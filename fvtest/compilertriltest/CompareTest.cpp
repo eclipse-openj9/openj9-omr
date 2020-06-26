@@ -1422,3 +1422,235 @@ INSTANTIATE_TEST_CASE_P(CompareTest, DoubleCompareOrUnordered, ::testing::Combin
         std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpleu", dcmpleu)
 
     )));
+
+int32_t iffcmpequ(float l, float r) {
+    if (std::isnan(l)) return IFCMP_TRUE_NUM;
+    if (std::isnan(r)) return IFCMP_TRUE_NUM;
+    return (l == r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t iffcmpneu(float l, float r) {
+    if (std::isnan(l)) return IFCMP_TRUE_NUM;
+    if (std::isnan(r)) return IFCMP_TRUE_NUM;
+    return (l != r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t iffcmpltu(float l, float r) {
+    if (std::isnan(l)) return IFCMP_TRUE_NUM;
+    if (std::isnan(r)) return IFCMP_TRUE_NUM;
+    return (l < r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t iffcmpleu(float l, float r) {
+    if (std::isnan(l)) return IFCMP_TRUE_NUM;
+    if (std::isnan(r)) return IFCMP_TRUE_NUM;
+    return (l <= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t iffcmpgeu(float l, float r) {
+    if (std::isnan(l)) return IFCMP_TRUE_NUM;
+    if (std::isnan(r)) return IFCMP_TRUE_NUM;
+    return (l >= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t iffcmpgtu(float l, float r) {
+    if (std::isnan(l)) return IFCMP_TRUE_NUM;
+    if (std::isnan(r)) return IFCMP_TRUE_NUM;
+    return (l > r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+class FloatIfCompareOrUnordered : public TRTest::OpCodeTest<int32_t, float, float> {};
+
+TEST_P(FloatIfCompareOrUnordered, UsingConst) {
+    SKIP_ON_RISCV(MissingImplementation);
+    SKIP_ON_HAMMER(KnownBug) << "The x86_64 code generator crashes (see issue #5122)";
+
+    auto param = TRTest::to_struct(GetParam());
+
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
+
+    char inputTrees[256] = {0};
+    std::snprintf(inputTrees, 256,
+        "(method return=Int32 "
+          "(block "
+            "(%s target=b1 (fconst %f) (fconst %f))) "
+          "(block "
+            "(ireturn (iconst %d))) "
+          "(block name=b1 "
+            "(ireturn (iconst %d)))"
+        ")",
+        param.opcode.c_str(), param.lhs, param.rhs, IFCMP_FALSE_NUM, IFCMP_TRUE_NUM);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(FloatIfCompareOrUnordered, UsingLoadParam) {
+    SKIP_ON_RISCV(MissingImplementation);
+    SKIP_ON_HAMMER(KnownBug) << "The x86_64 code generator crashes (see issue #5122)";
+
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[256] = {0};
+    std::snprintf(inputTrees, 256,
+        "(method return=Int32 args=[Float, Float] "
+          "(block "
+            "(%s target=b1 (fload parm=0) (fload parm=1))) "
+          "(block "
+            "(ireturn (iconst %d))) "
+          "(block name=b1 "
+            "(ireturn (iconst %d)))"
+        ")",
+        param.opcode.c_str(), IFCMP_FALSE_NUM, IFCMP_TRUE_NUM);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(float, float)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs, param.rhs);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(CompareTest, FloatIfCompareOrUnordered, ::testing::Combine(
+    ::testing::ValuesIn(
+        TRTest::filter(TRTest::const_value_pairs<float, float>(), smallFp_filter<float>)),
+    ::testing::Values(
+        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmpequ", iffcmpequ),
+        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmpneu", iffcmpneu),
+        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmpltu", iffcmpltu),
+        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmpleu", iffcmpleu),
+        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmpgeu", iffcmpgeu),
+        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmpgtu", iffcmpgtu)
+    )));
+
+int32_t ifdcmpequ(double l, double r) {
+    if (std::isnan(l)) return IFCMP_TRUE_NUM;
+    if (std::isnan(r)) return IFCMP_TRUE_NUM;
+    return (l == r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t ifdcmpneu(double l, double r) {
+    if (std::isnan(l)) return IFCMP_TRUE_NUM;
+    if (std::isnan(r)) return IFCMP_TRUE_NUM;
+    return (l != r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t ifdcmpltu(double l, double r) {
+    if (std::isnan(l)) return IFCMP_TRUE_NUM;
+    if (std::isnan(r)) return IFCMP_TRUE_NUM;
+    return (l < r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t ifdcmpleu(double l, double r) {
+    if (std::isnan(l)) return IFCMP_TRUE_NUM;
+    if (std::isnan(r)) return IFCMP_TRUE_NUM;
+    return (l <= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t ifdcmpgeu(double l, double r) {
+    if (std::isnan(l)) return IFCMP_TRUE_NUM;
+    if (std::isnan(r)) return IFCMP_TRUE_NUM;
+    return (l >= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t ifdcmpgtu(double l, double r) {
+    if (std::isnan(l)) return IFCMP_TRUE_NUM;
+    if (std::isnan(r)) return IFCMP_TRUE_NUM;
+    return (l > r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+class DoubleIfCompareOrUnordered : public TRTest::OpCodeTest<int32_t, double, double> {};
+
+TEST_P(DoubleIfCompareOrUnordered, UsingConst) {
+    SKIP_ON_RISCV(MissingImplementation);
+    SKIP_ON_HAMMER(KnownBug) << "The x86_64 code generator crashes (see issue #5122)";
+
+    auto param = TRTest::to_struct(GetParam());
+
+    if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
+       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+    }
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, 1024,
+        "(method return=Int32 "
+          "(block "
+            "(%s target=b1 (dconst %f) (dconst %f))) "
+          "(block "
+            "(ireturn (iconst %d))) "
+          "(block name=b1 "
+            "(ireturn (iconst %d)))"
+        ")",
+        param.opcode.c_str(), param.lhs, param.rhs, IFCMP_FALSE_NUM, IFCMP_TRUE_NUM);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(DoubleIfCompareOrUnordered, UsingLoadParam) {
+    SKIP_ON_RISCV(MissingImplementation);
+    SKIP_ON_HAMMER(KnownBug) << "The x86_64 code generator crashes (see issue #5122)";
+
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[256] = {0};
+    std::snprintf(inputTrees, 256,
+        "(method return=Int32 args=[Double, Double] "
+          "(block "
+            "(%s target=b1 (dload parm=0) (dload parm=1))) "
+          "(block "
+            "(ireturn (iconst %d))) "
+          "(block name=b1 "
+            "(ireturn (iconst %d)))"
+        ")",
+        param.opcode.c_str(), IFCMP_FALSE_NUM, IFCMP_TRUE_NUM);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(double, double)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs, param.rhs);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(CompareTest, DoubleIfCompareOrUnordered, ::testing::Combine(
+    ::testing::ValuesIn(
+        TRTest::filter(TRTest::const_value_pairs<double, double>(), smallFp_filter<double>)),
+    ::testing::Values(
+        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpequ", ifdcmpequ),
+        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpneu", ifdcmpneu),
+        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpltu", ifdcmpltu),
+        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpleu", ifdcmpleu),
+        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpgeu", ifdcmpgeu),
+        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpgtu", ifdcmpgtu)
+    )));

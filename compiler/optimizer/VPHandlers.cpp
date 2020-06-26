@@ -12205,7 +12205,8 @@ static TR_YesNoMaybe isArrayCompTypeValueType(OMR::ValuePropagation *vp, TR::VPC
       {
       isValueType = TR_no;
       }
-   else if (!arrayConstraint || !arrayConstraint->getClass())
+   else if (!(arrayConstraint && arrayConstraint->getClass()
+              && arrayConstraint->getClassType()->isArray() == TR_yes))
       {
       isValueType = TR_maybe;
       }

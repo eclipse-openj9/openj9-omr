@@ -23,7 +23,6 @@
  * Only Function Pointers are allowed.
  */
 
-
 #define BadILOpARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define aconstARM64Evaluator TR::TreeEvaluator::aconstEvaluator
 #define iconstARM64Evaluator TR::TreeEvaluator::iconstEvaluator
@@ -81,6 +80,7 @@
 #define bstoreiARM64Evaluator TR::TreeEvaluator::bstoreEvaluator
 #define sstoreiARM64Evaluator TR::TreeEvaluator::sstoreEvaluator
 #define istoreiARM64Evaluator TR::TreeEvaluator::istoreEvaluator
+<<<<<<< HEAD
 #define lwrtbariARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define fwrtbariARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define dwrtbariARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
@@ -88,6 +88,15 @@
 #define bwrtbariARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define swrtbariARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define iwrtbariARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
+=======
+#define lwrtbariARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define fwrtbariARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define dwrtbariARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define awrtbariARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define bwrtbariARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define swrtbariARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define iwrtbariARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+>>>>>>> 9db120d27... Adjust aarch64 Tree Evaluator table
 #define GotoARM64Evaluator TR::TreeEvaluator::gotoEvaluator
 #define ireturnARM64Evaluator TR::TreeEvaluator::ireturnEvaluator
 #define lreturnARM64Evaluator TR::TreeEvaluator::lreturnEvaluator
@@ -95,8 +104,13 @@
 #define dreturnARM64Evaluator TR::TreeEvaluator::dreturnEvaluator
 #define areturnARM64Evaluator TR::TreeEvaluator::areturnEvaluator
 #define ReturnARM64Evaluator TR::TreeEvaluator::returnEvaluator
+<<<<<<< HEAD
 #define asynccheckARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define athrowARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
+=======
+#define asynccheckARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define athrowARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+>>>>>>> 9db120d27... Adjust aarch64 Tree Evaluator table
 #define icallARM64Evaluator TR::TreeEvaluator::directCallEvaluator
 #define lcallARM64Evaluator TR::TreeEvaluator::directCallEvaluator
 #define fcallARM64Evaluator TR::TreeEvaluator::directCallEvaluator
@@ -104,6 +118,7 @@
 #define acallARM64Evaluator TR::TreeEvaluator::directCallEvaluator
 #define callARM64Evaluator TR::TreeEvaluator::directCallEvaluator
 #define iaddARM64Evaluator TR::TreeEvaluator::iaddEvaluator
+<<<<<<< HEAD
 #define laddARM64Evaluator TR::TreeEvaluator::laddEvaluator
 #define faddARM64Evaluator TR::TreeEvaluator::faddEvaluator
 #define daddARM64Evaluator TR::TreeEvaluator::daddEvaluator
@@ -122,10 +137,31 @@
 #define dmulARM64Evaluator TR::TreeEvaluator::dmulEvaluator
 #define bmulARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define smulARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
+=======
+#define laddARM64Evaluator TR::TreeEvaluator::laddEvaluator 
+#define faddARM64Evaluator TR::TreeEvaluator::faddEvaluator
+#define daddARM64Evaluator TR::TreeEvaluator::daddEvaluator
+#define baddARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define saddARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define isubARM64Evaluator TR::TreeEvaluator::isubEvaluator
+#define lsubARM64Evaluator TR::TreeEvaluator::lsubEvaluator 
+#define fsubARM64Evaluator TR::TreeEvaluator::fsubEvaluator
+#define dsubARM64Evaluator TR::TreeEvaluator::dsubEvaluator
+#define bsubARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define ssubARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define asubARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define imulARM64Evaluator TR::TreeEvaluator::imulEvaluator
+#define lmulARM64Evaluator TR::TreeEvaluator::lmulEvaluator 
+#define fmulARM64Evaluator TR::TreeEvaluator::fmulEvaluator
+#define dmulARM64Evaluator TR::TreeEvaluator::dmulEvaluator
+#define bmulARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define smulARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+>>>>>>> 9db120d27... Adjust aarch64 Tree Evaluator table
 #define idivARM64Evaluator TR::TreeEvaluator::idivEvaluator
 #define ldivARM64Evaluator TR::TreeEvaluator::ldivEvaluator
 #define fdivARM64Evaluator TR::TreeEvaluator::fdivEvaluator
 #define ddivARM64Evaluator TR::TreeEvaluator::ddivEvaluator
+<<<<<<< HEAD
 #define bdivARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define sdivARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define iudivARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
@@ -137,18 +173,37 @@
 #define bremARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define sremARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define iuremARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
+=======
+#define bdivARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define sdivARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define iudivARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define ludivARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define iremARM64Evaluator TR::TreeEvaluator::iremEvaluator
+#define lremARM64Evaluator TR::TreeEvaluator::lremEvaluator
+#define fremARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define dremARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define bremARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define sremARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define iuremARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+>>>>>>> 9db120d27... Adjust aarch64 Tree Evaluator table
 #define inegARM64Evaluator TR::TreeEvaluator::inegEvaluator
 #define lnegARM64Evaluator TR::TreeEvaluator::lnegEvaluator
 #define fnegARM64Evaluator TR::TreeEvaluator::fnegEvaluator
 #define dnegARM64Evaluator TR::TreeEvaluator::dnegEvaluator
+<<<<<<< HEAD
 #define bnegARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define snegARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
+=======
+#define bnegARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define snegARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+>>>>>>> 9db120d27... Adjust aarch64 Tree Evaluator table
 #define iabsARM64Evaluator TR::TreeEvaluator::iabsEvaluator
 #define labsARM64Evaluator TR::TreeEvaluator::labsEvaluator
 #define fabsARM64Evaluator TR::TreeEvaluator::fabsEvaluator
 #define dabsARM64Evaluator TR::TreeEvaluator::dabsEvaluator
 #define ishlARM64Evaluator TR::TreeEvaluator::ishlEvaluator
 #define lshlARM64Evaluator TR::TreeEvaluator::ishlEvaluator
+<<<<<<< HEAD
 #define bshlARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define sshlARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ishrARM64Evaluator TR::TreeEvaluator::ishrEvaluator
@@ -159,10 +214,23 @@
 #define lushrARM64Evaluator TR::TreeEvaluator::iushrEvaluator
 #define bushrARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define sushrARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
+=======
+#define bshlARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define sshlARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define ishrARM64Evaluator TR::TreeEvaluator::ishrEvaluator
+#define lshrARM64Evaluator TR::TreeEvaluator::ishrEvaluator
+#define bshrARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define sshrARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define iushrARM64Evaluator TR::TreeEvaluator::iushrEvaluator
+#define lushrARM64Evaluator TR::TreeEvaluator::iushrEvaluator
+#define bushrARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define sushrARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+>>>>>>> 9db120d27... Adjust aarch64 Tree Evaluator table
 #define irolARM64Evaluator TR::TreeEvaluator::irolEvaluator
 #define lrolARM64Evaluator TR::TreeEvaluator::irolEvaluator
 #define iandARM64Evaluator TR::TreeEvaluator::iandEvaluator
 #define landARM64Evaluator TR::TreeEvaluator::landEvaluator
+<<<<<<< HEAD
 #define bandARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define sandARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define iorARM64Evaluator TR::TreeEvaluator::iorEvaluator
@@ -173,16 +241,36 @@
 #define lxorARM64Evaluator TR::TreeEvaluator::lxorEvaluator
 #define bxorARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define sxorARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
+=======
+#define bandARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define sandARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define iorARM64Evaluator TR::TreeEvaluator::iorEvaluator
+#define lorARM64Evaluator TR::TreeEvaluator::lorEvaluator
+#define borARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define sorARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define ixorARM64Evaluator TR::TreeEvaluator::ixorEvaluator
+#define lxorARM64Evaluator TR::TreeEvaluator::lxorEvaluator
+#define bxorARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define sxorARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+>>>>>>> 9db120d27... Adjust aarch64 Tree Evaluator table
 #define i2lARM64Evaluator TR::TreeEvaluator::i2lEvaluator
 #define i2fARM64Evaluator TR::TreeEvaluator::i2fEvaluator
 #define i2dARM64Evaluator TR::TreeEvaluator::i2dEvaluator
 #define i2bARM64Evaluator TR::TreeEvaluator::l2iEvaluator
 #define i2sARM64Evaluator TR::TreeEvaluator::l2iEvaluator
+<<<<<<< HEAD
 #define i2aARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define iu2lARM64Evaluator TR::TreeEvaluator::iu2lEvaluator
 #define iu2fARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define iu2dARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define iu2aARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator
+=======
+#define i2aARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define iu2lARM64Evaluator TR::TreeEvaluator::iu2lEvaluator
+#define iu2fARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define iu2dARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define iu2aARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+>>>>>>> 9db120d27... Adjust aarch64 Tree Evaluator table
 #define l2iARM64Evaluator TR::TreeEvaluator::l2iEvaluator
 #define l2fARM64Evaluator TR::TreeEvaluator::l2fEvaluator
 #define l2dARM64Evaluator TR::TreeEvaluator::l2dEvaluator

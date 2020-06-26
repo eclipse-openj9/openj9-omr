@@ -63,14 +63,14 @@
    .globl    __forwardQuadWordArrayCopy_vsx{DS}
    .globl    .__quadWordArrayCopy_vsx
    .globl    __quadWordArrayCopy_vsx{DS}
-   .globl    .__forwardLEArrayCopy
-   .globl    __forwardLEArrayCopy{DS}
-   .globl    .__leArrayCopy
-   .globl    __leArrayCopy{DS}
    .globl    .__postP10ForwardCopy
    .globl    __postP10ForwardCopy{DS}
    .globl    .__postP10GenericCopy
    .globl    __postP10GenericCopy{DS}
+   .globl    .__forwardLEArrayCopy
+   .globl    __forwardLEArrayCopy{DS}
+   .globl    .__leArrayCopy
+   .globl    __leArrayCopy{DS}
 
    .lglobl    .__codeForShortArrayCopy
    .lglobl    L.0copy
@@ -136,14 +136,14 @@
    .type     FUNC_LABEL(__forwardQuadWordArrayCopy_vsx),@function
    .globl    FUNC_LABEL(__quadWordArrayCopy_vsx)
    .type     FUNC_LABEL(__quadWordArrayCopy_vsx),@function
-   .globl    FUNC_LABEL(__forwardLEArrayCopy)
-   .type     FUNC_LABEL(__forwardLEArrayCopy),@function
-   .globl    FUNC_LABEL(__leArrayCopy)
-   .type     FUNC_LABEL(__leArrayCopy),@function
    .globl    FUNC_LABEL(__postP10ForwardCopy)
    .type     FUNC_LABEL(__postP10ForwardCopy),@function
    .globl    FUNC_LABEL(__postP10GenericCopy)
    .type     FUNC_LABEL(__postP10GenericCopy),@function
+   .globl    FUNC_LABEL(__forwardLEArrayCopy)
+   .type     FUNC_LABEL(__forwardLEArrayCopy),@function
+   .globl    FUNC_LABEL(__leArrayCopy)
+   .type     FUNC_LABEL(__leArrayCopy),@function
 
 #elif defined(LINUX)
    .globl    __arrayCopy
@@ -160,10 +160,10 @@
    .globl    __forwardHalfWordArrayCopy_dp
    .globl    __forwardQuadWordArrayCopy_vsx
    .globl    __quadWordArrayCopy_vsx
-   .globl    __forwardLEArrayCopy
-   .globl    __leArrayCopy
    .globl    __postP10ForwardCopy
    .globl    __postP10GenericCopy
+   .globl    __forwardLEArrayCopy
+   .globl    __leArrayCopy
 #endif
 
 
@@ -2268,11 +2268,11 @@ __postP10ForwardCopy:
       cmpli cr0, CmpAddr, r7, 32
       bgt   cr0, L.p10_Forward_gt32       ! no taken branch for small copy for both fwd and reverse
 L.p10_le32:
-      sldi   r11, r7, 56
+      SLDI(r11, r7, 56)
       LXVL(vs32, r8, r11)
       addic. r7, r7, -16
       ISELLT(r7, 0, r7, cr0)            ! r0 here really means value 0
-      sldi   r7, r7, 56
+      SLDI(r7, r7, 56)
       addi   r8, r8, 16
       LXVL(vs33, r8, r7)
       STXVL(vs32, r9, r11)
@@ -2283,43 +2283,43 @@ L.p10_le32:
 L.p10_Forward_gt32:
       andi.  r11, r8, 0xf                 ! align the source
       subfic r11, r11, 16
-      sldi   r11, r11, 56
+      SLDI(r11, r11, 56)
       LXVL(vs32, r8, r11)
       STXVL(vs32, r9, r11)
-      srdi   r11, r11, 56
+      SRDI(r11, r11, 56)
       subf   r7, r11, r7
       add    r8, r8, r11                  ! source address aligned to 16
       add    r9, r9, r11
       cmpli  cr0, CmpAddr, r7, 64
       bge    cr0, L.p10_Forward_preloop64
 L.p10_Forward_lt64:
-      sldi   r11, r7, 56
+      SLDI(r11, r7, 56)
       LXVL(vs32, r8, r11)
       STXVL(vs32, r9, r11)
       addic. r7, r7, -16
       ISELLT(r11, 0, r7, cr0)
       addi   r8, r8, 16
-      sldi   r11, r11, 56
+      SLDI(r11, r11, 56)
       addic. r7, r7, -16
       addi   r9, r9, 16
       LXVL(vs32, r8, r11)
       STXVL(vs32, r9, r11)
       blelr
-      sldi   r11, r7, 56
+      SLDI(r11, r7, 56)
       addi   r8, r8, 16
       addi   r9, r9, 16
       LXVL(vs32, r8, r11)
       addic. r7, r7, -16
       STXVL(vs32, r9, r11)
       blelr
-      sldi   r11, r7, 56
+      SLDI(r11, r7, 56)
       addi   r8, r8, 16
       addi   r9, r9, 16
       LXVL(vs32, r8, r11)
       STXVL(vs32, r9, r11)
       blr
 L.p10_Forward_preloop64:
-      srdi   r11, r7, 6
+      SRDI(r11, r7, 6)
       andi.  r7, r7, 63
       mtctr  r11
 L.p10_Forward_loop64:
@@ -2362,7 +2362,7 @@ __postP10GenericCopy:
       add     r8, r8, r7                          ! Reverse copy
       add     r9, r9, r7
       andi.   r5, r8, 0xf                         ! Align the source
-      sldi    r11, r5, 56
+      SLDI(r11, r5, 56)
       subf    r8, r5, r8
       subf    r9, r5, r9
       subf    r7, r5, r7
@@ -2377,7 +2377,7 @@ L.post_P10_Generic_lt64:
       subf    r8, r5, r8
       subf    r9, r5, r9
       subf    r7, r5, r7
-      sldi    r5, r5, 56
+      SLDI(r5, r5, 56)
       LXVL(vs32, r8, r5)
       STXVL(vs32, r9, r5)
       addic.  r5, r7, -16
@@ -2385,7 +2385,7 @@ L.post_P10_Generic_lt64:
       subf    r8, r5, r8
       subf    r9, r5, r9
       subf    r7, r5, r7
-      sldi    r5, r5, 56
+      SLDI(r5, r5, 56)
       LXVL(vs32, r8, r5)
       STXVL(vs32, r9, r5)
       blelr
@@ -2394,18 +2394,18 @@ L.post_P10_Generic_lt64:
       subf    r8, r5, r8
       subf    r9, r5, r9
       subf    r7, r5, r7
-      sldi    r5, r5, 56
+      SLDI(r5, r5, 56)
       LXVL(vs32, r8, r5)
       STXVL(vs32, r9, r5)
       blelr
-      sldi    r5, r7, 56
+      SLDI(r5, r7, 56)
       subf    r8, r7, r8
       subf    r9, r7, r9
       LXVL(vs32, r8, r5)
       STXVL(vs32, r9, r5)
       blr
 L.post_P10_Generic_preloop64:
-      srdi    r5, r7, 6
+      SRDI(r5, r7, 6)
       andi.   r7, r7, 63
       mtctr   r5
 L.post_P10_Generic_loop64:
@@ -2425,8 +2425,6 @@ L.post_P10_Generic_loop64:
 
    endproc.__postP10GenericCopy:
 
-
-
 #ifdef AIXPPC
    .csect   __forwardLEArrayCopy{PR}
 .__forwardLEArrayCopy:
@@ -2437,11 +2435,6 @@ FUNC_LABEL(__forwardLEArrayCopy):
 __forwardLEArrayCopy:
 #endif
 startproc.__forwardLEArrayCopy:
-
-   cmpli cr0, CmpAddr, r7, 17
-   bc BO_IF, CR0_LT, .L.tableDispatch
-   b  L.doubleWordAlignment_le
-
 endproc.__forwardLEArrayCopy:
 
 #ifdef AIXPPC
@@ -2454,141 +2447,8 @@ FUNC_LABEL(__leArrayCopy):
 __leArrayCopy:
 #endif
 startproc.__leArrayCopy:
-
-   cmpli cr0, CmpAddr, r7, 17
-   subf  r11, r8, r9
-   bc BO_IF, CR0_LT, .L.tableDispatch
-   cmpl  cr0, CmpAddr, r11, r7
-   bc BO_IF_NOT, CR0_LT, L.doubleWordAlignment_le
-
-   add   r8, r8, r7
-   add   r9, r9, r7
-   b  L.reverseDoubleWordAlignment_le
-
 endproc.__leArrayCopy:
 
-L.doubleWordAlignment_le:
-   !Precondition, must strictly have r7 >= 32 to land here.
-
-   !Need 16 byte alignment for VSX loads/stores.
-   !Test 8byte alignment first, before 16 byte.
-   andi.   r11, r8, 0x7
-   beq     cr0,  L.doubleWordAligned_le
-
-   !Here we are not aligned at 8 bytes.
-   !Copy data using GPRs till we hit 16 byte alignment.
-   andi.   r11, r8, 0x1
-   beq     cr0, L.doubleWordAlignment_le_test2
-   lbz     r6, 0(r8)
-   stb     r6, 0(r9)
-   addi r8, r8,  1
-   addi r9, r9,  1
-   addi r7, r7, -1
-
-L.doubleWordAlignment_le_test2:
-   andi.   r11, r8, 0x2
-   beq     cr0, L.doubleWordAlignment_le_test4
-   lhz     r6, 0(r8)
-   sth     r6, 0(r9)
-   addi r8, r8,  2
-   addi r9, r9,  2
-   addi r7, r7, -2
-
-L.doubleWordAlignment_le_test4:
-   andi.   r11, r8, 0x4
-   beq     cr0, L.doubleWordAligned_le
-   lfs     fp8, 0(r8)
-   stfs     fp8, 0(r9)
-   addi r8, r8,  4
-   addi r9, r9,  4
-   addi r7, r7, -4
-
-L.doubleWordAligned_le:
-
-   srwi  r11,  r7,  4            ! number of 16byte loop iterations
-   andi.  r7,  r7, 15            ! residue bytes
-
-   !If r11 is zero, then cannot just go forward and do the vector code.
-   !we can have a case where 0 <= r7 < 64
-   cmpli cr0, CmpAddr, r11, 0
-   beq   cr0, .L.tableDispatch    ! false, goto residue
-
-   mtctr r11
-
-L.doubleWordLoop_le:
-   lfd     fp8, 0(r8)
-   lfd     fp9, 8(r8)
-   stfd    fp8, 0(r9)
-   stfd    fp9, 8(r9)
-   addi  r8, r8, 16
-   addi  r9, r9, 16
-   bdnz  L.doubleWordLoop_le
-
-   cmpli cr0, CmpAddr, r7, 0     ! check if any residue left.
-   bclr  BO_IF, CR0_EQ           ! return if no residue left.
-   !This code is quadWordAligned, and 0 < r7 < 16
-   b     .L.tableDispatch
-
-L.reverseDoubleWordAlignment_le:
-   !Precondition, must strictly have r7 >= 32 to land here.
-
-   !Need 16 byte alignment for VSX loads/stores.
-   !Test 8 byte alignment first, before 16 byte.
-   andi.   r11, r8, 0x7
-   beq     cr0,  L.reverseDoubleWordAligned_le
-
-   !Here we are not aligned at 8 bytes.
-   !Copy data using GPRs till we hit 16 byte alignment.
-   andi.   r11, r8, 0x1
-   beq     cr0, L.reverseDoubleWordAlignment_le_test2
-   lbz     r6, -1(r8)
-   stb     r6, -1(r9)
-   addi r8, r8, -1
-   addi r9, r9, -1
-   addi r7, r7, -1
-
-L.reverseDoubleWordAlignment_le_test2:
-   andi.   r11, r8, 0x2
-   beq     cr0, L.reversedoubleWordAlignment_le_test4
-   lhz     r6, -2(r8)
-   sth     r6, -2(r9)
-   addi r8, r8, -2
-   addi r9, r9, -2
-   addi r7, r7, -2
-
-L.reversedoubleWordAlignment_le_test4:
-   andi.   r11, r8, 0x4
-   beq     cr0, L.reverseDoubleWordAligned_le
-   lfs     fp8, -4(r8)
-   stfs    fp8, -4(r9)
-   addi r8, r8, -4
-   addi r9, r9, -4
-   addi r7, r7, -4
-
-L.reverseDoubleWordAligned_le:
-   srwi  r11,  r7,  4            ! number of 16byte loop iterations
-   andi.  r7,  r7,  15           ! residue bytes
-
-   !If r11 is zero, then cannot just go forward and do the vector code.
-   !we can have a case where 0 <= r7 < 16
-   cmpli cr0, CmpAddr, r11, 0
-   beq   cr0, .L.reverseTableDispatch    ! false, goto residue
-
-   mtctr r11
-
-L.reverseDoubleWordLoop_le:
-   lfd     fp8, -8(r8)
-   lfd     fp9, -16(r8)
-   stfd    fp8, -8(r9)
-   stfd    fp9, -16(r9)
-   addi     r8, r8, -16
-   addi     r9, r9, -16
-   bdnz  L.reverseDoubleWordLoop_le
-
-   cmpli cr0, CmpAddr, r7, 0        ! check if any residue left.
-   bclr  BO_IF, CR0_EQ              ! return if no residue left.
-   !This code is quadWordAligned, and 0 < r7 < 16
-   b     .L.reverseTableDispatch    ! table dispatch the remaining residue.
 
 ! .data section
 #ifdef AIXPPC
@@ -2680,18 +2540,6 @@ TOC__shortArrayCopyLabelTable:
    ADDR      0x00000000
 ! End   csect     __quadWordArrayCopy_vsx{DS}
 
-   .csect    __forwardLEArrayCopy{DS}
-   ADDR      .__forwardLEArrayCopy
-   ADDR      TOC{TC0}
-   ADDR      0x00000000
-! End   csect     __forwardLEArrayCopy{DS}
-
-   .csect    __leArrayCopy{DS}
-   ADDR      .__leArrayCopy
-   ADDR      TOC{TC0}
-   ADDR      0x00000000
-! End   csect     __leArrayCopy{DS}
-
    .csect    __postP10ForwardCopy{DS}
    ADDR      .__postP10ForwardCopy
    ADDR      TOC{TC0}
@@ -2703,6 +2551,18 @@ TOC__shortArrayCopyLabelTable:
    ADDR      TOC{TC0}
    ADDR      0x00000000
 ! End   csect     __postP10GenericCopy{DS}
+
+   .csect    __forwardLEArrayCopy{DS}
+   ADDR      .__forwardLEArrayCopy
+   ADDR      TOC{TC0}
+   ADDR      0x00000000
+! End   csect     __forwardLEArrayCopy{DS}
+
+   .csect    __leArrayCopy{DS}
+   ADDR      .__leArrayCopy
+   ADDR      TOC{TC0}
+   ADDR      0x00000000
+! End   csect     __leArrayCopy{DS}
 
 
 #elif defined(LINUXPPC64)
@@ -2825,22 +2685,6 @@ __quadWordArrayCopy_vsx:
    .long     0x00000000
    .long     0x00000000
 
-   .globl    __forwardLEArrayCopy
-   .size     __forwardLEArrayCopy,24
-__forwardLEArrayCopy:
-   .quad     .__forwardLEArrayCopy
-   .quad     .TOC.@tocbase
-   .long     0x00000000
-   .long     0x00000000
-
-   .globl    __leArrayCopy
-   .size     __leArrayCopy,24
-__leArrayCopy:
-   .quad     .__leArrayCopy
-   .quad     .TOC.@tocbase
-   .long     0x00000000
-   .long     0x00000000
-
    .globl    __postP10ForwardCopy
    .size     __postP10ForwardCopy,24
 __postP10ForwardCopy:
@@ -2853,6 +2697,22 @@ __postP10ForwardCopy:
    .size     __postP10GenericCopy,24
 __postP10GenericCopy:
    .quad     .__postP10GenericCopy
+   .quad     .TOC.@tocbase
+   .long     0x00000000
+   .long     0x00000000
+
+   .globl    __forwardLEArrayCopy
+   .size     __forwardLEArrayCopy,24
+__forwardLEArrayCopy:
+   .quad     .__forwardLEArrayCopy
+   .quad     .TOC.@tocbase
+   .long     0x00000000
+   .long     0x00000000
+
+   .globl    __leArrayCopy
+   .size     __leArrayCopy,24
+__leArrayCopy:
+   .quad     .__leArrayCopy
    .quad     .TOC.@tocbase
    .long     0x00000000
    .long     0x00000000

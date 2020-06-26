@@ -773,17 +773,6 @@ class OMR_EXTENSIBLE CodeGenerator
     */
    uint32_t getJitMethodEntryAlignmentBoundary();
 
-   /** \brief
-    *     Determines the byte threshold at which the JIT-to-JIT method entry point boundary alignment will not be
-    *     performed. If the JIT-to-JIT method entry point is already close to the boundary then it may not make sense
-    *     to perform the boundary alignment as much code cache can be wasted. This threshold can be used to avoid such
-    *     situations.
-    *
-    *  \note
-    *     This value must be less than or equal to the boundary returned via \see getJitMethodEntryAlignmentBoundary.
-    */
-   uint32_t getJitMethodEntryAlignmentThreshold();
-
    uint32_t getJitMethodEntryPaddingSize() {return _jitMethodEntryPaddingSize;}
    uint32_t setJitMethodEntryPaddingSize(uint32_t s) {return (_jitMethodEntryPaddingSize = s);}
 

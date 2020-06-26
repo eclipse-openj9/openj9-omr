@@ -781,8 +781,6 @@ public:
 
    uint32_t getJitMethodEntryAlignmentBoundary();
 
-   uint32_t getJitMethodEntryAlignmentThreshold();
-
    // LL: move to .cpp
    bool bitwiseOpNeedsLiteralFromPool(TR::Node *parent, TR::Node *child);
 

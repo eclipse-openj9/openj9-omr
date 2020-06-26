@@ -1176,7 +1176,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceNonLinearRA",                 "L\ttrace non-linear RA",                          SET_OPTION_BIT(TR_TraceNonLinearRegisterAssigner), "F"},
    {"traceOpts",                        "L\tdump each optimization name",                 SET_OPTION_BIT(TR_TraceOpts), "P" },
    {"traceOpts=",                       "L{regex}\tlist of optimizations to trace", TR::Options::setRegex, offsetof(OMR::Options, _optsToTrace), 0, "P"},
-   {"traceOptTrees",                    "L\tdump trees after each optimization",           SET_OPTION_BIT(TR_TraceOptTrees), "P" },
    {"traceOSR",                         "L\ttrace OSR",                                    SET_OPTION_BIT(TR_TraceOSR), "P"},
    {"traceOSRDefAnalysis",              "L\ttrace OSR reaching defintions analysis",       TR::Options::traceOptimization, osrDefAnalysis, 0, "P"},
 #ifdef J9_PROJECT_SPECIFIC
@@ -1184,7 +1183,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceOSRGuardRemoval",             "L\ttrace HCR guard removal",                      TR::Options::traceOptimization, osrGuardRemoval, 0, "P"},
 #endif
    {"traceOSRLiveRangeAnalysis",        "L\ttrace OSR live range analysis",                TR::Options::traceOptimization, osrLiveRangeAnalysis, 0, "P"},
-   {"tracePartialInlining",             "L\ttrace partial inlining heuristics",            SET_OPTION_BIT(TR_TracePartialInlining), "P" },
    {"tracePRE",                         "L\ttrace partial redundancy elimination",        TR::Options::traceOptimization, partialRedundancyElimination, 0, "P"},
    {"tracePrefetchInsertion",           "L\ttrace prefetch insertion",                     TR::Options::traceOptimization, prefetchInsertion, 0, "P"},
    {"tracePREForSubNodeReplacement",    "L\ttrace partial redundancy elimination focussed on optimal subnode replacement", SET_OPTION_BIT(TR_TracePREForOptimalSubNodeReplacement), "P" },
@@ -1208,8 +1206,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceRematerialization",           "L\ttrace rematerialization",                      TR::Options::traceOptimization, rematerialization, 0, "P"},
    {"traceReorderArrayIndexExpr",       "L\ttrace reorder array index expressions",        TR::Options::traceOptimization, reorderArrayIndexExpr, 0, "P"},
    {"traceSamplingJProfiling",          "L\ttrace samplingjProfiling",                     TR::Options::traceOptimization, samplingJProfiling, 0, "P"},
-   {"traceScalarizeSSOps",              "L\ttrace scalarization of array/SS ops", SET_OPTION_BIT(TR_TraceScalarizeSSOps), "P"},
-   {"traceSEL",                         "L\ttrace sign extension load", SET_OPTION_BIT(TR_TraceSEL), "P"},
+   {"traceSEL",                         "L\ttrace sign extension load",                    TR::Options::traceOptimization, signExtendLoads, 0, "P"},
    {"traceSequenceSimplification",      "L\ttrace arithmetic sequence simplification",     TR::Options::traceOptimization, expressionsSimplification, 0, "P"},
    {"traceStaticFinalFieldFolding",     "L\ttrace generic static final field folding",             TR::Options::traceOptimization, staticFinalFieldFolding, 0, "P"},
    {"traceStringBuilderTransformer",    "L\ttrace StringBuilder tranfsofermer optimization", TR::Options::traceOptimization, stringBuilderTransformer, 0, "P"},
@@ -1217,18 +1214,13 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceStripMining",                 "L\ttrace strip mining",                           TR::Options::traceOptimization, stripMining, 0, "P"},
    {"traceStructuralAnalysis",          "L\ttrace structural analysis", SET_OPTION_BIT(TR_TraceSA), "P"},
    {"traceSwitchAnalyzer",              "L\ttrace switch analyzer",                        TR::Options::traceOptimization, switchAnalyzer, 0, "P"},
-   {"traceTempUsage",                   "L\ttrace number of temps used",                   SET_OPTION_BIT(TR_TraceTempUsage), "P"},
-   {"traceTempUsageMore",               "L\ttrace usage of temps, showing each temp used", SET_OPTION_BIT(TR_TraceTempUsageMore), "P"},
    {"traceTreeCleansing",               "L\ttrace tree cleansing",                         TR::Options::traceOptimization, treesCleansing, 0, "P"},
    {"traceTreePatternMatching",         "L\ttrace the functioning of the TR_Pattern framework", SET_OPTION_BIT(TR_TraceTreePatternMatching), "F"},
    {"traceTrees",                       "L\tdump trees after each compilation phase", SET_OPTION_BIT(TR_TraceTrees), "P" },
    {"traceTreeSimplification",          "L\ttrace tree simplification",                    TR::Options::traceOptimization, treeSimplification, 0, "P"},
-   {"traceTreeSimplification=",         "L{regex}\tlist of additional options: mulDecompose",
-         TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _traceSimplifier), 0, "P"},
    {"traceTrivialBlockExtension",       "L\ttrace trivial block extension",                TR::Options::traceOptimization, trivialBlockExtension, 0, "P"},
-   {"traceTrivialDeadTreeRemoval",      "L\ttrace trivial dead tree removal", SET_OPTION_BIT(TR_TraceTrivialDeadTreeRemoval), "P"},
+   {"traceTrivialDeadTreeRemoval",      "L\ttrace trivial dead tree removal",              TR::Options::traceOptimization, trivialDeadTreeRemoval, 0, "P"},
    {"traceUnsafeFastPath",              "L\ttrace unsafe fast path",                       TR::Options::traceOptimization, unsafeFastPath, 0, "P"},  // Java specific option
-   {"traceUnsafeInlining",              "L\ttrace unsafe inlining",                        SET_OPTION_BIT(TR_TraceUnsafeInlining), "F"},
    {"traceUseDefs",                     "L\ttrace use def info",                           SET_OPTION_BIT(TR_TraceUseDefs), "F"},
    {"traceValueNumbers",                "L\ttrace value number info",                      SET_OPTION_BIT(TR_TraceValueNumbers), "F"},
    {"traceVarHandleTransformer",        "L\ttrace VarHandle transformer",                  TR::Options::traceOptimization, varHandleTransformer, 0, "P"},  // Java specific option
@@ -4598,10 +4590,7 @@ OMR::Options::setAddressEnumerationBits(char *option, void *base, TR::OptionTabl
 OMR::Options::TR_OptionStringToBit OMR::Options::_optionStringToBitMapping[] = {
 // Names cannot be reused otherwise all matching bits will be set
 // bit 0x00000001 is set if any option is present
-
-// Simplifier trace options
-{ "mulDecompose", TR_TraceMulDecomposition},
-
+   
 // Debug Enable flags
 { "enableUnneededNarrowIntConversion", TR_EnableUnneededNarrowIntConversion },
 

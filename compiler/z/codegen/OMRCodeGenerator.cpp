@@ -829,7 +829,7 @@ OMR::Z::CodeGenerator::internalPointerSupportImplemented()
 bool
 OMR::Z::CodeGenerator::mulDecompositionCostIsJustified(int32_t numOfOperations, char bitPosition[], char operationType[], int64_t value)
    {
-   bool trace = self()->comp()->getOptions()->getTraceSimplifier(TR_TraceMulDecomposition);
+   bool trace = self()->comp()->getOptions()->trace(OMR::treeSimplification);
 
    if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
       {

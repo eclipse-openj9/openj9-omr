@@ -8096,9 +8096,9 @@ TR_ColdBlockOutlining::perform()
 
    if (trace())
       {
-   comp()->dumpMethodTrees("Before cold block outlining");
-   traceMsg(comp(), "Original ");
-   orderBlocks.dumpBlockOrdering(comp()->getMethodSymbol()->getFirstTreeTop());
+      comp()->dumpMethodTrees("Before cold block outlining");
+      traceMsg(comp(), "Original ");
+      orderBlocks.dumpBlockOrdering(comp()->getMethodSymbol()->getFirstTreeTop());
       }
 
    reorderColdBlocks();
@@ -8106,9 +8106,9 @@ TR_ColdBlockOutlining::perform()
 
    if (trace())
       {
-   traceMsg(comp(), "After outlining cold Block ");
-   orderBlocks.dumpBlockOrdering(comp()->getMethodSymbol()->getFirstTreeTop());
-   comp()->dumpMethodTrees("After cold block outlining");
+      traceMsg(comp(), "After outlining cold Block ");
+      orderBlocks.dumpBlockOrdering(comp()->getMethodSymbol()->getFirstTreeTop());
+      comp()->dumpMethodTrees("After cold block outlining");
       }
 
    return 1;
@@ -8314,7 +8314,6 @@ TR_BlockManipulator::breakFallThrough(TR::Block *faller, TR::Block *fallee, bool
 void
 TR_TrivialDeadTreeRemoval::preProcessTreetop(TR::TreeTop *treeTop, List<TR::TreeTop> &commonedTreeTopList, char *optDetails, TR::Compilation *comp)
    {
-   bool trace = comp->getOption(TR_TraceTrivialDeadTreeRemoval);
    TR::Node *ttNode = treeTop->getNode();
    if (ttNode->getOpCodeValue() == TR::treetop &&
        ttNode->getFirstChild()->getReferenceCount() >= 1)
@@ -8326,7 +8325,7 @@ TR_TrivialDeadTreeRemoval::preProcessTreetop(TR::TreeTop *treeTop, List<TR::Tree
              performTransformation(comp, "%sUnlink trivial %s (%p) of %s (%p) with refCount==1\n",
                 optDetails, treeTop->getNode()->getOpCode().getName(),treeTop->getNode(),firstChild->getOpCode().getName(),firstChild))
             {
-            if (trace)
+            if (trace())
                traceMsg(comp,"\tfound trivially anchored ttNode %p with firstChild %s (%p -- refCount == 1)\n",
                   ttNode,firstChild->getOpCode().getName(),firstChild);
             for (int32_t i=0; i < firstChild->getNumChildren(); i++)
@@ -8334,14 +8333,14 @@ TR_TrivialDeadTreeRemoval::preProcessTreetop(TR::TreeTop *treeTop, List<TR::Tree
                TR::Node *grandChild = firstChild->getChild(i);
                if (!grandChild->getOpCode().isLoadConst() || grandChild->anchorConstChildren())
                   {
-                  if (trace)
+                  if (trace())
                      traceMsg(comp,"\t\tcreate new treetop for firstChild->getChild(%d) = %s (%p)\n",i,grandChild->getOpCode().getName(),grandChild);
                   // use insertAfter so the newly anchored trees get visited in the next interation(s)
                   treeTop->insertAfter(TR::TreeTop::create(comp,
                                                               TR::Node::create(TR::treetop, 1, grandChild)));
                   }
                }
-            if (trace)
+            if (trace())
                traceMsg(comp,"\t\tremove trivially anchored ttNode %p with firstChild %s (%p) treetop\n",
                   ttNode,firstChild->getOpCode().getName(),firstChild);
             treeTop->unlink(true);
@@ -8351,7 +8350,7 @@ TR_TrivialDeadTreeRemoval::preProcessTreetop(TR::TreeTop *treeTop, List<TR::Tree
                firstChild->getOpCode().isLoadAddr() ||
                (firstChild->getOpCode().isLoad() && !firstChild->getOpCode().isStore()))
          {
-         if (trace)
+         if (trace())
             traceMsg(comp,"\tadd ttNode %p with firstChild %s (%p, refCount %d) to commonedTreeTopList\n",
                ttNode,firstChild->getOpCode().getName(),firstChild,firstChild->getReferenceCount());
          commonedTreeTopList.add(treeTop);
@@ -8362,10 +8361,9 @@ TR_TrivialDeadTreeRemoval::preProcessTreetop(TR::TreeTop *treeTop, List<TR::Tree
 void
 TR_TrivialDeadTreeRemoval::postProcessTreetop(TR::TreeTop *treeTop, List<TR::TreeTop> &commonedTreeTopList, char *optDetails, TR::Compilation *comp)
    {
-   bool trace = comp->getOption(TR_TraceTrivialDeadTreeRemoval);
    if (treeTop->isPossibleDef())
       {
-      if (trace)
+      if (trace())
          traceMsg(comp,"\tfound a possible def at node %p so clear _commonedTreeTopList list\n",treeTop->getNode());
       commonedTreeTopList.deleteAll();
       }
@@ -8374,7 +8372,6 @@ TR_TrivialDeadTreeRemoval::postProcessTreetop(TR::TreeTop *treeTop, List<TR::Tre
 void
 TR_TrivialDeadTreeRemoval::processCommonedChild(TR::Node *child, TR::TreeTop *treeTop, List<TR::TreeTop> &commonedTreeTopList, char *optDetails, TR::Compilation *comp)
    {
-   bool trace = comp->getOption(TR_TraceTrivialDeadTreeRemoval);
    if (child->getReferenceCount() > 1)
       {
       if (!commonedTreeTopList.isEmpty())
@@ -8382,7 +8379,7 @@ TR_TrivialDeadTreeRemoval::processCommonedChild(TR::Node *child, TR::TreeTop *tr
          ListIterator<TR::TreeTop> listIt(&commonedTreeTopList);
          ListElement<TR::TreeTop> *prevElement = NULL;
          TR::TreeTop *listTT = listIt.getFirst();
-         if (trace)
+         if (trace())
             traceMsg(comp,"commonedTreeTopList is not empty and found a commoned child %s (%p, refCount %d)\n",child->getOpCode().getName(),child,child->getReferenceCount());
          while (listTT)
             {
@@ -8392,7 +8389,7 @@ TR_TrivialDeadTreeRemoval::processCommonedChild(TR::Node *child, TR::TreeTop *tr
             //   a
             //   =>a
             //
-            if (trace)
+            if (trace())
                traceMsg(comp,"\tcomparing listTT %p with firstChild %s (%p) to commoned child %s (%p, refCount %d) (listTT == _currentTreeTop -- %s)\n",
                   listTT->getNode(),listTT->getNode()->getFirstChild()->getOpCode().getName(),listTT->getNode()->getFirstChild(),child->getOpCode().getName(),child,child->getReferenceCount(),listTT == treeTop?"yes":"no");
             if (listTT->getNode()->getFirstChild() == child)
@@ -8423,7 +8420,7 @@ TR_TrivialDeadTreeRemoval::processCommonedChild(TR::Node *child, TR::TreeTop *tr
             prevElement = listIt.getCurrentElement();
             listTT = listIt.getNext();
             }
-            if (trace) traceMsg(comp,"\n");
+            if (trace()) traceMsg(comp,"\n");
          }
       else
          {
@@ -8473,7 +8470,7 @@ TR_TrivialDeadTreeRemoval::transformBlock(TR::TreeTop * entryTree, TR::TreeTop *
 
    _currentBlock = entryTree->getNode()->getBlock();
    _commonedTreeTopList.deleteAll();
-   if (comp()->getOption(TR_TraceTrivialDeadTreeRemoval))
+   if (trace())
       traceMsg(comp(),"TrivialDeadTreeRemoval on block_%d : entryTreeNode %p -> exitTreeNode %p\n",_currentBlock->getNumber(),entryTree->getNode(),exitTree->getNode());
    for (TR::TreeTop * currentTree = entryTree->getNextRealTreeTop();
         currentTree != exitTree;

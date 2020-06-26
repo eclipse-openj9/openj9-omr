@@ -465,7 +465,7 @@ TR_InlinerBase::performInlining(TR::ResolvedMethodSymbol * callerSymbol)
 
    cleanup(callerSymbol, inlinedSite);
 
-   if (debug("dumpInitialTrees") || comp()->getOption(TR_TraceTrees) )
+   if (debug("dumpInitialTrees") || comp()->getOption(TR_TraceTrees))
       comp()->dumpMethodTrees("Post Inlining Trees");
    }
 

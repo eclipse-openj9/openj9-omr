@@ -101,11 +101,11 @@ enum TR_CompilationOptions
    TR_MimicInterpreterFrameShape = 0x00008000,
 
    TR_TraceBC                    = 0x00010000,
-   TR_TraceInfo                  = 0x00020000,
+   // Available                  = 0x00020000,
    TR_TraceTrees                 = 0x00040000,
    TR_TraceCG                    = 0x00080000,
    TR_TraceAliases               = 0x00100000,
-   TR_TraceOptTrees              = 0x00200000,
+   // Available                  = 0x00200000,
    TR_TraceOptDetails            = 0x00400000,
    TR_TraceAll                   = 0x006F0000,
 
@@ -495,7 +495,7 @@ enum TR_CompilationOptions
    TR_TraceReloCG                             = 0x00080000 + 13,
    // Available                               = 0x00100000 + 13,
    // Available                               = 0x00200000 + 13,
-   TR_TraceTrivialDeadTreeRemoval             = 0x00400000 + 13,
+   // Available                               = 0x00400000 + 13,
    // Available                               = 0x00800000 + 13,
    TR_PaintAllocatedFrameSlotsDead            = 0x01000000 + 13, //x86 Only
    TR_PaintAllocatedFrameSlotsFauxObject      = 0x02000000 + 13, //x86 Only
@@ -521,7 +521,7 @@ enum TR_CompilationOptions
    TR_NoAotSecondRunDetection                         = 0x00010000 + 14,
    // Available                                       = 0x00020000 + 14,
    TR_DebugInliner                                    = 0x00040000 + 14,
-   TR_TracePartialInlining                            = 0x00080000 + 14,
+   // Available                                       = 0x00080000 + 14,
    // Available                                       = 0x00100000 + 14,
    TR_TraceOSR                                        = 0x00200000 + 14,
    TR_EnableOSR                                       = 0x00400000 + 14,
@@ -622,7 +622,7 @@ enum TR_CompilationOptions
    // Available                                       = 0x80000000 + 17,
 
    // Option word 18
-   TR_TraceScalarizeSSOps                             = 0x00000020 + 18,
+   // Available                                       = 0x00000020 + 18,
    // Available                                       = 0x00000040 + 18,
    // Available                                       = 0x00000080 + 18,
    // Available                                       = 0x00000100 + 18,
@@ -781,7 +781,7 @@ enum TR_CompilationOptions
    TR_DisableOSR                                      = 0x08000000 + 23,
    TR_DisableDualTLH                                  = 0x10000000 + 23,
    // Available                                       = 0x10000000 + 23,
-   TR_TraceUnsafeInlining                             = 0x20000000 + 23,
+   // Available                                       = 0x20000000 + 23,
    TR_DisableArrayStoreCheckOpts                      = 0x40000000 + 23,
    TR_DisableFastAssumptionReclamation                = 0x80000000 + 23,
 
@@ -819,8 +819,8 @@ enum TR_CompilationOptions
    TR_DisableRecognizedMethods                        = 0x00000040 + 25,
    TR_DisableBitOpcode                                = 0x00000080 + 25,
    // Available                                       = 0x00000100 + 25,
-   TR_TraceTempUsage                                  = 0x00000200 + 25,
-   TR_TraceTempUsageMore                              = 0x00000400 + 25,
+   // Available                                       = 0x00000200 + 25,
+   // Available                                       = 0x00000400 + 25,
    // Available                                       = 0x00000800 + 25,
    // Available                                       = 0x00001000 + 25,
    TR_TracePREForOptimalSubNodeReplacement            = 0x00002000 + 25,
@@ -929,7 +929,7 @@ enum TR_CompilationOptions
    TR_InlineVeryLargeCompiledMethods                  = 0x00000040 + 29,
    TR_HCRPatchClassPointers                           = 0x00000080 + 29,
    TR_UseOldHCRGuardAOTRelocations                    = 0x00000100 + 29,
-   TR_TraceSEL                                        = 0x00000200 + 29, // Sign Extension Load
+   // Available                                       = 0x00000200 + 29,
    TR_DisableSupportForCpuSpentInCompilation          = 0x00000400 + 29,
    TR_DisableSwitchAwayFromProfilingForHotAndVeryhot  = 0x00000800 + 29,
    // Available                                       = 0x00001000 + 29,
@@ -990,9 +990,6 @@ enum TR_CompilationOptions
     * obsolete and available for recycling.  Many reusable flags are marked
     * "AVAILABLE FOR USE"
     */
-
-   // Simplification option word
-   TR_TraceMulDecomposition            = 0x00000001,
 
    // Debug Enable flags
    TR_EnableUnneededNarrowIntConversion = 0x00000001,
@@ -1459,7 +1456,6 @@ public:
 
    bool      getAddressEnumerationOption(uint32_t mask)   {return (_addressToEnumerate & mask) != 0;}
 
-   bool      getTraceSimplifier(uint32_t mask) { return (_traceSimplifier & mask) != 0; }
    bool      getDebugEnableFlag(uint32_t mask) { return (_debugEnableFlags & mask) != 0; }
    bool      getEnableGPU(uint32_t mask) { return (_enableGPU & mask) != 0; }
 
@@ -2250,7 +2246,6 @@ protected:
    int32_t                     _test390StackBuffer;   // Buffer to force a large stack on 390
    int32_t                     _test390LitPoolBuffer; // Buffer to force a large lit pool on 390
    int32_t                     _addressToEnumerate;   // Addresses enumeration option flags
-   int32_t                     _traceSimplifier;      // Simplifier trace flags
    int32_t                     _debugEnableFlags;     // For miscellaneeous flags used to enable things
    bool                        _optLevelDowngraded;   // this is a flag rather than an option
                                                       // set in the constructor if we downgraded

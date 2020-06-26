@@ -939,7 +939,7 @@ static TR::Node *addSimplifier(TR::Node * node, TR::Block * block, TR::Simplifie
    else if (TR::DataType::isSignedInt32<T>() && // this code has not been ported to templates yet
             imulComposer(node, (int*)&iMulComposerValue, &iMulComposerChild ))
       {
-      bool iMulDecomposeReport = s->comp()->getOptions()->getTraceSimplifier(TR_TraceMulDecomposition);
+      bool iMulDecomposeReport = s->comp()->getOptions()->trace(OMR::treeSimplification);
       if (iMulDecomposeReport)
          dumpOptDetails(s->comp(), "\nImul composition succeeded for a value of %d.\n ", iMulComposerValue);
 
@@ -1308,7 +1308,7 @@ TR::Node *subSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    else if (TR::DataType::isSignedInt32<T>() && // this code has not been ported to templates yet
             imulComposer(node, (int*)&MulComposerValue, &MulComposerChild ))  // TODO
       {
-      bool iMulDecomposeReport = s->comp()->getOptions()->getTraceSimplifier(TR_TraceMulDecomposition);
+      bool iMulDecomposeReport = s->comp()->getOptions()->trace(OMR::treeSimplification);
       if (iMulDecomposeReport)
          dumpOptDetails(s->comp(), "\nImul composition succeeded for a value of %d.\n ", MulComposerValue);
 
@@ -3231,7 +3231,7 @@ static void decomposeMultiply(TR::Node *node, TR::Simplifier *s, bool isLong)
       operationType[count - 1 - i] = temp;
       }
 
-   bool iMulDecomposeReport = comp->getOptions()->getTraceSimplifier(TR_TraceMulDecomposition);
+   bool iMulDecomposeReport = comp->getOptions()->trace(OMR::treeSimplification);
    if (iMulDecomposeReport)
       {
       dumpOptDetails(comp, "\nvalue = " POINTER_PRINTF_FORMAT ", count = %d\n",
@@ -6415,7 +6415,7 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
    else if (imulComposer(node, &iMulComposerValue, &iMulComposerChild ))
       {
-      bool iMulDecomposeReport = s->comp()->getOptions()->getTraceSimplifier(TR_TraceMulDecomposition);
+      bool iMulDecomposeReport = s->comp()->getOptions()->trace(OMR::treeSimplification);
       if (iMulDecomposeReport)
          dumpOptDetails(s->comp(), "\nImul composition succeeded for a value of %d.\n ", iMulComposerValue);
 
@@ -7234,7 +7234,7 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
    else if (imulComposer(node, &iMulComposerValue, &iMulComposerChild ))
       {
-      bool iMulDecomposeReport = s->comp()->getOptions()->getTraceSimplifier(TR_TraceMulDecomposition);
+      bool iMulDecomposeReport = s->comp()->getOptions()->trace(OMR::treeSimplification);
       if (iMulDecomposeReport)
          dumpOptDetails(s->comp(), "\nImul composition succeeded for a value of %d.\n ", iMulComposerValue);
 

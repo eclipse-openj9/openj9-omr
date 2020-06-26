@@ -106,6 +106,9 @@ static TR::Instruction *ificmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, 
    TR::Node *thirdChild = NULL;
    TR::Register *src1Reg = cg->evaluate(firstChild);
    bool useRegCompare = true;
+   TR::LabelSymbol *dstLabel;
+   TR::Instruction *result;
+   TR::RegisterDependencyConditions *deps;
 
 #ifdef J9_PROJECT_SPECIFIC
 if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == TR::aconst &&
@@ -128,6 +131,44 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
    }
 #endif
 
+   if (secondChild->getOpCode().isLoadConst())
+      {
+      int64_t secondChildValue = is64bit ? secondChild->getLongInt() : secondChild->getInt();
+      if ((cc == TR::CC_EQ || cc == TR::CC_NE)
+            && secondChildValue == 0)
+         {
+         TR::InstOpCode::Mnemonic op;
+         if (cc == TR::CC_EQ )
+            op = is64bit ? TR::InstOpCode::cbzx : TR::InstOpCode::cbzw;
+         else
+            op = is64bit ? TR::InstOpCode::cbnzx : TR::InstOpCode::cbnzw;
+
+         dstLabel = node->getBranchDestination()->getNode()->getLabel();
+         if (node->getNumChildren() == 3)
+            {
+            thirdChild = node->getChild(2);
+            TR_ASSERT(thirdChild->getOpCodeValue() == TR::GlRegDeps, "The third child of a compare must be a TR::GlRegDeps");
+            cg->evaluate(thirdChild);
+
+            deps = generateRegisterDependencyConditions(cg, thirdChild, 0);
+            result = generateCompareBranchInstruction(cg, op, node, src1Reg, dstLabel, deps);
+            }
+         else
+            {
+            result = generateCompareBranchInstruction(cg, op, node, src1Reg, dstLabel);
+            }
+
+         cg->decReferenceCount(firstChild);
+         cg->decReferenceCount(secondChild);
+         if (thirdChild)
+            {
+            cg->decReferenceCount(thirdChild);
+            }
+
+         return result;
+         }
+      }
+
    if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
       {
       int64_t value = is64bit ? secondChild->getLongInt() : secondChild->getInt();
@@ -149,8 +190,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
       generateCompareInstruction(cg, node, src1Reg, src2Reg, is64bit);
       }
 
-   TR::LabelSymbol *dstLabel = node->getBranchDestination()->getNode()->getLabel();
-   TR::Instruction *result;
+   dstLabel = node->getBranchDestination()->getNode()->getLabel();
    if (node->getNumChildren() == 3)
       {
       thirdChild = node->getChild(2);
@@ -158,7 +198,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
 
       cg->evaluate(thirdChild);
 
-      TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions(cg, thirdChild, 0);
+      deps = generateRegisterDependencyConditions(cg, thirdChild, 0);
       result = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, dstLabel, cc, deps);
       }
    else

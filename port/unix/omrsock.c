@@ -246,6 +246,111 @@ get_os_socket_option(int32_t socketOption)
 	return OMRPORT_ERROR_SOCK_OPTION_UNSUPPORTED;
 }
 
+/**
+ * @internal
+ * Determine the proper omrsock error code to return given a errno error code.
+ *
+ * @param[in] osErrorCode The errno error code reported by the OS.
+ *
+ * @return omrsock error code.
+ */
+static int32_t
+get_omr_error(int32_t osErrorCode)
+{
+	switch (osErrorCode) {
+	case EACCES:
+		return OMRPORT_ERROR_SOCKET_NO_ACCESS;
+	case EADDRINUSE:
+		return OMRPORT_ERROR_SOCKET_ADDRINUSE;
+	case EADDRNOTAVAIL:
+		return OMRPORT_ERROR_SOCKET_ADDRNOTAVAIL;
+	case EAFNOSUPPORT:
+		return OMRPORT_ERROR_SOCKET_AF_UNSUPPORTED;
+	case EAGAIN:
+#if defined(J9ZOS390)
+	case EWOULDBLOCK:
+#endif
+		return OMRPORT_ERROR_SOCKET_WOULDBLOCK;
+	case EALREADY:
+		return OMRPORT_ERROR_SOCKET_ALREADYINPROGRESS;
+	case EBADF:
+		return OMRPORT_ERROR_SOCKET_BAD_FILE_DESCRIPTOR;
+	case ECONNABORTED:
+		return OMRPORT_ERROR_SOCKET_CONNABORTED;
+	case ECONNREFUSED:
+		return OMRPORT_ERROR_SOCKET_CONNREFUSED;
+	case ECONNRESET:
+		return OMRPORT_ERROR_SOCKET_CONNRESET;
+	case EDESTADDRREQ:
+		return OMRPORT_ERROR_SOCKET_DESTADDRREQ;
+	case EDOM:
+		return OMRPORT_ERROR_SOCKET_DOMAIN;
+	case EFAULT:
+	case EISDIR:
+		return OMRPORT_ERROR_SOCKET_BAD_ADDRESS;
+	case EINPROGRESS:
+		return OMRPORT_ERROR_SOCKET_INPROGRESS;
+	case EINTR:
+		return OMRPORT_ERROR_SOCKET_INTERRUPTED;
+	case EINVAL:
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	case EIO:
+	case ENXIO:
+		return OMRPORT_ERROR_SOCKET_IO;
+	case EISCONN:
+		return OMRPORT_ERROR_SOCKET_ALREADY_CONNECTED;
+	case ELOOP:
+		return OMRPORT_ERROR_SOCKET_PATH_NAME_LOOP;
+	case EMSGSIZE:
+		return OMRPORT_ERROR_SOCKET_MSGSIZE;
+	case EMFILE:
+		return OMRPORT_ERROR_SOCKET_MAX_FILE_OPENED_PROCESS;
+	case ENAMETOOLONG:
+		return OMRPORT_ERROR_SOCKET_NAMETOOLONG;
+	case ENETDOWN:
+		return OMRPORT_ERROR_SOCKET_NETDOWN;
+	case ENETUNREACH:
+		return OMRPORT_ERROR_SOCKET_NETUNREACH;
+	case ENFILE:
+		return OMRPORT_ERROR_SOCKET_MAX_FILE_OPENED_SYSTEM;
+	case ENOBUFS:
+		return OMRPORT_ERROR_SOCKET_NO_BUFFERS;
+	case ENODEV:
+		return OMRPORT_ERROR_SOCKET_NO_DEVICE;
+	case ENOENT:
+		return OMRPORT_ERROR_SOCKET_NO_FILE_ENTRY;
+	case ENOMEM:
+	case ENOSPC:
+		return OMRPORT_ERROR_SOCKET_NOMEM;
+	case ENOSYS:
+		return OMRPORT_ERROR_SOCKET_SYSTEM_FUNCTION_NOT_IMPLEMENTED;
+	case ENOTCONN:
+		return OMRPORT_ERROR_SOCKET_NOT_CONNECTED;
+	case ENOTDIR:
+		return OMRPORT_ERROR_SOCKET_NOTDIR;
+	case ENOTSOCK:
+		return OMRPORT_ERROR_SOCKET_NOTSOCK;
+	case EOPNOTSUPP:
+		return OMRPORT_ERROR_SOCKET_INVALID_OPERATION;
+	case EPERM:
+		return OMRPORT_ERROR_SOCKET_OPERATION_NOT_PERMITTED;
+	case EPIPE:
+		return OMRPORT_ERROR_SOCKET_BROKEN_PIPE;
+	case EPROTONOSUPPORT:
+		return OMRPORT_ERROR_SOCKET_PROTOCOL_UNSUPPORTED;
+	case EPROTOTYPE:
+		return OMRPORT_ERROR_SOCKET_BAD_PROTOCOL;
+	case EROFS:
+		return OMRPORT_ERROR_SOCKET_ROFS;
+	case ESOCKTNOSUPPORT:
+		return OMRPORT_ERROR_SOCKET_SOCKTYPE_UNSUPPORTED;
+	case ETIMEDOUT:
+		return OMRPORT_ERROR_SOCKET_TIMEOUT;
+	default:
+		return OMRPORT_ERROR_OPFAILED;
+	}
+}
+
 int32_t
 omrsock_startup(struct OMRPortLibrary *portLibrary)
 {
@@ -269,7 +374,7 @@ omrsock_getaddrinfo_create_hints(struct OMRPortLibrary *portLibrary, omrsock_add
 	if (NULL == ptbHints) {
 		ptbHints = portLibrary->mem_allocate_memory(portLibrary, sizeof(omr_os_addrinfo), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 		if (NULL == ptbHints) {
-			return OMRPORT_ERROR_SOCK_SYSTEM_FULL;
+			return OMRPORT_ERROR_SYSTEMFULL;
 		}
 	}
 	memset(ptbHints, 0, sizeof(omr_os_addrinfo));
@@ -498,7 +603,7 @@ omrsock_socket(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock, int32
 	sockDescriptor = socket(osFamily, osSockType, osProtocol);
 
 	if (sockDescriptor < 0) {
-		return OMRPORT_ERROR_SOCK_SOCKET_CREATION_FAILED;
+		return portLibrary->error_set_last_error(portLibrary, errno,  get_omr_error(errno));
 	}
 
 	/* Tag this descriptor as being non-inheritable. */
@@ -509,7 +614,7 @@ omrsock_socket(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock, int32
 	*sock = (omrsock_socket_t)portLibrary->mem_allocate_memory(portLibrary, sizeof(struct OMRSocket), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 	if (NULL == *sock) {
 		close(sockDescriptor);
-		return OMRPORT_ERROR_SOCK_SYSTEM_FULL; 
+		return OMRPORT_ERROR_SYSTEMFULL; 
 	}
 
 	memset(*sock, 0, sizeof(struct OMRSocket));
@@ -531,8 +636,7 @@ omrsock_bind(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_
 	}
 
 	if (bind(sock->data, (struct sockaddr *)&addr->data, addrlength) < 0) {
-		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_BIND_FAILED);
-		return OMRPORT_ERROR_SOCK_BIND_FAILED;
+		return portLibrary->error_set_last_error(portLibrary, errno,  get_omr_error(errno));
 	}
 
 	return 0;
@@ -542,8 +646,7 @@ int32_t
 omrsock_listen(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, int32_t backlog)
 {
  	if (listen(sock->data, backlog) < 0) {
-		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_LISTEN_FAILED);
-		return OMRPORT_ERROR_SOCK_LISTEN_FAILED;
+		return portLibrary->error_set_last_error(portLibrary, errno,  get_omr_error(errno));
 	}
 	return 0;
 }
@@ -565,8 +668,7 @@ omrsock_connect(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrso
 	}
 
 	if (connect(sock->data, (omr_os_sockaddr *)&addr->data, addrLength) < 0) {
-		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_CONNECT_FAILED);
-		return OMRPORT_ERROR_SOCK_CONNECT_FAILED;
+		return portLibrary->error_set_last_error(portLibrary, errno,  get_omr_error(errno));
 	}
 	return 0;
 }
@@ -590,14 +692,13 @@ omrsock_accept(struct OMRPortLibrary *portLibrary, omrsock_socket_t serverSock, 
 
 	connSocketDescriptor = accept(serverSock->data, (omr_os_sockaddr *)&addrHandle->data, &addrLength);
 	if (connSocketDescriptor < 0) {
-		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_ACCEPT_FAILED);
-		return OMRPORT_ERROR_SOCK_ACCEPT_FAILED;
+		return portLibrary->error_set_last_error(portLibrary, errno,  get_omr_error(errno));
 	}
 
 	*sockHandle = (omrsock_socket_t)portLibrary->mem_allocate_memory(portLibrary, sizeof(struct OMRSocket), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 	if (*sockHandle == NULL) {
 		close(connSocketDescriptor);
-		return OMRPORT_ERROR_SOCK_SYSTEM_FULL; 
+		return OMRPORT_ERROR_SYSTEMFULL; 
 	}
 
 	(*sockHandle)->data = connSocketDescriptor;
@@ -616,7 +717,7 @@ omrsock_send(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t 
 	bytesSent = send(sock->data, buf, nbyte, flags);
 
 	if (-1 == bytesSent) {
-		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_SEND_FAILED);
+		portLibrary->error_set_last_error(portLibrary, errno, get_omr_error(errno));
 	}
 	return bytesSent;
 }
@@ -624,9 +725,7 @@ omrsock_send(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t 
 int32_t
 omrsock_sendto(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t *buf, int32_t nbyte, int32_t flags, omrsock_sockaddr_t addrHandle)
 {
-
 	int32_t bytesSent = 0;
-	int32_t err;
 
 	if (NULL == sock || 0 >= nbyte || NULL == addrHandle) {
 		return OMRPORT_ERROR_INVALID_ARGUMENTS;
@@ -635,9 +734,7 @@ omrsock_sendto(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_
 	bytesSent = sendto(sock->data, buf, nbyte, flags, (omr_os_sockaddr *)&addrHandle->data, sizeof(omr_os_sockaddr_storage));
 
 	if (-1 == bytesSent) {
-		err = errno;
-		portLibrary->error_set_last_error(portLibrary, err, OMRPORT_ERROR_SOCK_SENDTO_FAILED);
-		return OMRPORT_ERROR_SOCK_SENDTO_FAILED;
+		portLibrary->error_set_last_error(portLibrary, errno, get_omr_error(errno));
 	}
 
 	return bytesSent;
@@ -655,7 +752,7 @@ omrsock_recv(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t 
 	bytesRecv = recv(sock->data, buf, nbyte, flags);
 
 	if (-1 == bytesRecv) {
-		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_RECV_FAILED);
+		portLibrary->error_set_last_error(portLibrary, errno, get_omr_error(errno));
 	}
 	return bytesRecv;
 }
@@ -678,8 +775,7 @@ omrsock_recvfrom(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint
 		bytesRecv = recvfrom(sock->data, buf, nbyte, flags, (struct sockaddr*)&addrHandle->data, &addrLength);
 	}
 	if (-1 == bytesRecv) {
-		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_RECVFROM_FAILED);
-		return errno;
+		portLibrary->error_set_last_error(portLibrary, errno, get_omr_error(errno));
 	}
 	
 	return bytesRecv;
@@ -740,11 +836,9 @@ omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const 
 #endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
 	if (rc == 0) {
-		portLibrary->error_set_last_error(portLibrary, 0, OMRPORT_ERROR_SOCK_INVALID_ADDRESS);
-		return OMRPORT_ERROR_SOCK_INVALID_ADDRESS;
+		return OMRPORT_ERROR_SOCKET_BAD_ADDRESS;
 	} else if (rc == -1) {
-		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_UNSUPPORTED_AF);
-		return OMRPORT_ERROR_SOCK_UNSUPPORTED_AF;
+		return OMRPORT_ERROR_SOCKET_AF_UNSUPPORTED;
 	}
 	return 0;
 }
@@ -800,8 +894,7 @@ set_opt(struct OMRPortLibrary *portLibrary, omr_os_socket sock, int32_t optlevel
 	}
 
 	if (0 != setsockopt(sock, osLevel, osOption, optval, len)) {
-		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_SETSOCKOPT_FAILED);
-		return OMRPORT_ERROR_SOCK_SETSOCKOPT_FAILED;
+		return portLibrary->error_set_last_error(portLibrary, errno,  get_omr_error(errno));
 	}
 
 	return 0;
@@ -836,8 +929,7 @@ get_opt(struct OMRPortLibrary *portLibrary, omr_os_socket sock, int32_t optlevel
 	}
 	
 	if (0 != getsockopt(sock, osLevel, osOption, optval, &optlen)) {
-		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_GETSOCKOPT_FAILED);
-		return OMRPORT_ERROR_SOCK_GETSOCKOPT_FAILED;
+		return portLibrary->error_set_last_error(portLibrary, errno,  get_omr_error(errno));
 	}
 
 	return 0;

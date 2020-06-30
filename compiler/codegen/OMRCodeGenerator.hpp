@@ -1493,6 +1493,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
    bool getSupportsArrayTranslateTRxx() {return _flags2.testAny(SupportsArrayTranslate);}
    void setSupportsArrayTranslateTRxx() {_flags2.set(SupportsArrayTranslate);}
+   void resetSupportsArrayTranslateTRxx() {_flags2.reset(SupportsArrayTranslate);}
 
    bool getSupportsSelect() {return _flags2.testAny(SupportsSelect);}
    void setSupportsSelect() {_flags2.set(SupportsSelect);}

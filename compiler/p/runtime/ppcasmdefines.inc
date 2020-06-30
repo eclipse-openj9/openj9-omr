@@ -516,11 +516,11 @@
         .int 0x7c00001e | \rt << 21 | \ra << 16 | \rb << 11 | \bc << 8
         .endm
 
-        .macro sldi     rt, rs, sh
-        .int 0x78000004 | \rt << 16 | \rs << 21 | (\sh & 31) << 11 | (\sh & 32) >> 4 | (63 - \sh) << 5
+        .macro m_sldi  rt, rs, sh
+        .int 0x78000004 | \rt << 16 | \rs << 21 | (\sh & 31) << 11 | (\sh & 32) >> 4 | ((63 - \sh) & 31) << 6 | ((63 - \sh) & 32)
         .endm
-        .macro srdi     rt, rs, sh
-        .int 0x78000000 | \rt << 16 | \rs << 21 | ((64 - \sh) & 31) << 11 | ((64 - \sh) & 32) >> 4 | \sh << 5
+        .macro m_srdi  rt, rs, sh
+        .int 0x78000000 | \rt << 16 | \rs << 21 | ((64 - \sh) & 31) << 11 | ((64 - \sh) & 32) >> 4 | (\sh  & 31) << 6 | (\sh & 32)
         .endm
 #endif
 
@@ -564,8 +564,8 @@
 #define LXVL(vrt,ra,rb)                 .long 0x7c00021a | ra < 16 | rb < 11 | (vrt & 31) < 21 | (vrt & 32) > 5
 #define STXVL(vrs,ra,rb)                .long 0x7c00031a | ra < 16 | rb < 11 | (vrs & 31) < 21 | (vrs & 32) > 5
 #define ISELLT(rt,ra,rb,bc)             .long 0x7c00001e | rt < 21 | ra < 16 | rb < 11 | bc < 8
-#define SLDI(rt, rs, sh)                .long 0x78000004 | rt < 16 | rs < 21 | (sh & 31) < 11 | (sh & 32) > 4 | (63 - sh) < 5
-#define SRDI(rt, rs, sh)                .long 0x78000000 | rt < 16 | rs < 21 | ((64 - sh) & 31) < 11 | ((64 - sh) & 32) > 4 | sh < 5
+#define SLDI(rt, rs, sh)                .long 0x78000004 | rt < 16 | rs < 21 | (sh & 31) < 11 | (sh & 32) > 4 | ((63 - sh) & 31) < 6 | ((63 - sh) & 32)
+#define SRDI(rt, rs, sh)                .long 0x78000000 | rt < 16 | rs < 21 | ((64 - sh) & 31) < 11 | ((64 - sh) & 32) > 4 | (sh & 31) < 6 | (sh & 32)
 
 #else
 
@@ -601,8 +601,8 @@
 #define LXVL(vrt,ra,rb)                 lxvl            vrt, ra, rb
 #define STXVL(vrs,ra,rb)                stxvl           vrs, ra, rb
 #define ISELLT(rt,ra,rb,bc)             isellt          rt, ra, rb, bc
-#define SLDI(rt, rs, sh)                sldi            rt, rs, sh
-#define SRDI(rt, rs, sh)                srdi            rt, rs, sh
+#define SLDI(rt, rs, sh)                m_sldi          rt, rs, sh
+#define SRDI(rt, rs, sh)                m_srdi          rt, rs, sh
 
 #endif
 

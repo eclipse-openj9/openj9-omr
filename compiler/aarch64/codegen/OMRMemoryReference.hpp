@@ -73,7 +73,6 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    TR::Register *_extraRegister;
 
    uint8_t _flag;
-   uint8_t _length;
    uint8_t _scale;
 
    public:
@@ -129,21 +128,38 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
          TR::CodeGenerator *cg);
 
    /**
-    * @brief Constructor
+    * @brief Constructor -- To be obsoleted
     * @param[in] node : load or store node
     * @param[in] len : length
     * @param[in] cg : CodeGenerator object
     */
-   MemoryReference(TR::Node *node, uint32_t len, TR::CodeGenerator *cg);
+   MemoryReference(TR::Node *node, uint32_t len, TR::CodeGenerator *cg)
+      : MemoryReference(node, cg) {}
 
    /**
-    * @brief Constructor
+    * @brief Constructor -- To be obsoleted
     * @param[in] node : node
     * @param[in] symRef : symbol reference
     * @param[in] len : length
     * @param[in] cg : CodeGenerator object
     */
-   MemoryReference(TR::Node *node, TR::SymbolReference *symRef, uint32_t len, TR::CodeGenerator *cg);
+   MemoryReference(TR::Node *node, TR::SymbolReference *symRef, uint32_t len, TR::CodeGenerator *cg)
+      : MemoryReference(node, symRef, cg) {}
+
+   /**
+    * @brief Constructor
+    * @param[in] node : load or store node
+    * @param[in] cg : CodeGenerator object
+    */
+   MemoryReference(TR::Node *node, TR::CodeGenerator *cg);
+
+   /**
+    * @brief Constructor
+    * @param[in] node : node
+    * @param[in] symRef : symbol reference
+    * @param[in] cg : CodeGenerator object
+    */
+   MemoryReference(TR::Node *node, TR::SymbolReference *symRef, TR::CodeGenerator *cg);
 
    /**
     * @brief Gets base register
@@ -204,18 +220,6 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
     * @return extra register
     */
    TR::Register *setExtraRegister(TR::Register *er) {return (_extraRegister = er);}
-
-   /**
-    * @brief Gets length
-    * @return length
-    */
-   uint32_t getLength() {return _length;}
-   /**
-    * @brief Sets length
-    * @param[in] len : length
-    * @return length
-    */
-   uint32_t setLength(uint32_t len) {return (_length = len);}
 
    /**
     * @brief Gets scale

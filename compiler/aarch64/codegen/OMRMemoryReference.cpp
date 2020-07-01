@@ -109,7 +109,6 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _extraRegister(NULL),
    _unresolvedSnippet(NULL),
    _flag(0),
-   _length(0),
    _scale(0)
    {
    _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
@@ -128,7 +127,6 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _extraRegister(NULL),
    _unresolvedSnippet(NULL),
    _flag(0),
-   _length(0),
    _scale(0)
    {
    _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
@@ -147,7 +145,6 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _extraRegister(NULL),
    _unresolvedSnippet(NULL),
    _flag(0),
-   _length(0),
    _scale(0),
    _offset(disp)
    {
@@ -157,7 +154,6 @@ OMR::ARM64::MemoryReference::MemoryReference(
 
 OMR::ARM64::MemoryReference::MemoryReference(
       TR::Node *rootLoadOrStore,
-      uint32_t len,
       TR::CodeGenerator *cg) :
    _baseRegister(NULL),
    _baseNode(NULL),
@@ -166,7 +162,6 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _extraRegister(NULL),
    _unresolvedSnippet(NULL),
    _flag(0),
-   _length(len),
    _scale(0),
    _offset(0),
    _symbolReference(rootLoadOrStore->getSymbolReference())
@@ -222,7 +217,6 @@ OMR::ARM64::MemoryReference::MemoryReference(
 OMR::ARM64::MemoryReference::MemoryReference(
       TR::Node *node,
       TR::SymbolReference *symRef,
-      uint32_t len,
       TR::CodeGenerator *cg) :
    _baseRegister(NULL),
    _baseNode(NULL),
@@ -231,7 +225,6 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _extraRegister(NULL),
    _unresolvedSnippet(NULL),
    _flag(0),
-   _length(len),
    _scale(0),
    _offset(0),
    _symbolReference(symRef)

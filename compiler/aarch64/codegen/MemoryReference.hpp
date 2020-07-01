@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -82,7 +82,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
          OMR::MemoryReferenceConnector(br, disp, cg) {}
 
    /**
-    * @brief Constructor
+    * @brief Constructor -- To be obsoleted
     * @param[in] node : load or store node
     * @param[in] len : length
     * @param[in] cg : CodeGenerator object
@@ -90,10 +90,10 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
    MemoryReference(TR::Node *node,
       uint32_t len,
       TR::CodeGenerator *cg) :
-         OMR::MemoryReferenceConnector(node, len, cg) {}
+         OMR::MemoryReferenceConnector(node, cg) {}
 
    /**
-    * @brief Constructor
+    * @brief Constructor -- To be obsoleted
     * @param[in] node : node
     * @param[in] symRef : symbol reference
     * @param[in] len : length
@@ -103,7 +103,27 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
       TR::SymbolReference *symRef,
       uint32_t len,
       TR::CodeGenerator *cg) :
-         OMR::MemoryReferenceConnector(node, symRef, len, cg) {}
+         OMR::MemoryReferenceConnector(node, symRef, cg) {}
+
+   /**
+    * @brief Constructor
+    * @param[in] node : load or store node
+    * @param[in] cg : CodeGenerator object
+    */
+   MemoryReference(TR::Node *node,
+      TR::CodeGenerator *cg) :
+         OMR::MemoryReferenceConnector(node, cg) {}
+
+   /**
+    * @brief Constructor
+    * @param[in] node : node
+    * @param[in] symRef : symbol reference
+    * @param[in] cg : CodeGenerator object
+    */
+   MemoryReference(TR::Node *node,
+      TR::SymbolReference *symRef,
+      TR::CodeGenerator *cg) :
+         OMR::MemoryReferenceConnector(node, symRef, cg) {}
    };
 } // TR
 

@@ -57,14 +57,13 @@
 static int32_t
 get_os_family(int32_t omrFamily)
 {
-	switch(omrFamily)
-	{
-		case OMRSOCK_AF_INET:
-			return OS_SOCK_AF_INET;
-		case OMRSOCK_AF_INET6:
-			return OS_SOCK_AF_INET6;
-		default:
-			break;
+	switch (omrFamily) {
+	case OMRSOCK_AF_INET:
+		return OS_SOCK_AF_INET;
+	case OMRSOCK_AF_INET6:
+		return OS_SOCK_AF_INET6;
+	default:
+		break;
 	}
 	return OS_SOCK_AF_UNSPEC;
 }
@@ -80,14 +79,13 @@ get_os_family(int32_t omrFamily)
 static int32_t
 get_os_socktype(int32_t omrSockType)
 {
-	switch(omrSockType)
-	{
-		case OMRSOCK_STREAM:
-			return OS_SOCK_STREAM;
-		case OMRSOCK_DGRAM:
-			return OS_SOCK_DGRAM;
-		default:
-			break;
+	switch (omrSockType) {
+	case OMRSOCK_STREAM:
+		return OS_SOCK_STREAM;
+	case OMRSOCK_DGRAM:
+		return OS_SOCK_DGRAM;
+	default:
+		break;
 	}
 	return OS_SOCK_ANY;
 }
@@ -104,14 +102,13 @@ get_os_socktype(int32_t omrSockType)
 static int32_t
 get_os_protocol(int32_t omrProtocol)
 {
-	switch(omrProtocol)
-	{
-		case OMRSOCK_IPPROTO_TCP:
-			return OS_SOCK_IPPROTO_TCP;
-		case OMRSOCK_IPPROTO_UDP:
-			return OS_SOCK_IPPROTO_UDP;
-		default:
-			break;
+	switch (omrProtocol) {
+	case OMRSOCK_IPPROTO_TCP:
+		return OS_SOCK_IPPROTO_TCP;
+	case OMRSOCK_IPPROTO_UDP:
+		return OS_SOCK_IPPROTO_UDP;
+	default:
+		break;
 	}
 	return OS_SOCK_IPPROTO_DEFAULT;
 }
@@ -130,14 +127,13 @@ get_os_protocol(int32_t omrProtocol)
 static int32_t
 get_omr_family(int32_t osFamily)
 {
-	switch(osFamily)
-	{
-		case OS_SOCK_AF_INET:
-			return OMRSOCK_AF_INET;
-		case OS_SOCK_AF_INET6:
-			return OMRSOCK_AF_INET6;
-		default:
-			break;
+	switch (osFamily) {
+	case OS_SOCK_AF_INET:
+		return OMRSOCK_AF_INET;
+	case OS_SOCK_AF_INET6:
+		return OMRSOCK_AF_INET6;
+	default:
+		break;
 	}
 	return OMRSOCK_AF_UNSPEC;
 }
@@ -153,14 +149,13 @@ get_omr_family(int32_t osFamily)
 static int32_t
 get_omr_socktype(int32_t osSockType)
 {
-	switch(osSockType)
-	{
-		case OMRSOCK_STREAM:
-			return OS_SOCK_STREAM;
-		case OMRSOCK_DGRAM:
-			return OS_SOCK_DGRAM;
-		default:
-			break;
+	switch (osSockType) {
+	case OMRSOCK_STREAM:
+		return OS_SOCK_STREAM;
+	case OMRSOCK_DGRAM:
+		return OS_SOCK_DGRAM;
+	default:
+		break;
 	}
 	return OMRSOCK_ANY;
 }
@@ -176,16 +171,79 @@ get_omr_socktype(int32_t osSockType)
 static int32_t
 get_omr_protocol(int32_t osProtocol)
 {
-	switch(osProtocol)
-	{
-		case OS_SOCK_IPPROTO_TCP:
-			return OMRSOCK_IPPROTO_TCP;
-		case OS_SOCK_IPPROTO_UDP:
-			return OMRSOCK_IPPROTO_UDP;
-		default:
-			break;
+	switch (osProtocol) {
+	case OS_SOCK_IPPROTO_TCP:
+		return OMRSOCK_IPPROTO_TCP;
+	case OS_SOCK_IPPROTO_UDP:
+		return OMRSOCK_IPPROTO_UDP;
+	default:
+		break;
 	}
 	return OMRSOCK_IPPROTO_DEFAULT;
+}
+
+/**
+ * @internal Map OMRSOCK API user interface socket level to
+ * OS socket level. Used to resolve the arguments of socket 
+ * option functions. 
+ * 
+ * Socket Levels currently supported are:
+ * \arg OMRSOCK_SOL_SOCKET, for most options.
+ * \arg OMRSOCK_IPPROTO_TCP, for the TCP noDelay option.
+ *
+ * @param[in] socketLevel The OMR socket level to be converted.
+ *
+ * @return OS protocol on success, or OS_SOL_SOCKET if none exists. 
+ */
+static int32_t
+get_os_socket_level(int32_t socketLevel)
+{
+	switch (socketLevel) {
+	case OMRSOCK_SOL_SOCKET:
+		return OS_SOL_SOCKET;
+	case OMRSOCK_IPPROTO_TCP:
+		return OS_SOCK_IPPROTO_TCP;
+	default:
+		break;
+	}
+	return OMRPORT_ERROR_SOCK_LEVEL_UNSUPPORTED;
+}
+
+/**
+ * @internal Map OMRSOCK API user interface socket option to OS socket option.
+ * Used to resolve the arguments of socket option functions.
+ * Options currently in supported are:
+ * \arg SO_KEEPALIVE, the keep-alive messages are enabled.
+ * \arg SO_LINGER, the linger timeout.
+ * \arg SO_REUSEADDR, the reusage of local address are allowed in bind.
+ * \arg SO_RCVTIMEO, the receive timeout.
+ * \arg SO_SNDTIMEO, the send timeout.
+ * \arg TCP_NODELAY, the buffering scheme disabling Nagle's algorithm.
+ *
+ * @param[in] socketOption The portable socket option to convert.
+ *
+ * @return OS Socket Option on success, or OS_SOL_SOCKET if none exists. 
+ */
+static int32_t
+get_os_socket_option(int32_t socketOption)
+{
+	switch (socketOption) {
+	case OMRSOCK_SO_KEEPALIVE:
+		return OS_SO_KEEPALIVE;
+	case OMRSOCK_SO_LINGER:
+		return OS_SO_LINGER;
+	case OMRSOCK_SO_REUSEADDR:
+		return OS_SO_REUSEADDR;
+	case OMRSOCK_SO_RCVTIMEO:
+		return OS_SO_RCVTIMEO;
+	case OMRSOCK_SO_SNDTIMEO:
+		return OS_SO_SNDTIMEO;
+	case OMRSOCK_TCP_NODELAY:
+		return OS_TCP_NODELAY;
+	default:
+		break;
+	}
+	return OMRPORT_ERROR_SOCK_OPTION_UNSUPPORTED;
 }
 
 int32_t
@@ -654,4 +712,134 @@ omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const 
 		return OMRPORT_ERROR_SOCK_UNSUPPORTED_AF;
 	}
 	return 0;
+}
+
+int32_t
+omrsock_timeval_init(struct OMRPortLibrary *portLibrary, omrsock_timeval_t handle, uint32_t secTime, uint32_t uSecTime)
+{
+	if (NULL == handle) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+	memset(handle, 0, sizeof(OMRTimeval));
+	handle->data.tv_sec = secTime;
+	handle->data.tv_usec = uSecTime;
+	return 0;
+}
+
+int32_t
+omrsock_linger_init(struct OMRPortLibrary *portLibrary, omrsock_linger_t handle, int32_t enabled, uint16_t timeout)
+{
+	if (NULL == handle) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+	memset(handle, 0, sizeof(OMRLinger));
+	handle->data.l_onoff = enabled;
+	handle->data.l_linger = (int32_t)timeout; /* Cast to in32_t because WIN system takes uint16_t*/
+	return 0;
+}
+
+/**
+ * @internal Set socket options for all option value types, since pointers to option values are casted to void types.  
+ *
+ * @param portLibrary The port library.
+ * @param sock Pointer to the socket to set the option in.
+ * @param optlevel The level within the IP stack at which the option is defined.
+ * @param optname The name of the option to set.
+ * @param optval Void type pointer to the option value to update the socket option with.
+ * @param len Length of the option value.
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+set_opt(struct OMRPortLibrary *portLibrary, omr_os_socket sock, int32_t optlevel, int32_t optname, void *optval, socklen_t len)
+{
+	int32_t osLevel = get_os_socket_level(optlevel);
+	int32_t osOption = get_os_socket_option(optname);
+
+	if (osLevel == OMRPORT_ERROR_SOCK_LEVEL_UNSUPPORTED) {
+		return OMRPORT_ERROR_SOCK_LEVEL_UNSUPPORTED;
+	}
+
+	if (osOption == OMRPORT_ERROR_SOCK_OPTION_UNSUPPORTED) {
+		return OMRPORT_ERROR_SOCK_OPTION_UNSUPPORTED;
+	}
+
+	if (0 != setsockopt(sock, osLevel, osOption, optval, len)) {
+		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_SETSOCKOPT_FAILED);
+		return OMRPORT_ERROR_SOCK_SETSOCKOPT_FAILED;
+	}
+
+	return 0;
+}
+
+/**
+ * @internal Get socket options for all option value types, since pointers to option values are casted to void types.
+ * Opposite of @ref set_opt.
+ *
+ * @param portLibrary The port library.
+ * @param sock Pointer to the socket to query for the option value.
+ * @param optlevel The level within the IP stack at which the option is defined.
+ * @param optname The name of the option to retrieve.
+ * @param optval Void type pointer to the pre-allocated space to update with the option value.
+ * @param len Length of the option value.
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+get_opt(struct OMRPortLibrary *portLibrary, omr_os_socket sock, int32_t optlevel, int32_t optname, void *optval, socklen_t len)
+{
+	int32_t osLevel = get_os_socket_level(optlevel);
+	int32_t osOption = get_os_socket_option(optname);
+	socklen_t optlen = len;
+
+	if (osLevel == OMRPORT_ERROR_SOCK_LEVEL_UNSUPPORTED) {
+		return OMRPORT_ERROR_SOCK_LEVEL_UNSUPPORTED;
+	}
+
+	if (osOption == OMRPORT_ERROR_SOCK_OPTION_UNSUPPORTED) {
+		return OMRPORT_ERROR_SOCK_OPTION_UNSUPPORTED;
+	}
+	
+	if (0 != getsockopt(sock, osLevel, osOption, optval, &optlen)) {
+		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SOCK_GETSOCKOPT_FAILED);
+		return OMRPORT_ERROR_SOCK_GETSOCKOPT_FAILED;
+	}
+
+	return 0;
+}
+
+int32_t
+omrsock_setsockopt_int(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, int32_t *optval)
+{
+	return set_opt(portLibrary, handle->data, optlevel, optname, (void*)optval, sizeof(int32_t));
+}
+
+int32_t
+omrsock_setsockopt_linger(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_linger_t optval)
+{
+	return set_opt(portLibrary, handle->data, optlevel, optname, (void*)&optval->data, sizeof(struct linger));
+}
+
+int32_t
+omrsock_setsockopt_timeval(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_timeval_t optval)
+{
+	return set_opt(portLibrary, handle->data, optlevel, optname, (void*)&optval->data, sizeof(struct timeval));
+}
+
+int32_t
+omrsock_getsockopt_int(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, int32_t *optval)
+{
+	return get_opt(portLibrary, handle->data, optlevel, optname, (void*)optval, sizeof(int32_t));
+}
+
+int32_t
+omrsock_getsockopt_linger(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_linger_t optval)
+{
+	return get_opt(portLibrary, handle->data, optlevel, optname, (void*)&optval->data, sizeof(struct linger));
+}
+
+int32_t
+omrsock_getsockopt_timeval(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_timeval_t optval)
+{
+	return get_opt(portLibrary, handle->data, optlevel, optname, (void*)&optval->data, sizeof(struct timeval));
 }

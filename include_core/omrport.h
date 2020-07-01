@@ -2158,6 +2158,22 @@ typedef struct OMRPortLibrary {
 	uint32_t (*sock_htonl)(struct OMRPortLibrary *portLibrary, uint32_t val) ;
 	/** see @ref omrsock.c::omrsock_inet_pton "omrsock_inet_pton"*/
 	int32_t (*sock_inet_pton)(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *result) ;
+	/** see @ref omrsock.c::omrsock_timeval_init "omrsock_timeval_init"*/
+	int32_t (*sock_timeval_init)(struct OMRPortLibrary *portLibrary, omrsock_timeval_t handle, uint32_t secTime, uint32_t uSecTime) ;
+	/** see @ref omrsock.c::omrsock_linger_init "omrsock_linger_init"*/
+	int32_t (*sock_linger_init)(struct OMRPortLibrary *portLibrary, omrsock_linger_t handle, int32_t enabled, uint16_t timeout) ;
+	/** see @ref omrsock.c::omrsock_setsockopt_int "omrsock_setsockopt_int"*/
+	int32_t (*sock_setsockopt_int)(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, int32_t *optval) ;
+	/** see @ref omrsock.c::omrsock_setsockopt_linger "omrsock_setsockopt_linger"*/
+	int32_t (*sock_setsockopt_linger)(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_linger_t optval) ;
+	/** see @ref omrsock.c::omrsock_setsockopt_timeval "omrsock_setsockopt_timeval"*/
+	int32_t (*sock_setsockopt_timeval)(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_timeval_t optval) ;
+	/** see @ref omrsock.c::omrsock_getsockopt_int "omrsock_getsockopt_int"*/
+	int32_t (*sock_getsockopt_int)(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, int32_t *optval) ;
+	/** see @ref omrsock.c::omrsock_getsockopt_linger "omrsock_getsockopt_linger"*/
+	int32_t (*sock_getsockopt_linger)(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_linger_t optval) ;
+	/** see @ref omrsock.c::omrsock_getsockopt_timeval "omrsock_getsockopt_timeval"*/
+	int32_t (*sock_getsockopt_timeval)(struct OMRPortLibrary *portLibrary, omrsock_socket_t handle, int32_t optlevel, int32_t optname, omrsock_timeval_t optval) ;
 #if defined(OMR_OPT_CUDA)
 	/** CUDA configuration data */
 	J9CudaConfig *cuda_configData;
@@ -2627,6 +2643,14 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsock_htons(param1) privateOmrPortLibrary->sock_htons(privateOmrPortLibrary, (param1))
 #define omrsock_htonl(param1) privateOmrPortLibrary->sock_htonl(privateOmrPortLibrary, (param1))
 #define omrsock_inet_pton(param1,param2,param3) privateOmrPortLibrary->sock_inet_pton(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrsock_timeval_init(param1,param2,param3) privateOmrPortLibrary->sock_timeval_init(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrsock_linger_init(param1,param2,param3) privateOmrPortLibrary->sock_linger_init(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrsock_setsockopt_int(param1,param2,param3,param4) privateOmrPortLibrary->sock_setsockopt_int(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
+#define omrsock_setsockopt_linger(param1,param2,param3,param4) privateOmrPortLibrary->sock_setsockopt_linger(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
+#define omrsock_setsockopt_timeval(param1,param2,param3,param4) privateOmrPortLibrary->sock_setsockopt_timeval(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
+#define omrsock_getsockopt_int(param1,param2,param3,param4) privateOmrPortLibrary->sock_getsockopt_int(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
+#define omrsock_getsockopt_linger(param1,param2,param3,param4) privateOmrPortLibrary->sock_getsockopt_linger(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
+#define omrsock_getsockopt_timeval(param1,param2,param3,param4) privateOmrPortLibrary->sock_getsockopt_timeval(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
 
 #if defined(OMR_OPT_CUDA)
 #define omrcuda_startup() \

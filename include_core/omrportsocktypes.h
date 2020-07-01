@@ -55,6 +55,13 @@
 #include <sys/socket.h>
 #endif /* defined(OMR_OS_WINDOWS) */
 
+/**
+ * To define struct timeval for ZOS.
+ */
+#if defined(J9ZOS390)
+#include <sys/time.h>
+#endif /* defined(J9ZOS390) */
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -86,7 +93,7 @@ typedef struct OMRSocket {
 } OMRSocket;
 
 /**
- * A node in a linked-list of addrinfo. Filled in using @ref omr_getaddrinfo.
+ * A node in a linked-list of addrinfo. Filled in using @ref omrsock_getaddrinfo.
  */
 typedef struct OMRAddrInfoNode {
 	/**
@@ -99,5 +106,19 @@ typedef struct OMRAddrInfoNode {
 	 */
 	uint32_t length;
 } OMRAddrInfoNode;
+
+/**
+ * A struct for storing timeval values. Filled in using @ref omrsock_timeval_init.
+ */
+typedef struct OMRTimeval {
+	struct timeval data;
+} OMRTimeval;
+
+/**
+ * A struct for storing linger values. Filled in using @ref omrsock_linger_init.
+ */
+typedef struct OMRLinger {
+	struct linger data;
+} OMRLinger;
 
 #endif /* !defined(OMRPORTSOCKTYPES_H_) */

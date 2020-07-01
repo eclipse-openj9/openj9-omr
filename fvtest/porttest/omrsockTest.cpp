@@ -416,12 +416,12 @@ TEST(PortSockTest, create_IPv6_socket_address)
 	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET6, "::1", addr6), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init6(OMRPORTLIB,  &sockAddr, OMRSOCK_AF_INET6, addr6, OMRPORTLIB->sock_htons(OMRPORTLIB, port), 0, 0), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET6, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
-	if (0 == (OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr))) {
-		EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
-	} else {
-		/* Test IPv6 support on current machine by trying to bind to ::1 localhost. Mark test as success for machines that has no IPv6 support. */
+	if (0 != (OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr))) {
 		portTestEnv->log(LEVEL_ERROR, "WARNING: Cannot test IPV6: Failed to find to IPV6 interface. \n");
+		EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
+		return;
 	}
+	EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
 }
 
@@ -577,4 +577,93 @@ TEST(PortSockTest, two_socket_datagram_communication)
 
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientSocket), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverSocket), 0);
+}
+
+/**
+ * Equal operator to compare contents of OMRTimeval struct socket option values.
+ */
+bool
+operator==(const OMRTimeval &lhs, const OMRTimeval &rhs)
+{
+	return (lhs.data.tv_sec == rhs.data.tv_sec) && (lhs.data.tv_usec == rhs.data.tv_usec);
+}
+
+/**
+ * Equal operator to compare contents of OMRLinger struct socket option values.
+ */
+bool
+operator==(const OMRLinger &lhs, const OMRLinger &rhs)
+{
+	if (lhs.data.l_onoff != 0) {
+		return (rhs.data.l_onoff != 0) && (lhs.data.l_linger == rhs.data.l_linger);
+	}
+	return rhs.data.l_onoff == 0;
+}
+
+/**
+ * Custom print for contents of OMRTimeval struct when comparing contents in test unit.
+ */
+void
+PrintTo(const OMRTimeval &x, std::ostream *os)
+{
+	*os << "{" << x.data.tv_sec << ", " <<  x.data.tv_usec << "}";
+}
+
+/**
+ * Custome print for contents of OMRLinger struct when comparing contents in test unit.
+ */
+void
+PrintTo(const OMRLinger &x, std::ostream *os)
+{
+	*os << "{" << x.data.l_onoff << ", " <<  x.data.l_linger << "}";
+}
+
+/**
+ * Test socket options functions by test setting and getting the socket options.
+ *
+ * First, the linger and timeval structs will be allocated and the corresponding
+ * init functions will be called to set up those structs. Then, an arbitrary IPv4
+ * stream socket will be opened and the socket options will be set and get. The 
+ * test will check if the set and get option values are the same.
+ */
+TEST(PortSockTest, socket_options)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	OMRTimeval timeVal;
+	OMRLinger lingerVal;
+	omrsock_socket_t sock = NULL;
+
+	EXPECT_EQ(OMRPORTLIB->sock_timeval_init(OMRPORTLIB, &timeVal, 2, 0), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_linger_init(OMRPORTLIB, &lingerVal, 1, 2), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &sock, OMRSOCK_AF_INET, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
+
+	/* Call omrsock_setsockopt to set socket options. */
+	int32_t flag = 1;
+	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_int(OMRPORTLIB, sock, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_KEEPALIVE, &flag), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_linger(OMRPORTLIB, sock, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_LINGER, &lingerVal), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_timeval(OMRPORTLIB, sock, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_RCVTIMEO, &timeVal), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_timeval(OMRPORTLIB, sock, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_SNDTIMEO, &timeVal), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_int(OMRPORTLIB, sock, OMRSOCK_IPPROTO_TCP, OMRSOCK_TCP_NODELAY, &flag), 0);
+
+	/* Call omrsock_getsockopt to check if the results matches the inputs earlier. */
+	OMRTimeval timeResult;
+	OMRLinger lingerResult;
+	int32_t flagResult;
+
+	EXPECT_EQ(OMRPORTLIB->sock_getsockopt_int(OMRPORTLIB, sock, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_KEEPALIVE, &flagResult), 0);
+	EXPECT_NE(flagResult, 0);
+
+	EXPECT_EQ(OMRPORTLIB->sock_getsockopt_linger(OMRPORTLIB, sock, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_LINGER, &lingerResult), 0);
+	EXPECT_EQ(lingerResult, lingerVal);
+
+	EXPECT_EQ(OMRPORTLIB->sock_getsockopt_timeval(OMRPORTLIB, sock, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_RCVTIMEO, &timeResult), 0);
+	EXPECT_EQ(timeResult, timeVal);
+
+	EXPECT_EQ(OMRPORTLIB->sock_getsockopt_timeval(OMRPORTLIB, sock, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_SNDTIMEO, &timeResult), 0);
+	EXPECT_EQ(timeResult, timeVal);
+
+	EXPECT_EQ(OMRPORTLIB->sock_getsockopt_int(OMRPORTLIB, sock, OMRSOCK_IPPROTO_TCP, OMRSOCK_TCP_NODELAY, &flagResult), 0);
+	EXPECT_NE(flagResult, 0);
+
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &sock), 0);
 }

@@ -328,6 +328,14 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrsock_htons, /* sock_htons */
 	omrsock_htonl, /* sock_htonl */
 	omrsock_inet_pton, /* sock_inet_pton */
+	omrsock_timeval_init, /* sock_timeval_init */
+	omrsock_linger_init, /* sock_linger_init */
+	omrsock_setsockopt_int, /* sock_setsockopt_int */
+	omrsock_setsockopt_linger, /* sock_setsockopt_linger */
+	omrsock_setsockopt_timeval, /* sock_setsockopt_timeval */
+	omrsock_getsockopt_int, /* sock_getsockopt_int */
+	omrsock_getsockopt_linger, /* sock_getsockopt_linger */
+	omrsock_getsockopt_timeval, /* sock_getsockopt_timeval */
 #if defined(OMR_OPT_CUDA)
 	NULL, /* cuda_configData */
 	omrcuda_startup, /* cuda_startup */

@@ -949,6 +949,12 @@ MM_Scavenger::activateSurvivorCopyScanCache(MM_EnvironmentStandard *env)
 		if ((uintptr_t)cache == MM_AtomicOperations::lockCompareExchange((volatile uintptr_t *)&env->_inactiveSurvivorCopyScanCache, (uintptr_t)cache, (uintptr_t)NULL)) {
 			/* succeded activating */
 			Assert_MM_true(NULL == env->_survivorCopyScanCache);
+			Assert_MM_true(0 != (cache->flags & OMR_SCAVENGER_CACHE_TYPE_CLEARED));
+			cache->flags &= ~OMR_SCAVENGER_CACHE_TYPE_CLEARED;
+			Assert_MM_true(env->_survivorTLHRemainderBase == cache->cacheAlloc);
+			Assert_MM_true(env->_survivorTLHRemainderTop == cache->cacheTop);
+			env->_survivorTLHRemainderBase = NULL;
+			env->_survivorTLHRemainderTop = NULL;
 			env->_survivorCopyScanCache = cache;
 			activateDeferredCopyScanCache(env);
 			/* Force slow path release VM access, to be able to push mutator copy caches to scanning and reliable tell if thread is inactive */
@@ -971,6 +977,12 @@ MM_Scavenger::activateTenureCopyScanCache(MM_EnvironmentStandard *env)
 		if ((uintptr_t)cache == MM_AtomicOperations::lockCompareExchange((volatile uintptr_t *)&env->_inactiveTenureCopyScanCache, (uintptr_t)cache, (uintptr_t)NULL)) {
 			/* succeded activating */
 			Assert_MM_true(NULL == env->_tenureCopyScanCache);
+			Assert_MM_true(0 != (cache->flags & OMR_SCAVENGER_CACHE_TYPE_CLEARED));
+			cache->flags &= ~OMR_SCAVENGER_CACHE_TYPE_CLEARED;
+			Assert_MM_true(env->_tenureTLHRemainderBase == cache->cacheAlloc);
+			Assert_MM_true(env->_tenureTLHRemainderTop == cache->cacheTop);
+			env->_tenureTLHRemainderBase = NULL;
+			env->_tenureTLHRemainderTop = NULL;
 			env->_tenureCopyScanCache = cache;
 			activateDeferredCopyScanCache(env);
 			/* Force slow path release VM access, to be able to push mutator copy caches to scanning and reliable tell if thread is inactive */
@@ -1021,6 +1033,8 @@ retry:
 		/* The copy cache was null or did not have enough room */
 		/* Try and allocate room for the copy - if successful, flush the old cache */
 		bool allocateResult = false;
+		/* Mutator (in CS) should have VM access when copying an object (but we just check on cache refresh) */
+		Assert_MM_false(env->inNative());
 		if (objectReserveSizeInBytes < _minSemiSpaceFailureSize) {
 			if (activateSurvivorCopyScanCache(env)) {
 				goto retry;
@@ -1133,6 +1147,8 @@ retry:
 		/* The copy cache was null or did not have enough room */
 		/* Try and allocate room for the copy - if successful, flush the old cache */
 		bool allocateResult = false;
+		/* Mutator (in CS) should have VM access when copying an object (but we just check on cache refresh) */
+		Assert_MM_false(env->inNative());
 		if (cacheSize < _minTenureFailureSize) {
 			if (activateTenureCopyScanCache(env)) {
 				goto retry;
@@ -2040,7 +2056,7 @@ MM_Scavenger::shouldDoFinalNotify(MM_EnvironmentStandard *env)
 				 * 1) notify (via hook) GC that Exclusive is requested (proven to work, but breaks general async nature of how Exclusive Request is requested)
 				 * 2) release VM access prior to blocking (tricky since thread that blocks is not necessarily Master, which is the one that holds VM access)
 				 */
-				omrthread_monitor_wait_timed(_scanCacheMonitor, 1000, 0);
+				omrthread_monitor_wait_timed(_scanCacheMonitor, 1, 0);
 			}
 			/* We know there is more work - can't do the final notify yet. Need to help with work and eventually re-evaulate if it's really the end */
 			return false;
@@ -2092,7 +2108,7 @@ MM_Scavenger::getNextScanCache(MM_EnvironmentStandard *env)
 		/* deferred copy caches are used to merge memory-contiguous caches that got chopped up due to large objects not fitting and resuing remainder.
 		 * we want to delay scanning them as much as possible (up to the size of the original cache size being chopped up),
 		 * but we still want to do it before we synchronizing on scan queue and realizing no more work is awailable */
-		Assert_MM_true(cache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY);
+		Assert_MM_true(0 != (cache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY));
 		cache->flags &= ~OMR_SCAVENGER_CACHE_TYPE_COPY;
 		env->_deferredCopyCache = NULL;
 		return cache;
@@ -3131,13 +3147,6 @@ MM_Scavenger::flushCache(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard *
 	}
 }
 
-bool
-MM_Scavenger::canLocalCacheBeReused(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard *cache)
-{
-	/* has not been scanned and no scan work to do - so it can be reused */
-	return (NULL != cache) && !cache->isCurrentlyBeingScanned() && !cache->isScanWorkAvailable();
-}
-
 MM_CopyScanCacheStandard *
 MM_Scavenger::releaseLocalCopyCache(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard *cache)
 {
@@ -3210,7 +3219,7 @@ MM_Scavenger::releaseLocalCopyCache(MM_EnvironmentStandard *env, MM_CopyScanCach
 
 				/* It is not being scanned, and it does have entries to scan - add to scan list */
 				/* Mark the cache entry as unused as a copy destination */
-				Assert_MM_true(cache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY);
+				Assert_MM_true(0 != (cache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY));
 				cache->flags &= ~OMR_SCAVENGER_CACHE_TYPE_COPY;
 				/* must not have local references still in use before adding to global list */
 				Assert_MM_true(cache->cacheBase <= cache->cacheAlloc);
@@ -4950,11 +4959,7 @@ MM_Scavenger::resetTenureLargeAllocateStats(MM_EnvironmentBase *env)
 bool
 MM_Scavenger::isConcurrentWorkAvailable(MM_EnvironmentBase *env)
 {
-	bool concurrentWorkAvailable = (concurrent_phase_scan == _concurrentPhase);
-
-	Assert_MM_true(!concurrentWorkAvailable || isConcurrentCycleInProgress());
-
-	return concurrentWorkAvailable;
+	return (concurrent_phase_scan == _concurrentPhase);
 }
 
 bool
@@ -5042,24 +5047,21 @@ MM_Scavenger::mutatorSetupForGC(MM_EnvironmentBase *envBase)
 }
 
 MMINLINE void
-MM_Scavenger::handleInactiveSurvivorCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final)
+MM_Scavenger::flushInactiveSurvivorCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final)
 {
 	MM_CopyScanCacheStandard *cache = (MM_CopyScanCacheStandard *)targetEnv->_inactiveSurvivorCopyScanCache;
 	if (NULL != cache) {
-		/* either we are explicitly instructed to flush, or we are observing suboptimal parallelism in background threads */
+		/* Either we are explicitly instructed to flush, or we are observing suboptimal parallelism in background threads */
 		if (flushCaches || (_waitingCount > 0)) {
 			/* Racing with mutator trying to activate cache */
 			if ((uintptr_t)cache == MM_AtomicOperations::lockCompareExchange((volatile uintptr_t *)&targetEnv->_inactiveSurvivorCopyScanCache, (uintptr_t)cache, (uintptr_t)NULL)) {
-				Assert_MM_true(cache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY);
+				/* It's already cleared on the way it became inactive */
+				Assert_MM_true(0 != (cache->flags & (OMR_SCAVENGER_CACHE_TYPE_COPY | OMR_SCAVENGER_CACHE_TYPE_CLEARED)));
 				cache->flags &= ~OMR_SCAVENGER_CACHE_TYPE_COPY;
 
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 				currentEnv->_scavengerStats._releaseScanListCount += 1;
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
-				/* Even if currentEnv != targetEnv, it should be safe to use target thread env,
-				 * since the mutator thread does not have VM access and we won't race it
-				 */
-				clearCache(targetEnv, cache);
 				/* notify is only needed by the end of concurrent phase */
 				addCacheEntryToScanListAndNotify(targetEnv, cache);
 			}
@@ -5069,8 +5071,14 @@ MM_Scavenger::handleInactiveSurvivorCopyScanCache(MM_EnvironmentStandard *curren
 }
 
 MMINLINE void
-MM_Scavenger::handleSurvivorCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final)
+MM_Scavenger::deactivateSurvivorCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final)
 {
+	/* Typically called from a mutator thread releasing VM access, to deactivate the cashe.
+	 * Also can be called from Async Handler toward end of concurrent phase to flush it.
+	 * In both cases: (currentEnv == targetEnv).
+	 * But can also be called from another mutator thread (currentEnv != targetEnv), when doing a final flush mutator walk before STW operation
+	 * or even when doing exclusive VM access mutator walk if thread was in Native.
+	 */
 	MM_CopyScanCacheStandard *cache = targetEnv->_survivorCopyScanCache;
 	if (NULL != cache) {
 		if ((currentEnv == targetEnv) || final || targetEnv->inNative()) {
@@ -5081,19 +5089,20 @@ MM_Scavenger::handleSurvivorCopyScanCache(MM_EnvironmentStandard *currentEnv, MM
 			 *    it will block since a) it's forced to reacquire VM access through slow path and b) caller holds thread public mutex what prevents reacquire
 			 */
 			targetEnv->_survivorCopyScanCache = NULL;
-			Assert_MM_true(cache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY);
-			/* either we are explicitly instructed to flush, or we are observing suboptimal parallelism in background threads */
-			if (flushCaches || (_waitingCount > 0)) {
+			bool remainderCreated = clearCache(targetEnv, cache);
+			if (flushCaches || (_waitingCount > 0) || !remainderCreated) {
+				/* Either we are explicitly instructed to flush, or we are observing suboptimal parallelism in background threads,
+				 * or no free space in the cache -> don't deactivate, but just push it for scanning  */
+				Assert_MM_true(0 != (cache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY));
 				cache->flags &= ~OMR_SCAVENGER_CACHE_TYPE_COPY;
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 				targetEnv->_scavengerStats._releaseScanListCount += 1;
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
-				clearCache(targetEnv, cache);
 				addCacheEntryToScanListAndNotify(targetEnv, cache);
 			} else {
 				/* If it's an intermediate release (mutator threads releasing VM access in a middle of concurrent cycle), and high parallelism,
 				 * we'll keep the cache around, but tag it inactive, so it can be safely flushed at a later point (toward the end of concurrent phase)
-				 * by another thread.
+				 * by another thread. Setting inactive cache flag, just for debugging purposes.
 				 */
 				Assert_MM_true(NULL == targetEnv->_inactiveSurvivorCopyScanCache);
 				targetEnv->_inactiveSurvivorCopyScanCache = cache;
@@ -5104,33 +5113,31 @@ MM_Scavenger::handleSurvivorCopyScanCache(MM_EnvironmentStandard *currentEnv, MM
 }
 
 MMINLINE void
-MM_Scavenger::handleInactiveTenureCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final)
+MM_Scavenger::flushInactiveTenureCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final)
 {
 	MM_CopyScanCacheStandard *cache = (MM_CopyScanCacheStandard *)targetEnv->_inactiveTenureCopyScanCache;
 	if (NULL != cache) {
-		/* either we are explicitly instructed to flush, or we are observing suboptimal parallelism in background threads */
+		/* Either we are explicitly instructed to flush, or we are observing suboptimal parallelism in background threads */
 		if (flushCaches || (_waitingCount > 0)) {
 			/* Racing with mutator trying to activate cache */
 			if ((uintptr_t)cache == MM_AtomicOperations::lockCompareExchange((volatile uintptr_t *)&targetEnv->_inactiveTenureCopyScanCache, (uintptr_t)cache, (uintptr_t)NULL)) {
-				Assert_MM_true(cache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY);
+				/* It's already cleared on the way it became inactive */
+				Assert_MM_true(0 != (cache->flags & (OMR_SCAVENGER_CACHE_TYPE_COPY | OMR_SCAVENGER_CACHE_TYPE_CLEARED)));
 				cache->flags &= ~OMR_SCAVENGER_CACHE_TYPE_COPY;
+
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 				targetEnv->_scavengerStats._releaseScanListCount += 1;
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
-				/* Even if currentEnv != targetEnv, t should be safe to use target thread env,
-				 * since the mutator thread does not have VM access and we won't race it
-				 */
-				clearCache(targetEnv, cache);
 				addCacheEntryToScanListAndNotify(targetEnv, cache);
 			}
-			/* else we failed to push inactive cache since mutator thread reactivacted it -> concurrent cycle continues */
+			/* else we failed to push inactive cache since mutator thread reactivated it -> concurrent cycle continues */
 		}
 		/* else thread has had consecutive VM access release without any barriers in between to activate this copy cache */
 	}
 }
 
 MMINLINE void
-MM_Scavenger::handleTenureCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final)
+MM_Scavenger::deactivateTenureCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final)
 {
 	MM_CopyScanCacheStandard *cache = targetEnv->_tenureCopyScanCache;
 	if (NULL != cache) {
@@ -5142,19 +5149,20 @@ MM_Scavenger::handleTenureCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_E
 			 *    it will block since a) it's forced to reacquire VM access through slow path and b) caller holds thread public mutex what prevents reacquire
 			 */
 			targetEnv->_tenureCopyScanCache = NULL;
-			Assert_MM_true(cache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY);
-			/* either we are explicitly instructed to flush, or we are observing suboptimal parallelism in background threads */
-			if (flushCaches || (_waitingCount > 0)) {
+			bool remainderCreated = clearCache(targetEnv, cache);
+			if (flushCaches || (_waitingCount > 0) || !remainderCreated) {
+				/* Either we are explicitly instructed to flush, or we are observing suboptimal parallelism in background threads,
+				 * or no free space in the cache -> don't deactivate, but just push it for scanning  */
+				Assert_MM_true(0 != (cache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY));
 				cache->flags &= ~OMR_SCAVENGER_CACHE_TYPE_COPY;
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 				targetEnv->_scavengerStats._releaseScanListCount += 1;
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
-				clearCache(targetEnv, cache);
 				addCacheEntryToScanListAndNotify(targetEnv, cache);
 			} else {
 				/* If it's an intermediate release (mutator threads releasing VM access in a middle of concurrent phase), and high parallelism,
 				 * we'll keep the cache around, but tag it inactive, so it can be safely flushed at a later point (toward the end of concurrent phase)
-				 * by another thread.
+				 * by another thread. Setting inactive cache flag, just for debugging purposes.
 				 */
 				Assert_MM_true(NULL == targetEnv->_inactiveTenureCopyScanCache);
 				targetEnv->_inactiveTenureCopyScanCache = cache;
@@ -5165,15 +5173,15 @@ MM_Scavenger::handleTenureCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_E
 
 
 MMINLINE void
-MM_Scavenger::handleInactiveDeferredCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final)
+MM_Scavenger::flushInactiveDeferredCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final)
 {
 	MM_CopyScanCacheStandard *cache = (MM_CopyScanCacheStandard *)targetEnv->_inactiveDeferredCopyCache;
 	if (NULL != cache) {
-		/* either we are explicitly instructed to flush, or we are observing suboptimal parallelism in background threads */
+		/* Either we are explicitly instructed to flush, or we are observing suboptimal parallelism in background threads */
 		if (flushCaches || (_waitingCount > 0)) {
 			/* Racing with mutator trying to activate cache */
 			if ((uintptr_t)cache == MM_AtomicOperations::lockCompareExchange((volatile uintptr_t *)&targetEnv->_inactiveDeferredCopyCache, (uintptr_t)cache, (uintptr_t)NULL)) {
-				Assert_MM_true(cache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY);
+				Assert_MM_true(0 != (cache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY));
 				cache->flags &= ~OMR_SCAVENGER_CACHE_TYPE_COPY;
 
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
@@ -5181,14 +5189,14 @@ MM_Scavenger::handleInactiveDeferredCopyScanCache(MM_EnvironmentStandard *curren
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
 				addCacheEntryToScanListAndNotify(targetEnv, cache);
 			}
-			/* else we failed to push inactive cache since mutator thread reactivacted it -> concurrent cycle continues */
+			/* else we failed to push inactive cache since mutator thread reactivated it -> concurrent cycle continues */
 		}
 		/* else thread has had consecutive VM access release without any barriers in between to activate this copy cache */
 	}
 }
 
 MMINLINE void
-MM_Scavenger::handleDeferredCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final)
+MM_Scavenger::deactivateDeferredCopyScanCache(MM_EnvironmentStandard *currentEnv, MM_EnvironmentStandard *targetEnv, bool flushCaches, bool final)
 {
 	MM_CopyScanCacheStandard *cache = targetEnv->_deferredCopyCache;
 	if (NULL != cache) {
@@ -5198,10 +5206,10 @@ MM_Scavenger::handleDeferredCopyScanCache(MM_EnvironmentStandard *currentEnv, MM
 			/* Race between mutator thread actual owner and another mutator thread that helps with concurrent termination */
 			if ((uintptr_t)cache == MM_AtomicOperations::lockCompareExchange((volatile uintptr_t *)&targetEnv->_deferredCopyCache, (uintptr_t)cache, (uintptr_t)NULL)) {
 				targetEnv->_deferredCopyCache = NULL;
-				Assert_MM_true(cache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY);
-				Assert_MM_true(cache->flags & OMR_SCAVENGER_CACHE_TYPE_CLEARED);
+				Assert_MM_true(0 != (cache->flags & OMR_SCAVENGER_CACHE_TYPE_CLEARED));
 				if (flushCaches || (_waitingCount > 0) || (NULL == targetEnv->_survivorCopyScanCache) || (NULL == targetEnv->_tenureCopyScanCache)) {
 					/* Master thread in STW is MUTATOR type and can trigger this as well */
+					Assert_MM_true(0 != (cache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY));
 					cache->flags &= ~OMR_SCAVENGER_CACHE_TYPE_COPY;
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 					targetEnv->_scavengerStats._releaseScanListCount += 1;
@@ -5255,12 +5263,12 @@ MM_Scavenger::threadReleaseCaches(MM_EnvironmentBase *currentEnvBase, MM_Environ
 			targetEnv->_deferredScanCache = NULL;
 		}
 
-		handleInactiveSurvivorCopyScanCache(currentEnv, targetEnv, flushCaches, final);
-		handleSurvivorCopyScanCache(currentEnv, targetEnv, flushCaches, final);
-		handleInactiveTenureCopyScanCache(currentEnv, targetEnv, flushCaches, final);
-		handleTenureCopyScanCache(currentEnv, targetEnv, flushCaches, final);
-		handleInactiveDeferredCopyScanCache(currentEnv, targetEnv, flushCaches, final);
-		handleDeferredCopyScanCache(currentEnv, targetEnv, flushCaches, final);
+		flushInactiveSurvivorCopyScanCache(currentEnv, targetEnv, flushCaches, final);
+		deactivateSurvivorCopyScanCache(currentEnv, targetEnv, flushCaches, final);
+		flushInactiveTenureCopyScanCache(currentEnv, targetEnv, flushCaches, final);
+		deactivateTenureCopyScanCache(currentEnv, targetEnv, flushCaches, final);
+		flushInactiveDeferredCopyScanCache(currentEnv, targetEnv, flushCaches, final);
+		deactivateDeferredCopyScanCache(currentEnv, targetEnv, flushCaches, final);
 
 		if (final) {
 			/* If it's an intermediate release (mutator threads releasing VM access in a middle of Concurrent Scavenger cycle),

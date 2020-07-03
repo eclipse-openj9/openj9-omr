@@ -34,7 +34,6 @@
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 #include "ConcurrentGC.hpp"
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
-#include "Dispatcher.hpp"
 #include "EnvironmentStandard.hpp"
 #include "GCExtensionsBase.hpp"
 #include "HeapMemoryPoolIterator.hpp"
@@ -44,6 +43,7 @@
 #include "MemoryPoolAddressOrderedList.hpp"
 #include "ObjectHeapIteratorAddressOrderedList.hpp"
 #include "ObjectModel.hpp"
+#include "ParallelDispatcher.hpp"
 #include "ParallelSweepChunk.hpp"
 #include "ParallelTask.hpp"
 #include "SweepHeapSectioning.hpp"
@@ -264,7 +264,7 @@ public:
 	
 	virtual void run(MM_EnvironmentBase *env);
 
-	MM_ConcurrentSweepCompleteSweepTask(MM_EnvironmentBase *env, MM_Dispatcher *dispatcher, MM_ConcurrentSweepScheme *concurrentSweepScheme) :
+	MM_ConcurrentSweepCompleteSweepTask(MM_EnvironmentBase *env, MM_ParallelDispatcher *dispatcher, MM_ConcurrentSweepScheme *concurrentSweepScheme) :
 		MM_ParallelSweepTask(env, dispatcher, concurrentSweepScheme)
 	{}
 };
@@ -309,7 +309,7 @@ public:
 	
 	virtual void run(MM_EnvironmentBase *env);
 
-	MM_ConcurrentSweepFindMinimumSizeFreeTask(MM_EnvironmentBase *env, MM_Dispatcher *dispatcher, MM_ConcurrentSweepScheme *concurrentSweepScheme, MM_MemorySubSpace *memorySubSpace, UDATA minimumFreeSize)
+	MM_ConcurrentSweepFindMinimumSizeFreeTask(MM_EnvironmentBase *env, MM_ParallelDispatcher *dispatcher, MM_ConcurrentSweepScheme *concurrentSweepScheme, MM_MemorySubSpace *memorySubSpace, UDATA minimumFreeSize)
 		: MM_ParallelSweepTask(env, dispatcher, concurrentSweepScheme)
 		, _memorySubSpace(memorySubSpace)
 		, _minimumFreeSize(minimumFreeSize)
@@ -1199,7 +1199,7 @@ void
 MM_ConcurrentSweepScheme::completeSweep(MM_EnvironmentBase* envBase, SweepCompletionReason reason)
 {
 	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
-	MM_Dispatcher *dispatcher = envBase->getExtensions()->dispatcher;
+	MM_ParallelDispatcher *dispatcher = (MM_ParallelDispatcher *)envBase->getExtensions()->dispatcher;
 	OMRPORT_ACCESS_FROM_OMRPORT(envBase->getPortLibrary());
 
 	/* Do no work if we weren't in concurrent sweep mode */

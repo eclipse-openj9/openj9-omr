@@ -30,8 +30,8 @@
 #include "AtomicOperations.hpp"
 #include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
-
 #include "ModronAssertions.h"
+#include "ParallelDispatcher.hpp"
 
 bool
 MM_ParallelTask::handleNextWorkUnit(MM_EnvironmentBase *env)

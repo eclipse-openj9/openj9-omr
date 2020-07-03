@@ -37,13 +37,13 @@
 #include "Scavenger.hpp"
 #include "SlotObject.hpp"
 
-class MM_Dispatcher;
 class MM_GCExtensionsBase;
 class MM_GlobalCollector;
 class MM_Heap;
 class MM_HeapRegionManager;
 class MM_MemorySpace;
 class MM_ObjectAllocationInterface;
+class MM_ParallelDispatcher;
 
 struct OMR_VM;
 struct OMR_VMThread;
@@ -88,7 +88,8 @@ public:
 	virtual MM_MemorySpace* createDefaultMemorySpace(MM_EnvironmentBase* env, MM_Heap* heap, MM_InitializationParameters* parameters) = 0;
 	MM_EnvironmentBase* createEnvironment(MM_GCExtensionsBase* extensions, OMR_VMThread* vmThread);
 	virtual J9Pool* createEnvironmentPool(MM_EnvironmentBase* env) = 0;
-	virtual MM_Dispatcher *createDispatcher(MM_EnvironmentBase *env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize);
+	virtual MM_Dispatcher* createDispatcher(MM_EnvironmentBase *env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize);
+	virtual MM_ParallelDispatcher* createParallelDispatcher(MM_EnvironmentBase *env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize);
 
 	bool initializeHeapRegionDescriptor(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) { return _delegate.initializeHeapRegionDescriptorExtension(env, region); }
 	void teardownHeapRegionDescriptor(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) { _delegate.teardownHeapRegionDescriptorExtension(env, region); }

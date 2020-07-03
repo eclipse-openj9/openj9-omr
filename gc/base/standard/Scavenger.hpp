@@ -47,12 +47,12 @@ struct J9HookInterface;
 class GC_ObjectScanner;
 class MM_AllocateDescription;
 class MM_CollectorLanguageInterface;
-class MM_Dispatcher;
 class MM_EnvironmentBase;
 class MM_HeapRegionManager;
 class MM_MemoryPool;
 class MM_MemorySubSpace;
 class MM_MemorySubSpaceSemiSpace;
+class MM_ParallelDispatcher;
 class MM_PhysicalSubArena;
 class MM_RSOverflow;
 class MM_SublistPool;
@@ -78,7 +78,7 @@ private:
 
 	MM_GCExtensionsBase *_extensions;
 	
-	MM_Dispatcher *_dispatcher;
+	MM_ParallelDispatcher *_dispatcher;
 
 	volatile uintptr_t _doneIndex; /**< sequence ID of completeScan loop, which we may have a few during one GC cycle */
 
@@ -870,7 +870,7 @@ public:
 		, _objectAlignmentInBytes(env->getObjectAlignmentInBytes())
 		, _isRememberedSetInOverflowAtTheBeginning(false)
 		, _extensions(env->getExtensions())
-		, _dispatcher(_extensions->dispatcher)
+		, _dispatcher((MM_ParallelDispatcher *)_extensions->dispatcher)
 		, _doneIndex(0)
 		, _activeSubSpace(NULL)
 		, _evacuateMemorySubSpace(NULL)

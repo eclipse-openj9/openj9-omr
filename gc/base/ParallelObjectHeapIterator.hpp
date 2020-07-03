@@ -31,13 +31,13 @@
 #include "omr.h"
 #include "omrcfg.h"
 
-#include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
 #include "MarkMapSegmentChunkIterator.hpp"
 #include "MemorySubSpace.hpp"
 #include "ObjectHeapBufferedIterator.hpp"
 #include "ObjectHeapIterator.hpp"
+#include "ParallelDispatcher.hpp"
 #include "Task.hpp"
 
 class MM_MarkMap;

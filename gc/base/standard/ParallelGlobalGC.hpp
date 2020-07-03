@@ -49,7 +49,7 @@ void healReferenceSlots(OMR_VMThread *omrVMThread, MM_HeapRegionDescriptor *regi
 
 class MM_CollectionStatisticsStandard;
 class MM_CompactScheme;
-class MM_Dispatcher;
+class MM_ParallelDispatcher;
 class MM_MarkingScheme;
 class MM_MemorySubSpace;
 
@@ -76,7 +76,7 @@ protected:
 	MM_MarkingScheme *_markingScheme;
 	MM_ParallelSweepScheme *_sweepScheme;
 	MM_ParallelHeapWalker *_heapWalker;
-	MM_Dispatcher *_dispatcher;
+	MM_ParallelDispatcher *_dispatcher;
 	MM_CycleState _cycleState;  /**< Embedded cycle state to be used as the main cycle state for GC activity */
 	MM_CollectionStatisticsStandard _collectionStatistics; /** Common collect stats (memory, time etc.) */
 	bool _fixHeapForWalkCompleted;
@@ -341,7 +341,7 @@ public:
 		, _markingScheme(NULL)
 		, _sweepScheme(NULL)
 		, _heapWalker(NULL)
-		, _dispatcher(_extensions->dispatcher)
+		, _dispatcher((MM_ParallelDispatcher *) _extensions->dispatcher)
 		, _cycleState()
 		, _collectionStatistics()
 		, _fixHeapForWalkCompleted(false)

@@ -38,8 +38,8 @@
 #include "CycleState.hpp"
 #include "ParallelTask.hpp"
 
-class MM_Dispatcher;
 class MM_EnvironmentBase;
+class MM_ParallelDispatcher;
 
 /**
  * @todo Provide class documentation
@@ -82,7 +82,7 @@ public:
 	/**
 	 * Create a ParallelScavengeTask object.
 	 */
-	MM_ParallelScavengeTask(MM_EnvironmentBase *env, MM_Dispatcher *dispatcher, MM_Scavenger *collector,MM_CycleState *cycleState) :
+	MM_ParallelScavengeTask(MM_EnvironmentBase *env, MM_ParallelDispatcher *dispatcher, MM_Scavenger *collector,MM_CycleState *cycleState) :
 		MM_ParallelTask(env, dispatcher)
 		,_collector(collector)
 		,_cycleState(cycleState)

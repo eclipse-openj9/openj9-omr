@@ -41,9 +41,9 @@
 #include "ParallelTask.hpp"
 
 class MM_AllocateDescription;
-class MM_Dispatcher;
 class MM_MemoryPool;
 class MM_MemorySubSpace;
+class MM_ParallelDispatcher;
 class MM_ParallelSweepChunk;
 class MM_ParallelSweepScheme;
 class MM_SweepHeapSectioning;
@@ -77,7 +77,7 @@ public:
 	/**
 	 * Create a ParallelSweepTask object.
 	 */
-	MM_ParallelSweepTask(MM_EnvironmentBase *env, MM_Dispatcher *dispatcher, MM_ParallelSweepScheme *sweepScheme) :
+	MM_ParallelSweepTask(MM_EnvironmentBase *env, MM_ParallelDispatcher *dispatcher, MM_ParallelSweepScheme *sweepScheme) :
 		MM_ParallelTask(env, dispatcher),
 		_sweepScheme(sweepScheme)
 	{
@@ -99,7 +99,7 @@ private:
 
 protected:
 	MM_GCExtensionsBase *_extensions;
-	MM_Dispatcher *_dispatcher;
+	MM_ParallelDispatcher *_dispatcher;
 	MM_MarkMap *_currentMarkMap;	/**< The MarkMap which the ParallelGlobalGC gave to us to use for this cycle */
 	uint8_t *_currentSweepBits;	/*< The base address of the raw bits used by the _currentMarkMap (sweep knows about this in order to perform some optimized types of map walking) */
 
@@ -218,7 +218,7 @@ public:
 		: MM_BaseVirtual()
 		, _chunksPrepared(0)
 		, _extensions(env->getExtensions())
-		, _dispatcher(_extensions->dispatcher)
+		, _dispatcher((MM_ParallelDispatcher *)_extensions->dispatcher)
 		, _currentMarkMap(NULL)
 		, _currentSweepBits(NULL)
 		, _heapBase(NULL)

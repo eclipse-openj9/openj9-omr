@@ -36,9 +36,9 @@
 #include "ConcurrentGC.hpp"
 #include "ConcurrentPrepareCardTableTask.hpp"
 #include "Debug.hpp"
-#include "Dispatcher.hpp"
 #include "MemorySubSpace.hpp"
 #include "WorkPackets.hpp"
+#include "ParallelDispatcher.hpp"
 
 /**
  * Create a new instance of MM_ConcurrentCardTableForWC object

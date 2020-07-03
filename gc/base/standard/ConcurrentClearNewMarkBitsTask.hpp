@@ -34,8 +34,8 @@
 #include "ParallelTask.hpp"
 
 class MM_ConcurrentGC;
-class MM_Dispatcher;
 class MM_EnvironmentBase;
+class MM_ParallelDispatcher;
 
 /**
  * @todo Provide class documentation
@@ -54,7 +54,7 @@ public:
 	/**
 	 * Create a ConcurrentClearNewMarkBitsTask object
 	 */
-	MM_ConcurrentClearNewMarkBitsTask(MM_EnvironmentBase *env, MM_Dispatcher *dispatcher, MM_ConcurrentGC *collector) :
+	MM_ConcurrentClearNewMarkBitsTask(MM_EnvironmentBase *env, MM_ParallelDispatcher *dispatcher, MM_ConcurrentGC *collector) :
 		MM_ParallelTask(env, dispatcher),
 		_collector(collector)
 	{

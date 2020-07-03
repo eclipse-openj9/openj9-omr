@@ -65,6 +65,7 @@ class MM_HeapRegionManager;
 class MM_InterRegionRememberedSet;
 class MM_MemoryManager;
 class MM_MemorySubSpace;
+class MM_ParallelDispatcher;
 #if defined(OMR_GC_OBJECT_MAP)
 class MM_ObjectMap;
 #endif /* defined(OMR_GC_OBJECT_MAP) */

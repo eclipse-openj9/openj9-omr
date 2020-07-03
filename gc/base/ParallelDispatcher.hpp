@@ -34,6 +34,7 @@
 #include "modronopt.h"
 #include "modronbase.h"
 
+#include "BaseVirtual.hpp"
 #include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
@@ -117,6 +118,8 @@ protected:
 public:
 	virtual bool startUpThreads();
 	virtual void shutDownThreads();
+
+	virtual bool condYieldFromGCWrapper(MM_EnvironmentBase *env, uint64_t timeSlack = 0) { return false; }
 	
 	MMINLINE virtual uintptr_t threadCount() { return _threadCount; }
 	MMINLINE virtual uintptr_t threadCountMaximum() { return _threadCountMaximum; }
@@ -126,6 +129,8 @@ public:
 
 	MMINLINE omrsig_handler_fn getSignalHandler() {return _handler;}
 	MMINLINE void * getSignalHandlerArg() {return _handler_arg;}
+
+	virtual void run(MM_EnvironmentBase *env, MM_Task *task, uintptr_t threadCount = UDATA_MAX);
 
 	static MM_ParallelDispatcher *newInstance(MM_EnvironmentBase *env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize);
 	virtual void kill(MM_EnvironmentBase *env);

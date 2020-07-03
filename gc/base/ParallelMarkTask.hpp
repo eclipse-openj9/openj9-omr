@@ -34,9 +34,9 @@
 #include "CycleState.hpp"
 #include "ParallelTask.hpp"
 
-class MM_Dispatcher;
 class MM_EnvironmentBase;
 class MM_MarkingScheme;
+class MM_ParallelDispatcher;
 
 /**
  * @todo Provide class documentation
@@ -66,7 +66,7 @@ public:
 	 * Create a ParallelMarkTask object.
 	 */
 	MM_ParallelMarkTask(MM_EnvironmentBase *env,
-			MM_Dispatcher *dispatcher, 
+			MM_ParallelDispatcher *dispatcher, 
 			MM_MarkingScheme *markingScheme, 
 			bool initMarkMap,
 			MM_CycleState *cycleState) :

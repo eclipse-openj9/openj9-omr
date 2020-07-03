@@ -27,12 +27,12 @@
 #include <string.h>
 
 #include "AtomicOperations.hpp"
-#include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
 #include "Heap.hpp"
 #include "Packet.hpp"
 #include "PacketList.hpp"
+#include "ParallelDispatcher.hpp"
 #include "Task.hpp"
 #include "WorkPackets.hpp"
 #include "WorkPacketOverflow.hpp"

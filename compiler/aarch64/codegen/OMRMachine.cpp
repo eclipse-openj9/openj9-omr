@@ -186,7 +186,7 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
 
    candidates[0]->setBackingStorage(location);
 
-   tmemref = new (self()->cg()->trHeapMemory()) TR::MemoryReference(currentNode, location->getSymbolReference(), 8, self()->cg());
+   tmemref = new (self()->cg()->trHeapMemory()) TR::MemoryReference(currentNode, location->getSymbolReference(), self()->cg());
 
    if (!comp->getOption(TR_DisableOOL))
       {
@@ -304,7 +304,7 @@ TR::RealRegister *OMR::ARM64::Machine::reverseSpillState(TR::Instruction *curren
                   targetRegister->getRegisterName(comp));
       }
 
-   tmemref = new (self()->cg()->trHeapMemory()) TR::MemoryReference(currentNode, location->getSymbolReference(), 8, self()->cg());
+   tmemref = new (self()->cg()->trHeapMemory()) TR::MemoryReference(currentNode, location->getSymbolReference(), self()->cg());
 
    if (comp->getOption(TR_DisableOOL))
       {

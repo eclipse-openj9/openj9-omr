@@ -53,19 +53,17 @@ TR::Register *genericReturnEvaluator(TR::Node *node, TR::RealRegister::RegNum rn
  * @brief Helper function for xloadEvaluators
  * @param[in] node : node
  * @param[in] op : instruction for load
- * @param[in] memSize : data size on memory
  * @param[in] cg : CodeGenerator
  */
-TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, int32_t memSize, TR::CodeGenerator *cg);
+TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg);
 
 /**
  * @brief Helper function for xstoreEvaluators
  * @param[in] node : node
  * @param[in] op : instruction for store
- * @param[in] memSize : data size on memory
  * @param[in] cg : CodeGenerator
  */
-TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, int32_t memSize, TR::CodeGenerator *cg);
+TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg);
 
 namespace OMR
 {

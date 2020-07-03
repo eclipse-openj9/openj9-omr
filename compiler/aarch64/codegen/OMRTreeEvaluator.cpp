@@ -340,7 +340,7 @@ OMR::ARM64::TreeEvaluator::badILOpEvaluator(TR::Node *node, TR::CodeGenerator *c
 	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 	}
 
-TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, int32_t memSize, TR::CodeGenerator *cg)
+TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
    {
    TR::Register *tempReg;
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
@@ -358,7 +358,7 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, i
       tempReg = cg->allocateRegister();
       }
    node->setRegister(tempReg);
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
+   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, cg);
    generateTrg1MemInstruction(cg, op, node, tempReg, tempMR);
 
    if (needSync)
@@ -375,7 +375,7 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, i
 TR::Register *
 OMR::ARM64::TreeEvaluator::iloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return commonLoadEvaluator(node, TR::InstOpCode::ldrimmw, 4, cg);
+   return commonLoadEvaluator(node, TR::InstOpCode::ldrimmw, cg);
    }
 
 // also handles aloadi
@@ -402,21 +402,18 @@ OMR::ARM64::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    node->setRegister(tempReg);
 
    TR::InstOpCode::Mnemonic op;
-   int32_t sizeOfMR;
 
    if (TR::Compiler->om.generateCompressedObjectHeaders() &&
        (node->getSymbol()->isClassObject() ||
         (node->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())))
       {
       op = TR::InstOpCode::ldrimmw;
-      sizeOfMR = 4;
       }
    else
       {
       op = TR::InstOpCode::ldrimmx;
-      sizeOfMR = 8;
       }
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, sizeOfMR, cg);
+   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, cg);
    generateTrg1MemInstruction(cg, op, node, tempReg, tempMR);
 
    if (node->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())
@@ -439,28 +436,28 @@ OMR::ARM64::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return commonLoadEvaluator(node, TR::InstOpCode::ldrimmx, 8, cg);
+   return commonLoadEvaluator(node, TR::InstOpCode::ldrimmx, cg);
    }
 
 // also handles bloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::bloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return commonLoadEvaluator(node, TR::InstOpCode::ldrsbimmx, 1, cg);
+   return commonLoadEvaluator(node, TR::InstOpCode::ldrsbimmx, cg);
    }
 
 // also handles sloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::sloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return commonLoadEvaluator(node, TR::InstOpCode::ldrshimmx, 2, cg);
+   return commonLoadEvaluator(node, TR::InstOpCode::ldrshimmx, cg);
    }
 
 // also handles cloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::cloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return commonLoadEvaluator(node, TR::InstOpCode::ldrhimm, 2, cg);
+   return commonLoadEvaluator(node, TR::InstOpCode::ldrhimm, cg);
    }
 
 TR::Register *
@@ -470,9 +467,9 @@ OMR::ARM64::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::CodeGenerator *c
 	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 	}
 
-TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, int32_t memSize, TR::CodeGenerator *cg)
+TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
    {
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
+   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, cg);
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
    TR::Node *valueChild;
 
@@ -505,21 +502,21 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
 TR::Register *
 OMR::ARM64::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return commonStoreEvaluator(node, TR::InstOpCode::strimmx, 8, cg);
+   return commonStoreEvaluator(node, TR::InstOpCode::strimmx, cg);
    }
 
 // also handles bstorei
 TR::Register *
 OMR::ARM64::TreeEvaluator::bstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return commonStoreEvaluator(node, TR::InstOpCode::strbimm, 1, cg);
+   return commonStoreEvaluator(node, TR::InstOpCode::strbimm, cg);
    }
 
 // also handles sstorei, cstore, cstorei
 TR::Register *
 OMR::ARM64::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return commonStoreEvaluator(node, TR::InstOpCode::strhimm, 2, cg);
+   return commonStoreEvaluator(node, TR::InstOpCode::strhimm, cg);
    }
 
 // also handles istorei
@@ -528,7 +525,7 @@ OMR::ARM64::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::CodeGenerator *cg
    {
    TR::Compilation *comp = cg->comp();
 
-   commonStoreEvaluator(node, TR::InstOpCode::strimmw, 4, cg);
+   commonStoreEvaluator(node, TR::InstOpCode::strimmw, cg);
 
    if (comp->useCompressedPointers() && node->getOpCode().isIndirect())
       node->setStoreAlreadyEvaluated(true);
@@ -544,10 +541,9 @@ OMR::ARM64::TreeEvaluator::astoreEvaluator(TR::Node *node, TR::CodeGenerator *cg
    bool isCompressedClassPointerOfObjectHeader = TR::Compiler->om.generateCompressedObjectHeaders() &&
          (node->getSymbol()->isClassObject() ||
          (node->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef()));
-   auto sizeOfMR = isCompressedClassPointerOfObjectHeader ? 4 : 8;
    TR::InstOpCode::Mnemonic op = isCompressedClassPointerOfObjectHeader ? TR::InstOpCode::strimmw : TR::InstOpCode::strimmx;
 
-   return commonStoreEvaluator(node, op, sizeOfMR, cg);
+   return commonStoreEvaluator(node, op, cg);
    }
 
 TR::Register *
@@ -670,7 +666,7 @@ OMR::ARM64::TreeEvaluator::loadaddrEvaluator(TR::Node *node, TR::CodeGenerator *
    TR::Register *resultReg;
    TR::Symbol *sym = node->getSymbol();
    TR::Compilation *comp = cg->comp();
-   TR::MemoryReference *mref = new (cg->trHeapMemory()) TR::MemoryReference(node, node->getSymbolReference(), 0, cg);
+   TR::MemoryReference *mref = new (cg->trHeapMemory()) TR::MemoryReference(node, node->getSymbolReference(), cg);
 
    if (mref->getUnresolvedSnippet() != NULL)
       {

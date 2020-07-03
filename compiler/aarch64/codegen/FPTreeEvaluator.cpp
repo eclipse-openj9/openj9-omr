@@ -126,28 +126,28 @@ OMR::ARM64::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeGenerator *cg
 TR::Register *
 OMR::ARM64::TreeEvaluator::floadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return commonLoadEvaluator(node, TR::InstOpCode::vldrimms, 4, cg);
+   return commonLoadEvaluator(node, TR::InstOpCode::vldrimms, cg);
    }
 
 // also handles dloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::dloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return commonLoadEvaluator(node, TR::InstOpCode::vldrimmd, 8, cg);
+   return commonLoadEvaluator(node, TR::InstOpCode::vldrimmd, cg);
    }
 
 // also handles fstorei
 TR::Register *
 OMR::ARM64::TreeEvaluator::fstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return commonStoreEvaluator(node, TR::InstOpCode::vstrimms, 4, cg);
+   return commonStoreEvaluator(node, TR::InstOpCode::vstrimms, cg);
    }
 
 // also handles dstorei
 TR::Register *
 OMR::ARM64::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return commonStoreEvaluator(node, TR::InstOpCode::vstrimmd, 8, cg);
+   return commonStoreEvaluator(node, TR::InstOpCode::vstrimmd, cg);
    }
 
 TR::Register *

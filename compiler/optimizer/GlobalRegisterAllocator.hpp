@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -25,7 +25,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "compile/Compilation.hpp"
-#include "cs2/hashtab.h"
 #include "env/TRMemory.hpp"
 #include "il/DataTypes.hpp"
 #include "il/Node.hpp"
@@ -74,18 +73,6 @@ struct TR_SymRefCandidatePair
 
    TR::SymbolReference *_symRef;
    TR_RegisterCandidate *_rc;
-   };
-
-struct TR_NodeTriple
-   {
-   TR_ALLOC(TR_Memory::GlobalRegisterAllocator)
-
-   TR_NodeTriple(TR::Node *node1, TR::Node *node2, TR::Node *node3, int32_t childNum) : _node1(node1), _node2(node2), _node3(node3), _childNum(childNum) {}
-
-   TR::Node *_node1;
-   TR::Node *_node2;
-   TR::Node *_node3;
-   int32_t _childNum;
    };
 
 class TR_LiveRangeSplitter : public TR::Optimization
@@ -234,12 +221,7 @@ private:
    void                appendGotoBlock(TR::Block *gotoBlock, TR::Block *curBlock);
    TR::Block           *getAppendBlock(TR::Block *);
 
-   CS2::HashTable<int32_t, TR::SymbolReference *, TR::Allocator> _defIndexToTempMap;
-
    TR_ScratchList<TR_PairedSymbols> _pairedSymbols;
-
-   TR::SparseBitVector _allocatedPerformCellSymRefs;
-   int32_t _performCellCount;
 
    TR_PairedSymbols   *findOrCreatePairedSymbols(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2);
    TR_PairedSymbols   *findPairedSymbols(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2);
@@ -266,24 +248,18 @@ private:
    vcount_t     _visitCount;
    int32_t      _firstGlobalRegisterNumber;
    int32_t      _lastGlobalRegisterNumber;
-   bool         _gotoCreated;
    TR::Block    *_appendBlock;
    SymRefCandidateMap *_registerCandidates;
    TR_ScratchList<TR::Block> _newBlocks;
    TR_BitVector *_temp, *_temp2;
    TR_BitVector *_candidatesNeedingSignExtension;
    TR_BitVector *_candidatesSignExtendedInThisLoop;
-   List<TR::Node> _nodesToBeChecked;
-   List<TR_NodeTriple> _nodeTriplesToBeChecked;
-   List<TR::Node> _rejectedSignExtNodes;
-   TR::SymbolReference *_storeSymRef;
    TR_LinkHead<StoresInBlockInfo> _storesInBlockInfo;
    TR_BitVector *_signExtAdjustmentReqd;
    TR_BitVector *_signExtAdjustmentNotReqd;
    TR_BitVector *_signExtDifference;
    TR_BitVector *_valueModifiedSymRefs;
    TR_RegisterCandidates * _candidates;
-   TR_BitVector *_seenInternalMethods;
 
    TR::Node **_nodesForSymRefs;
 

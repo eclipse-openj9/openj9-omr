@@ -373,26 +373,6 @@ private:
       {
       switch (opvalue) 
          {
-         //Equality compare
-         case TR::bucmpeq:
-         case TR::bucmpne:   
-         case TR::iucmpeq:
-         case TR::iucmpne:
-         case TR::lucmpeq:
-         case TR::lucmpne:
-         case TR::sucmpeq:
-         case TR::sucmpne:
-         
-         //Equality compare and branch
-         case TR::ifiucmpeq:
-         case TR::ifiucmpne:
-         case TR::iflucmpeq:
-         case TR::iflucmpne:
-         case TR::ifbucmpeq:
-         case TR::ifbucmpne:
-         case TR::ifsucmpeq:
-         case TR::ifsucmpne:
-
          //Constant
          case TR::buconst:
          case TR::iuconst:

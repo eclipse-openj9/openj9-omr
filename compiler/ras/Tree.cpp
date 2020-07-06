@@ -2494,8 +2494,6 @@ int32_t childTypes[] =
    TR::Int32,                     // TR::icmpge
    TR::Int32,                     // TR::icmpgt
    TR::Int32,                     // TR::icmple
-   TR::Int32,                     // TR::iucmpeq
-   TR::Int32,                     // TR::iucmpne
    TR::Int32,                     // TR::iucmplt
    TR::Int32,                     // TR::iucmpge
    TR::Int32,                     // TR::iucmpgt
@@ -2506,8 +2504,6 @@ int32_t childTypes[] =
    TR::Int64,                     // TR::lcmpge
    TR::Int64,                     // TR::lcmpgt
    TR::Int64,                     // TR::lcmple
-   TR::Int64,                     // TR::lucmpeq
-   TR::Int64,                     // TR::lucmpne
    TR::Int64,                     // TR::lucmplt
    TR::Int64,                     // TR::lucmpge
    TR::Int64,                     // TR::lucmpgt
@@ -2550,8 +2546,6 @@ int32_t childTypes[] =
    TR::Int8,                      // TR::bcmpge
    TR::Int8,                      // TR::bcmpgt
    TR::Int8,                      // TR::bcmple
-   TR::Int8,                      // TR::bucmpeq
-   TR::Int8,                      // TR::bucmpne
    TR::Int8,                      // TR::bucmplt
    TR::Int8,                      // TR::bucmpge
    TR::Int8,                      // TR::bucmpgt
@@ -2562,8 +2556,6 @@ int32_t childTypes[] =
    TR::Int16,                     // TR::scmpge
    TR::Int16,                     // TR::scmpgt
    TR::Int16,                     // TR::scmple
-   TR::Int16,                     // TR::sucmpeq
-   TR::Int16,                     // TR::sucmpne
    TR::Int16,                     // TR::sucmplt
    TR::Int16,                     // TR::sucmpge
    TR::Int16,                     // TR::sucmpgt
@@ -2579,8 +2571,6 @@ int32_t childTypes[] =
    TR::Int32,                     // TR::ificmpge
    TR::Int32,                     // TR::ificmpgt
    TR::Int32,                     // TR::ificmple
-   TR::Int32,                     // TR::ifiucmpeq
-   TR::Int32,                     // TR::ifiucmpne
    TR::Int32,                     // TR::ifiucmplt
    TR::Int32,                     // TR::ifiucmpge
    TR::Int32,                     // TR::ifiucmpgt
@@ -2591,8 +2581,6 @@ int32_t childTypes[] =
    TR::Int64,                     // TR::iflcmpge
    TR::Int64,                     // TR::iflcmpgt
    TR::Int64,                     // TR::iflcmple
-   TR::Int64,                     // TR::iflucmpeq
-   TR::Int64,                     // TR::iflucmpne
    TR::Int64,                     // TR::iflucmplt
    TR::Int64,                     // TR::iflucmpge
    TR::Int64,                     // TR::iflucmpgt
@@ -2635,8 +2623,6 @@ int32_t childTypes[] =
    TR::Int8,                      // TR::ifbcmpge
    TR::Int8,                      // TR::ifbcmpgt
    TR::Int8,                      // TR::ifbcmple
-   TR::Int8,                      // TR::ifbucmpeq
-   TR::Int8,                      // TR::ifbucmpne
    TR::Int8,                      // TR::ifbucmplt
    TR::Int8,                      // TR::ifbucmpge
    TR::Int8,                      // TR::ifbucmpgt
@@ -2647,8 +2633,6 @@ int32_t childTypes[] =
    TR::Int16,                     // TR::ifscmpge
    TR::Int16,                     // TR::ifscmpgt
    TR::Int16,                     // TR::ifscmple
-   TR::Int16,                     // TR::ifsucmpeq
-   TR::Int16,                     // TR::ifsucmpne
    TR::Int16,                     // TR::ifsucmplt
    TR::Int16,                     // TR::ifsucmpge
    TR::Int16,                     // TR::ifsucmpgt

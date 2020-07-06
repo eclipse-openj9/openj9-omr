@@ -234,8 +234,6 @@
    TR::TreeEvaluator::icmpgeEvaluator,                  // TR::icmpge
    TR::TreeEvaluator::icmpgtEvaluator,                  // TR::icmpgt
    TR::TreeEvaluator::icmpleEvaluator,                  // TR::icmple
-   TR::TreeEvaluator::icmpeqEvaluator,                  // TR::iucmpeq
-   TR::TreeEvaluator::icmpneEvaluator,                  // TR::iucmpne
    TR::TreeEvaluator::iucmpltEvaluator,                 // TR::iucmplt
    TR::TreeEvaluator::iucmpgeEvaluator,                 // TR::iucmpge
    TR::TreeEvaluator::iucmpgtEvaluator,                 // TR::iucmpgt
@@ -246,8 +244,6 @@
    TR::TreeEvaluator::lcmpgeEvaluator,                  // TR::lcmpge
    TR::TreeEvaluator::lcmpgtEvaluator,                  // TR::lcmpgt
    TR::TreeEvaluator::lcmpleEvaluator,                  // TR::lcmple
-   TR::TreeEvaluator::lcmpeqEvaluator,                  // TR::lucmpeq
-   TR::TreeEvaluator::lcmpneEvaluator,                  // TR::lucmpne
    TR::TreeEvaluator::lucmpltEvaluator,                 // TR::lucmplt
    TR::TreeEvaluator::lucmpgeEvaluator,                 // TR::lucmpge
    TR::TreeEvaluator::lucmpgtEvaluator,                 // TR::lucmpgt
@@ -288,8 +284,6 @@
    TR::TreeEvaluator::icmpgeEvaluator,                  // TR::bcmpge
    TR::TreeEvaluator::icmpgtEvaluator,                  // TR::bcmpgt
    TR::TreeEvaluator::icmpleEvaluator,                  // TR::bcmple
-   TR::TreeEvaluator::icmpeqEvaluator,                  // TR::bucmpeq
-   TR::TreeEvaluator::icmpneEvaluator,                  // TR::bucmpne
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::bucmplt
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::bucmpge
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::bucmpgt
@@ -300,8 +294,6 @@
    TR::TreeEvaluator::icmpgeEvaluator,                  // TR::scmpge
    TR::TreeEvaluator::icmpgtEvaluator,                  // TR::scmpgt
    TR::TreeEvaluator::icmpleEvaluator,                  // TR::scmple
-   TR::TreeEvaluator::icmpeqEvaluator,                  // TR::sucmpeq
-   TR::TreeEvaluator::icmpneEvaluator,                  // TR::sucmpne
    TR::TreeEvaluator::iucmpltEvaluator,                 // TR::sucmplt
    TR::TreeEvaluator::iucmpgeEvaluator,                 // TR::sucmpge
    TR::TreeEvaluator::iucmpgtEvaluator,                 // TR::sucmpgt
@@ -317,8 +309,6 @@
    TR::TreeEvaluator::ificmpgeEvaluator,                // TR::ificmpge
    TR::TreeEvaluator::ificmpgtEvaluator,                // TR::ificmpgt
    TR::TreeEvaluator::ificmpleEvaluator,                // TR::ificmple
-   TR::TreeEvaluator::ificmpeqEvaluator,                // TR::ifiucmpeq
-   TR::TreeEvaluator::ificmpeqEvaluator,                // TR::ifiucmpne
    TR::TreeEvaluator::ifiucmpltEvaluator,               // TR::ifiucmplt
    TR::TreeEvaluator::ifiucmpgeEvaluator,               // TR::ifiucmpge
    TR::TreeEvaluator::ifiucmpgtEvaluator,               // TR::ifiucmpgt
@@ -329,8 +319,6 @@
    TR::TreeEvaluator::iflcmpgeEvaluator,                // TR::iflcmpge
    TR::TreeEvaluator::iflcmpgtEvaluator,                // TR::iflcmpgt
    TR::TreeEvaluator::iflcmpleEvaluator,                // TR::iflcmple
-   TR::TreeEvaluator::iflcmpeqEvaluator,                // TR::iflucmpeq
-   TR::TreeEvaluator::iflcmpeqEvaluator,                // TR::iflucmpne
    TR::TreeEvaluator::iflucmpltEvaluator,               // TR::iflucmplt
    TR::TreeEvaluator::iflucmpgeEvaluator,               // TR::iflucmpge
    TR::TreeEvaluator::iflucmpgtEvaluator,               // TR::iflucmpgt
@@ -371,8 +359,6 @@
    TR::TreeEvaluator::ificmpgeEvaluator,                // TR::ifbcmpge
    TR::TreeEvaluator::ificmpgtEvaluator,                // TR::ifbcmpgt
    TR::TreeEvaluator::ificmpleEvaluator,                // TR::ifbcmple
-   TR::TreeEvaluator::ificmpeqEvaluator,                // TR::ifbucmpeq
-   TR::TreeEvaluator::ificmpeqEvaluator,                // TR::ifbucmpne
    TR::TreeEvaluator::ifiucmpltEvaluator,               // TR::ifbucmplt
    TR::TreeEvaluator::ifiucmpgeEvaluator,               // TR::ifbucmpge
    TR::TreeEvaluator::ifiucmpgtEvaluator,               // TR::ifbucmpgt
@@ -383,8 +369,6 @@
    TR::TreeEvaluator::ificmpgeEvaluator,                // TR::ifscmpge
    TR::TreeEvaluator::ificmpgtEvaluator,                // TR::ifscmpgt
    TR::TreeEvaluator::ificmpleEvaluator,                // TR::ifscmple
-   TR::TreeEvaluator::ificmpeqEvaluator,                // TR::ifsucmpeq
-   TR::TreeEvaluator::ificmpeqEvaluator,                // TR::ifsucmpne
    TR::TreeEvaluator::ifiucmpltEvaluator,               // TR::ifsucmplt
    TR::TreeEvaluator::ifiucmpgeEvaluator,               // TR::ifsucmpge
    TR::TreeEvaluator::ifiucmpgtEvaluator,               // TR::ifsucmpgt

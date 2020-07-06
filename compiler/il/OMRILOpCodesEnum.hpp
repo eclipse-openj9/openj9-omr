@@ -284,8 +284,6 @@
    icmpge,   // integer compare if greater than or equal
    icmpgt,   // integer compare if greater than
    icmple,   // integer compare if less than or equal
-   iucmpeq,   // unsigned integer compare if equal
-   iucmpne,   // unsigned integer compare if not equal
    iucmplt,   // unsigned integer compare if less than
    iucmpge,   // unsigned integer compare if greater than or equal
    iucmpgt,   // unsigned integer compare if greater than
@@ -296,8 +294,6 @@
    lcmpge,   // long compare if greater than or equal
    lcmpgt,   // long compare if greater than
    lcmple,   // long compare if less than or equal
-   lucmpeq,   // unsigned long compare if equal
-   lucmpne,   // unsigned long compare if not equal
    lucmplt,   // unsigned long compare if less than
    lucmpge,   // unsigned long compare if greater than or equal
    lucmpgt,   // unsigned long compare if greater than
@@ -338,8 +334,6 @@
    bcmpge,   // byte compare if greater than or equal
    bcmpgt,   // byte compare if greater than
    bcmple,   // byte compare if less than or equal
-   bucmpeq,  // unsigned byte compare if equal
-   bucmpne,  // unsigned byte compare if not equal
    bucmplt,  // unsigned byte compare if less than
    bucmpge,  // unsigned byte compare if greater than or equal
    bucmpgt,  // unsigned byte compare if greater than
@@ -350,8 +344,6 @@
    scmpge,   // short integer compare if greater than or equal
    scmpgt,   // short integer compare if greater than
    scmple,   // short integer compare if less than or equal
-   sucmpeq,   // char compare if equal
-   sucmpne,   // char compare if not equal
    sucmplt,   // char compare if less than
    sucmpge,   // char compare if greater than or equal
    sucmpgt,   // char compare if greater than
@@ -367,8 +359,6 @@
    ificmpge, // integer compare and branch if greater than or equal
    ificmpgt, // integer compare and branch if greater than
    ificmple, // integer compare and branch if less than or equal
-   ifiucmpeq, // unsigned integer compare and branch if equal
-   ifiucmpne, // unsigned integer compare and branch if not equal
    ifiucmplt, // unsigned integer compare and branch if less than
    ifiucmpge, // unsigned integer compare and branch if greater than or equal
    ifiucmpgt, // unsigned integer compare and branch if greater than
@@ -379,8 +369,6 @@
    iflcmpge, // long compare and branch if greater than or equal
    iflcmpgt, // long compare and branch if greater than
    iflcmple, // long compare and branch if less than or equal
-   iflucmpeq, // unsigned long compare and branch if equal
-   iflucmpne, // unsigned long compare and branch if not equal
    iflucmplt, // unsigned long compare and branch if less than
    iflucmpge, // unsigned long compare and branch if greater than or equal
    iflucmpgt, // unsigned long compare and branch if greater than
@@ -421,8 +409,6 @@
    ifbcmpge, // byte compare and branch if greater than or equal
    ifbcmpgt, // byte compare and branch if greater than
    ifbcmple, // byte compare and branch if less than or equal
-   ifbucmpeq, // unsigned byte compare and branch if equal
-   ifbucmpne, // unsigned byte compare and branch if not equal
    ifbucmplt, // unsigned byte compare and branch if less than
    ifbucmpge, // unsigned byte compare and branch if greater than or equal
    ifbucmpgt, // unsigned byte compare and branch if greater than
@@ -433,8 +419,6 @@
    ifscmpge, // short integer compare and branch if greater than or equal
    ifscmpgt, // short integer compare and branch if greater than
    ifscmple, // short integer compare and branch if less than or equal
-   ifsucmpeq, // char compare and branch if equal
-   ifsucmpne, // char compare and branch if not equal
    ifsucmplt, // char compare and branch if less than
    ifsucmpge, // char compare and branch if greater than or equal
    ifsucmpgt, // char compare and branch if greater than

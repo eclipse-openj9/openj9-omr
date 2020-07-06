@@ -196,8 +196,6 @@ TR::Node * scmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 TR::Node * scmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * scmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * scmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
-TR::Node * sucmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
-TR::Node * sucmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * sucmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * sucmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * sucmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);

@@ -235,8 +235,6 @@
     TR::TreeEvaluator::icmpgeEvaluator, // TR::icmpge		// integer compare if greater than or equal
     TR::TreeEvaluator::icmpgtEvaluator, // TR::icmpgt		// integer compare if greater than
     TR::TreeEvaluator::icmpleEvaluator, // TR::icmple		// integer compare if less than or equal
-    TR::TreeEvaluator::icmpeqEvaluator, // TR::iucmpeq		// unsigned integer compare if equal
-    TR::TreeEvaluator::icmpneEvaluator, // TR::iucmpne		// unsigned integer compare if not equal
     TR::TreeEvaluator::iucmpltEvaluator, // TR::iucmplt		// unsigned integer compare if less than
     TR::TreeEvaluator::iucmpgeEvaluator, // TR::iucmpge		// unsigned integer compare if greater than or equal
     TR::TreeEvaluator::iucmpgtEvaluator, // TR::iucmpgt		// unsigned integer compare if greater than
@@ -247,8 +245,6 @@
     TR::TreeEvaluator::lcmpgeEvaluator, // TR::lcmpge		// long compare if greater than or equal
     TR::TreeEvaluator::lcmpgtEvaluator, // TR::lcmpgt		// long compare if greater than
     TR::TreeEvaluator::lcmpleEvaluator, // TR::lcmple		// long compare if less than or equal
-    TR::TreeEvaluator::lcmpeqEvaluator, // TR::lucmpeq		// unsigned long compare if equal
-    TR::TreeEvaluator::lcmpneEvaluator, // TR::lucmpne		// unsigned long compare if not equal
     TR::TreeEvaluator::lucmpltEvaluator, // TR::lucmplt		// unsigned long compare if less than
     TR::TreeEvaluator::lucmpgeEvaluator, // TR::lucmpge		// unsigned long compare if greater than or equal
     TR::TreeEvaluator::lucmpgtEvaluator, // TR::lucmpgt		// unsigned long compare if greater than
@@ -289,8 +285,6 @@
     TR::TreeEvaluator::icmpgeEvaluator, // TR::bcmpge		// byte compare if greater than or equal
     TR::TreeEvaluator::icmpgtEvaluator, // TR::bcmpgt		// byte compare if greater than
     TR::TreeEvaluator::icmpleEvaluator, // TR::bcmple		// byte compare if less than or equal
-    TR::TreeEvaluator::icmpeqEvaluator, // TR::bucmpeq		// unsigned byte compare if equal
-    TR::TreeEvaluator::icmpneEvaluator, // TR::bucmpne		// unsigned byte compare if not equal
     TR::TreeEvaluator::iucmpltEvaluator, // TR::bucmplt		// unsigned byte compare if less than
     TR::TreeEvaluator::iucmpgeEvaluator, // TR::bucmpge		// unsigned byte compare if greater than or equal
     TR::TreeEvaluator::iucmpgtEvaluator, // TR::bucmpgt		// unsigned byte compare if greater than
@@ -301,8 +295,6 @@
     TR::TreeEvaluator::icmpgeEvaluator, // TR::scmpge		// short integer compare if greater than or equal
     TR::TreeEvaluator::icmpgtEvaluator, // TR::scmpgt		// short integer compare if greater than
     TR::TreeEvaluator::icmpleEvaluator, // TR::scmple		// short integer compare if less than or equal
-    TR::TreeEvaluator::icmpeqEvaluator, // TR::sucmpeq		// char compare if equal
-    TR::TreeEvaluator::icmpneEvaluator, // TR::sucmpne		// char compare if not equal
     TR::TreeEvaluator::iucmpltEvaluator, // TR::sucmplt		// char compare if less than
     TR::TreeEvaluator::iucmpgeEvaluator, // TR::sucmpge		// char compare if greater than or equal
     TR::TreeEvaluator::iucmpgtEvaluator, // TR::sucmpgt		// char compare if greater than
@@ -318,8 +310,6 @@
     TR::TreeEvaluator::ificmpgeEvaluator, // TR::ificmpge		// integer compare and branch if greater than or equal
     TR::TreeEvaluator::ificmpgtEvaluator, // TR::ificmpgt		// integer compare and branch if greater than
     TR::TreeEvaluator::ificmpleEvaluator, // TR::ificmple		// integer compare and branch if less than or equal
-    TR::TreeEvaluator::ificmpeqEvaluator, // TR::ifiucmpeq		// unsigned integer compare and branch if equal
-    TR::TreeEvaluator::ificmpneEvaluator, // TR::ifiucmpne		// unsigned integer compare and branch if not equal
     TR::TreeEvaluator::ifiucmpltEvaluator, // TR::ifiucmplt		// unsigned integer compare and branch if less than
     TR::TreeEvaluator::ifiucmpgeEvaluator, // TR::ifiucmpge		// unsigned integer compare and branch if greater than or equal
     TR::TreeEvaluator::ifiucmpgtEvaluator, // TR::ifiucmpgt		// unsigned integer compare and branch if greater than
@@ -330,8 +320,6 @@
     TR::TreeEvaluator::iflcmpgeEvaluator, // TR::iflcmpge		// long compare and branch if greater than or equal
     TR::TreeEvaluator::iflcmpgtEvaluator, // TR::iflcmpgt		// long compare and branch if greater than
     TR::TreeEvaluator::iflcmpleEvaluator, // TR::iflcmple		// long compare and branch if less than or equal
-    TR::TreeEvaluator::iflcmpeqEvaluator, // TR::iflucmpeq		// unsigned long compare and branch if equal
-    TR::TreeEvaluator::iflcmpneEvaluator, // TR::iflucmpne		// unsigned long compare and branch if not equal
     TR::TreeEvaluator::iflucmpltEvaluator, // TR::iflucmplt		// unsigned long compare and branch if less than
     TR::TreeEvaluator::iflucmpgeEvaluator, // TR::iflucmpge		// unsigned long compare and branch if greater than or equal
     TR::TreeEvaluator::iflucmpgtEvaluator, // TR::iflucmpgt		// unsigned long compare and branch if greater than
@@ -372,8 +360,6 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifbcmpgeEvaluator ,	// TR::ifbcmpge		// byte compare and branch if greater than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifbcmpgtEvaluator ,	// TR::ifbcmpgt		// byte compare and branch if greater than
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifbcmpleEvaluator ,	// TR::ifbcmple		// byte compare and branch if less than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifbucmpeqEvaluator ,	// TR::ifbucmpeq		// unsigned byte compare and branch if equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifbucmpneEvaluator ,	// TR::ifbucmpne		// unsigned byte compare and branch if not equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifbucmpltEvaluator ,	// TR::ifbucmplt		// unsigned byte compare and branch if less than
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifbucmpgeEvaluator ,	// TR::ifbucmpge		// unsigned byte compare and branch if greater than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifbucmpgtEvaluator ,	// TR::ifbucmpgt		// unsigned byte compare and branch if greater than
@@ -384,8 +370,6 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifscmpgeEvaluator ,	// TR::ifscmpge		// short integer compare and branch if greater than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifscmpgtEvaluator ,	// TR::ifscmpgt		// short integer compare and branch if greater than
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifscmpleEvaluator ,	// TR::ifscmple		// short integer compare and branch if less than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifsucmpeqEvaluator ,	// TR::ifsucmpeq		// char compare and branch if equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifsucmpneEvaluator ,	// TR::ifsucmpne		// char compare and branch if not equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifsucmpltEvaluator ,	// TR::ifsucmplt		// char compare and branch if less than
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifsucmpgeEvaluator ,	// TR::ifsucmpge		// char compare and branch if greater than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifsucmpgtEvaluator ,	// TR::ifsucmpgt		// char compare and branch if greater than

@@ -235,8 +235,6 @@
    TR::TreeEvaluator::integerCmpgeEvaluator,                           // TR::icmpge
    TR::TreeEvaluator::integerCmpgtEvaluator,                           // TR::icmpgt
    TR::TreeEvaluator::integerCmpleEvaluator,                           // TR::icmple
-   TR::TreeEvaluator::integerCmpeqEvaluator,                           // TR::iucmpeq
-   TR::TreeEvaluator::integerCmpneEvaluator,                           // TR::iucmpne
    TR::TreeEvaluator::unsignedIntegerCmpltEvaluator,                   // TR::iucmplt
    TR::TreeEvaluator::unsignedIntegerCmpgeEvaluator,                   // TR::iucmpge
    TR::TreeEvaluator::unsignedIntegerCmpgtEvaluator,                   // TR::iucmpgt
@@ -247,8 +245,6 @@
    TR::TreeEvaluator::integerCmpgeEvaluator,                           // TR::lcmpge
    TR::TreeEvaluator::integerCmpgtEvaluator,                           // TR::lcmpgt
    TR::TreeEvaluator::integerCmpleEvaluator,                           // TR::lcmple
-   TR::TreeEvaluator::integerCmpeqEvaluator,                           // TR::lucmpeq
-   TR::TreeEvaluator::integerCmpneEvaluator,                           // TR::lucmpne
    TR::TreeEvaluator::unsignedIntegerCmpltEvaluator,                   // TR::lucmplt
    TR::TreeEvaluator::unsignedIntegerCmpgeEvaluator,                   // TR::lucmpge
    TR::TreeEvaluator::unsignedIntegerCmpgtEvaluator,                   // TR::lucmpgt
@@ -289,8 +285,6 @@
    TR::TreeEvaluator::bcmpgeEvaluator,                                 // TR::bcmpge
    TR::TreeEvaluator::bcmpgtEvaluator,                                 // TR::bcmpgt
    TR::TreeEvaluator::bcmpleEvaluator,                                 // TR::bcmple
-   TR::TreeEvaluator::bcmpeqEvaluator,                                 // TR::bucmpeq (zPDT)
-   TR::TreeEvaluator::bcmpeqEvaluator,                                 // TR::bucmpne (zPDT)
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::bucmplt
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::bucmpge
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::bucmpgt
@@ -301,8 +295,6 @@
    TR::TreeEvaluator::scmpgeEvaluator,                                 // TR::scmpge
    TR::TreeEvaluator::scmpgtEvaluator,                                 // TR::scmpgt
    TR::TreeEvaluator::scmpleEvaluator,                                 // TR::scmple
-   TR::TreeEvaluator::sucmpeqEvaluator,                                // TR::sucmpeq
-   TR::TreeEvaluator::sucmpeqEvaluator,                                // TR::sucmpne
    TR::TreeEvaluator::sucmpltEvaluator,                                // TR::sucmplt
    TR::TreeEvaluator::sucmpgeEvaluator,                                // TR::sucmpge
    TR::TreeEvaluator::sucmpgtEvaluator,                                // TR::sucmpgt
@@ -318,8 +310,6 @@
    TR::TreeEvaluator::integerIfCmpgeEvaluator,                         // TR::ificmpge
    TR::TreeEvaluator::integerIfCmpgtEvaluator,                         // TR::ificmpgt
    TR::TreeEvaluator::integerIfCmpleEvaluator,                         // TR::ificmple
-   TR::TreeEvaluator::integerIfCmpeqEvaluator,                         // TR::ifiucmpeq
-   TR::TreeEvaluator::integerIfCmpneEvaluator,                         // TR::ifiucmpne
    TR::TreeEvaluator::unsignedIntegerIfCmpltEvaluator,                 // TR::ifiucmplt
    TR::TreeEvaluator::unsignedIntegerIfCmpgeEvaluator,                 // TR::ifiucmpge
    TR::TreeEvaluator::unsignedIntegerIfCmpgtEvaluator,                 // TR::ifiucmpgt
@@ -330,8 +320,6 @@
    TR::TreeEvaluator::integerIfCmpgeEvaluator,                         // TR::iflcmpge
    TR::TreeEvaluator::integerIfCmpgtEvaluator,                         // TR::iflcmpgt
    TR::TreeEvaluator::integerIfCmpleEvaluator,                         // TR::iflcmple
-   TR::TreeEvaluator::integerIfCmpeqEvaluator,                         // TR::iflucmpeq
-   TR::TreeEvaluator::integerIfCmpneEvaluator,                         // TR::iflucmpne
    TR::TreeEvaluator::unsignedIntegerIfCmpltEvaluator,                 // TR::iflucmplt
    TR::TreeEvaluator::unsignedIntegerIfCmpgeEvaluator,                 // TR::iflucmpge
    TR::TreeEvaluator::unsignedIntegerIfCmpgtEvaluator,                 // TR::iflucmpgt
@@ -372,8 +360,6 @@
    TR::TreeEvaluator::ifbcmpgeEvaluator,                               // TR::ifbcmpge
    TR::TreeEvaluator::ifbcmpgtEvaluator,                               // TR::ifbcmpgt
    TR::TreeEvaluator::ifbcmpleEvaluator,                               // TR::ifbcmple
-   TR::TreeEvaluator::ifbcmpeqEvaluator,                               // TR::ifbucmpeq
-   TR::TreeEvaluator::ifbcmpeqEvaluator,                               // TR::ifbucmpne
    TR::TreeEvaluator::ifbucmpltEvaluator,                              // TR::ifbucmplt
    TR::TreeEvaluator::ifbucmpgeEvaluator,                              // TR::ifbucmpge
    TR::TreeEvaluator::ifbucmpgtEvaluator,                              // TR::ifbucmpgt
@@ -384,8 +370,6 @@
    TR::TreeEvaluator::ifscmpgeEvaluator,                               // TR::ifscmpge
    TR::TreeEvaluator::ifscmpgtEvaluator,                               // TR::ifscmpgt
    TR::TreeEvaluator::ifscmpleEvaluator,                               // TR::ifscmple
-   TR::TreeEvaluator::ifsucmpeqEvaluator,                              // TR::ifsucmpeq
-   TR::TreeEvaluator::ifsucmpeqEvaluator,                              // TR::ifsucmpne
    TR::TreeEvaluator::ifsucmpltEvaluator,                              // TR::ifsucmplt
    TR::TreeEvaluator::ifsucmpgeEvaluator,                              // TR::ifsucmpge
    TR::TreeEvaluator::ifsucmpgtEvaluator,                              // TR::ifsucmpgt

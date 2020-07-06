@@ -256,8 +256,6 @@
    TR::TreeEvaluator::icmpgeEvaluator,      // TR::icmpge
    TR::TreeEvaluator::icmpgtEvaluator,      // TR::icmpgt
    TR::TreeEvaluator::icmpleEvaluator,      // TR::icmple
-   TR::TreeEvaluator::icmpeqEvaluator,      // TR::iucmpeq
-   TR::TreeEvaluator::icmpeqEvaluator,      // TR::iucmpne
    TR::TreeEvaluator::icmpltEvaluator,      // TR::iucmplt
    TR::TreeEvaluator::icmpgeEvaluator,      // TR::iucmpge
    TR::TreeEvaluator::icmpgtEvaluator,      // TR::iucmpgt
@@ -269,8 +267,6 @@
    TR::TreeEvaluator::lcmpgeEvaluator,      // TR::lcmpge
    TR::TreeEvaluator::lcmpgtEvaluator,      // TR::lcmpgt
    TR::TreeEvaluator::lcmpleEvaluator,      // TR::lcmple
-   TR::TreeEvaluator::lcmpeqEvaluator,      // TR::lucmpeq
-   TR::TreeEvaluator::lcmpneEvaluator,      // TR::lucmpne
    TR::TreeEvaluator::lcmpltEvaluator,      // TR::lucmplt
    TR::TreeEvaluator::lcmpgeEvaluator,      // TR::lucmpge
    TR::TreeEvaluator::lcmpgtEvaluator,      // TR::lucmpgt
@@ -314,8 +310,6 @@
    TR::TreeEvaluator::bcmpgeEvaluator,      // TR::bcmpge
    TR::TreeEvaluator::bcmpgtEvaluator,      // TR::bcmpgt
    TR::TreeEvaluator::bcmpleEvaluator,      // TR::bcmple
-   TR::TreeEvaluator::bcmpeqEvaluator,      // TR::bucmpeq
-   TR::TreeEvaluator::bcmpeqEvaluator,      // TR::bucmpne
    TR::TreeEvaluator::badILOpEvaluator,     // TR::bucmplt
    TR::TreeEvaluator::badILOpEvaluator,     // TR::bucmpge
    TR::TreeEvaluator::badILOpEvaluator,     // TR::bucmpgt
@@ -326,8 +320,6 @@
    TR::TreeEvaluator::scmpgeEvaluator,      // TR::scmpge
    TR::TreeEvaluator::scmpgtEvaluator,      // TR::scmpgt
    TR::TreeEvaluator::scmpleEvaluator,      // TR::scmple
-   TR::TreeEvaluator::sucmpeqEvaluator,      // TR::sucmpeq
-   TR::TreeEvaluator::sucmpeqEvaluator,      // TR::sucmpne
    TR::TreeEvaluator::sucmpltEvaluator,      // TR::sucmplt
    TR::TreeEvaluator::sucmpgeEvaluator,      // TR::sucmpge
    TR::TreeEvaluator::sucmpgtEvaluator,      // TR::sucmpgt
@@ -343,8 +335,6 @@
    TR::TreeEvaluator::ificmpgeEvaluator,    // TR::ificmpge
    TR::TreeEvaluator::ificmpgtEvaluator,    // TR::ificmpgt
    TR::TreeEvaluator::ificmpleEvaluator,    // TR::ificmple
-   TR::TreeEvaluator::ificmpeqEvaluator,    // TR::ifiucmpeq
-   TR::TreeEvaluator::ificmpeqEvaluator,    // TR::ifiucmpne : todo
    TR::TreeEvaluator::ificmpltEvaluator,    // TR::ifiucmplt : Temporary place holders till unsigned opcodes are implemented
    TR::TreeEvaluator::ificmpgeEvaluator,    // TR::ifiucmpge
    TR::TreeEvaluator::ificmpgtEvaluator,    // TR::ifiucmpgt
@@ -356,8 +346,6 @@
    TR::TreeEvaluator::iflcmpgeEvaluator,    // TR::iflcmpge
    TR::TreeEvaluator::iflcmpgtEvaluator,    // TR::iflcmpgt
    TR::TreeEvaluator::iflcmpleEvaluator,    // TR::iflcmple
-   TR::TreeEvaluator::iflcmpeqEvaluator,    // TR::iflucmpeq
-   TR::TreeEvaluator::iflcmpneEvaluator,    // TR::iflucmpne
    TR::TreeEvaluator::iflcmpltEvaluator,    // TR::iflucmplt
    TR::TreeEvaluator::iflcmpgeEvaluator,    // TR::iflucmpge
    TR::TreeEvaluator::iflcmpgtEvaluator,    // TR::iflucmpgt
@@ -401,8 +389,6 @@
    TR::TreeEvaluator::ifbcmpgeEvaluator,    // TR::ifbcmpge
    TR::TreeEvaluator::ifbcmpgtEvaluator,    // TR::ifbcmpgt
    TR::TreeEvaluator::ifbcmpleEvaluator,    // TR::ifbcmple
-   TR::TreeEvaluator::ifbcmpeqEvaluator,    // TR::ifbucmpeq
-   TR::TreeEvaluator::ifbcmpeqEvaluator,    // TR::ifbucmpne
    TR::TreeEvaluator::ifbcmpltEvaluator,    // TR::ifbucmplt
    TR::TreeEvaluator::ifbcmpgeEvaluator,    // TR::ifbucmpge
    TR::TreeEvaluator::ifbcmpgtEvaluator,    // TR::ifbucmpgt
@@ -413,8 +399,6 @@
    TR::TreeEvaluator::ifscmpgeEvaluator,    // TR::ifscmpge
    TR::TreeEvaluator::ifscmpgtEvaluator,    // TR::ifscmpgt
    TR::TreeEvaluator::ifscmpleEvaluator,    // TR::ifscmple
-   TR::TreeEvaluator::ifsucmpeqEvaluator,    // TR::ifsucmpeq
-   TR::TreeEvaluator::ifsucmpeqEvaluator,    // TR::ifsucmpne
    TR::TreeEvaluator::ifsucmpltEvaluator,    // TR::ifsucmplt
    TR::TreeEvaluator::ifsucmpgeEvaluator,    // TR::ifsucmpge
    TR::TreeEvaluator::ifsucmpgtEvaluator,    // TR::ifsucmpgt

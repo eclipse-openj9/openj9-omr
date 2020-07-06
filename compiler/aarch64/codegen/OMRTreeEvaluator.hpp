@@ -261,8 +261,6 @@ public:
 	static TR::Register *icmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *icmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *icmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iucmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -273,8 +271,6 @@ public:
 	static TR::Register *lcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *lucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *lucmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -315,8 +311,6 @@ public:
 	static TR::Register *bcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *bcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *bcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *bucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *bucmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *bucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *bucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *bucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -327,8 +321,6 @@ public:
 	static TR::Register *scmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *scmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *scmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *sucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *sucmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *sucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *sucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *sucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -344,8 +336,6 @@ public:
 	static TR::Register *ificmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ificmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ificmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *ifiucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *ifiucmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifiucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifiucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifiucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -356,8 +346,6 @@ public:
 	static TR::Register *iflcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iflcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iflcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iflucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iflucmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iflucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iflucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iflucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -398,8 +386,6 @@ public:
 	static TR::Register *ifbcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifbcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifbcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *ifbucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *ifbucmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifbucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifbucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifbucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -410,8 +396,6 @@ public:
 	static TR::Register *ifscmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifscmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifscmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *ifsucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *ifsucmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifsucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifsucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ifsucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);

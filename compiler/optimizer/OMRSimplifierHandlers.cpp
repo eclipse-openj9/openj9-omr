@@ -15426,48 +15426,6 @@ TR::Node *scmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
    return node;
    }
 
-TR::Node *sucmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
-   {
-   simplifyChildren(node, block, s);
-
-   TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
-
-   if (firstChild == secondChild)
-      {
-      foldIntConstant(node, 1, s, true /* anchorChildren */);
-      return node;
-      }
-   if (firstChild->getOpCode().isLoadConst() && secondChild->getOpCode().isLoadConst())
-      {
-      foldIntConstant(node, firstChild->getConst<uint16_t>()==secondChild->getConst<uint16_t>(), s, false /* !anchorChildren*/);
-      return node;
-      }
-
-   orderChildren(node, firstChild, secondChild, s);
-   return node;
-   }
-
-TR::Node *sucmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
-   {
-   simplifyChildren(node, block, s);
-
-   TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
-
-   if (firstChild == secondChild)
-      {
-      foldIntConstant(node, 0, s, true /* anchorChildren */);
-      return node;
-      }
-   if (firstChild->getOpCode().isLoadConst() && secondChild->getOpCode().isLoadConst())
-      {
-      foldIntConstant(node, firstChild->getConst<uint16_t>()!=secondChild->getConst<uint16_t>(), s, false /* !anchorChildren*/);
-      return node;
-      }
-
-   orderChildren(node, firstChild, secondChild, s);
-   return node;
-   }
-
 TR::Node *sucmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
    simplifyChildren(node, block, s);

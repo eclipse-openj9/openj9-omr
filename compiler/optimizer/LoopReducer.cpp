@@ -1765,7 +1765,7 @@ TR_Arraytranslate::checkStore(TR::Node * storeNode)
 
 //Break tree should look as follows:
 //
-//ifsucmpeq --> block <no-stop>
+//ifscmpeq --> block <no-stop>
 //  ==>icload at <translate-char>
 //  cconst <termination char>
 //-or-
@@ -2455,7 +2455,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //                    iconst -16
    //            iconst 2
    //          iconst -16
-   //ifsucmpne --> block <no-stop>
+   //ifscmpne --> block <no-stop>
    //  ==>icload at <translate-char>
    //  cconst <termination char>
    //BBEnd <load-char>
@@ -2505,7 +2505,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //                    iconst -16
    //            iconst 2
    //          iconst -16
-   //ifsucmpeq --> block <escape-block>
+   //ifscmpeq --> block <escape-block>
    //  ==>icload at <translate-char>
    //  cconst <termination char>
    //BBEnd <load-char>

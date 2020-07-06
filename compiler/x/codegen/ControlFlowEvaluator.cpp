@@ -1914,15 +1914,6 @@ TR::Register *OMR::X86::TreeEvaluator::ifscmpleEvaluator(TR::Node *node, TR::Cod
    return NULL;
    }
 
-
-TR::Register *OMR::X86::TreeEvaluator::ifsucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::TreeEvaluator::compareIntegersForEquality(node, cg);
-   generateConditionalJumpInstruction(node->getOpCodeValue() == TR::ifsucmpeq ? JE4 : JNE4,
-                                      node, cg, true);
-   return NULL;
-   }
-
 TR::Register *OMR::X86::TreeEvaluator::ifsucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compare2BytesForOrder(node, cg);
@@ -2196,52 +2187,6 @@ TR::Register *OMR::X86::TreeEvaluator::scmpgtEvaluator(TR::Node *node, TR::CodeG
 TR::Register *OMR::X86::TreeEvaluator::scmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::cmp2BytesEvaluator(node, SETLE1Reg, cg);
-   }
-
-
-TR::Register *OMR::X86::TreeEvaluator::sucmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *targetRegister = cg->allocateRegister();
-   TR::Node     *secondChild    = node->getSecondChild();
-
-   if (secondChild->getOpCode().isLoadConst() &&
-       secondChild->getRegister() == NULL)
-      {
-      int32_t      value            = secondChild->getShortInt();
-      TR::Node     *firstChild       = node->getFirstChild();
-      TR::Register *testRegister     = cg->evaluate(firstChild);
-      if (value >= -128 && value <= 127)
-         {
-         if (value == 0)
-            {
-            generateRegRegInstruction(TEST2RegReg, node, testRegister, testRegister, cg);
-            }
-         else
-            {
-            generateRegImmInstruction(CMP2RegImms, node, testRegister, value, cg);
-            }
-         }
-      else
-         {
-         ///generateRegImmInstruction(CMP2RegImm2, node, testRegister, value, cg);
-         generateWiderCompare(node, testRegister, value, cg);
-         }
-      cg->decReferenceCount(firstChild);
-      cg->decReferenceCount(secondChild);
-      }
-   else
-      {
-      TR_X86CompareAnalyser  temp(cg);
-      temp.integerCompareAnalyser(node, CMP2RegReg, CMP2RegMem, CMP2MemReg);
-      }
-   node->setRegister(targetRegister);
-
-   if (cg->enableRegisterInterferences())
-      cg->getLiveRegisters(TR_GPR)->setByteRegisterAssociation(targetRegister);
-
-   generateRegInstruction(node->getOpCodeValue() == TR::sucmpeq ? SETE1Reg : SETNE1Reg, node, targetRegister, cg);
-   generateRegRegInstruction(MOVZXReg4Reg1, node, targetRegister, targetRegister, cg);
-   return targetRegister;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::sucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)

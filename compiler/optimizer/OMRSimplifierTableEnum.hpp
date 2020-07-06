@@ -248,8 +248,6 @@
    icmpgeSimplifier,        // TR::icmpge
    icmpgtSimplifier,        // TR::icmpgt
    icmpleSimplifier,        // TR::icmple
-   dftSimplifier,           // TR::iucmpeq
-   dftSimplifier,           // TR::iucmpne
    dftSimplifier,           // TR::iucmplt
    dftSimplifier,           // TR::iucmpge
    dftSimplifier,           // TR::iucmpgt
@@ -260,8 +258,6 @@
    lcmpgeSimplifier,        // TR::lcmpge
    lcmpgtSimplifier,        // TR::lcmpgt
    lcmpleSimplifier,        // TR::lcmple
-   lcmpeqSimplifier,        // TR::lucmpeq
-   lcmpneSimplifier,        // TR::lucmpne
    lucmpltSimplifier,       // TR::lucmplt
    lucmpgeSimplifier,       // TR::lucmpge
    lucmpgtSimplifier,       // TR::lucmpgt
@@ -302,8 +298,6 @@
    bcmpgeSimplifier,        // TR::bcmpge
    bcmpgtSimplifier,        // TR::bcmpgt
    bcmpleSimplifier,        // TR::bcmple
-   bcmpeqSimplifier,        // TR::bucmpeq
-   bcmpneSimplifier,        // TR::bucmpne
    bcmpltSimplifier,        // TR::bucmplt
    bcmpgeSimplifier,        // TR::bucmpge
    bcmpgtSimplifier,        // TR::bucmpgt
@@ -314,8 +308,6 @@
    scmpgeSimplifier,        // TR::scmpge
    scmpgtSimplifier,        // TR::scmpgt
    scmpleSimplifier,        // TR::scmple
-   sucmpeqSimplifier,        // TR::sucmpeq
-   sucmpneSimplifier,        // TR::sucmpne
    sucmpltSimplifier,        // TR::sucmplt
    sucmpgeSimplifier,        // TR::sucmpge
    sucmpgtSimplifier,        // TR::sucmpgt
@@ -331,8 +323,6 @@
    ificmpgeSimplifier,      // TR::ificmpge
    ificmpgtSimplifier,      // TR::ificmpgt
    ificmpleSimplifier,      // TR::ificmple
-   ificmpeqSimplifier,      // TR::ifiucmpeq
-   ificmpneSimplifier,      // TR::ifiucmpne
    ificmpltSimplifier,      // TR::ifiucmplt
    ificmpgeSimplifier,      // TR::ifiucmpge
    ificmpgtSimplifier,      // TR::ifiucmpgt
@@ -343,8 +333,6 @@
    iflcmpgeSimplifier,      // TR::iflcmpge
    iflcmpgtSimplifier,      // TR::iflcmpgt
    iflcmpleSimplifier,      // TR::iflcmple
-   iflcmpeqSimplifier,      // TR::iflucmpeq
-   iflcmpneSimplifier,      // TR::iflucmpne
    iflcmpltSimplifier,      // TR::iflucmplt
    iflcmpgeSimplifier,      // TR::iflucmpge
    iflcmpgtSimplifier,      // TR::iflucmpgt
@@ -385,8 +373,6 @@
    ifCmpWithEqualitySimplifier,     // TR::ifbcmpge
    ifCmpWithoutEqualitySimplifier,  // TR::ifbcmpgt
    ifCmpWithEqualitySimplifier,     // TR::ifbcmple
-   ifCmpWithEqualitySimplifier,     // TR::ifbucmpeq
-   ifCmpWithoutEqualitySimplifier,  // TR::ifbucmpne
    ifCmpWithoutEqualitySimplifier,  // TR::ifbucmplt
    ifCmpWithEqualitySimplifier,     // TR::ifbucmpge
    ifCmpWithoutEqualitySimplifier,  // TR::ifbucmpgt
@@ -397,8 +383,6 @@
    ifCmpWithEqualitySimplifier,     // TR::ifscmpge
    ifCmpWithoutEqualitySimplifier,  // TR::ifscmpgt
    ifCmpWithEqualitySimplifier,     // TR::ifscmple
-   ifCmpWithEqualitySimplifier,     // TR::ifsucmpeq
-   ifCmpWithoutEqualitySimplifier,  // TR::ifsucmpne
    ifCmpWithoutEqualitySimplifier,  // TR::ifsucmplt
    ifCmpWithEqualitySimplifier,     // TR::ifsucmpge
    ifCmpWithoutEqualitySimplifier,  // TR::ifsucmpgt

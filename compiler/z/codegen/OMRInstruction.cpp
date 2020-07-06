@@ -537,52 +537,6 @@ OMR::Z::Instruction::usesRegister(TR::Register * reg)
    return false;
    }
 
-static bool isInternalControlFlowOneEntryOneExit(TR::Instruction *regionEnd, TR::Compilation *comp)
-  {
-  TR::deque<TR::LabelSymbol *> labels(comp->allocator());
-  TR::Instruction *curr=NULL;
-  TR::Instruction *regionStart=NULL;
-  bool done=false;
-
-  // Collect all the labels and start of region
-  for(curr=regionEnd;!done;curr=curr->getPrev())
-    {
-    if(curr->isLabel())
-      {
-      TR::LabelSymbol *labelSym=toS390LabelInstruction(curr)->getLabelSymbol();
-      labels.push_back(labelSym);
-      labelSym->isStartInternalControlFlow();
-      done=true;
-      regionStart=curr->getPrev();
-      }
-    }
-
-  // Now check if all branches jump to lables inside region
-
-  for(curr=regionEnd; curr != regionStart; curr=curr->getPrev())
-    {
-    if(curr->isBranchOp())
-      {
-      TR::S390LabeledInstruction *labeledInstr=(TR::S390LabeledInstruction *)curr;
-      TR::LabelSymbol *targetLabel=labeledInstr->getLabelSymbol();
-      bool found=false;
-      for(auto it = labels.begin(); it != labels.end(); ++it)
-        {
-        if(*it == targetLabel)
-          {
-          found = true;
-          break;
-          }
-        }
-      if(!found)
-        return false; // Found a branch to an outside label
-      }
-    }
-
-  return true;
-  }
-
-
 
 TR::Instruction *
 OMR::Z::Instruction::getOutOfLineEXInstr()

@@ -36,6 +36,15 @@ namespace TR
 
 class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
    {
+   private:
+
+   MemoryReference(TR::Register *br,
+      int64_t disp,
+      uint8_t len,
+      TR::CodeGenerator *cg,
+      int) :
+         OMR::MemoryReferenceConnector(br, disp, len, cg, 0) {}
+
    public:
 
    MemoryReference(TR::CodeGenerator *cg) :
@@ -61,6 +70,8 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
 
    MemoryReference(TR::Node *node, MemoryReference& mr, int32_t n, uint32_t len, TR::CodeGenerator *cg):
       OMR::MemoryReferenceConnector(node, mr, n, len, cg) {}
+
+   static TR::MemoryReference *withDisplacement(TR::CodeGenerator *cg, TR::Register *baseReg, int64_t displacement, int8_t length);
    };
 }
 

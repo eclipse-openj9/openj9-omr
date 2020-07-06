@@ -71,6 +71,11 @@ class InstOpCode: public OMR::InstOpCode
       const char* name;
 
       /** \brief
+       *     The instruction prefix with fields masked out by zeros.
+       */
+      uint32_t prefix;
+
+      /** \brief
        *     The instruction opcode with fields masked out by zeros.
        */
       uint32_t opcode;
@@ -164,33 +169,87 @@ class InstOpCode: public OMR::InstOpCode
    PPCInstructionFormat getFormat() { return getMetaData().format; }
    const char* getMnemonicName() { return getMetaData().name; }
 
-   int8_t getBinaryLength()
+   PPCInstructionFormat getTemplateFormat()
       {
       switch (getFormat())
          {
          case FORMAT_NONE:
-            return 0;
+            return FORMAT_NONE;
+         case FORMAT_DIRECT_PREFIXED:
+         case FORMAT_RT_D34_RA_R:
+         case FORMAT_RTP_D34_RA_R:
+         case FORMAT_FRT_D34_RA_R:
+         case FORMAT_VRT_D34_RA_R:
+         case FORMAT_XT5_D34_RA_R:
+         case FORMAT_RS_D34_RA_R:
+         case FORMAT_RSP_D34_RA_R:
+         case FORMAT_FRS_D34_RA_R:
+         case FORMAT_VRS_D34_RA_R:
+         case FORMAT_XS5_D34_RA_R:
+            return FORMAT_DIRECT_PREFIXED;
          default:
+            return FORMAT_DIRECT;
+         }
+      }
+
+   int8_t getBinaryLength()
+      {
+      switch (getTemplateFormat())
+         {
+         case FORMAT_NONE:
+            return 0;
+         case FORMAT_DIRECT:
             return 4;
+         case FORMAT_DIRECT_PREFIXED:
+            return 8;
+         default:
+            TR_ASSERT_FATAL(false, "Invalid template format for %s", getMnemonicName());
          }
       }
 
    int8_t getMaxBinaryLength()
       {
-      return getBinaryLength();
+      switch (getTemplateFormat())
+         {
+         case FORMAT_NONE:
+            return 0;
+         case FORMAT_DIRECT:
+            return 4;
+         case FORMAT_DIRECT_PREFIXED:
+            // Prefixed instructions can't cross a 64-byte boundary, so we may need to emit a nop
+            // to avoid this.
+            return 12;
+         default:
+            TR_ASSERT_FATAL(false, "Invalid template format for %s", getMnemonicName());
+         }
       }
 
-   uint8_t *copyBinaryToBuffer(uint8_t *cursor)
+   uint8_t *copyBinaryToBuffer(uint8_t *byteCursor)
       {
-      switch (getFormat())
+      uint32_t *cursor = reinterpret_cast<uint32_t*>(byteCursor);
+      switch (getTemplateFormat())
          {
          case FORMAT_NONE:
             break;
-         default:
-            *reinterpret_cast<uint32_t*>(cursor) = metadata[_mnemonic].opcode;
+         case FORMAT_DIRECT:
+            *cursor = metadata[_mnemonic].opcode;
             break;
+         case FORMAT_DIRECT_PREFIXED:
+            // Prefixed instructions can't cross a 64-byte boundary, so we may need to emit a nop
+            // to avoid this.
+            if (reinterpret_cast<uintptr_t>(cursor + 1) % 64 == 0)
+               {
+               *cursor = metadata[OMR::InstOpCode::nop].opcode;
+               cursor++;
+               byteCursor += 4;
+               }
+            cursor[0] = metadata[_mnemonic].prefix;
+            cursor[1] = metadata[_mnemonic].opcode;
+            break;
+         default:
+            TR_ASSERT_FATAL(false, "Invalid template format for %s", getMnemonicName());
          }
-      return cursor;
+      return byteCursor;
       }
    };
 }

@@ -5450,7 +5450,7 @@ TR::Register *OMR::Power::TreeEvaluator::loadaddrEvaluator(TR::Node *node, TR::C
          }
       else
          {
-         int32_t  offset = mref->getOffset(*comp);
+         int64_t  offset = mref->getOffset(*comp);
          if (mref->hasDelayedOffset() || offset!=0 || comp->getOption(TR_AOT))
             {
             resultReg = sym->isLocalObject() ? cg->allocateCollectedReferenceRegister() : cg->allocateRegister();

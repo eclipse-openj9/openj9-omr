@@ -55,14 +55,14 @@ class MemoryReference {
 public:
     TR::RealRegister::RegNum _baseReg;
     TR::RealRegister::RegNum _indexReg;
-    int32_t _displacement;
+    int64_t _displacement;
 
     MemoryReference() : _baseReg(TR::RealRegister::NoReg), _indexReg(TR::RealRegister::NoReg), _displacement(0) {}
 
     MemoryReference(TR::RealRegister::RegNum baseReg, TR::RealRegister::RegNum indexReg)
         : _baseReg(baseReg), _indexReg(indexReg), _displacement(0) {}
 
-    MemoryReference(TR::RealRegister::RegNum baseReg, int32_t displacement)
+    MemoryReference(TR::RealRegister::RegNum baseReg, int64_t displacement)
         : _baseReg(baseReg), _indexReg(TR::RealRegister::NoReg), _displacement(displacement) {}
 
     bool isIndexForm() const {
@@ -77,7 +77,7 @@ public:
         return _indexReg;
     }
 
-    int32_t displacement() const {
+    int64_t displacement() const {
         return _displacement;
     }
 
@@ -93,11 +93,11 @@ public:
                 cg
             );
         } else {
-            return new (cg->trHeapMemory()) TR::MemoryReference(
+            return TR::MemoryReference::withDisplacement(
+                cg,
                 cg->machine()->getRealRegister(_baseReg),
                 _displacement,
-                0,
-                cg
+                0
             );
         }
     }

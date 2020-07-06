@@ -1236,7 +1236,7 @@ class PPCMemInstruction : public TR::Instruction
 
    virtual TR::Register *getMemoryBase()    {return getMemoryReference()->getBaseRegister();}
    virtual TR::Register *getMemoryIndex()   {return getMemoryReference()->getIndexRegister();}
-   virtual int32_t      getOffset()        {return getMemoryReference()->getOffset(*TR::comp());}
+   virtual int64_t      getOffset()        {return getMemoryReference()->getOffset(*TR::comp());}
 
    virtual void fillBinaryEncodingFields(uint32_t *cursor);
    virtual TR::Instruction *expandInstruction();
@@ -1384,7 +1384,7 @@ class PPCTrg1MemInstruction : public PPCTrg1Instruction
 
    virtual TR::Register *getMemoryBase()    {return getMemoryReference()->getBaseRegister();}
    virtual TR::Register *getMemoryIndex()   {return getMemoryReference()->getIndexRegister();}
-   virtual int32_t      getOffset()        {return getMemoryReference()->getOffset(*TR::comp());}
+   virtual int64_t      getOffset()        {return getMemoryReference()->getOffset(*TR::comp());}
 
    bool encodeMutexHint();
    bool haveHint() {return getHint() != PPCOpProp_NoHint;};

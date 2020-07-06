@@ -9592,17 +9592,17 @@
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::lxv, */
-   /* .name        =    "lxv", */
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::lxv,
+   /* .name        = */ "lxv",
    /* .description =    "Load VSX vector", */
-   /* .prefix      =    0x00000000, */
-   /* .opcode      =    0xF4000001, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
-   /* .properties  =    PPCOpProp_IsLoad | */
-   /*                   PPCOpProp_IsVSX, */
-   /* }, */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0xF4000001,
+   /* .format      = */ FORMAT_XT28_DQ_RA,
+   /* .minimumALS  = */ TR_Processor::TR_PPCp9,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_IsVSX,
+   },
 
    /* { */
    /* .mnemonic    =    OMR::InstOpCode::lxvb16x, */
@@ -9839,17 +9839,17 @@
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::stxv, */
-   /* .name        =    "stxv", */
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::stxv,
+   /* .name        = */ "stxv",
    /* .description =    "Store VSX vector", */
-   /* .prefix      =    0x00000000, */
-   /* .opcode      =    0xF4000005, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    TR_Processor::TR_PPCp9, */
-   /* .properties  =    PPCOpProp_IsStore | */
-   /*                   PPCOpProp_IsVSX, */
-   /* }, */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0xF4000005,
+   /* .format      = */ FORMAT_XS28_DQ_RA,
+   /* .minimumALS  = */ TR_Processor::TR_PPCp9,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_IsVSX,
+   },
 
    /* { */
    /* .mnemonic    =    OMR::InstOpCode::stxvb16x, */

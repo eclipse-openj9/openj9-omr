@@ -828,7 +828,7 @@
 // lxssp,            // Load VSX scalar single
 // lxsibzx,          // Load VSX scalar as integer byte & zero indexed
 // lxsihzx,          // Load VSX scalar as integer Hword & zero indexed
-// lxv,              // Load VSX vector
+   lxv,              // Load VSX vector
 // lxvb16x,          // Load VSX vector byte*16 indexed
 // lxvh8x,           // Load VSX vector Hword*8 indexed
 // lxvll,            // Load VSX vector left-justified with length
@@ -848,7 +848,7 @@
    xscmpudp,         // VSX Scalar Compare Unordered Double-Precision
 // stxsibx,          // Store VSX scalar as integer byte indexed
 // stxsihx,          // Store VSX scalar as integer Hword indexed
-// stxv,             // Store VSX vector
+   stxv,             // Store VSX vector
 // stxvb16x,         // Store VSX vector byte*16 indexed
 // stxvh8x,          // Store VSX vector Hword*8 indexed
 // stxvll,           // Store VSX vector left-justified with length

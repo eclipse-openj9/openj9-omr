@@ -174,6 +174,23 @@ static void fillFieldXT(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
 
 /**
  * Fills in the XT field of a binary-encoded instruction with the provided VSX register, placing
+ * the uppermost bit in bit 28 of the instruction word:
+ *
+ * +------+----------+---------------------------------+----+-----+
+ * |      | XT       |                                 | XT |     |
+ * | 0    | 6        | 11                              | 28 | 29  |
+ * +------+----------+---------------------------------+----+-----+
+ */
+static void fillFieldXT28(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XT field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, canUseAsVsxRegister(reg), "Attempt to fill XT field with %s, which is not a VSR", reg->getRegisterName(instr->cg()->comp()));
+   *cursor |= ((reg->getRegisterNumber() - TR::RealRegister::vsr0) & 0x1f) << TR::RealRegister::pos_RT;
+   *cursor |= ((reg->getRegisterNumber() - TR::RealRegister::vsr0) & 0x20) >> 2;
+   }
+
+/**
+ * Fills in the XT field of a binary-encoded instruction with the provided VSX register, placing
  * the uppermost bit in bit 5 of the instruction word:
  *
  * +-----+-----------+--------------------------------------------+
@@ -271,6 +288,23 @@ static void fillFieldXS(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XS field with null register");
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, canUseAsVsxRegister(reg), "Attempt to fill XS field with %s, which is not a VSR", reg->getRegisterName(instr->cg()->comp()));
    reg->setRegisterFieldXS(cursor);
+   }
+
+/**
+ * Fills in the XS field of a binary-encoded instruction with the provided VSX register, placing
+ * the uppermost bit in bit 28 of the instruction word:
+ *
+ * +------+----------+---------------------------------+----+-----+
+ * |      | XS       |                                 | XS |     |
+ * | 0    | 6        | 11                              | 28 | 29  |
+ * +------+----------+---------------------------------+----+-----+
+ */
+static void fillFieldXS28(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill XS field with null register");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, canUseAsVsxRegister(reg), "Attempt to fill XS field with %s, which is not a VSR", reg->getRegisterName(instr->cg()->comp()));
+   *cursor |= ((reg->getRegisterNumber() - TR::RealRegister::vsr0) & 0x1f) << TR::RealRegister::pos_RT;
+   *cursor |= ((reg->getRegisterNumber() - TR::RealRegister::vsr0) & 0x20) >> 2;
    }
 
 /**
@@ -740,6 +774,24 @@ static void fillFieldDS(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0xffffu), "0x%x is out-of-range for DS field", val);
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3u) == 0, "0x%x is misaligned for DS field", val);
    *cursor |= val & 0xfffcu;
+   }
+
+/**
+ * Fills in the 16-bit DQ field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +----------------------------+----------------------+----------+
+ * |                            | DQ                   |          |
+ * | 0                          | 16                   | 28       |
+ * +----------------------------+----------------------+----------+
+ *
+ * Note that the provided immediate value is expected to be a 16 byte aligned offset and only the
+ * upper 12 bits are used to fill in the DQ field.
+ */
+static void fillFieldDQ(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, isValidInSignExtendedField(val, 0xffffu), "0x%x is out-of-range for DQ field", val);
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xfu) == 0, "0x%x is misaligned for DQ field", val);
+   *cursor |= val & 0xfff0u;
    }
 
 /**
@@ -1580,6 +1632,12 @@ void TR::PPCTrg1Src1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldDS(self(), cursor, imm);
          break;
 
+      case FORMAT_XT28_DQ_RA:
+         fillFieldXT28(self(), cursor, trg);
+         fillFieldRA(self(), cursor, src);
+         fillFieldDQ(self(), cursor, imm);
+         break;
+
       case FORMAT_RT_D34_RA_R:
          fillFieldRT(self(), cursor + 1, trg);
          fillFieldRA(self(), cursor + 1, src);
@@ -2089,6 +2147,13 @@ void fillMemoryReferenceDSRA(TR::Instruction *instr, uint32_t *cursor, TR::Memor
    fillFieldRA(instr, cursor, toRealBaseRegister(instr, mr->getBaseRegister()));
    }
 
+void fillMemoryReferenceDQRA(TR::Instruction *instr, uint32_t *cursor, TR::MemoryReference *mr)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, !mr->getIndexRegister(), "Cannot use index-form MemoryReference with non-index-form instruction");
+   fillFieldDQ(instr, cursor, mr->getOffset());
+   fillFieldRA(instr, cursor, toRealBaseRegister(instr, mr->getBaseRegister()));
+   }
+
 void fillMemoryReferenceD34RAR(TR::Instruction *instr, uint32_t *cursor, TR::MemoryReference *mr)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, !mr->getIndexRegister(), "Cannot use index-form MemoryReference with non-index-form instruction");
@@ -2125,6 +2190,11 @@ void TR::PPCMemSrc1Instruction::fillBinaryEncodingFields(uint32_t *cursor)
       case FORMAT_FRS_D16_RA:
          fillFieldFRS(self(), cursor, src);
          fillMemoryReferenceD16RA(self(), cursor, memRef);
+         break;
+
+      case FORMAT_XS28_DQ_RA:
+         fillFieldXS28(self(), cursor, src);
+         fillMemoryReferenceDQRA(self(), cursor, memRef);
          break;
 
       case FORMAT_RS_D34_RA_R:
@@ -2219,6 +2289,11 @@ void TR::PPCTrg1MemInstruction::fillBinaryEncodingFields(uint32_t *cursor)
       case FORMAT_FRT_D16_RA:
          fillFieldFRT(self(), cursor, trg);
          fillMemoryReferenceD16RA(self(), cursor, memRef);
+         break;
+
+      case FORMAT_XT28_DQ_RA:
+         fillFieldXT28(self(), cursor, trg);
+         fillMemoryReferenceDQRA(self(), cursor, memRef);
          break;
 
       case FORMAT_RT_D34_RA_R:

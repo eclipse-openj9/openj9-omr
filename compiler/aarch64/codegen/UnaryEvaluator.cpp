@@ -212,12 +212,38 @@ TR::Register *OMR::ARM64::TreeEvaluator::i2lEvaluator(TR::Node *node, TR::CodeGe
 
 TR::Register *OMR::ARM64::TreeEvaluator::bu2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return extendToIntOrLongHelper(node, TR::InstOpCode::ubfmw, 7, cg);
+   TR::Node *child = node->getFirstChild();
+
+   if ((child->getOpCodeValue() == TR::bload || child->getOpCodeValue() == TR::bloadi)
+       && child->getRegister() == NULL)
+      {
+      // Use unsigned load
+      TR::Register *trgReg = commonLoadEvaluator(child, TR::InstOpCode::ldrbimm, cg);
+      node->setRegister(trgReg);
+      return trgReg;
+      }
+   else
+      {
+      return extendToIntOrLongHelper(node, TR::InstOpCode::ubfmw, 7, cg);
+      }
    }
 
 TR::Register *OMR::ARM64::TreeEvaluator::su2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return extendToIntOrLongHelper(node, TR::InstOpCode::ubfmw, 15, cg);
+   TR::Node *child = node->getFirstChild();
+
+   if ((child->getOpCodeValue() == TR::sload || child->getOpCodeValue() == TR::sloadi)
+       && child->getRegister() == NULL)
+      {
+      // Use unsigned load
+      TR::Register *trgReg = commonLoadEvaluator(child, TR::InstOpCode::ldrhimm, cg);
+      node->setRegister(trgReg);
+      return trgReg;
+      }
+   else
+      {
+      return extendToIntOrLongHelper(node, TR::InstOpCode::ubfmw, 15, cg);
+      }
    }
 
 TR::Register *OMR::ARM64::TreeEvaluator::bu2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)

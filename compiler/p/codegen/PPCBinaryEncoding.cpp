@@ -1403,6 +1403,36 @@ void TR::PPCSrc1Instruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldFXM1(self(), cursor, imm);
          break;
 
+      case FORMAT_RS_D34_RA_R:
+         fillFieldRS(self(), cursor + 1, src);
+         fillFieldD34(self(), cursor, static_cast<int64_t>(static_cast<int32_t>(imm)));
+         fillFieldR(self(), cursor, 1);
+         break;
+
+      case FORMAT_RSP_D34_RA_R:
+         fillFieldRSP(self(), cursor + 1, src);
+         fillFieldD34(self(), cursor, static_cast<int64_t>(static_cast<int32_t>(imm)));
+         fillFieldR(self(), cursor, 1);
+         break;
+
+      case FORMAT_FRS_D34_RA_R:
+         fillFieldFRS(self(), cursor + 1, src);
+         fillFieldD34(self(), cursor, static_cast<int64_t>(static_cast<int32_t>(imm)));
+         fillFieldR(self(), cursor, 1);
+         break;
+
+      case FORMAT_VRS_D34_RA_R:
+         fillFieldVRS(self(), cursor + 1, src);
+         fillFieldD34(self(), cursor, static_cast<int64_t>(static_cast<int32_t>(imm)));
+         fillFieldR(self(), cursor, 1);
+         break;
+
+      case FORMAT_XS5_D34_RA_R:
+         fillFieldXS5(self(), cursor + 1, src);
+         fillFieldD34(self(), cursor, static_cast<int64_t>(static_cast<int32_t>(imm)));
+         fillFieldR(self(), cursor, 1);
+         break;
+
       default:
          TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCSrc1Instruction", getOpCode().getFormat());
       }
@@ -1531,6 +1561,36 @@ TR::PPCTrg1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
       case FORMAT_VRT_SIM:
          fillFieldVRT(self(), cursor, trg);
          fillFieldSIM(self(), cursor, imm);
+         break;
+
+      case FORMAT_RT_D34_RA_R:
+         fillFieldRT(self(), cursor + 1, trg);
+         fillFieldD34(self(), cursor, static_cast<int64_t>(static_cast<int32_t>(imm)));
+         fillFieldR(self(), cursor, 1);
+         break;
+
+      case FORMAT_RTP_D34_RA_R:
+         fillFieldRTP(self(), cursor + 1, trg);
+         fillFieldD34(self(), cursor, static_cast<int64_t>(static_cast<int32_t>(imm)));
+         fillFieldR(self(), cursor, 1);
+         break;
+
+      case FORMAT_FRT_D34_RA_R:
+         fillFieldFRT(self(), cursor + 1, trg);
+         fillFieldD34(self(), cursor, static_cast<int64_t>(static_cast<int32_t>(imm)));
+         fillFieldR(self(), cursor, 1);
+         break;
+
+      case FORMAT_VRT_D34_RA_R:
+         fillFieldVRT(self(), cursor + 1, trg);
+         fillFieldD34(self(), cursor, static_cast<int64_t>(static_cast<int32_t>(imm)));
+         fillFieldR(self(), cursor, 1);
+         break;
+
+      case FORMAT_XT5_D34_RA_R:
+         fillFieldXT5(self(), cursor + 1, trg);
+         fillFieldD34(self(), cursor, static_cast<int64_t>(static_cast<int32_t>(imm)));
+         fillFieldR(self(), cursor, 1);
          break;
 
       default:

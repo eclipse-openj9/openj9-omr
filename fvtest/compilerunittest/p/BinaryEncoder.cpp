@@ -898,6 +898,48 @@ TEST_P(PPCTrg1MemPCRelativeEncodingTest, encodePrefixCrossingBoundaryWithRelocat
     );
 }
 
+TEST_P(PPCTrg1MemPCRelativeEncodingTest, encodeFlat) {
+    int64_t displacement = std::get<2>(GetParam()) + std::get<3>(GetParam());
+
+    // PPCTrg1ImmInstruction currently only supports 32-bit immediates
+    if (displacement < -0x80000000 || displacement > 0x7fffffff)
+        return;
+
+    auto instr = generateTrg1ImmInstruction(
+        cg(),
+        std::get<0>(GetParam()),
+        fakeNode,
+        cg()->machine()->getRealRegister(std::get<1>(GetParam())),
+        displacement
+    );
+
+    ASSERT_EQ(
+        std::get<4>(GetParam()),
+        encodeInstruction(instr, 0)
+    );
+}
+
+TEST_P(PPCTrg1MemPCRelativeEncodingTest, encodeFlatPrefixCrossingBoundary) {
+    int64_t displacement = std::get<2>(GetParam()) + std::get<3>(GetParam());
+
+    // PPCTrg1ImmInstruction currently only supports 32-bit immediates
+    if (displacement < -0x80000000 || displacement > 0x7fffffff)
+        return;
+
+    auto instr = generateTrg1ImmInstruction(
+        cg(),
+        std::get<0>(GetParam()),
+        fakeNode,
+        cg()->machine()->getRealRegister(std::get<1>(GetParam())),
+        displacement
+    );
+
+    ASSERT_EQ(
+        std::get<4>(GetParam()).prepend(TR::InstOpCode::metadata[TR::InstOpCode::nop].opcode),
+        encodeInstruction(instr, 60)
+    );
+}
+
 class PPCMemSrc1EncodingTest : public PowerBinaryEncoderTest, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, MemoryReference, TR::RealRegister::RegNum, BinaryInstruction, bool>> {};
 
 TEST_P(PPCMemSrc1EncodingTest, encode) {
@@ -1028,6 +1070,48 @@ TEST_P(PPCMemSrc1PCRelativeEncodingTest, encodePrefixCrossingBoundaryWithRelocat
     ASSERT_EQ(
         std::get<4>(GetParam()).prepend(TR::InstOpCode::metadata[TR::InstOpCode::nop].opcode),
         getEncodedInstruction(size, 60)
+    );
+}
+
+TEST_P(PPCMemSrc1PCRelativeEncodingTest, encodeFlat) {
+    int64_t displacement = std::get<2>(GetParam()) + std::get<3>(GetParam());
+
+    // PPCSrc1Instruction currently only supports 32-bit immediates
+    if (displacement < -0x80000000 || displacement > 0x7fffffff)
+        return;
+
+    auto instr = generateSrc1Instruction(
+        cg(),
+        std::get<0>(GetParam()),
+        fakeNode,
+        cg()->machine()->getRealRegister(std::get<1>(GetParam())),
+        displacement
+    );
+
+    ASSERT_EQ(
+        std::get<4>(GetParam()),
+        encodeInstruction(instr, 0)
+    );
+}
+
+TEST_P(PPCMemSrc1PCRelativeEncodingTest, encodeFlatPrefixCrossingBoundary) {
+    int64_t displacement = std::get<2>(GetParam()) + std::get<3>(GetParam());
+
+    // PPCSrc1Instruction currently only supports 32-bit immediates
+    if (displacement < -0x80000000 || displacement > 0x7fffffff)
+        return;
+
+    auto instr = generateTrg1ImmInstruction(
+        cg(),
+        std::get<0>(GetParam()),
+        fakeNode,
+        cg()->machine()->getRealRegister(std::get<1>(GetParam())),
+        displacement
+    );
+
+    ASSERT_EQ(
+        std::get<4>(GetParam()).prepend(TR::InstOpCode::metadata[TR::InstOpCode::nop].opcode),
+        encodeInstruction(instr, 60)
     );
 }
 

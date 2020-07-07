@@ -1022,91 +1022,141 @@ void OMR::Power::MemoryReference::assignRegisters(TR::Instruction *currentInstru
 
 void OMR::Power::MemoryReference::mapOpCode(TR::Instruction *currentInstruction)
    {
-   TR::InstOpCode::Mnemonic op = currentInstruction->getOpCodeValue();
-   TR::Register  *index = self()->getIndexRegister();
-
-   if (index == NULL && !self()->isUsingDelayedIndexedForm())
-      return;
-
-   switch (op)
+   if (self()->getIndexRegister() != NULL || self()->isUsingDelayedIndexedForm())
       {
-      case TR::InstOpCode::lbz:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lbzx);
-         break;
-      case TR::InstOpCode::ld:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::ldx);
-         break;
-      case TR::InstOpCode::lfd:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lfdx);
-         break;
-      case TR::InstOpCode::lfdu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lfdux);
-         break;
-      case TR::InstOpCode::lfs:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lfsx);
-         break;
-      case TR::InstOpCode::lfsu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lfsux);
-         break;
-      case TR::InstOpCode::lha:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lhax);
-         break;
-      case TR::InstOpCode::lhau:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lhaux);
-         break;
-      case TR::InstOpCode::lhz:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lhzx);
-         break;
-      case TR::InstOpCode::lhzu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lhzux);
-         break;
-      case TR::InstOpCode::lwa:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lwax);
-         break;
-      case TR::InstOpCode::lwz:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lwzx);
-         break;
-      case TR::InstOpCode::lwzu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lwzux);
-         break;
-      case TR::InstOpCode::stb:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stbx);
-         break;
-      case TR::InstOpCode::stbu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stbux);
-         break;
-      case TR::InstOpCode::std:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stdx);
-         break;
-      case TR::InstOpCode::stdu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stdux);
-         break;
-      case TR::InstOpCode::stfd:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stfdx);
-         break;
-      case TR::InstOpCode::stfdu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stfdux);
-         break;
-      case TR::InstOpCode::stfs:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stfsx);
-         break;
-      case TR::InstOpCode::stfsu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stfsux);
-         break;
-      case TR::InstOpCode::sth:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::sthx);
-         break;
-      case TR::InstOpCode::sthu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::sthux);
-         break;
-      case TR::InstOpCode::stw:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stwx);
-         break;
-      case TR::InstOpCode::stwu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stwux);
-         break;
-      default:
-         break;
+      switch (currentInstruction->getOpCodeValue())
+         {
+         case TR::InstOpCode::lbz:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lbzx);
+            break;
+         case TR::InstOpCode::ld:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::ldx);
+            break;
+         case TR::InstOpCode::lfd:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lfdx);
+            break;
+         case TR::InstOpCode::lfdu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lfdux);
+            break;
+         case TR::InstOpCode::lfs:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lfsx);
+            break;
+         case TR::InstOpCode::lfsu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lfsux);
+            break;
+         case TR::InstOpCode::lha:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lhax);
+            break;
+         case TR::InstOpCode::lhau:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lhaux);
+            break;
+         case TR::InstOpCode::lhz:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lhzx);
+            break;
+         case TR::InstOpCode::lhzu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lhzux);
+            break;
+         case TR::InstOpCode::lwa:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lwax);
+            break;
+         case TR::InstOpCode::lwz:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lwzx);
+            break;
+         case TR::InstOpCode::lwzu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lwzux);
+            break;
+         case TR::InstOpCode::stb:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stbx);
+            break;
+         case TR::InstOpCode::stbu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stbux);
+            break;
+         case TR::InstOpCode::std:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stdx);
+            break;
+         case TR::InstOpCode::stdu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stdux);
+            break;
+         case TR::InstOpCode::stfd:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stfdx);
+            break;
+         case TR::InstOpCode::stfdu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stfdux);
+            break;
+         case TR::InstOpCode::stfs:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stfsx);
+            break;
+         case TR::InstOpCode::stfsu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stfsux);
+            break;
+         case TR::InstOpCode::sth:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::sthx);
+            break;
+         case TR::InstOpCode::sthu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::sthux);
+            break;
+         case TR::InstOpCode::stw:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stwx);
+            break;
+         case TR::InstOpCode::stwu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stwux);
+            break;
+         default:
+            break;
+         }
+      }
+   else if ((self()->getOffset() < LOWER_IMMED || self()->getOffset() > UPPER_IMMED || self()->getLabel()) && currentInstruction->cg()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
+      {
+      switch (currentInstruction->getOpCodeValue())
+         {
+         case TR::InstOpCode::addi:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::paddi);
+            break;
+         case TR::InstOpCode::lbz:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::plbz);
+            break;
+         case TR::InstOpCode::ld:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::pld);
+            break;
+         case TR::InstOpCode::lfd:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::plfd);
+            break;
+         case TR::InstOpCode::lfs:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::plfs);
+            break;
+         case TR::InstOpCode::lha:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::plha);
+            break;
+         case TR::InstOpCode::lhz:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::plhz);
+            break;
+         case TR::InstOpCode::lwa:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::plwa);
+            break;
+         case TR::InstOpCode::lwz:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::plwz);
+            break;
+         case TR::InstOpCode::stb:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::pstb);
+            break;
+         case TR::InstOpCode::std:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::pstd);
+            break;
+         case TR::InstOpCode::stfd:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::pstfd);
+            break;
+         case TR::InstOpCode::stfs:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::pstfs);
+            break;
+         case TR::InstOpCode::sth:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::psth);
+            break;
+         case TR::InstOpCode::stw:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::pstw);
+            break;
+         default:
+            break;
+         }
       }
    }
 
@@ -1227,15 +1277,14 @@ TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction 
    // a memory instruction.
    TR_ASSERT_FATAL(currentInstruction->getPrev(), "The first instruction cannot be a memory instruction");
 
-   if (self()->getLabel())
-      return currentInstruction;
-
+   self()->setOffset(self()->getOffset(*cg->comp()));
+   self()->setDelayedOffsetDone();
    self()->mapOpCode(currentInstruction);
 
    if (self()->getUnresolvedSnippet() != NULL)
       return self()->expandForUnresolvedSnippet(currentInstruction, cg);
 
-   if (!self()->getBaseRegister())
+   if (!self()->getBaseRegister() && !self()->getLabel())
       {
       if (self()->getModBase())
          self()->setBaseRegister(self()->getModBase());
@@ -1259,10 +1308,7 @@ TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction 
    TR::RealRegister *base = toRealRegister(self()->getBaseRegister());
    TR::RealRegister *index = toRealRegister(self()->getIndexRegister());
    TR::RealRegister *data = toRealRegister(currentInstruction->getMemoryDataRegister());
-   int32_t displacement = self()->getOffset(*comp);
-
-   self()->setOffset(displacement);
-   self()->setDelayedOffsetDone();
+   int32_t displacement = self()->getOffset();
 
    TR_ASSERT_FATAL_WITH_INSTRUCTION(
       currentInstruction,

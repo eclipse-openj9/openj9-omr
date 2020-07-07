@@ -667,6 +667,15 @@ FORMAT_FRT_D16_RA,
 // +------+----------+----------+---------------------------+-----+
 FORMAT_RT_DS_RA,
 
+// Format for instructions with an XT field encoding the target register, and RA and DQ fields
+// encoding an offset-based memory reference:
+//
+// +------+----------+----------+----------------------+----+-----+
+// |      | XT       | RA       | DQ                   | XT |     |
+// | 0    | 6        | 11       | 16                   | 28 | 29  |
+// +------+----------+----------+----------------------+----+-----+
+FORMAT_XT28_DQ_RA,
+
 // Format for instructions with an RS field encoding the source register, and RA and D fields
 // encoding an offset-based memory reference:
 //
@@ -693,6 +702,15 @@ FORMAT_FRS_D16_RA,
 // | 0    | 6        | 11       | 16                        | 30  |
 // +------+----------+----------+---------------------------+-----+
 FORMAT_RS_DS_RA,
+
+// Format for instructions with an XS field encoding the source register, and RA and DQ fields
+// encoding an offset-based memory reference:
+//
+// +------+----------+----------+----------------------+----+-----+
+// |      | XS       | RA       | DQ                   | XS |     |
+// | 0    | 6        | 11       | 16                   | 28 | 29  |
+// +------+----------+----------+----------------------+----+-----+
+FORMAT_XS28_DQ_RA,
 
 // Format for instructions with an RS field encoding the source register, and RA and RB fields
 // encoding an indexed memory reference:

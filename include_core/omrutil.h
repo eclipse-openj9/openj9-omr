@@ -42,6 +42,13 @@
 extern "C" {
 #endif
 
+#define OPTION_OK 0
+#define OPTION_MALFORMED -1
+#define OPTION_OVERFLOW -2
+#define OPTION_ERROR -3
+#define OPTION_BUFFER_OVERFLOW -4
+#define OPTION_OUTOFRANGE -5
+
 #if defined(J9ZOS390)
 #pragma map(getdsa, "GETDSA")
 /* ----------------- omrgetdsa.s ---------------- */
@@ -480,6 +487,127 @@ createThreadWithCategory(omrthread_t *handle, uintptr_t stacksize, uintptr_t pri
  */
 intptr_t
 attachThreadWithCategory(omrthread_t *handle, uint32_t category);
+
+/**
+ * @brief
+ * @param portLibrary
+ * @param input
+ * @return char *
+ */
+char * omr_trim(OMRPortLibrary *portLibrary, char * input);
+
+/**
+* @brief
+* @param portLibrary
+* @param module
+* @param *scan_start
+* @return void
+*/
+void omr_scan_failed(OMRPortLibrary *portLibrary, const char* module, const char *scan_start);
+
+/**
+* @brief
+* @param portLibrary
+* @param module
+* @param *scan_start
+* @return void
+*/
+void omr_scan_failed_incompatible(OMRPortLibrary *portLibrary, char* module, char *scan_start);
+
+/**
+* @brief
+* @param portLibrary
+* @param module
+* @param *scan_start
+* @return void
+*/
+void omr_scan_failed_unsupported(OMRPortLibrary *portLibrary, char* module, char *scan_start);
+
+/**
+* @brief
+* @param **scan_start
+* @param result
+* @return uintptr_t
+*/
+uintptr_t omr_scan_hex(char **scan_start, uintptr_t* result);
+
+/**
+* @brief
+* @param **scan_start
+* @param uppercaseFalg
+* @param result
+* @return uintptr_t
+*/
+uintptr_t omr_scan_hex_caseflag(char **scan_start, BOOLEAN uppercaseAllowed, uintptr_t* result);
+
+/**
+* @brief
+* @param **scan_start
+* @param *result
+* @return uintptr_t
+*/
+uintptr_t omr_scan_hex_u64(char **scan_start, uint64_t* result);
+
+/**
+* @brief
+* @param **scan_start
+* @param *result
+* @return uintptr_t
+*/
+uintptr_t omr_scan_hex_caseflag_u64(char **scan_start, BOOLEAN uppercaseAllowed, uint64_t* result);
+
+/**
+* @brief
+* @param **scan_start
+* @param *result
+* @return uintptr_t
+*/
+uintptr_t omr_scan_idata(char **scan_start, intptr_t *result);
+
+/**
+* @brief
+* @param portLibrary
+* @param **scan_start
+* @param delimiter
+* @return char *
+*/
+char *omr_scan_to_delim(OMRPortLibrary *portLibrary, char **scan_start, char delimiter);
+
+/** 
+ * Scan the next double number off of the argument string.
+ * Store the scanned double value in *result
+ *
+ * @param[in/out] scan_start pointer to char * representing the string to be scanned,
+                  on success, *scan_start is updated to point to the character after the last character converted to double
+ * @param[out] result pointer to double, on success contains the scanned double value
+ * @return on success returns OPTION_OK, on overflow returns OPTION_OVERFLOW,
+ *         if no conversion is performed return OPTION_MALFORMED
+ */
+uintptr_t omr_scan_double(char **scan_start, double *result);
+
+/**
+* @brief
+* @param **scan_start
+* @param result
+* @return uintptr_t
+*/
+uintptr_t omr_scan_udata(char **scan_start, uintptr_t* result);
+
+/**
+* @brief
+* @param **scan_start
+* @param result
+* @return uintptr_t
+*/
+uintptr_t omr_scan_u64(char **scan_start, uint64_t* result);
+
+/**
+* @brief
+* @param **scan_start
+* @param result
+* @return uint32_t
+*/
+uintptr_t omr_scan_u32(char **scan_start, uint32_t* result);
 
 #ifdef __cplusplus
 }

@@ -375,7 +375,8 @@ OMR::Power::CodeGenerator::generateScratchRegisterManager(int32_t capacity)
 void
 OMR::Power::CodeGenerator::ppcCGOnClassUnloading(void *loaderPtr)
    {
-   TR_PPCTableOfConstants::onClassUnloading(loaderPtr);
+   if (!TR::Options::getCmdLineOptions()->getOption(TR_DisableTOC))
+      TR_PPCTableOfConstants::onClassUnloading(loaderPtr);
    }
 
 TR_RuntimeHelper

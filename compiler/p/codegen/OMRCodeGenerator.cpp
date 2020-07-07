@@ -1641,16 +1641,6 @@ OMR::Power::CodeGenerator::calculateRegisterPressure()
    return NULL;
    }
 
-
-//FIXME: should this be common code in CodeGen?
-void OMR::Power::CodeGenerator::deleteInst(TR::Instruction* old)
-   {
-   TR::Instruction* prv = old->getPrev();
-   TR::Instruction* nxt = old->getNext();
-   prv->setNext(nxt);
-   nxt->setPrev(prv);
-   }
-
 TR::Linkage *
 OMR::Power::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    {

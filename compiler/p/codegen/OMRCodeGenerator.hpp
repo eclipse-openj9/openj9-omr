@@ -190,7 +190,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void doPeephole();
    void expandInstructions();
    virtual TR_RegisterPressureSummary *calculateRegisterPressure();
-   void deleteInst(TR::Instruction* old);
    TR::Instruction *generateNop(TR::Node *n, TR::Instruction *preced = 0, TR_NOPKind nopKind=TR_NOPStandard);
    TR::Instruction *generateGroupEndingNop(TR::Node *node , TR::Instruction *preced = 0);
    TR::Instruction *generateProbeNop(TR::Node *node , TR::Instruction *preced = 0);

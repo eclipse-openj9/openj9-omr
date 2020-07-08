@@ -1667,16 +1667,12 @@ OMR::Power::CodeGenerator::expandInstructions()
    _binaryEncodingData.estimate = 0;
    self()->generateBinaryEncodingPrologue(&_binaryEncodingData);
 
-   // This instruction needs to be generated here for the time being, since OpenJ9 directly
-   // overrides the generateBinaryEncodingPrologue method. Additionally, this instruction *must*
-   // be created using the constructor, since this may be the first instruction and the helpers
-   // don't handle that case properly.
-   new (self()->trHeapMemory()) TR::PPCLabelInstruction(
+   generateLabelInstruction(
+      self(),
       TR::InstOpCode::label,
       self()->comp()->getStartTree()->getNode(),
       self()->getStartPCLabel(),
-      _binaryEncodingData.preProcInstruction->getPrev(),
-      self()
+      _binaryEncodingData.preProcInstruction
    );
 
    for (TR::Instruction *instr = self()->getFirstInstruction(); instr; instr = instr->getNext())

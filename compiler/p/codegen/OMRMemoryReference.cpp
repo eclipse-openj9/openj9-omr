@@ -1455,6 +1455,16 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
       return;
       }
 
+   TR::Node *topNode = cg->getCurrentEvaluationTreeTop()->getNode();
+   TR::Node *nodeForSymbol = node ? node : topNode;
+
+   if (symbol->isStartPC())
+      {
+      TR::Register *reg = _baseRegister = cg->allocateRegister();
+      cg->fixedLoadLabelAddressIntoReg(nodeForSymbol, reg, cg->getStartPCLabel());
+      return;
+      }
+
    bool useUnresSnippetToAvoidRelo = cg->comp()->compileRelocatableCode();
    if (useUnresSnippetToAvoidRelo)
       {
@@ -1472,14 +1482,8 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
 
    if (cg->comp()->target().is64Bit())
       {
-      TR::Node *topNode = cg->getCurrentEvaluationTreeTop()->getNode();
       TR::UnresolvedDataSnippet *snippet = NULL;
       int32_t tocIndex = symbol->getStaticSymbol()->getTOCIndex();
- 
-      /* don't want to trash node prematurely by the code for handling other symbols */
-      TR::Node *nodeForSymbol = node;
-      if (!nodeForSymbol)
-         nodeForSymbol = cg->getCurrentEvaluationTreeTop()->getNode();
 
       if (symbol->isDebugCounter() && cg->comp()->compileRelocatableCode())
          {
@@ -1505,13 +1509,6 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_RamMethodSequence);
          return;
          }
-      else if (symbol->isStartPC())
-         {
-         // use inSnippet, as the relocation mechanism is already set up there
-         TR::Register *reg = _baseRegister = cg->allocateRegister();
-         loadAddressConstantInSnippet(cg, nodeForSymbol, 0, reg, NULL, TR::InstOpCode::addi, false, NULL);
-         return;
-         }
       else if (isStaticField && !ref->isUnresolved() && cg->needRelocationsForStatics())
          {
          TR::Register *reg = _baseRegister = cg->allocateRegister();
@@ -1531,9 +1528,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
 
       // TODO: find a better default uninitialized value --- 0x80000000
       //       Deciding particular static references through TOC or not
-      // startPC symbols should not be placed in the TOC as their value is not known at this time
-      // and they are different from method to method
-      if (tocIndex == 0 && !symbol->isStartPC())
+      if (tocIndex == 0)
          {
          tocIndex = TR_PPCTableOfConstants::lookUp(ref, cg);
          symbol->getStaticSymbol()->setTOCIndex(tocIndex);
@@ -1573,10 +1568,6 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
       }
    else
       {
-      // don't want to trash node prematurely by the code for handling other symbols */
-      TR::Node *nodeForSymbol = node;
-      if (!nodeForSymbol)
-         nodeForSymbol = cg->getCurrentEvaluationTreeTop()->getNode();
       bool refIsUnresolved = ref->isUnresolved();
 
       if ((refIsUnresolved || comp->compileRelocatableCode()) && symbol->isDebugCounter())
@@ -1603,13 +1594,6 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          loadAddressConstant(cg, cg->needRelocationsForCurrentMethodPC(), nodeForSymbol, 0, reg, NULL, false, TR_RamMethodSequence);
          return;
          }
-      else if (symbol->isStartPC() && (ref->isUnresolved() || cg->needRelocationsForCurrentMethodPC()))
-         {
-         // use inSnippet, as the relocation mechanism is already set up there
-         TR::Register *reg = _baseRegister = cg->allocateRegister();
-         loadAddressConstantInSnippet(cg, nodeForSymbol, 0, reg, NULL, TR::InstOpCode::addi, false, NULL);
-         return;
-         }
       else if (isStaticField && !refIsUnresolved && cg->needRelocationsForStatics())
          {
          TR::Register *reg = _baseRegister = cg->allocateRegister();
@@ -1633,12 +1617,6 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
                                   (intptr_t)symbol->getMethodSymbol()->getMethodAddress();
 
       if (!node) node = cg->getCurrentEvaluationTreeTop()->getNode();
-
-      if (symbol->isStartPC())
-         {
-         loadAddressConstantInSnippet(cg, node, 0, reg, NULL, TR::InstOpCode::addi, false, NULL);
-         return;
-         }
 
       self()->setBaseModifiable();
       rel1 = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, reg, (int16_t)cg->hiValue(addr));

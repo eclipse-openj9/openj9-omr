@@ -1,19 +1,19 @@
 ###############################################################################
-# Copyright (c) 2015, 2019 IBM Corp. and others
-# 
+# Copyright (c) 2015, 2020 IBM Corp. and others
+#
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
 # distribution and is available at https://www.eclipse.org/legal/epl-2.0/
 # or the Apache License, Version 2.0 which accompanies this distribution and
 # is available at https://www.apache.org/licenses/LICENSE-2.0.
-#      
+#
 # This Source Code may also be made available under the following
 # Secondary Licenses when the conditions for such availability set
 # forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
 # General Public License, version 2 with the GNU Classpath
 # Exception [1] and GNU General Public License, version 2 with the
 # OpenJDK Assembly Exception [2].
-#    
+#
 # [1] https://www.gnu.org/software/classpath/license.html
 # [2] http://openjdk.java.net/legal/assembly-exception.html
 #
@@ -49,7 +49,7 @@ GLOBAL_CPPFLAGS+=-D_MT
 # Defining _WINSOCKAPI_ prevents <winsock.h> from being included by <windows.h>.
 # We want to use <winsock2.h>.
 # This protects us in case <windows.h> is inadvertently included before <winsock2.h>.
-GLOBAL_CPPFLAGS+=-D_WINSOCKAPI_ 
+GLOBAL_CPPFLAGS+=-D_WINSOCKAPI_
 
 # Set minimum required system to Win 7, so we can use GetCurrentProcessorNumberEx
 OMR_MK_WINVER=0x0601
@@ -148,7 +148,7 @@ ifeq (1,$(DO_LINK))
   endif
 
   ## DLL-specific options
-  OMR_MK_DLLFLAGS+=/INCREMENTAL:NO /NOLOGO 
+  OMR_MK_DLLFLAGS+=/INCREMENTAL:NO /NOLOGO
   ifeq (1,$(OMR_ENV_DATA64))
     OMR_MK_DLLFLAGS+=-entry:_DllMainCRTStartup
   else
@@ -156,7 +156,7 @@ ifeq (1,$(DO_LINK))
   endif
   OMR_MK_DLLFLAGS+=-dll
   OMR_MK_DLLLIBS+=kernel32.lib ws2_32.lib advapi32.lib user32.lib gdi32.lib comdlg32.lib winspool.lib
-  
+
   # Delay Load Libraries
   # all windows system libraries are delayload
   ifneq (,$(MODULE_DELAYLOAD_LIBS))
@@ -228,7 +228,7 @@ define LINK_C_SHARED_COMMAND
 $(IMPLIB) -subsystem:$(WIN_SUBSYSTEM_TYPE) -out:$($(MODULE_NAME)_importlib) -def:$($(MODULE_NAME)_LINKER_EXPORT_SCRIPT) -machine:$(WIN_TARGET_MACHINE) $(OBJECTS) $(IMPORTLIB_LIBS) $(IMPORTLIB_LIBPATH)
 $(CCLINKSHARED) $(OBJECTS) \
   $(OMR_DELAYLOAD_INSTRUCTIONS) $(LDFLAGS) $(MODULE_LDFLAGS) $(OMR_MK_DLLFLAGS) $(GLOBAL_LDFLAGS) \
-  -out:$@ -map:$(MODULE_NAME).map \
+  -out:$@ -map:$(@:.dll=.map) \
   $(OMR_MK_DLLLIBS) \
   $(MODULE_NAME).exp
 endef
@@ -237,7 +237,7 @@ define LINK_CXX_SHARED_COMMAND
 $(IMPLIB) -subsystem:$(WIN_SUBSYSTEM_TYPE) -out:$($(MODULE_NAME)_importlib) -def:$($(MODULE_NAME)_LINKER_EXPORT_SCRIPT) -machine:$(WIN_TARGET_MACHINE) $(OBJECTS) $(IMPORTLIB_LIBS) $(IMPORTLIB_LIBPATH)
 $(CXXLINKSHARED) $(OBJECTS) \
   $(OMR_DELAYLOAD_INSTRUCTIONS) $(LDFLAGS) $(MODULE_LDFLAGS) $(OMR_MK_DLLFLAGS) $(GLOBAL_LDFLAGS) \
-  -out:$@ -map:$(MODULE_NAME).map \
+  -out:$@ -map:$(@:.dll=.map) \
   $(OMR_MK_DLLLIBS) \
   $(MODULE_NAME).exp
 endef
@@ -260,4 +260,3 @@ DEPS:=$(DEPS:$(OBJEXT)=.d)
 show_deps:
 	@echo "Dependencies are: $(DEPS)"
 .PHONY: show_deps
-

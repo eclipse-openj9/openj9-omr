@@ -196,22 +196,22 @@ genLoadLongConstant(TR::CodeGenerator * cg, TR::Node * node, int64_t value, TR::
       {
       cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_DebugCounter, cond, cursor, base);
       }
-   else if (comp->compileRelocatableCode() && sym && (sym->isCountForRecompile()))
+   else if (cg->needRelocationsForPersistentInfoData() && sym && (sym->isCountForRecompile()))
       {
       TR::Instruction * temp = cursor;
       cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_GlobalValue, cond, cursor, base);
       }
-   else if (comp->compileRelocatableCode() && sym && (sym->isRecompilationCounter()))
+   else if (cg->needRelocationsForBodyInfoData() && sym && sym->isRecompilationCounter())
       {
       TR::Instruction * temp = cursor;
       cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_BodyInfoAddress, cond, cursor, base);
       }
-   else if (comp->compileRelocatableCode() && sym && sym->isStatic() && !sym->isClassObject() && !sym->isNotDataAddress())
+   else if (cg->needRelocationsForStatics() && sym && sym->isStatic() && !sym->isClassObject() && !sym->isNotDataAddress())
       {
       TR::Instruction * temp = cursor;
       cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_DataAddress, cond, cursor, base);
       }
-   else if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL && !(comp->compileRelocatableCode()))
+   else if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL && !comp->compileRelocatableCode())
       {
       cursor = generateRIInstruction(cg, TR::InstOpCode::LGHI, node, targetRegister, value, cursor);
       }
@@ -234,7 +234,7 @@ genLoadLongConstant(TR::CodeGenerator * cg, TR::Node * node, int64_t value, TR::
    //disable LARL for AOT for easier relocation
    //cannot safely generate LARL for longs on 31-bit
    else if (cg->canUseRelativeLongInstructions(value) &&
-            comp->target().is64Bit() && !(comp->compileRelocatableCode()))
+            comp->target().is64Bit() && !comp->compileRelocatableCode())
       {
       cursor = generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, reinterpret_cast<void*>(value), cursor);
       }

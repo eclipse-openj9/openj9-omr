@@ -452,12 +452,6 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    bool usesRegister(TR::Register *r);
 
    /**
-    * @brief Increment totalUseCounts of registers in the RegisterDependencyConditions
-    * @param[in] cg : CodeGenerator
-    */
-   void incRegisterTotalUseCounts(TR::CodeGenerator *cg);
-
-   /**
     * @brief Do bookkeeping of use counts of registers in the RegisterDependencyConditions
     * @param[in] instr : instruction
     * @param[in] cg : CodeGenerator

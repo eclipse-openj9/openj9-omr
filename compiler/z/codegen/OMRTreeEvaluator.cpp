@@ -234,7 +234,7 @@ genLoadLongConstant(TR::CodeGenerator * cg, TR::Node * node, int64_t value, TR::
    //disable LARL for AOT for easier relocation
    //cannot safely generate LARL for longs on 31-bit
    else if (cg->canUseRelativeLongInstructions(value) &&
-            comp->target().is64Bit() && !(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation()))
+            comp->target().is64Bit() && !comp->compileRelocatableCode())
       {
       cursor = generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, reinterpret_cast<void*>(value), cursor);
       }

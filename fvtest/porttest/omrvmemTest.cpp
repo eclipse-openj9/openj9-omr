@@ -289,9 +289,6 @@ TEST(PortVmemTest, vmem_test1)
 	const char *testName = "omrvmem_test1";
 	char *memPtr = NULL;
 	uintptr_t *pageSizes = NULL;
-#if defined(J9ZOS390)
-	uintptr_t *pageFlags = NULL;
-#endif /* J9ZOS390 */
 	int i = 0;
 	struct J9PortVmemIdentifier vmemID;
 	char allocName[allocNameSize];
@@ -304,9 +301,8 @@ TEST(PortVmemTest, vmem_test1)
 	/* First get all the supported page sizes */
 	pageSizes = omrvmem_supported_page_sizes();
 #if defined(J9ZOS390)
-	pageFlags =
+	uintptr_t *pageFlags = omrvmem_supported_page_flags();
 #endif /* J9ZOS390 */
-		omrvmem_supported_page_flags();
 
 	/* reserve and commit memory for each page size */
 	for (i = 0 ; pageSizes[i] != 0 ; i++) {
@@ -409,9 +405,6 @@ TEST(PortVmemTest, vmem_test_free_memory)
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrvmem_test_free_memory";
 	uintptr_t *pageSizes = NULL;
-#if defined(J9ZOS390)
-	uintptr_t *pageFlags = NULL;
-#endif /* J9ZOS390 */
 	int i = 0;
 	struct J9PortVmemIdentifier vmemID;
 	int32_t rc = 0;
@@ -423,7 +416,7 @@ TEST(PortVmemTest, vmem_test_free_memory)
 	/* First get all the supported page sizes */
 	pageSizes = omrvmem_supported_page_sizes();
 #if defined(J9ZOS390)
-	pageFlags = omrvmem_supported_page_flags();
+	uintptr_t *pageFlags = omrvmem_supported_page_flags();
 #endif /* J9ZOS390 */
 
 	/* reserve and commit memory for each page size */
@@ -491,7 +484,7 @@ exit:
  * Get all the page sizes and make sure we can allocate a memory chunk for each page size.
  * This particular test is testing the flag OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN where it
  * forces default_pageSize_reserve_memory to mmap using a shared file handle.
- * 
+ *
  * Checks that each allocation manipulates the memory categories appropriately.
  */
 TEST(PortVmemTest, vmem_test_shared_file_handle)
@@ -501,9 +494,6 @@ TEST(PortVmemTest, vmem_test_shared_file_handle)
 	const char *testName = "omrvmem_test_shared_file_handle";
 	char *memPtr = NULL;
 	uintptr_t *pageSizes = NULL;
-#if defined(J9ZOS390)
-	uintptr_t *pageFlags = NULL;
-#endif /* J9ZOS390 */
 	int i = 0;
 	struct J9PortVmemIdentifier vmemID;
 	char allocName[allocNameSize];
@@ -516,7 +506,7 @@ TEST(PortVmemTest, vmem_test_shared_file_handle)
 	/* First get all the supported page sizes */
 	pageSizes = omrvmem_supported_page_sizes();
 #if defined(J9ZOS390)
-	pageFlags = omrvmem_supported_page_flags();
+	uintptr_t *pageFlags = omrvmem_supported_page_flags();
 #endif /* J9ZOS390 */
 
 	/* reserve and commit memory for each page size */
@@ -610,14 +600,14 @@ exit:
 /**
  * @internal
  * Helper function for memory management verification.
- * 
+ *
  * Given a pointer to an memory chunk verify it is
  * \arg a non NULL pointer
  * \arg correct size
  * \arg writeable
  * \arg aligned
  * \arg double aligned
- * 
+ *
  * @param[in] portLibrary The port library under test
  * @param[in] testName The name of the test requesting this functionality
  * @param[in] pageSize
@@ -626,8 +616,8 @@ exit:
  * @param[in] arraylet leaves addresses
  * @param[in] allocName Calling function name to display in errors
  */
-static void 
-verifyContiguousMem(struct OMRPortLibrary *portLibrary, const char *testName, size_t pagesize, size_t arrayletSize, void * contiguous, void* addresses[], char *vals, const char *allocName) 
+static void
+verifyContiguousMem(struct OMRPortLibrary *portLibrary, const char *testName, size_t pagesize, size_t arrayletSize, void * contiguous, void* addresses[], char *vals, const char *allocName)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 	char * contiguousMap = (char*)contiguous;
@@ -645,7 +635,7 @@ verifyContiguousMem(struct OMRPortLibrary *portLibrary, const char *testName, si
 			if(address[j] == vals[i] && address[j] == arrayletData[j]) {} /* Good */
 			else {
 				outputErrorMessage(PORTTEST_ERROR_ARGS, "%s failed address verification.\n", allocName);
-				return;	
+				return;
 			}
 		}
 	}
@@ -710,9 +700,6 @@ TEST(PortVmemTest, vmem_test_double_mapping)
 	const char *testName = "vmem_test_double_mapping";
 	char *memPtr = NULL;
 	uintptr_t *pageSizes = NULL;
-#if defined(J9ZOS390)
-	uintptr_t *pageFlags = NULL;
-#endif /* J9ZOS390 */
 	struct J9PortVmemIdentifier vmemID;
 	struct J9PortVmemIdentifier newIdentifier;
 	char allocName[allocNameSize];
@@ -731,7 +718,7 @@ TEST(PortVmemTest, vmem_test_double_mapping)
 	pageSizes = omrvmem_supported_page_sizes();
 	uintptr_t pageSize = pageSizes[0];
 #if defined(J9ZOS390)
-	pageFlags = omrvmem_supported_page_flags();
+	uintptr_t *pageFlags = omrvmem_supported_page_flags();
 #endif /* J9ZOS390 */
 
 	/* Make sure arrayletLeafSize is a multiple of pagesize */
@@ -831,12 +818,12 @@ TEST(PortVmemTest, vmem_test_double_mapping)
 				memset(arrayletLeaveAddrs[i], vals[i%ARRAYLET_COUNT], arrayletLeafSize);
 			}
 			/* Arraylet initialization complete */
-			
+
 			OMRMemCategory *category = omrmem_get_category(OMRMEM_CATEGORY_PORT_LIBRARY);
 
 			/* Now create contiguous block of memory and then double map arraylet leaves. */
 			void *contiguous = omrvmem_get_contiguous_region_memory(arrayletLeaveAddrs, ARRAYLET_COUNT, arrayletLeafSize, (ARRAYLET_COUNT * arrayletLeafSize),
-										&vmemID, &newIdentifier, 
+										&vmemID, &newIdentifier,
 										OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE | OMRPORT_VMEM_MEMORY_MODE_COMMIT,
 										pageSize,
 										category);
@@ -1322,9 +1309,6 @@ TEST(PortVmemTest, vmem_decommit_memory_test)
 	const char *testName = "omrvmem_decommit_memory_test";
 	char *memPtr = NULL;
 	uintptr_t *pageSizes = NULL;
-#if defined(J9ZOS390)
-	uintptr_t *pageFlags = NULL;
-#endif /* J9ZOS390 */
 	int i = 0;
 	struct J9PortVmemIdentifier vmemID;
 	char allocName[allocNameSize];
@@ -1337,9 +1321,8 @@ TEST(PortVmemTest, vmem_decommit_memory_test)
 	/* First get all the supported page sizes */
 	pageSizes = omrvmem_supported_page_sizes();
 #if defined(J9ZOS390)
-	pageFlags =
+	uintptr_t *pageFlags = omrvmem_supported_page_flags();
 #endif /* J9ZOS390 */
-		omrvmem_supported_page_flags();
 
 	/* reserve, commit, decommit, and memory for each page size */
 	for (i = 0 ; pageSizes[i] != 0 ; i++) {
@@ -2462,9 +2445,6 @@ TEST(PortVmemTest, vmem_test_numa)
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrvmem_test_numa";
 	uintptr_t *pageSizes = NULL;
-#if defined(J9ZOS390)
-	uintptr_t *pageFlags = NULL;
-#endif /* defined(J9ZOS390) */
 	uintptr_t totalNumaNodeCount = 0;
 	intptr_t detailReturnCode = 0;
 
@@ -2474,8 +2454,8 @@ TEST(PortVmemTest, vmem_test_numa)
 	/* First get all the supported page sizes */
 	pageSizes = omrvmem_supported_page_sizes();
 #if defined(J9ZOS390)
-	pageFlags = omrvmem_supported_page_flags();
-#endif /* defined(J9ZOS390) */
+	uintptr_t *pageFlags = omrvmem_supported_page_flags();
+#endif /* J9ZOS390 */
 
 	/* Find out how many NUMA nodes are available */
 	detailReturnCode = omrvmem_numa_get_node_details(NULL, &totalNumaNodeCount);
@@ -2610,7 +2590,7 @@ exit:
 
 #define PRINT_FIND_VALID_PAGE_SIZE_INPUT(mode, pageSize, pageFlags) \
 	portTestEnv->log("Input > mode: %zu, requestedPageSize: 0x%zx, requestedPageFlags: 0x%zx\n", mode, pageSize, pageFlags)
- 
+
 void
 verifyFindValidPageSizeOutput(struct OMRPortLibrary *portLibrary,
 						      const char *testName,

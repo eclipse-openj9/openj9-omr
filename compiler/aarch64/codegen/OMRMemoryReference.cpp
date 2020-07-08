@@ -610,19 +610,19 @@ void OMR::ARM64::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR:
    }
 
 
-void OMR::ARM64::MemoryReference::incRegisterTotalUseCounts(TR::CodeGenerator * cg)
+void OMR::ARM64::MemoryReference::bookKeepingRegisterUses(TR::Instruction *instr, TR::CodeGenerator *cg)
    {
    if (_baseRegister != NULL)
       {
-      _baseRegister->incTotalUseCount();
+      instr->useRegister(_baseRegister);
       }
    if (_indexRegister != NULL)
       {
-      _indexRegister->incTotalUseCount();
+      instr->useRegister(_indexRegister);
       }
    if (_extraRegister != NULL)
       {
-      _extraRegister->incTotalUseCount();
+      instr->useRegister(_extraRegister);
       }
    }
 

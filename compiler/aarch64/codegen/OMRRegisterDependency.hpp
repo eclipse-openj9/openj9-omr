@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -456,6 +456,13 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
     * @param[in] cg : CodeGenerator
     */
    void incRegisterTotalUseCounts(TR::CodeGenerator *cg);
+
+   /**
+    * @brief Do bookkeeping of use counts of registers in the RegisterDependencyConditions
+    * @param[in] instr : instruction
+    * @param[in] cg : CodeGenerator
+    */
+   void bookKeepingRegisterUses(TR::Instruction *instr, TR::CodeGenerator *cg);
    };
 
 } // ARM64

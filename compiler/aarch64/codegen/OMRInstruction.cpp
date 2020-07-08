@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -50,7 +50,7 @@ OMR::ARM64::Instruction::Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnem
    {
    self()->setBlockIndex(cg->getCurrentBlockIndex());
    if (cond)
-      cond->incRegisterTotalUseCounts(cg);
+      cond->bookKeepingRegisterUses(self(), cg);
    }
 
 
@@ -60,7 +60,7 @@ OMR::ARM64::Instruction::Instruction(TR::CodeGenerator *cg, TR::Instruction *pre
    {
    self()->setBlockIndex(cg->getCurrentBlockIndex());
    if (cond)
-      cond->incRegisterTotalUseCounts(cg);
+      cond->bookKeepingRegisterUses(self(), cg);
    }
 
 

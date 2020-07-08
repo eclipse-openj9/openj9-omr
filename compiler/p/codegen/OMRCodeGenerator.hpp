@@ -539,6 +539,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     */
    uint32_t getHotLoopAlignment();
 
+   TR::LabelSymbol *getStartPCLabel();
+
    private:
 
    enum // flags
@@ -589,6 +591,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    uint32_t *                       _tbTableEnd;
    uint32_t                         _numVRF;
 
+   TR::LabelSymbol *_startPCLabel;
    };
 
 } // PPC

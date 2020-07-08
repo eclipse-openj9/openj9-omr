@@ -114,7 +114,8 @@ OMR::Power::CodeGenerator::CodeGenerator() :
      _blockCallInfo(NULL),
      _transientLongRegisters(self()->trMemory()),
      conversionBuffer(NULL),
-     _outOfLineCodeSectionList(getTypedAllocator<TR_PPCOutOfLineCodeSection*>(self()->comp()->allocator()))
+     _outOfLineCodeSectionList(getTypedAllocator<TR_PPCOutOfLineCodeSection*>(self()->comp()->allocator())),
+     _startPCLabel(NULL)
    {
    // Initialize Linkage for Code Generator
    self()->initializeLinkage();
@@ -1665,6 +1666,18 @@ OMR::Power::CodeGenerator::expandInstructions()
    {
    _binaryEncodingData.estimate = 0;
    self()->generateBinaryEncodingPrologue(&_binaryEncodingData);
+
+   // This instruction needs to be generated here for the time being, since OpenJ9 directly
+   // overrides the generateBinaryEncodingPrologue method. Additionally, this instruction *must*
+   // be created using the constructor, since this may be the first instruction and the helpers
+   // don't handle that case properly.
+   new (self()->trHeapMemory()) TR::PPCLabelInstruction(
+      TR::InstOpCode::label,
+      self()->comp()->getStartTree()->getNode(),
+      self()->getStartPCLabel(),
+      _binaryEncodingData.preProcInstruction->getPrev(),
+      self()
+   );
 
    for (TR::Instruction *instr = self()->getFirstInstruction(); instr; instr = instr->getNext())
       {
@@ -3408,6 +3421,14 @@ OMR::Power::CodeGenerator::getHotLoopAlignment()
       return 16;
    else
       return 32;
+   }
+
+TR::LabelSymbol *
+OMR::Power::CodeGenerator::getStartPCLabel()
+   {
+   if (!_startPCLabel)
+      _startPCLabel = generateLabelSymbol(self());
+   return _startPCLabel;
    }
 
 // Multiply a register by a constant

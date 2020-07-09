@@ -168,10 +168,9 @@ OMR::CFG::addExceptionEdge(
    {
    if (comp()->getOption(TR_TraceAddAndRemoveEdge))
       {
-      traceMsg(comp(),"\nAdding exception edge %d-->%d:\n", f->getNumber(), t->getNumber());
+      traceMsg(comp(),"\nAttempting to add exception edge %d-->%d:\n", f->getNumber(), t->getNumber());
       }
 
-   TR_ASSERT(!f->hasSuccessor(t), "adding an exception edge when there's already a non exception edge");
    TR::Block * newCatchBlock = toBlock(t);
    for (auto e = f->getExceptionSuccessors().begin(); e != f->getExceptionSuccessors().end(); ++e)
       {
@@ -210,11 +209,26 @@ OMR::CFG::addExceptionEdge(
          return;
          }
       }
+
+   addExceptionEdgeUnchecked(f, t);
+   }
+
+void
+OMR::CFG::addExceptionEdgeUnchecked(
+      TR::CFGNode *f,
+      TR::CFGNode *t)
+   {
+   if (comp()->getOption(TR_TraceAddAndRemoveEdge))
+      {
+      traceMsg(comp(),"\nAdding exception edge %d-->%d:\n", f->getNumber(), t->getNumber());
+      }
+
+   TR_ASSERT(!f->hasSuccessor(t), "adding an exception edge when there's already a non exception edge");
+
    TR::CFGEdge* e = TR::CFGEdge::createExceptionEdge(f,t, _internalRegion);
    _numEdges++;
 
    // Tell the control tree to modify the structures containing this edge
-   //
    if (getStructure() != NULL)
       {
       getStructure()->addEdge(e, true);

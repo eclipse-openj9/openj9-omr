@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -185,11 +185,26 @@ class CFG
 
    /**
     * Create and store exception edge from CFGNode f to CFGNode t 
+    *
+    * The new edge will not be added if there is an existing exception edge
+    * from the "from" node to an existing block which catches the same
+    * exceptions as the new "to" block.
+    *
     * @param f   CFGNode from
     * @param t   CFGNode to
-    * @return    Pointer to newly created exception edge
     */
    void addExceptionEdge(TR::CFGNode *f, TR::CFGNode *t);
+
+   /**
+    * Create and store exception edge from CFGNode f to CFGNode t
+    *
+    * The new edge will be added even if there is an existing exception edge
+    * exiting the "from" node.
+    *
+    * @param f   CFGNode from
+    * @param t   CFGNode to
+    */
+   void addExceptionEdgeUnchecked(TR::CFGNode *f, TR::CFGNode *t);
    void addSuccessorEdges(TR::Block * block);
 
    void copyExceptionSuccessors(TR::CFGNode *from, TR::CFGNode *to, bool (*predicate)(TR::CFGEdge *) = OMR::alwaysTrue);

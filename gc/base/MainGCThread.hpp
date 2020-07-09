@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,8 +20,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#if !defined(MASTERGCTHREAD_HPP_)
-#define MASTERGCTHREAD_HPP_
+#if !defined(MAINGCTHREAD_HPP_)
+#define MAINGCTHREAD_HPP_
 
 #include "omrthread.h"
 #include "modronopt.h"
@@ -39,7 +39,7 @@ class MM_RememberedSetCardBucket;
  * Multi-threaded mark and sweep global collector.
  * @ingroup GC_Modron_Standard
  */
-class MM_MasterGCThread : public MM_BaseNonVirtual
+class MM_MainGCThread : public MM_BaseNonVirtual
 {
 /*
  * Data members
@@ -115,7 +115,7 @@ public:
 	 */
 	bool isGarbageCollectInProgress() { return STATE_GC_REQUESTED != _masterThreadState; }
 	
-	MM_MasterGCThread(MM_EnvironmentBase *env);
+	MM_MainGCThread(MM_EnvironmentBase *env);
 protected:
 private:
 	/**
@@ -143,4 +143,4 @@ private:
 	void handleSTW(MM_EnvironmentBase *env);
 };
 
-#endif /* MASTERGCTHREAD_HPP_ */
+#endif /* MAINGCTHREAD_HPP_ */

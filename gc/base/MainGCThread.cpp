@@ -24,7 +24,7 @@
 #include "ModronAssertions.h"
 #include "omrport.h"
 
-#include "MasterGCThread.hpp"
+#include "MainGCThread.hpp"
 
 #include "CollectorLanguageInterfaceImpl.hpp"
 #include "ConcurrentGMPStats.hpp"
@@ -36,7 +36,7 @@
 /**
  * Initialization
  */
-MM_MasterGCThread::MM_MasterGCThread(MM_EnvironmentBase *env)
+MM_MainGCThread::MM_MainGCThread(MM_EnvironmentBase *env)
 	: MM_BaseNonVirtual()
 	, _collectorControlMutex(NULL)
 	, _masterThreadState(STATE_ERROR)
@@ -53,9 +53,9 @@ MM_MasterGCThread::MM_MasterGCThread(MM_EnvironmentBase *env)
 }
 
 uintptr_t
-MM_MasterGCThread::master_thread_proc2(OMRPortLibrary* portLib, void *info)
+MM_MainGCThread::master_thread_proc2(OMRPortLibrary* portLib, void *info)
 {
-	MM_MasterGCThread *masterGCThread = (MM_MasterGCThread*)info;
+	MM_MainGCThread *masterGCThread = (MM_MainGCThread*)info;
 	/* jump into the master thread procedure and wait for work.  This method will NOT return */
 	masterGCThread->masterThreadEntryPoint();
 	Assert_MM_unreachable();
@@ -63,9 +63,9 @@ MM_MasterGCThread::master_thread_proc2(OMRPortLibrary* portLib, void *info)
 }
 
 int J9THREAD_PROC
-MM_MasterGCThread::master_thread_proc(void *info)
+MM_MainGCThread::master_thread_proc(void *info)
 {
-	MM_MasterGCThread *masterGCThread = (MM_MasterGCThread*)info;
+	MM_MainGCThread *masterGCThread = (MM_MainGCThread*)info;
 	MM_GCExtensionsBase *extensions = masterGCThread->_extensions;
 	OMR_VM *omrVM = extensions->getOmrVM();
 	OMRPORT_ACCESS_FROM_OMRVM(omrVM);
@@ -80,10 +80,10 @@ MM_MasterGCThread::master_thread_proc(void *info)
 
 
 bool
-MM_MasterGCThread::initialize(MM_Collector *collector, bool runAsImplicit, bool acquireVMAccessDuringConcurrent, bool concurrentResumable)
+MM_MainGCThread::initialize(MM_Collector *collector, bool runAsImplicit, bool acquireVMAccessDuringConcurrent, bool concurrentResumable)
 {
 	bool success = true;
-	if(omrthread_monitor_init_with_name(&_collectorControlMutex, 0, "MM_MasterGCThread::_collectorControlMutex")) {
+	if(omrthread_monitor_init_with_name(&_collectorControlMutex, 0, "MM_MainGCThread::_collectorControlMutex")) {
 		success = false;
 	}
 
@@ -96,7 +96,7 @@ MM_MasterGCThread::initialize(MM_Collector *collector, bool runAsImplicit, bool 
 }
 
 void
-MM_MasterGCThread::tearDown(MM_EnvironmentBase *env)
+MM_MainGCThread::tearDown(MM_EnvironmentBase *env)
 {
 	if (NULL != _collectorControlMutex) {
 		omrthread_monitor_destroy(_collectorControlMutex);
@@ -107,7 +107,7 @@ MM_MasterGCThread::tearDown(MM_EnvironmentBase *env)
 
 
 bool
-MM_MasterGCThread::startup()
+MM_MainGCThread::startup()
 {
 	/* set the success flag to false and we will set it true if everything succeeds */
 	bool success = false;
@@ -148,7 +148,7 @@ MM_MasterGCThread::startup()
 }
 
 void
-MM_MasterGCThread::shutdown()
+MM_MainGCThread::shutdown()
 {
 	Assert_MM_true(NULL != _collectorControlMutex);
 	if ((STATE_ERROR != _masterThreadState) && (STATE_DISABLED != _masterThreadState)) {
@@ -167,7 +167,7 @@ MM_MasterGCThread::shutdown()
 
 
 void
-MM_MasterGCThread::handleSTW(MM_EnvironmentBase *env)
+MM_MainGCThread::handleSTW(MM_EnvironmentBase *env)
 {
 	Assert_MM_true(NULL != _incomingCycleState);
 	env->_cycleState = _incomingCycleState;
@@ -187,7 +187,7 @@ MM_MasterGCThread::handleSTW(MM_EnvironmentBase *env)
 }
 
 bool
-MM_MasterGCThread::handleConcurrent(MM_EnvironmentBase *env)
+MM_MainGCThread::handleConcurrent(MM_EnvironmentBase *env)
 {
 	bool workDone = false;
 
@@ -229,7 +229,7 @@ MM_MasterGCThread::handleConcurrent(MM_EnvironmentBase *env)
 }
 
 void
-MM_MasterGCThread::masterThreadEntryPoint()
+MM_MainGCThread::masterThreadEntryPoint()
 {
 	OMR_VMThread *omrVMThread = NULL;
 	Assert_MM_true(NULL != _collectorControlMutex);
@@ -288,7 +288,7 @@ MM_MasterGCThread::masterThreadEntryPoint()
 }
 
 bool
-MM_MasterGCThread::garbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription)
+MM_MainGCThread::garbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription)
 {
 	Assert_MM_mustHaveExclusiveVMAccess(env->getOmrVMThread());
 	bool didAttemptCollect = false;

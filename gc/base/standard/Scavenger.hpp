@@ -39,7 +39,7 @@
 #include "CycleState.hpp"
 #include "GCExtensionsBase.hpp"
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-#include "MasterGCThread.hpp"
+#include "MainGCThread.hpp"
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 #include "ScavengerDelegate.hpp"
 
@@ -122,7 +122,7 @@ private:
 	MM_HeapRegionManager *_regionManager;
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	MM_MasterGCThread _masterGCThread; /**< An object which manages the state of the master GC thread */
+	MM_MainGCThread _masterGCThread; /**< An object which manages the state of the master GC thread */
 	
 	volatile enum ConcurrentState {
 		concurrent_phase_idle,

@@ -2239,6 +2239,8 @@ typedef struct OMRPortLibrary {
 	int32_t (*sock_sockaddr_init)(struct OMRPortLibrary *portLibrary, omrsock_sockaddr_t handle, int32_t family, uint8_t *addrNetworkOrder, uint16_t portNetworkOrder) ;
 	/** see @ref omrsock.c::omrsock_sockaddr_init6 "omrsock_sockaddr_init6"*/
 	int32_t (*sock_sockaddr_init6)(struct OMRPortLibrary *portLibrary, omrsock_sockaddr_t handle, int32_t family, uint8_t *addrNetworkOrder, uint16_t portNetworkOrder, uint32_t flowinfo, uint32_t scope_id) ;
+	/** see @ref omrsock.c::omrsock_socket_getfd "omrsock_socket_getfd"*/
+	int32_t (*sock_socket_getfd)(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock) ;
 	/** see @ref omrsock.c::omrsock_socket "omrsock_socket"*/
 	int32_t (*sock_socket)(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock, int32_t family, int32_t socktype, int32_t protocol) ;
 	/** see @ref omrsock.c::omrsock_bind "omrsock_bind"*/
@@ -2267,6 +2269,8 @@ typedef struct OMRPortLibrary {
 	uint32_t (*sock_htonl)(struct OMRPortLibrary *portLibrary, uint32_t val) ;
 	/** see @ref omrsock.c::omrsock_inet_pton "omrsock_inet_pton"*/
 	int32_t (*sock_inet_pton)(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *result) ;
+	/** see @ref omrsock.c::omrsock_fcntl "omrsock_fcntl"*/
+	int32_t (*sock_fcntl)(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, int32_t arg) ;
 	/** see @ref omrsock.c::omrsock_timeval_init "omrsock_timeval_init"*/
 	int32_t (*sock_timeval_init)(struct OMRPortLibrary *portLibrary, omrsock_timeval_t handle, uint32_t secTime, uint32_t uSecTime) ;
 	/** see @ref omrsock.c::omrsock_linger_init "omrsock_linger_init"*/
@@ -2799,6 +2803,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsock_freeaddrinfo(param1) privateOmrPortLibrary->sock_freeaddrinfo(privateOmrPortLibrary, (param1))
 #define omrsock_sockaddr_init(param1, param2, param3, param4) privateOmrPortLibrary->sock_sockaddr_init(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
 #define omrsock_sockaddr_init6(param1, param2, param3, param4, param5, param6) privateOmrPortLibrary->sock_sockaddr_init6(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5), (param6))
+#define omrsock_socket_getfd(param1) privateOmrPortLibrary->sock_socket_getfd(privateOmrPortLibrary, (param1))
 #define omrsock_socket(param1, param2, param3, param4) privateOmrPortLibrary->sock_socket(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
 #define omrsock_bind(param1,param2) privateOmrPortLibrary->sock_bind(privateOmrPortLibrary, (param1), (param2))
 #define omrsock_listen(param1,param2) privateOmrPortLibrary->sock_listen(privateOmrPortLibrary, (param1), (param2))
@@ -2813,6 +2818,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsock_htons(param1) privateOmrPortLibrary->sock_htons(privateOmrPortLibrary, (param1))
 #define omrsock_htonl(param1) privateOmrPortLibrary->sock_htonl(privateOmrPortLibrary, (param1))
 #define omrsock_inet_pton(param1,param2,param3) privateOmrPortLibrary->sock_inet_pton(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrsock_fcntl(param1,param2) privateOmrPortLibrary->sock_fcntl(privateOmrPortLibrary, (param1), (param2))
 #define omrsock_timeval_init(param1,param2,param3) privateOmrPortLibrary->sock_timeval_init(privateOmrPortLibrary, (param1), (param2), (param3))
 #define omrsock_linger_init(param1,param2,param3) privateOmrPortLibrary->sock_linger_init(privateOmrPortLibrary, (param1), (param2), (param3))
 #define omrsock_setsockopt_int(param1,param2,param3,param4) privateOmrPortLibrary->sock_setsockopt_int(privateOmrPortLibrary, (param1), (param2), (param3), (param4))

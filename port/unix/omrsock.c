@@ -585,6 +585,12 @@ omrsock_sockaddr_init6(struct OMRPortLibrary *portLibrary, omrsock_sockaddr_t ha
 }
 
 int32_t
+omrsock_socket_getfd(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+int32_t
 omrsock_socket(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock, int32_t family, int32_t socktype, int32_t protocol)
 {
 	int32_t sockDescriptor = 0;
@@ -840,6 +846,12 @@ omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const 
 		return OMRPORT_ERROR_SOCKET_AF_UNSUPPORTED;
 	}
 	return 0;
+}
+
+int32_t
+omrsock_fcntl(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, int32_t arg)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }
 
 int32_t

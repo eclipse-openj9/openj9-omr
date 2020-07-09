@@ -244,7 +244,25 @@ omrsock_sockaddr_init6(struct OMRPortLibrary *portLibrary, omrsock_sockaddr_t ha
 }
 
 /**
+ * Get socket file descriptor from a pointer to the socket structure.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[out] sock Pointer to the omrsocket.
+ *
+ * @return fd, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_socket_getfd(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
  * Creates a new socket descriptor and any related resources.
+ *
+ * If non-blocking or async sockets are wanted, the user can OR the socktype with socket flag
+ * they want to set. They may also set the socket to be non-blocking or async later in the code
+ * using @ref omrsock_fcntl.
  *
  * @param[in] portLibrary The port library.
  * @param[out] sock Pointer to the omrsocket, to be allocated.
@@ -512,6 +530,23 @@ omrsock_htonl(struct OMRPortLibrary *portLibrary, uint32_t val)
  */
 int32_t
 omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *result)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Set socket non_block and asychronous.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[out] sock Pointer to the socket structure.
+ * @param[in] arg The socket flag you want to set on the socket.
+ * \arg OMRSOCK_O_NON_BLOCK
+ * \arg OMRSOCK_O_ASYNC
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_fcntl(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, int32_t arg)
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }

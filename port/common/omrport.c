@@ -339,7 +339,8 @@ static OMRPortLibrary MainPortLibraryTable = {
 	omrsock_addrinfo_address, /* sock_addrinfo_address */
 	omrsock_freeaddrinfo, /* sock_freeaddrinfo */
 	omrsock_sockaddr_init, /* sock_sockaddr_init */
-	omrsock_sockaddr_init6, /* omrsock_sockaddr_init6 */
+	omrsock_sockaddr_init6, /* sock_sockaddr_init6 */
+	omrsock_socket_getfd, /* sock_socket_getfd */
 	omrsock_socket, /* sock_socket */
 	omrsock_bind, /* sock_bind */
 	omrsock_listen, /* sock_listen */
@@ -354,6 +355,7 @@ static OMRPortLibrary MainPortLibraryTable = {
 	omrsock_htons, /* sock_htons */
 	omrsock_htonl, /* sock_htonl */
 	omrsock_inet_pton, /* sock_inet_pton */
+	omrsock_fcntl, /* sock_fcntl */
 	omrsock_timeval_init, /* sock_timeval_init */
 	omrsock_linger_init, /* sock_linger_init */
 	omrsock_setsockopt_int, /* sock_setsockopt_int */

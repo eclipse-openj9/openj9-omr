@@ -32,6 +32,11 @@
 #include <limits>
 #include <stdlib.h>
 
+// A workaround for strtoull when building with visual studio 2012 (AppVeyor build)
+#ifdef _WIN32
+#define strtoull _strtoui64
+#endif
+
 class Token {
     public:
         enum Type {

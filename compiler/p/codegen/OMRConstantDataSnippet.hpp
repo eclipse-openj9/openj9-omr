@@ -35,6 +35,7 @@ namespace OMR { typedef OMR::ConstantDataSnippet ConstantDataSnippetConnector; }
 #include <stdint.h>
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/Instruction.hpp"
+#include "codegen/Relocation.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"
@@ -84,6 +85,83 @@ template <class T> class PPCConstant
          }
       }
 
+   void patchRequestors(TR::CodeGenerator *cg, intptr_t addr)
+      {
+      if (TR::Compiler->target.is64Bit())
+         {
+         TR_ASSERT_FATAL(_instructionPairs.size() % 4 == 0, "Expected groups of 4 requestors");
+
+         intptr_t addrHi = cg->hiValue(addr);
+         intptr_t addrLo = LO_VALUE(addr);
+
+         for (int32_t i = 0; i < _instructionPairs.size(); i += 4)
+            {
+            TR::Instruction *instr1 = _instructionPairs[i];
+            TR::Instruction *instr2 = _instructionPairs[i + 1];
+            TR::Instruction *instr3 = _instructionPairs[i + 2];
+            TR::Instruction *instr4 = _instructionPairs[i + 3];
+
+            TR_ASSERT_FATAL_WITH_INSTRUCTION(instr2, instr2->getBinaryEncoding() == instr1->getBinaryEncoding() + 8, "Unexpected ConstantDataSnippet load sequence");
+            TR_ASSERT_FATAL_WITH_INSTRUCTION(instr3, instr3->getBinaryEncoding() == instr1->getBinaryEncoding() + 4, "Unexpected ConstantDataSnippet load sequence");
+            TR_ASSERT_FATAL_WITH_INSTRUCTION(instr4, instr4->getBinaryEncoding() == instr1->getBinaryEncoding() + 16, "Unexpected ConstantDataSnippet load sequence");
+
+            if (cg->canEmitDataForExternallyRelocatableInstructions())
+               {
+               *reinterpret_cast<uint32_t*>(instr1->getBinaryEncoding()) |= (addrHi >> 32) & 0xffff;
+               *reinterpret_cast<uint32_t*>(instr2->getBinaryEncoding()) |= (addrHi >> 16) & 0xffff;
+               *reinterpret_cast<uint32_t*>(instr3->getBinaryEncoding()) |= addrHi & 0xffff;
+               *reinterpret_cast<uint32_t*>(instr4->getBinaryEncoding()) |= addrLo & 0xffff;
+               }
+            else
+               {
+               cg->addExternalRelocation(
+                  new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+                     instr1,
+                     (uint8_t *)(addr),
+                     (uint8_t *)fixedSequence4,
+                     TR_FixedSequenceAddress2,
+                     cg
+                  ),
+                  __FILE__,
+                  __LINE__,
+                  instr1->getNode()
+               );
+               }
+            }
+         }
+      else
+         {
+         TR_ASSERT_FATAL(_instructionPairs.size() % 2 == 0, "Expected groups of 2 requestors");
+
+         intptr_t addrHi = cg->hiValue(addr);
+         intptr_t addrLo = LO_VALUE(addr);
+
+         for (int32_t i = 0; i < _instructionPairs.size(); i += 2)
+            {
+            TR::Instruction *instr1 = _instructionPairs[i];
+            TR::Instruction *instr2 = _instructionPairs[i + 1];
+
+            *reinterpret_cast<uint32_t*>(instr1->getBinaryEncoding()) |= addrHi & 0xffff;
+            *reinterpret_cast<uint32_t*>(instr2->getBinaryEncoding()) |= addrLo & 0xffff;
+
+            TR_RelocationRecordInformation *recordInfo = (TR_RelocationRecordInformation *)cg->trMemory()->allocateMemory(sizeof(TR_RelocationRecordInformation), heapAlloc);
+            recordInfo->data3 = orderedPairSequence1;
+            cg->addExternalRelocation(
+               new (cg->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(
+                  instr1->getBinaryEncoding(),
+                  instr2->getBinaryEncoding(),
+                  (uint8_t *)recordInfo,
+                  TR_AbsoluteMethodAddressOrderedPair,
+                  cg
+               ),
+               __FILE__,
+               __LINE__,
+               instr1->getNode()
+            );
+            }
+         }
+      }
+
    int32_t getTOCOffset() {return _tocOffset;}
    void setTOCOffset(int32_t o) {_tocOffset = o;}
    TR::Node *getNode() { return _node; }
@@ -119,16 +197,7 @@ class ConstantDataSnippet
                            TR::Node *node,
                            bool isUnloadablePicSite);
 
-   void emitFloatingPointConstant(
-      TR_Array<TR::Instruction *> &requestors,
-      uint8_t *codeCursor,
-      int32_t count);
-
-   virtual void emitAddressConstant(
-      PPCConstant<intptr_t> *acursor,
-      TR_Array<TR::Instruction *> &requestors,
-      uint8_t *codeCursor,
-      int32_t count);
+   virtual void emitAddressConstant(PPCConstant<intptr_t> *acursor, uint8_t *codeCursor);
 
    bool getRequestorsFromNibble(TR::Instruction *nibble, TR::Instruction **q, bool remove);
 

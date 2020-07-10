@@ -353,6 +353,53 @@ void OMRZeroMemory(void *ptr, uintptr_t length);
 */
 void j9memset(void *dest, intptr_t value, uintptr_t size);
 
+/* ---------------- wildcard.c ---------------- */
+
+/**
+* @brief
+* @param pattern
+* @param patternLength
+* @param needle
+* @param needleLength
+* @param matchFlag
+* @return IDATA
+*/
+IDATA
+omrParseWildcard(const char * pattern, UDATA patternLength, const char** needle, UDATA* needleLength, U_32 * matchFlag);
+
+/**
+* @brief
+* @param matchFlag
+* @param needle
+* @param needleLength
+* @param haystack
+* @param haystackLength
+* @return IDATA
+*/
+IDATA
+omrWildcardMatch(U_32 matchFlag, const char* needle, UDATA needleLength, const char* haystack, UDATA haystackLength);
+
+/* ---------------- omrcrc32.c ---------------- */
+
+/**
+* @brief
+* @param crc
+* @param *bytes
+* @param len
+* @return U_32
+*/
+U_32 omrcrc32(U_32 crc, U_8 *bytes, U_32 len);
+
+/**
+* @brief
+* @param crc
+* @param *bytes
+* @param len
+* @param step
+* @return U_32
+*/
+U_32 omrcrcSparse32(U_32 crc, U_8 *bytes, U_32 len, U_32 step);
+
 /* ---------------- archinfo.c ---------------- */
 /**
  * @brief
@@ -614,4 +661,3 @@ uintptr_t omr_scan_u32(char **scan_start, uint32_t* result);
 #endif
 
 #endif /* OMRUTIL_H_INCLUDED */
-

@@ -221,14 +221,26 @@ bool OMR::ARM64::RegisterDependencyConditions::usesRegister(TR::Register *r)
    }
 
 void OMR::ARM64::RegisterDependencyConditions::incRegisterTotalUseCounts(TR::CodeGenerator *cg)
+    {
+    for (int i = 0; i < _addCursorForPre; i++)
+       {
+      _preConditions->getRegisterDependency(i)->getRegister()->incTotalUseCount();
+       }
+    for (int j = 0; j < _addCursorForPost; j++)
+       {
+      _postConditions->getRegisterDependency(j)->getRegister()->incTotalUseCount();
+       }
+    }
+
+void OMR::ARM64::RegisterDependencyConditions::bookKeepingRegisterUses(TR::Instruction *instr, TR::CodeGenerator *cg)
    {
    for (int i = 0; i < _addCursorForPre; i++)
       {
-      _preConditions->getRegisterDependency(i)->getRegister()->incTotalUseCount();
+      instr->useRegister(_preConditions->getRegisterDependency(i)->getRegister());
       }
    for (int j = 0; j < _addCursorForPost; j++)
       {
-      _postConditions->getRegisterDependency(j)->getRegister()->incTotalUseCount();
+      instr->useRegister(_postConditions->getRegisterDependency(j)->getRegister());
       }
    }
 

@@ -323,6 +323,9 @@ TR::Instruction *loadConstant(TR::CodeGenerator *cg, TR::Node * node, int64_t va
       return loadConstant(cg, node, (int32_t)value, trgReg, cursor, isPicSite);
       }
 
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
+      return loadAddressConstantInSnippet(cg, node, value, trgReg, NULL, TR::InstOpCode::ld, isPicSite, cursor);
+
    TR::Compilation *comp = cg->comp();
    TR::Instruction *temp = cursor;
 

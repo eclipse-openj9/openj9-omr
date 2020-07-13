@@ -251,7 +251,7 @@ def SPECS = [
         'builds' : [
             [
                 'buildDir' : cmakeBuildDir,
-                'configureArgs' : '-Wdev -G "Visual Studio 11 2012 Win64" -C../cmake/caches/AppVeyor.cmake',
+                'configureArgs' : '-Wdev -G "Visual Studio 11 2012 Win64" -C../cmake/caches/Windows.cmake',
                 'compile' : 'cmake --build . -- /m'
             ]
         ],

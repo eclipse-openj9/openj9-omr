@@ -82,9 +82,9 @@ objectively, but the committer should verify that each commit contains distinct
 changes that should not otherwise be logically squashed with other commits in the
 same pull request.
 
-* When commits are pushed to a pull request, TravisCI and AppVeyor builds launch
-automatically to test the changes on x86 Linux, macOS, and Windows 32-bit platforms.
-If the change affects multiple platforms or 64-bit Windows, you must initiate a pull
+* When commits are pushed to a pull request, TravisCI and Azure builds launch
+automatically to test the changes on x86 Linux, macOS, and Windows platforms.
+If the change affects multiple platforms, you must initiate a pull
 request build on all affected platforms prior to merging.  To launch a pull request
 build, add a comment to the pull request that follows the syntax:
    ```

@@ -17,7 +17,7 @@ pipeline {
                 timestamps {
                     dir('build') {
                         echo 'Configure...'
-                        sh '''cmake -Wdev -G "Visual Studio 11 2012 Win64" -C../cmake/caches/AppVeyor.cmake ..''' 
+                        sh '''cmake -Wdev -G "Visual Studio 11 2012 Win64" -C../cmake/caches/Windows.cmake ..''' 
                        
                         echo 'Compile...'
                         sh '''cmake --build . -- /m'''

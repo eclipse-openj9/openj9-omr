@@ -15,7 +15,7 @@ jobs:
  
       - script: |
           set PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.16299.0\x64;%PATH%
-          cmake .. -G "Visual Studio 15 2017 Win64" -C../cmake/caches/AppVeyor.cmake .. -DOMR_DDR=0
+          cmake .. -G "Visual Studio 15 2017 Win64" -C../cmake/caches/Windows.cmake .. -DOMR_DDR=0
         displayName: 'Configure'
         workingDirectory: 'build'
  

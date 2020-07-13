@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -40,62 +40,62 @@
 
 #include "ParallelDispatcher.hpp"
 
-typedef struct slaveThreadInfo {
+typedef struct workerThreadInfo {
 	OMR_VM *omrVM;
-	uintptr_t slaveID;
-	uintptr_t slaveFlags;
+	uintptr_t workerID;
+	uintptr_t workerFlags;
 	MM_ParallelDispatcher *dispatcher;
-} slaveThreadInfo;
+} workerThreadInfo;
 
-#define SLAVE_INFO_FLAG_OK 1
-#define SLAVE_INFO_FLAG_FAILED 2
+#define WORKER_INFO_FLAG_OK 1
+#define WORKER_INFO_FLAG_FAILED 2
 
 #define MINIMUM_HEAP_PER_THREAD (2*1024*1024)
 
 uintptr_t
 dispatcher_thread_proc2(OMRPortLibrary* portLib, void *info)
 {
-	slaveThreadInfo *slaveInfo = (slaveThreadInfo *)info;
-	OMR_VM *omrVM = slaveInfo->omrVM;
+	workerThreadInfo *workerInfo = (workerThreadInfo *)info;
+	OMR_VM *omrVM = workerInfo->omrVM;
 	OMR_VMThread *omrVMThread = NULL;
-	uintptr_t slaveID = 0;
-	MM_ParallelDispatcher *dispatcher = slaveInfo->dispatcher;
+	uintptr_t workerID = 0;
+	MM_ParallelDispatcher *dispatcher = workerInfo->dispatcher;
 	MM_EnvironmentBase *env = NULL;
 	uintptr_t oldVMState = 0;
 
 	/* Cache values from the info before releasing it */
-	slaveID = slaveInfo->slaveID;
+	workerID = workerInfo->workerID;
 
 	/* Attach the thread as a system daemon thread */
-	omrVMThread = MM_EnvironmentBase::attachVMThread(omrVM, "GC Slave", MM_EnvironmentBase::ATTACH_GC_DISPATCHER_THREAD);
+	omrVMThread = MM_EnvironmentBase::attachVMThread(omrVM, "GC Worker", MM_EnvironmentBase::ATTACH_GC_DISPATCHER_THREAD);
 	if (NULL == omrVMThread) {
 		goto startup_failed;
 	}
 
 	env = MM_EnvironmentBase::getEnvironment(omrVMThread);
-	env->setSlaveID(slaveID);
-	/* Enviroment initialization specific for GC threads (after slave ID is set) */
+	env->setWorkerID(workerID);
+	/* Enviroment initialization specific for GC threads (after worker ID is set) */
 	env->initializeGCThread();
 
 	/* Signal that the thread was created succesfully */
-	slaveInfo->slaveFlags = SLAVE_INFO_FLAG_OK;
+	workerInfo->workerFlags = WORKER_INFO_FLAG_OK;
 
 	oldVMState = env->pushVMstate(OMRVMSTATE_GC_DISPATCHER_IDLE);
 
 	/* Begin running the thread */
-	if (env->isMasterThread()) {
-		env->setThreadType(GC_MASTER_THREAD);
-		dispatcher->masterEntryPoint(env);
-		env->setThreadType(GC_SLAVE_THREAD);
+	if (env->isMainThread()) {
+		env->setThreadType(GC_MAIN_THREAD);
+		dispatcher->mainEntryPoint(env);
+		env->setThreadType(GC_WORKER_THREAD);
 	} else {
-		env->setThreadType(GC_SLAVE_THREAD);
-		dispatcher->slaveEntryPoint(env);
+		env->setThreadType(GC_WORKER_THREAD);
+		dispatcher->workerEntryPoint(env);
 	}
 
 	env->popVMstate(oldVMState);
 
 	/* Thread is terminating -- shut it down */
-	env->setSlaveID(0);
+	env->setWorkerID(0);
 	MM_EnvironmentBase::detachVMThread(omrVM, omrVMThread, MM_EnvironmentBase::ATTACH_GC_DISPATCHER_THREAD);
 	
 	omrthread_monitor_enter(dispatcher->_dispatcherMonitor);
@@ -108,7 +108,7 @@ dispatcher_thread_proc2(OMRPortLibrary* portLib, void *info)
 	return 0;
 
 startup_failed:
-	slaveInfo->slaveFlags = SLAVE_INFO_FLAG_FAILED;
+	workerInfo->workerFlags = WORKER_INFO_FLAG_FAILED;
 
 	omrthread_monitor_enter(dispatcher->_dispatcherMonitor);
 	omrthread_monitor_notify_all(dispatcher->_dispatcherMonitor);
@@ -123,8 +123,8 @@ extern "C" {
 int J9THREAD_PROC
 dispatcher_thread_proc(void *info)
 {
-	OMR_VM *omrVM = ((slaveThreadInfo *)info)->omrVM;
-	MM_ParallelDispatcher *dispatcher = ((slaveThreadInfo *)info)->dispatcher;
+	OMR_VM *omrVM = ((workerThreadInfo *)info)->omrVM;
+	MM_ParallelDispatcher *dispatcher = ((workerThreadInfo *)info)->dispatcher;
 	OMRPORT_ACCESS_FROM_OMRVM(omrVM);
 	uintptr_t rc;
 	omrsig_protect(dispatcher_thread_proc2, info,
@@ -138,8 +138,8 @@ dispatcher_thread_proc(void *info)
 
 
 /**
- * Run the main loop for a fully-constructed slave thread.
- * Subclasses can override this to have their own method of controlling slave
+ * Run the main loop for a fully-constructed worker thread.
+ * Subclasses can override this to have their own method of controlling worker
  * threads. They should keep the basic pattern of:
  * <code>
  * acceptTask(env); 
@@ -148,41 +148,41 @@ dispatcher_thread_proc(void *info)
  * </code>
  */
 void
-MM_ParallelDispatcher::slaveEntryPoint(MM_EnvironmentBase *env) 
+MM_ParallelDispatcher::workerEntryPoint(MM_EnvironmentBase *env) 
 {
-	uintptr_t slaveID = env->getSlaveID();
+	uintptr_t workerID = env->getWorkerID();
 	
 	setThreadInitializationComplete(env);
 	
-	omrthread_monitor_enter(_slaveThreadMutex);
+	omrthread_monitor_enter(_workerThreadMutex);
 
-	while(slave_status_dying != _statusTable[slaveID]) {
-		/* Wait for a task to be dispatched to the slave thread */
-		while(slave_status_waiting == _statusTable[slaveID]) {
-			omrthread_monitor_wait(_slaveThreadMutex);
+	while(worker_status_dying != _statusTable[workerID]) {
+		/* Wait for a task to be dispatched to the worker thread */
+		while(worker_status_waiting == _statusTable[workerID]) {
+			omrthread_monitor_wait(_workerThreadMutex);
 		}
 
-		if(slave_status_reserved == _statusTable[slaveID]) {
+		if(worker_status_reserved == _statusTable[workerID]) {
 			/* Found a task to dispatch to - do prep work for dispatch */
 			acceptTask(env);
-			omrthread_monitor_exit(_slaveThreadMutex);	
+			omrthread_monitor_exit(_workerThreadMutex);	
 
 			env->_currentTask->run(env);
 
-			omrthread_monitor_enter(_slaveThreadMutex);
+			omrthread_monitor_enter(_workerThreadMutex);
 			/* Returned from task - do clean up work from dispatch */
 			completeTask(env);
 		}
 	}
-	omrthread_monitor_exit(_slaveThreadMutex);	
+	omrthread_monitor_exit(_workerThreadMutex);	
 }
 
 void
-MM_ParallelDispatcher::masterEntryPoint(MM_EnvironmentBase *env)
+MM_ParallelDispatcher::mainEntryPoint(MM_EnvironmentBase *env)
 {
 	/* The default implementation is to not start a separate
-	 * master thread, but any subclasses that override 
-	 * useSeparateMasterThread() must also override this method.
+	 * main thread, but any subclasses that override 
+	 * useSeparateMainThread() must also override this method.
 	 */
 	assume0(0);
 }
@@ -208,9 +208,9 @@ MM_ParallelDispatcher::kill(MM_EnvironmentBase *env)
 {
 	OMR::GC::Forge *forge = env->getForge();
 
-	if(_slaveThreadMutex) {
-		omrthread_monitor_destroy(_slaveThreadMutex);
-		_slaveThreadMutex = NULL;
+	if(_workerThreadMutex) {
+		omrthread_monitor_destroy(_workerThreadMutex);
+		_workerThreadMutex = NULL;
 	}
     if(_dispatcherMonitor) {
         omrthread_monitor_destroy(_dispatcherMonitor);
@@ -245,7 +245,7 @@ MM_ParallelDispatcher::initialize(MM_EnvironmentBase *env)
 	_threadCountMaximum = env->getExtensions()->gcThreadCount;
 	Assert_MM_true(0 < _threadCountMaximum);
 
-	if(omrthread_monitor_init_with_name(&_slaveThreadMutex, 0, "MM_ParallelDispatcher::slaveThread")
+	if(omrthread_monitor_init_with_name(&_workerThreadMutex, 0, "MM_ParallelDispatcher::workerThread")
 	|| omrthread_monitor_init_with_name(&_dispatcherMonitor, 0, "MM_ParallelDispatcher::dispatcherControl")
 	|| omrthread_monitor_init_with_name(&_synchronizeMutex, 0, "MM_ParallelDispatcher::synchronize")) {
 		goto error_no_memory;
@@ -280,32 +280,32 @@ bool
 MM_ParallelDispatcher::startUpThreads()
 {
 	intptr_t threadForkResult;
-	uintptr_t slaveThreadCount;
-	slaveThreadInfo slaveInfo;
+	uintptr_t workerThreadCount;
+	workerThreadInfo workerInfo;
 
-	/* Fork the slave threads */
-	slaveInfo.omrVM = _extensions->getOmrVM();
-	slaveInfo.dispatcher = this;
+	/* Fork the worker threads */
+	workerInfo.omrVM = _extensions->getOmrVM();
+	workerInfo.dispatcher = this;
 
 	_threadShutdownCount = 0;
 
 	omrthread_monitor_enter(_dispatcherMonitor);
 
-	/* We may be starting the master thread at this point too */
-	slaveThreadCount = useSeparateMasterThread() ? 0 : 1;
+	/* We may be starting the main thread at this point too */
+	workerThreadCount = useSeparateMainThread() ? 0 : 1;
 	
-	while (slaveThreadCount < _threadCountMaximum) {
-		slaveInfo.slaveFlags = 0;
-		slaveInfo.slaveID = slaveThreadCount;
+	while (workerThreadCount < _threadCountMaximum) {
+		workerInfo.workerFlags = 0;
+		workerInfo.workerID = workerThreadCount;
 
 		threadForkResult =
 			createThreadWithCategory(
-				&(_threadTable[slaveThreadCount]),
+				&(_threadTable[workerThreadCount]),
 				_defaultOSStackSize,
 				getThreadPriority(),
 				0,
 				dispatcher_thread_proc,
-				(void *)&slaveInfo,
+				(void *)&workerInfo,
 				J9THREAD_CATEGORY_SYSTEM_GC_THREAD);
 		if (threadForkResult != 0) {
 			/* Thread creation failed - for safety sake, set the shutdown flag to true */
@@ -316,14 +316,14 @@ MM_ParallelDispatcher::startUpThreads()
 				goto error;
 			}
 			omrthread_monitor_wait(_dispatcherMonitor);
-		} while (!slaveInfo.slaveFlags);
+		} while (!workerInfo.workerFlags);
 
-		if(slaveInfo.slaveFlags != SLAVE_INFO_FLAG_OK ) {
+		if(workerInfo.workerFlags != WORKER_INFO_FLAG_OK ) {
 			goto error;
 		}
 
 		_threadShutdownCount += 1;
-		slaveThreadCount += 1;
+		workerThreadCount += 1;
 	}
 	omrthread_monitor_exit(_dispatcherMonitor);
 
@@ -352,24 +352,24 @@ MM_ParallelDispatcher::shutDownThreads()
 	omrthread_monitor_exit(_dispatcherMonitor);
 
 	/* TODO: Shutdown should account for threads that failed to start up in the first place */
-	omrthread_monitor_enter(_slaveThreadMutex);
+	omrthread_monitor_enter(_workerThreadMutex);
 
-	while (_slaveThreadsReservedForGC) {
-		omrthread_monitor_wait(_slaveThreadMutex);
+	while (_workerThreadsReservedForGC) {
+		omrthread_monitor_wait(_workerThreadMutex);
 	}
 
-	/* Set the slave thread mode to dying */
+	/* Set the worker thread mode to dying */
 	for(uintptr_t index=0; index < _threadCountMaximum; index++) {
-		_statusTable[index] = slave_status_dying;
+		_statusTable[index] = worker_status_dying;
 	}
 
 	/* Set the active parallel thread count to 1 */
-	/* This allows slave threads to cause a GC during their detach, */
-	/* making them the master in a single threaded GC */
+	/* This allows worker threads to cause a GC during their detach, */
+	/* making them the main in a single threaded GC */
 	_threadCount = 1;
 
 	wakeUpThreads(_threadShutdownCount);
-	omrthread_monitor_exit(_slaveThreadMutex);
+	omrthread_monitor_exit(_workerThreadMutex);
 
 	omrthread_monitor_enter(_dispatcherMonitor);
 	while (0 != _threadShutdownCount) {
@@ -379,15 +379,15 @@ MM_ParallelDispatcher::shutDownThreads()
 }
 
 /**
- * Wake up at least the first <code>count</code> slave threads.
- * In this implementation, since slaveThreadEntryPoint() allows a thread to
+ * Wake up at least the first <code>count</code> worker threads.
+ * In this implementation, since workerThreadEntryPoint() allows a thread to
  * go back to sleep if it wasn't selected, we can wake them all up. This
  * may not apply to all subclasses though.
  */
 void
 MM_ParallelDispatcher::wakeUpThreads(uintptr_t count)
 {
-	omrthread_monitor_notify_all(_slaveThreadMutex);	
+	omrthread_monitor_notify_all(_workerThreadMutex);	
 }
 
 /**
@@ -466,31 +466,31 @@ MM_ParallelDispatcher::adjustThreadCount(uintptr_t maxThreadCount)
 void
 MM_ParallelDispatcher::prepareThreadsForTask(MM_EnvironmentBase *env, MM_Task *task, uintptr_t threadCount)
 {
-	omrthread_monitor_enter(_slaveThreadMutex);
+	omrthread_monitor_enter(_workerThreadMutex);
 	
-	/* Set _slaveThreadsReservedForGC to true so that shutdown will not 
-	 * attempt to kill the slave threads until after this task is completed
+	/* Set _workerThreadsReservedForGC to true so that shutdown will not 
+	 * attempt to kill the worker threads until after this task is completed
 	 */
-	_slaveThreadsReservedForGC = true; 
+	_workerThreadsReservedForGC = true; 
 
 	task->setSynchronizeMutex(_synchronizeMutex);
 	
 	for(uintptr_t index=0; index < threadCount; index++) {
-		_statusTable[index] = slave_status_reserved;
+		_statusTable[index] = worker_status_reserved;
 		_taskTable[index] = task;
 	}
 	wakeUpThreads(threadCount);
-	omrthread_monitor_exit(_slaveThreadMutex);
+	omrthread_monitor_exit(_workerThreadMutex);
 }
 
 void
 MM_ParallelDispatcher::acceptTask(MM_EnvironmentBase *env)
 {
-	uintptr_t slaveID = env->getSlaveID();
+	uintptr_t workerID = env->getWorkerID();
 	
 	env->resetWorkUnitIndex();
-	_statusTable[slaveID] = slave_status_active;
-	env->_currentTask = _taskTable[slaveID];
+	_statusTable[workerID] = worker_status_active;
+	env->_currentTask = _taskTable[workerID];
 
 	env->_currentTask->accept(env);
 }
@@ -498,12 +498,12 @@ MM_ParallelDispatcher::acceptTask(MM_EnvironmentBase *env)
 void
 MM_ParallelDispatcher::completeTask(MM_EnvironmentBase *env)
 {
-	uintptr_t slaveID = env->getSlaveID();
-	_statusTable[slaveID] = slave_status_waiting;
+	uintptr_t workerID = env->getWorkerID();
+	_statusTable[workerID] = worker_status_waiting;
 	
 	MM_Task *currentTask = env->_currentTask;
 	env->_currentTask = NULL;
-	_taskTable[slaveID] = NULL;
+	_taskTable[workerID] = NULL;
 
 	currentTask->complete(env);
 }
@@ -511,15 +511,15 @@ MM_ParallelDispatcher::completeTask(MM_EnvironmentBase *env)
 void
 MM_ParallelDispatcher::cleanupAfterTask(MM_EnvironmentBase *env)
 {
-	omrthread_monitor_enter(_slaveThreadMutex);
+	omrthread_monitor_enter(_workerThreadMutex);
 	
-	_slaveThreadsReservedForGC = false;
+	_workerThreadsReservedForGC = false;
 	
 	if (_inShutdown) {
-		omrthread_monitor_notify_all(_slaveThreadMutex);
+		omrthread_monitor_notify_all(_workerThreadMutex);
 	}
 	
-	omrthread_monitor_exit(_slaveThreadMutex);
+	omrthread_monitor_exit(_workerThreadMutex);
 }
 
 /**
@@ -532,17 +532,17 @@ MM_ParallelDispatcher::getThreadPriority()
 }
 
 /**
- * Mark the slave thread as ready then notify everyone who is waiting
- * on the _slaveThreadMutex.
+ * Mark the worker thread as ready then notify everyone who is waiting
+ * on the _workerThreadMutex.
  */
 void
 MM_ParallelDispatcher::setThreadInitializationComplete(MM_EnvironmentBase *env)
 {
-	uintptr_t slaveID = env->getSlaveID();
+	uintptr_t workerID = env->getWorkerID();
 	
 	/* Set the status of the thread to waiting and notify that the thread has started up */
 	omrthread_monitor_enter(_dispatcherMonitor);
-	_statusTable[slaveID] = MM_ParallelDispatcher::slave_status_waiting;
+	_statusTable[workerID] = MM_ParallelDispatcher::worker_status_waiting;
 	omrthread_monitor_notify_all(_dispatcherMonitor);
 	omrthread_monitor_exit(_dispatcherMonitor);
 }
@@ -550,9 +550,9 @@ MM_ParallelDispatcher::setThreadInitializationComplete(MM_EnvironmentBase *env)
 void
 MM_ParallelDispatcher::reinitAfterFork(MM_EnvironmentBase *env, uintptr_t newThreadCount)
 {
-	/* Set the slave thread mode to dying */
+	/* Set the worker thread mode to dying */
 	for(uintptr_t index=0; index < _threadCountMaximum; index++) {
-		_statusTable[index] = slave_status_dying;
+		_statusTable[index] = worker_status_dying;
 	}
 
 	if (newThreadCount < _threadCountMaximum) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -66,7 +66,7 @@ public:
 
 	/**
 	 * Single call cleanup routine for tasks invoked by the master thread after the task has been dispatched and all
-	 * slave threads (if any) have been quiesced.
+	 * worker threads (if any) have been quiesced.
 	 */
 	virtual void masterCleanup(MM_EnvironmentBase *env);
 

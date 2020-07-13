@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -98,7 +98,7 @@ MM_ParallelSweepTask::cleanup(MM_EnvironmentBase *env)
 	
 	Trc_MM_ParallelSweepTask_parallelStats(
 		env->getLanguageVMThread(),
-		(uint32_t)env->getSlaveID(), 
+		(uint32_t)env->getWorkerID(), 
 		(uint32_t)omrtime_hires_delta(0, env->_sweepStats.idleTime, OMRPORT_TIME_DELTA_IN_MILLISECONDS), 
 		env->_sweepStats.sweepChunksProcessed, 
 		(uint32_t)omrtime_hires_delta(0, env->_sweepStats.mergeTime, OMRPORT_TIME_DELTA_IN_MILLISECONDS));
@@ -802,7 +802,7 @@ MM_ParallelSweepScheme::internalSweep(MM_EnvironmentBase *env)
  * There is no expectation for amount of work done for this routine.  The receiver is entitled to do as much or as little
  * work towards completing the sweep as it wants.  In this case, a full sweep of all memory spaces will be performed.
  * 
- * @note Expect to have the dispatcher and slave threads available for work
+ * @note Expect to have the dispatcher and worker threads available for work
  * @note Expect to have exclusive access
  * @note Expect to have a valid mark map for all live objects
  */
@@ -819,7 +819,7 @@ MM_ParallelSweepScheme::sweep(MM_EnvironmentBase *env)
  * Complete any sweep work after a basic sweep operation.
  * Completing the sweep is a noop - the basic sweep operation consists of a full sweep.
  * 
- * @note Expect to have the dispatcher and slave threads available for work
+ * @note Expect to have the dispatcher and worker threads available for work
  * @note Expect to have exclusive access
  * @note Expect to have a valid mark map for all live objects
  * @note Expect basic sweep work to have been completed

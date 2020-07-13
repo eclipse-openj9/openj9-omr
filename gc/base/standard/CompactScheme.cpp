@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -558,7 +558,7 @@ MM_CompactScheme::compact(MM_EnvironmentBase *envBase, bool rebuildMarkBits, boo
 	 *  o the compaction is aggressive. We use a single sub area per segment to avoid potentially having
 	 *    multiple holes created per segment, thereby fragmenting the space. This will result in
 	 *    singlethreaded compaction per segment, and so should only be done in extreme OOM situations.
-	 *  o no slave GC threads
+	 *  o no worker GC threads
 	 */
 	if (aggressive || (1 == env->_currentTask->getThreadCount())) {
 		singleThreaded = true;

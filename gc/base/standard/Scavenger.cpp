@@ -760,7 +760,7 @@ MM_Scavenger::mergeThreadGCStats(MM_EnvironmentBase *env)
 	/* record the thread-specific parallelism stats in the trace buffer. This aprtially duplicates info in -Xtgc:parallel */
 	Trc_MM_ParallelScavenger_parallelStats(
 		env->getLanguageVMThread(),
-		(uint32_t)env->getSlaveID(),
+		(uint32_t)env->getWorkerID(),
 		(uint32_t)omrtime_hires_delta(0, scavStats->_workStallTime, OMRPORT_TIME_DELTA_IN_MILLISECONDS),
 		(uint32_t)omrtime_hires_delta(0, scavStats->_completeStallTime, OMRPORT_TIME_DELTA_IN_MILLISECONDS),
 		(uint32_t)omrtime_hires_delta(0, scavStats->_syncStallTime, OMRPORT_TIME_DELTA_IN_MILLISECONDS),
@@ -2061,7 +2061,7 @@ MM_Scavenger::shouldDoFinalNotify(MM_EnvironmentStandard *env)
 			/* We know there is more work - can't do the final notify yet. Need to help with work and eventually re-evaulate if it's really the end */
 			return false;
 		}
-		/* If we have to yield, we do need to notify slave threads to unblock and temporarily completely scan loop */
+		/* If we have to yield, we do need to notify worker threads to unblock and temporarily completely scan loop */
 	}
 #endif /* #if defined(OMR_GC_CONCURRENT_SCAVENGER) */
 	return true;
@@ -2138,7 +2138,7 @@ MM_Scavenger::getNextScanCache(MM_EnvironmentStandard *env)
 				}
 
 #if defined(OMR_SCAVENGER_TRACE)
-				omrtty_printf("{SCAV: slaveID %zu _cachedEntryCount %zu _waitingCount %zu Scan cache from list (%p)}\n", env->getSlaveID(), _cachedEntryCount, _waitingCount, cache);
+				omrtty_printf("{SCAV: workerID %zu _cachedEntryCount %zu _waitingCount %zu Scan cache from list (%p)}\n", env->getWorkerID(), _cachedEntryCount, _waitingCount, cache);
 #endif /* OMR_SCAVENGER_TRACE */
 
 				return cache;

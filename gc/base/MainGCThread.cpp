@@ -302,7 +302,7 @@ MM_MainGCThread::garbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription 
 			 * For example, there may be a native out-of-memory during startup or RAS may 
 			 * trigger a GC after we've shutdown the master thread.
 			 */
-			Assert_MM_true(0 == env->getSlaveID());
+			Assert_MM_true(0 == env->getWorkerID());
 			_collector->preMasterGCThreadInitialize(env);
 			_collector->masterThreadGarbageCollect(env, allocDescription);
 

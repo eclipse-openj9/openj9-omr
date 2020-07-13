@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -235,9 +235,9 @@ MM_ParallelTask::complete(MM_EnvironmentBase *env)
 {
 	const char *id = UNIQUE_ID;
 
-	/* Update this slave thread's CPU time */
+	/* Update this worker thread's CPU time */
 	if(!env->isMasterThread()) {
-		env->_slaveThreadCpuTimeNanos = omrthread_get_self_cpu_time(env->getOmrVMThread()->_os_thread);
+		env->_workerThreadCpuTimeNanos = omrthread_get_self_cpu_time(env->getOmrVMThread()->_os_thread);
 	}
 
 	if(1 == _totalThreadCount) {

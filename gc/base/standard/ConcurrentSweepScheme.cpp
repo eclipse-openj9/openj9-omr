@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1310,9 +1310,9 @@ MM_ConcurrentSweepScheme::workThreadCompleteSweep(MM_EnvironmentBase *envBase)
  * two groups.  The master will attempt to connect the next available chunk, checking if the minimum free size has been
  * found during the connection.  If it hasn't, it moves to the next chunk and repeats the process (until all chunks have
  * been processed).  If the next available chunk is not ready for connecting, the master thread will attempt to find
- * another chunk to sweep to move total work forward before returning to connecting.  Slave threads are strictly responsible
+ * another chunk to sweep to move total work forward before returning to connecting.  Worker threads are strictly responsible
  * for finding and sweeping chunks.
- * When the master thread has finally connected in the minimum sized free entry, it will flag all slave threads to
+ * When the master thread has finally connected in the minimum sized free entry, it will flag all worker threads to
  * complete current work and stop any further sweeping.
  * @note The _largestFreeEntry value for the pool will be set
  * @note Do not call directly as this is the entry point for the dispatched task.
@@ -1410,14 +1410,14 @@ MM_ConcurrentSweepScheme::workThreadFindMinimumSizeFreeEntry(MM_EnvironmentBase 
 	if (NULL != memoryPool) {
 		if(env->isMasterThread()) {
 			/* Master thread: connect chunks until the correct entry is found or there are no more chunks to connect.
-			 * If an entry is found, set the task flag for slave termination to true
+			 * If an entry is found, set the task flag for worker termination to true
 			 */
 			task->_foundMinimumSizeFreeEntry = replenishPoolForAllocate(env, memoryPool, minimumFreeSize);
 			memoryPool->setLargestFreeEntry(getPoolState(memoryPool)->_largestFreeEntry);
 		} else {
-			/* Slave thread: keep finding and sweeping chunks until there are no more chunks to sweep or
+			/* Worker thread: keep finding and sweeping chunks until there are no more chunks to sweep or
 			 * the master has found an entry of the correct size and set the task termination flag.
-			 * Note: We might want to have a different flagging system that allows a slave to find the entry from
+			 * Note: We might want to have a different flagging system that allows a worker to find the entry from
 			 * its per-chunk statistics.
 			 */
 			MM_ConcurrentSweepPoolState *sweepState = (MM_ConcurrentSweepPoolState *)getPoolState(memoryPool);

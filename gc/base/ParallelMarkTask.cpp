@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -79,7 +79,7 @@ MM_ParallelMarkTask::cleanup(MM_EnvironmentBase *env)
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	Trc_MM_ParallelMarkTask_parallelStats(
 		env->getLanguageVMThread(),
-		(uint32_t)env->getSlaveID(),
+		(uint32_t)env->getWorkerID(),
 		(uint32_t)omrtime_hires_delta(0, env->_workPacketStats._workStallTime, OMRPORT_TIME_DELTA_IN_MILLISECONDS),
 		(uint32_t)omrtime_hires_delta(0, env->_workPacketStats._completeStallTime, OMRPORT_TIME_DELTA_IN_MILLISECONDS),
 		(uint32_t)omrtime_hires_delta(0, env->_markStats._syncStallTime, OMRPORT_TIME_DELTA_IN_MILLISECONDS),

@@ -1037,7 +1037,7 @@ MM_ConcurrentGC::getConHelperRequest(MM_EnvironmentBase *env)
 }
 
 void
-MM_ConcurrentGC::conHelperEntryPoint(OMR_VMThread *omrThread, uintptr_t slaveID)
+MM_ConcurrentGC::conHelperEntryPoint(OMR_VMThread *omrThread, uintptr_t workerID)
 {
 	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(omrThread);
 	ConHelperRequest request = CONCURRENT_HELPER_WAIT;
@@ -3004,7 +3004,7 @@ MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 
 				reportConcurrentCompleteTracingStart(env);
 				uint64_t startTime = omrtime_hires_clock();
-				/* Get assistance from all slave threads to complete processing of any remaining work packets.
+				/* Get assistance from all worker threads to complete processing of any remaining work packets.
 				 * In the event of work stack overflow we will just dirty cards which will get processed during
 				 * final card cleaning.
 				 */
@@ -3030,7 +3030,7 @@ MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 			}
 			resetInitRangesForSTW();
 
-			/* Get assistance from all slave threads to reset all mark bits for any NEW areas of heap */
+			/* Get assistance from all worker threads to reset all mark bits for any NEW areas of heap */
 			MM_ConcurrentClearNewMarkBitsTask clearNewMarkBitsTask(env, _dispatcher, this);
 			_dispatcher->run(env, &clearNewMarkBitsTask);
 
@@ -3056,7 +3056,7 @@ MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 				/* remember count when we start */
 				overflowCount = _stats.getConcurrentWorkStackOverflowCount();
 
-				/* Get assistance from all slave threads to do final card cleaning */
+				/* Get assistance from all worker threads to do final card cleaning */
 				MM_ConcurrentFinalCleanCardsTask cleanCardsTask(env, _dispatcher, this, env->_cycleState);
 				((MM_ConcurrentCardTable *)_cardTable)->initializeFinalCardCleaning(env);
 
@@ -3370,7 +3370,7 @@ MM_ConcurrentGC::heapReconfigured(MM_EnvironmentBase *env, HeapReconfigReason re
 /**
  * Clear mark bits for any nursery heaps.
  *
- * This routine is called by ConcurrentClearNewMarkBits task on master and any slave
+ * This routine is called by ConcurrentClearNewMarkBits task on master and any worker
  * threads during internalPreCollect().
  */
 void
@@ -3509,7 +3509,7 @@ MM_ConcurrentGC::finalCleanCards(MM_EnvironmentBase *env)
  * A marked object which is not in a dirty card needs rescanning now for any references
  * to the nursery which will not have been traced by concurrent mark
  *
- * This routine is called ConcurrentScanRememberedSetTask on master and any slave threads
+ * This routine is called ConcurrentScanRememberedSetTask on master and any worker threads
  * during internalPreCollect().
  */
 void

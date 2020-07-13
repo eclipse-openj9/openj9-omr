@@ -844,14 +844,34 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1CondInstruction *instr)
    trfflush(_comp->getOutFile());
    }
 
+/*
+ * Convert 8-bit modified immediate constant used in fmovimm instructions
+ * to double value
+ */
+static double
+getDoubleFromImm8(uint32_t imm8)
+   {
+   uint32_t isNegative = imm8 & 0x80;
+   uint32_t lower4 = imm8 & 0xf;
+   uint32_t upper3 = (imm8 >> 4) & 0x7;
+   uint32_t shift = (upper3 <= 3) ? (upper3 + 4) : (upper3 - 4);
+
+   double x = (lower4 + 16) / 16.0;
+   double y = (1 << shift) / 8.0;
+   double r = x * y;
+
+   return isNegative ? -r : r;
+   }
+
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1ImmInstruction *instr)
    {
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getTargetRegister(), TR_WordReg);
-   if ((instr->getOpCodeValue() == TR::InstOpCode::adr) ||
-       (instr->getOpCodeValue() == TR::InstOpCode::adrp))
+
+   TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+   if ((op == TR::InstOpCode::adr) || (op == TR::InstOpCode::adrp))
       {
       int64_t offset = static_cast<int64_t>(static_cast<int32_t>(instr->getSourceImmediate()));
       if (instr->getOpCodeValue() == TR::InstOpCode::adrp)
@@ -859,6 +879,11 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1ImmInstruction *instr)
          offset *= 4096;
          }
       trfprintf(pOutFile, ", " POINTER_PRINTF_FORMAT, (instr->getBinaryEncoding() + offset));
+      }
+   else if ((op == TR::InstOpCode::fmovimms) || (op == TR::InstOpCode::fmovimmd))
+      {
+      uint32_t imm = instr->getSourceImmediate() & 0xFF;
+      trfprintf(pOutFile, ", 0x%02x (%lf)", imm, getDoubleFromImm8(imm));
       }
    else
       {

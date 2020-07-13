@@ -158,6 +158,51 @@ omrsock_recvfrom(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint
 }
 
 int32_t
+omrsock_pollfd_init(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t handle, omrsock_socket_t sock, int16_t events)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+int32_t
+omrsock_get_pollfd_info(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t handle, omrsock_socket_t *sock, int16_t *revents)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+int32_t
+omrsock_poll(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t fds, uint32_t nfds, int32_t timeoutMs)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+void
+omrsock_fdset_zero(struct OMRPortLibrary *portLibrary, omrsock_fdset_t fdset)
+{
+}
+
+void
+omrsock_fdset_set(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset) 
+{
+}
+
+void
+omrsock_fdset_clr(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset) 
+{
+}
+
+BOOLEAN
+omrsock_fdset_isset(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset) 
+{
+	return FALSE;
+}
+
+int32_t
+omrsock_select(struct OMRPortLibrary *portLibrary, omrsock_fdset_t readfds, omrsock_fdset_t writefds, omrsock_fdset_t exceptfds, omrsock_timeval_t timeout)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+int32_t
 omrsock_close(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock)
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;

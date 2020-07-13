@@ -350,6 +350,14 @@ static OMRPortLibrary MainPortLibraryTable = {
 	omrsock_sendto, /* sock_sendto */
 	omrsock_recv, /* sock_recv */
 	omrsock_recvfrom, /* sock_recvfrom */
+	omrsock_pollfd_init, /* sock_pollfd_init */
+	omrsock_get_pollfd_info, /* sock_get_pollfd_info */
+	omrsock_poll, /* sock_poll */
+	omrsock_fdset_zero, /* sock_fdset_zero */
+	omrsock_fdset_set, /* sock_fdset_set */
+	omrsock_fdset_clr, /* sock_fdset_clr */
+	omrsock_fdset_isset, /* sock_fdset_isset */
+	omrsock_select, /* sock_select */
 	omrsock_close, /* sock_close */
 	omrsock_shutdown, /* sock_shutdown */
 	omrsock_htons, /* sock_htons */

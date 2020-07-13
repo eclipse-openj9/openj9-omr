@@ -34,6 +34,12 @@ typedef struct OMRSockAddrStorage *omrsock_sockaddr_t;
 /* Pointer to OMRSocket, a struct that contains socket descriptor. */
 typedef struct OMRSocket *omrsock_socket_t;
 
+/* Pointer to OMRPollFd, a struct that contains struct pollfd. */
+typedef struct OMRPollFd *omrsock_pollfd_t;
+
+/* Pointer to OMRFdSet, a struct that contains struct fd_set. */
+typedef struct OMRFdSet *omrsock_fdset_t;
+
 /* Pointer to OMRTimeval, a struct that contains struct timeval. */
 typedef struct OMRTimeval *omrsock_timeval_t;
 

@@ -62,6 +62,17 @@
 #include <sys/time.h>
 #endif /* defined(J9ZOS390) */
 
+/**
+ * To define pollfd for all systems but Windows.
+ */
+#if !defined(OMR_OS_WINDOWS)
+#include <poll.h>
+#endif /* !defined(OMR_OS_WINDOWS) */
+
+#if defined(OMR_OS_LINUX) || defined(OMR_OS_AIX) || defined(OMR_OS_OSX)
+#include <sys/select.h>
+#endif /* defined(OMR_OS_LINUX) || defined(OMR_OS_AIX) || defined(OMR_OS_OSX) */
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -106,6 +117,22 @@ typedef struct OMRAddrInfoNode {
 	 */
 	uint32_t length;
 } OMRAddrInfoNode;
+
+/**
+ * A struct for pollfd. @ref omrsock_poll.
+ */
+typedef struct OMRPollFd {
+	OMRSocket *socket;
+	struct pollfd data;
+} OMRPollFd;
+
+/**
+ * A struct for fd_set. @ref omrsock_select.
+ */
+typedef struct OMRFdSet {
+	int32_t maxFd;
+	fd_set data;
+} OMRFdSet;
 
 /**
  * A struct for storing timeval values. Filled in using @ref omrsock_timeval_init.

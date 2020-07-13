@@ -2259,6 +2259,22 @@ typedef struct OMRPortLibrary {
 	int32_t (*sock_recv)(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t *buf, int32_t nbyte, int32_t flags) ;
 	/** see @ref omrsock.c::omrsock_recvfrom "omrsock_recvfrom"*/
 	int32_t (*sock_recvfrom)(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t *buf, int32_t nbyte, int32_t flags, omrsock_sockaddr_t addrHandle) ;
+	/** see @ref omrsock.c::omrsock_pollfd_init "omrsock_pollfd_init"*/
+	int32_t (*sock_pollfd_init)(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t handle, omrsock_socket_t sock, int16_t events) ;
+	/** see @ref omrsock.c::omrsock_pollpd_info "omrsock_pollfd_info"*/
+	int32_t (*sock_get_pollfd_info)(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t handle, omrsock_socket_t *sock, int16_t *revents) ;
+	/** see @ref omrsock.c::omrsock_poll "omrsock_poll"*/
+	int32_t (*sock_poll)(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t fds, uint32_t nfds, int32_t timeoutMs) ;
+	/** see @ref omrsock.c::omrsock_fdset_zero "omrsock_fdset_zero"*/
+	void (*sock_fdset_zero)(struct OMRPortLibrary *portLibrary, omrsock_fdset_t fdset) ;
+	/** see @ref omrsock.c::omrsock_fdset_set "omrsock_fdset_set"*/
+	void (*sock_fdset_set)(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset) ;
+	/** see @ref omrsock.c::omrsock_fdset_clr "omrsock_fdset_clr"*/
+	void (*sock_fdset_clr)(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset) ;
+	/** see @ref omrsock.c::omrsock_fdset_isset "omrsock_fdset_isset"*/
+	BOOLEAN (*sock_fdset_isset)(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset) ;
+	/** see @ref omrsock.c::omrsock_select "omrsock_select"*/
+	int32_t (*sock_select)(struct OMRPortLibrary *portLibrary, omrsock_fdset_t readfds, omrsock_fdset_t writefds, omrsock_fdset_t exceptfds, omrsock_timeval_t timeout) ;
 	/** see @ref omrsock.c::omrsock_close "omrsock_close"*/
 	int32_t (*sock_close)(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock) ;
 	/** see @ref omrsock.c::omrsock_shutdown "omrsock_shutdown"*/
@@ -2813,6 +2829,14 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsock_sendto(param1,param2,param3,param4,param5) privateOmrPortLibrary->sock_sendto(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5))
 #define omrsock_recv(param1,param2,param3,param4) privateOmrPortLibrary->sock_recv(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
 #define omrsock_recvfrom(param1,param2,param3,param4,param5) privateOmrPortLibrary->sock_recvfrom(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5))
+#define omrsock_pollfd_init(param1,param2,param3) privateOmrPortLibrary->sock_pollfd_init(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrsock_get_pollfd_info(param1,param2,param3) privateOmrPortLibrary->sock_get_pollfd_info(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrsock_poll(param1,param2,param3) privateOmrPortLibrary->sock_poll(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrsock_fdset_zero(param1) privateOmrPortLibrary->sock_fdset_zero(privateOmrPortLibrary, (param1))
+#define omrsock_fdset_set(param1,param2) privateOmrPortLibrary->sock_fdset_set(privateOmrPortLibrary, (param1), (param2))
+#define omrsock_fdset_clr(param1,param2) privateOmrPortLibrary->sock_fdset_clr(privateOmrPortLibrary, (param1), (param2))
+#define omrsock_fdset_isset(param1,param2) privateOmrPortLibrary->sock_fdset_isset(privateOmrPortLibrary, (param1), (param2))
+#define omrsock_select(param1,param2,param3,param4) privateOmrPortLibrary->sock_select(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
 #define omrsock_close(param1) privateOmrPortLibrary->sock_close(privateOmrPortLibrary, (param1))
 #define omrsock_shutdown() privateOmrPortLibrary->sock_shutdown(privateOmrPortLibrary)
 #define omrsock_htons(param1) privateOmrPortLibrary->sock_htons(privateOmrPortLibrary, (param1))

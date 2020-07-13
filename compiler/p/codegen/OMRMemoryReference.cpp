@@ -1619,15 +1619,17 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
 
       if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
          {
-         TR::Register *addrReg = cg->allocateRegister();
-         _baseRegister = addrReg;
-         self()->setBaseModifiable();
+         intptr_t addr = reinterpret_cast<intptr_t>(symbol->getStaticSymbol()->getStaticAddress());
 
          // For now, P10 PC-relative loads and stores are not supported for UnresolvedDataSnippet
          // and for anything requiring a TR_ClassAddress relocation. To make things work, we must
          // emit the 5 instruction load address by faking that the pTOC was full.
          if (ref->isUnresolved() || useUnresSnippetToAvoidRelo || (cg->comp()->compileRelocatableCode() && symbol->isStatic() && symbol->isClassObject()))
             {
+            TR::Register *addrReg = cg->allocateRegister();
+            _baseRegister = addrReg;
+            self()->setBaseModifiable();
+
             if (ref->isUnresolved() || useUnresSnippetToAvoidRelo)
                {
                snippet = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false);
@@ -1651,9 +1653,18 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
             if (snippet != NULL)
                cg->stopUsingRegister(fakeTocRef->getModBase());
             }
+         else if (addr >= -0x200000000 && addr <= 0x1ffffffff)
+            {
+            _baseRegister = NULL;
+            _offset = addr;
+            }
          else
             {
-            loadAddressConstant(cg, false, nodeForSymbol, reinterpret_cast<intptr_t>(symbol->getStaticSymbol()->getStaticAddress()), addrReg);
+            TR::Register *addrReg = cg->allocateRegister();
+            _baseRegister = addrReg;
+            self()->setBaseModifiable();
+
+            loadAddressConstant(cg, false, nodeForSymbol, addr, addrReg);
             }
          }
       else

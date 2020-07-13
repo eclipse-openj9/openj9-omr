@@ -136,6 +136,7 @@ void loadFloatConstant(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic loadOp, T
          }
 
       cg->findOrCreateFloatConstant(value, type, loadInstr, NULL, NULL, NULL);
+      return;
       }
    else if (cg->comp()->target().is64Bit())
       {

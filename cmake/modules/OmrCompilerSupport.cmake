@@ -141,7 +141,7 @@ function(aarch64_spp_files out_var compiler)
 		if(extension STREQUAL ".spp")
 			set_source_files_properties(${in_f} PROPERTIES
 				LANGUAGE ASM
-				COMPILE_FLAGS "-x;assembler-with-cpp")
+				COMPILE_FLAGS "-xassembler-with-cpp")
 		endif()
 	endforeach()
 endfunction()
@@ -156,7 +156,7 @@ function(omr_inject_object_modification_targets result compiler_name)
 	if(OMR_ARCH_POWER)
 		ppc_spp2s_files(arg ${compiler_name} ${arg})
 	elseif(OMR_ARCH_AARCH64)
-		aarch64_spp_files(arg ${compiler_name ${arg})
+		aarch64_spp_files(arg ${compiler_name} ${arg})
 	endif()
 
 

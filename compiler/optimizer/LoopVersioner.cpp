@@ -2431,7 +2431,7 @@ bool opCodeIsHoistable(TR::Node *node, TR::Compilation *comp)
       TR::ILOpCodes opCodeValue = opCode.getOpCodeValue();
       TR::SymbolReference *symReference = node->getSymbolReference();
 
-      // CAREFUL: This should probably be a whitelist of side-effect free operators. If we move effectful stuff, things
+      // CAREFUL: This should probably be an allowlist of side-effect free operators. If we move effectful stuff, things
       // may explode. Boom is bad.
       hasEffects = (opCode.isCall() || opCodeValue == TR::New || opCodeValue == TR::newarray || opCodeValue == TR::anewarray ||
                     opCodeValue == TR::multianewarray) || symReference->isUnresolved() ||

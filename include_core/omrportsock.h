@@ -67,4 +67,8 @@ typedef struct OMRLinger *omrsock_linger_t;
 #define OMRSOCK_SO_SNDTIMEO 5
 #define OMRSOCK_TCP_NODELAY 6
 
+/* Socket Flags */
+#define OMRSOCK_O_ASYNC 0x0100
+#define OMRSOCK_O_NONBLOCK 0x1000
+
 #endif /* !defined(OMRPORTSOCK_H_) */

@@ -69,8 +69,8 @@ get_os_family(int32_t omrFamily)
 }
 
 /**
- * @internal Map OMRSOCK API user interface socket type to the OS socket type, 
- * which may be defined differently depending on operating system. 
+ * @internal Map OMRSOCK API user interface socket type to the OS socket type,
+ * which may be defined differently depending on operating system.
  *
  * @param omrSockType The OMR socket type to be converted.
  *
@@ -79,6 +79,9 @@ get_os_family(int32_t omrFamily)
 static int32_t
 get_os_socktype(int32_t omrSockType)
 {
+	/* Mask sockType. It should be defined in this range. */
+	omrSockType &= 0x00FF;
+
 	switch (omrSockType) {
 	case OMRSOCK_STREAM:
 		return OS_SOCK_STREAM;
@@ -111,6 +114,95 @@ get_os_protocol(int32_t omrProtocol)
 		break;
 	}
 	return OS_SOCK_IPPROTO_DEFAULT;
+}
+
+/**
+ * @internal Map OMRSOCK API user interface socket level to
+ * OS socket level. Used to resolve the arguments of socket 
+ * option functions. 
+ * 
+ * Socket Levels currently supported are:
+ * \arg OMRSOCK_SOL_SOCKET, for most options.
+ * \arg OMRSOCK_IPPROTO_TCP, for the TCP noDelay option.
+ *
+ * @param[in] socketLevel The OMR socket level to be converted.
+ *
+ * @return OS protocol on success, or OS_SOL_SOCKET if none exists. 
+ */
+static int32_t
+get_os_socket_level(int32_t socketLevel)
+{
+	switch (socketLevel) {
+	case OMRSOCK_SOL_SOCKET:
+		return OS_SOL_SOCKET;
+	case OMRSOCK_IPPROTO_TCP:
+		return OS_SOCK_IPPROTO_TCP;
+	default:
+		break;
+	}
+	return OMRPORT_ERROR_SOCK_LEVEL_UNSUPPORTED;
+}
+
+/**
+ * @internal Map OMRSOCK API user interface socket option to OS socket option.
+ * Used to resolve the arguments of socket option functions.
+ * Options currently in supported are:
+ * \arg SO_KEEPALIVE, the keep-alive messages are enabled.
+ * \arg SO_LINGER, the linger timeout.
+ * \arg SO_REUSEADDR, the reusage of local address are allowed in bind.
+ * \arg SO_RCVTIMEO, the receive timeout.
+ * \arg SO_SNDTIMEO, the send timeout.
+ * \arg TCP_NODELAY, the buffering scheme disabling Nagle's algorithm.
+ *
+ * @param[in] socketOption The portable socket option to convert.
+ *
+ * @return OS Socket Option on success, or OS_SOL_SOCKET if none exists. 
+ */
+static int32_t
+get_os_socket_option(int32_t socketOption)
+{
+	switch (socketOption) {
+	case OMRSOCK_SO_KEEPALIVE:
+		return OS_SO_KEEPALIVE;
+	case OMRSOCK_SO_LINGER:
+		return OS_SO_LINGER;
+	case OMRSOCK_SO_REUSEADDR:
+		return OS_SO_REUSEADDR;
+	case OMRSOCK_SO_RCVTIMEO:
+		return OS_SO_RCVTIMEO;
+	case OMRSOCK_SO_SNDTIMEO:
+		return OS_SO_SNDTIMEO;
+	case OMRSOCK_TCP_NODELAY:
+		return OS_TCP_NODELAY;
+	default:
+		break;
+	}
+	return OMRPORT_ERROR_SOCK_OPTION_UNSUPPORTED;
+}
+
+/**
+ * @internal Map OMRSOCK API user interface socket flag to the OS socket,
+ * flag which may be defined differently depending on operating system.
+ *
+ * @param omrProtocol The OMR flag to be converted.
+ *
+ * @return OS socket flag on success, or 0 if none exists.
+ */
+static int32_t
+get_os_socket_flag(int32_t omrFlag)
+{
+	/* Mask flag. It should be defined in this range. */
+	omrFlag &= 0xFF00;
+
+	switch (omrFlag) {
+	case OMRSOCK_O_ASYNC:
+		return OS_O_ASYNC;
+	case OMRSOCK_O_NONBLOCK:
+		return OS_O_NONBLOCK;
+	default:
+		break;
+	}
+	return 0;
 }
 
 /* Internal: OS dependent constants TO OMRSOCK user interface constants mapping. */
@@ -180,70 +272,6 @@ get_omr_protocol(int32_t osProtocol)
 		break;
 	}
 	return OMRSOCK_IPPROTO_DEFAULT;
-}
-
-/**
- * @internal Map OMRSOCK API user interface socket level to
- * OS socket level. Used to resolve the arguments of socket 
- * option functions. 
- * 
- * Socket Levels currently supported are:
- * \arg OMRSOCK_SOL_SOCKET, for most options.
- * \arg OMRSOCK_IPPROTO_TCP, for the TCP noDelay option.
- *
- * @param[in] socketLevel The OMR socket level to be converted.
- *
- * @return OS protocol on success, or OS_SOL_SOCKET if none exists. 
- */
-static int32_t
-get_os_socket_level(int32_t socketLevel)
-{
-	switch (socketLevel) {
-	case OMRSOCK_SOL_SOCKET:
-		return OS_SOL_SOCKET;
-	case OMRSOCK_IPPROTO_TCP:
-		return OS_SOCK_IPPROTO_TCP;
-	default:
-		break;
-	}
-	return OMRPORT_ERROR_SOCK_LEVEL_UNSUPPORTED;
-}
-
-/**
- * @internal Map OMRSOCK API user interface socket option to OS socket option.
- * Used to resolve the arguments of socket option functions.
- * Options currently in supported are:
- * \arg SO_KEEPALIVE, the keep-alive messages are enabled.
- * \arg SO_LINGER, the linger timeout.
- * \arg SO_REUSEADDR, the reusage of local address are allowed in bind.
- * \arg SO_RCVTIMEO, the receive timeout.
- * \arg SO_SNDTIMEO, the send timeout.
- * \arg TCP_NODELAY, the buffering scheme disabling Nagle's algorithm.
- *
- * @param[in] socketOption The portable socket option to convert.
- *
- * @return OS Socket Option on success, or OS_SOL_SOCKET if none exists. 
- */
-static int32_t
-get_os_socket_option(int32_t socketOption)
-{
-	switch (socketOption) {
-	case OMRSOCK_SO_KEEPALIVE:
-		return OS_SO_KEEPALIVE;
-	case OMRSOCK_SO_LINGER:
-		return OS_SO_LINGER;
-	case OMRSOCK_SO_REUSEADDR:
-		return OS_SO_REUSEADDR;
-	case OMRSOCK_SO_RCVTIMEO:
-		return OS_SO_RCVTIMEO;
-	case OMRSOCK_SO_SNDTIMEO:
-		return OS_SO_SNDTIMEO;
-	case OMRSOCK_TCP_NODELAY:
-		return OS_TCP_NODELAY;
-	default:
-		break;
-	}
-	return OMRPORT_ERROR_SOCK_OPTION_UNSUPPORTED;
 }
 
 /**
@@ -587,7 +615,10 @@ omrsock_sockaddr_init6(struct OMRPortLibrary *portLibrary, omrsock_sockaddr_t ha
 int32_t
 omrsock_socket_getfd(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	if (NULL == sock) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+	return sock->data;
 }
 
 int32_t
@@ -596,24 +627,41 @@ omrsock_socket(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock, int32
 	int32_t sockDescriptor = 0;
 	int32_t osFamily = get_os_family(family);
 	int32_t osSockType = get_os_socktype(socktype);
+	int32_t osFlag = get_os_socket_flag(socktype);
 	int32_t osProtocol = get_os_protocol(protocol);
+	int32_t fdFlags = 0;
 	
 	/* Initialize return omrsock_socket_t to NULL. */
 	*sock = NULL;
 
-	if ((osFamily < 0) || (osSockType < 0) || (osProtocol < 0)) {
+	if ((0 > osFamily) || (0 > osSockType) || (0 > osProtocol)) {
 		return OMRPORT_ERROR_INVALID_ARGUMENTS;
 	}
 
+#if defined(LINUX)
+	sockDescriptor = socket(osFamily, osSockType | osFlag, osProtocol);
+#else /* define(OMR_OS_LINUX) */
 	sockDescriptor = socket(osFamily, osSockType, osProtocol);
+#endif /* define(OMR_OS_LINUX) */
 
-	if (sockDescriptor < 0) {
+	if (0 > sockDescriptor) {
 		return portLibrary->error_set_last_error(portLibrary, errno,  get_omr_error(errno));
 	}
 
 	/* Tag this descriptor as being non-inheritable. */
-	int32_t fdflags = fcntl(sockDescriptor, F_GETFD, 0);
-	fcntl(sockDescriptor, F_SETFD, fdflags | FD_CLOEXEC);
+	fdFlags = fcntl(sockDescriptor, F_GETFD, 0);
+	fcntl(sockDescriptor, F_SETFD, fdFlags | FD_CLOEXEC);
+
+#if !defined(LINUX)
+	if (0 != osFlag) {
+		fdFlags = fcntl(sockDescriptor, F_GETFL, 0);
+
+		if (fcntl(sockDescriptor, F_SETFL, fdFlags | osFlag) < 0) {
+			close(sockDescriptor);
+			return portLibrary->error_set_last_error(portLibrary, errno, get_omr_error(errno));
+		}
+	}
+#endif /* !defined(OMR_OS_LINUX) */
 
 	/* Set up the socket structure. */
 	*sock = (omrsock_socket_t)portLibrary->mem_allocate_memory(portLibrary, sizeof(struct OMRSocket), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
@@ -851,7 +899,19 @@ omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const 
 int32_t
 omrsock_fcntl(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, int32_t arg)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	int32_t existingFlags = 0;
+	int32_t socketFlag = get_os_socket_flag(arg);
+
+	if (NULL == sock || 0 == socketFlag){
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	existingFlags = fcntl(sock->data, F_GETFL, 0);
+
+	if (fcntl(sock->data, F_SETFL, existingFlags | socketFlag) < 0) {
+		return portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_FILE_OPFAILED);
+	}
+	return 0;
 }
 
 int32_t

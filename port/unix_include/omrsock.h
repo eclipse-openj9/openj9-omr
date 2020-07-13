@@ -40,6 +40,7 @@
 
 #include <sys/types.h> /* Some historical implementations need this file, POSIX.1-2001 does not. */
 #include <sys/socket.h>
+#include <fcntl.h>
 #include <netinet/in.h> /* Must come before <netinet/tcp.h> */
 #include <netinet/tcp.h>
 
@@ -63,12 +64,22 @@ typedef struct sockaddr_in6 omr_os_sockaddr_in6; /* IPv6 */
 #define OS_SOCK_IPPROTO_TCP IPPROTO_TCP
 #define OS_SOCK_IPPROTO_UDP IPPROTO_UDP
 
-/* Socket options*/
+/* Socket options */
 #define OS_SO_REUSEADDR SO_REUSEADDR
 #define OS_SO_KEEPALIVE SO_KEEPALIVE
 #define OS_SO_LINGER SO_LINGER
 #define OS_SO_RCVTIMEO SO_RCVTIMEO
 #define OS_SO_SNDTIMEO SO_SNDTIMEO
 #define OS_TCP_NODELAY TCP_NODELAY
+
+/* Socket Flags */
+#if defined(J9ZOS390)
+#define OS_O_ASYNC O_ASYNCSIG
+#elif defined(AIXPPC)
+#define OS_O_ASYNC FASYNC
+#else
+#define OS_O_ASYNC O_ASYNC
+#endif
+#define OS_O_NONBLOCK O_NONBLOCK
 
 #endif /* !defined(OMRSOCK_H_) */

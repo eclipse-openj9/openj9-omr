@@ -112,7 +112,32 @@ void loadFloatConstant(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic loadOp, T
          TR_ASSERT_FATAL_WITH_NODE(node, false, "Cannot call loadFloatConstant with data type %s", TR::DataType::getName(type));
       }
 
-   if (cg->comp()->target().is64Bit())
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
+      {
+      TR::Instruction *loadInstr;
+
+      // Since we're using Trg1Imm instructions (to allow patching of the PC-relative offset), we
+      // have to use the prefixed form of the load without relying on MemoryReference expansion or
+      // the backend will reject the instruction as invalid.
+      switch (loadOp)
+         {
+         case TR::InstOpCode::lfs:
+            loadInstr = generateTrg1ImmInstruction(cg, TR::InstOpCode::plfs, node, trgReg, 0);
+            break;
+         case TR::InstOpCode::lfd:
+            loadInstr = generateTrg1ImmInstruction(cg, TR::InstOpCode::plfd, node, trgReg, 0);
+            break;
+         case TR::InstOpCode::lxvdsx:
+            loadInstr = generateTrg1ImmInstruction(cg, TR::InstOpCode::paddi, node, trgReg, 0);
+            generateTrg1MemInstruction(cg, loadOp, node, trgReg, new (cg->trHeapMemory()) TR::MemoryReference(NULL, trgReg, length, cg));
+            break;
+         default:
+            TR_ASSERT_FATAL_WITH_NODE(node, false, "Unhandled load instruction %s in loadFloatConstant", TR::InstOpCode(loadOp).getMnemonicName());
+         }
+
+      cg->findOrCreateFloatConstant(value, type, loadInstr, NULL, NULL, NULL);
+      }
+   else if (cg->comp()->target().is64Bit())
       {
       int32_t tocOffset;
 
@@ -175,18 +200,30 @@ void loadFloatConstant(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic loadOp, T
 
 TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node * node, intptr_t address, TR::Register *trgReg, TR::Register *tempReg, TR::InstOpCode::Mnemonic opCode, bool isUnloadablePicSite, TR::Instruction *cursor)
    {
-   TR::Instruction *q[4];
-   bool isTmpRegLocal = false;
-   if (!tempReg && cg->comp()->target().is64Bit())
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
       {
-      tempReg = cg->allocateRegister();
-      isTmpRegLocal = true;
+      cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::Op_pload, node, trgReg, 0, cursor);
+      cg->findOrCreateAddressConstant(&address, TR::Address, cursor, NULL, NULL, NULL, node, isUnloadablePicSite);
       }
-   TR::Instruction *c = fixedSeqMemAccess(cg, node, 0, q, trgReg,  trgReg, opCode, sizeof(intptr_t), cursor, tempReg);
-   cg->findOrCreateAddressConstant(&address, TR::Address, q[0], q[1], q[2], q[3], node, isUnloadablePicSite);
-   if (isTmpRegLocal)
-      cg->stopUsingRegister(tempReg);
-   return c;
+   else
+      {
+      TR::Instruction *q[4];
+
+      bool isTmpRegLocal = false;
+      if (!tempReg && cg->comp()->target().is64Bit())
+         {
+         tempReg = cg->allocateRegister();
+         isTmpRegLocal = true;
+         }
+
+      cursor = fixedSeqMemAccess(cg, node, 0, q, trgReg,  trgReg, opCode, sizeof(intptr_t), cursor, tempReg);
+      cg->findOrCreateAddressConstant(&address, TR::Address, q[0], q[1], q[2], q[3], node, isUnloadablePicSite);
+
+      if (isTmpRegLocal)
+         cg->stopUsingRegister(tempReg);
+      }
+
+   return cursor;
    }
 
 

@@ -70,23 +70,49 @@ template <class T> class PPCConstant
       if (n0 != NULL)
          {
          _instructionPairs.add(n0);
-         _instructionPairs.add(n1);
          n0->setWillBePatched();
+         }
+
+      if (n1 != NULL)
+         {
+         _instructionPairs.add(n1);
          n1->setWillBePatched();
          }
 
       if (n2 != NULL)
          {
          _instructionPairs.add(n2);
-         _instructionPairs.add(n3);
          n2->setWillBePatched();
+         }
+
+      if (n3 != NULL)
+         {
+         _instructionPairs.add(n3);
          n3->setWillBePatched();
          }
       }
 
    void patchRequestors(TR::CodeGenerator *cg, intptr_t addr)
       {
-      if (TR::Compiler->target.is64Bit())
+      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
+         {
+         for (int32_t i = 0; i < _instructionPairs.size(); i++)
+            {
+            TR::Instruction *instr = _instructionPairs[i];
+
+            // Since prefixed instructions may emit an extra nop for alignment reasons, the actual
+            // instruction to be patched may not necessarily be found at the pointer returned by
+            // getBinaryEncoding().
+            uint32_t *cursor = reinterpret_cast<uint32_t*>(instr->getBinaryEncoding() + instr->getBinaryLength() - 8);
+            intptr_t offset = reinterpret_cast<uint8_t*>(addr) - reinterpret_cast<uint8_t*>(cursor);
+
+            TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, offset >= -0x200000000 && offset <= 0x1ffffffff, "Offset to ConstantDataSnippet is out of range");
+
+            cursor[0] |= (offset >> 16) & 0x3ffff;
+            cursor[1] |= offset & 0xffff;
+            }
+         }
+      else if (cg->comp()->target().is64Bit())
          {
          TR_ASSERT_FATAL(_instructionPairs.size() % 4 == 0, "Expected groups of 4 requestors");
 

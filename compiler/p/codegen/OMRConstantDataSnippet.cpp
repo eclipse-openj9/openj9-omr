@@ -148,7 +148,9 @@ bool OMR::ConstantDataSnippet::getRequestorsFromNibble(TR::Instruction* nibble, 
    PPCConstant<double>                 *dcursor=diterator.getFirst();
    int32_t count;
 
-   if (TR::Compiler->target.is64Bit())
+   if (cg()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
+      count = 1;
+   else if (cg()->comp()->target().is64Bit())
       count = 4;
    else
       count = 2;

@@ -81,7 +81,7 @@ connect_client_to_server(struct OMRPortLibrary *portLibrary, const char *addrStr
 	EXPECT_EQ(OMRPORTLIB->sock_getaddrinfo_create_hints(OMRPORTLIB, &hints, family, socktype, OMRSOCK_IPPROTO_DEFAULT, 0), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_getaddrinfo(OMRPORTLIB, addrStr, port, hints, &result), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, &result, &length), 0);
-	EXPECT_NE(length, 0);
+	EXPECT_NE(length, uint32_t(0));
 
 	/* Create a socket with results. */
 	for (uint32_t i = 0; i < length; i++) {
@@ -92,11 +92,14 @@ connect_client_to_server(struct OMRPortLibrary *portLibrary, const char *addrStr
 		if(0 == OMRPORTLIB->sock_socket(OMRPORTLIB, clientSocket, resultFamily, resultSocktype, resultProtocol)) {
 			EXPECT_NE(clientSocket, (void *)NULL);
 			EXPECT_EQ(OMRPORTLIB->sock_addrinfo_address(OMRPORTLIB, &result, i, clientSockAddr), 0);
+			EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, *clientSocket, clientSockAddr), 0);
 			break;
 		}
 	}
-	EXPECT_EQ(OMRPORTLIB->sock_connect(OMRPORTLIB, *clientSocket, serverSockAddr), 0);
 
+	if(OMRSOCK_STREAM == resultSocktype) {
+		EXPECT_EQ(OMRPORTLIB->sock_connect(OMRPORTLIB, *clientSocket, serverSockAddr), 0);
+	}
 	return 0;
 }
 
@@ -194,7 +197,7 @@ TEST(PortSockTest, create_hints_and_element_extraction)
 
 	rc = OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, hints, &length);
 	EXPECT_EQ(rc, 0);
-	EXPECT_EQ(length, 1);
+	EXPECT_EQ(length, uint32_t(1));
 
 	rc = OMRPORTLIB->sock_addrinfo_family(OMRPORTLIB, hints, 0, &family);
 	EXPECT_EQ(rc, 0);
@@ -217,7 +220,7 @@ TEST(PortSockTest, create_hints_and_element_extraction)
 
 	rc = OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, hints, &length);
 	EXPECT_EQ(rc, 0);
-	EXPECT_EQ(length, 1);
+	EXPECT_EQ(length, uint32_t(1));
 
 	rc = OMRPORTLIB->sock_addrinfo_family(OMRPORTLIB, hints, 0, &family);
 	EXPECT_EQ(rc, 0);
@@ -297,7 +300,7 @@ TEST(PortSockTest, getaddrinfo_and_freeaddrinfo)
 	ASSERT_EQ(rc, 0);
 
 	OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, &result, &length);
-	ASSERT_NE(length, 0);
+	ASSERT_NE(length, uint32_t(0));
 	
 	OMRPORTLIB->sock_freeaddrinfo(OMRPORTLIB, &result);
 
@@ -306,7 +309,7 @@ TEST(PortSockTest, getaddrinfo_and_freeaddrinfo)
 	ASSERT_EQ(rc, 0);
 
 	OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, &result, &length);
-	ASSERT_NE(length, 0);
+	ASSERT_NE(length, uint32_t(0));
 
 	for (uint32_t i = 0; i < length; i++) {
 		rc = OMRPORTLIB->sock_addrinfo_family(OMRPORTLIB, &result, i, &family);
@@ -564,8 +567,7 @@ TEST(PortSockTest, two_socket_datagram_communication)
 	uint8_t serverAddr[4];
 
 	/* To Create a Server Socket and Address */
-	uint32_t inaddrAny = OMRPORTLIB->sock_htonl(OMRPORTLIB, OMRSOCK_INADDR_ANY);
-	memcpy(serverAddr, &inaddrAny, 4);
+	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET, "127.0.0.1", serverAddr), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB,  &serverSockAddr, OMRSOCK_AF_INET, serverAddr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
 	/* Datagram server sockets does not need to listen and accept */
 	EXPECT_EQ(start_server(OMRPORTLIB, OMRSOCK_AF_INET, OMRSOCK_DGRAM, &serverSocket, &serverSockAddr), 0);
@@ -573,7 +575,42 @@ TEST(PortSockTest, two_socket_datagram_communication)
 	OMRSockAddrStorage clientSockAddr;
 	omrsock_socket_t clientSocket = NULL;
 	/* Connect is optional for datagram clients */
-	EXPECT_EQ(connect_client_to_server(OMRPORTLIB, (char *)"localhost", NULL, OMRSOCK_AF_INET, OMRSOCK_DGRAM, &clientSocket, &clientSockAddr, &serverSockAddr), 0);
+	EXPECT_EQ(connect_client_to_server(OMRPORTLIB, (char *)"localhost", (char *)"16403", OMRSOCK_AF_INET, OMRSOCK_DGRAM, &clientSocket, &clientSockAddr, &serverSockAddr), 0);
+
+	/* Datagram Sendto and Recvfrom test. Sendto and Recvfrom are called multiple tests to ensure it has been
+	*	sent and received.
+	*/
+	OMRTimeval timeSend;
+	OMRTimeval timeRecv;
+	EXPECT_EQ(OMRPORTLIB->sock_timeval_init(OMRPORTLIB, &timeSend, 2, 0), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_timeval_init(OMRPORTLIB, &timeRecv, 3, 0), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_timeval(OMRPORTLIB, serverSocket, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_SNDTIMEO, &timeSend), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_timeval(OMRPORTLIB, clientSocket, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_RCVTIMEO, &timeRecv), 0);
+
+	/* Send 50 times. This should be enough for the message to be sent. */
+	char msgDgram[100] = "This is an omrsock test for datagram communications.";
+	int32_t	bytesTotal = strlen(msgDgram) + 1;
+	int32_t bytesSent = 0;
+
+	for (int32_t i = 0; i < 100; i++) {
+		bytesSent = OMRPORTLIB->sock_sendto(OMRPORTLIB, serverSocket, (uint8_t *)msgDgram, bytesTotal, 0, &clientSockAddr);
+		if (bytesSent == bytesTotal) {
+			break;
+		}
+	}
+
+	/* Receive */
+	char bufDgram[100] = "";
+	int32_t bytesRecv = 0;
+
+	for (int32_t i = 0; i < 100; i++) {
+		bytesRecv = OMRPORTLIB->sock_recvfrom(OMRPORTLIB, clientSocket, (uint8_t *)bufDgram, bytesTotal, 0, &serverSockAddr);
+		if (bytesRecv == bytesTotal) {
+			break;
+		}
+	}
+
+	EXPECT_EQ(strcmp(msgDgram, bufDgram), 0);
 
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientSocket), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverSocket), 0);

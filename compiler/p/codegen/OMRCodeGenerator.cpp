@@ -942,23 +942,23 @@ void OMR::Power::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *ma
    }
 
 
-int32_t OMR::Power::CodeGenerator::findOrCreateFloatConstant(void *v, TR::DataType t,
+void OMR::Power::CodeGenerator::findOrCreateFloatConstant(void *v, TR::DataType t,
                              TR::Instruction *n0, TR::Instruction *n1,
                              TR::Instruction *n2, TR::Instruction *n3)
    {
    if (_constantData == NULL)
       _constantData = new (self()->trHeapMemory()) TR::ConstantDataSnippet(self());
-   return(_constantData->addConstantRequest(v, t, n0, n1, n2, n3, NULL, false));
+   _constantData->addConstantRequest(v, t, n0, n1, n2, n3, NULL, false);
    }
 
-int32_t OMR::Power::CodeGenerator::findOrCreateAddressConstant(void *v, TR::DataType t,
+void OMR::Power::CodeGenerator::findOrCreateAddressConstant(void *v, TR::DataType t,
                              TR::Instruction *n0, TR::Instruction *n1,
                              TR::Instruction *n2, TR::Instruction *n3,
                              TR::Node *node, bool isUnloadablePicSite)
    {
    if (_constantData == NULL)
       _constantData = new (self()->trHeapMemory()) TR::ConstantDataSnippet(self());
-   return(_constantData->addConstantRequest(v, t, n0, n1, n2, n3, node, isUnloadablePicSite));
+   _constantData->addConstantRequest(v, t, n0, n1, n2, n3, node, isUnloadablePicSite);
    }
 
 bool OMR::Power::CodeGenerator::isSnippetMatched(TR::Snippet *snippet, int32_t snippetKind, TR::SymbolReference *symRef)

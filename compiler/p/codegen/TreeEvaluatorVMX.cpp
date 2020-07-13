@@ -160,11 +160,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
       if (fillNode->getDataType() != TR::Double && dofastPath)
          {
          fp1Reg = cg->allocateRegister(TR_FPR);
-         if (cg->comp()->target().is32Bit())
-            {
-            fixedSeqMemAccess(cg, node, 0, q, fp1Reg, tempReg, TR::InstOpCode::lfd, 8, NULL, tempReg);
-            cg->findOrCreateFloatConstant(&doubleword, TR::Double, q[0], q[1], q[2], q[3]);
-            }
+         loadFloatConstant(cg, TR::InstOpCode::lfd, node, TR::Double, &doubleword, fp1Reg);
          }
       }
    else //variable fill value

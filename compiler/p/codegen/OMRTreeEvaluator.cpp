@@ -96,6 +96,83 @@ static inline bool alwaysInlineArrayCopy(TR::CodeGenerator *cg)
    return false;
    }
 
+void loadFloatConstant(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic loadOp, TR::Node *node, TR::DataType type, void *value, TR::Register *trgReg)
+   {
+   int8_t length;
+
+   switch (type)
+      {
+      case TR::Float:
+         length = 4;
+         break;
+      case TR::Double:
+         length = 8;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Cannot call loadFloatConstant with data type %s", TR::DataType::getName(type));
+      }
+
+   if (cg->comp()->target().is64Bit())
+      {
+      int32_t tocOffset;
+
+      switch (type)
+         {
+         case TR::Float:
+            tocOffset = TR_PPCTableOfConstants::lookUp(*reinterpret_cast<float*>(value), cg);
+            break;
+         case TR::Double:
+            tocOffset = TR_PPCTableOfConstants::lookUp(*reinterpret_cast<double*>(value), cg);
+            break;
+         default:
+            TR_ASSERT_FATAL_WITH_NODE(node, false, "Invalid data type %s in loadFloatConstant", TR::DataType::getName(type));
+         }
+
+      if (tocOffset != PTOC_FULL_INDEX)
+         {
+         TR::Register *tmpReg = NULL;
+         TR::MemoryReference *memRef;
+         if (tocOffset < LOWER_IMMED || tocOffset > UPPER_IMMED)
+            {
+            tmpReg = cg->allocateRegister();
+
+            TR_ASSERT_FATAL_WITH_NODE(node, 0x00008000 != HI_VALUE(tocOffset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", tocOffset);
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, tmpReg, cg->getTOCBaseRegister(), HI_VALUE(tocOffset));
+            memRef = new (cg->trHeapMemory()) TR::MemoryReference(tmpReg, LO_VALUE(tocOffset), length, cg);
+            }
+         else
+            {
+            memRef = new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), tocOffset, length, cg);
+            }
+
+         // TODO(#5383): We don't yet have a property flag to determine whether a load is
+         //              indexed-form or not. For the time being, we only handle lxvdsx, as it's
+         //              the only indexed-form load that can get here.
+         if (loadOp == TR::InstOpCode::lxvdsx)
+            memRef->forceIndexedForm(node, cg);
+
+         generateTrg1MemInstruction(cg, loadOp, node, trgReg, memRef);
+
+         if (tmpReg)
+            cg->stopUsingRegister(tmpReg);
+
+         return;
+         }
+      }
+
+   TR::Register *srcReg = cg->allocateRegister();
+   TR::Register *tmpReg = cg->comp()->target().is64Bit() ? cg->allocateRegister() : NULL;
+
+   TR::Instruction *q[4];
+
+   fixedSeqMemAccess(cg, node, 0, q, trgReg, srcReg, loadOp, length, NULL, tmpReg);
+   cg->findOrCreateFloatConstant(value, type, q[0], q[1], q[2], q[3]);
+
+   cg->stopUsingRegister(srcReg);
+   if (tmpReg)
+      cg->stopUsingRegister(tmpReg);
+   }
+
 TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node * node, intptr_t address, TR::Register *trgReg, TR::Register *tempReg, TR::InstOpCode::Mnemonic opCode, bool isUnloadablePicSite, TR::Instruction *cursor)
    {
    TR::Instruction *q[4];

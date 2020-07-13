@@ -344,44 +344,8 @@ TR::Register *OMR::Power::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::Co
 static TR::Register *fconstHandler(TR::Node *node, TR::CodeGenerator *cg, float value)
    {
    TR::Register *trgRegister = cg->allocateSinglePrecisionRegister();
-   TR::Register *srcRegister, *tempReg=NULL;
-   TR::Instruction *q[4];
-   int32_t      offset;
-   TR::Compilation *comp = cg->comp();
 
-
-   if (cg->comp()->target().is64Bit())
-      {
-      offset = cg->findOrCreateFloatConstant(&value, TR::Float, NULL, NULL, NULL, NULL);
-      if (offset != PTOC_FULL_INDEX)
-         {
-         if (offset<LOWER_IMMED || offset>UPPER_IMMED)
-            {
-            srcRegister = cg->allocateRegister();
-
-            TR_ASSERT_FATAL_WITH_NODE(node, 0x00008000 != HI_VALUE(offset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", offset);
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, srcRegister, cg->getTOCBaseRegister(), HI_VALUE(offset));
-            generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, trgRegister, new (cg->trHeapMemory()) TR::MemoryReference(srcRegister, LO_VALUE(offset), 4, cg));
-            cg->stopUsingRegister(srcRegister);
-            }
-         else
-            {
-            generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, trgRegister, new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), offset, 4, cg));
-            }
-         }
-      }
-
-   if (cg->comp()->target().is32Bit() || offset==PTOC_FULL_INDEX)
-      {
-      srcRegister = cg->allocateRegister();
-      if (cg->comp()->target().is64Bit())
-         tempReg = cg->allocateRegister();
-      fixedSeqMemAccess(cg, node, 0, q, trgRegister, srcRegister, TR::InstOpCode::lfs, 4, NULL, tempReg);
-      cg->findOrCreateFloatConstant(&value, TR::Float, q[0], q[1], q[2], q[3]);
-      cg->stopUsingRegister(srcRegister);
-      if (cg->comp()->target().is64Bit())
-         cg->stopUsingRegister(tempReg);
-      }
+   loadFloatConstant(cg, TR::InstOpCode::lfs, node, TR::Float, &value, trgRegister);
    node->setRegister(trgRegister);
    return trgRegister;
    }
@@ -393,81 +357,15 @@ TR::Register *OMR::Power::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   double            value = node->getDouble();
-   TR::InstOpCode::Mnemonic     opcode = TR::InstOpCode::lfd;
-   bool              splats = false;
+   double value = node->getDouble();
    TR::Compilation *comp = cg->comp();
 
-   if (node->getOpCodeValue() == TR::vsplats)
-      {
-      splats = true;
-      }
+   if (value == ((double) ((float) value)))
+      return fconstHandler(node, cg, (float) value);
 
-   if (splats)
-      {
-      value = node->getFirstChild()->getDouble();
-      opcode = TR::InstOpCode::lxvdsx;
-      }
+   TR::Register *trgRegister = cg->allocateRegister(TR_FPR);
 
-
-   if (!splats)
-      {
-      if (value == ((double) ((float) value)))
-         return fconstHandler(node, cg, (float) value);
-      }
-
-   TR::Register *trgRegister;
-
-   if (splats)
-      trgRegister = cg->allocateRegister(TR_VSX_VECTOR);
-   else
-      trgRegister = cg->allocateRegister(TR_FPR);
-
-   TR::Register       *srcRegister, *tempReg=NULL;
-   TR::Instruction *q[4];
-   int32_t            offset;
-
-   if (cg->comp()->target().is64Bit())
-      {
-      offset = cg->findOrCreateFloatConstant(&value, TR::Double, NULL, NULL, NULL, NULL);
-      if (offset != PTOC_FULL_INDEX)
-         {
-         if (offset<LOWER_IMMED || offset>UPPER_IMMED)
-            {
-            srcRegister = cg->allocateRegister();
-
-            TR_ASSERT_FATAL_WITH_NODE(node, 0x00008000 != HI_VALUE(offset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", offset);
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, srcRegister, cg->getTOCBaseRegister(), HI_VALUE(offset));
-
-            TR::MemoryReference *memRef = new (cg->trHeapMemory()) TR::MemoryReference(srcRegister, LO_VALUE(offset), 8, cg);
-            if (splats)
-               memRef->forceIndexedForm(node, cg);
-
-            generateTrg1MemInstruction(cg, opcode, node, trgRegister, memRef);
-            cg->stopUsingRegister(srcRegister);
-            }
-         else
-            {
-            TR::MemoryReference *memRef = new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), offset, 8, cg);
-            if (splats)
-               memRef->forceIndexedForm(node, cg);
-
-            generateTrg1MemInstruction(cg, opcode, node, trgRegister, memRef);
-            }
-         }
-      }
-
-   if (cg->comp()->target().is32Bit() || offset==PTOC_FULL_INDEX)
-      {
-      srcRegister = cg->allocateRegister(TR_GPR);
-      if (cg->comp()->target().is64Bit())
-         tempReg = cg->allocateRegister(TR_GPR);
-      fixedSeqMemAccess(cg, node, 0, q, trgRegister, srcRegister, opcode, 8, NULL, tempReg);
-      cg->stopUsingRegister(srcRegister);
-      if (cg->comp()->target().is64Bit())
-         cg->stopUsingRegister(tempReg);
-      cg->findOrCreateFloatConstant(&value, TR::Double, q[0], q[1], q[2], q[3]);
-      }
+   loadFloatConstant(cg, TR::InstOpCode::lfd, node, TR::DataTypes::Double, &value, trgRegister);
    node->setRegister(trgRegister);
    return trgRegister;
    }
@@ -739,9 +637,13 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
 
    TR_ASSERT(node->getDataType() == TR::VectorDouble, "unsupported splats type");
 
+   TR::Register *resReg = node->setRegister(cg->allocateRegister(TR_VSX_VECTOR));
+
    if (child->getOpCode().isLoadConst())
       {
-      TR::Register *resReg = TR::TreeEvaluator::dconstEvaluator(node, cg);
+      double value = child->getDouble();
+      loadFloatConstant(cg, TR::InstOpCode::lxvdsx, node, TR::DataTypes::Double, &value, resReg);
+
       cg->decReferenceCount(child);
       return resReg;
       }
@@ -757,13 +659,11 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
          child = newNode;
          }
 
-      TR::Register *resReg = node->setRegister(cg->allocateRegister(TR_VSX_VECTOR));
       return TR::TreeEvaluator::dloadHelper(child, cg, resReg, TR::InstOpCode::lxvdsx);
       }
    else
       {
       TR::Register *srcReg = cg->evaluate(child);
-      TR::Register *resReg = node->setRegister(cg->allocateRegister(TR_VSX_VECTOR));
       generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxpermdi, node, resReg, srcReg, srcReg, 0x0);
 
       cg->decReferenceCount(child);

@@ -50,7 +50,6 @@ namespace OMR
 template <class T> class PPCConstant
    {
    TR_Array<TR::Instruction *>   _instructionPairs;
-   int32_t                         _tocOffset;
    T                               _value;
    TR::Node                        *_node;
    bool                            _isUnloadablePicSite;
@@ -162,8 +161,6 @@ template <class T> class PPCConstant
          }
       }
 
-   int32_t getTOCOffset() {return _tocOffset;}
-   void setTOCOffset(int32_t o) {_tocOffset = o;}
    TR::Node *getNode() { return _node; }
    };
 
@@ -188,7 +185,7 @@ class ConstantDataSnippet
    uint8_t *getSnippetBinaryStart() {return _snippetBinaryStart;}
    uint8_t *setSnippetBinaryStart(uint8_t *p) {return _snippetBinaryStart=p;}
 
-   int32_t addConstantRequest(void              *v,
+   void addConstantRequest(void              *v,
                            TR::DataType       type,
                            TR::Instruction *nibble0,
                            TR::Instruction *nibble1,

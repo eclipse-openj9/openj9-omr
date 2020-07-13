@@ -38,7 +38,7 @@
 #include "p/codegen/PPCTableOfConstants.hpp"
 #include "runtime/Runtime.hpp"
 
-int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
+void OMR::ConstantDataSnippet::addConstantRequest(void              *v,
                                                   TR::DataType       type,
                                                   TR::Instruction *nibble0,
                                                   TR::Instruction *nibble1,
@@ -60,8 +60,6 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
 
    intptr_t   ain, aex;
 
-   int32_t ret = PTOC_FULL_INDEX;
-
    switch(type)
       {
       case TR::Float:
@@ -81,15 +79,8 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
             {
             fcursor = new (_cg->trHeapMemory()) PPCConstant<float>(_cg, fin.fvalue);
             _floatConstants.add(fcursor);
-            if (comp->target().is64Bit())
-               {
-               ret = TR_PPCTableOfConstants::lookUp(fin.fvalue, _cg);
-               }
-            fcursor->setTOCOffset(ret);
             }
-         ret = fcursor->getTOCOffset();
-         if (comp->target().is32Bit() || ret==PTOC_FULL_INDEX)
-            fcursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
+         fcursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
          }
          break;
 
@@ -110,15 +101,8 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
             {
             dcursor = new (_cg->trHeapMemory()) PPCConstant<double>(_cg, din.dvalue);
             _doubleConstants.add(dcursor);
-            if (comp->target().is64Bit())
-               {
-               ret = TR_PPCTableOfConstants::lookUp(din.dvalue, _cg);
-               }
-            dcursor->setTOCOffset(ret);
             }
-         ret = dcursor->getTOCOffset();
-         if (comp->target().is32Bit() || ret==PTOC_FULL_INDEX)
-            dcursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
+         dcursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
          }
          break;
 
@@ -155,8 +139,6 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
       default:
          TR_ASSERT(0, "Only float and address constants are supported. Data type is %s.\n", type.toString());
       }
-
-   return(ret);
    }
 
 

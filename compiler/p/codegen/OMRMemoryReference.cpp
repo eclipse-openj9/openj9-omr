@@ -1617,37 +1617,79 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          symbol->getStaticSymbol()->setTOCIndex(tocIndex);
          }
 
-      // We need a snippet for unresolved or AOT if:
-      //  1. the load hasn't been resolved yet
-      //  (otherwise optimizer will remove the ResolveCHK and we can be sure pTOC will contain the resolved address),
-      //  2. we don't have a PTOC slot, we must always take the slow path
-
-      if ((ref->isUnresolved() || useUnresSnippetToAvoidRelo) &&
-          (topNode->getOpCodeValue() == TR::ResolveCHK || tocIndex == PTOC_FULL_INDEX))
+      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
          {
-         snippet = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false);
-         cg->addSnippet(snippet);
-         }
+         TR::Register *addrReg = cg->allocateRegister();
+         _baseRegister = addrReg;
+         self()->setBaseModifiable();
 
-      // TODO: Improve the code sequence for cases when we know pTOC is full.
-      TR::MemoryReference *tocRef = new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), 0, sizeof(uintptr_t), cg);
-      tocRef->setSymbol(symbol, cg);
-      tocRef->getSymbolReference()->copyFlags(ref);
-      tocRef->setUsingStaticTOC();
-      if (snippet != NULL)
+         // For now, P10 PC-relative loads and stores are not supported for UnresolvedDataSnippet
+         // and for anything requiring a TR_ClassAddress relocation. To make things work, we must
+         // emit the 5 instruction load address by faking that the pTOC was full.
+         if (ref->isUnresolved() || useUnresSnippetToAvoidRelo || (cg->comp()->compileRelocatableCode() && symbol->isStatic() && symbol->isClassObject()))
+            {
+            if (ref->isUnresolved() || useUnresSnippetToAvoidRelo)
+               {
+               snippet = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false);
+               cg->addSnippet(snippet);
+               }
+
+            TR::MemoryReference *fakeTocRef = new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), 0, sizeof(uintptr_t), cg);
+            fakeTocRef->setSymbol(symbol, cg);
+            fakeTocRef->getSymbolReference()->copyFlags(ref);
+            fakeTocRef->setUsingStaticTOC();
+
+            if (snippet != NULL)
+               {
+               fakeTocRef->setUnresolvedSnippet(snippet);
+               fakeTocRef->adjustForResolution(cg);
+               }
+
+            symbol->getStaticSymbol()->setTOCIndex(PTOC_FULL_INDEX);
+
+            generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node==NULL?topNode:node, addrReg, fakeTocRef);
+            if (snippet != NULL)
+               cg->stopUsingRegister(fakeTocRef->getModBase());
+            }
+         else
+            {
+            loadAddressConstant(cg, false, nodeForSymbol, reinterpret_cast<intptr_t>(symbol->getStaticSymbol()->getStaticAddress()), addrReg);
+            }
+         }
+      else
          {
-         tocRef->setUnresolvedSnippet(snippet);
-         tocRef->adjustForResolution(cg);
+         // We need a snippet for unresolved or AOT if:
+         //  1. the load hasn't been resolved yet
+         //  (otherwise optimizer will remove the ResolveCHK and we can be sure pTOC will contain the resolved address),
+         //  2. we don't have a PTOC slot, we must always take the slow path
+
+         if ((ref->isUnresolved() || useUnresSnippetToAvoidRelo) &&
+            (topNode->getOpCodeValue() == TR::ResolveCHK || tocIndex == PTOC_FULL_INDEX))
+            {
+            snippet = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false);
+            cg->addSnippet(snippet);
+            }
+
+         // TODO: Improve the code sequence for cases when we know pTOC is full.
+         TR::MemoryReference *tocRef = new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), 0, sizeof(uintptr_t), cg);
+         tocRef->setSymbol(symbol, cg);
+         tocRef->getSymbolReference()->copyFlags(ref);
+         tocRef->setUsingStaticTOC();
+         if (snippet != NULL)
+            {
+            tocRef->setUnresolvedSnippet(snippet);
+            tocRef->adjustForResolution(cg);
+            }
+
+         TR::Register *addrReg = cg->allocateRegister();
+         TR::InstOpCode::Mnemonic loadOp = TR::InstOpCode::ld;
+
+         generateTrg1MemInstruction(cg, loadOp, node==NULL?topNode:node, addrReg, tocRef);
+         if (snippet != NULL)
+            cg->stopUsingRegister(tocRef->getModBase());
+         _baseRegister = addrReg;
+         self()->setBaseModifiable();
          }
-
-      TR::Register *addrReg = cg->allocateRegister();
-      TR::InstOpCode::Mnemonic loadOp = TR::InstOpCode::ld;
-
-      generateTrg1MemInstruction(cg, loadOp, node==NULL?topNode:node, addrReg, tocRef);
-      if (snippet != NULL)
-         cg->stopUsingRegister(tocRef->getModBase());
-      _baseRegister = addrReg;
-      self()->setBaseModifiable();
       }
    else
       {

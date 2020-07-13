@@ -1535,7 +1535,7 @@ public:
 		, concurrentScavengerBackgroundThreadsForced(false)
 		, concurrentScavengerSlack(0)
 		, concurrentScavengerAllocDeviationBoost(2.0)
-		, concurrentScavengeExhaustiveTermination(false)
+		, concurrentScavengeExhaustiveTermination(true)
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 		, scavengerFailedTenureThreshold(0)
 		, maxScavengeBeforeGlobal(0)

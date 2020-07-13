@@ -1091,14 +1091,6 @@ OMR::X86::CodeGenerator::getSupportsBitPermute()
    }
 
 bool
-OMR::X86::CodeGenerator::supportsMergingGuards()
-   {
-   return self()->getSupportsVirtualGuardNOPing() &&
-          self()->comp()->performVirtualGuardNOPing() &&
-          self()->allowGuardMerging();
-   }
-
-bool
 OMR::X86::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol)
    {
    switch (symbol)

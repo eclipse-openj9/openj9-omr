@@ -368,6 +368,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     */
    bool directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress);
 
+   bool supportsMergingGuards() {return false;}
+
    // OutOfLineCodeSection List functions
    TR::list<TR_ARM64OutOfLineCodeSection*> &getARM64OutOfLineCodeSectionList() {return _outOfLineCodeSectionList;}
 

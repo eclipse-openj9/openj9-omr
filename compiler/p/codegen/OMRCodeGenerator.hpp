@@ -264,6 +264,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    bool canTransformUnsafeCopyToArrayCopy() { return true; }
    bool canTransformUnsafeSetMemory();
+   bool supportsMergingGuards() {return false;}
 
    virtual bool supportsAESInstructions();
 

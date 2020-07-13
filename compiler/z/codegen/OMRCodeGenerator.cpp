@@ -2090,14 +2090,6 @@ OMR::Z::CodeGenerator::StopUsingEscapedMemRefsRegisters(int32_t topOfMemRefStack
    }
 
 bool
-OMR::Z::CodeGenerator::supportsMergingGuards()
-   {
-   return self()->getSupportsVirtualGuardNOPing() &&
-          self()->comp()->performVirtualGuardNOPing() &&
-          !self()->comp()->compileRelocatableCode();
-   }
-
-bool
 OMR::Z::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol)
    {
    bool result = false;

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, 2017 IBM Corp. and others
+# Copyright (c) 2016, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -150,11 +150,11 @@ linter:: omrchecker
 # however, that doesn't fix all of our problems, as we are typically not
 # reconfiguring for clang when running lint (though, perhaps this is an early
 # indicator that we really should be.  
-BLACKLISTED_DEFINES='-D__sync()=' '-D__lwsync()=' '-D__isync()='
+EXCLUDED_DEFINES='-D__sync()=' '-D__lwsync()=' '-D__isync()='
 
 # The clang invocation magic line.
 LINTER_EXTRA=-Xclang -load -Xclang $(OMRCHECKER_OBJECT) -Xclang -add-plugin -Xclang omr-checker 
-LINTER_FLAGS=-std=c++0x -w -fsyntax-only $(BLACKLISTED_DEFINES) -ferror-limit=0 $(LINTER_FLAGS_EXTRA)
+LINTER_FLAGS=-std=c++0x -w -fsyntax-only $(EXCLUDED_DEFINES) -ferror-limit=0 $(LINTER_FLAGS_EXTRA)
 
 define DEF_RULE.linter
 .PHONY: $(1).linted 

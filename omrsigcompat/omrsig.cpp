@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2015, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -441,7 +441,7 @@ omrsig_sigaction_internal(int signum, const struct sigaction *act, struct sigact
 				/* If secondary has SA_ONSTACK/NOCLDSTOP/NOCLDWAIT flag and primary does not, add those flags. */
 				newRegisteringHandler = sigData[signum].primaryAction;
 #if defined(POSIX_SIGNAL)
-				newRegisteringHandler.sa_flags |= sigData[signum].secondaryAction.sa_flags & SECONDARY_FLAGS_WHITELIST;
+				newRegisteringHandler.sa_flags |= sigData[signum].secondaryAction.sa_flags & SECONDARY_FLAGS_ALLOWLIST;
 #endif /* defined(POSIX_SIGNAL) */
 			} else {
 				newRegisteringHandler = sigData[signum].secondaryAction;

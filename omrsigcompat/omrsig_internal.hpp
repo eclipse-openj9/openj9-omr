@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 IBM Corp. and others
+ * Copyright (c) 2017, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -52,11 +52,11 @@ typedef void (*sigaction_t)(int sig, siginfo_t *siginfo, void *uc);
 /* On zos, when an alt signal stack is set, the second call to pthread_sigmask() or
  * sigprocmask() within a signal handler will cause the program to sig kill itself.
  */
-#define SECONDARY_FLAGS_WHITELIST (SA_NOCLDSTOP | SA_NOCLDWAIT)
+#define SECONDARY_FLAGS_ALLOWLIST (SA_NOCLDSTOP | SA_NOCLDWAIT)
 #elif (OMRZTPF) /* defined(J9ZOS390) */
-#define SECONDARY_FLAGS_WHITELIST (SA_NOCLDSTOP)
+#define SECONDARY_FLAGS_ALLOWLIST (SA_NOCLDSTOP)
 #else /* defined(J9ZOS390) */
-#define SECONDARY_FLAGS_WHITELIST (SA_ONSTACK | SA_NOCLDSTOP | SA_NOCLDWAIT)
+#define SECONDARY_FLAGS_ALLOWLIST (SA_ONSTACK | SA_NOCLDSTOP | SA_NOCLDWAIT)
 #endif /* defined(J9ZOS390) */
 
 #endif /* defined(OMR_OS_WINDOWS) */

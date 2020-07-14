@@ -187,6 +187,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void endInstructionSelection();
    void doRegisterAssignment(TR_RegisterKinds kindsToAssign);
    void doBinaryEncoding();
+   void processRelocations();
    void doPeephole();
    void expandInstructions();
    virtual TR_RegisterPressureSummary *calculateRegisterPressure();

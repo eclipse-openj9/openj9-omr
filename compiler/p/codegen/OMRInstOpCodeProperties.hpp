@@ -167,7 +167,8 @@
    /* .opcode      = */ 0x38000000,
    /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -204,7 +205,8 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SetsCarryFlag |
                         PPCOpProp_HasRecordForm |
-                        PPCOpProp_SyncSideEffectFree,
+                        PPCOpProp_SyncSideEffectFree |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -230,7 +232,8 @@
    /* .opcode      = */ 0x3C000000,
    /* .format      = */ FORMAT_RT_RA_SI16,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -1161,7 +1164,8 @@
    /* .opcode      = */ 0x7C00022C,
    /* .format      = */ FORMAT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -1172,7 +1176,8 @@
    /* .opcode      = */ 0x7C0001EC,
    /* .format      = */ FORMAT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -1183,7 +1188,8 @@
    /* .opcode      = */ 0x7E0001EC,
    /* .format      = */ FORMAT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -1194,7 +1200,8 @@
    /* .opcode      = */ 0x7E00022C,
    /* .format      = */ FORMAT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -1205,7 +1212,8 @@
    /* .opcode      = */ 0x7C0007EC,
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2417,7 +2425,8 @@
    /* .opcode      = */ 0x88000000,
    /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2429,7 +2438,8 @@
    /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2441,7 +2451,8 @@
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2452,7 +2463,8 @@
    /* .opcode      = */ 0x7C0000AE,
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2464,6 +2476,7 @@
    /* .format      = */ FORMAT_RT_DS_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_OffsetRequiresWordAlignment,
    },
 
@@ -2475,7 +2488,8 @@
    /* .opcode      = */ 0x7C0000A8,
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2488,6 +2502,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_OffsetRequiresWordAlignment,
    },
 
@@ -2500,7 +2515,8 @@
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2511,7 +2527,8 @@
    /* .opcode      = */ 0x7C00002A,
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2523,7 +2540,8 @@
    /* .format      = */ FORMAT_FRT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2535,7 +2553,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2548,7 +2567,8 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2561,7 +2581,8 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2573,7 +2594,8 @@
    /* .format      = */ FORMAT_FRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2585,7 +2607,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2597,7 +2620,8 @@
    /* .format      = */ FORMAT_FRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2609,7 +2633,8 @@
    /* .format      = */ FORMAT_FRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2621,7 +2646,8 @@
    /* .format      = */ FORMAT_FRT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2634,7 +2660,8 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2647,7 +2674,8 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
                         PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2659,7 +2687,8 @@
    /* .format      = */ FORMAT_FRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2670,7 +2699,8 @@
    /* .opcode      = */ 0xA8000000,
    /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2682,7 +2712,8 @@
    /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2694,7 +2725,8 @@
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2705,7 +2737,8 @@
    /* .opcode      = */ 0x7C0002AE,
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2716,7 +2749,8 @@
    /* .opcode      = */ 0x7C00062C,
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2727,7 +2761,8 @@
    /* .opcode      = */ 0xA0000000,
    /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2739,7 +2774,8 @@
    /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2751,7 +2787,8 @@
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2762,7 +2799,8 @@
    /* .opcode      = */ 0x7C00022E,
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2795,7 +2833,8 @@
    /* .opcode      = */ 0xB8000000,
    /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2806,7 +2845,8 @@
    /* .opcode      = */ 0x7C0004AA,
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2817,7 +2857,8 @@
    /* .opcode      = */ 0x7C00042A,
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2829,6 +2870,7 @@
    /* .format      = */ FORMAT_RT_DS_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_OffsetRequiresWordAlignment,
    },
 
@@ -2840,7 +2882,8 @@
    /* .opcode      = */ 0x7C000028,
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2852,7 +2895,8 @@
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2863,7 +2907,8 @@
    /* .opcode      = */ 0x7C0002AA,
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2874,7 +2919,8 @@
    /* .opcode      = */ 0x7C00042C,
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2885,7 +2931,8 @@
    /* .opcode      = */ 0x7C000428,
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2907,7 +2954,8 @@
    /* .opcode      = */ 0x80000000,
    /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2919,7 +2967,8 @@
    /* .format      = */ FORMAT_RT_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2931,7 +2980,8 @@
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -2942,7 +2992,8 @@
    /* .opcode      = */ 0x7C00002E,
    /* .format      = */ FORMAT_RT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    /* { */
@@ -4327,7 +4378,8 @@
    /* .opcode      = */ 0x98000000,
    /* .format      = */ FORMAT_RS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4339,7 +4391,8 @@
    /* .format      = */ FORMAT_RS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4351,7 +4404,8 @@
    /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4362,7 +4416,8 @@
    /* .opcode      = */ 0x7C0001AE,
    /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4374,6 +4429,7 @@
    /* .format      = */ FORMAT_RS_DS_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_OffsetRequiresWordAlignment,
    },
 
@@ -4386,6 +4442,7 @@
    /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsRecordForm,
    },
 
@@ -4399,6 +4456,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_OffsetRequiresWordAlignment,
    },
 
@@ -4411,7 +4469,8 @@
    /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4422,7 +4481,8 @@
    /* .opcode      = */ 0x7C00012A,
    /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4434,7 +4494,8 @@
    /* .format      = */ FORMAT_FRS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4446,7 +4507,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4459,7 +4521,8 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_DoubleFP |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4472,7 +4535,8 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_DoubleFP |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4484,7 +4548,8 @@
    /* .format      = */ FORMAT_FRS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4496,7 +4561,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4507,7 +4573,8 @@
    /* .opcode      = */ 0x7C0007AE,
    /* .format      = */ FORMAT_FRS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4519,7 +4586,8 @@
    /* .format      = */ FORMAT_FRS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4532,7 +4600,8 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_SingleFP |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4545,7 +4614,8 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
                         PPCOpProp_SingleFP |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4557,7 +4627,8 @@
    /* .format      = */ FORMAT_FRS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_SingleFP |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4568,7 +4639,8 @@
    /* .opcode      = */ 0xB0000000,
    /* .format      = */ FORMAT_RS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4579,7 +4651,8 @@
    /* .opcode      = */ 0x7C00072C,
    /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4591,7 +4664,8 @@
    /* .format      = */ FORMAT_RS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4603,7 +4677,8 @@
    /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4614,7 +4689,8 @@
    /* .opcode      = */ 0x7C00032E,
    /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4625,7 +4701,8 @@
    /* .opcode      = */ 0xBC000000,
    /* .format      = */ FORMAT_RS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    /* { */
@@ -4647,7 +4724,8 @@
    /* .opcode      = */ 0x7C0005AA,
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4658,7 +4736,8 @@
    /* .opcode      = */ 0x7C00052A,
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4669,7 +4748,8 @@
    /* .opcode      = */ 0x90000000,
    /* .format      = */ FORMAT_RS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4680,7 +4760,8 @@
    /* .opcode      = */ 0x7C00052C,
    /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4691,7 +4772,8 @@
    /* .opcode      = */ 0x7C000528,
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4703,6 +4785,7 @@
    /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCpwr630,
    /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsRecordForm,
    },
 
@@ -4715,7 +4798,8 @@
    /* .format      = */ FORMAT_RS_D16_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4727,7 +4811,8 @@
    /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
    /* .properties  = */ PPCOpProp_UpdateForm |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -4738,7 +4823,8 @@
    /* .opcode      = */ 0x7C00012E,
    /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCrios1,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -6536,6 +6622,7 @@
    /* .format      = */ FORMAT_VRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVMX,
    },
 
@@ -6548,6 +6635,7 @@
    /* .format      = */ FORMAT_VRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVMX,
    },
 
@@ -6560,6 +6648,7 @@
    /* .format      = */ FORMAT_VRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVMX,
    },
 
@@ -6572,6 +6661,7 @@
    /* .format      = */ FORMAT_VRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVMX,
    },
 
@@ -6584,6 +6674,7 @@
    /* .format      = */ FORMAT_VRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVMX,
    },
 
@@ -6596,6 +6687,7 @@
    /* .format      = */ FORMAT_VRT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVMX,
    },
 
@@ -6632,6 +6724,7 @@
    /* .format      = */ FORMAT_VRS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVMX,
    },
 
@@ -6644,6 +6737,7 @@
    /* .format      = */ FORMAT_VRS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVMX,
    },
 
@@ -6656,6 +6750,7 @@
    /* .format      = */ FORMAT_VRS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVMX,
    },
 
@@ -6668,6 +6763,7 @@
    /* .format      = */ FORMAT_VRS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp6,
    /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVMX,
    },
 
@@ -9540,6 +9636,7 @@
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_DWord | */
    /*                   PPCOpProp_IsLoad | */
+  /*                   PPCOpProp_ExcludeR0ForRA | */
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
@@ -9553,6 +9650,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVSX,
    },
 
@@ -9565,6 +9663,7 @@
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_ExcludeR0ForRA | */
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
@@ -9577,6 +9676,7 @@
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_ExcludeR0ForRA | */
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
@@ -9589,6 +9689,7 @@
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_ExcludeR0ForRA | */
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
@@ -9601,6 +9702,7 @@
    /* .format      = */ FORMAT_XT28_DQ_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
    /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVSX,
    },
 
@@ -9613,6 +9715,7 @@
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_ExcludeR0ForRA | */
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
@@ -9625,6 +9728,7 @@
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_ExcludeR0ForRA | */
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
@@ -9637,6 +9741,7 @@
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_ExcludeR0ForRA | */
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
@@ -9649,6 +9754,7 @@
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_ExcludeR0ForRA | */
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
@@ -9661,6 +9767,7 @@
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsLoad | */
+   /*                   PPCOpProp_ExcludeR0ForRA | */
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
@@ -9673,6 +9780,7 @@
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsStore | */
+   /*                   PPCOpProp_ExcludeR0ForRA | */
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
@@ -9686,6 +9794,7 @@
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_DoubleFP |
                         PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVSX,
    },
 
@@ -9698,6 +9807,7 @@
    /* .format      = */ FORMAT_XT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVSX,
    },
 
@@ -9710,6 +9820,7 @@
    /* .format      = */ FORMAT_XT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVSX,
    },
 
@@ -9722,6 +9833,7 @@
    /* .format      = */ FORMAT_XT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVSX,
    },
 
@@ -9734,6 +9846,7 @@
    /* .format      = */ FORMAT_XS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVSX,
    },
 
@@ -9746,6 +9859,7 @@
    /* .format      = */ FORMAT_XS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp7,
    /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVSX,
    },
 
@@ -9758,7 +9872,8 @@
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsVSX | */
-   /*                   PPCOpProp_IsStore, */
+   /*                   PPCOpProp_IsStore | */
+   /*                   PPCOpProp_ExcludeR0ForRA, */
    /* }, */
 
    {
@@ -9824,6 +9939,7 @@
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsStore | */
+   /*                   PPCOpProp_ExcludeR0ForRA | */
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
@@ -9836,6 +9952,7 @@
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsStore | */
+   /*                   PPCOpProp_ExcludeR0ForRA | */
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
@@ -9848,6 +9965,7 @@
    /* .format      = */ FORMAT_XS28_DQ_RA,
    /* .minimumALS  = */ TR_Processor::TR_PPCp9,
    /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA |
                         PPCOpProp_IsVSX,
    },
 
@@ -9860,6 +9978,7 @@
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsStore | */
+   /*                   PPCOpProp_ExcludeR0ForRA | */
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
@@ -9872,6 +9991,7 @@
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsStore | */
+   /*                   PPCOpProp_ExcludeR0ForRA | */
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
@@ -9884,6 +10004,7 @@
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsStore | */
+   /*                   PPCOpProp_ExcludeR0ForRA | */
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
@@ -9896,6 +10017,7 @@
    /* .format      =    FORMAT_UNKNOWN, */
    /* .minimumALS  =    TR_Processor::TR_PPCp9, */
    /* .properties  =    PPCOpProp_IsStore | */
+   /*                   PPCOpProp_ExcludeR0ForRA | */
    /*                   PPCOpProp_IsVSX, */
    /* }, */
 
@@ -11384,7 +11506,8 @@
    /* .format      = */ FORMAT_XT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -11396,7 +11519,8 @@
    /* .format      = */ FORMAT_XT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -11408,7 +11532,8 @@
    /* .format      = */ FORMAT_XT_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -11420,7 +11545,8 @@
    /* .format      = */ FORMAT_XS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -11432,7 +11558,8 @@
    /* .format      = */ FORMAT_XS_RA_RB_MEM,
    /* .minimumALS  = */ TR_Processor::TR_PPCp8,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -12816,7 +12943,8 @@
    // NOTE: The isel instruction is available prior to Power 10, but it had serious performance
    //       problems prior to Power 10. As a result, it should not be used until Power 10.
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -12829,7 +12957,8 @@
    // NOTE: The isel instruction is available prior to Power 10, but it had serious performance
    //       problems prior to Power 10. As a result, it should not be used until Power 10.
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -12842,7 +12971,8 @@
    // NOTE: The isel instruction is available prior to Power 10, but it had serious performance
    //       problems prior to Power 10. As a result, it should not be used until Power 10.
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -12855,7 +12985,8 @@
    // NOTE: The isel instruction is available prior to Power 10, but it had serious performance
    //       problems prior to Power 10. As a result, it should not be used until Power 10.
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -12884,7 +13015,8 @@
    //       be used until Power 10.
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -12896,7 +13028,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -12908,7 +13041,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -12920,7 +13054,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -12932,7 +13067,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -12944,7 +13080,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -12956,7 +13093,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -12967,7 +13105,8 @@
    /* .opcode      = */ 0x38000000,
    /* .format      = */ FORMAT_RT_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13002,7 +13141,8 @@
    /* .opcode      = */ 0x88000000,
    /* .format      = */ FORMAT_RT_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13013,7 +13153,8 @@
    /* .opcode      = */ 0xE4000000,
    /* .format      = */ FORMAT_RT_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13025,7 +13166,8 @@
    /* .format      = */ FORMAT_FRT_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13037,7 +13179,8 @@
    /* .format      = */ FORMAT_FRT_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_SingleFP |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13048,7 +13191,8 @@
    /* .opcode      = */ 0xA8000000,
    /* .format      = */ FORMAT_RT_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13059,7 +13203,8 @@
    /* .opcode      = */ 0xA0000000,
    /* .format      = */ FORMAT_RT_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13070,7 +13215,8 @@
    /* .opcode      = */ 0xE0000000,
    /* .format      = */ FORMAT_RTP_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13081,7 +13227,8 @@
    /* .opcode      = */ 0xA4000000,
    /* .format      = */ FORMAT_RT_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13092,7 +13239,8 @@
    /* .opcode      = */ 0x80000000,
    /* .format      = */ FORMAT_RT_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_IsLoad,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13104,7 +13252,8 @@
    /* .format      = */ FORMAT_VRT_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13116,7 +13265,8 @@
    /* .format      = */ FORMAT_VRT_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13128,7 +13278,8 @@
    /* .format      = */ FORMAT_XT5_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13140,7 +13291,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsLoad,
+                        PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13151,7 +13303,8 @@
    /* .opcode      = */ 0x98000000,
    /* .format      = */ FORMAT_RS_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13162,7 +13315,8 @@
    /* .opcode      = */ 0xF4000000,
    /* .format      = */ FORMAT_RS_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13174,7 +13328,8 @@
    /* .format      = */ FORMAT_FRS_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_DoubleFP |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13186,7 +13341,8 @@
    /* .format      = */ FORMAT_FRS_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_SingleFP |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13197,7 +13353,8 @@
    /* .opcode      = */ 0xB0000000,
    /* .format      = */ FORMAT_RS_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13208,7 +13365,8 @@
    /* .opcode      = */ 0xF0000000,
    /* .format      = */ FORMAT_RSP_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13219,7 +13377,8 @@
    /* .opcode      = */ 0x90000000,
    /* .format      = */ FORMAT_RS_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
-   /* .properties  = */ PPCOpProp_IsStore,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13231,7 +13390,8 @@
    /* .format      = */ FORMAT_VRS_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13243,7 +13403,8 @@
    /* .format      = */ FORMAT_VRS_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13255,7 +13416,8 @@
    /* .format      = */ FORMAT_XS5_D34_RA_R,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13267,7 +13429,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13339,7 +13502,8 @@
    //       be used until Power 10.
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13351,7 +13515,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13363,7 +13528,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13375,7 +13541,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13387,7 +13554,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13399,7 +13567,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {
@@ -13411,7 +13580,8 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_IsStore,
+                        PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA,
    },
 
    {

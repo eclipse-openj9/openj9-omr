@@ -921,6 +921,7 @@ FORMAT_XS5_D34_RA_R
 #define PPCOpProp_DoubleFP          0x00000100
 #define PPCOpProp_SingleFP          0x00000200
 #define PPCOpProp_UpdateForm        0x00000400
+#define PPCOpProp_ExcludeR0ForRA     0x00000800
 #define PPCOpProp_IsRecordForm      0x00002000
 #define PPCOpProp_IsLoad            0x00004000
 #define PPCOpProp_IsStore           0x00008000

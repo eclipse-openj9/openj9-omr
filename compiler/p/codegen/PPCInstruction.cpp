@@ -457,7 +457,7 @@ TR::PPCTrg1Src1Instruction::PPCTrg1Src1Instruction(
       _source1Register(sreg)
    {
    useRegister(sreg);
-   if (op == TR::InstOpCode::addi || op == TR::InstOpCode::addis || op == TR::InstOpCode::addi2 || op == TR::InstOpCode::lxvl)
+   if (TR::InstOpCode(op).excludesR0ForRA())
       {
       cg->addRealRegisterInterference(sreg, TR::RealRegister::gr0);
       }
@@ -474,7 +474,7 @@ TR::PPCTrg1Src1Instruction::PPCTrg1Src1Instruction(
       _source1Register(sreg)
    {
    useRegister(sreg);
-   if (op == TR::InstOpCode::addi || op == TR::InstOpCode::addis || op == TR::InstOpCode::addi2 || op == TR::InstOpCode::lxvl)
+   if (TR::InstOpCode(op).excludesR0ForRA())
       {
       cg->addRealRegisterInterference(sreg, TR::RealRegister::gr0);
       }
@@ -515,10 +515,7 @@ void TR::PPCTrg1Src1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssign
    TR::Machine *machine = cg()->machine();
    TR::RealRegister  *assignedRegister;
    TR_RegisterKinds  kindOfRegister = sourceVirtual->getKind();
-   bool              excludeGPR0 = false;
-
-   if (getOpCodeValue()==TR::InstOpCode::addi || getOpCodeValue()==TR::InstOpCode::addis || getOpCodeValue()==TR::InstOpCode::addi2 || getOpCodeValue()==TR::InstOpCode::lxvl)
-      excludeGPR0 = true;
+   bool              excludeGPR0 = getOpCode().excludesR0ForRA();
 
    sourceVirtual->block();
 
@@ -572,7 +569,7 @@ TR::PPCSrc2Instruction::PPCSrc2Instruction(
    {
    useRegister(s1reg);
    useRegister(s2reg);
-   if (op == TR::InstOpCode::stxvl)
+   if (TR::InstOpCode(op).excludesR0ForRA())
       cg->addRealRegisterInterference(s2reg, TR::RealRegister::gr0);
    }
 
@@ -587,7 +584,7 @@ TR::PPCSrc2Instruction::PPCSrc2Instruction(
    {
    useRegister(s1reg);
    useRegister(s2reg);
-   if (op == TR::InstOpCode::stxvl)
+   if (TR::InstOpCode(op).excludesR0ForRA())
       cg->addRealRegisterInterference(s2reg, TR::RealRegister::gr0);
    }
 
@@ -626,7 +623,7 @@ void TR::PPCSrc2Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    TR::Register           *virtualRegister2 = getSource2Register();
    TR::RealRegister       *assignedRegister;
    TR::Machine *machine = cg()->machine();
-   bool excludeGPR0 = getOpCodeValue() == TR::InstOpCode::stxvl;
+   bool excludeGPR0 = getOpCode().excludesR0ForRA();
 
    virtualRegister1->block();
 

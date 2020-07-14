@@ -101,7 +101,7 @@ private:
 	uintptr_t _minTenureFailureSize;
 	uintptr_t _minSemiSpaceFailureSize;
 
-	MM_CycleState _cycleState;  /**< Embedded cycle state to be used as the master cycle state for GC activity */
+	MM_CycleState _cycleState;  /**< Embedded cycle state to be used as the main cycle state for GC activity */
 	MM_CollectionStatisticsStandard _collectionStatistics;  /** Common collect stats (memory, time etc.) */
 
 	MM_CopyScanCacheList _scavengeCacheFreeList; /**< pool of unused copy-scan caches */
@@ -122,7 +122,7 @@ private:
 	MM_HeapRegionManager *_regionManager;
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	MM_MainGCThread _masterGCThread; /**< An object which manages the state of the master GC thread */
+	MM_MainGCThread _mainGCThread; /**< An object which manages the state of the main GC thread */
 	
 	volatile enum ConcurrentState {
 		concurrent_phase_idle,
@@ -160,8 +160,8 @@ private:
 	 */
 	void flushBuffersForGetNextScanCache(MM_EnvironmentStandard *env, bool finalFlush = false);
 	
-	void saveMasterThreadTenureTLHRemainders(MM_EnvironmentStandard *env);
-	void restoreMasterThreadTenureTLHRemainders(MM_EnvironmentStandard *env);
+	void saveMainThreadTenureTLHRemainders(MM_EnvironmentStandard *env);
+	void restoreMainThreadTenureTLHRemainders(MM_EnvironmentStandard *env);
 	
 	void setBackOutFlag(MM_EnvironmentBase *env, BackOutState value);
 	MMINLINE bool isBackOutFlagRaised() { return _extensions->isScavengerBackOutFlagRaised(); }
@@ -543,7 +543,7 @@ public:
 
 	void scavenge(MM_EnvironmentBase *env);
 	bool scavengeCompletedSuccessfully(MM_EnvironmentStandard *env);
-	virtual	void masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool initMarkMap = false, bool rebuildMarkBits = false);
+	virtual	void mainThreadGarbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool initMarkMap = false, bool rebuildMarkBits = false);
 
 	MMINLINE uintptr_t
 	isTiltedScavenge()
@@ -597,7 +597,7 @@ public:
 
 	/**
 	 * reset LargeAllocateStats in Tenure Space
-	 * @param env Master GC thread.
+	 * @param env Main GC thread.
 	 */
 	void resetTenureLargeAllocateStats(MM_EnvironmentBase *env);
 
@@ -621,7 +621,7 @@ public:
 
 protected:
 	virtual void setupForGC(MM_EnvironmentBase *env);
-	virtual void masterSetupForGC(MM_EnvironmentStandard *env);
+	virtual void mainSetupForGC(MM_EnvironmentStandard *env);
 	virtual void workerSetupForGC(MM_EnvironmentStandard *env);
 
 	virtual bool initialize(MM_EnvironmentBase *env);
@@ -634,7 +634,7 @@ protected:
 	/**
 	 * process LargeAllocateStats before GC
 	 * merge largeObjectAllocateStats in nursery space(no averaging)
-	 * @param env Master GC thread.
+	 * @param env Main GC thread.
 	 */
 	virtual void processLargeAllocateStatsBeforeGC(MM_EnvironmentBase *env);
 
@@ -643,14 +643,14 @@ protected:
 	 * merge and average largeObjectAllocateStats in tenure space
 	 * merge FreeEntry AllocateStats in tenure space
 	 * estimate Fragmentation
-	 * @param env Master GC thread.
+	 * @param env Main GC thread.
 	 */
 	virtual void processLargeAllocateStatsAfterGC(MM_EnvironmentBase *env);
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	/**
-	 * Perform partial initialization if Garbage Collection is called earlier then GC Master Thread is activated
-	 * @param env Master GC thread.
+	 * Perform partial initialization if Garbage Collection is called earlier then GC Main Thread is activated
+	 * @param env Main GC thread.
 	 */
 	virtual MM_ConcurrentPhaseStatsBase *getConcurrentPhaseStats() { return &_concurrentPhaseStats; }
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
@@ -672,13 +672,13 @@ public:
 	virtual void collectorShutdown(MM_GCExtensionsBase* extensions);
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	/* API for interaction with MasterGCTread */
+	/* API for interaction with MainGCTread */
 	virtual bool isConcurrentWorkAvailable(MM_EnvironmentBase *env);
 	virtual void preConcurrentInitializeStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats);
-	virtual uintptr_t masterThreadConcurrentCollect(MM_EnvironmentBase *env);
+	virtual uintptr_t mainThreadConcurrentCollect(MM_EnvironmentBase *env);
 	virtual void postConcurrentUpdateStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats, UDATA bytesConcurrentlyScanned);
 
-	/* master thread specific methods */
+	/* main thread specific methods */
 	bool scavengeIncremental(MM_EnvironmentBase *env);
 	bool scavengeInit(MM_EnvironmentBase *env);
 	bool scavengeRoots(MM_EnvironmentBase *env);
@@ -904,7 +904,7 @@ public:
 		, _heapTop(NULL)
 		, _regionManager(regionManager)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-		, _masterGCThread(env)
+		, _mainGCThread(env)
 		, _concurrentPhase(concurrent_phase_idle)
 		, _currentPhaseConcurrent(false)
 		, _concurrentScavengerSwitchCount(0)

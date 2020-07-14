@@ -60,15 +60,15 @@ public:
 	virtual void cleanup(MM_EnvironmentBase *env);
 
 	/**
-	 * Single call setup routine for tasks invoked by the master thread before the task is dispatched.
+	 * Single call setup routine for tasks invoked by the main thread before the task is dispatched.
 	 */
-	virtual void masterSetup(MM_EnvironmentBase *env);
+	virtual void mainSetup(MM_EnvironmentBase *env);
 
 	/**
-	 * Single call cleanup routine for tasks invoked by the master thread after the task has been dispatched and all
+	 * Single call cleanup routine for tasks invoked by the main thread after the task has been dispatched and all
 	 * worker threads (if any) have been quiesced.
 	 */
-	virtual void masterCleanup(MM_EnvironmentBase *env);
+	virtual void mainCleanup(MM_EnvironmentBase *env);
 
 	/**
 	 * @note This should not be called by anyone but Dispatcher or ParallelDispatcher 
@@ -102,7 +102,7 @@ public:
 	 * @parm id is a literal string for unique identification of synchronization point 
 	 * @note no-op
 	 */
-	virtual bool synchronizeGCThreadsAndReleaseMaster(MM_EnvironmentBase *env, const char *id);
+	virtual bool synchronizeGCThreadsAndReleaseMain(MM_EnvironmentBase *env, const char *id);
 
 	/**
 	 * Synchronize threads.
@@ -125,7 +125,7 @@ public:
 	 * @param[out] stallTime time spent being blocked
 	 * @note no-op
 	 */
-	virtual bool synchronizeGCThreadsAndReleaseMaster(MM_EnvironmentBase *env, const char *id, uint64_t *stallTime) { return true; }
+	virtual bool synchronizeGCThreadsAndReleaseMain(MM_EnvironmentBase *env, const char *id, uint64_t *stallTime) { return true; }
 
 	/**
 	 * Release synchronization of threads.

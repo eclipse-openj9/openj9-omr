@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2018 IBM Corp. and others
+ * Copyright (c) 2015, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -39,7 +39,7 @@ MM_ParallelScavengeTask::run(MM_EnvironmentBase *envBase)
 }
 
 void
-MM_ParallelScavengeTask::masterSetup(MM_EnvironmentBase *env)
+MM_ParallelScavengeTask::mainSetup(MM_EnvironmentBase *env)
 {
 	uintptr_t calculatedAliasThreshold = (uintptr_t)(getThreadCount() * env->getExtensions()->aliasInhibitingThresholdPercentage);
 	_collector->setAliasThreshold(calculatedAliasThreshold);
@@ -48,7 +48,7 @@ MM_ParallelScavengeTask::masterSetup(MM_EnvironmentBase *env)
 void
 MM_ParallelScavengeTask::setup(MM_EnvironmentBase *env)
 {
-	if (env->isMasterThread()) {
+	if (env->isMainThread()) {
 		Assert_MM_true(_cycleState == env->_cycleState);
 	} else {
 		Assert_MM_true(NULL == env->_cycleState);
@@ -59,7 +59,7 @@ MM_ParallelScavengeTask::setup(MM_EnvironmentBase *env)
 void
 MM_ParallelScavengeTask::cleanup(MM_EnvironmentBase *env)
 {
-	if (env->isMasterThread()) {
+	if (env->isMainThread()) {
 		Assert_MM_true(_cycleState == env->_cycleState);
 	} else {
 		env->_cycleState = NULL;
@@ -80,12 +80,12 @@ MM_ParallelScavengeTask::synchronizeGCThreads(MM_EnvironmentBase *envBase, const
 }
 
 bool
-MM_ParallelScavengeTask::synchronizeGCThreadsAndReleaseMaster(MM_EnvironmentBase *envBase, const char *id)
+MM_ParallelScavengeTask::synchronizeGCThreadsAndReleaseMain(MM_EnvironmentBase *envBase, const char *id)
 {
 	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
 	OMRPORT_ACCESS_FROM_OMRPORT(envBase->getPortLibrary());
 	uint64_t startTime = omrtime_hires_clock();
-	bool result = MM_ParallelTask::synchronizeGCThreadsAndReleaseMaster(env, id);
+	bool result = MM_ParallelTask::synchronizeGCThreadsAndReleaseMain(env, id);
 	uint64_t endTime = omrtime_hires_clock();
 
 	env->_scavengerStats.addToSyncStallTime(startTime, endTime);

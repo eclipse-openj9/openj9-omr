@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 IBM Corp. and others
+ * Copyright (c) 2016, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -273,7 +273,7 @@ public:
 	/**
 	 * Reset to initial state (0 accumulated samples, unit scaling factor). This
 	 * should be called on each scavenging gc thread when it enters completeScan()
-	 * and on the master thread before starting a scavenging gc cycle to ensure
+	 * and on the main thread before starting a scavenging gc cycle to ensure
 	 * that the effective copy/scan cache size is maximal until all gc threads
 	 * have entered completeScan().
 	 * @param resetHistory if true history will be reset (eg at end of gc after reporting stats)

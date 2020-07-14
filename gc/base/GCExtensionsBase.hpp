@@ -231,8 +231,8 @@ public:
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	MM_Scavenger *scavenger;
-	void *_masterThreadTenureTLHRemainderBase;  /**< base and top pointers of the last unused tenure TLH copy cache, that will be loaded to thread env during master setup */
-	void *_masterThreadTenureTLHRemainderTop;
+	void *_mainThreadTenureTLHRemainderBase;  /**< base and top pointers of the last unused tenure TLH copy cache, that will be loaded to thread env during main setup */
+	void *_mainThreadTenureTLHRemainderTop;
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
 	J9Pool* environments;
@@ -699,7 +699,7 @@ public:
 
 	bool padToPageSize;
 	
-	bool fvtest_disableExplictMasterThread; /**< Test option to disable creation of explicit master GC thread */
+	bool fvtest_disableExplictMainThread; /**< Test option to disable creation of explicit main GC thread */
 
 #if defined(OMR_GC_VLHGC)
 	bool tarokDebugEnabled; /**< True if we want to perform additional checks and freed memory poisoning which aid in debugging Tarok problems  */
@@ -782,7 +782,7 @@ public:
 	MM_SweepPoolManagerAddressOrderedListBase* sweepPoolManagerSmallObjectArea; /**< Pointer to Sweep Pool Manager for MPSAOL or Hybrid, used for SOA */
 	MM_SweepPoolManager* sweepPoolManagerBumpPointer; /**<  Pointer to Sweep Pool Manager for MemoryPoolBumpPointer */
 
-	uint64_t _masterThreadCpuTimeNanos; /**< Total CPU time used by all master threads */
+	uint64_t _mainThreadCpuTimeNanos; /**< Total CPU time used by all main threads */
 
 	bool alwaysCallWriteBarrier; /**< was -Xgc:alwayscallwritebarrier specified? */
 	bool alwaysCallReadBarrier; /**< was -Xgc:alwaysCallReadBarrier specified? */
@@ -1347,8 +1347,8 @@ public:
 		, _tenureSize(0)
 #if defined(OMR_GC_MODRON_SCAVENGER)
 		, scavenger(NULL)
-		, _masterThreadTenureTLHRemainderBase(NULL)
-		, _masterThreadTenureTLHRemainderTop(NULL)
+		, _mainThreadTenureTLHRemainderBase(NULL)
+		, _mainThreadTenureTLHRemainderTop(NULL)
 #endif /* OMR_GC_MODRON_SCAVENGER */
 		, environments(NULL)
 		, excessiveGCStats()
@@ -1705,7 +1705,7 @@ public:
 		, _numaManager()
 		, numaForced(false)
 		, padToPageSize(false)
-		, fvtest_disableExplictMasterThread(false)
+		, fvtest_disableExplictMainThread(false)
 #if defined(OMR_GC_VLHGC)
 		, tarokDebugEnabled(false) /* by default, we turn off the Tarok debug options since they are an appreciable performance hit */
 		, tarokGlobalMarkIncrementTimeMillis(0)
@@ -1772,7 +1772,7 @@ public:
 		, sweepPoolManagerAddressOrderedList(NULL)
 		, sweepPoolManagerSmallObjectArea(NULL)
 		, sweepPoolManagerBumpPointer(NULL)
-		, _masterThreadCpuTimeNanos(0)
+		, _mainThreadCpuTimeNanos(0)
 		, alwaysCallWriteBarrier(false)
 		, alwaysCallReadBarrier(false)
 		, _holdRandomThreadBeforeHandlingWorkUnit(false)

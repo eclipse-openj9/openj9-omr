@@ -35,8 +35,8 @@
 /* Source object header bits */
 #define OMR_FORWARDED_TAG 4
 /* If 'being copied hint' is set, it hints that destination might still be being copied (although it might have just completed).
-   It tells the caller it should go and fetch master info from the destination header to tell if coping is really complete.
-   If hint is reset, the copying is definitely complete, no need to fetch the master info.
+   It tells the caller it should go and fetch main info from the destination header to tell if coping is really complete.
+   If hint is reset, the copying is definitely complete, no need to fetch the main info.
    This hint is not necessary for correctness of copying protocol, it's just an optimization to avoid visiting destination object header
    in cases when it's likely not in data cash (GC thread encountering already forwarded object) */
 #define OMR_BEING_COPIED_HINT 2
@@ -44,7 +44,7 @@
 
 
 /* Destination object header bits, masks, consts... */
-/* Master being-copied bit is the destination header. If set, object is still being copied,
+/* Main being-copied bit is the destination header. If set, object is still being copied,
    and the rest of the header indicate progress info (bytes yet to copy and number of threads participating).
    If the bit is reset, the object is fully copied, and the rest of header is fully restored (class info etc).
  */
@@ -401,7 +401,7 @@ public:
 	copyOrWait(omrobjectptr_t destinationObjectPtr)
 	{
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-		/* Check the hint bit in the forwarding pointer itself, before fetching the master info in the destination object header */ 
+		/* Check the hint bit in the forwarding pointer itself, before fetching the main info in the destination object header */ 
 		if (isBeingCopied()) {
 			copyOrWaitOutline(destinationObjectPtr);
 		}

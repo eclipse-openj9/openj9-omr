@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -133,7 +133,7 @@ MM_OverflowSegregated::fillFromOverflow(MM_EnvironmentBase *env, MM_Packet *pack
 void
 MM_OverflowSegregated::handleOverflow(MM_EnvironmentBase *env)
 {
-	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 		_overflow = false;
 
 		MM_Heap *heap = _extensions->heap;

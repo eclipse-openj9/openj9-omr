@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -197,7 +197,7 @@ MM_SegregatedGC::internalGarbageCollect(MM_EnvironmentBase *env, MM_MemorySubSpa
 	markStats->_startTime = omrtime_hires_clock();
 	/* OMRTODO investigate / fix this function call */
 
-	_markingScheme->masterSetupForGC(env);
+	_markingScheme->mainSetupForGC(env);
 
 //	if (env->_cycleState->_gcCode.isOutOfMemoryGC()) {
 //		env->_cycleState->_referenceObjectOptions |= MM_CycleState::references_soft_as_weak;
@@ -212,7 +212,7 @@ MM_SegregatedGC::internalGarbageCollect(MM_EnvironmentBase *env, MM_MemorySubSpa
 
 	/* Do any post mark checks */
 	/* OMRTODO we need to implement this function for segregated marking scheme */
-//	_markingScheme->masterCleanupAfterGC(env);
+//	_markingScheme->mainCleanupAfterGC(env);
 	markStats->_endTime = omrtime_hires_clock();
 	reportMarkEnd(env);
 

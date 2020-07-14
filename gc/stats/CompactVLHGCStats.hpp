@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -76,8 +76,8 @@ public:
 	uint64_t _rememberedSetClearingEndTime;	/**< hires end time to clear all RSCL from-references for the regions in the compact set */
 	uint64_t _planningStartTime;	/**< hires start time of the phase which plans the compaction operation */
 	uint64_t _planningEndTime;	/**< hires end time of the phase which plans the compaction operation */
-	uint64_t _reportMoveEventsStartTime;	/**< hires start time to report all object move events (master thread only and only if OBJECT_RENAME is hooked) */
-	uint64_t _reportMoveEventsEndTime;	/**< hires end time to report all object move events (master thread only and only if OBJECT_RENAME is hooked) */
+	uint64_t _reportMoveEventsStartTime;	/**< hires start time to report all object move events (main thread only and only if OBJECT_RENAME is hooked) */
+	uint64_t _reportMoveEventsEndTime;	/**< hires end time to report all object move events (main thread only and only if OBJECT_RENAME is hooked) */
 	uint64_t _fixupExternalPacketsStartTime;	/**< hires start time to fixup work packets for an active GMP (only done if GMP is active) */
 	uint64_t _fixupExternalPacketsEndTime;	/**< hires end time to fixup work packets for an active GMP (only done if GMP is active) */
 	uint64_t _fixupArrayletLeafStartTime;	/**< hires start time to fixup arraylet leaf spine pointers (one thread only) */

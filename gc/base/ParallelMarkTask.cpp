@@ -56,7 +56,7 @@ MM_ParallelMarkTask::run(MM_EnvironmentBase *env)
 void
 MM_ParallelMarkTask::setup(MM_EnvironmentBase *env)
 {
-	if(env->isMasterThread()) {
+	if(env->isMainThread()) {
 		Assert_MM_true(_cycleState == env->_cycleState);
 	} else {
 		Assert_MM_true(NULL == env->_cycleState);
@@ -69,7 +69,7 @@ MM_ParallelMarkTask::cleanup(MM_EnvironmentBase *env)
 {
 	_markingScheme->workerCleanupAfterGC(env);
 
-	if (env->isMasterThread()) {
+	if (env->isMainThread()) {
 		Assert_MM_true(_cycleState == env->_cycleState);
 	} else {
 		env->_cycleState = NULL;
@@ -104,11 +104,11 @@ MM_ParallelMarkTask::synchronizeGCThreads(MM_EnvironmentBase *env, const char *i
 }
 
 bool
-MM_ParallelMarkTask::synchronizeGCThreadsAndReleaseMaster(MM_EnvironmentBase *env, const char *id)
+MM_ParallelMarkTask::synchronizeGCThreadsAndReleaseMain(MM_EnvironmentBase *env, const char *id)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	uint64_t startTime = omrtime_hires_clock();
-	bool result = MM_ParallelTask::synchronizeGCThreadsAndReleaseMaster(env, id);
+	bool result = MM_ParallelTask::synchronizeGCThreadsAndReleaseMain(env, id);
 	uint64_t endTime = omrtime_hires_clock();
 	env->_markStats.addToSyncStallTime(startTime, endTime);
 	

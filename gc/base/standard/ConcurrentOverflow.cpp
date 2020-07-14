@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -229,7 +229,7 @@ void
 MM_ConcurrentOverflow::handleOverflow(MM_EnvironmentBase *env)
 {
 	MM_EnvironmentStandard *envStandard = MM_EnvironmentStandard::getEnvironment(env);
-	if (envStandard->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	if (envStandard->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 		_overflow = false;
 		envStandard->_currentTask->releaseSynchronizedGCThreads(envStandard);
 	}

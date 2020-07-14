@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -77,7 +77,7 @@ protected:
 	MM_ParallelSweepScheme *_sweepScheme;
 	MM_ParallelHeapWalker *_heapWalker;
 	MM_Dispatcher *_dispatcher;
-	MM_CycleState _cycleState;  /**< Embedded cycle state to be used as the master cycle state for GC activity */
+	MM_CycleState _cycleState;  /**< Embedded cycle state to be used as the main cycle state for GC activity */
 	MM_CollectionStatisticsStandard _collectionStatistics; /** Common collect stats (memory, time etc.) */
 	bool _fixHeapForWalkCompleted;
 public:
@@ -128,7 +128,7 @@ private:
 	 * If either of above options is specified we will still compact 
 	 * on non-system GCs if any of the compaction triggers are met.
 	 * 
-	 * @param env[in] The master thread of this collection
+	 * @param env[in] The main thread of this collection
 	 * @param allocDescription[in] The allocation description which triggered the GC (NULL if this collection was not triggered by an allocation)
 	 * @param activeSubspaceMaxExpansionInSpace[in] The maximum expansion size of the active subspace
 	 * @param gcCode[in] a code describing the type of GC cycle
@@ -156,22 +156,22 @@ private:
 	 *	Main call for Sweep operation
 	 *	Start of sweep for concurrentGC, full sweep for other cases
 	 */
-	void masterThreadSweepStart(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription);
+	void mainThreadSweepStart(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription);
 	
 	/**
 	 * 	Complete Sweep operation for concurrentGC, empty for all other cases 
 	 */
-	void masterThreadSweepComplete(MM_EnvironmentBase *env, SweepCompletionReason reason);
+	void mainThreadSweepComplete(MM_EnvironmentBase *env, SweepCompletionReason reason);
 	
 #if defined(OMR_GC_MODRON_COMPACTION)
 	/**
 	 *	Main call for Compact operation
 	 *	@param rebuildMarkBits rebuild of mark bits required
 	 */
-	void masterThreadCompact(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool rebuildMarkBits);
+	void mainThreadCompact(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool rebuildMarkBits);
 #endif /* OMR_GC_MODRON_COMPACTION */
 
-	void masterThreadRestartAllocationCaches(MM_EnvironmentBase *env);
+	void mainThreadRestartAllocationCaches(MM_EnvironmentBase *env);
 
 	/**
 	 *	Initializations before GC cycle 
@@ -191,7 +191,7 @@ protected:
 	bool initialize(MM_EnvironmentBase *env);
 	void tearDown(MM_EnvironmentBase *env);
 
-	virtual void masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool initMarkMap, bool rebuildMarkBits);
+	virtual void mainThreadGarbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool initMarkMap, bool rebuildMarkBits);
 
 	virtual void setupForGC(MM_EnvironmentBase *env);
 	virtual bool internalGarbageCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription);
@@ -228,7 +228,7 @@ protected:
 	 * process LargeAllocateStats before GC
 	 * merge and average largeObjectAllocateStats in tenure space
 	 * merge largeObjectAllocateStats in nursery space(no averaging)
-	 * @param env Master GC thread.
+	 * @param env Main GC thread.
 	 */
 	virtual void processLargeAllocateStatsBeforeGC(MM_EnvironmentBase *env);
 
@@ -236,7 +236,7 @@ protected:
 	 * process LargeAllocateStats after Sweep
 	 * merge FreeEntry AllocateStats in tenure space
 	 * estimate Fragmentation
-	 * @param env Master GC thread.
+	 * @param env Main GC thread.
 	 */
 	virtual void processLargeAllocateStatsAfterSweep(MM_EnvironmentBase *env);
 

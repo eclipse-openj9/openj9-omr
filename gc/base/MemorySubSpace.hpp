@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -171,7 +171,7 @@ public:
 	/**
 	 * Called by the by the collector when a region is determined to be unused to allow the receiver to recycle the given region
 	 * which it is responsible for managing.
-	 * @param env[in] The calling thread (usually the master thread of the GC)
+	 * @param env[in] The calling thread (usually the main thread of the GC)
 	 * @param region[in] The region to be recycled
 	 */
 	virtual void recycleRegion(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region);

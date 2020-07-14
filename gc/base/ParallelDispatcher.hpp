@@ -89,7 +89,7 @@ public:
 private:
 protected:
 	virtual void workerEntryPoint(MM_EnvironmentBase *env);
-	virtual void masterEntryPoint(MM_EnvironmentBase *env);
+	virtual void mainEntryPoint(MM_EnvironmentBase *env);
 
 	bool initialize(MM_EnvironmentBase *env);
 	
@@ -98,11 +98,11 @@ protected:
 	virtual uintptr_t getThreadPriority();
 
 	/**
-	 * Decides whether the dispatcher also start a separate thread to be the master
-	 * GC thread. Usually no, because the master thread will be the thread that
+	 * Decides whether the dispatcher also start a separate thread to be the main
+	 * GC thread. Usually no, because the main thread will be the thread that
 	 * requested the GC.
 	 */  
-	virtual bool useSeparateMasterThread() { return false; }
+	virtual bool useSeparateMainThread() { return false; }
 	
 	virtual void acceptTask(MM_EnvironmentBase *env);
 	virtual void completeTask(MM_EnvironmentBase *env);

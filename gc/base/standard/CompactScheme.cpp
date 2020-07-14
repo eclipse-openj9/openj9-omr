@@ -349,7 +349,7 @@ MM_CompactScheme::workerSetupForGC(MM_EnvironmentStandard *env, bool singleThrea
 }
 
 void
-MM_CompactScheme::masterSetupForGC(MM_EnvironmentStandard *env)
+MM_CompactScheme::mainSetupForGC(MM_EnvironmentStandard *env)
 {
 	_heap = _extensions->heap;
 	_rootManager = _heap->getHeapRegionManager();
@@ -357,7 +357,7 @@ MM_CompactScheme::masterSetupForGC(MM_EnvironmentStandard *env)
 	_compactTable = (CompactTableEntry*)_markingScheme->getMarkMap()->getMarkBits();
 	_subAreaTable = (SubAreaEntry*)_extensions->sweepHeapSectioning->getBackingStoreAddress();
 	_subAreaTableSize = _extensions->sweepHeapSectioning->getBackingStoreSize();
-	_delegate.masterSetupForGC(env);
+	_delegate.mainSetupForGC(env);
 }
 
 omrobjectptr_t
@@ -404,7 +404,7 @@ MM_CompactScheme::createSubAreaTable(MM_EnvironmentStandard *env, bool singleThr
 	/* Single threaded pass to set tentative sub area limits tentative limits are
 	 * listed in freeChunk field. This field will be reset during the third pass.
 	 */
-	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 		GC_HeapRegionIteratorStandard regionIterator(_rootManager);
 		uintptr_t i = 0;
 		while(NULL != (region = regionIterator.nextRegion())) {
@@ -480,7 +480,7 @@ void
 MM_CompactScheme::removeNullSubAreas(MM_EnvironmentStandard *env)
 {
 	/*single threaded pass to eliminate null sub areas */
-	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 		_compactFrom = (omrobjectptr_t)_heap->getHeapTop();
 		_compactTo   = (omrobjectptr_t)_heap->getHeapBase();
 		uintptr_t j = 0;
@@ -507,7 +507,7 @@ MM_CompactScheme::removeNullSubAreas(MM_EnvironmentStandard *env)
 void
 MM_CompactScheme::completeSubAreaTable(MM_EnvironmentStandard *env)
 {
-	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 		MM_HeapRegionDescriptorStandard *region = NULL;
 
 		/* Finally iterate over all memory pools and reset in preparation for
@@ -538,12 +538,12 @@ MM_CompactScheme::compact(MM_EnvironmentBase *envBase, bool rebuildMarkBits, boo
 	uintptr_t fixupObjectsCount = 0;
 	bool singleThreaded = false;
 
-	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 		/* Do any necessary initialization */
 		/* TODO: Perhaps the task dispatch should occur internally within so that the initialization doesn't need to be
 		 * done at a synchronize point?
 		 */
-		masterSetupForGC(env);
+		mainSetupForGC(env);
 #if defined(DEBUG)
 		_delegate.verifyHeap(env, _markMap);
 #endif /* DEBUG */
@@ -568,10 +568,10 @@ MM_CompactScheme::compact(MM_EnvironmentBase *envBase, bool rebuildMarkBits, boo
 	workerSetupForGC(env, singleThreaded);
 	env->_compactStats._setupEndTime = omrtime_hires_clock();
 
-	/* If a single threaded compaction force compact to run on master thread. Required
-	 * to ensure all events issued on master thread.
+	/* If a single threaded compaction force compact to run on main thread. Required
+	 * to ensure all events issued on main thread.
 	 */
-	if (!singleThreaded || env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	if (!singleThreaded || env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 		env->_compactStats._moveStartTime = omrtime_hires_clock();
 		moveObjects(env, objectCount, byteCount, skippedObjectCount);
 		env->_compactStats._moveEndTime = omrtime_hires_clock();
@@ -600,7 +600,7 @@ MM_CompactScheme::compact(MM_EnvironmentBase *envBase, bool rebuildMarkBits, boo
 
 	MM_AtomicOperations::sync();
 
-	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 		rebuildFreelist(env);
 
 		MM_MemoryPool *memoryPool;

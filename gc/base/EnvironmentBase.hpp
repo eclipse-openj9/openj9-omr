@@ -66,7 +66,7 @@ typedef enum {
 	WRITE_BARRIER_THREAD,
 	CON_MARK_HELPER_THREAD,
 	GC_WORKER_THREAD,
-	GC_MASTER_THREAD
+	GC_MAIN_THREAD
 } ThreadType;
 
 /**
@@ -125,7 +125,7 @@ public:
 		ATTACH_THREAD = 0x0,
 		ATTACH_GC_DISPATCHER_THREAD = 0x1,
 		ATTACH_GC_HELPER_THREAD = 0x2,
-		ATTACH_GC_MASTER_THREAD = 0x3,
+		ATTACH_GC_MAIN_THREAD = 0x3,
 	} AttachVMThreadReason;
 
 	MM_ObjectAllocationInterface *_objectAllocationInterface; /**< Per-thread interface that guides object allocation decisions */
@@ -336,10 +336,10 @@ public:
 	MMINLINE void setWorkerID(uintptr_t workerID) { _workerID = workerID; }
 
 	/**
-	 * Enguires if this thread is the master.
-	 * return true if the thread is the master thread, false otherwise.
+	 * Enguires if this thread is the main.
+	 * return true if the thread is the main thread, false otherwise.
 	 */
-	 MMINLINE bool isMasterThread() { return _workerID == 0; }
+	 MMINLINE bool isMainThread() { return _workerID == 0; }
 
 	/**
 	 * Gets the threads type.
@@ -355,7 +355,7 @@ public:
 	setThreadType(ThreadType threadType)
 	{
 		_threadType = threadType;
-		_delegate.setGCMasterThread(GC_MASTER_THREAD == _threadType);
+		_delegate.setGCMainThread(GC_MAIN_THREAD == _threadType);
 	}
 
 	/**
@@ -468,13 +468,13 @@ public:
 	void releaseExclusiveVMAccess();
 	
 	/**
-	 * Give up exclusive access in preparation for transferring it to a collaborating thread (i.e. main-to-master or master-to-main)
+	 * Give up exclusive access in preparation for transferring it to a collaborating thread (i.e. collaborator-to-main or main-to-collaborator)
 	 * @return the exclusive count of the current thread before relinquishing 
 	 */
 	uintptr_t relinquishExclusiveVMAccess();
 
 	/**
-	 * Assume exclusive access from a collaborating thread i.e. main-to-master or master-to-main)
+	 * Assume exclusive access from a collaborating thread i.e. collaborator-to-main or main-to-collaborator)
 	 * @param exclusiveCount the exclusive count to be restored 
 	 */
 	void assumeExclusiveVMAccess(uintptr_t exclusiveCount);

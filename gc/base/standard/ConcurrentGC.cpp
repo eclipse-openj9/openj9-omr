@@ -1142,7 +1142,7 @@ MM_ConcurrentGC::shutdownAndExitConHelperThread(OMR_VMThread *omrThread)
 	MM_EnvironmentBase::detachVMThread(_extensions->getOmrVM(), omrThread, MM_EnvironmentBase::ATTACH_GC_HELPER_THREAD);
 	omrthread_monitor_enter(_conHelpersActivationMonitor);
 	_conHelpersShutdownCount += 1;
-	/* The last thread to shut down must notify the master thread */
+	/* The last thread to shut down must notify the main thread */
 	if (_conHelpersShutdownCount == _conHelpersStarted) {
 		omrthread_monitor_notify(_conHelpersActivationMonitor);
 	}
@@ -2467,7 +2467,7 @@ MM_ConcurrentGC::doConcurrentInitialization(MM_EnvironmentBase *env, uintptr_t i
 	if(_initializers > 0) {
 		/* Did we run out of initialization work before paying all of our tax ? */
 		if (initDone < initToDo && !env->isExclusiveAccessRequestWaiting()) {
-			/* Yes..so block here and wait for master thread to finish and update execution mode
+			/* Yes..so block here and wait for main thread to finish and update execution mode
 			 */
 			omrthread_monitor_enter(_initWorkCompleteMonitor);
 			omrthread_monitor_exit(_initWorkMonitor);
@@ -3092,7 +3092,7 @@ MM_ConcurrentGC::internalGarbageCollect(MM_EnvironmentBase *env, MM_MemorySubSpa
 {
 	_extensions->globalGCStats.gcCount += 1;
 
-	masterThreadGarbageCollect(env, static_cast<MM_AllocateDescription*>(allocDescription), _initializeMarkMap, false);
+	mainThreadGarbageCollect(env, static_cast<MM_AllocateDescription*>(allocDescription), _initializeMarkMap, false);
 
 	/* Restore normal allocation rules.
 	 * It's not good to do it in concurrentFinalCollection(), as an AF may occur before we get chance to do final collection, so we may miss to restore it.
@@ -3370,7 +3370,7 @@ MM_ConcurrentGC::heapReconfigured(MM_EnvironmentBase *env, HeapReconfigReason re
 /**
  * Clear mark bits for any nursery heaps.
  *
- * This routine is called by ConcurrentClearNewMarkBits task on master and any worker
+ * This routine is called by ConcurrentClearNewMarkBits task on main and any worker
  * threads during internalPreCollect().
  */
 void
@@ -3509,7 +3509,7 @@ MM_ConcurrentGC::finalCleanCards(MM_EnvironmentBase *env)
  * A marked object which is not in a dirty card needs rescanning now for any references
  * to the nursery which will not have been traced by concurrent mark
  *
- * This routine is called ConcurrentScanRememberedSetTask on master and any worker threads
+ * This routine is called ConcurrentScanRememberedSetTask on main and any worker threads
  * during internalPreCollect().
  */
 void

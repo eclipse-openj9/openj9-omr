@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -307,7 +307,7 @@ public:
 	void kill(MM_EnvironmentBase *env);
 
     void workerSetupForGC(MM_EnvironmentStandard *env, bool singleThreaded);
-	void masterSetupForGC(MM_EnvironmentStandard *env);
+	void mainSetupForGC(MM_EnvironmentStandard *env);
     virtual void compact(MM_EnvironmentBase *env, bool rebuildMarkBits, bool aggressive);
     omrobjectptr_t getForwardingPtr(omrobjectptr_t objectPtr) const;
 	void flushPool(MM_EnvironmentStandard *env, MM_CompactMemoryPoolState *freeListState);

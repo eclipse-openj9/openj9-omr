@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -46,7 +46,7 @@ protected:
 	MM_SweepSchemeSegregated *_sweepScheme;
 	MM_Dispatcher *_dispatcher;
 
-	MM_CycleState _cycleState;  /**< Embedded cycle state to be used as the master cycle state for GC activity */
+	MM_CycleState _cycleState;  /**< Embedded cycle state to be used as the main cycle state for GC activity */
 	MM_CollectionStatisticsStandard _collectionStatistics; /** Common collect stats (memory, time etc.) */
 private:
 public:

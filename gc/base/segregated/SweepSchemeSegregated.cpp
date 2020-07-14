@@ -102,7 +102,7 @@ MM_SweepSchemeSegregated::sweep(MM_EnvironmentBase *env, MM_MemoryPoolSegregated
 	_memoryPool = memoryPool;
 	_isFixHeapForWalk = isFixHeapForWalk;
 
-	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 		preSweep(env);
 		env->_currentTask->releaseSynchronizedGCThreads(env);
 	}
@@ -112,7 +112,7 @@ MM_SweepSchemeSegregated::sweep(MM_EnvironmentBase *env, MM_MemoryPoolSegregated
 	incrementalSweepLarge(env);
 	
 	MM_RegionPoolSegregated *regionPool = _memoryPool->getRegionPool();
-	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 		regionPool->setSweepSmallPages(true);
 		regionPool->resetSkipAvailableRegionForAllocation();
 		env->_currentTask->releaseSynchronizedGCThreads(env);
@@ -121,7 +121,7 @@ MM_SweepSchemeSegregated::sweep(MM_EnvironmentBase *env, MM_MemoryPoolSegregated
 	incrementalSweepSmall(env);
 	regionPool->joinBucketListsForSplitIndex(env);
 
-	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 		regionPool->setSweepSmallPages(false);
 		postSweep(env);
 		env->_currentTask->releaseSynchronizedGCThreads(env);

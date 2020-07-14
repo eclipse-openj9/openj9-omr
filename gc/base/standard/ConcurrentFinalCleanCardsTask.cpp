@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -38,7 +38,7 @@ MM_ConcurrentFinalCleanCardsTask::run(MM_EnvironmentBase *envBase)
 void
 MM_ConcurrentFinalCleanCardsTask::setup(MM_EnvironmentBase *env)
 {
-	if (env->isMasterThread()) {
+	if (env->isMainThread()) {
 		Assert_MM_true(_cycleState == env->_cycleState);
 	} else {
 		Assert_MM_true(NULL == env->_cycleState);
@@ -49,7 +49,7 @@ MM_ConcurrentFinalCleanCardsTask::setup(MM_EnvironmentBase *env)
 void
 MM_ConcurrentFinalCleanCardsTask::cleanup(MM_EnvironmentBase *env)
 {
-	if (env->isMasterThread()) {
+	if (env->isMainThread()) {
 		Assert_MM_true(_cycleState == env->_cycleState);
 	} else {
 		env->_cycleState = NULL;

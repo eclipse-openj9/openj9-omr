@@ -122,11 +122,11 @@ MM_ParallelSweepTask::synchronizeGCThreads(MM_EnvironmentBase *env, const char *
  * Stats gathering for synchornizing threads during sweep.
  */
 bool
-MM_ParallelSweepTask::synchronizeGCThreadsAndReleaseMaster(MM_EnvironmentBase *env, const char *id)
+MM_ParallelSweepTask::synchronizeGCThreadsAndReleaseMain(MM_EnvironmentBase *env, const char *id)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	uint64_t startTime = omrtime_hires_clock();
-	bool result = MM_ParallelTask::synchronizeGCThreadsAndReleaseMaster(env, id);
+	bool result = MM_ParallelTask::synchronizeGCThreadsAndReleaseMain(env, id);
 	uint64_t endTime = omrtime_hires_clock();
 	env->_sweepStats.addToIdleTime(startTime, endTime);
 
@@ -313,7 +313,7 @@ MM_ParallelSweepScheme::heapReconfigured(MM_EnvironmentBase *env)
 /**
  * Initialize all internal structures in order to perform a parallel sweep.
  * 
- * @note called by the master thread only
+ * @note called by the main thread only
  */
 void
 MM_ParallelSweepScheme::setupForSweep(MM_EnvironmentBase *env)
@@ -761,8 +761,8 @@ MM_ParallelSweepScheme::allPoolsPostProcess(MM_EnvironmentBase *env)
 void
 MM_ParallelSweepScheme::internalSweep(MM_EnvironmentBase *env)
 {
-	/* master thread does initialization */
-	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	/* main thread does initialization */
+	if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 		/* Reset largestFreeEntry of all subSpaces at beginning of sweep */
 		_extensions->heap->resetLargestFreeEntry();
 		
@@ -774,8 +774,8 @@ MM_ParallelSweepScheme::internalSweep(MM_EnvironmentBase *env)
 	/* ..all threads now join in to do actual sweep */
 	sweepAllChunks(env, _chunksPrepared);
 	
-	/* ..and then master thread finishes off by connecting all the chunks */
-	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	/* ..and then main thread finishes off by connecting all the chunks */
+	if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 		uint64_t mergeStartTime, mergeEndTime;
 		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());

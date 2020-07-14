@@ -98,7 +98,7 @@ omr_add_library(omrgc STATIC
 	base/MarkingScheme.cpp
 	base/MarkMap.cpp
 	base/MarkMapSegmentChunkIterator.cpp
-	base/MasterGCThread.cpp
+	base/MainGCThread.cpp
 	base/Math.cpp
 	base/MemoryManager.cpp
 	base/MemoryPool.cpp

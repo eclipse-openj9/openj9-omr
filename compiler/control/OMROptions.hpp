@@ -1923,7 +1923,7 @@ private:
    TR_MCTLogs *    getLogListForOtherCompThreads() { return _logListForOtherCompThreads; }
    void            setLogListForOtherCompThreads(TR_MCTLogs *l) { _logListForOtherCompThreads = l; }
    TR_MCTLogs *    findLogFileForCompilationThread(int32_t compThreadID);
-   void            setLogForCompilationThread(int32_t compThreadID, TR::Options *masterOptions);
+   void            setLogForCompilationThread(int32_t compThreadID, TR::Options *mainOptions);
    static void     safelyCloseLogs(TR::Options *options, TR_MCTLogs * &closedLogs, TR_FrontEnd * fe);
    static void     closeLogsForOtherCompilationThreads(TR_FrontEnd * fe);
 
@@ -2313,7 +2313,7 @@ protected:
    int32_t                     _randomSeed;
    TR_MCTLogs *                _logListForOtherCompThreads;
    static bool                 _dualLogging;    // a log file is used in two different option sets, or in
-                                                // in the master TR::Options object and in an option set
+                                                // in the main TR::Options object and in an option set
    static bool                 _logsForOtherCompilationThreadsExist;
 
    char*                       _induceOSR;

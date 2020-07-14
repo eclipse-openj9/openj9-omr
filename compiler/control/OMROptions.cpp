@@ -1637,7 +1637,7 @@ char *        OMR::Options::_compilationStrategyName = "default";
 bool          OMR::Options::_optionsTablesValidated = false;
 
 bool          OMR::Options::_dualLogging = false; // a log file can be used in two different option sets, or in
-                                                // in the master TR::Options object and in an option set
+                                                // in the main TR::Options object and in an option set
 bool          OMR::Options::_logsForOtherCompilationThreadsExist = false;
 
 int32_t       OMR::Options::_aggressivenessLevel = -1; // -1 means not set
@@ -1769,21 +1769,21 @@ OMR::Options::Options(
    //
    TR::OptionSet *optionSet = TR::Options::findOptionSet(trMemory, index, lineNum, compilee, optimizationPlan->getOptLevel(), isAOT);
 
-   TR::Options *masterOptions;
+   TR::Options *mainOptions;
    if (optionSet)
-      masterOptions = optionSet->getOptions();
+      mainOptions = optionSet->getOptions();
    else if (isAOT)
-      masterOptions = _aotCmdLineOptions;
+      mainOptions = _aotCmdLineOptions;
    else
-      masterOptions = _jitCmdLineOptions;
-   *this = *masterOptions;
+      mainOptions = _jitCmdLineOptions;
+   *this = *mainOptions;
 
    // At this point this object contains the log for compThreadId==0
    // If this is a different compilation thread we need to find the right log
    //
    if (_logFileName && compThreadID > 0 && !_suppressLogFileBecauseDebugObjectNotCreated)
       {
-      self()->setLogForCompilationThread(compThreadID, masterOptions);
+      self()->setLogForCompilationThread(compThreadID, mainOptions);
       }
 
    if (optimizationPlan->disableCHOpts())
@@ -2283,7 +2283,7 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
                self()->openLogFile();
             else
                OMR::Options::_dualLogging = true; // a log file is used in two different option sets, or in
-                                                // in the master TR::Options object and in an option set
+                                                // in the main TR::Options object and in an option set
             }
          }
       else if (self()->requiresLogFile())
@@ -2668,7 +2668,7 @@ OMR::Options::jitPreProcess()
          {
          if (_aggressivenessLevel >= 0 && _aggressivenessLevel <= 5)
             {
-            // Set some default values for JIT and AOT master command line options
+            // Set some default values for JIT and AOT main command line options
             //
             switch (_aggressivenessLevel)
                {
@@ -3849,7 +3849,7 @@ TR_MCTLogs *OMR::Options::findLogFileForCompilationThread(int32_t compThreadID)
 
 // Side effect this->_logFile is set
 // compThreadID must be greater than 0
-void OMR::Options::setLogForCompilationThread(int32_t compThreadID, TR::Options *masterOptions)
+void OMR::Options::setLogForCompilationThread(int32_t compThreadID, TR::Options *mainOptions)
    {
    _fe->acquireLogMonitor();
 
@@ -3909,11 +3909,11 @@ void OMR::Options::setLogForCompilationThread(int32_t compThreadID, TR::Options 
       self()->openLogFile(compThreadID); // side effect: the open file will be set in this object
       if (_logFile != NULL)
          {
-         // Cache the open log file in the masterOptions
+         // Cache the open log file in the mainOptions
          optionLogEntry->setLogFile(_logFile);
          // Attach the new logInfo to the list
-         optionLogEntry->setNext(masterOptions->getLogListForOtherCompThreads());
-         masterOptions->setLogListForOtherCompThreads(optionLogEntry);
+         optionLogEntry->setNext(mainOptions->getLogListForOtherCompThreads());
+         mainOptions->setLogListForOtherCompThreads(optionLogEntry);
          OMR::Options::_logsForOtherCompilationThreadsExist = true;
          }
       else

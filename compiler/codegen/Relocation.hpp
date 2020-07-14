@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -268,30 +268,6 @@ class InstructionLabelRelative32BitRelocation : public TR::LabelRelocation
    int32_t _divisor;
    };
 
-class InstructionAbsoluteRelocation : public TR::Relocation
-   {
-   public:
-   InstructionAbsoluteRelocation(uint8_t *updateLocation,
-                                    TR::Instruction *i,
-                                    bool useEndAddr) /* specified if the start or
-                                                        the end address of the instruction
-                                                        is required */
-      : TR::Relocation(updateLocation), _instruction(i), _useEndAddr(useEndAddr) {}
-   virtual void apply(TR::CodeGenerator *cg);
-
-   bool isExternalRelocation() { return false; }
-
-   protected:
-   TR::Instruction *getInstruction() { return _instruction; }
-   bool useEndAddress() { return _useEndAddr; }
-
-   private:
-   TR::Instruction *_instruction;
-   bool            _useEndAddr;
-   };
-
-//FIXME: these label absolute relocations should really be a subclass of instruction
-// absolute.
 class LabelAbsoluteRelocation : public TR::LabelRelocation
    {
    public:
@@ -597,7 +573,6 @@ typedef TR::LabelRelative12BitRelocation TR_12BitLabelRelativeRelocation;
 typedef TR::LabelRelative16BitRelocation TR_16BitLabelRelativeRelocation;
 typedef TR::LabelRelative24BitRelocation TR_24BitLabelRelativeRelocation;
 typedef TR::LabelRelative32BitRelocation TR_32BitLabelRelativeRelocation;
-typedef TR::InstructionAbsoluteRelocation TR_InstructionAbsoluteRelocation;
 typedef TR::LabelAbsoluteRelocation TR_LabelAbsoluteRelocation;
 typedef TR::LoadLabelRelative16BitRelocation TR_16BitLoadLabelRelativeRelocation;
 typedef TR::LoadLabelRelative32BitRelocation TR_32BitLoadLabelRelativeRelocation;

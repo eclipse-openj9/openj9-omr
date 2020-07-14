@@ -148,14 +148,14 @@ public:
 	void flushNonAllocationCaches() { }
 
 	/**
-	 * Set or clear the transient master GC status on this thread. This thread obtains master status
-	 * when isMasterThread is true and relinquishes it when isMasterThread is false.
+	 * Set or clear the transient main GC status on this thread. This thread obtains main status
+	 * when isMainThread is true and relinquishes it when isMainThread is false.
 	 *
 	 * This is informational. OMR does not require any specific action to be implemented.
 	 *
-	 * @param isMasterThread true if thread is acquiring master status, false if losing it
+	 * @param isMainThread true if thread is acquiring main status, false if losing it
 	 */
-	void setGCMasterThread(bool isMasterThread) { }
+	void setGCMainThread(bool isMainThread) { }
 
 	/**
 	 * This will be called for every allocated object.  Note this is not necessarily done when the object is allocated, but will
@@ -210,7 +210,7 @@ public:
 
 	/**
 	 * Give up exclusive access in preparation for transferring it to a collaborating thread
-	 * (i.e. main-to-master or master-to-main). This may involve nothing more than
+	 * (i.e. collaborator-to-main or main-to-collaborator). This may involve nothing more than
 	 * transferring OMR_VMThread::exclusiveCount from the owning thread to the another
 	 * thread that thereby assumes exclusive access. Implement if this kind of collaboration
 	 * is required.
@@ -221,7 +221,7 @@ public:
 	uintptr_t relinquishExclusiveVMAccess();
 
 	/**
-	 * Assume exclusive access from a collaborating thread (i.e. main-to-master or master-to-main).
+	 * Assume exclusive access from a collaborating thread (i.e. collaborator-to-main or main-to-collaborator).
 	 * Implement if this kind of collaboration is required.
 	 *
 	 * @param exclusiveCount the exclusive count to be restored

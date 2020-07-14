@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -132,7 +132,7 @@ MM_EnvironmentDelegate::releaseExclusiveVMAccess()
 
 /**
  * Give up exclusive access in preparation for transferring it to a collaborating thread
- * (i.e. main-to-master or master-to-main). This may involve nothing more than
+ * (i.e. collaborator-to-main or main-to-collaborator). This may involve nothing more than
  * transferring OMR_VMThread::exclusiveCount from the owning thread to the another
  * thread that thereby assumes exclusive access. Implement if this kind of collaboration
  * is required.
@@ -149,7 +149,7 @@ MM_EnvironmentDelegate::relinquishExclusiveVMAccess()
 }
 
 /**
- * Assume exclusive access from a collaborating thread (i.e. main-to-master or master-to-main).
+ * Assume exclusive access from a collaborating thread (i.e. collaborator-to-main or main-to-collaborator).
  * Implement if this kind of collaboration is required.
  *
  * @param exclusiveCount the exclusive count to be restored

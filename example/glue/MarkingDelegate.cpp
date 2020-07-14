@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -53,7 +53,7 @@ MM_MarkingDelegate::scanRoots(MM_EnvironmentBase *env)
 }
 
 void
-MM_MarkingDelegate::masterCleanupAfterGC(MM_EnvironmentBase *env)
+MM_MarkingDelegate::mainCleanupAfterGC(MM_EnvironmentBase *env)
 {
 	OMRPORT_ACCESS_FROM_OMRVM(env->getOmrVM());
 	J9HashTableState state;

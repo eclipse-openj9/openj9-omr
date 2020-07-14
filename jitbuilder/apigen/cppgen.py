@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 ###############################################################################
-# Copyright (c) 2018, 2019 IBM Corp. and others
+# Copyright (c) 2018, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -67,7 +67,7 @@ class CppGenerator:
         # List of files to be included in the client API implementation.
         self.impl_include_files = self.gen_api_impl_includes(api.classes(), headerdir)
 
-        # Classes that have extra APIs, not covered in the master description
+        # Classes that have extra APIs, not covered in the main description
         self.classes_with_extras = extras
 
         self.allocator_setter_name = "setAllocators"

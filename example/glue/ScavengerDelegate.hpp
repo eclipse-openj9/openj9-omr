@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -62,7 +62,7 @@ public:
 #endif /* defined(OMR_ENV_DATA64) && defined(OMR_GC_FULL_POINTERS) */
 
 	/**
-	 * This method will be called on the master GC thread after each scavenger cycle, successful or
+	 * This method will be called on the main GC thread after each scavenger cycle, successful or
 	 * otherwise. It may be used for reporting or other tasks as required.
 	 *
 	 * @param[in] env The environment for the calling thread.
@@ -71,12 +71,12 @@ public:
 	void reportScavengeEnd(MM_EnvironmentBase * env, bool scavengeSuccessful);
 
 	/**
-	 * This method is called on the master GC thread when a scavenge cycle is started. Implementations of
+	 * This method is called on the main GC thread when a scavenge cycle is started. Implementations of
 	 * this method may clear any client-side stats or metadata relating to scavenge cycles at this point.
 	 *
 	 * @param[in] env The environment for the calling thread.
 	 */
-	void masterSetupForGC(MM_EnvironmentBase * env);
+	void mainSetupForGC(MM_EnvironmentBase * env);
 
 	/**
 	 * This method is called on each GC worker thread when a scavenge cycle is started. Implementations of
@@ -94,18 +94,18 @@ public:
 	void mergeGCStats_mergeLangStats(MM_EnvironmentBase * env);
 
 	/**
-	 * This method is called on the master GC thread when a scavenge cycle completes, successfully or otherwise.
+	 * This method is called on the main GC thread when a scavenge cycle completes, successfully or otherwise.
 	 *
 	 * @param[in] env The environment for the calling thread.
 	 */
-	void masterThreadGarbageCollect_scavengeComplete(MM_EnvironmentBase * env);
+	void mainThreadGarbageCollect_scavengeComplete(MM_EnvironmentBase * env);
 
 	/**
-	 * This method is called on the master GC thread when a scavenge cycle completes successfully.
+	 * This method is called on the main GC thread when a scavenge cycle completes successfully.
 	 *
 	 * @param[in] env The environment for the calling thread.
 	 */
-	void masterThreadGarbageCollect_scavengeSuccess(MM_EnvironmentBase *env);
+	void mainThreadGarbageCollect_scavengeSuccess(MM_EnvironmentBase *env);
 
 	/**
 	 * If a scavenge cycle is unable to start or complete successfully, the GC may be "percolated" up

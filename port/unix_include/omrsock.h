@@ -41,6 +41,7 @@
 #include <sys/types.h> /* Some historical implementations need this file, POSIX.1-2001 does not. */
 #include <sys/socket.h>
 #include <fcntl.h>
+#include <poll.h>
 #include <netinet/in.h> /* Must come before <netinet/tcp.h> */
 #include <netinet/tcp.h>
 
@@ -81,5 +82,15 @@ typedef struct sockaddr_in6 omr_os_sockaddr_in6; /* IPv6 */
 #define OS_O_ASYNC O_ASYNC
 #endif
 #define OS_O_NONBLOCK O_NONBLOCK
+
+/* Socket Poll */
+#define OS_POLLIN POLLIN
+#define OS_POLLOUT POLLOUT
+
+#if !defined(AIXPPC)
+#define OS_POLLERR POLLERR
+#define OS_POLLNVAL POLLNVAL
+#define OS_POLLHUP POLLHUP
+#endif
 
 #endif /* !defined(OMRSOCK_H_) */

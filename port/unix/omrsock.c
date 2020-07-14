@@ -205,6 +205,40 @@ get_os_socket_flag(int32_t omrFlag)
 	return 0;
 }
 
+/**
+ * @internal Map OMRSOCK API user interface poll constant to the OS poll
+ * constant which may be defined differently depending on operating system. 
+ *
+ * @param omrPollConstant The OMR poll constant to be converted.
+ *
+ * @return OS socket flag on success, or 0 if none exists.
+ */
+static int16_t
+get_os_poll_constant(int16_t omrPollConstant)
+{
+	int16_t osPollConstant = 0;
+
+	if (OMR_ARE_ANY_BITS_SET(omrPollConstant, OMRSOCK_POLLIN)) {
+		osPollConstant |= OS_POLLIN;
+	}
+	if (OMR_ARE_ANY_BITS_SET(omrPollConstant, OMRSOCK_POLLOUT)) {
+		osPollConstant |= OS_POLLOUT;
+	}
+#if !defined(AIXPPC)
+	if (OMR_ARE_ANY_BITS_SET(omrPollConstant, OMRSOCK_POLLERR)) {
+		osPollConstant |= OS_POLLERR;
+	}
+	if (OMR_ARE_ANY_BITS_SET(omrPollConstant, OMRSOCK_POLLNVAL)) {
+		osPollConstant |= OS_POLLNVAL;
+	}
+	if (OMR_ARE_ANY_BITS_SET(omrPollConstant, OMRSOCK_POLLHUP)) {
+		osPollConstant |= OS_POLLHUP;
+	}
+#endif /* !defined(AIXPPC) */
+
+	return osPollConstant;
+}
+
 /* Internal: OS dependent constants TO OMRSOCK user interface constants mapping. */
 
 /**
@@ -272,6 +306,39 @@ get_omr_protocol(int32_t osProtocol)
 		break;
 	}
 	return OMRSOCK_IPPROTO_DEFAULT;
+}
+
+/**
+ * @internal Map OS poll constant to the OMRSOCK API user interface poll constant.
+ *
+ * @param omrPollConstant The OMR poll constant to be converted.
+ *
+ * @return OS poll constant on success, or 0 if none exists.
+ */
+static int16_t
+get_omr_poll_constant(int16_t osPollConstant)
+{
+	int16_t omrPollConstant = 0;
+
+	if (OMR_ARE_ANY_BITS_SET(osPollConstant, OS_POLLIN)) {
+		omrPollConstant |= OMRSOCK_POLLIN;
+	}
+	if (OMR_ARE_ANY_BITS_SET(osPollConstant, OS_POLLOUT)) {
+		omrPollConstant |= OMRSOCK_POLLOUT;
+	}
+#if !defined(AIXPPC)
+	if (OMR_ARE_ANY_BITS_SET(osPollConstant, OS_POLLERR)) {
+		omrPollConstant |= OMRSOCK_POLLERR;
+	}
+	if (OMR_ARE_ANY_BITS_SET(osPollConstant, OS_POLLNVAL)) {
+		omrPollConstant |= OMRSOCK_POLLNVAL;
+	}
+	if (OMR_ARE_ANY_BITS_SET(osPollConstant, OS_POLLHUP)) {
+		omrPollConstant |= OMRSOCK_POLLHUP;
+	}
+#endif /* !defined(AIXPPC) */
+
+	return omrPollConstant;
 }
 
 /**
@@ -837,19 +904,92 @@ omrsock_recvfrom(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint
 int32_t
 omrsock_pollfd_init(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t handle, omrsock_socket_t sock, int16_t events)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	if (NULL == handle || NULL == sock || 0 == events) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+	memset(handle, 0, sizeof(OMRPollFd));
+	handle->socket = sock;
+	handle->data.fd = sock->data;
+	handle->data.events = events;
+	return 0;
 }
 
 int32_t
 omrsock_get_pollfd_info(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t handle, omrsock_socket_t *sock, int16_t *revents)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	if (NULL == handle || NULL == sock || NULL == revents) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+	memset(sock, 0, sizeof(omrsock_socket_t));
+
+	*sock = handle->socket;
+	*revents = handle->data.revents;
+	return 0;
 }
 
 int32_t
 omrsock_poll(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t fds, uint32_t nfds, int32_t timeoutMs)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	int32_t numPollFdSet = 0;
+	const uint32_t maxNumPollFd = 8;
+	struct pollfd pfdsArray[maxNumPollFd];
+	struct pollfd *pfds = NULL;
+	int32_t i = 0;
+
+#if defined(AIXPPC)
+	if (FD_SETSIZE < nfds) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+#endif /* defined(AIXPPC) */
+
+	if (NULL == fds || 0 >= nfds) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	if (maxNumPollFd >= nfds) {
+		/* Use statically allocated array if nfds less than or equal to 8. */
+		pfds = pfdsArray;
+	} else {
+		/* Dynamically allocate if nfds more than 8. */
+		pfds = portLibrary->mem_allocate_memory(portLibrary, nfds * sizeof(struct pollfd), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+	}
+
+	/* Set up fds to pass into the poll function. */
+	for (i = 0; nfds > i; i++) {
+		pfds[i].fd = fds[i].data.fd;
+		pfds[i].events = get_os_poll_constant(fds[i].data.events);
+	}
+
+	numPollFdSet = poll(pfds, nfds, timeoutMs);
+
+	if (0 > numPollFdSet) {
+		if (nfds > maxNumPollFd) {
+			portLibrary->mem_free_memory(portLibrary, pfds);
+		}
+		return portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_FILE_OPFAILED);
+	}
+
+	/* Set user's fds values to be same as pfds. */
+	for (i = 0; nfds > i; i++) {
+		fds[i].data.revents = get_omr_poll_constant(pfds[i].revents);
+#if defined (LINUX)
+		/* On Linux, all sockets with non-zero revents are included in numPollFdSet, but other systems do not include error revents. */
+		if (0 != (fds[i].data.revents & (OMRSOCK_POLLERR | OMRSOCK_POLLNVAL | OMRSOCK_POLLHUP))) {
+			/* Should not subtract if there are 0. This case should not happen. */
+			numPollFdSet = (numPollFdSet == 0) ? 0 : numPollFdSet - 1;
+		}
+#endif /* defined (LINUX) */
+	}
+
+	if (maxNumPollFd < nfds) {
+		portLibrary->mem_free_memory(portLibrary, pfds);
+	}
+
+#if defined (AIXPPC) || defined (J9ZOS390)
+	return numPollFdSet & 0x0000FFFF;
+#else /* defined (AIXPPC) || defined (J9ZOS390) */
+	return numPollFdSet;
+#endif /* defined (AIXPPC) || defined (J9ZOS390) */
 }
 
 void

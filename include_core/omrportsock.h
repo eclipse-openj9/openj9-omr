@@ -77,4 +77,14 @@ typedef struct OMRLinger *omrsock_linger_t;
 #define OMRSOCK_O_ASYNC 0x0100
 #define OMRSOCK_O_NONBLOCK 0x1000
 
+/* Poll Constants */
+#define OMRSOCK_POLLIN 0x0001
+#define OMRSOCK_POLLOUT 0x0002
+
+#if !defined(OMR_OS_AIX) 
+#define OMRSOCK_POLLERR 0x0004
+#define OMRSOCK_POLLNVAL 0x0008
+#define OMRSOCK_POLLHUP 0x0010
+#endif
+
 #endif /* !defined(OMRPORTSOCK_H_) */

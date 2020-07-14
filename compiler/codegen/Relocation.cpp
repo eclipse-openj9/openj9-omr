@@ -158,17 +158,6 @@ TR::InstructionLabelRelative32BitRelocation::apply(TR::CodeGenerator* cg)
    *reinterpret_cast<int32_t*>(p) = static_cast<int32_t>(getLabel()->getCodeLocation() - p) / _divisor;
    }
 
-void TR::InstructionAbsoluteRelocation::apply(TR::CodeGenerator *codeGen)
-   {
-   intptr_t *cursor = (intptr_t*)getUpdateLocation();
-   intptr_t address = (intptr_t)getInstruction()->getBinaryEncoding();
-   if (useEndAddress())
-      address += getInstruction()->getBinaryLength();
-   AOTcgDiag2(codeGen->comp(), "TR::InstructionAbsoluteRelocation::apply cursor=" POINTER_PRINTF_FORMAT " instruction=" POINTER_PRINTF_FORMAT "\n", cursor, address);
-   *cursor = address;
-   }
-
-
 void TR::LoadLabelRelative16BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
    AOTcgDiag3(codeGen->comp(), "TR::LoadLabelRelative16BitRelocation::apply lastInstruction=" POINTER_PRINTF_FORMAT " startLabel=" POINTER_PRINTF_FORMAT " endLabel=" POINTER_PRINTF_FORMAT "\n", getLastInstruction(), getStartLabel(), getEndLabel());

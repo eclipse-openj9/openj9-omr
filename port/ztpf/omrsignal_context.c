@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -154,7 +154,7 @@ static uint32_t	regions_used;
  * completely unknown until late in development.
  *
  * The solution was to grab some storage that wouldn't be subject to such problems. The
- * memory into which the .bss segment is assigned is a (set of) master page(s) of hex 
+ * memory into which the .bss segment is assigned is a (set of) main page(s) of hex 
  * zeros, and once written upon, is copied-on-write and become the property of the 
  * PROCESS (don't want to raise any confusion here) which did the writing. Therefore,
  * this storage appears zero to each new process which calls this module. NO SMP-

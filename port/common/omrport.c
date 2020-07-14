@@ -34,7 +34,7 @@
  * Create the port library initialization structure
  */
 
-static OMRPortLibrary MasterPortLibraryTable = {
+static OMRPortLibrary MainPortLibraryTable = {
 	NULL, /* portGlobals */
 	omrport_shutdown_library, /* port_shutdown_library */
 	omrport_isFunctionOverridden, /* port_isFunctionOverridden */
@@ -226,7 +226,7 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrsig_map_os_signal_to_portlib_signal, /* sig_map_os_signal_to_portlib_signal */
 	omrsig_map_portlib_signal_to_os_signal, /* sig_map_portlib_signal_to_os_signal */
 	omrsig_register_os_handler, /* sig_register_os_handler */
-	omrsig_is_master_signal_handler, /* sig_is_master_signal_handler */
+	omrsig_is_main_signal_handler, /* sig_is_main_signal_handler */
 	omrsig_is_signal_ignored, /* sig_is_signal_ignored */
 	omrsig_info, /* sig_info */
 	omrsig_info_count, /* sig_info_count */
@@ -520,7 +520,7 @@ omrport_create_library(struct OMRPortLibrary *portLibrary, uintptr_t size)
 
 	/* Null and initialize the table passed in */
 	memset(portLibrary, 0, size);
-	memcpy(portLibrary, &MasterPortLibraryTable, portSize);
+	memcpy(portLibrary, &MainPortLibraryTable, portSize);
 
 	return 0;
 }
@@ -729,7 +729,7 @@ omrport_isFunctionOverridden(struct OMRPortLibrary *portLibrary, uintptr_t offse
 		return 0;
 	}
 
-	return *((uintptr_t *)&(((uint8_t *)portLibrary)[offset])) != *((uintptr_t *)&(((uint8_t *)&MasterPortLibraryTable)[offset]));
+	return *((uintptr_t *)&(((uint8_t *)portLibrary)[offset])) != *((uintptr_t *)&(((uint8_t *)&MainPortLibraryTable)[offset]));
 }
 /**
  * Allocate a port library.

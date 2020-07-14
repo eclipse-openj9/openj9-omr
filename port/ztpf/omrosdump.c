@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -149,7 +149,7 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 	 *
 	 * If we knew that this thread were the same thread which faulted, we could simply
 	 * check ce2dib->dibjdb for non-zero content. Unfortunately, we don't have that
-	 * assurance. Instead, the ce2dib address was stored by the synchronous master
+	 * assurance. Instead, the ce2dib address was stored by the synchronous main
 	 * signal callback routine in the process block. Fetch it and see if it's non-zero.
 	 * If so, a thread (the system dump agent) was dispatched here to create the dump
 	 * file due to a synchronous signal (like SIGSEGV). If not, there was no signal

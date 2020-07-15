@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -428,3 +428,10 @@ MM_MarkingScheme::fixupForwardedSlotOutline(GC_SlotObject *slotObject) {
 	}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 }
+
+uintptr_t
+MM_MarkingScheme::setupIndexableScanner(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, MM_MarkingSchemeScanReason reason, uintptr_t *sizeToDo, uintptr_t *sizeInElementsToDo, fomrobject_t **basePtr, uintptr_t *flags)
+{
+	return _delegate.setupIndexableScanner(env, objectPtr, reason, sizeToDo, sizeInElementsToDo, basePtr, flags);
+}
+

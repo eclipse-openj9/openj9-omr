@@ -46,7 +46,6 @@ class MM_ParallelDispatcher : public MM_Dispatcher
 	 * Data members
 	 */
 private:
-	uintptr_t _threadsToReserve; /**< Indicates number of threads remaining to dispatch tasks upon notify. Must be exactly 0 after tasks are dispatched. */
 protected:
 	MM_GCExtensionsBase *_extensions;
 
@@ -135,7 +134,6 @@ public:
 
 	MM_ParallelDispatcher(MM_EnvironmentBase *env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize) :
 		MM_Dispatcher(env)
-		,_threadsToReserve(0)
 		,_extensions(MM_GCExtensionsBase::getExtensions(env->getOmrVM()))
 		,_threadShutdownCount(0)
 		,_threadTable(NULL)

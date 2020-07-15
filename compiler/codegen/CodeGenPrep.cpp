@@ -196,6 +196,14 @@ lowerNewValue(TR::Compilation *comp, TR::Node *node, TR::TreeTop *tt)
       storeNode->setAndIncChild(1, fieldValueNode);
       fieldStoreTreeTopCursor->join(TR::TreeTop::create(comp, storeNode));
       fieldStoreTreeTopCursor = fieldStoreTreeTopCursor->getNextTreeTop();
+
+      // if storing a ref, make sure it is compressed
+      if (comp->useCompressedPointers() && fieldValueNode->getDataType() == TR::Address)
+         {
+         auto* compressNode = TR::Node::createCompressedRefsAnchor(storeNode);
+         fieldStoreTreeTopCursor->join(TR::TreeTop::create(comp, compressNode));
+         fieldStoreTreeTopCursor = fieldStoreTreeTopCursor->getNextTreeTop();
+         }
       }
    node->setNumChildren(1);
 

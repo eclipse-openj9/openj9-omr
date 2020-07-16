@@ -1662,6 +1662,8 @@ typedef struct OMRPortLibrary {
 	BOOLEAN  ( *sysinfo_processor_has_feature)(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, uint32_t feature) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_processor_set_feature "omrsysinfo_processor_set_feature"*/
 	intptr_t  ( *sysinfo_processor_set_feature)(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, uint32_t feature, BOOLEAN enable) ;
+	/** see @ref omrsysinfo.c::omrsysinfo_get_processor_feature_name "omrsysinfo_get_processor_feature_name"*/
+	const char  *( *sysinfo_get_processor_feature_name)(struct OMRPortLibrary *portLibrary, uint32_t feature) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_OS_type "omrsysinfo_get_OS_type"*/
 	const char *(*sysinfo_get_OS_type)(struct OMRPortLibrary *portLibrary) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_executable_name "omrsysinfo_get_executable_name"*/
@@ -2401,7 +2403,8 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsysinfo_get_CPU_architecture() privateOmrPortLibrary->sysinfo_get_CPU_architecture(privateOmrPortLibrary)
 #define omrsysinfo_get_processor_description(param1) privateOmrPortLibrary->sysinfo_get_processor_description(privateOmrPortLibrary,param1)
 #define omrsysinfo_processor_has_feature(param1,param2) privateOmrPortLibrary->sysinfo_processor_has_feature(privateOmrPortLibrary,param1,param2)
-#define omrsysinfo_processor_set_feature(param1,param2,param3) privateOmrPortLibrary->sysinfo_processor_set_feature(privateOmrPortLibrary,param1,param2,param3) 
+#define omrsysinfo_processor_set_feature(param1,param2,param3) privateOmrPortLibrary->sysinfo_processor_set_feature(privateOmrPortLibrary,param1,param2,param3)
+#define omrsysinfo_get_processor_feature_name(param1) privateOmrPortLibrary->sysinfo_get_processor_feature_name(privateOmrPortLibrary,param1)
 #define omrsysinfo_get_OS_type() privateOmrPortLibrary->sysinfo_get_OS_type(privateOmrPortLibrary)
 #define omrsysinfo_get_executable_name(param1,param2) privateOmrPortLibrary->sysinfo_get_executable_name(privateOmrPortLibrary, (param1), (param2))
 #define omrsysinfo_get_username(param1,param2) privateOmrPortLibrary->sysinfo_get_username(privateOmrPortLibrary, (param1), (param2))

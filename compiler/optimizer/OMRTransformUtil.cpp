@@ -58,8 +58,7 @@ OMR::TransformUtil::scalarizeArrayCopy(
        node->getOpCodeValue() != TR::arraycopy ||
        node->getNumChildren() != 3 ||
        comp->requiresSpineChecks() ||
-       !node->getChild(2)->getOpCode().isLoadConst() ||
-       cg->getOptimizationPhaseIsComplete())
+       !node->getChild(2)->getOpCode().isLoadConst())
       return node;
 
    int64_t byteLen = node->getChild(2)->get64bitIntegralValue();

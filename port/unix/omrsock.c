@@ -995,28 +995,68 @@ omrsock_poll(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t fds, uint32_t 
 void
 omrsock_fdset_zero(struct OMRPortLibrary *portLibrary, omrsock_fdset_t fdset)
 {
+	fdset->maxFd = 0;
+	FD_ZERO(&fdset->data);
 }
 
 void
 omrsock_fdset_set(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset) 
 {
+	/* If socket fd is greater than fdset maxFd, overwrite it. */
+	if (sock->data > fdset->maxFd) {
+		fdset->maxFd = sock->data;
+	}
+	FD_SET(sock->data, &fdset->data);
 }
 
 void
 omrsock_fdset_clr(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset) 
 {
+	FD_CLR(sock->data, &fdset->data);
 }
 
 BOOLEAN
 omrsock_fdset_isset(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset) 
 {
-	return FALSE;
+	if (0 != FD_ISSET(sock->data, &fdset->data)) {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
 }
 
 int32_t
 omrsock_select(struct OMRPortLibrary *portLibrary, omrsock_fdset_t readfds, omrsock_fdset_t writefds, omrsock_fdset_t exceptfds, omrsock_timeval_t timeout)
 {
-	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+	int32_t nfds = 0;
+	int32_t readNfds = 0;
+	int32_t writeNfds = 0;
+	int32_t exceptNfds = 0;
+	int32_t numFdSet = 0;
+
+	if (NULL == timeout) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	/* Find maximum fd in the three fdsets. */
+
+	readNfds = (NULL == readfds) ? 0 : readfds->maxFd;
+	writeNfds = (NULL == writefds) ? 0 : writefds->maxFd;
+	exceptNfds = (NULL == exceptfds) ? 0 : exceptfds->maxFd;
+
+	nfds = OMR_MAX(OMR_MAX(readNfds,writeNfds),exceptNfds);
+
+	if ((FD_SETSIZE - 1) < nfds) {
+		return OMRPORT_ERROR_SOCKET_EXCEED_MAX_NFDS;
+	}
+
+	numFdSet = select(nfds + 1, readfds == NULL ? NULL : &readfds->data, writefds == NULL ? NULL : &writefds->data,
+					exceptfds == NULL ? NULL : &exceptfds->data, timeout == NULL ? NULL : &timeout->data);
+	if (-1 == numFdSet) {
+		return portLibrary->error_set_last_error(portLibrary, errno, get_omr_error(errno));
+	}
+
+	return numFdSet;
 }
 
 int32_t

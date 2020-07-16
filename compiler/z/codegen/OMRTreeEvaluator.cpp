@@ -4772,17 +4772,17 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
 
    TR::SymbolReference * symRef = node->getSymbolReference();
    TR::Symbol * symbol = symRef->getSymbol();
+   uintptr_t staticAddress = symbol->isStatic() ? (uintptr_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress() : NULL;
 
    if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) &&
        symbol->isStatic() &&
        !symRef->isUnresolved() &&
        !cg->comp()->compileRelocatableCode() &&
+       cg->canUseRelativeLongInstructions(staticAddress) &&
        !node->getOpCode().isIndirect() &&
        !cg->getConditionalMovesEvaluationMode()
       )
       {
-      uintptr_t staticAddress = (uintptr_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress();
-
       TR::InstOpCode::Mnemonic op = TR::InstOpCode::BAD;
       if (node->getType().isInt32() || (!(cg->comp()->target().is64Bit()) && node->getType().isAddress() ))
          {
@@ -5115,16 +5115,17 @@ bool relativeLongStoreHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Node *
    {
    TR::SymbolReference * symRef = node->getSymbolReference();
    TR::Symbol * symbol = symRef->getSymbol();
+   uintptr_t staticAddress = symbol->isStatic() ? (uintptr_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress() : NULL;
 
    if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) &&
        symbol->isStatic() &&
        !symRef->isUnresolved() &&
        !cg->comp()->compileRelocatableCode() &&
+       cg->canUseRelativeLongInstructions(staticAddress) &&
        !node->getOpCode().isIndirect() &&
        !cg->getConditionalMovesEvaluationMode()
       )
       {
-      uintptr_t staticAddress = (uintptr_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress();
       TR::InstOpCode::Mnemonic op = node->getSize() == 8 ? TR::InstOpCode::STGRL : TR::InstOpCode::STRL;
 
       TR::Register * sourceRegister = cg->evaluate(valueChild);

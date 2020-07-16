@@ -32,9 +32,11 @@ include(OmrFindFiles)
 set(OBJECTS "")
 set(VPATH "")
 
+add_tracegen(util.tdf omrutil)
 add_tracegen(utilcore.tdf j9utilcore)
 
 omr_add_library(omrutil_obj OBJECT
+	${CMAKE_CURRENT_BINARY_DIR}/ut_omrutil.c
 	${CMAKE_CURRENT_BINARY_DIR}/ut_j9utilcore.c
 )
 
@@ -136,6 +138,7 @@ list(APPEND OBJECTS
 	detectVMDirectory.c
 	gettimebase.c
 	j9memclr.c
+	omrcrc32.c
 	poolForPort.c
 	primeNumberHelper.c
 	ranking.c
@@ -145,6 +148,7 @@ list(APPEND OBJECTS
 	thrname_core.c
 	utf8decode.c
 	utf8encode.c
+	wildcard.c
 	xlphelp.c
 	xml.c
 )

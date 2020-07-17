@@ -40,9 +40,8 @@ build / configure:
 
 ci:
   - buildenv/jenkins/**/*
-  - scripts/Appveyor-ProcessTests.ps1
   - scripts/build-on-travis.sh
-  - ./.appveyor.yml
+  - ./.Windows.yml
   - ./.travis.yml
   - ./azure-pipelines*
 

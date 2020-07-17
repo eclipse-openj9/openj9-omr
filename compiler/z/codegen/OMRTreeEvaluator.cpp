@@ -4772,17 +4772,17 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
 
    TR::SymbolReference * symRef = node->getSymbolReference();
    TR::Symbol * symbol = symRef->getSymbol();
+   uintptr_t staticAddress = symbol->isStatic() ? (uintptr_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress() : NULL;
 
    if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) &&
        symbol->isStatic() &&
        !symRef->isUnresolved() &&
        !cg->comp()->compileRelocatableCode() &&
+       cg->canUseRelativeLongInstructions(staticAddress) &&
        !node->getOpCode().isIndirect() &&
        !cg->getConditionalMovesEvaluationMode()
       )
       {
-      uintptr_t staticAddress = (uintptr_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress();
-
       TR::InstOpCode::Mnemonic op = TR::InstOpCode::BAD;
       if (node->getType().isInt32() || (!(cg->comp()->target().is64Bit()) && node->getType().isAddress() ))
          {
@@ -5115,16 +5115,17 @@ bool relativeLongStoreHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Node *
    {
    TR::SymbolReference * symRef = node->getSymbolReference();
    TR::Symbol * symbol = symRef->getSymbol();
+   uintptr_t staticAddress = symbol->isStatic() ? (uintptr_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress() : NULL;
 
    if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) &&
        symbol->isStatic() &&
        !symRef->isUnresolved() &&
        !cg->comp()->compileRelocatableCode() &&
+       cg->canUseRelativeLongInstructions(staticAddress) &&
        !node->getOpCode().isIndirect() &&
        !cg->getConditionalMovesEvaluationMode()
       )
       {
-      uintptr_t staticAddress = (uintptr_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress();
       TR::InstOpCode::Mnemonic op = node->getSize() == 8 ? TR::InstOpCode::STGRL : TR::InstOpCode::STRL;
 
       TR::Register * sourceRegister = cg->evaluate(valueChild);
@@ -6342,31 +6343,34 @@ OMR::Z::TreeEvaluator::checkAndSetMemRefDataSnippetRelocationType(TR::Node * nod
    TR::Symbol * symbol = symRef->getSymbol();
    bool isStatic = symbol->isStatic() && !symRef->isUnresolved();
 
-   if (cg->comp()->compileRelocatableCode())
+   int32_t reloType = 0;
+   if (cg->comp()->compileRelocatableCode() && node->getSymbol()->isDebugCounter())
       {
-      int32_t reloType;
-      if (node->getSymbol()->isDebugCounter())
-         reloType = TR_DebugCounter;
-      else if (node->getSymbol()->isConst())
-         reloType = TR_ConstantPool;
-      else if (node->getSymbol()->isClassObject())
-         {
-         reloType = TR_ClassAddress;
-         }
-      else if (node->getSymbol()->isMethod())
-         reloType = TR_MethodObject;
-      else if (isStatic && !node->getSymbol()->isNotDataAddress())
-         reloType = TR_DataAddress;
-      else
-         reloType = 0;
+      reloType = TR_DebugCounter;
+      }
+   else if (cg->comp()->compileRelocatableCode() && node->getSymbol()->isConst())
+      {
+      reloType = TR_ConstantPool;
+      }
+   else if (cg->needClassAndMethodPointerRelocations() && node->getSymbol()->isClassObject())
+      {
+      reloType = TR_ClassAddress;
+      }
+   else if (cg->comp()->compileRelocatableCode() && node->getSymbol()->isMethod())
+      {
+      reloType = TR_MethodObject;
+      }
+   else if (cg->needRelocationsForStatics() && isStatic && !node->getSymbol()->isNotDataAddress())
+      {
+      reloType = TR_DataAddress;
+      }
 
-      if (reloType != 0)
+   if (reloType != 0)
+      {
+      if (tempMR->getConstantDataSnippet())
          {
-         if (tempMR->getConstantDataSnippet())
-            {
-            tempMR->getConstantDataSnippet()->setSymbolReference(tempMR->getSymbolReference());
-            tempMR->getConstantDataSnippet()->setReloType(reloType);
-            }
+         tempMR->getConstantDataSnippet()->setSymbolReference(tempMR->getSymbolReference());
+         tempMR->getConstantDataSnippet()->setReloType(reloType);
          }
       }
    }
@@ -9509,33 +9513,49 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
             if (sym && sym->isStartPC())
                {
                cursor = generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, node->getSymbolReference(),
-                                                reinterpret_cast<void*>(sym->getStaticAddress()),  NULL);
+                                               reinterpret_cast<void*>(sym->getStaticAddress()),  NULL);
                }
-            else if (comp->compileRelocatableCode())
+            else if (cg->needRelocationsForBodyInfoData() && sym && sym->isRecompilationCounter())
                {
-               int32_t reloType;
-               if (node->getSymbol()->isDebugCounter())
-                  reloType = TR_DebugCounter;
-               else if (node->getSymbol()->isConst())
-                  reloType = TR_ConstantPool;
-               else if (node->getSymbol()->isClassObject())
-                  reloType = TR_ClassAddress;
-               else if (node->getSymbol()->isMethod())
-                  reloType = TR_MethodObject;
-               else if (sym && sym->isRecompilationCounter())
-                  reloType = TR_BodyInfoAddress;
-               else if (sym && sym->isCompiledMethod())
-                  reloType = TR_RamMethod;
-               else if (sym && sym->isStartPC())
-                  reloType = TR_AbsoluteMethodAddress;
-               else if (sym && sym->isStatic() && !sym->isNotDataAddress())
-                  reloType = TR_DataAddress;
-               else
-                  reloType = 0;
-
                cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister,
                                                      (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(),
-                                                     reloType, NULL, NULL, NULL);
+                                                     TR_BodyInfoAddress, NULL, NULL, NULL);
+               }
+            else if (cg->needClassAndMethodPointerRelocations() && node->getSymbol()->isClassObject())
+               {
+               cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister,
+                                                     (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(),
+                                                     TR_ClassAddress, NULL, NULL, NULL);
+               }
+            else if (cg->needRelocationsForStatics() && sym && sym->isCompiledMethod())
+               {
+               cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister,
+                                                        (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(),
+                                                        TR_RamMethod, NULL, NULL, NULL);
+               }
+            else if (cg->needRelocationsForStatics() && sym && sym->isStatic() && !sym->isNotDataAddress())
+               {
+               cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister,
+                                                        (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(),
+                                                        TR_DataAddress, NULL, NULL, NULL);
+               }
+            else if (comp->compileRelocatableCode() && node->getSymbol()->isDebugCounter())
+               {
+               cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister,
+                                                     (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(),
+                                                     TR_DebugCounter, NULL, NULL, NULL);
+               }
+            else if (comp->compileRelocatableCode() && node->getSymbol()->isConst())
+               {
+               cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister,
+                                                     (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(),
+                                                     TR_ConstantPool, NULL, NULL, NULL);
+               }
+            else if (comp->compileRelocatableCode() && node->getSymbol()->isMethod())
+               {
+               cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister,
+                                                     (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(),
+                                                     TR_MethodObject, NULL, NULL, NULL);
                }
             else
                {

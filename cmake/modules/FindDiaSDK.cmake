@@ -34,6 +34,21 @@
 # leave the other hints as well.
 get_filename_component(VSPath ${CMAKE_CXX_COMPILER} DIRECTORY CACHE)
 
+
+# As a last ditch attempt, try finding based on COM GUIDs.
+# However, these have the potential to change as the DIA API changes.
+if(NOT DiaSDK_ROOT)
+	get_filename_component(DIA_COM_DLL_DIR "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\CLSID\\{E6756135-1E65-4D17-8576-610761398C3C}\\InprocServer32]" DIRECTORY CACHE)
+	if(DIA_COM_DLL_DIR)
+		# The DLL will live in  "X/DIA SDK/lib" or "X/DIA SDK/lib/amd64"
+		if(DIA_COM_DLL_DIR MATCHES "amd64$")
+			set(DiaSDK_ROOT "${DIA_COM_DLL_DIR}/../..")
+		else()
+			set(DiaSDK_ROOT "${DIA_COM_DLL_DIR}/..")
+		endif()
+	endif()
+endif()
+
 # Note we need to tell CMake to search DiaSDK_ROOT
 # this is default behavior on newer versions of cmake
 find_path(DIA2_H_DIR "dia2.h"

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -46,48 +46,49 @@
 TEST(PortTtyTest, tty_daemonize_test)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
-	const char *testName = "omrtty_daemonize_test";
 	const char *format = "Test string %d %d %d\n";
 
-	reportTestEntry(OMRPORTLIB, testName);
 
 	/* Get current output handles. */
 	HANDLE stdoutOriginal = GetStdHandle(STD_OUTPUT_HANDLE);
+	ASSERT_NE(stdoutOriginal, INVALID_HANDLE_VALUE);
 	HANDLE stderrOriginal = GetStdHandle(STD_ERROR_HANDLE);
+	ASSERT_NE(stderrOriginal, INVALID_HANDLE_VALUE);
+
 
 	/* Redirect output to a test handle and restart TTY to get the port functions to use it. */
 	HANDLE stdoutWrite;
 	HANDLE stdoutRead;
-	CreatePipe(&stdoutRead, &stdoutWrite, NULL, 0);
+	ASSERT_TRUE(CreatePipe(&stdoutRead, &stdoutWrite, NULL, 0));
 	SetStdHandle(STD_OUTPUT_HANDLE, stdoutWrite);
 	SetStdHandle(STD_ERROR_HANDLE, stdoutWrite);
 	omrtty_shutdown();
 	omrtty_startup();
+	/* restore the original handlers as soon as possible to prevent gtest framework from attempting to use them */
+	SetStdHandle(STD_OUTPUT_HANDLE, stdoutOriginal);
+	SetStdHandle(STD_ERROR_HANDLE, stderrOriginal);
 
 	omrtty_printf("pre-daemonize\n");
 	omrtty_daemonize();
-	/* outpuComment uses omrtty_vprintf */
+	/* outputComment uses omrtty_vprintf */
 	outputComment(OMRPORTLIB, format, 1, 2, 3);
 	omrtty_printf("post-daemonize\n");
 
 	char readBuffer[EsMaxPath] = {0};
 	DWORD bytesRead;
-	ReadFile(stdoutRead, readBuffer, EsMaxPath - 1, &bytesRead, NULL);
+	EXPECT_TRUE(ReadFile(stdoutRead, readBuffer, EsMaxPath - 1, &bytesRead, NULL));
 
 	/* Restart TTY to resume output for remaining tests. */
-	SetStdHandle(STD_OUTPUT_HANDLE, stdoutOriginal);
-	SetStdHandle(STD_ERROR_HANDLE, stderrOriginal);
 	omrtty_shutdown();
 	omrtty_startup();
 
 	/* Check the output. */
 	outputComment(OMRPORTLIB, "Captured test output: %s\n", readBuffer);
-	if (NULL == strstr(readBuffer, "post-daemonize")) {
-		outputComment(OMRPORTLIB, "Test passed: 'post-daemonize' not found in test output.\n");
-	} else {
-		outputErrorMessage(PORTTEST_ERROR_ARGS, "Test failed: post-daemonize unexpectedly found in output.\n");
-	}
 
-	reportTestExit(OMRPORTLIB, testName);
+
+	EXPECT_NE(strstr(readBuffer, "pre-daemonize"), (char*)NULL) << "'pre-daemonize' not found in output";
+	EXPECT_EQ(strstr(readBuffer, "post-daemonize"), (char*)NULL) << "Unexpected 'post-daemonize' found in output";
+	EXPECT_EQ(strstr(readBuffer, "Test string"), (char*)NULL) << "Unexpected 'Test string' found in output";
+
 }
 #endif /* defined(OMR_OS_WINDOWS) */

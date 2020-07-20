@@ -148,13 +148,14 @@ TR::Register *OMR::ARM64::TreeEvaluator::l2iEvaluator(TR::Node *node, TR::CodeGe
 
 static TR::Register *extendToIntOrLongHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, uint32_t imms, TR::CodeGenerator *cg)
    {
-   TR::Node *child  = node->getFirstChild();
-   TR::Register *trgReg = cg->gprClobberEvaluate(child);
+   TR::Node *child = node->getFirstChild();
+   TR::Register *srcReg = cg->evaluate(child);
+   TR::Register *trgReg = (child->getReferenceCount() == 1) ? srcReg : cg->allocateRegister();
 
    // signed extension: alias of SBFM
    // unsigned extension: alias of UBFM
    TR_ASSERT(imms < 32, "Extension size too big");
-   generateTrg1Src1ImmInstruction(cg, op, node, trgReg, trgReg, imms);
+   generateTrg1Src1ImmInstruction(cg, op, node, trgReg, srcReg, imms);
 
    node->setRegister(trgReg);
    cg->decReferenceCount(child);

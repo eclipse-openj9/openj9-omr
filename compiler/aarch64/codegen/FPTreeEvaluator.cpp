@@ -82,21 +82,132 @@ OMR::ARM64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::CodeGenerator *c
    return trgReg;
    }
 
+static uint16_t
+getImm8forFloat(float value)
+   {
+   if(value == 0.0f)
+      {
+      return 256;
+      }
+
+   uint32_t ieee_float;
+   uint16_t imm8bit;
+
+   typedef union {
+      float f;
+      struct {
+         uint32_t mantissa : 23;
+         uint32_t exponent : 8;
+         uint32_t sign : 1;
+      } raw;
+   } fvalue;
+
+   fvalue obj;
+   obj.f = value;
+
+   if(value < 0)
+      {
+      ieee_float = (((uint32_t) obj.raw.sign << 31) | ((uint32_t) obj.raw.exponent << 23)) | (uint32_t) obj.raw.mantissa;
+      }
+   else if(value > 0)
+      {
+      ieee_float = ((uint32_t) obj.raw.exponent << 23) | (uint32_t) obj.raw.mantissa;
+      }
+
+   if((((uint32_t) ieee_float << 13) == 0)
+      && (((((uint32_t) ieee_float << 1) >> 26) == 31) || ((((uint32_t) ieee_float << 1) >> 26) == 32))
+   ) {
+      ieee_float = (((uint32_t) ieee_float << 6) >> 25);
+      imm8bit = (uint16_t) ieee_float;
+
+      if(value < 0)
+         {
+         imm8bit = ((1 << 7) | imm8bit);
+         }
+
+      return imm8bit;
+      }
+   else
+      {
+      return 256;
+      }
+   }
+
+static uint16_t
+getImm8forDouble(double value)
+   {
+   if(value == 0.0)
+      {
+      return 256;
+      }
+
+   uint16_t imm8bit;
+   uint64_t ieee_double;
+
+   typedef union {
+      double d;
+      struct {
+         uint64_t mantissa : 52;
+         uint64_t exponent : 11;
+         uint64_t sign : 1;
+      } raw;
+   } dvalue;
+
+   dvalue obj;
+   obj.d = value;
+
+   if(value < 0)
+      {
+      ieee_double = (((uint64_t) obj.raw.sign << 63) | ((uint64_t) obj.raw.exponent << 52)) | (uint64_t) obj.raw.mantissa;
+      }
+   else if(value > 0)
+      {
+      ieee_double = ((uint64_t) obj.raw.exponent << 52) | (uint64_t) obj.raw.mantissa;
+      }
+
+   if((((uint64_t) ieee_double << 16) == 0)
+      && (((((uint64_t) ieee_double << 1) >> 55) == 255) || ((((uint64_t) ieee_double << 1) >> 55) == 256))
+   ) {
+      ieee_double = (((uint64_t) ieee_double << 9) >> 57);
+      imm8bit = (uint16_t) ieee_double;
+
+      if(value < 0)
+         {
+         imm8bit = ((1 << 7) | imm8bit);
+         }
+
+      return imm8bit;
+      }
+   else
+      {
+      return 256;
+      }
+   }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *trgReg = cg->allocateSinglePrecisionRegister();
-   TR::Register *tmpReg = cg->allocateRegister();
+   uint16_t imm8 = getImm8forFloat(node->getFloat());
 
-   union {
-      float f;
-      int32_t i;
-   } fvalue;
+   if (imm8 != 256)
+      {
+      generateTrg1ImmInstruction(cg, TR::InstOpCode::fmovimms, node, trgReg, (uint32_t) imm8);
+      }
+   else
+      {
+      TR::Register *tmpReg = cg->allocateRegister();
 
-   fvalue.f = node->getFloat();
-   loadConstant32(cg, node, fvalue.i, tmpReg);
-   generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_wtos, node, trgReg, tmpReg);
-   cg->stopUsingRegister(tmpReg);
+      union {
+         float f;
+         int32_t i;
+      } fvalue;
+
+      fvalue.f = node->getFloat();
+      loadConstant32(cg, node, fvalue.i, tmpReg);
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_wtos, node, trgReg, tmpReg);
+      cg->stopUsingRegister(tmpReg);
+      }
 
    node->setRegister(trgReg);
    return trgReg;
@@ -106,17 +217,26 @@ TR::Register *
 OMR::ARM64::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *trgReg = cg->allocateRegister(TR_FPR);
-   TR::Register *tmpReg = cg->allocateRegister();
+   uint16_t imm8 = getImm8forDouble(node->getDouble());
 
-   union {
-      double d;
-      int64_t l;
-   } dvalue;
+   if (imm8 != 256)
+      {
+      generateTrg1ImmInstruction(cg, TR::InstOpCode::fmovimmd, node, trgReg, (uint32_t) imm8);
+      }
+   else
+      {
+      TR::Register *tmpReg = cg->allocateRegister();
 
-   dvalue.d = node->getDouble();
-   loadConstant64(cg, node, dvalue.l, tmpReg);
-   generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, trgReg, tmpReg);
-   cg->stopUsingRegister(tmpReg);
+      union {
+         double d;
+         int64_t l;
+      } dvalue;
+
+      dvalue.d = node->getDouble();
+      loadConstant64(cg, node, dvalue.l, tmpReg);
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, trgReg, tmpReg);
+      cg->stopUsingRegister(tmpReg);
+      }
 
    node->setRegister(trgReg);
    return trgReg;

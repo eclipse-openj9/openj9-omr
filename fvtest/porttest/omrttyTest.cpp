@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -179,7 +179,7 @@ fake_omrtty_err_vprintf(struct OMRPortLibrary *portLibrary, const char *format, 
  *
  * Ensure the library table is properly setup to run TTY tests.
  */
-TEST(PortTTyTest, tty_test0)
+TEST(PortTtyTest, tty_test0)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrtty_test0";
@@ -251,7 +251,7 @@ TEST(PortTTyTest, tty_test0)
  * @ref omrtty.c::omrtty_printf "omrtty_printf()" is a helper function for
  * @ref omrtty.c::omrtty_vprintf "omrtty_vprintf()".  Ensure that relationship is properly set up.
  */
-TEST(PortTTyTest, tty_test1)
+TEST(PortTtyTest, tty_test1)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrtty_test1";
@@ -307,7 +307,7 @@ omrtty_vprintf_wrapper(struct OMRPortLibrary *portLibrary, const char *format, .
  * @ref omrtty.c::omrtty_vprintf "omrtty_vprintf()" is a helper function for
  * @ref omrfile.c::omrfile_vprintf "omrfile_vprintf()".  Ensure that relationship is properly set up.
  */
-TEST(PortTTyTest, tty_test2)
+TEST(PortTtyTest, tty_test2)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrtty_test2";
@@ -347,7 +347,7 @@ TEST(PortTTyTest, tty_test2)
  * Verify port library TTY operations.
  * Verify @ref omrtty.c::omrtty_get_chars.
  */
-TEST(PortTTyTest, tty_test3)
+TEST(PortTtyTest, tty_test3)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrtty_test3";
@@ -367,7 +367,7 @@ TEST(PortTTyTest, tty_test3)
  * @ref omrtty.c::omrtty_err_printf "omrtty_err_printf()" is a helper function for
  * @ref omrtty.c::omrtty_err_vprintf "omrtty_err_vprintf()".  Ensure that relationship is properly set up.
  */
-TEST(PortTTyTest, tty_test4)
+TEST(PortTtyTest, tty_test4)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrtty_test4";
@@ -408,7 +408,7 @@ TEST(PortTTyTest, tty_test4)
  * @ref omrtty.c::omrtty_err_vprintf "omrtty_err_vprintf()" is a helper function for
  * @ref omrfile.c::omrfile_vprintf "omrfile_vprintf()".  Ensure that relationship is properly set up.
  */
-TEST(PortTTyTest, tty_test5)
+TEST(PortTtyTest, tty_test5)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrtty_test5";
@@ -448,7 +448,7 @@ TEST(PortTTyTest, tty_test5)
  * Verify port library TTY operations.
  * Verify @ref omrtty.c::omrtty_available.
  */
-TEST(PortTTyTest, tty_test6)
+TEST(PortTtyTest, tty_test6)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrtty_test6";
@@ -467,7 +467,7 @@ TEST(PortTTyTest, tty_test6)
  * This test is included so the user has a better feel that things actually worked.  The
  * rest of the tests were verifying function relationships.
  */
-TEST(PortTTyTest, tty_test7)
+TEST(PortTtyTest, tty_test7)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrtty_test7";

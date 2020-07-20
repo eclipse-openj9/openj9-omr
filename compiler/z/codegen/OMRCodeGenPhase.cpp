@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -41,7 +41,7 @@
 void
 OMR::Z::CodeGenPhase::performMarkLoadAsZeroOrSignExtensionPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
    {
-   if (cg->comp()->target().cpu.isZ() && cg->getOptimizationPhaseIsComplete())
+   if (cg->comp()->target().cpu.isZ())
       {
       TR::Compilation* comp = cg->comp();
       TR::OptimizationManager *manager = comp->getOptimizer()->getOptimization(OMR::loadExtensions);

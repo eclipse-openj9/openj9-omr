@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2015 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -53,8 +53,6 @@ protected:
 	bool timeForHeapExpand(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription);	
 	uintptr_t performExpand(MM_EnvironmentBase *env);
 	uintptr_t performContract(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription);
-	uintptr_t getHeapFreeMaximumHeuristicMultiplier(MM_EnvironmentBase *env);
-	uintptr_t getHeapFreeMinimumHeuristicMultiplier(MM_EnvironmentBase *env);
 
 public:
 	virtual void checkResize(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription = NULL, bool _systemGC = false);

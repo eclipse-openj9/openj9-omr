@@ -1345,6 +1345,10 @@ class ARM64Trg1ImmInstruction : public ARM64Trg1Instruction
          {
          *instruction |= ((_sourceImmediate & 0x3ffff) << 5);
          }
+      else if (op == TR::InstOpCode::fmovimms || op == TR::InstOpCode::fmovimmd)
+         {
+         *instruction |= ((_sourceImmediate & 0xFF) << 13);
+         }
       else if (op == TR::InstOpCode::adr || op == TR::InstOpCode::adrp)
          {
          *instruction |= ((_sourceImmediate & 0x1ffffc) << 3) | ((_sourceImmediate & 0x3) << 29);

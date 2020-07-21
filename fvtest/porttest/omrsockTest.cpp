@@ -37,21 +37,23 @@
  * @param[out] serverSocket A pointer to the server socket. 
  * @param[out] serverAddr The socket address of the server created.
  * 
- * @return 0 on success, return an error otherwise.
+ * @return on success, report an error otherwise.
  */ 
-int32_t
+void
 start_server(struct OMRPortLibrary *portLibrary, int32_t family, int32_t socktype, omrsock_socket_t *serverSocket, omrsock_sockaddr_t serverSockAddr) 
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	int32_t flag = 1;
 
-	EXPECT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, serverSocket, family, socktype, OMRSOCK_IPPROTO_DEFAULT), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, *serverSocket, serverSockAddr), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, serverSocket, family, socktype, OMRSOCK_IPPROTO_DEFAULT), 0);
+	/** Set socket address to be reusable in case this address is in TIME_WAIT state. */
+	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_int(OMRPORTLIB, *serverSocket, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_REUSEADDR, &flag), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, *serverSocket, serverSockAddr), 0);
 
-	if (OMRSOCK_STREAM == socktype) {
-		EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, *serverSocket, 10), 0);
+	if (OMRSOCK_STREAM == (socktype & 0x00FF)) {
+		ASSERT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, *serverSocket, 10), 0);
 	}
-
-	return 0;
+	return;
 }
 
 /**
@@ -64,9 +66,9 @@ start_server(struct OMRPortLibrary *portLibrary, int32_t family, int32_t socktyp
  * @param[in] sessionClientSocket A pointer to the client socket. 
  * @param[in] sessionClientAddr The socket address of the client created. 
  * 
- * @return 0 on success, return an error otherwise.
+ * @return on success, report an error otherwise.
  */ 
-int32_t
+void
 connect_client_to_server(struct OMRPortLibrary *portLibrary, const char *addrStr, const char *port, int32_t family, int32_t socktype, omrsock_socket_t *clientSocket, omrsock_sockaddr_t clientSockAddr, omrsock_sockaddr_t serverSockAddr) 
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
@@ -90,17 +92,18 @@ connect_client_to_server(struct OMRPortLibrary *portLibrary, const char *addrStr
 		EXPECT_EQ(OMRPORTLIB->sock_addrinfo_protocol(OMRPORTLIB, &result, i, &resultProtocol), 0);
 
 		if(0 == OMRPORTLIB->sock_socket(OMRPORTLIB, clientSocket, resultFamily, resultSocktype, resultProtocol)) {
-			EXPECT_NE(clientSocket, (void *)NULL);
+			ASSERT_NE(clientSocket, (void *)NULL);
 			EXPECT_EQ(OMRPORTLIB->sock_addrinfo_address(OMRPORTLIB, &result, i, clientSockAddr), 0);
-			EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, *clientSocket, clientSockAddr), 0);
+			ASSERT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, *clientSocket, clientSockAddr), 0);
 			break;
 		}
 	}
+	EXPECT_EQ(OMRPORTLIB->sock_freeaddrinfo(OMRPORTLIB, &result), 0);
 
 	if(OMRSOCK_STREAM == resultSocktype) {
-		EXPECT_EQ(OMRPORTLIB->sock_connect(OMRPORTLIB, *clientSocket, serverSockAddr), 0);
+		ASSERT_EQ(OMRPORTLIB->sock_connect(OMRPORTLIB, *clientSocket, serverSockAddr), 0);
 	}
-	return 0;
+	return;
 }
 
 /**
@@ -123,6 +126,9 @@ TEST(PortSockTest, library_function_pointers_not_null)
 	EXPECT_NE(OMRPORTLIB->sock_addrinfo_protocol, (void *)NULL);
 	EXPECT_NE(OMRPORTLIB->sock_freeaddrinfo, (void *)NULL);
 	EXPECT_NE(OMRPORTLIB->sock_socket, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_sockaddr_init, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_sockaddr_init6, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_socket_getfd, (void *)NULL);
 	EXPECT_NE(OMRPORTLIB->sock_bind, (void *)NULL);
 	EXPECT_NE(OMRPORTLIB->sock_listen, (void *)NULL);
 	EXPECT_NE(OMRPORTLIB->sock_accept, (void *)NULL);
@@ -130,7 +136,27 @@ TEST(PortSockTest, library_function_pointers_not_null)
 	EXPECT_NE(OMRPORTLIB->sock_sendto, (void *)NULL);
 	EXPECT_NE(OMRPORTLIB->sock_recv, (void *)NULL);
 	EXPECT_NE(OMRPORTLIB->sock_recvfrom, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_pollfd_init, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_get_pollfd_info, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_poll, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_fdset_zero, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_fdset_set, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_fdset_clr, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_fdset_isset, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_select, (void *)NULL);
 	EXPECT_NE(OMRPORTLIB->sock_close, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_htons, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_htonl, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_inet_pton, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_fcntl, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_timeval_init, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_linger_init, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_setsockopt_int, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_setsockopt_linger, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_setsockopt_timeval, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_getsockopt_int, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_getsockopt_linger, (void *)NULL);
+	EXPECT_NE(OMRPORTLIB->sock_getsockopt_timeval, (void *)NULL);
 }
 
 /**
@@ -288,7 +314,7 @@ TEST(PortSockTest, getaddrinfo_and_freeaddrinfo)
 	/* Testing invalid arguments: getaddrinfo pointer to result is NULL. */
 	omrsock_addrinfo_t resultPtr = NULL;
 
-	rc = OMRPORTLIB->sock_getaddrinfo(OMRPORTLIB, (char *)"localhost", NULL, hints, resultPtr);
+	rc = OMRPORTLIB->sock_getaddrinfo(OMRPORTLIB, "localhost", NULL, hints, resultPtr);
 	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
 
 	/* Testing invalid arguments: freeaddrinfo pointer to result is NULL. */
@@ -296,7 +322,7 @@ TEST(PortSockTest, getaddrinfo_and_freeaddrinfo)
 	EXPECT_EQ(rc, OMRPORT_ERROR_INVALID_ARGUMENTS);
 
 	/* Verify that omrsock_getaddrinfo and omrsock_freeaddrinfo works with NULL hints. */
-	rc = OMRPORTLIB->sock_getaddrinfo(OMRPORTLIB, (char *)"localhost", NULL, NULL, &result);
+	rc = OMRPORTLIB->sock_getaddrinfo(OMRPORTLIB, "localhost", NULL, NULL, &result);
 	ASSERT_EQ(rc, 0);
 
 	OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, &result, &length);
@@ -305,7 +331,7 @@ TEST(PortSockTest, getaddrinfo_and_freeaddrinfo)
 	OMRPORTLIB->sock_freeaddrinfo(OMRPORTLIB, &result);
 
 	/* Get and verify that omrsock_getaddrinfo and omrsock_freeaddrinfo works. */
-	rc = OMRPORTLIB->sock_getaddrinfo(OMRPORTLIB, (char *)"localhost", NULL, hints, &result);
+	rc = OMRPORTLIB->sock_getaddrinfo(OMRPORTLIB, "localhost", NULL, hints, &result);
 	ASSERT_EQ(rc, 0);
 
 	OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, &result, &length);
@@ -363,15 +389,18 @@ TEST(PortSockTest, create_addressany_IPv4_socket_address)
 	OMRSockAddrStorage sockAddr;
 	omrsock_socket_t socket = NULL;
 	uint16_t port = 4930;
+	int32_t flag = 1;
 	uint8_t addr[4];
 
 	uint32_t inaddrAny = OMRPORTLIB->sock_htonl(OMRPORTLIB, OMRSOCK_INADDR_ANY);
 	memcpy(addr, &inaddrAny, 4);
 	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB, &sockAddr, OMRSOCK_AF_INET, addr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
+	/** Set socket address to be reusable in case this address is in TIME_WAIT state. */
+	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_int(OMRPORTLIB, socket, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_REUSEADDR, &flag), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, OMRSOCK_MAXCONN), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
 }
 
 /**
@@ -389,14 +418,17 @@ TEST(PortSockTest, create_dotted_decimal_IPv4_socket_address)
 	OMRSockAddrStorage sockAddr;
 	omrsock_socket_t socket = NULL;
 	uint16_t port = 4930;
+	int32_t flag = 1;
 	uint8_t addr[4];
 
 	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET, "127.0.0.1", addr), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB, &sockAddr, OMRSOCK_AF_INET, addr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
+	/** Set socket address to be reusable in case this address is in TIME_WAIT state. */
+	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_int(OMRPORTLIB, socket, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_REUSEADDR, &flag), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
 }
 
 /**
@@ -414,18 +446,21 @@ TEST(PortSockTest, create_IPv6_socket_address)
 	OMRSockAddrStorage sockAddr;
 	omrsock_socket_t socket = NULL;
 	uint16_t port = 4930;
+	int32_t flag = 1;
 	uint8_t addr6[16];
 
 	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET6, "::1", addr6), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init6(OMRPORTLIB,  &sockAddr, OMRSOCK_AF_INET6, addr6, OMRPORTLIB->sock_htons(OMRPORTLIB, port), 0, 0), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET6, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET6, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
+	/** Set socket address to be reusable in case this address is in TIME_WAIT state. */
+	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_int(OMRPORTLIB, socket, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_REUSEADDR, &flag), 0);
 	if (0 != (OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr))) {
 		portTestEnv->log(LEVEL_ERROR, "WARNING: Cannot test IPV6: Failed to find to IPV6 interface. \n");
 		EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
 		return;
 	}
-	EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
 }
 
 /**
@@ -443,14 +478,17 @@ TEST(PortSockTest, create_in6addrany_IPv6_socket_address)
 	OMRSockAddrStorage sockAddr;
 	omrsock_socket_t socket = NULL;
 	uint16_t port = 4930;
+	int32_t flag = 1;
 	uint8_t addr6[16];
 
 	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET6, "::0", addr6), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init6(OMRPORTLIB, &sockAddr, OMRSOCK_AF_INET6, addr6, OMRPORTLIB->sock_htons(OMRPORTLIB, port), 0, 0), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET6, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET6, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
+	/** Set socket address to be reusable in case this address is in TIME_WAIT state. */
+	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_int(OMRPORTLIB, socket, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_REUSEADDR, &flag), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, OMRSOCK_MAXCONN), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
 }
 
 /**
@@ -468,14 +506,17 @@ TEST(PortSockTest, create_IPv4_mapped_IPv6_Socket_Address)
 	OMRSockAddrStorage sockAddr;
 	omrsock_socket_t socket = NULL;
 	uint16_t port = 4930;
+	int32_t flag = 1;
 	uint8_t addr[4];
 
 	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET, "127.0.0.1", addr), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init6(OMRPORTLIB, &sockAddr, OMRSOCK_AF_INET, addr, OMRPORTLIB->sock_htons(OMRPORTLIB, port), 0, 0), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET6, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET6, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
+	/** Set socket address to be reusable in case this address is in TIME_WAIT state. */
+	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_int(OMRPORTLIB, socket, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_REUSEADDR, &flag), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
 }
 
 /**
@@ -503,17 +544,17 @@ TEST(PortSockTest, two_socket_stream_communication)
 	uint32_t inaddrAny = OMRPORTLIB->sock_htonl(OMRPORTLIB, OMRSOCK_INADDR_ANY);
 	memcpy(serverAddr, &inaddrAny, 4);
 	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB, &serverStreamSockAddr, OMRSOCK_AF_INET, serverAddr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
-	EXPECT_EQ(start_server(OMRPORTLIB, OMRSOCK_AF_INET, OMRSOCK_STREAM, &serverStreamSocket, &serverStreamSockAddr), 0);
+	start_server(OMRPORTLIB, OMRSOCK_AF_INET, OMRSOCK_STREAM, &serverStreamSocket, &serverStreamSockAddr);
 
 	/* To Create a Client Socket and Address */
 	OMRSockAddrStorage clientStreamSockAddr;
 	omrsock_socket_t clientStreamSocket = NULL;
-	EXPECT_EQ(connect_client_to_server(OMRPORTLIB, (char *)"localhost", NULL, OMRSOCK_AF_INET, OMRSOCK_STREAM, &clientStreamSocket, &clientStreamSockAddr, &serverStreamSockAddr), 0);
+	connect_client_to_server(OMRPORTLIB, "localhost", NULL, OMRSOCK_AF_INET, OMRSOCK_STREAM, &clientStreamSocket, &clientStreamSockAddr, &serverStreamSockAddr);
 
 	/* Accept Connection */
 	OMRSockAddrStorage connectedClientStreamSockAddr;
 	omrsock_socket_t connectedClientStreamSocket = NULL;
-	EXPECT_EQ(OMRPORTLIB->sock_accept(OMRPORTLIB, serverStreamSocket, &connectedClientStreamSockAddr, &connectedClientStreamSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_accept(OMRPORTLIB, serverStreamSocket, &connectedClientStreamSockAddr, &connectedClientStreamSocket), 0);
 
 	const char *msg = "This is an omrsock test for 2 socket stream communications.";
 	int32_t bytesLeft = strlen(msg) + 1;
@@ -539,9 +580,9 @@ TEST(PortSockTest, two_socket_stream_communication)
 	
 	EXPECT_STREQ(msg, buf);
 
-	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &connectedClientStreamSocket), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientStreamSocket), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverStreamSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &connectedClientStreamSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientStreamSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverStreamSocket), 0);
 }
 
 /**
@@ -570,12 +611,12 @@ TEST(PortSockTest, two_socket_datagram_communication)
 	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET, "127.0.0.1", serverAddr), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB,  &serverSockAddr, OMRSOCK_AF_INET, serverAddr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
 	/* Datagram server sockets does not need to listen and accept */
-	EXPECT_EQ(start_server(OMRPORTLIB, OMRSOCK_AF_INET, OMRSOCK_DGRAM, &serverSocket, &serverSockAddr), 0);
+	start_server(OMRPORTLIB, OMRSOCK_AF_INET, OMRSOCK_DGRAM, &serverSocket, &serverSockAddr);
 
 	OMRSockAddrStorage clientSockAddr;
 	omrsock_socket_t clientSocket = NULL;
 	/* Connect is optional for datagram clients */
-	EXPECT_EQ(connect_client_to_server(OMRPORTLIB, (char *)"localhost", (char *)"16403", OMRSOCK_AF_INET, OMRSOCK_DGRAM, &clientSocket, &clientSockAddr, &serverSockAddr), 0);
+	connect_client_to_server(OMRPORTLIB, "localhost", "16403", OMRSOCK_AF_INET, OMRSOCK_DGRAM, &clientSocket, &clientSockAddr, &serverSockAddr);
 
 	/* Datagram Sendto and Recvfrom test. Sendto and Recvfrom are called multiple tests to ensure it has been
 	*	sent and received.
@@ -584,26 +625,22 @@ TEST(PortSockTest, two_socket_datagram_communication)
 	OMRTimeval timeRecv;
 	EXPECT_EQ(OMRPORTLIB->sock_timeval_init(OMRPORTLIB, &timeSend, 2, 0), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_timeval_init(OMRPORTLIB, &timeRecv, 3, 0), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_timeval(OMRPORTLIB, serverSocket, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_SNDTIMEO, &timeSend), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_timeval(OMRPORTLIB, clientSocket, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_RCVTIMEO, &timeRecv), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_setsockopt_timeval(OMRPORTLIB, serverSocket, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_SNDTIMEO, &timeSend), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_setsockopt_timeval(OMRPORTLIB, clientSocket, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_RCVTIMEO, &timeRecv), 0);
 
 	/* Send 50 times. This should be enough for the message to be sent. */
 	char msgDgram[100] = "This is an omrsock test for datagram communications.";
 	int32_t	bytesTotal = strlen(msgDgram) + 1;
-	int32_t bytesSent = 0;
 
-	for (int32_t i = 0; i < 100; i++) {
-		bytesSent = OMRPORTLIB->sock_sendto(OMRPORTLIB, serverSocket, (uint8_t *)msgDgram, bytesTotal, 0, &clientSockAddr);
-		if (bytesSent == bytesTotal) {
-			break;
-		}
+	for (int32_t i = 0; i < 50; i++) {
+		OMRPORTLIB->sock_sendto(OMRPORTLIB, serverSocket, (uint8_t *)msgDgram, bytesTotal, 0, &clientSockAddr);
 	}
 
 	/* Receive */
 	char bufDgram[100] = "";
 	int32_t bytesRecv = 0;
 
-	for (int32_t i = 0; i < 100; i++) {
+	for (int32_t i = 0; i < 200; i++) {
 		bytesRecv = OMRPORTLIB->sock_recvfrom(OMRPORTLIB, clientSocket, (uint8_t *)bufDgram, bytesTotal, 0, &serverSockAddr);
 		if (bytesRecv == bytesTotal) {
 			break;
@@ -612,8 +649,8 @@ TEST(PortSockTest, two_socket_datagram_communication)
 
 	EXPECT_EQ(strcmp(msgDgram, bufDgram), 0);
 
-	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientSocket), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverSocket), 0);
 }
 
 /**
@@ -702,5 +739,40 @@ TEST(PortSockTest, socket_options)
 	EXPECT_EQ(OMRPORTLIB->sock_getsockopt_int(OMRPORTLIB, sock, OMRSOCK_IPPROTO_TCP, OMRSOCK_TCP_NODELAY, &flagResult), 0);
 	EXPECT_NE(flagResult, 0);
 
-	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &sock), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &sock), 0);
+}
+
+TEST(PortSockTest, socket_flags)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	OMRSockAddrStorage sockAddr;
+	omrsock_socket_t socket = NULL;
+	uint32_t inaddrAny;
+	uint16_t port = 4930;
+	uint8_t addr[4];
+	int32_t flag = 1;
+
+	/* Set up address */
+	inaddrAny = OMRPORTLIB->sock_htonl(OMRPORTLIB, OMRSOCK_INADDR_ANY);
+	memcpy(addr, &inaddrAny, 4);
+	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB, &sockAddr, OMRSOCK_AF_INET, addr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
+
+	/* Test setting non-blocking using OR in socktype field. */
+
+	ASSERT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET, OMRSOCK_STREAM | OMRSOCK_O_NONBLOCK, OMRSOCK_IPPROTO_DEFAULT), 0);
+	/** Set socket address to be reusable in case this address is in TIME_WAIT state. */
+	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_int(OMRPORTLIB, socket, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_REUSEADDR, &flag), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
+
+	/* Test setting non-blocking using omrsock_fcntl. */
+
+	ASSERT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
+	/** Set socket address to be reusable in case this address is in TIME_WAIT state. */
+	EXPECT_EQ(OMRPORTLIB->sock_setsockopt_int(OMRPORTLIB, socket, OMRSOCK_SOL_SOCKET, OMRSOCK_SO_REUSEADDR, &flag), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_fcntl(OMRPORTLIB, socket, OMRSOCK_O_NONBLOCK), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, socket, &sockAddr), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
 }

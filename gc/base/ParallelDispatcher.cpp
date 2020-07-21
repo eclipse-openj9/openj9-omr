@@ -159,7 +159,19 @@ MM_ParallelDispatcher::workerEntryPoint(MM_EnvironmentBase *env)
 	while(worker_status_dying != _statusTable[workerID]) {
 		/* Wait for a task to be dispatched to the worker thread */
 		while(worker_status_waiting == _statusTable[workerID]) {
-			omrthread_monitor_wait(_workerThreadMutex);
+			if (_workerThreadsReservedForGC && (_threadsToReserve > 0)) {
+				_threadsToReserve -= 1;
+				_statusTable[workerID] = worker_status_reserved;
+				_taskTable[workerID] = _task;
+			} else {
+				omrthread_monitor_wait(_workerThreadMutex);
+			}
+		}
+
+		/* Thread should never exit waiting loop without being reserved with _workerThreadsReservedForGC set.
+		 * (i.e we should never have non-waiting status upon wake up with _slaveThreadsReservedForGC) */
+		if (_workerThreadsReservedForGC) {
+			Assert_MM_true(worker_status_reserved == _statusTable[workerID]);
 		}
 
 		if(worker_status_reserved == _statusTable[workerID]) {
@@ -387,7 +399,20 @@ MM_ParallelDispatcher::shutDownThreads()
 void
 MM_ParallelDispatcher::wakeUpThreads(uintptr_t count)
 {
-	omrthread_monitor_notify_all(_workerThreadMutex);	
+	/* This thread should notify and release _workerThreadMutex asap. Threads waking up will need to
+	 * reacquire the mutex before proceeding with the task.
+	 *
+	 * Hybrid approach to notifying threads:
+	 * 	- Cheaper to do to individual notifies for small set of threads from a large pool
+	 * 	- More expensive to do with individual notifies with large set of threads
+	 */
+	if (count < OMR_MIN((_threadCountMaximum / 2), _extensions->dispatcherHybridNotifyThreadBound)) {
+		for (uintptr_t threads = 0; threads < count; threads++) {
+			omrthread_monitor_notify(_workerThreadMutex);
+		}
+	} else {
+		omrthread_monitor_notify_all(_workerThreadMutex);
+	}
 }
 
 /**
@@ -473,13 +498,20 @@ MM_ParallelDispatcher::prepareThreadsForTask(MM_EnvironmentBase *env, MM_Task *t
 	 */
 	_workerThreadsReservedForGC = true; 
 
+	Assert_MM_true(_task == NULL);
+	_task = task;
+
 	task->setSynchronizeMutex(_synchronizeMutex);
-	
-	for(uintptr_t index=0; index < threadCount; index++) {
-		_statusTable[index] = worker_status_reserved;
-		_taskTable[index] = task;
-	}
-	wakeUpThreads(threadCount);
+
+	/* Main thread will be used - update status */
+	_statusTable[env->getWorkerID()] = worker_status_reserved;
+	_taskTable[env->getWorkerID()] = task;
+
+	/* Main thread doesn't need to be woken up */
+	Assert_MM_true(_threadsToReserve == 0);
+	_threadsToReserve = threadCount - 1;
+	wakeUpThreads(_threadsToReserve);
+
 	omrthread_monitor_exit(_workerThreadMutex);
 }
 
@@ -514,6 +546,8 @@ MM_ParallelDispatcher::cleanupAfterTask(MM_EnvironmentBase *env)
 	omrthread_monitor_enter(_workerThreadMutex);
 	
 	_workerThreadsReservedForGC = false;
+	Assert_MM_true(_threadsToReserve == 0);
+	_task = NULL;
 	
 	if (_inShutdown) {
 		omrthread_monitor_notify_all(_workerThreadMutex);

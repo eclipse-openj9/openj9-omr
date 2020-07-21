@@ -47,6 +47,7 @@ class MM_ParallelDispatcher : public MM_BaseVirtual
 	 */
 private:
 protected:
+	MM_Task *_task;
 	MM_GCExtensionsBase *_extensions;
 
 	enum {
@@ -76,6 +77,7 @@ protected:
 	uintptr_t _threadCountMaximum; /**< maximum threadcount - this is the size of the thread tables etc */
 	uintptr_t _threadCount; /**< number of threads currently forked */
 	uintptr_t _activeThreadCount; /**< number of threads actively running a task */
+	uintptr_t _threadsToReserve; /**< Indicates number of threads remaining to dispatch tasks upon notify. Must be exactly 0 after tasks are dispatched. */
 
 	omrsig_handler_fn _handler;
 	void* _handler_arg;
@@ -138,6 +140,7 @@ public:
 
 	MM_ParallelDispatcher(MM_EnvironmentBase *env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize) :
 		MM_BaseVirtual()
+		,_task(NULL)
 		,_extensions(MM_GCExtensionsBase::getExtensions(env->getOmrVM()))
 		,_threadShutdownCount(0)
 		,_threadTable(NULL)
@@ -151,6 +154,7 @@ public:
 		,_threadCountMaximum(1)
 		,_threadCount(1)
 		,_activeThreadCount(1)
+		,_threadsToReserve(0)		
 		,_handler(handler)
 		,_handler_arg(handler_arg)
 		,_defaultOSStackSize(defaultOSStackSize)

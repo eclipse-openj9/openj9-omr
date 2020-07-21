@@ -305,7 +305,7 @@ private:
 	void updateTuningStatistics(MM_EnvironmentBase *env);
 	void tuneToHeap(MM_EnvironmentBase *env);
 
-	void conHelperEntryPoint(OMR_VMThread *omrThread, uintptr_t slaveID);
+	void conHelperEntryPoint(OMR_VMThread *omrThread, uintptr_t workerID);
 	void shutdownAndExitConHelperThread(OMR_VMThread *omrThread);
 
 	bool initializeConcurrentHelpers(MM_GCExtensionsBase *extensions);

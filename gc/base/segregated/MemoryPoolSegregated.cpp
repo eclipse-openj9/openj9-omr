@@ -112,7 +112,7 @@ MM_MemoryPoolSegregated::flushCachedFullRegions(MM_EnvironmentBase *env)
 void
 MM_MemoryPoolSegregated::moveInUseToSweep(MM_EnvironmentBase *env)
 {
-	assume(env->isMasterThread(), "only can be called by master thread");
+	assume(env->isMainThread(), "only can be called by main thread");
 	/* Must flush allocation contexts as part of transfering inUseToSweep.
 	 * Allocation contexts allocate into in use regions, and we can't let them be
 	 * put on a sweep list while mutators are still allocating into them.

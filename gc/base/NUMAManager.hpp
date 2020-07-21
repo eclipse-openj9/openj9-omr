@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -87,7 +87,7 @@ public:
 
 	/**
 	 * Called to update internal NUMA caches (could be due to a change in the machine's NUMA state or a change in whether or not we want to enable NUMA (either real or simulated))
-	 * @param env[in] The master GC thread
+	 * @param env[in] The main GC thread
 	 * @return True if the recache failed, false otherwise (typically implies an allocation failure in a caching data structure)
 	 */
 	bool recacheNUMASupport(MM_EnvironmentBase *env);
@@ -143,7 +143,7 @@ public:
 
 	/**
 	 * Called to disable NUMA support and clear any caches allocated to track NUMA support
-	 * @param env[in] The master GC thread
+	 * @param env[in] The main GC thread
 	 */
 	void shutdownNUMASupport(MM_EnvironmentBase *env);
 

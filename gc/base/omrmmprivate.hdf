@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-Copyright (c) 2010, 2018 IBM Corp. and others
+Copyright (c) 2010, 2020 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -774,7 +774,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-excepti
 		<data type="struct OMR_VMThread*" name="currentThread" description="current thread" />
 		<data type="uint64_t" name="timestamp" description="time of event" />
 		<data type="uintptr_t" name="eventid" description="unique identifier for event" />
-		<data type="uint64_t" name="exclusiveAccessTime" description="time GC master thread was blocked waiting to acquire Xaccess" />
+		<data type="uint64_t" name="exclusiveAccessTime" description="time GC main thread was blocked waiting to acquire Xaccess" />
 	</event>
 
 	<event>

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2018 IBM Corp. and others
+ * Copyright (c) 2008, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -209,14 +209,14 @@ sysThread(void * arg)
 		cpuLoad();
 	}
 
-	/* Inform master thread that we are done doing work */
+	/* Inform main thread that we are done doing work */
 	omrthread_monitor_enter(thrInfo->synchronization);
 	thrInfo->counter -= 1;
 	if (0 == thrInfo->counter) {
 		omrthread_monitor_notify(thrInfo->synchronization);
 	}
 
-	/* Wait for the master thread to get cpu usage thrInfo for all threads */
+	/* Wait for the main thread to get cpu usage thrInfo for all threads */
 	do {
 		omrthread_monitor_wait_interruptable(thrInfo->synchronization,
 		                                     MILLI_TIMEOUT, NANO_TIMEOUT);
@@ -251,14 +251,14 @@ appThread(void * arg)
 		cpuLoad();
 	}
 
-	/* Inform master thread that we are done doing work */
+	/* Inform main thread that we are done doing work */
 	omrthread_monitor_enter(thrInfo->synchronization);
 	thrInfo->counter -= 1;
 	if (0 == thrInfo->counter) {
 		omrthread_monitor_notify(thrInfo->synchronization);
 	}
 
-	/* Wait for the master thread to get cpu usage thrInfo for all threads */
+	/* Wait for the main thread to get cpu usage thrInfo for all threads */
 	do {
 		omrthread_monitor_wait_interruptable(thrInfo->synchronization,
 		                                     MILLI_TIMEOUT, NANO_TIMEOUT);
@@ -273,7 +273,7 @@ appThread(void * arg)
 
 	omrthread_monitor_enter(thrInfo->synchronization);
 	thrInfo->app -= 1;
-	/* Inform the master thread that we are now exiting */
+	/* Inform the main thread that we are now exiting */
 	if (0 == thrInfo->app) {
 		omrthread_monitor_notify(thrInfo->synchronization);
 	}
@@ -347,7 +347,7 @@ TEST(ThreadExtendedTest, DISABLED_TestThreadCpuTime)
 	omrthread_monitor_notify_all(thrInfo->synchronization);
 
 	do {
-		/* Ensure that all threads have exited before the master thread exits */
+		/* Ensure that all threads have exited before the main thread exits */
 		omrthread_monitor_wait_interruptable(thrInfo->synchronization,
 		                                     MILLI_TIMEOUT, NANO_TIMEOUT);
 	} while (thrInfo->app > 0);

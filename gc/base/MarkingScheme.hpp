@@ -86,9 +86,9 @@ public:
 	static MM_MarkingScheme *newInstance(MM_EnvironmentBase *env);
 	virtual void kill(MM_EnvironmentBase *env);
 	
-	void masterSetupForGC(MM_EnvironmentBase *env);
-	void masterSetupForWalk(MM_EnvironmentBase *env);
-	void masterCleanupAfterGC(MM_EnvironmentBase *env);
+	void mainSetupForGC(MM_EnvironmentBase *env);
+	void mainSetupForWalk(MM_EnvironmentBase *env);
+	void mainCleanupAfterGC(MM_EnvironmentBase *env);
 	void workerSetupForGC(MM_EnvironmentBase *env);
 	void workerCleanupAfterGC(MM_EnvironmentBase *env);
 	void completeMarking(MM_EnvironmentBase *env);

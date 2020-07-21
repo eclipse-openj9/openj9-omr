@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -83,20 +83,20 @@ public:
 	void tearDown(MM_EnvironmentBase *env) {}
 
 	/**
-	 * Called on GC master thread prior to commencing a global collection. This is informational,
+	 * Called on GC main thread prior to commencing a global collection. This is informational,
 	 * no specific actions are specified for this method.
 	 *
-	 * This is called before the master thread begins setting up for the global collection.
+	 * This is called before the main thread begins setting up for the global collection.
 	 *
 	 * @param env environment for calling thread
 	 */
-	void masterThreadGarbageCollectStarted(MM_EnvironmentBase *env) {}
+	void mainThreadGarbageCollectStarted(MM_EnvironmentBase *env) {}
 
 	/**
-	 * Called on GC master thread during a global collection. This is informational,
+	 * Called on GC main thread during a global collection. This is informational,
 	 * no specific actions are specified for this method.
 	 *
-	 * This is called on the master thread when the marking phase of the collection is complete
+	 * This is called on the main thread when the marking phase of the collection is complete
 	 * and before the sweeping phase commences.
 	 *
 	 * @param env environment for calling thread
@@ -104,21 +104,21 @@ public:
 	void postMarkProcessing(MM_EnvironmentBase *env) {}
 
 	/**
-	 * Called on GC master thread near the end of a global collection. This is informational,
+	 * Called on GC main thread near the end of a global collection. This is informational,
 	 * no specific actions are specified for this method.
 	 *
-	 * This will be called on the master thread when the master thread completes its participation
+	 * This will be called on the main thread when the main thread completes its participation
 	 * in the collection. Other GC threads may still be running at this point.
 	 *
 	 * @param env environment for calling thread
 	 */
-	void masterThreadGarbageCollectFinished(MM_EnvironmentBase *env, bool compactedThisCycle) {}
+	void mainThreadGarbageCollectFinished(MM_EnvironmentBase *env, bool compactedThisCycle) {}
 
 	/**
-	 * Called on GC master thread near the end a global collection. This is informational,
+	 * Called on GC main thread near the end a global collection. This is informational,
 	 * no specific actions are specified for this method.
 	 *
-	 * This is called on the master thread after all GC threads have completed their participation
+	 * This is called on the main thread after all GC threads have completed their participation
 	 * in the global collection cycle.
 	 *
 	 * @param env environment for calling thread
@@ -127,7 +127,7 @@ public:
 
 
 	/**
-	 * Called on GC master thread prior to commencing a global collection. This is informational,
+	 * Called on GC main thread prior to commencing a global collection. This is informational,
 	 * no specific actions are specified for this method.
 	 *
 	 * This will be called just before a heap walk is started. It can be used to set up additional

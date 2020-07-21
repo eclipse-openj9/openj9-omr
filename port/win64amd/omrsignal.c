@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -114,9 +114,9 @@ static struct {
 /* Keep track of signal counts. */
 static volatile uintptr_t signalCounts[ARRAY_SIZE_SIGNALS] = {0};
 
-static omrthread_monitor_t masterExceptionMonitor;
+static omrthread_monitor_t mainExceptionMonitor;
 
-/* access to this must be synchronized using masterExceptionMonitor */
+/* access to this must be synchronized using mainExceptionMonitor */
 static uint32_t vectoredExceptionHandlerInstalled;
 
 /* Thread to invoke signal handlers for asynchronous signals. */
@@ -133,7 +133,7 @@ static omrthread_tls_key_t tlsKey;
 /* Calls to registerSignalHandlerWithOS are synchronized using registerHandlerMonitor */
 static omrthread_monitor_t registerHandlerMonitor;
 
-/* wakeUpASyncReporter semaphore coordinates between master async signal handler and
+/* wakeUpASyncReporter semaphore coordinates between main async signal handler and
  * async signal reporter thread.
  */
 static j9sem_t wakeUpASyncReporter;
@@ -154,12 +154,12 @@ static uint32_t infoForModule(struct OMRPortLibrary *portLibrary, struct OMRWin3
 static uint32_t infoForOther(struct OMRPortLibrary *portLibrary, struct OMRWin32SignalInfo *info, int32_t index, const char **name, void **value);
 static uint32_t countInfoInCategory(struct OMRPortLibrary *portLibrary, void *info, uint32_t category);
 static BOOL WINAPI consoleCtrlHandler(DWORD dwCtrlType);
-static LONG WINAPI masterVectoredExceptionHandler(EXCEPTION_POINTERS *exceptionInfo);
+static LONG WINAPI mainVectoredExceptionHandler(EXCEPTION_POINTERS *exceptionInfo);
 static uint32_t infoForControl(struct OMRPortLibrary *portLibrary, struct OMRWin32SignalInfo *info, int32_t index, const char **name, void **value);
 static void fillInWinAMD64SignalInfo(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, EXCEPTION_POINTERS *exceptionInfo, struct OMRWin32SignalInfo *signalInfo);
 static void sig_full_shutdown(struct OMRPortLibrary *portLibrary);
 static void destroySignalTools(OMRPortLibrary *portLibrary);
-static uint32_t addMasterVectoredExceptionHandler(struct OMRPortLibrary *portLibrary);
+static uint32_t addMainVectoredExceptionHandler(struct OMRPortLibrary *portLibrary);
 static int32_t initializeSignalTools(OMRPortLibrary *portLibrary);
 static int structuredExceptionHandler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags, EXCEPTION_POINTERS *exceptionInfo);
 static int32_t runInTryExcept(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void *fn_arg, omrsig_handler_fn handler, void *handler_arg, uint32_t flags, uintptr_t *result);
@@ -169,7 +169,7 @@ static int mapPortLibSignalToOSSignal(uint32_t portLibSignal);
 
 static int32_t registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, win_signal handler, void **oldOSHandler);
 static void updateSignalCount(int osSignalNo);
-static void masterASynchSignalHandler(int osSignalNo);
+static void mainASynchSignalHandler(int osSignalNo);
 static void removeAsyncHandlers(OMRPortLibrary *portLibrary);
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
@@ -177,7 +177,7 @@ static int J9THREAD_PROC asynchSignalReporter(void *userData);
 static void runHandlers(uint32_t asyncSignalFlag, int osSignal);
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
-static int32_t registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler);
+static int32_t registerMainHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler);
 static int32_t setReporterPriority(OMRPortLibrary *portLibrary, uintptr_t priority);
 
 static OMRWinAMD64AsyncHandlerRecord *createAsyncHandlerRecord(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags);
@@ -243,21 +243,21 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 	Assert_PRT_true((OMRPORT_SIG_FLAG_MAY_RETURN | OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION) != (flags & (OMRPORT_SIG_FLAG_MAY_RETURN | OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION)));
 
 	if (OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS & signalOptions) {
-		/* -Xrs was set, we can't protect against any signals, do not install the master handler */
+		/* -Xrs was set, we can't protect against any signals, do not install the main handler */
 		*result = fn(portLibrary, fn_arg);
 		return 0;
 	}
 
-	/* Check to see if we have already registered the masterVectoredExceptionHandler.
+	/* Check to see if we have already registered the mainVectoredExceptionHandler.
 	 * Because we are checking without acquiring the monitor first, we'll have to check again.
-	 * Note that that we don't uninstall the masterHandlerMonitor, so we only have to account for it going from not installed to installed.
+	 * Note that that we don't uninstall the mainHandlerMonitor, so we only have to account for it going from not installed to installed.
 	*/
 	if (0 == vectoredExceptionHandlerInstalled) {
-		omrthread_monitor_enter(masterExceptionMonitor);
+		omrthread_monitor_enter(mainExceptionMonitor);
 		if (0 == vectoredExceptionHandlerInstalled) {
-			rc = addMasterVectoredExceptionHandler(portLibrary);
+			rc = addMainVectoredExceptionHandler(portLibrary);
 		}
-		omrthread_monitor_exit(masterExceptionMonitor);
+		omrthread_monitor_exit(mainExceptionMonitor);
 
 		if (rc) {
 			return OMRPORT_SIG_ERROR;
@@ -308,7 +308,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 
 	Trc_PRT_signal_omrsig_set_async_signal_handler_entered(handler, handler_arg, flags);
 
-	rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLASYNC, NULL);
+	rc = registerMainHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLASYNC, NULL);
 	if (0 != rc) {
 		Trc_PRT_signal_omrsig_set_async_signal_handler_exiting_did_nothing_possible_error(handler, handler_arg, flags);
 		return rc;
@@ -383,7 +383,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 		}
 	}
 
-	rc = registerMasterHandlers(portLibrary, portlibSignalFlag, OMRPORT_SIG_FLAG_SIGALLASYNC, oldOSHandler);
+	rc = registerMainHandlers(portLibrary, portlibSignalFlag, OMRPORT_SIG_FLAG_SIGALLASYNC, oldOSHandler);
 	if (0 != rc) {
 		Trc_PRT_signal_omrsig_set_single_async_signal_handler_exiting_did_nothing_possible_error(rc, handler, handler_arg, portlibSignalFlag);
 		return rc;
@@ -489,16 +489,16 @@ omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibS
 }
 
 BOOLEAN
-omrsig_is_master_signal_handler(struct OMRPortLibrary *portLibrary, void *osHandler)
+omrsig_is_main_signal_handler(struct OMRPortLibrary *portLibrary, void *osHandler)
 {
 	BOOLEAN rc = FALSE;
-	Trc_PRT_signal_omrsig_is_master_signal_handler_entered(osHandler);
+	Trc_PRT_signal_omrsig_is_main_signal_handler_entered(osHandler);
 
-	if (osHandler == (void *)masterASynchSignalHandler) {
+	if (osHandler == (void *)mainASynchSignalHandler) {
 		rc = TRUE;
 	}
 
-	Trc_PRT_signal_omrsig_is_master_signal_handler_exiting(rc);
+	Trc_PRT_signal_omrsig_is_main_signal_handler_exiting(rc);
 	return rc;
 }
 
@@ -594,13 +594,13 @@ omrsig_set_options(struct OMRPortLibrary *portLibrary, uint32_t options)
 	uintptr_t handlersInstalled = 0;
 
 	if ((OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS | OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS) & options)  {
-		/* check that we haven't already set any master handlers */
+		/* check that we haven't already set any main handlers */
 
-		omrthread_monitor_enter(masterExceptionMonitor);
+		omrthread_monitor_enter(mainExceptionMonitor);
 		if (0 != vectoredExceptionHandlerInstalled) {
 			handlersInstalled = 1;
 		}
-		omrthread_monitor_exit(masterExceptionMonitor);
+		omrthread_monitor_exit(mainExceptionMonitor);
 	}
 
 	if (handlersInstalled) {
@@ -1139,7 +1139,7 @@ infoForFPR(struct OMRPortLibrary *portLibrary, struct OMRWin32SignalInfo *info, 
 }
 
 static LONG WINAPI
-masterVectoredExceptionHandler(EXCEPTION_POINTERS *exceptionInfo)
+mainVectoredExceptionHandler(EXCEPTION_POINTERS *exceptionInfo)
 {
 	uint32_t portLibType;
 	struct OMRSignalHandlerRecord *thisRecord;
@@ -1150,7 +1150,7 @@ masterVectoredExceptionHandler(EXCEPTION_POINTERS *exceptionInfo)
 	if ((exceptionInfo->ExceptionRecord->ExceptionCode & (ERROR_SEVERITY_ERROR | APPLICATION_ERROR_MASK)) != ERROR_SEVERITY_ERROR) {
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
-	/* masterVectoredExceptionHandler is a process-wide handler so it
+	/* mainVectoredExceptionHandler is a process-wide handler so it
 	 * may be invoked by threads that aren't omrthreads or that had
 	 * not been protected by omrsig_protect() */
 
@@ -1320,9 +1320,9 @@ structuredExceptionHandler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn
 
 }
 
-/* Adds the master exception handler
+/* Adds the main exception handler
  *
- * Calls to this function must be synchronized around the masterExceptionMonitor
+ * Calls to this function must be synchronized around the mainExceptionMonitor
  *
  * @param[in] portLibrary The port library
  *
@@ -1330,7 +1330,7 @@ structuredExceptionHandler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn
  *
  */
 static uint32_t
-addMasterVectoredExceptionHandler(struct OMRPortLibrary *portLibrary)
+addMainVectoredExceptionHandler(struct OMRPortLibrary *portLibrary)
 {
 	/* We can't use Windows structured exception handling (SEH) on this platform.
 	 * On AMD64, SEH relies on finding exception records associated with the current
@@ -1338,13 +1338,13 @@ addMasterVectoredExceptionHandler(struct OMRPortLibrary *portLibrary)
 	 * code is actually in allocated memory, SEH is bypassed for exceptions which
 	 * occur in JIT code
 	 */
-	if (NULL == AddVectoredExceptionHandler(1, masterVectoredExceptionHandler)) {
+	if (NULL == AddVectoredExceptionHandler(1, mainVectoredExceptionHandler)) {
 		omrthread_tls_free(tlsKey);
 		omrthread_tls_free(tlsKeyCurrentSignal);
 		return -1;
 	}
 
-	/* vectoredExceptionHandlerInstalled is checked in omrsig_protect without checking the masterExceptionMonitor */
+	/* vectoredExceptionHandlerInstalled is checked in omrsig_protect without checking the mainExceptionMonitor */
 	/* issueWriteBarrier here in response to CMVC 96193, although it's likely not needed on this platform */
 	issueWriteBarrier();
 	vectoredExceptionHandlerInstalled = 1;
@@ -1363,7 +1363,7 @@ static void
 destroySignalTools(OMRPortLibrary *portLibrary)
 {
 	omrthread_monitor_destroy(asyncMonitor);
-	omrthread_monitor_destroy(masterExceptionMonitor);
+	omrthread_monitor_destroy(mainExceptionMonitor);
 	omrthread_monitor_destroy(registerHandlerMonitor);
 	j9sem_destroy(wakeUpASyncReporter);
 	omrthread_monitor_destroy(asyncReporterShutdownMonitor);
@@ -1376,7 +1376,7 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 		goto error;
 	}
 
-	if (0 != omrthread_monitor_init_with_name(&masterExceptionMonitor, 0, "portLibrary_omrsig_master_exception_monitor")) {
+	if (0 != omrthread_monitor_init_with_name(&mainExceptionMonitor, 0, "portLibrary_omrsig_main_exception_monitor")) {
 		goto cleanup1;
 	}
 
@@ -1417,7 +1417,7 @@ cleanup4:
 cleanup3:
 	omrthread_monitor_destroy(registerHandlerMonitor);
 cleanup2:
-	omrthread_monitor_destroy(masterExceptionMonitor);
+	omrthread_monitor_destroy(mainExceptionMonitor);
 cleanup1:
 	omrthread_monitor_destroy(asyncMonitor);
 error:
@@ -1457,7 +1457,7 @@ sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 		removeAsyncHandlers(portLibrary);
 
 		omrthread_tls_free(tlsKey);
-		RemoveVectoredExceptionHandler(masterVectoredExceptionHandler);
+		RemoveVectoredExceptionHandler(mainVectoredExceptionHandler);
 		vectoredExceptionHandlerInstalled = 0;
 
 		/* destroy all of the remaining monitors */
@@ -1476,7 +1476,7 @@ fillInWinAMD64SignalInfo(struct OMRPortLibrary *portLibrary, omrsig_handler_fn h
 	signalInfo->systemType = exceptionInfo->ExceptionRecord->ExceptionCode;
 	signalInfo->portLibType = mapWin32ExceptionToPortlibType(exceptionInfo->ExceptionRecord->ExceptionCode);
 	signalInfo->handlerAddress = (void *)handler;
-	signalInfo->handlerAddress2 = (void *)masterVectoredExceptionHandler;
+	signalInfo->handlerAddress2 = (void *)mainVectoredExceptionHandler;
 	signalInfo->ExceptionRecord = exceptionInfo->ExceptionRecord;
 	signalInfo->ContextRecord = exceptionInfo->ContextRecord;
 	signalInfo->deferToTryExcept = FALSE;
@@ -1632,22 +1632,22 @@ updateSignalCount(int osSignalNo)
 }
 
 /**
- * Invoke updateSignalCount(osSignalNo), and re-register masterASynchSignalHandler since the
- * masterASynchSignalHandler is unregistered after invocation.
+ * Invoke updateSignalCount(osSignalNo), and re-register mainASynchSignalHandler since the
+ * mainASynchSignalHandler is unregistered after invocation.
  *
  * @param[in] osSignalNo the integer value of the signal that is raised
  *
  * @return void
  */
 static void
-masterASynchSignalHandler(int osSignalNo)
+mainASynchSignalHandler(int osSignalNo)
 {
 	updateSignalCount(osSignalNo);
 
 	/* Signal handler is reset after invocation. So, the signal handler needs to
 	 * be registered again after it is invoked.
 	 */
-	OMRSIG_SIGNAL(osSignalNo, masterASynchSignalHandler);
+	OMRSIG_SIGNAL(osSignalNo, mainASynchSignalHandler);
 }
 
 /**
@@ -1786,8 +1786,8 @@ asynchSignalReporter(void *userData)
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 /**
- * Register the master handler for the signals indicated in the flags. Only
- * masterASynchSignalHandler/OMRPORT_SIG_FLAG_SIGALLASYNC is supported
+ * Register the main handler for the signals indicated in the flags. Only
+ * mainASynchSignalHandler/OMRPORT_SIG_FLAG_SIGALLASYNC is supported
  * on win64amd. OMRPORT_SIG_FLAG_SIGALLSYNC is not supported on win64amd.
  *
  * @param[in] flags the flags that we want signals for
@@ -1799,13 +1799,13 @@ asynchSignalReporter(void *userData)
  *
  * @return	0 upon success; OMRPORT_SIG_ERROR otherwise.
  *			Possible failure scenarios include:
- *			1) Master handlers are not registered if -Xrs is set.
+ *			1) Main handlers are not registered if -Xrs is set.
  *			2) Attempting to register a handler for a signal that is not included
  *			   in the allowedSubsetOfFlags.
  *			3) Failure to register the OS signal handler.
  */
 static int32_t
-registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler)
+registerMainHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler)
 {
 	int32_t rc = 0;
 	uint32_t flagsSignalsOnly = (flags & allowedSubsetOfFlags);
@@ -1817,7 +1817,7 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 	}
 
 	if (OMRPORT_SIG_FLAG_SIGALLASYNC == allowedSubsetOfFlags) {
-		handler = masterASynchSignalHandler;
+		handler = mainASynchSignalHandler;
 	} else {
 		return OMRPORT_SIG_ERROR;
 	}
@@ -1836,7 +1836,7 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 		 */
 		omrthread_monitor_enter(registerHandlerMonitor);
 		for (portSignalType = OMRPORT_SIG_SMALLEST_SIGNAL_FLAG; ((portSignalType < allowedSubsetOfFlags) && (portSignalType != 0)); portSignalType = portSignalType << 1) {
-			/* Iterate through all the  signals and register the master handler for the signals
+			/* Iterate through all the  signals and register the main handler for the signals
 			 * specified in flagsSignalsOnly.
 			 */
 			if (OMR_ARE_ALL_BITS_SET(flagsSignalsOnly, portSignalType)) {

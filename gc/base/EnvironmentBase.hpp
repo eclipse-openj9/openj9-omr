@@ -65,8 +65,8 @@ typedef enum {
 	MUTATOR_THREAD = 1,
 	WRITE_BARRIER_THREAD,
 	CON_MARK_HELPER_THREAD,
-	GC_SLAVE_THREAD,
-	GC_MASTER_THREAD
+	GC_WORKER_THREAD,
+	GC_MAIN_THREAD
 } ThreadType;
 
 /**
@@ -79,7 +79,7 @@ private:
 #if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
 	bool const _compressObjectReferences;
 #endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
-	uintptr_t _slaveID;
+	uintptr_t _workerID;
 	uintptr_t _environmentId;
 
 protected:
@@ -112,7 +112,7 @@ protected:
 #if defined(OMR_GC_SEGREGATED_HEAP)
 	MM_HeapRegionQueue* _regionWorkList;
 	MM_HeapRegionQueue* _regionLocalFree;
-	MM_HeapRegionQueue* _regionLocalFull; /* cached full region queue per slave during sweep */
+	MM_HeapRegionQueue* _regionLocalFull; /* cached full region queue per worker during sweep */
 #endif /* OMR_GC_SEGREGATED_HEAP */
 
 public:
@@ -125,7 +125,7 @@ public:
 		ATTACH_THREAD = 0x0,
 		ATTACH_GC_DISPATCHER_THREAD = 0x1,
 		ATTACH_GC_HELPER_THREAD = 0x2,
-		ATTACH_GC_MASTER_THREAD = 0x3,
+		ATTACH_GC_MAIN_THREAD = 0x3,
 	} AttachVMThreadReason;
 
 	MM_ObjectAllocationInterface *_objectAllocationInterface; /**< Per-thread interface that guides object allocation decisions */
@@ -142,7 +142,7 @@ public:
 	MM_WorkPacketStats _workPacketStats;
 	MM_WorkPacketStats _workPacketStatsRSScan;   /**< work packet Stats specifically for RS Scan Phase of Concurrent STW GC */
 
-	uint64_t _slaveThreadCpuTimeNanos;	/**< Total CPU time used by this slave thread (or 0 for non-slaves) */
+	uint64_t _workerThreadCpuTimeNanos;	/**< Total CPU time used by this worker thread (or 0 for non-workers) */
 
 	MM_FreeEntrySizeClassStats _freeEntrySizeClassStats;  /**< GC thread local statistics structure for heap free entry size (sizeClass) distribution */
 
@@ -325,21 +325,21 @@ public:
 	MMINLINE bool setNumaAffinity(uintptr_t *numaNodes, uintptr_t arrayLength) { return 0 == omrthread_numa_set_node_affinity(_omrVMThread->_os_thread, numaNodes, arrayLength, 0); }
 		
 	/**
-	 * Get the threads slave id.
-	 * @return The threads slave id.
+	 * Get the threads worker id.
+	 * @return The threads worker id.
 	 */
-	MMINLINE uintptr_t getSlaveID() { return _slaveID; }
+	MMINLINE uintptr_t getWorkerID() { return _workerID; }
 
 	/**
-	 * Sets the threads slave id.
+	 * Sets the threads worker id.
 	 */
-	MMINLINE void setSlaveID(uintptr_t slaveID) { _slaveID = slaveID; }
+	MMINLINE void setWorkerID(uintptr_t workerID) { _workerID = workerID; }
 
 	/**
-	 * Enguires if this thread is the master.
-	 * return true if the thread is the master thread, false otherwise.
+	 * Enguires if this thread is the main.
+	 * return true if the thread is the main thread, false otherwise.
 	 */
-	 MMINLINE bool isMasterThread() { return _slaveID == 0; }
+	 MMINLINE bool isMainThread() { return _workerID == 0; }
 
 	/**
 	 * Gets the threads type.
@@ -355,7 +355,7 @@ public:
 	setThreadType(ThreadType threadType)
 	{
 		_threadType = threadType;
-		_delegate.setGCMasterThread(GC_MASTER_THREAD == _threadType);
+		_delegate.setGCMainThread(GC_MAIN_THREAD == _threadType);
 	}
 
 	/**
@@ -468,13 +468,13 @@ public:
 	void releaseExclusiveVMAccess();
 	
 	/**
-	 * Give up exclusive access in preparation for transferring it to a collaborating thread (i.e. main-to-master or master-to-main)
+	 * Give up exclusive access in preparation for transferring it to a collaborating thread (i.e. collaborator-to-main or main-to-collaborator)
 	 * @return the exclusive count of the current thread before relinquishing 
 	 */
 	uintptr_t relinquishExclusiveVMAccess();
 
 	/**
-	 * Assume exclusive access from a collaborating thread i.e. main-to-master or master-to-main)
+	 * Assume exclusive access from a collaborating thread i.e. collaborator-to-main or main-to-collaborator)
 	 * @param exclusiveCount the exclusive count to be restored 
 	 */
 	void assumeExclusiveVMAccess(uintptr_t exclusiveCount);
@@ -654,7 +654,7 @@ public:
 #if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
 		, _compressObjectReferences(OMRVMTHREAD_COMPRESS_OBJECT_REFERENCES(omrVMThread))
 #endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
-		,_slaveID(0)
+		,_workerID(0)
 		,_environmentId(0)
 		,_omrVM(omrVMThread->_vm)
 		,_omrVMThread(omrVMThread)
@@ -685,7 +685,7 @@ public:
 		,_isInNoGCAllocationCall(false)
 		,_failAllocOnExcessiveGC(false)
 		,_currentTask(NULL)
-		,_slaveThreadCpuTimeNanos(0)
+		,_workerThreadCpuTimeNanos(0)
 		,_freeEntrySizeClassStats()
 		,_oolTraceAllocationBytes(0)
 		,_traceAllocationBytes(0)
@@ -709,7 +709,7 @@ public:
 #if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
 		, _compressObjectReferences(OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM))
 #endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
-		,_slaveID(0)
+		,_workerID(0)
 		,_environmentId(0)
 		,_omrVM(omrVM)
 		,_omrVMThread(NULL)
@@ -739,7 +739,7 @@ public:
 		,_isInNoGCAllocationCall(false)
 		,_failAllocOnExcessiveGC(false)
 		,_currentTask(NULL)
-		,_slaveThreadCpuTimeNanos(0)
+		,_workerThreadCpuTimeNanos(0)
 		,_freeEntrySizeClassStats()
 		,_oolTraceAllocationBytes(0)
 		,_traceAllocationBytes(0)

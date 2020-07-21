@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -47,7 +47,7 @@ class MM_MarkMap;
  * @note MM_MemorySubSpace::prepareSegmentForWalk must be called on the
  * segment before using this iterator.
  * @note Also assumes that the environment passed in has already been set up
- * with a parallel task, and slave threads are active.
+ * with a parallel task, and worker threads are active.
  * @ingroup GC_Base
  */
 class GC_ParallelObjectHeapIterator : public GC_ObjectHeapIterator

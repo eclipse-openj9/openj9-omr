@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -144,20 +144,20 @@ runTest(void *arg)
 		}
 	}
 
-	/* Inform master thread that we are done doing work */
+	/* Inform main thread that we are done doing work */
 	omrthread_monitor_enter(info->synchronization);
 	info->counter -= 1;
 	if (0 == info->counter) {
 		omrthread_monitor_notify(info->synchronization);
 	}
 
-	/* Wait for the master thread to get cpu usage info for all threads */
+	/* Wait for the main thread to get cpu usage info for all threads */
 	do {
 		omrthread_monitor_wait_interruptable(info->synchronization, MILLI_TIMEOUT, NANO_TIMEOUT);
 	} while (0 == info->sync);
 
 	info->wait -= 1;
-	/* Inform the master thread that we are now exiting */
+	/* Inform the main thread that we are now exiting */
 	if (0 == info->wait) {
 		omrthread_monitor_notify(info->synchronization);
 	}
@@ -228,7 +228,7 @@ TEST(ThreadExtendedTest, TestOtherThreadCputime)
 	omrthread_monitor_notify_all(info->synchronization);
 
 	do {
-		/* Ensure that all threads have exited before the master thread exits */
+		/* Ensure that all threads have exited before the main thread exits */
 		omrthread_monitor_wait_interruptable(info->synchronization, MILLI_TIMEOUT, NANO_TIMEOUT);
 	} while (info->wait > 0);
 

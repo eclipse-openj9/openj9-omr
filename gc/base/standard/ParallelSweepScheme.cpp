@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -98,7 +98,7 @@ MM_ParallelSweepTask::cleanup(MM_EnvironmentBase *env)
 	
 	Trc_MM_ParallelSweepTask_parallelStats(
 		env->getLanguageVMThread(),
-		(uint32_t)env->getSlaveID(), 
+		(uint32_t)env->getWorkerID(), 
 		(uint32_t)omrtime_hires_delta(0, env->_sweepStats.idleTime, OMRPORT_TIME_DELTA_IN_MILLISECONDS), 
 		env->_sweepStats.sweepChunksProcessed, 
 		(uint32_t)omrtime_hires_delta(0, env->_sweepStats.mergeTime, OMRPORT_TIME_DELTA_IN_MILLISECONDS));
@@ -122,11 +122,11 @@ MM_ParallelSweepTask::synchronizeGCThreads(MM_EnvironmentBase *env, const char *
  * Stats gathering for synchornizing threads during sweep.
  */
 bool
-MM_ParallelSweepTask::synchronizeGCThreadsAndReleaseMaster(MM_EnvironmentBase *env, const char *id)
+MM_ParallelSweepTask::synchronizeGCThreadsAndReleaseMain(MM_EnvironmentBase *env, const char *id)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	uint64_t startTime = omrtime_hires_clock();
-	bool result = MM_ParallelTask::synchronizeGCThreadsAndReleaseMaster(env, id);
+	bool result = MM_ParallelTask::synchronizeGCThreadsAndReleaseMain(env, id);
 	uint64_t endTime = omrtime_hires_clock();
 	env->_sweepStats.addToIdleTime(startTime, endTime);
 
@@ -313,7 +313,7 @@ MM_ParallelSweepScheme::heapReconfigured(MM_EnvironmentBase *env)
 /**
  * Initialize all internal structures in order to perform a parallel sweep.
  * 
- * @note called by the master thread only
+ * @note called by the main thread only
  */
 void
 MM_ParallelSweepScheme::setupForSweep(MM_EnvironmentBase *env)
@@ -761,8 +761,8 @@ MM_ParallelSweepScheme::allPoolsPostProcess(MM_EnvironmentBase *env)
 void
 MM_ParallelSweepScheme::internalSweep(MM_EnvironmentBase *env)
 {
-	/* master thread does initialization */
-	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	/* main thread does initialization */
+	if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 		/* Reset largestFreeEntry of all subSpaces at beginning of sweep */
 		_extensions->heap->resetLargestFreeEntry();
 		
@@ -774,8 +774,8 @@ MM_ParallelSweepScheme::internalSweep(MM_EnvironmentBase *env)
 	/* ..all threads now join in to do actual sweep */
 	sweepAllChunks(env, _chunksPrepared);
 	
-	/* ..and then master thread finishes off by connecting all the chunks */
-	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	/* ..and then main thread finishes off by connecting all the chunks */
+	if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 		uint64_t mergeStartTime, mergeEndTime;
 		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
@@ -802,7 +802,7 @@ MM_ParallelSweepScheme::internalSweep(MM_EnvironmentBase *env)
  * There is no expectation for amount of work done for this routine.  The receiver is entitled to do as much or as little
  * work towards completing the sweep as it wants.  In this case, a full sweep of all memory spaces will be performed.
  * 
- * @note Expect to have the dispatcher and slave threads available for work
+ * @note Expect to have the dispatcher and worker threads available for work
  * @note Expect to have exclusive access
  * @note Expect to have a valid mark map for all live objects
  */
@@ -819,7 +819,7 @@ MM_ParallelSweepScheme::sweep(MM_EnvironmentBase *env)
  * Complete any sweep work after a basic sweep operation.
  * Completing the sweep is a noop - the basic sweep operation consists of a full sweep.
  * 
- * @note Expect to have the dispatcher and slave threads available for work
+ * @note Expect to have the dispatcher and worker threads available for work
  * @note Expect to have exclusive access
  * @note Expect to have a valid mark map for all live objects
  * @note Expect basic sweep work to have been completed

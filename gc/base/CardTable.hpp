@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -138,7 +138,7 @@ public:
 	/**
 	 * Called to request that that the CardTable for entire heap range be cleaned.
 	 * This multi-threaded version must be executed under Parallel Task only
-	 * @param env[in] The thread passed to the driveGlobalCollectMasterThread call
+	 * @param env[in] The thread passed to the driveGlobalCollectMainThread call
 	 * @param cardCleaner[in] The card cleaner implementation which will be invoked to clean each card
 	 */
 	void cleanCardTable(MM_EnvironmentBase *env, MM_CardCleaner *cardCleaner);
@@ -155,7 +155,7 @@ public:
 	/**
 	 * Called to request that that the CardTable for specified heap range be cleaned.
 	 * This multi-threaded version must be executed under Parallel Task only
-	 * @param env[in] The thread passed to the driveGlobalCollectMasterThread call
+	 * @param env[in] The thread passed to the driveGlobalCollectMainThread call
 	 * @param cardCleaner[in] The card cleaner implementation which will be invoked to clean each card
 	 * @param lowAddress lowerst address of heap Card Table must be cleaned for (inclusive)
 	 * @param highAddress highest address of heap Card Table must be cleaned for (exclusive)
@@ -164,7 +164,7 @@ public:
 
 	/**
 	 * Called to request that that the CardTable under a specific region be cleaned.
-	 * @param env[in] The thread passed to the driveGlobalCollectMasterThread call
+	 * @param env[in] The thread passed to the driveGlobalCollectMainThread call
 	 * @param cardCleaner[in] The card cleaner implementation which will be invoked to clean each card
 	 * @param region[in] The region to be cleaned
 	 */
@@ -224,7 +224,7 @@ public:
 
 	/**
 	 * Binds the cards under a given range of heap memory to its NUMA node.
-	 * @param env[in] The master GC thread
+	 * @param env[in] The main GC thread
 	 * @param numaNode[in] The NUMA node to which the cards should be bound
 	 * @param baseOfHeapRange[in] The heap address contained in the first card in the range to be bound
 	 * @param topOfHeapRange[in] The heap address following the last card in the range to be bound
@@ -239,7 +239,7 @@ protected:
 	 * of new Virtual Memory objects for the card table, debug card table
 	 * and TLH mark bit map objects.
 	 *
-	 * @param env[in] The master GC thread
+	 * @param env[in] The main GC thread
 	 * @param heap[in] The heap which this card table is meant to describe
 	 * @return TRUE if object initialized OK; FALSE otherwise
 	 */

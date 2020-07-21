@@ -170,34 +170,34 @@ MM_MarkingScheme::heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace *su
  ****************************************
  */
 void
-MM_MarkingScheme::masterSetupForGC(MM_EnvironmentBase *env)
+MM_MarkingScheme::mainSetupForGC(MM_EnvironmentBase *env)
 {
 	/* Initialize the marking stack */
 	_workPackets->reset(env);
 
-	_delegate.masterSetupForGC(env);
+	_delegate.mainSetupForGC(env);
 }
 
 /**
  * Set up the marking scheme for marking the heap in preparation for walking the heap.
- * This should be called in place of masterSetupForGC if no actual garbage collection
+ * This should be called in place of mainSetupForGC if no actual garbage collection
  * is to take place.
  *
  * @parm[in] env the current environment
  */
 void
-MM_MarkingScheme::masterSetupForWalk(MM_EnvironmentBase *env)
+MM_MarkingScheme::mainSetupForWalk(MM_EnvironmentBase *env)
 {
 	/* Initialize the marking stack */
 	_workPackets->reset(env);
 
-	_delegate.masterSetupForWalk(env);
+	_delegate.mainSetupForWalk(env);
 }
 
 void
-MM_MarkingScheme::masterCleanupAfterGC(MM_EnvironmentBase *env)
+MM_MarkingScheme::mainCleanupAfterGC(MM_EnvironmentBase *env)
 {
-	_delegate.masterCleanupAfterGC(env);
+	_delegate.mainCleanupAfterGC(env);
 }
 
 void

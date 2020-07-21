@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -50,11 +50,11 @@ protected:
 	MM_GCExtensionsBase *_extensions;
 
 	enum {
-		slave_status_inactive = 0,	/* Must be 0 - set at initialization time by memset */
-		slave_status_waiting,
-		slave_status_reserved,
-		slave_status_active,
-		slave_status_dying
+		worker_status_inactive = 0,	/* Must be 0 - set at initialization time by memset */
+		worker_status_waiting,
+		worker_status_reserved,
+		worker_status_active,
+		worker_status_dying
 	};
 
 	uintptr_t _threadShutdownCount;
@@ -62,7 +62,7 @@ protected:
 	uintptr_t *_statusTable;
 	MM_Task **_taskTable;
 	
-	omrthread_monitor_t _slaveThreadMutex;
+	omrthread_monitor_t _workerThreadMutex;
 	omrthread_monitor_t _dispatcherMonitor; /**< Provides signalling between threads for startup and shutting down as well as the thread that initiated the shutdown */
 
 	/* The synchronize mutex should eventually be a table of mutexes that are distributed to each */
@@ -70,7 +70,7 @@ protected:
 	/* single mutex is sufficient */
 	omrthread_monitor_t _synchronizeMutex;
 	
-	bool _slaveThreadsReservedForGC;  /**< States whether or not the slave threads are currently taking part in a GC */
+	bool _workerThreadsReservedForGC;  /**< States whether or not the worker threads are currently taking part in a GC */
 	bool _inShutdown;  /**< Shutdown request is received */
 
 	uintptr_t _threadCountMaximum; /**< maximum threadcount - this is the size of the thread tables etc */
@@ -88,8 +88,8 @@ public:
 	 */
 private:
 protected:
-	virtual void slaveEntryPoint(MM_EnvironmentBase *env);
-	virtual void masterEntryPoint(MM_EnvironmentBase *env);
+	virtual void workerEntryPoint(MM_EnvironmentBase *env);
+	virtual void mainEntryPoint(MM_EnvironmentBase *env);
 
 	bool initialize(MM_EnvironmentBase *env);
 	
@@ -98,11 +98,11 @@ protected:
 	virtual uintptr_t getThreadPriority();
 
 	/**
-	 * Decides whether the dispatcher also start a separate thread to be the master
-	 * GC thread. Usually no, because the master thread will be the thread that
+	 * Decides whether the dispatcher also start a separate thread to be the main
+	 * GC thread. Usually no, because the main thread will be the thread that
 	 * requested the GC.
 	 */  
-	virtual bool useSeparateMasterThread() { return false; }
+	virtual bool useSeparateMainThread() { return false; }
 	
 	virtual void acceptTask(MM_EnvironmentBase *env);
 	virtual void completeTask(MM_EnvironmentBase *env);
@@ -139,10 +139,10 @@ public:
 		,_threadTable(NULL)
 		,_statusTable(NULL)
 		,_taskTable(NULL)
-		,_slaveThreadMutex(NULL)
+		,_workerThreadMutex(NULL)
 		,_dispatcherMonitor(NULL)
 		,_synchronizeMutex(NULL)
-		,_slaveThreadsReservedForGC(false)
+		,_workerThreadsReservedForGC(false)
 		,_inShutdown(false)
 		,_threadCountMaximum(1)
 		,_threadCount(1)

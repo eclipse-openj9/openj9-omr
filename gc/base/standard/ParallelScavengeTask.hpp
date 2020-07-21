@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2018 IBM Corp. and others
+ * Copyright (c) 2015, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -57,7 +57,7 @@ public:
 	virtual void run(MM_EnvironmentBase *env);
 	virtual void setup(MM_EnvironmentBase *env);
 	virtual void cleanup(MM_EnvironmentBase *env);
-	virtual void masterSetup(MM_EnvironmentBase *env);
+	virtual void mainSetup(MM_EnvironmentBase *env);
 
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 	/**
@@ -68,9 +68,9 @@ public:
 
 	/**
 	 * Override to collect stall time statistics.
-	 * @see MM_ParallelTask::synchronizeGCThreadsAndReleaseMaster
+	 * @see MM_ParallelTask::synchronizeGCThreadsAndReleaseMain
 	 */
-	virtual bool synchronizeGCThreadsAndReleaseMaster(MM_EnvironmentBase *env, const char *id);
+	virtual bool synchronizeGCThreadsAndReleaseMain(MM_EnvironmentBase *env, const char *id);
 
 	/**
 	 * Override to collect stall time statistics.

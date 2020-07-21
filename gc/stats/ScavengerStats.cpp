@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -122,7 +122,7 @@ MM_ScavengerStats::clear(bool firstIncrement)
 		/* clear() can be called several times per a cycle (in Concurrent Scavenger), but some stats/params must be reset/updated only once per a cycle */
 
 		/* Increment the histogram offset and loop if necessary */
-		/* TODO: this does not properly work for Master GC threads, which is implicit (a random mutator thread), for standard (non CS) Scavenger.
+		/* TODO: this does not properly work for Main GC threads, which is implicit (a random mutator thread), for standard (non CS) Scavenger.
 		 * Flip history stats (or complete ScavengerStats) should be one place (in GcExtensions or Scavenger), not scattered among mutator threads.
 		 */
 		_flipHistoryNewIndex = (_flipHistoryNewIndex + 1) % SCAVENGER_FLIP_HISTORY_SIZE;

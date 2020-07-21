@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -174,8 +174,8 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 
 /**
  * @brief Similar to omrsig_set_async_signal_handler. Refer to omrsig_set_async_signal_handler's description above.
- * A new element is added to the asyncHandlerList for omrsig_handler_fn, and masterASynchSignalHandler is registered
- * with the OS for the signal corresponding to the specified portlibSignalFlag. masterASynchSignalHandler invokes
+ * A new element is added to the asyncHandlerList for omrsig_handler_fn, and mainASynchSignalHandler is registered
+ * with the OS for the signal corresponding to the specified portlibSignalFlag. mainASynchSignalHandler invokes
  * asyncHandlerList elements when a relevant signal is raised. If portlibSignalFlag is 0, then the asyncHandlerList
  * entry corresponding to omrsig_handler_fn is removed, and related resources are freed. portlibSignalFlag can only
  * have one signal flag set; otherwise, OMRPORT_SIG_ERROR is returned. One omrsig_handler_fn handler is registered
@@ -238,11 +238,11 @@ omrsig_map_portlib_signal_to_os_signal(struct OMRPortLibrary *portLibrary, uint3
  * if NULL is provided for oldOSHandler, then *oldOSHandler is not updated to reflect the old
  * signal handler function.
  *
- * This function may override a master handler which was previously set by omrsig_protect or
- * omrsig_set_*_async_signal_handler variant. The records associated with the master handler
- * for the portlibSignalFlag signal are left unchanged when this function overrides the master
- * handler. When the master handler is re-registered with the portlibSignalFlag signal, then
- * the records associated with master handler don't need to be restored. An example of records
+ * This function may override a main handler which was previously set by omrsig_protect or
+ * omrsig_set_*_async_signal_handler variant. The records associated with the main handler
+ * for the portlibSignalFlag signal are left unchanged when this function overrides the main
+ * handler. When the main handler is re-registered with the portlibSignalFlag signal, then
+ * the records associated with main handler don't need to be restored. An example of records
  * is OMR*AsyncHandlerRecord(s) in asyncHandlerList.
  *
  * Each platform variant of omrsignal.c should have a signalMap. signalMap should have a list of
@@ -278,16 +278,16 @@ omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibS
 }
 
 /**
- * Determine if the osHandler is a predefined master signal handler. masterASynchSignalHandler is used for
- * asynchronous signals and masterSynchSignalHandler is used for synchronous signals.
+ * Determine if the osHandler is a predefined main signal handler. mainASynchSignalHandler is used for
+ * asynchronous signals and mainSynchSignalHandler is used for synchronous signals.
  *
  * @param[in] portLibrary The port library
  * @param[in] osHandler A signal handler function
  *
- * @return TRUE if osHandler is a predefined master handler. Otherwise, return FALSE.
+ * @return TRUE if osHandler is a predefined main handler. Otherwise, return FALSE.
  */
 BOOLEAN
-omrsig_is_master_signal_handler(struct OMRPortLibrary *portLibrary, void *osHandler)
+omrsig_is_main_signal_handler(struct OMRPortLibrary *portLibrary, void *osHandler)
 {
 	return FALSE;
 }

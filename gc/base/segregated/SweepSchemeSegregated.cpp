@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -102,7 +102,7 @@ MM_SweepSchemeSegregated::sweep(MM_EnvironmentBase *env, MM_MemoryPoolSegregated
 	_memoryPool = memoryPool;
 	_isFixHeapForWalk = isFixHeapForWalk;
 
-	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 		preSweep(env);
 		env->_currentTask->releaseSynchronizedGCThreads(env);
 	}
@@ -112,7 +112,7 @@ MM_SweepSchemeSegregated::sweep(MM_EnvironmentBase *env, MM_MemoryPoolSegregated
 	incrementalSweepLarge(env);
 	
 	MM_RegionPoolSegregated *regionPool = _memoryPool->getRegionPool();
-	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 		regionPool->setSweepSmallPages(true);
 		regionPool->resetSkipAvailableRegionForAllocation();
 		env->_currentTask->releaseSynchronizedGCThreads(env);
@@ -121,7 +121,7 @@ MM_SweepSchemeSegregated::sweep(MM_EnvironmentBase *env, MM_MemoryPoolSegregated
 	incrementalSweepSmall(env);
 	regionPool->joinBucketListsForSplitIndex(env);
 
-	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+	if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 		regionPool->setSweepSmallPages(false);
 		postSweep(env);
 		env->_currentTask->releaseSynchronizedGCThreads(env);
@@ -501,7 +501,7 @@ MM_SweepSchemeSegregated::incrementalSweepSmall(MM_EnvironmentBase *env)
 	MM_GCExtensionsBase *ext = env->getExtensions();
 	bool shouldUpdateOccupancy = ext->nonDeterministicSweep;
 	MM_RegionPoolSegregated *regionPool = _memoryPool->getRegionPool();
-	uintptr_t splitIndex = env->getSlaveID() % (regionPool->getSplitAvailableListSplitCount());
+	uintptr_t splitIndex = env->getWorkerID() % (regionPool->getSplitAvailableListSplitCount());
 
 	/* 
 	 * Iterate through the regions so that each region is processed exactly once.

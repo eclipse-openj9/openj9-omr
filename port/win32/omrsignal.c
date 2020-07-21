@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -86,7 +86,7 @@ static omrthread_tls_key_t tlsKeyCurrentSignal;
 /* Calls to registerSignalHandlerWithOS are synchronized using registerHandlerMonitor */
 static omrthread_monitor_t registerHandlerMonitor;
 
-/* wakeUpASyncReporter semaphore coordinates between master async signal handler and
+/* wakeUpASyncReporter semaphore coordinates between main async signal handler and
  * async signal reporter thread.
  */
 static j9sem_t wakeUpASyncReporter;
@@ -117,14 +117,14 @@ static int32_t initializeSignalTools(OMRPortLibrary *portLibrary);
 static void destroySignalTools(OMRPortLibrary *portLibrary);
 
 static void updateSignalCount(int osSignalNo);
-static void masterASynchSignalHandler(int osSignalNo);
+static void mainASynchSignalHandler(int osSignalNo);
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
 static int J9THREAD_PROC asynchSignalReporter(void *userData);
 static void runHandlers(uint32_t asyncSignalFlag, int osSignal);
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
-static int32_t registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler);
+static int32_t registerMainHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler);
 
 static OMRWin32AsyncHandlerRecord *createAsyncHandlerRecord(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags);
 
@@ -187,7 +187,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 
 	Trc_PRT_signal_omrsig_set_async_signal_handler_entered(handler, handler_arg, flags);
 
-	rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLASYNC, NULL);
+	rc = registerMainHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLASYNC, NULL);
 	if (0 != rc) {
 		Trc_PRT_signal_omrsig_set_async_signal_handler_exiting_did_nothing_possible_error(handler, handler_arg, flags);
 		return rc;
@@ -262,7 +262,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 		}
 	}
 
-	rc = registerMasterHandlers(portLibrary, portlibSignalFlag, OMRPORT_SIG_FLAG_SIGALLASYNC, oldOSHandler);
+	rc = registerMainHandlers(portLibrary, portlibSignalFlag, OMRPORT_SIG_FLAG_SIGALLASYNC, oldOSHandler);
 	if (0 != rc) {
 		Trc_PRT_signal_omrsig_set_single_async_signal_handler_exiting_did_nothing_possible_error(rc, handler, handler_arg, portlibSignalFlag);
 		return rc;
@@ -368,16 +368,16 @@ omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibS
 }
 
 BOOLEAN
-omrsig_is_master_signal_handler(struct OMRPortLibrary *portLibrary, void *osHandler)
+omrsig_is_main_signal_handler(struct OMRPortLibrary *portLibrary, void *osHandler)
 {
 	BOOLEAN rc = FALSE;
-	Trc_PRT_signal_omrsig_is_master_signal_handler_entered(osHandler);
+	Trc_PRT_signal_omrsig_is_main_signal_handler_entered(osHandler);
 
-	if (osHandler == (void *)masterASynchSignalHandler) {
+	if (osHandler == (void *)mainASynchSignalHandler) {
 		rc = TRUE;
 	}
 
-	Trc_PRT_signal_omrsig_is_master_signal_handler_exiting(rc);
+	Trc_PRT_signal_omrsig_is_main_signal_handler_exiting(rc);
 	return rc;
 }
 
@@ -1124,22 +1124,22 @@ updateSignalCount(int osSignalNo)
 }
 
 /**
- * Invoke updateSignalCount(osSignalNo), and re-register masterASynchSignalHandler since the
- * masterASynchSignalHandler is unregistered after invocation.
+ * Invoke updateSignalCount(osSignalNo), and re-register mainASynchSignalHandler since the
+ * mainASynchSignalHandler is unregistered after invocation.
  *
  * @param[in] osSignalNo the integer value of the signal that is raised
  *
  * @return void
  */
 static void
-masterASynchSignalHandler(int osSignalNo)
+mainASynchSignalHandler(int osSignalNo)
 {
 	updateSignalCount(osSignalNo);
 
 	/* Signal handler is reset after invocation. So, the signal handler needs to
 	 * be registered again after it is invoked.
 	 */
-	OMRSIG_SIGNAL(osSignalNo, masterASynchSignalHandler);
+	OMRSIG_SIGNAL(osSignalNo, mainASynchSignalHandler);
 }
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
@@ -1237,8 +1237,8 @@ asynchSignalReporter(void *userData)
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 /**
- * Register the master handler for the signals indicated in the flags. Only
- * masterASynchSignalHandler/OMRPORT_SIG_FLAG_SIGALLASYNC is supported
+ * Register the main handler for the signals indicated in the flags. Only
+ * mainASynchSignalHandler/OMRPORT_SIG_FLAG_SIGALLASYNC is supported
  * on win32. OMRPORT_SIG_FLAG_SIGALLSYNC is not supported on win32.
  *
  * @param[in] flags the flags that we want signals for
@@ -1250,13 +1250,13 @@ asynchSignalReporter(void *userData)
  *
  * @return	0 upon success; OMRPORT_SIG_ERROR otherwise.
  *			Possible failure scenarios include:
- *			1) Master handlers are not registered if -Xrs is set.
+ *			1) Main handlers are not registered if -Xrs is set.
  *			2) Attempting to register a handler for a signal that is not included
  *			   in the allowedSubsetOfFlags.
  *			3) Failure to register the OS signal handler.
  */
 static int32_t
-registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler)
+registerMainHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler)
 {
 	int32_t rc = 0;
 	uint32_t flagsSignalsOnly = (flags & allowedSubsetOfFlags);
@@ -1268,7 +1268,7 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 	}
 
 	if (OMRPORT_SIG_FLAG_SIGALLASYNC == allowedSubsetOfFlags) {
-		handler = masterASynchSignalHandler;
+		handler = mainASynchSignalHandler;
 	} else {
 		return OMRPORT_SIG_ERROR;
 	}
@@ -1287,7 +1287,7 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 		 */
 		omrthread_monitor_enter(registerHandlerMonitor);
 		for (portSignalType = OMRPORT_SIG_SMALLEST_SIGNAL_FLAG; ((portSignalType < allowedSubsetOfFlags) && (portSignalType != 0)); portSignalType = portSignalType << 1) {
-			/* Iterate through all the  signals and register the master handler for the signals
+			/* Iterate through all the  signals and register the main handler for the signals
 			 * specified in flagsSignalsOnly.
 			 */
 			if (OMR_ARE_ALL_BITS_SET(flagsSignalsOnly, portSignalType)) {

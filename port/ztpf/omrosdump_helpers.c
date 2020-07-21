@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -49,7 +49,7 @@
 #include "safe_storage.h"
 
 extern void translateInterruptContexts(args *argv) __attribute__((nonnull));
-extern void masterSynchSignalHandler(int nbr, siginfo_t *siginfo,
+extern void mainSynchSignalHandler(int nbr, siginfo_t *siginfo,
 		void *ucontext, uintptr_t bear);
 
 #define    KEY0(a)    do { cinfc(CINFC_WRITE, CINFC_CMMJDB); } while(0)
@@ -960,7 +960,7 @@ ztpf_preemptible_helper(void)
 	s->argv.flags = J9TPF_NO_PORT_LIBRARY;
 	s->pDIB = ecbp2()->ce2dib;
 	s->argv.dibPtr = s->pDIB;
-	masterSynchSignalHandler(s->siginfo.si_signo, &(s->siginfo), &(s->ucontext),
+	mainSynchSignalHandler(s->siginfo.si_signo, &(s->siginfo), &(s->ucontext),
 			s->pDIB->dbrevn);
 	/*
 	 * Like its "harder" cousin, below, if the signal handler returns here, it is
@@ -982,7 +982,7 @@ ztpf_nonpreemptible_helper(void)
 
 	/*
 	 *    Go translate the TPF-ish data available at interrupt time into UNIX-ish
-	 *    formatted blocks in preparation to call the master synchronous signal
+	 *    formatted blocks in preparation to call the main synchronous signal
 	 *    handler for the JVM's structured signal handling architecture. This
 	 *    storage comes from a static storage segment in DJPR.
 	 */
@@ -1015,12 +1015,12 @@ ztpf_nonpreemptible_helper(void)
 	s->pPROC->iproc_tdibptr = (uint64_t) s->pDIB; /*    Stash the faulting DIB pointer            */
 	PROC_UNLOCK(&(s->pPROC->iproc_JVMLock), holdkey);
 	/*
-	 * Call the master structured signal handler for synchronous signals.
+	 * Call the main structured signal handler for synchronous signals.
 	 * It's not possible that an async signal can get here. The signal handler will
 	 * either hand off execution to the JIT, or will run the dump agents. Do not
 	 * expect a return; else the normal SIG_DFL (bye, bye) rule applies.
 	 */
-	masterSynchSignalHandler(s->siginfo.si_signo, &(s->siginfo), &(s->ucontext),
+	mainSynchSignalHandler(s->siginfo.si_signo, &(s->siginfo), &(s->ucontext),
 			s->pDIB->dbrevn);
 	/*
 	 * If execution returns to this point, the signal handler returned

@@ -606,7 +606,7 @@ MM_MemorySubSpaceSemiSpace::cacheRanges(MM_MemorySubSpace *subSpace, void **base
 }
 
 void
-MM_MemorySubSpaceSemiSpace::masterSetupForGC(MM_EnvironmentBase *env)
+MM_MemorySubSpaceSemiSpace::mainSetupForGC(MM_EnvironmentBase *env)
 {
 	/* cache allocate (effectively evacuate for GC) ranges */
 	cacheRanges(_memorySubSpaceAllocate, &_allocateSpaceBase, &_allocateSpaceTop);
@@ -654,7 +654,7 @@ MM_MemorySubSpaceSemiSpace::tilt(MM_EnvironmentBase *env, uintptr_t survivorSpac
 }
 
 void
-MM_MemorySubSpaceSemiSpace::masterTeardownForSuccessfulGC(MM_EnvironmentBase *env)
+MM_MemorySubSpaceSemiSpace::mainTeardownForSuccessfulGC(MM_EnvironmentBase *env)
 {
 	_memorySubSpaceEvacuate->rebuildFreeList(env);
 
@@ -672,7 +672,7 @@ MM_MemorySubSpaceSemiSpace::masterTeardownForSuccessfulGC(MM_EnvironmentBase *en
 
 
 void
-MM_MemorySubSpaceSemiSpace::masterTeardownForAbortedGC(MM_EnvironmentBase *env)
+MM_MemorySubSpaceSemiSpace::mainTeardownForAbortedGC(MM_EnvironmentBase *env)
 {
 	/* Build free list in survivor. */
 	if (_extensions->isConcurrentScavengerEnabled()) {

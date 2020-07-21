@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -219,9 +219,9 @@ static struct {
 	uint32_t restore;
 } oldActions[MAX_UNIX_SIGNAL_TYPES];
 
-/* Records the (port library defined) signals for which we have registered a master handler.
- * Access to this must be protected by the masterHandlerMonitor */
-static uint32_t signalsWithMasterHandlers;
+/* Records the (port library defined) signals for which we have registered a main handler.
+ * Access to this must be protected by the mainHandlerMonitor */
+static uint32_t signalsWithMainHandlers;
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
 static uint32_t	shutDownASynchReporter;
@@ -252,7 +252,7 @@ static sem_t sigReconfigPendingSem;
 static sem_t sigXfszPendingSem;
 
 static omrthread_monitor_t asyncMonitor;
-static omrthread_monitor_t masterHandlerMonitor;
+static omrthread_monitor_t mainHandlerMonitor;
 static omrthread_monitor_t asyncReporterShutdownMonitor;
 static uint32_t	asyncThreadCount;
 static uint32_t	attachedPortLibraries;
@@ -276,7 +276,7 @@ struct {
 };
 
 static omrthread_t asynchSignalReporterThread = NULL;
-static int32_t registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags);
+static int32_t registerMainHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags);
 static void	removeAsyncHandlers(OMRPortLibrary* portLibrary);
 static uint32_t	mapUnixSignalToPortLib(uint32_t signalNo, siginfo_t *sigInfo);
 #if defined(OMR_PORT_ASYNC_HANDLER)
@@ -289,8 +289,8 @@ static uint32_t	countInfoInCategory(struct OMRPortLibrary *portLibrary, void *in
 static void	sig_full_shutdown(struct OMRPortLibrary *portLibrary);
 static int32_t	initializeSignalTools(OMRPortLibrary *portLibrary);
 
-void masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDATA breakingEventAddr);
-static void	masterASynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDATA nullArg);
+void mainSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDATA breakingEventAddr);
+static void	mainASynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDATA nullArg);
 
 int32_t
 omrsig_can_protect(struct OMRPortLibrary *portLibrary,  uint32_t flags)
@@ -344,7 +344,7 @@ omrsig_info_count(struct OMRPortLibrary *portLibrary, void *info, uint32_t categ
 }
 
 /**
- * We register the master signal handlers here to deal with -Xrs
+ * We register the main signal handlers here to deal with -Xrs
  */
 int32_t
 omrsig_protect(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void* fn_arg,
@@ -354,12 +354,12 @@ omrsig_protect(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void
 	omrthread_t thisThread;
 	uint32_t rc = 0;
 	uint32_t flagsSignalsOnly;
-	uint32_t flagsWithoutMasterHandlers;
+	uint32_t flagsWithoutMainHandlers;
 	
 	Trc_PRT_signal_omrsig_protect_entered(fn, fn_arg, handler, handler_arg, flags);
 
 	if (OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS)) {
-		/* -Xrs was set, we can't protect against any signals, do not install the master handler */
+		/* -Xrs was set, we can't protect against any signals, do not install the main handler */
 		Trc_PRT_signal_omrsig_protect_cannot_protect_dueto_Xrs(fn, fn_arg, flags);
 		*result = fn(portLibrary, fn_arg);		
 		Trc_PRT_signal_omrsig_protect_exiting_did_not_protect_due_to_Xrs(fn, fn_arg, handler, handler_arg, flags);
@@ -367,24 +367,24 @@ omrsig_protect(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void
 	} 
 
 	/*
-	 * Check to see if we have already installed a masterHandler for these signal(s).
-	 * We will need to aquire the masterHandlerMonitor if flagsWithoutMasterHandlers is not 0
+	 * Check to see if we have already installed a mainHandler for these signal(s).
+	 * We will need to aquire the mainHandlerMonitor if flagsWithoutMainHandlers is not 0
 	 * in order to install the handlers (and to check if another thread had "just" taken care of it).
 	 *
-	 * If we do have masterHandlers installed already then OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS
+	 * If we do have mainHandlers installed already then OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS
 	 * has not been set.
 	 */
 	flagsSignalsOnly = flags & OMRPORT_SIG_FLAG_SIGALLSYNC;
-	flagsWithoutMasterHandlers = flagsSignalsOnly & (~signalsWithMasterHandlers);
+	flagsWithoutMainHandlers = flagsSignalsOnly & (~signalsWithMainHandlers);
 
-	if (0 != flagsWithoutMasterHandlers) {
+	if (0 != flagsWithoutMainHandlers) {
 		/*
-		 * We have not installed handlers for all the signals, so acquire the masterHandlerMonitor,
-		 * check again, then install handlers as required: all done in registerMasterHandlers
+		 * We have not installed handlers for all the signals, so acquire the mainHandlerMonitor,
+		 * check again, then install handlers as required: all done in registerMainHandlers
 		 */
-		omrthread_monitor_enter(masterHandlerMonitor);
-		rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLSYNC);
-		omrthread_monitor_exit(masterHandlerMonitor);
+		omrthread_monitor_enter(mainHandlerMonitor);
+		rc = registerMainHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLSYNC);
+		omrthread_monitor_exit(mainHandlerMonitor);
 
 		if (0 != rc) {
 			return OMRPORT_SIG_ERROR;
@@ -454,7 +454,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary* portLibrary, omrsig_handl
 
 	Trc_PRT_signal_omrsig_set_async_signal_handler_entered(handler, handler_arg, flags);
 	
-	omrthread_monitor_enter(masterHandlerMonitor);
+	omrthread_monitor_enter(mainHandlerMonitor);
 
 	if (OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
 		/*
@@ -463,15 +463,15 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary* portLibrary, omrsig_handl
 		 */
 		if (OMR_ARE_ANY_BITS_SET(flags, OMRPORT_SIG_FLAG_SIGXFSZ)
 			&& OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_SIGXFSZ)) {
-			rc = registerMasterHandlers(portLibrary, OMRPORT_SIG_FLAG_SIGXFSZ, OMRPORT_SIG_FLAG_SIGALLASYNC);
+			rc = registerMainHandlers(portLibrary, OMRPORT_SIG_FLAG_SIGXFSZ, OMRPORT_SIG_FLAG_SIGALLASYNC);
 		} else {
 			Trc_PRT_signal_omrsig_set_async_signal_handler_will_not_set_handler_due_to_Xrs(handler, handler_arg, flags);
 			rc = OMRPORT_SIG_ERROR;
 		}
 	} else {
-		rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLASYNC);
+		rc = registerMainHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLASYNC);
 	}
-	omrthread_monitor_exit(masterHandlerMonitor);
+	omrthread_monitor_exit(mainHandlerMonitor);
 
 	if (0 != rc) {
 		Trc_PRT_signal_omrsig_set_async_signal_handler_exiting_did_nothing_possible_error(handler, handler_arg, flags);
@@ -493,7 +493,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary* portLibrary, omrsig_handl
 
 	while (NULL != cursor) {
 		if ( (cursor->portLib == portLibrary) && (cursor->handler == handler) && (cursor->handler_arg == handler_arg) ) {
-			if (0 == flags) {	/* Remove the listener, but not masterHandlers, which get removed at omrsignal shutdown */
+			if (0 == flags) {	/* Remove the listener, but not mainHandlers, which get removed at omrsignal shutdown */
 				*previousLink = cursor->next;						/* remove this handler record */
 				portLibrary->mem_free_memory(portLibrary, cursor);
 				Trc_PRT_signal_omrsig_set_async_signal_handler_user_handler_removed(handler, handler_arg, flags);
@@ -563,7 +563,7 @@ omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibS
 }
 
 BOOLEAN
-omrsig_is_master_signal_handler(struct OMRPortLibrary *portLibrary, void *osHandler)
+omrsig_is_main_signal_handler(struct OMRPortLibrary *portLibrary, void *osHandler)
 {
 	return FALSE;
 }
@@ -594,7 +594,7 @@ omrsig_shutdown(struct OMRPortLibrary *portLibrary)
 /**
  * Start up the signal handling component of the port library
  *
- * Note: none of the master handlers are registered with the OS until the first call to either
+ * Note: none of the main handlers are registered with the OS until the first call to either
  *		 omrsig_protect or omrsig_set_async_signal_handler.
  */
 int32_t
@@ -739,7 +739,7 @@ asynchSignalReporter(void *userData) {
  *
  */ 
 void
-masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDATA breakingEventAddr)
+mainSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDATA breakingEventAddr)
 { 
 	omrthread_t thisThread = omrthread_self();
 	uint32_t result = U_32_MAX;
@@ -750,7 +750,7 @@ masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDA
 		struct OMRCurrentSignal currentSignal; 
 		struct OMRCurrentSignal *previousSignal;
 		
-		/* Trc_PRT_signal_masterSynchSignalHandler_entered(signal, sigInfo, contextInfo); */
+		/* Trc_PRT_signal_mainSynchSignalHandler_entered(signal, sigInfo, contextInfo); */
 
 		thisRecord = NULL;
 		
@@ -787,7 +787,7 @@ masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDA
 
 				signalInfo.portLibrarySignalType = portLibType;
 				signalInfo.handlerAddress = (void*)thisRecord->handler;
-				signalInfo.handlerAddress2 = (void*)masterSynchSignalHandler;
+				signalInfo.handlerAddress2 = (void*)mainSynchSignalHandler;
 				signalInfo.sigInfo = sigInfo;
 				signalInfo.platformSignalInfo = platformSignalInfo;
 				/*
@@ -801,12 +801,12 @@ masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDA
 				 */
 				omrthread_tls_set(thisThread, tlsKey, thisRecord->previous);
 #if 0
-				Trc_PRT_signal_masterSynchSignalHandler_calling_handler
+				Trc_PRT_signal_mainSynchSignalHandler_calling_handler
 				   (signal, sigInfo, contextInfo, thisRecord->handler, thisRecord->portLibrary);
 #endif
 				result = thisRecord->handler(thisRecord->portLibrary, portLibType, &signalInfo, thisRecord->handler_arg);
 #if 0
-				Trc_PRT_signal_masterSynchSignalHandler_called_handler
+				Trc_PRT_signal_mainSynchSignalHandler_called_handler
 				   (signal, sigInfo, contextInfo, thisRecord->handler, thisRecord->portLibrary, result);
 #endif
 				/* 
@@ -822,7 +822,7 @@ masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDA
 				else if (result == OMRPORT_SIG_EXCEPTION_CONTINUE_EXECUTION) {
 					omrthread_tls_set(thisThread, tlsKeyCurrentSignal, previousSignal);
 #if 0
-					Trc_PRT_signal_masterSynchSignalHandler_exiting_continuing_execution
+					Trc_PRT_signal_mainSynchSignalHandler_exiting_continuing_execution
 					   (signal, sigInfo, contextInfo, thisRecord->handler, thisRecord->portLibrary);
 #endif
 					return;
@@ -830,7 +830,7 @@ masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDA
 				else /* if (result == OMRPORT_SIG_EXCEPTION_RETURN) */ {
 					omrthread_tls_set(thisThread, tlsKeyCurrentSignal, previousSignal);
 #if 0
-					Trc_PRT_signal_masterSynchSignalHandler_exiting_siglongjumping
+					Trc_PRT_signal_mainSynchSignalHandler_exiting_siglongjumping
 					   (signal, sigInfo, contextInfo, thisRecord->handler, thisRecord->portLibrary);
 #endif
 					longjmp(thisRecord->mark, 0);
@@ -848,12 +848,12 @@ masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDA
 	 */
 	if (OMR_ARE_NO_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_OMRSIG_NO_CHAIN)) {
 #if 0
-		Trc_PRT_signal_masterSynchSignalHandler_calling_jsig_handler(signal, sigInfo, contextInfo);
+		Trc_PRT_signal_mainSynchSignalHandler_calling_jsig_handler(signal, sigInfo, contextInfo);
 #endif
 		int rc	= omrsig_handler(signal, (void *)sigInfo, contextInfo);
 		if ((OMRSIG_RC_DEFAULT_ACTION_REQUIRED == rc) && (SI_USER != sigInfo->si_code) ) {
 #if 0
-			Trc_PRT_signal_masterSynchSignalHandler_aborting_after_jsig_handler(signal, sigInfo, contextInfo);
+			Trc_PRT_signal_mainSynchSignalHandler_aborting_after_jsig_handler(signal, sigInfo, contextInfo);
 #endif
 			abort();
 		}
@@ -864,7 +864,7 @@ masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDA
 	 * so the default action is to abort 
 	 */
 #if 0
-	Trc_PRT_signal_masterSynchSignalHandler_no_handlers_so_aborting(signal, sigInfo, contextInfo);
+	Trc_PRT_signal_mainSynchSignalHandler_no_handlers_so_aborting(signal, sigInfo, contextInfo);
 #endif
 	abort();
 
@@ -879,7 +879,7 @@ masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDA
  *
  */
 static void
-masterASynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDATA nullArg)
+mainASynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDATA nullArg)
 { 
 	uint32_t portLibSignalType;
 	portLibSignalType = mapUnixSignalToPortLib(signal, sigInfo);
@@ -910,10 +910,10 @@ masterASynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UD
 }
 
 /**
- * Register the signal handler with the OS, generally used to register the master signal handlers 
+ * Register the signal handler with the OS, generally used to register the main signal handlers 
  * Not to be confused with omrsig_protect, which registers the user's handler with the port library.
  * 
- * Calls to this function must be synchronized using "masterHandlerMonitor".
+ * Calls to this function must be synchronized using "mainHandlerMonitor".
  * 
  * The use of this function forces the flags SA_RESTART | SA_SIGINFO | SA_NODEFER to be set for the new signal action
  * 
@@ -955,12 +955,12 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 	newAction.sa_flags |= SA_NODEFER;
 
 	/*
-	 * The master exception handler:
+	 * The main exception handler:
 	 *		The (void *) casting only applies to zLinux because a new parameter "UDATA breakingEventAddr" 
-	 *		has been introduced in masterSynchSignalHandler() to obtain BEA on zLinux but not for other platforms.
-	 *		As a result, the total number of parameters in masterSynchSignalHandler() on zLinux & z/TPF
+	 *		has been introduced in mainSynchSignalHandler() to obtain BEA on zLinux but not for other platforms.
+	 *		As a result, the total number of parameters in mainSynchSignalHandler() on zLinux & z/TPF
 	 *		is 4 while the number is 3 on other platforms, because there is no need to change the signature of 
-	 *		masterSynchSignalHandler in there. Since the code is shared on all platforms, the change here is used 
+	 *		mainSynchSignalHandler in there. Since the code is shared on all platforms, the change here is used 
 	 *		to split them up to avoid any compiling error.
 	 */
 	newAction.sa_sigaction = (void *)handler;
@@ -975,12 +975,12 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 		oldActions[unixSignalNo].restore = 1;
 	}
 
-	/* CMVC 96193 signalsWithMasterHandlers is checked without acquiring the masterHandlerMonitor */ 
+	/* CMVC 96193 signalsWithMainHandlers is checked without acquiring the mainHandlerMonitor */ 
 	issueWriteBarrier();
 	/*
-	 * we've successfully registered the master handler for this, record it!
+	 * we've successfully registered the main handler for this, record it!
 	 */
-	signalsWithMasterHandlers |= portLibrarySignalNo;
+	signalsWithMainHandlers |= portLibrarySignalNo;
 
 	return 0;
 }
@@ -1084,9 +1084,9 @@ mapPortLibSignalToUnix(uint32_t portLibSignal)
 
 
 /**
- * \fn Registers the master handler for the signals in flags that don't have one.
+ * \fn Registers the main handler for the signals in flags that don't have one.
  * 
- * Calls to this function must be synchronized using masterHandlerMonitor.
+ * Calls to this function must be synchronized using mainHandlerMonitor.
  *
  * @param[in] portLibrary			Address of this JVM's OMRPortLibrary
  * @param[in] flags					The flags that we want signals for
@@ -1097,23 +1097,23 @@ mapPortLibSignalToUnix(uint32_t portLibSignal)
  *			a signal that is not included in the allowedSubsetOfFlags
 */
 static int32_t
-registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags)
+registerMainHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags)
 {
 	uint32_t flagsSignalsOnly = 0;
 	uint32_t flagsWithoutHandlers = 0;
 	unix_sigaction handler;
 
 	if (OMRPORT_SIG_FLAG_SIGALLSYNC == allowedSubsetOfFlags) {
-		handler = masterSynchSignalHandler;
+		handler = mainSynchSignalHandler;
 	} 
 	else if (OMRPORT_SIG_FLAG_SIGALLASYNC == allowedSubsetOfFlags) {
-		handler = masterASynchSignalHandler;
+		handler = mainASynchSignalHandler;
 	} 
 	else {
 		return OMRPORT_SIG_ERROR;
 	}
 	flagsSignalsOnly = flags & allowedSubsetOfFlags;
-	flagsWithoutHandlers = flagsSignalsOnly & (~signalsWithMasterHandlers);
+	flagsWithoutHandlers = flagsSignalsOnly & (~signalsWithMainHandlers);
 
 	if (0 != flagsWithoutHandlers) {
 		/* Register handlers. */
@@ -1128,11 +1128,11 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 		 * or all asynchronous signal flags (OMRPORT_SIG_FLAG_SIGALLASYNC).
 		 */
 		for (portSignalType = OMRPORT_SIG_SMALLEST_SIGNAL_FLAG; ((portSignalType < allowedSubsetOfFlags) && (portSignalType != 0)); portSignalType = portSignalType << 1) {
-			/* Iterate through all the signals and register the master handler
+			/* Iterate through all the signals and register the main handler
 			 * for the signals that don't have one yet.
 			 */
 			if (OMR_ARE_ANY_BITS_SET(flagsWithoutHandlers, portSignalType)) {
-				/* We need a master handler for this (portSignalType's) signal. */
+				/* We need a main handler for this (portSignalType's) signal. */
 				if (0 != registerSignalHandlerWithOS(portLibrary, portSignalType, handler)) {
 					return OMRPORT_SIG_ERROR;
 				}
@@ -1157,7 +1157,7 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 		return -1;
 	}
 
-	if(omrthread_monitor_init_with_name( &masterHandlerMonitor, 0, "portLibrary_omrsig_masterHandler_monitor" ) ) {
+	if(omrthread_monitor_init_with_name( &mainHandlerMonitor, 0, "portLibrary_omrsig_mainHandler_monitor" ) ) {
 		return -1;
 	}
 
@@ -1236,7 +1236,7 @@ destroySignalTools(OMRPortLibrary *portLibrary)
 {
 	omrthread_tls_free(tlsKey);
 	omrthread_tls_free(tlsKeyCurrentSignal);
-	omrthread_monitor_destroy(masterHandlerMonitor);
+	omrthread_monitor_destroy(mainHandlerMonitor);
 	omrthread_monitor_destroy(asyncReporterShutdownMonitor);
 	omrthread_monitor_destroy( asyncMonitor);
 	omrthread_monitor_destroy(ztpfSigShutdownMonitor);
@@ -1255,15 +1255,15 @@ omrsig_set_options(struct OMRPortLibrary *portLibrary, uint32_t options)
 	Trc_PRT_signal_omrsig_set_options(options);
 	
 	if ( (OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS | OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)  & options)  {
-		/* check that we haven't already set any master handlers */
+		/* check that we haven't already set any main handlers */
 		
 		uint32_t anyHandlersInstalled = 0;
 		
-		omrthread_monitor_enter(masterHandlerMonitor);
-		if (0 != signalsWithMasterHandlers) {
+		omrthread_monitor_enter(mainHandlerMonitor);
+		if (0 != signalsWithMainHandlers) {
 			anyHandlersInstalled = 1;
 		}
-		omrthread_monitor_exit(masterHandlerMonitor);
+		omrthread_monitor_exit(mainHandlerMonitor);
 		
 		if (anyHandlersInstalled) {
 			Trc_PRT_signal_omrsig_set_options_too_late_handlers_installed(options);
@@ -1307,7 +1307,7 @@ sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 				OMRSIG_SIGACTION(index, &oldActions[index].action, NULL);
 				/* record that we no longer have a handler installed with the OS for this signal */
 				Trc_PRT_signal_sig_full_shutdown_deregistered_handler_with_OS(portLibrary, index);
-				signalsWithMasterHandlers &= ~mapUnixSignalToPortLib(index, 0);				
+				signalsWithMainHandlers &= ~mapUnixSignalToPortLib(index, 0);				
 			}
 		}
 		removeAsyncHandlers(portLibrary);

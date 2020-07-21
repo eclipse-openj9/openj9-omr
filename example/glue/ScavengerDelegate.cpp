@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -57,7 +57,7 @@
 #include "SlotObject.hpp"
 
 void
-MM_ScavengerDelegate::masterSetupForGC(MM_EnvironmentBase *env)
+MM_ScavengerDelegate::mainSetupForGC(MM_EnvironmentBase *env)
 {
 	/* Do nothing for now */
 }
@@ -81,13 +81,13 @@ MM_ScavengerDelegate::mergeGCStats_mergeLangStats(MM_EnvironmentBase *envBase)
 }
 
 void
-MM_ScavengerDelegate::masterThreadGarbageCollect_scavengeComplete(MM_EnvironmentBase *envBase)
+MM_ScavengerDelegate::mainThreadGarbageCollect_scavengeComplete(MM_EnvironmentBase *envBase)
 {
 	/* Do nothing for now */
 }
 
 void
-MM_ScavengerDelegate::masterThreadGarbageCollect_scavengeSuccess(MM_EnvironmentBase *envBase)
+MM_ScavengerDelegate::mainThreadGarbageCollect_scavengeSuccess(MM_EnvironmentBase *envBase)
 {
 	/* Do nothing for now */
 }

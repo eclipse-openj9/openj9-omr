@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -128,7 +128,7 @@ protected:
 	 * Sets the NUMA node for the regions in the heap range [lowHeapEdge..highHeapEdge) and then adds them to the free region
 	 * table and internally links them together.
 	 *
-	 * @param env[in] The master GC thread
+	 * @param env[in] The main GC thread
 	 * @param lowHeapEdge[in] The address of the first byte of the first region to map
 	 * @param highHeapEdge[in] The address of the first byte after the last region to map
 	 * @param numaNode[in] The NUMA node to which the listed regions should be mapped

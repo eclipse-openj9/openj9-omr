@@ -39,8 +39,8 @@
 MM_MainGCThread::MM_MainGCThread(MM_EnvironmentBase *env)
 	: MM_BaseNonVirtual()
 	, _collectorControlMutex(NULL)
-	, _masterThreadState(STATE_ERROR)
-	, _masterGCThread(NULL)
+	, _mainThreadState(STATE_ERROR)
+	, _mainGCThread(NULL)
 	, _incomingCycleState(NULL)
 	, _allocDesc(NULL)
 	, _extensions(env->getExtensions())
@@ -53,24 +53,24 @@ MM_MainGCThread::MM_MainGCThread(MM_EnvironmentBase *env)
 }
 
 uintptr_t
-MM_MainGCThread::master_thread_proc2(OMRPortLibrary* portLib, void *info)
+MM_MainGCThread::main_thread_proc2(OMRPortLibrary* portLib, void *info)
 {
-	MM_MainGCThread *masterGCThread = (MM_MainGCThread*)info;
-	/* jump into the master thread procedure and wait for work.  This method will NOT return */
-	masterGCThread->masterThreadEntryPoint();
+	MM_MainGCThread *mainGCThread = (MM_MainGCThread*)info;
+	/* jump into the main thread procedure and wait for work.  This method will NOT return */
+	mainGCThread->mainThreadEntryPoint();
 	Assert_MM_unreachable();
 	return 0;
 }
 
 int J9THREAD_PROC
-MM_MainGCThread::master_thread_proc(void *info)
+MM_MainGCThread::main_thread_proc(void *info)
 {
-	MM_MainGCThread *masterGCThread = (MM_MainGCThread*)info;
-	MM_GCExtensionsBase *extensions = masterGCThread->_extensions;
+	MM_MainGCThread *mainGCThread = (MM_MainGCThread*)info;
+	MM_GCExtensionsBase *extensions = mainGCThread->_extensions;
 	OMR_VM *omrVM = extensions->getOmrVM();
 	OMRPORT_ACCESS_FROM_OMRVM(omrVM);
 	uintptr_t rc = 0;
-	omrsig_protect(master_thread_proc2, info,
+	omrsig_protect(main_thread_proc2, info,
 			((MM_ParallelDispatcher *)extensions->dispatcher)->getSignalHandler(), omrVM,
 		OMRPORT_SIG_FLAG_SIGALLSYNC | OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION,
 		&rc);
@@ -112,34 +112,34 @@ MM_MainGCThread::startup()
 	/* set the success flag to false and we will set it true if everything succeeds */
 	bool success = false;
 
-	if (_extensions->fvtest_disableExplictMasterThread) {
-		/* GC should be able to act even if master thread is not created (or late) */
-		_masterThreadState = STATE_DISABLED;
+	if (_extensions->fvtest_disableExplictMainThread) {
+		/* GC should be able to act even if main thread is not created (or late) */
+		_mainThreadState = STATE_DISABLED;
 		success = true;
 	} else {
 		/* hold the monitor over start-up of this thread so that we eliminate any timing hole where it might notify us of its start-up state before we wait */
 		omrthread_monitor_enter(_collectorControlMutex);
-		_masterThreadState = STATE_STARTING;
+		_mainThreadState = STATE_STARTING;
 		intptr_t forkResult = createThreadWithCategory(
 			NULL,
 			OMR_OS_STACK_SIZE,
 			J9THREAD_PRIORITY_NORMAL,
 			0,
-			master_thread_proc,
+			main_thread_proc,
 			this,
 			J9THREAD_CATEGORY_SYSTEM_GC_THREAD);
 		if (forkResult == 0) {
 			/* thread creation success */
 			/* wait to find out if they started up, successfully */
-			while (STATE_STARTING == _masterThreadState) {
+			while (STATE_STARTING == _mainThreadState) {
 				omrthread_monitor_wait(_collectorControlMutex);
 			}
-			if (STATE_ERROR != _masterThreadState) {
-				/* the master thread managed to start up and is in the waiting state, ready for GC requests */
+			if (STATE_ERROR != _mainThreadState) {
+				/* the main thread managed to start up and is in the waiting state, ready for GC requests */
 				success = true;
 			}
 		} else {
-			_masterThreadState = STATE_ERROR;
+			_mainThreadState = STATE_ERROR;
 		}
 		omrthread_monitor_exit(_collectorControlMutex);
 	}
@@ -151,11 +151,11 @@ void
 MM_MainGCThread::shutdown()
 {
 	Assert_MM_true(NULL != _collectorControlMutex);
-	if ((STATE_ERROR != _masterThreadState) && (STATE_DISABLED != _masterThreadState)) {
+	if ((STATE_ERROR != _mainThreadState) && (STATE_DISABLED != _mainThreadState)) {
 		/* tell the background thread to shut down and then wait for it to exit */
 		omrthread_monitor_enter(_collectorControlMutex);
-		while(STATE_TERMINATED != _masterThreadState) {
-			_masterThreadState = STATE_TERMINATION_REQUESTED;
+		while(STATE_TERMINATED != _mainThreadState) {
+			_mainThreadState = STATE_TERMINATION_REQUESTED;
 			omrthread_monitor_notify(_collectorControlMutex);
 			omrthread_monitor_wait(_collectorControlMutex);
 		}
@@ -175,14 +175,14 @@ MM_MainGCThread::handleSTW(MM_EnvironmentBase *env)
 	/* this thread effectively inherits exclusive access from the mutator thread -- set its state to indicate this */
 	env->assumeExclusiveVMAccess(1);
 
-	_collector->masterThreadGarbageCollect(env, _allocDesc);
+	_collector->mainThreadGarbageCollect(env, _allocDesc);
 
 	uintptr_t exclusiveCount = env->relinquishExclusiveVMAccess();
 	Assert_MM_true(1 == exclusiveCount);
 
 	env->_cycleState = NULL;
 	_incomingCycleState = NULL;
-	_masterThreadState = STATE_WAITING;
+	_mainThreadState = STATE_WAITING;
 	omrthread_monitor_notify(_collectorControlMutex);
 }
 
@@ -191,7 +191,7 @@ MM_MainGCThread::handleConcurrent(MM_EnvironmentBase *env)
 {
 	bool workDone = false;
 
-	_masterThreadState = STATE_RUNNING_CONCURRENT;
+	_mainThreadState = STATE_RUNNING_CONCURRENT;
 
 	do {
 		if (_acquireVMAccessDuringConcurrent) {
@@ -206,7 +206,7 @@ MM_MainGCThread::handleConcurrent(MM_EnvironmentBase *env)
 			if (!_acquireVMAccessDuringConcurrent) {
 				omrthread_monitor_exit(_collectorControlMutex);
 			}
-			uintptr_t bytesConcurrentlyScanned = _collector->masterThreadConcurrentCollect(env);
+			uintptr_t bytesConcurrentlyScanned = _collector->mainThreadConcurrentCollect(env);
 
 			if (!_acquireVMAccessDuringConcurrent) {
 				omrthread_monitor_enter(_collectorControlMutex);
@@ -221,27 +221,27 @@ MM_MainGCThread::handleConcurrent(MM_EnvironmentBase *env)
 			omrthread_monitor_enter(_collectorControlMutex);
 		}
 	} while (_concurrentResumable && _collector->isConcurrentWorkAvailable(env));
-	if (STATE_RUNNING_CONCURRENT == _masterThreadState) {
-		_masterThreadState = STATE_WAITING;
+	if (STATE_RUNNING_CONCURRENT == _mainThreadState) {
+		_mainThreadState = STATE_WAITING;
 	}
 
 	return workDone;
 }
 
 void
-MM_MainGCThread::masterThreadEntryPoint()
+MM_MainGCThread::mainThreadEntryPoint()
 {
 	OMR_VMThread *omrVMThread = NULL;
 	Assert_MM_true(NULL != _collectorControlMutex);
-	Assert_MM_true(NULL == _masterGCThread);
+	Assert_MM_true(NULL == _mainGCThread);
 
 	/* Attach the thread as a system daemon thread */	
 	/* You need a VM thread so that the stack walker can work */
-	omrVMThread = MM_EnvironmentBase::attachVMThread(_extensions->getOmrVM(), "Dedicated GC Master", MM_EnvironmentBase::ATTACH_GC_MASTER_THREAD);
+	omrVMThread = MM_EnvironmentBase::attachVMThread(_extensions->getOmrVM(), "Dedicated GC Main", MM_EnvironmentBase::ATTACH_GC_MAIN_THREAD);
 	if (NULL == omrVMThread) {
 		/* we failed to attach so notify the creating thread that we should fail to start up */
 		omrthread_monitor_enter(_collectorControlMutex);
-		_masterThreadState = STATE_ERROR;
+		_mainThreadState = STATE_ERROR;
 		omrthread_monitor_notify(_collectorControlMutex);
 		omrthread_exit(_collectorControlMutex);
 	} else {
@@ -249,22 +249,22 @@ MM_MainGCThread::masterThreadEntryPoint()
 		MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(omrVMThread);
 
 		/* attachVMThread could have allocated and execute a barrier (until point, this thread acted as a mutator thread.
-		 * Flush GC chaches (like barrier buffers) before turning into the master thread */
+		 * Flush GC chaches (like barrier buffers) before turning into the main thread */
 		/* TODO: call plain env->initializeGCThread() once downstream projects are ready (subclass Env::init calls base Env::init)  */
 		env->MM_EnvironmentBase::initializeGCThread();
 
-		env->setThreadType(GC_MASTER_THREAD);
+		env->setThreadType(GC_MAIN_THREAD);
 
 		/* Begin running the thread */
 		omrthread_monitor_enter(_collectorControlMutex);
 		
-		_collector->preMasterGCThreadInitialize(env);
+		_collector->preMainGCThreadInitialize(env);
 		
-		_masterThreadState = STATE_WAITING;
-		_masterGCThread = omrthread_self();
+		_mainThreadState = STATE_WAITING;
+		_mainGCThread = omrthread_self();
 		omrthread_monitor_notify(_collectorControlMutex);
 		do {
-			if (STATE_GC_REQUESTED == _masterThreadState) {
+			if (STATE_GC_REQUESTED == _mainThreadState) {
 				if (_runAsImplicit) {
 					handleConcurrent(env);
 				} else {
@@ -272,17 +272,17 @@ MM_MainGCThread::masterThreadEntryPoint()
 				}
 			}
 
-			if (STATE_WAITING == _masterThreadState) {
+			if (STATE_WAITING == _mainThreadState) {
 				if (_runAsImplicit || !handleConcurrent(env)) {
 					omrthread_monitor_wait(_collectorControlMutex);
 				}
 			}
-		} while (STATE_TERMINATION_REQUESTED != _masterThreadState);
+		} while (STATE_TERMINATION_REQUESTED != _mainThreadState);
 		/* notify the other side that we are active so that they can continue running */
-		_masterThreadState = STATE_TERMINATED;
-		_masterGCThread = NULL;
+		_mainThreadState = STATE_TERMINATED;
+		_mainGCThread = NULL;
 		omrthread_monitor_notify(_collectorControlMutex);
-		MM_EnvironmentBase::detachVMThread(_extensions->getOmrVM(), omrVMThread, MM_EnvironmentBase::ATTACH_GC_MASTER_THREAD);
+		MM_EnvironmentBase::detachVMThread(_extensions->getOmrVM(), omrVMThread, MM_EnvironmentBase::ATTACH_GC_MAIN_THREAD);
 		omrthread_exit(_collectorControlMutex);
 	}
 }
@@ -295,37 +295,37 @@ MM_MainGCThread::garbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription 
 	
 	if (NULL != _collector) {
 		/* the collector has started up so try to run */
-		/* once the master thread has stored itself in the _masterGCThread, it should never need to collect - this would hang */
-		Assert_MM_true(omrthread_self() != _masterGCThread);
-		if (_runAsImplicit || (NULL == _masterGCThread)) {
-			/* We might not have _masterGCThread in the startup phase or late in the shutdown phase.
+		/* once the main thread has stored itself in the _mainGCThread, it should never need to collect - this would hang */
+		Assert_MM_true(omrthread_self() != _mainGCThread);
+		if (_runAsImplicit || (NULL == _mainGCThread)) {
+			/* We might not have _mainGCThread in the startup phase or late in the shutdown phase.
 			 * For example, there may be a native out-of-memory during startup or RAS may 
-			 * trigger a GC after we've shutdown the master thread.
+			 * trigger a GC after we've shutdown the main thread.
 			 */
-			Assert_MM_true(0 == env->getSlaveID());
-			_collector->preMasterGCThreadInitialize(env);
-			_collector->masterThreadGarbageCollect(env, allocDescription);
+			Assert_MM_true(0 == env->getWorkerID());
+			_collector->preMainGCThreadInitialize(env);
+			_collector->mainThreadGarbageCollect(env, allocDescription);
 
 			if (_runAsImplicit && _collector->isConcurrentWorkAvailable(env)) {
 				omrthread_monitor_enter(_collectorControlMutex);
 
-				if (STATE_WAITING == _masterThreadState) {
-					_masterThreadState = STATE_GC_REQUESTED;
+				if (STATE_WAITING == _mainThreadState) {
+					_mainThreadState = STATE_GC_REQUESTED;
 					omrthread_monitor_notify(_collectorControlMutex);
 				}
 
 				omrthread_monitor_exit(_collectorControlMutex);
 			}
 		} else {
-			/* this is the general case, when the master thread is running internally */
+			/* this is the general case, when the main thread is running internally */
 			omrthread_monitor_enter(_collectorControlMutex);
 			/* The variable assignments below are safe because we hold Xaccess.  Otherwise, it is possible (based on the wait/notify mechanism here)
 			 * that another thread could come in under this mutex and stomp on the "parameters" while another thread is waiting.
 			 */
 			_allocDesc = allocDescription;
 			_incomingCycleState = env->_cycleState;
-			MasterGCThreadState previousState = _masterThreadState;
-			_masterThreadState = STATE_GC_REQUESTED;
+			MainGCThreadState previousState = _mainThreadState;
+			_mainThreadState = STATE_GC_REQUESTED;
 			if (STATE_WAITING == previousState) {
 				omrthread_monitor_notify(_collectorControlMutex);
 			} else if (STATE_RUNNING_CONCURRENT == previousState) {
@@ -334,9 +334,9 @@ MM_MainGCThread::garbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription 
 				Assert_MM_unreachable();
 			}
 			
-			/* The master thread will claim exclusive VM access. Artificially give it up in this thread so that tools like -Xcheck:vm continue to work. */
+			/* The main thread will claim exclusive VM access. Artificially give it up in this thread so that tools like -Xcheck:vm continue to work. */
 			uintptr_t savedExclusiveCount = env->relinquishExclusiveVMAccess();
-			while (STATE_GC_REQUESTED == _masterThreadState) {
+			while (STATE_GC_REQUESTED == _mainThreadState) {
 				omrthread_monitor_wait(_collectorControlMutex);
 			}
 			env->assumeExclusiveVMAccess(savedExclusiveCount);

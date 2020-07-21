@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -699,7 +699,7 @@ MM_ConcurrentSweepScheme::flushAllFinalChunks(MM_EnvironmentBase *env)
  * The initialization includes clearing all per-subspace stats and data as well as any segment and chunk
  * information (linkage, etc) used for sweeping (concurrent or otherwise).
  * 
- * @note called by the master thread only
+ * @note called by the main thread only
  */
 void
 MM_ConcurrentSweepScheme::setupForSweep(MM_EnvironmentBase *env)
@@ -1307,12 +1307,12 @@ MM_ConcurrentSweepScheme::workThreadCompleteSweep(MM_EnvironmentBase *envBase)
 /**
  * Sweep enough heap to find a free entry of the minimum free size.
  * This routine is the task entry point for all GC Threads.  The thread responsibilities in the task are split into 
- * two groups.  The master will attempt to connect the next available chunk, checking if the minimum free size has been
+ * two groups.  The main will attempt to connect the next available chunk, checking if the minimum free size has been
  * found during the connection.  If it hasn't, it moves to the next chunk and repeats the process (until all chunks have
- * been processed).  If the next available chunk is not ready for connecting, the master thread will attempt to find
- * another chunk to sweep to move total work forward before returning to connecting.  Slave threads are strictly responsible
+ * been processed).  If the next available chunk is not ready for connecting, the main thread will attempt to find
+ * another chunk to sweep to move total work forward before returning to connecting.  Worker threads are strictly responsible
  * for finding and sweeping chunks.
- * When the master thread has finally connected in the minimum sized free entry, it will flag all slave threads to
+ * When the main thread has finally connected in the minimum sized free entry, it will flag all worker threads to
  * complete current work and stop any further sweeping.
  * @note The _largestFreeEntry value for the pool will be set
  * @note Do not call directly as this is the entry point for the dispatched task.
@@ -1345,8 +1345,8 @@ MM_ConcurrentSweepScheme::workThreadFindMinimumSizeFreeEntry(MM_EnvironmentBase 
 				}
 			}
 
-			/* we now sync all threads and master thread propagates any projections */
-			if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+			/* we now sync all threads and main thread propagates any projections */
+			if (env->_currentTask->synchronizeGCThreadsAndReleaseMain(env, UNIQUE_ID)) {
 				 
 				/* Any projections need adjusting ? */
 				if (task->_foundLiveObject) {
@@ -1408,16 +1408,16 @@ MM_ConcurrentSweepScheme::workThreadFindMinimumSizeFreeEntry(MM_EnvironmentBase 
 	/* Determine which pool is the most appropriate to sweep given required minimum free size */
 	memoryPool = memorySubSpace->getMemoryPool(minimumFreeSize);
 	if (NULL != memoryPool) {
-		if(env->isMasterThread()) {
-			/* Master thread: connect chunks until the correct entry is found or there are no more chunks to connect.
-			 * If an entry is found, set the task flag for slave termination to true
+		if(env->isMainThread()) {
+			/* Main thread: connect chunks until the correct entry is found or there are no more chunks to connect.
+			 * If an entry is found, set the task flag for worker termination to true
 			 */
 			task->_foundMinimumSizeFreeEntry = replenishPoolForAllocate(env, memoryPool, minimumFreeSize);
 			memoryPool->setLargestFreeEntry(getPoolState(memoryPool)->_largestFreeEntry);
 		} else {
-			/* Slave thread: keep finding and sweeping chunks until there are no more chunks to sweep or
-			 * the master has found an entry of the correct size and set the task termination flag.
-			 * Note: We might want to have a different flagging system that allows a slave to find the entry from
+			/* Worker thread: keep finding and sweeping chunks until there are no more chunks to sweep or
+			 * the main has found an entry of the correct size and set the task termination flag.
+			 * Note: We might want to have a different flagging system that allows a worker to find the entry from
 			 * its per-chunk statistics.
 			 */
 			MM_ConcurrentSweepPoolState *sweepState = (MM_ConcurrentSweepPoolState *)getPoolState(memoryPool);

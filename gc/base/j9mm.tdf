@@ -169,8 +169,8 @@ TraceExit=Trc_MM_shutdownConHelperThreads_Exit noEnv Overhead=1 Level=1 Template
 TraceEntry=Trc_MM_SynchronizeGCThreads_Entry Overhead=1 Level=2 Template="Trc_MM_SynchronizeGCThreads Entry from: %s"
 TraceExit=Trc_MM_SynchronizeGCThreads_Exit Overhead=1 Level=2 Template="Trc_MM_SynchronizeGCThreads Exit"
 
-TraceEntry=Trc_MM_SynchronizeGCThreadsAndReleaseMaster_Entry Overhead=1 Level=1 Template="Trc_MM_SynchronizeGCThreadsAndReleaseMaster Entry from: %s"
-TraceExit=Trc_MM_SynchronizeGCThreadsAndReleaseMaster_Exit Overhead=1 Level=1 Template="Trc_MM_SynchronizeGCThreadsAndReleaseMaster Exit"
+TraceEntry=Trc_MM_SynchronizeGCThreadsAndReleaseMain_Entry Overhead=1 Level=1 Template="Trc_MM_SynchronizeGCThreadsAndReleaseMain Entry from: %s"
+TraceExit=Trc_MM_SynchronizeGCThreadsAndReleaseMain_Exit Overhead=1 Level=1 Template="Trc_MM_SynchronizeGCThreadsAndReleaseMain Exit"
 
 TraceEvent=Trc_MM_MethodSampleContinue Overhead=1 Level=1 Test Template="at %p %.*s.%.*s%.*s, jit %p, pc %p"
 
@@ -201,9 +201,9 @@ TraceEntry=Trc_MM_ParallelHeapWalker_allObjectsDoParallel_Entry Overhead=1 Level
 TraceExit=Trc_MM_ParallelHeapWalker_allObjectsDoParallel_Exit Overhead=1 Level=1 Template="Trc_MM_ParallelHeapWalker_allObjectsDoParallel_Exit: heapChunkFactor=%zu, parallelChunkSize=0x%zx, objects walked by this thread=%zu"
 TraceExit=Trc_MM_MemorySubSpace_garbageCollect_Exit4 Overhead=1 Level=1 Template="MM_MemorySubSpace_garbageCollect Exit4 Concurrent kickoff forced"
 
-TraceEntry=Trc_MM_Scavenger_masterThreadGarbageCollect_Entry Overhead=1 Level=1 Template="Scavenger start"
-TraceEvent=Trc_MM_Scavenger_masterThreadGarbageCollect_setFailedTenureFlag Overhead=1 Level=1 Group=percolate Template="Setting failed tenure flag. _failedTenureLargest = %zu"
-TraceExit=Trc_MM_Scavenger_masterThreadGarbageCollect_Exit Overhead=1 Level=1 Template="Scavenger end"
+TraceEntry=Trc_MM_Scavenger_mainThreadGarbageCollect_Entry Overhead=1 Level=1 Template="Scavenger start"
+TraceEvent=Trc_MM_Scavenger_mainThreadGarbageCollect_setFailedTenureFlag Overhead=1 Level=1 Group=percolate Template="Setting failed tenure flag. _failedTenureLargest = %zu"
+TraceExit=Trc_MM_Scavenger_mainThreadGarbageCollect_Exit Overhead=1 Level=1 Template="Scavenger end"
 
 TraceEvent=Trc_MM_Scavenger_semispaceAllocateFailed Overhead=1 Level=9 Group=percolate Template="Failed to allocate %zu bytes in semispace. Try tenure? %s"
 TraceEvent=Trc_MM_Scavenger_tenureAllocateFailed Overhead=1 Level=9 Group=percolate Template="Failed to allocate %zu bytes in tenure space. Largest failure=%zu. Try semispace? %s"

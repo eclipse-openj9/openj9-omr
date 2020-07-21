@@ -204,8 +204,8 @@ MM_Collector::preCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* subSpace, M
 
 	_stwCollectionInProgress = true;
 	
-	/* Record the master GC thread CPU time at the start to diff later */
-	_masterThreadCpuTimeStart = omrthread_get_self_cpu_time(env->getOmrVMThread()->_os_thread);
+	/* Record the main GC thread CPU time at the start to diff later */
+	_mainThreadCpuTimeStart = omrthread_get_self_cpu_time(env->getOmrVMThread()->_os_thread);
 
 	/* Set up frequent object stats */
 	if (extensions->doFrequentObjectAllocationSampling) {
@@ -423,12 +423,12 @@ MM_Collector::postCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* subSpace)
 {
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 
-	/* Calculate the master GC thread CPU time. Do this immediately
+	/* Calculate the main GC thread CPU time. Do this immediately
 	 * so the information will be available to cycle end hooks.
 	 */
-	uint64_t masterThreadCpuTime = omrthread_get_self_cpu_time(env->getOmrVMThread()->_os_thread);
-	masterThreadCpuTime -= _masterThreadCpuTimeStart;
-	extensions->_masterThreadCpuTimeNanos += masterThreadCpuTime;
+	uint64_t mainThreadCpuTime = omrthread_get_self_cpu_time(env->getOmrVMThread()->_os_thread);
+	mainThreadCpuTime -= _mainThreadCpuTimeStart;
+	extensions->_mainThreadCpuTimeNanos += mainThreadCpuTime;
 
 	internalPostCollect(env, subSpace);
 

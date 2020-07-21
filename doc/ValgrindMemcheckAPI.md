@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2017, 2018 IBM Corp. and others
+Copyright (c) 2017, 2020 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -54,7 +54,7 @@ API request `VALGRIND_MEMPOOL_FREE(pool, addr)` requires us to have base address
 
 There are 3 workarounds for this issue.
 
-1. Using `MM_MarkingDelegate::masterCleanupAfterGC`. Target language has record of objects in a object table, and this method is called after GC cycle has been completed with a record of marked objects. While it is freeing the dead objects from object table we are also requesting valgrind to free them. **Disadvantage:** free requests should have been made inside the GC (where we also request allocations) and not in target language.
+1. Using `MM_MarkingDelegate::mainCleanupAfterGC`. Target language has record of objects in a object table, and this method is called after GC cycle has been completed with a record of marked objects. While it is freeing the dead objects from object table we are also requesting valgrind to free them. **Disadvantage:** free requests should have been made inside the GC (where we also request allocations) and not in target language.
  
  2. Using a list to track allocated objects. This workaround allows us to free objects from GC directly. This is how we are freeing them currently. **Disadvantage** we haven't needed such a list in current Implementation, it is a overhead to maintain it later and increases complexity of code. Another disadvantage is we cannot access this list everywhere in GC (where `MM_ExtensionsBase` is absent)
 

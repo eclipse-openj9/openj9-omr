@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -46,7 +46,7 @@ public:
 	uintptr_t nonDeterministicSweepConsecutive;
 	uint64_t nonDeterministicSweepDelay;
 
-	uint64_t _microsToStopMutators; /**< The number of microseconds the master thread had to wait for the mutator threads to stop, at the beginning of this increment */
+	uint64_t _microsToStopMutators; /**< The number of microseconds the main thread had to wait for the mutator threads to stop, at the beginning of this increment */
 protected:
 private:
 public:

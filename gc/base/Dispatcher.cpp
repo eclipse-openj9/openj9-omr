@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -90,13 +90,13 @@ void
 MM_Dispatcher::run(MM_EnvironmentBase *env, MM_Task *task, uintptr_t newThreadCount)
 {
 	uintptr_t activeThreads = recomputeActiveThreadCountForTask(env, task, newThreadCount);
-	task->masterSetup(env);
+	task->mainSetup(env);
 	prepareThreadsForTask(env, task, activeThreads);
 	acceptTask(env);
 	task->run(env);
 	completeTask(env);
 	cleanupAfterTask(env);
-	task->masterCleanup(env);
+	task->mainCleanup(env);
 }
 
 bool 

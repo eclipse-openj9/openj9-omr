@@ -65,7 +65,7 @@ protected:
 	uintptr_t _collectorExpandedSize;
 	uintptr_t _cycleType;
 
-	uint64_t _masterThreadCpuTimeStart; /**< slot to store the master CPU time at the beginning of the collection */
+	uint64_t _mainThreadCpuTimeStart; /**< slot to store the main CPU time at the beginning of the collection */
 
 public:
 	/**
@@ -122,7 +122,7 @@ protected:
 
 	/**
 	 * Perform any collector setup activities.
-	 * @param env Master GC thread.
+	 * @param env Main GC thread.
 	 * @param subSpace the memory subspace where the collection is occurring
 	 * @param allocDescription Allocation description causing the GC (or detailing the GC request)
 	 * @param gcCode High level reason for invoking the GC
@@ -138,8 +138,8 @@ protected:
 	/**
 	 * Pre-condition initialization for garbage collection cycle.
 	 * This routine is meant to be an initializer for meta state on a Gc cycle, such as the aggressiveness of collection, excessive GC calculation,
-	 * and cycle state setup for the master thread.
-	 * @param env Master GC thread.
+	 * and cycle state setup for the main thread.
+	 * @param env Main GC thread.
 	 * @param subSpace the memory subspace where the collection is occurring
 	 * @param allocDescription Allocation description causing the GC (or detailing the GC request)
 	 * @param gcCode High level reason for invoking the GC
@@ -148,7 +148,7 @@ protected:
 
 	/**
 	 * process LargeAllocateStats before GC
-	 * @param env Master GC thread.
+	 * @param env Main GC thread.
 	 */
 	virtual void processLargeAllocateStatsBeforeGC(MM_EnvironmentBase* env)
 	{
@@ -156,7 +156,7 @@ protected:
 
 	/**
 	 * process LargeAllocateStats after GC
-	 * @param env Master GC thread.
+	 * @param env Main GC thread.
 	 */
 	virtual void processLargeAllocateStatsAfterGC(MM_EnvironmentBase* env)
 	{
@@ -282,11 +282,11 @@ public:
 	 */
 	virtual bool isMarked(void* objectPtr);
 	
-	virtual void preMasterGCThreadInitialize(MM_EnvironmentBase *env) {}
-	virtual	void masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool initMarkMap = false, bool rebuildMarkBits = false) {}
+	virtual void preMainGCThreadInitialize(MM_EnvironmentBase *env) {}
+	virtual	void mainThreadGarbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool initMarkMap = false, bool rebuildMarkBits = false) {}
 	virtual bool isConcurrentWorkAvailable(MM_EnvironmentBase *env) { return false; }
 	virtual	void preConcurrentInitializeStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats) {}
-	virtual uintptr_t masterThreadConcurrentCollect(MM_EnvironmentBase *env) { return 0; }
+	virtual uintptr_t mainThreadConcurrentCollect(MM_EnvironmentBase *env) { return 0; }
 	virtual	void postConcurrentUpdateStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats, UDATA bytesConcurrentlyScanned) {}
 	virtual void forceConcurrentFinish() {}
 	virtual void completeExternalConcurrentCycle(MM_EnvironmentBase *env) {}
@@ -312,7 +312,7 @@ public:
 		, _stwCollectionInProgress(false)
 		, _collectorExpandedSize(0)
 		, _cycleType(OMR_GC_CYCLE_TYPE_DEFAULT)
-		, _masterThreadCpuTimeStart(0)
+		, _mainThreadCpuTimeStart(0)
 	{
 		_typeId = __FUNCTION__;
 	}

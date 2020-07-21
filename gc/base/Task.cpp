@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,7 +33,7 @@ MM_Task::accept(MM_EnvironmentBase *env)
 {
 	/* store the old VMstate */
 	uintptr_t oldVMstate = env->pushVMstate(getVMStateID());
-	if (env->isMasterThread()) {
+	if (env->isMainThread()) {
 		_oldVMstate = oldVMstate;
 	} else {
 		Assert_MM_true(OMRVMSTATE_GC_DISPATCHER_IDLE == oldVMstate);
@@ -44,12 +44,12 @@ MM_Task::accept(MM_EnvironmentBase *env)
 }
 
 void
-MM_Task::masterSetup(MM_EnvironmentBase *env)
+MM_Task::mainSetup(MM_EnvironmentBase *env)
 {
 }
 
 void
-MM_Task::masterCleanup(MM_EnvironmentBase *env)
+MM_Task::mainCleanup(MM_EnvironmentBase *env)
 {
 }
 
@@ -70,7 +70,7 @@ MM_Task::complete(MM_EnvironmentBase *env)
 
 	/* restore the previous VMstate */
 	uintptr_t oldVMstate = OMRVMSTATE_GC_DISPATCHER_IDLE;
-	if (env->isMasterThread()) {
+	if (env->isMainThread()) {
 		oldVMstate = _oldVMstate;
 	}
 
@@ -92,7 +92,7 @@ MM_Task::synchronizeGCThreads(MM_EnvironmentBase *env, const char *id)
 }
 
 bool 
-MM_Task::synchronizeGCThreadsAndReleaseMaster(MM_EnvironmentBase *env, const char *id)
+MM_Task::synchronizeGCThreadsAndReleaseMain(MM_EnvironmentBase *env, const char *id)
 {
 	return true;
 }

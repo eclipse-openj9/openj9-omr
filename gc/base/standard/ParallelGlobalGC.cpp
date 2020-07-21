@@ -405,27 +405,27 @@ MM_ParallelGlobalGC::cleanupAfterGC(MM_EnvironmentBase *env, MM_AllocateDescript
 	GC_OMRVMThreadListIterator threadIterator(_extensions->getOmrVM());
 	OMR_VMThread *walkThread = NULL;
 
-	/* Null tenure TLH (Copy Cache) references for all GC slave and Mutator (for concurrent scavenger) threads as the memory will be invalidated on sweep cycle*/
+	/* Null tenure TLH (Copy Cache) references for all GC worker and Mutator (for concurrent scavenger) threads as the memory will be invalidated on sweep cycle*/
 	while((walkThread = threadIterator.nextOMRVMThread()) != NULL) {
 		MM_EnvironmentStandard *threadEnvironment = MM_EnvironmentStandard::getEnvironment(walkThread);
 		threadEnvironment->_tenureTLHRemainderBase = NULL;
 		threadEnvironment->_tenureTLHRemainderTop = NULL;
 	}
 
-	_extensions->_masterThreadTenureTLHRemainderTop = NULL;
-	_extensions->_masterThreadTenureTLHRemainderBase = NULL;
+	_extensions->_mainThreadTenureTLHRemainderTop = NULL;
+	_extensions->_mainThreadTenureTLHRemainderBase = NULL;
 #endif /* OMR_GC_MODRON_SCAVENGER */
 }
 
 void
-MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool initMarkMap, bool rebuildMarkBits)
+MM_ParallelGlobalGC::mainThreadGarbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool initMarkMap, bool rebuildMarkBits)
 {
 	if (_extensions->trackMutatorThreadCategory) {
 		/* This thread is doing GC work, account for the time spent into the GC bucket */
 		omrthread_set_category(env->getOmrVMThread()->_os_thread, J9THREAD_CATEGORY_SYSTEM_GC_THREAD, J9THREAD_TYPE_SET_GC);
 	}
 
-	/* Perform any master-specific setup */
+	/* Perform any main-specific setup */
 	/* Tell the GAM to flush its contexts */
 	MM_GlobalAllocationManager *gam = _extensions->globalAllocationManager;
 	if (NULL != gam) {
@@ -451,7 +451,7 @@ MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_Allo
 
 	_fixHeapForWalkCompleted = false;
 
-	_delegate.masterThreadGarbageCollectStarted(env);
+	_delegate.mainThreadGarbageCollectStarted(env);
 
 	/* ----- end of setupForCollect ------*/
 	
@@ -473,7 +473,7 @@ MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_Allo
 			_collectionStatistics._tenureFragmentation |= MACRO_FRAGMENTATION;
 		}
 
-		masterThreadCompact(env, allocDescription, rebuildMarkBits);
+		mainThreadCompact(env, allocDescription, rebuildMarkBits);
 		_collectionStatistics._tenureFragmentation = NO_FRAGMENTATION;
 		if (_extensions->processLargeAllocateStats) {
 			processLargeAllocateStatsAfterCompact(env);
@@ -523,7 +523,7 @@ MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_Allo
 		}
 	}
 
-	_delegate.masterThreadGarbageCollectFinished(env, compactedThisCycle);
+	_delegate.mainThreadGarbageCollectFinished(env, compactedThisCycle);
 
 #if defined(OMR_GC_MODRON_COMPACTION)
 	if (compactedThisCycle) {
@@ -544,7 +544,7 @@ MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_Allo
 #endif /* OMR_GC_MODRON_SCAVENGER */
 	
 	/* Restart the allocation caches associated to all threads */
-	masterThreadRestartAllocationCaches(env);
+	mainThreadRestartAllocationCaches(env);
 	
 	/* ----- start of cleanupAfterCollect ------*/
 
@@ -862,7 +862,7 @@ MM_ParallelGlobalGC::sweep(MM_EnvironmentBase *env, MM_AllocateDescription *allo
 
 	reportSweepStart(env);
 	sweepStats->_startTime = omrtime_hires_clock();
-	masterThreadSweepStart(env, allocDescription);
+	mainThreadSweepStart(env, allocDescription);
 
 	if (_extensions->processLargeAllocateStats) {
 		processLargeAllocateStatsAfterSweep(env);
@@ -886,7 +886,7 @@ MM_ParallelGlobalGC::sweep(MM_EnvironmentBase *env, MM_AllocateDescription *allo
 	/* If we need to completely rebuild the freeelist (impending compaction or contraction), then do it */
 	SweepCompletionReason reason = NOT_REQUIRED;
 	if(completeFreelistRebuildRequired(env, &reason)) {
-		masterThreadSweepComplete(env, reason);
+		mainThreadSweepComplete(env, reason);
 			
 #if defined(OMR_GC_MODRON_COMPACTION)
 		if (!_compactThisCycle)  
@@ -945,7 +945,7 @@ MM_ParallelGlobalGC::markAll(MM_EnvironmentBase *env, bool initMarkMap)
 	reportMarkStart(env);
 	markStats->_startTime = omrtime_hires_clock();
 
-	_markingScheme->masterSetupForGC(env);
+	_markingScheme->mainSetupForGC(env);
 
 	if (env->_cycleState->_gcCode.isOutOfMemoryGC()) {
 		env->_cycleState->_referenceObjectOptions |= MM_CycleState::references_soft_as_weak;
@@ -959,27 +959,27 @@ MM_ParallelGlobalGC::markAll(MM_EnvironmentBase *env, bool initMarkMap)
 
 	/* Do any post mark checks */
 	postMark(env);
-	_markingScheme->masterCleanupAfterGC(env);
+	_markingScheme->mainCleanupAfterGC(env);
 	markStats->_endTime = omrtime_hires_clock();
 	reportMarkEnd(env);
 }
 
 void
-MM_ParallelGlobalGC::masterThreadSweepStart(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription)
+MM_ParallelGlobalGC::mainThreadSweepStart(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription)
 {
 	_sweepScheme->setMarkMap(_markingScheme->getMarkMap());
 	_sweepScheme->sweepForMinimumSize(env, env->_cycleState->_activeSubSpace,  allocDescription);
 }
 
 void
-MM_ParallelGlobalGC::masterThreadSweepComplete(MM_EnvironmentBase *env, SweepCompletionReason reason)
+MM_ParallelGlobalGC::mainThreadSweepComplete(MM_EnvironmentBase *env, SweepCompletionReason reason)
 {
 	_sweepScheme->completeSweep(env, reason);
 }
 	
 #if defined(OMR_GC_MODRON_COMPACTION)
 void
-MM_ParallelGlobalGC::masterThreadCompact(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool rebuildMarkBits)
+MM_ParallelGlobalGC::mainThreadCompact(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool rebuildMarkBits)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	MM_CompactStats *compactStats = &_extensions->globalGCStats.compactStats;
@@ -1001,7 +1001,7 @@ MM_ParallelGlobalGC::masterThreadCompact(MM_EnvironmentBase *env, MM_AllocateDes
 #endif /* OMR_GC_MODRON_COMPACTION */
 
 void
-MM_ParallelGlobalGC::masterThreadRestartAllocationCaches(MM_EnvironmentBase *env)
+MM_ParallelGlobalGC::mainThreadRestartAllocationCaches(MM_EnvironmentBase *env)
 {
 	GC_OMRVMThreadListIterator vmThreadListIterator(env->getOmrVMThread());
 	OMR_VMThread *walkThread;
@@ -1232,7 +1232,7 @@ MM_ParallelGlobalGC::internalGarbageCollect(MM_EnvironmentBase *env, MM_MemorySu
 		env->_cycleState->_activeSubSpace->checkResize(env, allocDescription, false);
 		env->_cycleState->_activeSubSpace->performResize(env, allocDescription);
 	} else {
-		masterThreadGarbageCollect(env, allocDescription, true, false);
+		mainThreadGarbageCollect(env, allocDescription, true, false);
 	}
 	return true;
 }
@@ -1247,7 +1247,7 @@ MM_ParallelGlobalGC::prepareHeapForWalk(MM_EnvironmentBase *env)
 {
 	GC_OMRVMInterface::flushCachesForGC(env);
 
-	_markingScheme->masterSetupForWalk(env);
+	_markingScheme->mainSetupForWalk(env);
 	
 	/* Run a parallel mark */
 	/* TODO CRGTMP fix the cycleState parameter */

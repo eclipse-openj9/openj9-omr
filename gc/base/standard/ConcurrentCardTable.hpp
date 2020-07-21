@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -298,7 +298,7 @@ public:
 	
 	/**
 	 * Called when a range of memory has been added to the heap.
-	 * @param[in] env The thread which initiated the expansion request (typically the master GC thread)
+	 * @param[in] env The thread which initiated the expansion request (typically the main GC thread)
 	 * @param[in] subspace The expanding subspace
 	 * @param[in] size The number of bytes between lowAddress and highAddress
 	 * @param[in] lowAddress The first byte inside the expanded range
@@ -309,7 +309,7 @@ public:
 	bool heapAddRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, bool cleaNewCards);
 	/**
 	 * Called when a range of memory has been removed from the heap.
-	 * @param[in] env The thread which initiated the contraction request (typically the master GC thread)
+	 * @param[in] env The thread which initiated the contraction request (typically the main GC thread)
 	 * @param[in] subspace The expanding subspace
 	 * @param[in] size The amount of memory removed from the heap
 	 * @param[in] lowAddress The base address of the memory added to the heap

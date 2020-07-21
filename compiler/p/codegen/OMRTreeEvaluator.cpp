@@ -3048,7 +3048,6 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
 
    TR::Register *regs[4] = {NULL, NULL, NULL, NULL};
    TR::Register *fpRegs[4] = {NULL, NULL, NULL, NULL};
-   TR::Register *cndReg = cg->allocateRegister(TR_CCR);
    int32_t groups, residual, regIx=0, ix=0, fpRegIx=0;
    uint8_t numDeps = 0;
    int32_t memRefSize;
@@ -3059,6 +3058,8 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
    memRefSize = TR::Compiler->om.sizeofReferenceAddress();
    load =TR::InstOpCode::Op_load;
    store =TR::InstOpCode::Op_st;
+
+   bool  postP10CopyInline = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10) && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX);
 
    static bool disableLEArrayCopyInline  = (feGetEnv("TR_disableLEArrayCopyInline") != NULL);
    bool  supportsLEArrayCopyInline = (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8)) && !disableLEArrayCopyInline && cg->comp()->target().cpu.isLittleEndian() && cg->comp()->target().cpu.hasFPU() && cg->comp()->target().is64Bit();
@@ -3081,158 +3082,253 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
    TR::addDependency(conditions, dst, dstDep, TR_GPR, cg);
    conditions->getPreConditions()->getRegisterDependency(1)->setExcludeGPR0();
    conditions->getPostConditions()->getRegisterDependency(1)->setExcludeGPR0();
-   TR::addDependency(conditions, cndReg, cndDep, TR_CCR, cg);
-
-   if (cg->comp()->target().is64Bit())
-      {
-      groups = byteLen >> 5;
-      residual = byteLen & 0x0000001F;
-      }
-   else
-      {
-      groups = byteLen >> 4;
-      residual = byteLen & 0x0000000F;
-      }
-
-   regs[0] = cg->allocateRegister(TR_GPR);
-   TR::addDependency(conditions, regs[0], tempDep, TR_GPR, cg);
-
-   if (groups != 0)
-      {
-      regs[1] = cg->allocateRegister(TR_GPR);
-      regs[2] = cg->allocateRegister(TR_GPR);
-      regs[3] = cg->allocateRegister(TR_GPR);
-      TR::addDependency(conditions, regs[1], TR::RealRegister::NoReg, TR_GPR, cg);
-      TR::addDependency(conditions, regs[2], TR::RealRegister::NoReg, TR_GPR, cg);
-      TR::addDependency(conditions, regs[3], TR::RealRegister::NoReg, TR_GPR, cg);
-      }
-
-   if (supportsLEArrayCopyInline)
-      {
-      fpRegs[0] = cg->allocateRegister(TR_FPR);
-      fpRegs[1] = cg->allocateRegister(TR_FPR);
-      fpRegs[2] = cg->allocateRegister(TR_FPR);
-      fpRegs[3] = cg->allocateRegister(TR_FPR);
-
-      TR::addDependency(conditions, fpRegs[0], TR::RealRegister::NoReg, TR_FPR, cg);
-      TR::addDependency(conditions, fpRegs[1], TR::RealRegister::NoReg, TR_FPR, cg);
-      TR::addDependency(conditions, fpRegs[2], TR::RealRegister::NoReg, TR_FPR, cg);
-      TR::addDependency(conditions, fpRegs[3], TR::RealRegister::NoReg, TR_FPR, cg);
-      }
 
    TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
 
-   if (groups != 0)
+   if (postP10CopyInline)
       {
-      TR::LabelSymbol *loopStart;
+      // byteLen reg
+      regs[0] = cg->allocateRegister(TR_GPR);
+      TR::addDependency(conditions, regs[0], TR::RealRegister::NoReg, TR_GPR, cg);
 
-      if (groups != 1)
+      // First VSX vector reg
+      regs[1] = cg->allocateRegister(TR_VSX_VECTOR);
+      TR::addDependency(conditions, regs[1], TR::RealRegister::NoReg, TR_VSX_VECTOR, cg);
+
+      int32_t iteration64 = byteLen >> 6, residue64 = byteLen & 0x3F, standingOffset = 0;
+
+      if (iteration64 > 0)
          {
-         if (groups <= UPPER_IMMED)
-            generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, regs[0], groups);
+         TR::LabelSymbol *loopStart;
+         TR::Register    *cndReg;
+
+         if (iteration64 > 1)
+            {
+            generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, regs[0], iteration64);
+            generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, regs[0]);
+
+            cndReg = cg->allocateRegister(TR_CCR);
+            TR::addDependency(conditions, cndReg, TR::RealRegister::cr0, TR_CCR, cg);
+
+            loopStart = generateLabelSymbol(cg);
+            generateLabelInstruction(cg, TR::InstOpCode::label, node, loopStart);
+            }
+
+         generateTrg1MemInstruction(cg, TR::InstOpCode::lxv, node, regs[1], new (cg->trHeapMemory()) TR::MemoryReference(src, 0, 16, cg));
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stxv, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 0, 16, cg), regs[1]);
+         generateTrg1MemInstruction(cg, TR::InstOpCode::lxv, node, regs[1], new (cg->trHeapMemory()) TR::MemoryReference(src, 16, 16, cg));
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stxv, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 16, 16, cg), regs[1]);
+         generateTrg1MemInstruction(cg, TR::InstOpCode::lxv, node, regs[1], new (cg->trHeapMemory()) TR::MemoryReference(src, 32, 16, cg));
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stxv, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 32, 16, cg), regs[1]);
+         generateTrg1MemInstruction(cg, TR::InstOpCode::lxv, node, regs[1], new (cg->trHeapMemory()) TR::MemoryReference(src, 48, 16, cg));
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stxv, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 48, 16, cg), regs[1]);
+
+         if (iteration64 > 1)
+            {
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src, src, 64);
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, dst, dst, 64);
+            generateConditionalBranchInstruction(cg, TR::InstOpCode::bdnz, node, loopStart, cndReg);
+            }
          else
-            loadConstant(cg, node, groups, regs[0]);
-         generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, regs[0]);
+            standingOffset = 64;
+         }
 
-         loopStart = generateLabelSymbol(cg);
-         generateLabelInstruction(cg, TR::InstOpCode::label, node, loopStart);
-         }
-      if (supportsLEArrayCopyInline)
+      for (int32_t i = 0; i < (residue64>>4); i++)
          {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fpRegs[3], new (cg->trHeapMemory()) TR::MemoryReference(src, 0, memRefSize, cg));
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fpRegs[2], new (cg->trHeapMemory()) TR::MemoryReference(src, memRefSize, memRefSize, cg));
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fpRegs[1], new (cg->trHeapMemory()) TR::MemoryReference(src, 2*memRefSize, memRefSize, cg));
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fpRegs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, 3*memRefSize, memRefSize, cg));
+         generateTrg1MemInstruction(cg, TR::InstOpCode::lxv, node, regs[1], new (cg->trHeapMemory()) TR::MemoryReference(src, standingOffset+i*16, 16, cg));
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stxv, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, standingOffset+i*16, 16, cg), regs[1]);
          }
-      else
+
+      if ((residue64 & 0xF) != 0)
          {
-         generateTrg1MemInstruction(cg, load, node, regs[3], new (cg->trHeapMemory()) TR::MemoryReference(src, 0, memRefSize, cg));
-         generateTrg1MemInstruction(cg, load, node, regs[2], new (cg->trHeapMemory()) TR::MemoryReference(src, memRefSize, memRefSize, cg));
-         generateTrg1MemInstruction(cg, load, node, regs[1], new (cg->trHeapMemory()) TR::MemoryReference(src, 2*memRefSize, memRefSize, cg));
-         generateTrg1MemInstruction(cg, load, node, regs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, 3*memRefSize, memRefSize, cg));
-         }
-      if (groups != 1)
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, src, src, 4*memRefSize);
-      if (supportsLEArrayCopyInline)
-         {
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 0, memRefSize, cg), fpRegs[3]);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, memRefSize, memRefSize, cg), fpRegs[2]);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 2*memRefSize, memRefSize, cg), fpRegs[1]);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 3*memRefSize, memRefSize, cg), fpRegs[0]);
-         }
-      else
-         {
-         generateMemSrc1Instruction(cg, store, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 0, memRefSize, cg), regs[3]);
-         generateMemSrc1Instruction(cg, store, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, memRefSize, memRefSize, cg), regs[2]);
-         generateMemSrc1Instruction(cg, store, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 2*memRefSize, memRefSize, cg), regs[1]);
-         generateMemSrc1Instruction(cg, store, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 3*memRefSize, memRefSize, cg), regs[0]);
-         }
-      if (groups != 1)
-         {
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, dst, dst, 4*memRefSize);
-         generateConditionalBranchInstruction(cg, TR::InstOpCode::bdnz, node, loopStart, cndReg);
-         }
-      else
-         {
-         ix = 4*memRefSize;
+         standingOffset += residue64 & 0x30;
+         switch (residue64 & 0xF)
+            {
+            case 1:
+               generateTrg1MemInstruction(cg, TR::InstOpCode::lbz, node, regs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, standingOffset, 1, cg));
+               generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, standingOffset, 1, cg), regs[0]);
+               break;
+            case 2:
+               generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, regs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, standingOffset, 2, cg));
+               generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, standingOffset, 2, cg), regs[0]);
+               break;
+            case 4:
+               generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, regs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, standingOffset, 4, cg));
+               generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, standingOffset, 4, cg), regs[0]);
+               break;
+            case 8:
+               generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, regs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, standingOffset, 8, cg));
+               generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, standingOffset, 8, cg), regs[0]);
+               break;
+            default:
+               generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, regs[0], residue64 & 0xF);
+               generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicr, node, regs[0], regs[0],
+                                               56, CONSTANT64(0xff00000000000000));
+               if (standingOffset != 0)
+                  {
+                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src, src, standingOffset);
+                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, dst, dst, standingOffset);
+                  }
+               generateTrg1Src2Instruction(cg, TR::InstOpCode::lxvl, node, regs[1], src, regs[0]);
+               generateSrc3Instruction(cg, TR::InstOpCode::stxvl, node, regs[1], dst, regs[0]);
+               break;
+            }
          }
       }
-
-   for (; residual>=memRefSize; residual-=memRefSize, ix+=memRefSize)
+   else
       {
-      if (supportsLEArrayCopyInline)
+      TR::Register *cndReg = cg->allocateRegister(TR_CCR);
+      TR::addDependency(conditions, cndReg, cndDep, TR_CCR, cg);
+   
+      if (cg->comp()->target().is64Bit())
          {
-         TR::Register *oneReg = fpRegs[fpRegIx++];
-         if (fpRegIx>3 || fpRegs[fpRegIx]==NULL)
-            fpRegIx = 0;
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, oneReg, new (cg->trHeapMemory()) TR::MemoryReference(src, ix, memRefSize, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, memRefSize, cg), oneReg);
+         groups = byteLen >> 5;
+         residual = byteLen & 0x0000001F;
          }
       else
          {
-         TR::Register *oneReg = regs[regIx++];
-         if (regIx>3 || regs[regIx]==NULL)
-            regIx = 0;
-         generateTrg1MemInstruction(cg, load, node, oneReg, new (cg->trHeapMemory()) TR::MemoryReference(src, ix, memRefSize, cg));
-         generateMemSrc1Instruction(cg, store, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, memRefSize, cg), oneReg);
+         groups = byteLen >> 4;
+         residual = byteLen & 0x0000000F;
          }
-      }
-
-   if (residual != 0)
-      {
-      if (residual & 4)
+   
+      regs[0] = cg->allocateRegister(TR_GPR);
+      TR::addDependency(conditions, regs[0], tempDep, TR_GPR, cg);
+   
+      if (groups != 0)
+         {
+         regs[1] = cg->allocateRegister(TR_GPR);
+         regs[2] = cg->allocateRegister(TR_GPR);
+         regs[3] = cg->allocateRegister(TR_GPR);
+         TR::addDependency(conditions, regs[1], TR::RealRegister::NoReg, TR_GPR, cg);
+         TR::addDependency(conditions, regs[2], TR::RealRegister::NoReg, TR_GPR, cg);
+         TR::addDependency(conditions, regs[3], TR::RealRegister::NoReg, TR_GPR, cg);
+         }
+   
+      if (supportsLEArrayCopyInline)
+         {
+         fpRegs[0] = cg->allocateRegister(TR_FPR);
+         fpRegs[1] = cg->allocateRegister(TR_FPR);
+         fpRegs[2] = cg->allocateRegister(TR_FPR);
+         fpRegs[3] = cg->allocateRegister(TR_FPR);
+   
+         TR::addDependency(conditions, fpRegs[0], TR::RealRegister::NoReg, TR_FPR, cg);
+         TR::addDependency(conditions, fpRegs[1], TR::RealRegister::NoReg, TR_FPR, cg);
+         TR::addDependency(conditions, fpRegs[2], TR::RealRegister::NoReg, TR_FPR, cg);
+         TR::addDependency(conditions, fpRegs[3], TR::RealRegister::NoReg, TR_FPR, cg);
+         }
+   
+      if (groups != 0)
+         {
+         TR::LabelSymbol *loopStart;
+   
+         if (groups != 1)
+            {
+            if (groups <= UPPER_IMMED)
+               generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, regs[0], groups);
+            else
+               loadConstant(cg, node, groups, regs[0]);
+            generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, regs[0]);
+   
+            loopStart = generateLabelSymbol(cg);
+            generateLabelInstruction(cg, TR::InstOpCode::label, node, loopStart);
+            }
+         if (supportsLEArrayCopyInline)
+            {
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fpRegs[3], new (cg->trHeapMemory()) TR::MemoryReference(src, 0, memRefSize, cg));
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fpRegs[2], new (cg->trHeapMemory()) TR::MemoryReference(src, memRefSize, memRefSize, cg));
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fpRegs[1], new (cg->trHeapMemory()) TR::MemoryReference(src, 2*memRefSize, memRefSize, cg));
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fpRegs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, 3*memRefSize, memRefSize, cg));
+            }
+         else
+            {
+            generateTrg1MemInstruction(cg, load, node, regs[3], new (cg->trHeapMemory()) TR::MemoryReference(src, 0, memRefSize, cg));
+            generateTrg1MemInstruction(cg, load, node, regs[2], new (cg->trHeapMemory()) TR::MemoryReference(src, memRefSize, memRefSize, cg));
+            generateTrg1MemInstruction(cg, load, node, regs[1], new (cg->trHeapMemory()) TR::MemoryReference(src, 2*memRefSize, memRefSize, cg));
+            generateTrg1MemInstruction(cg, load, node, regs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, 3*memRefSize, memRefSize, cg));
+            }
+         if (groups != 1)
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, src, src, 4*memRefSize);
+         if (supportsLEArrayCopyInline)
+            {
+            generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 0, memRefSize, cg), fpRegs[3]);
+            generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, memRefSize, memRefSize, cg), fpRegs[2]);
+            generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 2*memRefSize, memRefSize, cg), fpRegs[1]);
+            generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 3*memRefSize, memRefSize, cg), fpRegs[0]);
+            }
+         else
+            {
+            generateMemSrc1Instruction(cg, store, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 0, memRefSize, cg), regs[3]);
+            generateMemSrc1Instruction(cg, store, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, memRefSize, memRefSize, cg), regs[2]);
+            generateMemSrc1Instruction(cg, store, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 2*memRefSize, memRefSize, cg), regs[1]);
+            generateMemSrc1Instruction(cg, store, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 3*memRefSize, memRefSize, cg), regs[0]);
+            }
+         if (groups != 1)
+            {
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, dst, dst, 4*memRefSize);
+            generateConditionalBranchInstruction(cg, TR::InstOpCode::bdnz, node, loopStart, cndReg);
+            }
+         else
+            {
+            ix = 4*memRefSize;
+            }
+         }
+   
+      for (; residual>=memRefSize; residual-=memRefSize, ix+=memRefSize)
          {
          if (supportsLEArrayCopyInline)
             {
             TR::Register *oneReg = fpRegs[fpRegIx++];
             if (fpRegIx>3 || fpRegs[fpRegIx]==NULL)
                fpRegIx = 0;
-            generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, oneReg, new (cg->trHeapMemory()) TR::MemoryReference(src, ix, 4, cg));
-            generateMemSrc1Instruction(cg, TR::InstOpCode::stfs, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, 4, cg), oneReg);
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, oneReg, new (cg->trHeapMemory()) TR::MemoryReference(src, ix, memRefSize, cg));
+            generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, memRefSize, cg), oneReg);
             }
          else
             {
             TR::Register *oneReg = regs[regIx++];
             if (regIx>3 || regs[regIx]==NULL)
                regIx = 0;
-            generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, oneReg, new (cg->trHeapMemory()) TR::MemoryReference(src, ix, 4, cg));
-            generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, 4, cg), oneReg);
+            generateTrg1MemInstruction(cg, load, node, oneReg, new (cg->trHeapMemory()) TR::MemoryReference(src, ix, memRefSize, cg));
+            generateMemSrc1Instruction(cg, store, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, memRefSize, cg), oneReg);
             }
-         ix += 4;
          }
-      if (residual & 2)
+   
+      if (residual != 0)
          {
-         TR::Register *oneReg = regs[regIx++];
-         if (regIx>3 || regs[regIx]==NULL)
-            regIx = 0;
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, oneReg, new (cg->trHeapMemory()) TR::MemoryReference(src, ix, 2, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, 2, cg), oneReg);
-         ix += 2;
-         }
-      if (residual & 1)
-         {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lbz, node, regs[regIx], new (cg->trHeapMemory()) TR::MemoryReference(src, ix, 1, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, 1, cg), regs[regIx]);
+         if (residual & 4)
+            {
+            if (supportsLEArrayCopyInline)
+               {
+               TR::Register *oneReg = fpRegs[fpRegIx++];
+               if (fpRegIx>3 || fpRegs[fpRegIx]==NULL)
+                  fpRegIx = 0;
+               generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, oneReg, new (cg->trHeapMemory()) TR::MemoryReference(src, ix, 4, cg));
+               generateMemSrc1Instruction(cg, TR::InstOpCode::stfs, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, 4, cg), oneReg);
+               }
+            else
+               {
+               TR::Register *oneReg = regs[regIx++];
+               if (regIx>3 || regs[regIx]==NULL)
+                  regIx = 0;
+               generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, oneReg, new (cg->trHeapMemory()) TR::MemoryReference(src, ix, 4, cg));
+               generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, 4, cg), oneReg);
+               }
+            ix += 4;
+            }
+         if (residual & 2)
+            {
+            TR::Register *oneReg = regs[regIx++];
+            if (regIx>3 || regs[regIx]==NULL)
+               regIx = 0;
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, oneReg, new (cg->trHeapMemory()) TR::MemoryReference(src, ix, 2, cg));
+            generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, 2, cg), oneReg);
+            ix += 2;
+            }
+         if (residual & 1)
+            {
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lbz, node, regs[regIx], new (cg->trHeapMemory()) TR::MemoryReference(src, ix, 1, cg));
+            generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, 1, cg), regs[regIx]);
+            }
          }
       }
 
@@ -3242,421 +3338,6 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
    return;
    }
 
-static void inlineVSXArrayCopy(TR::Node *node, TR::Register *srcAddrReg, TR::Register *dstAddrReg, TR::Register *lengthReg, TR::Register *cndRegister,
-                               TR::Register *tmp1Reg, TR::Register *tmp2Reg, TR::Register *tmp3Reg, TR::Register *tmp4Reg, TR::Register *fp1Reg, TR::Register *fp2Reg,
-                               TR::Register *vec0Reg, TR::Register *vec1Reg, bool supportsLEArrayCopy, TR::RegisterDependencyConditions *conditions, TR::CodeGenerator *cg)
-   {
-   TR::LabelSymbol *forwardQuadWordArrayCopy_vsx = NULL;
-   TR::LabelSymbol *quadWordArrayCopy_vsx = NULL;
-   TR::LabelSymbol *quadWordAlignment_vsx = NULL;
-   TR::LabelSymbol *reverseQuadWordAlignment_vsx = NULL;
-   TR::LabelSymbol *quadWordAlignment_vsx_test8 = generateLabelSymbol(cg);
-   TR::LabelSymbol *quadWordAlignment_vsx_test4 = generateLabelSymbol(cg);
-   TR::LabelSymbol *quadWordAlignment_vsx_test2 = generateLabelSymbol(cg);
-   TR::LabelSymbol *quadWordAligned_vsx = generateLabelSymbol(cg);
-   TR::LabelSymbol *quadWordAligned_vsx_residue32 = generateLabelSymbol(cg);
-   TR::LabelSymbol *quadWordAligned_vsx_residue16 = generateLabelSymbol(cg);
-   TR::LabelSymbol *quadWordAligned_vsx_residue8 = generateLabelSymbol(cg);
-   TR::LabelSymbol *quadWordAligned_vsx_residue4 = generateLabelSymbol(cg);
-   TR::LabelSymbol *quadWordAligned_vsx_residue2 = generateLabelSymbol(cg);
-   TR::LabelSymbol *quadWordAligned_vsx_residue1 = generateLabelSymbol(cg);
-   TR::LabelSymbol *quadWordLoop_vsx = generateLabelSymbol(cg);
-   TR::LabelSymbol *reverseQuadWordAlignment_vsx_test8 = NULL;
-   TR::LabelSymbol *reverseQuadWordAlignment_vsx_test4 = NULL;
-   TR::LabelSymbol *reverseQuadWordAlignment_vsx_test2 = NULL;
-   TR::LabelSymbol *reverseQuadWordAligned_vsx = NULL;
-   TR::LabelSymbol *reverseQuadWordAligned_vsx_residue32 = NULL;
-   TR::LabelSymbol *reverseQuadWordAligned_vsx_residue16 = NULL;
-   TR::LabelSymbol *reverseQuadWordAligned_vsx_residue8 = NULL;
-   TR::LabelSymbol *reverseQuadWordAligned_vsx_residue4 = NULL;
-   TR::LabelSymbol *reverseQuadWordAligned_vsx_residue2 = NULL;
-   TR::LabelSymbol *reverseQuadWordAligned_vsx_residue1 = NULL;
-   TR::LabelSymbol *reverseQuadWordLoop_vsx = NULL;
-   TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
-
-   generateMemInstruction(cg, TR::InstOpCode::dcbt, node,  new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 0, 16, cg));
-   generateMemInstruction(cg, TR::InstOpCode::dcbtst, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 16, cg));
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 0);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::ble, node, doneLabel, cndRegister);
-
-   if (!node->isForwardArrayCopy())
-      {
-      reverseQuadWordAlignment_vsx = generateLabelSymbol(cg);
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, tmp4Reg, srcAddrReg, dstAddrReg);
-      generateTrg1Src2Instruction(cg, cg->comp()->target().is64Bit() ? TR::InstOpCode::cmpl8 : TR::InstOpCode::cmpl4, node, cndRegister, tmp4Reg, lengthReg);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, reverseQuadWordAlignment_vsx, cndRegister);
-      }
-
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 16);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, quadWordAligned_vsx_residue8, cndRegister);
-
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tmp4Reg, srcAddrReg, 7);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, 1, node, quadWordAlignment_vsx_test8, cndRegister);
-
-   //check 2 aligned
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tmp4Reg, srcAddrReg, 1);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, quadWordAlignment_vsx_test2, cndRegister);
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lbz, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 0, 1, cg));
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 1, cg), tmp2Reg);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, 1);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 1);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -1);
-
-   //check 4 aligned
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, quadWordAlignment_vsx_test2);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tmp4Reg, srcAddrReg, 2);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, quadWordAlignment_vsx_test4, cndRegister);
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 0, 2, cg));
-   generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 2, cg), tmp2Reg);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, 2);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 2);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -2);
-
-   //check 8 aligned
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, quadWordAlignment_vsx_test4);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tmp4Reg, srcAddrReg, 4);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, quadWordAlignment_vsx_test8, cndRegister);
-   if (supportsLEArrayCopy)
-      {
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, fp1Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 0, 4, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stfs, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 4, cg), fp1Reg);
-      }
-   else
-      {
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 0, 4, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 4, cg), tmp2Reg);
-      }
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, 4);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 4);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -4);
-
-   //check 16 aligned
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, quadWordAlignment_vsx_test8);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tmp4Reg, srcAddrReg, 8);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, quadWordAligned_vsx, cndRegister);
-   if (supportsLEArrayCopy)
-      {
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 0, 8, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 8, cg), fp2Reg);
-      }
-   else if (cg->comp()->target().is64Bit())
-      {
-      generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 0, 8, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 8, cg), tmp2Reg);
-      }
-   else
-      {
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tmp1Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 0, 4, cg));
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 4, 4, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 4, cg), tmp1Reg);
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 4, 4, cg), tmp2Reg);
-      }
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, 8);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 8);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -8);
-
-   //16 aligned
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, quadWordAligned_vsx);
-   generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, tmp2Reg, 16);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, tmp4Reg, lengthReg, 6);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, lengthReg, lengthReg, 63);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, tmp4Reg, 0);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, quadWordAligned_vsx_residue32, cndRegister);
-   generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, tmp4Reg);
-
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, quadWordLoop_vsx);
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, vec0Reg, new (cg->trHeapMemory()) TR::MemoryReference(NULL, srcAddrReg, 16, cg));
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, vec1Reg, new (cg->trHeapMemory()) TR::MemoryReference(tmp2Reg, srcAddrReg, 16, cg));
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(NULL, dstAddrReg, 16, cg), vec0Reg);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(tmp2Reg, dstAddrReg, 16, cg), vec1Reg);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, 32);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 32);
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, vec0Reg, new (cg->trHeapMemory()) TR::MemoryReference(NULL, srcAddrReg, 16, cg));
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, vec1Reg, new (cg->trHeapMemory()) TR::MemoryReference(tmp2Reg, srcAddrReg, 16, cg));
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(NULL, dstAddrReg, 16, cg), vec0Reg);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(tmp2Reg, dstAddrReg, 16, cg), vec1Reg);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, 32);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 32);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::bdnz, node, quadWordLoop_vsx, cndRegister);
-
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 0);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, doneLabel, cndRegister);
-
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, quadWordAligned_vsx_residue32);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 32);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, quadWordAligned_vsx_residue16, cndRegister);
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, vec0Reg, new (cg->trHeapMemory()) TR::MemoryReference(NULL, srcAddrReg, 16, cg));
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, vec1Reg, new (cg->trHeapMemory()) TR::MemoryReference(tmp2Reg, srcAddrReg, 16, cg));
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(NULL, dstAddrReg, 16, cg), vec0Reg);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(tmp2Reg, dstAddrReg, 16, cg), vec1Reg);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, 32);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 32);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -32);
-
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, quadWordAligned_vsx_residue16);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 16);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, quadWordAligned_vsx_residue8, cndRegister);
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, vec1Reg, new (cg->trHeapMemory()) TR::MemoryReference(NULL, srcAddrReg, 16, cg));
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(NULL, dstAddrReg, 16, cg), vec1Reg);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, 16);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 16);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -16);
-
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, quadWordAligned_vsx_residue8);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 8);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, quadWordAligned_vsx_residue4, cndRegister);
-   if (supportsLEArrayCopy)
-      {
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 0, 8, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 8, cg), fp2Reg);
-      }
-   else if (cg->comp()->target().is64Bit())
-      {
-      generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 0, 8, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 8, cg), tmp2Reg);
-      }
-   else
-      {
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tmp1Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 0, 4, cg));
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 4, 4, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 4, cg), tmp1Reg);
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 4, 4, cg), tmp2Reg);
-      }
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, 8);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 8);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -8);
-
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, quadWordAligned_vsx_residue4);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 4);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, quadWordAligned_vsx_residue2, cndRegister);
-   if (supportsLEArrayCopy)
-      {
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, fp1Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 0, 4, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stfs, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 4, cg), fp1Reg);
-      }
-   else
-      {
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 0, 4, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 4, cg), tmp2Reg);
-      }
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, 4);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 4);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -4);
-
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, quadWordAligned_vsx_residue2);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 2);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, quadWordAligned_vsx_residue1, cndRegister);
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 0, 2, cg));
-   generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 2, cg), tmp2Reg);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, 2);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 2);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -2);
-
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, quadWordAligned_vsx_residue1);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 1);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, doneLabel, cndRegister);
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lbz, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, 0, 1, cg));
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 1, cg), tmp2Reg);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, 1);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 1);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -1);
-   if(!node->isForwardArrayCopy())
-      generateLabelInstruction(cg, TR::InstOpCode::b, node, doneLabel);
-
-   if(!node->isForwardArrayCopy())
-      {
-      reverseQuadWordAlignment_vsx_test8 = generateLabelSymbol(cg);
-      reverseQuadWordAlignment_vsx_test4 = generateLabelSymbol(cg);
-      reverseQuadWordAlignment_vsx_test2 = generateLabelSymbol(cg);
-      reverseQuadWordAligned_vsx = generateLabelSymbol(cg);
-      reverseQuadWordAligned_vsx_residue32 = generateLabelSymbol(cg);
-      reverseQuadWordAligned_vsx_residue16 = generateLabelSymbol(cg);
-      reverseQuadWordAligned_vsx_residue8 = generateLabelSymbol(cg);
-      reverseQuadWordAligned_vsx_residue4 = generateLabelSymbol(cg);
-      reverseQuadWordAligned_vsx_residue2 = generateLabelSymbol(cg);
-      reverseQuadWordAligned_vsx_residue1 = generateLabelSymbol(cg);
-      reverseQuadWordLoop_vsx = generateLabelSymbol(cg);
-
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, reverseQuadWordAlignment_vsx);
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, srcAddrReg, srcAddrReg, lengthReg);
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, dstAddrReg, dstAddrReg, lengthReg);
-
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 16);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, reverseQuadWordAligned_vsx_residue8, cndRegister);
-
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tmp4Reg, srcAddrReg, 7);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, reverseQuadWordAlignment_vsx_test8, cndRegister);
-
-      //check 2 aligned
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tmp4Reg, srcAddrReg, 1);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, reverseQuadWordAlignment_vsx_test2, cndRegister);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lbz, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, -1, 1, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, -1, 1, cg), tmp2Reg);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, -1);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, -1);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -1);
-
-      //check 4 aligned
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, reverseQuadWordAlignment_vsx_test2);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tmp4Reg, srcAddrReg, 2);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, reverseQuadWordAlignment_vsx_test4, cndRegister);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, -2, 2, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, -2, 2, cg), tmp2Reg);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, -2);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, -2);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -2);
-
-      //check 8 aligned
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, reverseQuadWordAlignment_vsx_test4);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tmp4Reg, srcAddrReg, 4);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, reverseQuadWordAlignment_vsx_test8, cndRegister);
-      if (supportsLEArrayCopy)
-         {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, fp1Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, -4, 4, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stfs, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, -4, 4, cg), fp1Reg);
-         }
-      else
-         {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, -4, 4, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, -4, 4, cg), tmp2Reg);
-         }
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, -4);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, -4);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -4);
-
-      //check 16 aligned
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, reverseQuadWordAlignment_vsx_test8);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tmp4Reg, srcAddrReg, 8);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, reverseQuadWordAligned_vsx, cndRegister);
-      if (supportsLEArrayCopy)
-         {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, -8, 8, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, -8, 8, cg), fp2Reg);
-         }
-      else if (cg->comp()->target().is64Bit())
-         {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, -8, 8, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, -8, 8, cg), tmp2Reg);
-         }
-      else
-         {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tmp1Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, -4, 4, cg));
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, -8, 4, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, -4, 4, cg), tmp1Reg);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, -8, 4, cg), tmp2Reg);
-         }
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, -8);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, -8);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -8);
-
-      //16 aligned
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, reverseQuadWordAligned_vsx);
-      generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, tmp2Reg, -16);
-      generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, tmp1Reg, -32);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, tmp4Reg, lengthReg, 6);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, lengthReg, lengthReg, 63);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, tmp4Reg, 0);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, reverseQuadWordAligned_vsx_residue32, cndRegister);
-      generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, tmp4Reg);
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, reverseQuadWordLoop_vsx);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, vec0Reg, new (cg->trHeapMemory()) TR::MemoryReference(tmp2Reg, srcAddrReg, 16, cg));
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, vec1Reg, new (cg->trHeapMemory()) TR::MemoryReference(tmp1Reg, srcAddrReg, 16, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(tmp2Reg, dstAddrReg, 16, cg), vec0Reg);
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(tmp1Reg, dstAddrReg, 16, cg), vec1Reg);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, -32);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, -32);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, vec0Reg, new (cg->trHeapMemory()) TR::MemoryReference(tmp2Reg, srcAddrReg, 16, cg));
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, vec1Reg, new (cg->trHeapMemory()) TR::MemoryReference(tmp1Reg, srcAddrReg, 16, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(tmp2Reg, dstAddrReg, 16, cg), vec0Reg);
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(tmp1Reg, dstAddrReg, 16, cg), vec1Reg);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, -32);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, -32);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::bdnz, node, reverseQuadWordLoop_vsx, cndRegister);
-
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 0);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, doneLabel, cndRegister);
-
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, reverseQuadWordAligned_vsx_residue32);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 32);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, reverseQuadWordAligned_vsx_residue16, cndRegister);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, vec0Reg, new (cg->trHeapMemory()) TR::MemoryReference(tmp2Reg, srcAddrReg, 16, cg));
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, vec1Reg, new (cg->trHeapMemory()) TR::MemoryReference(tmp1Reg, srcAddrReg, 16, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(tmp2Reg, dstAddrReg, 16, cg), vec0Reg);
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(tmp1Reg, dstAddrReg, 16, cg), vec1Reg);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, -32);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, -32);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -32);
-
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, reverseQuadWordAligned_vsx_residue16);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 16);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, reverseQuadWordAligned_vsx_residue8, cndRegister);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, vec1Reg, new (cg->trHeapMemory()) TR::MemoryReference(tmp2Reg, srcAddrReg, 16, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(tmp2Reg, dstAddrReg, 16, cg), vec1Reg);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, -16);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, -16);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -16);
-
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, reverseQuadWordAligned_vsx_residue8);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 8);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, reverseQuadWordAligned_vsx_residue4, cndRegister);
-      if (supportsLEArrayCopy)
-         {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, -8, 8, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, -8, 8, cg), fp2Reg);
-         }
-      else if (cg->comp()->target().is64Bit())
-         {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, -8, 8, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, -8, 8, cg), tmp2Reg);
-         }
-      else
-         {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tmp1Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, -4, 4, cg));
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, -8, 4, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, -4, 4, cg), tmp1Reg);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, -8, 4, cg), tmp2Reg);
-         }
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, -8);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, -8);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -8);
-
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, reverseQuadWordAligned_vsx_residue4);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 4);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, reverseQuadWordAligned_vsx_residue2, cndRegister);
-      if (supportsLEArrayCopy)
-         {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, fp1Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, -4, 4, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stfs, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, -4, 4, cg), fp1Reg);
-         }
-      else
-         {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, -4, 4, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, -4, 4, cg), tmp2Reg);
-         }
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, -4);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, -4);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -4);
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, reverseQuadWordAligned_vsx_residue2);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 2);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, reverseQuadWordAligned_vsx_residue1, cndRegister);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, -2, 2, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, -2, 2, cg), tmp2Reg);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, -2);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, -2);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -2);
-
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, reverseQuadWordAligned_vsx_residue1);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::Op_cmpli, node, cndRegister, lengthReg, 1);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, doneLabel, cndRegister);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lbz, node, tmp2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcAddrReg, -1, 1, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, -1, 1, cg), tmp2Reg);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, srcAddrReg, srcAddrReg, -1);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, -1);
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, lengthReg, lengthReg, -1);
-      }
-   generateDepLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, conditions);
-   return;
-   }
 
 TR::Register *OMR::Power::TreeEvaluator::reverseStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -4575,13 +4256,17 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
       stopUsingCopyReg5 = true;
       }
 
+   bool  postP10Copy = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10) && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX);
+
    static bool disableVSXArrayCopy  = (feGetEnv("TR_disableVSXArrayCopy") != NULL);
-   bool  supportsVSX = (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8)) && !disableVSXArrayCopy && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX);
+   bool  copyUsingVSX = (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8)) && !disableVSXArrayCopy && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX);
 
-   static bool disableLEArrayCopyHelper  = (feGetEnv("TR_disableLEArrayCopyHelper") != NULL);
-   static bool disableVSXArrayCopyInlining = (feGetEnv("TR_enableVSXArrayCopyInlining") == NULL); // Disabling due to a performance regression
-
-   bool  supportsLEArrayCopy = !disableLEArrayCopyHelper && cg->comp()->target().cpu.isLittleEndian() && cg->comp()->target().cpu.hasFPU();
+   // Disabling this or checking for FPU doesn't make senses at all, since VSX supercedes FPU
+   // And, LE only starts with POWER8 (so, always falling under copyUsingVSX)
+   //    On POWER8, unaligned integer accesses in LE mode are potentially micro-coded, breaking
+   //    the guarantee of data atomicity. Instead, we are using floating point or vector access
+   //    to replace it.
+   bool  additionalLERequirement = cg->comp()->target().cpu.isLittleEndian();
 
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
    static bool verboseArrayCopy = (feGetEnv("TR_verboseArrayCopy") != NULL);       //Check which helper is getting used.
@@ -4599,18 +4284,19 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
 
    TR::RegisterDependencyConditions *conditions;
    int32_t numDeps = 0;
-   if(cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) && supportsVSX)
+   if (postP10Copy)
+      {
+      numDeps = 10;
+      }
+   else if(copyUsingVSX)
       {
       numDeps = cg->comp()->target().is64Bit() ? 10 : 13;
-      if (supportsLEArrayCopy)
+      if (additionalLERequirement)
          {
-         numDeps += 2;
-         if(disableVSXArrayCopyInlining)
-            numDeps +=2;
+         numDeps += 4;
          }
       }
-   else
-   if (cg->comp()->target().is64Bit())
+   else if (cg->comp()->target().is64Bit())
       {
       if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
          numDeps = 12;
@@ -4627,8 +4313,9 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
    TR::Register *cndRegister = cg->allocateRegister(TR_CCR);
    TR::Register *tmp1Reg = cg->allocateRegister(TR_GPR);
    TR::Register *tmp2Reg = cg->allocateRegister(TR_GPR);
-   TR::Register *tmp3Reg = cg->allocateRegister(TR_GPR);
    TR::Register *tmp4Reg = cg->allocateRegister(TR_GPR);
+
+   TR::Register *tmp3Reg = NULL;
    TR::Register *fp1Reg = NULL;
    TR::Register *fp2Reg = NULL;
    TR::Register *vec0Reg = NULL;
@@ -4639,135 +4326,146 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
    TR::addDependency(conditions, lengthReg, TR::RealRegister::gr7, TR_GPR, cg);
    TR::addDependency(conditions, srcAddrReg, TR::RealRegister::gr8, TR_GPR, cg);
    TR::addDependency(conditions, dstAddrReg, TR::RealRegister::gr9, TR_GPR, cg);
-   TR::addDependency(conditions, tmp3Reg, TR::RealRegister::gr0, TR_GPR, cg);
    // trampoline kills gr11
    TR::addDependency(conditions, tmp4Reg, TR::RealRegister::gr11, TR_GPR, cg);
 
-   // Call the right version of arrayCopy code to do the job
-   TR::addDependency(conditions, tmp1Reg, TR::RealRegister::gr5, TR_GPR, cg);
-   TR::addDependency(conditions, tmp2Reg, TR::RealRegister::gr6, TR_GPR, cg);
-
-   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) && supportsVSX)
+   if (postP10Copy)
       {
-      vec0Reg = cg->allocateRegister(TR_VRF);
-      vec1Reg = cg->allocateRegister(TR_VRF);
-      TR::addDependency(conditions, vec0Reg, TR::RealRegister::vr0, TR_VRF, cg);
-      TR::addDependency(conditions, vec1Reg, TR::RealRegister::vr1, TR_VRF, cg);
-      if (cg->comp()->target().is32Bit())
+      TR::addDependency(conditions, NULL, TR::RealRegister::vsr32, TR_VSX_VECTOR, cg);
+      TR::addDependency(conditions, NULL, TR::RealRegister::vsr33, TR_VSX_VECTOR, cg);
+      TR::addDependency(conditions, NULL, TR::RealRegister::vsr8, TR_VSX_VECTOR, cg);
+      TR::addDependency(conditions, NULL, TR::RealRegister::vsr9, TR_VSX_VECTOR, cg);
+      if (!node->isForwardArrayCopy())
          {
-         TR::addDependency(conditions, NULL, TR::RealRegister::gr3, TR_GPR, cg);
-         TR::addDependency(conditions, NULL, TR::RealRegister::gr4, TR_GPR, cg);
-         TR::addDependency(conditions, NULL, TR::RealRegister::gr10, TR_GPR, cg);
+         TR::addDependency(conditions, NULL, TR::RealRegister::gr5, TR_GPR, cg);
          }
-      if (supportsLEArrayCopy)
+      }
+   else
+      {
+      tmp3Reg = cg->allocateRegister(TR_GPR);
+      TR::addDependency(conditions, tmp3Reg, TR::RealRegister::gr0, TR_GPR, cg);
+   
+      // Call the right version of arrayCopy code to do the job
+      TR::addDependency(conditions, tmp1Reg, TR::RealRegister::gr5, TR_GPR, cg);
+      TR::addDependency(conditions, tmp2Reg, TR::RealRegister::gr6, TR_GPR, cg);
+   
+      if (copyUsingVSX)
          {
-         fp1Reg = cg->allocateSinglePrecisionRegister();
-         fp2Reg = cg->allocateSinglePrecisionRegister();
-         TR::addDependency(conditions, fp1Reg, TR::RealRegister::fp8, TR_FPR, cg);
-         TR::addDependency(conditions, fp2Reg, TR::RealRegister::fp9, TR_FPR, cg);
-         if (disableVSXArrayCopyInlining)
+         vec0Reg = cg->allocateRegister(TR_VRF);
+         vec1Reg = cg->allocateRegister(TR_VRF);
+         TR::addDependency(conditions, vec0Reg, TR::RealRegister::vr0, TR_VRF, cg);
+         TR::addDependency(conditions, vec1Reg, TR::RealRegister::vr1, TR_VRF, cg);
+         if (cg->comp()->target().is32Bit())
             {
+            TR::addDependency(conditions, NULL, TR::RealRegister::gr3, TR_GPR, cg);
+            TR::addDependency(conditions, NULL, TR::RealRegister::gr4, TR_GPR, cg);
+            TR::addDependency(conditions, NULL, TR::RealRegister::gr10, TR_GPR, cg);
+            }
+         if (additionalLERequirement)
+            {
+            fp1Reg = cg->allocateSinglePrecisionRegister();
+            fp2Reg = cg->allocateSinglePrecisionRegister();
+            TR::addDependency(conditions, fp1Reg, TR::RealRegister::fp8, TR_FPR, cg);
+            TR::addDependency(conditions, fp2Reg, TR::RealRegister::fp9, TR_FPR, cg);
             TR::addDependency(conditions, NULL, TR::RealRegister::fp10, TR_FPR, cg);
             TR::addDependency(conditions, NULL, TR::RealRegister::fp11, TR_FPR, cg);
             }
          }
-      }
-   else if (cg->comp()->target().is32Bit())
-      {
-      TR::addDependency(conditions, NULL, TR::RealRegister::gr3, TR_GPR, cg);
-      TR::addDependency(conditions, NULL, TR::RealRegister::gr4, TR_GPR, cg);
-      TR::addDependency(conditions, NULL, TR::RealRegister::gr10, TR_GPR, cg);
-      if (cg->comp()->target().cpu.hasFPU())
+      else if (cg->comp()->target().is32Bit())
          {
+         TR::addDependency(conditions, NULL, TR::RealRegister::gr3, TR_GPR, cg);
+         TR::addDependency(conditions, NULL, TR::RealRegister::gr4, TR_GPR, cg);
+         TR::addDependency(conditions, NULL, TR::RealRegister::gr10, TR_GPR, cg);
+         if (cg->comp()->target().cpu.hasFPU())
+            {
+            TR::addDependency(conditions, NULL, TR::RealRegister::fp8, TR_FPR, cg);
+            TR::addDependency(conditions, NULL, TR::RealRegister::fp9, TR_FPR, cg);
+            TR::addDependency(conditions, NULL, TR::RealRegister::fp10, TR_FPR, cg);
+            TR::addDependency(conditions, NULL, TR::RealRegister::fp11, TR_FPR, cg);
+            }
+         }
+      else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
+         {
+         // stfdp arrayCopy used
          TR::addDependency(conditions, NULL, TR::RealRegister::fp8, TR_FPR, cg);
          TR::addDependency(conditions, NULL, TR::RealRegister::fp9, TR_FPR, cg);
          TR::addDependency(conditions, NULL, TR::RealRegister::fp10, TR_FPR, cg);
          TR::addDependency(conditions, NULL, TR::RealRegister::fp11, TR_FPR, cg);
          }
       }
-   else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
-      {
-      // stfdp arrayCopy used
-      TR::addDependency(conditions, NULL, TR::RealRegister::fp8, TR_FPR, cg);
-      TR::addDependency(conditions, NULL, TR::RealRegister::fp9, TR_FPR, cg);
-      TR::addDependency(conditions, NULL, TR::RealRegister::fp10, TR_FPR, cg);
-      TR::addDependency(conditions, NULL, TR::RealRegister::fp11, TR_FPR, cg);
-      }
 
-      if (!disableVSXArrayCopyInlining && supportsVSX)
+   TR_RuntimeHelper helper;
+
+   if (node->isForwardArrayCopy())
+      {
+      if (postP10Copy)
          {
-         inlineVSXArrayCopy(node, srcAddrReg, dstAddrReg, lengthReg, cndRegister,
-                            tmp1Reg, tmp2Reg, tmp3Reg, tmp4Reg, fp1Reg, fp2Reg,
-                            vec0Reg, vec1Reg, supportsLEArrayCopy, conditions, cg);
+         helper = TR_PPCpostP10ForwardCopy;
+         }
+      else if (copyUsingVSX)
+         {
+         helper = TR_PPCforwardQuadWordArrayCopy_vsx;
+         }
+      else if (node->isWordElementArrayCopy())
+         {
+         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
+            helper = TR_PPCforwardWordArrayCopy_dp;
+         else
+            helper = TR_PPCforwardWordArrayCopy;
+         }
+      else if (node->isHalfWordElementArrayCopy())
+         {
+         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
+            helper = TR_PPCforwardHalfWordArrayCopy_dp;
+         else
+            helper = TR_PPCforwardHalfWordArrayCopy;
          }
       else
          {
-         TR_RuntimeHelper helper;
-
-         if (node->isForwardArrayCopy())
+         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
+            helper = TR_PPCforwardArrayCopy_dp;
+         else
             {
-            if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) && supportsVSX)
-               {
-               helper = TR_PPCforwardQuadWordArrayCopy_vsx;
-               }
-            else
-            if (node->isWordElementArrayCopy())
-               {
-               if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
-                  helper = TR_PPCforwardWordArrayCopy_dp;
-               else
-                  helper = TR_PPCforwardWordArrayCopy;
-               }
-            else if (node->isHalfWordElementArrayCopy())
-               {
-               if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
-                  helper = TR_PPCforwardHalfWordArrayCopy_dp;
-               else
-                  helper = TR_PPCforwardHalfWordArrayCopy;
-               }
-            else
-               {
-               if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
-                  helper = TR_PPCforwardArrayCopy_dp;
-               else
-                  {
-                  helper = TR_PPCforwardArrayCopy;
-                  }
-               }
+            helper = TR_PPCforwardArrayCopy;
             }
-         else // We are not sure it is forward or we have to do backward
-            {
-            if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) && supportsVSX)
-               {
-               helper = TR_PPCquadWordArrayCopy_vsx;
-               }
-            else
-            if (node->isWordElementArrayCopy())
-               {
-               if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
-                  helper = TR_PPCwordArrayCopy_dp;
-               else
-                  helper = TR_PPCwordArrayCopy;
-               }
-            else if (node->isHalfWordElementArrayCopy())
-               {
-               if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
-                  helper = TR_PPChalfWordArrayCopy_dp;
-               else
-                  helper = TR_PPChalfWordArrayCopy;
-               }
-            else
-               {
-               if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
-                  helper = TR_PPCarrayCopy_dp;
-               else
-                  {
-                  helper = TR_PPCarrayCopy;
-                  }
-               }
-            }
-         TR::TreeEvaluator::generateHelperBranchAndLinkInstruction(helper, node, conditions, cg);
          }
+      }
+   else // We are not sure it is forward or we have to do backward
+      {
+      if (postP10Copy)
+         {
+         helper = TR_PPCpostP10GenericCopy;
+         }
+      else if (copyUsingVSX)
+         {
+         helper = TR_PPCquadWordArrayCopy_vsx;
+         }
+      else if (node->isWordElementArrayCopy())
+         {
+         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
+            helper = TR_PPCwordArrayCopy_dp;
+         else
+            helper = TR_PPCwordArrayCopy;
+         }
+      else if (node->isHalfWordElementArrayCopy())
+         {
+         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
+            helper = TR_PPChalfWordArrayCopy_dp;
+         else
+            helper = TR_PPChalfWordArrayCopy;
+         }
+      else
+         {
+         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6))
+            helper = TR_PPCarrayCopy_dp;
+         else
+            {
+            helper = TR_PPCarrayCopy;
+            }
+         }
+      }
+   TR::TreeEvaluator::generateHelperBranchAndLinkInstruction(helper, node, conditions, cg);
+         
    conditions->stopUsingDepRegs(cg);
 
 #ifdef J9_PROJECT_SPECIFIC

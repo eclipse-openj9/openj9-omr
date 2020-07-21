@@ -1,5 +1,5 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!! Copyright (c) 2000, 2016 IBM Corp. and others
+!! Copyright (c) 2000, 2020 IBM Corp. and others
 !!
 !! This program and the accompanying materials are made available under
 !! the terms of the Eclipse Public License 2.0 which accompanies this
@@ -67,10 +67,6 @@
    .globl    __postP10ForwardCopy{DS}
    .globl    .__postP10GenericCopy
    .globl    __postP10GenericCopy{DS}
-   .globl    .__forwardLEArrayCopy
-   .globl    __forwardLEArrayCopy{DS}
-   .globl    .__leArrayCopy
-   .globl    __leArrayCopy{DS}
 
    .lglobl    .__codeForShortArrayCopy
    .lglobl    L.0copy
@@ -140,10 +136,6 @@
    .type     FUNC_LABEL(__postP10ForwardCopy),@function
    .globl    FUNC_LABEL(__postP10GenericCopy)
    .type     FUNC_LABEL(__postP10GenericCopy),@function
-   .globl    FUNC_LABEL(__forwardLEArrayCopy)
-   .type     FUNC_LABEL(__forwardLEArrayCopy),@function
-   .globl    FUNC_LABEL(__leArrayCopy)
-   .type     FUNC_LABEL(__leArrayCopy),@function
 
 #elif defined(LINUX)
    .globl    __arrayCopy
@@ -162,8 +154,6 @@
    .globl    __quadWordArrayCopy_vsx
    .globl    __postP10ForwardCopy
    .globl    __postP10GenericCopy
-   .globl    __forwardLEArrayCopy
-   .globl    __leArrayCopy
 #endif
 
 
@@ -2425,30 +2415,6 @@ L.post_P10_Generic_loop64:
 
    endproc.__postP10GenericCopy:
 
-#ifdef AIXPPC
-   .csect   __forwardLEArrayCopy{PR}
-.__forwardLEArrayCopy:
-   .function .__forwardLEArrayCopy,startproc.__forwardLEArrayCopy,16,0,(endproc.__forwardLEArrayCopy-startproc.__forwardLEArrayCopy)
-#elif defined(LINUXPPC64)
-FUNC_LABEL(__forwardLEArrayCopy):
-#else
-__forwardLEArrayCopy:
-#endif
-startproc.__forwardLEArrayCopy:
-endproc.__forwardLEArrayCopy:
-
-#ifdef AIXPPC
-   .csect   __leArrayCopy{PR}
-.__leArrayCopy:
-   .function .__leArrayCopy,startproc.__leArrayCopy,16,0,(endproc.__leArrayCopy-startproc.__leArrayCopy)
-#elif defined(LINUXPPC64)
-FUNC_LABEL(__leArrayCopy):
-#else
-__leArrayCopy:
-#endif
-startproc.__leArrayCopy:
-endproc.__leArrayCopy:
-
 
 ! .data section
 #ifdef AIXPPC
@@ -2551,19 +2517,6 @@ TOC__shortArrayCopyLabelTable:
    ADDR      TOC{TC0}
    ADDR      0x00000000
 ! End   csect     __postP10GenericCopy{DS}
-
-   .csect    __forwardLEArrayCopy{DS}
-   ADDR      .__forwardLEArrayCopy
-   ADDR      TOC{TC0}
-   ADDR      0x00000000
-! End   csect     __forwardLEArrayCopy{DS}
-
-   .csect    __leArrayCopy{DS}
-   ADDR      .__leArrayCopy
-   ADDR      TOC{TC0}
-   ADDR      0x00000000
-! End   csect     __leArrayCopy{DS}
-
 
 #elif defined(LINUXPPC64)
    .section  ".toc"
@@ -2697,22 +2650,6 @@ __postP10ForwardCopy:
    .size     __postP10GenericCopy,24
 __postP10GenericCopy:
    .quad     .__postP10GenericCopy
-   .quad     .TOC.@tocbase
-   .long     0x00000000
-   .long     0x00000000
-
-   .globl    __forwardLEArrayCopy
-   .size     __forwardLEArrayCopy,24
-__forwardLEArrayCopy:
-   .quad     .__forwardLEArrayCopy
-   .quad     .TOC.@tocbase
-   .long     0x00000000
-   .long     0x00000000
-
-   .globl    __leArrayCopy
-   .size     __leArrayCopy,24
-__leArrayCopy:
-   .quad     .__leArrayCopy
    .quad     .TOC.@tocbase
    .long     0x00000000
    .long     0x00000000

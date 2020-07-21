@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2019 IBM Corp. and others
+ * Copyright (c) 2014, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -101,6 +101,7 @@ class ResolvedMethod : public ResolvedMethodBase, public Method
         _lineNumber(lineNumber),
         _name(name),
         _signature(0),
+        _externalName(0),
         _numParms(numParms),
         _parmTypes(parmTypes),
         _returnType(returnType),

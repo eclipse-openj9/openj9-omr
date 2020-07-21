@@ -925,6 +925,3 @@ TraceException=Trc_MM_double_map_Failed Overhead=1 Level=1 Group=arraylet Templa
 TraceExit=Trc_MM_double_map_Exit Overhead=1 Level=3 Group=arraylet Template="MM_IndexableObjectAllocationModel::doubleMapArraylets. result=%p"
 
 TraceEvent=Trc_MM_Scavenger_percolate_delegate Overhead=1 Level=1 Group=percolate Template="Percolating due to language specific reason"
-
-TraceEntry=Trc_MM_MemorySubSpaceUniSpace_getHeapFreeMaximumHeuristicMultiplier Overhead=1 Level=1 Group=resize Template="Trc_MM_MemorySubSpaceUniSpace_getHeapFreeMaximumHeuristicMultiplier Maximum free multiplier = %zu"
-TraceEntry=Trc_MM_MemorySubSpaceUniSpace_getHeapFreeMinimumHeuristicMultiplier Overhead=1 Level=1 Group=resize Template="Trc_MM_MemorySubSpaceUniSpace_getHeapFreeMinimumHeuristicMultiplier Minimum free multiplier = %zu"

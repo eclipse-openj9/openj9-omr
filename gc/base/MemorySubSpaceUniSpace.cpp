@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -285,9 +285,8 @@ MM_MemorySubSpaceUniSpace::timeForHeapContract(MM_EnvironmentBase *env, MM_Alloc
 		}
 	}
 	
-	/* Don't shrink if -Xmaxf1.0 specfied, i.e max free is 100% */
-	uintptr_t heapFreeMaximumHeuristicMultiplier = getHeapFreeMaximumHeuristicMultiplier(env);
-	if (100 == _extensions->heapFreeMaximumRatioMultiplier || heapFreeMaximumHeuristicMultiplier >= 100) {
+	/* Don't shrink if -Xmaxf1.0 specfied , i.e max free is 100% */
+	if ( _extensions->heapFreeMaximumRatioMultiplier == 100 ) {
 		Trc_MM_MemorySubSpaceUniSpace_timeForHeapContract_Exit2(env->getLanguageVMThread());
 		return false;
 	}
@@ -327,9 +326,8 @@ MM_MemorySubSpaceUniSpace::timeForHeapContract(MM_EnvironmentBase *env, MM_Alloc
 	 * the start of the garbage collection 
 	 */ 
 	 if (systemGC) {
-		uintptr_t heapFreeMinimumHeuristicMultiplier = getHeapFreeMinimumHeuristicMultiplier(env);
 	 	uintptr_t minimumFree = (getActiveMemorySize() / _extensions->heapFreeMinimumRatioDivisor) 
-								* heapFreeMinimumHeuristicMultiplier;
+								* _extensions->heapFreeMinimumRatioMultiplier;
 		uintptr_t freeBytesAtSystemGCStart = _extensions->heap->getResizeStats()->getFreeBytesAtSystemGCStart();
 		
 		if (freeBytesAtSystemGCStart < minimumFree) {
@@ -376,10 +374,8 @@ MM_MemorySubSpaceUniSpace::calculateTargetContractSize(MM_EnvironmentBase *env, 
 	} else {
 		uintptr_t currentFree = getApproximateActiveFreeMemorySize() - allocSize;
 		uintptr_t currentHeapSize = getActiveMemorySize();
-		uintptr_t heapFreeMaximumHeuristicMultiplier = getHeapFreeMaximumHeuristicMultiplier(env);
-		uintptr_t heapFreeMinimumHeuristicMultiplier = getHeapFreeMinimumHeuristicMultiplier(env);
-		uintptr_t maximumFreePercent =  ratioContract ? OMR_MIN(heapFreeMinimumHeuristicMultiplier + 5, heapFreeMaximumHeuristicMultiplier + 1) :
-													heapFreeMaximumHeuristicMultiplier + 1;
+		uintptr_t maximumFreePercent =  ratioContract ? OMR_MIN(_extensions->heapFreeMinimumRatioMultiplier + 5, _extensions->heapFreeMaximumRatioMultiplier + 1) :
+													_extensions->heapFreeMaximumRatioMultiplier + 1;
 		uintptr_t maximumFree = (currentHeapSize / _extensions->heapFreeMaximumRatioDivisor) * maximumFreePercent;
 
 		/* Do we have more free than is desirable ? */
@@ -445,19 +441,19 @@ MM_MemorySubSpaceUniSpace::calculateTargetContractSize(MM_EnvironmentBase *env, 
 uintptr_t
 MM_MemorySubSpaceUniSpace::calculateExpandSize(MM_EnvironmentBase *env, uintptr_t bytesRequired, bool expandToSatisfy)
 {
+	uintptr_t currentFree, minimumFree, desiredFree;
 	uintptr_t expandSize = 0;
 	
 	Trc_MM_MemorySubSpaceUniSpace_calculateExpandSize_Entry(env->getLanguageVMThread(), bytesRequired);
 	
 	/* How much heap space currently free ? */
-	uintptr_t currentFree = getApproximateActiveFreeMemorySize();
+	currentFree = getApproximateActiveFreeMemorySize();
 	
 	/* and how much do we need free after this GC to meet -Xminf ? */
-	uintptr_t heapFreeMinimumHeuristicMultiplier = getHeapFreeMinimumHeuristicMultiplier(env);
-	uintptr_t minimumFree = (getActiveMemorySize() / _extensions->heapFreeMinimumRatioDivisor) * heapFreeMinimumHeuristicMultiplier;
+	minimumFree = (getActiveMemorySize() / _extensions->heapFreeMinimumRatioDivisor) * _extensions->heapFreeMinimumRatioMultiplier;
 	
-	/* The desired free is the sum of these 2 rounded to heapAlignment */
-	uintptr_t desiredFree = MM_Math::roundToCeiling(_extensions->heapAlignment, minimumFree + bytesRequired);
+	/* The derired free is the sum of these 2 rounded to heapAlignment */
+	desiredFree= MM_Math::roundToCeiling(_extensions->heapAlignment, minimumFree + bytesRequired);
 
 	if(desiredFree <= currentFree) {
 		/* Only expand if we didn't expand in last _extensions->heapExpansionStabilizationCount global collections */
@@ -483,7 +479,7 @@ MM_MemorySubSpaceUniSpace::calculateExpandSize(MM_EnvironmentBase *env, uintptr_
 		/* Calculate how much we need to expand the heap by in order to meet the 
 		 * allocation request and the desired -Xminf amount AFTER expansion 
 		 */
-		expandSize = ((desiredFree - currentFree) / (100 - heapFreeMinimumHeuristicMultiplier)) * _extensions->heapFreeMinimumRatioDivisor;
+		expandSize= ((desiredFree - currentFree) / (100 - _extensions->heapFreeMinimumRatioMultiplier)) * _extensions->heapFreeMinimumRatioDivisor;
 
 		if (expandSize > 0 ) {
 			/* Remember reason for contraction for later */
@@ -577,34 +573,35 @@ uintptr_t
 MM_MemorySubSpaceUniSpace::checkForRatioExpand(MM_EnvironmentBase *env, uintptr_t bytesRequired)
 {
 	Trc_MM_MemorySubSpaceUniSpace_checkForRatioExpand_Entry(env->getLanguageVMThread(), bytesRequired);
+	
+	uint32_t gcPercentage;
+	uintptr_t currentFree, maxFree;
 
-	uint32_t gcPercentage = 0;
-
-	/* How many bytes currently free ? */
-	uintptr_t currentFree = getApproximateActiveFreeMemorySize();
-
-	/* How many bytes free would constitute -Xmaxf at current heap size ? */
-	uintptr_t heapFreeMaximumHeuristicMultiplier = getHeapFreeMaximumHeuristicMultiplier(env);
-	uintptr_t maxFree = (uintptr_t)(getActiveMemorySize() * heapFreeMaximumHeuristicMultiplier / _extensions->heapFreeMaximumRatioDivisor);
-
-	/* If we have hit -Xmaxf limit already ...return immiediatley */
-	if (currentFree >= maxFree) {
+	/* How many bytes currently free ? */	 
+	currentFree = getApproximateActiveFreeMemorySize();
+						 
+	/* How many bytes free would constitute -Xmaxf at current heap size ? */				 
+	maxFree = (uintptr_t)(((uint64_t)getActiveMemorySize()  * _extensions->heapFreeMaximumRatioMultiplier)
+														 / ((uint64_t)_extensions->heapFreeMaximumRatioDivisor));
+														 
+	/* If we have hit -Xmaxf limit already ...return immiediatley */													 
+	if (currentFree >= maxFree) { 
 		Trc_MM_MemorySubSpaceUniSpace_checkForRatioExpand_Exit1(env->getLanguageVMThread());
 		return 0;
-	}
-
+	}														 
+						 
 	/* Ask the collector for percentage of time being spent in GC */
-	if (NULL != _collector) {
+	if(NULL != _collector) {
 		gcPercentage = _collector->getGCTimePercentage(env);
 	} else {
-		gcPercentage = _extensions->getGlobalCollector()->getGCTimePercentage(env);
+		gcPercentage= _extensions->getGlobalCollector()->getGCTimePercentage(env);
 	}
-
+	
 	/* Is too much time is being spent in GC? */
 	if (gcPercentage < _extensions->heapExpansionGCTimeThreshold) {
 		Trc_MM_MemorySubSpaceUniSpace_checkForRatioExpand_Exit2(env->getLanguageVMThread(), gcPercentage);
 		return 0;
-	} else {
+	} else { 
 		/* 
 		 * We are spending too much time in gc and are below -Xmaxf free space so expand to 
 		 * attempt to reduce gc time.
@@ -613,29 +610,31 @@ MM_MemorySubSpaceUniSpace::checkForRatioExpand(MM_EnvironmentBase *env, uintptr_
 		 * 
 		 * We expand by HEAP_FREE_RATIO_EXPAND_MULTIPLIER percentage provided this does not take us above
 		 * -Xmaxf. If it does we expand up to the -Xmaxf limit.
-		 */
-
+		 */ 
+		uintptr_t ratioExpandAmount, maxExpandSize;
+			
 		/* How many bytes (maximum) do we want to expand by ?*/
-		uintptr_t ratioExpandAmount = (uintptr_t)(((uint64_t)getActiveMemorySize() * HEAP_FREE_RATIO_EXPAND_MULTIPLIER)
-						 / ((uint64_t)HEAP_FREE_RATIO_EXPAND_DIVISOR));
-
+		ratioExpandAmount =(uintptr_t)(((uint64_t)getActiveMemorySize()  * HEAP_FREE_RATIO_EXPAND_MULTIPLIER)
+						 / ((uint64_t)HEAP_FREE_RATIO_EXPAND_DIVISOR));		
+						 
 		/* If user has set -Xmaxf1.0 then they do not care how much free space we have
 		 * so no need to limit expand size here. Expand size will later be checked  
 		 * against -Xmaxe value.
 		 */
-		if (heapFreeMaximumHeuristicMultiplier < 100) {
-			/* By how much could we expand current heap without taking us above -Xmaxf bytes in
+		if (_extensions->heapFreeMaximumRatioMultiplier < 100 ) {					 
+			
+			/* By how much could we expand current heap without taking us above -Xmaxf bytes in 
 			 * resulting new (larger) heap
-			 */
-			uintptr_t maxExpandSize = ((maxFree - currentFree) / (100 - heapFreeMaximumHeuristicMultiplier)) *
+			 */ 
+			maxExpandSize = ((maxFree - currentFree) / (100 - _extensions->heapFreeMaximumRatioMultiplier)) *
 								_extensions->heapFreeMaximumRatioDivisor;
-
+				
 			ratioExpandAmount = OMR_MIN(maxExpandSize,ratioExpandAmount);
-		}
+		}	
 
 		/* Round expansion amount UP to heap alignment */
-		ratioExpandAmount = MM_Math::roundToCeiling(_extensions->heapAlignment, ratioExpandAmount);
-
+		ratioExpandAmount = MM_Math::roundToCeiling(_extensions->heapAlignment, ratioExpandAmount);	
+				
 		Trc_MM_MemorySubSpaceUniSpace_checkForRatioExpand_Exit3(env->getLanguageVMThread(), gcPercentage, ratioExpandAmount);
 		return ratioExpandAmount;
 	}
@@ -725,45 +724,4 @@ MM_MemorySubSpaceUniSpace::adjustExpansionWithinSoftMax(MM_EnvironmentBase *env,
 		}
 	}
 	return expandSize;
-}
-
-uintptr_t
-MM_MemorySubSpaceUniSpace::getHeapFreeMaximumHeuristicMultiplier(MM_EnvironmentBase *env)
-{
-	uint32_t gcPercentage = 0;
-
-	if (NULL != _collector) {
-		gcPercentage = _collector->getGCTimePercentage(env);
-	} else {
-		gcPercentage = _extensions->getGlobalCollector()->getGCTimePercentage(env);
-	}
-
-	uintptr_t expectedGcPercentage = (_extensions->heapContractionGCTimeThreshold + _extensions->heapExpansionGCTimeThreshold) / 2;
-	uintptr_t gcRatio = gcPercentage / expectedGcPercentage;
-	uintptr_t freeMaxMultiplier = _extensions->heapFreeMaximumRatioMultiplier + 6 * gcRatio * gcRatio;
-	
-	Trc_MM_MemorySubSpaceUniSpace_getHeapFreeMaximumHeuristicMultiplier(env->getLanguageVMThread(), freeMaxMultiplier);
-
-	return freeMaxMultiplier;
-}
-
-uintptr_t
-MM_MemorySubSpaceUniSpace::getHeapFreeMinimumHeuristicMultiplier(MM_EnvironmentBase *env)
-{
-	uint32_t gcPercentage = 0;
-
-	if (NULL != _collector) {
-		gcPercentage = _collector->getGCTimePercentage(env);
-	} else {
-		gcPercentage = _extensions->getGlobalCollector()->getGCTimePercentage(env);
-	}
-
-	uintptr_t expectedGcPercentage = (_extensions->heapContractionGCTimeThreshold + _extensions->heapExpansionGCTimeThreshold) / 2;
-	uintptr_t gcRatio = gcPercentage / expectedGcPercentage;
-	uintptr_t freeMinMultiplier = _extensions->heapFreeMinimumRatioMultiplier + 1 * gcRatio * gcRatio;
-	
-	Trc_MM_MemorySubSpaceUniSpace_getHeapFreeMinimumHeuristicMultiplier(env->getLanguageVMThread(), freeMinMultiplier);
-
-	return freeMinMultiplier;
-}
-
+}	

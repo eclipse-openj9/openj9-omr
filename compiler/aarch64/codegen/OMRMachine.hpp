@@ -41,6 +41,7 @@ namespace OMR { typedef OMR::ARM64::Machine MachineConnector; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }
 namespace TR { class Register; }
+namespace TR { class RegisterDependencyConditions; }
 
 #define NUM_ARM64_MAXR 32
 
@@ -139,6 +140,22 @@ public:
     * @brief Restore the register file from snapshot
     */
    void restoreRegisterStateFromSnapShot();
+
+   /**
+    * @brief Creates register dependency conditions for the entry label of cold path of OutOfLineCodeSection
+    *
+    * @param spilledRegisterList : the list of spilled registers in main line and hot path
+    * @return register dependency conditions
+    */
+   TR::RegisterDependencyConditions *createDepCondForLiveGPRs(TR::list<TR::Register*> *spilledRegisterList);
+
+   /**
+    * @brief Decrease future use count of the register and unlatch it if necessary
+    *
+    * @param currentInstruction     : instruction
+    * @param virtualRegister        : virtual register
+    */
+   void decFutureUseCountAndUnlatch(TR::Instruction *currentInstruction, TR::Register *virtualRegister);
 
 private:
 

@@ -2595,11 +2595,13 @@ TR_Debug::dumpMethodInstrs(TR::FILE *pOutFile, const char *title, bool dumpTrees
 
       // Dump OOL instruction sequences.
       //
-#if defined(TR_TARGET_POWER) || defined(TR_TARGET_S390)
+#if defined(TR_TARGET_POWER) || defined(TR_TARGET_S390) || defined(TR_TARGET_ARM64)
       // After RA outlined code is linked to the regular instruction stream and will automatically be printed
       if (_comp->cg()->getCodeGeneratorPhase() < TR::CodeGenPhase::RegisterAssigningPhase)
 #if defined(TR_TARGET_POWER)
          printPPCOOLSequences(pOutFile);
+#elif defined(TR_TARGET_ARM64)
+         printARM64OOLSequences(pOutFile);
 #else
          printS390OOLSequences(pOutFile);
 #endif

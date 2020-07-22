@@ -43,7 +43,8 @@
 OMR::ARM64::CodeGenerator::CodeGenerator() :
       OMR::CodeGenerator(),
       _dataSnippetList(getTypedAllocator<TR::ARM64ConstantDataSnippet*>(TR::comp()->allocator())),
-      _outOfLineCodeSectionList(getTypedAllocator<TR_ARM64OutOfLineCodeSection*>(self()->comp()->allocator()))
+      _outOfLineCodeSectionList(getTypedAllocator<TR_ARM64OutOfLineCodeSection*>(self()->comp()->allocator())),
+      _firstTimeLiveOOLRegisterList(NULL)
    {
    // Initialize Linkage for Code Generator
    self()->initializeLinkage();
@@ -175,8 +176,17 @@ OMR::ARM64::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
 
    if (!comp->getOption(TR_DisableOOL))
       {
-      TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
-      self()->setSpilledRegisterList(spilledRegisterList);
+      if (!self()->isOutOfLineColdPath())
+         {
+         // Allocates these lists when the register assignment starts.
+         // As doRegisterAssignment is called mutiple times for the cold path of OutOfLineCodeSections,
+         // we do allocation only when we are not in the cold path.
+         TR::list<TR::Register*> *firstTimeLiveOOLRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
+         self()->setFirstTimeLiveOOLRegisterList(firstTimeLiveOOLRegisterList);
+
+         TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
+         self()->setSpilledRegisterList(spilledRegisterList);
+         }
       }
 
    if (self()->getDebug())
@@ -594,4 +604,18 @@ OMR::ARM64::CodeGenerator::generateNop(TR::Node *node, TR::Instruction *preced)
       return new (self()->trHeapMemory()) TR::Instruction(TR::InstOpCode::nop, node, preced, self());
    else
       return new (self()->trHeapMemory()) TR::Instruction(TR::InstOpCode::nop, node, self());
+   }
+
+TR_ARM64OutOfLineCodeSection *
+OMR::ARM64::CodeGenerator::findARM64OutOfLineCodeSectionFromLabel(TR::LabelSymbol *label)
+   {
+   auto oiIterator = self()->getARM64OutOfLineCodeSectionList().begin();
+   while (oiIterator != self()->getARM64OutOfLineCodeSectionList().end())
+      {
+      if ((*oiIterator)->getEntryLabel() == label)
+         return *oiIterator;
+      ++oiIterator;
+      }
+
+   return NULL;
    }

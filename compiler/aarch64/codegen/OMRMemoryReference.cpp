@@ -26,6 +26,7 @@
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GenerateInstructions.hpp"
+#include "codegen/Machine.hpp"
 #include "codegen/Relocation.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
 #include "il/Node.hpp"
@@ -699,21 +700,13 @@ void OMR::ARM64::MemoryReference::assignRegisters(TR::Instruction *currentInstru
 
    if (_baseRegister != NULL)
       {
-      if (_baseRegister->decFutureUseCount() == 0)
-         {
-         _baseRegister->setAssignedRegister(NULL);
-         assignedBaseRegister->setState(TR::RealRegister::Unlatched);
-         }
+      machine->decFutureUseCountAndUnlatch(currentInstruction, _baseRegister);
       _baseRegister = assignedBaseRegister;
       }
 
    if (_indexRegister != NULL)
       {
-      if (_indexRegister->decFutureUseCount() == 0)
-         {
-         _indexRegister->setAssignedRegister(NULL);
-         assignedIndexRegister->setState(TR::RealRegister::Unlatched);
-         }
+      machine->decFutureUseCountAndUnlatch(currentInstruction, _indexRegister);
       _indexRegister = assignedIndexRegister;
       }
    if (self()->getUnresolvedSnippet() != NULL)

@@ -20,8 +20,76 @@
  *******************************************************************************/
 
 #include "codegen/ARM64Instruction.hpp"
+#include "codegen/ARM64OutOfLineCodeSection.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/RegisterDependency.hpp"
+
+void TR::ARM64LabelInstruction::assignRegistersForOutOfLineCodeSection(TR_RegisterKinds kindToBeAssigned)
+   {
+   TR::Compilation *comp = cg()->comp();
+
+   bool isLabel = getOpCodeValue() == TR::InstOpCode::label;
+   bool isBranch = (getOpCodeValue() == TR::InstOpCode::b) || (getKind() == IsConditionalBranch) || (getKind() == IsCompareBranch);
+
+   cg()->freeUnlatchedRegisters();
+   // this is the return label from OOL
+   if (isLabel && getLabelSymbol()->isEndOfColdInstructionStream())
+      {
+      TR::Machine *machine = cg()->machine();
+      if (comp->getOption(TR_TraceRA))
+         traceMsg (comp,"\nOOL: taking register state snap shot\n");
+      cg()->setIsOutOfLineHotPath(true);
+      machine->takeRegisterStateSnapShot();
+      }
+   if (isBranch && getLabelSymbol()->isStartOfColdInstructionStream())
+      {
+      // Switch to the outlined instruction stream and assign registers.
+      //
+      TR_ARM64OutOfLineCodeSection *oi = cg()->findARM64OutOfLineCodeSectionFromLabel(getLabelSymbol());
+      TR_ASSERT(oi, "Could not find ARM64OutOfLineCodeSection stream from label.  instr=%p, label=%p\n", this, getLabelSymbol());
+      if (!oi->hasBeenRegisterAssigned())
+         oi->assignRegisters(kindToBeAssigned);
+      }
+   if (isBranch && getLabelSymbol()->isEndOfColdInstructionStream())
+      {
+      // This if statement prevents RA to restore register snapshot on regular branches to the
+      // OOL section merging point. Register snapshot is a snapshot of register states taken at
+      // OOL merge label. Using this snapshot RA can enforce the similarity of register states
+      // at the end of main-stream code and OOL path.
+      // Generally the safer option is to not reuse OOL merge label for any other purpose. This
+      // can be done by creating an extra label right after merge point label.
+      if (cg()->getIsInOOLSection())
+         {
+         // Branches from inside an OOL section to the merge-points are not allowed. Branches
+         // in the OOL section can jump to the end of section and then only one branch (the
+         // last instruction of an OOL section) jumps to the merge-point. In other words, OOL
+         // section must contain exactly one exit point.
+         TR_ASSERT(cg()->getAppendInstruction() == this, "OOL section must have only one branch to the merge point\n");
+         // Start RA for OOL cold path, restore register state from snap shot
+         TR::Machine *machine = cg()->machine();
+         if (comp->getOption(TR_TraceRA))
+            traceMsg (comp, "\nOOL: Restoring Register state from snap shot\n");
+         cg()->setIsOutOfLineHotPath(false);
+         machine->restoreRegisterStateFromSnapShot();
+         }
+      // Reusing the OOL Section merge label for other branches might be unsafe.
+      else if(comp->getOption(TR_TraceRA))
+         traceMsg (comp, "\nOOL: Reusing the OOL Section merge label for other branches might be unsafe.\n");
+      }
+   }
+
+void TR::ARM64LabelInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+   {
+   TR::RegisterDependencyConditions *cond = OMR::ARM64::Instruction::getDependencyConditions();
+
+   if (cond)
+      {
+      cond->assignPostConditionRegisters(self(), kindToBeAssigned, self()->cg());
+      cond->assignPreConditionRegisters(self()->getPrev(), kindToBeAssigned, self()->cg());
+      }
+
+   assignRegistersForOutOfLineCodeSection(kindToBeAssigned);
+   }
 
 // TR::ARM64Trg1Instruction:: member functions
 
@@ -556,6 +624,8 @@ void TR::ARM64CompareBranchInstruction::assignRegisters(TR_RegisterKinds kindToB
       getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
 
    setSource1Register(assignedSource1Register);
+
+   assignRegistersForOutOfLineCodeSection(kindToBeAssigned);
    }
 
 // TR::ARM64RegBranchInstruction:: member functions

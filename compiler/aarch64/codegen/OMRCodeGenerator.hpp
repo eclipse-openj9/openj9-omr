@@ -271,6 +271,20 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void setIsOutOfLineHotPath(bool v) { _flags.set(IsOutOfLineHotPath, v);}
 
    /**
+    * @brief Returns the list of registers which is assigned first time in OOL cold path
+    *
+    * @return the list of registers which is assigned first time in OOL cold path
+    */
+   TR::list<TR::Register*> *getFirstTimeLiveOOLRegisterList() {return _firstTimeLiveOOLRegisterList;}
+   /**
+    * @brief Sets the list of registers which is assigned first time in OOL cold path
+    *
+    * @param r : the list of registers which is assigned first time in OOL cold path
+    * @return the list of registers
+    */
+   TR::list<TR::Register*> *setFirstTimeLiveOOLRegisterList(TR::list<TR::Register*> *r) {return _firstTimeLiveOOLRegisterList = r;}
+
+   /**
     * @brief Picks register
     * @param[in] regCan : register candidate
     * @param[in] barr : array of blocks
@@ -396,6 +410,14 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void generateBinaryEncodingPrePrologue(TR_ARM64BinaryEncodingData &data);
 
    /**
+    * @brief Finds OutOfLineCodeSection associated with the specified label
+    *
+    * @param[in] label : label
+    * @return OutOfLineCodeSection associated with the specified label
+    */
+   TR_ARM64OutOfLineCodeSection *findARM64OutOfLineCodeSectionFromLabel(TR::LabelSymbol *label);
+
+   /**
     * @brief Generates nop
     * @param[in] node: node
     * @param[in] preced : preceding instruction
@@ -429,6 +451,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    const TR::ARM64LinkageProperties *_linkageProperties;
    TR::list<TR_ARM64OutOfLineCodeSection*> _outOfLineCodeSectionList;
    TR::vector<TR::ARM64ConstantDataSnippet*> _dataSnippetList;
+   TR::list<TR::Register*> *_firstTimeLiveOOLRegisterList;
 
    };
 

@@ -462,6 +462,7 @@ void TR_ARM64RegisterDependencyGroup::assignRegisters(
    for (i = 0; i < numberOfRegisters; i++)
       {
       TR::Register *dependentRegister = getRegisterDependency(i)->getRegister();
+      dependentRegNum = getRegisterDependency(i)->getRealRegister();
       if (dependentRegister->getAssignedRegister())
          {
          TR::RealRegister *assignedRegister = dependentRegister->getAssignedRegister()->getRealRegister();
@@ -469,12 +470,11 @@ void TR_ARM64RegisterDependencyGroup::assignRegisters(
          if (getRegisterDependency(i)->getRealRegister() == TR::RealRegister::NoReg)
             getRegisterDependency(i)->setRealRegister(toRealRegister(assignedRegister)->getRegisterNumber());
 
-         if (dependentRegister->decFutureUseCount() == 0)
-            {
-            dependentRegister->setAssignedRegister(NULL);
-            assignedRegister->setAssignedRegister(NULL);
-            assignedRegister->setState(TR::RealRegister::Unlatched); // Was setting to Free
-            }
+         machine->decFutureUseCountAndUnlatch(currentInstruction, dependentRegister);
+         }
+      else if (dependentRegNum == TR::RealRegister::SpilledReg)
+         {
+         machine->decFutureUseCountAndUnlatch(currentInstruction, dependentRegister);
          }
       }
    }

@@ -157,8 +157,8 @@ omrsysinfo_processor_set_feature(struct OMRPortLibrary *portLibrary, OMRProcesso
 const char*
 omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32_t feature)
 {
-	Trc_PRT_sysinfo_get_processor_feature_name_Entered(feature);
 	const char* rc = "null";
+	Trc_PRT_sysinfo_get_processor_feature_name_Entered(feature);
 	Trc_PRT_sysinfo_get_processor_feature_name_Exit(rc);
 	return rc;
 }

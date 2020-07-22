@@ -431,11 +431,6 @@ OMR::ConstantDataSnippet::emitAddressConstant(
       iloc1 = requestors[i]->getBinaryEncoding();
       iloc2 = requestors[i+1]->getBinaryEncoding();
       addr = (intptr_t)codeCursor;
-      // if it's the start PC, don't use the constant, but grab it from the symbol:
-      TR::Symbol *sym = requestors[i]->getNode()->getSymbol();
-      TR::StaticSymbol *staticSym = sym ? sym->getStaticSymbol() : NULL;
-      if (staticSym && staticSym->isStartPC())
-         addr = (intptr_t) staticSym->getStaticAddress();
       if (count==4)
          {
          iloc3 = requestors[i+2]->getBinaryEncoding();

@@ -114,7 +114,8 @@ OMR::Power::CodeGenerator::CodeGenerator() :
      _blockCallInfo(NULL),
      _transientLongRegisters(self()->trMemory()),
      conversionBuffer(NULL),
-     _outOfLineCodeSectionList(getTypedAllocator<TR_PPCOutOfLineCodeSection*>(self()->comp()->allocator()))
+     _outOfLineCodeSectionList(getTypedAllocator<TR_PPCOutOfLineCodeSection*>(self()->comp()->allocator())),
+     _startPCLabel(NULL)
    {
    // Initialize Linkage for Code Generator
    self()->initializeLinkage();
@@ -1665,6 +1666,14 @@ OMR::Power::CodeGenerator::expandInstructions()
    {
    _binaryEncodingData.estimate = 0;
    self()->generateBinaryEncodingPrologue(&_binaryEncodingData);
+
+   generateLabelInstruction(
+      self(),
+      TR::InstOpCode::label,
+      self()->comp()->getStartTree()->getNode(),
+      self()->getStartPCLabel(),
+      _binaryEncodingData.preProcInstruction
+   );
 
    for (TR::Instruction *instr = self()->getFirstInstruction(); instr; instr = instr->getNext())
       {
@@ -3408,6 +3417,14 @@ OMR::Power::CodeGenerator::getHotLoopAlignment()
       return 16;
    else
       return 32;
+   }
+
+TR::LabelSymbol *
+OMR::Power::CodeGenerator::getStartPCLabel()
+   {
+   if (!_startPCLabel)
+      _startPCLabel = generateLabelSymbol(self());
+   return _startPCLabel;
    }
 
 // Multiply a register by a constant

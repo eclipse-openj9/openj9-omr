@@ -72,17 +72,18 @@ static OMRPortLibrary MainPortLibraryTable = {
 	omrsysinfo_get_OS_version, /* sysinfo_get_OS_version */
 	omrsysinfo_get_env, /* sysinfo_get_env */
 	omrsysinfo_get_CPU_architecture, /* sysinfo_get_CPU_architecture */
-	omrsysinfo_get_processor_description, /* omrsysinfo_get_processor_description */
-	omrsysinfo_processor_has_feature, /* omrsysinfo_processor_has_feature */
-	omrsysinfo_processor_set_feature, /* omrsysinfo_processor_set_feature */
+	omrsysinfo_get_processor_description, /* sysinfo_get_processor_description */
+	omrsysinfo_processor_has_feature, /* sysinfo_processor_has_feature */
+	omrsysinfo_processor_set_feature, /* sysinfo_processor_set_feature */
+	omrsysinfo_get_processor_feature_name, /* sysinfo_get_processor_feature_name */
 	omrsysinfo_get_OS_type, /* sysinfo_get_OS_type */
 	omrsysinfo_get_executable_name, /* sysinfo_get_executable_name */
 	omrsysinfo_get_username, /* sysinfo_get_username */
 	omrsysinfo_get_groupname, /* sysinfo_get_groupname */
 	omrsysinfo_get_hostname, /* sysinfo_get_hostname */
 	omrsysinfo_get_load_average, /* sysinfo_get_load_average */
-	omrsysinfo_get_CPU_utilization, /* omrsysinfo_get_CPU_utilization */
-	omrsysinfo_get_CPU_load, /* omrsysinfo_get_CPU_load */
+	omrsysinfo_get_CPU_utilization, /* sysinfo_get_CPU_utilization */
+	omrsysinfo_get_CPU_load, /* sysinfo_get_CPU_load */
 	omrsysinfo_limit_iterator_init, /* sysinfo_limit_iterator_next */
 	omrsysinfo_limit_iterator_hasNext, /* sysinfo_limit_iterator_hasNext */
 	omrsysinfo_limit_iterator_next, /* sysinfo_limit_iterator_next */

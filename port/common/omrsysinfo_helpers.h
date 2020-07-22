@@ -31,6 +31,9 @@
 #include "omrport.h"
 
 #if defined(OMR_OS_WINDOWS) || defined(J9X86) || defined(J9HAMMER)
+extern const char *
+omrsysinfo_get_x86_processor_feature_name(uint32_t feature);
+
 extern intptr_t
 omrsysinfo_get_x86_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
 

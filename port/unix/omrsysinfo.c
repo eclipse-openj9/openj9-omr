@@ -691,6 +691,19 @@ omrsysinfo_processor_set_feature(struct OMRPortLibrary *portLibrary, OMRProcesso
 	return rc;
 }
 
+const char*
+omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32_t feature)
+{
+	const char* rc = "null";
+	Trc_PRT_sysinfo_get_processor_feature_name_Entered(feature);
+#if (defined(J9X86) || defined(J9HAMMER))
+	rc = omrsysinfo_get_x86_processor_feature_name(feature);
+#endif
+	Trc_PRT_sysinfo_get_processor_feature_name_Exit(rc);
+	return rc;
+}
+
+
 #if (defined(AIXPPC) || defined(S390) || defined(J9ZOS390))
 /**
  * @internal

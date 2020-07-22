@@ -146,6 +146,16 @@ omrsysinfo_processor_set_feature(struct OMRPortLibrary *portLibrary, OMRProcesso
 	return rc;
 }
 
+const char*
+omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32_t feature)
+{
+	const char* rc = "null";
+	Trc_PRT_sysinfo_get_processor_feature_name_Entered(feature);
+	rc = omrsysinfo_get_x86_processor_feature_name(feature);
+	Trc_PRT_sysinfo_get_processor_feature_name_Exit(rc);
+	return rc;
+}
+
 #define ENVVAR_VALUE_BUFFER_LENGTH 512
 #define ENVVAR_NAME_BUFFER_LENGTH 128
 intptr_t

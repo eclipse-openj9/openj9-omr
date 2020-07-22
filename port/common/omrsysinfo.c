@@ -147,6 +147,23 @@ omrsysinfo_processor_set_feature(struct OMRPortLibrary *portLibrary, OMRProcesso
 }
 
 /**
+ * Generate the corresponding string literals for the provided feature.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] feature The processor feature. (see omrport.h for list of features OMRPORT_FEATURE_{PPC,S390,PPC}_*)
+ *
+ * @return string literals of the given processor feature
+ */
+const char*
+omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32_t feature)
+{
+	Trc_PRT_sysinfo_get_processor_feature_name_Entered(feature);
+	const char* rc = "null";
+	Trc_PRT_sysinfo_get_processor_feature_name_Exit(rc);
+	return rc;
+}
+
+/**
  * Query the operating system for environment variables.
  *
  * Obtain the value of the environment variable specified by envVar from the operating system

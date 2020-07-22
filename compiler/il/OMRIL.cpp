@@ -20,6 +20,7 @@
  *******************************************************************************/
 
 #include "il/IL.hpp"
+#include "il/ILOps.hpp"
 #include "il/ILOpCodes.hpp"
 #include "infra/Assert.hpp"
 
@@ -649,6 +650,102 @@ OMR::IL::opCodeForCorrespondingIndirectStore(TR::ILOpCodes storeOpCode)
       }
 
    TR_ASSERT(0, "no corresponding load opcode for specified store opcode");
+   return TR::BadILOp;
+   }
+
+TR::IL*
+OMR::IL::self()
+   {
+   return static_cast<TR::IL*>(this);
+   }
+
+TR::ILOpCodes
+OMR::IL::opCodeForCorrespondingLoadOrStore(TR::ILOpCodes opCodes)
+   {
+   TR::ILOpCode opCode(opCodes);
+
+   if (opCode.isLoadIndirect())
+      return self()->opCodeForCorrespondingIndirectLoad(opCodes);
+   else if (opCode.isLoadDirect())
+      return self()->opCodeForCorrespondingDirectLoad(opCodes);
+   else if (opCode.isStoreIndirect())
+      return self()->opCodeForCorrespondingIndirectStore(opCodes);
+   else if (opCode.isStoreDirect())
+      return self()->opCodeForCorrespondingDirectStore(opCodes);
+
+   TR_ASSERT_FATAL(0, "opCode is not load or store");
+   return TR::BadILOp;
+   }
+
+TR::ILOpCodes
+OMR::IL::opCodeForCorrespondingDirectLoad(TR::ILOpCodes loadOpCode)
+   {
+   switch (loadOpCode)
+      {
+      case TR::bload: return TR::bstore;
+      case TR::sload: return TR::sstore;
+      case TR::iload: return TR::istore;
+      case TR::lload: return TR::lstore;
+      case TR::fload: return TR::fstore;
+      case TR::dload: return TR::dstore;
+      case TR::aload: return TR::astore;
+      case TR::vload: return TR::vstore;
+      case TR::cload: return TR::cstore;
+      case TR::buload: return TR::bstore;
+      case TR::iuload: return TR::istore;
+      case TR::luload: return TR::lstore;
+      case TR::brdbar:
+      case TR::srdbar:
+      case TR::irdbar:
+      case TR::lrdbar:
+      case TR::frdbar:
+      case TR::drdbar:
+      case TR::ardbar:
+         //There is not necessarily a guaranteed symmetry about whether an direct rdbar should be mapped to
+         //an direct wrtbar or a normal direct store. The mapping of rdbar/ wrtbar totally depends on the
+         //actual use in subprojects and should be undefined in OMR level.
+         TR_ASSERT_FATAL(0, "xrdbar can't be used with global opcode mapping API at OMR level\n");
+      default: break;
+      }
+
+   TR_ASSERT_FATAL(0, "no corresponding store opcode for specified load opcode");
+   return TR::BadILOp;
+   }
+
+
+TR::ILOpCodes
+OMR::IL::opCodeForCorrespondingDirectStore(TR::ILOpCodes storeOpCode)
+   {
+   switch (storeOpCode)
+      {
+      case TR::bstore:  return TR::bload;
+      case TR::sstore:  return TR::sload;
+      case TR::istore:  return TR::iload;
+      case TR::lstore:  return TR::lload;
+      case TR::fstore:  return TR::fload;
+      case TR::dstore:  return TR::dload;
+      case TR::astore:  return TR::aload;
+      case TR::awrtbar: return TR::aload;
+      case TR::vstore:  return TR::vload;
+      case TR::cstore:  return TR::sload;
+      case TR::bustore: return TR::bload;
+      case TR::iustore: return TR::iload;
+      case TR::lustore: return TR::lload;
+      case TR::bwrtbar:
+      case TR::swrtbar:
+      case TR::iwrtbar:
+      case TR::lwrtbar:
+      case TR::fwrtbar:
+      case TR::dwrtbar:
+         //There is not necessarily a guaranteed symmetry about whether an direct wrtbar should be mapped to
+         //an direct rdbar or a normal direct load. The mapping of rdbar/wrtbar totally depends on the
+         //actual use in subprojects and should be undefined in OMR level.
+         TR_ASSERT_FATAL(0, "xwrtbar can't be used with global opcode mapping API at OMR level\n");
+
+      default: break;
+      }
+
+   TR_ASSERT_FATAL(0, "no corresponding load opcode for specified store opcode");
    return TR::BadILOp;
    }
 

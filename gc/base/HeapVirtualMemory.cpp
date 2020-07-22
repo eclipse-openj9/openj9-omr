@@ -312,7 +312,14 @@ MM_HeapVirtualMemory::commitMemory(void* address, uintptr_t size)
 {
 	MM_GCExtensionsBase* extensions = MM_GCExtensionsBase::getExtensions(_omrVM);
 	MM_MemoryManager* memoryManager = extensions->memoryManager;
-	return memoryManager->commitMemory(&_vmemHandle, address, size);
+
+	bool resultCommitMemory = memoryManager->commitMemory(&_vmemHandle, address, size);
+
+	if (resultCommitMemory && extensions->pretouchHeapOnExpand) {
+		memset(address, 0, size);
+	}
+	
+	return resultCommitMemory;
 }
 
 /**

@@ -66,6 +66,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    TR::Register *_indexRegister;
    TR::Node *_indexNode;
    TR::Register *_modBase;
+   TR::LabelSymbol *_label;
    int64_t _offset;
 
    TR::UnresolvedDataSnippet *_unresolvedSnippet;
@@ -89,6 +90,12 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
          uint8_t len,
          TR::CodeGenerator *cg,
          int);
+
+   MemoryReference(
+         TR::LabelSymbol *label,
+         int64_t disp,
+         uint8_t len,
+         TR::CodeGenerator *cg);
 
    public:
 
@@ -140,6 +147,9 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
 
    uint32_t getLength() {return _length;}
    uint32_t setLength(uint32_t len) {return (_length = len);}
+
+   TR::LabelSymbol *getLabel() {return _label;}
+   TR::LabelSymbol *setLabel(TR::LabelSymbol *label) {return (_label = label);}
 
    bool useIndexedForm();
 

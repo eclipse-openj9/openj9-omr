@@ -45,6 +45,9 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
       int) :
          OMR::MemoryReferenceConnector(br, disp, len, cg, 0) {}
 
+   MemoryReference(TR::LabelSymbol *label, int64_t disp, int8_t len, TR::CodeGenerator *cg) :
+      OMR::MemoryReferenceConnector(label, disp, len, cg) {}
+
    public:
 
    MemoryReference(TR::CodeGenerator *cg) :
@@ -72,6 +75,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
       OMR::MemoryReferenceConnector(node, mr, n, len, cg) {}
 
    static TR::MemoryReference *withDisplacement(TR::CodeGenerator *cg, TR::Register *baseReg, int64_t displacement, int8_t length);
+   static TR::MemoryReference *withLabel(TR::CodeGenerator *cg, TR::LabelSymbol *label, int64_t offset, int8_t length);
    };
 }
 

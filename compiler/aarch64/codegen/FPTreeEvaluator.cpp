@@ -27,6 +27,7 @@
 #include "codegen/TreeEvaluator.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include <math.h>
 
 static void fpBitsMovHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::Register *trgReg, TR::CodeGenerator *cg)
    {
@@ -196,17 +197,24 @@ OMR::ARM64::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeGenerator *cg
       }
    else
       {
-      TR::Register *tmpReg = cg->allocateRegister();
-
       union {
          float f;
          int32_t i;
       } fvalue;
 
       fvalue.f = node->getFloat();
-      loadConstant32(cg, node, fvalue.i, tmpReg);
-      generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_wtos, node, trgReg, tmpReg);
-      cg->stopUsingRegister(tmpReg);
+
+      if(fvalue.f == +0.0f && signbit(fvalue.f) == 0)
+         {
+         generateTrgInstruction(cg, TR::InstOpCode::movi0s, node, trgReg);
+         }
+      else
+         {
+         TR::Register *tmpReg = cg->allocateRegister();
+         loadConstant32(cg, node, fvalue.i, tmpReg);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_wtos, node, trgReg, tmpReg);
+         cg->stopUsingRegister(tmpReg);
+         }
       }
 
    node->setRegister(trgReg);
@@ -225,17 +233,24 @@ OMR::ARM64::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeGenerator *cg
       }
    else
       {
-      TR::Register *tmpReg = cg->allocateRegister();
-
       union {
          double d;
          int64_t l;
       } dvalue;
 
       dvalue.d = node->getDouble();
-      loadConstant64(cg, node, dvalue.l, tmpReg);
-      generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, trgReg, tmpReg);
-      cg->stopUsingRegister(tmpReg);
+
+      if(dvalue.d == +0.0d && signbit(dvalue.d) == 0)
+         {
+         generateTrgInstruction(cg, TR::InstOpCode::movi0d, node, trgReg);
+         }
+      else
+         {
+         TR::Register *tmpReg = cg->allocateRegister();
+         loadConstant64(cg, node, dvalue.l, tmpReg);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, trgReg, tmpReg);
+         cg->stopUsingRegister(tmpReg);
+         }
       }
 
    node->setRegister(trgReg);

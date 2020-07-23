@@ -5266,37 +5266,10 @@ TR::Register *OMR::Power::TreeEvaluator::loadaddrEvaluator(TR::Node *node, TR::C
       else
          {
          int64_t  offset = mref->getOffset(*comp);
-         if (mref->hasDelayedOffset() || offset!=0 || comp->getOption(TR_AOT))
+         if (mref->hasDelayedOffset() || !mref->getBaseRegister() || mref->getLabel() || offset!=0 || comp->getOption(TR_AOT))
             {
             resultReg = sym->isLocalObject() ? cg->allocateCollectedReferenceRegister() : cg->allocateRegister();
-            if (mref->hasDelayedOffset())
-               {
-               generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, resultReg, mref);
-               }
-            else
-               {
-               if (offset>=LOWER_IMMED && offset<=UPPER_IMMED)
-                  {
-                  TR::Instruction *src2ForStatic;
-
-                  src2ForStatic = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, resultReg, mref->getBaseRegister(), offset);
-                  if (mref->getStaticRelocation() != NULL)
-                     mref->getStaticRelocation()->setSource2Instruction(src2ForStatic);
-                  }
-               else
-                  {
-                  if (0x00008000 == HI_VALUE(offset))
-                     {
-                     generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, resultReg, mref->getBaseRegister(), 0x7FFF);
-                     generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, resultReg, resultReg, 0x1);
-                     }
-                  else
-                     {
-                     generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, resultReg, mref->getBaseRegister(), HI_VALUE(offset));
-                     }
-                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, resultReg, resultReg, LO_VALUE(offset));
-                  }
-               }
+            generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, resultReg, mref);
            }
            else
               {

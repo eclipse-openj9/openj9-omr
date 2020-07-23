@@ -305,6 +305,12 @@ MM_Configuration::initializeRunTimeObjectAlignmentAndCRShift(MM_EnvironmentBase*
 		}
 #endif /* defined(S390) */
 
+		if (extensions->shouldForceLowMemoryHeapCeilingShiftIfPossible) {
+			if (canChangeShift && (shift < DEFAULT_LOW_MEMORY_HEAP_CEILING_SHIFT)) {
+				shift = DEFAULT_LOW_MEMORY_HEAP_CEILING_SHIFT;
+			}
+		}
+
 		omrVM->_compressedPointersShift = shift;
 	}
 

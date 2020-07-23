@@ -3484,34 +3484,13 @@ TR::Register *OMR::Power::TreeEvaluator::tableEvaluator(TR::Node *node, TR::Code
       {
       if (cg->comp()->target().is64Bit())
          {
-         int32_t offset = TR_PPCTableOfConstants::allocateChunk(1, cg);
-
          if (tReg == NULL)
             {
             tReg = cg->allocateRegister();
             TR::addDependency(conditions, tReg, TR::RealRegister::NoReg, TR_GPR, cg);
             }
 
-         if (offset != PTOC_FULL_INDEX)
-            {
-            offset *= 8;
-            cg->itemTracking(offset, table);
-            if (offset<LOWER_IMMED||offset>UPPER_IMMED)
-               {
-               TR_ASSERT_FATAL_WITH_NODE(node, 0x00008000 != cg->hiValue(offset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", offset);
-               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, reg1, cg->getTOCBaseRegister(), cg->hiValue(offset));
-               generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, reg1, new (cg->trHeapMemory()) TR::MemoryReference(reg1, LO_VALUE(offset), 8, cg));
-               }
-            else
-               {
-               generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, reg1, new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), offset, 8, cg));
-               }
-            }
-         else
-            {
-            cg->fixedLoadLabelAddressIntoReg(node, reg1, table, NULL, tReg);
-            }
-
+         cg->fixedLoadLabelAddressIntoReg(node, reg1, table, NULL, tReg);
          generateShiftLeftImmediate(cg, node, tReg, sReg, 2);
          generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, reg1, reg1, tReg);
          }

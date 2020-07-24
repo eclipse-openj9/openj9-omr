@@ -468,6 +468,8 @@ static const char *opCodeToNameMap[] =
    "scvtf_xtod",
    "fmovimms",
    "fmovimmd",
+   "movi0s",
+   "movi0d",
    "fcmps",
    "fcmps_zero",
    "fcmpd",

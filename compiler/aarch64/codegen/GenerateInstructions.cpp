@@ -157,6 +157,14 @@ TR::Instruction *generateAdminInstruction(TR::CodeGenerator *cg, TR::InstOpCode:
    return new (cg->trHeapMemory()) TR::ARM64AdminInstruction(op, cond, node, fenceNode, cg);
    }
 
+TR::Instruction *generateTrgInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *treg, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1Instruction(op, node, treg, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1Instruction(op, node, treg, cg);
+   }
+
 TR::Instruction *generateTrg1ImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::Register *treg, uint32_t imm, TR::Instruction *preced)
    {

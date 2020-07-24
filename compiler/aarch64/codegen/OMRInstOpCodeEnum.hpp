@@ -444,6 +444,9 @@
 	/* Floating-Point Immediate */
 		fmovimms,                                               	/* 0x1E201000	FMOV      	 */
 		fmovimmd,                                               	/* 0x1E601000	FMOV      	 */
+	/* Move Immediate */
+		movi0s,                                               		/* 0x0F000400	MOVI      	 */
+		movi0d,                                               		/* 0x2F00E400	MOVI      	 */
 	/* Floating-Point Compare */
 		fcmps,                                                  	/* 0x1E202000	FCMP      	 */
 		fcmps_zero,                                             	/* 0x1E202008	FCMP      	 */

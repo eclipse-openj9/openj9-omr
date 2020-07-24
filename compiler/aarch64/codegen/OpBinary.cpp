@@ -443,6 +443,9 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 	/* Floating-Point Immediate */
 		0x1E201000,	/* FMOV      	fmovimms	 */
 		0x1E601000,	/* FMOV      	fmovimmd	 */
+	/* Move Immediate */
+		0x0F000400,	/* MOVI      	movi0s	 */
+		0x2F00E400,	/* MOVI      	movi0d	 */
 	/* Floating-Point Compare */
 		0x1E202000,	/* FCMP      	fcmps	 */
 		0x1E202008,	/* FCMP      	fcmps_zero	 */

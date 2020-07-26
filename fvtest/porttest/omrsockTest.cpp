@@ -1027,3 +1027,290 @@ TEST(PortSockTest, two_socket_nonblock_server_communication)
 	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientSocket), 0);
 	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverSocket), 0);
 }
+
+/**
+ * Test OMRFdSet functions by test setting, getting, and clearing the OMRFdSet.
+ *
+ * First, a socket and OMRFdSet is created. Then it is first zero-ed, and then set,
+ * and checked if it is set. The fdset is then cleared and set many times to make sure
+ * it works.
+ */
+TEST(PortSockTest, fdset_functionality)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	omrsock_socket_t socket = NULL;
+	OMRFdSet fdsetStruct;
+	omrsock_fdset_t fdset = &fdsetStruct;
+	
+	ASSERT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &socket, OMRSOCK_AF_INET, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
+	/* Should always zero the OMRFdSet before setting */
+	OMRPORTLIB->sock_fdset_zero(OMRPORTLIB, fdset);
+	EXPECT_FALSE(OMRPORTLIB->sock_fdset_isset(OMRPORTLIB, socket, fdset));
+
+	/* Set the OMRFdSet and it should return TRUE when check if it is set */
+	OMRPORTLIB->sock_fdset_set(OMRPORTLIB, socket, fdset);
+	EXPECT_TRUE(OMRPORTLIB->sock_fdset_isset(OMRPORTLIB, socket, fdset));
+
+	/* Clear the OMRFdSet for the socket and it should return FALSE when check if socket is set */
+	OMRPORTLIB->sock_fdset_clr(OMRPORTLIB, socket, fdset);
+	EXPECT_FALSE(OMRPORTLIB->sock_fdset_isset(OMRPORTLIB, socket, fdset));
+
+	/* Zero the OMRFdSet and it should return FALSE when check if socket is set */
+	OMRPORTLIB->sock_fdset_set(OMRPORTLIB, socket, fdset);
+	OMRPORTLIB->sock_fdset_zero(OMRPORTLIB, fdset);
+	EXPECT_FALSE(OMRPORTLIB->sock_fdset_isset(OMRPORTLIB, socket, fdset));
+
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
+}
+
+/**
+ * Test select functionaility by testing omrsock_select using the omrsock_fdset functions.
+ *
+ * First, a nonblocking connection is established between the server and client. An OMRFdSet
+ * structure is created and select OMRTimeVal is created and set to 2 seconds timeout. Zero the
+ * OMRFdSet and add connected server socket and client socket to OMRFdSet using omrsock_fdset_set.
+ * Call omrsock_select with the OMRFdSet as read_fds and write_fds. Check that the number of returned
+ * sockets that are ready makes sense.
+ */
+TEST(PortSockTest, select_functionality)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	OMRSockAddrStorage serverSockAddr;
+	omrsock_socket_t serverSocket = NULL;
+	OMRSockAddrStorage clientSockAddr;
+	omrsock_socket_t clientSocket = NULL;
+	OMRSockAddrStorage connectedServerSockAddr;
+	omrsock_socket_t connectedServerSocket = NULL;
+	uint16_t port = 4930;
+	uint8_t serverAddr[4];
+
+	/* To Create a Server Socket and Address */
+	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET, "127.0.0.1", serverAddr), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB,  &serverSockAddr, OMRSOCK_AF_INET, serverAddr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
+	start_server(OMRPORTLIB, OMRSOCK_AF_INET, OMRSOCK_STREAM, &serverSocket, &serverSockAddr);
+
+	/* To Create a Client Socket and Address */
+	connect_client_to_server(OMRPORTLIB, (char *)"localhost", NULL, OMRSOCK_AF_INET, OMRSOCK_STREAM, &clientSocket, &clientSockAddr, &serverSockAddr);
+	ASSERT_EQ(OMRPORTLIB->sock_fcntl(OMRPORTLIB, clientSocket, OMRSOCK_O_NONBLOCK), 0);
+
+	/* Accept Connection */
+	ASSERT_EQ(OMRPORTLIB->sock_accept(OMRPORTLIB, serverSocket, &connectedServerSockAddr, &connectedServerSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_fcntl(OMRPORTLIB, connectedServerSocket, OMRSOCK_O_NONBLOCK), 0);
+
+	/* Create an OMRFdSet and create a timeout for for the select function */
+	OMRFdSet fdSet;
+	OMRTimeval timeOut;
+	EXPECT_EQ(OMRPORTLIB->sock_timeval_init(OMRPORTLIB, &timeOut, 2, 0), 0);
+
+	/* Set OMRFdSet to check server and client sockets for communication */
+	OMRPORTLIB->sock_fdset_zero(OMRPORTLIB, &fdSet);
+	OMRPORTLIB->sock_fdset_set(OMRPORTLIB, connectedServerSocket, &fdSet);
+	OMRPORTLIB->sock_fdset_set(OMRPORTLIB, clientSocket, &fdSet);
+
+	/* Check if the server and client sockets are ready for write. Both should be ready. */
+	ASSERT_EQ(OMRPORTLIB->sock_select(OMRPORTLIB, NULL, &fdSet, NULL, &timeOut), 2);
+	EXPECT_TRUE(OMRPORTLIB->sock_fdset_isset(OMRPORTLIB, connectedServerSocket, &fdSet));
+	EXPECT_TRUE(OMRPORTLIB->sock_fdset_isset(OMRPORTLIB, clientSocket, &fdSet));
+
+	/* Send the message from server to client. It should be ready to send. */
+	const char *msg = "This is an omrsock test for 2 socket stream communications.";
+	ASSERT_GT(OMRPORTLIB->sock_send(OMRPORTLIB, connectedServerSocket, (uint8_t *)msg, strlen(msg) + 1, 0), 0);
+
+	/* Check if server and client have anything to receive. Client should be ready to receive.*/
+	ASSERT_EQ(OMRPORTLIB->sock_select(OMRPORTLIB, &fdSet, NULL, NULL, &timeOut), 1);
+	EXPECT_FALSE(OMRPORTLIB->sock_fdset_isset(OMRPORTLIB, connectedServerSocket, &fdSet));
+	EXPECT_TRUE(OMRPORTLIB->sock_fdset_isset(OMRPORTLIB, clientSocket, &fdSet));
+
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &connectedServerSocket), 0);
+}
+
+/**
+ * Test poll functionaility by testing omrsock_poll using the OMRPollFd structure.
+ *
+ * First, a nonblocking connection is established between the server and client. An
+ * OMRPollFd array is created and intialized with the I/O event(s) to watch for. After
+ * omrsock_poll returns and server is ready to send, server sends a message to client.
+ * omrsock_poll is called again and indicates when client is ready to receive. Client
+ * should successfully receive the message.
+ */
+TEST(PortSockTest, poll_functionality_basic)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	OMRSockAddrStorage serverSockAddr;
+	omrsock_socket_t serverSocket = NULL;
+	OMRSockAddrStorage clientSockAddr;
+	omrsock_socket_t clientSocket = NULL;
+	OMRSockAddrStorage connectedServerSockAddr;
+	omrsock_socket_t connectedServerSocket = NULL;
+	uint16_t port = 4930;
+	uint32_t inaddrAny;
+	uint8_t serverAddr[4];
+	int32_t rc = 0;
+
+	/* To Create a Server Socket and Address */
+	inaddrAny = OMRPORTLIB->sock_htonl(OMRPORTLIB, OMRSOCK_INADDR_ANY);
+	memcpy(serverAddr, &inaddrAny, 4);
+	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB, &serverSockAddr, OMRSOCK_AF_INET, serverAddr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
+	start_server(OMRPORTLIB, OMRSOCK_AF_INET, OMRSOCK_STREAM, &serverSocket, &serverSockAddr);
+
+	/* To Create a Client Socket and Address */
+	connect_client_to_server(OMRPORTLIB, (char *)"localhost", NULL, OMRSOCK_AF_INET, OMRSOCK_STREAM, &clientSocket, &clientSockAddr, &serverSockAddr);
+	ASSERT_EQ(OMRPORTLIB->sock_fcntl(OMRPORTLIB, clientSocket, OMRSOCK_O_NONBLOCK), 0);
+
+	/* Accept Connection */
+	ASSERT_EQ(OMRPORTLIB->sock_accept(OMRPORTLIB, serverSocket, &connectedServerSockAddr, &connectedServerSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_fcntl(OMRPORTLIB, connectedServerSocket, OMRSOCK_O_NONBLOCK), 0);
+
+	/* Create pollFd array and initialize server and client sockets to watch for POLLIN. None should be ready. */
+	OMRPollFd pollArray[2];
+	EXPECT_EQ(OMRPORTLIB->sock_pollfd_init(OMRPORTLIB, &pollArray[0], connectedServerSocket, OMRSOCK_POLLIN), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_pollfd_init(OMRPORTLIB, &pollArray[1], clientSocket, OMRSOCK_POLLIN), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_poll(OMRPORTLIB, pollArray, 2, 1000), 0);
+
+	/* Initialize server sockets to watch for  both POLLIN and POLLOUT. Server POLLOUT should be ready.
+	 * Give poll up to 10 times to be ready.
+	 */
+	EXPECT_EQ(OMRPORTLIB->sock_pollfd_init(OMRPORTLIB, &pollArray[0], connectedServerSocket, OMRSOCK_POLLIN | OMRSOCK_POLLOUT), 0);
+	for (int32_t i = 0; i < 10; i++) {
+		if (1 == (rc = OMRPORTLIB->sock_poll(OMRPORTLIB, pollArray, 2, 1000))) {
+			break;
+		}
+	}
+	ASSERT_EQ(rc, 1);
+
+	/* SocketSet and revents are returned from @ref omrsock_get_pollfd_info. */
+	omrsock_socket_t socketSet = NULL;
+	int16_t revents = 0;
+
+	/* Use poll to send a message from server to client. */
+	const char *msg = "This is an omrsock test for 2 socket stream communications.\n";
+	int32_t bytesSent = 0;
+	char buf[100] = {0};
+	int32_t bytesRecv = 0;
+
+	for (int32_t i = 0; i < 2; i++) {
+		OMRPORTLIB->sock_get_pollfd_info(OMRPORTLIB, &pollArray[i], &socketSet, &revents);
+		if ((revents & OMRSOCK_POLLOUT) != 0) {
+			ASSERT_EQ(connectedServerSocket, socketSet);
+			bytesSent = OMRPORTLIB->sock_send(OMRPORTLIB, socketSet, (uint8_t *)msg, strlen(msg) + 1, 0);
+		}
+	}
+
+	/* Use poll for client to received a message from server. Server POLLOUT and client POLLIN should be ready.
+	 * Give poll up to 10 times to be ready.
+	 */
+	for (int32_t i = 0; i < 10; i++) {
+		if (2 == (rc = OMRPORTLIB->sock_poll(OMRPORTLIB, pollArray, 2, 1000))) {
+			break;
+		}
+	}
+	ASSERT_EQ(rc, 2);
+
+	for (int32_t i = 0; i < 2; i++) {
+		OMRPORTLIB->sock_get_pollfd_info(OMRPORTLIB, &pollArray[i], &socketSet, &revents);
+		if ((revents & OMRSOCK_POLLIN) != 0) {
+			ASSERT_EQ(clientSocket, socketSet);
+			bytesRecv = OMRPORTLIB->sock_recv(OMRPORTLIB, socketSet, (uint8_t *)buf, strlen(msg) + 1, 0);
+		}
+	}
+	EXPECT_EQ(bytesSent, bytesRecv);
+
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverSocket), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientSocket), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &connectedServerSocket), 0);
+}
+
+/**
+ * Test dynamic allocation in @ref omrsock_poll.
+ *
+ * First, a nonblocking connection is established between the server and client. An
+ * OMRPollFd array and a socket array of 8 is created. The sockets are created to test
+ * dynamic allocation in omrsock_poll in case where there are more than 8 OMRPollFd in
+ * array, and thus more than 8 sockets to watch for. Communication is tested between
+ * the two connected sockets: server and client.
+ */
+TEST(PortSockTest, poll_functionality_many_sockets)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	OMRSockAddrStorage serverSockAddr;
+	omrsock_socket_t serverSocket = NULL;
+	OMRSockAddrStorage clientSockAddr;
+	omrsock_socket_t clientSocket = NULL;
+	OMRSockAddrStorage connectedServerSockAddr;
+	omrsock_socket_t connectedServerSocket = NULL;
+	uint16_t port = 4930;
+	uint32_t inaddrAny;
+	uint8_t serverAddr[4];
+	int32_t rc = 0;
+
+	/* To Create a Server Socket and Address */
+	inaddrAny = OMRPORTLIB->sock_htonl(OMRPORTLIB, OMRSOCK_INADDR_ANY);
+	memcpy(serverAddr, &inaddrAny, 4);
+	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB, &serverSockAddr, OMRSOCK_AF_INET, serverAddr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
+	start_server(OMRPORTLIB, OMRSOCK_AF_INET, OMRSOCK_STREAM, &serverSocket, &serverSockAddr);
+
+	/* To Create a Client Socket and Address */
+	connect_client_to_server(OMRPORTLIB, (char *)"localhost", NULL, OMRSOCK_AF_INET, OMRSOCK_STREAM, &clientSocket, &clientSockAddr, &serverSockAddr);
+	ASSERT_EQ(OMRPORTLIB->sock_fcntl(OMRPORTLIB, clientSocket, OMRSOCK_O_NONBLOCK), 0);
+
+	/* Accept Connection */
+	ASSERT_EQ(OMRPORTLIB->sock_accept(OMRPORTLIB, serverSocket, &connectedServerSockAddr, &connectedServerSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_fcntl(OMRPORTLIB, connectedServerSocket, OMRSOCK_O_NONBLOCK), 0);
+
+	/* Create pollFd array  of 10 pollfds and initialize. */
+	OMRPollFd pollArray[10];
+	omrsock_socket_t socketPoll = NULL;
+	int16_t revents = 0;
+	
+	/* Create an array of additional sockets for testing dynamic allocation in omrsock_poll. */
+	omrsock_socket_t sockets[8];
+	for (int32_t i = 0; i < 8; i++) {
+		ASSERT_EQ(OMRPORTLIB->sock_socket(OMRPORTLIB, &sockets[i], OMRSOCK_AF_INET, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT), 0);
+		ASSERT_EQ(OMRPORTLIB->sock_fcntl(OMRPORTLIB, sockets[i], OMRSOCK_O_NONBLOCK), 0);
+		ASSERT_EQ(OMRPORTLIB->sock_pollfd_init(OMRPORTLIB, &pollArray[i], sockets[i], OMRSOCK_POLLIN | OMRSOCK_POLLHUP), 0);
+	}
+	EXPECT_EQ(OMRPORTLIB->sock_pollfd_init(OMRPORTLIB, &pollArray[8], connectedServerSocket, OMRSOCK_POLLIN), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_pollfd_init(OMRPORTLIB, &pollArray[9], clientSocket, OMRSOCK_POLLOUT), 0);
+
+	/* Check that only client POLLOUT is ready. Give poll up to 10 times to be ready. */
+	const char *msg = "This is an omrsock test for 2 socket stream communications.\n";
+	int32_t bytesSent = 0;
+
+	for (int32_t i = 0; i < 10; i++) {
+		if (1 == (rc = OMRPORTLIB->sock_poll(OMRPORTLIB, pollArray, 10, 1000))) {
+			break;
+		}
+	}
+	ASSERT_EQ(rc, 1);
+
+	for (int32_t i = 0; i < 10; i++) {
+		OMRPORTLIB->sock_get_pollfd_info(OMRPORTLIB, &pollArray[i], &socketPoll, &revents);
+		if (0 != (revents & OMRSOCK_POLLOUT)) {
+			ASSERT_EQ(clientSocket, socketPoll);
+			bytesSent = OMRPORTLIB->sock_send(OMRPORTLIB, clientSocket, (uint8_t *)msg, strlen(msg) + 1, 0);
+			ASSERT_GT(bytesSent, 0);
+			break;
+		}
+	}
+
+	/* Check that server POLLIN is ready. Give poll up to 10 times to be ready. */
+	for (int32_t i = 0; i < 10; i++) {
+		if (2 == (rc = OMRPORTLIB->sock_poll(OMRPORTLIB, pollArray, 10, 1000))) {
+			OMRPORTLIB->sock_get_pollfd_info(OMRPORTLIB, &pollArray[8], &socketPoll, &revents);
+			ASSERT_EQ(connectedServerSocket, socketPoll);
+			ASSERT_NE((revents & OMRSOCK_POLLIN), 0);
+			break;
+		}
+	}
+	ASSERT_EQ(rc, 2);
+
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverSocket), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientSocket), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &connectedServerSocket), 0);
+
+	for (int32_t i = 0; i < 8; i++) {
+		EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &sockets[i]), 0);
+	}
+}

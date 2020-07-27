@@ -215,12 +215,14 @@ TR::Register *OMR::ARM64::TreeEvaluator::bu2iEvaluator(TR::Node *node, TR::CodeG
    {
    TR::Node *child = node->getFirstChild();
 
-   if ((child->getOpCodeValue() == TR::bload || child->getOpCodeValue() == TR::bloadi)
+   if (child->getReferenceCount() == 1
+       && (child->getOpCodeValue() == TR::bload || child->getOpCodeValue() == TR::bloadi)
        && child->getRegister() == NULL)
       {
       // Use unsigned load
       TR::Register *trgReg = commonLoadEvaluator(child, TR::InstOpCode::ldrbimm, cg);
       node->setRegister(trgReg);
+      cg->decReferenceCount(child);
       return trgReg;
       }
    else
@@ -233,12 +235,14 @@ TR::Register *OMR::ARM64::TreeEvaluator::su2iEvaluator(TR::Node *node, TR::CodeG
    {
    TR::Node *child = node->getFirstChild();
 
-   if ((child->getOpCodeValue() == TR::sload || child->getOpCodeValue() == TR::sloadi)
+   if (child->getReferenceCount() == 1
+       && (child->getOpCodeValue() == TR::sload || child->getOpCodeValue() == TR::sloadi)
        && child->getRegister() == NULL)
       {
       // Use unsigned load
       TR::Register *trgReg = commonLoadEvaluator(child, TR::InstOpCode::ldrhimm, cg);
       node->setRegister(trgReg);
+      cg->decReferenceCount(child);
       return trgReg;
       }
    else

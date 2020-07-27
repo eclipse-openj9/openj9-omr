@@ -27,6 +27,7 @@
 #include "codegen/ARM64ConditionCode.hpp"
 #include "codegen/ARM64HelperCallSnippet.hpp"
 #include "codegen/ARM64Instruction.hpp"
+#include "codegen/ARM64OutOfLineCodeSection.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
 #include "codegen/GCRegisterMap.hpp"
@@ -1520,6 +1521,7 @@ getRegisterName(TR::RealRegister::RegNum num, bool is64bit)
    switch (num)
       {
       case TR::RealRegister::NoReg: return "NoReg";
+      case TR::RealRegister::SpilledReg: return "SpilledReg";
       case TR::RealRegister::x0: return (is64bit ? "x0" : "w0");
       case TR::RealRegister::x1: return (is64bit ? "x1" : "w1");
       case TR::RealRegister::x2: return (is64bit ? "x2" : "w2");
@@ -1605,7 +1607,26 @@ TR_Debug::getARM64RegisterName(uint32_t regNum, bool is64bit)
 
 void TR_Debug::printARM64OOLSequences(TR::FILE *pOutFile)
    {
-   TR_UNIMPLEMENTED();
+   auto oiIterator = _cg->getARM64OutOfLineCodeSectionList().begin();
+
+   while (oiIterator != _cg->getARM64OutOfLineCodeSectionList().end())
+      {
+      trfprintf(pOutFile, "\n------------ start out-of-line instructions\n");
+      TR::Instruction *instr = (*oiIterator)->getFirstInstruction();
+
+      do {
+         print(pOutFile, instr);
+         instr = instr->getNext();
+      } while (instr != (*oiIterator)->getAppendInstruction());
+
+      if ((*oiIterator)->getAppendInstruction())
+         {
+         print(pOutFile, (*oiIterator)->getAppendInstruction());
+         }
+      trfprintf(pOutFile, "\n------------ end out-of-line instructions\n");
+
+      ++oiIterator;
+      }
    }
 
 const char *

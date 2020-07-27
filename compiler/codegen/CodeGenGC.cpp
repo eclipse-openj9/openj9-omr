@@ -276,7 +276,7 @@ OMR::CodeGenerator::buildGCMapForInstruction(TR::Instruction *instr)
          {
          TR::AutomaticSymbol * s = (*location)->getSymbolReference()->getSymbol()->getAutoSymbol();
 
-         // For PPC/390 OOL codegen; If a spill is in the collected list and it
+         // For PPC/390/aarch64 OOL codegen; If a spill is in the collected list and it
          // has maxSpillDepth==0 then the following is true:
          //
          // 1) This GC point is in the hot path of an OOL section
@@ -288,7 +288,7 @@ OMR::CodeGenerator::buildGCMapForInstruction(TR::Instruction *instr)
          // skip it.  The occupied flag is not accurate in this case because we
          // did not free the spill and therefore did not clear the flag.
          //
-         if ((self()->comp()->target().cpu.isPower() || self()->comp()->target().cpu.isZ()) && (*location)->getMaxSpillDepth() == 0  && comp->cg()->isOutOfLineHotPath())
+         if ((self()->comp()->target().cpu.isPower() || self()->comp()->target().cpu.isZ() || self()->comp()->target().cpu.isARM64()) && (*location)->getMaxSpillDepth() == 0  && comp->cg()->isOutOfLineHotPath())
             {
             if (self()->getDebug())
                traceMsg(comp, "\nSkipping GC map [%p] index %d (%s) for instruction [%p] in OOL hot path because it has already been reverse spilled.\n",

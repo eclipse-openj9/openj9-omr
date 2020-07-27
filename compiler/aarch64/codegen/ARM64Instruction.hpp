@@ -523,6 +523,12 @@ class ARM64LabelInstruction : public TR::Instruction
       }
 
    /**
+    * @brief Assigns registers
+    * @param[in] kindToBeAssigned : register kind
+    */
+   virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
+
+   /**
     * @brief Generates binary encoding of the instruction
     * @return instruction cursor
     */
@@ -534,6 +540,15 @@ class ARM64LabelInstruction : public TR::Instruction
     * @return estimated binary length
     */
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+
+   protected:
+
+   /**
+    * @brief Assigns registers for OutOfLineCodeSection
+    *
+    * @param[in] kindToBeAssigned : register kind
+    */
+   void assignRegistersForOutOfLineCodeSection(TR_RegisterKinds kindToBeAssigned);
    };
 
 class ARM64ConditionalBranchInstruction : public ARM64LabelInstruction

@@ -37,7 +37,6 @@
 #endif /* OMR_GC_MODRON_COMPACTION */
 #include "Configuration.hpp"
 #include "CycleState.hpp"
-#include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
 #include "GlobalAllocationManager.hpp"
 #include "Heap.hpp"
@@ -58,6 +57,7 @@
 #if defined(OMR_GC_MODRON_COMPACTION)
 #include "ParallelCompactTask.hpp"
 #endif /* OMR_GC_MODRON_COMPACTION */
+#include "ParallelDispatcher.hpp"
 #include "ParallelGlobalGC.hpp"
 #include "ParallelMarkTask.hpp"
 #include "ParallelSweepScheme.hpp"

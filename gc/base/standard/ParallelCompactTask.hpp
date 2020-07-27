@@ -34,9 +34,9 @@
 
 #if defined(OMR_GC_MODRON_COMPACTION)
 
-class MM_Dispatcher;
 class MM_CompactScheme;
 class MM_EnvironmentBase;
+class MM_ParallelDispatcher;
 
 /**
  * @todo Provide class documentation
@@ -59,7 +59,7 @@ public:
 	/**
 	 * Create an ParallelCompactTask object.
 	 */
-	MM_ParallelCompactTask(MM_EnvironmentBase *env, MM_Dispatcher *dispatcher, MM_CompactScheme *compactScheme, bool rebuildMarkBits, bool aggressive) :
+	MM_ParallelCompactTask(MM_EnvironmentBase *env, MM_ParallelDispatcher *dispatcher, MM_CompactScheme *compactScheme, bool rebuildMarkBits, bool aggressive) :
 		MM_ParallelTask(env, dispatcher),
 		_compactScheme(compactScheme),
 		_rebuildMarkBits(rebuildMarkBits),

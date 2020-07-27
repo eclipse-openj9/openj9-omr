@@ -65,7 +65,7 @@ public:
 	virtual void run(MM_EnvironmentBase *env);
 
 	MM_ConcurrentScavengeTask(MM_EnvironmentBase *env,
-			MM_Dispatcher *dispatcher,
+			MM_ParallelDispatcher *dispatcher,
 			MM_Scavenger *scavenger,
 			ConcurrentAction action,
 			MM_CycleState *cycleState) :

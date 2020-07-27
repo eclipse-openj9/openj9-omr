@@ -39,6 +39,7 @@
 #include "Task.hpp"
 
 #include "ParallelDispatcher.hpp"
+#include "Dispatcher.hpp"
 
 typedef struct workerThreadInfo {
 	OMR_VM *omrVM;
@@ -234,7 +235,7 @@ MM_ParallelDispatcher::kill(MM_EnvironmentBase *env)
 		_threadTable = NULL;
 	}
 
-	MM_Dispatcher::kill(env);
+	env->getForge()->free(this);
 }
 
 bool
@@ -520,6 +521,19 @@ MM_ParallelDispatcher::cleanupAfterTask(MM_EnvironmentBase *env)
 	}
 	
 	omrthread_monitor_exit(_workerThreadMutex);
+}
+
+void
+MM_ParallelDispatcher::run(MM_EnvironmentBase *env, MM_Task *task, uintptr_t newThreadCount)
+{
+	uintptr_t activeThreads = recomputeActiveThreadCountForTask(env, task, newThreadCount);
+	task->mainSetup(env);
+	prepareThreadsForTask(env, task, activeThreads);
+	acceptTask(env);
+	task->run(env);
+	completeTask(env);
+	cleanupAfterTask(env);
+	task->mainCleanup(env);
 }
 
 /**

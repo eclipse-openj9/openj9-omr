@@ -24,8 +24,8 @@
 
 #include "ModronAssertions.h"
 
-#include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
+#include "ParallelDispatcher.hpp"
 
 #include "ScavengerStats.hpp"
 

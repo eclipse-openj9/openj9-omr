@@ -36,6 +36,7 @@
 
 class MM_EnvironmentBase;
 class MM_Task;
+class MM_ParallelDispatcher;
 
 /**
  * @todo Provide define documentation
@@ -50,40 +51,29 @@ class MM_Task;
 class MM_Dispatcher : public MM_BaseVirtual
 {
 private:
-	MM_Task *_task;
 	
 protected:
-	bool initialize(MM_EnvironmentBase *env);
-	
-	virtual void prepareThreadsForTask(MM_EnvironmentBase *env, MM_Task *task, uintptr_t threadCount);
-	virtual void acceptTask(MM_EnvironmentBase *env);
-	virtual void completeTask(MM_EnvironmentBase *env);
-	virtual void cleanupAfterTask(MM_EnvironmentBase *env);
-
-	virtual uintptr_t recomputeActiveThreadCountForTask(MM_EnvironmentBase *env, MM_Task *task, uintptr_t newThreadCount);
 
 public:
-	static MM_Dispatcher *newInstance(MM_EnvironmentBase *env);
-	virtual void kill(MM_EnvironmentBase *env);
-	virtual bool startUpThreads();
-	virtual void shutDownThreads();
+	virtual void kill(MM_EnvironmentBase *env) = 0;
+	virtual bool startUpThreads() = 0;
+	virtual void shutDownThreads() = 0;
 
-	virtual bool condYieldFromGCWrapper(MM_EnvironmentBase *env, uint64_t timeSlack = 0) { return false; }
+	virtual bool condYieldFromGCWrapper(MM_EnvironmentBase *env, uint64_t timeSlack = 0) = 0;
 
-	MMINLINE virtual uintptr_t threadCount() { return 1; }
-	MMINLINE virtual uintptr_t threadCountMaximum() { return 1; }
-	MMINLINE virtual uintptr_t activeThreadCount() { return 1; }
-	MMINLINE virtual void setThreadCount(uintptr_t threadCount) {}
+	virtual uintptr_t threadCount() = 0;
+	virtual uintptr_t threadCountMaximum() = 0;
+	virtual uintptr_t activeThreadCount() = 0;
+	virtual void setThreadCount(uintptr_t threadCount) = 0;
 
-	void run(MM_EnvironmentBase *env, MM_Task *task, uintptr_t threadCount = UDATA_MAX);
-	virtual void reinitAfterFork(MM_EnvironmentBase *env, uintptr_t newThreadCount) {}
+	virtual void run(MM_EnvironmentBase *env, MM_Task *task, uintptr_t threadCount = UDATA_MAX) = 0;
+	virtual void reinitAfterFork(MM_EnvironmentBase *env, uintptr_t newThreadCount) = 0;
 
 	/**
 	 * Create a Dispatcher object.
 	 */
 	MM_Dispatcher(MM_EnvironmentBase *env) :
-		MM_BaseVirtual(),
-		_task(NULL)
+		MM_BaseVirtual()
 	{
 		_typeId = __FUNCTION__;
 	};

@@ -23,9 +23,9 @@
 
 #include "modronapicore.hpp"
 
-#include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
+#include "ParallelDispatcher.hpp"
 
 #include "pool_api.h"
 

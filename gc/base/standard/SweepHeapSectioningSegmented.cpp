@@ -24,13 +24,13 @@
 
 #include "SweepHeapSectioningSegmented.hpp"
 
-#include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
 #include "Heap.hpp"
 #include "HeapRegionIterator.hpp"
 #include "HeapRegionDescriptor.hpp"
 #include "NonVirtualMemory.hpp"
 #include "MemorySubSpace.hpp"
+#include "ParallelDispatcher.hpp"
 #include "ParallelSweepChunk.hpp"
 
 /**

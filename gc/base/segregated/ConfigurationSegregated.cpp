@@ -223,7 +223,13 @@ MM_ConfigurationSegregated::createGlobalCollector(MM_EnvironmentBase* env)
 MM_Dispatcher *
 MM_ConfigurationSegregated::createDispatcher(MM_EnvironmentBase *env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize)
 {
-	return MM_ParallelDispatcher::newInstance(env, handler, handler_arg, defaultOSStackSize);
+	return (MM_Dispatcher*) createParallelDispatcher(env, handler, handler_arg, defaultOSStackSize);
+}
+
+MM_ParallelDispatcher *
+MM_ConfigurationSegregated::createParallelDispatcher(MM_EnvironmentBase *env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize)
+{
+	return  MM_ParallelDispatcher::newInstance(env, handler, handler_arg, defaultOSStackSize);
 }
 
 #endif /* OMR_GC_SEGREGATED_HEAP */

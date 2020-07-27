@@ -28,7 +28,6 @@
 #include "omrcfg.h"
 #include "omr.h"
 
-#include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
 #include "Heap.hpp"
@@ -36,6 +35,7 @@
 #include "HeapRegionIterator.hpp"
 #include "HeapRegionManager.hpp"
 #include "MarkMap.hpp"
+#include "ParallelDispatcher.hpp"
 #include "Task.hpp"
 
 

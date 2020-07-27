@@ -32,7 +32,7 @@
 #include "HeapRegionManager.hpp"
 #include "MemoryManager.hpp"
 #include "HeapRegionDescriptor.hpp"
-#include "Dispatcher.hpp"
+#include "ParallelDispatcher.hpp"
 #include "Task.hpp"
 
 #include "ModronAssertions.h"

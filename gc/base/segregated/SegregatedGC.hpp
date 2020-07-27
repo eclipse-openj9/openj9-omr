@@ -44,7 +44,7 @@ protected:
 	OMRPortLibrary *_portLibrary;
 	MM_SegregatedMarkingScheme *_markingScheme;
 	MM_SweepSchemeSegregated *_sweepScheme;
-	MM_Dispatcher *_dispatcher;
+	MM_ParallelDispatcher *_dispatcher;
 
 	MM_CycleState _cycleState;  /**< Embedded cycle state to be used as the main cycle state for GC activity */
 	MM_CollectionStatisticsStandard _collectionStatistics; /** Common collect stats (memory, time etc.) */
@@ -118,7 +118,7 @@ public:
 		, _portLibrary(env->getPortLibrary())
 		, _markingScheme(NULL)
 		, _sweepScheme(NULL)
-		, _dispatcher(_extensions->dispatcher)
+		, _dispatcher((MM_ParallelDispatcher *)_extensions->dispatcher)
 		, _scanBytes(0)
 		, _objectsMarked(0)
 	{

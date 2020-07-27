@@ -41,11 +41,11 @@
 
 class MM_AllocateDescription;
 class MM_EnvironmentStandard;
-class MM_Dispatcher;
 class MM_Heap;
 class MM_HeapRegionDescriptorStandard;
 class MM_MemoryPool;
 class MM_MemorySubSpace;
+class MM_ParallelDispatcher;
 class CompactTableEntry;
 
 class MM_CompactMemoryPoolState : public MM_BaseVirtual
@@ -126,7 +126,7 @@ private:
 protected:
     OMR_VM *_omrVM;
     MM_GCExtensionsBase *_extensions;
-    MM_Dispatcher *_dispatcher;
+    MM_ParallelDispatcher *_dispatcher;
     MM_MarkingScheme *_markingScheme;
 	MM_HeapRegionManager *_rootManager; /**< The root region manager which holds the MM_HeapRegionDescriptor instances which manage the properties of the regions */
 
@@ -329,7 +329,7 @@ public:
         : MM_BaseVirtual()
     	, _omrVM(env->getOmrVM())
         , _extensions(env->getExtensions())
-        , _dispatcher(_extensions->dispatcher)
+        , _dispatcher((MM_ParallelDispatcher *)_extensions->dispatcher)
         , _markingScheme(markingScheme)
         , _markMap(markingScheme->getMarkMap())
         , _subAreaTableSize(0)

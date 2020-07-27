@@ -52,6 +52,7 @@
 #include "MemorySubSpace.hpp"
 #include "ObjectHeapIteratorAddressOrderedList.hpp"
 #include "ObjectModel.hpp"
+#include "ParallelDispatcher.hpp"
 #include "ParallelSweepScheme.hpp"
 #include "ParallelTask.hpp"
 #include "SlotObject.hpp"

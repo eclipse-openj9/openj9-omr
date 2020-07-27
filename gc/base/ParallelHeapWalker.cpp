@@ -26,7 +26,7 @@
 
 #include "GCExtensionsBase.hpp"
 #include "ParallelTask.hpp"
-#include "Dispatcher.hpp"
+#include "ParallelDispatcher.hpp"
 #include "HeapMapIterator.hpp"
 #include "HeapRegionIterator.hpp"
 #include "HeapRegionDescriptor.hpp"

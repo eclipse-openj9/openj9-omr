@@ -26,7 +26,6 @@
 #include "omrgcconsts.h"
 
 #include "CollectorLanguageInterface.hpp"
-#include "Dispatcher.hpp"
 #include "GCExtensionsBase.hpp"
 #include "Heap.hpp"
 #include "HeapRegionIterator.hpp"
@@ -36,6 +35,7 @@
 #include "ObjectIterator.hpp"
 #include "ObjectModel.hpp"
 #include "OMRVMInterface.hpp"
+#include "ParallelDispatcher.hpp"
 #include "SlotObject.hpp"
 #include "SublistIterator.hpp"
 #include "SublistSlotIterator.hpp"

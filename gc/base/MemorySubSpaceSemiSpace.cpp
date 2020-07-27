@@ -38,6 +38,7 @@
 #include "MemorySubSpace.hpp"
 #include "MemorySubSpaceRegionIterator.hpp"
 #include "MemorySubSpaceSemiSpace.hpp"
+#include "ParallelDispatcher.hpp"
 #include "PhysicalSubArena.hpp"
 
 #if defined(OMR_VALGRIND_MEMCHECK)

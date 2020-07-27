@@ -29,7 +29,6 @@
 
 #include "AllocateDescription.hpp"
 #include "Bits.hpp"
-#include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
 #include "Heap.hpp"
@@ -39,6 +38,7 @@
 #include "MemoryPoolAddressOrderedList.hpp"
 #include "MemorySpace.hpp"
 #include "MemorySubSpace.hpp"
+#include "ParallelDispatcher.hpp"
 #include "ParallelSweepChunk.hpp"
 #include "ParallelSweepScheme.hpp"
 #include "ParallelTask.hpp"
@@ -811,7 +811,7 @@ MM_ParallelSweepScheme::sweep(MM_EnvironmentBase *env)
 {
 	setupForSweep(env);
 	
-	MM_ParallelSweepTask sweepTask(env, _extensions->dispatcher, this);
+	MM_ParallelSweepTask sweepTask(env,(MM_ParallelDispatcher *) _extensions->dispatcher, this);
 	_extensions->dispatcher->run(env, &sweepTask);
 }
 

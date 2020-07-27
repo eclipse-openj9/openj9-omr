@@ -51,7 +51,7 @@ public:
 	
 	virtual void run(MM_EnvironmentBase *env);
 
-	MM_CompactFixHeapForWalkTask(MM_EnvironmentBase *env, MM_Dispatcher *dispatcher, MM_CompactScheme *compactScheme) :
+	MM_CompactFixHeapForWalkTask(MM_EnvironmentBase *env, MM_ParallelDispatcher *dispatcher, MM_CompactScheme *compactScheme) :
 		MM_ParallelTask(env, dispatcher),
 		_compactScheme(compactScheme)
 	{

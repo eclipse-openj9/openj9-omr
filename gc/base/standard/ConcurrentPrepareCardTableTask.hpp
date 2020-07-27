@@ -34,8 +34,8 @@
 #include "ParallelTask.hpp"
 #include "ConcurrentCardTableForWC.hpp"
 
-class MM_Dispatcher;
 class MM_EnvironmentBase;
+class MM_ParallelDispatcher;
 
 /**
  * Task used to prepare the card-table in parallel on weakly-ordered platforms.
@@ -54,7 +54,7 @@ public:
 	
 	virtual void run(MM_EnvironmentBase *env);
 
-	MM_ConcurrentPrepareCardTableTask(MM_EnvironmentBase *env, MM_Dispatcher *dispatcher, MM_ConcurrentCardTableForWC *cardTable, Card *firstCard, Card *lastCard, CardAction action) :
+	MM_ConcurrentPrepareCardTableTask(MM_EnvironmentBase *env, MM_ParallelDispatcher *dispatcher, MM_ConcurrentCardTableForWC *cardTable, Card *firstCard, Card *lastCard, CardAction action) :
 		MM_ParallelTask(env, dispatcher),
 		_cardTable(cardTable),
 		_firstCard(firstCard),

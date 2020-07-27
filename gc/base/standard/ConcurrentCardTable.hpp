@@ -125,8 +125,8 @@ typedef enum {
 
 class MM_EnvironmentBase;
 class MM_ConcurrentGC;
-class MM_Dispatcher;
 class MM_MarkingScheme;
+class MM_ParallelDispatcher;
 
 
 typedef struct {
@@ -157,7 +157,7 @@ protected:
 	OMR_VM *_omrVM;
 	MM_ConcurrentGC *_collector;
 	MM_GCExtensionsBase *_extensions;
-	MM_Dispatcher *_dispatcher; 
+	MM_ParallelDispatcher *_dispatcher;
 	MM_MarkingScheme *_markingScheme;
 	MM_ConcurrentCardTableStats _cardTableStats;
 	volatile CardCleanPhase	_cardCleanPhase;
@@ -479,7 +479,7 @@ public:
 		_omrVM(env->getOmrVM()),
 		_collector(collector),
 		_extensions(MM_GCExtensionsBase::getExtensions(_omrVM)),
-		_dispatcher(_extensions->dispatcher),
+		_dispatcher((MM_ParallelDispatcher *)_extensions->dispatcher),
 		_markingScheme(markingScheme),
 		_cardCleanPhase(UNINITIALIZED),
 		_lastCardCleanPhase(UNINITIALIZED),

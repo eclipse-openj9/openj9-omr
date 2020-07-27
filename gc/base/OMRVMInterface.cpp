@@ -25,7 +25,6 @@
 
 #include "OMRVMInterface.hpp"
 
-#include "Dispatcher.hpp"
 #include "GCExtensionsBase.hpp"
 #include "Heap.hpp"
 #include "GlobalCollector.hpp"
@@ -34,6 +33,7 @@
 #include "ObjectHeapIterator.hpp"
 #include "ObjectModel.hpp"
 #include "OMRVMThreadInterface.hpp"
+#include "ParallelDispatcher.hpp"
 #include "SublistPool.hpp"
 #include "SublistPuddle.hpp"
 #include "SublistIterator.hpp"

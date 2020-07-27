@@ -29,9 +29,9 @@
 #include "CopyScanCacheChunk.hpp"
 #include "CopyScanCacheChunkInHeap.hpp"
 #include "CopyScanCacheStandard.hpp"
-#include "Dispatcher.hpp"
 #include "EnvironmentStandard.hpp"
 #include "GCExtensionsBase.hpp"
+#include "ParallelDispatcher.hpp"
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 

@@ -47,7 +47,7 @@ public:
 	virtual void setup(MM_EnvironmentBase *env);
 	virtual void cleanup(MM_EnvironmentBase *env);
 	
-	MM_SegregatedSweepTask(MM_EnvironmentBase *env, MM_Dispatcher *dispatcher, MM_SweepSchemeSegregated *sweepScheme, MM_MemoryPoolSegregated *memoryPool)
+	MM_SegregatedSweepTask(MM_EnvironmentBase *env, MM_ParallelDispatcher *dispatcher, MM_SweepSchemeSegregated *sweepScheme, MM_MemoryPoolSegregated *memoryPool)
 		: MM_ParallelTask(env, dispatcher)
 		, _sweepScheme(sweepScheme)
 		, _memoryPool(memoryPool)

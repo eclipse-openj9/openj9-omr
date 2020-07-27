@@ -121,4 +121,7 @@ typedef struct OMRLinger {
 	struct linger data;
 } OMRLinger;
 
+/* Additional constants: Set maximum backlog for listen */
+#define OMRSOCK_MAXCONN SOMAXCONN
+
 #endif /* !defined(OMRPORTSOCKTYPES_H_) */

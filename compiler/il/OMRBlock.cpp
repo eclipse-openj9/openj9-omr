@@ -920,7 +920,9 @@ static std::pair<TR_GlobalRegisterNumber,TR_GlobalRegisterNumber> findAvailableR
       end = lastVRF;
       }
    else
-      TR_ASSERT_FATAL(false, "Unknown data type %s encountered when trying to pick a register for postGRA block splitting!", dt.toString());
+      {
+      return toReturn;
+      }
 
    for (TR_GlobalRegisterNumber itr = start; itr < end; ++itr)
       {
@@ -1226,7 +1228,11 @@ static TR::SymbolReference * createSymRefForNode(TR::Compilation *comp, TR::Reso
 
    if (!symRef)
       {
-      symRef = comp->getSymRefTab()->createTemporary(methodSymbol, value->getDataType());
+      symRef = comp->getSymRefTab()->createTemporary(methodSymbol, value->getDataType(), false,
+#ifdef J9_PROJECT_SPECIFIC
+                                                      value->getType().isBCD() ? value->getSize() :
+#endif
+                                                      0);
       if (value->getType() == TR::Address && value->isNotCollected())
          symRef->getSymbol()->setNotCollected();
       }
@@ -1484,18 +1490,26 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
                   convertedValueNode = TR::Node::create(convertOpCode, 1, value);
                   }
                TR::SymbolReference *storedValueSymRef = createSymRefForNode(comp, methodSymbol, convertedValueNode, self()->getExit());
-               self()->getExit()->insertBefore(TR::TreeTop::create(comp,
-                                                                     TR::Node::createWithSymRef(value,
-                                                                        comp->il.opCodeForDirectStore(convertedValDataType),
+               TR::Node *storeNode = TR::Node::createWithSymRef(value, comp->il.opCodeForDirectStore(convertedValDataType),
                                                                         1,
                                                                         convertedValueNode,
-                                                                        storedValueSymRef)));
+                                                                        storedValueSymRef);
+#ifdef J9_PROJECT_SPECIFIC
+               if (convertedValueNode->getType().isBCD())
+                  storeNode->setDecimalPrecision(convertedValueNode->getDecimalPrecision());
+#endif
+               self()->getExit()->insertBefore(TR::TreeTop::create(comp,
+                                                                     storeNode));
                TR::Node *replacementNode = TR::Node::createLoad(value, storedValueSymRef);
                if (convertedValDataType != originalValDataType)
                   {
                   TR::ILOpCodes convertOpCode = TR::ILOpCode::getProperConversion(convertedValDataType, originalValDataType, false);
                   replacementNode = TR::Node::create(convertOpCode, 1, replacementNode);
                   }
+#ifdef J9_PROJECT_SPECIFIC
+               if (convertedValueNode->getType().isBCD())
+                  replacementNode->setDecimalPrecision(convertedValueNode->getDecimalPrecision());
+#endif
                iter->second.second = replacementNode;
                }
             }

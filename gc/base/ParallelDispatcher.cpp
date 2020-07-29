@@ -39,7 +39,6 @@
 #include "Task.hpp"
 
 #include "ParallelDispatcher.hpp"
-#include "Dispatcher.hpp"
 
 typedef struct workerThreadInfo {
 	OMR_VM *omrVM;

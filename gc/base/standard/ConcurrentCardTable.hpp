@@ -479,7 +479,7 @@ public:
 		_omrVM(env->getOmrVM()),
 		_collector(collector),
 		_extensions(MM_GCExtensionsBase::getExtensions(_omrVM)),
-		_dispatcher((MM_ParallelDispatcher *)_extensions->dispatcher),
+		_dispatcher(_extensions->dispatcher),
 		_markingScheme(markingScheme),
 		_cardCleanPhase(UNINITIALIZED),
 		_lastCardCleanPhase(UNINITIALIZED),

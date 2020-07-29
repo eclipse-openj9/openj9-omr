@@ -27,7 +27,6 @@
 
 #include "AllocateDescription.hpp"
 #include "Collector.hpp"
-#include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
 #include "Heap.hpp"

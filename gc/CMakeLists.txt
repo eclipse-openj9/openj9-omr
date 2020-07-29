@@ -75,7 +75,6 @@ omr_add_library(omrgc STATIC
 	base/CardTable.cpp
 	base/Collector.cpp
 	base/Configuration.cpp
-	base/Dispatcher.cpp
 	base/EmptyListPopulator.cpp
 	base/EnvironmentBase.cpp
 	base/Forge.cpp

@@ -35,7 +35,6 @@
 #include "CompactFixHeapForWalkTask.hpp"
 #include "CompactSchemeFixupObject.hpp"
 #include "Debug.hpp"
-#include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
 #include "Heap.hpp"
 #include "HeapLinkedFreeHeader.hpp"

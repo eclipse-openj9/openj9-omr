@@ -329,7 +329,7 @@ public:
         : MM_BaseVirtual()
     	, _omrVM(env->getOmrVM())
         , _extensions(env->getExtensions())
-        , _dispatcher((MM_ParallelDispatcher *)_extensions->dispatcher)
+        , _dispatcher(_extensions->dispatcher)
         , _markingScheme(markingScheme)
         , _markMap(markingScheme->getMarkMap())
         , _subAreaTableSize(0)

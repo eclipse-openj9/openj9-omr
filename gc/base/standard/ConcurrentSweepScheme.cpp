@@ -1199,7 +1199,7 @@ void
 MM_ConcurrentSweepScheme::completeSweep(MM_EnvironmentBase* envBase, SweepCompletionReason reason)
 {
 	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
-	MM_ParallelDispatcher *dispatcher = (MM_ParallelDispatcher *)envBase->getExtensions()->dispatcher;
+	MM_ParallelDispatcher *dispatcher = envBase->getExtensions()->dispatcher;
 	OMRPORT_ACCESS_FROM_OMRPORT(envBase->getPortLibrary());
 
 	/* Do no work if we weren't in concurrent sweep mode */

@@ -341,7 +341,7 @@ public:
 		, _markingScheme(NULL)
 		, _sweepScheme(NULL)
 		, _heapWalker(NULL)
-		, _dispatcher((MM_ParallelDispatcher *) _extensions->dispatcher)
+		, _dispatcher(_extensions->dispatcher)
 		, _cycleState()
 		, _collectionStatistics()
 		, _fixHeapForWalkCompleted(false)

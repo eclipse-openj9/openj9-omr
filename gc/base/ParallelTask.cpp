@@ -28,7 +28,6 @@
 #include "ParallelTask.hpp"
 
 #include "AtomicOperations.hpp"
-#include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
 #include "ModronAssertions.h"
 #include "ParallelDispatcher.hpp"

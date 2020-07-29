@@ -465,6 +465,21 @@ void createPatchableDataInLitpool(TR::Node * node, TR::CodeGenerator * cg, TR::R
 
 bool symRefHasTemporaryNegativeOffset() {return false;}
 void setMemRefAndGetUnresolvedData(TR::Snippet *& snippet) {}
+
+/**
+ * \brief
+ *   Create a MemoryReference from a given node. 
+ *
+ * \param[in] node
+ *   The node which describes the memory reference.
+ *
+ * \param[in] cg
+ *   The code generator used to generate the instructions.
+ *
+ * \return
+ *   The \c TR::MemoryReference representing this node.
+ */
+static TR::MemoryReference* create(TR::CodeGenerator* cg, TR::Node* node);
 };
 }
 }

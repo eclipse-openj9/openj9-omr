@@ -3923,6 +3923,29 @@ TR::AMD64RegImm64SymInstruction::autoSetReloKind()
 // Generate methods
 ////////////////////////////////////////////////////////////////////////////////
 
+TR::Instruction* generateBreakOnDFSet(TR::CodeGenerator *cg, TR::Instruction* cursor)
+   {
+   if (!cursor)
+      cursor = cg->getAppendInstruction();
+
+   TR::RealRegister *espReal = cg->machine()->getRealRegister(TR::RealRegister::esp);
+   cursor = generateInstruction(cursor, PUSHFD, cg);
+   TR::LabelSymbol* begLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol* endLabel = generateLabelSymbol(cg);
+   begLabel->setStartInternalControlFlow();
+   endLabel->setEndInternalControlFlow();
+
+   const int32_t dfMask = 0x400;
+   cursor = generateLabelInstruction(cursor, LABEL, begLabel, cg);
+   cursor = generateMemImmInstruction(cursor, TEST2MemImm2, generateX86MemoryReference(espReal, 0, cg), dfMask, cg);
+   cursor = generateLabelInstruction(cursor, JE1, endLabel, cg);
+   cursor = generateInstruction(cursor, BADIA32Op, cg);
+   cursor = generateLabelInstruction(cursor, LABEL, endLabel, cg);
+   cursor = generateInstruction(cursor, POPFD, cg);
+
+   return cursor;
+   }
+
 TR::Instruction  *
 generateInstruction(TR::Instruction *prev, TR_X86OpCodes op, TR::CodeGenerator *cg)
    {

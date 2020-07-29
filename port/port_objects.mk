@@ -162,6 +162,12 @@ OBJECTS += omrtty
 OBJECTS += omrvmem
 OBJECTS += ut_omrport
 OBJECTS += omrmemtag_checks
+ifneq (win,$(OMR_HOST_OS))
+  OBJECTS += omrsysv_ipcwrappers
+  OBJECTS += omrsharedhelper
+  OBJECTS += omrshsem
+  OBJECTS += omrshsem_deprecated
+endif  
 ifeq (aix,$(OMR_HOST_OS))
   OBJECTS += omrosdump_helpers
 else

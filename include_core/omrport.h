@@ -286,6 +286,55 @@
 #define OMRPORT_TIME_US_PER_SEC ((uint64_t) 1000000) /* microseconds per second */
 /** @} */
 
+/**
+ * @name Shared Semaphore
+ * Flags used to indicate type of operation for omrshsem_post/omrshsem_wait
+ * @{
+ */
+#define OMRPORT_SHSEM_MODE_DEFAULT ((uintptr_t) 0)
+#define OMRPORT_SHSEM_MODE_UNDO ((uintptr_t) 1)
+#define OMRPORT_SHSEM_MODE_NOWAIT ((uintptr_t) 2)
+/** @} */
+
+/**
+ * @name Shared Semaphore Success flags
+ * @anchor PortSharedSemaphoreSuccessFlags
+ * Success codes related to shared semaphore  operations.
+ * @{
+ * @internal OMRPORT_INFO_SHSEM* range from at 100 to 109 to avoid overlap
+ */
+#define OMRPORT_INFO_SHSEM_BASE 100
+#define OMRPORT_INFO_SHSEM_CREATED (OMRPORT_INFO_SHSEM_BASE)
+#define OMRPORT_INFO_SHSEM_OPENED (OMRPORT_INFO_SHSEM_BASE+1)
+#define OMRPORT_INFO_SHSEM_OPEN_UNLINKED (OMRPORT_INFO_SHSEM_BASE+2)
+#define OMRPORT_INFO_SHSEM_OPENED_STALE (OMRPORT_INFO_SHSEM_BASE+3)
+#define OMRPORT_INFO_SHSEM_PARTIAL (OMRPORT_INFO_SHSEM_BASE+4)
+#define OMRPORT_INFO_SHSEM_STAT_PASSED (OMRPORT_INFO_SHSEM_BASE+5)
+
+/** @} */
+
+#define OMRSH_MAXPATH EsMaxPath
+
+#define OMRSH_SEMAPHORE_ID "_semaphore_"
+
+#define OMRSH_DIRPERM_ABSENT ((uintptr_t)-2)
+#define OMRSH_DIRPERM (0777)
+#define OMRSH_PARENTDIRPERM (01777)
+#define OMRSH_DIRPERM_DEFAULT (0000)
+#define OMRSH_DIRPERM_DEFAULT_WITH_STICKYBIT (01000)
+#define OMRSH_BASEFILEPERM (0644)
+#define OMRSH_BASEFILEPERM_GROUP_RW_ACCESS (0664)
+
+#define OMRSH_SYSV_REGULAR_CONTROL_FILE 0
+#define OMRSH_SYSV_OLDER_CONTROL_FILE 1
+#define OMRSH_SYSV_OLDER_EMPTY_CONTROL_FILE 2
+
+/* Flags passed to "flag" argument of omrshsem_deprecated_open(). */
+#define OMRSHSEM_NO_FLAGS 0x0
+#define OMRSHSEM_OPEN_FOR_STATS 0x1
+#define OMRSHSEM_OPEN_FOR_DESTROY 0x2
+#define OMRSHSEM_OPEN_DO_NOT_CREATE 0x4
+
 #define ROUND_UP_TO_POWEROF2(value, powerof2) (((value) + ((powerof2) - 1)) & (UDATA)~((powerof2) - 1))
 #define ROUND_DOWN_TO_POWEROF2(value, powerof2) ((value) & (UDATA)~((powerof2) - 1))
 
@@ -298,6 +347,18 @@ typedef struct J9Permission {
 	uint32_t isOtherReadable : 1;
 	uint32_t : 26; /* future use */
 } J9Permission;
+
+typedef struct OMRPortShsemStatistic {
+	uintptr_t semid;
+	uintptr_t ouid;
+	uintptr_t ogid;
+	uintptr_t cuid;
+	uintptr_t cgid;
+	int64_t lastOpTime;
+	int64_t lastChangeTime;
+	int32_t nsems;
+	J9Permission perm;
+} OMRPortShsemStatistic;
 
 /**
  * Holds properties relating to a file. Can be added to in the future
@@ -1568,6 +1629,11 @@ typedef struct OMRProcessorDesc {
 #define OMR_FEATURE_X86_AVX512BW            96 + 30 /* AVX512 Byte and Word */
 #define OMR_FEATURE_X86_AVX512VL            96 + 31 /* AVX512 Vector Length */
 
+struct OMRControlFileStatus;
+struct OMRPortShSemParameters;
+
+struct omrshsem_handle;
+
 struct OMRPortLibrary;
 typedef struct J9Heap J9Heap;
 
@@ -2013,6 +2079,54 @@ typedef struct OMRPortLibrary {
 	uintptr_t (*mmap_get_region_granularity)(struct OMRPortLibrary *portLibrary, void *address) ;
 	/** see @ref omrmmap.c::omrmmap_dont_need "omrmmap_dont_need"*/
 	void (*mmap_dont_need)(struct OMRPortLibrary *portLibrary, const void *startAddress, size_t length) ;
+#if !defined(OMR_OS_WINDOWS)
+	/** see @ref omrshsem.c::omrshsem_params_init "omrshsem_params_init"*/
+	int32_t  ( *shsem_params_init)(struct OMRPortLibrary *portLibrary, struct OMRPortShSemParameters *params) ;
+	/** see @ref omrshsem.c::omrshsem_startup "omrshsem_startup"*/
+	int32_t  ( *shsem_startup)(struct OMRPortLibrary *portLibrary) ;
+	/** see @ref omrshsem.c::omrshsem_shutdown "omrshsem_shutdown"*/
+	void  ( *shsem_shutdown)(struct OMRPortLibrary *portLibrary) ;
+	/** see @ref omrshsem.c::omrshsem_open "omrshsem_open"*/
+	intptr_t  ( *shsem_open)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle **handle, const struct OMRPortShSemParameters *params) ;
+	/** see @ref omrshsem.c::omrshsem_post "omrshsem_post"*/
+	intptr_t  ( *shsem_post)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle* handle, uintptr_t semset, uintptr_t flag) ;
+	/** see @ref omrshsem.c::omrshsem_wait "omrshsem_wait"*/
+	intptr_t  ( *shsem_wait)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle* handle, uintptr_t semset, uintptr_t flag) ;
+	/** see @ref omrshsem.c::omrshsem_getVal "omrshsem_getVal"*/
+	intptr_t  ( *shsem_getVal)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle* handle, uintptr_t semset) ;
+	/** see @ref omrshsem.c::omrshsem_setVal "omrshsem_setVal"*/
+	intptr_t  ( *shsem_setVal)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle* handle, uintptr_t semset, intptr_t value) ;
+	/** see @ref omrshsem.c::omrshsem_close "omrshsem_close"*/
+	void  ( *shsem_close)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle **handle) ;
+	/** see @ref omrshsem.c::omrshsem_destroy "omrshsem_destroy"*/
+	intptr_t  ( *shsem_destroy)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle **handle) ;
+	/** see @ref omrshsem.c::omrshsem_deprecated_startup "omrshsem_deprecated_startup"*/
+	int32_t  ( *shsem_deprecated_startup)(struct OMRPortLibrary *portLibrary) ;
+	/** see @ref omrshsem.c::omrshsem_deprecated_shutdown "omrshsem_deprecated_shutdown"*/
+	void  ( *shsem_deprecated_shutdown)(struct OMRPortLibrary *portLibrary) ;
+	/** see @ref omrshsem.c::omrshsem_deprecated_open "omrshsem_deprecated_open"*/
+	intptr_t  ( *shsem_deprecated_open)(struct OMRPortLibrary *portLibrary, const char* cacheDirName, uintptr_t groupPerm, struct omrshsem_handle** handle, const char* semname, int setSize, int permission, uintptr_t flags, struct OMRControlFileStatus *controlFileStatus) ;
+	/** see @ref omrshsem.c::omrshsem_deprecated_openDeprecated "omrshsem_deprecated_openDeprecated"*/
+	intptr_t  ( *shsem_deprecated_openDeprecated)(struct OMRPortLibrary *portLibrary, const char* cacheDirName, uintptr_t groupPerm, struct omrshsem_handle** handle, const char* semname, uintptr_t cacheFileType) ;
+	/** see @ref omrshsem.c::omrshsem_deprecated_post "omrshsem_deprecated_post"*/
+	intptr_t  ( *shsem_deprecated_post)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle* handle, uintptr_t semset, uintptr_t flag) ;
+	/** see @ref omrshsem.c::omrshsem_deprecated_wait "omrshsem_deprecated_wait"*/
+	intptr_t  ( *shsem_deprecated_wait)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle* handle, uintptr_t semset, uintptr_t flag) ;
+	/** see @ref omrshsem.c::omrshsem_deprecated_getVal "omrshsem_deprecated_getVal"*/
+	intptr_t  ( *shsem_deprecated_getVal)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle* handle, uintptr_t semset) ;
+	/** see @ref omrshsem.c::omrshsem_deprecated_setVal "omrshsem_deprecated_setVal"*/
+	intptr_t  ( *shsem_deprecated_setVal)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle* handle, uintptr_t semset, intptr_t value) ;
+	/** see @ref omrshsem.c::omrshsem_deprecated_handle_stat "omrshsem_deprecated_handle_stat"*/
+	intptr_t  ( *shsem_deprecated_handle_stat)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle *handle, struct OMRPortShsemStatistic *statbuf);
+	/** see @ref omrshsem.c::omrshsem_deprecated_close "omrshsem_deprecated_close"*/
+	void  ( *shsem_deprecated_close)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle **handle) ;
+	/** see @ref omrshsem.c::omrshsem_deprecated_destroy "omrshsem_deprecated_destroy"*/
+	intptr_t  ( *shsem_deprecated_destroy)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle **handle) ;
+	/** see @ref omrshsem.c::omrshsem_deprecated_destroyDeprecated "omrshsem_deprecated_destroyDeprecated"*/
+	intptr_t  ( *shsem_deprecated_destroyDeprecated)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle **handle, uintptr_t cacheFileType) ;
+	/** see @ref omrshsem.c::omrshsem_deprecated_getid "omrshsem_deprecated_getid"*/
+	int32_t  ( *shsem_deprecated_getid)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle* handle) ;
+#endif /* !defined(OMR_OS_WINDOWS) */
 	/** see @ref omrsysinfo.c::omrsysinfo_get_limit "omrsysinfo_get_limit"*/
 	uint32_t (*sysinfo_get_limit)(struct OMRPortLibrary *portLibrary, uint32_t resourceID, uint64_t *limit) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_set_limit "omrsysinfo_set_limit"*/
@@ -2322,6 +2436,41 @@ typedef struct OMRPortLibrary {
 } OMRPortLibrary;
 
 /**
+ * Stores information about status of control file used by omrshmem_open() or omrshsem_deprecated_open().
+ */
+typedef struct OMRControlFileStatus {
+	uintptr_t status;
+	int32_t errorCode;
+	char *errorMsg;
+} OMRControlFileStatus;
+
+/**
+ * @name OMRPortShSemParameters
+ * The caller is responsible creating storage for OMRPortShSemParameters.
+ * The structure is only needed for the lifetime of the call to @ref omrshsem_open
+ * This structure must be initialized using @ref omrshsem_params_init
+ */
+typedef struct OMRPortShSemParameters {
+	const char *semName; /* Unique identifier of the semaphore. */
+	uint32_t setSize; /* number of semaphores to be created in this set */
+	uint32_t permission; /* Posix-style file permissions */
+	const char* controlFileDir; /* Directory in which to create control files (SysV semaphores only) */
+	uint8_t proj_id; /* parameter used with semName to generate semaphore key */
+	uint32_t deleteBasefile : 1; /* delete the base file (used to generate the semaphore key) when destroying the semaphore */
+} OMRPortShSemParameters;
+
+/**
+ * @name Control file unlink status
+ * Flags used to indicate unlink status of control files used by semaphore set or shared memory
+ * These flags are used to store value in J9ControlFileStatus.status
+ * @{
+ */
+#define OMRPORT_INFO_CONTROL_FILE_NOT_UNLINKED 0
+#define OMRPORT_INFO_CONTROL_FILE_UNLINK_FAILED 1
+#define OMRPORT_INFO_CONTROL_FILE_UNLINKED 2
+/** @} */
+
+/**
  * @name Port library startup and shutdown functions
  * @anchor PortStartup
  * Create, initialize, startup and shutdow the port library
@@ -2574,6 +2723,31 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrmmap_protect(param1,param2,param3) privateOmrPortLibrary->mmap_protect(privateOmrPortLibrary, (param1), (param2), (param3))
 #define omrmmap_get_region_granularity(param1) privateOmrPortLibrary->mmap_get_region_granularity(privateOmrPortLibrary, (param1))
 #define omrmmap_dont_need(param1, param2) privateOmrPortLibrary->mmap_dont_need(privateOmrPortLibrary, (param1), param2)
+#if !defined(OMR_OS_WINDOWS)
+#define omrshsem_params_init(param1) privateOmrPortLibrary->shsem_params_init(privateOmrPortLibrary,param1)
+#define omrshsem_startup() privateOmrPortLibrary->shsem_startup(privateOmrPortLibrary)
+#define omrshsem_shutdown() privateOmrPortLibrary->shsem_shutdown(privateOmrPortLibrary)
+#define omrshsem_open(param1,param2) privateOmrPortLibrary->shsem_open(privateOmrPortLibrary,param1,param2)
+#define omrshsem_post(param1,param2,param3) privateOmrPortLibrary->shsem_post(privateOmrPortLibrary,param1,param2,param3)
+#define omrshsem_wait(param1,param2,param3) privateOmrPortLibrary->shsem_wait(privateOmrPortLibrary,param1,param2,param3)
+#define omrshsem_getVal(param1,param2) privateOmrPortLibrary->shsem_getVal(privateOmrPortLibrary,param1,param2)
+#define omrshsem_setVal(param1,param2,param3) privateOmrPortLibrary->shsem_setVal(privateOmrPortLibrary,param1,param2,param3)
+#define omrshsem_close(param1) privateOmrPortLibrary->shsem_close(privateOmrPortLibrary,param1)
+#define omrshsem_destroy(param1) privateOmrPortLibrary->shsem_destroy(privateOmrPortLibrary,param1)
+#define omrshsem_deprecated_startup() privateOmrPortLibrary->shsem_deprecated_startup(privateOmrPortLibrary)
+#define omrshsem_deprecated_shutdown() privateOmrPortLibrary->shsem_deprecated_shutdown(privateOmrPortLibrary)
+#define omrshsem_deprecated_open(param1,param2,param3,param4,param5,param6,param7,param8) privateOmrPortLibrary->shsem_deprecated_open(privateOmrPortLibrary,param1,param2,param3,param4,param5,param6,param7,param8)
+#define omrshsem_deprecated_openDeprecated(param1,param2,param3,param4,param5) privateOmrPortLibrary->shsem_deprecated_openDeprecated(privateOmrPortLibrary,param1,param2,param3,param4,param5)
+#define omrshsem_deprecated_post(param1,param2,param3) privateOmrPortLibrary->shsem_deprecated_post(privateOmrPortLibrary,param1,param2,param3)
+#define omrshsem_deprecated_wait(param1,param2,param3) privateOmrPortLibrary->shsem_deprecated_wait(privateOmrPortLibrary,param1,param2,param3)
+#define omrshsem_deprecated_getVal(param1,param2) privateOmrPortLibrary->shsem_deprecated_getVal(privateOmrPortLibrary,param1,param2)
+#define omrshsem_deprecated_setVal(param1,param2,param3) privateOmrPortLibrary->shsem_deprecated_setVal(privateOmrPortLibrary,param1,param2,param3)
+#define omrshsem_deprecated_handle_stat(param1,param2) privateOmrPortLibrary->shsem_deprecated_handle_stat(privateOmrPortLibrary,param1,param2)
+#define omrshsem_deprecated_close(param1) privateOmrPortLibrary->shsem_deprecated_close(privateOmrPortLibrary,param1)
+#define omrshsem_deprecated_destroy(param1) privateOmrPortLibrary->shsem_deprecated_destroy(privateOmrPortLibrary,param1)
+#define omrshsem_deprecated_destroyDeprecated(param1,param2) privateOmrPortLibrary->shsem_deprecated_destroyDeprecated(privateOmrPortLibrary,param1,param2)
+#define omrshsem_deprecated_getid(param1) privateOmrPortLibrary->shsem_deprecated_getid(privateOmrPortLibrary,param1)
+#endif /* !defined(OMR_OS_WINDOWS) */
 #define omrsysinfo_get_limit(param1,param2) privateOmrPortLibrary->sysinfo_get_limit(privateOmrPortLibrary, (param1), (param2))
 #define omrsysinfo_set_limit(param1,param2) privateOmrPortLibrary->sysinfo_set_limit(privateOmrPortLibrary, (param1), (param2))
 #define omrsysinfo_get_number_CPUs_by_type(param1) privateOmrPortLibrary->sysinfo_get_number_CPUs_by_type(privateOmrPortLibrary, (param1))

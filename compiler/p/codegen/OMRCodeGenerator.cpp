@@ -1799,16 +1799,6 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
       self()->getLinkage()->performPostBinaryEncoding();
       }
 
-   // We late-processing TOC entries here: obviously cannot deal with snippet labels.
-   // If needed, we should move this step to common code around relocation processing.
-   if (self()->comp()->target().is64Bit())
-      {
-      int32_t idx;
-      for (idx=0; idx<self()->getTrackItems()->size(); idx++)
-         TR_PPCTableOfConstants::setTOCSlot(self()->getTrackItems()->element(idx)->getTOCOffset(),
-            (uintptr_t)self()->getTrackItems()->element(idx)->getLabel()->getCodeLocation());
-      }
-
    // Create exception table entries for outlined instructions.
    //
    if (!self()->comp()->getOption(TR_DisableOOL))
@@ -1830,6 +1820,20 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
          ++oiIterator;
          }
       }
+   }
+
+void OMR::Power::CodeGenerator::processRelocations()
+   {
+   // Fill in pTOC entries that are used to load label addresses. This is done during relocation
+   // processing to ensure that snippet labels can be handled correctly.
+   if (self()->comp()->target().is64Bit())
+      {
+      for (int32_t idx = 0; idx < self()->getTrackItems()->size(); idx++)
+         TR_PPCTableOfConstants::setTOCSlot(self()->getTrackItems()->element(idx)->getTOCOffset(),
+            (uintptr_t)self()->getTrackItems()->element(idx)->getLabel()->getCodeLocation());
+      }
+
+   OMR::CodeGenerator::processRelocations();
    }
 
 // different from evaluate in that it returns a clobberable register

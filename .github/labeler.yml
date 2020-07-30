@@ -51,6 +51,9 @@ cmake:
 comp:compiler:
   - compiler/**/*
 
+comp:core:
+  - include_core/**/*
+
 comp:diagnostic:
   - ddr/**/*
 
@@ -72,6 +75,9 @@ comp:thread:
 comp:tril:
   - fvtest/compilertriltest/**/*
   - fvtest/tril/**/*
+
+comp:utilities:
+  - util/**/*
 
 documentation:
   - doc/**/*

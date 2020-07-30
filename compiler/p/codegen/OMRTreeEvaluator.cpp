@@ -319,6 +319,11 @@ TR::Instruction *loadConstant(TR::CodeGenerator *cg, TR::Node * node, int32_t va
 
 TR::Instruction *loadConstant(TR::CodeGenerator *cg, TR::Node * node, int64_t value, TR::Register *trgReg, TR::Instruction *cursor, bool isPicSite, bool useTOC)
    {
+   // When loading 64-bit constants in 32-bit builds, we should not be using this function. This
+   // function assumes that 64-bit instructions are available and that intptr_t and int64_t are
+   // interchangeable.
+   TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().is64Bit(), "Should not use 64-bit loadConstant on 32-bit builds");
+
    if ((TR::getMinSigned<TR::Int32>() <= value) && (value <= TR::getMaxSigned<TR::Int32>()))
       {
       return loadConstant(cg, node, (int32_t)value, trgReg, cursor, isPicSite);

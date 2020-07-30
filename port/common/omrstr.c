@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3127,7 +3127,7 @@ convertPlatformToWide(struct OMRPortLibrary *portLibrary, charconvState_t encodi
 		resultSize = (outBufferSize - wideBufferLimit); /* number of bytes written */
 	}
 #endif /* defined(OMR_OS_WINDOWS) */
-	if ((outBufferSize > 0) && ((outBufferSize - resultSize) >= 2)) {
+	if ((outBufferSize >= 2) && (resultSize <= (outBufferSize - 2))) {
 		uint16_t *terminator = (uint16_t *) &outBuffer[resultSize];
 		*terminator = 0;
 	}

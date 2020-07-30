@@ -1309,22 +1309,22 @@ OMR::Z::Peephole::tryToReduceLHIToXR()
 bool
 OMR::Z::Peephole::tryToReduceLLCToLLGC()
    {
-   TR::Instruction *current = cursor->getNext();
-   auto mnemonic = current->getOpCodeValue();
+   TR::Instruction *nextInst = cursor->getNext();
+   auto mnemonic = nextInst->getOpCodeValue();
 
    if (mnemonic == TR::InstOpCode::LGFR || mnemonic == TR::InstOpCode::LLGTR)
       {
       TR::Register *llcTgtReg = ((TR::S390RRInstruction *) cursor)->getRegisterOperand(1);
 
-      TR::Register *curSrcReg = ((TR::S390RRInstruction *) current)->getRegisterOperand(2);
-      TR::Register *curTgtReg = ((TR::S390RRInstruction *) current)->getRegisterOperand(1);
+      TR::Register *nextSrcReg = ((TR::S390RRInstruction *) nextInst)->getRegisterOperand(2);
+      TR::Register *nextTgtReg = ((TR::S390RRInstruction *) nextInst)->getRegisterOperand(1);
 
-      if (llcTgtReg == curSrcReg && llcTgtReg == curTgtReg)
+      if (llcTgtReg == nextSrcReg && llcTgtReg == nextTgtReg)
          {
-         if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: Reducing LLC/%s [%p] to LLGC.\n", TR::InstOpCode::metadata[mnemonic].name, current))
+         if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: Reducing LLC/%s [%p] to LLGC.\n", TR::InstOpCode::metadata[mnemonic].name, nextInst))
             {
             // Remove the LGFR/LLGTR
-            current->remove();
+            nextInst->remove();
 
             // Replace the LLC with LLGC
             TR::MemoryReference* memRef = ((TR::S390RXInstruction *) cursor)->getMemoryReference();

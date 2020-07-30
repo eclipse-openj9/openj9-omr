@@ -1118,7 +1118,6 @@ OMR::Z::Peephole::tryToReduceLToICM()
       return false;
 
    bool performed = false;
-   bool isICMOpportunity = false;
 
    TR::S390RXInstruction* load= (TR::S390RXInstruction*) cursor;
 
@@ -1138,8 +1137,8 @@ OMR::Z::Peephole::tryToReduceLToICM()
       //        LTR    GPRX, GPRY
       // it is wrong to transform the above sequence into
       //        ICM    GPRX, MEM
-      if (next->getRegisterOperand(1) != ((TR::S390RRInstruction*)next)->getRegisterOperand(2)) return false;
-      isICMOpportunity = true;
+      if (next->getRegisterOperand(1) != ((TR::S390RRInstruction*)next)->getRegisterOperand(2))
+         return false;
       }
    else
       {
@@ -1152,15 +1151,14 @@ OMR::Z::Peephole::tryToReduceLToICM()
 
       // CHI must be comparing against '0' (i.e. NULLCHK) or else our
       // condition codes will be wrong.
-      if (chi->getSourceImmediate() != 0) return false;
-
-      isICMOpportunity = true;
+      if (chi->getSourceImmediate() != 0)
+         return false;
       }
 
-   if (isICMOpportunity && performTransformation(self()->comp(), "\nO^O S390 PEEPHOLE: Reducing L [%p] being reduced to ICM.\n", cursor))
+   if (performTransformation(self()->comp(), "\nO^O S390 PEEPHOLE: Reducing L [%p] being reduced to ICM.\n", cursor))
       {
       // Prevent reuse of memory reference
-      TR::MemoryReference* memcp = generateS390MemoryReference(*load->getMemoryReference(), 0, self()->cg());
+      TR::MemoryReference* memcp = generateS390MemoryReference(*mem, 0, self()->cg());
 
       if ((memcp->getBaseRegister() == NULL) &&
           (memcp->getIndexRegister() != NULL))

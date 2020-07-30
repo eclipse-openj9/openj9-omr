@@ -322,16 +322,18 @@ OMR::Z::Peephole::tryLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, ui
       {
       TR::S390RXInstruction* loadInst = static_cast<TR::S390RXInstruction*>(cursor);
       TR::S390RXInstruction* storeInst = static_cast<TR::S390RXInstruction*>(cursor->getNext());
+      TR::MemoryReference* loadMemRef = loadInst->getMemoryReference();
+      TR::MemoryReference* storeMemRef = storeInst->getMemoryReference();
 
       // Cannot change to MVC if symbol references are unresolved, MVC doesn't follow same format as load and store so patching won't work
-      if (loadInst->getMemoryReference()->getSymbolReference() && loadInst->getMemoryReference()->getSymbolReference()->isUnresolved() ||
-          storeInst->getMemoryReference()->getSymbolReference() && storeInst->getMemoryReference()->getSymbolReference()->isUnresolved())
+      if (loadMemRef->getSymbolReference() && loadMemRef->getSymbolReference()->isUnresolved() ||
+          storeMemRef->getSymbolReference() && storeMemRef->getSymbolReference()->isUnresolved())
          {
          return false;
          }
 
-      if (!loadInst->getMemoryReference()->getBaseRegister() && !loadInst->getMemoryReference()->getIndexRegister() ||
-          !storeInst->getMemoryReference()->getBaseRegister() && !storeInst->getMemoryReference()->getIndexRegister())
+      if (!loadMemRef->getBaseRegister() && !loadMemRef->getIndexRegister() ||
+          !storeMemRef->getBaseRegister() && !storeMemRef->getIndexRegister())
          {
          return false;
          }
@@ -346,7 +348,7 @@ OMR::Z::Peephole::tryLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, ui
       // Register must only be used in the load-store sequence, possibly used in the memory reference
       // of the load however, not in the store since the the register would have to be loaded first.
       ncount_t uses = 2;
-      uses += reg == loadInst->getMemoryReference()->getBaseRegister();
+      uses += reg == loadMemRef->getBaseRegister();
 
       // Bail out if register could have future uses, or if either instruction has dependencies.
       // Since 2 instructions are replaced with one before RA, we can't handle things like merging
@@ -360,32 +362,32 @@ OMR::Z::Peephole::tryLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, ui
          {
          TR::DebugCounter::incStaticDebugCounter(self()->comp(), "z/peephole/load-store");
 
-         loadInst->getMemoryReference()->resetMemRefUsedBefore();
-         storeInst->getMemoryReference()->resetMemRefUsedBefore();
+         loadMemRef->resetMemRefUsedBefore();
+         storeMemRef->resetMemRefUsedBefore();
 
          reg->decTotalUseCount(2);
 
-         if (loadInst->getMemoryReference()->getBaseRegister())
+         if (loadMemRef->getBaseRegister())
             {
-            loadInst->getMemoryReference()->getBaseRegister()->decTotalUseCount();
+            loadMemRef->getBaseRegister()->decTotalUseCount();
             }
 
-         if (storeInst->getMemoryReference()->getBaseRegister())
+         if (storeMemRef->getBaseRegister())
             {
-            storeInst->getMemoryReference()->getBaseRegister()->decTotalUseCount();
+            storeMemRef->getBaseRegister()->decTotalUseCount();
             }
 
-         if (loadInst->getMemoryReference()->getIndexRegister())
+         if (loadMemRef->getIndexRegister())
             {
-            loadInst->getMemoryReference()->getIndexRegister()->decTotalUseCount();
+            loadMemRef->getIndexRegister()->decTotalUseCount();
             }
 
-         if (storeInst->getMemoryReference()->getIndexRegister())
+         if (storeMemRef->getIndexRegister())
             {
-            storeInst->getMemoryReference()->getIndexRegister()->decTotalUseCount();
+            storeMemRef->getIndexRegister()->decTotalUseCount();
             }
 
-         TR::Instruction * newInst = generateSS1Instruction(self()->cg(), TR::InstOpCode::MVC, loadInst->getNode(), size - 1, storeInst->getMemoryReference(), loadInst->getMemoryReference(), cursor->getPrev());
+         TR::Instruction * newInst = generateSS1Instruction(self()->cg(), TR::InstOpCode::MVC, loadInst->getNode(), size - 1, storeMemRef, loadMemRef, cursor->getPrev());
 
          if (loadInst->getGCMap())
             {

@@ -54,6 +54,12 @@ protected:
 public:
 
    /**
+    * @brief Answers whether the CPU has hardware support for SQRT or not
+    * @return true if supported, false otherwise
+    */
+   bool getSupportsHardwareSQRT() { return true; }
+
+   /**
     * @brief Provides the maximum forward branch displacement in bytes reachable
     *        with a relative unconditional branch with immediate (B or BL) instruction.
     *

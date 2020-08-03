@@ -64,7 +64,7 @@ extern TR::Instruction *loadConstant64(TR::CodeGenerator *cg, TR::Node *node, in
 
 extern TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg, TR::Node *node, intptr_t value, TR::Register *trgReg, TR::Instruction *cursor=NULL, bool isPicSite=false, int16_t typeAddress=-1);
 
- /* @brief Generates instruction for loading address constant to register using constant data snippet
+/* @brief Generates instruction for loading address constant to register using constant data snippet
  * @param[in] cg : CodeGenerator
  * @param[in] node: node
  * @param[in] address : address
@@ -74,6 +74,26 @@ extern TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg, TR::Node *nod
  * @return generated instruction
  */
 extern TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node *node, intptr_t address, TR::Register *trgReg, TR_ExternalRelocationTargetKind reloKind, TR::Instruction *cursor=NULL);
+
+/**
+ * @brief Generates instructions for adding 64-bit integer value to a register
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] trgReg : target register
+ * @param[in] srcReg : source register
+ * @param[in] value : value to be added
+ */
+TR::Instruction *addConstant64(TR::CodeGenerator *cg, TR::Node *node, TR::Register *trgReg, TR::Register *srcReg, int64_t value);
+
+/**
+ * @brief Generates instructions for adding 32-bit integer value to a register
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] trgReg : target register
+ * @param[in] srcReg : source register
+ * @param[in] value : value to be added
+ */
+TR::Instruction *addConstant32(TR::CodeGenerator *cg, TR::Node *node, TR::Register *trgReg, TR::Register *srcReg, int32_t value);
 
 /**
  * @brief Helper function for encoding immediate value of logic instructions.

@@ -616,6 +616,17 @@ class OMR_EXTENSIBLE CodeGenerator
     */
    bool suppressInliningOfRecognizedMethod(TR::RecognizedMethod method);
 
+   /**
+    * @brief Answers whether iabs/labs evaluators are available or not
+    * @return true if iabs/labs evaluators are available
+    */
+   bool supportsIntAbs() { return true; }
+   /**
+    * @brief Answers whether fabs/dabs evaluators are available or not
+    * @return true if fabs/dabs evaluators are available
+    */
+   bool supportsFPAbs() { return true; }
+
    // --------------------------------------------------------------------------
    // Optimizer, not code generator
    //

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -212,6 +212,19 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     * @return : true if a trampoline is required; false otherwise.
     */
    bool directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress);
+
+   /**
+    * @brief Answers whether fabs/dabs evaluators are available or not
+    * @return true if fabs/dabs evaluators are available
+    */
+   bool supportsFPAbs()
+      {
+#if (defined(__VFP_FP__) && !defined(__SOFTFP__))
+      return true;
+#else
+      return false;
+#endif
+      }
 
    private:
 

@@ -3127,7 +3127,7 @@ convertPlatformToWide(struct OMRPortLibrary *portLibrary, charconvState_t encodi
 		resultSize = (outBufferSize - wideBufferLimit); /* number of bytes written */
 	}
 #endif /* defined(OMR_OS_WINDOWS) */
-	if ((outBufferSize >= 2) && (resultSize <= (outBufferSize - 2))) {
+	if ((outBufferSize >= sizeof(uint16_t)) && (resultSize >= 0) && ((uintptr_t)resultSize <= (outBufferSize - sizeof(uint16_t)))) {
 		uint16_t *terminator = (uint16_t *) &outBuffer[resultSize];
 		*terminator = 0;
 	}

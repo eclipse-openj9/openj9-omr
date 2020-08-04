@@ -193,12 +193,12 @@ bool OMR::CFGSimplifier::simplifyIfPatterns(bool needToDuplicateTree)
           || simplifySimpleStore(needToDuplicateTree)
           || simplifyCondStoreSequence(needToDuplicateTree)
           || simplifyInstanceOfTestToCheckcast(needToDuplicateTree)
+          || simplifyBoundCheckWithThrowException(needToDuplicateTree)
           ;
    }
 
 bool  OMR::CFGSimplifier::hasExceptionPoint(TR::Block *block, TR::TreeTop *end)
    {
-   return true;
    if (!block->getExceptionSuccessors().empty())
       return true;
 
@@ -330,6 +330,304 @@ bool OMR::CFGSimplifier::simplifyInstanceOfTestToCheckcast(bool needToDuplicateT
 
    TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "cfgSimpCheckcast/(%s)", comp()->signature()));
 
+   return true;
+   }
+
+// Looks for one of the patterns of the form:
+//   Pattern-1:
+//    ificmplt (i, 0) --------
+//        | (FallThrough)     |
+//    ificmplt (i, length) ======    
+//        |                   |  |
+//      throw  <--------------   |
+//                               |
+//      return <=================
+//
+//   Pattern-2:
+//    ificmplt (i, 0) -----------
+//        | (FallThrough)        |
+//    ificmpge (i, length) ------|   
+//        |                      |
+//      return                   |
+//                               |
+//      throw <------------------
+//
+//   Pattern-3:
+//    ificmpge (i, 0) -----------
+//        | (FallThrough)        |
+//  --> throw                    |
+// |                             |
+//  - ificmpge (i, length) <-----
+//        |                      
+//      return
+//
+// That can be generated from the typical bound check code,
+//    if (i < 0 || i >= length)
+//       throw Exception();
+//    return i;
+//
+//  Or,
+//     if (i>=0 && i < length)
+//        return i;
+//     throw Exception();
+//
+// And tries to simplify them by replacing the ifcmp[lt/ge] blocks with a BNDCHK such that it becomes
+//
+//
+//  Simplification:
+//    BNDCHK (i, length)  ----(exp edge) ------ 
+//      |                                      |
+//    return                                   |
+//                                             |
+//     goto  <---------------------------------
+//      |
+//    throw Exception() 
+// Or,
+//
+//  Simplification:
+//    BNDCHK (i, length)  ----(exp edge) ------
+//      |                                      |
+//    goto =================                   |
+//                          |                  |
+//    goto   <---------------------------------
+//      |                   |
+//    throw Exception()     |
+//                          |  
+//    return <==============
+//
+// Return "true" if any transformations were made.
+//
+bool OMR::CFGSimplifier::simplifyBoundCheckWithThrowException(bool needToDuplicateTree) 
+   {
+   static char *disableSimplifyBoundCheckWithThrowException = feGetEnv("TR_disableSimplifyBoundCheckWithThrowException");
+   if (disableSimplifyBoundCheckWithThrowException != NULL)
+      return false;
+   if (trace())
+      traceMsg(comp(), "Start simplifyBoundCheckWithThrowException\n");
+   TR::TreeTop * treeTop = getLastRealTreetop(_block);
+   if (!treeTop)
+      return false;
+   TR::Node *compareNode = treeTop->getNode();
+
+   TR::ILOpCodes opCode = compareNode->getOpCodeValue();
+   if (opCode != TR::ificmplt && opCode != TR::ificmpge)
+      {
+      if (trace())
+         traceMsg(comp(), "   Abort simplifyBoundCheckWithThrowException : pattern not matched\n");
+      return false;
+      }
+
+   bool isCompareLT = opCode == TR::ificmplt;
+   bool patternMatched = false;
+
+   TR::Block *throwBlock = NULL;
+   TR::Block *nextCompareBlock = NULL;
+   TR::Node *firstChildBndChk = NULL;
+   TR::Node *secondChildBndChk = NULL;
+
+   TR::Node *firstChild = compareNode->getFirstChild();
+   TR::Node *secondChild = compareNode->getSecondChild();
+   TR::SymbolReference *firstSymRef = NULL;
+
+   if (firstChild->getOpCodeValue() == TR::iload)
+      {
+      firstSymRef = firstChild->getSymbolReference();
+      if (secondChild->getOpCodeValue() == TR::iconst && secondChild->getConstValue() == 0)
+         {
+         patternMatched = true;
+         throwBlock = isCompareLT ? compareNode->getBranchDestination()->getNode()->getBlock() : _block->getNextBlock();
+         nextCompareBlock = isCompareLT ? _block->getNextBlock() : compareNode->getBranchDestination()->getNode()->getBlock();
+         firstChildBndChk = firstChild;
+         }
+      else if (secondChild->getOpCode().isIntegralLoadVar() || secondChild->getOpCode().isLoadIndirect())
+         {
+         patternMatched = true;
+         throwBlock = isCompareLT ? _block->getNextBlock() : compareNode->getBranchDestination()->getNode()->getBlock();
+         nextCompareBlock = isCompareLT ? compareNode->getBranchDestination()->getNode()->getBlock() : _block->getNextBlock();
+         secondChildBndChk = secondChild;
+         }
+      }
+
+   if (!patternMatched)
+      return false;
+
+   if (trace())
+      traceMsg(comp(), "   Matched with first %s in block_%d\n", isCompareLT ? "ificmplt" : "ificmpge",
+                  _block->getNumber());
+
+   if (nextCompareBlock->getFirstRealTreeTop() != nextCompareBlock->getLastRealTreeTop()) 
+      {
+      if (trace())
+         traceMsg(comp(), "   Abort simplifyBoundCheckWithThrowException : pattern not matched\n");
+      return false;
+      }
+
+   TR::Node *secondCompareNode = nextCompareBlock->getLastRealTreeTop()->getNode();
+
+   if (secondCompareNode->getOpCodeValue() != TR::ificmplt && secondCompareNode->getOpCodeValue() != TR::ificmpge) 
+      {
+      if (trace())
+         traceMsg(comp(), "   Abort simplifyBoundCheckWithThrowException : The second compare block does not contain ificmplt or ificmpge\n");
+      return false;
+      }
+
+   bool firstNodeRequiresDuplicate = false;
+   bool secondNodeRequiresDuplicate = false;
+   bool isLastBlockRetBlock = true;
+   patternMatched = false;
+   TR::Block *retBlock = NULL;
+   TR::Block *secondThrowBlock = NULL;
+   bool isSecondCompareLT = secondCompareNode->getOpCodeValue() == TR::ificmplt;
+
+   firstChild = secondCompareNode->getFirstChild();
+   secondChild = secondCompareNode->getSecondChild();
+   TR::SymbolReference *secondSymRef = NULL;
+   
+   if (firstChild->getOpCodeValue() == TR::iload)
+      {
+      secondSymRef = firstChild->getSymbolReference();
+      if (secondChild->getOpCodeValue() == TR::iconst && secondChild->getConstValue() == 0)
+         {
+         patternMatched = true;
+         secondThrowBlock = isSecondCompareLT ? secondCompareNode->getBranchDestination()->getNode()->getBlock() : nextCompareBlock->getNextBlock();
+         retBlock = isSecondCompareLT ? nextCompareBlock->getNextBlock() : secondCompareNode->getBranchDestination()->getNode()->getBlock();
+         isLastBlockRetBlock = !isSecondCompareLT;
+         firstChildBndChk = firstChild;
+         firstNodeRequiresDuplicate = true;
+         }
+      else if (secondChild->getOpCode().isIntegralLoadVar() || secondChild->getOpCode().isLoadIndirect())
+         {
+         patternMatched = true;
+         secondThrowBlock = isSecondCompareLT ? nextCompareBlock->getNextBlock() : secondCompareNode->getBranchDestination()->getNode()->getBlock();
+         retBlock = isSecondCompareLT ? secondCompareNode->getBranchDestination()->getNode()->getBlock() : nextCompareBlock->getNextBlock();
+         isLastBlockRetBlock = isSecondCompareLT;
+         secondChildBndChk = secondChild;
+         secondNodeRequiresDuplicate = true;
+         }
+      }
+
+   if (!patternMatched || !firstChildBndChk || !secondChildBndChk || throwBlock != secondThrowBlock)
+      {
+      if (trace())
+         traceMsg(comp(), "Abort simplifyBoundCheckWithThrowException : %s\n", !patternMatched ? "Pattern did not matched" : 
+            (!firstChildBndChk ? "None of the ificmp matches (param < 0) or (param >= 0)" : 
+            (!secondChildBndChk ? "None of the ificmp matches (param < limit) or (param >= limit)" : 
+            "Each of the branch jumps to different throw block")));
+      return false;
+      }
+
+   if (!firstSymRef || firstSymRef != secondSymRef)
+      {
+      if (trace())
+         traceMsg(comp(), "Abort simplifyBoundCheckWithThrowException : compare nodes uses different variables, pattern not matched\n");
+      return false;
+      }
+
+   if (trace())
+      traceMsg(comp(), "   Matched with second %s in block_%d\n", isSecondCompareLT ? "ificmplt" : "ificmpge",
+               nextCompareBlock->getNumber());
+   
+   TR::Node *throwNode = throwBlock->getLastRealTreeTop()->getNode();
+   if (throwNode->getNumChildren() < 1 || throwNode->getFirstChild()->getOpCodeValue() != TR::athrow) 
+      {
+      if (trace())
+         traceMsg(comp(), "Abort simplifyBoundCheckWithThrowException : %s\n", throwNode->getNumChildren() < 1 ? "Expected throwNode does not contain children" :
+         "The throwNode does not contain throw, pattern not matched");
+      return false;
+      }
+
+   if (!performTransformation(comp(), "%sReplace %s n%dn [%p] followed by a %s n%dn [%p] that throws (block_%d) with a BNDCHK to a catch which goes to block_%d\n", 
+            OPT_DETAILS, isCompareLT ? "ificmplt" : "ificmpge",
+            compareNode->getGlobalIndex(), compareNode, isSecondCompareLT ? "ificmplt" : "ificmpge",
+            secondCompareNode->getGlobalIndex(), secondCompareNode, throwBlock->getNumber(), throwBlock->getNumber()))
+      return false;
+
+   _cfg->invalidateStructure();
+
+   TR::Block *compareBlock = _block;
+   if (hasExceptionPoint(compareBlock, treeTop)) 
+      compareBlock = compareBlock->split(treeTop, _cfg, true, false);
+
+   TR::Node *bndChkNode = TR::Node::createWithSymRef(TR::BNDCHK, 2, 2, 
+                              secondNodeRequiresDuplicate ? secondChildBndChk->duplicateTree(true) : secondChildBndChk,
+                              firstNodeRequiresDuplicate ? firstChildBndChk->duplicateTree(true) : firstChildBndChk,
+                              comp()->getSymRefTab()->findOrCreateArrayBoundsCheckSymbolRef(comp()->getMethodSymbol()));
+
+   bndChkNode = compareBlock->append(TR::TreeTop::create(comp(), bndChkNode))->getNode();
+
+   TR::Block *catchBlock = TR::Block::createEmptyBlock(bndChkNode, comp(), throwBlock->getFrequency());
+   catchBlock->setHandlerInfo(0, comp()->getInlineDepth(), 0, comp()->getCurrentMethod(), comp());
+   TR::Node *gotoNode = TR::Node::create(bndChkNode, TR::Goto, 0);
+   gotoNode->setBranchDestination(throwBlock->getEntry());
+   catchBlock->append(TR::TreeTop::create(comp(), gotoNode));
+   
+   TR::TreeTop *swapTree = throwBlock->getExit()->getNextTreeTop();
+   throwBlock->getExit()->join(catchBlock->getEntry());
+   catchBlock->getExit()->join(swapTree);
+
+   ncount_t replacedNodeId = compareNode->getGlobalIndex();
+   TR::TransformUtil::removeTree(comp(), treeTop);
+
+   if (trace()) 
+      {
+      traceMsg(comp(), "   Replaced %s n%dn with BNDCHK n%dn\n", isCompareLT ? "ificmplt" : "ificmpge", 
+               replacedNodeId, bndChkNode->getGlobalIndex());
+      traceMsg(comp(), "   Added a new goto node n%dn that branches to throw block (block_%d)\n", 
+               gotoNode->getGlobalIndex(), throwBlock->getNumber());
+      }
+
+   TR::Block *jmpBlock = NULL;
+   if (isLastBlockRetBlock) 
+      {
+      jmpBlock = TR::Block::createEmptyBlock(_block->getLastRealTreeTop()->getNode(), comp(), retBlock->getFrequency());
+      jmpBlock->setHandlerInfo(0, comp()->getInlineDepth(), 0, comp()->getCurrentMethod(), comp());
+      TR::Node *jmpNode = TR::Node::create(_block->getLastRealTreeTop()->getNode(), TR::Goto, 0);
+      jmpNode->setBranchDestination(retBlock->getEntry());
+      jmpBlock->append(TR::TreeTop::create(comp(), jmpNode));
+
+      compareBlock->getExit()->join(jmpBlock->getEntry());
+      jmpBlock->getExit()->join(nextCompareBlock->getEntry());
+
+      if (trace())
+         traceMsg(comp(), "   Added a new goto node n%dn that branches to return block (block_%d)\n",
+                  jmpNode->getGlobalIndex(), retBlock->getNumber());
+      }
+
+   TR::TransformUtil::removeTree(comp(), nextCompareBlock->getLastRealTreeTop());
+   TR::TransformUtil::removeTree(comp(), nextCompareBlock->getEntry());
+   TR::TransformUtil::removeTree(comp(), nextCompareBlock->getExit());
+
+   if (trace())
+      traceMsg(comp(), "   Removed %s block (block_%d) which either branches to throw block (block_%d) or normal block (block_%d)\n",
+            isSecondCompareLT ? "ificmplt" : "ificmpge", nextCompareBlock->getNumber(), throwBlock->getNumber(), retBlock->getNumber());
+
+   _cfg->addNode(catchBlock);
+   _cfg->addExceptionEdge(compareBlock, catchBlock);
+   _cfg->addEdge(catchBlock, throwBlock);
+   if (isLastBlockRetBlock) 
+      {
+      _cfg->addNode(jmpBlock);
+      _cfg->addEdge(compareBlock, jmpBlock);
+      _cfg->addEdge(jmpBlock, retBlock);
+      }
+   else
+      {
+      _cfg->addEdge(compareBlock, retBlock);
+      }
+   _cfg->removeEdge(compareBlock, throwBlock);
+   _cfg->removeEdge(compareBlock, nextCompareBlock);
+   _cfg->removeEdge(nextCompareBlock, retBlock);
+   _cfg->removeEdge(nextCompareBlock, throwBlock);
+   _cfg->removeNode(nextCompareBlock);
+
+   nextCompareBlock->removeFromCFG(comp());
+
+   if (trace()) 
+      {
+      traceMsg(comp(), "   Updated CFG\n");
+      traceMsg(comp(), "End simplifyBoundCheckWithThrowException\n");
+      }
+   
    return true;
    }
 

@@ -1293,12 +1293,26 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src2ShiftedInstruction *instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+   if ((op == TR::InstOpCode::extrw || op == TR::InstOpCode::extrx) &&
+         (instr->getSource1Register() == instr->getSource2Register()))
+      {
+      // ror alias
+      trfprintf(pOutFile, "ror%c \t", (op == TR::InstOpCode::extrx) ? 'x' : 'w');
+      print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+      print(pOutFile, instr->getSource1Register(), TR_WordReg);
+      trfprintf(pOutFile, ", #%d", instr->getShiftAmount());
+      }
+   else
+      {
+      trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
 
-   print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
-   print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
-   print(pOutFile, instr->getSource2Register(), TR_WordReg);
-   trfprintf(pOutFile, " %s %d", ARM64ShiftCodeNames[instr->getShiftType()], instr->getShiftAmount());
+      print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+      print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+      print(pOutFile, instr->getSource2Register(), TR_WordReg);
+      trfprintf(pOutFile, " %s %d", ARM64ShiftCodeNames[instr->getShiftType()], instr->getShiftAmount());
+      }
+
    trfflush(_comp->getOutFile());
    }
 

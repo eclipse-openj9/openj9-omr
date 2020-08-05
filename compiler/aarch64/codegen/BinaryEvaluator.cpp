@@ -622,16 +622,49 @@ OMR::ARM64::TreeEvaluator::irolEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       }
    else
       {
-      TR::Register *shiftAmountReg = cg->evaluate(secondChild);
-      generateNegInstruction(cg, node, shiftAmountReg, shiftAmountReg); // change ROL to ROR
-      if (is64bit)
+      TR::Register *shiftAmountSrcReg;
+      TR::Register *shiftAmountReg;
+      TR::Register *tempReg;
+      bool useTempReg;
+
+      if (secondChild->getOpCode().isNeg() && secondChild->getRegister() == NULL && secondChild->getReferenceCount() == 1)
          {
-         // 32->64 bit sign extension: SXTW is alias of SBFM
-         uint32_t imm = 0x101F; // N=1, immr=0, imms=31
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmx, node, shiftAmountReg, shiftAmountReg, imm);
+         // If the second child is `ineg` and not commoned, cancel out double negation
+         auto shiftAmountNode = secondChild->getFirstChild();
+         useTempReg = is64bit && shiftAmountNode->getReferenceCount() > 1;
+         tempReg = useTempReg ? cg->allocateRegister() : NULL;
+         shiftAmountSrcReg = cg->evaluate(shiftAmountNode);
+         shiftAmountReg = useTempReg ? tempReg : shiftAmountSrcReg;
+         if (is64bit)
+            {
+            // 32->64 bit sign extension: SXTW is alias of SBFM
+            uint32_t imm = 0x1F; // immr=0, imms=31, N bit is pre-encoded in `sbfmx` opcode.
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmx, node, shiftAmountReg, shiftAmountSrcReg, imm);
+            }
+         cg->decReferenceCount(shiftAmountNode);
+         }
+      else
+         {
+         useTempReg = secondChild->getReferenceCount() > 1;
+         tempReg = useTempReg ? cg->allocateRegister() : NULL;
+         shiftAmountSrcReg = cg->evaluate(secondChild);
+         shiftAmountReg = useTempReg ? tempReg : shiftAmountSrcReg;
+
+         generateNegInstruction(cg, node, shiftAmountReg, shiftAmountSrcReg); // change ROL to ROR
+         if (is64bit)
+            {
+            // 32->64 bit sign extension: SXTW is alias of SBFM
+            uint32_t imm = 0x1F; // immr=0, imms=31, N bit is pre-encoded in `sbfmx` opcode.
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmx, node, shiftAmountReg, shiftAmountReg, imm);
+            }
          }
       op = is64bit ? TR::InstOpCode::rorvx : TR::InstOpCode::rorvw;
       generateTrg1Src2Instruction(cg, op, node, trgReg, trgReg, shiftAmountReg);
+
+      if (useTempReg)
+         {
+         cg->stopUsingRegister(tempReg);
+         }
       }
 
    node->setRegister(trgReg);

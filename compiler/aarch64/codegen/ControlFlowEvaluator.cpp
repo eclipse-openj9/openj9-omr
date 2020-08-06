@@ -812,7 +812,12 @@ OMR::ARM64::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeGenerator *c
    TR::Register *condReg = cg->evaluate(condNode);
    TR::Register *trueReg = cg->evaluate(trueNode);
    TR::Register *falseReg = cg->evaluate(falseNode);
-   TR::Register *resultReg = cg->canClobberNodesRegister(condNode) ? condReg : cg->allocateRegister();
+   TR::Register *resultReg = trueReg;
+
+   if (!cg->canClobberNodesRegister(trueNode))
+      {
+      resultReg = (node->getOpCodeValue() == TR::aselect) ? cg->allocateCollectedReferenceRegister() : cg->allocateRegister();
+      }
 
    generateCompareImmInstruction(cg, node, condReg, 0, true); // 64-bit compare
    generateCondTrg1Src2Instruction(cg, TR::InstOpCode::cselx, node, resultReg, trueReg, falseReg, TR::CC_NE);

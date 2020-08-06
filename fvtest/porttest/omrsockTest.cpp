@@ -776,3 +776,254 @@ TEST(PortSockTest, socket_flags)
 	ASSERT_EQ(OMRPORTLIB->sock_listen(OMRPORTLIB, socket, 10), 0);
 	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &socket), 0);
 }
+
+/**
+ * Test nonblocking functionality by connecting two sockets while it is nonblocking.
+ *
+ * The server is started. The client uses getaddrinfo to create a nonblocking socket
+ * The socket then tries to connect to server using nonblocking connect, which returns
+ * OMRPORT_ERROR_SOCKET_INPROGRESS or OMRPORT_ERROR_SOCKET_ALREADY_CONNECTED.
+ */
+TEST(PortSockTest, socket_nonblock_connection)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+
+	OMRSockAddrStorage serverSockAddr;
+	omrsock_socket_t serverSocket = NULL;
+	uint16_t port = 4930;
+	uint8_t serverAddr[4];
+	int32_t rc = 0;
+
+	/* To Create a Server Socket and Address */
+	EXPECT_EQ(OMRPORTLIB->sock_inet_pton(OMRPORTLIB, OMRSOCK_AF_INET, "127.0.0.1", serverAddr), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB,  &serverSockAddr, OMRSOCK_AF_INET, serverAddr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
+	start_server(OMRPORTLIB, OMRSOCK_AF_INET, OMRSOCK_STREAM, &serverSocket, &serverSockAddr);
+
+	/* To Create a Client Socket and Address */
+	OMRSockAddrStorage clientSockAddr;
+	omrsock_socket_t clientSocket = NULL;
+	omrsock_addrinfo_t hints = NULL;
+	OMRAddrInfoNode result;
+	uint32_t length = 0;
+
+	EXPECT_EQ(OMRPORTLIB->sock_getaddrinfo_create_hints(OMRPORTLIB, &hints, OMRSOCK_AF_INET, OMRSOCK_STREAM, OMRSOCK_IPPROTO_DEFAULT, 0), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_getaddrinfo(OMRPORTLIB, "localhost", NULL, hints, &result), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_addrinfo_length(OMRPORTLIB, &result, &length), 0);
+	ASSERT_NE(length, uint32_t(0));
+
+	/* Create a nonblocking socket with results */
+	for (uint32_t i = 0; i < length; i++) {
+		if (0 == OMRPORTLIB->sock_socket(OMRPORTLIB, &clientSocket, OMRSOCK_AF_INET, OMRSOCK_STREAM | OMRSOCK_O_NONBLOCK, OMRSOCK_IPPROTO_DEFAULT)) {
+			ASSERT_NE(clientSocket, (void *)NULL);
+			EXPECT_EQ(OMRPORTLIB->sock_addrinfo_address(OMRPORTLIB, &result, i, &clientSockAddr), 0);
+			ASSERT_EQ(OMRPORTLIB->sock_bind(OMRPORTLIB, clientSocket, &clientSockAddr), 0);
+			break;
+		}
+	}
+	ASSERT_NE(clientSocket, (void *)NULL);
+	EXPECT_EQ(OMRPORTLIB->sock_freeaddrinfo(OMRPORTLIB, &result), 0);
+
+	/* Client Attempts Connection */
+	while (0 != (rc = OMRPORTLIB->sock_connect(OMRPORTLIB, clientSocket, &serverSockAddr))) {
+		if (OMRPORT_ERROR_SOCKET_INPROGRESS == rc) {
+			// Still in the middle of attempting connection.
+			continue;
+		}
+		else if (OMRPORT_ERROR_SOCKET_ALREADY_CONNECTED == rc) {
+			// Connected
+			break;
+		}
+		else {
+			FAIL() << "Error other than INPROGRESS and ALREADY_CONNECTED were returned for connect: " << ::testing::PrintToString(rc);
+		}
+	}
+
+	/* Server Accepts Connection */
+	OMRSockAddrStorage connectedServerSockAddr;
+	omrsock_socket_t connectedServerSocket = NULL;
+	ASSERT_EQ(OMRPORTLIB->sock_accept(OMRPORTLIB, serverSocket, &connectedServerSockAddr, &connectedServerSocket), 0);
+
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &connectedServerSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverSocket), 0);
+}
+
+/**
+ * Test nonblocking functionality by two nonblocking socket communication.
+ *
+ * First, a connection is established between server and client. The server
+ * and client is then set to be nonblocking. Communication between server and
+ * client is then tested using OMRPORT_ERROR_SOCKET_WOULDBLOCK.
+ */
+TEST(PortSockTest, two_socket_nonblock_communication_basic)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+
+	OMRSockAddrStorage serverSockAddr;
+	omrsock_socket_t serverSocket = NULL;
+	OMRSockAddrStorage clientSockAddr;
+	omrsock_socket_t clientSocket = NULL;
+	OMRSockAddrStorage connectedServerSockAddr;
+	omrsock_socket_t connectedServerSocket = NULL;
+	uint16_t port = 4930;
+	uint32_t inaddrAny;
+	uint8_t serverAddr[4];
+
+	/* To Create a Server Socket and Address */
+	inaddrAny = OMRPORTLIB->sock_htonl(OMRPORTLIB, OMRSOCK_INADDR_ANY);
+	memcpy(serverAddr, &inaddrAny, 4);
+	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB, &serverSockAddr, OMRSOCK_AF_INET, serverAddr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
+	start_server(OMRPORTLIB, OMRSOCK_AF_INET, OMRSOCK_STREAM, &serverSocket, &serverSockAddr);
+
+	/* To Create a Client Socket and Address */
+	connect_client_to_server(OMRPORTLIB, "localhost", NULL, OMRSOCK_AF_INET, OMRSOCK_STREAM, &clientSocket, &clientSockAddr, &serverSockAddr);
+	ASSERT_EQ(OMRPORTLIB->sock_fcntl(OMRPORTLIB, clientSocket, OMRSOCK_O_NONBLOCK), 0);
+
+	/* Accept Connection */
+	ASSERT_EQ(OMRPORTLIB->sock_accept(OMRPORTLIB, serverSocket, &connectedServerSockAddr, &connectedServerSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_fcntl(OMRPORTLIB, connectedServerSocket, OMRSOCK_O_NONBLOCK), 0);
+
+	/* Send and Recv using non-blocking sockets. */
+	char buf[100] = {0};
+	const char *msg = "This is an omrsock test for 2 socket stream communications.";
+	uint8_t *cursor = NULL;
+	int32_t bytesSent = 0;
+	int32_t bytesRecv = 0;
+	int32_t bytesLeft = 0;
+
+	/* Trying to receive on client side when nothing has been sent from the server. */
+	cursor = (uint8_t *)buf;
+	bytesRecv = OMRPORTLIB->sock_recv(OMRPORTLIB, clientSocket, cursor, strlen(msg) + 1, 0);
+	ASSERT_GE(bytesRecv, -1);
+	ASSERT_EQ(OMRPORTLIB->error_last_error_number(OMRPORTLIB), OMRPORT_ERROR_SOCKET_WOULDBLOCK);
+
+	/* Send from the server using non-blocking server socket. */
+	cursor = (uint8_t *)msg;
+	bytesLeft = strlen(msg) + 1;
+	bytesSent = 0;
+	while (0 != bytesLeft) {
+		bytesSent = OMRPORTLIB->sock_send(OMRPORTLIB, connectedServerSocket, cursor, bytesLeft, 0);
+		if (0 > bytesSent) {
+			// If bytesSent is -1, then it must mean it is still waiting to send.
+			ASSERT_EQ(OMRPORTLIB->error_last_error_number(OMRPORTLIB), OMRPORT_ERROR_SOCKET_WOULDBLOCK);
+			bytesSent = 0;
+		}
+		bytesLeft -= bytesSent;
+		cursor += bytesSent;
+	}
+
+	/* Receive on the client side using non-blocking client socket. */
+	cursor = (uint8_t *)buf;
+	bytesLeft = strlen(msg) + 1;
+	bytesRecv = 0;
+	while (0 != bytesLeft) {
+		bytesRecv = OMRPORTLIB->sock_recv(OMRPORTLIB, clientSocket, cursor, bytesLeft, 0);
+		if (0 >= bytesRecv) {
+			// If bytesRecv is -1, then it must mean it is still waiting to receive the message.
+			ASSERT_EQ(OMRPORTLIB->error_last_error_number(OMRPORTLIB), OMRPORT_ERROR_SOCKET_WOULDBLOCK);
+			bytesRecv = 0;
+		}
+		bytesLeft -= bytesRecv;
+		cursor += bytesRecv;
+	}
+
+	EXPECT_STREQ(msg, buf);
+
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &connectedServerSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverSocket), 0);
+}
+
+/**
+ * Test nonblocking functionality by two nonblocking socket communication.
+ * The nonblocking is assigned to server at the very beginning. Accept
+ * nonblocking is performed using OMRPORT_ERROR_SOCKET_WOULDBLOCK.
+ * Communication between server and client is then tested using 
+ * OMRPORT_ERROR_SOCKET_WOULDBLOCK.
+ */
+TEST(PortSockTest, two_socket_nonblock_server_communication)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+
+	OMRSockAddrStorage serverSockAddr;
+	omrsock_socket_t serverSocket = NULL;
+	OMRSockAddrStorage clientSockAddr;
+	omrsock_socket_t clientSocket = NULL;
+	OMRSockAddrStorage connectedServerSockAddr;
+	omrsock_socket_t connectedServerSocket = NULL;
+	uint16_t port = 4930;
+	uint32_t inaddrAny;
+	uint8_t serverAddr[4];
+	int32_t rc = 0;
+
+	/* To Create a Server Socket and Address */
+	inaddrAny = OMRPORTLIB->sock_htonl(OMRPORTLIB, OMRSOCK_INADDR_ANY);
+	memcpy(serverAddr, &inaddrAny, 4);
+	EXPECT_EQ(OMRPORTLIB->sock_sockaddr_init(OMRPORTLIB, &serverSockAddr, OMRSOCK_AF_INET, serverAddr, OMRPORTLIB->sock_htons(OMRPORTLIB, port)), 0);
+	start_server(OMRPORTLIB, OMRSOCK_AF_INET, OMRSOCK_STREAM | OMRSOCK_O_NONBLOCK, &serverSocket, &serverSockAddr);
+
+	/* To Create a Client Socket and Address */
+	connect_client_to_server(OMRPORTLIB, "localhost", NULL, OMRSOCK_AF_INET, OMRSOCK_STREAM, &clientSocket, &clientSockAddr, &serverSockAddr);
+	ASSERT_EQ(OMRPORTLIB->sock_fcntl(OMRPORTLIB, clientSocket, OMRSOCK_O_NONBLOCK), 0);
+
+	/* Accept Connection */
+	while (0 != (rc = OMRPORTLIB->sock_accept(OMRPORTLIB, serverSocket, &connectedServerSockAddr, &connectedServerSocket))) {
+		if (OMRPORT_ERROR_SOCKET_WOULDBLOCK == rc) {
+			// Still in the middle of accepting next connection request.
+			continue;
+		}
+		else {
+			FAIL() << "Error other than OMRPORT_ERROR_SOCKET_WOULDBLOCK was returned for accept: " << ::testing::PrintToString(rc);
+		}
+	}
+
+	/* Send and Recv using non-blocking sockets. */
+	char buf[100] = {0};
+	const char *msg = "This is an omrsock test for 2 socket stream communications.";
+	uint8_t *cursor = NULL;
+	int32_t bytesSent = 0;
+	int32_t bytesRecv = 0;
+	int32_t bytesLeft = 0;
+
+	/* Trying to receive on client side when nothing has been sent from the server. */
+	cursor = (uint8_t *)buf;
+	bytesRecv = OMRPORTLIB->sock_recv(OMRPORTLIB, clientSocket, cursor, strlen(msg) + 1, 0);
+	ASSERT_GE(bytesRecv, -1);
+	ASSERT_EQ(OMRPORTLIB->error_last_error_number(OMRPORTLIB), OMRPORT_ERROR_SOCKET_WOULDBLOCK);
+
+	/* Send from the server using non-blocking server socket. */
+	cursor = (uint8_t *)msg;
+	bytesLeft = strlen(msg) + 1;
+	bytesSent = 0;
+	while (0 != bytesLeft) {
+		bytesSent = OMRPORTLIB->sock_send(OMRPORTLIB, connectedServerSocket, cursor, bytesLeft, 0);
+		if (0 > bytesSent) {
+			// If bytesSent is -1, then it must mean it is still waiting to send.
+			ASSERT_EQ(OMRPORTLIB->error_last_error_number(OMRPORTLIB), OMRPORT_ERROR_SOCKET_WOULDBLOCK);
+			bytesSent = 0;
+		}
+		bytesLeft -= bytesSent;
+		cursor += bytesSent;
+	}
+
+	/* Receive on the client side using non-blocking client socket. */
+	cursor = (uint8_t *)buf;
+	bytesLeft = strlen(msg) + 1;
+	bytesRecv = 0;
+	while (0 != bytesLeft) {
+		bytesRecv = OMRPORTLIB->sock_recv(OMRPORTLIB, clientSocket, cursor, bytesLeft, 0);
+		if (0 >= bytesRecv) {
+			// If bytesRecv is -1, then it must mean it is still waiting to receive the message.
+			ASSERT_EQ(OMRPORTLIB->error_last_error_number(OMRPORTLIB), OMRPORT_ERROR_SOCKET_WOULDBLOCK);
+			bytesRecv = 0;
+		}
+		bytesLeft -= bytesRecv;
+		cursor += bytesRecv;
+	}
+
+	EXPECT_STREQ(msg, buf);
+
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &connectedServerSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientSocket), 0);
+	ASSERT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverSocket), 0);
+}

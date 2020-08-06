@@ -619,3 +619,9 @@ OMR::ARM64::CodeGenerator::findARM64OutOfLineCodeSectionFromLabel(TR::LabelSymbo
 
    return NULL;
    }
+
+TR_ARM64ScratchRegisterManager *
+OMR::ARM64::CodeGenerator::generateScratchRegisterManager(int32_t capacity)
+   {
+   return new (self()->trHeapMemory()) TR_ARM64ScratchRegisterManager(capacity, self());
+   }

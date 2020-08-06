@@ -36,6 +36,7 @@ namespace OMR { typedef OMR::ARM64::CodeGenerator CodeGeneratorConnector; }
 #include "compiler/codegen/OMRCodeGenerator.hpp"
 
 #include "codegen/RegisterConstants.hpp"
+#include "codegen/ScratchRegisterManager.hpp"
 #include "infra/Annotations.hpp"
 #include "runtime/Runtime.hpp"
 
@@ -111,6 +112,13 @@ struct TR_ARM64BinaryEncodingData : public TR_BinaryEncodingData
    TR::Instruction *cursorInstruction;
    TR::Instruction *i2jEntryInstruction;
    TR::Recompilation *recomp;
+   };
+
+class TR_ARM64ScratchRegisterManager : public TR_ScratchRegisterManager
+   {
+   public:
+
+   TR_ARM64ScratchRegisterManager(int32_t capacity, TR::CodeGenerator *cg) : TR_ScratchRegisterManager(capacity, cg) {}
    };
 
 namespace OMR
@@ -416,6 +424,12 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     * @return OutOfLineCodeSection associated with the specified label
     */
    TR_ARM64OutOfLineCodeSection *findARM64OutOfLineCodeSectionFromLabel(TR::LabelSymbol *label);
+
+   /**
+    * @brief Generates ScratchRegisterManager
+    * @param[in] capacity : maximum number of scratch registers
+    */
+   TR_ARM64ScratchRegisterManager *generateScratchRegisterManager(int32_t capacity = 8);
 
    /**
     * @brief Generates nop

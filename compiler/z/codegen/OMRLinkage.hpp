@@ -424,9 +424,6 @@ enum TR_DispatchType
 
    virtual int32_t numArgumentRegisters(TR_RegisterKinds kind);
 
-   void markPreservedRegsInBlock(int32_t);
-   void markPreservedRegsInDep(TR::RegisterDependencyConditions *);
-
 
   // set the indexth integer argument register
    virtual void setIntegerArgumentRegister(uint32_t index, TR::RealRegister::RegNum r);

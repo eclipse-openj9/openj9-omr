@@ -63,15 +63,6 @@ OMR::ARM64::Instruction::Instruction(TR::CodeGenerator *cg, TR::Instruction *pre
       cond->bookKeepingRegisterUses(self(), cg);
    }
 
-
-void
-OMR::ARM64::Instruction::remove()
-   {
-   self()->getPrev()->setNext(self()->getNext());
-   self()->getNext()->setPrev(self()->getPrev());
-   }
-
-
 void OMR::ARM64::Instruction::ARM64NeedsGCMap(TR::CodeGenerator *cg, uint32_t mask)
    {
    if (cg->comp()->useRegisterMaps())

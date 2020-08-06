@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -37,6 +37,7 @@ compiler_library(codegen
 	${CMAKE_CURRENT_LIST_DIR}/OMRTreeEvaluator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/PreInstructionSelection.cpp
 	${CMAKE_CURRENT_LIST_DIR}/NodeEvaluation.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRPeephole.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRSnippet.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRUnresolvedDataSnippet.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRSnippetGCMap.cpp

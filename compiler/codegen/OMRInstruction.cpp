@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -216,25 +216,18 @@ Instruction::move(TR::Instruction *newLocation)
 void
 Instruction::remove()
    {
-   TR::Instruction *prev = self()->getPrev();
-   TR::Instruction *next = self()->getNext();
+   if (self()->getPrev())
+      self()->getPrev()->setNext(self()->getNext());
+   else
+      self()->cg()->setFirstInstruction(self()->getNext());
 
-   if (prev)
-      {
-      prev->setNext(next);
-      }
-   if (next)
-      {
-      next->setPrev(prev);
-      }
+   if (self()->getNext())
+      self()->getNext()->setPrev(self()->getPrev());
+   else
+      self()->cg()->setAppendInstruction(self()->getPrev());
 
-   TR::CodeGenerator *cg = self()->cg();
-
-   // Update the append instruction if we are removing the current instruction
-   if (cg->getAppendInstruction() == self())
-      {
-      cg->setAppendInstruction(prev);
-      }
+   self()->setPrev(NULL);
+   self()->setNext(NULL);
    }
 
 void

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -38,13 +38,13 @@
 namespace TR { class CodeGenerator; }
 
 OMR::Z::RealRegister::RealRegister(TR::CodeGenerator *cg):
-      OMR::RealRegister(cg, NoReg),
-      _modified(0) {}
+      OMR::RealRegister(cg, NoReg)
+   {}
 
 OMR::Z::RealRegister::RealRegister(TR_RegisterKinds rk, uint16_t w, RegState s,
                                           RegNum rn, RegMask m, TR::CodeGenerator* cg):
-      OMR::RealRegister(rk, w, s, (uint16_t)rn, rn, m, cg),
-      _modified(0) {}
+      OMR::RealRegister(rk, w, s, (uint16_t)rn, rn, m, cg)
+   {}
 
 
 void

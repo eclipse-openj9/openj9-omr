@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -131,13 +131,6 @@ OMR::ARM::Instruction::Instruction(TR::Instruction                     *precedin
    self()->setDependencyConditions(cond);
    if (cond)
       cond->incRegisterTotalUseCounts(cg);
-   }
-
-void
-OMR::ARM::Instruction::remove()
-   {
-   self()->getPrev()->setNext(self()->getNext());
-   self()->getNext()->setPrev(self()->getPrev());
    }
 
 void OMR::ARM::Instruction::ARMNeedsGCMap(uint32_t mask)

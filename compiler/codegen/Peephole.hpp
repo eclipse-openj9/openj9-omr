@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2020, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,15 +19,22 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-/*
- * This file will be included within an enum.  Only comments and enumerator
- * definitions are permitted.
- */
+#ifndef TR_PEEPHOLE_INCL
+#define TR_PEEPHOLE_INCL
 
-#include "compiler/codegen/OMRCodeGenPhaseEnum.hpp"
+#include "codegen/OMRPeephole.hpp"
 
-// The entries in this file must be kept in sync with compiler/z/codegen/OMRCodeGenPhaseFunctionTable.hpp
+namespace TR
+{
 
-markLoadAsZeroOrSignExtension,
-SetBranchOnCountFlagPhase,
-LastOMRZPhase = SetBranchOnCountFlagPhase,
+class OMR_EXTENSIBLE Peephole : public OMR::PeepholeConnector
+   {
+   public:
+
+   Peephole(TR::Compilation* comp) :
+      OMR::PeepholeConnector(comp) {}
+   };
+
+}
+
+#endif

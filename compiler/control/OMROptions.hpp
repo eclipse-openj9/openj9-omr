@@ -346,7 +346,7 @@ enum TR_CompilationOptions
    TR_DisableStripMining                  = 0x00040000 + 8,
    TR_EnableSharedCacheTiming             = 0x00080000 + 8,
    TR_EnableTM                            = 0x00100000 + 8,
-   // Available                           = 0x00200000 + 8,
+   TR_DisablePeephole                     = 0x00200000 + 8,
    TR_NoOptServer                         = 0x00400000 + 8,
    TR_DisableDLTrecompilationPrevention   = 0x00800000 + 8,
    // Available                           = 0x01000000 + 8,

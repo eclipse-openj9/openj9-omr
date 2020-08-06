@@ -127,7 +127,6 @@
 #include "z/codegen/S390Evaluator.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"
-#include "z/codegen/S390Peephole.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"
 #include "z/codegen/SystemLinkageLinux.hpp"
 #include "z/codegen/SystemLinkagezOS.hpp"
@@ -1978,51 +1977,14 @@ OMR::Z::CodeGenerator::replaceInst(TR::Instruction* old, TR::Instruction* curr)
    //old used to point to
    if (prv != curr && nxt != curr)
       {
-      self()->deleteInst(curr);
+      curr->remove();
       prv->setNext(curr);
       curr->setNext(nxt);
       nxt->setPrev(curr);
       curr->setPrev(prv);
       }
-   else  //if consecutive, then can just delete the old one
-      {
-      self()->deleteInst(old);
-      }
-   }
 
-// TODO (Issue #254): This should really be a common code generator API. Push this up to the common code generator.
-void
-OMR::Z::CodeGenerator::deleteInst(TR::Instruction* old)
-   {
-   TR::Instruction* prv = old->getPrev();
-   TR::Instruction* nxt = old->getNext();
-   prv->setNext(nxt);
-
-   // The next instruction could be the append instruction
-   if (nxt != NULL)
-      {
-      nxt->setPrev(prv);
-      }
-
-   // Update the append instruction if we are deleting the last instruction in the stream
-   if (self()->getAppendInstruction() == old)
-      {
-      self()->setAppendInstruction(prv);
-      }
-   }
-
-void
-OMR::Z::CodeGenerator::doPreRAPeephole()
-   {
-   TR_S390PreRAPeephole ph(self()->comp());
-   ph.perform();
-   }
-
-void
-OMR::Z::CodeGenerator::doPostRAPeephole()
-   {
-   TR_S390PostRAPeephole ph(self()->comp());
-   ph.perform();
+   old->remove();
    }
 
 void
@@ -2317,41 +2279,6 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    self()->getLinkage()->createPrologue(cursor);
 
    bool isPrivateLinkage = (self()->comp()->getJittedMethodSymbol()->getLinkageConvention() == TR_Private);
-
-   TR::Instruction *instr = self()->getFirstInstruction();
-
-   while (instr)
-      {
-      TR::Register *reg = instr->getRegisterOperand(1);
-      if (reg)
-         {
-         if (reg->getRegisterPair())
-            {
-            TR::RealRegister * lowReg = toRealRegister(reg->getLowOrder());
-            TR::RealRegister * highReg = toRealRegister(reg->getHighOrder());
-            lowReg->setModified(true);
-            highReg->setModified(true);
-            if (instr->getOpCodeValue() == TR::InstOpCode::LM ||
-                instr->getOpCodeValue() == TR::InstOpCode::LMG)
-               {
-               uint8_t numRegs = (lowReg->getRegisterNumber() - highReg->getRegisterNumber())-1;
-               if (numRegs > 0)
-                  {
-                  for (uint8_t i=highReg->getRegisterNumber()+1; i++; i<= numRegs)
-                     {
-                     self()->getS390Linkage()->getRealRegister(REGNUM(i))->setModified(true);
-                     }
-                  }
-               }
-            }
-         else
-            {
-            TR::RealRegister * rReg = toRealRegister(reg);
-            rReg->setModified(true);
-            }
-         }
-      instr = instr->getNext();
-      }
 
    // Create epilogues for all return points
    bool skipOneReturn = false;

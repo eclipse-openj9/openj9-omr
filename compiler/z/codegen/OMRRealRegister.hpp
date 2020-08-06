@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -56,10 +56,6 @@ class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister
    RealRegister(TR_RegisterKinds, uint16_t, RegState, RegNum, RegMask, TR::CodeGenerator *);
 
    public:
-      
-   // methods for manipulating flags
-   bool getModified() {return _modified.testAny(isModified);}
-   bool setModified(bool b)  { (b)? _modified.set(isModified) : _modified.reset(isModified);  return b; }
    
    bool setHasBeenAssignedInMethod(bool b); // derived from base class
 
@@ -97,19 +93,11 @@ class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister
 
    private:
 
-   enum
-      {
-      isModified      = 0x01,
-      };
-   
-   flags8_t        _modified;
    static const uint8_t _fullRegBinaryEncodings[NumRegisters];
-
    };
 
 }
 
 }
-
 
 #endif

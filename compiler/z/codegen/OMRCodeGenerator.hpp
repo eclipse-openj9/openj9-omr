@@ -276,8 +276,6 @@ public:
    void recordRegisterAssignment(TR::Register *assignedReg, TR::Register *virtualReg);
 
    void doBinaryEncoding();
-   void doPreRAPeephole();
-   void doPostRAPeephole();
 
    void AddFoldedMemRefToStack(TR::MemoryReference * mr);
    void RemoveMemRefFromStack(TR::MemoryReference * mr);
@@ -743,8 +741,6 @@ public:
    bool clearHighOrderBits( TR::Node * node, TR::Register * targetRegister, TR::Register * srcRegister, uint32_t numberOfBits );
 
    void replaceInst(TR::Instruction* old, TR::Instruction* curr);
-
-   void deleteInst(TR::Instruction* old);
 
    static bool isILOpCodeSupported(TR::ILOpCodes);
 

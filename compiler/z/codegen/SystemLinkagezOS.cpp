@@ -1330,7 +1330,7 @@ TR::S390zOSSystemLinkage::XPLINKCallDescriptorRelocation::apply(TR::CodeGenerato
 
    if (offsetToCallDescriptor < std::numeric_limits<int16_t>::min() || offsetToCallDescriptor > std::numeric_limits<int16_t>::max())
       {
-      cg->comp()->failCompilation<TR::ExcessiveComplexity>("Unable to encode offset to XPLINK call descriptor");
+      TR_ASSERT_FATAL_WITH_INSTRUCTION(_nop, false, "Unable to encode offset to XPLINK call descriptor");
       }
 
    uint8_t* p = getUpdateLocation();

@@ -472,6 +472,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableOutlinedNew",                 "O\tdo object allocation logic inline instead of using a fast jit helper",  SET_OPTION_BIT(TR_DisableOutlinedNew), "F"},
    {"disablePackedDecimalIntrinsics",     "O\tDisables packed decimal function optimizations and avoid generating exception triggering packed decimal instructions on z/Architecture.", SET_OPTION_BIT(TR_DisablePackedDecimalIntrinsics), "F"},
    {"disablePartialInlining",             "O\tdisable  partial Inlining ",        SET_OPTION_BIT(TR_DisablePartialInlining), "F"},
+   {"disablePeephole",                    "O\tdisable peephole phase ",        SET_OPTION_BIT(TR_DisablePeephole), "F"},
    {"disablePostProfileCompPriorityBoost","M\tdisable boosting the priority of post profiling compilations",  SET_OPTION_BIT(TR_DisablePostProfileCompPriorityBoost), "F"},
    {"disablePRBE",                        "O\tdisable partial redundancy branch elimination",  SET_OPTION_BIT(TR_DisablePRBE), "F"},
    {"disablePRE",                         "O\tdisable partial redundancy elimination",         TR::Options::disableOptimization, partialRedundancyElimination, 0, "P"},

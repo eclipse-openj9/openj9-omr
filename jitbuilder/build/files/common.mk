@@ -198,6 +198,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRTreeEvaluator.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/PreInstructionSelection.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/NodeEvaluation.cpp \
+    $(JIT_OMR_DIRTY_DIR)/codegen/OMRPeephole.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRSnippet.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRUnresolvedDataSnippet.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRSnippetGCMap.cpp \

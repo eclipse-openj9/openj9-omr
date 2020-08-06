@@ -5293,12 +5293,6 @@ TR::S390AlignmentNopInstruction::generateBinaryEncoding()
 
    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - currentMisalign);
 
-   // When the trace log prints the list of instructions after binary encoding, we don't want this
-   // instruction to show up any more. Removing it from the linked list of instructions does this
-   // without affecting this instruction's next pointer, so the binary encoding loop can continue
-   // and encode the actual nops we emitted as if nothing happened.
-   self()->remove();
-
    return cg()->getBinaryBufferCursor();
    }
 

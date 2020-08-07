@@ -244,15 +244,12 @@ TR::Register *OMR::Power::TreeEvaluator::b2iEvaluator(TR::Node *node, TR::CodeGe
    if (node->isUnneededConversion() ||
        (child->getOpCodeValue() != TR::bload &&
         child->getOpCodeValue() != TR::bloadi &&
-        child->getOpCodeValue() != TR::buload &&
-        child->getOpCodeValue() != TR::buloadi &&
         child->getOpCodeValue() != TR::s2b &&
         child->getOpCodeValue() != TR::f2b &&
         child->getOpCodeValue() != TR::d2b &&
         child->getOpCodeValue() != TR::i2b &&
         child->getOpCodeValue() != TR::l2b &&
-        child->getOpCodeValue() != TR::iRegLoad &&
-        child->getOpCodeValue() != TR::iuRegLoad ))
+        child->getOpCodeValue() != TR::iRegLoad ))
       {
       trgReg = cg->gprClobberEvaluate(child);
       }

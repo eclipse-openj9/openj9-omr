@@ -366,7 +366,7 @@ TR::Instruction *fixedSeqMemAccess(TR::CodeGenerator *cg, TR::Node *node, intptr
 
 
 
-// also handles iiload, iuload, iiuload
+// also handles iiload, iiuload
 TR::Register *OMR::Power::TreeEvaluator::iloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
 #ifdef J9_PROJECT_SPECIFIC
@@ -567,7 +567,7 @@ TR::Register *OMR::Power::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::Code
    return tempReg;
    }
 
-// also handles ilload, luload, iluload
+// also handles ilload, iluload
 TR::Register *OMR::Power::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
@@ -5222,7 +5222,7 @@ TR::Register *OMR::Power::TreeEvaluator::gprRegLoadEvaluator(TR::Node *node, TR:
    else
       {
 #ifdef TR_TARGET_32BIT
-      if (OMR_LIKELY(node->getOpCodeValue() != TR::lRegLoad && node->getOpCodeValue() != TR::luRegLoad))
+      if (OMR_LIKELY(node->getOpCodeValue() != TR::lRegLoad))
          globalReg = cg->allocateRegister();
       else
          globalReg = cg->allocateRegisterPair(cg->allocateRegister(),
@@ -5241,7 +5241,7 @@ TR::Register *OMR::Power::TreeEvaluator::gprRegStoreEvaluator(TR::Node *node, TR
    TR::Node     *child = node->getFirstChild();
    TR::Register *globalReg = cg->evaluate(child);
 
-   if (node->getOpCodeValue() != TR::lRegLoad && node->getOpCodeValue() != TR::luRegLoad && node->needsSignExtension())
+   if (node->getOpCodeValue() != TR::lRegLoad && node->needsSignExtension())
       generateTrg1Src1Instruction(cg, TR::InstOpCode::extsw, node, globalReg, globalReg);
 
    cg->decReferenceCount(child);

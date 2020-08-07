@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -190,8 +190,8 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
       if (firstChild->getOpCodeValue() == TR::bu2i &&
           firstChild->getReferenceCount() == 1    &&
           firstChild->getRegister() == NULL       &&
-             (firstChild->getFirstChild()->getOpCodeValue() == TR::buload ||
-              firstChild->getFirstChild()->getOpCodeValue() == TR::buloadi  ))
+             (firstChild->getFirstChild()->getOpCodeValue() == TR::bload ||	
+              firstChild->getFirstChild()->getOpCodeValue() == TR::bloadi  ))
           {
           initFirstChild = firstChild;
 
@@ -202,8 +202,8 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
       if (secondChild->getOpCodeValue() == TR::bu2i &&
           secondChild->getReferenceCount() == 1    &&
           secondChild->getRegister() == NULL       &&
-             (secondChild->getFirstChild()->getOpCodeValue() == TR::buload ||
-              secondChild->getFirstChild()->getOpCodeValue() == TR::buloadi  ))
+             (secondChild->getFirstChild()->getOpCodeValue() == TR::bload ||	
+              secondChild->getFirstChild()->getOpCodeValue() == TR::bloadi  ))
           {
           initSecondChild = secondChild;
 

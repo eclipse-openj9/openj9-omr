@@ -742,7 +742,7 @@ TR::Register *OMR::X86::TreeEvaluator::bloadEvaluator(TR::Node *node, TR::CodeGe
    return reg;
    }
 
-// also handles cload, isload and icload
+// also handles isload and icload
 TR::Register *OMR::X86::TreeEvaluator::sloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::MemoryReference  *sourceMR = generateX86MemoryReference(node, cg);

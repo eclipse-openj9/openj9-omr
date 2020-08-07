@@ -3056,9 +3056,9 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
    //            what about su2i? s2i? mixing of these? bytes? ints? longs?
    //
    else if (firstChild->getOpCodeValue()==TR::su2i && firstChild->getRegister()==NULL && firstChild->getReferenceCount()==1 &&
-            firstChild->getFirstChild()->getOpCodeValue()==TR::cloadi && firstChild->getFirstChild()->getRegister() &&
+            firstChild->getFirstChild()->getOpCodeValue()==TR::sloadi && firstChild->getFirstChild()->getRegister() &&
             secondChild->getOpCodeValue()==TR::su2i && secondChild->getRegister()==NULL && secondChild->getReferenceCount()==1 &&
-            secondChild->getFirstChild()->getOpCodeValue()==TR::cloadi && secondChild->getFirstChild()->getRegister())
+            secondChild->getFirstChild()->getOpCodeValue()==TR::sloadi && secondChild->getFirstChild()->getRegister())
       {
       if (branchTarget != NULL)
          {
@@ -3086,11 +3086,11 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
    // FIXME: can't the binary commutative analyser handle this? that's where this should be done
    //
    else if (firstChild->getOpCodeValue()==TR::bu2i && firstChild->getRegister()==NULL && firstChild->getReferenceCount()==1 &&
-            (firstChild->getFirstChild()->getOpCodeValue()==TR::buloadi   ||
+            (firstChild->getFirstChild()->getOpCodeValue()==TR::bloadi   ||
              firstChild->getFirstChild()->getOpCodeValue()==TR::iRegLoad)
             && firstChild->getFirstChild()->getRegister() &&
             secondChild->getOpCodeValue()==TR::bu2i && secondChild->getRegister()==NULL && secondChild->getReferenceCount()==1 &&
-            (secondChild->getFirstChild()->getOpCodeValue()==TR::buloadi  ||
+            (secondChild->getFirstChild()->getOpCodeValue()==TR::bloadi  ||
              secondChild->getFirstChild()->getOpCodeValue()==TR::iRegLoad)
             && secondChild->getFirstChild()->getRegister())
       {
@@ -3696,10 +3696,8 @@ generateTestUnderMaskIfPossible(TR::Node * node, TR::CodeGenerator * cg, TR::Ins
             nonConstNode->getFirstChild()->getReferenceCount() == 1                          &&
             nonConstNode->getFirstChild()->getRegister() == NULL                             &&
             memRefNode != NULL                                                               &&
-            (nonConstNode->getFirstChild()->getOpCodeValue() == TR::buload ||
-             nonConstNode->getFirstChild()->getOpCodeValue() == TR::bload  ||
-             nonConstNode->getFirstChild()->getOpCodeValue() == TR::bloadi ||
-             nonConstNode->getFirstChild()->getOpCodeValue() == TR::buloadi    )                   )
+            (nonConstNode->getFirstChild()->getOpCodeValue() == TR::bload  ||
+             nonConstNode->getFirstChild()->getOpCodeValue() == TR::bloadi )                   )
       {
       TR::MemoryReference * tempMR2 = NULL;
       TR::MemoryReference * tempMR = generateS390MemoryReference(nonConstNode->getFirstChild(), cg);
@@ -5945,7 +5943,7 @@ OMR::Z::TreeEvaluator::lloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
 /**
  * sload Evaluator: load short integer
- *   - also handles cload, isload and icload
+ *   - also handles isload
  */
 TR::Register *
 OMR::Z::TreeEvaluator::sloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
@@ -6190,10 +6188,8 @@ OMR::Z::TreeEvaluator::bstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    // If the only consumer is the bstore, then don't bother extending
    //
    else if (valueChild->getReferenceCount() == 1 && valueChild->getRegister() == NULL &&
-             (valueChild->getOpCodeValue() == TR::buload  ||
-              valueChild->getOpCodeValue() == TR::bload   ||
-              valueChild->getOpCodeValue() == TR::buloadi ||
-              valueChild->getOpCodeValue() == TR::buload      ))
+               (valueChild->getOpCodeValue() == TR::bload || 
+                valueChild->getOpCodeValue() == TR::bloadi     ))
       {
       sourceRegister = cg->allocateRegister();
       TR::MemoryReference * tempMR2 = generateS390MemoryReference(valueChild, cg);

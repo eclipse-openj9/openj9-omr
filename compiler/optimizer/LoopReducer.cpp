@@ -531,10 +531,10 @@ TR_CharToByteArraycopy::checkArrayStores(TR::Node * origHighStoreNode, TR::Node 
    if (!iand) return false;
    TR::Node * c2i = testBinaryIConst(comp(), iand, TR::iand, TR::su2i, 0xFF00, "checkArrayStores: high store child is not iand of su2i and 0xFF00\n");
    if (!c2i) return false;
-   TR::Node * icload = testUnary(comp(), c2i->getFirstChild(), TR::cloadi, "checkArrayStores: high store child is not icload\n");
-   if (!icload) return false;
+   TR::Node * isload = testUnary(comp(), c2i->getFirstChild(), TR::sloadi, "checkArrayStores: high store child is not isload\n");
+   if (!isload) return false;
 
-   bool checkLoad = getLoadAddress()->checkAiadd(icload->getFirstChild(), 2);
+   bool checkLoad = getLoadAddress()->checkAiadd(isload->getFirstChild(), 2);
    if (!checkLoad)
       {
       return false;
@@ -544,12 +544,12 @@ TR_CharToByteArraycopy::checkArrayStores(TR::Node * origHighStoreNode, TR::Node 
    if (!iand) return false;
    c2i = testBinaryIConst(comp(), iand, TR::iand, TR::su2i, 0xFF, "checkArrayStores: low store child is not iand of su2i and 0xFF\n");
    if (!c2i) return false;
-   TR::Node * icloadDup = testUnary(comp(), c2i->getFirstChild(), TR::cloadi, "checkArrayStores: low store child is not icload\n");
-   if (!icloadDup) return false;
+   TR::Node * isloadDup = testUnary(comp(), c2i->getFirstChild(), TR::sloadi, "checkArrayStores: low store child is not isload\n");
+   if (!isloadDup) return false;
 
-   if (icloadDup != icload)
+   if (isloadDup != isload)
       {
-      dumpOptDetails(comp(), "checkArrayStores: two icload addresses are not the same\n");
+      dumpOptDetails(comp(), "checkArrayStores: two isload addresses are not the same\n");
       return false;
       }
 
@@ -1596,7 +1596,7 @@ TR_Arraytranslate::checkLoad(TR::Node * loadNode)
       transLoadNode = transLoadNode->skipConversions();
       }
 
-   if (transLoadNode->getOpCodeValue() != TR::cloadi && transLoadNode->getOpCodeValue() != TR::bloadi)
+   if (transLoadNode->getOpCodeValue() != TR::bloadi)
       {
       dumpOptDetails(comp(), "...load tree does not have ibload/icload - no arraytranslate reduction\n");
       return false;
@@ -1656,7 +1656,7 @@ TR_Arraytranslate::checkLoad(TR::Node * loadNode)
    inLoadNode = getMulChild(inLoadNode);
    inLoadNode = inLoadNode->skipConversions();
 
-   if (inLoadNode->getOpCodeValue() != TR::cloadi && inLoadNode->getOpCodeValue() != TR::bloadi)
+   if (inLoadNode->getOpCodeValue() != TR::bloadi)
       {
       dumpOptDetails(comp(), "...load tree does not have 2nd icload/ibload - check if compiler-generated table lookup match\n");
       inLoadNode = transLoadNode;

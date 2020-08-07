@@ -554,8 +554,7 @@ void OMR::CodeGenerator::identifyUnneededByteConvNodes(TR::Node * parent, TR::Tr
                     child->getFirstChild()->getOpCodeValue() == TR::d2s ||
                     child->getFirstChild()->getOpCodeValue() == TR::i2s ||
                     child->getFirstChild()->getOpCodeValue() == TR::l2s ||
-                    child->getFirstChild()->getOpCodeValue() == TR::iRegLoad ||
-                    child->getFirstChild()->getOpCodeValue() == TR::iuRegLoad ) &&
+                    child->getFirstChild()->getOpCodeValue() == TR::iRegLoad) &&
                    performTransformation(self()->comp(), "%sChanging b2i node %p to unsigned conversion\n", OPT_DETAILS, child))
                   {
                   TR::Node::recreate(child, (storeType == TR::Int8 ? TR::bu2i : TR::su2i));

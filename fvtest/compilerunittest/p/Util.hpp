@@ -93,7 +93,7 @@ public:
                 cg
             );
         } else {
-            return TR::MemoryReference::withDisplacement(
+            return TR::MemoryReference::createWithDisplacement(
                 cg,
                 cg->machine()->getRealRegister(_baseReg),
                 _displacement,

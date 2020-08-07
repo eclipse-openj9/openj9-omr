@@ -69,11 +69,42 @@ class TR_OpaqueClassBlock;
 
 static TR::RealRegister::RegNum choose_rX(TR::Instruction *, TR::RealRegister *);
 
-TR::MemoryReference *TR::MemoryReference::withDisplacement(TR::CodeGenerator *cg, TR::Register *baseReg, int64_t displacement, int8_t length)
+TR::MemoryReference *TR::MemoryReference::create(TR::CodeGenerator *cg)
+   {
+   return new (cg->trHeapMemory()) TR::MemoryReference(cg);
+   }
+
+TR::MemoryReference *TR::MemoryReference::createWithLabel(TR::CodeGenerator *cg, TR::LabelSymbol *label, int64_t offset, int8_t length)
+   {
+   return new (cg->trHeapMemory()) TR::MemoryReference(label, offset, length, cg);
+   }
+
+TR::MemoryReference *TR::MemoryReference::createWithIndexReg(TR::CodeGenerator *cg, TR::Register *baseReg, TR::Register *indexReg, uint8_t length)
+   {
+   return new (cg->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, length, cg);
+   }
+
+TR::MemoryReference *TR::MemoryReference::createWithDisplacement(TR::CodeGenerator *cg, TR::Register *baseReg, int64_t displacement, int8_t length)
    {
    return new (cg->trHeapMemory()) TR::MemoryReference(baseReg, displacement, length, cg, 0);
    }
 
+TR::MemoryReference *TR::MemoryReference::createWithRootLoadOrStore(TR::CodeGenerator *cg, TR::Node *rootLoadOrStore, uint32_t length)
+   {
+   return new (cg->trHeapMemory()) TR::MemoryReference(rootLoadOrStore, length, cg);
+   }
+
+TR::MemoryReference *TR::MemoryReference::createWithSymRef(TR::CodeGenerator *cg, TR::Node *node, TR::SymbolReference *symRef, uint32_t length)
+   {
+   return new (cg->trHeapMemory()) TR::MemoryReference(node, symRef, length, cg);
+   }
+
+TR::MemoryReference *TR::MemoryReference::createWithMemRef(TR::CodeGenerator *cg, TR::Node *node, TR::MemoryReference& memRef, int32_t displacement, uint32_t length)
+   {
+   return new (cg->trHeapMemory()) TR::MemoryReference(node, memRef, displacement, length, cg);
+   }
+
+//Keeping the old version of the createWithLabel helper here to make sure OpenJ9 doesn't break
 TR::MemoryReference *TR::MemoryReference::withLabel(TR::CodeGenerator *cg, TR::LabelSymbol *label, int64_t offset, int8_t length)
    {
    return new (cg->trHeapMemory()) TR::MemoryReference(label, offset, length, cg);

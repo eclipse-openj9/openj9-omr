@@ -176,12 +176,35 @@ OMR::ARM64::MemoryReference::MemoryReference(
 
    if (rootLoadOrStore->getOpCode().isIndirect())
       {
-      if (ref->isUnresolved())
+      TR::Node *base = rootLoadOrStore->getFirstChild();
+      bool     isLocalObject = ((base->getOpCodeValue() == TR::loadaddr) &&
+                                base->getSymbol()->isLocalObject());
+      // Special case an indirect load or store off a local object. This
+      // can be treated as a direct load or store off the frame pointer
+      // We can't do this when the access is unresolved.
+      //
+      if (!ref->isUnresolved() && isLocalObject)
          {
-         self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, rootLoadOrStore, rootLoadOrStore->getSymbolReference(), isStore, false));
-         cg->addSnippet(self()->getUnresolvedSnippet());
+         _baseRegister = cg->getStackPointerRegister();
+         _symbolReference = base->getSymbolReference();
+         _baseNode = base;
          }
-      self()->populateMemoryReference(rootLoadOrStore->getFirstChild(), cg);
+      else
+         {
+         if (ref->isUnresolved())
+            {
+            // If it is an unresolved reference to a field of a local object
+            // then force the localobject address to be evaluated into a register
+            // otherwise the resolution may not work properly if the computation
+            // is folded away into a stack pointer + offset computation
+            if (isLocalObject)
+               cg->evaluate(base);
+
+            self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, rootLoadOrStore, rootLoadOrStore->getSymbolReference(), isStore, false));
+            cg->addSnippet(self()->getUnresolvedSnippet());
+            }
+         self()->populateMemoryReference(rootLoadOrStore->getFirstChild(), cg);
+         }
       }
    else
       {

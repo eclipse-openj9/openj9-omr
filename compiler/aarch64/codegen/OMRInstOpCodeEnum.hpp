@@ -452,6 +452,9 @@
 		fcmps_zero,                                             	/* 0x1E202008	FCMP      	 */
 		fcmpd,                                                  	/* 0x1E602000	FCMP      	 */
 		fcmpd_zero,                                             	/* 0x1E602008	FCMP      	 */
+	/* Floating-point conditional select */
+		fcsels,                                                 	/* 0x1E200C00	FCSEL     	 */
+		fcseld,                                                 	/* 0x1E600C00	FCSEL     	 */
 	/* Floating-Point Data-processing (1 source) */
 		fmovs,                                                  	/* 0x1E204000	FMOV      	 */
 		fmovd,                                                  	/* 0x1E604000	FMOV      	 */

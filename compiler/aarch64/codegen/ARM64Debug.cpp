@@ -475,6 +475,8 @@ static const char *opCodeToNameMap[] =
    "fcmps_zero",
    "fcmpd",
    "fcmpd_zero",
+   "fcsels",
+   "fcseld",
    "fmovs",
    "fmovd",
    "fabss",

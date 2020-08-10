@@ -106,7 +106,7 @@ template <class T> class PPCConstant
             uint32_t *cursor = reinterpret_cast<uint32_t*>(instr->getBinaryEncoding() + instr->getBinaryLength() - 8);
             intptr_t offset = reinterpret_cast<uint8_t*>(addr) - reinterpret_cast<uint8_t*>(cursor);
 
-            TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, offset >= -0x200000000 && offset <= 0x1ffffffff, "Offset to ConstantDataSnippet is out of range");
+            TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, offset >= LOWER_IMMED_34 && offset <= UPPER_IMMED_34, "Offset to ConstantDataSnippet is out of range");
 
             cursor[0] |= (offset >> 16) & 0x3ffff;
             cursor[1] |= offset & 0xffff;

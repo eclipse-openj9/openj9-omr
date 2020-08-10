@@ -356,7 +356,7 @@ void OMR::Power::MemoryReference::addToOffset(TR::Node * node, int64_t amount, T
       }
    int64_t displacement = self()->getOffset() + amount;
    if (((displacement<LOWER_IMMED || displacement>UPPER_IMMED) && !cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10)) ||
-         (displacement < -0x200000000 || displacement > 0x1ffffffff))
+         (displacement < LOWER_IMMED_34 || displacement > UPPER_IMMED_34))
       {
       TR::Register  *newBase;
       intptr_t     upper, lower;

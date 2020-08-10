@@ -107,6 +107,12 @@ OMR::Z::CPU::is_at_least_test(OMRProcessorArchitecture p)
    {
    switch(p)
       {
+      case OMR_PROCESSOR_S390_Z900:
+         return (self()->getSupportsArch(TR::CPU::z900) == (_processorDescription.processor >= p));
+      case OMR_PROCESSOR_S390_Z990:
+         return (self()->getSupportsArch(TR::CPU::z990) == (_processorDescription.processor >= p));
+      case OMR_PROCESSOR_S390_Z9:
+         return (self()->getSupportsArch(TR::CPU::z9) == (_processorDescription.processor >= p));
       case OMR_PROCESSOR_S390_Z10:
          return (self()->getSupportsArch(TR::CPU::z10) == (_processorDescription.processor >= p));
       case OMR_PROCESSOR_S390_Z196:
@@ -174,6 +180,15 @@ OMR::Z::CPU::is_at_least_old_api(OMRProcessorArchitecture p)
    bool ans = false;
    switch(p)
       {
+      case OMR_PROCESSOR_S390_Z900:
+         ans = self()->getSupportsArch(TR::CPU::z900);
+         break;
+      case OMR_PROCESSOR_S390_Z990:
+         ans = self()->getSupportsArch(TR::CPU::z990);
+         break;
+      case OMR_PROCESSOR_S390_Z9:
+         ans = self()->getSupportsArch(TR::CPU::z9);
+         break;
       case OMR_PROCESSOR_S390_Z10:
          ans = self()->getSupportsArch(TR::CPU::z10);
          break;

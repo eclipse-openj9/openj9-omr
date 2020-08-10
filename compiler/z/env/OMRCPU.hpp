@@ -293,28 +293,7 @@ class OMR_EXTENSIBLE CPU : public OMR::CPU
       memset(_processorDescription.features, 0, OMRPORT_SYSINFO_FEATURES_SIZE*sizeof(uint32_t));
       }
 
-   CPU(const OMRProcessorDesc& processorDescription) : OMR::CPU(processorDescription)
-      {
-      switch(processorDescription.processor)
-         {
-         case OMR_PROCESSOR_S390_Z10:
-            _supportedArch = z10;
-         case OMR_PROCESSOR_S390_Z196:
-            _supportedArch = z196;
-         case OMR_PROCESSOR_S390_ZEC12:
-            _supportedArch = zEC12;
-         case OMR_PROCESSOR_S390_Z13:
-            _supportedArch = z13;
-         case OMR_PROCESSOR_S390_Z14:
-            _supportedArch = z14;
-         case OMR_PROCESSOR_S390_Z15:
-            _supportedArch = z15;
-         case OMR_PROCESSOR_S390_ZNEXT:
-            _supportedArch = zNext;
-         default:
-            TR_ASSERT_FATAL(0, "Unsupported processorDescription.processor type: %d", processorDescription.processor);
-         }
-      }
+   CPU(const OMRProcessorDesc& processorDescription);
 
    enum
       {

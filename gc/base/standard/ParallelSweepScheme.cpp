@@ -811,7 +811,7 @@ MM_ParallelSweepScheme::sweep(MM_EnvironmentBase *env)
 {
 	setupForSweep(env);
 	
-	MM_ParallelSweepTask sweepTask(env,(MM_ParallelDispatcher *) _extensions->dispatcher, this);
+	MM_ParallelSweepTask sweepTask(env,_extensions->dispatcher, this);
 	_extensions->dispatcher->run(env, &sweepTask);
 }
 

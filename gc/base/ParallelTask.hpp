@@ -104,25 +104,6 @@ public:
 	{
 		_typeId = __FUNCTION__;
 	}
-
-	/**
-	 * Create a ParallelTask object.
-	 * Interim Function, should be deleted after update from OpenJ9 side
-	 */
-	MM_ParallelTask(MM_EnvironmentBase *env, MM_Dispatcher *dispatcher) :
-		MM_Task(env, dispatcher)
-		,_synchronized(false)
-		,_syncPointUniqueId(NULL)
-		,_syncPointWorkUnitIndex(0)
-		,_totalThreadCount(0)
-		,_threadCount(0)
-		,_workUnitIndex(0)
-		,_synchronizeIndex(0)
-		,_synchronizeCount(0)
-		,_synchronizeMutex(NULL)
-	{
-		_typeId = __FUNCTION__;
-	}
 };
 
 #endif /* PARALLEL_TASK_HPP_ */

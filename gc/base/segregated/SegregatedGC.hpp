@@ -118,7 +118,7 @@ public:
 		, _portLibrary(env->getPortLibrary())
 		, _markingScheme(NULL)
 		, _sweepScheme(NULL)
-		, _dispatcher((MM_ParallelDispatcher *)_extensions->dispatcher)
+		, _dispatcher(_extensions->dispatcher)
 		, _scanBytes(0)
 		, _objectsMarked(0)
 	{

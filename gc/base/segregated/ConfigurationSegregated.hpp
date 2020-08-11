@@ -62,7 +62,6 @@ public:
 	virtual MM_HeapRegionManager *createHeapRegionManager(MM_EnvironmentBase *env);
 	virtual MM_MemorySpace *createDefaultMemorySpace(MM_EnvironmentBase *env, MM_Heap *heap, MM_InitializationParameters *parameters);
 	virtual J9Pool *createEnvironmentPool(MM_EnvironmentBase *env);
-	virtual MM_Dispatcher *createDispatcher(MM_EnvironmentBase *env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize);
 	virtual MM_ParallelDispatcher *createParallelDispatcher(MM_EnvironmentBase *env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize);
 	
 	virtual void defaultMemorySpaceAllocated(MM_GCExtensionsBase *extensions, void* defaultMemorySpace);

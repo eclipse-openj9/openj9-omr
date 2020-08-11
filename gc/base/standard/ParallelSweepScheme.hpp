@@ -218,7 +218,7 @@ public:
 		: MM_BaseVirtual()
 		, _chunksPrepared(0)
 		, _extensions(env->getExtensions())
-		, _dispatcher((MM_ParallelDispatcher *)_extensions->dispatcher)
+		, _dispatcher(_extensions->dispatcher)
 		, _currentMarkMap(NULL)
 		, _currentSweepBits(NULL)
 		, _heapBase(NULL)

@@ -870,7 +870,7 @@ public:
 		, _objectAlignmentInBytes(env->getObjectAlignmentInBytes())
 		, _isRememberedSetInOverflowAtTheBeginning(false)
 		, _extensions(env->getExtensions())
-		, _dispatcher((MM_ParallelDispatcher *)_extensions->dispatcher)
+		, _dispatcher(_extensions->dispatcher)
 		, _doneIndex(0)
 		, _activeSubSpace(NULL)
 		, _evacuateMemorySubSpace(NULL)

@@ -22,9 +22,9 @@
 
 #include "ModronAssertions.h"
 
-#include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
+#include "ParallelDispatcher.hpp"
 #include "ScavengerStats.hpp"
 
 #include "ScavengerCopyScanRatio.hpp"

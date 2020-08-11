@@ -30,7 +30,6 @@
 #include "Collector.hpp"
 #include "CollectorLanguageInterface.hpp"
 #include "ConfigurationFlat.hpp"
-#include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
 #include "GlobalCollector.hpp"
@@ -123,7 +122,7 @@ heapCreationHelper(OMR_VM *omrVM, MM_StartupManager *startupManager, bool create
 
 	/* It is necessary to have a dispatcher up before the collector can be initialized,
 	 * since the number of sweep chunks is determined by the number of threads. */
-	extensions->dispatcher = extensions->configuration->createDispatcher(&envBase, NULL, NULL, OMR_OS_STACK_SIZE);
+	extensions->dispatcher = extensions->configuration->createParallelDispatcher(&envBase, NULL, NULL, OMR_OS_STACK_SIZE);
 	if (NULL == extensions->dispatcher) {
 		omrtty_printf("Failed to create dispatcher.\n");
 		rc = OMR_ERROR_INTERNAL;

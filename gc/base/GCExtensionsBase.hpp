@@ -53,7 +53,6 @@ class MM_CollectorLanguageInterface;
 class MM_CompactGroupPersistentStats;
 class MM_CompressedCardTable;
 class MM_Configuration;
-class MM_Dispatcher;
 class MM_EnvironmentBase;
 class MM_FrequentObjectsStats;
 class MM_GlobalAllocationManager;
@@ -563,7 +562,7 @@ public:
 	UDATA fvtest_forceCardTableDecommitFailure; /**< Force failure at Card Table decommit operation */
 	UDATA fvtest_forceCardTableDecommitFailureCounter; /**< Force failure at Card Table decommit operation  counter */
 
-	MM_Dispatcher* dispatcher;
+	MM_ParallelDispatcher* dispatcher;
 
 	MM_CardTable* cardTable;
 

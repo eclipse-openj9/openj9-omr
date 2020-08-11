@@ -39,7 +39,12 @@
 /* Macro to create an unique literal string identifier */ 
 #define UNIQUE_ID ((const char *)(OMR_GET_CALLSITE()))
 
-class MM_Dispatcher;
+/**
+ * @todo Provide define documentation
+ * @ingroup GC_Base_Core
+ */
+#define J9MODRON_HANDLE_NEXT_WORK_UNIT(envPtr) envPtr->_currentTask->handleNextWorkUnit(envPtr)
+
 class MM_EnvironmentBase;
 class MM_ParallelDispatcher;
 
@@ -158,14 +163,6 @@ public:
 	MM_Task(MM_EnvironmentBase *env, MM_ParallelDispatcher *dispatcher) :
 		MM_BaseVirtual(),
 		_dispatcher(dispatcher),
-		_oldVMstate(0)
-	{
-		_typeId = __FUNCTION__;
-	};
-
-	MM_Task(MM_EnvironmentBase *env, MM_Dispatcher *dispatcher) :
-		MM_BaseVirtual(),
-		_dispatcher( ( MM_ParallelDispatcher* ) dispatcher),
 		_oldVMstate(0)
 	{
 		_typeId = __FUNCTION__;

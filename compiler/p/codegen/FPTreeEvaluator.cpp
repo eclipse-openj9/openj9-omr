@@ -360,9 +360,6 @@ TR::Register *OMR::Power::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::Cod
    double value = node->getDouble();
    TR::Compilation *comp = cg->comp();
 
-   if (value == ((double) ((float) value)))
-      return fconstHandler(node, cg, (float) value);
-
    TR::Register *trgRegister = cg->allocateRegister(TR_FPR);
 
    loadFloatConstant(cg, TR::InstOpCode::lfd, node, TR::DataTypes::Double, &value, trgRegister);

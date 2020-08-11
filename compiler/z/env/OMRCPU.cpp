@@ -57,7 +57,7 @@ OMR::Z::CPU::CPU(const OMRProcessorDesc& processorDescription) : OMR::CPU(proces
             _supportedArch = zNext;
             break;
          default:
-            TR_ASSERT_FATAL(false, "Unsupported processorDescription.processor type: %d", processorDescription.processor);
+            TR_ASSERT_FATAL(false, "Unsupported processorDescription.processor type: %s(%d)", TR::CPU::getProcessorName(processorDescription.processor), processorDescription.processor);
          }
       }
 
@@ -114,7 +114,7 @@ OMR::Z::CPU::isAtLeast(OMRProcessorArchitecture p)
 #if defined(TR_HOST_S390) && (defined(J9ZOS390) || defined(LINUX))
    if (TR::Compiler->omrPortLib == NULL)
       return self()->is_at_least_old_api(p);
-   TR_ASSERT_FATAL(self()->is_at_least_test(p), "processor %d failed, _supportedArch %d, _processorDescription.processor %d", p, _supportedArch, _processorDescription.processor);
+   TR_ASSERT_FATAL(self()->is_at_least_test(p), "processor %s(%d) failed, _supportedArch %s(%d), _processorDescription.processor %s(%d)", TR::CPU::getProcessorName(p), p, TR::CPU::getProcessorName(_supportedArch), _supportedArch, TR::CPU::getProcessorName(_processorDescription.processor), _processorDescription.processor);
 
    return _processorDescription.processor >= p;
 #endif
@@ -126,7 +126,7 @@ OMR::Z::CPU::supportsFeature(uint32_t feature)
    {
    if (TR::Compiler->omrPortLib == NULL)
       return self()->supports_feature_old_api(feature);
-   TR_ASSERT_FATAL(self()->supports_feature_test(feature), "feature test %d failed, _supportedArch %d, _processorDescription.processor %d", feature, _supportedArch, _processorDescription.processor);
+   TR_ASSERT_FATAL(self()->supports_feature_test(feature), "feature test %d failed, _supportedArch %s(%d), _processorDescription.processor %s(%d)", feature, TR::CPU::getProcessorName(_supportedArch), _supportedArch, TR::CPU::getProcessorName(_processorDescription.processor), _processorDescription.processor);
 
    OMRPORT_ACCESS_FROM_OMRPORT(TR::Compiler->omrPortLib);
    return TRUE == omrsysinfo_processor_has_feature(&_processorDescription, feature);
@@ -246,7 +246,7 @@ OMR::Z::CPU::is_at_least_old_api(OMRProcessorArchitecture p)
          ans = self()->getSupportsArch(TR::CPU::zNext);
          break;
       default:
-         TR_ASSERT_FATAL(false, "Unknown processor!\n");
+         TR_ASSERT_FATAL(false, "Unknown processor: %d!\n", p);
       }
    return ans;
    }
@@ -297,9 +297,104 @@ OMR::Z::CPU::supports_feature_old_api(uint32_t feature)
          supported = self()->getSupportsVectorFacilityEnhancement1();
          break;
       default:
-         TR_ASSERT_FATAL(false, "Unknown processor feature!\n");
+         TR_ASSERT_FATAL(false, "Unknown processor feature: %d!\n", feature);
       }
    return supported;
+   }
+
+const char*
+OMR::Z::CPU::getProcessorName(Architecture arch)
+   {
+   const char* result = "";
+   switch (arch)
+      {
+      case Unknown:
+         result = "Unknown";
+         break;
+      case z900:
+         result = "z900";
+         break;
+      case z990:
+         result = "z990";
+         break;
+      case z9:
+         result = "z9";
+         break;
+      case z10:
+         result = "z10";
+         break;
+      case z196:
+         result = "z196";
+         break;
+      case zEC12:
+         result = "zEC12";
+         break;
+      case z13:
+         result = "z13";
+         break;
+      case z14:
+         result = "z14";
+         break;
+      case z15:
+         result = "z15";
+         break;
+      case zNext:
+         result = "zNext";
+         break;
+      default:
+         TR_ASSERT(false, "Invalid Archiecture Type: %d", arch);
+         result = "Invalid Architecture type!";
+         break;
+      }
+   return result;
+   }
+
+const char*
+OMR::Z::CPU::getProcessorName(OMRProcessorArchitecture arch)
+   {
+   const char* result = "";
+
+   switch(arch)
+      {
+      case OMR_PROCESSOR_S390_UNKNOWN:
+         result = "Unknown";
+         break;
+      case OMR_PROCESSOR_S390_Z900:
+         result = "z900";
+         break;
+      case OMR_PROCESSOR_S390_Z990:
+         result = "z990";
+         break;
+      case OMR_PROCESSOR_S390_Z9:
+         result = "z9";
+         break;
+      case OMR_PROCESSOR_S390_Z10:
+         result = "z10";
+         break;
+      case OMR_PROCESSOR_S390_Z196:
+         result = "z196";
+         break;
+      case OMR_PROCESSOR_S390_ZEC12:
+         result = "zEC12";
+         break;
+      case OMR_PROCESSOR_S390_Z13:
+         result = "z13";
+         break;
+      case OMR_PROCESSOR_S390_Z14:
+         result = "z14";
+         break;
+      case OMR_PROCESSOR_S390_Z15:
+         result = "z15";
+         break;
+      case OMR_PROCESSOR_S390_ZNEXT:
+         result = "zNext";
+         break;
+      default:
+         TR_ASSERT(false, "Invalid Archiecture Type: %d", arch);
+         result = "Invalid Architecture type!";
+         break;
+      }
+   return result;
    }
 
 const char*

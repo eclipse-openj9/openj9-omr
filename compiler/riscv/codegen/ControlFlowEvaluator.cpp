@@ -510,6 +510,23 @@ OMR::RV::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Register *falseReg = cg->evaluate(falseNode);
    TR::RealRegister *zero = cg->machine()->getRealRegister(TR::RealRegister::zero);
 
+   // Internal pointers cannot be handled since we cannot set the pinning array
+   // on the result register without knowing which side of the select will be
+   // taken.
+   TR_ASSERT_FATAL_WITH_NODE(
+      node,
+      !trueReg->containsInternalPointer() && !falseReg->containsInternalPointer(),
+      "Select nodes cannot have children that are internal pointers"
+   );
+   if (falseReg->containsCollectedReference())
+      {
+      if (cg->comp()->getOption(TR_TraceCG))
+         traceMsg(
+            cg->comp(),
+            "Setting containsCollectedReference on result of select node in register %s\n",
+            cg->getDebug()->getName(trueReg));
+      trueReg->setContainsCollectedReference();
+      }
 
    TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
    TR::LabelSymbol *joinLabel = generateLabelSymbol(cg);

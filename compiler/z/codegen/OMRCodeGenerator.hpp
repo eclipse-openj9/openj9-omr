@@ -214,6 +214,16 @@ public:
    bool hasWarmCallsBeforeReturn();
 
    /**
+    * @brief Answers whether a method call is implemented using an internal runtime
+    *           helper routine (ex. a j2iTransition)
+    *
+    * @param[in] sym : The symbol holding the call information
+    *
+    * @return : true if the call is represented by a helper; false otherwise.
+    */
+   bool callUsesHelperImplementation(TR::Symbol *sym) { return false; }
+
+   /**
     * @brief Answers whether a trampoline is required for a direct call instruction to
     *           reach a target address.
     *

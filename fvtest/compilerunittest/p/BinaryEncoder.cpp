@@ -84,8 +84,6 @@ std::ostream& operator<<(std::ostream& os, const BinaryInstruction& instr) {
 
 class PowerBinaryEncoderTest : public TRTest::CodeGenTest {
 public:
-    TR::Node* fakeNode;
-
     uint32_t buf[64];
 
     // POWER10 prefixed instructions cannot cross a 64-byte boundary, so we need to ensure the
@@ -94,12 +92,7 @@ public:
         return reinterpret_cast<uint32_t*>(((reinterpret_cast<uintptr_t>(buf) - 1) & ~0x3f) + 0x40);
     }
 
-    TR::RealRegister* createReg(TR_RegisterKinds kind, TR::RealRegister::RegNum reg, TR::RealRegister::RegMask mask) {
-        return new (cg()->trHeapMemory()) TR::RealRegister(kind, 0, TR::RealRegister::Free, reg, mask, cg());
-    }
-
     PowerBinaryEncoderTest() {
-        fakeNode = TR::Node::create(TR::treetop);
         cg()->setBinaryBufferStart(reinterpret_cast<uint8_t*>(&getAlignedBuf()[0]));
     }
 

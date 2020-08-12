@@ -83,7 +83,10 @@ class CodeGenTest : public ::testing::Test {
     NullIlGenRequest _ilGenRequest;
     TR::ResolvedMethod _method;
     TR::Compilation _comp;
+
 public:
+    TR::Node *fakeNode;
+
     CodeGenTest() :
         _jitInit(),
         _rawAllocator(),
@@ -95,6 +98,7 @@ public:
         _ilGenRequest(),
         _method("compunittest", "0", "test", 0, NULL, _types.NoType, NULL, NULL),
         _comp(0, NULL, &OMR::FrontEnd::singleton(), &_method, _ilGenRequest, _options, _dispatchRegion, &_trMemory, TR_OptimizationPlan::alloc(warm)) {
+        fakeNode = TR::Node::create(TR::treetop);
     }
 
     TR::CodeGenerator* cg() { return _comp.cg(); }

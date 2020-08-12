@@ -86,11 +86,11 @@ public:
             if (_displacement != 0)
                 throw std::invalid_argument("A MemoryReference cannot have a displacement and an index register");
 
-            return new (cg->trHeapMemory()) TR::MemoryReference(
+            return TR::MemoryReference::createWithIndexReg(
+                cg, 
                 cg->machine()->getRealRegister(_baseReg),
                 cg->machine()->getRealRegister(_indexReg),
-                0,
-                cg
+                0
             );
         } else {
             return TR::MemoryReference::createWithDisplacement(

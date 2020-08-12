@@ -119,33 +119,33 @@ TR::Instruction *generateMvFprGprInstructions(TR::CodeGenerator *cg, TR::Node *n
       location = cg->allocateSpill(8, false, NULL);
       if ((mode == gprSp2fpr) || (mode == fpr2gprSp) || (mode == gprLow2fpr))
          {
-         tempMRStore1 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 4, cg);
-         tempMRLoad1 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 0, 4, cg);
+         tempMRStore1 = TR::MemoryReference::createWithSymRef(cg, node, location->getSymbolReference(), 4);
+         tempMRLoad1 = TR::MemoryReference::createWithMemRef(cg, node, *tempMRStore1, 0, 4);
          }
       else if (mode == gpr2fprHost32)
          {
          if (isLittleEndian)
             {
-            tempMRStore2 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 4, cg);
-            tempMRStore1 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore2, 4, 4, cg);
+            tempMRStore2 = TR::MemoryReference::createWithSymRef(cg, node, location->getSymbolReference(), 4);
+            tempMRStore1 = TR::MemoryReference::createWithMemRef(cg, node, *tempMRStore2, 4, 4);
             }
          else
             {
-            tempMRStore1 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 4, cg);
-            tempMRStore2 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 4, 4, cg);
+            tempMRStore1 = TR::MemoryReference::createWithSymRef(cg, node, location->getSymbolReference(), 4);
+            tempMRStore2 = TR::MemoryReference::createWithMemRef(cg, node, *tempMRStore1, 4, 4);
             }
-         tempMRLoad1 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 8, cg);
+         tempMRLoad1 = TR::MemoryReference::createWithSymRef(cg, node, location->getSymbolReference(), 8);
          }
       else
          {
-         tempMRStore1 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 8, cg);
+         tempMRStore1 = TR::MemoryReference::createWithSymRef(cg, node, location->getSymbolReference(), 8);
 
          if (mode == fpr2gprHost32)
-            tempMRLoad1 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, isLittleEndian ? 4 : 0, 4, cg);
+            tempMRLoad1 = TR::MemoryReference::createWithMemRef(cg, node, *tempMRStore1, isLittleEndian ? 4 : 0, 4);
          if ((mode == fpr2gprHost64) || (mode == gpr2fprHost64))
-            tempMRLoad1 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 0, 8, cg);
+            tempMRLoad1 = TR::MemoryReference::createWithMemRef(cg, node, *tempMRStore1, 0, 8);
          else
-            tempMRLoad2 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, isLittleEndian ? 0 : 4, 4, cg);
+            tempMRLoad2 = TR::MemoryReference::createWithMemRef(cg, node, *tempMRStore1, isLittleEndian ? 0 : 4, 4);
          }
 
       if ((mode == fpr2gprHost64) || (mode == fpr2gprLow))

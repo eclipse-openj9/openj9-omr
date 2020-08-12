@@ -1227,25 +1227,25 @@ TR::Instruction *OMR::Power::MemoryReference::expandForUnresolvedSnippet(TR::Ins
          }
       else if (displacement < LOWER_IMMED || displacement > UPPER_IMMED)
          {
-         newMR = new (cg->trHeapMemory()) TR::MemoryReference(self()->getModBase(), LO_VALUE(displacement), self()->getLength(), cg);
+         newMR = TR::MemoryReference::createWithDisplacement(cg, self()->getModBase(), LO_VALUE(displacement), self()->getLength());
          }
       }
    else if (index != NULL || isUsingDelayedIndexedForm())
       {
       if (index == NULL)
          {
-         newMR = new (cg->trHeapMemory()) TR::MemoryReference(cg->machine()->getRealRegister(TR::RealRegister::gr0), base, self()->getLength(), cg);
+         newMR = TR::MemoryReference::createWithIndexReg(cg, cg->machine()->getRealRegister(TR::RealRegister::gr0), base, self()->getLength());
          }
       else
          {
-         newMR = new (cg->trHeapMemory()) TR::MemoryReference(base, index, self()->getLength(), cg);
+         newMR = TR::MemoryReference::createWithIndexReg(cg, base, index, self()->getLength());
          }
 
       prevInstruction = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, base, base, 0, prevInstruction);
       }
    else
       {
-      newMR = new (cg->trHeapMemory()) TR::MemoryReference(self()->getModBase(), 0, self()->getLength(), cg);
+      newMR = TR::MemoryReference::createWithDisplacement(cg, self()->getModBase(), 0, self()->getLength());
       }
 
    // Since J9UnresolvedDataSnippet will look at this memory reference's registers, modifying them in place to be
@@ -1501,7 +1501,7 @@ TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction 
             cg,
             TR::InstOpCode::Op_st,
             node,
-            new (comp->trHeapMemory()) TR::MemoryReference(stackPtr, -saveLen, saveLen, cg),
+            TR::MemoryReference::createWithDisplacement(cg, stackPtr, -saveLen, saveLen), 
             rX,
             prevInstruction
          );
@@ -1515,7 +1515,7 @@ TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction 
             TR::InstOpCode::Op_load,
             node,
             rX,
-            new (comp->trHeapMemory()) TR::MemoryReference(stackPtr, -saveLen, saveLen, cg),
+            TR::MemoryReference::createWithDisplacement(cg, stackPtr, -saveLen, saveLen), 
             currentInstruction
          );
          }
@@ -1667,7 +1667,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
                cg->addSnippet(snippet);
                }
 
-            TR::MemoryReference *fakeTocRef = new (cg->trHeapMemory()) TR::MemoryReference(NULL, 0, sizeof(uintptr_t), cg);
+            TR::MemoryReference *fakeTocRef = TR::MemoryReference::createWithDisplacement(cg, NULL, 0, sizeof(uintptr_t));
             fakeTocRef->setSymbol(symbol, cg);
             fakeTocRef->getSymbolReference()->copyFlags(ref);
             fakeTocRef->setUsingStaticTOC();
@@ -1713,7 +1713,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
             }
 
          // TODO: Improve the code sequence for cases when we know pTOC is full.
-         TR::MemoryReference *tocRef = new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), 0, sizeof(uintptr_t), cg);
+         TR::MemoryReference *tocRef = TR::MemoryReference::createWithDisplacement(cg, cg->getTOCBaseRegister(), 0, sizeof(uintptr_t));
          tocRef->setSymbol(symbol, cg);
          tocRef->getSymbolReference()->copyFlags(ref);
          tocRef->setUsingStaticTOC();

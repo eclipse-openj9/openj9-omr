@@ -31,7 +31,7 @@ TEST_F(PeepholeTest, testRegressIssue5418FlatLoad) {
     TR::RealRegister *gr1 = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::RealRegister *gr2 = cg()->machine()->getRealRegister(TR::RealRegister::gr2);
 
-    TR::Instruction *instr1 = generateMemSrc1Instruction(cg(), TR::InstOpCode::stw, fakeNode, TR::MemoryReference::withDisplacement(cg(), gr1, 0, 4), gr2);
+    TR::Instruction *instr1 = generateMemSrc1Instruction(cg(), TR::InstOpCode::stw, fakeNode, TR::MemoryReference::createWithDisplacement(cg(), gr1, 0, 4), gr2);
     TR::Instruction *instr2 = generateTrg1Src1ImmInstruction(cg(), TR::InstOpCode::lwz, fakeNode, gr2, gr1, 0);
 
     TR::Peephole peephole(cg()->comp());
@@ -46,7 +46,7 @@ TEST_F(PeepholeTest, testRegressIssue5418End) {
     TR::RealRegister *gr1 = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::RealRegister *gr2 = cg()->machine()->getRealRegister(TR::RealRegister::gr2);
 
-    TR::Instruction *instr = generateMemSrc1Instruction(cg(), TR::InstOpCode::stw, fakeNode, TR::MemoryReference::withDisplacement(cg(), gr1, 0, 4), gr2);
+    TR::Instruction *instr = generateMemSrc1Instruction(cg(), TR::InstOpCode::stw, fakeNode, TR::MemoryReference::createWithDisplacement(cg(), gr1, 0, 4), gr2);
 
     TR::Peephole peephole(cg()->comp());
     peephole.perform();

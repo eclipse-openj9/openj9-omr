@@ -38,7 +38,6 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
    {
    private:
 
-   //TODO: get rid of extra int paramenter once legacy constructor is removed and replaced
    MemoryReference(TR::Register *br,
       int64_t disp,
       uint8_t len,
@@ -60,7 +59,6 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
       TR::CodeGenerator *cg) :
          OMR::MemoryReferenceConnector(br, ir, len, cg) {}
 
-   //TODO: legacy constructor - should be replaced by int64_t version (called by withDisplacement)
    MemoryReference(TR::Register *br,
       int32_t disp,
       uint8_t len,

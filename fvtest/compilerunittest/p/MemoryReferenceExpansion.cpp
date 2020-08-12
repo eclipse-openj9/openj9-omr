@@ -348,7 +348,7 @@ TEST_F(PPCMemInstructionExpansionTest, simpleIndex) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::Register* indexReg = cg()->machine()->getRealRegister(TR::RealRegister::gr2);
-    TR::MemoryReference* mr = new (cg()->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, 4, cg());
+    TR::MemoryReference* mr = TR::MemoryReference::createWithIndexReg(cg(), baseReg, indexReg, 4);
 
     TR::Node* fakeNode = TR::Node::create(TR::treetop);
     TR::Instruction* startInstr = generateLabelInstruction(cg(), TR::InstOpCode::label, fakeNode, generateLabelSymbol(cg()));
@@ -883,7 +883,7 @@ TEST_F(PPCMemInstructionExpansionTest, tocSmallPositiveDisp) {
     TR::SymbolReference* symRef = new (cg()->trHeapMemory()) TR::SymbolReference(cg()->comp()->getSymRefTab(), sym);
     symRef->setUnresolved();
 
-    TR::MemoryReference *mr = new (cg()->trHeapMemory()) TR::MemoryReference(cg());
+    TR::MemoryReference *mr = TR::MemoryReference::create(cg());
 
     mr->setSymbolReference(symRef);
     mr->setUsingStaticTOC();
@@ -930,7 +930,7 @@ TEST_F(PPCMemInstructionExpansionTest, tocSmallNegativeDisp) {
     TR::SymbolReference* symRef = new (cg()->trHeapMemory()) TR::SymbolReference(cg()->comp()->getSymRefTab(), sym);
     symRef->setUnresolved();
 
-    TR::MemoryReference *mr = new (cg()->trHeapMemory()) TR::MemoryReference(cg());
+    TR::MemoryReference *mr = TR::MemoryReference::create(cg());
 
     mr->setSymbolReference(symRef);
     mr->setUsingStaticTOC();
@@ -977,7 +977,7 @@ TEST_F(PPCMemInstructionExpansionTest, tocLargePositiveDisp) {
     TR::SymbolReference* symRef = new (cg()->trHeapMemory()) TR::SymbolReference(cg()->comp()->getSymRefTab(), sym);
     symRef->setUnresolved();
 
-    TR::MemoryReference *mr = new (cg()->trHeapMemory()) TR::MemoryReference(cg());
+    TR::MemoryReference *mr = TR::MemoryReference::create(cg());
 
     mr->setSymbolReference(symRef);
     mr->setUsingStaticTOC();
@@ -1034,7 +1034,7 @@ TEST_F(PPCMemInstructionExpansionTest, tocLargeNegativeDisp) {
     TR::SymbolReference* symRef = new (cg()->trHeapMemory()) TR::SymbolReference(cg()->comp()->getSymRefTab(), sym);
     symRef->setUnresolved();
 
-    TR::MemoryReference *mr = new (cg()->trHeapMemory()) TR::MemoryReference(cg());
+    TR::MemoryReference *mr = TR::MemoryReference::create(cg());
 
     mr->setSymbolReference(symRef);
     mr->setUsingStaticTOC();
@@ -1091,7 +1091,7 @@ TEST_F(PPCMemInstructionExpansionTest, tocFull) {
     TR::SymbolReference* symRef = new (cg()->trHeapMemory()) TR::SymbolReference(cg()->comp()->getSymRefTab(), sym);
     symRef->setUnresolved();
 
-    TR::MemoryReference *mr = new (cg()->trHeapMemory()) TR::MemoryReference(cg());
+    TR::MemoryReference *mr = TR::MemoryReference::create(cg());
 
     mr->setSymbolReference(symRef);
     mr->setUsingStaticTOC();
@@ -1169,7 +1169,7 @@ TEST_F(PPCMemInstructionExpansionTest, delayedOffset) {
 
     TR::AutomaticSymbol* sym = TR::AutomaticSymbol::create(cg()->trHeapMemory());
     TR::SymbolReference* symRef = new (cg()->trHeapMemory()) TR::SymbolReference(cg()->comp()->getSymRefTab(), sym);
-    TR::MemoryReference *mr = new (cg()->trHeapMemory()) TR::MemoryReference(cg());
+    TR::MemoryReference *mr = TR::MemoryReference::create(cg());
 
     mr->setSymbolReference(symRef);
 

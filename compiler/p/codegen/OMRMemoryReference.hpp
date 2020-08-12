@@ -119,7 +119,6 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
          uint8_t len,
          TR::CodeGenerator *cg);
 
-   //TODO: legacy constructor - should be replaced by int64_t version (called by createWithDisplacement)
    MemoryReference(
          TR::Register *br,
          int32_t disp,

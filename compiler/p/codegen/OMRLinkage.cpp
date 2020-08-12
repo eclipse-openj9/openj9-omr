@@ -82,8 +82,7 @@ TR::MemoryReference *OMR::Power::Linkage::getOutgoingArgumentMemRef(int32_t argS
    TR::Machine *machine = self()->machine();
    const TR::PPCLinkageProperties& properties = self()->getProperties();
 
-   TR::MemoryReference *result = new (self()->trHeapMemory()) TR::MemoryReference(machine->getRealRegister(properties.getNormalStackPointerRegister()),
-                                                                              argSize+self()->getOffsetToFirstParm(), length, self()->cg());
+   TR::MemoryReference *result = TR::MemoryReference::createWithDisplacement(self()->cg(), machine->getRealRegister(properties.getNormalStackPointerRegister()), argSize+self()->getOffsetToFirstParm(), length);
    memArg.argRegister = argReg;
    memArg.argMemory = result;
    memArg.opCode = opCode;
@@ -220,14 +219,14 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                }
 
             cursor = generateMemSrc1Instruction(self()->cg(), op, firstNode,
-                        new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, length, self()->cg()),
+                        TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, length),
                         REAL_REGISTER(regNum),
                         cursor);
 
             if (twoRegs)
                {
                cursor = generateMemSrc1Instruction(self()->cg(), TR::InstOpCode::stw, firstNode,
-                           new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset+4, 4, self()->cg()),
+                           TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset+4, 4),
                            REAL_REGISTER(REGNUM(regNum+1)),
                            cursor);
                if (ai<0)
@@ -273,7 +272,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                   if (freeScratchable.isSet(aiLow))
                      {
                      cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lwz, firstNode, REAL_REGISTER(REGNUM(aiLow)),
-                                 new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
+                                 TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, 4), cursor);
                      freeScratchable.reset(aiLow);
                      }
                   else
@@ -317,7 +316,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                if (freeScratchable.isSet(ai))
                   {
                   cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lwz, firstNode, REAL_REGISTER(REGNUM(ai)),
-                           new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
+                           TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, 4), cursor);
                   freeScratchable.reset(ai);
                   }
                else
@@ -332,7 +331,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                if (freeScratchable.isSet(ai))
                   {
                   cursor = generateTrg1MemInstruction(self()->cg(),TR::InstOpCode::Op_load, firstNode, REAL_REGISTER(REGNUM(ai)),
-                           new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, TR::Compiler->om.sizeofReferenceAddress(), self()->cg()), cursor);
+                           TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, TR::Compiler->om.sizeofReferenceAddress()), cursor);
                   freeScratchable.reset(ai);
                   }
                else
@@ -352,7 +351,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                   if (freeScratchable.isSet(ai))
                      {
                      cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::ld, firstNode, REAL_REGISTER(REGNUM(ai)),
-                              new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 8, self()->cg()), cursor);
+                              TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, 8), cursor);
                      freeScratchable.reset(ai);
                      }
                   else
@@ -368,7 +367,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                   if (freeScratchable.isSet(ai))
                      {
                      cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lwz, firstNode, REAL_REGISTER(REGNUM(ai)),
-                              new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
+                              TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, 4), cursor);
                      freeScratchable.reset(ai);
                      }
                   else
@@ -383,7 +382,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                   if (freeScratchable.isSet(ai))
                      {
                      cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lwz, firstNode, REAL_REGISTER(REGNUM(ai)),
-                              new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset+4, 4, self()->cg()), cursor);
+                              TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset+4, 4), cursor);
                      freeScratchable.reset(ai);
                      }
                   else
@@ -399,7 +398,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                if (freeScratchable.isSet(ai))
                   {
                   cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lfs, firstNode, REAL_REGISTER(REGNUM(ai)),
-                           new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
+                           TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, 4), cursor);
                   freeScratchable.reset(ai);
                   }
                else
@@ -414,7 +413,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                if (freeScratchable.isSet(ai))
                   {
                   cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lfd, firstNode, REAL_REGISTER(REGNUM(ai)),
-                           new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 8, self()->cg()), cursor);
+                           TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, 8), cursor);
                   freeScratchable.reset(ai);
                   }
                else
@@ -477,7 +476,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
                   {
                   cursor = generateTrg1MemInstruction(self()->cg(), op, firstNode,
                               REAL_REGISTER(REGNUM(target)),
-                              new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, source, length, self()->cg()),
+                              TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, source, length),
                               cursor);
                   }
 
@@ -529,7 +528,7 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
                cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lwz, firstNode, argRegister,
-                     new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
+                     TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, 4), cursor);
                }
             numIntArgs++;
             break;
@@ -538,7 +537,7 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
                cursor = generateTrg1MemInstruction(self()->cg(),TR::InstOpCode::Op_load, firstNode, argRegister,
-                     new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, TR::Compiler->om.sizeofReferenceAddress(), self()->cg()), cursor);
+                     TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, TR::Compiler->om.sizeofReferenceAddress()), cursor);
                }
             numIntArgs++;
             break;
@@ -549,16 +548,16 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
                if (self()->comp()->target().is64Bit())
                   cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::ld, firstNode, argRegister,
-                        new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 8, self()->cg()), cursor);
+                        TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, 8), cursor);
                else
                   {
                   cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lwz, firstNode, argRegister,
-                        new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()), cursor);
+                        TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, 4), cursor);
                   if (numIntArgs < properties.getNumIntArgRegs()-1)
                      {
                      argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs+1));
                      cursor = generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::lwz, firstNode, argRegister,
-                           new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset+4, 4, self()->cg()), cursor);
+                           TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset+4, 4), cursor);
                      }
                   }
                }
@@ -588,7 +587,7 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
                   }
 
                cursor = generateTrg1MemInstruction(self()->cg(), op, firstNode, argRegister,
-                     new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, length, self()->cg()), cursor);
+                     TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, length), cursor);
                }
             numFloatArgs++;
             break;
@@ -629,7 +628,7 @@ TR::Instruction *OMR::Power::Linkage::flushArguments(TR::Instruction *cursor)
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
                cursor = generateMemSrc1Instruction(self()->cg(), TR::InstOpCode::stw, firstNode,
-                     new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()),
+                     TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, 4),
                      argRegister, cursor);
                }
             numIntArgs++;
@@ -639,7 +638,7 @@ TR::Instruction *OMR::Power::Linkage::flushArguments(TR::Instruction *cursor)
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
                cursor = generateMemSrc1Instruction(self()->cg(),TR::InstOpCode::Op_st, firstNode,
-                     new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, TR::Compiler->om.sizeofReferenceAddress(), self()->cg()),
+                     TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, TR::Compiler->om.sizeofReferenceAddress()),
                      argRegister, cursor);
                }
             numIntArgs++;
@@ -651,18 +650,18 @@ TR::Instruction *OMR::Power::Linkage::flushArguments(TR::Instruction *cursor)
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
                if (self()->comp()->target().is64Bit())
                   cursor = generateMemSrc1Instruction(self()->cg(),TR::InstOpCode::Op_st, firstNode,
-                        new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 8, self()->cg()),
+                        TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, 8),
                         argRegister, cursor);
                else
                   {
                   cursor = generateMemSrc1Instruction(self()->cg(), TR::InstOpCode::stw, firstNode,
-                        new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, 4, self()->cg()),
+                        TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, 4),
                         argRegister, cursor);
                   if (numIntArgs < properties.getNumIntArgRegs()-1)
                      {
                      argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs+1));
                      cursor = generateMemSrc1Instruction(self()->cg(), TR::InstOpCode::stw, firstNode,
-                           new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset+4, 4, self()->cg()),
+                           TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset+4, 4),
                            argRegister, cursor);
                      }
                   }
@@ -693,7 +692,7 @@ TR::Instruction *OMR::Power::Linkage::flushArguments(TR::Instruction *cursor)
                   }
 
                cursor = generateMemSrc1Instruction(self()->cg(), op, firstNode,
-                     new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, length, self()->cg()),
+                     TR::MemoryReference::createWithDisplacement(self()->cg(), stackPtr, offset, length),
                      argRegister, cursor);
                }
             numFloatArgs++;

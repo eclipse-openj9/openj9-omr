@@ -129,7 +129,7 @@ void loadFloatConstant(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic loadOp, T
             break;
          case TR::InstOpCode::lxvdsx:
             loadInstr = generateTrg1ImmInstruction(cg, TR::InstOpCode::paddi, node, trgReg, 0);
-            generateTrg1MemInstruction(cg, loadOp, node, trgReg, new (cg->trHeapMemory()) TR::MemoryReference(NULL, trgReg, length, cg));
+            generateTrg1MemInstruction(cg, loadOp, node, trgReg, TR::MemoryReference::createWithIndexReg(cg, NULL, trgReg, length));
             break;
          default:
             TR_ASSERT_FATAL_WITH_NODE(node, false, "Unhandled load instruction %s in loadFloatConstant", TR::InstOpCode(loadOp).getMnemonicName());
@@ -164,11 +164,11 @@ void loadFloatConstant(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic loadOp, T
 
             TR_ASSERT_FATAL_WITH_NODE(node, 0x00008000 != HI_VALUE(tocOffset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", tocOffset);
             generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, tmpReg, cg->getTOCBaseRegister(), HI_VALUE(tocOffset));
-            memRef = new (cg->trHeapMemory()) TR::MemoryReference(tmpReg, LO_VALUE(tocOffset), length, cg);
+            memRef = TR::MemoryReference::createWithDisplacement(cg, tmpReg, LO_VALUE(tocOffset), length);
             }
          else
             {
-            memRef = new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), tocOffset, length, cg);
+            memRef = TR::MemoryReference::createWithDisplacement(cg, cg->getTOCBaseRegister(), tocOffset, length);
             }
 
          // TODO(#5383): We don't yet have a property flag to determine whether a load is
@@ -352,11 +352,11 @@ TR::Instruction *loadConstant(TR::CodeGenerator *cg, TR::Node * node, int64_t va
          {
          TR_ASSERT_FATAL_WITH_NODE(node, 0x00008000 != cg->hiValue(offset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", offset);
          cursor = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, trgReg, cg->getTOCBaseRegister(), cg->hiValue(offset), cursor);
-         cursor = generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, trgReg, new (cg->trHeapMemory()) TR::MemoryReference(trgReg, LO_VALUE(offset), 8, cg), cursor);
+         cursor = generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, trgReg, TR::MemoryReference::createWithDisplacement(cg, trgReg, LO_VALUE(offset), 8), cursor);
          }
       else
          {
-         cursor = generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, trgReg, new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), offset, 8, cg), cursor);
+         cursor = generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, trgReg, TR::MemoryReference::createWithDisplacement(cg, cg->getTOCBaseRegister(), offset, 8), cursor);
          }
       }
    else
@@ -463,18 +463,18 @@ TR::Instruction *fixedSeqMemAccess(TR::CodeGenerator *cg, TR::Node *node, intptr
       if (cg->comp()->target().is64Bit() && tempReg)
          {
          nibbles[idx] = cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, tempReg, ((int32_t)loAddr)<<16>>16, cursor);
-         memRef = new (cg->trHeapMemory()) TR::MemoryReference(baseReg, tempReg, opSize, cg);
+         memRef = TR::MemoryReference::createWithIndexReg(cg, baseReg, tempReg, opSize);
          }
       else
          {
          nibbles[idx] = cursor = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, baseReg, baseReg, ((int32_t)loAddr)<<16>>16, cursor);
-         memRef = new (cg->trHeapMemory()) TR::MemoryReference(NULL, baseReg, opSize, cg);
+         memRef = TR::MemoryReference::createWithIndexReg(cg, NULL, baseReg, opSize);
          }
       cursor = generateTrg1MemInstruction(cg, opCode, node, srcOrTrg, memRef, cursor);
       }
    else
       {
-      TR::MemoryReference *memRef = new (cg->trHeapMemory()) TR::MemoryReference(baseReg, ((int32_t)loAddr)<<16>>16, opSize, cg);
+      TR::MemoryReference *memRef = TR::MemoryReference::createWithDisplacement(cg, baseReg, ((int32_t)loAddr)<<16>>16, opSize);
       if (!op.isStore())
          nibbles[idx] = cursor = generateTrg1MemInstruction(cg, opCode, node, srcOrTrg, memRef, cursor);
       else
@@ -514,7 +514,7 @@ TR::Register *OMR::Power::TreeEvaluator::iloadEvaluator(TR::Node *node, TR::Code
    // If the reference is volatile or potentially volatile, we keep a fixed instruction
    // layout in order to patch if it turns out that the reference isn't really volatile.
 
-   tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+   tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 4);
    if (reverseLoad)
       {
       tempMR->forceIndexedForm(node, cg);
@@ -649,11 +649,11 @@ TR::Register *OMR::Power::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::Code
              (node->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())))
          numBytes = 4; // read only 4 bytes
 
-      tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, numBytes, cg);
+      tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, numBytes);
       }
    else
       {
-      tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+      tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 4);
       }
 
    node->setRegister(tempReg);
@@ -713,7 +713,7 @@ TR::Register *OMR::Power::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::Code
       // If the reference is volatile or potentially volatile, we keep a fixed instruction
       // layout in order to patch if it turns out that the reference isn't really volatile.
       //
-      tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+      tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
 
       if (reverseLoad)  // 64-bit only
          {
@@ -746,15 +746,15 @@ TR::Register *OMR::Power::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::Code
          {
          TR::Register *doubleReg = cg->allocateRegister(TR_FPR);
          TR_BackingStore * location = cg->allocateSpill(8, false, NULL);
-         TR::MemoryReference *tempMR        = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
-         TR::MemoryReference *tempMRLoad1 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMR, 0, 4, cg);
-         TR::MemoryReference *tempMRLoad2 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMR, 4, 4, cg);
+         TR::MemoryReference *tempMR      = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
+         TR::MemoryReference *tempMRLoad1 = TR::MemoryReference::createWithMemRef(cg, node, *tempMR, 0, 4);
+         TR::MemoryReference *tempMRLoad2 = TR::MemoryReference::createWithMemRef(cg, node, *tempMR, 4, 4);
          // ^ ordering of these temp memory references important?
 
          // assume SMP since only on POWER 7 and newer
          if (needSync)
             {
-            TR::MemoryReference *tempMRStore1 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 8, cg);
+            TR::MemoryReference *tempMRStore1 = TR::MemoryReference::createWithSymRef(cg, node, location->getSymbolReference(), 8);
             generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, tempMRStore1, doubleReg);
             generateInstruction(cg, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7) ? TR::InstOpCode::lwsync : TR::InstOpCode::isync, node);
             tempMRStore1->decNodeReferenceCounts(cg);
@@ -775,7 +775,7 @@ TR::Register *OMR::Power::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::Code
 
       if (needSync)
          {
-         TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+         TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
 
          if (!node->getSymbolReference()->isUnresolved() && cg->is64BitProcessor()) //resolved as volatile
             {
@@ -786,9 +786,9 @@ TR::Register *OMR::Power::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::Code
                {
                TR_BackingStore * location;
                location = cg->allocateSpill(8, false, NULL);
-               TR::MemoryReference *tempMRStore1 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 8, cg);
-               TR::MemoryReference *tempMRLoad1 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 0, 4, cg);
-               TR::MemoryReference *tempMRLoad2 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 4, 4, cg);
+               TR::MemoryReference *tempMRStore1 = TR::MemoryReference::createWithSymRef(cg, node, location->getSymbolReference(), 8);
+               TR::MemoryReference *tempMRLoad1 = TR::MemoryReference::createWithMemRef(cg, node, *tempMRStore1, 0, 4);
+               TR::MemoryReference *tempMRLoad2 = TR::MemoryReference::createWithMemRef(cg, node, *tempMRStore1, 4, 4);
                generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, tempMRStore1, doubleReg);
                generateInstruction(cg, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7) ? TR::InstOpCode::lwsync : TR::InstOpCode::isync, node);
                generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, highReg, tempMRLoad1);
@@ -858,10 +858,10 @@ TR::Register *OMR::Power::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::Code
          }
       else
          {
-         TR::MemoryReference *highMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+         TR::MemoryReference *highMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 4);
 
          generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, highReg, highMR);
-         TR::MemoryReference *lowMR       = new (cg->trHeapMemory()) TR::MemoryReference(node, *highMR, 4, 4, cg);
+         TR::MemoryReference *lowMR       = TR::MemoryReference::createWithMemRef(cg, node, *highMR, 4, 4);
          generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, lowReg, lowMR);
          highMR->decNodeReferenceCounts(cg);
          lowMR->decNodeReferenceCounts(cg);
@@ -882,7 +882,7 @@ TR::Register *OMR::Power::TreeEvaluator::commonByteLoadEvaluator(TR::Node *node,
    // If the reference is volatile or potentially volatile, we keep a fixed instruction
    // layout in order to patch if it turns out that the reference isn't really volatile.
 
-   tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 1, cg);
+   tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 1);
 
    generateTrg1MemInstruction(cg, TR::InstOpCode::lbz, node, trgReg, tempMR);
    if (needSync)
@@ -928,7 +928,7 @@ TR::Register *OMR::Power::TreeEvaluator::sloadEvaluator(TR::Node *node, TR::Code
    // If the reference is volatile or potentially volatile, we keep a fixed instruction
    // layout in order to patch if it turns out that the reference isn't really volatile.
 
-   tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 2, cg);
+   tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 2);
 
    if (reverseLoad)
       {
@@ -958,7 +958,7 @@ TR::Register *OMR::Power::TreeEvaluator::cloadEvaluator(TR::Node *node, TR::Code
    // If the reference is volatile or potentially volatile, we keep a fixed instruction
    // layout in order to patch if it turns out that the reference isn't really volatile.
 
-   tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 2, cg);
+   tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 2);
 
    generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, tempReg, tempMR);
    if (needSync)
@@ -1099,7 +1099,7 @@ TR::Register *OMR::Power::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::Cod
 
    // If the reference is volatile or potentially volatile, we keep a fixed instruction
    // layout in order to patch if it turns out that the reference isn't really volatile.
-   tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+   tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 4);
    if (needSync)
       generateInstruction(cg, TR::InstOpCode::lwsync, node);
    if (reverseStore)
@@ -1169,9 +1169,9 @@ TR::Register *OMR::Power::TreeEvaluator::astoreEvaluator(TR::Node *node, TR::Cod
    // If the reference is volatile or potentially volatile, we keep a fixed instruction
    // layout in order to patch if it turns out that the reference isn't really volatile.
    if (cg->comp()->target().is64Bit())
-      tempMR  = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+      tempMR  = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
    else // 32 bit target
-      tempMR  = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+      tempMR  = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 4);
 
    if (needSync)
       generateInstruction(cg, TR::InstOpCode::lwsync, node);
@@ -1283,7 +1283,7 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
 
       // If the reference is volatile or potentially volatile, we keep a fixed instruction
       // layout in order to patch if it turns out that the reference isn't really volatile.
-      TR::MemoryReference *tempMR  = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+      TR::MemoryReference *tempMR  = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
       if (needSync)
          generateInstruction(cg, TR::InstOpCode::lwsync, node);
       if (reverseStore)
@@ -1333,7 +1333,7 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
 
       if (needSync)
          {
-         TR::MemoryReference *tempMR  = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+         TR::MemoryReference *tempMR  = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
 
          if (!node->getSymbolReference()->isUnresolved() && cg->is64BitProcessor()) //resolved as volatile
             {
@@ -1343,12 +1343,12 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
                {
                TR_BackingStore * location;
                location = cg->allocateSpill(8, false, NULL);
-               TR::MemoryReference *tempMRStore1 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 4, cg);
-               TR::MemoryReference *tempMRStore2 =  new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 4, 4, cg);
+               TR::MemoryReference *tempMRStore1 = TR::MemoryReference::createWithSymRef(cg, node, location->getSymbolReference(), 4);
+               TR::MemoryReference *tempMRStore2 =  TR::MemoryReference::createWithMemRef(cg, node, *tempMRStore1, 4, 4);
                generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, tempMRStore1, valueReg->getHighOrder());
                generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, tempMRStore2, valueReg->getLowOrder());
                generateInstruction(cg, TR::InstOpCode::lwsync, node);
-               generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, doubleReg, new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 8, cg));
+               generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, doubleReg, TR::MemoryReference::createWithSymRef(cg, node, location->getSymbolReference(), 8));
                if (reverseStore)
                   {
                   tempMRStore1->forceIndexedForm(node, cg);
@@ -1440,7 +1440,7 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
          }
       else
          {
-         TR::MemoryReference *highMR  = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+         TR::MemoryReference *highMR  = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 4);
 
          if (reverseStore)
             {
@@ -1451,7 +1451,7 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
             generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, highMR, valueReg->getHighOrder());
 
          // This ordering is important at this stage unless the base is guaranteed to be non-modifiable.
-         TR::MemoryReference *lowMR = new (cg->trHeapMemory()) TR::MemoryReference(node, *highMR, 4, 4, cg);
+         TR::MemoryReference *lowMR = TR::MemoryReference::createWithMemRef(cg, node, *highMR, 4, 4);
          if (reverseStore)
             {
             lowMR->forceIndexedForm(node, cg);
@@ -1493,7 +1493,7 @@ TR::Register *OMR::Power::TreeEvaluator::bstoreEvaluator(TR::Node *node, TR::Cod
 
    // If the reference is volatile or potentially volatile, we keep a fixed instruction
    // layout in order to patch if it turns out that the reference isn't really volatile.
-   tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 1, cg);
+   tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 1);
    if (needSync)
       generateInstruction(cg, TR::InstOpCode::lwsync, node);
    generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, tempMR, valueReg);
@@ -1534,7 +1534,7 @@ TR::Register *OMR::Power::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::Cod
 
    // If the reference is volatile or potentially volatile, we keep a fixed instruction
    // layout in order to patch if it turns out that the reference isn't really volatile.
-   tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 2, cg);
+   tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 2);
    if (needSync)
       generateInstruction(cg, TR::InstOpCode::lwsync, node);
    if (reverseStore)
@@ -1576,7 +1576,7 @@ TR::Register *OMR::Power::TreeEvaluator::cstoreEvaluator(TR::Node *node, TR::Cod
 
    // If the reference is volatile or potentially volatile, we keep a fixed instruction
    // layout in order to patch if it turns out that the reference isn't really volatile.
-   tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 2, cg);
+   tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 2);
    if (needSync)
       generateInstruction(cg, TR::InstOpCode::lwsync, node);
    generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node, tempMR, valueReg);
@@ -1631,13 +1631,13 @@ TR::Register *OMR::Power::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::Code
    TR::Register *dstReg = cg->allocateRegister(kind);
    node->setRegister(dstReg);
 
-   TR::MemoryReference *srcMemRef = new (cg->trHeapMemory()) TR::MemoryReference(node, 16, cg);
+   TR::MemoryReference *srcMemRef = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 16);
    if (srcMemRef->hasDelayedOffset())
       {
       TR::Register *tmpReg = cg->allocateRegister();
       generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, tmpReg, srcMemRef);
 
-      TR::MemoryReference *tmpMemRef = new (cg->trHeapMemory()) TR::MemoryReference(NULL, tmpReg, 16, cg);
+      TR::MemoryReference *tmpMemRef = TR::MemoryReference::createWithIndexReg(cg, NULL, tmpReg, 16);
       generateTrg1MemInstruction(cg, opcode, node, dstReg, tmpMemRef);
       tmpMemRef->decNodeReferenceCounts(cg);
       }
@@ -1671,13 +1671,13 @@ TR::Register *OMR::Power::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::Cod
    TR::Node *valueChild = node->getOpCode().isStoreDirect() ? node->getFirstChild() : node->getSecondChild();
    TR::Register *valueReg = cg->evaluate(valueChild);
 
-   TR::MemoryReference *srcMemRef = new (cg->trHeapMemory()) TR::MemoryReference(node, 16, cg);
+   TR::MemoryReference *srcMemRef = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 16);
 
    if (srcMemRef->hasDelayedOffset())
       {
       TR::Register *tmpReg = cg->allocateRegister();
       generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, tmpReg, srcMemRef);
-      TR::MemoryReference *tmpMemRef = new (cg->trHeapMemory()) TR::MemoryReference(NULL, tmpReg, 16, cg);
+      TR::MemoryReference *tmpMemRef = TR::MemoryReference::createWithIndexReg(cg, NULL, tmpReg, 16);
 
       generateMemSrc1Instruction(cg, opcode, node, tmpMemRef, valueReg);
       tmpMemRef->decNodeReferenceCounts(cg);
@@ -1935,12 +1935,12 @@ TR::Register *OMR::Power::TreeEvaluator::viremEvaluator(TR::Node *node, TR::Code
    TR::SymbolReference    *srcV1 = cg->allocateLocalTemp(TR::VectorInt32);
    TR::SymbolReference    *srcV2 = cg->allocateLocalTemp(TR::VectorInt32);
 
-   generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, srcV1IdxReg, new (cg->trHeapMemory()) TR::MemoryReference(node, srcV1, 16, cg));
-   generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, srcV2IdxReg, new (cg->trHeapMemory()) TR::MemoryReference(node, srcV2, 16, cg));
+   generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, srcV1IdxReg, TR::MemoryReference::createWithSymRef(cg, node, srcV1, 16));
+   generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, srcV2IdxReg, TR::MemoryReference::createWithSymRef(cg, node, srcV2, 16));
 
    // store the src regs to memory
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(NULL, srcV1IdxReg, 16, cg), lhsReg);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(NULL, srcV2IdxReg, 16, cg), rhsReg);
+   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, TR::MemoryReference::createWithIndexReg(cg, NULL, srcV1IdxReg, 16), lhsReg);
+   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, TR::MemoryReference::createWithIndexReg(cg, NULL, srcV2IdxReg, 16), rhsReg);
 
    // load each pair and compute division
    int i;
@@ -1949,8 +1949,8 @@ TR::Register *OMR::Power::TreeEvaluator::viremEvaluator(TR::Node *node, TR::Code
       TR::Register *srcA1Reg = cg->allocateRegister();
       TR::Register *srcA2Reg = cg->allocateRegister();
       TR::Register *trgAReg = cg->allocateRegister();
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwa, node, srcA1Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcV1IdxReg, i * 4, 4, cg));
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwa, node, srcA2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcV2IdxReg, i * 4, 4, cg));
+      generateTrg1MemInstruction(cg, TR::InstOpCode::lwa, node, srcA1Reg, TR::MemoryReference::createWithDisplacement(cg, srcV1IdxReg, i * 4, 4));
+      generateTrg1MemInstruction(cg, TR::InstOpCode::lwa, node, srcA2Reg, TR::MemoryReference::createWithDisplacement(cg, srcV2IdxReg, i * 4, 4));
       if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
          {
          generateTrg1Src2Instruction(cg, TR::InstOpCode::modsw, node, trgAReg, srcA1Reg, srcA2Reg);
@@ -1961,7 +1961,7 @@ TR::Register *OMR::Power::TreeEvaluator::viremEvaluator(TR::Node *node, TR::Code
          generateTrg1Src2Instruction(cg, TR::InstOpCode::mullw, node, trgAReg, trgAReg, srcA2Reg);
          generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, trgAReg, trgAReg, srcA1Reg);
          }
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(srcV1IdxReg, i * 4, 4, cg), trgAReg);
+      generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, TR::MemoryReference::createWithDisplacement(cg, srcV1IdxReg, i * 4, 4), trgAReg);
       cg->stopUsingRegister(srcA1Reg);
       cg->stopUsingRegister(srcA2Reg);
       cg->stopUsingRegister(trgAReg);
@@ -1969,7 +1969,7 @@ TR::Register *OMR::Power::TreeEvaluator::viremEvaluator(TR::Node *node, TR::Code
 
    // load result
    TR::Register *resReg = cg->allocateRegister(TR_VRF);
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, resReg, new (cg->trHeapMemory()) TR::MemoryReference(NULL, srcV1IdxReg, 16, cg));
+   generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, resReg, TR::MemoryReference::createWithIndexReg(cg, NULL, srcV1IdxReg, 16));
 
    cg->stopUsingRegister(srcV1IdxReg);
    cg->stopUsingRegister(srcV2IdxReg);
@@ -1989,8 +1989,8 @@ TR::Register *OMR::Power::TreeEvaluator::vigetelemEvaluator(TR::Node *node, TR::
 
    TR::Register *addrReg = cg->evaluate(firstChild);
    TR::SymbolReference    *localTemp = cg->allocateLocalTemp(TR::VectorInt32);
-   generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, resReg, new (cg->trHeapMemory()) TR::MemoryReference(node, localTemp, 16, cg));
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(NULL, resReg, 16, cg), addrReg);
+   generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, resReg, TR::MemoryReference::createWithSymRef(cg, node, localTemp, 16));
+   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, TR::MemoryReference::createWithIndexReg(cg, NULL, resReg, 16), addrReg);
 
 
    if (secondChild->getOpCode().isLoadConst())
@@ -1998,7 +1998,7 @@ TR::Register *OMR::Power::TreeEvaluator::vigetelemEvaluator(TR::Node *node, TR::
       int elem = secondChild->getInt();
       TR_ASSERT(elem >= 0 && elem <= 3, "Element can only be 0 to 3\n");
 
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwa, node, resReg, new (cg->trHeapMemory()) TR::MemoryReference(resReg, elem * 4, 4, cg));
+      generateTrg1MemInstruction(cg, TR::InstOpCode::lwa, node, resReg, TR::MemoryReference::createWithDisplacement(cg, resReg, elem * 4, 4));
 
       cg->decReferenceCount(firstChild);
       cg->decReferenceCount(secondChild);
@@ -2008,7 +2008,7 @@ TR::Register *OMR::Power::TreeEvaluator::vigetelemEvaluator(TR::Node *node, TR::
    TR::Register *idxReg = cg->evaluate(secondChild);
    TR::Register *offsetReg = cg->allocateRegister();
    generateTrg1Src1ImmInstruction (cg, TR::InstOpCode::mulli, node, offsetReg, idxReg, 4);
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lwa, node, resReg, new (cg->trHeapMemory()) TR::MemoryReference(resReg, offsetReg, 4, cg));
+   generateTrg1MemInstruction(cg, TR::InstOpCode::lwa, node, resReg, TR::MemoryReference::createWithIndexReg(cg, resReg, offsetReg, 4));
    cg->stopUsingRegister(offsetReg);
 
    cg->decReferenceCount(firstChild);
@@ -2307,8 +2307,8 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemMemoryMoveHelper(TR::Node *node
 
    TR::Register *vectorReg = cg->evaluate(firstChild);
    TR::SymbolReference *localTemp = cg->allocateLocalTemp(firstChild->getDataType());
-   generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, resReg, new (cg->trHeapMemory()) TR::MemoryReference(node, localTemp, 16, cg));
-   generateMemSrc1Instruction(cg, vecStoreOpCode, node, new (cg->trHeapMemory()) TR::MemoryReference(NULL, resReg, 16, cg), vectorReg);
+   generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, resReg, TR::MemoryReference::createWithSymRef(cg, node, localTemp, 16));
+   generateMemSrc1Instruction(cg, vecStoreOpCode, node, TR::MemoryReference::createWithIndexReg(cg, NULL, resReg, 16), vectorReg);
 
    if (secondChild->getOpCode().isLoadConst())
       {
@@ -2318,7 +2318,7 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemMemoryMoveHelper(TR::Node *node
 
       if (firstChild->getDataType() == TR::VectorFloat || firstChild->getDataType() == TR::VectorDouble)
          {
-         generateTrg1MemInstruction(cg, loadOpCode, node, fResReg, new (cg->trHeapMemory()) TR::MemoryReference(resReg, elem * (16 / elementCount), 16 / elementCount, cg));
+         generateTrg1MemInstruction(cg, loadOpCode, node, fResReg, TR::MemoryReference::createWithDisplacement(cg, resReg, elem * (16 / elementCount), 16 / elementCount));
          cg->stopUsingRegister(resReg);
          }
       else if (cg->comp()->target().is32Bit() && firstChild->getDataType() == TR::VectorInt64)
@@ -2327,21 +2327,21 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemMemoryMoveHelper(TR::Node *node
             {
             highResReg = cg->allocateRegister();
             lowResReg = resReg;
-            generateTrg1MemInstruction(cg, loadOpCode, node, highResReg, new (cg->trHeapMemory()) TR::MemoryReference(resReg, elem * 8, 4, cg));
-            generateTrg1MemInstruction(cg, loadOpCode, node, lowResReg, new (cg->trHeapMemory()) TR::MemoryReference(resReg, elem * 8 + 4, 4, cg));
+            generateTrg1MemInstruction(cg, loadOpCode, node, highResReg, TR::MemoryReference::createWithDisplacement(cg, resReg, elem * 8, 4));
+            generateTrg1MemInstruction(cg, loadOpCode, node, lowResReg, TR::MemoryReference::createWithDisplacement(cg, resReg, elem * 8 + 4, 4));
             }
          else
             {
             highResReg = resReg;
             lowResReg = cg->allocateRegister();
-            generateTrg1MemInstruction(cg, loadOpCode, node, lowResReg, new (cg->trHeapMemory()) TR::MemoryReference(resReg, elem * 8, 4, cg));
-            generateTrg1MemInstruction(cg, loadOpCode, node, highResReg, new (cg->trHeapMemory()) TR::MemoryReference(resReg, elem * 8 + 4, 4, cg));
+            generateTrg1MemInstruction(cg, loadOpCode, node, lowResReg, TR::MemoryReference::createWithDisplacement(cg, resReg, elem * 8, 4));
+            generateTrg1MemInstruction(cg, loadOpCode, node, highResReg, TR::MemoryReference::createWithDisplacement(cg, resReg, elem * 8 + 4, 4));
             }
             resReg = cg->allocateRegisterPair(lowResReg, highResReg);
          }
       else
          {
-         generateTrg1MemInstruction(cg, loadOpCode, node, resReg, new (cg->trHeapMemory()) TR::MemoryReference(resReg, elem * (16 / elementCount), 16 / elementCount, cg));
+         generateTrg1MemInstruction(cg, loadOpCode, node, resReg, TR::MemoryReference::createWithDisplacement(cg, resReg, elem * (16 / elementCount), 16 / elementCount));
          }
 
       cg->decReferenceCount(firstChild);
@@ -2365,7 +2365,7 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemMemoryMoveHelper(TR::Node *node
 
    if (firstChild->getDataType() == TR::VectorFloat || firstChild->getDataType() == TR::VectorDouble)
       {
-      generateTrg1MemInstruction(cg, loadOpCode, node, fResReg, new (cg->trHeapMemory()) TR::MemoryReference(resReg, offsetReg, 16 / elementCount, cg));
+      generateTrg1MemInstruction(cg, loadOpCode, node, fResReg, TR::MemoryReference::createWithIndexReg(cg, resReg, offsetReg, 16 / elementCount));
       cg->stopUsingRegister(resReg);
       }
    else if (cg->comp()->target().is32Bit() && firstChild->getDataType() == TR::VectorInt64)
@@ -2374,23 +2374,23 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemMemoryMoveHelper(TR::Node *node
          {
          highResReg = cg->allocateRegister();
          lowResReg = resReg;
-         generateTrg1MemInstruction(cg, loadOpCode, node, highResReg, new (cg->trHeapMemory()) TR::MemoryReference(resReg, offsetReg, 4, cg));
+         generateTrg1MemInstruction(cg, loadOpCode, node, highResReg, TR::MemoryReference::createWithIndexReg(cg, resReg, offsetReg, 4));
          generateTrg1Src1ImmInstruction (cg, TR::InstOpCode::addi, node, offsetReg, offsetReg, 4);
-         generateTrg1MemInstruction(cg, loadOpCode, node, lowResReg, new (cg->trHeapMemory()) TR::MemoryReference(resReg, offsetReg, 4, cg));
+         generateTrg1MemInstruction(cg, loadOpCode, node, lowResReg, TR::MemoryReference::createWithIndexReg(cg, resReg, offsetReg, 4));
          }
       else
          {
          highResReg = resReg;
          lowResReg = cg->allocateRegister();
-         generateTrg1MemInstruction(cg, loadOpCode, node, lowResReg, new (cg->trHeapMemory()) TR::MemoryReference(resReg, offsetReg, 4, cg));
+         generateTrg1MemInstruction(cg, loadOpCode, node, lowResReg, TR::MemoryReference::createWithIndexReg(cg, resReg, offsetReg, 4));
          generateTrg1Src1ImmInstruction (cg, TR::InstOpCode::addi, node, offsetReg, offsetReg, 4);
-         generateTrg1MemInstruction(cg, loadOpCode, node, highResReg, new (cg->trHeapMemory()) TR::MemoryReference(resReg, offsetReg, 4, cg));
+         generateTrg1MemInstruction(cg, loadOpCode, node, highResReg, TR::MemoryReference::createWithIndexReg(cg, resReg, offsetReg, 4));
          }
          resReg = cg->allocateRegisterPair(lowResReg, highResReg);
       }
    else
       {
-      generateTrg1MemInstruction(cg, loadOpCode, node, resReg, new (cg->trHeapMemory()) TR::MemoryReference(resReg, offsetReg, 16 / elementCount, cg));
+      generateTrg1MemInstruction(cg, loadOpCode, node, resReg, TR::MemoryReference::createWithIndexReg(cg, resReg, offsetReg, 16 / elementCount));
       }
 
    cg->stopUsingRegister(offsetReg);
@@ -2422,15 +2422,15 @@ TR::Register *OMR::Power::TreeEvaluator::visetelemEvaluator(TR::Node *node, TR::
 
    TR::Register *addrReg = cg->allocateRegister();
    TR::SymbolReference    *localTemp = cg->allocateLocalTemp(TR::VectorInt32);
-   generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, addrReg, new (cg->trHeapMemory()) TR::MemoryReference(node, localTemp, 16, cg));
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(NULL, addrReg, 16, cg), vectorReg);
+   generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, addrReg, TR::MemoryReference::createWithSymRef(cg, node, localTemp, 16));
+   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, TR::MemoryReference::createWithIndexReg(cg, NULL, addrReg, 16), vectorReg);
 
    if (secondChild->getOpCode().isLoadConst())
       {
       int elem = secondChild->getInt();
       TR_ASSERT(elem >= 0 && elem <= 3, "Element can only be 0 to 3\n");
 
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(addrReg, elem * 4, 4, cg), valueReg);
+      generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, TR::MemoryReference::createWithDisplacement(cg, addrReg, elem * 4, 4), valueReg);
 
       }
    else
@@ -2438,11 +2438,11 @@ TR::Register *OMR::Power::TreeEvaluator::visetelemEvaluator(TR::Node *node, TR::
       TR::Register *idxReg = cg->evaluate(secondChild);
       TR::Register *offsetReg = cg->allocateRegister();
       generateTrg1Src1ImmInstruction (cg, TR::InstOpCode::mulli, node, offsetReg, idxReg, 4);
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(addrReg, offsetReg, 4, cg), valueReg);
+      generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, TR::MemoryReference::createWithIndexReg(cg, addrReg, offsetReg, 4), valueReg);
       cg->stopUsingRegister(offsetReg);
       }
 
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, resReg, new (cg->trHeapMemory()) TR::MemoryReference(NULL, addrReg, 16, cg));
+   generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, resReg, TR::MemoryReference::createWithIndexReg(cg, NULL, addrReg, 16));
    cg->stopUsingRegister(addrReg);
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
@@ -2803,12 +2803,12 @@ TR::Register *OMR::Power::TreeEvaluator::vdivInt32Helper(TR::Node *node, TR::Cod
    TR::SymbolReference    *srcV1 = cg->allocateLocalTemp(TR::VectorInt32);
    TR::SymbolReference    *srcV2 = cg->allocateLocalTemp(TR::VectorInt32);
 
-   generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, srcV1IdxReg, new (cg->trHeapMemory()) TR::MemoryReference(node, srcV1, 16, cg));
-   generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, srcV2IdxReg, new (cg->trHeapMemory()) TR::MemoryReference(node, srcV2, 16, cg));
+   generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, srcV1IdxReg, TR::MemoryReference::createWithSymRef(cg, node, srcV1, 16));
+   generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, srcV2IdxReg, TR::MemoryReference::createWithSymRef(cg, node, srcV2, 16));
 
    // store the src regs to memory
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(NULL, srcV1IdxReg, 16, cg), lhsReg);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, new (cg->trHeapMemory()) TR::MemoryReference(NULL, srcV2IdxReg, 16, cg), rhsReg);
+   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, TR::MemoryReference::createWithIndexReg(cg, NULL, srcV1IdxReg, 16), lhsReg);
+   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, TR::MemoryReference::createWithIndexReg(cg, NULL, srcV2IdxReg, 16), rhsReg);
 
    // load each pair and compute division
    int i;
@@ -2817,10 +2817,10 @@ TR::Register *OMR::Power::TreeEvaluator::vdivInt32Helper(TR::Node *node, TR::Cod
       TR::Register *srcA1Reg = cg->allocateRegister();
       TR::Register *srcA2Reg = cg->allocateRegister();
       TR::Register *trgAReg = cg->allocateRegister();
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwa, node, srcA1Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcV1IdxReg, i * 4, 4, cg));
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwa, node, srcA2Reg, new (cg->trHeapMemory()) TR::MemoryReference(srcV2IdxReg, i * 4, 4, cg));
+      generateTrg1MemInstruction(cg, TR::InstOpCode::lwa, node, srcA1Reg, TR::MemoryReference::createWithDisplacement(cg, srcV1IdxReg, i * 4, 4));
+      generateTrg1MemInstruction(cg, TR::InstOpCode::lwa, node, srcA2Reg, TR::MemoryReference::createWithDisplacement(cg, srcV2IdxReg, i * 4, 4));
       generateTrg1Src2Instruction(cg, TR::InstOpCode::divw, node, trgAReg, srcA1Reg, srcA2Reg);
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(srcV1IdxReg, i * 4, 4, cg), trgAReg);
+      generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, TR::MemoryReference::createWithDisplacement(cg, srcV1IdxReg, i * 4, 4), trgAReg);
       cg->stopUsingRegister(srcA1Reg);
       cg->stopUsingRegister(srcA2Reg);
       cg->stopUsingRegister(trgAReg);
@@ -2828,7 +2828,7 @@ TR::Register *OMR::Power::TreeEvaluator::vdivInt32Helper(TR::Node *node, TR::Cod
 
    // load result
    TR::Register *resReg = cg->allocateRegister(TR_VRF);
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, resReg, new (cg->trHeapMemory()) TR::MemoryReference(NULL, srcV1IdxReg, 16, cg));
+   generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, resReg, TR::MemoryReference::createWithIndexReg(cg, NULL, srcV1IdxReg, 16));
 
    cg->stopUsingRegister(srcV1IdxReg);
    cg->stopUsingRegister(srcV2IdxReg);
@@ -3237,14 +3237,14 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
             generateLabelInstruction(cg, TR::InstOpCode::label, node, loopStart);
             }
 
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lxv, node, regs[1], new (cg->trHeapMemory()) TR::MemoryReference(src, 0, 16, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stxv, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 0, 16, cg), regs[1]);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lxv, node, regs[1], new (cg->trHeapMemory()) TR::MemoryReference(src, 16, 16, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stxv, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 16, 16, cg), regs[1]);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lxv, node, regs[1], new (cg->trHeapMemory()) TR::MemoryReference(src, 32, 16, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stxv, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 32, 16, cg), regs[1]);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lxv, node, regs[1], new (cg->trHeapMemory()) TR::MemoryReference(src, 48, 16, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stxv, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 48, 16, cg), regs[1]);
+         generateTrg1MemInstruction(cg, TR::InstOpCode::lxv, node, regs[1], TR::MemoryReference::createWithDisplacement(cg, src, 0, 16));
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stxv, node, TR::MemoryReference::createWithDisplacement(cg, dst, 0, 16), regs[1]);
+         generateTrg1MemInstruction(cg, TR::InstOpCode::lxv, node, regs[1], TR::MemoryReference::createWithDisplacement(cg, src, 16, 16));
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stxv, node, TR::MemoryReference::createWithDisplacement(cg, dst, 16, 16), regs[1]);
+         generateTrg1MemInstruction(cg, TR::InstOpCode::lxv, node, regs[1], TR::MemoryReference::createWithDisplacement(cg, src, 32, 16));
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stxv, node, TR::MemoryReference::createWithDisplacement(cg, dst, 32, 16), regs[1]);
+         generateTrg1MemInstruction(cg, TR::InstOpCode::lxv, node, regs[1], TR::MemoryReference::createWithDisplacement(cg, src, 48, 16));
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stxv, node, TR::MemoryReference::createWithDisplacement(cg, dst, 48, 16), regs[1]);
 
          if (iteration64 > 1)
             {
@@ -3258,8 +3258,8 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
 
       for (int32_t i = 0; i < (residue64>>4); i++)
          {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lxv, node, regs[1], new (cg->trHeapMemory()) TR::MemoryReference(src, standingOffset+i*16, 16, cg));
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stxv, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, standingOffset+i*16, 16, cg), regs[1]);
+         generateTrg1MemInstruction(cg, TR::InstOpCode::lxv, node, regs[1], TR::MemoryReference::createWithDisplacement(cg, src, standingOffset+i*16, 16));
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stxv, node, TR::MemoryReference::createWithDisplacement(cg, dst, standingOffset+i*16, 16), regs[1]);
          }
 
       if ((residue64 & 0xF) != 0)
@@ -3268,20 +3268,20 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
          switch (residue64 & 0xF)
             {
             case 1:
-               generateTrg1MemInstruction(cg, TR::InstOpCode::lbz, node, regs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, standingOffset, 1, cg));
-               generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, standingOffset, 1, cg), regs[0]);
+               generateTrg1MemInstruction(cg, TR::InstOpCode::lbz, node, regs[0], TR::MemoryReference::createWithDisplacement(cg, src, standingOffset, 1));
+               generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, TR::MemoryReference::createWithDisplacement(cg, dst, standingOffset, 1), regs[0]);
                break;
             case 2:
-               generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, regs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, standingOffset, 2, cg));
-               generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, standingOffset, 2, cg), regs[0]);
+               generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, regs[0], TR::MemoryReference::createWithDisplacement(cg, src, standingOffset, 2));
+               generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node, TR::MemoryReference::createWithDisplacement(cg, dst, standingOffset, 2), regs[0]);
                break;
             case 4:
-               generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, regs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, standingOffset, 4, cg));
-               generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, standingOffset, 4, cg), regs[0]);
+               generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, regs[0], TR::MemoryReference::createWithDisplacement(cg, src, standingOffset, 4));
+               generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, TR::MemoryReference::createWithDisplacement(cg, dst, standingOffset, 4), regs[0]);
                break;
             case 8:
-               generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, regs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, standingOffset, 8, cg));
-               generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, standingOffset, 8, cg), regs[0]);
+               generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, regs[0], TR::MemoryReference::createWithDisplacement(cg, src, standingOffset, 8));
+               generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, TR::MemoryReference::createWithDisplacement(cg, dst, standingOffset, 8), regs[0]);
                break;
             default:
                generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, regs[0], residue64 & 0xF);
@@ -3357,33 +3357,33 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
             }
          if (supportsLEArrayCopyInline)
             {
-            generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fpRegs[3], new (cg->trHeapMemory()) TR::MemoryReference(src, 0, memRefSize, cg));
-            generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fpRegs[2], new (cg->trHeapMemory()) TR::MemoryReference(src, memRefSize, memRefSize, cg));
-            generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fpRegs[1], new (cg->trHeapMemory()) TR::MemoryReference(src, 2*memRefSize, memRefSize, cg));
-            generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fpRegs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, 3*memRefSize, memRefSize, cg));
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fpRegs[3], TR::MemoryReference::createWithDisplacement(cg, src, 0, memRefSize));
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fpRegs[2], TR::MemoryReference::createWithDisplacement(cg, src, memRefSize, memRefSize));
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fpRegs[1], TR::MemoryReference::createWithDisplacement(cg, src, 2*memRefSize, memRefSize));
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, fpRegs[0], TR::MemoryReference::createWithDisplacement(cg, src, 3*memRefSize, memRefSize));
             }
          else
             {
-            generateTrg1MemInstruction(cg, load, node, regs[3], new (cg->trHeapMemory()) TR::MemoryReference(src, 0, memRefSize, cg));
-            generateTrg1MemInstruction(cg, load, node, regs[2], new (cg->trHeapMemory()) TR::MemoryReference(src, memRefSize, memRefSize, cg));
-            generateTrg1MemInstruction(cg, load, node, regs[1], new (cg->trHeapMemory()) TR::MemoryReference(src, 2*memRefSize, memRefSize, cg));
-            generateTrg1MemInstruction(cg, load, node, regs[0], new (cg->trHeapMemory()) TR::MemoryReference(src, 3*memRefSize, memRefSize, cg));
+            generateTrg1MemInstruction(cg, load, node, regs[3], TR::MemoryReference::createWithDisplacement(cg, src, 0, memRefSize));
+            generateTrg1MemInstruction(cg, load, node, regs[2], TR::MemoryReference::createWithDisplacement(cg, src, memRefSize, memRefSize));
+            generateTrg1MemInstruction(cg, load, node, regs[1], TR::MemoryReference::createWithDisplacement(cg, src, 2*memRefSize, memRefSize));
+            generateTrg1MemInstruction(cg, load, node, regs[0], TR::MemoryReference::createWithDisplacement(cg, src, 3*memRefSize, memRefSize));
             }
          if (groups != 1)
             generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, src, src, 4*memRefSize);
          if (supportsLEArrayCopyInline)
             {
-            generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 0, memRefSize, cg), fpRegs[3]);
-            generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, memRefSize, memRefSize, cg), fpRegs[2]);
-            generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 2*memRefSize, memRefSize, cg), fpRegs[1]);
-            generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 3*memRefSize, memRefSize, cg), fpRegs[0]);
+            generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, TR::MemoryReference::createWithDisplacement(cg, dst, 0, memRefSize), fpRegs[3]);
+            generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, TR::MemoryReference::createWithDisplacement(cg, dst, memRefSize, memRefSize), fpRegs[2]);
+            generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, TR::MemoryReference::createWithDisplacement(cg, dst, 2*memRefSize, memRefSize), fpRegs[1]);
+            generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, TR::MemoryReference::createWithDisplacement(cg, dst, 3*memRefSize, memRefSize), fpRegs[0]);
             }
          else
             {
-            generateMemSrc1Instruction(cg, store, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 0, memRefSize, cg), regs[3]);
-            generateMemSrc1Instruction(cg, store, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, memRefSize, memRefSize, cg), regs[2]);
-            generateMemSrc1Instruction(cg, store, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 2*memRefSize, memRefSize, cg), regs[1]);
-            generateMemSrc1Instruction(cg, store, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, 3*memRefSize, memRefSize, cg), regs[0]);
+            generateMemSrc1Instruction(cg, store, node, TR::MemoryReference::createWithDisplacement(cg, dst, 0, memRefSize), regs[3]);
+            generateMemSrc1Instruction(cg, store, node, TR::MemoryReference::createWithDisplacement(cg, dst, memRefSize, memRefSize), regs[2]);
+            generateMemSrc1Instruction(cg, store, node, TR::MemoryReference::createWithDisplacement(cg, dst, 2*memRefSize, memRefSize), regs[1]);
+            generateMemSrc1Instruction(cg, store, node, TR::MemoryReference::createWithDisplacement(cg, dst, 3*memRefSize, memRefSize), regs[0]);
             }
          if (groups != 1)
             {
@@ -3403,16 +3403,16 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
             TR::Register *oneReg = fpRegs[fpRegIx++];
             if (fpRegIx>3 || fpRegs[fpRegIx]==NULL)
                fpRegIx = 0;
-            generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, oneReg, new (cg->trHeapMemory()) TR::MemoryReference(src, ix, memRefSize, cg));
-            generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, memRefSize, cg), oneReg);
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, oneReg, TR::MemoryReference::createWithDisplacement(cg, src, ix, memRefSize));
+            generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, TR::MemoryReference::createWithDisplacement(cg, dst, ix, memRefSize), oneReg);
             }
          else
             {
             TR::Register *oneReg = regs[regIx++];
             if (regIx>3 || regs[regIx]==NULL)
                regIx = 0;
-            generateTrg1MemInstruction(cg, load, node, oneReg, new (cg->trHeapMemory()) TR::MemoryReference(src, ix, memRefSize, cg));
-            generateMemSrc1Instruction(cg, store, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, memRefSize, cg), oneReg);
+            generateTrg1MemInstruction(cg, load, node, oneReg, TR::MemoryReference::createWithDisplacement(cg, src, ix, memRefSize));
+            generateMemSrc1Instruction(cg, store, node, TR::MemoryReference::createWithDisplacement(cg, dst, ix, memRefSize), oneReg);
             }
          }
    
@@ -3425,16 +3425,16 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
                TR::Register *oneReg = fpRegs[fpRegIx++];
                if (fpRegIx>3 || fpRegs[fpRegIx]==NULL)
                   fpRegIx = 0;
-               generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, oneReg, new (cg->trHeapMemory()) TR::MemoryReference(src, ix, 4, cg));
-               generateMemSrc1Instruction(cg, TR::InstOpCode::stfs, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, 4, cg), oneReg);
+               generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, oneReg, TR::MemoryReference::createWithDisplacement(cg, src, ix, 4));
+               generateMemSrc1Instruction(cg, TR::InstOpCode::stfs, node, TR::MemoryReference::createWithDisplacement(cg, dst, ix, 4), oneReg);
                }
             else
                {
                TR::Register *oneReg = regs[regIx++];
                if (regIx>3 || regs[regIx]==NULL)
                   regIx = 0;
-               generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, oneReg, new (cg->trHeapMemory()) TR::MemoryReference(src, ix, 4, cg));
-               generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, 4, cg), oneReg);
+               generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, oneReg, TR::MemoryReference::createWithDisplacement(cg, src, ix, 4));
+               generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, TR::MemoryReference::createWithDisplacement(cg, dst, ix, 4), oneReg);
                }
             ix += 4;
             }
@@ -3443,14 +3443,14 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
             TR::Register *oneReg = regs[regIx++];
             if (regIx>3 || regs[regIx]==NULL)
                regIx = 0;
-            generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, oneReg, new (cg->trHeapMemory()) TR::MemoryReference(src, ix, 2, cg));
-            generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, 2, cg), oneReg);
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, oneReg, TR::MemoryReference::createWithDisplacement(cg, src, ix, 2));
+            generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node, TR::MemoryReference::createWithDisplacement(cg, dst, ix, 2), oneReg);
             ix += 2;
             }
          if (residual & 1)
             {
-            generateTrg1MemInstruction(cg, TR::InstOpCode::lbz, node, regs[regIx], new (cg->trHeapMemory()) TR::MemoryReference(src, ix, 1, cg));
-            generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, new (cg->trHeapMemory()) TR::MemoryReference(dst, ix, 1, cg), regs[regIx]);
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lbz, node, regs[regIx], TR::MemoryReference::createWithDisplacement(cg, src, ix, 1));
+            generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, TR::MemoryReference::createWithDisplacement(cg, dst, ix, 1), regs[regIx]);
             }
          }
       }
@@ -3903,8 +3903,8 @@ static bool loadValue8(TR::Node *node, int valueSize, int length, bool constFill
 
 static inline void loadArrayCmpSources(TR::Node *node, TR::InstOpCode::Mnemonic Op_load, uint32_t loadSize, uint32_t byteLen, TR::Register *src1, TR::Register *src2, TR::Register *src1Addr, TR::Register *src2Addr, TR::CodeGenerator *cg)
    {
-   generateTrg1MemInstruction (cg,TR::InstOpCode::Op_load, node, src1, new (cg->trHeapMemory()) TR::MemoryReference (src1Addr, 0, loadSize, cg));
-   generateTrg1MemInstruction (cg,TR::InstOpCode::Op_load, node, src2, new (cg->trHeapMemory()) TR::MemoryReference (src2Addr, 0, loadSize, cg));
+   generateTrg1MemInstruction (cg,TR::InstOpCode::Op_load, node, src1, TR::MemoryReference::createWithDisplacement(cg, src1Addr, 0, loadSize));
+   generateTrg1MemInstruction (cg,TR::InstOpCode::Op_load, node, src2, TR::MemoryReference::createWithDisplacement(cg, src2Addr, 0, loadSize));
    if (loadSize != byteLen)
       {
       TR_ASSERT(loadSize == 4 || loadSize == 8,"invalid load size\n");
@@ -3993,13 +3993,13 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
 
    if (byteLen == 4)
       {
-      generateTrg1MemInstruction (cg, TR::InstOpCode::lwzu, node, src1Reg, new (cg->trHeapMemory()) TR::MemoryReference (src1AddrReg, 4, 4, cg));
-      generateTrg1MemInstruction (cg, TR::InstOpCode::lwzu, node, src2Reg, new (cg->trHeapMemory()) TR::MemoryReference (src2AddrReg, 4, 4, cg));
+      generateTrg1MemInstruction (cg, TR::InstOpCode::lwzu, node, src1Reg, TR::MemoryReference::createWithDisplacement(cg, src1AddrReg, 4, 4));
+      generateTrg1MemInstruction (cg, TR::InstOpCode::lwzu, node, src2Reg, TR::MemoryReference::createWithDisplacement(cg, src2AddrReg, 4, 4));
       }
    else
       {
-      generateTrg1MemInstruction (cg, TR::InstOpCode::ldu, node, src1Reg, new (cg->trHeapMemory()) TR::MemoryReference (src1AddrReg, 8, 8, cg));
-      generateTrg1MemInstruction (cg, TR::InstOpCode::ldu, node, src2Reg, new (cg->trHeapMemory()) TR::MemoryReference (src2AddrReg, 8, 8, cg));
+      generateTrg1MemInstruction (cg, TR::InstOpCode::ldu, node, src1Reg, TR::MemoryReference::createWithDisplacement(cg, src1AddrReg, 8, 8));
+      generateTrg1MemInstruction (cg, TR::InstOpCode::ldu, node, src2Reg, TR::MemoryReference::createWithDisplacement(cg, src2AddrReg, 8, 8));
       }
 
    TR::Register *ccReg =  cg->allocateRegister(TR_GPR);
@@ -4033,8 +4033,8 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
 
    generateLabelInstruction(cg, TR::InstOpCode::label, node, residueLoopStartLabel);
 
-   generateTrg1MemInstruction (cg, TR::InstOpCode::lbzu, node, src1Reg, new (cg->trHeapMemory()) TR::MemoryReference (src1AddrReg, 1, 1, cg));
-   generateTrg1MemInstruction (cg, TR::InstOpCode::lbzu, node, src2Reg, new (cg->trHeapMemory()) TR::MemoryReference (src2AddrReg, 1, 1, cg));
+   generateTrg1MemInstruction (cg, TR::InstOpCode::lbzu, node, src1Reg, TR::MemoryReference::createWithDisplacement(cg, src1AddrReg, 1, 1));
+   generateTrg1MemInstruction (cg, TR::InstOpCode::lbzu, node, src2Reg, TR::MemoryReference::createWithDisplacement(cg, src2AddrReg, 1, 1));
 
    generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp4, node, condReg, src1Reg, src2Reg);
    generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, cntrLabel, condReg);
@@ -4217,42 +4217,42 @@ TR::Register *OMR::Power::TreeEvaluator::setmemoryEvaluator(TR::Node *node, TR::
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, tempReg, lengthReg, 5);
    generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, tempReg);
    generateLabelInstruction(cg, TR::InstOpCode::label, node, loopStartLabel);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 8, cg), valueReg);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 8, 8, cg), valueReg);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 16, 8, cg), valueReg);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 24, 8, cg), valueReg);
+   generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 0, 8), valueReg);
+   generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 8, 8), valueReg);
+   generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 16, 8), valueReg);
+   generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 24, 8), valueReg);
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 32);
    generateConditionalBranchInstruction(cg, TR::InstOpCode::bdnz, node, loopStartLabel, cndReg);
 
    generateLabelInstruction(cg, TR::InstOpCode::label, node, residualLabel); //check 16 aligned
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tempReg, lengthReg, 16);
    generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, label8aligned, cndReg);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 8, cg), valueReg);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 8, 8, cg), valueReg);
+   generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 0, 8), valueReg);
+   generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 8, 8), valueReg);
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 16);
 
    generateLabelInstruction(cg, TR::InstOpCode::label, node, label8aligned); //check 8 aligned
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tempReg, lengthReg, 8);
    generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, label4aligned, cndReg);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 8, cg), valueReg);
+   generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 0, 8), valueReg);
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 8);
 
    generateLabelInstruction(cg, TR::InstOpCode::label, node, label4aligned); //check 4 aligned
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tempReg, lengthReg, 4);
    generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, label2aligned, cndReg);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 4, cg), valueReg);
+   generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 0, 4), valueReg);
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 4);
 
    generateLabelInstruction(cg, TR::InstOpCode::label, node, label2aligned); //check 2 aligned
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tempReg, lengthReg, 2);
    generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, label1aligned, cndReg);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 2, cg), valueReg);
+   generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node, TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 0, 2), valueReg);
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, dstAddrReg, dstAddrReg, 2);
 
    generateLabelInstruction(cg, TR::InstOpCode::label, node, label1aligned); //check 1 aligned
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::andi_r, node, tempReg, lengthReg, 1);
    generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, doneLabel, cndReg);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, new (cg->trHeapMemory()) TR::MemoryReference(dstAddrReg, 0, 1, cg), valueReg);
+   generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, TR::MemoryReference::createWithDisplacement(cg, dstAddrReg, 0, 1), valueReg);
 
    generateDepLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, conditions);
 
@@ -4914,8 +4914,8 @@ TR::Register *OMR::Power::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::C
       indexReg = cg->evaluate(secondChild);
 
    TR::MemoryReference *memRef = indexReg ?
-      new (cg->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, sizeChild->getInt(), cg) :
-      new (cg->trHeapMemory()) TR::MemoryReference(NULL, baseReg, sizeChild->getInt(), cg);
+      TR::MemoryReference::createWithIndexReg(cg, baseReg, indexReg, sizeChild->getInt()) :
+      TR::MemoryReference::createWithIndexReg(cg, NULL, baseReg, sizeChild->getInt());
 
    generateMemInstruction(cg, prefetchOp, node, memRef);
 
@@ -5042,7 +5042,7 @@ static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool
    const uint8_t len = isLong ? 8 : 4;
 
    generateTrg1MemInstruction(cg, isLong ? TR::InstOpCode::ldarx : TR::InstOpCode::lwarx, node, oldValueReg,
-         new (cg->trHeapMemory()) TR::MemoryReference(0, valueAddrReg, len, cg));
+         TR::MemoryReference::createWithIndexReg(cg, 0, valueAddrReg, len));
 
    if (isAddOp)
       {
@@ -5062,7 +5062,7 @@ static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool
       deltaReg = NULL;
       }
 
-   generateMemSrc1Instruction(cg, isLong ? TR::InstOpCode::stdcx_r : TR::InstOpCode::stwcx_r, node, new (cg->trHeapMemory()) TR::MemoryReference(0, valueAddrReg, len, cg),
+   generateMemSrc1Instruction(cg, isLong ? TR::InstOpCode::stdcx_r : TR::InstOpCode::stwcx_r, node, TR::MemoryReference::createWithIndexReg(cg, 0, valueAddrReg, len),
          newValueReg);
 
    // We expect this store is usually successful, i.e., the following branch will not be taken
@@ -5248,7 +5248,7 @@ TR::Register *OMR::Power::TreeEvaluator::loadaddrEvaluator(TR::Node *node, TR::C
    TR::MemoryReference *mref;
    TR::Compilation *comp = cg->comp();
 
-   mref = new (cg->trHeapMemory()) TR::MemoryReference(node, node->getSymbolReference(), 4, cg);
+   mref = TR::MemoryReference::createWithSymRef(cg, node, node->getSymbolReference(), 4);
 
    if (mref->getUnresolvedSnippet() != NULL)
       {
@@ -5485,15 +5485,15 @@ TR::Register *OMR::Power::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Co
          TR::Register *tempReg = cg->allocateRegister();
          if (cg->comp()->target().is64Bit() && !comp->useCompressedPointers())
             {
-            TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(srcReg, offset, 8, cg);
+            TR::MemoryReference *tempMR = TR::MemoryReference::createWithDisplacement(cg, srcReg, offset, 8);
             generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, tempReg, tempMR);
             }
          else
             {
-            TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(srcReg, offset, 4, cg);
+            TR::MemoryReference *tempMR = TR::MemoryReference::createWithDisplacement(cg, srcReg, offset, 4);
             generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tempReg, tempMR);
             }
-         TR::MemoryReference *targetMR = new (cg->trHeapMemory()) TR::MemoryReference(tempReg, (int32_t)0, 4, cg);
+         TR::MemoryReference *targetMR = TR::MemoryReference::createWithDisplacement(cg, tempReg, (int32_t)0, 4);
          targetMR->forceIndexedForm(node, cg);
          generateMemInstruction(cg, TR::InstOpCode::dcbt, node, targetMR);
          cg->stopUsingRegister(tempReg);
@@ -5666,10 +5666,8 @@ TR::Register *OMR::Power::TreeEvaluator::cmpsetEvaluator(
    TR::Register *condReg = cg->allocateRegister(TR_CCR);
    TR::Register *cr0     = cg->allocateRegister(TR_CCR);
 
-   TR::MemoryReference *ldMemRef = new (cg->trHeapMemory())
-      TR::MemoryReference(0, ptrReg, size, cg);
-   TR::MemoryReference *stMemRef = new (cg->trHeapMemory())
-      TR::MemoryReference(0, ptrReg, size, cg);
+   TR::MemoryReference *ldMemRef = TR::MemoryReference::createWithIndexReg(cg, 0, ptrReg, size);
+   TR::MemoryReference *stMemRef = TR::MemoryReference::createWithIndexReg(cg, 0, ptrReg, size);
 
    TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
    TR::LabelSymbol *endLabel   = generateLabelSymbol(cg);
@@ -5804,7 +5802,7 @@ void OMR::Power::TreeEvaluator::preserveTOCRegister(TR::Node *node, TR::CodeGene
 
    int32_t callerSaveTOCOffset = (cg->comp()->target().cpu.isBigEndian() ? 5 : 3) *  TR::Compiler->om.sizeofReferenceAddress();
 
-   cursor = generateMemSrc1Instruction(cg,TR::InstOpCode::Op_st, node, new (cg->trHeapMemory()) TR::MemoryReference(grSysStackReg, callerSaveTOCOffset, TR::Compiler->om.sizeofReferenceAddress(), cg), grTOCReg, cursor);
+   cursor = generateMemSrc1Instruction(cg,TR::InstOpCode::Op_st, node, TR::MemoryReference::createWithDisplacement(cg, grSysStackReg, callerSaveTOCOffset, TR::Compiler->om.sizeofReferenceAddress()), grTOCReg, cursor);
 
    cg->setAppendInstruction(cursor);
 }
@@ -5818,7 +5816,7 @@ void OMR::Power::TreeEvaluator::restoreTOCRegister(TR::Node *node, TR::CodeGener
 
    int32_t callerSaveTOCOffset = (cg->comp()->target().cpu.isBigEndian() ? 5 : 3) *  TR::Compiler->om.sizeofReferenceAddress();
 
-   generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, grTOCReg, new (cg->trHeapMemory()) TR::MemoryReference(grSysStackReg, callerSaveTOCOffset, TR::Compiler->om.sizeofReferenceAddress(), cg));
+   generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, grTOCReg, TR::MemoryReference::createWithDisplacement(cg, grSysStackReg, callerSaveTOCOffset, TR::Compiler->om.sizeofReferenceAddress()));
 }
 
 TR::Register *OMR::Power::TreeEvaluator::retrieveTOCRegister(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions *dependencies)
@@ -5837,7 +5835,7 @@ TR::Register * OMR::Power::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR:
        firstChild->getOpCode().isMemoryReference() &&
        firstChild->getReferenceCount() == 1)
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(firstChild, 4, cg);
+      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, firstChild, 4);
       tempMR->forceIndexedForm(firstChild, cg);
       generateTrg1MemInstruction(cg, TR::InstOpCode::lwbrx, node, tgtRegister, tempMR);
       tempMR->decNodeReferenceCounts(cg);

@@ -206,6 +206,7 @@ class InstOpCode: public OMR::InstOpCode
             return 8;
          default:
             TR_ASSERT_FATAL(false, "Invalid template format for %s", getMnemonicName());
+            return 0;
          }
       }
 
@@ -223,6 +224,7 @@ class InstOpCode: public OMR::InstOpCode
             return 12;
          default:
             TR_ASSERT_FATAL(false, "Invalid template format for %s", getMnemonicName());
+            return 0;
          }
       }
 

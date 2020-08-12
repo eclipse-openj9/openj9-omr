@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -129,6 +129,7 @@ typedef struct J9HashTableState {
 	void **pointerToCurrentNode;
 	uintptr_t iterateState;
 	struct J9PoolState poolState;
+	uintptr_t flags;
 } J9HashTableState;
 
 #ifdef __cplusplus

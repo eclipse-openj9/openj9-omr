@@ -379,10 +379,6 @@ private:
          case TR::luconst:
          case TR::cconst:
 
-         //Call and Return
-         case TR::iureturn: 
-         case TR::lureturn: 
-
          //Add and Subtract
          case TR::aiuadd: 
          case TR::aluadd: 

@@ -555,8 +555,6 @@
    indirectStoreSimplifier, // TR::iustorei
    indirectStoreSimplifier, // TR::lustorei
    indirectStoreSimplifier, // TR::bustorei
-   dftSimplifier,           // TR::iureturn
-   dftSimplifier,           // TR::lureturn
    iaddSimplifier,          // TR::iuadd
    laddSimplifier,          // TR::luadd
    baddSimplifier,          // TR::buadd

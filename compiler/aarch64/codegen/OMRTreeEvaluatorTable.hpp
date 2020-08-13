@@ -531,8 +531,6 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iustoreiEvaluator ,	// TR::iustorei		// store indirect unsigned integer       (child1 a; child2 i)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lustoreiEvaluator ,	// TR::lustorei		// store indirect unsigned long integer  (child1 a; child2 l)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bustoreiEvaluator ,	// TR::bustorei		// store indirect unsigned byte          (child1 a; child2 b)
-    TR::TreeEvaluator::ireturnEvaluator, // TR::iureturn		// return an unsigned integer
-    TR::TreeEvaluator::lreturnEvaluator, // TR::lureturn		// return a long unsigned integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iuaddEvaluator ,	// TR::iuadd		// add 2 unsigned integers
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::luaddEvaluator ,	// TR::luadd		// add 2 unsigned long integers
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::buaddEvaluator ,	// TR::buadd		// add 2 unsigned bytes

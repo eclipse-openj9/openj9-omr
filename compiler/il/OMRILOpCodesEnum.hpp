@@ -593,8 +593,6 @@
    iustorei, // store indirect unsigned integer       (child1 a, child2 i)
    lustorei, // store indirect unsigned long integer  (child1 a, child2 l)
    bustorei, // store indirect unsigned byte          (child1 a, child2 b)
-   iureturn, // return an unsigned integer
-   lureturn, // return a long unsigned integer
    iuadd,    // add 2 unsigned integers
    luadd,    // add 2 unsigned long integers
    buadd,    // add 2 unsigned bytes

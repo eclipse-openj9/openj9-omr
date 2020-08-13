@@ -328,7 +328,7 @@ CompareCondition evaluateDualIntCompareToConditionRegister(
    return CompareCondition::eq;
    }
 
-CompareCondition evaluateIntCompareToConditionRegister(
+void evaluateThreeWayIntCompareToConditionRegister(
       TR::Register *condReg,
       TR::Node *node,
       TR::Node *firstChild,
@@ -355,11 +355,10 @@ CompareCondition evaluateIntCompareToConditionRegister(
          is64Bit = cg->comp()->target().is64Bit();
          break;
       default:
-         TR_ASSERT_FATAL_WITH_NODE(node, false, "Cannot call evaluateIntCompareToConditionRegister with data type %s", TR::DataType::getName(compareInfo.type));
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Cannot call evaluateThreeWayIntCompareToConditionRegister with data type %s", TR::DataType::getName(compareInfo.type));
       }
 
-   if (is64Bit && !cg->comp()->target().is64Bit())
-      return evaluateDualIntCompareToConditionRegister(condReg, node, firstChild, secondChild, compareInfo, cg);
+   TR_ASSERT_FATAL(!is64Bit || cg->comp()->target().is64Bit(), "Cannot call evaluateThreeWayIntCompareToConditionRegister for 64-bit values on 32-bit");
 
    if (is64Bit)
       {
@@ -406,7 +405,21 @@ CompareCondition evaluateIntCompareToConditionRegister(
       }
 
    stopUsingExtendedRegister(firstReg, firstChild, cg);
+   }
 
+CompareCondition evaluateIntCompareToConditionRegister(
+   TR::Register *condReg,
+   TR::Node *node,
+   TR::Node *firstChild,
+   TR::Node *secondChild,
+   const CompareInfo& compareInfo,
+   TR::CodeGenerator *cg
+)
+   {
+   if (compareInfo.type == TR::Int64 && !cg->comp()->target().is64Bit())
+      return evaluateDualIntCompareToConditionRegister(condReg, node, firstChild, secondChild, compareInfo, cg);
+
+   evaluateThreeWayIntCompareToConditionRegister(condReg, node, firstChild, secondChild, compareInfo, cg);
    return compareInfo.cond;
    }
 
@@ -2084,6 +2097,21 @@ TR::Register *intEqualityEvaluator(TR::Node *node, bool flipResult, TR::DataType
       {
       generateCompareBranchSequence(trgReg, node, firstChild, secondChild, compareInfo, cg);
       }
+   else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
+      {
+      TR::Register *condReg = cg->allocateRegister(TR_CCR);
+
+      evaluateThreeWayIntCompareToConditionRegister(condReg, node, firstChild, secondChild, compareInfo, cg);
+
+      // By taking the lower bit of setb, we can compute the result of (x < y || x > y), which is
+      // the same as x != y for integers.
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::setb, node, trgReg, condReg);
+      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, trgReg, trgReg, 0, 1);
+      if (!flipResult)
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xori, node, trgReg, trgReg, 1);
+
+      cg->stopUsingRegister(condReg);
+      }
    else
       {
       TR::Register *src1Reg = evaluateAndSignExtend(firstChild, false, cg);
@@ -2231,6 +2259,33 @@ TR::Register *intOrderEvaluator(TR::Node *node, const CompareInfo& compareInfo, 
    if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
       {
       generateCompareSetBoolean(trgReg, node, firstChild, secondChild, compareInfo, cg);
+      }
+   else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
+      {
+      CRCompareCondition crCond = compareConditionInCR(compareInfo.cond);
+      TR::Register *condReg = cg->allocateRegister(TR_CCR);
+
+      evaluateThreeWayIntCompareToConditionRegister(condReg, node, firstChild, secondChild, compareInfo, cg);
+
+      if (crCond.crcc == TR::RealRegister::CRCC_LT)
+         {
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::setb, node, trgReg, condReg);
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, trgReg, trgReg, 1, 1);
+         if (crCond.isReversed)
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xori, node, trgReg, trgReg, 1);
+         }
+      else
+         {
+         TR_ASSERT_FATAL_WITH_NODE(node, crCond.crcc == TR::RealRegister::CRCC_GT, "Invalid CRCC %d in intOrderEvaluator", crCond.crcc);
+
+         generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::crxor, node, condReg, condReg, condReg,
+            (TR::RealRegister::CRCC_LT << TR::RealRegister::pos_RT) | (TR::RealRegister::CRCC_LT << TR::RealRegister::pos_RA) | (TR::RealRegister::CRCC_LT << TR::RealRegister::pos_RB));
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::setb, node, trgReg, condReg);
+         if (crCond.isReversed)
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xori, node, trgReg, trgReg, 1);
+         }
+
+      cg->stopUsingRegister(condReg);
       }
    else if (isSimpleSignedCompareToKnownSign(secondChild, compareInfo, cg))
       {
@@ -2604,9 +2659,93 @@ TR::Register *floatCompareEvaluator(TR::Node *node, const CompareInfo& compareIn
    TR::Register *trgReg = cg->allocateRegister();
 
    if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
+      {
       generateCompareSetBoolean(trgReg, node, firstChild, secondChild, compareInfo, cg);
+      }
+   else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
+      {
+      CRCompareCondition crCond = compareConditionInCR(compareInfo.cond);
+      TR::Register *condReg = cg->allocateRegister(TR_CCR);
+      TR::Register *lhsReg = cg->evaluate(firstChild);
+      TR::Register *rhsReg = cg->evaluate(secondChild);
+
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, condReg, lhsReg, rhsReg);
+
+      switch (crCond.crcc)
+         {
+         case TR::RealRegister::CRCC_EQ:
+            // We can compute (x < y || x > y) by taking the negation of the lowest bit of the
+            // result of setb. However, for *cmpeq and *cmpneu, we actually need to compute
+            // (x < y || x > y || is_unordered(x, y)), so we set the LT bit if the FU bit is
+            // set to get setb to return -1.
+            if (crCond.isReversed == compareInfo.isUnsignedOrUnordered)
+               generateTrg1Src2ImmInstruction(
+                  cg,
+                  TR::InstOpCode::crxor,
+                  node,
+                  condReg,
+                  condReg,
+                  condReg,
+                  (TR::RealRegister::CRCC_LT << TR::RealRegister::pos_RT) | (TR::RealRegister::CRCC_LT << TR::RealRegister::pos_RA) | (TR::RealRegister::CRCC_FU << TR::RealRegister::pos_RB)
+               );
+
+            generateTrg1Src1Instruction(cg, TR::InstOpCode::setb, node, trgReg, condReg);
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, trgReg, trgReg, 0, 1);
+            if (!crCond.isReversed)
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xori, node, trgReg, trgReg, 1);
+            break;
+
+         case TR::RealRegister::CRCC_LT:
+            // To check for x < y, we can take the sign bit of the result of setb. We do need to
+            // take unordered operands into account, though.
+            if (crCond.isReversed != compareInfo.isUnsignedOrUnordered)
+               generateTrg1Src2ImmInstruction(
+                  cg,
+                  TR::InstOpCode::crxor,
+                  node,
+                  condReg,
+                  condReg,
+                  condReg,
+                  (TR::RealRegister::CRCC_LT << TR::RealRegister::pos_RT) | (TR::RealRegister::CRCC_LT << TR::RealRegister::pos_RA) | (TR::RealRegister::CRCC_FU << TR::RealRegister::pos_RB)
+               );
+
+            generateTrg1Src1Instruction(cg, TR::InstOpCode::setb, node, trgReg, condReg);
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, trgReg, trgReg, 1, 1);
+            if (crCond.isReversed)
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xori, node, trgReg, trgReg, 1);
+            break;
+
+         case TR::RealRegister::CRCC_GT:
+            // To check for x > y, we can simply clear the LT bit of the CR and then take the
+            // result of setb directly. We do need to take unordered operands into account, though.
+            if (crCond.isReversed != compareInfo.isUnsignedOrUnordered)
+               generateTrg1Src2ImmInstruction(
+                  cg,
+                  TR::InstOpCode::crxor,
+                  node,
+                  condReg,
+                  condReg,
+                  condReg,
+                  (TR::RealRegister::CRCC_GT << TR::RealRegister::pos_RT) | (TR::RealRegister::CRCC_GT << TR::RealRegister::pos_RA) | (TR::RealRegister::CRCC_FU << TR::RealRegister::pos_RB)
+               );
+
+            generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::crxor, node, condReg, condReg, condReg,
+               (TR::RealRegister::CRCC_LT << TR::RealRegister::pos_RT) | (TR::RealRegister::CRCC_LT << TR::RealRegister::pos_RA) | (TR::RealRegister::CRCC_LT << TR::RealRegister::pos_RB));
+            generateTrg1Src1Instruction(cg, TR::InstOpCode::setb, node, trgReg, condReg);
+            if (crCond.isReversed)
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xori, node, trgReg, trgReg, 1);
+            break;
+
+         default:
+            TR_ASSERT_FATAL_WITH_NODE(node, false, "Invalid CRCC %d in floatCompareEvaluator", crCond.crcc);
+         }
+
+      cg->stopUsingRegister(condReg);
+      }
    else
+      {
       generateCompareBranchSequence(trgReg, node, firstChild, secondChild, compareInfo, cg);
+      }
 
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);

@@ -583,7 +583,7 @@ fstoreHelper(TR::Node * node, TR::CodeGenerator * cg)
 
    TR::Register * valueReg = cg->evaluate(valueChild);
 
-   TR::MemoryReference * tempMR = generateS390MemoryReference(node, cg);
+   TR::MemoryReference * tempMR = TR::MemoryReference::create(cg, node);
 
    generateRXInstruction(cg, TR::InstOpCode::STE, node, valueReg, tempMR);
 
@@ -607,7 +607,7 @@ dstoreHelper(TR::Node * node, TR::CodeGenerator * cg)
 
    TR::Register * valueReg = cg->evaluate(valueChild);
 
-   TR::MemoryReference * tempMR = generateS390MemoryReference(node, cg, true);
+   TR::MemoryReference * tempMR = TR::MemoryReference::create(cg, node);
 
    generateRXInstruction(cg, TR::InstOpCode::STD, node, valueReg, tempMR);
 
@@ -624,7 +624,7 @@ floadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * srcMR
    TR::MemoryReference * tempMR = srcMR;
    if (tempMR == NULL)
       {
-      tempMR = generateS390MemoryReference(node, cg);
+      tempMR = TR::MemoryReference::create(cg, node);
       //traceMsg(cg->comp(), "Generated memory reference %p for node %p with offset %d",tempMR,node,tempMR->getOffset());
       }
 
@@ -641,7 +641,7 @@ dloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * srcMR
 
    if (tempMR == NULL)
       {
-      tempMR = generateS390MemoryReference(node, cg, true);
+      tempMR = TR::MemoryReference::create(cg, node);
       }
    generateRXInstruction(cg, TR::InstOpCode::LD, node, tempReg, tempMR);
    tempMR->stopUsingMemRefRegister(cg);
@@ -962,7 +962,7 @@ FPtoIntBitsTypeCoercionHelper(TR::Node * node, TR::CodeGenerator * cg)
    if (node->getFirstChild()->isSingleRefUnevaluated() &&
           node->getFirstChild()->getOpCode().isLoadVar())
       {
-      TR::MemoryReference * tempmemref = generateS390MemoryReference(node->getFirstChild(), cg);
+      TR::MemoryReference * tempmemref = TR::MemoryReference::create(cg, node->getFirstChild());
       if (nodeType == TR::Int64)
          targetReg = genericLoadHelper<64, 64, MemReg>(node, cg, tempmemref, NULL, false, true);
       else

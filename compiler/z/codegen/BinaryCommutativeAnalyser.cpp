@@ -538,7 +538,7 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
          cursor = generateRRInstruction(cg(), copyOpCode, root, nodeReg, firstRegister);
          }
 
-      TR::MemoryReference * tempMR = generateS390MemoryReference(secondChild, cg(), true);
+      TR::MemoryReference * tempMR = TR::MemoryReference::create(cg(), secondChild);
       //floating-point arithmatics don't have RXY format instructions, so no long displacement
       if (secondChild->getOpCode().isFloatingPoint())
          {
@@ -595,7 +595,7 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
          }
 
       TR::Node* loadNode = isLoadNodeNested ? firstChild->getFirstChild() : firstChild;
-      TR::MemoryReference * tempMR = generateS390MemoryReference(loadNode, cg(), true);
+      TR::MemoryReference * tempMR = TR::MemoryReference::create(cg(), loadNode);
 
       //floating-point arithmatics don't have RXY format instructions, so no long displacement
       if (firstChild->getOpCode().isFloatingPoint())
@@ -858,7 +858,7 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
          cursor = generateRRInstruction(cg(), copyOpCode, root, tempReg, firstRegister);
          }
 
-      TR::MemoryReference * tempMR = generateS390MemoryReference(is16BitMemory2Operand ? secondChild->getFirstChild() : secondChild, cg());
+      TR::MemoryReference * tempMR = TR::MemoryReference::create(cg(), is16BitMemory2Operand ? secondChild->getFirstChild() : secondChild);
 
       generateRXInstruction(cg(), memToRegOpCode, root, tempReg, tempMR);
       root->setRegister(tempReg);
@@ -898,7 +898,7 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
          cursor = generateRRInstruction(cg(), copyOpCode, root, tempReg, secondRegister);
          }
 
-      TR::MemoryReference * tempMR = generateS390MemoryReference(firstChild, cg());
+      TR::MemoryReference * tempMR = TR::MemoryReference::create(cg(), firstChild);
 
       generateRXInstruction(cg(), memToRegOpCode, root, tempReg, tempMR);
       root->setRegister(tempReg);

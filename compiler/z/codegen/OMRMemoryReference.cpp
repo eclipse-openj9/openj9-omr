@@ -3303,7 +3303,13 @@ OMR::Z::MemoryReference::doEvaluate(TR::Node * subTree, TR::CodeGenerator * cg)
 TR::MemoryReference*
 OMR::Z::MemoryReference::create(TR::CodeGenerator* cg, TR::Node* node)
    {
-   return generateS390MemoryReference(node, cg);
+   // The TR::MemoryReference(TR::Node*, TR::CodeGenerator*, bool); constructor (below) is made for store or load nodes
+   // that have symbol references.
+   // A symbol reference is needed to adjust memory reference displacement (TR::MemoryReference::calcDisplacement).
+   // If the node has no sym ref, this memory reference's gets a NULL symbol reference, which can lead to crashes in displacement
+   // calculations.
+   TR_ASSERT_FATAL(node->getOpCode().hasSymbolReference(), "Memory reference generation API needs a node with symbol reference\n");
+   return new (cg->trHeapMemory()) TR::MemoryReference(node, cg);
    }
 
 ///////////////////////////////////////////
@@ -3373,18 +3379,6 @@ generateS390MemoryReference(TR::Register * br, int32_t disp, TR::CodeGenerator *
    return new (cg->trHeapMemory()) TR::MemoryReference(br, disp, cg, name);
    }
 
-TR::MemoryReference *
-generateS390MemoryReference(TR::Node * node, TR::CodeGenerator * cg, bool canUseRX)
-   {
-   // The TR::MemoryReference(TR::Node*, TR::CodeGenerator*, bool); constructor (below) is made for store or load nodes
-   // that have symbol references.
-   // A symbol reference is needed to adjust memory reference displacement (TR::MemoryReference::calcDisplacement).
-   // If the node has no sym ref, this memory reference's gets a NULL symbol reference, which can lead to crashes in displacement
-   // calculations.
-   TR_ASSERT_FATAL(node->getOpCode().hasSymbolReference(), "Memory reference generation API needs a node with symbol reference\n");
-   return new (cg->trHeapMemory()) TR::MemoryReference(node, cg, canUseRX);
-   }
-
 static TR::SymbolReference * findBestSymRefForArrayCopy(TR::CodeGenerator *cg, TR::Node *arrayCopyNode, TR::Node *srcNode)
    {
    TR::SymbolReference *sym = arrayCopyNode->getSymbolReference();
@@ -3422,7 +3416,7 @@ generateS390MemoryReference(TR::CodeGenerator * cg, TR::SymbolReference *symRefF
    TR::Node * tempLoad = TR::Node::createWithSymRef(TR::iloadi, 1, 1, baseNode, symRefForAliasing);
    // dec ref count that was inc'ed in the line above so that populatememref code is not confused with refcount >1
    baseNode->decReferenceCount();
-   TR::MemoryReference * mr = generateS390MemoryReference(tempLoad, cg);
+   TR::MemoryReference * mr = TR::MemoryReference::create(cg, tempLoad);
    mr->setOffset(mr->getOffset()+disp);
    return mr;
    }

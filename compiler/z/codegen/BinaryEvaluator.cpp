@@ -1071,7 +1071,7 @@ iDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
              secondChild->getOpCode().isMemoryReference() &&
              !needCheck)
       {
-      sourceMR = generateS390MemoryReference(secondChild, cg);
+      sourceMR = TR::MemoryReference::create(cg, secondChild);
       }
    else
       {
@@ -2703,7 +2703,7 @@ OMR::Z::TreeEvaluator::imulEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       {
       // Emit MH directly
       targetRegister = cg->evaluate(regNode);
-      TR::MemoryReference* tmpMR = generateS390MemoryReference(halfwordNode->getFirstChild(), cg);
+      TR::MemoryReference* tmpMR = TR::MemoryReference::create(cg, halfwordNode->getFirstChild());
       generateRXInstruction(cg, TR::InstOpCode::MH, node, targetRegister, tmpMR);
       node->setRegister(targetRegister);
       tmpMR->stopUsingMemRefRegister(cg);

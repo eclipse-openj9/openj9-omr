@@ -35,6 +35,8 @@ namespace OMR { typedef OMR::IL ILConnector; }
 #include "il/ILOpCodes.hpp"
 #include "il/DataTypes.hpp"
 
+namespace TR { class IL; }
+
 namespace OMR
 {
 
@@ -42,6 +44,8 @@ class OMR_EXTENSIBLE IL
    {
 
    public:
+
+   TR::IL* self();
 
    static TR::ILOpCodes opCodesForConst[];
    static TR::ILOpCodes opCodesForDirectLoad[];
@@ -72,6 +76,21 @@ class OMR_EXTENSIBLE IL
 
    TR::ILOpCodes opCodeForCorrespondingIndirectLoad(TR::ILOpCodes loadOpCode);
    TR::ILOpCodes opCodeForCorrespondingIndirectStore(TR::ILOpCodes storeOpCode);
+/**
+ * \brief
+ *    Given a direct load opcode, return its corresponding direct store opcode
+ */
+   TR::ILOpCodes opCodeForCorrespondingDirectLoad(TR::ILOpCodes loadOpCode);
+/**
+ * \brief
+ *    Given a direct store opcode, return its corresponding direct load opcode
+ */
+   TR::ILOpCodes opCodeForCorrespondingDirectStore(TR::ILOpCodes storeOpCode);
+/**
+ * \brief
+ *    Given a load/store opcode, return its corresponding store/load opcode
+ */
+   TR::ILOpCodes opCodeForCorrespondingLoadOrStore(TR::ILOpCodes opCodes);
 
    TR::ILOpCodes opCodeForSelect(TR::DataType dt);
    TR::ILOpCodes opCodeForConst(TR::DataType dt);

@@ -595,7 +595,6 @@
    bustorei, // store indirect unsigned byte          (child1 a, child2 b)
    iureturn, // return an unsigned integer
    lureturn, // return a long unsigned integer
-   lucall,   // direct call returning unsigned long integer
    iuadd,    // add 2 unsigned integers
    luadd,    // add 2 unsigned long integers
    buadd,    // add 2 unsigned bytes
@@ -643,7 +642,6 @@
    discontigarraylength, // number of elements in a discontiguous array
    icalli,   // indirect call returning integer (child1 is addr of function)
    lcalli,   // indirect call returning long integer (child1 is addr of function)
-   lucalli,  // indirect call returning unsigned long integer (child1 is addr of function)
    fcalli,   // indirect call returning float (child1 is addr of function)
    dcalli,   // indirect call returning double (child1 is addr of function)
    acalli,   // indirect call returning reference

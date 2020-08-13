@@ -571,7 +571,6 @@
    TR::TreeEvaluator::bstoreEvaluator,      // TR::bustorei
    TR::TreeEvaluator::returnEvaluator,      // TR::iureturn
    TR::TreeEvaluator::returnEvaluator,      // TR::lureturn
-   TR::TreeEvaluator::directCallEvaluator,  // TR::lucall
    TR::TreeEvaluator::iaddEvaluator,        // TR::iuadd
    TR::TreeEvaluator::laddEvaluator,        // TR::luadd
    TR::TreeEvaluator::baddEvaluator,        // TR::buadd
@@ -618,7 +617,6 @@
    TR::TreeEvaluator::badILOpEvaluator,     // TR::discontigarraylength
    TR::TreeEvaluator::indirectCallEvaluator,// TR::icalli
    TR::TreeEvaluator::indirectCallEvaluator,// TR::lcalli
-   TR::TreeEvaluator::indirectCallEvaluator,// TR::lucalli
    TR::TreeEvaluator::indirectCallEvaluator,// TR::fcalli
    TR::TreeEvaluator::indirectCallEvaluator,// TR::dcalli
    TR::TreeEvaluator::indirectCallEvaluator,// TR::acalli

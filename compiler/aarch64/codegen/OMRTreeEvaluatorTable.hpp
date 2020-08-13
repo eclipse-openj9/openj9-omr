@@ -533,7 +533,6 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bustoreiEvaluator ,	// TR::bustorei		// store indirect unsigned byte          (child1 a; child2 b)
     TR::TreeEvaluator::ireturnEvaluator, // TR::iureturn		// return an unsigned integer
     TR::TreeEvaluator::lreturnEvaluator, // TR::lureturn		// return a long unsigned integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lucallEvaluator ,	// TR::lucall		// direct call returning unsigned long integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iuaddEvaluator ,	// TR::iuadd		// add 2 unsigned integers
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::luaddEvaluator ,	// TR::luadd		// add 2 unsigned long integers
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::buaddEvaluator ,	// TR::buadd		// add 2 unsigned bytes
@@ -580,7 +579,6 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::discontigarraylengthEvaluator ,	// TR::discontigarraylength	// number of elements in a discontiguous array
     TR::TreeEvaluator::indirectCallEvaluator, // TR::icalli		// indirect call returning integer (child1 is addr of function)
     TR::TreeEvaluator::indirectCallEvaluator, // TR::lcalli		// indirect call returning long integer (child1 is addr of function)
-    TR::TreeEvaluator::indirectCallEvaluator, // TR::lucalli		// indirect call returning unsigned long integer (child1 is addr of function)
     TR::TreeEvaluator::indirectCallEvaluator, // TR::fcalli		// indirect call returning float (child1 is addr of function)
     TR::TreeEvaluator::indirectCallEvaluator, // TR::dcalli		// indirect call returning double (child1 is addr of function)
     TR::TreeEvaluator::indirectCallEvaluator, // TR::acalli		// indirect call returning reference (child1 is addr of function)

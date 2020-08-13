@@ -381,8 +381,6 @@ private:
 
          //Call and Return
          case TR::iureturn: 
-         case TR::lucall: 
-         case TR::lucalli: 
          case TR::lureturn: 
 
          //Add and Subtract

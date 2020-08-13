@@ -536,7 +536,6 @@
    TR::TreeEvaluator::bstoreEvaluator,                                 // TR::bustorei
    TR::TreeEvaluator::integerReturnEvaluator,                          // TR::iureturn
    TR::TreeEvaluator::integerReturnEvaluator,                          // TR::lureturn
-   TR::TreeEvaluator::directCallEvaluator,                             // TR::iucall
    TR::TreeEvaluator::directCallEvaluator,                             // TR::lucall
    TR::TreeEvaluator::integerAddEvaluator,                             // TR::iuadd
    TR::TreeEvaluator::integerAddEvaluator,                             // TR::luadd
@@ -583,7 +582,6 @@
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::contigarraylength (J9)
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::discontigarraylength (J9)
    TR::TreeEvaluator::indirectCallEvaluator,                           // TR::icalli
-   TR::TreeEvaluator::indirectCallEvaluator,                           // TR::iucalli
    TR::TreeEvaluator::indirectCallEvaluator,                           // TR::lcalli
    TR::TreeEvaluator::indirectCallEvaluator,                           // TR::lucalli
    TR::TreeEvaluator::indirectCallEvaluator,                           // TR::fcalli

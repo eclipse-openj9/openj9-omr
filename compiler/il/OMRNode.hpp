@@ -380,8 +380,6 @@ private:
          case TR::cconst:
 
          //Call and Return
-         case TR::iucall:
-         case TR::iucalli:
          case TR::iureturn: 
          case TR::lucall: 
          case TR::lucalli: 

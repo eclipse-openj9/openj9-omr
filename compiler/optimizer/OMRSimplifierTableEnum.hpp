@@ -557,7 +557,6 @@
    indirectStoreSimplifier, // TR::bustorei
    dftSimplifier,           // TR::iureturn
    dftSimplifier,           // TR::lureturn
-   ifdCallSimplifier,       // TR::iucall
    lcallSimplifier,         // TR::lucall
    iaddSimplifier,          // TR::iuadd
    laddSimplifier,          // TR::luadd
@@ -604,7 +603,6 @@
    arrayLengthSimplifier,   // TR::contigarraylength
    arrayLengthSimplifier,   // TR::discontigarraylength
    dftSimplifier,           // TR::icalli
-   dftSimplifier,           // TR::iucalli
    dftSimplifier,           // TR::lcalli
    dftSimplifier,           // TR::lucalli
    dftSimplifier,           // TR::fcalli

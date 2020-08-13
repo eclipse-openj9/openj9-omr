@@ -845,8 +845,6 @@ TR::Register *TR::RVSystemLinkage::buildDispatch(TR::Node *callNode)
       {
       case TR::icall:
       case TR::icalli:
-      case TR::iucall:
-      case TR::iucalli:
          retReg = dependencies->searchPostConditionRegister(
                      pp.getIntegerReturnRegister());
          break;

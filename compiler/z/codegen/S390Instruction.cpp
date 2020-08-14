@@ -2440,7 +2440,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
             TR::Symbol *sym = getSymbolReference() ? getSymbolReference()->getSymbol() : NULL;
             TR::ResolvedMethodSymbol *resolvedMethodSym = sym ? sym->getResolvedMethodSymbol() : NULL;
             TR_ResolvedMethod *resolvedMethod = resolvedMethodSym ? resolvedMethodSym->getResolvedMethod() : NULL;
-            if (sym && sym->castToMethodSymbol()->isHelper())
+            if (sym && (sym->castToMethodSymbol()->isHelper() || cg()->callUsesHelperImplementation(sym)))
                {
                AOTcgDiag1(comp, "add TR_HelperAddress cursor=%x\n", cursor);
                cg()->addProjectSpecializedRelocation(cursor+2, (uint8_t*) getSymbolReference(), NULL, TR_HelperAddress,

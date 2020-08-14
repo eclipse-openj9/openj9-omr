@@ -39,6 +39,7 @@ namespace OMR { typedef OMR::Z::InstOpCode InstOpCodeConnector; }
 #include "env/Processors.hpp"
 #include "il/DataTypes.hpp"
 #include "infra/Assert.hpp"
+#include "omrport.h"
 
 namespace TR { class CodeGenerator; }
 namespace TR { class Node; }
@@ -523,7 +524,7 @@ class InstOpCode: public OMR::InstOpCode
        *  \brief
        *      The minimum architecture level set (ALS) which introduced this instruction.
        */
-      CPU::Architecture minimumALS;
+      OMRProcessorArchitecture minimumALS;
 
       /**
        *  \brief
@@ -541,7 +542,7 @@ class InstOpCode: public OMR::InstOpCode
     * \return
     *    The minimum ALS of this instruction.
     */
-   CPU::Architecture getMinimumALS() const
+   OMRProcessorArchitecture getMinimumALS() const
       {
       return metadata[_mnemonic].minimumALS;
       }

@@ -1221,7 +1221,7 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 		{
 			omrsysinfo_set_feature(desc, OMR_FEATURE_S390_LONG_DISPLACEMENT);
 
-			desc->processor = OMR_PROCESSOR_S390_GP6;
+			desc->processor = OMR_PROCESSOR_S390_Z990;
 		}
 	}
 
@@ -1252,7 +1252,7 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_EXTENDED_IMMEDIATE) &&
 		 omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_EXTENDED_TRANSLATION_3) &&
 		 omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_ETF3_ENHANCEMENT)) {
-		desc->processor = OMR_PROCESSOR_S390_GP7;
+		desc->processor = OMR_PROCESSOR_S390_Z9;
 	}
 
 	/* z10 facility and processor detection */
@@ -1260,7 +1260,7 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_GENERAL_INSTRUCTIONS_EXTENSIONS)) {
 		omrsysinfo_set_feature(desc, OMR_FEATURE_S390_GENERAL_INSTRUCTIONS_EXTENSIONS);
 
-		desc->processor = OMR_PROCESSOR_S390_GP8;
+		desc->processor = OMR_PROCESSOR_S390_Z10;
 	}
 
 	/* z196 facility and processor detection */
@@ -1273,13 +1273,13 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 			omrsysinfo_set_feature(desc, OMR_FEATURE_S390_HIGH_WORD);
 		}
 
-		desc->processor = OMR_PROCESSOR_S390_GP9;
+		desc->processor = OMR_PROCESSOR_S390_Z196;
 	}
 
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_LOAD_STORE_ON_CONDITION_1)) {
 		omrsysinfo_set_feature(desc, OMR_FEATURE_S390_LOAD_STORE_ON_CONDITION_1);
 
-		desc->processor = OMR_PROCESSOR_S390_GP9;
+		desc->processor = OMR_PROCESSOR_S390_Z196;
 	}
 
 	/* zEC12 facility and processor detection */
@@ -1311,7 +1311,7 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION)) {
 		omrsysinfo_set_feature(desc, OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION);
 
-		desc->processor = OMR_PROCESSOR_S390_GP10;
+		desc->processor = OMR_PROCESSOR_S390_ZEC12;
 	}
 
 	/* z13 facility and processor detection */
@@ -1326,20 +1326,20 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 #endif
 		{
 			omrsysinfo_set_feature(desc, OMR_FEATURE_S390_VECTOR_FACILITY);
-			desc->processor = OMR_PROCESSOR_S390_GP11;
+			desc->processor = OMR_PROCESSOR_S390_Z13;
 		}
 	}
 
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_LOAD_STORE_ON_CONDITION_2)) {
 		omrsysinfo_set_feature(desc, OMR_FEATURE_S390_LOAD_STORE_ON_CONDITION_2);
 
-		desc->processor = OMR_PROCESSOR_S390_GP11;
+		desc->processor = OMR_PROCESSOR_S390_Z13;
 	}
 
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_LOAD_AND_ZERO_RIGHTMOST_BYTE)) {
 		omrsysinfo_set_feature(desc, OMR_FEATURE_S390_LOAD_AND_ZERO_RIGHTMOST_BYTE);
 
-		desc->processor = OMR_PROCESSOR_S390_GP11;
+		desc->processor = OMR_PROCESSOR_S390_Z13;
 	}
 
 	/* z14 facility and processor detection */
@@ -1354,20 +1354,20 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 		{
 			omrsysinfo_set_feature(desc, OMR_FEATURE_S390_GUARDED_STORAGE);
 
-			desc->processor = OMR_PROCESSOR_S390_GP12;
+			desc->processor = OMR_PROCESSOR_S390_Z14;
 		}
 	}
 
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_2)) {
 		omrsysinfo_set_feature(desc, OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_2);
 
-		desc->processor = OMR_PROCESSOR_S390_GP12;
+		desc->processor = OMR_PROCESSOR_S390_Z14;
 	}
 
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_SEMAPHORE_ASSIST)) {
 		omrsysinfo_set_feature(desc, OMR_FEATURE_S390_SEMAPHORE_ASSIST);
 
-		desc->processor = OMR_PROCESSOR_S390_GP12;
+		desc->processor = OMR_PROCESSOR_S390_Z14;
 	}
 
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL)) {
@@ -1380,7 +1380,7 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 		{
 			omrsysinfo_set_feature(desc, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL);
 
-			desc->processor = OMR_PROCESSOR_S390_GP12;
+			desc->processor = OMR_PROCESSOR_S390_Z14;
 		}
 	}
 
@@ -1394,14 +1394,14 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 		{
 			omrsysinfo_set_feature(desc, OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1);
 
-			desc->processor = OMR_PROCESSOR_S390_GP12;
+			desc->processor = OMR_PROCESSOR_S390_Z14;
 		}
 	}
 
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_MSA_EXTENSION_8)) {
 		omrsysinfo_set_feature(desc, OMR_FEATURE_S390_MSA_EXTENSION_8);
 
-		desc->processor = OMR_PROCESSOR_S390_GP12;
+		desc->processor = OMR_PROCESSOR_S390_Z14;
 	}
 
     /* z15 facility and processor detection */
@@ -1409,7 +1409,7 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_3)) {
 		omrsysinfo_set_feature(desc, OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_3);
 
-		desc->processor = OMR_PROCESSOR_S390_GP13;
+		desc->processor = OMR_PROCESSOR_S390_Z15;
 	}
 
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_2)) {
@@ -1421,7 +1421,7 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 		{
 			omrsysinfo_set_feature(desc, OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_2);
 
-			desc->processor = OMR_PROCESSOR_S390_GP13;
+			desc->processor = OMR_PROCESSOR_S390_Z15;
 		}
 	}
 
@@ -1434,7 +1434,7 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 		{
 			omrsysinfo_set_feature(desc, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY);
 
-			desc->processor = OMR_PROCESSOR_S390_GP13;
+			desc->processor = OMR_PROCESSOR_S390_Z15;
 		}
 	}
 

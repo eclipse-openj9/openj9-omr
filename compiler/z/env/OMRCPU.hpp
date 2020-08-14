@@ -69,6 +69,16 @@ class OMR_EXTENSIBLE CPU : public OMR::CPU
     */
    static const char* getProcessorName(int32_t machineId);
 
+   /** \brief
+    *     Gets the name of the processor given the four TR::CPU::Architecture enum type.
+    */
+   static const char* getProcessorName(Architecture arch);
+
+   /** \brief
+    *     Gets the name of the processor given the OMRProcessorArchitecture enum type.
+    */
+   static const char* getProcessorName(OMRProcessorArchitecture arch);
+
    static TR::CPU detect(OMRPortLibrary * const omrPortLib);
 
    public:
@@ -293,7 +303,7 @@ class OMR_EXTENSIBLE CPU : public OMR::CPU
       memset(_processorDescription.features, 0, OMRPORT_SYSINFO_FEATURES_SIZE*sizeof(uint32_t));
       }
 
-   CPU(const OMRProcessorDesc& processorDescription) : OMR::CPU(processorDescription), _supportedArch(z9) {}
+   CPU(const OMRProcessorDesc& processorDescription);
 
    enum
       {

@@ -177,7 +177,7 @@
          DefineReturnType(returnType); \
          std::pair<const char *, OMR::JitBuilder::IlType *> argsArray[] = {std::pair<const char *, OMR::JitBuilder::IlType *>("", NULL), __VA_ARGS__}; \
          std::vector<std::pair<const char *, OMR::JitBuilder::IlType *> > args(argsArray, argsArray + sizeof(argsArray)/sizeof(std::pair<const char *, OMR::JitBuilder::IlType *>)); \
-         for (int i = 1, s = args.size(); i < s; ++i) \
+         for (std::vector<std::pair<const char *, OMR::JitBuilder::IlType *> >::size_type i = 1, s = args.size(); i < s; ++i) \
             { \
             DefineParameter(args[i].first, args[i].second); \
             } \

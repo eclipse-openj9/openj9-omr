@@ -29,6 +29,10 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Add bigobj compiler options for TypeConversionTest.cpp under Windows
+if(OMR_HOST_OS STREQUAL "win")
+	add_compile_options(-bigobj)
+endif()
 
 omr_add_executable(comptest
 	main.cpp

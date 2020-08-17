@@ -105,12 +105,12 @@ TEST_P(Int32Compare, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(CompareTest, Int32Compare, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int32_t, int32_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("icmpeq", icmpeq),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("icmpne", icmpne),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("icmpgt", icmpgt),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("icmpge", icmpge),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("icmplt", icmplt),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("icmple", icmple)
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("icmpeq", icmpeq),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("icmpne", icmpne),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("icmpgt", icmpgt),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("icmpge", icmpge),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("icmplt", icmplt),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("icmple", icmple)
     )));
 
 int32_t iucmpgt(uint32_t l, uint32_t r) {
@@ -186,10 +186,10 @@ TEST_P(UInt32Compare, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(CompareTest, UInt32Compare, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<uint32_t, uint32_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmpgt", iucmpgt),
-        std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmpge", iucmpge),
-        std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmplt", iucmplt),
-        std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmple", iucmple)
+        std::tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmpgt", iucmpgt),
+        std::tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmpge", iucmpge),
+        std::tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmplt", iucmplt),
+        std::tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("iucmple", iucmple)
     )));
 
 int32_t lcmpeq(int64_t l, int64_t r) {
@@ -277,13 +277,13 @@ TEST_P(Int64Compare, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(CompareTest, Int64Compare, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int64_t, int64_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("lcmpeq", lcmpeq),
-        std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("lcmpne", lcmpne),
-        std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("lcmpgt", lcmpgt),
-        std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("lcmpge", lcmpge),
-        std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("lcmplt", lcmplt),
-        std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("lcmple", lcmple),
-        std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("lcmp", lcmp)
+        std::tuple<const char*, int32_t(*)(int64_t, int64_t)>("lcmpeq", lcmpeq),
+        std::tuple<const char*, int32_t(*)(int64_t, int64_t)>("lcmpne", lcmpne),
+        std::tuple<const char*, int32_t(*)(int64_t, int64_t)>("lcmpgt", lcmpgt),
+        std::tuple<const char*, int32_t(*)(int64_t, int64_t)>("lcmpge", lcmpge),
+        std::tuple<const char*, int32_t(*)(int64_t, int64_t)>("lcmplt", lcmplt),
+        std::tuple<const char*, int32_t(*)(int64_t, int64_t)>("lcmple", lcmple),
+        std::tuple<const char*, int32_t(*)(int64_t, int64_t)>("lcmp", lcmp)
     )));
 
 
@@ -360,10 +360,10 @@ TEST_P(UInt64Compare, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(CompareTest, UInt64Compare, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<uint64_t, uint64_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmpgt", lucmpgt),
-        std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmpge", lucmpge),
-        std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmplt", lucmplt),
-        std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmple", lucmple)
+        std::tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmpgt", lucmpgt),
+        std::tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmpge", lucmpge),
+        std::tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmplt", lucmplt),
+        std::tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("lucmple", lucmple)
     )));
 
 static const int32_t IFCMP_TRUE_NUM = 123;
@@ -454,12 +454,12 @@ TEST_P(Int32IfCompare, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(CompareTest, Int32IfCompare, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int32_t, int32_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("ificmpeq", ificmpeq),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("ificmpne", ificmpne),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("ificmplt", ificmplt),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("ificmple", ificmple),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("ificmpge", ificmpge),
-        std::make_tuple<const char*, int32_t(*)(int32_t, int32_t)>("ificmpgt", ificmpgt)
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("ificmpeq", ificmpeq),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("ificmpne", ificmpne),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("ificmplt", ificmplt),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("ificmple", ificmple),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("ificmpge", ificmpge),
+        std::tuple<const char*, int32_t(*)(int32_t, int32_t)>("ificmpgt", ificmpgt)
     )));
 
 int32_t ifiucmplt(uint32_t l, uint32_t r) {
@@ -539,10 +539,10 @@ TEST_P(UInt32IfCompare, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(CompareTest, UInt32IfCompare, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<uint32_t, uint32_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("ifiucmplt", ifiucmplt),
-        std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("ifiucmple", ifiucmple),
-        std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("ifiucmpge", ifiucmpge),
-        std::make_tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("ifiucmpgt", ifiucmpgt)
+        std::tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("ifiucmplt", ifiucmplt),
+        std::tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("ifiucmple", ifiucmple),
+        std::tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("ifiucmpge", ifiucmpge),
+        std::tuple<const char*, int32_t(*)(uint32_t, uint32_t)>("ifiucmpgt", ifiucmpgt)
     )));
 
 int32_t iflcmpeq(int64_t l, int64_t r) {
@@ -630,12 +630,12 @@ TEST_P(Int64IfCompare, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(CompareTest, Int64IfCompare, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int64_t, int64_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("iflcmpeq", iflcmpeq),
-        std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("iflcmpne", iflcmpne),
-        std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("iflcmplt", iflcmplt),
-        std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("iflcmple", iflcmple),
-        std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("iflcmpge", iflcmpge),
-        std::make_tuple<const char*, int32_t(*)(int64_t, int64_t)>("iflcmpgt", iflcmpgt)
+        std::tuple<const char*, int32_t(*)(int64_t, int64_t)>("iflcmpeq", iflcmpeq),
+        std::tuple<const char*, int32_t(*)(int64_t, int64_t)>("iflcmpne", iflcmpne),
+        std::tuple<const char*, int32_t(*)(int64_t, int64_t)>("iflcmplt", iflcmplt),
+        std::tuple<const char*, int32_t(*)(int64_t, int64_t)>("iflcmple", iflcmple),
+        std::tuple<const char*, int32_t(*)(int64_t, int64_t)>("iflcmpge", iflcmpge),
+        std::tuple<const char*, int32_t(*)(int64_t, int64_t)>("iflcmpgt", iflcmpgt)
     )));
 
 int32_t iflucmplt(uint64_t l, uint64_t r) {
@@ -715,10 +715,10 @@ TEST_P(UInt64IfCompare, UsingLoadParam) {
 INSTANTIATE_TEST_CASE_P(CompareTest, UInt64IfCompare, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<uint64_t, uint64_t>()),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmplt", iflucmplt),
-        std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmple", iflucmple),
-        std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmpge", iflucmpge),
-        std::make_tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmpgt", iflucmpgt)
+        std::tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmplt", iflucmplt),
+        std::tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmple", iflucmple),
+        std::tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmpge", iflucmpge),
+        std::tuple<const char*, int32_t(*)(uint64_t, uint64_t)>("iflucmpgt", iflucmpgt)
     )));
 
 template <typename T>
@@ -775,7 +775,8 @@ TEST_P(FloatCompare, UsingConst) {
         SKIP_ON_POWER(KnownBug) << "fcmpne returns wrong value on POWER (see #5152)";
     }
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[1024] = {0};
@@ -835,12 +836,12 @@ INSTANTIATE_TEST_CASE_P(CompareTest, FloatCompare, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<float, float>(), smallFp_filter<float>)),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmpeq", fcmpeq),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmpne", fcmpne),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmpgt", fcmpgt),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmpge", fcmpge),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmplt", fcmplt),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmple", fcmple)
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmpeq", fcmpeq),
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmpne", fcmpne),
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmpgt", fcmpgt),
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmpge", fcmpge),
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmplt", fcmplt),
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmple", fcmple)
     )));
 
 int32_t dcmpeq(double l, double r) {
@@ -888,7 +889,8 @@ TEST_P(DoubleCompare, UsingConst) {
         SKIP_ON_POWER(KnownBug) << "dcmpne returns wrong value on POWER (see #5152)";
     }
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[1024] = {0};
@@ -948,12 +950,12 @@ INSTANTIATE_TEST_CASE_P(CompareTest, DoubleCompare, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<double, double>(), smallFp_filter<double>)),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpeq", dcmpeq),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpne", dcmpne),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpgt", dcmpgt),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpge", dcmpge),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmplt", dcmplt),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmple", dcmple)
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmpeq", dcmpeq),
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmpne", dcmpne),
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmpgt", dcmpgt),
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmpge", dcmpge),
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmplt", dcmplt),
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmple", dcmple)
     )));
 
 int32_t iffcmpeq(float l, float r) {
@@ -1004,6 +1006,7 @@ TEST_P(FloatIfCompare, UsingConst) {
     }
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+       SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[256] = {0};
@@ -1069,12 +1072,12 @@ INSTANTIATE_TEST_CASE_P(CompareTest, FloatIfCompare, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<float, float>(), smallFp_filter<float>)),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmpeq", iffcmpeq),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmpne", iffcmpne),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmplt", iffcmplt),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmple", iffcmple),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmpge", iffcmpge),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmpgt", iffcmpgt)
+        std::tuple<const char*, int32_t (*)(float, float)>("iffcmpeq", iffcmpeq),
+        std::tuple<const char*, int32_t (*)(float, float)>("iffcmpne", iffcmpne),
+        std::tuple<const char*, int32_t (*)(float, float)>("iffcmplt", iffcmplt),
+        std::tuple<const char*, int32_t (*)(float, float)>("iffcmple", iffcmple),
+        std::tuple<const char*, int32_t (*)(float, float)>("iffcmpge", iffcmpge),
+        std::tuple<const char*, int32_t (*)(float, float)>("iffcmpgt", iffcmpgt)
     )));
 
 int32_t ifdcmpeq(double l, double r) {
@@ -1125,6 +1128,7 @@ TEST_P(DoubleIfCompare, UsingConst) {
     }
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+       SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[1024] = {0};
@@ -1190,12 +1194,12 @@ INSTANTIATE_TEST_CASE_P(CompareTest, DoubleIfCompare, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<double, double>(), smallFp_filter<double>)),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpeq", ifdcmpeq),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpne", ifdcmpne),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmplt", ifdcmplt),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmple", ifdcmple),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpge", ifdcmpge),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpgt", ifdcmpgt)
+        std::tuple<const char*, int32_t (*)(double, double)>("ifdcmpeq", ifdcmpeq),
+        std::tuple<const char*, int32_t (*)(double, double)>("ifdcmpne", ifdcmpne),
+        std::tuple<const char*, int32_t (*)(double, double)>("ifdcmplt", ifdcmplt),
+        std::tuple<const char*, int32_t (*)(double, double)>("ifdcmple", ifdcmple),
+        std::tuple<const char*, int32_t (*)(double, double)>("ifdcmpge", ifdcmpge),
+        std::tuple<const char*, int32_t (*)(double, double)>("ifdcmpgt", ifdcmpgt)
     )));
 
 int32_t fcmpequ(float l, float r) {
@@ -1302,12 +1306,12 @@ INSTANTIATE_TEST_CASE_P(CompareTest, FloatCompareOrUnordered, ::testing::Combine
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<float, float>(), smallFp_filter<float>)),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmpequ", fcmpequ),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmpneu", fcmpneu),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmpgtu", fcmpgtu),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmpgeu", fcmpgeu),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmpltu", fcmpltu),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("fcmpleu", fcmpleu)
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmpequ", fcmpequ),
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmpneu", fcmpneu),
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmpgtu", fcmpgtu),
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmpgeu", fcmpgeu),
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmpltu", fcmpltu),
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmpleu", fcmpleu)
     )));
 
 int32_t dcmpequ(double l, double r) {
@@ -1414,12 +1418,12 @@ INSTANTIATE_TEST_CASE_P(CompareTest, DoubleCompareOrUnordered, ::testing::Combin
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<double, double>(), smallFp_filter<double>)),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpequ", dcmpequ),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpneu", dcmpneu),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpgtu", dcmpgtu),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpgeu", dcmpgeu),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpltu", dcmpltu),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("dcmpleu", dcmpleu)
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmpequ", dcmpequ),
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmpneu", dcmpneu),
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmpgtu", dcmpgtu),
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmpgeu", dcmpgeu),
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmpltu", dcmpltu),
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmpleu", dcmpleu)
 
     )));
 
@@ -1531,12 +1535,12 @@ INSTANTIATE_TEST_CASE_P(CompareTest, FloatIfCompareOrUnordered, ::testing::Combi
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<float, float>(), smallFp_filter<float>)),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmpequ", iffcmpequ),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmpneu", iffcmpneu),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmpltu", iffcmpltu),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmpleu", iffcmpleu),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmpgeu", iffcmpgeu),
-        std::make_tuple<const char*, int32_t (*)(float, float)>("iffcmpgtu", iffcmpgtu)
+        std::tuple<const char*, int32_t (*)(float, float)>("iffcmpequ", iffcmpequ),
+        std::tuple<const char*, int32_t (*)(float, float)>("iffcmpneu", iffcmpneu),
+        std::tuple<const char*, int32_t (*)(float, float)>("iffcmpltu", iffcmpltu),
+        std::tuple<const char*, int32_t (*)(float, float)>("iffcmpleu", iffcmpleu),
+        std::tuple<const char*, int32_t (*)(float, float)>("iffcmpgeu", iffcmpgeu),
+        std::tuple<const char*, int32_t (*)(float, float)>("iffcmpgtu", iffcmpgtu)
     )));
 
 int32_t ifdcmpequ(double l, double r) {
@@ -1647,10 +1651,10 @@ INSTANTIATE_TEST_CASE_P(CompareTest, DoubleIfCompareOrUnordered, ::testing::Comb
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<double, double>(), smallFp_filter<double>)),
     ::testing::Values(
-        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpequ", ifdcmpequ),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpneu", ifdcmpneu),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpltu", ifdcmpltu),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpleu", ifdcmpleu),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpgeu", ifdcmpgeu),
-        std::make_tuple<const char*, int32_t (*)(double, double)>("ifdcmpgtu", ifdcmpgtu)
+        std::tuple<const char*, int32_t (*)(double, double)>("ifdcmpequ", ifdcmpequ),
+        std::tuple<const char*, int32_t (*)(double, double)>("ifdcmpneu", ifdcmpneu),
+        std::tuple<const char*, int32_t (*)(double, double)>("ifdcmpltu", ifdcmpltu),
+        std::tuple<const char*, int32_t (*)(double, double)>("ifdcmpleu", ifdcmpleu),
+        std::tuple<const char*, int32_t (*)(double, double)>("ifdcmpgeu", ifdcmpgeu),
+        std::tuple<const char*, int32_t (*)(double, double)>("ifdcmpgtu", ifdcmpgtu)
     )));

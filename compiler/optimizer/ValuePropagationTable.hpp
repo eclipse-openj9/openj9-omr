@@ -698,10 +698,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainStore,           // TR::iustorei
    constrainStore,           // TR::lustorei
    constrainStore,           // TR::bustorei
-   constrainReturn,          // TR::iureturn
-   constrainReturn,          // TR::lureturn
-   constrainCall,            // TR::iucall
-   constrainCall,            // TR::lucall
    constrainAdd,             // TR::iuadd
    constrainAdd,             // TR::luadd
    constrainAdd,             // TR::buadd
@@ -747,9 +743,7 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainArraylength,     // TR::contigarraylength
    constrainArraylength,     // TR::discontigarraylength
    constrainCall,            // TR::icalli
-   constrainCall,            // TR::iucalli
    constrainCall,            // TR::lcalli
-   constrainCall,            // TR::lucalli
    constrainCall,            // TR::fcalli
    constrainCall,            // TR::dcalli
    constrainAcall,           // TR::acalli

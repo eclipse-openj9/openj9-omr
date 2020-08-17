@@ -561,10 +561,6 @@ public:
 	static TR::Register *iustoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lustoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *bustoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iureturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *lureturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iucallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *lucallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iuaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *luaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *buaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -611,9 +607,7 @@ public:
 	static TR::Register *contigarraylengthEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *discontigarraylengthEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *icalliEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iucalliEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lcalliEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *lucalliEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *fcalliEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dcalliEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *acalliEvaluator(TR::Node *node, TR::CodeGenerator *cg);

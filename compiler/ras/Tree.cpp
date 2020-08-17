@@ -2804,10 +2804,6 @@ int32_t childTypes[] =
    TR::Int32 | (TR::Address<<8),   // TR::iustorei
    TR::Int64 | (TR::Address<<8),   // TR::lustorei
    TR::Int8 | (TR::Address<<8),    // TR::bustorei
-   TR::Int32,                     // TR::iureturn
-   TR::Int64,                     // TR::lureturn
-   TR::NoType,                     // TR::iucall
-   TR::NoType,                     // TR::lucall
    TR::Int32,                     // TR::iuadd
    TR::Int64,                     // TR::luadd
    TR::Int8,                      // TR::buadd
@@ -2853,9 +2849,7 @@ int32_t childTypes[] =
    TR::Address,                    // TR::contigarraylength
    TR::Address,                    // TR::discontigarraylength
    TR::NoType | (TR::Address<<8),   // TR::icalli
-   TR::NoType | (TR::Address<<8),   // TR::iucalli
    TR::NoType | (TR::Address<<8),   // TR::lcalli
-   TR::NoType | (TR::Address<<8),   // TR::lucalli
    TR::NoType | (TR::Address<<8),   // TR::fcalli
    TR::NoType | (TR::Address<<8),   // TR::dcalli
    TR::NoType | (TR::Address<<8),   // TR::acalli

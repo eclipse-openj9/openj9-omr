@@ -268,6 +268,12 @@ OMR::Power::Peephole::tryToRemoveRedundantLoadAfterStore()
    if (disableLHSPeephole)
       return false;
 
+   // Just because the instruction opcode is a load or store doesn't mean we're necessarily using
+   // a MemoryReference. In some cases, we use other instruction kinds (e.g. Trg1Imm) if we're
+   // going to patch the instruction.
+   if (cursor->getKind() != TR::Instruction::IsMemSrc1 || !cursor->getNext() || cursor->getNext()->getKind() != TR::Instruction::IsTrg1Mem)
+      return false;
+
    TR::Instruction *storeInstruction = cursor;
    TR::Instruction   *loadInstruction = storeInstruction->getNext();
    TR::InstOpCode&      storeOp = storeInstruction->getOpCode();

@@ -37,6 +37,7 @@ if(OMR_ARCH_POWER)
 	list(APPEND COMPCGTEST_FILES
 		p/BinaryEncoder.cpp
 		p/MemoryReferenceExpansion.cpp
+		p/Peephole.cpp
 	)
 endif()
 

@@ -82,6 +82,10 @@ function(make_ddr_set set_name)
 	# This is so that you can process misc headers which don't logically belong to any other target.
 	target_enable_ddr(${DDR_TARGET_NAME})
 	set_property(TARGET "${DDR_TARGET_NAME}" APPEND PROPERTY DDR_TARGETS "${DDR_TARGET_NAME}")
+
+	# default to search the current binary dir
+	# note: only used on zos
+	set_property(TARGET "${DDR_TARGET_NAME}" PROPERTY DDR_OBJECT_SEARCH_ROOT "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction(make_ddr_set)
 
 function(ddr_set_add_targets ddr_set)

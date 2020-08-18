@@ -303,7 +303,7 @@ class OMR_EXTENSIBLE CPU : public OMR::CPU
       memset(_processorDescription.features, 0, OMRPORT_SYSINFO_FEATURES_SIZE*sizeof(uint32_t));
       }
 
-   CPU(const OMRProcessorDesc& processorDescription);
+   CPU(const OMRProcessorDesc& processorDescription) : OMR::CPU(processorDescription), _supportedArch(z9) {}
 
    enum
       {

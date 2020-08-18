@@ -272,10 +272,51 @@ CompareCondition evaluateDualIntCompareToConditionRegister(
    {
    TR::Register *condReg2 = cg->allocateRegister(TR_CCR);
    TR::Register *firstReg = cg->evaluate(firstChild);
-   TR::Register *secondReg = cg->evaluate(secondChild);
 
-   generateTrg1Src2Instruction(cg, compareInfo.isUnsignedOrUnordered ? TR::InstOpCode::cmpl4 : TR::InstOpCode::cmp4, node, condReg, firstReg->getHighOrder(), secondReg->getHighOrder());
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::cmpl4, node, condReg2, firstReg->getLowOrder(), secondReg->getLowOrder());
+   if (secondChild->getOpCode().isLoadConst() && !secondChild->getRegister() && secondChild->getReferenceCount() == 1)
+      {
+      int32_t secondHi = secondChild->getLongIntHigh();
+      int32_t secondLo = secondChild->getLongIntLow();
+
+      if (compareInfo.isUnsignedOrUnordered && is16BitUnsigedImmediate(secondHi))
+         {
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, condReg, firstReg->getHighOrder(), secondHi);
+         }
+      else if (!compareInfo.isUnsignedOrUnordered && is16BitSignedImmediate(secondHi))
+         {
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, firstReg->getHighOrder(), secondHi);
+         }
+      else
+         {
+         TR::Register *secondHiReg = cg->allocateRegister();
+
+         loadConstant(cg, node, secondHi, secondHiReg);
+         generateTrg1Src2Instruction(cg, compareInfo.isUnsignedOrUnordered ? TR::InstOpCode::cmpl4 : TR::InstOpCode::cmp4, node, condReg, firstReg->getHighOrder(), secondHiReg);
+
+         cg->stopUsingRegister(secondHiReg);
+         }
+
+      if (is16BitUnsigedImmediate(secondLo))
+         {
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, condReg2, firstReg->getLowOrder(), secondLo);
+         }
+      else
+         {
+         TR::Register *secondLoReg = cg->allocateRegister();
+
+         loadConstant(cg, node, secondLo, secondLoReg);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::cmpl4, node, condReg2, firstReg->getHighOrder(), secondLoReg);
+
+         cg->stopUsingRegister(secondLoReg);
+         }
+      }
+   else
+      {
+      TR::Register *secondReg = cg->evaluate(secondChild);
+
+      generateTrg1Src2Instruction(cg, compareInfo.isUnsignedOrUnordered ? TR::InstOpCode::cmpl4 : TR::InstOpCode::cmp4, node, condReg, firstReg->getHighOrder(), secondReg->getHighOrder());
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::cmpl4, node, condReg2, firstReg->getLowOrder(), secondReg->getLowOrder());
+      }
 
    switch (compareInfo.cond)
       {

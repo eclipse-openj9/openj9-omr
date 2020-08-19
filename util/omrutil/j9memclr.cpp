@@ -57,7 +57,7 @@ OMRZeroMemory(void *ptr, uintptr_t length)
 #endif /* defined(J9ZOS390) || (defined(LINUX) && defined(S390)) */
 
 #if defined(AIXPPC) || defined(LINUXPPC)
-	char *addr = ptr;
+	char *addr = static_cast<char*>(ptr);
 	char *limit;
 	uintptr_t localCacheLineSize;
 

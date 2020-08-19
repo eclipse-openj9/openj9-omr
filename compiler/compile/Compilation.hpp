@@ -49,7 +49,8 @@ class OMR_EXTENSIBLE Compilation : public OMR::CompilationConnector
          TR::Options &options,
          TR::Region &heapMemoryRegion,
          TR_Memory *memory,
-         TR_OptimizationPlan *optimizationPlan) :
+         TR_OptimizationPlan *optimizationPlan,
+         TR::Environment *target = NULL) :
       OMR::CompilationConnector(
          compThreadId,
          omrVMThread,
@@ -59,7 +60,8 @@ class OMR_EXTENSIBLE Compilation : public OMR::CompilationConnector
          options,
          heapMemoryRegion,
          memory,
-         optimizationPlan)
+         optimizationPlan,
+         target)
       {}
 
    ~Compilation() {}

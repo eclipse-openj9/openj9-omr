@@ -24,18 +24,23 @@
 #include "omr.h"
 #include "omrutil.h"
 
+#if defined(J9ZOS390) || (defined(LINUX) && defined(S390))
+#include <stdlib.h>
+#endif /* defined(J9ZOS390) || (defined(LINUX) && defined(S390)) */
 #include <string.h>
 
-#if (defined(LINUX) && defined(S390))
+#if defined(LINUX) && defined(S390)
 /* _j9Z10Zero() is defined in j9memclrz10_31.s and j9memclrz10_64.s */
-extern void _j9Z10Zero(void *ptr, uintptr_t length);
+extern "C" void _j9Z10Zero(void *ptr, uintptr_t length);
+#elif defined(J9ZOS390)
+extern "C" void J9ZERZ10(void *ptr, uintptr_t length);
 #endif
 
-#if defined(AIXPPC) || defined (LINUXPPC)
+#if defined(AIXPPC) || defined(LINUXPPC)
 static uintptr_t cacheLineSize = 0;
 #endif
 
-#if defined (J9ZOS390)
+#if defined(J9ZOS390)
 struct IHAPSA {
 	char filler1[204];			/* Filler to get to offset 204 or X'CC'  */
 	unsigned int filler2 : 1;
@@ -44,14 +49,14 @@ struct IHAPSA {
 };
 #endif
 
-#if defined (S390)
-static int isZ10orGreater = -1;
-#endif
-
 void
 OMRZeroMemory(void *ptr, uintptr_t length)
 {
-#if defined(AIXPPC) || defined (LINUXPPC)
+#if defined(J9ZOS390) || (defined(LINUX) && defined(S390))
+	static BOOLEAN useJ9zerz10Assembly = (NULL != getenv("OMR_USE_J9ZERZ10"));
+#endif /* defined(J9ZOS390) || (defined(LINUX) && defined(S390)) */
+
+#if defined(AIXPPC) || defined(LINUXPPC)
 	char *addr = ptr;
 	char *limit;
 	uintptr_t localCacheLineSize;
@@ -113,30 +118,20 @@ OMRZeroMemory(void *ptr, uintptr_t length)
 	memset(ptr, 0, (size_t)length);
 #elif defined(J9ZOS390)
 
-	if (((struct IHAPSA *)0)->FLCFGIEF) {
+	if (useJ9zerz10Assembly && ((struct IHAPSA *)0)->FLCFGIEF) {
 		J9ZERZ10(ptr, length);
 	} else {
 		memset(ptr, 0, (size_t)length);
 	}
-#else
-#if (defined (LINUX) && defined(S390)) && !defined(OMRZTPF)
-	if (-1 == isZ10orGreater) {
-		int machineType = get390zLinuxMachineType();
-		if ((-1 == machineType) || machineType < Z10) {
-			isZ10orGreater = 0;
-		} else {
-			isZ10orGreater = 1;
-		}
-	}
-
-	if (1 == isZ10orGreater) {
+#elif (defined(LINUX) && defined(S390)) && !defined(OMRZTPF)
+	static BOOLEAN isZ10orGreater = (Z10 <= get390zLinuxMachineType());
+	if (useJ9zerz10Assembly && isZ10orGreater) {
 		_j9Z10Zero(ptr, length);
 	} else {
 		memset(ptr, 0, (size_t)length);
 	}
 #else /* (defined (LINUX) && defined(S390)) && !defined(OMRZTPF) */
 	memset(ptr, 0, (size_t)length);
-#endif
 #endif
 }
 

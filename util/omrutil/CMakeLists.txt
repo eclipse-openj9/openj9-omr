@@ -137,7 +137,7 @@ list(APPEND OBJECTS
 	argscan.c
 	detectVMDirectory.c
 	gettimebase.c
-	j9memclr.c
+	j9memclr.cpp
 	omrcrc32.c
 	poolForPort.c
 	primeNumberHelper.c

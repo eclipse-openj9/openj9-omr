@@ -77,6 +77,16 @@ public:
 		finalizableCount = 0;
 	};
 
+	/**
+	 * Get the total stall time
+	 * @return the time in hi-res ticks
+	 */
+	MMINLINE uint64_t 
+	getStallTime()
+	{
+		return markStats.getStallTime() + workPacketStats.getStallTime() + sweepStats.idleTime;
+	}
+
 	MM_GlobalGCStats()
 		: gcCount(0)
 		, workPacketStats()

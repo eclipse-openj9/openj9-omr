@@ -1667,7 +1667,7 @@ MM_ParallelGlobalGC::reportGCIncrementEnd(MM_EnvironmentBase *env)
 	}
 
 	stats->_endTime = omrtime_hires_clock();
-
+	stats->_stallTime = _extensions->globalGCStats.getStallTime();
 	TRIGGER_J9HOOK_MM_PRIVATE_GC_INCREMENT_END(
 		_extensions->privateHookInterface,
 		env->getOmrVMThread(),

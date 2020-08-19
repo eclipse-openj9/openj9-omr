@@ -204,12 +204,12 @@ MM_VerboseHandlerOutput::getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t 
 }
 
 uintptr_t
-MM_VerboseHandlerOutput::getTagTemplateWithDuration(char *buf, uintptr_t bufsize, uintptr_t id, const char *type, uintptr_t contextId, uint64_t durationus, uint64_t usertimeus, uint64_t cputimeus, uint64_t wallTimeMs)
+MM_VerboseHandlerOutput::getTagTemplateWithDuration(char *buf, uintptr_t bufsize, uintptr_t id, const char *type, uintptr_t contextId, uint64_t durationus, uint64_t usertimeus, uint64_t cputimeus, uint64_t wallTimeMs, uint64_t stalltimeus)
 {
 	OMRPORT_ACCESS_FROM_OMRVM(_omrVM);
 	uintptr_t bufPos = 0;
-	bufPos += omrstr_printf(buf, bufsize, "id=\"%zu\" type=\"%s\" contextid=\"%zu\" durationms=\"%llu.%03.3llu\" usertimems=\"%llu.%03.3llu\" systemtimems=\"%llu.%03.3llu\" timestamp=\"",
- 			id, type, contextId, durationus / 1000, durationus % 1000, usertimeus / 1000, usertimeus % 1000, cputimeus / 1000, cputimeus % 1000);
+	bufPos += omrstr_printf(buf, bufsize, "id=\"%zu\" type=\"%s\" contextid=\"%zu\" durationms=\"%llu.%03.3llu\" usertimems=\"%llu.%03.3llu\" systemtimems=\"%llu.%03.3llu\" stalltimems=\"%llu.%03.3llu\" timestamp=\"",
+ 			id, type, contextId, durationus / 1000, durationus % 1000, usertimeus / 1000, usertimeus % 1000, cputimeus / 1000, cputimeus % 1000, stalltimeus / 1000, stalltimeus % 1000);
 	bufPos += omrstr_ftime(buf + bufPos, bufsize - bufPos, VERBOSEGC_DATE_FORMAT_PRE_MS, wallTimeMs);
 	bufPos += omrstr_printf(buf + bufPos, bufsize - bufPos, "%03llu", wallTimeMs % 1000);
 	bufPos += omrstr_ftime(buf + bufPos, bufsize - bufPos, VERBOSEGC_DATE_FORMAT_POST_MS, wallTimeMs);
@@ -834,6 +834,7 @@ MM_VerboseHandlerOutput::handleGCEnd(J9HookInterface** hook, uintptr_t eventNum,
 	uint64_t durationInMicroseconds   = 0;
 	uint64_t userTimeInMicroseconds   = 0;
 	uint64_t systemTimeInMicroseconds = 0;
+	uint64_t stallTimeInMicroseconds  = 0;
 
 	/* convert from nanoseconds to microseconds, compiler should autocast lvalue (int64_t) to rvalue (uint64_t) but just incase */
 	uint64_t startUserTime   =	(uint64_t)stats->_startProcessTimes._userTime   / 1000;
@@ -845,16 +846,18 @@ MM_VerboseHandlerOutput::handleGCEnd(J9HookInterface** hook, uintptr_t eventNum,
 	bool getDurationTimeSuccessful = getTimeDeltaInMicroSeconds(&durationInMicroseconds, stats->_startTime, stats->_endTime);
 	bool getUserTimeSuccessful = getTimeDelta(&userTimeInMicroseconds, startUserTime, endUserTime);
 	bool getSystemTimeSuccessful = getTimeDelta(&systemTimeInMicroseconds, startSystemTime, endSystemTime);
+	bool getStallTimeSuccessful = getTimeDeltaInMicroSeconds(&stallTimeInMicroseconds, 0, stats->_stallTime);
+
 	char tagTemplate[200];
 	getTagTemplateWithDuration(	tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(),
 								getCurrentCycleType(env), env->_cycleState->_verboseContextID,
 								durationInMicroseconds, userTimeInMicroseconds, systemTimeInMicroseconds,
-								omrtime_current_time_millis());
+								omrtime_current_time_millis(), stallTimeInMicroseconds);
 								
 	uintptr_t activeThreads = env->getExtensions()->dispatcher->activeThreadCount();
 
 	enterAtomicReportingBlock();
-	if (!getDurationTimeSuccessful || !getUserTimeSuccessful || !getSystemTimeSuccessful) {
+	if (!getDurationTimeSuccessful || !getUserTimeSuccessful || !getSystemTimeSuccessful || !getStallTimeSuccessful) {
 		writer->formatAndOutput(env, 0, "<warning details=\"clock error detected, following timing may be inaccurate\" />");
 	}
 	writer->formatAndOutput(env, 0, "<gc-end %s activeThreads=\"%zu\">", tagTemplate, activeThreads);

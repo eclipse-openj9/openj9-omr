@@ -380,6 +380,7 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 		<attribute name="durationms" type="float" use="required" />
 		<attribute name="usertimems" type="float" use="required" />
 		<attribute name="systemtimems" type="float" use="required" />
+		<attribute name="stalltimems" type="float" use="required" />
 		<attribute name="timestamp" type="dateTime" use="required" />
 		<attribute name="activeThreads" type="integer" use="required" />
 	</complexType>

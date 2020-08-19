@@ -4757,6 +4757,7 @@ MM_Scavenger::reportGCIncrementEnd(MM_EnvironmentStandard *env)
 	}
 
 	stats->_endTime = omrtime_hires_clock();
+	stats->_stallTime = _extensions->scavengerStats.getStallTime();
 
 	TRIGGER_J9HOOK_MM_PRIVATE_GC_INCREMENT_END(
 		_extensions->privateHookInterface,

@@ -38,7 +38,7 @@
 #include "p/codegen/PPCTableOfConstants.hpp"
 #include "runtime/Runtime.hpp"
 
-int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
+void OMR::ConstantDataSnippet::addConstantRequest(void              *v,
                                                   TR::DataType       type,
                                                   TR::Instruction *nibble0,
                                                   TR::Instruction *nibble1,
@@ -60,8 +60,6 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
 
    intptr_t   ain, aex;
 
-   int32_t ret = PTOC_FULL_INDEX;
-
    switch(type)
       {
       case TR::Float:
@@ -81,15 +79,8 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
             {
             fcursor = new (_cg->trHeapMemory()) PPCConstant<float>(_cg, fin.fvalue);
             _floatConstants.add(fcursor);
-            if (comp->target().is64Bit())
-               {
-               ret = TR_PPCTableOfConstants::lookUp(fin.fvalue, _cg);
-               }
-            fcursor->setTOCOffset(ret);
             }
-         ret = fcursor->getTOCOffset();
-         if (comp->target().is32Bit() || ret==PTOC_FULL_INDEX)
-            fcursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
+         fcursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
          }
          break;
 
@@ -110,15 +101,8 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
             {
             dcursor = new (_cg->trHeapMemory()) PPCConstant<double>(_cg, din.dvalue);
             _doubleConstants.add(dcursor);
-            if (comp->target().is64Bit())
-               {
-               ret = TR_PPCTableOfConstants::lookUp(din.dvalue, _cg);
-               }
-            dcursor->setTOCOffset(ret);
             }
-         ret = dcursor->getTOCOffset();
-         if (comp->target().is32Bit() || ret==PTOC_FULL_INDEX)
-            dcursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
+         dcursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
          }
          break;
 
@@ -155,8 +139,6 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
       default:
          TR_ASSERT(0, "Only float and address constants are supported. Data type is %s.\n", type.toString());
       }
-
-   return(ret);
    }
 
 
@@ -164,45 +146,39 @@ bool OMR::ConstantDataSnippet::getRequestorsFromNibble(TR::Instruction* nibble, 
    {
    ListIterator< PPCConstant<double> >  diterator(&_doubleConstants);
    PPCConstant<double>                 *dcursor=diterator.getFirst();
-   int32_t count = cg()->comp()->target().is64Bit()?4:2;
+   int32_t count;
+
+   if (cg()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
+      count = 1;
+   else if (cg()->comp()->target().is64Bit())
+      count = 4;
+   else
+      count = 2;
+
+   q[0] = NULL;
+   q[1] = NULL;
+   q[2] = NULL;
+   q[3] = NULL;
 
    while (dcursor != NULL)
       {
       TR_Array<TR::Instruction *> &requestors = dcursor->getRequestors();
-      if (requestors.size() > 0)
+      for (int32_t i = 0; i < requestors.size(); i+=count)
          {
-         for (int32_t i = 0; i < requestors.size(); i+=count)
+         for (int32_t j = 0; j < count; j++)
             {
-            if (count == 2)
+            if (requestors[i + j] == nibble)
                {
-               if (requestors[i] == nibble || requestors[i+1] == nibble)
+               for (int32_t k = 0; k < count; k++)
+                  q[k] = requestors[i + k];
+
+               if (remove)
                   {
-                  q[0] = requestors[i];
-                  q[1] = requestors[i+1];
-                  q[2] = NULL;
-                  q[3] = NULL;
-                  if (remove)
-                     {
-                     requestors.remove(i+1);
+                  for (int32_t k = 0; k < count; k++)
                      requestors.remove(i);
-                     }
-                  return true;
                   }
-               }
-            else // count == 4
-               {
-               int32_t j;
-               if (requestors[i] == nibble || requestors[i+1] == nibble || requestors[i+2] == nibble || requestors[i+3] == nibble)
-                  {
-                  for (j = 0; j < count; j++)
-                      q[j] = requestors[i+j];
-                  if (remove)
-                     {
-                     for (j = count-1; j >= 0 ; j--)
-                         requestors.remove(i+j);
-                     }
-                  return true;
-                  }
+
+               return true;
                }
             }
          }
@@ -213,40 +189,22 @@ bool OMR::ConstantDataSnippet::getRequestorsFromNibble(TR::Instruction* nibble, 
    while (fcursor != NULL)
       {
       TR_Array<TR::Instruction *> &requestors = fcursor->getRequestors();
-      if (requestors.size() > 0)
+      for (int32_t i = 0; i < requestors.size(); i+=count)
          {
-         for (int32_t i = 0; i < requestors.size(); i+=count)
+         for (int32_t j = 0; j < count; j++)
             {
-            if (count == 2)
+            if (requestors[i + j] == nibble)
                {
-               if (requestors[i] == nibble || requestors[i+1] == nibble)
+               for (int32_t k = 0; k < count; k++)
+                  q[k] = requestors[i + k];
+
+               if (remove)
                   {
-                  q[0] = requestors[i];
-                  q[1] = requestors[i+1];
-                  q[2] = NULL;
-                  q[3] = NULL;
-                  if (remove)
-                     {
-                     requestors.remove(i+1);
+                  for (int32_t k = 0; k < count; k++)
                      requestors.remove(i);
-                     }
-                  return true;
                   }
-               }
-            else // count == 4
-               {
-               int32_t j = 0;
-               if (requestors[i] == nibble || requestors[i+1] == nibble || requestors[i+2] == nibble || requestors[i+3] == nibble)
-                  {
-                  for (j = 0; j < count; j++)
-                      q[j] = requestors[i+j];
-                  if (remove)
-                     {
-                     for (j = count-1; j >= 0 ; j--)
-                         requestors.remove(i+j);
-                     }
-                  return true;
-                  }
+
+               return true;
                }
             }
          }
@@ -257,40 +215,22 @@ bool OMR::ConstantDataSnippet::getRequestorsFromNibble(TR::Instruction* nibble, 
    while (acursor != NULL)
       {
       TR_Array<TR::Instruction *> &requestors = acursor->getRequestors();
-      if (requestors.size() > 0)
+      for (int32_t i = 0; i < requestors.size(); i+=count)
          {
-         for (int32_t i = 0; i < requestors.size(); i+=count)
+         for (int32_t j = 0; j < count; j++)
             {
-            if (count == 2)
+            if (requestors[i + j] == nibble)
                {
-               if (requestors[i] == nibble || requestors[i+1] == nibble)
+               for (int32_t k = 0; k < count; k++)
+                  q[k] = requestors[i + k];
+
+               if (remove)
                   {
-                  q[0] = requestors[i];
-                  q[1] = requestors[i+1];
-                  q[2] = NULL;
-                  q[3] = NULL;
-                  if (remove)
-                     {
-                     requestors.remove(i+1);
+                  for (int32_t k = 0; k < count; k++)
                      requestors.remove(i);
-                     }
-                  return true;
                   }
-               }
-            else // count == 4
-               {
-               int32_t j = 0;
-               if (requestors[i] == nibble || requestors[i+1] == nibble || requestors[i+2] == nibble || requestors[i+3] == nibble)
-                  {
-                  for (j = 0; j < count; j++)
-                      q[j] = requestors[i+j];
-                  if (remove)
-                     {
-                     for (j = count-1; j >= 0 ; j--)
-                         requestors.remove(i+j);
-                     }
-                  return true;
-                  }
+
+               return true;
                }
             }
          }
@@ -299,90 +239,15 @@ bool OMR::ConstantDataSnippet::getRequestorsFromNibble(TR::Instruction* nibble, 
    return false;
    }
 
-
 void
-OMR::ConstantDataSnippet::emitFloatingPointConstant(
-      TR_Array<TR::Instruction *> &requestors,
-      uint8_t *codeCursor,
-      int32_t count)
+OMR::ConstantDataSnippet::emitAddressConstant(PPCConstant<intptr_t> *acursor, uint8_t *codeCursor)
    {
-   uint8_t *iloc1, *iloc2, *iloc3, *iloc4;
-   intptr_t addr;
-   int32_t i;
-   int32_t size = requestors.size();
-   TR::Compilation *comp = cg()->comp();
-
-   TR_ASSERT(size%count == 0, "Requestors are paired.\n");
-   for (i=0; i<size; i+=count)
-      {
-      iloc1 = requestors[i]->getBinaryEncoding();
-      iloc2 = requestors[i+1]->getBinaryEncoding();
-      addr = (intptr_t)codeCursor;
-      if (count==4)
-         {
-         iloc3 = requestors[i+2]->getBinaryEncoding();
-         iloc4 = requestors[i+3]->getBinaryEncoding();
-
-         if (cg()->canEmitDataForExternallyRelocatableInstructions())
-            {
-            *(int32_t *)iloc4 |= LO_VALUE(addr) & 0x0000ffff;
-            addr = cg()->hiValue(addr);
-            *(int32_t *)iloc3 |= addr & 0x0000ffff;
-            *(int32_t *)iloc2 |= (addr>>16) & 0x0000ffff;
-            *(int32_t *)iloc1 |= (addr>>32) & 0x0000ffff;
-            }
-         else
-            {
-            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(requestors[i],
-                                                                                         (uint8_t *)(addr),
-                                                                                         (uint8_t *)fixedSequence4,
-                                                                                         TR_FixedSequenceAddress2,
-                                                                                         cg()),
-                                   __FILE__,
-                                   __LINE__,
-                                   requestors[i]->getNode());
-            }
-         }
-      else
-         {
-         *(int32_t *)iloc1 |= cg()->hiValue(addr) & 0x0000ffff;
-         *(int32_t *)iloc2 |= LO_VALUE(addr) & 0x0000ffff;
-
-         TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
-         recordInfo->data3 = orderedPairSequence1;
-         cg()->addExternalRelocation(new (_cg->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(iloc1,
-                                                                                                iloc2,
-                                                                                                (uint8_t *)recordInfo,
-                                                                                                TR_AbsoluteMethodAddressOrderedPair,
-                                                                                                cg()),
-                                __FILE__,
-                                __LINE__,
-                                requestors[i]->getNode());
-         }
-      }
-
-   }
-
-
-void
-OMR::ConstantDataSnippet::emitAddressConstant(
-      PPCConstant<intptr_t> *acursor,
-      TR_Array<TR::Instruction *> &requestors,
-      uint8_t *codeCursor,
-      int32_t count)
-   {
-   uint8_t *iloc1, *iloc2, *iloc3, *iloc4;
-   intptr_t addr;
-   int32_t i;
-   int32_t size = requestors.size();
-   TR::Compilation *comp = cg()->comp();
-
    if (cg()->profiledPointersRequireRelocation())
       {
       TR::Node *node = acursor->getNode();
       if (node != NULL && node->getOpCodeValue() == TR::aconst)
          {
-         if (comp->getOption(TR_UseSymbolValidationManager))
+         if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
             {
             TR::SymbolType type;
 
@@ -425,105 +290,57 @@ OMR::ConstantDataSnippet::emitAddressConstant(
          }
       }
 
-   TR_ASSERT(size%count == 0, "Requestors are paired.\n");
-   for (i=0; i<size; i+=count)
-      {
-      iloc1 = requestors[i]->getBinaryEncoding();
-      iloc2 = requestors[i+1]->getBinaryEncoding();
-      addr = (intptr_t)codeCursor;
-      if (count==4)
-         {
-         iloc3 = requestors[i+2]->getBinaryEncoding();
-         iloc4 = requestors[i+3]->getBinaryEncoding();
-         if (cg()->canEmitDataForExternallyRelocatableInstructions())
-            {
-            *(int32_t *)iloc4 |= LO_VALUE(addr) & 0x0000ffff;
-            addr = cg()->hiValue(addr);
-            *(int32_t *)iloc3 |= addr & 0x0000ffff;
-            *(int32_t *)iloc2 |= (addr>>16) & 0x0000ffff;
-            *(int32_t *)iloc1 |= (addr>>32) & 0x0000ffff;
-            }
-         else
-            {
-            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(requestors[i],
-                                                                                         (uint8_t *)(addr),
-                                                                                         (uint8_t *)fixedSequence4,
-                                                                                         TR_FixedSequenceAddress2,
-                                                                                         cg()),
-                                   __FILE__,
-                                   __LINE__,
-                                   requestors[i]->getNode());
-            }
-         }
-      else
-         {
-         *(int32_t *)iloc1 |= _cg->hiValue(addr) & 0x0000ffff;
-         *(int32_t *)iloc2 |= LO_VALUE(addr) & 0x0000ffff;
-
-         TR_RelocationRecordInformation *recordInfo = (TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
-         recordInfo->data3 = orderedPairSequence1;
-         cg()->addExternalRelocation(new (_cg->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(iloc1, iloc2, (uint8_t *)recordInfo, TR_AbsoluteMethodAddressOrderedPair, cg()),
-                                __FILE__, __LINE__, requestors[i]->getNode());
-         }
-      }
-
+   acursor->patchRequestors(cg(), reinterpret_cast<intptr_t>(codeCursor));
    }
 
 
 uint8_t *OMR::ConstantDataSnippet::emitSnippetBody()
    {
    uint8_t *codeCursor = cg()->getBinaryBufferCursor();
-   int32_t size, count;
 
    setSnippetBinaryStart(codeCursor);
-   count = cg()->comp()->target().is64Bit()?4:2;
 
    // Align cursor to 8 bytes alignment
    codeCursor = (uint8_t *)((intptr_t)(codeCursor+7) & ~7);
 
    // Emit order is double, address, float. In this order we can ensure the 8 bytes alignment of double and address.
 
-   ListIterator< PPCConstant<double> > diterator(&_doubleConstants);
+   ListIterator<PPCConstant<double>> diterator(&_doubleConstants);
    PPCConstant<double> *dcursor=diterator.getFirst();
    while (dcursor != NULL)
       {
-      TR_Array<TR::Instruction *> &requestors = dcursor->getRequestors();
-      size = requestors.size();
-      if (size > 0)
+      if (dcursor->getRequestors().size() > 0)
          {
          *(double *)codeCursor = dcursor->getConstantValue();
-         emitFloatingPointConstant(requestors, codeCursor, count);
+         dcursor->patchRequestors(cg(), reinterpret_cast<intptr_t>(codeCursor));
          codeCursor += 8;
          }
 
       dcursor = diterator.getNext();
       }
 
-   ListIterator< PPCConstant<intptr_t> > aiterator(&_addressConstants);
+   ListIterator<PPCConstant<intptr_t>> aiterator(&_addressConstants);
    PPCConstant<intptr_t> *acursor=aiterator.getFirst();
    while (acursor != NULL)
       {
-      TR_Array<TR::Instruction *> &requestors = acursor->getRequestors();
-      size = requestors.size();
-      if (size > 0)
+      if (acursor->getRequestors().size() > 0)
          {
          *(intptr_t *)codeCursor = acursor->getConstantValue();
-         emitAddressConstant(acursor, requestors, codeCursor, count);
+         emitAddressConstant(acursor, codeCursor);
          codeCursor += sizeof(intptr_t);
          }
+
       acursor = aiterator.getNext();
       }
 
-   ListIterator< PPCConstant<float> > fiterator(&_floatConstants);
+   ListIterator<PPCConstant<float>> fiterator(&_floatConstants);
    PPCConstant<float> *fcursor=fiterator.getFirst();
    while (fcursor != NULL)
       {
-      TR_Array<TR::Instruction *> &requestors = fcursor->getRequestors();
-      size = requestors.size();
-      if (size > 0)
+      if (fcursor->getRequestors().size() > 0)
          {
          *(float *)codeCursor = fcursor->getConstantValue();
-         emitFloatingPointConstant(requestors, codeCursor, count);
+         fcursor->patchRequestors(cg(), reinterpret_cast<intptr_t>(codeCursor));
          codeCursor += 4;
          }
 

@@ -1970,6 +1970,11 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
    if (_sampleInterval == 0) // sampleInterval==0 does make much sense
       _sampleInterval = 1;
 
+   // POWER10 introduced prefixed loads with PC-relative addressing, so the pTOC is now obsolete
+   // and should no longer be used when such instructions are available.
+   if (TR::Compiler->target.cpu.isPower() && TR::Compiler->target.cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
+      self()->setOption(TR_DisableTOC);
+
 #if defined(TR_HOST_ARM)
    // OSR is not available for ARM yet
    self()->setOption(TR_DisableOSR);

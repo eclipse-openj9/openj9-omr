@@ -375,7 +375,8 @@ OMR::Power::CodeGenerator::generateScratchRegisterManager(int32_t capacity)
 void
 OMR::Power::CodeGenerator::ppcCGOnClassUnloading(void *loaderPtr)
    {
-   TR_PPCTableOfConstants::onClassUnloading(loaderPtr);
+   if (!TR::Options::getCmdLineOptions()->getOption(TR_DisableTOC))
+      TR_PPCTableOfConstants::onClassUnloading(loaderPtr);
    }
 
 TR_RuntimeHelper
@@ -941,23 +942,23 @@ void OMR::Power::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *ma
    }
 
 
-int32_t OMR::Power::CodeGenerator::findOrCreateFloatConstant(void *v, TR::DataType t,
+void OMR::Power::CodeGenerator::findOrCreateFloatConstant(void *v, TR::DataType t,
                              TR::Instruction *n0, TR::Instruction *n1,
                              TR::Instruction *n2, TR::Instruction *n3)
    {
    if (_constantData == NULL)
       _constantData = new (self()->trHeapMemory()) TR::ConstantDataSnippet(self());
-   return(_constantData->addConstantRequest(v, t, n0, n1, n2, n3, NULL, false));
+   _constantData->addConstantRequest(v, t, n0, n1, n2, n3, NULL, false);
    }
 
-int32_t OMR::Power::CodeGenerator::findOrCreateAddressConstant(void *v, TR::DataType t,
+void OMR::Power::CodeGenerator::findOrCreateAddressConstant(void *v, TR::DataType t,
                              TR::Instruction *n0, TR::Instruction *n1,
                              TR::Instruction *n2, TR::Instruction *n3,
                              TR::Node *node, bool isUnloadablePicSite)
    {
    if (_constantData == NULL)
       _constantData = new (self()->trHeapMemory()) TR::ConstantDataSnippet(self());
-   return(_constantData->addConstantRequest(v, t, n0, n1, n2, n3, node, isUnloadablePicSite));
+   _constantData->addConstantRequest(v, t, n0, n1, n2, n3, node, isUnloadablePicSite);
    }
 
 bool OMR::Power::CodeGenerator::isSnippetMatched(TR::Snippet *snippet, int32_t snippetKind, TR::SymbolReference *symRef)
@@ -2259,33 +2260,41 @@ OMR::Power::CodeGenerator::fixedLoadLabelAddressIntoReg(
       TR::Register *tempReg,
       bool useADDISFor32Bit)
    {
-   TR::Compilation *comp = self()->comp();
    if (self()->comp()->target().is64Bit())
       {
-      int32_t offset = TR_PPCTableOfConstants::allocateChunk(1, self());
+      TR_ASSERT_FATAL(!useADDISFor32Bit, "Cannot set useADDISFor32Bit on 64-bit systems");
 
-      if (offset != PTOC_FULL_INDEX)
+      if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
          {
-         offset *= 8;
-         self()->itemTracking(offset, label);
-         if (offset<LOWER_IMMED||offset>UPPER_IMMED)
-            {
-            TR_ASSERT_FATAL_WITH_NODE(node, 0x00008000 != self()->hiValue(offset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", offset);
-            generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addis, node, trgReg, self()->getTOCBaseRegister(), self()->hiValue(offset));
-            generateTrg1MemInstruction(self(),TR::InstOpCode::Op_load, node, trgReg, new (self()->trHeapMemory()) TR::MemoryReference(trgReg, LO_VALUE(offset), 8, self()));
-            }
-         else
-            {
-            generateTrg1MemInstruction(self(),TR::InstOpCode::Op_load, node, trgReg, new (self()->trHeapMemory()) TR::MemoryReference(self()->getTOCBaseRegister(), offset, 8, self()));
-            }
+         generateTrg1MemInstruction(self(), TR::InstOpCode::paddi, node, trgReg, TR::MemoryReference::withLabel(self(), label, 0, 0));
          }
       else
          {
-         TR::Instruction *q[4];
+         int32_t offset = TR_PPCTableOfConstants::allocateChunk(1, self());
 
-         fixedSeqMemAccess(self(), node, 0, q, trgReg, trgReg, TR::InstOpCode::addi2, 4, NULL, tempReg);
+         if (offset != PTOC_FULL_INDEX)
+            {
+            offset *= 8;
+            self()->itemTracking(offset, label);
+            if (offset<LOWER_IMMED||offset>UPPER_IMMED)
+               {
+               TR_ASSERT_FATAL_WITH_NODE(node, 0x00008000 != self()->hiValue(offset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", offset);
+               generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addis, node, trgReg, self()->getTOCBaseRegister(), self()->hiValue(offset));
+               generateTrg1MemInstruction(self(),TR::InstOpCode::Op_load, node, trgReg, new (self()->trHeapMemory()) TR::MemoryReference(trgReg, LO_VALUE(offset), 8, self()));
+               }
+            else
+               {
+               generateTrg1MemInstruction(self(),TR::InstOpCode::Op_load, node, trgReg, new (self()->trHeapMemory()) TR::MemoryReference(self()->getTOCBaseRegister(), offset, 8, self()));
+               }
+            }
+         else
+            {
+            TR::Instruction *q[4];
 
-         self()->addMetaDataFor64BitFixedLoadLabelAddressIntoReg(node, label, tempReg, q);
+            fixedSeqMemAccess(self(), node, 0, q, trgReg, trgReg, TR::InstOpCode::addi2, 4, NULL, tempReg);
+
+            self()->addMetaDataFor64BitFixedLoadLabelAddressIntoReg(node, label, tempReg, q);
+            }
          }
       }
    else

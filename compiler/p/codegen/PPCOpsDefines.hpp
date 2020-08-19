@@ -958,10 +958,12 @@ FORMAT_XS5_D34_RA_R
 #define Op_stu       stdu
 #define Op_stx       stdx
 #define Op_stux      stdux
+#define Op_pst       pstd
 #define Op_load      ld
 #define Op_loadu     ldu
 #define Op_loadx     ldx
 #define Op_loadux    ldux
+#define Op_pload     pld
 #define Op_cmp       cmp8
 #define Op_cmpi      cmpi8
 #define Op_cmpl      cmpl8
@@ -973,10 +975,12 @@ FORMAT_XS5_D34_RA_R
 #define Op_stu       stwu
 #define Op_stx       stwx
 #define Op_stux      stwux
+#define Op_pst       pstw
 #define Op_load      lwz
 #define Op_loadu     lwzu
 #define Op_loadx     lwzx
 #define Op_loadux    lwzux
+#define Op_pload     plwz
 #define Op_cmp       cmp4
 #define Op_cmpi      cmpi4
 #define Op_cmpl      cmpl4

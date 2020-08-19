@@ -53,6 +53,8 @@ template <typename ListKind> class List;
 #define NUM_PPC_MAXR 32
 #define UPPER_IMMED ((1 << 15) - 1)
 #define LOWER_IMMED (-(1 << 15))
+#define UPPER_IMMED_34 ((1LL << 33) - 1)
+#define LOWER_IMMED_34 (-(1LL << 33))
 
 namespace OMR
 {

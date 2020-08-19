@@ -354,8 +354,9 @@ void OMR::Power::MemoryReference::addToOffset(TR::Node * node, int64_t amount, T
       {
       self()->consolidateRegisters(NULL, NULL, false, cg);
       }
-   intptr_t displacement = self()->getOffset() + amount;
-   if (displacement<LOWER_IMMED || displacement>UPPER_IMMED)
+   int64_t displacement = self()->getOffset() + amount;
+   if (((displacement<LOWER_IMMED || displacement>UPPER_IMMED) && !cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10)) ||
+         (displacement < LOWER_IMMED_34 || displacement > UPPER_IMMED_34))
       {
       TR::Register  *newBase;
       intptr_t     upper, lower;
@@ -415,7 +416,9 @@ void OMR::Power::MemoryReference::addToOffset(TR::Node * node, int64_t amount, T
       self()->setBaseModifiable();
       }
    else
+      {
       self()->setOffset(displacement);
+      }
    }
 
 void OMR::Power::MemoryReference::forceIndexedForm(TR::Node * node, TR::CodeGenerator *cg, TR::Instruction *cursor)
@@ -1022,91 +1025,142 @@ void OMR::Power::MemoryReference::assignRegisters(TR::Instruction *currentInstru
 
 void OMR::Power::MemoryReference::mapOpCode(TR::Instruction *currentInstruction)
    {
-   TR::InstOpCode::Mnemonic op = currentInstruction->getOpCodeValue();
-   TR::Register  *index = self()->getIndexRegister();
-
-   if (index == NULL && !self()->isUsingDelayedIndexedForm())
-      return;
-
-   switch (op)
+   if (self()->getIndexRegister() != NULL || self()->isUsingDelayedIndexedForm())
       {
-      case TR::InstOpCode::lbz:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lbzx);
-         break;
-      case TR::InstOpCode::ld:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::ldx);
-         break;
-      case TR::InstOpCode::lfd:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lfdx);
-         break;
-      case TR::InstOpCode::lfdu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lfdux);
-         break;
-      case TR::InstOpCode::lfs:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lfsx);
-         break;
-      case TR::InstOpCode::lfsu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lfsux);
-         break;
-      case TR::InstOpCode::lha:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lhax);
-         break;
-      case TR::InstOpCode::lhau:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lhaux);
-         break;
-      case TR::InstOpCode::lhz:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lhzx);
-         break;
-      case TR::InstOpCode::lhzu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lhzux);
-         break;
-      case TR::InstOpCode::lwa:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lwax);
-         break;
-      case TR::InstOpCode::lwz:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lwzx);
-         break;
-      case TR::InstOpCode::lwzu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::lwzux);
-         break;
-      case TR::InstOpCode::stb:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stbx);
-         break;
-      case TR::InstOpCode::stbu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stbux);
-         break;
-      case TR::InstOpCode::std:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stdx);
-         break;
-      case TR::InstOpCode::stdu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stdux);
-         break;
-      case TR::InstOpCode::stfd:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stfdx);
-         break;
-      case TR::InstOpCode::stfdu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stfdux);
-         break;
-      case TR::InstOpCode::stfs:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stfsx);
-         break;
-      case TR::InstOpCode::stfsu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stfsux);
-         break;
-      case TR::InstOpCode::sth:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::sthx);
-         break;
-      case TR::InstOpCode::sthu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::sthux);
-         break;
-      case TR::InstOpCode::stw:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stwx);
-         break;
-      case TR::InstOpCode::stwu:
-         currentInstruction->setOpCodeValue(TR::InstOpCode::stwux);
-         break;
-      default:
-         break;
+      switch (currentInstruction->getOpCodeValue())
+         {
+         case TR::InstOpCode::lbz:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lbzx);
+            break;
+         case TR::InstOpCode::ld:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::ldx);
+            break;
+         case TR::InstOpCode::lfd:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lfdx);
+            break;
+         case TR::InstOpCode::lfdu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lfdux);
+            break;
+         case TR::InstOpCode::lfs:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lfsx);
+            break;
+         case TR::InstOpCode::lfsu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lfsux);
+            break;
+         case TR::InstOpCode::lha:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lhax);
+            break;
+         case TR::InstOpCode::lhau:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lhaux);
+            break;
+         case TR::InstOpCode::lhz:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lhzx);
+            break;
+         case TR::InstOpCode::lhzu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lhzux);
+            break;
+         case TR::InstOpCode::lwa:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lwax);
+            break;
+         case TR::InstOpCode::lwz:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lwzx);
+            break;
+         case TR::InstOpCode::lwzu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::lwzux);
+            break;
+         case TR::InstOpCode::stb:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stbx);
+            break;
+         case TR::InstOpCode::stbu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stbux);
+            break;
+         case TR::InstOpCode::std:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stdx);
+            break;
+         case TR::InstOpCode::stdu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stdux);
+            break;
+         case TR::InstOpCode::stfd:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stfdx);
+            break;
+         case TR::InstOpCode::stfdu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stfdux);
+            break;
+         case TR::InstOpCode::stfs:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stfsx);
+            break;
+         case TR::InstOpCode::stfsu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stfsux);
+            break;
+         case TR::InstOpCode::sth:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::sthx);
+            break;
+         case TR::InstOpCode::sthu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::sthux);
+            break;
+         case TR::InstOpCode::stw:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stwx);
+            break;
+         case TR::InstOpCode::stwu:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::stwux);
+            break;
+         default:
+            break;
+         }
+      }
+   else if ((self()->getOffset() < LOWER_IMMED || self()->getOffset() > UPPER_IMMED || self()->getLabel()) && currentInstruction->cg()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
+      {
+      switch (currentInstruction->getOpCodeValue())
+         {
+         case TR::InstOpCode::addi:
+         case TR::InstOpCode::addi2:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::paddi);
+            break;
+         case TR::InstOpCode::lbz:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::plbz);
+            break;
+         case TR::InstOpCode::ld:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::pld);
+            break;
+         case TR::InstOpCode::lfd:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::plfd);
+            break;
+         case TR::InstOpCode::lfs:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::plfs);
+            break;
+         case TR::InstOpCode::lha:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::plha);
+            break;
+         case TR::InstOpCode::lhz:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::plhz);
+            break;
+         case TR::InstOpCode::lwa:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::plwa);
+            break;
+         case TR::InstOpCode::lwz:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::plwz);
+            break;
+         case TR::InstOpCode::stb:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::pstb);
+            break;
+         case TR::InstOpCode::std:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::pstd);
+            break;
+         case TR::InstOpCode::stfd:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::pstfd);
+            break;
+         case TR::InstOpCode::stfs:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::pstfs);
+            break;
+         case TR::InstOpCode::sth:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::psth);
+            break;
+         case TR::InstOpCode::stw:
+            currentInstruction->setOpCodeValue(TR::InstOpCode::pstw);
+            break;
+         default:
+            break;
+         }
       }
    }
 
@@ -1227,15 +1281,14 @@ TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction 
    // a memory instruction.
    TR_ASSERT_FATAL(currentInstruction->getPrev(), "The first instruction cannot be a memory instruction");
 
-   if (self()->getLabel())
-      return currentInstruction;
-
+   self()->setOffset(self()->getOffset(*cg->comp()));
+   self()->setDelayedOffsetDone();
    self()->mapOpCode(currentInstruction);
 
    if (self()->getUnresolvedSnippet() != NULL)
       return self()->expandForUnresolvedSnippet(currentInstruction, cg);
 
-   if (!self()->getBaseRegister())
+   if (!self()->getBaseRegister() && !self()->getLabel())
       {
       if (self()->getModBase())
          self()->setBaseRegister(self()->getModBase());
@@ -1259,10 +1312,7 @@ TR::Instruction *OMR::Power::MemoryReference::expandInstruction(TR::Instruction 
    TR::RealRegister *base = toRealRegister(self()->getBaseRegister());
    TR::RealRegister *index = toRealRegister(self()->getIndexRegister());
    TR::RealRegister *data = toRealRegister(currentInstruction->getMemoryDataRegister());
-   int32_t displacement = self()->getOffset(*comp);
-
-   self()->setOffset(displacement);
-   self()->setDelayedOffsetDone();
+   int32_t displacement = self()->getOffset();
 
    TR_ASSERT_FATAL_WITH_INSTRUCTION(
       currentInstruction,
@@ -1567,37 +1617,90 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          symbol->getStaticSymbol()->setTOCIndex(tocIndex);
          }
 
-      // We need a snippet for unresolved or AOT if:
-      //  1. the load hasn't been resolved yet
-      //  (otherwise optimizer will remove the ResolveCHK and we can be sure pTOC will contain the resolved address),
-      //  2. we don't have a PTOC slot, we must always take the slow path
-
-      if ((ref->isUnresolved() || useUnresSnippetToAvoidRelo) &&
-          (topNode->getOpCodeValue() == TR::ResolveCHK || tocIndex == PTOC_FULL_INDEX))
+      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
          {
-         snippet = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false);
-         cg->addSnippet(snippet);
-         }
+         intptr_t addr = reinterpret_cast<intptr_t>(symbol->getStaticSymbol()->getStaticAddress());
 
-      // TODO: Improve the code sequence for cases when we know pTOC is full.
-      TR::MemoryReference *tocRef = new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), 0, sizeof(uintptr_t), cg);
-      tocRef->setSymbol(symbol, cg);
-      tocRef->getSymbolReference()->copyFlags(ref);
-      tocRef->setUsingStaticTOC();
-      if (snippet != NULL)
+         // For now, P10 PC-relative loads and stores are not supported for UnresolvedDataSnippet
+         // and for anything requiring a TR_ClassAddress relocation. To make things work, we must
+         // emit the 5 instruction load address by faking that the pTOC was full.
+         if (ref->isUnresolved() || useUnresSnippetToAvoidRelo || (cg->comp()->compileRelocatableCode() && symbol->isStatic() && symbol->isClassObject()))
+            {
+            TR::Register *addrReg = cg->allocateRegister();
+            _baseRegister = addrReg;
+            self()->setBaseModifiable();
+
+            if (ref->isUnresolved() || useUnresSnippetToAvoidRelo)
+               {
+               snippet = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false);
+               cg->addSnippet(snippet);
+               }
+
+            TR::MemoryReference *fakeTocRef = new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), 0, sizeof(uintptr_t), cg);
+            fakeTocRef->setSymbol(symbol, cg);
+            fakeTocRef->getSymbolReference()->copyFlags(ref);
+            fakeTocRef->setUsingStaticTOC();
+
+            if (snippet != NULL)
+               {
+               fakeTocRef->setUnresolvedSnippet(snippet);
+               fakeTocRef->adjustForResolution(cg);
+               }
+
+            symbol->getStaticSymbol()->setTOCIndex(PTOC_FULL_INDEX);
+
+            generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node==NULL?topNode:node, addrReg, fakeTocRef);
+            if (snippet != NULL)
+               cg->stopUsingRegister(fakeTocRef->getModBase());
+            }
+         else if (addr >= -0x200000000 && addr <= 0x1ffffffff)
+            {
+            _baseRegister = NULL;
+            _offset = addr;
+            }
+         else
+            {
+            TR::Register *addrReg = cg->allocateRegister();
+            _baseRegister = addrReg;
+            self()->setBaseModifiable();
+
+            loadAddressConstant(cg, false, nodeForSymbol, addr, addrReg);
+            }
+         }
+      else
          {
-         tocRef->setUnresolvedSnippet(snippet);
-         tocRef->adjustForResolution(cg);
+         // We need a snippet for unresolved or AOT if:
+         //  1. the load hasn't been resolved yet
+         //  (otherwise optimizer will remove the ResolveCHK and we can be sure pTOC will contain the resolved address),
+         //  2. we don't have a PTOC slot, we must always take the slow path
+
+         if ((ref->isUnresolved() || useUnresSnippetToAvoidRelo) &&
+            (topNode->getOpCodeValue() == TR::ResolveCHK || tocIndex == PTOC_FULL_INDEX))
+            {
+            snippet = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false);
+            cg->addSnippet(snippet);
+            }
+
+         // TODO: Improve the code sequence for cases when we know pTOC is full.
+         TR::MemoryReference *tocRef = new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), 0, sizeof(uintptr_t), cg);
+         tocRef->setSymbol(symbol, cg);
+         tocRef->getSymbolReference()->copyFlags(ref);
+         tocRef->setUsingStaticTOC();
+         if (snippet != NULL)
+            {
+            tocRef->setUnresolvedSnippet(snippet);
+            tocRef->adjustForResolution(cg);
+            }
+
+         TR::Register *addrReg = cg->allocateRegister();
+         TR::InstOpCode::Mnemonic loadOp = TR::InstOpCode::ld;
+
+         generateTrg1MemInstruction(cg, loadOp, node==NULL?topNode:node, addrReg, tocRef);
+         if (snippet != NULL)
+            cg->stopUsingRegister(tocRef->getModBase());
+         _baseRegister = addrReg;
+         self()->setBaseModifiable();
          }
-
-      TR::Register *addrReg = cg->allocateRegister();
-      TR::InstOpCode::Mnemonic loadOp = TR::InstOpCode::ld;
-
-      generateTrg1MemInstruction(cg, loadOp, node==NULL?topNode:node, addrReg, tocRef);
-      if (snippet != NULL)
-         cg->stopUsingRegister(tocRef->getModBase());
-      _baseRegister = addrReg;
-      self()->setBaseModifiable();
       }
    else
       {

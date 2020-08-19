@@ -62,6 +62,13 @@ namespace TR { class PPCImmInstruction; }
 namespace TR { class Snippet; }
 namespace TR { struct PPCLinkageProperties; }
 
+extern void loadFloatConstant(TR::CodeGenerator *cg,
+                              TR::InstOpCode::Mnemonic loadOp,
+                              TR::Node *node,
+                              TR::DataType type,
+                              void* value,
+                              TR::Register *trgReg);
+
 extern TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg,
                                     TR::Node        *node,
                                     intptr_t      address,
@@ -223,10 +230,10 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void dumpDataSnippets(TR::FILE *outFile);
 #endif
 
-   int32_t findOrCreateFloatConstant(void *v, TR::DataType t,
+   void findOrCreateFloatConstant(void *v, TR::DataType t,
                   TR::Instruction *n0, TR::Instruction *n1,
                   TR::Instruction *n2, TR::Instruction *n3);
-   int32_t findOrCreateAddressConstant(void *v, TR::DataType t,
+   void findOrCreateAddressConstant(void *v, TR::DataType t,
                   TR::Instruction *n0, TR::Instruction *n1,
                   TR::Instruction *n2, TR::Instruction *n3,
                   TR::Node *node, bool isUnloadablePicSite);

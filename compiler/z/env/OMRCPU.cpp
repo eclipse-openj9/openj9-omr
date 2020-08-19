@@ -31,36 +31,6 @@
 #include "control/Options_inlines.hpp"
 #include "env/CPU.hpp"
 
-OMR::Z::CPU::CPU(const OMRProcessorDesc& processorDescription) : OMR::CPU(processorDescription)
-      {
-      switch(processorDescription.processor)
-         {
-         case OMR_PROCESSOR_S390_Z10:
-            _supportedArch = z10;
-            break;
-         case OMR_PROCESSOR_S390_Z196:
-            _supportedArch = z196;
-            break;
-         case OMR_PROCESSOR_S390_ZEC12:
-            _supportedArch = zEC12;
-            break;
-         case OMR_PROCESSOR_S390_Z13:
-            _supportedArch = z13;
-            break;
-         case OMR_PROCESSOR_S390_Z14:
-            _supportedArch = z14;
-            break;
-         case OMR_PROCESSOR_S390_Z15:
-            _supportedArch = z15;
-            break;
-         case OMR_PROCESSOR_S390_ZNEXT:
-            _supportedArch = zNext;
-            break;
-         default:
-            TR_ASSERT_FATAL(false, "Unsupported processorDescription.processor type: %s(%d)", TR::CPU::getProcessorName(processorDescription.processor), processorDescription.processor);
-         }
-      }
-
 TR::CPU
 OMR::Z::CPU::detect(OMRPortLibrary * const omrPortLib)
    {

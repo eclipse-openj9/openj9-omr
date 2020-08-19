@@ -82,6 +82,9 @@ static void lookupScheme2(TR::Node *node, bool unbalanced, bool fromTableEval, T
 static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg);
 static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg);
 
+/**
+ * @brief Represents an integer comparison condition.
+ */
 enum class CompareCondition
    {
    eq,
@@ -92,14 +95,28 @@ enum class CompareCondition
    le
    };
 
+/**
+ * \brief
+ *    Represents a condition as a (potentially reversed) bit in a condition register field.
+ */
 struct CRCompareCondition
    {
-   TR::RealRegister::CRCC crcc;
-   bool isReversed;
+   TR::RealRegister::CRCC crcc; //< Which bit in the CR field the result will be placed in.
+   bool isReversed; //< Whether the bit in the CR field is the complement of the comparison result.
 
    CRCompareCondition(TR::RealRegister::CRCC crcc, bool isReversed) : crcc(crcc), isReversed(isReversed) {}
    };
 
+/**
+ * \brief
+ *    Gets the placement of a condition in a CR field after a compare instruction is run.
+ *
+ * \param cond
+ *    The condition which should be checked for.
+ *
+ * \return
+ *    The placement of the provided condition in a CR field.
+ */
 CRCompareCondition compareConditionInCR(CompareCondition cond)
    {
    switch (cond)
@@ -119,6 +136,16 @@ CRCompareCondition compareConditionInCR(CompareCondition cond)
       }
    }
 
+/**
+ * \brief
+ *    Returns a condition representing the logical complement of the provided condition.
+ *
+ * \param cond
+ *    The condition to be reversed.
+ *
+ * \return
+ *    The logical complement of cond.
+ */
 CompareCondition reverseCondition(CompareCondition cond)
    {
    switch (cond)
@@ -138,6 +165,17 @@ CompareCondition reverseCondition(CompareCondition cond)
       }
    }
 
+/**
+ * \brief
+ *    Gets the opcode of a conditional branch instruction that branches when the provided condition
+ *    is true.
+ *
+ * \param cond
+ *    The condition upon which the instruction should branch.
+ *
+ * \return
+ *    An extended mnemonic for the bc instruction that branches when the provided condition is true.
+ */
 TR::InstOpCode::Mnemonic compareConditionToBranch(CompareCondition cond)
    {
    switch (cond)
@@ -157,27 +195,76 @@ TR::InstOpCode::Mnemonic compareConditionToBranch(CompareCondition cond)
       }
    }
 
+/**
+ * \brief
+ *    Represents information about a comparison to be performed.
+ */
 struct CompareInfo
    {
-   CompareCondition cond;
-   TR::DataTypes type;
-   bool isUnsigned;
-   bool isUnorderedTrue;
+   CompareCondition cond; //< The condition that is being evaluated for this comparison.
+   TR::DataTypes type; //< The types of the operands being compared.
+   bool isUnsigned; //< Whether an unsigned integral comparison should be performed.
+   bool isUnorderedTrue; //< Whether unordered floating-point operands should evaluate as true.
 
    CompareInfo(CompareCondition cond, TR::DataTypes type, bool isUnsigned, bool isUnorderedTrue)
       : cond(cond), type(type), isUnsigned(isUnsigned), isUnorderedTrue(isUnorderedTrue) {}
    };
 
+/**
+ * \brief
+ *    Determines whether the provided value is valid for a 16-bit signed SI field in an
+ *    instruction.
+ *
+ * \param value
+ *    The value to be checked.
+ *
+ * \return
+ *    true if the value provided can be encoded in a 16-bit SI field; false otherwise.
+ */
 bool is16BitSignedImmediate(int64_t value)
    {
    return value >= -0x8000 && value < 0x8000;
    }
 
+/**
+ * \brief
+ *    Determines whether the provided value is valid for a 16-bit unsigned UI field in an
+ *    instruction.
+ *
+ * \param value
+ *    The value to be checked.
+ *
+ * \return
+ *    true if the value provided can be encoded in a 16-bit UI field; false otherwise.
+ */
 bool is16BitUnsigedImmediate(uint64_t value)
    {
    return value < 0x10000;
    }
 
+/**
+ * \brief
+ *    Evaluates a node, sign-extending it to fill a register if its type is less than the size of
+ *    a register.
+ *
+ *    The returned register may or may not be the same as the value of \c node->getRegister() so it
+ *    is necessary to call stopUsingExtendedRegister when done using the returned register.
+ *
+ * \param node
+ *    The node to evaluate.
+ *
+ * \param extendInt32
+ *    This flag determines whether 32-bit integers need to be sign-extended when running on 64-bit.
+ *    If only 32-bit instructions will be used on the register, then this flag does not need to be
+ *    set.
+ *
+ * \param cg
+ *    The code generator.
+ *
+ * \return
+ *    A register containing the evaluated value of the provided node, sign-extended to the desired
+ *    length.
+ */
 static TR::Register *evaluateAndSignExtend(TR::Node *node, bool extendInt32, TR::CodeGenerator *cg)
    {
    TR::Register *srcReg = cg->evaluate(node);
@@ -215,6 +302,29 @@ static TR::Register *evaluateAndSignExtend(TR::Node *node, bool extendInt32, TR:
       }
    }
 
+/**
+ * \brief
+ *    Evaluates a node, zero-extending it to fill a register if its type is less than the size of
+ *    a register.
+ *
+ *    The returned register may or may not be the same as the value of \c node->getRegister() so it
+ *    is necessary to call stopUsingExtendedRegister when done using the returned register.
+ *
+ * \param node
+ *    The node to evaluate.
+ *
+ * \param extendInt32
+ *    This flag determines whether 32-bit integers need to be zero-extended when running on 64-bit.
+ *    If only 32-bit instructions will be used on the register, then this flag does not need to be
+ *    set.
+ *
+ * \param cg
+ *    The code generator.
+ *
+ * \return
+ *    A register containing the evaluated value of the provided node, zero-extended to the desired
+ *    length.
+ */
 static TR::Register *evaluateAndZeroExtend(TR::Node *node, bool extendInt32, TR::CodeGenerator *cg)
    {
    TR::Register *srcReg = cg->evaluate(node);
@@ -252,17 +362,83 @@ static TR::Register *evaluateAndZeroExtend(TR::Node *node, bool extendInt32, TR:
       }
    }
 
+/**
+ * \brief
+ *    Evaluates a node, sign- or zero-extending it to fill a register if its type is less than the
+ *    size of a register.
+ *
+ *    The returned register may or may not be the same as the value of \c node->getRegister() so it
+ *    is necessary to call stopUsingExtendedRegister when done using the returned register.
+ *
+ * \param node
+ *    The node to evaluate.
+ *
+ * \param isUnsigned
+ *    If true, the register will be zero-extended; otherwise, it will be sign-extended.
+ *
+ * \param extendInt32
+ *    This flag determines whether 32-bit integers need to be extended when running on 64-bit. If
+ *    only 32-bit instructions will be used on the register, then this flag does not need to be
+ *    set.
+ *
+ * \param cg
+ *    The code generator.
+ *
+ * \return
+ *    A register containing the evaluated value of the provided node, sign- or zero-extended to the
+ *    desired length.
+ */
 static TR::Register *evaluateAndExtend(TR::Node *node, bool isUnsigned, bool extendInt32, TR::CodeGenerator *cg)
    {
    return isUnsigned ? evaluateAndZeroExtend(node, extendInt32, cg) : evaluateAndSignExtend(node, extendInt32, cg);
    }
 
+/**
+ * \brief
+ *    Stops using a register returned from the evaluateAndExtend, evaluateAndZeroExtend, or
+ *    evaluateAndSignExtend helpers.
+ *
+ * \param reg
+ *    The sign- or zero-extended register to be freed.
+ *
+ * \param node
+ *    The node from which the provided register was evaluated.
+ *
+ * \param cg
+ *    The code generator.
+ */
 static void stopUsingExtendedRegister(TR::Register *reg, TR::Node *node, TR::CodeGenerator *cg)
    {
    if (reg != node->getRegister())
       cg->stopUsingRegister(reg);
    }
 
+/**
+ * \brief
+ *    Evaluates a 64-bit comparison on 32-bit machines using register pairs for the operands.
+ *
+ * \param condReg
+ *    The condition register in which the result of the comparison should be placed.
+ *
+ * \param node
+ *    The node for which this comparison is being generated.
+ *
+ * \param firstChild
+ *    The node corresponding to the left-hand side operand of the comparison.
+ *
+ * \param secondChild
+ *    The node corresponding to the right-hand side operand of the comparison.
+ *
+ * \param compareInfo
+ *    The CompareInfo struct containing information about the comparison.
+ *
+ * \param cg
+ *    The code generator.
+ *
+ * \return
+ *    The condition code corresponding to the CR field bit into which the result of the comparison
+ *    was placed.
+ */
 CompareCondition evaluateDualIntCompareToConditionRegister(
       TR::Register *condReg,
       TR::Node *node,
@@ -370,6 +546,33 @@ CompareCondition evaluateDualIntCompareToConditionRegister(
    return CompareCondition::eq;
    }
 
+/**
+ * \brief
+ *    Evaluates an integral comparison to all bits of a CR field using a cmp or cmpi instruction.
+ *
+ *    This function is not capable of handling 64-bit integral comparisons on 32-bit machines, as
+ *    such comparisons cannot be performed in a single instruction and would require many extra CR
+ *    logical instructions, rendering it too inefficient for general use.
+ *
+ * \param condReg
+ *    The condition register in which the result of the comparison should be placed.
+ *
+ * \param node
+ *    The node for which this comparison is being generated.
+ *
+ * \param firstChild
+ *    The node corresponding to the left-hand side operand of the comparison.
+ *
+ * \param secondChild
+ *    The node corresponding to the right-hand side operand of the comparison.
+ *
+ * \param compareInfo
+ *    The CompareInfo struct containing information about the comparison. Only the fields relating
+ *    to the types of values being compared (i.e. type and signedness) will be used.
+ *
+ * \param cg
+ *    The code generator.
+ */
 void evaluateThreeWayIntCompareToConditionRegister(
       TR::Register *condReg,
       TR::Node *node,
@@ -449,6 +652,32 @@ void evaluateThreeWayIntCompareToConditionRegister(
    stopUsingExtendedRegister(firstReg, firstChild, cg);
    }
 
+/**
+ * \brief
+ *    Evaluates an integral comparison to a single bit of a CR field.
+ *
+ * \param condReg
+ *    The condition register in which the result of the comparison should be placed.
+ *
+ * \param node
+ *    The node for which this comparison is being generated.
+ *
+ * \param firstChild
+ *    The node corresponding to the left-hand side operand of the comparison.
+ *
+ * \param secondChild
+ *    The node corresponding to the right-hand side operand of the comparison.
+ *
+ * \param compareInfo
+ *    The CompareInfo struct containing information about the comparison.
+ *
+ * \param cg
+ *    The code generator.
+ *
+ * \return
+ *    The condition code corresponding to the CR field bit into which the result of the comparison
+ *    was placed.
+ */
 CompareCondition evaluateIntCompareToConditionRegister(
    TR::Register *condReg,
    TR::Node *node,
@@ -465,6 +694,32 @@ CompareCondition evaluateIntCompareToConditionRegister(
    return compareInfo.cond;
    }
 
+/**
+ * \brief
+ *    Evaluates a floating-point comparison to a single bit of a CR field.
+ *
+ * \param condReg
+ *    The condition register in which the result of the comparison should be placed.
+ *
+ * \param node
+ *    The node for which this comparison is being generated.
+ *
+ * \param firstChild
+ *    The node corresponding to the left-hand side operand of the comparison.
+ *
+ * \param secondChild
+ *    The node corresponding to the right-hand side operand of the comparison.
+ *
+ * \param compareInfo
+ *    The CompareInfo struct containing information about the comparison.
+ *
+ * \param cg
+ *    The code generator.
+ *
+ * \return
+ *    The condition code corresponding to the CR field bit into which the result of the comparison
+ *    was placed.
+ */
 CompareCondition evaluateFloatCompareToConditionRegister(
       TR::Register *condReg,
       TR::Node *node,
@@ -499,6 +754,32 @@ CompareCondition evaluateFloatCompareToConditionRegister(
    return compareInfo.cond;
    }
 
+/**
+ * \brief
+ *    Evaluates an arbitrary comparison to a single bit of a CR field.
+ *
+ * \param condReg
+ *    The condition register in which the result of the comparison should be placed.
+ *
+ * \param node
+ *    The node for which this comparison is being generated.
+ *
+ * \param firstChild
+ *    The node corresponding to the left-hand side operand of the comparison.
+ *
+ * \param secondChild
+ *    The node corresponding to the right-hand side operand of the comparison.
+ *
+ * \param compareInfo
+ *    The CompareInfo struct containing information about the comparison.
+ *
+ * \param cg
+ *    The code generator.
+ *
+ * \return
+ *    The condition code corresponding to the CR field bit into which the result of the comparison
+ *    was placed.
+ */
 CompareCondition evaluateCompareToConditionRegister(
       TR::Register *condReg,
       TR::Node *node,
@@ -2075,6 +2356,29 @@ TR::Register *OMR::Power::TreeEvaluator::ifacmpneEvaluator(TR::Node *node, TR::C
    return NULL;
    }
 
+/**
+ * \brief
+ *    Generates an internal control flow sequence using a branch to set a target register to either
+ *    0 or 1 depending on the result of a comparison.
+ *
+ * \param trgReg
+ *    The register into which the result of the comparison should be written.
+ *
+ * \param node
+ *    The node for which the comparison is being performed.
+ *
+ * \param firstChild
+ *    The node corresponding to the left-hand side operand of the comparison.
+ *
+ * \param secondChild
+ *    The node corresponding to the right-hand side operand of the comparison.
+ *
+ * \param compareInfo
+ *    The CompareInfo struct containing information about the comparison.
+ *
+ * \param cg
+ *    The code generator.
+ */
 void generateCompareBranchSequence(
       TR::Register *trgReg,
       TR::Node *node,
@@ -2106,6 +2410,29 @@ void generateCompareBranchSequence(
    cg->stopUsingRegister(condReg);
    }
 
+/**
+ * \brief
+ *    Generates a sequence using the POWER10 setbc family of instructions to set a target register
+ *    to either 0 or 1 depending on the result of a comparison without branching.
+ *
+ * \param trgReg
+ *    The register into which the result of the comparison should be written.
+ *
+ * \param node
+ *    The node for which the comparison is being performed.
+ *
+ * \param firstChild
+ *    The node corresponding to the left-hand side operand of the comparison.
+ *
+ * \param secondChild
+ *    The node corresponding to the right-hand side operand of the comparison.
+ *
+ * \param compareInfo
+ *    The CompareInfo struct containing information about the comparison.
+ *
+ * \param cg
+ *    The code generator.
+ */
 void generateCompareSetBoolean(
       TR::Register *trgReg,
       TR::Node *node,
@@ -2210,6 +2537,32 @@ TR::Register *intEqualityEvaluator(TR::Node *node, bool flipResult, TR::DataType
    return trgReg;
    }
 
+/**
+ * \brief
+ *    Generates a branchless sequence for comparing the specified register to the integral constant
+ *    0, placing the result in the sign bit of the returned register.
+ *
+ * \param node
+ *    The node for which the comparison is being performed.
+ *
+ * \param cond
+ *    The condition code corresponding to the comparison that should be performed.
+ *
+ * \param srcReg
+ *    The register containing the value which should be compared to 0. This register is not
+ *    clobbered when performing the computation.
+ *
+ * \param tempReg
+ *    A register whose value can be clobbered to hold intermediate values used to perform the
+ *    comparison.
+ *
+ * \param cg
+ *    The code generator.
+ *
+ * \return
+ *    The register containing the result of the comparison in its sign bit. This register may be
+ *    either srcReg or tempReg depending on what comparison was performed.
+ */
 TR::Register *intOrderZeroToSignBit(TR::Node *node, CompareCondition cond, TR::Register *srcReg, TR::Register *tempReg, TR::CodeGenerator *cg)
    {
    switch (cond)
@@ -2244,6 +2597,24 @@ TR::Register *intOrderZeroToSignBit(TR::Node *node, CompareCondition cond, TR::R
       }
    }
 
+/**
+ * \brief
+ *    Determines whether a comparison is a signed comparison that does not use register pairs
+ *    against a value for which the value of the sign bit is known.
+ *
+ * \param secondChild
+ *    The node corresponding to the right-hand side operand of the comparison.
+ *
+ * \param compareInfo
+ *    The CompareInfo struct containing information about the comparison.
+ *
+ * \param cg
+ *    The code generator.
+ *
+ * \return
+ *    true if the comparison is a signed comparison, does not use register pairs, and is against
+ *    a value with a known sign bit; false otherwise.
+ */
 bool isSimpleSignedCompareToKnownSign(TR::Node *secondChild, const CompareInfo& compareInfo, TR::CodeGenerator *cg)
    {
    if (compareInfo.isUnsigned)
@@ -2255,6 +2626,19 @@ bool isSimpleSignedCompareToKnownSign(TR::Node *secondChild, const CompareInfo& 
    return secondChild->isNonNegative() || secondChild->isNegative() || secondChild->getOpCode().isLoadConst();
    }
 
+/**
+ * \brief
+ *    Gets the length of an integral type in bits.
+ *
+ * \param dt
+ *    The data type to get the length of.
+ *
+ * \param cg
+ *    The code generator.
+ *
+ * \return
+ *    The length of the provided type in bits.
+ */
 int32_t getTypeBitLength(TR::DataTypes dt, TR::CodeGenerator *cg)
    {
    switch (dt)
@@ -2274,6 +2658,26 @@ int32_t getTypeBitLength(TR::DataTypes dt, TR::CodeGenerator *cg)
       }
    }
 
+/**
+ * \brief
+ *    Determines whether an integral type is smaller than the size of a GPR on the current
+ *    machine. This is meant to be used to enable optimizations that make use of extra bits
+ *    available in the GPR that cannot actually be set by the value.
+ *
+ *    Note that this method considers the size of a GPR on the target machine to be equal to the
+ *    size of an address. While this is not strictly true in hardware since it's possible to make
+ *    use of the upper 32 bits of a register when running in 32-bit mode on a 64-bit machine, this
+ *    function assumes that the caller will not do this.
+ *
+ * \param dt
+ *    The data type to check.
+ *
+ * \param cg
+ *    The code generator.
+ *
+ * \return
+ *    true if the provided type is smaller than the size of a GPR; false otherwise.
+ */
 bool isTypeSubRegister(TR::DataTypes dt, TR::CodeGenerator *cg)
    {
    switch (dt)

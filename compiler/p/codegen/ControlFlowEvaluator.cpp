@@ -161,10 +161,11 @@ struct CompareInfo
    {
    CompareCondition cond;
    TR::DataTypes type;
-   bool isUnsignedOrUnordered;
+   bool isUnsigned;
+   bool isUnorderedTrue;
 
-   CompareInfo(CompareCondition cond, TR::DataTypes type, bool isUnsignedOrUnordered)
-      : cond(cond), type(type), isUnsignedOrUnordered(isUnsignedOrUnordered) {}
+   CompareInfo(CompareCondition cond, TR::DataTypes type, bool isUnsigned, bool isUnorderedTrue)
+      : cond(cond), type(type), isUnsigned(isUnsigned), isUnorderedTrue(isUnorderedTrue) {}
    };
 
 bool is16BitSignedImmediate(int64_t value)
@@ -278,11 +279,11 @@ CompareCondition evaluateDualIntCompareToConditionRegister(
       int32_t secondHi = secondChild->getLongIntHigh();
       int32_t secondLo = secondChild->getLongIntLow();
 
-      if (compareInfo.isUnsignedOrUnordered && is16BitUnsigedImmediate(secondHi))
+      if (compareInfo.isUnsigned && is16BitUnsigedImmediate(secondHi))
          {
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, condReg, firstReg->getHighOrder(), secondHi);
          }
-      else if (!compareInfo.isUnsignedOrUnordered && is16BitSignedImmediate(secondHi))
+      else if (!compareInfo.isUnsigned && is16BitSignedImmediate(secondHi))
          {
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, firstReg->getHighOrder(), secondHi);
          }
@@ -291,7 +292,7 @@ CompareCondition evaluateDualIntCompareToConditionRegister(
          TR::Register *secondHiReg = cg->allocateRegister();
 
          loadConstant(cg, node, secondHi, secondHiReg);
-         generateTrg1Src2Instruction(cg, compareInfo.isUnsignedOrUnordered ? TR::InstOpCode::cmpl4 : TR::InstOpCode::cmp4, node, condReg, firstReg->getHighOrder(), secondHiReg);
+         generateTrg1Src2Instruction(cg, compareInfo.isUnsigned ? TR::InstOpCode::cmpl4 : TR::InstOpCode::cmp4, node, condReg, firstReg->getHighOrder(), secondHiReg);
 
          cg->stopUsingRegister(secondHiReg);
          }
@@ -314,7 +315,7 @@ CompareCondition evaluateDualIntCompareToConditionRegister(
       {
       TR::Register *secondReg = cg->evaluate(secondChild);
 
-      generateTrg1Src2Instruction(cg, compareInfo.isUnsignedOrUnordered ? TR::InstOpCode::cmpl4 : TR::InstOpCode::cmp4, node, condReg, firstReg->getHighOrder(), secondReg->getHighOrder());
+      generateTrg1Src2Instruction(cg, compareInfo.isUnsigned ? TR::InstOpCode::cmpl4 : TR::InstOpCode::cmp4, node, condReg, firstReg->getHighOrder(), secondReg->getHighOrder());
       generateTrg1Src2Instruction(cg, TR::InstOpCode::cmpl4, node, condReg2, firstReg->getLowOrder(), secondReg->getLowOrder());
       }
 
@@ -403,7 +404,7 @@ void evaluateThreeWayIntCompareToConditionRegister(
 
    if (is64Bit)
       {
-      if (compareInfo.isUnsignedOrUnordered)
+      if (compareInfo.isUnsigned)
          {
          cmpOp = TR::InstOpCode::cmpl8;
          cmpiOp = TR::InstOpCode::cmpli8;
@@ -416,7 +417,7 @@ void evaluateThreeWayIntCompareToConditionRegister(
       }
    else
       {
-      if (compareInfo.isUnsignedOrUnordered)
+      if (compareInfo.isUnsigned)
          {
          cmpOp = TR::InstOpCode::cmpl4;
          cmpiOp = TR::InstOpCode::cmpli4;
@@ -428,9 +429,9 @@ void evaluateThreeWayIntCompareToConditionRegister(
          }
       }
 
-   TR::Register *firstReg = evaluateAndExtend(firstChild, compareInfo.isUnsignedOrUnordered, false, cg);
+   TR::Register *firstReg = evaluateAndExtend(firstChild, compareInfo.isUnsigned, false, cg);
    bool canUseCmpi = secondChild->getOpCode().isLoadConst() &&
-      (compareInfo.isUnsignedOrUnordered
+      (compareInfo.isUnsigned
          ? is16BitUnsigedImmediate(secondChild->get64bitIntegralValueAsUnsigned())
          : is16BitSignedImmediate(secondChild->get64bitIntegralValue()));
 
@@ -440,7 +441,7 @@ void evaluateThreeWayIntCompareToConditionRegister(
       }
    else
       {
-      TR::Register *secondReg = evaluateAndExtend(secondChild, compareInfo.isUnsignedOrUnordered, false, cg);
+      TR::Register *secondReg = evaluateAndExtend(secondChild, compareInfo.isUnsigned, false, cg);
       generateTrg1Src2Instruction(cg, cmpOp, node, condReg, firstReg, secondReg);
       stopUsingExtendedRegister(secondReg, secondChild, cg);
       }
@@ -480,11 +481,11 @@ CompareCondition evaluateFloatCompareToConditionRegister(
 
    // When we're using the negation of a CR bit (e.g. x >= y is checked as x < y), we must take
    // into account the possibility that the two operands were unordered for a floating-point
-   // comparison. The isUnsignedOrUnordered flag tells us whether two unordered operands should
-   // return true, so if that is different from whether the CR bit is negated, we must flip that
-   // CR bit if the operands were unordered. Since both CR bits can never be set simultaneously,
-   // this can be done with either cror or crxor, as both are equivalent.
-   if (crCond.isReversed != compareInfo.isUnsignedOrUnordered)
+   // comparison. The isUnorderedTrue flag tells us whether two unordered operands should return
+   // true, so if that is different from whether the CR bit is negated, we must flip that CR bit
+   // if the operands were unordered. Since both CR bits can never be set simultaneously, this can
+   // be done with either cror or crxor, as both are equivalent.
+   if (crCond.isReversed != compareInfo.isUnorderedTrue)
       generateTrg1Src2ImmInstruction(
          cg,
          TR::InstOpCode::crxor,
@@ -2128,7 +2129,7 @@ TR::Register *intEqualityEvaluator(TR::Node *node, bool flipResult, TR::DataType
 
    TR::Register *trgReg = cg->allocateRegister();
 
-   CompareInfo compareInfo(flipResult ? CompareCondition::ne : CompareCondition::eq, type, false);
+   CompareInfo compareInfo(flipResult ? CompareCondition::ne : CompareCondition::eq, type, false, false);
 
    if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
       {
@@ -2245,7 +2246,7 @@ TR::Register *intOrderZeroToSignBit(TR::Node *node, CompareCondition cond, TR::R
 
 bool isSimpleSignedCompareToKnownSign(TR::Node *secondChild, const CompareInfo& compareInfo, TR::CodeGenerator *cg)
    {
-   if (compareInfo.isUnsignedOrUnordered)
+   if (compareInfo.isUnsigned)
       return false;
 
    if (compareInfo.type == TR::Int64 && !cg->comp()->target().is64Bit())
@@ -2412,13 +2413,13 @@ TR::Register *intOrderEvaluator(TR::Node *node, const CompareInfo& compareInfo, 
       // When the size of the type of values being compared is less than the size of a register, we
       // can simply sign- or zero-extend the values to fill a register, subtract them from each
       // other, then check the sign of the result.
-      TR::Register *src1Reg = evaluateAndExtend(firstChild, compareInfo.isUnsignedOrUnordered, true, cg);
+      TR::Register *src1Reg = evaluateAndExtend(firstChild, compareInfo.isUnsigned, true, cg);
 
       bool flipOrder = (compareInfo.cond == CompareCondition::gt || compareInfo.cond == CompareCondition::le);
       bool flipResult = (compareInfo.cond == CompareCondition::le || compareInfo.cond == CompareCondition::ge);
       bool isConst = secondChild->getOpCode().isLoadConst();
 
-      if (isConst && compareInfo.isUnsignedOrUnordered && secondChild->get64bitIntegralValue() < 0)
+      if (isConst && compareInfo.isUnsigned && secondChild->get64bitIntegralValue() < 0)
          isConst = false;
 
       if (flipOrder && isConst && is16BitSignedImmediate(secondChild->get64bitIntegralValue()))
@@ -2431,7 +2432,7 @@ TR::Register *intOrderEvaluator(TR::Node *node, const CompareInfo& compareInfo, 
          }
       else
          {
-         TR::Register *src2Reg = evaluateAndExtend(secondChild, compareInfo.isUnsignedOrUnordered, true, cg);
+         TR::Register *src2Reg = evaluateAndExtend(secondChild, compareInfo.isUnsigned, true, cg);
 
          if (flipOrder)
             generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, trgReg, src1Reg, src2Reg);
@@ -2474,42 +2475,42 @@ TR::Register *OMR::Power::TreeEvaluator::bcmpneEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::bcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Int8, false), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Int8, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::bcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Int8, false), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Int8, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::bcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Int8, false), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Int8, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::bcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Int8, false), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Int8, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::bucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Int8, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Int8, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::bucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Int8, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Int8, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::bucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Int8, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Int8, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::bucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Int8, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Int8, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::scmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -2524,42 +2525,42 @@ TR::Register *OMR::Power::TreeEvaluator::scmpneEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::scmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Int16, false), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Int16, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::scmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Int16, false), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Int16, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::scmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Int16, false), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Int16, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::scmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Int16, false), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Int16, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::sucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Int16, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Int16, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::sucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Int16, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Int16, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::sucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Int16, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Int16, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::sucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Int16, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Int16, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::icmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -2574,42 +2575,42 @@ TR::Register *OMR::Power::TreeEvaluator::icmpneEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::icmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Int32, false), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Int32, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::icmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Int32, false), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Int32, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::icmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Int32, false), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Int32, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::icmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Int32, false), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Int32, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::iucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Int32, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Int32, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::iucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Int32, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Int32, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::iucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Int32, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Int32, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::iucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Int32, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Int32, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::lcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -2624,42 +2625,42 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpneEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::lcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Int64, false), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Int64, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::lcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Int64, false), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Int64, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::lcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Int64, false), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Int64, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::lcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Int64, false), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Int64, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::lucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Int64, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Int64, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::lucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Int64, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Int64, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::lucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Int64, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Int64, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::lucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Int64, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Int64, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::acmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -2674,22 +2675,22 @@ TR::Register *OMR::Power::TreeEvaluator::acmpneEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::acmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Address, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::lt, TR::Address, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::acmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Address, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::ge, TR::Address, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::acmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Address, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::gt, TR::Address, true, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::acmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Address, true), cg);
+   return intOrderEvaluator(node, CompareInfo(CompareCondition::le, TR::Address, true, false), cg);
    }
 
 TR::Register *floatCompareEvaluator(TR::Node *node, const CompareInfo& compareInfo, TR::CodeGenerator *cg)
@@ -2719,7 +2720,7 @@ TR::Register *floatCompareEvaluator(TR::Node *node, const CompareInfo& compareIn
             // result of setb. However, for *cmpeq and *cmpneu, we actually need to compute
             // (x < y || x > y || is_unordered(x, y)), so we set the LT bit if the FU bit is
             // set to get setb to return -1.
-            if (crCond.isReversed == compareInfo.isUnsignedOrUnordered)
+            if (crCond.isReversed == compareInfo.isUnorderedTrue)
                generateTrg1Src2ImmInstruction(
                   cg,
                   TR::InstOpCode::crxor,
@@ -2739,7 +2740,7 @@ TR::Register *floatCompareEvaluator(TR::Node *node, const CompareInfo& compareIn
          case TR::RealRegister::CRCC_LT:
             // To check for x < y, we can take the sign bit of the result of setb. We do need to
             // take unordered operands into account, though.
-            if (crCond.isReversed != compareInfo.isUnsignedOrUnordered)
+            if (crCond.isReversed != compareInfo.isUnorderedTrue)
                generateTrg1Src2ImmInstruction(
                   cg,
                   TR::InstOpCode::crxor,
@@ -2759,7 +2760,7 @@ TR::Register *floatCompareEvaluator(TR::Node *node, const CompareInfo& compareIn
          case TR::RealRegister::CRCC_GT:
             // To check for x > y, we can simply clear the LT bit of the CR and then take the
             // result of setb directly. We do need to take unordered operands into account, though.
-            if (crCond.isReversed != compareInfo.isUnsignedOrUnordered)
+            if (crCond.isReversed != compareInfo.isUnorderedTrue)
                generateTrg1Src2ImmInstruction(
                   cg,
                   TR::InstOpCode::crxor,
@@ -2796,122 +2797,122 @@ TR::Register *floatCompareEvaluator(TR::Node *node, const CompareInfo& compareIn
 
 TR::Register *OMR::Power::TreeEvaluator::fcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::eq, TR::Float, false), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::eq, TR::Float, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::fcmpequEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::eq, TR::Float, true), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::eq, TR::Float, false, true), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::fcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::ne, TR::Float, false), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::ne, TR::Float, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::fcmpneuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::ne, TR::Float, true), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::ne, TR::Float, false, true), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::fcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::lt, TR::Float, false), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::lt, TR::Float, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::fcmpltuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::lt, TR::Float, true), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::lt, TR::Float, false, true), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::fcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::ge, TR::Float, false), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::ge, TR::Float, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::fcmpgeuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::ge, TR::Float, true), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::ge, TR::Float, false, true), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::fcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::gt, TR::Float, false), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::gt, TR::Float, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::fcmpgtuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::gt, TR::Float, true), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::gt, TR::Float, false, true), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::fcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::le, TR::Float, false), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::le, TR::Float, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::fcmpleuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::le, TR::Float, true), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::le, TR::Float, false, true), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::dcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::eq, TR::Double, false), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::eq, TR::Double, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::dcmpequEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::eq, TR::Double, true), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::eq, TR::Double, false, true), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::dcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::ne, TR::Double, false), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::ne, TR::Double, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::dcmpneuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::ne, TR::Double, true), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::ne, TR::Double, false, true), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::dcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::lt, TR::Double, false), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::lt, TR::Double, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::dcmpltuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::lt, TR::Double, true), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::lt, TR::Double, false, true), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::dcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::ge, TR::Double, false), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::ge, TR::Double, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::dcmpgeuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::ge, TR::Double, true), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::ge, TR::Double, false, true), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::dcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::gt, TR::Double, false), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::gt, TR::Double, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::dcmpgtuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::gt, TR::Double, true), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::gt, TR::Double, false, true), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::dcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::le, TR::Double, false), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::le, TR::Double, false, false), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::dcmpleuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return floatCompareEvaluator(node, CompareInfo(CompareCondition::le, TR::Double, true), cg);
+   return floatCompareEvaluator(node, CompareInfo(CompareCondition::le, TR::Double, false, true), cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)

@@ -254,7 +254,14 @@ if(OMR_OPT_CUDA)
 	list(APPEND OBJECTS omrcuda.cpp)
 endif()
 
-
+if(NOT OMR_OS_WINDOWS)
+	list(APPEND OBJECTS
+		omrsysv_ipcwrappers.c
+		omrsharedhelper.c
+		omrshsem.c
+		omrshsem_deprecated.c
+	)
+endif()
 
 
 #Setup paths and include directories

@@ -357,7 +357,7 @@ TR_Arraycopy::checkArrayStore(TR::Node * storeNode)
 bool
 TR_ByteToCharArraycopy::checkArrayStore(TR::Node * storeNode)
    {
-   if (storeNode->getOpCodeValue() != TR::cstorei)
+   if (storeNode->getOpCodeValue() != TR::sstorei)
       {
       dumpOptDetails(comp(), "byte to char arraycopy arraystore tree does not have an indirect store as root\n");
       return false;
@@ -1694,7 +1694,7 @@ TR_Arraytranslate::checkLoad(TR::Node * loadNode)
 bool
 TR_Arraytranslate::checkStore(TR::Node * storeNode)
    {
-   if (storeNode->getOpCodeValue() != TR::cstorei && storeNode->getOpCodeValue() != TR::bstorei)
+   if (storeNode->getOpCodeValue() != TR::sstorei && storeNode->getOpCodeValue() != TR::bstorei)
       {
       dumpOptDetails(comp(), "...store tree does not have icstore/ibstore - no arraytranslate reduction\n");
       return false;
@@ -1750,7 +1750,7 @@ TR_Arraytranslate::checkStore(TR::Node * storeNode)
       }
    else
       {
-      if (storeNode->getOpCodeValue() == TR::cstorei)
+      if (storeNode->getOpCodeValue() == TR::sstorei)
          {
          _byteOutput = false;
          }

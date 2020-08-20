@@ -1200,7 +1200,7 @@ TR::Register *OMR::Power::TreeEvaluator::astoreEvaluator(TR::Node *node, TR::Cod
    }
 
 
-// also handles ilstore, lustore, ilustore
+// also handles ilstore, ilustore
 TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
@@ -1469,7 +1469,7 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
    return NULL;
    }
 
-// also handles ibstore, bustore, ibustore
+// also handles ibstore, ibustore
 TR::Register *OMR::Power::TreeEvaluator::bstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::MemoryReference *tempMR;

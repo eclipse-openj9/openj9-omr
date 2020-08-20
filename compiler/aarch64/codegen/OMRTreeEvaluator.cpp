@@ -549,7 +549,7 @@ OMR::ARM64::TreeEvaluator::bstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg
    return commonStoreEvaluator(node, TR::InstOpCode::strbimm, cg);
    }
 
-// also handles sstorei, cstore, cstorei
+// also handles sstorei
 TR::Register *
 OMR::ARM64::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

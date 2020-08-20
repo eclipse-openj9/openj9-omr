@@ -2315,7 +2315,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    TR::S390RILInstruction *LRLinst = 0;
    if (cg->isLiteralPoolOnDemandOn() && (base == 0))
       {
-      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) && op == TR::InstOpCode::L)
+      if (op == TR::InstOpCode::L)
          {
          targetsnippet = cg->findOrCreate4ByteConstant(node, imm);
          LRLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::LRL, node, treg, targetsnippet, 0);
@@ -2388,21 +2388,18 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    TR::Instruction * cursor;
    TR::Compilation *comp = cg->comp();
 
-   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
+   if (op == TR::InstOpCode::LG || op == TR::InstOpCode::L)
       {
-      if (op == TR::InstOpCode::LG || op == TR::InstOpCode::L)
-         {
-         TR::S390ConstantDataSnippet *targetSnippet = op == TR::InstOpCode::LG ?
-               targetSnippet = cg->findOrCreate8ByteConstant(node, (int64_t)imm) :
-               targetSnippet = cg->findOrCreate4ByteConstant(node, (int32_t)imm);
+      TR::S390ConstantDataSnippet *targetSnippet = op == TR::InstOpCode::LG ?
+            targetSnippet = cg->findOrCreate8ByteConstant(node, (int64_t)imm) :
+            targetSnippet = cg->findOrCreate4ByteConstant(node, (int32_t)imm);
 
-         targetSnippet->setSymbolReference(new (INSN_HEAP) TR::SymbolReference(comp->getSymRefTab()));
-         targetSnippet->setReloType(reloType);
-         AOTcgDiag4(comp, "generateRegLitRefInstruction constantDataSnippet=%x symbolReference=%x symbol=%x reloType=%x\n", targetSnippet, targetSnippet->getSymbolReference(), targetSnippet->getSymbolReference()->getSymbol(), reloType);
+      targetSnippet->setSymbolReference(new (INSN_HEAP) TR::SymbolReference(comp->getSymRefTab()));
+      targetSnippet->setReloType(reloType);
+      AOTcgDiag4(comp, "generateRegLitRefInstruction constantDataSnippet=%x symbolReference=%x symbol=%x reloType=%x\n", targetSnippet, targetSnippet->getSymbolReference(), targetSnippet->getSymbolReference()->getSymbol(), reloType);
 
-         cursor = (TR::S390RILInstruction *) generateRILInstruction(cg, (op == TR::InstOpCode::LG)?TR::InstOpCode::LGRL:TR::InstOpCode::LRL, node, treg, targetSnippet, preced);
-         return cursor;
-         }
+      cursor = (TR::S390RILInstruction *) generateRILInstruction(cg, (op == TR::InstOpCode::LG)?TR::InstOpCode::LGRL:TR::InstOpCode::LRL, node, treg, targetSnippet, preced);
+      return cursor;
       }
 
 
@@ -2531,7 +2528,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       }
    else if (cg->isLiteralPoolOnDemandOn() && (base == 0))
       {
-      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) && op == TR::InstOpCode::LG)
+      if (op == TR::InstOpCode::LG)
          {
          targetsnippet = cg->findOrCreate8ByteConstant(node, imm);
          LGRLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::LGRL, node, treg, targetsnippet, 0);
@@ -3066,15 +3063,9 @@ void generateShiftThenKeepSelected64Bit(TR::Node * node, TR::CodeGenerator *cg,
       {
       generateRIEInstruction(cg, TR::InstOpCode::RISBGN, node, targetRegister, sourceRegister, fromBit, toBit|0x80, shiftAmount);
       }
-   else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
-      {
-      generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, targetRegister, sourceRegister, fromBit, toBit|0x80, shiftAmount);
-      }
    else
       {
-      generateRSInstruction(cg, TR::InstOpCode::SRLG, node, targetRegister, sourceRegister, (63 - toBit) - shiftAmount);
-      generateRSInstruction(cg, TR::InstOpCode::SLLG, node, targetRegister, targetRegister, (63 - toBit) + fromBit);
-      generateRSInstruction(cg, TR::InstOpCode::SRLG, node, targetRegister, targetRegister, fromBit);
+      generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, targetRegister, sourceRegister, fromBit, toBit|0x80, shiftAmount);
       }
    }
 

@@ -1313,41 +1313,37 @@ OMR::Z::TreeEvaluator::icmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    if (node->getOpCodeValue() == TR::icmpeq ||
          node->getOpCodeValue() == TR::acmpeq)
       {
-      // RXSBG only supported on z10+
-      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
+      TR::Node* firstChild = node->getFirstChild();
+      TR::Node* secondChild = node->getSecondChild();
+      if (node->getOpCodeValue() != TR::acmpeq &&
+            cg->comp()->target().is64Bit() &&
+            firstChild->getOpCodeValue() == TR::iand &&
+            firstChild->getSecondChild()->getOpCodeValue() == TR::iconst &&
+            secondChild->getOpCodeValue() == TR::iconst &&
+            secondChild->getInt() == 0 &&
+            performTransformation(cg->comp(), "O^O CODE GENERATION:  ===>   Use RXSBG to perform icmpeq  <==\n"))
          {
-         TR::Node* firstChild = node->getFirstChild();
-         TR::Node* secondChild = node->getSecondChild();
-         if (node->getOpCodeValue() != TR::acmpeq &&
-             cg->comp()->target().is64Bit() &&
-             firstChild->getOpCodeValue() == TR::iand &&
-             firstChild->getSecondChild()->getOpCodeValue() == TR::iconst &&
-             secondChild->getOpCodeValue() == TR::iconst &&
-             secondChild->getInt() == 0 &&
-             performTransformation(cg->comp(), "O^O CODE GENERATION:  ===>   Use RXSBG to perform icmpeq  <==\n"))
+         int64_t val1 = node->getFirstChild()->getSecondChild()->getInt();
+         if ((val1 & (val1 - 1)) == 0)
             {
-            int64_t val1 = node->getFirstChild()->getSecondChild()->getInt();
-            if ((val1 & (val1 - 1)) == 0)
+            int32_t rotBy = (leadingZeroes(val1) + 1) & 0x3f; // 0-63
+            TR::Register *source = NULL;
+            if (firstChild->getRegister() == NULL)
                {
-               int32_t rotBy = (leadingZeroes(val1) + 1) & 0x3f; // 0-63
-               TR::Register *source = NULL;
-               if (firstChild->getRegister() == NULL)
-                  {
-                  source = cg->evaluate(firstChild->getFirstChild());
-                  cg->recursivelyDecReferenceCount(firstChild);
-                  }
-               else
-                  {
-                  source = cg->evaluate(firstChild);
-                  cg->decReferenceCount(firstChild);
-                  }
-               TR::Register *target = cg->allocateRegister();
-               generateRIInstruction(cg, TR::InstOpCode::LHI, node, target, 1);
-               generateRIEInstruction(cg, TR::InstOpCode::RXSBG, node, target, source, 63, 128+63, rotBy);
-               node->setRegister(target);
-               cg->decReferenceCount(secondChild);
-               return target;
+               source = cg->evaluate(firstChild->getFirstChild());
+               cg->recursivelyDecReferenceCount(firstChild);
                }
+            else
+               {
+               source = cg->evaluate(firstChild);
+               cg->decReferenceCount(firstChild);
+               }
+            TR::Register *target = cg->allocateRegister();
+            generateRIInstruction(cg, TR::InstOpCode::LHI, node, target, 1);
+            generateRIEInstruction(cg, TR::InstOpCode::RXSBG, node, target, source, 63, 128+63, rotBy);
+            node->setRegister(target);
+            cg->decReferenceCount(secondChild);
+            return target;
             }
          }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -189,14 +189,9 @@ genLogicalConversionForInt(TR::Node * node, TR::CodeGenerator * cg, TR::Register
       {
       generateRIEInstruction(cg, TR::InstOpCode::RISBGN, node, targetRegister, targetRegister, shift_amount, (int8_t)(63|0x80), 0);
       }
-   else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
-      {
-      generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, targetRegister, targetRegister, shift_amount, (int8_t)(63|0x80), 0);
-      }
    else
       {
-      generateRSInstruction(cg, TR::InstOpCode::SLLG, node, targetRegister, targetRegister, shift_amount);
-      generateRSInstruction(cg, TR::InstOpCode::SRLG, node, targetRegister, targetRegister, shift_amount);
+      generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, targetRegister, targetRegister, shift_amount, (int8_t)(63|0x80), 0);
       }
    }
 

@@ -526,21 +526,14 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
 #ifdef J9_PROJECT_SPECIFIC
          seenIndirectBCDStore = node->getType().isBCD();
 #endif
+
+         TR::Node::recreate(node, _compilation->il.opCodeForCorrespondingLoadOrStore(node->getOpCodeValue()));
          if (node->getOpCode().isStoreIndirect())
             {
-            if (seenWriteBarrier)
-               {
-               TR::Node::recreate(node, _compilation->il.opCodeForIndirectArrayLoad(node->getDataType()));
-               }
-            else
-               {
-               TR::Node::recreate(node, _compilation->il.opCodeForCorrespondingIndirectStore(node->getOpCodeValue()));
-               }
             node->setNumChildren(1);
             }
          else
             {
-            TR::Node::recreate(node, _compilation->il.opCodeForDirectLoad(node->getDataType()));
             node->setNumChildren(0);
             }
 
@@ -576,21 +569,14 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
 #ifdef J9_PROJECT_SPECIFIC
             seenOtherIndirectBCDStore = other->getType().isBCD();
 #endif
+            TR::Node::recreate(other, _compilation->il.opCodeForCorrespondingLoadOrStore(other->getOpCodeValue()));
+
             if (other->getOpCode().isStoreIndirect())
                {
-               if (seenOtherWriteBarrier)
-                  {
-                  TR::Node::recreate(other, _compilation->il.opCodeForIndirectArrayLoad(other->getDataType()));
-                  }
-               else
-                  {
-                  TR::Node::recreate(other, _compilation->il.opCodeForCorrespondingIndirectStore(other->getOpCodeValue()));
-                  }
                other->setNumChildren(1);
                }
             else
                {
-               TR::Node::recreate(other, _compilation->il.opCodeForDirectLoad(other->getDataType()));
                other->setNumChildren(0);
                }
 
@@ -625,10 +611,7 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
                other->setBCDStoreIsTemporarilyALoad(false);
 #endif
 
-            if (other->getOpCode().isIndirect())
-               TR::Node::recreate(other, _compilation->il.opCodeForCorrespondingIndirectLoad(other->getOpCodeValue()));
-            else
-               TR::Node::recreate(other, _compilation->il.opCodeForDirectStore(other->getDataType()));
+            TR::Node::recreate(other, _compilation->il.opCodeForCorrespondingLoadOrStore(other->getOpCodeValue()));
             }
 
          if (areSame)
@@ -651,10 +634,7 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
                   node->setBCDStoreIsTemporarilyALoad(false);
 #endif
 
-               if (node->getOpCode().isIndirect())
-                  TR::Node::recreate(node, _compilation->il.opCodeForCorrespondingIndirectLoad(node->getOpCodeValue()));
-               else
-                  TR::Node::recreate(node, _compilation->il.opCodeForDirectStore(node->getDataType()));
+               TR::Node::recreate(node, _compilation->il.opCodeForCorrespondingLoadOrStore(node->getOpCodeValue()));
                }
 
             return other->getLocalIndex();
@@ -688,10 +668,7 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
          node->setBCDStoreIsTemporarilyALoad(false);
 #endif
 
-      if (node->getOpCode().isIndirect())
-         TR::Node::recreate(node, _compilation->il.opCodeForCorrespondingIndirectLoad(node->getOpCodeValue()));
-      else
-         TR::Node::recreate(node, _compilation->il.opCodeForDirectStore(node->getDataType()));
+      TR::Node::recreate(node, _compilation->il.opCodeForCorrespondingLoadOrStore(node->getOpCodeValue()));
       }
 
    return -1;

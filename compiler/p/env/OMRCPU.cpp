@@ -93,6 +93,12 @@ OMR::Power::CPU::supportsFeature(uint32_t feature)
    }
 
 bool
+OMR::Power::CPU::getSupportsHardware64bitRotate(bool requireRotateToLeft)
+   {
+   return TR::Compiler->target.is64Bit();
+   }
+
+bool
 OMR::Power::CPU::is(OMRProcessorArchitecture p)
    {
    if (TR::Compiler->omrPortLib == NULL)

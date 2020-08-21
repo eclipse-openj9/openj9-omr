@@ -511,22 +511,6 @@ OpCodesTest::compileTestMethods()
    {
    }
 
-void
-OpCodesTest::addUnsupportedOpCodeTest(int32_t opCodeArgsNum,
-      TR::ILOpCodes opCode,
-      char * resolvedMethodName,
-      TR::DataType * argTypes,
-      TR::DataType returnType)
-   {
-   typedef void (*functype)();
-   functype never_succeeds;
-
-   int32_t returnCode = 0;
-   compileOpCodeMethod(never_succeeds, opCodeArgsNum, opCode, resolvedMethodName, argTypes, returnType, returnCode);
-   EXPECT_TRUE(COMPILATION_IL_GEN_FAILURE == returnCode || COMPILATION_REQUESTED == returnCode)
-      << resolvedMethodName << " is " << returnCode << ", expected is 0 or " << COMPILATION_IL_GEN_FAILURE;
-   }
-
 TR::ResolvedMethod *
 OpCodesTest::resolvedMethod(TR::DataType dataType)
    {
@@ -1293,24 +1277,6 @@ OpCodesTest::invokeDisabledOpCodesTests()
    OMR_CT_EXPECT_DOUBLE_EQ(_dRem, remainder(DOUBLE_ZERO, DOUBLE_MAXIMUM), _dRem(DOUBLE_ZERO, DOUBLE_MAXIMUM));
    OMR_CT_EXPECT_DOUBLE_EQ(_dRem, remainder(DOUBLE_POS, DOUBLE_NEG), _dRem(DOUBLE_POS, DOUBLE_NEG));
    OMR_CT_EXPECT_DOUBLE_EQ(_dRem, remainder(DOUBLE_MAXIMUM, DOUBLE_POS), _dRem(DOUBLE_MAXIMUM, DOUBLE_POS));
-   }
-
-void
-OpCodesTest::UnsupportedOpCodesTests()
-   {
-   //bdiv, brem
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::bdiv, "bDiv", _argTypesBinaryByte, TR::Int8);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::brem, "bRem", _argTypesBinaryByte, TR::Int8);
-
-   //sdiv, srem
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::sdiv, "sDiv", _argTypesBinaryShort, TR::Int16);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::srem, "sRem", _argTypesBinaryShort, TR::Int16);
-
-   //bucmplt, bucmple, bucmpgt, bucmpge
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::bucmplt, "buCmplt", _argTypesBinaryByte, TR::Int32);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::bucmpge, "buCmpge", _argTypesBinaryByte, TR::Int32);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::bucmpgt, "buCmpgt", _argTypesBinaryByte, TR::Int32);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::bucmple, "buCmple", _argTypesBinaryByte, TR::Int32);
    }
 
 void
@@ -2423,12 +2389,6 @@ TEST(JITCrossPlatformsOpCodesTest, AddressTest)
    ::TestCompiler::OpCodesTest addressTest;
    addressTest.compileAddressTestMethods();
    addressTest.invokeAddressTests();
-   }
-
-TEST(JITCrossPlatformsOpCodesTest, UnsupportedOpCodesTest)
-   {
-   ::TestCompiler::OpCodesTest unsupportedOpcodesTest;
-   unsupportedOpcodesTest.UnsupportedOpCodesTests();
    }
 
 TEST(JITCrossPlatformsOpCodesTest, DISABLED_OpCodesTests)

@@ -2609,12 +2609,12 @@ static void longCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCod
                      }
                   if (reportCompareDemotions)
                      {
-                     dumpOptDetails(s->comp(), "Long Compare Narrower: found child 1 c2l and child 2 lconst in cconst range in method %s\n", s->comp()->signature());
+                     dumpOptDetails(s->comp(), "Long Compare Narrower: found child 1 c2l and child 2 lconst in sconst range in method %s\n", s->comp()->signature());
                      }
                   }
                else if (reportCompareDemotions)
                   {
-                  dumpOptDetails(s->comp(), "Long Compare Narrower: found child 1 c2l and child 2 cconst in method %s\n", s->comp()->signature());
+                  dumpOptDetails(s->comp(), "Long Compare Narrower: found child 1 c2l and child 2 sconst in method %s\n", s->comp()->signature());
                   }
                }
             }
@@ -4440,12 +4440,12 @@ static void intCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCode
                   }
                if (reportCompareDemotions)
                   {
-                  dumpOptDetails(s->comp(), "Integer Compare Narrower: found child 1 c2i and child 2 iconst in cconst range in method %s\n", s->comp()->signature());
+                  dumpOptDetails(s->comp(), "Integer Compare Narrower: found child 1 c2i and child 2 iconst in sconst range in method %s\n", s->comp()->signature());
                   }
                }
             else if (reportCompareDemotions)
                {
-               dumpOptDetails(s->comp(), "Integer Compare Narrower: found child 1 c2i and child 2 cconst in method %s\n", s->comp()->signature());
+               dumpOptDetails(s->comp(), "Integer Compare Narrower: found child 1 c2i and child 2 sconst in method %s\n", s->comp()->signature());
                }
             }
          }
@@ -4582,12 +4582,12 @@ static void unsignedIntCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::
                   }
                if (reportCompareDemotions)
                   {
-                  dumpOptDetails(s->comp(), "Integer Compare Narrower: found child 1 c2i and child 2 iconst in cconst range in method %s\n", s->comp()->signature());
+                  dumpOptDetails(s->comp(), "Integer Compare Narrower: found child 1 c2i and child 2 iconst in sconst range in method %s\n", s->comp()->signature());
                   }
                }
             else if (reportCompareDemotions)
                {
-               dumpOptDetails(s->comp(), "Integer Compare Narrower: found child 1 c2i and child 2 cconst in method %s\n", s->comp()->signature());
+               dumpOptDetails(s->comp(), "Integer Compare Narrower: found child 1 c2i and child 2 sconst in method %s\n", s->comp()->signature());
                }
             }
          }
@@ -5050,10 +5050,10 @@ static bool isDeletedLabelLoadaddr(TR::Node * node)
 //  band                               band
 //    bshl                              ibload
 //      ibload           ===>             loadaddr
-//        loadaddr                      buconst N>>s
-//      iconst s                       buconst M>>s
-//    buconst N
-//  buconst M
+//        loadaddr                      bconst N>>s
+//      iconst s                       bconst M>>s
+//    bconst N
+//  bconst M
 
 static void bitTestingOp(TR::Node * node, TR::Simplifier *s)
   {

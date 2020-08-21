@@ -61,7 +61,6 @@ public:
    static TR::Register *unImpOpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *iconstEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *sconstEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *cconstEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bconstEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *aconstEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lconstEvaluator(TR::Node *node, TR::CodeGenerator *cg);

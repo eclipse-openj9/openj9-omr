@@ -55,11 +55,6 @@ TR::Register *OMR::ARM::TreeEvaluator::bconstEvaluator(TR::Node *node, TR::CodeG
    return commonConstEvaluator(node, node->getByte(), cg);
    }
 
-TR::Register *OMR::ARM::TreeEvaluator::cconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return commonConstEvaluator(node, node->getConst<uint16_t>(), cg);
-   }
-
 TR::Register *OMR::ARM::TreeEvaluator::commonConstEvaluator(TR::Node *node, int32_t value, TR::CodeGenerator *cg)
    {
    TR::Register *tempReg = node->setRegister(cg->allocateRegister());

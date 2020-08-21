@@ -523,9 +523,6 @@
 /*
  *END OF OPCODES REQUIRED BY OMR
  */
-   TR::TreeEvaluator::iconstEvaluator,                  // TR::iuconst
-   TR::TreeEvaluator::lconstEvaluator,                  // TR::luconst
-   TR::TreeEvaluator::iconstEvaluator,                  // TR::buconst
    TR::TreeEvaluator::iloadEvaluator,                   // TR::iuload
    TR::TreeEvaluator::lloadEvaluator,                   // TR::luload
    TR::TreeEvaluator::buloadEvaluator,                  // TR::buload
@@ -558,7 +555,6 @@
    TR::TreeEvaluator::gprRegLoadEvaluator,              // TR::luRegLoad
    TR::TreeEvaluator::gprRegStoreEvaluator,             // TR::iuRegStore
    TR::TreeEvaluator::gprRegStoreEvaluator,             // TR::luRegStore
-   TR::TreeEvaluator::iconstEvaluator,                  // TR::cconst
    TR::TreeEvaluator::cloadEvaluator,                   // TR::cload
    TR::TreeEvaluator::cloadEvaluator,                   // TR::cloadi
    TR::TreeEvaluator::cstoreEvaluator,                  // TR::cstore

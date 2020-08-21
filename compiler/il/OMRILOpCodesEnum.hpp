@@ -578,9 +578,6 @@
    vfRegStore,    // Store vector global register
    vdRegStore,    // Store vector global register
 
-   iuconst,  // load unsigned integer constant (32-but unsigned)
-   luconst,  // load unsigned long integer constant (64-bit unsigned)
-   buconst,  // load unsigned byte integer constant (8-bit unsigned)
    iuload,   // load unsigned integer
    luload,   // load unsigned long integer
    buload,   // load unsigned byte
@@ -613,7 +610,6 @@
    luRegLoad, // Load unsigned long integer global register
    iuRegStore,// Store unsigned integer global register
    luRegStore,// Store long integer global register
-   cconst,   // load unicode constant (16-bit unsigned)
    cload,    // load short unsigned integer
    cloadi,   // load indirect unsigned short integer
    cstore,   // store unsigned short integer

@@ -683,9 +683,6 @@ const ValuePropagationPtr constraintHandlers[] =
 /*
  *END OF OPCODES REQUIRED BY OMR
  */
-   constrainIntConst,        // TR::iuconst
-   constrainLongConst,       // TR::luconst
-   constrainByteConst,       // TR::buconst
    constrainIntLoad,         // TR::iuload
    constrainLload,           // TR::luload
    constrainIntLoad,         // TR::buload
@@ -718,7 +715,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,        // TR::luRegLoad
    constrainChildren,        // TR::iuRegStore
    constrainChildren,        // TR::luRegStore
-   constrainShortConst,      // TR::cconst
    constrainIntLoad,         // TR::cload
    constrainIntLoad,         // TR::cloadi
    constrainIntStore,        // TR::cstore

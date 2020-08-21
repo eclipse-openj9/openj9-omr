@@ -540,9 +540,6 @@
    dftSimplifier,           // TR::vfRegStore
    dftSimplifier,           // TR::vdRegStore
 
-   constSimplifier,         // TR::iuconst
-   lconstSimplifier,        // TR::luconst
-   constSimplifier,         // TR::buconst
    directLoadSimplifier,    // TR::iuload
    directLoadSimplifier,    // TR::luload
    directLoadSimplifier,    // TR::buload
@@ -575,7 +572,6 @@
    dftSimplifier,           // TR::luRegLoad
    dftSimplifier,           // TR::iuRegStore
    dftSimplifier,           // TR::luRegStore
-   constSimplifier,         // TR::cconst
    directLoadSimplifier,    // TR::cload
    indirectLoadSimplifier,  // TR::cloadi
    dftSimplifier,           // TR::cstore

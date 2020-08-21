@@ -54,13 +54,6 @@ TR::Register *OMR::X86::TreeEvaluator::sconstEvaluator(TR::Node *node, TR::CodeG
    return reg;
    }
 
-TR::Register *OMR::X86::TreeEvaluator::cconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *reg = TR::TreeEvaluator::loadConstant(node, node->getInt(), TR_RematerializableChar, cg);
-   node->setRegister(reg);
-   return reg;
-   }
-
 TR::Register *OMR::X86::TreeEvaluator::iconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *reg = TR::TreeEvaluator::loadConstant(node, node->getInt(), TR_RematerializableInt, cg);

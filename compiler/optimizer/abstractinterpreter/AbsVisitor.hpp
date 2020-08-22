@@ -19,57 +19,25 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0 OR GPL-2.0-only WITH OpenJDK-assembly-exception-1.0
  *******************************************************************************/
 
-#include "optimizer/abstractinterpreter/AbsValue.hpp"
+#ifndef ABS_VISITOR_INCL
+#define ABS_VISITOR_INCL
 
-TR::AbsValue* TR::AbsVPValue::clone(TR::Region& region) const
+#include "infra/vector.hpp"
+
+class TR_CallSite;
+namespace TR { class Block; }
+namespace TR { class AbsValue; }
+
+namespace TR {
+
+/*
+ * AbsVisitor enables users to define customized callback methods for abstract interpretation.
+ */
+class AbsVisitor
    {
-   TR::AbsVPValue* copy = new (region) TR::AbsVPValue(_vp, _constraint, _dataType, _paramPos);
-   return copy;
-   }
+   public:
+   virtual void visitCallSite(TR_CallSite* callSite, TR::Block* callBlock, TR::vector<TR::AbsValue*, TR::Region&>* arguments) = 0;
+   };
+}
 
-TR::AbsValue* TR::AbsVPValue::merge(const TR::AbsValue *other)
-   {
-   if (other == NULL)
-      return this;
-
-   if (_paramPos != other->getParameterPosition())
-      _paramPos = -1;
-
-   if (other->getDataType() != _dataType)
-      {
-      _dataType = TR::NoType;
-      setToTop();
-      return this;
-      }
-
-   if (isTop())
-      return this;
-
-   if (other->isTop())
-      {
-      setToTop();
-      return this;
-      }
-
-   TR::VPConstraint *mergedConstraint = _constraint->merge(static_cast<const TR::AbsVPValue*>(other)->getConstraint(), _vp);
-
-   _constraint = mergedConstraint;
-   return this;
-   }
-
-void TR::AbsVPValue::print(TR::Compilation* comp) const
-   {
-   traceMsg(comp, "AbsValue: Type: %s ", TR::DataType::getName(_dataType));
-
-   if (_constraint)
-      {
-      traceMsg(comp, "Constraint: ");
-      _constraint->print(_vp);
-      }
-   else
-      {
-      traceMsg(comp, "TOP (unknown) ");
-      }
-
-   traceMsg(comp, " param position: %d", _paramPos);
-   }
+#endif

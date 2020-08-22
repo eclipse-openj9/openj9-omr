@@ -3,7 +3,7 @@
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
- * distribution and is available at http://eclipse.org/legal/epl-2.0
+ * distribution and is available at https://www.eclipse.org/legal/epl-2.0/
  * or the Apache License, Version 2.0 which accompanies this distribution
  * and is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
@@ -41,7 +41,7 @@ class AbsOpArray
 
    /**
     * @brief Clone the operand array
-    * 
+    *
     * @param region The memory region where the cloned operand array should be allocated.
     * @return the cloned operand array
     */
@@ -49,13 +49,13 @@ class AbsOpArray
 
    /**
     * @brief Perform an in-place merge with another operand array.
-    * The merge operation does not modify the state of another state 
+    * The merge operation does not modify the state of another state
     * or store any references of abstract values from another state to be merged with
     *
     * @param other The operand array to be merged with.
     */
    void merge(const TR::AbsOpArray* other, TR::Region& region);
-   
+
    /**
     * @brief Get the abstract value at index i.
     *

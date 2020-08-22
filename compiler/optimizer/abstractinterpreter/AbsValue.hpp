@@ -3,7 +3,7 @@
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
- * distribution and is available at http://eclipse.org/legal/epl-2.0
+ * distribution and is available at https://www.eclipse.org/legal/epl-2.0/
  * or the Apache License, Version 2.0 which accompanies this distribution
  * and is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
@@ -44,18 +44,18 @@ class AbsValue
 
    /**
     * @brief Clone an abstract value
-    * 
+    *
     * @param region The region where the cloned value will be allocated on.
     * @return the cloned abstract value
     */
    virtual TR::AbsValue* clone(TR::Region& region) const =0;
 
    /**
-    * @brief Merge with another AbsValue. 
+    * @brief Merge with another AbsValue.
     * @note This is an in-place merge. Self should modify other.
-    * Also, self should not store any mutable references from other during the merge 
+    * Also, self should not store any mutable references from other during the merge
     * but immutable references are allowed.
-    * 
+    *
     *
     * @param other Another AbsValue to be merged with
     * @return Self after the merge
@@ -96,7 +96,7 @@ class AbsValue
          _paramPos(paramPos)
       {}
 
-   int32_t _paramPos; 
+   int32_t _paramPos;
    TR::DataType _dataType;
    };
 

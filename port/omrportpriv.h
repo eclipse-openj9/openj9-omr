@@ -689,6 +689,8 @@ omrsock_sockaddr_init(struct OMRPortLibrary *portLibrary, omrsock_sockaddr_t han
 extern J9_CFUNC int32_t
 omrsock_sockaddr_init6(struct OMRPortLibrary *portLibrary, omrsock_sockaddr_t handle, int32_t family, uint8_t *addrNetworkOrder, uint16_t portNetworkOrder, uint32_t flowinfo, uint32_t scope_id);
 extern J9_CFUNC int32_t
+omrsock_socket_getfd(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock);
+extern J9_CFUNC int32_t
 omrsock_socket(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock, int32_t family, int32_t socktype, int32_t protocol);
 extern J9_CFUNC int32_t
 omrsock_bind(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_sockaddr_t addr);
@@ -707,6 +709,22 @@ omrsock_recv(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t 
 extern J9_CFUNC int32_t
 omrsock_recvfrom(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint8_t *buf, int32_t nbyte, int32_t flags, omrsock_sockaddr_t addrHandle);
 extern J9_CFUNC int32_t
+omrsock_pollfd_init(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t handle, omrsock_socket_t sock, int16_t events);
+extern J9_CFUNC int32_t
+omrsock_get_pollfd_info(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t handle, omrsock_socket_t *sock, int16_t *revents);
+extern J9_CFUNC int32_t
+omrsock_poll(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t fds, uint32_t nfds, int32_t timeoutMs);
+extern J9_CFUNC void
+omrsock_fdset_zero(struct OMRPortLibrary *portLibrary, omrsock_fdset_t fdset);
+extern J9_CFUNC void
+omrsock_fdset_set(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset);
+extern J9_CFUNC void
+omrsock_fdset_clr(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset);
+extern J9_CFUNC BOOLEAN
+omrsock_fdset_isset(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset);
+extern J9_CFUNC int32_t
+omrsock_select(struct OMRPortLibrary *portLibrary, omrsock_fdset_t readfds, omrsock_fdset_t writefds, omrsock_fdset_t exceptfds, omrsock_timeval_t timeout);
+extern J9_CFUNC int32_t
 omrsock_close(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock);
 extern J9_CFUNC int32_t
 omrsock_shutdown(struct OMRPortLibrary *portLibrary);
@@ -716,6 +734,8 @@ extern J9_CFUNC uint32_t
 omrsock_htonl(struct OMRPortLibrary *portLibrary, uint32_t val);
 extern J9_CFUNC int32_t
 omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *result);
+extern J9_CFUNC int32_t
+omrsock_fcntl(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, int32_t arg);
 extern J9_CFUNC int32_t
 omrsock_timeval_init(struct OMRPortLibrary *portLibrary, omrsock_timeval_t handle, uint32_t secTime, uint32_t uSecTime);
 extern J9_CFUNC int32_t

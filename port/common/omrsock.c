@@ -244,7 +244,25 @@ omrsock_sockaddr_init6(struct OMRPortLibrary *portLibrary, omrsock_sockaddr_t ha
 }
 
 /**
+ * Get socket file descriptor from a pointer to the socket structure.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[out] sock Pointer to the omrsocket.
+ *
+ * @return fd, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_socket_getfd(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
  * Creates a new socket descriptor and any related resources.
+ *
+ * If non-blocking or async sockets are wanted, the user can OR the socktype with socket flag
+ * they want to set. They may also set the socket to be non-blocking or async later in the code
+ * using @ref omrsock_fcntl.
  *
  * @param[in] portLibrary The port library.
  * @param[out] sock Pointer to the omrsocket, to be allocated.
@@ -438,6 +456,154 @@ omrsock_recvfrom(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint
 }
 
 /**
+ * Set the pollfd values in an user allocated OMRPollFd structure. This allows the user
+ * to set the socket this pollfd is for as well as the events it would like @ref omrsock_poll
+ * to observe. This initializes the OMRPollFd structure for @ref omrsock_poll function.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] handle Pointer to OMRPollFd structure that is to be initialized.
+ * @param[in] sock Pointer to the socket this OMRPollFd structure is for.
+ * @param[in] events All events to be observed by @ref omrsock_poll, which is ORed before passing in.
+ * \arg OMRSOCK_POLLIN
+ * \arg OMRSOCK_POLLOUT
+ * \arg OMRSOCK_POLLERR (Not available on AIX)
+ * \arg OMRSOCK_POLLNVAL (Not available on AIX)
+ * \arg OMRSOCK_POLLHUP (Not available on AIX)
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_pollfd_init(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t handle, omrsock_socket_t sock, int16_t events)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Get the pollfd revents values and the socket that the revents were set on.
+ *
+ * The revents are the returned events from the @ref omrsock_poll function, which is ORed events of which
+ * the socket is ready for, whether it will be POLLIN or POLLOUT or error. User should use this information
+ * to decide if a socket is ready for the communication operations.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] handle Pointer to OMRPollFd structure.
+ * @param[out] sock To set pointer to the socket that this OMRPollFd is for.
+ * @param[out] revents To set revents returned by @ref omrsock_poll. This is ORed and should use AND
+ * to decide which operation is ready.
+ * \arg OMRSOCK_POLLIN
+ * \arg OMRSOCK_POLLOUT
+ * \arg OMRSOCK_POLLERR (Not available on AIX)
+ * \arg OMRSOCK_POLLNVAL (Not available on AIX)
+ * \arg OMRSOCK_POLLHUP (Not available on AIX)
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_get_pollfd_info(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t handle, omrsock_socket_t *sock, int16_t *revents)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Observe and waits for a set of sockets for I/O multiplexing operations.
+ *
+ * Watches an array of OMRPollFd structures, which is to be initalized using @ref omrsock_pollfd_init
+ * and to be examined using @ref omrsock_get_pollfd_info.
+ *
+ * Similar to @ref omrsock_select, but uses a different interface. This is the new function and interface
+ * for I/O multiplexing.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[out] fds Pointer to an OMRPollFd structure or an array of OMRPollFd structures.
+ * @param[in] nfd The number of OMRPollFds inside the array fds.
+ * @param[in] timeoutMs Poll timeout in milliseconds.
+ *
+ * @returns number of sockets that are ready for I/O, otherwise return an error.
+ */
+int32_t
+omrsock_poll(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t fds, uint32_t nfds, int32_t timeoutMs)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Zero the fdset. All sockets in fdset will be removed.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[out] fds Pointer to an OMRFdSet structure.
+ */
+void
+omrsock_fdset_zero(struct OMRPortLibrary *portLibrary, omrsock_fdset_t fdset)
+{
+}
+
+/**
+ * Set a socket in the fdset. This socket will be watched in @ref omrsock_select.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] sock Pointer to the socket to be set.
+ * @param[out] fds Pointer to an OMRFdSet structure.
+ */
+void
+omrsock_fdset_set(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset) 
+{
+}
+
+/**
+ * Clear a socket in the fdset. This socket will be removed from being watched in @ref omrsock_select.
+ * Other sockets in fdset will not be affected.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] sock Pointer to the socket to be set.
+ * @param[out] fds Pointer to an OMRFdSet structure.
+ */
+void
+omrsock_fdset_clr(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset) 
+{
+}
+
+/**
+ * Check if a socket in the fdset is ready for I/O or if it is in the fdset.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] sock Pointer to the socket to be set.
+ * @param[in] fds Pointer to an OMRFdSet structure.
+ * @return TRUE, if socket is SET, otherwise return FALSE.
+ */
+BOOLEAN
+omrsock_fdset_isset(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset) 
+{
+	return FALSE;
+}
+
+/**
+ * Observe and waits for a set of sockets for I/O multiplexing operations.
+ *
+ * Select watches and monitors over three sets of fdsets.
+ *
+ * Similar to @ref omrsock_poll, but uses a different interface. This is the old way of
+ * I/O multiplexing. BSD select() function takes an additional argument of nfds, the max socket
+ * file descriptor in the fdsets. This value is taken care of inside the omrsock API by storing
+ * the maximum fd inside OMRFdSet when user calls @ref omrsock_fdset_set.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[out] readfds Pointer to an read OMRFdSet structure, that contains all sockets to be read.
+ * @param[out] writefds Pointer to an write OMRFdSet structure, that contains all sockets to write.
+ * @param[out] exceptfds Pointer to except OMRFdSet structure, that contains all sockets to be checked
+ * for error.
+ * @param[in] timeout Pointer to OMRTimeVal struct which decides timeout for select. Initialize
+ * timeout using @ref omrsock_timeval_init.
+ *
+ * @returns number of sockets that are ready for I/O, otherwise return an error.
+ */
+int32_t
+omrsock_select(struct OMRPortLibrary *portLibrary, omrsock_fdset_t readfds, omrsock_fdset_t writefds, omrsock_fdset_t exceptfds, omrsock_timeval_t timeout)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+
+/**
  * Closes a socket. Use it to release the socket so that further references 
  * to socket will fail.
  * 
@@ -512,6 +678,23 @@ omrsock_htonl(struct OMRPortLibrary *portLibrary, uint32_t val)
  */
 int32_t
 omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const char *addr, uint8_t *result)
+{
+	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
+}
+
+/**
+ * Set socket non_block and asychronous.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[out] sock Pointer to the socket structure.
+ * @param[in] arg The socket flag you want to set on the socket.
+ * \arg OMRSOCK_O_NON_BLOCK
+ * \arg OMRSOCK_O_ASYNC
+ *
+ * @return 0, if no errors occurred, otherwise return an error.
+ */
+int32_t
+omrsock_fcntl(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, int32_t arg)
 {
 	return OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM;
 }

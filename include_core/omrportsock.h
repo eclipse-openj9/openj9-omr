@@ -34,6 +34,12 @@ typedef struct OMRSockAddrStorage *omrsock_sockaddr_t;
 /* Pointer to OMRSocket, a struct that contains socket descriptor. */
 typedef struct OMRSocket *omrsock_socket_t;
 
+/* Pointer to OMRPollFd, a struct that contains struct pollfd. */
+typedef struct OMRPollFd *omrsock_pollfd_t;
+
+/* Pointer to OMRFdSet, a struct that contains struct fd_set. */
+typedef struct OMRFdSet *omrsock_fdset_t;
+
 /* Pointer to OMRTimeval, a struct that contains struct timeval. */
 typedef struct OMRTimeval *omrsock_timeval_t;
 
@@ -66,5 +72,19 @@ typedef struct OMRLinger *omrsock_linger_t;
 #define OMRSOCK_SO_RCVTIMEO 4
 #define OMRSOCK_SO_SNDTIMEO 5
 #define OMRSOCK_TCP_NODELAY 6
+
+/* Socket Flags */
+#define OMRSOCK_O_ASYNC 0x0100
+#define OMRSOCK_O_NONBLOCK 0x1000
+
+/* Poll Constants */
+#define OMRSOCK_POLLIN 0x0001
+#define OMRSOCK_POLLOUT 0x0002
+
+#if !defined(OMR_OS_AIX) 
+#define OMRSOCK_POLLERR 0x0004
+#define OMRSOCK_POLLNVAL 0x0008
+#define OMRSOCK_POLLHUP 0x0010
+#endif
 
 #endif /* !defined(OMRPORTSOCK_H_) */

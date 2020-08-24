@@ -69,8 +69,8 @@ get_os_family(int32_t omrFamily)
 }
 
 /**
- * @internal Map OMRSOCK API user interface socket type to the OS socket type, 
- * which may be defined differently depending on operating system. 
+ * @internal Map OMRSOCK API user interface socket type to the OS socket type,
+ * which may be defined differently depending on operating system.
  *
  * @param omrSockType The OMR socket type to be converted.
  *
@@ -79,6 +79,9 @@ get_os_family(int32_t omrFamily)
 static int32_t
 get_os_socktype(int32_t omrSockType)
 {
+	/* Mask sockType. It should be defined in this range. */
+	omrSockType &= 0x00FF;
+
 	switch (omrSockType) {
 	case OMRSOCK_STREAM:
 		return OS_SOCK_STREAM;
@@ -111,6 +114,129 @@ get_os_protocol(int32_t omrProtocol)
 		break;
 	}
 	return OS_SOCK_IPPROTO_DEFAULT;
+}
+
+/**
+ * @internal Map OMRSOCK API user interface socket level to
+ * OS socket level. Used to resolve the arguments of socket 
+ * option functions. 
+ * 
+ * Socket Levels currently supported are:
+ * \arg OMRSOCK_SOL_SOCKET, for most options.
+ * \arg OMRSOCK_IPPROTO_TCP, for the TCP noDelay option.
+ *
+ * @param[in] socketLevel The OMR socket level to be converted.
+ *
+ * @return OS protocol on success, or OS_SOL_SOCKET if none exists. 
+ */
+static int32_t
+get_os_socket_level(int32_t socketLevel)
+{
+	switch (socketLevel) {
+	case OMRSOCK_SOL_SOCKET:
+		return OS_SOL_SOCKET;
+	case OMRSOCK_IPPROTO_TCP:
+		return OS_SOCK_IPPROTO_TCP;
+	default:
+		break;
+	}
+	return OMRPORT_ERROR_SOCK_LEVEL_UNSUPPORTED;
+}
+
+/**
+ * @internal Map OMRSOCK API user interface socket option to OS socket option.
+ * Used to resolve the arguments of socket option functions.
+ * Options currently in supported are:
+ * \arg SO_KEEPALIVE, the keep-alive messages are enabled.
+ * \arg SO_LINGER, the linger timeout.
+ * \arg SO_REUSEADDR, the reusage of local address are allowed in bind.
+ * \arg SO_RCVTIMEO, the receive timeout.
+ * \arg SO_SNDTIMEO, the send timeout.
+ * \arg TCP_NODELAY, the buffering scheme disabling Nagle's algorithm.
+ *
+ * @param[in] socketOption The portable socket option to convert.
+ *
+ * @return OS Socket Option on success, or OS_SOL_SOCKET if none exists. 
+ */
+static int32_t
+get_os_socket_option(int32_t socketOption)
+{
+	switch (socketOption) {
+	case OMRSOCK_SO_KEEPALIVE:
+		return OS_SO_KEEPALIVE;
+	case OMRSOCK_SO_LINGER:
+		return OS_SO_LINGER;
+	case OMRSOCK_SO_REUSEADDR:
+		return OS_SO_REUSEADDR;
+	case OMRSOCK_SO_RCVTIMEO:
+		return OS_SO_RCVTIMEO;
+	case OMRSOCK_SO_SNDTIMEO:
+		return OS_SO_SNDTIMEO;
+	case OMRSOCK_TCP_NODELAY:
+		return OS_TCP_NODELAY;
+	default:
+		break;
+	}
+	return OMRPORT_ERROR_SOCK_OPTION_UNSUPPORTED;
+}
+
+/**
+ * @internal Map OMRSOCK API user interface socket flag to the OS socket,
+ * flag which may be defined differently depending on operating system.
+ *
+ * @param omrProtocol The OMR flag to be converted.
+ *
+ * @return OS socket flag on success, or 0 if none exists.
+ */
+static int32_t
+get_os_socket_flag(int32_t omrFlag)
+{
+	/* Mask flag. It should be defined in this range. */
+	omrFlag &= 0xFF00;
+
+	switch (omrFlag) {
+	case OMRSOCK_O_ASYNC:
+		return OS_O_ASYNC;
+	case OMRSOCK_O_NONBLOCK:
+		return OS_O_NONBLOCK;
+	default:
+		break;
+	}
+	return 0;
+}
+
+/**
+ * @internal Map OMRSOCK API user interface poll constant to the OS poll
+ * constant which may be defined differently depending on operating system. 
+ *
+ * @param omrPollConstant The OMR poll constant to be converted.
+ *
+ * @return OS socket flag on success, or 0 if none exists.
+ */
+static int16_t
+get_os_poll_constant(int16_t omrPollConstant)
+{
+	int16_t osPollConstant = 0;
+
+	if (OMR_ARE_ANY_BITS_SET(omrPollConstant, OMRSOCK_POLLIN)) {
+		osPollConstant |= OS_POLLIN;
+	}
+	if (OMR_ARE_ANY_BITS_SET(omrPollConstant, OMRSOCK_POLLOUT)) {
+		osPollConstant |= OS_POLLOUT;
+	}
+#if !defined(AIXPPC)
+	if (OMR_ARE_ANY_BITS_SET(omrPollConstant, OMRSOCK_POLLERR)) {
+		osPollConstant |= OS_POLLERR;
+	}
+	if (OMR_ARE_ANY_BITS_SET(omrPollConstant, OMRSOCK_POLLNVAL)) {
+		osPollConstant |= OS_POLLNVAL;
+	}
+	if (OMR_ARE_ANY_BITS_SET(omrPollConstant, OMRSOCK_POLLHUP)) {
+		osPollConstant |= OS_POLLHUP;
+	}
+#endif /* !defined(AIXPPC) */
+
+	return osPollConstant;
 }
 
 /* Internal: OS dependent constants TO OMRSOCK user interface constants mapping. */
@@ -183,67 +309,36 @@ get_omr_protocol(int32_t osProtocol)
 }
 
 /**
- * @internal Map OMRSOCK API user interface socket level to
- * OS socket level. Used to resolve the arguments of socket 
- * option functions. 
- * 
- * Socket Levels currently supported are:
- * \arg OMRSOCK_SOL_SOCKET, for most options.
- * \arg OMRSOCK_IPPROTO_TCP, for the TCP noDelay option.
+ * @internal Map OS poll constant to the OMRSOCK API user interface poll constant.
  *
- * @param[in] socketLevel The OMR socket level to be converted.
+ * @param omrPollConstant The OMR poll constant to be converted.
  *
- * @return OS protocol on success, or OS_SOL_SOCKET if none exists. 
+ * @return OS poll constant on success, or 0 if none exists.
  */
-static int32_t
-get_os_socket_level(int32_t socketLevel)
+static int16_t
+get_omr_poll_constant(int16_t osPollConstant)
 {
-	switch (socketLevel) {
-	case OMRSOCK_SOL_SOCKET:
-		return OS_SOL_SOCKET;
-	case OMRSOCK_IPPROTO_TCP:
-		return OS_SOCK_IPPROTO_TCP;
-	default:
-		break;
-	}
-	return OMRPORT_ERROR_SOCK_LEVEL_UNSUPPORTED;
-}
+	int16_t omrPollConstant = 0;
 
-/**
- * @internal Map OMRSOCK API user interface socket option to OS socket option.
- * Used to resolve the arguments of socket option functions.
- * Options currently in supported are:
- * \arg SO_KEEPALIVE, the keep-alive messages are enabled.
- * \arg SO_LINGER, the linger timeout.
- * \arg SO_REUSEADDR, the reusage of local address are allowed in bind.
- * \arg SO_RCVTIMEO, the receive timeout.
- * \arg SO_SNDTIMEO, the send timeout.
- * \arg TCP_NODELAY, the buffering scheme disabling Nagle's algorithm.
- *
- * @param[in] socketOption The portable socket option to convert.
- *
- * @return OS Socket Option on success, or OS_SOL_SOCKET if none exists. 
- */
-static int32_t
-get_os_socket_option(int32_t socketOption)
-{
-	switch (socketOption) {
-	case OMRSOCK_SO_KEEPALIVE:
-		return OS_SO_KEEPALIVE;
-	case OMRSOCK_SO_LINGER:
-		return OS_SO_LINGER;
-	case OMRSOCK_SO_REUSEADDR:
-		return OS_SO_REUSEADDR;
-	case OMRSOCK_SO_RCVTIMEO:
-		return OS_SO_RCVTIMEO;
-	case OMRSOCK_SO_SNDTIMEO:
-		return OS_SO_SNDTIMEO;
-	case OMRSOCK_TCP_NODELAY:
-		return OS_TCP_NODELAY;
-	default:
-		break;
+	if (OMR_ARE_ANY_BITS_SET(osPollConstant, OS_POLLIN)) {
+		omrPollConstant |= OMRSOCK_POLLIN;
 	}
-	return OMRPORT_ERROR_SOCK_OPTION_UNSUPPORTED;
+	if (OMR_ARE_ANY_BITS_SET(osPollConstant, OS_POLLOUT)) {
+		omrPollConstant |= OMRSOCK_POLLOUT;
+	}
+#if !defined(AIXPPC)
+	if (OMR_ARE_ANY_BITS_SET(osPollConstant, OS_POLLERR)) {
+		omrPollConstant |= OMRSOCK_POLLERR;
+	}
+	if (OMR_ARE_ANY_BITS_SET(osPollConstant, OS_POLLNVAL)) {
+		omrPollConstant |= OMRSOCK_POLLNVAL;
+	}
+	if (OMR_ARE_ANY_BITS_SET(osPollConstant, OS_POLLHUP)) {
+		omrPollConstant |= OMRSOCK_POLLHUP;
+	}
+#endif /* !defined(AIXPPC) */
+
+	return omrPollConstant;
 }
 
 /**
@@ -272,7 +367,8 @@ get_omr_error(int32_t osErrorCode)
 #endif
 		return OMRPORT_ERROR_SOCKET_WOULDBLOCK;
 	case EALREADY:
-		return OMRPORT_ERROR_SOCKET_ALREADYINPROGRESS;
+	case EINPROGRESS:
+		return OMRPORT_ERROR_SOCKET_INPROGRESS;
 	case EBADF:
 		return OMRPORT_ERROR_SOCKET_BAD_FILE_DESCRIPTOR;
 	case ECONNABORTED:
@@ -288,8 +384,6 @@ get_omr_error(int32_t osErrorCode)
 	case EFAULT:
 	case EISDIR:
 		return OMRPORT_ERROR_SOCKET_BAD_ADDRESS;
-	case EINPROGRESS:
-		return OMRPORT_ERROR_SOCKET_INPROGRESS;
 	case EINTR:
 		return OMRPORT_ERROR_SOCKET_INTERRUPTED;
 	case EINVAL:
@@ -586,29 +680,55 @@ omrsock_sockaddr_init6(struct OMRPortLibrary *portLibrary, omrsock_sockaddr_t ha
 }
 
 int32_t
+omrsock_socket_getfd(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock)
+{
+	if (NULL == sock) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+	return sock->data;
+}
+
+int32_t
 omrsock_socket(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock, int32_t family, int32_t socktype, int32_t protocol)
 {
 	int32_t sockDescriptor = 0;
 	int32_t osFamily = get_os_family(family);
 	int32_t osSockType = get_os_socktype(socktype);
+	int32_t osFlag = get_os_socket_flag(socktype);
 	int32_t osProtocol = get_os_protocol(protocol);
+	int32_t fdFlags = 0;
 	
 	/* Initialize return omrsock_socket_t to NULL. */
 	*sock = NULL;
 
-	if ((osFamily < 0) || (osSockType < 0) || (osProtocol < 0)) {
+	if ((0 > osFamily) || (0 > osSockType) || (0 > osProtocol)) {
 		return OMRPORT_ERROR_INVALID_ARGUMENTS;
 	}
 
+#if defined(LINUX)
+	sockDescriptor = socket(osFamily, osSockType | osFlag, osProtocol);
+#else /* define(OMR_OS_LINUX) */
 	sockDescriptor = socket(osFamily, osSockType, osProtocol);
+#endif /* define(OMR_OS_LINUX) */
 
-	if (sockDescriptor < 0) {
+	if (0 > sockDescriptor) {
 		return portLibrary->error_set_last_error(portLibrary, errno,  get_omr_error(errno));
 	}
 
 	/* Tag this descriptor as being non-inheritable. */
-	int32_t fdflags = fcntl(sockDescriptor, F_GETFD, 0);
-	fcntl(sockDescriptor, F_SETFD, fdflags | FD_CLOEXEC);
+	fdFlags = fcntl(sockDescriptor, F_GETFD, 0);
+	fcntl(sockDescriptor, F_SETFD, fdFlags | FD_CLOEXEC);
+
+#if !defined(LINUX)
+	if (0 != osFlag) {
+		fdFlags = fcntl(sockDescriptor, F_GETFL, 0);
+
+		if (fcntl(sockDescriptor, F_SETFL, fdFlags | osFlag) < 0) {
+			close(sockDescriptor);
+			return portLibrary->error_set_last_error(portLibrary, errno, get_omr_error(errno));
+		}
+	}
+#endif /* !defined(OMR_OS_LINUX) */
 
 	/* Set up the socket structure. */
 	*sock = (omrsock_socket_t)portLibrary->mem_allocate_memory(portLibrary, sizeof(struct OMRSocket), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
@@ -782,6 +902,164 @@ omrsock_recvfrom(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint
 }
 
 int32_t
+omrsock_pollfd_init(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t handle, omrsock_socket_t sock, int16_t events)
+{
+	if (NULL == handle || NULL == sock || 0 == events) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+	memset(handle, 0, sizeof(OMRPollFd));
+	handle->socket = sock;
+	handle->data.fd = sock->data;
+	handle->data.events = events;
+	return 0;
+}
+
+int32_t
+omrsock_get_pollfd_info(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t handle, omrsock_socket_t *sock, int16_t *revents)
+{
+	if (NULL == handle || NULL == sock || NULL == revents) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+	memset(sock, 0, sizeof(omrsock_socket_t));
+
+	*sock = handle->socket;
+	*revents = handle->data.revents;
+	return 0;
+}
+
+int32_t
+omrsock_poll(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t fds, uint32_t nfds, int32_t timeoutMs)
+{
+	int32_t numPollFdSet = 0;
+	const uint32_t maxNumPollFd = 8;
+	struct pollfd pfdsArray[maxNumPollFd];
+	struct pollfd *pfds = NULL;
+	int32_t i = 0;
+
+#if defined(AIXPPC)
+	if (FD_SETSIZE < nfds) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+#endif /* defined(AIXPPC) */
+
+	if (NULL == fds || 0 >= nfds) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	if (maxNumPollFd >= nfds) {
+		/* Use statically allocated array if nfds less than or equal to 8. */
+		pfds = pfdsArray;
+	} else {
+		/* Dynamically allocate if nfds more than 8. */
+		pfds = portLibrary->mem_allocate_memory(portLibrary, nfds * sizeof(struct pollfd), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+	}
+
+	/* Set up fds to pass into the poll function. */
+	for (i = 0; nfds > i; i++) {
+		pfds[i].fd = fds[i].data.fd;
+		pfds[i].events = get_os_poll_constant(fds[i].data.events);
+	}
+
+	numPollFdSet = poll(pfds, nfds, timeoutMs);
+
+	if (0 > numPollFdSet) {
+		if (nfds > maxNumPollFd) {
+			portLibrary->mem_free_memory(portLibrary, pfds);
+		}
+		return portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_FILE_OPFAILED);
+	}
+
+	/* Set user's fds values to be same as pfds. */
+	for (i = 0; nfds > i; i++) {
+		fds[i].data.revents = get_omr_poll_constant(pfds[i].revents);
+#if defined (LINUX)
+		/* On Linux, all sockets with non-zero revents are included in numPollFdSet, but other systems do not include error revents. */
+		if (0 != (fds[i].data.revents & (OMRSOCK_POLLERR | OMRSOCK_POLLNVAL | OMRSOCK_POLLHUP))) {
+			/* Should not subtract if there are 0. This case should not happen. */
+			numPollFdSet = (numPollFdSet == 0) ? 0 : numPollFdSet - 1;
+		}
+#endif /* defined (LINUX) */
+	}
+
+	if (maxNumPollFd < nfds) {
+		portLibrary->mem_free_memory(portLibrary, pfds);
+	}
+
+#if defined (AIXPPC) || defined (J9ZOS390)
+	return numPollFdSet & 0x0000FFFF;
+#else /* defined (AIXPPC) || defined (J9ZOS390) */
+	return numPollFdSet;
+#endif /* defined (AIXPPC) || defined (J9ZOS390) */
+}
+
+void
+omrsock_fdset_zero(struct OMRPortLibrary *portLibrary, omrsock_fdset_t fdset)
+{
+	fdset->maxFd = 0;
+	FD_ZERO(&fdset->data);
+}
+
+void
+omrsock_fdset_set(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset) 
+{
+	/* If socket fd is greater than fdset maxFd, overwrite it. */
+	if (sock->data > fdset->maxFd) {
+		fdset->maxFd = sock->data;
+	}
+	FD_SET(sock->data, &fdset->data);
+}
+
+void
+omrsock_fdset_clr(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset) 
+{
+	FD_CLR(sock->data, &fdset->data);
+}
+
+BOOLEAN
+omrsock_fdset_isset(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, omrsock_fdset_t fdset) 
+{
+	if (0 != FD_ISSET(sock->data, &fdset->data)) {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
+int32_t
+omrsock_select(struct OMRPortLibrary *portLibrary, omrsock_fdset_t readfds, omrsock_fdset_t writefds, omrsock_fdset_t exceptfds, omrsock_timeval_t timeout)
+{
+	int32_t nfds = 0;
+	int32_t readNfds = 0;
+	int32_t writeNfds = 0;
+	int32_t exceptNfds = 0;
+	int32_t numFdSet = 0;
+
+	if (NULL == timeout) {
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	/* Find maximum fd in the three fdsets. */
+
+	readNfds = (NULL == readfds) ? 0 : readfds->maxFd;
+	writeNfds = (NULL == writefds) ? 0 : writefds->maxFd;
+	exceptNfds = (NULL == exceptfds) ? 0 : exceptfds->maxFd;
+
+	nfds = OMR_MAX(OMR_MAX(readNfds,writeNfds),exceptNfds);
+
+	if ((FD_SETSIZE - 1) < nfds) {
+		return OMRPORT_ERROR_SOCKET_EXCEED_MAX_NFDS;
+	}
+
+	numFdSet = select(nfds + 1, readfds == NULL ? NULL : &readfds->data, writefds == NULL ? NULL : &writefds->data,
+					exceptfds == NULL ? NULL : &exceptfds->data, timeout == NULL ? NULL : &timeout->data);
+	if (-1 == numFdSet) {
+		return portLibrary->error_set_last_error(portLibrary, errno, get_omr_error(errno));
+	}
+
+	return numFdSet;
+}
+
+int32_t
 omrsock_close(struct OMRPortLibrary *portLibrary, omrsock_socket_t *sock)
 {
 	if (NULL == *sock) {
@@ -839,6 +1117,24 @@ omrsock_inet_pton(struct OMRPortLibrary *portLibrary, int32_t addrFamily, const 
 		return OMRPORT_ERROR_SOCKET_BAD_ADDRESS;
 	} else if (rc == -1) {
 		return OMRPORT_ERROR_SOCKET_AF_UNSUPPORTED;
+	}
+	return 0;
+}
+
+int32_t
+omrsock_fcntl(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, int32_t arg)
+{
+	int32_t existingFlags = 0;
+	int32_t socketFlag = get_os_socket_flag(arg);
+
+	if (NULL == sock || 0 == socketFlag){
+		return OMRPORT_ERROR_INVALID_ARGUMENTS;
+	}
+
+	existingFlags = fcntl(sock->data, F_GETFL, 0);
+
+	if (fcntl(sock->data, F_SETFL, existingFlags | socketFlag) < 0) {
+		return portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_FILE_OPFAILED);
 	}
 	return 0;
 }

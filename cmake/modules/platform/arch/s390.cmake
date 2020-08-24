@@ -30,3 +30,8 @@ if(OMR_ENV_DATA64)
 	list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_64BIT TR_TARGET_64BIT BITVECTOR_64BIT)
 endif()
 set(CMAKE_ASM-ATT_FLAGS "-noexecstack -march=z9-109")
+
+if(NOT OMR_OS_ZOS)
+	# TODO: this seems wrong. Maybe we mean -qlonglong ?
+	list(APPEND OMR_PLATFORM_DEFINITIONS -D_LONG_LONG)
+endif()

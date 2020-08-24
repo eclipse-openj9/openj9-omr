@@ -67,6 +67,27 @@ public:
    bool hasPopulationCountInstruction();
    bool supportsDecimalFloatingPoint();
 
+   /**
+    * @brief Determines whether 32bit integer rotate is available
+    *
+    * @details
+    *    Returns true if 32bit integer rotate to left is available when requireRotateToLeft is true.
+    *    Returns true if 32bit integer rotate (right or left) is available when requireRotateToLeft is false.
+    *
+    * @param requireRotateToLeft if true, returns true if rotate to left operation is available.
+    */
+   bool getSupportsHardware32bitRotate(bool requireRotateToLeft=false) { return true; }
+   /**
+    * @brief Determines whether 64bit integer rotate is available
+    *
+    * @details
+    *    Returns true if 64bit integer rotate to left is available when requireRotateToLeft is true.
+    *    Returns true if 64bit integer rotate (right or left) is available when requireRotateToLeft is false.
+    *
+    * @param requireRotateToLeft if true, returns true if rotate to left operation is available.
+    */
+   bool getSupportsHardware64bitRotate(bool requireRotateToLeft=false);
+
    /** @brief Determines whether the Transactional Memory (TM) facility is available on the current processor.
     *         Alias of supportsFeature(OMR_FEATURE_PPC_HTM) as a platform agnostic query.
     *

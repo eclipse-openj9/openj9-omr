@@ -127,6 +127,27 @@ public:
    bool supportsDecimalFloatingPoint() { return false; }
    bool hasFPU() { return true; }
 
+   /**
+    * @brief Determines whether 32bit integer rotate is available
+    *
+    * @details
+    *    Returns true if 32bit integer rotate to left is available when requireRotateToLeft is true.
+    *    Returns true if 32bit integer rotate (right or left) is available when requireRotateToLeft is false.
+    *
+    * @param requireRotateToLeft if true, returns true if rotate to left operation is available.
+    */
+   bool getSupportsHardware32bitRotate(bool requireRotateToLeft=false) { return false; }
+   /**
+    * @brief Determines whether 64bit integer rotate is available
+    *
+    * @details
+    *    Returns true if 64bit integer rotate to left is available when requireRotateToLeft is true.
+    *    Returns true if 64bit integer rotate (right or left) is available when requireRotateToLeft is false.
+    *
+    * @param requireRotateToLeft if true, returns true if rotate to left operation is available.
+    */
+   bool getSupportsHardware64bitRotate(bool requireRotateToLeft=false) { return false; }
+
    TR::Endianness endianness() { return _endianness; }
    void setEndianness(TR::Endianness e) { _endianness = e; }
    bool isBigEndian() { return _endianness == TR::endian_big; }

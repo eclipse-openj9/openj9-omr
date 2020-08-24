@@ -457,23 +457,13 @@ class S390BranchOnIndexInstruction : public TR::S390LabeledInstruction
 ////////////////////////////////////////////////////////////////////////////////
 class S390LabelInstruction : public TR::S390LabeledInstruction
    {
-   flags8_t _flags;
-
-   enum
-      {
-      // AVAILABLE                    = 0x01,
-      skipForLabelTargetNOPs          = 0x02,
-      estimateDoneForLabelTargetNOPs  = 0x04,
-      // AVAILABLE                    = 0x08
-      };
-
    public:
 
    S390LabelInstruction(TR::InstOpCode::Mnemonic    op,
                            TR::Node          *n,
                            TR::LabelSymbol    *sym,
                            TR::CodeGenerator *cg)
-      : S390LabeledInstruction(op, n, sym, cg), _alignment(0), _flags(0)
+      : S390LabeledInstruction(op, n, sym, cg), _alignment(0)
       {
       if (op==TR::InstOpCode::LABEL)
          sym->setInstruction(this);
@@ -485,7 +475,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::LabelSymbol    *sym,
                            TR::RegisterDependencyConditions * cond,
                            TR::CodeGenerator *cg)
-      : S390LabeledInstruction(op, n, sym, cond, cg), _alignment(0), _flags(0)
+      : S390LabeledInstruction(op, n, sym, cond, cg), _alignment(0)
       {
       if (op==TR::InstOpCode::LABEL)
          sym->setInstruction(this);
@@ -497,7 +487,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::LabelSymbol    *sym,
                            TR::Instruction   *precedingInstruction,
                            TR::CodeGenerator *cg)
-      : S390LabeledInstruction(op, n, sym, precedingInstruction, cg), _alignment(0), _flags(0)
+      : S390LabeledInstruction(op, n, sym, precedingInstruction, cg), _alignment(0)
       {
       if (op==TR::InstOpCode::LABEL)
          sym->setInstruction(this);
@@ -510,7 +500,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::RegisterDependencyConditions * cond,
                            TR::Instruction   *precedingInstruction,
                            TR::CodeGenerator *cg)
-      : S390LabeledInstruction(op, n, sym, cond, precedingInstruction, cg), _alignment(0), _flags(0)
+      : S390LabeledInstruction(op, n, sym, cond, precedingInstruction, cg), _alignment(0)
       {
       if (op==TR::InstOpCode::LABEL)
          sym->setInstruction(this);
@@ -521,7 +511,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::Node           *n,
                            TR::Snippet        *s,
                            TR::CodeGenerator  *cg)
-      : S390LabeledInstruction(op, n, s, cg), _alignment(0), _flags(0)
+      : S390LabeledInstruction(op, n, s, cg), _alignment(0)
       {}
 
    S390LabelInstruction(TR::InstOpCode::Mnemonic     op,
@@ -529,7 +519,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::Snippet        *s,
                            TR::RegisterDependencyConditions * cond,
                            TR::CodeGenerator  *cg)
-      : S390LabeledInstruction(op, n, s, cond, cg), _alignment(0), _flags(0)
+      : S390LabeledInstruction(op, n, s, cond, cg), _alignment(0)
       {}
 
    S390LabelInstruction(TR::InstOpCode::Mnemonic     op,
@@ -537,7 +527,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::Snippet        *s,
                            TR::Instruction    *precedingInstruction,
                            TR::CodeGenerator  *cg)
-      : S390LabeledInstruction(op, n, s, precedingInstruction, cg), _alignment(0), _flags(0)
+      : S390LabeledInstruction(op, n, s, precedingInstruction, cg), _alignment(0)
       {}
 
    S390LabelInstruction(TR::InstOpCode::Mnemonic     op,
@@ -546,7 +536,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::RegisterDependencyConditions * cond,
                            TR::Instruction    *precedingInstruction,
                            TR::CodeGenerator  *cg)
-      : S390LabeledInstruction(op, n, s, cond, precedingInstruction, cg), _alignment(0), _flags(0)
+      : S390LabeledInstruction(op, n, s, cond, precedingInstruction, cg), _alignment(0)
       {}
 
    virtual char *description() { return "S390LabelInstruction"; }
@@ -555,14 +545,6 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
    virtual uint8_t *generateBinaryEncoding();
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    void assignRegistersAndDependencies(TR_RegisterKinds kindToBeAssigned);
-
-   void setSkipForLabelTargetNOPs()    { _flags.set(skipForLabelTargetNOPs);}
-   bool isSkipForLabelTargetNOPs()     {return _flags.testAny(skipForLabelTargetNOPs); }
-
-   void setEstimateDoneForLabelTargetNOPs()     { _flags.set(estimateDoneForLabelTargetNOPs);}
-   bool wasEstimateDoneForLabelTargetNOPs()     {return _flags.testAny(estimateDoneForLabelTargetNOPs); }
-
-   bool considerForLabelTargetNOPs(bool inEncodingPhase);
 
    uint16_t getAlignment()          {return _alignment;}
    uint16_t setAlignment(uint16_t alignment) {return _alignment = alignment;}

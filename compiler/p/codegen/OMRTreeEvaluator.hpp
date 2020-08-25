@@ -316,11 +316,17 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *acmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *acmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *bcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *bucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *bucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *bucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *bucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *scmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *scmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *scmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *scmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *scmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -538,9 +544,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static void preserveTOCRegister(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions *dependencies);
    static void restoreTOCRegister(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions *dependencies);
    static TR::Register *retrieveTOCRegister(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions *dependencies);
-
-   static void genBranchSequence(TR::Node* node, TR::Register* src1Reg, TR::Register* src2Reg, TR::Register* trgReg,
-      TR::InstOpCode::Mnemonic branchOpCode, TR::InstOpCode::Mnemonic cmpOpCode, TR::CodeGenerator* cg);
 
    static bool stopUsingCopyReg(TR::Node* node, TR::Register*& reg, TR::CodeGenerator* cg);
 

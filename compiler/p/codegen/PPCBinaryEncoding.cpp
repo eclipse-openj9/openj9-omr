@@ -523,13 +523,31 @@ static void fillFieldXC(TR::Instruction *instr, uint32_t *cursor, TR::RealRegist
  * Note that the ISA defines the BI field to also include the part which determines which bit of
  * the condition register is checked. This needs to be filled in using separate means. Typically,
  * this is done by including the correct value of that part of the field as part of the binary
- * encoding template of an extended mnemonic, e.g. beq.
+ * encoding template of an extended mnemonic, e.g. beq, or using fillFieldBIBit.
  */
 static void fillFieldBI(TR::Instruction *instr, uint32_t *cursor, TR::RealRegister *reg)
    {
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg, "Attempt to fill BI field with null register");
    TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, reg->getKind() == TR_CCR, "Attempt to fill BI field with %s, which is not a CCR", reg->getRegisterName(instr->cg()->comp()));
    reg->setRegisterFieldBI(cursor);
+   }
+
+/**
+ * Fills in the CRCC part of the BI field of a binary-encoded instruction with the provided
+ * immediate value:
+ *
+ * +-------------------+-----+------------------------------------+
+ * |                   | BI  |                                    |
+ * | 0                 | 14  | 16                                 |
+ * +-------------------+-----+------------------------------------+
+ *
+ * Note that this must be used in conjunction with the fillFieldBI function to fill in the part of
+ * the field corresponding to the condition register.
+ */
+static void fillFieldBIBit(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0x3u) == val, "0x%x is out-of-range for BI field", val);
+   *cursor |= val << 16;
    }
 
 /**
@@ -1794,6 +1812,12 @@ void TR::PPCTrg1Src1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldUIM(self(), cursor, 2, imm);
          break;
 
+      case FORMAT_RT_BI:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldBI(self(), cursor, src);
+         fillFieldBIBit(self(), cursor, imm);
+         break;
+
       default:
          TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1Src1ImmInstruction", getOpCode().getFormat());
       }
@@ -2448,7 +2472,6 @@ int32_t TR::PPCControlFlowInstruction::estimateBinaryLength(int32_t currentEstim
    switch(getOpCodeValue())
       {
       case TR::InstOpCode::iflong:
-      case TR::InstOpCode::setbool:
       case TR::InstOpCode::idiv:
       case TR::InstOpCode::ldiv:
       case TR::InstOpCode::iselect:
@@ -2467,12 +2490,6 @@ int32_t TR::PPCControlFlowInstruction::estimateBinaryLength(int32_t currentEstim
                setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 6);
             }
          break;
-      case TR::InstOpCode::setbflt:
-         setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 5);
-         break;
-      case TR::InstOpCode::setblong:
-      case TR::InstOpCode::flcmpg:
-      case TR::InstOpCode::flcmpl:
       case TR::InstOpCode::irem:
       case TR::InstOpCode::lrem:
       case TR::InstOpCode::d2i:
@@ -2483,9 +2500,6 @@ int32_t TR::PPCControlFlowInstruction::estimateBinaryLength(int32_t currentEstim
             setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 6);
        else
             setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 8);
-         break;
-      case TR::InstOpCode::lcmp:
-         setEstimatedBinaryLength(PPC_INSTRUCTION_LENGTH * 11);
          break;
       default:
          TR_ASSERT(false,"unknown control flow instruction (estimateBinaryLength)");

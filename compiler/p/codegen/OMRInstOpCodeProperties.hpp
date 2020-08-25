@@ -6302,72 +6302,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::setblong,
-   /* .name        = */ "setblong",
-   /* .description =    "compare long and set boolean", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::setbool,
-   /* .name        = */ "setbool",
-   /* .description =    "compare and set boolean (int or simple float)", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::setbflt,
-   /* .name        = */ "setbflt",
-   /* .description =    "compare float and set boolean (complex float)", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::lcmp,
-   /* .name        = */ "lcmp",
-   /* .description =    "compare long and set result -1,0,1", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::flcmpl,
-   /* .name        = */ "flcmpl",
-   /* .description =    "compare float and set result -1(less,unordered),0(equal),1(greater)", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::flcmpg,
-   /* .name        = */ "flcmpg",
-   /* .description =    "compare float and set result -1(less),0(equal),1(greater,unordered)", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ TR_Processor::TR_DefaultPPCProcessor,
-   /* .properties  = */ PPCOpProp_None,
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::idiv,
    /* .name        = */ "idiv",
    /* .description =    "integer divide", */
@@ -13449,8 +13383,8 @@
    /* .name        = */ "setbc",
    /* .description =    "Set Boolean Condition", */
    /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .opcode      = */ 0x7C000300,
+   /* .format      = */ FORMAT_RT_BI,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -13460,8 +13394,8 @@
    /* .name        = */ "setbcr",
    /* .description =    "Set Boolean Condition Reverse", */
    /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .opcode      = */ 0x7C000340,
+   /* .format      = */ FORMAT_RT_BI,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -13471,8 +13405,8 @@
    /* .name        = */ "setnbc",
    /* .description =    "Set Negative Boolean Condition", */
    /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .opcode      = */ 0x7C000380,
+   /* .format      = */ FORMAT_RT_BI,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
@@ -13482,8 +13416,8 @@
    /* .name        = */ "setnbcr",
    /* .description =    "Set Negative Boolean Condition Reverse", */
    /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .opcode      = */ 0x7C0003C0,
+   /* .format      = */ FORMAT_RT_BI,
    /* .minimumALS  = */ TR_Processor::TR_PPCp10,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },

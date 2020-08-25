@@ -417,6 +417,16 @@ FORMAT_VRT_VRB_UIM2,
 //       only for the purposes of checking that the UIM field is in range.
 FORMAT_XT_XB_UIM2,
 
+// Format for instructions with an RT field encoding the target register and a BI field encoding
+// the source CR bit (split between a source condition register and an immediate for which bit to
+// use):
+//
+// +------+----------+----------+---------------------------------+
+// |      | RT       | BI       |                                 |
+// | 0    | 6        | 11       | 16                              |
+// +------+----------+----------+---------------------------------+
+FORMAT_RT_BI,
+
 // Format for instructions with an RT field encoding the target register and a 16-bit SI field
 // encoding a signed immediate:
 //

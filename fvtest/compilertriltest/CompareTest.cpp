@@ -76,6 +76,32 @@ TEST_P(Int32Compare, UsingConst) {
     ASSERT_EQ(exp, act);
 }
 
+TEST_P(Int32Compare, UsingRhsConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[120] = {0};
+    std::snprintf(inputTrees, 120,
+       "(method return=Int32 args=[Int32] "
+         "(block "
+           "(ireturn "
+             "(%s "
+               "(iload parm=0) "
+               "(iconst %d)))))",
+       param.opcode.c_str(), param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(int32_t)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs);
+    ASSERT_EQ(exp, act);
+}
+
 TEST_P(Int32Compare, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
@@ -154,6 +180,32 @@ TEST_P(UInt32Compare, UsingConst) {
     auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(UInt32Compare, UsingRhsConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[120] = {0};
+    std::snprintf(inputTrees, 120,
+       "(method return=Int32 args=[Int32] "
+         "(block "
+           "(ireturn "
+             "(%s "
+               "(iload parm=0) "
+               "(iconst %d)))))",
+       param.opcode.c_str(), param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(uint32_t)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs);
     ASSERT_EQ(exp, act);
 }
 
@@ -248,6 +300,32 @@ TEST_P(Int64Compare, UsingConst) {
     ASSERT_EQ(exp, act);
 }
 
+TEST_P(Int64Compare, UsingRhsConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160,
+       "(method return=Int32 args=[Int64] "
+         "(block "
+           "(ireturn "
+             "(%s "
+               "(lload parm=0) "
+               "(lconst %lld)))))",
+       param.opcode.c_str(), param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(int64_t)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs);
+    ASSERT_EQ(exp, act);
+}
+
 TEST_P(Int64Compare, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
@@ -328,6 +406,32 @@ TEST_P(UInt64Compare, UsingConst) {
     auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(UInt64Compare, UsingRhsConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160,
+       "(method return=Int32 args=[Int64] "
+         "(block "
+           "(ireturn "
+             "(%s "
+               "(lload parm=0) "
+               "(lconst %lld)))))",
+       param.opcode.c_str(), param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(uint64_t)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs);
     ASSERT_EQ(exp, act);
 }
 
@@ -766,14 +870,29 @@ int32_t fcmple(float l, float r) {
     return (l <= r) ? 1 : 0;
 }
 
+int32_t fcmpl(float l, float r) {
+    if (l == r)
+        return 0;
+    else if (l > r)
+        return 1;
+    else
+        return -1;
+}
+
+int32_t fcmpg(float l, float r) {
+    if (l == r)
+        return 0;
+    else if (l < r)
+        return -1;
+    else
+        return 1;
+}
+
 class FloatCompare : public TRTest::OpCodeTest<int32_t, float, float> {};
 
 TEST_P(FloatCompare, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    if ( param.opcode == "fcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
-        SKIP_ON_POWER(KnownBug) << "fcmpne returns wrong value on POWER (see #5152)";
-    }
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
         SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
         SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
@@ -802,12 +921,39 @@ TEST_P(FloatCompare, UsingConst) {
     ASSERT_EQ(exp, act);
 }
 
-TEST_P(FloatCompare, UsingLoadParam) {
+TEST_P(FloatCompare, UsingRhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    if ( param.opcode == "fcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
-        SKIP_ON_POWER(KnownBug) << "fcmpne returns wrong value on POWER (see #5152)";
+    if ( std::isnan(param.rhs) ) {
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, 1024,
+       "(method return=Int32 args=[Float] "
+         "(block "
+           "(ireturn "
+             "(%s "
+               "(fload parm=0) "
+               "(fconst %f)))))",
+       param.opcode.c_str(), param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(float)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs);
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(FloatCompare, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[160] = {0};
     std::snprintf(inputTrees, 160,
@@ -841,7 +987,9 @@ INSTANTIATE_TEST_CASE_P(CompareTest, FloatCompare, ::testing::Combine(
         std::tuple<const char*, int32_t (*)(float, float)>("fcmpgt", fcmpgt),
         std::tuple<const char*, int32_t (*)(float, float)>("fcmpge", fcmpge),
         std::tuple<const char*, int32_t (*)(float, float)>("fcmplt", fcmplt),
-        std::tuple<const char*, int32_t (*)(float, float)>("fcmple", fcmple)
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmple", fcmple),
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmpl", fcmpl),
+        std::tuple<const char*, int32_t (*)(float, float)>("fcmpg", fcmpg)
     )));
 
 int32_t dcmpeq(double l, double r) {
@@ -880,14 +1028,29 @@ int32_t dcmple(double l, double r) {
     return (l <= r) ? 1 : 0;
 }
 
+int32_t dcmpl(double l, double r) {
+    if (l == r)
+        return 0;
+    else if (l > r)
+        return 1;
+    else
+        return -1;
+}
+
+int32_t dcmpg(double l, double r) {
+    if (l == r)
+        return 0;
+    else if (l < r)
+        return -1;
+    else
+        return 1;
+}
+
 class DoubleCompare : public TRTest::OpCodeTest<int32_t, double, double> {};
 
 TEST_P(DoubleCompare, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    if ( param.opcode == "dcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
-        SKIP_ON_POWER(KnownBug) << "dcmpne returns wrong value on POWER (see #5152)";
-    }
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
         SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
         SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
@@ -916,12 +1079,39 @@ TEST_P(DoubleCompare, UsingConst) {
     ASSERT_EQ(exp, act);
 }
 
-TEST_P(DoubleCompare, UsingLoadParam) {
+TEST_P(DoubleCompare, UsingRhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    if ( param.opcode == "dcmpne" && (std::isnan(param.lhs) || std::isnan(param.rhs)) ) {
-        SKIP_ON_POWER(KnownBug) << "dcmpne returns wrong value on POWER (see #5152)";
+    if ( std::isnan(param.rhs) ) {
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, 1024,
+       "(method return=Int32 args=[Double] "
+         "(block "
+           "(ireturn "
+             "(%s "
+               "(dload parm=0) "
+               "(dconst %f)))))",
+       param.opcode.c_str(), param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(double)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs);
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(DoubleCompare, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[160] = {0};
     std::snprintf(inputTrees, 160,
@@ -955,7 +1145,9 @@ INSTANTIATE_TEST_CASE_P(CompareTest, DoubleCompare, ::testing::Combine(
         std::tuple<const char*, int32_t (*)(double, double)>("dcmpgt", dcmpgt),
         std::tuple<const char*, int32_t (*)(double, double)>("dcmpge", dcmpge),
         std::tuple<const char*, int32_t (*)(double, double)>("dcmplt", dcmplt),
-        std::tuple<const char*, int32_t (*)(double, double)>("dcmple", dcmple)
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmple", dcmple),
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmpl", dcmpl),
+        std::tuple<const char*, int32_t (*)(double, double)>("dcmpg", dcmpg)
     )));
 
 int32_t iffcmpeq(float l, float r) {
@@ -1005,8 +1197,8 @@ TEST_P(FloatIfCompare, UsingConst) {
         SKIP_ON_POWER(KnownBug) << "iffcmpne returns wrong value on POWER (see #5152)";
     }
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
-       SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[256] = {0};
@@ -1127,8 +1319,8 @@ TEST_P(DoubleIfCompare, UsingConst) {
         SKIP_ON_POWER(KnownBug) << "ifdcmpne returns wrong value on POWER (see #5152)";
     }
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
-       SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[1024] = {0};
@@ -1247,7 +1439,8 @@ TEST_P(FloatCompareOrUnordered, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[1024] = {0};
@@ -1270,6 +1463,40 @@ TEST_P(FloatCompareOrUnordered, UsingConst) {
     auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(FloatCompareOrUnordered, UsingRhsConst) {
+    SKIP_ON_HAMMER(KnownBug) << "The x86_64 code generator crashes (see issue #5122)";
+    SKIP_ON_AARCH64(MissingImplementation);
+
+    auto param = TRTest::to_struct(GetParam());
+
+    if ( std::isnan(param.rhs) ) {
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
+    }
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, 1024,
+       "(method return=Int32 args=[Float] "
+         "(block "
+           "(ireturn "
+             "(%s "
+               "(fload parm=0) "
+               "(fconst %f)))))",
+       param.opcode.c_str(), param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(float)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs);
     ASSERT_EQ(exp, act);
 }
 
@@ -1359,7 +1586,8 @@ TEST_P(DoubleCompareOrUnordered, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[1024] = {0};
@@ -1382,6 +1610,40 @@ TEST_P(DoubleCompareOrUnordered, UsingConst) {
     auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
     volatile auto exp = param.oracle(param.lhs, param.rhs);
     volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(DoubleCompareOrUnordered, UsingRhsConst) {
+    SKIP_ON_HAMMER(KnownBug) << "The x86_64 code generator crashes (see issue #5122)";
+    SKIP_ON_AARCH64(MissingImplementation);
+
+    auto param = TRTest::to_struct(GetParam());
+
+    if ( std::isnan(param.rhs) ) {
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
+    }
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, 1024,
+       "(method return=Int32 args=[Double] "
+         "(block "
+           "(ireturn "
+             "(%s "
+               "(dload parm=0) "
+               "(dconst %f)))))",
+       param.opcode.c_str(), param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(double)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs);
     ASSERT_EQ(exp, act);
 }
 
@@ -1472,7 +1734,8 @@ TEST_P(FloatIfCompareOrUnordered, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[256] = {0};
@@ -1588,7 +1851,8 @@ TEST_P(DoubleIfCompareOrUnordered, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     if ( std::isnan(param.lhs) || std::isnan(param.rhs) ) {
-       SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
     char inputTrees[1024] = {0};

@@ -180,7 +180,7 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
         }
      }
 
-   if (cg->getAheadOfTimeCompile() && (comp->getOption(TR_TraceRelocatableDataCG) || comp->getOption(TR_TraceRelocatableDataDetailsCG) || comp->getOption(TR_TraceReloCG)))
+   if (cg->getAheadOfTimeCompile() && (comp->getOption(TR_TraceRelocatableDataCG) || comp->getOption(TR_TraceRelocatableDataDetailsCG)))
       {
       traceMsg(comp, "\n<relocatableDataCG>\n");
       if (comp->getOption(TR_TraceRelocatableDataDetailsCG)) // verbose output

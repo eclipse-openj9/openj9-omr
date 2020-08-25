@@ -4419,53 +4419,6 @@ X86OpCodesTest::invokeSelectTests()
    }
 
 void
-X86OpCodesTest::UnsupportedOpCodesTests()
-   {
-
-   //lu2f, lu2d
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::lu2f, "lu2f", _argTypesUnaryLong, TR::Float);
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::lu2d, "lu2d", _argTypesUnaryLong, TR::Double);
-
-   //bselect, sselect, fselect, dselect
-   addUnsupportedOpCodeTest(_numberOfSelectArgs, TR::fselect, "fSelect", _argTypesSelectFloat, TR::Float);
-   addUnsupportedOpCodeTest(_numberOfSelectArgs, TR::dselect, "dSelect", _argTypesSelectDouble, TR::Double);
-
-   //iu2f, iu2d
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::iu2f, "iu2f", _argTypesUnaryInt, TR::Float);
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::iu2d, "iu2d", _argTypesUnaryInt, TR::Double);
-
-   //f2b,f2s,d2b,d2s
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::d2b, "d2b", _argTypesUnaryDouble, TR::Int8);
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::d2s, "d2s", _argTypesUnaryDouble, TR::Int16);
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::f2b, "f2b", _argTypesUnaryFloat, TR::Int8);
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::f2s, "f2s", _argTypesUnaryFloat, TR::Int16);
-
-   //address opcodes
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::b2a, "b2a", _argTypesUnaryByte, TR::Address);
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::s2a, "s2a", _argTypesUnaryShort, TR::Address);
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::bu2a, "bu2a", _argTypesUnaryByte, TR::Address);
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::su2a, "su2a", _argTypesUnaryShort, TR::Address);
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::lu2a, "lu2a", _argTypesUnaryLong, TR::Address);
-
-
-#if defined(TR_TARGET_32BIT)
-   //ldiv, lrem
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::ldiv, "lDiv", _argTypesBinaryLong, TR::Int64);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::lrem, "lRem", _argTypesBinaryLong, TR::Int64);
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::l2a, "l2a", _argTypesUnaryLong, TR::Address);
-
-#endif
-
-#if defined(TR_TARGET_64BIT)
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::a2b, "a2b", _argTypesUnaryAddress, TR::Int8);
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::a2s, "a2s", _argTypesUnaryAddress, TR::Int16);
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::i2a, "i2a", _argTypesUnaryInt, TR::Address);
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::iu2a, "iu2a", _argTypesUnaryInt, TR::Address);
-#endif
-
-}
-
-void
 X86OpCodesTest::invokeDirectCallTests()
    {
    int64_t longDataArray[] = {LONG_NEG, LONG_POS, LONG_MAXIMUM, LONG_MINIMUM, LONG_ZERO};
@@ -4648,12 +4601,6 @@ TEST(JITX86OpCodesTest, DISABLED_X86IntegerArithmeticTest)
    ::TestCompiler::X86OpCodesTest X86IntegerArithmeticTest;
    X86IntegerArithmeticTest.compileDisabledIntegerArithmeticTestMethods();
    X86IntegerArithmeticTest.invokeDisabledIntegerArithmeticTests();
-   }
-
-TEST(JITX86OpCodesTest, UnsupportedOpCodesTest)
-   {
-   ::TestCompiler::X86OpCodesTest X86UnsupportedOpcodesTest;
-   X86UnsupportedOpcodesTest.UnsupportedOpCodesTests();
    }
 
 TEST(JITX86OpCodesTest, DISABLED_X86UnaryTest)

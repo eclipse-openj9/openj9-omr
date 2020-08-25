@@ -39,7 +39,6 @@ class PPCOpCodesTest : public OpCodesTest
    virtual void invokeCompareTests();
    virtual void invokeBitwiseTests();
    virtual void invokeAddressTests();
-   virtual void UnsupportedOpCodesTests();
 
    virtual void compileDisabledConvertTestMethods();
    virtual void compileDisabledCompareTestMethods();

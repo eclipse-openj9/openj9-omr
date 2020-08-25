@@ -560,24 +560,6 @@ PPCOpCodesTest::invokeMemoryOperationTests()
    }
 
 void
-PPCOpCodesTest::UnsupportedOpCodesTests()
-   {
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::lu2f, "lu2f", _argTypesUnaryLong, TR::Float);
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::lu2d, "lu2d", _argTypesUnaryLong, TR::Double);
-
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::bdiv, "bDiv", _argTypesBinaryByte, TR::Int8);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::brem, "bRem", _argTypesBinaryByte, TR::Int8);
-
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::sdiv, "sDiv", _argTypesBinaryShort, TR::Int16);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::srem, "sRem", _argTypesBinaryShort, TR::Int16);
-
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::bucmplt, "bucmplt", _argTypesBinaryByte, TR::Int32);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::bucmpge, "bucmpge", _argTypesBinaryByte, TR::Int32);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::bucmpgt, "bucmpgt", _argTypesBinaryByte, TR::Int32);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::bucmple, "bucmple", _argTypesBinaryByte, TR::Int32);
-   }
-
-void
 PPCOpCodesTest::invokeCompareTests()
    {
    int16_t sCmpeqDataArr[][2] =
@@ -4736,12 +4718,6 @@ TEST(JITPPCOpCodesTest, PPCAddressTest)
    ::TestCompiler::PPCOpCodesTest PPCAddressTest;
    PPCAddressTest.compileAddressTestMethods();
    PPCAddressTest.invokeAddressTests();
-   }
-
-TEST(JITPPCOpCodesTest, UnsupportedOpCodesTest)
-   {
-   ::TestCompiler::PPCOpCodesTest PPCUnsupportedOpcodesTest;
-   PPCUnsupportedOpcodesTest.UnsupportedOpCodesTests();
    }
 
 TEST(JITPPCOpCodesTest, DISABLED_PPCLEConvertTests)

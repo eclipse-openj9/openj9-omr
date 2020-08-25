@@ -192,9 +192,6 @@ class OpCodesTest : public TestDriver
    //another function for no helper issue tracking and testing.
    virtual void invokeNoHelperUnaryTests();
 
-   //Unsupported OpCodes are tested in this function
-   virtual void UnsupportedOpCodesTests();
-
    template <typename functiontype>
    int32_t
    compileOpCodeMethod(functiontype& resultpointer,
@@ -407,13 +404,6 @@ class OpCodesTest : public TestDriver
       resultpointer = reinterpret_cast<functiontype>(startPC);
       return returnCode;;
       }
-
-   void
-   addUnsupportedOpCodeTest(int32_t opCodeArgsNum,
-         TR::ILOpCodes opCode,
-         char * resolvedMethodName,
-         TR::DataType * argTypes,
-         TR::DataType returnType);
 
    static TR::ResolvedMethod * resolvedMethod(TR::DataType dataType);
 

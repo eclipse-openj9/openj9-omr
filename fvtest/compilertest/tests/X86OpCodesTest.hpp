@@ -45,7 +45,6 @@ class X86OpCodesTest : public OpCodesTest
    virtual void invokeCompareTests();
    virtual void invokeSelectTests();
    virtual void invokeAddressTests();
-   virtual void UnsupportedOpCodesTests();
 
    virtual void compileDisabledIntegerArithmeticTestMethods();
    virtual void invokeDisabledIntegerArithmeticTests();

@@ -459,6 +459,12 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::Instruction *generateNop(TR::Node *node, TR::Instruction *preced = 0);
 
    /**
+    * @brief Determines whether register association is enabled
+    * @return true if register association is enabled
+    */
+   bool enableRegisterAssociations() { return true; }
+
+   /**
     * @brief Returns bit mask for real register
     * @param[in] reg: real register number
     * 

@@ -836,24 +836,34 @@ OMR::ARM64::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::CodeGenerator *c
 
    TR::RegisterDependencyConditions *deps = NULL;
 
-   if (!block->isExtensionOfPreviousBlock() && node->getNumChildren()>0)
+   if (!block->isExtensionOfPreviousBlock())
       {
-      int32_t i;
-      TR::Node *child = node->getFirstChild();
-      cg->evaluate(child);
-      deps = generateRegisterDependencyConditions(cg, child, 0);
-      if (cg->getCurrentEvaluationTreeTop() == comp->getStartTree())
+      TR::Machine *machine = cg->machine();
+      // REG ASSOC
+      machine->clearRegisterAssociations();
+      machine->setRegisterWeightsFromAssociations();
+
+      if (node->getNumChildren() > 0)
          {
-         for (i=0; i<child->getNumChildren(); i++)
+         int32_t i;
+         TR::Node *child = node->getFirstChild();
+
+         cg->evaluate(child);
+
+         deps = generateRegisterDependencyConditions(cg, child, 0);
+         if (cg->getCurrentEvaluationTreeTop() == comp->getStartTree())
             {
-            TR::ParameterSymbol *sym = child->getChild(i)->getSymbol()->getParmSymbol();
-            if (sym != NULL)
+            for (i=0; i<child->getNumChildren(); i++)
                {
-               sym->setAssignedGlobalRegisterIndex(cg->getGlobalRegister(child->getChild(i)->getGlobalRegisterNumber()));
+               TR::ParameterSymbol *sym = child->getChild(i)->getSymbol()->getParmSymbol();
+               if (sym != NULL)
+                  {
+                  sym->setAssignedGlobalRegisterIndex(cg->getGlobalRegister(child->getChild(i)->getGlobalRegisterNumber()));
+                  }
                }
             }
+         cg->decReferenceCount(child);
          }
-      cg->decReferenceCount(child);
       }
 
    TR::LabelSymbol *labelSym = node->getLabel();
@@ -897,13 +907,21 @@ OMR::ARM64::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::TreeTop *nextTT = cg->getCurrentEvaluationTreeTop()->getNextTreeTop();
 
    TR::RegisterDependencyConditions *deps = NULL;
-   if (node->getNumChildren() > 0 &&
-       (!nextTT || !nextTT->getNode()->getBlock()->isExtensionOfPreviousBlock()))
+   if (!nextTT || !nextTT->getNode()->getBlock()->isExtensionOfPreviousBlock())
       {
-      TR::Node *child = node->getFirstChild();
-      cg->evaluate(child);
-      deps = generateRegisterDependencyConditions(cg, child, 0);
-      cg->decReferenceCount(child);
+      if (cg->enableRegisterAssociations() &&
+          cg->getAppendInstruction()->getOpCodeValue() != TR::InstOpCode::assocreg)
+         {
+         cg->machine()->createRegisterAssociationDirective(cg->getAppendInstruction());
+         }
+
+      if (node->getNumChildren() > 0)
+         {
+         TR::Node *child = node->getFirstChild();
+         cg->evaluate(child);
+         deps = generateRegisterDependencyConditions(cg, child, 0);
+         cg->decReferenceCount(child);
+         }
       }
 
    // put the dependencies (if any) on the fence

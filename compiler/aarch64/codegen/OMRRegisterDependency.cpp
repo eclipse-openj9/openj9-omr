@@ -222,6 +222,40 @@ bool OMR::ARM64::RegisterDependencyConditions::usesRegister(TR::Register *r)
 
 void OMR::ARM64::RegisterDependencyConditions::bookKeepingRegisterUses(TR::Instruction *instr, TR::CodeGenerator *cg)
    {
+   if (instr->getOpCodeValue() == TR::InstOpCode::assocreg)
+      return;
+
+   // We create a register association directive for each dependency
+
+   if (cg->enableRegisterAssociations() && !cg->isOutOfLineColdPath())
+      {
+      TR::Machine *machine = cg->machine();
+
+      machine->createRegisterAssociationDirective(instr->getPrev());
+
+      // Now set up the new register associations as required by the current
+      // dependent register instruction onto the machine.
+      // Only the registers that this instruction interferes with are modified.
+      //
+      for (int i = 0; i < _addCursorForPre; i++)
+         {
+         TR::RegisterDependency *dependency = _preConditions->getRegisterDependency(i);
+         if (dependency->getRegister())
+            {
+            machine->setVirtualAssociatedWithReal(dependency->getRealRegister(), dependency->getRegister());
+            }
+         }
+
+      for (int j = 0; j < _addCursorForPost; j++)
+         {
+         TR::RegisterDependency *dependency = _postConditions->getRegisterDependency(j);
+         if (dependency->getRegister())
+            {
+            machine->setVirtualAssociatedWithReal(dependency->getRealRegister(), dependency->getRegister());
+            }
+         }
+      }
+
    for (int i = 0; i < _addCursorForPre; i++)
       {
       instr->useRegister(_preConditions->getRegisterDependency(i)->getRegister());

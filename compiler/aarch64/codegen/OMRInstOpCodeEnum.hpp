@@ -481,5 +481,6 @@
 		dd,    // Define word
 		label, // Destination of a jump
 		vgdnop, // Virtual Guard NOP instruction
-		ARM64LastOp = vgdnop,
+		assocreg, // Associate real registers with Virtual registers.
+		ARM64LastOp = assocreg,
 		ARM64NumOpCodes = ARM64LastOp+1,

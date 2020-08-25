@@ -91,6 +91,49 @@ void TR::ARM64LabelInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigne
    assignRegistersForOutOfLineCodeSection(kindToBeAssigned);
    }
 
+// TR::ARM64AdminInstruction member functions
+
+void TR::ARM64AdminInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+   {
+   if (getOpCodeValue() != TR::InstOpCode::assocreg)
+      {
+      OMR::ARM64::Instruction::assignRegisters(kindToBeAssigned);
+      }
+   else if (self()->cg()->enableRegisterAssociations())
+      {
+      TR::Machine *machine = self()->cg()->machine();
+
+      int32_t first = TR::RealRegister::FirstGPR;
+      int32_t last  = TR::RealRegister::LastAssignableFPR;
+      // Step 1 : First traverse the existing associations and remove them so that they don't interfere with the new ones
+      for (int32_t i = first; i <= last; ++i)
+         {
+         TR::Register *virtReg = machine->getVirtualAssociatedWithReal(static_cast<TR::RealRegister::RegNum>(i));
+         if (virtReg)
+            {
+            virtReg->setAssociation(TR::RealRegister::NoReg);
+            }
+         }
+
+      // Step 2 : loop through and set up the new associations (both on the machine and by associating the virtual
+      // registers with their real dependencies)
+      auto depCond = self()->getDependencyConditions();
+      auto depGroup = depCond->getPostConditions();
+      auto numPostCond = depCond->getNumPostConditions();
+      for (int32_t j = 0; j < numPostCond; ++j)
+         {
+         auto registerDependency = depGroup->getRegisterDependency(j);
+         TR::RealRegister::RegNum regNum = registerDependency->getRealRegister();
+         TR::Register *virtReg = registerDependency->getRegister();
+
+         machine->setVirtualAssociatedWithReal(regNum, virtReg);
+         }
+
+      // Set up virtual to real associations and set register weights
+      machine->setRegisterWeightsFromAssociations();
+      }
+   }
+
 // TR::ARM64Trg1Instruction:: member functions
 
 bool TR::ARM64Trg1Instruction::refsRegister(TR::Register *reg)

@@ -26,6 +26,7 @@
 #include "codegen/BackingStore.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GenerateInstructions.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/Machine_inlines.hpp"
 #include "codegen/RealRegister.hpp"
@@ -33,10 +34,18 @@
 #include "il/Node_inlines.hpp"
 #include "infra/Assert.hpp"
 
+// Register Association
+#define ARM64_REGISTER_HEAVIEST_WEIGHT               0x0000ffff
+#define ARM64_REGISTER_INITIAL_PRESERVED_WEIGHT      0x00001000
+#define ARM64_REGISTER_ASSOCIATED_WEIGHT             0x00000800
+#define ARM64_REGISTER_PLACEHOLDER_WEIGHT            0x00000100
+#define ARM64_REGISTER_BASIC_WEIGHT                  0x00000080
+
 OMR::ARM64::Machine::Machine(TR::CodeGenerator *cg) :
       OMR::Machine(cg)
    {
    self()->initializeRegisterFile();
+   self()->clearRegisterAssociations();
    }
 
 TR::RealRegister *OMR::ARM64::Machine::findBestFreeRegister(TR_RegisterKinds rk,
@@ -1148,6 +1157,91 @@ void OMR::ARM64::Machine::initializeRegisterFile()
                                                  self()->cg());
    }
 
+
+// Register Association ////////////////////////////////////////////
+void
+OMR::ARM64::Machine::setRegisterWeightsFromAssociations()
+   {
+   TR::ARM64LinkageProperties linkageProperties = self()->cg()->getProperties();
+   int32_t first = TR::RealRegister::FirstGPR;
+   TR::Compilation *comp = self()->cg()->comp();
+   int32_t last = TR::RealRegister::LastAssignableFPR;
+
+   for (int32_t i = first; i <= last; ++i)
+      {
+      TR::Register * assocReg = getVirtualAssociatedWithReal(static_cast<TR::RealRegister::RegNum>(i));
+      if (linkageProperties.getPreserved(static_cast<TR::RealRegister::RegNum>(i)) && _registerFile[i]->getHasBeenAssignedInMethod() == false)
+         {
+         if (assocReg)
+            {
+            assocReg->setAssociation(i);
+            }
+         _registerFile[i]->setWeight(ARM64_REGISTER_INITIAL_PRESERVED_WEIGHT);
+         }
+      else if (assocReg == NULL)
+         {
+         _registerFile[i]->setWeight(ARM64_REGISTER_BASIC_WEIGHT);
+         }
+      else
+         {
+         assocReg->setAssociation(i);
+         if (assocReg->isPlaceholderReg())
+            {
+            // placeholder register and is only needed at the specific dependency
+            // site (usually a killed register on a call)
+            // so defer this register's weight to that of registers
+            // where the associated register has a longer life
+            _registerFile[i]->setWeight(ARM64_REGISTER_PLACEHOLDER_WEIGHT);
+            }
+         else
+            {
+            _registerFile[i]->setWeight(ARM64_REGISTER_ASSOCIATED_WEIGHT);
+            }
+         }
+      }
+   }
+
+void
+OMR::ARM64::Machine::createRegisterAssociationDirective(TR::Instruction *cursor)
+   {
+   TR::Compilation *comp = self()->cg()->comp();
+   int32_t first = TR::RealRegister::FirstGPR;
+   int32_t last = TR::RealRegister::LastAssignableFPR;
+   TR::RegisterDependencyConditions *associations  = new (self()->cg()->trHeapMemory()) TR::RegisterDependencyConditions(0, last, self()->cg()->trMemory());
+
+   // Go through the current associations held in the machine and put a copy of
+   // that state out into the stream after the cursor
+   // so that when the register assigner goes backwards through this point
+   // it updates the machine and register association states properly
+   //
+   for (int32_t i = first; i <= last; i++)
+      {
+      TR::RealRegister::RegNum regNum = static_cast<TR::RealRegister::RegNum>(i);
+      associations->addPostCondition(self()->getVirtualAssociatedWithReal(regNum), regNum);
+      }
+
+   generateAdminInstruction(self()->cg(), TR::InstOpCode::assocreg, cursor->getNode(), associations, NULL, cursor);
+   }
+
+TR::Register *
+OMR::ARM64::Machine::setVirtualAssociatedWithReal(TR::RealRegister::RegNum regNum, TR::Register *virtReg)
+   {
+   if (virtReg)
+      {
+      // disable previous association
+      if (virtReg->getAssociation() && (_registerAssociations[virtReg->getAssociation()] == virtReg))
+         _registerAssociations[virtReg->getAssociation()] = NULL;
+
+      if (regNum == TR::RealRegister::NoReg || regNum == TR::RealRegister::xzr || regNum >= TR::RealRegister::NumRegisters)
+         {
+         virtReg->setAssociation(TR::RealRegister::NoReg);
+         return NULL;
+         }
+      }
+
+   return _registerAssociations[regNum] = virtReg;
+   }
+
 void
 OMR::ARM64::Machine::takeRegisterStateSnapShot()
    {
@@ -1157,6 +1251,8 @@ OMR::ARM64::Machine::takeRegisterStateSnapShot()
       _registerStatesSnapShot[i] = _registerFile[i]->getState();
       _assignedRegisterSnapShot[i] = _registerFile[i]->getAssignedRegister();
       _registerFlagsSnapShot[i] = _registerFile[i]->getFlags();
+      _registerAssociationsSnapShot[i] = self()->getVirtualAssociatedWithReal(static_cast<TR::RealRegister::RegNum>(i));
+      _registerWeightSnapShot[i] = _registerFile[i]->getWeight();
       }
    }
 
@@ -1166,8 +1262,11 @@ OMR::ARM64::Machine::restoreRegisterStateFromSnapShot()
    int32_t i;
    for (i = TR::RealRegister::FirstGPR; i < TR::RealRegister::NumRegisters - 1; i++) // Skipping SpilledReg
       {
+      _registerFile[i]->setWeight(_registerWeightSnapShot[i]);
       _registerFile[i]->setFlags(_registerFlagsSnapShot[i]);
       _registerFile[i]->setState(_registerStatesSnapShot[i]);
+      self()->setVirtualAssociatedWithReal(static_cast<TR::RealRegister::RegNum>(i), _registerAssociationsSnapShot[i]);
+
       if (_registerFile[i]->getState() == TR::RealRegister::Free)
          {
          if (_registerFile[i]->getAssignedRegister() != NULL)

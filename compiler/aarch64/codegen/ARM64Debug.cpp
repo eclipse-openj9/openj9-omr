@@ -499,7 +499,8 @@ static const char *opCodeToNameMap[] =
    "return",
    "dd",
    "label",
-   "vgdnop"
+   "vgdnop",
+   "assocreg"
    };
 
 const char *
@@ -796,6 +797,12 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64RegBranchInstruction *instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64AdminInstruction *instr)
    {
+   if (instr->getOpCodeValue() == TR::InstOpCode::assocreg)
+      {
+      printAssocRegDirective(pOutFile, instr);
+      return;
+      }
+
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s ", getOpCodeName(&instr->getOpCode()));
 
@@ -1487,6 +1494,30 @@ TR_Debug::print(TR::FILE *pOutFile, TR::RegisterDependencyConditions *conditions
          }
       trfflush(_comp->getOutFile());
       }
+   }
+
+void
+TR_Debug::printAssocRegDirective(TR::FILE *pOutFile, TR::Instruction *instr)
+   {
+   TR_ARM64RegisterDependencyGroup * depGroup = instr->getDependencyConditions()->getPostConditions();
+
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s", getOpCodeName(&instr->getOpCode()));
+   trfflush(pOutFile);
+
+   auto numPostConditions = instr->getDependencyConditions()->getAddCursorForPost();
+   for (int i = 0; i < numPostConditions; i++)
+      {
+      TR::RegisterDependency *dependency = depGroup->getRegisterDependency(i);
+      TR::Register *virtReg = dependency->getRegister();
+
+      if (virtReg)
+         {
+         print(pOutFile, dependency);
+         }
+      }
+
+   trfflush(pOutFile);
    }
 
 void

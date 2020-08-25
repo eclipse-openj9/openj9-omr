@@ -1152,6 +1152,7 @@ public:
    void printARM64GCRegisterMap(TR::FILE *, TR::GCRegisterMap *);
    void printInstructionComment(TR::FILE *, int32_t, TR::Instruction *);
    void printMemoryReferenceComment(TR::FILE *, TR::MemoryReference *);
+   void printAssocRegDirective(TR::FILE *, TR::Instruction *);
 
    const char *getARM64RegisterName(uint32_t, bool = true);
 

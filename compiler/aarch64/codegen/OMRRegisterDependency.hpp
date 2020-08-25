@@ -157,7 +157,8 @@ class TR_ARM64RegisterDependencyGroup
       {
       for (uint32_t i = 0; i < numberOfRegisters; i++)
          {
-         _dependencies[i].getRegister()->block();
+         if (_dependencies[i].getRegister())
+            _dependencies[i].getRegister()->block();
          }
       }
 
@@ -169,7 +170,8 @@ class TR_ARM64RegisterDependencyGroup
       {
       for (uint32_t i = 0; i < numberOfRegisters; i++)
          {
-         _dependencies[i].getRegister()->unblock();
+         if (_dependencies[i].getRegister())
+            _dependencies[i].getRegister()->unblock();
          }
       }
    };

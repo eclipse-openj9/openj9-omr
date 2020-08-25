@@ -952,6 +952,9 @@ omrsock_poll(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t fds, uint32_t 
 	} else {
 		/* Dynamically allocate if nfds more than 8. */
 		pfds = portLibrary->mem_allocate_memory(portLibrary, nfds * sizeof(struct pollfd), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+		if (NULL == pfds) {
+			portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SYSTEMFULL);
+		}
 	}
 
 	/* Set up fds to pass into the poll function. */
@@ -966,7 +969,7 @@ omrsock_poll(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t fds, uint32_t 
 		if (nfds > maxNumPollFd) {
 			portLibrary->mem_free_memory(portLibrary, pfds);
 		}
-		return portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_FILE_OPFAILED);
+		return portLibrary->error_set_last_error(portLibrary, errno, get_omr_error(errno));
 	}
 
 	/* Set user's fds values to be same as pfds. */

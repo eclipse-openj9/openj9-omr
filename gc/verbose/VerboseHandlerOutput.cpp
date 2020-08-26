@@ -1054,12 +1054,21 @@ MM_VerboseHandlerOutput::handleExcessiveGCRaised(J9HookInterface** hook, uintptr
 }
 
 void
-MM_VerboseHandlerOutput::outputStringConstantInfo(MM_EnvironmentBase *env, uintptr_t ident, uintptr_t candidates, uintptr_t cleared)
+MM_VerboseHandlerOutput::outputStringConstantInfo(MM_EnvironmentBase *env, uintptr_t indent, uintptr_t candidates, uintptr_t cleared)
 {
 	MM_VerboseWriterChain* writer = _manager->getWriterChain();
 
 	if (0 != candidates) {
-		writer->formatAndOutput(env, ident, "<stringconstants candidates=\"%zu\" cleared=\"%zu\"  />", candidates, cleared);
+		writer->formatAndOutput(env, indent, "<stringconstants candidates=\"%zu\" cleared=\"%zu\"  />", candidates, cleared);
+	}
+}
+
+void
+MM_VerboseHandlerOutput::outputMonitorReferenceInfo(MM_EnvironmentBase *env, uintptr_t indent, uintptr_t candidates, uintptr_t cleared)
+{
+	MM_VerboseWriterChain* writer = _manager->getWriterChain();
+	if (0 != candidates) {
+		writer->formatAndOutput(env, indent, "<object-monitors candidates=\"%zu\" cleared=\"%zu\"  />", candidates, cleared);
 	}
 }
 

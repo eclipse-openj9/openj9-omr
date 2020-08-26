@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -182,16 +182,8 @@ class multipleJumpSuccessorIterator : public SuccessorIterator
 TR_GlobalRegisterAllocator::TR_GlobalRegisterAllocator(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
      _pairedSymbols(manager->trMemory()),
-     _allocatedPerformCellSymRefs(manager->allocator()),
-     _performCellCount(0),
      _newBlocks(manager->trMemory()),
-     _nodesToBeChecked(manager->trMemory()),
-     _nodeTriplesToBeChecked(manager->trMemory()),
-     _rejectedSignExtNodes(manager->trMemory()),
-     _storeSymRef(NULL),
-     _seenInternalMethods(NULL),
-     _osrCatchSucc(NULL),
-     _defIndexToTempMap(manager->allocator())
+     _osrCatchSucc(NULL)
    {}
 
 void TR_GlobalRegisterAllocator::populateSymRefNodes(TR::Node *node, vcount_t visitCount)
@@ -372,9 +364,6 @@ TR_GlobalRegisterAllocator::perform()
          comp()->getSymRefTab()->aliasBuilder.createAliasInfo();
       }
 
-   _storeSymRef = NULL;
-   _rejectedSignExtNodes.deleteAll();
-
    bool globalFPAssignmentDone = false;
    _appendBlock = 0;
 
@@ -462,9 +451,6 @@ TR_GlobalRegisterAllocator::perform()
       if (trace())
          comp()->dumpMethodTrees("Trees before tactical global register allocator", comp()->getMethodSymbol());
 
-      _nodesToBeChecked.deleteAll();
-      _nodeTriplesToBeChecked.deleteAll();
-      _rejectedSignExtNodes.deleteAll();
       _candidatesNeedingSignExtension = NULL;
       _candidatesSignExtendedInThisLoop = NULL;
 
@@ -540,7 +526,6 @@ TR_GlobalRegisterAllocator::perform()
          if (_lastGlobalRegisterNumber > -1)
             {
             _visitCount = comp()->incVisitCount();
-            _gotoCreated = false;
 
             _signExtAdjustmentReqd = new (trStackMemory()) TR_BitVector(_lastGlobalRegisterNumber+1, trMemory(), stackAlloc);
             _signExtAdjustmentNotReqd = new (trStackMemory()) TR_BitVector(_lastGlobalRegisterNumber+1, trMemory(), stackAlloc);
@@ -551,48 +536,6 @@ TR_GlobalRegisterAllocator::perform()
             //
             for (TR::TreeTop * tt = comp()->getStartTree(); tt; tt = tt->getExtendedBlockExitTreeTop()->getNextTreeTop())
                transformBlock(tt);
-
-            TR::Node *node;
-            ListIterator<TR::Node> nodesIt(&_nodesToBeChecked);
-            for (node = nodesIt.getFirst(); node != NULL; node = nodesIt.getNext())
-               {
-               if (node->skipSignExtension() &&
-                   (node->getOpCode().isLoadVarDirect() ||
-                    (((node->getOpCodeValue() == TR::iadd) || (node->getOpCodeValue() == TR::isub)) &&
-                     node->getFirstChild()->getOpCode().isLoadVarDirect() &&
-                     node->getFirstChild()->getSymbolReference()->getSymbol()->isAuto() &&
-                     node->getSecondChild()->getOpCode().isLoadConst())))
-                  node->setSkipSignExtension(false);
-               }
-
-            TR_NodeTriple *nodeTriple;
-            ListIterator<TR_NodeTriple> nodeTriplesIt(&_nodeTriplesToBeChecked);
-            for (nodeTriple = nodeTriplesIt.getFirst(); nodeTriple != NULL; nodeTriple = nodeTriplesIt.getNext())
-               {
-               if (trace())
-                  traceMsg(comp(), "node1 %p node2 %p node3 %p \n", nodeTriple->_node1, nodeTriple->_node2, nodeTriple->_node3);
-
-               TR::Node *node3 = NULL;
-               if ((nodeTriple->_node3->getOpCodeValue() == TR::istore) || (nodeTriple->_node3->getOpCodeValue() == TR::iRegStore))
-                  node3 = nodeTriple->_node3;
-               else
-                  node3 = nodeTriple->_node3->getChild(nodeTriple->_childNum);
-
-               if ((nodeTriple->_node2->getOpCodeValue() == TR::iRegStore) &&
-                   ((node3->getOpCodeValue() == TR::iRegStore) ||
-                    (node3->getOpCodeValue() == TR::iRegLoad)) &&
-                   (nodeTriple->_node2->getGlobalRegisterNumber() == node3->getGlobalRegisterNumber()))
-                  {
-                  //nodeTriple->_node1->setRegisterNumber(nodeTriple->_node2->getGlobalRegisterNumber());
-                  }
-               else
-                  {
-                  if (trace())
-                     traceMsg(comp(), "Resetting property on %p\n", nodeTriple->_node1->getFirstChild());
-                  nodeTriple->_node1->getChild(nodeTriple->_childNum)->setSkipSignExtension(false);
-                  }
-               }
-
             }
 
          bool mayHaveDeadStore = false;
@@ -624,8 +567,6 @@ TR_GlobalRegisterAllocator::perform()
             {
             requestOpt(OMR::isolatedStoreGroup);
             requestOpt(OMR::globalDeadStoreElimination);
-            if (_gotoCreated)
-               requestOpt(OMR::redundantGotoElimination);
             }
 
          // Post processing to remove redundant stores for live-range splitting.
@@ -724,8 +665,6 @@ TR_GlobalRegisterAllocator::perform()
       block->clearGlobalRegisters();
 
    candidates->releaseCandidates();
-
-   _allocatedPerformCellSymRefs.Clear();
 
    return 1; // actual cost
    }
@@ -4275,7 +4214,6 @@ TR_GlobalRegisterAllocator::findLoopsAndCreateAutosForSignExt(TR_StructureSubGra
          regionStructure->getBlocks(&blocksInLoop);
 
          visitCount = comp()->incVisitCount();
-         _storeSymRef = NULL;
 
          ListIterator<TR::Block> blocksIt(&blocksInLoop);
          TR::Block *nextBlock;

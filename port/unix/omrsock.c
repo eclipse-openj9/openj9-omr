@@ -953,7 +953,7 @@ omrsock_poll(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t fds, uint32_t 
 		/* Dynamically allocate if nfds more than 8. */
 		pfds = portLibrary->mem_allocate_memory(portLibrary, nfds * sizeof(struct pollfd), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 		if (NULL == pfds) {
-			portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SYSTEMFULL);
+			return portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SYSTEMFULL);
 		}
 	}
 

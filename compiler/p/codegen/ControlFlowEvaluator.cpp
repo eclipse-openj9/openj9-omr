@@ -237,7 +237,7 @@ bool is16BitSignedImmediate(int64_t value)
  * \return
  *    true if the value provided can be encoded in a 16-bit UI field; false otherwise.
  */
-bool is16BitUnsigedImmediate(uint64_t value)
+bool is16BitUnsignedImmediate(uint64_t value)
    {
    return value < 0x10000;
    }
@@ -455,7 +455,7 @@ CompareCondition evaluateDualIntCompareToConditionRegister(
       int32_t secondHi = secondChild->getLongIntHigh();
       int32_t secondLo = secondChild->getLongIntLow();
 
-      if (compareInfo.isUnsigned && is16BitUnsigedImmediate(secondHi))
+      if (compareInfo.isUnsigned && is16BitUnsignedImmediate(secondHi))
          {
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, condReg, firstReg->getHighOrder(), secondHi);
          }
@@ -473,7 +473,7 @@ CompareCondition evaluateDualIntCompareToConditionRegister(
          cg->stopUsingRegister(secondHiReg);
          }
 
-      if (is16BitUnsigedImmediate(secondLo))
+      if (is16BitUnsignedImmediate(secondLo))
          {
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, condReg2, firstReg->getLowOrder(), secondLo);
          }
@@ -635,7 +635,7 @@ void evaluateThreeWayIntCompareToConditionRegister(
    TR::Register *firstReg = evaluateAndExtend(firstChild, compareInfo.isUnsigned, false, cg);
    bool canUseCmpi = secondChild->getOpCode().isLoadConst() &&
       (compareInfo.isUnsigned
-         ? is16BitUnsigedImmediate(secondChild->get64bitIntegralValueAsUnsigned())
+         ? is16BitUnsignedImmediate(secondChild->get64bitIntegralValueAsUnsigned())
          : is16BitSignedImmediate(secondChild->get64bitIntegralValue()));
 
    if (canUseCmpi)

@@ -38,8 +38,28 @@ get_filename_component(VSPath ${CMAKE_CXX_COMPILER} DIRECTORY CACHE)
 # As a last ditch attempt, try finding based on COM GUIDs.
 # However, these have the potential to change as the DIA API changes.
 if(NOT DiaSDK_ROOT)
-	get_filename_component(DIA_COM_DLL_DIR "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\CLSID\\{E6756135-1E65-4D17-8576-610761398C3C}\\InprocServer32]" DIRECTORY CACHE)
-	if(DIA_COM_DLL_DIR)
+	if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+		# Only the Windows CMake builds (ie not Cygwin) can read the registry
+		get_filename_component(DIA_COM_DLL_DIR "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\CLSID\\{E6756135-1E65-4D17-8576-610761398C3C}\\InprocServer32]" DIRECTORY CACHE)
+	elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL "CYGWIN")
+		# If we are on Cygwin, use regtool and cygpath (both should be provided by Cygwin)
+		find_program(CMAKE_REGTOOL regtool)
+		find_program(CMAKE_CYGPATH cygpath)
+
+		if(CMAKE_REGTOOL AND CMAKE_CYGPATH)
+			execute_process(
+				COMMAND "${CMAKE_REGTOOL}" get "/HKLM/SOFTWARE/Classes/CLSID/{E6756135-1E65-4D17-8576-610761398C3C}/InprocServer32/"
+				COMMAND "${CMAKE_CYGPATH}" -u -f -
+				OUTPUT_VARIABLE reg_key
+				RESULT_VARIABLE rc
+			)
+			if((rc EQUAL 0) AND reg_key)
+				get_filename_component(DIA_COM_DLL_DIR "${reg_key}" DIRECTORY)
+			endif()
+		endif()
+	endif()
+
+	if(DIA_COM_DLL_DIR AND EXISTS DIA_COM_DLL_DIR)
 		# The DLL will live in  "X/DIA SDK/lib" or "X/DIA SDK/lib/amd64"
 		if(DIA_COM_DLL_DIR MATCHES "amd64$")
 			set(DiaSDK_ROOT "${DIA_COM_DLL_DIR}/../..")

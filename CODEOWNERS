@@ -42,6 +42,7 @@
 /compiler/il/ @vijaysun-omr @Leonardo2718
 /compiler/arm/ @0xdaryl @knn-k
 /compiler/aarch64/ @0xdaryl @knn-k
+/compiler/p/ @aviansie-ben
 /compiler/z/ @fjeremic
 
 # JitBuilder

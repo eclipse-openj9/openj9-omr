@@ -1352,6 +1352,8 @@ class Int32SelectInt8CompareTest : public SelectCompareTest<int8_t, int32_t> {};
 
 TEST_P(Int32SelectInt8CompareTest, UsingLoadParam) {
     SKIP_ON_ARM(MissingImplementation);
+    SKIP_ON_S390(KnownBug) << "The Z code generator crashes when a sub-integer compare is the first child of an integral select (#5499)";
+    SKIP_ON_S390X(KnownBug) << "The Z code generator crashes when a sub-integer compare is the first child of an integral select (#5499)";
 
     auto param = to_struct(GetParam());
 
@@ -1382,6 +1384,8 @@ TEST_P(Int32SelectInt8CompareTest, UsingLoadParam) {
 
 TEST_P(Int32SelectInt8CompareTest, UsingConstCompare) {
     SKIP_ON_ARM(MissingImplementation);
+    SKIP_ON_S390(KnownBug) << "The Z code generator crashes when a sub-integer compare is the first child of an integral select (#5499)";
+    SKIP_ON_S390X(KnownBug) << "The Z code generator crashes when a sub-integer compare is the first child of an integral select (#5499)";
 
     auto param = to_struct(GetParam());
 
@@ -1413,6 +1417,8 @@ TEST_P(Int32SelectInt8CompareTest, UsingConstCompare) {
 
 TEST_P(Int32SelectInt8CompareTest, UsingConstValues) {
     SKIP_ON_ARM(MissingImplementation);
+    SKIP_ON_S390(KnownBug) << "The Z code generator crashes when a sub-integer compare is the first child of an integral select (#5499)";
+    SKIP_ON_S390X(KnownBug) << "The Z code generator crashes when a sub-integer compare is the first child of an integral select (#5499)";
 
     auto param = to_struct(GetParam());
 
@@ -1453,6 +1459,8 @@ class Int32SelectInt16CompareTest : public SelectCompareTest<int16_t, int32_t> {
 
 TEST_P(Int32SelectInt16CompareTest, UsingLoadParam) {
     SKIP_ON_ARM(MissingImplementation);
+    SKIP_ON_S390(KnownBug) << "The Z code generator crashes when a sub-integer compare is the first child of an integral select (#5499)";
+    SKIP_ON_S390X(KnownBug) << "The Z code generator crashes when a sub-integer compare is the first child of an integral select (#5499)";
 
     auto param = to_struct(GetParam());
 
@@ -1483,6 +1491,8 @@ TEST_P(Int32SelectInt16CompareTest, UsingLoadParam) {
 
 TEST_P(Int32SelectInt16CompareTest, UsingConstCompare) {
     SKIP_ON_ARM(MissingImplementation);
+    SKIP_ON_S390(KnownBug) << "The Z code generator crashes when a sub-integer compare is the first child of an integral select (#5499)";
+    SKIP_ON_S390X(KnownBug) << "The Z code generator crashes when a sub-integer compare is the first child of an integral select (#5499)";
 
     auto param = to_struct(GetParam());
 
@@ -1514,6 +1524,8 @@ TEST_P(Int32SelectInt16CompareTest, UsingConstCompare) {
 
 TEST_P(Int32SelectInt16CompareTest, UsingConstValues) {
     SKIP_ON_ARM(MissingImplementation);
+    SKIP_ON_S390(KnownBug) << "The Z code generator crashes when a sub-integer compare is the first child of an integral select (#5499)";
+    SKIP_ON_S390X(KnownBug) << "The Z code generator crashes when a sub-integer compare is the first child of an integral select (#5499)";
 
     auto param = to_struct(GetParam());
 

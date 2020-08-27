@@ -1770,6 +1770,11 @@ TR::Register *OMR::Power::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::Co
             generateTrg1Src3Instruction(cg, iselOp, node, trgReg, trueReg, falseReg, condReg);
          }
 
+      TR_ASSERT_FATAL_WITH_NODE(
+         node,
+         !trueReg->containsInternalPointer() && !falseReg->containsInternalPointer(),
+         "Select nodes cannot have children that are internal pointers"
+      );
       if (trueReg->containsCollectedReference() || falseReg->containsCollectedReference())
          trgReg->setContainsCollectedReference();
       }
@@ -1780,6 +1785,11 @@ TR::Register *OMR::Power::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::Co
       trgReg = cg->gprClobberEvaluate(trueNode);
       TR::Register *falseReg = cg->evaluate(falseNode);
 
+      TR_ASSERT_FATAL_WITH_NODE(
+         node,
+         !trgReg->containsInternalPointer() && !falseReg->containsInternalPointer(),
+         "Select nodes cannot have children that are internal pointers"
+      );
       if (falseReg->containsCollectedReference())
          trgReg->setContainsCollectedReference();
 

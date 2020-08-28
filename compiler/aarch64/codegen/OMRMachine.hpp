@@ -64,12 +64,28 @@ public:
 
    /**
     * @brief Finds the best free register
+    * @param[in] currentInstruction : current instruction
+    * @param[in] rk : register kind
+    * @param[in] considerUnlatched : consider unlatched state or not
+    * @param[in] virtualReg : virtual register
+    * @return Free RealRegister
+    */
+   TR::RealRegister *findBestFreeRegister(TR::Instruction *currentInstruction,
+                                            TR_RegisterKinds rk,
+                                            bool considerUnlatched = false,
+                                            TR::Register *virtualReg = NULL);
+
+   /**
+    * @brief Finds the best free register
     * @param[in] rk : register kind
     * @param[in] considerUnlatched : consider unlatched state or not
     * @return Free RealRegister
     */
    TR::RealRegister *findBestFreeRegister(TR_RegisterKinds rk,
-                                            bool considerUnlatched = false);
+                                            bool considerUnlatched = false)
+      {
+      return findBestFreeRegister(NULL, rk, considerUnlatched);
+      }
 
    /**
     * @brief Frees the best register

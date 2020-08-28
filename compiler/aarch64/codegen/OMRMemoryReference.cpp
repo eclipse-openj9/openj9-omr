@@ -669,7 +669,7 @@ void OMR::ARM64::MemoryReference::assignRegisters(TR::Instruction *currentInstru
          {
          if (_baseRegister->getTotalUseCount() == _baseRegister->getFutureUseCount())
             {
-            if ((assignedBaseRegister = machine->findBestFreeRegister(TR_GPR, true)) == NULL)
+            if ((assignedBaseRegister = machine->findBestFreeRegister(currentInstruction, TR_GPR, true, _baseRegister)) == NULL)
                {
                assignedBaseRegister = machine->freeBestRegister(currentInstruction, _baseRegister);
                }
@@ -701,7 +701,7 @@ void OMR::ARM64::MemoryReference::assignRegisters(TR::Instruction *currentInstru
          {
          if (_indexRegister->getTotalUseCount() == _indexRegister->getFutureUseCount())
             {
-            if ((assignedIndexRegister = machine->findBestFreeRegister(TR_GPR, false)) == NULL)
+            if ((assignedIndexRegister = machine->findBestFreeRegister(currentInstruction, TR_GPR, false, _indexRegister)) == NULL)
                {
                assignedIndexRegister = machine->freeBestRegister(currentInstruction, _indexRegister);
                }

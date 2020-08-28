@@ -475,7 +475,7 @@ void TR_ARM64RegisterDependencyGroup::assignRegisters(
             {
             if (virtReg->getTotalUseCount() == virtReg->getFutureUseCount())
                {
-               if ((assignedRegister = machine->findBestFreeRegister(virtReg->getKind(), true)) == NULL)
+               if ((assignedRegister = machine->findBestFreeRegister(currentInstruction, virtReg->getKind(), true, virtReg)) == NULL)
                   {
                   assignedRegister = machine->freeBestRegister(currentInstruction, virtReg, NULL);
                   }

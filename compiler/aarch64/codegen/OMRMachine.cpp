@@ -48,9 +48,14 @@ OMR::ARM64::Machine::Machine(TR::CodeGenerator *cg) :
    self()->clearRegisterAssociations();
    }
 
-TR::RealRegister *OMR::ARM64::Machine::findBestFreeRegister(TR_RegisterKinds rk,
-                                                            bool considerUnlatched)
+ // `currentInstruction` argument will be required when we implement live register analysis
+TR::RealRegister *OMR::ARM64::Machine::findBestFreeRegister(TR::Instruction *currentInstruction,
+                                            TR_RegisterKinds rk,
+                                            bool considerUnlatched,
+                                            TR::Register *virtualReg)
    {
+   uint32_t preference = (virtualReg != NULL) ? virtualReg->getAssociation() : 0;
+
    int32_t first;
    int32_t last;
 
@@ -70,6 +75,36 @@ TR::RealRegister *OMR::ARM64::Machine::findBestFreeRegister(TR_RegisterKinds rk,
 
    uint32_t bestWeightSoFar = 0xffffffff;
    TR::RealRegister *freeRegister = NULL;
+   TR::RealRegister *bestRegister = NULL;
+
+   /****************************************************************************************************************/
+   /*            STEP 1                         Register Associations                                              */
+   /****************************************************************************************************************/
+   // Register Associations are best effort. If you really need to map a virtual to a real, use register pre/post dependency conditions.
+
+   // Check if the preferred register is free
+   if ((preference != 0) && (_registerFile[preference] != NULL) &&
+         ((_registerFile[preference]->getState() == TR::RealRegister::Free) ||
+           (considerUnlatched && (_registerFile[preference]->getState() == TR::RealRegister::Unlatched))))
+      {
+      bestRegister = _registerFile[preference];
+
+      if (bestRegister->getState() == TR::RealRegister::Unlatched)
+         {
+         bestRegister->setAssignedRegister(NULL);
+         bestRegister->setState(TR::RealRegister::Free);
+         }
+
+      self()->cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is %R", virtualReg, bestRegister);
+
+      return bestRegister;
+      }
+
+   /*******************************************************************************************************************/
+   /*            STEP 2                         Good 'ol linear search                                              */
+   /****************************************************************************************************************/
+   // If no association or assoc fails, find any other free register
+
    for (int32_t i = first; i <= last; i++)
       {
       if ((_registerFile[i]->getState() == TR::RealRegister::Free ||
@@ -86,6 +121,12 @@ TR::RealRegister *OMR::ARM64::Machine::findBestFreeRegister(TR_RegisterKinds rk,
       freeRegister->setAssignedRegister(NULL);
       freeRegister->setState(TR::RealRegister::Free);
       }
+
+   if (freeRegister != NULL)
+      self()->cg()->traceRegisterAssignment("BEST FREE REG for %R is %R", virtualReg, freeRegister);
+   else
+      self()->cg()->traceRegisterAssignment("BEST FREE REG for %R is NULL (could not find one)", virtualReg);
+
    return freeRegister;
    }
 
@@ -301,7 +342,7 @@ TR::RealRegister *OMR::ARM64::Machine::reverseSpillState(TR::Instruction *curren
 
    if (targetRegister == NULL)
       {
-      targetRegister = self()->findBestFreeRegister(rk);
+      targetRegister = self()->findBestFreeRegister(currentInstruction, rk, false, spilledRegister);
       if (targetRegister == NULL)
          {
          targetRegister = self()->freeBestRegister(currentInstruction, spilledRegister, NULL);
@@ -485,7 +526,7 @@ TR::RealRegister *OMR::ARM64::Machine::assignOneRegister(TR::Instruction *curren
          }
       else
          {
-         assignedRegister = self()->findBestFreeRegister(rk, true);
+         assignedRegister = self()->findBestFreeRegister(currentInstruction, rk, true, virtualRegister);
          if (assignedRegister == NULL)
             {
             cg->setRegisterAssignmentFlag(TR_RegisterSpilled);
@@ -635,7 +676,7 @@ void OMR::ARM64::Machine::coerceRegisterAssignment(TR::Instruction *currentInstr
 #endif
          if (!currentAssignedRegister || needTemp)
             {
-            spareReg = self()->findBestFreeRegister(rk);
+            spareReg = self()->findBestFreeRegister(currentInstruction, rk, false, currentTargetVirtual);
             self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
             if (spareReg == NULL)
                {
@@ -686,7 +727,7 @@ void OMR::ARM64::Machine::coerceRegisterAssignment(TR::Instruction *currentInstr
                        currentTargetVirtual->getRegisterName(comp));
 #endif
          if (!currentAssignedRegister || needTemp)
-            spareReg = self()->findBestFreeRegister(rk);
+            spareReg = self()->findBestFreeRegister(currentInstruction, rk, false, currentTargetVirtual);
 
          self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
          if (currentAssignedRegister)

@@ -59,7 +59,7 @@ if(NOT DiaSDK_ROOT)
 		endif()
 	endif()
 
-	if(DIA_COM_DLL_DIR AND EXISTS DIA_COM_DLL_DIR)
+	if(DIA_COM_DLL_DIR AND EXISTS "${DIA_COM_DLL_DIR}")
 		# The DLL will live in  "X/DIA SDK/lib" or "X/DIA SDK/lib/amd64"
 		if(DIA_COM_DLL_DIR MATCHES "amd64$")
 			set(DiaSDK_ROOT "${DIA_COM_DLL_DIR}/../..")

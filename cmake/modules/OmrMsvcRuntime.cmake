@@ -41,46 +41,55 @@ elseif(MSVC_VERSION EQUAL 1200) # VS 6
 	string(CONCAT msvc_crt
 		$<$<CONFIG:Debug>:MSVCR60D>
 		$<$<CONFIG:Release>:MSVCR60>
+		$<$<CONFIG:RelWithDebInfo>:MSVCR60>
 	)
 elseif(MSVC_VERSION EQUAL 1300) # VS 7
 	string(CONCAT msvc_crt
 		$<$<CONFIG:Debug>:MSVCR70D>
 		$<$<CONFIG:Release>:MSVCR70>
+		$<$<CONFIG:RelWithDebInfo>:MSVCR70>
 	)
 elseif(MSVC_VERSION EQUAL 1310) # VS 7.1
 	string(CONCAT msvc_crt
 		$<$<CONFIG:Debug>:MSVCR71D>
 		$<$<CONFIG:Release>:MSVCR71>
+		$<$<CONFIG:RelWithDebInfo>:MSVCR71>
 	)
 elseif(MSVC_VERSION EQUAL 1400) # VS 8
 	string(CONCAT msvc_crt
 		$<$<CONFIG:Debug>:MSVCR80D>
 		$<$<CONFIG:Release>:MSVCR80>
+		$<$<CONFIG:RelWithDebInfo>:MSVCR80>
 	)
 elseif(MSVC_VERSION EQUAL 1500) # VS 9
 	string(CONCAT msvc_crt
 		$<$<CONFIG:Debug>:MSVCR90D>
 		$<$<CONFIG:Release>:MSVCR90>
+		$<$<CONFIG:RelWithDebInfo>:MSVCR90>
 	)
 elseif(MSVC_VERSION EQUAL 1600) # VS 10
 	string(CONCAT msvc_crt
 		$<$<CONFIG:Debug>:MSVCR100D>
 		$<$<CONFIG:Release>:MSVCR100>
+		$<$<CONFIG:RelWithDebInfo>:MSVCR100>
 	)
 elseif(MSVC_VERSION EQUAL 1700) # VS 11
 	string(CONCAT msvc_crt
 		$<$<CONFIG:Debug>:MSVCR110D>
 		$<$<CONFIG:Release>:MSVCR110>
+		$<$<CONFIG:RelWithDebInfo>:MSVCR110>
 	)
 elseif(MSVC_VERSION EQUAL 1800) # VS 12
 	string(CONCAT msvc_crt
 		$<$<CONFIG:Debug>:MSVCR120D>
 		$<$<CONFIG:Release>:MSVCR120>
+		$<$<CONFIG:RelWithDebInfo>:MSVCR120>
 	)
 elseif(MSVC_VERSION GREATER 1800) # VS 14+
 	string(CONCAT msvc_crt
 		$<$<CONFIG:Debug>:UCRTBASED>
 		$<$<CONFIG:Release>:UCRTBASE>
+		$<$<CONFIG:RelWithDebInfo>:UCRTBASE>
 	)
 else()
 	set(msvc_crt NOTFOUND)

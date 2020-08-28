@@ -31,6 +31,7 @@
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
+#include <sys/shm.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -52,6 +53,12 @@ int omr_ftokWrapper(OMRPortLibrary *portLibrary, const char *baseFile, int proj_
 int omr_semgetWrapper(OMRPortLibrary *portLibrary, key_t key, int nsems, int semflg);
 int omr_semctlWrapper(OMRPortLibrary *portLibrary, BOOLEAN storeError, int semid, int semnum, int cmd, ...);
 int omr_semopWrapper(OMRPortLibrary *portLibrary, int semid, struct sembuf *sops, size_t nsops);
+
+/*memory*/
+int omr_shmgetWrapper(OMRPortLibrary *portLibrary, key_t key, size_t size, int shmflg);
+int omr_shmctlWrapper(OMRPortLibrary *portLibrary, BOOLEAN storeError, int shmid, int cmd, struct shmid_ds *buf);
+void * omr_shmatWrapper(OMRPortLibrary *portLibrary, int shmid, const void *shmaddr, int shmflg);
+int omr_shmdtWrapper(OMRPortLibrary *portLibrary, const void *shmaddr);
 
 /*z/OS sysv helper function*/
 #if defined (J9ZOS390)

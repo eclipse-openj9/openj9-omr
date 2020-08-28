@@ -352,13 +352,13 @@ omr_ControlFileOpenWithWriteLock(struct OMRPortLibrary* portLibrary, intptr_t * 
 intptr_t
 omr_ControlFileCloseAndUnLock(struct OMRPortLibrary* portLibrary, intptr_t fd)
 {
-        Trc_PRT_shared_omr_ControlFileFDUnLock_EnterWithMessage("Start");
-        if (-1 == omrfile_close(portLibrary, fd)) {
-	        Trc_PRT_shared_omr_ControlFileFDUnLock_ExitWithMessage("Error: failed to close control file.");
-	        return OMRSH_FAILED;
+	Trc_PRT_shared_omr_ControlFileFDUnLock_EnterWithMessage("Start");
+	if (-1 == omrfile_close(portLibrary, fd)) {
+		Trc_PRT_shared_omr_ControlFileFDUnLock_ExitWithMessage("Error: failed to close control file.");
+		return OMRSH_FAILED;
 	}
-        Trc_PRT_shared_omr_ControlFileFDUnLock_ExitWithMessage("Success");
-        return OMRSH_SUCCESS;
+	Trc_PRT_shared_omr_ControlFileFDUnLock_ExitWithMessage("Success");
+	return OMRSH_SUCCESS;
 }
 
 /**

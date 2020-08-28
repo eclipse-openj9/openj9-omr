@@ -27,6 +27,10 @@ static const char * ftokErrorMsgPrefix = "ftok : ";
 static const char * semgetErrorMsgPrefix ="semget : ";
 static const char * semctlErrorMsgPrefix ="semctl : ";
 static const char * semopErrorMsgPrefix ="semop : ";
+static const char * shmgetErrorMsgPrefix ="shmget : ";
+static const char * shmctlErrorMsgPrefix ="shmctl : ";
+static const char * shmatErrorMsgPrefix ="shmat : ";
+static const char * shmdtErrorMsgPrefix ="shmdt : ";
 #if defined (J9ZOS390)
 static const char * getipcErrorMsgPrefix = "__getipc : ";
 #endif
@@ -51,6 +55,18 @@ omr_semgetWrapper(OMRPortLibrary *portLibrary, key_t key, int nsems, int semflg)
 		int myerror = errno;
 		omr_setPortableError(portLibrary, semgetErrorMsgPrefix,
 				OMRPORT_ERROR_SYSV_IPC_SEMGET_ERROR, myerror);
+	}
+	return result;
+}
+
+int
+omr_shmgetWrapper(OMRPortLibrary *portLibrary, key_t key, size_t size, int shmflg)
+{
+	int result = shmget(key, size, shmflg);
+	if (result == -1) {
+		int myerror = errno;
+		omr_setPortableError(portLibrary, shmgetErrorMsgPrefix,
+				OMRPORT_ERROR_SYSV_IPC_SHMGET_ERROR, myerror);
 	}
 	return result;
 }
@@ -95,6 +111,45 @@ omr_semopWrapper(OMRPortLibrary *portLibrary, int semid, struct sembuf *sops, si
 		int myerror = errno;
 		omr_setPortableError(portLibrary, semopErrorMsgPrefix,
 				OMRPORT_ERROR_SYSV_IPC_SEMOP_ERROR, myerror);
+	}
+	return result;
+}
+
+int
+omr_shmctlWrapper(OMRPortLibrary *portLibrary,  BOOLEAN storeError, int shmid, int cmd, struct shmid_ds *buf)
+{
+	int result = shmctl(shmid, cmd, buf);
+	if (result == -1) {
+		if (TRUE == storeError) {
+			int myerror = errno;
+			omr_setPortableError(portLibrary, shmctlErrorMsgPrefix,
+					OMRPORT_ERROR_SYSV_IPC_SHMCTL_ERROR, myerror);
+		} else {
+			Trc_PRT_omr_sysvipc_shmctlWrapper_Failed(errno);
+		}
+	}
+	return result;
+}
+void *
+omr_shmatWrapper(OMRPortLibrary *portLibrary, int shmid, const void *shmaddr, int shmflg)
+{
+	void * result = shmat(shmid, shmaddr, shmflg);
+	if (result == (void*)-1) {
+		int myerror = errno;
+		omr_setPortableError(portLibrary, shmatErrorMsgPrefix,
+				OMRPORT_ERROR_SYSV_IPC_SHMAT_ERROR, myerror);
+	}
+	return result;
+}
+
+int
+omr_shmdtWrapper(OMRPortLibrary *portLibrary, const void *shmaddr)
+{
+	int32_t result = shmdt(shmaddr);
+	if (result == -1) {
+		int myerror = errno;
+		omr_setPortableError(portLibrary, shmdtErrorMsgPrefix,
+				OMRPORT_ERROR_SYSV_IPC_SHMDT_ERROR, myerror);
 	}
 	return result;
 }

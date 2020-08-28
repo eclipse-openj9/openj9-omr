@@ -316,6 +316,7 @@
 #define OMRSH_MAXPATH EsMaxPath
 
 #define OMRSH_SEMAPHORE_ID "_semaphore_"
+#define OMRSH_MEMORY_ID "_memory_"
 
 #define OMRSH_DIRPERM_ABSENT ((uintptr_t)-2)
 #define OMRSH_DIRPERM (0777)
@@ -324,6 +325,9 @@
 #define OMRSH_DIRPERM_DEFAULT_WITH_STICKYBIT (01000)
 #define OMRSH_BASEFILEPERM (0644)
 #define OMRSH_BASEFILEPERM_GROUP_RW_ACCESS (0664)
+
+#define OMRSH_SHMEM_PERM_READ (0444)
+#define OMRSH_SHMEM_PERM_READ_WRITE (0644)
 
 #define OMRSH_SYSV_REGULAR_CONTROL_FILE 0
 #define OMRSH_SYSV_OLDER_CONTROL_FILE 1
@@ -334,6 +338,57 @@
 #define OMRSHSEM_OPEN_FOR_STATS 0x1
 #define OMRSHSEM_OPEN_FOR_DESTROY 0x2
 #define OMRSHSEM_OPEN_DO_NOT_CREATE 0x4
+/*
+ * Flags passed to "flag" argument of omrshmem_open(). Should be of type uintptr_t.
+ * High order 4 bits are reserved for passing the storage key testing value to omrshmem.
+ */
+#define OMRSHMEM_NO_FLAGS 0x0
+#define OMRSHMEM_OPEN_FOR_STATS 0x1
+#define OMRSHMEM_OPEN_FOR_DESTROY 0x2
+#define OMRSHMEM_PRINT_STORAGE_KEY_WARNING 0x4
+#define OMRSHMEM_STORAGE_KEY_TESTING 0x8
+#define OMRSHMEM_OPEN_DO_NOT_CREATE 0x10
+
+#define OMRSHMEM_STORAGE_KEY_TESTING_SHIFT ((sizeof(uintptr_t)*8)-4)
+#define OMRSHMEM_STORAGE_KEY_TESTING_MASK 0xF
+
+/* Flags passed to "flags" argument of omrshmem_getDir(). */
+#define OMRSHMEM_GETDIR_APPEND_BASEDIR 0x1
+#define OMRSHMEM_GETDIR_USE_USERHOME 0x2
+
+#ifdef WIN32
+#define OMRSH_BASEDIR "omrsharedresources\\"
+#else
+#define OMRSH_BASEDIR "omrsharedresources/"
+#endif
+
+/**
+ * @name Shared Memory Success flags
+ * @anchor PortSharedMemorySuccessFlags
+ * Success codes related to shared memory semaphore operations.
+ * @{
+ * @internal OMRPORT_INFO_SHMEM* range from at 110 to 119 to avoid overlap
+ */
+#define OMRPORT_INFO_SHMEM_BASE 110
+#define OMRPORT_INFO_SHMEM_CREATED (OMRPORT_INFO_SHMEM_BASE)
+#define OMRPORT_INFO_SHMEM_OPENED (OMRPORT_INFO_SHMEM_BASE+1)
+#define OMRPORT_INFO_SHMEM_OPEN_UNLINKED (OMRPORT_INFO_SHMEM_BASE+2)
+#define OMRPORT_INFO_SHMEM_OPENED_STALE (OMRPORT_INFO_SHMEM_BASE+3)
+#define OMRPORT_INFO_SHMEM_PARTIAL (OMRPORT_INFO_SHMEM_BASE+4)
+#define OMRPORT_INFO_SHMEM_STAT_PASSED (OMRPORT_INFO_SHMEM_BASE+5)
+
+/** @} */
+
+/**
+ * @name Shared Memory Eyecatcher
+ * @anchor PortSharedMemoryEyecatcher
+ * Eyecatcher written to start of a shared classes cache to identify the shared memory segment as such a cache
+ * @{
+ */
+
+#define OMRPORT_SHMEM_EYECATCHER "OMRSC"
+#define OMRPORT_SHMEM_EYECATCHER_LENGTH 5
+/** @} */
 
 #define ROUND_UP_TO_POWEROF2(value, powerof2) (((value) + ((powerof2) - 1)) & (UDATA)~((powerof2) - 1))
 #define ROUND_DOWN_TO_POWEROF2(value, powerof2) ((value) & (UDATA)~((powerof2) - 1))
@@ -347,6 +402,23 @@ typedef struct J9Permission {
 	uint32_t isOtherReadable : 1;
 	uint32_t : 26; /* future use */
 } J9Permission;
+
+typedef struct OMRPortShmemStatistic {
+	uintptr_t shmid;
+	uintptr_t nattach;
+	uintptr_t key;
+	uintptr_t ouid;
+	uintptr_t ogid;
+	uintptr_t cuid;
+	uintptr_t cgid;
+	char* file;
+	uintptr_t size;
+	int64_t lastAttachTime;
+	int64_t lastDetachTime;
+	int64_t lastChangeTime;
+	char* controlDir;
+	J9Permission perm;
+} OMRPortShmemStatistic;
 
 typedef struct OMRPortShsemStatistic {
 	uintptr_t semid;
@@ -1633,6 +1705,7 @@ struct OMRControlFileStatus;
 struct OMRPortShSemParameters;
 
 struct omrshsem_handle;
+struct omrshmem_handle;
 
 struct OMRPortLibrary;
 typedef struct J9Heap J9Heap;
@@ -2126,6 +2199,48 @@ typedef struct OMRPortLibrary {
 	intptr_t  ( *shsem_deprecated_destroyDeprecated)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle **handle, uintptr_t cacheFileType) ;
 	/** see @ref omrshsem.c::omrshsem_deprecated_getid "omrshsem_deprecated_getid"*/
 	int32_t  ( *shsem_deprecated_getid)(struct OMRPortLibrary *portLibrary, struct omrshsem_handle* handle) ;
+	/** see @ref omrshmem.c::omrshmem_startup "omrshmem_startup"*/
+	int32_t  ( *shmem_startup)(struct OMRPortLibrary *portLibrary) ;
+	/** see @ref omrshmem.c::omrshmem_shutdown "omrshmem_shutdown"*/
+	void  ( *shmem_shutdown)(struct OMRPortLibrary *portLibrary) ;
+	/** see @ref omrshmem.c::omrshmem_open "omrshmem_open"*/
+	intptr_t  ( *shmem_open)(struct OMRPortLibrary *portLibrary, const char* cacheDirName, uintptr_t groupPerm, struct omrshmem_handle **handle, const char* rootname, uintptr_t size, uint32_t perm, uint32_t category, uintptr_t flags, struct OMRControlFileStatus *controlFileStatus) ;
+	/** see @ref omrshmem.c::omrshmem_openDeprecated "omrshmem_openDeprecated"*/
+	intptr_t  ( *shmem_openDeprecated)(struct OMRPortLibrary *portLibrary, const char* cacheDirName, uintptr_t groupPerm, struct omrshmem_handle **handle, const char* rootname, uint32_t perm, uintptr_t cacheFileType, uint32_t category) ;
+	/** see @ref omrshmem.c::omrshmem_attach "omrshmem_attach"*/
+	void*  ( *shmem_attach)(struct OMRPortLibrary *portLibrary, struct omrshmem_handle* handle,  uint32_t category) ;
+	/** see @ref omrshmem.c::omrshmem_detach "omrshmem_detach"*/
+	intptr_t  ( *shmem_detach)(struct OMRPortLibrary *portLibrary, struct omrshmem_handle **handle) ;
+	/** see @ref omrshmem.c::omrshmem_close "omrshmem_close"*/
+	void  ( *shmem_close)(struct OMRPortLibrary *portLibrary, struct omrshmem_handle **handle) ;
+	/** see @ref omrshmem.c::omrshmem_destroy "omrshmem_destroy"*/
+	intptr_t  ( *shmem_destroy)(struct OMRPortLibrary *portLibrary, const char* cacheDirName, uintptr_t groupPerm, struct omrshmem_handle **handle) ;
+	/** see @ref omrshmem.c::omrshmem_destroyDeprecated "omrshmem_destroyDeprecated"*/
+	intptr_t  ( *shmem_destroyDeprecated)(struct OMRPortLibrary *portLibrary, const char* cacheDirName, uintptr_t groupPerm, struct omrshmem_handle **handle, uintptr_t cacheFileType) ;
+	/** see @ref omrshmem.c::omrshmem_findfirst "omrshmem_findfirst"*/
+	uintptr_t  ( *shmem_findfirst)(struct OMRPortLibrary *portLibrary, char *cacheDirName, char *resultbuf) ;
+	/** see @ref omrshmem.c::omrshmem_findnext "omrshmem_findnext"*/
+	int32_t  ( *shmem_findnext)(struct OMRPortLibrary *portLibrary, uintptr_t findhandle, char *resultbuf) ;
+	/** see @ref omrshmem.c::omrshmem_findclose "omrshmem_findclose"*/
+	void  ( *shmem_findclose)(struct OMRPortLibrary *portLibrary, uintptr_t findhandle) ;
+	/** see @ref omrshmem.c::omrshmem_stat "omrshmem_stat"*/
+	uintptr_t  ( *shmem_stat)(struct OMRPortLibrary *portLibrary, const char* cacheDirName, uintptr_t groupPerm, const char* name, struct OMRPortShmemStatistic* statbuf) ;
+	/** see @ref omrshmem.c::omrshmem_statDeprecated "omrshmem_statDeprecated"*/
+	uintptr_t  ( *shmem_statDeprecated)(struct OMRPortLibrary *portLibrary, const char* cacheDirName, uintptr_t groupPerm, const char* name, struct OMRPortShmemStatistic* statbuf, uintptr_t cacheFileType) ;
+	/** see @ref omrshmem.c::omrshmem_handle_stat "omrshmem_handle_stat"*/
+	intptr_t  ( *shmem_handle_stat)(struct OMRPortLibrary *portLibrary, struct omrshmem_handle *handle, struct OMRPortShmemStatistic *statbuf);
+	/** see @ref omrshmem.c::omrshmem_getDir "omrshmem_getDir"*/
+	intptr_t  ( *shmem_getDir)(struct OMRPortLibrary* portLibrary, const char* ctrlDirName, uint32_t flags, char* buffer, uintptr_t length) ;
+	/** see @ref omrshmem.c::omrshmem_createDir "omrshmem_createDir"*/
+	intptr_t  ( *shmem_createDir)(struct OMRPortLibrary *portLibrary, char* cacheDirName, uintptr_t cacheDirPerm, BOOLEAN cleanMemorySegments) ;
+	/** see @ref omrshmem.c::omrshmem_getFilepath "omrshmem_getFilepath"*/
+	intptr_t  ( *shmem_getFilepath)(struct OMRPortLibrary* portLibrary, char* cacheDirName, char* buffer, uintptr_t length, const char* cachename) ;
+	/** see @ref omrshmem.c::omrshmem_protect "omrshmem_protect"*/
+	intptr_t  ( *shmem_protect)(struct OMRPortLibrary *portLibrary, const char* cacheDirName, uintptr_t groupPerm, void* address, uintptr_t length, uintptr_t flags) ;
+	/** see @ref omrshmem.c::omrshmem_get_region_granularity "omrshmem_get_region_granularity"*/
+	uintptr_t  ( *shmem_get_region_granularity)(struct OMRPortLibrary *portLibrary, const char* cacheDirName, uintptr_t groupPerm, void *address) ;
+	/** see @ref omrshmem.c::omrshmem_getid "omrshmem_getid"*/
+	int32_t  ( *shmem_getid)(struct OMRPortLibrary *portLibrary, struct omrshmem_handle* handle);
 #endif /* !defined(OMR_OS_WINDOWS) */
 	/** see @ref omrsysinfo.c::omrsysinfo_get_limit "omrsysinfo_get_limit"*/
 	uint32_t (*sysinfo_get_limit)(struct OMRPortLibrary *portLibrary, uint32_t resourceID, uint64_t *limit) ;
@@ -2767,6 +2882,27 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrshsem_deprecated_destroy(param1) privateOmrPortLibrary->shsem_deprecated_destroy(privateOmrPortLibrary,param1)
 #define omrshsem_deprecated_destroyDeprecated(param1,param2) privateOmrPortLibrary->shsem_deprecated_destroyDeprecated(privateOmrPortLibrary,param1,param2)
 #define omrshsem_deprecated_getid(param1) privateOmrPortLibrary->shsem_deprecated_getid(privateOmrPortLibrary,param1)
+#define omrshmem_startup() privateOmrPortLibrary->shmem_startup(privateOmrPortLibrary)
+#define omrshmem_shutdown() privateOmrPortLibrary->shmem_shutdown(privateOmrPortLibrary)
+#define omrshmem_open(param1,param2,param3,param4,param5,param6,param7,param8,param9) privateOmrPortLibrary->shmem_open(privateOmrPortLibrary,param1,param2,param3,param4,param5,param6,param7,param8,param9)
+#define omrshmem_openDeprecated(param1,param2,param3,param4,param5,param6,param7) privateOmrPortLibrary->shmem_openDeprecated(privateOmrPortLibrary,param1,param2,param3,param4,param5,param6,param7)
+#define omrshmem_attach(param1,param2) privateOmrPortLibrary->shmem_attach(privateOmrPortLibrary,param1,param2)
+#define omrshmem_detach(param1) privateOmrPortLibrary->shmem_detach(privateOmrPortLibrary,param1)
+#define omrshmem_close(param1) privateOmrPortLibrary->shmem_close(privateOmrPortLibrary,param1)
+#define omrshmem_destroy(param1,param2,param3) privateOmrPortLibrary->shmem_destroy(privateOmrPortLibrary,param1,param2,param3)
+#define omrshmem_destroyDeprecated(param1,param2,param3,param4) privateOmrPortLibrary->shmem_destroyDeprecated(privateOmrPortLibrary,param1,param2,param3,param4)
+#define omrshmem_findfirst(param1,param2) privateOmrPortLibrary->shmem_findfirst(privateOmrPortLibrary,param1,param2)
+#define omrshmem_findnext(param1,param2) privateOmrPortLibrary->shmem_findnext(privateOmrPortLibrary,param1,param2)
+#define omrshmem_findclose(param1) privateOmrPortLibrary->shmem_findclose(privateOmrPortLibrary,param1)
+#define omrshmem_stat(param1,param2,param3,param4) privateOmrPortLibrary->shmem_stat(privateOmrPortLibrary,param1,param2,param3,param4)
+#define omrshmem_statDeprecated(param1,param2,param3,param4,param5) privateOmrPortLibrary->shmem_statDeprecated(privateOmrPortLibrary,param1,param2,param3,param4,param5)
+#define omrshmem_handle_stat(param1,param2) privateOmrPortLibrary->shmem_handle_stat(privateOmrPortLibrary,param1,param2)
+#define omrshmem_getDir(param1,param2,param3,param4) privateOmrPortLibrary->shmem_getDir(privateOmrPortLibrary,param1,param2,param3,param4)
+#define omrshmem_createDir(param1,param2,param3) privateOmrPortLibrary->shmem_createDir(privateOmrPortLibrary,param1,param2,param3)
+#define omrshmem_getFilepath(param1,param2,param3,param4) privateOmrPortLibrary->shmem_getFilepath(privateOmrPortLibrary,param1,param2,param3,param4)
+#define omrshmem_protect(param1,param2,param3,param4,param5) privateOmrPortLibrary->shmem_protect(privateOmrPortLibrary,param1,param2,param3,param4,param5)
+#define omrshmem_get_region_granularity(param1,param2,param3) privateOmrPortLibrary->shmem_get_region_granularity(privateOmrPortLibrary,param1,param2,param3)
+#define omrshmem_getid(param1) privateOmrPortLibrary->shmem_getid(privateOmrPortLibrary,param1)
 #endif /* !defined(OMR_OS_WINDOWS) */
 #define omrsysinfo_get_limit(param1,param2) privateOmrPortLibrary->sysinfo_get_limit(privateOmrPortLibrary, (param1), (param2))
 #define omrsysinfo_set_limit(param1,param2) privateOmrPortLibrary->sysinfo_set_limit(privateOmrPortLibrary, (param1), (param2))

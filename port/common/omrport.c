@@ -283,6 +283,27 @@ static OMRPortLibrary MainPortLibraryTable = {
 	omrshsem_deprecated_destroy, /* shsem_deprecated_destroy */
 	omrshsem_deprecated_destroyDeprecated, /* shsem_deprecated_destroyDeprecated */
 	omrshsem_deprecated_getid, /* shsem_deprecated_getid */
+	omrshmem_startup, /* shmem_startup */
+	omrshmem_shutdown, /* shmem_shutdown */
+	omrshmem_open, /*shmem_open*/
+	omrshmem_openDeprecated, /*shmem_openDeprecated*/
+	omrshmem_attach, /*shmem_attach*/
+	omrshmem_detach, /*shmem_detach*/
+	omrshmem_close, /*shmem_close*/
+	omrshmem_destroy, /*shmem_destroy */
+	omrshmem_destroyDeprecated, /* shmem_destroyDeprecated */
+	omrshmem_findfirst, /*shmem_findfirst*/
+	omrshmem_findnext, /* shmem_findnext*/
+	omrshmem_findclose, /* shmem_findclose*/
+	omrshmem_stat, /* shmem_stat */
+	omrshmem_statDeprecated, /* shmem_statDeprecated */
+	omrshmem_handle_stat, /* shmem_handle_stat */
+	omrshmem_getDir, /* shmem_getDir */
+	omrshmem_createDir, /* shmem_createDir */
+	omrshmem_getFilepath, /* shmem_getFilepath */
+	omrshmem_protect, /* shmem_protect */
+	omrshmem_get_region_granularity, /* shmem_get_region_granularity */
+	omrshmem_getid, /* shmem_getid */
 #endif /* !defined(OMR_OS_WINDOWS) */
 	omrsysinfo_get_limit, /* sysinfo_get_limit */
 	omrsysinfo_set_limit, /* sysinfo_set_limit */

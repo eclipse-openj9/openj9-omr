@@ -166,8 +166,9 @@ ifneq (win,$(OMR_HOST_OS))
   OBJECTS += omrsysv_ipcwrappers
   OBJECTS += omrsharedhelper
   OBJECTS += omrshsem
-  OBJECTS += omrshsem_deprecated
-endif  
+  OBJECTS += omrshsem_deprecated 
+  OBJECTS += omrshmem
+endif
 ifeq (aix,$(OMR_HOST_OS))
   OBJECTS += omrosdump_helpers
 else

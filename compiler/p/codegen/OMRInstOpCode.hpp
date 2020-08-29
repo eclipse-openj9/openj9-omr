@@ -37,6 +37,7 @@ namespace OMR { typedef OMR::Power::InstOpCode InstOpCodeConnector; }
 
 #include "codegen/PPCOpsDefines.hpp"
 #include "env/Processors.hpp"
+#include "omrport.h"
 
 namespace OMR
 {
@@ -88,7 +89,7 @@ class InstOpCode: public OMR::InstOpCode
       /** \brief
        *     The minimum architecture level set (ALS) which introduced this instruction.
        */
-      TR_Processor minimumALS;
+      OMRProcessorArchitecture minimumALS;
 
       /** \brief
        *     The properties describing the behavior of this instruction to the codegen.

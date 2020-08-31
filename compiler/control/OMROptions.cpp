@@ -337,6 +337,9 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableGuardedCountingRecompilations","O\tdeprecated.  Same as disableGuardedCountingRecompilation", SET_OPTION_BIT(TR_DisableGuardedCountingRecompilations), "F"},
    {"disableGuardedStaticFinalFieldFolding", "O\tdisable static final field folding guarded by OSR guards", SET_OPTION_BIT(TR_DisableGuardedStaticFinalFieldFolding), "F", NOT_IN_SUBSET },
    {"disableHalfSlotSpills",              "O\tdisable sharing of a single 8-byte spill temp for two 4-byte values",  SET_OPTION_BIT(TR_DisableHalfSlotSpills), "P"},
+#ifdef J9_PROJECT_SPECIFIC
+   {"disableHandleRecompilationOps",      "O\tdisable handling operations that require recompilation",  TR::Options::disableOptimization, handleRecompilationOps, 0, "P"},
+#endif
    {"disableHardwareProfilerDataCollection",    "O\tdisable the collection of hardware profiler information while maintaining the framework", SET_OPTION_BIT(TR_DisableHWProfilerDataCollection), "F", NOT_IN_SUBSET},
    {"disableHardwareProfilerDuringStartup", "O\tdisable hardware profiler during startup", SET_OPTION_BIT(TR_DisableHardwareProfilerDuringStartup), "F", NOT_IN_SUBSET},
    {"disableHardwareProfileRecompilation","O\tdisable hardware profile recompilation", RESET_OPTION_BIT(TR_EnableHardwareProfileRecompilation), "F", NOT_IN_SUBSET},
@@ -1126,9 +1129,10 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceGlobalLiveVariablesForGC",    "L\ttrace global live variables for GC",           TR::Options::traceOptimization, globalLiveVariablesForGC, 0, "P"},
    {"traceGlobalVP",                    "L\ttrace global value propagation",               TR::Options::traceOptimization, globalValuePropagation, 0, "P"},
    {"traceGLU",                         "L\ttrace general loop unroller",                  TR::Options::traceOptimization, generalLoopUnroller, 0, "P"},
-   {"traceGRA",                         "L\ttrace tree based global register allocator",     TR::Options::traceOptimization, tacticalGlobalRegisterAllocator, 0, "P"},
+   {"traceGRA",                         "L\ttrace tree based global register allocator",   TR::Options::traceOptimization, tacticalGlobalRegisterAllocator, 0, "P"},
 #ifdef J9_PROJECT_SPECIFIC
-   {"traceIdiomRecognition",            "L\ttrace idiom recognition",                       TR::Options::traceOptimization, idiomRecognition, 0, "P"},
+   {"traceHandleRecompilationOps",      "L\ttrace handle recompilation operations",        TR::Options::traceOptimization, handleRecompilationOps, 0, "P"},
+   {"traceIdiomRecognition",            "L\ttrace idiom recognition",                      TR::Options::traceOptimization, idiomRecognition, 0, "P"},
 #endif
    {"traceILGen",                       "L\ttrace IL generator",                           SET_OPTION_BIT(TR_TraceILGen), "F"},
    {"traceILValidator",                 "L\ttrace validation over intermediate language constructs",SET_OPTION_BIT(TR_TraceILValidator), "F" },

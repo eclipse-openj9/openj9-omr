@@ -814,6 +814,7 @@ public:
 	MUTEX memcheckHashTableMutex;
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
+	bool shouldForceLowMemoryHeapCeilingShiftIfPossible; /**< Whether we should force compressed reference shift to 3 **/
 	/* Function Members */
 private:
 
@@ -1800,6 +1801,7 @@ public:
 #if defined(OMR_VALGRIND_MEMCHECK)
 		, valgrindMempoolAddr(0)
 		, memcheckHashTable(NULL)
+		, shouldForceLowMemoryHeapCeilingShiftIfPossible(false)
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	{
 		_typeId = __FUNCTION__;

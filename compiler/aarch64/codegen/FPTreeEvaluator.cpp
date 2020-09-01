@@ -445,6 +445,18 @@ OMR::ARM64::TreeEvaluator::dnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return doublePrecisionUnaryEvaluator(node, TR::InstOpCode::fnegd, cg);
    }
 
+TR::Register *
+OMR::ARM64::TreeEvaluator::fsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return singlePrecisionUnaryEvaluator(node, TR::InstOpCode::fsqrts, cg);
+   }
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::dsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return doublePrecisionUnaryEvaluator(node, TR::InstOpCode::fsqrtd, cg);
+   }
+
 static TR::Register *
 intFpTypeConversionHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
    {

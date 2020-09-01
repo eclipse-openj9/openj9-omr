@@ -458,6 +458,8 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x1E60C000,	/* FABS      	fabsd	 */
 		0x1E214000,	/* FNEG      	fnegs	 */
 		0x1E614000,	/* FNEG      	fnegd	 */
+		0x1E21C000,	/* FSQRT     	fsqrts	 */
+		0x1E61C000,	/* FSQRT     	fsqrtd	 */
 	/* Floating-Point Data-processing (2 source) */
 		0x1E202800,	/* FADD      	fadds	 */
 		0x1E602800,	/* FADD      	faddd	 */

@@ -459,6 +459,8 @@
 		fabsd,                                                  	/* 0x1E60C000	FABS      	 */
 		fnegs,                                                  	/* 0x1E214000	FNEG      	 */
 		fnegd,                                                  	/* 0x1E614000	FNEG      	 */
+		fsqrts,                                                 	/* 0x1E21C000	FSQRT     	 */
+		fsqrtd,                                                 	/* 0x1E61C000	FSQRT     	 */
 	/* Floating-Point Data-processing (2 source) */
 		fadds,                                                  	/* 0x1E202800	FADD      	 */
 		faddd,                                                  	/* 0x1E602800	FADD      	 */

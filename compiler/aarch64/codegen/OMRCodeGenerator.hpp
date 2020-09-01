@@ -466,6 +466,12 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     */
    static uint32_t registerBitMask(int32_t reg);
 
+   /**
+    * @brief Answers whether single-precision SQRT is supported or not
+    * @return true if supported, false otherwise
+    */
+   bool supportsSinglePrecisionSQRT() { return true; }
+
    private:
 
    enum // flags

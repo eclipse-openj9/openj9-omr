@@ -678,8 +678,8 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dintEvaluator ,	// TR::dint		// truncate double to int
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fnintEvaluator ,	// TR::fnint		// round float to nearest int
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dnintEvaluator ,	// TR::dnint		// round double to nearest int
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fsqrtEvaluator ,	// TR::fsqrt		// square root of float
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dsqrtEvaluator ,	// TR::dsqrt		// square root of double
+    TR::TreeEvaluator::fsqrtEvaluator, // TR::fsqrt		// square root of float
+    TR::TreeEvaluator::dsqrtEvaluator, // TR::dsqrt		// square root of double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::getstackEvaluator ,	// TR::getstack		// returns current value of SP
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::deallocaEvaluator ,	// TR::dealloca		// resets value of SP
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::idozEvaluator ,	// TR::idoz		// difference or zero

@@ -204,7 +204,8 @@ OMR::Compilation::Compilation(
       TR::Options &options,
       TR::Region &heapMemoryRegion,
       TR_Memory *m,
-      TR_OptimizationPlan *optimizationPlan) :
+      TR_OptimizationPlan *optimizationPlan,
+      TR::Environment *target) :
    _signature(compilee->signature(m)),
    _options(&options),
    _heapMemoryRegion(heapMemoryRegion),
@@ -294,9 +295,17 @@ OMR::Compilation::Compilation(
    _gpuPtxCount(0),
    _bitVectorPool(self()),
    _typeLayoutMap((LayoutComparator()), LayoutAllocator(self()->region())),
-   _target(TR::Compiler->target),
    _tlsManager(*self())
    {
+   if (target != NULL)
+      {
+      _target = *target;
+      }
+   else
+      {
+      _target = TR::Compiler->target;
+      }
+
    //Avoid expensive initialization and uneeded option checking if we are doing AOT Loads
    if (_optimizationPlan && _optimizationPlan->getIsAotLoad())
       {

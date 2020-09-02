@@ -88,8 +88,9 @@ TR::Register *OMR::ARM64::TreeEvaluator::inegEvaluator(TR::Node *node, TR::CodeG
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *reg = cg->gprClobberEvaluate(firstChild);
    generateNegInstruction(cg, node, reg, reg);
+   node->setRegister(reg);
    cg->decReferenceCount(firstChild);
-   return node->setRegister(reg);
+   return reg;
    }
 
 TR::Register *OMR::ARM64::TreeEvaluator::lnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -97,8 +98,9 @@ TR::Register *OMR::ARM64::TreeEvaluator::lnegEvaluator(TR::Node *node, TR::CodeG
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *tempReg = cg->gprClobberEvaluate(firstChild);
    generateNegInstruction(cg, node, tempReg, tempReg, true);
+   node->setRegister(tempReg);
    cg->decReferenceCount(firstChild);
-   return node->setRegister(tempReg);
+   return tempReg;
    }
 
 static TR::Register *commonIntegerAbsEvaluator(TR::Node *node, TR::CodeGenerator *cg)

@@ -218,6 +218,13 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
     */
    virtual bool dependencyRefsRegister(TR::Register *reg);
 
+   /**
+    * @brief Calls OMR::Instruction::useRegister and remove placeholder flags if isDummy is false
+    * @param[in] reg : virtual register
+    * @param[in] isDummy : dummy flag
+    */
+   void useRegister(TR::Register *reg, bool isDummy = false);
+
    /*
     * Maps to TIndex in Instruction. Here we set values specific to ARM64 CodeGen.
     *

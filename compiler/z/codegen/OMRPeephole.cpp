@@ -421,7 +421,7 @@ OMR::Z::Peephole::tryLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, ui
 bool
 OMR::Z::Peephole::tryToFoldLoadRegisterIntoSubsequentInstruction()
    {
-   if (!self()->comp()->target().cpu.getSupportsArch(TR::CPU::z196))
+   if (!self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
       {
       return false;
       }
@@ -1042,7 +1042,7 @@ bool
 OMR::Z::Peephole::tryToReduceCRJLHIToLOCHI(TR::InstOpCode::Mnemonic compareMnemonic)
    {
    // This optimization relies on hardware instructions introduced in z13
-   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z13))
+   if (!self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z13))
       return false;
 
    TR::S390RIEInstruction* branchInst = static_cast<TR::S390RIEInstruction*>(cursor);
@@ -1193,7 +1193,7 @@ bool
 OMR::Z::Peephole::tryToReduceLToLZRF(TR::InstOpCode::Mnemonic loadAndZeroRightMostByteMnemonic)
    {
    // This optimization relies on hardware instructions introduced in z13
-   if (!TR::Compiler->target.cpu.getSupportsArch(TR::CPU::z13))
+   if (!self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z13))
       return false;
 
    if (cursor->getNext()->getOpCodeValue() == TR::InstOpCode::NILL)

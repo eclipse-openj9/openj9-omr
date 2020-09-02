@@ -521,17 +521,7 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
          {
          intptr_t amount = (subTree->getOpCodeValue() == TR::iconst) ?
                              subTree->getInt() : subTree->getLongInt();
-         if (_baseRegister != NULL)
-            {
-            self()->addToOffset(subTree, amount, cg);
-            }
-         else
-            {
-            _baseRegister = cg->allocateRegister();
-            _baseNode = subTree;
-            self()->setBaseModifiable();
-            loadConstant64(cg, subTree, amount, _baseRegister);
-            }
+         self()->addToOffset(subTree, amount, cg);
          }
       else
          {

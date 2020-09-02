@@ -796,9 +796,9 @@ enum TR_CompilationOptions
    // Available                                       = 0x00001000 + 24,
    TR_EnableCopyingTROTInduction1Idioms               = 0x00002000 + 24,
    // Available                                       = 0x00004000 + 24,
-   TR_EnableLabelTargetNOPs                           = 0x00008000 + 24,
+   // Available                                       = 0x00008000 + 24,
    // Available                                       = 0x00010000 + 24,
-   TR_TraceLabelTargetNOPs                            = 0x00020000 + 24,
+   // Available                                       = 0x00020000 + 24,
    TR_CrashDuringCompilation                          = 0x00040000 + 24,
    TR_DisableShareableMethodHandleThunks              = 0x00080000 + 24,
    TR_DisableCustomMethodHandleThunks                 = 0x00100000 + 24,
@@ -1666,9 +1666,6 @@ public:
    int32_t getInlinerCGVeryColdBorderFrequency() { return _inlinerCGVeryColdBorderFrequency; }
    void    setInlinerCGVeryColdBorderFrequency(int32_t n) { _inlinerCGVeryColdBorderFrequency = n; }
    int32_t getAlwaysWorthInliningThreshold() const { return _alwaysWorthInliningThreshold; }
-
-   int32_t getLabelTargetNOPLimit() { return _labelTargetNOPLimit; }
-
    int32_t getMaxLimitedGRACandidates()   { return _maxLimitedGRACandidates; }
    int32_t getMaxLimitedGRARegs()         { return _maxLimitedGRARegs; }
    int32_t getNumLimitedGRARegsWithheld();
@@ -2296,10 +2293,7 @@ protected:
    int32_t                     _initialSCount;
    int32_t                     _enableSCHintFlags;
    bool                        _insertGCRTrees; // more like a flag than an option; cannot be set by user
-
-
-   int32_t                     _labelTargetNOPLimit;
-
+   
    int32_t                     _maxLimitedGRACandidates;
    int32_t                     _maxLimitedGRARegs;
 

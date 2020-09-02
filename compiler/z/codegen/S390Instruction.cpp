@@ -150,9 +150,6 @@ bool isLoopEntryAlignmentEnabled(TR::Compilation *comp)
    if(comp->getOptLevel() <= warm)
       return false;
 
-   if (comp->getOption(TR_EnableLabelTargetNOPs)) // only one type of NOP insertion is currently supported
-      return false;
-
    return true;
    }
 
@@ -268,40 +265,6 @@ TR::S390LabelInstruction::generateBinaryEncoding()
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    TR::Compilation *comp = cg()->comp();
 
-   bool tryToUseLabelTargetNOPs = comp->getOption(TR_EnableLabelTargetNOPs);
-   bool traceLabelTargetNOPs = comp->getOption(TR_TraceLabelTargetNOPs);
-   intptr_t offsetForLabelTargetNOPs = 0;
-   if (tryToUseLabelTargetNOPs)
-      {
-      tryToUseLabelTargetNOPs = considerForLabelTargetNOPs(true); // inEncodingPhase=true
-      if (tryToUseLabelTargetNOPs)
-         {
-         offsetForLabelTargetNOPs = instructionStart-cg()->getCodeStart();
-         // the offset that matters is the offset relative to the start of the object (the object start is 256 byte aligned but programs in this object may only be 8 byte aligned)
-         // instructionStart-cg()->getCodeStart() is the offset just for this one routine or nested routine so have to add in the object size for any already
-         // compiled separate programs (batchObjCodeSize) and any offset for any already compiled parent programs for the nested case (getCodeSize)
-         size_t batchObjCodeSize = 0;
-         size_t objCodeSize = 0;
-
-         if (traceLabelTargetNOPs)
-            traceMsg(comp,"\toffsetForLabelTargetNOPs = absOffset 0x%p + batchObjCodeSize 0x%p + objCodeSize 0x%p = 0x%p\n",
-               offsetForLabelTargetNOPs,batchObjCodeSize,objCodeSize,offsetForLabelTargetNOPs + batchObjCodeSize + objCodeSize);
-
-         offsetForLabelTargetNOPs = offsetForLabelTargetNOPs + batchObjCodeSize + objCodeSize;
-
-         if (traceLabelTargetNOPs)
-            {
-            TR::Instruction *thisInst = this;
-            TR::Instruction *prevInst = getPrev();
-            traceMsg(comp,"\tTR::S390LabeledInstruction %p (%s) at cursor %p (skipThisOne=%s, offset = %p, codeStart %p)\n",
-               this,thisInst->getOpCode().getMnemonicName(),instructionStart,isSkipForLabelTargetNOPs()?"true":"false",
-               offsetForLabelTargetNOPs,cg()->getCodeStart());
-            traceMsg(comp,"\tprev %p (%s)\n",
-               prevInst,prevInst->getOpCode().getMnemonicName());
-            }
-         }
-      }
-
    TR::LabelSymbol * label = getLabelSymbol();
    TR::Snippet * snippet = getCallSnippet();
    uint8_t * cursor = instructionStart;
@@ -327,10 +290,6 @@ TR::S390LabelInstruction::generateBinaryEncoding()
       // Insert Padding if necessary.
       if (_alignment != 0)
          {
-         if (tryToUseLabelTargetNOPs && traceLabelTargetNOPs)
-            traceMsg(comp,"force tryToUseLabelTargetNOPs to false because _alignment already needed on inst %p\n",this);
-         tryToUseLabelTargetNOPs = false;
-
          int32_t padding = _alignment - (((uintptr_t)instructionStart) % _alignment);
 
          for (int i = padding / 6; i > 0; i--)
@@ -360,41 +319,15 @@ TR::S390LabelInstruction::generateBinaryEncoding()
 
    // Insert NOPs for loop alignment if possible
    uint64_t offset = 0;
-   bool doUseLabelTargetNOPs = false;
    uint8_t * newInstructionStart = NULL;
    int32_t labelTargetBytesInserted = 0;
-   if (tryToUseLabelTargetNOPs)
-      {
-      int32_t labelTargetNOPLimit = comp->getOptions()->getLabelTargetNOPLimit();
-      if (isOdd(labelTargetNOPLimit))
-         {
-         if (traceLabelTargetNOPs)
-            traceMsg(comp,"\tlabelTargetNOPLimit %d is odd reduce by 1 to %d\n",labelTargetNOPLimit,labelTargetNOPLimit-1);
-         labelTargetNOPLimit--;
-         }
-      offset = (uint64_t)offsetForLabelTargetNOPs&(0xff);
-      if (traceLabelTargetNOPs)
-         traceMsg(comp,"\tcomparing offset %lld >? labelTargetNOPLimit %d (offsetForLabelTargetNOPs = %p)\n",offset,labelTargetNOPLimit,offsetForLabelTargetNOPs);
-      if (offset > labelTargetNOPLimit)
-         {
-         doUseLabelTargetNOPs = true;
-         newInstructionStart = cursor + (256 - offset);
-         labelTargetBytesInserted = 256 - offset;
-         if (traceLabelTargetNOPs)
-            traceMsg(comp,"\tset useLabelTargetNOPs = true : offsetForLabelTargetNOPs=%p > labelTargetNOPLimit %d, offset=%lld, cursor %p -> %p, labelTargetBytesInserted=%d\n",
-               offsetForLabelTargetNOPs,labelTargetNOPLimit,offset,cursor,newInstructionStart,labelTargetBytesInserted);
-         }
-      }
-   else
-      {
-      offset = (uint64_t)cursor&(0xff);
-      newInstructionStart = (uint8_t *) (((uintptr_t)cursor+256)/256*256);
-      }
 
-   if (offset && (doUseLabelTargetNOPs || isNopCandidate()))
+   offset = (uint64_t)cursor&(0xff);
+   newInstructionStart = (uint8_t *) (((uintptr_t)cursor+256)/256*256);
+
+   if (offset && isNopCandidate())
       {
-      if (!doUseLabelTargetNOPs)
-         setEstimatedBinaryLength(getEstimatedBinaryLength()+256-offset);
+      setEstimatedBinaryLength(getEstimatedBinaryLength()+256-offset);
       getLabelSymbol()->setCodeLocation(newInstructionStart);     // Label location need to be updated
       assert(offset%2==0);
       TR::Instruction * prevInstr = getPrev();
@@ -409,18 +342,7 @@ TR::S390LabelInstruction::generateBinaryEncoding()
          cg()->setBinaryBufferCursor(cursor = instr->generateBinaryEncoding());
          if (debugObj)
             debugObj->addInstructionComment(instr, "Skip NOP instructions for loop alignment");
-         if (doUseLabelTargetNOPs)
-            {
-            int32_t bytesOfJump = cursor - curBeforeJump;
-            if (traceLabelTargetNOPs)
-               traceMsg(comp,"\tbytesOfJump=%d : update offset %lld -> %lld\n",bytesOfJump,offset,offset+bytesOfJump);
-            offset+=bytesOfJump;
-            offset = (uint64_t)offset&0xff;
-            }
-         else
-            {
-            offset = (uint64_t)cursor&0xff;
-            }
+         offset = (uint64_t)cursor&0xff;
          prevInstr = instr;
          }
       // Insert NOP instructions until cursor is aligned
@@ -430,103 +352,29 @@ TR::S390LabelInstruction::generateBinaryEncoding()
          if(offset<=250)
             {
             instr = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 6, getNode(), prevInstr, cg());
-            if (doUseLabelTargetNOPs && traceLabelTargetNOPs)
-               traceMsg(comp,"\tgen 6 byte NOP at offset %lld\n",offset);
             instr->setEstimatedBinaryLength(6);
             }
          else if(offset<=252)
             {
             instr = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, getNode(), prevInstr, cg());
-            if (doUseLabelTargetNOPs && traceLabelTargetNOPs)
-               traceMsg(comp,"\tgen 4 byte NOP at offset %lld\n",offset);
             instr->setEstimatedBinaryLength(4);
             }
          else if(offset<=254)
             {
             instr = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, getNode(), prevInstr, cg());
-            if (doUseLabelTargetNOPs && traceLabelTargetNOPs)
-               traceMsg(comp,"\tgen 2 byte NOP at offset %lld\n",offset);
             instr->setEstimatedBinaryLength(2);
             }
          cg()->setBinaryBufferCursor(cursor = instr->generateBinaryEncoding());
-         if (doUseLabelTargetNOPs)
-            {
-            int32_t bytesOfNOPs = cursor - curBeforeNOPs;
-            if (traceLabelTargetNOPs)
-               traceMsg(comp,"\tbytesOfNOPs=%d : end update offset %lld -> %lld\n",bytesOfNOPs,offset,offset+bytesOfNOPs);
-            offset+=bytesOfNOPs;
-            offset = (uint64_t)offset&0xff;
-            }
-         else
-            {
-            offset = (uint64_t)cursor&0xff;
-            }
+         offset = (uint64_t)cursor&0xff;
          prevInstr = instr;
          }
       instructionStart = cursor;
-      if (doUseLabelTargetNOPs)
-         {
-         if (traceLabelTargetNOPs)
-            traceMsg(comp,"\tfinished NOP insertion : setBinaryLength to 0, addAccumError = estBinLen %d - bytesInserted %d = %d, setBinaryEncoding to 0x%x\n",
-               getEstimatedBinaryLength(),labelTargetBytesInserted,getEstimatedBinaryLength() - labelTargetBytesInserted,instructionStart);
-         setBinaryLength(0);
-         TR_ASSERT(getEstimatedBinaryLength() >= labelTargetBytesInserted,"label inst %p : estimatedBinaryLength %d must be >= labelTargetBytesInserted %d inserted\n",
-            this,getEstimatedBinaryLength(),labelTargetBytesInserted);
-         cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - labelTargetBytesInserted);
-         setBinaryEncoding(instructionStart);
-         return cursor;
-         }
       }
 
    setBinaryLength(cursor - instructionStart);
    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
    setBinaryEncoding(instructionStart);
    return cursor;
-   }
-
-bool
-TR::S390LabelInstruction::considerForLabelTargetNOPs(bool inEncodingPhase)
-   {
-   TR::Compilation *comp = cg()->comp();
-   TR::Instruction *thisInst = this;
-   bool traceLabelTargetNOPs = comp->getOption(TR_TraceLabelTargetNOPs);
-   TR::Instruction *prevInst = getPrev();
-   while (prevInst && prevInst->getOpCode().getOpCodeValue() == TR::InstOpCode::ASSOCREGS)
-      prevInst = prevInst->getPrev();
-
-   bool doConsider = true;
-   if (traceLabelTargetNOPs)
-      traceMsg(comp,"considerForLabelTargetNOPs check during %s phase : %p (%s), prev  %p (%s)\n",
-         inEncodingPhase?"encoding":"estimating",this,thisInst->getOpCode().getMnemonicName(),prevInst,prevInst->getOpCode().getMnemonicName());
-
-   if (isSkipForLabelTargetNOPs())
-      {
-      if (traceLabelTargetNOPs)
-         traceMsg(comp,"\t%p (%s) marked with isSkipForLabelTargetNOPs = true : set doConsider=false\n",this,thisInst->getOpCode().getMnemonicName());
-      doConsider = false;
-      }
-   else if (prevInst && prevInst->getOpCode().getOpCodeValue() == TR::InstOpCode::BASR)
-      {
-      if (traceLabelTargetNOPs)
-         traceMsg(comp,"\tprev %p is a BASR : set doConsider=false\n",prevInst);
-      doConsider = false;
-      }
-   else if (inEncodingPhase && !wasEstimateDoneForLabelTargetNOPs())
-      {
-      // this is the case where some instructions (e.g. SCHEDON/SCHEDOFF) have been inserted between the estimate and encoding phases
-      // and therefore this routine would return false during estimation and true during encoding and the estimate bump for NOPs would have been missed
-      if (traceLabelTargetNOPs)
-         traceMsg(comp,"\t%p (%s) marked with wasEstimateDoneForLabelTargetNOPs = false : set doConsider=false\n",this,thisInst->getOpCode().getMnemonicName());
-      doConsider = false;
-      }
-   else
-      {
-      if (traceLabelTargetNOPs)
-         traceMsg(comp,"\t%p (%s) may need to be aligned : set doConsider=true\n",this,thisInst->getOpCode().getMnemonicName());
-      doConsider = true;
-      }
-
-   return doConsider;
    }
 
 int32_t
@@ -548,30 +396,7 @@ TR::S390LabelInstruction::estimateBinaryLength(int32_t  currentEstimate)
       estimatedSize = 0;
       }
 
-   if (comp->getOption(TR_EnableLabelTargetNOPs))
-      {
-      if (considerForLabelTargetNOPs(false)) // inEncodingPhase=false (in estimating phase now)
-         {
-         bool traceLabelTargetNOPs = comp->getOption(TR_TraceLabelTargetNOPs);
-         int32_t maxNOPBump = 256 - comp->getOptions()->getLabelTargetNOPLimit();
-         if (traceLabelTargetNOPs)
-            traceMsg(comp,"\tmaxNOPBump = %d\n",maxNOPBump);
-         if (getLabelSymbol() != NULL)
-            {
-            if (traceLabelTargetNOPs)
-               traceMsg(comp,"\tupdate label %s (%p) estimatedCodeLocation with estimate %d + maxNOPBump %d = %d\n",
-                  cg()->getDebug()->getName(getLabelSymbol()),getLabelSymbol(),currentEstimate,maxNOPBump,currentEstimate+maxNOPBump);
-            getLabelSymbol()->setEstimatedCodeLocation(currentEstimate+maxNOPBump);
-            }
-         if (traceLabelTargetNOPs)
-            traceMsg(comp,"\tupdate estimatedSize %d by maxNOPBump %d -> %d\n",estimatedSize,maxNOPBump,estimatedSize+maxNOPBump);
-         estimatedSize += maxNOPBump;
-         setEstimatedBinaryLength(estimatedSize);
-         setEstimateDoneForLabelTargetNOPs();
-         return currentEstimate + estimatedSize;
-         }
-      }
-   else if (isLoopEntryAlignmentEnabled(comp))
+   if (isLoopEntryAlignmentEnabled(comp))
       {
       // increase estimate by 256 if it's a loop alignment candidate
       TR::Node * node = getNode();

@@ -2294,26 +2294,8 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
 
          if (skipOneReturn == false)
             {
-            TR::Instruction * temp = data.cursorInstruction->getPrev();
-            TR::Instruction *originalNextInstruction = temp->getNext();
-
+            TR::Instruction* temp = data.cursorInstruction->getPrev();
             self()->getLinkage()->createEpilogue(temp);
-
-            if (self()->comp()->getOption(TR_EnableLabelTargetNOPs))
-               {
-               for (TR::Instruction *inst = temp->getNext(); inst != originalNextInstruction; inst = inst->getNext())
-                  {
-                  TR::Instruction *s390Inst = inst;
-                  if (s390Inst->getKind() == TR::Instruction::IsLabel)
-                     {
-                     if (self()->comp()->getOption(TR_TraceLabelTargetNOPs))
-                        traceMsg(self()->comp(),"\t\tepilogue inst %p (%s) setSkipForLabelTargetNOPs\n",s390Inst,s390Inst->getOpCode().getMnemonicName());
-                     TR::S390LabelInstruction *labelInst = (TR::S390LabelInstruction*)s390Inst;
-                     labelInst->setSkipForLabelTargetNOPs();
-                     }
-                  }
-               }
-
             data.cursorInstruction = temp->getNext();
 
             /* skipOneReturn only if epilog is generated which is indicated by instructions being */

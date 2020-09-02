@@ -78,7 +78,6 @@ using namespace OMR;
 #define TR_VSS_ALIGNMENT 8
 #define TR_AGGR_CONST_DISPLAY_SIZE 16
 #define TR_STORAGE_ALIGNMENT_DISPLAY_SIZE 128
-#define TR_LABEL_TARGET_NOP_LIMIT 232
 
 #define TR_MAX_BUCKET_INDEX_COUNT 20
 #define TR_MAX_LIMITED_GRA_REGS 5
@@ -698,7 +697,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableJProfiling",                   "O\tenable JProfiling", SET_OPTION_BIT(TR_EnableJProfiling), "F"},
    {"enableJProfilingInProfilingCompilations", "O\tEnable the use of jprofiling instrumentation in profiling compilations", RESET_OPTION_BIT(TR_DisableJProfilingInProfilingCompilations), "F"},
    {"enableJVMPILineNumbers",            "M\tenable output of line numbers via JVMPI",       SET_OPTION_BIT(TR_EnableJVMPILineNumbers), "F"},
-   {"enableLabelTargetNOPs",             "O\tenable inserting NOPs before label targets", SET_OPTION_BIT(TR_EnableLabelTargetNOPs),  "F"},
    {"enableLastRetrialLogging",          "O\tenable fullTrace logging for last compilation attempt. Needs to have a log defined on the command line", SET_OPTION_BIT(TR_EnableLastCompilationRetrialLogging), "F"},
    {"enableLocalVPSkipLowFreqBlock",     "O\tSkip processing of low frequency blocks in localVP", SET_OPTION_BIT(TR_EnableLocalVPSkipLowFreqBlock), "F" },
    {"enableLoopEntryAlignment",            "O\tenable loop Entry alignment",                          SET_OPTION_BIT(TR_EnableLoopEntryAlignment), "F"},
@@ -879,9 +877,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"jProfilingMethodRecompThreshold=",      "C<nnn>\tMethod invocations for jProfiling body",
         TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_jProfilingMethodRecompThreshold), 0, "F%d"},
    {"keepBCDWidening",       "O\tstress testing option -- do not remove widening BCD operations", SET_OPTION_BIT(TR_KeepBCDWidening), "F" },
-
-   {"labelTargetNOPLimit=", "C<nnn>\t(labelTargetAddress&0xff) > _labelTargetNOPLimit are padded out with NOPs until the next 256 byte boundary",
-      TR::Options::set32BitNumeric, offsetof(OMR::Options,_labelTargetNOPLimit), TR_LABEL_TARGET_NOP_LIMIT , "F%d"},
    {"largeCompiledMethodExemptionFreqCutoff=", "O<nnn>\tInliner threshold",
       TR::Options::set32BitNumeric, offsetof(OMR::Options, _largeCompiledMethodExemptionFreqCutoff), 0, "F%d" },
    {"largeNumberOfLoops=", "O<nnn>\tnumber of loops to consider 'a large number'", TR::Options::set32BitNumeric, offsetof(OMR::Options,_largeNumberOfLoops), 0, "F%d"},
@@ -893,8 +888,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
         TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_lastOptSubIndex), 0, "F%d"},
    {"lastOptTransformationIndex=", "O<nnn>\tindex of the last optimization transformation to perform",
         TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_lastOptTransformationIndex), 0, "F%d"},
-   {"lnl=", "C<nnn>\t(labelTargetAddress&0xff) > _labelTargetNOPLimit are padded out with NOPs until the next 256 byte boundary",
-      TR::Options::set32BitNumeric, offsetof(OMR::Options,_labelTargetNOPLimit), TR_LABEL_TARGET_NOP_LIMIT , "F%d"},
    {"lockReserveClass=",  "O{regex}\tenable reserving locks for specified classes", TR::Options::setRegex, offsetof(OMR::Options, _lockReserveClass), 0, "P"},
    {"lockVecRegs=",    "M<nn>\tThe number of vector register to lock (from end) Range: 0-32", TR::Options::setStaticNumeric, (intptr_t)&OMR::Options::_numVecRegsToLock, 0, "F%d", NOT_IN_SUBSET},
    {"log=",               "L<filename>\twrite log output to filename",
@@ -1153,7 +1146,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceJProfilingValue",             "L\ttrace insertion of jProfiling trees for value profiling",    TR::Options::traceOptimization, jProfilingValue, 0, "P"},
 #endif
    {"traceKnownObjectGraph",            "L\ttrace the relationships between objects in the known-object table", SET_OPTION_BIT(TR_TraceKnownObjectGraph), "P" },
-   {"traceLabelTargetNOPs",             "L\ttrace inserting of NOPs before label targets", SET_OPTION_BIT(TR_TraceLabelTargetNOPs), "F"},
    {"traceLastOpt",                     "L\textra tracing for the opt corresponding to lastOptIndex; usually used with traceFull", SET_OPTION_BIT(TR_TraceLastOpt), "F"},
    {"traceLiveMonitorMetadata",         "L\ttrace live monitor metadata",                  SET_OPTION_BIT(TR_TraceLiveMonitorMetadata), "F" },
    {"traceLiveness",                     "L\ttrace liveness analysis",                     SET_OPTION_BIT(TR_TraceLiveness), "P" },
@@ -2564,7 +2556,6 @@ OMR::Options::jitPreProcess()
    _maxLimitedGRARegs = TR_MAX_LIMITED_GRA_REGS;
    _counterBucketGranularity = 2;
    _minCounterFidelity = INT_MIN;
-   _labelTargetNOPLimit = TR_LABEL_TARGET_NOP_LIMIT;
    _lastIpaOptTransformationIndex = INT_MAX;
    _jProfilingMethodRecompThreshold = 4000;
    _jProfilingLoopRecompThreshold = 2000;

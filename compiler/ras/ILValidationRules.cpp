@@ -446,6 +446,19 @@ void TR::ValidateChildTypes::validate(TR::Node *node)
          auto childOpcode = node->getChild(i)->getOpCode();
          if (childOpcode.getOpCodeValue() != TR::GlRegDeps)
             {
+            /**
+             * It is possible that a PassThrough is set as child of a node, which
+             * is not real child. We need to traverse through child of PassThrough
+             * till we get the real child to validate.
+             */
+            if (opcode.isStoreReg() && childOpcode.getOpCodeValue() == TR::PassThrough)
+               {
+               TR::Node *childNode = node->getChild(i);
+               while (childNode->getOpCodeValue() == TR::PassThrough)
+                  childNode = childNode->getFirstChild();
+               childOpcode = childNode->getOpCode();
+               }
+
             const auto expChildType = opcode.expectedChildType(i);
             const auto actChildType = childOpcode.getDataType().getDataType();
             const auto expChildTypeName = (expChildType >= TR::NumTypes) ?

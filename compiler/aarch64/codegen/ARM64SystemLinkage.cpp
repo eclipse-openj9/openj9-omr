@@ -920,6 +920,8 @@ TR::Register *TR::ARM64SystemLinkage::buildDirectDispatch(TR::Node *callNode)
       }
 
    callNode->setRegister(retReg);
+
+   dependencies->stopUsingDepRegs(cg(), retReg);
    return retReg;
    }
 

@@ -288,8 +288,16 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptr_t value,
    if (node->isClassUnloadingConst())
       {
       uintptr_t value = node->getAddress();
-      TR::Instruction *unloadableConstInstr = generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, reinterpret_cast<void*>(value));
-      TR_OpaqueClassBlock* unloadableClass = NULL;
+      TR::Instruction *unloadableConstInstr = NULL;
+      if (cg->canUseRelativeLongInstructions(value))
+         {
+         unloadableConstInstr = generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, reinterpret_cast<void*>(value));
+         }
+      else
+         {
+         unloadableConstInstr = genLoadAddressConstantInSnippet(cg, node, value, targetRegister, NULL, NULL, NULL, true);
+         }
+
       if (node->isMethodPointerConstant())
          {
          comp->getStaticMethodPICSites()->push_front(unloadableConstInstr);

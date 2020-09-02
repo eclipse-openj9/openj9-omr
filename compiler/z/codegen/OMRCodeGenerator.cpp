@@ -391,7 +391,7 @@ bool OMR::Z::CodeGenerator::canTransformUnsafeCopyToArrayCopy()
 
 bool OMR::Z::CodeGenerator::supportsDirectIntegralLoadStoresFromLiteralPool()
    {
-   return self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10);
+   return true;
    }
 
 OMR::Z::CodeGenerator::CodeGenerator()
@@ -494,23 +494,9 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setSupportsSearchCharString(); // CISC Transformation into SRSTU loop - only on z9.
    self()->setSupportsTranslateAndTestCharString(); // CISC Transformation into TRTE loop - only on z6.
 
-   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
+   if (!comp->getOption(TR_DisableTraps) && TR::Compiler->vm.hasResumableTrapHandler(comp))
       {
-      self()->setSupportsTranslateAndTestCharString();
-
-      if (!comp->getOption(TR_DisableTraps) && TR::Compiler->vm.hasResumableTrapHandler(comp))
-         {
-         self()->setHasResumableTrapHandler();
-         }
-      }
-   else
-      {
-      comp->setOption(TR_DisableCompareAndBranchInstruction);
-
-      // No trap instructions available for z10 and below.
-      // Set disable traps so that the optimizations and codegen can avoid generating
-      // trap-specific nodes or instructions.
-      comp->setOption(TR_DisableTraps);
+      self()->setHasResumableTrapHandler();
       }
 
    if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
@@ -845,7 +831,7 @@ OMR::Z::CodeGenerator::mulDecompositionCostIsJustified(int32_t numOfOperations, 
             traceMsg(self()->comp(), "MulDecomp cost is too high. numCycle=%i(max:3)\n", numCycles);
       return numCycles <= 3;
       }
-   else if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
+   else
       {
       int32_t numCycles = 0;
       numCycles = numOfOperations+1;
@@ -859,16 +845,6 @@ OMR::Z::CodeGenerator::mulDecompositionCostIsJustified(int32_t numOfOperations, 
          else
             traceMsg(self()->comp(), "MulDecomp cost is too high. numCycle=%i(max:10)\n", numCycles);
       return numCycles <= 9;
-      }
-   else
-      {
-      if (value > MAX_IMMEDIATE_VAL || value < MIN_IMMEDIATE_VAL)
-         {
-         // If more than 16 bits, then justify the shift / subtract
-         return OMR::CodeGenerator::mulDecompositionCostIsJustified(numOfOperations, bitPosition, operationType, value);
-         }
-
-      return false;
       }
    }
 
@@ -967,27 +943,24 @@ OMR::Z::CodeGenerator::isAddMemoryUpdate(TR::Node * node, TR::Node * valueChild)
    {
    static char * disableASI = feGetEnv("TR_DISABLEASI");
 
-   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
+   if (!disableASI && self()->isMemoryUpdate(node) && valueChild->getSecondChild()->getOpCode().isLoadConst())
       {
-      if (!disableASI && self()->isMemoryUpdate(node) && valueChild->getSecondChild()->getOpCode().isLoadConst())
+      if (valueChild->getOpCodeValue() == TR::iadd || valueChild->getOpCodeValue() == TR::isub)
          {
-         if (valueChild->getOpCodeValue() == TR::iadd || valueChild->getOpCodeValue() == TR::isub)
-            {
-            int32_t value = valueChild->getSecondChild()->getInt();
+         int32_t value = valueChild->getSecondChild()->getInt();
 
-            if (value < (int32_t) 0x7F && value > (int32_t) 0xFFFFFF80)
-               {
-               return true;
-               }
+         if (value < (int32_t) 0x7F && value > (int32_t) 0xFFFFFF80)
+            {
+            return true;
             }
-         else if (self()->comp()->target().is64Bit() && (valueChild->getOpCodeValue() == TR::ladd || valueChild->getOpCodeValue() == TR::lsub))
-            {
-            int64_t value = valueChild->getSecondChild()->getLongInt();
+         }
+      else if (self()->comp()->target().is64Bit() && (valueChild->getOpCodeValue() == TR::ladd || valueChild->getOpCodeValue() == TR::lsub))
+         {
+         int64_t value = valueChild->getSecondChild()->getLongInt();
 
-            if (value < (int64_t) CONSTANT64(0x7F) && value > (int64_t) CONSTANT64(0xFFFFFFFFFFFFFF80))
-               {
-               return true;
-               }
+         if (value < (int64_t) CONSTANT64(0x7F) && value > (int64_t) CONSTANT64(0xFFFFFFFFFFFFFF80))
+            {
+            return true;
             }
          }
       }
@@ -1531,7 +1504,7 @@ OMR::Z::CodeGenerator::isLitPoolFreeForAssignment()
       {
       litPoolRegIsFree = true;
       }
-   else if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) && !self()->anyLitPoolSnippets())
+   else if (!self()->anyLitPoolSnippets())
       {
       litPoolRegIsFree = true;
       }
@@ -2319,7 +2292,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    data.estimate = self()->setEstimatedLocationsForSnippetLabels(data.estimate);
    // need to reset constant data snippets offset for inlineEXTarget peephole optimization
    static char * disableEXRLDispatch = feGetEnv("TR_DisableEXRLDispatch");
-   if (!(bool)disableEXRLDispatch && self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
+   if (!(bool)disableEXRLDispatch)
       {
       _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets();
       }
@@ -4449,8 +4422,7 @@ bool OMR::Z::CodeGenerator::isActiveCompareCC(TR::InstOpCode::Mnemonic opcd, TR:
       TR::Register* ccSrcReg = ccInst->srcRegArrElem(0);
 
       // On z10 trueCompElimination may swap the previous compare operands, so give up early
-      if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) &&
-          !self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
+      if (!self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
          {
          if (tReg->getKind() != TR_FPR)
             {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -130,11 +130,6 @@ TR::Register *inlineTrtEvaluator(
    TR::Register *r1Reg = cg->allocateRegister();
    TR::Register *r2Reg = cg->allocateRegister();
 
-   if (packR2 && !cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
-      {
-      generateRRInstruction(cg, TR::InstOpCode::XR, node, r2Reg, r2Reg);
-      }
-
    TR::RegisterDependencyConditions *regDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
    regDeps->addPostCondition(r1Reg, TR::RealRegister::GPR1,DefinesDependentRegister);
    regDeps->addPostCondition(r2Reg, TR::RealRegister::GPR2,DefinesDependentRegister);
@@ -173,14 +168,9 @@ TR::Register *inlineTrtEvaluator(
          {
          generateRIEInstruction(cg, TR::InstOpCode::RISBGN, node,  conditionCodeReg, r2Reg, 48, 55, 8);
          }
-      else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
-         {
-         generateRIEInstruction(cg, TR::InstOpCode::RISBG, node,  conditionCodeReg, r2Reg, 48, 55, 8);
-         }
       else
          {
-         generateRSInstruction(cg, TR::InstOpCode::SLL, node, r2Reg, 8);
-         generateRRInstruction(cg, TR::InstOpCode::OR, node, conditionCodeReg, r2Reg);
+         generateRIEInstruction(cg, TR::InstOpCode::RISBG, node,  conditionCodeReg, r2Reg, 48, 55, 8);
          }
 
       node->setRegister(conditionCodeReg);

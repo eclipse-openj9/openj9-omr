@@ -1202,50 +1202,47 @@ genericLongShiftSingle(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::
       {
       int32_t value = secondChild->getInt();
 
-      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
+      // Generate RISBG for lshl + i2l sequence
+      if (node->getOpCodeValue() == TR::lshl)
          {
-         // Generate RISBG for lshl + i2l sequence
-         if (node->getOpCodeValue() == TR::lshl)
+         if (firstChild->getOpCodeValue() == TR::i2l && firstChild->isSingleRefUnevaluated() && (firstChild->isNonNegative() || firstChild->getFirstChild()->isNonNegative()))
             {
-            if (firstChild->getOpCodeValue() == TR::i2l && firstChild->isSingleRefUnevaluated() && (firstChild->isNonNegative() || firstChild->getFirstChild()->isNonNegative()))
+            srcReg = cg->evaluate(firstChild->getFirstChild());
+            trgReg = cg->allocateRegister();
+            auto mnemonic = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
+
+            generateRIEInstruction(cg, mnemonic, node, trgReg, srcReg, (int8_t)(32-value), (int8_t)((63-value)|0x80), (int8_t)value);
+
+            node->setRegister(trgReg);
+
+            cg->decReferenceCount(firstChild->getFirstChild());
+            cg->decReferenceCount(firstChild);
+            cg->decReferenceCount(secondChild);
+
+            return trgReg;
+            }
+         else if (firstChild->getOpCodeValue() == TR::land)
+            {
+            if (trgReg = TR::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(firstChild, cg, value, node->getOpCodeValue() == TR::lshl))
                {
-               srcReg = cg->evaluate(firstChild->getFirstChild());
-               trgReg = cg->allocateRegister();
-               auto mnemonic = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
-
-               generateRIEInstruction(cg, mnemonic, node, trgReg, srcReg, (int8_t)(32-value), (int8_t)((63-value)|0x80), (int8_t)value);
-
                node->setRegister(trgReg);
-
-               cg->decReferenceCount(firstChild->getFirstChild());
                cg->decReferenceCount(firstChild);
                cg->decReferenceCount(secondChild);
-
                return trgReg;
                }
-            else if (firstChild->getOpCodeValue() == TR::land)
-               {
-               if (trgReg = TR::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(firstChild, cg, value, node->getOpCodeValue() == TR::lshl))
-                  {
-                  node->setRegister(trgReg);
-                  cg->decReferenceCount(firstChild);
-                  cg->decReferenceCount(secondChild);
-                  return trgReg;
-                  }
-               }
             }
-         else if (node->getOpCodeValue() == TR::lshr || node->getOpCodeValue() == TR::lushr)
+         }
+      else if (node->getOpCodeValue() == TR::lshr || node->getOpCodeValue() == TR::lushr)
+         {
+         // Generate RISBGN for (lshr + land) and (lushr + land) sequences
+         if (firstChild->getOpCodeValue() == TR::land)
             {
-            // Generate RISBGN for (lshr + land) and (lushr + land) sequences
-            if (firstChild->getOpCodeValue() == TR::land)
+            if (trgReg = TR::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(firstChild, cg, -value, node->getOpCodeValue() == TR::lshr))
                {
-               if (trgReg = TR::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(firstChild, cg, -value, node->getOpCodeValue() == TR::lshr))
-                  {
-                  node->setRegister(trgReg);
-                  cg->decReferenceCount(firstChild);
-                  cg->decReferenceCount(secondChild);
-                  return trgReg;
-                  }
+               node->setRegister(trgReg);
+               cg->decReferenceCount(firstChild);
+               cg->decReferenceCount(secondChild);
+               return trgReg;
                }
             }
          }
@@ -1446,184 +1443,181 @@ genericRotateLeft(TR::Node * node, TR::CodeGenerator * cg)
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
 
-   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
+   if (node->getOpCodeValue() == TR::lor)
       {
-      if (node->getOpCodeValue() == TR::lor)
+      TR::Node * lushr = NULL;
+      TR::Node * lshl  = NULL;
+
+      if (firstChild->getOpCodeValue() == TR::lushr)
          {
-         TR::Node * lushr = NULL;
-         TR::Node * lshl  = NULL;
+         lushr = firstChild;
+         lshl  = secondChild;
+         }
+      else if (secondChild->getOpCodeValue() == TR::lushr)
+         {
+         lushr = secondChild;
+         lshl  = firstChild;
+         }
 
-         if (firstChild->getOpCodeValue() == TR::lushr)
-            {
-            lushr = firstChild;
-            lshl  = secondChild;
-            }
-         else if (secondChild->getOpCodeValue() == TR::lushr)
-            {
-            lushr = secondChild;
-            lshl  = firstChild;
-            }
+      if (lushr &&
+            lushr->getOpCodeValue() == TR::lushr && lushr->getReferenceCount() == 1 && lushr->getRegister() == NULL &&
+            lshl->getOpCodeValue()  == TR::lshl &&   lshl->getReferenceCount() == 1 &&  lshl->getRegister() == NULL)
+         {
+         int32_t rShftAmnt = lushr->getSecondChild()->getInt();
+         int32_t lShftAmnt = lshl->getSecondChild()->getInt();
+         TR::Node * lshlSourceNode  = lshl->getFirstChild();
+         TR::Node * lushrSourceNode = lushr->getFirstChild();
 
-         if (lushr &&
-             lushr->getOpCodeValue() == TR::lushr && lushr->getReferenceCount() == 1 && lushr->getRegister() == NULL &&
-             lshl->getOpCodeValue()  == TR::lshl &&   lshl->getReferenceCount() == 1 &&  lshl->getRegister() == NULL)
+         if (rShftAmnt + lShftAmnt == 64 && lshlSourceNode == lushrSourceNode)
             {
-            int32_t rShftAmnt = lushr->getSecondChild()->getInt();
-            int32_t lShftAmnt = lshl->getSecondChild()->getInt();
-            TR::Node * lshlSourceNode  = lshl->getFirstChild();
-            TR::Node * lushrSourceNode = lushr->getFirstChild();
+            TR::Register * targetReg = NULL;
+            TR::Register * sourceReg = cg->evaluate(lshlSourceNode);
 
-            if (rShftAmnt + lShftAmnt == 64 && lshlSourceNode == lushrSourceNode)
+            if (!cg->canClobberNodesRegister(lshlSourceNode))
                {
-               TR::Register * targetReg = NULL;
-               TR::Register * sourceReg = cg->evaluate(lshlSourceNode);
-
-               if (!cg->canClobberNodesRegister(lshlSourceNode))
-                  {
-                  targetReg = cg->allocateClobberableRegister(sourceReg);
-                  }
-               else
-                  {
-                  targetReg = sourceReg;
-                  }
-
-               TR::InstOpCode::Mnemonic opCode = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
-                  generateRIEInstruction(cg, opCode, node, targetReg, sourceReg, 0, 63, lShftAmnt);
-
-               // Clean up skipped nodes
-               cg->decReferenceCount(lushrSourceNode);
-               cg->decReferenceCount(lushr->getSecondChild());
-               cg->decReferenceCount(lshlSourceNode);
-               cg->decReferenceCount(lshl->getSecondChild());
-               return targetReg;
-               }
-            }
-         }
-
-      TR::Node* andChild = NULL;
-      TR::Node* shiftChild = NULL;
-      if (firstChild->getOpCodeValue() == TR::land)
-         {
-         andChild = firstChild;
-         shiftChild = secondChild;
-         }
-      else if (secondChild->getOpCodeValue() == TR::land)
-         {
-         andChild = secondChild;
-         shiftChild = firstChild;
-         }
-      if (node->getOpCodeValue() == TR::lor &&
-          andChild &&
-          andChild->getRegister() == NULL &&
-          andChild->getReferenceCount() == 1)
-         {
-         TR::Node* data = NULL;
-         uint64_t shiftBy = 0;
-         uint64_t mask1 = 0;
-         uint64_t mask2 = 0;
-         uint64_t bitPos = 0;
-
-         if (shiftChild->getOpCodeValue() == TR::lshl &&
-             shiftChild->getRegister() == NULL &&
-             shiftChild->getReferenceCount() == 1 &&
-             shiftChild->getSecondChild()->getOpCode().isLoadConst())
-            {
-            data = shiftChild->getFirstChild();
-            shiftBy = shiftChild->getSecondChild()->getLongInt();
-            mask1 = 1ULL << shiftBy;
-            if (data->getOpCodeValue() == TR::i2l &&
-                data->getRegister() == NULL)
-               data = data->getFirstChild();
-            if (data->getOpCodeValue() != TR::icmpeq &&
-                data->getOpCodeValue() != TR::icmpne)
-               mask1 = 0;
-            }
-
-         if (andChild->getSecondChild()->getOpCode().isLoadConst())
-            mask2 = andChild->getSecondChild()->getLongInt();
-         bitPos = 63 - shiftBy;
-
-         if (mask1 && mask1 == (~mask2) && shiftBy <= 63 && performTransformation(cg->comp(), "O^O Insert bit using RISBG node [%p]\n", node))
-            {
-            TR::Node* otherData = andChild->getFirstChild();
-            TR::Register* toReg = cg->evaluate(otherData);
-            TR::Register* fromReg = cg->evaluate(data);
-            TR::Register* targetReg = cg->allocateRegister();
-
-            generateRRInstruction(cg, TR::InstOpCode::LGR, node, targetReg, toReg);
-            generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, targetReg, fromReg, bitPos, bitPos, shiftBy);
-            cg->decReferenceCount(andChild->getSecondChild());
-            cg->decReferenceCount(shiftChild->getSecondChild());
-            cg->decReferenceCount(otherData);
-            cg->decReferenceCount(data);
-            if (shiftChild->getFirstChild()->getOpCodeValue() == TR::i2l)
-               cg->decReferenceCount(shiftChild->getFirstChild());
-
-            return targetReg;
-            }
-         else if (mask2 && shiftBy)
-            {
-            mask1 = (1ULL << shiftBy) - 1;
-            if (mask1 == mask2 && performTransformation(cg->comp(), "O^O Insert contiguous bits using RISBG node [%p]\n", node))
-               {
-               TR::Register* toReg = cg->evaluate(andChild->getFirstChild());
-               TR::Register* fromReg = cg->evaluate(shiftChild->getFirstChild());
-               TR::Register* targetReg = cg->allocateRegister();
-               generateRRInstruction(cg, TR::InstOpCode::LGR, node, targetReg, toReg);
-               generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, targetReg, fromReg, 0, bitPos, shiftBy);
-               cg->decReferenceCount(andChild->getFirstChild());
-               cg->decReferenceCount(shiftChild->getFirstChild());
-               cg->decReferenceCount(andChild->getSecondChild());
-               cg->decReferenceCount(shiftChild->getSecondChild());
-               return targetReg;
-               }
-            }
-         }
-
-      if (node->getOpCodeValue() == TR::lor ||
-          node->getOpCodeValue() == TR::lxor)
-         {
-         TR::Node* shiftChild = NULL;
-         TR::Node* otherChild = NULL;
-         if (firstChild->getOpCodeValue() == TR::lshl ||
-             firstChild->getOpCodeValue() == TR::lushr)
-            {
-            shiftChild = firstChild;
-            otherChild = secondChild;
-            }
-         else if (secondChild->getOpCodeValue() == TR::lshl ||
-                  secondChild->getOpCodeValue() == TR::lushr)
-            {
-            shiftChild = secondChild;
-            otherChild = firstChild;
-            }
-         if (shiftChild &&
-             shiftChild->getSecondChild()->getOpCode().isLoadConst() &&
-             shiftChild->isSingleRefUnevaluated() &&
-             performTransformation(cg->comp(), "O^O Combine or/shift into rotate node [%p]\n", node))
-            {
-            uint32_t shiftBy = shiftChild->getSecondChild()->getInt();
-            uint32_t firstBit = 0;
-            uint32_t lastBit = 63;
-            if (shiftChild->getOpCodeValue() == TR::lushr)
-               {
-               firstBit = shiftBy;
-               shiftBy = 64 - shiftBy;
+               targetReg = cg->allocateClobberableRegister(sourceReg);
                }
             else
-               lastBit = 63 - shiftBy;
-            TR::Register* toReg = cg->evaluate(otherChild);
+               {
+               targetReg = sourceReg;
+               }
+
+            TR::InstOpCode::Mnemonic opCode = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
+               generateRIEInstruction(cg, opCode, node, targetReg, sourceReg, 0, 63, lShftAmnt);
+
+            // Clean up skipped nodes
+            cg->decReferenceCount(lushrSourceNode);
+            cg->decReferenceCount(lushr->getSecondChild());
+            cg->decReferenceCount(lshlSourceNode);
+            cg->decReferenceCount(lshl->getSecondChild());
+            return targetReg;
+            }
+         }
+      }
+
+   TR::Node* andChild = NULL;
+   TR::Node* shiftChild = NULL;
+   if (firstChild->getOpCodeValue() == TR::land)
+      {
+      andChild = firstChild;
+      shiftChild = secondChild;
+      }
+   else if (secondChild->getOpCodeValue() == TR::land)
+      {
+      andChild = secondChild;
+      shiftChild = firstChild;
+      }
+   if (node->getOpCodeValue() == TR::lor &&
+         andChild &&
+         andChild->getRegister() == NULL &&
+         andChild->getReferenceCount() == 1)
+      {
+      TR::Node* data = NULL;
+      uint64_t shiftBy = 0;
+      uint64_t mask1 = 0;
+      uint64_t mask2 = 0;
+      uint64_t bitPos = 0;
+
+      if (shiftChild->getOpCodeValue() == TR::lshl &&
+            shiftChild->getRegister() == NULL &&
+            shiftChild->getReferenceCount() == 1 &&
+            shiftChild->getSecondChild()->getOpCode().isLoadConst())
+         {
+         data = shiftChild->getFirstChild();
+         shiftBy = shiftChild->getSecondChild()->getLongInt();
+         mask1 = 1ULL << shiftBy;
+         if (data->getOpCodeValue() == TR::i2l &&
+               data->getRegister() == NULL)
+            data = data->getFirstChild();
+         if (data->getOpCodeValue() != TR::icmpeq &&
+               data->getOpCodeValue() != TR::icmpne)
+            mask1 = 0;
+         }
+
+      if (andChild->getSecondChild()->getOpCode().isLoadConst())
+         mask2 = andChild->getSecondChild()->getLongInt();
+      bitPos = 63 - shiftBy;
+
+      if (mask1 && mask1 == (~mask2) && shiftBy <= 63 && performTransformation(cg->comp(), "O^O Insert bit using RISBG node [%p]\n", node))
+         {
+         TR::Node* otherData = andChild->getFirstChild();
+         TR::Register* toReg = cg->evaluate(otherData);
+         TR::Register* fromReg = cg->evaluate(data);
+         TR::Register* targetReg = cg->allocateRegister();
+
+         generateRRInstruction(cg, TR::InstOpCode::LGR, node, targetReg, toReg);
+         generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, targetReg, fromReg, bitPos, bitPos, shiftBy);
+         cg->decReferenceCount(andChild->getSecondChild());
+         cg->decReferenceCount(shiftChild->getSecondChild());
+         cg->decReferenceCount(otherData);
+         cg->decReferenceCount(data);
+         if (shiftChild->getFirstChild()->getOpCodeValue() == TR::i2l)
+            cg->decReferenceCount(shiftChild->getFirstChild());
+
+         return targetReg;
+         }
+      else if (mask2 && shiftBy)
+         {
+         mask1 = (1ULL << shiftBy) - 1;
+         if (mask1 == mask2 && performTransformation(cg->comp(), "O^O Insert contiguous bits using RISBG node [%p]\n", node))
+            {
+            TR::Register* toReg = cg->evaluate(andChild->getFirstChild());
             TR::Register* fromReg = cg->evaluate(shiftChild->getFirstChild());
             TR::Register* targetReg = cg->allocateRegister();
-            TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::ROSBG;
-            if (node->getOpCodeValue() == TR::lxor)
-               opcode = TR::InstOpCode::RXSBG;
             generateRRInstruction(cg, TR::InstOpCode::LGR, node, targetReg, toReg);
-            generateRIEInstruction(cg, opcode, node, targetReg, fromReg, firstBit, lastBit, shiftBy);
+            generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, targetReg, fromReg, 0, bitPos, shiftBy);
+            cg->decReferenceCount(andChild->getFirstChild());
             cg->decReferenceCount(shiftChild->getFirstChild());
+            cg->decReferenceCount(andChild->getSecondChild());
             cg->decReferenceCount(shiftChild->getSecondChild());
             return targetReg;
             }
+         }
+      }
+
+   if (node->getOpCodeValue() == TR::lor ||
+         node->getOpCodeValue() == TR::lxor)
+      {
+      TR::Node* shiftChild = NULL;
+      TR::Node* otherChild = NULL;
+      if (firstChild->getOpCodeValue() == TR::lshl ||
+            firstChild->getOpCodeValue() == TR::lushr)
+         {
+         shiftChild = firstChild;
+         otherChild = secondChild;
+         }
+      else if (secondChild->getOpCodeValue() == TR::lshl ||
+               secondChild->getOpCodeValue() == TR::lushr)
+         {
+         shiftChild = secondChild;
+         otherChild = firstChild;
+         }
+      if (shiftChild &&
+            shiftChild->getSecondChild()->getOpCode().isLoadConst() &&
+            shiftChild->isSingleRefUnevaluated() &&
+            performTransformation(cg->comp(), "O^O Combine or/shift into rotate node [%p]\n", node))
+         {
+         uint32_t shiftBy = shiftChild->getSecondChild()->getInt();
+         uint32_t firstBit = 0;
+         uint32_t lastBit = 63;
+         if (shiftChild->getOpCodeValue() == TR::lushr)
+            {
+            firstBit = shiftBy;
+            shiftBy = 64 - shiftBy;
+            }
+         else
+            lastBit = 63 - shiftBy;
+         TR::Register* toReg = cg->evaluate(otherChild);
+         TR::Register* fromReg = cg->evaluate(shiftChild->getFirstChild());
+         TR::Register* targetReg = cg->allocateRegister();
+         TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::ROSBG;
+         if (node->getOpCodeValue() == TR::lxor)
+            opcode = TR::InstOpCode::RXSBG;
+         generateRRInstruction(cg, TR::InstOpCode::LGR, node, targetReg, toReg);
+         generateRIEInstruction(cg, opcode, node, targetReg, fromReg, firstBit, lastBit, shiftBy);
+         cg->decReferenceCount(shiftChild->getFirstChild());
+         cg->decReferenceCount(shiftChild->getSecondChild());
+         return targetReg;
          }
       }
 
@@ -1637,162 +1631,159 @@ genericRotateLeft(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
    {
-   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
-      {
-      TR::Node * firstChild = node->getFirstChild();
-      TR::Node * secondChild = node->getSecondChild();
-      TR::Node * skipedConversion = NULL;
-      TR::Compilation *comp = cg->comp();
+   TR::Node * firstChild = node->getFirstChild();
+   TR::Node * secondChild = node->getSecondChild();
+   TR::Node * skipedConversion = NULL;
+   TR::Compilation *comp = cg->comp();
 
-      if (firstChild->getOpCode().isConversion())
+   if (firstChild->getOpCode().isConversion())
+      {
+      if (firstChild->getReferenceCount() > 1)
          {
-         if (firstChild->getReferenceCount() > 1)
-            {
-            return NULL;
-            }
-         if (!firstChild->getFirstChild()->getType().isIntegral()) // only skip integer to integer conversions
-            {
-            return NULL;
-            }
-         skipedConversion = firstChild;
-         firstChild = firstChild->getFirstChild();
+         return NULL;
+         }
+      if (!firstChild->getFirstChild()->getType().isIntegral()) // only skip integer to integer conversions
+         {
+         return NULL;
+         }
+      skipedConversion = firstChild;
+      firstChild = firstChild->getFirstChild();
+      }
+
+   // Turn this pattern into a rotate
+   // iand
+   //    iush[r|l]
+   //      ...
+   //      iconts 6
+   //    iconst 4     <<<<<<< Must be consecutive 1's
+   //
+   if (node->getOpCode().isAnd() &&
+         (firstChild->getOpCode().isLeftShift() || firstChild->getOpCode().isRightShift()) &&
+         firstChild->getRegister() == NULL && firstChild->getReferenceCount() <= 1 &&
+         secondChild->getOpCode().isLoadConst() &&
+         firstChild->getSecondChild()->getOpCode().isLoadConst())
+      {
+      uint64_t value = 0;
+
+      // Mask
+      switch (secondChild->getDataType())
+         {
+         case TR::Address:
+            TR_ASSERT( cg->comp()->target().is32Bit(),"genericRotateAndInsertHelper: unexpected data type");
+         case TR::Int64:
+            value = (uint64_t) secondChild->getLongInt();
+            break;
+         case TR::Int32:
+            value = ((uint64_t) secondChild->getInt()) & 0x00000000FFFFFFFFL;  //avoid sign extension
+            break;
+         case TR::Int16:
+            value = ((uint64_t) secondChild->getShortInt()) & 0x000000000000FFFFL;
+            break;
+         case TR::Int8:
+            value = ((uint64_t) secondChild->getByte()) & 0x00000000000000FFL;
+            break;
+         default:
+            TR_ASSERT( 0,"genericRotateAndInsertHelper: Unexpected Type\n");
+            break;
          }
 
-      // Turn this pattern into a rotate
-      // iand
-      //    iush[r|l]
-      //      ...
-      //      iconts 6
-      //    iconst 4     <<<<<<< Must be consecutive 1's
-      //
-      if (node->getOpCode().isAnd() &&
-          (firstChild->getOpCode().isLeftShift() || firstChild->getOpCode().isRightShift()) &&
-          firstChild->getRegister() == NULL && firstChild->getReferenceCount() <= 1 &&
-          secondChild->getOpCode().isLoadConst() &&
-          firstChild->getSecondChild()->getOpCode().isLoadConst())
+      int32_t length;
+      if (firstChild->getType().isInt8())
+         length = 8;
+      else if (firstChild->getType().isInt16())
+         length = 16;
+      else if (firstChild->getType().isInt32())
+         length = 32;
+      else
+         length = 64;
+
+      int32_t tZeros = trailingZeroes(value);
+      int32_t lZeros = leadingZeroes(value);
+      int32_t popCnt = populationCount(value);
+      int32_t shiftAmnt = (firstChild->getSecondChild()->getInt()) % length;
+      int32_t msBit = lZeros;
+      int32_t lsBit = 63 - tZeros;
+      int32_t shiftMsBit = 64 - length;
+      int32_t shiftLsBit = 63;
+      int useOrder = 0; //For l2i conversions in 31-bit, 1 = lowOrder, 2 = highOrder, 0 = neither
+
+      TR::Register *sourceReg = cg->evaluate(firstChild->getFirstChild());
+
+      if (firstChild->getOpCode().isRightShift())
          {
-         uint64_t value = 0;
+         shiftMsBit += shiftAmnt;
+         // Turn right shift into left shift
+         shiftAmnt = 64 - shiftAmnt;
+         }
+      else
+         {
+         shiftLsBit -= shiftAmnt;
+         }
 
-         // Mask
-         switch (secondChild->getDataType())
-            {
-            case TR::Address:
-               TR_ASSERT( cg->comp()->target().is32Bit(),"genericRotateAndInsertHelper: unexpected data type");
-            case TR::Int64:
-               value = (uint64_t) secondChild->getLongInt();
-               break;
-            case TR::Int32:
-               value = ((uint64_t) secondChild->getInt()) & 0x00000000FFFFFFFFL;  //avoid sign extension
-               break;
-            case TR::Int16:
-               value = ((uint64_t) secondChild->getShortInt()) & 0x000000000000FFFFL;
-               break;
-            case TR::Int8:
-               value = ((uint64_t) secondChild->getByte()) & 0x00000000000000FFL;
-               break;
-            default:
-               TR_ASSERT( 0,"genericRotateAndInsertHelper: Unexpected Type\n");
-               break;
-            }
-
-         int32_t length;
-         if (firstChild->getType().isInt8())
-            length = 8;
-         else if (firstChild->getType().isInt16())
-            length = 16;
-         else if (firstChild->getType().isInt32())
-            length = 32;
-         else
-            length = 64;
-
-         int32_t tZeros = trailingZeroes(value);
-         int32_t lZeros = leadingZeroes(value);
-         int32_t popCnt = populationCount(value);
-         int32_t shiftAmnt = (firstChild->getSecondChild()->getInt()) % length;
-         int32_t msBit = lZeros;
-         int32_t lsBit = 63 - tZeros;
-         int32_t shiftMsBit = 64 - length;
-         int32_t shiftLsBit = 63;
-         int useOrder = 0; //For l2i conversions in 31-bit, 1 = lowOrder, 2 = highOrder, 0 = neither
-
-         TR::Register *sourceReg = cg->evaluate(firstChild->getFirstChild());
-
-         if (firstChild->getOpCode().isRightShift())
-            {
-            shiftMsBit += shiftAmnt;
-            // Turn right shift into left shift
-            shiftAmnt = 64 - shiftAmnt;
-            }
+      if (shiftMsBit > msBit) //Conditions for when we don't need any sign extension
+         {
+         if (firstChild->getFirstChild()->isNonNegative() || firstChild->chkUnsigned() || firstChild->getOpCodeValue() == TR::lushr)
+            msBit = shiftMsBit;
          else
             {
-            shiftLsBit -= shiftAmnt;
+            traceMsg(comp, "Cannot use RISBG, number could be negative, no sign extension available for RISBG\n");
+            return NULL;
             }
+         }
+      if (lsBit > shiftLsBit)
+         lsBit = shiftLsBit;
 
-         if (shiftMsBit > msBit) //Conditions for when we don't need any sign extension
+      if (comp->getOption(TR_TraceCG))
+         {
+         traceMsg(comp,"[%p] and/sh[r,l] => rotated-and-insert: tZeros %d, lZeros %d, popCnt %d\n", node, tZeros, lZeros, popCnt);
+         traceMsg(comp,"\t               => rotated-and-insert: shiftMsBit %d, shiftLsBit %d \n", shiftMsBit, shiftLsBit);
+         traceMsg(comp,"\t               => rotated-and-insert: msBit %d, lsBit %d \n", msBit, lsBit);
+         }
+
+      // Make sure we have consecutive 1's
+      //
+      if (popCnt == (64 - lZeros - tZeros))
+         {
+         TR::Register * targetReg = NULL;
+
+         if (!cg->canClobberNodesRegister(firstChild->getFirstChild()))
+            targetReg = cg->allocateClobberableRegister(sourceReg);
+         else
+            targetReg = sourceReg;
+
+         if (msBit > lsBit)
             {
-            if (firstChild->getFirstChild()->isNonNegative() || firstChild->chkUnsigned() || firstChild->getOpCodeValue() == TR::lushr)
-               msBit = shiftMsBit;
-            else
+            if (node->getType().isInt64())
                {
-               traceMsg(comp, "Cannot use RISBG, number could be negative, no sign extension available for RISBG\n");
-               return NULL;
-               }
-            }
-         if (lsBit > shiftLsBit)
-            lsBit = shiftLsBit;
-
-         if (comp->getOption(TR_TraceCG))
-            {
-            traceMsg(comp,"[%p] and/sh[r,l] => rotated-and-insert: tZeros %d, lZeros %d, popCnt %d\n", node, tZeros, lZeros, popCnt);
-            traceMsg(comp,"\t               => rotated-and-insert: shiftMsBit %d, shiftLsBit %d \n", shiftMsBit, shiftLsBit);
-            traceMsg(comp,"\t               => rotated-and-insert: msBit %d, lsBit %d \n", msBit, lsBit);
-            }
-
-         // Make sure we have consecutive 1's
-         //
-         if (popCnt == (64 - lZeros - tZeros))
-            {
-            TR::Register * targetReg = NULL;
-
-            if (!cg->canClobberNodesRegister(firstChild->getFirstChild()))
-               targetReg = cg->allocateClobberableRegister(sourceReg);
-            else
-               targetReg = sourceReg;
-
-            if (msBit > lsBit)
-               {
-               if (node->getType().isInt64())
-                  {
-                  generateRRInstruction(cg, TR::InstOpCode::XGR, node, targetReg, targetReg);
-                  }
-               else
-                  {
-                  generateRRInstruction(cg, TR::InstOpCode::XR, node, targetReg, targetReg);
-                  }
-               }
-            else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196) && !node->getType().isInt64())
-               {
-               generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, sourceReg, msBit, 0x80 + lsBit, shiftAmnt);
+               generateRRInstruction(cg, TR::InstOpCode::XGR, node, targetReg, targetReg);
                }
             else
                {
-               auto mnemonic = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
-
-               generateRIEInstruction(cg, mnemonic, node, targetReg, sourceReg, msBit, 0x80 + lsBit, shiftAmnt);
+               generateRRInstruction(cg, TR::InstOpCode::XR, node, targetReg, targetReg);
                }
-
-            // Clean up skipped node
-            firstChild->setRegister(sourceReg);
-            cg->decReferenceCount(firstChild->getFirstChild());
-            cg->decReferenceCount(firstChild->getSecondChild());
-
-            if (skipedConversion)
-               {
-               skipedConversion->setRegister(sourceReg);
-               cg->decReferenceCount(firstChild);
-               }
-            return targetReg;
             }
+         else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196) && !node->getType().isInt64())
+            {
+            generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, sourceReg, msBit, 0x80 + lsBit, shiftAmnt);
+            }
+         else
+            {
+            auto mnemonic = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
+
+            generateRIEInstruction(cg, mnemonic, node, targetReg, sourceReg, msBit, 0x80 + lsBit, shiftAmnt);
+            }
+
+         // Clean up skipped node
+         firstChild->setRegister(sourceReg);
+         cg->decReferenceCount(firstChild->getFirstChild());
+         cg->decReferenceCount(firstChild->getSecondChild());
+
+         if (skipedConversion)
+            {
+            skipedConversion->setRegister(sourceReg);
+            cg->decReferenceCount(firstChild);
+            }
+         return targetReg;
          }
       }
 
@@ -1802,203 +1793,201 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(TR::Node * node, TR::CodeGenerator * cg, int32_t shiftAmount, bool isSignedShift)
    {
-   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10))
+   TR::Node * firstChild = node->getFirstChild();
+   TR::Node * secondChild = node->getSecondChild();
+   TR::Compilation *comp = cg->comp();
+
+   // Given the right cases, transform land into RISBG as it may be better than discrete pair of ands
+   if (node->getOpCodeValue() == TR::land && secondChild->getOpCode().isLoadConst())
       {
-      TR::Node * firstChild = node->getFirstChild();
-      TR::Node * secondChild = node->getSecondChild();
-      TR::Compilation *comp = cg->comp();
+      uint64_t longConstValue = secondChild->getLongInt();
 
-      // Given the right cases, transform land into RISBG as it may be better than discrete pair of ands
-      if (node->getOpCodeValue() == TR::land && secondChild->getOpCode().isLoadConst())
+      // RISBG instructions perform unsigned rotation, so if we are selecting the sign bit via the logical AND we cannot
+      // perform a signed shift because we must preserve the sign bit. In general we cannot handle this case because we are
+      // not certain our input will be non-negative, hence we must conservatively disallow the optimization in such a case.
+      if (longConstValue >= 0x8000000000000000LL && shiftAmount != 0 && isSignedShift)
          {
-         uint64_t longConstValue = secondChild->getLongInt();
+         return NULL;
+         }
+      // The Shift amount operand in RISBG only holds 6 bits so the optimization will not work on shift amounts >63 or < 63.
+      if (shiftAmount > 63 || shiftAmount < -63)
+         {
+         return NULL;
+         }
+      // If the node entered is a common node, then there is no guarantee that the child of the common node will still be alive.
+      // And when we try to access the value in that node, we might receive values from a node that might've been killed already.
+      // Thus, the optimization will not work.
+      if (node->getRegister() != NULL)
+         {
+         return NULL;
+         }
+      int32_t tZeros = trailingZeroes(longConstValue);
+      int32_t lZeros = leadingZeroes(longConstValue);
+      int32_t tOnes  = trailingZeroes(~longConstValue);
+      int32_t lOnes  = leadingZeroes(~longConstValue);
+      int32_t popCnt = populationCount(longConstValue);
 
-         // RISBG instructions perform unsigned rotation, so if we are selecting the sign bit via the logical AND we cannot
-         // perform a signed shift because we must preserve the sign bit. In general we cannot handle this case because we are
-         // not certain our input will be non-negative, hence we must conservatively disallow the optimization in such a case.
-         if (longConstValue >= 0x8000000000000000LL && shiftAmount != 0 && isSignedShift)
-            {
-            return NULL;
-            }
-         // The Shift amount operand in RISBG only holds 6 bits so the optimization will not work on shift amounts >63 or < 63.
-         if (shiftAmount > 63 || shiftAmount < -63)
-            {
-            return NULL;
-            }
-         // If the node entered is a common node, then there is no guarantee that the child of the common node will still be alive.
-         // And when we try to access the value in that node, we might receive values from a node that might've been killed already.
-         // Thus, the optimization will not work.
-         if (node->getRegister() != NULL)
-            {
-            return NULL;
-            }
-         int32_t tZeros = trailingZeroes(longConstValue);
-         int32_t lZeros = leadingZeroes(longConstValue);
-         int32_t tOnes  = trailingZeroes(~longConstValue);
-         int32_t lOnes  = leadingZeroes(~longConstValue);
-         int32_t popCnt = populationCount(longConstValue);
+      // if the population count is 0 then the result of the AND will also be 0,
+      // because a popCnt=0 means there are no overlapping bits between the two AND
+      // operands. We cannot generate a RISBG for this case as RISBG cannot be
+      // used to zero out the contents of the entire register. The starting and ending
+      // positions are inclusive, so even if start=end, we will preserve at least one bit.
+      if (popCnt == 0)
+         return NULL;
 
-         // if the population count is 0 then the result of the AND will also be 0,
-         // because a popCnt=0 means there are no overlapping bits between the two AND
-         // operands. We cannot generate a RISBG for this case as RISBG cannot be
-         // used to zero out the contents of the entire register. The starting and ending
-         // positions are inclusive, so even if start=end, we will preserve at least one bit.
-         if (popCnt == 0)
-            return NULL;
+      // the minimum value for the bit positions is 0, and lsBit can equal msBit iff popCnt = 1
+      // if popCnt == 0 then we cannot generate a RISBG instruction because RISBG preserves at
+      // least one bit position
+      int32_t msBit = 0;
+      int32_t lsBit = 0;
 
-         // the minimum value for the bit positions is 0, and lsBit can equal msBit iff popCnt = 1
-         // if popCnt == 0 then we cannot generate a RISBG instruction because RISBG preserves at
-         // least one bit position
-         int32_t msBit = 0;
-         int32_t lsBit = 0;
+      if (comp->getOption(TR_TraceCG))
+         {
+         traceMsg(comp,"[%p] land => rotated-and-insert: tZeros %d, lZeros %d, popCnt %d\n", node, tZeros, lZeros, popCnt);
+         traceMsg(comp,"          => rotated-and-insert: lOnes %d, tOnes %d\n", lOnes, tOnes);
+         }
 
-         if (comp->getOption(TR_TraceCG))
-            {
-            traceMsg(comp,"[%p] land => rotated-and-insert: tZeros %d, lZeros %d, popCnt %d\n", node, tZeros, lZeros, popCnt);
-            traceMsg(comp,"          => rotated-and-insert: lOnes %d, tOnes %d\n", lOnes, tOnes);
-            }
+      bool doTransformation = false;
 
-         bool doTransformation = false;
+      // We now try to detect if the lconst's bit pattern is such that we can use a single RISBG
+      // instead of multiple AND instructions
 
-         // We now try to detect if the lconst's bit pattern is such that we can use a single RISBG
-         // instead of multiple AND instructions
-
-         // The first block will catch all cases where the lConstValue is a series of contiguous ones
-         // surrounded by zeros
-         // ex: 0001111000, 011110, 111111, 001111, 11100 etc...
+      // The first block will catch all cases where the lConstValue is a series of contiguous ones
+      // surrounded by zeros
+      // ex: 0001111000, 011110, 111111, 001111, 11100 etc...
+      //
+      // The 'else if' block will consider all cases where we have a series of contiguous zeros
+      // surrounded by ones
+      // ex: 1110000111, 1000001
+      if (popCnt == (64 - lZeros - tZeros))
+         {
+         msBit = lZeros;
+         lsBit = 63 - tZeros;
+         // The below checks make sure we are not better off using one of Z architecture's
+         // 16-bit AND immediate instructions (NILF,NILH,NILL, NIHF,NIHH, NIHL).
+         // Details for each check below:
          //
-         // The 'else if' block will consider all cases where we have a series of contiguous zeros
-         // surrounded by ones
-         // ex: 1110000111, 1000001
-         if (popCnt == (64 - lZeros - tZeros))
-            {
-            msBit = lZeros;
-            lsBit = 63 - tZeros;
-            // The below checks make sure we are not better off using one of Z architecture's
-            // 16-bit AND immediate instructions (NILF,NILH,NILL, NIHF,NIHH, NIHL).
-            // Details for each check below:
-            //
-            // "firstChild->getReferenceCount() > 1"
-            //    If the firstChild's refCount>1, we will need to clobber evaluate this case
-            //    because we cannot destroy the value. In such a case we're better off with
-            //    RISBG because RISBG won't clobber anything and hence can do the operation
-            //    faster.
-            //
-            // "|| lZeros > 31 || tZeros > 31"
-            //    If there are more than 31 contiguous zeros, then we must use RISBG because
-            //    no NI** instruction do zero out that many bits in a single instruction.
-            //
-            // "|| (lZeros > 0 && tZeros > 0"
-            //    NI** instructions need to explicitly specify which bit positions to zero out.
-            //    If our constant at minimum looks like 0111...110 (there are zeros in the top
-            //    half and bottom half of the register), then it's better to use RISBG.
-            //    This is because there are no NI** instructions allowing us to specify bits in
-            //    the top half and bottom half of the register to zero out.
+         // "firstChild->getReferenceCount() > 1"
+         //    If the firstChild's refCount>1, we will need to clobber evaluate this case
+         //    because we cannot destroy the value. In such a case we're better off with
+         //    RISBG because RISBG won't clobber anything and hence can do the operation
+         //    faster.
+         //
+         // "|| lZeros > 31 || tZeros > 31"
+         //    If there are more than 31 contiguous zeros, then we must use RISBG because
+         //    no NI** instruction do zero out that many bits in a single instruction.
+         //
+         // "|| (lZeros > 0 && tZeros > 0"
+         //    NI** instructions need to explicitly specify which bit positions to zero out.
+         //    If our constant at minimum looks like 0111...110 (there are zeros in the top
+         //    half and bottom half of the register), then it's better to use RISBG.
+         //    This is because there are no NI** instructions allowing us to specify bits in
+         //    the top half and bottom half of the register to zero out.
                
-            if (firstChild->getReferenceCount() > 1 || lZeros > 31 || tZeros > 31
-                || (lZeros > 0 && tZeros > 0))
-               {
-               // If the shift amount is NOT zero, then we must account for the shifted range
-               // [1] If the resultant shifted msb in a right shift is shifted "too far" to the right, then we are basically zeroing the register. This optimization will not be used.
-               // [2] Same case if the resultant lsb of a left shift is shifted out of range.
-               // Eg[1]: 000...0011 >> 3. msb = 62, lsb = 63. If we right shift, then msb and lsb will both be > 63 (out of range)
-               // Eg[2]: 11100...00 << 10. msb = 0, lsb = 2. If we left shift, then msb and lsb will both be < 0 (out of range)
-               if ((shiftAmount < 0 && msBit - shiftAmount > 63) || (shiftAmount > 0 && lsBit - shiftAmount < 0))
-                  {
-                  return NULL;
-                  }
-               doTransformation = true;
-               }
-            }
-         else if (popCnt == (lOnes + tOnes))
+         if (firstChild->getReferenceCount() > 1 || lZeros > 31 || tZeros > 31
+               || (lZeros > 0 && tZeros > 0))
             {
-            msBit = 64 - tOnes;
-            lsBit = lOnes - 1;
-            // The below checks make sure we are not better off using one of Z architecture's
-            // 16-bit AND immediate instructions (NILF,NILH,NILL, NIHF,NIHH, NIHL).
-            // Details for each check below:
-            //
-            // "firstChild->getReferenceCount() > 1"
-            //    same as above
-            //
-            // "(lOnes < 32 && tOnes < 32)"
-            //    This case implies there are zeros at the high/low boundary of the register.
-            //    Example value: 11111000011111. The NI** instructions can only operate on
-            //    the top half or bottom half of a register at a time. So such a case
-            //    will require two NI** instructions. Hence we are better off using a single RISBG
-            //
-            // "shiftAmount == 0"
-            //    For cases where we have zeros surrounded by one, if the shift value is not zero
-            //    then the optimization will not work.
-
-            if ((firstChild->getReferenceCount()> 1 || (lOnes < 32 && tOnes < 32)) && shiftAmount == 0)
-               {
-               // Similar to above, if the shift amount is NOT zero, then we must account for the shifted range
-               if ((shiftAmount < 0 && msBit - shiftAmount > 63) || (shiftAmount > 0 && lsBit - shiftAmount < 0))
-                  {
-                  return NULL;
-                  }
-               doTransformation = true;
-               }
-            }
-
-         if (doTransformation && performTransformation(comp, "O^O Use RISBG instead of 2 ANDs for %p.\n", node))
-            {
-            TR::Register * targetReg = cg->allocateRegister();
-            TR::Register * sourceReg = cg->evaluate(firstChild);
-
-            // if possible then use the instruction that doesn't set the CC as it's faster
-            TR::InstOpCode::Mnemonic opCode = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
-
-            // If the shift amount is zero, this instruction sets the rotation factor to 0 and sets the zero bit(0x80).
-            // So it's effectively zeroing out every bit except the inclusive range of lsBit to msBit.
-            // The bits in that range are preserved as is.
-            //
             // If the shift amount is NOT zero, then we must account for the shifted range
-            // [1] If the shifted lsb of a left shift is still in range, but the msb is out of range, then we can still "capture" the shifted bits by upperbounding the msb.
-            // [2] Similar case if the msb of a right shift is still in range but the lsb is out of range.
-            //
-            // Eg[1]: 00...0111 >> 2. msb = 61, lsb = 63. If we right shift, we get 000...0001, so we can still preserve the last bit.
-            // Eg[2]: 1110...00 << 2. msb = 0, lsb = 2. If we left left, we can still preserve the first bit.
-
-            int32_t rangeStart = msBit;
-            int32_t rangeEnd = lsBit;
-
-            if (shiftAmount < 0)
+            // [1] If the resultant shifted msb in a right shift is shifted "too far" to the right, then we are basically zeroing the register. This optimization will not be used.
+            // [2] Same case if the resultant lsb of a left shift is shifted out of range.
+            // Eg[1]: 000...0011 >> 3. msb = 62, lsb = 63. If we right shift, then msb and lsb will both be > 63 (out of range)
+            // Eg[2]: 11100...00 << 10. msb = 0, lsb = 2. If we left shift, then msb and lsb will both be < 0 (out of range)
+            if ((shiftAmount < 0 && msBit - shiftAmount > 63) || (shiftAmount > 0 && lsBit - shiftAmount < 0))
                {
-               rangeStart = msBit - shiftAmount;
-               if (lsBit - shiftAmount > 63)
-                  {
-                  rangeEnd = 63;
-                  }
-               else
-                  {
-                  rangeEnd = lsBit - shiftAmount;
-                  }
+               return NULL;
                }
-            else if (shiftAmount > 0)
-               {                  
-               rangeEnd = lsBit - shiftAmount;
-               if (msBit - shiftAmount < 0)
-                  {
-                  rangeStart = 0;
-                  }
-               else
-                  {
-                  rangeStart = msBit - shiftAmount;
-                  }
-               }
-            if (shiftAmount < 0)
-               {
-               shiftAmount = 64 + shiftAmount;
-               }
-            generateRIEInstruction(cg, opCode, node, targetReg, sourceReg, rangeStart, 0x80 + rangeEnd, shiftAmount);
-            cg->decReferenceCount(firstChild);
-            cg->decReferenceCount(secondChild);
-            return targetReg;
+            doTransformation = true;
             }
          }
+      else if (popCnt == (lOnes + tOnes))
+         {
+         msBit = 64 - tOnes;
+         lsBit = lOnes - 1;
+         // The below checks make sure we are not better off using one of Z architecture's
+         // 16-bit AND immediate instructions (NILF,NILH,NILL, NIHF,NIHH, NIHL).
+         // Details for each check below:
+         //
+         // "firstChild->getReferenceCount() > 1"
+         //    same as above
+         //
+         // "(lOnes < 32 && tOnes < 32)"
+         //    This case implies there are zeros at the high/low boundary of the register.
+         //    Example value: 11111000011111. The NI** instructions can only operate on
+         //    the top half or bottom half of a register at a time. So such a case
+         //    will require two NI** instructions. Hence we are better off using a single RISBG
+         //
+         // "shiftAmount == 0"
+         //    For cases where we have zeros surrounded by one, if the shift value is not zero
+         //    then the optimization will not work.
+
+         if ((firstChild->getReferenceCount()> 1 || (lOnes < 32 && tOnes < 32)) && shiftAmount == 0)
+            {
+            // Similar to above, if the shift amount is NOT zero, then we must account for the shifted range
+            if ((shiftAmount < 0 && msBit - shiftAmount > 63) || (shiftAmount > 0 && lsBit - shiftAmount < 0))
+               {
+               return NULL;
+               }
+            doTransformation = true;
+            }
+         }
+
+      if (doTransformation && performTransformation(comp, "O^O Use RISBG instead of 2 ANDs for %p.\n", node))
+         {
+         TR::Register * targetReg = cg->allocateRegister();
+         TR::Register * sourceReg = cg->evaluate(firstChild);
+
+         // if possible then use the instruction that doesn't set the CC as it's faster
+         TR::InstOpCode::Mnemonic opCode = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12) ? TR::InstOpCode::RISBGN : TR::InstOpCode::RISBG;
+
+         // If the shift amount is zero, this instruction sets the rotation factor to 0 and sets the zero bit(0x80).
+         // So it's effectively zeroing out every bit except the inclusive range of lsBit to msBit.
+         // The bits in that range are preserved as is.
+         //
+         // If the shift amount is NOT zero, then we must account for the shifted range
+         // [1] If the shifted lsb of a left shift is still in range, but the msb is out of range, then we can still "capture" the shifted bits by upperbounding the msb.
+         // [2] Similar case if the msb of a right shift is still in range but the lsb is out of range.
+         //
+         // Eg[1]: 00...0111 >> 2. msb = 61, lsb = 63. If we right shift, we get 000...0001, so we can still preserve the last bit.
+         // Eg[2]: 1110...00 << 2. msb = 0, lsb = 2. If we left left, we can still preserve the first bit.
+
+         int32_t rangeStart = msBit;
+         int32_t rangeEnd = lsBit;
+
+         if (shiftAmount < 0)
+            {
+            rangeStart = msBit - shiftAmount;
+            if (lsBit - shiftAmount > 63)
+               {
+               rangeEnd = 63;
+               }
+            else
+               {
+               rangeEnd = lsBit - shiftAmount;
+               }
+            }
+         else if (shiftAmount > 0)
+            {                  
+            rangeEnd = lsBit - shiftAmount;
+            if (msBit - shiftAmount < 0)
+               {
+               rangeStart = 0;
+               }
+            else
+               {
+               rangeStart = msBit - shiftAmount;
+               }
+            }
+         if (shiftAmount < 0)
+            {
+            shiftAmount = 64 + shiftAmount;
+            }
+         generateRIEInstruction(cg, opCode, node, targetReg, sourceReg, rangeStart, 0x80 + rangeEnd, shiftAmount);
+         cg->decReferenceCount(firstChild);
+         cg->decReferenceCount(secondChild);
+         return targetReg;
+         }
       }
+
    return NULL;
    }
 

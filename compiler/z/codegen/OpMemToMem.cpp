@@ -168,7 +168,7 @@ MemToMemVarLenMacroOp::generateLoop()
 
    generateS390BranchInstruction(_cg, TR::InstOpCode::BRCT, _rootNode, _itersReg, topOfLoop);
 
-   if (_cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) && !comp->getOption(TR_DisableInlineEXTarget))
+   if (!comp->getOption(TR_DisableInlineEXTarget))
       {
       if (useEXForRemainder())
          {
@@ -971,7 +971,7 @@ MemToMemVarLenMacroOp::generateRemainder()
 
       TR::Instruction* cursor = NULL;
 
-      if (!_cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) || comp->getOption(TR_DisableInlineEXTarget))
+      if (comp->getOption(TR_DisableInlineEXTarget))
          {
          cursor = generateInstruction(0, 1);
          }
@@ -991,7 +991,7 @@ MemToMemVarLenMacroOp::generateRemainder()
         }
 
 
-      if (_cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) && !comp->getOption(TR_DisableInlineEXTarget))
+      if (!comp->getOption(TR_DisableInlineEXTarget))
          {
          TR_ASSERT(_EXTargetLabel != NULL, "Assert: EXTarget label must not be NULL");
 
@@ -1243,7 +1243,7 @@ MemClearConstLenMacroOp::generateInstruction(int32_t offset, int64_t length, TR:
       // For lengths of 1, 2, 4 and 8, the XC sequence is suboptimal, as they require
       // 2 cycles to execute.  If MVI / MVHHI / MVHI / MVGHI are supported, we should
       // generate those instead.
-      if (_cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z10) && length <= 8 && TR::TreeEvaluator::checkPositiveOrNegativePowerOfTwo(length))
+      if (length <= 8 && TR::TreeEvaluator::checkPositiveOrNegativePowerOfTwo(length))
          {
          switch(length)
             {

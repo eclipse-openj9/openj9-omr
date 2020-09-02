@@ -958,9 +958,6 @@ OMR::Z::Peephole::tryToReduceAGI()
 bool
 OMR::Z::Peephole::tryToReduceCLRToCLRJ()
    {
-   if (!self()->comp()->target().cpu.getSupportsArch(TR::CPU::z10))
-      return false;
-
    bool branchTakenPerformReduction = false;
    bool fallThroughPerformReduction = false;
 

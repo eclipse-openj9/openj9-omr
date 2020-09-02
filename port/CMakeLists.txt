@@ -260,6 +260,7 @@ if(NOT OMR_OS_WINDOWS)
 		omrsharedhelper.c
 		omrshsem.c
 		omrshsem_deprecated.c
+		omrshmem.c
 	)
 endif()
 

@@ -109,6 +109,9 @@ typedef struct OMRPortPlatformGlobals {
 	BOOLEAN syscallNotAllowed; /**< Assigned True if the mempolicy syscall is failed due to security opts (Can be seen in case of docker) */
 #endif /* defined(LINUX) */
 	OMRSTFLECache stfleCache;
+#if defined(AIXPPC)
+	int pageProtectionPossible;
+#endif
 } OMRPortPlatformGlobals;
 
 
@@ -161,6 +164,13 @@ typedef struct OMRPortPlatformGlobals {
 #endif /* defined(LINUX) */
 
 #define PPG_stfleCache (portLibrary->portGlobals->platformGlobals.stfleCache)
+
+#if defined(AIXPPC)
+#define PPG_pageProtectionPossible (portLibrary->portGlobals->platformGlobals.pageProtectionPossible)
+#define PAGE_PROTECTION_AVAILABLE 0
+#define PAGE_PROTECTION_NOTAVAILABLE 1
+#define PAGE_PROTECTION_NOTCHECKED 2
+#endif
 
 #endif /* omrportpg_h */
 

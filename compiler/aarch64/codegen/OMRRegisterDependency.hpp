@@ -172,6 +172,22 @@ class TR_ARM64RegisterDependencyGroup
          _dependencies[i].getRegister()->unblock();
          }
       }
+
+   /**
+    * @brief Kills registers held by this dependency group
+    * @param[in] numberOfRegisters : # of registers
+    * @param[in] returnRegister    : register which is not killed
+    * @param[in] cg                : CodeGenerator
+    */
+   void stopUsingDepRegs(uint32_t numberOfRegisters, TR::Register *returnRegister, TR::CodeGenerator *cg)
+      {
+      for (uint32_t i = 0; i < numberOfRegisters; i++)
+         {
+         TR::Register *depReg = _dependencies[i].getRegister();
+         if (depReg && (depReg != returnRegister))
+            cg->stopUsingRegister(depReg);
+         }
+      }
    };
 
 namespace OMR
@@ -457,6 +473,13 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
     * @param[in] cg : CodeGenerator
     */
    void bookKeepingRegisterUses(TR::Instruction *instr, TR::CodeGenerator *cg);
+
+   /**
+    * @brief Kills placeholder registers held by the RegisterDependencyConditions
+    * @param[in] cg : CodeGenerator
+    * @param[in] returnRegister : return register
+    */
+   void stopUsingDepRegs(TR::CodeGenerator *cg, TR::Register *returnRegister = NULL);
    };
 
 } // ARM64

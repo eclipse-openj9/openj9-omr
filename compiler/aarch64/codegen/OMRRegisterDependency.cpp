@@ -277,6 +277,14 @@ OMR::ARM64::RegisterDependencyConditions::clone(
    return result;
    }
 
+void OMR::ARM64::RegisterDependencyConditions::stopUsingDepRegs(TR::CodeGenerator *cg, TR::Register *returnRegister)
+   {
+   if (_preConditions != NULL)
+      _preConditions->stopUsingDepRegs(getAddCursorForPre(), returnRegister, cg);
+   if (_postConditions != NULL)
+      _postConditions->stopUsingDepRegs(getAddCursorForPost(), returnRegister, cg);
+   }
+
 void TR_ARM64RegisterDependencyGroup::assignRegisters(
                         TR::Instruction *currentInstruction,
                         TR_RegisterKinds kindToBeAssigned,

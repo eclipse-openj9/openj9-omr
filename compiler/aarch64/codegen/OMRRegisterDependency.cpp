@@ -226,8 +226,8 @@ void OMR::ARM64::RegisterDependencyConditions::bookKeepingRegisterUses(TR::Instr
       return;
 
    // We create a register association directive for each dependency
-
-   if (cg->enableRegisterAssociations() && !cg->isOutOfLineColdPath())
+   bool isOOL = cg->isOutOfLineColdPath();
+   if (cg->enableRegisterAssociations() && !isOOL)
       {
       TR::Machine *machine = cg->machine();
 
@@ -258,11 +258,21 @@ void OMR::ARM64::RegisterDependencyConditions::bookKeepingRegisterUses(TR::Instr
 
    for (int i = 0; i < _addCursorForPre; i++)
       {
-      instr->useRegister(_preConditions->getRegisterDependency(i)->getRegister());
+      auto dependency = _preConditions->getRegisterDependency(i);
+      TR::Register *virtReg = dependency->getRegister();
+      TR::RealRegister::RegNum regNum = dependency->getRealRegister();
+      instr->useRegister(virtReg);
+      if (!isOOL)
+         cg->setRealRegisterAssociation(virtReg, regNum);
       }
    for (int j = 0; j < _addCursorForPost; j++)
       {
-      instr->useRegister(_postConditions->getRegisterDependency(j)->getRegister());
+      auto dependency = _postConditions->getRegisterDependency(j);
+      TR::Register *virtReg = dependency->getRegister();
+      TR::RealRegister::RegNum regNum = dependency->getRealRegister();
+      instr->useRegister(virtReg);
+      if (!isOOL)
+         cg->setRealRegisterAssociation(virtReg, regNum);
       }
    }
 

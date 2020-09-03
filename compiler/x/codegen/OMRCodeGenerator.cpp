@@ -2032,10 +2032,28 @@ TR::Register *OMR::X86::CodeGenerator::gprClobberEvaluate(TR::Node * node, TR_X8
 
       TR::Register *targetRegister = self()->allocateRegister();
       generateRegRegInstruction(movRegRegOpCode, node, targetRegister, sourceRegister, self());
-      //
-      // TODO: Should we do this?
-      // if (sourceRegister->containsCollectedReference())
-      //    targetRegister->setContainsCollectedReference();
+
+      if (sourceRegister->containsCollectedReference())
+         {
+         if (self()->comp()->getOption(TR_TraceCG))
+            traceMsg(
+               self()->comp(),
+               "Setting containsCollectedReference on register %s\n",
+               self()->getDebug()->getName(targetRegister));
+         targetRegister->setContainsCollectedReference();
+         }
+      if (sourceRegister->containsInternalPointer())
+         {
+         TR::AutomaticSymbol *pinningArrayPointer = sourceRegister->getPinningArrayPointer();
+         if (self()->comp()->getOption(TR_TraceCG))
+            traceMsg(
+               self()->comp(),
+               "Setting containsInternalPointer on register %s and setting pinningArrayPointer to " POINTER_PRINTF_FORMAT "\n",
+               self()->getDebug()->getName(targetRegister),
+               pinningArrayPointer);
+         targetRegister->setContainsInternalPointer();
+         targetRegister->setPinningArrayPointer(pinningArrayPointer);
+         }
 
       return targetRegister;
       }

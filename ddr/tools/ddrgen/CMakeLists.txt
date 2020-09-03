@@ -40,6 +40,14 @@ target_link_libraries(omr_ddrgen
 
 if(OMRPORT_OMRSIG_SUPPORT)
 	target_link_libraries(omr_ddrgen omrsig)
+	if(OMR_OS_AIX)
+		# make sure that omrsig can be found when ddrgen is run
+		# ideally we would set the BUILD_RPATH, but that doesn't exist in cmake 3.4
+		set_target_properties(omr_ddrgen PROPERTIES
+			BUILD_WITH_INSTALL_RPATH TRUE
+			INSTALL_RPATH "$<TARGET_FILE_DIR:omrsig>"
+		)
+	endif()
 endif()
 
 if((OMR_TOOLCONFIG STREQUAL "gnu") AND (NOT OMR_OS_OSX))

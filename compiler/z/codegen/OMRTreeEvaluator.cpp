@@ -288,8 +288,16 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptr_t value,
    if (node->isClassUnloadingConst())
       {
       uintptr_t value = node->getAddress();
-      TR::Instruction *unloadableConstInstr = generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, reinterpret_cast<void*>(value));
-      TR_OpaqueClassBlock* unloadableClass = NULL;
+      TR::Instruction *unloadableConstInstr = NULL;
+      if (cg->canUseRelativeLongInstructions(value))
+         {
+         unloadableConstInstr = generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, reinterpret_cast<void*>(value));
+         }
+      else
+         {
+         unloadableConstInstr = genLoadAddressConstantInSnippet(cg, node, value, targetRegister, NULL, NULL, NULL, true);
+         }
+
       if (node->isMethodPointerConstant())
          {
          comp->getStaticMethodPICSites()->push_front(unloadableConstInstr);
@@ -4931,7 +4939,15 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
             && constNode->isClassUnloadingConst())
       {
       uintptr_t value = constNode->getAddress();
-      TR::Instruction *unloadableConstInstr = generateRILInstruction(cg, TR::InstOpCode::LARL, node, tempReg, reinterpret_cast<void*>(value));
+      TR::Instruction *unloadableConstInstr = NULL;
+      if (cg->canUseRelativeLongInstructions(value))
+         {
+         unloadableConstInstr = generateRILInstruction(cg, TR::InstOpCode::LARL, node, tempReg, reinterpret_cast<void*>(value));
+         }
+      else
+         {
+         unloadableConstInstr = genLoadAddressConstantInSnippet(cg, node, value, tempReg, NULL, NULL, NULL, true);
+         }
       TR_OpaqueClassBlock* unloadableClass = NULL;
       if (constNode->isMethodPointerConstant())
          {

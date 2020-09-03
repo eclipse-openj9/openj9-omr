@@ -64,12 +64,28 @@ public:
 
    /**
     * @brief Finds the best free register
+    * @param[in] currentInstruction : current instruction
+    * @param[in] rk : register kind
+    * @param[in] considerUnlatched : consider unlatched state or not
+    * @param[in] virtualReg : virtual register
+    * @return Free RealRegister
+    */
+   TR::RealRegister *findBestFreeRegister(TR::Instruction *currentInstruction,
+                                            TR_RegisterKinds rk,
+                                            bool considerUnlatched = false,
+                                            TR::Register *virtualReg = NULL);
+
+   /**
+    * @brief Finds the best free register
     * @param[in] rk : register kind
     * @param[in] considerUnlatched : consider unlatched state or not
     * @return Free RealRegister
     */
    TR::RealRegister *findBestFreeRegister(TR_RegisterKinds rk,
-                                            bool considerUnlatched = false);
+                                            bool considerUnlatched = false)
+      {
+      return findBestFreeRegister(NULL, rk, considerUnlatched);
+      }
 
    /**
     * @brief Frees the best register
@@ -157,12 +173,60 @@ public:
     */
    void decFutureUseCountAndUnlatch(TR::Instruction *currentInstruction, TR::Register *virtualRegister);
 
+   // Register Association Stuff ///////////////
+
+   /**
+    * @brief Sets register weights from register associations
+    *
+    */
+   void setRegisterWeightsFromAssociations();
+
+   /**
+    * @brief Creates a regassoc pseudo instruction
+    *
+    */
+   void createRegisterAssociationDirective(TR::Instruction *cursor);
+
+   /**
+    * @brief Returns a virtual register associted to the passed real register.
+    *
+    * @param regNum                 : real register number
+    */
+   TR::Register *getVirtualAssociatedWithReal(TR::RealRegister::RegNum regNum)
+      {
+      return _registerAssociations[regNum];
+      }
+
+   /**
+    * @brief Associates the virtual register to the real register.
+    *
+    * @param regNum                 : real register number
+    * @param virtReg                : virtual register
+    * @returns virtual register
+    */
+   TR::Register *setVirtualAssociatedWithReal(TR::RealRegister::RegNum regNum, TR::Register *virtReg);
+
+
+   /**
+    * @brief Clears register association
+    *
+    */
+   void clearRegisterAssociations()
+      {
+      memset(_registerAssociations, 0, sizeof(TR::Register *) * (TR::RealRegister::NumRegisters));
+      }
+
 private:
 
    // For register snap shot
    uint16_t                   _registerFlagsSnapShot[TR::RealRegister::NumRegisters];
    TR::RealRegister::RegState _registerStatesSnapShot[TR::RealRegister::NumRegisters];
    TR::Register               *_assignedRegisterSnapShot[TR::RealRegister::NumRegisters];
+   TR::Register               *_registerAssociationsSnapShot[TR::RealRegister::NumRegisters];
+   uint16_t                   _registerWeightSnapShot[TR::RealRegister::NumRegisters];
+
+   // register association
+   TR::Register               *_registerAssociations[TR::RealRegister::NumRegisters];
 
    void initializeRegisterFile();
    };

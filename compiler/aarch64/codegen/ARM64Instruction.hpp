@@ -1067,6 +1067,12 @@ class ARM64AdminInstruction : public TR::Instruction
    TR::Node *getFenceNode() { return _fenceNode; }
 
    /**
+    * @brief Assigns registers
+    * @param[in] kindToBeAssigned : register kind
+    */
+   virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
+
+   /**
     * @brief Generates binary encoding of the instruction
     * @return instruction cursor
     */

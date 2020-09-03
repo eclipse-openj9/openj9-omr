@@ -918,8 +918,8 @@ OMR::ARM64::TreeEvaluator::passThroughEvaluator(TR::Node *node, TR::CodeGenerato
    {
    TR::Node *child = node->getFirstChild();
    TR::Register *trgReg = cg->evaluate(child);
-   cg->decReferenceCount(child);
    node->setRegister(trgReg);
+   cg->decReferenceCount(child);
    return trgReg;
    }
 

@@ -404,8 +404,8 @@ commonFpUnaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, bool isDoubl
       trgReg = srcReg;
       }
    generateTrg1Src1Instruction(cg, op, node, trgReg, srcReg);
-   cg->decReferenceCount(firstChild);
    node->setRegister(trgReg);
+   cg->decReferenceCount(firstChild);
    return trgReg;
    }
 

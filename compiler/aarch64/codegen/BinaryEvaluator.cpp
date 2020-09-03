@@ -124,9 +124,9 @@ genericBinaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic regOp, TR::InstO
       generateTrg1Src2Instruction(cg, regOp, node, trgReg, src1Reg, src2Reg);
       }
 
+   node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
-   node->setRegister(trgReg);
    return trgReg;
    }
 
@@ -324,9 +324,9 @@ OMR::ARM64::TreeEvaluator::imulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       generateMulInstruction(cg, node, trgReg, src1Reg, src2Reg);
       }
 
+   node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
-   node->setRegister(trgReg);
    return trgReg;
    }
 
@@ -368,9 +368,9 @@ OMR::ARM64::TreeEvaluator::imulhEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       cg->stopUsingRegister(tmpReg);
       }
 
+   node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
-   node->setRegister(trgReg);
    return trgReg;
    }
 
@@ -417,9 +417,9 @@ OMR::ARM64::TreeEvaluator::lmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       generateMulInstruction(cg, node, trgReg, src1Reg, src2Reg);
       }
 
+   node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
-   node->setRegister(trgReg);
    return trgReg;
    }
 
@@ -435,9 +435,9 @@ static TR::Register *idivHelper(TR::Node *node, bool is64bit, TR::CodeGenerator 
 
    generateTrg1Src2Instruction(cg, is64bit ? TR::InstOpCode::sdivx : TR::InstOpCode::sdivw, node, trgReg, src1Reg, src2Reg);
 
+   node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
-   node->setRegister(trgReg);
    return trgReg;
    }
 
@@ -456,9 +456,9 @@ static TR::Register *iremHelper(TR::Node *node, bool is64bit, TR::CodeGenerator 
    generateTrg1Src3Instruction(cg, is64bit ? TR::InstOpCode::msubx : TR::InstOpCode::msubw, node, trgReg, tmpReg, src2Reg, src1Reg);
 
    cg->stopUsingRegister(tmpReg);
+   node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
-   node->setRegister(trgReg);
    return trgReg;
    }
 
@@ -492,9 +492,9 @@ OMR::ARM64::TreeEvaluator::lmulhEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       cg->stopUsingRegister(tmpReg);
       }
 
+   node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
-   node->setRegister(trgReg);
    return trgReg;
    }
 
@@ -922,9 +922,9 @@ logicBinaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic regOp, TR::InstOpC
       generateTrg1Src2Instruction(cg, regOp, node, trgReg, src1Reg, src2Reg);
       }
 
+   node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
-   node->setRegister(trgReg);
    return trgReg;
    }
 

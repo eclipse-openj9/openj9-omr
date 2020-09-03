@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -49,7 +49,7 @@ extern "C" {
 #define J9THREAD_RWMUTEX_WOULDBLOCK -1
 
 /* Define conversions for units of time used in thrprof.c */
-#define SEC_TO_NANO_CONVERSION_CONSTANT		1000 * 1000 * 1000
+#define SEC_TO_NANO_CONVERSION_CONSTANT		(1000 * 1000 * 1000)
 #define MICRO_TO_NANO_CONVERSION_CONSTANT	1000
 #define GET_PROCESS_TIMES_IN_NANO			100
 
@@ -1440,4 +1440,3 @@ struct J9ThreadLibrary;
 #endif
 
 #endif /* thread_api_h */
-

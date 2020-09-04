@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,6 +20,17 @@
  *******************************************************************************/
 
 #include "codegen/RealRegister.hpp"
+
+TR_RegisterMask
+OMR::ARM64::RealRegister::getAvailableRegistersMask(TR_RegisterKinds rk)
+   {
+   if (rk == TR_GPR)
+      return AvailableGPRMask;
+   else if (rk == TR_FPR)
+      return AvailableFPRMask;
+   else
+      return 0;
+   }
 
 const uint8_t OMR::ARM64::RealRegister::fullRegBinaryEncodings[TR::RealRegister::NumRegisters] =
    {

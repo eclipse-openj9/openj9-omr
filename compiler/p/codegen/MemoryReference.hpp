@@ -41,8 +41,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
    MemoryReference(TR::Register *br,
       int64_t disp,
       uint8_t len,
-      TR::CodeGenerator *cg,
-      int) :
+      TR::CodeGenerator *cg) :
          OMR::MemoryReferenceConnector(br, disp, len, cg, 0) {}
 
    MemoryReference(TR::LabelSymbol *label, int64_t disp, int8_t len, TR::CodeGenerator *cg) :
@@ -58,12 +57,6 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
       uint8_t len,
       TR::CodeGenerator *cg) :
          OMR::MemoryReferenceConnector(br, ir, len, cg) {}
-
-   MemoryReference(TR::Register *br,
-      int32_t disp,
-      uint8_t len,
-      TR::CodeGenerator *cg) :
-         OMR::MemoryReferenceConnector(br, disp, len, cg) {}
 
    MemoryReference(TR::Node *rootLoadOrStore, uint32_t len, TR::CodeGenerator *cg):
       OMR::MemoryReferenceConnector(rootLoadOrStore, len, cg) {}

@@ -86,7 +86,7 @@ TR::MemoryReference *TR::MemoryReference::createWithIndexReg(TR::CodeGenerator *
 
 TR::MemoryReference *TR::MemoryReference::createWithDisplacement(TR::CodeGenerator *cg, TR::Register *baseReg, int64_t displacement, int8_t length)
    {
-   return new (cg->trHeapMemory()) TR::MemoryReference(baseReg, displacement, length, cg, 0);
+   return new (cg->trHeapMemory()) TR::MemoryReference(baseReg, displacement, length, cg);
    }
 
 TR::MemoryReference *TR::MemoryReference::createWithRootLoadOrStore(TR::CodeGenerator *cg, TR::Node *rootLoadOrStore, uint32_t length)
@@ -171,17 +171,9 @@ OMR::Power::MemoryReference::MemoryReference(
 
 OMR::Power::MemoryReference::MemoryReference(
       TR::Register *br,
-      int32_t disp,
-      uint8_t len,
-      TR::CodeGenerator *cg) :
-   OMR::Power::MemoryReference(br, static_cast<int64_t>(disp), len, cg, 0) {}
-
-OMR::Power::MemoryReference::MemoryReference(
-      TR::Register *br,
       int64_t disp,
       uint8_t len,
-      TR::CodeGenerator *cg,
-      int) :
+      TR::CodeGenerator *cg) :
    _baseRegister(br),
    _baseNode(NULL),
    _indexRegister(NULL),

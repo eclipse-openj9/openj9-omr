@@ -88,8 +88,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
          TR::Register *br,
          int64_t disp,
          uint8_t len,
-         TR::CodeGenerator *cg,
-         int);
+         TR::CodeGenerator *cg);
 
    MemoryReference(
          TR::LabelSymbol *label,
@@ -116,12 +115,6 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    MemoryReference(
          TR::Register *br,
          TR::Register *ir,
-         uint8_t len,
-         TR::CodeGenerator *cg);
-
-   MemoryReference(
-         TR::Register *br,
-         int32_t disp,
          uint8_t len,
          TR::CodeGenerator *cg);
 

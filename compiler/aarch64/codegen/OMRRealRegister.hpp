@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -139,6 +139,13 @@ class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister
       {
       *instruction |= fullRegBinaryEncodings[_registerNumber] << pos_RA;
       }
+
+   /**
+    * @brief Returns register mask for available registers of specified kind
+    * @param[in] rk : register kind
+    * @returns register mask
+    */
+   static TR_RegisterMask getAvailableRegistersMask(TR_RegisterKinds rk);
 
    private:
 

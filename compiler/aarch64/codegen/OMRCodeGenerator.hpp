@@ -465,6 +465,13 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    bool enableRegisterAssociations() { return true; }
 
    /**
+    * @brief Set live register association
+    * @param[in] virtualRegister : virtual register
+    * @param[rn] realNum : real register number
+    */
+   void setRealRegisterAssociation(TR::Register *virtualRegister, TR::RealRegister::RegNum realNum);
+
+   /**
     * @brief Returns bit mask for real register
     * @param[in] reg: real register number
     * 

@@ -32,6 +32,7 @@
 #include "codegen/GenerateInstructions.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/Linkage_inlines.hpp"
+#include "codegen/LiveRegister.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterIterator.hpp"
 #include "codegen/TreeEvaluator.hpp"
@@ -624,4 +625,15 @@ TR_ARM64ScratchRegisterManager *
 OMR::ARM64::CodeGenerator::generateScratchRegisterManager(int32_t capacity)
    {
    return new (self()->trHeapMemory()) TR_ARM64ScratchRegisterManager(capacity, self());
+   }
+
+void OMR::ARM64::CodeGenerator::setRealRegisterAssociation(TR::Register *virtualRegister, TR::RealRegister::RegNum realNum)
+   {
+   if (!virtualRegister->isLive() || realNum == TR::RealRegister::NoReg || realNum == TR::RealRegister::xzr)
+      {
+      return;
+      }
+
+   TR::RealRegister *realReg = self()->machine()->getRealRegister(realNum);
+   self()->getLiveRegisters(virtualRegister->getKind())->setAssociation(virtualRegister, realReg);
    }

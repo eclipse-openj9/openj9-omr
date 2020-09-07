@@ -110,18 +110,22 @@ TR::RealRegister *OMR::ARM64::Machine::findBestFreeRegister(TR::Instruction *cur
                                             TR::Register *virtualReg)
    {
    uint32_t preference = (virtualReg != NULL) ? virtualReg->getAssociation() : 0;
+   bool liveRegOn = (self()->cg()->getLiveRegisters(rk) != NULL);
+   uint32_t interference = 0;
+   if (liveRegOn && virtualReg != NULL)
+      interference = virtualReg->getInterference();
 
-   int32_t first;
-   int32_t last;
+   int32_t first, last;
+   uint32_t maskI;
 
    switch(rk)
       {
       case TR_GPR:
-         first = TR::RealRegister::FirstGPR;
+         first = maskI = TR::RealRegister::FirstGPR;
          last  = TR::RealRegister::LastAssignableGPR;
          break;
       case TR_FPR:
-         first = TR::RealRegister::FirstFPR;
+         first = maskI = TR::RealRegister::FirstFPR;
          last  = TR::RealRegister::LastFPR;
          break;
       default:
@@ -131,11 +135,19 @@ TR::RealRegister *OMR::ARM64::Machine::findBestFreeRegister(TR::Instruction *cur
    uint32_t bestWeightSoFar = 0xffffffff;
    TR::RealRegister *freeRegister = NULL;
    TR::RealRegister *bestRegister = NULL;
-
    /****************************************************************************************************************/
    /*            STEP 1                         Register Associations                                              */
    /****************************************************************************************************************/
    // Register Associations are best effort. If you really need to map a virtual to a real, use register pre/post dependency conditions.
+
+   // If preference register is also marked as an interference at some point, check to see if the interference still applies.
+   if (liveRegOn && preference != 0 && (interference & (1 << (preference - maskI))))
+      {
+      if (!boundNext(currentInstruction, preference, virtualReg))
+         {
+         preference = 0;
+         }
+      }
 
    // Check if the preferred register is free
    if ((preference != 0) && (_registerFile[preference] != NULL) &&
@@ -159,14 +171,19 @@ TR::RealRegister *OMR::ARM64::Machine::findBestFreeRegister(TR::Instruction *cur
    /*            STEP 2                         Good 'ol linear search                                              */
    /****************************************************************************************************************/
    // If no association or assoc fails, find any other free register
-
+   int32_t iOld = 0, iNew;
    for (int32_t i = first; i <= last; i++)
       {
+      uint32_t tRegMask = _registerFile[i]->getRealRegisterMask();
+
+      iNew = interference & (1 << (i - maskI));
+
       if ((_registerFile[i]->getState() == TR::RealRegister::Free ||
            (considerUnlatched &&
             _registerFile[i]->getState() == TR::RealRegister::Unlatched)) &&
-          _registerFile[i]->getWeight() < bestWeightSoFar)
+            (freeRegister == NULL || (iOld && !iNew) || ((iOld || !iNew) && _registerFile[i]->getWeight() < bestWeightSoFar)))
          {
+         iOld = iNew;
          freeRegister    = _registerFile[i];
          bestWeightSoFar = freeRegister->getWeight();
          }
@@ -200,7 +217,6 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
    TR::Node *currentNode = currentInstruction->getNode();
    TR_RegisterKinds rk = (virtualRegister == NULL) ? TR_GPR : virtualRegister->getKind();
    int numCandidates = 0;
-   int first, last;
    int32_t dataSize = 0;
    TR::InstOpCode::Mnemonic loadOp;
 
@@ -213,10 +229,26 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
       }
    else
       {
+      int first, last;
+      uint32_t maskI;
       uint32_t interference = 0; // TODO implement live register analysis for aarch64
       uint32_t preference = 0;
       bool pref_favored = false;
 
+      switch (rk)
+         {
+         case TR_GPR:
+            first = maskI = TR::RealRegister::FirstGPR;
+            last = TR::RealRegister::LastGPR;
+            break;
+         case TR_FPR:
+            first = maskI = TR::RealRegister::FirstFPR;
+            last = TR::RealRegister::LastFPR;
+            break;
+         default:
+            TR_ASSERT(false, "Unsupported RegisterKind.");
+            break;
+         }
       if ((cg->getLiveRegisters(rk) != NULL) && (virtualRegister != NULL))
          {
          interference = virtualRegister->getInterference();
@@ -226,29 +258,13 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
          if (preference != 0 && boundNext(currentInstruction, preference, virtualRegister))
             {
             pref_favored = true;
-            // TODO implement live register analysis for aarch64
-            //interference &= ~(1 << (preference - maskI));
+            interference &= ~(1 << (preference - maskI));
             }
-         }
-      switch (rk)
-         {
-         case TR_GPR:
-            first = TR::RealRegister::FirstGPR;
-            last = TR::RealRegister::LastGPR;
-            break;
-         case TR_FPR:
-            first = TR::RealRegister::FirstFPR;
-            last = TR::RealRegister::LastFPR;
-            break;
-         default:
-            TR_ASSERT(false, "Unsupported RegisterKind.");
-            break;
          }
 
       for (int i = first; i <= last; i++)
          {
-         // TODO implement live register analysis for aarch64
-         int32_t iInterfere = 0;//interference & (1 << (i - maskI));
+         uint32_t iInterfere = interference & (1 << (i - maskI));
          TR::RealRegister *realReg = machine->getRealRegister(static_cast<TR::RealRegister::RegNum>(i));
          TR::Register *tempReg;
 

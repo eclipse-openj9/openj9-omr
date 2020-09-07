@@ -19,7 +19,24 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/Machine.hpp"
 #include "codegen/RealRegister.hpp"
+
+TR::RealRegister *
+OMR::ARM64::RealRegister::regMaskToRealRegister(TR_RegisterMask mask, TR_RegisterKinds rk, TR::CodeGenerator *cg)
+   {
+   RegNum rr;
+
+   int32_t bitPos = TR::RealRegister::getBitPosInMask(mask);
+
+   if (rk == TR_GPR)
+      rr = FirstGPR;
+   else if (rk == TR_FPR)
+      rr = FirstFPR;
+
+   return cg->machine()->getRealRegister(RegNum(rr+bitPos));
+   }
 
 TR_RegisterMask
 OMR::ARM64::RealRegister::getAvailableRegistersMask(TR_RegisterKinds rk)

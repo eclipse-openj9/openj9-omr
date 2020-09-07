@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -60,8 +60,8 @@ class OMR_EXTENSIBLE Register: public OMR::Register
    TR_LiveRegisterInfo *getLiveRegisterInfo()                       {return _liveRegisterInfo._liveRegister;}
    TR_LiveRegisterInfo *setLiveRegisterInfo(TR_LiveRegisterInfo *p) {return (_liveRegisterInfo._liveRegister = p);}
 
-   uint64_t getInterference()           {return _liveRegisterInfo._interference;}
-   uint64_t setInterference(uint64_t i) {return (_liveRegisterInfo._interference = i);}
+   uint32_t getInterference()           {return _liveRegisterInfo._interference;}
+   uint32_t setInterference(uint64_t i) {return (_liveRegisterInfo._interference = i);}
 
    private:
 

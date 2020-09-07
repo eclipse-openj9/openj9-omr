@@ -203,6 +203,16 @@ OMR::ARM64::MemoryReference::MemoryReference(
             self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, rootLoadOrStore, rootLoadOrStore->getSymbolReference(), isStore, false));
             cg->addSnippet(self()->getUnresolvedSnippet());
             }
+         // if an aconst feeds an aloadi, we need to load the constant
+         if (base->getOpCode().isLoadConst())
+            {
+            cg->evaluate(base);
+            }
+         if (symbol->isMethodMetaData())
+            {
+            _baseRegister = cg->getMethodMetaDataRegister();
+            }
+
          self()->populateMemoryReference(rootLoadOrStore->getFirstChild(), cg);
          }
       }

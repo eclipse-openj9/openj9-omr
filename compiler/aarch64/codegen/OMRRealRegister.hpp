@@ -147,6 +147,15 @@ class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister
     */
    static TR_RegisterMask getAvailableRegistersMask(TR_RegisterKinds rk);
 
+   /**
+    * @brief Returns real register for the passed register mask
+    * @param[in] mask : register mask
+    * @param[in] rk : register kind
+    * @param[in] cg : code generator
+    * @returns real register
+    */
+   static TR::RealRegister *regMaskToRealRegister(TR_RegisterMask mask, TR_RegisterKinds rk, TR::CodeGenerator *cg);
+
    private:
 
    static const uint8_t fullRegBinaryEncodings[NumRegisters];

@@ -32,6 +32,7 @@
 #include "codegen/GenerateInstructions.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/Linkage_inlines.hpp"
+#include "codegen/LiveRegister.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterIterator.hpp"
 #include "codegen/TreeEvaluator.hpp"
@@ -70,6 +71,11 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
    self()->getLinkage()->initARM64RealRegisterLinkage();
    self()->setSupportsGlRegDeps();
    self()->setSupportsGlRegDepOnFirstBlock();
+
+   self()->addSupportedLiveRegisterKind(TR_GPR);
+   self()->addSupportedLiveRegisterKind(TR_FPR);
+   self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(self()->comp()), TR_GPR);
+   self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(self()->comp()), TR_FPR);
 
    self()->setSupportsVirtualGuardNOPing();
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,6 +28,9 @@
 #include "VerboseManager.hpp"
 
 #include <string.h>
+
+#include "VerboseBuffer.hpp"
+#include "VerboseHandlerOutput.hpp"
 
 MM_VerboseWriterFileLoggingSynchronous::MM_VerboseWriterFileLoggingSynchronous(MM_EnvironmentBase *env, MM_VerboseManager *manager)
 	:MM_VerboseWriterFileLogging(env, manager, VERBOSE_WRITER_FILE_LOGGING_SYNCHRONOUS)
@@ -81,7 +84,7 @@ MM_VerboseWriterFileLoggingSynchronous::tearDown(MM_EnvironmentBase *env)
  * @return true on sucess, false otherwise
  */
 bool
-MM_VerboseWriterFileLoggingSynchronous::openFile(MM_EnvironmentBase *env)
+MM_VerboseWriterFileLoggingSynchronous::openFile(MM_EnvironmentBase *env, bool printInitializedHeader)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	MM_GCExtensionsBase* extensions = env->getExtensions();
@@ -117,7 +120,16 @@ MM_VerboseWriterFileLoggingSynchronous::openFile(MM_EnvironmentBase *env)
 	extensions->getForge()->free(filenameToOpen);
 	
 	omrfile_printf(_logFileDescriptor, getHeader(env), version);
-	
+	/* Print an Initialized Stanza in new file */
+	if (printInitializedHeader) {
+		MM_VerboseBuffer* buffer = MM_VerboseBuffer::newInstance(env, INITIAL_BUFFER_SIZE);
+		if (NULL != buffer) {
+			_manager->getVerboseHandlerOutput()->outputInitializedStanza(env, buffer);
+			omrfile_printf(_logFileDescriptor, buffer->contents());
+			buffer->kill(env);
+		}
+	}
+
 	return true;
 }
 
@@ -143,7 +155,10 @@ MM_VerboseWriterFileLoggingSynchronous::outputString(MM_EnvironmentBase *env, co
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 
 	if(-1 == _logFileDescriptor) {
-		/* we open the file at the end of the cycle so can't have a final empty file at the end of a run */
+		/**
+		 * Under normal circumstances, new file should be opened during endOfCycle call.
+		 * This path works as one backup, in case we failed to open the file,  we’ll attempt to open it again before outputting the string.
+		 */
 		openFile(env);
 	}
 

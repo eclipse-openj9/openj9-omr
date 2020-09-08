@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,6 +28,8 @@
 
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
+
+#define INDENT_SPACER "  "
 
 /**
  * Instantiate a new buffer object
@@ -206,4 +208,27 @@ MM_VerboseBuffer::reset()
 {
 	_bufferAlloc = _buffer;
 	_buffer[0] = '\0';
+}
+
+void
+MM_VerboseBuffer::formatAndOutputV(MM_EnvironmentBase *env, uintptr_t indent, const char *format, va_list args)
+{
+	/* Ensure we have a  buffer. */
+	Assert_VGC_true(NULL != _buffer);
+
+	for (uintptr_t i = 0; i < indent; ++i) {
+		add(env, INDENT_SPACER);
+	}
+	
+	vprintf(env, format, args);
+	add(env, "\n");
+}
+
+void
+MM_VerboseBuffer::formatAndOutput(MM_EnvironmentBase *env, uintptr_t indent, const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	formatAndOutputV(env, indent, format, args);
+	va_end(args);
 }

@@ -117,7 +117,8 @@ public:
 	virtual void closeStreams(MM_EnvironmentBase *env);
 
 	MMINLINE MM_VerboseWriterChain* getWriterChain() { return _writerChain; }
-	
+	MM_VerboseHandlerOutput* getVerboseHandlerOutput() { return _verboseHandlerOutput; }
+
 	virtual void handleFileOpenError(MM_EnvironmentBase *env, char *fileName) {}
 
 	MM_VerboseManager(OMR_VM *omrVM)

@@ -168,10 +168,14 @@ MM_ParallelDispatcher::workerEntryPoint(MM_EnvironmentBase *env)
 			}
 		}
 
-		/* Thread should never exit waiting loop without being reserved with _workerThreadsReservedForGC set.
-		 * (i.e we should never have non-waiting status upon wake up with _slaveThreadsReservedForGC) */
+		/* Assert dispatcher and thread states. In most cases, a thread should exit during task dispatch (_workerThreadsReservedForGC) with a reserved status. */
 		if (_workerThreadsReservedForGC) {
-			Assert_MM_true(worker_status_reserved == _statusTable[workerID]);
+			/* Thread must exit being reserved, except in the rare case that a task is dispatched during shutdown.
+			 * In this case, _workerThreadsReservedForGC is set but the task is run single threaded and exiting threads must be dying instead of reserved. */
+			Assert_MM_true((worker_status_reserved == _statusTable[workerID]) || (!_threadsToReserve && worker_status_dying == _statusTable[workerID]));
+		} else {
+			/* If there is no task dispatched and thread exited, then we must be in shutdown */
+			Assert_MM_true(_inShutdown && worker_status_dying == _statusTable[workerID]);
 		}
 
 		if(worker_status_reserved == _statusTable[workerID]) {

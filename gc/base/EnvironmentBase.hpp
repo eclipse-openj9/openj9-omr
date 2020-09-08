@@ -152,10 +152,6 @@ public:
 
 	uintptr_t approxScanCacheCount; /**< Local copy of approximate entries in global Cache Scan List. Updated upon allocation of new cache. */
 
-	#if defined(OMR_GC_MODRON_SCAVENGER)
-	uintptr_t _hotFieldCopyDepthCount; /**< Used for dynamic breadth first scan ordering. Counter for the current copying depth based on the initial object copied. */
-	#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
-	
 	MM_Validator *_activeValidator; /**< Used to identify and report crashes inside Validators */
 
 	MM_MarkStats _markStats;
@@ -179,6 +175,7 @@ public:
 #endif /* OMR_GC_MODRON_STANDARD || OMR_GC_REALTIME */
 #if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
 	MM_ScavengerStats _scavengerStats;
+	uintptr_t _hotFieldCopyDepthCount; /**< Used for dynamic breadth first scan ordering. Counter for the current copying depth based on the initial object copied. */
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	uint64_t _concurrentScavengerSwitchCount; /**< local counter of cycle start and cycle end transitions */
@@ -533,7 +530,7 @@ public:
 	 */
 	void forceOutOfLineVMAccess() { _delegate.forceOutOfLineVMAccess(); }
 
-#if defined(OMR_GC_MODRON_SCAVENGER)
+#if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
 	/**
 	 * Disable scavenger hot field depth copying for dynamicBreadthFirstScanOrdering
 	 */
@@ -550,7 +547,7 @@ public:
 			_hotFieldCopyDepthCount = 0;
 		}
 	}
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
 
 #if defined (OMR_GC_THREAD_LOCAL_HEAP)
 	/**
@@ -718,14 +715,14 @@ public:
 		,_traceAllocationBytes(0)
 		,_traceAllocationBytesCurrentTLH(0)
 		,approxScanCacheCount(0)
-#if defined(OMR_GC_MODRON_SCAVENGER)
-		,_hotFieldCopyDepthCount(0)
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 		,_activeValidator(NULL)
 		,_lastSyncPointReached(NULL)
 #if defined(OMR_GC_SEGREGATED_HEAP)
 		,_allocationTracker(NULL)
 #endif /* OMR_GC_SEGREGATED_HEAP */
+#if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
+		,_hotFieldCopyDepthCount(0)
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		,_concurrentScavengerSwitchCount(0)
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
@@ -775,14 +772,14 @@ public:
 		,_traceAllocationBytes(0)
 		,_traceAllocationBytesCurrentTLH(0)
 		,approxScanCacheCount(0)
-#if defined(OMR_GC_MODRON_SCAVENGER)
-		,_hotFieldCopyDepthCount(0)
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 		,_activeValidator(NULL)
 		,_lastSyncPointReached(NULL)
 #if defined(OMR_GC_SEGREGATED_HEAP)
 		,_allocationTracker(NULL)
 #endif /* OMR_GC_SEGREGATED_HEAP */
+#if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
+		,_hotFieldCopyDepthCount(0)
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		,_concurrentScavengerSwitchCount(0)
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */

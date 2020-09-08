@@ -448,7 +448,6 @@ public:
 		OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL,
 	};
 	ScavengerScanOrdering scavengerScanOrdering; /**< scan ordering in Scavenger */
-#if defined(OMR_GC_MODRON_SCAVENGER)
 	/* Start of options relating to dynamicBreadthFirstScanOrdering */
 	uintptr_t gcCountBetweenHotFieldSort;
 	uintptr_t gcCountBetweenHotFieldSortMax;
@@ -464,6 +463,7 @@ public:
 	uint32_t maxHotFieldListLength;
 	uintptr_t minCpuUtil;
 	/* End of options relating to dynamicBreadthFirstScanOrdering */
+#if defined(OMR_GC_MODRON_SCAVENGER) 
 	uintptr_t scvTenureRatioHigh;
 	uintptr_t scvTenureRatioLow;
 	uintptr_t scvTenureFixedTenureAge; /**< The tenure age to use for the Fixed scavenger tenure strategy. */
@@ -1537,8 +1537,6 @@ public:
 		, dispatcherHybridNotifyThreadBound(16)
 #if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
 		, scavengerScanOrdering(OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL)
-#endif /* OMR_GC_MODRON_SCAVENGER || OMR_GC_VLHGC */
-#if defined(OMR_GC_MODRON_SCAVENGER)
 		/* Start of options relating to dynamicBreadthFirstScanOrdering */
 		, gcCountBetweenHotFieldSort(1)
 		, gcCountBetweenHotFieldSortMax(6)
@@ -1554,6 +1552,8 @@ public:
 		, maxHotFieldListLength(10)
 		, minCpuUtil (1)
 		/* End of options relating to dynamicBreadthFirstScanOrdering */
+#endif /* OMR_GC_MODRON_SCAVENGER || OMR_GC_VLHGC */
+#if defined(OMR_GC_MODRON_SCAVENGER)
 		, scvTenureRatioHigh(OMR_SCV_TENURE_RATIO_HIGH)
 		, scvTenureRatioLow(OMR_SCV_TENURE_RATIO_LOW)
 		, scvTenureFixedTenureAge(OBJECT_HEADER_AGE_MAX)

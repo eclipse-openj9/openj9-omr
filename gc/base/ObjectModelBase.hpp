@@ -785,6 +785,48 @@ public:
 		return result;
 	}
 
+#if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
+	/**
+	 * Returns the field offset of the hottest field of the object referred to by the forwarded header.
+	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled.
+	 *
+	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
+	 * @return the offset of the hottest field of the given object referred to by the forwarded header, return U_8_MAX if a hot field does not exist
+	 */
+	MMINLINE uint8_t
+	getHotFieldOffset(MM_ForwardedHeader *forwardedHeader)
+	{
+		return _delegate.getHotFieldOffset(forwardedHeader);
+	}
+
+	/**
+	 * Returns the field offset of the second hottest field of the object referred to by the forwarded header.
+	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled
+	 *
+	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
+	 * @return the offset of the second hottest field of the given object referred to by the forwarded header, return U_8_MAX if the hot field does not exist
+	 */
+	MMINLINE uint8_t
+	getHotFieldOffset2(MM_ForwardedHeader *forwardedHeader)
+	{
+		return _delegate.getHotFieldOffset2(forwardedHeader);
+	}
+
+	/**
+	 * Returns the field offset of the third hottest field of the object referred to by the forwarded header.
+	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled
+	 *
+	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
+	 * @return the offset of the third hottest field of the given object referred to by the forwarded header, return U_8_MAX if the hot field does not exist
+	 */
+	MMINLINE uint8_t
+	getHotFieldOffset3(MM_ForwardedHeader *forwardedHeader)
+	{
+		return _delegate.getHotFieldOffset3(forwardedHeader);
+	}
+
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
+
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	/**
 	 * Returns TRUE if the object referred to by the forwarded header is indexable.
@@ -824,45 +866,6 @@ public:
 	getForwardedObjectSizeInBytes(MM_ForwardedHeader *forwardedHeader)
 	{
 		return _delegate.getForwardedObjectSizeInBytes(forwardedHeader);
-	}
-
-	/**
-	 * Returns the field offset of the hottest field of the object referred to by the forwarded header.
-	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled.
-	 *
-	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
-	 * @return the offset of the hottest field of the given object referred to by the forwarded header, return U_8_MAX if a hot field does not exist
-	 */
-	MMINLINE uint8_t
-	getHotFieldOffset(MM_ForwardedHeader *forwardedHeader)
-	{
-		return _delegate.getHotFieldOffset(forwardedHeader);
-	}
-
-	/**
-	 * Returns the field offset of the second hottest field of the object referred to by the forwarded header.
-	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled
-	 *
-	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
-	 * @return the offset of the second hottest field of the given object referred to by the forwarded header, return U_8_MAX if the hot field does not exist
-	 */
-	MMINLINE uint8_t
-	getHotFieldOffset2(MM_ForwardedHeader *forwardedHeader)
-	{
-		return _delegate.getHotFieldOffset2(forwardedHeader);
-	}
-
-		/**
-	 * Returns the field offset of the third hottest field of the object referred to by the forwarded header.
-	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled
-	 *
-	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
-	 * @return the offset of the third hottest field of the given object referred to by the forwarded header, return U_8_MAX if the hot field does not exist
-	 */
-	MMINLINE uint8_t
-	getHotFieldOffset3(MM_ForwardedHeader *forwardedHeader)
-	{
-		return _delegate.getHotFieldOffset3(forwardedHeader);
 	}
 
 	/**

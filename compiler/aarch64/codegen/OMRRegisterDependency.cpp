@@ -261,7 +261,7 @@ void OMR::ARM64::RegisterDependencyConditions::bookKeepingRegisterUses(TR::Instr
       auto dependency = _preConditions->getRegisterDependency(i);
       TR::Register *virtReg = dependency->getRegister();
       TR::RealRegister::RegNum regNum = dependency->getRealRegister();
-      instr->useRegister(virtReg);
+      instr->useRegister(virtReg, true);
       if (!isOOL)
          cg->setRealRegisterAssociation(virtReg, regNum);
       }
@@ -270,7 +270,7 @@ void OMR::ARM64::RegisterDependencyConditions::bookKeepingRegisterUses(TR::Instr
       auto dependency = _postConditions->getRegisterDependency(j);
       TR::Register *virtReg = dependency->getRegister();
       TR::RealRegister::RegNum regNum = dependency->getRealRegister();
-      instr->useRegister(virtReg);
+      instr->useRegister(virtReg, true);
       if (!isOOL)
          cg->setRealRegisterAssociation(virtReg, regNum);
       }

@@ -119,3 +119,16 @@ OMR::ARM64::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
       cond->assignPreConditionRegisters(self()->getPrev(), kindToBeAssigned, self()->cg());
       }
    }
+
+void
+OMR::ARM64::Instruction::useRegister(TR::Register *reg, bool isDummy)
+   {
+   OMR::Instruction::useRegister(reg);
+   // If an instruction uses a dummy register, that register should no longer be considered dummy.
+   // ARM64RegisterDependencyConditions also calls useRegister, in this case we do not want to reset the dummy status of these regs
+   //
+   if (!isDummy && reg->isPlaceholderReg())
+      {
+      reg->resetPlaceholderReg();
+      }
+   }

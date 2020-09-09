@@ -79,11 +79,6 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
 
    protected:
 
-   // The extra int parameter at the end is needed to ensure that this constructor is never
-   // ambiguous with the legacy constructor taking an int32_t for its displacement. This detail
-   // is hidden from other code, since this constructor can only be used by calling the
-   // MemoryReference::createWithDisplacement helper. Once the legacy constructor is removed, the extra
-   // parameter here can also be removed.
    MemoryReference(
          TR::Register *br,
          int64_t disp,
@@ -95,6 +90,20 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
          int64_t disp,
          uint8_t len,
          TR::CodeGenerator *cg);
+
+   MemoryReference(TR::CodeGenerator *cg);
+
+   MemoryReference(
+         TR::Register *br,
+         TR::Register *ir,
+         uint8_t len,
+         TR::CodeGenerator *cg);
+
+   MemoryReference(TR::Node *rootLoadOrStore, uint32_t len, TR::CodeGenerator *cg);
+
+   MemoryReference(TR::Node *node, TR::SymbolReference *symRef, uint32_t len, TR::CodeGenerator *cg);
+
+   MemoryReference(TR::Node *node, TR::MemoryReference& mr, int32_t n, uint32_t len, TR::CodeGenerator *cg);
 
    public:
 
@@ -109,14 +118,6 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
       TR_PPCMemoryReferenceControl_OffsetRequiresWordAlignment = 0x10,
       TR_PPCMemoryReferenceControl_DelayedOffsetDone           = 0x20
       } TR_PPCMemoryReferenceControl;
-
-   MemoryReference(TR::CodeGenerator *cg);
-
-   MemoryReference(
-         TR::Register *br,
-         TR::Register *ir,
-         uint8_t len,
-         TR::CodeGenerator *cg);
 
    virtual TR::RegisterDependencyConditions *getConditions() { return _conditions; }
 
@@ -298,12 +299,6 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    void setSymbol(TR::Symbol *symbol, TR::CodeGenerator *cg);
 
    void checkRegisters(TR::CodeGenerator *cg);
-
-   MemoryReference(TR::Node *rootLoadOrStore, uint32_t len, TR::CodeGenerator *cg);
-
-   MemoryReference(TR::Node *node, TR::SymbolReference *symRef, uint32_t len, TR::CodeGenerator *cg);
-
-   MemoryReference(TR::Node *node, TR::MemoryReference& mr, int32_t n, uint32_t len, TR::CodeGenerator *cg);
 
    void accessStaticItem(TR::Node *node, TR::SymbolReference *ref, bool isStore, TR::CodeGenerator *cg);
 

@@ -104,12 +104,6 @@ TR::MemoryReference *TR::MemoryReference::createWithMemRef(TR::CodeGenerator *cg
    return new (cg->trHeapMemory()) TR::MemoryReference(node, memRef, displacement, length, cg);
    }
 
-//Keeping the old version of the createWithLabel helper here to make sure OpenJ9 doesn't break
-TR::MemoryReference *TR::MemoryReference::withLabel(TR::CodeGenerator *cg, TR::LabelSymbol *label, int64_t offset, int8_t length)
-   {
-   return new (cg->trHeapMemory()) TR::MemoryReference(label, offset, length, cg);
-   }
-
 OMR::Power::MemoryReference::MemoryReference(
       TR::CodeGenerator *cg) :
    _baseRegister(NULL),

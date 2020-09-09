@@ -42,12 +42,10 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
       int64_t disp,
       uint8_t len,
       TR::CodeGenerator *cg) :
-         OMR::MemoryReferenceConnector(br, disp, len, cg, 0) {}
+         OMR::MemoryReferenceConnector(br, disp, len, cg) {}
 
    MemoryReference(TR::LabelSymbol *label, int64_t disp, int8_t len, TR::CodeGenerator *cg) :
       OMR::MemoryReferenceConnector(label, disp, len, cg) {}
-
-   public:
 
    MemoryReference(TR::CodeGenerator *cg) :
       OMR::MemoryReferenceConnector(cg) {}
@@ -67,6 +65,8 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
    MemoryReference(TR::Node *node, MemoryReference& mr, int32_t n, uint32_t len, TR::CodeGenerator *cg):
       OMR::MemoryReferenceConnector(node, mr, n, len, cg) {}
 
+   public:
+
    static TR::MemoryReference *create(TR::CodeGenerator *cg);
    static TR::MemoryReference *createWithLabel(TR::CodeGenerator *cg, TR::LabelSymbol *label, int64_t offset, int8_t length);
    static TR::MemoryReference *createWithIndexReg(TR::CodeGenerator *cg, TR::Register *baseReg, TR::Register *indexReg, uint8_t length);
@@ -74,9 +74,6 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
    static TR::MemoryReference *createWithRootLoadOrStore(TR::CodeGenerator *cg, TR::Node *rootLoadOrStore, uint32_t length);
    static TR::MemoryReference *createWithSymRef(TR::CodeGenerator *cg, TR::Node *node, TR::SymbolReference *symRef, uint32_t length);
    static TR::MemoryReference *createWithMemRef(TR::CodeGenerator *cg, TR::Node *node, TR::MemoryReference& memRef, int32_t displacement, uint32_t length);
-
-   //Keeping the old version of the createWithLabel helper here to make sure OpenJ9 doesn't break 
-   static TR::MemoryReference *withLabel(TR::CodeGenerator *cg, TR::LabelSymbol *label, int64_t offset, int8_t length);
    };
 }
 

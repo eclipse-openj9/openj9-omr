@@ -72,6 +72,11 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
    self()->setSupportsGlRegDeps();
    self()->setSupportsGlRegDepOnFirstBlock();
 
+   self()->addSupportedLiveRegisterKind(TR_GPR);
+   self()->addSupportedLiveRegisterKind(TR_FPR);
+   self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(self()->comp()), TR_GPR);
+   self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(self()->comp()), TR_FPR);
+
    self()->setSupportsVirtualGuardNOPing();
 
    self()->setSupportsRecompilation();

@@ -1604,6 +1604,9 @@ class OMR_EXTENSIBLE CodeGenerator
    bool considerAllAutosAsTacticalGlobalRegisterCandidates()    {return _flags1.testAny(ConsiderAllAutosAsTacticalGlobalRegisterCandidates);}
    void setConsiderAllAutosAsTacticalGlobalRegisterCandidates() {_flags1.set(ConsiderAllAutosAsTacticalGlobalRegisterCandidates);}
 
+   bool supportsByteswap() { return _flags1.testAny(SupportsByteswap); }
+   void setSupportsByteswap() { _flags1.set(SupportsByteswap); }
+
    bool getSupportsScaledIndexAddressing() { return _flags1.testAny(SupportsScaledIndexAddressing); }
    void setSupportsScaledIndexAddressing() { _flags1.set(SupportsScaledIndexAddressing); }
 
@@ -1719,7 +1722,7 @@ class OMR_EXTENSIBLE CodeGenerator
       PerformsExplicitChecks                             = 0x00080000,
       SpillsFPRegistersAcrossCalls                       = 0x00100000,
       ConsiderAllAutosAsTacticalGlobalRegisterCandidates = 0x00200000,
-      // AVAILABLE                                       = 0x00400000,
+      SupportsByteswap                                   = 0x00400000,
       SupportsScaledIndexAddressing                      = 0x00800000,
       SupportsCompactedLocals                            = 0x01000000,
       // AVAILABLE                                       = 0x02000000,

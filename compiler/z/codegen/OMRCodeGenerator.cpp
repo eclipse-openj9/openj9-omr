@@ -455,6 +455,8 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    self()->setSupportsSelect();
 
+   self()->setSupportsByteswap();
+
    self()->setIsOutOfLineHotPath(false);
 
    self()->setUsesRegisterPairsForLongs();

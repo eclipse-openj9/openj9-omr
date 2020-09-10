@@ -209,6 +209,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
     self()->setSupportsPrimitiveArrayCopy();
     self()->setSupportsReferenceArrayCopy();
     self()->setSupportsSelect();
+    self()->setSupportsByteswap();
 
     // disabled for now
     //

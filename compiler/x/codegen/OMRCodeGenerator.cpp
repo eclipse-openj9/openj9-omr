@@ -427,6 +427,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    self()->setSupportsVirtualGuardNOPing();
    self()->setSupportsDynamicANewArray();
    self()->setSupportsSelect();
+   self()->setSupportsByteswap();
 
    // allows [i/l]div to decompose to [i/l]mulh in TreeSimplifier
    //

@@ -730,7 +730,9 @@
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::lnolz (J9)
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::lnotz (J9)
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::lpopcnt (J9)
+   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::sbyteswap
    TR::TreeEvaluator::ibyteswapEvaluator,                              // TR::ibyteswap
+   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::lbyteswap
    TR::TreeEvaluator::bitpermuteEvaluator,                             // TR::bbitpermute
    TR::TreeEvaluator::bitpermuteEvaluator,                             // TR::sbitpermute
    TR::TreeEvaluator::bitpermuteEvaluator,                             // TR::ibitpermute

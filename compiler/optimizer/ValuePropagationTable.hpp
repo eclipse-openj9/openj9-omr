@@ -922,7 +922,9 @@ const ValuePropagationPtr constraintHandlers[] =
 	constrainLongNumberOfTrailingZeros,
 	constrainLongBitCount,
 
+   constrainChildren,           // TR::sbyteswap
    constrainChildren,           // TR::ibyteswap
+   constrainChildren,           // TR::lbyteswap
 
    constrainChildren,           // TR::bbitpermute
    constrainChildren,           // TR::sbitpermute

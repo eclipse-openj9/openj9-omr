@@ -2731,7 +2731,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * inst, const char *title)
       print(pOutFile, inst);
       return;
       }
-#endif      
+#endif
 
 #if defined(TR_TARGET_S390)
    if (_comp->target().cpu.isZ())
@@ -3722,6 +3722,18 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_interpreterUnresolvedMethodHandleGlue:           return "interpreterUnresolvedMethodHandleGlue";
          case TR_interpreterUnresolvedCallSiteTableEntryGlue:     return "interpreterUnresolvedCallSiteTableEntryGlue";
          case TR_interpreterUnresolvedMethodTypeTableEntryGlue:   return "interpreterUnresolvedMethodTypeTableEntryGlue";
+         case TR_interpreterUnresolvedFieldSetterReadOnlyGlue:            return "interpreterUnresolvedFieldSetterReadOnlyGlue";
+         case TR_interpreterUnresolvedFieldReadOnlyGlue:                  return "interpreterUnresolvedFieldReadOnlyGlue";
+         case TR_interpreterUnresolvedClassFromStaticFieldReadOnlyGlue:   return "interpreterUnresolvedClassFromStaticFieldReadOnlyGlue";
+         case TR_interpreterUnresolvedClassReadOnlyGlue:                  return "interpreterUnresolvedClassReadOnlyGlue";
+         case TR_interpreterUnresolvedStringReadOnlyGlue:                 return "interpreterUnresolvedStringReadOnlyGlue";
+         case TR_interpreterUnresolvedMethodTypeReadOnlyGlue:             return "interpreterUnresolvedMethodTypeReadOnlyGlue";
+         case TR_interpreterUnresolvedMethodHandleReadOnlyGlue:           return "interpreterUnresolvedMethodHandleReadOnlyGlue";
+         case TR_interpreterUnresolvedCallSiteTableEntryReadOnlyGlue:     return "interpreterUnresolvedCallSiteTableEntryReadOnlyGlue";
+         case TR_interpreterUnresolvedMethodTypeTableEntryReadOnlyGlue:   return "interpreterUnresolvedMethodTypeTableEntryReadOnlyGlue";
+         case TR_interpreterUnresolvedConstantDynamicReadOnlyGlue:        return "interpreterUnresolvedConstantDynamicReadOnlyGlue";
+         case TR_interpreterUnresolvedStaticFieldSetterReadOnlyGlue:      return "interpreterUnresolvedStaticFieldSetterReadOnlyGlue";
+         case TR_interpreterUnresolvedStaticFieldReadOnlyGlue:            return "interpreterUnresolvedStaticFieldReadOnlyGlue";
 
          case TR_jitProfileValue:           return "jitProfileValue";
          case TR_jitProfileLongValue:       return "jitProfileLongValue";
@@ -3769,6 +3781,14 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_X86interpreterUnresolvedStaticFieldSetterGlue:    return "interpreterUnresolvedStaticFieldSetterGlue";
             case TR_X86interpreterUnresolvedFieldGlue:                return "interpreterUnresolvedFieldGlue";
             case TR_X86interpreterUnresolvedFieldSetterGlue:          return "interpreterUnresolvedFieldSetterGlue";
+            case TR_X86interpreterUnresolvedClassReadOnlyGlue:                return "interpreterUnresolvedClassReadOnlyGlue";
+            case TR_X86interpreterUnresolvedClassFromStaticFieldReadOnlyGlue: return "interpreterUnresolvedClassFromStaticFieldReadOnlyGlue";
+            case TR_X86interpreterUnresolvedStringReadOnlyGlue:               return "interpreterUnresolvedStringReadOnlyGlue";
+            case TR_X86interpreterUnresolvedStaticFieldReadOnlyGlue:          return "interpreterUnresolvedStaticFieldReadOnlyGlue";
+            case TR_X86interpreterUnresolvedConstantDynamicReadOnlyGlue:      return "interpreterUnresolvedConstantDynamicReadOnlyGlue";
+            case TR_X86interpreterUnresolvedStaticFieldSetterReadOnlyGlue:    return "interpreterUnresolvedStaticFieldSetterReadOnlyGlue";
+            case TR_X86interpreterUnresolvedFieldReadOnlyGlue:                return "interpreterUnresolvedFieldReadOnlyGlue";
+            case TR_X86interpreterUnresolvedFieldSetterReadOnlyGlue:          return "interpreterUnresolvedFieldSetterReadOnlyGlue";
             case TR_X86PatchSingleComparePIC_mov:                     return "jitX86PatchSingleComparePIC_mov";
             case TR_X86PatchSingleComparePIC_je:                      return "jitX86PatchSingleComparePIC_je";
             case TR_X86PatchMultipleComparePIC_mov:                   return "jitX86PatchMultipleComparePIC_mov";
@@ -3822,6 +3842,18 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             {
             case TR_AMD64floatRemainder:                              return "__SSEfloatRemainder";
             case TR_AMD64doubleRemainder:                             return "__SSEdoubleRemainder";
+
+            case TR_AMD64resolveVirtualDispatchReadOnly:              return "resolveVirtualDispatchReadOnly";
+
+            case TR_AMD64interpreterUnresolvedStaticGlueReadOnly:     return "interpreterUnresolvedStaticGlueReadOnly";
+            case TR_AMD64interpreterUnresolvedSpecialGlueReadOnly:    return "interpreterUnresolvedSpecialGlueReadOnly";
+            case TR_AMD64interpreterStaticAndSpecialGlueReadOnly:     return "interpreterStaticAndSpecialGlueReadOnly";
+
+            case TR_AMD64dispatchIPicSlot1MethodReadOnly:             return "dispatchIPicSlot1MethodReadOnly";
+            case TR_AMD64dispatchIPicSlot2MethodReadOnly:             return "dispatchIPicSlot2MethodReadOnly";
+            case TR_AMD64IPicResolveReadOnly:                         return "IPicResolveReadOnly";
+            case TR_AMD64IPicLookupDispatchReadOnly:                  return "IPicLookupDispatchReadOnly";
+
             case TR_AMD64icallVMprJavaSendVirtual0:                   return "_icallVMprJavaSendVirtual0";
             case TR_AMD64icallVMprJavaSendVirtual1:                   return "_icallVMprJavaSendVirtual1";
             case TR_AMD64icallVMprJavaSendVirtualJ:                   return "_icallVMprJavaSendVirtualJ";
@@ -3990,6 +4022,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_S390interpreterUnresolvedInstanceDataGlue:        return "_interpreterUnresolvedInstanceDataGlue";
          case TR_S390interpreterUnresolvedInstanceDataStoreGlue:   return "_interpreterUnresolvedInstanceDataStoreGlue";
          case TR_S390virtualUnresolvedHelper:                      return "_virtualUnresolvedHelper";
+         case TR_S390virtualUnresolvedHelperReadOnly:              return "_virtualUnresolvedHelperReadOnly";
          case TR_S390interfaceCallHelper:                          return "_interfaceCallHelper";
          case TR_S390interfaceCallHelperSingleDynamicSlot:         return "_interfaceCallHelperSingleDynamicSlot";
          case TR_S390interfaceCallHelperMultiSlots:                return "_interfaceCallHelperMultiSlots";

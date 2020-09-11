@@ -162,6 +162,10 @@ public:
 
 	virtual bool inflate(MM_EnvironmentBase *env);
 
+#if defined(OMR_GC_SNAPSHOTS)
+	virtual bool restore(MM_EnvironmentBase *env);
+#endif /* defined(OMR_GC_SNAPSHOTS) */
+
 	MMINLINE MM_PhysicalArena *getPhysicalArena() { return _physicalArena; }
 
 	bool canExpand(MM_EnvironmentBase *env, uintptr_t expandSize);

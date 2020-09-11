@@ -48,6 +48,8 @@
 #include "il/SymbolReference.hpp"
 #include "infra/Assert.hpp"
 #include "infra/List.hpp"
+#include "objectfmt/GlobalFunctionCallData.hpp"
+#include "objectfmt/ObjectFormat.hpp"
 #include "ras/Debug.hpp"
 #include "x/codegen/X86Instruction.hpp"
 #include "x/codegen/X86Ops.hpp"
@@ -801,29 +803,9 @@ TR::Register *TR::AMD64SystemLinkage::buildDirectDispatch(
          }
       }
 
-   TR::Instruction *instr;
-   if (methodSymbol->getMethodAddress())
-      {
-      TR_ASSERT(scratchReg, "could not find second scratch register");
-      auto LoadRegisterInstruction = generateRegImm64SymInstruction(
-         MOV8RegImm64,
-         callNode,
-         scratchReg,
-         (uintptr_t)methodSymbol->getMethodAddress(),
-         methodSymRef,
-         cg());
-
-      if (comp()->getOption(TR_EmitRelocatableELFFile))
-         {
-         LoadRegisterInstruction->setReloKind(TR_NativeMethodAbsolute);
-         }
-
-      instr = generateRegInstruction(CALLReg, callNode, scratchReg, preDeps, cg());
-      }
-   else
-      {
-      instr = generateImmSymInstruction(CALLImm4, callNode, (uintptr_t)methodSymbol->getMethodAddress(), methodSymRef, preDeps, cg());
-      }
+   TR::GlobalFunctionCallData data(methodSymRef, callNode, scratchReg, 0, preDeps,
+      comp()->getOption(TR_EmitRelocatableELFFile) ? TR_NativeMethodAbsolute : TR_NoRelocation, true, cg());
+   TR::Instruction *instr = cg()->getObjFmt()->emitGlobalFunctionCall(data);
 
    cg()->resetIsLeafMethod();
 

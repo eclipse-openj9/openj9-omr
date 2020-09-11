@@ -453,6 +453,8 @@ public:
 
       SymbolValidationManager,
 
+      ObjectFormat,
+
       NumObjectTypes,
       // If adding new object types above, add the corresponding names
       // to objectName[] array defined in TRMemory.cpp

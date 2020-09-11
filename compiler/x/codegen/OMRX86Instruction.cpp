@@ -4553,11 +4553,6 @@ generateHelperCallInstruction(TR::Node * node, TR_RuntimeHelper index, TR::Regis
 void
 TR::X86VFPCallCleanupInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   if (kindsToBeAssigned & TR_GPR_Mask)
-      {
-      TR_ASSERT(cg()->internalControlFlowNestingDepth() >= 1, "TR::X86VFPCallCleanupInstruction %s must only be used inside internal control flow", cg()->getDebug()->getName(this));
-      }
-
    OMR::X86::Instruction::assignRegisters(kindsToBeAssigned);
    }
 

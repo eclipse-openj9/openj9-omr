@@ -201,6 +201,31 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 }
 
 /**
+ * Reserve collocated memory
+ *
+ * Reserves collocated memory as specified by an array of J9PortVMemParams without allocating any actual physical storage.
+ * A single, contiguous range of memory will be reserved to satisfy the request.
+ * The memory is not available for use until committed @ref omrvmem_commit_memory.
+ * The memory may not be used by other memory allocation routines until it is explicitly released.
+ * Each block of memory can be independently committed and freed.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] count The number of distinct, collocated, memory blocks to reserve.
+ * @param[out] identifiers Descriptors for the collocated virtual memory blocks.
+ * @param[in] params J9PortVMemParams Structs containing necessary information about requested memory.
+ *					 It is the responsibility of the user to create the storage for these structs.
+ *					 These structures must be initialized using @ref omrvmem_vmem_params_init.
+ * 					 These structures may be discarded after this function returns.
+ *
+ * @return pointer to the reserved memory on success, NULL on failure.
+ */
+void
+omrvmem_reserve_memory_collocated_ex(struct OMRPortLibrary *portLibrary, uint32_t count, struct J9PortVmemIdentifier **identifiers, struct J9PortVmemParams *params)
+{
+	return NULL;
+}
+
+/**
  * Maps a contiguous region of memory to double map addresses[] passed in.
  *
  * @param OMRPortLibrary       *portLibrary            [in] The portLibrary object

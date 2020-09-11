@@ -9193,7 +9193,8 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                      }
                   }
 
-               if (clazzToBeInitialized &&
+               if (!vp->comp()->getGenerateReadOnlyCode() &&
+                   clazzToBeInitialized &&
                    (((clazzNameLen == 35) && !strncmp(clazzToBeInitialized, "Lcom/ibm/ejs/ras/TraceEnabledToken;", clazzNameLen)) ||
                     ((clazzNameLen == 41) && !strncmp(clazzToBeInitialized, "Lcom/ibm/websphere/ras/TraceEnabledToken;", clazzNameLen)) ||
                     ((clazzNameLen == 40) && !strncmp(clazzToBeInitialized, "Ljava/lang/String$StringCompressionFlag;", clazzNameLen))) &&

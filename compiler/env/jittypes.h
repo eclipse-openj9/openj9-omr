@@ -129,6 +129,15 @@ typedef struct TR_InlinedCallSite
    struct TR_ByteCodeInfo   _byteCodeInfo;
    } TR_InlinedCallSite;
 
+// This struct represents inlined call site entries with an offset to their corresponding method info,
+// rather than a pointer.
+// The pointer form is used during compilation while the offset form is more suitable for use as metadata.
+typedef struct TR_InlinedCallSiteWithOffset
+   {
+   uintptr_t              _methodInfoOffset;
+   struct TR_ByteCodeInfo _byteCodeInfo;
+   } TR_InlinedCallSiteWithOffset;
+
 /* Useful between initializing a data structure and making it visible to other threads */
 #if !defined(TR_HOST_POWER)
    #if defined(TR_HOST_ARM)

@@ -67,6 +67,8 @@
 #include "infra/Bit.hpp"
 #include "infra/List.hpp"
 #include "infra/CfgEdge.hpp"
+#include "objectfmt/GlobalFunctionCallData.hpp"
+#include "objectfmt/ObjectFormat.hpp"
 #include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
 #include "runtime/Runtime.hpp"
@@ -192,6 +194,8 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
         { XOR4RegReg, OR4RegImms, MOV4RegImm4 },   // 32-bit address constant
         { XOR4RegReg, OR8RegImms, BADIA32Op   } }; // Long address constant; MOVs handled specially
 
+   static char *disableRelocatableClassMethodConsts = feGetEnv("TR_disableRelocatableClassMethodConsts");
+
    enum { XOR = 0, OR  = 1, MOV = 2 };
 
    bool is64Bit = false;
@@ -251,7 +255,13 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
       TR::Instruction *movInstruction = NULL;
       if (is64Bit)
          {
-         if (cg->constantAddressesCanChangeSize(node) && node && node->getOpCodeValue() == TR::aconst &&
+         if (comp->getGenerateReadOnlyCode() && !disableRelocatableClassMethodConsts && node && node->getOpCodeValue() == TR::aconst &&
+             (node->isClassPointerConstant() || node->isMethodPointerConstant()))
+            {
+            movInstruction = generateRegMemInstruction(currentInstruction, LRegMem(), target,
+               TR::TreeEvaluator::generateLoadConstantMemoryReference(node, value, cg, reloKind), cg);
+            }
+         else if (cg->constantAddressesCanChangeSize(node) && node && node->getOpCodeValue() == TR::aconst &&
              (node->isClassPointerConstant() || node->isMethodPointerConstant()))
             {
             movInstruction = generateRegImm64Instruction(currentInstruction, MOV8RegImm64, target, value, cg, reloKind);
@@ -323,7 +333,13 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
          TR::Instruction *movInstruction = NULL;
          if (is64Bit)
             {
-            if (cg->constantAddressesCanChangeSize(node) && node && node->getOpCodeValue() == TR::aconst &&
+            if (comp->getGenerateReadOnlyCode() && !disableRelocatableClassMethodConsts && node && node->getOpCodeValue() == TR::aconst &&
+                (node->isClassPointerConstant() || node->isMethodPointerConstant()))
+               {
+               movInstruction = generateRegMemInstruction(LRegMem(), node, target,
+                  TR::TreeEvaluator::generateLoadConstantMemoryReference(node, value, cg, reloKind), cg);
+               }
+            else if (cg->constantAddressesCanChangeSize(node) && node && node->getOpCodeValue() == TR::aconst &&
                 (node->isClassPointerConstant() || node->isMethodPointerConstant()))
                {
                movInstruction = generateRegImm64Instruction(MOV8RegImm64, node, target, value, cg, reloKind);
@@ -523,11 +539,12 @@ OMR::X86::TreeEvaluator::loadMemory(
       TR::MemoryReference *sourceMR,
       TR_RematerializableTypes type,
       bool markImplicitExceptionPoint,
-      TR::CodeGenerator *cg)
+      TR::CodeGenerator *cg,
+      TR::Instruction *insertAfterInstr)
    {
    TR::Register *targetRegister = cg->allocateRegister();
    TR::Instruction *instr;
-   instr = TR::TreeEvaluator::insertLoadMemory(node, targetRegister, sourceMR, type, cg);
+   instr = TR::TreeEvaluator::insertLoadMemory(node, targetRegister, sourceMR, type, cg, insertAfterInstr);
 
    TR::SymbolReference& symRef = sourceMR->getSymbolReference();
    if (symRef.isUnresolved())
@@ -578,9 +595,9 @@ void OMR::X86::TreeEvaluator::removeLiveDiscardableStatics(TR::CodeGenerator *cg
       }
    }
 
-TR::Register *OMR::X86::TreeEvaluator::performIload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::TreeEvaluator::performIload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg, TR::Instruction *insertAfterInstr)
    {
-   TR::Register *reg = TR::TreeEvaluator::loadMemory(node, sourceMR, TR_RematerializableInt, node->getOpCode().isIndirect(), cg);
+   TR::Register *reg = TR::TreeEvaluator::loadMemory(node, sourceMR, TR_RematerializableInt, node->getOpCode().isIndirect(), cg, insertAfterInstr);
 
    node->setRegister(reg);
    return reg;
@@ -589,8 +606,9 @@ TR::Register *OMR::X86::TreeEvaluator::performIload(TR::Node *node, TR::MemoryRe
 // also handles iaload
 TR::Register *OMR::X86::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::MemoryReference  *sourceMR = generateX86MemoryReference(node, cg);
-   TR::Register         *reg      = TR::TreeEvaluator::loadMemory(node, sourceMR, TR_RematerializableAddress, node->getOpCode().isIndirect(), cg);
+   TR::Instruction *insertAfterInstr;
+   TR::MemoryReference *sourceMR = TR::TreeEvaluator::generateX86MemoryReferenceForLoadILOpCode(node, insertAfterInstr, cg);
+   TR::Register *reg = TR::TreeEvaluator::loadMemory(node, sourceMR, TR_RematerializableAddress, node->getOpCode().isIndirect(), cg, insertAfterInstr);
    reg->setMemRef(sourceMR);
    TR::Compilation *comp = cg->comp();
 
@@ -699,8 +717,9 @@ bool OMR::X86::TreeEvaluator::genNullTestSequence(TR::Node *node,
 // also handles iiload
 TR::Register *OMR::X86::TreeEvaluator::iloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::MemoryReference  *sourceMR = generateX86MemoryReference(node, cg);
-   TR::Register         *reg      = TR::TreeEvaluator::performIload(node, sourceMR, cg);
+   TR::Instruction *insertAfterInstr;
+   TR::MemoryReference *sourceMR = TR::TreeEvaluator::generateX86MemoryReferenceForLoadILOpCode(node, insertAfterInstr, cg);
+   TR::Register *reg = TR::TreeEvaluator::performIload(node, sourceMR, cg, insertAfterInstr);
    reg->setMemRef(sourceMR);
    sourceMR->decNodeReferenceCounts(cg);
    TR::Compilation *comp = cg->comp();
@@ -891,7 +910,8 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
       // low order "size" bytes of the int will be used by the instruction,
       // and longs only get here if the constant fits in 32 bits.
       //
-      tempMR = generateX86MemoryReference(node, cg);
+      TR::Instruction *insertAfterInstr;
+      tempMR = TR::TreeEvaluator::generateX86MemoryReferenceForStoreILOpCode(node, insertAfterInstr, cg);
 
       if (size == 1)
          opCode = S1MemImm1;
@@ -902,7 +922,14 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
       else
          opCode = S8MemImm4;
 
-      instr = generateMemImmInstruction(opCode, node, tempMR, konst, cg);
+      if (insertAfterInstr)
+         {
+         instr = generateMemImmInstruction(insertAfterInstr, opCode, tempMR, konst, cg);
+         }
+      else
+         {
+         instr = generateMemImmInstruction(opCode, node, tempMR, konst, cg);
+         }
       }
    else
       {
@@ -991,12 +1018,20 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
                  (node->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())))
             opCode = S4MemReg;
 
-         tempMR = generateX86MemoryReference(node, cg);
+         TR::Instruction *insertAfterInstr;
+         tempMR = TR::TreeEvaluator::generateX86MemoryReferenceForStoreILOpCode(node, insertAfterInstr, cg);
 
          // in comp->useCompressedPointers we should write 4 bytes
          // since the iastore has been changed to an iistore, size will be 4
          //
-         instr = generateMemRegInstruction(opCode, node, tempMR, valueReg, cg);
+         if (insertAfterInstr)
+            {
+            instr = generateMemRegInstruction(insertAfterInstr, opCode, tempMR, valueReg, cg);
+            }
+         else
+            {
+            instr = generateMemRegInstruction(opCode, node, tempMR, valueReg, cg);
+            }
 
          TR::SymbolReference& symRef = tempMR->getSymbolReference();
          if (symRef.isUnresolved())
@@ -2371,7 +2406,10 @@ TR::Register *OMR::X86::TreeEvaluator::arraytranslateEvaluator(TR::Node *node, T
       dependencies->addPostCondition(termCharReg, TR::RealRegister::edx, cg);
       }
    dependencies->stopAddingConditions();
-   generateHelperCallInstruction(node, helper, dependencies, cg);
+
+   TR::GlobalFunctionCallData data(helper, node, dependencies, cg);
+   cg->getObjFmt()->emitGlobalFunctionCall(data);
+
    cg->stopUsingRegister(dummy1);
    cg->stopUsingRegister(dummy2);
    cg->stopUsingRegister(dummy3);
@@ -3225,7 +3263,8 @@ TR::Register *OMR::X86::TreeEvaluator::generateLEAForLoadAddr(TR::Node *node,
                                                           TR::MemoryReference *memRef,
                                                           TR::SymbolReference *symRef,
                                                           TR::CodeGenerator *cg,
-                                                          bool isInternalPointer)
+                                                          bool isInternalPointer,
+                                                          TR::Instruction *prevInstr)
    {
    TR::Register        *targetRegister;
 
@@ -3244,7 +3283,16 @@ TR::Register *OMR::X86::TreeEvaluator::generateLEAForLoadAddr(TR::Node *node,
          (node->getSymbol()->isClassObject() /*|| node->getSymbol()->isAddressOfClassObject()*/))
       op = LEA4RegMem;
 
-   TR::Instruction *instr = generateRegMemInstruction(op, node, targetRegister, memRef, cg);
+   TR::Instruction *instr;
+   if (prevInstr)
+      {
+      instr = generateRegMemInstruction(prevInstr, op, targetRegister, memRef, cg);
+      }
+   else
+      {
+      instr = generateRegMemInstruction(op, node, targetRegister, memRef, cg);
+      }
+
    memRef->decNodeReferenceCounts(cg);
    // HCR register PIC site in generateLEAForLoadAddr
    if (node && node->getSymbol()->isClassObject() && cg->wantToPatchClassPointer(NULL, node))
@@ -4382,3 +4430,41 @@ OMR::X86::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *
 
    return resultReg;
    }
+
+
+TR::MemoryReference *
+OMR::X86::TreeEvaluator::generateX86MemoryReferenceForLoadILOpCode(TR::Node *node, TR::Instruction *&insertAfterInstr, TR::CodeGenerator *cg)
+   {
+   insertAfterInstr = 0;
+   return generateX86MemoryReference(node, cg);
+   }
+
+TR::MemoryReference *
+OMR::X86::TreeEvaluator::generateX86MemoryReferenceForStoreILOpCode(TR::Node *node, TR::Instruction *&insertAfterInstr, TR::CodeGenerator *cg)
+   {
+   insertAfterInstr = 0;
+   return generateX86MemoryReference(node, cg);
+   }
+
+TR::MemoryReference *
+OMR::X86::TreeEvaluator::generateLoadConstantMemoryReference(TR::Node *node, intptr_t constant, TR::CodeGenerator *cg, TR_ExternalRelocationTargetKind reloKind)
+   {
+   TR::Compilation *comp = cg->comp();
+
+   intptr_t *ccConstantAddress = reinterpret_cast<intptr_t *>(cg->allocateCodeMemory(sizeof(intptr_t), false));
+
+   if (!ccConstantAddress)
+      {
+      comp->failCompilation<TR::CompilationException>("Could not allocate address constant");
+      }
+
+   *ccConstantAddress = constant;
+
+   TR::StaticSymbol *ccConstantSymbol =
+      TR::StaticSymbol::createWithAddress(comp->trHeapMemory(), TR::Address, reinterpret_cast<void *>(ccConstantAddress));
+   ccConstantSymbol->setNotDataAddress();
+   TR::SymbolReference *ccConstantSymRef = new (comp->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab(), ccConstantSymbol, 0);
+
+   return new (comp->trHeapMemory()) TR::MemoryReference(ccConstantSymRef, cg, true);
+   }
+

@@ -141,7 +141,6 @@ namespace TR { class X86FPMemRegInstruction;               }
 namespace TR { class X86FPRegMemInstruction;               }
 class TR_X86RegisterDependencyGroup;
 namespace TR { class X86RestartSnippet; }
-namespace TR { class X86PicDataSnippet; }
 namespace TR { class X86DivideCheckSnippet; }
 namespace TR { class X86FPConvertToIntSnippet; }
 namespace TR { class X86FPConvertToLongSnippet; }
@@ -161,12 +160,17 @@ namespace TR { class X86VFPCallCleanupInstruction; }
 
 #ifdef J9_PROJECT_SPECIFIC
 namespace TR { class X86CallSnippet; }
+namespace TR { class X86CallReadOnlySnippet; }
 namespace TR { class X86CheckFailureSnippet; }
 namespace TR { class X86CheckFailureSnippetWithResolve; }
 namespace TR { class X86BoundCheckWithSpineCheckSnippet; }
 namespace TR { class X86SpineCheckSnippet; }
 namespace TR { class X86ForceRecompilationSnippet; }
 namespace TR { class X86RecompilationSnippet; }
+namespace TR { class X86PicDataSnippet; }
+namespace TR { class X86ResolveVirtualDispatchReadOnlyDataSnippet; }
+namespace TR { class X86InterfaceDispatchReadOnlySnippet; }
+namespace J9 { namespace X86 { class UnresolvedDataReadOnlySnippet; } }
 #endif
 
 namespace TR { class PPCAlignmentNopInstruction;         }
@@ -331,6 +335,7 @@ namespace TR { class S390VirtualSnippet; }
 namespace TR { class S390VirtualUnresolvedSnippet; }
 namespace TR { class S390InterfaceCallSnippet; }
 namespace TR { class J9S390InterfaceCallDataSnippet; }
+namespace TR { class S390VirtualUnresolvedReadOnlySnippet; }
 #endif
 
 namespace TR { class ARM64ImmInstruction; }
@@ -860,13 +865,17 @@ public:
 
 #ifdef J9_PROJECT_SPECIFIC
    void print(TR::FILE *, TR::X86CallSnippet *);
+   void print(TR::FILE *, TR::X86CallReadOnlySnippet *);
    void print(TR::FILE *, TR::X86PicDataSnippet *);
+   void print(TR::FILE *, TR::X86ResolveVirtualDispatchReadOnlyDataSnippet *);
+   void print(TR::FILE *, TR::X86InterfaceDispatchReadOnlySnippet *);
    void print(TR::FILE *, TR::X86CheckFailureSnippet *);
    void print(TR::FILE *, TR::X86CheckFailureSnippetWithResolve *);
    void print(TR::FILE *, TR::X86BoundCheckWithSpineCheckSnippet *);
    void print(TR::FILE *, TR::X86SpineCheckSnippet *);
    void print(TR::FILE *, TR::X86ForceRecompilationSnippet *);
    void print(TR::FILE *, TR::X86RecompilationSnippet *);
+   void print(TR::FILE *, J9::X86::UnresolvedDataReadOnlySnippet *);
 #endif
 
    void print(TR::FILE *, TR::X86DivideCheckSnippet *);
@@ -1089,6 +1098,7 @@ public:
    void print(TR::FILE *, TR::S390VirtualUnresolvedSnippet *);
    void print(TR::FILE *, TR::S390InterfaceCallSnippet *);
    void print(TR::FILE *, TR::J9S390InterfaceCallDataSnippet *);
+   void print(TR::FILE *, TR::S390VirtualUnresolvedReadOnlySnippet *);
 #endif
    void print(TR::FILE *, TR::S390StackCheckFailureSnippet *);
    void print(TR::FILE *, TR::UnresolvedDataSnippet *);

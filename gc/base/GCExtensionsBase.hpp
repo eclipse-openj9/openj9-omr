@@ -570,9 +570,15 @@ public:
 	/* Begin command line options temporary home */
 	uintptr_t memoryMax;
 	uintptr_t initialMemorySize;
+#if defined(OMR_GC_SNAPSHOTS)
+	uintptr_t restoreNewSpaceSize;
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 	uintptr_t minNewSpaceSize;
 	uintptr_t newSpaceSize;
 	uintptr_t maxNewSpaceSize;
+#if defined(OMR_GC_SNAPSHOTS)
+	uintptr_t restoreOldSpaceSize;
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 	uintptr_t minOldSpaceSize;
 	uintptr_t oldSpaceSize;
 	uintptr_t maxOldSpaceSize;
@@ -1624,9 +1630,15 @@ public:
 		, cardTable(NULL)
 		, memoryMax(0)
 		, initialMemorySize(0)
+#if defined(OMR_GC_SNAPSHOTS)
+		, restoreNewSpaceSize(0)
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 		, minNewSpaceSize(0)
 		, newSpaceSize(0)
 		, maxNewSpaceSize(0)
+#if defined(OMR_GC_SNAPSHOTS)
+		, restoreOldSpaceSize(0)
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 		, minOldSpaceSize(0)
 		, oldSpaceSize(0)
 		, maxOldSpaceSize(0)

@@ -117,8 +117,9 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR
 // also handles ilload
 TR::Register *OMR::X86::AMD64::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::MemoryReference  *sourceMR = generateX86MemoryReference(node, cg);
-   TR::Register *reg = TR::TreeEvaluator::loadMemory(node, sourceMR, TR_RematerializableLong, node->getOpCode().isIndirect(), cg);
+   TR::Instruction *insertAfterInstr;
+   TR::MemoryReference *sourceMR = TR::TreeEvaluator::generateX86MemoryReferenceForLoadILOpCode(node, insertAfterInstr, cg);
+   TR::Register *reg = TR::TreeEvaluator::loadMemory(node, sourceMR, TR_RematerializableLong, node->getOpCode().isIndirect(), cg, insertAfterInstr);
 
    reg->setMemRef(sourceMR);
    node->setRegister(reg);

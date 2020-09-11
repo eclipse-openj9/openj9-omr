@@ -21,6 +21,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "codegen/CCData.hpp"
+#include "codegen/CCData_inlines.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
@@ -70,6 +72,8 @@
 #include "infra/List.hpp"
 #include "ras/Debug.hpp"
 #include "runtime/Runtime.hpp"
+#include "runtime/CodeCache.hpp"
+#include "runtime/CodeCacheManager.hpp"
 #include "x/codegen/BinaryCommutativeAnalyser.hpp"
 #include "x/codegen/CompareAnalyser.hpp"
 #include "x/codegen/FPTreeEvaluator.hpp"
@@ -428,10 +432,19 @@ TR::Register *OMR::X86::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::CodeG
 
 TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   const bool generateReadOnlyCode = cg->comp()->getGenerateReadOnlyCode();
    int32_t i;
    uint32_t numBranchTableEntries = node->getNumChildren() - 2;
-   intptr_t *branchTable =
-      (intptr_t*)cg->allocateCodeMemory(numBranchTableEntries * sizeof(branchTable[0]), cg->getCurrentEvaluationBlock()->isCold());
+   intptr_t *branchTable = NULL;
+   if (generateReadOnlyCode)
+      {
+      OMR::CCData *codeCacheData = cg->getCodeCache()->manager()->getCodeCacheData();
+      OMR::CCData::index_t index;
+      codeCacheData->put(NULL, numBranchTableEntries * sizeof(intptr_t), alignof(intptr_t), NULL, index);
+      branchTable = codeCacheData->get<intptr_t>(index);
+      }
+   else
+      branchTable = (intptr_t*)cg->allocateCodeMemory(numBranchTableEntries * sizeof(branchTable[0]), cg->getCurrentEvaluationBlock()->isCold());
 
    TR::Register *selectorReg = cg->evaluate(node->getFirstChild());
    TR_X86OpCodes opCode;
@@ -465,7 +478,7 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
 
    TR::MemoryReference *jumpMR = NULL;
    TR::Register *branchTableReg = NULL;
-   if (cg->comp()->target().is64Bit() && cg->comp()->compileRelocatableCode())
+   if (generateReadOnlyCode || (cg->comp()->target().is64Bit() && cg->comp()->compileRelocatableCode()))
       {
       // Generate position-independent code so that no (external) relocation is
       // necessary:

@@ -2397,11 +2397,6 @@ bool OMR::Power::CodeGenerator::is64BitProcessor()
       }
    }
 
-bool OMR::Power::CodeGenerator::getSupportsIbyteswap()
-   {
-   return true;
-   }
-
 bool
 OMR::Power::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol)
    {

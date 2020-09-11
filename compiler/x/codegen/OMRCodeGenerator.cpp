@@ -1079,12 +1079,6 @@ OMR::X86::CodeGenerator::getSupportsEncodeUtf16BigWithSurrogateTest()
    }
 
 bool
-OMR::X86::CodeGenerator::getSupportsIbyteswap()
-   {
-   return true;
-   }
-
-bool
 OMR::X86::CodeGenerator::getSupportsBitPermute()
    {
    return true;

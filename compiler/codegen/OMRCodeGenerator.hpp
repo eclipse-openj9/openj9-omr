@@ -1559,8 +1559,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    virtual bool getSupportsTLE();
 
-   virtual bool getSupportsIbyteswap();
-
    virtual bool getSupportsBitPermute();
 
    bool getSupportsAutoSIMD() { return _flags4.testAny(SupportsAutoSIMD);}

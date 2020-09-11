@@ -5826,8 +5826,6 @@ TR::Register *OMR::Power::TreeEvaluator::retrieveTOCRegister(TR::Node *node, TR:
 
 TR::Register *OMR::Power::TreeEvaluator::sbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(node->getNumChildren() == 1, "Wrong number of children in sbyteswapEvaluator");
-
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *tgtRegister = cg->allocateRegister();
 
@@ -5898,8 +5896,6 @@ TR::Register *OMR::Power::TreeEvaluator::sbyteswapEvaluator(TR::Node *node, TR::
 
 TR::Register * OMR::Power::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-   TR_ASSERT(node->getNumChildren() == 1, "Wrong number of children in ibyteswapEvaluator");
-
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *tgtRegister = cg->allocateRegister();
 
@@ -5944,7 +5940,6 @@ TR::Register * OMR::Power::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR:
 TR::Register *OMR::Power::TreeEvaluator::lbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
-   TR_ASSERT(node->getNumChildren() == 1, "Wrong number of children in lbyteswapEvaluator");
 
    if (comp->target().is64Bit())
       {

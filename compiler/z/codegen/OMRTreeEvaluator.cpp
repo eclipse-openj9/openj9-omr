@@ -8308,7 +8308,6 @@ inlineP256Mod(TR::Node * node, TR::CodeGenerator * cg)
 
 TR::Register *inlineShortReverseBytes(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(node->getNumChildren()==1, "Wrong number of children in inlineShortReverseBytes");
    TR::Node * firstChild = node->getFirstChild();
    TR::Register *srcReg = cg->evaluate(firstChild);
    cg->decReferenceCount(firstChild);
@@ -8326,7 +8325,6 @@ TR::Register *OMR::Z::TreeEvaluator::sbyteswapEvaluator(TR::Node *node, TR::Code
 
 TR::Register *inlineIntegerReverseBytes(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(node->getNumChildren()==1, "Wrong number of children in inlineIntegerReverseBytes");
    TR::Node * firstChild = node->getFirstChild();
    TR::Register *srcReg = cg->evaluate(firstChild);
    cg->decReferenceCount(firstChild);
@@ -8343,7 +8341,6 @@ TR::Register *OMR::Z::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR::Code
 
 TR::Register *inlineLongReverseBytes(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(node->getNumChildren()==1, "Wrong number of children in inlineIntegerReverseBytes");
    TR::Node * firstChild = node->getFirstChild();
    TR::Register *srcReg = cg->evaluate(firstChild);
    cg->decReferenceCount(firstChild);

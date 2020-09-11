@@ -1017,18 +1017,15 @@ OMR::ARM64::TreeEvaluator::fselectEvaluator(TR::Node *node, TR::CodeGenerator *c
    TR::Register *resultReg = trueReg;
 
    bool isDouble = trueNode->getDataType().isDouble();
-   TR::InstOpCode::Mnemonic movOp = isDouble ? TR::InstOpCode::fmovd : TR::InstOpCode::fmovs;
 
    if (!cg->canClobberNodesRegister(trueNode))
       {
       resultReg = isDouble ? cg->allocateRegister(TR_FPR) : cg->allocateSinglePrecisionRegister();
-      generateTrg1Src1Instruction(cg, movOp, node, resultReg, trueReg);
       }
 
-   TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
-   generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, condReg, doneLabel);
-   generateTrg1Src1Instruction(cg, movOp, node, resultReg, falseReg);
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel);
+   generateCompareImmInstruction(cg, node, condReg, 0, true); // 64-bit compare
+   TR::InstOpCode::Mnemonic fcselOp = isDouble ? TR::InstOpCode::fcseld : TR::InstOpCode::fcsels;
+   generateCondTrg1Src2Instruction(cg, fcselOp, node, resultReg, trueReg, falseReg, TR::CC_NE);
 
    node->setRegister(resultReg);
    cg->decReferenceCount(condNode);

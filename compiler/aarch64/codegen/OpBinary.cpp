@@ -451,6 +451,9 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x1E202008,	/* FCMP      	fcmps_zero	 */
 		0x1E602000,	/* FCMP      	fcmpd	 */
 		0x1E602008,	/* FCMP      	fcmpd_zero	 */
+	/* Floating-point conditional select */
+		0x1E200C00,	/* FCSEL     	fcsels	 */
+		0x1E600C00,	/* FCSEL     	fcseld	 */
 	/* Floating-Point Data-processing (1 source) */
 		0x1E204000,	/* FMOV      	fmovs	 */
 		0x1E604000,	/* FMOV      	fmovd	 */

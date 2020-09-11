@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -180,6 +180,13 @@ MM_HeapVirtualMemory::doubleMapArraylet(MM_EnvironmentBase *env, void* arrayletL
 {
 	MM_MemoryManager* memoryManager = MM_GCExtensionsBase::getExtensions(_omrVM)->memoryManager;
 	return memoryManager->doubleMapArraylet(&_vmemHandle, env, arrayletLeaves, arrayletLeafCount, arrayletLeafSize, byteAmount, newIdentifier, pageSize);
+}
+
+void*
+MM_HeapVirtualMemory::doubleMapRegions(MM_EnvironmentBase *env, void* regions[], UDATA regionsCount, UDATA regionSize, UDATA byteAmount, struct J9PortVmemIdentifier *newIdentifier, UDATA pageSize, void *preferredAddress)
+{
+	MM_MemoryManager* memoryManager = MM_GCExtensionsBase::getExtensions(_omrVM)->memoryManager;
+	return memoryManager->doubleMapRegions(&_vmemHandle, env, regions, regionsCount, regionSize, byteAmount, newIdentifier, pageSize, preferredAddress);
 }
 #endif /* defined(OMR_GC_DOUBLE_MAP_ARRAYLETS) */
 

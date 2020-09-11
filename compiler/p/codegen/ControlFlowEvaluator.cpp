@@ -133,6 +133,8 @@ CRCompareCondition compareConditionInCR(CompareCondition cond)
          return CRCompareCondition(TR::RealRegister::CRCC_GT, false);
       case CompareCondition::le:
          return CRCompareCondition(TR::RealRegister::CRCC_GT, true);
+      default:
+         TR_ASSERT_FATAL(false, "Invalid CompareCondition %d", static_cast<int>(cond));
       }
    }
 
@@ -162,6 +164,8 @@ CompareCondition reverseCondition(CompareCondition cond)
          return CompareCondition::le;
       case CompareCondition::le:
          return CompareCondition::gt;
+      default:
+         TR_ASSERT_FATAL(false, "Invalid CompareCondition %d", static_cast<int>(cond));
       }
    }
 
@@ -192,6 +196,8 @@ CompareCondition flipConditionOrder(CompareCondition cond)
          return CompareCondition::lt;
       case CompareCondition::le:
          return CompareCondition::ge;
+      default:
+         TR_ASSERT_FATAL(false, "Invalid CompareCondition %d", static_cast<int>(cond));
       }
    }
 
@@ -222,6 +228,8 @@ TR::InstOpCode::Mnemonic compareConditionToBranch(CompareCondition cond)
          return TR::InstOpCode::bgt;
       case CompareCondition::le:
          return TR::InstOpCode::ble;
+      default:
+         TR_ASSERT_FATAL(false, "Invalid CompareCondition %d", static_cast<int>(cond));
       }
    }
 
@@ -598,6 +606,9 @@ CompareCondition evaluateDualIntCompareToConditionRegister(
          generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::cror, node, condReg, condReg2, condReg,
             (TR::RealRegister::CRCC_EQ << TR::RealRegister::pos_RT) | (TR::RealRegister::CRCC_EQ << TR::RealRegister::pos_RA) | (TR::RealRegister::CRCC_LT << TR::RealRegister::pos_RB));
          break;
+
+      default:
+         TR_ASSERT_FATAL(false, "Invalid CompareCondition %d", static_cast<int>(compareInfo.cond));
       }
 
    cg->stopUsingRegister(condReg2);

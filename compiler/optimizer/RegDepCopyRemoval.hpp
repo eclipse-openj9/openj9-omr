@@ -97,6 +97,7 @@ class RegDepCopyRemoval : public TR::Optimization
       {
       TR::Node *original;
       TR::Node *selected;
+      TR::Node *regStoreNode;
       };
 
    const char *registerName(TR_GlobalRegisterNumber reg);
@@ -106,6 +107,7 @@ class RegDepCopyRemoval : public TR::Optimization
 
    void discardAllNodeChoices();
    void discardNodeChoice(TR_GlobalRegisterNumber reg);
+   void clearNodeChoice(TR_GlobalRegisterNumber reg);
    void rememberNodeChoice(TR_GlobalRegisterNumber reg, TR::Node *selected);
 
    void processRegDeps(TR::Node *deps, TR::TreeTop *depTT);

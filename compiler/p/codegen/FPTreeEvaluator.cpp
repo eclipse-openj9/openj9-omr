@@ -73,7 +73,7 @@ TR::Register *OMR::Power::TreeEvaluator::ibits2fEvaluator(TR::Node *node, TR::Co
    if (child->getRegister() == NULL && child->getReferenceCount() == 1 &&
        child->getOpCode().isLoadVar())
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
+      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
 #ifdef J9_PROJECT_SPECIFIC
       if (node->getFirstChild()->getOpCodeValue() == TR::iriload)
          {
@@ -108,8 +108,8 @@ TR::Register *OMR::Power::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Co
       {
       childEval = false;
       floatReg = cg->allocateSinglePrecisionRegister();
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, floatReg, new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMR, 0, 4, cg));
+      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, floatReg, TR::MemoryReference::createWithMemRef(cg, node, *tempMR, 0, 4));
       generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, target, tempMR);
       tempMR->decNodeReferenceCounts(cg);
       }
@@ -162,7 +162,7 @@ TR::Register *OMR::Power::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::Co
    if (child->getRegister() == NULL && child->getReferenceCount() == 1 &&
        child->getOpCode().isLoadVar())
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 8, cg);
+      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 8);
 #ifdef J9_PROJECT_SPECIFIC
       if (child->getOpCodeValue() == TR::irlload && cg->comp()->target().is64Bit())        // 64-bit only
          {
@@ -176,8 +176,8 @@ TR::Register *OMR::Power::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::Co
          {
          TR::Register     *highReg = cg->allocateRegister();
          TR::Register     *lowReg = cg->allocateRegister();
-         TR::MemoryReference *tempMRLoad1 = new (cg->trHeapMemory()) TR::MemoryReference(child, *tempMR, 0, 4, cg);
-         TR::MemoryReference *tempMRLoad2 = new (cg->trHeapMemory()) TR::MemoryReference(child, *tempMR, 4, 4, cg);
+         TR::MemoryReference *tempMRLoad1 = TR::MemoryReference::createWithMemRef(cg, child, *tempMR, 0, 4);
+         TR::MemoryReference *tempMRLoad2 = TR::MemoryReference::createWithMemRef(cg, child, *tempMR, 4, 4);
 
          tempMRLoad1->forceIndexedForm(child, cg);
          tempMRLoad2->forceIndexedForm(child, cg);
@@ -232,14 +232,14 @@ TR::Register *OMR::Power::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::Co
        child->getOpCode().isLoadVar())
       {
       childEval = false;
-      TR::MemoryReference  *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 8, cg);
+      TR::MemoryReference  *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 8);
       doubleReg = cg->allocateRegister(TR_FPR);
       generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, doubleReg, tempMR);
 
       if (cg->comp()->target().is64Bit())
          {
          lReg  = cg->allocateRegister();
-         TR::MemoryReference  *tempMR2 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMR, 0, 8, cg);
+         TR::MemoryReference  *tempMR2 = TR::MemoryReference::createWithMemRef(cg, node, *tempMR, 0, 8);
          generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, lReg, tempMR2);
          tempMR2->decNodeReferenceCounts(cg);
          }
@@ -249,9 +249,9 @@ TR::Register *OMR::Power::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::Co
          highReg = cg->allocateRegister();
 
          TR::MemoryReference *highMem, *lowMem;
-         highMem = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMR, 0, 4, cg);
+         highMem = TR::MemoryReference::createWithMemRef(cg, node, *tempMR, 0, 4);
          generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, highReg, highMem);
-         lowMem = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMR, 4, 4, cg);
+         lowMem = TR::MemoryReference::createWithMemRef(cg, node, *tempMR, 4, 4);
          generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, lowReg, lowMem);
 
          highMem->decNodeReferenceCounts(cg);
@@ -375,7 +375,7 @@ TR::Register *OMR::Power::TreeEvaluator::floadEvaluator(TR::Node *node, TR::Code
 
    // If the reference is volatile or potentially volatile, the layout needs to be
    // fixed for patching if it turns out to be not a volatile atfer all.
-   tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+   tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 4);
 
    generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, tempReg, tempMR);
    if (needSync)
@@ -403,7 +403,7 @@ TR::Register *OMR::Power::TreeEvaluator::dloadHelper(TR::Node *node, TR::CodeGen
 #ifdef J9_PROJECT_SPECIFIC
          // NOTE NOTE -- If the reference is volatile or potentially volatile, the layout
          // needs to be fixed for patching if it turns out to be not a volatile after all.
-         tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+         tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
 
          if (opcode == TR::InstOpCode::lxvdsx)
             tempMR->forceIndexedForm(node, cg);
@@ -415,7 +415,7 @@ TR::Register *OMR::Power::TreeEvaluator::dloadHelper(TR::Node *node, TR::CodeGen
          }
       else
          {
-         tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+         tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
          if (tempMR->getIndexRegister() != NULL)
             generateTrg1Src2Instruction (cg, TR::InstOpCode::add, node, addrReg, tempMR->getBaseRegister(), tempMR->getIndexRegister());
          else
@@ -448,7 +448,7 @@ TR::Register *OMR::Power::TreeEvaluator::dloadHelper(TR::Node *node, TR::CodeGen
       {
       // If the reference is volatile or potentially volatile, the layout needs to be
       // fixed for patching if it turns out to be not a volatile after all.
-      tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+      tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
 
       if (opcode == TR::InstOpCode::lxvdsx || opcode == TR::InstOpCode::lxsdx)
          {
@@ -458,7 +458,7 @@ TR::Register *OMR::Power::TreeEvaluator::dloadHelper(TR::Node *node, TR::CodeGen
             generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, tmpReg, tempMR);
             tempMR->decNodeReferenceCounts(cg);
 
-            tempMR = new (cg->trHeapMemory()) TR::MemoryReference(NULL, tmpReg, 16, cg);
+            tempMR = TR::MemoryReference::createWithIndexReg(cg, NULL, tmpReg, 16);
             }
          else
             {
@@ -492,14 +492,14 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
    if (node->getDataType() == TR::VectorInt8)
       {
       TR::SymbolReference    *temp    = cg->allocateLocalTemp(TR::VectorInt8);
-      TR::MemoryReference *tempMR  = new (cg->trHeapMemory()) TR::MemoryReference(node, temp, 1, cg);
+      TR::MemoryReference *tempMR  = TR::MemoryReference::createWithSymRef(cg, node, temp, 1);
       TR::Register *srcReg = cg->evaluate(child);
       generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, tempMR, srcReg);
 
       TR::Register *tmpReg = cg->allocateRegister();
 
       generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, tmpReg, tempMR);
-      tempMR = new (cg->trHeapMemory()) TR::MemoryReference(NULL, tmpReg, 16, cg);
+      tempMR = TR::MemoryReference::createWithIndexReg(cg, NULL, tmpReg, 16);
       cg->stopUsingRegister(tmpReg);
 
       TR::Register *trgReg = cg->allocateRegister(TR_VRF);
@@ -517,14 +517,14 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
    else if (node->getDataType() == TR::VectorInt16)
       {
       TR::SymbolReference    *temp    = cg->allocateLocalTemp(TR::VectorInt16);
-      TR::MemoryReference *tempMR  = new (cg->trHeapMemory()) TR::MemoryReference(node, temp, 2, cg);
+      TR::MemoryReference *tempMR  = TR::MemoryReference::createWithSymRef(cg, node, temp, 2);
       TR::Register *srcReg = cg->evaluate(child);
       generateMemSrc1Instruction(cg, TR::InstOpCode::sth, node, tempMR, srcReg);
 
       TR::Register *tmpReg = cg->allocateRegister();
 
       generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, tmpReg, tempMR);
-      tempMR = new (cg->trHeapMemory()) TR::MemoryReference(NULL, tmpReg, 16, cg);
+      tempMR = TR::MemoryReference::createWithIndexReg(cg, NULL, tmpReg, 16);
       cg->stopUsingRegister(tmpReg);
 
       TR::Register *trgReg = cg->allocateRegister(TR_VRF);
@@ -552,9 +552,9 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
       else
          {
          TR::SymbolReference    *localTemp = cg->allocateLocalTemp(TR::Int32);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(node, localTemp, 4, cg), tempReg);
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, TR::MemoryReference::createWithSymRef(cg, node, localTemp, 4), tempReg);
 
-         TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, localTemp, 4, cg);
+         TR::MemoryReference *tempMR = TR::MemoryReference::createWithSymRef(cg, node, localTemp, 4);
          tempMR->forceIndexedForm(node, cg);
          generateTrg1MemInstruction(cg, TR::InstOpCode::lxsdx, node, resReg, tempMR);
          tempMR->decNodeReferenceCounts(cg);
@@ -594,7 +594,7 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
       else
          {
          TR::SymbolReference *temp   = cg->allocateLocalTemp(TR::Int64);
-         TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, temp, 8, cg);
+         TR::MemoryReference *tempMR = TR::MemoryReference::createWithSymRef(cg, node, temp, 8);
 
          if (cg->comp()->target().is64Bit())
             {
@@ -602,14 +602,14 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
             }
          else
             {
-            TR::MemoryReference *tempMR2 =  new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMR, 4, 4, cg);
+            TR::MemoryReference *tempMR2 =  TR::MemoryReference::createWithMemRef(cg, node, *tempMR, 4, 4);
             generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, tempMR, srcReg->getHighOrder());
             generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, tempMR2, srcReg->getLowOrder());
             }
 
          TR::Register *tmpReg = cg->allocateRegister();
          generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, tmpReg, tempMR);
-         tempMR = new (cg->trHeapMemory()) TR::MemoryReference(NULL, tmpReg, 16, cg);
+         tempMR = TR::MemoryReference::createWithIndexReg(cg, NULL, tmpReg, 16);
          cg->stopUsingRegister(tmpReg);
          generateTrg1MemInstruction(cg, TR::InstOpCode::lxvdsx, node, trgReg, tempMR);
          }
@@ -831,7 +831,7 @@ TR::Register *OMR::Power::TreeEvaluator::fstoreEvaluator(TR::Node *node, TR::Cod
 
    // If the reference is volatile or potentially volatile, the layout needs to be
    // fixed for patching if it turns out to be not a volatile after all.
-   tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
+   tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 4);
 
    if (needSync)
       generateInstruction(cg, TR::InstOpCode::lwsync, node);
@@ -885,7 +885,7 @@ TR::Register* OMR::Power::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::Cod
 #ifdef J9_PROJECT_SPECIFIC
          // NOTE NOTE -- If the reference is volatile or potentially volatile, the layout
          // needs to be fixed for patching if it turns out to be not a volatile after all.
-         tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+         tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
          generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, tempMR, valueReg);
          tempMR->getUnresolvedSnippet()->setIsSpecialDouble();
          tempMR->getUnresolvedSnippet()->setInSyncSequence();
@@ -893,7 +893,7 @@ TR::Register* OMR::Power::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::Cod
          }
       else
          {
-         tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+         tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
          if (tempMR->getIndexRegister() != NULL)
              generateTrg1Src2Instruction (cg, TR::InstOpCode::add, node, addrReg, tempMR->getBaseRegister(), tempMR->getIndexRegister());
          else
@@ -926,7 +926,7 @@ TR::Register* OMR::Power::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::Cod
       {
       // If the reference is volatile or potentially volatile, the layout needs to be
       // fixed for patching if it turns out to be not a volatile after all.
-      tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+      tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
       if (needSync)
          generateInstruction(cg, TR::InstOpCode::lwsync, node);
       generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, tempMR, valueReg);
@@ -1363,7 +1363,7 @@ TR::Register *OMR::Power::TreeEvaluator::i2fEvaluator(TR::Node *node, TR::CodeGe
        child->getReferenceCount() == 1 && child->getRegister() == NULL &&
        !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
+      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
       tempMR->forceIndexedForm(node, cg);
       tempReg = cg->allocateRegister(TR_FPR); // This one is 64bit
       trgReg = cg->allocateSinglePrecisionRegister(); // Allocate here
@@ -1413,7 +1413,7 @@ TR::Register *OMR::Power::TreeEvaluator::i2dEvaluator(TR::Node *node, TR::CodeGe
        !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
       {
       // possible TODO: if refcount > 1, do both load and lfiwax?
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
+      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
       tempMR->forceIndexedForm(node, cg);
       trgReg = cg->allocateRegister(TR_FPR);
       if (node->getOpCodeValue() == TR::i2d)
@@ -1600,7 +1600,7 @@ TR::Register *OMR::Power::TreeEvaluator::l2fEvaluator(TR::Node *node, TR::CodeGe
        child->getRegister() == NULL &&
        !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
+      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
       tempMR->forceIndexedForm(node, cg);
       TR::Register *tempReg = cg->allocateRegister(TR_FPR); // Double
       trgReg = cg->allocateSinglePrecisionRegister(TR_FPR); // Single
@@ -1628,7 +1628,7 @@ TR::Register *OMR::Power::TreeEvaluator::l2dEvaluator(TR::Node *node, TR::CodeGe
        child->getRegister() == NULL &&
        !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
       {
-         TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
+         TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
          tempMR->forceIndexedForm(node, cg);
          trgReg = cg->allocateRegister(TR_FPR); // Double
          generateTrg1MemInstruction(cg, TR::InstOpCode::lfdx, node, trgReg, tempMR);

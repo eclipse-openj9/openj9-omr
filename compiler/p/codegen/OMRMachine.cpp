@@ -734,7 +734,7 @@ TR::RealRegister *OMR::Power::Machine::freeBestRegister(TR::Instruction     *cur
          best->getRegisterNumber() - TR::RealRegister::FirstCCR);
    candidates[0]->setBackingStorage(location);
 
-   tmemref = new (self()->cg()->trHeapMemory()) TR::MemoryReference(currentNode, location->getSymbolReference(), TR::Compiler->om.sizeofReferenceAddress(), self()->cg());
+   tmemref = TR::MemoryReference::createWithSymRef(self()->cg(), currentNode, location->getSymbolReference(), TR::Compiler->om.sizeofReferenceAddress());
 
    if (rk == TR_CCR)
       {
@@ -934,7 +934,7 @@ TR::RealRegister *OMR::Power::Machine::reverseSpillState(TR::Instruction      *c
          crtemp->setHasBeenAssignedInMethod(true);
       }
 
-   tmemref = new (self()->cg()->trHeapMemory()) TR::MemoryReference(currentNode, location->getSymbolReference(), TR::Compiler->om.sizeofReferenceAddress(), self()->cg());
+   tmemref = TR::MemoryReference::createWithSymRef(self()->cg(), currentNode, location->getSymbolReference(), TR::Compiler->om.sizeofReferenceAddress());
    TR::Instruction *spillInstr = NULL;
 
    int32_t dataSize = spillSizeForRegister(spilledRegister);

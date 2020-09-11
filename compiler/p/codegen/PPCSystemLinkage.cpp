@@ -651,7 +651,7 @@ TR::PPCSystemLinkage::createPrologue(
       }
 
    if (machine->getLinkRegisterKilled())
-      cursor = generateMemSrc1Instruction(cg(),TR::InstOpCode::Op_st, firstNode, new (trHeapMemory()) TR::MemoryReference(sp, 2*TR::Compiler->om.sizeofReferenceAddress(), TR::Compiler->om.sizeofReferenceAddress(), cg()), gr0, cursor);
+      cursor = generateMemSrc1Instruction(cg(),TR::InstOpCode::Op_st, firstNode, TR::MemoryReference::createWithDisplacement(cg(), sp, 2*TR::Compiler->om.sizeofReferenceAddress(), TR::Compiler->om.sizeofReferenceAddress()), gr0, cursor);
 
    // Save in-register arguments to the caller frame: this will not be
    // necessary if this linkage can be accounted for in the code-gen.
@@ -668,7 +668,7 @@ TR::PPCSystemLinkage::createPrologue(
    for (regIndex=TR::RealRegister::LastFPR; regIndex>=savedFirst; regIndex=(TR::RealRegister::RegNum)((uint32_t)regIndex-1))
       {
       argSize = argSize - 8;
-      cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::stfd, firstNode, new (trHeapMemory()) TR::MemoryReference(sp, argSize, 8, cg()), machine->getRealRegister(regIndex), cursor);
+      cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::stfd, firstNode, TR::MemoryReference::createWithDisplacement(cg(), sp, argSize, 8), machine->getRealRegister(regIndex), cursor);
       }
 
    savedFirst = TR::RealRegister::gr13;
@@ -686,12 +686,12 @@ TR::PPCSystemLinkage::createPrologue(
          for (regIndex=TR::RealRegister::LastGPR; regIndex>=savedFirst; regIndex=(TR::RealRegister::RegNum)((uint32_t)regIndex-1))
             {
             argSize = argSize - TR::Compiler->om.sizeofReferenceAddress();
-            cursor = generateMemSrc1Instruction(cg(),TR::InstOpCode::Op_st, firstNode, new (trHeapMemory()) TR::MemoryReference(sp, argSize, TR::Compiler->om.sizeofReferenceAddress(), cg()), machine->getRealRegister(regIndex), cursor);
+            cursor = generateMemSrc1Instruction(cg(),TR::InstOpCode::Op_st, firstNode, TR::MemoryReference::createWithDisplacement(cg(), sp, argSize, TR::Compiler->om.sizeofReferenceAddress()), machine->getRealRegister(regIndex), cursor);
             }
       else
          {
          argSize = argSize - (TR::RealRegister::LastGPR - savedFirst + 1) * 4;
-         cursor = generateMemSrc1Instruction(cg(), (savedFirst==TR::RealRegister::LastGPR)?TR::InstOpCode::stw:TR::InstOpCode::stmw, firstNode, new (trHeapMemory()) TR::MemoryReference(sp, argSize, 4*(TR::RealRegister::LastGPR-savedFirst+1), cg()), machine->getRealRegister(savedFirst), cursor);
+         cursor = generateMemSrc1Instruction(cg(), (savedFirst==TR::RealRegister::LastGPR)?TR::InstOpCode::stw:TR::InstOpCode::stmw, firstNode, TR::MemoryReference::createWithDisplacement(cg(), sp, argSize, 4*(TR::RealRegister::LastGPR-savedFirst+1)), machine->getRealRegister(savedFirst), cursor);
          }
       }
 
@@ -701,7 +701,7 @@ TR::PPCSystemLinkage::createPrologue(
         machine->getRealRegister(TR::RealRegister::cr4)->getHasBeenAssignedInMethod() )
       {
       cursor = generateTrg1Instruction(cg(), TR::InstOpCode::mfcr, firstNode, gr0, cursor);
-      cursor = generateMemSrc1Instruction(cg(),TR::InstOpCode::Op_st, firstNode, new (trHeapMemory()) TR::MemoryReference(sp, TR::Compiler->om.sizeofReferenceAddress(), TR::Compiler->om.sizeofReferenceAddress(), cg()), gr0, cursor);
+      cursor = generateMemSrc1Instruction(cg(),TR::InstOpCode::Op_st, firstNode, TR::MemoryReference::createWithDisplacement(cg(), sp, TR::Compiler->om.sizeofReferenceAddress(), TR::Compiler->om.sizeofReferenceAddress()), gr0, cursor);
       }
 
    // If only the link area is needed, a stack frame is unnecessary.
@@ -714,11 +714,11 @@ TR::PPCSystemLinkage::createPrologue(
       if (size > (-LOWER_IMMED))
          {
          cursor = loadConstant(cg(), firstNode, -size, gr11, cursor);
-         cursor = generateMemSrc1Instruction(cg(),TR::InstOpCode::Op_stux, firstNode, new (trHeapMemory()) TR::MemoryReference(sp, gr11, TR::Compiler->om.sizeofReferenceAddress(), cg()), sp, cursor);
+         cursor = generateMemSrc1Instruction(cg(),TR::InstOpCode::Op_stux, firstNode, TR::MemoryReference::createWithIndexReg(cg(), sp, gr11, TR::Compiler->om.sizeofReferenceAddress()), sp, cursor);
          }
       else
          {
-         cursor = generateMemSrc1Instruction(cg(),TR::InstOpCode::Op_stu, firstNode, new (trHeapMemory()) TR::MemoryReference(sp, -size, TR::Compiler->om.sizeofReferenceAddress(), cg()), sp, cursor);
+         cursor = generateMemSrc1Instruction(cg(),TR::InstOpCode::Op_stu, firstNode, TR::MemoryReference::createWithDisplacement(cg(), sp, -size, TR::Compiler->om.sizeofReferenceAddress()), sp, cursor);
          }
       }
    else   // leaf routine
@@ -771,7 +771,7 @@ TR::PPCSystemLinkage::createEpilogue(TR::Instruction *cursor)
    for (regIndex=TR::RealRegister::LastFPR; regIndex>=savedFirst; regIndex=(TR::RealRegister::RegNum)((uint32_t)regIndex-1))
       {
       saveSize = saveSize - 8;
-      cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::lfd, currentNode, machine->getRealRegister(regIndex), new (trHeapMemory()) TR::MemoryReference(sp, saveSize, 8, cg()), cursor);
+      cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::lfd, currentNode, machine->getRealRegister(regIndex), TR::MemoryReference::createWithDisplacement(cg(), sp, saveSize, 8), cursor);
       }
 
    savedFirst = TR::RealRegister::gr13;
@@ -789,12 +789,12 @@ TR::PPCSystemLinkage::createEpilogue(TR::Instruction *cursor)
          for (regIndex=TR::RealRegister::LastGPR; regIndex>=savedFirst; regIndex=(TR::RealRegister::RegNum)((uint32_t)regIndex-1))
             {
             saveSize = saveSize - TR::Compiler->om.sizeofReferenceAddress();
-            cursor = generateTrg1MemInstruction(cg(),TR::InstOpCode::Op_load, currentNode, machine->getRealRegister(regIndex), new (trHeapMemory()) TR::MemoryReference(sp, saveSize, TR::Compiler->om.sizeofReferenceAddress(), cg()), cursor);
+            cursor = generateTrg1MemInstruction(cg(),TR::InstOpCode::Op_load, currentNode, machine->getRealRegister(regIndex), TR::MemoryReference::createWithDisplacement(cg(), sp, saveSize, TR::Compiler->om.sizeofReferenceAddress()), cursor);
             }
       else
          {
          saveSize = saveSize - (TR::RealRegister::LastGPR - savedFirst + 1) * 4;
-         cursor = generateTrg1MemInstruction(cg(), (savedFirst==TR::RealRegister::LastGPR)?TR::InstOpCode::lwz:TR::InstOpCode::lmw, currentNode, machine->getRealRegister(savedFirst), new (trHeapMemory()) TR::MemoryReference(sp, saveSize, 4*(TR::RealRegister::LastGPR-savedFirst+1), cg()), cursor);
+         cursor = generateTrg1MemInstruction(cg(), (savedFirst==TR::RealRegister::LastGPR)?TR::InstOpCode::lwz:TR::InstOpCode::lmw, currentNode, machine->getRealRegister(savedFirst), TR::MemoryReference::createWithDisplacement(cg(), sp, saveSize, 4*(TR::RealRegister::LastGPR-savedFirst+1)), cursor);
          }
       }
 
@@ -819,7 +819,7 @@ TR::PPCSystemLinkage::createEpilogue(TR::Instruction *cursor)
 
    if (machine->getLinkRegisterKilled())
       {
-      cursor = generateTrg1MemInstruction(cg(),TR::InstOpCode::Op_load, currentNode, gr0, new (trHeapMemory()) TR::MemoryReference(sp, 2*TR::Compiler->om.sizeofReferenceAddress(), TR::Compiler->om.sizeofReferenceAddress(), cg()), cursor);
+      cursor = generateTrg1MemInstruction(cg(),TR::InstOpCode::Op_load, currentNode, gr0, TR::MemoryReference::createWithDisplacement(cg(), sp, 2*TR::Compiler->om.sizeofReferenceAddress(), TR::Compiler->om.sizeofReferenceAddress()), cursor);
       cursor = generateSrc1Instruction(cg(), TR::InstOpCode::mtlr, currentNode, gr0, 0, cursor);
       }
 
@@ -828,7 +828,7 @@ TR::PPCSystemLinkage::createEpilogue(TR::Instruction *cursor)
         machine->getRealRegister(TR::RealRegister::cr3)->getHasBeenAssignedInMethod() ||
         machine->getRealRegister(TR::RealRegister::cr4)->getHasBeenAssignedInMethod() )
       {
-      cursor = generateTrg1MemInstruction(cg(),TR::InstOpCode::Op_load, currentNode, gr0, new (trHeapMemory()) TR::MemoryReference(sp, TR::Compiler->om.sizeofReferenceAddress(), TR::Compiler->om.sizeofReferenceAddress(), cg()), cursor);
+      cursor = generateTrg1MemInstruction(cg(),TR::InstOpCode::Op_load, currentNode, gr0, TR::MemoryReference::createWithDisplacement(cg(), sp, TR::Compiler->om.sizeofReferenceAddress(), TR::Compiler->om.sizeofReferenceAddress()), cursor);
       cursor = generateSrc1Instruction(cg(), TR::InstOpCode::mtcr, currentNode, gr0, 0, cursor);
       }
 
@@ -1441,9 +1441,9 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
             TR::Register *geReg = dependencies->searchPreConditionRegister(TR::RealRegister::gr12);
             if (!cg()->comp()->getOption(TR_DisableTOC))
                generateTrg1MemInstruction(cg(),TR::InstOpCode::Op_load, callNode, geReg,
-                  new (cg()->trHeapMemory()) TR::MemoryReference(cg()->getTOCBaseRegister(),
+                  TR::MemoryReference::createWithDisplacement(cg(), cg()->getTOCBaseRegister(),
                        (refNum-1)*TR::Compiler->om.sizeofReferenceAddress(),
-                       TR::Compiler->om.sizeofReferenceAddress(), cg()));
+                       TR::Compiler->om.sizeofReferenceAddress()));
             else
                loadAddressConstant(cg(), callNode, (int64_t)runtimeHelperValue((TR_RuntimeHelper)refNum), geReg);
             }
@@ -1571,7 +1571,7 @@ void TR::PPCSystemLinkage::buildVirtualDispatch(TR::Node                        
    if (cg()->comp()->target().cpu.isBigEndian())
       {
       // load target from FD
-      generateTrg1MemInstruction(cg(),TR::InstOpCode::Op_load, callNode, gr0, new (trHeapMemory()) TR::MemoryReference(callNode->getChild(0)->getRegister(), 0, TR::Compiler->om.sizeofReferenceAddress(), cg()));
+      generateTrg1MemInstruction(cg(),TR::InstOpCode::Op_load, callNode, gr0, TR::MemoryReference::createWithDisplacement(cg(), callNode->getChild(0)->getRegister(), 0, TR::Compiler->om.sizeofReferenceAddress()));
 
       targetRegister = gr0;
       }
@@ -1585,12 +1585,12 @@ void TR::PPCSystemLinkage::buildVirtualDispatch(TR::Node                        
    generateSrc1Instruction(cg(), TR::InstOpCode::mtctr, callNode, targetRegister, 0);
 
    if (cg()->comp()->target().cpu.isBigEndian())
-      generateTrg1MemInstruction(cg(),TR::InstOpCode::Op_load, callNode, grTOCReg, new (trHeapMemory()) TR::MemoryReference(callNode->getChild(0)->getRegister(), TR::Compiler->om.sizeofReferenceAddress(), TR::Compiler->om.sizeofReferenceAddress(), cg()));
+      generateTrg1MemInstruction(cg(),TR::InstOpCode::Op_load, callNode, grTOCReg, TR::MemoryReference::createWithDisplacement(cg(), callNode->getChild(0)->getRegister(), TR::Compiler->om.sizeofReferenceAddress(), TR::Compiler->om.sizeofReferenceAddress()));
 
    generateDepInstruction(cg(), TR::InstOpCode::bctrl, callNode, dependencies);
 
    // load JIT TOC back
-   generateTrg1MemInstruction(cg(),TR::InstOpCode::Op_load, callNode, grTOCReg, new (trHeapMemory()) TR::MemoryReference(grSysStackReg, callerSaveTOCOffset, TR::Compiler->om.sizeofReferenceAddress(), cg()));
+   generateTrg1MemInstruction(cg(),TR::InstOpCode::Op_load, callNode, grTOCReg, TR::MemoryReference::createWithDisplacement(cg(), grSysStackReg, callerSaveTOCOffset, TR::Compiler->om.sizeofReferenceAddress()));
    }
 
 

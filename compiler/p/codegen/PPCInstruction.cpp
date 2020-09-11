@@ -1424,7 +1424,7 @@ void TR::PPCControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
 
          if (!cg()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8))
             {
-            tempMR = new (cg()->trHeapMemory()) TR::MemoryReference(cg()->getStackPointerRegister(), -8, 8, cg());
+            tempMR = TR::MemoryReference::createWithDisplacement(cg(), cg()->getStackPointerRegister(), -8, 8);
             cg()->traceRAInstruction(cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::stfd, currentNode, tempMR, getTargetRegister(1), cursor));
             }
 
@@ -1437,7 +1437,7 @@ void TR::PPCControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
          if (cg()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8))
             cg()->traceRAInstruction(cursor = generateTrg1Src1Instruction(cg(), TR::InstOpCode::mfvsrwz, currentNode, getTargetRegister(2), getTargetRegister(1), cursor));
          else
-            cg()->traceRAInstruction(cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::lwz, currentNode, getTargetRegister(2), new (cg()->trHeapMemory()) TR::MemoryReference(currentNode, *tempMR, 4, 4, cg()), cursor));
+            cg()->traceRAInstruction(cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::lwz, currentNode, getTargetRegister(2), TR::MemoryReference::createWithMemRef(cg(), currentNode, *tempMR, 4, 4), cursor));
          cg()->traceRAInstruction(cursor = generateLabelInstruction(cg(), TR::InstOpCode::label, currentNode, label2, cursor));
 
          break;
@@ -1454,7 +1454,7 @@ void TR::PPCControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
             }
          if (!cg()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8)|| cg()->comp()->target().is32Bit())
             {
-            tempMR = new (cg()->trHeapMemory()) TR::MemoryReference(cg()->getStackPointerRegister(), -8, 8, cg());
+            tempMR = TR::MemoryReference::createWithDisplacement(cg(), cg()->getStackPointerRegister(), -8, 8);
             cg()->traceRAInstruction(cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::stfd, currentNode, tempMR, getTargetRegister(1), cursor));
             }
 
@@ -1473,8 +1473,8 @@ void TR::PPCControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
             }
          else
             {
-            cg()->traceRAInstruction(cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::lwz, currentNode, getTargetRegister(2), new (cg()->trHeapMemory()) TR::MemoryReference(currentNode, *tempMR, 0, 4, cg()), cursor));
-            cg()->traceRAInstruction(cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::lwz, currentNode, getTargetRegister(3), new (cg()->trHeapMemory()) TR::MemoryReference(currentNode, *tempMR, 4, 4, cg()), cursor));
+            cg()->traceRAInstruction(cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::lwz, currentNode, getTargetRegister(2), TR::MemoryReference::createWithMemRef(cg(), currentNode, *tempMR, 0, 4), cursor));
+            cg()->traceRAInstruction(cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::lwz, currentNode, getTargetRegister(3), TR::MemoryReference::createWithMemRef(cg(), currentNode, *tempMR, 4, 4), cursor));
             }
          cg()->traceRAInstruction(cursor = generateLabelInstruction(cg(), TR::InstOpCode::label, currentNode, label2, cursor));
 

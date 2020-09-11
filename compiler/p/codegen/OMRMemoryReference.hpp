@@ -82,7 +82,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    // The extra int parameter at the end is needed to ensure that this constructor is never
    // ambiguous with the legacy constructor taking an int32_t for its displacement. This detail
    // is hidden from other code, since this constructor can only be used by calling the
-   // MemoryReference::withDisplacement helper. Once the legacy constructor is removed, the extra
+   // MemoryReference::createWithDisplacement helper. Once the legacy constructor is removed, the extra
    // parameter here can also be removed.
    MemoryReference(
          TR::Register *br,

@@ -3908,24 +3908,24 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
             {
             TR_ASSERT_FATAL_WITH_NODE(node, 0x00008000 != cg->hiValue(offset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", offset);
             generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, addrRegister, cg->getTOCBaseRegister(), cg->hiValue(offset));
-            generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, addrRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, LO_VALUE(offset), 8, cg));
+            generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, addrRegister, TR::MemoryReference::createWithDisplacement(cg, addrRegister, LO_VALUE(offset), 8));
             }
          else
             {
-            generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, addrRegister, new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), offset, 8, cg));
+            generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, addrRegister, TR::MemoryReference::createWithDisplacement(cg, cg->getTOCBaseRegister(), offset, 8));
             }
 
          if(isInt64)
-            generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, 0, 8, cg));
+            generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, dataRegister, TR::MemoryReference::createWithDisplacement(cg, addrRegister, 0, 8));
          else
-            generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, 0, 4, cg));
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister, TR::MemoryReference::createWithDisplacement(cg, addrRegister, 0, 4));
          }
       else
          {
          if (cg->needRelocationsForLookupEvaluationData())
             {
             loadAddressConstant(cg, true, node, address, addrRegister);
-            generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, 0, 4, cg));
+            generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister, TR::MemoryReference::createWithDisplacement(cg, addrRegister, 0, 4));
             }
          else
             {
@@ -3935,12 +3935,12 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
                {
                if (nextAddress >= 32760)
                   {
-                  generateTrg1MemInstruction(cg, TR::InstOpCode::ldu, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 8, cg));
+                  generateTrg1MemInstruction(cg, TR::InstOpCode::ldu, node, dataRegister, TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 8));
                   nextAddress = 8;
                   }
                else
                   {
-                  generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 8, cg));
+                  generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, dataRegister, TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 8));
                   nextAddress += 8;
                   }
                }
@@ -3948,12 +3948,12 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
                {
                if (nextAddress >= 32764)
                   {
-                  generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 4, cg));
+                  generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister, TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
                   nextAddress = 4;
                   }
                else
                   {
-                  generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 4, cg));
+                  generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister, TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
                   nextAddress += 4;
                   }
                } // is64BitInt ?
@@ -3969,16 +3969,16 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
          nextAddress = LO_VALUE(address);
          if (nextAddress == 32760)
             {
-            rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getHighOrder(), new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 4, cg));
+            rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getHighOrder(), TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
             nextAddress += 4;
-            rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister->getLowOrder(), new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 4, cg));
+            rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister->getLowOrder(), TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
             nextAddress = 4;
             }
          else
             {
-            rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getHighOrder(), new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 4, cg));
+            rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getHighOrder(), TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
             nextAddress += 4;
-            rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getLowOrder(), new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 4, cg));
+            rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getLowOrder(), TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
             nextAddress += 4;
             }
          }
@@ -3986,19 +3986,19 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
          {
          if (cg->comp()->compileRelocatableCode())
             {
-            rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, LO_VALUE(address), 4, cg));
+            rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister, TR::MemoryReference::createWithDisplacement(cg, addrRegister, LO_VALUE(address), 4));
             }
          else
             {
             nextAddress = LO_VALUE(address);
             if (nextAddress >= 32764)
                {
-               rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 4, cg));
+               rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister, TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
                nextAddress = 4;
                }
             else
                {
-               rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 4, cg));
+               rel2 = generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister, TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
                nextAddress += 4;
                }
             }
@@ -4059,12 +4059,12 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
                {
                if (nextAddress >= 32760)
                   {
-                  generateTrg1MemInstruction(cg, TR::InstOpCode::ldu, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 8, cg));
+                  generateTrg1MemInstruction(cg, TR::InstOpCode::ldu, node, dataRegister, TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 8));
                   nextAddress = 8;
                   }
                else
                   {
-                  generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 8, cg));
+                  generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, dataRegister, TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 8));
                   nextAddress += 8;
                   }
                }
@@ -4072,16 +4072,16 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
                {
                if (nextAddress == 32760)
                   {
-                  generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getHighOrder(), new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 4, cg));
+                  generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getHighOrder(), TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
                   nextAddress += 4;
-                  generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister->getLowOrder(), new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 4, cg));
+                  generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister->getLowOrder(), TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
                   nextAddress = 4;
                   }
                else
                   {
-                  generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getHighOrder(), new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 4, cg));
+                  generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getHighOrder(), TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
                   nextAddress += 4;
-                  generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getLowOrder(), new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 4, cg));
+                  generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister->getLowOrder(), TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
                   nextAddress += 4;
                   }
                } // 64BitTarget ?
@@ -4090,12 +4090,12 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
             {
             if (nextAddress >= 32764)
                {
-               generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 4, cg));
+               generateTrg1MemInstruction(cg, TR::InstOpCode::lwzu, node, dataRegister, TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
                nextAddress = 4;
                }
             else
                {
-               generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, nextAddress, 4, cg));
+               generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, dataRegister, TR::MemoryReference::createWithDisplacement(cg, addrRegister, nextAddress, 4));
                nextAddress += 4;
                }
             }
@@ -4211,11 +4211,11 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
             {
             TR_ASSERT_FATAL_WITH_NODE(node, 0x00008000 != cg->hiValue(offset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", offset);
             generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, pivotRegister, cg->getTOCBaseRegister(), cg->hiValue(offset));
-            generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, addrRegister, new (cg->trHeapMemory()) TR::MemoryReference(pivotRegister, LO_VALUE(offset), 8, cg));
+            generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, addrRegister, TR::MemoryReference::createWithDisplacement(cg, pivotRegister, LO_VALUE(offset), 8));
             }
          else
             {
-            generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, addrRegister, new (cg->trHeapMemory()) TR::MemoryReference(cg->getTOCBaseRegister(), offset, 8, cg));
+            generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, addrRegister, TR::MemoryReference::createWithDisplacement(cg, cg->getTOCBaseRegister(), offset, 8));
             }
          }
       else
@@ -4252,19 +4252,19 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
       {
       if (two_reg)
          {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwzx, node, dataRegister->getHighOrder(), new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, pivotRegister, 4, cg));
+         generateTrg1MemInstruction(cg, TR::InstOpCode::lwzx, node, dataRegister->getHighOrder(), TR::MemoryReference::createWithIndexReg(cg, addrRegister, pivotRegister, 4));
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, pivotRegister, pivotRegister, 4);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwzx, node, dataRegister->getLowOrder(), new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, pivotRegister, 4, cg));
+         generateTrg1MemInstruction(cg, TR::InstOpCode::lwzx, node, dataRegister->getLowOrder(), TR::MemoryReference::createWithIndexReg(cg, addrRegister, pivotRegister, 4));
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, pivotRegister, pivotRegister, -4);
          }
       else
          {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::ldx, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, pivotRegister, 8, cg));
+         generateTrg1MemInstruction(cg, TR::InstOpCode::ldx, node, dataRegister, TR::MemoryReference::createWithIndexReg(cg, addrRegister, pivotRegister, 8));
          }
       }
    else
       {
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwzx, node, dataRegister, new (cg->trHeapMemory()) TR::MemoryReference(addrRegister, pivotRegister, 4, cg));
+      generateTrg1MemInstruction(cg, TR::InstOpCode::lwzx, node, dataRegister, TR::MemoryReference::createWithIndexReg(cg, addrRegister, pivotRegister, 4));
       }
 
    if (isInt64)

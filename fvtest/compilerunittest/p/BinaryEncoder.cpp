@@ -822,7 +822,7 @@ TEST_P(PPCTrg1MemPCRelativeEncodingTest, encode) {
         std::get<0>(GetParam()),
         fakeNode,
         cg()->machine()->getRealRegister(std::get<1>(GetParam())),
-        TR::MemoryReference::withLabel(cg(), label, std::get<3>(GetParam()), 0)
+        TR::MemoryReference::createWithLabel(cg(), label, std::get<3>(GetParam()), 0)
     );
 
     label->setCodeLocation(reinterpret_cast<uint8_t*>(getAlignedBuf()) + std::get<2>(GetParam()));
@@ -840,7 +840,7 @@ TEST_P(PPCTrg1MemPCRelativeEncodingTest, encodePrefixCrossingBoundary) {
         std::get<0>(GetParam()),
         fakeNode,
         cg()->machine()->getRealRegister(std::get<1>(GetParam())),
-        TR::MemoryReference::withLabel(cg(), label, std::get<3>(GetParam()), 0)
+        TR::MemoryReference::createWithLabel(cg(), label, std::get<3>(GetParam()), 0)
     );
 
     label->setCodeLocation(reinterpret_cast<uint8_t*>(getAlignedBuf()) + 64 + std::get<2>(GetParam()));
@@ -858,7 +858,7 @@ TEST_P(PPCTrg1MemPCRelativeEncodingTest, encodeWithRelocation) {
         std::get<0>(GetParam()),
         fakeNode,
         cg()->machine()->getRealRegister(std::get<1>(GetParam())),
-        TR::MemoryReference::withLabel(cg(), label, std::get<3>(GetParam()), 0)
+        TR::MemoryReference::createWithLabel(cg(), label, std::get<3>(GetParam()), 0)
     );
 
     auto size = encodeInstruction(instr)._words.size() * 4;
@@ -878,7 +878,7 @@ TEST_P(PPCTrg1MemPCRelativeEncodingTest, encodePrefixCrossingBoundaryWithRelocat
         std::get<0>(GetParam()),
         fakeNode,
         cg()->machine()->getRealRegister(std::get<1>(GetParam())),
-        TR::MemoryReference::withLabel(cg(), label, std::get<3>(GetParam()), 0)
+        TR::MemoryReference::createWithLabel(cg(), label, std::get<3>(GetParam()), 0)
     );
 
     auto size = encodeInstruction(instr, 60)._words.size() * 4;
@@ -996,7 +996,7 @@ TEST_P(PPCMemSrc1PCRelativeEncodingTest, encode) {
         cg(),
         std::get<0>(GetParam()),
         fakeNode,
-        TR::MemoryReference::withLabel(cg(), label, std::get<3>(GetParam()), 0),
+        TR::MemoryReference::createWithLabel(cg(), label, std::get<3>(GetParam()), 0),
         cg()->machine()->getRealRegister(std::get<1>(GetParam()))
     );
 
@@ -1014,7 +1014,7 @@ TEST_P(PPCMemSrc1PCRelativeEncodingTest, encodePrefixCrossingBoundary) {
         cg(),
         std::get<0>(GetParam()),
         fakeNode,
-        TR::MemoryReference::withLabel(cg(), label, std::get<3>(GetParam()), 0),
+        TR::MemoryReference::createWithLabel(cg(), label, std::get<3>(GetParam()), 0),
         cg()->machine()->getRealRegister(std::get<1>(GetParam()))
     );
 
@@ -1032,7 +1032,7 @@ TEST_P(PPCMemSrc1PCRelativeEncodingTest, encodeWithRelocation) {
         cg(),
         std::get<0>(GetParam()),
         fakeNode,
-        TR::MemoryReference::withLabel(cg(), label, std::get<3>(GetParam()), 0),
+        TR::MemoryReference::createWithLabel(cg(), label, std::get<3>(GetParam()), 0),
         cg()->machine()->getRealRegister(std::get<1>(GetParam()))
     );
 
@@ -1052,7 +1052,7 @@ TEST_P(PPCMemSrc1PCRelativeEncodingTest, encodePrefixCrossingBoundaryWithRelocat
         cg(),
         std::get<0>(GetParam()),
         fakeNode,
-        TR::MemoryReference::withLabel(cg(), label, std::get<3>(GetParam()), 0),
+        TR::MemoryReference::createWithLabel(cg(), label, std::get<3>(GetParam()), 0),
         cg()->machine()->getRealRegister(std::get<1>(GetParam()))
     );
 

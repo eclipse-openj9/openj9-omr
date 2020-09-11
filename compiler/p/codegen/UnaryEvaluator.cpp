@@ -285,7 +285,7 @@ TR::Register *OMR::Power::TreeEvaluator::s2iEvaluator(TR::Node *node, TR::CodeGe
       if (!trgReg && child->getOpCode().isMemoryReference() && child->getReferenceCount() == 1)
          {
          trgReg = cg->allocateRegister();
-         TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 2, cg);
+         TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 2);
 #ifdef J9_PROJECT_SPECIFIC
          if (node->getFirstChild()->getOpCodeValue() == TR::irsload)
             {
@@ -459,7 +459,7 @@ TR::Register *OMR::Power::TreeEvaluator::su2iEvaluator(TR::Node *node, TR::CodeG
    if (child->getReferenceCount()==1 &&
        child->getOpCode().isMemoryReference() && (temp == NULL))
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 2, cg);
+      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 2);
       generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, trgReg, tempMR);
       tempMR->decNodeReferenceCounts(cg);
       }
@@ -499,7 +499,7 @@ TR::Register *OMR::Power::TreeEvaluator::i2cEvaluator(TR::Node *node, TR::CodeGe
        child->getOpCode().isMemoryReference() &&
        child->getRegister() == NULL)
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 2, cg);
+      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 2);
       tempMR->addToOffset(node, cg->comp()->target().cpu.isBigEndian()?2:0, cg);
       generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, trgReg, tempMR);
       tempMR->decNodeReferenceCounts(cg);
@@ -522,7 +522,7 @@ TR::Register *OMR::Power::TreeEvaluator::i2sEvaluator(TR::Node *node, TR::CodeGe
        child->getOpCode().isMemoryReference() &&
        child->getRegister() == NULL)
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 2, cg);
+      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 2);
       tempMR->addToOffset(node, cg->comp()->target().cpu.isBigEndian()?2:0, cg);
       generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, trgReg, tempMR);
       generateTrg1Src1Instruction(cg, TR::InstOpCode::extsh, node, trgReg, trgReg);
@@ -561,7 +561,7 @@ TR::Register *OMR::Power::TreeEvaluator::l2bEvaluator(TR::Node *node, TR::CodeGe
    if (child->getReferenceCount()==1 &&
        child->getOpCode().isMemoryReference() && (child->getRegister() == NULL))
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 1, cg);
+      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 1);
       trgReg = cg->allocateRegister();
       tempMR->addToOffset(node, cg->comp()->target().cpu.isBigEndian()?7:0, cg);
       generateTrg1MemInstruction(cg, TR::InstOpCode::lbz, node, trgReg, tempMR);
@@ -601,7 +601,7 @@ TR::Register *OMR::Power::TreeEvaluator::l2buEvaluator(TR::Node *node, TR::CodeG
    if (child->getReferenceCount()==1 &&
        child->getOpCode().isMemoryReference() && (child->getRegister() == NULL))
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 1, cg);
+      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 1);
       tempMR->addToOffset(node, cg->comp()->target().cpu.isBigEndian()?7:0, cg);
       generateTrg1MemInstruction(cg, TR::InstOpCode::lbz, node, trgReg, tempMR);
       tempMR->decNodeReferenceCounts(cg);
@@ -632,7 +632,7 @@ TR::Register *OMR::Power::TreeEvaluator::l2cEvaluator(TR::Node *node, TR::CodeGe
    if (child->getReferenceCount()==1 &&
        child->getOpCode().isMemoryReference() && (temp == NULL))
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 2, cg);
+      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 2);
       tempMR->addToOffset(node, cg->comp()->target().cpu.isBigEndian()?6:0, cg);
       generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, trgReg, tempMR);
       tempMR->decNodeReferenceCounts(cg);
@@ -658,7 +658,7 @@ TR::Register *OMR::Power::TreeEvaluator::l2sEvaluator(TR::Node *node, TR::CodeGe
        child->getOpCode().isMemoryReference() &&
        child->getRegister() == NULL)
       {
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 2, cg);
+      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 2);
       tempMR->addToOffset(node, cg->comp()->target().cpu.isBigEndian()?6:0, cg);
       if (cg->comp()->target().cpu.is(OMR_PROCESSOR_PPC_P6))  // avoid algebraic loads on P6
          {
@@ -691,7 +691,7 @@ TR::Register *OMR::Power::TreeEvaluator::l2iEvaluator(TR::Node *node, TR::CodeGe
        child->getOpCode().isMemoryReference() && (temp == NULL))
       {
       trgReg = cg->allocateRegister();
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
+      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
       tempMR->addToOffset(node, cg->comp()->target().cpu.isBigEndian()?4:0, cg);
       generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, trgReg, tempMR);
       tempMR->decNodeReferenceCounts(cg);
@@ -789,7 +789,7 @@ TR::Register *OMR::Power::TreeEvaluator::su2lEvaluator(TR::Node *node, TR::CodeG
       if (child->getReferenceCount()==1 &&
           child->getOpCode().isMemoryReference() && (temp == NULL))
          {
-         TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 2, cg);
+         TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 2);
          generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, trgReg, tempMR);
          tempMR->decNodeReferenceCounts(cg);
          }
@@ -811,7 +811,7 @@ TR::Register *OMR::Power::TreeEvaluator::su2lEvaluator(TR::Node *node, TR::CodeG
       if (child->getReferenceCount()==1 &&
           child->getOpCode().isMemoryReference() && (temp == NULL))
          {
-         TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 2, cg);
+         TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 2);
          generateTrg1MemInstruction(cg, TR::InstOpCode::lhz, node, trgReg->getLowOrder(), tempMR);
          tempMR->decNodeReferenceCounts(cg);
          }
@@ -847,7 +847,7 @@ TR::Register *OMR::Power::TreeEvaluator::bu2iEvaluator(TR::Node *node, TR::CodeG
       if (!trgReg && child->getOpCode().isMemoryReference() && trgReg == NULL)
          {
          trgReg = cg->allocateRegister();
-         TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 2, cg);
+         TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 2);
          generateTrg1MemInstruction(cg, TR::InstOpCode::lbz, node, trgReg, tempMR);
          child->setRegister(trgReg);
          tempMR->decNodeReferenceCounts(cg);

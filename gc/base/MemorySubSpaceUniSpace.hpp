@@ -70,6 +70,20 @@ public:
 	{
 		_typeId = __FUNCTION__;
 	};
+
+#if defined(OMR_GC_SNAPSHOTS)
+	/**
+	 * Create a MemorySubSpaceUniSpace object.
+	 */
+	MM_MemorySubSpaceUniSpace(MM_EnvironmentBase *env, MM_PhysicalSubArena *physicalSubArena,
+		bool usesGlobalCollector, uintptr_t restoreSize, uintptr_t minimumSize,
+		uintptr_t initialSize, uintptr_t maximumSize, uintptr_t memoryFlags, uint32_t objectFlags)
+	: MM_MemorySubSpace(env, NULL, physicalSubArena, usesGlobalCollector, restoreSize, minimumSize,
+		initialSize, maximumSize, memoryFlags, objectFlags)
+	{
+		_typeId = __FUNCTION__;
+	};
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 };
- 
+
 #endif /* MEMORYSUBSPACEUNISPACE_HPP_ */

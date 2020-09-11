@@ -43,6 +43,10 @@ public:
 
 	virtual MM_MemorySpace* createDefaultMemorySpace(MM_EnvironmentBase* env, MM_Heap* heap, MM_InitializationParameters* parameters);
 
+#if defined(OMR_GC_SNAPSHOTS)
+	virtual MM_MemorySpace* createDefaultMemorySpaceForRestore(MM_EnvironmentBase* env, MM_Heap* heap, MM_InitializationParameters* parameters);
+#endif /* defined(OMR_GC_SNAPSHOTS) */
+
 	MM_ConfigurationFlat(MM_EnvironmentBase* env)
 		: MM_ConfigurationStandard(env, env->getExtensions()->configurationOptions._gcPolicy, STANDARD_REGION_SIZE_BYTES)
 	{

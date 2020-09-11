@@ -367,7 +367,54 @@ MM_Configuration::prepareParameters(OMR_VM* omrVM,
 	parameters->_initialOldSpaceSize = OMR_MIN(maximumHeapSize - parameters->_initialNewSpaceSize, initialTenureSpaceSize);
 	parameters->_maximumOldSpaceSize = OMR_MIN(maximumHeapSize, maximumTenureSpaceSize);
 	parameters->_maximumSpaceSize = maximumHeapSize;
+
+#if defined(OMR_GC_SNAPSHOTS)
+	parameters->_restoreNewSpaceSize = 0;
+	parameters->_restoreOldSpaceSize = 0;
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 }
+
+#if defined(OMR_GC_SNAPSHOTS)
+void
+MM_Configuration::prepareParameters(OMR_VM* omrVM,
+                                    uintptr_t minimumSpaceSize,
+                                    uintptr_t restoreNewSpaceSize,
+                                    uintptr_t minimumNewSpaceSize,
+                                    uintptr_t initialNewSpaceSize,
+                                    uintptr_t maximumNewSpaceSize,
+                                    uintptr_t restoreTenureSpaceSize,
+                                    uintptr_t minimumTenureSpaceSize,
+                                    uintptr_t initialTenureSpaceSize,
+                                    uintptr_t maximumTenureSpaceSize,
+                                    uintptr_t memoryMax,
+                                    uintptr_t tenureFlags,
+                                    MM_InitializationParameters* parameters)
+{
+	prepareParameters(omrVM,
+	                  minimumSpaceSize,
+	                  minimumNewSpaceSize,
+	                  initialNewSpaceSize,
+	                  maximumNewSpaceSize,
+	                  minimumTenureSpaceSize,
+	                  initialTenureSpaceSize,
+	                  maximumTenureSpaceSize,
+	                  memoryMax,
+	                  tenureFlags,
+	                  parameters);
+
+	MM_GCExtensionsBase* extensions = MM_GCExtensionsBase::getExtensions(omrVM);
+	uintptr_t alignment = getAlignment(extensions, _alignmentType);
+
+	restoreNewSpaceSize = MM_Math::roundToCeiling(alignment, restoreNewSpaceSize);
+	restoreTenureSpaceSize = MM_Math::roundToCeiling(alignment, restoreTenureSpaceSize);
+
+	parameters->_restoreNewSpaceSize = restoreNewSpaceSize;
+	parameters->_initialNewSpaceSize = OMR_MAX(parameters->_initialNewSpaceSize, restoreNewSpaceSize);
+
+	parameters->_restoreOldSpaceSize = restoreTenureSpaceSize;
+	parameters->_initialOldSpaceSize = OMR_MAX(parameters->_initialOldSpaceSize , restoreTenureSpaceSize);
+}
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 
 uintptr_t
 MM_Configuration::getAlignment(MM_GCExtensionsBase* extensions, MM_AlignmentType type)

@@ -116,14 +116,42 @@ MM_PhysicalSubArenaVirtualMemoryFlat::inflate(MM_EnvironmentBase *env)
 
 			void *lowAddress = _region->getLowAddress();
 			void *highAddress = _region->getHighAddress();
-
+			size_t size = _region->getSize();
 			MM_MemorySubSpace *genericSubSpace = ((MM_MemorySubSpaceFlat *)_subSpace)->getChildSubSpace();
-			result = genericSubSpace->expanded(env, this, _region->getSize(), lowAddress, highAddress, false);
-			if (result) {
-				genericSubSpace->heapReconfigured(env, HEAP_RECONFIG_EXPAND, genericSubSpace, lowAddress, highAddress);
-			} else {
+
+#if defined(OMR_GC_SNAPSHOTS)
+			/* restored memory located in low range of region */
+
+			size_t restoreSize = _subSpace->getRestoreSize();
+			void *restoreLowAddress = lowAddress;
+			void *restoreHighAddress = (char*)lowAddress + restoreSize;
+
+			result = genericSubSpace->expandedWithActiveMemory(env, this, restoreSize, restoreLowAddress, restoreHighAddress, false);
+			if (!result) {
 				genericSubSpace->heapReconfigured(env, HEAP_RECONFIG_EXPAND);
+				return false;
 			}
+
+			genericSubSpace->heapReconfigured(env, HEAP_RECONFIG_EXPAND, genericSubSpace, restoreLowAddress, restoreHighAddress);
+
+			/* free memory located in remainder of region */
+			size_t freeSize = size - restoreSize;
+			void *freeLowAddress = restoreHighAddress;
+			void *freeHighAddress = highAddress;
+#else /* defined(OMR_GC_SNAPSHOTS) */
+			/* entire region is considered free memory */
+			size_t freeSize = size;
+			void *freeLowAddress = lowAddress;
+			void *freeHighAddress = highAddress;
+#endif /* defined(OMR_GC_SNAPSHOTS) */
+
+			result = genericSubSpace->expanded(env, this, freeSize, freeLowAddress, freeHighAddress, false);
+			if (!result) {
+				genericSubSpace->heapReconfigured(env, HEAP_RECONFIG_EXPAND);
+				return false;
+			}
+
+			genericSubSpace->heapReconfigured(env, HEAP_RECONFIG_EXPAND, genericSubSpace, freeLowAddress, freeHighAddress);
 		}
 	}
 	return result;

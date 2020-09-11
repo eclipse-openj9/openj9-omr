@@ -200,6 +200,7 @@ typedef struct J9MemorySegment {
 #define MEMORY_TYPE_JIT_PERSISTENT  0x800000
 #define MEMORY_TYPE_FIXEDSIZE  0x100
 #define MEMORY_TYPE_DEFAULT  0x2000000
+#define MEMORY_TYPE_CCDATA  0x100000
 
 #define J9MEMORYSEGMENT_LEFTCHILD(base) AVL_SRP_GETNODE((base)->parentAVLTreeNode.leftChild)
 #define J9MEMORYSEGMENT_RIGHTCHILD(base) AVL_SRP_GETNODE((base)->parentAVLTreeNode.rightChild)

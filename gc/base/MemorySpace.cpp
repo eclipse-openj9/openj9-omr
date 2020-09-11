@@ -426,6 +426,15 @@ MM_MemorySpace::inflate(MM_EnvironmentBase *env)
 	return result;
 }
 
+#if defined(OMR_GC_SNAPSHOTS)
+bool
+MM_MemorySpace::restore(MM_EnvironmentBase *env)
+{
+	/* TODO: Here is where we would consider mapping restored data into the memory space or subspace */
+	return inflate(env);
+}
+#endif /* defined(OMR_GC_SNAPSHOTS) */
+
 /**
  * Determine if the receiver will allow the expansion request size.
  * @return true if the expand size fits into the receivers limits, false otherwise.

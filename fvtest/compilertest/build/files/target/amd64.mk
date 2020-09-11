@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, 2017 IBM Corp. and others
+# Copyright (c) 2016, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,6 +27,8 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/x/amd64/codegen/OMRTreeEvaluator.cpp \
     $(JIT_OMR_DIRTY_DIR)/x/amd64/codegen/AMD64SystemLinkage.cpp \
     $(JIT_OMR_DIRTY_DIR)/x/amd64/codegen/OMRELFRelocationResolver.cpp \
-
+    $(JIT_OMR_DIRTY_DIR)/x/amd64/objectfmt/OMRJitCodeObjectFormat.cpp \
+    $(JIT_OMR_DIRTY_DIR)/x/amd64/objectfmt/OMRELFJitCodeObjectFormat.cpp \
+    $(JIT_OMR_DIRTY_DIR)/x/amd64/objectfmt/OMRELFObjectFormat.cpp \
 
 JIT_PRODUCT_SOURCE_FILES+=

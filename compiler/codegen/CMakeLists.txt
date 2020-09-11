@@ -22,6 +22,7 @@
 compiler_library(codegen
 	${CMAKE_CURRENT_LIST_DIR}/OMRAheadOfTimeCompile.cpp
 	${CMAKE_CURRENT_LIST_DIR}/Analyser.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CCData.cpp
 	${CMAKE_CURRENT_LIST_DIR}/CodeGenPrep.cpp
 	${CMAKE_CURRENT_LIST_DIR}/CodeGenGC.cpp
 	${CMAKE_CURRENT_LIST_DIR}/CodeGenRA.cpp

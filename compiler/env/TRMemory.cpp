@@ -305,7 +305,9 @@ const char * objectName[] =
    "ClientSessionData",
    "ROMClass",
 
-   "SymbolValidationManager"
+   "SymbolValidationManager",
+
+   "ObjectFormat"
    };
 
 

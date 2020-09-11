@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -87,6 +87,7 @@ class OMR_EXTENSIBLE CodeCacheConfig
          _codeCacheTotalKB(0),
          _codeCachePadKB(0),
          _codeCacheAlignment(0),
+         _dataAreaTotalKB(0),
          _codeCacheHelperAlignmentBytes(32),
          _codeCacheTrampolineAlignmentBytes(8),
          _codeCacheMethodBodyAllocRetries(3),
@@ -142,6 +143,8 @@ class OMR_EXTENSIBLE CodeCacheConfig
    size_t codeCacheTotalKB() const { return _codeCacheTotalKB; }
    size_t codeCacheAlignment() const { return _codeCacheAlignment; }
 
+   size_t dataAreaTotalKB() const { return _dataAreaTotalKB; }
+
    // Alignment for per-code cache helpers
    //
    size_t codeCacheHelperAlignment() const { return _codeCacheHelperAlignmentBytes; }
@@ -186,6 +189,7 @@ class OMR_EXTENSIBLE CodeCacheConfig
    size_t _codeCachePadKB;
    size_t _codeCacheAlignment;
 
+   size_t _dataAreaTotalKB;
 
    size_t _largeCodePageSize;
    uint32_t _largeCodePageFlags;

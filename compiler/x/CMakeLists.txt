@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -68,6 +68,9 @@ if(TR_TARGET_BITS STREQUAL 64)
 		${CMAKE_CURRENT_LIST_DIR}/amd64/codegen/OMRRealRegister.cpp
 		${CMAKE_CURRENT_LIST_DIR}/amd64/codegen/AMD64SystemLinkage.cpp
 		${CMAKE_CURRENT_LIST_DIR}/amd64/codegen/OMRELFRelocationResolver.cpp
+		${CMAKE_CURRENT_LIST_DIR}/amd64/objectfmt/OMRJitCodeObjectFormat.cpp
+		${CMAKE_CURRENT_LIST_DIR}/amd64/objectfmt/OMRELFJitCodeObjectFormat.cpp
+		${CMAKE_CURRENT_LIST_DIR}/amd64/objectfmt/OMRELFObjectFormat.cpp
 	)
 else()
 	compiler_library(x_32

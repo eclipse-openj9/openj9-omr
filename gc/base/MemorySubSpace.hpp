@@ -90,6 +90,9 @@ protected:
 	MM_MemorySubSpace *_parent;
 	MM_PhysicalSubArena *_physicalSubArena;
 
+#if defined(OMR_GC_SNAPSHOTS)
+	uintptr_t _restoreSize;
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 	uintptr_t _initialSize;
 	uintptr_t _minimumSize;
 	uintptr_t _currentSize;
@@ -199,6 +202,9 @@ public:
 	
 	void setMemorySpace(MM_MemorySpace *memorySpace);
 
+#if defined(OMR_GC_SNAPSHOTS)
+	MMINLINE uintptr_t getRestoreSize() { return _restoreSize; }
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 	MMINLINE uintptr_t getInitialSize() { return _initialSize; }
 	MMINLINE uintptr_t getMinimumSize() { return _minimumSize; }
 	MMINLINE uintptr_t getCurrentSize() { return _currentSize; }
@@ -338,6 +344,13 @@ public:
 
 	virtual bool inflate(MM_EnvironmentBase *env);
 
+#if defined(OMR_GC_SNAPSHOTS)
+	/**
+	 * Similar to inflate, but a portion of the subspace may be initialized with restored heap data.
+	 */
+	virtual bool restore(MM_EnvironmentBase *env);
+#endif /* defined(OMR_GC_SNAPSHOTS) */
+
 	virtual void systemGarbageCollect(MM_EnvironmentBase *env, uint32_t gcCode);
 	virtual bool percolateGarbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, uint32_t gcCode);
 	virtual bool garbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, uint32_t gcCode);
@@ -383,9 +396,19 @@ public:
 	uintptr_t getAvailableContractionSizeForRangeEndingAt(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, void *lowAddr, void *highAddr);
 	virtual bool expanded(MM_EnvironmentBase *env, MM_PhysicalSubArena *subArena, MM_HeapRegionDescriptor *region, bool canCoalesce);
 	virtual bool expanded(MM_EnvironmentBase *env, MM_PhysicalSubArena *subArena, uintptr_t size, void *lowAddress, void *highAddress, bool canCoalesce);
+#if defined(OMR_GC_SNAPSHOTS)
+	/**
+	 * The memory space has expanded, with memory that is actively in use (not free memory).
+	 */
+	virtual bool expandedWithActiveMemory(MM_EnvironmentBase *env, MM_PhysicalSubArena *subArena, MM_HeapRegionDescriptor *region, bool canCoalesce);
+	virtual bool expandedWithActiveMemory(MM_EnvironmentBase* env, MM_PhysicalSubArena* subArena, uintptr_t size, void* lowAddress, void* highAddress, bool canCoalesce);
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 	virtual void addExistingMemory(MM_EnvironmentBase *env, MM_PhysicalSubArena *subArena, uintptr_t size, void *lowAddress, void *highAddress, bool canCoalesce);
 	virtual void *removeExistingMemory(MM_EnvironmentBase *env, MM_PhysicalSubArena *subArena, uintptr_t size, void *lowAddress, void *highAddress);
-	
+#if defined(OMR_GC_SNAPSHOTS)
+	virtual void *addActiveMemory(MM_EnvironmentBase *env, MM_PhysicalSubArena *subArena, uintptr_t size, void *lowAddress, void *highAddress, bool canCoalesce);
+#endif /* defined(OMR_GC_SNAPSHOTS) */
+
 	/**
 	 * Select a region for contraction, preferably on the specified NUMA node
 	 * 
@@ -468,6 +491,9 @@ public:
 		, _memorySpace(NULL)
 		, _parent(NULL)
 		, _physicalSubArena(physicalSubArena)
+#if defined(OMR_GC_SNAPSHOTS)
+		, _restoreSize(0)
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 		, _initialSize(initialSize)
 		, _minimumSize(minimumSize)
 		, _currentSize(0)
@@ -484,7 +510,57 @@ public:
 	{
 		_typeId = __FUNCTION__;
 	}
+
+#if defined(OMR_GC_SNAPSHOTS)
+	/**
+	 * Create A MemorySubSpace, where a portion of the space will be restored from a heap snapshot.
+	 */
+	MM_MemorySubSpace(MM_EnvironmentBase *env,
+	                  MM_Collector *collector,
+	                  MM_PhysicalSubArena *physicalSubArena,
+	                  bool usesGlobalCollector,
+	                  uintptr_t restoreSize,
+	                  uintptr_t minimumSize,
+	                  uintptr_t initialSize,
+	                  uintptr_t maximumSize,
+	                  uintptr_t memoryType,
+	                  uint32_t objectFlags)
+		: MM_BaseVirtual()
+		, _next(NULL)
+		, _previous(NULL)
+		, _children(NULL)
+		, _regionList(NULL)
+		, _concurrentCollectable(false)
+		, _memoryType(memoryType)
+		, _objectFlags(objectFlags)
+		, _extensions(env->getExtensions())
+		, _collector(collector)
+		, _memorySpace(NULL)
+		, _parent(NULL)
+		, _physicalSubArena(physicalSubArena)
+		, _restoreSize(restoreSize)
+		, _initialSize(initialSize)
+		, _minimumSize(minimumSize)
+		, _currentSize(0)
+		, _maximumSize(maximumSize)
+		, _uniqueID(0)
+		, _usesGlobalCollector(usesGlobalCollector)
+		, _isAllocatable(true)
+		, _counterBalanceType(MODRON_COUNTER_BALANCE_TYPE_NONE)
+		, _counterBalanceSize(0)
+		, _counterBalanceChainHead(NULL)
+		, _counterBalanceChain(NULL)
+		, _contractionSize(0)
+		, _expansionSize(0)
+	{
+		_typeId = __FUNCTION__;
+	
+		Assert_MM_true(_initialSize >= _restoreSize);
+	
+		/* TODO: Temporary assertion -- should be able to throw away snapshotted data. */
+		Assert_MM_true(_minimumSize >= _restoreSize);
+	}
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 };
 
 #endif /* MEMORYSUBSPACE_HPP_ */
-

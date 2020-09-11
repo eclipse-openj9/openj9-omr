@@ -180,6 +180,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/optimizer/ValuePropagationCommon.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRAheadOfTimeCompile.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/Analyser.cpp \
+    $(JIT_OMR_DIRTY_DIR)/codegen/CCData.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/CodeGenPrep.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/CodeGenGC.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/CodeGenRA.cpp \
@@ -233,6 +234,7 @@ JIT_PRODUCT_SOURCE_FILES+=\
     $(JIT_PRODUCT_DIR)/tests/OptionSetTest.cpp \
     $(JIT_PRODUCT_DIR)/tests/OpCodesTest.cpp \
     $(JIT_PRODUCT_DIR)/tests/PPCOpCodesTest.cpp \
+    $(JIT_PRODUCT_DIR)/tests/CCDataTest.cpp \
     $(JIT_PRODUCT_DIR)/tests/Qux2Test.cpp \
     $(JIT_PRODUCT_DIR)/tests/SimplifierFoldAndTest.cpp \
     $(JIT_PRODUCT_DIR)/tests/SingleBitContainerTest.cpp \

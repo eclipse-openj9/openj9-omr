@@ -310,6 +310,27 @@ MM_MemorySubSpaceFlat::newInstance(
 	return memorySubSpace;
 }
 
+#if defined(OMR_GC_SNAPSHOTS)
+MM_MemorySubSpaceFlat*
+MM_MemorySubSpaceFlat::newInstance(
+	MM_EnvironmentBase* env, MM_PhysicalSubArena* physicalSubArena, MM_MemorySubSpace* childMemorySubSpace,
+	bool usesGlobalCollector, uintptr_t restoreSize, uintptr_t minimumSize, uintptr_t initialSize, uintptr_t maximumSize,
+	uintptr_t memoryType, uint32_t objectFlags)
+{
+	MM_MemorySubSpaceFlat* memorySubSpace;
+
+	memorySubSpace = (MM_MemorySubSpaceFlat*)env->getForge()->allocate(sizeof(MM_MemorySubSpaceFlat), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	if (memorySubSpace) {
+		new (memorySubSpace) MM_MemorySubSpaceFlat(env, physicalSubArena, childMemorySubSpace, usesGlobalCollector, restoreSize, minimumSize, initialSize, maximumSize, memoryType, objectFlags);
+		if (!memorySubSpace->initialize(env)) {
+			memorySubSpace->kill(env);
+			memorySubSpace = NULL;
+		}
+	}
+	return memorySubSpace;
+}
+#endif /* defined(OMR_GC_SNAPSHOTS) */
+
 bool
 MM_MemorySubSpaceFlat::initialize(MM_EnvironmentBase* env)
 {

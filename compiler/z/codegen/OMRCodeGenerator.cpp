@@ -2334,31 +2334,8 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       // generate magic word
       if (isPrivateLinkage && data.cursorInstruction == data.jitTojitStart)
          {
-         uint32_t argSize = self()->getBinaryBufferCursor() - self()->getCodeStart();
-         uint32_t magicWord = (argSize << 16) | static_cast<uint32_t>(self()->comp()->getReturnInfo());
-         uint32_t recompFlag = 0;
-
-#ifdef J9_PROJECT_SPECIFIC
-         if (recomp != NULL && recomp->couldBeCompiledAgain())
-            {
-            J9::PrivateLinkage::LinkageInfo * linkageInfo = J9::PrivateLinkage::LinkageInfo::get(self()->getCodeStart());
-            if (recomp->useSampling())
-               {
-               recompFlag = METHOD_SAMPLING_RECOMPILATION;
-               linkageInfo->setSamplingMethodBody();
-               }
-            else
-               {
-               recompFlag = METHOD_COUNTING_RECOMPILATION;
-               linkageInfo->setCountingMethodBody();
-               }
-            }
-#endif
-         magicWord |= recompFlag;
-
-         // first word is the code size of intrepeter-to-jit glue in bytes and the second word is the return info
-         toS390ImmInstruction(data.preProcInstruction)->setSourceImmediate(magicWord);
-         *(uint32_t *) (data.preProcInstruction->getBinaryEncoding()) = magicWord;
+         uint32_t linkageInfoWord = self()->initializeLinkageInfo(data.preProcInstruction->getBinaryEncoding());
+         toS390ImmInstruction(data.preProcInstruction)->setSourceImmediate(linkageInfoWord);
          }
       }
 
@@ -5872,7 +5849,8 @@ OMR::Z::CodeGenerator::findOrCreateLiteral(void *value, size_t len)
 bool
 OMR::Z::CodeGenerator::directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress)
    {
+   // TODO: For now disabling trampolines when generating a readOnlyCode
    return
-      !self()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange(targetAddress, sourceAddress) ||
-      self()->comp()->getOption(TR_StressTrampolines);
+      (!self()->comp()->target().cpu.isTargetWithinBranchRelativeRILRange(targetAddress, sourceAddress) ||
+      self()->comp()->getOption(TR_StressTrampolines)) && !self()->comp()->getGenerateReadOnlyCode();
    }

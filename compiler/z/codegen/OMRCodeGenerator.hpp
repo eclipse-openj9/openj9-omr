@@ -541,6 +541,8 @@ public:
 
    bool afterRA() { return _afterRA; }
 
+   void createObjectFormat();
+
 #ifdef DEBUG
    void dumpPreGPRegisterAssignment(TR::Instruction *);
    void dumpPostGPRegisterAssignment(TR::Instruction *, TR::Instruction *);

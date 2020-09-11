@@ -80,6 +80,7 @@ initializeCodeCache(TR::CodeCacheManager & codeCacheManager)
                             &codeCacheConfig._numOfRuntimeHelpers,
                             &codeCacheConfig._CCPreLoadedCodeSize);
 
+   codeCacheConfig._dataAreaTotalKB = 16*1024;
    codeCacheConfig._needsMethodTrampolines = false;
    codeCacheConfig._trampolineSpacePercentage = 5;
    codeCacheConfig._allowedToGrowCache = true;

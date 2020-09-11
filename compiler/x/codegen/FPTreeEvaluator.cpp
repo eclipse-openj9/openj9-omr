@@ -279,15 +279,18 @@ TR::Register *OMR::X86::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeG
    return targetRegister;
    }
 
-TR::Register *OMR::X86::TreeEvaluator::performFload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::TreeEvaluator::performFload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg, TR::Instruction *insertAfterInstr)
    {
    TR::Register    *targetRegister;
    TR::Instruction *instr;
    if (cg->useSSEForSinglePrecision())
       {
       if (cg->comp()->target().is64Bit() &&
-          sourceMR->getSymbolReference().isUnresolved())
+          sourceMR->getSymbolReference().isUnresolved() &&
+          !cg->comp()->getGenerateReadOnlyCode())
          {
+         TR_ASSERT_FATAL(!insertAfterInstr, "not expecting a previous instruction %p for patchable code cache", insertAfterInstr);
+
          // The 64-bit mode XMM load instructions may be wider than 8-bytes (our patching
          // window) but we won't know that for sure until after register assignment.
          // Hence, the unresolved memory reference must be evaluated into a register
@@ -304,8 +307,20 @@ TR::Register *OMR::X86::TreeEvaluator::performFload(TR::Node *node, TR::MemoryRe
       else
          {
          targetRegister = cg->allocateSinglePrecisionRegister(TR_FPR);
-         instr = generateRegMemInstruction(MOVSSRegMem, node, targetRegister, sourceMR, cg);
-         setDiscardableIfPossible(TR_RematerializableFloat, targetRegister, node, instr, sourceMR, cg);
+
+         if (insertAfterInstr)
+            {
+            instr = generateRegMemInstruction(insertAfterInstr, MOVSSRegMem, targetRegister, sourceMR, cg);
+            }
+         else
+            {
+            instr = generateRegMemInstruction(MOVSSRegMem, node, targetRegister, sourceMR, cg);
+            }
+
+         if (cg->enableRematerialisation())
+            {
+            setDiscardableIfPossible(TR_RematerializableFloat, targetRegister, node, instr, sourceMR, cg);
+            }
          }
       }
    else
@@ -322,21 +337,25 @@ TR::Register *OMR::X86::TreeEvaluator::performFload(TR::Node *node, TR::MemoryRe
 // also handles TR::floadi
 TR::Register *OMR::X86::TreeEvaluator::floadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::MemoryReference  *tempMR = generateX86MemoryReference(node, cg);
-   TR::Register *targetRegister = TR::TreeEvaluator::performFload(node, tempMR, cg);
+   TR::Instruction *insertAfterInstr;
+   TR::MemoryReference *tempMR = TR::TreeEvaluator::generateX86MemoryReferenceForLoadILOpCode(node, insertAfterInstr, cg);
+   TR::Register *targetRegister = TR::TreeEvaluator::performFload(node, tempMR, cg, insertAfterInstr);
    tempMR->decNodeReferenceCounts(cg);
    return targetRegister;
    }
 
-TR::Register *OMR::X86::TreeEvaluator::performDload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::TreeEvaluator::performDload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg, TR::Instruction *insertAfterInstr)
    {
    TR::Register    *targetRegister;
    TR::Instruction *instr;
    if (cg->useSSEForDoublePrecision())
       {
       if (cg->comp()->target().is64Bit() &&
-          sourceMR->getSymbolReference().isUnresolved())
+          sourceMR->getSymbolReference().isUnresolved() &&
+          !cg->comp()->getGenerateReadOnlyCode())
          {
+         TR_ASSERT_FATAL(!insertAfterInstr, "not expecting a previous instruction %p for patchable code cache", insertAfterInstr);
+
          // The 64-bit load instructions may be wider than 8-bytes (our patching
          // window) but we won't know that for sure until after register assignment.
          // Hence, the unresolved memory reference must be evaluated into a register
@@ -349,7 +368,15 @@ TR::Register *OMR::X86::TreeEvaluator::performDload(TR::Node *node, TR::MemoryRe
          }
 
       targetRegister = cg->allocateRegister(TR_FPR);
-      instr = generateRegMemInstruction(cg->getXMMDoubleLoadOpCode(), node, targetRegister, sourceMR, cg);
+
+      if (insertAfterInstr)
+         {
+         instr = generateRegMemInstruction(insertAfterInstr, cg->getXMMDoubleLoadOpCode(), targetRegister, sourceMR, cg);
+         }
+      else
+         {
+         instr = generateRegMemInstruction(cg->getXMMDoubleLoadOpCode(), node, targetRegister, sourceMR, cg);
+         }
       }
    else
       {
@@ -365,8 +392,9 @@ TR::Register *OMR::X86::TreeEvaluator::performDload(TR::Node *node, TR::MemoryRe
 // also handles TR::dloadi
 TR::Register *OMR::X86::TreeEvaluator::dloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::MemoryReference  *tempMR = generateX86MemoryReference(node, cg);
-   TR::Register *targetRegister = TR::TreeEvaluator::performDload(node, tempMR, cg);
+   TR::Instruction *insertAfterInstr;
+   TR::MemoryReference *tempMR = TR::TreeEvaluator::generateX86MemoryReferenceForLoadILOpCode(node, insertAfterInstr, cg);
+   TR::Register *targetRegister = TR::TreeEvaluator::performDload(node, tempMR, cg, insertAfterInstr);
    tempMR->decNodeReferenceCounts(cg);
    return targetRegister;
    }
@@ -400,16 +428,15 @@ TR::Register *OMR::X86::TreeEvaluator::floatingPointStoreEvaluator(TR::Node *nod
       return NULL;
       }
 
-   TR::MemoryReference  *tempMR = generateX86MemoryReference(node, cg);
-   TR::Instruction *exceptionPoint;
-
+   TR::Register *sourceRegister = 0;
+   TR::Register *floatConstReg = 0;
    if (valueChild->getOpCode().isLoadConst())
       {
       if (nodeIs64Bit)
          {
          if (cg->comp()->target().is64Bit())
             {
-            TR::Register *floatConstReg = cg->allocateRegister(TR_GPR);
+            floatConstReg = cg->allocateRegister(TR_GPR);
             if (valueChild->getLongInt() == 0)
                {
                generateRegRegInstruction(XOR8RegReg, node, floatConstReg, floatConstReg, cg);
@@ -418,44 +445,71 @@ TR::Register *OMR::X86::TreeEvaluator::floatingPointStoreEvaluator(TR::Node *nod
                {
                generateRegImm64Instruction(MOV8RegImm64, node, floatConstReg, valueChild->getLongInt(), cg);
                }
-            exceptionPoint = generateMemRegInstruction(S8MemReg, node, tempMR, floatConstReg, cg);
+            }
+         }
+      }
+   else
+      {
+      sourceRegister = cg->evaluate(valueChild);
+      }
+
+   TR::Instruction *insertAfterInstr;
+   TR::MemoryReference *tempMR = TR::TreeEvaluator::generateX86MemoryReferenceForStoreILOpCode(node, insertAfterInstr, cg);
+
+   TR::Instruction *exceptionPoint;
+
+   if (valueChild->getOpCode().isLoadConst())
+      {
+      if (nodeIs64Bit)
+         {
+         if (cg->comp()->target().is64Bit())
+            {
+            if (insertAfterInstr)
+               {
+               exceptionPoint = generateMemRegInstruction(insertAfterInstr, S8MemReg, tempMR, floatConstReg, cg);
+               }
+            else
+               {
+               exceptionPoint = generateMemRegInstruction(S8MemReg, node, tempMR, floatConstReg, cg);
+               }
             cg->stopUsingRegister(floatConstReg);
             }
          else
             {
-            exceptionPoint = generateMemImmInstruction(S4MemImm4, node, tempMR, valueChild->getLongIntLow(), cg);
-            generateMemImmInstruction(S4MemImm4, node, generateX86MemoryReference(*tempMR, 4, cg), valueChild->getLongIntHigh(), cg);
+            if (insertAfterInstr)
+               {
+               exceptionPoint = generateMemImmInstruction(insertAfterInstr, S4MemImm4, tempMR, valueChild->getLongIntLow(), cg);
+               generateMemImmInstruction(exceptionPoint, S4MemImm4, generateX86MemoryReference(*tempMR, 4, cg), valueChild->getLongIntHigh(), cg);
+               }
+            else
+               {
+               exceptionPoint = generateMemImmInstruction(S4MemImm4, node, tempMR, valueChild->getLongIntLow(), cg);
+               generateMemImmInstruction(S4MemImm4, node, generateX86MemoryReference(*tempMR, 4, cg), valueChild->getLongIntHigh(), cg);
+               }
             }
          }
       else
          {
-         exceptionPoint = generateMemImmInstruction(S4MemImm4, node, tempMR, valueChild->getFloatBits(), cg);
+         if (insertAfterInstr)
+            {
+            exceptionPoint = generateMemImmInstruction(insertAfterInstr, S4MemImm4, tempMR, valueChild->getFloatBits(), cg);
+            }
+         else
+            {
+            exceptionPoint = generateMemImmInstruction(S4MemImm4, node, tempMR, valueChild->getFloatBits(), cg);
+            }
          }
       TR::Register *firstChildReg = valueChild->getRegister();
       if (firstChildReg && firstChildReg->getKind() == TR_X87 && valueChild->getReferenceCount() == 1)
          generateFPSTiST0RegRegInstruction(FSTRegReg, valueChild, firstChildReg, firstChildReg, cg);
       }
-   else if (debug("useGPRsForFP") &&
-            (cg->getLiveRegisters(TR_GPR)->getNumberOfLiveRegisters() <
-             cg->getMaximumNumbersOfAssignableGPRs() - 1) &&
-            valueChild->getOpCode().isLoadVar() &&
-            valueChild->getRegister() == NULL   &&
-            valueChild->getReferenceCount() == 1)
-      {
-      TR::Register *tempRegister = cg->allocateRegister(TR_GPR);
-      TR::MemoryReference  *loadMR = generateX86MemoryReference(valueChild, cg);
-      generateRegMemInstruction(LRegMem(nodeIs64Bit), node, tempRegister, loadMR, cg);
-      exceptionPoint = generateMemRegInstruction(SMemReg(nodeIs64Bit), node, tempMR, tempRegister, cg);
-      cg->stopUsingRegister(tempRegister);
-      loadMR->decNodeReferenceCounts(cg);
-      }
    else
       {
-      TR::Register *sourceRegister = cg->evaluate(valueChild);
       if (sourceRegister->getKind() == TR_FPR)
          {
          if (cg->comp()->target().is64Bit() &&
-            tempMR->getSymbolReference().isUnresolved())
+            tempMR->getSymbolReference().isUnresolved() &&
+            !cg->comp()->getGenerateReadOnlyCode())
             {
 
             if (!tempMR->getSymbolReference().getSymbol()->isShadow() && !tempMR->getSymbolReference().getSymbol()->isClassObject() && !tempMR->getSymbolReference().getSymbol()->isConstObjectRef())
@@ -490,7 +544,15 @@ TR::Register *OMR::X86::TreeEvaluator::floatingPointStoreEvaluator(TR::Node *nod
          else
             {
             TR_ASSERT(nodeIs64Bit != sourceRegister->isSinglePrecision(), "Wrong operand type to floating point store\n");
-            exceptionPoint = generateMemRegInstruction(MOVSMemReg(nodeIs64Bit), node, tempMR, sourceRegister, cg);
+
+            if (insertAfterInstr)
+               {
+               exceptionPoint = generateMemRegInstruction(insertAfterInstr, MOVSMemReg(nodeIs64Bit), tempMR, sourceRegister, cg);
+               }
+            else
+               {
+               exceptionPoint = generateMemRegInstruction(MOVSMemReg(nodeIs64Bit), node, tempMR, sourceRegister, cg);
+               }
             }
          }
       else

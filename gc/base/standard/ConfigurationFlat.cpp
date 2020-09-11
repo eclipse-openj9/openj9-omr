@@ -66,6 +66,11 @@ MM_ConfigurationFlat::createDefaultMemorySpace(MM_EnvironmentBase* env, MM_Heap*
 	MM_MemorySubSpaceFlat* memorySubSpaceFlat = NULL;
 	MM_PhysicalArenaVirtualMemory* physicalArena = NULL;
 
+#if defined(OMR_GC_SNAPSHOTS)
+	Assert_MM_true(0 == parameters->_restoreNewSpaceSize);
+	Assert_MM_true(0 == parameters->_restoreOldSpaceSize);
+#endif
+
 	if (NULL == (memoryPool = createMemoryPool(env, false))) {
 		return NULL;
 	}
@@ -90,5 +95,41 @@ MM_ConfigurationFlat::createDefaultMemorySpace(MM_EnvironmentBase* env, MM_Heap*
 
 	return MM_MemorySpace::newInstance(env, heap, physicalArena, memorySubSpaceFlat, parameters, MEMORY_SPACE_NAME_FLAT, MEMORY_SPACE_DESCRIPTION_FLAT);
 }
+
+#if defined(OMR_GC_SNAPSHOTS)
+MM_MemorySpace *
+MM_ConfigurationFlat::createDefaultMemorySpaceForRestore(MM_EnvironmentBase* env, MM_Heap* heap, MM_InitializationParameters* parameters)
+{
+	MM_MemoryPool* memoryPool = NULL;
+	MM_MemorySubSpaceGeneric* memorySubSpaceGeneric = NULL;
+	MM_PhysicalSubArenaVirtualMemoryFlat* physicalSubArena = NULL;
+	MM_MemorySubSpaceFlat* memorySubSpaceFlat = NULL;
+	MM_PhysicalArenaVirtualMemory* physicalArena = NULL;
+
+	if (NULL == (memoryPool = createMemoryPool(env, false))) {
+		return NULL;
+	}
+
+	if (NULL == (memorySubSpaceGeneric = MM_MemorySubSpaceGeneric::newInstance(env, memoryPool, NULL, false, parameters->_restoreOldSpaceSize, parameters->_minimumSpaceSize, parameters->_initialOldSpaceSize, parameters->_maximumSpaceSize, MEMORY_TYPE_OLD, 0))) {
+		return NULL;
+	}
+
+	if (NULL == (physicalSubArena = MM_PhysicalSubArenaVirtualMemoryFlat::newInstance(env, heap))) {
+		memorySubSpaceGeneric->kill(env);
+		return NULL;
+	}
+
+	if (NULL == (memorySubSpaceFlat = MM_MemorySubSpaceFlat::newInstance(env, physicalSubArena, memorySubSpaceGeneric, true, parameters->_restoreOldSpaceSize, parameters->_minimumSpaceSize, parameters->_initialOldSpaceSize, parameters->_maximumSpaceSize, MEMORY_TYPE_OLD, 0))) {
+		return NULL;
+	}
+
+	if (NULL == (physicalArena = MM_PhysicalArenaVirtualMemory::newInstance(env, heap))) {
+		memorySubSpaceFlat->kill(env);
+		return NULL;
+	}
+
+	return MM_MemorySpace::newInstance(env, heap, physicalArena, memorySubSpaceFlat, parameters, MEMORY_SPACE_NAME_FLAT, MEMORY_SPACE_DESCRIPTION_FLAT);
+}
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 
 #endif /* defined(OMR_GC_MODRON_STANDARD) */

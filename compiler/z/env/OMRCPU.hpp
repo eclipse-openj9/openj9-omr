@@ -47,7 +47,7 @@ namespace Z
 
 class OMR_EXTENSIBLE CPU : public OMR::CPU
    {
-   public:
+public:
 
    enum Architecture
       {
@@ -310,12 +310,13 @@ class OMR_EXTENSIBLE CPU : public OMR::CPU
 
    bool isAtLeast(OMRProcessorArchitecture p);
    bool supportsFeature(uint32_t feature);
-   bool is_at_least_old_api(OMRProcessorArchitecture p);
-   bool supports_feature_old_api(uint32_t feature);
-   bool is_at_least_test(OMRProcessorArchitecture p);
-   bool supports_feature_test(uint32_t feature);
 
-   protected:
+private:
+
+   bool isAtLeastOldAPI(OMRProcessorArchitecture p);
+   bool supportsFeatureOldAPI(uint32_t feature);
+
+protected:
 
    CPU() : OMR::CPU(), _supportedArch(z10)
       {

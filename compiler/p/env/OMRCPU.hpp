@@ -55,6 +55,7 @@ protected:
       _processorDescription.physicalProcessor = OMR_PROCESSOR_PPC_UNKNOWN;
       memset(_processorDescription.features, 0, OMRPORT_SYSINFO_FEATURES_SIZE*sizeof(uint32_t));
       }
+   
    CPU(const OMRProcessorDesc& processorDescription) : OMR::CPU(processorDescription) {}
 
 public:
@@ -129,8 +130,12 @@ public:
    bool is(OMRProcessorArchitecture p);
    bool isAtLeast(OMRProcessorArchitecture p);
    bool isAtMost(OMRProcessorArchitecture p);
-   TR_Processor get_old_processor_type_from_new_processor_type(OMRProcessorArchitecture p);
    void applyUserOptions();
+
+private:
+   
+   TR_Processor getOldProcessorTypeFromNewProcessorType(OMRProcessorArchitecture p);
+
    };
 
 }

@@ -36,6 +36,11 @@ public:
 	uintptr_t _minimumNewSpaceSize, _initialNewSpaceSize, _maximumNewSpaceSize;
 	uintptr_t _minimumOldSpaceSize, _initialOldSpaceSize, _maximumOldSpaceSize;
 	uintptr_t _maximumSpaceSize;
+#if defined(OMR_GC_SNAPSHOTS)
+	uintptr_t _restoreSpaceSize;
+	uintptr_t _restoreNewSpaceSize;
+	uintptr_t _restoreOldSpaceSize;
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 
 	MMINLINE void clear()
 	{
@@ -47,6 +52,12 @@ public:
 		_initialOldSpaceSize = 0;
 		_maximumOldSpaceSize = 0;
 		_maximumSpaceSize = 0;
+
+#if defined(OMR_GC_SNAPSHOTS)
+		_restoreSpaceSize = 0;
+		_restoreNewSpaceSize = 0;
+		_restoreOldSpaceSize = 0;
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 	}
 
 	MM_InitializationParameters()

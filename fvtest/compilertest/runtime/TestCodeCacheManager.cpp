@@ -27,7 +27,7 @@
 #include "runtime/CodeCacheManager.hpp"
 #include "runtime/CodeCacheMemorySegment.hpp"
 #include "env/FrontEnd.hpp"
-
+#include "codegen/CCData.hpp"
 
 // Allocate and initialize a new code cache
 // If reservingCompThreadID >= -1, then the new code codecache will be reserved
@@ -61,10 +61,12 @@ TestCompiler::CodeCacheManager::allocateCodeCacheSegment(size_t segmentSize,
    if (segmentSize < config.codeCachePadKB() << 10)
       codeCacheSizeToAllocate = config.codeCachePadKB() << 10;
 
+   size_t dataAreaSize = config.dataAreaTotalKB() << 10;
+   size_t actualMemoryToAllocate = codeCacheSizeToAllocate + dataAreaSize;
 #if defined(OMR_OS_WINDOWS)
    auto memorySlab = reinterpret_cast<uint8_t *>(
          VirtualAlloc(NULL,
-            codeCacheSizeToAllocate,
+            actualMemoryToAllocate,
             MEM_COMMIT,
             PAGE_EXECUTE_READWRITE));
 #elif defined(J9ZOS390)
@@ -72,11 +74,11 @@ TestCompiler::CodeCacheManager::allocateCodeCacheSegment(size_t segmentSize,
    // ought to be using the port library to allocate such memory. This was the quickest "workaround" I could think
    // of to just get us off the ground.
    auto memorySlab =  reinterpret_cast<uint8_t *>(
-         __malloc31(codeCacheSizeToAllocate));
+         __malloc31(actualMemoryToAllocate));
 #else
    auto memorySlab = reinterpret_cast<uint8_t *>(
          mmap(NULL,
-              codeCacheSizeToAllocate,
+              actualMemoryToAllocate,
               PROT_READ | PROT_WRITE | PROT_EXEC,
               MAP_ANONYMOUS | MAP_PRIVATE,
               -1,
@@ -84,17 +86,26 @@ TestCompiler::CodeCacheManager::allocateCodeCacheSegment(size_t segmentSize,
 #endif /* OMR_OS_WINDOWS */
    TR::CodeCacheMemorySegment *memSegment = (TR::CodeCacheMemorySegment *) ((size_t)memorySlab + codeCacheSizeToAllocate - sizeof(TR::CodeCacheMemorySegment));
    new (memSegment) TR::CodeCacheMemorySegment(memorySlab, reinterpret_cast<uint8_t *>(memSegment));
+
+   if (config.dataAreaTotalKB() > 0)
+      {
+      TR_ASSERT_FATAL(_codeCacheData == NULL, "A CCData instance already exists; this code currently doesn't support multiple codecache segments because we can only allocate one CCData instance. TODO: Fix this limitation.");
+      uint8_t * const dataArea = memorySlab + codeCacheSizeToAllocate;
+      _codeCacheData = new OMR::CCData(dataArea, dataAreaSize);
+      }
    return memSegment;
    }
 
 void
 TestCompiler::CodeCacheManager::freeCodeCacheSegment(TR::CodeCacheMemorySegment * memSegment)
    {
+   if (_codeCacheData)
+      delete _codeCacheData;
 #if defined(OMR_OS_WINDOWS)
    VirtualFree(memSegment->_base, 0, MEM_RELEASE); // second arg must be zero when calling with MEM_RELEASE
 #elif defined(J9ZOS390)
    free(memSegment->_base);
 #else
-   munmap(memSegment->_base, memSegment->_top - memSegment->_base + sizeof(TR::CodeCacheMemorySegment));
+   munmap(memSegment->_base, memSegment->_top - memSegment->_base + sizeof(TR::CodeCacheMemorySegment) + (self()->codeCacheConfig().dataAreaTotalKB() << 10));
 #endif
    }

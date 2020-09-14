@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,9 +32,13 @@
 #include "x/codegen/RestartSnippet.hpp"
 #include "x/codegen/X86Ops.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
+#ifdef J9_PROJECT_SPECIFIC
+#include "codegen/J9UnresolvedDataReadOnlySnippet.hpp"
+#endif
 
 namespace TR { class X86BoundCheckWithSpineCheckSnippet; }
 namespace TR { class X86CallSnippet; }
+namespace TR { class X86CallReadOnlySnippet; }
 namespace TR { class X86CheckFailureSnippet; }
 namespace TR { class X86CheckFailureSnippetWithResolve; }
 namespace TR { class X86DivideCheckSnippet; }
@@ -43,6 +47,8 @@ namespace TR { class X86FPConvertToLongSnippet; }
 namespace TR { class X86ForceRecompilationSnippet; }
 namespace TR { class X86GuardedDevirtualSnippet; }
 namespace TR { class X86PicDataSnippet; }
+namespace TR { class X86ResolveVirtualDispatchReadOnlyDataSnippet; }
+namespace TR { class X86InterfaceDispatchReadOnlySnippet; }
 namespace TR { class X86RecompilationSnippet; }
 namespace TR { class X86SpineCheckSnippet; }
 namespace TR { class LabelSymbol; }
@@ -77,11 +83,20 @@ TR_Debug::getNamex(TR::Snippet *snippet)
       case TR::Snippet::IsCall:
          return "Call Snippet";
          break;
+      case TR::Snippet::IsCallReadOnly:
+         return "Call Read Only";
+         break;
       case TR::Snippet::IsVPicData:
          return "VPic Data";
          break;
       case TR::Snippet::IsIPicData:
          return "IPic Data";
+         break;
+      case TR::Snippet::IsResolveVirtualDispatchReadOnlyData:
+         return "Resolve Virtual Dispatch Data Read Only";
+         break;
+      case TR::Snippet::IsInterfaceDispatchReadOnly:
+         return "Interface Dispatch Read Only";
          break;
       case TR::Snippet::IsForceRecompilation:
          return "Force Recompilation Snippet";
@@ -113,6 +128,9 @@ TR_Debug::getNamex(TR::Snippet *snippet)
 #ifdef J9_PROJECT_SPECIFIC
       case TR::Snippet::IsGuardedDevirtual:
          return "Guarded Devirtual Snippet";
+         break;
+      case TR::Snippet::IsUnresolvedDataReadOnly:
+         return "Unresolved Data Read Only Snippet";
          break;
 #endif
       case TR::Snippet::IsHelperCall:
@@ -150,9 +168,18 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
       case TR::Snippet::IsCall:
          print(pOutFile, (TR::X86CallSnippet *)snippet);
          break;
+      case TR::Snippet::IsCallReadOnly:
+         print(pOutFile, (TR::X86CallReadOnlySnippet *)snippet);
+         break;
       case TR::Snippet::IsIPicData:
       case TR::Snippet::IsVPicData:
          print(pOutFile, (TR::X86PicDataSnippet *)snippet);
+         break;
+      case TR::Snippet::IsResolveVirtualDispatchReadOnlyData:
+         print(pOutFile, (TR::X86ResolveVirtualDispatchReadOnlyDataSnippet *)snippet);
+         break;
+      case TR::Snippet::IsInterfaceDispatchReadOnly:
+         print(pOutFile, (TR::X86InterfaceDispatchReadOnlySnippet *)snippet);
          break;
       case TR::Snippet::IsCheckFailure:
          print(pOutFile, (TR::X86CheckFailureSnippet *)snippet);
@@ -179,6 +206,9 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
 #ifdef J9_PROJECT_SPECIFIC
       case TR::Snippet::IsGuardedDevirtual:
          print(pOutFile, (TR::X86GuardedDevirtualSnippet  *)snippet);
+         break;
+      case TR::Snippet::IsUnresolvedDataReadOnly:
+         print(pOutFile, (J9::X86::UnresolvedDataReadOnlySnippet *)snippet);
          break;
 #endif
       case TR::Snippet::IsHelperCall:

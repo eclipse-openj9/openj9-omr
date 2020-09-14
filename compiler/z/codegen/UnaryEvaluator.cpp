@@ -296,7 +296,7 @@ OMR::Z::TreeEvaluator::dsqrtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
    if (firstChild->isSingleRefUnevaluated() && firstChild->getOpCodeValue() == TR::dloadi)
       {
-      generateRXEInstruction(cg, TR::InstOpCode::SQDB, node, targetRegister, generateS390MemoryReference(firstChild, cg), 0);
+      generateRXEInstruction(cg, TR::InstOpCode::SQDB, node, targetRegister, TR::MemoryReference::create(cg, firstChild), 0);
       }
    else
       {

@@ -880,6 +880,8 @@ omrvmem_reserve_memory(struct OMRPortLibrary *portLibrary, void *address, uintpt
 extern J9_CFUNC void *
 omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, struct J9PortVmemParams *params);
 extern J9_CFUNC void *
+omrvmem_reserve_memory_collocated_ex(struct OMRPortLibrary *portLibrary, uint32_t count, struct J9PortVmemIdentifier **identifiers, struct J9PortVmemParams *params);
+extern J9_CFUNC void *
 omrvmem_get_contiguous_region_memory(struct OMRPortLibrary *portLibrary, void* addresses[], uintptr_t addressesCount, uintptr_t addressSize, uintptr_t byteAmount, struct J9PortVmemIdentifier *oldIdentifier, struct J9PortVmemIdentifier *newIdentifier, uintptr_t mode, uintptr_t pageSize, OMRMemCategory *category);
 extern J9_CFUNC uintptr_t
 omrvmem_get_page_size(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier);

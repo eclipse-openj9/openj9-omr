@@ -75,6 +75,7 @@ omr_add_executable(compilertest
 	tests/FooBarTest.cpp
 	tests/LimitFileTest.cpp
 	tests/LogFileTest.cpp
+	tests/CCDataTest.cpp
 	tests/OMRTestEnv.cpp
 	tests/OptionSetTest.cpp
 	tests/OpCodesTest.cpp
@@ -122,7 +123,7 @@ target_link_libraries(compilertest
 	${OMR_PORT_LIB}
 )
 
-set_property(TARGET compilertest PROPERTY FOLDER fvtest)
+set_target_properties(compilertest PROPERTIES FOLDER fvtest)
 
 if (NOT OMR_HOST_OS STREQUAL "aix")
 	add_test(NAME CompilerTest COMMAND compilertest --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/compilertest-results.xml)

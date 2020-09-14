@@ -69,6 +69,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::X86::CodeGenerator
 
    bool internalPointerSupportImplemented() { return true; }
 
+   void createObjectFormat();
+
    protected:
 
    TR_BitVector _globalGPRsPreservedAcrossCalls;

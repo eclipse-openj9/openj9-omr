@@ -57,6 +57,11 @@ public:
 	static MM_MemorySubSpaceFlat *newInstance(MM_EnvironmentBase *env, MM_PhysicalSubArena *physicalSubArena, MM_MemorySubSpace *childMemorySubSpace,
 			bool usesGlobalCollector, uintptr_t minimumSize, uintptr_t initialSize, uintptr_t maximumSize, uintptr_t memoryType, uint32_t objectFlags);
 
+#if defined(OMR_GC_SNAPSHOTS)
+	static MM_MemorySubSpaceFlat *newInstance(MM_EnvironmentBase *env, MM_PhysicalSubArena *physicalSubArena, MM_MemorySubSpace *childMemorySubSpace,
+			bool usesGlobalCollector, uintptr_t restoreSize, uintptr_t minimumSize, uintptr_t initialSize, uintptr_t maximumSize, uintptr_t memoryType, uint32_t objectFlags);
+#endif /* defined(OMR_GC_SNAPSHOTS) */
+
 	virtual const char *getName() { return MEMORY_SUBSPACE_NAME_FLAT; }
 	virtual const char *getDescription() { return MEMORY_SUBSPACE_DESCRIPTION_FLAT; }
 
@@ -101,6 +106,18 @@ public:
 	{
 		_typeId = __FUNCTION__;
 	}
+
+#if defined(OMR_GC_SNAPSHOTS)
+	MM_MemorySubSpaceFlat(
+		MM_EnvironmentBase *env, MM_PhysicalSubArena *physicalSubArena, MM_MemorySubSpace *memorySubSpace,
+		bool usesGlobalCollector, uintptr_t restoreSize, uintptr_t minimumSize, uintptr_t initialSize, uintptr_t maximumSize,
+		uintptr_t memoryType, uint32_t objectFlags)
+		: MM_MemorySubSpaceUniSpace(env, physicalSubArena, usesGlobalCollector, restoreSize, minimumSize, initialSize, maximumSize, memoryType, objectFlags)
+		, _memorySubSpace(memorySubSpace)
+	{
+		_typeId = __FUNCTION__;
+	}
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 };
 
 #endif /* MEMORYSUBSPACEFLAT_HPP_ */

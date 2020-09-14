@@ -267,7 +267,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *unsignedIntegerIfCmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *unsignedIntegerIfCmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
-   
+
    static TR::Register *tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *tfinishEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *tabortEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -359,19 +359,55 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
 
    static TR::Register *loadConstant(TR::Node *node, intptr_t value, TR_RematerializableTypes t, TR::CodeGenerator *cg, TR::Register *targetRegister = NULL);
 
+   /**
+    * @brief Create a MemoryReference for a load IL opcode
+    *
+    * @param[in] node : the node on which the load IL opcode appears
+    * @param[out] insertAfterInstr : when the memory reference is created, if the instruction
+    *                that uses it must appear after some other instruction in the stream then
+    *                that instruction will be returned via this parameter.  Otherwise, this
+    *                parameter will be set to NULL.
+    * @param[in] cg : CodeGenerator object
+    *
+    * @return The TR::MemoryReference for this load
+    */
+   static TR::MemoryReference *generateX86MemoryReferenceForLoadILOpCode(TR::Node *node, TR::Instruction *&insertAfterInstr, TR::CodeGenerator *cg);
+
+   /**
+    * @brief Create a MemoryReference for a store IL opcode
+    *
+    * @param[in] node : the node on which the store IL opcode appears
+    * @param[out] insertAfterInstr : when the memory reference is created, if the instruction
+    *                that uses it must appear after some other instruction in the stream then
+    *                that instruction will be returned via this parameter.  Otherwise, this
+    *                parameter will be set to NULL.
+    * @param[in] cg : CodeGenerator object
+    *
+    * @return The TR::MemoryReference for this store
+    */
+   static TR::MemoryReference *generateX86MemoryReferenceForStoreILOpCode(TR::Node *node, TR::Instruction *&insertAfterInstr, TR::CodeGenerator *cg);
+
+   static TR::MemoryReference *generateLoadConstantMemoryReference(TR::Node *node, intptr_t constant, TR::CodeGenerator *cg, TR_ExternalRelocationTargetKind reloKind = TR_NoRelocation);
+
+   static TR::MemoryReference *generateUnresolvedDataReferenceReadOnly(
+      TR::Node *node,
+      TR::Instruction *&insertAfterInstr,
+      bool needsVolatileCheck,
+      TR::CodeGenerator *cg) { return 0; }
+
    protected:
 
    static TR::Register *performHelperCall(TR::Node *node, TR::SymbolReference *helperSymRef, TR::ILOpCodes helperCallOpCode, bool spillFPRegs, TR::CodeGenerator *cg);
-   static TR::Register *performIload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg);
-   static TR::Register *performFload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg);
-   static TR::Register *performDload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg);
+   static TR::Register *performIload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg, TR::Instruction *insertAfterInstr = 0);
+   static TR::Register *performFload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg, TR::Instruction *insertAfterInstr = 0);
+   static TR::Register *performDload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg, TR::Instruction *insertAfterInstr = 0);
    static TR::Register *negEvaluatorHelper(TR::Node *node, TR_X86OpCodes RegInstr, TR::CodeGenerator *cg);
    static TR::Register *logicalEvaluator(TR::Node *node, TR_X86OpCodes package[], TR::CodeGenerator *cg);
    static TR::Register *fpBinaryArithmeticEvaluator(TR::Node *node, bool isFloat, TR::CodeGenerator *cg);
    static TR::Register *bcmpEvaluator(TR::Node *node, TR_X86OpCodes setOp, TR::CodeGenerator *cg);
    static TR::Register *cmp2BytesEvaluator(TR::Node *node, TR_X86OpCodes setOp, TR::CodeGenerator *cg);
 
-   static TR::Register *loadMemory(TR::Node *node, TR::MemoryReference  *sourceMR, TR_RematerializableTypes type, bool markImplicitExceptionPoint, TR::CodeGenerator *cg);
+   static TR::Register *loadMemory(TR::Node *node, TR::MemoryReference  *sourceMR, TR_RematerializableTypes type, bool markImplicitExceptionPoint, TR::CodeGenerator *cg, TR::Instruction *insertAfterInstr = 0);
    static TR::Register *conversionAnalyser(TR::Node *node, TR_X86OpCodes memoryToRegisterOp, TR_X86OpCodes registerToRegisterOp, TR::CodeGenerator *cg);
    static TR::Register *fpConvertToInt(TR::Node *node, TR::SymbolReference *helperSymRef, TR::CodeGenerator *cg);
    static TR::Register *fpConvertToLong(TR::Node *node, TR::SymbolReference *helperSymRef, TR::CodeGenerator *cg);
@@ -401,7 +437,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *integerOrderHelper(TR::Node *node, TR_X86OpCodes setOp, TR::CodeGenerator *cg);
    static TR::Register *evaluateNULLCHKWithPossibleResolve(TR::Node *node, bool needResolution, TR::CodeGenerator *cg);
    static TR::Register *commonFPRemEvaluator( TR::Node *node, TR::CodeGenerator *cg, bool isDouble);
-   static TR::Register *generateLEAForLoadAddr(TR::Node *node, TR::MemoryReference *memRef, TR::SymbolReference *symRef,TR::CodeGenerator *cg, bool isInternalPointer);
+   static TR::Register *generateLEAForLoadAddr(TR::Node *node, TR::MemoryReference *memRef, TR::SymbolReference *symRef,TR::CodeGenerator *cg, bool isInternalPointer, TR::Instruction *prevInstr = 0);
 
    static bool constNodeValueIs32BitSigned(TR::Node *node, intptr_t *value, TR::CodeGenerator *cg);
 

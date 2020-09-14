@@ -98,6 +98,7 @@ namespace TR { class Instruction; }
 namespace TR { class LabelSymbol; }
 namespace TR { class Linkage; }
 namespace TR { class MemoryReference; }
+namespace TR { class ObjectFormat; }
 namespace TR { class RealRegister; }
 namespace TR { class Recompilation; }
 namespace TR { class Register; }
@@ -1192,6 +1193,18 @@ class OMR_EXTENSIBLE CodeGenerator
 
    public:
 
+   /**
+    * @brief initializeLinkageInfo
+    *
+    * The linkage info word is emitted to be right before the startPC. In OMR, there is no
+    * interpreter entry point. Therefore, after the Linkage Info word is emitted, the next
+    * instruction is the compiled method start PC. This means that when the code in
+    * doBinaryEncoding tries to determine the offset of the interpreter entry point from the
+    * start PC, it will always compute 0. Since the Linkage Info word is emitted as 32-bit
+    * word of 0s, there is nothing to initialize.
+    */
+   uint32_t initializeLinkageInfo(void *linkageInfo) { return 0; }
+
    int32_t internalControlFlowNestingDepth() {return _internalControlFlowNestingDepth;}
    int32_t internalControlFlowSafeNestingDepth() { return _internalControlFlowSafeNestingDepth; }
    void incInternalControlFlowNestingDepth() {_internalControlFlowNestingDepth++;}
@@ -1403,6 +1416,26 @@ class OMR_EXTENSIBLE CodeGenerator
     *
     */
    void redoTrampolineReservationIfNecessary(TR::Instruction *callInstr, TR::SymbolReference *instructionSymRef);
+
+   /**
+    * @brief
+    *    Create the object format for this compilation.  If the code generator
+    *    does not support the use of object formats then this function does nothing.
+    */
+   void createObjectFormat() { return; }
+
+   /**
+    * @return TR::ObjectFormat created for this CodeGenerator
+    */
+   TR::ObjectFormat *getObjFmt() { return _objectFormat; }
+
+protected:
+   /**
+    * @brief Sets an ObjectFormat.  Available to CodeGenerator classes only.
+    */
+   void setObjFmt(TR::ObjectFormat *of) { _objectFormat = of; }
+
+public:
 
    // --------------------------------------------------------------------------
 
@@ -1983,6 +2016,11 @@ class OMR_EXTENSIBLE CodeGenerator
    TR_Stack<TR::Node *> _stackOfArtificiallyInflatedNodes;
 
    CS2::HashTable<TR::Symbol*, TR::DataType, TR::Allocator> _symbolDataTypeMap;
+
+   /**
+    * The binary object format to generate code for in this compilation/
+    */
+   TR::ObjectFormat *_objectFormat;
    };
 
 }

@@ -175,6 +175,11 @@ OMR::X86::MemoryReference::MemoryReference(
       bool isStore = rootLoadOrStore->getOpCode().isStore();
       bool isUnresolved = symRef->isUnresolved();
 
+      if (cg->comp()->getGenerateReadOnlyCode())
+         {
+         TR_ASSERT_FATAL(!isUnresolved, "Unexpected unresolved for read only code: node=%p", rootLoadOrStore);
+         }
+
       _symbolReference.setSymbol(symbol);
       _symbolReference.addToOffset(symRef->getOffset());
       _symbolReference.setOwningMethodIndex(symRef->getOwningMethodIndex());

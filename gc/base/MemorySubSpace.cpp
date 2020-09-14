@@ -493,6 +493,28 @@ MM_MemorySubSpace::tearDown(MM_EnvironmentBase* env)
 	_lock.tearDown();
 }
 
+#if defined(OMR_GC_SNAPSHOTS)
+bool
+MM_MemorySubSpace::restore(MM_EnvironmentBase* env)
+{
+	bool result;
+	MM_MemorySubSpace* child;
+
+	if (_physicalSubArena && !_physicalSubArena->inflate(env)) {
+		return false;
+	}
+
+	result = true;
+	child = _children;
+	while (result && child) {
+		result = child->restore(env);
+		child = child->getNext();
+	}
+
+	return result;
+}
+#endif /* defined(OMR_GC_SNAPSHOTS) */
+
 bool
 MM_MemorySubSpace::inflate(MM_EnvironmentBase* env)
 {
@@ -1295,6 +1317,26 @@ MM_MemorySubSpace::expanded(MM_EnvironmentBase* env, MM_PhysicalSubArena* subAre
 	return false;
 }
 
+#if defined(OMR_GC_SNAPSHOTS)
+
+bool
+MM_MemorySubSpace::expandedWithActiveMemory(MM_EnvironmentBase *env, MM_PhysicalSubArena *subArena, MM_HeapRegionDescriptor *region, bool canCoalesce)
+{
+	/* Should never get here */
+	Assert_MM_unreachable();
+	return false;
+}
+
+bool
+MM_MemorySubSpace::expandedWithActiveMemory(MM_EnvironmentBase* env, MM_PhysicalSubArena* subArena, uintptr_t size, void* lowAddress, void* highAddress, bool canCoalesce)
+{
+	/* Should never get here */
+	Assert_MM_unreachable();
+	return false;
+}
+
+#endif /* defined(OMR_GC_SNAPSHOTS) */
+
 /**
  * Memory described by the range which was already part of the heap has been made available to the subspace
  * as free memory.
@@ -1322,6 +1364,16 @@ MM_MemorySubSpace::removeExistingMemory(MM_EnvironmentBase* env, MM_PhysicalSubA
 	Assert_MM_unreachable();
 	return NULL;
 }
+
+#if defined(OMR_GC_SNAPSHOTS)
+void *
+MM_MemorySubSpace::addActiveMemory(MM_EnvironmentBase *env, MM_PhysicalSubArena *subArena, uintptr_t size, void *lowAddress, void *highAddress, bool canCoalesce)
+{
+	/* Should never get here */
+	Assert_MM_unreachable();
+	return NULL;
+}
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 
 /**
  * The heap has added a range of memory associated to the receiver or one of its children.

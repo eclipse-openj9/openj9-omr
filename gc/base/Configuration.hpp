@@ -81,11 +81,37 @@ public:
 								   uintptr_t tenureFlags,
 								   MM_InitializationParameters* parameters);
 
+#if defined(OMR_GC_SNAPSHOTS)
+	/**
+	 * Variant where some range of heap memory will be restored from a snapshot.
+	 */
+	virtual void prepareParameters(OMR_VM* omrVM,
+	                               uintptr_t minimumSpaceSize,
+	                               uintptr_t restoredNewSpaceSize,
+	                               uintptr_t minimumNewSpaceSize,
+	                               uintptr_t initialNewSpaceSize,
+	                               uintptr_t maximumNewSpaceSize,
+	                               uintptr_t restoredTenureSpaceSize,
+	                               uintptr_t minimumTenureSpaceSize,
+	                               uintptr_t initialTenureSpaceSize,
+	                               uintptr_t maximumTenureSpaceSize,
+	                               uintptr_t memoryMax,
+	                               uintptr_t tenureFlags,
+	                               MM_InitializationParameters* parameters);
+#endif /* defined(OMR_GC_SNAPSHOTS) */
+
 	virtual MM_GlobalCollector* createGlobalCollector(MM_EnvironmentBase* env) = 0;
 	MM_Heap* createHeap(MM_EnvironmentBase* env, uintptr_t heapBytesRequested);
 	virtual MM_Heap* createHeapWithManager(MM_EnvironmentBase* env, uintptr_t heapBytesRequested, MM_HeapRegionManager* regionManager) = 0;
 	virtual MM_HeapRegionManager* createHeapRegionManager(MM_EnvironmentBase* env) = 0;
 	virtual MM_MemorySpace* createDefaultMemorySpace(MM_EnvironmentBase* env, MM_Heap* heap, MM_InitializationParameters* parameters) = 0;
+#if defined(OMR_GC_SNAPSHOTS)
+	virtual MM_MemorySpace* createDefaultMemorySpaceForRestore(MM_EnvironmentBase* env, MM_Heap* heap, MM_InitializationParameters* parameters)
+	{
+		Assert_MM_unimplemented();
+		return NULL;
+	}
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 	MM_EnvironmentBase* createEnvironment(MM_GCExtensionsBase* extensions, OMR_VMThread* vmThread);
 	virtual J9Pool* createEnvironmentPool(MM_EnvironmentBase* env) = 0;
 	virtual MM_ParallelDispatcher* createParallelDispatcher(MM_EnvironmentBase *env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize);

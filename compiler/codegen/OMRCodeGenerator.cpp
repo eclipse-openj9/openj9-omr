@@ -234,7 +234,8 @@ OMR::CodeGenerator::CodeGenerator() :
      _outOfLineColdPathNestedDepth(0),
      _codeGenPhase(self()),
      _symbolDataTypeMap(self()->comp()->allocator()),
-     _lmmdFailed(false)
+     _lmmdFailed(false),
+     _objectFormat(NULL)
    {
    _machine = new (self()->trHeapMemory()) TR::Machine(self());
    _disableInternalPointers = self()->comp()->getOption(TR_MimicInterpreterFrameShape) ||
@@ -259,6 +260,8 @@ OMR::CodeGenerator::CodeGenerator() :
       self()->comp()->getDebug()->resetDebugData();
 
    self()->setIsLeafMethod();
+
+   self()->createObjectFormat();
    }
 
 TR_StackMemory

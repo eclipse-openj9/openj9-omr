@@ -258,6 +258,9 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Snippet * snippet)
       case TR::Snippet::IsVirtualUnresolved:
          print(pOutFile, (TR::S390VirtualUnresolvedSnippet *) snippet);
          break;
+      case TR::Snippet::IsResolveVirtualDispatchReadOnlyData:
+         print(pOutFile, (TR::S390VirtualUnresolvedReadOnlySnippet *) snippet);
+         break;
       case TR::Snippet::IsInterfaceCall:
          print(pOutFile, (TR::S390InterfaceCallSnippet *) snippet);
          break;

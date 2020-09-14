@@ -209,7 +209,7 @@ TR_S390BinaryAnalyser::genericAnalyser(TR::Node * root,
          else
             {
             TR::Node* loadBaseAddr = is16BitMemory2Operand ? secondChild->getFirstChild() : secondChild;
-            TR::MemoryReference * tempMR = generateS390MemoryReference(loadBaseAddr, cg());
+            TR::MemoryReference * tempMR = TR::MemoryReference::create(cg(), loadBaseAddr);
 
             //floating-point arithmatics don't have RXY format instructions, so no long displacement
             if (secondChild->getOpCode().isFloatingPoint())
@@ -247,7 +247,7 @@ TR_S390BinaryAnalyser::genericAnalyser(TR::Node * root,
       {
       TR_ASSERT(  !getInvalid(), "TR_S390BinaryAnalyser::invalid case\n");
 
-      TR::MemoryReference * tempMR = generateS390MemoryReference(is16BitMemory2Operand ? secondChild->getFirstChild() : secondChild, cg());
+      TR::MemoryReference * tempMR = TR::MemoryReference::create(cg(), is16BitMemory2Operand ? secondChild->getFirstChild() : secondChild);
       //floating-point arithmatics don't have RXY format instructions, so no long displacement
       if (secondChild->getOpCode().isFloatingPoint())
          {
@@ -354,7 +354,7 @@ TR_S390BinaryAnalyser::longSubtractAnalyser(TR::Node * root)
          }
       else // assert getBinaryReg3Mem2() == true
          {
-         TR::MemoryReference * longMR = generateS390MemoryReference(secondChild, cg());
+         TR::MemoryReference * longMR = TR::MemoryReference::create(cg(), secondChild);
 
          generateRXInstruction(cg(), memToRegOpCode, root, thirdReg, longMR);
          longMR->stopUsingMemRefRegister(cg());
@@ -371,7 +371,7 @@ TR_S390BinaryAnalyser::longSubtractAnalyser(TR::Node * root)
       TR_ASSERT(  !getInvalid(), "TR_S390BinaryAnalyser::invalid case\n");
 
       TR::Node* baseAddrNode = is16BitMemory2Operand ? secondChild->getFirstChild() : secondChild;
-      TR::MemoryReference * longMR = generateS390MemoryReference(baseAddrNode, cg());
+      TR::MemoryReference * longMR = TR::MemoryReference::create(cg(), baseAddrNode);
 
       generateRXInstruction(cg(), memToRegOpCode, root, firstRegister, longMR);
 

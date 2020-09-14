@@ -136,6 +136,7 @@ static BOOLEAN addressIterator_next(AddressIterator *iterator, ADDRESS *address)
 
 static void *getMemoryInRangeWithShmat(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, key_t addressKey, OMRMemCategory *category, uintptr_t byteAmount, void *startAddress, void *endAddress, uintptr_t alignmentInBytes, uintptr_t vmemOptions, uintptr_t pageSize, uintptr_t mode);
 static void *getMemoryInRangeWithMmap(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, OMRMemCategory *category, uintptr_t byteAmount, void *startAddress, void *endAddress, uintptr_t alignmentInBytes, uintptr_t vmemOptions, uintptr_t mode, uintptr_t pageSize);
+static void *getCollocatedMemoryInRangeWithMmap(struct OMRPortLibrary *portLibrary, uint32_t count, struct J9PortVmemIdentifier **identifiers, OMRMemCategory **categories, uintptr_t *byteAmounts, uintptr_t alignmentInBytes, uintptr_t *modes, uintptr_t pageSize);
 static void *allocateMemoryWithShmat(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, void *currentAddress, key_t addressKey, OMRMemCategory *category, uintptr_t byteAmount, uintptr_t pageSize, uintptr_t mode);
 static BOOLEAN isStrictAndOutOfRange(void *memoryPointer, void *startAddress, void *endAddress, uintptr_t vmemOptions);
 static BOOLEAN rangeIsValid(struct J9PortVmemIdentifier *identifier, void *address, uintptr_t byteAmount);
@@ -878,6 +879,79 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 	return memoryPointer;
 }
 
+void *
+omrvmem_reserve_memory_collocated_ex(struct OMRPortLibrary *portLibrary, uint32_t count, struct J9PortVmemIdentifier **identifiers, struct J9PortVmemParams *params)
+{
+	void *memoryPointer = NULL;
+	OMRMemCategory *categories[OMRPORT_MAX_COLLOCATED_SEGMENTS_ALLOC];
+	uintptr_t byteAmounts[OMRPORT_MAX_COLLOCATED_SEGMENTS_ALLOC];
+	uintptr_t modes[OMRPORT_MAX_COLLOCATED_SEGMENTS_ALLOC];
+	uintptr_t totalByteAmount = 0;
+	int i = 0;
+
+	Assert_PRT_true(count > 0 && count <= OMRPORT_MAX_COLLOCATED_SEGMENTS_ALLOC);
+	Assert_PRT_true(OMRPORT_VMEM_PAGE_FLAG_NOT_USED == params[0].pageFlags);
+
+	for (i = 0; i < count; i++) {
+		Assert_PRT_true(params[i].startAddress == params[0].startAddress);
+		Assert_PRT_true(params[i].endAddress == params[0].endAddress);
+		Assert_PRT_true(params[i].pageSize == params[0].pageSize);
+		Assert_PRT_true(params[i].pageFlags == params[0].pageFlags);
+		Assert_PRT_true(params[i].options == params[0].options);
+		Assert_PRT_true(params[i].alignmentInBytes == params[0].alignmentInBytes);
+
+		ASSERT_VALUE_IS_PAGE_SIZE_ALIGNED(params[i].byteAmount, params[i].pageSize);
+		byteAmounts[i] = params[i].byteAmount;
+		totalByteAmount += byteAmounts[i];
+		modes[i] = params[i].mode;
+		categories[i] = omrmem_get_category(portLibrary, params[i].category);
+	}
+
+	Trc_PRT_vmem_omrvmem_reserve_memory_Entry_replacement(params[0].startAddress, totalByteAmount, params[0].pageSize);
+
+	Assert_PRT_true(params[0].startAddress == NULL && params[0].endAddress == OMRPORT_VMEM_MAX_ADDRESS);
+	ASSERT_VALUE_IS_PAGE_SIZE_ALIGNED(totalByteAmount, params[0].pageSize);
+
+	/* Invalid input */
+	if (0 == params[0].pageSize) {
+		for (i = 0; i < count; i++) {
+			update_vmemIdentifier(identifiers[i], NULL, NULL, 0, 0, 0, 0, 0, NULL, -1);
+		}
+		Trc_PRT_vmem_omrvmem_reserve_memory_invalid_input();
+	} else if (PPG_vmem_pageSize[0] == params[0].pageSize) {
+		uintptr_t alignmentInBytes = OMR_MAX(params[0].pageSize, params[0].alignmentInBytes);
+		uintptr_t minimumGranule = OMR_MIN(params[0].pageSize, params[0].alignmentInBytes);
+
+		/* Make sure that the alignment is a multiple of both requested alignment and page size (enforces that arguments are powers of two and, thus, their max is their lowest common multiple) */
+		if ((0 == minimumGranule) || (0 == (alignmentInBytes % minimumGranule))) {
+			memoryPointer = getCollocatedMemoryInRangeWithMmap(portLibrary, count, identifiers, categories, byteAmounts, alignmentInBytes, modes, PPG_vmem_pageSize[0]);
+		}
+	} else {
+		/* If the pageSize is not one of the supported page sizes, error */
+		for (i = 0; i < count; i++) {
+			update_vmemIdentifier(identifiers[i], NULL, NULL, 0, 0, 0, 0, 0, NULL, -1);
+		}
+		Trc_PRT_vmem_omrvmem_reserve_memory_unsupported_page_size(params[0].pageSize);
+	}
+#if defined(OMR_PORT_NUMA_SUPPORT)
+	if (NULL != memoryPointer) {
+		port_numa_interleave_memory(portLibrary, memoryPointer, totalByteAmount);
+	}
+#endif
+
+#if defined(OMRVMEM_DEBUG)
+	printf("\tomrvmem_reserve_memory_collocated_ex(start=%p,end=%p,totalsize=0x%zx,page=0x%zx,options=0x%zx) with count=%u segments returning %p\n",
+			params[0].startAddress, params[0].endAddress, totalByteAmount, params[0].pageSize, (size_t)params[0].options, count, memoryPointer);
+	for (i = 0; i < count; i++) {
+		printf("\t\tsegment %d (size=0x%zx)\n", i, params[i].byteAmount);
+	}
+	fflush(stdout);
+#endif
+
+	Trc_PRT_vmem_omrvmem_reserve_memory_Exit_replacement(memoryPointer, totalByteAmount);
+	return memoryPointer;
+}
+
 static void *
 reserveMemoryWithShmat(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, OMRMemCategory *category, uintptr_t byteAmount, void *startAddress, void *endAddress, uintptr_t pageSize, uintptr_t alignmentInBytes, uintptr_t vmemOptions, uintptr_t mode)
 {
@@ -1225,6 +1299,70 @@ reserve_memory_with_mmap(struct OMRPortLibrary *portLibrary, void *address, uint
 	}
 
 	Trc_PRT_vmem_reserve_exit(result, address, byteAmount);
+	return result;
+}
+
+static void *
+reserve_collocated_memory_with_mmap(struct OMRPortLibrary *portLibrary, void *address, uint32_t count, uintptr_t *byteAmounts, struct J9PortVmemIdentifier **identifiers, uintptr_t *modes, uintptr_t pageSize, OMRMemCategory **categories)
+{
+	int fd = -1;
+	int flags = 0;
+	void *result = NULL;
+	int protectionFlags = PROT_NONE;
+	uintptr_t totalByteAmount = 0;
+	int i = 0;
+	int j = 0;
+
+	uint32_t requiredModeFlags = OMRPORT_VMEM_MEMORY_MODE_COMMIT;
+	Assert_PRT_true((modes[0] & requiredModeFlags) == requiredModeFlags);
+	uint32_t unsupportedModeFlags = OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN | OMRPORT_VMEM_MEMORY_MODE_MMAP_HUGE_PAGES;
+	Assert_PRT_true((modes[0] & unsupportedModeFlags) == 0);
+
+	for (i = 0; i < count; i++) {
+		totalByteAmount += byteAmounts[i];
+	}
+
+	if (TRUE == set_flags_for_mmap(&flags)) {
+		Assert_PRT_true(FALSE);
+	}
+
+	Trc_PRT_vmem_reserve_entry(address, totalByteAmount);
+
+	/* do NOT use the MAP_FIXED flag on Linux. With this flag, Linux may return
+	 * an address that has already been reserved.
+	 */
+	result = mmap(address, (size_t)totalByteAmount, protectionFlags, flags, fd, 0);
+
+	if (MAP_FAILED == result) {
+		result = NULL;
+	} else {
+		uintptr_t identifierAddress = (uintptr_t)result;
+		/* Update identifier and commit memory */
+		for (i = 0; i < count; i++) {
+			update_vmemIdentifier(identifiers[i], (void *)identifierAddress, (void *)identifierAddress, byteAmounts[i], modes[i], pageSize, OMRPORT_VMEM_PAGE_FLAG_NOT_USED, OMRPORT_VMEM_RESERVE_USED_MMAP, categories[i], fd);
+			omrmem_categories_increment_counters(categories[i], byteAmounts[i]);
+			identifierAddress += byteAmounts[i];
+			/* The collocated segments were allocated with PROT_NONE; here we apply each segment's protection flags individually. */
+			Assert_PRT_true(OMRPORT_VMEM_MEMORY_MODE_COMMIT == (modes[i] & OMRPORT_VMEM_MEMORY_MODE_COMMIT));
+			if (NULL == omrvmem_commit_memory(portLibrary, identifiers[i]->address, byteAmounts[i], identifiers[i])) {
+				/* If the commit fails free the memory */
+				for (j = 0; j < count; j++) {
+					omrvmem_free_memory(portLibrary, identifiers[j]->address, byteAmounts[j], identifiers[j]);
+				}
+				result = NULL;
+				break;
+			}
+		}
+	}
+
+	if (NULL == result) {
+		Trc_PRT_vmem_reserve_failed(address, totalByteAmount);
+		for (i = 0; i < count; i++) {
+			update_vmemIdentifier(identifiers[i], NULL, NULL, 0, 0, 0, 0, 0, NULL, -1);
+		}
+	}
+
+	Trc_PRT_vmem_reserve_exit(result, address, totalByteAmount);
 	return result;
 }
 
@@ -1673,6 +1811,16 @@ allocAnywhere:
 	}
 
 	return memoryPointer;
+}
+
+/**
+ * Unlike getMemoryInRangeWithMmap(), this doesn't offer any support for controlling where
+ * the memory is allocated. Returns NULL on failure.
+ */
+static void *
+getCollocatedMemoryInRangeWithMmap(struct OMRPortLibrary *portLibrary, uint32_t count, struct J9PortVmemIdentifier **identifiers, OMRMemCategory **categories, uintptr_t *byteAmounts, uintptr_t alignmentInBytes, uintptr_t *modes, uintptr_t pageSize)
+{
+	return reserve_collocated_memory_with_mmap(portLibrary, NULL, count, byteAmounts, identifiers, modes, pageSize, categories);
 }
 
 /**

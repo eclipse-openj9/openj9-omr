@@ -47,6 +47,9 @@ class MM_MemorySubSpaceGeneric : public MM_MemorySubSpace {
 
 public:
 	static MM_MemorySubSpaceGeneric* newInstance(MM_EnvironmentBase* env, MM_MemoryPool* memoryPool, MM_RegionPool* regionPool, bool usesGlobalCollector, uintptr_t minimumSize, uintptr_t initialSize, uintptr_t maximumSize, uintptr_t memoryType, uint32_t objectFlags);
+#if defined(OMR_GC_SNAPSHOTS)
+	static MM_MemorySubSpaceGeneric* newInstance(MM_EnvironmentBase* env, MM_MemoryPool* memoryPool, MM_RegionPool* regionPool, bool usesGlobalCollector, uintptr_t restoreSize, uintptr_t minimumSize, uintptr_t initialSize, uintptr_t maximumSize, uintptr_t memoryType, uint32_t objectFlags);
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 
 	virtual const char* getName() { return MEMORY_SUBSPACE_NAME_GENERIC; }
 	virtual const char* getDescription() { return MEMORY_SUBSPACE_DESCRIPTION_GENERIC; }
@@ -109,6 +112,11 @@ public:
 	virtual bool expanded(MM_EnvironmentBase* env, MM_PhysicalSubArena* subArena, MM_HeapRegionDescriptor* region, bool canCoalesce);
 	virtual bool expanded(MM_EnvironmentBase* env, MM_PhysicalSubArena* subArena, uintptr_t size, void* lowAddress, void* highAddress, bool canCoalesce);
 
+#if defined(OMR_GC_SNAPSHOTS)
+	virtual bool expandedWithActiveMemory(MM_EnvironmentBase* env, MM_PhysicalSubArena* subArena, MM_HeapRegionDescriptor* region, bool canCoalesce);
+	virtual bool expandedWithActiveMemory(MM_EnvironmentBase* env, MM_PhysicalSubArena* subArena, uintptr_t size, void* lowAddress, void* highAddress, bool canCoalesce);
+#endif /* defined(OMR_GC_SNAPSHOTS) */
+
 	virtual void addExistingMemory(MM_EnvironmentBase* env, MM_PhysicalSubArena* subArena, uintptr_t size, void* lowAddress, void* highAddress, bool canCoalesce);
 	virtual void* removeExistingMemory(MM_EnvironmentBase* env, MM_PhysicalSubArena* subArena, uintptr_t size, void* lowAddress, void* highAddress);
 
@@ -137,6 +145,20 @@ public:
 	{
 		_typeId = __FUNCTION__;
 	};
+
+#if defined(OMR_GC_SNAPSHOTS)
+	/**
+	 * Create a MemorySubSpaceGeneric object, where a portion of the space will be restored from a heap snapshot.
+	 */
+	MM_MemorySubSpaceGeneric(MM_EnvironmentBase* env, MM_MemoryPool* memoryPool, MM_RegionPool* regionPool, bool usesGlobalCollector, uintptr_t restoreSize, uintptr_t minimumSize, uintptr_t initialSize, uintptr_t maximumSize, uintptr_t memoryType, uint32_t objectFlags)
+		: MM_MemorySubSpace(env, (MM_Collector*)NULL, NULL, usesGlobalCollector, restoreSize, minimumSize, initialSize, maximumSize, memoryType, objectFlags)
+		, _memoryPool(memoryPool)
+		, _regionPool(regionPool)
+		, _allocateAtSafePointOnly(false)
+	{
+		_typeId = __FUNCTION__;
+	};
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 
 protected:
 	virtual void* allocationRequestFailed(MM_EnvironmentBase* env, MM_AllocateDescription* allocateDescription, AllocationType allocationType, MM_ObjectAllocationInterface* objectAllocationInterface, MM_MemorySubSpace* baseSubSpace, MM_MemorySubSpace* previousSubSpace);

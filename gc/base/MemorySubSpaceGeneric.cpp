@@ -574,6 +574,34 @@ MM_MemorySubSpaceGeneric::newInstance(MM_EnvironmentBase* env, MM_MemoryPool* me
 	return memorySubSpace;
 }
 
+#if defined(OMR_GC_SNAPSHOTS)
+MM_MemorySubSpaceGeneric*
+MM_MemorySubSpaceGeneric::newInstance(MM_EnvironmentBase* env, MM_MemoryPool* memoryPool, MM_RegionPool* regionPool, bool usesGlobalCollector, uintptr_t restoreSize, uintptr_t minimumSize, uintptr_t initialSize, uintptr_t maximumSize, uintptr_t memoryType, uint32_t objectFlags)
+{
+	MM_MemorySubSpaceGeneric* memorySubSpace;
+
+	memorySubSpace = (MM_MemorySubSpaceGeneric*)env->getForge()->allocate(sizeof(MM_MemorySubSpaceGeneric), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	if (NULL != memorySubSpace) {
+		new (memorySubSpace) MM_MemorySubSpaceGeneric(env, memoryPool, regionPool, usesGlobalCollector, restoreSize, minimumSize, initialSize, maximumSize, memoryType, objectFlags);
+		if (!memorySubSpace->initialize(env)) {
+			memorySubSpace->kill(env);
+			memorySubSpace = NULL;
+		}
+	} else {
+		/* the MSS has responsibility for freeing the memoryPool and 
+		 * regionPool. Since we couldn't create one, we must free them now. 
+		 */
+		if (NULL != memoryPool) {
+			memoryPool->kill(env);
+		}
+		if (NULL != regionPool) {
+			regionPool->kill(env);
+		}
+	}
+	return memorySubSpace;
+}
+#endif /* defined(OMR_GC_SNAPSHOTS) */
+
 bool
 MM_MemorySubSpaceGeneric::initialize(MM_EnvironmentBase* env)
 {
@@ -643,6 +671,38 @@ MM_MemorySubSpaceGeneric::expanded(MM_EnvironmentBase* env, MM_PhysicalSubArena*
 	}
 	return result;
 }
+
+#if defined(OMR_GC_SNAPSHOTS)
+
+/**
+ * Memory described by the range has added to the heap and been made available to the subspace as active memory.
+ * The active memory range may contain live objects, it is not free space.
+ */
+bool
+MM_MemorySubSpaceGeneric::expandedWithActiveMemory(MM_EnvironmentBase* env, MM_PhysicalSubArena* subArena, MM_HeapRegionDescriptor* region, bool canCoalesce)
+{
+	uintptr_t size = region->getSize();
+	void* lowAddress = region->getLowAddress();
+	void* highAddress = region->getHighAddress();
+
+	/* Inform the sub space hierarchy of the size change */
+	return heapAddRange(env, this, size, lowAddress, highAddress);
+}
+
+bool
+MM_MemorySubSpaceGeneric::expandedWithActiveMemory(MM_EnvironmentBase* env, MM_PhysicalSubArena* subArena, uintptr_t size, void* lowAddress, void* highAddress, bool canCoalesce)
+{
+	/* Inform the sub space hierarchy of the size change */
+	bool result = heapAddRange(env, this, size, lowAddress, highAddress);
+
+	if (result && MEMORY_TYPE_OLD == (getTypeFlags() & MEMORY_TYPE_OLD)) {
+		addTenureRange(env, size, lowAddress, highAddress);
+	}
+
+	return result;
+}
+
+#endif /* defined(OMR_GC_SNAPSHOTS) */
 
 /**
  * Memory described by the range which was already part of the heap has been made available to the subspace

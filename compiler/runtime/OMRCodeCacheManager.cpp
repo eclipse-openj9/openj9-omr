@@ -58,7 +58,8 @@ OMR::CodeCacheManager::CodeCacheManager(TR::RawAllocator rawAllocator) :
    _initialized(false),
    _codeCacheFull(false),
    _currTotalUsedInBytes(0),
-   _maxUsedInBytes(0)
+   _maxUsedInBytes(0),
+   _codeCacheData(NULL)
    {
    }
 
@@ -139,6 +140,7 @@ OMR::CodeCacheManager::initialize(
    mcc_printf("mcc_initialize: code cache size = %" OMR_PRIuSIZE " kb\n",  config.codeCacheKB());
    mcc_printf("mcc_initialize: code cache pad size = %" OMR_PRIuSIZE " kb\n",  config.codeCachePadKB());
    mcc_printf("mcc_initialize: code cache total size = %" OMR_PRIuSIZE " kb\n",  config.codeCacheTotalKB());
+   mcc_printf("mcc_initialize: data area total size = %" OMR_PRIuSIZE " kb\n",  config.dataAreaTotalKB());
 
    // Initialize the list of code caches
    //

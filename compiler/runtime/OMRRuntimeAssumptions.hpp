@@ -182,8 +182,30 @@ class RuntimeAssumption
       return toReturn != this || !toReturn->isMarkedForDetach() ? toReturn : const_cast<RuntimeAssumption*>(this);
       }
 
+   /**
+    * @brief Returns the sentinel for the circular linked list of assumptions associated with a method body.
+    *
+    * @return Returns the sentinel RuntimeAssumption object.
+    */
+   RuntimeAssumption * getSentinel()
+      {
+      RuntimeAssumption *toReturn = (RuntimeAssumption *)(((uintptr_t)_nextAssumptionForSameJittedBody)&~MARK_FOR_DELETE);
+      TR_ASSERT_FATAL(toReturn, "toReturn can't be NULL, this=%p\n", this);
+      while (toReturn->getAssumptionKind() != RuntimeAssumptionSentinel)
+         {
+         TR_ASSERT_FATAL(toReturn != this, "Looped through assumptions for same jitted body without finding sentinel! toReturn=%p\n", toReturn);
+         RuntimeAssumption *next = (RuntimeAssumption*)(((uintptr_t)toReturn->_nextAssumptionForSameJittedBody)&~MARK_FOR_DELETE);
+         TR_ASSERT_FATAL(next, "next can't be NULL, toReturn=%p\n", toReturn);
+         toReturn = next;
+         }
+      return toReturn;
+      }
+
    virtual void     compensate(TR_FrontEnd *vm, bool isSMP, void *data) = 0;
    virtual bool     equals(RuntimeAssumption &other) = 0;
+
+   virtual void     serialize(uint8_t *cursor, uint8_t *owningMetadata) { TR_ASSERT_FATAL(false, "Should not be called\n"); }
+   virtual uint32_t size()                                              { TR_ASSERT_FATAL(false, "Should not be called\n"); return 0; }
 
    /*
     * These functions are used to determine whether the runtime assumption falls within
@@ -257,7 +279,7 @@ namespace TR
 class SentinelRuntimeAssumption : public OMR::RuntimeAssumption
    {
    public:
-   SentinelRuntimeAssumption() :  RuntimeAssumption(NULL, 0)
+   SentinelRuntimeAssumption() :  _owningMetaData(NULL), RuntimeAssumption(NULL, 0)
       {
       setNextAssumptionForSameJittedBody(this); // pointing to itself means that the list is empty
       }
@@ -268,7 +290,13 @@ class SentinelRuntimeAssumption : public OMR::RuntimeAssumption
 
    virtual uint8_t *getFirstAssumingPC() { return NULL; }
    virtual uint8_t *getLastAssumingPC() { return NULL; }
-   virtual void     dumpInfo() {};
+   virtual void     dumpInfo() {}
+
+   void *getOwningMetadata()                     { return _owningMetaData; }
+   void  setOwningMetadata(void *owningMetadata) { _owningMetaData = owningMetadata; }
+
+   private:
+   void * _owningMetaData;
    }; // TR::SentinelRuntimeAssumption
 
 class PatchNOPedGuardSite : public OMR::LocationRedirectRuntimeAssumption

@@ -694,6 +694,7 @@ OMR_ARCH_POWER
 OMR_PORT_ASYNC_HANDLER
 OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD
 OMR_GC_VLHGC
+OMR_GC_SNAPSHOTS
 OMR_GC_SEGREGATED_HEAP
 OMR_GC_SCAN_OBJECT_GLUE
 OMR_GC_REALTIME
@@ -865,6 +866,7 @@ enable_OMR_GC_OBJECT_ALLOCATION_NOTIFY
 enable_OMR_GC_REALTIME
 enable_OMR_GC_SCAN_OBJECT_GLUE
 enable_OMR_GC_SEGREGATED_HEAP
+enable_OMR_GC_SNAPSHOTS
 enable_OMR_GC_VLHGC
 enable_OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD
 enable_OMR_PORT_ASYNC_HANDLER
@@ -1637,6 +1639,8 @@ Optional Features:
   --enable-OMR_GC_SCAN_OBJECT_GLUE
 
   --enable-OMR_GC_SEGREGATED_HEAP
+
+  --enable-OMR_GC_SNAPSHOTS
 
   --enable-OMR_GC_VLHGC
   --enable-OMR_GC_VLHGC_CONCURRENT_COPY_FORWARD
@@ -5542,6 +5546,25 @@ else
 fi
 else
   OMR_GC_SEGREGATED_HEAP=0
+
+
+fi
+
+
+# Check whether --enable-OMR_GC_SNAPSHOTS was given.
+if test "${enable_OMR_GC_SNAPSHOTS+set}" = set; then :
+  enableval=$enable_OMR_GC_SNAPSHOTS; if test "x${enableval}" = xyes; then :
+  OMR_GC_SNAPSHOTS=1
+
+   $as_echo "#define OMR_GC_SNAPSHOTS 1" >>confdefs.h
+
+else
+  OMR_GC_SNAPSHOTS=0
+
+
+fi
+else
+  OMR_GC_SNAPSHOTS=0
 
 
 fi

@@ -2276,7 +2276,7 @@ OMR::Z::TreeEvaluator::commonButestEvaluator(TR::Node * node, TR::CodeGenerator 
    uint8_t tmMask = secondChild->getUnsignedByte();
    if (firstChild->isSingleRefUnevaluated())
       {
-      TR::MemoryReference * mr = generateS390MemoryReference(firstChild, cg);
+      TR::MemoryReference * mr = TR::MemoryReference::create(cg, firstChild);
       generateSIInstruction(cg, TR::InstOpCode::TM, node, mr, tmMask);
       }
    else

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -108,6 +108,8 @@ public:
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 	virtual uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env);
 #endif
+
+	virtual MMINLINE uintptr_t getContractionSize() const { return _memorySubSpaceOld->getContractionSize(); }
 
 	/**
 	 * Create a MemorySubSpaceGenerational object.

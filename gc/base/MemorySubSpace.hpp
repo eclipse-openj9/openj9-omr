@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -180,7 +180,7 @@ public:
 	MMINLINE void isAllocatable(bool isAllocatable) {_isAllocatable = isAllocatable; }
 	MMINLINE bool isAllocatable() { return _isAllocatable; }
 	
-	MMINLINE uintptr_t getContractionSize() const { return _contractionSize; }
+	virtual MMINLINE uintptr_t getContractionSize() const { return _contractionSize; }
 	MMINLINE uintptr_t getExpansionSize() const { return _expansionSize; }
 	MMINLINE void setContractionSize(uintptr_t size) { _contractionSize = size; }
 	MMINLINE void setExpansionSize(uintptr_t size) { _expansionSize = size; }

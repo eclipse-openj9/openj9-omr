@@ -203,6 +203,10 @@ if(OMR_JITBUILDER)
 	add_subdirectory(jitbuilder)
 endif(OMR_JITBUILDER)
 
+if(OMR_SHARED_CACHE)
+	add_subdirectory(sharedcache)
+endif(OMR_SHARED_CACHE)
+
 # This should come last to ensure dependencies
 # are defined
 if(OMR_FVTEST)

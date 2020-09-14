@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2018 IBM Corp. and others
+ * Copyright (c) 2014, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -55,7 +55,10 @@ OMRMEM_CATEGORY_NO_CHILDREN("JIT Data Cache", OMRMEM_CATEGORY_JIT_DATA_CACHE);
 #if defined(OMR_OPT_CUDA)
 OMRMEM_CATEGORY_NO_CHILDREN("CUDA", OMRMEM_CATEGORY_CUDA);
 #endif /* OMR_OPT_CUDA */
-
+#if defined(OMR_SHARED_CACHE)
+OMRMEM_CATEGORY_1_CHILD("Classes", OMRMEM_CATEGORY_CLASSES, OMRMEM_CATEGORY_CLASSES_SHC_CACHE);
+OMRMEM_CATEGORY_NO_CHILDREN("Shared Cache", OMRMEM_CATEGORY_CLASSES_SHC_CACHE);
+#endif /* OMR_SHARED_CACHE */
 
 omr_error_t
 omr_ras_initMemCategories(OMRPortLibrary *portLibrary)
@@ -88,6 +91,10 @@ omr_ras_initMemCategories(OMRPortLibrary *portLibrary)
 #if defined(OMR_OPT_CUDA)
 		CATEGORY_TABLE_ENTRY(OMRMEM_CATEGORY_CUDA),
 #endif /* OMR_OPT_CUDA */
+#if defined(OMR_SHARED_CACHE)
+		CATEGORY_TABLE_ENTRY(OMRMEM_CATEGORY_CLASSES), 
+		CATEGORY_TABLE_ENTRY(OMRMEM_CATEGORY_CLASSES_SHC_CACHE),
+#endif /* OMR_SHARED_CACHE */
 	};
 	OMRMemCategorySet memCategorySet = { sizeof(memCategories) / sizeof(memCategories[0]), memCategories };
 	omr_error_t rc = OMR_ERROR_NONE;

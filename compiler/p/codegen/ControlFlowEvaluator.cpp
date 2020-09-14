@@ -133,6 +133,8 @@ CRCompareCondition compareConditionInCR(CompareCondition cond)
          return CRCompareCondition(TR::RealRegister::CRCC_GT, false);
       case CompareCondition::le:
          return CRCompareCondition(TR::RealRegister::CRCC_GT, true);
+      default:
+         TR_ASSERT_FATAL(false, "Invalid CompareCondition %d", static_cast<int>(cond));
       }
    }
 
@@ -162,6 +164,40 @@ CompareCondition reverseCondition(CompareCondition cond)
          return CompareCondition::le;
       case CompareCondition::le:
          return CompareCondition::gt;
+      default:
+         TR_ASSERT_FATAL(false, "Invalid CompareCondition %d", static_cast<int>(cond));
+      }
+   }
+
+/**
+ * \brief
+ *    Returns a condition that should be used if the order of operands to the compare instruction
+ *    is flipped.
+ *
+ * \param cond
+ *    The original condition.
+ *
+ * \return
+ *    The condition that should be used if the compare operands are flipped.
+ */
+CompareCondition flipConditionOrder(CompareCondition cond)
+   {
+   switch (cond)
+      {
+      case CompareCondition::eq:
+         return CompareCondition::eq;
+      case CompareCondition::ne:
+         return CompareCondition::ne;
+      case CompareCondition::lt:
+         return CompareCondition::gt;
+      case CompareCondition::ge:
+         return CompareCondition::le;
+      case CompareCondition::gt:
+         return CompareCondition::lt;
+      case CompareCondition::le:
+         return CompareCondition::ge;
+      default:
+         TR_ASSERT_FATAL(false, "Invalid CompareCondition %d", static_cast<int>(cond));
       }
    }
 
@@ -192,6 +228,36 @@ TR::InstOpCode::Mnemonic compareConditionToBranch(CompareCondition cond)
          return TR::InstOpCode::bgt;
       case CompareCondition::le:
          return TR::InstOpCode::ble;
+      default:
+         TR_ASSERT_FATAL(false, "Invalid CompareCondition %d", static_cast<int>(cond));
+      }
+   }
+
+/**
+ * \brief
+ *    Gets the opcode of an isel instruction that selects based on the given condition code bit.
+ *
+ * \param cond
+ *    The condition code bit to select based on.
+ *
+ * \return
+ *    An extended mnemonic for the isel instruction that selects based on the given condition code
+ *    bit.
+ */
+TR::InstOpCode::Mnemonic compareConditionToISel(TR::RealRegister::CRCC crcc)
+   {
+   switch (crcc)
+      {
+      case TR::RealRegister::CRCC_EQ:
+         return TR::InstOpCode::iseleq;
+      case TR::RealRegister::CRCC_LT:
+         return TR::InstOpCode::isellt;
+      case TR::RealRegister::CRCC_GT:
+         return TR::InstOpCode::iselgt;
+      case TR::RealRegister::CRCC_FU:
+         return TR::InstOpCode::iselun;
+      default:
+         TR_ASSERT_FATAL(false, "Invalid CRCC %d in compareConditionToISel", static_cast<int>(crcc));
       }
    }
 
@@ -237,7 +303,7 @@ bool is16BitSignedImmediate(int64_t value)
  * \return
  *    true if the value provided can be encoded in a 16-bit UI field; false otherwise.
  */
-bool is16BitUnsigedImmediate(uint64_t value)
+bool is16BitUnsignedImmediate(uint64_t value)
    {
    return value < 0x10000;
    }
@@ -455,7 +521,7 @@ CompareCondition evaluateDualIntCompareToConditionRegister(
       int32_t secondHi = secondChild->getLongIntHigh();
       int32_t secondLo = secondChild->getLongIntLow();
 
-      if (compareInfo.isUnsigned && is16BitUnsigedImmediate(secondHi))
+      if (compareInfo.isUnsigned && is16BitUnsignedImmediate(secondHi))
          {
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, condReg, firstReg->getHighOrder(), secondHi);
          }
@@ -473,7 +539,7 @@ CompareCondition evaluateDualIntCompareToConditionRegister(
          cg->stopUsingRegister(secondHiReg);
          }
 
-      if (is16BitUnsigedImmediate(secondLo))
+      if (is16BitUnsignedImmediate(secondLo))
          {
          generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpli4, node, condReg2, firstReg->getLowOrder(), secondLo);
          }
@@ -540,15 +606,41 @@ CompareCondition evaluateDualIntCompareToConditionRegister(
          generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::cror, node, condReg, condReg2, condReg,
             (TR::RealRegister::CRCC_EQ << TR::RealRegister::pos_RT) | (TR::RealRegister::CRCC_EQ << TR::RealRegister::pos_RA) | (TR::RealRegister::CRCC_LT << TR::RealRegister::pos_RB));
          break;
+
+      default:
+         TR_ASSERT_FATAL(false, "Invalid CompareCondition %d", static_cast<int>(compareInfo.cond));
       }
 
    cg->stopUsingRegister(condReg2);
    return CompareCondition::eq;
    }
 
+static bool registerRecentlyWritten(TR::Register *reg, uint32_t windowSize, TR::CodeGenerator *cg)
+   {
+   uint32_t i = 0;
+   TR::Instruction *cursor = cg->getAppendInstruction();
+
+   while (cursor && i < windowSize)
+      {
+      if (cursor->getOpCode().getMaxBinaryLength() != 0)
+         {
+         if (cursor->getTargetRegister(0) == reg)
+            return true;
+         i++;
+         }
+
+      cursor = cursor->getPrev();
+      }
+
+   return false;
+   }
+
 /**
  * \brief
  *    Evaluates an integral comparison to all bits of a CR field using a cmp or cmpi instruction.
+ *
+ *    Under certain conditions, this function may actually evaluate the comparison by reversing its
+ *    operands, in which case this routine will return true to indicate that this has been done.
  *
  *    This function is not capable of handling 64-bit integral comparisons on 32-bit machines, as
  *    such comparisons cannot be performed in a single instruction and would require many extra CR
@@ -572,8 +664,11 @@ CompareCondition evaluateDualIntCompareToConditionRegister(
  *
  * \param cg
  *    The code generator.
+ *
+ * \return
+ *    true if the order of operands to the compare instruction was reversed; false otherwise.
  */
-void evaluateThreeWayIntCompareToConditionRegister(
+bool evaluateThreeWayIntCompareToConditionRegister(
       TR::Register *condReg,
       TR::Node *node,
       TR::Node *firstChild,
@@ -635,12 +730,33 @@ void evaluateThreeWayIntCompareToConditionRegister(
    TR::Register *firstReg = evaluateAndExtend(firstChild, compareInfo.isUnsigned, false, cg);
    bool canUseCmpi = secondChild->getOpCode().isLoadConst() &&
       (compareInfo.isUnsigned
-         ? is16BitUnsigedImmediate(secondChild->get64bitIntegralValueAsUnsigned())
+         ? is16BitUnsignedImmediate(secondChild->get64bitIntegralValueAsUnsigned())
          : is16BitSignedImmediate(secondChild->get64bitIntegralValue()));
+
+   static bool disableFlipCompare = feGetEnv("TR_DisableFlipCompare") != NULL;
+   CompareCondition cond = compareInfo.cond;
+   bool wasFlipped = false;
 
    if (canUseCmpi)
       {
       generateTrg1Src1ImmInstruction(cg, cmpiOp, node, condReg, firstReg, secondChild->get64bitIntegralValue());
+      }
+   else if (
+      (firstReg->containsInternalPointer() || registerRecentlyWritten(firstReg, 4, cg)) &&
+      performTransformation(
+         cg->comp(),
+         "O^O evaluateIntCompareToConditionRegister: flipping order of compare operands (n%dn, n%dn) while evaluating n%dn to avoid P6 FXU reject",
+         firstChild->getGlobalIndex(),
+         secondChild->getGlobalIndex(),
+         node->getGlobalIndex()
+      )
+   )
+      {
+      TR::Register *secondReg = evaluateAndExtend(secondChild, compareInfo.isUnsigned, false, cg);
+      generateTrg1Src2Instruction(cg, cmpOp, node, condReg, secondReg, firstReg);
+      stopUsingExtendedRegister(secondReg, secondChild, cg);
+
+      wasFlipped = true;
       }
    else
       {
@@ -650,6 +766,7 @@ void evaluateThreeWayIntCompareToConditionRegister(
       }
 
    stopUsingExtendedRegister(firstReg, firstChild, cg);
+   return wasFlipped;
    }
 
 /**
@@ -690,8 +807,10 @@ CompareCondition evaluateIntCompareToConditionRegister(
    if (compareInfo.type == TR::Int64 && !cg->comp()->target().is64Bit())
       return evaluateDualIntCompareToConditionRegister(condReg, node, firstChild, secondChild, compareInfo, cg);
 
-   evaluateThreeWayIntCompareToConditionRegister(condReg, node, firstChild, secondChild, compareInfo, cg);
-   return compareInfo.cond;
+   if (evaluateThreeWayIntCompareToConditionRegister(condReg, node, firstChild, secondChild, compareInfo, cg))
+      return flipConditionOrder(compareInfo.cond);
+   else
+      return compareInfo.cond;
    }
 
 /**
@@ -804,6 +923,144 @@ CompareCondition evaluateCompareToConditionRegister(
       default:
          TR_ASSERT_FATAL_WITH_NODE(node, false, "Unrecognized comparison type %s", TR::DataType::getName(compareInfo.type));
       }
+   }
+
+CompareInfo getCompareInfo(TR::ILOpCode op)
+   {
+   TR::DataTypes type = op.expectedChildType(0);
+
+   switch (op.getOpCodeValue())
+      {
+      case TR::bcmpeq:
+      case TR::scmpeq:
+      case TR::icmpeq:
+      case TR::lcmpeq:
+      case TR::acmpeq:
+      case TR::fcmpeq:
+      case TR::dcmpeq:
+         return CompareInfo(CompareCondition::eq, type, false, false);
+
+      case TR::fcmpequ:
+      case TR::dcmpequ:
+         return CompareInfo(CompareCondition::eq, type, false, true);
+
+      case TR::bcmpne:
+      case TR::scmpne:
+      case TR::icmpne:
+      case TR::lcmpne:
+      case TR::acmpne:
+      case TR::fcmpne:
+      case TR::dcmpne:
+         return CompareInfo(CompareCondition::ne, type, false, false);
+
+      case TR::fcmpneu:
+      case TR::dcmpneu:
+         return CompareInfo(CompareCondition::ne, type, false, true);
+
+      case TR::bcmplt:
+      case TR::scmplt:
+      case TR::icmplt:
+      case TR::lcmplt:
+      case TR::fcmplt:
+      case TR::dcmplt:
+         return CompareInfo(CompareCondition::lt, type, false, false);
+
+      case TR::bucmplt:
+      case TR::sucmplt:
+      case TR::iucmplt:
+      case TR::lucmplt:
+      case TR::acmplt:
+         return CompareInfo(CompareCondition::lt, type, true, false);
+
+      case TR::fcmpltu:
+      case TR::dcmpltu:
+         return CompareInfo(CompareCondition::lt, type, false, true);
+
+      case TR::bcmpge:
+      case TR::scmpge:
+      case TR::icmpge:
+      case TR::lcmpge:
+      case TR::fcmpge:
+      case TR::dcmpge:
+         return CompareInfo(CompareCondition::ge, type, false, false);
+
+      case TR::bucmpge:
+      case TR::sucmpge:
+      case TR::iucmpge:
+      case TR::lucmpge:
+      case TR::acmpge:
+         return CompareInfo(CompareCondition::ge, type, true, false);
+
+      case TR::fcmpgeu:
+      case TR::dcmpgeu:
+         return CompareInfo(CompareCondition::ge, type, false, true);
+
+      case TR::bcmpgt:
+      case TR::scmpgt:
+      case TR::icmpgt:
+      case TR::lcmpgt:
+      case TR::fcmpgt:
+      case TR::dcmpgt:
+         return CompareInfo(CompareCondition::gt, type, false, false);
+
+      case TR::bucmpgt:
+      case TR::sucmpgt:
+      case TR::iucmpgt:
+      case TR::lucmpgt:
+      case TR::acmpgt:
+         return CompareInfo(CompareCondition::gt, type, true, false);
+
+      case TR::fcmpgtu:
+      case TR::dcmpgtu:
+         return CompareInfo(CompareCondition::gt, type, false, true);
+
+      case TR::bcmple:
+      case TR::scmple:
+      case TR::icmple:
+      case TR::lcmple:
+      case TR::fcmple:
+      case TR::dcmple:
+         return CompareInfo(CompareCondition::le, type, false, false);
+
+      case TR::bucmple:
+      case TR::sucmple:
+      case TR::iucmple:
+      case TR::lucmple:
+      case TR::acmple:
+         return CompareInfo(CompareCondition::le, type, true, false);
+
+      case TR::fcmpleu:
+      case TR::dcmpleu:
+         return CompareInfo(CompareCondition::le, type, false, true);
+
+      default:
+         return CompareInfo(CompareCondition::eq, TR::DataTypes::NoType, false, false);
+      }
+   }
+
+CompareCondition evaluateToConditionRegister(TR::Register *condReg, TR::Node *node, TR::Node *condNode, TR::CodeGenerator *cg)
+   {
+   static bool disableCondRegEval = feGetEnv("TR_DisableCondRegEval") != NULL;
+
+   if (!disableCondRegEval && !condNode->getRegister() && condNode->getReferenceCount() == 1)
+      {
+      auto compareInfo = getCompareInfo(condNode->getOpCode());
+
+      if (compareInfo.type != TR::DataTypes::NoType &&
+          performTransformation(cg->comp(), "O^O evaluateToConditionRegister: evaluating n%dn directly to a condition register\n", condNode->getGlobalIndex()))
+         {
+         auto cond = evaluateCompareToConditionRegister(condReg, condNode, condNode->getFirstChild(), condNode->getSecondChild(), compareInfo, cg);
+
+         cg->decReferenceCount(condNode->getFirstChild());
+         cg->decReferenceCount(condNode->getSecondChild());
+         return cond;
+         }
+      }
+
+   TR::Register *condIntReg = cg->evaluate(condNode);
+
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, condIntReg, 0);
+   return CompareCondition::ne;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::ifacmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -1384,42 +1641,6 @@ TR::Register *OMR::Power::TreeEvaluator::returnEvaluator(TR::Node *node, TR::Cod
    return NULL;
    }
 
-static TR::InstOpCode::Mnemonic cmp2bun(TR::ILOpCodes op)
-    {
-    switch (op)
-       {
-       case TR::fcmpeq:
-       case TR::fcmpne:
-       case TR::fcmplt:
-       case TR::fcmpgt:
-       case TR::fcmpgeu:
-       case TR::fcmpleu:
-       case TR::dcmpeq:
-       case TR::dcmpne:
-       case TR::dcmplt:
-       case TR::dcmpgt:
-       case TR::dcmpgeu:
-       case TR::dcmpleu:
-          return TR::InstOpCode::bad;
-       case TR::fcmpge:
-       case TR::fcmple:
-       case TR::dcmpge:
-       case TR::dcmple:
-          return TR::InstOpCode::beq;
-       case TR::fcmpequ:
-       case TR::fcmpltu:
-       case TR::fcmpgtu:
-       case TR::dcmpequ:
-       case TR::dcmpltu:
-       case TR::dcmpgtu:
-          return TR::InstOpCode::bun;
-       default:
-          TR_ASSERT(false, "assertion failure");
-       }
-     return TR::InstOpCode::bad;
-    }
-
-
 static TR::InstOpCode::Mnemonic cmp2branch(TR::ILOpCodes op, TR::CodeGenerator *cg)
     {
     switch (op)
@@ -1497,309 +1718,180 @@ static TR::InstOpCode::Mnemonic cmp2branch(TR::ILOpCodes op, TR::CodeGenerator *
     return TR::InstOpCode::bad;
     }
 
-
-static TR::InstOpCode::Mnemonic cmp2cmp(TR::ILOpCodes op, TR::CodeGenerator *cg)
-    {
-    switch (op)
-       {
-       case TR::icmpeq:
-       case TR::icmpne:
-       case TR::icmplt:
-       case TR::icmpge:
-       case TR::icmpgt:
-       case TR::icmple:
-       case TR::bcmpeq:
-       case TR::bcmpne:
-       case TR::bcmplt:
-       case TR::bcmpge:
-       case TR::bcmpgt:
-       case TR::bcmple:
-          return TR::InstOpCode::cmp4;
-       case TR::iucmplt:
-       case TR::iucmpge:
-       case TR::iucmpgt:
-       case TR::iucmple:
-       case TR::bucmplt:
-       case TR::bucmpge:
-       case TR::bucmpgt:
-       case TR::bucmple:
-          return TR::InstOpCode::cmpl4;
-       case TR::lcmpeq:
-       case TR::lcmpne:
-       case TR::lcmplt:
-       case TR::lcmpge:
-       case TR::lcmpgt:
-       case TR::lcmple:
-          return cg->comp()->target().is64Bit() ? TR::InstOpCode::cmp8 : TR::InstOpCode::cmp4;
-       case TR::lucmplt:
-       case TR::lucmpge:
-       case TR::lucmpgt:
-       case TR::lucmple:
-       case TR::acmpeq:
-       case TR::acmpne:
-       case TR::acmplt:
-       case TR::acmpge:
-       case TR::acmpgt:
-       case TR::acmple:
-          return cg->comp()->target().is64Bit() ? TR::InstOpCode::cmpl8 : TR::InstOpCode::cmpl4;
-       default:
-       TR_ASSERT(false, "assertion failure");
-       }
-    return TR::InstOpCode::bad;
-    }
-
-
-static TR::InstOpCode::Mnemonic cmp2cmpi(TR::ILOpCodes op, TR::CodeGenerator *cg)
-    {
-    switch (op)
-       {
-       case TR::icmpeq:
-       case TR::icmpne:
-       case TR::icmplt:
-       case TR::icmpge:
-       case TR::icmpgt:
-       case TR::icmple:
-       case TR::bcmpeq:
-       case TR::bcmpne:
-       case TR::bcmplt:
-       case TR::bcmpge:
-       case TR::bcmpgt:
-       case TR::bcmple:
-          return TR::InstOpCode::cmpi4;
-       case TR::iucmplt:
-       case TR::iucmpge:
-       case TR::iucmpgt:
-       case TR::iucmple:
-       case TR::bucmplt:
-       case TR::bucmpge:
-       case TR::bucmpgt:
-       case TR::bucmple:
-          return TR::InstOpCode::cmpli4;
-       case TR::lcmpeq:
-       case TR::lcmpne:
-       case TR::lcmplt:
-       case TR::lcmpge:
-       case TR::lcmpgt:
-       case TR::lcmple:
-          return cg->comp()->target().is64Bit() ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpi4;
-       case TR::lucmplt:
-       case TR::lucmpge:
-       case TR::lucmpgt:
-       case TR::lucmple:
-       case TR::acmpeq:
-       case TR::acmpne:
-       case TR::acmplt:
-       case TR::acmpge:
-       case TR::acmpgt:
-       case TR::acmple:
-          return cg->comp()->target().is64Bit() ? TR::InstOpCode::cmpli8 : TR::InstOpCode::cmpli4;
-       default:
-       TR_ASSERT(false, "assertion failure");
-       }
-    return TR::InstOpCode::bad;
-    }
-
-
-TR::Register *OMR::Power::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+bool checkSelectReverse(TR::CodeGenerator *cg, TR::Node *node, TR::Node *&trueNode, TR::Node *&falseNode)
    {
-   TR::DataType type = node->getType();
-   bool two_reg = (cg->comp()->target().is32Bit()) && type.getDataType() == TR::Int64;
-   TR::Register *resultReg = two_reg ?
-                            cg->allocateRegisterPair(cg->allocateRegister(),cg->allocateRegister()) :
-                            (type.getDataType() == TR::Float ?
-                            cg->allocateSinglePrecisionRegister() :
-                            (type.getDataType() == TR::Double ?
-                            cg->allocateRegister(TR_FPR) :
-                            cg->allocateRegister(TR_GPR)));
+   static bool disableSelectReverse = feGetEnv("TR_DisableSelectReverse") != NULL;
 
-   // Mark the result reg as collected reference if required.
-   if (!node->isNotCollected())
+   cg->evaluate(trueNode);
+   cg->evaluate(falseNode);
+
+   if (!disableSelectReverse && !cg->canClobberNodesRegister(trueNode) && cg->canClobberNodesRegister(falseNode) &&
+       performTransformation(cg->comp(), "O^O checkSelectReverse: reversing condition on n%dn to avoid a register shuffle\n", node->getGlobalIndex()))
       {
-      resultReg->setContainsCollectedReference();
+      TR::Node *tmpNode = trueNode;
+      trueNode = falseNode;
+      falseNode = tmpNode;
+
+      return true;
       }
 
-   TR::InstOpCode::Mnemonic move_opcode = (type.isIntegral() || type.isAddress()) ? TR::InstOpCode::mr : TR::InstOpCode::fmr;
-   TR::Node * firstChild = node->getFirstChild();
+   return false;
+   }
 
-   if (firstChild->getOpCode().isBooleanCompare() &&
-       firstChild->getRegister() == NULL &&
-       firstChild->getReferenceCount() == 1 &&
-       !(firstChild->getFirstChild()->getType().isInt64() && cg->comp()->target().is32Bit()))
+// Also handles bselect, sselect, aselect, and lselect
+TR::Register *OMR::Power::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *condNode = node->getFirstChild();
+   TR::Node *trueNode = node->getSecondChild();
+   TR::Node *falseNode = node->getThirdChild();
+
+   TR::Register *trgReg;
+   TR::Register *condReg = cg->allocateRegister(TR_CCR);
+
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
       {
-      //This is now either 64 bit only.
-      // (cmp1Reg [branch_opcode] cmp2Reg) ? trueReg : falseReg;
-      TR::DataType compare_type = firstChild->getFirstChild()->getType();
+      TR::Register *trueReg = cg->evaluate(trueNode);
+      TR::Register *falseReg = cg->evaluate(falseNode);
 
-      TR::Register * trueReg = cg->evaluate(node->getChild(1));
-      TR::Register * falseReg = cg->evaluate(node->getChild(2));
-      TR::Register * cmp1Reg = cg->evaluate(firstChild->getFirstChild());
-      TR::Register * cmp2Reg = NULL;      //Do not evaluate this unless we have to.
+      auto cond = evaluateToConditionRegister(condReg, node, condNode, cg);
 
-      TR::InstOpCode::Mnemonic branch_opcode = cmp2branch(firstChild->getOpCodeValue(), cg);
-      TR::Register    *ccr = cg->allocateRegister(TR_CCR);
-      TR::LabelSymbol *doneLabel  = generateLabelSymbol(cg);
+      CRCompareCondition crCond = compareConditionInCR(cond);
+      TR::InstOpCode::Mnemonic iselOp = compareConditionToISel(crCond.crcc);
 
-      bool useImmediateCompare = false;
-
-      if (compare_type.isIntegral() || compare_type.isAddress())
+      if (node->getOpCodeValue() == TR::lselect && !cg->comp()->target().is64Bit())
          {
-         TR::LabelSymbol *label;
-         int64_t value;
-
-         if (firstChild->getSecondChild()->getOpCode().isLoadConst())
+         trgReg = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
+         if (crCond.isReversed)
             {
-               value = firstChild->getSecondChild()->get64bitIntegralValue();
-               useImmediateCompare = value >= LOWER_IMMED && value <= UPPER_IMMED;
-            }
-
-         //We do not have an immediate within range at firstChild->getSecondChild(), so evaluate it.
-         if(!useImmediateCompare)
-            {
-            cmp2Reg = cg->evaluate(firstChild->getSecondChild());
-            }
-
-         if (useImmediateCompare)
-            {
-            generateTrg1Src1ImmInstruction(cg, cmp2cmpi(firstChild->getOpCodeValue(), cg), node, ccr,
-                                             cmp1Reg, value);
+            generateTrg1Src3Instruction(cg, iselOp, node, trgReg->getLowOrder(), falseReg->getLowOrder(), trueReg->getLowOrder(), condReg);
+            generateTrg1Src3Instruction(cg, iselOp, node, trgReg->getHighOrder(), falseReg->getHighOrder(), trueReg->getHighOrder(), condReg);
             }
          else
             {
-            generateTrg1Src2Instruction(cg, cmp2cmp(firstChild->getOpCodeValue(), cg), node, ccr,
-                                          cmp1Reg, cmp2Reg);
-            }
-
-         if (two_reg)
-            {
-            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getHighOrder(), trueReg->getHighOrder());
-            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getLowOrder(), trueReg->getLowOrder());
-            }
-         else
-            {
-            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, trueReg);
-            }
-         generateConditionalBranchInstruction(cg, branch_opcode, node, doneLabel, ccr);
-         if (two_reg)
-            {
-            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getHighOrder(), falseReg->getHighOrder());
-            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getLowOrder(), falseReg->getLowOrder());
-            }
-         else
-            {
-            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, falseReg);
-            }
-         }
-      else if (compare_type.isFloatingPoint())
-         {
-         cmp2Reg = cg->evaluate(firstChild->getSecondChild());
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, ccr, cmp1Reg, cmp2Reg);
-
-         if (two_reg)
-            {
-            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getHighOrder(), trueReg->getHighOrder());
-            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getLowOrder(), trueReg->getLowOrder());
-            }
-         else
-            {
-            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, trueReg);
-            }
-
-         generateConditionalBranchInstruction(cg, branch_opcode, node, doneLabel, ccr);
-         TR::InstOpCode::Mnemonic branch_opcode2 = cmp2bun(firstChild->getOpCodeValue());
-         if (branch_opcode2 != TR::InstOpCode::bad)
-            generateConditionalBranchInstruction(cg, branch_opcode2, node, doneLabel, ccr);
-
-         if (two_reg)
-            {
-            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getHighOrder(), falseReg->getHighOrder());
-            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg->getLowOrder(), falseReg->getLowOrder());
-            }
-         else
-            {
-            generateTrg1Src1Instruction(cg, move_opcode, node, resultReg, falseReg);
+            generateTrg1Src3Instruction(cg, iselOp, node, trgReg->getLowOrder(), trueReg->getLowOrder(), falseReg->getLowOrder(), condReg);
+            generateTrg1Src3Instruction(cg, iselOp, node, trgReg->getHighOrder(), trueReg->getHighOrder(), falseReg->getHighOrder(), condReg);
             }
          }
       else
          {
-         TR_ASSERT(false, "Unsupported compare type for select\n");
+         trgReg = cg->allocateRegister();
+         if (crCond.isReversed)
+            generateTrg1Src3Instruction(cg, iselOp, node, trgReg, falseReg, trueReg, condReg);
+         else
+            generateTrg1Src3Instruction(cg, iselOp, node, trgReg, trueReg, falseReg, condReg);
          }
 
-      TR::RegisterDependencyConditions *dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, two_reg ? 8 : 5, cg->trMemory());
-      if (two_reg)
-         {
-         dep->addPostCondition(resultReg->getHighOrder(), TR::RealRegister::NoReg);
-         dep->addPostCondition(resultReg->getLowOrder(), TR::RealRegister::NoReg);
-         dep->addPostCondition(falseReg->getHighOrder(), TR::RealRegister::NoReg);
-         dep->addPostCondition(falseReg->getLowOrder(), TR::RealRegister::NoReg);
-         dep->addPostCondition(trueReg->getHighOrder(), TR::RealRegister::NoReg);
-         dep->addPostCondition(trueReg->getLowOrder(), TR::RealRegister::NoReg);
-         }
-      else
-         {
-         dep->addPostCondition(resultReg, TR::RealRegister::NoReg);
-         dep->addPostCondition(falseReg, TR::RealRegister::NoReg);
-         dep->addPostCondition(trueReg, TR::RealRegister::NoReg);
-         }
-      dep->addPostCondition(cmp1Reg, TR::RealRegister::NoReg);
-      if (cmp2Reg) dep->addPostCondition(cmp2Reg, TR::RealRegister::NoReg);
-
-      generateDepLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, dep);
-
-      cg->stopUsingRegister(ccr);
-      node->setRegister(resultReg);
-      cg->decReferenceCount(node->getChild(0)->getChild(0));
-      cg->decReferenceCount(node->getChild(0)->getChild(1));
-      cg->decReferenceCount(node->getChild(1));
-      cg->decReferenceCount(node->getChild(2));
+      TR_ASSERT_FATAL_WITH_NODE(
+         node,
+         !trueReg->containsInternalPointer() && !falseReg->containsInternalPointer(),
+         "Select nodes cannot have children that are internal pointers"
+      );
+      if (trueReg->containsCollectedReference() || falseReg->containsCollectedReference())
+         trgReg->setContainsCollectedReference();
       }
    else
       {
-      TR::Register *  trueReg = cg->evaluate(node->getChild(1));
-      TR::Register * falseReg = cg->evaluate(node->getChild(2));
-      TR::Register *  condReg = cg->evaluate(node->getChild(0));
+      bool selectReverse = checkSelectReverse(cg, node, trueNode, falseNode);
 
-      TR::Register *ccr       = cg->allocateRegister(TR_CCR);
-      bool useRegPairForCond = (condReg->getRegisterPair() != NULL);
-      TR::PPCControlFlowInstruction *i = (TR::PPCControlFlowInstruction*)
-            generateControlFlowInstruction(cg, TR::InstOpCode::iselect, node, NULL, 0, two_reg, useRegPairForCond);
-      i->addTargetRegister(ccr);
-      if (two_reg)
+      trgReg = cg->gprClobberEvaluate(trueNode);
+      TR::Register *falseReg = cg->evaluate(falseNode);
+
+      TR_ASSERT_FATAL_WITH_NODE(
+         node,
+         !trgReg->containsInternalPointer() && !falseReg->containsInternalPointer(),
+         "Select nodes cannot have children that are internal pointers"
+      );
+      if (falseReg->containsCollectedReference())
+         trgReg->setContainsCollectedReference();
+
+      auto cond = evaluateToConditionRegister(condReg, node, condNode, cg);
+      if (selectReverse)
+         cond = reverseCondition(cond);
+
+      TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+      startLabel->setStartInternalControlFlow();
+
+      TR::LabelSymbol *endLabel = generateLabelSymbol(cg);
+      endLabel->setEndInternalControlFlow();
+
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, startLabel);
+      generateConditionalBranchInstruction(cg, compareConditionToBranch(cond), node, endLabel, condReg);
+
+      TR::RegisterDependencyConditions *deps;
+
+      if (node->getOpCodeValue() == TR::lselect && !cg->comp()->target().is64Bit())
          {
-         i->addTargetRegister(resultReg->getHighOrder());
-         i->addTargetRegister(resultReg->getLowOrder());
+         deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 5, cg->trMemory());
+         deps->addPostCondition(condReg, TR::RealRegister::NoReg);
+         deps->addPostCondition(trgReg->getLowOrder(), TR::RealRegister::NoReg);
+         deps->addPostCondition(trgReg->getHighOrder(), TR::RealRegister::NoReg);
+         deps->addPostCondition(falseReg->getLowOrder(), TR::RealRegister::NoReg);
+         deps->addPostCondition(falseReg->getHighOrder(), TR::RealRegister::NoReg);
+
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgReg->getLowOrder(), falseReg->getLowOrder());
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgReg->getHighOrder(), falseReg->getHighOrder());
          }
       else
-         i->addTargetRegister(resultReg);
-      i->addSourceRegister(useRegPairForCond ? condReg->getLowOrder() : condReg);
-      if (two_reg)
          {
-         i->addSourceRegister(trueReg->getHighOrder());
-         i->addSourceRegister(trueReg->getLowOrder());
-         i->addSourceRegister(falseReg->getHighOrder());
-         i->addSourceRegister(falseReg->getLowOrder());
-         }
-      else
-         {
-         i->addSourceRegister(trueReg);
-         i->addSourceRegister(falseReg);
+         deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg->trMemory());
+         deps->addPostCondition(condReg, TR::RealRegister::NoReg);
+         deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
+         deps->addPostCondition(falseReg, TR::RealRegister::NoReg);
+
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgReg, falseReg);
          }
 
-      if (useRegPairForCond)
-         i->addSourceRegister(condReg->getHighOrder());
-
-      i->setOpCode2Value(move_opcode);
-
-      cg->stopUsingRegister(ccr);
-
-      node->setRegister(resultReg);
-
-      cg->decReferenceCount(node->getChild(0));
-      cg->decReferenceCount(node->getChild(1));
-      cg->decReferenceCount(node->getChild(2));
+      generateDepLabelInstruction(cg, TR::InstOpCode::label, node, endLabel, deps);
       }
 
-   return resultReg;
+   node->setRegister(trgReg);
+   cg->decReferenceCount(condNode);
+   cg->decReferenceCount(trueNode);
+   cg->decReferenceCount(falseNode);
+   cg->stopUsingRegister(condReg);
 
+   return trgReg;
+   }
+
+// Also handles dselect
+TR::Register *OMR::Power::TreeEvaluator::fselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *condNode = node->getFirstChild();
+   TR::Node *trueNode = node->getSecondChild();
+   TR::Node *falseNode = node->getThirdChild();
+   bool selectReverse = checkSelectReverse(cg, node, trueNode, falseNode);
+
+   TR::Register *trgReg = cg->gprClobberEvaluate(trueNode);
+   TR::Register *falseReg = cg->evaluate(falseNode);
+
+   TR::Register *condReg = cg->allocateRegister(TR_CCR);
+   auto cond = evaluateToConditionRegister(condReg, node, condNode, cg);
+   if (selectReverse)
+      cond = reverseCondition(cond);
+
+   TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+   startLabel->setStartInternalControlFlow();
+
+   TR::LabelSymbol *endLabel = generateLabelSymbol(cg);
+   endLabel->setEndInternalControlFlow();
+
+   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg->trMemory());
+   deps->addPostCondition(condReg, TR::RealRegister::NoReg);
+   deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
+   deps->addPostCondition(falseReg, TR::RealRegister::NoReg);
+
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, startLabel);
+   generateConditionalBranchInstruction(cg, compareConditionToBranch(cond), node, endLabel, condReg);
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::fmr, node, trgReg, falseReg);
+   generateDepLabelInstruction(cg, TR::InstOpCode::label, node, endLabel, deps);
+
+   node->setRegister(trgReg);
+   cg->decReferenceCount(condNode);
+   cg->decReferenceCount(trueNode);
+   cg->decReferenceCount(falseNode);
+   cg->stopUsingRegister(condReg);
+
+   return trgReg;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::compareIntsForEquality(TR::Node *node, TR::CodeGenerator *cg)
@@ -2708,10 +2800,13 @@ TR::Register *intOrderEvaluator(TR::Node *node, const CompareInfo& compareInfo, 
       }
    else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
       {
-      CRCompareCondition crCond = compareConditionInCR(compareInfo.cond);
+      CompareCondition cond = compareInfo.cond;
       TR::Register *condReg = cg->allocateRegister(TR_CCR);
 
-      evaluateThreeWayIntCompareToConditionRegister(condReg, node, firstChild, secondChild, compareInfo, cg);
+      if (evaluateThreeWayIntCompareToConditionRegister(condReg, node, firstChild, secondChild, compareInfo, cg))
+         cond = flipConditionOrder(compareInfo.cond);
+
+      CRCompareCondition crCond = compareConditionInCR(cond);
 
       if (crCond.crcc == TR::RealRegister::CRCC_LT)
          {

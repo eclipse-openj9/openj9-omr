@@ -1424,7 +1424,7 @@ void TR::PPCControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
 
          if (!cg()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8))
             {
-            tempMR = new (cg()->trHeapMemory()) TR::MemoryReference(cg()->getStackPointerRegister(), -8, 8, cg());
+            tempMR = TR::MemoryReference::createWithDisplacement(cg(), cg()->getStackPointerRegister(), -8, 8);
             cg()->traceRAInstruction(cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::stfd, currentNode, tempMR, getTargetRegister(1), cursor));
             }
 
@@ -1437,7 +1437,7 @@ void TR::PPCControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
          if (cg()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8))
             cg()->traceRAInstruction(cursor = generateTrg1Src1Instruction(cg(), TR::InstOpCode::mfvsrwz, currentNode, getTargetRegister(2), getTargetRegister(1), cursor));
          else
-            cg()->traceRAInstruction(cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::lwz, currentNode, getTargetRegister(2), new (cg()->trHeapMemory()) TR::MemoryReference(currentNode, *tempMR, 4, 4, cg()), cursor));
+            cg()->traceRAInstruction(cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::lwz, currentNode, getTargetRegister(2), TR::MemoryReference::createWithMemRef(cg(), currentNode, *tempMR, 4, 4), cursor));
          cg()->traceRAInstruction(cursor = generateLabelInstruction(cg(), TR::InstOpCode::label, currentNode, label2, cursor));
 
          break;
@@ -1454,7 +1454,7 @@ void TR::PPCControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
             }
          if (!cg()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8)|| cg()->comp()->target().is32Bit())
             {
-            tempMR = new (cg()->trHeapMemory()) TR::MemoryReference(cg()->getStackPointerRegister(), -8, 8, cg());
+            tempMR = TR::MemoryReference::createWithDisplacement(cg(), cg()->getStackPointerRegister(), -8, 8);
             cg()->traceRAInstruction(cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::stfd, currentNode, tempMR, getTargetRegister(1), cursor));
             }
 
@@ -1473,55 +1473,11 @@ void TR::PPCControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
             }
          else
             {
-            cg()->traceRAInstruction(cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::lwz, currentNode, getTargetRegister(2), new (cg()->trHeapMemory()) TR::MemoryReference(currentNode, *tempMR, 0, 4, cg()), cursor));
-            cg()->traceRAInstruction(cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::lwz, currentNode, getTargetRegister(3), new (cg()->trHeapMemory()) TR::MemoryReference(currentNode, *tempMR, 4, 4, cg()), cursor));
+            cg()->traceRAInstruction(cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::lwz, currentNode, getTargetRegister(2), TR::MemoryReference::createWithMemRef(cg(), currentNode, *tempMR, 0, 4), cursor));
+            cg()->traceRAInstruction(cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::lwz, currentNode, getTargetRegister(3), TR::MemoryReference::createWithMemRef(cg(), currentNode, *tempMR, 4, 4), cursor));
             }
          cg()->traceRAInstruction(cursor = generateLabelInstruction(cg(), TR::InstOpCode::label, currentNode, label2, cursor));
 
-         break;
-      case TR::InstOpCode::iselect:
-         {
-         cg()->traceRAInstruction(cursor = generateTrg1Src1ImmInstruction(cg(), TR::InstOpCode::cmpi4, currentNode, getTargetRegister(0), getSourceRegister(0), 0, cursor));
-
-         if (useRegPairForResult())
-            {
-            cg()->traceRAInstruction(cursor = generateTrg1Src1Instruction   (cg(), getOpCode2Value(), currentNode, getTargetRegister(1), getSourceRegister(1), cursor));
-            cg()->traceRAInstruction(cursor = generateTrg1Src1Instruction   (cg(), getOpCode2Value(), currentNode, getTargetRegister(2), getSourceRegister(2), cursor));
-            }
-         else
-            {
-            cg()->traceRAInstruction(cursor = generateTrg1Src1Instruction   (cg(), getOpCode2Value(), currentNode, getTargetRegister(1), getSourceRegister(1), cursor));
-            }
-         cg()->traceRAInstruction(cursor = generateConditionalBranchInstruction(cg(), TR::InstOpCode::bne, currentNode, label2, getTargetRegister(0), cursor));
-
-         if (useRegPairForResult())
-            {
-            if (useRegPairForCond())
-               {
-               cg()->traceRAInstruction(cursor = generateTrg1Src1ImmInstruction(cg(), TR::InstOpCode::cmpi4, currentNode, getTargetRegister(0), getSourceRegister(5), 0, cursor));
-               cg()->traceRAInstruction(cursor = generateConditionalBranchInstruction(cg(), TR::InstOpCode::bne, currentNode, label2, getTargetRegister(0), cursor));
-               }
-            }
-         else
-            {
-            if (useRegPairForCond())
-               {
-               cg()->traceRAInstruction(cursor = generateTrg1Src1ImmInstruction(cg(), TR::InstOpCode::cmpi4, currentNode, getTargetRegister(0), getSourceRegister(3), 0, cursor));
-               cg()->traceRAInstruction(cursor = generateConditionalBranchInstruction(cg(), TR::InstOpCode::bne, currentNode, label2, getTargetRegister(0), cursor));
-               }
-            }
-
-         if (useRegPairForResult())
-            {
-            cg()->traceRAInstruction(cursor = generateTrg1Src1Instruction   (cg(), getOpCode2Value(), currentNode, getTargetRegister(1), getSourceRegister(3), cursor));
-            cg()->traceRAInstruction(cursor = generateTrg1Src1Instruction   (cg(), getOpCode2Value(), currentNode, getTargetRegister(2), getSourceRegister(4), cursor));
-            }
-         else
-            {
-            cg()->traceRAInstruction(cursor = generateTrg1Src1Instruction   (cg(), getOpCode2Value(), currentNode, getTargetRegister(1), getSourceRegister(2), cursor));
-            }
-         cg()->traceRAInstruction(cursor = generateLabelInstruction      (cg(), TR::InstOpCode::label,currentNode, label2, cursor));
-         }
          break;
       default:
          TR_ASSERT(false,"unknown control flow instruction ");

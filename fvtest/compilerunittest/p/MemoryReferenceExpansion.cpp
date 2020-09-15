@@ -30,7 +30,7 @@ class PPCMemInstructionExpansionTest : public TRTest::CodeGenTest {};
 TEST_F(PPCMemInstructionExpansionTest, zeroDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, 0, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, 0, 4);
 
     TR::Node* fakeNode = TR::Node::create(TR::treetop);
     TR::Instruction* startInstr = generateLabelInstruction(cg(), TR::InstOpCode::label, fakeNode, generateLabelSymbol(cg()));
@@ -59,7 +59,7 @@ TEST_F(PPCMemInstructionExpansionTest, zeroDisp) {
 TEST_F(PPCMemInstructionExpansionTest, smallPositiveDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, 0x7fff, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, 0x7fff, 4);
 
     TR::Node* fakeNode = TR::Node::create(TR::treetop);
     TR::Instruction* startInstr = generateLabelInstruction(cg(), TR::InstOpCode::label, fakeNode, generateLabelSymbol(cg()));
@@ -88,7 +88,7 @@ TEST_F(PPCMemInstructionExpansionTest, smallPositiveDisp) {
 TEST_F(PPCMemInstructionExpansionTest, smallNegativeDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, -0x8000, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, -0x8000, 4);
 
     TR::Node* fakeNode = TR::Node::create(TR::treetop);
     TR::Instruction* startInstr = generateLabelInstruction(cg(), TR::InstOpCode::label, fakeNode, generateLabelSymbol(cg()));
@@ -117,7 +117,7 @@ TEST_F(PPCMemInstructionExpansionTest, smallNegativeDisp) {
 TEST_F(PPCMemInstructionExpansionTest, largePositiveDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, 0x8000, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, 0x8000, 4);
 
     TR::Node* fakeNode = TR::Node::create(TR::treetop);
     TR::Instruction* startInstr = generateLabelInstruction(cg(), TR::InstOpCode::label, fakeNode, generateLabelSymbol(cg()));
@@ -191,7 +191,7 @@ TEST_F(PPCMemInstructionExpansionTest, largePositiveDisp) {
 TEST_F(PPCMemInstructionExpansionTest, largeNegativeDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, -0x8001, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, -0x8001, 4);
 
     TR::Node* fakeNode = TR::Node::create(TR::treetop);
     TR::Instruction* startInstr = generateLabelInstruction(cg(), TR::InstOpCode::label, fakeNode, generateLabelSymbol(cg()));
@@ -265,7 +265,7 @@ TEST_F(PPCMemInstructionExpansionTest, largeNegativeDisp) {
 TEST_F(PPCMemInstructionExpansionTest, modBaseLargePositiveDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, 0x8000, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, 0x8000, 4);
 
     mr->setBaseModifiable();
 
@@ -306,7 +306,7 @@ TEST_F(PPCMemInstructionExpansionTest, modBaseLargePositiveDisp) {
 TEST_F(PPCMemInstructionExpansionTest, modBaseLargeNegativeDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, -0x8001, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, -0x8001, 4);
 
     mr->setBaseModifiable();
 
@@ -348,7 +348,7 @@ TEST_F(PPCMemInstructionExpansionTest, simpleIndex) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::Register* indexReg = cg()->machine()->getRealRegister(TR::RealRegister::gr2);
-    TR::MemoryReference* mr = new (cg()->trHeapMemory()) TR::MemoryReference(baseReg, indexReg, 4, cg());
+    TR::MemoryReference* mr = TR::MemoryReference::createWithIndexReg(cg(), baseReg, indexReg, 4);
 
     TR::Node* fakeNode = TR::Node::create(TR::treetop);
     TR::Instruction* startInstr = generateLabelInstruction(cg(), TR::InstOpCode::label, fakeNode, generateLabelSymbol(cg()));
@@ -378,7 +378,7 @@ TEST_F(PPCMemInstructionExpansionTest, delayedIndexZeroDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::Register* indexReg = cg()->machine()->getRealRegister(TR::RealRegister::gr2);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, 0, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, 0, 4);
 
     mr->setUsingDelayedIndexedForm();
     mr->setIndexRegister(indexReg);
@@ -411,7 +411,7 @@ TEST_F(PPCMemInstructionExpansionTest, delayedIndexSmallPositiveDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::Register* indexReg = cg()->machine()->getRealRegister(TR::RealRegister::gr2);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, 0x7fff, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, 0x7fff, 4);
 
     mr->setUsingDelayedIndexedForm();
     mr->setIndexRegister(indexReg);
@@ -453,7 +453,7 @@ TEST_F(PPCMemInstructionExpansionTest, delayedIndexSmallNegativeDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::Register* indexReg = cg()->machine()->getRealRegister(TR::RealRegister::gr2);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, -0x8000, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, -0x8000, 4);
 
     mr->setUsingDelayedIndexedForm();
     mr->setIndexRegister(indexReg);
@@ -495,7 +495,7 @@ TEST_F(PPCMemInstructionExpansionTest, delayedIndexLargePositiveDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::Register* indexReg = cg()->machine()->getRealRegister(TR::RealRegister::gr2);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, 0x8000, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, 0x8000, 4);
 
     mr->setUsingDelayedIndexedForm();
     mr->setIndexRegister(indexReg);
@@ -546,7 +546,7 @@ TEST_F(PPCMemInstructionExpansionTest, delayedIndexLargeNegativeDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
     TR::Register* indexReg = cg()->machine()->getRealRegister(TR::RealRegister::gr2);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, -0x8001, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, -0x8001, 4);
 
     mr->setUsingDelayedIndexedForm();
     mr->setIndexRegister(indexReg);
@@ -596,7 +596,7 @@ TEST_F(PPCMemInstructionExpansionTest, delayedIndexLargeNegativeDisp) {
 TEST_F(PPCMemInstructionExpansionTest, delayedIndexModBaseZeroDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, 0, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, 0, 4);
 
     mr->setUsingDelayedIndexedForm();
     mr->setBaseModifiable();
@@ -628,7 +628,7 @@ TEST_F(PPCMemInstructionExpansionTest, delayedIndexModBaseZeroDisp) {
 TEST_F(PPCMemInstructionExpansionTest, delayedIndexModBaseSmallPositiveDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, 0x7fff, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, 0x7fff, 4);
 
     mr->setUsingDelayedIndexedForm();
     mr->setBaseModifiable();
@@ -670,7 +670,7 @@ TEST_F(PPCMemInstructionExpansionTest, delayedIndexModBaseSmallPositiveDisp) {
 TEST_F(PPCMemInstructionExpansionTest, delayedIndexModBaseSmallNegativeDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, -0x8000, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, -0x8000, 4);
 
     mr->setUsingDelayedIndexedForm();
     mr->setBaseModifiable();
@@ -712,7 +712,7 @@ TEST_F(PPCMemInstructionExpansionTest, delayedIndexModBaseSmallNegativeDisp) {
 TEST_F(PPCMemInstructionExpansionTest, delayedIndexModBaseLargePositiveDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, 0x8000, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, 0x8000, 4);
 
     mr->setUsingDelayedIndexedForm();
     mr->setBaseModifiable();
@@ -763,7 +763,7 @@ TEST_F(PPCMemInstructionExpansionTest, delayedIndexModBaseLargePositiveDisp) {
 TEST_F(PPCMemInstructionExpansionTest, delayedIndexModBaseLargeNegativeDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, -0x8001, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, -0x8001, 4);
 
     mr->setUsingDelayedIndexedForm();
     mr->setBaseModifiable();
@@ -814,7 +814,7 @@ TEST_F(PPCMemInstructionExpansionTest, delayedIndexModBaseLargeNegativeDisp) {
 TEST_F(PPCMemInstructionExpansionTest, prefixNoExpandPositiveDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, 0x1ffffffff, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, 0x1ffffffff, 4);
 
     TR::Node* fakeNode = TR::Node::create(TR::treetop);
     TR::Instruction* startInstr = generateLabelInstruction(cg(), TR::InstOpCode::label, fakeNode, generateLabelSymbol(cg()));
@@ -843,7 +843,7 @@ TEST_F(PPCMemInstructionExpansionTest, prefixNoExpandPositiveDisp) {
 TEST_F(PPCMemInstructionExpansionTest, prefixNoExpandNegativeDisp) {
     TR::Register* dataReg = cg()->machine()->getRealRegister(TR::RealRegister::gr0);
     TR::Register* baseReg = cg()->machine()->getRealRegister(TR::RealRegister::gr1);
-    TR::MemoryReference* mr = TR::MemoryReference::withDisplacement(cg(), baseReg, -0x200000000, 4);
+    TR::MemoryReference* mr = TR::MemoryReference::createWithDisplacement(cg(), baseReg, -0x200000000, 4);
 
     TR::Node* fakeNode = TR::Node::create(TR::treetop);
     TR::Instruction* startInstr = generateLabelInstruction(cg(), TR::InstOpCode::label, fakeNode, generateLabelSymbol(cg()));
@@ -883,7 +883,7 @@ TEST_F(PPCMemInstructionExpansionTest, tocSmallPositiveDisp) {
     TR::SymbolReference* symRef = new (cg()->trHeapMemory()) TR::SymbolReference(cg()->comp()->getSymRefTab(), sym);
     symRef->setUnresolved();
 
-    TR::MemoryReference *mr = new (cg()->trHeapMemory()) TR::MemoryReference(cg());
+    TR::MemoryReference *mr = TR::MemoryReference::create(cg());
 
     mr->setSymbolReference(symRef);
     mr->setUsingStaticTOC();
@@ -930,7 +930,7 @@ TEST_F(PPCMemInstructionExpansionTest, tocSmallNegativeDisp) {
     TR::SymbolReference* symRef = new (cg()->trHeapMemory()) TR::SymbolReference(cg()->comp()->getSymRefTab(), sym);
     symRef->setUnresolved();
 
-    TR::MemoryReference *mr = new (cg()->trHeapMemory()) TR::MemoryReference(cg());
+    TR::MemoryReference *mr = TR::MemoryReference::create(cg());
 
     mr->setSymbolReference(symRef);
     mr->setUsingStaticTOC();
@@ -977,7 +977,7 @@ TEST_F(PPCMemInstructionExpansionTest, tocLargePositiveDisp) {
     TR::SymbolReference* symRef = new (cg()->trHeapMemory()) TR::SymbolReference(cg()->comp()->getSymRefTab(), sym);
     symRef->setUnresolved();
 
-    TR::MemoryReference *mr = new (cg()->trHeapMemory()) TR::MemoryReference(cg());
+    TR::MemoryReference *mr = TR::MemoryReference::create(cg());
 
     mr->setSymbolReference(symRef);
     mr->setUsingStaticTOC();
@@ -1034,7 +1034,7 @@ TEST_F(PPCMemInstructionExpansionTest, tocLargeNegativeDisp) {
     TR::SymbolReference* symRef = new (cg()->trHeapMemory()) TR::SymbolReference(cg()->comp()->getSymRefTab(), sym);
     symRef->setUnresolved();
 
-    TR::MemoryReference *mr = new (cg()->trHeapMemory()) TR::MemoryReference(cg());
+    TR::MemoryReference *mr = TR::MemoryReference::create(cg());
 
     mr->setSymbolReference(symRef);
     mr->setUsingStaticTOC();
@@ -1091,7 +1091,7 @@ TEST_F(PPCMemInstructionExpansionTest, tocFull) {
     TR::SymbolReference* symRef = new (cg()->trHeapMemory()) TR::SymbolReference(cg()->comp()->getSymRefTab(), sym);
     symRef->setUnresolved();
 
-    TR::MemoryReference *mr = new (cg()->trHeapMemory()) TR::MemoryReference(cg());
+    TR::MemoryReference *mr = TR::MemoryReference::create(cg());
 
     mr->setSymbolReference(symRef);
     mr->setUsingStaticTOC();
@@ -1169,7 +1169,7 @@ TEST_F(PPCMemInstructionExpansionTest, delayedOffset) {
 
     TR::AutomaticSymbol* sym = TR::AutomaticSymbol::create(cg()->trHeapMemory());
     TR::SymbolReference* symRef = new (cg()->trHeapMemory()) TR::SymbolReference(cg()->comp()->getSymRefTab(), sym);
-    TR::MemoryReference *mr = new (cg()->trHeapMemory()) TR::MemoryReference(cg());
+    TR::MemoryReference *mr = TR::MemoryReference::create(cg());
 
     mr->setSymbolReference(symRef);
 

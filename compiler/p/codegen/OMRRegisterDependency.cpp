@@ -785,7 +785,7 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
                   traceMsg(comp,"\nOOL: Found register spilled in main line and re-assigned inside OOL");
                TR::Node            *currentNode = currentInstruction->getNode();
                TR::RealRegister    *assignedReg = toRealRegister(virtReg->getAssignedRegister());
-               TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t), cg);
+               TR::MemoryReference *tempMR = TR::MemoryReference::createWithSymRef(cg, currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t));
                TR_RegisterKinds     rk = virtReg->getKind();
 
                TR::InstOpCode::Mnemonic opCode;

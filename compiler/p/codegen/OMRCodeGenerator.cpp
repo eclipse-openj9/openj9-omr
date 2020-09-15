@@ -1707,11 +1707,9 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
    TR::Register *counterReg = self()->allocateRegister();
 
    cursor = loadAddressConstant(self(), self()->comp()->compileRelocatableCode(), node, addr, addrReg, cursor);
-   cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::lwz, node, counterReg,
-                                       new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), cursor);
+   cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::lwz, node, counterReg, TR::MemoryReference::createWithDisplacement(self(), addrReg, 0, 4), cursor);
    cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addi, node, counterReg, counterReg, delta, cursor);
-   cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::stw, node,
-                                       new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), counterReg, cursor);
+   cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::stw, node, TR::MemoryReference::createWithDisplacement(self(), addrReg, 0, 4), counterReg, cursor);
    if (cond)
       {
       uint32_t preCondCursor = cond->getAddCursorForPre();
@@ -1737,11 +1735,9 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
    TR::Register *counterReg = self()->allocateRegister();
 
    cursor = loadAddressConstant(self(), self()->comp()->compileRelocatableCode(), node, addr, addrReg, cursor);
-   cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::lwz, node, counterReg,
-                                       new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), cursor);
+   cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::lwz, node, counterReg, TR::MemoryReference::createWithDisplacement(self(), addrReg, 0, 4), cursor);
    cursor = generateTrg1Src2Instruction(self(), TR::InstOpCode::add, node, counterReg, counterReg, deltaReg, cursor);
-   cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::stw, node,
-                                       new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), counterReg, cursor);
+   cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::stw, node, TR::MemoryReference::createWithDisplacement(self(), addrReg, 0, 4), counterReg, cursor);
    if (cond)
       {
       uint32_t preCondCursor = cond->getAddCursorForPre();
@@ -1777,11 +1773,9 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
    TR::Register *counterReg = srm.findOrCreateScratchRegister();
 
    cursor = loadAddressConstant(self(), self()->comp()->compileRelocatableCode(), node, addr, addrReg, cursor);
-   cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::lwz, node, counterReg,
-                                       new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), cursor);
+   cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::lwz, node, counterReg, TR::MemoryReference::createWithDisplacement(self(), addrReg, 0, 4), cursor);
    cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addi, node, counterReg, counterReg, delta, cursor);
-   cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::stw, node,
-                                       new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), counterReg, cursor);
+   cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::stw, node, TR::MemoryReference::createWithDisplacement(self(), addrReg, 0, 4), counterReg, cursor);
    srm.reclaimScratchRegister(addrReg);
    srm.reclaimScratchRegister(counterReg);
    return cursor;
@@ -1798,11 +1792,9 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
    TR::Register *counterReg = srm.findOrCreateScratchRegister();
 
    cursor = loadAddressConstant(self(), self()->comp()->compileRelocatableCode(), node, addr, addrReg, cursor);
-   cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::lwz, node, counterReg,
-                                       new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), cursor);
+   cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::lwz, node, counterReg, TR::MemoryReference::createWithDisplacement(self(), addrReg, 0, 4), cursor);
    cursor = generateTrg1Src2Instruction(self(), TR::InstOpCode::add, node, counterReg, counterReg, deltaReg, cursor);
-   cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::stw, node,
-                                       new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, 4, self()), counterReg, cursor);
+   cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::stw, node, TR::MemoryReference::createWithDisplacement(self(), addrReg, 0, 4), counterReg, cursor);
    srm.reclaimScratchRegister(addrReg);
    srm.reclaimScratchRegister(counterReg);
    return cursor;
@@ -2252,7 +2244,7 @@ OMR::Power::CodeGenerator::fixedLoadLabelAddressIntoReg(
 
       if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
          {
-         generateTrg1MemInstruction(self(), TR::InstOpCode::paddi, node, trgReg, TR::MemoryReference::withLabel(self(), label, 0, 0));
+         generateTrg1MemInstruction(self(), TR::InstOpCode::paddi, node, trgReg, TR::MemoryReference::createWithLabel(self(), label, 0, 0));
          }
       else
          {
@@ -2266,11 +2258,11 @@ OMR::Power::CodeGenerator::fixedLoadLabelAddressIntoReg(
                {
                TR_ASSERT_FATAL_WITH_NODE(node, 0x00008000 != self()->hiValue(offset), "TOC offset (0x%x) is unexpectedly high. Can not encode upper 16 bits into an addis instruction.", offset);
                generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addis, node, trgReg, self()->getTOCBaseRegister(), self()->hiValue(offset));
-               generateTrg1MemInstruction(self(),TR::InstOpCode::Op_load, node, trgReg, new (self()->trHeapMemory()) TR::MemoryReference(trgReg, LO_VALUE(offset), 8, self()));
+               generateTrg1MemInstruction(self(),TR::InstOpCode::Op_load, node, trgReg, TR::MemoryReference::createWithDisplacement(self(), trgReg, LO_VALUE(offset), 8));
                }
             else
                {
-               generateTrg1MemInstruction(self(),TR::InstOpCode::Op_load, node, trgReg, new (self()->trHeapMemory()) TR::MemoryReference(self()->getTOCBaseRegister(), offset, 8, self()));
+               generateTrg1MemInstruction(self(),TR::InstOpCode::Op_load, node, trgReg, TR::MemoryReference::createWithDisplacement(self(), self()->getTOCBaseRegister(), offset, 8));
                }
             }
          else

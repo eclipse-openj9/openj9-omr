@@ -407,6 +407,11 @@ OMR::Compilation::Compilation(
       self()->getNodePool().enableNodeGC();
       }
 
+   if (self()->getOption(TR_ForceGenerateReadOnlyCode))
+      {
+      self()->setGenerateReadOnlyCode();
+      }
+
    //codegen also needs _methodSymbol
    _codeGenerator = allocateCodeGenerator(self());
 
@@ -468,12 +473,6 @@ OMR::Compilation::Compilation(
       }
    else
       _osrCompilationData = NULL;
-
-  if (self()->getOption(TR_ForceGenerateReadOnlyCode))
-      {
-      self()->setGenerateReadOnlyCode();
-      }
-
    }
 
 OMR::Compilation::~Compilation() throw()

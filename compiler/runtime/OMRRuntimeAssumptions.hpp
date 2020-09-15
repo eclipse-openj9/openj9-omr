@@ -257,7 +257,7 @@ namespace TR
 class SentinelRuntimeAssumption : public OMR::RuntimeAssumption
    {
    public:
-   SentinelRuntimeAssumption() :  RuntimeAssumption(NULL, 0)
+   SentinelRuntimeAssumption() :  _owningMetaData(NULL), RuntimeAssumption(NULL, 0)
       {
       setNextAssumptionForSameJittedBody(this); // pointing to itself means that the list is empty
       }
@@ -268,7 +268,18 @@ class SentinelRuntimeAssumption : public OMR::RuntimeAssumption
 
    virtual uint8_t *getFirstAssumingPC() { return NULL; }
    virtual uint8_t *getLastAssumingPC() { return NULL; }
-   virtual void     dumpInfo() {};
+   virtual void     dumpInfo() {}
+
+   void *getOwningMetadata()                     { return _owningMetaData; }
+   void  setOwningMetadata(void *owningMetadata) { _owningMetaData = owningMetadata; }
+
+   private:
+
+   /* A pointer to the owning metadata.  This allows one to dangle a chain of runtime assumptions
+    * associated with a specific compiled body off of a metadata structure that describes said
+    * body when reifying the assumptions is necessary.
+    */
+   void * _owningMetaData;
    }; // TR::SentinelRuntimeAssumption
 
 class PatchNOPedGuardSite : public OMR::LocationRedirectRuntimeAssumption

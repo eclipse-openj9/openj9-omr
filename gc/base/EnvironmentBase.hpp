@@ -152,6 +152,10 @@ public:
 
 	uintptr_t approxScanCacheCount; /**< Local copy of approximate entries in global Cache Scan List. Updated upon allocation of new cache. */
 
+	#if defined(OMR_GC_MODRON_SCAVENGER)
+	uintptr_t _hotFieldCopyDepthCount; /**< Used for dynamic breadth first scan ordering. Counter for the current copying depth based on the initial object copied. */
+	#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
+	
 	MM_Validator *_activeValidator; /**< Used to identify and report crashes inside Validators */
 
 	MM_MarkStats _markStats;
@@ -529,6 +533,25 @@ public:
 	 */
 	void forceOutOfLineVMAccess() { _delegate.forceOutOfLineVMAccess(); }
 
+#if defined(OMR_GC_MODRON_SCAVENGER)
+	/**
+	 * Disable scavenger hot field depth copying for dynamicBreadthFirstScanOrdering
+	 */
+	MMINLINE void disableHotFieldDepthCopy()
+	{
+		_hotFieldCopyDepthCount = getExtensions()->depthCopyMax;
+	}
+	/**
+	 * Enable scavenger hot field depth copying for dynamicBreadthFirstScanOrdering
+	 */
+	MMINLINE void enableHotFieldDepthCopy()
+	{ 
+		if (getExtensions()->scavengerScanOrdering == MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_DYNAMIC_BREADTH_FIRST) {
+			_hotFieldCopyDepthCount = 0;
+		}
+	}
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
+
 #if defined (OMR_GC_THREAD_LOCAL_HEAP)
 	/**
 	 * Disable inline TLH allocates by hiding the real heap top address from
@@ -695,6 +718,9 @@ public:
 		,_traceAllocationBytes(0)
 		,_traceAllocationBytesCurrentTLH(0)
 		,approxScanCacheCount(0)
+#if defined(OMR_GC_MODRON_SCAVENGER)
+		,_hotFieldCopyDepthCount(0)
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 		,_activeValidator(NULL)
 		,_lastSyncPointReached(NULL)
 #if defined(OMR_GC_SEGREGATED_HEAP)
@@ -749,6 +775,9 @@ public:
 		,_traceAllocationBytes(0)
 		,_traceAllocationBytesCurrentTLH(0)
 		,approxScanCacheCount(0)
+#if defined(OMR_GC_MODRON_SCAVENGER)
+		,_hotFieldCopyDepthCount(0)
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 		,_activeValidator(NULL)
 		,_lastSyncPointReached(NULL)
 #if defined(OMR_GC_SEGREGATED_HEAP)

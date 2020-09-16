@@ -104,7 +104,7 @@ int32_t memoryBarrierRequired(
    static char *mbou = feGetEnv("TR_MemoryBarriersOnUnresolved");
 
    TR_ASSERT_FATAL(cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation() || cg->comp()->target().cpu.requiresLFence() == cg->getX86ProcessorInfo().requiresLFENCE(), "requiresLFence() failed\n");
-   
+
    // Unresolved references are assumed to be volatile until they can be proven otherwise.
    // The memory barrier will be removed by PicBuilder when the reference is resolved and
    // proven to be non-volatile.
@@ -1222,7 +1222,12 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
          {
          intptr_t targetAddress = (int32_t)getSourceImmediate();
 
-         if (cg()->comp()->target().is64Bit() && cg()->hasCodeCacheSwitched() && getOpCodeValue() == CALLImm4)
+         TR::LabelSymbol *labelSym = sym->getLabelSymbol();
+
+         /**
+          * Branches to labels do not require trampolines on x86
+          */
+         if (cg()->comp()->target().is64Bit() && cg()->hasCodeCacheSwitched() && getOpCodeValue() == CALLImm4 && !labelSym)
             {
             cg()->redoTrampolineReservationIfNecessary(this, getSymbolReference());
             }
@@ -1243,7 +1248,6 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
             }
          else
             {
-            TR::LabelSymbol *labelSym = sym->getLabelSymbol();
             if (!labelSym)
                {
                // TODO:

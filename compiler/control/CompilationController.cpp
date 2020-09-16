@@ -37,10 +37,11 @@
 
 namespace TR { class CompilationInfo; }
 
-int32_t                 TR::CompilationController::_verbose = 0;
+int32_t                  TR::CompilationController::_verbose = 0;
 TR::CompilationStrategy *TR::CompilationController::_compilationStrategy = NULL;
 TR::CompilationInfo *    TR::CompilationController::_compInfo = 0;
-bool                    TR::CompilationController::_useController = false;
+bool                     TR::CompilationController::_useController = false;
+bool                     TR::CompilationController::_tlsCompObjCreated = false;
 
 
 bool TR::CompilationController::init(TR::CompilationInfo *compInfo)
@@ -67,13 +68,14 @@ bool TR::CompilationController::init(TR::CompilationInfo *compInfo)
       }
 
    tlsAlloc(OMR::compilation);
-
+   _tlsCompObjCreated = true;
    return _useController;
    }
 
 void TR::CompilationController::shutdown()
    {
-   tlsFree(OMR::compilation);
+   if (_tlsCompObjCreated)
+      tlsFree(OMR::compilation);
    if (!_useController)
       return;
 

@@ -4226,7 +4226,11 @@ OMR::Options::setCounts()
       _initialCount = initialCount;
       _initialBCount = initialBCount;
       _initialMILCount = initialMILCount;
-      _allowRecompilation = allowRecompilation;
+
+      if (!self()->getOption(TR_ForceGenerateReadOnlyCode))
+         _allowRecompilation = allowRecompilation;
+      else
+         _allowRecompilation = false;
       }
 
    // The following need to stay after the count string has been processed

@@ -30,7 +30,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(TRIL_BACKEND_LIB      testcompiler)
 
-omr_add_library(tril STATIC
+omr_add_library(tril NOWARNINGS STATIC
 	ast.cpp
 	parser.cpp
 	ilgen.cpp
@@ -62,10 +62,10 @@ if(NOT OMR_HOST_OS STREQUAL "win")
 endif()
 
 
-omr_add_executable(tril_dumper compiler.cpp)
+omr_add_executable(tril_dumper NOWARNINGS compiler.cpp)
 target_link_libraries(tril_dumper tril)
 
-omr_add_executable(tril_compiler compiler.cpp)
+omr_add_executable(tril_compiler NOWARNINGS compiler.cpp)
 target_link_libraries(tril_compiler tril)
 
 # The platform specific ${TR_CXX_COMPILE_OPTIONS} and ${TR_C_COMPILE_OPTIONS} compile options

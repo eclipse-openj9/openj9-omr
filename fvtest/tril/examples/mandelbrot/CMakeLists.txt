@@ -27,7 +27,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-omr_add_executable(mandelbrot
+omr_add_executable(mandelbrot NOWARNINGS
 	main.cpp
 )
 

@@ -185,6 +185,20 @@ class RuntimeAssumption
    virtual void     compensate(TR_FrontEnd *vm, bool isSMP, void *data) = 0;
    virtual bool     equals(RuntimeAssumption &other) = 0;
 
+   /**
+    * @brief Used to serialize an assumption to a buffer
+    *
+    * @param cursor Pointer into the buffer where the assumption to be is serialized into
+    */
+   virtual void     serialize(uint8_t *cursor) { TR_ASSERT_FATAL(false, "Should not be called\n"); }
+
+   /**
+    * @brief Provides the size of the serialized assumption
+    *
+    * @return Returns the size of the serialized assumption
+    */
+   virtual uint32_t size()                     { TR_ASSERT_FATAL(false, "Should not be called\n"); return 0; }
+
    /*
     * These functions are used to determine whether the runtime assumption falls within
     * a given range. Both bounds are inclusive.
@@ -257,7 +271,7 @@ namespace TR
 class SentinelRuntimeAssumption : public OMR::RuntimeAssumption
    {
    public:
-   SentinelRuntimeAssumption() :  RuntimeAssumption(NULL, 0)
+   SentinelRuntimeAssumption() :  _owningMetaData(NULL), RuntimeAssumption(NULL, 0)
       {
       setNextAssumptionForSameJittedBody(this); // pointing to itself means that the list is empty
       }
@@ -268,7 +282,18 @@ class SentinelRuntimeAssumption : public OMR::RuntimeAssumption
 
    virtual uint8_t *getFirstAssumingPC() { return NULL; }
    virtual uint8_t *getLastAssumingPC() { return NULL; }
-   virtual void     dumpInfo() {};
+   virtual void     dumpInfo() {}
+
+   void *getOwningMetadata()                     { return _owningMetaData; }
+   void  setOwningMetadata(void *owningMetadata) { _owningMetaData = owningMetadata; }
+
+   private:
+
+   /* A pointer to the owning metadata.  This allows one to dangle a chain of runtime assumptions
+    * associated with a specific compiled body off of a metadata structure that describes said
+    * body when reifying the assumptions is necessary.
+    */
+   void * _owningMetaData;
    }; // TR::SentinelRuntimeAssumption
 
 class PatchNOPedGuardSite : public OMR::LocationRedirectRuntimeAssumption

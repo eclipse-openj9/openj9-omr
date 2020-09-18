@@ -189,15 +189,17 @@ class RuntimeAssumption
     * @brief Used to serialize an assumption to a buffer
     *
     * @param cursor Pointer into the buffer where the assumption to be is serialized into
+    * @param owningMetadata pointer to a metadata structure associated with the compiled body
+    *                       the current assumption is associated with.
     */
-   virtual void     serialize(uint8_t *cursor) { TR_ASSERT_FATAL(false, "Should not be called\n"); }
+   virtual void serialize(uint8_t *cursor, uint8_t *owningMetadata) { TR_ASSERT_FATAL(false, "Should not be called\n"); }
 
    /**
     * @brief Provides the size of the serialized assumption
     *
     * @return Returns the size of the serialized assumption
     */
-   virtual uint32_t size()                     { TR_ASSERT_FATAL(false, "Should not be called\n"); return 0; }
+   virtual uint32_t size() { TR_ASSERT_FATAL(false, "Should not be called\n"); return 0; }
 
    /*
     * These functions are used to determine whether the runtime assumption falls within

@@ -362,8 +362,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    bool getSupportsEncodeUtf16LittleWithSurrogateTest();
    bool getSupportsEncodeUtf16BigWithSurrogateTest();
 
-   virtual bool getSupportsIbyteswap();
-
    virtual bool getSupportsBitPermute();
 
    bool supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol);

@@ -209,6 +209,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
     self()->setSupportsPrimitiveArrayCopy();
     self()->setSupportsReferenceArrayCopy();
     self()->setSupportsSelect();
+    self()->setSupportsByteswap();
 
     // disabled for now
     //
@@ -2390,11 +2391,6 @@ bool OMR::Power::CodeGenerator::is64BitProcessor()
       {
       return self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_64BIT_FIRST);
       }
-   }
-
-bool OMR::Power::CodeGenerator::getSupportsIbyteswap()
-   {
-   return true;
    }
 
 bool

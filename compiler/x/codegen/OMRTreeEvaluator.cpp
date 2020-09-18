@@ -3682,7 +3682,6 @@ TR::Register *OMR::X86::TreeEvaluator::NOPEvaluator(TR::Node *node, TR::CodeGene
 
 TR::Register *OMR::X86::TreeEvaluator::sbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(node->getNumChildren() == 1, "Wrong number of children in byteswapEvaluator");
    TR::Node *child = node->getFirstChild();
    TR::Register *target = cg->shortClobberEvaluate(child);
    // TODO: We are using a ROR instruction to do this -- xchg al, ah would
@@ -4112,10 +4111,10 @@ OMR::X86::TreeEvaluator::VMinlineCallEvaluator(TR::Node*, bool, TR::CodeGenerato
    return false;
    }
 
+// also handles lbyteswap
 TR::Register *
 OMR::X86::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(node->getNumChildren() == 1, "Wrong number of children in byteswapEvaluator");
    TR::Node *child = node->getFirstChild();
    bool nodeIs64Bit = TR::TreeEvaluator::getNodeIs64Bit(child, cg);
    TR::Register *target = TR::TreeEvaluator::intOrLongClobberEvaluate(child, nodeIs64Bit, cg);

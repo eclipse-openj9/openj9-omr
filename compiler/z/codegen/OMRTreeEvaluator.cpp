@@ -8304,9 +8304,10 @@ inlineP256Mod(TR::Node * node, TR::CodeGenerator * cg)
    return NULL;
    }
 
+// TODO: Merge the inlineReverseBytes methods into their respective evaluators once OpenJ9 stops referencing them
+
 TR::Register *inlineShortReverseBytes(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(node->getNumChildren()==1, "Wrong number of children in inlineShortReverseBytes");
    TR::Node * firstChild = node->getFirstChild();
    TR::Register *srcReg = cg->evaluate(firstChild);
    cg->decReferenceCount(firstChild);
@@ -8317,9 +8318,13 @@ TR::Register *inlineShortReverseBytes(TR::Node *node, TR::CodeGenerator *cg)
    return trgReg;
    }
 
+TR::Register *OMR::Z::TreeEvaluator::sbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return inlineShortReverseBytes(node, cg);
+   }
+
 TR::Register *inlineIntegerReverseBytes(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(node->getNumChildren()==1, "Wrong number of children in inlineIntegerReverseBytes");
    TR::Node * firstChild = node->getFirstChild();
    TR::Register *srcReg = cg->evaluate(firstChild);
    cg->decReferenceCount(firstChild);
@@ -8329,9 +8334,13 @@ TR::Register *inlineIntegerReverseBytes(TR::Node *node, TR::CodeGenerator *cg)
    return trgReg;
    }
 
+TR::Register *OMR::Z::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return inlineIntegerReverseBytes(node, cg);
+   }
+
 TR::Register *inlineLongReverseBytes(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(node->getNumChildren()==1, "Wrong number of children in inlineIntegerReverseBytes");
    TR::Node * firstChild = node->getFirstChild();
    TR::Register *srcReg = cg->evaluate(firstChild);
    cg->decReferenceCount(firstChild);
@@ -8339,6 +8348,11 @@ TR::Register *inlineLongReverseBytes(TR::Node *node, TR::CodeGenerator *cg)
    generateRREInstruction(cg, TR::InstOpCode::LRVGR, node, trgReg, srcReg);
    node->setRegister(trgReg);
    return trgReg;
+   }
+
+TR::Register *OMR::Z::TreeEvaluator::lbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return inlineLongReverseBytes(node, cg);
    }
 
 TR::Register *

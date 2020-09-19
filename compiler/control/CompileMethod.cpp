@@ -300,9 +300,7 @@ compileMethodFromDetails(
    if (!methodCanBeCompiled(&fe, compilee, filterInfo, &trMemory))
       {
       if (TR::Options::getCmdLineOptions()->getVerboseOption(TR_VerboseCompileExclude))
-         {
-         TR_VerboseLog::writeLine(TR_Vlog_INFO, "%s cannot be translated", compilee.signature(&trMemory));
-         }
+         TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "%s cannot be translated", compilee.signature(&trMemory));
       return 0;
       }
 
@@ -311,9 +309,7 @@ compileMethodFromDetails(
       // FIXME: maybe it would be better to allocate the plan on the stack
       // so that we don't have to deal with OOM ugliness below
       if (TR::Options::getCmdLineOptions()->getVerboseOption(TR_VerboseCompileExclude))
-         {
-         TR_VerboseLog::writeLine(TR_Vlog_INFO, "%s out-of-memory allocating optimization plan", compilee.signature(&trMemory));
-         }
+         TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "%s out-of-memory allocating optimization plan", compilee.signature(&trMemory));
       return 0;
       }
 
@@ -399,9 +395,8 @@ compileMethodFromDetails(
                   );
                }
 
-            TR_VerboseLog::writeLine("");
-            TR_VerboseLog::vlogRelease();
             trfflush(jitConfig->options.vLogFile);
+            TR_VerboseLog::vlogRelease();
             }
 
          if (
@@ -476,7 +471,6 @@ compileMethodFromDetails(
    TR::CodeCacheManager::instance()->unreserveCodeCache(codeCache);
 
    TR_OptimizationPlan::freeOptimizationPlan(plan);
-
 
    return startPC;
    }

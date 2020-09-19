@@ -147,6 +147,7 @@ static bool regexExcludes(TR::SimpleRegex *regex, const char *string)
 
 void TR_Debug::dumpOptionHelp(TR::OptionTable * firstOjit, TR::OptionTable * firstOfe, TR::SimpleRegex *nameFilter)
    {
+   TR_VerboseLog::vlogAcquire();
    char *p;
    int32_t i, lastPos;
    static int optionLineWidth=0;
@@ -276,6 +277,7 @@ void TR_Debug::dumpOptionHelp(TR::OptionTable * firstOjit, TR::OptionTable * fir
       }
    TR_VerboseLog::writeLine("");
    TR_VerboseLog::writeLine(TR_Vlog_INFO, "");
+   TR_VerboseLog::vlogRelease();
    }
 
 void
@@ -289,6 +291,7 @@ TR_Debug::dumpOptions(
       void * feBase,
       TR_FrontEnd *fe)
    {
+   TR_VerboseLog::vlogAcquire();
    TR::OptionTable *entry;
    char *base;
    TR::Compilation* comp = TR::comp();
@@ -511,4 +514,5 @@ TR_Debug::dumpOptions(
       TR_VerboseLog::writeLine(TR_Vlog_INFO, "     compressedRefs isLowMemHeap=%d", (TR::Compiler->vm.heapBaseAddress() == 0));
       }
 #endif
+      TR_VerboseLog::vlogRelease();
    }

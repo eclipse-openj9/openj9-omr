@@ -1520,7 +1520,7 @@ OMR::Options::setRegex(char *option, void *base, TR::OptionTable *entry)
    TR::SimpleRegex * regex = TR::SimpleRegex::create(option);
    *((TR::SimpleRegex**)((char*)base+entry->parm1)) = regex;
    if (!regex)
-      TR_VerboseLog::writeLine("Bad regular expression at --> '%s'", option);
+      TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE,"Bad regular expression at --> '%s'", option);
    return option;
    }
 
@@ -1531,7 +1531,7 @@ OMR::Options::setStaticRegex(char *option, void *base, TR::OptionTable *entry)
    TR::SimpleRegex * regex = TR::SimpleRegex::create(option);
    *((TR::SimpleRegex**)entry->parm1) = regex;
    if (!regex)
-      TR_VerboseLog::writeLine("Bad regular expression at --> '%s'", option);
+      TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", option);
    return option;
    }
 
@@ -2216,6 +2216,7 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
 
       if (self()->getOption(TR_MimicInterpreterFrameShape))
          {
+         TR_VerboseLog::vlogAcquire();
          if (self()->getFixedOptLevel() != -1 && self()->getFixedOptLevel() != noOpt)
             TR_VerboseLog::writeLine(TR_Vlog_FSD, "Ignoring user specified optLevel");
          if (_countString)
@@ -2233,8 +2234,8 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
                   }
                }
             }
-
          _countString = 0;
+         TR_VerboseLog::vlogRelease();
          }
 
       if (TR::Options::isAnyVerboseOptionSet(TR_VerboseOptimizer)
@@ -2287,7 +2288,7 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
          }
       else if (self()->requiresLogFile())
          {
-         TR_VerboseLog::writeLine(TR_Vlog_INFO, "Trace options require a log file to be specified: log=<filename>");
+         TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "Trace options require a log file to be specified: log=<filename>");
          return false;
          }
 
@@ -2300,7 +2301,7 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
          fej9->compileMethods(optionSet, jitConfig);
          if (self()->getOption(TR_WaitBit))
             {
-            TR_VerboseLog::writeLine("Will call waitOnCompiler");
+            TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "Will call waitOnCompiler");
             fej9->waitOnCompiler(jitConfig);
             }
          }
@@ -2693,8 +2694,8 @@ OMR::Options::jitPreProcess()
             {
             if (_aggressivenessLevel != -1) // -1 means not set
                {
-               if (OMR::Options::isAnyVerboseOptionSet())
-                  TR_VerboseLog::writeLine(TR_Vlog_INFO, "_aggressivenessLevel=%d; must be between 0 and 5; Option ignored", _aggressivenessLevel);
+               if (OMR::Options::isAnyVerboseOptionSet()) 
+                     TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "_aggressivenessLevel=%d; must be between 0 and 5; Option ignored", _aggressivenessLevel);
                _aggressivenessLevel = -1;
                }
             }
@@ -3090,10 +3091,12 @@ OMR::Options::validateOptionsTables(void *feBase, TR_FrontEnd *fe)
          }
       if (_numJitEntries > 0 && stricmp_ignore_locale((opt-1)->name, opt->name) >= 0)
          {
+         TR_VerboseLog::vlogAcquire();
          TR_VerboseLog::write(TR_Vlog_FAILURE, "JIT option table entries out of order: ");
          TR_VerboseLog::write((opt-1)->name);
          TR_VerboseLog::write(", ");
          TR_VerboseLog::writeLine(opt->name);
+         TR_VerboseLog::vlogRelease();
          return false;
          }
 #endif
@@ -3114,10 +3117,12 @@ OMR::Options::validateOptionsTables(void *feBase, TR_FrontEnd *fe)
          }
       if (_numVmEntries > 0 && stricmp_ignore_locale((opt-1)->name, opt->name) >= 0)
          {
+         TR_VerboseLog::vlogAcquire();
          TR_VerboseLog::writeLine(TR_Vlog_FAILURE,"FE option table entries out of order: ");
          TR_VerboseLog::write((opt-1)->name);
          TR_VerboseLog::write(", ");
          TR_VerboseLog::write(opt->name);
+         TR_VerboseLog::vlogRelease();
          return false;
          }
 #endif
@@ -3251,7 +3256,7 @@ OMR::Options::processOptionSet(
             methodRegex = TR::SimpleRegex::create(endOpt);
             if (!methodRegex)
                {
-               TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", endOpt);
+               TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", endOpt);
                return options;
                }
 
@@ -3262,7 +3267,7 @@ OMR::Options::processOptionSet(
                optLevelRegex = TR::SimpleRegex::create(endOpt);
                if (!optLevelRegex)
                   {
-                  TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", endOpt);
+                  TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", endOpt);
                   return options;
                   }
                }
@@ -3404,7 +3409,7 @@ OMR::Options::processOptionSet(
 
          if (!endOpt)
             {
-            TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Unable to allocate option string");
+            TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Unable to allocate option string");
             return options;
             }
 
@@ -3412,7 +3417,7 @@ OMR::Options::processOptionSet(
 
          if (!feEndOpt)
             {
-            TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Unable to allocate option string");
+            TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Unable to allocate option string");
             return options;
             }
 
@@ -3422,7 +3427,7 @@ OMR::Options::processOptionSet(
          //
          if (feEndOpt != options && optionSet)
             {
-            TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Option not allowed in option subset");
+            TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Option not allowed in option subset");
             return options;
             }
 
@@ -3538,7 +3543,7 @@ OMR::Options::processOption(
       {
       if (opt->msgInfo & NOT_IN_SUBSET)
          {
-         TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Option not allowed in option subset");
+         TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Option not allowed in option subset");
          opt->msgInfo = 0;
          return startOption;
          }
@@ -3562,7 +3567,7 @@ OMR::Options::processOption(
       processingMethod = TR::Options::negateProcessingMethod(opt->fcn);
       if (!processingMethod)
          {
-         TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "'!' is not supported for this option");
+         TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "'!' is not supported for this option");
          opt->msgInfo = 0;
          return startOption;
          }
@@ -3607,7 +3612,7 @@ OMR::Options::jitPostProcess()
       }
    else if (self()->requiresLogFile())
       {
-      TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Log file option must be specified when a trace options is used: log=<filename>");
+      TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Log file option must be specified when a trace options is used: log=<filename>");
       return false;
       }
 
@@ -3626,7 +3631,7 @@ OMR::Options::jitPostProcess()
             }
          else
             {
-            TR_VerboseLog::writeLine(TR_Vlog_INFO, "Ignoring optFile option; unable to read opts from '%s'", _optFileName);
+            TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "Ignoring optFile option; unable to read opts from '%s'", _optFileName);
             }
          }
       }
@@ -3831,8 +3836,8 @@ OMR::Options::printOptions(char *options, char *envOptions)
    if (this == TR::Options::getAOTCmdLineOptions())
       optionsType = "AOT";
    TR_Debug::dumpOptions(optionsType, options, envOptions, self(), _jitOptions, TR::Options::_feOptions, _feBase, _fe);
-   if (_aggressivenessLevel > 0)
-       TR_VerboseLog::writeLine("aggressivenessLevel=%u", _aggressivenessLevel);
+   if (_aggressivenessLevel > 0) 
+       TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "aggressivenessLevel=%d", _aggressivenessLevel);
    }
 
 
@@ -4240,13 +4245,13 @@ OMR::Options::setCounts()
 
    if (!_countString)
       {
-      TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Count string could not be allocated");
+      TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Count string could not be allocated");
       return dummy_string;
       }
 
    if (_initialCount == -1 || _initialBCount == -1 || _initialMILCount == -1)
       {
-      TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Bad string count: '%s'", _countString);
+      TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Bad string count: '%s'", _countString);
       return _countString;
       }
 
@@ -4581,7 +4586,7 @@ OMR::Options::setAddressEnumerationBits(char *option, void *base, TR::OptionTabl
             *((int32_t*)((char*)base+entry->parm1)) |= TR_EnumerateStructure;
             }
          if (*((int32_t*)((char*)base+entry->parm1)) == 0x00000000)
-            TR_VerboseLog::writeLine(TR_Vlog_INFO, "Address enumeration option not found. No address enumeration option was set.");
+            TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "Address enumeration option not found. No address enumeration option was set.");
          }
       }
 
@@ -4626,7 +4631,7 @@ OMR::Options::setBitsFromStringSet(char *option, void *base, TR::OptionTable *en
 
       TR::SimpleRegex * regex = _debug ? TR::SimpleRegex::create(option) : 0;
       if (!regex)
-         TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", option);
+         TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", option);
       else
          {
          for(i=0;_optionStringToBitMapping[i].bitValue != 0;i++)
@@ -4637,7 +4642,7 @@ OMR::Options::setBitsFromStringSet(char *option, void *base, TR::OptionTable *en
              }
            }
          if (*((int32_t*)((char*)base+entry->parm1)) == 0x00000000)
-            TR_VerboseLog::writeLine(TR_Vlog_INFO, "Register assignment tracing options not found. No additional tracing option was set.");
+            TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "Register assignment tracing options not found. No additional tracing option was set.");
          }
       }
 
@@ -4657,7 +4662,7 @@ char *OMR::Options::clearBitsFromStringSet(char *option, void *base, TR::OptionT
       {
       TR::SimpleRegex * regex = TR::SimpleRegex::create(option);
       if (!regex)
-         TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", option);
+         TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", option);
       else
          {
          for(i=0;_optionStringToBitMapping[i].bitValue != 0;i++)
@@ -4668,7 +4673,7 @@ char *OMR::Options::clearBitsFromStringSet(char *option, void *base, TR::OptionT
              }
            }
          if (*((int32_t*)((char*)base+entry->parm1)) == 0x00000000)
-            TR_VerboseLog::writeLine(TR_Vlog_INFO, "Register assignment tracing options not found. No additional tracing option was set.");
+            TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "Register assignment tracing options not found. No additional tracing option was set.");
          }
       }
 
@@ -4694,7 +4699,7 @@ OMR::Options::configureOptReporting(char *option, void *base, TR::OptionTable *e
          options->setOption(TR_CountOptTransformations);
          TR::SimpleRegex * regex = _debug ? TR::SimpleRegex::create(option) : 0;
          if (!regex)
-            TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Bad regular expression --> '%s'", option);
+            TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Bad regular expression --> '%s'", option);
          else
             options->_verboseOptTransformationsRegex = regex;
          break;
@@ -4799,7 +4804,7 @@ OMR::Options::setVerboseBitsHelper(char *option, VerboseOptionFlagArray *verbose
       {
       TR::SimpleRegex * regex = TR::SimpleRegex::create(option);
       if (!regex)
-         TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", option);
+         TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", option);
       else
          {
          bool foundMatch = false;
@@ -4815,7 +4820,7 @@ OMR::Options::setVerboseBitsHelper(char *option, VerboseOptionFlagArray *verbose
             }
 
          if (!foundMatch)
-            TR_VerboseLog::writeLine(TR_Vlog_INFO, "Verbose option not found. No verbose option was set.");
+            TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "Verbose option not found. No verbose option was set.");
          }
       }
       return option;
@@ -4992,7 +4997,7 @@ char *OMR::Options::setHotFieldReductionAlgorithm(char *option, void *base, TR::
       }
    if (!foundMatch)
       {
-      TR_VerboseLog::write("<JIT: Reduction algorithm not found.  Default sum reduction algorithm set.>");
+      TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "<JIT: Reduction algorithm not found.  Default sum reduction algorithm set.>");
       _hotFieldReductionAlgorithms.set(TR_HotFieldReductionAlgorithmSum);
       }
    return option;

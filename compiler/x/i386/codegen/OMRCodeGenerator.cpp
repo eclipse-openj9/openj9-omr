@@ -57,6 +57,83 @@
 #include "x/codegen/X86Instruction.hpp"
 #include "x/codegen/X86Ops.hpp"
 
+
+OMR::X86::I386::CodeGenerator::CodeGenerator(TR::Compilation *comp) :
+   OMR::X86::CodeGenerator(comp)
+   {
+   }
+
+
+void
+OMR::X86::I386::CodeGenerator::initialize()
+   {
+   self()->OMR::X86::CodeGenerator::initialize();
+
+   TR::CodeGenerator *cg = self();
+   TR::Compilation *comp = self()->comp();
+
+   // Common X86 initialization
+   //
+   cg->initializeX86(comp);
+
+   cg->setUsesRegisterPairsForLongs();
+
+   if (debug("supportsArrayTranslateAndTest"))
+      cg->setSupportsArrayTranslateAndTest();
+   if (debug("supportsArrayCmp"))
+      cg->setSupportsArrayCmp();
+
+   cg->setSupportsDoubleWordCAS();
+   cg->setSupportsDoubleWordSet();
+
+   if (comp->target().isWindows())
+      {
+      if (comp->getOption(TR_DisableTraps))
+         {
+         _numberBytesReadInaccessible = 0;
+         _numberBytesWriteInaccessible = 0;
+         }
+      else
+         {
+         _numberBytesReadInaccessible = 4096;
+         _numberBytesWriteInaccessible = 4096;
+         cg->setHasResumableTrapHandler();
+         cg->setEnableImplicitDivideCheck();
+         }
+      cg->setSupportsDivCheck();
+      cg->setJNILinkageCalleeCleanup();
+      cg->setRealVMThreadRegister(cg->machine()->getRealRegister(TR::RealRegister::ebp));
+      }
+   else if (comp->target().isLinux())
+      {
+      if (comp->getOption(TR_DisableTraps))
+         {
+         _numberBytesReadInaccessible = 0;
+         _numberBytesWriteInaccessible = 0;
+         }
+      else
+         {
+         _numberBytesReadInaccessible = 4096;
+         _numberBytesWriteInaccessible = 4096;
+         cg->setHasResumableTrapHandler();
+         cg->setEnableImplicitDivideCheck();
+         }
+      cg->setRealVMThreadRegister(cg->machine()->getRealRegister(TR::RealRegister::ebp));
+      cg->setSupportsDivCheck();
+      }
+   else
+      {
+      TR_ASSERT(0, "unknown target");
+      }
+
+   cg->setSupportsInlinedAtomicLongVolatiles();
+
+   static char *dontConsiderAllAutosForGRA = feGetEnv("TR_dontConsiderAllAutosForGRA");
+   if (!dontConsiderAllAutosForGRA)
+      cg->setConsiderAllAutosAsTacticalGlobalRegisterCandidates();
+   }
+
+
 OMR::X86::I386::CodeGenerator::CodeGenerator() :
    OMR::X86::CodeGenerator()
    {

@@ -107,6 +107,259 @@
 #include <sys/debug.h>
 #endif
 
+
+OMR::Power::CodeGenerator::CodeGenerator(TR::Compilation *comp) :
+   OMR::CodeGenerator(comp),
+      _stackPtrRegister(NULL),
+      _constantData(NULL),
+      _blockCallInfo(NULL),
+      _transientLongRegisters(comp->trMemory()),
+      conversionBuffer(NULL),
+      _outOfLineCodeSectionList(getTypedAllocator<TR_PPCOutOfLineCodeSection*>(comp->allocator())),
+      _startPCLabel(NULL)
+   {
+   }
+
+
+void
+OMR::Power::CodeGenerator::initialize()
+   {
+   self()->OMR::CodeGenerator::initialize();
+
+   TR::CodeGenerator *cg = self();
+   TR::Compilation *comp = self()->comp();
+
+   // Initialize Linkage for Code Generator
+   cg->initializeLinkage();
+
+   _unlatchedRegisterList =
+      (TR::RealRegister**)cg->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
+
+   _unlatchedRegisterList[0] = 0; // mark that list is empty
+
+   _linkageProperties = &cg->getLinkage()->getProperties();
+
+   // Set up to collect items for later TOC mapping
+   if (comp->target().is64Bit())
+      {
+      cg->setTrackStatics(new (cg->trHeapMemory()) TR_Array<TR::SymbolReference *>(cg->trMemory()));
+      cg->setTrackItems(new (cg->trHeapMemory()) TR_Array<TR_PPCLoadLabelItem *>(cg->trMemory()));
+      }
+   else
+      {
+      cg->setTrackStatics(NULL);
+      cg->setTrackItems(NULL);
+      }
+
+   cg->setStackPointerRegister(cg->machine()->getRealRegister(_linkageProperties->getNormalStackPointerRegister()));
+   cg->setMethodMetaDataRegister(cg->machine()->getRealRegister(_linkageProperties->getMethodMetaDataRegister()));
+   cg->setTOCBaseRegister(cg->machine()->getRealRegister(_linkageProperties->getTOCBaseRegister()));
+   cg->getLinkage()->initPPCRealRegisterLinkage();
+   cg->getLinkage()->setParameterLinkageRegisterIndex(comp->getJittedMethodSymbol());
+   cg->machine()->initREGAssociations();
+
+   // Tactical GRA settings.
+   //
+   cg->setGlobalGPRPartitionLimit(TR::Machine::getGlobalGPRPartitionLimit());
+   cg->setGlobalFPRPartitionLimit(TR::Machine::getGlobalFPRPartitionLimit());
+   cg->setGlobalRegisterTable(_linkageProperties->getRegisterAllocationOrder());
+   _numGPR = _linkageProperties->getNumAllocatableIntegerRegisters();
+   _firstGPR = 0;
+   _lastGPR = _numGPR - 1;
+   _firstParmGPR = _linkageProperties->getFirstAllocatableIntegerArgumentRegister();
+   _lastVolatileGPR = _linkageProperties->getLastAllocatableIntegerVolatileRegister();
+   _numFPR = _linkageProperties->getNumAllocatableFloatRegisters();
+   _firstFPR = _numGPR;
+   _lastFPR = _firstFPR + _numFPR - 1;
+   _firstParmFPR = _linkageProperties->getFirstAllocatableFloatArgumentRegister();
+   _lastVolatileFPR = _linkageProperties->getLastAllocatableFloatVolatileRegister();
+   cg->setLastGlobalGPR(_lastGPR);
+   cg->setLast8BitGlobalGPR(_lastGPR);
+   cg->setLastGlobalFPR(_lastFPR);
+
+   _numVRF = _linkageProperties->getNumAllocatableVectorRegisters();
+   cg->setFirstGlobalVRF(_lastFPR + 1);
+   cg->setLastGlobalVRF(_lastFPR + _numVRF);
+
+   cg->setSupportsGlRegDeps();
+   cg->setSupportsGlRegDepOnFirstBlock();
+
+   cg->setSupportsRecompilation();
+
+   if (comp->target().is32Bit())
+      cg->setUsesRegisterPairsForLongs();
+
+   cg->setPerformsChecksExplicitly();
+   cg->setConsiderAllAutosAsTacticalGlobalRegisterCandidates();
+
+   cg->setEnableRefinedAliasSets();
+
+   static char * accessStaticsIndirectly = feGetEnv("TR_AccessStaticsIndirectly");
+   if (accessStaticsIndirectly)
+      cg->setAccessStaticsIndirectly(true);
+
+   if (!debug("noLiveRegisters"))
+      {
+      cg->addSupportedLiveRegisterKind(TR_GPR);
+      cg->addSupportedLiveRegisterKind(TR_FPR);
+      cg->addSupportedLiveRegisterKind(TR_CCR);
+      cg->addSupportedLiveRegisterKind(TR_VSX_SCALAR);
+      cg->addSupportedLiveRegisterKind(TR_VSX_VECTOR);
+      cg->addSupportedLiveRegisterKind(TR_VRF);
+
+      cg->setLiveRegisters(new (cg->trHeapMemory()) TR_LiveRegisters(comp), TR_GPR);
+      cg->setLiveRegisters(new (cg->trHeapMemory()) TR_LiveRegisters(comp), TR_FPR);
+      cg->setLiveRegisters(new (cg->trHeapMemory()) TR_LiveRegisters(comp), TR_CCR);
+      cg->setLiveRegisters(new (cg->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
+      cg->setLiveRegisters(new (cg->trHeapMemory()) TR_LiveRegisters(comp), TR_VSX_SCALAR);
+      cg->setLiveRegisters(new (cg->trHeapMemory()) TR_LiveRegisters(comp), TR_VSX_VECTOR);
+      }
+
+    cg->setSupportsConstantOffsetInAddressing();
+    cg->setSupportsVirtualGuardNOPing();
+    cg->setSupportsPrimitiveArrayCopy();
+    cg->setSupportsReferenceArrayCopy();
+    cg->setSupportsSelect();
+    cg->setSupportsByteswap();
+
+    // disabled for now
+    //
+    if (comp->getOption(TR_AggressiveOpts) &&
+        !comp->getOption(TR_DisableArraySetOpts))
+       {
+       cg->setSupportsArraySet();
+       }
+    cg->setSupportsArrayCmp();
+
+    if (comp->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX))
+       {
+       static bool disablePPCTRTO = (feGetEnv("TR_disablePPCTRTO") != NULL);
+       static bool disablePPCTRTO255 = (feGetEnv("TR_disablePPCTRTO255") != NULL);
+       static bool disablePPCTROT = (feGetEnv("TR_disablePPCTROT") != NULL);
+       static bool disablePPCTROTNoBreak = (feGetEnv("TR_disablePPCTROTNoBreak") != NULL);
+
+       if (!disablePPCTRTO)
+          cg->setSupportsArrayTranslateTRTO();
+#ifndef __LITTLE_ENDIAN__
+       else if (!disablePPCTRTO255)
+          setSupportsArrayTranslateTRTO255();
+#endif
+
+       if (!disablePPCTROT)
+          cg->setSupportsArrayTranslateTROT();
+
+       if (!disablePPCTROTNoBreak)
+          cg->setSupportsArrayTranslateTROTNoBreak();
+       }
+
+   _numberBytesReadInaccessible = 0;
+   _numberBytesWriteInaccessible = 4096;
+
+   // Poorly named.  Not necessarily Java specific.
+   //
+   cg->setSupportsJavaFloatSemantics();
+
+   cg->setSupportsDivCheck();
+   cg->setSupportsLoweringConstIDiv();
+   if (comp->target().is64Bit())
+      cg->setSupportsLoweringConstLDiv();
+   cg->setSupportsLoweringConstLDivPower2();
+
+   static bool disableDCAS = (feGetEnv("TR_DisablePPCDCAS") != NULL);
+
+   if (!disableDCAS &&
+       comp->target().is64Bit() &&
+       TR::Options::useCompressedPointers())
+      {
+      cg->setSupportsDoubleWordCAS();
+      cg->setSupportsDoubleWordSet();
+      }
+
+   if (cg->is64BitProcessor())
+      cg->setSupportsInlinedAtomicLongVolatiles();
+
+   // Standard allows only offset multiple of 4
+   // TODO: either improves the query to be size-based or gets the offset into a register
+   if (comp->target().is64Bit())
+      cg->setSupportsAlignedAccessOnly();
+
+   // TODO: distinguishing among OOO and non-OOO implementations
+   if (comp->target().isSMP())
+      cg->setEnforceStoreOrder();
+
+   if (!comp->getOption(TR_DisableTraps) && TR::Compiler->vm.hasResumableTrapHandler(comp))
+      cg->setHasResumableTrapHandler();
+
+   /*
+    * TODO: TM is currently not compatible with read barriers. If read barriers are required, TM is disabled until the issue is fixed.
+    *       TM is now disabled by default, due to various reasons (OS, hardware, etc), unless it is explicitly enabled.
+    */
+   if (comp->target().cpu.supportsFeature(OMR_FEATURE_PPC_HTM) && comp->getOption(TR_EnableTM) &&
+       !comp->getOption(TR_DisableTM) && TR::Compiler->om.readBarrierType() == gc_modron_readbar_none)
+      cg->setSupportsTM();
+
+   if (comp->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_ALTIVEC) && comp->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX))
+      cg->setSupportsAutoSIMD();
+
+   if (!comp->getOption(TR_DisableRegisterPressureSimulation))
+      {
+      for (int32_t i = 0; i < TR_numSpillKinds; i++)
+         _globalRegisterBitVectors[i].init(cg->getNumberOfGlobalRegisters(), cg->trMemory());
+
+      for (TR_GlobalRegisterNumber grn=0; grn < cg->getNumberOfGlobalRegisters(); grn++)
+         {
+         TR::RealRegister::RegNum reg = (TR::RealRegister::RegNum)cg->getGlobalRegister(grn);
+         if (cg->getFirstGlobalGPR() <= grn && grn <= cg->getLastGlobalGPR())
+            _globalRegisterBitVectors[ TR_gprSpill ].set(grn);
+         else if (cg->getFirstGlobalFPR() <= grn && grn <= cg->getLastGlobalFPR())
+            _globalRegisterBitVectors[ TR_fprSpill ].set(grn);
+
+         if (!cg->getProperties().getPreserved(reg))
+            _globalRegisterBitVectors[ TR_volatileSpill ].set(grn);
+         if (cg->getProperties().getIntegerArgument(reg) || cg->getProperties().getFloatArgument(reg))
+            _globalRegisterBitVectors[ TR_linkageSpill  ].set(grn);
+         }
+
+      }
+
+   // Calculate inverse of getGlobalRegister function
+   //
+   TR_GlobalRegisterNumber grn;
+   int i;
+
+   TR_GlobalRegisterNumber globalRegNumbers[TR::RealRegister::NumRegisters];
+   for (i=0; i < cg->getNumberOfGlobalGPRs(); i++)
+     {
+     grn = cg->getFirstGlobalGPR() + i;
+     globalRegNumbers[cg->getGlobalRegister(grn)] = grn;
+     }
+   for (i=0; i < cg->getNumberOfGlobalFPRs(); i++)
+     {
+     grn = cg->getFirstGlobalFPR() + i;
+     globalRegNumbers[cg->getGlobalRegister(grn)] = grn;
+     }
+
+   // Initialize linkage reg arrays
+   TR::PPCLinkageProperties linkageProperties = cg->getProperties();
+   for (i=0; i < linkageProperties.getNumIntArgRegs(); i++)
+     _gprLinkageGlobalRegisterNumbers[i] = globalRegNumbers[linkageProperties.getIntegerArgumentRegister(i)];
+   for (i=0; i < linkageProperties.getNumFloatArgRegs(); i++)
+     _fprLinkageGlobalRegisterNumbers[i] = globalRegNumbers[linkageProperties.getFloatArgumentRegister(i)];
+
+   if (comp->getOption(TR_TraceRA))
+      {
+      cg->setGPRegisterIterator(new (cg->trHeapMemory()) TR::RegisterIterator(cg->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR));
+      cg->setFPRegisterIterator(new (cg->trHeapMemory()) TR::RegisterIterator(cg->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
+      }
+
+   cg->setSupportsProfiledInlining();
+
+   TR_ResolvedMethod *method = comp->getJittedMethodSymbol()->getResolvedMethod();
+   TR_ReturnInfo      returnInfo = cg->getLinkage()->getReturnInfoFromReturnType(method->returnType());
+   comp->setReturnInfo(returnInfo);
+   }
+
+
 OMR::Power::CodeGenerator::CodeGenerator() :
    OMR::CodeGenerator(),
      _stackPtrRegister(NULL),

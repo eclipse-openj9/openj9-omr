@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -52,7 +52,14 @@ namespace AMD64
 
 class OMR_EXTENSIBLE CodeGenerator : public OMR::X86::CodeGenerator
    {
-   public:
+
+protected:
+
+   CodeGenerator(TR::Compilation *comp);
+
+public:
+
+   void initialize();
 
    CodeGenerator();
 

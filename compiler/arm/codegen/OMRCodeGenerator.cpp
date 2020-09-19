@@ -73,6 +73,178 @@ TR::Linkage *OMR::ARM::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    return linkage;
    }
 
+OMR::ARM::CodeGenerator::CodeGenerator(TR::Compilation *comp)
+   : OMR::CodeGenerator(comp),
+     _frameRegister(NULL),
+     _constantData(NULL),
+     _outOfLineCodeSectionList(comp->trMemory()),
+     _internalControlFlowNestingDepth(0),
+     _internalControlFlowSafeNestingDepth(0)
+   {
+   }
+
+void
+OMR::ARM::CodeGenerator::initialize()
+   {
+   self()->OMR::CodeGenerator::initialize();
+
+   TR::CodeGenerator *cg = self();
+   TR::Compilation *comp = self()->comp();
+
+   // Initialize Linkage for Code Generator
+   cg->initializeLinkage();
+
+   _unlatchedRegisterList =
+      (TR::RealRegister**)cg->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
+
+   _unlatchedRegisterList[0] = 0; // mark that list is empty
+
+   _linkageProperties = &cg->getLinkage()->getProperties();
+   _linkageProperties->setEndianness(comp->target().cpu.isBigEndian());
+
+   if (!comp->getOption(TR_FullSpeedDebug))
+      cg->setSupportsDirectJNICalls();
+   cg->setSupportsVirtualGuardNOPing();
+
+   if(comp->target().isLinux())
+      {
+      // only hardhat linux-arm builds have the required gcc soft libraries
+      // that allow the vm to be compiled with -msoft-float.
+      // With -msoft-float any floating point return value is placed in gr0 for single precision and
+      // gr0 and gr1 for double precision.  This is where the jit expects the result following a directToJNI call.
+      // The floating point return value on non-hardhat linux-arm builds is through the coprocessor register f0.
+      // Therefore the HasHardFloatReturn flag must be set to force generation of instructions to move the result
+      // from f0 to gr0/gr1 following a directToJNI dispatch.
+
+      #if !defined(HARDHAT) && !defined(__VFP_FP__) // gcc does not support VFP with -mfloat-abi=hard yet
+      cg->setHasHardFloatReturn();
+      #endif
+      }
+
+   if (!debug("hasFramePointer"))
+      cg->setFrameRegister(cg->machine()->getRealRegister(_linkageProperties->getStackPointerRegister()));
+   else
+      cg->setFrameRegister(cg->machine()->getRealRegister(_linkageProperties->getFramePointerRegister()));
+
+   cg->setMethodMetaDataRegister(cg->machine()->getRealRegister(_linkageProperties->getMethodMetaDataRegister()));
+
+   // Tactical GRA settings
+#if 1 // PPC enables below, but seem no longer used?
+   cg->setGlobalGPRPartitionLimit(TR::Machine::getGlobalGPRPartitionLimit());
+   cg->setGlobalFPRPartitionLimit(TR::Machine::getGlobalFPRPartitionLimit());
+#endif
+   cg->setGlobalRegisterTable(TR::Machine::getGlobalRegisterTable());
+   _numGPR = _linkageProperties->getNumAllocatableIntegerRegisters();
+   cg->setLastGlobalGPR(TR::Machine::getLastGlobalGPRRegisterNumber());
+   cg->setLast8BitGlobalGPR(TR::Machine::getLast8BitGlobalGPRRegisterNumber());
+   cg->setLastGlobalFPR(TR::Machine::getLastGlobalFPRRegisterNumber());
+   _numFPR = _linkageProperties->getNumAllocatableFloatRegisters();
+
+   // TODO: Disable FP-GRA since current GRA does not work well with ARM linkage (where Float register usage is limited).
+   cg->setDisableFpGRA();
+
+   cg->setSupportsRecompilation();
+
+   cg->setSupportsGlRegDeps();
+   cg->setSupportsGlRegDepOnFirstBlock();
+   cg->setPerformsChecksExplicitly();
+   cg->setConsiderAllAutosAsTacticalGlobalRegisterCandidates();
+   cg->setSupportsScaledIndexAddressing();
+   cg->setSupportsAlignedAccessOnly();
+   cg->setSupportsPrimitiveArrayCopy();
+   cg->setSupportsReferenceArrayCopy();
+   cg->setSupportsLoweringConstIDiv();
+   cg->setSupportsNewInstanceImplOpt();
+
+#ifdef J9_PROJECT_SPECIFIC
+   cg->setAheadOfTimeCompile(new (cg->trHeapMemory()) TR::AheadOfTimeCompile(cg));
+#endif
+   cg->getLinkage()->initARMRealRegisterLinkage();
+   //To enable this, we must change OMR::ARM::Linkage::saveArguments to support GRA registers
+   //cg->getLinkage()->setParameterLinkageRegisterIndex(comp->getJittedMethodSymbol());
+
+   _numberBytesReadInaccessible = 0;
+   _numberBytesWriteInaccessible = 0;
+
+   cg->setSupportsJavaFloatSemantics();
+   cg->setSupportsInliningOfTypeCoersionMethods();
+
+   if (comp->target().isLinux())
+      {
+      // On AIX and Linux, we are very far away from address
+      // wrapping-around.
+      _maxObjectSizeGuaranteedNotToOverflow = 0x10000000;
+      cg->setSupportsDivCheck();
+      if (!comp->getOption(TR_DisableTraps))
+         cg->setHasResumableTrapHandler();
+      }
+   else
+      {
+      TR_ASSERT(0, "unknown target");
+      }
+
+   // Tactical GRA
+   if (!comp->getOption(TR_DisableRegisterPressureSimulation))
+      {
+      for (int32_t i = 0; i < TR_numSpillKinds; i++)
+         _globalRegisterBitVectors[i].init(cg->getNumberOfGlobalRegisters(), cg->trMemory());
+
+      for (TR_GlobalRegisterNumber grn=0; grn < cg->getNumberOfGlobalRegisters(); grn++)
+         {
+         TR::RealRegister::RegNum reg = (TR::RealRegister::RegNum)cg->getGlobalRegister(grn);
+         if (cg->getFirstGlobalGPR() <= grn && grn <= cg->getLastGlobalGPR())
+            _globalRegisterBitVectors[ TR_gprSpill ].set(grn);
+         else if (cg->getFirstGlobalFPR() <= grn && grn <= cg->getLastGlobalFPR())
+            _globalRegisterBitVectors[ TR_fprSpill ].set(grn);
+
+         if (!cg->getProperties().getPreserved(reg))
+            _globalRegisterBitVectors[ TR_volatileSpill ].set(grn);
+         if (cg->getProperties().getIntegerArgument(reg) || cg->getProperties().getFloatArgument(reg))
+            _globalRegisterBitVectors[ TR_linkageSpill  ].set(grn);
+         }
+
+      }
+
+   // Calculate inverse of getGlobalRegister function
+   //
+   TR_GlobalRegisterNumber grn;
+   int i;
+
+   TR_GlobalRegisterNumber globalRegNumbers[TR::RealRegister::NumRegisters];
+   for (i=0; i < cg->getNumberOfGlobalGPRs(); i++)
+     {
+     grn = cg->getFirstGlobalGPR() + i;
+     globalRegNumbers[cg->getGlobalRegister(grn)] = grn;
+     }
+   for (i=0; i < cg->getNumberOfGlobalFPRs(); i++)
+     {
+     grn = cg->getFirstGlobalFPR() + i;
+     globalRegNumbers[cg->getGlobalRegister(grn)] = grn;
+     }
+
+   // Initialize linkage reg arrays
+   TR::ARMLinkageProperties linkageProperties = cg->getProperties();
+   for (i=0; i < linkageProperties.getNumIntArgRegs(); i++)
+     _gprLinkageGlobalRegisterNumbers[i] = globalRegNumbers[linkageProperties.getIntegerArgumentRegister(i)];
+   for (i=0; i < linkageProperties.getNumFloatArgRegs(); i++)
+     _fprLinkageGlobalRegisterNumbers[i] = globalRegNumbers[linkageProperties.getFloatArgumentRegister(i)];
+
+   if (comp->getOption(TR_TraceRA))
+      {
+      cg->setGPRegisterIterator(new (cg->trHeapMemory()) TR::RegisterIterator(cg->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR));
+      cg->setFPRegisterIterator(new (cg->trHeapMemory()) TR::RegisterIterator(cg->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
+      }
+
+   if (!comp->compileRelocatableCode())
+      {
+      cg->setSupportsProfiledInlining();
+      }
+
+   // Disable optimizations for max min by default on arm
+   comp->setOption(TR_DisableMaxMinOptimization);
+   }
+
+
 OMR::ARM::CodeGenerator::CodeGenerator()
    : OMR::CodeGenerator(),
      _frameRegister(NULL),

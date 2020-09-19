@@ -45,6 +45,94 @@
 #include "infra/BitVector.hpp"
 #include "x/codegen/X86Ops.hpp"
 
+
+OMR::X86::AMD64::CodeGenerator::CodeGenerator(TR::Compilation *comp) :
+   OMR::X86::CodeGenerator(comp)
+   {
+   }
+
+
+void OMR::X86::AMD64::CodeGenerator::initialize()
+   {
+   self()->OMR::X86::CodeGenerator::initialize();
+
+   TR::CodeGenerator *cg = self();
+   TR::Compilation *comp = self()->comp();
+
+   if (comp->getOption(TR_DisableTraps))
+      {
+      _numberBytesReadInaccessible  = 0;
+      _numberBytesWriteInaccessible = 0;
+      }
+   else
+      {
+      _numberBytesReadInaccessible  = 4096;
+      _numberBytesWriteInaccessible = 4096;
+      cg->setHasResumableTrapHandler();
+      cg->setEnableImplicitDivideCheck();
+      }
+
+   cg->setSupportsDivCheck();
+
+   static char *c = feGetEnv("TR_disableAMD64ValueProfiling");
+   if (c)
+      comp->setOption(TR_DisableValueProfiling);
+
+   static char *accessStaticsIndirectly = feGetEnv("TR_AccessStaticsIndirectly");
+   if (accessStaticsIndirectly)
+      cg->setAccessStaticsIndirectly(true);
+
+   cg->setSupportsDoubleWordCAS();
+   cg->setSupportsDoubleWordSet();
+
+   cg->setSupportsGlRegDepOnFirstBlock();
+   cg->setConsiderAllAutosAsTacticalGlobalRegisterCandidates();
+
+   // Interpreter frame shape requires all autos to occupy an 8-byte slot on 64-bit.
+   //
+   if (comp->getOption(TR_MimicInterpreterFrameShape))
+      cg->setMapAutosTo8ByteSlots();
+
+   // Common X86 initialization
+   //
+   cg->initializeX86(comp);
+
+   cg->initLinkageToGlobalRegisterMap();
+
+   cg->setRealVMThreadRegister(cg->machine()->getRealRegister(TR::RealRegister::ebp));
+
+   // GRA-related initialization is done after calling initializeX86() so we can
+   // use such things as getNumberOfGlobal[FG]PRs().
+
+   _globalGPRsPreservedAcrossCalls.init(cg->getNumberOfGlobalRegisters(), cg->trMemory());
+   _globalFPRsPreservedAcrossCalls.init(cg->getNumberOfGlobalRegisters(), cg->trMemory());
+
+   int16_t i;
+   TR_GlobalRegisterNumber grn;
+   for (i=0; i < cg->getNumberOfGlobalGPRs(); i++)
+      {
+      grn = cg->getFirstGlobalGPR() + i;
+      if (cg->getProperties().isPreservedRegister((TR::RealRegister::RegNum)cg->getGlobalRegister(grn)))
+         _globalGPRsPreservedAcrossCalls.set(grn);
+      }
+   for (i=0; i < cg->getNumberOfGlobalFPRs(); i++)
+      {
+      grn = cg->getFirstGlobalFPR() + i;
+      if (cg->getProperties().isPreservedRegister((TR::RealRegister::RegNum)cg->getGlobalRegister(grn)))
+         _globalFPRsPreservedAcrossCalls.set(grn);
+      }
+
+   // Reduce the maxObjectSizeGuaranteedNotToOverflow value on 64-bit such that the
+   // runtime comparison does not sign extend (saves an instruction on array allocations).
+   // INT_MAX should be sufficiently large.
+   //
+   if ((uint32_t)_maxObjectSizeGuaranteedNotToOverflow > (uint32_t)INT_MAX)
+      {
+      _maxObjectSizeGuaranteedNotToOverflow = (uint32_t)INT_MAX;
+      }
+   }
+
+
 OMR::X86::AMD64::CodeGenerator::CodeGenerator() :
    OMR::X86::CodeGenerator()
    {

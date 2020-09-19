@@ -509,6 +509,34 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
    }
 
 
+OMR::X86::CodeGenerator::CodeGenerator(TR::Compilation *comp) :
+   OMR::CodeGenerator(comp),
+   _nanoTimeTemp(NULL),
+   _assignmentDirection(Backward),
+   _lastCatchAppendInstruction(NULL),
+   _betterSpillPlacements(NULL),
+   _dataSnippetList(getTypedAllocator<TR::X86DataSnippet*>(comp->allocator())),
+   _spilledIntRegisters(getTypedAllocator<TR::Register*>(comp->allocator())),
+   _liveDiscardableRegisters(getTypedAllocator<TR::Register*>(comp->allocator())),
+   _dependentDiscardableRegisters(getTypedAllocator<TR::Register*>(comp->allocator())),
+   _clobberingInstructions(getTypedAllocator<TR::ClobberingInstruction*>(comp->allocator())),
+   _outlinedInstructionsList(getTypedAllocator<TR_OutlinedInstructions*>(comp->allocator())),
+   _numReservedIPICTrampolines(0),
+   _flags(0)
+   {
+   _clobIterator = _clobberingInstructions.begin();
+   }
+
+
+void
+OMR::X86::CodeGenerator::initialize()
+   {
+   self()->OMR::CodeGenerator::initialize();
+
+   _clobIterator = _clobberingInstructions.begin();
+   }
+
+
 OMR::X86::CodeGenerator::CodeGenerator() :
    OMR::CodeGenerator(),
    _nanoTimeTemp(NULL),

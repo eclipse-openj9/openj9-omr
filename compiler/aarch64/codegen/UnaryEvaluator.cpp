@@ -133,6 +133,35 @@ TR::Register *OMR::ARM64::TreeEvaluator::labsEvaluator(TR::Node *node, TR::CodeG
    return commonIntegerAbsEvaluator(node, cg);
    }
 
+static TR::Register *commonUnaryHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
+   {
+   TR::Node *child = node->getFirstChild();
+   TR::Register *srcReg = cg->evaluate(child);
+   TR::Register *trgReg = (child->getReferenceCount() == 1) ? srcReg : cg->allocateRegister();
+
+   generateTrg1Src1Instruction(cg, op, node, trgReg, srcReg);
+   node->setRegister(trgReg);
+   cg->decReferenceCount(child);
+   return trgReg;
+   }
+
+TR::Register *OMR::ARM64::TreeEvaluator::sbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Register *trgReg = commonUnaryHelper(node, TR::InstOpCode::rev16w, cg);
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmw, node, trgReg, trgReg, 15); // sign extension
+   return trgReg;
+   }
+
+TR::Register *OMR::ARM64::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonUnaryHelper(node, TR::InstOpCode::revw, cg);
+   }
+
+TR::Register *OMR::ARM64::TreeEvaluator::lbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonUnaryHelper(node, TR::InstOpCode::revx, cg);
+   }
+
 // also handles i2b, i2s, l2b, l2s, s2b
 TR::Register *OMR::ARM64::TreeEvaluator::l2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

@@ -196,10 +196,10 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    /** \brief
     *     This is a helper function that will try to use a rotate instruction
     *     to perform an 'land' (Long AND) operation. It will handle cases
-    *     where the second child of the Long AND is a lconst node, and the 
+    *     where the second child of the Long AND is a lconst node, and the
     *     lconst value is a sequence of contiguous 1's surrounded by 0's or vice versa.
     *     For example, the lconst value can be:
-    *     00011111111000, 1111000000011111, 0100000  
+    *     00011111111000, 1111000000011111, 0100000
     *
     *     For example, consider the following tree:
     *
@@ -208,26 +208,26 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *           iload parm=0
     *        lconst 0x0000FFFFFFFF0000
     *
-    *     We can either materialize the constant in a register or use the NIHF+NILF instructions 
-    *     to AND the most and least significant 32 bit portions in the first operand. These 
+    *     We can either materialize the constant in a register or use the NIHF+NILF instructions
+    *     to AND the most and least significant 32 bit portions in the first operand. These
     *     are both more expensive than generating a RISBG instruction.
     *
-    *     This is because in the above case we can perform the AND operation with the 
+    *     This is because in the above case we can perform the AND operation with the
     *     following single RISBG instruction:
     *
     *     RISBG R2,R1,33,175,0 //R1 holds parm 0
     *
     *     In the above instruction the value of 175 comes from
     *     the sum of 128 and 47. 47 represents the ending position
-    *     of the bit range to preserve, and 128 is there to set the 
+    *     of the bit range to preserve, and 128 is there to set the
     *     zero bit. The instruction is saying to take the value in R1 and
     *     do the following:
     *        -preserve the bits from 33 - 47 (inclusive)
     *        -zero the remaining bits
     *        -rotate the preserved bits by a factor of 0(hence no rotation)
     *        -store the result in R2
-    * 
-    *     Note: RISBG is non-destructive (unlike the AND immediate instructions). 
+    *
+    *     Note: RISBG is non-destructive (unlike the AND immediate instructions).
     *     So the original value in R1 is preserved.
     *
     *   \param node
@@ -235,19 +235,19 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *
     *   \param cg
     *      The code generator used to generate the instructions
-    * 
+    *
     *    \param shiftAmount
     *      The number of bits we should shift the result of the logical AND. A positive value represents a left shift,
     *      a negative value represents a right shift, and a value of zero represents no shift.
     *      Note that if the absolute value of number is greater than 6 bits, then this optimization will not work
     *      since the RISBG instruction will only hold 6 bits for the shift operand.
-    * 
+    *
     *   \param isSignedShift
     *      If replacing a signed shift+and combination, this variable evaluates to true. Else it will evaluate to false.
     *      Note: If we are using this function to replace a standalone 'and', then this variable should be false.
     *
     *   \return
-    *      The target register for the instruction, or NULL if generating a 
+    *      The target register for the instruction, or NULL if generating a
     *      RISBG instruction is not suitable
     *
     */
@@ -413,8 +413,8 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::InstOpCode::Mnemonic getCompareOpFromNode(TR::CodeGenerator *cg, TR::Node *node);
    static TR::Register *selectEvaluator(TR::Node * node, TR::CodeGenerator * cg);
    static TR::Register *dselectEvaluator(TR::Node * node, TR::CodeGenerator * cg);
-   static bool treeContainsAllOtherUsesForNode(TR::Node *condition, TR::Node *trueVal);
-   static int32_t countReferencesInTree(TR::Node *treeNode, TR::Node *node);
+   static bool treeContainsAllOtherUsesForNode(TR::Node *condition, TR::Node *trueVal, TR::CodeGenerator *cg);
+   static int32_t countReferencesInTree(TR::Node *treeNode, TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *NOPEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *barrierFenceEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lookupEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -463,7 +463,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *inlineVectorBitSelectOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);
 
    static TR::Register *bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   
+
    static TR::Register *tryToReuseInputVectorRegs(TR::Node *node, TR::CodeGenerator *cg);
 
    static TR::Register *checkAndAllocateReferenceRegister(TR::Node * node,
@@ -538,7 +538,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
 
 /** \brief
     *  Generates Load/Store sequence for array copy as per type of array copy element
-    *  
+    *
     * \param node
     *     The arraycopy node.
     *
@@ -553,13 +553,13 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *
     *  \param srm
     *     Scratch Register Manager providing pool of scratch registers to use
-    * 
+    *
     *  \param elementType
     *     Array Copy element type
-    * 
+    *
     *  \param needsGuardedLoad
     *     Boolean stating if we need to use Guarded Load instruction
-    * 
+    *
     *  \param deps
     *     Register dependency conditions of the external ICF. Load-and-store for array copy
     *     itself is usually a load-store instruction pair without internal control flows.
@@ -586,13 +586,13 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *
     *  \param byteLenReg
     *     Register holding number of bytes to copy
-    * 
+    *
     *  \param byteLenNode
     *     Node for number of bytes to copy
-    * 
+    *
     *  \param srm
     *     Scratch Register Manager providing pool of scratch registers to use
-    * 
+    *
     *  \param mergeLabel
     *     Label Symbol where we merge from Out Of line code section
     */
@@ -617,19 +617,19 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *
     *  \param byteLenReg
     *     Register holding number of bytes to copy
-    * 
+    *
     *  \param srm
     *     Scratch Register Manager providing pool of scratch registers to use
     *
     *  \param isForward
     *     Boolean specifying if we need to copy elements in forward direction
-    * 
+    *
     *  \param needsGuardedLoad
     *     Boolean stating if we need to use Guarded Load instruction
     *
     *  \param genStartICFLabel
     *     Boolean stating if we need to set the start ICF flag
-    * 
+    *
     *  \param deps
     *     Register dependency conditions of the external ICF this mem-to-mem copy resides. Mem-to-Mem element copy
     *     itself is a loop of load-store instructions that has its own ICF. If this ICF resides in another ICF,
@@ -637,19 +637,19 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *
     *  \return
     *     Register depdendecy conditions containg registers allocated within Internal Control Flow
-    * 
+    *
     */
    static TR::RegisterDependencyConditions* generateMemToMemElementCopy(TR::Node *node, TR::CodeGenerator *cg, TR::Register *byteSrcReg, TR::Register *byteDstReg, TR::Register *byteLenReg, TR_S390ScratchRegisterManager *srm, bool isForward, bool needsGuardedLoad, bool genStartICFLabel=false, TR::RegisterDependencyConditions* deps = NULL);
 
 /** \brief
     *  Generates sequence for backward array copy
-    *  
+    *
     * \param node
     *     The arraycopy node.
     *
     *  \param cg
     *     The code generator used to generate the instructions.
-    * 
+    *
     *  \param byteSrcReg
     *     Register holding starting address of source
     *
@@ -661,13 +661,13 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *
     *  \param byteLenNode
     *     Node for number of bytes to copy
-    * 
+    *
     *  \param srm
     *     Scratch Register Manager providing pool of scratch registers to use
-    * 
+    *
     *  \param mergeLabel
     *     Label Symbol where we merge from Out Of line code section
-    * 
+    *
     *  \return
     *     Register depdendecy conditions containg registers allocated within Internal Control Flow
     */
@@ -732,7 +732,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *dRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *GlRegDepsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   
+
    static TR::Register *iminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *fminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -797,7 +797,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    /** \brief
     *     Inlines an intrinsic for calls to atomicAddSymbol which are represented by a call node of the form for
     *     32-bit (64-bit similar):
-    * 
+    *
     *     \code
     *       icall <atomicAddSymbol>
     *         <address>
@@ -821,11 +821,11 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *     A register holding the <value> node.
     */
    static TR::Register* intrinsicAtomicAdd(TR::Node* node, TR::CodeGenerator* cg);
-   
+
    /** \brief
     *     Inlines an intrinsic for calls to atomicFetchAndAddSymbol which are represented by a call node of the form for
     *     32-bit (64-bit similar):
-    * 
+    *
     *     \code
     *       icall <atomicFetchAndAddSymbol>
     *         <address>
@@ -850,11 +850,11 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *     A register holding the original value in memory (before the addition) at the <address> location.
     */
    static TR::Register* intrinsicAtomicFetchAndAdd(TR::Node* node, TR::CodeGenerator* cg);
-   
+
    /** \brief
     *     Inlines an intrinsic for calls to atomicSwapSymbol which are represented by a call node of the form for
     *     32-bit (64-bit similar):
-    * 
+    *
     *     \code
     *       icall <atomicSwapSymbol>
     *         <address>
@@ -879,7 +879,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *     A register holding the original value in memory (before the swap) at the <address> location.
     */
    static TR::Register* intrinsicAtomicSwap(TR::Node* node, TR::CodeGenerator* cg);
-   
+
    static void         commonButestEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register* ifFoldingHelper(TR::Node *node, TR::CodeGenerator *cg, bool &handledBIF);
    };

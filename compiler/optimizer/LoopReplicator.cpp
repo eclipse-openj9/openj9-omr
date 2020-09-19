@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -67,11 +67,13 @@ TR_LoopReplicator::TR_LoopReplicator(TR::OptimizationManager *manager)
 //Add static debug counter for a given replication failure
 static void countReplicationFailure(char *failureReason, int32_t regionNum)
    {
+   TR::Compilation *comp = TR::comp();
+
    //Assemble format string: "LoopReplicator/<failureReason>/%s/(%s)/region_%d"
-   TR::DebugCounter::incStaticDebugCounter(TR::comp(), TR::DebugCounter::debugCounterName(TR::comp(),
+   TR::DebugCounter::incStaticDebugCounter(comp, TR::DebugCounter::debugCounterName(comp,
       "LoopReplicator/%s/%s/(%s)/region_%d", failureReason,
-      TR::comp()->getHotnessName(TR::comp()->getMethodHotness()),
-      TR::comp()->signature(), regionNum));
+      comp->getHotnessName(comp->getMethodHotness()),
+      comp->signature(), regionNum));
    }
 
 int32_t TR_LoopReplicator::perform()

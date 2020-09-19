@@ -66,7 +66,6 @@ class TR_OutlinedInstructions
 
    bool                 _hasBeenRegisterAssigned;
 
-   TR::Compilation *comp() { return TR::comp(); }
    TR::CodeGenerator *cg() { return _cg; }
 
    public:

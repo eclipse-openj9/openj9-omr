@@ -29,7 +29,7 @@
 #include "compile/Compilation.hpp"
 #include "env/jittypes.h"
 #include "infra/Assert.hpp"
-#include "OMRCodeGenerator.hpp"
+#include "codegen/CodeGenerator.hpp"
 
 class TR_Debug;
 namespace TR { class CodeGenerator; }
@@ -95,7 +95,7 @@ class S390ConstantDataSnippet : public TR::Snippet
       {
       return _reloType = rt;
       }
-   TR::Compilation* comp() { return TR::comp(); }
+   TR::Compilation* comp() { return cg()->comp(); }
 
    };
 

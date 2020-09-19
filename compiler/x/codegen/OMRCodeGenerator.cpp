@@ -232,7 +232,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
 
 #if defined(TR_TARGET_X86) && !defined(J9HAMMER)
    TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) == _targetProcessorInfo.supportsSSE2(), "supportsSSE2() failed\n");
-   
+
    if (comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) && comp->target().cpu.testOSForSSESupport())
       supportsSSE2 = true;
 #endif // defined(TR_TARGET_X86) && !defined(J9HAMMER)
@@ -2927,7 +2927,7 @@ TR_X86ScratchRegisterManager *OMR::X86::CodeGenerator::generateScratchRegisterMa
 bool
 TR_X86ScratchRegisterManager::reclaimAddressRegister(TR::MemoryReference *mr)
    {
-   if (TR::comp()->target().is32Bit())
+   if (_cg->comp()->target().is32Bit())
       return false;
 
    return reclaimScratchRegister(mr->getAddressRegister());

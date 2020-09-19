@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -183,11 +183,11 @@ static void collectDirectLoads(TR::Node *node, TR_BitVector &loadSymRefs, TR::No
  * @param firstBlock The guard's branch destination
  * @param coldPathLoads BitVector of symbol reference numbers for any direct loads seen until the merge back to mainline
  */
-static void collectColdPathLoads(TR::Block* firstBlock, TR_BitVector &coldPathLoads)
+static void collectColdPathLoads(TR::Block* firstBlock, TR_BitVector &coldPathLoads, TR::Compilation *comp)
    {
-   TR_Stack<TR::Block*> blocksToCheck(TR::comp()->trMemory(), 8, false, stackAlloc);
+   TR_Stack<TR::Block*> blocksToCheck(comp->trMemory(), 8, false, stackAlloc);
    blocksToCheck.push(firstBlock);
-   TR::NodeChecklist checklist(TR::comp());
+   TR::NodeChecklist checklist(comp);
 
    coldPathLoads.empty();
    while (!blocksToCheck.isEmpty())
@@ -201,17 +201,17 @@ static void collectColdPathLoads(TR::Block* firstBlock, TR_BitVector &coldPathLo
       for (auto itr = block->getSuccessors().begin(), end = block->getSuccessors().end(); itr != end; ++itr)
          {
          TR::Block *dest = (*itr)->getTo()->asBlock();
-         if (dest != TR::comp()->getFlowGraph()->getEnd() && dest->getPredecessors().size() == 1)
+         if (dest != comp->getFlowGraph()->getEnd() && dest->getPredecessors().size() == 1)
             blocksToCheck.push(dest);
          }
       }
    }
 
 static bool safeToMoveGuard(TR::Block *destination, TR::TreeTop *guardCandidate,
-   TR::TreeTop *branchDest, TR_BitVector &privArgSymRefs)
+   TR::TreeTop *branchDest, TR_BitVector &privArgSymRefs, TR::Compilation *comp)
    {
    static char *disablePrivArgMovement = feGetEnv("TR_DisableRuntimeGuardPrivArgMovement");
-   TR::TreeTop *start = destination ? destination->getExit() : TR::comp()->getStartTree();
+   TR::TreeTop *start = destination ? destination->getExit() : comp->getStartTree();
    if (guardCandidate->getNode()->isHCRGuard())
       {
       for (TR::TreeTop *tt = start; tt && tt != guardCandidate; tt = tt->getNextTreeTop())
@@ -224,7 +224,7 @@ static bool safeToMoveGuard(TR::Block *destination, TR::TreeTop *guardCandidate,
       {
       for (TR::TreeTop *tt = start; tt && tt != guardCandidate; tt = tt->getNextTreeTop())
          {
-         if (TR::comp()->isPotentialOSRPoint(tt->getNode(), NULL, true))
+         if (comp->isPotentialOSRPoint(tt->getNode(), NULL, true))
             return false;
          }
       }
@@ -247,7 +247,7 @@ static bool safeToMoveGuard(TR::Block *destination, TR::TreeTop *guardCandidate,
              (guardCandidate->getNode()->getInlinedSiteIndex() > -1 &&
              // if priv arg store does not have the same inlined site index as the guard's caller, that means it is not a priv arg for this guard,
              // then we cannot move the guard and its priv args up across other calls' priv args
-             tt->getNode()->getInlinedSiteIndex() != TR::comp()->getInlinedCallSite(guardCandidate->getNode()->getInlinedSiteIndex())._byteCodeInfo.getCallerIndex())))
+             tt->getNode()->getInlinedSiteIndex() != comp->getInlinedCallSite(guardCandidate->getNode()->getInlinedSiteIndex())._byteCodeInfo.getCallerIndex())))
             return false;
 
          if (tt->getNode()->chkIsPrivatizedInlinerArg())
@@ -263,7 +263,6 @@ static bool safeToMoveGuard(TR::Block *destination, TR::TreeTop *guardCandidate,
 
 static void moveBlockAfterDest(TR::CFG *cfg, TR::Block *toMove, TR::Block *dest)
    {
-   TR::Compilation *comp = TR::comp();
    // Step1 splice out toMove
    TR::Block *toMovePrev = toMove->getPrevBlock();
    TR::Block *toMoveSucc = toMove->getNextBlock();
@@ -411,7 +410,7 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
                break;
 
             TR::Block *insertPoint = isStopTheWorldGuard(guard2) ? HCRIns : runtimeIns;
-            if (!safeToMoveGuard(insertPoint, guard2Tree, guard1->getBranchDestination(), privArgSymRefs))
+            if (!safeToMoveGuard(insertPoint, guard2Tree, guard1->getBranchDestination(), privArgSymRefs, comp()))
                break;
 
             // now we figure out if we can redirect guard2 to guard1's cold block
@@ -423,7 +422,7 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
                   traceMsg(comp(), "  Guard1 [%p] is guarding the same call as Guard2 [%p] - proceeding with guard merging\n", guard1, guard2);
                }
             else if (guard2->getInlinedSiteIndex() > -1 &&
-                guard1->getInlinedSiteIndex() == TR::comp()->getInlinedCallSite(guard2->getInlinedSiteIndex())._byteCodeInfo.getCallerIndex())
+                guard1->getInlinedSiteIndex() == comp()->getInlinedCallSite(guard2->getInlinedSiteIndex())._byteCodeInfo.getCallerIndex())
                {
                if (trace())
                   traceMsg(comp(), "  Guard1 [%p] is the caller of Guard2 [%p] - proceeding with guard merging\n", guard1, guard2);
@@ -450,7 +449,7 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
                {
                if (!evaluatedColdPathLoads)
                   {
-                  collectColdPathLoads(cold1, coldPathLoads);
+                  collectColdPathLoads(cold1, coldPathLoads, comp());
                   evaluatedColdPathLoads = true;
                   }
 

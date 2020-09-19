@@ -2471,12 +2471,12 @@ TR::InstOpCode::Mnemonic OMR::Z::TreeEvaluator::getCompareOpFromNode(TR::CodeGen
 
    }
 
-int32_t OMR::Z::TreeEvaluator::countReferencesInTree(TR::Node *treeNode, TR::Node *node)
+int32_t OMR::Z::TreeEvaluator::countReferencesInTree(TR::Node *treeNode, TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (treeNode->getVisitCount() >= TR::comp()->getVisitCount())
+   if (treeNode->getVisitCount() >= cg->comp()->getVisitCount())
       return 0;
 
-   treeNode->setVisitCount(TR::comp()->getVisitCount());
+   treeNode->setVisitCount(cg->comp()->getVisitCount());
 
    if (treeNode->getRegister())
       return 0;
@@ -2487,13 +2487,13 @@ int32_t OMR::Z::TreeEvaluator::countReferencesInTree(TR::Node *treeNode, TR::Nod
    int32_t sum=0;
    for(int32_t i = 0 ; i < treeNode->getNumChildren() ; i++)
       {
-      sum += TR::TreeEvaluator::countReferencesInTree(treeNode->getChild(i), node);
+      sum += TR::TreeEvaluator::countReferencesInTree(treeNode->getChild(i), node, cg);
       }
    return sum;
    }
 
 bool
-OMR::Z::TreeEvaluator::treeContainsAllOtherUsesForNode(TR::Node *treeNode, TR::Node *node)
+OMR::Z::TreeEvaluator::treeContainsAllOtherUsesForNode(TR::Node *treeNode, TR::Node *node, TR::CodeGenerator *cg)
    {
    static const char *x = feGetEnv("disableSelectEvaluatorImprovement");
    if (x)
@@ -2507,7 +2507,7 @@ OMR::Z::TreeEvaluator::treeContainsAllOtherUsesForNode(TR::Node *treeNode, TR::N
    if (numberOfInstancesToFind == 0)
       return true;
 
-   int32_t instancesFound = TR::TreeEvaluator::countReferencesInTree(treeNode, node);
+   int32_t instancesFound = TR::TreeEvaluator::countReferencesInTree(treeNode, node, cg);
 
    //traceMsg(cg->comp(), "numberOfInstancesToFind = %d instancesFound = %d\n",numberOfInstancesToFind,instancesFound);
 
@@ -2531,8 +2531,8 @@ OMR::Z::TreeEvaluator::selectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       traceMsg(comp, "Starting evaluation of select node %p condition %p (in reg %p) trueVal %p (in reg %p) falseVal %p (in reg %p)\n",node,condition,condition->getRegister(), trueVal, trueVal->getRegister(), falseVal, falseVal->getRegister());
 
   TR::Register *trueReg = 0;
-  if(TR::TreeEvaluator::treeContainsAllOtherUsesForNode(condition,trueVal) &&
-     (!trueVal->isUnneededConversion() || TR::TreeEvaluator::treeContainsAllOtherUsesForNode(condition, trueVal->getFirstChild())))
+  if (TR::TreeEvaluator::treeContainsAllOtherUsesForNode(condition, trueVal, cg) &&
+     (!trueVal->isUnneededConversion() || TR::TreeEvaluator::treeContainsAllOtherUsesForNode(condition, trueVal->getFirstChild(), cg)))
      {
      if (comp->getOption(TR_TraceCG))
         traceMsg(comp, "Calling evaluate (instead of clobber evaluate for node %p because all other uses are in the compare tree)\n",trueVal);

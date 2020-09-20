@@ -149,6 +149,15 @@ OMR::CodeGenerator::generateNop(TR::Node * node, TR::Instruction *instruction, T
     { TR_ASSERT(0, "shouldn't get here"); return NULL;}
 
 
+TR::CodeGenerator *
+OMR::CodeGenerator::create(TR::Compilation *comp)
+   {
+   TR::CodeGenerator *cg = new (comp->trHeapMemory()) TR::CodeGenerator(comp);
+   cg->initialize();
+   return cg;
+   }
+
+
 OMR::CodeGenerator::CodeGenerator(TR::Compilation *comp) :
       _compilation(comp),
       _trMemory(comp->trMemory()),

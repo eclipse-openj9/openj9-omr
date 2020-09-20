@@ -186,15 +186,6 @@ OMR::Compilation::getHotnessName(TR_Hotness h)
    }
 
 
-static TR::CodeGenerator * allocateCodeGenerator(TR::Compilation * comp)
-   {
-   return new (comp->trHeapMemory()) TR::CodeGenerator();
-   }
-
-
-
-
-
 OMR::Compilation::Compilation(
       int32_t id,
       OMR_VMThread *omrVMThread,
@@ -380,7 +371,7 @@ OMR::Compilation::Compilation(
          );
    _isServerInlining = !options.getOption(TR_NoOptServer);
 
-   // TR_DisableInternalPointers must be set before allocateCodeGenerator(self()) is called because
+   // TR_DisableInternalPointers must be set before the TR::CodeGenerator object is created because
    // CodeGenerator's _disableInternalPointers member is set in its constructor and this is one of
    // options that is checked for
    if (_isOptServer)
@@ -413,7 +404,7 @@ OMR::Compilation::Compilation(
       }
 
    //codegen also needs _methodSymbol
-   _codeGenerator = allocateCodeGenerator(self());
+   _codeGenerator = TR::CodeGenerator::create(self());
 
    _recompilationInfo = _codeGenerator->getSupportsRecompilation() ? _codeGenerator->allocateRecompilationInfo() : NULL;
 

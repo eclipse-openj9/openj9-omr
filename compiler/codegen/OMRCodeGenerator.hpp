@@ -281,6 +281,15 @@ public:
    TR_ALLOC(TR_Memory::CodeGenerator)
 
    /**
+    * @brief Factory function to create and initialize a new \c TR::CodeGenerator object.
+    *
+    * @param[in] comp \c TR::Compilation object
+    *
+    * @return An allocated and initialized \c TR::CodeGenerator object
+    */
+   static TR::CodeGenerator *create(TR::Compilation *comp);
+
+   /**
     * @brief Initialize a \c TR::CodeGenerator object
     */
    void initialize();

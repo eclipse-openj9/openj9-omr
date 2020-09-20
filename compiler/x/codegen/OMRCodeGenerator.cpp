@@ -204,7 +204,7 @@ void TR_X86ProcessorInfo::initialize(TR::CodeGenerator *cg)
 
 
 void
-OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
+OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
    {
 
    bool supportsSSE2 = false;
@@ -232,7 +232,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
 
 #if defined(TR_TARGET_X86) && !defined(J9HAMMER)
    TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) == _targetProcessorInfo.supportsSSE2(), "supportsSSE2() failed\n");
-   
+
    if (comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) && comp->target().cpu.testOSForSSESupport())
       supportsSSE2 = true;
 #endif // defined(TR_TARGET_X86) && !defined(J9HAMMER)

@@ -683,7 +683,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    // constructors.  This breaks a rather nasty cyclic initialization dependency,
    // but it is pretty ugly.
    // TODO: Figure out a cleaner solution for this.
-   void initialize( TR::Compilation *comp);
+   void initializeX86(TR::Compilation *comp);
 
    TR::RealRegister::RegNum pickNOPRegister(TR::Instruction  *successor);
 

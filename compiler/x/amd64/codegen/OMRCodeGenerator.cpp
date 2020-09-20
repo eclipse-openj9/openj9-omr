@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -85,13 +85,13 @@ OMR::X86::AMD64::CodeGenerator::CodeGenerator() :
 
    // Common X86 initialization
    //
-   self()->initialize(self()->comp());
+   self()->initializeX86(self()->comp());
 
    self()->initLinkageToGlobalRegisterMap();
 
    self()->setRealVMThreadRegister(self()->machine()->getRealRegister(TR::RealRegister::ebp));
 
-   // GRA-related initialization is done after calling initialize() so we can
+   // GRA-related initialization is done after calling initializeX86() so we can
    // use such things as getNumberOfGlobal[FG]PRs().
 
    _globalGPRsPreservedAcrossCalls.init(self()->getNumberOfGlobalRegisters(), self()->trMemory());

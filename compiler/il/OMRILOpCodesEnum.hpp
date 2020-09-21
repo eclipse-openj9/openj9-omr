@@ -823,7 +823,12 @@
    lnotz,
    lpopcnt,
 
-   ibyteswap,// swap bytes in an integer
+   // Note that only integral types have byteswap opcodes since architectures generally only
+   // support swapping bytes in GPRs. To byteswap floats, use fbits2i/dbits2l, perform an integer
+   // byteswap, then use ibits2f/lbits2d.
+   sbyteswap, // swap bytes in a short
+   ibyteswap, // swap bytes in an integer
+   lbyteswap, // swap bytes in a long
 
    bbitpermute,
    sbitpermute,

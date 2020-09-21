@@ -1015,12 +1015,124 @@ OMR::RV::TreeEvaluator::dcmpleuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return compareUnorderedHelper(node, TR::InstOpCode::_flt_d, true, cg);
    }
 
+static TR::Register *
+compareThreeWayHelper(TR::Node *node, bool unorderedIsLess, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src2Reg = cg->evaluate(secondChild);
+
+   TR::Register *tmpReg = cg->allocateRegister();
+   TR::Register *trgReg = cg->allocateRegister();
+   TR::RealRegister *zero = cg->machine()->getRealRegister(TR::RealRegister::zero);
+
+   TR::InstOpCode::Mnemonic ltOp = firstChild->getDataType().isDouble()
+                                      ? TR::InstOpCode::_flt_d
+                                      : TR::InstOpCode::_flt_s;
+   TR::InstOpCode::Mnemonic eqOp = firstChild->getDataType().isDouble()
+                                      ? TR::InstOpCode::_feq_d
+                                      : TR::InstOpCode::_feq_s;
+
+   /*
+    * fcmpl / dcmpl does basically following:
+    *
+    *     if (src1 > src2)
+    *        trg = 1;
+    *     else if (src1 == src2)
+    *        trg = 0;
+    *     else
+    *        trg = -1;
+    *
+    * so we generate:
+    *
+    *      ...
+    *      flt.d   tmp, src2, src1  ; note swapped arguments!
+    *      addi    trg, zero, 1
+    *    start:                     ; start internal control flow
+    *      bnez    tmp, join
+    *      feq.d   trg, src1, src2
+    *      addi    trg, trg,  -1
+    *    join:                      ; end internal control flow
+    *      ...
+    *
+    * Similarly, fcmpg / dcmpg does following:
+    *
+    *     if (src1 < src2)
+    *        trg = -1;
+    *     else if (src1 == src2)
+    *        trg = 0;
+    *     else
+    *        trg = 1;
+    *
+    * so we generate:
+    *
+    *      ...
+    *      flt.d   tmp, src1, src2
+    *      addi    trg, zero, -1
+    *    start:                     ; start internal control flow
+    *      bnez    tmp, join
+    *      feq.d   trg, src1, src2
+    *      xori    trg, trg,  1
+    *    join:                      ; end internal control flow
+    *      ...
+    *
+    */
+
+   TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *joinLabel = generateLabelSymbol(cg);
+
+   startLabel->setStartInternalControlFlow();
+   joinLabel->setEndInternalControlFlow();
+
+   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
+   deps->addPostCondition(tmpReg, TR::RealRegister::NoReg);
+   deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
+   deps->addPostCondition(src1Reg, TR::RealRegister::NoReg);
+   deps->addPostCondition(src2Reg, TR::RealRegister::NoReg);
+
+   if (unorderedIsLess)
+      {
+      generateRTYPE(ltOp, node, tmpReg, src2Reg, src1Reg, cg);
+      generateITYPE(TR::InstOpCode::_addi, node, trgReg, zero, 1, cg);
+      generateLABEL(cg, TR::InstOpCode::label, node, startLabel);
+      generateBTYPE(TR::InstOpCode::_bne, node, joinLabel, tmpReg, zero, cg);
+      generateRTYPE(eqOp, node, trgReg, src1Reg, src2Reg, cg);
+      generateITYPE(TR::InstOpCode::_addi, node, trgReg, trgReg, -1, cg);
+      generateLABEL(cg, TR::InstOpCode::label, node, joinLabel, deps);
+      }
+   else
+      {
+      generateRTYPE(ltOp, node, tmpReg, src1Reg, src2Reg, cg);
+      generateITYPE(TR::InstOpCode::_addi, node, trgReg, zero, -1, cg);
+      generateLABEL(cg, TR::InstOpCode::label, node, startLabel);
+      generateBTYPE(TR::InstOpCode::_bne, node, joinLabel, tmpReg, zero, cg);
+      generateRTYPE(eqOp, node, trgReg, src1Reg, src2Reg, cg);
+      generateITYPE(TR::InstOpCode::_xori, node, trgReg, trgReg, 1, cg);
+      generateLABEL(cg, TR::InstOpCode::label, node, joinLabel, deps);
+      }
+
+
+   cg->stopUsingRegister(tmpReg);
+   node->setRegister(trgReg);
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+   return trgReg;
+   }
+
+// also handles fcmpl
+TR::Register *
+OMR::RV::TreeEvaluator::dcmplEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return compareThreeWayHelper(node, true, cg);
+   }
+
+// also handles fcmpg
 TR::Register *
 OMR::RV::TreeEvaluator::dcmpgEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:RV: Enable TR::TreeEvaluator::dcmpgEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::RV::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return compareThreeWayHelper(node, false, cg);
+   }
 
 static TR::Register *
 commonFpSelectEvaluator(TR::Node *node, bool isDouble, TR::CodeGenerator *cg)

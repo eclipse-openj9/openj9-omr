@@ -41,7 +41,7 @@ if(OMR_ARCH_POWER)
 	)
 endif()
 
-omr_add_executable(compunittest ${COMPCGTEST_FILES})
+omr_add_executable(compunittest NOWARNINGS ${COMPCGTEST_FILES})
 
 # For the time being, link against Tril even though we don't really need Tril itself. This is done
 # to avoid needing to duplicate the boilerplate in Tril's CMakeLists.txt.

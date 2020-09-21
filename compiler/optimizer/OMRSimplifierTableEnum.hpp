@@ -783,7 +783,9 @@
    dftSimplifier, //TR::lnotz
    dftSimplifier, //TR::lpopcnt
 
-   dftSimplifier,            // TR::ibyteswap
+   dftSimplifier, // TR::sbyteswap
+   dftSimplifier, // TR::ibyteswap
+   dftSimplifier, // TR::lbyteswap
 
    dftSimplifier,            // TR::bbitpermute
    dftSimplifier,            // TR::sbitpermute

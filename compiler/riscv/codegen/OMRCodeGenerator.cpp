@@ -361,17 +361,17 @@ TR::Register *OMR::RV::CodeGenerator::gprClobberEvaluate(TR::Node *node)
             traceMsg(
                self()->comp(),
                "Setting containsCollectedReference on register %s\n",
-               self()->getDebug()->getName(targetRegister));
+               self()->getDebug()->getName(targetReg));
          targetReg->setContainsCollectedReference();
          }
       if (sourceReg->containsInternalPointer())
          {
-         TR::AutomaticSymbol *pinningArrayPointer = sourceRegister->getPinningArrayPointer();
+         TR::AutomaticSymbol *pinningArrayPointer = sourceReg->getPinningArrayPointer();
          if (self()->comp()->getOption(TR_TraceCG))
             traceMsg(
                self()->comp(),
                "Setting containsInternalPointer on register %s and setting pinningArrayPointer to " POINTER_PRINTF_FORMAT "\n",
-               self()->getDebug()->getName(targetRegister),
+               self()->getDebug()->getName(targetReg),
                pinningArrayPointer);
          targetReg->setContainsInternalPointer();
          targetReg->setPinningArrayPointer(pinningArrayPointer);

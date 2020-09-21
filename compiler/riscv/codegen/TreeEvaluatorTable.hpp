@@ -300,10 +300,10 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sucmpgtEvaluator ,	// TR::sucmpgt		// char compare if greater than
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sucmpleEvaluator ,	// TR::sucmple		// char compare if less than or equal
     TR::TreeEvaluator::lcmpEvaluator, // TR::lcmp		// long compare (1 if child1 > child2; 0 if child1 == child2; -1 if child1 < child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::fcmplEvaluator ,	// TR::fcmpl		// float compare l (1 if child1 > child2; 0 if child1 == child2; -1 if child1 < child2 or unordered)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::fcmpgEvaluator ,	// TR::fcmpg		// float compare g (1 if child1 > child2 or unordered; 0 if child1 == child2; -1 if child1 < child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::dcmplEvaluator ,	// TR::dcmpl		// double compare l (1 if child1 > child2; 0 if child1 == child2; -1 if child1 < child2 or unordered)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::dcmpgEvaluator ,	// TR::dcmpg		// double compare g (1 if child1 > child2 or unordered; 0 if child1 == child2; -1 if child1 < child2)
+    TR::TreeEvaluator::dcmplEvaluator ,	// TR::fcmpl		// float compare l (1 if child1 > child2; 0 if child1 == child2; -1 if child1 < child2 or unordered)
+    TR::TreeEvaluator::dcmpgEvaluator ,	// TR::fcmpg		// float compare g (1 if child1 > child2 or unordered; 0 if child1 == child2; -1 if child1 < child2)
+    TR::TreeEvaluator::dcmplEvaluator ,	// TR::dcmpl		// double compare l (1 if child1 > child2; 0 if child1 == child2; -1 if child1 < child2 or unordered)
+    TR::TreeEvaluator::dcmpgEvaluator ,	// TR::dcmpg		// double compare g (1 if child1 > child2 or unordered; 0 if child1 == child2; -1 if child1 < child2)
     TR::TreeEvaluator::ificmpeqEvaluator, // TR::ificmpeq		// integer compare and branch if equal
     TR::TreeEvaluator::ificmpneEvaluator, // TR::ificmpne		// integer compare and branch if not equal
     TR::TreeEvaluator::ificmpltEvaluator, // TR::ificmplt		// integer compare and branch if less than
@@ -727,7 +727,9 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::lnolzEvaluator ,	// TR::lnolz
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::lnotzEvaluator ,	// TR::lnotz
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::lpopcntEvaluator ,	// TR::lpopcnt
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::ibyteswapEvaluator ,	// TR::ibyteswap		// swap bytes in an integer
+    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sbyteswapEvaluator ,	// TR::sbyteswap // swap bytes in a short
+    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::ibyteswapEvaluator ,	// TR::ibyteswap // swap bytes in an integer
+    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::lbyteswapEvaluator ,	// TR::lbyteswap // swap bytes in a long
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::bbitpermuteEvaluator ,	// TR::bbitpermute
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::sbitpermuteEvaluator ,	// TR::sbitpermute
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:RV: Enable when Implemented: TR::TreeEvaluator::ibitpermuteEvaluator ,	// TR::ibitpermute

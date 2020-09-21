@@ -444,10 +444,26 @@ public:
 #if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
 	enum ScavengerScanOrdering {
 		OMR_GC_SCAVENGER_SCANORDERING_BREADTH_FIRST = 0,
+		OMR_GC_SCAVENGER_SCANORDERING_DYNAMIC_BREADTH_FIRST,
 		OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL,
 	};
 	ScavengerScanOrdering scavengerScanOrdering; /**< scan ordering in Scavenger */
 #if defined(OMR_GC_MODRON_SCAVENGER)
+	/* Start of options relating to dynamicBreadthFirstScanOrdering */
+	uintptr_t gcCountBetweenHotFieldSort;
+	uintptr_t gcCountBetweenHotFieldSortMax;
+	bool adaptiveGcCountBetweenHotFieldSort;
+	bool depthCopyTwoPaths;
+	bool depthCopyThreePaths;
+	bool alwaysDepthCopyFirstOffset;
+	bool allowPermanantHotFields;
+	bool hotFieldResettingEnabled;
+	uintptr_t maxConsecutiveHotFieldSelections;
+	uintptr_t gcCountBetweenHotFieldReset;
+	uintptr_t depthCopyMax;
+	uint32_t maxHotFieldListLength;
+	uintptr_t minCpuUtil;
+	/* End of options relating to dynamicBreadthFirstScanOrdering */
 	uintptr_t scvTenureRatioHigh;
 	uintptr_t scvTenureRatioLow;
 	uintptr_t scvTenureFixedTenureAge; /**< The tenure age to use for the Fixed scavenger tenure strategy. */
@@ -1529,6 +1545,21 @@ public:
 		, scavengerScanOrdering(OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL)
 #endif /* OMR_GC_MODRON_SCAVENGER || OMR_GC_VLHGC */
 #if defined(OMR_GC_MODRON_SCAVENGER)
+		/* Start of options relating to dynamicBreadthFirstScanOrdering */
+		, gcCountBetweenHotFieldSort(1)
+		, gcCountBetweenHotFieldSortMax(6)
+		, adaptiveGcCountBetweenHotFieldSort(true)
+		, depthCopyTwoPaths(true)
+		, depthCopyThreePaths(false)
+		, alwaysDepthCopyFirstOffset(false)
+		, allowPermanantHotFields (false)
+		, hotFieldResettingEnabled (false)
+		, maxConsecutiveHotFieldSelections(10)
+		, gcCountBetweenHotFieldReset(100)
+		, depthCopyMax(3)
+		, maxHotFieldListLength(10)
+		, minCpuUtil (1)
+		/* End of options relating to dynamicBreadthFirstScanOrdering */
 		, scvTenureRatioHigh(OMR_SCV_TENURE_RATIO_HIGH)
 		, scvTenureRatioLow(OMR_SCV_TENURE_RATIO_LOW)
 		, scvTenureFixedTenureAge(OBJECT_HEADER_AGE_MAX)

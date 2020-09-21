@@ -1105,6 +1105,16 @@ enum TR_ProcessOptionsFlags
    TR_JITProcessErrorUnknown = 0x00000080
    };
 
+enum TR_ReductionAlgorithms
+   {
+   TR_HotFieldReductionAlgorithmSum,
+   TR_HotFieldReductionAlgorithmAverage,
+   TR_HotFieldReductionAlgorithmMax,
+   // Any new option added here must be added also to _hotFieldReductionAlgorithmNames
+
+   // The below must be the last option...
+   TR_NumReductionAlgorithms,
+   };
 
 #define TR_FILTER_EXCLUDE_NAME_ONLY         1
 #define TR_FILTER_EXCLUDE_NAME_AND_SIG      2
@@ -1440,6 +1450,8 @@ public:
    static void  resetSamplingJProfilingOption(TR_SamplingJProfilingFlags op) { _samplingJProfilingOptionFlags.reset(op); }
    static bool  isAnySamplingJProfilingOptionSet()                   { return !_samplingJProfilingOptionFlags.isEmpty(); }
 
+   static bool  getReductionAlgorithm(TR_ReductionAlgorithms op)     {  return _hotFieldReductionAlgorithms.isSet(op); }
+   static void  setReductionAlgorithm(TR_ReductionAlgorithms op)     { _hotFieldReductionAlgorithms.set(op); }
    static bool  getVerboseOption(TR_VerboseFlags op)     {  return _verboseOptionFlags.isSet(op); }
    static void  setVerboseOption(TR_VerboseFlags op)     { _verboseOptionFlags.set(op); }
    static void  setVerboseOptions(uint64_t mask)         { _verboseOptionFlags.maskWord(0, mask); }
@@ -1942,6 +1954,10 @@ private:
    // Helper method used by the two methods above
    static char *setVerboseBitsHelper(char *option, VerboseOptionFlagArray *verboseOptionFlags, uintptr_t defaultVerboseFlags);
 
+   //set hot field reduction algorithm for dynamicBreadthFirstScanOrdering
+   //
+   static char *setHotFieldReductionAlgorithm(char *option, void *base, TR::OptionTable *entry);
+   
    // Set samplingjprofiling bits
    //
    static char *setSamplingJProfilingBits(char* option, void *base, TR::OptionTable *entry);
@@ -2232,6 +2248,9 @@ protected:
    static SamplingJProfilingOptionFlagArray _samplingJProfilingOptionFlags;
    static char                     *_samplingJProfilingOptionNames[TR_NumSamplingJProfilingFlags];
 
+   typedef OptionFlagArray<TR_ReductionAlgorithms, TR_NumReductionAlgorithms> HotFieldReductionAlgorithmArray;
+   static HotFieldReductionAlgorithmArray  _hotFieldReductionAlgorithms;
+   static char                   *_hotFieldReductionAlgorithmNames[TR_NumReductionAlgorithms];
    // Miscellaneous options
    //
    char *                      _osVersionString;

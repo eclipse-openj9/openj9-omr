@@ -34,7 +34,7 @@ if(OMR_HOST_OS STREQUAL "win")
 	add_compile_options(-bigobj)
 endif()
 
-omr_add_executable(comptest
+omr_add_executable(comptest NOWARNINGS
 	main.cpp
 	JitTest.cpp
 	JitTestUtilitiesTest.cpp

@@ -204,8 +204,21 @@ class RuntimeAssumption
    virtual void     compensate(TR_FrontEnd *vm, bool isSMP, void *data) = 0;
    virtual bool     equals(RuntimeAssumption &other) = 0;
 
-   virtual void     serialize(uint8_t *cursor, uint8_t *owningMetadata) { TR_ASSERT_FATAL(false, "Should not be called\n"); }
-   virtual uint32_t size()                                              { TR_ASSERT_FATAL(false, "Should not be called\n"); return 0; }
+   /**
+    * @brief Used to serialize an assumption to a buffer
+    *
+    * @param cursor Pointer into the buffer where the assumption to be is serialized into
+    * @param owningMetadata pointer to a metadata structure associated with the compiled body
+    *                       the current assumption is associated with.
+    */
+   virtual void serialize(uint8_t *cursor, uint8_t *owningMetadata) { TR_ASSERT_FATAL(false, "Should not be called\n"); }
+
+   /**
+    * @brief Provides the size of the serialized assumption
+    *
+    * @return Returns the size of the serialized assumption
+    */
+   virtual uint32_t size() { TR_ASSERT_FATAL(false, "Should not be called\n"); return 0; }
 
    /*
     * These functions are used to determine whether the runtime assumption falls within
@@ -296,6 +309,11 @@ class SentinelRuntimeAssumption : public OMR::RuntimeAssumption
    void  setOwningMetadata(void *owningMetadata) { _owningMetaData = owningMetadata; }
 
    private:
+
+   /* A pointer to the owning metadata.  This allows one to dangle a chain of runtime assumptions
+    * associated with a specific compiled body off of a metadata structure that describes said
+    * body when reifying the assumptions is necessary.
+    */
    void * _owningMetaData;
    }; // TR::SentinelRuntimeAssumption
 

@@ -99,6 +99,13 @@ MM_EnvironmentBase::initialize(MM_GCExtensionsBase *extensions)
 		}
 	}
 
+#if defined(OMR_GC_MODRON_SCAVENGER)
+	/* Disable dynamic depth copying if scavengerDynamicBreadthFirstScanOrdering is not selected */
+	if (extensions->scavengerScanOrdering != MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_DYNAMIC_BREADTH_FIRST) {
+		disableHotFieldDepthCopy();
+	}
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
+
 #if defined(OMR_GC_SEGREGATED_HEAP)
 	if (extensions->isSegregatedHeap()) {
 		_regionWorkList = MM_RegionPoolSegregated::allocateHeapRegionQueue(this, MM_HeapRegionList::HRL_KIND_LOCAL_WORK, true, false, false);

@@ -209,6 +209,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
     self()->setSupportsPrimitiveArrayCopy();
     self()->setSupportsReferenceArrayCopy();
     self()->setSupportsSelect();
+    self()->setSupportsByteswap();
 
     // disabled for now
     //
@@ -509,26 +510,21 @@ OMR::Power::CodeGenerator::mulDecompositionCostIsJustified(
    switch (self()->comp()->target().cpu.getProcessorDescription().processor)
       {
       case OMR_PROCESSOR_PPC_PWR630: // 2S+1M FXU out-of-order
-         TR_ASSERT_FATAL(self()->comp()->target().cpu.id() == TR_PPCpwr630, "TR_PPCpwr630");
          return (numOfOperations<=4);
 
       case OMR_PROCESSOR_PPC_NSTAR:
       case OMR_PROCESSOR_PPC_PULSAR: // 1S+1M FXU in-order
-         TR_ASSERT_FATAL(self()->comp()->target().cpu.id() == TR_PPCnstar || self()->comp()->target().cpu.id() == TR_PPCpulsar, "TR_PPCnstar, TR_PPCpulsar");
          return (numOfOperations<=8);
 
       case OMR_PROCESSOR_PPC_GPUL:
       case OMR_PROCESSOR_PPC_GP:
       case OMR_PROCESSOR_PPC_GR:    // 2 FXU out-of-order back-to-back 2 cycles. Mul is only 4 to 6 cycles
-         TR_ASSERT_FATAL(self()->comp()->target().cpu.id() == TR_PPCgpul || self()->comp()->target().cpu.id() == TR_PPCgp || self()->comp()->target().cpu.id() == TR_PPCgr, "TR_PPCgpul, TR_PPCgp, TR_PPCgr");
          return (numOfOperations<=2);
 
       case OMR_PROCESSOR_PPC_P6:    // Mul is on FPU for 17cycles blocking other operations
-         TR_ASSERT_FATAL(self()->comp()->target().cpu.id() == TR_PPCp6, "TR_PPCp6");
          return (numOfOperations<=16);
 
       case OMR_PROCESSOR_PPC_P7:    // Mul blocks other operations for up to 4 cycles
-         TR_ASSERT_FATAL(self()->comp()->target().cpu.id() == TR_PPCp7, "TR_PPCp7");
          return (numOfOperations<=3);
 
       default:          // assume a generic design similar to 604
@@ -2381,11 +2377,6 @@ bool OMR::Power::CodeGenerator::is64BitProcessor()
       {
       return self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_64BIT_FIRST);
       }
-   }
-
-bool OMR::Power::CodeGenerator::getSupportsIbyteswap()
-   {
-   return true;
    }
 
 bool

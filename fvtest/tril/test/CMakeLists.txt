@@ -28,7 +28,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
-omr_add_executable(triltest
+omr_add_executable(triltest NOWARNINGS
 	main.cpp
 	ASTTest.cpp
 	ParserTest.cpp

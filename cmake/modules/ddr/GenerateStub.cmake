@@ -27,8 +27,26 @@ if(NOT EXISTS "${input_file}")
 	message(FATAL_ERROR "Input file '${input_file}' does not exist")
 endif()
 
-execute_process(COMMAND grep -E -q "@ddr_(namespace|options):" ${input_file} RESULT_VARIABLE rc)
+macro(convert_path output filename)
+	if(PATH_TOOL)
+		execute_process(
+			COMMAND ${PATH_TOOL} "${filename}"
+			OUTPUT_VARIABLE _converted_path
+			RESULT_VARIABLE _convert_rc
+		)
+		if(NOT _convert_rc EQUAL 0)
+			message(FATAL_ERROR "Error converting path ${filename}")
+		endif()
 
+		# remove excess whitespace and save into result variable
+		string(STRIP "${_converted_path}" ${output})
+	else()
+		# no defined tool to convert path names. Do nothing
+		set(${output} "${filename}")
+	endif()
+endmacro()
+
+execute_process(COMMAND grep -E -q "@ddr_(namespace|options):" ${input_file} RESULT_VARIABLE rc)
 if(NOT rc EQUAL 0)
 	# input didn't have any DDR directives, so just dump an empty file
 	file(WRITE ${output_file} "")
@@ -42,10 +60,12 @@ else()
 		file(WRITE "${output_file}" "/* generated file, DO NOT EDIT */\n")
 		if(pre_includes)
 			foreach(inc_file IN LISTS pre_includes)
-				file(APPEND ${output_file} "#include \"${inc_file}\"\n")
+				convert_path(native_inc_file "${inc_file}")
+				file(APPEND ${output_file} "#include \"${native_inc_file}\"\n")
 			endforeach()
 		endif()
-		file(APPEND ${output_file} "#include \"${input_file}\"\n")
+		convert_path(native_input_file "${input_file}")
+		file(APPEND ${output_file} "#include \"${native_input_file}\"\n")
 		file(APPEND ${output_file} "${awk_result}")
 	else()
 		message(FATAL_ERROR "GenerateStub: Invoking awk script failed (${rc})")

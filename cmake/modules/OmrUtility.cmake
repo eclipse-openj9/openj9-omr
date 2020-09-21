@@ -58,7 +58,7 @@ function(omr_remove_flags variable)
 	set(${variable} "${result}" PARENT_SCOPE)
 endfunction(omr_remove_flags)
 
-# omr_join(<output_variable> <item>...)
+# omr_join(<glue> <output_variable> <item>...)
 # takes given items an joins them with <glue>, places result in output variable
 function(omr_join glue output)
 	string(REGEX REPLACE "(^|[^\\]);" "\\1${glue}" result "${ARGN}")

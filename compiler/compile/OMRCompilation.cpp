@@ -407,7 +407,7 @@ OMR::Compilation::Compilation(
       self()->getNodePool().enableNodeGC();
       }
 
-  if (self()->getOption(TR_ForceGenerateReadOnlyCode))
+   if (self()->getOption(TR_ForceGenerateReadOnlyCode))
       {
       self()->setGenerateReadOnlyCode();
       }
@@ -473,7 +473,6 @@ OMR::Compilation::Compilation(
       }
    else
       _osrCompilationData = NULL;
-
    }
 
 OMR::Compilation::~Compilation() throw()

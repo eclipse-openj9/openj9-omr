@@ -31,6 +31,7 @@ set(DDR_BLOB "$<TARGET_PROPERTY:@DDR_TARGET_NAME@,BLOB>")
 set(DDR_SUPERSET "$<TARGET_PROPERTY:@DDR_TARGET_NAME@,SUPERSET>")
 set(DDR_MACRO_LIST "${DDR_INFO_DIR}/sets/@DDR_TARGET_NAME@.macros")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${OMR_MODULES_DIR})
+set(PATH_TOOL "@PATH_TOOL@")
 
 set(DDR_TARGETS
 	$<JOIN:$<TARGET_PROPERTY:@DDR_TARGET_NAME@,DDR_TARGETS>,
@@ -117,6 +118,11 @@ function(process_source_files src_files)
 		list(APPEND stub_files "${stub_file}")
 		list(APPEND annotated_files "${annt_file}")
 
+		if(PATH_TOOL)
+			set(path_tool_opt "-DPATH_TOOL=${PATH_TOOL}")
+		else()
+			set(path_tool_opt "")
+		endif()
 		add_custom_command(
 			OUTPUT "${stub_file}"
 			DEPENDS
@@ -127,10 +133,11 @@ function(process_source_files src_files)
 				-DAWK_SCRIPT=${DDR_SUPPORT_DIR}/cmake_ddr.awk
 				-Dinput_file=${abs_file}
 				-Doutput_file=${stub_file}
+				"${path_tool_opt}"
 				-P ${DDR_SUPPORT_DIR}/GenerateStub.cmake
+				VERBATIM
 		)
 
-		# TODO this will break when we use a compiler which doesn't take UNIX style args (e.g. MSVC)
 		set(pp_command "@CMAKE_C_COMPILER@")
 		list(APPEND pp_command ${BASE_ARGS} "-E" "${stub_file}")
 		add_custom_command(
@@ -238,7 +245,7 @@ foreach(subset IN LISTS DDR_SUBSETS)
 endforeach()
 
 # now we generate our own list of binaries, so that they can be parsed if we are a subset
-omr_join(binaries_list "\n"
+omr_join("\n" binaries_list
 	${target_files}
 	${subset_binaries}
 )

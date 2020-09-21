@@ -3673,7 +3673,6 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lselectEvaluator(TR::Node *node, TR
 TR::Register *
 OMR::X86::I386::TreeEvaluator::integerPairByteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(node->getNumChildren() == 1, "Wrong number of children in byteswapEvaluator");
    TR::Node *child = node->getFirstChild();
    TR::Register *target     = cg->longClobberEvaluate(child);
    TR::RegisterPair *pair   = target->getRegisterPair();

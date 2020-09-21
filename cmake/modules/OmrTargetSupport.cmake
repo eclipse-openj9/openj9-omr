@@ -33,7 +33,7 @@ include(OmrUtility)
 # At present, a thin wrapper around add_library, but it ensures that exports
 # and split debug info are handled
 function(omr_add_library name)
-	set(options SHARED STATIC OBJECT INTERFACE)
+	set(options SHARED STATIC OBJECT INTERFACE NOWARNINGS)
 	set(oneValueArgs OUTPUT_NAME)
 	set(multiValueArgs)
 
@@ -73,7 +73,7 @@ function(omr_add_library name)
 		set_target_properties(${name} PROPERTIES OUTPUT_NAME "${opt_OUTPUT_NAME}")
 	endif()
 
-	if(NOT lib_type STREQUAL "INTERFACE")
+	if(NOT opt_NOWARNINGS AND NOT lib_type STREQUAL "INTERFACE")
 		if(OMR_WARNINGS_AS_ERRORS)
 			target_compile_options(${name} PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
 		endif()
@@ -96,7 +96,7 @@ endfunction()
 # At present, a thin wrapper around add_executable, but it ensures that
 # split debug info is handled
 function(omr_add_executable name)
-	set(options)
+	set(options NOWARNINGS)
 	set(oneValueArgs OUTPUT_NAME)
 	set(multiValueArgs)
 
@@ -107,14 +107,16 @@ function(omr_add_executable name)
 
 	add_executable(${name} ${opt_UNPARSED_ARGUMENTS})
 
-	if(OMR_WARNINGS_AS_ERRORS)
-		target_compile_options(${name} PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
-	endif()
+	if(NOT opt_NOWARNINGS)
+		if(OMR_WARNINGS_AS_ERRORS)
+			target_compile_options(${name} PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
+		endif()
 
-	if(OMR_ENHANCED_WARNINGS)
-		target_compile_options(${name} PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
-	else()
-		target_compile_options(${name} PRIVATE ${OMR_BASE_WARNING_FLAGS})
+		if(OMR_ENHANCED_WARNINGS)
+			target_compile_options(${name} PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
+		else()
+			target_compile_options(${name} PRIVATE ${OMR_BASE_WARNING_FLAGS})
+		endif()
 	endif()
 
 	if(opt_OUTPUT_NAME)

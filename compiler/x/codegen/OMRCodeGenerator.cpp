@@ -431,6 +431,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    self()->setSupportsVirtualGuardNOPing();
    self()->setSupportsDynamicANewArray();
    self()->setSupportsSelect();
+   self()->setSupportsByteswap();
 
    // allows [i/l]div to decompose to [i/l]mulh in TreeSimplifier
    //
@@ -1080,12 +1081,6 @@ OMR::X86::CodeGenerator::getSupportsEncodeUtf16BigWithSurrogateTest()
    TR_ASSERT_FATAL(self()->comp()->compileRelocatableCode() || self()->comp()->isOutOfProcessCompilation() || self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1) == TR::CodeGenerator::getX86ProcessorInfo().supportsSSE4_1(), "supportsSSE4_1()");
    return self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1) &&
           !self()->comp()->getOption(TR_DisableSIMDUTF16BEEncoder);
-   }
-
-bool
-OMR::X86::CodeGenerator::getSupportsIbyteswap()
-   {
-   return true;
    }
 
 bool

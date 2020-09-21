@@ -801,6 +801,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"help",               " \tdisplay this help information", TR::Options::helpOption, 0, 0, NULL, NOT_IN_SUBSET},
    {"help=",              " {regex}\tdisplay help for options whose names match {regex}", TR::Options::helpOption, 1, 0, NULL, NOT_IN_SUBSET},
    {"highOpt",            "O\tdeprecated; equivalent to optLevel=hot", TR::Options::set32BitValue, offsetof(OMR::Options, _optLevel), hot},
+   {"hotFieldReductionAlgorithm=",          "O\tcompilation's hot field combined block frequency reduction algorithm", TR::Options::setHotFieldReductionAlgorithm, 0, 0, "F", NOT_IN_SUBSET},
    {"hotFieldThreshold=", "M<nnn>\t The normalized frequency of a reference to a field to be marked as hot.   Values are 0 to 10000.  Default is 10",
                           TR::Options::setStaticNumeric, (intptr_t)&OMR::Options::_hotFieldThreshold, 0, " %d", NOT_IN_SUBSET},
    {"hotMaxStaticPICSlots=", " <nnn>\tmaximum number of polymorphic inline cache slots pre-populated from profiling info for hot and above.  A negative value -N means use N times the maxStaticPICSlots setting.",
@@ -1558,6 +1559,7 @@ OMR::Options::VerboseOptionFlagArray OMR::Options::_verboseOptionFlags;
 bool          OMR::Options::_quickstartDetected = false;
 
 OMR::Options::SamplingJProfilingOptionFlagArray OMR::Options::_samplingJProfilingOptionFlags;
+OMR::Options::HotFieldReductionAlgorithmArray OMR::Options::_hotFieldReductionAlgorithms;
 
 int32_t       OMR::Options::_samplingFrequency = 2; // ms
 
@@ -1584,7 +1586,7 @@ int32_t       OMR::Options::_interpreterSamplingDivisorInStartupMode = -1; // un
 int32_t       OMR::Options::_numJitEntries = 0;
 int32_t       OMR::Options::_numVmEntries = 0;
 int32_t       OMR::Options::_numVecRegsToLock=0;
-int32_t       OMR::Options::_hotFieldThreshold = 100;
+int32_t       OMR::Options::_hotFieldThreshold = 200;
 int32_t       OMR::Options::_maxNumPrexAssumptions = 209;
 int32_t       OMR::Options::_maxNumVisitedSubclasses = 500;
 
@@ -4965,6 +4967,36 @@ char *OMR::Options::setSamplingJProfilingBits(char *option, void *base, TR::Opti
          }
       }
 
+   return option;
+   }
+
+char *OMR::Options::_hotFieldReductionAlgorithmNames[TR_NumReductionAlgorithms] =
+   {
+   "sum",
+   "average",
+   "max",
+   };
+
+char *OMR::Options::setHotFieldReductionAlgorithm(char *option, void *base, TR::OptionTable *entry)
+   {
+   TR::SimpleRegex * regex = TR::SimpleRegex::create(option);
+   bool foundMatch = false;
+   if (regex)
+      {
+      for (int8_t i = 0; i < TR_NumReductionAlgorithms; i++)
+         {
+         if (TR::SimpleRegex::matchIgnoringLocale(regex, _hotFieldReductionAlgorithmNames[i], false))
+            {
+            _hotFieldReductionAlgorithms.set(i);
+            foundMatch = true;
+            }
+         }
+      }
+   if (!foundMatch)
+      {
+      TR_VerboseLog::write("<JIT: Reduction algorithm not found.  Default sum reduction algorithm set.>");
+      _hotFieldReductionAlgorithms.set(TR_HotFieldReductionAlgorithmSum);
+      }
    return option;
    }
 

@@ -904,7 +904,9 @@
 	TR::TreeEvaluator::longNumberOfTrailingZeros,
 	TR::TreeEvaluator::longBitCount,
 
+   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::sbyteswap
    TR::TreeEvaluator::unImpOpEvaluator,                 // TR::ibyteswap
+   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::lbyteswap
 
    TR::TreeEvaluator::unImpOpEvaluator,                 // TR::bbitpermute
    TR::TreeEvaluator::unImpOpEvaluator,                 // TR::sbitpermute

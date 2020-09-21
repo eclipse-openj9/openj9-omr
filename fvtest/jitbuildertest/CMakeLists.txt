@@ -23,7 +23,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-omr_add_executable(jitbuildertest
+omr_add_executable(jitbuildertest NOWARNINGS
 	main.cpp
 	selftest.cpp
 	UnionTest.cpp

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 IBM Corp. and others
+ * Copyright (c) 2017, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -92,7 +92,6 @@ TEST_P(Int16LogicalUnary, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     if (param.opcode == "sbyteswap") {
-        SKIP_ON_AARCH64(MissingImplementation);
         SKIP_ON_ARM(MissingImplementation);
         SKIP_ON_RISCV(MissingImplementation);
     }
@@ -127,7 +126,6 @@ TEST_P(Int16LogicalUnary, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
     if (param.opcode == "sbyteswap") {
-        SKIP_ON_AARCH64(MissingImplementation);
         SKIP_ON_ARM(MissingImplementation);
         SKIP_ON_RISCV(MissingImplementation);
     }
@@ -167,7 +165,6 @@ TEST_P(Int32LogicalUnary, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     if (param.opcode == "ibyteswap") {
-        SKIP_ON_AARCH64(MissingImplementation);
         SKIP_ON_ARM(MissingImplementation);
         SKIP_ON_RISCV(MissingImplementation);
     }
@@ -192,7 +189,6 @@ TEST_P(Int32LogicalUnary, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
     if (param.opcode == "ibyteswap") {
-        SKIP_ON_AARCH64(MissingImplementation);
         SKIP_ON_ARM(MissingImplementation);
         SKIP_ON_RISCV(MissingImplementation);
     }
@@ -335,7 +331,6 @@ TEST_P(Int64LogicalUnary, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     if (param.opcode == "lbyteswap") {
-        SKIP_ON_AARCH64(MissingImplementation);
         SKIP_ON_ARM(MissingImplementation);
         SKIP_ON_RISCV(MissingImplementation);
     }
@@ -369,7 +364,6 @@ TEST_P(Int64LogicalUnary, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
     if (param.opcode == "lbyteswap") {
-        SKIP_ON_AARCH64(MissingImplementation);
         SKIP_ON_ARM(MissingImplementation);
         SKIP_ON_RISCV(MissingImplementation);
     }

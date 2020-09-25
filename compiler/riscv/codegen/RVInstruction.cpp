@@ -521,7 +521,7 @@ uint8_t *TR::JtypeInstruction::generateBinaryEncoding() {
       TR::ResolvedMethodSymbol *sym = getSymbolReference()->getSymbol()->getResolvedMethodSymbol();
       TR_ResolvedMethod *resolvedMethod = sym == NULL ? NULL : sym->getResolvedMethod();
 
-      if (resolvedMethod != NULL && resolvedMethod->isSameMethod(cg()->comp()->getCurrentMethod()))
+      if (comp()->isRecursiveMethodTarget(resolvedMethod))
          {
          offset = cg()->getCodeStart() - cursor;
          }

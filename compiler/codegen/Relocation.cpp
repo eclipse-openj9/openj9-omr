@@ -158,24 +158,6 @@ TR::InstructionLabelRelative32BitRelocation::apply(TR::CodeGenerator* cg)
    *reinterpret_cast<int32_t*>(p) = static_cast<int32_t>(getLabel()->getCodeLocation() - p) / _divisor;
    }
 
-void TR::LoadLabelRelative16BitRelocation::apply(TR::CodeGenerator *codeGen)
-   {
-   AOTcgDiag3(codeGen->comp(), "TR::LoadLabelRelative16BitRelocation::apply lastInstruction=" POINTER_PRINTF_FORMAT " startLabel=" POINTER_PRINTF_FORMAT " endLabel=" POINTER_PRINTF_FORMAT "\n", getLastInstruction(), getStartLabel(), getEndLabel());
-   codeGen->apply16BitLoadLabelRelativeRelocation(getLastInstruction(), getStartLabel(), getEndLabel(), getDeltaToStartLabel());
-   }
-
-void TR::LoadLabelRelative32BitRelocation::apply(TR::CodeGenerator *codeGen)
-   {
-   AOTcgDiag3(codeGen->comp(), "TR::LoadLabelRelative32BitRelocation::apply lastInstruction=" POINTER_PRINTF_FORMAT " startLabel=" POINTER_PRINTF_FORMAT " endLabel=" POINTER_PRINTF_FORMAT "\n", getLastInstruction(), getStartLabel(), getEndLabel());
-   codeGen->apply32BitLoadLabelRelativeRelocation(getLastInstruction(), getStartLabel(), getEndLabel(), getDeltaToStartLabel());
-   }
-
-void TR::LoadLabelRelative64BitRelocation::apply(TR::CodeGenerator *codeGen)
-   {
-   AOTcgDiag2(codeGen->comp(), "TR::LoadLabelRelative64BitRelocation::apply lastInstruction=" POINTER_PRINTF_FORMAT " label=" POINTER_PRINTF_FORMAT "\n", getLastInstruction(), getLabel());
-   codeGen->apply64BitLoadLabelRelativeRelocation(getLastInstruction(), getLabel());
-   }
-
 uint8_t TR::ExternalRelocation::collectModifier()
    {
    TR::Compilation *comp = TR::comp();
@@ -576,9 +558,4 @@ void TR::IteratedExternalRelocation::addRelocationEntry(uint32_t locationOffset)
       *(uint32_t *)_relocationDataCursor = locationOffset;
       _relocationDataCursor += 4;
       }
-   }
-
-void TR::LabelTable32BitRelocation::apply(TR::CodeGenerator *codeGen)
-   {
-   codeGen->apply32BitLabelTableRelocation((int32_t *)getUpdateLocation(), getLabel());
    }

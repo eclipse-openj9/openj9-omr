@@ -2350,30 +2350,6 @@ OMR::X86::CodeGenerator::estimateBinaryLength(TR::MemoryReference *mr)
    return mr->estimateBinaryLength(self());
    }
 
-// movInstruction     MOV4RegImm4 reg,<4 byte imm>
-// ...
-// startLabel:
-// ...
-// endLabel:
-//
-// This relocation encodes the distance (endLabel - startLabel) in the movInstruction's immediate field
-// deltaToStartLabel is the byte distance from the start of the instruction following the mov to the startLabel address
-void OMR::X86::CodeGenerator::apply32BitLoadLabelRelativeRelocation(TR::Instruction *movInstruction, TR::LabelSymbol *startLabel, TR::LabelSymbol *endLabel, int32_t deltaToStartLabel)
-   {
-   TR::Instruction *movInstructionX86   = movInstruction;
-
-   TR_ASSERT(movInstructionX86->getOpCodeValue() == MOV4RegImm4,"wrong load instruction used for apply32BitLoadLabelRelativeRelocation\n");
-
-   uint8_t *cursor = movInstructionX86->getBinaryEncoding();
-   cursor += movInstructionX86->getOpCode().length(movInstructionX86->rexBits()) + movInstructionX86->rexRepeatCount();
-
-   int32_t distance = int32_t(endLabel->getCodeLocation() - startLabel->getCodeLocation());
-   TR_ASSERT(IS_32BIT_SIGNED(distance),
-          "relative label does not fit in 4 byte mov immediate instruction\n");
-   TR_ASSERT(*(int32_t *)cursor == 0,"offset should be 0 to start\n");
-
-   *(int32_t *)cursor = distance;
-   }
 
 void OMR::X86::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label)
    {

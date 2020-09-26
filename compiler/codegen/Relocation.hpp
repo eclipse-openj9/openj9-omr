@@ -39,15 +39,6 @@ namespace TR { class Node; }
 
 extern char* AOTcgDiagOn;
 
-#if 0 //defined(ENABLE_AOT_S390)
-#define AOTcgDiag0(comp,s)                   if (AOTcgDiagOn) dumpOptDetails(comp,s)
-#define AOTcgDiag1(comp,s,p1)                if (AOTcgDiagOn) dumpOptDetails(comp,s,p1)
-#define AOTcgDiag2(comp,s,p1,p2)             if (AOTcgDiagOn) dumpOptDetails(comp,s,p1,p2)
-#define AOTcgDiag3(comp,s,p1,p2,p3)          if (AOTcgDiagOn) dumpOptDetails(comp,s,p1,p2,p3)
-#define AOTcgDiag4(comp,s,p1,p2,p3,p4)       if (AOTcgDiagOn) dumpOptDetails(comp,s,p1,p2,p3,p4)
-#define AOTcgDiag5(comp,s,p1,p2,p3,p4,p5)    if (AOTcgDiagOn) dumpOptDetails(comp,s,p1,p2,p3,p4,p5)
-#define AOTcgDiag6(comp,s,p1,p2,p3,p4,p5,p6) if (AOTcgDiagOn) dumpOptDetails(comp,s,p1,p2,p3,p4,p5,p6)
-#else
 #define AOTcgDiag0(comp,s)                    AOTcgDummy()
 #define AOTcgDiag1(comp,s,p1)                 AOTcgDummy()
 #define AOTcgDiag2(comp,s,p1,p2)              AOTcgDummy()
@@ -56,7 +47,6 @@ extern char* AOTcgDiagOn;
 #define AOTcgDiag5(comp,s,p1,p2,p3,p4,p5)     AOTcgDummy()
 #define AOTcgDiag6(comp,s,p1,p2,p3,p4,p5,p6)  AOTcgDummy()
 inline  void AOTcgDummy(){}
-#endif
 
 typedef enum
    {
@@ -487,19 +477,5 @@ class BeforeBinaryEncodingExternalRelocation : public TR::ExternalRelocation
    };
 
 }
-
-typedef TR::RelocationDebugInfo TR_RelocationDebugInfo;
-typedef TR::Relocation TR_Relocation;
-typedef TR::LabelRelocation TR_LabelRelocation;
-typedef TR::LabelRelative8BitRelocation TR_8BitLabelRelativeRelocation;
-typedef TR::LabelRelative12BitRelocation TR_12BitLabelRelativeRelocation;
-typedef TR::LabelRelative16BitRelocation TR_16BitLabelRelativeRelocation;
-typedef TR::LabelRelative24BitRelocation TR_24BitLabelRelativeRelocation;
-typedef TR::LabelRelative32BitRelocation TR_32BitLabelRelativeRelocation;
-typedef TR::LabelAbsoluteRelocation TR_LabelAbsoluteRelocation;
-typedef TR::IteratedExternalRelocation TR_IteratedExternalRelocation;
-typedef TR::ExternalRelocation TR_ExternalRelocation;
-typedef TR::ExternalOrderedPair32BitRelocation TR_32BitExternalOrderedPairRelocation;
-typedef TR::BeforeBinaryEncodingExternalRelocation TR_BeforeBinaryEncodingExternalRelocation;
 
 #endif

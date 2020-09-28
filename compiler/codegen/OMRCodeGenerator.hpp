@@ -246,7 +246,8 @@ namespace OMR
 
 class OMR_EXTENSIBLE CodeGenerator
    {
-   private:
+
+private:
 
    TR::Compilation *_compilation;
    TR_Memory *_trMemory;
@@ -262,15 +263,27 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::Instruction *_implicitExceptionPoint;
    bool areMergeableGuards(TR::Instruction *earlierGuard, TR::Instruction *laterGuard);
 
-   protected:
+protected:
 
    TR_BitVector *_localsThatAreStored;
    int32_t _numLocalsWhenStoreAnalysisWasDone;
    List<TR_Pair<TR::Node, int32_t> > _ialoadUnneeded;
 
-   public:
+   /**
+    * @brief Constructor
+    *
+    * @param[in] comp \c TR::Compilation object
+    */
+   CodeGenerator(TR::Compilation *comp);
+
+public:
 
    TR_ALLOC(TR_Memory::CodeGenerator)
+
+   /**
+    * @brief Initialize a \c TR::CodeGenerator object
+    */
+   void initialize();
 
    inline TR::CodeGenerator *self();
 

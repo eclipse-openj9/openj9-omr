@@ -78,7 +78,7 @@ OMR::Power::Instruction::isCall()
 void
 OMR::Power::Instruction::PPCNeedsGCMap(uint32_t mask)
    {
-   if (TR::comp()->useRegisterMaps())
+   if (self()->cg()->comp()->useRegisterMaps())
       self()->setNeedsGCMap(mask);
    }
 

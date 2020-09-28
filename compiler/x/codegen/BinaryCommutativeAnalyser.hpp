@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -96,7 +96,7 @@ class TR_X86BinaryCommutativeAnalyser  : public TR_Analyser
                                                TR::Node *secondChild,
                                                TR_X86OpCodes regRegOpCode,
                                                TR_X86OpCodes regMemOpCode,
-                                               bool needsEflags = false, 
+                                               bool needsEflags = false,
                                                TR::Node *carry = 0);
 
    TR::Register* integerAddAnalyserImpl(TR::Node       *root,
@@ -104,7 +104,7 @@ class TR_X86BinaryCommutativeAnalyser  : public TR_Analyser
                            TR::Node *secondChild,
                            TR_X86OpCodes regRegOpCode,
                            TR_X86OpCodes regMemOpCode,
-                           bool needsEflags, 
+                           bool needsEflags,
                            TR::Node *carry);
 
    void longAddAnalyserWithExplicitOperands(TR::Node *root, TR::Node *firstChild, TR::Node *secondChild);
@@ -128,6 +128,7 @@ class TR_X86BinaryCommutativeAnalyser  : public TR_Analyser
    bool getOpReg2Mem1() {return (_actionMap[getInputs()] & OpReg2Mem1) ? true : false;}
    bool getCopyRegs()   {return (_actionMap[getInputs()] & (CopyReg1 | CopyReg2)) ? true : false;}
 
+   bool isVolatileMemoryOperand(TR::Node *node);
    };
 
 #endif

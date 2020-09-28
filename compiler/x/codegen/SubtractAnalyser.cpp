@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,14 +42,14 @@
 #include "x/codegen/X86Ops.hpp"
 
 /*
- * \brief 
- * this API is for check nodes(like OverflowCHK) with sub operation where the operands 
+ * \brief
+ * this API is for check nodes(like OverflowCHK) with sub operation where the operands
  * are given explicitly by the caller and are not the first and second child of the given root node
  *
  * \param root
  *     the check node
- * \param firstChild, secondChild 
- *     the operands for the sub operation 
+ * \param firstChild, secondChild
+ *     the operands for the sub operation
  */
 void TR_X86SubtractAnalyser::integerSubtractAnalyserWithExplicitOperands(TR::Node      *root,
                                                                          TR::Node      *firstChild,
@@ -68,7 +68,7 @@ void TR_X86SubtractAnalyser::integerSubtractAnalyserWithExplicitOperands(TR::Nod
    }
 
 /*
- * \brief 
+ * \brief
  * this API is for regular sub operation nodes where the first child and second child are the operands by default
  */
 void TR_X86SubtractAnalyser::integerSubtractAnalyser(TR::Node      *root,
@@ -88,7 +88,7 @@ void TR_X86SubtractAnalyser::integerSubtractAnalyser(TR::Node      *root,
    }
 
 /*
- * users should call the integerSubtractAnalyser or integerSubtractAnalyserWithExplicitOperands APIs instead of calling this one directly 
+ * users should call the integerSubtractAnalyser or integerSubtractAnalyserWithExplicitOperands APIs instead of calling this one directly
  */
 TR::Register* TR_X86SubtractAnalyser::integerSubtractAnalyserImpl(TR::Node     *root,
                                                                   TR::Node     *firstChild,
@@ -96,8 +96,8 @@ TR::Register* TR_X86SubtractAnalyser::integerSubtractAnalyserImpl(TR::Node     *
                                                                   TR_X86OpCodes regRegOpCode,
                                                                   TR_X86OpCodes regMemOpCode,
                                                                   TR_X86OpCodes copyOpCode,
-                                                                  bool needsEflags, 
-                                                                  TR::Node *borrow)  
+                                                                  bool needsEflags,
+                                                                  TR::Node *borrow)
    {
    TR::Register *targetRegister = NULL;
    TR::Register *firstRegister = firstChild->getRegister();
@@ -234,9 +234,9 @@ TR::Register* TR_X86SubtractAnalyser::integerSubtractAnalyserImpl(TR::Node     *
 // get clobbered by the memory barrier immediately preceding the
 // SBB4RegMem instruction.
 //
-static bool isVolatileMemoryOperand(TR::Node *node)
+bool TR_X86SubtractAnalyser::isVolatileMemoryOperand(TR::Node *node)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
    if (comp->target().isSMP() && node->getOpCode().isMemoryReference())
       {
       TR_ASSERT(node->getSymbolReference(), "expecting a symbol reference\n");
@@ -247,14 +247,14 @@ static bool isVolatileMemoryOperand(TR::Node *node)
    }
 
 /*
- * \brief 
- * this API is for check nodes(like OverflowCHK) with an lsub operation where the operands 
+ * \brief
+ * this API is for check nodes(like OverflowCHK) with an lsub operation where the operands
  * are given explicitly by the caller and are not the first and second child of the given root node
  *
  * \param root
  *     the check node
- * \param firstChild, secondChild 
- *     the operands for the lsub operation 
+ * \param firstChild, secondChild
+ *     the operands for the lsub operation
  */
 void TR_X86SubtractAnalyser::longSubtractAnalyserWithExplicitOperands(TR::Node *root, TR::Node *firstChild, TR::Node *secondChild)
    {
@@ -266,7 +266,7 @@ void TR_X86SubtractAnalyser::longSubtractAnalyserWithExplicitOperands(TR::Node *
    }
 
 /*
- * \brief 
+ * \brief
  * this API is intended for regular lsub operation nodes where the first child and second child are the operands by default
  */
 void TR_X86SubtractAnalyser::longSubtractAnalyser(TR::Node *root)
@@ -281,7 +281,7 @@ void TR_X86SubtractAnalyser::longSubtractAnalyser(TR::Node *root)
    }
 
 /*
- * users should call the longSubtractAnalyser or longSubtractAnalyserWithExplicitOperands APIs instead of calling this one directly 
+ * users should call the longSubtractAnalyser or longSubtractAnalyserWithExplicitOperands APIs instead of calling this one directly
  */
 TR::Register* TR_X86SubtractAnalyser::longSubtractAnalyserImpl(TR::Node *root, TR::Node *&firstChild, TR::Node *&secondChild)
    {

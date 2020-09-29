@@ -135,7 +135,7 @@ OMR::ARM::Instruction::Instruction(TR::Instruction                     *precedin
 
 void OMR::ARM::Instruction::ARMNeedsGCMap(uint32_t mask)
    {
-   if (TR::comp()->useRegisterMaps())
+   if (self()->cg()->comp()->useRegisterMaps())
       self()->setNeedsGCMap(mask);
    }
 
@@ -303,7 +303,7 @@ TR::ARMImmSymInstruction::ARMImmSymInstruction(TR::Instruction                  
 
 void TR::ARMLabelInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg()->comp();
    TR::Machine  *machine        = cg()->machine();
    TR::Register    *target1Virtual = getTarget1Register();
    TR::Register    *source1Virtual = getSource1Register();

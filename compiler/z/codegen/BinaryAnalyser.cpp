@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -101,7 +101,7 @@ TR_S390BinaryAnalyser::genericAnalyser(TR::Node * root,
    secondChild = root->getSecondChild();
    TR::Register * firstRegister = firstChild->getRegister();
    TR::Register * secondRegister = secondChild->getRegister();
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg()->comp();
 
    setInputs(firstChild, firstRegister, secondChild, secondRegister, false, false, comp, false, false);
 
@@ -287,7 +287,7 @@ TR_S390BinaryAnalyser::longSubtractAnalyser(TR::Node * root)
    bool setsOrReadsCC = NEED_CC(root) || (root->getOpCodeValue() == TR::lusubb);
    TR::InstOpCode::Mnemonic regToRegOpCode;
    TR::InstOpCode::Mnemonic memToRegOpCode;
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg()->comp();
 
    if (!setsOrReadsCC)
       {

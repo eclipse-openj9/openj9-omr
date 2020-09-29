@@ -2777,6 +2777,7 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
    if (base && base->getClass() && !vp->comp()->getOption(TR_DisableMarkingOfHotFields) &&
       node->getFirstChild()->getOpCode().hasSymbolReference() &&
       node->getFirstChild()->getSymbol()->isCollectedReference() &&
+      !vp->comp()->fej9()->isHotReferenceFieldRequired() &&
       vp->_curBlock->getGlobalNormalizedFrequency(vp->comp()->getFlowGraph()) >= TR::Options::_hotFieldThreshold)
       {
       vp->comp()->fej9()->markHotField(vp->comp(), node->getSymbolReference(), base->getClass(), base->isFixedClass());

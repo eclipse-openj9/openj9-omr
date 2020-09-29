@@ -3772,7 +3772,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_X86populateVPicVTableDispatch:                    return "populateVPicVTableDispatch";
             case TR_X86interpreterUnresolvedStaticGlue:               return "interpreterUnresolvedStaticGlue";
             case TR_X86interpreterUnresolvedSpecialGlue:              return "interpreterUnresolvedSpecialGlue";
-            case TR_X86updateInterpreterDispatchGlueSite:             return "updateInterpreterDispatchGlueSite";
             case TR_X86interpreterUnresolvedClassGlue:                return "interpreterUnresolvedClassGlue";
             case TR_X86interpreterUnresolvedClassFromStaticFieldGlue: return "interpreterUnresolvedClassFromStaticFieldGlue";
             case TR_X86interpreterUnresolvedStringGlue:               return "interpreterUnresolvedStringGlue";
@@ -3789,21 +3788,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_X86interpreterUnresolvedStaticFieldSetterReadOnlyGlue:    return "interpreterUnresolvedStaticFieldSetterReadOnlyGlue";
             case TR_X86interpreterUnresolvedFieldReadOnlyGlue:                return "interpreterUnresolvedFieldReadOnlyGlue";
             case TR_X86interpreterUnresolvedFieldSetterReadOnlyGlue:          return "interpreterUnresolvedFieldSetterReadOnlyGlue";
-            case TR_X86PatchSingleComparePIC_mov:                     return "jitX86PatchSingleComparePIC_mov";
-            case TR_X86PatchSingleComparePIC_je:                      return "jitX86PatchSingleComparePIC_je";
-            case TR_X86PatchMultipleComparePIC_mov:                   return "jitX86PatchMultipleComparePIC_mov";
-            case TR_X86PatchMultipleComparePIC_je:                    return "jitX86PatchMultipleComparePIC_je";
             case TR_X86CodeCachePrefetchHelper:                       return "per code cache TLH prefetch helper";
-
-            case TR_outlinedPrologue_0preserved:         return "outlinedPrologue_0preserved";
-            case TR_outlinedPrologue_1preserved:         return "outlinedPrologue_1preserved";
-            case TR_outlinedPrologue_2preserved:         return "outlinedPrologue_2preserved";
-            case TR_outlinedPrologue_3preserved:         return "outlinedPrologue_3preserved";
-            case TR_outlinedPrologue_4preserved:         return "outlinedPrologue_4preserved";
-            case TR_outlinedPrologue_5preserved:         return "outlinedPrologue_5preserved";
-            case TR_outlinedPrologue_6preserved:         return "outlinedPrologue_6preserved";
-            case TR_outlinedPrologue_7preserved:         return "outlinedPrologue_7preserved";
-            case TR_outlinedPrologue_8preserved:         return "outlinedPrologue_8preserved";
             }
          }
       else if (_comp->target().cpu.isI386())

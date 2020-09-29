@@ -34,6 +34,101 @@
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 
+OMR::RV::CodeGenerator::CodeGenerator(TR::Compilation *comp) :
+      OMR::CodeGenerator(comp),
+      _constantData(NULL),
+      _outOfLineCodeSectionList(getTypedAllocator<TR_RVOutOfLineCodeSection*>(comp->allocator()))
+   {
+   }
+
+void
+OMR::RV::CodeGenerator::initialize()
+   {
+   self()->OMR::CodeGenerator::initialize();
+
+   TR::CodeGenerator *cg = self();
+   TR::Compilation *comp = self()->comp();
+
+   // Initialize Linkage for Code Generator
+   cg->initializeLinkage();
+
+   _unlatchedRegisterList =
+      (TR::RealRegister**)cg->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
+
+   _unlatchedRegisterList[0] = 0; // mark that list is empty
+
+   _linkageProperties = &cg->getLinkage()->getProperties();
+
+   cg->setStackPointerRegister(cg->machine()->getRealRegister(_linkageProperties->getStackPointerRegister()));
+   cg->setMethodMetaDataRegister(cg->machine()->getRealRegister(_linkageProperties->getMethodMetaDataRegister()));
+
+   // Tactical GRA settings
+   //
+   cg->setGlobalRegisterTable(TR::Machine::getGlobalRegisterTable());
+   _numGPR = _linkageProperties->getNumAllocatableIntegerRegisters();
+   _numFPR = _linkageProperties->getNumAllocatableFloatRegisters();
+   cg->setLastGlobalGPR(TR::Machine::getLastGlobalGPRRegisterNumber());
+   cg->setLastGlobalFPR(TR::Machine::getLastGlobalFPRRegisterNumber());
+
+   cg->getLinkage()->initRVRealRegisterLinkage();
+
+   _numberBytesReadInaccessible = 0;
+   _numberBytesWriteInaccessible = 0;
+
+   if (TR::Compiler->vm.hasResumableTrapHandler(comp))
+      cg->setHasResumableTrapHandler();
+
+   if (!comp->getOption(TR_DisableRegisterPressureSimulation))
+      {
+      for (int32_t i = 0; i < TR_numSpillKinds; i++)
+         _globalRegisterBitVectors[i].init(cg->getNumberOfGlobalRegisters(), cg->trMemory());
+
+      for (TR_GlobalRegisterNumber grn=0; grn < cg->getNumberOfGlobalRegisters(); grn++)
+         {
+         TR::RealRegister::RegNum reg = (TR::RealRegister::RegNum)cg->getGlobalRegister(grn);
+         if (cg->getFirstGlobalGPR() <= grn && grn <= cg->getLastGlobalGPR())
+            _globalRegisterBitVectors[ TR_gprSpill ].set(grn);
+         else if (cg->getFirstGlobalFPR() <= grn && grn <= cg->getLastGlobalFPR())
+            _globalRegisterBitVectors[ TR_fprSpill ].set(grn);
+
+         if (!cg->getProperties().getPreserved(reg))
+            _globalRegisterBitVectors[ TR_volatileSpill ].set(grn);
+         if (cg->getProperties().getIntegerArgument(reg) || cg->getProperties().getFloatArgument(reg))
+            _globalRegisterBitVectors[ TR_linkageSpill  ].set(grn);
+         }
+      }
+
+   // Calculate inverse of getGlobalRegister function
+   //
+   TR_GlobalRegisterNumber grn;
+   int i;
+
+   TR_GlobalRegisterNumber globalRegNumbers[TR::RealRegister::NumRegisters];
+   for (i = 0; i < cg->getNumberOfGlobalGPRs(); i++)
+     {
+     grn = cg->getFirstGlobalGPR() + i;
+     globalRegNumbers[cg->getGlobalRegister(grn)] = grn;
+     }
+   for (i = 0; i < cg->getNumberOfGlobalFPRs(); i++)
+     {
+     grn = cg->getFirstGlobalFPR() + i;
+     globalRegNumbers[cg->getGlobalRegister(grn)] = grn;
+     }
+
+   // Initialize linkage reg arrays
+   TR::RVLinkageProperties linkageProperties = cg->getProperties();
+   for (i = 0; i < linkageProperties.getNumIntArgRegs(); i++)
+     _gprLinkageGlobalRegisterNumbers[i] = globalRegNumbers[linkageProperties.getIntegerArgumentRegister(i)];
+   for (i = 0; i < linkageProperties.getNumFloatArgRegs(); i++)
+     _fprLinkageGlobalRegisterNumbers[i] = globalRegNumbers[linkageProperties.getFloatArgumentRegister(i)];
+
+   if (comp->getOption(TR_TraceRA))
+      {
+      cg->setGPRegisterIterator(new (cg->trHeapMemory()) TR::RegisterIterator(cg->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR));
+      cg->setFPRegisterIterator(new (cg->trHeapMemory()) TR::RegisterIterator(cg->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
+      }
+   }
+
 OMR::RV::CodeGenerator::CodeGenerator() :
       OMR::CodeGenerator(),
       _constantData(NULL),
@@ -455,7 +550,7 @@ void OMR::RV::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t *cursor, 
    *cursor |= ENCODE_SBTYPE_IMM(distance);
    }
 
-void OMR::RV::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label, int8_t d, bool isInstrOffset) 
+void OMR::RV::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label, int8_t d, bool isInstrOffset)
    {
    apply16BitLabelRelativeRelocation(cursor, label);
    }
@@ -477,13 +572,13 @@ void OMR::RV::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t *cursor, 
    }
 
 int64_t OMR::RV::CodeGenerator::getLargestNegConstThatMustBeMaterialized()
-   { 
-   TR_ASSERT(0, "Not Implemented on AArch64"); 
-   return 0; 
+   {
+   TR_ASSERT(0, "Not Implemented on AArch64");
+   return 0;
    }
 
 int64_t OMR::RV::CodeGenerator::getSmallestPosConstThatMustBeMaterialized()
-   { 
-   TR_ASSERT(0, "Not Implemented on AArch64"); 
-   return 0; 
+   {
+   TR_ASSERT(0, "Not Implemented on AArch64");
+   return 0;
    }

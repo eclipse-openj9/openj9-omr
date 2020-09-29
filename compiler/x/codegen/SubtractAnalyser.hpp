@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -86,6 +86,7 @@ class TR_X86SubtractAnalyser  : public TR_Analyser
    bool getSubReg1Mem2() {return (_actionMap[getInputs()] & SubReg1Mem2) ? true : false;}
    bool getSubReg3Mem2() {return (_actionMap[getInputs()] & SubReg3Mem2) ? true : false;}
 
+   bool isVolatileMemoryOperand(TR::Node *node);
    };
 
 #endif

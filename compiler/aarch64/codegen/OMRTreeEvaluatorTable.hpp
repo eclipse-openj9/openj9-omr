@@ -727,9 +727,9 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lnolzEvaluator ,	// TR::lnolz
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lnotzEvaluator ,	// TR::lnotz
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lpopcntEvaluator ,	// TR::lpopcnt
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sbyteswapEvaluator ,	// TR::sbyteswap // swap bytes in a short
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ibyteswapEvaluator ,	// TR::ibyteswap // swap bytes in an integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lbyteswapEvaluator ,	// TR::lbyteswap // swap bytes in a long
+    TR::TreeEvaluator::sbyteswapEvaluator, // TR::sbyteswap		// swap bytes in a short
+    TR::TreeEvaluator::ibyteswapEvaluator, // TR::ibyteswap		// swap bytes in an integer
+    TR::TreeEvaluator::lbyteswapEvaluator, // TR::lbyteswap		// swap bytes in a long
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bbitpermuteEvaluator ,	// TR::bbitpermute
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sbitpermuteEvaluator ,	// TR::sbitpermute
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ibitpermuteEvaluator ,	// TR::ibitpermute

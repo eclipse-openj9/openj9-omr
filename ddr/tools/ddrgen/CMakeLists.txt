@@ -43,9 +43,11 @@ if(OMRPORT_OMRSIG_SUPPORT)
 	if(OMR_OS_AIX)
 		# make sure that omrsig can be found when ddrgen is run
 		# ideally we would set the BUILD_RPATH, but that doesn't exist in cmake 3.4
+		get_target_property(omrsig_dir omrsig RUNTIME_OUTPUT_DIRECTORY)
+
 		set_target_properties(omr_ddrgen PROPERTIES
 			BUILD_WITH_INSTALL_RPATH TRUE
-			INSTALL_RPATH "$<TARGET_FILE_DIR:omrsig>"
+			INSTALL_RPATH "${omrsig_dir}"
 		)
 	endif()
 endif()

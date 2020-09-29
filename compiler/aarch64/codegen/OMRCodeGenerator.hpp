@@ -150,9 +150,15 @@ namespace ARM64
 class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    {
 
-   public:
+protected:
+
+   CodeGenerator(TR::Compilation *comp);
+
+public:
 
    CodeGenerator();
+
+   void initialize();
 
    /**
     * @brief AArch64 hook to begin instruction selection
@@ -474,7 +480,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    /**
     * @brief Returns bit mask for real register
     * @param[in] reg: real register number
-    * 
+    *
     * @return bit mask for real register
     */
    static uint32_t registerBitMask(int32_t reg);

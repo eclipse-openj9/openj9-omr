@@ -148,6 +148,133 @@ TR::Instruction *
 OMR::CodeGenerator::generateNop(TR::Node * node, TR::Instruction *instruction, TR_NOPKind nopKind)
     { TR_ASSERT(0, "shouldn't get here"); return NULL;}
 
+
+OMR::CodeGenerator::CodeGenerator(TR::Compilation *comp) :
+      _compilation(comp),
+      _trMemory(comp->trMemory()),
+      _liveLocals(0),
+      _currentEvaluationTreeTop(0),
+      _currentEvaluationBlock(0),
+      _prePrologueSize(0),
+      _implicitExceptionPoint(0),
+      _localsThatAreStored(NULL),
+      _numLocalsWhenStoreAnalysisWasDone(-1),
+      _ialoadUnneeded(comp->trMemory()),
+      _symRefTab(comp->getSymRefTab()),
+      _vmThreadRegister(NULL),
+      _stackAtlas(NULL),
+      _methodStackMap(NULL),
+      _binaryBufferStart(NULL),
+      _binaryBufferCursor(NULL),
+      _largestOutgoingArgSize(0),
+      _estimatedCodeLength(0),
+      _estimatedSnippetStart(0),
+      _accumulatedInstructionLengthError(0),
+      _registerSaveDescription(0),
+      _extendedToInt64GlobalRegisters(comp->allocator()),
+      _liveButMaybeUnreferencedLocals(NULL),
+      _assignedGlobalRegisters(NULL),
+      _aheadOfTimeCompile(NULL),
+      _globalRegisterTable(NULL),
+      _currentGRABlockLiveOutSet(NULL),
+      _localsIG(NULL),
+      _lastGlobalGPR(0),
+      _firstGlobalFPR(0),
+      _lastGlobalFPR(0),
+      _firstOverlappedGlobalFPR(0),
+      _lastOverlappedGlobalFPR(0),
+      _last8BitGlobalGPR(0),
+      _globalGPRPartitionLimit(0),
+      _globalFPRPartitionLimit(0),
+      _firstInstruction(NULL),
+      _appendInstruction(NULL),
+      _firstGlobalVRF(-1),
+      _lastGlobalVRF(-1),
+      _firstOverlappedGlobalVRF(-1),
+      _lastOverlappedGlobalVRF(-1),
+      _overlapOffsetBetweenFPRandVRFgrns(0),
+      _supportedLiveRegisterKinds(0),
+      _blocksWithCalls(NULL),
+      _codeCache(0),
+      _committedToCodeCache(false),
+      _codeCacheSwitched(false),
+      _blockRegisterPressureCache(NULL),
+      _simulatedNodeStates(NULL),
+      _availableSpillTemps(getTypedAllocator<TR::SymbolReference*>(comp->allocator())),
+      _counterBlocks(getTypedAllocator<TR::Block*>(comp->allocator())),
+      _liveReferenceList(getTypedAllocator<TR_LiveReference*>(comp->allocator())),
+      _snippetList(getTypedAllocator<TR::Snippet*>(comp->allocator())),
+      _registerArray(comp->trMemory()),
+      _spill4FreeList(getTypedAllocator<TR_BackingStore*>(comp->allocator())),
+      _spill8FreeList(getTypedAllocator<TR_BackingStore*>(comp->allocator())),
+      _spill16FreeList(getTypedAllocator<TR_BackingStore*>(comp->allocator())),
+      _internalPointerSpillFreeList(getTypedAllocator<TR_BackingStore*>(comp->allocator())),
+      _spilledRegisterList(NULL),
+      _referencedRegistersList(NULL),
+      _variableSizeSymRefPendingFreeList(getTypedAllocator<TR::SymbolReference*>(comp->allocator())),
+      _variableSizeSymRefFreeList(getTypedAllocator<TR::SymbolReference*>(comp->allocator())),
+      _variableSizeSymRefAllocList(getTypedAllocator<TR::SymbolReference*>(comp->allocator())),
+      _accumulatorNodeUsage(0),
+      _collectedSpillList(getTypedAllocator<TR_BackingStore*>(comp->allocator())),
+      _allSpillList(getTypedAllocator<TR_BackingStore*>(comp->allocator())),
+      _relocationList(getTypedAllocator<TR::Relocation*>(comp->allocator())),
+      _externalRelocationList(getTypedAllocator<TR::Relocation*>(comp->allocator())),
+      _staticRelocationList(comp->allocator()),
+      _preJitMethodEntrySize(0),
+      _jitMethodEntryPaddingSize(0),
+      _lastInstructionBeforeCurrentEvaluationTreeTop(NULL),
+      _unlatchedRegisterList(NULL),
+      _indentation(2),
+      _currentBlock(NULL),
+      _realVMThreadRegister(NULL),
+      _internalControlFlowNestingDepth(0),
+      _internalControlFlowSafeNestingDepth(0),
+      _stackOfArtificiallyInflatedNodes(comp->trMemory(), 16),
+      _stackOfMemoryReferencesCreatedDuringEvaluation(comp->trMemory(), 16),
+      randomizer(comp),
+      _outOfLineColdPathNestedDepth(0),
+      _codeGenPhase(self()),
+      _symbolDataTypeMap(comp->allocator()),
+      _lmmdFailed(false)
+   {
+   }
+
+
+void
+OMR::CodeGenerator::initialize()
+   {
+   TR::CodeGenerator *cg = self();
+   TR::Compilation *comp = self()->comp();
+
+   _machine = new (cg->trHeapMemory()) TR::Machine(cg);
+
+   _disableInternalPointers = comp->getOption(TR_MimicInterpreterFrameShape) ||
+                              comp->getOptions()->realTimeGC() ||
+                              comp->getOption(TR_DisableInternalPointers);
+
+   uintptr_t maxSize = TR::Compiler->vm.getOverflowSafeAllocSize(comp);
+   int32_t i;
+
+   for (i = 0; i < NumRegisterKinds; ++i)
+      {
+      _liveRegisters[i] = NULL;
+      _liveRealRegisters[i] = 0;
+      }
+
+   for (i = 0 ; i < TR_NumLinkages; ++i)
+      _linkages[i] = NULL;
+
+   _maxObjectSizeGuaranteedNotToOverflow = (maxSize > UINT_MAX) ? UINT_MAX : maxSize;
+
+   if (comp->getDebug())
+      {
+      comp->getDebug()->resetDebugData();
+      }
+
+   cg->setIsLeafMethod();
+   }
+
+
 OMR::CodeGenerator::CodeGenerator() :
       _compilation(TR::comp()),
       _trMemory(_compilation->trMemory()),

@@ -3992,8 +3992,9 @@ static void orderSensitiveDescendants(TR::Node *node, TR::NodeChecklist &out)
  */
 static bool substPreservesEvalOrder(TR::Node *orig, TR::Node *replacement)
    {
-   TR::NodeChecklist origEvaluated(TR::comp());
-   TR::NodeChecklist replacementEvaluated(TR::comp());
+   TR::Compilation *comp = TR::comp();
+   TR::NodeChecklist origEvaluated(comp);
+   TR::NodeChecklist replacementEvaluated(comp);
    orderSensitiveDescendants(orig, origEvaluated);
    orderSensitiveDescendants(replacement, replacementEvaluated);
    return origEvaluated == replacementEvaluated;

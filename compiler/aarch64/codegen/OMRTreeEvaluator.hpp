@@ -749,7 +749,9 @@ public:
 	static TR::Register *lnolzEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lnotzEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lpopcntEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *sbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ibyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *lbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *bbitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *sbitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ibitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg);

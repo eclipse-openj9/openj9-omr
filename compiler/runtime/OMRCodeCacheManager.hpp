@@ -204,6 +204,46 @@ public:
    TR::CodeCache * findCodeCacheFromPC(void *inCacheAddress);
 
    /**
+    * @brief Inquires whether the given code address is in RX code.
+    *
+    * @details
+    *    This function is suitable for calling either at runtime (outside of a
+    *    compilation context) or during compilation of a method.  This function
+    *    is static to facilitate calling from diverse contexts.
+    *
+    * @param[in] address The code address inquired about.
+    * @param[in] jitConfig The jitConfig structure for this language environment
+    *
+    * @returns \c true if the code address is in RX code; \c false otherwise.
+    */
+   static bool isAddressInRXCode(intptr_t address, void *jitConfig);
+
+   /**
+    * @brief Inquires whether the given method startPC code address is in RX code.
+    *
+    * @details
+    *    This function allows implementing language runtimes to provide a more
+    *    efficient version of this query if it is known that the provided address
+    *    is the startPC of a method.
+    *
+    *    This function is suitable for calling either at runtime (outside of a
+    *    compilation context) or during compilation of a method.
+    *
+    *    If the address provided via \a startPC is not a method startPC then the
+    *    result of this function is undefined.  Determining whether the given
+    *    address is actually a startPC will defeat any optimization benefit from
+    *    assuming it is.
+    *
+    *    This function is static to facilitate calling from diverse contexts.
+    *
+    * @param[in] startPC The startPC of a method
+    * @param[in] jitConfig The jitConfig structure for this language environment
+    *
+    * @returns \c true if the code address is in RX code; \c false otherwise.
+    */
+   static bool isStartPCInRXCode(intptr_t startPC, void *jitConfig);
+
+   /**
     * @brief Finds a helper trampoline for the given helper reachable from the
     *        given code cache address.
     *

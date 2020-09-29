@@ -259,7 +259,16 @@ public:
 
    void lowerTreesPropagateBlockToNode(TR::Node *node);
 
+protected:
+
+   CodeGenerator(TR::Compilation *comp);
+
+public:
+
    CodeGenerator();
+
+   void initialize();
+
    TR::Linkage *createLinkage(TR_LinkageConventions lc);
 
    bool anyNonConstantSnippets();

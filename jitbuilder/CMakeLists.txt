@@ -46,7 +46,6 @@ if(OMR_ARCH_X86)
 elseif(OMR_ARCH_S390)
 	list(APPEND JITBUILDER_OBJECTS
 		z/codegen/Evaluator.cpp
-		z/codegen/JBCodeGenerator.cpp
 	)
 elseif(OMR_ARCH_POWER)
 	list(APPEND JITBUILDER_OBJECTS

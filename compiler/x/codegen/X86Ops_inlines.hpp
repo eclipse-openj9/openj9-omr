@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -38,9 +38,10 @@ template <typename TBuffer> inline typename TBuffer::cursor_t TR_X86OpCode::OpCo
    rex.W = rex_w;
    // Use AVX if possible
 
-   TR_ASSERT_FATAL(TR::comp()->compileRelocatableCode() || TR::comp()->isOutOfProcessCompilation() || TR::comp()->target().cpu.supportsAVX() == TR::CodeGenerator::getX86ProcessorInfo().supportsAVX(), "supportsAVX() failed\n");
+   TR::Compilation *comp = TR::comp();
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsAVX() == TR::CodeGenerator::getX86ProcessorInfo().supportsAVX(), "supportsAVX() failed\n");
 
-   if (supportsAVX() && TR::comp()->target().cpu.supportsAVX())
+   if (supportsAVX() && comp->target().cpu.supportsAVX())
       {
       TR::Instruction::VEX<3> vex(rex, modrm_opcode);
       vex.m = escape;

@@ -1230,3 +1230,41 @@ OMR::CodeCacheManager::allocateCodeCacheFromNewSegment(
 
    return NULL;
    }
+
+
+bool
+OMR::CodeCacheManager::isStartPCInRXCode(intptr_t startPC, void *jitConfig)
+   {
+   return TR::CodeCacheManager::isAddressInRXCode(startPC, jitConfig);
+   }
+
+
+bool
+OMR::CodeCacheManager::isAddressInRXCode(intptr_t address, void *jitConfig)
+   {
+   /**
+    * The default implementation first simply validates whether the provided
+    * \a address is in fact a method code address by locating its corresponding
+    * \c CodeCache object.  If it is, then the result depends on the setting of
+    * the \c TR_ForceGenerateReadOnlyCode option.  Otherwise, the result is
+    * \c false.
+    *
+    * This is sufficient as the \c CodeCacheManager and \c CodeCache classes are
+    * not presently architected to manage code caches with different permission
+    * properties.
+    *
+    * Language environments should override this function if this is not the best
+    * approach in those environments.
+    */
+   TR::CodeCacheManager *ccm = TR::CodeCacheManager::instance();
+
+   TR_ASSERT_FATAL(ccm, "TR::CodeCacheManager is not initialized");
+
+   TR::CodeCache *codeCache = ccm->findCodeCacheFromPC(reinterpret_cast<void *>(address));
+   if (!codeCache)
+      {
+      return false;
+      }
+
+   return TR::Options::getCmdLineOptions()->getOption(TR_ForceGenerateReadOnlyCode);
+   }

@@ -394,6 +394,230 @@ bool OMR::Z::CodeGenerator::supportsDirectIntegralLoadStoresFromLiteralPool()
    return true;
    }
 
+OMR::Z::CodeGenerator::CodeGenerator(TR::Compilation *comp)
+   : OMR::CodeGenerator(comp),
+     _extentOfLitPool(-1),
+     _recompPatchInsnList(getTypedAllocator<TR::Instruction*>(comp->allocator())),
+     _constantHash(comp->allocator()),
+     _constantHashCur(_constantHash),
+     _constantList(getTypedAllocator<TR::S390ConstantDataSnippet*>(comp->allocator())),
+     _writableList(getTypedAllocator<TR::S390WritableDataSnippet*>(comp->allocator())),
+     _transientLongRegisters(comp->trMemory()),
+     _snippetDataList(getTypedAllocator<TR::S390ConstantDataSnippet*>(comp->allocator())),
+     _outOfLineCodeSectionList(getTypedAllocator<TR_S390OutOfLineCodeSection*>(comp->allocator())),
+     _returnTypeInfoInstruction(NULL),
+     _interfaceSnippetToPICsListHashTab(NULL),
+     _currentCheckNode(NULL),
+     _currentBCDCHKHandlerLabel(NULL),
+     _nodesToBeEvaluatedInRegPairs(comp->allocator()),
+     _ccInstruction(NULL),
+     _previouslyAssignedTo(comp->allocator("LocalRA")),
+     _firstTimeLiveOOLRegisterList(NULL),
+     _methodBegin(NULL),
+     _methodEnd(NULL),
+     _afterRA(false)
+   {
+   }
+
+void
+OMR::Z::CodeGenerator::initialize()
+   {
+   self()->OMR::CodeGenerator::initialize();
+
+   TR::CodeGenerator *cg = self();
+   TR::Compilation *comp = self()->comp();
+
+   _cgFlags = 0;
+
+   // Initialize Linkage for Code Generator
+   cg->initializeLinkage();
+
+   _unlatchedRegisterList = (TR::RealRegister**)cg->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters));
+   _unlatchedRegisterList[0] = 0; // mark that list is empty
+
+   bool enableBranchPreload = comp->getOption(TR_EnableBranchPreload);
+   bool disableBranchPreload = comp->getOption(TR_DisableBranchPreload);
+
+   if (enableBranchPreload || (!disableBranchPreload && comp->isOptServer() && comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12)))
+      cg->setEnableBranchPreload();
+   else
+      cg->setDisableBranchPreload();
+
+   static bool bpp = (feGetEnv("TR_BPRP")!=NULL);
+
+   if ((enableBranchPreload && bpp) || (bpp && !disableBranchPreload && comp->isOptServer() && comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12)))
+      cg->setEnableBranchPreloadForCalls();
+   else
+      cg->setDisableBranchPreloadForCalls();
+
+   if (cg->supportsBranchPreloadForCalls())
+      {
+      _callsForPreloadList = new (cg->trHeapMemory()) TR::list<TR_BranchPreloadCallData*>(getTypedAllocator<TR_BranchPreloadCallData*>(comp->allocator()));
+      }
+
+   cg->setOnDemandLiteralPoolRun(true);
+   cg->setGlobalStaticBaseRegisterOn(false);
+
+   cg->setGlobalPrivateStaticBaseRegisterOn(false);
+
+   cg->setMultiplyIsDestructive();
+
+   cg->setSupportsSelect();
+
+   cg->setSupportsByteswap();
+
+   cg->setIsOutOfLineHotPath(false);
+
+   cg->setUsesRegisterPairsForLongs();
+   cg->setSupportsDivCheck();
+   cg->setSupportsLoweringConstIDiv();
+   cg->setSupportsTestUnderMask();
+
+   // Initialize to be 8 bytes for bodyInfo / methodInfo
+   cg->setPreJitMethodEntrySize(8);
+
+   // Support divided by power of 2 logic in ldivSimplifier
+   cg->setSupportsLoweringConstLDivPower2();
+
+   //enable LM/STM for volatile longs in 32 bit
+   cg->setSupportsInlinedAtomicLongVolatiles();
+
+   cg->setSupportsConstantOffsetInAddressing();
+
+   static char * noVGNOP = feGetEnv("TR_NOVGNOP");
+   if (noVGNOP == NULL)
+      {
+      cg->setSupportsVirtualGuardNOPing();
+      }
+   if (!comp->getOption(TR_DisableArraySetOpts))
+      {
+      cg->setSupportsArraySet();
+      }
+   cg->setSupportsArrayCmp();
+   cg->setSupportsArrayCmpSign();
+   if (!comp->compileRelocatableCode())
+      {
+      cg->setSupportsArrayTranslateTRxx();
+      }
+
+   cg->setSupportsTestCharComparisonControl();  // TRXX instructions on Danu have mask to disable test char comparison.
+   cg->setSupportsReverseLoadAndStore();
+   cg->setSupportsSearchCharString(); // CISC Transformation into SRSTU loop - only on z9.
+   cg->setSupportsTranslateAndTestCharString(); // CISC Transformation into TRTE loop - only on z6.
+
+   if (!comp->getOption(TR_DisableTraps) && TR::Compiler->vm.hasResumableTrapHandler(comp))
+      {
+      cg->setHasResumableTrapHandler();
+      }
+
+   if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z196))
+      {
+      cg->setSupportsAtomicLoadAndAdd();
+      }
+   else
+      {
+      // Max min optimization uses the maxMinHelper evaluator which
+      // requires conditional loads that are not supported below z196
+      comp->setOption(TR_DisableMaxMinOptimization);
+      }
+
+   if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12))
+      {
+      cg->setSupportsZonedDFPConversions();
+      if (comp->target().cpu.supportsFeature(OMR_FEATURE_S390_TE) && !comp->getOption(TR_DisableTM))
+         cg->setSupportsTM();
+      }
+
+   if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z13) && !comp->getOption(TR_DisableArch11PackedToDFP))
+      cg->setSupportsFastPackedDFPConversions();
+
+   if (!comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14))
+      {
+      comp->setOption(TR_DisableVectorBCD);
+      }
+
+   // Be pessimistic until we can prove we don't exit after doing code-generation
+   cg->setExitPointsInMethod(true);
+
+#ifdef DEBUG
+   // Clear internal counters for internal profiling of
+   // register allocation
+   cg->clearTotalSpills();
+   cg->clearTotalRegisterXfers();
+   cg->clearTotalRegisterMoves();
+#endif
+
+   // Set up vector register support for machine after zEC12.
+   // This should also happen before prepareForGRA
+   if (comp->getOption(TR_DisableSIMD))
+      {
+      comp->setOption(TR_DisableAutoSIMD);
+      comp->setOption(TR_DisableSIMDArrayCompare);
+      comp->setOption(TR_DisableSIMDArrayTranslate);
+      comp->setOption(TR_DisableSIMDUTF16BEEncoder);
+      comp->setOption(TR_DisableSIMDUTF16LEEncoder);
+      comp->setOption(TR_DisableSIMDStringHashCode);
+      comp->setOption(TR_DisableVectorRegGRA);
+      }
+
+   cg->setSupportsRecompilation();
+
+   // This enables the tactical GRA
+   cg->setSupportsGlRegDeps();
+
+   cg->addSupportedLiveRegisterKind(TR_GPR);
+   cg->addSupportedLiveRegisterKind(TR_FPR);
+   cg->addSupportedLiveRegisterKind(TR_VRF);
+
+   cg->setLiveRegisters(new (cg->trHeapMemory()) TR_LiveRegisters(comp), TR_GPR);
+   cg->setLiveRegisters(new (cg->trHeapMemory()) TR_LiveRegisters(comp), TR_FPR);
+   cg->setLiveRegisters(new (cg->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
+
+   cg->setSupportsPrimitiveArrayCopy();
+   cg->setSupportsReferenceArrayCopy();
+
+   cg->setSupportsPartialInlineOfMethodHooks();
+
+   cg->setSupportsInliningOfTypeCoersionMethods();
+
+   cg->setPerformsChecksExplicitly();
+
+   _numberBytesReadInaccessible = 4096;
+   _numberBytesWriteInaccessible = 4096;
+
+   // zLinux sTR requires this as well, otherwise cp00f054.C testcase fails in TR_FPStoreReloadElimination.
+   cg->setSupportsJavaFloatSemantics();
+
+   _localF2ISpill = NULL;
+   _localD2LSpill = NULL;
+
+   _nextAvailableBlockIndex = -1;
+   _currentBlockIndex = -1;
+
+   if (comp->getOption(TR_TraceRA))
+      {
+      cg->setGPRegisterIterator(new (cg->trHeapMemory()) TR::RegisterIterator(cg->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastAssignableGPR));
+      cg->setFPRegisterIterator(new (cg->trHeapMemory()) TR::RegisterIterator(cg->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
+      cg->setVRFRegisterIterator(new (cg->trHeapMemory()) TR::RegisterIterator(cg->machine(), TR::RealRegister::FirstVRF, TR::RealRegister::LastVRF));
+      }
+
+   if (!comp->getOption(TR_DisableTLHPrefetch) && !comp->compileRelocatableCode())
+      {
+      cg->setEnableTLHPrefetching();
+      }
+
+   _reusableTempSlot = NULL;
+   cg->freeReusableTempSlot();
+
+   cg->setSupportsProfiledInlining();
+
+   cg->getS390Linkage()->setParameterLinkageRegisterIndex(comp->getJittedMethodSymbol());
+
+   cg->getS390Linkage()->initS390RealRegisterLinkage();
+   cg->setAccessStaticsIndirectly(true);
+   }
+
+
 OMR::Z::CodeGenerator::CodeGenerator()
    : OMR::CodeGenerator(),
      _extentOfLitPool(-1),

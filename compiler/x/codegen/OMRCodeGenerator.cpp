@@ -204,7 +204,7 @@ void TR_X86ProcessorInfo::initialize(TR::CodeGenerator *cg)
 
 
 void
-OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
+OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
    {
 
    bool supportsSSE2 = false;
@@ -232,7 +232,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
 
 #if defined(TR_TARGET_X86) && !defined(J9HAMMER)
    TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) == _targetProcessorInfo.supportsSSE2(), "supportsSSE2() failed\n");
-   
+
    if (comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) && comp->target().cpu.testOSForSSESupport())
       supportsSSE2 = true;
 #endif // defined(TR_TARGET_X86) && !defined(J9HAMMER)
@@ -510,6 +510,34 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
       }
 
    self()->setSupportsProfiledInlining();
+   }
+
+
+OMR::X86::CodeGenerator::CodeGenerator(TR::Compilation *comp) :
+   OMR::CodeGenerator(comp),
+   _nanoTimeTemp(NULL),
+   _assignmentDirection(Backward),
+   _lastCatchAppendInstruction(NULL),
+   _betterSpillPlacements(NULL),
+   _dataSnippetList(getTypedAllocator<TR::X86DataSnippet*>(comp->allocator())),
+   _spilledIntRegisters(getTypedAllocator<TR::Register*>(comp->allocator())),
+   _liveDiscardableRegisters(getTypedAllocator<TR::Register*>(comp->allocator())),
+   _dependentDiscardableRegisters(getTypedAllocator<TR::Register*>(comp->allocator())),
+   _clobberingInstructions(getTypedAllocator<TR::ClobberingInstruction*>(comp->allocator())),
+   _outlinedInstructionsList(getTypedAllocator<TR_OutlinedInstructions*>(comp->allocator())),
+   _numReservedIPICTrampolines(0),
+   _flags(0)
+   {
+   _clobIterator = _clobberingInstructions.begin();
+   }
+
+
+void
+OMR::X86::CodeGenerator::initialize()
+   {
+   self()->OMR::CodeGenerator::initialize();
+
+   _clobIterator = _clobberingInstructions.begin();
    }
 
 
@@ -2915,7 +2943,7 @@ TR_X86ScratchRegisterManager *OMR::X86::CodeGenerator::generateScratchRegisterMa
 bool
 TR_X86ScratchRegisterManager::reclaimAddressRegister(TR::MemoryReference *mr)
    {
-   if (TR::comp()->target().is32Bit())
+   if (_cg->comp()->target().is32Bit())
       return false;
 
    return reclaimScratchRegister(mr->getAddressRegister());

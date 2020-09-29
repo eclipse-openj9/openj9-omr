@@ -437,8 +437,14 @@ TR::RegDepCopyRemoval::makeFreshCopy(TR_GlobalRegisterNumber reg)
    NodeChoice &choice = getNodeChoice(reg);
    if (choice.regStoreNode == NULL)
       {
-      // As we walk down in Extended Basic Block, for each register, if exists, we record a regStore node, if we do not have one found for given register, node should be regLoad. 
-      TR_ASSERT_FATAL(dep.node->getOpCode().isLoadReg(), "Only PassThrough (with a corresponding regStore appeared before) or regLoad is expected as children of GlRegDeps, Unexpected Node is n%dn OpCode %s",dep.node->getGlobalIndex(), dep.node->getOpCode().getName());
+      // As we walk down in Extended Basic Block, for each register, if exists, we record a regStore node, if we do not have one found for given register, node should be regLoad.
+      // It is possible that the child node of GlRegDep is PassThrough with regLoad child where both uses same register. In this case, it won't have the corresponding regStore.
+      TR_ASSERT_FATAL_WITH_NODE(dep.node,
+                                 dep.node->getOpCode().isLoadReg()
+                                 || (dep.node->getOpCodeValue() == TR::PassThrough
+                                    && dep.node->getFirstChild()->getOpCode().isLoadReg()
+                                    && dep.node->getGlobalRegisterNumber() == dep.node->getFirstChild()->getGlobalRegisterNumber()),
+                                 "Only PassThrough (with corresponding regStore appeared before or using same Global Register as child) or regLoad nodes are expected as children of GlRegDeps.");
       choice.regStoreNode = TR::Node::create(dep.node, comp()->il.opCodeForRegisterStore(dep.node->getDataType()), 1, copyNode);
       _treetop->insertBefore(TR::TreeTop::create(comp(), choice.regStoreNode));
       choice.regStoreNode->setGlobalRegisterNumber(dep.node->getGlobalRegisterNumber());

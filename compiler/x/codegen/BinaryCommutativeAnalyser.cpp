@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -74,14 +74,14 @@ zeroExtendTo32BitRegister(TR::Node          *node,
    }
 
 /*
- * \brief 
- * this API is for check nodes(like OverflowCHK) with certain operation where the operands 
+ * \brief
+ * this API is for check nodes(like OverflowCHK) with certain operation where the operands
  * are given explicitly by the caller and are not the first and second child of the given root node
  *
  * \param root
  *     the check node
- * \param firstChild, secondChild 
- *     the operands for the operation 
+ * \param firstChild, secondChild
+ *     the operands for the operation
  */
 void TR_X86BinaryCommutativeAnalyser::genericAnalyserWithExplicitOperands(TR::Node      *root,
                                                                           TR::Node      *firstChild,
@@ -99,7 +99,7 @@ void TR_X86BinaryCommutativeAnalyser::genericAnalyserWithExplicitOperands(TR::No
    }
 
 /*
- * \brief 
+ * \brief
  * this API is for regular operation nodes where the first child and second child are the operands by default
  */
 void TR_X86BinaryCommutativeAnalyser::genericAnalyser(TR::Node      *root,
@@ -130,7 +130,7 @@ void TR_X86BinaryCommutativeAnalyser::genericAnalyser(TR::Node      *root,
    }
 
 /*
- * users should call the genericAnalyser or genericAnalyserWithExplicitOperands APIs instead of calling this one directly 
+ * users should call the genericAnalyser or genericAnalyserWithExplicitOperands APIs instead of calling this one directly
  */
 TR::Register* TR_X86BinaryCommutativeAnalyser::genericAnalyserImpl(TR::Node      *root,
                                                                    TR::Node      *firstChild,
@@ -700,7 +700,7 @@ void TR_X86BinaryCommutativeAnalyser::genericLongAnalyser(TR::Node       *root,
    }
 
 /*
- * \brief 
+ * \brief
  * this API is intended for regular add operation nodes where the first child and second child are the operands by default
  */
 void TR_X86BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node      *root,
@@ -731,18 +731,18 @@ void TR_X86BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node      *root,
    }
 
 /*
- * \brief 
- * this API is for check nodes(like OverflowCHK) with an add operation where the operands 
+ * \brief
+ * this API is for check nodes(like OverflowCHK) with an add operation where the operands
  * are given explicitly by the caller and are not the first and second child of the given root node
  *
  * \param root
  *     the check node
- * \param firstChild, secondChild 
- *     the operands for the add operation 
+ * \param firstChild, secondChild
+ *     the operands for the add operation
  */
 void TR_X86BinaryCommutativeAnalyser::integerAddAnalyserWithExplicitOperands(TR::Node      *root,
-                                                                             TR::Node      *firstChild, 
-                                                                             TR::Node      *secondChild, 
+                                                                             TR::Node      *firstChild,
+                                                                             TR::Node      *secondChild,
                                                                              TR_X86OpCodes regRegOpCode,
                                                                              TR_X86OpCodes regMemOpCode,
                                                                              bool          needsEflags, // false by default
@@ -754,16 +754,16 @@ void TR_X86BinaryCommutativeAnalyser::integerAddAnalyserWithExplicitOperands(TR:
    _cg->decReferenceCount(secondChild);
    _cg->stopUsingRegister(tempReg);
    }
- 
+
 /*
- * users should call the integerAddAnalyser or integerAddAnalyserWithGivenOperands APIs instead of calling this one directly 
+ * users should call the integerAddAnalyser or integerAddAnalyserWithGivenOperands APIs instead of calling this one directly
  */
 TR::Register *TR_X86BinaryCommutativeAnalyser::integerAddAnalyserImpl(TR::Node      *root,
-                                                                      TR::Node      *firstChild, 
-                                                                      TR::Node      *secondChild, 
+                                                                      TR::Node      *firstChild,
+                                                                      TR::Node      *secondChild,
                                                                       TR_X86OpCodes regRegOpCode,
                                                                       TR_X86OpCodes regMemOpCode,
-                                                                      bool          needsEflags,     
+                                                                      bool          needsEflags,
                                                                       TR::Node      *carry)
    {
    TR::Register *targetRegister;
@@ -927,9 +927,9 @@ TR::Register *TR_X86BinaryCommutativeAnalyser::integerAddAnalyserImpl(TR::Node  
 // get clobbered by the memory barrier immediately preceding the
 // ADC4RegMem instruction.
 //
-static bool isVolatileMemoryOperand(TR::Node *node)
+bool TR_X86BinaryCommutativeAnalyser::isVolatileMemoryOperand(TR::Node *node)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
    TR_ASSERT_FATAL(comp, "isVolatileMemoryOperand should only be called during a compilation!");
    if (comp->target().isSMP() && node->getOpCode().isMemoryReference())
       {
@@ -941,14 +941,14 @@ static bool isVolatileMemoryOperand(TR::Node *node)
    }
 
 /*
- * \brief 
- * this API is for check nodes(like OverflowCHK) an ladd operation where the operands 
+ * \brief
+ * this API is for check nodes(like OverflowCHK) an ladd operation where the operands
  * are given explicitly by the caller and are not the first and second child of the given root node
  *
  * \param root
  *     the check node
- * \param firstChild, secondChild 
- *     the operands for the add operation 
+ * \param firstChild, secondChild
+ *     the operands for the add operation
  */
 void TR_X86BinaryCommutativeAnalyser::longAddAnalyserWithExplicitOperands(TR::Node *root, TR::Node *firstChild, TR::Node *secondChild)
    {
@@ -960,12 +960,12 @@ void TR_X86BinaryCommutativeAnalyser::longAddAnalyserWithExplicitOperands(TR::No
    }
 
 /*
- * \brief 
+ * \brief
  * this API is intended for regular ladd operation nodes where the first child and second child are the operands by default
  */
 void TR_X86BinaryCommutativeAnalyser::longAddAnalyser(TR::Node *root)
    {
-   TR::Node *firstChild = NULL; 
+   TR::Node *firstChild = NULL;
    TR::Node *secondChild = NULL;
    if (_cg->whichChildToEvaluate(root) == 0)
       {
@@ -986,7 +986,7 @@ void TR_X86BinaryCommutativeAnalyser::longAddAnalyser(TR::Node *root)
    }
 
 /*
- * users should call the longAddAnalyser or longAddAnalyserWithExplicitOperands APIs instead of calling this one directly 
+ * users should call the longAddAnalyser or longAddAnalyserWithExplicitOperands APIs instead of calling this one directly
  */
 TR::Register* TR_X86BinaryCommutativeAnalyser::longAddAnalyserImpl(TR::Node *root, TR::Node *&firstChild, TR::Node *&secondChild)
    {

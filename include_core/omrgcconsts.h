@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -271,7 +271,7 @@ struct ModronLnrlOptions {
 #define OLDFREE_INSUFFICIENT					((uintptr_t)(1024 * 128))
 #define MINIMUM_TLHSIZE_MULTIPLIER				2
 #define MINIMUM_CONTRACTION_RATIO_DIVISOR		100
-#define MINIMUM_CONTRACTION_RATIO_MULTIPLIER	10
+#define DEFAULT_MINIMUM_CONTRACTION_RATIO	10
 
 #define DESIRED_SUBAREA_SIZE		((uintptr_t)(4*1024*1024))
 

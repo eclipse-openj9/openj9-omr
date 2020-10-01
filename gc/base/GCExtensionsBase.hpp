@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -355,6 +355,7 @@ public:
 	int loaFreeHistorySize; /**< max size of _loaFreeRatioHistory array */
 	uintptr_t lastGlobalGCFreeBytesLOA; /**< records the LOA free memory size from after Global GC cycle */
 	ConcurrentMetering concurrentMetering;
+	uintptr_t minimumContractionRatio;
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 
 	bool disableExplicitGC;
@@ -1466,6 +1467,7 @@ public:
 		, loaFreeHistorySize(15)
 		, lastGlobalGCFreeBytesLOA(0)
 		, concurrentMetering(METER_BY_SOA)
+		, minimumContractionRatio(DEFAULT_MINIMUM_CONTRACTION_RATIO)
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 		, disableExplicitGC(false)
 		, heapAlignment(HEAP_ALIGNMENT)

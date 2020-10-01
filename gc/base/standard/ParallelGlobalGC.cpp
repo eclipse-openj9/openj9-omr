@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -827,16 +827,16 @@ MM_ParallelGlobalGC::compactRequiredBeforeHeapContraction(MM_EnvironmentBase *en
 	/* Note: We know based on the collector that this is a single contiguous area */
 	lengthLastFree = env->_cycleState->_activeSubSpace->getAvailableContractionSize(env, allocDescription);
 	
-	/* If chunk at end of heap is free then check its at least 10% of 
+	/* If chunk at end of heap is free then check its at least minimumContractionRatio percent of the
 	 * requested contraction amount
 	 */
-	if (lengthLastFree > 0 ) {
+	if (lengthLastFree > 0) {
 		uintptr_t minContractSize = (contractionSize / MINIMUM_CONTRACTION_RATIO_DIVISOR)
-								 * MINIMUM_CONTRACTION_RATIO_MULTIPLIER;
-								 
-		if (lengthLastFree > minContractSize ) {						 
+								 * _extensions->minimumContractionRatio;
+
+		if (lengthLastFree > minContractSize) {
 			return false;
-		}	
+		}
 	}
 
 compactionReqd:

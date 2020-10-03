@@ -39,6 +39,7 @@
 #include "env/IO.hpp"
 #include "env/ObjectModel.hpp"
 #include "env/Processors.hpp"
+#include "env/VerboseLog.hpp"
 #include "env/defines.h"
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"

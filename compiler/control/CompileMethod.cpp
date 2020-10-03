@@ -47,6 +47,7 @@
 #include "env/PersistentInfo.hpp"
 #include "env/Processors.hpp"
 #include "env/TRMemory.hpp"
+#include "env/VerboseLog.hpp"
 #include "env/defines.h"
 #include "env/jittypes.h"
 #include "il/ResolvedMethodSymbol.hpp"

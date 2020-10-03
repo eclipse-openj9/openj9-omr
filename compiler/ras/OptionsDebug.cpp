@@ -31,6 +31,7 @@
 #include "env/ObjectModel.hpp"
 #include "env/jittypes.h"
 #include "env/CompilerEnv.hpp"
+#include "env/VerboseLog.hpp"
 #include "infra/Assert.hpp"
 #include "infra/SimpleRegex.hpp"
 #include "optimizer/Optimizations.hpp"

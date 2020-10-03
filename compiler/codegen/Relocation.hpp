@@ -102,7 +102,7 @@ class Relocation
    virtual uint8_t *getUpdateLocation()           {return _updateLocation;}
    uint8_t *setUpdateLocation(uint8_t *p) {return (_updateLocation = p);}
 
-   virtual bool isExternalRelocation() { return true; }
+   virtual bool isExternalRelocation() { return false; }
 
    TR::RelocationDebugInfo* getDebugInfo();
 
@@ -127,7 +127,6 @@ class LabelRelocation : public TR::Relocation
    TR::LabelSymbol *getLabel()                  {return _label;}
    TR::LabelSymbol *setLabel(TR::LabelSymbol *l) {return (_label = l);}
 
-   bool isExternalRelocation() { return false; }
    };
 
 class LabelRelative8BitRelocation : public TR::LabelRelocation
@@ -220,7 +219,7 @@ class InstructionLabelRelative16BitRelocation : public TR::LabelRelocation
     *     at \p cursor + \p offset will be the number of half-words between \p cursor and \p l
     */
    InstructionLabelRelative16BitRelocation(TR::Instruction* cursor, int32_t offset, TR::LabelSymbol* l, int32_t divisor);
-      
+
    virtual uint8_t* getUpdateLocation();
    virtual void apply(TR::CodeGenerator* cg);
 
@@ -239,7 +238,7 @@ class InstructionLabelRelative16BitRelocation : public TR::LabelRelocation
 class InstructionLabelRelative32BitRelocation : public TR::LabelRelocation
    {
    public:
-      
+
    /** \brief
     *     Initializes the InstructionLabelRelative16BitRelocation relocation using a \c NULL base target pointer.
     *
@@ -257,7 +256,7 @@ class InstructionLabelRelative32BitRelocation : public TR::LabelRelocation
     *     at \p cursor + \p offset will be the number of half-words between \p cursor and \p l
     */
    InstructionLabelRelative32BitRelocation(TR::Instruction* cursor, int32_t offset, TR::LabelSymbol* l, int32_t divisor);
-      
+
    virtual uint8_t* getUpdateLocation();
    virtual void apply(TR::CodeGenerator* cg);
 
@@ -301,8 +300,6 @@ class LoadLabelRelative16BitRelocation : public TR::Relocation
    int32_t setDeltaToStartLabel(int32_t d)   { return (_deltaToStartLabel = d); }
    int32_t getDeltaToStartLabel()            { return _deltaToStartLabel; }
 
-   bool isExternalRelocation() { return false; }
-
    virtual void apply(TR::CodeGenerator *codeGen);
    };
 
@@ -328,8 +325,6 @@ class LoadLabelRelative32BitRelocation : public TR::Relocation
 
    int32_t setDeltaToStartLabel(int32_t d)   { return (_deltaToStartLabel = d); }
    int32_t getDeltaToStartLabel()            { return _deltaToStartLabel; }
-
-   bool isExternalRelocation() { return false; }
 
    virtual void apply(TR::CodeGenerator *codeGen);
    };
@@ -471,6 +466,8 @@ class ExternalRelocation : public TR::Relocation
    virtual uint32_t getWideSize() {return 4;}
 
    virtual void apply(TR::CodeGenerator *codeGen);
+
+   virtual bool isExternalRelocation() { return true; }
 
    static const char *getName(TR_ExternalRelocationTargetKind k) {return _externalRelocationTargetKindNames[k];}
    static uintptr_t    getGlobalValue(uint32_t g)

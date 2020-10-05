@@ -257,6 +257,7 @@ static intptr_t omrsysinfo_get_aix_ppc_description(struct OMRPortLibrary *portLi
 #if (defined(S390) || defined(J9ZOS390) || defined(J9ZTPF))
 static BOOLEAN omrsysinfo_test_stfle(struct OMRPortLibrary *portLibrary, uint64_t stfleBit);
 static intptr_t omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
+const char * omrsysinfo_get_s390_processor_feature_name(uint32_t feature);
 #endif /* defined(S390) || defined(J9ZOS390) || defined(J9ZTPF) */
 
 #if defined(RISCV)
@@ -698,6 +699,8 @@ omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32
 	Trc_PRT_sysinfo_get_processor_feature_name_Entered(feature);
 #if (defined(J9X86) || defined(J9HAMMER))
 	rc = omrsysinfo_get_x86_processor_feature_name(feature);
+#elif (defined(S390) || defined(J9ZOS390) || defined(J9ZTPF))
+	rc = omrsysinfo_get_s390_processor_feature_name(feature);
 #endif
 	Trc_PRT_sysinfo_get_processor_feature_name_Exit(rc);
 	return rc;
@@ -1448,6 +1451,84 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 	desc->physicalProcessor = desc->processor;
 
 	return 0;
+}
+
+const char *
+omrsysinfo_get_s390_processor_feature_name(uint32_t feature)
+{
+	switch (feature) {
+	case OMR_FEATURE_S390_ESAN3:
+		return "esan3";
+	case OMR_FEATURE_S390_ZARCH:
+		return "zarch";
+	case OMR_FEATURE_S390_STFLE:
+		return "stfle";
+	case OMR_FEATURE_S390_MSA:
+		return "msa";
+	case OMR_FEATURE_S390_DFP:
+		return "dfp";
+	case OMR_FEATURE_S390_HPAGE:
+		return "hpage";
+	case OMR_FEATURE_S390_TE:
+		return "te";
+	case OMR_FEATURE_S390_MSA_EXTENSION3:
+		return "msa_e3";
+	case OMR_FEATURE_S390_MSA_EXTENSION4:
+		return "msa_e4";
+	case OMR_FEATURE_S390_COMPARE_AND_SWAP_AND_STORE:
+		return "css";
+	case OMR_FEATURE_S390_COMPARE_AND_SWAP_AND_STORE2:
+		return "css2";
+	case OMR_FEATURE_S390_EXECUTE_EXTENSIONS:
+		return "ee";
+	case OMR_FEATURE_S390_FPE:
+		return "fpe";
+	case OMR_FEATURE_S390_RI:
+		return "ri";
+	case OMR_FEATURE_S390_LONG_DISPLACEMENT:
+		return "ld";
+	case OMR_FEATURE_S390_EXTENDED_IMMEDIATE:
+		return "ei";
+	case OMR_FEATURE_S390_EXTENDED_TRANSLATION_3:
+		return "et3";
+	case OMR_FEATURE_S390_ETF3_ENHANCEMENT:
+		return "etf3";
+	case OMR_FEATURE_S390_GENERAL_INSTRUCTIONS_EXTENSIONS:
+		return "gi";
+	case OMR_FEATURE_S390_HIGH_WORD:
+		return "hw";
+	case OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION:
+		return "mi";
+	case OMR_FEATURE_S390_LOAD_AND_ZERO_RIGHTMOST_BYTE:
+		return "lzrb";
+	case OMR_FEATURE_S390_VECTOR_FACILITY:
+		return "vec";
+	case OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_2:
+		return "mi_e2";
+	case OMR_FEATURE_S390_SEMAPHORE_ASSIST:
+		return "sema";
+	case OMR_FEATURE_S390_SIDE_EFFECT_ACCESS:
+		return "sea";
+	case OMR_FEATURE_S390_GUARDED_STORAGE:
+		return "gs";
+	case OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL:
+		return "vec_pd";
+	case OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1:
+		return "vec_e1";
+	case OMR_FEATURE_S390_MSA_EXTENSION_8:
+		return "msa_e8";
+	case OMR_FEATURE_S390_MSA_EXTENSION_5:
+		return "msa_e5";
+	case OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_3:
+		return "mi_e3";
+	case OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_2:
+		return "vec_e2";
+	case OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY:
+		return "vec_pde";
+	default:
+		return "null";
+	}
+	return "null";
 }
 
 #endif /* defined(S390) || defined(J9ZOS390) */

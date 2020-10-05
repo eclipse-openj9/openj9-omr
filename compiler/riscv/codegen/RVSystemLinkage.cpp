@@ -879,3 +879,13 @@ TR::Register *TR::RVSystemLinkage::buildDispatch(TR::Node *callNode)
    return retReg;
    }
 
+intptr_t TR::RVSystemLinkage::entryPointFromCompiledMethod()
+   {
+   return reinterpret_cast<intptr_t>(cg()->getCodeStart());
+   }
+
+intptr_t TR::RVSystemLinkage::entryPointFromInterpretedMethod()
+   {
+   return reinterpret_cast<intptr_t>(cg()->getCodeStart());
+   }
+

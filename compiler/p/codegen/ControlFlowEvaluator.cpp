@@ -1641,83 +1641,6 @@ TR::Register *OMR::Power::TreeEvaluator::returnEvaluator(TR::Node *node, TR::Cod
    return NULL;
    }
 
-static TR::InstOpCode::Mnemonic cmp2branch(TR::ILOpCodes op, TR::CodeGenerator *cg)
-    {
-    switch (op)
-       {
-       case TR::icmpeq:
-       case TR::acmpeq:
-       case TR::lcmpeq:
-       case TR::fcmpeq:
-       case TR::dcmpeq:
-       case TR::fcmpequ:
-       case TR::dcmpequ:
-       case TR::bcmpeq:
-          return TR::InstOpCode::beq;
-       case TR::icmpne:
-       case TR::acmpne:
-       case TR::lcmpne:
-       case TR::fcmpne:
-       case TR::dcmpne:
-       case TR::fcmpneu:
-       case TR::dcmpneu:
-       case TR::bcmpne:
-          return TR::InstOpCode::bne;
-       case TR::icmplt:
-       case TR::iucmplt:
-       case TR::acmplt:
-       case TR::lcmplt:
-       case TR::lucmplt:
-       case TR::fcmple:
-       case TR::dcmple:
-       case TR::fcmplt:
-       case TR::dcmplt:
-       case TR::fcmpltu:
-       case TR::dcmpltu:
-       case TR::bucmplt:
-       case TR::bcmplt:
-          return TR::InstOpCode::blt;
-       case TR::icmpge:
-       case TR::iucmpge:
-       case TR::acmpge:
-       case TR::lcmpge:
-       case TR::lucmpge:
-       case TR::fcmpgeu:
-       case TR::dcmpgeu:
-       case TR::bucmpge:
-       case TR::bcmpge:
-          return TR::InstOpCode::bge;
-       case TR::icmpgt:
-       case TR::iucmpgt:
-       case TR::acmpgt:
-       case TR::lcmpgt:
-       case TR::lucmpgt:
-       case TR::fcmpge:
-       case TR::dcmpge:
-       case TR::fcmpgt:
-       case TR::dcmpgt:
-       case TR::fcmpgtu:
-       case TR::dcmpgtu:
-       case TR::bucmpgt:
-       case TR::bcmpgt:
-          return TR::InstOpCode::bgt;
-       case TR::icmple:
-       case TR::iucmple:
-       case TR::acmple:
-       case TR::lcmple:
-       case TR::lucmple:
-       case TR::fcmpleu:
-       case TR::dcmpleu:
-       case TR::bucmple:
-       case TR::bcmple:
-          return TR::InstOpCode::ble;
-       default:
-       TR_ASSERT(false, "assertion failure");
-       }
-
-    return TR::InstOpCode::bad;
-    }
-
 bool checkSelectReverse(TR::CodeGenerator *cg, TR::Node *node, TR::Node *&trueNode, TR::Node *&falseNode)
    {
    static bool disableSelectReverse = feGetEnv("TR_DisableSelectReverse") != NULL;
@@ -4613,67 +4536,14 @@ TR::Register *OMR::Power::TreeEvaluator::ZEROCHKEvaluator(TR::Node *node, TR::Co
 
    // Inline instructions for the check
    //
-   TR::Node *valueToCheck = node->getFirstChild();
+   TR::Register *condReg = cg->allocateRegister(TR_CCR);
+   CompareCondition cond = evaluateToConditionRegister(condReg, node, node->getFirstChild(), cg);
 
-   if (valueToCheck->getOpCode().isBooleanCompare() &&
-       valueToCheck->getChild(0)->getOpCode().isIntegerOrAddress() &&
-       valueToCheck->getChild(1)->getOpCode().isIntegerOrAddress() &&
-       performTransformation(cg->comp(), "O^O CODEGEN Optimizing ZEROCHK+%s %s\n", valueToCheck->getOpCode().getName(), valueToCheck->getName(cg->getDebug())))
-      {
-      if (valueToCheck->getOpCode().isCompareForOrder())
-         {
-         if (valueToCheck->getChild(0)->getOpCode().is8Byte() ||
-             valueToCheck->getChild(1)->getOpCode().is8Byte())
-            {
-            // switch branches since we want to go to OOL on node evaluating to 0
-            // which corresponds to an ifcmp fall-through
-            TR::InstOpCode::Mnemonic branchOp = cmp2branch(valueToCheck->getOpCode().getOpCodeForReverseBranch(), cg);
-            TR::InstOpCode::Mnemonic reverseBranchOp = cmp2branch(valueToCheck->getOpCodeValue(), cg);
-            TR::TreeEvaluator::compareLongsForOrder(branchOp, reverseBranchOp, slowPathLabel, valueToCheck, cg,
-                                 valueToCheck->getOpCode().isUnsignedCompare(), true, PPCOpProp_BranchUnlikely);
-            }
-         else
-            {
-            // switch branches since we want to go to OOL on node evaluating to 0
-            // which corresponds to an ifcmp fall-through
-            TR::TreeEvaluator::compareIntsForOrder(cmp2branch(valueToCheck->getOpCode().getOpCodeForReverseBranch(), cg),
-                                slowPathLabel, valueToCheck, cg, valueToCheck->getOpCode().isUnsignedCompare(),
-                                true, PPCOpProp_BranchUnlikely);
-            }
-         }
-      else
-         {
-         TR_ASSERT(valueToCheck->getOpCode().isCompareForEquality(), "Compare opcode must either be compare for order or for equality");
-         if (valueToCheck->getChild(0)->getOpCode().is8Byte() ||
-             valueToCheck->getChild(1)->getOpCode().is8Byte())
-            {
-            // switch branches since we want to go to OOL on node evaluating to 0
-            // which corresponds to an ifcmp fall-through
-            TR::TreeEvaluator::compareLongsForEquality(cmp2branch(valueToCheck->getOpCode().getOpCodeForReverseBranch(), cg),
-                                    slowPathLabel, valueToCheck, cg, true, PPCOpProp_BranchUnlikely);
-            }
-         else
-            {
-            TR::TreeEvaluator::compareIntsForEquality(cmp2branch(valueToCheck->getOpCode().getOpCodeForReverseBranch(), cg),
-                                   slowPathLabel, valueToCheck, cg, true, PPCOpProp_BranchUnlikely);
-            }
-         }
-      }
-   else
-      {
-      TR::Register *value = cg->evaluate(node->getFirstChild());
-      TR::Register *condReg = cg->allocateRegister(TR_CCR);
-      if (cg->comp()->target().is64Bit())
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi8, node, condReg, value, 0);
-      else
-         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, value, 0);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, PPCOpProp_BranchUnlikely, node, slowPathLabel, condReg);
-
-      cg->decReferenceCount(node->getFirstChild());
-      cg->stopUsingRegister(condReg);
-      }
+   generateConditionalBranchInstruction(cg, compareConditionToBranch(reverseCondition(cond)), PPCOpProp_BranchUnlikely, node, slowPathLabel, condReg);
    generateLabelInstruction(cg, TR::InstOpCode::label, node, restartLabel);
 
+   cg->stopUsingRegister(condReg);
+   cg->decReferenceCount(node->getFirstChild());
    return NULL;
    }
 

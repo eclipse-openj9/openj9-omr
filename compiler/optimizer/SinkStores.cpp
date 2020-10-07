@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -289,10 +289,7 @@ TR_MovableStore::TR_MovableStore(TR_SinkStores *s, TR_UseOrKillInfo *useOrKillIn
 TR_SinkStores::TR_SinkStores(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
    _allEdgePlacements(trMemory()),
-   _allBlockPlacements(trMemory()),
-   _indirectLoadAnchors(NULL),
-   _indirectLoadAnchorMap(NULL),
-   _firstUseOfLoadMap(NULL)
+   _allBlockPlacements(trMemory())
    {
    _tempSymMap = new (trHeapMemory()) TR_HashTab(comp()->trMemory(), stackAlloc, 4);
 
@@ -330,7 +327,6 @@ TR_GeneralSinkStores::TR_GeneralSinkStores(TR::OptimizationManager *manager)
    : TR_SinkStores(manager)
    {
    setUsesDataFlowAnalysis(true);
-   setSinkStoresWithIndirectLoads(false);
    setExceptionFlagIsSticky(true);
    setSinkStoresWithStaticLoads(true);
    }
@@ -532,8 +528,6 @@ int32_t TR_SinkStores::performStoreSinking()
    _searchMarkCalls = 0;
    _searchMarkWalks = 0;
    _killMarkWalks = 0;
-   _numFirstUseAnchors = 0;
-   _numIndirectLoadAnchors = 0;
    _numTransformations = 0;
 
    TR::CFG *cfg = comp()->getFlowGraph();
@@ -619,19 +613,6 @@ int32_t TR_SinkStores::performStoreSinking()
    _placementsForEdgesToBlock = (TR_EdgeStorePlacementList **) trMemory()->allocateStackMemory(arraySize);
    memset(_placementsForEdgesToBlock, 0, arraySize);
 
-   // some extra meta data is needed if stores with indirect loads are going to be sunk
-   if (sinkStoresWithIndirectLoads())
-      {
-      // estimate that half the blocks will have a sinkable store with an indirect child
-      if (trace())
-         traceMsg(comp(),"creating _indirectLoadAnchorMap with initSize = %d\n",comp()->getFlowGraph()->getNextNodeNumber()/2);
-      _indirectLoadAnchorMap = new (trStackMemory()) TR_HashTab(comp()->trMemory(), stackAlloc, comp()->getFlowGraph()->getNextNodeNumber()/2);
-      if (trace())
-         traceMsg(comp(),"creating _firstUseOfLoadMap with initSize = %d\n",comp()->getFlowGraph()->getNextNodeNumber()/4);
-      _firstUseOfLoadMap = new (trStackMemory()) TR_HashTab(comp()->trMemory(), stackAlloc, comp()->getFlowGraph()->getNextNodeNumber()/4);
-      _indirectLoadAnchors = new (trStackMemory()) ListHeadAndTail<TR_IndirectLoadAnchor>(trMemory());
-      }
-
    // grab what symbols are used/killed/exception killed from the live variable info
    //
    // The below call to initializeGenAndKillSetInfo is likely not needed at all as it looks like _symbolsUsedInBlock
@@ -689,8 +670,6 @@ int32_t TR_SinkStores::performStoreSinking()
       traceMsg(comp(),"  Removed %d stores\n", _numRemovedStores);
       traceMsg(comp(),"  Placed  %d stores\n", _numPlacements);
       traceMsg(comp(),"  Created %d temps\n", _numTemps);
-      traceMsg(comp(),"  Created %d anchors of killed loads\n",_numFirstUseAnchors);
-      traceMsg(comp(),"  Created %d anchors of indirect loads\n", _numIndirectLoadAnchors);
       traceMsg(comp(),"  Performed %d kill mark walks\n", _killMarkWalks);
       traceMsg(comp(),"  Performed %d search mark walks\n", _searchMarkWalks);
       traceMsg(comp(),"  Performed %d search mark calls\n", _searchMarkCalls);
@@ -698,8 +677,6 @@ int32_t TR_SinkStores::performStoreSinking()
       printf("  Removed %d stores\n", _numRemovedStores);
       printf("  Placed  %d stores\n", _numPlacements);
       printf("  Created %d temps\n", _numTemps);
-      printf("  Created %d anchors of killed loads\n",_numFirstUseAnchors);
-      printf("  Created %d anchors of indirect loads\n", _numIndirectLoadAnchors);
       printf("  Performed %d kill mark walks\n", _killMarkWalks);
       printf(" Performed %d search mark walks\n", _searchMarkWalks);
       printf("  Performed %d search mark calls\n", _searchMarkCalls);
@@ -1678,29 +1655,6 @@ void TR_SinkStores::doSinking()
    if (trace())
       traceMsg(comp(), "Now performing store placements:\n");
 
-   if (_indirectLoadAnchors)
-      {
-      ListIterator<TR_IndirectLoadAnchor> it(_indirectLoadAnchors);
-      for (TR_IndirectLoadAnchor *loadAnchor = it.getFirst(); loadAnchor; loadAnchor = it.getNext())
-         {
-         TR::Node *anchoredNode = loadAnchor->getNode();
-         if (anchoredNode->decFutureUseCount() == 0)
-            {
-            // Insert the anchoredNode at the start of the specified block
-            // This is correctly placed as it is:
-            //    - low enough that the child of the indirect load (the translateAddress node) has already been evaluated
-            //      (as the translateAddress would have ended the previous block)
-            //    - high enough that any subsequent uses will get naturally commoned
-            TR::Block *anchorBlock = loadAnchor->getAnchorBlock();
-            TR::TreeTop *anchorTree = loadAnchor->getAnchorTree();
-            if (trace())
-               traceMsg(comp(),   "anchoring indirect load %p after node %p at start of block_%d anchor tt node is %p\n",anchoredNode,anchorBlock->getEntry()->getNode(),anchorBlock->getNumber(),anchorTree->getNode());
-            anchorTree->insertBefore(TR::TreeTop::create(comp(), anchoredNode));
-            _numIndirectLoadAnchors++;
-            }
-         }
-      }
-
    while (!_allEdgePlacements.isEmpty())
       {
       TR_EdgeStorePlacement *placement=_allEdgePlacements.popHead();
@@ -1854,10 +1808,7 @@ bool TR_SinkStores::treeIsSinkableStore(TR::Node *node, bool sinkIndirectLoads, 
             {
             if (trace())
                {
-               if (sinkStoresWithIndirectLoads())
-                  traceMsg(comp(), "      *found an indirect load and store is not for a condition code*\n");
-               else
-                  traceMsg(comp(), "      *found an indirect load*\n");
+               traceMsg(comp(), "      *found an indirect load*\n");
                }
             return false;
             }
@@ -2205,16 +2156,6 @@ TR_SinkStores::findTempSym(TR::Node *load)
       return 0;
    }
 
-TR_FirstUseOfLoad*
-TR_SinkStores::findFirstUseOfLoad(TR::Node *load)
-   {
-   TR_HashId id;
-   if (_firstUseOfLoadMap->locate(load, id))
-      return (TR_FirstUseOfLoad*) _firstUseOfLoadMap->getData(id);
-   else
-      return NULL;
-   }
-
 void
 TR_SinkStores::genStoreToTempSyms(TR::TreeTop *storeLocation,
                                   TR::Node *node,
@@ -2317,250 +2258,6 @@ TR_SinkStores::replaceLoadsWithTempSym(TR::Node *newNode, TR::Node *origNode, TR
       TR::Node *origChild = origNode->getChild(i);
       replaceLoadsWithTempSym(newChild, origChild, needTempForCommonedLoads);
       }
-   }
-
-
-// A single store that is being replicated to a side exit may have 0 or more nodes replaced with anchored nodes for different reasons
-// insertAnchoredNodes will take care of all possible node replacements so only a single recursive walk of a store is required
-uint32_t
-TR_SinkStores::insertAnchoredNodes(TR_MovableStore *store,
-                                   TR::Node *nodeCopy,
-                                   TR::Node *nodeOrig,
-                                   TR::Node *nodeParentCopy,
-                                   int32_t childNum,
-                                   TR_BitVector *needTempForCommonedLoads,
-                                   TR_BitVector *blockingUsedSymbols,
-                                   TR_BitVector *blockingCommonedSymbols,
-                                   TR::Block *currentBlock,
-                                   List<TR_IndirectLoadAnchor> *indirectLoadAnchorsForThisStore,
-                                   vcount_t visitCount)
-   {
-   uint32_t increment = 0;
-
-   // insertAnchoredNodes is called from two places
-   // 1. When creating the side exit store tree this function will replace the duplicated tree with references to
-   //    anchored nodes. In this case, nodeParentCopy != NULL and all nodes must be visited so duplicated references
-   //    within the tree are all replaced. To avoid very deep recursion MAX_TREE_DEPTH_TO_DUP is checked before calling
-   //    this function.
-   // 2. When creating anchors for the fall through store. In this case, nodeParentCopy == NULL and all nodes need only be
-   //    visited once because only a single anchor has to be created even if the fall through store tree has multiple
-   //    references to the same node (the multiple references will naturally refer to the single anchored copy)
-   if (nodeParentCopy == NULL)
-      {
-      vcount_t oldVisitCount = nodeOrig->getVisitCount();
-      if (oldVisitCount == visitCount)
-         {
-         if (0 && trace())
-            traceMsg(comp(),"         oldVisitCount == visitCount == %d so do not recurse\n",visitCount);
-         return increment;
-         }
-      else
-         {
-         if (0 && trace())
-            traceMsg(comp(),"         oldVisitCount (%d) != visitCount (%d) so do recurse\n",oldVisitCount,visitCount);
-         nodeOrig->setVisitCount(visitCount);
-         }
-      }
-      // only recurse each parent once
-   else
-      {
-      vcount_t oldVisitCount = nodeParentCopy->getVisitCount();
-      if (oldVisitCount == visitCount)
-         {
-         return increment;
-         }
-      }
-
-   // In this case only anchors for blockingUsedSymbols and blockingCommonedSymbols need to be created as indirect load nodes
-   // are naturally commoned correctly for the fall through sunk store
-   if (indirectLoadAnchorsForThisStore && nodeOrig->getOpCode().isLoadIndirect())
-      {
-      TR_HashId locateID;
-      TR::Node *anchoredNode = NULL;
-      if (trace())
-         traceMsg(comp(),"      insertAnchoredNodes found indirectLoad at %p, increment %d -> %d\n",nodeOrig,increment,increment+1);
-      if (_indirectLoadAnchorMap->locate(nodeOrig, locateID))
-         {
-         anchoredNode = (TR::Node*)_indirectLoadAnchorMap->getData(locateID);
-         anchoredNode->incFutureUseCount();
-         }
-      else
-         {
-         anchoredNode = TR::Node::create(TR::treetop, 1, nodeOrig);
-         TR_ASSERT(false /*cg()->useBroaderEBBDefinition()*/, "expected EnableBroaderEBBDefinition to be set");
-         anchoredNode->setFutureUseCount(1);
-         TR_HashId addID = 0;
-         _indirectLoadAnchorMap->add(nodeOrig, addID, anchoredNode);
-         }
-      if (trace())
-         traceMsg(comp(),"create loadAnchored for node %p at currentBlock %d with nodeOrig %p for store node %p\n",anchoredNode,currentBlock->getNumber(),nodeOrig,store->_useOrKillInfo->_tt->getNode());
-      indirectLoadAnchorsForThisStore->add(new (trStackMemory()) TR_IndirectLoadAnchor(anchoredNode, currentBlock, store->_useOrKillInfo->_tt));
-      if (trace())
-         traceMsg(comp(),"      indirectCase  nodeParentCopy %p setting childnum %d with nodeOrig %p\n",nodeParentCopy,childNum,nodeOrig);
-      increment++;
-
-      TR::SymbolReference* symRef = nodeOrig->getSymbolReference();
-
-      if (symRef)
-         {
-         TR::SparseBitVector indirectMethodMetaUses(comp()->allocator());
-         symRef->getUseDefAliases(false).getAliases(indirectMethodMetaUses);
-
-         bool updated = false;
-         if (trace() && !indirectMethodMetaUses.IsZero())
-            {
-            traceMsg(comp(),"           indirectMethodMetaUses:\n");
-            (*comp()) << indirectMethodMetaUses << "\n";
-            }
-         updated = !indirectMethodMetaUses.IsZero();
-         if (updated && trace())
-            {
-            traceMsg(comp(),"updating symbolsUsed in create loadAnchored\n");
-            traceMsg(comp(), "BEF  _symbolsUsedInBlock[%d]: ",currentBlock->getNumber());
-            _symbolsUsedInBlock[currentBlock->getNumber()]->print(comp());
-            traceMsg(comp(), "\n");
-            }
-         TR::SparseBitVector::Cursor aliasesCursor(indirectMethodMetaUses);
-         for (aliasesCursor.SetToFirstOne(); aliasesCursor.Valid(); aliasesCursor.SetToNextOne())
-            {
-            int32_t usedSymbolIndex;
-            TR::SymbolReference *usedSymRef = comp()->getSymRefTab()->getSymRef(aliasesCursor);
-            TR::RegisterMappedSymbol *usedSymbol = usedSymRef->getSymbol()->getMethodMetaDataSymbol();
-            if (usedSymbol)
-               {
-               usedSymbolIndex = usedSymbol->getLiveLocalIndex();
-               if (usedSymbolIndex != INVALID_LIVENESS_INDEX && usedSymbolIndex < _liveVarInfo->numLocals())
-                  {
-                  if (trace())
-                     {
-                     traceMsg(comp(),"               update _symbolsUsedInBlock[%d] for anchor set symIdx %d\n",currentBlock->getNumber(), usedSymbolIndex);
-                     }
-                  _symbolsUsedInBlock[currentBlock->getNumber()]->set(usedSymbolIndex);
-                  }
-               }
-            }
-         if (updated && trace())
-            {
-            traceMsg(comp(), "AFT  _symbolsUsedInBlock[%d]: ",currentBlock->getNumber());
-            _symbolsUsedInBlock[currentBlock->getNumber()]->print(comp());
-            traceMsg(comp(), "\n");
-            }
-         }
-
-      if (nodeParentCopy)
-         {
-         // if the node is being replaced then there is no need to search below because the side exit tree being created
-         // can now not reference anything below this point
-         // in the fall through case (where the node is not being replaced) then the children of this indirect load must be
-         // searched in case there are first uses of commoned or blocked symbols that should be anchored
-         nodeParentCopy->setAndIncChild(childNum, nodeOrig);
-         return increment;
-         }
-      }
-/*
-   else if (nodeOrig->getOpCode().isLoadConst() && !nodeParentCopy)
-      {
-      // Must uncommon any const children as these may not be evaluated into registers at the anchor point
-      // If they are only first evaluated below the anchor then the register may be commoned and this would be illegal
-      // as the evaluation point may no longer be on a dominating path
-      // iand    // anchor point
-      //   iload
-      //   iconst // not evaluated into a register
-      // ifbucmpne -> sideExit1
-      // ...
-      // bustore sym1
-      //    iand
-      //       =>iload
-      //         iconst // evaluated into a register now
-      // ...
-      // sideExit1:
-      // bustore sym1
-      //    iand
-      //       =>iload
-      //       =>iconst // illegally commoned from a path that does not dominate
-      TR::Node *nodeClone = TR::Node::copy(nodeOrig, comp());
-      nodeOrig->decReferenceCount();
-      nodeParentOrig->setAndIncChild(childNum,nodeClone);
-      }
-*/
-   else if (nodeOrig->getOpCode().isLoadVarDirect() && nodeOrig->getOpCode().hasSymbolReference() &&
-            !nodeOrig->getSymbolReference()->getSymbol()->isStatic() && getSinkableSymbol(nodeOrig)->getLiveLocalIndex() != INVALID_LIVENESS_INDEX)
-      {
-      TR::RegisterMappedSymbol *local = getSinkableSymbol(nodeOrig);
-      TR_ASSERT(local,"invalid local symbol\n");
-      int32_t symIdx = local->getLiveLocalIndex();
-      TR_FirstUseOfLoad *firstUseOfLoad = NULL;
-
-      if (blockingUsedSymbols && blockingUsedSymbols->isSet(symIdx))
-         {
-         firstUseOfLoad = findFirstUseOfLoad(nodeOrig);
-         // A first use may already exist for a blocking used symbol load if this node itself is commoned somewhere below
-         if (!firstUseOfLoad)
-            {
-            firstUseOfLoad = new (trStackMemory()) TR_FirstUseOfLoad(nodeOrig, store->_useOrKillInfo->_tt, store->_useOrKillInfo->_block->getNumber());
-            TR_HashId addID = 0;
-            _firstUseOfLoadMap->add(nodeOrig, addID, firstUseOfLoad);
-            if (trace())
-               traceMsg(comp(),"      insertAnchoredNodes usedBlocked create/add for symIdx %d  firstUse %p with node %p and anchor treetop\n",symIdx,firstUseOfLoad,nodeOrig,store->_useOrKillInfo->_tt->getNode());
-            }
-         else
-            {
-            if (trace())
-               traceMsg(comp(),"      insertAnchoredNodes usedBlocked found for symIdx %d firstUse %p with node %p and anchor treetop %p\n",symIdx,firstUseOfLoad,nodeOrig,firstUseOfLoad->getAnchorLocation());
-            }
-         }
-      TR_ASSERT(!firstUseOfLoad || (firstUseOfLoad->getNode() == nodeOrig),"nodes should match, firstUseOfLoad->getNode() = %p, nodeOrig = %p\n",firstUseOfLoad->getNode(),nodeOrig);
-      if (firstUseOfLoad)
-         {
-         if (!firstUseOfLoad->isAnchored())
-            {
-            TR::Node *anchoredLoad =  TR::Node::create(TR::treetop, 1, nodeOrig);
-            TR_ASSERT(false /*cg()->useBroaderEBBDefinition()*/, "expected EnableBroaderEBBDefinition to be set");
-            TR::TreeTop *anchoredTT = TR::TreeTop::create(comp(), anchoredLoad);
-            firstUseOfLoad->getAnchorLocation()->insertBefore(anchoredTT);
-            // This anchor creates a new use of symIdx in the anchoring block so update _symbolsUsedInBlock so
-            // earlier stores are not incorrectly sunk past this anchor
-            _symbolsUsedInBlock[firstUseOfLoad->getAnchorBlockNumber()]->set(symIdx);
-            firstUseOfLoad->setIsAnchored();
-            if (trace())
-            {
-            traceMsg(comp(),"            anchor firstUse %p of load %p before %p\n",firstUseOfLoad,nodeOrig,anchoredTT->getNode());
-            traceMsg(comp(),"               update _symbolsUsedInBlock[%d] for anchor set symIdx %d\n",firstUseOfLoad->getAnchorBlockNumber(),symIdx);
-            traceMsg(comp(),"               _symbolsUsedInBlock[%d] ",firstUseOfLoad->getAnchorBlockNumber());
-            _symbolsUsedInBlock[firstUseOfLoad->getAnchorBlockNumber()]->print(comp());
-            traceMsg(comp(), "\n");
-            }
-
-            _numFirstUseAnchors++;
-            }
-         if (nodeCopy)
-            {
-            TR_ASSERT(nodeParentCopy,"if nodeCopy is not NULL then nodeParentCopy should be not NULL too\n");
-            if (trace())
-               traceMsg(comp(),"            replace nodeCopy with nodeOrig %p on dup\n",nodeOrig);
-            nodeCopy->recursivelyDecReferenceCount();
-            nodeParentCopy->setAndIncChild(childNum, nodeOrig);
-            nodeCopy = nodeOrig;
-            }
-         }
-      }
-
-   for (int32_t i = nodeOrig->getNumChildren()-1; i >= 0; i--)
-      {
-      increment+=insertAnchoredNodes(store, nodeCopy ? nodeCopy->getChild(i) : NULL,
-                                     nodeOrig->getChild(i),
-                                     nodeCopy,
-                                     i,
-                                     needTempForCommonedLoads,
-                                     blockingUsedSymbols,
-                                     blockingCommonedSymbols,
-                                     currentBlock,
-                                     indirectLoadAnchorsForThisStore,
-                                     visitCount);
-      }
-   if (nodeCopy)
-      nodeCopy->setVisitCount(visitCount);
-   return increment;
    }
 
 

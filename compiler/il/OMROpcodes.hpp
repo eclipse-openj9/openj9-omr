@@ -3406,38 +3406,6 @@
       /* .description          = */ icmple, /* integer compare if less than or equal */ \
    ) \
    MACRO(\
-      /* .opcode               = */ TR::iucmpeq, \
-      /* .name                 = */ "iucmpeq", \
-      /* .properties1          = */ ILProp1::BooleanCompare, \
-      /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, \
-      /* .properties3          = */ ILProp3::CompareTrueIfEqual, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int32, \
-      /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, \
-      /* .childProperties      = */ TWO_SAME_CHILD(TR::Int32), \
-      /* .swapChildrenOpCode   = */ TR::iucmpeq, \
-      /* .reverseBranchOpCode  = */ TR::iucmpne, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::ifiucmpeq, \
-      /* .description          = */ iucmpeq, /* unsigned integer compare if equal */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::iucmpne, \
-      /* .name                 = */ "iucmpne", \
-      /* .properties1          = */ ILProp1::BooleanCompare, \
-      /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, \
-      /* .properties3          = */ ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int32, \
-      /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, \
-      /* .childProperties      = */ TWO_SAME_CHILD(TR::Int32), \
-      /* .swapChildrenOpCode   = */ TR::iucmpne, \
-      /* .reverseBranchOpCode  = */ TR::iucmpeq, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::ifiucmpne, \
-      /* .description          = */ iucmpne, /* unsigned integer compare if not equal */ \
-   ) \
-   MACRO(\
       /* .opcode               = */ TR::iucmplt, \
       /* .name                 = */ "iucmplt", \
       /* .properties1          = */ ILProp1::BooleanCompare, \
@@ -3596,38 +3564,6 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::iflcmple, \
       /* .description          = */ lcmple, /* long compare if less than or equal */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::lucmpeq, \
-      /* .name                 = */ "lucmpeq", \
-      /* .properties1          = */ ILProp1::BooleanCompare, \
-      /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, \
-      /* .properties3          = */ ILProp3::CompareTrueIfEqual, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int32, \
-      /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, \
-      /* .childProperties      = */ TWO_SAME_CHILD(TR::Int64), \
-      /* .swapChildrenOpCode   = */ TR::lucmpeq, \
-      /* .reverseBranchOpCode  = */ TR::lucmpne, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::iflucmpeq, \
-      /* .description          = */ lucmpeq, /* unsigned long compare if equal */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::lucmpne, \
-      /* .name                 = */ "lucmpne", \
-      /* .properties1          = */ ILProp1::BooleanCompare, \
-      /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, \
-      /* .properties3          = */ ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int32, \
-      /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, \
-      /* .childProperties      = */ TWO_SAME_CHILD(TR::Int64), \
-      /* .swapChildrenOpCode   = */ TR::lucmpne, \
-      /* .reverseBranchOpCode  = */ TR::lucmpeq, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::iflucmpne, \
-      /* .description          = */ lucmpne, /* unsigned long compare if not equal */ \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lucmplt, \
@@ -4270,38 +4206,6 @@
       /* .description          = */ bcmple, /* byte compare if less than or equal */ \
    ) \
    MACRO(\
-      /* .opcode               = */ TR::bucmpeq, \
-      /* .name                 = */ "bucmpeq", \
-      /* .properties1          = */ ILProp1::BooleanCompare, \
-      /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, \
-      /* .properties3          = */ ILProp3::CompareTrueIfEqual, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int32, \
-      /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, \
-      /* .childProperties      = */ TWO_SAME_CHILD(TR::Int8), \
-      /* .swapChildrenOpCode   = */ TR::bucmpeq, \
-      /* .reverseBranchOpCode  = */ TR::bucmpne, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::ifbucmpeq, \
-      /* .description          = */ bucmpeq, /* unsigned byte compare if equal */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::bucmpne, \
-      /* .name                 = */ "bucmpne", \
-      /* .properties1          = */ ILProp1::BooleanCompare, \
-      /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::UnsignedCompare, \
-      /* .properties3          = */ ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int32, \
-      /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer | ILTypeProp::Unsigned, \
-      /* .childProperties      = */ TWO_SAME_CHILD(TR::Int8), \
-      /* .swapChildrenOpCode   = */ TR::bucmpne, \
-      /* .reverseBranchOpCode  = */ TR::bucmpeq, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::ifbucmpne, \
-      /* .description          = */ bucmpne, /* unsigned byte compare if not equal */ \
-   ) \
-   MACRO(\
       /* .opcode               = */ TR::bucmplt, \
       /* .name                 = */ "bucmplt", \
       /* .properties1          = */ ILProp1::BooleanCompare, \
@@ -4460,38 +4364,6 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::ifscmple, \
       /* .description          = */ scmple, /* short integer compare if less than or equal */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::sucmpeq, \
-      /* .name                 = */ "sucmpeq", \
-      /* .properties1          = */ ILProp1::BooleanCompare, \
-      /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-      /* .properties3          = */ ILProp3::CompareTrueIfEqual, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int32, \
-      /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
-      /* .childProperties      = */ TWO_SAME_CHILD(TR::Int16), \
-      /* .swapChildrenOpCode   = */ TR::sucmpeq, \
-      /* .reverseBranchOpCode  = */ TR::sucmpne, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::ifsucmpeq, \
-      /* .description          = */ sucmpeq, /* char compare if equal */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::sucmpne, \
-      /* .name                 = */ "sucmpne", \
-      /* .properties1          = */ ILProp1::BooleanCompare, \
-      /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-      /* .properties3          = */ ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int32, \
-      /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
-      /* .childProperties      = */ TWO_SAME_CHILD(TR::Int16), \
-      /* .swapChildrenOpCode   = */ TR::sucmpne, \
-      /* .reverseBranchOpCode  = */ TR::sucmpeq, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::ifsucmpne, \
-      /* .description          = */ sucmpne, /* char compare if not equal */ \
    ) \
    MACRO(\
       /* .opcode               = */ TR::sucmplt, \
@@ -4734,38 +4606,6 @@
       /* .description          = */ ificmple, /* integer compare and branch if less than or equal */ \
    ) \
    MACRO(\
-      /* .opcode               = */ TR::ifiucmpeq, \
-      /* .name                 = */ "ifiucmpeq", \
-      /* .properties1          = */ ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, \
-      /* .properties2          = */ ILProp2::UnsignedCompare, \
-      /* .properties3          = */ ILProp3::CompareTrueIfEqual, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::NoType, \
-      /* .typeProperties       = */ ILTypeProp::Unsigned, \
-      /* .childProperties      = */ TWO_SAME_CHILD(TR::Int32), \
-      /* .swapChildrenOpCode   = */ TR::ifiucmpeq, \
-      /* .reverseBranchOpCode  = */ TR::ifiucmpne, \
-      /* .booleanCompareOpCode = */ TR::iucmpeq, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ ifiucmpeq, /* unsigned integer compare and branch if equal */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::ifiucmpne, \
-      /* .name                 = */ "ifiucmpne", \
-      /* .properties1          = */ ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, \
-      /* .properties2          = */ ILProp2::UnsignedCompare, \
-      /* .properties3          = */ ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::NoType, \
-      /* .typeProperties       = */ ILTypeProp::Unsigned, \
-      /* .childProperties      = */ TWO_SAME_CHILD(TR::Int32), \
-      /* .swapChildrenOpCode   = */ TR::ifiucmpne, \
-      /* .reverseBranchOpCode  = */ TR::ifiucmpeq, \
-      /* .booleanCompareOpCode = */ TR::iucmpne, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ ifiucmpne, /* unsigned integer compare and branch if not equal */ \
-   ) \
-   MACRO(\
       /* .opcode               = */ TR::ifiucmplt, \
       /* .name                 = */ "ifiucmplt", \
       /* .properties1          = */ ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, \
@@ -4924,38 +4764,6 @@
       /* .booleanCompareOpCode = */ TR::lcmple, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ iflcmple, /* long compare and branch if less than or equal */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::iflucmpeq, \
-      /* .name                 = */ "iflucmpeq", \
-      /* .properties1          = */ ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, \
-      /* .properties2          = */ ILProp2::UnsignedCompare, \
-      /* .properties3          = */ ILProp3::CompareTrueIfEqual, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::NoType, \
-      /* .typeProperties       = */ ILTypeProp::Unsigned, \
-      /* .childProperties      = */ TWO_SAME_CHILD(TR::Int64), \
-      /* .swapChildrenOpCode   = */ TR::iflucmpeq, \
-      /* .reverseBranchOpCode  = */ TR::iflucmpne, \
-      /* .booleanCompareOpCode = */ TR::lucmpeq, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ iflucmpeq, /* unsigned long compare and branch if equal */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::iflucmpne, \
-      /* .name                 = */ "iflucmpne", \
-      /* .properties1          = */ ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, \
-      /* .properties2          = */ ILProp2::UnsignedCompare, \
-      /* .properties3          = */ ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::NoType, \
-      /* .typeProperties       = */ ILTypeProp::Unsigned, \
-      /* .childProperties      = */ TWO_SAME_CHILD(TR::Int64), \
-      /* .swapChildrenOpCode   = */ TR::iflucmpne, \
-      /* .reverseBranchOpCode  = */ TR::iflucmpeq, \
-      /* .booleanCompareOpCode = */ TR::lucmpne, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ iflucmpne, /* unsigned long compare and branch if not equal */ \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iflucmplt, \
@@ -5598,38 +5406,6 @@
       /* .description          = */ ifbcmple, /* byte compare and branch if less than or equal */ \
    ) \
    MACRO(\
-      /* .opcode               = */ TR::ifbucmpeq, \
-      /* .name                 = */ "ifbucmpeq", \
-      /* .properties1          = */ ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, \
-      /* .properties2          = */ ILProp2::UnsignedCompare, \
-      /* .properties3          = */ ILProp3::CompareTrueIfEqual, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::NoType, \
-      /* .typeProperties       = */ ILTypeProp::Unsigned, \
-      /* .childProperties      = */ TWO_SAME_CHILD(TR::Int8), \
-      /* .swapChildrenOpCode   = */ TR::ifbucmpeq, \
-      /* .reverseBranchOpCode  = */ TR::ifbucmpne, \
-      /* .booleanCompareOpCode = */ TR::bucmpeq, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ ifbucmpeq, /* unsigned byte compare and branch if equal */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::ifbucmpne, \
-      /* .name                 = */ "ifbucmpne", \
-      /* .properties1          = */ ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, \
-      /* .properties2          = */ ILProp2::UnsignedCompare, \
-      /* .properties3          = */ ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::NoType, \
-      /* .typeProperties       = */ ILTypeProp::Unsigned, \
-      /* .childProperties      = */ TWO_SAME_CHILD(TR::Int8), \
-      /* .swapChildrenOpCode   = */ TR::ifbucmpne, \
-      /* .reverseBranchOpCode  = */ TR::ifbucmpeq, \
-      /* .booleanCompareOpCode = */ TR::bucmpne, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ ifbucmpne, /* unsigned byte compare and branch if not equal */ \
-   ) \
-   MACRO(\
       /* .opcode               = */ TR::ifbucmplt, \
       /* .name                 = */ "ifbucmplt", \
       /* .properties1          = */ ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, \
@@ -5788,38 +5564,6 @@
       /* .booleanCompareOpCode = */ TR::scmple, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ifscmple, /* short integer compare and branch if less than or equal */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::ifsucmpeq, \
-      /* .name                 = */ "ifsucmpeq", \
-      /* .properties1          = */ ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, \
-      /* .properties2          = */ ILProp2::UnsignedCompare, \
-      /* .properties3          = */ ILProp3::CompareTrueIfEqual, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::NoType, \
-      /* .typeProperties       = */ ILTypeProp::Unsigned, \
-      /* .childProperties      = */ TWO_SAME_CHILD(TR::Int16), \
-      /* .swapChildrenOpCode   = */ TR::ifsucmpeq, \
-      /* .reverseBranchOpCode  = */ TR::ifsucmpne, \
-      /* .booleanCompareOpCode = */ TR::sucmpeq, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ ifsucmpeq, /* char compare and branch if equal */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::ifsucmpne, \
-      /* .name                 = */ "ifsucmpne", \
-      /* .properties1          = */ ILProp1::BooleanCompare | ILProp1::Branch | ILProp1::TreeTop, \
-      /* .properties2          = */ ILProp2::UnsignedCompare, \
-      /* .properties3          = */ ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::NoType, \
-      /* .typeProperties       = */ ILTypeProp::Unsigned, \
-      /* .childProperties      = */ TWO_SAME_CHILD(TR::Int16), \
-      /* .swapChildrenOpCode   = */ TR::ifsucmpne, \
-      /* .reverseBranchOpCode  = */ TR::ifsucmpeq, \
-      /* .booleanCompareOpCode = */ TR::sucmpne, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ ifsucmpne, /* char compare and branch if not equal */ \
    ) \
    MACRO(\
       /* .opcode               = */ TR::ifsucmplt, \

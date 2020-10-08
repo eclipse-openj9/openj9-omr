@@ -78,7 +78,7 @@ public:
 
    CodeGenerator();
 
-   initialize();
+   void initialize();
 
    /**
     * @brief AArch64 hook to begin instruction selection

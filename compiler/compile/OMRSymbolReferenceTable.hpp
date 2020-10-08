@@ -369,6 +369,25 @@ class SymbolReferenceTable
       jProfileValueSymbol, 
       jProfileValueWithNullCHKSymbol,
 
+      /** \brief
+       * This symbol represents the tempSlot field in j9vmthread. It will provide a mechanism for the compiler
+       * to insert temporary information that the VM can use - such as the number of args when calling
+       * signature-polymorphic methods that are implemented in the VM as internal natives. The VM can use that
+       * information in a number of ways, such as locating items on the stack.
+       *
+       * \code
+       *    istore  <j9VMThreadTempSlotField>
+       *       iconst <number of args for the call to the signature-polymorphic VM internal native method>
+       *    icall <VM internal native method>
+       *       <object the VM needs to locate>
+       *       <parm1>
+       *       <parm2>
+       *       .
+       *       .
+       * \endcode
+       */
+      j9VMThreadTempSlotFieldSymbol,
+
       firstPerCodeCacheHelperSymbol,
       lastPerCodeCacheHelperSymbol = firstPerCodeCacheHelperSymbol + TR_numCCPreLoadedCode - 1,
 

@@ -1466,7 +1466,6 @@ OMR::Z::Linkage::pushLongArg32(TR::Node * callNode, TR::Node * child, int32_t nu
       {
 #ifdef J9_PROJECT_SPECIFIC
       case TR::java_lang_invoke_ComputedCalls_dispatchJ9Method:
-      case TR::java_lang_invoke_MethodHandle_invokeWithArgumentsHelper:
          isStorePair = true;
          break;
 #endif
@@ -1590,7 +1589,6 @@ OMR::Z::Linkage::pushArg(TR::Node * callNode, TR::Node * child, int32_t numInteg
       {
 #ifdef J9_PROJECT_SPECIFIC
       case TR::java_lang_invoke_ComputedCalls_dispatchJ9Method:
-      case TR::java_lang_invoke_MethodHandle_invokeWithArgumentsHelper:
          isStoreArg = true;
          break;
 #endif

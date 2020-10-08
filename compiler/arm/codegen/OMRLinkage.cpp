@@ -555,10 +555,6 @@ int32_t OMR::ARM::Linkage::buildARMLinkageArgs(TR::Node                         
       case TR::java_lang_invoke_ComputedCalls_dispatchVirtual:
          specialArgReg = self()->getProperties().getVTableIndexArgumentRegister();
          break;
-      case TR::java_lang_invoke_MethodHandle_invokeWithArgumentsHelper:
-         numIntArgRegs   = 0;
-         numFloatArgRegs = 0;
-         break;
 #endif
       }
 

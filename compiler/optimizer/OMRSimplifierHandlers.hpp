@@ -769,9 +769,6 @@ TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier *
 #define vlRegStoreSimplifierHandler dftSimplifier
 #define vfRegStoreSimplifierHandler dftSimplifier
 #define vdRegStoreSimplifierHandler dftSimplifier
-#define iuconstSimplifierHandler constSimplifier
-#define luconstSimplifierHandler lconstSimplifier
-#define buconstSimplifierHandler constSimplifier
 #define iuloadSimplifierHandler directLoadSimplifier
 #define luloadSimplifierHandler directLoadSimplifier
 #define buloadSimplifierHandler directLoadSimplifier
@@ -784,9 +781,6 @@ TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier *
 #define iustoreiSimplifierHandler indirectStoreSimplifier
 #define lustoreiSimplifierHandler indirectStoreSimplifier
 #define bustoreiSimplifierHandler indirectStoreSimplifier
-#define iureturnSimplifierHandler dftSimplifier
-#define lureturnSimplifierHandler dftSimplifier
-#define lucallSimplifierHandler lcallSimplifier
 #define iuaddSimplifierHandler iaddSimplifier
 #define luaddSimplifierHandler laddSimplifier
 #define buaddSimplifierHandler baddSimplifier
@@ -807,7 +801,6 @@ TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier *
 #define luRegLoadSimplifierHandler dftSimplifier
 #define iuRegStoreSimplifierHandler dftSimplifier
 #define luRegStoreSimplifierHandler dftSimplifier
-#define cconstSimplifierHandler constSimplifier
 #define cloadSimplifierHandler directLoadSimplifier
 #define cloadiSimplifierHandler indirectLoadSimplifier
 #define cstoreSimplifierHandler dftSimplifier
@@ -833,7 +826,6 @@ TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier *
 #define discontigarraylengthSimplifierHandler arrayLengthSimplifier
 #define icalliSimplifierHandler dftSimplifier
 #define lcalliSimplifierHandler dftSimplifier
-#define lucalliSimplifierHandler dftSimplifier
 #define fcalliSimplifierHandler dftSimplifier
 #define dcalliSimplifierHandler dftSimplifier
 #define acalliSimplifierHandler dftSimplifier
@@ -988,7 +980,9 @@ TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier *
 #define lnolzSimplifierHandler dftSimplifier
 #define lnotzSimplifierHandler dftSimplifier
 #define lpopcntSimplifierHandler dftSimplifier
+#define sbyteswapSimplifierHandler dftSimplifier
 #define ibyteswapSimplifierHandler dftSimplifier
+#define lbyteswapSimplifierHandler dftSimplifier
 #define bbitpermuteSimplifierHandler dftSimplifier
 #define sbitpermuteSimplifierHandler dftSimplifier
 #define ibitpermuteSimplifierHandler dftSimplifier

@@ -516,9 +516,6 @@
 #define vlRegStorePowerEvaluator TR::TreeEvaluator::fRegStoreEvaluator
 #define vfRegStorePowerEvaluator TR::TreeEvaluator::fRegStoreEvaluator
 #define vdRegStorePowerEvaluator TR::TreeEvaluator::fRegStoreEvaluator
-#define iuconstPowerEvaluator TR::TreeEvaluator::iconstEvaluator
-#define luconstPowerEvaluator TR::TreeEvaluator::lconstEvaluator
-#define buconstPowerEvaluator TR::TreeEvaluator::iconstEvaluator
 #define iuloadPowerEvaluator TR::TreeEvaluator::iloadEvaluator
 #define luloadPowerEvaluator TR::TreeEvaluator::lloadEvaluator
 #define buloadPowerEvaluator TR::TreeEvaluator::buloadEvaluator
@@ -531,9 +528,6 @@
 #define iustoreiPowerEvaluator TR::TreeEvaluator::istoreEvaluator
 #define lustoreiPowerEvaluator TR::TreeEvaluator::lstoreEvaluator
 #define bustoreiPowerEvaluator TR::TreeEvaluator::bstoreEvaluator
-#define iureturnPowerEvaluator TR::TreeEvaluator::ireturnEvaluator
-#define lureturnPowerEvaluator TR::TreeEvaluator::lreturnEvaluator
-#define lucallPowerEvaluator TR::TreeEvaluator::directCallEvaluator
 #define iuaddPowerEvaluator TR::TreeEvaluator::iaddEvaluator
 #define luaddPowerEvaluator TR::TreeEvaluator::laddEvaluator
 #define buaddPowerEvaluator TR::TreeEvaluator::unImpOpEvaluator
@@ -554,7 +548,6 @@
 #define luRegLoadPowerEvaluator TR::TreeEvaluator::gprRegLoadEvaluator
 #define iuRegStorePowerEvaluator TR::TreeEvaluator::gprRegStoreEvaluator
 #define luRegStorePowerEvaluator TR::TreeEvaluator::gprRegStoreEvaluator
-#define cconstPowerEvaluator TR::TreeEvaluator::iconstEvaluator
 #define cloadPowerEvaluator TR::TreeEvaluator::cloadEvaluator
 #define cloadiPowerEvaluator TR::TreeEvaluator::cloadEvaluator
 #define cstorePowerEvaluator TR::TreeEvaluator::cstoreEvaluator
@@ -580,7 +573,6 @@
 #define discontigarraylengthPowerEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define icalliPowerEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define lcalliPowerEvaluator TR::TreeEvaluator::indirectCallEvaluator
-#define lucalliPowerEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define fcalliPowerEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define dcalliPowerEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define acalliPowerEvaluator TR::TreeEvaluator::indirectCallEvaluator
@@ -735,7 +727,9 @@
 #define lnolzPowerEvaluator TR::TreeEvaluator::longNumberOfLeadingZeros
 #define lnotzPowerEvaluator TR::TreeEvaluator::longNumberOfTrailingZeros
 #define lpopcntPowerEvaluator TR::TreeEvaluator::longBitCount
+#define sbyteswapPowerEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ibyteswapPowerEvaluator TR::TreeEvaluator::ibyteswapEvaluator
+#define lbyteswapPowerEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define bbitpermutePowerEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define sbitpermutePowerEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ibitpermutePowerEvaluator TR::TreeEvaluator::unImpOpEvaluator

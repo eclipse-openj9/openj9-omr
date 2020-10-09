@@ -522,9 +522,6 @@
 #define vlRegStoreZEvaluator TR::TreeEvaluator::vRegStoreEvaluator
 #define vfRegStoreZEvaluator TR::TreeEvaluator::vRegStoreEvaluator
 #define vdRegStoreZEvaluator TR::TreeEvaluator::vRegStoreEvaluator
-#define iuconstZEvaluator TR::TreeEvaluator::iconstEvaluator
-#define luconstZEvaluator TR::TreeEvaluator::lconstEvaluator
-#define buconstZEvaluator TR::TreeEvaluator::bconstEvaluator
 #define iuloadZEvaluator TR::TreeEvaluator::iloadEvaluator
 #define luloadZEvaluator TR::TreeEvaluator::lloadEvaluator
 #define buloadZEvaluator TR::TreeEvaluator::bloadEvaluator
@@ -537,9 +534,6 @@
 #define iustoreiZEvaluator TR::TreeEvaluator::istoreEvaluator
 #define lustoreiZEvaluator TR::TreeEvaluator::lstoreEvaluator
 #define bustoreiZEvaluator TR::TreeEvaluator::bstoreEvaluator
-#define iureturnZEvaluator TR::TreeEvaluator::returnEvaluator
-#define lureturnZEvaluator TR::TreeEvaluator::returnEvaluator
-#define lucallZEvaluator TR::TreeEvaluator::directCallEvaluator
 #define iuaddZEvaluator TR::TreeEvaluator::iaddEvaluator
 #define luaddZEvaluator TR::TreeEvaluator::laddEvaluator
 #define buaddZEvaluator TR::TreeEvaluator::baddEvaluator
@@ -560,7 +554,6 @@
 #define luRegLoadZEvaluator TR::TreeEvaluator::lRegLoadEvaluator
 #define iuRegStoreZEvaluator TR::TreeEvaluator::iRegStoreEvaluator
 #define luRegStoreZEvaluator TR::TreeEvaluator::lRegStoreEvaluator
-#define cconstZEvaluator TR::TreeEvaluator::cconstEvaluator
 #define cloadZEvaluator TR::TreeEvaluator::sloadEvaluator
 #define cloadiZEvaluator TR::TreeEvaluator::sloadEvaluator
 #define cstoreZEvaluator TR::TreeEvaluator::cstoreEvaluator
@@ -586,7 +579,6 @@
 #define discontigarraylengthZEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define icalliZEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define lcalliZEvaluator TR::TreeEvaluator::indirectCallEvaluator
-#define lucalliZEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define fcalliZEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define dcalliZEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define acalliZEvaluator TR::TreeEvaluator::indirectCallEvaluator
@@ -741,7 +733,9 @@
 #define lnolzZEvaluator TR::TreeEvaluator::longNumberOfLeadingZeros
 #define lnotzZEvaluator TR::TreeEvaluator::longNumberOfTrailingZeros
 #define lpopcntZEvaluator TR::TreeEvaluator::longBitCount
+#define sbyteswapZEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ibyteswapZEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define lbyteswapZEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define bbitpermuteZEvaluator TR::TreeEvaluator::bitpermuteEvaluator
 #define sbitpermuteZEvaluator TR::TreeEvaluator::bitpermuteEvaluator
 #define ibitpermuteZEvaluator TR::TreeEvaluator::bitpermuteEvaluator

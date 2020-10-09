@@ -516,9 +516,6 @@
 #define vlRegStoreAMD64Evaluator TR::TreeEvaluator::SIMDRegStoreEvaluator
 #define vfRegStoreAMD64Evaluator TR::TreeEvaluator::SIMDRegStoreEvaluator
 #define vdRegStoreAMD64Evaluator TR::TreeEvaluator::SIMDRegStoreEvaluator
-#define iuconstAMD64Evaluator TR::TreeEvaluator::iconstEvaluator
-#define luconstAMD64Evaluator TR::TreeEvaluator::lconstEvaluator
-#define buconstAMD64Evaluator TR::TreeEvaluator::bconstEvaluator
 #define iuloadAMD64Evaluator TR::TreeEvaluator::iloadEvaluator
 #define luloadAMD64Evaluator TR::TreeEvaluator::lloadEvaluator
 #define buloadAMD64Evaluator TR::TreeEvaluator::bloadEvaluator
@@ -531,9 +528,6 @@
 #define iustoreiAMD64Evaluator TR::TreeEvaluator::istoreEvaluator
 #define lustoreiAMD64Evaluator TR::TreeEvaluator::lstoreEvaluator
 #define bustoreiAMD64Evaluator TR::TreeEvaluator::bstoreEvaluator
-#define iureturnAMD64Evaluator TR::TreeEvaluator::integerReturnEvaluator
-#define lureturnAMD64Evaluator TR::TreeEvaluator::integerReturnEvaluator
-#define lucallAMD64Evaluator TR::TreeEvaluator::directCallEvaluator
 #define iuaddAMD64Evaluator TR::TreeEvaluator::integerAddEvaluator
 #define luaddAMD64Evaluator TR::TreeEvaluator::integerAddEvaluator
 #define buaddAMD64Evaluator TR::TreeEvaluator::baddEvaluator
@@ -554,7 +548,6 @@
 #define luRegLoadAMD64Evaluator TR::TreeEvaluator::integerRegLoadEvaluator
 #define iuRegStoreAMD64Evaluator TR::TreeEvaluator::iRegStoreEvaluator
 #define luRegStoreAMD64Evaluator TR::TreeEvaluator::lRegStoreEvaluator
-#define cconstAMD64Evaluator TR::TreeEvaluator::cconstEvaluator
 #define cloadAMD64Evaluator TR::TreeEvaluator::sloadEvaluator
 #define cloadiAMD64Evaluator TR::TreeEvaluator::sloadEvaluator
 #define cstoreAMD64Evaluator TR::TreeEvaluator::cstoreEvaluator
@@ -580,7 +573,6 @@
 #define discontigarraylengthAMD64Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define icalliAMD64Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define lcalliAMD64Evaluator TR::TreeEvaluator::indirectCallEvaluator
-#define lucalliAMD64Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define fcalliAMD64Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define dcalliAMD64Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define acalliAMD64Evaluator TR::TreeEvaluator::indirectCallEvaluator
@@ -735,7 +727,9 @@
 #define lnolzAMD64Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define lnotzAMD64Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define lpopcntAMD64Evaluator TR::TreeEvaluator::badILOpEvaluator
+#define sbyteswapAMD64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ibyteswapAMD64Evaluator TR::TreeEvaluator::ibyteswapEvaluator
+#define lbyteswapAMD64Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define bbitpermuteAMD64Evaluator TR::TreeEvaluator::bitpermuteEvaluator
 #define sbitpermuteAMD64Evaluator TR::TreeEvaluator::bitpermuteEvaluator
 #define ibitpermuteAMD64Evaluator TR::TreeEvaluator::bitpermuteEvaluator

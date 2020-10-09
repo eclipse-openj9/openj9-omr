@@ -7902,54 +7902,6 @@
       /* .description          = */ vdRegStore, /* Store vector global register */ \
    ) \
    MACRO(\
-      /* .opcode               = */ TR::iuconst, \
-      /* .name                 = */ "iuconst", \
-      /* .properties1          = */ ILProp1::LoadConst, \
-      /* .properties2          = */ ILProp2::ValueNumberShare, \
-      /* .properties3          = */ ILProp3::LikeUse, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int32, \
-      /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned, \
-      /* .childProperties      = */ ILChildProp::NoChildren, \
-      /* .swapChildrenOpCode   = */ TR::BadILOp, \
-      /* .reverseBranchOpCode  = */ TR::BadILOp, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ iuconst, /* load unsigned integer constant (32-but unsigned) */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::luconst, \
-      /* .name                 = */ "luconst", \
-      /* .properties1          = */ ILProp1::LoadConst, \
-      /* .properties2          = */ ILProp2::ValueNumberShare, \
-      /* .properties3          = */ ILProp3::LikeUse, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int64, \
-      /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Unsigned, \
-      /* .childProperties      = */ ILChildProp::NoChildren, \
-      /* .swapChildrenOpCode   = */ TR::BadILOp, \
-      /* .reverseBranchOpCode  = */ TR::BadILOp, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ luconst, /* load unsigned long integer constant (64-bit unsigned) */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::buconst, \
-      /* .name                 = */ "buconst", \
-      /* .properties1          = */ ILProp1::LoadConst, \
-      /* .properties2          = */ ILProp2::ValueNumberShare, \
-      /* .properties3          = */ ILProp3::LikeUse, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int8, \
-      /* .typeProperties       = */ ILTypeProp::Size_1 | ILTypeProp::Unsigned, \
-      /* .childProperties      = */ ILChildProp::NoChildren, \
-      /* .swapChildrenOpCode   = */ TR::BadILOp, \
-      /* .reverseBranchOpCode  = */ TR::BadILOp, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ buconst, /* load unsigned byte integer constant (8-bit unsigned) */ \
-   ) \
-   MACRO(\
       /* .opcode               = */ TR::iuload, \
       /* .name                 = */ "iuload", \
       /* .properties1          = */ ILProp1::LoadVar | ILProp1::HasSymbolRef, \
@@ -8140,54 +8092,6 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ bustorei, /* store indirect unsigned byte          (child1 a, child2 b) */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::iureturn, \
-      /* .name                 = */ "iureturn", \
-      /* .properties1          = */ ILProp1::Return | ILProp1::TreeTop, \
-      /* .properties2          = */ ILProp2::MayUseSystemStack, \
-      /* .properties3          = */ 0, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int32, \
-      /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned, \
-      /* .childProperties      = */ ONE_CHILD(TR::Int32), \
-      /* .swapChildrenOpCode   = */ TR::BadILOp, \
-      /* .reverseBranchOpCode  = */ TR::BadILOp, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ iureturn, /* return an unsigned integer */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::lureturn, \
-      /* .name                 = */ "lureturn", \
-      /* .properties1          = */ ILProp1::Return | ILProp1::TreeTop, \
-      /* .properties2          = */ ILProp2::MayUseSystemStack, \
-      /* .properties3          = */ 0, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int64, \
-      /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Unsigned, \
-      /* .childProperties      = */ ONE_CHILD(TR::Int64), \
-      /* .swapChildrenOpCode   = */ TR::BadILOp, \
-      /* .reverseBranchOpCode  = */ TR::BadILOp, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ lureturn, /* return a long unsigned integer */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::lucall, \
-      /* .name                 = */ "lucall", \
-      /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-      /* .properties2          = */ ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, \
-      /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int64, \
-      /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Unsigned, \
-      /* .childProperties      = */ ILChildProp::Unspecified, \
-      /* .swapChildrenOpCode   = */ TR::BadILOp, \
-      /* .reverseBranchOpCode  = */ TR::BadILOp, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ lucall, /* direct call returning unsigned long integer */ \
    ) \
    MACRO(\
       /* .opcode               = */ TR::iuadd, \
@@ -8508,22 +8412,6 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ luRegStore, /* Store long integer global register */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::cconst, \
-      /* .name                 = */ "cconst", \
-      /* .properties1          = */ ILProp1::LoadConst, \
-      /* .properties2          = */ ILProp2::ValueNumberShare, \
-      /* .properties3          = */ ILProp3::LikeUse, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int16, \
-      /* .typeProperties       = */ ILTypeProp::Size_2 | ILTypeProp::Unsigned, \
-      /* .childProperties      = */ ILChildProp::NoChildren, \
-      /* .swapChildrenOpCode   = */ TR::BadILOp, \
-      /* .reverseBranchOpCode  = */ TR::BadILOp, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ cconst, /* load unicode constant (16-bit unsigned) */ \
    ) \
    MACRO(\
       /* .opcode               = */ TR::cload, \
@@ -8924,22 +8812,6 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ lcalli, /* indirect call returning long integer (child1 is addr of function) */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::lucalli, \
-      /* .name                 = */ "lucalli", \
-      /* .properties1          = */ ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef, \
-      /* .properties2          = */ ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, \
-      /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int64, \
-      /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Unsigned, \
-      /* .childProperties      = */ ILChildProp::IndirectCallType, \
-      /* .swapChildrenOpCode   = */ TR::BadILOp, \
-      /* .reverseBranchOpCode  = */ TR::BadILOp, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ lucalli, /* indirect call returning unsigned long integer (child1 is addr of function) */ \
    ) \
    MACRO(\
       /* .opcode               = */ TR::fcalli, \
@@ -11406,6 +11278,22 @@
       /* .description          = */ lpopcnt, \
    ) \
    MACRO(\
+      /* .opcode               = */ TR::sbyteswap, \
+      /* .name                 = */ "sbyteswap", \
+      /* .properties1          = */ 0, \
+      /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ByteSwap, \
+      /* .properties3          = */ 0, \
+      /* .properties4          = */ 0, \
+      /* .dataType             = */ TR::Int16, \
+      /* .typeProperties       = */ ILTypeProp::Size_2 | ILTypeProp::Integer, \
+      /* .childProperties      = */ ONE_CHILD(TR::Int16), \
+      /* .swapChildrenOpCode   = */ TR::BadILOp, \
+      /* .reverseBranchOpCode  = */ TR::BadILOp, \
+      /* .booleanCompareOpCode = */ TR::BadILOp, \
+      /* .ifCompareOpCode      = */ TR::BadILOp, \
+      /* .description          = */ sbyteswap, /* swap bytes in a short */ \
+   ) \
+   MACRO(\
       /* .opcode               = */ TR::ibyteswap, \
       /* .name                 = */ "ibyteswap", \
       /* .properties1          = */ 0, \
@@ -11420,6 +11308,22 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ ibyteswap, /* swap bytes in an integer */ \
+   ) \
+   MACRO(\
+      /* .opcode               = */ TR::lbyteswap, \
+      /* .name                 = */ "lbyteswap", \
+      /* .properties1          = */ 0, \
+      /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::ByteSwap, \
+      /* .properties3          = */ 0, \
+      /* .properties4          = */ 0, \
+      /* .dataType             = */ TR::Int64, \
+      /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Integer, \
+      /* .childProperties      = */ ONE_CHILD(TR::Int64), \
+      /* .swapChildrenOpCode   = */ TR::BadILOp, \
+      /* .reverseBranchOpCode  = */ TR::BadILOp, \
+      /* .booleanCompareOpCode = */ TR::BadILOp, \
+      /* .ifCompareOpCode      = */ TR::BadILOp, \
+      /* .description          = */ lbyteswap, /* swap bytes in a long */ \
    ) \
    MACRO(\
       /* .opcode               = */ TR::bbitpermute, \

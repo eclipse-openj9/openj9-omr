@@ -516,9 +516,6 @@
 #define vlRegStoreARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define vfRegStoreARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define vdRegStoreARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define iuconstARMEvaluator TR::TreeEvaluator::iconstEvaluator
-#define luconstARMEvaluator TR::TreeEvaluator::lconstEvaluator
-#define buconstARMEvaluator TR::TreeEvaluator::bconstEvaluator
 #define iuloadARMEvaluator TR::TreeEvaluator::iloadEvaluator
 #define luloadARMEvaluator TR::TreeEvaluator::lloadEvaluator
 #define buloadARMEvaluator TR::TreeEvaluator::bloadEvaluator
@@ -531,9 +528,6 @@
 #define iustoreiARMEvaluator TR::TreeEvaluator::istoreEvaluator
 #define lustoreiARMEvaluator TR::TreeEvaluator::lstoreEvaluator
 #define bustoreiARMEvaluator TR::TreeEvaluator::bstoreEvaluator
-#define iureturnARMEvaluator TR::TreeEvaluator::ireturnEvaluator
-#define lureturnARMEvaluator TR::TreeEvaluator::lreturnEvaluator
-#define lucallARMEvaluator TR::TreeEvaluator::directCallEvaluator
 #define iuaddARMEvaluator TR::TreeEvaluator::iaddEvaluator
 #define luaddARMEvaluator TR::TreeEvaluator::laddEvaluator
 #define buaddARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
@@ -554,7 +548,6 @@
 #define luRegLoadARMEvaluator TR::TreeEvaluator::lRegLoadEvaluator
 #define iuRegStoreARMEvaluator TR::TreeEvaluator::iRegStoreEvaluator
 #define luRegStoreARMEvaluator TR::TreeEvaluator::lRegStoreEvaluator
-#define cconstARMEvaluator TR::TreeEvaluator::cconstEvaluator
 #define cloadARMEvaluator TR::TreeEvaluator::cloadEvaluator
 #define cloadiARMEvaluator TR::TreeEvaluator::cloadEvaluator
 #define cstoreARMEvaluator TR::TreeEvaluator::sstoreEvaluator
@@ -580,7 +573,6 @@
 #define discontigarraylengthARMEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define icalliARMEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define lcalliARMEvaluator TR::TreeEvaluator::indirectCallEvaluator
-#define lucalliARMEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define fcalliARMEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define dcalliARMEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define acalliARMEvaluator TR::TreeEvaluator::indirectCallEvaluator
@@ -735,7 +727,9 @@
 #define lnolzARMEvaluator TR::TreeEvaluator::longNumberOfLeadingZeros
 #define lnotzARMEvaluator TR::TreeEvaluator::longNumberOfTrailingZeros
 #define lpopcntARMEvaluator TR::TreeEvaluator::longBitCount
+#define sbyteswapARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ibyteswapARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define lbyteswapARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define bbitpermuteARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define sbitpermuteARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ibitpermuteARMEvaluator TR::TreeEvaluator::unImpOpEvaluator

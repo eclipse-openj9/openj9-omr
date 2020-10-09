@@ -516,9 +516,6 @@
 #define vlRegStoreX86Evaluator TR::TreeEvaluator::SIMDRegStoreEvaluator
 #define vfRegStoreX86Evaluator TR::TreeEvaluator::SIMDRegStoreEvaluator
 #define vdRegStoreX86Evaluator TR::TreeEvaluator::SIMDRegStoreEvaluator
-#define iuconstX86Evaluator TR::TreeEvaluator::iconstEvaluator
-#define luconstX86Evaluator TR::TreeEvaluator::lconstEvaluator
-#define buconstX86Evaluator TR::TreeEvaluator::bconstEvaluator
 #define iuloadX86Evaluator TR::TreeEvaluator::iloadEvaluator
 #define luloadX86Evaluator TR::TreeEvaluator::lloadEvaluator
 #define buloadX86Evaluator TR::TreeEvaluator::bloadEvaluator
@@ -531,9 +528,6 @@
 #define iustoreiX86Evaluator TR::TreeEvaluator::istoreEvaluator
 #define lustoreiX86Evaluator TR::TreeEvaluator::lstoreEvaluator
 #define bustoreiX86Evaluator TR::TreeEvaluator::bstoreEvaluator
-#define iureturnX86Evaluator TR::TreeEvaluator::integerReturnEvaluator
-#define lureturnX86Evaluator TR::TreeEvaluator::integerPairReturnEvaluator
-#define lucallX86Evaluator TR::TreeEvaluator::directCallEvaluator
 #define iuaddX86Evaluator TR::TreeEvaluator::integerAddEvaluator
 #define luaddX86Evaluator TR::TreeEvaluator::integerPairAddEvaluator
 #define buaddX86Evaluator TR::TreeEvaluator::baddEvaluator
@@ -554,7 +548,6 @@
 #define luRegLoadX86Evaluator TR::TreeEvaluator::lRegLoadEvaluator
 #define iuRegStoreX86Evaluator TR::TreeEvaluator::iRegStoreEvaluator
 #define luRegStoreX86Evaluator TR::TreeEvaluator::lRegStoreEvaluator
-#define cconstX86Evaluator TR::TreeEvaluator::cconstEvaluator
 #define cloadX86Evaluator TR::TreeEvaluator::sloadEvaluator
 #define cloadiX86Evaluator TR::TreeEvaluator::sloadEvaluator
 #define cstoreX86Evaluator TR::TreeEvaluator::cstoreEvaluator
@@ -580,7 +573,6 @@
 #define discontigarraylengthX86Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define icalliX86Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define lcalliX86Evaluator TR::TreeEvaluator::indirectCallEvaluator
-#define lucalliX86Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define fcalliX86Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define dcalliX86Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define acalliX86Evaluator TR::TreeEvaluator::indirectCallEvaluator
@@ -735,7 +727,9 @@
 #define lnolzX86Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define lnotzX86Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define lpopcntX86Evaluator TR::TreeEvaluator::badILOpEvaluator
+#define sbyteswapX86Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ibyteswapX86Evaluator TR::TreeEvaluator::ibyteswapEvaluator
+#define lbyteswapX86Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define bbitpermuteX86Evaluator TR::TreeEvaluator::bitpermuteEvaluator
 #define sbitpermuteX86Evaluator TR::TreeEvaluator::bitpermuteEvaluator
 #define ibitpermuteX86Evaluator TR::TreeEvaluator::bitpermuteEvaluator

@@ -515,9 +515,6 @@
 #define vlRegStoreARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define vfRegStoreARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define vdRegStoreARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define iuconstARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define luconstARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define buconstARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define iuloadARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define luloadARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define buloadARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
@@ -530,9 +527,6 @@
 #define iustoreiARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define lustoreiARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define bustoreiARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define iureturnARM64Evaluator TR::TreeEvaluator::ireturnEvaluator
-#define lureturnARM64Evaluator TR::TreeEvaluator::lreturnEvaluator
-#define lucallARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define iuaddARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define luaddARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define buaddARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
@@ -553,7 +547,6 @@
 #define luRegLoadARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define iuRegStoreARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define luRegStoreARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define cconstARM64Evaluator TR::TreeEvaluator::cconstEvaluator
 #define cloadARM64Evaluator TR::TreeEvaluator::cloadEvaluator
 #define cloadiARM64Evaluator TR::TreeEvaluator::cloadEvaluator
 #define cstoreARM64Evaluator TR::TreeEvaluator::sstoreEvaluator
@@ -579,7 +572,6 @@
 #define discontigarraylengthARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define icalliARM64Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define lcalliARM64Evaluator TR::TreeEvaluator::indirectCallEvaluator
-#define lucalliARM64Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define fcalliARM64Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define dcalliARM64Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define acalliARM64Evaluator TR::TreeEvaluator::indirectCallEvaluator
@@ -734,7 +726,9 @@
 #define lnolzARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define lnotzARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define lpopcntARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define sbyteswapARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define ibyteswapARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define lbyteswapARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define bbitpermuteARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define sbitpermuteARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define ibitpermuteARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 

@@ -658,9 +658,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define vlRegStoreVPHandler constrainChildren
 #define vfRegStoreVPHandler constrainChildren
 #define vdRegStoreVPHandler constrainChildren
-#define iuconstVPHandler constrainIntConst
-#define luconstVPHandler constrainLongConst
-#define buconstVPHandler constrainByteConst
 #define iuloadVPHandler constrainIntLoad
 #define luloadVPHandler constrainLload
 #define buloadVPHandler constrainIntLoad
@@ -673,9 +670,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define iustoreiVPHandler constrainStore
 #define lustoreiVPHandler constrainStore
 #define bustoreiVPHandler constrainStore
-#define iureturnVPHandler constrainReturn
-#define lureturnVPHandler constrainReturn
-#define lucallVPHandler constrainCall
 #define iuaddVPHandler constrainAdd
 #define luaddVPHandler constrainAdd
 #define buaddVPHandler constrainAdd
@@ -696,7 +690,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define luRegLoadVPHandler constrainChildren
 #define iuRegStoreVPHandler constrainChildren
 #define luRegStoreVPHandler constrainChildren
-#define cconstVPHandler constrainShortConst
 #define cloadVPHandler constrainIntLoad
 #define cloadiVPHandler constrainIntLoad
 #define cstoreVPHandler constrainIntStore
@@ -722,7 +715,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define discontigarraylengthVPHandler constrainArraylength
 #define icalliVPHandler constrainCall
 #define lcalliVPHandler constrainCall
-#define lucalliVPHandler constrainCall
 #define fcalliVPHandler constrainCall
 #define dcalliVPHandler constrainCall
 #define acalliVPHandler constrainAcall
@@ -877,7 +869,9 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define lnolzVPHandler constrainLongNumberOfLeadingZeros
 #define lnotzVPHandler constrainLongNumberOfTrailingZeros
 #define lpopcntVPHandler constrainLongBitCount
+#define sbyteswapVPHandler constrainChildren
 #define ibyteswapVPHandler constrainChildren
+#define lbyteswapVPHandler constrainChildren
 #define bbitpermuteVPHandler constrainChildren
 #define sbitpermuteVPHandler constrainChildren
 #define ibitpermuteVPHandler constrainChildren

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -538,11 +538,18 @@ MM_MemoryPoolLargeObjects::allocateTLH(MM_EnvironmentBase* env, MM_AllocateDescr
 void*
 MM_MemoryPoolLargeObjects::findFreeEntryEndingAtAddr(MM_EnvironmentBase* env, void* addr)
 {
+	void *freeEntry = NULL;
 	if (addr >= _currentLOABase) {
-		return _memoryPoolLargeObjects->findFreeEntryEndingAtAddr(env, addr);
+		if (getCurrentLOASize() == getApproximateFreeLOAMemorySize()) {
+			Assert_MM_true(addr == (void *)(((uintptr_t)_currentLOABase) + getCurrentLOASize()));
+			freeEntry = _memoryPoolSmallObjects->findFreeEntryEndingAtAddr(env, _currentLOABase);
+		} else {
+			freeEntry = _memoryPoolLargeObjects->findFreeEntryEndingAtAddr(env, addr);
+		}
 	} else {
-		return _memoryPoolSmallObjects->findFreeEntryEndingAtAddr(env, addr);
+		freeEntry = _memoryPoolSmallObjects->findFreeEntryEndingAtAddr(env, addr);
 	}
+	return freeEntry;
 }
 
 /**
@@ -552,11 +559,17 @@ uintptr_t
 MM_MemoryPoolLargeObjects::getAvailableContractionSizeForRangeEndingAt(MM_EnvironmentBase* env, MM_AllocateDescription* allocDescription,
 																	   void* lowAddr, void* highAddr)
 {
+	uintptr_t availableContractionSize = 0;
 	if (highAddr >= _currentLOABase) {
-		return _memoryPoolLargeObjects->getAvailableContractionSizeForRangeEndingAt(env, allocDescription, lowAddr, highAddr);
+		availableContractionSize = _memoryPoolLargeObjects->getAvailableContractionSizeForRangeEndingAt(env, allocDescription, lowAddr, highAddr);
+		if (getCurrentLOASize() == getApproximateFreeLOAMemorySize()) {
+			Assert_MM_true(highAddr == (void *)(((uintptr_t)_currentLOABase) + getCurrentLOASize()));
+			availableContractionSize += _memoryPoolSmallObjects->getAvailableContractionSizeForRangeEndingAt(env, allocDescription, lowAddr, _currentLOABase);
+		}
 	} else {
-		return _memoryPoolSmallObjects->getAvailableContractionSizeForRangeEndingAt(env, allocDescription, lowAddr, highAddr);
+		availableContractionSize = _memoryPoolSmallObjects->getAvailableContractionSizeForRangeEndingAt(env, allocDescription, lowAddr, highAddr);
 	}
+	return availableContractionSize;
 }
 
 /**
@@ -886,7 +899,6 @@ MM_MemoryPoolLargeObjects::expandWithRange(MM_EnvironmentBase* env, uintptr_t ex
 
 		Trc_MM_LOAResize_expandWithRange1(env->getLanguageVMThread(), oldAreaSize, _currentLOARatio, _currentLOABase, _loaSize);
 	} else {
-
 		/* If LOA ratio has reduced to zero then we have an empty
 		 * LOA at the moment and all new storage goes to SOA
 		 */
@@ -925,7 +937,7 @@ MM_MemoryPoolLargeObjects::expandWithRange(MM_EnvironmentBase* env, uintptr_t ex
  * The heap has contracted so we need to recalculate the LOA boundary and update the SOA and LOA
  * freelists appropriately.
  *
- * @param expandSize Number of bytes to remove from the memory pool
+ * @param contractSize Number of bytes to remove from the memory pool
  * @param lowAddress Low address of memory to remove (inclusive)
  * @param highAddress High address of memory to remove (non inclusive)
  *
@@ -939,20 +951,22 @@ MM_MemoryPoolLargeObjects::contractWithRange(MM_EnvironmentBase* env, uintptr_t 
 
 	/* Get the new old area size..cant ask MSS as size not updated yet */
 	oldAreaSize -= contractSize;
-	assume0((_currentOldAreaSize - contractSize) == oldAreaSize);
+	Assert_MM_true((_currentOldAreaSize - contractSize) == oldAreaSize);
 
 	/* First remove the memory from the appropraiate pool */
 	if (0 == _currentLOARatio) {
-		assume0((0 == _loaSize) && (LOA_EMPTY == _currentLOABase));
+		Assert_MM_true((0 == _loaSize) && (LOA_EMPTY == _currentLOABase));
 
 		/* No LOA so just remove memory from SOA and we are done */
 		_memoryPoolSmallObjects->contractWithRange(env, contractSize, lowAddress, highAddress);
 	} else {
-
-		assume0(lowAddress >= _currentLOABase);
-
-		/* First remove memory from LOA */
-		_memoryPoolLargeObjects->contractWithRange(env, contractSize, lowAddress, highAddress);
+		if (lowAddress >= _currentLOABase) {
+			_memoryPoolLargeObjects->contractWithRange(env, contractSize, lowAddress, highAddress);
+		} else {
+			Assert_MM_true(getCurrentLOASize() == getApproximateFreeLOAMemorySize());
+			_memoryPoolLargeObjects->contractWithRange(env, getCurrentLOASize(), _currentLOABase, highAddress);
+			_memoryPoolSmallObjects->contractWithRange(env, contractSize - getCurrentLOASize(), lowAddress, (void*)(((uintptr_t)highAddress) - _loaSize));
+		}
 
 		redistributeFreeMemory(env, oldAreaSize);
 

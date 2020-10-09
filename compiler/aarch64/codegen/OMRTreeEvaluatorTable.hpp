@@ -726,9 +726,9 @@
 #define lnolzARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define lnotzARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define lpopcntARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define sbyteswapARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define ibyteswapARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define lbyteswapARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define sbyteswapARM64Evaluator TR::TreeEvaluator::sbyteswapEvaluator 
+#define ibyteswapARM64Evaluator TR::TreeEvaluator::ibyteswapEvaluator 
+#define lbyteswapARM64Evaluator TR::TreeEvaluator::lbyteswapEvaluator 
 #define bbitpermuteARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define sbitpermuteARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define ibitpermuteARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
@@ -755,6 +755,7 @@
    enumValue, \
    ...) enumValue ## ARM64Evaluator,
 
+   BadILOpARM64Evaluator,
    FOR_EACH_OPCODE(GENERATE_TREE_EVAL_TABLE)
 
 #undef GENERATE_TREE_EVAL_TABLE

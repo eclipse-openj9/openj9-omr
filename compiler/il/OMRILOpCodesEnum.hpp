@@ -57,7 +57,8 @@
    enumValue, \
    ...) enumValue,
 
-   FirstOMROp = -1,
+   FirstOMROp,
+   BadILOp = 0,
    FOR_EACH_OPCODE(GET_ENUM_VAL)
    LastOMROp = Prefetch,
 

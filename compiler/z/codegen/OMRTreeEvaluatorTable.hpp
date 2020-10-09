@@ -763,6 +763,7 @@
    enumValue, \
    ...) enumValue ## ZEvaluator,
 
+   BadILOpZEvaluator,
    FOR_EACH_OPCODE(GENERATE_TREE_EVAL_TABLE)
 
 #undef GENERATE_TREE_EVAL_TABLE

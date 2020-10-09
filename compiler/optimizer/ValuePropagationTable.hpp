@@ -898,6 +898,7 @@ const ValuePropagationPtr constraintHandlers[] =
    enumValue, \
    ...) enumValue ## VPHandler,
 
+   BadILOpVPHandler,
    FOR_EACH_OPCODE(GET_VP_HANDLER)
 
 #undef GET_VP_HANDLER

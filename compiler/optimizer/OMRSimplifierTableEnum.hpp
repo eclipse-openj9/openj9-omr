@@ -41,6 +41,7 @@
    enumValue, \
    ...) enumValue ## SimplifierHandler,
 
+   BadILOpSimplifierHandler,
    FOR_EACH_OPCODE(GET_SIMPLIFIER_HANDLER)
 
 #undef GET_SIMPLIFIER_HANDLER

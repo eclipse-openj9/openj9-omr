@@ -756,6 +756,7 @@
    enumValue, \
    ...) enumValue ## X86Evaluator,
 
+   BadILOpX86Evaluator,
    FOR_EACH_OPCODE(GENERATE_TREE_EVAL_TABLE)
 
 #undef GENERATE_TREE_EVAL_TABLE

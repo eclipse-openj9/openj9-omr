@@ -55,6 +55,22 @@
    ifCompareOpcode, \
    },
 
+    {
+      /* .opcode               = */ TR::BadILOp,
+      /* .name                 = */ "BadILOp",
+      /* .properties1          = */ 0,
+      /* .properties2          = */ 0,
+      /* .properties3          = */ 0,
+      /* .properties4          = */ 0,
+      /* .dataType             = */ TR::NoType,
+      /* .typeProperties       = */ 0,
+      /* .childProperties      = */ ILChildProp::NoChildren,
+      /* .swapChildrenOpCode   = */ TR::BadILOp,
+      /* .reverseBranchOpCode  = */ TR::BadILOp,
+      /* .booleanCompareOpCode = */ TR::BadILOp,
+      /* .ifCompareOpCode      = */ TR::BadILOp,
+    },
+
    FOR_EACH_OPCODE(PROPS)
 
 #undef PROPS

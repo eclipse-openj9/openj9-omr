@@ -30,22 +30,6 @@
 
 #define FOR_EACH_OPCODE(MACRO) \
    MACRO(\
-      /* .opcode               = */ TR::BadILOp, \
-      /* .name                 = */ "BadILOp", \
-      /* .properties1          = */ 0, \
-      /* .properties2          = */ 0, \
-      /* .properties3          = */ 0, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::NoType, \
-      /* .typeProperties       = */ 0, \
-      /* .childProperties      = */ ILChildProp::NoChildren, \
-      /* .swapChildrenOpCode   = */ TR::BadILOp, \
-      /* .reverseBranchOpCode  = */ TR::BadILOp, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ BadILOp, /* illegal op hopefully help with uninitialized nodes */ \
-   ) \
-   MACRO(\
       /* .opcode               = */ TR::aconst, \
       /* .name                 = */ "aconst", \
       /* .properties1          = */ ILProp1::LoadConst, \

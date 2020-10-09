@@ -756,6 +756,7 @@
    enumValue, \
    ...) enumValue ## AMD64Evaluator,
 
+   BadILOpAMD64Evaluator,
    FOR_EACH_OPCODE(GENERATE_TREE_EVAL_TABLE)
 
 #undef GENERATE_TREE_EVAL_TABLE

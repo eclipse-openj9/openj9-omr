@@ -235,8 +235,6 @@
 #define icmpgeX86Evaluator TR::TreeEvaluator::integerCmpgeEvaluator
 #define icmpgtX86Evaluator TR::TreeEvaluator::integerCmpgtEvaluator
 #define icmpleX86Evaluator TR::TreeEvaluator::integerCmpleEvaluator
-#define iucmpeqX86Evaluator TR::TreeEvaluator::integerCmpeqEvaluator
-#define iucmpneX86Evaluator TR::TreeEvaluator::integerCmpneEvaluator
 #define iucmpltX86Evaluator TR::TreeEvaluator::unsignedIntegerCmpltEvaluator
 #define iucmpgeX86Evaluator TR::TreeEvaluator::unsignedIntegerCmpgeEvaluator
 #define iucmpgtX86Evaluator TR::TreeEvaluator::unsignedIntegerCmpgtEvaluator
@@ -247,8 +245,6 @@
 #define lcmpgeX86Evaluator TR::TreeEvaluator::lcmpgeEvaluator
 #define lcmpgtX86Evaluator TR::TreeEvaluator::lcmpgtEvaluator
 #define lcmpleX86Evaluator TR::TreeEvaluator::lcmpleEvaluator
-#define lucmpeqX86Evaluator TR::TreeEvaluator::lcmpeqEvaluator
-#define lucmpneX86Evaluator TR::TreeEvaluator::lcmpneEvaluator
 #define lucmpltX86Evaluator TR::TreeEvaluator::lucmpltEvaluator
 #define lucmpgeX86Evaluator TR::TreeEvaluator::lucmpgeEvaluator
 #define lucmpgtX86Evaluator TR::TreeEvaluator::lucmpgtEvaluator
@@ -289,8 +285,6 @@
 #define bcmpgeX86Evaluator TR::TreeEvaluator::bcmpgeEvaluator
 #define bcmpgtX86Evaluator TR::TreeEvaluator::bcmpgtEvaluator
 #define bcmpleX86Evaluator TR::TreeEvaluator::bcmpleEvaluator
-#define bucmpeqX86Evaluator TR::TreeEvaluator::bcmpeqEvaluator
-#define bucmpneX86Evaluator TR::TreeEvaluator::bcmpeqEvaluator
 #define bucmpltX86Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define bucmpgeX86Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define bucmpgtX86Evaluator TR::TreeEvaluator::badILOpEvaluator
@@ -301,8 +295,6 @@
 #define scmpgeX86Evaluator TR::TreeEvaluator::scmpgeEvaluator
 #define scmpgtX86Evaluator TR::TreeEvaluator::scmpgtEvaluator
 #define scmpleX86Evaluator TR::TreeEvaluator::scmpleEvaluator
-#define sucmpeqX86Evaluator TR::TreeEvaluator::sucmpeqEvaluator
-#define sucmpneX86Evaluator TR::TreeEvaluator::sucmpeqEvaluator
 #define sucmpltX86Evaluator TR::TreeEvaluator::sucmpltEvaluator
 #define sucmpgeX86Evaluator TR::TreeEvaluator::sucmpgeEvaluator
 #define sucmpgtX86Evaluator TR::TreeEvaluator::sucmpgtEvaluator
@@ -318,8 +310,6 @@
 #define ificmpgeX86Evaluator TR::TreeEvaluator::integerIfCmpgeEvaluator
 #define ificmpgtX86Evaluator TR::TreeEvaluator::integerIfCmpgtEvaluator
 #define ificmpleX86Evaluator TR::TreeEvaluator::integerIfCmpleEvaluator
-#define ifiucmpeqX86Evaluator TR::TreeEvaluator::integerIfCmpeqEvaluator
-#define ifiucmpneX86Evaluator TR::TreeEvaluator::integerIfCmpneEvaluator
 #define ifiucmpltX86Evaluator TR::TreeEvaluator::unsignedIntegerIfCmpltEvaluator
 #define ifiucmpgeX86Evaluator TR::TreeEvaluator::unsignedIntegerIfCmpgeEvaluator
 #define ifiucmpgtX86Evaluator TR::TreeEvaluator::unsignedIntegerIfCmpgtEvaluator
@@ -330,8 +320,6 @@
 #define iflcmpgeX86Evaluator TR::TreeEvaluator::iflcmpgeEvaluator
 #define iflcmpgtX86Evaluator TR::TreeEvaluator::iflcmpgtEvaluator
 #define iflcmpleX86Evaluator TR::TreeEvaluator::iflcmpleEvaluator
-#define iflucmpeqX86Evaluator TR::TreeEvaluator::iflcmpeqEvaluator
-#define iflucmpneX86Evaluator TR::TreeEvaluator::iflcmpneEvaluator
 #define iflucmpltX86Evaluator TR::TreeEvaluator::iflcmpltEvaluator
 #define iflucmpgeX86Evaluator TR::TreeEvaluator::iflcmpgeEvaluator
 #define iflucmpgtX86Evaluator TR::TreeEvaluator::iflcmpgtEvaluator
@@ -372,8 +360,6 @@
 #define ifbcmpgeX86Evaluator TR::TreeEvaluator::ifbcmpgeEvaluator
 #define ifbcmpgtX86Evaluator TR::TreeEvaluator::ifbcmpgtEvaluator
 #define ifbcmpleX86Evaluator TR::TreeEvaluator::ifbcmpleEvaluator
-#define ifbucmpeqX86Evaluator TR::TreeEvaluator::ifbcmpeqEvaluator
-#define ifbucmpneX86Evaluator TR::TreeEvaluator::ifbcmpeqEvaluator
 #define ifbucmpltX86Evaluator TR::TreeEvaluator::ifbucmpltEvaluator
 #define ifbucmpgeX86Evaluator TR::TreeEvaluator::ifbucmpgeEvaluator
 #define ifbucmpgtX86Evaluator TR::TreeEvaluator::ifbucmpgtEvaluator
@@ -384,8 +370,6 @@
 #define ifscmpgeX86Evaluator TR::TreeEvaluator::ifscmpgeEvaluator
 #define ifscmpgtX86Evaluator TR::TreeEvaluator::ifscmpgtEvaluator
 #define ifscmpleX86Evaluator TR::TreeEvaluator::ifscmpleEvaluator
-#define ifsucmpeqX86Evaluator TR::TreeEvaluator::ifsucmpeqEvaluator
-#define ifsucmpneX86Evaluator TR::TreeEvaluator::ifsucmpeqEvaluator
 #define ifsucmpltX86Evaluator TR::TreeEvaluator::ifsucmpltEvaluator
 #define ifsucmpgeX86Evaluator TR::TreeEvaluator::ifsucmpgeEvaluator
 #define ifsucmpgtX86Evaluator TR::TreeEvaluator::ifsucmpgtEvaluator

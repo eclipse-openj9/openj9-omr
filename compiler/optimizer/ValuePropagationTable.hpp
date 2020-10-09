@@ -377,8 +377,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define icmpgeVPHandler constrainCmpge
 #define icmpgtVPHandler constrainCmpgt
 #define icmpleVPHandler constrainCmple
-#define iucmpeqVPHandler constrainCmpeq
-#define iucmpneVPHandler constrainCmpne
 #define iucmpltVPHandler constrainCmp
 #define iucmpgeVPHandler constrainCmp
 #define iucmpgtVPHandler constrainCmp
@@ -389,8 +387,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define lcmpgeVPHandler constrainCmpge
 #define lcmpgtVPHandler constrainCmpgt
 #define lcmpleVPHandler constrainCmple
-#define lucmpeqVPHandler constrainCmpeq
-#define lucmpneVPHandler constrainCmpne
 #define lucmpltVPHandler constrainCmp
 #define lucmpgeVPHandler constrainCmp
 #define lucmpgtVPHandler constrainCmp
@@ -431,8 +427,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define bcmpgeVPHandler constrainCmpge
 #define bcmpgtVPHandler constrainCmpgt
 #define bcmpleVPHandler constrainCmple
-#define bucmpeqVPHandler constrainCmpeq
-#define bucmpneVPHandler constrainCmpne
 #define bucmpltVPHandler constrainCmp
 #define bucmpgeVPHandler constrainCmp
 #define bucmpgtVPHandler constrainCmp
@@ -443,8 +437,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define scmpgeVPHandler constrainCmpge
 #define scmpgtVPHandler constrainCmpgt
 #define scmpleVPHandler constrainCmple
-#define sucmpeqVPHandler constrainCmpeq
-#define sucmpneVPHandler constrainCmpne
 #define sucmpltVPHandler constrainCmplt
 #define sucmpgeVPHandler constrainCmpge
 #define sucmpgtVPHandler constrainCmpgt
@@ -460,8 +452,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define ificmpgeVPHandler constrainIfcmpge
 #define ificmpgtVPHandler constrainIfcmpgt
 #define ificmpleVPHandler constrainIfcmple
-#define ifiucmpeqVPHandler constrainIfcmpeq
-#define ifiucmpneVPHandler constrainIfcmpne
 #define ifiucmpltVPHandler constrainCondBranch
 #define ifiucmpgeVPHandler constrainCondBranch
 #define ifiucmpgtVPHandler constrainCondBranch
@@ -472,8 +462,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define iflcmpgeVPHandler constrainIfcmpge
 #define iflcmpgtVPHandler constrainIfcmpgt
 #define iflcmpleVPHandler constrainIfcmple
-#define iflucmpeqVPHandler constrainIfcmpeq
-#define iflucmpneVPHandler constrainIfcmpne
 #define iflucmpltVPHandler constrainIfcmplt
 #define iflucmpgeVPHandler constrainIfcmpge
 #define iflucmpgtVPHandler constrainIfcmpgt
@@ -514,8 +502,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define ifbcmpgeVPHandler constrainCondBranch
 #define ifbcmpgtVPHandler constrainCondBranch
 #define ifbcmpleVPHandler constrainCondBranch
-#define ifbucmpeqVPHandler constrainCondBranch
-#define ifbucmpneVPHandler constrainCondBranch
 #define ifbucmpltVPHandler constrainCondBranch
 #define ifbucmpgeVPHandler constrainCondBranch
 #define ifbucmpgtVPHandler constrainCondBranch
@@ -526,8 +512,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define ifscmpgeVPHandler constrainCondBranch
 #define ifscmpgtVPHandler constrainCondBranch
 #define ifscmpleVPHandler constrainCondBranch
-#define ifsucmpeqVPHandler constrainCondBranch
-#define ifsucmpneVPHandler constrainCondBranch
 #define ifsucmpltVPHandler constrainCondBranch
 #define ifsucmpgeVPHandler constrainCondBranch
 #define ifsucmpgtVPHandler constrainCondBranch

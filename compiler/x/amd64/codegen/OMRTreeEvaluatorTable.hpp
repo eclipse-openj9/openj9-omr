@@ -235,8 +235,6 @@
 #define icmpgeAMD64Evaluator TR::TreeEvaluator::integerCmpgeEvaluator
 #define icmpgtAMD64Evaluator TR::TreeEvaluator::integerCmpgtEvaluator
 #define icmpleAMD64Evaluator TR::TreeEvaluator::integerCmpleEvaluator
-#define iucmpeqAMD64Evaluator TR::TreeEvaluator::integerCmpeqEvaluator
-#define iucmpneAMD64Evaluator TR::TreeEvaluator::integerCmpneEvaluator
 #define iucmpltAMD64Evaluator TR::TreeEvaluator::unsignedIntegerCmpltEvaluator
 #define iucmpgeAMD64Evaluator TR::TreeEvaluator::unsignedIntegerCmpgeEvaluator
 #define iucmpgtAMD64Evaluator TR::TreeEvaluator::unsignedIntegerCmpgtEvaluator
@@ -247,8 +245,6 @@
 #define lcmpgeAMD64Evaluator TR::TreeEvaluator::integerCmpgeEvaluator
 #define lcmpgtAMD64Evaluator TR::TreeEvaluator::integerCmpgtEvaluator
 #define lcmpleAMD64Evaluator TR::TreeEvaluator::integerCmpleEvaluator
-#define lucmpeqAMD64Evaluator TR::TreeEvaluator::integerCmpeqEvaluator
-#define lucmpneAMD64Evaluator TR::TreeEvaluator::integerCmpneEvaluator
 #define lucmpltAMD64Evaluator TR::TreeEvaluator::unsignedIntegerCmpltEvaluator
 #define lucmpgeAMD64Evaluator TR::TreeEvaluator::unsignedIntegerCmpgeEvaluator
 #define lucmpgtAMD64Evaluator TR::TreeEvaluator::unsignedIntegerCmpgtEvaluator
@@ -289,8 +285,6 @@
 #define bcmpgeAMD64Evaluator TR::TreeEvaluator::bcmpgeEvaluator
 #define bcmpgtAMD64Evaluator TR::TreeEvaluator::bcmpgtEvaluator
 #define bcmpleAMD64Evaluator TR::TreeEvaluator::bcmpleEvaluator
-#define bucmpeqAMD64Evaluator TR::TreeEvaluator::bcmpeqEvaluator
-#define bucmpneAMD64Evaluator TR::TreeEvaluator::bcmpeqEvaluator
 #define bucmpltAMD64Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define bucmpgeAMD64Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define bucmpgtAMD64Evaluator TR::TreeEvaluator::badILOpEvaluator
@@ -301,8 +295,6 @@
 #define scmpgeAMD64Evaluator TR::TreeEvaluator::scmpgeEvaluator
 #define scmpgtAMD64Evaluator TR::TreeEvaluator::scmpgtEvaluator
 #define scmpleAMD64Evaluator TR::TreeEvaluator::scmpleEvaluator
-#define sucmpeqAMD64Evaluator TR::TreeEvaluator::sucmpeqEvaluator
-#define sucmpneAMD64Evaluator TR::TreeEvaluator::sucmpeqEvaluator
 #define sucmpltAMD64Evaluator TR::TreeEvaluator::sucmpltEvaluator
 #define sucmpgeAMD64Evaluator TR::TreeEvaluator::sucmpgeEvaluator
 #define sucmpgtAMD64Evaluator TR::TreeEvaluator::sucmpgtEvaluator
@@ -318,8 +310,6 @@
 #define ificmpgeAMD64Evaluator TR::TreeEvaluator::integerIfCmpgeEvaluator
 #define ificmpgtAMD64Evaluator TR::TreeEvaluator::integerIfCmpgtEvaluator
 #define ificmpleAMD64Evaluator TR::TreeEvaluator::integerIfCmpleEvaluator
-#define ifiucmpeqAMD64Evaluator TR::TreeEvaluator::integerIfCmpeqEvaluator
-#define ifiucmpneAMD64Evaluator TR::TreeEvaluator::integerIfCmpneEvaluator
 #define ifiucmpltAMD64Evaluator TR::TreeEvaluator::unsignedIntegerIfCmpltEvaluator
 #define ifiucmpgeAMD64Evaluator TR::TreeEvaluator::unsignedIntegerIfCmpgeEvaluator
 #define ifiucmpgtAMD64Evaluator TR::TreeEvaluator::unsignedIntegerIfCmpgtEvaluator
@@ -330,8 +320,6 @@
 #define iflcmpgeAMD64Evaluator TR::TreeEvaluator::integerIfCmpgeEvaluator
 #define iflcmpgtAMD64Evaluator TR::TreeEvaluator::integerIfCmpgtEvaluator
 #define iflcmpleAMD64Evaluator TR::TreeEvaluator::integerIfCmpleEvaluator
-#define iflucmpeqAMD64Evaluator TR::TreeEvaluator::integerIfCmpeqEvaluator
-#define iflucmpneAMD64Evaluator TR::TreeEvaluator::integerIfCmpneEvaluator
 #define iflucmpltAMD64Evaluator TR::TreeEvaluator::unsignedIntegerIfCmpltEvaluator
 #define iflucmpgeAMD64Evaluator TR::TreeEvaluator::unsignedIntegerIfCmpgeEvaluator
 #define iflucmpgtAMD64Evaluator TR::TreeEvaluator::unsignedIntegerIfCmpgtEvaluator
@@ -372,8 +360,6 @@
 #define ifbcmpgeAMD64Evaluator TR::TreeEvaluator::ifbcmpgeEvaluator
 #define ifbcmpgtAMD64Evaluator TR::TreeEvaluator::ifbcmpgtEvaluator
 #define ifbcmpleAMD64Evaluator TR::TreeEvaluator::ifbcmpleEvaluator
-#define ifbucmpeqAMD64Evaluator TR::TreeEvaluator::ifbcmpeqEvaluator
-#define ifbucmpneAMD64Evaluator TR::TreeEvaluator::ifbcmpeqEvaluator
 #define ifbucmpltAMD64Evaluator TR::TreeEvaluator::ifbucmpltEvaluator
 #define ifbucmpgeAMD64Evaluator TR::TreeEvaluator::ifbucmpgeEvaluator
 #define ifbucmpgtAMD64Evaluator TR::TreeEvaluator::ifbucmpgtEvaluator
@@ -384,8 +370,6 @@
 #define ifscmpgeAMD64Evaluator TR::TreeEvaluator::ifscmpgeEvaluator
 #define ifscmpgtAMD64Evaluator TR::TreeEvaluator::ifscmpgtEvaluator
 #define ifscmpleAMD64Evaluator TR::TreeEvaluator::ifscmpleEvaluator
-#define ifsucmpeqAMD64Evaluator TR::TreeEvaluator::ifsucmpeqEvaluator
-#define ifsucmpneAMD64Evaluator TR::TreeEvaluator::ifsucmpeqEvaluator
 #define ifsucmpltAMD64Evaluator TR::TreeEvaluator::ifsucmpltEvaluator
 #define ifsucmpgeAMD64Evaluator TR::TreeEvaluator::ifsucmpgeEvaluator
 #define ifsucmpgtAMD64Evaluator TR::TreeEvaluator::ifsucmpgtEvaluator

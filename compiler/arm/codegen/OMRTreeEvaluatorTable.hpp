@@ -235,8 +235,6 @@
 #define icmpgeARMEvaluator TR::TreeEvaluator::icmpgeEvaluator
 #define icmpgtARMEvaluator TR::TreeEvaluator::icmpgtEvaluator
 #define icmpleARMEvaluator TR::TreeEvaluator::icmpleEvaluator
-#define iucmpeqARMEvaluator TR::TreeEvaluator::icmpeqEvaluator
-#define iucmpneARMEvaluator TR::TreeEvaluator::icmpneEvaluator
 #define iucmpltARMEvaluator TR::TreeEvaluator::iucmpltEvaluator
 #define iucmpgeARMEvaluator TR::TreeEvaluator::iucmpgeEvaluator
 #define iucmpgtARMEvaluator TR::TreeEvaluator::iucmpgtEvaluator
@@ -247,8 +245,6 @@
 #define lcmpgeARMEvaluator TR::TreeEvaluator::lcmpgeEvaluator
 #define lcmpgtARMEvaluator TR::TreeEvaluator::lcmpgtEvaluator
 #define lcmpleARMEvaluator TR::TreeEvaluator::lcmpleEvaluator
-#define lucmpeqARMEvaluator TR::TreeEvaluator::lcmpeqEvaluator
-#define lucmpneARMEvaluator TR::TreeEvaluator::lcmpneEvaluator
 #define lucmpltARMEvaluator TR::TreeEvaluator::lucmpltEvaluator
 #define lucmpgeARMEvaluator TR::TreeEvaluator::lucmpgeEvaluator
 #define lucmpgtARMEvaluator TR::TreeEvaluator::lucmpgtEvaluator
@@ -289,8 +285,6 @@
 #define bcmpgeARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define bcmpgtARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define bcmpleARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define bucmpeqARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define bucmpneARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define bucmpltARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define bucmpgeARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define bucmpgtARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
@@ -301,8 +295,6 @@
 #define scmpgeARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define scmpgtARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define scmpleARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define sucmpeqARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define sucmpneARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define sucmpltARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define sucmpgeARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define sucmpgtARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
@@ -318,8 +310,6 @@
 #define ificmpgeARMEvaluator TR::TreeEvaluator::ificmpgeEvaluator
 #define ificmpgtARMEvaluator TR::TreeEvaluator::ificmpgtEvaluator
 #define ificmpleARMEvaluator TR::TreeEvaluator::ificmpleEvaluator
-#define ifiucmpeqARMEvaluator TR::TreeEvaluator::ificmpeqEvaluator
-#define ifiucmpneARMEvaluator TR::TreeEvaluator::ificmpeqEvaluator
 #define ifiucmpltARMEvaluator TR::TreeEvaluator::ifiucmpltEvaluator
 #define ifiucmpgeARMEvaluator TR::TreeEvaluator::ifiucmpgeEvaluator
 #define ifiucmpgtARMEvaluator TR::TreeEvaluator::ifiucmpgtEvaluator
@@ -330,8 +320,6 @@
 #define iflcmpgeARMEvaluator TR::TreeEvaluator::iflcmpgeEvaluator
 #define iflcmpgtARMEvaluator TR::TreeEvaluator::iflcmpgtEvaluator
 #define iflcmpleARMEvaluator TR::TreeEvaluator::iflcmpleEvaluator
-#define iflucmpeqARMEvaluator TR::TreeEvaluator::iflcmpeqEvaluator
-#define iflucmpneARMEvaluator TR::TreeEvaluator::iflcmpeqEvaluator
 #define iflucmpltARMEvaluator TR::TreeEvaluator::iflucmpltEvaluator
 #define iflucmpgeARMEvaluator TR::TreeEvaluator::iflucmpgeEvaluator
 #define iflucmpgtARMEvaluator TR::TreeEvaluator::iflucmpgtEvaluator
@@ -372,8 +360,6 @@
 #define ifbcmpgeARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ifbcmpgtARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ifbcmpleARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define ifbucmpeqARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define ifbucmpneARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ifbucmpltARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ifbucmpgeARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ifbucmpgtARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
@@ -384,8 +370,6 @@
 #define ifscmpgeARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ifscmpgtARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ifscmpleARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define ifsucmpeqARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define ifsucmpneARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ifsucmpltARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ifsucmpgeARMEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ifsucmpgtARMEvaluator TR::TreeEvaluator::unImpOpEvaluator

@@ -241,8 +241,6 @@
 #define icmpgeZEvaluator TR::TreeEvaluator::icmpgeEvaluator
 #define icmpgtZEvaluator TR::TreeEvaluator::icmpgtEvaluator
 #define icmpleZEvaluator TR::TreeEvaluator::icmpleEvaluator
-#define iucmpeqZEvaluator TR::TreeEvaluator::icmpeqEvaluator
-#define iucmpneZEvaluator TR::TreeEvaluator::icmpeqEvaluator
 #define iucmpltZEvaluator TR::TreeEvaluator::icmpltEvaluator
 #define iucmpgeZEvaluator TR::TreeEvaluator::icmpgeEvaluator
 #define iucmpgtZEvaluator TR::TreeEvaluator::icmpgtEvaluator
@@ -253,8 +251,6 @@
 #define lcmpgeZEvaluator TR::TreeEvaluator::lcmpgeEvaluator
 #define lcmpgtZEvaluator TR::TreeEvaluator::lcmpgtEvaluator
 #define lcmpleZEvaluator TR::TreeEvaluator::lcmpleEvaluator
-#define lucmpeqZEvaluator TR::TreeEvaluator::lcmpeqEvaluator
-#define lucmpneZEvaluator TR::TreeEvaluator::lcmpneEvaluator
 #define lucmpltZEvaluator TR::TreeEvaluator::lcmpltEvaluator
 #define lucmpgeZEvaluator TR::TreeEvaluator::lcmpgeEvaluator
 #define lucmpgtZEvaluator TR::TreeEvaluator::lcmpgtEvaluator
@@ -295,8 +291,6 @@
 #define bcmpgeZEvaluator TR::TreeEvaluator::bcmpgeEvaluator
 #define bcmpgtZEvaluator TR::TreeEvaluator::bcmpgtEvaluator
 #define bcmpleZEvaluator TR::TreeEvaluator::bcmpleEvaluator
-#define bucmpeqZEvaluator TR::TreeEvaluator::bcmpeqEvaluator
-#define bucmpneZEvaluator TR::TreeEvaluator::bcmpeqEvaluator
 #define bucmpltZEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define bucmpgeZEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define bucmpgtZEvaluator TR::TreeEvaluator::badILOpEvaluator
@@ -307,8 +301,6 @@
 #define scmpgeZEvaluator TR::TreeEvaluator::scmpgeEvaluator
 #define scmpgtZEvaluator TR::TreeEvaluator::scmpgtEvaluator
 #define scmpleZEvaluator TR::TreeEvaluator::scmpleEvaluator
-#define sucmpeqZEvaluator TR::TreeEvaluator::sucmpeqEvaluator
-#define sucmpneZEvaluator TR::TreeEvaluator::sucmpeqEvaluator
 #define sucmpltZEvaluator TR::TreeEvaluator::sucmpltEvaluator
 #define sucmpgeZEvaluator TR::TreeEvaluator::sucmpgeEvaluator
 #define sucmpgtZEvaluator TR::TreeEvaluator::sucmpgtEvaluator
@@ -324,8 +316,6 @@
 #define ificmpgeZEvaluator TR::TreeEvaluator::ificmpgeEvaluator
 #define ificmpgtZEvaluator TR::TreeEvaluator::ificmpgtEvaluator
 #define ificmpleZEvaluator TR::TreeEvaluator::ificmpleEvaluator
-#define ifiucmpeqZEvaluator TR::TreeEvaluator::ificmpeqEvaluator
-#define ifiucmpneZEvaluator TR::TreeEvaluator::ificmpeqEvaluator
 #define ifiucmpltZEvaluator TR::TreeEvaluator::ificmpltEvaluator
 #define ifiucmpgeZEvaluator TR::TreeEvaluator::ificmpgeEvaluator
 #define ifiucmpgtZEvaluator TR::TreeEvaluator::ificmpgtEvaluator
@@ -336,8 +326,6 @@
 #define iflcmpgeZEvaluator TR::TreeEvaluator::iflcmpgeEvaluator
 #define iflcmpgtZEvaluator TR::TreeEvaluator::iflcmpgtEvaluator
 #define iflcmpleZEvaluator TR::TreeEvaluator::iflcmpleEvaluator
-#define iflucmpeqZEvaluator TR::TreeEvaluator::iflcmpeqEvaluator
-#define iflucmpneZEvaluator TR::TreeEvaluator::iflcmpneEvaluator
 #define iflucmpltZEvaluator TR::TreeEvaluator::iflcmpltEvaluator
 #define iflucmpgeZEvaluator TR::TreeEvaluator::iflcmpgeEvaluator
 #define iflucmpgtZEvaluator TR::TreeEvaluator::iflcmpgtEvaluator
@@ -378,8 +366,6 @@
 #define ifbcmpgeZEvaluator TR::TreeEvaluator::ifbcmpgeEvaluator
 #define ifbcmpgtZEvaluator TR::TreeEvaluator::ifbcmpgtEvaluator
 #define ifbcmpleZEvaluator TR::TreeEvaluator::ifbcmpleEvaluator
-#define ifbucmpeqZEvaluator TR::TreeEvaluator::ifbcmpeqEvaluator
-#define ifbucmpneZEvaluator TR::TreeEvaluator::ifbcmpeqEvaluator
 #define ifbucmpltZEvaluator TR::TreeEvaluator::ifbcmpltEvaluator
 #define ifbucmpgeZEvaluator TR::TreeEvaluator::ifbcmpgeEvaluator
 #define ifbucmpgtZEvaluator TR::TreeEvaluator::ifbcmpgtEvaluator
@@ -390,8 +376,6 @@
 #define ifscmpgeZEvaluator TR::TreeEvaluator::ifscmpgeEvaluator
 #define ifscmpgtZEvaluator TR::TreeEvaluator::ifscmpgtEvaluator
 #define ifscmpleZEvaluator TR::TreeEvaluator::ifscmpleEvaluator
-#define ifsucmpeqZEvaluator TR::TreeEvaluator::ifsucmpeqEvaluator
-#define ifsucmpneZEvaluator TR::TreeEvaluator::ifsucmpeqEvaluator
 #define ifsucmpltZEvaluator TR::TreeEvaluator::ifsucmpltEvaluator
 #define ifsucmpgeZEvaluator TR::TreeEvaluator::ifsucmpgeEvaluator
 #define ifsucmpgtZEvaluator TR::TreeEvaluator::ifsucmpgtEvaluator

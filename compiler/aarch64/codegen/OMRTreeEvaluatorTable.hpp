@@ -234,8 +234,6 @@
 #define icmpgeARM64Evaluator TR::TreeEvaluator::icmpgeEvaluator
 #define icmpgtARM64Evaluator TR::TreeEvaluator::icmpgtEvaluator
 #define icmpleARM64Evaluator TR::TreeEvaluator::icmpleEvaluator
-#define iucmpeqARM64Evaluator TR::TreeEvaluator::icmpeqEvaluator
-#define iucmpneARM64Evaluator TR::TreeEvaluator::icmpneEvaluator
 #define iucmpltARM64Evaluator TR::TreeEvaluator::iucmpltEvaluator
 #define iucmpgeARM64Evaluator TR::TreeEvaluator::iucmpgeEvaluator
 #define iucmpgtARM64Evaluator TR::TreeEvaluator::iucmpgtEvaluator
@@ -246,8 +244,6 @@
 #define lcmpgeARM64Evaluator TR::TreeEvaluator::lcmpgeEvaluator
 #define lcmpgtARM64Evaluator TR::TreeEvaluator::lcmpgtEvaluator
 #define lcmpleARM64Evaluator TR::TreeEvaluator::lcmpleEvaluator
-#define lucmpeqARM64Evaluator TR::TreeEvaluator::lcmpeqEvaluator
-#define lucmpneARM64Evaluator TR::TreeEvaluator::lcmpneEvaluator
 #define lucmpltARM64Evaluator TR::TreeEvaluator::lucmpltEvaluator
 #define lucmpgeARM64Evaluator TR::TreeEvaluator::lucmpgeEvaluator
 #define lucmpgtARM64Evaluator TR::TreeEvaluator::lucmpgtEvaluator
@@ -288,8 +284,6 @@
 #define bcmpgeARM64Evaluator TR::TreeEvaluator::icmpgeEvaluator
 #define bcmpgtARM64Evaluator TR::TreeEvaluator::icmpgtEvaluator
 #define bcmpleARM64Evaluator TR::TreeEvaluator::icmpleEvaluator
-#define bucmpeqARM64Evaluator TR::TreeEvaluator::icmpeqEvaluator
-#define bucmpneARM64Evaluator TR::TreeEvaluator::icmpneEvaluator
 #define bucmpltARM64Evaluator TR::TreeEvaluator::iucmpltEvaluator
 #define bucmpgeARM64Evaluator TR::TreeEvaluator::iucmpgeEvaluator
 #define bucmpgtARM64Evaluator TR::TreeEvaluator::iucmpgtEvaluator
@@ -300,8 +294,6 @@
 #define scmpgeARM64Evaluator TR::TreeEvaluator::icmpgeEvaluator
 #define scmpgtARM64Evaluator TR::TreeEvaluator::icmpgtEvaluator
 #define scmpleARM64Evaluator TR::TreeEvaluator::icmpleEvaluator
-#define sucmpeqARM64Evaluator TR::TreeEvaluator::icmpeqEvaluator
-#define sucmpneARM64Evaluator TR::TreeEvaluator::icmpneEvaluator
 #define sucmpltARM64Evaluator TR::TreeEvaluator::iucmpltEvaluator
 #define sucmpgeARM64Evaluator TR::TreeEvaluator::iucmpgeEvaluator
 #define sucmpgtARM64Evaluator TR::TreeEvaluator::iucmpgtEvaluator
@@ -317,8 +309,6 @@
 #define ificmpgeARM64Evaluator TR::TreeEvaluator::ificmpgeEvaluator
 #define ificmpgtARM64Evaluator TR::TreeEvaluator::ificmpgtEvaluator
 #define ificmpleARM64Evaluator TR::TreeEvaluator::ificmpleEvaluator
-#define ifiucmpeqARM64Evaluator TR::TreeEvaluator::ificmpeqEvaluator
-#define ifiucmpneARM64Evaluator TR::TreeEvaluator::ificmpneEvaluator
 #define ifiucmpltARM64Evaluator TR::TreeEvaluator::ifiucmpltEvaluator
 #define ifiucmpgeARM64Evaluator TR::TreeEvaluator::ifiucmpgeEvaluator
 #define ifiucmpgtARM64Evaluator TR::TreeEvaluator::ifiucmpgtEvaluator
@@ -329,8 +319,6 @@
 #define iflcmpgeARM64Evaluator TR::TreeEvaluator::iflcmpgeEvaluator
 #define iflcmpgtARM64Evaluator TR::TreeEvaluator::iflcmpgtEvaluator
 #define iflcmpleARM64Evaluator TR::TreeEvaluator::iflcmpleEvaluator
-#define iflucmpeqARM64Evaluator TR::TreeEvaluator::iflcmpeqEvaluator
-#define iflucmpneARM64Evaluator TR::TreeEvaluator::iflcmpneEvaluator
 #define iflucmpltARM64Evaluator TR::TreeEvaluator::iflucmpltEvaluator
 #define iflucmpgeARM64Evaluator TR::TreeEvaluator::iflucmpgeEvaluator
 #define iflucmpgtARM64Evaluator TR::TreeEvaluator::iflucmpgtEvaluator
@@ -371,8 +359,6 @@
 #define ifbcmpgeARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define ifbcmpgtARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define ifbcmpleARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define ifbucmpeqARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define ifbucmpneARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define ifbucmpltARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define ifbucmpgeARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define ifbucmpgtARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
@@ -383,8 +369,6 @@
 #define ifscmpgeARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define ifscmpgtARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define ifscmpleARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define ifsucmpeqARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define ifsucmpneARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define ifsucmpltARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define ifsucmpgeARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define ifsucmpgtARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 

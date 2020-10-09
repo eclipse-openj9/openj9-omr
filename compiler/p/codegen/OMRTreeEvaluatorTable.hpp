@@ -235,8 +235,6 @@
 #define icmpgePowerEvaluator TR::TreeEvaluator::icmpgeEvaluator
 #define icmpgtPowerEvaluator TR::TreeEvaluator::icmpgtEvaluator
 #define icmplePowerEvaluator TR::TreeEvaluator::icmpleEvaluator
-#define iucmpeqPowerEvaluator TR::TreeEvaluator::icmpeqEvaluator
-#define iucmpnePowerEvaluator TR::TreeEvaluator::icmpneEvaluator
 #define iucmpltPowerEvaluator TR::TreeEvaluator::iucmpltEvaluator
 #define iucmpgePowerEvaluator TR::TreeEvaluator::iucmpgeEvaluator
 #define iucmpgtPowerEvaluator TR::TreeEvaluator::iucmpgtEvaluator
@@ -247,8 +245,6 @@
 #define lcmpgePowerEvaluator TR::TreeEvaluator::lcmpgeEvaluator
 #define lcmpgtPowerEvaluator TR::TreeEvaluator::lcmpgtEvaluator
 #define lcmplePowerEvaluator TR::TreeEvaluator::lcmpleEvaluator
-#define lucmpeqPowerEvaluator TR::TreeEvaluator::lcmpeqEvaluator
-#define lucmpnePowerEvaluator TR::TreeEvaluator::lcmpneEvaluator
 #define lucmpltPowerEvaluator TR::TreeEvaluator::lucmpltEvaluator
 #define lucmpgePowerEvaluator TR::TreeEvaluator::lucmpgeEvaluator
 #define lucmpgtPowerEvaluator TR::TreeEvaluator::lucmpgtEvaluator
@@ -289,8 +285,6 @@
 #define bcmpgePowerEvaluator TR::TreeEvaluator::icmpgeEvaluator
 #define bcmpgtPowerEvaluator TR::TreeEvaluator::icmpgtEvaluator
 #define bcmplePowerEvaluator TR::TreeEvaluator::icmpleEvaluator
-#define bucmpeqPowerEvaluator TR::TreeEvaluator::icmpeqEvaluator
-#define bucmpnePowerEvaluator TR::TreeEvaluator::icmpneEvaluator
 #define bucmpltPowerEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define bucmpgePowerEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define bucmpgtPowerEvaluator TR::TreeEvaluator::badILOpEvaluator
@@ -301,8 +295,6 @@
 #define scmpgePowerEvaluator TR::TreeEvaluator::icmpgeEvaluator
 #define scmpgtPowerEvaluator TR::TreeEvaluator::icmpgtEvaluator
 #define scmplePowerEvaluator TR::TreeEvaluator::icmpleEvaluator
-#define sucmpeqPowerEvaluator TR::TreeEvaluator::icmpeqEvaluator
-#define sucmpnePowerEvaluator TR::TreeEvaluator::icmpneEvaluator
 #define sucmpltPowerEvaluator TR::TreeEvaluator::iucmpltEvaluator
 #define sucmpgePowerEvaluator TR::TreeEvaluator::iucmpgeEvaluator
 #define sucmpgtPowerEvaluator TR::TreeEvaluator::iucmpgtEvaluator
@@ -318,8 +310,6 @@
 #define ificmpgePowerEvaluator TR::TreeEvaluator::ificmpgeEvaluator
 #define ificmpgtPowerEvaluator TR::TreeEvaluator::ificmpgtEvaluator
 #define ificmplePowerEvaluator TR::TreeEvaluator::ificmpleEvaluator
-#define ifiucmpeqPowerEvaluator TR::TreeEvaluator::ificmpeqEvaluator
-#define ifiucmpnePowerEvaluator TR::TreeEvaluator::ificmpeqEvaluator
 #define ifiucmpltPowerEvaluator TR::TreeEvaluator::ifiucmpltEvaluator
 #define ifiucmpgePowerEvaluator TR::TreeEvaluator::ifiucmpgeEvaluator
 #define ifiucmpgtPowerEvaluator TR::TreeEvaluator::ifiucmpgtEvaluator
@@ -330,8 +320,6 @@
 #define iflcmpgePowerEvaluator TR::TreeEvaluator::iflcmpgeEvaluator
 #define iflcmpgtPowerEvaluator TR::TreeEvaluator::iflcmpgtEvaluator
 #define iflcmplePowerEvaluator TR::TreeEvaluator::iflcmpleEvaluator
-#define iflucmpeqPowerEvaluator TR::TreeEvaluator::iflcmpeqEvaluator
-#define iflucmpnePowerEvaluator TR::TreeEvaluator::iflcmpeqEvaluator
 #define iflucmpltPowerEvaluator TR::TreeEvaluator::iflucmpltEvaluator
 #define iflucmpgePowerEvaluator TR::TreeEvaluator::iflucmpgeEvaluator
 #define iflucmpgtPowerEvaluator TR::TreeEvaluator::iflucmpgtEvaluator
@@ -372,8 +360,6 @@
 #define ifbcmpgePowerEvaluator TR::TreeEvaluator::ificmpgeEvaluator
 #define ifbcmpgtPowerEvaluator TR::TreeEvaluator::ificmpgtEvaluator
 #define ifbcmplePowerEvaluator TR::TreeEvaluator::ificmpleEvaluator
-#define ifbucmpeqPowerEvaluator TR::TreeEvaluator::ificmpeqEvaluator
-#define ifbucmpnePowerEvaluator TR::TreeEvaluator::ificmpeqEvaluator
 #define ifbucmpltPowerEvaluator TR::TreeEvaluator::ifiucmpltEvaluator
 #define ifbucmpgePowerEvaluator TR::TreeEvaluator::ifiucmpgeEvaluator
 #define ifbucmpgtPowerEvaluator TR::TreeEvaluator::ifiucmpgtEvaluator
@@ -384,8 +370,6 @@
 #define ifscmpgePowerEvaluator TR::TreeEvaluator::ificmpgeEvaluator
 #define ifscmpgtPowerEvaluator TR::TreeEvaluator::ificmpgtEvaluator
 #define ifscmplePowerEvaluator TR::TreeEvaluator::ificmpleEvaluator
-#define ifsucmpeqPowerEvaluator TR::TreeEvaluator::ificmpeqEvaluator
-#define ifsucmpnePowerEvaluator TR::TreeEvaluator::ificmpeqEvaluator
 #define ifsucmpltPowerEvaluator TR::TreeEvaluator::ifiucmpltEvaluator
 #define ifsucmpgePowerEvaluator TR::TreeEvaluator::ifiucmpgeEvaluator
 #define ifsucmpgtPowerEvaluator TR::TreeEvaluator::ifiucmpgtEvaluator

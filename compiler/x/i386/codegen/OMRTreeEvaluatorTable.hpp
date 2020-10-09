@@ -533,7 +533,6 @@
 #define bustoreiX86Evaluator TR::TreeEvaluator::bstoreEvaluator
 #define iureturnX86Evaluator TR::TreeEvaluator::integerReturnEvaluator
 #define lureturnX86Evaluator TR::TreeEvaluator::integerPairReturnEvaluator
-#define iucallX86Evaluator TR::TreeEvaluator::directCallEvaluator
 #define lucallX86Evaluator TR::TreeEvaluator::directCallEvaluator
 #define iuaddX86Evaluator TR::TreeEvaluator::integerAddEvaluator
 #define luaddX86Evaluator TR::TreeEvaluator::integerPairAddEvaluator
@@ -580,7 +579,6 @@
 #define contigarraylengthX86Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define discontigarraylengthX86Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define icalliX86Evaluator TR::TreeEvaluator::indirectCallEvaluator
-#define iucalliX86Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define lcalliX86Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define lucalliX86Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define fcalliX86Evaluator TR::TreeEvaluator::indirectCallEvaluator

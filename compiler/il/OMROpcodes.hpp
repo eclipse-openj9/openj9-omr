@@ -8174,22 +8174,6 @@
       /* .description          = */ lureturn, /* return a long unsigned integer */ \
    ) \
    MACRO(\
-      /* .opcode               = */ TR::iucall, \
-      /* .name                 = */ "iucall", \
-      /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-      /* .properties2          = */ ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, \
-      /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int32, \
-      /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned, \
-      /* .childProperties      = */ ILChildProp::Unspecified, \
-      /* .swapChildrenOpCode   = */ TR::BadILOp, \
-      /* .reverseBranchOpCode  = */ TR::BadILOp, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ iucall, /* direct call returning unsigned integer */ \
-   ) \
-   MACRO(\
       /* .opcode               = */ TR::lucall, \
       /* .name                 = */ "lucall", \
       /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
@@ -8924,22 +8908,6 @@
       /* .booleanCompareOpCode = */ TR::BadILOp, \
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ icalli, /* indirect call returning integer (child1 is addr of function) */ \
-   ) \
-   MACRO(\
-      /* .opcode               = */ TR::iucalli, \
-      /* .name                 = */ "iucalli", \
-      /* .properties1          = */ ILProp1::Indirect | ILProp1::Call | ILProp1::HasSymbolRef, \
-      /* .properties2          = */ ILProp2::CanRaiseException | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, \
-      /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-      /* .properties4          = */ 0, \
-      /* .dataType             = */ TR::Int32, \
-      /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned, \
-      /* .childProperties      = */ ILChildProp::IndirectCallType, \
-      /* .swapChildrenOpCode   = */ TR::BadILOp, \
-      /* .reverseBranchOpCode  = */ TR::BadILOp, \
-      /* .booleanCompareOpCode = */ TR::BadILOp, \
-      /* .ifCompareOpCode      = */ TR::BadILOp, \
-      /* .description          = */ iucalli, /* indirect call returning unsigned integer (child1 is addr of function) */ \
    ) \
    MACRO(\
       /* .opcode               = */ TR::lcalli, \

@@ -533,7 +533,6 @@
 #define bustoreiARMEvaluator TR::TreeEvaluator::bstoreEvaluator
 #define iureturnARMEvaluator TR::TreeEvaluator::ireturnEvaluator
 #define lureturnARMEvaluator TR::TreeEvaluator::lreturnEvaluator
-#define iucallARMEvaluator TR::TreeEvaluator::directCallEvaluator
 #define lucallARMEvaluator TR::TreeEvaluator::directCallEvaluator
 #define iuaddARMEvaluator TR::TreeEvaluator::iaddEvaluator
 #define luaddARMEvaluator TR::TreeEvaluator::laddEvaluator
@@ -580,7 +579,6 @@
 #define contigarraylengthARMEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define discontigarraylengthARMEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define icalliARMEvaluator TR::TreeEvaluator::indirectCallEvaluator
-#define iucalliARMEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define lcalliARMEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define lucalliARMEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define fcalliARMEvaluator TR::TreeEvaluator::indirectCallEvaluator

@@ -675,7 +675,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define bustoreiVPHandler constrainStore
 #define iureturnVPHandler constrainReturn
 #define lureturnVPHandler constrainReturn
-#define iucallVPHandler constrainCall
 #define lucallVPHandler constrainCall
 #define iuaddVPHandler constrainAdd
 #define luaddVPHandler constrainAdd
@@ -722,7 +721,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define contigarraylengthVPHandler constrainArraylength
 #define discontigarraylengthVPHandler constrainArraylength
 #define icalliVPHandler constrainCall
-#define iucalliVPHandler constrainCall
 #define lcalliVPHandler constrainCall
 #define lucalliVPHandler constrainCall
 #define fcalliVPHandler constrainCall

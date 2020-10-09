@@ -533,7 +533,6 @@
 #define bustoreiAMD64Evaluator TR::TreeEvaluator::bstoreEvaluator
 #define iureturnAMD64Evaluator TR::TreeEvaluator::integerReturnEvaluator
 #define lureturnAMD64Evaluator TR::TreeEvaluator::integerReturnEvaluator
-#define iucallAMD64Evaluator TR::TreeEvaluator::directCallEvaluator
 #define lucallAMD64Evaluator TR::TreeEvaluator::directCallEvaluator
 #define iuaddAMD64Evaluator TR::TreeEvaluator::integerAddEvaluator
 #define luaddAMD64Evaluator TR::TreeEvaluator::integerAddEvaluator
@@ -580,7 +579,6 @@
 #define contigarraylengthAMD64Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define discontigarraylengthAMD64Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define icalliAMD64Evaluator TR::TreeEvaluator::indirectCallEvaluator
-#define iucalliAMD64Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define lcalliAMD64Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define lucalliAMD64Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define fcalliAMD64Evaluator TR::TreeEvaluator::indirectCallEvaluator

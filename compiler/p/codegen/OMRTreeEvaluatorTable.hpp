@@ -533,7 +533,6 @@
 #define bustoreiPowerEvaluator TR::TreeEvaluator::bstoreEvaluator
 #define iureturnPowerEvaluator TR::TreeEvaluator::ireturnEvaluator
 #define lureturnPowerEvaluator TR::TreeEvaluator::lreturnEvaluator
-#define iucallPowerEvaluator TR::TreeEvaluator::directCallEvaluator
 #define lucallPowerEvaluator TR::TreeEvaluator::directCallEvaluator
 #define iuaddPowerEvaluator TR::TreeEvaluator::iaddEvaluator
 #define luaddPowerEvaluator TR::TreeEvaluator::laddEvaluator
@@ -580,7 +579,6 @@
 #define contigarraylengthPowerEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define discontigarraylengthPowerEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define icalliPowerEvaluator TR::TreeEvaluator::indirectCallEvaluator
-#define iucalliPowerEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define lcalliPowerEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define lucalliPowerEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define fcalliPowerEvaluator TR::TreeEvaluator::indirectCallEvaluator

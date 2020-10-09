@@ -532,7 +532,6 @@
 #define bustoreiARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define iureturnARM64Evaluator TR::TreeEvaluator::ireturnEvaluator
 #define lureturnARM64Evaluator TR::TreeEvaluator::lreturnEvaluator
-#define iucallARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define lucallARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define iuaddARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define luaddARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
@@ -579,7 +578,6 @@
 #define contigarraylengthARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define discontigarraylengthARM64Evaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define icalliARM64Evaluator TR::TreeEvaluator::indirectCallEvaluator
-#define iucalliARM64Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define lcalliARM64Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define lucalliARM64Evaluator TR::TreeEvaluator::indirectCallEvaluator
 #define fcalliARM64Evaluator TR::TreeEvaluator::indirectCallEvaluator

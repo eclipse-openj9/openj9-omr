@@ -488,8 +488,6 @@ TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier *
 #define icmpgeSimplifierHandler icmpgeSimplifier
 #define icmpgtSimplifierHandler icmpgtSimplifier
 #define icmpleSimplifierHandler icmpleSimplifier
-#define iucmpeqSimplifierHandler dftSimplifier
-#define iucmpneSimplifierHandler dftSimplifier
 #define iucmpltSimplifierHandler dftSimplifier
 #define iucmpgeSimplifierHandler dftSimplifier
 #define iucmpgtSimplifierHandler dftSimplifier
@@ -500,8 +498,6 @@ TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier *
 #define lcmpgeSimplifierHandler lcmpgeSimplifier
 #define lcmpgtSimplifierHandler lcmpgtSimplifier
 #define lcmpleSimplifierHandler lcmpleSimplifier
-#define lucmpeqSimplifierHandler lcmpeqSimplifier
-#define lucmpneSimplifierHandler lcmpneSimplifier
 #define lucmpltSimplifierHandler lucmpltSimplifier
 #define lucmpgeSimplifierHandler lucmpgeSimplifier
 #define lucmpgtSimplifierHandler lucmpgtSimplifier
@@ -542,8 +538,6 @@ TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier *
 #define bcmpgeSimplifierHandler bcmpgeSimplifier
 #define bcmpgtSimplifierHandler bcmpgtSimplifier
 #define bcmpleSimplifierHandler bcmpleSimplifier
-#define bucmpeqSimplifierHandler bcmpeqSimplifier
-#define bucmpneSimplifierHandler bcmpneSimplifier
 #define bucmpltSimplifierHandler bcmpltSimplifier
 #define bucmpgeSimplifierHandler bcmpgeSimplifier
 #define bucmpgtSimplifierHandler bcmpgtSimplifier
@@ -554,8 +548,6 @@ TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier *
 #define scmpgeSimplifierHandler scmpgeSimplifier
 #define scmpgtSimplifierHandler scmpgtSimplifier
 #define scmpleSimplifierHandler scmpleSimplifier
-#define sucmpeqSimplifierHandler sucmpeqSimplifier
-#define sucmpneSimplifierHandler sucmpneSimplifier
 #define sucmpltSimplifierHandler sucmpltSimplifier
 #define sucmpgeSimplifierHandler sucmpgeSimplifier
 #define sucmpgtSimplifierHandler sucmpgtSimplifier
@@ -571,8 +563,6 @@ TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier *
 #define ificmpgeSimplifierHandler ificmpgeSimplifier
 #define ificmpgtSimplifierHandler ificmpgtSimplifier
 #define ificmpleSimplifierHandler ificmpleSimplifier
-#define ifiucmpeqSimplifierHandler ificmpeqSimplifier
-#define ifiucmpneSimplifierHandler ificmpneSimplifier
 #define ifiucmpltSimplifierHandler ificmpltSimplifier
 #define ifiucmpgeSimplifierHandler ificmpgeSimplifier
 #define ifiucmpgtSimplifierHandler ificmpgtSimplifier
@@ -583,8 +573,6 @@ TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier *
 #define iflcmpgeSimplifierHandler iflcmpgeSimplifier
 #define iflcmpgtSimplifierHandler iflcmpgtSimplifier
 #define iflcmpleSimplifierHandler iflcmpleSimplifier
-#define iflucmpeqSimplifierHandler iflcmpeqSimplifier
-#define iflucmpneSimplifierHandler iflcmpneSimplifier
 #define iflucmpltSimplifierHandler iflcmpltSimplifier
 #define iflucmpgeSimplifierHandler iflcmpgeSimplifier
 #define iflucmpgtSimplifierHandler iflcmpgtSimplifier
@@ -625,8 +613,6 @@ TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier *
 #define ifbcmpgeSimplifierHandler ifCmpWithEqualitySimplifier
 #define ifbcmpgtSimplifierHandler ifCmpWithoutEqualitySimplifier
 #define ifbcmpleSimplifierHandler ifCmpWithEqualitySimplifier
-#define ifbucmpeqSimplifierHandler ifCmpWithEqualitySimplifier
-#define ifbucmpneSimplifierHandler ifCmpWithoutEqualitySimplifier
 #define ifbucmpltSimplifierHandler ifCmpWithoutEqualitySimplifier
 #define ifbucmpgeSimplifierHandler ifCmpWithEqualitySimplifier
 #define ifbucmpgtSimplifierHandler ifCmpWithoutEqualitySimplifier
@@ -637,8 +623,6 @@ TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier *
 #define ifscmpgeSimplifierHandler ifCmpWithEqualitySimplifier
 #define ifscmpgtSimplifierHandler ifCmpWithoutEqualitySimplifier
 #define ifscmpleSimplifierHandler ifCmpWithEqualitySimplifier
-#define ifsucmpeqSimplifierHandler ifCmpWithEqualitySimplifier
-#define ifsucmpneSimplifierHandler ifCmpWithoutEqualitySimplifier
 #define ifsucmpltSimplifierHandler ifCmpWithoutEqualitySimplifier
 #define ifsucmpgeSimplifierHandler ifCmpWithEqualitySimplifier
 #define ifsucmpgtSimplifierHandler ifCmpWithoutEqualitySimplifier
@@ -802,7 +786,6 @@ TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier *
 #define bustoreiSimplifierHandler indirectStoreSimplifier
 #define iureturnSimplifierHandler dftSimplifier
 #define lureturnSimplifierHandler dftSimplifier
-#define iucallSimplifierHandler ifdCallSimplifier
 #define lucallSimplifierHandler lcallSimplifier
 #define iuaddSimplifierHandler iaddSimplifier
 #define luaddSimplifierHandler laddSimplifier
@@ -849,7 +832,6 @@ TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier *
 #define contigarraylengthSimplifierHandler arrayLengthSimplifier
 #define discontigarraylengthSimplifierHandler arrayLengthSimplifier
 #define icalliSimplifierHandler dftSimplifier
-#define iucalliSimplifierHandler dftSimplifier
 #define lcalliSimplifierHandler dftSimplifier
 #define lucalliSimplifierHandler dftSimplifier
 #define fcalliSimplifierHandler dftSimplifier

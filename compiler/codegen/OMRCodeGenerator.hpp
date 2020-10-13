@@ -1146,11 +1146,7 @@ public:
    void apply16BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label);
    void apply16BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label,int8_t d, bool isInstrOffset = false);
    void apply24BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *);
-   void apply16BitLoadLabelRelativeRelocation(TR::Instruction *, TR::LabelSymbol *, TR::LabelSymbol *, int32_t);
-   void apply32BitLoadLabelRelativeRelocation(TR::Instruction *, TR::LabelSymbol *, TR::LabelSymbol *, int32_t);
-   void apply64BitLoadLabelRelativeRelocation(TR::Instruction *, TR::LabelSymbol *);
    void apply32BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *);
-   void apply32BitLabelTableRelocation(int32_t * cursor, TR::LabelSymbol *);
    bool supportsMergingGuards();
 
 

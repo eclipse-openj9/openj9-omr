@@ -727,9 +727,9 @@
 #define lnolzX86Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define lnotzX86Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define lpopcntX86Evaluator TR::TreeEvaluator::badILOpEvaluator
-#define sbyteswapX86Evaluator TR::TreeEvaluator::unImpOpEvaluator
+#define sbyteswapX86Evaluator TR::TreeEvaluator::sbyteswapEvaluator
 #define ibyteswapX86Evaluator TR::TreeEvaluator::ibyteswapEvaluator
-#define lbyteswapX86Evaluator TR::TreeEvaluator::unImpOpEvaluator
+#define lbyteswapX86Evaluator TR::TreeEvaluator::ibyteswapEvaluator
 #define bbitpermuteX86Evaluator TR::TreeEvaluator::bitpermuteEvaluator
 #define sbitpermuteX86Evaluator TR::TreeEvaluator::bitpermuteEvaluator
 #define ibitpermuteX86Evaluator TR::TreeEvaluator::bitpermuteEvaluator

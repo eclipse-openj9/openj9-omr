@@ -733,9 +733,9 @@
 #define lnolzZEvaluator TR::TreeEvaluator::longNumberOfLeadingZeros
 #define lnotzZEvaluator TR::TreeEvaluator::longNumberOfTrailingZeros
 #define lpopcntZEvaluator TR::TreeEvaluator::longBitCount
-#define sbyteswapZEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define ibyteswapZEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define lbyteswapZEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define sbyteswapZEvaluator TR::TreeEvaluator::sbyteswapEvaluator
+#define ibyteswapZEvaluator TR::TreeEvaluator::ibyteswapEvaluator
+#define lbyteswapZEvaluator TR::TreeEvaluator::lbyteswapEvaluator
 #define bbitpermuteZEvaluator TR::TreeEvaluator::bitpermuteEvaluator
 #define sbitpermuteZEvaluator TR::TreeEvaluator::bitpermuteEvaluator
 #define ibitpermuteZEvaluator TR::TreeEvaluator::bitpermuteEvaluator

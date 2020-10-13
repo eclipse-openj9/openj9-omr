@@ -727,9 +727,9 @@
 #define lnolzAMD64Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define lnotzAMD64Evaluator TR::TreeEvaluator::badILOpEvaluator
 #define lpopcntAMD64Evaluator TR::TreeEvaluator::badILOpEvaluator
-#define sbyteswapAMD64Evaluator TR::TreeEvaluator::unImpOpEvaluator
+#define sbyteswapAMD64Evaluator TR::TreeEvaluator::sbyteswapEvaluator
 #define ibyteswapAMD64Evaluator TR::TreeEvaluator::ibyteswapEvaluator
-#define lbyteswapAMD64Evaluator TR::TreeEvaluator::unImpOpEvaluator
+#define lbyteswapAMD64Evaluator TR::TreeEvaluator::ibyteswapEvaluator
 #define bbitpermuteAMD64Evaluator TR::TreeEvaluator::bitpermuteEvaluator
 #define sbitpermuteAMD64Evaluator TR::TreeEvaluator::bitpermuteEvaluator
 #define ibitpermuteAMD64Evaluator TR::TreeEvaluator::bitpermuteEvaluator

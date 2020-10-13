@@ -727,9 +727,9 @@
 #define lnolzPowerEvaluator TR::TreeEvaluator::longNumberOfLeadingZeros
 #define lnotzPowerEvaluator TR::TreeEvaluator::longNumberOfTrailingZeros
 #define lpopcntPowerEvaluator TR::TreeEvaluator::longBitCount
-#define sbyteswapPowerEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define sbyteswapPowerEvaluator TR::TreeEvaluator::sbyteswapEvaluator
 #define ibyteswapPowerEvaluator TR::TreeEvaluator::ibyteswapEvaluator
-#define lbyteswapPowerEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define lbyteswapPowerEvaluator TR::TreeEvaluator::lbyteswapEvaluator
 #define bbitpermutePowerEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define sbitpermutePowerEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define ibitpermutePowerEvaluator TR::TreeEvaluator::unImpOpEvaluator

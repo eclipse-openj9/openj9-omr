@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -70,10 +70,13 @@ if(OMR_HOST_OS STREQUAL "zos")
 	    zos390/omrlpdat.mc
 	    zos390/omrlpdat.o
 	)
-	target_sources(omrport_obj
-		PRIVATE
-			${CMAKE_CURRENT_BINARY_DIR}/zos390/omrlpdat.o
+	# Older versions of CMake don't let you add pre-compiled objects to object-libraries.
+	# Instead create a new static library for the metal c files
+	omr_add_library(omrport_metalc STATIC
+		${CMAKE_CURRENT_BINARY_DIR}/zos390/omrlpdat.o
 	)
+	set_target_properties(omrport_metalc PROPERTIES LINKER_LANGUAGE C)
+
 	list(APPEND OBJECTS
 		omrgenerate_ieat_dump.s
 		omrget_large_pageable_pages_supported.s
@@ -443,6 +446,10 @@ target_link_libraries(omrport
 		${OMR_THREAD_LIB}
 		${CMAKE_DL_LIBS}
 )
+
+if(OMR_OS_ZOS)
+	target_link_libraries(omrport PRIVATE omrport_metalc)
+endif()
 
 if(OMRPORT_OMRSIG_SUPPORT)
 	target_link_libraries(omrport PRIVATE omrsig)

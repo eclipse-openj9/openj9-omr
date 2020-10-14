@@ -42,6 +42,7 @@ public:
 
 	uint64_t  _startTime;		/**< Collection start time */
 	uint64_t  _endTime;			/**< Collection end time */
+	uint64_t  _stallTime;		/**< Collection stall time */
 
 	omrthread_process_time_t _startProcessTimes; /**< Process (Kernel and User) start time(s) */
 	omrthread_process_time_t _endProcessTimes;   /**< Process (Kernel and User) end time(s) */
@@ -58,6 +59,7 @@ public:
 		,_totalFreeHeapSize(0)
 		,_startTime(0)
 		,_endTime(0)
+		,_stallTime(0)
 		,_startProcessTimes()
 		,_endProcessTimes()
 	{};

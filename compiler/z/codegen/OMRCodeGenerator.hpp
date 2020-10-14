@@ -331,7 +331,6 @@ public:
    void apply16BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *, int8_t addressDifferenceDivisor, bool isInstrOffset = false);
    void apply16BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *);
    void apply32BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *);
-   void apply32BitLabelTableRelocation(int32_t * cursor, TR::LabelSymbol *);
 
    void setUnavailableRegisters(TR::Block *b, TR_BitVector &unavailableRegisters);
 

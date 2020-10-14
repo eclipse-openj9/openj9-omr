@@ -2118,6 +2118,7 @@ static const char *commonNonhelperSymbolNames[] =
    "<atomicCompareAndSwapReturnValue>",
    "<jProfileValueSymbol>",
    "<jProfileValueWithNullCHKSymbol>",
+   "<j9VMThreadTempSlotField>"
    };
 
 const char *

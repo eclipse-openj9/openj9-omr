@@ -39,15 +39,6 @@ namespace TR { class Node; }
 
 extern char* AOTcgDiagOn;
 
-#if 0 //defined(ENABLE_AOT_S390)
-#define AOTcgDiag0(comp,s)                   if (AOTcgDiagOn) dumpOptDetails(comp,s)
-#define AOTcgDiag1(comp,s,p1)                if (AOTcgDiagOn) dumpOptDetails(comp,s,p1)
-#define AOTcgDiag2(comp,s,p1,p2)             if (AOTcgDiagOn) dumpOptDetails(comp,s,p1,p2)
-#define AOTcgDiag3(comp,s,p1,p2,p3)          if (AOTcgDiagOn) dumpOptDetails(comp,s,p1,p2,p3)
-#define AOTcgDiag4(comp,s,p1,p2,p3,p4)       if (AOTcgDiagOn) dumpOptDetails(comp,s,p1,p2,p3,p4)
-#define AOTcgDiag5(comp,s,p1,p2,p3,p4,p5)    if (AOTcgDiagOn) dumpOptDetails(comp,s,p1,p2,p3,p4,p5)
-#define AOTcgDiag6(comp,s,p1,p2,p3,p4,p5,p6) if (AOTcgDiagOn) dumpOptDetails(comp,s,p1,p2,p3,p4,p5,p6)
-#else
 #define AOTcgDiag0(comp,s)                    AOTcgDummy()
 #define AOTcgDiag1(comp,s,p1)                 AOTcgDummy()
 #define AOTcgDiag2(comp,s,p1,p2)              AOTcgDummy()
@@ -56,7 +47,6 @@ extern char* AOTcgDiagOn;
 #define AOTcgDiag5(comp,s,p1,p2,p3,p4,p5)     AOTcgDummy()
 #define AOTcgDiag6(comp,s,p1,p2,p3,p4,p5,p6)  AOTcgDummy()
 inline  void AOTcgDummy(){}
-#endif
 
 typedef enum
    {
@@ -102,7 +92,7 @@ class Relocation
    virtual uint8_t *getUpdateLocation()           {return _updateLocation;}
    uint8_t *setUpdateLocation(uint8_t *p) {return (_updateLocation = p);}
 
-   virtual bool isExternalRelocation() { return true; }
+   virtual bool isExternalRelocation() { return false; }
 
    TR::RelocationDebugInfo* getDebugInfo();
 
@@ -127,7 +117,6 @@ class LabelRelocation : public TR::Relocation
    TR::LabelSymbol *getLabel()                  {return _label;}
    TR::LabelSymbol *setLabel(TR::LabelSymbol *l) {return (_label = l);}
 
-   bool isExternalRelocation() { return false; }
    };
 
 class LabelRelative8BitRelocation : public TR::LabelRelocation
@@ -220,7 +209,7 @@ class InstructionLabelRelative16BitRelocation : public TR::LabelRelocation
     *     at \p cursor + \p offset will be the number of half-words between \p cursor and \p l
     */
    InstructionLabelRelative16BitRelocation(TR::Instruction* cursor, int32_t offset, TR::LabelSymbol* l, int32_t divisor);
-      
+
    virtual uint8_t* getUpdateLocation();
    virtual void apply(TR::CodeGenerator* cg);
 
@@ -239,7 +228,7 @@ class InstructionLabelRelative16BitRelocation : public TR::LabelRelocation
 class InstructionLabelRelative32BitRelocation : public TR::LabelRelocation
    {
    public:
-      
+
    /** \brief
     *     Initializes the InstructionLabelRelative16BitRelocation relocation using a \c NULL base target pointer.
     *
@@ -257,7 +246,7 @@ class InstructionLabelRelative32BitRelocation : public TR::LabelRelocation
     *     at \p cursor + \p offset will be the number of half-words between \p cursor and \p l
     */
    InstructionLabelRelative32BitRelocation(TR::Instruction* cursor, int32_t offset, TR::LabelSymbol* l, int32_t divisor);
-      
+
    virtual uint8_t* getUpdateLocation();
    virtual void apply(TR::CodeGenerator* cg);
 
@@ -277,75 +266,6 @@ class LabelAbsoluteRelocation : public TR::LabelRelocation
    virtual void apply(TR::CodeGenerator *codeGen);
    };
 
-
-class LoadLabelRelative16BitRelocation : public TR::Relocation
-   {
-   TR::Instruction *_lastInstruction;
-   TR::LabelSymbol *_startLabel;
-   TR::LabelSymbol *_endLabel;
-   int32_t _deltaToStartLabel;   // used to catch potentially nasty register dep related bugs
-
-   public:
-   LoadLabelRelative16BitRelocation() : TR::Relocation() {}
-   LoadLabelRelative16BitRelocation(TR::Instruction *i, TR::LabelSymbol *start, TR::LabelSymbol *end, int32_t delta)
-      : TR::Relocation(NULL), _lastInstruction(i), _startLabel(start), _endLabel(end), _deltaToStartLabel(delta) {}
-   TR::Instruction *getLastInstruction() {return _lastInstruction;}
-   TR::Instruction *setLastInstruction(TR::Instruction *i) {return (_lastInstruction = i);}
-
-   TR::LabelSymbol *getStartLabel()                  {return _startLabel;}
-   TR::LabelSymbol *setStartLabel(TR::LabelSymbol *l) {return (_startLabel = l);}
-
-   TR::LabelSymbol *getEndLabel()                  {return _endLabel;}
-   TR::LabelSymbol *setEndLabel(TR::LabelSymbol *l) {return (_endLabel = l);}
-
-   int32_t setDeltaToStartLabel(int32_t d)   { return (_deltaToStartLabel = d); }
-   int32_t getDeltaToStartLabel()            { return _deltaToStartLabel; }
-
-   bool isExternalRelocation() { return false; }
-
-   virtual void apply(TR::CodeGenerator *codeGen);
-   };
-
-class LoadLabelRelative32BitRelocation : public TR::Relocation
-   {
-   TR::Instruction *_lastInstruction;
-   TR::LabelSymbol *_startLabel;
-   TR::LabelSymbol *_endLabel;
-   int32_t _deltaToStartLabel;   // used to catch potentially nasty register dep related bugs
-
-   public:
-   LoadLabelRelative32BitRelocation() : TR::Relocation() {}
-   LoadLabelRelative32BitRelocation(TR::Instruction *i, TR::LabelSymbol *start, TR::LabelSymbol *end, int32_t delta)
-      : TR::Relocation(NULL), _lastInstruction(i), _startLabel(start), _endLabel(end), _deltaToStartLabel(delta) {}
-   TR::Instruction *getLastInstruction() {return _lastInstruction;}
-   TR::Instruction *setLastInstruction(TR::Instruction *i) {return (_lastInstruction = i);}
-
-   TR::LabelSymbol *getStartLabel()                  {return _startLabel;}
-   TR::LabelSymbol *setStartLabel(TR::LabelSymbol *l) {return (_startLabel = l);}
-
-   TR::LabelSymbol *getEndLabel()                  {return _endLabel;}
-   TR::LabelSymbol *setEndLabel(TR::LabelSymbol *l) {return (_endLabel = l);}
-
-   int32_t setDeltaToStartLabel(int32_t d)   { return (_deltaToStartLabel = d); }
-   int32_t getDeltaToStartLabel()            { return _deltaToStartLabel; }
-
-   bool isExternalRelocation() { return false; }
-
-   virtual void apply(TR::CodeGenerator *codeGen);
-   };
-
-class LoadLabelRelative64BitRelocation : public TR::LabelRelocation
-   {
-   TR::Instruction *_lastInstruction;
-   public:
-   LoadLabelRelative64BitRelocation() : TR::LabelRelocation() {}
-   LoadLabelRelative64BitRelocation(TR::Instruction *i, TR::LabelSymbol *l)
-      : TR::LabelRelocation(NULL, l), _lastInstruction(i) {}
-   TR::Instruction *getLastInstruction() {return _lastInstruction;}
-   TR::Instruction *setLastInstruction(TR::Instruction *i) {return (_lastInstruction = i);}
-
-   virtual void apply(TR::CodeGenerator *codeGen);
-   };
 
 #define MAX_SIZE_RELOCATION_DATA ((uint16_t)0xffff)
 #define MIN_SHORT_OFFSET         -32768
@@ -472,6 +392,8 @@ class ExternalRelocation : public TR::Relocation
 
    virtual void apply(TR::CodeGenerator *codeGen);
 
+   virtual bool isExternalRelocation() { return true; }
+
    static const char *getName(TR_ExternalRelocationTargetKind k) {return _externalRelocationTargetKindNames[k];}
    static uintptr_t    getGlobalValue(uint32_t g)
          {
@@ -554,33 +476,6 @@ class BeforeBinaryEncodingExternalRelocation : public TR::ExternalRelocation
 
    };
 
-class LabelTable32BitRelocation : public TR::LabelRelocation
-   {
-   public:
-   LabelTable32BitRelocation() : TR::LabelRelocation() {}
-   LabelTable32BitRelocation(uint8_t *p, TR::LabelSymbol *l)
-      : TR::LabelRelocation(p, l) {}
-   virtual void apply(TR::CodeGenerator *codeGen);
-   };
-
 }
-
-typedef TR::RelocationDebugInfo TR_RelocationDebugInfo;
-typedef TR::Relocation TR_Relocation;
-typedef TR::LabelRelocation TR_LabelRelocation;
-typedef TR::LabelRelative8BitRelocation TR_8BitLabelRelativeRelocation;
-typedef TR::LabelRelative12BitRelocation TR_12BitLabelRelativeRelocation;
-typedef TR::LabelRelative16BitRelocation TR_16BitLabelRelativeRelocation;
-typedef TR::LabelRelative24BitRelocation TR_24BitLabelRelativeRelocation;
-typedef TR::LabelRelative32BitRelocation TR_32BitLabelRelativeRelocation;
-typedef TR::LabelAbsoluteRelocation TR_LabelAbsoluteRelocation;
-typedef TR::LoadLabelRelative16BitRelocation TR_16BitLoadLabelRelativeRelocation;
-typedef TR::LoadLabelRelative32BitRelocation TR_32BitLoadLabelRelativeRelocation;
-typedef TR::LoadLabelRelative64BitRelocation TR_64BitLoadLabelRelativeRelocation;
-typedef TR::IteratedExternalRelocation TR_IteratedExternalRelocation;
-typedef TR::ExternalRelocation TR_ExternalRelocation;
-typedef TR::ExternalOrderedPair32BitRelocation TR_32BitExternalOrderedPairRelocation;
-typedef TR::BeforeBinaryEncodingExternalRelocation TR_BeforeBinaryEncodingExternalRelocation;
-typedef TR::LabelTable32BitRelocation TR_32BitLabelTableRelocation;
 
 #endif

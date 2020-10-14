@@ -536,8 +536,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    //
    uint32_t estimateBinaryLength(TR::MemoryReference *);
 
-   void apply32BitLoadLabelRelativeRelocation(TR::Instruction *movInstruction, TR::LabelSymbol *startLabel, TR::LabelSymbol *endLabel, int32_t deltaToStartLabel);
-
    void apply32BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *);
 
    bool isAddressScaleIndexSupported(int32_t scale) { if (scale <= 8) return true; return false; }

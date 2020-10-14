@@ -3555,15 +3555,6 @@ OMR::Z::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t * cursor, TR::L
    *(int32_t *) (((uint8_t *) cursor) + 2) = (int32_t) (((intptr_t) (label->getCodeLocation()) - ((intptr_t) cursor)) / 2);
    }
 
-////////////////////////////////////////////////////////////////////////////////
-// OMR::Z::CodeGenerator::apply32BitLabelTableRelocation
-////////////////////////////////////////////////////////////////////////////////
-void
-OMR::Z::CodeGenerator::apply32BitLabelTableRelocation(int32_t * cursor, TR::LabelSymbol * label)
-   {
-   *(uint32_t *) cursor = (intptr_t) label->getCodeLocation() - ((intptr_t) cursor - *(uint32_t *) cursor);
-   }
-
 /**
  * Get the first snippet entry. If there is at least one targetAddress entry,
  * this value will be returned.  If no targetAddress exists,  the first dataConstant

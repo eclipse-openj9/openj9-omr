@@ -252,8 +252,6 @@ public:
    using OMR::CodeGenerator::apply16BitLabelRelativeRelocation;
    void apply16BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *);
    void apply24BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *);
-   void apply16BitLoadLabelRelativeRelocation(TR::Instruction *liInstruction, TR::LabelSymbol *startLabel, TR::LabelSymbol *endLabel, int32_t deltaToStartLabel);
-   void apply64BitLoadLabelRelativeRelocation(TR::Instruction *lastInstruction, TR::LabelSymbol *label);
 
    TR::RealRegister *getStackPointerRegister()
       {

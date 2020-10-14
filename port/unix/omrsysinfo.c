@@ -200,6 +200,7 @@ static void setPortableError(OMRPortLibrary *portLibrary, const char *funcName, 
 
 #if (defined(LINUXPPC) || defined(AIXPPC))
 static OMRProcessorArchitecture omrsysinfo_map_ppc_processor(const char *processorName);
+const char* omrsysinfo_get_ppc_processor_feature_name(uint32_t feature);
 #endif /* (defined(LINUXPPC) || defined(AIXPPC)) */
 
 #if (defined(AIXPPC) || defined(S390) || defined(J9ZOS390))
@@ -701,6 +702,8 @@ omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32
 	rc = omrsysinfo_get_x86_processor_feature_name(feature);
 #elif (defined(S390) || defined(J9ZOS390) || defined(J9ZTPF))
 	rc = omrsysinfo_get_s390_processor_feature_name(feature);
+#elif (defined(AIXPPC) || defined(LINUXPPC))
+	rc = omrsysinfo_get_ppc_processor_feature_name(feature);
 #endif
 	Trc_PRT_sysinfo_get_processor_feature_name_Exit(rc);
 	return rc;
@@ -727,6 +730,87 @@ omrsysinfo_set_feature(OMRProcessorDesc *desc, uint32_t feature)
 	}
 }
 #endif /* defined(AIXPPC) || defined(S390) || defined(J9ZOS390) */
+
+
+#if (defined(LINUXPPC) || defined(AIXPPC))
+
+const char *
+omrsysinfo_get_ppc_processor_feature_name(uint32_t feature)
+{
+	switch (feature) {
+	case OMR_FEATURE_PPC_32:
+		return "mode32";
+	case OMR_FEATURE_PPC_64:
+		return "mode64";
+	case OMR_FEATURE_PPC_601_INSTR:
+		return "601";
+	case OMR_FEATURE_PPC_HAS_ALTIVEC:
+		return "vec";
+	case OMR_FEATURE_PPC_HAS_FPU:
+		return "fpu";
+	case OMR_FEATURE_PPC_HAS_MMU:
+		return "mmu";
+	case OMR_FEATURE_PPC_HAS_4xxMAC:
+		return "4xxmac";
+	case OMR_FEATURE_PPC_UNIFIED_CACHE:
+		return "uc";
+	case OMR_FEATURE_PPC_HAS_SPE:
+		return "spe";
+	case OMR_FEATURE_PPC_HAS_EFP_SINGLE:
+		return "efp_single";
+	case OMR_FEATURE_PPC_HAS_EFP_DOUBLE:
+		return "efp_double";
+	case OMR_FEATURE_PPC_POWER4:
+		return "p4";
+	case OMR_FEATURE_PPC_POWER5:
+		return "p5";
+	case OMR_FEATURE_PPC_POWER5_PLUS:
+		return "p5+";
+	case OMR_FEATURE_PPC_CELL_BE:
+		return "cell_be";
+	case OMR_FEATURE_PPC_BOOKE:
+		return "booke";
+	case OMR_FEATURE_PPC_SMT:
+		return "smt";
+	case OMR_FEATURE_PPC_ICACHE_SNOOP:
+		return "icache_snoop";
+	case OMR_FEATURE_PPC_ARCH_2_05:
+		return "arch_2_05";
+	case OMR_FEATURE_PPC_PA6T:
+		return "pa6t";
+	case OMR_FEATURE_PPC_HAS_DFP:
+		return "dfp";
+	case OMR_FEATURE_PPC_POWER6_EXT:
+		return "p6_ext";
+	case OMR_FEATURE_PPC_ARCH_2_06:
+		return "arch_2_06";
+	case OMR_FEATURE_PPC_HAS_VSX:
+		return "vsx";
+	case OMR_FEATURE_PPC_PSERIES_PERFMON_COMPAT:
+		return "perfmon_compact";
+	case OMR_FEATURE_PPC_TRUE_LE:
+		return "true_le";
+	case OMR_FEATURE_PPC_LE:
+		return "le";
+	case OMR_FEATURE_PPC_ARCH_2_07:
+		return "arch_2_07";
+	case OMR_FEATURE_PPC_HTM:
+		return "htm";
+	case OMR_FEATURE_PPC_DSCR:
+		return "dscr";
+	case OMR_FEATURE_PPC_EBB:
+		return "ebb";
+	case OMR_FEATURE_PPC_ISEL:
+		return "isel";
+	case OMR_FEATURE_PPC_TAR:
+		return "tar";
+	default:
+		return "null";
+	}
+	return "null";
+}
+
+#endif /* defined(LINUXPPC) || defined(AIXPPC) */
 
 #if defined(LINUXPPC)
 /**

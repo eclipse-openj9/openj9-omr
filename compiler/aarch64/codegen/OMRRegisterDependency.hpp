@@ -35,6 +35,7 @@ namespace OMR { typedef OMR::ARM64::RegisterDependencyConditions RegisterDepende
 
 #include "compiler/codegen/OMRRegisterDependency.hpp"
 
+#include <algorithm>
 #include <stddef.h>
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/RealRegister.hpp"
@@ -172,6 +173,17 @@ class TR_ARM64RegisterDependencyGroup
          {
          if (_dependencies[i].getRegister())
             _dependencies[i].getRegister()->unblock();
+         }
+      }
+
+   template<class It>
+   void stopUsingDepRegs(uint32_t numberOfRegisters, It skipRegsBegin, It skipRegsEnd, TR::CodeGenerator *cg)
+      {
+      for (uint32_t i = 0; i < numberOfRegisters; i++)
+         {
+         TR::Register *depReg = _dependencies[i].getRegister();
+         if (depReg && (std::find(skipRegsBegin, skipRegsEnd, depReg) == skipRegsEnd))
+            cg->stopUsingRegister(depReg);
          }
       }
 
@@ -476,6 +488,14 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
     */
    void bookKeepingRegisterUses(TR::Instruction *instr, TR::CodeGenerator *cg);
 
+   template<class It>
+   void stopUsingDepRegs(TR::CodeGenerator *cg, It skipRegsBegin, It skipRegsEnd)
+      {
+      if (_preConditions != NULL)
+         _preConditions->stopUsingDepRegs(_addCursorForPre, skipRegsBegin, skipRegsEnd, cg);
+      if (_postConditions != NULL)
+         _postConditions->stopUsingDepRegs(_addCursorForPost, skipRegsBegin, skipRegsEnd, cg);
+      }
    /**
     * @brief Kills placeholder registers held by the RegisterDependencyConditions
     * @param[in] cg : CodeGenerator

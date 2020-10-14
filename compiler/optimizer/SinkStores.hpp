@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -84,57 +84,6 @@ class TR_LiveOnNotAllPaths
    TR_BitVector **_outSetInfo;
    };
 
-class TR_FirstUseOfLoad
-   {
-   public:
-   TR_ALLOC(TR_Memory::DataFlowAnalysis)
-   TR_FirstUseOfLoad(TR::Node *node, TR::TreeTop *anchorLocation, int32_t anchorBlockNumber) :
-                   _node(node),_anchorLocation(anchorLocation),_anchorBlockNumber(anchorBlockNumber), _isAnchored(false) { }
-
-   bool isAnchored() { return _isAnchored; }
-   bool setIsAnchored(bool b = true) { return _isAnchored = b; }
-
-   TR::TreeTop *getAnchorLocation() { return _anchorLocation; }
-   TR::TreeTop *setAnchorLocation(TR::TreeTop *loc) { return _anchorLocation = loc; }
-
-   TR::Node *getNode() { return _node; }
-   TR::Node *setNode(TR::Node *n) { return _node = n; }
-
-   int32_t getAnchorBlockNumber() { return _anchorBlockNumber; }
-   int32_t setAnchorBlockNumber(int32_t b) { return _anchorBlockNumber = b; }
-
-   private:
-   int32_t _anchorBlockNumber;
-   TR::Node *_node;
-   TR::TreeTop *_anchorLocation;
-   bool _isAnchored;
-   };
-
-class TR_CommonedLoad
-   {
-   public:
-   TR_ALLOC(TR_Memory::DataFlowAnalysis)
-   TR_CommonedLoad(TR::Node *node, int32_t symIdx) : _node(node), _isSatisfied(false), _isKilled(false), _symIdx(symIdx) { }
-
-   bool isSatisfied() { return _isSatisfied; }
-   bool setIsSatisfied(bool b = true) { return _isSatisfied = b; }
-
-   bool isKilled()  { return _isKilled; }
-   bool setIsKilled(bool b = true)  { return _isKilled = b; }
-
-   TR::Node *getNode() { return _node; }
-   TR::Node *setNode(TR::Node *n) { return _node = n; }
-
-   int32_t getSymIdx() { return _symIdx; }
-   int32_t setSymIdx(int32_t i) { return _symIdx = i; }
-
-   private:
-   TR::Node *_node;
-   bool _isSatisfied;
-   bool _isKilled;
-   int32_t _symIdx;
-   };
-
 class TR_UseOrKillInfo
    {
    public:
@@ -191,45 +140,6 @@ class TR_MovableStore
    TR_BitVector *_needTempForCommonedLoads; // move stores with commoned load
    bool          _isLoadStatic;             // is this a store of a static load?
 
-   };
-
-class TR_SideExitStorePlacement
-   {
-   public:
-   TR_ALLOC(TR_Memory::DataFlowAnalysis)
-
-   TR_SideExitStorePlacement(TR::Block *b, TR::TreeTop *t, bool copy)
-    : _block(b), _store(t), _copyStore(copy) {}
-
-   bool _copyStore;
-   TR::Block *_block;
-   TR::TreeTop *_store;
-   };
-
-class TR_IndirectLoadAnchor
-   {
-   public:
-   TR_ALLOC(TR_Memory::DataFlowAnalysis)
-
-   TR_IndirectLoadAnchor(TR::Node *node, TR::Block *anchorBlock, TR::TreeTop *anchorTree)
-   : _node(node),_anchorBlock(anchorBlock),_anchorTree(anchorTree) {}
-
-   // treetop <- this is node
-   //    iiload
-
-   TR::TreeTop *getAnchorTree() { return _anchorTree; }
-   TR::TreeTop *setAnchorTree(TR::TreeTop *t) { return _anchorTree = t; }
-
-   TR::Block *getAnchorBlock() { return _anchorBlock; }
-   TR::Block *setAnchorBlock(TR::Block *b) { return _anchorBlock = b; }
-
-   TR::Node *getNode() { return _node; }
-   TR::Node *setNode(TR::Node *n) { return _node = n; }
-
-   private:
-   TR::TreeTop *_anchorTree;
-   TR::Block *_anchorBlock;
-   TR::Node *_node;
    };
 
 class TR_StoreInformation
@@ -323,9 +233,6 @@ class TR_SinkStores : public TR::Optimization
    bool usesDataFlowAnalysis()          {return _storeSinkingFlags.testAny(UsesDataFlowAnalysis);}
    void setUsesDataFlowAnalysis(bool b) {_storeSinkingFlags.set(UsesDataFlowAnalysis, b);}
 
-   bool sinkStoresWithIndirectLoads()          {return _storeSinkingFlags.testAny(SinkStoresWithIndirectLoads);}
-   void setSinkStoresWithIndirectLoads(bool b) {_storeSinkingFlags.set(SinkStoresWithIndirectLoads, b);}
-
    bool isExceptionFlagIsSticky()         {return _storeSinkingFlags.testAny(ExceptionFlagIsSticky);}
    void setExceptionFlagIsSticky(bool b)  {_storeSinkingFlags.set(ExceptionFlagIsSticky, b);}
 
@@ -362,19 +269,6 @@ class TR_SinkStores : public TR::Optimization
    void recordPlacementForDefInBlock(TR_BlockStorePlacement *blockPlacement);
    bool isSafeToSinkThruEdgePlacement(int symIdx, TR::CFGNode *block, TR::CFGNode *succBlock, TR_BitVector *allEdgeInfoUsedOrKilledSymbols);
    bool isSymUsedInEdgePlacement(TR::CFGNode *block, TR::CFGNode *succBlock);
-
-   uint32_t
-   insertAnchoredNodes(TR_MovableStore *store,
-                       TR::Node *nodeCopy,
-                       TR::Node *nodeOrig,
-                       TR::Node *nodeParentCopy,
-                       int32_t childNum,
-                       TR_BitVector *needTempForCommonedLoads,
-                       TR_BitVector *blockingUsedSymbols,
-                       TR_BitVector *blockingCommonedSymbols,
-                       TR::Block *currentBlock,
-                       List<TR_IndirectLoadAnchor> *indirectLoadAnchorsForThisStore,
-                       vcount_t visitCount);
 
    int32_t genHandlerIndex() { return _handlerIndex++; }
 
@@ -418,14 +312,11 @@ class TR_SinkStores : public TR::Optimization
    uint64_t                         _searchMarkCalls;
    uint64_t                         _searchMarkWalks;
    uint64_t                         _killMarkWalks;
-   uint64_t                         _numFirstUseAnchors;
-   uint64_t                         _numIndirectLoadAnchors;
    uint64_t                         _numTransformations;
 
    // Data and routines needed to generate and place temp stores of killed locals
    TR_HashTab                      * _tempSymMap;
    TR::SymbolReference              * findTempSym(TR::Node *load);
-   TR_FirstUseOfLoad               * findFirstUseOfLoad(TR::Node *load);
    void                            replaceLoadsWithTempSym(TR::Node *newNode, TR::Node *origNode, TR_BitVector *needTempForCommonedLoads);
    bool                            isCorrectCommonedLoad(TR::Node *commonedLoad, TR::Node *searchNode);
    void                            genStoreToTempSyms(TR::TreeTop *storeLocation,
@@ -434,11 +325,6 @@ class TR_SinkStores : public TR::Optimization
                                                       TR_BitVector *killedLiveCommonedLoads,
                                                       TR::Node *store,
                                                       List<TR_MovableStore> &potentiallyMovableStores);
-
-   // Data needed to sink stores that have indirect loads underneath
-   TR_HashTab                       *_indirectLoadAnchorMap;
-   TR_HashTab                       *_firstUseOfLoadMap;
-   ListHeadAndTail<TR_IndirectLoadAnchor>     *_indirectLoadAnchors;
 
    // Tuning parameters controlled by env vars
    bool                            _sinkAllStores;        // all sinkable stores will be moved regardless of condition
@@ -451,7 +337,7 @@ class TR_SinkStores : public TR::Optimization
       {
       UsesDataFlowAnalysis                     = 0x0001,
       // AVAILABLE                             = 0x0002,
-      SinkStoresWithIndirectLoads              = 0x0004,
+      // AVAILABLE                             = 0x0004,
       ExceptionFlagIsSticky                    = 0x0008,
       SinkStoresWithStaticLoads                = 0x0010,
 

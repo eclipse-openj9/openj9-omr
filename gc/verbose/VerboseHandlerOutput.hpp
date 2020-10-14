@@ -355,7 +355,7 @@ public:
 	 *
 	 * @note should be moved to protected once all standard usage is converted.
 	 */
-	uintptr_t getTagTemplateWithDuration(char *buf, uintptr_t bufsize, uintptr_t id, const char *type, uintptr_t contextId, uint64_t durationus, uint64_t usertimeus, uint64_t cputimeus, uint64_t wallTimeMs);
+	uintptr_t getTagTemplateWithDuration(char *buf, uintptr_t bufsize, uintptr_t id, const char *type, uintptr_t contextId, uint64_t durationus, uint64_t usertimeus, uint64_t cputimeus, uint64_t wallTimeMs, uint64_t stalltimeus);
 
 	/**
 	 * Handle any output or data tracking for the initialized phase of verbose GC.

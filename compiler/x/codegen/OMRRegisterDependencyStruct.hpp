@@ -64,6 +64,26 @@ struct RegisterDependency : OMR::RegisterDependency
    {
    uint32_t getGlobalFPRegister()   {return _flags & GlobalRegisterFPDependency;}
    uint32_t setGlobalFPRegister()   {return (_flags |= GlobalRegisterFPDependency);}
+
+   /**
+    * @return Answers \c true if this register dependency refers to all x87 floating
+    *         point registers collectively; \c false otherwise.
+    */
+   bool isAllFPRegisters() { return _realRegister == TR::RealRegister::AllFPRegisters; }
+
+   /**
+    * @return Answers \c true if this register dependency is a request for the
+    *         best free register from the perspective of the register assigner;
+    *         \c false otherwise.
+    */
+   bool isBestFreeReg() { return _realRegister == TR::RealRegister::BestFreeReg; }
+
+   /**
+    * @return Answers \c true if this register dependency is a request for a
+    *         register that can be used as the byte operand in certain machine
+    *         instructions; \c false otherwise.
+    */
+   bool isByteReg() { return _realRegister == TR::RealRegister::ByteReg; }
    };
 }
 }

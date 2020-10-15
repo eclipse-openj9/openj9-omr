@@ -255,7 +255,7 @@ void TR::X86LabelInstruction::addPostDepsToOutlinedInstructionsBranch()
 #ifdef DEBUG
       // Ensure all register dependencies have been assigned.
       //
-      TR_ASSERT(dependency->getRealRegister() != TR::RealRegister::NoReg, "unassigned merge dep register");
+      TR_ASSERT(!dependency->isNoReg(), "unassigned merge dep register");
 #endif
       }
    }

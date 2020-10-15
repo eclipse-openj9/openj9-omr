@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -657,7 +657,7 @@ void TR_X86RegisterDependencyGroup::blockRealDependencyRegisters(TR_X86RegisterD
    TR::Machine *machine = cg->machine();
    for (TR_X86RegisterDependencyIndex i = 0; i < numberOfRegisters; i++)
       {
-      if (_dependencies[i].getRealRegister() != TR::RealRegister::NoReg)
+      if (!_dependencies[i].isNoReg())
          {
          machine->getRealRegister(_dependencies[i].getRealRegister())->block();
          }
@@ -670,7 +670,7 @@ void TR_X86RegisterDependencyGroup::unblockRealDependencyRegisters(TR_X86Registe
    TR::Machine *machine = cg->machine();
    for (TR_X86RegisterDependencyIndex i = 0; i < numberOfRegisters; i++)
       {
-      if (_dependencies[i].getRealRegister() != TR::RealRegister::NoReg)
+      if (!_dependencies[i].isNoReg())
          {
          machine->getRealRegister(_dependencies[i].getRealRegister())->unblock();
          }
@@ -715,27 +715,27 @@ void TR_X86RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
 
    for (i=0; i<numberOfRegisters; i++)
       {
-      virtReg = _dependencies[i].getRegister();
-      dependentRegNum = _dependencies[i].getRealRegister();
+      TR::RegisterDependency &regDep = _dependencies[i];
+      virtReg = regDep.getRegister();
 
       if (virtReg && (kindsToBeAssigned & virtReg->getKindAsMask())
-          && dependentRegNum != TR::RealRegister::NoReg
-          && dependentRegNum != TR::RealRegister::ByteReg
-          && dependentRegNum != TR::RealRegister::SpilledReg
-          && dependentRegNum != TR::RealRegister::BestFreeReg)
+          && !regDep.isNoReg()
+          && !regDep.isByteReg()
+          && !regDep.isSpilledReg()
+          && !regDep.isBestFreeReg())
          {
          dependencies[numDependencyRegisters++] = getRegisterDependency(i);
          }
-      else if (dependentRegNum == TR::RealRegister::NoReg)
+      else if (regDep.isNoReg())
          hasNoRegDeps = true;
-      else if (dependentRegNum == TR::RealRegister::ByteReg)
+      else if (regDep.isByteReg())
          hasByteDeps = true;
-      else if (dependentRegNum == TR::RealRegister::BestFreeReg)
+      else if (regDep.isBestFreeReg())
          hasBestFreeRegDeps = true;
 
       // Handle spill registers first.
       //
-      if (dependentRegNum == TR::RealRegister::SpilledReg)
+      if (regDep.isSpilledReg())
          {
          if (cg->getUseNonLinearRegisterAssigner())
             {
@@ -790,9 +790,8 @@ void TR_X86RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
       for (i=0; i<numberOfRegisters; i++)
          {
          virtReg = _dependencies[i].getRegister();
-         dependentRegNum = _dependencies[i].getRealRegister();
          if (virtReg && (kindsToBeAssigned & virtReg->getKindAsMask()) &&
-             dependentRegNum == TR::RealRegister::ByteReg)
+             _dependencies[i].isByteReg())
             {
             dependencies[numDependencyRegisters++] = getRegisterDependency(i);
             }
@@ -807,9 +806,8 @@ void TR_X86RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
       for (i=0; i<numberOfRegisters; i++)
          {
          virtReg = _dependencies[i].getRegister();
-         dependentRegNum = _dependencies[i].getRealRegister();
          if (virtReg && (kindsToBeAssigned & virtReg->getKindAsMask()) &&
-             dependentRegNum == TR::RealRegister::NoReg)
+             _dependencies[i].isNoReg())
             {
             dependencies[numDependencyRegisters++] = getRegisterDependency(i);
             }
@@ -824,9 +822,8 @@ void TR_X86RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
       for (i=0; i<numberOfRegisters; i++)
          {
          virtReg = _dependencies[i].getRegister();
-         dependentRegNum = _dependencies[i].getRealRegister();
          if (virtReg && (kindsToBeAssigned & virtReg->getKindAsMask()) &&
-             dependentRegNum == TR::RealRegister::BestFreeReg)
+             _dependencies[i].isBestFreeReg())
             {
             dependencies[numDependencyRegisters++] = getRegisterDependency(i);
             }
@@ -1017,10 +1014,10 @@ void TR_X86RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
       // by snippets that need to look back and figure out which virtual
       // registers ended up assigned to which real registers.
       //
-      if (dependencies[i]->getRealRegister() == TR::RealRegister::NoReg)
+      if (dependencies[i]->isNoReg())
          dependencies[i]->setRealRegister(assignedReg->getRegisterNumber());
 
-      if (dependencies[i]->getRealRegister() == TR::RealRegister::BestFreeReg)
+      if (dependencies[i]->isBestFreeReg())
          {
          dependencies[i]->setRealRegister(bestFreeRealRegIndex);
          virtRegister->decFutureUseCount();
@@ -1041,11 +1038,10 @@ void TR_X86RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
       for (i=0; i<numberOfRegisters; i++)
          {
          virtReg = _dependencies[i].getRegister();
-         dependentRegNum = _dependencies[i].getRealRegister();
 
          if (virtReg
              && (kindsToBeAssigned & virtReg->getKindAsMask())
-             && dependentRegNum == TR::RealRegister::SpilledReg)
+             && _dependencies[i].isSpilledReg())
             {
             virtReg->decFutureUseCount();
             }
@@ -1269,7 +1265,7 @@ void TR_X86RegisterDependencyGroup::assignFPRegisters(TR::Instruction   *prevIns
                   }
                }
             }
-         else if (_dependencies[i].getRealRegister() == TR::RealRegister::AllFPRegisters)
+         else if (_dependencies[i].isAllFPRegisters())
             {
             // Spill the entire FP stack to memory.
             //
@@ -1311,7 +1307,7 @@ void TR_X86RegisterDependencyGroup::assignFPRegisters(TR::Instruction   *prevIns
             }
          else
             {
-            if (_dependencies[i].getRealRegister() == TR::RealRegister::AllFPRegisters)
+            if (_dependencies[i].isAllFPRegisters())
                {
                // Spill the entire FP stack to memory.
                //
@@ -1493,7 +1489,7 @@ uint32_t OMR::X86::RegisterDependencyConditions::numReferencedFPRegisters(TR::Co
       {
       reg = _preConditions->getRegisterDependency(i)->getRegister();
       if ((reg && reg->getKind() == TR_X87) ||
-          (!reg && _preConditions->getRegisterDependency(i)->getRealRegister() == TR::RealRegister::AllFPRegisters))
+          (!reg && _preConditions->getRegisterDependency(i)->isAllFPRegisters()))
          {
          total++;
          }
@@ -1503,7 +1499,7 @@ uint32_t OMR::X86::RegisterDependencyConditions::numReferencedFPRegisters(TR::Co
       {
       reg = _postConditions->getRegisterDependency(i)->getRegister();
       if ((reg && reg->getKind() == TR_X87) ||
-          (!reg && _postConditions->getRegisterDependency(i)->getRealRegister() == TR::RealRegister::AllFPRegisters))
+          (!reg && _postConditions->getRegisterDependency(i)->isAllFPRegisters()))
          {
          total++;
          }

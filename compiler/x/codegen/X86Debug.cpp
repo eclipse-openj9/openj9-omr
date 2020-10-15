@@ -239,31 +239,32 @@ TR_Debug::printDependencyConditions(
       cursor += 12;
 
       *(cursor++) = '(';
-      TR::RealRegister::RegNum r = (conditions->getRegisterDependency(i))->getRealRegister();
-      if  (r == TR::RealRegister::AllFPRegisters)
+      TR::RegisterDependency *regDep = conditions->getRegisterDependency(i);
+      if (regDep->isAllFPRegisters())
          {
          len = sprintf(cursor, "AllFP");
          }
-      else if (r == TR::RealRegister::NoReg)
+      else if (regDep->isNoReg())
          {
          len = sprintf(cursor, "NoReg");
          }
-      else if (r == TR::RealRegister::ByteReg)
+      else if (regDep->isByteReg())
          {
          len = sprintf(cursor, "ByteReg");
          }
-      else if (r == TR::RealRegister::BestFreeReg)
+      else if (regDep->isBestFreeReg())
          {
          len = sprintf(cursor, "BestFreeReg");
          }
-      else if (r == TR::RealRegister::SpilledReg)
+      else if (regDep->isSpilledReg())
          {
          len = sprintf(cursor, "SpilledReg");
          }
       else
          {
+         TR::RealRegister::RegNum r = regDep->getRealRegister();
          len = sprintf(cursor, "%s", getName(_cg->machine()->getRealRegister(r)));
-        }
+         }
 
       *(cursor+len)=')';
       *(cursor+9) = 0x00;
@@ -313,31 +314,34 @@ TR_Debug::dumpDependencyGroup(TR::FILE *                         pOutFile,
    trfprintf(pOutFile, "\n\t%s:", prefix);
    for (i = 0; i < numConditions; ++i)
       {
-      virtReg = group->getRegisterDependency(i)->getRegister();
-      r = (group->getRegisterDependency(i))->getRealRegister();
+      TR::RegisterDependency *regDep = group->getRegisterDependency(i);
+      virtReg = regDep->getRegister();
 
       if (omitNullDependencies)
-        if (!virtReg && r != TR::RealRegister::AllFPRegisters)
-           continue;
+         {
+         if (!virtReg && !regDep->isAllFPRegisters())
+            continue;
+         }
 
-      if  (r == TR::RealRegister::AllFPRegisters)
-        {
-        trfprintf(pOutFile, " [All FPRs]");
-        }
+      if (regDep->isAllFPRegisters())
+         {
+         trfprintf(pOutFile, " [All FPRs]");
+         }
       else
-        {
-        trfprintf(pOutFile, " [%s : ", getName(virtReg));
-        if (r == TR::RealRegister::NoReg)
-           trfprintf(pOutFile, "NoReg]");
-        else if (r == TR::RealRegister::ByteReg)
-           trfprintf(pOutFile, "ByteReg]");
-        else if (r == TR::RealRegister::BestFreeReg)
-           trfprintf(pOutFile, "BestFreeReg]");
-        else if (r == TR::RealRegister::SpilledReg)
-           trfprintf(pOutFile, "SpilledReg]");
-        else
-           trfprintf(pOutFile, "%s]", getName(_cg->machine()->getRealRegister(r)));
-        }
+         {
+         r = regDep->getRealRegister();
+         trfprintf(pOutFile, " [%s : ", getName(virtReg));
+         if (regDep->isNoReg())
+            trfprintf(pOutFile, "NoReg]");
+         else if (regDep->isByteReg())
+            trfprintf(pOutFile, "ByteReg]");
+         else if (regDep->isBestFreeReg())
+            trfprintf(pOutFile, "BestFreeReg]");
+         else if (regDep->isSpilledReg())
+            trfprintf(pOutFile, "SpilledReg]");
+         else
+            trfprintf(pOutFile, "%s]", getName(_cg->machine()->getRealRegister(r)));
+         }
 
       foundDep = true;
       }

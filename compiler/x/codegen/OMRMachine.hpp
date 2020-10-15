@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -137,8 +137,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    int32_t getGlobalReg(TR::RealRegister::RegNum reg);
 
    uint8_t getNumberOfGPRs() { return _numGPRs; }
-
-   TR::RealRegister **cloneRegisterFile(TR::RealRegister **registerFile, TR_AllocationKind allocKind = heapAlloc);
 
    TR::RealRegister **captureRegisterFile();
    void installRegisterFile(TR::RealRegister **registerFileCopy);

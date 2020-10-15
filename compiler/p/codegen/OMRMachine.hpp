@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -130,9 +130,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    void takeRegisterStateSnapShot();
    void restoreRegisterStateFromSnapShot();
 
-   TR::RealRegister **cloneRegisterFile(TR::RealRegister **registerFile, TR_AllocationKind allocKind = heapAlloc);
-   TR::RealRegister **cloneRegisterFileByType(TR::RealRegister **registerFileClone, TR::RealRegister **registerFile,
-                                                int32_t start, int32_t end, TR_RegisterKinds kind, TR_AllocationKind allocKind);
    TR::RegisterDependencyConditions  *createCondForLiveAndSpilledGPRs(bool cleanRegState, TR::list<TR::Register*> *spilledRegisterList = NULL);
 
    void decFutureUseCountAndUnlatch(TR::Register *virtualRegister);

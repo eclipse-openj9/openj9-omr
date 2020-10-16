@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -169,10 +169,9 @@ void TR_RVRegisterDependencyGroup::assignRegisters(
       for (i = 0; i< numberOfRegisters; i++)
          {
          virtReg = _dependencies[i].getRegister();
-         dependentRegNum = _dependencies[i].getRealRegister();
-         if (dependentRegNum == TR::RealRegister::SpilledReg)
+         if (_dependencies[i].isSpilledReg())
             {
-            TR_ASSERT(virtReg->getBackingStorage(),"should have a backing store if dependentRegNum == spillRegIndex()\n");
+            TR_ASSERT(virtReg->getBackingStorage(), "should have a backing store if SpilledReg");
             if (virtReg->getAssignedRealRegister())
                {
                // this happens when the register was first spilled in main line path then was reverse spilled
@@ -239,7 +238,7 @@ void TR_RVRegisterDependencyGroup::assignRegisters(
 
       if (virtReg->getAssignedRealRegister() != NULL)
          {
-         if (_dependencies[i].getRealRegister() == TR::RealRegister::NoReg)
+         if (_dependencies[i].isNoReg())
             {
             virtReg->block();
             }
@@ -263,12 +262,13 @@ void TR_RVRegisterDependencyGroup::assignRegisters(
       changed = false;
       for (i = 0; i < numberOfRegisters; i++)
          {
-         virtReg = _dependencies[i].getRegister();
-         dependentRegNum = _dependencies[i].getRealRegister();
+         TR::RegisterDependency &regDep = _dependencies[i];
+         virtReg = regDep.getRegister();
+         dependentRegNum = regDep.getRealRegister();
          dependentRealReg = machine->getRealRegister(dependentRegNum);
 
-         if (dependentRegNum != TR::RealRegister::NoReg &&
-             dependentRegNum != TR::RealRegister::SpilledReg &&
+         if (!regDep.isNoReg() &&
+             !regDep.isSpilledReg() &&
              dependentRealReg->getState() == TR::RealRegister::Free)
             {
             machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum);
@@ -283,16 +283,17 @@ void TR_RVRegisterDependencyGroup::assignRegisters(
       changed = false;
       for (i = 0; i < numberOfRegisters; i++)
          {
-         virtReg = _dependencies[i].getRegister();
+         TR::RegisterDependency &regDep = _dependencies[i];
+         virtReg = regDep.getRegister();
          assignedRegister = NULL;
          if (virtReg->getAssignedRealRegister() != NULL)
             {
             assignedRegister = toRealRegister(virtReg->getAssignedRealRegister());
             }
-         dependentRegNum = _dependencies[i].getRealRegister();
+         dependentRegNum = regDep.getRealRegister();
          dependentRealReg = machine->getRealRegister(dependentRegNum);
-         if (dependentRegNum != TR::RealRegister::NoReg &&
-             dependentRegNum != TR::RealRegister::SpilledReg &&
+         if (!regDep.isNoReg() &&
+             !regDep.isSpilledReg() &&
              dependentRealReg != assignedRegister)
             {
             machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum);
@@ -304,7 +305,7 @@ void TR_RVRegisterDependencyGroup::assignRegisters(
 
    for (i = 0; i < numberOfRegisters; i++)
       {
-      if (_dependencies[i].getRealRegister() == TR::RealRegister::NoReg)
+      if (_dependencies[i].isNoReg())
          {
          TR::RealRegister *realOne;
 
@@ -339,7 +340,7 @@ void TR_RVRegisterDependencyGroup::assignRegisters(
          {
          TR::RealRegister *assignedRegister = dependentRegister->getAssignedRegister()->getRealRegister();
 
-         if (getRegisterDependency(i)->getRealRegister() == TR::RealRegister::NoReg)
+         if (getRegisterDependency(i)->isNoReg())
             getRegisterDependency(i)->setRealRegister(toRealRegister(assignedRegister)->getRegisterNumber());
 
          if (dependentRegister->decFutureUseCount() == 0)

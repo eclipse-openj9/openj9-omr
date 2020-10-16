@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -253,15 +253,11 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::RegisterD
       {
       TR::RegisterDependency* dep = depGroup->getRegisterDependency(i);
 
-      flag = dep->getFlags();
-      vr   = dep->getRegister();
-      rr   = dep->getRealRegister();
-
-      if( doesPreConditionExist( vr, rr, flag, true ) )
+      if( doesPreConditionExist( dep ) )
          {
          _numPreConditions--;
          }
-      else if( !addPreConditionIfNotAlreadyInserted( vr, rr, flag ) )
+      else if( !addPreConditionIfNotAlreadyInserted( dep ) )
          {
          _numPreConditions--;
          }
@@ -272,15 +268,11 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::RegisterD
       {
       TR::RegisterDependency* dep = depGroup->getRegisterDependency(i);
 
-      flag = dep->getFlags();
-      vr   = dep->getRegister();
-      rr   = dep->getRealRegister();
-
-      if( doesPreConditionExist( vr, rr, flag, true ) )
+      if( doesPreConditionExist( dep ) )
          {
          _numPreConditions--;
          }
-      else if( !addPreConditionIfNotAlreadyInserted( vr, rr, flag ) )
+      else if( !addPreConditionIfNotAlreadyInserted( dep ) )
          {
          _numPreConditions--;
          }
@@ -292,15 +284,11 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::RegisterD
       {
       TR::RegisterDependency* dep = depGroup->getRegisterDependency(i);
 
-      flag = dep->getFlags();
-      vr   = dep->getRegister();
-      rr   = dep->getRealRegister();
-
-      if( doesPostConditionExist( vr, rr, flag, true ) )
+      if( doesPostConditionExist( dep ) )
          {
          _numPostConditions--;
          }
-      else if( !addPostConditionIfNotAlreadyInserted( vr, rr, flag ) )
+      else if( !addPostConditionIfNotAlreadyInserted( dep ) )
          {
          _numPostConditions--;
          }
@@ -311,15 +299,11 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::RegisterD
       {
       TR::RegisterDependency* dep = depGroup->getRegisterDependency(i);
 
-      flag = dep->getFlags();
-      vr   = dep->getRegister();
-      rr   = dep->getRealRegister();
-
-      if( doesPostConditionExist( vr, rr, flag, true ) )
+      if( doesPostConditionExist( dep ) )
          {
          _numPostConditions--;
          }
-      else if( !addPostConditionIfNotAlreadyInserted( vr, rr, flag ) )
+      else if( !addPostConditionIfNotAlreadyInserted( dep ) )
          {
          _numPostConditions--;
          }
@@ -1412,8 +1396,12 @@ OMR::Z::RegisterDependencyConditions::createRegisterAssociationDirective(TR::Ins
       }
    }
 
-bool OMR::Z::RegisterDependencyConditions::doesConditionExist( TR_S390RegisterDependencyGroup * regDepArr, TR::Register * vr, TR::RealRegister::RegNum rr, uint32_t flag, uint32_t numberOfRegisters, bool overwriteAssignAny )
+bool OMR::Z::RegisterDependencyConditions::doesConditionExist( TR_S390RegisterDependencyGroup * regDepArr, TR::RegisterDependency *depToCheck, uint32_t numberOfRegisters )
    {
+   uint32_t flag = depToCheck->getFlags();
+   TR::Register *vr = depToCheck->getRegister();
+   TR::RealRegister::RegNum rr = depToCheck->getRealRegister();
+
    for( int32_t i = 0; i < numberOfRegisters; i++ )
       {
       TR::RegisterDependency * regDep = regDepArr->getRegisterDependency(i);
@@ -1457,16 +1445,24 @@ bool OMR::Z::RegisterDependencyConditions::doesConditionExist( TR_S390RegisterDe
    return false;
    }
 
-bool OMR::Z::RegisterDependencyConditions::doesPreConditionExist( TR::Register * vr, TR::RealRegister::RegNum rr, uint32_t flag, bool overwriteAssignAny )
+bool OMR::Z::RegisterDependencyConditions::doesPreConditionExist( TR::RegisterDependency *depToCheck )
    {
-   return doesConditionExist( _preConditions, vr, rr, flag, _addCursorForPre, overwriteAssignAny );
+   return doesConditionExist( _preConditions, depToCheck, _addCursorForPre );
    }
 
-bool OMR::Z::RegisterDependencyConditions::doesPostConditionExist( TR::Register * vr, TR::RealRegister::RegNum rr, uint32_t flag, bool overwriteAssignAny )
+bool OMR::Z::RegisterDependencyConditions::doesPostConditionExist( TR::RegisterDependency *depToCheck )
    {
-   return doesConditionExist( _postConditions, vr, rr, flag, _addCursorForPost, overwriteAssignAny );
+   return doesConditionExist( _postConditions, depToCheck, _addCursorForPost );
    }
 
+bool OMR::Z::RegisterDependencyConditions::addPreConditionIfNotAlreadyInserted(TR::RegisterDependency *regDep)
+   {
+   uint32_t flag = regDep->getFlags();
+   TR::Register* vr = regDep->getRegister();
+   TR::RealRegister::RegNum rr = regDep->getRealRegister();
+
+   return addPreConditionIfNotAlreadyInserted(vr, static_cast<TR::RealRegister::RegDep>(rr), flag);
+   }
 
 bool OMR::Z::RegisterDependencyConditions::addPreConditionIfNotAlreadyInserted(TR::Register *vr,
                                                                                   TR::RealRegister::RegNum rr,
@@ -1502,6 +1498,16 @@ bool OMR::Z::RegisterDependencyConditions::addPreConditionIfNotAlreadyInserted(T
       return false;
       }
    return false;
+   }
+
+
+bool OMR::Z::RegisterDependencyConditions::addPostConditionIfNotAlreadyInserted(TR::RegisterDependency *regDep)
+   {
+   uint32_t flag = regDep->getFlags();
+   TR::Register* vr = regDep->getRegister();
+   TR::RealRegister::RegNum rr = regDep->getRealRegister();
+
+   return addPostConditionIfNotAlreadyInserted(vr, static_cast<TR::RealRegister::RegDep>(rr), flag);
    }
 
 bool OMR::Z::RegisterDependencyConditions::addPostConditionIfNotAlreadyInserted(TR::Register *vr,

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -458,12 +458,32 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
 
    // These methods are temporary until dependencies are re-engineered down the road
    // We only add in the post condition if the desired virt reg is not already spoken for
+
+   /**
+    * @brief Adds the provided \c TR::RegisterDependency to the set of preconditions if it
+    *        has not been added already
+    *
+    * @param[in] \a regDep : the \c TR::RegisterDependency to add
+    *
+    * @return \c true if successfully added; \c false otherwise
+    */
+   bool addPreConditionIfNotAlreadyInserted(TR::RegisterDependency *regDep);
    bool addPreConditionIfNotAlreadyInserted(TR::Register *vr,
                                             TR::RealRegister::RegNum rr,
 				                                uint8_t flag = ReferencesDependentRegister);
    bool addPreConditionIfNotAlreadyInserted(TR::Register *vr,
                                             TR::RealRegister::RegDep rr,
 				                                uint8_t flag = ReferencesDependentRegister);
+
+   /**
+    * @brief Adds the provided \c TR::RegisterDependency to the set of postconditions if it
+    *        has not been added already
+    *
+    * @param[in] \a regDep : the \c TR::RegisterDependency to add
+    *
+    * @return \c true if successfully added; \c false otherwise
+    */
+   bool addPostConditionIfNotAlreadyInserted(TR::RegisterDependency *regDep);
 
    bool addPostConditionIfNotAlreadyInserted(TR::Register *vr,
                                              TR::RealRegister::RegNum rr,
@@ -482,9 +502,34 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    void bookKeepingRegisterUses(TR::Instruction *instr, TR::CodeGenerator *cg, int32_t oldPreCursor=0, int32_t oldPostCursor=0);
    void createRegisterAssociationDirective(TR::Instruction *instruction, TR::CodeGenerator *cg);
 
-   bool doesConditionExist( TR_S390RegisterDependencyGroup * regDepArr, TR::Register * vr, TR::RealRegister::RegNum rr, uint32_t flag, uint32_t numberOfRegisters, bool overwriteAssignAny = false );
-   bool doesPreConditionExist( TR::Register * vr, TR::RealRegister::RegNum rr, uint32_t flag, bool overwriteAssignAny = false );
-   bool doesPostConditionExist( TR::Register * vr, TR::RealRegister::RegNum rr, uint32_t flag, bool overwriteAssignAny = false );
+   /**
+    * @brief Inquires whether a register dependency exists within a given \c TR_S390RegisterDependencyGroup
+    *
+    * @param[in] \a regDepArr : the \c TR_S390RegisterDependencyGroup to check
+    * @param[in] \a regDep : the \c TR::RegisterDependency to check for inclusion
+    * @param[in] \a numberOfRegisters : the number of registers in the dependency group to check
+    *
+    * @return \c true if the register dependency is found; \c false otherwise
+    */
+   bool doesConditionExist( TR_S390RegisterDependencyGroup * regDepArr, TR::RegisterDependency *regDep, uint32_t numberOfRegisters );
+
+   /**
+    * @brief Inquires whether a given register dependency exists within the preconditions
+    *
+    * @param[in] \a regDep : the \c TR::RegisterDependency to check for inclusion
+    *
+    * @return \c true if the register dependency is found; \c false otherwise
+    */
+   bool doesPreConditionExist( TR::RegisterDependency *regDep );
+
+   /**
+    * @brief Inquires whether a given register dependency exists within the postconditions
+    *
+    * @param[in] \a regDep : the \c TR::RegisterDependency to check for inclusion
+    *
+    * @return \c true if the register dependency is found; \c false otherwise
+    */
+   bool doesPostConditionExist( TR::RegisterDependency *regDep );
 
    TR::CodeGenerator *cg()   { return _cg; }
    };

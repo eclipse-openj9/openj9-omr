@@ -497,7 +497,6 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    bool refsRegister(TR::Register *r);
    bool defsRegister(TR::Register *r);
    bool usesRegister(TR::Register *r);
-   bool mayDefineRegister(TR::Register *r);
 
    void bookKeepingRegisterUses(TR::Instruction *instr, TR::CodeGenerator *cg, int32_t oldPreCursor=0, int32_t oldPostCursor=0);
    void createRegisterAssociationDirective(TR::Instruction *instruction, TR::CodeGenerator *cg);

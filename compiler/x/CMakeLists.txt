@@ -69,6 +69,7 @@ if(TR_TARGET_BITS STREQUAL 64)
 		${CMAKE_CURRENT_LIST_DIR}/amd64/codegen/AMD64SystemLinkage.cpp
 		${CMAKE_CURRENT_LIST_DIR}/amd64/codegen/OMRELFRelocationResolver.cpp
 		${CMAKE_CURRENT_LIST_DIR}/amd64/objectfmt/OMRJitCodeRWXObjectFormat.cpp
+		${CMAKE_CURRENT_LIST_DIR}/amd64/objectfmt/OMRJitCodeRXObjectFormat.cpp
 	)
 else()
 	compiler_library(x_32

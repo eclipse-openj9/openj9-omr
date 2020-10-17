@@ -29,3 +29,4 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/x/amd64/codegen/AMD64SystemLinkage.cpp \
     $(JIT_OMR_DIRTY_DIR)/x/amd64/codegen/OMRELFRelocationResolver.cpp \
     $(JIT_OMR_DIRTY_DIR)/x/amd64/objectfmt/OMRJitCodeRWXObjectFormat.cpp \
+    $(JIT_OMR_DIRTY_DIR)/x/amd64/objectfmt/OMRJitCodeRXObjectFormat.cpp \

@@ -2611,7 +2611,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
       if (isFloat)
          {
            if (debug("disableGlobalFPRs")
-               || cg->getDisableFpGRA()
+               || cg->getDisableFloatingPointGRA()
 #ifdef J9_PROJECT_SPECIFIC
                || (dt == TR::DecimalLongDouble)
 #endif

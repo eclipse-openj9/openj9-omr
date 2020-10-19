@@ -360,8 +360,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *arraysetEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraytranslateEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraytranslateAndTestEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *reverseLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *reverseStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *compareIntsForEquality(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *compareIntsForEquality(TR::InstOpCode::Mnemonic branchOp, TR::LabelSymbol *dstLabel, TR::Node *node,

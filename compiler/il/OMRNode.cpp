@@ -3670,18 +3670,6 @@ OMR::Node::exceptionsRaised()
          if (node->isArrayTRT())
             possibleExceptions |= TR::Block:: CanCatchBoundCheck;
          break;
-#ifdef J9_PROJECT_SPECIFIC
-      case TR::ircload:  // reverse load/store does not throw any exceptions
-      case TR::irsload:
-      case TR::iruiload:
-      case TR::iriload:
-      case TR::irulload:
-      case TR::irlload:
-      case TR::irsstore:
-      case TR::iristore:
-      case TR::irlstore:
-         break;
-#endif
       case TR::arraycmp: // does not throw any exceptions
          break;
       case TR::checkcast:

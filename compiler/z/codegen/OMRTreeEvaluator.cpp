@@ -5223,13 +5223,12 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
    {
    if (!cg->getConditionalMovesEvaluationMode())
       {
-      if (!storeNode->getOpCode().isReverseLoadOrStore()
-              && storeNode->getType().isIntegral()
+      if (storeNode->getType().isIntegral()
               && !(storeNode->getOpCode().isIndirect() && storeNode->hasUnresolvedSymbolReference()))
          {
          TR::Node* valueNode = storeNode->getOpCode().isIndirect() ? storeNode->getChild(1) : storeNode->getChild(0);
 
-         if (valueNode->getOpCode().isLoadVar() && !valueNode->getOpCode().isReverseLoadOrStore () && valueNode->isSingleRefUnevaluated() && !valueNode->hasUnresolvedSymbolReference())
+         if (valueNode->getOpCode().isLoadVar() && valueNode->isSingleRefUnevaluated() && !valueNode->hasUnresolvedSymbolReference())
             {
             // Pattern match the following trees:
             //
@@ -5271,7 +5270,6 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
 
             // Make sure this is an integral truncation conversion
             if (valueNode->getOpCode().isIntegralLoadVar()
-                    && !valueNode->getOpCode().isReverseLoadOrStore()
                     && valueNode->isSingleRefUnevaluated()
                     && !valueNode->hasUnresolvedSymbolReference())
                {
@@ -5825,36 +5823,6 @@ OMR::Z::TreeEvaluator::axaddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
  *   isloadEvaluator handled by sloadEvaluator
  *   icloadEvaluator handled by sloadEvaluator
  *
- * riload Evaluator: load integer reversed
- * handles ruiload too
- */
-TR::Register *
-OMR::Z::TreeEvaluator::riloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   return iloadHelper(node, cg, NULL, true);
-   }
-
-/**
- * rlload Evaluator: load long integer reversed
- * handles rulload too
- */
-TR::Register *
-OMR::Z::TreeEvaluator::rlloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   return lloadHelper64(node, cg, NULL, true);
-   }
-
-/**
- * rsload Evaluator: load short integer reversed
- * handles rcload too
- */
-TR::Register *
-OMR::Z::TreeEvaluator::rsloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   return sloadHelper(node, cg, NULL, true);
-   }
-
-/**
  * iload Evaluator: load integer
  *   - also handles iiload
  */
@@ -5916,36 +5884,6 @@ OMR::Z::TreeEvaluator::bloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
  *  isstoreEvaluator handled by sstoreEvaluator
  *  icstoreEvaluator handled by cstoreEvaluator
  */
-/**
- * ristoreEvaluator - store integer reversed
- */
-TR::Register *
-OMR::Z::TreeEvaluator::ristoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   istoreHelper(node, cg, true);
-   return NULL;
-   }
-
-/**
- * rlstoreEvaluator - store long integer reversed
- */
-TR::Register *
-OMR::Z::TreeEvaluator::rlstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   lstoreHelper64(node, cg, true);
-   return NULL;
-   }
-
-/**
- * rsstoreEvaluator - store short integer reversed
- */
-TR::Register *
-OMR::Z::TreeEvaluator::rsstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   sstoreHelper(node, cg, true);
-   return NULL;
-   }
-
 /**
  * istoreEvaluator - store integer
  *  - also used for istorei

@@ -93,9 +93,6 @@ bool OMR::LocalCSE::shouldCopyPropagateNode(TR::Node *parent, TR::Node *node, in
    if (node->getNumChildren() < maxChild)
       return false;
 
-   if (node->getOpCode().isReverseLoadOrStore() || storeNode->getOpCode().isReverseLoadOrStore())
-      return false;
-
    for (int32_t k = 0; k < maxChild; k++)
       {
       if (storeNode->getChild(k) != node->getChild(k))

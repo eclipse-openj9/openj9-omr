@@ -766,18 +766,6 @@ TR::Register *OMR::ARM::TreeEvaluator::longNumberOfLeadingZeros(TR::Node *node, 
 TR::Register *OMR::ARM::TreeEvaluator::longNumberOfTrailingZeros(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }
 TR::Register *OMR::ARM::TreeEvaluator::longBitCount(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }
 
-TR::Register *OMR::ARM::TreeEvaluator::reverseLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR_UNIMPLEMENTED();
-   return NULL;
-   }
-
-TR::Register *OMR::ARM::TreeEvaluator::reverseStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR_UNIMPLEMENTED();
-   return NULL;
-   }
-
 TR::Register *OMR::ARM::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_UNIMPLEMENTED();

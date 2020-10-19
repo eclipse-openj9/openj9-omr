@@ -706,12 +706,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *arraytranslateAndTestEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *long2StringEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bitOpMemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *rsloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *riloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *rlloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *rsstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *ristoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *rlstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraycmpEvaluatorWithPad(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *BBStartEvaluator(TR::Node *node, TR::CodeGenerator *cg);

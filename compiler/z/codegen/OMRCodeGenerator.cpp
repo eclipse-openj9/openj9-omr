@@ -501,7 +501,6 @@ OMR::Z::CodeGenerator::initialize()
       }
 
    cg->setSupportsTestCharComparisonControl();  // TRXX instructions on Danu have mask to disable test char comparison.
-   cg->setSupportsReverseLoadAndStore();
    cg->setSupportsSearchCharString(); // CISC Transformation into SRSTU loop - only on z9.
    cg->setSupportsTranslateAndTestCharString(); // CISC Transformation into TRTE loop - only on z6.
 
@@ -716,7 +715,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
       }
 
    self()->setSupportsTestCharComparisonControl();  // TRXX instructions on Danu have mask to disable test char comparison.
-   self()->setSupportsReverseLoadAndStore();
    self()->setSupportsSearchCharString(); // CISC Transformation into SRSTU loop - only on z9.
    self()->setSupportsTranslateAndTestCharString(); // CISC Transformation into TRTE loop - only on z6.
 

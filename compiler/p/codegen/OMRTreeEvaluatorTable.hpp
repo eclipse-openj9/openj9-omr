@@ -397,8 +397,8 @@
 #define bselectPowerEvaluator TR::TreeEvaluator::iselectEvaluator
 #define sselectPowerEvaluator TR::TreeEvaluator::iselectEvaluator
 #define aselectPowerEvaluator TR::TreeEvaluator::iselectEvaluator
-#define fselectPowerEvaluator TR::TreeEvaluator::iselectEvaluator
-#define dselectPowerEvaluator TR::TreeEvaluator::iselectEvaluator
+#define fselectPowerEvaluator TR::TreeEvaluator::fselectEvaluator
+#define dselectPowerEvaluator TR::TreeEvaluator::dselectEvaluator
 #define treetopPowerEvaluator TR::TreeEvaluator::treetopEvaluator
 #define MethodEnterHookPowerEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define MethodExitHookPowerEvaluator TR::TreeEvaluator::badILOpEvaluator

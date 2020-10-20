@@ -559,6 +559,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsCompareBranch:
          print(pOutFile, (TR::ARM64CompareBranchInstruction *)instr);
          break;
+      case OMR::Instruction::IsTestBitBranch:
+         print(pOutFile, (TR::ARM64TestBitBranchInstruction *)instr);
+         break;
 #ifdef J9_PROJECT_SPECIFIC
       case OMR::Instruction::IsVirtualGuardNOP:
          print(pOutFile, (TR::ARM64VirtualGuardNOPInstruction *)instr);
@@ -779,6 +782,24 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64CompareBranchInstruction *instr)
    TR::Snippet *snippet = label ? label->getSnippet() : NULL;
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, label);
+   if (snippet)
+      {
+      trfprintf(pOutFile, " (%s)", getName(snippet));
+      }
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64TestBitBranchInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+
+   TR::LabelSymbol *label = instr->getLabelSymbol();
+   TR::Snippet *snippet = label ? label->getSnippet() : NULL;
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+   trfprintf(pOutFile, "#%d, ", instr->getBitPos());
    print(pOutFile, label);
    if (snippet)
       {
@@ -1220,7 +1241,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ZeroSrc1ImmInstruction *instr)
          if (decodeBitMasks(n, immr, imms, immediate))
             {
             done = true;
-            trfprintf(pOutFile, "%tstimmw \t");
+            trfprintf(pOutFile, "tstimmw \t");
             print(pOutFile, instr->getSource1Register(), TR_WordReg);
             trfprintf(pOutFile, ", 0x%lx", immediate);
             }

@@ -74,6 +74,7 @@ omr_add_executable(compilertest NOWARNINGS
 	tests/FooBarTest.cpp
 	tests/LimitFileTest.cpp
 	tests/LogFileTest.cpp
+	tests/CCDataTest.cpp
 	tests/OMRTestEnv.cpp
 	tests/OptionSetTest.cpp
 	tests/OpCodesTest.cpp

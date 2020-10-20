@@ -852,12 +852,12 @@ TR::Register *OMR::X86::TreeEvaluator::fpRemEvaluator(TR::Node *node, TR::CodeGe
       if (cg->comp()->target().is64Bit())
          {
          // TODO: We should do this for IA32 eventually
-         TR::SymbolReference *helperSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(nodeIsDouble ? TR_AMD64doubleRemainder : TR_AMD64floatRemainder, false, false, false);
+         TR::SymbolReference *helperSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(nodeIsDouble ? TR_AMD64doubleRemainder : TR_AMD64floatRemainder);
          targetRegister = TR::TreeEvaluator::performHelperCall(node, helperSymRef, nodeIsDouble ? TR::dcall : TR::fcall, false, cg);
          }
       else
          {
-         TR::SymbolReference *helperSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(nodeIsDouble ? TR_IA32doubleRemainderSSE : TR_IA32floatRemainderSSE, false, false, false);
+         TR::SymbolReference *helperSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(nodeIsDouble ? TR_IA32doubleRemainderSSE : TR_IA32floatRemainderSSE);
          targetRegister = TR::TreeEvaluator::performHelperCall(node, helperSymRef, nodeIsDouble ? TR::dcall : TR::fcall, false, cg);
          }
       }
@@ -1291,7 +1291,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
       generateLabelInstruction(LABEL, node, reStartLabel, deps, cg);
 
       TR::Register *targetRegister = cg->allocateRegisterPair(lowReg, highReg);
-      TR::SymbolReference *d2l = comp->getSymRefTab()->findOrCreateRuntimeHelper(TR_IA32double2LongSSE,false,false,false);
+      TR::SymbolReference *d2l = comp->getSymRefTab()->findOrCreateRuntimeHelper(TR_IA32double2LongSSE);
       d2l->getSymbol()->getMethodSymbol()->setLinkage(TR_Helper);
       TR::Node::recreate(node, TR::lcall);
       node->setSymbolReference(d2l);
@@ -1554,7 +1554,7 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
    else
       {
       TR_ASSERT(cg->comp()->target().is32Bit(), "assertion failure");
-      return TR::TreeEvaluator::fpConvertToInt(node, cg->symRefTab()->findOrCreateRuntimeHelper(node->getOpCodeValue() == TR::f2i ? TR_IA32floatToInt : TR_IA32doubleToInt, false, false, false), cg);
+      return TR::TreeEvaluator::fpConvertToInt(node, cg->symRefTab()->findOrCreateRuntimeHelper(node->getOpCodeValue() == TR::f2i ? TR_IA32floatToInt : TR_IA32doubleToInt), cg);
       }
    }
 
@@ -1562,7 +1562,7 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
 TR::Register *OMR::X86::TreeEvaluator::f2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_ASSERT(cg->comp()->target().is32Bit(), "AMD64 uses f2iEvaluator for this");
-   return TR::TreeEvaluator::fpConvertToLong(node, cg->symRefTab()->findOrCreateRuntimeHelper(TR_IA32floatToLong, false, false, false), cg);
+   return TR::TreeEvaluator::fpConvertToLong(node, cg->symRefTab()->findOrCreateRuntimeHelper(TR_IA32floatToLong), cg);
    }
 
 
@@ -1630,7 +1630,7 @@ TR::Register *OMR::X86::TreeEvaluator::d2lEvaluator(TR::Node *node, TR::CodeGene
    {
    TR_ASSERT(cg->comp()->target().is32Bit(), "AMD64 uses f2iEvaluator for this");
 
-   return TR::TreeEvaluator::fpConvertToLong(node, cg->symRefTab()->findOrCreateRuntimeHelper(TR_IA32doubleToLong, false, false, false), cg);
+   return TR::TreeEvaluator::fpConvertToLong(node, cg->symRefTab()->findOrCreateRuntimeHelper(TR_IA32doubleToLong), cg);
    }
 
 

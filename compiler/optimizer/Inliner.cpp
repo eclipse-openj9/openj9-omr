@@ -5498,14 +5498,7 @@ TR_InlinerBase::forceInline(TR_CallTarget *calltarget)
 
 void TR_CallSite::tagcalltarget(int32_t index, TR_InlinerTracer *tracer, TR_InlinerFailureReason reason)
    {
-  heuristicTrace(tracer,"Tag Call Target %p from callsite %p for Reason: %s",getTarget(index),this,tracer->getFailureReasonString(reason));
-   if (_comp->cg()->traceBCDCodeGen())
-      {
-      char callerName[1024];
-      traceMsg(_comp, "q^q : tag to inline %s into %s (callNode %p on line_no=%d)\n",
-         signature(_comp->trMemory()),_comp->fe()->sampleSignature(_callerResolvedMethod->getPersistentIdentifier(), callerName, 1024, _comp->trMemory()),
-         _callNode,_comp->getLineNumber(_callNode));
-      }
+   heuristicTrace(tracer,"Tag Call Target %p from callsite %p for Reason: %s",getTarget(index),this,tracer->getFailureReasonString(reason));
 
    getTarget(index)->_failureReason = reason;
 
@@ -5531,13 +5524,6 @@ void TR_CallSite::tagcalltarget(TR_CallTarget *calltarget, TR_InlinerTracer *tra
 void TR_CallSite::removecalltarget(int32_t index, TR_InlinerTracer *tracer, TR_InlinerFailureReason reason)
    {
    heuristicTrace(tracer,"Removing Call Target %p from callsite %p for Reason: %s",getTarget(index),this,tracer->getFailureReasonString(reason));
-   if (_comp->cg()->traceBCDCodeGen() && _callNode != NULL)
-      {
-      char callerName[1024];
-      traceMsg(_comp, "q^q : failing to inline %s into %s (callNode %p on line_no=%d)\n",
-         signature(_comp->trMemory()),_comp->fe()->sampleSignature(_callerResolvedMethod->getPersistentIdentifier(), callerName, 1024, _comp->trMemory()),
-         _callNode,_comp->getLineNumber(_callNode));
-      }
 
    getTarget(index)->_failureReason = reason;
 

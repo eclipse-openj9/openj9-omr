@@ -38,10 +38,10 @@ private:
 	volatile fomrobject_t* _slot;		/**< stored slot address (volatile, because in concurrent GC the mutator can change the value in _slot) */
 #if defined (OMR_GC_COMPRESSED_POINTERS)
 	uintptr_t _compressedPointersShift; /**< the number of bits to shift by when converting between the compressed pointers heap and real heap */
-#if defined (OMR_GC_FULL_POINTERS)
+#if defined (OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
 	bool _compressObjectReferences;
-#endif /* OMR_GC_FULL_POINTERS */
-#endif /* OMR_GC_COMPRESSED_POINTERS */
+#endif /* defined (OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
+#endif /* defined (OMR_GC_COMPRESSED_POINTERS) */
 
 protected:
 public:
@@ -252,10 +252,10 @@ public:
 	: _slot(slot)
 #if defined (OMR_GC_COMPRESSED_POINTERS)
 	, _compressedPointersShift(omrVM->_compressedPointersShift)
-#if defined (OMR_GC_FULL_POINTERS)
+#if defined (OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
 	, _compressObjectReferences(OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM))
-#endif /* OMR_GC_FULL_POINTERS */
-#endif /* OMR_GC_COMPRESSED_POINTERS */
+#endif /* defined (OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
+#endif /* defined (OMR_GC_COMPRESSED_POINTERS) */
 	{}
 };
 #endif /* SLOTOBJECT_HPP_ */

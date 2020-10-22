@@ -23,6 +23,7 @@
 #include "codegen/CodeGenerator.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/Relocation.hpp"
 #include "codegen/Machine.hpp"
 #include "arm/codegen/ARMInstruction.hpp"
@@ -267,11 +268,8 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
 
       if (comp->isRecursiveMethodTarget(sym))
          {
-         uint32_t jitTojitStart = (uintptr_t) cg()->getCodeStart();
-
-         // reach for how many interp->jit argument loads to skip
-         jitTojitStart += ((*(int32_t *)(jitTojitStart - 4)) >> 16) & 0xFFFF;
-         *(int32_t *) cursor = (*(int32_t *)cursor) | encodeBranchDistance((uintptr_t)cursor, jitTojitStart);
+         intptr_t jitToJitStart = cg()->getLinkage()->entryPointFromCompiledMethod();
+         *(int32_t *) cursor = (*(int32_t *)cursor) | encodeBranchDistance((uintptr_t)cursor, (uint32_t)jitToJitStart);
          }
       else if (label != NULL)
          {

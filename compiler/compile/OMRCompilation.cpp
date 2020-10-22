@@ -34,6 +34,7 @@
 #include "codegen/CodeGenerator.hpp"
 #include "env/FrontEnd.hpp"
 #include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/RecognizedMethods.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/Compilation_inlines.hpp"
@@ -1250,12 +1251,11 @@ int32_t OMR::Compilation::compile()
 #if defined(AIXPPC) || defined(LINUXPPC)
    if (self()->getOption(TR_DebugOnEntry))
       {
-      intptr_t jitTojitStart = (intptr_t) self()->cg()->getCodeStart();
-      jitTojitStart += ((*(int32_t *)(jitTojitStart - 4)) >> 16) & 0x0000ffff;
+      intptr_t jitToJitStart = self()->cg()->getLinkage()->entryPointFromCompiledMethod();
 #if defined(AIXPPC)
-      self()->getDebug()->setupDebugger((void *)jitTojitStart);
+      self()->getDebug()->setupDebugger((void *)jitToJitStart);
 #else
-      self()->getDebug()->setupDebugger((void *)jitTojitStart, self()->cg()->getCodeEnd(), false);
+      self()->getDebug()->setupDebugger((void *)jitToJitStart, self()->cg()->getCodeEnd(), false);
 #endif /* defined(AIXPPC) */
       }
 #elif defined(LINUX) || defined(J9ZOS390) || defined(OMR_OS_WINDOWS)

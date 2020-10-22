@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2610,41 +2610,13 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
 
       if (isFloat)
          {
-           if (debug("disableGlobalFPRs")
-               || cg->getDisableFpGRA()
+         if (cg->getDisableFloatingPointGRA()
 #ifdef J9_PROJECT_SPECIFIC
-               || (dt == TR::DecimalLongDouble)
+             || (dt == TR::DecimalLongDouble)
 #endif
-               )
-              {
-              continue;
-              }
-
-         // Cannot keep FP values on FP stack across a switch on IA32
-         //
-         if (!comp()->cg()->getSupportsJavaFloatSemantics())
+            )
             {
-            temp = rc->getBlocksLiveOnEntry();
-            temp |= rc->getBlocksLiveOnExit();
-            temp &= switchBlocks;
-            if (!temp.isEmpty())
-               {
-               //printf("Discarding FP candidate in %s\n", comp()->getCurrentMethod()->signature());
-               continue;
-               }
-            }
-
-         if (0 && comp()->cg()->spillsFPRegistersAcrossCalls())
-            {
-            temp = rc->getBlocksLiveOnEntry();
-            temp &= rc->getBlocksLiveOnExit();
-            temp &= callBlocks;
-            if (!temp.isEmpty())
-               {
-               //dumpOptDetails(comp(), "Discarding FP candidate %d\n", rc->getSymbolReference()->getReferenceNumber());
-               //printf("Discarding FP candidate in %s\n", comp()->getCurrentMethod()->signature());
-               continue;
-               }
+            continue;
             }
 
          firstRegister = cg->getFirstGlobalFPR(), lastRegister = cg->getLastGlobalFPR();

@@ -268,6 +268,10 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
       self()->setSupportsAutoSIMD();
       self()->setSupportsJavaFloatSemantics();
       }
+   else
+      {
+      self()->setDisableFloatingPointGRA();
+      }
 
    // Choose the best XMM double precision load instruction for the target architecture.
    //

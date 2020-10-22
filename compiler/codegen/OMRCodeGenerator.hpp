@@ -1469,8 +1469,8 @@ public:
    bool getDisableLongGRA() {return _flags1.testAny(DisableLongGRA);}
    void setDisableLongGRA() {_flags1.set(DisableLongGRA);}
 
-   bool getDisableFpGRA() {return _flags2.testAny(DisableFpGRA);}
-   void setDisableFpGRA() {_flags2.set(DisableFpGRA);}
+   bool getDisableFloatingPointGRA() {return _flags2.testAny(DisableFloatingPointGRA);}
+   void setDisableFloatingPointGRA() {_flags2.set(DisableFloatingPointGRA);}
 
    bool usesRegisterMaps() {return _flags1.testAny(UsesRegisterMaps);}
    void setUsesRegisterMaps() {_flags1.set(UsesRegisterMaps);}
@@ -1767,7 +1767,7 @@ public:
       HasCCInfo                                           = 0x00200000,
       SupportsReverseLoadAndStore                         = 0x00400000,
       SupportsLoweringConstLDivPower2                     = 0x00800000,
-      DisableFpGRA                                        = 0x01000000,
+      DisableFloatingPointGRA                             = 0x01000000,
       // AVAILABLE                                        = 0x02000000,
       MethodModifiedByRA                                  = 0x04000000,
       // AVAILABLE                                        = 0x08000000,

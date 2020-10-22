@@ -264,6 +264,9 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Snippet * snippet)
       case TR::Snippet::IsInterfaceCall:
          print(pOutFile, (TR::S390InterfaceCallSnippet *) snippet);
          break;
+      case TR::Snippet::IsInterfaceCallDataReadOnly:
+         print(pOutFile, (TR::S390InterfaceCallReadOnlySnippet *) snippet);
+         break;
       case TR::Snippet::IsStackCheckFailure:
          print(pOutFile, (TR::S390StackCheckFailureSnippet *) snippet);
          break;

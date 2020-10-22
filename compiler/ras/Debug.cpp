@@ -4012,6 +4012,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_S390interfaceCallHelper:                          return "_interfaceCallHelper";
          case TR_S390interfaceCallHelperSingleDynamicSlot:         return "_interfaceCallHelperSingleDynamicSlot";
          case TR_S390interfaceCallHelperMultiSlots:                return "_interfaceCallHelperMultiSlots";
+         case TR_S390interfaceCallHelperMultiSlotsReadOnly:        return "_interfaceCallHelperMultiSlotsReadOnly";
          case TR_S390icallVMprJavaSendVirtual0:                    return "icallVMprJavaSendVirtual0";
          case TR_S390icallVMprJavaSendVirtual1:                    return "icallVMprJavaSendVirtual1";
          case TR_S390icallVMprJavaSendVirtualJ:                    return "icallVMprJavaSendVirtualJ";

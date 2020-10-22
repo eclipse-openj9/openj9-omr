@@ -76,6 +76,7 @@ class OMR_EXTENSIBLE Snippet : public OMR::Snippet
          IsVirtualUnresolved,
          IsResolveVirtualDispatchReadOnlyData,
          IsInterfaceCall,
+         IsInterfaceCallDataReadOnly,
       IsHelperCall,
       IsRecompilation,
       IsStackCheckFailure,

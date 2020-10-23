@@ -315,9 +315,9 @@ TYPED_TEST(CCDataTest, test_no_data_reservation_templated)
    // Make sure the index was written.
    EXPECT_NE(index, INVALID_INDEX);
    // Try to update the value via the key.
-   EXPECT_DEATH(table.put(nullptr, reservationSize, reservationAlignment, &key, index2), "");
-   // Make sure the index wasn't written.
-   EXPECT_EQ(index2, INVALID_INDEX);
+   EXPECT_TRUE(table.put(nullptr, reservationSize, reservationAlignment, &key, index2));
+   // Make sure the index was written.
+   EXPECT_EQ(index2, index);
 
    const TypeParam * const dataPtr = table.get<TypeParam>(index);
 
@@ -421,9 +421,9 @@ TYPED_TEST(CCDataTest, test_updating_templated)
    // Make sure the index was written.
    EXPECT_NE(index1, INVALID_INDEX);
    // Update the value via the key.
-   EXPECT_DEATH(table.put(data2, &key, index2), "");
-    // Make sure the index wasn't written.
-   EXPECT_EQ(index2, INVALID_INDEX);
+   EXPECT_TRUE(table.put(data2, &key, index2));
+   // Make sure the index was written.
+   EXPECT_EQ(index2, index1);
 
    TypeParam * const dataPtr = table.get<TypeParam>(index1);
 

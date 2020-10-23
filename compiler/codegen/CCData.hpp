@@ -141,8 +141,9 @@ class CCData
        * @param[In] value Optional. A pointer to the value to put. If null, no data will be copied but the space will be allocated none the less.
        * @param[In] sizeBytes The size of the value pointed to.
        * @param[In] alignmentBytes The alignment (in bytes) to align the value to.
-       * @param[In] key Optional. The key to map the resulting index to. Without a key the index is the only reference to the data. If the key is already mapped to an index a TR_ASSERT_FATAL will be triggered.
+       * @param[In] key Optional. The key to map the resulting index to. Without a key the index is the only reference to the data. If the key is already mapped to an index the operation will return the index and true, but no data will be written.
        * @param[Out] index The index that refers to the value.
+       * @return True if the value was placed in the table, or the key was already mapped to an index, false otherwise.
        */
       bool put(const uint8_t * const value, const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index);
 

@@ -20,7 +20,6 @@
  *******************************************************************************/
 
 #include "codegen/CCData.hpp"
-#include "infra/Assert.hpp"
 
 using OMR::CCData;
 

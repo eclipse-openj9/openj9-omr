@@ -33,6 +33,7 @@ namespace OMR { typedef OMR::RegisterDependency RegisterDependencyConnector; }
 
 #include <stdint.h>
 #include "codegen/Register.hpp"
+#include "codegen/RealRegister.hpp"
 
 #define DefinesDependentRegister    0x01
 #define ReferencesDependentRegister 0x02
@@ -43,8 +44,11 @@ namespace OMR
 
 struct RegisterDependency
    {
-   uint8_t                                 _flags;
-   TR::Register                            *_virtualRegister;
+   uint8_t _flags;
+
+   TR::Register *_virtualRegister;
+
+   TR::RealRegister::RegNum _realRegister;
 
    uint32_t getFlags()             {return _flags;}
    uint32_t assignFlags(uint8_t f) {return _flags = f;}
@@ -64,6 +68,17 @@ struct RegisterDependency
    TR::Register *getRegister()               {return _virtualRegister;}
    TR::Register *setRegister(TR::Register *r) {return (_virtualRegister = r);}
 
+   /**
+    * @return RealRegister enum for this register dependency
+    */
+   TR::RealRegister::RegNum getRealRegister() {return _realRegister;}
+
+   /**
+    * @brief Set RealRegister enum value for this register dependency
+    *
+    * @param[in] r : RealRegister enum value
+    */
+   TR::RealRegister::RegNum setRealRegister(TR::RealRegister::RegNum r) { return (_realRegister = r); }
    };
 }
 

@@ -36,7 +36,6 @@ namespace OMR { typedef OMR::X86::RegisterDependency RegisterDependencyConnector
 #include "compiler/codegen/OMRRegisterDependencyStruct.hpp"
 
 #include <stdint.h>
-#include "codegen/RealRegister.hpp"
 
 #define GlobalRegisterFPDependency    0x04
 
@@ -63,14 +62,8 @@ namespace X86
 
 struct RegisterDependency : OMR::RegisterDependency
    {
-   TR::RealRegister::RegNum _realRegister;
-
-   TR::RealRegister::RegNum getRealRegister() {return _realRegister;}
-   TR::RealRegister::RegNum setRealRegister(TR::RealRegister::RegNum r) { return (_realRegister = r); }
-
    uint32_t getGlobalFPRegister()   {return _flags & GlobalRegisterFPDependency;}
    uint32_t setGlobalFPRegister()   {return (_flags |= GlobalRegisterFPDependency);}
-
    };
 }
 }

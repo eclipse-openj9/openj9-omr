@@ -35,11 +35,6 @@ namespace OMR { typedef OMR::ARM::RegisterDependency RegisterDependencyConnector
 
 #include "compiler/codegen/OMRRegisterDependencyStruct.hpp"
 
-#include "codegen/RealRegister.hpp"
-
-#define DefinesDependentRegister    0x01
-#define ReferencesDependentRegister 0x02
-#define UsesDependentRegister       (ReferencesDependentRegister | DefinesDependentRegister)
 #define ExcludeGPR0InAssigner       0x80
 
 namespace OMR
@@ -50,11 +45,6 @@ namespace ARM
 
 struct RegisterDependency: OMR::RegisterDependency
    {
-   TR::RealRegister::RegNum  _realRegister;
-
-   TR::RealRegister::RegNum getRealRegister() {return _realRegister;}
-   TR::RealRegister::RegNum setRealRegister(TR::RealRegister::RegNum r) { return (_realRegister = r); }
-
    uint32_t getExcludeGPR0()    {return _flags & ExcludeGPR0InAssigner;}
    uint32_t setExcludeGPR0()    {return (_flags |= ExcludeGPR0InAssigner);}
    uint32_t resetExcludeGPR0()  {return (_flags &= ~ExcludeGPR0InAssigner);}

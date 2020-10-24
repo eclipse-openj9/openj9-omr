@@ -48,10 +48,6 @@ namespace Z
 {
 struct RegisterDependency : OMR::RegisterDependency
    {
-   TR::RealRegister::RegNum  _realRegister;
-
-   TR::RealRegister::RegNum getRealRegister() {return _realRegister;}
-   TR::RealRegister::RegNum setRealRegister(TR::RealRegister::RegNum r) { return (_realRegister = r); }
    };
 }
 }

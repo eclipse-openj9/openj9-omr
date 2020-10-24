@@ -79,6 +79,28 @@ struct RegisterDependency
     * @param[in] r : RealRegister enum value
     */
    TR::RealRegister::RegNum setRealRegister(TR::RealRegister::RegNum r) { return (_realRegister = r); }
+
+#ifndef TR_TARGET_S390
+   /**
+    * Z already has a \c isSpilledReg() function that is implemented differently.
+    * Avoid compiling the common version for now on Z.  Eventually, there should
+    * be a unified solution across all platforms.
+    */
+
+   /**
+    * @return Answers \c true if this register dependency records a register in
+    *         spill state; \c false otherwise.
+    */
+   bool isSpilledReg() { return _realRegister == TR::RealRegister::SpilledReg; }
+#endif
+
+   /**
+    * @return Answers \c true if this register dependency does not specify an
+    *         actual real register.  Some architectures may use this to request
+    *         that any available register be assigned.  Answers \c false otherwise.
+    */
+   bool isNoReg() { return _realRegister == TR::RealRegister::NoReg; }
+
    };
 }
 

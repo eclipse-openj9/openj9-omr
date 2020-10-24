@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,10 +27,10 @@
  */
 #ifndef OMR_REGISTER_DEPENDENCY_STRUCT_CONNECTOR
 #define OMR_REGISTER_DEPENDENCY_STRUCT_CONNECTOR
-namespace OMR { namespace ARM64 { struct RegisterDependencyExt; } }
-namespace OMR { typedef OMR::ARM64::RegisterDependencyExt RegisterDependency; }
+namespace OMR { namespace ARM64 { struct RegisterDependency; } }
+namespace OMR { typedef OMR::ARM64::RegisterDependency RegisterDependencyConnector; }
 #else
-#error OMR::ARM64::RegisterDependencyExt expected to be a primary connector, but a OMR connector is already defined
+#error OMR::ARM64::RegisterDependency expected to be a primary connector, but an OMR connector is already defined
 #endif
 
 #include "compiler/codegen/OMRRegisterDependencyStruct.hpp"
@@ -47,7 +47,7 @@ namespace OMR
 namespace ARM64
 {
 
-struct RegisterDependencyExt: OMR::RegisterDependencyExt
+struct RegisterDependency: OMR::RegisterDependency
    {
    TR::RealRegister::RegNum  _realRegister;
 

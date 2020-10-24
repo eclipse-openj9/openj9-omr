@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,8 +27,8 @@
  */
 #ifndef OMR_REGISTER_DEPENDENCY_STRUCT_CONNECTOR
 #define OMR_REGISTER_DEPENDENCY_STRUCT_CONNECTOR
-namespace OMR { struct RegisterDependencyExt; }
-namespace OMR { typedef OMR::RegisterDependencyExt RegisterDependency; }
+namespace OMR { struct RegisterDependency; }
+namespace OMR { typedef OMR::RegisterDependency RegisterDependencyConnector; }
 #endif
 
 #include <stdint.h>
@@ -41,7 +41,7 @@ namespace OMR { typedef OMR::RegisterDependencyExt RegisterDependency; }
 namespace OMR
 {
 
-struct RegisterDependencyExt
+struct RegisterDependency
    {
    uint8_t                                 _flags;
    TR::Register                            *_virtualRegister;

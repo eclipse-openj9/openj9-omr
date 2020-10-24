@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,10 +27,10 @@
  */
 #ifndef OMR_REGISTER_DEPENDENCY_STRUCT_CONNECTOR
 #define OMR_REGISTER_DEPENDENCY_STRUCT_CONNECTOR
-   namespace OMR { namespace ARM { struct RegisterDependencyExt; } }
-   namespace OMR { typedef OMR::ARM::RegisterDependencyExt RegisterDependency; }
+namespace OMR { namespace ARM { struct RegisterDependency; } }
+namespace OMR { typedef OMR::ARM::RegisterDependency RegisterDependencyConnector; }
 #else
-   #error OMR::ARM::RegisterDependencyExt expected to be a primary connector, but a OMR connector is already defined
+#error OMR::ARM::RegisterDependency expected to be a primary connector, but an OMR connector is already defined
 #endif
 
 #include "compiler/codegen/OMRRegisterDependencyStruct.hpp"
@@ -48,7 +48,7 @@ namespace OMR
 namespace ARM
 {
 
-struct RegisterDependencyExt: OMR::RegisterDependencyExt
+struct RegisterDependency: OMR::RegisterDependency
    {
    TR::RealRegister::RegNum  _realRegister;
 

@@ -26,7 +26,8 @@
 #include <map>
 #include <string>
 #include <cstddef>
-#include <mutex>
+
+namespace TR { class Monitor; }
 
 namespace OMR
 {
@@ -46,8 +47,6 @@ class CCData
 
       /** \typedef section_t Implementation detail. This type represents the table itself. It must behave like a pointer to an array of type data_t. */
       typedef std::unique_ptr<data_t[]> section_t;
-
-      typedef std::mutex mutex_t;
 
    public:
       /** \typedef index_t This type represents the indices defined in the public interface of this class. They must behave like integral types. */
@@ -208,7 +207,7 @@ class CCData
       const size_t      _capacity;
       size_t            _putIndex;
       map_t             _mappings;
-      mutable mutex_t   _lock;
+      TR::Monitor      *_lock;
       const bool        _releaseData;
    };
 

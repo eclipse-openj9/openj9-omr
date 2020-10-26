@@ -21,6 +21,9 @@
 
 #include "codegen/CCData.hpp"
 
+#include "infra/Monitor.hpp"
+#include "infra/CriticalSection.hpp"
+
 using OMR::CCData;
 
 CCData::key_t CCData::key(const uint8_t * const data, const size_t sizeBytes)
@@ -40,7 +43,7 @@ CCData::key_t CCData::key(const char * const str)
 #define DATA_ALIGNMENT_FROM_BYTES_ALIGNMENT(x) (((x) + (alignof(data_t)) - 1) / (alignof(data_t)))
 
 CCData::CCData(const size_t sizeBytes)
-: _data(new data_t[DATA_SIZE_FROM_BYTES_SIZE(sizeBytes)]), _capacity(DATA_SIZE_FROM_BYTES_SIZE(sizeBytes)), _putIndex(0), _releaseData(false)
+: _data(new data_t[DATA_SIZE_FROM_BYTES_SIZE(sizeBytes)]), _capacity(DATA_SIZE_FROM_BYTES_SIZE(sizeBytes)), _putIndex(0), _lock(TR::Monitor::create("CCDataMutex")), _releaseData(false)
    {
    }
 
@@ -50,7 +53,7 @@ CCData::CCData(uint8_t * const storage, const size_t sizeBytes)
    }
 
 CCData::CCData(const storage_and_size_pair_t storageAndSize)
-: _data(storageAndSize.first), _capacity(storageAndSize.second), _putIndex(0), _releaseData(true)
+: _data(storageAndSize.first), _capacity(storageAndSize.second), _putIndex(0), _lock(TR::Monitor::create("CCDataMutex")), _releaseData(true)
    {
    }
 
@@ -78,7 +81,7 @@ const CCData::storage_and_size_pair_t CCData::alignStorage(uint8_t * const stora
 
 bool CCData::put(const uint8_t * const value, const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index)
    {
-   const std::lock_guard<mutex_t> g(_lock);
+   const OMR::CriticalSection cs(_lock);
 
    /**
     * Multiple compilation threads may be attempting to update the same value with
@@ -132,7 +135,7 @@ bool CCData::get(const index_t index, uint8_t * const value, const size_t sizeBy
 
 bool CCData::find(const key_t key, index_t * const index) const
    {
-   const std::lock_guard<mutex_t> g(_lock);
+   const OMR::CriticalSection cs(_lock);
    return find_unsafe(key, index);
    }
 
@@ -148,4 +151,3 @@ bool CCData::find_unsafe(const key_t key, index_t * const index) const
 
    return false;
    }
-

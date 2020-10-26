@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -334,8 +334,8 @@ void TR_ARMRegisterDependencyGroup::assignRegisters(TR::Instruction  *currentIns
       {
       for (i = 0; i< numberOfRegisters; i++)
          {
-         virtReg = dependencies[i].getRegister();
-         dependentRegNum = dependencies[i].getRealRegister();
+         virtReg = _dependencies[i].getRegister();
+         dependentRegNum = _dependencies[i].getRealRegister();
          if (dependentRegNum == TR::RealRegister::SpilledReg)
             {
             TR_ASSERT(virtReg->getBackingStorage(),"should have a backing store if dependentRegNum == spillRegIndex()\n");
@@ -399,11 +399,11 @@ void TR_ARMRegisterDependencyGroup::assignRegisters(TR::Instruction  *currentIns
       }
    for (i = 0; i < numberOfRegisters; i++)
       {
-      virtReg = dependencies[i].getRegister();
+      virtReg = _dependencies[i].getRegister();
 
       if (virtReg->getAssignedRealRegister()!=NULL)
          {
-         if (dependencies[i].getRealRegister() == TR::RealRegister::NoReg)
+         if (_dependencies[i].getRealRegister() == TR::RealRegister::NoReg)
             {
             virtReg->block();
             }
@@ -412,7 +412,7 @@ void TR_ARMRegisterDependencyGroup::assignRegisters(TR::Instruction  *currentIns
             dependentRegNum = toRealRegister(virtReg->getAssignedRealRegister())->getRegisterNumber();
             for (j=0; j<numberOfRegisters; j++)
                {
-               if (dependentRegNum == dependencies[j].getRealRegister())
+               if (dependentRegNum == _dependencies[j].getRealRegister())
                   {
                   virtReg->block();
                   break;
@@ -427,8 +427,8 @@ void TR_ARMRegisterDependencyGroup::assignRegisters(TR::Instruction  *currentIns
       changed = false;
       for (i = 0; i < numberOfRegisters; i++)
          {
-         virtReg = dependencies[i].getRegister();
-         dependentRegNum = dependencies[i].getRealRegister();
+         virtReg = _dependencies[i].getRegister();
+         dependentRegNum = _dependencies[i].getRealRegister();
          dependentRealReg = machine->getRealRegister(dependentRegNum);
 
          if (dependentRegNum != TR::RealRegister::NoReg &&
@@ -448,13 +448,13 @@ void TR_ARMRegisterDependencyGroup::assignRegisters(TR::Instruction  *currentIns
       changed = false;
       for (i = 0; i < numberOfRegisters; i++)
          {
-         virtReg = dependencies[i].getRegister();
+         virtReg = _dependencies[i].getRegister();
          assignedRegister = NULL;
          if (virtReg->getAssignedRealRegister() != NULL)
             {
             assignedRegister = toRealRegister(virtReg->getAssignedRealRegister());
             }
-         dependentRegNum = dependencies[i].getRealRegister();
+         dependentRegNum = _dependencies[i].getRealRegister();
          dependentRealReg = machine->getRealRegister(dependentRegNum);
          if (dependentRegNum != TR::RealRegister::NoReg &&
              dependentRegNum != TR::RealRegister::SpilledReg &&
@@ -469,12 +469,12 @@ void TR_ARMRegisterDependencyGroup::assignRegisters(TR::Instruction  *currentIns
 
    for (i=0; i<numberOfRegisters; i++)
       {
-      if (dependencies[i].getRealRegister() == TR::RealRegister::NoReg)
+      if (_dependencies[i].getRealRegister() == TR::RealRegister::NoReg)
          {
-         bool excludeGPR0 = dependencies[i].getExcludeGPR0()?true:false;
+         bool excludeGPR0 = _dependencies[i].getExcludeGPR0()?true:false;
          TR::RealRegister *realOne;
 
-         virtReg = dependencies[i].getRegister();
+         virtReg = _dependencies[i].getRegister();
          realOne = virtReg->getAssignedRealRegister();
          if (realOne!=NULL && excludeGPR0 && toRealRegister(realOne)->getRegisterNumber()==TR::RealRegister::gr0)
             {
@@ -531,7 +531,7 @@ TR::RegisterDependencyConditions *OMR::ARM::RegisterDependencyConditions::clone(
    TR::CodeGenerator * cg, TR::RegisterDependencyConditions *added)
    {
    TR::RegisterDependencyConditions *result;
-   TR_ARMRegisterDependency           *singlePair;
+   TR::RegisterDependency *singlePair;
    int32_t      idx, preNum, postNum, addPre=0, addPost=0;
 #if defined(DEBUG)
    int32_t      preGPR=0, postGPR=0;
@@ -602,7 +602,7 @@ TR::RegisterDependencyConditions *OMR::ARM::RegisterDependencyConditions::cloneA
    TR::CodeGenerator * cg, TR::RegisterDependencyConditions *added)
    {
    TR::RegisterDependencyConditions *result;
-   TR_ARMRegisterDependency           *singlePair;
+   TR::RegisterDependency *singlePair;
    int32_t      idx, preNum, postNum, addPre=0, addPost=0;
    TR::Register *postReg, *tempReg;
    TR::RealRegister::RegNum rnum;

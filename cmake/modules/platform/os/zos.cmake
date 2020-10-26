@@ -37,6 +37,9 @@ list(APPEND OMR_PLATFORM_DEFINITIONS
 list(REMOVE_ITEM CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES /usr/include)
 list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES /usr/include)
 
+# Make sure that cmake can find libelf/libdwarf headers.
+list(APPEND CMAKE_INCLUDE_PATH "/usr/lpp/cbclib/include")
+
 # Create helper targets for specifying ascii/ebcdic options
 add_library(omr_ascii INTERFACE)
 target_compile_definitions(omr_ascii INTERFACE -DIBM_ATOE)

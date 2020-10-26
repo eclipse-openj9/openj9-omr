@@ -43,7 +43,7 @@ if(OMR_OS_WINDOWS)
 		PUBLIC
 			DiaSDK::diasdk
 	)
-elseif(OMR_OS_LINUX)
+elseif(OMR_OS_LINUX OR OMR_OS_ZOS)
 	find_package(LibDwarf REQUIRED)
 
 	target_link_libraries(omr_ddr_scanner
@@ -53,7 +53,6 @@ elseif(OMR_OS_LINUX)
 
 	target_sources(omr_ddr_scanner
 		PRIVATE
-			dwarf/DwarfFunctions.cpp
 			dwarf/DwarfScanner.cpp
 	)
 elseif(OMR_OS_OSX)

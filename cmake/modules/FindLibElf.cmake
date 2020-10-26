@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,7 +28,18 @@
 #  LIBELF_LIBRARIES
 #  LIBELF_DEFINITIONS
 
-find_package(LibZ)
+if(NOT OMR_OS_ZOS)
+	# On z/OS we don't want libz.
+	find_package(LibZ)
+else()
+	# For technical reasons this is hard to autodetect on zos.
+	# Note: the value can still be overridden on the command line.
+	if(OMR_ENV_DATA64)
+		set(LIBELF_LIBRARY "/usr/lpp/cbclib/lib/libelfdwarf64.x" CACHE FILEPATH "")
+	else()
+		set(LIBELF_LIBRARY "/usr/lpp/cbclib/lib/libelfdwarf32.x" CACHE FILEPATH "")
+	endif()
+endif()
 
 # First we try getting the info we need from pkg-config
 find_package(PkgConfig QUIET)

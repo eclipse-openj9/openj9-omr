@@ -87,6 +87,7 @@ class TR_ResolvedMethod;
 namespace OMR { class RuntimeAssumption; }
 class TR_VirtualGuard;
 class TR_VirtualGuardSite;
+struct TR_VirtualGuardSelection;
 namespace TR { class Block; }
 namespace TR { class CFG; }
 namespace TR { class CodeCache; }
@@ -614,6 +615,7 @@ public:
    TR_Stack<int32_t> & getInlinedCallStack() {return _inlinedCallStack; }
    uint16_t getInlineDepth() {return _inlinedCallStack.size();}
    uint16_t getMaxInlineDepth() {return _maxInlineDepth;}
+   bool incInlineDepth(TR::ResolvedMethodSymbol *, TR::Node *callNode, bool directCall, TR_VirtualGuardSelection *guard, TR_OpaqueClassBlock *receiverClass, TR_PrexArgInfo *argInfo = 0);
    bool incInlineDepth(TR::ResolvedMethodSymbol *, TR_ByteCodeInfo &, int32_t cpIndex, TR::SymbolReference *callSymRef, bool directCall, TR_PrexArgInfo *argInfo = 0);
    bool incInlineDepth(TR_OpaqueMethodBlock *, TR::ResolvedMethodSymbol *, TR_ByteCodeInfo &, TR::SymbolReference *callSymRef, bool directCall, TR_PrexArgInfo *argInfo = 0);
    void decInlineDepth(bool removeInlinedCallSitesEntries = false);

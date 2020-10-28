@@ -92,6 +92,7 @@
 #include "infra/Timer.hpp"
 #include "infra/ThreadLocal.hpp"
 #include "optimizer/DebuggingCounters.hpp"
+#include "optimizer/Inliner.hpp"
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "optimizer/RegisterCandidate.hpp"
@@ -1285,6 +1286,28 @@ void OMR::Compilation::performOptimizations()
 
    if (_optimizer)
       _optimizer->optimize();
+   }
+
+bool OMR::Compilation::incInlineDepth(TR::ResolvedMethodSymbol * method, TR::Node *callNode, bool directCall, TR_VirtualGuardSelection *guard, TR_OpaqueClassBlock *receiverClass, TR_PrexArgInfo *argInfo)
+   {
+   TR::SymbolReference *callSymRef = callNode->getSymbolReference();
+   int32_t cpIndex = callSymRef->getCPIndex();
+   TR_ByteCodeInfo &bcInfo = callNode->getByteCodeInfo();
+
+   if (self()->compileRelocatableCode())
+      {
+      TR_AOTMethodInfo *aotMethodInfo = (TR_AOTMethodInfo *)self()->trMemory()->allocateHeapMemory(sizeof(TR_AOTMethodInfo));
+      aotMethodInfo->resolvedMethod = method->getResolvedMethod();
+      aotMethodInfo->cpIndex = cpIndex;
+      aotMethodInfo->receiver = receiverClass;
+      aotMethodInfo->callSymRef = callSymRef;
+
+      return self()->incInlineDepth(reinterpret_cast<TR_OpaqueMethodBlock *>(aotMethodInfo), method, bcInfo, callSymRef, directCall, argInfo);
+      }
+   else
+      {
+      return self()->incInlineDepth(method->getResolvedMethod()->getPersistentIdentifier(), method, bcInfo, callSymRef, directCall, argInfo);
+      }
    }
 
 bool OMR::Compilation::incInlineDepth(TR::ResolvedMethodSymbol * method, TR_ByteCodeInfo & bcInfo, int32_t cpIndex, TR::SymbolReference *callSymRef, bool directCall, TR_PrexArgInfo *argInfo)

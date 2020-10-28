@@ -1301,6 +1301,7 @@ bool OMR::Compilation::incInlineDepth(TR::ResolvedMethodSymbol * method, TR::Nod
       aotMethodInfo->cpIndex = cpIndex;
       aotMethodInfo->receiver = receiverClass;
       aotMethodInfo->callSymRef = callSymRef;
+      aotMethodInfo->reloKind = self()->getReloTypeForMethodToBeInlined(guard, callNode, receiverClass);
 
       return self()->incInlineDepth(reinterpret_cast<TR_OpaqueMethodBlock *>(aotMethodInfo), method, bcInfo, callSymRef, directCall, argInfo);
       }

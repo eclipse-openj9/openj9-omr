@@ -627,6 +627,8 @@ public:
    int32_t getInlinedCalls() { return _inlinedCalls; }
    void incInlinedCalls() { _inlinedCalls++; }
 
+   TR_ExternalRelocationTargetKind getReloTypeForMethodToBeInlined(TR_VirtualGuardSelection *guard, TR::Node *callNode, TR_OpaqueClassBlock *receiverClass) { return TR_NoRelocation; }
+
    class TR_InlinedCallSiteInfo
       {
       TR_InlinedCallSite _site;

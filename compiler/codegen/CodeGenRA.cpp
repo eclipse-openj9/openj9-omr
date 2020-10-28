@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2094,40 +2094,6 @@ OMR::CodeGenerator::setSpilledRegsForAllPresentLinkages(TR_BitVector *spilledReg
 
 TR::SymbolReference *OMR::CodeGenerator::TR_RegisterPressureState::getCandidateSymRef(){ return _candidate? _candidate->getSymbolReference() : NULL; }
 
-void OMR::CodeGenerator::TR_RegisterPressureState::addVirtualRegister(TR::Register *reg)
-  {
-  if (reg == NULL) return;
-  if (reg->getRealRegister()) return;
-
-  if (reg->getTotalUseCount() == reg->getFutureUseCount())
-     {
-     // first time we see this register
-     if (reg->getKind() == TR_GPR)
-        _gprPressure++;
-     else if (reg->getKind() == TR_FPR)
-        _fprPressure++;
-     else if (reg->getKind() == TR_VRF)
-        _vrfPressure++;
-     }
-  }
-
-void OMR::CodeGenerator::TR_RegisterPressureState::removeVirtualRegister(TR::Register *reg)
-  {
-  if (reg == NULL) return;
-  if (reg->getRealRegister()) return;
-
-  reg->decFutureUseCount();
-  if (reg->getFutureUseCount() == 0)
-     {
-     // register goes dead
-     if (reg->getKind() == TR_GPR)
-        _gprPressure--;
-     else if (reg->getKind() == TR_FPR)
-        _fprPressure--;
-     else if (reg->getKind() == TR_VRF)
-        _vrfPressure--;
-    }
-  }
 
 bool OMR::CodeGenerator::TR_RegisterPressureState::isInitialized(TR::Node *node){ return node->getVisitCount() == _visitCountForInit; }
 

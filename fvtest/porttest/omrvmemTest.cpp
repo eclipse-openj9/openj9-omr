@@ -57,7 +57,7 @@
 #define D512M (512*1024*1024)
 #define D256M (256*1024*1024)
 #define DEFAULT_NUM_ITERATIONS 50
-#define ARRAYLET_COUNT 8
+#define REGION_COUNT 8
 #define LEAF_SIZE_LIMIT (ONE_MB * 2)
 
 #define MAX_ALLOC_SIZE 256 /**<@internal largest size to allocate */
@@ -611,28 +611,28 @@ exit:
  * @param[in] portLibrary The port library under test
  * @param[in] testName The name of the test requesting this functionality
  * @param[in] pageSize
- * @param[in] arraylet leaf size
+ * @param[in] regions size
  * @param[in] contiguous block of memory pointer
- * @param[in] arraylet leaves addresses
+ * @param[in] regions addresses
  * @param[in] allocName Calling function name to display in errors
  */
 static void
-verifyContiguousMem(struct OMRPortLibrary *portLibrary, const char *testName, size_t pagesize, size_t arrayletSize, void * contiguous, void* addresses[], char *vals, const char *allocName)
+verifyContiguousMem(struct OMRPortLibrary *portLibrary, const char *testName, uintptr_t pagesize,  uintptr_t regionSize, void * contiguous, void* addresses[], char *vals, const char *allocName)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 	char * contiguousMap = (char*)contiguous;
-	size_t i = 0;
-	size_t firstBytes = 32;
-	size_t jump = 48;
-	size_t secondBytes = 16;
+	uintptr_t i = 0;
+	uintptr_t firstBytes = 32;
+	uintptr_t jump = 48;
+	uintptr_t secondBytes = 16;
 
-	/* Verify if arraylet leaves and contiguous block of memory contain expected data */
-	for(i = 0; i < ARRAYLET_COUNT; i++) {
+	/* Verify if regions and contiguous block of memory contain expected data */
+	for(i = 0; i < REGION_COUNT; i++) {
 		char *address = (char*)addresses[i];
-		char *arrayletData = contiguousMap + (i * arrayletSize);
-		size_t j = 0;
-		for(; j < arrayletSize; j++) {
-			if(address[j] == vals[i] && address[j] == arrayletData[j]) {} /* Good */
+		char *regionData = contiguousMap + (i * regionSize);
+		uintptr_t j = 0;
+		for(; j < regionSize; j++) {
+			if(address[j] == vals[i] && address[j] == regionData[j]) {} /* Good */
 			else {
 				outputErrorMessage(PORTTEST_ERROR_ARGS, "%s failed address verification.\n", allocName);
 				return;
@@ -641,48 +641,48 @@ verifyContiguousMem(struct OMRPortLibrary *portLibrary, const char *testName, si
 	}
 
 	/* Fill contiguous region of memory with asterisks */
-	for(i = 0; i < ARRAYLET_COUNT; i++) {
-		/* Get the address representing the beginning of each arraylet */
-		char *arrayletData = contiguousMap + (i * arrayletSize);
+	for(i = 0; i < REGION_COUNT; i++) {
+		/* Get the address representing the beginning of each region */
+		char *regionData = contiguousMap + (i * regionSize);
 
-		/* write a pattern to the first page of each arraylet to verify proper mappings */
-		memset(arrayletData, '*', firstBytes);
-		char *arrayletData2 = arrayletData + jump;
-		memset(arrayletData2, '*', secondBytes);
+		/* write a pattern to the first page of each region to verify proper mappings */
+		memset(regionData, '*', firstBytes);
+		char *regionData2 = regionData + jump;
+		memset(regionData2, '*', secondBytes);
 
-		/* Write to the first byte of each of the other pages in the arraylet to ensure all pages are touched */
-		for (size_t j = 1; j < (arrayletSize / pagesize); j++) {
-			char *pageData = arrayletData + (j * pagesize);
+		/* Write to the first byte of each of the other pages in the region to ensure all pages are touched */
+		for (uintptr_t j = 1; j < (regionSize / pagesize); j++) {
+			char *pageData = regionData + (j * pagesize);
 			*pageData = '*';
 		}
 	}
 
 	/* Verify if addresses were modified with the above changes */
-	for(i = 0; i < ARRAYLET_COUNT; i++) {
+	for(i = 0; i < REGION_COUNT; i++) {
 		char *address = (char*)addresses[i];
-		char *arrayletData = contiguousMap + (i * arrayletSize);
+		char *regionData = contiguousMap + (i * regionSize);
 
 		/* Verify first 32 chars are * (asterisks) */
-		size_t j = 0;
+		uintptr_t j = 0;
 		for(; j < firstBytes; j++) {
-			if(arrayletData[j] == '*' && arrayletData[j] == address[j]) {} /* Good */
+			if(regionData[j] == '*' && regionData[j] == address[j]) {} /* Good */
 			else { /* Verification failed. Fail double map. */
 				outputErrorMessage(PORTTEST_ERROR_ARGS, "%s failed double mapping test at 0\n", allocName);
 				return;
 			}
 		}
-		char *arrayletData2 = arrayletData + jump;
+		char *regionData2 = regionData + jump;
 		char *address2 = address + jump;
 		for(j = 0; j < secondBytes; j++) {
-			if(arrayletData2[j] == '*' && arrayletData2[j] == address2[j]) {} /* Good */
+			if(regionData2[j] == '*' && regionData2[j] == address2[j]) {} /* Good */
 			else { /* Verification failed. Fail double map. */
 				outputErrorMessage(PORTTEST_ERROR_ARGS, "%s failed double mapping test at 1\n", allocName);
 				return;
 			}
 		}
-		/* Verify first byte of each of the other pages in the arraylet to ensure all pages were modified in the heap */
-		for (j = 1; j < (arrayletSize / pagesize); j++) {
-			char *pageData = arrayletData + (j * pagesize);
+		/* Verify first byte of each of the other pages in the region to ensure all pages were modified in the heap */
+		for (j = 1; j < (regionSize / pagesize); j++) {
+			char *pageData = regionData + (j * pagesize);
 			char *addressData = address + (j * pagesize);
 			if(*pageData == '*' && *pageData == *addressData) {} /* Good */
 			else { /* Verification failed. Fail double map. */
@@ -698,7 +698,7 @@ TEST(PortVmemTest, vmem_test_double_mapping)
 	portTestEnv->changeIndent(1);
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "vmem_test_double_mapping";
-	char *memPtr = NULL;
+	void *memPtr = NULL;
 	uintptr_t *pageSizes = NULL;
 	struct J9PortVmemIdentifier vmemID;
 	struct J9PortVmemIdentifier newIdentifier;
@@ -706,11 +706,11 @@ TEST(PortVmemTest, vmem_test_double_mapping)
 	int32_t rc = 0;
 	char *lastErrorMessage = NULL;
 	int32_t lastErrorNumber = 0;
-	size_t HEAP_SIZE = SIXTEEN_MB; // 16MB
-	size_t arrayletLeafSize = SIXTEEN_KB; // 16KB
-	char vals[ARRAYLET_COUNT] = {'3', '5', '6', '8', '9', '0', '1', '2'};
-	size_t totalArrayletSize = 0;
-	void* arrayletLeaveAddrs[ARRAYLET_COUNT];
+	uintptr_t HEAP_SIZE = SIXTEEN_MB; // 16MB
+	uintptr_t regionSize = SIXTEEN_KB; // 16KB
+	char vals[REGION_COUNT] = {'3', '5', '6', '8', '9', '0', '1', '2'};
+	uintptr_t totalRegionsSize = 0;
+	void* regionAddrs[REGION_COUNT];
 
 	reportTestEntry(OMRPORTLIB, testName);
 
@@ -721,13 +721,13 @@ TEST(PortVmemTest, vmem_test_double_mapping)
 	uintptr_t *pageFlags = omrvmem_supported_page_flags();
 #endif /* J9ZOS390 */
 
-	/* Make sure arrayletLeafSize is a multiple of pagesize */
-	if(arrayletLeafSize / pageSize == 0 && (arrayletLeafSize < pageSize)) {
-		/* Leaf size limit is 2 MB due to heap size and number of leaves. If pageSize is too big for test skip */
+	/* Make sure regionSize is a multiple of pagesize */
+	if(regionSize / pageSize == 0 && (regionSize < pageSize)) {
+		/* Region size limit is 2 MB due to heap size and number of regions. If pageSize is too big for test skip */
 		if(pageSize > LEAF_SIZE_LIMIT) {
 			goto exit;
 		}
-		arrayletLeafSize = pageSize;
+		regionSize = pageSize;
 	}
 
 	/* reserve and commit memory for heap size */
@@ -745,7 +745,7 @@ TEST(PortVmemTest, vmem_test_double_mapping)
 			goto J9ZOS390_exit;
 		}
 #endif /* J9ZOS390 */
-		memPtr = (char *)omrvmem_reserve_memory(
+		memPtr = omrvmem_reserve_memory(
 						0, HEAP_SIZE, &vmemID,
 						OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE | OMRPORT_VMEM_MEMORY_MODE_COMMIT | OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN,
 						pageSize, OMRMEM_CATEGORY_PORT_LIBRARY);
@@ -793,40 +793,43 @@ TEST(PortVmemTest, vmem_test_double_mapping)
 		}
 		/* can we read and write to the memory? */
 		omrstr_printf(allocName, allocNameSize, "omrvmem_reserve_memory(%d)", HEAP_SIZE);
-		verifyMemory(OMRPORTLIB, testName, memPtr, HEAP_SIZE, allocName);
+		verifyMemory(OMRPORTLIB, testName, (char*)memPtr, HEAP_SIZE, allocName);
 		/* Memory verified successfully */
 		{
-			/* Initialize arraylet offsets to different ranges */
-			long arrayLetOffsets[ARRAYLET_COUNT];
-			/* Must be multiple of pagesize: sysconf(_SC_PAGE_SIZE) 	Simulates the order of arraylet leaves in an array */
-			arrayLetOffsets[0] = 0;                                                             /* 1 */
-			arrayLetOffsets[1] = (long)((HEAP_SIZE / 2) + (HEAP_SIZE / 8));	                    /* 6 */
-			arrayLetOffsets[2] = (long)(HEAP_SIZE / 4);                                         /* 3 */
-			arrayLetOffsets[3] = (long)((HEAP_SIZE / 4) + (HEAP_SIZE / 8));                     /* 4 */
-			arrayLetOffsets[4] = (long)(HEAP_SIZE / 2);                                         /* 5 */
-			arrayLetOffsets[5] = (long)((HEAP_SIZE / 2) + (HEAP_SIZE / 4) + (HEAP_SIZE / 8));   /* 8 */
-			arrayLetOffsets[6] = (long)(HEAP_SIZE / 8);                                         /* 2 */
-			arrayLetOffsets[7] = (long)((HEAP_SIZE / 2) + (HEAP_SIZE / 4));                     /* 7 */
+			/* Initialize region offsets to different ranges */
+			long regionsOffsets[REGION_COUNT];
+			/* Must be multiple of pagesize: sysconf(_SC_PAGE_SIZE) 	Simulates the order of regions in an array */
+			regionsOffsets[0] = 0;                                                             /* 1 */
+			regionsOffsets[1] = (long)((HEAP_SIZE / 2) + (HEAP_SIZE / 8));	                   /* 6 */
+			regionsOffsets[2] = (long)(HEAP_SIZE / 4);                                         /* 3 */
+			regionsOffsets[3] = (long)((HEAP_SIZE / 4) + (HEAP_SIZE / 8));                     /* 4 */
+			regionsOffsets[4] = (long)(HEAP_SIZE / 2);                                         /* 5 */
+			regionsOffsets[5] = (long)((HEAP_SIZE / 2) + (HEAP_SIZE / 4) + (HEAP_SIZE / 8));   /* 8 */
+			regionsOffsets[6] = (long)(HEAP_SIZE / 8);                                         /* 2 */
+			regionsOffsets[7] = (long)((HEAP_SIZE / 2) + (HEAP_SIZE / 4));                     /* 7 */
 
-			size_t i = 0;
-			for(; i < ARRAYLET_COUNT; i++) {
-				arrayletLeaveAddrs[i] = memPtr + arrayLetOffsets[i];
-				totalArrayletSize += arrayletLeafSize;
+			uintptr_t i = 0;
+			for(; i < REGION_COUNT; i++) {
+				regionAddrs[i] = (void *)((uintptr_t)memPtr + regionsOffsets[i]);
+				totalRegionsSize += regionSize;
 			}
 
-			for(i = 0; i < ARRAYLET_COUNT; i++) {
-				memset(arrayletLeaveAddrs[i], vals[i%ARRAYLET_COUNT], arrayletLeafSize);
+			for(i = 0; i < REGION_COUNT; i++) {
+				memset(regionAddrs[i], vals[i%REGION_COUNT], regionSize);
 			}
 			/* Arraylet initialization complete */
 
 			OMRMemCategory *category = omrmem_get_category(OMRMEM_CATEGORY_PORT_LIBRARY);
+			uintptr_t doubleMapContiguousSize = REGION_COUNT * regionSize;
 
-			/* Now create contiguous block of memory and then double map arraylet leaves. */
-			void *contiguous = omrvmem_get_contiguous_region_memory(arrayletLeaveAddrs, ARRAYLET_COUNT, arrayletLeafSize, (ARRAYLET_COUNT * arrayletLeafSize),
+			/* Now create contiguous block of memory and then double map regions. */
+			void *contiguous = omrvmem_create_double_mapped_region(regionAddrs, REGION_COUNT, regionSize, doubleMapContiguousSize,
 										&vmemID, &newIdentifier,
 										OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE | OMRPORT_VMEM_MEMORY_MODE_COMMIT,
 										pageSize,
-										category);
+										category,
+										NULL);
+
 			if(contiguous == NULL) {
 				portTestEnv->log(LEVEL_ERROR, "Double mapping failed\n");
 				lastErrorMessage = (char *)omrerror_last_error_message();
@@ -848,16 +851,15 @@ TEST(PortVmemTest, vmem_test_double_mapping)
 			} else {
 				/* Double mapping successfull */
 				/* Check if changing contiguous block of memory also changes heap. */
-				verifyContiguousMem(OMRPORTLIB, testName, pageSize, arrayletLeafSize, contiguous, arrayletLeaveAddrs, vals, allocName);
+				verifyContiguousMem(OMRPORTLIB, testName, pageSize, regionSize, contiguous, regionAddrs, vals, allocName);
 
-				/* Free contiguous block of memory. */
-				uintptr_t byteAmount = ARRAYLET_COUNT * arrayletLeafSize;
-				int32_t rc_contiguous = omrvmem_free_memory(contiguous, byteAmount, &newIdentifier);
-				if (rc_contiguous != 0) {
+				/* In case of double mapping we must call omrvmem_release_double_mapped_region instead of omrvmem_free_memory */
+				int32_t rc_restore = omrvmem_release_double_mapped_region(contiguous, doubleMapContiguousSize, &newIdentifier);
+				if (rc_restore != 0) {
 					outputErrorMessage(
 						PORTTEST_ERROR_ARGS,
 						"omrvmem_free_memory returned %i when trying to free 0x%zx bytes at 0x%zx\n",
-						rc_contiguous, byteAmount, contiguous);
+						rc_restore, doubleMapContiguousSize, contiguous);
 					goto exit;
 				}
 			}
@@ -869,6 +871,237 @@ TEST(PortVmemTest, vmem_test_double_mapping)
 				PORTTEST_ERROR_ARGS,
 				"omrvmem_free_memory returned %i when trying to free 0x%zx bytes at 0x%zx\n",
 				rc, HEAP_SIZE, memPtr);
+			goto exit;
+		}
+
+		{
+			uintptr_t finalBlocks = 0;
+			uintptr_t finalBytes = 0;
+
+			getPortLibraryMemoryCategoryData(OMRPORTLIB, &finalBlocks, &finalBytes);
+
+			if (finalBlocks != initialBlocks) {
+				outputErrorMessage(PORTTEST_ERROR_ARGS, "vmem free didn't decrement category block as expected. Final blocks=%zu, initial blocks=%zu, page size=%zu.\n", finalBlocks, initialBlocks, pageSize);
+			}
+
+			if (finalBytes != initialBytes) {
+				outputErrorMessage(PORTTEST_ERROR_ARGS, "vmem free didn't decrement category bytes as expected. Initial bytes=%zu, final bytes=%zu, page size=%zu.\n", initialBytes, finalBytes, pageSize);
+			}
+		}
+	}
+#if defined(J9ZOS390)
+J9ZOS390_exit:
+#endif /* J9ZOS390 */
+	portTestEnv->changeIndent(-1);
+exit:
+	reportTestExit(OMRPORTLIB, testName);
+}
+
+TEST(PortVmemTest, vmem_test_double_mapping_fixed_address)
+{
+	portTestEnv->changeIndent(1);
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "vmem_test_double_mapping_fixed_address";
+	void *memPtr = NULL;
+	void *secondMemPtr = NULL;
+	uintptr_t *pageSizes = NULL;
+	struct J9PortVmemIdentifier vmemID;
+	struct J9PortVmemIdentifier secondVmemID;
+	struct J9PortVmemIdentifier newIdentifier;
+	char allocName[allocNameSize];
+	int32_t rc = 0;
+	char *lastErrorMessage = NULL;
+	void *contiguousPreferedAddress = NULL;
+	int32_t lastErrorNumber = 0;
+	uintptr_t HEAP_SIZE = SIXTEEN_MB; // 16MB
+	uintptr_t SECOND_HEAP_SIZE = HEAP_SIZE * 3;
+	uintptr_t regionSize = SIXTEEN_KB; // 16KB
+	char vals[REGION_COUNT] = {'3', '5', '6', '8', '9', '0', '1', '2'};
+	uintptr_t totalRegionsSize = 0;
+	void* regionAddrs[REGION_COUNT];
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+	/* First get all the supported page sizes */
+	pageSizes = omrvmem_supported_page_sizes();
+	uintptr_t pageSize = pageSizes[0];
+#if defined(J9ZOS390)
+	uintptr_t *pageFlags = omrvmem_supported_page_flags();
+#endif /* J9ZOS390 */
+
+	/* Make sure regionSize is a multiple of pagesize */
+	if(regionSize / pageSize == 0 && (regionSize < pageSize)) {
+		/* Region size limit is 2 MB due to heap size and number of regions. If pageSize is too big for test skip */
+		if(pageSize > LEAF_SIZE_LIMIT) {
+			goto exit;
+		}
+		regionSize = pageSize;
+	}
+
+	/* reserve and commit memory for heap size */
+	{
+		uintptr_t initialBlocks = 0;
+		uintptr_t initialBytes = 0;
+
+		/* Sample baseline category data */
+		getPortLibraryMemoryCategoryData(OMRPORTLIB, &initialBlocks, &initialBytes);
+
+		/* reserve and commit */
+#if defined(J9ZOS390)
+		/* On z/OS skip this test for newly added large pages as obsolete omrvmem_reserve_memory() does not support them */
+		if (isNewPageSize(pageSizes[0], pageFlags[0])) {
+			goto J9ZOS390_exit;
+		}
+#endif /* J9ZOS390 */
+		memPtr = omrvmem_reserve_memory(
+				0, HEAP_SIZE, &vmemID,
+				OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE | OMRPORT_VMEM_MEMORY_MODE_COMMIT | OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN,
+				pageSize, OMRMEM_CATEGORY_PORT_LIBRARY);
+
+		secondMemPtr = omrvmem_reserve_memory(
+				0, SECOND_HEAP_SIZE, &secondVmemID,
+				OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE | OMRPORT_VMEM_MEMORY_MODE_COMMIT,
+				pageSize, OMRMEM_CATEGORY_PORT_LIBRARY);
+
+		/* In order for double map to work, the system must have the appropriate API. The existance of such API is checked dynamically. In a normal application,
+		 * if the API is not available, we fall back to disabling double mapping, which turns this test useless. Because of that, we must check if such API is
+		 * available. We do so by checking if we found the API call or not. */
+		if (0 == (OMRPORT_VMEM_MEMORY_MODE_DOUBLE_MAP_AVAILABLE & vmemID.mode)) {
+			portTestEnv->log(LEVEL_ERROR, "Double map API not available. Skipping test...\n");
+			goto exit;
+		}
+
+		/* did we get any memory? */
+		if ((NULL == memPtr) || (NULL == secondMemPtr)) {
+			lastErrorMessage = (char *)omrerror_last_error_message();
+			lastErrorNumber = omrerror_last_error_number();
+			/* Succeed instead of error then continue since the platform is not supported */
+			if (OMRPORT_ERROR_VMEM_NOT_SUPPORTED == lastErrorNumber) {
+				goto exit;
+			}
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "unable to reserve and commit 0x%zx bytes and/or 0x%zx with page size 0x%zx.\n"
+					"\tlastErrorNumber=%d, lastErrorMessage=%s\n", HEAP_SIZE, SECOND_HEAP_SIZE, pageSize, lastErrorNumber, lastErrorMessage);
+
+			if (OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES == lastErrorNumber) {
+				portTestEnv->log(LEVEL_ERROR, "Portable error OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES...\n");
+				portTestEnv->changeIndent(1);
+				portTestEnv->log(LEVEL_ERROR, "REBOOT THE MACHINE to free up resources AND TRY THE TEST AGAIN\n");
+				portTestEnv->changeIndent(-1);
+			}
+			goto exit;
+		} else {
+			uintptr_t finalBlocks = 0;
+			uintptr_t finalBytes = 0;
+			portTestEnv->log("reserved and committed 0x%zx bytes with page size 0x%zx at address 0x%zx\n", HEAP_SIZE, vmemID.pageSize, memPtr);
+
+			getPortLibraryMemoryCategoryData(OMRPORTLIB, &finalBlocks, &finalBytes);
+
+			if (finalBlocks <= initialBlocks) {
+				outputErrorMessage(PORTTEST_ERROR_ARGS, "vmem reserve didn't increment category block as expected. Final blocks=%zu, initial blocks=%zu, page size=%zu.\n", finalBlocks, initialBlocks, pageSize);
+			}
+
+			if (finalBytes < (initialBytes + pageSize)) {
+				outputErrorMessage(PORTTEST_ERROR_ARGS, "vmem reserve didn't increment category bytes as expected. Initial bytes=%zu, final bytes=%zu, page size=%zu.\n", finalBytes, initialBytes, pageSize);
+			}
+		}
+		/* can we read and write to the memory? */
+		omrstr_printf(allocName, allocNameSize, "omrvmem_reserve_memory(%d)", HEAP_SIZE);
+		verifyMemory(OMRPORTLIB, testName, (char *)memPtr, HEAP_SIZE, allocName);
+		verifyMemory(OMRPORTLIB, testName, (char *)secondMemPtr, SECOND_HEAP_SIZE, allocName);
+		/* Memory verified successfully */
+		{
+			/* Pick page aligned contiguous prefered address at second heap to test double mapping */
+			contiguousPreferedAddress = (void*)((uintptr_t)secondMemPtr + SIXTEEN_MB);
+			if (0 != (uintptr_t)contiguousPreferedAddress % pageSize) {
+				outputErrorMessage(PORTTEST_ERROR_ARGS, "vmem reserve didn't choose appropriate contiguous prefered address for double mapping (not a multiple of pagesize). memPtr=%p, HEAP_SIZE=%zu, pageSize=%zu.\n", memPtr, HEAP_SIZE, pageSize);
+				goto exit;
+			}
+			/* Initialize region offsets to different ranges */
+			long regionsOffsets[REGION_COUNT];
+			/* Must be multiple of pagesize: sysconf(_SC_PAGE_SIZE) 	Simulates the order of regions in an array */
+			regionsOffsets[0] = 0;                                                             /* 1 */
+			regionsOffsets[1] = (long)((HEAP_SIZE / 2) + (HEAP_SIZE / 8));	                   /* 6 */
+			regionsOffsets[2] = (long)(HEAP_SIZE / 4);                                         /* 3 */
+			regionsOffsets[3] = (long)((HEAP_SIZE / 4) + (HEAP_SIZE / 8));                     /* 4 */
+			regionsOffsets[4] = (long)(HEAP_SIZE / 2);                                         /* 5 */
+			regionsOffsets[5] = (long)((HEAP_SIZE / 2) + (HEAP_SIZE / 4) + (HEAP_SIZE / 8));   /* 8 */
+			regionsOffsets[6] = (long)(HEAP_SIZE / 8);                                         /* 2 */
+			regionsOffsets[7] = (long)((HEAP_SIZE / 2) + (HEAP_SIZE / 4));                     /* 7 */
+
+			uintptr_t i = 0;
+			for(; i < REGION_COUNT; i++) {
+				regionAddrs[i] = (void*)((uintptr_t)memPtr + regionsOffsets[i]);
+				totalRegionsSize += regionSize;
+			}
+
+			/* Initialization of regions complete */
+
+			OMRMemCategory *category = omrmem_get_category(OMRMEM_CATEGORY_PORT_LIBRARY);
+			uintptr_t doubleMapContiguousSize = REGION_COUNT * regionSize;
+
+			/* Now create contiguous block of memory and then double map regions. */
+			void *contiguous = omrvmem_create_double_mapped_region(regionAddrs, REGION_COUNT, regionSize, doubleMapContiguousSize,
+										&vmemID, &newIdentifier,
+										OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE | OMRPORT_VMEM_MEMORY_MODE_COMMIT,
+										pageSize,
+										category,
+										contiguousPreferedAddress);
+
+			for(i = 0; i < REGION_COUNT; i++) {
+				memset(regionAddrs[i], vals[i%REGION_COUNT], regionSize);
+			}
+
+			if(contiguous == NULL) {
+				portTestEnv->log(LEVEL_ERROR, "Double mapping failed\n");
+				lastErrorMessage = (char *)omrerror_last_error_message();
+				lastErrorNumber = omrerror_last_error_number();
+				if (OMRPORT_ERROR_VMEM_NOT_SUPPORTED == lastErrorNumber) {
+					portTestEnv->log(LEVEL_ERROR, "Double mapping not supported. Skipping test...\n");
+					goto exit;
+				}
+				outputErrorMessage(PORTTEST_ERROR_ARGS, "unable to reserve and double map 0x%zx bytes with page size 0x%zx.\n"
+						"\tlastErrorNumber=%d, lastErrorMessage=%s\n", HEAP_SIZE, pageSize, lastErrorNumber, lastErrorMessage);
+
+				if (OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES == lastErrorNumber) {
+					portTestEnv->log(LEVEL_ERROR, "Portable error OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES...\n");
+					portTestEnv->changeIndent(1);
+					portTestEnv->log(LEVEL_ERROR, "REBOOT THE MACHINE to free up resources AND TRY THE TEST AGAIN\n");
+					portTestEnv->changeIndent(-1);
+				}
+				goto exit;
+			} else {
+				/* Double mapping successfull */
+				/* Check if changing contiguous block of memory also changes heap. */
+				verifyContiguousMem(OMRPORTLIB, testName, pageSize, regionSize, contiguous, regionAddrs, vals, allocName);
+
+				/* In case of double mapping we must call omrvmem_release_double_mapped_region instead of omrvmem_free_memory */
+				int32_t rc_restore = omrvmem_release_double_mapped_region(contiguous, doubleMapContiguousSize, &newIdentifier);
+				if (rc_restore != 0) {
+					outputErrorMessage(
+						PORTTEST_ERROR_ARGS,
+						"omrvmem_free_memory returned %i when trying to free 0x%zx bytes at 0x%zx\n",
+						rc_restore, doubleMapContiguousSize, contiguous);
+					goto exit;
+				}
+			}
+		}
+		/* free the heap memory */
+		rc = omrvmem_free_memory(memPtr, HEAP_SIZE, &vmemID);
+		if (rc != 0) {
+			outputErrorMessage(
+				PORTTEST_ERROR_ARGS,
+				"omrvmem_free_memory returned %i when trying to free heap 0x%zx bytes at 0x%zx\n",
+				rc, HEAP_SIZE, memPtr);
+			goto exit;
+		}
+
+		/* free second heap memory */
+		rc = omrvmem_free_memory(secondMemPtr, SECOND_HEAP_SIZE, &secondVmemID);
+		if (rc != 0) {
+			outputErrorMessage(
+				PORTTEST_ERROR_ARGS,
+				"omrvmem_free_memory returned %i when trying to free second heap 0x%zx bytes at 0x%zx\n",
+				rc, SECOND_HEAP_SIZE, secondMemPtr);
 			goto exit;
 		}
 

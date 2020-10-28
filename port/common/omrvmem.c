@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -217,6 +217,48 @@ void *
 omrvmem_get_contiguous_region_memory(struct OMRPortLibrary *portLibrary, void* addresses[], uintptr_t addressesCount, uintptr_t addressSize, uintptr_t byteAmount, struct J9PortVmemIdentifier *oldIdentifier, struct J9PortVmemIdentifier *newIdentifier, uintptr_t mode, uintptr_t pageSize, OMRMemCategory *category)
 {
 	return NULL;
+}
+
+/**
+ * Restores memory region associated with double mapped region, to what it was
+ * previously to call to omrvmem_create_double_mapped_region
+ *
+ * @param OMRPortLibrary         *portLibrary     [in] portLibrary The port library.
+ * @param void                   *address         [in] address The starting address of the memory to be restored.
+ * @param uintptr_t              byteAmount       [in] byteAmount The number of bytes to be restored.
+ * @param struct J9PortVmemIdentifier *identifier [in] identifier Descriptor for virtual memory block.
+ *
+ * @return 0 on success, non zero on failure.
+ */
+
+int32_t
+omrvmem_release_double_mapped_region(struct OMRPortLibrary *portLibrary, void *address, uintptr_t byteAmount, struct J9PortVmemIdentifier *identifier)
+{
+	return -1;
+}
+
+/**
+ * Double maps regions. Discontiguous regions are double mapped to one contiguous region.
+ *
+ * @param OMRPortLibrary       *portLibrary            [in] The portLibrary object
+ * @param void                 *regions[]              [in] Addresses to be double mapped
+ * @param uintptr_t            regionsCount            [in] Number of regions
+ * @param uintptr_t            regionSize              [in] Size of each region
+ * @param uintptr_t            byteAmount              [in] Total size to allocate for contiguous block of memory
+ * @param struct J9PortVmemIdentifier *oldIdentifier   [in] Old Identifier containing file descriptor
+ * @param struct J9PortVmemIdentifier *newIdentifier   [out] new Identifier for new block of memory. The structure to be updated
+ * @param uintptr_t            mode             [in] Access Mode
+ * @param uintptr_t            pageSize         [in] Pagesize
+ * @param OMRMemCategory       *category        [in] Memory allocation category
+ * @param void                 *preferredAddress [in] Address of contiguous region to double map
+ *
+ * @return pointer to contiguous region to which regions were double mapped into, NULL is returned if unsuccessful
+ */
+
+void *
+omrvmem_create_double_mapped_region(struct OMRPortLibrary *portLibrary, void* regions[], uintptr_t regionsCount, uintptr_t regionSize, uintptr_t byteAmount, struct J9PortVmemIdentifier *oldIdentifier, struct J9PortVmemIdentifier *newIdentifier, uintptr_t mode, uintptr_t pageSize, OMRMemCategory *category, void *preferredAddress)
+{
+        return NULL;
 }
 
 /**

@@ -82,6 +82,7 @@ public:
 
    bool isAbstractClass(TR::Compilation *comp, TR_OpaqueClassBlock *clazzPointer) { return false; }
    bool isInterfaceClass(TR::Compilation *comp, TR_OpaqueClassBlock *clazzPointer) { return false; }
+   bool isConcreteClass(TR::Compilation *comp, TR_OpaqueClassBlock *clazzPointer) { return true; }
    bool isPrimitiveClass(TR::Compilation *comp, TR_OpaqueClassBlock *clazz) { return false; }
    bool isAnonymousClass(TR::Compilation *comp, TR_OpaqueClassBlock *clazz) { return false; }
    bool isValueTypeClass(TR_OpaqueClassBlock *) { return false; }

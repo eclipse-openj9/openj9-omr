@@ -7127,8 +7127,7 @@ TR_InvariantArgumentPreexistence::ParmInfo *TR_InvariantArgumentPreexistence::ge
 
 bool TR_InvariantArgumentPreexistence::classIsCurrentlyFinal(TR_OpaqueClassBlock* clazz)
    {
-   if (!TR::Compiler->cls.isInterfaceClass(comp(), clazz) &&
-       !TR::Compiler->cls.isAbstractClass(comp(), clazz) &&
+   if (TR::Compiler->cls.isConcreteClass(comp(), clazz) &&
        !fe()->classHasBeenExtended(clazz))
       return true;
 

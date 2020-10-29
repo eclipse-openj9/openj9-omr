@@ -329,7 +329,11 @@ typedef enum
    TR_ResolvedTrampolines                 = 101,
    TR_BlockFrequency                      = 102,
    TR_RecompQueuedFlag                    = 103,
-   TR_NumExternalRelocationKinds          = 104,
+   TR_InlinedStaticMethod                 = 104,
+   TR_InlinedSpecialMethod                = 105,
+   TR_InlinedAbstractMethod               = 106,
+   TR_Breakpoint                          = 107,
+   TR_NumExternalRelocationKinds          = 108,
    TR_ExternalRelocationTargetKindMask    = 0xff,
    } TR_ExternalRelocationTargetKind;
 

@@ -47,6 +47,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/p/codegen/TreeEvaluatorVMX.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/UnaryEvaluator.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRConstantDataSnippet.cpp \
+    $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRLoadStoreHandler.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/env/OMRCPU.cpp
 
 JIT_PRODUCT_SOURCE_FILES+=\

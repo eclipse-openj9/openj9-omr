@@ -682,6 +682,16 @@ TR_GlobalRegisterNumber OMR::ARM64::CodeGenerator::getLinkageGlobalRegisterNumbe
    return result;
    }
 
+void OMR::ARM64::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label)
+   {
+   // for "tbz/tbnz" instruction
+   TR_ASSERT(label->getCodeLocation(), "Attempt to relocate to a NULL label address!");
+
+   intptr_t distance = reinterpret_cast<intptr_t>(label->getCodeLocation() - reinterpret_cast<uint8_t *>(cursor));
+   TR_ASSERT_FATAL(constantIsSignedImm16(distance), "offset (%d) is too large for imm14", distance);
+   *cursor |= ((distance >> 2) & 0x3fff) << 5; // imm14
+   }
+
 void OMR::ARM64::CodeGenerator::apply24BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label)
    {
    // for "b.cond" instruction

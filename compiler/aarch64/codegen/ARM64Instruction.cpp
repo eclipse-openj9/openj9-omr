@@ -29,7 +29,7 @@ void TR::ARM64LabelInstruction::assignRegistersForOutOfLineCodeSection(TR_Regist
    TR::Compilation *comp = cg()->comp();
 
    bool isLabel = getOpCodeValue() == TR::InstOpCode::label;
-   bool isBranch = (getOpCodeValue() == TR::InstOpCode::b) || (getKind() == IsConditionalBranch) || (getKind() == IsCompareBranch);
+   bool isBranch = (getOpCodeValue() == TR::InstOpCode::b) || (getKind() == IsConditionalBranch) || (getKind() == IsCompareBranch) || (getKind() == IsTestBitBranch);
 
    cg()->freeUnlatchedRegisters();
    // this is the return label from OOL

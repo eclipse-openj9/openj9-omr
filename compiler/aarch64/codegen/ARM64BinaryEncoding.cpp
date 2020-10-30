@@ -324,13 +324,13 @@ uint8_t *TR::ARM64TestBitBranchInstruction::generateBinaryEncoding()
    if (destination != 0)
       {
       intptr_t distance = destination - (uintptr_t)cursor;
-      TR_ASSERT_FATAL(-0x8000 <= distance && distance < 0x8000, "Branch destination is too far away for tbz/tbnz.");
+      TR_ASSERT_FATAL(constantIsSignedImm16(distance), "Branch destination is too far away for tbz/tbnz.");
 
       insertImmediateField(toARM64Cursor(cursor), distance);
       }
    else
       {
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
+      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor, label));
       }
 
    cursor += ARM64_INSTRUCTION_LENGTH;

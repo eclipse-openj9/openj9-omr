@@ -1528,9 +1528,6 @@ public:
    bool getSupportsArrayTranslateAndTest() {return _flags2.testAny(SupportsArrayTranslateAndTest);}
    void setSupportsArrayTranslateAndTest() {_flags2.set(SupportsArrayTranslateAndTest);}
 
-   bool getSupportsReverseLoadAndStore() {return _flags2.testAny(SupportsReverseLoadAndStore);}
-   void setSupportsReverseLoadAndStore() {_flags2.set(SupportsReverseLoadAndStore);}
-
    bool getSupportsArrayTranslateTRxx() {return _flags2.testAny(SupportsArrayTranslate);}
    void setSupportsArrayTranslateTRxx() {_flags2.set(SupportsArrayTranslate);}
    void resetSupportsArrayTranslateTRxx() {_flags2.reset(SupportsArrayTranslate);}
@@ -1797,7 +1794,7 @@ public:
       HasCCZero                                           = 0x00080000,
       HasCCOverflow                                       = 0x00100000,
       HasCCInfo                                           = 0x00200000,
-      SupportsReverseLoadAndStore                         = 0x00400000,
+      // AVAILABLE                                        = 0x00400000,
       SupportsLoweringConstLDivPower2                     = 0x00800000,
       DisableFloatingPointGRA                             = 0x01000000,
       // AVAILABLE                                        = 0x02000000,

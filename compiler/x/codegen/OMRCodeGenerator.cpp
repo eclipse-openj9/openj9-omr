@@ -431,7 +431,8 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
    self()->setSupportsVirtualGuardNOPing();
    self()->setSupportsDynamicANewArray();
    self()->setSupportsSelect();
-   self()->setSupportsByteswap();
+   // TODO (#5642): Re-enable byteswap support on x86 and Power
+   // self()->setSupportsByteswap();
 
    // allows [i/l]div to decompose to [i/l]mulh in TreeSimplifier
    //

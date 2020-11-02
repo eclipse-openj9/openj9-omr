@@ -27,6 +27,7 @@
 #include "codegen/CodeGenerator.hpp"              // for CodeGenerator, etc
 #include "codegen/InstOpCode.hpp"                 // for InstOpCode, etc
 #include "codegen/Instruction.hpp"                // for Instruction
+#include "codegen/Linkage.hpp"
 #include "codegen/Machine.hpp"                    // for Machine, etc
 #include "codegen/MemoryReference.hpp"            // for MemoryReference
 #include "codegen/RealRegister.hpp"               // for RealRegister, etc
@@ -521,9 +522,10 @@ uint8_t *TR::JtypeInstruction::generateBinaryEncoding() {
       TR::ResolvedMethodSymbol *sym = getSymbolReference()->getSymbol()->getResolvedMethodSymbol();
       TR_ResolvedMethod *resolvedMethod = sym == NULL ? NULL : sym->getResolvedMethod();
 
-      if (resolvedMethod != NULL && resolvedMethod->isSameMethod(cg()->comp()->getCurrentMethod()))
+      if (comp()->isRecursiveMethodTarget(resolvedMethod))
          {
-         offset = cg()->getCodeStart() - cursor;
+         intptr_t jitToJitStart = cg()->getLinkage()->entryPointFromCompiledMethod();
+         offset = jitToJitStart - reinterpret_cast<intptr_t>(cursor);
          }
       else
          {

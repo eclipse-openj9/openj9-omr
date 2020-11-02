@@ -233,15 +233,6 @@ class PPCSrc1Instruction : public PPCImmInstruction
 
    virtual bool usesRegister(TR::Register *reg);
 
-   virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->addVirtualRegister(getSource1Register());
-      }
-   virtual void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->removeVirtualRegister(getSource1Register());
-      }
-
    };
 
 class PPCDepInstruction : public TR::Instruction
@@ -405,15 +396,6 @@ class PPCDepLabelInstruction : public PPCLabelInstruction
    virtual bool defsRealRegister(TR::Register *reg);
 
    virtual bool usesRegister(TR::Register *reg);
-
-   virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      getDependencyConditions()->registersGoLive(state);
-      }
-   virtual void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      getDependencyConditions()->registersGoDead(state);
-      }
 
    };
 
@@ -706,15 +688,6 @@ class PPCTrg1Instruction : public TR::Instruction
 
    virtual bool usesRegister(TR::Register *reg);
 
-   virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->addVirtualRegister(getTargetRegister());
-      }
-   virtual void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->removeVirtualRegister(getTargetRegister());
-      }
-
    };
 
 class PPCTrg1ImmInstruction : public PPCTrg1Instruction
@@ -740,15 +713,6 @@ class PPCTrg1ImmInstruction : public PPCTrg1Instruction
    virtual void fillBinaryEncodingFields(uint32_t *cursor);
 
    void addMetaDataForCodeAddress(uint8_t *cursor);
-
-   virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->addVirtualRegister(getTargetRegister());
-      }
-   virtual void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->removeVirtualRegister(getTargetRegister());
-      }
 
    };
 
@@ -787,16 +751,6 @@ class PPCSrc2Instruction : public TR::Instruction
 
    virtual bool usesRegister(TR::Register *reg);
 
-   virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->addVirtualRegister(getSource1Register());
-      state->addVirtualRegister(getSource2Register());
-      }
-   virtual void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->removeVirtualRegister(getSource1Register());
-      state->removeVirtualRegister(getSource2Register());
-      }
    };
 
 class PPCSrc3Instruction : public PPCSrc2Instruction
@@ -843,18 +797,6 @@ class PPCSrc3Instruction : public PPCSrc2Instruction
       return reg == _source3Register || TR::PPCSrc2Instruction::usesRegister(reg);
       }
 
-   virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->addVirtualRegister(getSource1Register());
-      state->addVirtualRegister(getSource2Register());
-      state->addVirtualRegister(getSource3Register());
-      }
-   virtual void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->removeVirtualRegister(getSource1Register());
-      state->removeVirtualRegister(getSource2Register());
-      state->removeVirtualRegister(getSource3Register());
-      }
    };
 
 class PPCTrg1Src1Instruction : public PPCTrg1Instruction
@@ -889,16 +831,6 @@ class PPCTrg1Src1Instruction : public PPCTrg1Instruction
 
    virtual bool usesRegister(TR::Register *reg);
 
-   virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->addVirtualRegister(getTargetRegister());
-      state->addVirtualRegister(getSource1Register());
-      }
-   virtual void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->removeVirtualRegister(getTargetRegister());
-      state->removeVirtualRegister(getSource1Register());
-      }
    };
 
 class PPCTrg1Src1ImmInstruction : public PPCTrg1Src1Instruction
@@ -953,16 +885,6 @@ class PPCTrg1Src1ImmInstruction : public PPCTrg1Src1Instruction
 
    virtual void fillBinaryEncodingFields(uint32_t *cursor);
 
-   virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->addVirtualRegister(getTargetRegister());
-      state->addVirtualRegister(getSource1Register());
-      }
-   virtual void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->removeVirtualRegister(getTargetRegister());
-      state->removeVirtualRegister(getSource1Register());
-      }
    };
 
 class PPCTrg1Src1Imm2Instruction : public PPCTrg1Src1ImmInstruction
@@ -1021,16 +943,6 @@ class PPCTrg1Src1Imm2Instruction : public PPCTrg1Src1ImmInstruction
 
    virtual void fillBinaryEncodingFields(uint32_t *cursor);
 
-   virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->addVirtualRegister(getTargetRegister());
-      state->addVirtualRegister(getSource1Register());
-      }
-   virtual void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->removeVirtualRegister(getTargetRegister());
-      state->removeVirtualRegister(getSource1Register());
-      }
    };
 
 class PPCTrg1Src2Instruction : public PPCTrg1Src1Instruction
@@ -1098,18 +1010,6 @@ class PPCTrg1Src2Instruction : public PPCTrg1Src1Instruction
 
    virtual bool usesRegister(TR::Register *reg);
 
-   virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->addVirtualRegister(getTargetRegister());
-      state->addVirtualRegister(getSource1Register());
-      state->addVirtualRegister(getSource2Register());
-      }
-   virtual void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->removeVirtualRegister(getTargetRegister());
-      state->removeVirtualRegister(getSource1Register());
-      state->removeVirtualRegister(getSource2Register());
-      }
    };
 
 class PPCTrg1Src2ImmInstruction : public PPCTrg1Src2Instruction
@@ -1194,20 +1094,6 @@ class PPCTrg1Src3Instruction : public PPCTrg1Src2Instruction
 
    virtual bool usesRegister(TR::Register *reg);
 
-   virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->addVirtualRegister(getTargetRegister());
-      state->addVirtualRegister(getSource1Register());
-      state->addVirtualRegister(getSource2Register());
-      state->addVirtualRegister(getSource3Register());
-      }
-   virtual void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->removeVirtualRegister(getTargetRegister());
-      state->removeVirtualRegister(getSource1Register());
-      state->removeVirtualRegister(getSource2Register());
-      state->removeVirtualRegister(getSource3Register());
-      }
    };
 
 class PPCMemInstruction : public TR::Instruction
@@ -1255,16 +1141,6 @@ class PPCMemInstruction : public TR::Instruction
 	   }
    }
 
-   virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->addVirtualRegister(getMemoryReference()->getBaseRegister());
-      state->addVirtualRegister(getMemoryReference()->getIndexRegister());
-      }
-   virtual void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->removeVirtualRegister(getMemoryReference()->getBaseRegister());
-      state->removeVirtualRegister(getMemoryReference()->getIndexRegister());
-      }
    };
 
 class PPCMemSrc1Instruction : public PPCMemInstruction
@@ -1340,18 +1216,6 @@ class PPCMemSrc1Instruction : public PPCMemInstruction
 
    virtual bool usesRegister(TR::Register *reg);
 
-   virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->addVirtualRegister(getSourceRegister());
-      state->addVirtualRegister(getMemoryReference()->getBaseRegister());
-      state->addVirtualRegister(getMemoryReference()->getIndexRegister());
-      }
-   virtual void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->removeVirtualRegister(getSourceRegister());
-      state->removeVirtualRegister(getMemoryReference()->getBaseRegister());
-      state->removeVirtualRegister(getMemoryReference()->getIndexRegister());
-      }
    };
 
 class PPCTrg1MemInstruction : public PPCTrg1Instruction
@@ -1462,18 +1326,6 @@ class PPCTrg1MemInstruction : public PPCTrg1Instruction
 
    virtual bool usesRegister(TR::Register *reg);
 
-   virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->addVirtualRegister(getTargetRegister());
-      state->addVirtualRegister(getMemoryReference()->getBaseRegister());
-      state->addVirtualRegister(getMemoryReference()->getIndexRegister());
-      }
-   virtual void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      state->removeVirtualRegister(getTargetRegister());
-      state->removeVirtualRegister(getMemoryReference()->getBaseRegister());
-      state->removeVirtualRegister(getMemoryReference()->getIndexRegister());
-      }
    };
 
 // If we are using a register allocator that cannot handle registers being alive across basic block

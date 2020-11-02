@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -120,22 +120,6 @@ class TR_PPCRegisterDependencyGroup
                         TR_RegisterKinds  kindToBeAssigned,
                         uint32_t          numberOfRegisters,
                         TR::CodeGenerator *cg);
-
-   void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state, uint32_t numberOfRegisters)
-      {
-      for (uint32_t i = 0; i < numberOfRegisters; i++)
-         {
-         state->addVirtualRegister(_dependencies[i].getRegister());
-         }
-      }
-
-   void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state, uint32_t numberOfRegisters)
-      {
-      for (uint32_t i = 0; i < numberOfRegisters; i++)
-         {
-         state->removeVirtualRegister(_dependencies[i].getRegister());
-         }
-      }
 
    void blockRegisters(uint32_t numberOfRegisters)
       {
@@ -296,18 +280,6 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
          cg->setRegisterAssignmentFlag(TR_PostDependencyCoercion);
          _postConditions->assignRegisters(currentInstruction, kindToBeAssigned, _addCursorForPost, cg);
          }
-      }
-
-   void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      _preConditions->registersGoLive(state, _addCursorForPre);
-      _preConditions->registersGoDead(state, _addCursorForPre);
-      _postConditions->registersGoLive(state, _addCursorForPost);
-      }
-
-   void registersGoDead(TR::CodeGenerator::TR_RegisterPressureState *state)
-      {
-      _postConditions->registersGoDead(state, _addCursorForPost);
       }
 
    TR::Register *searchPreConditionRegister(TR::RealRegister::RegNum rr)

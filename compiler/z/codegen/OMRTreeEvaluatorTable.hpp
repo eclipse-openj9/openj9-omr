@@ -26,10 +26,6 @@
  */
 
 
-#define SIGNED true
-#define UNSIGN false
-
-
 #define _BadILOpEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _aconstEvaluator TR::TreeEvaluator::aconstEvaluator
 #define _iconstEvaluator TR::TreeEvaluator::iconstEvaluator
@@ -179,21 +175,21 @@
 #define _lxorEvaluator TR::TreeEvaluator::lxorEvaluator
 #define _bxorEvaluator TR::TreeEvaluator::bxorEvaluator
 #define _sxorEvaluator TR::TreeEvaluator::sxorEvaluator
-#define _i2lEvaluator TR::TreeEvaluator::extendCastEvaluator<SIGNED,32,64>
+#define _i2lEvaluator TR::TreeEvaluator::extendCastEvaluator<true,32,64>
 #define _i2fEvaluator TR::TreeEvaluator::i2fEvaluator
 #define _i2dEvaluator TR::TreeEvaluator::i2dEvaluator
-#define _i2bEvaluator TR::TreeEvaluator::narrowCastEvaluator<SIGNED,8>
-#define _i2sEvaluator TR::TreeEvaluator::narrowCastEvaluator<SIGNED,16>
+#define _i2bEvaluator TR::TreeEvaluator::narrowCastEvaluator<true,8>
+#define _i2sEvaluator TR::TreeEvaluator::narrowCastEvaluator<true,16>
 #define _i2aEvaluator TR::TreeEvaluator::addressCastEvaluator<32,true>
-#define _iu2lEvaluator TR::TreeEvaluator::extendCastEvaluator<UNSIGN,32,64>
+#define _iu2lEvaluator TR::TreeEvaluator::extendCastEvaluator<false,32,64>
 #define _iu2fEvaluator TR::TreeEvaluator::i2fEvaluator
 #define _iu2dEvaluator TR::TreeEvaluator::i2dEvaluator
 #define _iu2aEvaluator TR::TreeEvaluator::addressCastEvaluator<32,true>
-#define _l2iEvaluator TR::TreeEvaluator::narrowCastEvaluator<SIGNED,32>
+#define _l2iEvaluator TR::TreeEvaluator::narrowCastEvaluator<true,32>
 #define _l2fEvaluator TR::TreeEvaluator::l2fEvaluator
 #define _l2dEvaluator TR::TreeEvaluator::l2dEvaluator
-#define _l2bEvaluator TR::TreeEvaluator::narrowCastEvaluator<SIGNED,8>
-#define _l2sEvaluator TR::TreeEvaluator::narrowCastEvaluator<SIGNED,16>
+#define _l2bEvaluator TR::TreeEvaluator::narrowCastEvaluator<true,8>
+#define _l2sEvaluator TR::TreeEvaluator::narrowCastEvaluator<true,16>
 #define _l2aEvaluator TR::TreeEvaluator::l2aEvaluator
 #define _lu2fEvaluator TR::TreeEvaluator::l2fEvaluator
 #define _lu2dEvaluator TR::TreeEvaluator::l2dEvaluator
@@ -208,26 +204,26 @@
 #define _d2fEvaluator TR::TreeEvaluator::d2fEvaluator
 #define _d2bEvaluator TR::TreeEvaluator::d2iEvaluator
 #define _d2sEvaluator TR::TreeEvaluator::d2iEvaluator
-#define _b2iEvaluator TR::TreeEvaluator::extendCastEvaluator<SIGNED,8,32>
-#define _b2lEvaluator TR::TreeEvaluator::extendCastEvaluator<SIGNED,8,64>
+#define _b2iEvaluator TR::TreeEvaluator::extendCastEvaluator<true,8,32>
+#define _b2lEvaluator TR::TreeEvaluator::extendCastEvaluator<true,8,64>
 #define _b2fEvaluator TR::TreeEvaluator::i2fEvaluator
 #define _b2dEvaluator TR::TreeEvaluator::i2dEvaluator
-#define _b2sEvaluator TR::TreeEvaluator::extendCastEvaluator<SIGNED,8,32>
+#define _b2sEvaluator TR::TreeEvaluator::extendCastEvaluator<true,8,32>
 #define _b2aEvaluator TR::TreeEvaluator::passThroughEvaluator
-#define _bu2iEvaluator TR::TreeEvaluator::extendCastEvaluator<UNSIGN,8,32>
-#define _bu2lEvaluator TR::TreeEvaluator::extendCastEvaluator<UNSIGN,8,64>
+#define _bu2iEvaluator TR::TreeEvaluator::extendCastEvaluator<false,8,32>
+#define _bu2lEvaluator TR::TreeEvaluator::extendCastEvaluator<false,8,64>
 #define _bu2fEvaluator TR::TreeEvaluator::i2fEvaluator
 #define _bu2dEvaluator TR::TreeEvaluator::i2dEvaluator
-#define _bu2sEvaluator TR::TreeEvaluator::extendCastEvaluator<UNSIGN,8,32>
+#define _bu2sEvaluator TR::TreeEvaluator::extendCastEvaluator<false,8,32>
 #define _bu2aEvaluator TR::TreeEvaluator::addressCastEvaluator<8,true>
-#define _s2iEvaluator TR::TreeEvaluator::extendCastEvaluator<SIGNED,16,32>
-#define _s2lEvaluator TR::TreeEvaluator::extendCastEvaluator<SIGNED,16,64>
+#define _s2iEvaluator TR::TreeEvaluator::extendCastEvaluator<true,16,32>
+#define _s2lEvaluator TR::TreeEvaluator::extendCastEvaluator<true,16,64>
 #define _s2fEvaluator TR::TreeEvaluator::i2fEvaluator
 #define _s2dEvaluator TR::TreeEvaluator::i2dEvaluator
-#define _s2bEvaluator TR::TreeEvaluator::narrowCastEvaluator<SIGNED,8>
+#define _s2bEvaluator TR::TreeEvaluator::narrowCastEvaluator<true,8>
 #define _s2aEvaluator TR::TreeEvaluator::addressCastEvaluator<16,true>
-#define _su2iEvaluator TR::TreeEvaluator::extendCastEvaluator<UNSIGN,16,32>
-#define _su2lEvaluator TR::TreeEvaluator::extendCastEvaluator<UNSIGN,16,64>
+#define _su2iEvaluator TR::TreeEvaluator::extendCastEvaluator<false,16,32>
+#define _su2lEvaluator TR::TreeEvaluator::extendCastEvaluator<false,16,64>
 #define _su2fEvaluator TR::TreeEvaluator::i2fEvaluator
 #define _su2dEvaluator TR::TreeEvaluator::i2dEvaluator
 #define _su2aEvaluator TR::TreeEvaluator::addressCastEvaluator<16,true>
@@ -767,8 +763,4 @@
    FOR_EACH_OPCODE(GENERATE_TREE_EVAL_TABLE)
 
 #undef GENERATE_TREE_EVAL_TABLE
-
-
-#undef SIGNED
-#undef UNSIGN
 

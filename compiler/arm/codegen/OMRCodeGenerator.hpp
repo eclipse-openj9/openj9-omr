@@ -118,8 +118,6 @@ protected:
 
 public:
 
-   CodeGenerator();
-
    void initialize();
 
    TR::Linkage *createLinkage(TR_LinkageConventions lc);

@@ -178,8 +178,6 @@ public:
    ListIterator<TR_BackingStore> * conversionBufferIt;
    TR_BackingStore * allocateStackSlot();
 
-   CodeGenerator();
-
 protected:
 
    CodeGenerator(TR::Compilation *comp);

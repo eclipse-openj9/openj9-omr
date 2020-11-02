@@ -966,9 +966,11 @@ TR::Register *OMR::Power::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::Cod
       }
 
    bool reverseStore = false;
-   if (valueChild->getOpCodeValue() == TR::ibyteswap)
+   if (valueChild->getOpCodeValue() == TR::ibyteswap && valueChild->isSingleRefUnevaluated())
       {
       reverseStore = true;
+
+      cg->decReferenceCount(valueChild);
       valueChild = valueChild->getFirstChild();
       }
 
@@ -1149,9 +1151,11 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
       }
 
    bool reverseStore = false;
-   if (valueChild->getOpCodeValue() == TR::lbyteswap)
+   if (valueChild->getOpCodeValue() == TR::lbyteswap && valueChild->isSingleRefUnevaluated())
       {
       reverseStore = true;
+
+      cg->decReferenceCount(valueChild);
       valueChild = valueChild->getFirstChild();
       }
 
@@ -1457,9 +1461,11 @@ TR::Register *OMR::Power::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::Cod
       }
 
    bool reverseStore = false;
-   if (valueChild->getOpCodeValue() == TR::sbyteswap)
+   if (valueChild->getOpCodeValue() == TR::sbyteswap && valueChild->isSingleRefUnevaluated())
       {
       reverseStore = true;
+
+      cg->decReferenceCount(valueChild);
       valueChild = valueChild->getFirstChild();
       }
 

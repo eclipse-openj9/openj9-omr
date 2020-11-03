@@ -31,6 +31,7 @@ int jitDebugPPC;
 #include "codegen/GCRegisterMap.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
@@ -419,10 +420,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepImmSymInstruction * instr)
          }
       else if (targetAddress == 0)
          {
-         uint8_t *jitTojitStart = _cg->getCodeStart();
-
-         jitTojitStart += ((*(int32_t *)(jitTojitStart - 4)) >> 16) & 0x0000ffff;
-         targetAddress = (intptr_t)jitTojitStart;
+         targetAddress = _cg->getLinkage()->entryPointFromCompiledMethod();
          }
       else if (_cg->directCallRequiresTrampoline(targetAddress, (intptr_t)cursor))
          {

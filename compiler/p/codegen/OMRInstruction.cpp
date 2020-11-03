@@ -25,6 +25,7 @@
 #include "env/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/PPCInstruction.hpp"
 #include "codegen/RegisterConstants.hpp"
@@ -196,9 +197,8 @@ uint8_t *TR::PPCDepImmSymInstruction::generateBinaryEncoding()
       {
       if (cg()->comp()->isRecursiveMethodTarget(getSymbolReference()->getSymbol()))
          {
-         uint8_t *jitTojitStart = cg()->getCodeStart();
-         jitTojitStart += ((*(int32_t *)(jitTojitStart - 4)) >> 16) & 0x0000ffff;
-         distance = (intptr_t)(jitTojitStart - cursor);
+         intptr_t jitToJitStart = cg()->getLinkage()->entryPointFromCompiledMethod();
+         distance = jitToJitStart - reinterpret_cast<intptr_t>(cursor);
          }
       else
          {

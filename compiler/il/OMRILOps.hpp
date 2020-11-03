@@ -272,7 +272,6 @@ public:
    bool isAbs()                      const { return properties3().testAny(ILProp3::Abs); }
    bool isVectorReduction()          const { return properties3().testAny(ILProp3::VectorReduction); }
    bool isSignum()                   const { return properties3().testAny(ILProp3::Signum); }
-   bool isReverseLoadOrStore()       const { return properties3().testAny(ILProp3::ReverseLoadOrStore); }
 
 
 

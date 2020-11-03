@@ -3472,15 +3472,6 @@ int32_t childTypes[] =
    TR::DecimalLongDouble,                                    // TR::de2pdSetSign
    TR::DecimalLongDouble,                                    // TR::de2pdClean
    TR::NoType,                                               // TR::BCDCHK
-   TR::Int16 | (TR::Address<<8),                             // TR::ircload
-   TR::Int16 | (TR::Address<<8),                             // TR::irsload
-   TR::Int32 | (TR::Address<<8),                             // TR::iruiload
-   TR::Int32 | (TR::Address<<8),                             // TR::iriload
-   TR::Int64 | (TR::Address<<8),                             // TR::irulload
-   TR::Int64 | (TR::Address<<8),                             // TR::irlload
-   TR::Int16 | (TR::Address<<8),                             // TR::irsstore
-   TR::Int32 | (TR::Address<<8),                             // TR::iristore
-   TR::Int64 | (TR::Address<<8),                             // TR::irlstore
 #endif
 
    };

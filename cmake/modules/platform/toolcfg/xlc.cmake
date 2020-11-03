@@ -66,10 +66,9 @@ if(OMR_HOST_ARCH STREQUAL "ppc")
 endif()
 
 if(OMR_OS_AIX)
-	list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
-		-qlanglvl=extended
-		-qinfo=pro
-	)
+	list(APPEND OMR_PLATFORM_COMPILE_OPTIONS -qinfo=pro)
+	list(APPEND OMR_PLATFORM_C_COMPILE_OPTIONS -qlanglvl=extended)
+	list(APPEND OMR_PLATFORM_CXX_COMPILE_OPTIONS -qlanglvl=extended0x)
 
 	set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} -lm -liconv -ldl -lperfstat")
 

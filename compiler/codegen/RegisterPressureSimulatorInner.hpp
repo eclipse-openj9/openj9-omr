@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -117,11 +117,6 @@
        TR::SymbolReference *getCandidateSymRef();
 
        bool candidateIsLiveOnEntry(){ return _candidateIsLiveOnEntry; }
-
-       // this method is used during calculation of actual register
-       // pressure, based on instructions
-       void addVirtualRegister(TR::Register *reg);
-       void removeVirtualRegister(TR::Register *reg);
 
       // This indicates that we have already prepared this node for the simulation process.
       // It's an internal bookkeeping thing.

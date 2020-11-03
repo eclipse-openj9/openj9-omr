@@ -34,6 +34,7 @@
 #include "codegen/CodeGenerator.hpp"
 #include "env/FrontEnd.hpp"
 #include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/RecognizedMethods.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/Compilation_inlines.hpp"
@@ -184,15 +185,6 @@ OMR::Compilation::getHotnessName(TR_Hotness h)
       return "unknownHotness";
    return pHotnessNames[h];
    }
-
-
-static TR::CodeGenerator * allocateCodeGenerator(TR::Compilation * comp)
-   {
-   return new (comp->trHeapMemory()) TR::CodeGenerator();
-   }
-
-
-
 
 
 OMR::Compilation::Compilation(
@@ -380,7 +372,7 @@ OMR::Compilation::Compilation(
          );
    _isServerInlining = !options.getOption(TR_NoOptServer);
 
-   // TR_DisableInternalPointers must be set before allocateCodeGenerator(self()) is called because
+   // TR_DisableInternalPointers must be set before the TR::CodeGenerator object is created because
    // CodeGenerator's _disableInternalPointers member is set in its constructor and this is one of
    // options that is checked for
    if (_isOptServer)
@@ -413,7 +405,7 @@ OMR::Compilation::Compilation(
       }
 
    //codegen also needs _methodSymbol
-   _codeGenerator = allocateCodeGenerator(self());
+   _codeGenerator = TR::CodeGenerator::create(self());
 
    _recompilationInfo = _codeGenerator->getSupportsRecompilation() ? _codeGenerator->allocateRecompilationInfo() : NULL;
 
@@ -1250,12 +1242,11 @@ int32_t OMR::Compilation::compile()
 #if defined(AIXPPC) || defined(LINUXPPC)
    if (self()->getOption(TR_DebugOnEntry))
       {
-      intptr_t jitTojitStart = (intptr_t) self()->cg()->getCodeStart();
-      jitTojitStart += ((*(int32_t *)(jitTojitStart - 4)) >> 16) & 0x0000ffff;
+      intptr_t jitToJitStart = self()->cg()->getLinkage()->entryPointFromCompiledMethod();
 #if defined(AIXPPC)
-      self()->getDebug()->setupDebugger((void *)jitTojitStart);
+      self()->getDebug()->setupDebugger((void *)jitToJitStart);
 #else
-      self()->getDebug()->setupDebugger((void *)jitTojitStart, self()->cg()->getCodeEnd(), false);
+      self()->getDebug()->setupDebugger((void *)jitToJitStart, self()->cg()->getCodeEnd(), false);
 #endif /* defined(AIXPPC) */
       }
 #elif defined(LINUX) || defined(J9ZOS390) || defined(OMR_OS_WINDOWS)

@@ -141,7 +141,7 @@ OMR::ARM::CodeGenerator::initialize()
    _numFPR = _linkageProperties->getNumAllocatableFloatRegisters();
 
    // TODO: Disable FP-GRA since current GRA does not work well with ARM linkage (where Float register usage is limited).
-   cg->setDisableFpGRA();
+   cg->setDisableFloatingPointGRA();
 
    cg->setSupportsRecompilation();
 
@@ -303,7 +303,7 @@ OMR::ARM::CodeGenerator::CodeGenerator()
    _numFPR = _linkageProperties->getNumAllocatableFloatRegisters();
 
    // TODO: Disable FP-GRA since current GRA does not work well with ARM linkage (where Float register usage is limited).
-   self()->setDisableFpGRA();
+   self()->setDisableFloatingPointGRA();
 
    self()->setSupportsRecompilation();
 

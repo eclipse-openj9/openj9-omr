@@ -258,6 +258,14 @@ public:
     */
    TR::RealRegister *setMethodMetaDataRegister(TR::RealRegister *r) { return (_methodMetaDataRegister = r); }
 
+   using OMR::CodeGenerator::apply16BitLabelRelativeRelocation;
+   /**
+    * @brief Applies 16-bit Label relative relocation (for test bit branch)
+    * @param[in] cursor : instruction cursor
+    * @param[in] label : label
+    */
+   void apply16BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label);
+
    /**
     * @brief Applies 24-bit Label relative relocation (for conditional branch)
     * @param[in] cursor : instruction cursor

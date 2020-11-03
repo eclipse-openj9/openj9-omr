@@ -4770,7 +4770,7 @@
    /* .description =    "Store doubleword byte reverse indexed", */
    /* .prefix      = */ 0x00000000,
    /* .opcode      = */ 0x7C000528,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_RS_RA_RB_MEM,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
    /* .properties  = */ PPCOpProp_IsStore |
                         PPCOpProp_ExcludeR0ForRA,

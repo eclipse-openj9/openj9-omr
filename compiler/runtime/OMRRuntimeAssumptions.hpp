@@ -182,6 +182,25 @@ class RuntimeAssumption
       return toReturn != this || !toReturn->isMarkedForDetach() ? toReturn : const_cast<RuntimeAssumption*>(this);
       }
 
+   /**
+    * @brief Returns the sentinel for the circular linked list of assumptions associated with a method body.
+    *
+    * @return Returns the sentinel RuntimeAssumption object.
+    */
+   RuntimeAssumption * getSentinel()
+      {
+      RuntimeAssumption *toReturn = (RuntimeAssumption *)(((uintptr_t)_nextAssumptionForSameJittedBody)&~MARK_FOR_DELETE);
+      TR_ASSERT_FATAL(toReturn, "toReturn can't be NULL, this=%p\n", this);
+      while (toReturn->getAssumptionKind() != RuntimeAssumptionSentinel)
+         {
+         TR_ASSERT_FATAL(toReturn != this, "Looped through assumptions for same jitted body without finding sentinel! toReturn=%p\n", toReturn);
+         RuntimeAssumption *next = (RuntimeAssumption*)(((uintptr_t)toReturn->_nextAssumptionForSameJittedBody)&~MARK_FOR_DELETE);
+         TR_ASSERT_FATAL(next, "next can't be NULL, toReturn=%p\n", toReturn);
+         toReturn = next;
+         }
+      return toReturn;
+      }
+
    virtual void     compensate(TR_FrontEnd *vm, bool isSMP, void *data) = 0;
    virtual bool     equals(RuntimeAssumption &other) = 0;
 

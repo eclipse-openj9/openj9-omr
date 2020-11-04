@@ -219,6 +219,19 @@ public:
     */
    bool directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress);
 
+   /**
+    * @brief Answers whether fabs/dabs evaluators are available or not
+    * @return true if fabs/dabs evaluators are available
+    */
+   bool supportsFPAbs()
+      {
+#if (defined(__VFP_FP__) && !defined(__SOFTFP__))
+      return true;
+#else
+      return false;
+#endif
+      }
+
    private:
 
    enum // flags

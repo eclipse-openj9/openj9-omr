@@ -2232,12 +2232,8 @@ TR::S390RILInstruction::generateBinaryEncoding()
 
          if (comp->isRecursiveMethodTarget(getTargetSymbol()))
             {
-            // call myself case
-            uint8_t * jitTojitStart = cg()->getCodeStart();
-
-            // Calculate jit-to-jit entry point
-            jitTojitStart += ((*(int32_t *) (jitTojitStart - 4)) >> 16) & 0x0000ffff;
-            *(int32_t *) (cursor + 2) = boi(((intptr_t) jitTojitStart - (intptr_t) cursor) / 2);
+            intptr_t jitToJitStart = cg()->getLinkage()->entryPointFromCompiledMethod();
+            *(int32_t *) (cursor + 2) = boi((jitToJitStart - (intptr_t) cursor) / 2);
             }
          else
             {
@@ -5079,7 +5075,7 @@ TR::S390AlignmentNopInstruction::generateBinaryEncoding()
       uint32_t nopsOfLength6ToAdd = (_alignment - currentMisalign) / 6;
       uint32_t nopsOfLength4ToAdd = ((_alignment - currentMisalign) % 6) / 4;
       uint32_t nopsOfLength2ToAdd = (((_alignment - currentMisalign) % 6) % 4) / 2;
-      
+
       if (trace)
          traceMsg(cg()->comp(), "Expanding alignment nop %p into %u instructions: [ ", self(), nopsOfLength6ToAdd + nopsOfLength4ToAdd + nopsOfLength2ToAdd);
 
@@ -5098,7 +5094,7 @@ TR::S390AlignmentNopInstruction::generateBinaryEncoding()
          if (trace)
             traceMsg(cg()->comp(), "%p ", nop);
          }
-      
+
       for (uint32_t i = 0; i < nopsOfLength6ToAdd; ++i)
          {
          TR::Instruction *nop = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 6, getNode(), self(), cg());

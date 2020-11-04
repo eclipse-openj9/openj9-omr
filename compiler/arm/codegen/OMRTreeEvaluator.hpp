@@ -386,8 +386,6 @@ public:
    static TR::Register *arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraysetEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraytranslateAndTestEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *reverseLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *reverseStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraytranslateEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *BBStartEvaluator(TR::Node *node, TR::CodeGenerator *cg);

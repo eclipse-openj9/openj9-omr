@@ -286,16 +286,7 @@ TR::Register *OMR::Power::TreeEvaluator::s2iEvaluator(TR::Node *node, TR::CodeGe
          {
          trgReg = cg->allocateRegister();
          TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 2);
-#ifdef J9_PROJECT_SPECIFIC
-         if (node->getFirstChild()->getOpCodeValue() == TR::irsload)
-            {
-            tempMR->forceIndexedForm(node->getFirstChild(), cg);
-            generateTrg1MemInstruction(cg, TR::InstOpCode::lhbrx, node, trgReg, tempMR);
-            generateTrg1Src1Instruction(cg, TR::InstOpCode::extsh, node, trgReg, trgReg);
-            }
-         else
-#endif
-            generateTrg1MemInstruction(cg, TR::InstOpCode::lha, node, trgReg, tempMR);
+         generateTrg1MemInstruction(cg, TR::InstOpCode::lha, node, trgReg, tempMR);
          tempMR->decNodeReferenceCounts(cg);
          }
       else

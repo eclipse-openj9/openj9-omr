@@ -165,9 +165,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual TR::PPCImmInstruction *getPPCImmInstruction();
 #endif
 
-   virtual void registersGoLive(TR_RegisterPressureState *) {}
-   virtual void registersGoDead(TR_RegisterPressureState *) {}
-
    /*
     * Maps to TIndex in Instruction. Here we set values specific to PPC CodeGen.
     *

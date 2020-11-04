@@ -74,15 +74,7 @@ TR::Register *OMR::Power::TreeEvaluator::ibits2fEvaluator(TR::Node *node, TR::Co
        child->getOpCode().isLoadVar())
       {
       TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
-#ifdef J9_PROJECT_SPECIFIC
-      if (node->getFirstChild()->getOpCodeValue() == TR::iriload)
-         {
-         tempMR->forceIndexedForm(child, cg);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwbrx, node, target, tempMR);
-         }
-      else
-#endif
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, target, tempMR);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, target, tempMR);
       tempMR->decNodeReferenceCounts(cg);
       }
    else
@@ -163,37 +155,7 @@ TR::Register *OMR::Power::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::Co
        child->getOpCode().isLoadVar())
       {
       TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 8);
-#ifdef J9_PROJECT_SPECIFIC
-      if (child->getOpCodeValue() == TR::irlload && cg->comp()->target().is64Bit())        // 64-bit only
-         {
-         TR::Register     *tmpReg = cg->allocateRegister();
-         tempMR->forceIndexedForm(child, cg);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::ldbrx, node, tmpReg, tempMR);
-         generateMvFprGprInstructions(cg, node, gpr2fprHost64, true, target, tmpReg);
-         cg->stopUsingRegister(tmpReg);
-         }
-      else if (child->getOpCodeValue() == TR::irlload && cg->comp()->target().is32Bit())   // 32-bit
-         {
-         TR::Register     *highReg = cg->allocateRegister();
-         TR::Register     *lowReg = cg->allocateRegister();
-         TR::MemoryReference *tempMRLoad1 = TR::MemoryReference::createWithMemRef(cg, child, *tempMR, 0, 4);
-         TR::MemoryReference *tempMRLoad2 = TR::MemoryReference::createWithMemRef(cg, child, *tempMR, 4, 4);
-
-         tempMRLoad1->forceIndexedForm(child, cg);
-         tempMRLoad2->forceIndexedForm(child, cg);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwbrx, node, lowReg, tempMRLoad1);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwbrx, node, highReg, tempMRLoad2);
-         generateMvFprGprInstructions(cg, node, gpr2fprHost32, false, target, highReg, lowReg);
-
-         tempMRLoad1->decNodeReferenceCounts(cg);
-         tempMRLoad2->decNodeReferenceCounts(cg);
-         cg->stopUsingRegister(highReg);
-         cg->stopUsingRegister(lowReg);
-         cg->decReferenceCount(child);
-         }
-      else
-#endif
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, target, tempMR);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, target, tempMR);
       tempMR->decNodeReferenceCounts(cg);
       }
    else

@@ -282,6 +282,15 @@ public:
    TR_ALLOC(TR_Memory::CodeGenerator)
 
    /**
+    * @brief Factory function to create and initialize a new \c TR::CodeGenerator object.
+    *
+    * @param[in] comp \c TR::Compilation object
+    *
+    * @return An allocated and initialized \c TR::CodeGenerator object
+    */
+   static TR::CodeGenerator *create(TR::Compilation *comp);
+
+   /**
     * @brief Initialize a \c TR::CodeGenerator object
     */
    void initialize();
@@ -628,6 +637,17 @@ public:
     * @return true if inlining should be suppressed; false otherwise
     */
    bool suppressInliningOfRecognizedMethod(TR::RecognizedMethod method);
+
+   /**
+    * @brief Answers whether iabs/labs evaluators are available or not
+    * @return true if iabs/labs evaluators are available
+    */
+   bool supportsIntAbs() { return true; }
+   /**
+    * @brief Answers whether fabs/dabs evaluators are available or not
+    * @return true if fabs/dabs evaluators are available
+    */
+   bool supportsFPAbs() { return true; }
 
    // --------------------------------------------------------------------------
    // Optimizer, not code generator
@@ -1502,8 +1522,8 @@ public:
    bool getDisableLongGRA() {return _flags1.testAny(DisableLongGRA);}
    void setDisableLongGRA() {_flags1.set(DisableLongGRA);}
 
-   bool getDisableFpGRA() {return _flags2.testAny(DisableFpGRA);}
-   void setDisableFpGRA() {_flags2.set(DisableFpGRA);}
+   bool getDisableFloatingPointGRA() {return _flags2.testAny(DisableFloatingPointGRA);}
+   void setDisableFloatingPointGRA() {_flags2.set(DisableFloatingPointGRA);}
 
    bool usesRegisterMaps() {return _flags1.testAny(UsesRegisterMaps);}
    void setUsesRegisterMaps() {_flags1.set(UsesRegisterMaps);}
@@ -1528,9 +1548,6 @@ public:
 
    bool getSupportsArrayTranslateAndTest() {return _flags2.testAny(SupportsArrayTranslateAndTest);}
    void setSupportsArrayTranslateAndTest() {_flags2.set(SupportsArrayTranslateAndTest);}
-
-   bool getSupportsReverseLoadAndStore() {return _flags2.testAny(SupportsReverseLoadAndStore);}
-   void setSupportsReverseLoadAndStore() {_flags2.set(SupportsReverseLoadAndStore);}
 
    bool getSupportsArrayTranslateTRxx() {return _flags2.testAny(SupportsArrayTranslate);}
    void setSupportsArrayTranslateTRxx() {_flags2.set(SupportsArrayTranslate);}
@@ -1798,9 +1815,9 @@ public:
       HasCCZero                                           = 0x00080000,
       HasCCOverflow                                       = 0x00100000,
       HasCCInfo                                           = 0x00200000,
-      SupportsReverseLoadAndStore                         = 0x00400000,
+      // AVAILABLE                                        = 0x00400000,
       SupportsLoweringConstLDivPower2                     = 0x00800000,
-      DisableFpGRA                                        = 0x01000000,
+      DisableFloatingPointGRA                             = 0x01000000,
       // AVAILABLE                                        = 0x02000000,
       MethodModifiedByRA                                  = 0x04000000,
       // AVAILABLE                                        = 0x08000000,

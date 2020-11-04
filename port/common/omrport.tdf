@@ -1589,3 +1589,18 @@ TraceEvent=Trc_PRT_shared_omr_cleanSharedMemorySegments_childFailed Group=omrsha
 // sysvipc
 TraceException=Trc_PRT_omr_sysvipc_shmctlWrapper_Failed NoEnv Overhead=1 Level=1 Template="shmctlWrapper failed with platform error code=%d"
 TraceException=Trc_PRT_sysinfo_unrecognized_Windows_version Obsolete NoEnv Overhead=1 Level=1 Template="omrsysinfo_get_OS_type unrecognized Windows version: type=%d version=%d.%d"
+
+TraceEntry=Trc_PRT_double_map_regions_Create_Entry Overhead=1 Level=3 Group=double_map NoEnv Template="omrvmem_create_double_mapped_region. Entered addresses: %p, addressesCount: %zu, addressSize: %zu, byteAmount: %zu, pageSize: %zu, preferredAddress: %p"
+TraceEvent=Trc_PRT_double_map_regions_Create_UsingPreferredAddress Overhead=1 Level=1 Group=double_map NoEnv Template="Using prefered address to double map regions, preferredAddress: %p"
+TraceEvent=Trc_PRT_double_map_regions_Create_GenerateContiguousAddress Overhead=1 Level=1 Group=double_map NoEnv Template="Generating contiguous region of memory, contiguousMap: %p"
+TraceEvent=Trc_PRT_double_map_regions_Create_Success Overhead=1 Level=1 Group=double_map NoEnv Template="mmap contiguous region of memory created successfully. contiguousMap: %p, preferredAddress: %p"
+TraceException=Trc_PRT_double_map_regions_Create_Failure Overhead=1 Level=1 Group=double_map NoEnv Template="Failed to mmap contiguous region of memory"
+TraceException=Trc_PRT_double_map_regions_Create_Failure2 Overhead=1 Level=1 Group=double_map NoEnv Template="Double map failed while double mapping individual leaves."
+TraceException=Trc_PRT_double_map_regions_Create_Failure3 Overhead=1 Level=1 Group=double_map NoEnv Template="Address returned by mmap dpes not match expected. Expected: %p, returned: %p"
+TraceException=Trc_PRT_double_map_regions_Create_Failure4 Overhead=1 Level=1 Group=double_map NoEnv Template="Double map failed. Clean up phase."
+TraceExit=Trc_PRT_double_map_regions_Create_Exit Overhead=1 Level=3 Group=double_map NoEnv Template="omrvmem_create_double_mapped_region. result=%p"
+TraceEntry=Trc_PRT_double_map_regions_Release_Entry Group=double_map Overhead=1 Level=3 NoEnv Template="omrvmem_release_double_mapped_region address: %p, byteAmount: %zu"
+TraceEvent=Trc_PRT_double_map_regions_Release_Restore_Region Overhead=1 Level=1 Group=double_map NoEnv Template="OMRPORT_VMEM_RESERVE_USED_MMAP_RESTORE_MMAP is set. Calling mmap to revert region. address: %p, byteAmount: %zu, fd: %d"
+TraceExit=Trc_PRT_double_map_regions_Release_Exit Group=double_map Overhead=1 Level=5 NoEnv Template="omrvmem_release_double_mapped_region returnCode: %d"
+TraceException=Trc_PRT_double_map_regions_Release_Failure Overhead=1 Level=1 Group=double_map NoEnv Template="Failed to mmap FIXED contiguous region of memory when releasing region"
+TraceException=Trc_PRT_double_map_regions_Release_Failure2 Overhead=1 Level=1 Group=double_map NoEnv Template="Failed to mmap FIXED contiguous region of memory. Expected address: %p, mmap returned: %p"

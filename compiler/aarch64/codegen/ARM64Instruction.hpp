@@ -81,6 +81,16 @@ inline bool constantIsUnsignedImm12(uint64_t intValue)
    }
 
 /*
+ * @brief Answers if the signed integer value can be placed in a 16-bit field
+ * @param[in] intValue : signed integer value
+ * @return true if the value can be placed in 16-bit field, false otherwise
+ */
+inline bool constantIsSignedImm16(intptr_t intValue)
+   {
+   return (-0x8000 <= intValue && intValue < 0x8000);
+   }
+
+/*
  * @brief Answers if the unsigned integer value can be encoded in a 16-bit field
  * @param[in] intValue : unsigned integer value
  * @return true if the value can be encoded in a 16-bit field, false otherwise

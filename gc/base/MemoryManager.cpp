@@ -576,6 +576,15 @@ MM_MemoryManager::doubleMapArraylet(MM_MemoryHandle* handle, MM_EnvironmentBase 
 	Assert_MM_true(NULL != memory);
 	return memory->doubleMapArraylet(env, arrayletLeaves, arrayletLeafCount, arrayletLeafSize, byteAmount, newIdentifier, pageSize);
 }
+
+void*
+MM_MemoryManager::doubleMapRegions(MM_MemoryHandle* handle, MM_EnvironmentBase *env, void* regions[], UDATA regionsCount, UDATA regionSize, UDATA byteAmount, struct J9PortVmemIdentifier *newIdentifier, UDATA pageSize, void *preferredAddress)
+{
+	Assert_MM_true(NULL != handle);
+	MM_VirtualMemory* memory = handle->getVirtualMemory();
+	Assert_MM_true(NULL != memory);
+	return memory->doubleMapRegions(env, regions, regionsCount, regionSize, byteAmount, newIdentifier, pageSize, preferredAddress);
+}
 #endif /* defined(OMR_GC_DOUBLE_MAP_ARRAYLETS) */
 
 bool

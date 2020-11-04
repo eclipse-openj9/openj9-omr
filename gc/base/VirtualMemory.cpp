@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -170,6 +170,16 @@ MM_VirtualMemory::doubleMapArraylet(MM_EnvironmentBase *env, void* arrayletLeave
 	uintptr_t mode = OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE | OMRPORT_VMEM_MEMORY_MODE_COMMIT;
 
 	return omrvmem_get_contiguous_region_memory(arrayletLeaves, arrayletLeafCount, arrayletLeafSize, byteAmount, oldIdentifier, newIdentifier, mode, pageSize, omrmem_get_category(OMRMEM_CATEGORY_MM));
+}
+
+void*
+MM_VirtualMemory::doubleMapRegions(MM_EnvironmentBase *env, void* regions[], UDATA regionsCount, UDATA regionSize, UDATA byteAmount, struct J9PortVmemIdentifier *newIdentifier, UDATA pageSize, void *preferredAddress)
+{
+	OMRPORT_ACCESS_FROM_OMRVM(_extensions->getOmrVM());
+	struct J9PortVmemIdentifier *oldIdentifier = &_identifier;
+	uintptr_t mode = OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE | OMRPORT_VMEM_MEMORY_MODE_COMMIT;
+
+	return omrvmem_create_double_mapped_region(regions, regionsCount, regionSize, byteAmount, oldIdentifier, newIdentifier, mode, pageSize, omrmem_get_category(OMRMEM_CATEGORY_MM), preferredAddress);
 }
 #endif /* defined(OMR_GC_DOUBLE_MAP_ARRAYLETS) */
 

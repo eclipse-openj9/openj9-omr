@@ -492,11 +492,6 @@ TR::Instruction *fixedSeqMemAccess(TR::CodeGenerator *cg, TR::Node *node, intptr
 // also handles iiload, iiuload
 TR::Register *OMR::Power::TreeEvaluator::iloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-#ifdef J9_PROJECT_SPECIFIC
-   bool reverseLoad = node->getOpCodeValue() == TR::iriload;
-#else
-   bool reverseLoad = false;
-#endif
    TR::Register *tempReg;
    TR::MemoryReference *tempMR = NULL;
    TR::Compilation *comp = cg->comp();
@@ -515,15 +510,7 @@ TR::Register *OMR::Power::TreeEvaluator::iloadEvaluator(TR::Node *node, TR::Code
    // layout in order to patch if it turns out that the reference isn't really volatile.
 
    tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 4);
-   if (reverseLoad)
-      {
-      tempMR->forceIndexedForm(node, cg);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwbrx, node, tempReg, tempMR);
-      }
-   else
-      {
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tempReg, tempMR);
-      }
+   generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, tempReg, tempMR);
 
    cg->insertPrefetchIfNecessary(node, tempReg);
 
@@ -694,11 +681,6 @@ TR::Register *OMR::Power::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::Code
 TR::Register *OMR::Power::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
-#ifdef J9_PROJECT_SPECIFIC
-   bool reverseLoad = node->getOpCodeValue() == TR::irlload;
-#else
-   bool reverseLoad = false;
-#endif
    bool needSync;
 
    if (cg->comp()->target().is64Bit())
@@ -715,13 +697,7 @@ TR::Register *OMR::Power::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::Code
       //
       tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
 
-      if (reverseLoad)  // 64-bit only
-         {
-         tempMR->forceIndexedForm(node, cg);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::ldbrx, node, trgReg, tempMR);
-         }
-      else
-         generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, trgReg, tempMR);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, trgReg, tempMR);
       if (needSync)
          {
          TR::TreeEvaluator::postSyncConditions(node, cg, trgReg, tempMR, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7) ? TR::InstOpCode::lwsync : TR::InstOpCode::isync);
@@ -740,38 +716,6 @@ TR::Register *OMR::Power::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::Code
       // guarantee atomicity either.
       //
       needSync = node->getSymbolReference()->getSymbol()->isSyncVolatile();
-
-
-      if (reverseLoad)  // 32-bit reverse load. Handles sync
-         {
-         TR::Register *doubleReg = cg->allocateRegister(TR_FPR);
-         TR_BackingStore * location = cg->allocateSpill(8, false, NULL);
-         TR::MemoryReference *tempMR      = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
-         TR::MemoryReference *tempMRLoad1 = TR::MemoryReference::createWithMemRef(cg, node, *tempMR, 0, 4);
-         TR::MemoryReference *tempMRLoad2 = TR::MemoryReference::createWithMemRef(cg, node, *tempMR, 4, 4);
-         // ^ ordering of these temp memory references important?
-
-         // assume SMP since only on POWER 7 and newer
-         if (needSync)
-            {
-            TR::MemoryReference *tempMRStore1 = TR::MemoryReference::createWithSymRef(cg, node, location->getSymbolReference(), 8);
-            generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, tempMRStore1, doubleReg);
-            generateInstruction(cg, cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7) ? TR::InstOpCode::lwsync : TR::InstOpCode::isync, node);
-            tempMRStore1->decNodeReferenceCounts(cg);
-            }
-         tempMRLoad1->forceIndexedForm(node, cg);
-         tempMRLoad2->forceIndexedForm(node, cg);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwbrx, node, lowReg, tempMRLoad1);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwbrx, node, highReg, tempMRLoad2);
-
-         cg->freeSpill(location, 8, 0);
-         cg->stopUsingRegister(doubleReg);
-         tempMRLoad1->decNodeReferenceCounts(cg);
-         tempMRLoad2->decNodeReferenceCounts(cg);
-         tempMR->decNodeReferenceCounts(cg);
-         node->setRegister(trgReg);
-         return trgReg;
-         }
 
       if (needSync)
          {
@@ -915,11 +859,6 @@ TR::Register *OMR::Power::TreeEvaluator::bloadEvaluator(TR::Node *node, TR::Code
 // also handles isload
 TR::Register *OMR::Power::TreeEvaluator::sloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-#ifdef J9_PROJECT_SPECIFIC
-   bool reverseLoad = node->getOpCodeValue() == TR::irsload;
-#else
-   bool reverseLoad = false;
-#endif
    TR::Register *tempReg = node->setRegister(cg->allocateRegister());
    TR::MemoryReference *tempMR;
 
@@ -929,14 +868,7 @@ TR::Register *OMR::Power::TreeEvaluator::sloadEvaluator(TR::Node *node, TR::Code
    // layout in order to patch if it turns out that the reference isn't really volatile.
 
    tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 2);
-
-   if (reverseLoad)
-      {
-      tempMR->forceIndexedForm(node, cg);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lhbrx, node, tempReg, tempMR);
-      }
-   else
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lha, node, tempReg, tempMR);
+   generateTrg1MemInstruction(cg, TR::InstOpCode::lha, node, tempReg, tempMR);
 
    if (needSync)
       {
@@ -986,11 +918,6 @@ TR::Register *OMR::Power::TreeEvaluator::cloadEvaluator(TR::Node *node, TR::Code
 TR::Register *OMR::Power::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
-#ifdef J9_PROJECT_SPECIFIC
-   bool reverseStore = node->getOpCodeValue() == TR::iristore;
-#else
-   bool reverseStore = false;
-#endif
    TR::MemoryReference *tempMR = NULL;
    TR::Node *valueChild;
 
@@ -1036,6 +963,15 @@ TR::Register *OMR::Power::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::Cod
    else
       {
       valueChild = node->getFirstChild();
+      }
+
+   bool reverseStore = false;
+   if (valueChild->getOpCodeValue() == TR::ibyteswap && valueChild->isSingleRefUnevaluated())
+      {
+      reverseStore = true;
+
+      cg->decReferenceCount(valueChild);
+      valueChild = valueChild->getFirstChild();
       }
 
    // Handle special cases
@@ -1204,11 +1140,6 @@ TR::Register *OMR::Power::TreeEvaluator::astoreEvaluator(TR::Node *node, TR::Cod
 TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
-#ifdef J9_PROJECT_SPECIFIC
-   bool reverseStore = node->getOpCodeValue() == TR::irlstore;
-#else
-   bool reverseStore = false;
-#endif
    TR::Node *valueChild;
    if (node->getOpCode().isIndirect())
       {
@@ -1217,6 +1148,15 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
    else
       {
       valueChild = node->getFirstChild();
+      }
+
+   bool reverseStore = false;
+   if (valueChild->getOpCodeValue() == TR::lbyteswap && valueChild->isSingleRefUnevaluated())
+      {
+      reverseStore = true;
+
+      cg->decReferenceCount(valueChild);
+      valueChild = valueChild->getFirstChild();
       }
 
    // Handle special cases
@@ -1509,11 +1449,6 @@ TR::Register *OMR::Power::TreeEvaluator::bstoreEvaluator(TR::Node *node, TR::Cod
 // also handles isstore
 TR::Register *OMR::Power::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-#ifdef J9_PROJECT_SPECIFIC
-   bool reverseStore = node->getOpCodeValue() == TR::irsstore;
-#else
-   bool reverseStore = false;
-#endif
    TR::MemoryReference *tempMR;
    TR::Node *valueChild;
    if (node->getOpCode().isIndirect())
@@ -1524,6 +1459,16 @@ TR::Register *OMR::Power::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::Cod
       {
       valueChild = node->getFirstChild();
       }
+
+   bool reverseStore = false;
+   if (valueChild->getOpCodeValue() == TR::sbyteswap && valueChild->isSingleRefUnevaluated())
+      {
+      reverseStore = true;
+
+      cg->decReferenceCount(valueChild);
+      valueChild = valueChild->getFirstChild();
+      }
+
    if ((valueChild->getOpCodeValue()==TR::i2s) &&
        valueChild->getReferenceCount()==1 && valueChild->getRegister()==NULL)
        {
@@ -3459,55 +3404,6 @@ static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, 
 
    conditions->stopUsingDepRegs(cg);
    return;
-   }
-
-
-TR::Register *OMR::Power::TreeEvaluator::reverseStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-#ifdef J9_PROJECT_SPECIFIC
-   if (node->getOpCodeValue() == TR::irsstore)
-      {
-     return sstoreEvaluator(node, cg);
-      }
-   else if (node->getOpCodeValue() == TR::iristore)
-      {
-     return istoreEvaluator(node, cg);
-      }
-   else if (node->getOpCodeValue() == TR::irlstore)
-      {
-     return lstoreEvaluator(node, cg);
-      }
-   else
-#endif
-      {
-      // somehow break here because we have an unimplemented
-      TR_UNIMPLEMENTED();
-      return NULL;
-      }
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::reverseLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-#ifdef J9_PROJECT_SPECIFIC
-   if (node->getOpCodeValue() == TR::irsload)
-      {
-     return sloadEvaluator(node, cg);
-      }
-   else if (node->getOpCodeValue() == TR::iriload)
-      {
-     return iloadEvaluator(node, cg);
-      }
-   else if (node->getOpCodeValue() == TR::irlload)
-      {
-     return lloadEvaluator(node, cg);
-      }
-   else
-#endif
-     {
-     // somehow break here because we have an unimplemented
-     TR_UNIMPLEMENTED();
-     return NULL;
-     }
    }
 
 TR::Register *OMR::Power::TreeEvaluator::arraytranslateEvaluator(TR::Node *node, TR::CodeGenerator *cg)

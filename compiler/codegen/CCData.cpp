@@ -19,6 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#include "omrcomp.h"
 #include "OMR/Bytes.hpp"
 
 #include "codegen/CCData.hpp"
@@ -42,21 +43,22 @@ CCData::key_t CCData::key(const char * const str)
 #define DATA_SIZE_FROM_BYTES_SIZE(x) (((x) + (sizeof(data_t)) - 1) / (sizeof(data_t)))
 
 // Converts an alignment in units of bytes to an alignment in units of alignof(data_t).
-#define DATA_ALIGNMENT_FROM_BYTES_ALIGNMENT(x) (((x) + (alignof(data_t)) - 1) / (alignof(data_t)))
+#define DATA_ALIGNMENT_FROM_BYTES_ALIGNMENT(x) (((x) + (OMR_ALIGNOF(data_t)) - 1) / (OMR_ALIGNOF(data_t)))
 
 CCData::CCData(const size_t sizeBytes)
-: _data(new data_t[DATA_SIZE_FROM_BYTES_SIZE(sizeBytes)]), _capacity(DATA_SIZE_FROM_BYTES_SIZE(sizeBytes)), _putIndex(0), _lock(TR::Monitor::create("CCDataMutex")), _releaseData(false)
+: _data(new data_t[DATA_SIZE_FROM_BYTES_SIZE(sizeBytes)]), _capacity(DATA_SIZE_FROM_BYTES_SIZE(sizeBytes)), _putIndex(0), _lock(TR::Monitor::create("CCDataMutex")), _releaseData(true)
    {
    }
 
 CCData::CCData(uint8_t * const storage, const size_t sizeBytes)
-: CCData(alignStorage(storage, sizeBytes))
+: _putIndex(0), _lock(TR::Monitor::create("CCDataMutex")), _releaseData(false)
    {
-   }
-
-CCData::CCData(const storage_and_size_pair_t storageAndSize)
-: _data(storageAndSize.first), _capacity(storageAndSize.second), _putIndex(0), _lock(TR::Monitor::create("CCDataMutex")), _releaseData(true)
-   {
+   void *alignedStorage = storage;
+   size_t sizeBytesAfterAlignment = sizeBytes;
+   bool success = OMR::align(OMR_ALIGNOF(data_t), sizeof(data_t), alignedStorage, sizeBytesAfterAlignment) != NULL;
+   TR_ASSERT_FATAL(success, "Can't align CCData storage to required boundary");
+   _data = reinterpret_cast<data_t *>(alignedStorage);
+   _capacity = DATA_SIZE_FROM_BYTES_SIZE(sizeBytesAfterAlignment);
    }
 
 CCData::~CCData()
@@ -64,21 +66,8 @@ CCData::~CCData()
    // Memory for data can either be allocated by this class or passed in via
    // the constructor. If allocated, it has to be freed now; if passed in we can't free
    // it.
-   // The _data member var is a smart pointer that will automatically
-   // free the underlying memory when it goes out of scope. If memory was passed in
-   // via the constructor we have to release it now to prevent the smart pointer from
-   // freeing it.
    if (_releaseData)
-      _data.release();
-   }
-
-const CCData::storage_and_size_pair_t CCData::alignStorage(uint8_t * const storage, size_t sizeBytes)
-   {
-   // This function takes buffer, aligns it for data_t, and converts the size in bytes to the size in units of data_t.
-   // It returns the aligned pointer and adjusted size in an std::pair so that we can use it when calling a constructor in an initializer list.
-   void *alignedStorage = storage;
-   OMR::align(alignof(data_t), sizeof(data_t), alignedStorage, sizeBytes);
-   return std::make_pair(reinterpret_cast<data_t *>(alignedStorage), DATA_SIZE_FROM_BYTES_SIZE(sizeBytes));
+      delete [] _data;
    }
 
 bool CCData::put(const uint8_t * const value, const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index)
@@ -99,7 +88,7 @@ bool CCData::put(const uint8_t * const value, const size_t sizeBytes, const size
    const size_t sizeDataUnits = DATA_SIZE_FROM_BYTES_SIZE(sizeBytes);
    const size_t alignmentDataUnits = DATA_ALIGNMENT_FROM_BYTES_ALIGNMENT(alignmentBytes);
    const size_t alignmentMask = alignmentDataUnits - 1;
-   const size_t alignmentPadding = (alignmentDataUnits - ((reinterpret_cast<uintptr_t>(_data.get() + _putIndex) / alignof(data_t)) & alignmentMask)) & alignmentMask;
+   const size_t alignmentPadding = (alignmentDataUnits - ((reinterpret_cast<uintptr_t>(_data + _putIndex) / OMR_ALIGNOF(data_t)) & alignmentMask)) & alignmentMask;
    const size_t remainingCapacity = _capacity - _putIndex;
 
    if (sizeDataUnits + alignmentPadding > remainingCapacity)
@@ -108,14 +97,14 @@ bool CCData::put(const uint8_t * const value, const size_t sizeBytes, const size
    _putIndex += alignmentPadding;
    index = _putIndex;
 
-   if (key != nullptr)
+   if (key != NULL)
       _mappings[*key] = _putIndex;
 
-   if (value != nullptr)
+   if (value != NULL)
       {
       std::copy(value,
                 value + sizeBytes,
-                reinterpret_cast<uint8_t *>(_data.get() + _putIndex));
+                reinterpret_cast<uint8_t *>(_data + _putIndex));
       }
 
    _putIndex += sizeDataUnits;
@@ -128,8 +117,8 @@ bool CCData::get(const index_t index, uint8_t * const value, const size_t sizeBy
    if (index >= _capacity)
       return false;
 
-   std::copy(reinterpret_cast<const uint8_t *>(_data.get() + index),
-             reinterpret_cast<const uint8_t *>(_data.get() + index) + sizeBytes,
+   std::copy(reinterpret_cast<const uint8_t *>(_data + index),
+             reinterpret_cast<const uint8_t *>(_data + index) + sizeBytes,
              value);
 
    return true;
@@ -144,9 +133,9 @@ bool CCData::find(const key_t key, index_t * const index) const
 bool CCData::find_unsafe(const key_t key, index_t * const index) const
    {
    auto e = _mappings.find(key);
-   if (e != _mappings.cend())
+   if (e != _mappings.end())
       {
-      if (index != nullptr)
+      if (index != NULL)
          *index = e->second;
       return true;
       }

@@ -40,18 +40,22 @@ CCData::key_t CCData::key(const T value)
 template <typename T>
 bool CCData::put(const T value, const key_t * const key, index_t &index)
    {
-#if __cpp_static_assert
-   static_assert(std::is_trivially_copyable<T>::value == true, "T must be trivially copyable.");
-#endif
+   // std::is_trivially_copyable is a C++11 type trait, but unfortunately there's no test macro for it.
+   // static_assert is also a C++11 feature, so testing for that would hopefully be enough, but unfortunately some old compilers have static_assert but not is_trivially_copyable,
+   // hence `#if __cpp_static_assert` is insufficient.
+//#if __cpp_static_assert
+//   static_assert(std::is_trivially_copyable<T>::value == true, "T must be trivially copyable.");
+//#endif
    return put(reinterpret_cast<const uint8_t *>(&value), sizeof(value), alignof(value), key, index);
    }
 
 template <typename T>
 bool CCData::get(const index_t index, T &value) const
    {
-#if __cpp_static_assert
-   static_assert(std::is_trivially_copyable<T>::value == true, "T must be trivially copyable.");
-#endif
+   // See above.
+//#if __cpp_static_assert
+//   static_assert(std::is_trivially_copyable<T>::value == true, "T must be trivially copyable.");
+//#endif
    return get(index, reinterpret_cast<uint8_t *>(&value), sizeof(value));
    }
 
@@ -61,9 +65,9 @@ T* CCData::get(const index_t index) const
    // Don't have to check if T is trivially_copyable here since we're not copying to/from a T.
    // The caller might, but it is then their responsibility to make sure.
    if (index >= _capacity)
-      return nullptr;
+      return NULL;
 
-   return reinterpret_cast<T *>(_data.get() + index);
+   return reinterpret_cast<T *>(_data + index);
    }
 
 }

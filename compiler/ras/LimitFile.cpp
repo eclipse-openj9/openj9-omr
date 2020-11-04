@@ -36,6 +36,7 @@
 #include "env/CompilerEnv.hpp"
 #include "env/PersistentInfo.hpp"
 #include "env/TRMemory.hpp"
+#include "env/VerboseLog.hpp"
 #include "env/jittypes.h"
 #include "infra/Assert.hpp"
 #include "optimizer/OptimizationManager.hpp"

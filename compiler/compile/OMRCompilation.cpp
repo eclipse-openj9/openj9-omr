@@ -58,6 +58,7 @@
 #include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"
 #include "env/TypeLayout.hpp"
+#include "env/VerboseLog.hpp"
 #include "env/defines.h"
 #include "env/jittypes.h"
 #include "il/Block.hpp"

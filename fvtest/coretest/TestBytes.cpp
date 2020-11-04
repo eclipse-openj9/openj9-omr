@@ -19,6 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#include <omrcomp.h>
 #include <OMR/Bytes.hpp>
 #include <gtest/gtest.h>
 
@@ -187,7 +188,7 @@ TEST(TestBytes, AlignMaximumSizeFor16byteAlignment)
 TEST(TestBytes, AlignPointers)
 {
 	const size_t size = sizeof(void*);
-	const size_t alignment = alignof(void*);
+	const size_t alignment = OMR_ALIGNOF(void*);
 	const size_t totalSpace = size * 3 - 1;
 	char buffer[totalSpace] = {0};
 	void * const lastValidAddress = &buffer[totalSpace - size];

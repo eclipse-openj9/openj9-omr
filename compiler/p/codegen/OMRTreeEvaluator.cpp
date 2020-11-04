@@ -1151,7 +1151,8 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
       }
 
    bool reverseStore = false;
-   if (valueChild->getOpCodeValue() == TR::lbyteswap && valueChild->isSingleRefUnevaluated())
+   if (valueChild->getOpCodeValue() == TR::lbyteswap && valueChild->isSingleRefUnevaluated() &&
+      cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7))
       {
       reverseStore = true;
 

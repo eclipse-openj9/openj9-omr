@@ -295,6 +295,8 @@ bool OMR::X86::AMD64::MemoryReference::needsAddressLoadInstruction(intptr_t next
       return true; // If a class gets replaced, it may no longer fit in an immediate
    else if (IS_32BIT_SIGNED(displacement))
       return false;
+   else if (cg->comp()->isOutOfProcessCompilation() && sr.getSymbol() && sr.getSymbol()->isStatic() && !sr.getSymbol()->isNotDataAddress())
+      return true;
    else if (IS_32BIT_RIP(displacement, nextInstructionAddress))
       return false;
    else

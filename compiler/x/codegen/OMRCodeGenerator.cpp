@@ -529,7 +529,6 @@ OMR::X86::CodeGenerator::CodeGenerator(TR::Compilation *comp) :
    _numReservedIPICTrampolines(0),
    _flags(0)
    {
-   _clobIterator = _clobberingInstructions.begin();
    }
 
 
@@ -541,24 +540,6 @@ OMR::X86::CodeGenerator::initialize()
    _clobIterator = _clobberingInstructions.begin();
    }
 
-
-OMR::X86::CodeGenerator::CodeGenerator() :
-   OMR::CodeGenerator(),
-   _nanoTimeTemp(NULL),
-   _assignmentDirection(Backward),
-   _lastCatchAppendInstruction(NULL),
-   _betterSpillPlacements(NULL),
-   _dataSnippetList(getTypedAllocator<TR::X86DataSnippet*>(TR::comp()->allocator())),
-   _spilledIntRegisters(getTypedAllocator<TR::Register*>(TR::comp()->allocator())),
-   _liveDiscardableRegisters(getTypedAllocator<TR::Register*>(TR::comp()->allocator())),
-   _dependentDiscardableRegisters(getTypedAllocator<TR::Register*>(TR::comp()->allocator())),
-   _clobberingInstructions(getTypedAllocator<TR::ClobberingInstruction*>(TR::comp()->allocator())),
-   _outlinedInstructionsList(getTypedAllocator<TR_OutlinedInstructions*>(TR::comp()->allocator())),
-   _numReservedIPICTrampolines(0),
-   _flags(0)
-   {
-   _clobIterator = _clobberingInstructions.begin();
-   }
 
 TR::Linkage *
 OMR::X86::CodeGenerator::createLinkage(TR_LinkageConventions lc)

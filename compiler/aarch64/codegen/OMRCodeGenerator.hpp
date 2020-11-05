@@ -156,8 +156,6 @@ protected:
 
 public:
 
-   CodeGenerator();
-
    void initialize();
 
    /**

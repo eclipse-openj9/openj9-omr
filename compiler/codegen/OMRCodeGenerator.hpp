@@ -1732,8 +1732,6 @@ public:
 
    protected:
 
-   CodeGenerator();
-
    enum // _flags1
       {
       MappingAutomatics                                  = 0x00000001,

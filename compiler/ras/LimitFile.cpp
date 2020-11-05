@@ -124,7 +124,7 @@ TR_Debug::addFilter(char * & filterString, int32_t scanningExclude, int32_t opti
       TR::SimpleRegex *regex = TR::SimpleRegex::create(filterCursor);
       if (!regex)
          {
-         TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", filterCursor);
+         TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", filterCursor);
          return 0;
          }
       nameLength = filterCursor - filterString;
@@ -372,7 +372,7 @@ TR_Debug::scanInlineFilters(FILE * inlineFile, int32_t & lineNumber, TR::Compila
          if (!filter)
             {
             inlineFileError = true;
-            TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Bad inline file entry --> '%s'", limitReadBuffer);
+            TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Bad inline file entry --> '%s'", limitReadBuffer);
             break;
             }
          }
@@ -446,7 +446,7 @@ TR_Debug::inlinefileOption(char *option, void *base, TR::OptionTable *entry, TR:
 
    if (!success)
       {
-      TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Unable to read inline file --> '%s'", inlineFileName);
+      TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Unable to read inline file --> '%s'", inlineFileName);
       return fail; // We want to fail if we can't read the file because it is too easy to miss that the file wasn't picked up
       }
    return endOpt;
@@ -688,14 +688,14 @@ TR_Debug::limitfileOption(char *option, void *base, TR::OptionTable *entry, TR::
          }
       if (limitFileError)
          {
-         TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Bad limit file entry --> '%s'", limitReadBuffer);
+         TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Bad limit file entry --> '%s'", limitReadBuffer);
          return fail;
          }
       fclose(limitFile);
       }
    else
       {
-      TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Unable to read limit file --> '%s'", limitFileName);
+      TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Unable to read limit file --> '%s'", limitFileName);
       return fail; //We want to fail if we can't read the file because it is too easy to miss that the file wasn't picked up
       }
    return endOpt;
@@ -732,8 +732,9 @@ TR_Debug::limitOption(char *option, void *base, TR::OptionTable *entry, TR::Opti
          optLevelRegex = TR::SimpleRegex::create(p);
          if (!optLevelRegex || *p != '(')
             {
-            if (!optLevelRegex)
-               TR_VerboseLog::writeLine(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", p);
+            if (!optLevelRegex) {
+               TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", p);
+            }
             return option;
             }
          }
@@ -882,6 +883,7 @@ TR_Debug::print(TR_FilterBST * filter)
    if (filter->_lineNumber)
       TR_VerboseLog::write("   [%d]", filter->_lineNumber);
    */
+   TR_VerboseLog::vlogAcquire();
 
    switch (filter->_filterType)
       {
@@ -949,6 +951,8 @@ TR_Debug::print(TR_FilterBST * filter)
          printFilters(filter->subGroup);
          TR_VerboseLog::write("   ]\n");
          }
+      
+      TR_VerboseLog::vlogRelease();
    }
 
 void
@@ -981,6 +985,7 @@ TR_Debug::printFilters(TR::CompilationFilters * filters)
 void
 TR_Debug::printFilters()
    {
+   TR_VerboseLog::vlogAcquire();
    TR_VerboseLog::writeLine("<compilationFilters>");
    printFilters(_compilationFilters);
    TR_VerboseLog::writeLine("</compilationFilters>");
@@ -992,6 +997,7 @@ TR_Debug::printFilters()
    TR_VerboseLog::writeLine("<inlineFilters>");
    printFilters(_inlineFilters);
    TR_VerboseLog::writeLine("</inlineFilters>");
+   TR_VerboseLog::vlogRelease();
    }
 
 void
@@ -1007,26 +1013,28 @@ TR_Debug::printFilterTree(TR_FilterBST *root)
 void
 TR_Debug::printSamplingPoints()
    {
+   TR_VerboseLog::vlogAcquire();
    for (TR_FilterBST *filter=_compilationFilters->samplingPoints; filter; filter = filter->getNext())
-   {
-      if (filter->getFilterType() == TR_FILTER_SAMPLE_INTERPRETED)
       {
+      if (filter->getFilterType() == TR_FILTER_SAMPLE_INTERPRETED)
+         {
          TR_VerboseLog::writeLine("(%d)\tInterpreted %s.%s%s\tcount=%d",
             filter->getTickCount(),
             filter->getClass(), filter->getName(), filter->getSignature(),
             filter->getSampleCount()
             );
-      }
+         }
       else
-      {
+         {
          TR_VerboseLog::writeLine("(%d)\tCompiled %s.%s%s\tlevel=%d%s",
             filter->getTickCount(),
             filter->getClass(), filter->getName(), filter->getSignature(),
             filter->getSampleLevel(),
             (filter->getSampleProfiled() ? ", profiled": "")
             );
+         }
       }
-   }
+   TR_VerboseLog::vlogRelease();
    }
 
 int32_t
@@ -1359,6 +1367,7 @@ TR_Debug::methodCanBeRelocated(TR_Memory *trMemory, TR_ResolvedMethod *method, T
 int32_t *
 TR_Debug::loadCustomStrategy(char *fileName)
    {
+   TR_VerboseLog::vlogAcquire();
    int32_t *customStrategy = NULL;
    FILE *optFile = fopen(fileName, "r");
    if (optFile)
@@ -1416,5 +1425,6 @@ TR_Debug::loadCustomStrategy(char *fileName)
       {
       TR_VerboseLog::writeLine(TR_Vlog_INFO, "optFile not found: '%s'", fileName);
       }
+   TR_VerboseLog::vlogRelease();
    return customStrategy;
    }

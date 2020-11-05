@@ -393,11 +393,13 @@ bool SimpleRegex::match(const char *s, bool isCaseSensitive, bool useLocale)
 
 void SimpleRegex::print(bool negate)
    {
+   TR_VerboseLog::vlogAcquire();
    TR_VerboseLog::write("{");
    if (negate ^ _negate)
       TR_VerboseLog::write("^");
    _regex->print();
    TR_VerboseLog::write("}");
+   TR_VerboseLog::vlogRelease();
    }
 
 
@@ -407,7 +409,9 @@ void SimpleRegex::Regex::print()
       simple->print();
    if (remainder)
       {
+      TR_VerboseLog::vlogAcquire();
       TR_VerboseLog::write("|");
+      TR_VerboseLog::vlogRelease();
       remainder->print();
       }
    }
@@ -415,6 +419,7 @@ void SimpleRegex::Regex::print()
 
 void SimpleRegex::Simple::print()
    {
+   TR_VerboseLog::vlogAcquire();
    int32_t i;
    switch (component->type)
       {
@@ -453,6 +458,7 @@ void SimpleRegex::Simple::print()
       }
    if (remainder)
       remainder->print();
+   TR_VerboseLog::vlogRelease();
    }
 
 

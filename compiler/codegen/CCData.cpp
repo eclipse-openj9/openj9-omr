@@ -72,7 +72,7 @@ CCData::~CCData()
 
 bool CCData::put(const uint8_t * const value, const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index)
    {
-   const OMR::CriticalSection cs(_lock);
+   const OMR::CriticalSection critsec(_lock);
 
    /**
     * Multiple compilation threads may be attempting to update the same value with
@@ -126,7 +126,7 @@ bool CCData::get(const index_t index, uint8_t * const value, const size_t sizeBy
 
 bool CCData::find(const key_t key, index_t * const index) const
    {
-   const OMR::CriticalSection cs(_lock);
+   const OMR::CriticalSection critsec(_lock);
    return find_unsafe(key, index);
    }
 

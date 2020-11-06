@@ -22,12 +22,6 @@
 #ifndef OMR_OPCODEMACROS_INCL
 #define OMR_OPCODEMACROS_INCL
 
-/*#ifdef FIRST_OPCODE_INIT
-#define FIRST_OPCODE_VAL BadILOp=0
-#else
-#define FIRST_OPCODE_VAL BadILOp
-#endif*/
-
 #define FOR_EACH_OPCODE(MACRO) \
    MACRO(\
       /* .opcode               = */ TR::aconst, \
@@ -11389,7 +11383,5 @@
       /* .ifCompareOpCode      = */ TR::BadILOp, \
       /* .description          = */ Prefetch, /* Prefetch */ \
    ) 
-
-//#undef FIRST_OPCODE_VAL
 
 #endif

@@ -57,6 +57,7 @@ jobs:
       - script: |
           mkdir build
         displayName: 'Create build directory'
+        
       - task: Cache@2
         inputs:
           key: 'ccache | "$(Agent.OS)" | azure-pipelines.cache'
@@ -153,3 +154,67 @@ jobs:
           testResultsFormat: 'JUnit'
           testResultsFiles: '**/*results.xml'
         displayName: 'Publish results'
+        
+  - job:
+    displayName: 'Linter'
+    pool:
+      vmImage: 'ubuntu-16.04'
+    variables:
+      CCACHE_DIR: $(Pipeline.Workspace)/ccache
+      CLANG: clang++-3.8
+      CXX: clang++-3.8
+      CXX_PATH: clang++-3.8
+      LLVM_CONFIG: llvm-config-3.8
+      SPEC: linux_x86-64
+      PLATFORM: amd64-linux64-gcc
+    steps:
+      - script: |
+          sudo apt-get install -y ccache clang-3.8 libclang-3.8-dev llvm-3.8 llvm-3.8-dev
+        displayName: 'Install prerequisites'
+ 
+      - script: |
+          PARALLELISM=$(grep -c '^processor' /proc/cpuinfo)
+          echo "Number of parallel jobs: $PARALLELISM"
+          echo "##vso[task.setvariable variable=NUMBER_OF_PROCESSORS]$PARALLELISM"
+          echo "##vso[task.prependpath]/usr/lib/ccache"
+        displayName: 'Initialize environment'
+       
+      - task: Cache@2
+        inputs:
+          key: 'ccache | "$(Agent.OS)" | azure-pipelines.cache'
+          path: $(CCACHE_DIR)
+        displayName: 'Save/Restore ccache'
+ 
+      - script: |
+          ccache -s -z
+        displayName: 'Print cache stats'
+ 
+      - script: |
+          make -f run_configure.mk OMRGLUE=./example/glue RUN_LINT=yes RUN_BUILD=no HAS_AUTOCONF=1 all
+        displayName: 'Configure'
+ 
+      - script: |
+          make -j$NUMBER_OF_PROCESSORS lint
+        displayName: 'Run linter for x86'
+        env:
+          TARGET_ARCH: x
+          TARGET_SUBARCH: amd64
+          TARGET_BITS: 64
+ 
+      - script: |
+          make -j$NUMBER_OF_PROCESSORS lint
+        displayName: 'Run linter for Power'
+        env:
+          TARGET_ARCH: p
+          TARGET_BITS: 64
+ 
+      - script: |
+          make -j$NUMBER_OF_PROCESSORS lint
+        displayName: 'Run linter for z/Architecture'
+        env:
+          TARGET_ARCH: z
+          TARGET_BITS: 64
+ 
+      - script: |
+          ccache -s -z
+        displayName: 'Print cache stats'

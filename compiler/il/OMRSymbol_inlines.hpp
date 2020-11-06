@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 IBM Corp. and others
+ * Copyright (c) 2017, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -601,10 +601,23 @@ OMR::Symbol::isConstMethodHandle()
    return self()->isStatic() && _flags2.testAny(ConstMethodHandle);
    }
 
+void
+OMR::Symbol::setNonSpecificConstObject()
+   {
+   TR_ASSERT(self()->isStatic(), "assert failure");
+   _flags2.set(NonSpecificConstObject);
+   }
+
+bool
+OMR::Symbol::isNonSpecificConstObject()
+   {
+   return self()->isStatic() && _flags2.testAny(NonSpecificConstObject);
+   }
+
 bool
 OMR::Symbol::isConstObjectRef()
    {
-   return self()->isStatic() && (_flags.testAny(ConstString) || _flags2.testAny(ConstMethodType|ConstMethodHandle|ConstantDynamic));
+   return self()->isStatic() && (_flags.testAny(ConstString) || _flags2.testAny(NonSpecificConstObject|ConstMethodType|ConstMethodHandle|ConstantDynamic));
    }
 
 bool

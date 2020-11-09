@@ -1345,15 +1345,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,           // TR::de2pdSetSign
    constrainChildren,           // TR::de2pdClean
    constrainBCDCHK,          // TR::BCDCHK
-   constrainIiload,             // TR::ircload
-   constrainIiload,             // TR::irsload
-   constrainIiload,             // TR::iruiload
-   constrainIiload,             // TR::iriload
-   constrainLload,              // TR::irulload
-   constrainLload,              // TR::irlload
-   constrainStore,              // TR::irsstore
-   constrainStore,              // TR::iristore
-   constrainStore,              // TR::irlstore
 #endif
 
    };

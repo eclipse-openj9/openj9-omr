@@ -52,7 +52,6 @@ Build Status
 
 | Build | Status |
 | ---------------------- | -------------------- |
-| Linux x86-64 Lint (Travis) | [![Travis Overall Status](https://api.travis-ci.org/eclipse/omr.svg?branch=master)](https://travis-ci.org/eclipse/omr) |
 | Windows x86-64 | [![Windows x86-64 Status](https://ci.eclipse.org/omr/job/Build-win_x86-64/badge/icon)](https://ci.eclipse.org/omr/job/Build-win_x86-64/) |
 | Linux x86 | [![Build Status](https://ci.eclipse.org/omr/job/Build-linux_x86/badge/icon)](https://ci.eclipse.org/omr/job/Build-linux_x86/) |
 | Linux x86-64 | [![Linux x86-64 Status](https://ci.eclipse.org/omr/job/Build-linux_x86-64/badge/icon)](https://ci.eclipse.org/omr/job/Build-linux_x86-64/) |

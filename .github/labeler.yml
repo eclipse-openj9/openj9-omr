@@ -40,9 +40,7 @@ build / configure:
 
 ci:
   - buildenv/jenkins/**/*
-  - scripts/build-on-travis.sh
   - ./.Windows.yml
-  - ./.travis.yml
   - ./azure-pipelines*
 
 cmake:

@@ -49,8 +49,8 @@ The `test/` directory contains some GTest-based test cases for Tril.
     ```
 
 3. Build tril using `cmake`. To ensure OMR gets built in a compatible
-   configuration, we currently reccomend you use the CMake cache that drives
-   our TravisCI builds.
+   configuration, we currently recommend you use the CMake cache that drives
+   our Azure builds.
 
     ```sh
     mkdir build

@@ -72,6 +72,7 @@ class OMR_EXTENSIBLE Snippet : public OMR::Snippet
       IsUnknown,
       IsCall,
          IsUnresolvedCall,
+         IsCallReadOnly,
       IsVirtual,
          IsVirtualUnresolved,
          IsResolveVirtualDispatchReadOnlyData,

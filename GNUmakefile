@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2019 IBM Corp. and others
+# Copyright (c) 2015, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,7 +31,7 @@ include $(top_srcdir)/omrmakefiles/configure.mk
 all : postbuild
 .DEFAULT : all
 clean :
-.PHONY : all clean
+.PHONY : all clean help
 
 help :
 	@echo "help   Display this help message."
@@ -39,7 +39,6 @@ help :
 	@echo "clean  Clean OMR build artifacts."
 	@echo "test   Run functional verification tests."
 	@echo "lint   Run the OMR linter."
-.PHONY : help
 
 # recursively find files in directory $1 matching the pattern $2
 FindAllFiles = \
@@ -186,9 +185,9 @@ endif
 
 ifeq (yes,$(ENABLE_DDR))
   postbuild_targets += ddr
-  ddr :: staticlib
+  ddr : staticlib
 ifeq (zos,$(OMR_HOST_OS))
-  ddr :: util/a2e
+  ddr : util/a2e
 endif
 endif
 
@@ -244,15 +243,13 @@ tools :
 ### Inter-target Dependencies
 ###
 
-# These rules must be specified before $(targets) ::
-
 # If a prereq directory is not also defined in $(targets),
 # then we won't execute 'make' in the prereq directory.
 
 ifeq (zos,$(OMR_HOST_OS))
-tools/hookgen :: util/a2e
-tools/tracegen :: util/a2e
-tools/tracemerge :: util/a2e
+tools/hookgen : util/a2e
+tools/tracegen : util/a2e
+tools/tracemerge : util/a2e
 endif
 
 hook_definition_sentinel_all : $(HOOK_DEFINITION_SENTINELS)
@@ -267,41 +264,42 @@ $(HOOK_DEFINITION_SENTINELS) : $(exe_output_dir)/hookgen$(EXEEXT)
 hook_definition_sentinel_clean :
 	rm -f $(HOOK_DEFINITION_SENTINELS)
 
-omrsigcompat :: util/omrutil
+omrsigcompat : util/omrutil
 
-example :: $(test_prereqs)
+example : $(test_prereqs)
 
-fvtest/algotest ::$(test_prereqs)
-fvtest/gctest :: $(test_prereqs)
-fvtest/jitbuildertest :: $(test_prereqs)
-fvtest/porttest :: $(test_prereqs)
-fvtest/rastest :: $(test_prereqs)
-fvtest/sigtest :: $(test_prereqs)
-fvtest/threadextendedtest :: $(test_prereqs)
-fvtest/threadtest :: $(test_prereqs)
-fvtest/utiltest :: $(test_prereqs)
-fvtest/vmtest :: $(test_prereqs)
+fvtest/algotest : $(test_prereqs)
+fvtest/gctest : $(test_prereqs)
+fvtest/jitbuildertest : $(test_prereqs)
+fvtest/porttest : $(test_prereqs)
+fvtest/rastest : $(test_prereqs)
+fvtest/sigtest : $(test_prereqs)
+fvtest/threadextendedtest : $(test_prereqs)
+fvtest/threadtest : $(test_prereqs)
+fvtest/utiltest : $(test_prereqs)
+fvtest/vmtest : $(test_prereqs)
 
-perftest/gctest :: $(test_prereqs)
+perftest/gctest : $(test_prereqs)
 
 # Test Compiler dependencies
 ifeq (1,$(OMR_TEST_COMPILER))
-  fvtest/compilertest :: $(compiler_prereqs)
+  fvtest/compilertest : $(compiler_prereqs)
 endif
 
 # JitBuilder dependencies
 ifeq (1,$(OMR_JITBUILDER))
-  fvtest/jitbuildertest :: $(compiler_prereqs)
-  jitbuilder :: $(compiler_prereqs)
-  jitbuilder/release/cpp :: $(compiler_prereqs)
+  fvtest/jitbuildertest : $(compiler_prereqs)
+  jitbuilder : $(compiler_prereqs)
+  jitbuilder/release/cpp : $(compiler_prereqs)
 endif
 
 ###
 ### Targets
 ###
 
-$(targets) ::
+$(targets) :
 	$(MAKE) -C $@ all
+
 .PHONY : $(targets)
 
 % :
@@ -309,7 +307,7 @@ $(targets) ::
 	@exit -1
 
 clean : $(targets_clean) hook_definition_sentinel_clean
-$(targets_clean) ::
+$(targets_clean) :
 	$(MAKE) -C $(patsubst %_clean,%,$@) clean
 .PHONY : $(targets_clean)
 

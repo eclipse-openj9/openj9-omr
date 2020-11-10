@@ -297,6 +297,13 @@ endif
 ### Targets
 ###
 
+# Because we haven't expressed dependencies of these targets clearly, we can't
+# allow make to build them in parallel (at least at this level). Otherwise,
+# things like util/a2e (a prerequisite of several targets) get built twice.
+# Often we get lucky and both branches leave things in a reasonable state for
+# dependents, but not always.
+.NOTPARALLEL :
+
 $(targets) :
 	$(MAKE) -C $@ all
 

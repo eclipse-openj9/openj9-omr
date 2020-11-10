@@ -677,8 +677,8 @@
 #define _dintEvaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define _fnintEvaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define _dnintEvaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define _fsqrtEvaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define _dsqrtEvaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define _fsqrtEvaluator TR::TreeEvaluator::fsqrtEvaluator
+#define _dsqrtEvaluator TR::TreeEvaluator::dsqrtEvaluator
 #define _getstackEvaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define _deallocaEvaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define _idozEvaluator TR::TreeEvaluator::unImpOpEvaluator 

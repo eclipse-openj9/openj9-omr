@@ -1964,7 +1964,17 @@ void TR_LoopCanonicalizer::eliminateRedundantInductionVariablesFromLoop(TR_Regio
       //else
       primaryIncr = (int64_t) primaryInductionVariable->getIncrement();
 
+      static bool disableIVEPostDominatorsCheck = (comp()->cg()->hasComplexAddressingMode()
+         || NULL != feGetEnv("TR_DisableIVEPostDominatorsCheck"));
+      TR_PostDominators *postDominators;
+      if (!disableIVEPostDominatorsCheck)
+         {
+         TR_PostDominators computedPostDominators(comp());
+         postDominators = &computedPostDominators;
+         }
+
       //ListIterator<TR_InductionVariable> derivedIt(&derivedInductionVariables);
+      // Iterate over all derived induction variables and check if they can be replaced
       TR_BasicInductionVariable *nextIndVar;
       for (nextIndVar = bivIterator.getFirst(); nextIndVar != NULL;)
          {
@@ -2011,13 +2021,11 @@ void TR_LoopCanonicalizer::eliminateRedundantInductionVariablesFromLoop(TR_Regio
             TR_ScratchList<TR::Block> derivedInductionVarIncrementBlocks(trMemory());
             TR_ScratchList<TR::Block> primaryInductionVarIncrementBlocks(trMemory());
             //comp()->incVisitCount();
-            bool incrementsInLockStep = incrementedInLockStep(naturalLoop, derivedInductionVar, symRefInCompare, nextIndVarIncr, primaryIncr, &derivedInductionVarIncrementBlocks, &primaryInductionVarIncrementBlocks);
-            if (incrementsInLockStep &&
+            bool performElimination = incrementedInLockStep(naturalLoop, derivedInductionVar, symRefInCompare, nextIndVarIncr, primaryIncr, &derivedInductionVarIncrementBlocks, &primaryInductionVarIncrementBlocks);
+            if (performElimination &&
                 (!derivedInductionVarIncrementBlocks.isEmpty() ||
                  !primaryInductionVarIncrementBlocks.isEmpty()))
                {
-               incrementsInLockStep = checkIfOrderOfBlocksIsKnown(naturalLoop, entryBlock, loopTestBlock, &derivedInductionVarIncrementBlocks, &primaryInductionVarIncrementBlocks, _primaryIncrementedFirst);
-               //if (_primaryIncrementedFirst == 1)
                //     {
                //   _primaryInductionIncrementBlock = entryBlock;
                //   _derivedInductionIncrementBlock = loopTestBlock;
@@ -2027,9 +2035,42 @@ void TR_LoopCanonicalizer::eliminateRedundantInductionVariablesFromLoop(TR_Regio
                //   _primaryInductionIncrementBlock = loopTestBlock;
                //   _derivedInductionIncrementBlock = entryBlock;
                //     }
+               if (!disableIVEPostDominatorsCheck)
+                  {
+                  if (trace())
+                     traceMsg(comp(), "Checking post dominator relationship between primary and derived induction variable increments");
+
+                  bool existsAtLeastOnePostDom = false;
+                  ListIterator<TR::Block> primaryIndVarIncrIt(&primaryInductionVarIncrementBlocks);
+                  ListIterator<TR::Block> derivedIndVarIncrIt(&derivedInductionVarIncrementBlocks);
+                  for (TR::Block *primaryIndVarIncr = primaryIndVarIncrIt.getFirst();
+                     performElimination && NULL != primaryIndVarIncr;
+                     primaryIndVarIncr = primaryIndVarIncrIt.getNext())
+                     {
+                     /* Check if all increments of derived induction variable are
+                      * post-dominated by an increment of the primary variable.
+                      * We go ahead with the elimination only if they are.
+                      */
+                     existsAtLeastOnePostDom = false;
+
+                     for (TR::Block *derivedIndVarIncr = derivedIndVarIncrIt.getFirst();
+                        !existsAtLeastOnePostDom &&  NULL != derivedIndVarIncr;
+                        derivedIndVarIncr = derivedIndVarIncrIt.getNext())
+                        {
+                        if (postDominators->dominates(primaryIndVarIncr, derivedIndVarIncr))
+                           existsAtLeastOnePostDom = true;
+                        }
+
+                     if (!existsAtLeastOnePostDom)
+                        performElimination = false;
+                     }
+                  }
+
+               if (performElimination)
+                  performElimination = checkIfOrderOfBlocksIsKnown(naturalLoop, entryBlock, loopTestBlock, &derivedInductionVarIncrementBlocks, &primaryInductionVarIncrementBlocks, _primaryIncrementedFirst);
                }
 
-            if (incrementsInLockStep)
+            if (performElimination)
                {
                _symRefBeingReplaced = derivedInductionVar;
                alteredCode = true;
@@ -2053,6 +2094,8 @@ void TR_LoopCanonicalizer::eliminateRedundantInductionVariablesFromLoop(TR_Regio
 
                _symRefBeingReplaced = NULL;
                }
+            else
+               performTransformation(comp(), "%sSkipping induction variable elimination for %d.\n", OPT_DETAILS, derivedInductionVar->getReferenceNumber());
             //else
               // derivedInductionVariables.remove(nextIndVar);
             }

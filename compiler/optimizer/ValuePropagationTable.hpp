@@ -893,8 +893,7 @@ const ValuePropagationPtr constraintHandlers[] =
    reverseBranchOpcode, \
    boolCompareOpcode, \
    ifCompareOpcode, \
-   enumValue, \
-   ...) enumValue ## VPHandler,
+   ...) opcode ## VPHandler,
 
    BadILOpVPHandler,
 

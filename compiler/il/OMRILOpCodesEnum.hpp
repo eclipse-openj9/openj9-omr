@@ -36,8 +36,7 @@
    reverseBranchOpcode, \
    boolCompareOpcode, \
    ifCompareOpcode, \
-   enumValue, \
-   ...) enumValue,
+   ...) opcode,
 
    FirstOMROp,
    BadILOp = 0,

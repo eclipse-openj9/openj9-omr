@@ -750,8 +750,7 @@
    reverseBranchOpcode, \
    boolCompareOpcode, \
    ifCompareOpcode, \
-   enumValue, \
-   ...) _ ## enumValue ## Evaluator,
+   ...) _ ## opcode ## Evaluator,
 
    _BadILOpEvaluator,
 

@@ -36,8 +36,7 @@
    reverseBranchOpcode, \
    boolCompareOpcode, \
    ifCompareOpcode, \
-   enumValue, \
-   ...) enumValue ## SimplifierHandler,
+   ...) opcode ## SimplifierHandler,
 
    BadILOpSimplifierHandler,
 

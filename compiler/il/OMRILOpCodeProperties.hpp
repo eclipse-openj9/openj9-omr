@@ -38,7 +38,7 @@
    ifCompareOpcode, ...) \
    \
    { \
-   opcode, \
+   TR::opcode, \
    name, \
    prop1, \
    prop2, \

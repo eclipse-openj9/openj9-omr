@@ -22,9 +22,7 @@
 #ifndef OMR_SIMPLIFIERTABLE_ENUM_INCL
 #define OMR_SIMPLIFIERTABLE_ENUM_INCL
 
-#include "il/OMROpcodes.hpp"
-
-#define GET_SIMPLIFIER_HANDLER(\
+#define OPCODE_MACRO(\
    opcode, \
    name, \
    prop1, \
@@ -42,8 +40,8 @@
    ...) enumValue ## SimplifierHandler,
 
    BadILOpSimplifierHandler,
-   FOR_EACH_OPCODE(GET_SIMPLIFIER_HANDLER)
 
-#undef GET_SIMPLIFIER_HANDLER
+#include "il/Opcodes.enum"
+#undef OPCODE_MACRO
 
 #endif

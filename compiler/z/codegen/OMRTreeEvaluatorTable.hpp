@@ -738,11 +738,7 @@
 #define _lbitpermuteEvaluator TR::TreeEvaluator::bitpermuteEvaluator
 #define _PrefetchEvaluator TR::TreeEvaluator::PrefetchEvaluator
 
-
-
-#include "il/OMROpcodes.hpp"
-
-#define GENERATE_TREE_EVAL_TABLE(\
+#define OPCODE_MACRO(\
    opcode, \
    name, \
    prop1, \
@@ -760,7 +756,7 @@
    ...) _ ## enumValue ## Evaluator,
 
    _BadILOpEvaluator,
-   FOR_EACH_OPCODE(GENERATE_TREE_EVAL_TABLE)
 
-#undef GENERATE_TREE_EVAL_TABLE
+#include "il/Opcodes.enum"
+#undef OPCODE_MACRO
 

@@ -22,9 +22,7 @@
 #ifndef OMR_OPCODEPROPERTIES_INCL
 #define OMR_OPCODEPROPERTIES_INCL
 
-#include "il/OMROpcodes.hpp"
-
-#define PROPS(\
+#define OPCODE_MACRO(\
    opcode, \
    name, \
    prop1, \
@@ -55,24 +53,23 @@
    ifCompareOpcode, \
    },
 
-    {
-      /* .opcode               = */ TR::BadILOp,
-      /* .name                 = */ "BadILOp",
-      /* .properties1          = */ 0,
-      /* .properties2          = */ 0,
-      /* .properties3          = */ 0,
-      /* .properties4          = */ 0,
-      /* .dataType             = */ TR::NoType,
-      /* .typeProperties       = */ 0,
-      /* .childProperties      = */ ILChildProp::NoChildren,
-      /* .swapChildrenOpCode   = */ TR::BadILOp,
-      /* .reverseBranchOpCode  = */ TR::BadILOp,
-      /* .booleanCompareOpCode = */ TR::BadILOp,
-      /* .ifCompareOpCode      = */ TR::BadILOp,
-    },
+   {
+     /* .opcode               = */ TR::BadILOp,
+     /* .name                 = */ "BadILOp",
+     /* .properties1          = */ 0,
+     /* .properties2          = */ 0,
+     /* .properties3          = */ 0,
+     /* .properties4          = */ 0,
+     /* .dataType             = */ TR::NoType,
+     /* .typeProperties       = */ 0,
+     /* .childProperties      = */ ILChildProp::NoChildren,
+     /* .swapChildrenOpCode   = */ TR::BadILOp,
+     /* .reverseBranchOpCode  = */ TR::BadILOp,
+     /* .booleanCompareOpCode = */ TR::BadILOp,
+     /* .ifCompareOpCode      = */ TR::BadILOp,
+   },
 
-   FOR_EACH_OPCODE(PROPS)
-
-#undef PROPS
+#include "il/Opcodes.enum"
+#undef OPCODE_MACRO
 
 #endif

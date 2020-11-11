@@ -22,8 +22,6 @@
 #ifndef VALUEPROPAGATIONTABLE_INCL
 #define VALUEPROPAGATIONTABLE_INCL
 
-#include "il/OMROpcodes.hpp"
-
 TR::Node *constrainAcall(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainAConst(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainAdd(OMR::ValuePropagation *vp, TR::Node *node);
@@ -881,7 +879,7 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 
 const ValuePropagationPtr constraintHandlers[] =
    {
-#define GET_VP_HANDLER(\
+#define OPCODE_MACRO(\
    opcode, \
    name, \
    prop1, \
@@ -899,9 +897,9 @@ const ValuePropagationPtr constraintHandlers[] =
    ...) enumValue ## VPHandler,
 
    BadILOpVPHandler,
-   FOR_EACH_OPCODE(GET_VP_HANDLER)
 
-#undef GET_VP_HANDLER
+#include "il/Opcodes.enum"
+#undef OPCODE_MACRO
 
 #ifdef J9_PROJECT_SPECIFIC
    constrainChildren,           // TR::dfconst

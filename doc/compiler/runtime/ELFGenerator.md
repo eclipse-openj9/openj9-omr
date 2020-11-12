@@ -185,4 +185,4 @@ No version information found in this file.
 
 * `man elf` - the ELF entry in the Linux Programmer's Manual
 * [Wikipedia article on ELF](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
-* [ELF Hello World Tutorial](http://www.cirosantilli.com/elf-hello-world/) by Ciro Santilli
+* [ELF Hello World Tutorial](https://cirosantilli.com/elf-hello-world) by Ciro Santilli

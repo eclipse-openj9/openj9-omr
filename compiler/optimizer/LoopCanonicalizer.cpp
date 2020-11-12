@@ -1966,12 +1966,9 @@ void TR_LoopCanonicalizer::eliminateRedundantInductionVariablesFromLoop(TR_Regio
 
       static bool disableIVEPostDominatorsCheck = (comp()->cg()->hasComplexAddressingMode()
          || NULL != feGetEnv("TR_DisableIVEPostDominatorsCheck"));
-      TR_PostDominators *postDominators;
+      TR_PostDominators *postDominators = NULL;
       if (!disableIVEPostDominatorsCheck)
-         {
-         TR_PostDominators computedPostDominators(comp());
-         postDominators = &computedPostDominators;
-         }
+         postDominators = new (comp()->trHeapMemory()) TR_PostDominators(comp());
 
       //ListIterator<TR_InductionVariable> derivedIt(&derivedInductionVariables);
       // Iterate over all derived induction variables and check if they can be replaced

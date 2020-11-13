@@ -193,6 +193,22 @@ class CCData
        */
       bool find_unsafe(const key_t key, index_t * const index = NULL) const;
 
+      /**
+       * @brief Converts a size in units of bytes to a size in units of data_t.
+       *
+       * @param[In] sizeBytes A size in bytes.
+       * @return A size in units of data_t.
+       */
+      static size_t dataSizeFromBytesSize(size_t sizeBytes);
+
+      /**
+       * @brief Converts an alignment in units of bytes to an alignment in units of data_t.
+       *
+       * @param[In] alignmentBytes An alignment in bytes.
+       * @return An alignment in units of data_t.
+       */
+      static size_t dataAlignmentFromBytesAlignment(size_t alignmentBytes);
+
    private:
       data_t           *_data;
       size_t            _capacity;

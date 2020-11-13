@@ -29,6 +29,18 @@
 
 using TR::CCData;
 
+inline
+size_t CCData::dataSizeFromBytesSize(size_t sizeBytes)
+   {
+   return (sizeBytes + sizeof(data_t) - 1) / sizeof(data_t);
+   }
+
+inline
+size_t CCData::dataAlignmentFromBytesAlignment(size_t alignmentBytes)
+   {
+   return (alignmentBytes + OMR_ALIGNOF(data_t) - 1) / OMR_ALIGNOF(data_t);
+   }
+
 CCData::key_t CCData::key(const uint8_t * const data, const size_t sizeBytes)
    {
    return key_t(reinterpret_cast<const key_t::value_type *>(data), sizeBytes);
@@ -39,14 +51,8 @@ CCData::key_t CCData::key(const char * const str)
    return key_t(reinterpret_cast<const key_t::value_type *>(str));
    }
 
-// Converts a size in units of bytes to a size in units of sizeof(data_t).
-#define DATA_SIZE_FROM_BYTES_SIZE(x) (((x) + (sizeof(data_t)) - 1) / (sizeof(data_t)))
-
-// Converts an alignment in units of bytes to an alignment in units of alignof(data_t).
-#define DATA_ALIGNMENT_FROM_BYTES_ALIGNMENT(x) (((x) + (OMR_ALIGNOF(data_t)) - 1) / (OMR_ALIGNOF(data_t)))
-
 CCData::CCData(const size_t sizeBytes)
-: _data(new data_t[DATA_SIZE_FROM_BYTES_SIZE(sizeBytes)]), _capacity(DATA_SIZE_FROM_BYTES_SIZE(sizeBytes)), _putIndex(0), _lock(TR::Monitor::create("CCDataMutex")), _releaseData(true)
+: _data(new data_t[dataSizeFromBytesSize(sizeBytes)]), _capacity(dataSizeFromBytesSize(sizeBytes)), _putIndex(0), _lock(TR::Monitor::create("CCDataMutex")), _releaseData(true)
    {
    }
 
@@ -58,7 +64,7 @@ CCData::CCData(uint8_t * const storage, const size_t sizeBytes)
    bool success = OMR::align(OMR_ALIGNOF(data_t), sizeof(data_t), alignedStorage, sizeBytesAfterAlignment) != NULL;
    TR_ASSERT_FATAL(success, "Can't align CCData storage to required boundary");
    _data = reinterpret_cast<data_t *>(alignedStorage);
-   _capacity = DATA_SIZE_FROM_BYTES_SIZE(sizeBytesAfterAlignment);
+   _capacity = dataSizeFromBytesSize(sizeBytesAfterAlignment);
    }
 
 CCData::~CCData()
@@ -85,8 +91,8 @@ bool CCData::put(const uint8_t * const value, const size_t sizeBytes, const size
       }
 
    // The following feels like it could be simplified and calculated more efficiently. If you're reading this, have a go at it.
-   const size_t sizeDataUnits = DATA_SIZE_FROM_BYTES_SIZE(sizeBytes);
-   const size_t alignmentDataUnits = DATA_ALIGNMENT_FROM_BYTES_ALIGNMENT(alignmentBytes);
+   const size_t sizeDataUnits = dataSizeFromBytesSize(sizeBytes);
+   const size_t alignmentDataUnits = dataAlignmentFromBytesAlignment(alignmentBytes);
    const size_t alignmentMask = alignmentDataUnits - 1;
    const size_t alignmentPadding = (alignmentDataUnits - ((reinterpret_cast<uintptr_t>(_data + _putIndex) / OMR_ALIGNOF(data_t)) & alignmentMask)) & alignmentMask;
    const size_t remainingCapacity = _capacity - _putIndex;

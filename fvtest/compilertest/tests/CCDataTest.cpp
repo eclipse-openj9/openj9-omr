@@ -102,7 +102,7 @@ class GeneratedMethodInfo : public MethodInfo
 class TableTest : public OptTestDriver
    {
    public:
-      TableTest() : _caseValues(nullptr), _numCaseValues(0) {}
+      TableTest() : _caseValues(NULL), _numCaseValues(0) {}
       void setCaseValues(const int32_t * const caseValues, const size_t numCaseValues)
          {
          _caseValues = caseValues;
@@ -110,7 +110,7 @@ class TableTest : public OptTestDriver
          }
       virtual void invokeTests() override
          {
-         EXPECT_NE(_caseValues, nullptr);
+         EXPECT_TRUE(_caseValues != NULL);
          EXPECT_GT(_numCaseValues, 0);
          auto compiledMethod = getCompiledMethod<GeneratedMethodInfo::compiled_method_t>();
          for (auto i = 0; i < _numCaseValues; ++i)
@@ -219,9 +219,9 @@ TYPED_TEST(CCDataTest, test_basics_templated)
    const TypeParam * const dataPtr = table.get<TypeParam>(index);
 
    // Make sure the data was written.
-   EXPECT_NE(dataPtr, nullptr);
+   EXPECT_TRUE(dataPtr != NULL);
    // Make sure it was written to an aligned address.
-   EXPECT_EQ(reinterpret_cast<size_t>(dataPtr) & (alignof(data) - 1), 0);
+   EXPECT_EQ(reinterpret_cast<size_t>(dataPtr) & (OMR_ALIGNOF(data) - 1), 0);
    // Make sure it was written correctly.
    EXPECT_EQ(*dataPtr, data);
    // We should be able to find something with this key now.
@@ -244,7 +244,7 @@ TYPED_TEST(CCDataTest, test_basics_templated)
    EXPECT_EQ(index, find_index);
 
    // Make sure we can fill the table.
-   while (table.put(data, nullptr, index));
+   while (table.put(data, NULL, index));
    }
 
 TYPED_TEST(CCDataTest, test_arbitrary_data_templated)
@@ -261,16 +261,16 @@ TYPED_TEST(CCDataTest, test_arbitrary_data_templated)
    CCData::index_t index = INVALID_INDEX;
 
    // Put the data in the table, associate it with the key, retrieve the index.
-   EXPECT_TRUE(table.put(reinterpret_cast<const uint8_t *>(&data[0]), sizeof(data), alignof(data), &key, index));
+   EXPECT_TRUE(table.put(reinterpret_cast<const uint8_t *>(&data[0]), sizeof(data), OMR_ALIGNOF(data), &key, index));
    // Make sure the index was written.
    EXPECT_NE(index, INVALID_INDEX);
 
    const TypeParam * const dataPtr = table.get<TypeParam>(index);
 
    // Make sure the data was written.
-   EXPECT_NE(dataPtr, nullptr);
+   EXPECT_TRUE(dataPtr != NULL);
    // Make sure it was written to an aligned address.
-   EXPECT_EQ(reinterpret_cast<size_t>(dataPtr) & (alignof(data) - 1), 0);
+   EXPECT_EQ(reinterpret_cast<size_t>(dataPtr) & (OMR_ALIGNOF(data) - 1), 0);
    // Make sure it was written correctly.
    EXPECT_TRUE(std::equal(data, data + sizeof(data)/sizeof(data[0]), dataPtr));
    // We should be able to find something with this key now.
@@ -294,7 +294,7 @@ TYPED_TEST(CCDataTest, test_arbitrary_data_templated)
    EXPECT_EQ(index, find_index);
 
    // Make sure we can fill the table.
-   while (table.put(reinterpret_cast<const uint8_t *>(&data[0]), sizeof(data), alignof(data), nullptr, index));
+   while (table.put(reinterpret_cast<const uint8_t *>(&data[0]), sizeof(data), OMR_ALIGNOF(data), NULL, index));
    }
 
 TYPED_TEST(CCDataTest, test_no_data_reservation_templated)
@@ -311,18 +311,18 @@ TYPED_TEST(CCDataTest, test_no_data_reservation_templated)
    CCData::index_t index2 = INVALID_INDEX;
 
    // Reserve space in the table, associate it with the key, retrieve the index.
-   EXPECT_TRUE(table.put(nullptr, reservationSize, reservationAlignment, &key, index));
+   EXPECT_TRUE(table.put(NULL, reservationSize, reservationAlignment, &key, index));
    // Make sure the index was written.
    EXPECT_NE(index, INVALID_INDEX);
    // Try to update the value via the key.
-   EXPECT_DEATH(table.put(nullptr, reservationSize, reservationAlignment, &key, index2), "");
-   // Make sure the index wasn't written.
-   EXPECT_EQ(index2, INVALID_INDEX);
+   EXPECT_TRUE(table.put(NULL, reservationSize, reservationAlignment, &key, index2));
+   // Make sure the index was written.
+   EXPECT_EQ(index2, index);
 
    const TypeParam * const dataPtr = table.get<TypeParam>(index);
 
    // Make sure the reservation was done.
-   EXPECT_NE(dataPtr, nullptr);
+   EXPECT_TRUE(dataPtr != NULL);
    // Make sure we got an aligned address.
    EXPECT_EQ(reinterpret_cast<size_t>(dataPtr) & (reservationAlignment - 1), 0);
    // We should be able to find something with this key now.
@@ -336,7 +336,7 @@ TYPED_TEST(CCDataTest, test_no_data_reservation_templated)
    EXPECT_EQ(index, find_index);
 
    // Make sure we can fill the table.
-   while (table.put(nullptr, reservationSize, reservationAlignment, nullptr, index));
+   while (table.put(NULL, reservationSize, reservationAlignment, NULL, index));
    }
 
 #define STRINGIFY(x) #x
@@ -377,7 +377,7 @@ TYPED_TEST(CCDataTest, test_error_conditions_templated)
       CCData::index_t   index = INVALID_INDEX;
 
       // Shouldn't be able to put.
-      EXPECT_FALSE(zeroTable.put(data, nullptr, index));
+      EXPECT_FALSE(zeroTable.put(data, NULL, index));
       // Make sure the index didn't change.
       EXPECT_EQ(index, INVALID_INDEX);
       }
@@ -391,7 +391,7 @@ TYPED_TEST(CCDataTest, test_error_conditions_templated)
 
       int count = 0;
 
-      while (smallTable.put(data, nullptr, curIndex))
+      while (smallTable.put(data, NULL, curIndex))
          {
          // Make sure the index changed.
          EXPECT_NE(curIndex, lastIndex);
@@ -421,14 +421,14 @@ TYPED_TEST(CCDataTest, test_updating_templated)
    // Make sure the index was written.
    EXPECT_NE(index1, INVALID_INDEX);
    // Update the value via the key.
-   EXPECT_DEATH(table.put(data2, &key, index2), "");
-    // Make sure the index wasn't written.
-   EXPECT_EQ(index2, INVALID_INDEX);
+   EXPECT_TRUE(table.put(data2, &key, index2));
+   // Make sure the index was written.
+   EXPECT_EQ(index2, index1);
 
    TypeParam * const dataPtr = table.get<TypeParam>(index1);
 
    // Make sure the data was written.
-   EXPECT_NE(dataPtr, nullptr);
+   EXPECT_TRUE(dataPtr != NULL);
    // Make sure it wasn't updated.
    EXPECT_EQ(*dataPtr, data1);
    // Change the value via a pointer.
@@ -543,21 +543,21 @@ TEST(AllTypesCCDataTest, test_basics)
    const double * const ptr_doubleA = table.get<const double>(doubleAIndex);
    const double * const ptr_doubleB = table.get<const double>(doubleBIndex);
 
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_classAptr) & (alignof(*ptr_classAptr) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_classBptr) & (alignof(*ptr_classBptr) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_funcAptr) & (alignof(*ptr_funcAptr) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_funcBptr) & (alignof(*ptr_funcBptr) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_intA) & (alignof(*ptr_intA) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_intB) & (alignof(*ptr_intB) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_shortA) & (alignof(*ptr_shortA) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_shortB) & (alignof(*ptr_shortB) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_floatA) & (alignof(*ptr_floatA) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_floatB) & (alignof(*ptr_floatB) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_doubleA) & (alignof(*ptr_doubleA) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_doubleB) & (alignof(*ptr_doubleB) - 1), 0);
+   EXPECT_EQ(reinterpret_cast<size_t>(ptr_classAptr) & (OMR_ALIGNOF(*ptr_classAptr) - 1), 0);
+   EXPECT_EQ(reinterpret_cast<size_t>(ptr_classBptr) & (OMR_ALIGNOF(*ptr_classBptr) - 1), 0);
+   EXPECT_EQ(reinterpret_cast<size_t>(ptr_funcAptr) & (OMR_ALIGNOF(*ptr_funcAptr) - 1), 0);
+   EXPECT_EQ(reinterpret_cast<size_t>(ptr_funcBptr) & (OMR_ALIGNOF(*ptr_funcBptr) - 1), 0);
+   EXPECT_EQ(reinterpret_cast<size_t>(ptr_intA) & (OMR_ALIGNOF(*ptr_intA) - 1), 0);
+   EXPECT_EQ(reinterpret_cast<size_t>(ptr_intB) & (OMR_ALIGNOF(*ptr_intB) - 1), 0);
+   EXPECT_EQ(reinterpret_cast<size_t>(ptr_shortA) & (OMR_ALIGNOF(*ptr_shortA) - 1), 0);
+   EXPECT_EQ(reinterpret_cast<size_t>(ptr_shortB) & (OMR_ALIGNOF(*ptr_shortB) - 1), 0);
+   EXPECT_EQ(reinterpret_cast<size_t>(ptr_floatA) & (OMR_ALIGNOF(*ptr_floatA) - 1), 0);
+   EXPECT_EQ(reinterpret_cast<size_t>(ptr_floatB) & (OMR_ALIGNOF(*ptr_floatB) - 1), 0);
+   EXPECT_EQ(reinterpret_cast<size_t>(ptr_doubleA) & (OMR_ALIGNOF(*ptr_doubleA) - 1), 0);
+   EXPECT_EQ(reinterpret_cast<size_t>(ptr_doubleB) & (OMR_ALIGNOF(*ptr_doubleB) - 1), 0);
 
-   void     *out_classAptr = nullptr, *out_classBptr = nullptr;
-   void     *out_funcAptr = nullptr, *out_funcBptr = nullptr;
+   void     *out_classAptr = NULL, *out_classBptr = NULL;
+   void     *out_funcAptr = NULL, *out_funcBptr = NULL;
    int      out_intA = ~intA, out_intB = ~intB;
    short    out_shortA = ~shortA, out_shortB = ~shortB;
    float    out_floatA = -floatA, out_floatB = -floatB;

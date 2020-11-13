@@ -22,11 +22,11 @@
 #ifndef OMR_CCDATA_INCL
 #define OMR_CCDATA_INCL
 
-#include <memory>
 #include <map>
 #include <string>
 #include <cstddef>
-#include <mutex>
+
+namespace TR { class Monitor; }
 
 namespace OMR
 {
@@ -43,11 +43,6 @@ class CCData
    private:
       /** \typedef data_t Implementation detail. This type represents the units of the table. Typically bytes, but can be some other data type, as long as it can be default-constructed. */
       typedef uint8_t data_t;
-
-      /** \typedef section_t Implementation detail. This type represents the table itself. It must behave like a pointer to an array of type data_t. */
-      typedef std::unique_ptr<data_t[]> section_t;
-
-      typedef std::mutex mutex_t;
 
    public:
       /** \typedef index_t This type represents the indices defined in the public interface of this class. They must behave like integral types. */
@@ -141,8 +136,9 @@ class CCData
        * @param[In] value Optional. A pointer to the value to put. If null, no data will be copied but the space will be allocated none the less.
        * @param[In] sizeBytes The size of the value pointed to.
        * @param[In] alignmentBytes The alignment (in bytes) to align the value to.
-       * @param[In] key Optional. The key to map the resulting index to. Without a key the index is the only reference to the data. If the key is already mapped to an index a TR_ASSERT_FATAL will be triggered.
+       * @param[In] key Optional. The key to map the resulting index to. Without a key the index is the only reference to the data. If the key is already mapped to an index the operation will return the index and true, but no data will be written.
        * @param[Out] index The index that refers to the value.
+       * @return True if the value was placed in the table, or the key was already mapped to an index, false otherwise.
        */
       bool put(const uint8_t * const value, const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index);
 
@@ -172,7 +168,7 @@ class CCData
 
        * @param[In] T The type of the value to get from the table. The type need not be TriviallyCopyable, since this function doesn't do any copying, but it probably should be for symmetry with the put() functions.
        * @param[In] index The index that refers to the value.
-       * @return A pointer to the value if the index refers to an existing value, nullptr otherwise.
+       * @return A pointer to the value if the index refers to an existing value, NULL otherwise.
        */
       template <typename T>
       T* get(const index_t index) const;
@@ -184,14 +180,9 @@ class CCData
        * @param[out] index Optional. A pointer to write the index to. This parameter is ignored unless this function returns true.
        * @return True if the given key maps to an index, false otherwise.
        */
-      bool find(const key_t key, index_t * const index = nullptr) const;
+      bool find(const key_t key, index_t * const index = NULL) const;
 
    private:
-      // Helper stuff used by the general (storage, sizeBytes) ctor.
-      typedef std::pair<data_t * const, const size_t> storage_and_size_pair_t;
-      CCData(const storage_and_size_pair_t storageAndSize);
-      static const storage_and_size_pair_t alignStorage(uint8_t * const storage, size_t sizeBytes);
-
       /**
        * @brief Checks if the given key maps to an index in this table and returns the index.
        *        This function is NOT synchronized (hence unsafe).
@@ -200,14 +191,14 @@ class CCData
        * @param[out] index Optional. A pointer to write the index to. This parameter is ignored unless this function returns true.
        * @return True if the given key maps to an index, false otherwise.
        */
-      bool find_unsafe(const key_t key, index_t * const index = nullptr) const;
+      bool find_unsafe(const key_t key, index_t * const index = NULL) const;
 
    private:
-      section_t         _data;         // Could be const were it not for the release() call in the dtor.
-      const size_t      _capacity;
+      data_t           *_data;
+      size_t            _capacity;
       size_t            _putIndex;
       map_t             _mappings;
-      mutable mutex_t   _lock;
+      TR::Monitor      *_lock;
       const bool        _releaseData;
    };
 

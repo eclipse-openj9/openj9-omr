@@ -108,6 +108,28 @@ align(size_t size, size_t alignment)
 	return alignNoCheck(size, alignment);
 }
 
+/// Returns an aligned pointer.
+///
+/// This function has the same semantics as C++11's std::align() and
+/// exists to support old compilers that don't provide it.
+inline void*
+align(size_t alignment, size_t size, void* &ptr, size_t &space)
+{
+	if (size > space) {
+		return NULL;
+	}
+	uintptr_t p = reinterpret_cast<uintptr_t>(ptr);
+	uintptr_t alignedP = (p + (alignment - 1)) & ~(alignment - 1);
+	uintptr_t adjustment = alignedP - p;
+	if (adjustment > (space - size)) {
+		return NULL;
+	}
+	space -= adjustment;
+	void *alignedPtr = reinterpret_cast<void*>(alignedP);
+	ptr = alignedPtr;
+	return alignedPtr;
+}
+
 } // namespace OMR
 
 #endif // OMR_BYTES_HPP_

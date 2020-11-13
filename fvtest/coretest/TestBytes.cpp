@@ -19,6 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#include <omrcomp.h>
 #include <OMR/Bytes.hpp>
 #include <gtest/gtest.h>
 
@@ -182,6 +183,51 @@ TEST(TestBytes, AlignMaximumSizeFor16byteAlignment)
 	// hand crafted maximums for a 16 byte alignment
 	EXPECT_EQ(std::numeric_limits<size_t>::max() - 15, align(std::numeric_limits<size_t>::max() - 17, 16));
 	EXPECT_EQ(std::numeric_limits<size_t>::max(), align(std::numeric_limits<size_t>::max(), 1));
+}
+
+TEST(TestBytes, AlignPointers)
+{
+	const size_t size = sizeof(void*);
+	const size_t alignment = OMR_ALIGNOF(void*);
+	const size_t totalSpace = size * 3 - 1;
+	char buffer[totalSpace] = {0};
+	void * const lastValidAddress = &buffer[totalSpace - size];
+
+	for (size_t i = 0; i < totalSpace; i++) {
+		size_t space = totalSpace - i;
+		void *ptr = &buffer[i];
+		const size_t initialSpace = space;
+		void * const initialPtr = ptr;
+		uintptr_t ptrValue = reinterpret_cast<uintptr_t>(ptr);
+
+		const void *alignedPtr = OMR::align(alignment, size, ptr, space);
+		const uintptr_t alignedPtrValue = reinterpret_cast<uintptr_t>(alignedPtr);
+
+		// Whatever was returned must be aligned.
+		EXPECT_EQ(alignedPtrValue & (alignment - 1), 0);
+
+		if (alignedPtr != NULL) {
+			// The passed-in ptr reference must be updated to match the returned pointer.
+			EXPECT_EQ(ptr, alignedPtr);
+			// The returned pointer must be aligned in the expected manner.
+			const void *expectedPtr = reinterpret_cast<void *>((ptrValue + (alignment - 1)) & ~(alignment - 1));
+			EXPECT_EQ(alignedPtr, expectedPtr);
+			// The passed-in space reference must be updated to subtract the bytes lost to obtain the desired alignment.
+			const size_t expectedAdjustment = (alignment - (ptrValue & (alignment - 1))) % alignment;
+			EXPECT_EQ(space, initialSpace - expectedAdjustment);
+			// The data must not overflow the buffer.
+			EXPECT_LE(alignedPtr, lastValidAddress);
+		}
+		else {
+			// The passed-in ptr reference must not have been updated.
+			EXPECT_EQ(ptr, initialPtr);
+			// The passed-in space reference must not have been updated.
+			EXPECT_EQ(space, initialSpace);
+			// The returned pointer must be NULL because we don't have any space left to make the adjustment.
+			const size_t alignmentAdjustment = (alignment - (ptrValue & (alignment - 1))) % alignment;
+			EXPECT_LT(initialSpace, size + alignmentAdjustment);
+		}
+	}
 }
 
 }  // namespace OMR

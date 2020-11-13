@@ -163,7 +163,7 @@ TEST_F(TableTest, test_table)
 #include "codegen/CCData.hpp"
 #include "codegen/CCData_inlines.hpp"
 
-using OMR::CCData;
+using TR::CCData;
 
 const CCData::index_t INVALID_INDEX = std::numeric_limits<CCData::index_t>::max();
 

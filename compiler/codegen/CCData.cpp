@@ -27,7 +27,7 @@
 #include "infra/Monitor.hpp"
 #include "infra/CriticalSection.hpp"
 
-using OMR::CCData;
+using TR::CCData;
 
 CCData::key_t CCData::key(const uint8_t * const data, const size_t sizeBytes)
    {

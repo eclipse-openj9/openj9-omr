@@ -24,7 +24,7 @@
 
 #include <type_traits>
 
-namespace OMR
+namespace TR
 {
 
 template <typename T>

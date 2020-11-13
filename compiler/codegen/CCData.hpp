@@ -28,7 +28,7 @@
 
 namespace TR { class Monitor; }
 
-namespace OMR
+namespace TR
 {
 
 /**

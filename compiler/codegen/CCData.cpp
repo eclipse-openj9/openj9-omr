@@ -19,6 +19,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#include <type_traits>
+
 #include "omrcomp.h"
 #include "OMR/Bytes.hpp"
 
@@ -41,8 +43,11 @@ size_t CCData::dataAlignmentFromBytesAlignment(size_t alignmentBytes)
    return (alignmentBytes + OMR_ALIGNOF(data_t) - 1) / OMR_ALIGNOF(data_t);
    }
 
-CCData::key_t CCData::key(const uint8_t * const data, const size_t sizeBytes)
+CCData::key_t CCData::key(const void * const data, const size_t sizeBytes)
    {
+#if __cpp_static_assert
+   static_assert(std::is_same<key_t::value_type, char>::value, "Keys need to be constructible from a sequence of chars.");
+#endif
    return key_t(reinterpret_cast<const key_t::value_type *>(data), sizeBytes);
    }
 
@@ -51,7 +56,7 @@ CCData::key_t CCData::key(const char * const str)
    return key_t(reinterpret_cast<const key_t::value_type *>(str));
    }
 
-CCData::CCData(uint8_t * const storage, const size_t sizeBytes)
+CCData::CCData(void * const storage, const size_t sizeBytes)
 : _putIndex(0), _lock(TR::Monitor::create("CCDataMutex"))
    {
    if (sizeBytes > 0)
@@ -70,7 +75,7 @@ CCData::CCData(uint8_t * const storage, const size_t sizeBytes)
       }
    }
 
-bool CCData::put(const uint8_t * const value, const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index)
+bool CCData::put(const void * const value, const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index)
    {
    const OMR::CriticalSection critsec(_lock);
 
@@ -102,9 +107,9 @@ bool CCData::put(const uint8_t * const value, const size_t sizeBytes, const size
 
    if (value != NULL)
       {
-      std::copy(value,
-                value + sizeBytes,
-                reinterpret_cast<uint8_t *>(_data + _putIndex));
+      std::copy(reinterpret_cast<const char *>(value),
+                reinterpret_cast<const char *>(value) + sizeBytes,
+                reinterpret_cast<char *>(_data + _putIndex));
       }
 
    _putIndex += sizeDataUnits;
@@ -112,14 +117,14 @@ bool CCData::put(const uint8_t * const value, const size_t sizeBytes, const size
    return true;
    }
 
-bool CCData::get(const index_t index, uint8_t * const value, const size_t sizeBytes) const
+bool CCData::get(const index_t index, void * const value, const size_t sizeBytes) const
    {
    if (index >= _capacity)
       return false;
 
-   std::copy(reinterpret_cast<const uint8_t *>(_data + index),
-             reinterpret_cast<const uint8_t *>(_data + index) + sizeBytes,
-             value);
+   std::copy(reinterpret_cast<const char *>(_data + index),
+             reinterpret_cast<const char *>(_data + index) + sizeBytes,
+             reinterpret_cast<char *>(value));
 
    return true;
    }

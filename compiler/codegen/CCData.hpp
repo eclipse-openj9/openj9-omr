@@ -54,7 +54,7 @@ class CCData
    {
    private:
       /** \typedef data_t Implementation detail. This type represents the units of the table. Typically bytes, but can be some other data type, as long as it can be default-constructed. */
-      typedef uint8_t data_t;
+      typedef char data_t;
 
    public:
       /** \typedef index_t This type represents the indices defined in the public interface of this class. They must behave like integral types. */
@@ -62,10 +62,6 @@ class CCData
 
       /** \typedef key_t This type represents the keys defined in the public interface of this class. The constructor is unspecified, use CCData_t::key() to create keys. */
       typedef std::string key_t;
-
-#if __cpp_static_assert
-      static_assert(sizeof(key_t::value_type) == 1, "Unimplemented key unit size, remaining bytes need to be zeroed to support key units >1.");
-#endif
 
    private:
       /** \typedef map_t Implementation detail. This type represents the associative container that maps keys to indices. It must behave like std::unordered_map. */
@@ -107,7 +103,7 @@ class CCData
        * @param[In] sizeBytes The size (in bytes) of the data.
        * @return The key.
        */
-      static key_t key(const uint8_t * const data, const size_t sizeBytes);
+      static key_t key(const void * const data, const size_t sizeBytes);
 
       /**
        * @brief Creates a key_t from the given null-terminated C string.
@@ -125,7 +121,7 @@ class CCData
        * @param[In] storage A pointer to a memory buffer that CCData will use.
        * @param[In] sizeBytes The amount of data (in bytes) that the buffer contains.
        */
-      CCData(uint8_t * const storage, const size_t sizeBytes);
+      CCData(void * const storage, const size_t sizeBytes);
 
       /**
        * @brief Puts the given value in the table, optionally mapped to the given key (if any), aligned to the value's natural type, and returns the index to the value. Synchronized.
@@ -149,7 +145,7 @@ class CCData
        * @param[Out] index The index that refers to the value.
        * @return True if the value exists in the table, or the key was already mapped to an index, false otherwise.
        */
-      bool put(const uint8_t * const value, const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index);
+      bool put(const void * const value, const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index);
 
       /**
        * @brief Gets the value referred to by the index from the table.
@@ -170,7 +166,7 @@ class CCData
        * @param[In] sizeBytes The size (in bytes) of the value pointed to. This parameter is ignored unless the operation succeeds and this function returns true.
        * @return True if the index refers to an existing value, false otherwise.
        */
-      bool get(const index_t index, uint8_t * const value, const size_t sizeBytes) const;
+      bool get(const index_t index, void * const value, const size_t sizeBytes) const;
 
       /**
        * @brief Gets a pointer to the value referred to by the index from the table.

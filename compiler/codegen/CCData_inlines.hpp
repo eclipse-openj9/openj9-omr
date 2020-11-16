@@ -34,7 +34,7 @@ CCData::key_t CCData::key(const T value)
    // std::has_unique_object_representations is only available in C++17.
    static_assert(std::has_unique_object_representations<T>::value == true, "T must have unique object representations.");
 #endif
-   return key(reinterpret_cast<const uint8_t *>(&value), sizeof(value));
+   return key(&value, sizeof(value));
    }
 
 template <typename T>
@@ -46,7 +46,8 @@ bool CCData::put(const T value, const key_t * const key, index_t &index)
 //#if __cpp_static_assert
 //   static_assert(std::is_trivially_copyable<T>::value == true, "T must be trivially copyable.");
 //#endif
-   return put(reinterpret_cast<const uint8_t *>(&value), sizeof(value), alignof(value), key, index);
+   return put(&value, sizeof(value), alignof(value), key, index);
+   }
    }
 
 template <typename T>
@@ -56,7 +57,7 @@ bool CCData::get(const index_t index, T &value) const
 //#if __cpp_static_assert
 //   static_assert(std::is_trivially_copyable<T>::value == true, "T must be trivially copyable.");
 //#endif
-   return get(index, reinterpret_cast<uint8_t *>(&value), sizeof(value));
+   return get(index, &value, sizeof(value));
    }
 
 template <typename T>

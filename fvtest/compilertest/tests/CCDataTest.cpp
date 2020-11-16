@@ -201,7 +201,7 @@ TYPED_TEST_CASE(CCDataTest, CCDataTestTypes);
 
 TYPED_TEST(CCDataTest, test_basics_templated)
    {
-   std::vector<uint8_t> storage(256);
+   std::vector<char>    storage(256);
    CCData               table(&storage[0], storage.size());
    const TypeParam      data = 99;
    // Generate a key from the data being stored.
@@ -250,12 +250,12 @@ TYPED_TEST(CCDataTest, test_basics_templated)
 
 TYPED_TEST(CCDataTest, test_arbitrary_data_templated)
    {
-   std::vector<uint8_t> storage(256);
+   std::vector<char>    storage(256);
    CCData               table(&storage[0], storage.size());
    const TypeParam      d = 99;
    const TypeParam      data[3] = {d, d, d};
    // Generate a key from the data being stored.
-   const CCData::key_t  key = CCData::key(reinterpret_cast<const uint8_t *>(&data[0]), sizeof(data));
+   const CCData::key_t  key = CCData::key(&data[0], sizeof(data));
 
    // Nothing should be found by this key yet.
    EXPECT_FALSE(table.find(key));
@@ -263,7 +263,7 @@ TYPED_TEST(CCDataTest, test_arbitrary_data_templated)
    CCData::index_t index = INVALID_INDEX;
 
    // Put the data in the table, associate it with the key, retrieve the index.
-   EXPECT_TRUE(table.put(reinterpret_cast<const uint8_t *>(&data[0]), sizeof(data), OMR_ALIGNOF(data), &key, index));
+   EXPECT_TRUE(table.put(&data[0], sizeof(data), OMR_ALIGNOF(data), &key, index));
    // Make sure the index was written.
    EXPECT_NE(index, INVALID_INDEX);
 
@@ -276,22 +276,22 @@ TYPED_TEST(CCDataTest, test_arbitrary_data_templated)
    // Make sure it was written correctly.
    EXPECT_TRUE(std::equal(data, data + sizeof(data)/sizeof(data[0]), dataPtr));
    // We should be able to find something with this key now.
-   EXPECT_TRUE(table.find(CCData::key(reinterpret_cast<const uint8_t *>(&data[0]), sizeof(data))));
+   EXPECT_TRUE(table.find(CCData::key(&data[0], sizeof(data))));
 
    const TypeParam dminus = -d; // Negating `d` here avoids narrowing conversion warnings/errors on the next line.
    TypeParam out_data[3] = {dminus, dminus, dminus};
 
    // Retrieve the data via the index.
-   EXPECT_TRUE(table.get(index, reinterpret_cast<uint8_t *>(&out_data[0]), sizeof(out_data)));
+   EXPECT_TRUE(table.get(index, &out_data[0], sizeof(out_data)));
    // Make sure it matches what was stored.
    EXPECT_TRUE(std::equal(data, data + sizeof(data)/sizeof(data[0]), out_data));
    // Make sure both copies generate equal keys.
-   EXPECT_EQ(CCData::key(reinterpret_cast<const uint8_t *>(&data[0]), sizeof(data)), CCData::key(reinterpret_cast<const uint8_t *>(&out_data[0]), sizeof(out_data)));
+   EXPECT_EQ(CCData::key(&data[0], sizeof(data)), CCData::key(&out_data[0], sizeof(out_data)));
 
    CCData::index_t find_index = INVALID_INDEX;
 
    // Find the index via the key.
-   EXPECT_TRUE(table.find(CCData::key(reinterpret_cast<const uint8_t *>(&data[0]), sizeof(data)), &find_index));
+   EXPECT_TRUE(table.find(CCData::key(&data[0], sizeof(data)), &find_index));
    // Make sure it's the same index.
    EXPECT_EQ(index, find_index);
 
@@ -301,7 +301,7 @@ TYPED_TEST(CCDataTest, test_arbitrary_data_templated)
 
 TYPED_TEST(CCDataTest, test_no_data_reservation_templated)
    {
-   std::vector<uint8_t> storage(256);
+   std::vector<char>    storage(256);
    CCData               table(&storage[0], storage.size());
    size_t               reservationSize = 32, reservationAlignment = 16;
    // Generate an arbitrary key.
@@ -347,7 +347,7 @@ TYPED_TEST(CCDataTest, test_no_data_reservation_templated)
 
 TYPED_TEST(CCDataTest, test_arbitrary_keys_templated)
    {
-   std::vector<uint8_t> storage(256);
+   std::vector<char>    storage(256);
    CCData               table(&storage[0], storage.size());
    const TypeParam      data = 99;
    const CCData::key_t  keyFromData = CCData::key(data);
@@ -376,7 +376,7 @@ TYPED_TEST(CCDataTest, test_arbitrary_keys_templated)
 TYPED_TEST(CCDataTest, test_error_conditions_templated)
    {
       {
-      std::vector<uint8_t> storage(sizeof(TypeParam), 0);
+      std::vector<char> storage(sizeof(TypeParam), 0);
       CCData            zeroTable(&storage[0], 0);
       const TypeParam   data = 99;
       CCData::index_t   index = INVALID_INDEX;
@@ -386,7 +386,7 @@ TYPED_TEST(CCDataTest, test_error_conditions_templated)
       // Make sure the index didn't change.
       EXPECT_EQ(index, INVALID_INDEX);
       // Make sure storage wasn't written to.
-      for (std::vector<uint8_t>::iterator i = storage.begin(); i != storage.end(); i++)
+      for (std::vector<char>::iterator i = storage.begin(); i != storage.end(); i++)
          {
          EXPECT_EQ(*i, 0);
          }
@@ -394,7 +394,7 @@ TYPED_TEST(CCDataTest, test_error_conditions_templated)
 
       {
       const size_t         smallSize = 16;
-      std::vector<uint8_t> storage(sizeof(TypeParam) * smallSize);
+      std::vector<char>    storage(sizeof(TypeParam) * smallSize);
       CCData               smallTable(&storage[0], storage.size());
       const TypeParam      data = 99;
       CCData::index_t      lastIndex = INVALID_INDEX;
@@ -420,7 +420,7 @@ TYPED_TEST(CCDataTest, test_error_conditions_templated)
 
 TYPED_TEST(CCDataTest, test_updating_templated)
    {
-   std::vector<uint8_t> storage(256);
+   std::vector<char>    storage(256);
    CCData               table(&storage[0], storage.size());
    const TypeParam      data1 = 99;
    const TypeParam      data2 = -data1;
@@ -455,7 +455,7 @@ TYPED_TEST(CCDataTest, test_updating_templated)
 
 TEST(AllTypesCCDataTest, test_basics)
    {
-   std::vector<uint8_t> storage(256);
+   std::vector<char>    storage(256);
    CCData               table(&storage[0], storage.size());
    const void           * const classAptr = reinterpret_cast<void *>(0x1), * const classBptr = reinterpret_cast<void *>(0x2);
    const void           * const funcAptr = reinterpret_cast<void *>(0x100), * const funcBptr = reinterpret_cast<void *>(0x200);

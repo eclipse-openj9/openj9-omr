@@ -710,6 +710,45 @@ omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32
 }
 
 
+/**
+ * Generate the corresponding string literals for the provided OMRProcessorDesc. The buffer will be zero 
+ * initialized and overwritten with the processor feature output string.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] desc The struct that contains the list of processor features to be converted to string.
+ * @param[out] buffer The processor feature output string.
+ * @param[in] length The size of the buffer in number of bytes.
+ */
+void
+omrsysinfo_get_processor_feature_string(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, char * buffer, const size_t length)
+{
+	BOOLEAN start = TRUE;
+	size_t i = 0;
+	size_t j = 0;
+	size_t numberOfBits = 0;
+
+	memset(buffer, 0, length * sizeof(char));
+	for (i = 0; i < OMRPORT_SYSINFO_FEATURES_SIZE; i++) {
+		numberOfBits = CHAR_BIT * sizeof(desc->features[i]);
+		for (j = 0; j < numberOfBits; j++) {
+
+			if (desc->features[i] & (1 << j)) {
+				uint32_t feature = (uint32_t)(i * numberOfBits + j);
+				const char * featureName = omrsysinfo_get_processor_feature_name(portLibrary, feature);
+				
+				if (start == FALSE) {
+					strncat(buffer, " ", length - strlen(buffer) - 1);
+				}
+				else {
+					start = FALSE;
+				}
+				strncat(buffer, featureName, length - strlen(buffer) - 1);
+		    }
+		}
+	}
+	strncat(buffer, "\n", length - strlen(buffer) - 1);
+}
+
 #if (defined(AIXPPC) || defined(S390) || defined(J9ZOS390))
 /**
  * @internal

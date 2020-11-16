@@ -201,7 +201,8 @@ TYPED_TEST_CASE(CCDataTest, CCDataTestTypes);
 
 TYPED_TEST(CCDataTest, test_basics_templated)
    {
-   CCData               table(256);
+   std::vector<uint8_t> storage(256);
+   CCData               table(&storage[0], storage.size());
    const TypeParam      data = 99;
    // Generate a key from the data being stored.
    const CCData::key_t  key = CCData::key(data);
@@ -249,7 +250,8 @@ TYPED_TEST(CCDataTest, test_basics_templated)
 
 TYPED_TEST(CCDataTest, test_arbitrary_data_templated)
    {
-   CCData               table(256);
+   std::vector<uint8_t> storage(256);
+   CCData               table(&storage[0], storage.size());
    const TypeParam      d = 99;
    const TypeParam      data[3] = {d, d, d};
    // Generate a key from the data being stored.
@@ -299,7 +301,8 @@ TYPED_TEST(CCDataTest, test_arbitrary_data_templated)
 
 TYPED_TEST(CCDataTest, test_no_data_reservation_templated)
    {
-   CCData               table(256);
+   std::vector<uint8_t> storage(256);
+   CCData               table(&storage[0], storage.size());
    size_t               reservationSize = 32, reservationAlignment = 16;
    // Generate an arbitrary key.
    const CCData::key_t  key = CCData::key("It was the best of times, it was the worst of times.");
@@ -344,7 +347,8 @@ TYPED_TEST(CCDataTest, test_no_data_reservation_templated)
 
 TYPED_TEST(CCDataTest, test_arbitrary_keys_templated)
    {
-   CCData               table(256);
+   std::vector<uint8_t> storage(256);
+   CCData               table(&storage[0], storage.size());
    const TypeParam      data = 99;
    const CCData::key_t  keyFromData = CCData::key(data);
    const CCData::key_t  keyFromFileAndLine = CCData::key(__FILE__ ":" TOSTRING(__LINE__));
@@ -372,7 +376,8 @@ TYPED_TEST(CCDataTest, test_arbitrary_keys_templated)
 TYPED_TEST(CCDataTest, test_error_conditions_templated)
    {
       {
-      CCData            zeroTable(0);
+      std::vector<uint8_t> storage(sizeof(TypeParam), 0);
+      CCData            zeroTable(&storage[0], 0);
       const TypeParam   data = 99;
       CCData::index_t   index = INVALID_INDEX;
 
@@ -380,14 +385,20 @@ TYPED_TEST(CCDataTest, test_error_conditions_templated)
       EXPECT_FALSE(zeroTable.put(data, NULL, index));
       // Make sure the index didn't change.
       EXPECT_EQ(index, INVALID_INDEX);
+      // Make sure storage wasn't written to.
+      for (std::vector<uint8_t>::iterator i = storage.begin(); i != storage.end(); i++)
+         {
+         EXPECT_EQ(*i, 0);
+         }
       }
 
       {
-      const size_t      smallSize = 16;
-      CCData            smallTable(sizeof(TypeParam) * smallSize);
-      const TypeParam   data = 99;
-      CCData::index_t   lastIndex = INVALID_INDEX;
-      CCData::index_t   curIndex = INVALID_INDEX;
+      const size_t         smallSize = 16;
+      std::vector<uint8_t> storage(sizeof(TypeParam) * smallSize);
+      CCData               smallTable(&storage[0], storage.size());
+      const TypeParam      data = 99;
+      CCData::index_t      lastIndex = INVALID_INDEX;
+      CCData::index_t      curIndex = INVALID_INDEX;
 
       int count = 0;
 
@@ -409,7 +420,8 @@ TYPED_TEST(CCDataTest, test_error_conditions_templated)
 
 TYPED_TEST(CCDataTest, test_updating_templated)
    {
-   CCData               table(256);
+   std::vector<uint8_t> storage(256);
+   CCData               table(&storage[0], storage.size());
    const TypeParam      data1 = 99;
    const TypeParam      data2 = -data1;
    const CCData::key_t  key = CCData::key("data");
@@ -443,13 +455,14 @@ TYPED_TEST(CCDataTest, test_updating_templated)
 
 TEST(AllTypesCCDataTest, test_basics)
    {
-   CCData         table(256);
-   const void     * const classAptr = reinterpret_cast<void *>(0x1), * const classBptr = reinterpret_cast<void *>(0x2);
-   const void     * const funcAptr = reinterpret_cast<void *>(0x100), * const funcBptr = reinterpret_cast<void *>(0x200);
-   const int      intA = 99, intB = 101;
-   const short    shortA = 999, shortB = -999;
-   const float    floatA = 10000.99f, floatB = 0.99999f;
-   const double   doubleA = 1245.6789, doubleB = 3.14159;
+   std::vector<uint8_t> storage(256);
+   CCData               table(&storage[0], storage.size());
+   const void           * const classAptr = reinterpret_cast<void *>(0x1), * const classBptr = reinterpret_cast<void *>(0x2);
+   const void           * const funcAptr = reinterpret_cast<void *>(0x100), * const funcBptr = reinterpret_cast<void *>(0x200);
+   const int            intA = 99, intB = 101;
+   const short          shortA = 999, shortB = -999;
+   const float          floatA = 10000.99f, floatB = 0.99999f;
+   const double         doubleA = 1245.6789, doubleB = 3.14159;
 
    const CCData::key_t classAptrKey = CCData::key(classAptr);
    const CCData::key_t classBptrKey = CCData::key(classBptr);

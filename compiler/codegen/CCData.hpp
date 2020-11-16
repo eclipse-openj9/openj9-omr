@@ -118,13 +118,6 @@ class CCData
       static key_t key(const char * const str);
 
       /**
-       * @brief Constructs a CCData.
-
-       * @param[In] sizeBytes The amount of data (in bytes) that CCData can hold.
-       */
-      CCData(const size_t sizeBytes);
-
-      /**
        * @brief Constructs a CCData and accepts a pointer to a memory buffer that will be used to hold the data.
        *
        * The lifetime of the memory buffer must exceed the lifetime of the resulting CCData object. The memory buffer will still be valid after the CCData object is destructed (i.e. the memory buffer will not be freed, do it yourself).
@@ -133,8 +126,6 @@ class CCData
        * @param[In] sizeBytes The amount of data (in bytes) that the buffer contains.
        */
       CCData(uint8_t * const storage, const size_t sizeBytes);
-
-      ~CCData();
 
       /**
        * @brief Puts the given value in the table, optionally mapped to the given key (if any), aligned to the value's natural type, and returns the index to the value. Synchronized.
@@ -233,7 +224,6 @@ class CCData
       size_t            _putIndex;
       map_t             _mappings;
       TR::Monitor      *_lock;
-      const bool        _releaseData;
    };
 
 }

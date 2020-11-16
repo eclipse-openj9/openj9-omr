@@ -51,29 +51,23 @@ CCData::key_t CCData::key(const char * const str)
    return key_t(reinterpret_cast<const key_t::value_type *>(str));
    }
 
-CCData::CCData(const size_t sizeBytes)
-: _data(new data_t[dataSizeFromBytesSize(sizeBytes)]), _capacity(dataSizeFromBytesSize(sizeBytes)), _putIndex(0), _lock(TR::Monitor::create("CCDataMutex")), _releaseData(true)
-   {
-   }
-
 CCData::CCData(uint8_t * const storage, const size_t sizeBytes)
-: _putIndex(0), _lock(TR::Monitor::create("CCDataMutex")), _releaseData(false)
+: _putIndex(0), _lock(TR::Monitor::create("CCDataMutex"))
    {
-   void *alignedStorage = storage;
-   size_t sizeBytesAfterAlignment = sizeBytes;
-   bool success = OMR::align(OMR_ALIGNOF(data_t), sizeof(data_t), alignedStorage, sizeBytesAfterAlignment) != NULL;
-   TR_ASSERT_FATAL(success, "Can't align CCData storage to required boundary");
-   _data = reinterpret_cast<data_t *>(alignedStorage);
-   _capacity = dataSizeFromBytesSize(sizeBytesAfterAlignment);
-   }
-
-CCData::~CCData()
-   {
-   // Memory for data can either be allocated by this class or passed in via
-   // the constructor. If allocated, it has to be freed now; if passed in we can't free
-   // it.
-   if (_releaseData)
-      delete [] _data;
+   if (sizeBytes > 0)
+      {
+      void *alignedStorage = storage;
+      size_t sizeBytesAfterAlignment = sizeBytes;
+      bool success = OMR::align(OMR_ALIGNOF(data_t), sizeof(data_t), alignedStorage, sizeBytesAfterAlignment) != NULL;
+      TR_ASSERT_FATAL(success, "Can't align CCData storage to required boundary");
+      _data = reinterpret_cast<data_t *>(alignedStorage);
+      _capacity = dataSizeFromBytesSize(sizeBytesAfterAlignment);
+      }
+   else
+      {
+      _data = NULL;
+      _capacity = 0;
+      }
    }
 
 bool CCData::put(const uint8_t * const value, const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index)

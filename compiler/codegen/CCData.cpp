@@ -75,7 +75,7 @@ CCData::CCData(void * const storage, const size_t sizeBytes)
       }
    }
 
-bool CCData::put(const void * const value, const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index)
+bool CCData::put_impl(const void * const value, const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index)
    {
    const OMR::CriticalSection critsec(_lock);
 

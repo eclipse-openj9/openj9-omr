@@ -299,6 +299,24 @@ TYPED_TEST(CCDataTest, test_arbitrary_data_templated)
    while (table.put(reinterpret_cast<const uint8_t *>(&data[0]), sizeof(data), OMR_ALIGNOF(data), NULL, index));
    }
 
+TYPED_TEST(CCDataTest, test_no_data_templated)
+   {
+   std::vector<char>    storage(sizeof(TypeParam), 0);
+   CCData               table(&storage[0], storage.size());
+   const TypeParam      data = 99;
+   CCData::index_t      index = INVALID_INDEX;
+
+   // Shouldn't be able to put.
+   EXPECT_FALSE(table.put(NULL, sizeof(data), OMR_ALIGNOF(data), NULL, index));
+   // Make sure the index didn't change.
+   EXPECT_EQ(index, INVALID_INDEX);
+   // Make sure storage wasn't written to.
+   for (std::vector<char>::iterator i = storage.begin(); i != storage.end(); i++)
+      {
+      EXPECT_EQ(*i, 0);
+      }
+   }
+
 TYPED_TEST(CCDataTest, test_no_data_reservation_templated)
    {
    std::vector<char>    storage(256);
@@ -314,11 +332,11 @@ TYPED_TEST(CCDataTest, test_no_data_reservation_templated)
    CCData::index_t index2 = INVALID_INDEX;
 
    // Reserve space in the table, associate it with the key, retrieve the index.
-   EXPECT_TRUE(table.put(NULL, reservationSize, reservationAlignment, &key, index));
+   EXPECT_TRUE(table.reserve(reservationSize, reservationAlignment, &key, index));
    // Make sure the index was written.
    EXPECT_NE(index, INVALID_INDEX);
    // Try to update the value via the key.
-   EXPECT_TRUE(table.put(NULL, reservationSize, reservationAlignment, &key, index2));
+   EXPECT_TRUE(table.reserve(reservationSize, reservationAlignment, &key, index2));
    // Make sure the index was written.
    EXPECT_EQ(index2, index);
 
@@ -339,7 +357,7 @@ TYPED_TEST(CCDataTest, test_no_data_reservation_templated)
    EXPECT_EQ(index, find_index);
 
    // Make sure we can fill the table.
-   while (table.put(NULL, reservationSize, reservationAlignment, NULL, index));
+   while (table.reserve(reservationSize, reservationAlignment, NULL, index));
    }
 
 #define STRINGIFY(x) #x

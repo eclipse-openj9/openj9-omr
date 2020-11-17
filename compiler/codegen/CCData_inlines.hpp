@@ -48,7 +48,6 @@ bool CCData::put(const T value, const key_t * const key, index_t &index)
 //#endif
    return put(&value, sizeof(value), alignof(value), key, index);
    }
-   }
 
 template <typename T>
 bool CCData::get(const index_t index, T &value) const
@@ -69,6 +68,22 @@ T* CCData::get(const index_t index) const
       return NULL;
 
    return reinterpret_cast<T *>(_data + index);
+   }
+
+inline
+bool CCData::put(const void * const value, const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index)
+   {
+   if (value == NULL)
+      {
+      return false;
+      }
+   return put_impl(value, sizeBytes, alignmentBytes, key, index);
+   }
+
+inline
+bool CCData::reserve(const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index)
+   {
+   return put_impl(NULL, sizeBytes, alignmentBytes, key, index);
    }
 
 }

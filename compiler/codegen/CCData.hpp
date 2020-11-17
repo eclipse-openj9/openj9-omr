@@ -138,14 +138,25 @@ class CCData
       /**
        * @brief Puts the given value in the table, optionally mapped to the given key (if any), aligned to the given boundary (in bytes), and returns the index to the value. Synchronized.
        *
-       * @param[In] value Optional. A pointer to the value to put. If null, no data will be copied but the space will be allocated none the less.
+       * @param[In] value A pointer to the value to put.
        * @param[In] sizeBytes The size of the value pointed to.
        * @param[In] alignmentBytes The alignment (in bytes) to align the value to.
        * @param[In] key Optional. The key to map the resulting index to. Without a key the index is the only reference to the data. If the key is already mapped to an index the operation will return the index and true, but no data will be written.
        * @param[Out] index The index that refers to the value.
-       * @return True if the value exists in the table, or the key was already mapped to an index, false otherwise.
+       * @return True if the value pointer is non-NULL, and either the value exists in the table, or the key was already mapped to an index, false otherwise.
        */
       bool put(const void * const value, const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index);
+
+      /**
+       * @brief Reserves space in the table, optionally mapped to the given key (if any), aligned to the given boundary (in bytes), and returns the index to the space. Synchronized.
+
+       * @param[In] sizeBytes The size to reserve.
+       * @param[In] alignmentBytes The alignment (in bytes) to align the reserved space to.
+       * @param[In] key Optional. The key to map the resulting index to. Without a key the index is the only reference to the data. If the key is already mapped to an index the operation will return the index and true, but no space will be reserved.
+       * @param[Out] index The index that refers to the space.
+       * @return True if the space was reserved, or the key was already mapped to an index, false otherwise.
+       */
+      bool reserve(const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index);
 
       /**
        * @brief Gets the value referred to by the index from the table.
@@ -197,6 +208,18 @@ class CCData
        * @return True if the given key maps to an index, false otherwise.
        */
       bool find_unsafe(const key_t key, index_t * const index = NULL) const;
+
+      /**
+       * @brief This function implements the actual work behind both put() and reserve().
+       *
+       * @param[In] value Optional. A pointer to the value to put.
+       * @param[In] sizeBytes The size of the value pointed to.
+       * @param[In] alignmentBytes The alignment (in bytes) to align the value to.
+       * @param[In] key Optional. The key to map the resulting index to. Without a key the index is the only reference to the data. If the key is already mapped to an index the operation will return the index and true, but no data will be written.
+       * @param[Out] index The index that refers to the value.
+       * @return True if the value exists in the table, or the key was already mapped to an index, false otherwise.
+       */
+      bool put_impl(const void * const value, const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index);
 
       /**
        * @brief Converts a size in units of bytes to a size in units of data_t.

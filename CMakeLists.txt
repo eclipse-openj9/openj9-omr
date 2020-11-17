@@ -140,6 +140,13 @@ if(OMR_DDR)
 		${CMAKE_CURRENT_SOURCE_DIR}/include_core
 		${CMAKE_CURRENT_BINARY_DIR}
 	)
+	set_property(TARGET omrddr PROPERTY DDR_OBJECT_EXCLUDES
+		ddr/
+		fvtest/
+		jitbuilder/
+		third_party/
+		tools/
+	)
 endif()
 
 ###

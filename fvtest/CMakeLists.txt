@@ -65,10 +65,5 @@ endif()
 if(OMR_JITBUILDER_TEST)
 	add_subdirectory(tril)
 	add_subdirectory(compilertriltest)
-
-	# Currently, there are only unit tests for the Power codegen. To avoid unnecessarily compiling and running an
-	# executable with no tests, compilerunittest is thus disabled on other architectures.
-	if(OMR_ARCH_POWER)
-		add_subdirectory(compilerunittest)
-	endif()
+	add_subdirectory(compilerunittest)
 endif()

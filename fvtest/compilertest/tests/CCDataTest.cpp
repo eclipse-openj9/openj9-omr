@@ -110,12 +110,12 @@ class TableTest : public OptTestDriver
          }
       virtual void invokeTests() override
          {
-         EXPECT_TRUE(_caseValues != NULL);
-         EXPECT_GT(_numCaseValues, 0);
+         ASSERT_TRUE(_caseValues != NULL);
+         ASSERT_GT(_numCaseValues, 0);
          auto compiledMethod = getCompiledMethod<GeneratedMethodInfo::compiled_method_t>();
          for (auto i = 0; i < _numCaseValues; ++i)
-            EXPECT_EQ(compiledMethod(i, -1), _caseValues[i]);
-         EXPECT_EQ(compiledMethod(_numCaseValues, -1), -1);
+            ASSERT_EQ(compiledMethod(i, -1), _caseValues[i]);
+         ASSERT_EQ(compiledMethod(_numCaseValues, -1), -1);
          }
       private:
          const int32_t  *_caseValues;
@@ -208,41 +208,41 @@ TYPED_TEST(CCDataTest, test_basics_templated)
    const CCData::key_t  key = CCData::key(data);
 
    // Nothing should be found by this key yet.
-   EXPECT_FALSE(table.find(key));
+   ASSERT_FALSE(table.find(key));
 
    CCData::index_t index = INVALID_INDEX;
 
    // Put the data in the table, associate it with the key, retrieve the index.
-   EXPECT_TRUE(table.put(data, &key, index));
+   ASSERT_TRUE(table.put(data, &key, index));
    // Make sure the index was written.
-   EXPECT_NE(index, INVALID_INDEX);
+   ASSERT_NE(index, INVALID_INDEX);
 
    const TypeParam * const dataPtr = table.get<TypeParam>(index);
 
    // Make sure the data was written.
-   EXPECT_TRUE(dataPtr != NULL);
+   ASSERT_TRUE(dataPtr != NULL);
    // Make sure it was written to an aligned address.
-   EXPECT_EQ(reinterpret_cast<size_t>(dataPtr) & (OMR_ALIGNOF(data) - 1), 0);
+   ASSERT_EQ(reinterpret_cast<size_t>(dataPtr) & (OMR_ALIGNOF(data) - 1), 0);
    // Make sure it was written correctly.
-   EXPECT_EQ(*dataPtr, data);
+   ASSERT_EQ(*dataPtr, data);
    // We should be able to find something with this key now.
-   EXPECT_TRUE(table.find(CCData::key(data)));
+   ASSERT_TRUE(table.find(CCData::key(data)));
 
    TypeParam out_data = -data;
 
    // Retrieve the data via the index.
-   EXPECT_TRUE(table.get(index, out_data));
+   ASSERT_TRUE(table.get(index, out_data));
    // Make sure it matches what was stored.
-   EXPECT_EQ(data, out_data);
+   ASSERT_EQ(data, out_data);
    // Make sure both copies generate equal keys.
-   EXPECT_EQ(CCData::key(data), CCData::key(out_data));
+   ASSERT_EQ(CCData::key(data), CCData::key(out_data));
 
    CCData::index_t find_index = INVALID_INDEX;
 
    // Find the index via the key.
-   EXPECT_TRUE(table.find(CCData::key(data), &find_index));
+   ASSERT_TRUE(table.find(CCData::key(data), &find_index));
    // Make sure it's the same index.
-   EXPECT_EQ(index, find_index);
+   ASSERT_EQ(index, find_index);
 
    // Make sure we can fill the table.
    while (table.put(data, NULL, index));
@@ -258,42 +258,42 @@ TYPED_TEST(CCDataTest, test_arbitrary_data_templated)
    const CCData::key_t  key = CCData::key(&data[0], sizeof(data));
 
    // Nothing should be found by this key yet.
-   EXPECT_FALSE(table.find(key));
+   ASSERT_FALSE(table.find(key));
 
    CCData::index_t index = INVALID_INDEX;
 
    // Put the data in the table, associate it with the key, retrieve the index.
-   EXPECT_TRUE(table.put(&data[0], sizeof(data), OMR_ALIGNOF(data), &key, index));
+   ASSERT_TRUE(table.put(&data[0], sizeof(data), OMR_ALIGNOF(data), &key, index));
    // Make sure the index was written.
-   EXPECT_NE(index, INVALID_INDEX);
+   ASSERT_NE(index, INVALID_INDEX);
 
    const TypeParam * const dataPtr = table.get<TypeParam>(index);
 
    // Make sure the data was written.
-   EXPECT_TRUE(dataPtr != NULL);
+   ASSERT_TRUE(dataPtr != NULL);
    // Make sure it was written to an aligned address.
-   EXPECT_EQ(reinterpret_cast<size_t>(dataPtr) & (OMR_ALIGNOF(data) - 1), 0);
+   ASSERT_EQ(reinterpret_cast<size_t>(dataPtr) & (OMR_ALIGNOF(data) - 1), 0);
    // Make sure it was written correctly.
-   EXPECT_TRUE(std::equal(data, data + sizeof(data)/sizeof(data[0]), dataPtr));
+   ASSERT_TRUE(std::equal(data, data + sizeof(data)/sizeof(data[0]), dataPtr));
    // We should be able to find something with this key now.
-   EXPECT_TRUE(table.find(CCData::key(&data[0], sizeof(data))));
+   ASSERT_TRUE(table.find(CCData::key(&data[0], sizeof(data))));
 
    const TypeParam dminus = -d; // Negating `d` here avoids narrowing conversion warnings/errors on the next line.
    TypeParam out_data[3] = {dminus, dminus, dminus};
 
    // Retrieve the data via the index.
-   EXPECT_TRUE(table.get(index, &out_data[0], sizeof(out_data)));
+   ASSERT_TRUE(table.get(index, &out_data[0], sizeof(out_data)));
    // Make sure it matches what was stored.
-   EXPECT_TRUE(std::equal(data, data + sizeof(data)/sizeof(data[0]), out_data));
+   ASSERT_TRUE(std::equal(data, data + sizeof(data)/sizeof(data[0]), out_data));
    // Make sure both copies generate equal keys.
-   EXPECT_EQ(CCData::key(&data[0], sizeof(data)), CCData::key(&out_data[0], sizeof(out_data)));
+   ASSERT_EQ(CCData::key(&data[0], sizeof(data)), CCData::key(&out_data[0], sizeof(out_data)));
 
    CCData::index_t find_index = INVALID_INDEX;
 
    // Find the index via the key.
-   EXPECT_TRUE(table.find(CCData::key(&data[0], sizeof(data)), &find_index));
+   ASSERT_TRUE(table.find(CCData::key(&data[0], sizeof(data)), &find_index));
    // Make sure it's the same index.
-   EXPECT_EQ(index, find_index);
+   ASSERT_EQ(index, find_index);
 
    // Make sure we can fill the table.
    while (table.put(reinterpret_cast<const uint8_t *>(&data[0]), sizeof(data), OMR_ALIGNOF(data), NULL, index));
@@ -307,13 +307,13 @@ TYPED_TEST(CCDataTest, test_no_data_templated)
    CCData::index_t      index = INVALID_INDEX;
 
    // Shouldn't be able to put.
-   EXPECT_FALSE(table.put(NULL, sizeof(data), OMR_ALIGNOF(data), NULL, index));
+   ASSERT_FALSE(table.put(NULL, sizeof(data), OMR_ALIGNOF(data), NULL, index));
    // Make sure the index didn't change.
-   EXPECT_EQ(index, INVALID_INDEX);
+   ASSERT_EQ(index, INVALID_INDEX);
    // Make sure storage wasn't written to.
    for (std::vector<char>::iterator i = storage.begin(); i != storage.end(); i++)
       {
-      EXPECT_EQ(*i, 0);
+      ASSERT_EQ(*i, 0);
       }
    }
 
@@ -326,35 +326,35 @@ TYPED_TEST(CCDataTest, test_no_data_reservation_templated)
    const CCData::key_t  key = CCData::key("It was the best of times, it was the worst of times.");
 
    // Nothing should be found by this key yet.
-   EXPECT_FALSE(table.find(key));
+   ASSERT_FALSE(table.find(key));
 
    CCData::index_t index = INVALID_INDEX;
    CCData::index_t index2 = INVALID_INDEX;
 
    // Reserve space in the table, associate it with the key, retrieve the index.
-   EXPECT_TRUE(table.reserve(reservationSize, reservationAlignment, &key, index));
+   ASSERT_TRUE(table.reserve(reservationSize, reservationAlignment, &key, index));
    // Make sure the index was written.
-   EXPECT_NE(index, INVALID_INDEX);
+   ASSERT_NE(index, INVALID_INDEX);
    // Try to update the value via the key.
-   EXPECT_TRUE(table.reserve(reservationSize, reservationAlignment, &key, index2));
+   ASSERT_TRUE(table.reserve(reservationSize, reservationAlignment, &key, index2));
    // Make sure the index was written.
-   EXPECT_EQ(index2, index);
+   ASSERT_EQ(index2, index);
 
    const TypeParam * const dataPtr = table.get<TypeParam>(index);
 
    // Make sure the reservation was done.
-   EXPECT_TRUE(dataPtr != NULL);
+   ASSERT_TRUE(dataPtr != NULL);
    // Make sure we got an aligned address.
-   EXPECT_EQ(reinterpret_cast<size_t>(dataPtr) & (reservationAlignment - 1), 0);
+   ASSERT_EQ(reinterpret_cast<size_t>(dataPtr) & (reservationAlignment - 1), 0);
    // We should be able to find something with this key now.
-   EXPECT_TRUE(table.find(key));
+   ASSERT_TRUE(table.find(key));
 
    CCData::index_t find_index = INVALID_INDEX;
 
    // Find the index via the key.
-   EXPECT_TRUE(table.find(key, &find_index));
+   ASSERT_TRUE(table.find(key, &find_index));
    // Make sure it's the same index.
-   EXPECT_EQ(index, find_index);
+   ASSERT_EQ(index, find_index);
 
    // Make sure we can fill the table.
    while (table.reserve(reservationSize, reservationAlignment, NULL, index));
@@ -372,23 +372,23 @@ TYPED_TEST(CCDataTest, test_arbitrary_keys_templated)
    const CCData::key_t  keyFromFileAndLine = CCData::key(__FILE__ ":" TOSTRING(__LINE__));
 
    // Nothing should be found by either key yet.
-   EXPECT_FALSE(table.find(keyFromData));
-   EXPECT_FALSE(table.find(keyFromFileAndLine));
+   ASSERT_FALSE(table.find(keyFromData));
+   ASSERT_FALSE(table.find(keyFromFileAndLine));
 
    CCData::index_t index1 = INVALID_INDEX;
    CCData::index_t index2 = INVALID_INDEX;
 
    // Put the data in the table twice, associate it with each key, retrieve the indices.
-   EXPECT_TRUE(table.put(data, &keyFromData, index1));
-   EXPECT_TRUE(table.put(data, &keyFromFileAndLine, index2));
+   ASSERT_TRUE(table.put(data, &keyFromData, index1));
+   ASSERT_TRUE(table.put(data, &keyFromFileAndLine, index2));
    // Make sure the indices were written.
-   EXPECT_NE(index1, INVALID_INDEX);
-   EXPECT_NE(index2, INVALID_INDEX);
+   ASSERT_NE(index1, INVALID_INDEX);
+   ASSERT_NE(index2, INVALID_INDEX);
    // We should be able to find something with both keys now.
-   EXPECT_TRUE(table.find(CCData::key(data)));
-   EXPECT_TRUE(table.find(keyFromFileAndLine));
+   ASSERT_TRUE(table.find(CCData::key(data)));
+   ASSERT_TRUE(table.find(keyFromFileAndLine));
    // The data should be in two different indices, based on key.
-   EXPECT_NE(index1, index2);
+   ASSERT_NE(index1, index2);
    }
 
 TYPED_TEST(CCDataTest, test_error_conditions_templated)
@@ -400,13 +400,13 @@ TYPED_TEST(CCDataTest, test_error_conditions_templated)
       CCData::index_t   index = INVALID_INDEX;
 
       // Shouldn't be able to put.
-      EXPECT_FALSE(zeroTable.put(data, NULL, index));
+      ASSERT_FALSE(zeroTable.put(data, NULL, index));
       // Make sure the index didn't change.
-      EXPECT_EQ(index, INVALID_INDEX);
+      ASSERT_EQ(index, INVALID_INDEX);
       // Make sure storage wasn't written to.
       for (std::vector<char>::iterator i = storage.begin(); i != storage.end(); i++)
          {
-         EXPECT_EQ(*i, 0);
+         ASSERT_EQ(*i, 0);
          }
       }
 
@@ -423,16 +423,16 @@ TYPED_TEST(CCDataTest, test_error_conditions_templated)
       while (smallTable.put(data, NULL, curIndex))
          {
          // Make sure the index changed.
-         EXPECT_NE(curIndex, lastIndex);
+         ASSERT_NE(curIndex, lastIndex);
          lastIndex = curIndex;
          ++count;
          }
 
       // Make sure the index didn't change on the last iteration.
-      EXPECT_EQ(curIndex, lastIndex);
+      ASSERT_EQ(curIndex, lastIndex);
 
       // Make sure we put at least some data in the table.
-      EXPECT_GT(count, 0);
+      ASSERT_GT(count, 0);
       }
    }
 
@@ -447,28 +447,28 @@ TYPED_TEST(CCDataTest, test_updating_templated)
    CCData::index_t      index2 = INVALID_INDEX;
 
    // Put the data in the table, associate it with the key, retrieve the index.
-   EXPECT_TRUE(table.put(data1, &key, index1));
+   ASSERT_TRUE(table.put(data1, &key, index1));
    // Make sure the index was written.
-   EXPECT_NE(index1, INVALID_INDEX);
+   ASSERT_NE(index1, INVALID_INDEX);
    // Update the value via the key.
-   EXPECT_TRUE(table.put(data2, &key, index2));
+   ASSERT_TRUE(table.put(data2, &key, index2));
    // Make sure the index was written.
-   EXPECT_EQ(index2, index1);
+   ASSERT_EQ(index2, index1);
 
    TypeParam * const dataPtr = table.get<TypeParam>(index1);
 
    // Make sure the data was written.
-   EXPECT_TRUE(dataPtr != NULL);
+   ASSERT_TRUE(dataPtr != NULL);
    // Make sure it wasn't updated.
-   EXPECT_EQ(*dataPtr, data1);
+   ASSERT_EQ(*dataPtr, data1);
    // Change the value via a pointer.
    *dataPtr = data2;
 
    TypeParam out_data;
    // Make sure the data was written.
-   EXPECT_TRUE(table.get(index1, out_data));
+   ASSERT_TRUE(table.get(index1, out_data));
    // Make sure it matches.
-   EXPECT_EQ(out_data, data2);
+   ASSERT_EQ(out_data, data2);
    }
 
 TEST(AllTypesCCDataTest, test_basics)
@@ -496,18 +496,18 @@ TEST(AllTypesCCDataTest, test_basics)
    const CCData::key_t doubleAKey = CCData::key("doubleA");
    const CCData::key_t doubleBKey = CCData::key("doubleB");
 
-   EXPECT_FALSE(table.find(classAptrKey));
-   EXPECT_FALSE(table.find(classBptrKey));
-   EXPECT_FALSE(table.find(funcAptrKey));
-   EXPECT_FALSE(table.find(funcBptrKey));
-   EXPECT_FALSE(table.find(intAKey));
-   EXPECT_FALSE(table.find(intBKey));
-   EXPECT_FALSE(table.find(shortAKey));
-   EXPECT_FALSE(table.find(shortBKey));
-   EXPECT_FALSE(table.find(floatAKey));
-   EXPECT_FALSE(table.find(floatBKey));
-   EXPECT_FALSE(table.find(doubleAKey));
-   EXPECT_FALSE(table.find(doubleBKey));
+   ASSERT_FALSE(table.find(classAptrKey));
+   ASSERT_FALSE(table.find(classBptrKey));
+   ASSERT_FALSE(table.find(funcAptrKey));
+   ASSERT_FALSE(table.find(funcBptrKey));
+   ASSERT_FALSE(table.find(intAKey));
+   ASSERT_FALSE(table.find(intBKey));
+   ASSERT_FALSE(table.find(shortAKey));
+   ASSERT_FALSE(table.find(shortBKey));
+   ASSERT_FALSE(table.find(floatAKey));
+   ASSERT_FALSE(table.find(floatBKey));
+   ASSERT_FALSE(table.find(doubleAKey));
+   ASSERT_FALSE(table.find(doubleBKey));
 
    CCData::index_t classAptrIndex = INVALID_INDEX;
    CCData::index_t classBptrIndex = INVALID_INDEX;
@@ -522,44 +522,44 @@ TEST(AllTypesCCDataTest, test_basics)
    CCData::index_t doubleAIndex = INVALID_INDEX;
    CCData::index_t doubleBIndex = INVALID_INDEX;
 
-   EXPECT_TRUE(table.put(classAptr, &classAptrKey, classAptrIndex));
-   EXPECT_TRUE(table.put(classBptr, &classBptrKey, classBptrIndex));
-   EXPECT_TRUE(table.put(funcAptr, &funcAptrKey, funcAptrIndex));
-   EXPECT_TRUE(table.put(funcBptr, &funcBptrKey, funcBptrIndex));
-   EXPECT_TRUE(table.put(intA, &intAKey, intAIndex));
-   EXPECT_TRUE(table.put(intB, &intBKey, intBIndex));
-   EXPECT_TRUE(table.put(shortA, &shortAKey, shortAIndex));
-   EXPECT_TRUE(table.put(shortB, &shortBKey, shortBIndex));
-   EXPECT_TRUE(table.put(floatA, &floatAKey, floatAIndex));
-   EXPECT_TRUE(table.put(floatB, &floatBKey, floatBIndex));
-   EXPECT_TRUE(table.put(doubleA, &doubleAKey, doubleAIndex));
-   EXPECT_TRUE(table.put(doubleB, &doubleBKey, doubleBIndex));
+   ASSERT_TRUE(table.put(classAptr, &classAptrKey, classAptrIndex));
+   ASSERT_TRUE(table.put(classBptr, &classBptrKey, classBptrIndex));
+   ASSERT_TRUE(table.put(funcAptr, &funcAptrKey, funcAptrIndex));
+   ASSERT_TRUE(table.put(funcBptr, &funcBptrKey, funcBptrIndex));
+   ASSERT_TRUE(table.put(intA, &intAKey, intAIndex));
+   ASSERT_TRUE(table.put(intB, &intBKey, intBIndex));
+   ASSERT_TRUE(table.put(shortA, &shortAKey, shortAIndex));
+   ASSERT_TRUE(table.put(shortB, &shortBKey, shortBIndex));
+   ASSERT_TRUE(table.put(floatA, &floatAKey, floatAIndex));
+   ASSERT_TRUE(table.put(floatB, &floatBKey, floatBIndex));
+   ASSERT_TRUE(table.put(doubleA, &doubleAKey, doubleAIndex));
+   ASSERT_TRUE(table.put(doubleB, &doubleBKey, doubleBIndex));
 
-   EXPECT_NE(classAptrIndex, INVALID_INDEX);
-   EXPECT_NE(classBptrIndex, INVALID_INDEX);
-   EXPECT_NE(funcAptrIndex, INVALID_INDEX);
-   EXPECT_NE(funcBptrIndex, INVALID_INDEX);
-   EXPECT_NE(intAIndex, INVALID_INDEX);
-   EXPECT_NE(intBIndex, INVALID_INDEX);
-   EXPECT_NE(shortAIndex, INVALID_INDEX);
-   EXPECT_NE(shortBIndex, INVALID_INDEX);
-   EXPECT_NE(floatAIndex, INVALID_INDEX);
-   EXPECT_NE(floatBIndex, INVALID_INDEX);
-   EXPECT_NE(doubleAIndex, INVALID_INDEX);
-   EXPECT_NE(doubleBIndex, INVALID_INDEX);
+   ASSERT_NE(classAptrIndex, INVALID_INDEX);
+   ASSERT_NE(classBptrIndex, INVALID_INDEX);
+   ASSERT_NE(funcAptrIndex, INVALID_INDEX);
+   ASSERT_NE(funcBptrIndex, INVALID_INDEX);
+   ASSERT_NE(intAIndex, INVALID_INDEX);
+   ASSERT_NE(intBIndex, INVALID_INDEX);
+   ASSERT_NE(shortAIndex, INVALID_INDEX);
+   ASSERT_NE(shortBIndex, INVALID_INDEX);
+   ASSERT_NE(floatAIndex, INVALID_INDEX);
+   ASSERT_NE(floatBIndex, INVALID_INDEX);
+   ASSERT_NE(doubleAIndex, INVALID_INDEX);
+   ASSERT_NE(doubleBIndex, INVALID_INDEX);
 
-   EXPECT_TRUE(table.find(CCData::key(classAptr)));
-   EXPECT_TRUE(table.find(CCData::key(classBptr)));
-   EXPECT_TRUE(table.find(CCData::key(funcAptr)));
-   EXPECT_TRUE(table.find(CCData::key(funcBptr)));
-   EXPECT_TRUE(table.find(CCData::key(intA)));
-   EXPECT_TRUE(table.find(CCData::key(intB)));
-   EXPECT_TRUE(table.find(CCData::key(shortA)));
-   EXPECT_TRUE(table.find(CCData::key(shortB)));
-   EXPECT_TRUE(table.find(CCData::key("floatA")));
-   EXPECT_TRUE(table.find(CCData::key("floatB")));
-   EXPECT_TRUE(table.find(CCData::key("doubleA")));
-   EXPECT_TRUE(table.find(CCData::key("doubleB")));
+   ASSERT_TRUE(table.find(CCData::key(classAptr)));
+   ASSERT_TRUE(table.find(CCData::key(classBptr)));
+   ASSERT_TRUE(table.find(CCData::key(funcAptr)));
+   ASSERT_TRUE(table.find(CCData::key(funcBptr)));
+   ASSERT_TRUE(table.find(CCData::key(intA)));
+   ASSERT_TRUE(table.find(CCData::key(intB)));
+   ASSERT_TRUE(table.find(CCData::key(shortA)));
+   ASSERT_TRUE(table.find(CCData::key(shortB)));
+   ASSERT_TRUE(table.find(CCData::key("floatA")));
+   ASSERT_TRUE(table.find(CCData::key("floatB")));
+   ASSERT_TRUE(table.find(CCData::key("doubleA")));
+   ASSERT_TRUE(table.find(CCData::key("doubleB")));
 
    const void* * const ptr_classAptr = table.get<const void*>(classAptrIndex);
    const void* * const ptr_classBptr = table.get<const void*>(classBptrIndex);
@@ -574,18 +574,18 @@ TEST(AllTypesCCDataTest, test_basics)
    const double * const ptr_doubleA = table.get<const double>(doubleAIndex);
    const double * const ptr_doubleB = table.get<const double>(doubleBIndex);
 
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_classAptr) & (OMR_ALIGNOF(*ptr_classAptr) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_classBptr) & (OMR_ALIGNOF(*ptr_classBptr) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_funcAptr) & (OMR_ALIGNOF(*ptr_funcAptr) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_funcBptr) & (OMR_ALIGNOF(*ptr_funcBptr) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_intA) & (OMR_ALIGNOF(*ptr_intA) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_intB) & (OMR_ALIGNOF(*ptr_intB) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_shortA) & (OMR_ALIGNOF(*ptr_shortA) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_shortB) & (OMR_ALIGNOF(*ptr_shortB) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_floatA) & (OMR_ALIGNOF(*ptr_floatA) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_floatB) & (OMR_ALIGNOF(*ptr_floatB) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_doubleA) & (OMR_ALIGNOF(*ptr_doubleA) - 1), 0);
-   EXPECT_EQ(reinterpret_cast<size_t>(ptr_doubleB) & (OMR_ALIGNOF(*ptr_doubleB) - 1), 0);
+   ASSERT_EQ(reinterpret_cast<size_t>(ptr_classAptr) & (OMR_ALIGNOF(*ptr_classAptr) - 1), 0);
+   ASSERT_EQ(reinterpret_cast<size_t>(ptr_classBptr) & (OMR_ALIGNOF(*ptr_classBptr) - 1), 0);
+   ASSERT_EQ(reinterpret_cast<size_t>(ptr_funcAptr) & (OMR_ALIGNOF(*ptr_funcAptr) - 1), 0);
+   ASSERT_EQ(reinterpret_cast<size_t>(ptr_funcBptr) & (OMR_ALIGNOF(*ptr_funcBptr) - 1), 0);
+   ASSERT_EQ(reinterpret_cast<size_t>(ptr_intA) & (OMR_ALIGNOF(*ptr_intA) - 1), 0);
+   ASSERT_EQ(reinterpret_cast<size_t>(ptr_intB) & (OMR_ALIGNOF(*ptr_intB) - 1), 0);
+   ASSERT_EQ(reinterpret_cast<size_t>(ptr_shortA) & (OMR_ALIGNOF(*ptr_shortA) - 1), 0);
+   ASSERT_EQ(reinterpret_cast<size_t>(ptr_shortB) & (OMR_ALIGNOF(*ptr_shortB) - 1), 0);
+   ASSERT_EQ(reinterpret_cast<size_t>(ptr_floatA) & (OMR_ALIGNOF(*ptr_floatA) - 1), 0);
+   ASSERT_EQ(reinterpret_cast<size_t>(ptr_floatB) & (OMR_ALIGNOF(*ptr_floatB) - 1), 0);
+   ASSERT_EQ(reinterpret_cast<size_t>(ptr_doubleA) & (OMR_ALIGNOF(*ptr_doubleA) - 1), 0);
+   ASSERT_EQ(reinterpret_cast<size_t>(ptr_doubleB) & (OMR_ALIGNOF(*ptr_doubleB) - 1), 0);
 
    void     *out_classAptr = NULL, *out_classBptr = NULL;
    void     *out_funcAptr = NULL, *out_funcBptr = NULL;
@@ -594,40 +594,40 @@ TEST(AllTypesCCDataTest, test_basics)
    float    out_floatA = -floatA, out_floatB = -floatB;
    double   out_doubleA = -doubleA, out_doubleB = -doubleB;
 
-   EXPECT_TRUE(table.get(classAptrIndex, out_classAptr));
-   EXPECT_TRUE(table.get(classBptrIndex, out_classBptr));
-   EXPECT_TRUE(table.get(funcAptrIndex, out_funcAptr));
-   EXPECT_TRUE(table.get(funcBptrIndex, out_funcBptr));
-   EXPECT_TRUE(table.get(intAIndex, out_intA));
-   EXPECT_TRUE(table.get(intBIndex, out_intB));
-   EXPECT_TRUE(table.get(shortAIndex, out_shortA));
-   EXPECT_TRUE(table.get(shortBIndex, out_shortB));
-   EXPECT_TRUE(table.get(floatAIndex, out_floatA));
-   EXPECT_TRUE(table.get(floatBIndex, out_floatB));
-   EXPECT_TRUE(table.get(doubleAIndex, out_doubleA));
-   EXPECT_TRUE(table.get(doubleBIndex, out_doubleB));
+   ASSERT_TRUE(table.get(classAptrIndex, out_classAptr));
+   ASSERT_TRUE(table.get(classBptrIndex, out_classBptr));
+   ASSERT_TRUE(table.get(funcAptrIndex, out_funcAptr));
+   ASSERT_TRUE(table.get(funcBptrIndex, out_funcBptr));
+   ASSERT_TRUE(table.get(intAIndex, out_intA));
+   ASSERT_TRUE(table.get(intBIndex, out_intB));
+   ASSERT_TRUE(table.get(shortAIndex, out_shortA));
+   ASSERT_TRUE(table.get(shortBIndex, out_shortB));
+   ASSERT_TRUE(table.get(floatAIndex, out_floatA));
+   ASSERT_TRUE(table.get(floatBIndex, out_floatB));
+   ASSERT_TRUE(table.get(doubleAIndex, out_doubleA));
+   ASSERT_TRUE(table.get(doubleBIndex, out_doubleB));
 
-   EXPECT_EQ(classAptr, out_classAptr);
-   EXPECT_EQ(classBptr, out_classBptr);
-   EXPECT_EQ(funcAptr, out_funcAptr);
-   EXPECT_EQ(funcBptr, out_funcBptr);
-   EXPECT_EQ(intA, out_intA);
-   EXPECT_EQ(intB, out_intB);
-   EXPECT_EQ(shortA, out_shortA);
-   EXPECT_EQ(shortB, out_shortB);
-   EXPECT_EQ(floatA, out_floatA);
-   EXPECT_EQ(floatB, out_floatB);
-   EXPECT_EQ(doubleA, out_doubleA);
-   EXPECT_EQ(doubleB, out_doubleB);
+   ASSERT_EQ(classAptr, out_classAptr);
+   ASSERT_EQ(classBptr, out_classBptr);
+   ASSERT_EQ(funcAptr, out_funcAptr);
+   ASSERT_EQ(funcBptr, out_funcBptr);
+   ASSERT_EQ(intA, out_intA);
+   ASSERT_EQ(intB, out_intB);
+   ASSERT_EQ(shortA, out_shortA);
+   ASSERT_EQ(shortB, out_shortB);
+   ASSERT_EQ(floatA, out_floatA);
+   ASSERT_EQ(floatB, out_floatB);
+   ASSERT_EQ(doubleA, out_doubleA);
+   ASSERT_EQ(doubleB, out_doubleB);
 
-   EXPECT_EQ(CCData::key(classAptr), CCData::key(out_classAptr));
-   EXPECT_EQ(CCData::key(classBptr), CCData::key(out_classBptr));
-   EXPECT_EQ(CCData::key(funcAptr), CCData::key(out_funcAptr));
-   EXPECT_EQ(CCData::key(funcBptr), CCData::key(out_funcBptr));
-   EXPECT_EQ(CCData::key(intA), CCData::key(out_intA));
-   EXPECT_EQ(CCData::key(intB), CCData::key(out_intB));
-   EXPECT_EQ(CCData::key(shortA), CCData::key(out_shortA));
-   EXPECT_EQ(CCData::key(shortB), CCData::key(out_shortB));
+   ASSERT_EQ(CCData::key(classAptr), CCData::key(out_classAptr));
+   ASSERT_EQ(CCData::key(classBptr), CCData::key(out_classBptr));
+   ASSERT_EQ(CCData::key(funcAptr), CCData::key(out_funcAptr));
+   ASSERT_EQ(CCData::key(funcBptr), CCData::key(out_funcBptr));
+   ASSERT_EQ(CCData::key(intA), CCData::key(out_intA));
+   ASSERT_EQ(CCData::key(intB), CCData::key(out_intB));
+   ASSERT_EQ(CCData::key(shortA), CCData::key(out_shortA));
+   ASSERT_EQ(CCData::key(shortB), CCData::key(out_shortB));
 
    CCData::index_t find_classAptrIndex = INVALID_INDEX;
    CCData::index_t find_classBptrIndex = INVALID_INDEX;
@@ -642,29 +642,29 @@ TEST(AllTypesCCDataTest, test_basics)
    CCData::index_t find_doubleAIndex = INVALID_INDEX;
    CCData::index_t find_doubleBIndex = INVALID_INDEX;
 
-   EXPECT_TRUE(table.find(CCData::key(classAptr), &find_classAptrIndex));
-   EXPECT_TRUE(table.find(CCData::key(classBptr), &find_classBptrIndex));
-   EXPECT_TRUE(table.find(CCData::key(funcAptr), &find_funcAptrIndex));
-   EXPECT_TRUE(table.find(CCData::key(funcBptr), &find_funcBptrIndex));
-   EXPECT_TRUE(table.find(CCData::key(intA), &find_intAIndex));
-   EXPECT_TRUE(table.find(CCData::key(intB), &find_intBIndex));
-   EXPECT_TRUE(table.find(CCData::key(shortA), &find_shortAIndex));
-   EXPECT_TRUE(table.find(CCData::key(shortB), &find_shortBIndex));
-   EXPECT_TRUE(table.find(CCData::key("floatA"), &find_floatAIndex));
-   EXPECT_TRUE(table.find(CCData::key("floatB"), &find_floatBIndex));
-   EXPECT_TRUE(table.find(CCData::key("doubleA"), &find_doubleAIndex));
-   EXPECT_TRUE(table.find(CCData::key("doubleB"), &find_doubleBIndex));
+   ASSERT_TRUE(table.find(CCData::key(classAptr), &find_classAptrIndex));
+   ASSERT_TRUE(table.find(CCData::key(classBptr), &find_classBptrIndex));
+   ASSERT_TRUE(table.find(CCData::key(funcAptr), &find_funcAptrIndex));
+   ASSERT_TRUE(table.find(CCData::key(funcBptr), &find_funcBptrIndex));
+   ASSERT_TRUE(table.find(CCData::key(intA), &find_intAIndex));
+   ASSERT_TRUE(table.find(CCData::key(intB), &find_intBIndex));
+   ASSERT_TRUE(table.find(CCData::key(shortA), &find_shortAIndex));
+   ASSERT_TRUE(table.find(CCData::key(shortB), &find_shortBIndex));
+   ASSERT_TRUE(table.find(CCData::key("floatA"), &find_floatAIndex));
+   ASSERT_TRUE(table.find(CCData::key("floatB"), &find_floatBIndex));
+   ASSERT_TRUE(table.find(CCData::key("doubleA"), &find_doubleAIndex));
+   ASSERT_TRUE(table.find(CCData::key("doubleB"), &find_doubleBIndex));
 
-   EXPECT_EQ(classAptrIndex, find_classAptrIndex);
-   EXPECT_EQ(classBptrIndex, find_classBptrIndex);
-   EXPECT_EQ(funcAptrIndex, find_funcAptrIndex);
-   EXPECT_EQ(funcBptrIndex, find_funcBptrIndex);
-   EXPECT_EQ(intAIndex, find_intAIndex);
-   EXPECT_EQ(intBIndex, find_intBIndex);
-   EXPECT_EQ(shortAIndex, find_shortAIndex);
-   EXPECT_EQ(shortBIndex, find_shortBIndex);
-   EXPECT_EQ(floatAIndex, find_floatAIndex);
-   EXPECT_EQ(floatBIndex, find_floatBIndex);
-   EXPECT_EQ(doubleAIndex, find_doubleAIndex);
-   EXPECT_EQ(doubleBIndex, find_doubleBIndex);
+   ASSERT_EQ(classAptrIndex, find_classAptrIndex);
+   ASSERT_EQ(classBptrIndex, find_classBptrIndex);
+   ASSERT_EQ(funcAptrIndex, find_funcAptrIndex);
+   ASSERT_EQ(funcBptrIndex, find_funcBptrIndex);
+   ASSERT_EQ(intAIndex, find_intAIndex);
+   ASSERT_EQ(intBIndex, find_intBIndex);
+   ASSERT_EQ(shortAIndex, find_shortAIndex);
+   ASSERT_EQ(shortBIndex, find_shortBIndex);
+   ASSERT_EQ(floatAIndex, find_floatAIndex);
+   ASSERT_EQ(floatBIndex, find_floatBIndex);
+   ASSERT_EQ(doubleAIndex, find_doubleAIndex);
+   ASSERT_EQ(doubleBIndex, find_doubleBIndex);
    }

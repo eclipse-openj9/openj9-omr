@@ -243,9 +243,29 @@ TYPED_TEST(CCDataTest, test_basics_templated)
    ASSERT_TRUE(table.find(CCData::key(data), &find_index));
    // Make sure it's the same index.
    ASSERT_EQ(index, find_index);
+   }
+
+TYPED_TEST(CCDataTest, test_fill_table_templated)
+   {
+   std::vector<char>    storage(256);
+   CCData               table(&storage[0], storage.size());
+   const TypeParam      data = 99;
+   ssize_t              spaceLeft = storage.size();
+   bool                 putSucceeded = true;
+   CCData::index_t      index = INVALID_INDEX;
 
    // Make sure we can fill the table.
-   while (table.put(data, NULL, index));
+   do
+      {
+      putSucceeded = table.put(data, NULL, index);
+      if (putSucceeded)
+         {
+         spaceLeft -= sizeof(data);
+         }
+      }
+   while (spaceLeft >= 0 && putSucceeded);
+   ASSERT_FALSE(putSucceeded);
+   ASSERT_GE(spaceLeft, 0);
    }
 
 TYPED_TEST(CCDataTest, test_arbitrary_data_templated)
@@ -294,9 +314,30 @@ TYPED_TEST(CCDataTest, test_arbitrary_data_templated)
    ASSERT_TRUE(table.find(CCData::key(&data[0], sizeof(data)), &find_index));
    // Make sure it's the same index.
    ASSERT_EQ(index, find_index);
+   }
+
+TYPED_TEST(CCDataTest, test_fill_table_arbitrary_data_templated)
+   {
+   std::vector<char>    storage(256);
+   CCData               table(&storage[0], storage.size());
+   const TypeParam      d = 99;
+   const TypeParam      data[3] = {d, d, d};
+   ssize_t              spaceLeft = storage.size();
+   bool                 putSucceeded = true;
+   CCData::index_t      index = INVALID_INDEX;
 
    // Make sure we can fill the table.
-   while (table.put(reinterpret_cast<const uint8_t *>(&data[0]), sizeof(data), OMR_ALIGNOF(data), NULL, index));
+   do
+      {
+      putSucceeded = table.put(&data[0], sizeof(data), OMR_ALIGNOF(data), NULL, index);
+      if (putSucceeded)
+         {
+         spaceLeft -= sizeof(data);
+         }
+      }
+   while (spaceLeft >= 0 && putSucceeded);
+   ASSERT_FALSE(putSucceeded);
+   ASSERT_GE(spaceLeft, 0);
    }
 
 TYPED_TEST(CCDataTest, test_no_data_templated)
@@ -355,9 +396,29 @@ TYPED_TEST(CCDataTest, test_no_data_reservation_templated)
    ASSERT_TRUE(table.find(key, &find_index));
    // Make sure it's the same index.
    ASSERT_EQ(index, find_index);
+   }
+
+TYPED_TEST(CCDataTest, test_fill_table_no_data_reservation_templated)
+   {
+   std::vector<char>    storage(256);
+   CCData               table(&storage[0], storage.size());
+   size_t               reservationSize = 32, reservationAlignment = 16;
+   ssize_t              spaceLeft = storage.size();
+   bool                 putSucceeded = true;
+   CCData::index_t      index = INVALID_INDEX;
 
    // Make sure we can fill the table.
-   while (table.reserve(reservationSize, reservationAlignment, NULL, index));
+   do
+      {
+      putSucceeded = table.reserve(reservationSize, reservationAlignment, NULL, index);
+      if (putSucceeded)
+         {
+         spaceLeft -= reservationSize;
+         }
+      }
+   while (spaceLeft >= 0 && putSucceeded);
+   ASSERT_FALSE(putSucceeded);
+   ASSERT_GE(spaceLeft, 0);
    }
 
 #define STRINGIFY(x) #x

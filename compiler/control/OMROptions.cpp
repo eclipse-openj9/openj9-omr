@@ -2247,6 +2247,11 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
             TR::Options::createDebug();
          }
 
+      if (!TR::Options::getCmdLineOptions()->isAnyReductionAlgorithmSet())
+         {
+         _hotFieldReductionAlgorithms.set(TR_HotFieldReductionAlgorithmMax);
+         }
+
       if (self()->setCounts())
          return false; // bad string count
 
@@ -4998,8 +5003,8 @@ char *OMR::Options::setHotFieldReductionAlgorithm(char *option, void *base, TR::
       }
    if (!foundMatch)
       {
-      TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "<JIT: Reduction algorithm not found.  Default sum reduction algorithm set.>");
-      _hotFieldReductionAlgorithms.set(TR_HotFieldReductionAlgorithmSum);
+      TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "<JIT: Invalid reduction algorithm option provided. Default max reduction algorithm set.>");
+      _hotFieldReductionAlgorithms.set(TR_HotFieldReductionAlgorithmMax);
       }
    return option;
    }

@@ -182,25 +182,7 @@ public:
 		return false;
 	}
 
-	/**
-	 * The following methods (defined(OMR_GC_MODRON_SCAVENGER)) are required if generational GC is
- 	 * configured for the build (--enable-OMR_GC_MODRON_SCAVENGER in configure_includes/configure_*.mk).
- 	 * They typically involve a MM_ForwardedHeader object, and allow information about the forwarded
- 	 * object to be obtained.
-	 */
-#if defined(OMR_GC_MODRON_SCAVENGER)
-	/**
-	 * Returns TRUE if the object referred to by the forwarded header is indexable.
-	 *
-	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
-	 * @return TRUE if object is indexable, FALSE otherwise
-	 */
-	MMINLINE bool
-	isIndexable(MM_ForwardedHeader *forwardedHeader)
-	{
-		return false;
-	}
-
+#if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
 	/**
 	 * Returns the field offset of the hottest field of the object referred to by the forwarded header.
 	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled.
@@ -225,6 +207,26 @@ public:
 	getHotFieldOffset2(MM_ForwardedHeader *forwardedHeader)
 	{
 		return U_8_MAX;
+	}
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
+
+	/**
+	 * The following methods (defined(OMR_GC_MODRON_SCAVENGER)) are required if generational GC is
+ 	 * configured for the build (--enable-OMR_GC_MODRON_SCAVENGER in configure_includes/configure_*.mk).
+ 	 * They typically involve a MM_ForwardedHeader object, and allow information about the forwarded
+ 	 * object to be obtained.
+	 */
+#if defined(OMR_GC_MODRON_SCAVENGER)
+	/**
+	 * Returns TRUE if the object referred to by the forwarded header is indexable.
+	 *
+	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
+	 * @return TRUE if object is indexable, FALSE otherwise
+	 */
+	MMINLINE bool
+	isIndexable(MM_ForwardedHeader *forwardedHeader)
+	{
+		return false;
 	}
 
 	/**

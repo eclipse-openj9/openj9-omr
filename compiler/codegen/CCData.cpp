@@ -19,7 +19,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#if (__cplusplus >= 201103L)
 #include <type_traits>
+#endif
 
 #include "omrcomp.h"
 #include "OMR/Bytes.hpp"
@@ -45,7 +47,7 @@ size_t CCData::dataAlignmentFromBytesAlignment(size_t alignmentBytes)
 
 CCData::key_t CCData::key(const void * const data, const size_t sizeBytes)
    {
-#if __cpp_static_assert
+#if (__cplusplus >= 201103L)
    static_assert(std::is_same<key_t::value_type, char>::value, "Keys need to be constructible from a sequence of chars.");
 #endif
    return key_t(reinterpret_cast<const key_t::value_type *>(data), sizeBytes);

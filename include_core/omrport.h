@@ -1797,6 +1797,8 @@ typedef struct OMRPortLibrary {
 	intptr_t  ( *sysinfo_processor_set_feature)(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, uint32_t feature, BOOLEAN enable) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_processor_feature_name "omrsysinfo_get_processor_feature_name"*/
 	const char  *( *sysinfo_get_processor_feature_name)(struct OMRPortLibrary *portLibrary, uint32_t feature) ;
+	/** see @ref omrsysinfo.c::omrsysinfo_get_processor_feature_string "omrsysinfo_get_processor_feature_string"*/
+	void ( *sysinfo_get_processor_feature_string)(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, char * buffer, const size_t length) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_OS_type "omrsysinfo_get_OS_type"*/
 	const char *(*sysinfo_get_OS_type)(struct OMRPortLibrary *portLibrary) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_executable_name "omrsysinfo_get_executable_name"*/
@@ -2687,6 +2689,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsysinfo_processor_has_feature(param1,param2) privateOmrPortLibrary->sysinfo_processor_has_feature(privateOmrPortLibrary,param1,param2)
 #define omrsysinfo_processor_set_feature(param1,param2,param3) privateOmrPortLibrary->sysinfo_processor_set_feature(privateOmrPortLibrary,param1,param2,param3)
 #define omrsysinfo_get_processor_feature_name(param1) privateOmrPortLibrary->sysinfo_get_processor_feature_name(privateOmrPortLibrary,param1)
+#define omrsysinfo_get_processor_feature_string(param1,param2,param3) privateOmrPortLibrary->sysinfo_get_processor_feature_string(privateOmrPortLibrary,param1,param2,param3)
 #define omrsysinfo_get_OS_type() privateOmrPortLibrary->sysinfo_get_OS_type(privateOmrPortLibrary)
 #define omrsysinfo_get_executable_name(param1,param2) privateOmrPortLibrary->sysinfo_get_executable_name(privateOmrPortLibrary, (param1), (param2))
 #define omrsysinfo_get_username(param1,param2) privateOmrPortLibrary->sysinfo_get_username(privateOmrPortLibrary, (param1), (param2))

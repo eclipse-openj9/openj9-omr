@@ -164,6 +164,20 @@ omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32
 }
 
 /**
+ * Generate the corresponding string literals for the provided OMRProcessorDesc. The buffer will be zero 
+ * initialized and overwritten with the processor feature output string.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] desc The struct that contains the list of processor features to be converted to string.
+ * @param[out] buffer The processor feature output string.
+ * @param[in] length The size of the buffer in number of bytes.
+ */
+void
+omrsysinfo_get_processor_feature_string(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, char *buffer, const size_t length)
+{
+}
+
+/**
  * Query the operating system for environment variables.
  *
  * Obtain the value of the environment variable specified by envVar from the operating system

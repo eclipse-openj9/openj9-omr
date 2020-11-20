@@ -22,25 +22,7 @@
 #ifndef OMR_ILOPCODES_ENUM_INCL
 #define OMR_ILOPCODES_ENUM_INCL
 
-//  NOTE: IF you add opcodes or change the order then you must fix the following
-//        files (at least): ./ILOpCodeProperties.hpp
-//                          compiler/ras/Tree.cpp (2 tables)
-//                          compiler/optimizer/SimplifierTable.hpp
-//                          compiler/optimizer/ValuePropagationTable.hpp
-//                          compiler/x/amd64/codegen/TreeEvaluatorTable.cpp
-//                          compiler/x/i386/codegen/TreeEvaluatorTable.cpp
-//                          compiler/p/codegen/TreeEvaluatorTable.cpp
-//                          compiler/z/codegen/TreeEvaluatorTable.cpp
-//                          compiler/aarch64/codegen/TreeEvaluatorTable.cpp
-//                          compiler/arm/codegen/TreeEvaluatorTable.cpp
-//                          compiler/il/OMRILOpCodesEnum.hpp
-//                          compiler/il/ILOpCodes.hpp
-// Also check tables in ../codegen/ILOps.hpp
-
-
-#include "il/OMROpcodes.hpp"
-
-#define GET_ENUM_VAL(\
+#define OPCODE_MACRO(\
    opcode, \
    name, \
    prop1, \
@@ -54,13 +36,15 @@
    reverseBranchOpcode, \
    boolCompareOpcode, \
    ifCompareOpcode, \
-   enumValue, \
-   ...) enumValue,
+   ...) opcode,
 
    FirstOMROp,
    BadILOp = 0,
-   FOR_EACH_OPCODE(GET_ENUM_VAL)
+
+#include "il/Opcodes.enum"
+
    LastOMROp = Prefetch,
 
-#undef GET_ENUM_VAL
+#undef OPCODE_MACRO
+
 #endif

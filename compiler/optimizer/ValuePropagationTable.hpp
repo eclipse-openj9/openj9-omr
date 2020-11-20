@@ -22,8 +22,6 @@
 #ifndef VALUEPROPAGATIONTABLE_INCL
 #define VALUEPROPAGATIONTABLE_INCL
 
-#include "il/OMROpcodes.hpp"
-
 TR::Node *constrainAcall(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainAConst(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainAdd(OMR::ValuePropagation *vp, TR::Node *node);
@@ -878,10 +876,403 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define lbitpermuteVPHandler constrainChildren
 #define PrefetchVPHandler constrainChildren
 
+#ifdef J9_PROJECT_SPECIFIC
+#define dfconstVPHandler constrainChildren
+#define ddconstVPHandler constrainChildren
+#define deconstVPHandler constrainChildren
+#define dfloadVPHandler constrainChildren
+#define ddloadVPHandler constrainChildren
+#define deloadVPHandler constrainChildren
+#define dfloadiVPHandler constrainChildren
+#define ddloadiVPHandler constrainChildren
+#define deloadiVPHandler constrainChildren
+#define dfstoreVPHandler constrainChildren
+#define ddstoreVPHandler constrainChildren
+#define destoreVPHandler constrainChildren
+#define dfstoreiVPHandler constrainChildren
+#define ddstoreiVPHandler constrainChildren
+#define destoreiVPHandler constrainChildren
+#define dfreturnVPHandler constrainReturn
+#define ddreturnVPHandler constrainReturn
+#define dereturnVPHandler constrainReturn
+#define dfcallVPHandler constrainCall
+#define ddcallVPHandler constrainCall
+#define decallVPHandler constrainCall
+#define dfcalliVPHandler constrainCall
+#define ddcalliVPHandler constrainCall
+#define decalliVPHandler constrainCall
+#define dfaddVPHandler constrainChildren
+#define ddaddVPHandler constrainChildren
+#define deaddVPHandler constrainChildren
+#define dfsubVPHandler constrainChildren
+#define ddsubVPHandler constrainChildren
+#define desubVPHandler constrainChildren
+#define dfmulVPHandler constrainChildren
+#define ddmulVPHandler constrainChildren
+#define demulVPHandler constrainChildren
+#define dfdivVPHandler constrainChildren
+#define dddivVPHandler constrainChildren
+#define dedivVPHandler constrainChildren
+#define dfremVPHandler constrainChildren
+#define ddremVPHandler constrainChildren
+#define deremVPHandler constrainChildren
+#define dfnegVPHandler constrainChildren
+#define ddnegVPHandler constrainChildren
+#define denegVPHandler constrainChildren
+#define dfabsVPHandler constrainChildren
+#define ddabsVPHandler constrainChildren
+#define deabsVPHandler constrainChildren
+#define dfshlVPHandler constrainChildren
+#define dfshrVPHandler constrainChildren
+#define ddshlVPHandler constrainChildren
+#define ddshrVPHandler constrainChildren
+#define deshlVPHandler constrainChildren
+#define deshrVPHandler constrainChildren
+#define dfshrRoundedVPHandler constrainChildren
+#define ddshrRoundedVPHandler constrainChildren
+#define deshrRoundedVPHandler constrainChildren
+#define dfSetNegativeVPHandler constrainChildren
+#define ddSetNegativeVPHandler constrainChildren
+#define deSetNegativeVPHandler constrainChildren
+#define dfModifyPrecisionVPHandler constrainChildren
+#define ddModifyPrecisionVPHandler constrainChildren
+#define deModifyPrecisionVPHandler constrainChildren
+#define i2dfVPHandler constrainChildren
+#define iu2dfVPHandler constrainChildren
+#define l2dfVPHandler constrainChildren
+#define lu2dfVPHandler constrainChildren
+#define f2dfVPHandler constrainChildren
+#define d2dfVPHandler constrainChildren
+#define dd2dfVPHandler constrainChildren
+#define de2dfVPHandler constrainChildren
+#define b2dfVPHandler constrainChildren
+#define bu2dfVPHandler constrainChildren
+#define s2dfVPHandler constrainChildren
+#define su2dfVPHandler constrainChildren
+#define df2iVPHandler constrainChildren
+#define df2iuVPHandler constrainChildren
+#define df2lVPHandler constrainChildren
+#define df2luVPHandler constrainChildren
+#define df2fVPHandler constrainChildren
+#define df2dVPHandler constrainChildren
+#define df2ddVPHandler constrainChildren
+#define df2deVPHandler constrainChildren
+#define df2bVPHandler constrainChildren
+#define df2buVPHandler constrainChildren
+#define df2sVPHandler constrainChildren
+#define df2cVPHandler constrainChildren
+#define i2ddVPHandler constrainChildren
+#define iu2ddVPHandler constrainChildren
+#define l2ddVPHandler constrainChildren
+#define lu2ddVPHandler constrainChildren
+#define f2ddVPHandler constrainChildren
+#define d2ddVPHandler constrainChildren
+#define de2ddVPHandler constrainChildren
+#define b2ddVPHandler constrainChildren
+#define bu2ddVPHandler constrainChildren
+#define s2ddVPHandler constrainChildren
+#define su2ddVPHandler constrainChildren
+#define dd2iVPHandler constrainChildren
+#define dd2iuVPHandler constrainChildren
+#define dd2lVPHandler constrainChildren
+#define dd2luVPHandler constrainChildren
+#define dd2fVPHandler constrainChildren
+#define dd2dVPHandler constrainChildren
+#define dd2deVPHandler constrainChildren
+#define dd2bVPHandler constrainChildren
+#define dd2buVPHandler constrainChildren
+#define dd2sVPHandler constrainChildren
+#define dd2cVPHandler constrainChildren
+#define i2deVPHandler constrainChildren
+#define iu2deVPHandler constrainChildren
+#define l2deVPHandler constrainChildren
+#define lu2deVPHandler constrainChildren
+#define f2deVPHandler constrainChildren
+#define d2deVPHandler constrainChildren
+#define b2deVPHandler constrainChildren
+#define bu2deVPHandler constrainChildren
+#define s2deVPHandler constrainChildren
+#define su2deVPHandler constrainChildren
+#define de2iVPHandler constrainChildren
+#define de2iuVPHandler constrainChildren
+#define de2lVPHandler constrainChildren
+#define de2luVPHandler constrainChildren
+#define de2fVPHandler constrainChildren
+#define de2dVPHandler constrainChildren
+#define de2bVPHandler constrainChildren
+#define de2buVPHandler constrainChildren
+#define de2sVPHandler constrainChildren
+#define de2cVPHandler constrainChildren
+#define ifdfcmpeqVPHandler constrainCondBranch
+#define ifdfcmpneVPHandler constrainCondBranch
+#define ifdfcmpltVPHandler constrainCondBranch
+#define ifdfcmpgeVPHandler constrainCondBranch
+#define ifdfcmpgtVPHandler constrainCondBranch
+#define ifdfcmpleVPHandler constrainCondBranch
+#define ifdfcmpequVPHandler constrainCondBranch
+#define ifdfcmpneuVPHandler constrainCondBranch
+#define ifdfcmpltuVPHandler constrainCondBranch
+#define ifdfcmpgeuVPHandler constrainCondBranch
+#define ifdfcmpgtuVPHandler constrainCondBranch
+#define ifdfcmpleuVPHandler constrainCondBranch
+#define dfcmpeqVPHandler constrainChildren
+#define dfcmpneVPHandler constrainChildren
+#define dfcmpltVPHandler constrainChildren
+#define dfcmpgeVPHandler constrainChildren
+#define dfcmpgtVPHandler constrainChildren
+#define dfcmpleVPHandler constrainChildren
+#define dfcmpequVPHandler constrainChildren
+#define dfcmpneuVPHandler constrainChildren
+#define dfcmpltuVPHandler constrainChildren
+#define dfcmpgeuVPHandler constrainChildren
+#define dfcmpgtuVPHandler constrainChildren
+#define dfcmpleuVPHandler constrainChildren
+#define ifddcmpeqVPHandler constrainCondBranch
+#define ifddcmpneVPHandler constrainCondBranch
+#define ifddcmpltVPHandler constrainCondBranch
+#define ifddcmpgeVPHandler constrainCondBranch
+#define ifddcmpgtVPHandler constrainCondBranch
+#define ifddcmpleVPHandler constrainCondBranch
+#define ifddcmpequVPHandler constrainCondBranch
+#define ifddcmpneuVPHandler constrainCondBranch
+#define ifddcmpltuVPHandler constrainCondBranch
+#define ifddcmpgeuVPHandler constrainCondBranch
+#define ifddcmpgtuVPHandler constrainCondBranch
+#define ifddcmpleuVPHandler constrainCondBranch
+#define ddcmpeqVPHandler constrainChildren
+#define ddcmpneVPHandler constrainChildren
+#define ddcmpltVPHandler constrainChildren
+#define ddcmpgeVPHandler constrainChildren
+#define ddcmpgtVPHandler constrainChildren
+#define ddcmpleVPHandler constrainChildren
+#define ddcmpequVPHandler constrainChildren
+#define ddcmpneuVPHandler constrainChildren
+#define ddcmpltuVPHandler constrainChildren
+#define ddcmpgeuVPHandler constrainChildren
+#define ddcmpgtuVPHandler constrainChildren
+#define ddcmpleuVPHandler constrainChildren
+#define ifdecmpeqVPHandler constrainCondBranch
+#define ifdecmpneVPHandler constrainCondBranch
+#define ifdecmpltVPHandler constrainCondBranch
+#define ifdecmpgeVPHandler constrainCondBranch
+#define ifdecmpgtVPHandler constrainCondBranch
+#define ifdecmpleVPHandler constrainCondBranch
+#define ifdecmpequVPHandler constrainCondBranch
+#define ifdecmpneuVPHandler constrainCondBranch
+#define ifdecmpltuVPHandler constrainCondBranch
+#define ifdecmpgeuVPHandler constrainCondBranch
+#define ifdecmpgtuVPHandler constrainCondBranch
+#define ifdecmpleuVPHandler constrainCondBranch
+#define decmpeqVPHandler constrainChildren
+#define decmpneVPHandler constrainChildren
+#define decmpltVPHandler constrainChildren
+#define decmpgeVPHandler constrainChildren
+#define decmpgtVPHandler constrainChildren
+#define decmpleVPHandler constrainChildren
+#define decmpequVPHandler constrainChildren
+#define decmpneuVPHandler constrainChildren
+#define decmpltuVPHandler constrainChildren
+#define decmpgeuVPHandler constrainChildren
+#define decmpgtuVPHandler constrainChildren
+#define decmpleuVPHandler constrainChildren
+#define dfRegLoadVPHandler constrainChildren
+#define ddRegLoadVPHandler constrainChildren
+#define deRegLoadVPHandler constrainChildren
+#define dfRegStoreVPHandler constrainChildren
+#define ddRegStoreVPHandler constrainChildren
+#define deRegStoreVPHandler constrainChildren
+#define dfselectVPHandler constrainChildrenFirstToLast
+#define ddselectVPHandler constrainChildrenFirstToLast
+#define deselectVPHandler constrainChildrenFirstToLast
+#define dfexpVPHandler constrainChildren
+#define ddexpVPHandler constrainChildren
+#define deexpVPHandler constrainChildren
+#define dfnintVPHandler constrainChildren
+#define ddnintVPHandler constrainChildren
+#define denintVPHandler constrainChildren
+#define dfsqrtVPHandler constrainChildren
+#define ddsqrtVPHandler constrainChildren
+#define desqrtVPHandler constrainChildren
+#define dfcosVPHandler constrainChildren
+#define ddcosVPHandler constrainChildren
+#define decosVPHandler constrainChildren
+#define dfsinVPHandler constrainChildren
+#define ddsinVPHandler constrainChildren
+#define desinVPHandler constrainChildren
+#define dftanVPHandler constrainChildren
+#define ddtanVPHandler constrainChildren
+#define detanVPHandler constrainChildren
+#define dfcoshVPHandler constrainChildren
+#define ddcoshVPHandler constrainChildren
+#define decoshVPHandler constrainChildren
+#define dfsinhVPHandler constrainChildren
+#define ddsinhVPHandler constrainChildren
+#define desinhVPHandler constrainChildren
+#define dftanhVPHandler constrainChildren
+#define ddtanhVPHandler constrainChildren
+#define detanhVPHandler constrainChildren
+#define dfacosVPHandler constrainChildren
+#define ddacosVPHandler constrainChildren
+#define deacosVPHandler constrainChildren
+#define dfasinVPHandler constrainChildren
+#define ddasinVPHandler constrainChildren
+#define deasinVPHandler constrainChildren
+#define dfatanVPHandler constrainChildren
+#define ddatanVPHandler constrainChildren
+#define deatanVPHandler constrainChildren
+#define dfatan2VPHandler constrainChildren
+#define ddatan2VPHandler constrainChildren
+#define deatan2VPHandler constrainChildren
+#define dflogVPHandler constrainChildren
+#define ddlogVPHandler constrainChildren
+#define delogVPHandler constrainChildren
+#define dffloorVPHandler constrainChildren
+#define ddfloorVPHandler constrainChildren
+#define defloorVPHandler constrainChildren
+#define dfceilVPHandler constrainChildren
+#define ddceilVPHandler constrainChildren
+#define deceilVPHandler constrainChildren
+#define dfmaxVPHandler constrainChildren
+#define ddmaxVPHandler constrainChildren
+#define demaxVPHandler constrainChildren
+#define dfminVPHandler constrainChildren
+#define ddminVPHandler constrainChildren
+#define deminVPHandler constrainChildren
+#define dfInsExpVPHandler constrainChildren
+#define ddInsExpVPHandler constrainChildren
+#define deInsExpVPHandler constrainChildren
+#define ddcleanVPHandler constrainChildren
+#define decleanVPHandler constrainChildren
+#define zdloadVPHandler constrainBCDAggrLoad
+#define zdloadiVPHandler constrainBCDAggrLoad
+#define zdstoreVPHandler constrainStore
+#define zdstoreiVPHandler constrainStore
+#define pd2zdVPHandler constrainChildren
+#define zd2pdVPHandler constrainChildren
+#define zdsleLoadVPHandler constrainBCDAggrLoad
+#define zdslsLoadVPHandler constrainBCDAggrLoad
+#define zdstsLoadVPHandler constrainBCDAggrLoad
+#define zdsleLoadiVPHandler constrainBCDAggrLoad
+#define zdslsLoadiVPHandler constrainBCDAggrLoad
+#define zdstsLoadiVPHandler constrainBCDAggrLoad
+#define zdsleStoreVPHandler constrainStore
+#define zdslsStoreVPHandler constrainStore
+#define zdstsStoreVPHandler constrainStore
+#define zdsleStoreiVPHandler constrainStore
+#define zdslsStoreiVPHandler constrainStore
+#define zdstsStoreiVPHandler constrainStore
+#define zd2zdsleVPHandler constrainChildren
+#define zd2zdslsVPHandler constrainChildren
+#define zd2zdstsVPHandler constrainChildren
+#define zdsle2pdVPHandler constrainChildren
+#define zdsls2pdVPHandler constrainChildren
+#define zdsts2pdVPHandler constrainChildren
+#define zdsle2zdVPHandler constrainChildren
+#define zdsls2zdVPHandler constrainChildren
+#define zdsts2zdVPHandler constrainChildren
+#define pd2zdslsVPHandler constrainChildren
+#define pd2zdslsSetSignVPHandler constrainChildren
+#define pd2zdstsVPHandler constrainChildren
+#define pd2zdstsSetSignVPHandler constrainChildren
+#define zd2dfVPHandler constrainChildren
+#define df2zdVPHandler constrainChildren
+#define zd2ddVPHandler constrainChildren
+#define dd2zdVPHandler constrainChildren
+#define zd2deVPHandler constrainChildren
+#define de2zdVPHandler constrainChildren
+#define zd2dfAbsVPHandler constrainChildren
+#define zd2ddAbsVPHandler constrainChildren
+#define zd2deAbsVPHandler constrainChildren
+#define df2zdSetSignVPHandler constrainChildren
+#define dd2zdSetSignVPHandler constrainChildren
+#define de2zdSetSignVPHandler constrainChildren
+#define df2zdCleanVPHandler constrainChildren
+#define dd2zdCleanVPHandler constrainChildren
+#define de2zdCleanVPHandler constrainChildren
+#define udLoadVPHandler constrainBCDAggrLoad
+#define udslLoadVPHandler constrainBCDAggrLoad
+#define udstLoadVPHandler constrainBCDAggrLoad
+#define udLoadiVPHandler constrainBCDAggrLoad
+#define udslLoadiVPHandler constrainBCDAggrLoad
+#define udstLoadiVPHandler constrainBCDAggrLoad
+#define udStoreVPHandler constrainStore
+#define udslStoreVPHandler constrainStore
+#define udstStoreVPHandler constrainStore
+#define udStoreiVPHandler constrainStore
+#define udslStoreiVPHandler constrainStore
+#define udstStoreiVPHandler constrainStore
+#define pd2udVPHandler constrainChildren
+#define pd2udslVPHandler constrainChildren
+#define pd2udstVPHandler constrainChildren
+#define udsl2udVPHandler constrainChildren
+#define udst2udVPHandler constrainChildren
+#define ud2pdVPHandler constrainChildren
+#define udsl2pdVPHandler constrainChildren
+#define udst2pdVPHandler constrainChildren
+#define pdloadVPHandler constrainBCDAggrLoad
+#define pdloadiVPHandler constrainBCDAggrLoad
+#define pdstoreVPHandler constrainStore
+#define pdstoreiVPHandler constrainStore
+#define pdaddVPHandler constrainChildren
+#define pdsubVPHandler constrainChildren
+#define pdmulVPHandler constrainChildren
+#define pddivVPHandler constrainChildren
+#define pdremVPHandler constrainChildren
+#define pdnegVPHandler constrainChildren
+#define pdabsVPHandler constrainChildren
+#define pdshrVPHandler constrainChildren
+#define pdshlVPHandler constrainChildren
+#define pdshrSetSignVPHandler constrainChildren
+#define pdshlSetSignVPHandler constrainChildren
+#define pdshlOverflowVPHandler constrainChildren
+#define pdchkVPHandler constrainChildren
+#define pd2iVPHandler constrainBCDToIntegral
+#define pd2iOverflowVPHandler constrainChildren
+#define pd2iuVPHandler constrainBCDToIntegral
+#define i2pdVPHandler constrainIntegralToBCD
+#define iu2pdVPHandler constrainIntegralToBCD
+#define pd2lVPHandler constrainBCDToIntegral
+#define pd2lOverflowVPHandler constrainChildren
+#define pd2luVPHandler constrainBCDToIntegral
+#define l2pdVPHandler constrainIntegralToBCD
+#define lu2pdVPHandler constrainIntegralToBCD
+#define pd2fVPHandler constrainChildren
+#define pd2dVPHandler constrainChildren
+#define f2pdVPHandler constrainChildren
+#define d2pdVPHandler constrainChildren
+#define pdcmpeqVPHandler constrainChildren
+#define pdcmpneVPHandler constrainChildren
+#define pdcmpltVPHandler constrainChildren
+#define pdcmpgeVPHandler constrainChildren
+#define pdcmpgtVPHandler constrainChildren
+#define pdcmpleVPHandler constrainChildren
+#define pdcleanVPHandler constrainChildren
+#define pdclearVPHandler constrainChildren
+#define pdclearSetSignVPHandler constrainChildren
+#define pdSetSignVPHandler constrainChildren
+#define pdModifyPrecisionVPHandler constrainChildren
+#define countDigitsVPHandler constrainChildren
+#define pd2dfVPHandler constrainChildren
+#define pd2dfAbsVPHandler constrainChildren
+#define df2pdVPHandler constrainChildren
+#define df2pdSetSignVPHandler constrainChildren
+#define df2pdCleanVPHandler constrainChildren
+#define pd2ddVPHandler constrainChildren
+#define pd2ddAbsVPHandler constrainChildren
+#define dd2pdVPHandler constrainChildren
+#define dd2pdSetSignVPHandler constrainChildren
+#define dd2pdCleanVPHandler constrainChildren
+#define pd2deVPHandler constrainChildren
+#define pd2deAbsVPHandler constrainChildren
+#define de2pdVPHandler constrainChildren
+#define de2pdSetSignVPHandler constrainChildren
+#define de2pdCleanVPHandler constrainChildren
+#define BCDCHKVPHandler constrainBCDCHK
+#endif
 
 const ValuePropagationPtr constraintHandlers[] =
    {
-#define GET_VP_HANDLER(\
+#define OPCODE_MACRO(\
    opcode, \
    name, \
    prop1, \
@@ -895,459 +1286,13 @@ const ValuePropagationPtr constraintHandlers[] =
    reverseBranchOpcode, \
    boolCompareOpcode, \
    ifCompareOpcode, \
-   enumValue, \
-   ...) enumValue ## VPHandler,
+   ...) opcode ## VPHandler,
 
    BadILOpVPHandler,
-   FOR_EACH_OPCODE(GET_VP_HANDLER)
 
-#undef GET_VP_HANDLER
-
-#ifdef J9_PROJECT_SPECIFIC
-   constrainChildren,           // TR::dfconst
-   constrainChildren,           // TR::ddconst
-   constrainChildren,           // TR::deconst
-   constrainChildren,           // TR::dfload
-   constrainChildren,           // TR::ddload
-   constrainChildren,           // TR::deload
-   constrainChildren,           // TR::dfloadi
-   constrainChildren,           // TR::ddloadi
-   constrainChildren,           // TR::deloadi
-   constrainChildren,           // TR::dfstore
-   constrainChildren,           // TR::ddstore
-   constrainChildren,           // TR::destore
-   constrainChildren,           // TR::dfstorei
-   constrainChildren,           // TR::ddstorei
-   constrainChildren,           // TR::destorei
-   constrainReturn,             // TR::dfreturn
-   constrainReturn,             // TR::ddreturn
-   constrainReturn,             // TR::dereturn
-   constrainCall,               // TR::dfcall
-   constrainCall,               // TR::ddcall
-   constrainCall,               // TR::decall
-   constrainCall,               // TR::idfcall
-   constrainCall,               // TR::iddcall
-   constrainCall,               // TR::idecall
-   constrainChildren,           // TR::dfadd
-   constrainChildren,           // TR::ddadd
-   constrainChildren,           // TR::deadd
-   constrainChildren,           // TR::dfsub
-   constrainChildren,           // TR::ddsub
-   constrainChildren,           // TR::desub
-   constrainChildren,           // TR::dfmul
-   constrainChildren,           // TR::ddmul
-   constrainChildren,           // TR::demul
-   constrainChildren,           // TR::dfdiv
-   constrainChildren,           // TR::dddiv
-   constrainChildren,           // TR::dediv
-   constrainChildren,           // TR::dfrem
-   constrainChildren,           // TR::ddrem
-   constrainChildren,           // TR::derem
-   constrainChildren,           // TR::dfneg
-   constrainChildren,           // TR::ddneg
-   constrainChildren,           // TR::deneg
-   constrainChildren,           // TR::dfabs
-   constrainChildren,           // TR::ddabs
-   constrainChildren,           // TR::deabs
-   constrainChildren,           // TR::dfshl
-   constrainChildren,           // TR::dfshr
-   constrainChildren,           // TR::ddshl
-   constrainChildren,           // TR::ddshr
-   constrainChildren,           // TR::deshl
-   constrainChildren,           // TR::deshr
-   constrainChildren,           // TR::dfshrRounded
-   constrainChildren,           // TR::ddshrRounded
-   constrainChildren,           // TR::deshrRounded
-   constrainChildren,           // TR::dfSetNegative
-   constrainChildren,           // TR::ddSetNegative
-   constrainChildren,           // TR::deSetNegative
-   constrainChildren,           // TR::dfModifyPrecision
-   constrainChildren,           // TR::ddModifyPrecision
-   constrainChildren,           // TR::deModifyPrecision
-
-   constrainChildren,           // TR::i2df
-   constrainChildren,           // TR::iu2df
-   constrainChildren,           // TR::l2df
-   constrainChildren,           // TR::lu2df
-   constrainChildren,           // TR::f2df
-   constrainChildren,           // TR::d2df
-   constrainChildren,           // TR::dd2df
-   constrainChildren,           // TR::de2df
-   constrainChildren,           // TR::b2df
-   constrainChildren,           // TR::bu2df
-   constrainChildren,           // TR::s2df
-   constrainChildren,           // TR::su2df
-
-   constrainChildren,           // TR::df2i
-   constrainChildren,           // TR::df2iu
-   constrainChildren,           // TR::df2l
-   constrainChildren,           // TR::df2lu
-   constrainChildren,           // TR::df2f
-   constrainChildren,           // TR::df2d
-   constrainChildren,           // TR::df2dd
-   constrainChildren,           // TR::df2de
-   constrainChildren,           // TR::df2b
-   constrainChildren,           // TR::df2bu
-   constrainChildren,           // TR::df2s
-   constrainChildren,           // TR::df2c
-
-   constrainChildren,           // TR::i2dd
-   constrainChildren,           // TR::iu2dd
-   constrainChildren,           // TR::l2dd
-   constrainChildren,           // TR::lu2dd
-   constrainChildren,           // TR::f2dd
-   constrainChildren,           // TR::d2dd
-   constrainChildren,           // TR::de2dd
-   constrainChildren,           // TR::b2dd
-   constrainChildren,           // TR::bu2dd
-   constrainChildren,           // TR::s2dd
-   constrainChildren,           // TR::su2dd
-
-   constrainChildren,           // TR::dd2i
-   constrainChildren,           // TR::dd2iu
-   constrainChildren,           // TR::dd2l
-   constrainChildren,           // TR::dd2lu
-   constrainChildren,           // TR::dd2f
-   constrainChildren,           // TR::dd2d
-   constrainChildren,           // TR::dd2de
-   constrainChildren,           // TR::dd2b
-   constrainChildren,           // TR::dd2bu
-   constrainChildren,           // TR::dd2s
-   constrainChildren,           // TR::dd2c
-
-   constrainChildren,           // TR::i2de
-   constrainChildren,           // TR::iu2de
-   constrainChildren,           // TR::l2de
-   constrainChildren,           // TR::lu2de
-   constrainChildren,           // TR::f2de
-   constrainChildren,           // TR::d2de
-   constrainChildren,           // TR::b2de
-   constrainChildren,           // TR::bu2de
-   constrainChildren,           // TR::s2de
-   constrainChildren,           // TR::su2de
-
-   constrainChildren,           // TR::de2i
-   constrainChildren,           // TR::de2iu
-   constrainChildren,           // TR::de2l
-   constrainChildren,           // TR::de2lu
-   constrainChildren,           // TR::de2f
-   constrainChildren,           // TR::de2d
-   constrainChildren,           // TR::de2b
-   constrainChildren,           // TR::de2bu
-   constrainChildren,           // TR::de2s
-   constrainChildren,           // TR::de2c
-
-   constrainCondBranch,         // TR::ifdfcmpeq
-   constrainCondBranch,         // TR::ifdfcmpne
-   constrainCondBranch,         // TR::ifdfcmplt
-   constrainCondBranch,         // TR::ifdfcmpge
-   constrainCondBranch,         // TR::ifdfcmpgt
-   constrainCondBranch,         // TR::ifdfcmple
-   constrainCondBranch,         // TR::ifdfcmpequ
-   constrainCondBranch,         // TR::ifdfcmpneu
-   constrainCondBranch,         // TR::ifdfcmpltu
-   constrainCondBranch,         // TR::ifdfcmpgeu
-   constrainCondBranch,         // TR::ifdfcmpgtu
-   constrainCondBranch,         // TR::ifdfcmpleu
-
-   constrainChildren,           // TR::dfcmpeq
-   constrainChildren,           // TR::dfcmpne
-   constrainChildren,           // TR::dfcmplt
-   constrainChildren,           // TR::dfcmpge
-   constrainChildren,           // TR::dfcmpgt
-   constrainChildren,           // TR::dfcmple
-   constrainChildren,           // TR::dfcmpequ
-   constrainChildren,           // TR::dfcmpneu
-   constrainChildren,           // TR::dfcmpltu
-   constrainChildren,           // TR::dfcmpgeu
-   constrainChildren,           // TR::dfcmpgtu
-   constrainChildren,           // TR::dfcmpleu
-
-   constrainCondBranch,         // TR::ifddcmpeq
-   constrainCondBranch,         // TR::ifddcmpne
-   constrainCondBranch,         // TR::ifddcmplt
-   constrainCondBranch,         // TR::ifddcmpge
-   constrainCondBranch,         // TR::ifddcmpgt
-   constrainCondBranch,         // TR::ifddcmple
-   constrainCondBranch,         // TR::ifddcmpequ
-   constrainCondBranch,         // TR::ifddcmpneu
-   constrainCondBranch,         // TR::ifddcmpltu
-   constrainCondBranch,         // TR::ifddcmpgeu
-   constrainCondBranch,         // TR::ifddcmpgtu
-   constrainCondBranch,         // TR::ifddcmpleu
-
-   constrainChildren,           // TR::ddcmpeq
-   constrainChildren,           // TR::ddcmpne
-   constrainChildren,           // TR::ddcmplt
-   constrainChildren,           // TR::ddcmpge
-   constrainChildren,           // TR::ddcmpgt
-   constrainChildren,           // TR::ddcmple
-   constrainChildren,           // TR::ddcmpequ
-   constrainChildren,           // TR::ddcmpneu
-   constrainChildren,           // TR::ddcmpltu
-   constrainChildren,           // TR::ddcmpgeu
-   constrainChildren,           // TR::ddcmpgtu
-   constrainChildren,           // TR::ddcmpleu
-
-   constrainCondBranch,         // TR::ifdecmpeq
-   constrainCondBranch,         // TR::ifdecmpne
-   constrainCondBranch,         // TR::ifdecmplt
-   constrainCondBranch,         // TR::ifdecmpge
-   constrainCondBranch,         // TR::ifdecmpgt
-   constrainCondBranch,         // TR::ifdecmple
-   constrainCondBranch,         // TR::ifdecmpequ
-   constrainCondBranch,         // TR::ifdecmpneu
-   constrainCondBranch,         // TR::ifdecmpltu
-   constrainCondBranch,         // TR::ifdecmpgeu
-   constrainCondBranch,         // TR::ifdecmpgtu
-   constrainCondBranch,         // TR::ifdecmpleu
-
-   constrainChildren,           // TR::decmpeq
-   constrainChildren,           // TR::decmpne
-   constrainChildren,           // TR::decmplt
-   constrainChildren,           // TR::decmpge
-   constrainChildren,           // TR::decmpgt
-   constrainChildren,           // TR::decmple
-   constrainChildren,           // TR::decmpequ
-   constrainChildren,           // TR::decmpneu
-   constrainChildren,           // TR::decmpltu
-   constrainChildren,           // TR::decmpgeu
-   constrainChildren,           // TR::decmpgtu
-   constrainChildren,           // TR::decmpleu
-
-   constrainChildren,           // TR::dfRegLoad
-   constrainChildren,           // TR::ddRegLoad
-   constrainChildren,           // TR::deRegLoad
-   constrainChildren,           // TR::dfRegStore
-   constrainChildren,           // TR::ddRegStore
-   constrainChildren,           // TR::deRegStore
-
-   constrainChildrenFirstToLast,        // TR::dfselect
-   constrainChildrenFirstToLast,        // TR::ddselect
-   constrainChildrenFirstToLast,        // TR::deselect
-
-   constrainChildren,           // TR::dfexp
-   constrainChildren,           // TR::ddexp
-   constrainChildren,           // TR::deexp
-   constrainChildren,           // TR::dfnint
-   constrainChildren,           // TR::ddnint
-   constrainChildren,           // TR::denint
-   constrainChildren,           // TR::dfsqrt
-   constrainChildren,           // TR::ddsqrt
-   constrainChildren,           // TR::desqrt
-
-   constrainChildren,           // TR::dfcos
-   constrainChildren,           // TR::ddcos
-   constrainChildren,           // TR::decos
-   constrainChildren,           // TR::dfsin
-   constrainChildren,           // TR::ddsin
-   constrainChildren,           // TR::desin
-   constrainChildren,           // TR::dftan
-   constrainChildren,           // TR::ddtan
-   constrainChildren,           // TR::detan
-
-   constrainChildren,           // TR::dfcosh
-   constrainChildren,           // TR::ddcosh
-   constrainChildren,           // TR::decosh
-   constrainChildren,           // TR::dfsinh
-   constrainChildren,           // TR::ddsinh
-   constrainChildren,           // TR::desinh
-   constrainChildren,           // TR::dftanh
-   constrainChildren,           // TR::ddtanh
-   constrainChildren,           // TR::detanh
-
-   constrainChildren,           // TR::dfacos
-   constrainChildren,           // TR::ddacos
-   constrainChildren,           // TR::deacos
-   constrainChildren,           // TR::dfasin
-   constrainChildren,           // TR::ddasin
-   constrainChildren,           // TR::deasin
-   constrainChildren,           // TR::dfatan
-   constrainChildren,           // TR::ddatan
-   constrainChildren,           // TR::deatan
-
-   constrainChildren,           // TR::dfatan2
-   constrainChildren,           // TR::ddatan2
-   constrainChildren,           // TR::deatan2
-   constrainChildren,           // TR::dflog
-   constrainChildren,           // TR::ddlog
-   constrainChildren,           // TR::delog
-   constrainChildren,           // TR::dffloor
-   constrainChildren,           // TR::ddfloor
-   constrainChildren,           // TR::defloor
-   constrainChildren,           // TR::dfceil
-   constrainChildren,           // TR::ddceil
-   constrainChildren,           // TR::deceil
-   constrainChildren,           // TR::dfmax
-   constrainChildren,           // TR::ddmax
-   constrainChildren,           // TR::demax
-   constrainChildren,           // TR::dfmin
-   constrainChildren,           // TR::ddmin
-   constrainChildren,           // TR::demin
-
-   constrainChildren,           // TR::dfInsExp
-   constrainChildren,           // TR::ddInsExp
-   constrainChildren,           // TR::deInsExp
-
-   constrainChildren,           // TR::ddclean
-   constrainChildren,           // TR::declean
-
-   constrainBCDAggrLoad,        // TR::zdload
-   constrainBCDAggrLoad,        // TR::zdloadi
-   constrainStore,              // TR::zdstore
-   constrainStore,              // TR::zdstorei
-
-   constrainChildren,           // TR::pd2zd
-   constrainChildren,           // TR::zd2pd
-
-   constrainBCDAggrLoad,        // TR::zdsleLoad
-   constrainBCDAggrLoad,        // TR::zdslsLoad
-   constrainBCDAggrLoad,        // TR::zdstsLoad
-
-   constrainBCDAggrLoad,        // TR::zdsleLoadi
-   constrainBCDAggrLoad,        // TR::zdslsLoadi
-   constrainBCDAggrLoad,        // TR::zdstsLoadi
-
-   constrainStore,              // TR::zdsleStore
-   constrainStore,              // TR::zdslsStore
-   constrainStore,              // TR::zdstsStore
-
-   constrainStore,              // TR::zdsleStorei
-   constrainStore,              // TR::zdslsStorei
-   constrainStore,              // TR::zdstsStorei
-
-   constrainChildren,           // TR::zd2zdsle
-   constrainChildren,           // TR::zd2zdsls
-   constrainChildren,           // TR::zd2zdsts
-
-   constrainChildren,           // TR::zdsle2pd
-   constrainChildren,           // TR::zdsls2pd
-   constrainChildren,           // TR::zdsts2pd
-
-   constrainChildren,           // TR::zdsle2zd
-   constrainChildren,           // TR::zdsls2zd
-   constrainChildren,           // TR::zdsts2zd
-
-   constrainChildren,           // TR::pd2zdsls
-   constrainChildren,           // TR::pd2zdslsSetSign
-   constrainChildren,           // TR::pd2zdsts
-   constrainChildren,           // TR::pd2zdstsSetSign
-
-   constrainChildren,           // TR::zd2df
-   constrainChildren,           // TR::df2zd
-   constrainChildren,           // TR::zd2dd
-   constrainChildren,           // TR::dd2zd
-   constrainChildren,           // TR::zd2de
-   constrainChildren,           // TR::de2zd
-
-   constrainChildren,           // TR::zd2dfAbs
-   constrainChildren,           // TR::zd2ddAbs
-   constrainChildren,           // TR::zd2deAbs
-
-   constrainChildren,           // TR::df2zdSetSign
-   constrainChildren,           // TR::dd2zdSetSign
-   constrainChildren,           // TR::de2zdSetSign
-
-   constrainChildren,           // TR::df2zdClean
-   constrainChildren,           // TR::dd2zdClean
-   constrainChildren,           // TR::de2zdClean
-
-   constrainBCDAggrLoad,        // TR::udLoad
-   constrainBCDAggrLoad,        // TR::udslLoad
-   constrainBCDAggrLoad,        // TR::udstLoad
-
-   constrainBCDAggrLoad,        // TR::udLoadi
-   constrainBCDAggrLoad,        // TR::udslLoadi
-   constrainBCDAggrLoad,        // TR::udstLoadi
-
-   constrainStore,              // TR::udStore
-   constrainStore,              // TR::udslStore
-   constrainStore,              // TR::udstStore
-
-   constrainStore,              // TR::udStorei
-   constrainStore,              // TR::udslStorei
-   constrainStore,              // TR::udstStorei
-
-   constrainChildren,           // TR::pd2ud
-   constrainChildren,           // TR::pd2udsl
-   constrainChildren,           // TR::pd2udst
-
-   constrainChildren,           // TR::udsl2ud
-   constrainChildren,           // TR::udst2ud
-
-   constrainChildren,           // TR::ud2pd
-   constrainChildren,           // TR::udsl2pd
-   constrainChildren,           // TR::udst2pd
-
-   constrainBCDAggrLoad,        // TR::pdload
-   constrainBCDAggrLoad,        // TR::pdloadi
-   constrainStore,              // TR::pdstore
-   constrainStore,              // TR::pdstorei
-   constrainChildren,           // TR::pdadd
-   constrainChildren,           // TR::pdsub
-   constrainChildren,           // TR::pdmul
-   constrainChildren,           // TR::pddiv
-   constrainChildren,           // TR::pdrem
-   constrainChildren,           // TR::pdneg
-   constrainChildren,           // TR::pdabs
-   constrainChildren,           // TR::pdshr
-   constrainChildren,           // TR::pdshl
-
-   constrainChildren,           // TR::pdshrSetSign
-   constrainChildren,           // TR::pdshlSetSign
-   constrainChildren,           // TR::pdshlOverflow
-   constrainChildren,           // TR::pdchk
-   constrainBCDToIntegral,      // TR::pd2i
-   constrainChildren,           // TR::pd2iOverflow
-   constrainBCDToIntegral,      // TR::pd2iu
-   constrainIntegralToBCD,      // TR::i2pd
-   constrainIntegralToBCD,      // TR::iu2pd
-   constrainBCDToIntegral,      // TR::pd2l
-   constrainChildren,           // TR::pd2lOverflow
-   constrainBCDToIntegral,      // TR::pd2lu
-   constrainIntegralToBCD,      // TR::l2pd
-   constrainIntegralToBCD,      // TR::lu2pd
-   constrainChildren,           // TR::pd2f
-   constrainChildren,           // TR::pd2d
-   constrainChildren,           // TR::f2pd
-   constrainChildren,           // TR::d2pd
-
-   constrainChildren,           // TR::pdcmpeq
-   constrainChildren,           // TR::pdcmpne
-   constrainChildren,           // TR::pdcmplt
-   constrainChildren,           // TR::pdcmpge
-   constrainChildren,           // TR::pdcmpgt
-   constrainChildren,           // TR::pdcmple
-
-   constrainChildren,           // TR::pdclean
-   constrainChildren,           // TR::pdclear
-   constrainChildren,           // TR::pdclearSetSign
-
-   constrainChildren,           // TR::pdSetSign
-
-   constrainChildren,           // TR::pdModifyPrecision
-
-   constrainChildren,           // TR::countDigits
-
-   constrainChildren,           // TR::pd2df
-   constrainChildren,           // TR::pd2dfAbs
-   constrainChildren,           // TR::df2pd
-   constrainChildren,           // TR::df2pdSetSign
-   constrainChildren,           // TR::df2pdClean
-   constrainChildren,           // TR::pd2dd
-   constrainChildren,           // TR::pd2ddAbs
-   constrainChildren,           // TR::dd2pd
-   constrainChildren,           // TR::dd2pdSetSign
-   constrainChildren,           // TR::dd2pdClean
-   constrainChildren,           // TR::pd2de
-   constrainChildren,           // TR::pd2deAbs
-   constrainChildren,           // TR::de2pd
-   constrainChildren,           // TR::de2pdSetSign
-   constrainChildren,           // TR::de2pdClean
-   constrainBCDCHK,          // TR::BCDCHK
-#endif
+#include "il/Opcodes.enum"
+#undef OPCODE_MACRO
 
    };
-
 
 #endif

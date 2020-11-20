@@ -237,8 +237,16 @@ class CCData
        */
       static size_t dataAlignmentFromBytesAlignment(size_t alignmentBytes);
 
+      /**
+       * @brief Converts a data index into a byte index.
+       *
+       * @param[In] dataIndex An index into an array of data_t elements.
+       * @return The equivalent index into an array of bytes.
+       */
+      static size_t byteIndexFromDataIndex(index_t dataIndex);
+
    private:
-      data_t           *_data;
+      char             *_data;
       size_t            _capacity;
       size_t            _putIndex;
       map_t             _mappings;

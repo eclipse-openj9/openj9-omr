@@ -204,7 +204,7 @@ TYPED_TEST(CCDataTest, test_fill_table_arbitrary_data_templated)
 
 TYPED_TEST(CCDataTest, test_no_data_templated)
    {
-   std::vector<char>    storage(sizeof(TypeParam), 0);
+   std::vector<char>    storage(256, 0);
    CCData               table(&storage[0], storage.size());
    const TypeParam      data = 99;
    CCData::index_t      index = INVALID_INDEX;
@@ -317,7 +317,7 @@ TYPED_TEST(CCDataTest, test_arbitrary_keys_templated)
 TYPED_TEST(CCDataTest, test_error_conditions_templated)
    {
       {
-      std::vector<char> storage(sizeof(TypeParam), 0);
+      std::vector<char> storage(256, 0);
       CCData            zeroTable(&storage[0], 0);
       const TypeParam   data = 99;
       CCData::index_t   index = INVALID_INDEX;

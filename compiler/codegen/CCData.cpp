@@ -45,17 +45,23 @@ size_t CCData::dataAlignmentFromBytesAlignment(size_t alignmentBytes)
    return (alignmentBytes + OMR_ALIGNOF(data_t) - 1) / OMR_ALIGNOF(data_t);
    }
 
+inline
+size_t CCData::byteIndexFromDataIndex(size_t dataIndex)
+   {
+   return dataIndex * sizeof(data_t);
+   }
+
 CCData::key_t CCData::key(const void * const data, const size_t sizeBytes)
    {
 #if (__cplusplus >= 201103L)
    static_assert(std::is_same<key_t::value_type, char>::value, "Keys need to be constructible from a sequence of chars.");
 #endif
-   return key_t(reinterpret_cast<const key_t::value_type *>(data), sizeBytes);
+   return key_t(static_cast<const key_t::value_type *>(data), sizeBytes);
    }
 
 CCData::key_t CCData::key(const char * const str)
    {
-   return key_t(reinterpret_cast<const key_t::value_type *>(str));
+   return key_t(static_cast<const key_t::value_type *>(str));
    }
 
 CCData::CCData(void * const storage, const size_t sizeBytes)
@@ -67,7 +73,7 @@ CCData::CCData(void * const storage, const size_t sizeBytes)
       size_t sizeBytesAfterAlignment = sizeBytes;
       bool success = OMR::align(OMR_ALIGNOF(data_t), sizeof(data_t), alignedStorage, sizeBytesAfterAlignment) != NULL;
       TR_ASSERT_FATAL(success, "Can't align CCData storage to required boundary");
-      _data = reinterpret_cast<data_t *>(alignedStorage);
+      _data = static_cast<char *>(alignedStorage);
       _capacity = dataSizeFromBytesSize(sizeBytesAfterAlignment);
       }
    else
@@ -92,10 +98,11 @@ bool CCData::put_impl(const void * const value, const size_t sizeBytes, const si
       }
 
    // The following feels like it could be simplified and calculated more efficiently. If you're reading this, have a go at it.
+   size_t putByteIndex = byteIndexFromDataIndex(_putIndex);
    const size_t sizeDataUnits = dataSizeFromBytesSize(sizeBytes);
    const size_t alignmentDataUnits = dataAlignmentFromBytesAlignment(alignmentBytes);
    const size_t alignmentMask = alignmentDataUnits - 1;
-   const size_t alignmentPadding = (alignmentDataUnits - ((reinterpret_cast<uintptr_t>(_data + _putIndex) / OMR_ALIGNOF(data_t)) & alignmentMask)) & alignmentMask;
+   const size_t alignmentPadding = (alignmentDataUnits - ((reinterpret_cast<uintptr_t>(_data + putByteIndex) / OMR_ALIGNOF(data_t)) & alignmentMask)) & alignmentMask;
    const size_t remainingCapacity = _capacity - _putIndex;
 
    if (sizeDataUnits + alignmentPadding > remainingCapacity)
@@ -103,15 +110,16 @@ bool CCData::put_impl(const void * const value, const size_t sizeBytes, const si
 
    _putIndex += alignmentPadding;
    index = _putIndex;
+   putByteIndex = byteIndexFromDataIndex(_putIndex);
 
    if (key != NULL)
       _mappings[*key] = _putIndex;
 
    if (value != NULL)
       {
-      std::copy(reinterpret_cast<const char *>(value),
-                reinterpret_cast<const char *>(value) + sizeBytes,
-                reinterpret_cast<char *>(_data + _putIndex));
+      std::copy(static_cast<const char *>(value),
+                static_cast<const char *>(value) + sizeBytes,
+                _data + putByteIndex);
       }
 
    _putIndex += sizeDataUnits;
@@ -124,9 +132,11 @@ bool CCData::get(const index_t index, void * const value, const size_t sizeBytes
    if (index >= _capacity)
       return false;
 
-   std::copy(reinterpret_cast<const char *>(_data + index),
-             reinterpret_cast<const char *>(_data + index) + sizeBytes,
-             reinterpret_cast<char *>(value));
+   const size_t byteIndex = byteIndexFromDataIndex(index);
+
+   std::copy(_data + byteIndex,
+             _data + byteIndex + sizeBytes,
+             static_cast<char *>(value));
 
    return true;
    }

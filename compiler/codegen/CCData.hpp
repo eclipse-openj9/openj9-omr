@@ -25,6 +25,7 @@
 #include <map>
 #include <string>
 #include <cstddef>
+#include <OMR/TypeTraits.hpp>
 
 namespace TR { class Monitor; }
 
@@ -62,6 +63,8 @@ class CCData
 
       /** \typedef key_t This type represents the keys defined in the public interface of this class. The constructor is unspecified, use CCData_t::key() to create keys. */
       typedef std::string key_t;
+
+      static_assert(OMR::IsSame<key_t::value_type, char>::VALUE, "Keys need to be constructible from a sequence of chars.");
 
    private:
       /** \typedef map_t Implementation detail. This type represents the associative container that maps keys to indices. It must behave like std::unordered_map. */

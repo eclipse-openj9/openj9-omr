@@ -192,8 +192,15 @@ int32_t TR_LoopVersioner::performWithDominators()
       {
          printf("WARNING: method may have infinite loops\n");
       }
+   auto result = performWithoutDominators();
 
-   return performWithoutDominators();
+   /* Local variable postDominators is about to go out of scope.
+    * NULL this field to prevent illegal access to a stack
+    * allocated object.
+    */
+   _postDominators = NULL;
+
+   return result;
    }
 
 

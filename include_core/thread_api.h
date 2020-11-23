@@ -533,6 +533,41 @@ omrthread_global(char *name);
 omrthread_monitor_t
 omrthread_global_monitor(void);
 
+/**
+ * Return monitor that thread is currently waiting to acquire. 
+ * If thread is not waiting on a monitor return null.
+ * @param thread
+ * @return omrthread_monitor_t
+ */
+omrthread_monitor_t
+omrthread_waiting_to_acquire(omrthread_t thread);
+
+/**
+ * Return true if monitor is currently acquired.
+ * @param monitor
+ * @return BOOLEAN
+ */
+BOOLEAN
+omrthread_monitor_is_acquired(omrthread_monitor_t monitor);
+
+/**
+ * Monitor may be acquired multiple times by the current owner.
+ * Return number of times it has been acquired. Zero means
+ * the monitor is not acquired.
+ * @param monitor
+ * @return uint32_t
+ */
+uint32_t
+omrthread_monitor_getNumOfTimesAcquired(omrthread_monitor_t monitor);
+
+/**
+ * Return thread that currently owns the monitor. Null 
+ * will be returned if monitor is not owned.
+ * @param monitor
+ * @return omrthread_t
+ */
+omrthread_t
+omrthread_monitor_getCurrentOwner(omrthread_monitor_t monitor);
 
 /**
 * @brief

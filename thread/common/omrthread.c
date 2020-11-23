@@ -1219,6 +1219,25 @@ omrthread_global_monitor(void)
 	return lib->globalMonitor;
 }
 
+omrthread_monitor_t
+omrthread_waiting_to_acquire(omrthread_t thread) {
+	return thread->monitor;
+}
+
+BOOLEAN
+omrthread_monitor_is_acquired(omrthread_monitor_t monitor) {
+	return (monitor->count > 0);
+}
+
+uint32_t
+omrthread_monitor_getNumOfTimesAcquired(omrthread_monitor_t monitor) {
+	return monitor->count;
+}
+
+omrthread_t
+omrthread_monitor_getCurrentOwner(omrthread_monitor_t monitor) {
+	return monitor->owner;
+}
 
 /*
  * Threads
@@ -1839,7 +1858,7 @@ dontreturn:
 /**
  * Create a new OS thread and attach it to the library.
  *
- * @param[out] handle
+ * @param[out] handle Location where the new omrthread_t should be returned, if successfully created. May be NULL.
  * @param[in] attr attr must not be modified by this function.
  * @param[in] suspend Non-zero if the thread should suspend before entering entrypoint,
  * zero to allow the thread to run freely.
@@ -5906,4 +5925,3 @@ j9thread_tls_get(omrthread_t thread, omrthread_tls_key_t key)
 {
 	return omrthread_tls_get(thread, key);
 }
-

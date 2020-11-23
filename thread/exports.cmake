@@ -33,6 +33,10 @@ omr_add_exports(j9thr_obj
 	omrthread_abort
 	omrthread_attach
 	omrthread_attach_ex
+	omrthread_waiting_to_acquire
+	omrthread_monitor_is_acquired
+	omrthread_monitor_getNumOfTimesAcquired
+	omrthread_monitor_getCurrentOwner
 	omrthread_create
 	omrthread_create_ex
 	omrthread_cancel

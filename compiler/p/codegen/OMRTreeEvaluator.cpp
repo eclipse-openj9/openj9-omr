@@ -966,7 +966,9 @@ TR::Register *OMR::Power::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::Cod
       }
 
    bool reverseStore = false;
-   if (valueChild->getOpCodeValue() == TR::ibyteswap && valueChild->isSingleRefUnevaluated())
+   // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
+   static bool reverseStoreEnabled = feGetEnv("TR_EnableReverseLoadStore");
+   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::ibyteswap && valueChild->isSingleRefUnevaluated())
       {
       reverseStore = true;
 
@@ -1151,7 +1153,9 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
       }
 
    bool reverseStore = false;
-   if (valueChild->getOpCodeValue() == TR::lbyteswap && valueChild->isSingleRefUnevaluated() &&
+   // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
+   static bool reverseStoreEnabled = feGetEnv("TR_EnableReverseLoadStore");
+   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::lbyteswap && valueChild->isSingleRefUnevaluated() &&
       cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7))
       {
       reverseStore = true;
@@ -1464,7 +1468,9 @@ TR::Register *OMR::Power::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::Cod
       }
 
    bool reverseStore = false;
-   if (valueChild->getOpCodeValue() == TR::sbyteswap && valueChild->isSingleRefUnevaluated())
+   // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
+   static bool reverseStoreEnabled = feGetEnv("TR_EnableReverseLoadStore");
+   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::sbyteswap && valueChild->isSingleRefUnevaluated())
       {
       reverseStore = true;
 
@@ -5731,6 +5737,9 @@ TR::Register *OMR::Power::TreeEvaluator::sbyteswapEvaluator(TR::Node *node, TR::
    TR::Node *firstNonConversionOpCodeNode = node->getFirstChild();
    TR::DataType nodeType = firstNonConversionOpCodeNode->getType();
 
+   // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
+   static bool reverseLoadEnabled = feGetEnv("TR_EnableReverseLoadStore");
+
    //Move through descendants until a non conversion opcode is reached,
    //while making sure all nodes have a ref count of 1 and the types are between 2-8 bytes
    while (firstNonConversionOpCodeNode->getOpCode().isConversion() &&
@@ -5741,7 +5750,7 @@ TR::Register *OMR::Power::TreeEvaluator::sbyteswapEvaluator(TR::Node *node, TR::
       nodeType = firstNonConversionOpCodeNode->getType();
       }
 
-   if (!firstNonConversionOpCodeNode->getRegister() &&
+   if (reverseLoadEnabled && !firstNonConversionOpCodeNode->getRegister() &&
        firstNonConversionOpCodeNode->getOpCode().isMemoryReference() &&
        firstNonConversionOpCodeNode->getReferenceCount() == 1 &&
        (nodeType.isInt16() || nodeType.isInt32() || nodeType.isInt64()))
@@ -5798,7 +5807,10 @@ TR::Register * OMR::Power::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR:
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *tgtRegister = cg->allocateRegister();
 
-   if (!firstChild->getRegister() &&
+   // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
+   static bool reverseLoadEnabled = feGetEnv("TR_EnableReverseLoadStore");
+
+   if (reverseLoadEnabled && !firstChild->getRegister() &&
        firstChild->getOpCode().isMemoryReference() &&
        firstChild->getReferenceCount() == 1)
       {
@@ -5845,7 +5857,10 @@ TR::Register *OMR::Power::TreeEvaluator::lbyteswapEvaluator(TR::Node *node, TR::
       TR::Node *firstChild = node->getFirstChild();
       TR::Register *tgtRegister = cg->allocateRegister();
 
-      if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7) &&
+      // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
+      static bool reverseLoadEnabled = feGetEnv("TR_EnableReverseLoadStore");
+
+      if (reverseLoadEnabled && comp->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7) &&
           !firstChild->getRegister() &&
           firstChild->getOpCode().isMemoryReference() &&
           firstChild->getReferenceCount() == 1)

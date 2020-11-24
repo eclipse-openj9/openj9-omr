@@ -301,6 +301,19 @@ public:
 	 * @param buf character buffer in which to create to tag template.
 	 * @param bufsize maximum size allowed in the character buffer.
 	 * @param id unique id of the tag being built.
+	 * @param contextId unique identifier of the associated event this is associated with (parent/sibling relationship).
+	 * @param wallTimeMs wall clock time to be used as the timestamp for the tag.
+	 * @return number of bytes consumed in the buffer.
+	 *
+	 * @note should be moved to protected once all standard usage is converted.
+	 */
+	uintptr_t getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t id, uintptr_t contextId, uint64_t wallTimeMs);
+
+	/**
+	 * Build the standard top level tag template.
+	 * @param buf character buffer in which to create to tag template.
+	 * @param bufsize maximum size allowed in the character buffer.
+	 * @param id unique id of the tag being built.
 	 * @param type Human readable name for the type of the tag.
 	 * @param contextId unique identifier of the associated event this is associated with (parent/sibling relationship).
 	 * @param wallTimeMs wall clock time to be used as the timestamp for the tag.

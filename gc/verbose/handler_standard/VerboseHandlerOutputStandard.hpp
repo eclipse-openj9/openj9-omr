@@ -79,7 +79,6 @@ protected:
 	virtual const char* getConcurrentKickoffReason(void *eventData);
 	virtual void handleConcurrentHaltedInternal(MM_EnvironmentBase *env, void* eventData);
 	virtual void handleConcurrentCollectionStartInternal(MM_EnvironmentBase *env, void* eventData);
-	virtual void handleConcurrentCollectionEndInternal(MM_EnvironmentBase *env, void* eventData);
 	virtual void handleConcurrentAbortedInternal(MM_EnvironmentBase *env, void* eventData);
 #endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
 
@@ -192,14 +191,6 @@ public:
 	 * @param eventData hook specific event data.
 	 */
 	void handleConcurrentCollectionStart(J9HookInterface** hook, uintptr_t eventNum, void* eventData);
-
-	/**
-	 * Write verbose stanza for concurrent collection end event.
-	 * @param hook Hook interface used by the JVM.
-	 * @param eventNum The hook event number.
-	 * @param eventData hook specific event data.
-	 */
-	void handleConcurrentCollectionEnd(J9HookInterface** hook, uintptr_t eventNum, void* eventData);
 
 	/**
 	 * Write verbose stanza for concurrent aborted event.

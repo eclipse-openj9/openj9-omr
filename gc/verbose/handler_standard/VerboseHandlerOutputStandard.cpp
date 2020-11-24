@@ -70,7 +70,6 @@ static void verboseHandlerConcurrentTracingEnd(J9HookInterface** hook, uintptr_t
 static void verboseHandlerConcurrentKickoff(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
 static void verboseHandlerConcurrentHalted(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
 static void verboseHandlerConcurrentCollectionStart(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
-static void verboseHandlerConcurrentCollectionEnd(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
 static void verboseHandlerConcurrentAborted(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
 #endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
 
@@ -150,7 +149,6 @@ MM_VerboseHandlerOutputStandard::enableVerbose()
 	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_KICKOFF, verboseHandlerConcurrentKickoff, OMR_GET_CALLSITE(), (void *)this);
 	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_HALTED, verboseHandlerConcurrentHalted, OMR_GET_CALLSITE(), (void *)this);
 	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_START, verboseHandlerConcurrentCollectionStart, OMR_GET_CALLSITE(), (void *)this);
-	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_END, verboseHandlerConcurrentCollectionEnd, OMR_GET_CALLSITE(), (void *)this);
 	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_ABORTED, verboseHandlerConcurrentAborted, OMR_GET_CALLSITE(), (void *)this);
 	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_REMEMBERED_SET_SCAN_END, verboseHandlerConcurrentRememberedSetScanEnd, OMR_GET_CALLSITE(), (void *)this);
 	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COMPLETE_TRACING_END, verboseHandlerConcurrentTracingEnd, OMR_GET_CALLSITE(), (void *)this);
@@ -210,7 +208,6 @@ MM_VerboseHandlerOutputStandard::disableVerbose()
 	(*_mmPrivateHooks)->J9HookUnregister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_KICKOFF, verboseHandlerConcurrentKickoff, NULL);
 	(*_mmPrivateHooks)->J9HookUnregister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_HALTED, verboseHandlerConcurrentHalted, NULL);
 	(*_mmPrivateHooks)->J9HookUnregister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_START, verboseHandlerConcurrentCollectionStart, NULL);
-	(*_mmPrivateHooks)->J9HookUnregister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_END, verboseHandlerConcurrentCollectionEnd, NULL);
 	(*_mmPrivateHooks)->J9HookUnregister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_ABORTED, verboseHandlerConcurrentAborted, NULL);
 	(*_mmPrivateHooks)->J9HookUnregister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_REMEMBERED_SET_SCAN_END, verboseHandlerConcurrentRememberedSetScanEnd, NULL);
 	(*_mmPrivateHooks)->J9HookUnregister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COMPLETE_TRACING_END, verboseHandlerConcurrentTracingEnd, NULL);
@@ -748,12 +745,12 @@ MM_VerboseHandlerOutputStandard::handleConcurrentCollectionStart(J9HookInterface
 
 	char tagTemplate[200];
 	enterAtomicReportingBlock();
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_current_time_millis());
-	writer->formatAndOutput(env, 0, "<concurrent-collection-start %s intervalms=\"%llu.%03llu\" >",
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), event->contextid, omrtime_current_time_millis());
+	writer->formatAndOutput(env, 0, "<concurrent-global-final %s intervalms=\"%llu.%03llu\" >",
 		tagTemplate, deltaTime / 1000, deltaTime % 1000);
 	writer->formatAndOutput(env, 1, "<concurrent-trace-info reason=\"%s\" tracedByMutators=\"%zu\" tracedByHelpers=\"%zu\" cardsCleaned=\"%zu\" workStackOverflowCount=\"%zu\" />",
 		cardCleaningReasonString, event->tracedByMutators, event->tracedByHelpers, event->cardsCleaned, event->workStackOverflowCount);
-  	writer->formatAndOutput(env, 0, "</concurrent-collection-start>");
+  	writer->formatAndOutput(env, 0, "</concurrent-global-final>");
 
 	writer->flush(env);
 
@@ -764,31 +761,6 @@ MM_VerboseHandlerOutputStandard::handleConcurrentCollectionStart(J9HookInterface
 
 void
 MM_VerboseHandlerOutputStandard::handleConcurrentCollectionStartInternal(MM_EnvironmentBase *env, void* eventData)
-{
-	/* Empty stub */
-}
-
-void
-MM_VerboseHandlerOutputStandard::handleConcurrentCollectionEnd(J9HookInterface** hook, uintptr_t eventNum, void* eventData)
-{
-	MM_ConcurrentCollectionEndEvent* event = (MM_ConcurrentCollectionEndEvent*)eventData;
-	MM_VerboseManager* manager = getManager();
-	MM_VerboseWriterChain* writer = manager->getWriterChain();
-	MM_EnvironmentBase* env = MM_EnvironmentBase::getEnvironment(event->currentThread);
-	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
-	char tagTemplate[200];
-	enterAtomicReportingBlock();
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), omrtime_current_time_millis());
-	writer->formatAndOutput(env, 0, "<concurrent-collection-end %s />", tagTemplate);
-	writer->flush(env);
-
-	handleConcurrentCollectionEndInternal(env, eventData);
-
-	exitAtomicReportingBlock();
-}
-
-void
-MM_VerboseHandlerOutputStandard::handleConcurrentCollectionEndInternal(MM_EnvironmentBase *env, void* eventData)
 {
 	/* Empty stub */
 }
@@ -1109,12 +1081,6 @@ void
 verboseHandlerConcurrentCollectionStart(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData)
 {
 	((MM_VerboseHandlerOutputStandard *)userData)->handleConcurrentCollectionStart(hook, eventNum, eventData);
-}
-
-void
-verboseHandlerConcurrentCollectionEnd(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData)
-{
-	((MM_VerboseHandlerOutputStandard *)userData)->handleConcurrentCollectionEnd(hook, eventNum, eventData);
 }
 
 void

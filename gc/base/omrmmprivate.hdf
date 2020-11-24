@@ -335,6 +335,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-excepti
 		<data type="struct OMR_VMThread*" name="currentThread" description="current thread" />
 		<data type="uint64_t"  name="timestamp" description="time of event" />
 		<data type="uintptr_t" name="eventid" description="unique identifier for event" />
+		<data type="uintptr_t" name="contextid" description="unique identifier of the associated event this is associated with (parent/sibling relationship)" />
 		<data type="struct MM_CommonGCStartData*" name="gcStartData" description="common data for GC start events" />
 		<data type="uintptr_t" name="traceTarget" description="the targetted number of bytes to be concurrently traced" />
 		<data type="uintptr_t" name="tracedTotal" description="the number of bytes concurrently traced" />

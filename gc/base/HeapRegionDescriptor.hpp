@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -58,7 +58,8 @@ public:
 		ADDRESS_ORDERED = 5,		/**< Represents regions that have an AOL MemoryPool */
 		ADDRESS_ORDERED_IDLE = 6,	/**< Represents regions that have an AOL MemoryPool but are not actively being used (that is, they can be made into other kinds of regions without penalty) */
 		ADDRESS_ORDERED_MARKED = 7,	/**< Represents regions that have an AOL MemoryPool and an accurate mark set in extensions->previousMarkMap */
-		BUMP_ALLOCATED = 8,		/**< Represents regions that have a BumpPointer MemoryPool */
+		/* TODO: remove BUMP_ALLOCATED, BUMP_ALLOCATED_IDLE, BUMP_ALLOCATED_MARKED with BumpPointer MemoryPool */
+		BUMP_ALLOCATED = 8,			/**< Represents regions that have a BumpPointer MemoryPool */
 		BUMP_ALLOCATED_IDLE = 9,	/**< Represents regions that have a BumpPointer MemoryPool but are not actively being used (that is, they can be made into other kinds of regions without penalty) */
 		BUMP_ALLOCATED_MARKED = 10,	/**< Represents regions that have a BumpPointer MemoryPool and an accurate mark set in extensions->previousMarkMap */
 		LAST_REGION_TYPE  /**< This dummy type is sed later as a size of an array for stats of region counts */
@@ -326,13 +327,13 @@ public:
 	}
 	
 	/**
-	 * Sets a BUMP_ALLOCATED region to BUMP_ALLOCATED_MARKED.  Asserts if called on any other region type.
+	 * Sets a ADDRESS_ORDERED region to ADDRESS_ORDERED_MARKED.  Asserts if called on any other region type.
 	 * This can be extended to other region types which have a "marked" variant as they are needed.
 	 */
 	void setMarkMapValid()
 	{
-		Assert_MM_true(BUMP_ALLOCATED == getRegionType());
-		setRegionType(BUMP_ALLOCATED_MARKED);
+		Assert_MM_true(ADDRESS_ORDERED == getRegionType());
+		setRegionType(ADDRESS_ORDERED_MARKED);
 	}
 	
 	/**

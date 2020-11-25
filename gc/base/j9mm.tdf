@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 1998, 2020 IBM Corp. and others
+// Copyright (c) 1998, 2021 IBM Corp. and others
 //
 // This program and the accompanying materials are made available under
 // the terms of the Eclipse Public License 2.0 which accompanies this
@@ -935,3 +935,6 @@ TraceExit=Trc_MM_Scavenger_calculateRecommendedWorkingThreads_setRecommendedThre
 TraceEvent=Trc_MM_Scavenger_calculateRecommendedWorkingThreads_averageStallBreakDown Overhead=1 Level=1 Group=adaptivethread Template="Average for: %u threads -> avgTimeToStartCollection: %5llu  avgTimeIdleAfterCollection: %5llu  avgScanStallTime: %5llu  avgSyncStallTime: %5llu  avgNotifyStallTime: %5llu"
 TraceEvent=Trc_MM_Scavenger_calculateRecommendedWorkingThreads_threadStallBreakDown Overhead=1 Level=1 Group=adaptivethread Template="Thread: %2u -> timeToStartCollection: %5llu  scanStall: %5llu  syncStall: %5llu  notifyStall: %5llu"
 TraceEvent=Trc_MM_ParallelDispatcher_recomputeActiveThreadCountForTask_useCollectorRecommendedThreads noEnv Overhead=1 Level=1 Group=adaptivethread Template="Attempting to use Task Recommended Threads: %u -> Adjusting to Bounds: %u"
+
+TraceEntry=Trc_MM_CopyForwardScheme_convertFreeMemoryCandidateToSurvivorRegion_Entry Overhead=1 Level=1 Group=copyforwardscheme Template="MM_CopyForwardScheme_convertCandidateToSurvivorRegion region=%p"
+TraceExit=Trc_MM_CopyForwardScheme_convertFreeMemoryCandidateToSurvivorRegion_Exit Overhead=1 Level=1 Group=copyforwardscheme Template="MM_CopyForwardScheme_convertCandidateToSurvivorRegion"

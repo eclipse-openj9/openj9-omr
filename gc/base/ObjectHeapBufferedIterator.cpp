@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -90,19 +90,14 @@ GC_ObjectHeapBufferedIterator::getPopulator()
 	case MM_HeapRegionDescriptor::RESERVED:
 	case MM_HeapRegionDescriptor::FREE:
 	case MM_HeapRegionDescriptor::ADDRESS_ORDERED_IDLE:
-	case MM_HeapRegionDescriptor::BUMP_ALLOCATED_IDLE:
 		/* (for all intents and purposes, an IDLE region is the same as a FREE region) */
 	case MM_HeapRegionDescriptor::ARRAYLET_LEAF:
 		populator = &_emptyListPopulator;
-		break;
-	case MM_HeapRegionDescriptor::BUMP_ALLOCATED:
-		populator = &_bumpAllocatedListPopulator;
 		break;
 	case MM_HeapRegionDescriptor::ADDRESS_ORDERED:
 		populator = &_addressOrderedListPopulator;
 		break;
 	case MM_HeapRegionDescriptor::ADDRESS_ORDERED_MARKED:
-	case MM_HeapRegionDescriptor::BUMP_ALLOCATED_MARKED:
 		populator = &_markedObjectPopulator;
 		break;
 #if defined(OMR_GC_SEGREGATED_HEAP)

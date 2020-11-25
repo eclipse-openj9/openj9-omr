@@ -5693,7 +5693,7 @@ astoreHelper(TR::Node * node, TR::CodeGenerator * cg)
             }
          }
       // aload is the child, then don't evaluate the child, generate MVC to move directly among memory
-      else if(!node->getOpCode().isIndirect() &&
+      else if(!node->getOpCode().isIndirect() && !node->getSymbolReference()->isUnresolved() &&
               valueChild->getOpCodeValue() == TR::aload &&
               valueChild->getReferenceCount() == 1 &&
               valueChild->getRegister() == NULL &&

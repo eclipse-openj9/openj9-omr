@@ -273,6 +273,9 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Snippet * snippet)
       case TR::Snippet::IsInterfaceCallData:
          print(pOutFile, (TR::J9S390InterfaceCallDataSnippet *) snippet);
          break;
+      case TR::Snippet::IsCallReadOnly:
+         print(pOutFile, (TR::S390J9CallSnippetRX *) snippet);
+         break;
 #endif
       case TR::Snippet::IsConstantData:
       case TR::Snippet::IsWritableData:

@@ -23,7 +23,6 @@
 
 #include <stddef.h>                               // for NULL
 #include <stdint.h>                               // for int32_t, uint32_t, etc
-#include <riscv.h>
 #include "codegen/CodeGenerator.hpp"              // for CodeGenerator, etc
 #include "codegen/InstOpCode.hpp"                 // for InstOpCode, etc
 #include "codegen/Instruction.hpp"                // for Instruction
@@ -49,19 +48,6 @@
 #include "infra/Assert.hpp"                       // for TR_ASSERT
 #include "codegen/RVOutOfLineCodeSection.hpp"
 #include "codegen/GenerateInstructions.hpp"
-
-#define TR_RISCV_RTYPE(insn, rd, rs1, rs2) \
-  ((insn) | ((rd) << OP_SH_RD) | ((rs1) << OP_SH_RS1) | ((rs2) << OP_SH_RS2))
-#define TR_RISCV_ITYPE(insn, rd, rs1, imm) \
-  ((insn) | ((rd) << OP_SH_RD) | ((rs1) << OP_SH_RS1) | ENCODE_ITYPE_IMM(imm))
-#define TR_RISCV_STYPE(insn, rs1, rs2, imm) \
-  ((insn) | ((rs1) << OP_SH_RS1) | ((rs2) << OP_SH_RS2) | ENCODE_STYPE_IMM(imm))
-#define TR_RISCV_SBTYPE(insn, rs1, rs2, target) \
-  ((insn) | ((rs1) << OP_SH_RS1) | ((rs2) << OP_SH_RS2) | ENCODE_SBTYPE_IMM(target))
-#define TR_RISCV_UTYPE(insn, rd, bigimm) \
-  ((insn) | ((rd) << OP_SH_RD) | ENCODE_UTYPE_IMM(bigimm))
-#define TR_RISCV_UJTYPE(insn, rd, target) \
-  ((insn) | ((rd) << OP_SH_RD) | ENCODE_UJTYPE_IMM(target))
 
 // TR::RtypeInstruction:: member functions
 
@@ -128,10 +114,7 @@ uint8_t *TR::RtypeInstruction::generateBinaryEncoding() {
    uint8_t        *cursor           = instructionStart;
    uint32_t *iPtr = (uint32_t*)instructionStart;
 
-   *iPtr = TR_RISCV_RTYPE ((uint32_t)(getOpCode().getOpCodeBinaryEncoding()),
-                         toRealRegister(getTargetRegister())->binaryRegCode(),
-                         toRealRegister(getSource1Register())->binaryRegCode(),
-                         toRealRegister(getSource2Register())->binaryRegCode());
+   *iPtr = TR_RISCV_RTYPE(getOpCode().getMnemonic(), getTargetRegister(), getSource1Register(), getSource2Register());
 
    cursor += RISCV_INSTRUCTION_LENGTH;
    setBinaryLength(RISCV_INSTRUCTION_LENGTH);
@@ -191,10 +174,7 @@ uint8_t *TR::ItypeInstruction::generateBinaryEncoding() {
    uint8_t        *cursor           = instructionStart;
    uint32_t *iPtr = (uint32_t*)instructionStart;
 
-   *iPtr = TR_RISCV_ITYPE ((uint32_t)(getOpCode().getOpCodeBinaryEncoding()),
-                         toRealRegister(getTargetRegister())->binaryRegCode(),
-                         toRealRegister(getSource1Register())->binaryRegCode(),
-                         getSourceImmediate());
+   *iPtr = TR_RISCV_ITYPE(getOpCode().getMnemonic(), getTargetRegister(), getSource1Register(), getSourceImmediate());
 
    cursor += RISCV_INSTRUCTION_LENGTH;
    setBinaryLength(RISCV_INSTRUCTION_LENGTH);
@@ -250,10 +230,7 @@ uint8_t *TR::LoadInstruction::generateBinaryEncoding() {
    uint8_t        *cursor           = instructionStart;
    uint32_t *iPtr = (uint32_t*)instructionStart;
 
-   *iPtr = TR_RISCV_ITYPE ((uint32_t)(getOpCode().getOpCodeBinaryEncoding()),
-                         toRealRegister(getTargetRegister())->binaryRegCode(),
-                         toRealRegister(getMemoryBase())->binaryRegCode(),
-                         getMemoryReference()->getOffset(true));
+   *iPtr = TR_RISCV_ITYPE (getOpCode().getMnemonic(), getTargetRegister(), getMemoryBase(), getMemoryReference()->getOffset(true));
 
    cursor += RISCV_INSTRUCTION_LENGTH;
    setBinaryLength(RISCV_INSTRUCTION_LENGTH);
@@ -313,10 +290,7 @@ uint8_t *TR::StypeInstruction::generateBinaryEncoding() {
    uint8_t        *cursor           = instructionStart;
    uint32_t *iPtr = (uint32_t*)instructionStart;
 
-   *iPtr = TR_RISCV_STYPE ((uint32_t)(getOpCode().getOpCodeBinaryEncoding()),
-                         toRealRegister(getSource1Register())->binaryRegCode(),
-                         toRealRegister(getSource2Register())->binaryRegCode(),
-                         getSourceImmediate());
+   *iPtr = TR_RISCV_STYPE (getOpCode().getMnemonic(), getSource1Register(), getSource2Register(), getSourceImmediate());
 
    cursor += RISCV_INSTRUCTION_LENGTH;
    setBinaryLength(RISCV_INSTRUCTION_LENGTH);
@@ -372,10 +346,7 @@ uint8_t *TR::StoreInstruction::generateBinaryEncoding() {
    uint8_t        *cursor           = instructionStart;
    uint32_t *iPtr = (uint32_t*)instructionStart;
 
-   *iPtr = TR_RISCV_STYPE ((uint32_t)(getOpCode().getOpCodeBinaryEncoding()),
-                         toRealRegister(getMemoryBase())->binaryRegCode(),
-                         toRealRegister(getSource1Register())->binaryRegCode(),
-                         getMemoryReference()->getOffset(true));
+   *iPtr = TR_RISCV_STYPE (getOpCode().getMnemonic(), getMemoryBase(), getSource1Register(), getMemoryReference()->getOffset(true));
 
    cursor += RISCV_INSTRUCTION_LENGTH;
    setBinaryLength(RISCV_INSTRUCTION_LENGTH);
@@ -393,10 +364,7 @@ uint8_t *TR::BtypeInstruction::generateBinaryEncoding()
 
    TR::LabelSymbol *label            = getLabelSymbol();
 
-   *iPtr = TR_RISCV_SBTYPE ((uint32_t)(getOpCode().getOpCodeBinaryEncoding()),
-                         toRealRegister(getSource1Register())->binaryRegCode(),
-                         toRealRegister(getSource2Register())->binaryRegCode(),
-                         0 /* to fix up in the future */ );
+   *iPtr = TR_RISCV_SBTYPE (getOpCode().getMnemonic(), getSource1Register(), getSource2Register(), 0 /* to fix up in the future */ );
 
    if (label->getCodeLocation() != NULL) {
            // we already know the address
@@ -498,9 +466,7 @@ uint8_t *TR::UtypeInstruction::generateBinaryEncoding() {
    uint8_t        *cursor           = instructionStart;
    uint32_t *iPtr = (uint32_t*)instructionStart;
 
-   *iPtr = TR_RISCV_UTYPE ((uint32_t)(getOpCode().getOpCodeBinaryEncoding()),
-                         toRealRegister(getTargetRegister())->binaryRegCode(),
-                         _imm);
+   *iPtr = TR_RISCV_UTYPE (getOpCode().getMnemonic(), getTargetRegister(), _imm);
 
    cursor += RISCV_INSTRUCTION_LENGTH;
    setBinaryLength(RISCV_INSTRUCTION_LENGTH);
@@ -546,9 +512,7 @@ uint8_t *TR::JtypeInstruction::generateBinaryEncoding() {
       }
 
    TR_ASSERT(VALID_UJTYPE_IMM(offset), "Jump offset out of range");
-   *iPtr = TR_RISCV_UJTYPE ((uint32_t)(getOpCode().getOpCodeBinaryEncoding()),
-                         toRealRegister(getTargetRegister())->binaryRegCode(),
-                         offset);
+   *iPtr = TR_RISCV_UJTYPE (getOpCode().getMnemonic(), getTargetRegister(), offset);
 
    cursor += RISCV_INSTRUCTION_LENGTH;
    setBinaryLength(RISCV_INSTRUCTION_LENGTH);

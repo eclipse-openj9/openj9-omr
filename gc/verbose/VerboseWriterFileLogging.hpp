@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -70,7 +70,7 @@ protected:
 	virtual bool initialize(MM_EnvironmentBase *env, const char *filename, uintptr_t numFiles, uintptr_t numCycles);
 	virtual void tearDown(MM_EnvironmentBase *env);
 
-	virtual bool openFile(MM_EnvironmentBase *env) = 0;
+	virtual bool openFile(MM_EnvironmentBase *env, bool printInitializedHeader = false) = 0;
 	virtual void closeFile(MM_EnvironmentBase *env) = 0;
 
 	intptr_t findInitialFile(MM_EnvironmentBase *env);

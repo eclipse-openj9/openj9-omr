@@ -54,8 +54,8 @@ OMR::Z::ELFJitCodeObjectFormat::emitGlobalFunctionCall(TR::GlobalFunctionCallDat
    TR::Node *callNode = data.callNode;
    TR_ASSERT_FATAL(targetAddress != NULL, "Unable to make a call for n%dn %s as targetAddress for the Call is not found.", callNode->getGlobalIndex(), callNode->getOpCode().getName());
 
-   OMR::CCData *codeCacheData = cg->getCodeCache()->manager()->getCodeCacheData();
-   OMR::CCData::index_t index;
+   TR::CCData *codeCacheData = cg->getCodeCache()->manager()->getCodeCacheData();
+   TR::CCData::index_t index;
    
    if (!(codeCacheData->put(NULL, sizeof(ccGlobalFunctionData), alignof(ccGlobalFunctionData), NULL, index)))
       {

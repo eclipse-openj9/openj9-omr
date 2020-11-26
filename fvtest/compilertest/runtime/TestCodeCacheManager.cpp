@@ -91,7 +91,7 @@ TestCompiler::CodeCacheManager::allocateCodeCacheSegment(size_t segmentSize,
       {
       TR_ASSERT_FATAL(_codeCacheData == NULL, "A CCData instance already exists; this code currently doesn't support multiple codecache segments because we can only allocate one CCData instance. TODO: Fix this limitation.");
       uint8_t * const dataArea = memorySlab + codeCacheSizeToAllocate;
-      _codeCacheData = new OMR::CCData(dataArea, dataAreaSize);
+      _codeCacheData = new TR::CCData(dataArea, dataAreaSize);
       }
    return memSegment;
    }

@@ -47,7 +47,7 @@ namespace OMR { class CodeCacheHashEntrySlab; }
 namespace OMR { class FaintCacheBlock; }
 namespace OMR { typedef void CodeCacheTrampolineCode; }
 namespace OMR { class CodeCacheManager; }
-namespace OMR { class CCData; }
+namespace TR { class CCData; }
 namespace TR { class StaticRelocation; }
 namespace OMR { typedef CodeCacheManager CodeCacheManagerConnector; }
 
@@ -325,7 +325,7 @@ public:
    void decreaseCurrTotalUsedInBytes(size_t size);
    size_t getCurrTotalUsedInBytes() const { return _currTotalUsedInBytes; }
    size_t getMaxUsedInBytes() const { return _maxUsedInBytes; }
-   CCData* getCodeCacheData() const { return _codeCacheData; }
+   TR::CCData* getCodeCacheData() const { return _codeCacheData; }
 
 protected:
 
@@ -339,7 +339,7 @@ protected:
    TR::CodeCache                 *_repositoryCodeCache;
    TR::CodeCacheMemorySegment    *_codeCacheRepositorySegment;
    TR::Monitor                   *_codeCacheRepositoryMonitor;
-   OMR::CCData                   *_codeCacheData;
+   TR::CCData                    *_codeCacheData;
 
    bool                           _initialized;                       /*!< flag to indicate if code cache manager has been initialized or not */
    bool                           _lowCodeCacheSpaceThresholdReached; /*!< true if close to exhausting available code cache */

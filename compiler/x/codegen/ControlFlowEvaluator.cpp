@@ -440,6 +440,7 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
       {
       TR::CCData *codeCacheData = cg->getCodeCache()->manager()->getCodeCacheData();
       TR::CCData::index_t index;
+      codeCacheData->reserve(numBranchTableEntries * sizeof(intptr_t), alignof(intptr_t), NULL, index);
       branchTable = codeCacheData->get<intptr_t>(index);
       }
    else

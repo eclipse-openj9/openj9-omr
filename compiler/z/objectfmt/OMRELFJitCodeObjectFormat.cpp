@@ -41,14 +41,14 @@ OMR::Z::ELFJitCodeObjectFormat::emitGlobalFunctionCall(TR::GlobalFunctionCallDat
    {
    TR::SymbolReference *callSymRef = data.globalMethodSymRef;
    TR::CodeGenerator *cg = data.cg;
-   
+
 
    if (callSymRef == NULL)
       {
       TR_ASSERT_FATAL(data.runtimeHelperIndex > 0, "GlobalFunctionCallData does not contain symbol reference for call or valid TR_RuntimeHelper");
       callSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(data.runtimeHelperIndex, false, false, false);
       }
-   
+
    uintptr_t targetAddress = data.targetAddress ? data.targetAddress : reinterpret_cast<uintptr_t>(callSymRef->getMethodAddress());
 
    TR::Node *callNode = data.callNode;
@@ -56,8 +56,8 @@ OMR::Z::ELFJitCodeObjectFormat::emitGlobalFunctionCall(TR::GlobalFunctionCallDat
 
    TR::CCData *codeCacheData = cg->getCodeCache()->manager()->getCodeCacheData();
    TR::CCData::index_t index;
-   
-   if (!(codeCacheData->put(NULL, sizeof(ccGlobalFunctionData), alignof(ccGlobalFunctionData), NULL, index)))
+
+   if (!(codeCacheData->reserve(sizeof(ccGlobalFunctionData), alignof(ccGlobalFunctionData), NULL, index)))
       {
       cg->comp()->failCompilation<TR::CompilationException>("Could not allocate global function data");
       }
@@ -75,8 +75,8 @@ OMR::Z::ELFJitCodeObjectFormat::emitGlobalFunctionCall(TR::GlobalFunctionCallDat
 
    if (data.entryPointReg == NULL)
       data.entryPointReg = data.returnAddressReg;
-   
-   data.out_loadInstr = generateRILInstruction(cg, TR::InstOpCode::LGRL, callNode, data.entryPointReg, reinterpret_cast<void *>(ccGlobalFunctionDataAddress), data.prevInstr);   
+
+   data.out_loadInstr = generateRILInstruction(cg, TR::InstOpCode::LGRL, callNode, data.entryPointReg, reinterpret_cast<void *>(ccGlobalFunctionDataAddress), data.prevInstr);
 
    data.out_callInstr = generateRRInstruction(cg, TR::InstOpCode::BASR, callNode, data.returnAddressReg, data.entryPointReg, data.out_loadInstr);
 
@@ -100,7 +100,7 @@ OMR::Z::ELFJitCodeObjectFormat::encodeGlobalFunctionCall(TR::GlobalFunctionCallD
       TR_ASSERT_FATAL(data.runtimeHelperIndex > 0, "GlobalFunctionCallData does not contain symbol reference for call or valid TR_RuntimeHelper");
       callSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(data.runtimeHelperIndex, false, false, false);
       }
-   
+
    uintptr_t targetAddress = data.targetAddress != NULL ? data.targetAddress : reinterpret_cast<uintptr_t>(callSymRef->getMethodAddress());
 
    uint8_t *cursor = data.bufferAddress;
@@ -108,14 +108,14 @@ OMR::Z::ELFJitCodeObjectFormat::encodeGlobalFunctionCall(TR::GlobalFunctionCallD
    TR::Node *callNode = data.callNode;
    TR_ASSERT_FATAL(targetAddress != NULL, "Unable to make a call for n%dn %s as targetAddress for the Call is not found.", callNode->getGlobalIndex(), callNode->getOpCode().getName());
 
-   ccGlobalFunctionData *ccGlobalFunctionDataAddress = 
+   ccGlobalFunctionData *ccGlobalFunctionDataAddress =
       reinterpret_cast<ccGlobalFunctionData *>(cg->allocateCodeMemory(sizeof(ccGlobalFunctionData), false));
 
    if (!ccGlobalFunctionDataAddress)
       {
       cg->comp()->failCompilation<TR::CompilationException>("Could not allocate global function call data");
       }
-   
+
 	TR_ASSERT_FATAL(cg->canUseRelativeLongInstructions(reinterpret_cast<int64_t>(ccGlobalFunctionDataAddress)), "ccGlobalFunctionDataAddress is outside relative immediate range", targetAddress);
    ccGlobalFunctionDataAddress->address = targetAddress;
 

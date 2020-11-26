@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -390,6 +390,7 @@ namespace TR { class UtypeInstruction; }
 namespace TR { class JtypeInstruction; }
 namespace TR { class LoadInstruction;  }
 namespace TR { class StoreInstruction; }
+namespace TR { class RVHelperCallSnippet; }
 
 TR_Debug *createDebugObject(TR::Compilation *);
 
@@ -1188,6 +1189,7 @@ public:
    void print(TR::FILE *, TR::JtypeInstruction *);
    void print(TR::FILE *, TR::LoadInstruction * );
    void print(TR::FILE *, TR::StoreInstruction *);
+   void print(TR::FILE *, TR::RVHelperCallSnippet *);
 
    void print(TR::FILE *, TR::RealRegister *, TR_RegisterSizes size = TR_WordReg);
    void print(TR::FILE *, TR::RegisterDependency *);

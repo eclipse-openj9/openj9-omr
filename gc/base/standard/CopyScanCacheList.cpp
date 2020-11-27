@@ -288,7 +288,6 @@ MM_CopyScanCacheList::decrementCount(CopyScanCacheSublist *sublist, uintptr_t va
 
 	if ((0 == sublist->_entryCount) && (NULL != _cachedEntryCount)) {
 		Assert_MM_true(*_cachedEntryCount >= 1);
-		Assert_MM_true(NULL == sublist->_cacheHead);
 		if (1 == _sublistCount) {
 			*_cachedEntryCount -= 1;
 		} else {
@@ -332,8 +331,8 @@ MM_CopyScanCacheList::popCache(MM_EnvironmentBase *env)
 			list->_cacheLock.acquire();
 			cache = list->_cacheHead;
 			if (NULL != cache) {
-				list->_cacheHead = (MM_CopyScanCacheStandard *)cache->next;
 				decrementCount(list, 1);
+				list->_cacheHead = (MM_CopyScanCacheStandard *)cache->next;
 
 				if (NULL == list->_cacheHead) {
 					Assert_MM_true(0 == list->_entryCount);

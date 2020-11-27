@@ -676,32 +676,43 @@ getMemoryInRange(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier
 			currentAddress = (void *)alignmentInBytes;
 		}
 	}
+	
+#if defined(VM_FLAGS_SUPERPAGE_SIZE_2MB)
+	if (PPG_vmem_pageSize[2] == pageSize) {
+		/* Don't bother scanning the entire address space if the request can't be satisfied. */
+		void *tmpPointer = reserveMemory(portLibrary, NULL, byteAmount, identifier, mode, pageSize, pageFlags, category);
+		if (NULL == tmpPointer) {
+			goto done;
+		}
+		omrvmem_free_memory(portLibrary, tmpPointer, byteAmount, identifier);
+	}
+#endif /* defined(VM_FLAGS_SUPERPAGE_SIZE_2MB) */
+	
+	/* Try all addresses within range */
+	while ((startAddress <= currentAddress) && (endAddress >= currentAddress)) {
+		memoryPointer = reserveMemory(portLibrary, currentAddress, byteAmount, identifier, mode, pageSize, pageFlags, category);
 
-	if (NULL == memoryPointer) {
-		/* Try all addresses within range */
-		while ((startAddress <= currentAddress) && (endAddress >= currentAddress)) {
-			memoryPointer = reserveMemory(portLibrary, currentAddress, byteAmount, identifier, mode, pageSize, pageFlags, category);
-
-			if (NULL != memoryPointer) {
-				/* stop if returned pointer is within range */
-				if ((startAddress <= memoryPointer) && (endAddress >= memoryPointer)) {
-					break;
-				}
-				if (0 != omrvmem_free_memory(portLibrary, memoryPointer, byteAmount, identifier)) {
-					return NULL;
-				}
-				memoryPointer = NULL;
-			}
-
-			oldAddress = currentAddress;
-
-			currentAddress += direction * alignmentInBytes;
-
-			/* Protect against loop around */
-			if (((1 == direction) && ((uintptr_t)oldAddress > (uintptr_t)currentAddress)) ||
-				((-1 == direction) && ((uintptr_t)oldAddress < (uintptr_t)currentAddress))) {
+		if (NULL != memoryPointer) {
+			/* stop if returned pointer is within range */
+			if ((startAddress <= memoryPointer) && (endAddress >= memoryPointer)) {
 				break;
 			}
+			if (0 != omrvmem_free_memory(portLibrary, memoryPointer, byteAmount, identifier)) {
+				memoryPointer = NULL;
+				goto done;
+			}
+			memoryPointer = NULL;
+		}
+
+		oldAddress = currentAddress;
+
+		currentAddress += direction * alignmentInBytes;
+
+		/* Protect against loop around */
+		if (((1 == direction) && ((uintptr_t)oldAddress > (uintptr_t)currentAddress))
+			|| ((-1 == direction) && ((uintptr_t)oldAddress < (uintptr_t)currentAddress))
+		) {
+			break;
 		}
 	}
 
@@ -711,9 +722,7 @@ allocAnywhere:
 		memoryPointer = reserveMemory(portLibrary, NULL, byteAmount, identifier, mode, pageSize, pageFlags, category);
 	}
 
-	if (NULL == memoryPointer) {
-		memoryPointer = NULL;
-	} else if (isStrictAndOutOfRange(memoryPointer, startAddress, endAddress, vmemOptions)) {
+	if ((NULL != memoryPointer) && isStrictAndOutOfRange(memoryPointer, startAddress, endAddress, vmemOptions)) {
 		/* If strict flag is set and returned pointer is not within range then fail */
 		omrvmem_free_memory(portLibrary, memoryPointer, byteAmount, identifier);
 
@@ -722,6 +731,7 @@ allocAnywhere:
 		memoryPointer = NULL;
 	}
 
+done:
 	return memoryPointer;
 }
 

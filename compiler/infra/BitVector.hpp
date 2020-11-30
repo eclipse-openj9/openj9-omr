@@ -166,20 +166,29 @@ class TR_BitVector
    /**
     * @brief Constructor to create a new BitVector by reading serialized data from the memory buffer
     * @param [in] buffer Memory buffer containing serialized BitVector
+    *
+    * @note This method does not check agains buffer over-reads. The caller should ensure that the
+    * the memory buffer has been populated by calling the serialized() method to avoid buffer over-reads.
+    * On return the buffer gets updated to point to the location past the serialized data.
+    * Also see getSizeForSerialization(), serialize().
     */
    TR_BitVector(uint8_t * &buffer)
       {
-      _firstChunkWithNonZero = *(int32_t *)buffer;
-      buffer += sizeof(_firstChunkWithNonZero);
-      _lastChunkWithNonZero = *(int32_t *)buffer;
-      buffer += sizeof(_lastChunkWithNonZero);
-      _numChunks = *(int32_t *)buffer;
-      _chunks = NULL;
+      TR_SerializedBitVector *sbv = reinterpret_cast<TR_SerializedBitVector *>(buffer);
+      _firstChunkWithNonZero = sbv->_firstChunkWithNonZero;
+      _lastChunkWithNonZero = sbv->_lastChunkWithNonZero;
+      _numChunks = sbv->_numChunks;
+      buffer += sizeof(TR_SerializedBitVector);
       if (_numChunks > 0)
          {
-         _chunks = (chunk_t*) TR_Memory::jitPersistentAlloc(_numChunks * sizeof(*_chunks), TR_Memory::BitVector);
-         memcpy(_chunks, buffer, _numChunks * sizeof(_chunks[0]));
-         buffer += (_numChunks * sizeof(_chunks[0]));
+         size_t chunksSize = _numChunks * sizeof(*_chunks);
+         _chunks = (chunk_t*) TR_Memory::jitPersistentAlloc(chunksSize, TR_Memory::BitVector);
+         memcpy(_chunks, buffer, chunksSize);
+         buffer += chunksSize;
+         }
+      else
+         {
+         _chunks = NULL;
          }
       _region = NULL;
       }
@@ -867,11 +876,10 @@ class TR_BitVector
     */
    uint32_t getSizeForSerialization() const
       {
-      uint32_t size = 0;
-      size += sizeof(_firstChunkWithNonZero) + sizeof(_lastChunkWithNonZero) + sizeof(_numChunks);
+      uint32_t size = sizeof(TR_SerializedBitVector);
       if (_numChunks > 0)
          {
-         size += (_numChunks * sizeof(_chunks[0]));
+         size += (_numChunks * sizeof(*_chunks));
          }
       return size;
       }
@@ -879,24 +887,37 @@ class TR_BitVector
    /**
     * @brief Serialize this object
     * @param [in] serializer used for serializing this object
-    * @return void
+    *
+    * @note The caller should ensure buffer is large enough to accommodate the serialized data.
+    * On return the buffer gets updated to point to the location past the serialized data.
+    * Also see getSizeForSerialization(), TR_BitVector(uint8_t * &).
     */
    void serialize(uint8_t * &buffer) const
       {
-      *(int32_t *)buffer = _firstChunkWithNonZero;
-      buffer += sizeof(_firstChunkWithNonZero);
-      *(int32_t *)buffer = _lastChunkWithNonZero;
-      buffer += sizeof(_lastChunkWithNonZero);
-      *(int32_t *)buffer = _numChunks;
-      buffer += sizeof(_numChunks);
+      TR_SerializedBitVector *sbv = reinterpret_cast<TR_SerializedBitVector *>(buffer);
+      sbv->_firstChunkWithNonZero = _firstChunkWithNonZero;
+      sbv->_lastChunkWithNonZero = _lastChunkWithNonZero;
+      sbv->_numChunks = _numChunks;
+      buffer += sizeof(TR_SerializedBitVector);
       if (_numChunks > 0)
          {
-         memcpy(buffer, _chunks, _numChunks * sizeof(_chunks[0]));
-         buffer += (_numChunks * sizeof(_chunks[0]));
+         size_t chunksSize = _numChunks * sizeof(*_chunks);
+         memcpy(buffer, _chunks, chunksSize);
+         buffer += chunksSize;
          }
       }
 
    private:
+
+   /**
+    * This data structure contains all the fields required for serializing TR_BitVector.
+    */
+   struct TR_SerializedBitVector
+      {
+      int32_t _firstChunkWithNonZero;
+      int32_t _lastChunkWithNonZero;
+      int32_t _numChunks;
+      };
 
    // Each chunk of bits is an unsigned word, which is 32/64 bits.
    // The low order 5/6 bits of a bit index define the bit position within the

@@ -194,10 +194,6 @@ OMR::Power::CodeGenerator::initialize()
 
    cg->setEnableRefinedAliasSets();
 
-   static char * accessStaticsIndirectly = feGetEnv("TR_AccessStaticsIndirectly");
-   if (accessStaticsIndirectly)
-      cg->setAccessStaticsIndirectly(true);
-
    if (!debug("noLiveRegisters"))
       {
       cg->addSupportedLiveRegisterKind(TR_GPR);

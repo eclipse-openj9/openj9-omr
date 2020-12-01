@@ -481,6 +481,18 @@ TR::Instruction *fixedSeqMemAccess(TR::CodeGenerator *cg, TR::Node *node, intptr
          nibbles[idx] = cursor = generateMemSrc1Instruction(cg, opCode, node, memRef, srcOrTrg, cursor);
       }
 
+   // When using tempReg ensure no register spills occur in the middle of the fixed sequence
+   if (tempReg)
+      {
+      TR::RegisterDependencyConditions *dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg->trMemory());
+      if (srcOrTrg != tempReg && srcOrTrg != baseReg)
+         dep->addPostCondition(srcOrTrg, TR::RealRegister::NoReg);
+      dep->addPostCondition(tempReg, TR::RealRegister::NoReg);
+      dep->addPostCondition(baseReg, TR::RealRegister::NoReg, UsesDependentRegister | ExcludeGPR0InAssigner);
+
+      cursor = generateDepLabelInstruction(cg, TR::InstOpCode::label, node, TR::LabelSymbol::create(cg->trHeapMemory(),cg), dep);
+      }
+
    if (cursorCopy == NULL)
       cg->setAppendInstruction(cursor);
 

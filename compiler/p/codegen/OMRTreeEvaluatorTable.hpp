@@ -173,7 +173,7 @@
 #define _lxorEvaluator TR::TreeEvaluator::lxorEvaluator
 #define _bxorEvaluator TR::TreeEvaluator::ixorEvaluator
 #define _sxorEvaluator TR::TreeEvaluator::ixorEvaluator
-#define _i2lEvaluator TR::TreeEvaluator::s2lEvaluator
+#define _i2lEvaluator TR::TreeEvaluator::i2lEvaluator
 #define _i2fEvaluator TR::TreeEvaluator::i2fEvaluator
 #define _i2dEvaluator TR::TreeEvaluator::i2dEvaluator
 #define _i2bEvaluator TR::TreeEvaluator::i2bEvaluator

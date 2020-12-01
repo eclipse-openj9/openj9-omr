@@ -184,6 +184,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *i2bEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *i2cEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *i2sEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *i2lEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *iu2lEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *l2bEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *l2buEvaluator(TR::Node *node, TR::CodeGenerator *cg);

@@ -3094,7 +3094,11 @@ class S390RIEInstruction : public TR::S390RegInstruction
            : S390RegInstruction(op, n, targetRegister, cg),
              _instructionFormat(RIE_RR),
              _branchDestination(branchDestination),
-             _branchCondition(branchCondition)
+             _branchCondition(branchCondition),
+             _sourceImmediate8(0),
+             _sourceImmediate8One(0),
+             _sourceImmediate8Two(0),
+             _sourceImmediate16(0)
       {
       // note that _targetRegister is registered for use via the
       // S390RegInstruction constructor call
@@ -3113,7 +3117,11 @@ class S390RIEInstruction : public TR::S390RegInstruction
            : S390RegInstruction(op, n, targetRegister, precedingInstruction, cg),
              _instructionFormat(RIE_RR),
              _branchDestination(branchDestination),
-             _branchCondition(branchCondition)
+             _branchCondition(branchCondition),
+             _sourceImmediate8(0),
+             _sourceImmediate8One(0),
+             _sourceImmediate8Two(0),
+             _sourceImmediate16(0)
       {
       // note that _targetRegister is registered for use via the
       // S390RegInstruction constructor call
@@ -3132,7 +3140,10 @@ class S390RIEInstruction : public TR::S390RegInstruction
              _instructionFormat(RIE_RI8),
              _branchDestination(branchDestination),
              _branchCondition(branchCondition),
-             _sourceImmediate8(sourceImmediate)
+             _sourceImmediate8(sourceImmediate),
+             _sourceImmediate8One(0),
+             _sourceImmediate8Two(0),
+             _sourceImmediate16(0)
       {
       // note that _targetRegister is registered for use via the
       // S390RegInstruction constructor call
@@ -3152,7 +3163,10 @@ class S390RIEInstruction : public TR::S390RegInstruction
               _instructionFormat(RIE_RI8),
              _branchDestination(branchDestination),
              _branchCondition(branchCondition),
-             _sourceImmediate8(sourceImmediate)
+             _sourceImmediate8(sourceImmediate),
+             _sourceImmediate8One(0),
+             _sourceImmediate8Two(0),
+             _sourceImmediate16(0)
       {
       // note that _targetRegister is registered for use via the
       // S390RegInstruction constructor call
@@ -3173,7 +3187,8 @@ class S390RIEInstruction : public TR::S390RegInstruction
              _branchCondition(TR::InstOpCode::COND_NOPR),
              _sourceImmediate8(sourceImmediate),
              _sourceImmediate8One(sourceImmediateOne),
-             _sourceImmediate8Two(sourceImmediateTwo)
+             _sourceImmediate8Two(sourceImmediateTwo),
+             _sourceImmediate16(0)
       {
       useSourceRegister(sourceRegister);
       }
@@ -3195,7 +3210,8 @@ class S390RIEInstruction : public TR::S390RegInstruction
              _branchCondition(TR::InstOpCode::COND_NOPR),
              _sourceImmediate8(sourceImmediate),
              _sourceImmediate8One(sourceImmediateOne),
-             _sourceImmediate8Two(sourceImmediateTwo)
+             _sourceImmediate8Two(sourceImmediateTwo),
+             _sourceImmediate16(0)
       {
       // note that _targetRegister is registered for use via the
       // S390RegInstruction constructor call
@@ -3213,6 +3229,9 @@ class S390RIEInstruction : public TR::S390RegInstruction
               _instructionFormat(RIE_RI16A),
              _branchDestination(0),
              _branchCondition(branchCondition),
+             _sourceImmediate8(0),
+             _sourceImmediate8One(0),
+             _sourceImmediate8Two(0),
              _sourceImmediate16(sourceImmediate)
       {
       // Note that _targetRegister is registered for use via the S390RegInstruction constructor call
@@ -3232,6 +3251,9 @@ class S390RIEInstruction : public TR::S390RegInstruction
               _instructionFormat(RIE_RI16A),
              _branchDestination(0),
              _branchCondition(branchCondition),
+             _sourceImmediate8(0),
+             _sourceImmediate8One(0),
+             _sourceImmediate8Two(0),
              _sourceImmediate16(sourceImmediate)
       {
       if (isTrap())
@@ -3255,6 +3277,8 @@ class S390RIEInstruction : public TR::S390RegInstruction
         _branchDestination(0),
         _branchCondition(TR::InstOpCode::COND_NOPR),
         _sourceImmediate8(0),
+        _sourceImmediate8One(0),
+        _sourceImmediate8Two(0),
         _sourceImmediate16(sourceImmediate)
       {
       // note that _targetRegister is registered for use via the
@@ -3274,6 +3298,8 @@ class S390RIEInstruction : public TR::S390RegInstruction
         _branchDestination(0),
         _branchCondition(TR::InstOpCode::COND_NOPR),
         _sourceImmediate8(0),
+        _sourceImmediate8One(0),
+        _sourceImmediate8Two(0),
         _sourceImmediate16(sourceImmediate)
       {
       // note that _targetRegister is registered for use via the

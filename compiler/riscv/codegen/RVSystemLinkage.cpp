@@ -34,39 +34,6 @@
 #include "il/ParameterSymbol.hpp"
 
 
-//getRegisterNumber
-
-#define FOR_EACH_REGISTER(machine, block)                                        \
-   for (int regNum = TR::RealRegister::x0; regNum <= TR::RealRegister::x31; regNum++) \
-      {                                                                          \
-      TR::RealRegister *reg                                                      \
-                   = machine->getRealRegister((TR::RealRegister::RegNum)regNum); \
-      { block; }                                                                 \
-      }                                                                          \
-   for (int regNum = TR::RealRegister::f0; regNum <= TR::RealRegister::f31; regNum++) \
-      {                                                                          \
-      TR::RealRegister *reg                                                      \
-                   = machine->getRealRegister((TR::RealRegister::RegNum)regNum); \
-      { block; }                                                                 \
-      }
-
-#define FOR_EACH_RESERVED_REGISTER(machine, props, block)                        \
-   FOR_EACH_REGISTER(machine,                                                    \
-   if (props._registerFlags[(TR::RealRegister::RegNum)regNum] & RV_Reserved)     \
-      { block; }                                                                 \
-   )
-
-#define FOR_EACH_CALLEE_SAVED_REGISTER(machine, props, block)                    \
-   FOR_EACH_REGISTER(machine,                                                    \
-   if (props._registerFlags[(TR::RealRegister::RegNum)regNum] == Preserved)      \
-      { block; }                                                                 \
-   )
-
-#define FOR_EACH_ASSIGNED_CALLEE_SAVED_REGISTER(machine, props, block)           \
-   FOR_EACH_CALLEE_SAVED_REGISTER(machine, props,                                \
-   if (reg->getHasBeenAssignedInMethod())                                        \
-      { block; }                                                                 \
-   )
 /**
  * @brief Adds dependency
  */
@@ -86,7 +53,6 @@ addDependency(
    dep->addPreCondition(vreg, rnum);
    dep->addPostCondition(vreg, rnum);
    }
-
 TR::RVSystemLinkage::RVSystemLinkage(TR::CodeGenerator *cg)
    : TR::Linkage(cg)
    {

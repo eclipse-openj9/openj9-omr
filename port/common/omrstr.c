@@ -3160,15 +3160,14 @@ convertWideToPlatform(struct OMRPortLibrary *portLibrary, charconvState_t encodi
 
 	if (0 == outBufferSize) { /* get the required buffer size */
 		char onStackBuffer[CONVERSION_BUFFER_SIZE];
-		char *osbCursor = onStackBuffer;
 
-		uintptr_t osbSize = sizeof(onStackBuffer);
 		resultSize = 0;
 		/* initialize convertor */
 		while (wideRemaining > 0) {
 			uintptr_t oldOsbSize = 0;
 			uintptr_t iconvResult = 0;
-			osbSize = sizeof(onStackBuffer);
+			uintptr_t osbSize = sizeof(onStackBuffer);
+			char *osbCursor = onStackBuffer;
 			oldOsbSize = osbSize;
 			iconvResult = iconv(encodingState, (char **)inBuffer, (size_t *) &wideRemaining, &osbCursor, (size_t *) &osbSize); /* input and output pointers and limits are updated */
 			resultSize += oldOsbSize - osbSize;

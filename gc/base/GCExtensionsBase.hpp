@@ -190,9 +190,9 @@ public:
 class MM_GCExtensionsBase : public MM_BaseVirtual {
 	/* Data Members */
 private:
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
 	bool _compressObjectReferences;
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	void* _guaranteedNurseryStart; /**< lowest address guaranteed to be in the nursery */
 	void* _guaranteedNurseryEnd; /**< highest address guaranteed to be in the nursery */
@@ -1343,9 +1343,9 @@ public:
 
 	MM_GCExtensionsBase()
 		: MM_BaseVirtual()
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
 		, _compressObjectReferences(false)
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 		, _guaranteedNurseryStart(NULL)
 		, _guaranteedNurseryEnd(NULL)

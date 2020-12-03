@@ -153,6 +153,7 @@
 #cmakedefine OMR_GC_REALTIME
 #cmakedefine OMR_GC_TLH_PREFETCH_FTA
 #cmakedefine OMR_GC_VLHGC
+#cmakedefine OMR_MIXED_REFERENCES_MODE_STATIC
 
 /**
  * Add support for CUDA

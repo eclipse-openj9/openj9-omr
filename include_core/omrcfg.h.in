@@ -146,6 +146,7 @@
 #undef OMR_GC_REALTIME
 #undef OMR_GC_TLH_PREFETCH_FTA
 #undef OMR_GC_VLHGC
+#undef OMR_MIXED_REFERENCES_MODE_STATIC
 
 /**
  * Add support for CUDA

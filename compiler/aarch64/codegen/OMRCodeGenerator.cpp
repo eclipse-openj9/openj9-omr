@@ -94,11 +94,18 @@ OMR::ARM64::CodeGenerator::initialize()
 
    cg->setSupportsSelect();
 
-   _numberBytesReadInaccessible = 0;
-   _numberBytesWriteInaccessible = 0;
 
-   if (TR::Compiler->vm.hasResumableTrapHandler(comp))
+   if (!comp->getOption(TR_DisableTraps) && TR::Compiler->vm.hasResumableTrapHandler(comp))
+      {
+      _numberBytesReadInaccessible = 4096;
+      _numberBytesWriteInaccessible = 4096;
       cg->setHasResumableTrapHandler();
+      }
+   else
+      {
+      _numberBytesReadInaccessible = 0;
+      _numberBytesWriteInaccessible = 0;
+      }
 
    if (!comp->getOption(TR_DisableRegisterPressureSimulation))
       {

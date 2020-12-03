@@ -1798,7 +1798,7 @@ typedef struct OMRPortLibrary {
 	/** see @ref omrsysinfo.c::omrsysinfo_get_processor_feature_name "omrsysinfo_get_processor_feature_name"*/
 	const char  *( *sysinfo_get_processor_feature_name)(struct OMRPortLibrary *portLibrary, uint32_t feature) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_processor_feature_string "omrsysinfo_get_processor_feature_string"*/
-	void ( *sysinfo_get_processor_feature_string)(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, char * buffer, const size_t length) ;
+	intptr_t ( *sysinfo_get_processor_feature_string)(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, char * buffer, const size_t length) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_OS_type "omrsysinfo_get_OS_type"*/
 	const char *(*sysinfo_get_OS_type)(struct OMRPortLibrary *portLibrary) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_executable_name "omrsysinfo_get_executable_name"*/

@@ -1417,6 +1417,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1MemInstruction *instr)
       }
 
    printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
+   printInstructionComment(pOutFile, 1, instr);
    trfflush(_comp->getOutFile());
    }
 
@@ -1427,6 +1428,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64MemInstruction *instr)
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getMemoryReference());
    printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
+   printInstructionComment(pOutFile, 1, instr);
    trfflush(_comp->getOutFile());
    }
 
@@ -1440,6 +1442,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64MemSrc1Instruction *instr)
    print(pOutFile, instr->getMemoryReference());
 
    printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
+   printInstructionComment(pOutFile, 1, instr);
    trfflush(_comp->getOutFile());
    }
 
@@ -1454,6 +1457,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64MemSrc2Instruction *instr)
    print(pOutFile, instr->getMemoryReference());
 
    printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
+   printInstructionComment(pOutFile, 1, instr);
    trfflush(_comp->getOutFile());
    }
 
@@ -1468,6 +1472,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1MemSrc1Instruction *instr)
    print(pOutFile, instr->getMemoryReference());
 
    printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
+   printInstructionComment(pOutFile, 1, instr);
    trfflush(_comp->getOutFile());
    }
 

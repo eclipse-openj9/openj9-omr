@@ -278,10 +278,11 @@ OMR::Power::CodeGenerator::initialize()
    if (cg->is64BitProcessor())
       cg->setSupportsInlinedAtomicLongVolatiles();
 
-   // Standard allows only offset multiple of 4
-   // TODO: either improves the query to be size-based or gets the offset into a register
-   if (comp->target().is64Bit())
+   if (!comp->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9) &&
+       !(comp->target().cpu.isBigEndian() && comp->target().cpu.is(OMR_PROCESSOR_PPC_P8)))
+      {
       cg->setSupportsAlignedAccessOnly();
+      }
 
    // TODO: distinguishing among OOO and non-OOO implementations
    if (comp->target().isSMP())

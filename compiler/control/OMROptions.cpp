@@ -1204,6 +1204,9 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceSamplingJProfiling",          "L\ttrace samplingjProfiling",                     TR::Options::traceOptimization, samplingJProfiling, 0, "P"},
    {"traceSEL",                         "L\ttrace sign extension load",                    TR::Options::traceOptimization, signExtendLoads, 0, "P"},
    {"traceSequenceSimplification",      "L\ttrace arithmetic sequence simplification",     TR::Options::traceOptimization, expressionsSimplification, 0, "P"},
+#ifdef J9_PROJECT_SPECIFIC
+   {"traceSequentialStoreSimplification", "L\ttrace sequential load or store simplification", TR::Options::traceOptimization, sequentialStoreSimplification, 0, "P"},
+#endif
    {"traceStaticFinalFieldFolding",     "L\ttrace generic static final field folding",             TR::Options::traceOptimization, staticFinalFieldFolding, 0, "P"},
    {"traceStringBuilderTransformer",    "L\ttrace StringBuilder tranfsofermer optimization", TR::Options::traceOptimization, stringBuilderTransformer, 0, "P"},
    {"traceStringPeepholes",             "L\ttrace string peepholes",                       TR::Options::traceOptimization, stringPeepholes, 0, "P"},

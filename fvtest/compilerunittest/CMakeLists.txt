@@ -41,6 +41,11 @@ if(OMR_ARCH_POWER)
 	)
 endif()
 
+
+list(APPEND COMPCGTEST_FILES
+	abstractinterpreter/AbsInterpreterTest.cpp
+)
+
 # MSVC and XL C/C++ have trouble with this file
 if (NOT OMR_TOOLCONFIG STREQUAL "msvc" AND NOT OMR_TOOLCONFIG STREQUAL "xlc")
 	list(APPEND COMPCGTEST_FILES

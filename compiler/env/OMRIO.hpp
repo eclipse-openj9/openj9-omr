@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -35,8 +35,8 @@ namespace OMR { typedef OMR::IO IOConnector; }
 #include <stdint.h>
 #include "env/FilePointerDecl.hpp"
 #include "infra/Annotations.hpp"
-
 #include "env/FilePointer.hpp"
+#include "omrformatconsts.h"
 
 /* All compilers now use the same format string for signed/unsigned 64-bit values.
  *
@@ -44,10 +44,10 @@ namespace OMR { typedef OMR::IO IOConnector; }
  *       library.  If you call a C runtime "printf" or "sprintf", for example, then
  *       that runtime may dictate the format specifiers you may use.
 */
-#define INT64_PRINTF_FORMAT  "%lld"
-#define INT64_PRINTF_FORMAT_HEX "0x%llx"
-#define UINT64_PRINTF_FORMAT "%llu"
-#define UINT64_PRINTF_FORMAT_HEX "0x%llx"
+#define INT64_PRINTF_FORMAT "%" OMR_PRId64
+#define INT64_PRINTF_FORMAT_HEX "0x%" OMR_PRIx64
+#define UINT64_PRINTF_FORMAT "%" OMR_PRIu64
+#define UINT64_PRINTF_FORMAT_HEX "0x%" OMR_PRIx64
 
 #ifdef _MSC_VER
    #define POINTER_PRINTF_FORMAT "0x%p"

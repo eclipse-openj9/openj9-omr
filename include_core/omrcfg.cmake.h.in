@@ -41,6 +41,7 @@
 #cmakedefine OMR_THREAD
 #cmakedefine OMR_OMRSIG
 #cmakedefine OMR_EXAMPLE
+#cmakedefine OMR_SHARED_CACHE
 
 #cmakedefine OMR_GC_ALLOCATION_TAX
 #cmakedefine OMR_GC_BATCH_CLEAR_TLH

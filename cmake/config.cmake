@@ -45,6 +45,7 @@ set(OMR_COMPILER OFF CACHE BOOL "Enable the Compiler")
 set(OMR_JITBUILDER OFF CACHE BOOL "Enable building JitBuilder")
 set(OMR_TEST_COMPILER OFF CACHE BOOL "Enable building the test compiler")
 set(OMR_LLJB OFF CACHE BOOL "Enable building LLJB")
+set(OMR_SHARED_CACHE OFF CACHE BOOL "Enable the Shared Cache")
 
 set(OMR_GC ON CACHE BOOL "Enable the GC")
 set(OMR_GC_TEST ${OMR_GC} CACHE BOOL "Enable the GC tests.")

@@ -97,14 +97,6 @@ omr_add_executable(compilertest NOWARNINGS
 	tests/injectors/UnaryOpIlInjector.cpp
 )
 
-# MSVC and XL C/C++ have trouble with this file
-if (NOT OMR_TOOLCONFIG STREQUAL "msvc" AND NOT OMR_TOOLCONFIG STREQUAL "xlc")
-	target_sources(compilertest
-		PRIVATE
-			tests/CCDataTest.cpp
-	)
-endif()
-
 if(OMR_ARCH_X86)
 	target_sources(compilertest
 		PRIVATE

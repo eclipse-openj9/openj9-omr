@@ -438,9 +438,9 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
    intptr_t *branchTable = NULL;
    if (generateReadOnlyCode)
       {
-      OMR::CCData *codeCacheData = cg->getCodeCache()->manager()->getCodeCacheData();
-      OMR::CCData::index_t index;
-      codeCacheData->put(NULL, numBranchTableEntries * sizeof(intptr_t), alignof(intptr_t), NULL, index);
+      TR::CCData *codeCacheData = cg->getCodeCache()->manager()->getCodeCacheData();
+      TR::CCData::index_t index;
+      codeCacheData->reserve(numBranchTableEntries * sizeof(intptr_t), alignof(intptr_t), NULL, index);
       branchTable = codeCacheData->get<intptr_t>(index);
       }
    else

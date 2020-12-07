@@ -609,4 +609,12 @@ typedef struct U_128 {
 #define OMR_ALIGNOF(x) alignof(x)
 #endif /* defined(_MSC_VER) && (1900 > _MSC_VER) */
 
+#if (__cplusplus >= 201103L)
+#if defined(__GNUC__) && (__GNUC__ < 5) /* GCC<=5 claims C++11 support but doesn't actually provide this trait; it does however provide a close enough extension. */
+#define OMR_IS_TRIVIALLY_COPYABLE(t) __has_trivial_copy(t)
+#else /* C++>=11 && (!GCC || GCC>=5) */
+#define OMR_IS_TRIVIALLY_COPYABLE(t) std::is_trivially_copyable<t>::value
+#endif /* defined(__GNUC__) && (__GNUC__ < 5) */
+#endif /* (__cplusplus >= 201103L) */
+
 #endif /* OMRCOMP_H */

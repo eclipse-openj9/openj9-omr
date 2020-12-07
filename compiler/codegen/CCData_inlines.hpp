@@ -22,41 +22,40 @@
 #ifndef OMR_CCDATA_INLINES_INCL
 #define OMR_CCDATA_INLINES_INCL
 
+#if (__cplusplus >= 201103L)
 #include <type_traits>
+#include "omrcomp.h"
+#endif
 
-namespace OMR
+namespace TR
 {
 
 template <typename T>
 CCData::key_t CCData::key(const T value)
    {
-#if __cpp_static_assert && __cpp_lib_has_unique_object_representations
+#if __cpp_lib_has_unique_object_representations
    // std::has_unique_object_representations is only available in C++17.
    static_assert(std::has_unique_object_representations<T>::value == true, "T must have unique object representations.");
 #endif
-   return key(reinterpret_cast<const uint8_t *>(&value), sizeof(value));
+   return key(&value, sizeof(value));
    }
 
 template <typename T>
 bool CCData::put(const T value, const key_t * const key, index_t &index)
    {
-   // std::is_trivially_copyable is a C++11 type trait, but unfortunately there's no test macro for it.
-   // static_assert is also a C++11 feature, so testing for that would hopefully be enough, but unfortunately some old compilers have static_assert but not is_trivially_copyable,
-   // hence `#if __cpp_static_assert` is insufficient.
-//#if __cpp_static_assert
-//   static_assert(std::is_trivially_copyable<T>::value == true, "T must be trivially copyable.");
-//#endif
-   return put(reinterpret_cast<const uint8_t *>(&value), sizeof(value), alignof(value), key, index);
+#if (__cplusplus >= 201103L)
+   static_assert(OMR_IS_TRIVIALLY_COPYABLE(T), "T must be trivially copyable.");
+#endif
+   return put(&value, sizeof(value), alignof(value), key, index);
    }
 
 template <typename T>
 bool CCData::get(const index_t index, T &value) const
    {
-   // See above.
-//#if __cpp_static_assert
-//   static_assert(std::is_trivially_copyable<T>::value == true, "T must be trivially copyable.");
-//#endif
-   return get(index, reinterpret_cast<uint8_t *>(&value), sizeof(value));
+#if (__cplusplus >= 201103L)
+   static_assert(OMR_IS_TRIVIALLY_COPYABLE(T), "T must be trivially copyable.");
+#endif
+   return get(index, &value, sizeof(value));
    }
 
 template <typename T>
@@ -67,7 +66,25 @@ T* CCData::get(const index_t index) const
    if (index >= _capacity)
       return NULL;
 
-   return reinterpret_cast<T *>(_data + index);
+   const size_t byteIndex = byteIndexFromDataIndex(index);
+
+   return reinterpret_cast<T *>(_data + byteIndex);
+   }
+
+inline
+bool CCData::put(const void * const value, const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index)
+   {
+   if (value == NULL)
+      {
+      return false;
+      }
+   return put_impl(value, sizeBytes, alignmentBytes, key, index);
+   }
+
+inline
+bool CCData::reserve(const size_t sizeBytes, const size_t alignmentBytes, const key_t * const key, index_t &index)
+   {
+   return put_impl(NULL, sizeBytes, alignmentBytes, key, index);
    }
 
 }

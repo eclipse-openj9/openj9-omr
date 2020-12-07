@@ -2635,10 +2635,6 @@ OMR::Options::jitPreProcess()
 #if defined(TR_HOST_ARM64)
       // Prefetch is not supported on ARM64 yet
       _disabledOptimizations[prefetchInsertion] = true;
-
-      // Profiling is not supported on ARM64 yet
-      // Eclipse OpenJ9 Issue #9881
-      self()->setOption(TR_DisableProfiling);
 #endif
 
       self()->setOption(TR_DisableThunkTupleJ2I); // JSR292:TODO: Figure out how to do this without confusing startPCIfAlreadyCompiled

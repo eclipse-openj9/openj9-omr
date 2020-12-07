@@ -22,6 +22,7 @@
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/ARM64OutOfLineCodeSection.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/InstructionDelegate.hpp"
 #include "codegen/RegisterDependency.hpp"
 
 void TR::ARM64LabelInstruction::assignRegistersForOutOfLineCodeSection(TR_RegisterKinds kindToBeAssigned)
@@ -452,6 +453,27 @@ void TR::ARM64MemSrc2Instruction::assignRegisters(TR_RegisterKinds kindToBeAssig
 
 // TR::ARM64Trg1MemInstruction:: member functions
 
+TR::ARM64Trg1MemInstruction::ARM64Trg1MemInstruction(TR::InstOpCode::Mnemonic op,
+                           TR::Node *node,
+                           TR::Register *treg,
+                           TR::MemoryReference *mr, TR::CodeGenerator *cg)
+   : ARM64Trg1Instruction(op, node, treg, cg), _memoryReference(mr)
+   {
+   mr->bookKeepingRegisterUses(self(), cg);
+   TR::InstructionDelegate::setupImplicitNullPointerException(cg, this);
+   }
+
+TR::ARM64Trg1MemInstruction::ARM64Trg1MemInstruction(TR::InstOpCode::Mnemonic op,
+                           TR::Node *node,
+                           TR::Register *treg,
+                           TR::MemoryReference *mr,
+                           TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+   : ARM64Trg1Instruction(op, node, treg, precedingInstruction, cg), _memoryReference(mr)
+   {
+   mr->bookKeepingRegisterUses(self(), cg);
+   TR::InstructionDelegate::setupImplicitNullPointerException(cg, this);
+   }
+
 bool TR::ARM64Trg1MemInstruction::refsRegister(TR::Register *reg)
    {
    return (reg == getTargetRegister() || getMemoryReference()->refsRegister(reg));
@@ -491,6 +513,27 @@ void TR::ARM64Trg1MemInstruction::assignRegisters(TR_RegisterKinds kindToBeAssig
 
    if (getDependencyConditions())
       getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
+   }
+
+// TR::ARM64MemInstruction:: member functions
+
+TR::ARM64MemInstruction::ARM64MemInstruction(TR::InstOpCode::Mnemonic op,
+                     TR::Node *node,
+                     TR::MemoryReference *mr, TR::CodeGenerator *cg)
+   : TR::Instruction(op, node, cg), _memoryReference(mr)
+   {
+   mr->bookKeepingRegisterUses(self(), cg);
+   TR::InstructionDelegate::setupImplicitNullPointerException(cg, this);
+   }
+
+TR::ARM64MemInstruction::ARM64MemInstruction(TR::InstOpCode::Mnemonic op,
+                     TR::Node *node,
+                     TR::MemoryReference *mr,
+                     TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+   : TR::Instruction(op, node, precedingInstruction, cg), _memoryReference(mr)
+   {
+   mr->bookKeepingRegisterUses(self(), cg);
+   TR::InstructionDelegate::setupImplicitNullPointerException(cg, this);
    }
 
 // TR::ARM64Trg1MemSrc1Instruction:: member functions

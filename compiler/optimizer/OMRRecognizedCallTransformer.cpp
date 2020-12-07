@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2017, 2019 IBM Corp. and others
+* Copyright (c) 2017, 2020 IBM Corp. and others
 *
 * This program and the accompanying materials are made available under
 * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,14 +29,22 @@
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
 #include "optimizer/TransformUtil.hpp"
+#include "optimizer/Optimization_inlines.hpp"
 
 TR::Optimization* OMR::RecognizedCallTransformer::create(TR::OptimizationManager *manager)
    {
    return new (manager->allocator()) TR::RecognizedCallTransformer(manager);
    }
 
+void OMR::RecognizedCallTransformer::preProcess() {}
+
 int32_t OMR::RecognizedCallTransformer::perform()
    {
+   if (trace())
+      comp()->dumpMethodTrees("Trees before recognized call transformer", comp()->getMethodSymbol());
+
+   preProcess();
+
    TR::NodeChecklist visited(comp());
    for (auto treetop = comp()->getMethodSymbol()->getFirstTreeTop(); treetop != NULL; treetop = treetop->getNextTreeTop())
       {
@@ -54,6 +62,10 @@ int32_t OMR::RecognizedCallTransformer::perform()
             }
          }
       }
+
+   if (trace())
+      comp()->dumpMethodTrees("Trees after recognized call transformer", comp()->getMethodSymbol());
+
    return 0;
    }
 

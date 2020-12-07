@@ -61,6 +61,14 @@ extern TR::Instruction *loadConstant32(TR::CodeGenerator *cg, TR::Node *node, in
  */
 extern TR::Instruction *loadConstant64(TR::CodeGenerator *cg, TR::Node *node, int64_t value, TR::Register *trgReg, TR::Instruction *cursor = NULL);
 
+struct TR_RVBinaryEncodingData : public TR_BinaryEncodingData
+   {
+   int32_t estimate;
+   TR::Instruction *cursorInstruction;
+   TR::Instruction *i2jEntryInstruction;
+   TR::Recompilation *recomp;
+   };
+
 namespace OMR
 {
 

@@ -133,8 +133,8 @@ function(ppc_spp2s_files out_var compiler)
 	set(${out_var} "${result}" PARENT_SCOPE)
 endfunction()
 
-function(aarch64_spp_files out_var compiler)
-	# Aarch64 .spp files are equivalent to standard .S files
+function(common_spp_files out_var compiler)
+	# AArch64 and RISC-V .spp files are equivalent to standard .S files
 	# ie. assembler + c pre-processor
 	foreach(in_f ${ARGN})
 		get_filename_component(extension ${in_f} EXT)
@@ -155,8 +155,8 @@ function(omr_inject_object_modification_targets result compiler_name)
 	# Handle SPP files
 	if(OMR_ARCH_POWER)
 		ppc_spp2s_files(arg ${compiler_name} ${arg})
-	elseif(OMR_ARCH_AARCH64)
-		aarch64_spp_files(arg ${compiler_name} ${arg})
+	elseif(OMR_ARCH_AARCH64 OR OMR_ARCH_RISCV)
+		common_spp_files(arg ${compiler_name} ${arg})
 	endif()
 
 

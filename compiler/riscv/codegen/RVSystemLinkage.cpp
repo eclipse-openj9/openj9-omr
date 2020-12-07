@@ -26,6 +26,7 @@
 #include "codegen/Linkage.hpp"
 #include "codegen/Linkage_inlines.hpp"
 #include "codegen/MemoryReference.hpp"
+#include "codegen/RegisterDependency.hpp"
 #include "env/StackMemoryRegion.hpp"
 #include "il/Node_inlines.hpp"
 #include "il/AutomaticSymbol.hpp"
@@ -60,6 +61,26 @@
    if (reg->getHasBeenAssignedInMethod())                                        \
       { block; }                                                                 \
    )
+
+/**
+ * @brief Adds dependency
+ */
+inline void
+addDependency(
+      TR::RegisterDependencyConditions *dep,
+      TR::Register *vreg,
+      TR::RealRegister::RegNum rnum,
+      TR_RegisterKinds rk,
+      TR::CodeGenerator *cg)
+   {
+   if (vreg == NULL)
+      {
+      vreg = cg->allocateRegister(rk);
+      }
+
+   dep->addPreCondition(vreg, rnum);
+   dep->addPostCondition(vreg, rnum);
+   }
 
 TR::RVSystemLinkage::RVSystemLinkage(TR::CodeGenerator *cg)
    : TR::Linkage(cg)

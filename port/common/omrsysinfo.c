@@ -171,8 +171,10 @@ omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32
  * @param[in] desc The struct that contains the list of processor features to be converted to string.
  * @param[out] buffer The processor feature output string.
  * @param[in] length The size of the buffer in number of bytes.
+ *
+ * @return 0 on success, -1 if output string size exceeds input length.
  */
-void
+intptr_t
 omrsysinfo_get_processor_feature_string(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, char *buffer, const size_t length)
 {
 }

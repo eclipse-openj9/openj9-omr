@@ -275,53 +275,18 @@ TR::Register *OMR::Power::TreeEvaluator::b2aEvaluator(TR::Node *node, TR::CodeGe
 TR::Register *OMR::Power::TreeEvaluator::s2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *child  = node->getFirstChild();
-   TR::Register *trgReg = 0;
+   TR::Register *trgReg = cg->allocateRegister();
 
-   TR_ASSERT(node->getOpCodeValue() == TR::s2i, "s2iEvaluator called for a %s node",
-             node->getOpCode().getName());
-
-   if (node->getOpCodeValue() == TR::s2i)// s2i sign extend
+   if (child->getOpCode().isLoad() && !child->getRegister() && child->getReferenceCount() == 1)
       {
-      trgReg = child->getRegister();
-      if (!trgReg && child->getOpCode().isMemoryReference() && child->getReferenceCount() == 1)
-         {
-         trgReg = cg->allocateRegister();
-         TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 2);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lha, node, trgReg, tempMR);
-         tempMR->decNodeReferenceCounts(cg);
-         }
-      else
-         {
-         if(!trgReg)
-           {
-           // child reg is null. need to evaluate child
-           trgReg = cg->evaluate(child);
-           if(child->getReferenceCount() == 1)
-             {
-             generateTrg1Src1Instruction(cg, TR::InstOpCode::extsh, node, trgReg, trgReg);
-             }
-           else
-             {
-             TR::Register * trgRegOld = trgReg;
-             trgReg = cg->allocateRegister();
-             generateTrg1Src1Instruction(cg, TR::InstOpCode::extsh, node, trgReg, trgRegOld);
-             }
-           }
-         else if(child->getReferenceCount() > 1)
-           {
-           // child has been evaluated, but will be used later
-           TR::Register * trgRegOld = trgReg;
-           trgReg = cg->allocateRegister();
-           generateTrg1Src1Instruction(cg, TR::InstOpCode::extsh, node, trgReg, trgRegOld);
-           }
-         else
-           {
-           generateTrg1Src1Instruction(cg, TR::InstOpCode::extsh, node, trgReg, trgReg);
-           }
-         }
+      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 2);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::lha, node, trgReg, tempMR);
+      tempMR->decNodeReferenceCounts(cg);
       }
    else
-      trgReg = cg->gprClobberEvaluate(child);
+      {
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::extsh, node, trgReg, cg->evaluate(child));
+      }
 
    node->setRegister(trgReg);
    cg->decReferenceCount(child);

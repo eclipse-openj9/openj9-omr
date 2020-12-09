@@ -3300,6 +3300,12 @@ OMR::Z::MemoryReference::doEvaluate(TR::Node * subTree, TR::CodeGenerator * cg)
    return false;
    }
 
+TR::MemoryReference*
+OMR::Z::MemoryReference::create(TR::CodeGenerator* cg, TR::Node* node)
+   {
+   return generateS390MemoryReference(node, cg);
+   }
+
 ///////////////////////////////////////////
 // Generate Routines
 ///////////////////////////////////////////

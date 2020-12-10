@@ -106,6 +106,8 @@
 #include "runtime/CodeCacheExceptions.hpp"
 #include "ilgen/IlGen.hpp"
 #include "env/RegionProfiler.hpp"
+#include "omrformatconsts.h"
+
 // this ratio defines how full the alias memory region is allowed to become before
 // it is recreated after an optimization finishes
 #define ALIAS_REGION_LOAD_FACTOR 0.75
@@ -956,7 +958,7 @@ int32_t OMR::Compilation::compile()
       {
       uint64_t limit = (uint64_t)self()->getOptions()->getDelayCompile();
       uint64_t starttime = self()->getPersistentInfo()->getElapsedTime();
-      fprintf(stderr,"\nDelayCompile: Starting a delay of length %d for method %s at time %d.",limit,self()->signature(),starttime);
+      fprintf(stderr,"\nDelayCompile: Starting a delay of length %" OMR_PRIu64 " for method %s at time %" OMR_PRIu64 ".", limit, self()->signature(), starttime);
       fflush(stderr);
       uint64_t temp=0;
       while(1)
@@ -964,7 +966,7 @@ int32_t OMR::Compilation::compile()
          temp = self()->getPersistentInfo()->getElapsedTime();
          if( ( temp - starttime ) > limit)
             {
-            fprintf(stderr,"\nDelayCompile: Finished delay at time  = %d, elapsed time = %d\n",temp,(temp-starttime));
+            fprintf(stderr,"\nDelayCompile: Finished delay at time = %" OMR_PRIu64 ", elapsed time = %" OMR_PRIu64 "\n", temp, (temp - starttime));
             break;
             }
          }

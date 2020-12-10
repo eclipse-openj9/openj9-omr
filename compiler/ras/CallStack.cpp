@@ -67,7 +67,7 @@ void TR_CallStackIterator::printStackBacktrace(TR::Compilation *comp)
    /*copy current stack pointer to dst*/ \
    asm("la %0, 0(r1)" : "=r" (dst)); \
    }                      \
-   while (0)             
+   while (0)
 
 void TR_PPCCallStackIterator::_set_tb_table()
    {
@@ -450,7 +450,7 @@ TR_WinCallStackIterator::TR_WinCallStackIterator() :
    if (!(* SymInitialize)(hProcess, userSearchPath, TRUE))
       {
       // SymInitialize failed
-      fprintf(stderr, "Unable to retrieve symbol informaton. SymInitialize returned error : %" PRIid32 "\n", GetLastError());
+      fprintf(stderr, "Unable to retrieve symbol informaton. SymInitialize returned error : %" OMR_PRId32 "\n", GetLastError());
       }
 
    //Initialize StackFrame

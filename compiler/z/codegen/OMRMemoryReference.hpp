@@ -493,7 +493,6 @@ TR::MemoryReference * generateS390MemoryReference(TR::CodeGenerator *cg);
 TR::MemoryReference * generateS390MemoryReference(int32_t, TR::CodeGenerator *cg);
 TR::MemoryReference * generateS390MemoryReference(TR::Register *, int32_t, TR::CodeGenerator *cg, const char *name=NULL);
 TR::MemoryReference * generateS390MemoryReference(TR::Register *, TR::Register *, int32_t, TR::CodeGenerator *cg);
-TR::MemoryReference * generateS390MemoryReference(TR::Node *, TR::CodeGenerator *, bool canUseRX = false);
 TR::MemoryReference * generateS390MemoryReference(TR::MemoryReference &, int32_t, TR::CodeGenerator *cg);
 TR::MemoryReference * generateS390MemoryReference(TR::Node *, TR::SymbolReference *, TR::CodeGenerator *);
 TR::MemoryReference * generateS390MemoryReference(TR::Snippet *, TR::CodeGenerator *, TR::Register *, TR::Node *);

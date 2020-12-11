@@ -100,7 +100,7 @@ TR_S390CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node * root, TR:
             firstChild->getRegister() == NULL &&
             (firstChild->getOpCodeValue() == TR::lload || (firstChild->getOpCodeValue() == TR::iload && firstIU2L)))
             {
-            lowFirstMR = generateS390MemoryReference(firstChild, _cg);
+            lowFirstMR = TR::MemoryReference::create(_cg, firstChild);
             delayedFirst = _cg->allocateRegister();
             if (!firstIU2L)
                {
@@ -119,7 +119,7 @@ TR_S390CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node * root, TR:
             secondChild->getRegister() == NULL &&
             (secondChild->getOpCodeValue() == TR::lload || (secondChild->getOpCodeValue() == TR::iload && secondIU2L)))
             {
-            lowSecondMR = generateS390MemoryReference(secondChild, _cg);
+            lowSecondMR = TR::MemoryReference::create(_cg, secondChild);
             delayedSecond = _cg->allocateRegister();
             if (!secondIU2L)
                {
@@ -141,7 +141,7 @@ TR_S390CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node * root, TR:
             secondChild->getRegister() == NULL &&
             (secondChild->getOpCodeValue() == TR::lload || (secondChild->getOpCodeValue() == TR::iload && secondIU2L)))
             {
-            lowSecondMR = generateS390MemoryReference(secondChild, _cg);
+            lowSecondMR = TR::MemoryReference::create(_cg, secondChild);
             delayedSecond = _cg->allocateRegister();
             if (!secondIU2L)
                {
@@ -160,7 +160,7 @@ TR_S390CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node * root, TR:
             firstChild->getRegister() == NULL &&
             (firstChild->getOpCodeValue() == TR::lload || (firstChild->getOpCodeValue() == TR::iload && firstIU2L)))
             {
-            lowFirstMR = generateS390MemoryReference(firstChild, _cg);
+            lowFirstMR = TR::MemoryReference::create(_cg, firstChild);
             delayedFirst = _cg->allocateRegister();
             if (!firstIU2L)
                {
@@ -317,11 +317,11 @@ TR_S390CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node * root, TR:
       if (secondIU2L)
          {
           highMR = NULL;
-          lowMR = generateS390MemoryReference(secondChild, _cg);
+          lowMR = TR::MemoryReference::create(_cg, secondChild);
          }
       else
          {
-         highMR = generateS390MemoryReference(secondChild, _cg);
+         highMR = TR::MemoryReference::create(_cg, secondChild);
          lowMR = generateS390MemoryReference(*highMR, 4, _cg);
          }
       numAdditionalRegDeps += 2;
@@ -435,11 +435,11 @@ TR_S390CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node * root, TR:
       if (firstIU2L)
          {
           highMR = NULL;
-          lowMR = generateS390MemoryReference(firstChild, _cg);
+          lowMR = TR::MemoryReference::create(_cg, firstChild);
          }
       else
          {
-         highMR = generateS390MemoryReference(firstChild, _cg);
+         highMR = TR::MemoryReference::create(_cg, firstChild);
          lowMR = generateS390MemoryReference(*highMR, 4, _cg);
          }
 

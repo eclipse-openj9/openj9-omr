@@ -2038,7 +2038,7 @@ tryGenerateSIComparisons(TR::Node *node, TR::Node *constNode, TR::Node *otherNod
 
       if (isOnlyTest) return true;
 
-      TR::MemoryReference *memRef = generateS390MemoryReference(operand, cg);
+      TR::MemoryReference *memRef = TR::MemoryReference::create(cg, operand);
 
       if (comp->getOption(TR_TraceCG))
          traceMsg(comp, "CLI-Success\n");
@@ -2141,7 +2141,7 @@ tryGenerateSIComparisons(TR::Node *node, TR::Node *constNode, TR::Node *otherNod
 
       if (isOnlyTest) return true;
 
-      TR::MemoryReference *memRef = generateS390MemoryReference(operand, cg);
+      TR::MemoryReference *memRef = TR::MemoryReference::create(cg, operand);
 
       TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::BAD;
       if (operandSize == 8)
@@ -2361,8 +2361,8 @@ tryGenerateCLCForComparison(TR::Node *node, TR::CodeGenerator *cg)
    // compressed refs. But we have to adjust/increase the displacement of the operand that is a temp
    // slot so that CLC gets to compare the correct bytes.
 
-   TR::MemoryReference *memRef1 = generateS390MemoryReference(operand1, cg);
-   TR::MemoryReference *memRef2 = generateS390MemoryReference(operand2, cg);
+   TR::MemoryReference *memRef1 = TR::MemoryReference::create(cg, operand1);
+   TR::MemoryReference *memRef2 = TR::MemoryReference::create(cg, operand2);
 
    // If we have a pair of class pointers, we have to mask the rightmost byte (flags).
    // Instead, we ignore that byte and do not use it in our comparison. Since the operands
@@ -2659,7 +2659,7 @@ tryGenerateConversionRXComparison(TR::Node *node, TR::CodeGenerator *cg, bool *i
       }
 
    TR::Register *reg = cg->evaluate(regNode);
-   TR::MemoryReference *memRef = generateS390MemoryReference(memNode, cg);
+   TR::MemoryReference *memRef = TR::MemoryReference::create(cg, memNode);
 
    TR::Instruction *i = generateRXInstruction(cg, op, node, reg, memRef);
 
@@ -2809,7 +2809,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
             testRegister = cg->allocateRegister();
             }
 
-         TR::MemoryReference * tempMR = generateS390MemoryReference(nonConstNode, cg);
+         TR::MemoryReference * tempMR = TR::MemoryReference::create(cg, nonConstNode);
          bool mustExtend = !useLTG && nonConstNode->isExtendedTo64BitAtSource();
 
          if (mustExtend)
@@ -3633,7 +3633,7 @@ generateTestUnderMaskIfPossible(TR::Node * node, TR::CodeGenerator * cg, TR::Ins
              nonConstNode->getFirstChild()->getOpCodeValue() == TR::bloadi )                   )
       {
       TR::MemoryReference * tempMR2 = NULL;
-      TR::MemoryReference * tempMR = generateS390MemoryReference(nonConstNode->getFirstChild(), cg);
+      TR::MemoryReference * tempMR = TR::MemoryReference::create(cg, nonConstNode->getFirstChild());
 
       if (tempMR->getIndexRegister() == NULL && tempMR->getIndexNode() == NULL)
          {
@@ -3731,7 +3731,7 @@ generateTestUnderMaskIfPossible(TR::Node * node, TR::CodeGenerator * cg, TR::Ins
 
           byteNum = lastByteInAddress - byteNum;
 
-          TR::MemoryReference * tempMR = generateS390MemoryReference(memRefNode, cg);
+          TR::MemoryReference * tempMR = TR::MemoryReference::create(cg, memRefNode);
           TR::MemoryReference * tempMR2 = generateS390MemoryReference(*tempMR, byteNum, cg);
           generateSIInstruction(cg, TR::InstOpCode::TM, node, tempMR2, nodeVal);
 
@@ -4672,7 +4672,7 @@ sloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
 
    if (tempMR == NULL)
       {
-      tempMR = generateS390MemoryReference(node, cg);
+      tempMR = TR::MemoryReference::create(cg, node);
       }
 
    if (isReversed)
@@ -4778,7 +4778,7 @@ iloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
 
    if (tempMR == NULL)
       {
-      tempMR = generateS390MemoryReference(node, cg);
+      tempMR = TR::MemoryReference::create(cg, node);
       }
 
    if (isReversed)
@@ -4849,7 +4849,7 @@ lloadHelper64(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * hig
 
    if (highMR == NULL)
       {
-      highMR = generateS390MemoryReference(node, cg);
+      highMR = TR::MemoryReference::create(cg, node);
       }
 
    if (node->isLoadAndTest())
@@ -4976,7 +4976,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
       {
       if (tempMR == NULL)
          {
-         tempMR = generateS390MemoryReference(node, cg);
+         tempMR = TR::MemoryReference::create(cg, node);
          TR::TreeEvaluator::checkAndSetMemRefDataSnippetRelocationType(node, cg, tempMR);
          }
 
@@ -5084,7 +5084,7 @@ bool directToMemoryAddHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Node *
    //
    if (cg->isAddMemoryUpdate(node, valueChild))
       {
-      TR::MemoryReference * tempMR = generateS390MemoryReference(node, cg);
+      TR::MemoryReference * tempMR = TR::MemoryReference::create(cg, node);
       int32_t value = 0;
 
       switch (valueChild->getSecondChild()->getDataType())
@@ -5250,10 +5250,10 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
             // This will avoid scenarios when we have common base/index between destination and source
             // And when generating the source memory reference, it clobber evaluates one of the node shared between
             // target memory reference as well.
-            TR::MemoryReference* targetMemRef = generateS390MemoryReference(storeNode, cg, false);
+            TR::MemoryReference* targetMemRef = TR::MemoryReference::create(cg, storeNode);
             targetMemRef->enforceSSFormatLimits(storeNode, cg, NULL);
 
-            TR::MemoryReference* sourceMemRef = generateS390MemoryReference(valueNode, cg, false);
+            TR::MemoryReference* sourceMemRef = TR::MemoryReference::create(cg, valueNode);
             sourceMemRef->enforceSSFormatLimits(storeNode, cg, NULL);
 
             generateSS1Instruction(cg, TR::InstOpCode::MVC, storeNode, storeNode->getSize() - 1, targetMemRef, sourceMemRef);
@@ -5293,8 +5293,8 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
                   TR::DebugCounter::incStaticDebugCounter(cg->comp(), "z/optimization/directMemoryStore/conversion/indirect");
 
                   // Force the memory references to not use an index register because MVC is an SS instruction
-                  TR::MemoryReference* targetMemRef = generateS390MemoryReference(storeNode, cg, false);
-                  TR::MemoryReference* sourceMemRef = generateS390MemoryReference(valueNode, cg, false);
+                  TR::MemoryReference* targetMemRef = TR::MemoryReference::create(cg, storeNode);
+                  TR::MemoryReference* sourceMemRef = TR::MemoryReference::create(cg, valueNode);
 
                   // Adjust the offset to reference the truncated value
                   sourceMemRef->setOffset(sourceMemRef->getOffset() + valueNode->getSize() - storeNode->getSize());
@@ -5340,7 +5340,7 @@ sstoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
    bool longWay = false;
    if (valueChild->getOpCode().isLoadConst())
       {
-      tempMR = generateS390MemoryReference(node, cg);
+      tempMR = TR::MemoryReference::create(cg, node);
       longWay = storeHelperImmediateInstruction(valueChild, cg, isReversed, TR::InstOpCode::MVHHI, node, tempMR);
       if (longWay)
          {
@@ -5365,7 +5365,7 @@ sstoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
             generateRSInstruction(cg, TR::InstOpCode::SRL, node, sourceRegister, 16);
          srcClobbered = true;
          }
-      tempMR = generateS390MemoryReference(node, cg);
+      tempMR = TR::MemoryReference::create(cg, node);
       }
    if (longWay)
       {
@@ -5507,7 +5507,7 @@ istoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
       if (valueChild->getOpCode().isLoadConst())
          {
          if (storeHelperImmediateInstruction(valueChild, cg, isReversed, TR::InstOpCode::MVHI, node,
-              (tempMR = generateS390MemoryReference(node, cg))))
+              (tempMR = TR::MemoryReference::create(cg, node))))
             {
             sourceRegister = cg->evaluate(valueChild);
             }
@@ -5522,7 +5522,7 @@ istoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
             generateRSInstruction(cg, TR::InstOpCode::SRLG, node, sourceRegister, sourceRegister, 32);
             srcClobbered = true;
             }
-         tempMR = generateS390MemoryReference(node, cg);
+         tempMR = TR::MemoryReference::create(cg, node);
          }
       if (sourceRegister != NULL)
          {
@@ -5591,7 +5591,7 @@ lstoreHelper64(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
       if (valueChild->getOpCode().isLoadConst())
          {
          if(storeHelperImmediateInstruction(valueChild, cg, isReversed, TR::InstOpCode::MVGHI, node,
-           (longMR = generateS390MemoryReference(node,cg)) ))
+           (longMR = TR::MemoryReference::create(cg, node))))
             {
             valueReg = cg->evaluate(valueChild);
             }
@@ -5601,11 +5601,11 @@ lstoreHelper64(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
               valueChild->getOpCodeValue() == TR::lload &&
               valueChild->getReferenceCount() == 1  &&
               valueChild->getRegister() == NULL &&
-              generateS390MemoryReference(node, cg)->getIndexRegister() == NULL &&
+              TR::MemoryReference::create(cg, node)->getIndexRegister() == NULL &&
               !cg->getConditionalMovesEvaluationMode())
          {
-         TR::MemoryReference * tempMRSource = generateS390MemoryReference(valueChild, cg);
-         TR::MemoryReference * tempMRDest = generateS390MemoryReference(node, cg);
+         TR::MemoryReference * tempMRSource = TR::MemoryReference::create(cg, valueChild);
+         TR::MemoryReference * tempMRDest = TR::MemoryReference::create(cg, node);
          generateSS1Instruction(cg, TR::InstOpCode::MVC, node, int16_t(node->getSize()-1),
                                 tempMRDest, tempMRSource );
          cg->decReferenceCount(valueChild);
@@ -5614,7 +5614,7 @@ lstoreHelper64(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
       else
          {
          valueReg = cg->evaluate(valueChild);
-         longMR = generateS390MemoryReference(node,cg);
+         longMR = TR::MemoryReference::create(cg, node);
          }
       if (valueReg != NULL)
          {
@@ -5675,7 +5675,7 @@ astoreHelper(TR::Node * node, TR::CodeGenerator * cg)
           valueChild->getOpCode().isLoadConst() &&
           !cg->getConditionalMovesEvaluationMode())
          {
-         tempMR = generateS390MemoryReference(node, cg);
+         tempMR = TR::MemoryReference::create(cg, node);
          if (storeHelperImmediateInstruction(valueChild, cg, false, mvhiOp, node, tempMR))
             {
             // Move Halfword Immediate Instruction failed.  Evaluate valueChild now.
@@ -5697,7 +5697,7 @@ astoreHelper(TR::Node * node, TR::CodeGenerator * cg)
               valueChild->getOpCodeValue() == TR::aload &&
               valueChild->getReferenceCount() == 1 &&
               valueChild->getRegister() == NULL &&
-              generateS390MemoryReference(node, cg)->getIndexRegister() == NULL &&
+              TR::MemoryReference::create(cg, node)->getIndexRegister() == NULL &&
               !valueChild->getSymbolReference()->isLiteralPoolAddress() &&
         node->getSymbol()->getSize() == node->getSize() &&
         node->getSymbol()->getSize() == valueChild->getSymbol()->getSize() &&
@@ -5715,8 +5715,8 @@ astoreHelper(TR::Node * node, TR::CodeGenerator * cg)
             length = 3;
          else
             length = 4;
-         TR::MemoryReference * tempMRSource = generateS390MemoryReference(valueChild, cg);
-         tempMR = generateS390MemoryReference(node, cg);
+         TR::MemoryReference * tempMRSource = TR::MemoryReference::create(cg, valueChild);
+         tempMR = TR::MemoryReference::create(cg, node);
          generateSS1Instruction(cg, TR::InstOpCode::MVC, node, length-1, tempMR, tempMRSource);
          cg->decReferenceCount(valueChild);
          return tempMR;
@@ -5725,7 +5725,7 @@ astoreHelper(TR::Node * node, TR::CodeGenerator * cg)
          {
          // Normal non-constant path
          sourceRegister = cg->evaluate(valueChild);
-         tempMR = generateS390MemoryReference(node, cg);
+         tempMR = TR::MemoryReference::create(cg, node);
          }
 
       // Generate the Store instruction unless storeOp is TR::InstOpCode::BAD (i.e. Move
@@ -5867,7 +5867,7 @@ OMR::Z::TreeEvaluator::bloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    tempReg = cg->allocateRegister();
    TR::MemoryReference * tempMR;
 
-   tempMR = generateS390MemoryReference(node, cg);
+   tempMR = TR::MemoryReference::create(cg, node);
    tempReg = genericLoad<8>(node, cg, tempMR, tempReg);
    node->setRegister(tempReg);
 
@@ -5980,7 +5980,7 @@ OMR::Z::TreeEvaluator::bstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    if (valueChild->getRegister()==NULL &&
       valueChild->getOpCodeValue() == TR::bconst)
       {
-      TR::MemoryReference * tempMR = generateS390MemoryReference(node, cg);
+      TR::MemoryReference * tempMR = TR::MemoryReference::create(cg, node);
       generateSIInstruction(cg, TR::InstOpCode::MVI, node, tempMR, valueChild->getByte()&0xFF);
 
       cg->decReferenceCount(valueChild);
@@ -6023,7 +6023,7 @@ OMR::Z::TreeEvaluator::bstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          }
 
       int8_t byteConst = valueChild->getSecondChild()->getByte();
-      TR::MemoryReference * tmp_mr = generateS390MemoryReference(node, cg);
+      TR::MemoryReference * tmp_mr = TR::MemoryReference::create(cg, node);
       generateSIInstruction(cg, instrOpCode, node, tmp_mr, byteConst);
 
       // cg->decReferenceCount(node->getChild(0)); // addr
@@ -6064,7 +6064,7 @@ OMR::Z::TreeEvaluator::bstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
                 valueChild->getOpCodeValue() == TR::bloadi     ))
       {
       sourceRegister = cg->allocateRegister();
-      TR::MemoryReference * tempMR2 = generateS390MemoryReference(valueChild, cg);
+      TR::MemoryReference * tempMR2 = TR::MemoryReference::create(cg, valueChild);
       generateRXInstruction(cg, TR::InstOpCode::IC, valueChild, sourceRegister, tempMR2);
 
       valueChild->setRegister(sourceRegister);
@@ -6087,7 +6087,7 @@ OMR::Z::TreeEvaluator::bstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          }
       }
 
-   TR::MemoryReference * tempMR = generateS390MemoryReference(node, cg);
+   TR::MemoryReference * tempMR = TR::MemoryReference::create(cg, node);
    generateRXInstruction(cg, TR::InstOpCode::STC, node, sourceRegister, tempMR);
 
    if (srcClobbered)
@@ -16476,7 +16476,7 @@ OMR::Z::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
             firstChild->getOpCode().isMemoryReference() &&
             firstChild->getReferenceCount() < 2)  // Just load from mem and skip evaluation if low refcount
       {
-      auto mr = generateS390MemoryReference(firstChild, cg);
+      auto mr = TR::MemoryReference::create(cg, firstChild);
       generateVRXInstruction(cg, TR::InstOpCode::VLREP, node, returnReg, mr, ESMask);
       cg->decReferenceCount(firstChild);
       }
@@ -16727,7 +16727,7 @@ OMR::Z::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
             cg->stopUsingRegister(litReg);
             }
          else
-            memRef = generateS390MemoryReference(valueNode, cg);
+            memRef = TR::MemoryReference::create(cg, valueNode);
 
          generateVRXInstruction(cg, op, node, vectorReg, memRef, m3);
          }

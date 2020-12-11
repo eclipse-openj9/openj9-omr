@@ -750,8 +750,9 @@ OMR_ZOS_LINK_COMPAT
 OMR_ZOS_COMPILE_TUNE
 OMR_ZOS_COMPILE_TARGET
 OMR_ZOS_COMPILE_ARCHITECTURE
-OMR_PRODUCT_VERSION
 OMR_PRODUCT_DESCRIPTION
+OMR_PRODUCT_VERSION
+OMR_PRODUCT_NAME
 OMR_COMPANY_COPYRIGHT
 OMR_COMPANY_NAME
 OMR_CROSS_CONFIGURE
@@ -920,8 +921,9 @@ OMR_TOOLS_CXX
 OMR_CROSS_CONFIGURE
 OMR_COMPANY_NAME
 OMR_COMPANY_COPYRIGHT
-OMR_PRODUCT_DESCRIPTION
+OMR_PRODUCT_NAME
 OMR_PRODUCT_VERSION
+OMR_PRODUCT_DESCRIPTION
 OMR_ZOS_COMPILE_ARCHITECTURE
 OMR_ZOS_COMPILE_TARGET
 OMR_ZOS_COMPILE_TUNE
@@ -1743,10 +1745,13 @@ Some influential environment variables:
               The company name of product integrating OMR. (Default: )
   OMR_COMPANY_COPYRIGHT
               The copyright of product integrating OMR. (Default: )
-  OMR_PRODUCT_DESCRIPTION
-              The description of product integrating OMR. (Default: OMR 0.1)
+  OMR_PRODUCT_NAME
+              The name of the product integrating OMR. (Default: OMR)
   OMR_PRODUCT_VERSION
-              The version of product integrating OMR. (Default: 0.1)
+              The version of the product integrating OMR. (Default: 0.1)
+  OMR_PRODUCT_DESCRIPTION
+              A description of the product which is integrating OMR. (Default:
+              OMR 0.1 )
   OMR_ZOS_COMPILE_ARCHITECTURE
               The z/OS compile machine architecture. (Default: 7)
   OMR_ZOS_COMPILE_TARGET
@@ -2878,8 +2883,8 @@ case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 
 OMR_COMPANY_NAME=${OMR_COMPANY_NAME:-""}
 OMR_COMPANY_COPYRIGHT=${OMR_COMPANY_COPYRIGHT:-""}
-OMR_PRODUCT_DESCRIPTION=${OMR_PRODUCT_DESCRIPTION:-"OMR 0.1 "}
 OMR_PRODUCT_NAME=${OMR_PRODUCT_NAME:-"OMR"}
+OMR_PRODUCT_DESCRIPTION=${OMR_PRODUCT_DESCRIPTION:-"OMR 0.1 "}
 OMR_PRODUCT_VERSION=${OMR_PRODUCT_VERSION:-"0.1"}
 
 OMR_ZOS_COMPILE_ARCHITECTURE=${OMR_ZOS_COMPILE_ARCHITECTURE:-"7"}

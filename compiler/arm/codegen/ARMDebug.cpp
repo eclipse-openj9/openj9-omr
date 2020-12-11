@@ -268,7 +268,8 @@ TR_Debug::dumpDependencyGroup(TR::FILE *                        pOutFile,
    trfprintf(pOutFile, "\n\t%s: ", prefix);
    for (i = 0; i < numConditions; ++i)
       {
-      TR::Register *virtReg = group->getRegisterDependency(i)->getRegister();
+      TR::RegisterDependency *regDep = group->getRegisterDependency(i);
+      TR::Register *virtReg = regDep->getRegister();
 
       if (omitNullDependencies && !virtReg)
             continue;
@@ -276,7 +277,7 @@ TR_Debug::dumpDependencyGroup(TR::FILE *                        pOutFile,
       TR::RealRegister::RegNum r = group->getRegisterDependency(i)->getRealRegister();
 
       trfprintf(pOutFile, " [%s : ", getName(virtReg));
-      if (r == TR::RealRegister::NoReg)
+      if (regDep->isNoReg())
          trfprintf(pOutFile, "NoReg]");
       else
          trfprintf(pOutFile, "%s]", getName(_cg->machine()->getRealRegister(r)));

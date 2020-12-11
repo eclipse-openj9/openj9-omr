@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -401,6 +401,9 @@ public:
    inline void setConstMethodHandle();
    inline bool isConstMethodHandle();
 
+   inline void setNonSpecificConstObject();
+   inline bool isNonSpecificConstObject();
+
    inline bool isConstObjectRef();
    inline bool isStaticField();
    inline bool isFixedObjectRef();
@@ -554,6 +557,7 @@ public:
       ImmutableField            = 0x00000400,
       PendingPush               = 0x00000800,
       ConstantDynamic           = 0x00001000,
+      NonSpecificConstObject    = 0x00002000, // Constant object not specific to a type
       };
 
 protected:

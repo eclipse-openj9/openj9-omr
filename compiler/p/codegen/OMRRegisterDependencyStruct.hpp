@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,19 +27,14 @@
  */
 #ifndef OMR_REGISTER_DEPENDENCY_STRUCT_CONNECTOR
 #define OMR_REGISTER_DEPENDENCY_STRUCT_CONNECTOR
-namespace OMR { namespace Power { struct RegisterDependencyExt; } }
-namespace OMR { typedef OMR::Power::RegisterDependencyExt RegisterDependency; }
+namespace OMR { namespace Power { struct RegisterDependency; } }
+namespace OMR { typedef OMR::Power::RegisterDependency RegisterDependencyConnector; }
 #else
-#error OMR::Power::RegisterDependencyExt expected to be a primary connector, but a OMR connector is already defined
+#error OMR::Power::RegisterDependency expected to be a primary connector, but an OMR connector is already defined
 #endif
 
 #include "compiler/codegen/OMRRegisterDependencyStruct.hpp"
 
-#include "codegen/RealRegister.hpp"
-
-#define DefinesDependentRegister    0x01
-#define ReferencesDependentRegister 0x02
-#define UsesDependentRegister       (ReferencesDependentRegister | DefinesDependentRegister)
 #define ExcludeGPR0InAssigner       0x80
 
 namespace OMR
@@ -48,18 +43,11 @@ namespace OMR
 namespace Power
 {
 
-struct RegisterDependencyExt: OMR::RegisterDependencyExt
+struct RegisterDependency: OMR::RegisterDependency
    {
-   TR::RealRegister::RegNum  _realRegister;
-
-   TR::RealRegister::RegNum getRealRegister() {return _realRegister;}
-   TR::RealRegister::RegNum setRealRegister(TR::RealRegister::RegNum r) { return (_realRegister = r); }
-
    uint32_t getExcludeGPR0()    {return _flags & ExcludeGPR0InAssigner;}
    uint32_t setExcludeGPR0()    {return (_flags |= ExcludeGPR0InAssigner);}
    uint32_t resetExcludeGPR0()  {return (_flags &= ~ExcludeGPR0InAssigner);}
-
-
    };
 
 }

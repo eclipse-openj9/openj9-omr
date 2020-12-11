@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -52,7 +52,6 @@ public:
 	void kill(MM_EnvironmentBase *env);
 
 	void formatAndOutput(MM_EnvironmentBase *env, uintptr_t indent, const char *format, ...);
-	void formatAndOutputV(MM_EnvironmentBase *env, uintptr_t indent, const char *format, va_list args);
 	void flush(MM_EnvironmentBase *env);
 
 	/**
@@ -66,6 +65,8 @@ public:
 	 * @return the first writer
 	 */
 	MM_VerboseWriter *getFirstWriter() { return _writers; }
+	
+	MM_VerboseBuffer *getBuffer() { return _buffer; }
 
 	/**
 	 * Notify each of the writers in the chain that a GC cycle has ended

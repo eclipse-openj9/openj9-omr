@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -76,6 +76,8 @@ protected:
 public:
 	static MM_VerboseBuffer *newInstance(MM_EnvironmentBase *env, uintptr_t size);
 	virtual void kill(MM_EnvironmentBase *env);
+	void formatAndOutputV(MM_EnvironmentBase *env, uintptr_t indent, const char *format, va_list args);
+	void formatAndOutput(MM_EnvironmentBase *env, uintptr_t indent, const char *format, ...);
 
 	void reset();
 	

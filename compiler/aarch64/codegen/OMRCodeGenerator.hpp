@@ -156,8 +156,6 @@ protected:
 
 public:
 
-   CodeGenerator();
-
    void initialize();
 
    /**
@@ -492,6 +490,12 @@ public:
     * @return bit mask for real register
     */
    static uint32_t registerBitMask(int32_t reg);
+
+   /**
+    * @brief Answers whether bit operations are supported or not
+    * @return true if supported, false otherwise
+    */
+   bool getSupportsBitOpCodes() { return true; }
 
    /**
     * @brief Answers whether single-precision SQRT is supported or not

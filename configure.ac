@@ -59,12 +59,12 @@ AC_ARG_VAR([OMR_COMPANY_NAME],
   [The company name of product integrating OMR.] (Default: ))
 AC_ARG_VAR([OMR_COMPANY_COPYRIGHT],
   [The copyright of product integrating OMR.] (Default: ))
-AC_ARG_VAR([OMR_PRODUCT_DESCRIPTION],
-  [The description of product integrating OMR.] (Default: AC_PACKAGE_STRING))
+AC_ARG_VAR([OMR_PRODUCT_NAME],
+  [The name of the product integrating OMR.] (Default: AC_PACKAGE_NAME))
 AC_ARG_VAR([OMR_PRODUCT_VERSION],
-  [The version of product integrating OMR.] (Default: AC_PACKAGE_VERSION))
+  [The version of the product integrating OMR.] (Default: AC_PACKAGE_VERSION))
 AC_ARG_VAR([OMR_PRODUCT_DESCRIPTION],
-  [The description of product integrating OMR.] (Default: AC_PACKAGE_STRING AC_PACKAGE_URL))
+  [A description of the product which is integrating OMR.] (Default: AC_PACKAGE_STRING AC_PACKAGE_URL))
 
 AC_ARG_VAR([OMR_ZOS_COMPILE_ARCHITECTURE],
   [The z/OS compile machine architecture. (Default: 7)])

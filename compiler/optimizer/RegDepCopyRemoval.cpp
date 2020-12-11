@@ -442,13 +442,13 @@ TR::RegDepCopyRemoval::makeFreshCopy(TR_GlobalRegisterNumber reg)
       TR_ASSERT_FATAL_WITH_NODE(dep.node,
                                  dep.node->getOpCode().isLoadReg()
                                  || (dep.node->getOpCodeValue() == TR::PassThrough
-                                    && dep.node->getFirstChild()->getOpCode().isLoadReg()
-                                    && dep.node->getGlobalRegisterNumber() == dep.node->getFirstChild()->getGlobalRegisterNumber()),
+                                    && dep.value->getOpCode().isLoadReg()
+                                    && dep.node->getGlobalRegisterNumber() == dep.value->getGlobalRegisterNumber()),
                                  "Only PassThrough (with corresponding regStore appeared before or using same Global Register as child) or regLoad nodes are expected as children of GlRegDeps.");
-      choice.regStoreNode = TR::Node::create(dep.node, comp()->il.opCodeForRegisterStore(dep.node->getDataType()), 1, copyNode);
+      choice.regStoreNode = TR::Node::create(dep.node, comp()->il.opCodeForRegisterStore(dep.value->getDataType()), 1, copyNode);
       _treetop->insertBefore(TR::TreeTop::create(comp(), choice.regStoreNode));
       choice.regStoreNode->setGlobalRegisterNumber(dep.node->getGlobalRegisterNumber());
-      choice.regStoreNode->setRegLoadStoreSymbolReference(dep.node->getRegLoadStoreSymbolReference());
+      choice.regStoreNode->setRegLoadStoreSymbolReference(dep.value->getRegLoadStoreSymbolReference());
       }
    else
       {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,6 +36,7 @@ class MM_CollectionStatistics;
 class MM_EnvironmentBase;
 class MM_GCExtensionsBase;
 class MM_VerboseManager;
+class MM_VerboseBuffer;
 
 class MM_VerboseHandlerOutput : public MM_Base
 {
@@ -58,7 +59,8 @@ protected:
 	virtual void tearDown(MM_EnvironmentBase *env);
 
 	virtual bool getThreadName(char *buf, uintptr_t bufLen, OMR_VMThread *vmThread);
-	virtual void writeVmArgs(MM_EnvironmentBase* env);
+	virtual void writeVmArgs(MM_EnvironmentBase* env, MM_VerboseBuffer* buffer);
+	virtual void writeVmArgs(MM_EnvironmentBase* env) {};
 
 	bool getTimeDeltaInMicroSeconds(uint64_t *timeInMicroSeconds, uint64_t startTime, uint64_t endTime)
 	{
@@ -106,22 +108,28 @@ protected:
 
 
 	/**
-	 * Handle any output or data tracking for the initialized phase of verbose GC.
-	 * This routine is meant to be overridden by subclasses to implement collector specific output or functionality.
-	 * @param hook Hook interface used by the JVM.
-	 * @param eventNum The hook event number.
-	 * @param eventData hook specific event data.
-	 */
-	virtual void handleInitializedInnerStanzas(J9HookInterface** hook, uintptr_t eventNum, void* eventData);
+     * Output a stanza on data tracking for the initialized phase of verbose GC into a verbose buffer.
+     * This method is meant to be overridden by subclasses to implement collector specific output or functionality.
+     * @param env GC thread used for output.
+     * @param buffer The verbose buffer used to store formatted string
+     */
+	virtual void outputInitializedInnerStanza(MM_EnvironmentBase *env, MM_VerboseBuffer *buffer) {};
+	
+	/**
+ 	 * Output region specific information of the initialized phase of verbose GC into a verbose buffer.
+ 	 * @param env GC thread used for output.
+ 	 * @param buffer The verbose buffer used to store formatted string
+ 	 */
+	virtual void outputInitializedRegion(MM_EnvironmentBase *env, MM_VerboseBuffer *buffer);
 
 	/**
-	 * Handle any output or data tracking for the initialized phase of verbose GC.
-	 * This routing handles region specific information.
-	 * @param hook Hook interface used by the JVM.
-	 * @param eventNum The hook event number.
-	 * @param eventData hook specific event data.
-	 */
-	void handleInitializedRegion(J9HookInterface** hook, uintptr_t eventNum, void* eventData);
+	* Handle any output or data tracking for the initialized phase of verbose GC.
+	* This routing handles region specific information.
+	* @param hook Hook interface used by the JVM.
+	* @param eventNum The hook event number.
+	* @param eventData hook specific event data.
+	*/
+	void handleInitializedRegion(J9HookInterface** hook, uintptr_t eventNum, void* eventData) {};
 
 	/**
 	 * Determine if the receive has inner stanza details for cycle start events.
@@ -359,11 +367,19 @@ public:
 
 	/**
 	 * Handle any output or data tracking for the initialized phase of verbose GC.
+	 * Called during initialization of GC, stanza printed to all writers via writer chain.
 	 * @param hook Hook interface used by the JVM.
 	 * @param eventNum The hook event number.
 	 * @param eventData hook specific event data.
 	 */
 	virtual void handleInitialized(J9HookInterface** hook, uintptr_t eventNum, void* eventData);
+
+	/**
+	 * Write verbose stanza for Initialization of GC in to a verbose buffer
+	 * @param env GC thread used for output.
+	 * @param buffer verbose buffer used to store formatted string
+	 */
+	void outputInitializedStanza(MM_EnvironmentBase *env, MM_VerboseBuffer *buffer);
 
 	/**
 	 * Write verbose stanza for a cycle start event.

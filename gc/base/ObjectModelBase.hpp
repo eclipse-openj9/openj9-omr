@@ -61,9 +61,9 @@ class GC_ObjectModelBase : public MM_BaseVirtual
  * Member data and types
  */
 private:
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
 	bool _compressObjectReferences;
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
 	GC_ObjectModelDelegate _delegate;	/**< instance of object model delegate class */
 
 protected:
@@ -330,9 +330,9 @@ public:
 	MMINLINE void
 	setObjectAlignment(OMR_VM *omrVM)
 	{
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
 		_compressObjectReferences = OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM);
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
 		_objectAlignmentInBytes = OMR_MAX((uintptr_t)1 << omrVM->_compressedPointersShift, OMR_MINIMUM_OBJECT_ALIGNMENT);
 		_objectAlignmentShift = OMR_MAX(omrVM->_compressedPointersShift, OMR_MINIMUM_OBJECT_ALIGNMENT_SHIFT);
 
@@ -785,6 +785,48 @@ public:
 		return result;
 	}
 
+#if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
+	/**
+	 * Returns the field offset of the hottest field of the object referred to by the forwarded header.
+	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled.
+	 *
+	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
+	 * @return the offset of the hottest field of the given object referred to by the forwarded header, return U_8_MAX if a hot field does not exist
+	 */
+	MMINLINE uint8_t
+	getHotFieldOffset(MM_ForwardedHeader *forwardedHeader)
+	{
+		return _delegate.getHotFieldOffset(forwardedHeader);
+	}
+
+	/**
+	 * Returns the field offset of the second hottest field of the object referred to by the forwarded header.
+	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled
+	 *
+	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
+	 * @return the offset of the second hottest field of the given object referred to by the forwarded header, return U_8_MAX if the hot field does not exist
+	 */
+	MMINLINE uint8_t
+	getHotFieldOffset2(MM_ForwardedHeader *forwardedHeader)
+	{
+		return _delegate.getHotFieldOffset2(forwardedHeader);
+	}
+
+	/**
+	 * Returns the field offset of the third hottest field of the object referred to by the forwarded header.
+	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled
+	 *
+	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
+	 * @return the offset of the third hottest field of the given object referred to by the forwarded header, return U_8_MAX if the hot field does not exist
+	 */
+	MMINLINE uint8_t
+	getHotFieldOffset3(MM_ForwardedHeader *forwardedHeader)
+	{
+		return _delegate.getHotFieldOffset3(forwardedHeader);
+	}
+
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
+
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	/**
 	 * Returns TRUE if the object referred to by the forwarded header is indexable.
@@ -824,45 +866,6 @@ public:
 	getForwardedObjectSizeInBytes(MM_ForwardedHeader *forwardedHeader)
 	{
 		return _delegate.getForwardedObjectSizeInBytes(forwardedHeader);
-	}
-
-	/**
-	 * Returns the field offset of the hottest field of the object referred to by the forwarded header.
-	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled.
-	 *
-	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
-	 * @return the offset of the hottest field of the given object referred to by the forwarded header, return U_8_MAX if a hot field does not exist
-	 */
-	MMINLINE uint8_t
-	getHotFieldOffset(MM_ForwardedHeader *forwardedHeader)
-	{
-		return _delegate.getHotFieldOffset(forwardedHeader);
-	}
-
-	/**
-	 * Returns the field offset of the second hottest field of the object referred to by the forwarded header.
-	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled
-	 *
-	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
-	 * @return the offset of the second hottest field of the given object referred to by the forwarded header, return U_8_MAX if the hot field does not exist
-	 */
-	MMINLINE uint8_t
-	getHotFieldOffset2(MM_ForwardedHeader *forwardedHeader)
-	{
-		return _delegate.getHotFieldOffset2(forwardedHeader);
-	}
-
-		/**
-	 * Returns the field offset of the third hottest field of the object referred to by the forwarded header.
-	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled
-	 *
-	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
-	 * @return the offset of the third hottest field of the given object referred to by the forwarded header, return U_8_MAX if the hot field does not exist
-	 */
-	MMINLINE uint8_t
-	getHotFieldOffset3(MM_ForwardedHeader *forwardedHeader)
-	{
-		return _delegate.getHotFieldOffset3(forwardedHeader);
 	}
 
 	/**

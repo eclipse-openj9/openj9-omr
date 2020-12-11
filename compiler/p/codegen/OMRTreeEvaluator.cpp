@@ -481,6 +481,18 @@ TR::Instruction *fixedSeqMemAccess(TR::CodeGenerator *cg, TR::Node *node, intptr
          nibbles[idx] = cursor = generateMemSrc1Instruction(cg, opCode, node, memRef, srcOrTrg, cursor);
       }
 
+   // When using tempReg ensure no register spills occur in the middle of the fixed sequence
+   if (tempReg)
+      {
+      TR::RegisterDependencyConditions *dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg->trMemory());
+      if (srcOrTrg != tempReg && srcOrTrg != baseReg)
+         dep->addPostCondition(srcOrTrg, TR::RealRegister::NoReg);
+      dep->addPostCondition(tempReg, TR::RealRegister::NoReg);
+      dep->addPostCondition(baseReg, TR::RealRegister::NoReg, UsesDependentRegister | ExcludeGPR0InAssigner);
+
+      cursor = generateDepLabelInstruction(cg, TR::InstOpCode::label, node, TR::LabelSymbol::create(cg->trHeapMemory(),cg), dep);
+      }
+
    if (cursorCopy == NULL)
       cg->setAppendInstruction(cursor);
 
@@ -966,7 +978,9 @@ TR::Register *OMR::Power::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::Cod
       }
 
    bool reverseStore = false;
-   if (valueChild->getOpCodeValue() == TR::ibyteswap && valueChild->isSingleRefUnevaluated())
+   // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
+   static bool reverseStoreEnabled = feGetEnv("TR_EnableReverseLoadStore");
+   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::ibyteswap && valueChild->isSingleRefUnevaluated())
       {
       reverseStore = true;
 
@@ -1151,7 +1165,10 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
       }
 
    bool reverseStore = false;
-   if (valueChild->getOpCodeValue() == TR::lbyteswap && valueChild->isSingleRefUnevaluated())
+   // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
+   static bool reverseStoreEnabled = feGetEnv("TR_EnableReverseLoadStore");
+   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::lbyteswap && valueChild->isSingleRefUnevaluated() &&
+      cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7))
       {
       reverseStore = true;
 
@@ -1380,7 +1397,8 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
          }
       else
          {
-         TR::MemoryReference *highMR  = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 4);
+         TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
+         TR::MemoryReference *highMR = TR::MemoryReference::createWithMemRef(cg, node, *tempMR, 0, 4);
 
          if (reverseStore)
             {
@@ -1391,7 +1409,7 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
             generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, highMR, valueReg->getHighOrder());
 
          // This ordering is important at this stage unless the base is guaranteed to be non-modifiable.
-         TR::MemoryReference *lowMR = TR::MemoryReference::createWithMemRef(cg, node, *highMR, 4, 4);
+         TR::MemoryReference *lowMR = TR::MemoryReference::createWithMemRef(cg, node, *tempMR, 4, 4);
          if (reverseStore)
             {
             lowMR->forceIndexedForm(node, cg);
@@ -1400,6 +1418,7 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
          else
             generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, lowMR, valueReg->getLowOrder());
 
+         tempMR->decNodeReferenceCounts(cg);
          highMR->decNodeReferenceCounts(cg);
          lowMR->decNodeReferenceCounts(cg);
          }
@@ -1461,7 +1480,9 @@ TR::Register *OMR::Power::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::Cod
       }
 
    bool reverseStore = false;
-   if (valueChild->getOpCodeValue() == TR::sbyteswap && valueChild->isSingleRefUnevaluated())
+   // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
+   static bool reverseStoreEnabled = feGetEnv("TR_EnableReverseLoadStore");
+   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::sbyteswap && valueChild->isSingleRefUnevaluated())
       {
       reverseStore = true;
 
@@ -5728,6 +5749,9 @@ TR::Register *OMR::Power::TreeEvaluator::sbyteswapEvaluator(TR::Node *node, TR::
    TR::Node *firstNonConversionOpCodeNode = node->getFirstChild();
    TR::DataType nodeType = firstNonConversionOpCodeNode->getType();
 
+   // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
+   static bool reverseLoadEnabled = feGetEnv("TR_EnableReverseLoadStore");
+
    //Move through descendants until a non conversion opcode is reached,
    //while making sure all nodes have a ref count of 1 and the types are between 2-8 bytes
    while (firstNonConversionOpCodeNode->getOpCode().isConversion() &&
@@ -5738,7 +5762,7 @@ TR::Register *OMR::Power::TreeEvaluator::sbyteswapEvaluator(TR::Node *node, TR::
       nodeType = firstNonConversionOpCodeNode->getType();
       }
 
-   if (!firstNonConversionOpCodeNode->getRegister() &&
+   if (reverseLoadEnabled && !firstNonConversionOpCodeNode->getRegister() &&
        firstNonConversionOpCodeNode->getOpCode().isMemoryReference() &&
        firstNonConversionOpCodeNode->getReferenceCount() == 1 &&
        (nodeType.isInt16() || nodeType.isInt32() || nodeType.isInt64()))
@@ -5795,7 +5819,10 @@ TR::Register * OMR::Power::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR:
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *tgtRegister = cg->allocateRegister();
 
-   if (!firstChild->getRegister() &&
+   // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
+   static bool reverseLoadEnabled = feGetEnv("TR_EnableReverseLoadStore");
+
+   if (reverseLoadEnabled && !firstChild->getRegister() &&
        firstChild->getOpCode().isMemoryReference() &&
        firstChild->getReferenceCount() == 1)
       {
@@ -5842,7 +5869,10 @@ TR::Register *OMR::Power::TreeEvaluator::lbyteswapEvaluator(TR::Node *node, TR::
       TR::Node *firstChild = node->getFirstChild();
       TR::Register *tgtRegister = cg->allocateRegister();
 
-      if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7) &&
+      // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
+      static bool reverseLoadEnabled = feGetEnv("TR_EnableReverseLoadStore");
+
+      if (reverseLoadEnabled && comp->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7) &&
           !firstChild->getRegister() &&
           firstChild->getOpCode().isMemoryReference() &&
           firstChild->getReferenceCount() == 1)

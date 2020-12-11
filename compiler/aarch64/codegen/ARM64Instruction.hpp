@@ -2805,11 +2805,7 @@ class ARM64Trg1MemInstruction : public ARM64Trg1Instruction
    ARM64Trg1MemInstruction(TR::InstOpCode::Mnemonic op,
                             TR::Node *node,
                             TR::Register *treg,
-                            TR::MemoryReference *mr, TR::CodeGenerator *cg)
-      : ARM64Trg1Instruction(op, node, treg, cg), _memoryReference(mr)
-      {
-      mr->bookKeepingRegisterUses(self(), cg);
-      }
+                            TR::MemoryReference *mr, TR::CodeGenerator *cg);
 
    /*
     * @brief Constructor
@@ -2824,11 +2820,7 @@ class ARM64Trg1MemInstruction : public ARM64Trg1Instruction
                             TR::Node *node,
                             TR::Register *treg,
                             TR::MemoryReference *mr,
-                            TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
-      : ARM64Trg1Instruction(op, node, treg, precedingInstruction, cg), _memoryReference(mr)
-      {
-      mr->bookKeepingRegisterUses(self(), cg);
-      }
+                            TR::Instruction *precedingInstruction, TR::CodeGenerator *cg);
 
    /**
     * @brief Gets instruction kind
@@ -2928,11 +2920,7 @@ class ARM64MemInstruction : public TR::Instruction
     */
    ARM64MemInstruction(TR::InstOpCode::Mnemonic op,
                         TR::Node *node,
-                        TR::MemoryReference *mr, TR::CodeGenerator *cg)
-      : TR::Instruction(op, node, cg), _memoryReference(mr)
-      {
-      mr->bookKeepingRegisterUses(self(), cg);
-      }
+                        TR::MemoryReference *mr, TR::CodeGenerator *cg);
 
    /*
     * @brief Constructor
@@ -2945,11 +2933,7 @@ class ARM64MemInstruction : public TR::Instruction
    ARM64MemInstruction(TR::InstOpCode::Mnemonic op,
                         TR::Node *node,
                         TR::MemoryReference *mr,
-                        TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
-      : TR::Instruction(op, node, precedingInstruction, cg), _memoryReference(mr)
-      {
-      mr->bookKeepingRegisterUses(self(), cg);
-      }
+                        TR::Instruction *precedingInstruction, TR::CodeGenerator *cg);
 
    /**
     * @brief Gets instruction kind

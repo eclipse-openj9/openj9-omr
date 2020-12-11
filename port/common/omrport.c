@@ -76,6 +76,7 @@ static OMRPortLibrary MainPortLibraryTable = {
 	omrsysinfo_processor_has_feature, /* sysinfo_processor_has_feature */
 	omrsysinfo_processor_set_feature, /* sysinfo_processor_set_feature */
 	omrsysinfo_get_processor_feature_name, /* sysinfo_get_processor_feature_name */
+	omrsysinfo_get_processor_feature_string, /* sysinfo_get_processor_feature_string */
 	omrsysinfo_get_OS_type, /* sysinfo_get_OS_type */
 	omrsysinfo_get_executable_name, /* sysinfo_get_executable_name */
 	omrsysinfo_get_username, /* sysinfo_get_username */

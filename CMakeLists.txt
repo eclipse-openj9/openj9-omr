@@ -140,6 +140,13 @@ if(OMR_DDR)
 		${CMAKE_CURRENT_SOURCE_DIR}/include_core
 		${CMAKE_CURRENT_BINARY_DIR}
 	)
+	set_property(TARGET omrddr PROPERTY DDR_OBJECT_EXCLUDES
+		ddr/
+		fvtest/
+		jitbuilder/
+		third_party/
+		tools/
+	)
 endif()
 
 ###
@@ -195,6 +202,10 @@ endif()
 if(OMR_JITBUILDER)
 	add_subdirectory(jitbuilder)
 endif(OMR_JITBUILDER)
+
+if(OMR_SHARED_CACHE)
+	add_subdirectory(sharedcache)
+endif(OMR_SHARED_CACHE)
 
 # This should come last to ensure dependencies
 # are defined

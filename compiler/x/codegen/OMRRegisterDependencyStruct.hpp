@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,16 +27,15 @@
  */
 #ifndef OMR_REGISTER_DEPENDENCY_STRUCT_CONNECTOR
 #define OMR_REGISTER_DEPENDENCY_STRUCT_CONNECTOR
-namespace OMR { namespace X86 { struct RegisterDependencyExt; } }
-namespace OMR { typedef OMR::X86::RegisterDependencyExt RegisterDependency; }
+namespace OMR { namespace X86 { struct RegisterDependency; } }
+namespace OMR { typedef OMR::X86::RegisterDependency RegisterDependencyConnector; }
 #else
-#error OMR::X86::RegisterDependencyExt expected to be a primary connector, but a OMR connector is already defined
+#error OMR::X86::RegisterDependency expected to be a primary connector, but an OMR connector is already defined
 #endif
 
 #include "compiler/codegen/OMRRegisterDependencyStruct.hpp"
 
 #include <stdint.h>
-#include "codegen/RealRegister.hpp"
 
 #define GlobalRegisterFPDependency    0x04
 
@@ -61,16 +60,30 @@ namespace OMR
 namespace X86
 {
 
-struct RegisterDependencyExt : OMR::RegisterDependencyExt
+struct RegisterDependency : OMR::RegisterDependency
    {
-   TR::RealRegister::RegNum _realRegister;
-
-   TR::RealRegister::RegNum getRealRegister() {return _realRegister;}
-   TR::RealRegister::RegNum setRealRegister(TR::RealRegister::RegNum r) { return (_realRegister = r); }
-
    uint32_t getGlobalFPRegister()   {return _flags & GlobalRegisterFPDependency;}
    uint32_t setGlobalFPRegister()   {return (_flags |= GlobalRegisterFPDependency);}
 
+   /**
+    * @return Answers \c true if this register dependency refers to all x87 floating
+    *         point registers collectively; \c false otherwise.
+    */
+   bool isAllFPRegisters() { return _realRegister == TR::RealRegister::AllFPRegisters; }
+
+   /**
+    * @return Answers \c true if this register dependency is a request for the
+    *         best free register from the perspective of the register assigner;
+    *         \c false otherwise.
+    */
+   bool isBestFreeReg() { return _realRegister == TR::RealRegister::BestFreeReg; }
+
+   /**
+    * @return Answers \c true if this register dependency is a request for a
+    *         register that can be used as the byte operand in certain machine
+    *         instructions; \c false otherwise.
+    */
+   bool isByteReg() { return _realRegister == TR::RealRegister::ByteReg; }
    };
 }
 }

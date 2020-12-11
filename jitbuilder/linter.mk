@@ -19,15 +19,15 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
-# To lint: 
+# To lint:
 #
-# PLATFORM=foo-bar-clang make -f linter.mk 
+# PLATFORM=foo-bar-clang make -f linter.mk
 #
 
 .PHONY: linter
-linter::
+linter:
 
-#default paths, unless overriden 
+#default paths, unless overriden
 export LLVM_CONFIG?=llvm-config
 export CC_PATH?=clang
 export CXX_PATH?=clang++
@@ -57,7 +57,7 @@ BUILD_CONFIG?=debug
 #
 # This is where we setup our component dirs
 # Note these are all relative to JIT_SRCBASE and JIT_OBJBASE
-# It just makes sense since source and build dirs may be in different places 
+# It just makes sense since source and build dirs may be in different places
 # in the filesystem :)
 #
 JIT_OMR_DIRTY_DIR?=compiler
@@ -95,9 +95,9 @@ include $(JIT_MAKE_DIR)/toolcfg/common.mk
 #
 # Add OMRChecker targets
 #
-# This likely ought to be using the OMRChecker fragment that 
-# exists in that repo, but in the mean time, this is fine. 
-# 
+# This likely ought to be using the OMRChecker fragment that
+# exists in that repo, but in the mean time, this is fine.
+#
 
 OMRCHECKER_DIR?=$(JIT_SRCBASE)/tools/compiler/OMRChecker
 
@@ -125,45 +125,45 @@ omrchecker_cleanall:
 	cd $(OMRCHECKER_DIR); make cleanall
 
 
-# The core linter bits.  
-# 
-# linter:: is the default target, and we construct a pre-req for each
+# The core linter bits.
+#
+# linter is the default target, and we construct a pre-req for each
 #  .cpp file.
 #
-linter:: omrchecker 
+linter: omrchecker
 
 # It seems that different versions of clang either do or do not define these,
 # however, it appears that it's not possible to check for definitions
-# using macros. 
+# using macros.
 #
 # Given that the purpose of linting is categorically not to produce a
 # functional binary, and to ease our progress right now, we choose to exclude
-# the problematic builtins, wiping out their definitions with nothing. 
+# the problematic builtins, wiping out their definitions with nothing.
 #
 # A longer term answer might involve autoconf detection in the omr project,
 # however, that doesn't fix all of our problems, as we are typically not
 # reconfiguring for clang when running lint (though, perhaps this is an early
-# indicator that we really should be.  
+# indicator that we really should be.
 EXCLUDED_DEFINES='-D__sync()=' '-D__lwsync()=' '-D__isync()='
 
 # The clang invocation magic line.
-LINTER_EXTRA=-Xclang -load -Xclang $(OMRCHECKER_OBJECT) -Xclang -add-plugin -Xclang omr-checker 
+LINTER_EXTRA=-Xclang -load -Xclang $(OMRCHECKER_OBJECT) -Xclang -add-plugin -Xclang omr-checker
 LINTER_FLAGS=-std=c++0x -w -fsyntax-only $(EXCLUDED_DEFINES) -ferror-limit=0 $(LINTER_FLAGS_EXTRA)
 
 define DEF_RULE.linter
-.PHONY: $(1).linted 
+.PHONY: $(1).linted
 
-$(1).linted: $(1) omrchecker 
+$(1).linted: $(1) omrchecker
 	$$(CXX_CMD) $(LINTER_FLAGS) $(LINTER_EXTRA)  $$(patsubst %,-D%,$$(CXX_DEFINES)) $$(patsubst %,-I'%',$$(CXX_INCLUDES)) -o $$@ -c $$<
-linter:: $(1).linted 
+linter: $(1).linted
 
 endef # DEF_RULE.linter
 
 RULE.linter=$(eval $(DEF_RULE.linter))
 
-# The list of sources. 
+# The list of sources.
 JIT_CPP_FILES=$(filter %.cpp,$(JIT_PRODUCT_SOURCE_FILES) $(JIT_PRODUCT_BACKEND_SOURCES))
 
-# Construct lint dependencies. 
+# Construct lint dependencies.
 $(foreach SRCFILE,$(JIT_CPP_FILES),\
    $(call RULE.linter,$(FIXED_SRCBASE)/$(SRCFILE)))

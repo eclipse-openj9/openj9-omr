@@ -579,6 +579,8 @@ extern J9_CFUNC intptr_t
 omrsysinfo_processor_set_feature(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, uint32_t feature, BOOLEAN enable);
 extern J9_CFUNC const char *
 omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32_t feature);
+extern J9_CFUNC intptr_t
+omrsysinfo_get_processor_feature_string(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, char * buffer, const size_t length);
 extern J9_CFUNC const char *
 omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary);
 extern J9_CFUNC int32_t

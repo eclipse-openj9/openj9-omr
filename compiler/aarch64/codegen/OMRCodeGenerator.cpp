@@ -94,11 +94,18 @@ OMR::ARM64::CodeGenerator::initialize()
 
    cg->setSupportsSelect();
 
-   _numberBytesReadInaccessible = 0;
-   _numberBytesWriteInaccessible = 0;
 
-   if (TR::Compiler->vm.hasResumableTrapHandler(comp))
+   if (!comp->getOption(TR_DisableTraps) && TR::Compiler->vm.hasResumableTrapHandler(comp))
+      {
+      _numberBytesReadInaccessible = 4096;
+      _numberBytesWriteInaccessible = 4096;
       cg->setHasResumableTrapHandler();
+      }
+   else
+      {
+      _numberBytesReadInaccessible = 0;
+      _numberBytesWriteInaccessible = 0;
+      }
 
    if (!comp->getOption(TR_DisableRegisterPressureSimulation))
       {
@@ -154,112 +161,6 @@ OMR::ARM64::CodeGenerator::initialize()
 
    if (comp->target().isSMP())
       cg->setEnforceStoreOrder();
-   }
-
-OMR::ARM64::CodeGenerator::CodeGenerator() :
-      OMR::CodeGenerator(),
-      _dataSnippetList(getTypedAllocator<TR::ARM64ConstantDataSnippet*>(TR::comp()->allocator())),
-      _outOfLineCodeSectionList(getTypedAllocator<TR_ARM64OutOfLineCodeSection*>(self()->comp()->allocator())),
-      _firstTimeLiveOOLRegisterList(NULL)
-   {
-   // Initialize Linkage for Code Generator
-   self()->initializeLinkage();
-
-   _unlatchedRegisterList =
-      (TR::RealRegister**)self()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
-
-   _unlatchedRegisterList[0] = 0; // mark that list is empty
-
-   _linkageProperties = &self()->getLinkage()->getProperties();
-
-   self()->setStackPointerRegister(self()->machine()->getRealRegister(_linkageProperties->getStackPointerRegister()));
-   self()->setMethodMetaDataRegister(self()->machine()->getRealRegister(_linkageProperties->getMethodMetaDataRegister()));
-
-   // Tactical GRA settings
-   //
-   self()->setGlobalRegisterTable(_linkageProperties->getRegisterAllocationOrder());
-   _numGPR = _linkageProperties->getNumAllocatableIntegerRegisters();
-   _numFPR = _linkageProperties->getNumAllocatableFloatRegisters();
-   self()->setLastGlobalGPR(_numGPR - 1);
-   self()->setLastGlobalFPR(_numGPR + _numFPR - 1);
-
-   self()->getLinkage()->initARM64RealRegisterLinkage();
-   self()->setSupportsGlRegDeps();
-   self()->setSupportsGlRegDepOnFirstBlock();
-
-   self()->addSupportedLiveRegisterKind(TR_GPR);
-   self()->addSupportedLiveRegisterKind(TR_FPR);
-   self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(self()->comp()), TR_GPR);
-   self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(self()->comp()), TR_FPR);
-
-   self()->setSupportsVirtualGuardNOPing();
-
-   self()->setSupportsRecompilation();
-
-   self()->setSupportsSelect();
-
-   self()->setSupportsByteswap();
-
-   _numberBytesReadInaccessible = 0;
-   _numberBytesWriteInaccessible = 0;
-
-   if (TR::Compiler->vm.hasResumableTrapHandler(self()->comp()))
-      self()->setHasResumableTrapHandler();
-
-   if (!self()->comp()->getOption(TR_DisableRegisterPressureSimulation))
-      {
-      for (int32_t i = 0; i < TR_numSpillKinds; i++)
-         _globalRegisterBitVectors[i].init(self()->getNumberOfGlobalRegisters(), self()->trMemory());
-
-      for (TR_GlobalRegisterNumber grn=0; grn < self()->getNumberOfGlobalRegisters(); grn++)
-         {
-         TR::RealRegister::RegNum reg = (TR::RealRegister::RegNum)self()->getGlobalRegister(grn);
-         if (self()->getFirstGlobalGPR() <= grn && grn <= self()->getLastGlobalGPR())
-            _globalRegisterBitVectors[ TR_gprSpill ].set(grn);
-         else if (self()->getFirstGlobalFPR() <= grn && grn <= self()->getLastGlobalFPR())
-            _globalRegisterBitVectors[ TR_fprSpill ].set(grn);
-
-         if (!self()->getProperties().getPreserved(reg))
-            _globalRegisterBitVectors[ TR_volatileSpill ].set(grn);
-         if (self()->getProperties().getIntegerArgument(reg) || self()->getProperties().getFloatArgument(reg))
-            _globalRegisterBitVectors[ TR_linkageSpill  ].set(grn);
-         }
-      }
-
-   // Calculate inverse of getGlobalRegister function
-   //
-   TR_GlobalRegisterNumber grn;
-   int i;
-
-   TR_GlobalRegisterNumber globalRegNumbers[TR::RealRegister::NumRegisters];
-   for (i = 0; i < self()->getNumberOfGlobalGPRs(); i++)
-     {
-     grn = self()->getFirstGlobalGPR() + i;
-     globalRegNumbers[self()->getGlobalRegister(grn)] = grn;
-     }
-   for (i = 0; i < self()->getNumberOfGlobalFPRs(); i++)
-     {
-     grn = self()->getFirstGlobalFPR() + i;
-     globalRegNumbers[self()->getGlobalRegister(grn)] = grn;
-     }
-
-   // Initialize linkage reg arrays
-   TR::ARM64LinkageProperties linkageProperties = self()->getProperties();
-   for (i = 0; i < linkageProperties.getNumIntArgRegs(); i++)
-     _gprLinkageGlobalRegisterNumbers[i] = globalRegNumbers[linkageProperties.getIntegerArgumentRegister(i)];
-   for (i = 0; i < linkageProperties.getNumFloatArgRegs(); i++)
-     _fprLinkageGlobalRegisterNumbers[i] = globalRegNumbers[linkageProperties.getFloatArgumentRegister(i)];
-
-   if (self()->comp()->getOption(TR_TraceRA))
-      {
-      self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR));
-      self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
-      }
-
-   self()->getLinkage()->setParameterLinkageRegisterIndex(self()->comp()->getJittedMethodSymbol());
-
-   if (self()->comp()->target().isSMP())
-      self()->setEnforceStoreOrder();
    }
 
 void

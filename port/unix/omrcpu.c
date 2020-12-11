@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -142,7 +142,14 @@ omrcpu_flush_icache(struct OMRPortLibrary *portLibrary, void *memoryPointer, uin
 	__asm__("sync");
 	__asm__("isync");
 
-#endif /*  defined(RS6000) || defined (LINUXPPC) || defined (PPC) */
+#elif defined(ARM) || defined(AARCH64) /* defined(RS6000) || defined(LINUXPPC) || defined(PPC) */
+#if defined(__GNUC__)
+	// GCC built-in function
+	__builtin___clear_cache(memoryPointer, (void *)((char *)memoryPointer+byteAmount));
+#else
+#error Not supported
+#endif /* defined(__GNUC__) */
+#endif /* defined(ARM) || defined(AARCH64) */
 
 }
 

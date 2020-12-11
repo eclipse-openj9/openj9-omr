@@ -544,9 +544,9 @@ TR::Register *OMR::ARM::TreeEvaluator::commonLoadEvaluator(TR::Node *node,  TR_A
    return tempReg;
    }
 
-#if J9_PROJECT_SPECIFIC
 TR::Register *OMR::ARM::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+#if J9_PROJECT_SPECIFIC
    TR::MemoryReference *tempMR              = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
    TR::Register            *destinationRegister = cg->evaluate(node->getSecondChild());
    TR::Node                *firstChild = node->getFirstChild();
@@ -589,10 +589,14 @@ TR::Register *OMR::ARM::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::Code
    tempMR->decNodeReferenceCounts();
 
    return NULL;
+#else
+   return OMR::ARM::TreeEvaluator::unImpOpEvaluator(node, cg);
+#endif
    }
 
 TR::Register *OMR::ARM::TreeEvaluator::awrtbariEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+#if J9_PROJECT_SPECIFIC
    TR::MemoryReference *tempMR              = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
    TR::Register            *destinationRegister = cg->evaluate(node->getChild(2));
    TR::Node                *secondChild = node->getSecondChild();
@@ -636,8 +640,10 @@ TR::Register *OMR::ARM::TreeEvaluator::awrtbariEvaluator(TR::Node *node, TR::Cod
    tempMR->decNodeReferenceCounts();
 
    return NULL;
-   }
+#else
+   return OMR::ARM::TreeEvaluator::unImpOpEvaluator(node, cg);
 #endif
+   }
 
 // also handles ilstore
 TR::Register *OMR::ARM::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -743,17 +749,23 @@ TR::Register *OMR::ARM::TreeEvaluator::commonStoreEvaluator(TR::Node *node, TR_A
    return NULL;
    }
 
-#ifdef J9_PROJECT_SPECIFIC
 TR::Register *OMR::ARM::TreeEvaluator::monentEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+#ifdef J9_PROJECT_SPECIFIC
    return VMmonentEvaluator(node, cg);
+#else
+   return OMR::ARM::TreeEvaluator::unImpOpEvaluator(node, cg);
+#endif
    }
 
 TR::Register *OMR::ARM::TreeEvaluator::monexitEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+#ifdef J9_PROJECT_SPECIFIC
    return VMmonexitEvaluator(node, cg);
-   }
+#else
+   return OMR::ARM::TreeEvaluator::unImpOpEvaluator(node, cg);
 #endif
+   }
 
 TR::Register *OMR::ARM::TreeEvaluator::integerHighestOneBit(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }
 TR::Register *OMR::ARM::TreeEvaluator::integerLowestOneBit(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }
@@ -1041,29 +1053,45 @@ TR::Register *OMR::ARM::TreeEvaluator::asynccheckEvaluator(TR::Node *node, TR::C
    return NULL;
    }
 
-#if J9_PROJECT_SPECIFIC
 TR::Register *OMR::ARM::TreeEvaluator::instanceofEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+#if J9_PROJECT_SPECIFIC
    return VMinstanceOfEvaluator(node, cg);
+#else
+   return OMR::ARM::TreeEvaluator::unImpOpEvaluator(node, cg);
+#endif
    }
 
 TR::Register *OMR::ARM::TreeEvaluator::checkcastEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+#if J9_PROJECT_SPECIFIC
    return OMR::ARM::TreeEvaluator::VMcheckcastEvaluator(node, cg);
+#else
+   return OMR::ARM::TreeEvaluator::unImpOpEvaluator(node, cg);
+#endif
    }
 
 TR::Register *OMR::ARM::TreeEvaluator::checkcastAndNULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+#if J9_PROJECT_SPECIFIC
    return OMR::ARM::TreeEvaluator::VMcheckcastEvaluator(node, cg);
+#else
+   return OMR::ARM::TreeEvaluator::unImpOpEvaluator(node, cg);
+#endif
    }
 
 TR::Register *OMR::ARM::TreeEvaluator::newObjectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+#if J9_PROJECT_SPECIFIC
    return VMnewEvaluator(node, cg);
+#else
+   return OMR::ARM::TreeEvaluator::unImpOpEvaluator(node, cg);
+#endif
    }
 
 TR::Register *OMR::ARM::TreeEvaluator::newArrayEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+#if J9_PROJECT_SPECIFIC
    if (cg->comp()->suppressAllocationInlining())
       {
       TR::ILOpCodes opCode = node->getOpCodeValue();
@@ -1076,10 +1104,14 @@ TR::Register *OMR::ARM::TreeEvaluator::newArrayEvaluator(TR::Node *node, TR::Cod
       {
       return VMnewEvaluator(node, cg);
       }
+#else
+   return OMR::ARM::TreeEvaluator::unImpOpEvaluator(node, cg);
+#endif
    }
 
 TR::Register *OMR::ARM::TreeEvaluator::anewArrayEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+#if J9_PROJECT_SPECIFIC
    if (cg->comp()->suppressAllocationInlining())
       {
       TR::ILOpCodes opCode = node->getOpCodeValue();
@@ -1092,9 +1124,10 @@ TR::Register *OMR::ARM::TreeEvaluator::anewArrayEvaluator(TR::Node *node, TR::Co
       {
       return VMnewEvaluator(node, cg);
       }
-
-   }
+#else
+   return OMR::ARM::TreeEvaluator::unImpOpEvaluator(node, cg);
 #endif
+   }
 
 TR::Register *OMR::ARM::TreeEvaluator::multianewArrayEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

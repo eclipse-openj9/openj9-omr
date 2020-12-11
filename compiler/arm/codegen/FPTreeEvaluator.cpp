@@ -3138,4 +3138,14 @@ TR::Register *OMR::ARM::TreeEvaluator::fRegStoreEvaluator(TR::Node *node, TR::Co
    return NULL;
    }
 
+TR::Register *OMR::ARM::TreeEvaluator::fmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return NULL; 
+   }
+
+TR::Register *OMR::ARM::TreeEvaluator::fminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return NULL; 
+   }
+
 #endif

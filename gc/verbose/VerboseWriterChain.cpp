@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,8 +32,6 @@
 #undef UT_MODULE_UNLOADED
 #include "ut_j9vgc.h"
 
-#define INDENT_SPACER "  "
-
 MM_VerboseWriterChain::MM_VerboseWriterChain()
 	: MM_Base()
 	,_buffer(NULL)
@@ -57,26 +55,12 @@ MM_VerboseWriterChain::newInstance(MM_EnvironmentBase *env)
 }
 
 void
-MM_VerboseWriterChain::formatAndOutputV(MM_EnvironmentBase *env, uintptr_t indent, const char *format, va_list args)
-{
-	/* Ensure we have a  buffer. */
-	Assert_VGC_true(NULL != _buffer);
-
-	for (uintptr_t i = 0; i < indent; ++i) {
-		_buffer->add(env, INDENT_SPACER);
-	}
-	
-	_buffer->vprintf(env, format, args);
-	_buffer->add(env, "\n");
-}
-
-void
 MM_VerboseWriterChain::formatAndOutput(MM_EnvironmentBase *env, uintptr_t indent, const char *format, ...)
 {
 	va_list args;
 
 	va_start(args, format);
-	formatAndOutputV(env, indent, format, args);
+	_buffer->formatAndOutputV(env, indent, format, args);
 	va_end(args);
 }
 

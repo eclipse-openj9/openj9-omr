@@ -12397,6 +12397,9 @@ TR::Node *lu2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *f2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+#ifdef TR_HOST_X86
+   return dftSimplifier(node, block, s);
+#else
    simplifyChildren(node, block, s);
 
    TR::Node * firstChild = node->getFirstChild();
@@ -12408,10 +12411,14 @@ TR::Node *f2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    return node;
+#endif
    }
 
 TR::Node *f2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+#ifdef TR_HOST_X86
+   return dftSimplifier(node, block, s);
+#else
    simplifyChildren(node, block, s);
 
    TR::Node * firstChild = node->getFirstChild();
@@ -12423,6 +12430,7 @@ TR::Node *f2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    return node;
+#endif
    }
 
 TR::Node *f2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)

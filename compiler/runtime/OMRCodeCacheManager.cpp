@@ -33,6 +33,7 @@
 #include "env/defines.h"
 #include "env/CompilerEnv.hpp"
 #include "env/jittypes.h"
+#include "env/VerboseLog.hpp"
 #include "il/DataTypes.hpp"
 #include "infra/Assert.hpp"
 #include "infra/CriticalSection.hpp"

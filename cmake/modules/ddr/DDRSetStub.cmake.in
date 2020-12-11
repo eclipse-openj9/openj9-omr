@@ -32,6 +32,7 @@ set(DDR_SUPERSET "$<TARGET_PROPERTY:@DDR_TARGET_NAME@,SUPERSET>")
 set(DDR_MACRO_LIST "${DDR_INFO_DIR}/sets/@DDR_TARGET_NAME@.macros")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${OMR_MODULES_DIR})
 set(PATH_TOOL "@PATH_TOOL@")
+set(OBJECT_SEARCH_ROOT "$<TARGET_PROPERTY:@DDR_TARGET_NAME@,DDR_OBJECT_SEARCH_ROOT>")
 
 set(DDR_TARGETS
 	$<JOIN:$<TARGET_PROPERTY:@DDR_TARGET_NAME@,DDR_TARGETS>,
@@ -41,6 +42,7 @@ set(DDR_SUBSETS
 	$<JOIN:$<TARGET_PROPERTY:@DDR_TARGET_NAME@,DDR_SUBSETS>,
 	>
 )
+set(OBJECT_EXCLUDE_REGEX "^$<JOIN:$<TARGET_PROPERTY:@DDR_TARGET_NAME@,DDR_OBJECT_EXCLUDES>,|^>")
 
 project(@DDR_TARGET_NAME@ LANGUAGES NONE)
 
@@ -244,6 +246,23 @@ foreach(subset IN LISTS DDR_SUBSETS)
 	list(APPEND subset_binaries ${binaries})
 endforeach()
 
+if(ZOS)
+	# On zos, we have to glob for the individual .dbg files
+	set(target_files)
+
+	if(OBJECT_EXCLUDE_REGEX STREQUAL "^")
+		# Empty exclude regex, just include everything
+		file(GLOB_RECURSE target_files "${OBJECT_SEARCH_ROOT}/*.dbg")
+	else()
+		file(GLOB_RECURSE dbg_files  RELATIVE "${OBJECT_SEARCH_ROOT}" "${OBJECT_SEARCH_ROOT}/*.dbg")
+		foreach(item IN LISTS dbg_files)
+			if(NOT "${item}" MATCHES "${OBJECT_EXCLUDE_REGEX}")
+				list(APPEND target_files "${OBJECT_SEARCH_ROOT}/${item}")
+			endif()
+		endforeach()
+	endif()
+
+endif()
 # now we generate our own list of binaries, so that they can be parsed if we are a subset
 omr_join("\n" binaries_list
 	${target_files}

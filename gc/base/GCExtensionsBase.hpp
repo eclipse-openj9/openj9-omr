@@ -190,9 +190,9 @@ public:
 class MM_GCExtensionsBase : public MM_BaseVirtual {
 	/* Data Members */
 private:
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
 	bool _compressObjectReferences;
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	void* _guaranteedNurseryStart; /**< lowest address guaranteed to be in the nursery */
 	void* _guaranteedNurseryEnd; /**< highest address guaranteed to be in the nursery */
@@ -448,7 +448,6 @@ public:
 		OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL,
 	};
 	ScavengerScanOrdering scavengerScanOrdering; /**< scan ordering in Scavenger */
-#if defined(OMR_GC_MODRON_SCAVENGER)
 	/* Start of options relating to dynamicBreadthFirstScanOrdering */
 	uintptr_t gcCountBetweenHotFieldSort;
 	uintptr_t gcCountBetweenHotFieldSortMax;
@@ -464,6 +463,7 @@ public:
 	uint32_t maxHotFieldListLength;
 	uintptr_t minCpuUtil;
 	/* End of options relating to dynamicBreadthFirstScanOrdering */
+#if defined(OMR_GC_MODRON_SCAVENGER) 
 	uintptr_t scvTenureRatioHigh;
 	uintptr_t scvTenureRatioLow;
 	uintptr_t scvTenureFixedTenureAge; /**< The tenure age to use for the Fixed scavenger tenure strategy. */
@@ -1349,9 +1349,9 @@ public:
 
 	MM_GCExtensionsBase()
 		: MM_BaseVirtual()
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
 		, _compressObjectReferences(false)
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 		, _guaranteedNurseryStart(NULL)
 		, _guaranteedNurseryEnd(NULL)
@@ -1543,8 +1543,6 @@ public:
 		, dispatcherHybridNotifyThreadBound(16)
 #if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
 		, scavengerScanOrdering(OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL)
-#endif /* OMR_GC_MODRON_SCAVENGER || OMR_GC_VLHGC */
-#if defined(OMR_GC_MODRON_SCAVENGER)
 		/* Start of options relating to dynamicBreadthFirstScanOrdering */
 		, gcCountBetweenHotFieldSort(1)
 		, gcCountBetweenHotFieldSortMax(6)
@@ -1560,6 +1558,8 @@ public:
 		, maxHotFieldListLength(10)
 		, minCpuUtil (1)
 		/* End of options relating to dynamicBreadthFirstScanOrdering */
+#endif /* OMR_GC_MODRON_SCAVENGER || OMR_GC_VLHGC */
+#if defined(OMR_GC_MODRON_SCAVENGER)
 		, scvTenureRatioHigh(OMR_SCV_TENURE_RATIO_HIGH)
 		, scvTenureRatioLow(OMR_SCV_TENURE_RATIO_LOW)
 		, scvTenureFixedTenureAge(OBJECT_HEADER_AGE_MAX)

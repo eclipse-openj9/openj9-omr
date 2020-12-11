@@ -24,717 +24,735 @@
  * Only Function Pointers are allowed.
  */
 
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::BadILOp
-   TR::TreeEvaluator::aconstEvaluator,                                 // TR::aconst
-   TR::TreeEvaluator::iconstEvaluator,                                 // TR::iconst
-   TR::TreeEvaluator::lconstEvaluator,                                 // TR::lconst
-   TR::TreeEvaluator::fconstEvaluator,                                 // TR::fconst
-   TR::TreeEvaluator::dconstEvaluator,                                 // TR::dconst
-   TR::TreeEvaluator::bconstEvaluator,                                 // TR::bconst
-   TR::TreeEvaluator::sconstEvaluator,                                 // TR::sconst
-   TR::TreeEvaluator::iloadEvaluator,                                  // TR::iload
-   TR::TreeEvaluator::floadEvaluator,                                  // TR::fload
-   TR::TreeEvaluator::dloadEvaluator,                                  // TR::dload
-   TR::TreeEvaluator::aloadEvaluator,                                  // TR::aload
-   TR::TreeEvaluator::bloadEvaluator,                                  // TR::bload
-   TR::TreeEvaluator::sloadEvaluator,                                  // TR::sload
-   TR::TreeEvaluator::lloadEvaluator,                                  // TR::lload
-   TR::TreeEvaluator::irdbarEvaluator,                                 // TR::irdbar
-   TR::TreeEvaluator::frdbarEvaluator,                                 // TR::frdbar
-   TR::TreeEvaluator::drdbarEvaluator,                                 // TR::drdbar
-   TR::TreeEvaluator::ardbarEvaluator,                                 // TR::ardbar
-   TR::TreeEvaluator::brdbarEvaluator,                                 // TR::brdbar
-   TR::TreeEvaluator::srdbarEvaluator,                                 // TR::srdbar
-   TR::TreeEvaluator::lrdbarEvaluator,                                 // TR::lrdbar
-   TR::TreeEvaluator::iloadEvaluator,                                  // TR::iloadi
-   TR::TreeEvaluator::floadEvaluator,                                  // TR::floadi
-   TR::TreeEvaluator::dloadEvaluator,                                  // TR::dloadi
-   TR::TreeEvaluator::aloadEvaluator,                                  // TR::aloadi
-   TR::TreeEvaluator::bloadEvaluator,                                  // TR::bloadi
-   TR::TreeEvaluator::sloadEvaluator,                                  // TR::sloadi
-   TR::TreeEvaluator::lloadEvaluator,                                  // TR::lloadi
-   TR::TreeEvaluator::irdbariEvaluator,                                // TR::irdbari
-   TR::TreeEvaluator::frdbariEvaluator,                                // TR::frdbari
-   TR::TreeEvaluator::drdbariEvaluator,                                // TR::drdbari
-   TR::TreeEvaluator::ardbariEvaluator,                                // TR::ardbari
-   TR::TreeEvaluator::brdbariEvaluator,                                // TR::brdbari
-   TR::TreeEvaluator::srdbariEvaluator,                                // TR::srdbari
-   TR::TreeEvaluator::lrdbariEvaluator,                                // TR::lrdbari
-   TR::TreeEvaluator::istoreEvaluator,                                 // TR::istore
-   TR::TreeEvaluator::lstoreEvaluator,                                 // TR::lstore
-   TR::TreeEvaluator::floatingPointStoreEvaluator,                     // TR::fstore
-   TR::TreeEvaluator::floatingPointStoreEvaluator,                     // TR::dstore
-   TR::TreeEvaluator::lstoreEvaluator,                                 // TR::astore
-   TR::TreeEvaluator::bstoreEvaluator,                                 // TR::bstore
-   TR::TreeEvaluator::sstoreEvaluator,                                 // TR::sstore
-   TR::TreeEvaluator::iwrtbarEvaluator,                                // TR::iwrtbar
-   TR::TreeEvaluator::lwrtbarEvaluator,                                // TR::lwrtbar
-   TR::TreeEvaluator::fwrtbarEvaluator,                                // TR::fwrtbar
-   TR::TreeEvaluator::dwrtbarEvaluator,                                // TR::dwrtbar
-   TR::TreeEvaluator::awrtbarEvaluator,                                // TR::awrtbar
-   TR::TreeEvaluator::bwrtbarEvaluator,                                // TR::bwrtbar
-   TR::TreeEvaluator::swrtbarEvaluator,                                // TR::swrtbar
-   TR::TreeEvaluator::lstoreEvaluator,                                 // TR::lstorei
-   TR::TreeEvaluator::floatingPointStoreEvaluator,                     // TR::fstorei
-   TR::TreeEvaluator::floatingPointStoreEvaluator,                     // TR::dstorei
-   TR::TreeEvaluator::lstoreEvaluator,                                 // TR::astorei
-   TR::TreeEvaluator::bstoreEvaluator,                                 // TR::bstorei
-   TR::TreeEvaluator::sstoreEvaluator,                                 // TR::sstorei
-   TR::TreeEvaluator::istoreEvaluator,                                 // TR::istorei
-   TR::TreeEvaluator::lwrtbariEvaluator,                               // TR::lwrtbari
-   TR::TreeEvaluator::fwrtbariEvaluator,                               // TR::fwrtbari
-   TR::TreeEvaluator::dwrtbariEvaluator,                               // TR::dwrtbari
-   TR::TreeEvaluator::awrtbariEvaluator,                               // TR::awrtbari
-   TR::TreeEvaluator::bwrtbariEvaluator,                               // TR::bwrtbari
-   TR::TreeEvaluator::swrtbariEvaluator,                               // TR::swrtbari
-   TR::TreeEvaluator::iwrtbariEvaluator,                               // TR::iwrtbari
-   TR::TreeEvaluator::gotoEvaluator,                                   // TR::Goto
-   TR::TreeEvaluator::integerReturnEvaluator,                          // TR::ireturn
-   TR::TreeEvaluator::integerReturnEvaluator,                          // TR::lreturn
-   TR::TreeEvaluator::fpReturnEvaluator,                               // TR::freturn
-   TR::TreeEvaluator::fpReturnEvaluator,                               // TR::dreturn
-   TR::TreeEvaluator::integerReturnEvaluator,                          // TR::areturn
-   TR::TreeEvaluator::returnEvaluator,                                 // TR::Return
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::asynccheck (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::athrow
-   TR::TreeEvaluator::directCallEvaluator,                             // TR::icall
-   TR::TreeEvaluator::directCallEvaluator,                             // TR::lcall
-   TR::TreeEvaluator::directCallEvaluator,                             // TR::fcall
-   TR::TreeEvaluator::directCallEvaluator,                             // TR::dcall
-   TR::TreeEvaluator::directCallEvaluator,                             // TR::acall
-   TR::TreeEvaluator::directCallEvaluator,                             // TR::call
-   TR::TreeEvaluator::integerAddEvaluator,                             // TR::iadd
-   TR::TreeEvaluator::integerAddEvaluator,                             // TR::ladd
-   TR::TreeEvaluator::faddEvaluator,                                   // TR::fadd
-   TR::TreeEvaluator::daddEvaluator,                                   // TR::dadd
-   TR::TreeEvaluator::baddEvaluator,                                   // TR::badd
-   TR::TreeEvaluator::saddEvaluator,                                   // TR::sadd
-   TR::TreeEvaluator::integerSubEvaluator,                             // TR::isub
-   TR::TreeEvaluator::integerSubEvaluator,                             // TR::lsub
-   TR::TreeEvaluator::fsubEvaluator,                                   // TR::fsub
-   TR::TreeEvaluator::dsubEvaluator,                                   // TR::dsub
-   TR::TreeEvaluator::bsubEvaluator,                                   // TR::bsub
-   TR::TreeEvaluator::ssubEvaluator,                                   // TR::ssub
-   TR::TreeEvaluator::integerSubEvaluator,                             // TR::asub
-   TR::TreeEvaluator::integerMulEvaluator,                             // TR::imul
-   TR::TreeEvaluator::integerMulEvaluator,                             // TR::lmul
-   TR::TreeEvaluator::fmulEvaluator,                                   // TR::fmul
-   TR::TreeEvaluator::dmulEvaluator,                                   // TR::dmul
-   TR::TreeEvaluator::integerMulEvaluator,                             // TR::bmul
-   TR::TreeEvaluator::integerMulEvaluator,                             // TR::smul
-   TR::TreeEvaluator::integerDivOrRemEvaluator,                        // TR::idiv
-   TR::TreeEvaluator::integerDivOrRemEvaluator,                        // TR::ldiv
-   TR::TreeEvaluator::fdivEvaluator,                                   // TR::fdiv
-   TR::TreeEvaluator::ddivEvaluator,                                   // TR::ddiv
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::bdiv
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::sdiv
-   TR::TreeEvaluator::integerDivOrRemEvaluator,                        // TR::iudiv
-   TR::TreeEvaluator::integerDivOrRemEvaluator,                        // TR::ludiv
-   TR::TreeEvaluator::integerDivOrRemEvaluator,                        // TR::irem
-   TR::TreeEvaluator::integerDivOrRemEvaluator,                        // TR::lrem
-   TR::TreeEvaluator::fpRemEvaluator,                                  // TR::frem
-   TR::TreeEvaluator::fpRemEvaluator,                                  // TR::drem
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::brem
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::srem
-   TR::TreeEvaluator::integerDivOrRemEvaluator,                        // TR::iurem
-   TR::TreeEvaluator::integerNegEvaluator,                             // TR::ineg
-   TR::TreeEvaluator::integerNegEvaluator,                             // TR::lneg
-   TR::TreeEvaluator::fpUnaryMaskEvaluator,                            // TR::fneg
-   TR::TreeEvaluator::fpUnaryMaskEvaluator,                            // TR::dneg
-   TR::TreeEvaluator::bnegEvaluator,                                   // TR::bneg
-   TR::TreeEvaluator::snegEvaluator,                                   // TR::sneg
-   TR::TreeEvaluator::integerAbsEvaluator,                             // TR::iabs
-   TR::TreeEvaluator::integerAbsEvaluator,                             // TR::labs
-   TR::TreeEvaluator::fpUnaryMaskEvaluator,                            // TR::fabs
-   TR::TreeEvaluator::fpUnaryMaskEvaluator,                            // TR::dabs
-   TR::TreeEvaluator::integerShlEvaluator,                             // TR::ishl
-   TR::TreeEvaluator::integerShlEvaluator,                             // TR::lshl
-   TR::TreeEvaluator::bshlEvaluator,                                   // TR::bshl
-   TR::TreeEvaluator::sshlEvaluator,                                   // TR::sshl
-   TR::TreeEvaluator::integerShrEvaluator,                             // TR::ishr
-   TR::TreeEvaluator::integerShrEvaluator,                             // TR::lshr
-   TR::TreeEvaluator::bshrEvaluator,                                   // TR::bshr
-   TR::TreeEvaluator::sshrEvaluator,                                   // TR::sshr
-   TR::TreeEvaluator::integerUshrEvaluator,                            // TR::iushr
-   TR::TreeEvaluator::integerUshrEvaluator,                            // TR::lushr
-   TR::TreeEvaluator::bushrEvaluator,                                  // TR::bushr
-   TR::TreeEvaluator::sushrEvaluator,                                  // TR::sushr
-   TR::TreeEvaluator::integerRolEvaluator,                             // TR::irol
-   TR::TreeEvaluator::integerRolEvaluator,                             // TR::lrol
-   TR::TreeEvaluator::iandEvaluator,                                   // TR::iand
-   TR::TreeEvaluator::landEvaluator,                                   // TR::land
-   TR::TreeEvaluator::bandEvaluator,                                   // TR::band
-   TR::TreeEvaluator::sandEvaluator,                                   // TR::sand
-   TR::TreeEvaluator::iorEvaluator,                                    // TR::ior
-   TR::TreeEvaluator::lorEvaluator,                                    // TR::lor
-   TR::TreeEvaluator::borEvaluator,                                    // TR::bor
-   TR::TreeEvaluator::sorEvaluator,                                    // TR::sor
-   TR::TreeEvaluator::ixorEvaluator,                                   // TR::ixor
-   TR::TreeEvaluator::lxorEvaluator,                                   // TR::lxor
-   TR::TreeEvaluator::bxorEvaluator,                                   // TR::bxor
-   TR::TreeEvaluator::sxorEvaluator,                                   // TR::sxor
-   TR::TreeEvaluator::i2lEvaluator,                                    // TR::i2l
-   TR::TreeEvaluator::i2fEvaluator,                                    // TR::i2f
-   TR::TreeEvaluator::i2dEvaluator,                                    // TR::i2d
-   TR::TreeEvaluator::i2bEvaluator,                                    // TR::i2b
-   TR::TreeEvaluator::i2bEvaluator,                                    // TR::i2s
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::i2a
-   TR::TreeEvaluator::iu2lEvaluator,                                   // TR::iu2l
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::iu2f
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::iu2d
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::iu2a
-   TR::TreeEvaluator::l2iEvaluator,                                    // TR::l2i
-   TR::TreeEvaluator::l2fEvaluator,                                    // TR::l2f
-   TR::TreeEvaluator::l2dEvaluator,                                    // TR::l2d
-   TR::TreeEvaluator::l2iEvaluator,                                    // TR::l2b
-   TR::TreeEvaluator::l2iEvaluator,                                    // TR::l2s
-   TR::TreeEvaluator::l2aEvaluator,                                    // TR::l2a
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::lu2f
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::lu2d
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::lu2a
-   TR::TreeEvaluator::f2iEvaluator,                                    // TR::f2i
-   TR::TreeEvaluator::f2iEvaluator,                                    // TR::f2l <- (Uses f2i intentionally)
-   TR::TreeEvaluator::f2dEvaluator,                                    // TR::f2d
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::f2b
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::f2s
-   TR::TreeEvaluator::f2iEvaluator,                                    // TR::d2i <- (Uses f2i intentionally)
-   TR::TreeEvaluator::f2iEvaluator,                                    // TR::d2l <- (Uses f2i intentionally)
-   TR::TreeEvaluator::d2fEvaluator,                                    // TR::d2f
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::d2b
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::d2s
-   TR::TreeEvaluator::b2iEvaluator,                                    // TR::b2i
-   TR::TreeEvaluator::b2lEvaluator,                                    // TR::b2l
-   TR::TreeEvaluator::i2fEvaluator,                                    // TR::b2f
-   TR::TreeEvaluator::i2dEvaluator,                                    // TR::b2d
-   TR::TreeEvaluator::b2sEvaluator,                                    // TR::b2s
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::b2a
-   TR::TreeEvaluator::bu2iEvaluator,                                   // TR::bu2i
-   TR::TreeEvaluator::bu2lEvaluator,                                   // TR::bu2l
-   TR::TreeEvaluator::i2fEvaluator,                                    // TR::bu2f
-   TR::TreeEvaluator::i2dEvaluator,                                    // TR::bu2d
-   TR::TreeEvaluator::bu2sEvaluator,                                   // TR::bu2s
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::bu2a
-   TR::TreeEvaluator::s2iEvaluator,                                    // TR::s2i
-   TR::TreeEvaluator::s2lEvaluator,                                    // TR::s2l
-   TR::TreeEvaluator::i2fEvaluator,                                    // TR::s2f
-   TR::TreeEvaluator::i2dEvaluator,                                    // TR::s2d
-   TR::TreeEvaluator::i2bEvaluator,                                    // TR::s2b
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::s2a
-   TR::TreeEvaluator::su2iEvaluator,                                   // TR::su2i
-   TR::TreeEvaluator::su2lEvaluator,                                   // TR::su2l
-   TR::TreeEvaluator::i2fEvaluator,                                    // TR::su2f
-   TR::TreeEvaluator::i2dEvaluator,                                    // TR::su2d
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::su2a
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::a2i
-   TR::TreeEvaluator::a2lEvaluator,                                    // TR::a2l
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::a2b
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::a2s
-   TR::TreeEvaluator::integerCmpeqEvaluator,                           // TR::icmpeq
-   TR::TreeEvaluator::integerCmpneEvaluator,                           // TR::icmpne
-   TR::TreeEvaluator::integerCmpltEvaluator,                           // TR::icmplt
-   TR::TreeEvaluator::integerCmpgeEvaluator,                           // TR::icmpge
-   TR::TreeEvaluator::integerCmpgtEvaluator,                           // TR::icmpgt
-   TR::TreeEvaluator::integerCmpleEvaluator,                           // TR::icmple
-   TR::TreeEvaluator::unsignedIntegerCmpltEvaluator,                   // TR::iucmplt
-   TR::TreeEvaluator::unsignedIntegerCmpgeEvaluator,                   // TR::iucmpge
-   TR::TreeEvaluator::unsignedIntegerCmpgtEvaluator,                   // TR::iucmpgt
-   TR::TreeEvaluator::unsignedIntegerCmpleEvaluator,                   // TR::iucmple
-   TR::TreeEvaluator::integerCmpeqEvaluator,                           // TR::lcmpeq
-   TR::TreeEvaluator::integerCmpneEvaluator,                           // TR::lcmpne
-   TR::TreeEvaluator::integerCmpltEvaluator,                           // TR::lcmplt
-   TR::TreeEvaluator::integerCmpgeEvaluator,                           // TR::lcmpge
-   TR::TreeEvaluator::integerCmpgtEvaluator,                           // TR::lcmpgt
-   TR::TreeEvaluator::integerCmpleEvaluator,                           // TR::lcmple
-   TR::TreeEvaluator::unsignedIntegerCmpltEvaluator,                   // TR::lucmplt
-   TR::TreeEvaluator::unsignedIntegerCmpgeEvaluator,                   // TR::lucmpge
-   TR::TreeEvaluator::unsignedIntegerCmpgtEvaluator,                   // TR::lucmpgt
-   TR::TreeEvaluator::unsignedIntegerCmpleEvaluator,                   // TR::lucmple
-   TR::TreeEvaluator::compareFloatAndSetEvaluator,                     // TR::fcmpeq
-   TR::TreeEvaluator::compareFloatAndSetEvaluator,                     // TR::fcmpne
-   TR::TreeEvaluator::compareFloatAndSetEvaluator,                     // TR::fcmplt
-   TR::TreeEvaluator::compareFloatAndSetEvaluator,                     // TR::fcmpge
-   TR::TreeEvaluator::compareFloatAndSetEvaluator,                     // TR::fcmpgt
-   TR::TreeEvaluator::compareFloatAndSetEvaluator,                     // TR::fcmple
-   TR::TreeEvaluator::compareFloatAndSetEvaluator,                     // TR::fcmpequ
-   TR::TreeEvaluator::compareFloatAndSetEvaluator,                     // TR::fcmpneu
-   TR::TreeEvaluator::compareFloatAndSetEvaluator,                     // TR::fcmpltu
-   TR::TreeEvaluator::compareFloatAndSetEvaluator,                     // TR::fcmpgeu
-   TR::TreeEvaluator::compareFloatAndSetEvaluator,                     // TR::fcmpgtu
-   TR::TreeEvaluator::compareFloatAndSetEvaluator,                     // TR::fcmpleu
-   TR::TreeEvaluator::compareDoubleAndSetEvaluator,                    // TR::dcmpeq
-   TR::TreeEvaluator::compareDoubleAndSetEvaluator,                    // TR::dcmpne
-   TR::TreeEvaluator::compareDoubleAndSetEvaluator,                    // TR::dcmplt
-   TR::TreeEvaluator::compareDoubleAndSetEvaluator,                    // TR::dcmpge
-   TR::TreeEvaluator::compareDoubleAndSetEvaluator,                    // TR::dcmpgt
-   TR::TreeEvaluator::compareDoubleAndSetEvaluator,                    // TR::dcmple
-   TR::TreeEvaluator::compareDoubleAndSetEvaluator,                    // TR::dcmpequ
-   TR::TreeEvaluator::compareDoubleAndSetEvaluator,                    // TR::dcmpneu
-   TR::TreeEvaluator::compareDoubleAndSetEvaluator,                    // TR::dcmpltu
-   TR::TreeEvaluator::compareDoubleAndSetEvaluator,                    // TR::dcmpgeu
-   TR::TreeEvaluator::compareDoubleAndSetEvaluator,                    // TR::dcmpgtu
-   TR::TreeEvaluator::compareDoubleAndSetEvaluator,                    // TR::dcmpleu
-   TR::TreeEvaluator::integerCmpeqEvaluator,                           // TR::acmpeq
-   TR::TreeEvaluator::integerCmpneEvaluator,                           // TR::acmpne
-   TR::TreeEvaluator::unsignedIntegerCmpltEvaluator,                   // TR::acmplt
-   TR::TreeEvaluator::unsignedIntegerCmpgeEvaluator,                   // TR::acmpge
-   TR::TreeEvaluator::unsignedIntegerCmpgtEvaluator,                   // TR::acmpgt
-   TR::TreeEvaluator::unsignedIntegerCmpleEvaluator,                   // TR::acmple
-   TR::TreeEvaluator::bcmpeqEvaluator,                                 // TR::bcmpeq
-   TR::TreeEvaluator::bcmpeqEvaluator,                                 // TR::bcmpne
-   TR::TreeEvaluator::bcmpltEvaluator,                                 // TR::bcmplt
-   TR::TreeEvaluator::bcmpgeEvaluator,                                 // TR::bcmpge
-   TR::TreeEvaluator::bcmpgtEvaluator,                                 // TR::bcmpgt
-   TR::TreeEvaluator::bcmpleEvaluator,                                 // TR::bcmple
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::bucmplt
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::bucmpge
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::bucmpgt
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::bucmple
-   TR::TreeEvaluator::scmpeqEvaluator,                                 // TR::scmpeq
-   TR::TreeEvaluator::scmpeqEvaluator,                                 // TR::scmpne
-   TR::TreeEvaluator::scmpltEvaluator,                                 // TR::scmplt
-   TR::TreeEvaluator::scmpgeEvaluator,                                 // TR::scmpge
-   TR::TreeEvaluator::scmpgtEvaluator,                                 // TR::scmpgt
-   TR::TreeEvaluator::scmpleEvaluator,                                 // TR::scmple
-   TR::TreeEvaluator::sucmpltEvaluator,                                // TR::sucmplt
-   TR::TreeEvaluator::sucmpgeEvaluator,                                // TR::sucmpge
-   TR::TreeEvaluator::sucmpgtEvaluator,                                // TR::sucmpgt
-   TR::TreeEvaluator::sucmpleEvaluator,                                // TR::sucmple
-   TR::TreeEvaluator::lcmpEvaluator,                                   // TR::lcmp
-   TR::TreeEvaluator::compareFloatEvaluator,                           // TR::fcmpl
-   TR::TreeEvaluator::compareFloatEvaluator,                           // TR::fcmpg
-   TR::TreeEvaluator::compareDoubleEvaluator,                          // TR::dcmpl
-   TR::TreeEvaluator::compareDoubleEvaluator,                          // TR::dcmpg
-   TR::TreeEvaluator::integerIfCmpeqEvaluator,                         // TR::ificmpeq
-   TR::TreeEvaluator::integerIfCmpneEvaluator,                         // TR::ificmpne
-   TR::TreeEvaluator::integerIfCmpltEvaluator,                         // TR::ificmplt
-   TR::TreeEvaluator::integerIfCmpgeEvaluator,                         // TR::ificmpge
-   TR::TreeEvaluator::integerIfCmpgtEvaluator,                         // TR::ificmpgt
-   TR::TreeEvaluator::integerIfCmpleEvaluator,                         // TR::ificmple
-   TR::TreeEvaluator::unsignedIntegerIfCmpltEvaluator,                 // TR::ifiucmplt
-   TR::TreeEvaluator::unsignedIntegerIfCmpgeEvaluator,                 // TR::ifiucmpge
-   TR::TreeEvaluator::unsignedIntegerIfCmpgtEvaluator,                 // TR::ifiucmpgt
-   TR::TreeEvaluator::unsignedIntegerIfCmpleEvaluator,                 // TR::ifiucmple
-   TR::TreeEvaluator::integerIfCmpeqEvaluator,                         // TR::iflcmpeq
-   TR::TreeEvaluator::integerIfCmpneEvaluator,                         // TR::iflcmpne
-   TR::TreeEvaluator::integerIfCmpltEvaluator,                         // TR::iflcmplt
-   TR::TreeEvaluator::integerIfCmpgeEvaluator,                         // TR::iflcmpge
-   TR::TreeEvaluator::integerIfCmpgtEvaluator,                         // TR::iflcmpgt
-   TR::TreeEvaluator::integerIfCmpleEvaluator,                         // TR::iflcmple
-   TR::TreeEvaluator::unsignedIntegerIfCmpltEvaluator,                 // TR::iflucmplt
-   TR::TreeEvaluator::unsignedIntegerIfCmpgeEvaluator,                 // TR::iflucmpge
-   TR::TreeEvaluator::unsignedIntegerIfCmpgtEvaluator,                 // TR::iflucmpgt
-   TR::TreeEvaluator::unsignedIntegerIfCmpleEvaluator,                 // TR::iflucmple
-   TR::TreeEvaluator::compareFloatAndBranchEvaluator,                  // TR::iffcmpeq
-   TR::TreeEvaluator::compareFloatAndBranchEvaluator,                  // TR::iffcmpne
-   TR::TreeEvaluator::compareFloatAndBranchEvaluator,                  // TR::iffcmplt
-   TR::TreeEvaluator::compareFloatAndBranchEvaluator,                  // TR::iffcmpge
-   TR::TreeEvaluator::compareFloatAndBranchEvaluator,                  // TR::iffcmpgt
-   TR::TreeEvaluator::compareFloatAndBranchEvaluator,                  // TR::iffcmple
-   TR::TreeEvaluator::compareFloatAndBranchEvaluator,                  // TR::iffcmpequ
-   TR::TreeEvaluator::compareFloatAndBranchEvaluator,                  // TR::iffcmpneu
-   TR::TreeEvaluator::compareFloatAndBranchEvaluator,                  // TR::iffcmpltu
-   TR::TreeEvaluator::compareFloatAndBranchEvaluator,                  // TR::iffcmpgeu
-   TR::TreeEvaluator::compareFloatAndBranchEvaluator,                  // TR::iffcmpgtu
-   TR::TreeEvaluator::compareFloatAndBranchEvaluator,                  // TR::iffcmpleu
-   TR::TreeEvaluator::compareDoubleAndBranchEvaluator,                 // TR::ifdcmpeq
-   TR::TreeEvaluator::compareDoubleAndBranchEvaluator,                 // TR::ifdcmpne
-   TR::TreeEvaluator::compareDoubleAndBranchEvaluator,                 // TR::ifdcmplt
-   TR::TreeEvaluator::compareDoubleAndBranchEvaluator,                 // TR::ifdcmpge
-   TR::TreeEvaluator::compareDoubleAndBranchEvaluator,                 // TR::ifdcmpgt
-   TR::TreeEvaluator::compareDoubleAndBranchEvaluator,                 // TR::ifdcmple
-   TR::TreeEvaluator::compareDoubleAndBranchEvaluator,                 // TR::ifdcmpequ
-   TR::TreeEvaluator::compareDoubleAndBranchEvaluator,                 // TR::ifdcmpneu
-   TR::TreeEvaluator::compareDoubleAndBranchEvaluator,                 // TR::ifdcmpltu
-   TR::TreeEvaluator::compareDoubleAndBranchEvaluator,                 // TR::ifdcmpgeu
-   TR::TreeEvaluator::compareDoubleAndBranchEvaluator,                 // TR::ifdcmpgtu
-   TR::TreeEvaluator::compareDoubleAndBranchEvaluator,                 // TR::ifdcmpleu
-   TR::TreeEvaluator::integerIfCmpeqEvaluator,                         // TR::ifacmpeq
-   TR::TreeEvaluator::integerIfCmpneEvaluator,                         // TR::ifacmpne
-   TR::TreeEvaluator::unsignedIntegerIfCmpltEvaluator,                 // TR::ifacmplt
-   TR::TreeEvaluator::unsignedIntegerIfCmpgeEvaluator,                 // TR::ifacmpge
-   TR::TreeEvaluator::unsignedIntegerIfCmpgtEvaluator,                 // TR::ifacmpgt
-   TR::TreeEvaluator::unsignedIntegerIfCmpleEvaluator,                 // TR::ifacmple
-   TR::TreeEvaluator::ifbcmpeqEvaluator,                               // TR::ifbcmpeq
-   TR::TreeEvaluator::ifbcmpeqEvaluator,                               // TR::ifbcmpne
-   TR::TreeEvaluator::ifbcmpltEvaluator,                               // TR::ifbcmplt
-   TR::TreeEvaluator::ifbcmpgeEvaluator,                               // TR::ifbcmpge
-   TR::TreeEvaluator::ifbcmpgtEvaluator,                               // TR::ifbcmpgt
-   TR::TreeEvaluator::ifbcmpleEvaluator,                               // TR::ifbcmple
-   TR::TreeEvaluator::ifbucmpltEvaluator,                              // TR::ifbucmplt
-   TR::TreeEvaluator::ifbucmpgeEvaluator,                              // TR::ifbucmpge
-   TR::TreeEvaluator::ifbucmpgtEvaluator,                              // TR::ifbucmpgt
-   TR::TreeEvaluator::ifbucmpleEvaluator,                              // TR::ifbucmple
-   TR::TreeEvaluator::ifscmpeqEvaluator,                               // TR::ifscmpeq
-   TR::TreeEvaluator::ifscmpeqEvaluator,                               // TR::ifscmpne
-   TR::TreeEvaluator::ifscmpltEvaluator,                               // TR::ifscmplt
-   TR::TreeEvaluator::ifscmpgeEvaluator,                               // TR::ifscmpge
-   TR::TreeEvaluator::ifscmpgtEvaluator,                               // TR::ifscmpgt
-   TR::TreeEvaluator::ifscmpleEvaluator,                               // TR::ifscmple
-   TR::TreeEvaluator::ifsucmpltEvaluator,                              // TR::ifsucmplt
-   TR::TreeEvaluator::ifsucmpgeEvaluator,                              // TR::ifsucmpge
-   TR::TreeEvaluator::ifsucmpgtEvaluator,                              // TR::ifsucmpgt
-   TR::TreeEvaluator::ifsucmpleEvaluator,                              // TR::ifsucmple
-   TR::TreeEvaluator::loadaddrEvaluator,                               // TR::loadaddr
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::ZEROCHK (J9)
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::callIf
-   TR::TreeEvaluator::integerRegLoadEvaluator,                         // TR::iRegLoad
-   TR::TreeEvaluator::aRegLoadEvaluator,                               // TR::aRegLoad
-   TR::TreeEvaluator::integerRegLoadEvaluator,                         // TR::lRegLoad <- (Uses iRegLoad intentionally)
-   TR::TreeEvaluator::fRegLoadEvaluator,                               // TR::fRegLoad
-   TR::TreeEvaluator::dRegLoadEvaluator,                               // TR::dRegLoad
-   TR::TreeEvaluator::integerRegLoadEvaluator,                         // TR::sRegLoad
-   TR::TreeEvaluator::integerRegLoadEvaluator,                         // TR::bRegLoad
-   TR::TreeEvaluator::iRegStoreEvaluator,                              // TR::iRegStore
-   TR::TreeEvaluator::iRegStoreEvaluator,                              // TR::aRegStore
-   TR::TreeEvaluator::lRegStoreEvaluator,                              // TR::lRegStore
-   TR::TreeEvaluator::fRegStoreEvaluator,                              // TR::fRegStore
-   TR::TreeEvaluator::dRegStoreEvaluator,                              // TR::dRegStore
-   TR::TreeEvaluator::iRegStoreEvaluator,                              // TR::sRegStore
-   TR::TreeEvaluator::iRegStoreEvaluator,                              // TR::bRegStore
-   TR::TreeEvaluator::GlRegDepsEvaluator,                              // TR::GlRegDeps
-   TR::TreeEvaluator::iselectEvaluator,                                // TR::iselect
-   TR::TreeEvaluator::iselectEvaluator,                                // TR::lselect
-   TR::TreeEvaluator::iselectEvaluator,                                // TR::bselect
-   TR::TreeEvaluator::iselectEvaluator,                                // TR::sselect
-   TR::TreeEvaluator::iselectEvaluator,                                // TR::aselect
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::fselect
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::dselect
-   TR::TreeEvaluator::treetopEvaluator,                                // TR::treetop
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::MethodEnterHook (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::MethodExitHook (J9)
-   TR::TreeEvaluator::passThroughEvaluator,                            // TR::PassThrough
-   TR::TreeEvaluator::compressedRefsEvaluator,                         // TR::compressedRefs
-   TR::TreeEvaluator::BBStartEvaluator,                                // TR::BBStart
-   TR::TreeEvaluator::BBEndEvaluator,                                  // TR::BBEnd
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::virem
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vimin
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vimax
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vigetelem
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::visetelem
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vimergel
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vimergeh
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpeq
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpgt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpge
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmplt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmple
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpalleq
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpallne
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpallgt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpallge
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpalllt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpallle
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpanyeq
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpanyne
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpanygt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpanyge
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpanylt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vicmpanyle
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vnot
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vbitselect
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vperm
-   TR::TreeEvaluator::SIMDsplatsEvaluator,                             // TR::vsplats
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdmergel
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdmergeh
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdsetelem
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdgetelem
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdsel
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdrem
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdmadd
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdnmsub
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdmsub
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdmax
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdmin
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmpeq
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmpne
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmpgt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmpge
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmplt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmple
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmpalleq
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmpallne
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmpallgt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmpallge
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmpalllt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmpallle
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmpanyeq
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmpanyne
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmpanygt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmpanyge
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmpanylt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdcmpanyle
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdsqrt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdlog
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vinc
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vdec
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vneg
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vcom
-   TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vadd
-   TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vsub
-   TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vmul
-   TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vdiv
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vrem
-   TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vand
-   TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vor
-   TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vxor
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vshl
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vushr
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vshr
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vcmpeq
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vcmpne
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vcmplt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vucmplt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vcmpgt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vucmpgt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vcmple
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vucmple
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vcmpge
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vucmpge
-   TR::TreeEvaluator::SIMDloadEvaluator,                               // TR::vload
-   TR::TreeEvaluator::SIMDloadEvaluator,                               // TR::vloadi
-   TR::TreeEvaluator::SIMDstoreEvaluator,                              // TR::vstore
-   TR::TreeEvaluator::SIMDstoreEvaluator,                              // TR::vstorei
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vrand
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vreturn
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vcall
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vcalli
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vselect
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::v2v
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vl2vd
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vconst
-   TR::TreeEvaluator::SIMDgetvelemEvaluator,                           // TR::getvelem
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::vsetelem
-   TR::TreeEvaluator::SIMDRegLoadEvaluator,                            // TR::vbRegLoad
-   TR::TreeEvaluator::SIMDRegLoadEvaluator,                            // TR::vsRegLoad
-   TR::TreeEvaluator::SIMDRegLoadEvaluator,                            // TR::viRegLoad
-   TR::TreeEvaluator::SIMDRegLoadEvaluator,                            // TR::vlRegLoad
-   TR::TreeEvaluator::SIMDRegLoadEvaluator,                            // TR::vfRegLoad
-   TR::TreeEvaluator::SIMDRegLoadEvaluator,                            // TR::vdRegLoad
-   TR::TreeEvaluator::SIMDRegStoreEvaluator,                           // TR::vbRegStore
-   TR::TreeEvaluator::SIMDRegStoreEvaluator,                           // TR::vsRegStore
-   TR::TreeEvaluator::SIMDRegStoreEvaluator,                           // TR::viRegStore
-   TR::TreeEvaluator::SIMDRegStoreEvaluator,                           // TR::vlRegStore
-   TR::TreeEvaluator::SIMDRegStoreEvaluator,                           // TR::vfRegStore
-   TR::TreeEvaluator::SIMDRegStoreEvaluator,                           // TR::vdRegStore
-/*
- *END OF OPCODES REQUIRED BY OMR
- */
-   TR::TreeEvaluator::iloadEvaluator,                                  // TR::iuload
-   TR::TreeEvaluator::lloadEvaluator,                                  // TR::luload
-   TR::TreeEvaluator::bloadEvaluator,                                  // TR::buload
-   TR::TreeEvaluator::iloadEvaluator,                                  // TR::iuloadi
-   TR::TreeEvaluator::lloadEvaluator,                                  // TR::luloadi
-   TR::TreeEvaluator::bloadEvaluator,                                  // TR::buloadi
-   TR::TreeEvaluator::istoreEvaluator,                                 // TR::iustore
-   TR::TreeEvaluator::lstoreEvaluator,                                 // TR::lustore
-   TR::TreeEvaluator::bstoreEvaluator,                                 // TR::bustore
-   TR::TreeEvaluator::istoreEvaluator,                                 // TR::iustorei
-   TR::TreeEvaluator::lstoreEvaluator,                                 // TR::lustorei
-   TR::TreeEvaluator::bstoreEvaluator,                                 // TR::bustorei
-   TR::TreeEvaluator::integerAddEvaluator,                             // TR::iuadd
-   TR::TreeEvaluator::integerAddEvaluator,                             // TR::luadd
-   TR::TreeEvaluator::baddEvaluator,                                   // TR::buadd
-   TR::TreeEvaluator::integerSubEvaluator,                             // TR::iusub
-   TR::TreeEvaluator::integerSubEvaluator,                             // TR::lusub
-   TR::TreeEvaluator::bsubEvaluator,                                   // TR::busub
-   TR::TreeEvaluator::integerNegEvaluator,                             // TR::iuneg
-   TR::TreeEvaluator::integerNegEvaluator,                             // TR::luneg
-   TR::TreeEvaluator::f2iEvaluator,                                    // TR::f2iu
-   TR::TreeEvaluator::f2iEvaluator,                                    // TR::f2lu <- (Uses f2i intentionally)
-   TR::TreeEvaluator::f2bEvaluator,                                    // TR::f2bu
-   TR::TreeEvaluator::f2cEvaluator,                                    // TR::f2c
-   TR::TreeEvaluator::f2iEvaluator,                                    // TR::d2iu <- (Uses f2i intentionally)
-   TR::TreeEvaluator::f2iEvaluator,                                    // TR::d2lu <- (Uses f2i intentionally)
-   TR::TreeEvaluator::d2bEvaluator,                                    // TR::d2bu
-   TR::TreeEvaluator::d2cEvaluator,                                    // TR::d2c
-   TR::TreeEvaluator::integerRegLoadEvaluator,                         // TR::iuRegLoad
-   TR::TreeEvaluator::integerRegLoadEvaluator,                         // TR::luRegLoad <- (Uses iRegLoad intentionally)
-   TR::TreeEvaluator::iRegStoreEvaluator,                              // TR::iuRegStore
-   TR::TreeEvaluator::lRegStoreEvaluator,                              // TR::luRegStore
-   TR::TreeEvaluator::sloadEvaluator,                                  // TR::cload
-   TR::TreeEvaluator::sloadEvaluator,                                  // TR::cloadi
-   TR::TreeEvaluator::cstoreEvaluator,                                 // TR::cstore
-   TR::TreeEvaluator::cstoreEvaluator,                                 // TR::cstorei
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::monent (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::monexit (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::monexitfence (J9)
-   TR::TreeEvaluator::tstartEvaluator,                                 // TR::tstart
-   TR::TreeEvaluator::tfinishEvaluator,                                // TR::tfinish
-   TR::TreeEvaluator::tabortEvaluator,                                 // TR::tabort
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::instanceof (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::checkcast (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::checkcastAndNULLCHK (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::New (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::newvalue  (should be lowered before evaluation)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::newarray (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::anewarray (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::variableNew (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::variableNewArray (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::multianewarray (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::arraylength (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::contigarraylength (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::discontigarraylength (J9)
-   TR::TreeEvaluator::indirectCallEvaluator,                           // TR::icalli
-   TR::TreeEvaluator::indirectCallEvaluator,                           // TR::lcalli
-   TR::TreeEvaluator::indirectCallEvaluator,                           // TR::fcalli
-   TR::TreeEvaluator::indirectCallEvaluator,                           // TR::dcalli
-   TR::TreeEvaluator::indirectCallEvaluator,                           // TR::acalli
-   TR::TreeEvaluator::indirectCallEvaluator,                           // TR::calli
-   TR::TreeEvaluator::fenceEvaluator,                                  // TR::fence
-   TR::TreeEvaluator::integerAddEvaluator,                             // TR::luaddh
-   TR::TreeEvaluator::caddEvaluator,                                   // TR::cadd
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::aiadd
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::aiuadd
-   TR::TreeEvaluator::integerAddEvaluator,                             // TR::aladd
-   TR::TreeEvaluator::integerAddEvaluator,                             // TR::aluadd
-   TR::TreeEvaluator::integerSubEvaluator,                             // TR::lusubh
-   TR::TreeEvaluator::csubEvaluator,                                   // TR::csub
-   TR::TreeEvaluator::integerMulhEvaluator,                            // TR::imulh
-   TR::TreeEvaluator::integerMulhEvaluator,                            // TR::iumulh
-   TR::TreeEvaluator::integerMulhEvaluator,                            // TR::lmulh
-   TR::TreeEvaluator::integerMulhEvaluator,                            // TR::lumulh
-   TR::TreeEvaluator::ibits2fEvaluator,                                // TR::ibits2f
-   TR::TreeEvaluator::fbits2iEvaluator,                                // TR::fbits2i
-   TR::TreeEvaluator::lbits2dEvaluator,                                // TR::lbits2d
-   TR::TreeEvaluator::dbits2lEvaluator,                                // TR::dbits2l
-   TR::TreeEvaluator::lookupEvaluator,                                 // TR::lookup (J9)
-   TR::TreeEvaluator::NOPEvaluator,                                    // TR::trtLookup
-   TR::TreeEvaluator::NOPEvaluator,                                    // TR::Case
-   TR::TreeEvaluator::tableEvaluator,                                  // TR::table (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::exceptionRangeFence (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::dbgFence (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::NULLCHK (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::ResolveCHK (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::ResolveAndNULLCHK (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::DIVCHK (J9)
-   TR::TreeEvaluator::overflowCHKEvaluator,                            // TR::OverflowCHK
-   TR::TreeEvaluator::overflowCHKEvaluator,                            // TR::UnsignedOverflowCHK
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::BNDCHK (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::ArrayCopyBNDCHK (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::BNDCHKwithSpineCHK (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::SpineCHK (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::ArrayStoreCHK (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::ArrayCHK (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::Ret
-   TR::TreeEvaluator::arraycopyEvaluator,                              // TR::arraycopy
-   TR::TreeEvaluator::arraysetEvaluator,                               // TR::arrayset
-   TR::TreeEvaluator::arraytranslateEvaluator,                         // TR::arraytranslate
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::arraytranslateAndTest
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::long2String
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::bitOpMem
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::bitOpMemND
-   TR::TreeEvaluator::arraycmpEvaluator,                               // TR::arraycmp
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::arraycmpWithPad
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::allocationFence (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::loadFence (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::storeFence (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::fullFence (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::MergeNew (J9)
-   TR::TreeEvaluator::computeCCEvaluator,                              // TR::computeCC
-   TR::TreeEvaluator::butestEvaluator,                                 // TR::butest (zPDT)
-   TR::TreeEvaluator::sutestEvaluator,                                 // TR::sutest (zPDT)
-   TR::TreeEvaluator::bucmpEvaluator,                                  // TR::bucmp (zPDT)
-   TR::TreeEvaluator::bcmpEvaluator,                                   // TR::bcmp (zPDT)
-   TR::TreeEvaluator::sucmpEvaluator,                                  // TR::sucmp (zPDT)
-   TR::TreeEvaluator::scmpEvaluator,                                   // TR::scmp (zPDT)
-   TR::TreeEvaluator::iucmpEvaluator,                                  // TR::iucmp (zPDT)
-   TR::TreeEvaluator::icmpEvaluator,                                   // TR::icmp (zPDT)
-   TR::TreeEvaluator::iucmpEvaluator,                                  // TR::lucmp
-   TR::TreeEvaluator::ifxcmpoEvaluator,                                // TR::ificmpo
-   TR::TreeEvaluator::ifxcmpoEvaluator,                                // TR::ificmpno
-   TR::TreeEvaluator::ifxcmpoEvaluator,                                // TR::iflcmpo
-   TR::TreeEvaluator::ifxcmpoEvaluator,                                // TR::iflcmpno
-   TR::TreeEvaluator::ifxcmpoEvaluator,                                // TR::ificmno
-   TR::TreeEvaluator::ifxcmpoEvaluator,                                // TR::ificmnno
-   TR::TreeEvaluator::ifxcmpoEvaluator,                                // TR::iflcmno
-   TR::TreeEvaluator::ifxcmpoEvaluator,                                // TR::iflcmnno
-   TR::TreeEvaluator::integerAddEvaluator,                             // TR::iuaddc
-   TR::TreeEvaluator::integerAddEvaluator,                             // TR::luaddc
-   TR::TreeEvaluator::integerSubEvaluator,                             // TR::iusubb
-   TR::TreeEvaluator::integerSubEvaluator,                             // TR::lusubb
-   TR::TreeEvaluator::icmpsetEvaluator,                                // TR::icmpset
-   TR::TreeEvaluator::icmpsetEvaluator,                                // TR::lcmpset
-   TR::TreeEvaluator::bztestnsetEvaluator,                             // TR::bztestnset
-   TR::TreeEvaluator::atomicorEvaluator,                               // TR::ibatomicor
-   TR::TreeEvaluator::atomicorEvaluator,                               // TR::isatomicor
-   TR::TreeEvaluator::atomicorEvaluator,                               // TR::iiatomicor
-   TR::TreeEvaluator::atomicorEvaluator,                               // TR::ilatomicor
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dexp
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::branch
-   TR::TreeEvaluator::igotoEvaluator,                                  // TR::igoto
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::bexp
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::buexp
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::sexp
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::cexp
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::iexp
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::iuexp
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::lexp
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::luexp
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::fexp
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::fuexp
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::duexp
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::ixfrs
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::lxfrs
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::fxfrs
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dxfrs
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::fint
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dint
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::fnint
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dnint
-   TR::TreeEvaluator::fpSqrtEvaluator,                                 // TR::fsqrt
-   TR::TreeEvaluator::dsqrtEvaluator,                                  // TR::dsqrt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::getstack
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dealloca
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::idoz
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dcos
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dsin
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dtan
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dcosh
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dsinh
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dtanh
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dacos
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dasin
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::datan
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::datan2
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dlog
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dfloor
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::ffloor
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dceil
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::fceil
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::ibranch
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::mbranch
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::getpm
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::setpm
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::loadAutoOffset
-   TR::TreeEvaluator::minmaxEvaluator,                                 // TR::imax
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::iumax
-   TR::TreeEvaluator::minmaxEvaluator,                                 // TR::lmax
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::lumax
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::fmax
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dmax
-   TR::TreeEvaluator::minmaxEvaluator,                                 // TR::imin
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::iumin
-   TR::TreeEvaluator::minmaxEvaluator,                                 // TR::lmin
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::lumin
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::fmin
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::dmin
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::trt
-   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::trtSimple
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::ihbit (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::ilbit (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::inolz (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::inotz (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::ipopcnt (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::lhbit (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::llbit (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::lnolz (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::lnotz (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                                // TR::lpopcnt (J9)
-   TR::TreeEvaluator::sbyteswapEvaluator,                              // TR::sbyteswap
-   TR::TreeEvaluator::ibyteswapEvaluator,                              // TR::ibyteswap
-   TR::TreeEvaluator::ibyteswapEvaluator,                              // TR::lbyteswap
-   TR::TreeEvaluator::bitpermuteEvaluator,                             // TR::bbitpermute
-   TR::TreeEvaluator::bitpermuteEvaluator,                             // TR::sbitpermute
-   TR::TreeEvaluator::bitpermuteEvaluator,                             // TR::ibitpermute
-   TR::TreeEvaluator::bitpermuteEvaluator,                             // TR::lbitpermute
-   TR::TreeEvaluator::PrefetchEvaluator,                               // TR::Prefetch
+#define _BadILOpEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _aconstEvaluator TR::TreeEvaluator::aconstEvaluator
+#define _iconstEvaluator TR::TreeEvaluator::iconstEvaluator
+#define _lconstEvaluator TR::TreeEvaluator::lconstEvaluator
+#define _fconstEvaluator TR::TreeEvaluator::fconstEvaluator
+#define _dconstEvaluator TR::TreeEvaluator::dconstEvaluator
+#define _bconstEvaluator TR::TreeEvaluator::bconstEvaluator
+#define _sconstEvaluator TR::TreeEvaluator::sconstEvaluator
+#define _iloadEvaluator TR::TreeEvaluator::iloadEvaluator
+#define _floadEvaluator TR::TreeEvaluator::floadEvaluator
+#define _dloadEvaluator TR::TreeEvaluator::dloadEvaluator
+#define _aloadEvaluator TR::TreeEvaluator::aloadEvaluator
+#define _bloadEvaluator TR::TreeEvaluator::bloadEvaluator
+#define _sloadEvaluator TR::TreeEvaluator::sloadEvaluator
+#define _lloadEvaluator TR::TreeEvaluator::lloadEvaluator
+#define _irdbarEvaluator TR::TreeEvaluator::irdbarEvaluator
+#define _frdbarEvaluator TR::TreeEvaluator::frdbarEvaluator
+#define _drdbarEvaluator TR::TreeEvaluator::drdbarEvaluator
+#define _ardbarEvaluator TR::TreeEvaluator::ardbarEvaluator
+#define _brdbarEvaluator TR::TreeEvaluator::brdbarEvaluator
+#define _srdbarEvaluator TR::TreeEvaluator::srdbarEvaluator
+#define _lrdbarEvaluator TR::TreeEvaluator::lrdbarEvaluator
+#define _iloadiEvaluator TR::TreeEvaluator::iloadEvaluator
+#define _floadiEvaluator TR::TreeEvaluator::floadEvaluator
+#define _dloadiEvaluator TR::TreeEvaluator::dloadEvaluator
+#define _aloadiEvaluator TR::TreeEvaluator::aloadEvaluator
+#define _bloadiEvaluator TR::TreeEvaluator::bloadEvaluator
+#define _sloadiEvaluator TR::TreeEvaluator::sloadEvaluator
+#define _lloadiEvaluator TR::TreeEvaluator::lloadEvaluator
+#define _irdbariEvaluator TR::TreeEvaluator::irdbariEvaluator
+#define _frdbariEvaluator TR::TreeEvaluator::frdbariEvaluator
+#define _drdbariEvaluator TR::TreeEvaluator::drdbariEvaluator
+#define _ardbariEvaluator TR::TreeEvaluator::ardbariEvaluator
+#define _brdbariEvaluator TR::TreeEvaluator::brdbariEvaluator
+#define _srdbariEvaluator TR::TreeEvaluator::srdbariEvaluator
+#define _lrdbariEvaluator TR::TreeEvaluator::lrdbariEvaluator
+#define _istoreEvaluator TR::TreeEvaluator::istoreEvaluator
+#define _lstoreEvaluator TR::TreeEvaluator::lstoreEvaluator
+#define _fstoreEvaluator TR::TreeEvaluator::floatingPointStoreEvaluator
+#define _dstoreEvaluator TR::TreeEvaluator::floatingPointStoreEvaluator
+#define _astoreEvaluator TR::TreeEvaluator::lstoreEvaluator
+#define _bstoreEvaluator TR::TreeEvaluator::bstoreEvaluator
+#define _sstoreEvaluator TR::TreeEvaluator::sstoreEvaluator
+#define _iwrtbarEvaluator TR::TreeEvaluator::iwrtbarEvaluator
+#define _lwrtbarEvaluator TR::TreeEvaluator::lwrtbarEvaluator
+#define _fwrtbarEvaluator TR::TreeEvaluator::fwrtbarEvaluator
+#define _dwrtbarEvaluator TR::TreeEvaluator::dwrtbarEvaluator
+#define _awrtbarEvaluator TR::TreeEvaluator::awrtbarEvaluator
+#define _bwrtbarEvaluator TR::TreeEvaluator::bwrtbarEvaluator
+#define _swrtbarEvaluator TR::TreeEvaluator::swrtbarEvaluator
+#define _lstoreiEvaluator TR::TreeEvaluator::lstoreEvaluator
+#define _fstoreiEvaluator TR::TreeEvaluator::floatingPointStoreEvaluator
+#define _dstoreiEvaluator TR::TreeEvaluator::floatingPointStoreEvaluator
+#define _astoreiEvaluator TR::TreeEvaluator::lstoreEvaluator
+#define _bstoreiEvaluator TR::TreeEvaluator::bstoreEvaluator
+#define _sstoreiEvaluator TR::TreeEvaluator::sstoreEvaluator
+#define _istoreiEvaluator TR::TreeEvaluator::istoreEvaluator
+#define _lwrtbariEvaluator TR::TreeEvaluator::lwrtbariEvaluator
+#define _fwrtbariEvaluator TR::TreeEvaluator::fwrtbariEvaluator
+#define _dwrtbariEvaluator TR::TreeEvaluator::dwrtbariEvaluator
+#define _awrtbariEvaluator TR::TreeEvaluator::awrtbariEvaluator
+#define _bwrtbariEvaluator TR::TreeEvaluator::bwrtbariEvaluator
+#define _swrtbariEvaluator TR::TreeEvaluator::swrtbariEvaluator
+#define _iwrtbariEvaluator TR::TreeEvaluator::iwrtbariEvaluator
+#define _GotoEvaluator TR::TreeEvaluator::gotoEvaluator
+#define _ireturnEvaluator TR::TreeEvaluator::integerReturnEvaluator
+#define _lreturnEvaluator TR::TreeEvaluator::integerReturnEvaluator
+#define _freturnEvaluator TR::TreeEvaluator::fpReturnEvaluator
+#define _dreturnEvaluator TR::TreeEvaluator::fpReturnEvaluator
+#define _areturnEvaluator TR::TreeEvaluator::integerReturnEvaluator
+#define _ReturnEvaluator TR::TreeEvaluator::returnEvaluator
+#define _asynccheckEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _athrowEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _icallEvaluator TR::TreeEvaluator::directCallEvaluator
+#define _lcallEvaluator TR::TreeEvaluator::directCallEvaluator
+#define _fcallEvaluator TR::TreeEvaluator::directCallEvaluator
+#define _dcallEvaluator TR::TreeEvaluator::directCallEvaluator
+#define _acallEvaluator TR::TreeEvaluator::directCallEvaluator
+#define _callEvaluator TR::TreeEvaluator::directCallEvaluator
+#define _iaddEvaluator TR::TreeEvaluator::integerAddEvaluator
+#define _laddEvaluator TR::TreeEvaluator::integerAddEvaluator
+#define _faddEvaluator TR::TreeEvaluator::faddEvaluator
+#define _daddEvaluator TR::TreeEvaluator::daddEvaluator
+#define _baddEvaluator TR::TreeEvaluator::baddEvaluator
+#define _saddEvaluator TR::TreeEvaluator::saddEvaluator
+#define _isubEvaluator TR::TreeEvaluator::integerSubEvaluator
+#define _lsubEvaluator TR::TreeEvaluator::integerSubEvaluator
+#define _fsubEvaluator TR::TreeEvaluator::fsubEvaluator
+#define _dsubEvaluator TR::TreeEvaluator::dsubEvaluator
+#define _bsubEvaluator TR::TreeEvaluator::bsubEvaluator
+#define _ssubEvaluator TR::TreeEvaluator::ssubEvaluator
+#define _asubEvaluator TR::TreeEvaluator::integerSubEvaluator
+#define _imulEvaluator TR::TreeEvaluator::integerMulEvaluator
+#define _lmulEvaluator TR::TreeEvaluator::integerMulEvaluator
+#define _fmulEvaluator TR::TreeEvaluator::fmulEvaluator
+#define _dmulEvaluator TR::TreeEvaluator::dmulEvaluator
+#define _bmulEvaluator TR::TreeEvaluator::integerMulEvaluator
+#define _smulEvaluator TR::TreeEvaluator::integerMulEvaluator
+#define _idivEvaluator TR::TreeEvaluator::integerDivOrRemEvaluator
+#define _ldivEvaluator TR::TreeEvaluator::integerDivOrRemEvaluator
+#define _fdivEvaluator TR::TreeEvaluator::fdivEvaluator
+#define _ddivEvaluator TR::TreeEvaluator::ddivEvaluator
+#define _bdivEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _sdivEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _iudivEvaluator TR::TreeEvaluator::integerDivOrRemEvaluator
+#define _ludivEvaluator TR::TreeEvaluator::integerDivOrRemEvaluator
+#define _iremEvaluator TR::TreeEvaluator::integerDivOrRemEvaluator
+#define _lremEvaluator TR::TreeEvaluator::integerDivOrRemEvaluator
+#define _fremEvaluator TR::TreeEvaluator::fpRemEvaluator
+#define _dremEvaluator TR::TreeEvaluator::fpRemEvaluator
+#define _bremEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _sremEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _iuremEvaluator TR::TreeEvaluator::integerDivOrRemEvaluator
+#define _inegEvaluator TR::TreeEvaluator::integerNegEvaluator
+#define _lnegEvaluator TR::TreeEvaluator::integerNegEvaluator
+#define _fnegEvaluator TR::TreeEvaluator::fpUnaryMaskEvaluator
+#define _dnegEvaluator TR::TreeEvaluator::fpUnaryMaskEvaluator
+#define _bnegEvaluator TR::TreeEvaluator::bnegEvaluator
+#define _snegEvaluator TR::TreeEvaluator::snegEvaluator
+#define _iabsEvaluator TR::TreeEvaluator::integerAbsEvaluator
+#define _labsEvaluator TR::TreeEvaluator::integerAbsEvaluator
+#define _fabsEvaluator TR::TreeEvaluator::fpUnaryMaskEvaluator
+#define _dabsEvaluator TR::TreeEvaluator::fpUnaryMaskEvaluator
+#define _ishlEvaluator TR::TreeEvaluator::integerShlEvaluator
+#define _lshlEvaluator TR::TreeEvaluator::integerShlEvaluator
+#define _bshlEvaluator TR::TreeEvaluator::bshlEvaluator
+#define _sshlEvaluator TR::TreeEvaluator::sshlEvaluator
+#define _ishrEvaluator TR::TreeEvaluator::integerShrEvaluator
+#define _lshrEvaluator TR::TreeEvaluator::integerShrEvaluator
+#define _bshrEvaluator TR::TreeEvaluator::bshrEvaluator
+#define _sshrEvaluator TR::TreeEvaluator::sshrEvaluator
+#define _iushrEvaluator TR::TreeEvaluator::integerUshrEvaluator
+#define _lushrEvaluator TR::TreeEvaluator::integerUshrEvaluator
+#define _bushrEvaluator TR::TreeEvaluator::bushrEvaluator
+#define _sushrEvaluator TR::TreeEvaluator::sushrEvaluator
+#define _irolEvaluator TR::TreeEvaluator::integerRolEvaluator
+#define _lrolEvaluator TR::TreeEvaluator::integerRolEvaluator
+#define _iandEvaluator TR::TreeEvaluator::iandEvaluator
+#define _landEvaluator TR::TreeEvaluator::landEvaluator
+#define _bandEvaluator TR::TreeEvaluator::bandEvaluator
+#define _sandEvaluator TR::TreeEvaluator::sandEvaluator
+#define _iorEvaluator TR::TreeEvaluator::iorEvaluator
+#define _lorEvaluator TR::TreeEvaluator::lorEvaluator
+#define _borEvaluator TR::TreeEvaluator::borEvaluator
+#define _sorEvaluator TR::TreeEvaluator::sorEvaluator
+#define _ixorEvaluator TR::TreeEvaluator::ixorEvaluator
+#define _lxorEvaluator TR::TreeEvaluator::lxorEvaluator
+#define _bxorEvaluator TR::TreeEvaluator::bxorEvaluator
+#define _sxorEvaluator TR::TreeEvaluator::sxorEvaluator
+#define _i2lEvaluator TR::TreeEvaluator::i2lEvaluator
+#define _i2fEvaluator TR::TreeEvaluator::i2fEvaluator
+#define _i2dEvaluator TR::TreeEvaluator::i2dEvaluator
+#define _i2bEvaluator TR::TreeEvaluator::i2bEvaluator
+#define _i2sEvaluator TR::TreeEvaluator::i2bEvaluator
+#define _i2aEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _iu2lEvaluator TR::TreeEvaluator::iu2lEvaluator
+#define _iu2fEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _iu2dEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _iu2aEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _l2iEvaluator TR::TreeEvaluator::l2iEvaluator
+#define _l2fEvaluator TR::TreeEvaluator::l2fEvaluator
+#define _l2dEvaluator TR::TreeEvaluator::l2dEvaluator
+#define _l2bEvaluator TR::TreeEvaluator::l2iEvaluator
+#define _l2sEvaluator TR::TreeEvaluator::l2iEvaluator
+#define _l2aEvaluator TR::TreeEvaluator::l2aEvaluator
+#define _lu2fEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _lu2dEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _lu2aEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _f2iEvaluator TR::TreeEvaluator::f2iEvaluator
+#define _f2lEvaluator TR::TreeEvaluator::f2iEvaluator
+#define _f2dEvaluator TR::TreeEvaluator::f2dEvaluator
+#define _f2bEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _f2sEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _d2iEvaluator TR::TreeEvaluator::f2iEvaluator
+#define _d2lEvaluator TR::TreeEvaluator::f2iEvaluator
+#define _d2fEvaluator TR::TreeEvaluator::d2fEvaluator
+#define _d2bEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _d2sEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _b2iEvaluator TR::TreeEvaluator::b2iEvaluator
+#define _b2lEvaluator TR::TreeEvaluator::b2lEvaluator
+#define _b2fEvaluator TR::TreeEvaluator::i2fEvaluator
+#define _b2dEvaluator TR::TreeEvaluator::i2dEvaluator
+#define _b2sEvaluator TR::TreeEvaluator::b2sEvaluator
+#define _b2aEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _bu2iEvaluator TR::TreeEvaluator::bu2iEvaluator
+#define _bu2lEvaluator TR::TreeEvaluator::bu2lEvaluator
+#define _bu2fEvaluator TR::TreeEvaluator::i2fEvaluator
+#define _bu2dEvaluator TR::TreeEvaluator::i2dEvaluator
+#define _bu2sEvaluator TR::TreeEvaluator::bu2sEvaluator
+#define _bu2aEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _s2iEvaluator TR::TreeEvaluator::s2iEvaluator
+#define _s2lEvaluator TR::TreeEvaluator::s2lEvaluator
+#define _s2fEvaluator TR::TreeEvaluator::i2fEvaluator
+#define _s2dEvaluator TR::TreeEvaluator::i2dEvaluator
+#define _s2bEvaluator TR::TreeEvaluator::i2bEvaluator
+#define _s2aEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _su2iEvaluator TR::TreeEvaluator::su2iEvaluator
+#define _su2lEvaluator TR::TreeEvaluator::su2lEvaluator
+#define _su2fEvaluator TR::TreeEvaluator::i2fEvaluator
+#define _su2dEvaluator TR::TreeEvaluator::i2dEvaluator
+#define _su2aEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _a2iEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _a2lEvaluator TR::TreeEvaluator::a2lEvaluator
+#define _a2bEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _a2sEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _icmpeqEvaluator TR::TreeEvaluator::integerCmpeqEvaluator
+#define _icmpneEvaluator TR::TreeEvaluator::integerCmpneEvaluator
+#define _icmpltEvaluator TR::TreeEvaluator::integerCmpltEvaluator
+#define _icmpgeEvaluator TR::TreeEvaluator::integerCmpgeEvaluator
+#define _icmpgtEvaluator TR::TreeEvaluator::integerCmpgtEvaluator
+#define _icmpleEvaluator TR::TreeEvaluator::integerCmpleEvaluator
+#define _iucmpltEvaluator TR::TreeEvaluator::unsignedIntegerCmpltEvaluator
+#define _iucmpgeEvaluator TR::TreeEvaluator::unsignedIntegerCmpgeEvaluator
+#define _iucmpgtEvaluator TR::TreeEvaluator::unsignedIntegerCmpgtEvaluator
+#define _iucmpleEvaluator TR::TreeEvaluator::unsignedIntegerCmpleEvaluator
+#define _lcmpeqEvaluator TR::TreeEvaluator::integerCmpeqEvaluator
+#define _lcmpneEvaluator TR::TreeEvaluator::integerCmpneEvaluator
+#define _lcmpltEvaluator TR::TreeEvaluator::integerCmpltEvaluator
+#define _lcmpgeEvaluator TR::TreeEvaluator::integerCmpgeEvaluator
+#define _lcmpgtEvaluator TR::TreeEvaluator::integerCmpgtEvaluator
+#define _lcmpleEvaluator TR::TreeEvaluator::integerCmpleEvaluator
+#define _lucmpltEvaluator TR::TreeEvaluator::unsignedIntegerCmpltEvaluator
+#define _lucmpgeEvaluator TR::TreeEvaluator::unsignedIntegerCmpgeEvaluator
+#define _lucmpgtEvaluator TR::TreeEvaluator::unsignedIntegerCmpgtEvaluator
+#define _lucmpleEvaluator TR::TreeEvaluator::unsignedIntegerCmpleEvaluator
+#define _fcmpeqEvaluator TR::TreeEvaluator::compareFloatAndSetEvaluator
+#define _fcmpneEvaluator TR::TreeEvaluator::compareFloatAndSetEvaluator
+#define _fcmpltEvaluator TR::TreeEvaluator::compareFloatAndSetEvaluator
+#define _fcmpgeEvaluator TR::TreeEvaluator::compareFloatAndSetEvaluator
+#define _fcmpgtEvaluator TR::TreeEvaluator::compareFloatAndSetEvaluator
+#define _fcmpleEvaluator TR::TreeEvaluator::compareFloatAndSetEvaluator
+#define _fcmpequEvaluator TR::TreeEvaluator::compareFloatAndSetEvaluator
+#define _fcmpneuEvaluator TR::TreeEvaluator::compareFloatAndSetEvaluator
+#define _fcmpltuEvaluator TR::TreeEvaluator::compareFloatAndSetEvaluator
+#define _fcmpgeuEvaluator TR::TreeEvaluator::compareFloatAndSetEvaluator
+#define _fcmpgtuEvaluator TR::TreeEvaluator::compareFloatAndSetEvaluator
+#define _fcmpleuEvaluator TR::TreeEvaluator::compareFloatAndSetEvaluator
+#define _dcmpeqEvaluator TR::TreeEvaluator::compareDoubleAndSetEvaluator
+#define _dcmpneEvaluator TR::TreeEvaluator::compareDoubleAndSetEvaluator
+#define _dcmpltEvaluator TR::TreeEvaluator::compareDoubleAndSetEvaluator
+#define _dcmpgeEvaluator TR::TreeEvaluator::compareDoubleAndSetEvaluator
+#define _dcmpgtEvaluator TR::TreeEvaluator::compareDoubleAndSetEvaluator
+#define _dcmpleEvaluator TR::TreeEvaluator::compareDoubleAndSetEvaluator
+#define _dcmpequEvaluator TR::TreeEvaluator::compareDoubleAndSetEvaluator
+#define _dcmpneuEvaluator TR::TreeEvaluator::compareDoubleAndSetEvaluator
+#define _dcmpltuEvaluator TR::TreeEvaluator::compareDoubleAndSetEvaluator
+#define _dcmpgeuEvaluator TR::TreeEvaluator::compareDoubleAndSetEvaluator
+#define _dcmpgtuEvaluator TR::TreeEvaluator::compareDoubleAndSetEvaluator
+#define _dcmpleuEvaluator TR::TreeEvaluator::compareDoubleAndSetEvaluator
+#define _acmpeqEvaluator TR::TreeEvaluator::integerCmpeqEvaluator
+#define _acmpneEvaluator TR::TreeEvaluator::integerCmpneEvaluator
+#define _acmpltEvaluator TR::TreeEvaluator::unsignedIntegerCmpltEvaluator
+#define _acmpgeEvaluator TR::TreeEvaluator::unsignedIntegerCmpgeEvaluator
+#define _acmpgtEvaluator TR::TreeEvaluator::unsignedIntegerCmpgtEvaluator
+#define _acmpleEvaluator TR::TreeEvaluator::unsignedIntegerCmpleEvaluator
+#define _bcmpeqEvaluator TR::TreeEvaluator::bcmpeqEvaluator
+#define _bcmpneEvaluator TR::TreeEvaluator::bcmpeqEvaluator
+#define _bcmpltEvaluator TR::TreeEvaluator::bcmpltEvaluator
+#define _bcmpgeEvaluator TR::TreeEvaluator::bcmpgeEvaluator
+#define _bcmpgtEvaluator TR::TreeEvaluator::bcmpgtEvaluator
+#define _bcmpleEvaluator TR::TreeEvaluator::bcmpleEvaluator
+#define _bucmpltEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _bucmpgeEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _bucmpgtEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _bucmpleEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _scmpeqEvaluator TR::TreeEvaluator::scmpeqEvaluator
+#define _scmpneEvaluator TR::TreeEvaluator::scmpeqEvaluator
+#define _scmpltEvaluator TR::TreeEvaluator::scmpltEvaluator
+#define _scmpgeEvaluator TR::TreeEvaluator::scmpgeEvaluator
+#define _scmpgtEvaluator TR::TreeEvaluator::scmpgtEvaluator
+#define _scmpleEvaluator TR::TreeEvaluator::scmpleEvaluator
+#define _sucmpltEvaluator TR::TreeEvaluator::sucmpltEvaluator
+#define _sucmpgeEvaluator TR::TreeEvaluator::sucmpgeEvaluator
+#define _sucmpgtEvaluator TR::TreeEvaluator::sucmpgtEvaluator
+#define _sucmpleEvaluator TR::TreeEvaluator::sucmpleEvaluator
+#define _lcmpEvaluator TR::TreeEvaluator::lcmpEvaluator
+#define _fcmplEvaluator TR::TreeEvaluator::compareFloatEvaluator
+#define _fcmpgEvaluator TR::TreeEvaluator::compareFloatEvaluator
+#define _dcmplEvaluator TR::TreeEvaluator::compareDoubleEvaluator
+#define _dcmpgEvaluator TR::TreeEvaluator::compareDoubleEvaluator
+#define _ificmpeqEvaluator TR::TreeEvaluator::integerIfCmpeqEvaluator
+#define _ificmpneEvaluator TR::TreeEvaluator::integerIfCmpneEvaluator
+#define _ificmpltEvaluator TR::TreeEvaluator::integerIfCmpltEvaluator
+#define _ificmpgeEvaluator TR::TreeEvaluator::integerIfCmpgeEvaluator
+#define _ificmpgtEvaluator TR::TreeEvaluator::integerIfCmpgtEvaluator
+#define _ificmpleEvaluator TR::TreeEvaluator::integerIfCmpleEvaluator
+#define _ifiucmpltEvaluator TR::TreeEvaluator::unsignedIntegerIfCmpltEvaluator
+#define _ifiucmpgeEvaluator TR::TreeEvaluator::unsignedIntegerIfCmpgeEvaluator
+#define _ifiucmpgtEvaluator TR::TreeEvaluator::unsignedIntegerIfCmpgtEvaluator
+#define _ifiucmpleEvaluator TR::TreeEvaluator::unsignedIntegerIfCmpleEvaluator
+#define _iflcmpeqEvaluator TR::TreeEvaluator::integerIfCmpeqEvaluator
+#define _iflcmpneEvaluator TR::TreeEvaluator::integerIfCmpneEvaluator
+#define _iflcmpltEvaluator TR::TreeEvaluator::integerIfCmpltEvaluator
+#define _iflcmpgeEvaluator TR::TreeEvaluator::integerIfCmpgeEvaluator
+#define _iflcmpgtEvaluator TR::TreeEvaluator::integerIfCmpgtEvaluator
+#define _iflcmpleEvaluator TR::TreeEvaluator::integerIfCmpleEvaluator
+#define _iflucmpltEvaluator TR::TreeEvaluator::unsignedIntegerIfCmpltEvaluator
+#define _iflucmpgeEvaluator TR::TreeEvaluator::unsignedIntegerIfCmpgeEvaluator
+#define _iflucmpgtEvaluator TR::TreeEvaluator::unsignedIntegerIfCmpgtEvaluator
+#define _iflucmpleEvaluator TR::TreeEvaluator::unsignedIntegerIfCmpleEvaluator
+#define _iffcmpeqEvaluator TR::TreeEvaluator::compareFloatAndBranchEvaluator
+#define _iffcmpneEvaluator TR::TreeEvaluator::compareFloatAndBranchEvaluator
+#define _iffcmpltEvaluator TR::TreeEvaluator::compareFloatAndBranchEvaluator
+#define _iffcmpgeEvaluator TR::TreeEvaluator::compareFloatAndBranchEvaluator
+#define _iffcmpgtEvaluator TR::TreeEvaluator::compareFloatAndBranchEvaluator
+#define _iffcmpleEvaluator TR::TreeEvaluator::compareFloatAndBranchEvaluator
+#define _iffcmpequEvaluator TR::TreeEvaluator::compareFloatAndBranchEvaluator
+#define _iffcmpneuEvaluator TR::TreeEvaluator::compareFloatAndBranchEvaluator
+#define _iffcmpltuEvaluator TR::TreeEvaluator::compareFloatAndBranchEvaluator
+#define _iffcmpgeuEvaluator TR::TreeEvaluator::compareFloatAndBranchEvaluator
+#define _iffcmpgtuEvaluator TR::TreeEvaluator::compareFloatAndBranchEvaluator
+#define _iffcmpleuEvaluator TR::TreeEvaluator::compareFloatAndBranchEvaluator
+#define _ifdcmpeqEvaluator TR::TreeEvaluator::compareDoubleAndBranchEvaluator
+#define _ifdcmpneEvaluator TR::TreeEvaluator::compareDoubleAndBranchEvaluator
+#define _ifdcmpltEvaluator TR::TreeEvaluator::compareDoubleAndBranchEvaluator
+#define _ifdcmpgeEvaluator TR::TreeEvaluator::compareDoubleAndBranchEvaluator
+#define _ifdcmpgtEvaluator TR::TreeEvaluator::compareDoubleAndBranchEvaluator
+#define _ifdcmpleEvaluator TR::TreeEvaluator::compareDoubleAndBranchEvaluator
+#define _ifdcmpequEvaluator TR::TreeEvaluator::compareDoubleAndBranchEvaluator
+#define _ifdcmpneuEvaluator TR::TreeEvaluator::compareDoubleAndBranchEvaluator
+#define _ifdcmpltuEvaluator TR::TreeEvaluator::compareDoubleAndBranchEvaluator
+#define _ifdcmpgeuEvaluator TR::TreeEvaluator::compareDoubleAndBranchEvaluator
+#define _ifdcmpgtuEvaluator TR::TreeEvaluator::compareDoubleAndBranchEvaluator
+#define _ifdcmpleuEvaluator TR::TreeEvaluator::compareDoubleAndBranchEvaluator
+#define _ifacmpeqEvaluator TR::TreeEvaluator::integerIfCmpeqEvaluator
+#define _ifacmpneEvaluator TR::TreeEvaluator::integerIfCmpneEvaluator
+#define _ifacmpltEvaluator TR::TreeEvaluator::unsignedIntegerIfCmpltEvaluator
+#define _ifacmpgeEvaluator TR::TreeEvaluator::unsignedIntegerIfCmpgeEvaluator
+#define _ifacmpgtEvaluator TR::TreeEvaluator::unsignedIntegerIfCmpgtEvaluator
+#define _ifacmpleEvaluator TR::TreeEvaluator::unsignedIntegerIfCmpleEvaluator
+#define _ifbcmpeqEvaluator TR::TreeEvaluator::ifbcmpeqEvaluator
+#define _ifbcmpneEvaluator TR::TreeEvaluator::ifbcmpeqEvaluator
+#define _ifbcmpltEvaluator TR::TreeEvaluator::ifbcmpltEvaluator
+#define _ifbcmpgeEvaluator TR::TreeEvaluator::ifbcmpgeEvaluator
+#define _ifbcmpgtEvaluator TR::TreeEvaluator::ifbcmpgtEvaluator
+#define _ifbcmpleEvaluator TR::TreeEvaluator::ifbcmpleEvaluator
+#define _ifbucmpltEvaluator TR::TreeEvaluator::ifbucmpltEvaluator
+#define _ifbucmpgeEvaluator TR::TreeEvaluator::ifbucmpgeEvaluator
+#define _ifbucmpgtEvaluator TR::TreeEvaluator::ifbucmpgtEvaluator
+#define _ifbucmpleEvaluator TR::TreeEvaluator::ifbucmpleEvaluator
+#define _ifscmpeqEvaluator TR::TreeEvaluator::ifscmpeqEvaluator
+#define _ifscmpneEvaluator TR::TreeEvaluator::ifscmpeqEvaluator
+#define _ifscmpltEvaluator TR::TreeEvaluator::ifscmpltEvaluator
+#define _ifscmpgeEvaluator TR::TreeEvaluator::ifscmpgeEvaluator
+#define _ifscmpgtEvaluator TR::TreeEvaluator::ifscmpgtEvaluator
+#define _ifscmpleEvaluator TR::TreeEvaluator::ifscmpleEvaluator
+#define _ifsucmpltEvaluator TR::TreeEvaluator::ifsucmpltEvaluator
+#define _ifsucmpgeEvaluator TR::TreeEvaluator::ifsucmpgeEvaluator
+#define _ifsucmpgtEvaluator TR::TreeEvaluator::ifsucmpgtEvaluator
+#define _ifsucmpleEvaluator TR::TreeEvaluator::ifsucmpleEvaluator
+#define _loadaddrEvaluator TR::TreeEvaluator::loadaddrEvaluator
+#define _ZEROCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _callIfEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _iRegLoadEvaluator TR::TreeEvaluator::integerRegLoadEvaluator
+#define _aRegLoadEvaluator TR::TreeEvaluator::aRegLoadEvaluator
+#define _lRegLoadEvaluator TR::TreeEvaluator::integerRegLoadEvaluator
+#define _fRegLoadEvaluator TR::TreeEvaluator::fRegLoadEvaluator
+#define _dRegLoadEvaluator TR::TreeEvaluator::dRegLoadEvaluator
+#define _sRegLoadEvaluator TR::TreeEvaluator::integerRegLoadEvaluator
+#define _bRegLoadEvaluator TR::TreeEvaluator::integerRegLoadEvaluator
+#define _iRegStoreEvaluator TR::TreeEvaluator::iRegStoreEvaluator
+#define _aRegStoreEvaluator TR::TreeEvaluator::iRegStoreEvaluator
+#define _lRegStoreEvaluator TR::TreeEvaluator::lRegStoreEvaluator
+#define _fRegStoreEvaluator TR::TreeEvaluator::fRegStoreEvaluator
+#define _dRegStoreEvaluator TR::TreeEvaluator::dRegStoreEvaluator
+#define _sRegStoreEvaluator TR::TreeEvaluator::iRegStoreEvaluator
+#define _bRegStoreEvaluator TR::TreeEvaluator::iRegStoreEvaluator
+#define _GlRegDepsEvaluator TR::TreeEvaluator::GlRegDepsEvaluator
+#define _iselectEvaluator TR::TreeEvaluator::iselectEvaluator
+#define _lselectEvaluator TR::TreeEvaluator::iselectEvaluator
+#define _bselectEvaluator TR::TreeEvaluator::iselectEvaluator
+#define _sselectEvaluator TR::TreeEvaluator::iselectEvaluator
+#define _aselectEvaluator TR::TreeEvaluator::iselectEvaluator
+#define _fselectEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _dselectEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _treetopEvaluator TR::TreeEvaluator::treetopEvaluator
+#define _MethodEnterHookEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _MethodExitHookEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _PassThroughEvaluator TR::TreeEvaluator::passThroughEvaluator
+#define _compressedRefsEvaluator TR::TreeEvaluator::compressedRefsEvaluator
+#define _BBStartEvaluator TR::TreeEvaluator::BBStartEvaluator
+#define _BBEndEvaluator TR::TreeEvaluator::BBEndEvaluator
+#define _viremEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _viminEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vimaxEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vigetelemEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _visetelemEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vimergelEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vimergehEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpeqEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpgtEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpgeEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpltEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpleEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpalleqEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpallneEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpallgtEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpallgeEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpallltEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpallleEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpanyeqEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpanyneEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpanygtEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpanygeEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpanyltEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vicmpanyleEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vnotEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vbitselectEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vpermEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vsplatsEvaluator TR::TreeEvaluator::SIMDsplatsEvaluator
+#define _vdmergelEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdmergehEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdsetelemEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdgetelemEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdselEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdremEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdmaddEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdnmsubEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdmsubEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdmaxEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdminEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpeqEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpneEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpgtEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpgeEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpltEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpleEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpalleqEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpallneEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpallgtEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpallgeEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpallltEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpallleEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpanyeqEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpanyneEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpanygtEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpanygeEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpanyltEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdcmpanyleEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdsqrtEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdlogEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vincEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vdecEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vnegEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vcomEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vaddEvaluator TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator
+#define _vsubEvaluator TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator
+#define _vmulEvaluator TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator
+#define _vdivEvaluator TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator
+#define _vremEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vandEvaluator TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator
+#define _vorEvaluator TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator
+#define _vxorEvaluator TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator
+#define _vshlEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vushrEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vshrEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vcmpeqEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vcmpneEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vcmpltEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vucmpltEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vcmpgtEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vucmpgtEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vcmpleEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vucmpleEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vcmpgeEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vucmpgeEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vloadEvaluator TR::TreeEvaluator::SIMDloadEvaluator
+#define _vloadiEvaluator TR::TreeEvaluator::SIMDloadEvaluator
+#define _vstoreEvaluator TR::TreeEvaluator::SIMDstoreEvaluator
+#define _vstoreiEvaluator TR::TreeEvaluator::SIMDstoreEvaluator
+#define _vrandEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vreturnEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vcallEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vcalliEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vselectEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _v2vEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vl2vdEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vconstEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _getvelemEvaluator TR::TreeEvaluator::SIMDgetvelemEvaluator
+#define _vsetelemEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vbRegLoadEvaluator TR::TreeEvaluator::SIMDRegLoadEvaluator
+#define _vsRegLoadEvaluator TR::TreeEvaluator::SIMDRegLoadEvaluator
+#define _viRegLoadEvaluator TR::TreeEvaluator::SIMDRegLoadEvaluator
+#define _vlRegLoadEvaluator TR::TreeEvaluator::SIMDRegLoadEvaluator
+#define _vfRegLoadEvaluator TR::TreeEvaluator::SIMDRegLoadEvaluator
+#define _vdRegLoadEvaluator TR::TreeEvaluator::SIMDRegLoadEvaluator
+#define _vbRegStoreEvaluator TR::TreeEvaluator::SIMDRegStoreEvaluator
+#define _vsRegStoreEvaluator TR::TreeEvaluator::SIMDRegStoreEvaluator
+#define _viRegStoreEvaluator TR::TreeEvaluator::SIMDRegStoreEvaluator
+#define _vlRegStoreEvaluator TR::TreeEvaluator::SIMDRegStoreEvaluator
+#define _vfRegStoreEvaluator TR::TreeEvaluator::SIMDRegStoreEvaluator
+#define _vdRegStoreEvaluator TR::TreeEvaluator::SIMDRegStoreEvaluator
+#define _iuloadEvaluator TR::TreeEvaluator::iloadEvaluator
+#define _luloadEvaluator TR::TreeEvaluator::lloadEvaluator
+#define _buloadEvaluator TR::TreeEvaluator::bloadEvaluator
+#define _iuloadiEvaluator TR::TreeEvaluator::iloadEvaluator
+#define _luloadiEvaluator TR::TreeEvaluator::lloadEvaluator
+#define _buloadiEvaluator TR::TreeEvaluator::bloadEvaluator
+#define _iustoreEvaluator TR::TreeEvaluator::istoreEvaluator
+#define _lustoreEvaluator TR::TreeEvaluator::lstoreEvaluator
+#define _bustoreEvaluator TR::TreeEvaluator::bstoreEvaluator
+#define _iustoreiEvaluator TR::TreeEvaluator::istoreEvaluator
+#define _lustoreiEvaluator TR::TreeEvaluator::lstoreEvaluator
+#define _bustoreiEvaluator TR::TreeEvaluator::bstoreEvaluator
+#define _iuaddEvaluator TR::TreeEvaluator::integerAddEvaluator
+#define _luaddEvaluator TR::TreeEvaluator::integerAddEvaluator
+#define _buaddEvaluator TR::TreeEvaluator::baddEvaluator
+#define _iusubEvaluator TR::TreeEvaluator::integerSubEvaluator
+#define _lusubEvaluator TR::TreeEvaluator::integerSubEvaluator
+#define _busubEvaluator TR::TreeEvaluator::bsubEvaluator
+#define _iunegEvaluator TR::TreeEvaluator::integerNegEvaluator
+#define _lunegEvaluator TR::TreeEvaluator::integerNegEvaluator
+#define _f2iuEvaluator TR::TreeEvaluator::f2iEvaluator
+#define _f2luEvaluator TR::TreeEvaluator::f2iEvaluator
+#define _f2buEvaluator TR::TreeEvaluator::f2bEvaluator
+#define _f2cEvaluator TR::TreeEvaluator::f2cEvaluator
+#define _d2iuEvaluator TR::TreeEvaluator::f2iEvaluator
+#define _d2luEvaluator TR::TreeEvaluator::f2iEvaluator
+#define _d2buEvaluator TR::TreeEvaluator::d2bEvaluator
+#define _d2cEvaluator TR::TreeEvaluator::d2cEvaluator
+#define _iuRegLoadEvaluator TR::TreeEvaluator::integerRegLoadEvaluator
+#define _luRegLoadEvaluator TR::TreeEvaluator::integerRegLoadEvaluator
+#define _iuRegStoreEvaluator TR::TreeEvaluator::iRegStoreEvaluator
+#define _luRegStoreEvaluator TR::TreeEvaluator::lRegStoreEvaluator
+#define _cloadEvaluator TR::TreeEvaluator::sloadEvaluator
+#define _cloadiEvaluator TR::TreeEvaluator::sloadEvaluator
+#define _cstoreEvaluator TR::TreeEvaluator::cstoreEvaluator
+#define _cstoreiEvaluator TR::TreeEvaluator::cstoreEvaluator
+#define _monentEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _monexitEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _monexitfenceEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _tstartEvaluator TR::TreeEvaluator::tstartEvaluator
+#define _tfinishEvaluator TR::TreeEvaluator::tfinishEvaluator
+#define _tabortEvaluator TR::TreeEvaluator::tabortEvaluator
+#define _instanceofEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _checkcastEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _checkcastAndNULLCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _NewEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _newvalueEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _newarrayEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _anewarrayEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _variableNewEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _variableNewArrayEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _multianewarrayEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _arraylengthEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _contigarraylengthEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _discontigarraylengthEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _icalliEvaluator TR::TreeEvaluator::indirectCallEvaluator
+#define _lcalliEvaluator TR::TreeEvaluator::indirectCallEvaluator
+#define _fcalliEvaluator TR::TreeEvaluator::indirectCallEvaluator
+#define _dcalliEvaluator TR::TreeEvaluator::indirectCallEvaluator
+#define _acalliEvaluator TR::TreeEvaluator::indirectCallEvaluator
+#define _calliEvaluator TR::TreeEvaluator::indirectCallEvaluator
+#define _fenceEvaluator TR::TreeEvaluator::fenceEvaluator
+#define _luaddhEvaluator TR::TreeEvaluator::integerAddEvaluator
+#define _caddEvaluator TR::TreeEvaluator::caddEvaluator
+#define _aiaddEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _aiuaddEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _aladdEvaluator TR::TreeEvaluator::integerAddEvaluator
+#define _aluaddEvaluator TR::TreeEvaluator::integerAddEvaluator
+#define _lusubhEvaluator TR::TreeEvaluator::integerSubEvaluator
+#define _csubEvaluator TR::TreeEvaluator::csubEvaluator
+#define _imulhEvaluator TR::TreeEvaluator::integerMulhEvaluator
+#define _iumulhEvaluator TR::TreeEvaluator::integerMulhEvaluator
+#define _lmulhEvaluator TR::TreeEvaluator::integerMulhEvaluator
+#define _lumulhEvaluator TR::TreeEvaluator::integerMulhEvaluator
+#define _ibits2fEvaluator TR::TreeEvaluator::ibits2fEvaluator
+#define _fbits2iEvaluator TR::TreeEvaluator::fbits2iEvaluator
+#define _lbits2dEvaluator TR::TreeEvaluator::lbits2dEvaluator
+#define _dbits2lEvaluator TR::TreeEvaluator::dbits2lEvaluator
+#define _lookupEvaluator TR::TreeEvaluator::lookupEvaluator
+#define _trtLookupEvaluator TR::TreeEvaluator::NOPEvaluator
+#define _CaseEvaluator TR::TreeEvaluator::NOPEvaluator
+#define _tableEvaluator TR::TreeEvaluator::tableEvaluator
+#define _exceptionRangeFenceEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _dbgFenceEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _NULLCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _ResolveCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _ResolveAndNULLCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _DIVCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _OverflowCHKEvaluator TR::TreeEvaluator::overflowCHKEvaluator
+#define _UnsignedOverflowCHKEvaluator TR::TreeEvaluator::overflowCHKEvaluator
+#define _BNDCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _ArrayCopyBNDCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _BNDCHKwithSpineCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _SpineCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _ArrayStoreCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _ArrayCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _RetEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _arraycopyEvaluator TR::TreeEvaluator::arraycopyEvaluator
+#define _arraysetEvaluator TR::TreeEvaluator::arraysetEvaluator
+#define _arraytranslateEvaluator TR::TreeEvaluator::arraytranslateEvaluator
+#define _arraytranslateAndTestEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _long2StringEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _bitOpMemEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _bitOpMemNDEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _arraycmpEvaluator TR::TreeEvaluator::arraycmpEvaluator
+#define _arraycmpWithPadEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _allocationFenceEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _loadFenceEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _storeFenceEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _fullFenceEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _MergeNewEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _computeCCEvaluator TR::TreeEvaluator::computeCCEvaluator
+#define _butestEvaluator TR::TreeEvaluator::butestEvaluator
+#define _sutestEvaluator TR::TreeEvaluator::sutestEvaluator
+#define _bucmpEvaluator TR::TreeEvaluator::bucmpEvaluator
+#define _bcmpEvaluator TR::TreeEvaluator::bcmpEvaluator
+#define _sucmpEvaluator TR::TreeEvaluator::sucmpEvaluator
+#define _scmpEvaluator TR::TreeEvaluator::scmpEvaluator
+#define _iucmpEvaluator TR::TreeEvaluator::iucmpEvaluator
+#define _icmpEvaluator TR::TreeEvaluator::icmpEvaluator
+#define _lucmpEvaluator TR::TreeEvaluator::iucmpEvaluator
+#define _ificmpoEvaluator TR::TreeEvaluator::ifxcmpoEvaluator
+#define _ificmpnoEvaluator TR::TreeEvaluator::ifxcmpoEvaluator
+#define _iflcmpoEvaluator TR::TreeEvaluator::ifxcmpoEvaluator
+#define _iflcmpnoEvaluator TR::TreeEvaluator::ifxcmpoEvaluator
+#define _ificmnoEvaluator TR::TreeEvaluator::ifxcmpoEvaluator
+#define _ificmnnoEvaluator TR::TreeEvaluator::ifxcmpoEvaluator
+#define _iflcmnoEvaluator TR::TreeEvaluator::ifxcmpoEvaluator
+#define _iflcmnnoEvaluator TR::TreeEvaluator::ifxcmpoEvaluator
+#define _iuaddcEvaluator TR::TreeEvaluator::integerAddEvaluator
+#define _luaddcEvaluator TR::TreeEvaluator::integerAddEvaluator
+#define _iusubbEvaluator TR::TreeEvaluator::integerSubEvaluator
+#define _lusubbEvaluator TR::TreeEvaluator::integerSubEvaluator
+#define _icmpsetEvaluator TR::TreeEvaluator::icmpsetEvaluator
+#define _lcmpsetEvaluator TR::TreeEvaluator::icmpsetEvaluator
+#define _bztestnsetEvaluator TR::TreeEvaluator::bztestnsetEvaluator
+#define _ibatomicorEvaluator TR::TreeEvaluator::atomicorEvaluator
+#define _isatomicorEvaluator TR::TreeEvaluator::atomicorEvaluator
+#define _iiatomicorEvaluator TR::TreeEvaluator::atomicorEvaluator
+#define _ilatomicorEvaluator TR::TreeEvaluator::atomicorEvaluator
+#define _dexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _branchEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _igotoEvaluator TR::TreeEvaluator::igotoEvaluator
+#define _bexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _buexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _sexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _cexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _iexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _iuexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _lexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _luexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _fexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _fuexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _duexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _ixfrsEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _lxfrsEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _fxfrsEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _dxfrsEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _fintEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _dintEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _fnintEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _dnintEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _fsqrtEvaluator TR::TreeEvaluator::fpSqrtEvaluator
+#define _dsqrtEvaluator TR::TreeEvaluator::dsqrtEvaluator
+#define _getstackEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _deallocaEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _idozEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _dcosEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _dsinEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _dtanEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _dcoshEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _dsinhEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _dtanhEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _dacosEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _dasinEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _datanEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _datan2Evaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _dlogEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _dfloorEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _ffloorEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _dceilEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _fceilEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _ibranchEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _mbranchEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _getpmEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _setpmEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _loadAutoOffsetEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _imaxEvaluator TR::TreeEvaluator::minmaxEvaluator
+#define _iumaxEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _lmaxEvaluator TR::TreeEvaluator::minmaxEvaluator
+#define _lumaxEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _fmaxEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _dmaxEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _iminEvaluator TR::TreeEvaluator::minmaxEvaluator
+#define _iuminEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _lminEvaluator TR::TreeEvaluator::minmaxEvaluator
+#define _luminEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _fminEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _dminEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _trtEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _trtSimpleEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _ihbitEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _ilbitEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _inolzEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _inotzEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _ipopcntEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _lhbitEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _llbitEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _lnolzEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _lnotzEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _lpopcntEvaluator TR::TreeEvaluator::badILOpEvaluator
+#define _sbyteswapEvaluator TR::TreeEvaluator::sbyteswapEvaluator
+#define _ibyteswapEvaluator TR::TreeEvaluator::ibyteswapEvaluator
+#define _lbyteswapEvaluator TR::TreeEvaluator::ibyteswapEvaluator
+#define _bbitpermuteEvaluator TR::TreeEvaluator::bitpermuteEvaluator
+#define _sbitpermuteEvaluator TR::TreeEvaluator::bitpermuteEvaluator
+#define _ibitpermuteEvaluator TR::TreeEvaluator::bitpermuteEvaluator
+#define _lbitpermuteEvaluator TR::TreeEvaluator::bitpermuteEvaluator
+#define _PrefetchEvaluator TR::TreeEvaluator::PrefetchEvaluator
+
+#define OPCODE_MACRO(\
+   opcode, \
+   name, \
+   prop1, \
+   prop2, \
+   prop3, \
+   prop4, \
+   dataType, \
+   typeProps, \
+   childProps, \
+   swapChildrenOpcode, \
+   reverseBranchOpcode, \
+   boolCompareOpcode, \
+   ifCompareOpcode, \
+   ...) _ ## opcode ## Evaluator,
+
+   _BadILOpEvaluator,
+
+#include "il/Opcodes.enum"
+#undef OPCODE_MACRO

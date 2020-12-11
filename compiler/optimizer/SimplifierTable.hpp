@@ -32,7 +32,7 @@ typedef TR::Node *(* SimplifierPtr)(TR::Node *node, TR::Block *block, TR::Simpli
 
 const SimplifierPtr simplifierOpts[TR::NumIlOps] =
    {
-   #include "optimizer/OMRSimplifierTableEnum.hpp"
+   #include "optimizer/OMRSimplifierTable.enum"
    };
 
 #endif

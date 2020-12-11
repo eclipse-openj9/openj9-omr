@@ -1452,6 +1452,8 @@ public:
 
    static bool  getReductionAlgorithm(TR_ReductionAlgorithms op)     {  return _hotFieldReductionAlgorithms.isSet(op); }
    static void  setReductionAlgorithm(TR_ReductionAlgorithms op)     { _hotFieldReductionAlgorithms.set(op); }
+   static void  resetReductionAlgorithm(TR_SamplingJProfilingFlags op) { _hotFieldReductionAlgorithms.reset(op); }
+   static bool  isAnyReductionAlgorithmSet()                   { return !_hotFieldReductionAlgorithms.isEmpty(); }
    static bool  getVerboseOption(TR_VerboseFlags op)     {  return _verboseOptionFlags.isSet(op); }
    static void  setVerboseOption(TR_VerboseFlags op)     { _verboseOptionFlags.set(op); }
    static void  setVerboseOptions(uint64_t mask)         { _verboseOptionFlags.maskWord(0, mask); }

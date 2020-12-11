@@ -285,7 +285,6 @@ OMR::CodeGenerator::initialize()
    cg->createObjectFormat();
    }
 
-
 OMR::CodeGenerator::CodeGenerator() :
       _compilation(TR::comp()),
       _trMemory(_compilation->trMemory()),

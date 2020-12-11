@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 IBM Corp. and others
+ * Copyright (c) 2018, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,8 +32,7 @@
       LegalSecondOfFPPair = LastVRF + 6,      // Assign second FP reg of a FP reg Pair
       AssignAny           = LastVRF + 7,      // Assign any register
       KillVolHighRegs     = LastVRF + 8,      // Kill all volatile access regs
-      MayDefine           = LastVRF + 9,      // This instruction's result should be modelled as live before as this instruction only 'may defines' the register
-      SpilledReg          = LastVRF + 10,     // OOL: Any Spilled register cross OOL sequences
+      SpilledReg          = LastVRF + 9,      // OOL: Any Spilled register cross OOL sequences
 
       NumRegisters        = LastVRF + 1    // (include noReg)
 

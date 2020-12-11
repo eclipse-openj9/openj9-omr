@@ -62,8 +62,6 @@ public:
 
    void initialize();
 
-   CodeGenerator();
-
    virtual TR::Register *longClobberEvaluate(TR::Node *node);
 
    TR_GlobalRegisterNumber pickRegister(TR_RegisterCandidate *, TR::Block * *, TR_BitVector &, TR_GlobalRegisterNumber &, TR_LinkHead<TR_RegisterCandidate> *candidates);

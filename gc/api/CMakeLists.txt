@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2017, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,21 +28,39 @@ omr_assert(TEST OMR_GC_API)
 ### OMR GC
 ###
 
-target_include_directories(omrgc
-	PUBLIC
-		glue/
-		include/
+set(gc_include_directories
+	glue/
+	include/
 )
 
+set(gc_compile_features
+	cxx_constexpr
+	cxx_deleted_functions
+	cxx_delegating_constructors
+	cxx_noexcept
+	cxx_nullptr
+	cxx_override
+	cxx_right_angle_brackets
+	cxx_variadic_templates
+	cxx_template_template_parameters
+)
+
+target_include_directories(omrgc
+	PUBLIC
+		${gc_include_directories}
+)
 target_compile_features(omrgc
 	PUBLIC
-		cxx_constexpr
-		cxx_deleted_functions
-		cxx_delegating_constructors
-		cxx_noexcept
-		cxx_nullptr
-		cxx_override
-		cxx_right_angle_brackets
-		cxx_variadic_templates
-		cxx_template_template_parameters
+		${gc_compile_features}
 )
+
+if(OMR_MIXED_REFERENCES_MODE_STATIC)
+	target_include_directories(omrgc_full
+		PUBLIC
+			${gc_include_directories}
+	)
+	target_compile_features(omrgc_full
+		PUBLIC
+			${gc_compile_features}
+	)
+endif()

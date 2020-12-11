@@ -66,7 +66,7 @@ target_compile_definitions(omrgc_tracegen
 		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_DEFINITIONS>
 )
 
-omr_add_library(omrgc STATIC
+set(omrgc_sources
 	base/AddressOrderedListPopulator.cpp
 	base/AllocationContext.cpp
 	base/AllocationInterfaceGeneric.cpp
@@ -201,6 +201,11 @@ omr_add_library(omrgc STATIC
 	verbose/handler_standard/VerboseHandlerOutputStandard.cpp
 	$<TARGET_OBJECTS:omrgc_tracegen>
 )
+
+omr_add_library(omrgc STATIC
+	${omrgc_sources}
+)
+
 target_enable_ddr(omrgc EARLY_SOURCE_EVAL)
 ddr_set_add_targets(omrddr omrgc)
 ddr_add_headers(omrgc
@@ -210,43 +215,56 @@ ddr_add_headers(omrgc
 )
 
 if(OMR_GC_OBJECT_MAP)
+	set(objmap_sources
+		base/ObjectMap.cpp
+	)
+
 	target_sources(omrgc
 		PRIVATE
-			base/ObjectMap.cpp
+			${objmap_sources}
 	)
 endif()
 
 if(OMR_GC_MODRON_STANDARD)
+	set(modronstandard_sources
+		base/standard/ConfigurationFlat.cpp
+		base/standard/ConfigurationStandard.cpp
+		base/standard/CopyScanCacheChunk.cpp
+		base/standard/CopyScanCacheChunkInHeap.cpp
+		base/standard/EnvironmentStandard.cpp
+		base/standard/HeapMemoryPoolIterator.cpp
+		base/standard/HeapRegionDescriptorStandard.cpp
+		base/standard/HeapRegionManagerStandard.cpp
+		base/standard/HeapWalker.cpp
+		base/standard/OverflowStandard.cpp
+		base/standard/ParallelGlobalGC.cpp
+		base/standard/ParallelSweepScheme.cpp
+		base/standard/SweepHeapSectioningSegmented.cpp
+		base/standard/WorkPacketsStandard.cpp
+	)
+
 	target_sources(omrgc
 		PRIVATE
-			base/standard/ConfigurationFlat.cpp
-			base/standard/ConfigurationStandard.cpp
-			base/standard/CopyScanCacheChunk.cpp
-			base/standard/CopyScanCacheChunkInHeap.cpp
-			base/standard/EnvironmentStandard.cpp
-			base/standard/HeapMemoryPoolIterator.cpp
-			base/standard/HeapRegionDescriptorStandard.cpp
-			base/standard/HeapRegionManagerStandard.cpp
-			base/standard/HeapWalker.cpp
-			base/standard/OverflowStandard.cpp
-			base/standard/ParallelGlobalGC.cpp
-			base/standard/ParallelSweepScheme.cpp
-			base/standard/SweepHeapSectioningSegmented.cpp
-			base/standard/WorkPacketsStandard.cpp
+			${modronstandard_sources}
 	)
-	if (OMR_GC_MODRON_COMPACTION)
-		target_sources(omrgc
-			PRIVATE
+
+	if(OMR_GC_MODRON_COMPACTION)
+		set(modroncompaction_sources
 				base/standard/CompactFixHeapForWalkTask.cpp
 				base/standard/CompactScheme.cpp
 				base/standard/ParallelCompactTask.cpp
-				
+
 				stats/CompactStats.cpp
 		)
-	endif()
-	if(OMR_GC_MODRON_CONCURRENT_MARK)
+
 		target_sources(omrgc
 			PRIVATE
+				${modroncompaction_sources}
+		)
+	endif()
+
+	if(OMR_GC_MODRON_CONCURRENT_MARK)
+		set(modronconcurrentmark_sources
 				base/standard/ConcurrentCardTable.cpp
 				base/standard/ConcurrentCardTableForWC.cpp
 				base/standard/ConcurrentClearNewMarkBitsTask.cpp
@@ -261,120 +279,274 @@ if(OMR_GC_MODRON_STANDARD)
 				base/standard/RememberedSetSATB.cpp
 				base/standard/WorkPacketsConcurrent.cpp
 				base/standard/WorkPacketsSATB.cpp
-				
+
 				stats/ConcurrentGCStats.cpp
 		)
+
+		target_sources(omrgc
+			PRIVATE
+				${modronconcurrentmark_sources}
+		)
+
 		if(OMR_GC_MODRON_SCAVENGER)
+			set(mcm_modronscavenger_sources
+				base/standard/ConcurrentScanRememberedSetTask.cpp
+			)
+
 			target_sources(omrgc
 				PRIVATE
-					base/standard/ConcurrentScanRememberedSetTask.cpp
+					${mcm_modronscavenger_sources}
 			)
 		endif()
 	endif()
+
 	if(OMR_GC_CONCURRENT_SWEEP)
+		set(concurrentsweep_sources
+			base/standard/ConcurrentSweepScheme.cpp
+		)
+
 		target_sources(omrgc
 			PRIVATE
-				base/standard/ConcurrentSweepScheme.cpp
+				${concurrentsweep_sources}
 		)
 	endif()
+
 	if(OMR_GC_MODRON_SCAVENGER)
-		target_sources(omrgc
-			PRIVATE
+		set(modronscavenger_sources
 				base/HeapSplit.cpp # TODO delete as this should not be used anymore!
 				base/MemorySubSpaceGenerational.cpp
 				base/MemorySubSpaceSemiSpace.cpp
-				
+
 				base/standard/ConfigurationGenerational.cpp
 				base/standard/CopyScanCacheList.cpp
 				base/standard/ParallelScavengeTask.cpp
 				base/standard/PhysicalSubArenaVirtualMemorySemiSpace.cpp
 				base/standard/RSOverflow.cpp
 				base/standard/Scavenger.cpp
-				
+
 				stats/ScavengerCopyScanRatio.cpp
 		)
+
+		target_sources(omrgc
+			PRIVATE
+				${modronscavenger_sources}
+		)
+
 		if(OMR_GC_CONCURRENT_SCAVENGER)
+			set(ms_concurrentscavenger_sources
+				base/standard/ConcurrentScavengeTask.cpp
+			)
+
 			target_sources(omrgc
 				PRIVATE
-					base/standard/ConcurrentScavengeTask.cpp
+					${ms_concurrentscavenger_sources}
 			)
 		endif()
 	endif()
 endif()
 
 if(OMR_GC_SEGREGATED_HEAP)
+	set(segregatedheap_sources
+		base/segregated/AllocationContextSegregated.cpp
+		base/segregated/ConfigurationSegregated.cpp
+		base/segregated/GlobalAllocationManagerSegregated.cpp
+		base/segregated/HeapRegionDescriptorSegregated.cpp
+		base/segregated/LockingFreeHeapRegionList.cpp
+		base/segregated/LockingHeapRegionQueue.cpp
+		base/segregated/MemoryPoolAggregatedCellList.cpp
+		base/segregated/MemoryPoolSegregated.cpp
+		base/segregated/MemorySubSpaceSegregated.cpp
+		base/segregated/ObjectHeapIteratorSegregated.cpp
+		base/segregated/OverflowSegregated.cpp
+		base/segregated/RegionPoolSegregated.cpp
+		base/segregated/SegregatedAllocationInterface.cpp
+		base/segregated/SegregatedAllocationTracker.cpp
+		base/segregated/SegregatedGC.cpp
+		base/segregated/SegregatedListPopulator.cpp
+		base/segregated/SegregatedMarkingScheme.cpp
+		base/segregated/SegregatedSweepTask.cpp
+		base/segregated/SizeClasses.cpp
+		base/segregated/SweepSchemeSegregated.cpp
+		base/segregated/WorkPacketsSegregated.cpp
+	)
+
 	target_sources(omrgc
 		PRIVATE
-			base/segregated/AllocationContextSegregated.cpp
-			base/segregated/ConfigurationSegregated.cpp
-			base/segregated/GlobalAllocationManagerSegregated.cpp
-			base/segregated/HeapRegionDescriptorSegregated.cpp
-			base/segregated/LockingFreeHeapRegionList.cpp
-			base/segregated/LockingHeapRegionQueue.cpp
-			base/segregated/MemoryPoolAggregatedCellList.cpp
-			base/segregated/MemoryPoolSegregated.cpp
-			base/segregated/MemorySubSpaceSegregated.cpp
-			base/segregated/ObjectHeapIteratorSegregated.cpp
-			base/segregated/OverflowSegregated.cpp
-			base/segregated/RegionPoolSegregated.cpp
-			base/segregated/SegregatedAllocationInterface.cpp
-			base/segregated/SegregatedAllocationTracker.cpp
-			base/segregated/SegregatedGC.cpp
-			base/segregated/SegregatedListPopulator.cpp
-			base/segregated/SegregatedMarkingScheme.cpp
-			base/segregated/SegregatedSweepTask.cpp
-			base/segregated/SizeClasses.cpp
-			base/segregated/SweepSchemeSegregated.cpp
-			base/segregated/WorkPacketsSegregated.cpp
+			${segregatedheap_sources}
 	)
 	ddr_add_headers(omrgc base/segregated/RegionPoolSegregated.hpp)
 endif()
 
 if(OMR_GC_VLHGC)
+	set(vlhgc_sources
+		base/vlhgc/HeapRegionStateTable.cpp
+	)
+
 	target_sources(omrgc
 		PRIVATE
-			base/vlhgc/HeapRegionStateTable.cpp
+			${vlhgc_sources}
+	)
+
+	set(vlhgc_include
+		base/vlhgc
 	)
 
 	target_include_directories(omrgc
 		PUBLIC
-			base/vlhgc
+			${vlhgc_include}
 	)
 endif()
 
 add_dependencies(omrgc omrgc_hookgen)
 
+set(gc_include_public
+	.
+	${CMAKE_CURRENT_BINARY_DIR}  #Ideally this should be private, but the glue pulls this in
+	base
+	base/segregated
+	base/standard
+	include
+	startup
+	stats
+	structs
+	verbose
+	verbose/handler_standard
+)
+
 target_include_directories(omrgc
 	PUBLIC
-		.
-		${CMAKE_CURRENT_BINARY_DIR}  #Ideally this should be private, but the glue pulls this in
-		base
-		base/segregated
-		base/standard
-		include
-		startup
-		stats
-		structs
-		verbose
-		verbose/handler_standard
+		${gc_include_public}
 	INTERFACE
 		$<TARGET_PROPERTY:${OMR_GC_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>
 )
 
-target_link_libraries(omrgc
-	PUBLIC
-		omr_base
-	PRIVATE
-		${OMR_GC_GLUE_TARGET}
-		omrutil
-		omrcore
-		${OMR_THREAD_LIB}
-		${OMR_PORT_LIB}
-		${OMR_HOOK_LIB}
+set(gc_link_libraries_public
+	omr_base
+)
+set(gc_link_libraries_private
+	omrutil
+	omrcore
+	${OMR_THREAD_LIB}
+	${OMR_PORT_LIB}
+	${OMR_HOOK_LIB}
 )
 
-
+target_link_libraries(omrgc
+	PUBLIC
+		${gc_link_libraries_public}
+	PRIVATE
+		${OMR_GC_GLUE_TARGET}
+		${gc_link_libraries_private}
+)
 set_target_properties(omrgc omrgc_hookgen omrgc_tracegen PROPERTIES FOLDER gc)
+
+if(OMR_MIXED_REFERENCES_MODE_STATIC)
+	target_compile_definitions(omrgc PUBLIC -DOMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES=1)
+
+	omr_assert(
+		TEST OMR_GC_GLUE_FULL_TARGET
+		MESSAGE "OMR_GC_GLUE_TARGET must be set."
+	)
+
+	omr_add_library(omrgc_full STATIC
+		${omrgc_sources}
+	)
+
+	if(OMR_GC_OBJECT_MAP)
+		target_sources(omrgc_full
+			PRIVATE
+				${objmap_sources}
+		)
+	endif()
+
+	if(OMR_GC_MODRON_STANDARD)
+		target_sources(omrgc_full
+			PRIVATE
+				${modronstandard_sources}
+		)
+
+		if(OMR_GC_MODRON_COMPACTION)
+			target_sources(omrgc_full
+				PRIVATE
+					${modroncompaction_sources}
+			)
+		endif()
+
+		if(OMR_GC_MODRON_CONCURRENT_MARK)
+			target_sources(omrgc_full
+				PRIVATE
+					${modronconcurrentmark_sources}
+			)
+
+			if(OMR_GC_MODRON_SCAVENGER)
+				target_sources(omrgc_full
+					PRIVATE
+						${mcm_modronscavenger_sources}
+				)
+			endif()
+		endif()
+
+		if(OMR_GC_CONCURRENT_SWEEP)
+			target_sources(omrgc_full
+				PRIVATE
+					${concurrentsweep_sources}
+			)
+		endif()
+
+		if(OMR_GC_MODRON_SCAVENGER)
+			target_sources(omrgc_full
+				PRIVATE
+					${modronscavenger_sources}
+			)
+
+			if(OMR_GC_CONCURRENT_SCAVENGER)
+				target_sources(omrgc_full
+					PRIVATE
+						${ms_concurrentscavenger_sources}
+				)
+			endif()
+		endif()
+	endif()
+
+	if(OMR_GC_SEGREGATED_HEAP)
+		target_sources(omrgc_full
+			PRIVATE
+				${segregatedheap_sources}
+		)
+	endif()
+
+	if(OMR_GC_VLHGC)
+		target_sources(omrgc_full
+			PRIVATE
+				${vlhgc_sources}
+		)
+
+		target_include_directories(omrgc_full
+			PUBLIC
+				${vlhgc_include}
+		)
+	endif()
+
+	add_dependencies(omrgc_full omrgc_hookgen)
+
+	target_include_directories(omrgc_full
+		PUBLIC
+			${gc_include_public}
+		INTERFACE
+			$<TARGET_PROPERTY:${OMR_GC_GLUE_FULL_TARGET},INTERFACE_INCLUDE_DIRECTORIES>
+	)
+
+	target_link_libraries(omrgc_full
+		PUBLIC
+			${gc_link_libraries_public}
+		PRIVATE
+			${OMR_GC_GLUE_FULL_TARGET}
+			${gc_link_libraries_private}
+	)
+	set_target_properties(omrgc_full omrgc_hookgen omrgc_tracegen PROPERTIES FOLDER gc)
+
+	target_compile_definitions(omrgc_full PUBLIC -DOMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES=0)
+endif()
 
 if(OMR_GC_API)
 	add_subdirectory(api)

@@ -1423,6 +1423,27 @@ OMR::Block::splitPostGRA(TR::TreeTop * startOfNewBlock, TR::CFG *cfg, bool copyE
                   }
                }
             }
+         else if(node->getOpCodeValue() == TR::compressedRefs)
+            {
+            TR::Node *anchoredNode = node->getFirstChild();
+            auto nodeInfoEntry = nodeInfo->find(anchoredNode);
+
+            if (nodeInfoEntry != nodeInfo->end())
+               {
+               // Moving the compressedref anchor node before the split point
+               iter->unlink(false);
+               self()->getExit()->insertBefore(iter);
+               // Now Update the Node Info if the anchored node is the only reference after splitpoint
+               if (nodeInfoEntry->second.first == 1)
+                  {
+                  nodeInfo->erase(nodeInfoEntry);
+                  auto storeNodeEntry = storeNodeInfo->find(anchoredNode);
+                  if (storeNodeEntry != storeNodeInfo->end())
+                     storeNodeInfo->erase(storeNodeEntry);
+                  }
+               }
+            }
+
          if (nextTreeTop == nextExtendedBlockEntry) // TreeTop Node is BBExit and next tree top is nextExtendedBlockEntry
             {
             TR::Node *regDeps = iter->getNode()->getNumChildren() > 0 ? iter->getNode()->getChild(0) : NULL;

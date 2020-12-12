@@ -566,3 +566,16 @@ int32_t TR::AdminInstruction::estimateBinaryLength(int32_t currentEstimate)
    setEstimatedBinaryLength(0);
    return currentEstimate;
    }
+
+// TR::DataInstruction:: member functions
+
+uint8_t *TR::DataInstruction::generateBinaryEncoding() {
+   uint8_t *cursor =  cg()->getBinaryBufferCursor();
+
+   *(uint32_t*)cursor = getSourceImmediate();
+
+   setBinaryLength(RISCV_INSTRUCTION_LENGTH);
+   setBinaryEncoding(cursor);
+   cursor += RISCV_INSTRUCTION_LENGTH;
+   return cursor;
+}

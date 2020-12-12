@@ -73,6 +73,14 @@ TR_Debug::printMemoryReferenceComment(TR::FILE *pOutFile, TR::MemoryReference *m
    }
 
 void
+TR_Debug::print(TR::FILE *pOutFile, TR::DataInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t0x%08x (%d)", getOpCodeName(&instr->getOpCode()), instr->getSourceImmediate(), instr->getSourceImmediate());
+   trfflush(_comp->getOutFile());
+   }
+
+void
 TR_Debug::print(TR::FILE *pOutFile, TR::RtypeInstruction *instr)
    {
    printPrefix(pOutFile, instr);
@@ -190,6 +198,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
          break;
       case OMR::Instruction::IsAdmin:
          print(pOutFile, (TR::AdminInstruction *)instr);
+         break;
+      case OMR::Instruction::IsData:
+         print(pOutFile, (TR::DataInstruction *)instr);
          break;
       case OMR::Instruction::IsRTYPE:
          print(pOutFile, (TR::RtypeInstruction *)instr);

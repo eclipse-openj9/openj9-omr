@@ -48,8 +48,6 @@ class S390CallSnippet : public TR::Snippet
 
    protected:
    TR::SymbolReference * _realMethodSymbolReference;
-   TR_RuntimeHelper getInterpretedDispatchHelper(TR::SymbolReference *methodSymRef,
-                                                 TR::DataType        type);
    public:
 
    S390CallSnippet(TR::CodeGenerator *cg, TR::Node *c, TR::LabelSymbol *lab, int32_t s)
@@ -79,8 +77,6 @@ class S390CallSnippet : public TR::Snippet
 
    TR::SymbolReference *setRealMethodSymbolReference(TR::SymbolReference *s) {return _realMethodSymbolReference = s;}
    TR::SymbolReference *getRealMethodSymbolReference() {return _realMethodSymbolReference;}
-
-   static TR_RuntimeHelper getHelper(TR::MethodSymbol *, TR::DataType, TR::CodeGenerator *);
 
    static uint8_t *storeArgumentItem(TR::InstOpCode::Mnemonic op, uint8_t *buffer, TR::RealRegister *reg, int32_t offset, TR::CodeGenerator *cg);
    static uint8_t *S390flushArgumentsToStack(uint8_t *buffer, TR::Node *callNode, int32_t argSize, TR::CodeGenerator *cg);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,5 +32,47 @@
  * The functions may be in the public (TR) or project-specific namespaces (e.g., OMR)
  * depending upon how they are expected to be used.
  */
+
+
+#include <stddef.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
+#include "codegen/RegisterConstants.hpp"
+#include "codegen/RegisterDependency.hpp"
+
+
+namespace TR
+{
+
+/**
+ * @brief Creates a pre and post condition for the specified virtual and real register
+ *
+ * @param[in] dep : TR::RegisterDependencyConditions to add the dependencies to
+ * @param[in] vreg : the virtual register.  If NULL then a new virtual register of kind rk will
+ *                   be allocated
+ * @param[in] rnum : the real register
+ * @param[in] rk : the kind of register to allocate if one must be allocated.  Otherwise, this
+ *                 parameter is ignored.
+ * @param[in] cg : CodeGenerator object
+ */
+static inline void
+addDependency(
+      TR::RegisterDependencyConditions *dep,
+      TR::Register *vreg,
+      TR::RealRegister::RegNum rnum,
+      TR_RegisterKinds rk,
+      TR::CodeGenerator *cg)
+   {
+   if (vreg == NULL)
+      {
+      vreg = cg->allocateRegister(rk);
+      vreg->setPlaceholderReg();
+      }
+   dep->addPreCondition(vreg, rnum);
+   dep->addPostCondition(vreg, rnum);
+   }
+
+} // namespace TR
 
 #endif

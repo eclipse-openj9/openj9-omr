@@ -27,6 +27,7 @@
 #include "codegen/Linkage_inlines.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RegisterDependency.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "env/StackMemoryRegion.hpp"
 #include "il/Node_inlines.hpp"
 #include "il/AutomaticSymbol.hpp"
@@ -61,7 +62,6 @@
    if (reg->getHasBeenAssignedInMethod())                                        \
       { block; }                                                                 \
    )
-
 /**
  * @brief Adds dependency
  */
@@ -689,7 +689,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
                   }
                else
                   {
-                  addDependency(dependencies, argRegister, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+                  TR::addDependency(dependencies, argRegister, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
                   }
                }
             else
@@ -740,7 +740,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
                   }
                else
                   {
-                  addDependency(dependencies, argRegister, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
+                  TR::addDependency(dependencies, argRegister, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
                   }
                }
             else
@@ -772,7 +772,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
          }
       else
          {
-         addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+         TR::addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
          }
       numIntegerArgs++;
       }
@@ -783,7 +783,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
       if (!properties.getPreserved((TR::RealRegister::RegNum)i))
          {
          // NULL dependency for non-preserved regs
-         addDependency(dependencies, NULL, (TR::RealRegister::RegNum)i, TR_FPR, cg());
+         TR::addDependency(dependencies, NULL, (TR::RealRegister::RegNum)i, TR_FPR, cg());
          }
       }
 

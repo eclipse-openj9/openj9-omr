@@ -189,6 +189,19 @@ MM_VerboseHandlerOutput::getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t 
 }
 
 uintptr_t
+MM_VerboseHandlerOutput::getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t id, const char *type, uintptr_t contextId, uint64_t wallTimeMs, const char *reasonForTermination)
+{
+	OMRPORT_ACCESS_FROM_OMRVM(_omrVM);
+	uintptr_t bufPos = getTagTemplate(buf, bufsize, id, type, contextId, wallTimeMs);
+	
+	if (NULL != reasonForTermination){
+		bufPos += omrstr_printf(buf + bufPos, bufsize - bufPos, " terminationReason=\"%s\"", reasonForTermination);
+	}
+
+	return bufPos;
+}
+
+uintptr_t
 MM_VerboseHandlerOutput::getTagTemplateWithOldType(char *buf, uintptr_t bufsize, uintptr_t id, const char *oldType, const char *newType, uintptr_t contextId, uint64_t wallTimeMs)
 {
 	OMRPORT_ACCESS_FROM_OMRVM(_omrVM);
@@ -229,6 +242,27 @@ MM_VerboseHandlerOutput::getTagTemplateWithDuration(char *buf, uintptr_t bufsize
 	bufPos += omrstr_printf(buf + bufPos, bufsize - bufPos, "\"");
 
 	return bufPos;
+}
+
+const char *
+MM_VerboseHandlerOutput::getConcurrentTerminationReason(MM_ConcurrentPhaseStatsBase *stats)
+{
+	const char *reasonForTermination = NULL;
+	if (stats->isTerminationRequested()) {
+		if (stats->isTerminationRequestExternal()) {
+			/* For example, Java JVMTI and similar. Unfortunately, we could not tell what. */
+			reasonForTermination = "termination requested externally";
+		} else {
+			/* Most interesting reason would be exhausted allocate/survivor, since it could mean that
+			 * tilting is too aggressive (and survival rate is jittery), and suggest tilt tuning/limiting.
+			 * There could be various other reasons, like STW global GC (system, end of concurrent mark etc.),
+			 * or even notorious 'exclusive VM access to satisfy allocate'.
+			 * Either way, the more detailed reason could be deduced from verbose GC.
+			 */
+			reasonForTermination = "termination requested by GC";
+		}
+	}
+	return reasonForTermination;
 }
 
 void
@@ -903,33 +937,6 @@ MM_VerboseHandlerOutput::handleConcurrentStart(J9HookInterface** hook, UDATA eve
 	exitAtomicReportingBlock();
 }
 
-
-void
-MM_VerboseHandlerOutput::handleConcurrentEndInternal(J9HookInterface** hook, UDATA eventNum, void* eventData)
-{
-	MM_ConcurrentPhaseEndEvent *event = (MM_ConcurrentPhaseEndEvent *)eventData;
-	MM_ConcurrentPhaseStatsBase *stats = (MM_ConcurrentPhaseStatsBase *)event->concurrentStats;
-	MM_VerboseWriterChain* writer = _manager->getWriterChain();
-	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(event->currentThread);
-
-	const char *reasonForTermination = NULL;
-	if (stats->isTerminationRequested()) {
-		if (stats->isTerminationRequestExternal()) {
-			/* For example, Java JVMTI and similar. Unfortunately, we could not tell what. */
-			reasonForTermination = "termination requested externally";
-		} else {
-			/* Most interesting reason would be exhausted allocate/survivor, since it could mean that
-			 * tilting is too aggressive (and survival rate is jittery), and suggest tilt tuning/limiting.
-			 * There could be various other reasons, like STW global GC (system, end of concurrent mark etc.),
-			 * or even notorious 'exclusive VM access to satisfy allocate'.
-			 * Either way, the more detailed reason could be deduced from verbose GC.
-			 */
-			reasonForTermination = "termination requested by GC";
-		}
-		writer->formatAndOutput(env, 0, "<warning details=\"%s\" />", reasonForTermination, _extensions->gcExclusiveAccessThreadId);
-	}
-}
-
 void
 MM_VerboseHandlerOutput::handleConcurrentEnd(J9HookInterface** hook, UDATA eventNum, void* eventData)
 {
@@ -940,12 +947,12 @@ MM_VerboseHandlerOutput::handleConcurrentEnd(J9HookInterface** hook, UDATA event
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	UDATA contextId = stats->_cycleID;
 	char tagTemplate[200];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), getConcurrentTypeString(), contextId, omrtime_current_time_millis());
+	const char* reasonForTermination = getConcurrentTerminationReason(stats);
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), getConcurrentTypeString(), contextId, omrtime_current_time_millis(), reasonForTermination);
 
 	enterAtomicReportingBlock();
 	writer->formatAndOutput(env, 0, "<concurrent-end %s>", tagTemplate);
 	handleConcurrentEndInternal(hook, eventNum, eventData);
-	handleConcurrentGCOpEnd(hook, eventNum, eventData);
 	writer->formatAndOutput(env, 0, "</concurrent-end>\n");
 	writer->flush(env);
 	exitAtomicReportingBlock();
@@ -1102,4 +1109,28 @@ void
 verboseHandlerHeapResize(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData)
 {
 	((MM_VerboseHandlerOutput*)userData)->handleHeapResize(hook, eventNum, eventData);
+}
+
+void
+MM_VerboseHandlerOutput::handleGCOPOuterStanzaStart(MM_EnvironmentBase* env, const char *type, uintptr_t contextID, uint64_t duration, bool deltaTimeSuccess)
+{
+	MM_VerboseManager* manager = getManager();
+	MM_VerboseWriterChain* writer = manager->getWriterChain();
+	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+
+	if (!deltaTimeSuccess) {
+		writer->formatAndOutput(env, 0, "<warning details=\"clock error detected, following timing may be inaccurate\" />");
+	}
+
+	char tagTemplate[200];
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), type ,contextID, duration, omrtime_current_time_millis());
+	writer->formatAndOutput(env, 0, "<gc-op %s>", tagTemplate);
+}
+
+void
+MM_VerboseHandlerOutput::handleGCOPOuterStanzaEnd(MM_EnvironmentBase* env)
+{
+	MM_VerboseManager* manager = getManager();
+	MM_VerboseWriterChain* writer = manager->getWriterChain();
+	writer->formatAndOutput(env, 0, "</gc-op>");
 }

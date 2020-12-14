@@ -261,30 +261,6 @@ MM_VerboseHandlerOutputStandard::handleGCOPStanza(MM_EnvironmentBase* env, const
 }
 
 void
-MM_VerboseHandlerOutputStandard::handleGCOPOuterStanzaStart(MM_EnvironmentBase* env, const char *type, uintptr_t contextID, uint64_t duration, bool deltaTimeSuccess)
-{
-	MM_VerboseManager* manager = getManager();
-	MM_VerboseWriterChain* writer = manager->getWriterChain();
-	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-
-	if (!deltaTimeSuccess) {
-		writer->formatAndOutput(env, 0, "<warning details=\"clock error detected, following timing may be inaccurate\" />");
-	}
-
-	char tagTemplate[200];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), manager->getIdAndIncrement(), type ,contextID, duration, omrtime_current_time_millis());
-	writer->formatAndOutput(env, 0, "<gc-op %s>", tagTemplate);
-}
-
-void
-MM_VerboseHandlerOutputStandard::handleGCOPOuterStanzaEnd(MM_EnvironmentBase* env)
-{
-	MM_VerboseManager* manager = getManager();
-	MM_VerboseWriterChain* writer = manager->getWriterChain();
-	writer->formatAndOutput(env, 0, "</gc-op>");
-}
-
-void
 MM_VerboseHandlerOutputStandard::handleMarkEnd(J9HookInterface** hook, uintptr_t eventNum, void* eventData)
 {
 	MM_MarkEndEvent* event = (MM_MarkEndEvent*)eventData;
@@ -468,7 +444,7 @@ MM_VerboseHandlerOutputStandard::handleScavengeEnd(J9HookInterface** hook, uintp
 }
 
 void
-MM_VerboseHandlerOutputStandard::handleConcurrentGCOpEnd(J9HookInterface** hook, uintptr_t eventNum, void* eventData)
+MM_VerboseHandlerOutputStandard::handleConcurrentEndInternal(J9HookInterface** hook, uintptr_t eventNum, void* eventData)
 {
 	/* convert event from concurrent-end to scavenge-end */
 	MM_ScavengeEndEvent scavengeEndEvent;

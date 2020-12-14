@@ -30,6 +30,7 @@
 
 #include "modronbase.h"
 
+#include "ConcurrentPhaseStatsBase.hpp"
 #include "LightweightNonReentrantLock.hpp"
 
 class MM_CollectionStatistics;
@@ -336,6 +337,21 @@ public:
 	 * @param buf character buffer in which to create to tag template.
 	 * @param bufsize maximum size allowed in the character buffer.
 	 * @param id unique id of the tag being built.
+	 * @param type Human readable name for the type of the tag.
+	 * @param contextId unique identifier of the associated event this is associated with (parent/sibling relationship).
+	 * @param wallTimeMs wall clock time to be used as the timestamp for the tag.
+	 * @param reasonForTermination termination reason.
+	 * @return number of bytes consumed in the buffer.
+	 *
+	 * @note should be moved to protected once all standard usage is converted.
+	 */
+	uintptr_t getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t id, const char *type, uintptr_t contextId, uint64_t wallTimeMs, const char *reasonForTermination);
+
+	/**
+	 * Build the standard top level tag template.
+	 * @param buf character buffer in which to create to tag template.
+	 * @param bufsize maximum size allowed in the character buffer.
+	 * @param id unique id of the tag being built.
 	 * @param type Human readable name for the type of the tag - old cycle that has finished.
 	 * @param type Human readable name for the type of the tag - new cycle that is starting.
 	 * @param contextId unique identifier of the associated event this is associated with (parent/sibling relationship).
@@ -377,6 +393,13 @@ public:
 	 * @note should be moved to protected once all standard usage is converted.
 	 */
 	uintptr_t getTagTemplateWithDuration(char *buf, uintptr_t bufsize, uintptr_t id, const char *type, uintptr_t contextId, uint64_t durationus, uint64_t usertimeus, uint64_t cputimeus, uint64_t wallTimeMs, uint64_t stalltimeus);
+
+	/**
+	 * Get termination reason for concurrent collection.
+	 * @param stats concurrent stats
+	 * @return string representing the reason for termination
+	 */ 
+	virtual const char *getConcurrentTerminationReason(MM_ConcurrentPhaseStatsBase *stats);
 
 	/**
 	 * Handle any output or data tracking for the initialized phase of verbose GC.
@@ -496,11 +519,13 @@ public:
 	void handleConcurrentEnd(J9HookInterface** hook, UDATA eventNum, void* eventData);
 	
 	virtual	void handleConcurrentStartInternal(J9HookInterface** hook, UDATA eventNum, void* eventData) {}
-	virtual void handleConcurrentEndInternal(J9HookInterface** hook, UDATA eventNum, void* eventData);
+	virtual void handleConcurrentEndInternal(J9HookInterface** hook, UDATA eventNum, void* eventData) {};
 	virtual const char *getConcurrentTypeString() { return NULL; }
 	
 	virtual void handleConcurrentGCOpStart(J9HookInterface** hook, uintptr_t eventNum, void* eventData) {}
-	virtual void handleConcurrentGCOpEnd(J9HookInterface** hook, uintptr_t eventNum, void* eventData) {}
+
+	void handleGCOPOuterStanzaStart(MM_EnvironmentBase* env, const char *type, uintptr_t contextID, uint64_t duration, bool deltaTimeSuccess);
+	void handleGCOPOuterStanzaEnd(MM_EnvironmentBase* env);
 
 	void handleHeapResize(J9HookInterface** hook, uintptr_t eventNum, void* eventData);
 

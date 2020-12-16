@@ -141,6 +141,10 @@ define WRITE_COMMON_THREAD_EXPORTS
 @echo omrthread_abort >>$@
 @echo omrthread_attach >>$@
 @echo omrthread_attach_ex >>$@
+@echo omrthread_waiting_to_acquire >>$@
+@echo omrthread_monitor_is_acquired >>$@
+@echo omrthread_monitor_getNumOfTimesAcquired >>$@
+@echo omrthread_monitor_getCurrentOwner >>$@
 @echo omrthread_create >>$@
 @echo omrthread_create_ex >>$@
 @echo omrthread_cancel >>$@

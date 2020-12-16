@@ -136,9 +136,7 @@ OMR::RV::CodeGenerator::beginInstructionSelection()
    TR::Node *startNode = comp->getStartTree()->getNode();
    if (comp->getMethodSymbol()->getLinkageConvention() == TR_Private)
       {
-      TR_UNIMPLEMENTED();
-
-      //_returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::RVImmInstruction(TR::InstOpCode::dd, startNode, 0, self());
+      _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::DataInstruction(TR::InstOpCode::dd, startNode, 0, self());
       }
    else
       {
@@ -153,9 +151,7 @@ OMR::RV::CodeGenerator::endInstructionSelection()
    {
    if (_returnTypeInfoInstruction != NULL)
       {
-      TR_UNIMPLEMENTED();
-
-      //_returnTypeInfoInstruction->setSourceImmediate(static_cast<uint32_t>(self()->comp()->getReturnInfo()));
+      _returnTypeInfoInstruction->setSourceImmediate(static_cast<uint32_t>(self()->comp()->getReturnInfo()));
       }
    }
 

@@ -380,7 +380,7 @@ namespace TR { class ARM64UnresolvedCallSnippet; }
 namespace TR { class ARM64VirtualUnresolvedSnippet; }
 #endif
 
-
+namespace TR { class DataInstruction; }
 namespace TR { class RtypeInstruction; }
 namespace TR { class ItypeInstruction; }
 namespace TR { class StypeInstruction; }
@@ -1178,6 +1178,7 @@ public:
 
    void print(TR::FILE *, TR::LabelInstruction *);
    void print(TR::FILE *, TR::AdminInstruction *);
+   void print(TR::FILE *, TR::DataInstruction *);
 
    void print(TR::FILE *, TR::RtypeInstruction *);
    void print(TR::FILE *, TR::ItypeInstruction *);

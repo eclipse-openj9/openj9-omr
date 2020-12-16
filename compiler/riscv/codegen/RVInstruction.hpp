@@ -1298,6 +1298,65 @@ class AdminInstruction : public TR::Instruction
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };
 
+class DataInstruction : public TR::Instruction
+   {
+   uint32_t _sourceImmediate;
+
+public:
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] imm : immediate value
+    * @param[in] cg : CodeGenerator
+    */
+   DataInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, uint32_t imm, TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, cg), _sourceImmediate(imm)
+      {
+      TR_ASSERT_FATAL_WITH_NODE(node, op == TR::InstOpCode::dd, "Opcode of data instruction is not dd");
+      }
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] imm : immediate value
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   DataInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, uint32_t imm,
+                       TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, precedingInstruction, cg), _sourceImmediate(imm)
+      {
+      TR_ASSERT_FATAL_WITH_NODE(node, op == TR::InstOpCode::dd, "Opcode of data instruction is not dd");
+      }
+
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsData; }
+
+   /**
+    * @brief Gets source immediate
+    * @return source immediate
+    */
+   uint32_t getSourceImmediate() {return _sourceImmediate;}
+   /**
+    * @brief Sets source immediate
+    * @param[in] si : immediate value
+    * @return source immediate
+    */
+   uint32_t setSourceImmediate(uint32_t si) {return (_sourceImmediate = si);}
+
+   /**
+    * @brief Generates binary encoding of the instruction
+    * @return instruction cursor
+    */
+   virtual uint8_t *generateBinaryEncoding();
+   };
+
+
 } // namespace TR
 
 #endif // RVINSTRUCTION_INCL

@@ -314,6 +314,24 @@ public:
    TR_GlobalRegisterNumber _gprLinkageGlobalRegisterNumbers[TR::RealRegister::NumRegisters]; // could be smaller
    TR_GlobalRegisterNumber _fprLinkageGlobalRegisterNumbers[TR::RealRegister::NumRegisters]; // could be smaller
 
+
+   /**
+    * @return Retrieves the cached returnTypeInfo instruction
+    */
+   TR::DataInstruction* getReturnTypeInfoInstruction()
+      {
+      return _returnTypeInfoInstruction;
+      }
+
+   /**
+    * @brief Caches the returnTypeInfo instruction
+    * @param[in] rtii : the returnTypeInfo instruction
+    */
+   void setReturnTypeInfoInstruction(TR::DataInstruction *rtii)
+      {
+      _returnTypeInfoInstruction = rtii;
+      }
+
    private:
 
    enum // flags
@@ -329,7 +347,7 @@ public:
 
    TR::RealRegister *_stackPtrRegister;
    TR::RealRegister *_methodMetaDataRegister;
-   TR::Instruction *_returnTypeInfoInstruction;
+   TR::DataInstruction *_returnTypeInfoInstruction;
    TR::ConstantDataSnippet *_constantData;
    const TR::RVLinkageProperties *_linkageProperties;
    TR::list<TR_RVOutOfLineCodeSection*> _outOfLineCodeSectionList;

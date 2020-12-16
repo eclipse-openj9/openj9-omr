@@ -558,7 +558,7 @@ omrthread_monitor_is_acquired(omrthread_monitor_t monitor);
  * @return uint32_t
  */
 uint32_t
-omrthread_monitor_getNumOfTimesAcquired(omrthread_monitor_t monitor);
+omrthread_monitor_get_acquired_count(omrthread_monitor_t monitor);
 
 /**
  * Return thread that currently owns the monitor. Null 
@@ -567,7 +567,7 @@ omrthread_monitor_getNumOfTimesAcquired(omrthread_monitor_t monitor);
  * @return omrthread_t
  */
 omrthread_t
-omrthread_monitor_getCurrentOwner(omrthread_monitor_t monitor);
+omrthread_monitor_get_current_owner(omrthread_monitor_t monitor);
 
 /**
 * @brief

@@ -1073,16 +1073,13 @@ TR::Register *OMR::Power::TreeEvaluator::i2fEvaluator(TR::Node *node, TR::CodeGe
        (node->getOpCodeValue() == TR::iu2f && (child->getOpCodeValue() == TR::iload || child->getOpCodeValue() == TR::iloadi))) ||
        (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6) &&
        (node->getOpCodeValue() == TR::i2f && (child->getOpCodeValue() == TR::iload || child->getOpCodeValue() == TR::iloadi)))) &&
-       child->getReferenceCount() == 1 && child->getRegister() == NULL &&
-       !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
+       child->getReferenceCount() == 1 && child->getRegister() == NULL)
       {
-      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
-      tempMR->forceIndexedForm(node, cg);
       tempReg = cg->allocateRegister(TR_FPR); // This one is 64bit
       trgReg = cg->allocateSinglePrecisionRegister(); // Allocate here
       if (node->getOpCodeValue() == TR::i2f)
          {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfiwax, node, tempReg, tempMR);
+         TR::LoadStoreHandler::generateLoadNodeSequence(cg, tempReg, child, TR::InstOpCode::lfiwax, 4, true);
          if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7))
             {
             generateTrg1Src1Instruction(cg, TR::InstOpCode::fcfids, node, trgReg, tempReg);
@@ -1095,10 +1092,8 @@ TR::Register *OMR::Power::TreeEvaluator::i2fEvaluator(TR::Node *node, TR::CodeGe
          }
       else
          {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfiwzx, node, tempReg, tempMR);  // TR::iu2f, must be P7
-         generateTrg1Src1Instruction(cg, TR::InstOpCode::fcfidus, node, trgReg, tempReg);
+         TR::LoadStoreHandler::generateLoadNodeSequence(cg, tempReg, child, TR::InstOpCode::lfiwzx, 4, true);
          }
-      tempMR->decNodeReferenceCounts(cg);
       cg->stopUsingRegister(tempReg);
       }
    else
@@ -1122,24 +1117,19 @@ TR::Register *OMR::Power::TreeEvaluator::i2dEvaluator(TR::Node *node, TR::CodeGe
        (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6) &&
        node->getOpCodeValue() == TR::i2d && (child->getOpCodeValue() == TR::iload || child->getOpCodeValue() == TR::iloadi))) &&
        child->getReferenceCount()==1 &&
-       child->getRegister() == NULL &&
-       !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
+       child->getRegister() == NULL)
       {
-      // possible TODO: if refcount > 1, do both load and lfiwax?
-      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
-      tempMR->forceIndexedForm(node, cg);
       trgReg = cg->allocateRegister(TR_FPR);
       if (node->getOpCodeValue() == TR::i2d)
          {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfiwax, node, trgReg, tempMR);
+         TR::LoadStoreHandler::generateLoadNodeSequence(cg, trgReg, child, TR::InstOpCode::lfiwax, 4, true);
          generateTrg1Src1Instruction(cg, TR::InstOpCode::fcfid, node, trgReg, trgReg);
          }
       else
          {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfiwzx, node, trgReg, tempMR); // iu2d
+         TR::LoadStoreHandler::generateLoadNodeSequence(cg, trgReg, child, TR::InstOpCode::lfiwzx, 4, true);
          generateTrg1Src1Instruction(cg, TR::InstOpCode::fcfidu, node, trgReg, trgReg);
          }
-      tempMR->decNodeReferenceCounts(cg);
       }
    else
       {
@@ -1310,16 +1300,12 @@ TR::Register *OMR::Power::TreeEvaluator::l2fEvaluator(TR::Node *node, TR::CodeGe
        node->getOpCodeValue() == TR::l2f &&
        (child->getOpCodeValue() == TR::lload || child->getOpCodeValue() == TR::lloadi) &&
        child->getReferenceCount()==1 &&
-       child->getRegister() == NULL &&
-       !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
+       child->getRegister() == NULL)
       {
-      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
-      tempMR->forceIndexedForm(node, cg);
       TR::Register *tempReg = cg->allocateRegister(TR_FPR); // Double
       trgReg = cg->allocateSinglePrecisionRegister(TR_FPR); // Single
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lfdx, node, tempReg, tempMR);
+      TR::LoadStoreHandler::generateLoadNodeSequence(cg, tempReg, child, TR::InstOpCode::lfd, 8);
       generateTrg1Src1Instruction(cg, TR::InstOpCode::fcfids, node, trgReg, tempReg);
-      tempMR->decNodeReferenceCounts(cg);
       cg->stopUsingRegister(tempReg);
       }
    else
@@ -1338,15 +1324,11 @@ TR::Register *OMR::Power::TreeEvaluator::l2dEvaluator(TR::Node *node, TR::CodeGe
        node->getOpCodeValue() == TR::l2d &&
        (child->getOpCodeValue() == TR::lload || child->getOpCodeValue() == TR::lloadi) &&
        child->getReferenceCount()==1 &&
-       child->getRegister() == NULL &&
-       !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
+       child->getRegister() == NULL)
       {
-         TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
-         tempMR->forceIndexedForm(node, cg);
-         trgReg = cg->allocateRegister(TR_FPR); // Double
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfdx, node, trgReg, tempMR);
-         generateTrg1Src1Instruction(cg, TR::InstOpCode::fcfid, node, trgReg, trgReg);
-         tempMR->decNodeReferenceCounts(cg);
+      trgReg = cg->allocateRegister(TR_FPR);
+      TR::LoadStoreHandler::generateLoadNodeSequence(cg, trgReg, child, TR::InstOpCode::lfd, 8);
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::fcfid, node, trgReg, trgReg);
       }
    else
       {

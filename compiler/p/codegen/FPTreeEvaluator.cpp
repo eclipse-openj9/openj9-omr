@@ -605,19 +605,10 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
       cg->decReferenceCount(child);
       return resReg;
       }
-   else if (child->getRegister() == NULL &&
-            child->getOpCode().isLoadVar())
+   else if (!child->getRegister() && child->getReferenceCount() == 1 && child->getOpCode().isLoadVar())
       {
-      if (child->getReferenceCount() > 1)
-         {
-         TR::Node *newNode = child->duplicateTree(false);
-
-         cg->evaluate(child);
-         cg->decReferenceCount(child);
-         child = newNode;
-         }
-
-      return TR::TreeEvaluator::dloadHelper(child, cg, resReg, TR::InstOpCode::lxvdsx);
+      TR::LoadStoreHandler::generateLoadNodeSequence(cg, resReg, child, TR::InstOpCode::lxvdsx, 8, true);
+      return resReg;
       }
    else
       {

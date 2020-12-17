@@ -689,21 +689,12 @@ TR::Register *OMR::Power::TreeEvaluator::vdsetelemEvaluator(TR::Node *node, TR::
       int elem = thirdChild->getInt();
       TR_ASSERT(elem == 0 || elem == 1, "Element can only be 0 or 1\n");
 
-      if (secondChild->getRegister() == NULL &&
-         secondChild->getOpCode().isLoadVar())
+      if (!secondChild->getRegister() && secondChild->getReferenceCount() == 1 && secondChild->getOpCode().isLoadVar())
          {
-         if (secondChild->getReferenceCount() > 1)
-            {
-            TR::Node *newNode = secondChild->duplicateTree(false);
-             cg->evaluate(secondChild);
-            cg->decReferenceCount(secondChild);
-            secondChild = newNode;
-            }
-
-         TR::TreeEvaluator::dloadHelper(secondChild, cg, resReg, TR::InstOpCode::lxsdx);
-	      }
-         else
-	      {
+         TR::LoadStoreHandler::generateLoadNodeSequence(cg, resReg, secondChild, TR::InstOpCode::lxsdx, 8, true);
+         }
+      else
+         {
          TR::Register *fprReg = cg->evaluate(secondChild);
          generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, fprReg, fprReg);
 

@@ -929,25 +929,10 @@ TR::Register *OMR::Power::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::Code
      }
 
    TR::Register *dstReg = cg->allocateRegister(kind);
+
+   TR::LoadStoreHandler::generateLoadNodeSequence(cg, dstReg, node, opcode, 16, true);
+
    node->setRegister(dstReg);
-
-   TR::MemoryReference *srcMemRef = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 16);
-   if (srcMemRef->hasDelayedOffset())
-      {
-      TR::Register *tmpReg = cg->allocateRegister();
-      generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, tmpReg, srcMemRef);
-
-      TR::MemoryReference *tmpMemRef = TR::MemoryReference::createWithIndexReg(cg, NULL, tmpReg, 16);
-      generateTrg1MemInstruction(cg, opcode, node, dstReg, tmpMemRef);
-      tmpMemRef->decNodeReferenceCounts(cg);
-      }
-   else
-      {
-      srcMemRef->forceIndexedForm(node, cg);
-      generateTrg1MemInstruction(cg, opcode, node, dstReg, srcMemRef);
-      }
-
-   srcMemRef->decNodeReferenceCounts(cg);
    return dstReg;
    }
 
@@ -971,26 +956,9 @@ TR::Register *OMR::Power::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::Cod
    TR::Node *valueChild = node->getOpCode().isStoreDirect() ? node->getFirstChild() : node->getSecondChild();
    TR::Register *valueReg = cg->evaluate(valueChild);
 
-   TR::MemoryReference *srcMemRef = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 16);
+   TR::LoadStoreHandler::generateStoreNodeSequence(cg, valueReg, node, opcode, 16, true);
 
-   if (srcMemRef->hasDelayedOffset())
-      {
-      TR::Register *tmpReg = cg->allocateRegister();
-      generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, tmpReg, srcMemRef);
-      TR::MemoryReference *tmpMemRef = TR::MemoryReference::createWithIndexReg(cg, NULL, tmpReg, 16);
-
-      generateMemSrc1Instruction(cg, opcode, node, tmpMemRef, valueReg);
-      tmpMemRef->decNodeReferenceCounts(cg);
-      }
-   else
-      {
-      srcMemRef->forceIndexedForm(node, cg);
-      generateMemSrc1Instruction(cg, opcode, node, srcMemRef, valueReg);
-      }
-
-   srcMemRef->decNodeReferenceCounts(cg);
    cg->decReferenceCount(valueChild);
-
    return NULL;
    }
 

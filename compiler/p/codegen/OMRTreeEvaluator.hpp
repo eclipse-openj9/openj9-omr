@@ -68,7 +68,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *lloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *floadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *dloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *dloadHelper(TR::Node *node, TR::CodeGenerator *cg, TR::Register *reg, TR::InstOpCode::Mnemonic op);
    static TR::Register *bloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *sloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg); // ibm@59591

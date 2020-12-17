@@ -5069,17 +5069,16 @@ TR::Register *OMR::Power::TreeEvaluator::sbyteswapEvaluator(TR::Node *node, TR::
        firstNonConversionOpCodeNode->getReferenceCount() == 1 &&
        (nodeType.isInt16() || nodeType.isInt32() || nodeType.isInt64()))
       {
-      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, firstNonConversionOpCodeNode, 2);
+      int64_t extraOffset = 0;
+
 #ifndef __LITTLE_ENDIAN__
-      //On Big Endian Machines
       if (nodeType.isInt32())
-         tempMR->addToOffset(node,2,cg);
+         extraOffset = 2;
       else if (nodeType.isInt64())
-         tempMR->addToOffset(node,6,cg);
+         extraOffset = 6;
 #endif
-      tempMR->forceIndexedForm(firstNonConversionOpCodeNode, cg);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lhbrx, node, tgtRegister, tempMR);
-      tempMR->decNodeReferenceCounts(cg);
+
+      TR::LoadStoreHandler::generateLoadNodeSequence(cg, tgtRegister, firstNonConversionOpCodeNode, TR::InstOpCode::lhbrx, 2, true, extraOffset);
 
       //Decrement Ref count for the intermediate conversion nodes
       firstNonConversionOpCodeNode = node->getFirstChild();
@@ -5133,10 +5132,7 @@ TR::Register * OMR::Power::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR:
        firstChild->getOpCode().isMemoryReference() &&
        firstChild->getReferenceCount() == 1)
       {
-      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, firstChild, 4);
-      tempMR->forceIndexedForm(firstChild, cg);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwbrx, node, tgtRegister, tempMR);
-      tempMR->decNodeReferenceCounts(cg);
+      TR::LoadStoreHandler::generateLoadNodeSequence(cg, tgtRegister, firstChild, TR::InstOpCode::lwbrx, 4, true);
       }
    else
       {
@@ -5190,10 +5186,7 @@ TR::Register *OMR::Power::TreeEvaluator::lbyteswapEvaluator(TR::Node *node, TR::
           firstChild->getOpCode().isMemoryReference() &&
           firstChild->getReferenceCount() == 1)
          {
-         TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, firstChild, 8);
-         tempMR->forceIndexedForm(firstChild, cg);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::ldbrx, node, tgtRegister, tempMR);
-         tempMR->decNodeReferenceCounts(cg);
+         TR::LoadStoreHandler::generateLoadNodeSequence(cg, tgtRegister, firstChild, TR::InstOpCode::ldbrx, 8, true);
          }
       else
          {

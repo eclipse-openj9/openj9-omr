@@ -70,10 +70,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *dloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *dloadHelper(TR::Node *node, TR::CodeGenerator *cg, TR::Register *reg, TR::InstOpCode::Mnemonic op);
    static TR::Register *bloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *buloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *commonByteLoadEvaluator(TR::Node *node, bool signExtend, TR::CodeGenerator *cg);
    static TR::Register *sloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *cloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg); // ibm@59591
    static TR::Register *istoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -81,7 +78,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *dstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *sstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *cstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ilstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *astoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);  // ibm@59591
    static TR::Register *dwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg);

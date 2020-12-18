@@ -85,13 +85,12 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(
    TR::Register      *copyReg = NULL;
    TR::Register      *highCopyReg = NULL;
    List<TR::Register> registers(cg->trMemory());
-   int32_t           i;
    TR::Machine *machine = cg->machine();
    TR::Compilation *comp = cg->comp();
 
    int32_t numLongs = 0;
 
-   for (i = 0; i < node->getNumChildren(); ++i)
+   for (int32_t i = 0; i < node->getNumChildren(); ++i)
       {
       TR::Node *child = node->getChild(i);
 
@@ -108,7 +107,7 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(
 
    int32_t numLongsAdded = 0;
 
-   for (i = node->getNumChildren()-1; i >= 0; i--)
+   for (int32_t i = node->getNumChildren()-1; i >= 0; i--)
       {
       TR::Node                 *child        = node->getChild(i);
       TR::Register             *globalReg    = child->getRegister();
@@ -423,15 +422,13 @@ TR::RegisterDependencyConditions  *OMR::X86::RegisterDependencyConditions::clone
    TR::RegisterDependencyConditions  *other =
       new (cg->trHeapMemory()) TR::RegisterDependencyConditions(_numPreConditions  + additionalRegDeps,
                                               _numPostConditions + additionalRegDeps, cg->trMemory());
-   int32_t i;
-
-   for (i = _numPreConditions-1; i >= 0; --i)
+   for (int32_t i = _numPreConditions-1; i >= 0; --i)
       {
       TR::RegisterDependency  *dep = getPreConditions()->getRegisterDependency(i);
       other->getPreConditions()->setDependencyInfo(i, dep->getRegister(), dep->getRealRegister(), cg, dep->getFlags());
       }
 
-   for (i = _numPostConditions-1; i >= 0; --i)
+   for (int32_t i = _numPostConditions-1; i >= 0; --i)
       {
       TR::RegisterDependency  *dep = getPostConditions()->getRegisterDependency(i);
       other->getPostConditions()->setDependencyInfo(i, dep->getRegister(), dep->getRealRegister(), cg, dep->getFlags());
@@ -1040,56 +1037,7 @@ void TR_X86RegisterDependencyGroup::assignFPRegisters(TR::Instruction   *prevIns
 
    if (numberOfRegisters > 0)
       {
-      TR::Register *reqdTopVirtReg = NULL;
-
-      int32_t i;
-
-#ifdef DEBUG
-      int32_t numberOfFPRegisters = 0;
-      for (i = 0; i < numberOfRegisters; i++)
-         {
-         TR::Register *virtReg = _dependencies[i].getRegister();
-         if (virtReg && kindsToBeAssigned & virtReg->getKindAsMask())
-            {
-            if (_dependencies[i].getGlobalFPRegister())
-               numberOfFPRegisters++;
-            }
-         }
-#endif
-
-      TR::X86LabelInstruction  *labelInstruction = NULL;
-
-      if (prevInstruction->getNext())
-         labelInstruction = prevInstruction->getNext()->getX86LabelInstruction();
-
-      if (labelInstruction &&
-          labelInstruction->getNeedToClearFPStack())
-         {
-         // Push the correct number of FP values in global registers
-         // onto the stack; this would enable the stack height to be
-         // correct at this point (start of extended basic block).
-         //
-         for (i = 0; i < numberOfRegisters; i++)
-            {
-            TR::Register *virtReg = _dependencies[i].getRegister();
-            if (virtReg && kindsToBeAssigned & virtReg->getKindAsMask())
-               {
-               if (_dependencies[i].getGlobalFPRegister())
-                  {
-                  if ((virtReg->getFutureUseCount() == 0) ||
-                      (virtReg->getTotalUseCount() == virtReg->getFutureUseCount()))
-                     {
-                     machine->fpStackPush(virtReg);
-                     }
-                  }
-               }
-            }
-         }
-
-      // Reverse all FP spills so that FP stack height
-      // equals number of global registers as this point
-      //
-      for (i = 0; i < numberOfRegisters; i++)
+      for (int32_t i = 0; i < numberOfRegisters; i++)
          {
          TR::Register *virtReg = _dependencies[i].getRegister();
          if (virtReg && kindsToBeAssigned & virtReg->getKindAsMask())
@@ -1103,54 +1051,32 @@ void TR_X86RegisterDependencyGroup::assignFPRegisters(TR::Instruction   *prevIns
             }
          }
 
-      // Call the routine that places the global registers in correct order;
-      // this routine tries to order them in as few exchanges as possible. This
-      // routine could be improved slightly in the future.
-      //
-      List<TR::Register> popRegisters(cg->trMemory());
-      orderGlobalRegsOnFPStack(cursor, kindsToBeAssigned, numberOfRegisters, &popRegisters, cg);
-
-      for (i = 0; i < numberOfRegisters; i++)
+      for (int32_t i = 0; i < numberOfRegisters; i++)
          {
          TR::Register *virtReg = _dependencies[i].getRegister();
          if (virtReg && kindsToBeAssigned & virtReg->getKindAsMask())
             {
             if (virtReg->getTotalUseCount() != virtReg->getFutureUseCount())
                {
-               // Original code that handles non global FP regs
-               //
-               if (!_dependencies[i].getGlobalFPRegister())
+               if (!machine->isFPRTopOfStack(virtReg))
                   {
-                  if (!machine->isFPRTopOfStack(virtReg))
-                     {
-                     cursor = machine->fpStackFXCH(cursor, virtReg);
-                     }
+                  cursor = machine->fpStackFXCH(cursor, virtReg);
+                  }
 
-                  if (virtReg->decFutureUseCount() == 0)
-                     {
-                     machine->fpStackPop();
-                     }
+               if (virtReg->decFutureUseCount() == 0)
+                  {
+                  machine->fpStackPop();
                   }
                }
             else
                {
                // If this is the first reference of a register, then this must be the caller
-               // side return value.  Assume it already exists on the FP stack if not a global
-               // FP register; else coerce it to the right stack location. The required stack
-               // must be available at this point.
+               // side return value.  Assume it already exists on the FP stack.  The required
+               // stack must be available at this point.
                //
-               if (_dependencies[i].getGlobalFPRegister())
+               if (virtReg->decFutureUseCount() != 0)
                   {
-                  int32_t reqdStackHeight = _dependencies[i].getRealRegister() - TR::RealRegister::FirstFPR;
-                  machine->fpStackCoerce(virtReg, (machine->getFPTopOfStack() - reqdStackHeight));
-                  virtReg->decFutureUseCount();
-                  }
-               else
-                  {
-                  if (virtReg->decFutureUseCount() != 0)
-                     {
-                     machine->fpStackPush(virtReg);
-                     }
+                  machine->fpStackPush(virtReg);
                   }
                }
             }
@@ -1161,208 +1087,6 @@ void TR_X86RegisterDependencyGroup::assignFPRegisters(TR::Instruction   *prevIns
             cursor = machine->fpSpillStack(cursor);
             }
          }
-
-      if (reqdTopVirtReg)
-         {
-         if (!machine->isFPRTopOfStack(reqdTopVirtReg))
-            {
-            cursor = machine->fpStackFXCH(cursor, reqdTopVirtReg);
-            }
-         }
-
-#ifdef DEBUG
-      bool onlyGlobalFPRA = true;
-      bool onlySpillAllFP = true;
-      bool globalFPRA = false;
-      for (i = 0; i < numberOfRegisters; i++)
-         {
-         TR::Register *virtReg = _dependencies[i].getRegister();
-         if (virtReg && kindsToBeAssigned & virtReg->getKindAsMask())
-            {
-            if (_dependencies[i].getGlobalFPRegister())
-               {
-               globalFPRA = true;
-               onlySpillAllFP = false;
-               TR_X86FPStackRegister *assignedRegister = toX86FPStackRegister(virtReg->getAssignedRealRegister());
-               if (assignedRegister)
-                  {
-                  int32_t reqdStackHeight    = _dependencies[i].getRealRegister() - TR::RealRegister::FirstFPR;
-                  int32_t currentStackHeight = machine->getFPTopOfStack() - assignedRegister->getFPStackRegisterNumber();
-
-                  TR_ASSERT(reqdStackHeight == currentStackHeight,
-                         "Stack height for global FP register is NOT correct\n");
-                  }
-               }
-            }
-         else
-            {
-            if (_dependencies[i].isAllFPRegisters())
-               {
-               // Spill the entire FP stack to memory.
-               //
-               cursor = machine->fpSpillStack(cursor);
-               onlyGlobalFPRA = false;
-               }
-            }
-
-         TR_ASSERT((!globalFPRA || ((machine->getFPTopOfStack()+1) == numberOfFPRegisters)),
-                "Stack height is NOT correct\n");
-
-         TR_ASSERT(onlyGlobalFPRA || onlySpillAllFP, "Illegal dependency\n");
-         }
-#endif
-
-      // We may need to pop registers off the FP stack at this late stage in certain cases;
-      // in particular if there are 2 global registers having the same value (same child C
-      // in the GLRegDeps on a branch) and one of them is never used in the extended block after
-      // the branch; then only one value will be popped off the stack when the last reference
-      // to child C is seen in the extended basic block. This case cannot be detected during
-      // instruction selection as the reference count on the child C is non-zero at the dependency
-      // but in fact one of the registers must be popped off (late) in this case.
-      //
-      if (getMayNeedToPopFPRegisters() &&
-          !popRegisters.isEmpty())
-         {
-         ListIterator<TR::Register> popRegsIt(&popRegisters);
-         for (TR::Register *popRegister = popRegsIt.getFirst(); popRegister != NULL; popRegister = popRegsIt.getNext())
-            {
-            if (!machine->isFPRTopOfStack(popRegister))
-               {
-               cursor = machine->fpStackFXCH(cursor, popRegister);
-               }
-
-            TR::RealRegister *popRealRegister = machine->fpMapToStackRelativeRegister(popRegister);
-            cursor = new (cg->trHeapMemory()) TR::X86FPRegInstruction(cursor, FSTPReg, popRealRegister, cg);
-            machine->fpStackPop();
-            }
-         }
-      }
-   }
-
-
-// Tries to coerce global FP registers into their required stack positions
-// in fewest exchanges possible. Can be still improved; current worst case
-// is 3N/2 exchanges where N is number of incorrect stack locations (this could happen
-// if there are N/2 pairwise incorrect global registers. This could possibly be done in
-// N+1 approx maybe (?)
-//
-void TR_X86RegisterDependencyGroup::orderGlobalRegsOnFPStack(TR::Instruction    *cursor,
-                                                              TR_RegisterKinds   kindsToBeAssigned,
-                                                              TR_X86RegisterDependencyIndex          numberOfRegisters,
-                                                              List<TR::Register> *poppedRegisters,
-                                                              TR::CodeGenerator  *cg)
-   {
-
-   //
-   TR::Machine *machine = cg->machine();
-   int32_t *stackShape = machine->getFPStackShape();
-   memset(stackShape, 0xff, TR_X86FPStackRegister::NumRegisters*sizeof(int32_t));
-
-   // The data structure stackShape holds the required stack position j for each
-   // value on the stack at a particular location i. This will be used in the
-   // algorithm later.
-   //
-   int32_t topOfStack = machine->getFPTopOfStack();
-   int32_t i;
-   for (i = 0; i < numberOfRegisters; i++)
-      {
-      TR::Register *virtReg = _dependencies[i].getRegister();
-      if (virtReg && kindsToBeAssigned & virtReg->getKindAsMask())
-         {
-         if (virtReg->getTotalUseCount() != virtReg->getFutureUseCount())
-            {
-            TR_X86FPStackRegister *assignedRegister = toX86FPStackRegister(virtReg->getAssignedRealRegister());
-            TR_ASSERT(assignedRegister != NULL, "All spilled registers should have been reloaded by now\n");
-
-            if (_dependencies[i].getGlobalFPRegister())
-               {
-               int32_t reqdStackHeight    = _dependencies[i].getRealRegister() - TR::RealRegister::FirstFPR;
-               int32_t currentStackHeight = topOfStack - assignedRegister->getFPStackRegisterNumber();
-               stackShape[currentStackHeight] = reqdStackHeight;
-               }
-            }
-         }
-      }
-
-   TR::Register *reqdTopVirtReg = NULL;
-   for (i = 0; i < numberOfRegisters; i++)
-      {
-      TR::Register *virtReg = _dependencies[i].getRegister();
-      if (virtReg && kindsToBeAssigned & virtReg->getKindAsMask())
-         {
-         if (virtReg->getTotalUseCount() != virtReg->getFutureUseCount())
-            {
-            // If this is not the first reference of a register, then coerce it to the
-            // top of stack.
-            //
-            if (_dependencies[i].getGlobalFPRegister())
-               {
-               int32_t reqdStackHeight = _dependencies[i].getRealRegister() - TR::RealRegister::FirstFPR;
-               TR_X86FPStackRegister *assignedRegister = toX86FPStackRegister(virtReg->getAssignedRealRegister());
-               int32_t currentStackHeight =  topOfStack - assignedRegister->getFPStackRegisterNumber();
-
-               if (reqdStackHeight == 0)
-                  {
-                  reqdTopVirtReg = virtReg;
-                  }
-
-               TR::Register *origRegister = virtReg;
-               while ((reqdStackHeight != currentStackHeight) &&
-                      (reqdStackHeight >= 0))
-                  {
-                  if (!machine->isFPRTopOfStack(virtReg))
-                     {
-                     cursor = machine->fpStackFXCH(cursor, virtReg);
-                     }
-
-                  assignedRegister = toX86FPStackRegister(virtReg->getAssignedRealRegister());
-                  int32_t tempCurrentStackHeight =  topOfStack - assignedRegister->getFPStackRegisterNumber();
-                  if (reqdStackHeight != tempCurrentStackHeight)
-                     {
-                     cursor = machine->fpStackFXCH(cursor, reqdStackHeight);
-                     }
-
-#if DEBUG
-                  if ((currentStackHeight < 0) ||
-                      (currentStackHeight >= TR_X86FPStackRegister::NumRegisters))
-                     TR_ASSERT(0, "Array out of bounds exception in array stackShape\n");
-                  if ((reqdStackHeight < 0) ||
-                      (reqdStackHeight >= TR_X86FPStackRegister::NumRegisters))
-                     TR_ASSERT(0, "Array out of bounds exception in array stackShape\n");
-#endif
-
-                  // This is the new stack shape now after the exchanges done above
-                  //
-                  stackShape[currentStackHeight] = stackShape[0];
-                  stackShape[0] = stackShape[reqdStackHeight];
-                  stackShape[reqdStackHeight] = reqdStackHeight;
-
-                  // Drive this loop by the value on top of the stack
-                  //
-                  reqdStackHeight = stackShape[0];
-                  currentStackHeight = 0;
-                  virtReg = machine->getFPStackLocationPtr(topOfStack)->getAssignedRegister();
-                  }
-
-               if (origRegister->decFutureUseCount() == 0)
-                  {
-                  // It is possible for a global register to go dead at a dependency;
-                  // add it to the list of registers to be popped in this case (discussed
-                  // in more detail above)
-                  //
-                  poppedRegisters->add(origRegister);
-                  }
-               }
-            }
-         }
-      }
-
-   if (reqdTopVirtReg)
-      {
-      if (!machine->isFPRTopOfStack(reqdTopVirtReg))
-         {
-         cursor = machine->fpStackFXCH(cursor, reqdTopVirtReg);
-         }
       }
    }
 
@@ -1371,10 +1095,10 @@ void TR_X86RegisterDependencyGroup::orderGlobalRegsOnFPStack(TR::Instruction    
 uint32_t OMR::X86::RegisterDependencyConditions::numReferencedFPRegisters(TR::CodeGenerator * cg)
    {
    TR::Machine *machine = cg->machine();
-   uint32_t i, total = 0;
+   uint32_t total = 0;
    TR::Register *reg;
 
-   for (i=0; i<_numPreConditions; i++)
+   for (int32_t i=0; i<_numPreConditions; i++)
       {
       reg = _preConditions->getRegisterDependency(i)->getRegister();
       if ((reg && reg->getKind() == TR_X87) ||
@@ -1384,7 +1108,7 @@ uint32_t OMR::X86::RegisterDependencyConditions::numReferencedFPRegisters(TR::Co
          }
       }
 
-   for (i=0; i<_numPostConditions; i++)
+   for (int32_t i=0; i<_numPostConditions; i++)
       {
       reg = _postConditions->getRegisterDependency(i)->getRegister();
       if ((reg && reg->getKind() == TR_X87) ||
@@ -1399,10 +1123,10 @@ uint32_t OMR::X86::RegisterDependencyConditions::numReferencedFPRegisters(TR::Co
 
 uint32_t OMR::X86::RegisterDependencyConditions::numReferencedGPRegisters(TR::CodeGenerator * cg)
    {
-   uint32_t i, total = 0;
+   uint32_t total = 0;
    TR::Register *reg;
 
-   for (i=0; i<_numPreConditions; i++)
+   for (int32_t i=0; i<_numPreConditions; i++)
       {
       reg = _preConditions->getRegisterDependency(i)->getRegister();
       if (reg && (reg->getKind() == TR_GPR || reg->getKind() == TR_FPR || reg->getKind() == TR_VRF))
@@ -1411,7 +1135,7 @@ uint32_t OMR::X86::RegisterDependencyConditions::numReferencedGPRegisters(TR::Co
          }
       }
 
-   for (i=0; i<_numPostConditions; i++)
+   for (int32_t i=0; i<_numPostConditions; i++)
       {
       reg = _postConditions->getRegisterDependency(i)->getRegister();
       if (reg && (reg->getKind() == TR_GPR || reg->getKind() == TR_FPR || reg->getKind() == TR_VRF))

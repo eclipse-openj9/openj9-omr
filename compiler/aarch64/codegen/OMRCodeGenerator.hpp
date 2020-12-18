@@ -279,6 +279,16 @@ public:
    void apply32BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label);
 
    /**
+    * @brief find or create a constant data snippet for 4 byte constant.
+    *
+    * @param[in] node : the node which this constant data snippet belongs to
+    * @param[in] c    : 4 byte constant
+    *
+    * @return : a constant data snippet
+    */
+   TR::ARM64ConstantDataSnippet *findOrCreate4ByteConstant(TR::Node *node, int32_t c);
+
+   /**
     * @brief find or create a constant data snippet for 8 byte constant.
     *
     * @param[in] node : the node which this constant data snippet belongs to

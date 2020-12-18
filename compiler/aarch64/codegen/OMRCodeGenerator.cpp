@@ -430,6 +430,11 @@ TR::ARM64ConstantDataSnippet *OMR::ARM64::CodeGenerator::findOrCreateConstantDat
    return snippet;
    }
 
+TR::ARM64ConstantDataSnippet *OMR::ARM64::CodeGenerator::findOrCreate4ByteConstant(TR::Node * n, int32_t c)
+   {
+   return self()->findOrCreateConstantDataSnippet(n, &c, 4);
+   }
+
 TR::ARM64ConstantDataSnippet *OMR::ARM64::CodeGenerator::findOrCreate8ByteConstant(TR::Node * n, int64_t c)
    {
    return self()->findOrCreateConstantDataSnippet(n, &c, 8);

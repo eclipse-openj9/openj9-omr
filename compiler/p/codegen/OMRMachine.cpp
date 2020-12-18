@@ -1735,38 +1735,6 @@ void OMR::Power::Machine::initializeRegisterFile()
                0, TR::RealRegister::Free, TR::RealRegister::vr31, TR::RealRegister::vr31Mask, self()->cg());
    }
 
-TR::RealRegister **
-OMR::Power::Machine::cloneRegisterFileByType(TR::RealRegister **registerFileClone, TR::RealRegister **registerFile, int32_t start, int32_t end, TR_RegisterKinds kind, TR_AllocationKind allocKind)
-   {
-   TR_LiveRegisters *liveRegs = self()->cg()->getLiveRegisters(kind);
-   if(liveRegs && liveRegs->getNumberOfLiveRegisters() > 0)
-      {
-      for (int32_t i = start; i <= end; i++)
-         {
-         registerFileClone[i] = (TR::RealRegister *)self()->cg()->trMemory()->allocateMemory(sizeof(TR::RealRegister), allocKind);
-         memcpy(registerFileClone[i], registerFile[i], sizeof(TR::RealRegister));
-         }
-      }
-   else
-      {
-      for (int32_t j = start; j <= end; j++)
-         registerFileClone[j] = registerFile[j];
-      }
-   return registerFileClone;
-   }
-
-TR::RealRegister **
-OMR::Power::Machine::cloneRegisterFile(TR::RealRegister **registerFile, TR_AllocationKind allocKind)
-   {
-   int32_t arraySize = sizeof(TR::RealRegister *)*TR::RealRegister::NumRegisters;
-   TR::RealRegister  **registerFileClone = (TR::RealRegister **)self()->cg()->trMemory()->allocateMemory(arraySize, allocKind);
-   registerFileClone = self()->cloneRegisterFileByType(registerFileClone, registerFile, TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR, TR_GPR, allocKind);
-   registerFileClone = self()->cloneRegisterFileByType(registerFileClone, registerFile, TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR, TR_FPR, allocKind);
-   registerFileClone = self()->cloneRegisterFileByType(registerFileClone, registerFile, TR::RealRegister::FirstCCR, TR::RealRegister::LastCCR, TR_CCR, allocKind);
-   registerFileClone = self()->cloneRegisterFileByType(registerFileClone, registerFile, TR::RealRegister::FirstVRF, TR::RealRegister::LastVRF, TR_VRF, allocKind);
-
-   return registerFileClone;
-   }
 
 static void registerCopy(TR::Instruction     *precedingInstruction,
                          TR_RegisterKinds    rk,

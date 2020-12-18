@@ -555,9 +555,9 @@ omrthread_monitor_is_acquired(omrthread_monitor_t monitor);
  * Return number of times it has been acquired. Zero means
  * the monitor is not acquired.
  * @param monitor
- * @return uint32_t
+ * @return intptr_t
  */
-uint32_t
+intptr_t
 omrthread_monitor_get_acquired_count(omrthread_monitor_t monitor);
 
 /**

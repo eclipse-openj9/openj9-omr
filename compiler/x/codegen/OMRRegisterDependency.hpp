@@ -51,7 +51,6 @@ namespace TR { class Node; }
 namespace TR { class RegisterDependencyConditions; }
 template <typename ListKind> class List;
 
-#define UsesGlobalDependentFPRegister (UsesDependentRegister | GlobalRegisterFPDependency)
 #define NUM_DEFAULT_DEPENDENCIES 1
 
 typedef uint16_t depsize_t;

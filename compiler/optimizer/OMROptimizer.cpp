@@ -536,6 +536,7 @@ static const OptimizationStrategy ilgenStrategyOpts[] =
 #ifdef J9_PROJECT_SPECIFIC
    { osrLiveRangeAnalysis,          IfOSR   },
    { osrDefAnalysis,                IfInvoluntaryOSR },
+   { methodHandleTransformer,                      },
    { varHandleTransformer,          MustBeDone     },
    { handleRecompilationOps,        MustBeDone     },
    { unsafeFastPath                                },

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2019, 2019 IBM Corp. and others
+# Copyright (c) 2019, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,8 +22,25 @@
 SET(CMAKE_SYSTEM_PROCESSOR riscv64)
 SET(CMAKE_SYSTEM_NAME Linux)
 
-SET(CMAKE_C_COMPILER riscv64-linux-gnu-gcc)
-SET(CMAKE_CXX_COMPILER riscv64-linux-gnu-g++)
+#
+# Look for RISC-V cross-compilers. The "official" RISC-V GNU Compiler Toolchain [1]
+# used prefix "riscv64-unknown-linux-gnu-" whereas Debian / Ubuntu (and possibly other)
+# RISC-V toolchains [2] use just "riscv64-linux-gnu-" prefix. 
+# 
+# Here we use find_program() to make it work on both. 
+#
+# [1]: https://github.com/riscv/riscv-gnu-toolchain
+# [2]: https://packages.debian.org/buster/amd64/gcc-riscv64-linux-gnu/filelist
+#
+find_program(CMAKE_C_COMPILER NAMES riscv64-unknown-linux-gnu-gcc riscv64-linux-gnu-gcc REQUIRED NO_CMAKE_FIND_ROOT_PATH)
+find_program(CMAKE_CXX_COMPILER NAMES riscv64-unknown-linux-gnu-g++ riscv64-linux-gnu-g++ REQUIRED NO_CMAKE_FIND_ROOT_PATH)
+
+#
+# Include sysroot /usr/local/include to the path so compiler can find
+# `riscv.h` and `riscv-opc.h`. This is required for "official" RISC-V GNU 
+# Compiler Toolchain.
+# 
+include_directories("${CMAKE_FIND_ROOT_PATH}/usr/local/include")
 
 SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)

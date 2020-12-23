@@ -192,8 +192,7 @@ const bool TR_LoadExtensions::isSupportedType(TR::Node* node) const
    bool result = node->getType().isIntegral() || node->getType().isAddress();
 
    // Disallow static integral loads of size smaller than an int
-   if (!TR::comp()->cg()->getAccessStaticsIndirectly() &&
-      node->getOpCode().isLoadDirect() &&
+   if (node->getOpCode().isLoadDirect() &&
       node->getOpCode().hasSymbolReference() && node->getSymbol()->isStatic() &&
       !node->getOpCode().isInt() && !node->getOpCode().isLong())
       {

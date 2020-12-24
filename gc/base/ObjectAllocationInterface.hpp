@@ -99,6 +99,10 @@ public:
 
 	virtual void kill(MM_EnvironmentBase *env) = 0;
 
+	virtual bool forceRefreshTLH(MM_EnvironmentBase *env, MM_AllocateDescription *allocateDescription) {
+		return true;
+	}
+
 	virtual void *allocateObject(MM_EnvironmentBase *env, MM_AllocateDescription *allocateDescription, MM_MemorySpace *memorySpace, bool shouldCollectOnFailure) = 0;
 	virtual void *allocateArray(MM_EnvironmentBase *env, MM_AllocateDescription *allocateDescription, MM_MemorySpace *memorySpace, bool shouldCollectOnFailure) = 0;
 	/**

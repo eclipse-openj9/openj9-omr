@@ -161,6 +161,22 @@ MM_TLHAllocationInterface::allocateFromTLH(MM_EnvironmentBase *env, MM_AllocateD
 	return result;
 };
 
+bool
+MM_TLHAllocationInterface::forceRefreshTLH(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription) {
+	bool result = false;
+
+#if defined(OMR_GC_NON_ZERO_TLH)
+	if (allocDescription->getNonZeroTLHFlag()) {
+		result = _tlhAllocationSupportNonZero.refresh(env, allocDescription, false, true);
+	} else
+#endif /* defined(OMR_GC_NON_ZERO_TLH) */ 
+	{
+		result = _tlhAllocationSupport.refresh(env, allocDescription, false, true);
+	}
+
+	return result;
+}
+
 void *
 MM_TLHAllocationInterface::allocateObject(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, MM_MemorySpace *memorySpace, bool shouldCollectOnFailure)
 {

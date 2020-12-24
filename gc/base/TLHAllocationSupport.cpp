@@ -149,25 +149,29 @@ MM_TLHAllocationSupport::restart(MM_EnvironmentBase *env)
  * Refresh the TLH.
  */
 bool
-MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool shouldCollectOnFailure)
+MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool shouldCollectOnFailure, bool force)
 {
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 	bool const compressed = extensions->compressObjectReferences();
-
-	/* Refresh the TLH only if the allocation request will fit in half the refresh size
-	 * or in the TLH minimum size.
-	 */
-	uintptr_t sizeInBytesRequired = allocDescription->getContiguousBytes();
 	uintptr_t tlhMinimumSize = extensions->tlhMinimumSize;
 	uintptr_t tlhMaximumSize = extensions->tlhMaximumSize;
-	uintptr_t halfRefreshSize = getRefreshSize() >> 1;
-	uintptr_t abandonSize = (tlhMinimumSize > halfRefreshSize ? tlhMinimumSize : halfRefreshSize);
-	if (sizeInBytesRequired > abandonSize) {
-		/* increase thread hungriness if we did not refresh */
-		if (getRefreshSize() < tlhMaximumSize && sizeInBytesRequired < tlhMaximumSize) {
-			setRefreshSize(getRefreshSize() + extensions->tlhIncrementSize);
+	uintptr_t sizeInBytesRequired = 0; /* for force refresh no memory needs to be allocated. */
+
+	/* for forced refresh don't check size */
+	if (false == force) {
+		/* Refresh the TLH only if the allocation request will fit in half the refresh size
+		* or in the TLH minimum size.
+		*/
+		sizeInBytesRequired = allocDescription->getContiguousBytes();
+		uintptr_t halfRefreshSize = getRefreshSize() >> 1;
+		uintptr_t abandonSize = (tlhMinimumSize > halfRefreshSize ? tlhMinimumSize : halfRefreshSize);
+		if (sizeInBytesRequired > abandonSize) {
+			/* increase thread hungriness if we did not refresh */
+			if (getRefreshSize() < tlhMaximumSize && sizeInBytesRequired < tlhMaximumSize) {
+				setRefreshSize(getRefreshSize() + extensions->tlhIncrementSize);
+			}
+			return false;
 		}
-		return false;
 	}
 
 	MM_AllocationStats *stats = _objectAllocationInterface->getAllocationStats();
@@ -251,7 +255,7 @@ MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription
 #endif /* defined(OMR_GC_BATCH_CLEAR_TLH) */
 
 			/*
-			 * THL was refreshed however it might be already flushed in GC
+			 * TLH was refreshed however it might be already flushed in GC
 			 * Some special features (like Prepare Heap For Walk called by GC check)
 			 * might request flush of all TLHs
 			 * Flushed TLH would have Base=Top=Allocated=0, so getSize returns 0
@@ -307,7 +311,7 @@ MM_TLHAllocationSupport::allocateFromTLH(MM_EnvironmentBase *env, MM_AllocateDes
 	uintptr_t sizeInBytesRequired = allocDescription->getContiguousBytes();
 	/* If there's insufficient space, refresh the current TLH */
 	if (sizeInBytesRequired > getSize()) {
-		refresh(env, allocDescription, shouldCollectOnFailure);
+		refresh(env, allocDescription, shouldCollectOnFailure, false);
 	}
 
 	/* Try to fit the allocate into the current TLH */

@@ -31,6 +31,15 @@
 #include "omrgcstartup.hpp"
 #include "ModronAssertions.h"
 
+omr_error_t
+OMR_GC_RefreshTLH(OMR_VMThread *omrVMThread) {
+	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(omrVMThread);
+	MM_AllocateInitialization allocator(env, 0, 0, OMR_GC_ALLOCATE_OBJECT_INSTRUMENTABLE);
+	MM_AllocateDescription *allocateDescription = allocator.getAllocateDescription();
+	bool refresh = env->_objectAllocationInterface->forceRefreshTLH(env, allocateDescription);
+	return refresh ? OMR_ERROR_NONE : OMR_ERROR_INTERNAL;
+}
+
 omrobjectptr_t
 OMR_GC_AllocateObject(OMR_VMThread * omrVMThread, MM_AllocateInitialization *allocator)
 {

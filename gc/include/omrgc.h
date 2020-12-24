@@ -51,6 +51,8 @@ omr_error_t OMR_GC_SystemCollect(OMR_VMThread* omrVMThread, uint32_t gcCode);
 class MM_AllocateInitialization;
 /* Caller is expected to initialize the allocation description (MM_AllocateInitialization::getAllocateDescription()) prior to call */
 omrobjectptr_t OMR_GC_AllocateObject(OMR_VMThread * omrVMThread, MM_AllocateInitialization *allocator);
+
+omr_error_t OMR_GC_RefreshTLH(OMR_VMThread *omrVMThread);
 #endif
 
 #endif /* MM_OMRGCAPI_HPP_ */

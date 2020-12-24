@@ -142,7 +142,7 @@ private:
 	void clear(MM_EnvironmentBase *env);
 	void reconnect(MM_EnvironmentBase *env, bool shouldFlush);
 	void restart(MM_EnvironmentBase *env);
-	bool refresh(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool shouldCollectOnFailure);
+	bool refresh(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool shouldCollectOnFailure, bool force);
 
 	void *allocateFromTLH(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool shouldCollectOnFailure);
 

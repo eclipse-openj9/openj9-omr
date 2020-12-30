@@ -787,6 +787,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64CompareBranchInstruction *instr)
       {
       trfprintf(pOutFile, " (%s)", getName(snippet));
       }
+   if (instr->getDependencyConditions())
+      print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
    }
 
@@ -805,6 +807,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64TestBitBranchInstruction *instr)
       {
       trfprintf(pOutFile, " (%s)", getName(snippet));
       }
+   if (instr->getDependencyConditions())
+      print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
    }
 

@@ -296,7 +296,7 @@ TR::SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stackInd
 
       setFPRSaveMask(FPRSaveMask);
 
-      if (FPRSaveMask != 0 && isOSLinkageType())
+      if (FPRSaveMask != 0)
          {
          #define DELTA_ALIGN(x, align) ((x & (align-1)) ? (align -((x)&(align-1))) : 0)
          stackIndex -= DELTA_ALIGN(stackIndex, 16);

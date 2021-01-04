@@ -172,7 +172,7 @@ namespace Z
 class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    {
 private:
-   TR_LinkageConventions _explicitLinkageType;
+   TR_LinkageConventions _linkageType;
    uint32_t _properties;
    uint32_t _registerFlags[TR::RealRegister::NumRegisters];
    uint8_t _numIntegerArgumentRegisters;
@@ -235,10 +235,9 @@ enum TR_DispatchType
 
    Linkage(TR::CodeGenerator *, TR_LinkageConventions);
 
-   TR_LinkageConventions getExplicitLinkageType() { return _explicitLinkageType; }
-   void setExplicitLinkageType(TR_LinkageConventions lc ) { _explicitLinkageType = lc; }
+   TR_LinkageConventions getLinkageType() { return _linkageType; }
+   void setLinkageType(TR_LinkageConventions lc ) { _linkageType = lc; }
 
-   bool isOSLinkageType();
    bool isXPLinkLinkageType();
    bool isFastLinkLinkageType();
 

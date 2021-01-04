@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -275,6 +275,12 @@ public:
 
    void setIsDebugCounter()                 { _flags2.set(DebugCounter); }
    bool isDebugCounter()                    { return _flags2.testAny(DebugCounter); }
+
+   void setIsBlockFrequency()               { _flags2.set(BlockFrequency); }
+   bool isBlockFrequency()                  { return _flags2.testAny(BlockFrequency); }
+
+   void setIsRecompQueuedFlag()             { _flags2.set(RecompQueuedFlag); }
+   bool isRecompQueuedFlag()                { return _flags2.testAny(RecompQueuedFlag); }
 
    inline bool isNamed();
 
@@ -558,6 +564,8 @@ public:
       PendingPush               = 0x00000800,
       ConstantDynamic           = 0x00001000,
       NonSpecificConstObject    = 0x00002000, // Constant object not specific to a type
+      BlockFrequency            = 0x00004000,
+      RecompQueuedFlag          = 0x00008000,
       };
 
 protected:

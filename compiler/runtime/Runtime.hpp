@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -327,7 +327,9 @@ typedef enum
    TR_MethodCallAddress                   = 99,
    TR_DiscontiguousSymbolFromManager      = 100,
    TR_ResolvedTrampolines                 = 101,
-   TR_NumExternalRelocationKinds          = 102,
+   TR_BlockFrequency                      = 102,
+   TR_RecompQueuedFlag                    = 103,
+   TR_NumExternalRelocationKinds          = 104,
    TR_ExternalRelocationTargetKindMask    = 0xff,
    } TR_ExternalRelocationTargetKind;
 

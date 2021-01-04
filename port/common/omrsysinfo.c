@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -177,6 +177,8 @@ omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32
 intptr_t
 omrsysinfo_get_processor_feature_string(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc, char *buffer, const size_t length)
 {
+	memset(buffer, 0, length);
+	return -1;
 }
 
 /**

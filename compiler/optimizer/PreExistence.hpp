@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -34,6 +34,7 @@ class TR_OpaqueClassBlock;
 class TR_VirtualGuard;
 namespace TR { class Compilation; }
 namespace TR { class Node; }
+namespace TR { class TreeTop; }
 namespace TR { class ResolvedMethodSymbol; }
 
 enum PrexKnowledgeLevel { NONE, PREEXISTENT, FIXED_CLASS, KNOWN_OBJECT };
@@ -106,8 +107,15 @@ class TR_PrexArgInfo
    {
    public:
 
-#ifdef J9_PROJECT_SPECIFIC
+   /**
+    * \brief
+    *    Improve prex arg info `dest` with `source`
+    *
+    * \return
+    *    TR_PrexArgInfo The improved prex arg info
+    */
    static TR_PrexArgInfo* enhance(TR_PrexArgInfo *dest, TR_PrexArgInfo *source, TR::Compilation *comp);
+#ifdef J9_PROJECT_SPECIFIC
 
    static void propagateReceiverInfoIfAvailable (TR::ResolvedMethodSymbol* methodSymbol, TR_CallSite* callsite,
                                               TR_PrexArgInfo* argInfo, TR_LogTracer* tracer);
@@ -136,12 +144,22 @@ class TR_PrexArgInfo
       memset(_args, 0, sizeof(TR_PrexArgument*) * numArgs);
       }
 
+   // Construct TR_PrexArgInfo from another TR_PrexArgInfo
+   TR_PrexArgInfo(TR_PrexArgInfo* other, TR_Memory * m)
+      {
+      TR_ASSERT(other, "other can't be NULL");
+      _numArgs = other->_numArgs;
+      _args = (TR_PrexArgument **) m->allocateHeapMemory(sizeof(TR_PrexArgument*) * _numArgs);
+      memcpy(_args, other->_args, sizeof(TR_PrexArgument*) * _numArgs);
+      }
+
    void set(int32_t index, TR_PrexArgument *info) { _args[index] = info; }
    TR_PrexArgument *get(int32_t index) { return _args[index]; }
 
    int32_t getNumArgs() { return _numArgs; }
 
    void dumpTrace();
+   static TR::TreeTop* getCallTree(TR::ResolvedMethodSymbol* methodSymbol, TR_CallSite* callsite, TR_LogTracer* tracer);
 
    private:
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -102,7 +102,7 @@ extern bool storeHelperImmediateInstruction(TR::Node * valueChild, TR::CodeGener
 
 OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen)
    : OMR::Linkage(codeGen),
-      _explicitLinkageType(TR_S390LinkageDefault), _stackSizeCheckNeeded(true), _raContextSaveNeeded(true),
+      _explicitLinkageType(TR_None), _stackSizeCheckNeeded(true), _raContextSaveNeeded(true),
       _integerReturnRegister(TR::RealRegister::NoReg),
       _floatReturnRegister(TR::RealRegister::NoReg),
       _doubleReturnRegister(TR::RealRegister::NoReg),

@@ -135,7 +135,7 @@ OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen)
  * convention.
  * Even though this method is common, its implementation is machine-specific.
  */
-OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen,TR_S390LinkageConventions elc)
+OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen,TR_LinkageConventions elc)
    : OMR::Linkage(codeGen),
       _explicitLinkageType(elc), _stackSizeCheckNeeded(true), _raContextSaveNeeded(true),
       _integerReturnRegister(TR::RealRegister::NoReg),
@@ -2840,7 +2840,9 @@ OMR::Z::Linkage::getLastMaskedBit(int16_t mask)
 bool
 OMR::Z::Linkage::isOSLinkageType()
    {
-   return (self()->getExplicitLinkageType() & TR_SystemOS_MASK) != 0;
+   // #define TR_SystemOS_MASK  0x40
+   // zOS Type 1 linkages (non-Java) - all have bit 0x40 set
+   return (self()->getExplicitLinkageType() & 0x40) != 0;
    }
 
 bool

@@ -39,7 +39,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::LinkageConnector
    Linkage(TR::CodeGenerator *cg)
       : OMR::LinkageConnector(cg) {}
 
-   Linkage(TR::CodeGenerator *cg, TR_S390LinkageConventions elc)
+   Linkage(TR::CodeGenerator *cg, TR_LinkageConventions elc)
       : OMR::LinkageConnector(cg, elc) {}
    };
 }

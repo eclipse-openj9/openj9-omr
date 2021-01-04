@@ -62,25 +62,6 @@ template <class T> class List;
 /**
  * 390 Explicit linkage conventions
  */
-enum TR_S390LinkageConventions
-   {
-   TR_S390LinkageDefault   = 0,     ///< reserved for default construction
-
-   // Java specific linkages
-   TR_JavaPrivate          = 0x1,   ///< Java private linkage
-   TR_JavaHelper           = 0x2,   ///< Java helper linkage
-
-   TR_SystemXPLink         = 0x20,  ///< (Java) zOS XPLink convention
-
-   // zOS Type 1 linkages (non-Java) - all have bit 0x40 set
-   #define TR_SystemOS_MASK  0x40
-
-   // zOS Type 1 linkage - C++ Fastlink
-   TR_SystemFastLink       = 0x4D,  ///< (non-Java) zOS (C++) FastLink convention
-
-   // Linux Platform Linkages
-   TR_SystemLinux          = 60     ///< (Java) Linux convention
-   };
 
 ////////////////////////////////////////////////////////////////////////////////
 // linkage properties
@@ -191,7 +172,7 @@ namespace Z
 class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    {
 private:
-   TR_S390LinkageConventions _explicitLinkageType;
+   TR_LinkageConventions _explicitLinkageType;
    uint32_t _properties;
    uint32_t _registerFlags[TR::RealRegister::NumRegisters];
    uint8_t _numIntegerArgumentRegisters;
@@ -252,10 +233,10 @@ enum TR_DispatchType
 
    Linkage(TR::CodeGenerator *);
 
-   Linkage(TR::CodeGenerator *, TR_S390LinkageConventions);
+   Linkage(TR::CodeGenerator *, TR_LinkageConventions);
 
-   TR_S390LinkageConventions getExplicitLinkageType() { return _explicitLinkageType; }
-   void setExplicitLinkageType(TR_S390LinkageConventions lc ) { _explicitLinkageType = lc; }
+   TR_LinkageConventions getExplicitLinkageType() { return _explicitLinkageType; }
+   void setExplicitLinkageType(TR_LinkageConventions lc ) { _explicitLinkageType = lc; }
 
    bool isOSLinkageType();
    bool isXPLinkLinkageType();

@@ -56,7 +56,7 @@ class SystemLinkage : public TR::Linkage
    {
    public:
 
-   SystemLinkage(TR::CodeGenerator * cg, TR_S390LinkageConventions elc = TR_S390LinkageDefault);
+   SystemLinkage(TR::CodeGenerator * cg, TR_LinkageConventions elc = TR_S390LinkageDefault);
 
    TR::SystemLinkage * self();
 

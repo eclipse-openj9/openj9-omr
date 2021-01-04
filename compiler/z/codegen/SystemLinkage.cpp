@@ -69,7 +69,7 @@
 #include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/SystemLinkage.hpp"
 
-TR::SystemLinkage::SystemLinkage(TR::CodeGenerator* cg, TR_S390LinkageConventions elc)
+TR::SystemLinkage::SystemLinkage(TR::CodeGenerator* cg, TR_LinkageConventions elc)
    :
       TR::Linkage(cg, elc),
       _GPRSaveMask(0),

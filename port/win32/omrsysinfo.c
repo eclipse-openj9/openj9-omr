@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2020 IBM Corp. and others
+ * Copyright (c) 2015, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -176,7 +176,7 @@ omrsysinfo_get_processor_feature_string(struct OMRPortLibrary *portLibrary, OMRP
 	size_t numberOfBits = 0;
 	size_t bufferLength = 0;
 
-	memset(buffer, 0, length * sizeof(char));
+	memset(buffer, 0, length);
 
 	for (i = 0; i < OMRPORT_SYSINFO_FEATURES_SIZE; i++) {
 		numberOfBits = CHAR_BIT * sizeof(desc->features[i]);
@@ -186,12 +186,11 @@ omrsysinfo_get_processor_feature_string(struct OMRPortLibrary *portLibrary, OMRP
 				uint32_t feature = (uint32_t)(i * numberOfBits + j);
 				const char * featureName = omrsysinfo_get_processor_feature_name(portLibrary, feature);
 				size_t featureLength = strlen(featureName);
-				
+
 				if (start == FALSE) {
 					strncat(buffer, " ", length - bufferLength - 1);
 					bufferLength += 1;
-				}
-				else {
+				} else {
 					start = FALSE;
 				}
 
@@ -201,7 +200,7 @@ omrsysinfo_get_processor_feature_string(struct OMRPortLibrary *portLibrary, OMRP
 
 				strncat(buffer, featureName, length - bufferLength - 1);
 				bufferLength += featureLength;
-		    }
+			}
 		}
 	}
 	return 0;

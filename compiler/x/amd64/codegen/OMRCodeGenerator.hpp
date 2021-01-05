@@ -61,8 +61,6 @@ public:
 
    void initialize();
 
-   CodeGenerator();
-
    virtual TR::Register *longClobberEvaluate(TR::Node *node);
 
    TR_GlobalRegisterNumber getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataType type);

@@ -99,12 +99,12 @@ MM_EnvironmentBase::initialize(MM_GCExtensionsBase *extensions)
 		}
 	}
 
-#if defined(OMR_GC_MODRON_SCAVENGER)
-	/* Disable dynamic depth copying if scavengerDynamicBreadthFirstScanOrdering is not selected */
-	if (extensions->scavengerScanOrdering != MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_DYNAMIC_BREADTH_FIRST) {
+#if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
+	/* Disable dynamic depth copying if scavengerDynamicBreadthFirstScanOrdering is not selected */ 
+	if (MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_DYNAMIC_BREADTH_FIRST != extensions->scavengerScanOrdering) {
 		disableHotFieldDepthCopy();
 	}
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
 
 #if defined(OMR_GC_SEGREGATED_HEAP)
 	if (extensions->isSegregatedHeap()) {

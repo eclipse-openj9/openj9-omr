@@ -38,6 +38,7 @@
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "env/CompilerEnv.hpp"
+#include "env/VerboseLog.hpp"
 #include "il/AutomaticSymbol.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 IBM Corp. and others
+ * Copyright (c) 2017, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,6 +36,8 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 
+#include "env/VerboseLog.hpp"
+
 namespace TR {
 
 /**
@@ -57,7 +59,7 @@ namespace TR {
  * These defaults can be overridden using the TR_CompileTimeProfiler env var.
  *
  * The current implementation only supports perf, but other profiling
- * utilities could be introduced. 
+ * utilities could be introduced.
  *
  * In testing, the initial portion of the compile was lost, due to perf's
  * start up. A delay has been added to manage this.
@@ -77,7 +79,7 @@ public:
          char timestr[_timeLength];
          time_t timer = time(NULL);
          snprintf(timestr, sizeof(timestr), "%i", (int32_t)timer % 100000);
-         
+
          char tidstr[_threadIDLength];
          snprintf(tidstr, sizeof(tidstr), "%ld", syscall(SYS_gettid));
 
@@ -86,8 +88,8 @@ public:
          snprintf(filename, sizeof(filename), "%s.%s.%s.data", identifier ? identifier : "perf", tidstr, timestr);
 
          // Build up the constant options, with env var override
-         if (filenamePos == 0) 
-            parseOptions(cacheOptions, filenamePos, threadIDPos); 
+         if (filenamePos == 0)
+            parseOptions(cacheOptions, filenamePos, threadIDPos);
 
          // Copy and specialize options
          char *options[_optionsLength];
@@ -120,7 +122,7 @@ public:
          // Give perf some time to start
          usleep(_initMicroSecDelay);
          }
-      } 
+      }
 
    ~CompileTimeProfiler()
       {
@@ -162,7 +164,7 @@ private:
             if (*iter == ' ')
                {
                *iter = '\0';
-               newArg = true; 
+               newArg = true;
                }
             else if (newArg)
                {

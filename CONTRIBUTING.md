@@ -63,7 +63,7 @@ A subset of the labels are documented below.
 
 * [**`ci`**](https://github.com/eclipse/omr/labels/ci) labels are used for
   issues and enhancements with the continuous integration system for pull
-  request testing (e.g., Jenkins, Travis, AppVeyor, etc.)
+  request testing (e.g., Jenkins, Azure, etc.)
 
 * [**`cmake`**](https://github.com/eclipse/omr/labels/cmake) labels are similar
   to build/configure but they apply specifically to the CMake configuration.

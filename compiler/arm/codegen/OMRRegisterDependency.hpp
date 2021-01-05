@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,84 +36,18 @@
 
 #include "compiler/codegen/OMRRegisterDependency.hpp"
 
-#include "codegen/RealRegister.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/RegisterDependencyStruct.hpp"
 #include "env/IO.hpp"
 
 namespace TR { class Register; }
-
-#define DefinesDependentRegister    0x01
-#define ReferencesDependentRegister 0x02
-#define UsesDependentRegister       (ReferencesDependentRegister | DefinesDependentRegister)
-#define ExcludeGPR0InAssigner       0x80
-
-struct TR_ARMRegisterDependency
-   {
-   TR::RealRegister::RegNum _realRegister;
-   uint8_t                                 _flags;
-   TR::Register                            *_virtualRegister;
-
-   TR::RealRegister::RegNum getRealRegister() {return _realRegister;}
-   TR::RealRegister::RegNum setRealRegister(TR::RealRegister::RegNum r)
-      {
-      return (_realRegister = r);
-      }
-
-   uint32_t getFlags()             {return _flags;}
-   uint32_t assignFlags(uint8_t f) {return _flags = f;}
-   uint32_t setFlags(uint8_t f)    {return (_flags |= f);}
-   uint32_t resetFlags(uint8_t f)  {return (_flags &= ~f);}
-
-   uint32_t getDefsRegister()   {return _flags & DefinesDependentRegister;}
-   uint32_t setDefsRegister()   {return (_flags |= DefinesDependentRegister);}
-   uint32_t resetDefsRegister() {return (_flags &= ~DefinesDependentRegister);}
-
-   uint32_t getRefsRegister()   {return _flags & ReferencesDependentRegister;}
-   uint32_t setRefsRegister()   {return (_flags |= ReferencesDependentRegister);}
-   uint32_t resetRefsRegister() {return (_flags &= ~ReferencesDependentRegister);}
-
-   uint32_t getUsesRegister()   {return _flags & UsesDependentRegister;}
-
-   uint32_t getExcludeGPR0()    {return _flags & ExcludeGPR0InAssigner;}
-   uint32_t setExcludeGPR0()    {return (_flags |= ExcludeGPR0InAssigner);}
-   uint32_t resetExcludeGPR0()  {return (_flags &= ~ExcludeGPR0InAssigner);}
-
-   TR::Register *getRegister()               {return _virtualRegister;}
-   TR::Register *setRegister(TR::Register *r) {return (_virtualRegister = r);}
-
-#if 0 // def DEBUG
-void print(TR::FILE *pOutFile, TR::CodeGenerator *cg)
-   {
-   TR_ARMMachine *machine = getARMMachine(cg);
-   TR_FrontEnd *fe = cg->comp()->fe();
-   trfprintf(pOutFile,"\nVirtual: ");
-   (void)trfflush(pOutFile);
-   _virtualRegister->print(pOutFile, TR_WordReg);
-   (void)trfflush(pOutFile);
-   trfprintf(pOutFile,", Real: ");
-   (void)trfflush(pOutFile);
-   if (machine->getRealRegister(_realRegister)==NULL)
-      {
-      trfprintf(pOutFile,"NoReg");
-      (void)trfflush(pOutFile);
-      }
-   else
-      {
-      machine->getRealRegister(_realRegister)->print(pOutFile, TR_WordReg);
-      (void)trfflush(pOutFile);
-      }
-   trfprintf(pOutFile,", Flags: %x",_flags);
-   (void)trfflush(pOutFile);
-   }
-#endif
-
-   };
 
 #define NUM_DEFAULT_DEPENDENCIES 1
 
 class TR_ARMRegisterDependencyGroup
    {
-   TR_ARMRegisterDependency dependencies[NUM_DEFAULT_DEPENDENCIES];
+   TR::RegisterDependency _dependencies[NUM_DEFAULT_DEPENDENCIES];
 
    // Use TR_ARMRegisterDependencyGroup::create to allocate an object of this type
    //
@@ -122,7 +56,7 @@ class TR_ARMRegisterDependencyGroup
       TR_ASSERT(numDependencies > 0, "operator new called with numDependencies == 0");
       if (numDependencies > NUM_DEFAULT_DEPENDENCIES)
          {
-         s += (numDependencies-NUM_DEFAULT_DEPENDENCIES)*sizeof(TR_ARMRegisterDependency);
+         s += (numDependencies-NUM_DEFAULT_DEPENDENCIES)*sizeof(TR::RegisterDependency);
          }
       return m->allocateHeapMemory(s);
       }
@@ -138,9 +72,9 @@ class TR_ARMRegisterDependencyGroup
       return numDependencies ? new (numDependencies, m) TR_ARMRegisterDependencyGroup : 0;
       }
 
-   TR_ARMRegisterDependency *getRegisterDependency(uint32_t index)
+   TR::RegisterDependency *getRegisterDependency(uint32_t index)
       {
-      return &dependencies[index];
+      return &_dependencies[index];
       }
 
    void setDependencyInfo(uint32_t                                index,
@@ -148,17 +82,17 @@ class TR_ARMRegisterDependencyGroup
                           TR::RealRegister::RegNum rr,
                           uint8_t                                 flag)
       {
-      dependencies[index].setRegister(vr);
-      dependencies[index].assignFlags(flag);
-      dependencies[index].setRealRegister(rr);
+      _dependencies[index].setRegister(vr);
+      _dependencies[index].assignFlags(flag);
+      _dependencies[index].setRealRegister(rr);
       }
 
    TR::Register *searchForRegister(TR::RealRegister::RegNum rr, uint32_t numberOfRegisters)
       {
       for (uint32_t i=0; i<numberOfRegisters; i++)
 	 {
-         if (dependencies[i].getRealRegister() == rr)
-            return(dependencies[i].getRegister());
+         if (_dependencies[i].getRealRegister() == rr)
+            return(_dependencies[i].getRegister());
 	 }
       return(NULL);
       }
@@ -172,7 +106,7 @@ class TR_ARMRegisterDependencyGroup
       {
       for (uint32_t i = 0; i < numberOfRegisters; i++)
          {
-         dependencies[i].getRegister()->block();
+         _dependencies[i].getRegister()->block();
          }
       }
 
@@ -180,7 +114,7 @@ class TR_ARMRegisterDependencyGroup
       {
       for (uint32_t i = 0; i < numberOfRegisters; i++)
          {
-         dependencies[i].getRegister()->unblock();
+         _dependencies[i].getRegister()->unblock();
          }
       }
    };

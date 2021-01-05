@@ -751,7 +751,7 @@ bool TR_LocalAnticipatability::updateAnticipatabilityForSupportedNodes(TR::Node 
             {
             killedExpressions->set(node->getLocalIndex());
             if (trace())
-               traceMsg(comp(), "\n330Definition #%d (n%dn) is NOT locally anticipatable in block_%d\n", node->getLocalIndex(),block->getNumber());
+               traceMsg(comp(), "\n330Definition #%d (n%dn) is NOT locally anticipatable in block_%d\n", node->getLocalIndex(), node->getGlobalIndex(), block->getNumber());
             _info[block->getNumber()]._analysisInfo->reset(node->getLocalIndex());
             }
          }
@@ -760,7 +760,7 @@ bool TR_LocalAnticipatability::updateAnticipatabilityForSupportedNodes(TR::Node 
          flag = false;
          killedExpressions->set(node->getLocalIndex());
          if (trace())
-            traceMsg(comp(), "\n331Definition #%d (n%dn) is NOT locally anticipatable in block_%d\n", node->getLocalIndex(),block->getNumber());
+            traceMsg(comp(), "\n331Definition #%d (n%dn) is NOT locally anticipatable in block_%d\n", node->getLocalIndex(), node->getGlobalIndex(), block->getNumber());
          _info[block->getNumber()]._analysisInfo->reset(node->getLocalIndex());
          }
       }

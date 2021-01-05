@@ -548,9 +548,10 @@ void OMR::X86::Linkage::stopUsingKilledRegisters(TR::RegisterDependencyCondition
    TR::Register *vmThreadReg = self()->cg()->getVMThreadRegister();
    for (int32_t i = deps->getNumPostConditions()-1; i >= 0; --i)
       {
-      if (deps->getPostConditions()->getRegisterDependency(i)->getRealRegister() != TR::RealRegister::NoReg)
+      TR::RegisterDependency *regDep = deps->getPostConditions()->getRegisterDependency(i);
+      if (!regDep->isNoReg())
          {
-         TR::Register *reg = deps->getPostConditions()->getRegisterDependency(i)->getRegister();
+         TR::Register *reg = regDep->getRegister();
          if (reg                         &&
              reg != firstReturnRegister  &&
              reg != secondReturnRegister &&

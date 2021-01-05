@@ -306,6 +306,7 @@ MM_VerboseWriterFileLogging::endOfCycle(MM_EnvironmentBase *env)
 		if(0 == _currentCycle) {
 			closeFile(env);
 			_currentFile = (_currentFile + 1) % _numFiles;
+			openFile(env, true);
 		}
 	}
 }

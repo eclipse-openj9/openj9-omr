@@ -1263,7 +1263,10 @@ TEST(PortSockTest, poll_functionality_many_sockets)
 	OMRPollFd pollArray[10];
 	omrsock_socket_t socketPoll = NULL;
 	int16_t revents = 0;
-	
+
+	const uint8_t SERVER_SOCKET_POLL_IDX = 8;
+	const uint8_t CLIENT_SOCKET_POLL_IDX = 9;
+
 	/* Create an array of additional sockets for testing dynamic allocation in omrsock_poll. */
 	omrsock_socket_t sockets[8];
 	for (int32_t i = 0; i < 8; i++) {
@@ -1271,8 +1274,8 @@ TEST(PortSockTest, poll_functionality_many_sockets)
 		ASSERT_EQ(OMRPORTLIB->sock_fcntl(OMRPORTLIB, sockets[i], OMRSOCK_O_NONBLOCK), 0);
 		ASSERT_EQ(OMRPORTLIB->sock_pollfd_init(OMRPORTLIB, &pollArray[i], sockets[i], OMRSOCK_POLLIN | OMRSOCK_POLLHUP), 0);
 	}
-	EXPECT_EQ(OMRPORTLIB->sock_pollfd_init(OMRPORTLIB, &pollArray[8], connectedServerSocket, OMRSOCK_POLLIN), 0);
-	EXPECT_EQ(OMRPORTLIB->sock_pollfd_init(OMRPORTLIB, &pollArray[9], clientSocket, OMRSOCK_POLLOUT), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_pollfd_init(OMRPORTLIB, &pollArray[SERVER_SOCKET_POLL_IDX], connectedServerSocket, OMRSOCK_POLLIN), 0);
+	EXPECT_EQ(OMRPORTLIB->sock_pollfd_init(OMRPORTLIB, &pollArray[CLIENT_SOCKET_POLL_IDX], clientSocket, OMRSOCK_POLLOUT), 0);
 
 	/* Check that only client POLLOUT is ready. Give poll up to 10 times to be ready. */
 	const char *msg = "This is an omrsock test for 2 socket stream communications.\n";
@@ -1285,26 +1288,33 @@ TEST(PortSockTest, poll_functionality_many_sockets)
 	}
 	ASSERT_EQ(rc, 1);
 
-	for (int32_t i = 0; i < 10; i++) {
-		OMRPORTLIB->sock_get_pollfd_info(OMRPORTLIB, &pollArray[i], &socketPoll, &revents);
-		if (0 != (revents & OMRSOCK_POLLOUT)) {
-			ASSERT_EQ(clientSocket, socketPoll);
-			bytesSent = OMRPORTLIB->sock_send(OMRPORTLIB, clientSocket, (uint8_t *)msg, strlen(msg) + 1, 0);
-			ASSERT_GT(bytesSent, 0);
-			break;
-		}
-	}
+	/* The client socket should be ready to write. */
+	OMRPORTLIB->sock_get_pollfd_info(OMRPORTLIB, &pollArray[CLIENT_SOCKET_POLL_IDX], &socketPoll, &revents);
+	ASSERT_EQ(clientSocket, socketPoll);
+	ASSERT_NE(revents & OMRSOCK_POLLOUT, 0);
+
+	bytesSent = OMRPORTLIB->sock_send(OMRPORTLIB, clientSocket, (uint8_t *)msg, strlen(msg) + 1, 0);
+	ASSERT_GT(bytesSent, 0);
+
+
+	/* Ignore OMRSOCK_POLLOUT on client socket, since its state is indeterminate
+	 * Listen for HUP, since an error is returned if sock_pollfd_init recieves an event arg of 0. */
+	 EXPECT_EQ(OMRPORTLIB->sock_pollfd_init(OMRPORTLIB, &pollArray[CLIENT_SOCKET_POLL_IDX], clientSocket, OMRSOCK_POLLHUP), 0);
 
 	/* Check that server POLLIN is ready. Give poll up to 10 times to be ready. */
+	bool succeeded = false;
 	for (int32_t i = 0; i < 10; i++) {
-		if (2 == (rc = OMRPORTLIB->sock_poll(OMRPORTLIB, pollArray, 10, 1000))) {
-			OMRPORTLIB->sock_get_pollfd_info(OMRPORTLIB, &pollArray[8], &socketPoll, &revents);
-			ASSERT_EQ(connectedServerSocket, socketPoll);
-			ASSERT_NE((revents & OMRSOCK_POLLIN), 0);
-			break;
+		rc = OMRPORTLIB->sock_poll(OMRPORTLIB, pollArray, 10, 1000);
+		if (rc > 0) {
+			OMRPORTLIB->sock_get_pollfd_info(OMRPORTLIB, &pollArray[SERVER_SOCKET_POLL_IDX], &socketPoll, &revents);
+			ASSERT_EQ(socketPoll, connectedServerSocket);
+			if (0 != (revents & OMRSOCK_POLLIN)) {
+				succeeded = true;
+				break;
+			}
 		}
 	}
-	ASSERT_EQ(rc, 2);
+	ASSERT_TRUE(succeeded);
 
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &serverSocket), 0);
 	EXPECT_EQ(OMRPORTLIB->sock_close(OMRPORTLIB, &clientSocket), 0);

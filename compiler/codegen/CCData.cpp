@@ -41,7 +41,6 @@ size_t CCData::dataAlignmentFromBytesAlignment(size_t alignmentBytes)
    return (alignmentBytes + OMR_ALIGNOF(data_t) - 1) / OMR_ALIGNOF(data_t);
    }
 
-inline
 size_t CCData::byteIndexFromDataIndex(size_t dataIndex)
    {
    return dataIndex * sizeof(data_t);

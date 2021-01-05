@@ -68,9 +68,9 @@ MM_GCExtensionsBase::initialize(MM_EnvironmentBase* env)
 	uintptr_t *pageSizes = NULL;
 	uintptr_t *pageFlags = NULL;
 
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
 	_compressObjectReferences = env->compressObjectReferences();
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
 
 	_omrVM = env->getOmrVM();
 

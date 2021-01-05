@@ -41,6 +41,7 @@
 #cmakedefine OMR_THREAD
 #cmakedefine OMR_OMRSIG
 #cmakedefine OMR_EXAMPLE
+#cmakedefine OMR_SHARED_CACHE
 
 #cmakedefine OMR_GC_ALLOCATION_TAX
 #cmakedefine OMR_GC_BATCH_CLEAR_TLH
@@ -154,6 +155,7 @@
 #cmakedefine OMR_GC_REALTIME
 #cmakedefine OMR_GC_TLH_PREFETCH_FTA
 #cmakedefine OMR_GC_VLHGC
+#cmakedefine OMR_MIXED_REFERENCES_MODE_STATIC
 
 /**
  * Add support for CUDA

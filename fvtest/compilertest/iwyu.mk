@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, 2018 IBM Corp. and others
+# Copyright (c) 2016, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -71,8 +71,7 @@
 #
 
 .PHONY: iwyu
-iwyu::
-
+iwyu:
 
 # default paths, unless overriden
 export CC_PATH?=include-what-you-use
@@ -145,7 +144,7 @@ define DEF_RULE.iwyu
 $(1).iwyu: $(1)
 	- $$(CXX_CMD) $(LINTER_FLAGS) $$(patsubst %,-D%,$$(CXX_DEFINES)) $$(patsubst %,-I'%',$$(CXX_INCLUDES)) $$<
 
-iwyu:: $(1).iwyu
+iwyu: $(1).iwyu
 
 endef # DEF_RULE.iwyu
 

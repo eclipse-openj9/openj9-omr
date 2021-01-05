@@ -59,7 +59,7 @@ TR::ELFGenerator::initializeELFHeaderForPlatform(void)
     
     for (auto b = EI_PAD;b < EI_NIDENT;b++)
         _header->e_ident[b] = 0;
-        _header->e_ident[EI_OSABI] = ELFOSABI_LINUX; // Current support for Linux only. AIX would use the macro ELFOSABI_AIX.
+    _header->e_ident[EI_OSABI] = ELFOSABI_LINUX; // Current support for Linux only. AIX would use the macro ELFOSABI_AIX.
     
     if (TR::Compiler->target.cpu.isX86())
     {

@@ -257,8 +257,8 @@ omrerror_set_last_error(struct OMRPortLibrary *portLibrary,  int32_t platformCod
 int32_t
 omrerror_set_last_error_with_message(struct OMRPortLibrary *portLibrary, int32_t portableCode, const char *errorMessage)
 {
-	PortlibPTBuffers_t ptBuffers;
-	uint32_t requiredSize;
+	PortlibPTBuffers_t ptBuffers = NULL;
+	uint32_t requiredSize = 0;
 
 	/* get the buffers, allocate if necessary.
 	 * Silently return if not present, what else would the caller do anyway?
@@ -266,6 +266,13 @@ omrerror_set_last_error_with_message(struct OMRPortLibrary *portLibrary, int32_t
 	ptBuffers = omrport_tls_get(portLibrary);
 	if (NULL == ptBuffers) {
 		return portableCode;
+	}
+	if (NULL == errorMessage) {
+		/* Unexpectedly got here with a NULL message.  Ensure we
+		 * set an empty string as the message to clear any previously
+		 * set message.
+		 */
+		errorMessage = "";
 	}
 
 	/* Save the last error */

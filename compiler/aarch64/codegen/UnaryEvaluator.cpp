@@ -162,6 +162,95 @@ TR::Register *OMR::ARM64::TreeEvaluator::lbyteswapEvaluator(TR::Node *node, TR::
    return commonUnaryHelper(node, TR::InstOpCode::revx, cg);
    }
 
+/*
+ * highest one bit
+ */
+static TR::Register *hbitHelper(TR::Node *node, bool is64bit, TR::CodeGenerator *cg)
+   {
+   TR::Node *child = node->getFirstChild();
+   TR::Register *srcReg = cg->evaluate(child);
+   TR::Register *trgReg = cg->allocateRegister();
+   TR::Register *tmpReg = cg->allocateRegister();
+   TR::InstOpCode::Mnemonic op;
+
+   op = is64bit ? TR::InstOpCode::clzx : TR::InstOpCode::clzw;
+   generateTrg1Src1Instruction(cg, op, node, tmpReg, srcReg);
+   generateCompareImmInstruction(cg, node, srcReg, 0, is64bit);
+   if (is64bit)
+      {
+      // mov trgReg, #0x80000000
+      generateTrg1ImmInstruction(cg, TR::InstOpCode::movzx, node, trgReg, 0x8000 | TR::MOV_LSL48);
+      }
+   else
+      {
+      // mov trgReg, #0x8000000000000000
+      generateTrg1ImmInstruction(cg, TR::InstOpCode::movzw, node, trgReg, 0x8000 | TR::MOV_LSL16);
+      }
+   op = is64bit ? TR::InstOpCode::cselx : TR::InstOpCode::cselw;
+   generateCondTrg1Src2Instruction(cg, op, node, trgReg, trgReg, srcReg, TR::CC_NE);
+   op = is64bit ? TR::InstOpCode::lsrvx : TR::InstOpCode::lsrvw;
+   generateTrg1Src2Instruction(cg, op, node, trgReg, trgReg, tmpReg);
+
+   cg->stopUsingRegister(tmpReg);
+
+   node->setRegister(trgReg);
+   cg->decReferenceCount(child);
+   return trgReg;
+   }
+
+TR::Register *OMR::ARM64::TreeEvaluator::ihbitEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return hbitHelper(node, false, cg);
+   }
+
+TR::Register *OMR::ARM64::TreeEvaluator::lhbitEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return hbitHelper(node, true, cg);
+   }
+
+/*
+ * number of leading zeros
+ */
+TR::Register *OMR::ARM64::TreeEvaluator::inolzEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonUnaryHelper(node, TR::InstOpCode::clzw, cg);
+   }
+
+TR::Register *OMR::ARM64::TreeEvaluator::lnolzEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonUnaryHelper(node, TR::InstOpCode::clzx, cg);
+   }
+
+/*
+ * number of trailing zeros
+ */
+static TR::Register *notzHelper(TR::Node *node, bool is64bit, TR::CodeGenerator *cg)
+   {
+   TR::Node *child = node->getFirstChild();
+   TR::Register *srcReg = cg->evaluate(child);
+   TR::Register *trgReg = (child->getReferenceCount() == 1) ? srcReg : cg->allocateRegister();
+   TR::InstOpCode::Mnemonic op;
+
+   op = is64bit ? TR::InstOpCode::rbitx : TR::InstOpCode::rbitw;
+   generateTrg1Src1Instruction(cg, op, node, trgReg, srcReg);
+   op = is64bit ? TR::InstOpCode::clzx : TR::InstOpCode::clzw;
+   generateTrg1Src1Instruction(cg, op, node, trgReg, trgReg);
+
+   node->setRegister(trgReg);
+   cg->decReferenceCount(child);
+   return trgReg;
+   }
+
+TR::Register *OMR::ARM64::TreeEvaluator::inotzEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return notzHelper(node, false, cg);
+   }
+
+TR::Register *OMR::ARM64::TreeEvaluator::lnotzEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return notzHelper(node, true, cg);
+   }
+
 // also handles i2b, i2s, l2b, l2s, s2b
 TR::Register *OMR::ARM64::TreeEvaluator::l2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

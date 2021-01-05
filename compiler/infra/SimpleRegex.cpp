@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,6 +28,7 @@
 #include "compile/Compilation.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "env/StackMemoryRegion.hpp"
+#include "env/VerboseLog.hpp"
 #include "il/DataTypes.hpp"
 #include "ras/Debug.hpp"
 #include "ras/IgnoreLocale.hpp"
@@ -392,11 +393,13 @@ bool SimpleRegex::match(const char *s, bool isCaseSensitive, bool useLocale)
 
 void SimpleRegex::print(bool negate)
    {
+   TR_VerboseLog::vlogAcquire();
    TR_VerboseLog::write("{");
    if (negate ^ _negate)
       TR_VerboseLog::write("^");
    _regex->print();
    TR_VerboseLog::write("}");
+   TR_VerboseLog::vlogRelease();
    }
 
 
@@ -406,7 +409,9 @@ void SimpleRegex::Regex::print()
       simple->print();
    if (remainder)
       {
+      TR_VerboseLog::vlogAcquire();
       TR_VerboseLog::write("|");
+      TR_VerboseLog::vlogRelease();
       remainder->print();
       }
    }
@@ -414,6 +419,7 @@ void SimpleRegex::Regex::print()
 
 void SimpleRegex::Simple::print()
    {
+   TR_VerboseLog::vlogAcquire();
    int32_t i;
    switch (component->type)
       {
@@ -452,6 +458,7 @@ void SimpleRegex::Simple::print()
       }
    if (remainder)
       remainder->print();
+   TR_VerboseLog::vlogRelease();
    }
 
 

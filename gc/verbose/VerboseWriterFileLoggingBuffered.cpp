@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,6 +26,8 @@
 
 #include "GCExtensionsBase.hpp"
 #include "EnvironmentBase.hpp"
+#include "VerboseBuffer.hpp"
+#include "VerboseHandlerOutput.hpp"
 
 #include <string.h>
 
@@ -81,7 +83,7 @@ MM_VerboseWriterFileLoggingBuffered::tearDown(MM_EnvironmentBase *env)
  * @return true on sucess, false otherwise
  */
 bool
-MM_VerboseWriterFileLoggingBuffered::openFile(MM_EnvironmentBase *env)
+MM_VerboseWriterFileLoggingBuffered::openFile(MM_EnvironmentBase *env, bool printInitializedHeader)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	MM_GCExtensionsBase* extensions = env->getExtensions();
@@ -117,6 +119,15 @@ MM_VerboseWriterFileLoggingBuffered::openFile(MM_EnvironmentBase *env)
 	extensions->getForge()->free(filenameToOpen);
 	
 	omrfilestream_printf(_logFileStream, getHeader(env), version);
+	/* Print an Initialized Stanza in new file */
+	if (printInitializedHeader) {
+		MM_VerboseBuffer* buffer = MM_VerboseBuffer::newInstance(env, INITIAL_BUFFER_SIZE);
+		if (NULL != buffer) {
+			_manager->getVerboseHandlerOutput()->outputInitializedStanza(env, buffer);
+			omrfilestream_printf(_logFileStream, buffer->contents());
+			buffer->kill(env);
+		}
+	}
 	
 	return true;
 }
@@ -142,7 +153,10 @@ MM_VerboseWriterFileLoggingBuffered::outputString(MM_EnvironmentBase *env, const
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 
 	if(NULL == _logFileStream) {
-		/* we open the file at the end of the cycle so can't have a final empty file at the end of a run */
+		/**
+		 * Under normal circumstances, new file should be opened during endOfCycle call.
+		 * This path works as one backup, in case we failed to open the file,  we’ll attempt to open it again before outputting the string.
+		 */
 		openFile(env);
 	}
 

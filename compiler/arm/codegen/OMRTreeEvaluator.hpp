@@ -94,11 +94,9 @@ public:
    static TR::Register *monentEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *monexitEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *asynccheckEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-#if J9_PROJECT_SPECIFIC
    static TR::Register *instanceofEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *checkcastEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *checkcastAndNULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-#endif
    static TR::Register *newObjectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *newArrayEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *anewArrayEvaluator(TR::Node *node, TR::CodeGenerator *cg);

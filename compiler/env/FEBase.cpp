@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,6 +32,7 @@
 #include "env/FEBase.hpp"
 #include "env/IO.hpp"
 #include "env/JitConfig.hpp"
+#include "env/VerboseLog.hpp"
 #include "env/jittypes.h"
 #include "compile/CompilationException.hpp"
 #include "il/ILOps.hpp"

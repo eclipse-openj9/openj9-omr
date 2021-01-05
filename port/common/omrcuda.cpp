@@ -1204,6 +1204,10 @@ const J9CudaLibraryDescriptor runtimeLibraries[] = {
 /*
  * Include forward-compatible support for runtime libraries.
  */
+#if CUDART_VERSION <= 11010
+	OMRCUDA_LIBRARY_ENTRY(11, 1),
+#endif /* CUDART_VERSION <= 11010 */
+
 #if CUDART_VERSION <= 11000
 	OMRCUDA_LIBRARY_ENTRY(11, 0),
 #endif /* CUDART_VERSION <= 11000 */

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2017 IBM Corp. and others
+# Copyright (c) 2015, 2020 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -38,6 +38,6 @@ $(targets):
 
 targets_clean := $(addsuffix _clean,$(targets))
 clean: $(targets_clean)
-$(targets_clean)::
+$(targets_clean):
 	$(MAKE) -C $(patsubst %_clean,%,$@) clean
 .PHONY: $(targets_clean)

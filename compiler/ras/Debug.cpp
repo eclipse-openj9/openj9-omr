@@ -1980,7 +1980,7 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
                      }
                }
             char *result = (char*)_comp->trMemory()->allocateHeapMemory(length+20);
-            sprintf(result, "<string \"%.*s%s%s\">", prefixLength, contents, etc, contents+suffixOffset);
+            sprintf(result, "<string \"%.*s%s%s\">", (int)prefixLength, contents, etc, contents+suffixOffset);
             return result;
             }
 #endif
@@ -2959,7 +2959,7 @@ TR_Debug::getName(TR::Register *reg, TR_RegisterSizes size)
       {
       // Prefix checking for register pairs is a bit complex, and likely irrelevant since they
       // can't contain collected refs or internal pointers anyway.  Let's not worry about it.
-      sprintf(prefix, "");
+      prefix[0] = '\0';
       }
    else
       {

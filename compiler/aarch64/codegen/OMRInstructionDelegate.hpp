@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,9 +33,13 @@ namespace OMR { typedef OMR::ARM64::InstructionDelegate InstructionDelegateConne
 #error OMR::ARM64::InstructionDelegate expected to be a primary connector, but an OMR connector is already defined
 #endif
 
-#include "codegen/ARM64Instruction.hpp"
+#include "codegen/MemoryReference.hpp"
 #include "compiler/codegen/OMRInstructionDelegate.hpp"
 #include "infra/Annotations.hpp"
+
+namespace TR { class ARM64ImmSymInstruction; }
+namespace TR { class ARM64Trg1MemInstruction; }
+namespace TR { class ARM64MemInstruction; }
 
 namespace OMR
 {
@@ -62,6 +66,25 @@ public:
       // Do nothing in OMR
       }
 
+   /**
+    * @brief Determines if this instruction will throw an implicit null pointer exception and sets appropriate flags
+    * @param[in] cg    : CodeGenerator
+    * @param[in] instr : instruction with memory reference
+    */
+   static void setupImplicitNullPointerException(TR::CodeGenerator *cg, TR::ARM64Trg1MemInstruction *instr)
+      {
+      // Do nothing in OMR
+      }
+
+   /**
+    * @brief Determines if this instruction will throw an implicit null pointer exception and sets appropriate flags
+    * @param[in] cg    : CodeGenerator
+    * @param[in] instr : instruction with memory reference
+    */
+   static void setupImplicitNullPointerException(TR::CodeGenerator *cg, TR::ARM64MemInstruction *instr)
+      {
+      // Do nothing in OMR
+      }
    };
 
 }

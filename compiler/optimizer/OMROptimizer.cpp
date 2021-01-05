@@ -545,6 +545,7 @@ static const OptimizationStrategy ilgenStrategyOpts[] =
    { osrLiveRangeAnalysis,          IfOSR   },
    { osrDefAnalysis,                IfInvoluntaryOSR },
    { varHandleTransformer,          MustBeDone     },
+   { handleRecompilationOps,        MustBeDone     },
    { unsafeFastPath                                },
    { recognizedCallTransformer                     },
    { coldBlockMarker                               },

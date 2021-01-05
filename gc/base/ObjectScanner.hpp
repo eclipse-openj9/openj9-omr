@@ -62,9 +62,9 @@ protected:
 	fomrobject_t *_scanPtr;					/**< Pointer to base of object slots mapped by current _scanMap */
 	GC_SlotObject _slotObject;				/**< Create own SlotObject class to provide output */
 	uintptr_t _flags;						/**< Scavenger context flags (scanRoots, scanHeap, ...) */
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
 	bool const _compressObjectReferences;
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
 	
 public:
 	/**
@@ -104,9 +104,9 @@ protected:
 		, _scanPtr(scanPtr)
 		, _slotObject(env->getOmrVM(), NULL)
 		, _flags(flags | headObjectScanner)
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
 		, _compressObjectReferences(env->compressObjectReferences())
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
 	{
 		_typeId = __FUNCTION__;
 	}

@@ -190,7 +190,7 @@ RC_INCLUDES=$(call buildCPPIncludeFlags,$(MODULE_INCLUDES) $(GLOBAL_INCLUDES))
 
 # compilation rule for text resource files on Windows
 %.res: %.rc
-	$(RC) $(RC_INCLUDES) $<
+	$(RC) /fo $@ $(RC_INCLUDES) $<
 
 define AR_COMMAND
 $(AR) -out:$@ $(OBJECTS)

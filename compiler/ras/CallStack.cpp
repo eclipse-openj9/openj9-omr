@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,6 +26,7 @@
 #include "env/TRMemory.hpp"
 #include "ras/CallStackIterator.hpp"
 #include "compile/Compilation.hpp"
+#include "omrformatconsts.h"
 
 
 void TR_CallStackIterator::printStackBacktrace(TR::Compilation *comp)
@@ -33,9 +34,9 @@ void TR_CallStackIterator::printStackBacktrace(TR::Compilation *comp)
    while (!isDone())
       {
       if (comp)
-         traceMsg(comp, "%s+0x%lx\n", getProcedureName(), getOffsetInProcedure());
+         traceMsg(comp, "%s+0x%" OMR_PRIxPTR "\n", getProcedureName(), getOffsetInProcedure());
       else
-         fprintf(stderr, "%s+0x%lx\n", getProcedureName(), getOffsetInProcedure());
+         fprintf(stderr, "%s+0x%" OMR_PRIxPTR "\n", getProcedureName(), getOffsetInProcedure());
       getNext();
       }
    }
@@ -66,7 +67,7 @@ void TR_CallStackIterator::printStackBacktrace(TR::Compilation *comp)
    /*copy current stack pointer to dst*/ \
    asm("la %0, 0(r1)" : "=r" (dst)); \
    }                      \
-   while (0)             
+   while (0)
 
 void TR_PPCCallStackIterator::_set_tb_table()
    {
@@ -210,13 +211,13 @@ void TR_LinuxCallStackIterator::printSymbol(int32_t frame, char *sig, TR::Compil
       char *demangled = abi::__cxa_demangle(func, buffer, &length, &status);
       if (status == 0) funcToPrint = demangled;
       if (comp)
-         traceMsg(comp, "#%d: function %s+%#lx [%#p]\n",
+         traceMsg(comp, "#%" OMR_PRId32 ": function %s+%#" OMR_PRIxPTR " [%#" OMR_PRIxPTR "]\n",
               frame,
               funcToPrint,
               offset,
               address);
       else
-         fprintf(stderr, "#%d: function %s+%#lx [%#p]\n",
+         fprintf(stderr, "#%" OMR_PRId32 ": function %s+%#" OMR_PRIxPTR" [%#" OMR_PRIxPTR "]\n",
                  frame,
                  funcToPrint,
                  offset,
@@ -226,9 +227,9 @@ void TR_LinuxCallStackIterator::printSymbol(int32_t frame, char *sig, TR::Compil
    else
       {
       if (comp)
-         traceMsg(comp, "#%d: %s\n", frame, sig);
+         traceMsg(comp, "#%" OMR_PRId32 ": %s\n", frame, sig);
       else
-         fprintf(stderr, "#%d: %s\n", frame, sig);
+         fprintf(stderr, "#%" OMR_PRId32 ": %s\n", frame, sig);
       }
    }
 
@@ -449,7 +450,7 @@ TR_WinCallStackIterator::TR_WinCallStackIterator() :
    if (!(* SymInitialize)(hProcess, userSearchPath, TRUE))
       {
       // SymInitialize failed
-      fprintf(stderr, "Unable to retrieve symbol informaton. SymInitialize returned error : %d\n", GetLastError());
+      fprintf(stderr, "Unable to retrieve symbol informaton. SymInitialize returned error : %" OMR_PRId32 "\n", GetLastError());
       }
 
    //Initialize StackFrame

@@ -27,11 +27,14 @@
 #include "GCExtensionsBase.hpp"
 #include "CollectionStatistics.hpp"
 #include "ConcurrentPhaseStatsBase.hpp"
+#include "Heap.hpp"
+#include "HeapRegionManager.hpp"
 #include "ObjectAllocationInterface.hpp"
 #include "ParallelDispatcher.hpp"
 #include "VerboseHandlerOutput.hpp"
 #include "VerboseManager.hpp"
 #include "VerboseWriterChain.hpp"
+#include "VerboseBuffer.hpp"
 
 #include "gcutils.h"
 
@@ -124,12 +127,11 @@ MM_VerboseHandlerOutput::getThreadName(char *buf, uintptr_t bufLen, OMR_VMThread
 }
 
 void
-MM_VerboseHandlerOutput::writeVmArgs(MM_EnvironmentBase* env)
+MM_VerboseHandlerOutput::writeVmArgs(MM_EnvironmentBase* env, MM_VerboseBuffer* buffer)
 {
 	/* TODO (stefanbu) OMR does not support argument parsing yet, but we should repsect schema.*/
-	MM_VerboseWriterChain* writer = _manager->getWriterChain();
-	writer->formatAndOutput(env, 1, "<vmargs>");
-	writer->formatAndOutput(env, 1, "</vmargs>");
+	buffer->formatAndOutput(env, 1, "<vmargs>");
+	buffer->formatAndOutput(env, 1, "</vmargs>");
 }
 
 
@@ -219,57 +221,20 @@ MM_VerboseHandlerOutput::getTagTemplateWithDuration(char *buf, uintptr_t bufsize
 }
 
 void
-MM_VerboseHandlerOutput::handleInitializedInnerStanzas(J9HookInterface** hook, uintptr_t eventNum, void* eventData)
+MM_VerboseHandlerOutput::outputInitializedStanza(MM_EnvironmentBase *env, MM_VerboseBuffer *buffer)
 {
-	return;
-}
-
-void
-MM_VerboseHandlerOutput::handleInitializedRegion(J9HookInterface** hook, uintptr_t eventNum, void* eventData)
-{
-	MM_InitializedEvent* event = (MM_InitializedEvent*)eventData;
-	MM_VerboseWriterChain* writer = _manager->getWriterChain();
-	MM_EnvironmentBase* env = MM_EnvironmentBase::getEnvironment(event->currentThread);
-#if defined(OMR_GC_DOUBLE_MAP_ARRAYLETS)
-	bool isArrayletDoubleMapRequested = _extensions->isArrayletDoubleMapRequested;
-	const char *arrayletDoubleMappingStatus = _extensions->indexableObjectModel.isDoubleMappingEnabled() ? "enabled" : "disabled";
-	const char *arrayletDoubleMappingRequested = isArrayletDoubleMapRequested ? "true" : "false";
-#endif /* OMR_GC_DOUBLE_MAP_ARRAYLETS */
-
-	writer->formatAndOutput(env, 1, "<region>");
-	writer->formatAndOutput(env, 2, "<attribute name=\"regionSize\" value=\"%zu\" />", event->regionSize);
-	writer->formatAndOutput(env, 2, "<attribute name=\"regionCount\" value=\"%zu\" />", event->regionCount);
-	writer->formatAndOutput(env, 2, "<attribute name=\"arrayletLeafSize\" value=\"%zu\" />", event->arrayletLeafSize);
-#if defined(OMR_GC_DOUBLE_MAP_ARRAYLETS)
-	if (_extensions->isVLHGC()) {
-		writer->formatAndOutput(env, 2, "<attribute name=\"arrayletDoubleMappingRequested\" value=\"%s\"/>", arrayletDoubleMappingRequested);
-		if (isArrayletDoubleMapRequested) {
-			writer->formatAndOutput(env, 2, "<attribute name=\"arrayletDoubleMapping\" value=\"%s\"/>", arrayletDoubleMappingStatus);
-		}
-	}
-#endif /* OMR_GC_DOUBLE_MAP_ARRAYLETS */
-	writer->formatAndOutput(env, 1, "</region>");
-}
-
-void
-MM_VerboseHandlerOutput::handleInitialized(J9HookInterface** hook, uintptr_t eventNum, void* eventData)
-{
-	MM_InitializedEvent* event = (MM_InitializedEvent*)eventData;
-	MM_VerboseWriterChain* writer = _manager->getWriterChain();
-	MM_EnvironmentBase* env = MM_EnvironmentBase::getEnvironment(event->currentThread);
-	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
-
 	char tagTemplate[200];
 
-	_manager->setInitializedTime(event->timestamp);
-
+	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+	Assert_MM_true(_manager->getInitializedTime() != 0);
 	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), omrtime_current_time_millis());
-	enterAtomicReportingBlock();
-	writer->formatAndOutput(env, 0, "<initialized %s>", tagTemplate);
-	writer->formatAndOutput(env, 1, "<attribute name=\"gcPolicy\" value=\"%s\" />", event->gcPolicy);
+
+	buffer->formatAndOutput(env, 0, "<initialized %s>", tagTemplate);
+	buffer->formatAndOutput(env, 1, "<attribute name=\"gcPolicy\" value=\"%s\" />", _extensions->gcModeString);
+
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (_extensions->isConcurrentScavengerEnabled()) {
-		writer->formatAndOutput(env, 1, "<attribute name=\"concurrentScavenger\" value=\"%s\" />",
+		buffer->formatAndOutput(env, 1, "<attribute name=\"concurrentScavenger\" value=\"%s\" />",
 #if defined(S390) || defined(J9ZOS390)
 				_extensions->concurrentScavengerHWSupport ?
 				"enabled, with H/W assistance" :
@@ -279,56 +244,97 @@ MM_VerboseHandlerOutput::handleInitialized(J9HookInterface** hook, uintptr_t eve
 #endif /* defined(S390) || defined(J9ZOS390) */
 	}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
-	writer->formatAndOutput(env, 1, "<attribute name=\"maxHeapSize\" value=\"0x%zx\" />", event->maxHeapSize);
-	writer->formatAndOutput(env, 1, "<attribute name=\"initialHeapSize\" value=\"0x%zx\" />", event->initialHeapSize);
+
+	buffer->formatAndOutput(env, 1, "<attribute name=\"maxHeapSize\" value=\"0x%zx\" />", _extensions->memoryMax);
+	buffer->formatAndOutput(env, 1, "<attribute name=\"initialHeapSize\" value=\"0x%zx\" />", _extensions->initialMemorySize);
+
 #if defined(OMR_GC_COMPRESSED_POINTERS)
 	if (env->compressObjectReferences()) {
-		writer->formatAndOutput(env, 1, "<attribute name=\"compressedRefs\" value=\"true\" />");
-		writer->formatAndOutput(env, 1, "<attribute name=\"compressedRefsDisplacement\" value=\"0x%zx\" />", 0);
-		writer->formatAndOutput(env, 1, "<attribute name=\"compressedRefsShift\" value=\"0x%zx\" />", event->compressedPointersShift);
+		buffer->formatAndOutput(env, 1, "<attribute name=\"compressedRefs\" value=\"true\" />");
+		buffer->formatAndOutput(env, 1, "<attribute name=\"compressedRefsDisplacement\" value=\"0x%zx\" />", 0);
+		buffer->formatAndOutput(env, 1, "<attribute name=\"compressedRefsShift\" value=\"0x%zx\" />", _omrVM->_compressedPointersShift);
 	} else
 #endif /* defined(OMR_GC_COMPRESSED_POINTERS) */
 	{
-		writer->formatAndOutput(env, 1, "<attribute name=\"compressedRefs\" value=\"false\" />");
+		buffer->formatAndOutput(env, 1, "<attribute name=\"compressedRefs\" value=\"false\" />");
 	}
-	writer->formatAndOutput(env, 1, "<attribute name=\"pageSize\" value=\"0x%zx\" />", event->heapPageSize);
-	writer->formatAndOutput(env, 1, "<attribute name=\"pageType\" value=\"%s\" />", event->heapPageType);
-	writer->formatAndOutput(env, 1, "<attribute name=\"requestedPageSize\" value=\"0x%zx\" />", event->heapRequestedPageSize);
-	writer->formatAndOutput(env, 1, "<attribute name=\"requestedPageType\" value=\"%s\" />", event->heapRequestedPageType);
-	writer->formatAndOutput(env, 1, "<attribute name=\"gcthreads\" value=\"%zu\" />", event->gcThreads);
+
+	buffer->formatAndOutput(env, 1, "<attribute name=\"pageSize\" value=\"0x%zx\" />", _extensions->heap->getPageSize());
+	buffer->formatAndOutput(env, 1, "<attribute name=\"pageType\" value=\"%s\" />", getPageTypeString(_extensions->heap->getPageFlags()));
+	buffer->formatAndOutput(env, 1, "<attribute name=\"requestedPageSize\" value=\"0x%zx\" />", _extensions->requestedPageSize);
+	buffer->formatAndOutput(env, 1, "<attribute name=\"requestedPageType\" value=\"%s\" />", getPageTypeString(_extensions->requestedPageFlags));
+	buffer->formatAndOutput(env, 1, "<attribute name=\"gcthreads\" value=\"%zu\" />", _extensions->gcThreadCount);
+
 	if (gc_policy_gencon == _extensions->configurationOptions._gcPolicy) {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		if (_extensions->isConcurrentScavengerEnabled()) {
-			writer->formatAndOutput(env, 1, "<attribute name=\"gcthreads Concurrent Scavenger\" value=\"%zu\" />", _extensions->concurrentScavengerBackgroundThreads);
+			buffer->formatAndOutput(env, 1, "<attribute name=\"gcthreads Concurrent Scavenger\" value=\"%zu\" />", _extensions->concurrentScavengerBackgroundThreads);
 		}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 		if (_extensions->isConcurrentMarkEnabled()) {
-			writer->formatAndOutput(env, 1, "<attribute name=\"gcthreads Concurrent Mark\" value=\"%zu\" />", _extensions->concurrentBackground);
+			buffer->formatAndOutput(env, 1, "<attribute name=\"gcthreads Concurrent Mark\" value=\"%zu\" />", _extensions->concurrentBackground);
 		}
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 	}
 
-	writer->formatAndOutput(env, 1, "<attribute name=\"packetListSplit\" value=\"%zu\" />", _extensions->packetListSplit);
+	buffer->formatAndOutput(env, 1, "<attribute name=\"packetListSplit\" value=\"%zu\" />", _extensions->packetListSplit);
 #if defined(OMR_GC_MODRON_SCAVENGER)
-	writer->formatAndOutput(env, 1, "<attribute name=\"cacheListSplit\" value=\"%zu\" />", _extensions->cacheListSplit);
+	buffer->formatAndOutput(env, 1, "<attribute name=\"cacheListSplit\" value=\"%zu\" />", _extensions->cacheListSplit);
 #endif /* OMR_GC_MODRON_SCAVENGER */
-	writer->formatAndOutput(env, 1, "<attribute name=\"splitFreeListSplitAmount\" value=\"%zu\" />", _extensions->splitFreeListSplitAmount);
-	writer->formatAndOutput(env, 1, "<attribute name=\"numaNodes\" value=\"%zu\" />", event->numaNodes);
+	buffer->formatAndOutput(env, 1, "<attribute name=\"splitFreeListSplitAmount\" value=\"%zu\" />", _extensions->splitFreeListSplitAmount);
+	buffer->formatAndOutput(env, 1, "<attribute name=\"numaNodes\" value=\"%zu\" />", _extensions->_numaManager.getAffinityLeaderCount());
 
-	handleInitializedInnerStanzas(hook, eventNum, eventData);
+	outputInitializedInnerStanza(env, buffer);
 
-	writer->formatAndOutput(env, 1, "<system>");
-	writer->formatAndOutput(env, 2, "<attribute name=\"physicalMemory\" value=\"%llu\" />", event->physicalMemory);
-	writer->formatAndOutput(env, 2, "<attribute name=\"numCPUs\" value=\"%zu\" />", event->numCPUs);
-	writer->formatAndOutput(env, 2, "<attribute name=\"architecture\" value=\"%s\" />", event->architecture);
-	writer->formatAndOutput(env, 2, "<attribute name=\"os\" value=\"%s\" />", event->os);
-	writer->formatAndOutput(env, 2, "<attribute name=\"osVersion\" value=\"%s\" />", event->osVersion);
-	writer->formatAndOutput(env, 1, "</system>");
-	
-	writeVmArgs(env);
+	buffer->formatAndOutput(env, 1, "<system>");
+	buffer->formatAndOutput(env, 2, "<attribute name=\"physicalMemory\" value=\"%llu\" />", omrsysinfo_get_physical_memory());
+	buffer->formatAndOutput(env, 2, "<attribute name=\"numCPUs\" value=\"%zu\" />", omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_ONLINE));
+	buffer->formatAndOutput(env, 2, "<attribute name=\"architecture\" value=\"%s\" />", omrsysinfo_get_CPU_architecture());
+	buffer->formatAndOutput(env, 2, "<attribute name=\"os\" value=\"%s\" />", omrsysinfo_get_OS_type());
+	buffer->formatAndOutput(env, 2, "<attribute name=\"osVersion\" value=\"%s\" />", omrsysinfo_get_OS_version());
+	buffer->formatAndOutput(env, 1, "</system>");
 
-	writer->formatAndOutput(env, 0, "</initialized>\n");
+	writeVmArgs(env,buffer);
+
+	buffer->formatAndOutput(env, 0, "</initialized>\n");
+}
+
+void
+MM_VerboseHandlerOutput::outputInitializedRegion(MM_EnvironmentBase *env, MM_VerboseBuffer *buffer)
+{
+	OMR_VM *omrVM = env->getOmrVM();
+#if defined(OMR_GC_DOUBLE_MAP_ARRAYLETS)
+	bool isArrayletDoubleMapRequested = _extensions->isArrayletDoubleMapRequested;
+	const char *arrayletDoubleMappingStatus = _extensions->indexableObjectModel.isDoubleMappingEnabled() ? "enabled" : "disabled";
+	const char *arrayletDoubleMappingRequested = isArrayletDoubleMapRequested ? "true" : "false";
+#endif /* OMR_GC_DOUBLE_MAP_ARRAYLETS */
+	buffer->formatAndOutput(env, 1, "<region>");
+	buffer->formatAndOutput(env, 2, "<attribute name=\"regionSize\" value=\"%zu\" />", _extensions->getHeap()->getHeapRegionManager()->getRegionSize());
+	buffer->formatAndOutput(env, 2, "<attribute name=\"regionCount\" value=\"%zu\" />", _extensions->getHeap()->getHeapRegionManager()->getTableRegionCount());
+	buffer->formatAndOutput(env, 2, "<attribute name=\"arrayletLeafSize\" value=\"%zu\" />", omrVM->_arrayletLeafSize);
+#if defined(OMR_GC_DOUBLE_MAP_ARRAYLETS)
+	if (_extensions->isVLHGC()) {
+		buffer->formatAndOutput(env, 2, "<attribute name=\"arrayletDoubleMappingRequested\" value=\"%s\"/>", arrayletDoubleMappingRequested);
+		if (isArrayletDoubleMapRequested) {
+			buffer->formatAndOutput(env, 2, "<attribute name=\"arrayletDoubleMapping\" value=\"%s\"/>", arrayletDoubleMappingStatus);
+		}
+	}
+#endif /* OMR_GC_DOUBLE_MAP_ARRAYLETS */
+	buffer->formatAndOutput(env, 1, "</region>");
+}
+
+void
+MM_VerboseHandlerOutput::handleInitialized(J9HookInterface** hook, uintptr_t eventNum, void* eventData)
+{
+	MM_InitializedEvent* event = (MM_InitializedEvent*)eventData;
+	MM_VerboseWriterChain* writer = _manager->getWriterChain();
+	MM_EnvironmentBase* env = MM_EnvironmentBase::getEnvironment(event->currentThread);
+
+ 	_manager->setInitializedTime(event->timestamp);
+
+	enterAtomicReportingBlock();
+	outputInitializedStanza(env, writer->getBuffer());
 	writer->flush(env);
 	exitAtomicReportingBlock();
 }

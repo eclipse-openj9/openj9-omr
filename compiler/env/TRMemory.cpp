@@ -281,6 +281,9 @@ const char * objectName[] =
    "TR::RelocationDebugInfo",
    "TR::AOTClassInfo",
    "TR_SharedCache",
+   "SharedCacheRegion",
+   "SharedCacheLayout",
+   "SharedCacheConfig",
 
    "TR::RegisterPair",
    "TR::Instruction",

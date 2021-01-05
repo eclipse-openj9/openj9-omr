@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -529,7 +529,7 @@ OMR::Power::RegisterDependencyConditions::clone(
       {
       singlePair = this->getPostConditions()->getRegisterDependency(idx);
       //eliminate duplicate virtual->NoReg dependencies in 'this' conditions
-      if (!((TR::RealRegister::NoReg == singlePair->getRealRegister()) && (added->postConditionContainsVirtual(singlePair->getRegister()))))
+      if (!(singlePair->isNoReg() && (added->postConditionContainsVirtual(singlePair->getRegister()))))
          result->addPostCondition(singlePair->getRegister(), singlePair->getRealRegister(),
                                singlePair->getFlags());
 #if defined(DEBUG)
@@ -542,7 +542,7 @@ OMR::Power::RegisterDependencyConditions::clone(
       {
       singlePair = this->getPreConditions()->getRegisterDependency(idx);
       //eliminate duplicate virtual->NoReg dependencies in 'this' conditions
-      if (!((TR::RealRegister::NoReg == singlePair->getRealRegister()) && (added->preConditionContainsVirtual(singlePair->getRegister()))))
+      if (!(singlePair->isNoReg() && (added->preConditionContainsVirtual(singlePair->getRegister()))))
          result->addPreCondition(singlePair->getRegister(), singlePair->getRealRegister(),
                               singlePair->getFlags());
 #if defined(DEBUG)
@@ -771,11 +771,10 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
       {
       for (i = 0; i < numberOfRegisters; i++)
          {
-         virtReg         = _dependencies[i].getRegister();
-         dependentRegNum = _dependencies[i].getRealRegister();
-         if (dependentRegNum == TR::RealRegister::SpilledReg)
+         virtReg = _dependencies[i].getRegister();
+         if (_dependencies[i].isSpilledReg())
             {
-            TR_ASSERT(virtReg->getBackingStorage(), "Should have a backing store if dependentRegNum == SpilledReg");
+            TR_ASSERT(virtReg->getBackingStorage(), "Should have a backing store if SpilledReg");
             if (virtReg->getAssignedRealRegister())
                {
                // this happens when the register was first spilled in main line path then was reverse spilled
@@ -830,9 +829,7 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
       {
       map.addDependency(_dependencies[i], i);
 
-      dependentRegNum = _dependencies[i].getRealRegister();
-
-      if (dependentRegNum != TR::RealRegister::SpilledReg)
+      if (!_dependencies[i].isSpilledReg())
          {
          virtReg = _dependencies[i].getRegister();
          switch (virtReg->getKind())
@@ -912,7 +909,7 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
 
       if (virtReg->getAssignedRealRegister() != NULL)
          {
-         if (_dependencies[i].getRealRegister() == TR::RealRegister::NoReg)
+         if (_dependencies[i].isNoReg())
             {
             virtReg->block();
             }
@@ -947,17 +944,18 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
       {
       for (i = 0; i < numberOfRegisters; i++)
          {
-         virtReg = _dependencies[i].getRegister();
+         TR::RegisterDependency &regDep = _dependencies[i];
+         virtReg = regDep.getRegister();
          if (virtReg->getKind() != TR_CCR)
             continue;
-         dependentRegNum = _dependencies[i].getRealRegister();
+         dependentRegNum = regDep.getRealRegister();
          dependentRealReg = machine->getRealRegister(dependentRegNum);
 
-         if (dependentRegNum != TR::RealRegister::NoReg &&
-             dependentRegNum != TR::RealRegister::SpilledReg &&
+         if (!regDep.isNoReg() &&
+             !regDep.isSpilledReg() &&
              dependentRealReg->getState() == TR::RealRegister::Free)
             {
-            assignFreeRegisters(currentInstruction, &_dependencies[i], map, cg);
+            assignFreeRegisters(currentInstruction, &regDep, map, cg);
             }
          }
       }
@@ -965,15 +963,16 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
    // Assign all virtual regs that depend on a specific real reg that is free
    for (i = 0; i < numberOfRegisters; i++)
       {
-      virtReg = _dependencies[i].getRegister();
-      dependentRegNum = _dependencies[i].getRealRegister();
+      TR::RegisterDependency &regDep = _dependencies[i];
+      virtReg = regDep.getRegister();
+      dependentRegNum = regDep.getRealRegister();
       dependentRealReg = machine->getRealRegister(dependentRegNum);
 
-      if (dependentRegNum != TR::RealRegister::NoReg &&
-          dependentRegNum != TR::RealRegister::SpilledReg &&
+      if (!regDep.isNoReg() &&
+          !regDep.isSpilledReg() &&
           dependentRealReg->getState() == TR::RealRegister::Free)
          {
-         assignFreeRegisters(currentInstruction, &_dependencies[i], map, cg);
+         assignFreeRegisters(currentInstruction, &regDep, map, cg);
          }
       }
 
@@ -988,8 +987,8 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
          }
       dependentRegNum  = _dependencies[i].getRealRegister();
       dependentRealReg = machine->getRealRegister(dependentRegNum);
-      if (dependentRegNum != TR::RealRegister::NoReg &&
-          dependentRegNum != TR::RealRegister::SpilledReg &&
+      if (!_dependencies[i].isNoReg() &&
+          !_dependencies[i].isSpilledReg() &&
           dependentRealReg != assignedRegister)
          {
          bool depsBlocked = false;
@@ -1012,7 +1011,7 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
    // Assign all virtual regs that depend on NoReg but exclude gr0
    for (i = 0; i < numberOfRegisters; i++)
       {
-      if (_dependencies[i].getRealRegister() == TR::RealRegister::NoReg && _dependencies[i].getExcludeGPR0())
+      if (_dependencies[i].isNoReg() && _dependencies[i].getExcludeGPR0())
          {
          TR::RealRegister *realOne;
 
@@ -1037,7 +1036,7 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
    // Assign all virtual regs that depend on NoReg
    for (i = 0; i < numberOfRegisters; i++)
       {
-      if (_dependencies[i].getRealRegister() == TR::RealRegister::NoReg && !_dependencies[i].getExcludeGPR0())
+      if (_dependencies[i].isNoReg() && !_dependencies[i].getExcludeGPR0())
          {
          TR::RealRegister *realOne;
 
@@ -1064,7 +1063,7 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
          {
          TR::RealRegister *assignedRegister = dependentRegister->getAssignedRegister()->getRealRegister();
 
-         if (getRegisterDependency(i)->getRealRegister() == TR::RealRegister::NoReg)
+         if (getRegisterDependency(i)->isNoReg())
             getRegisterDependency(i)->setRealRegister(toRealRegister(assignedRegister)->getRegisterNumber());
 
          machine->decFutureUseCountAndUnlatch(dependentRegister);

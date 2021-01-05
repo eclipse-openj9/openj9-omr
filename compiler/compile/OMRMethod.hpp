@@ -40,11 +40,13 @@ namespace OMR { typedef OMR::Method MethodConnector; }
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "infra/Annotations.hpp"
+#include "runtime/Runtime.hpp"
 
 class TR_OpaqueClassBlock;
 class TR_ResolvedMethod;
 namespace TR { class Compilation; }
 namespace TR { class Method; }
+namespace TR { class SymbolReference; }
 
 // Method indexes
 //
@@ -101,6 +103,9 @@ typedef struct TR_AOTMethodInfo
    {
    TR_ResolvedMethod *resolvedMethod;
    int32_t cpIndex;
+   TR_ExternalRelocationTargetKind reloKind;
+   TR_OpaqueClassBlock *receiver;
+   TR::SymbolReference *callSymRef;
    } TR_AOTMethodInfo;
 
 

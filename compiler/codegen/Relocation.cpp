@@ -483,6 +483,10 @@ const char *TR::ExternalRelocation::_externalRelocationTargetKindNames[TR_NumExt
    "TR_ResolvedTrampolines (101)",
    "TR_BlockFrequency (102)",
    "TR_RecompQueuedFlag (103)",
+   "TR_InlinedStaticMethod (104",
+   "TR_InlinedSpecialMethod (105)",
+   "TR_InlinedAbstractMethod (106)",
+   "TR_Breakpoint (107)",
    };
 
 uintptr_t TR::ExternalRelocation::_globalValueList[TR_NumGlobalValueItems] =

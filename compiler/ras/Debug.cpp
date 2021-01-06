@@ -3967,7 +3967,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_S390longUShiftRight:                              return "__longUShiftRight";
          case TR_S390interpreterUnresolvedStaticGlue:              return "_interpreterUnresolvedStaticGlue";
          case TR_S390interpreterUnresolvedSpecialGlue:             return "_interpreterUnresolvedSpecialGlue";
-         case TR_S390interpreterUnresolvedDirectVirtualGlue:       return "_interpreterUnresolvedDirectVirtualGlue";
          case TR_S390interpreterUnresolvedClassGlue:               return "_interpreterUnresolvedClassGlue";
          case TR_S390interpreterUnresolvedClassGlue2:              return "_interpreterUnresolvedClassGlue2";
          case TR_S390interpreterUnresolvedStringGlue:              return "_interpreterUnresolvedStringGlue";
@@ -3984,16 +3983,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_S390icallVMprJavaSendVirtualJ:                    return "icallVMprJavaSendVirtualJ";
          case TR_S390icallVMprJavaSendVirtualF:                    return "icallVMprJavaSendVirtualF";
          case TR_S390icallVMprJavaSendVirtualD:                    return "icallVMprJavaSendVirtualD";
-         case TR_S390interpreterVoidStaticGlue:                    return "_interpreterVoidStaticGlue";
-         case TR_S390interpreterIntStaticGlue:                     return "_interpreterIntStaticGlue";
-         case TR_S390interpreterLongStaticGlue:                    return "_interpreterLongStaticGlue";
-         case TR_S390interpreterFloatStaticGlue:                   return "_interpreterFloatStaticGlue";
-         case TR_S390interpreterDoubleStaticGlue:                  return "_interpreterDoubleStaticGlue";
-         case TR_S390interpreterSyncVoidStaticGlue:                return "_interpreterSyncVoidStaticGlue";
-         case TR_S390interpreterSyncIntStaticGlue:                 return "_interpreterSyncIntStaticGlue";
-         case TR_S390interpreterSyncLongStaticGlue:                return "_interpreterSyncLongStaticGlue";
-         case TR_S390interpreterSyncFloatStaticGlue:               return "_interpreterSyncFloatStaticGlue";
-         case TR_S390interpreterSyncDoubleStaticGlue:              return "_interpreterSyncDoubleStaticGlue";
+         case TR_S390interpreterStaticSpecialCallGlue:             return "_interpreterStaticSpecialCallGlue";
          case TR_S390jitLookupInterfaceMethod:                     return "__jitLookupInterfaceMethod";
          case TR_S390jitMethodIsNative:                            return "__jitMethodIsNative";
          case TR_S390jitMethodIsSync:                              return "__jitMethodIsSync";

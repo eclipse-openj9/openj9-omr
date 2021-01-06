@@ -105,9 +105,6 @@ class OMR_EXTENSIBLE Snippet : public OMR::Snippet
    intptr_t setSnippetDestAddr(intptr_t addr) {return _snippetDestAddr = addr;}
    intptr_t getSnippetDestAddr()               {return _snippetDestAddr;}
 
-   uint8_t *generatePICBinary(TR::CodeGenerator *, uint8_t *, TR::SymbolReference *);
-   uint32_t getPICBinaryLength(TR::CodeGenerator *);
-
    /** Helper method to reload VM Thread into GPR13 */
    uint8_t *generateLoadVMThreadInstruction(TR::CodeGenerator *cg, uint8_t *cursor);
    uint32_t getLoadVMThreadInstructionLength(TR::CodeGenerator *cg);

@@ -326,6 +326,7 @@ namespace TR { class S390IEInstruction; }
 #ifdef J9_PROJECT_SPECIFIC
 namespace TR { class S390ForceRecompilationSnippet; }
 namespace TR { class S390ForceRecompilationDataSnippet; }
+namespace TR { class S390J9CallSnippet; }
 namespace TR { class S390UnresolvedCallSnippet; }
 namespace TR { class S390VirtualSnippet; }
 namespace TR { class S390VirtualUnresolvedSnippet; }
@@ -1077,7 +1078,6 @@ public:
    uint8_t * printS390ArgumentsFlush(TR::FILE *, TR::Node *, uint8_t *, int32_t);
 
    void printz(TR::FILE *, TR::Snippet *);
-   void print(TR::FILE *, TR::S390CallSnippet *);
 
    void print(TR::FILE *, TR::S390ConstantDataSnippet *);
 

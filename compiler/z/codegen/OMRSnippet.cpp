@@ -78,106 +78,6 @@ OMR::Z::Snippet::Snippet(
    self()->setNeedLitPoolBasePtr();
    }
 
-
-/**
- * Generate binary for PicBuilder Call
- */
-uint8_t *
-OMR::Z::Snippet::generatePICBinary(TR::CodeGenerator * cg, uint8_t * cursor, TR::SymbolReference* glueRef)
-   {
-   // Branch to the dispatcher.
-   // Since N3 instructions are supported, we can use relative long instructions.
-   // i.e.:
-   //              BRASL r14, <target Addr>.
-   //  - or -
-   //              LARL  r14, <target Addr>.   // Unresolved Calls only.
-   //              L/LG  rEP, 0(r14).
-   //              BCR   rEP
-
-   uint32_t rEP = (uint32_t) cg->getEntryPointRegister() - 1;
-
-   if (self()->getKind() == TR::Snippet::IsUnresolvedCall)
-      {
-      // Generate LARL r14, <Start of Data Const>
-      *(int16_t *) cursor = 0xC0E0;
-      cursor += sizeof(int16_t);
-      intptr_t destAddr = (intptr_t)(cursor + self()->getPICBinaryLength(cg) + self()->getPadBytes() - 2);
-      *(int32_t *) cursor = (int32_t)((destAddr - (intptr_t)(cursor - 2)) / 2);
-      cursor += sizeof(int32_t);
-
-      // L/LG  rEP, 0(r14)
-      if (cg->comp()->target().is64Bit())
-         {
-         *(int32_t *) cursor = 0xe300e000 + (rEP << 20);           // LG  rEP, 0(r14)
-         cursor += sizeof(int32_t);
-         *(int16_t *) cursor = 0x0004;
-         cursor += sizeof(int16_t);
-         }
-      else
-         {
-         *(int32_t *) cursor = 0x5800e000 + (rEP << 20);           // L  rEP, 0(r14)
-         cursor += sizeof(int32_t);
-         }
-
-      // BCR   rEP
-      *(int16_t *) cursor = 0x07F0 + rEP;
-      cursor += sizeof(int16_t);
-      }
-   else
-      {
-      // Generate BRASL instruction.
-      intptr_t instructionStartAddress = (intptr_t)cursor;
-      *(int16_t *) cursor = 0xC0E5;
-      cursor += sizeof(int16_t);
-
-      // Calculate the relative offset to get to helper method.
-      // If MCC is not supported, everything should be reachable.
-      // If MCC is supported, we will look up the appropriate trampoline, if
-      //     necessary.
-      intptr_t destAddr = (intptr_t)(glueRef->getSymbol()->castToMethodSymbol()->getMethodAddress());
-
-#if defined(TR_TARGET_64BIT)
-#if defined(J9ZOS390)
-      if (cg->comp()->getOption(TR_EnableRMODE64))
-#endif
-         {
-         if (cg->directCallRequiresTrampoline(destAddr, instructionStartAddress))
-            {
-            // Destination is beyond our reachable jump distance, we'll find the
-            // trampoline.
-            destAddr = TR::CodeCacheManager::instance()->findHelperTrampoline(glueRef->getReferenceNumber(), (void *)cursor);
-            self()->setUsedTrampoline(true);
-            }
-         }
-#endif
-
-      TR_ASSERT_FATAL(cg->comp()->target().cpu.isTargetWithinBranchRelativeRILRange(destAddr, instructionStartAddress),
-                      "Helper Call is not reachable.");
-      self()->setSnippetDestAddr(destAddr);
-
-      *(int32_t *) cursor = (int32_t)((destAddr - instructionStartAddress) / 2);
-      AOTcgDiag1(cg->comp(), "add TR_AbsoluteHelperAddress cursor=%x\n", cursor);
-      cg->addProjectSpecializedRelocation(cursor, (uint8_t*) glueRef, NULL, TR_HelperAddress,
-                                      __FILE__, __LINE__, self()->getNode());
-      cursor += sizeof(int32_t);
-      }
-   return cursor;
-   }
-
-/**
- * Get PicBuilder Call Binary Length
- */
-uint32_t
-OMR::Z::Snippet::getPICBinaryLength(TR::CodeGenerator * cg)
-   {
-   int32_t lengthOfLoad = (cg->comp()->target().is64Bit())?6:4;
-
-   if (self()->getKind() == TR::Snippet::IsUnresolvedCall)
-      return 6 + lengthOfLoad + 2; // LARL + L/LG + BCR
-   else
-      return 6; // BRASL
-   }
-
 /**
  * Load the vm thread value into GPR13
  * @todo okay to assume that we can destroy previous contents of r13? is register volatile?
@@ -236,13 +136,13 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Snippet * snippet)
       }
    switch (snippet->getKind())
       {
-      case TR::Snippet::IsCall:
-         print(pOutFile, (TR::S390CallSnippet *) snippet);
-         break;
       case TR::Snippet::IsHelperCall:
          print(pOutFile, (TR::S390HelperCallSnippet *) snippet);
          break;
 #if J9_PROJECT_SPECIFIC
+      case TR::Snippet::IsCall:
+         snippet->print(pOutFile, this);
+         break;
       case TR::Snippet::IsForceRecomp:
          print(pOutFile, (TR::S390ForceRecompilationSnippet *) snippet);
          break;

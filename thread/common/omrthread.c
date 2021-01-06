@@ -1229,13 +1229,13 @@ omrthread_monitor_is_acquired(omrthread_monitor_t monitor) {
 	return (monitor->count > 0);
 }
 
-uint32_t
-omrthread_monitor_getNumOfTimesAcquired(omrthread_monitor_t monitor) {
+intptr_t
+omrthread_monitor_get_acquired_count(omrthread_monitor_t monitor) {
 	return monitor->count;
 }
 
 omrthread_t
-omrthread_monitor_getCurrentOwner(omrthread_monitor_t monitor) {
+omrthread_monitor_get_current_owner(omrthread_monitor_t monitor) {
 	return monitor->owner;
 }
 

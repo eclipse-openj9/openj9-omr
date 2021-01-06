@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -135,7 +135,14 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
       {
       int64_t secondChildValue = is64bit ? secondChild->getLongInt() : secondChild->getInt();
       if ((cc == TR::CC_EQ || cc == TR::CC_NE)
-            && secondChildValue == 0)
+            && (secondChildValue == 0)
+            /* If the node has the third child (TR::GlRegDeps)
+             * and if the number of children of it equals to the number of allocatable integer registers,
+             * we cannot assign a register for a cbz/cbnz instruction because all registers are used up.
+             * We need to use a b.cond instruction instead for that case.
+             */
+            && ((node->getNumChildren() != 3) ||
+             (node->getChild(2)->getNumChildren() != cg->getLinkage()->getProperties().getNumAllocatableIntegerRegisters())))
          {
          TR::InstOpCode::Mnemonic op;
          if (cc == TR::CC_EQ )

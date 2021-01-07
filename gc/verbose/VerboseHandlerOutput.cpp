@@ -164,6 +164,17 @@ MM_VerboseHandlerOutput::getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t 
 }
 
 uintptr_t
+MM_VerboseHandlerOutput::getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t id, uintptr_t contextId, uint64_t wallTimeMs)
+{
+	OMRPORT_ACCESS_FROM_OMRVM(_omrVM);
+	uintptr_t bufPos = 0;
+	bufPos += getTagTemplate(buf, bufsize, id, wallTimeMs);
+	bufPos += omrstr_printf(buf + bufPos, bufsize - bufPos, " contextid=\"%zu\"", contextId);
+
+	return bufPos;
+}
+
+uintptr_t
 MM_VerboseHandlerOutput::getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t id, const char *type, uintptr_t contextId, uint64_t wallTimeMs)
 {
 	OMRPORT_ACCESS_FROM_OMRVM(_omrVM);

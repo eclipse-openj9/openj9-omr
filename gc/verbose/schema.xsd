@@ -47,9 +47,8 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 	<element name="af-start" type="vgc:af-start" />
 	<element name="af-end" type="vgc:af-end" />
 	<element name="allocation-taxation" type="vgc:allocation-taxation" />
-	<element name="concurrent-collection-start" type="vgc:concurrent-collection-start" />
+	<element name="concurrent-global-final" type="vgc:concurrent-global-final" />
 	<element name="concurrent-trace-info" type="vgc:concurrent-trace-info" />
-	<element name="concurrent-collection-end" type="vgc:concurrent-collection-end" />
 	<element name="cycle-start" type="vgc:cycle-start" />
 	<element name="cycle-continue" type="vgc:cycle-continue" />
 	<element name="cycle-end" type="vgc:cycle-end" />
@@ -133,8 +132,7 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 				<element ref="vgc:af-start" maxOccurs="1" minOccurs="1" />
 				<element ref="vgc:af-end" maxOccurs="1" minOccurs="1" />
 				<element ref="vgc:allocation-taxation" maxOccurs="1" minOccurs="1" />
-				<element ref="vgc:concurrent-collection-start" maxOccurs="1" minOccurs="1" />
-				<element ref="vgc:concurrent-collection-end" maxOccurs="1" minOccurs="1" />
+				<element ref="vgc:concurrent-global-final" maxOccurs="1" minOccurs="1" />
 				<element ref="vgc:cycle-start" maxOccurs="1" minOccurs="1" />
 				<element ref="vgc:cycle-continue" maxOccurs="1" minOccurs="1" />
 				<element ref="vgc:cycle-end" maxOccurs="1" minOccurs="1" />
@@ -296,11 +294,12 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 		<attribute name="intervalms" type="float" use="required" />
 	</complexType>	
 
-	<complexType name="concurrent-collection-start">
+	<complexType name="concurrent-global-final">
 		<sequence maxOccurs="1" minOccurs="1">
 			<element ref="vgc:concurrent-trace-info" maxOccurs="1" minOccurs="1" />
 		</sequence>
 		<attribute name="id" type="integer" use="required" />
+		<attribute name="contextid" type="integer" use="required" />
 		<attribute name="timestamp" type="dateTime" use="required" />
 		<attribute name="intervalms" type="float" use="required" />
 	</complexType>
@@ -311,11 +310,6 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 		<attribute name="tracedByHelpers" type="integer" use="required" />
 		<attribute name="cardsCleaned" type="integer" use="required" />
 		<attribute name="workStackOverflowCount" type="integer" use="required" />
-	</complexType>
-
-	<complexType name="concurrent-collection-end">
-		<attribute name="id" type="integer" use="required" />
-		<attribute name="timestamp" type="dateTime" use="required" />
 	</complexType>
 
 	<complexType name="cycle-start">

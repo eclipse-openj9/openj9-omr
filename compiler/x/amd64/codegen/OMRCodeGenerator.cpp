@@ -78,10 +78,6 @@ void OMR::X86::AMD64::CodeGenerator::initialize()
    if (c)
       comp->setOption(TR_DisableValueProfiling);
 
-   static char *accessStaticsIndirectly = feGetEnv("TR_AccessStaticsIndirectly");
-   if (accessStaticsIndirectly)
-      cg->setAccessStaticsIndirectly(true);
-
    cg->setSupportsDoubleWordCAS();
    cg->setSupportsDoubleWordSet();
 

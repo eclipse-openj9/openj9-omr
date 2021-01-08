@@ -1577,9 +1577,6 @@ public:
    bool getMethodContainsBinaryCodedDecimal() { return _flags3.testAny(MethodContainsBinaryCodedDecimal);}
    void setMethodContainsBinaryCodedDecimal() { _flags3.set(MethodContainsBinaryCodedDecimal);}
 
-   bool getAccessStaticsIndirectly() {return _flags1.testAny(AccessStaticsIndirectly);}
-   void setAccessStaticsIndirectly(bool b) {_flags1.set(AccessStaticsIndirectly, b);}
-
    bool getSupportsBDLLHardwareOverflowCheck() { return _flags3.testAny(SupportsBDLLHardwareOverflowCheck);}
    void setSupportsBDLLHardwareOverflowCheck() { _flags3.set(SupportsBDLLHardwareOverflowCheck);}
 
@@ -1762,7 +1759,7 @@ public:
       // AVAILABLE                                       = 0x02000000,
       UsesRegisterPairsForLongs                          = 0x04000000,
       SupportsArraySet                                   = 0x08000000,
-      AccessStaticsIndirectly                            = 0x10000000,
+      // AVAILABLE                                       = 0x10000000,
       SupportsArrayCmp                                   = 0x20000000,
       DisableLongGRA                                     = 0x40000000,
       DummyLastEnum1

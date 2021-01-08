@@ -74,26 +74,10 @@ OMR::TreeTop::createIncTree(TR::Compilation * comp, TR::Node *node, TR::SymbolRe
    TR::StaticSymbol * symbol = symRef->getSymbol()->castToStaticSymbol();
    TR::DataType type = symbol->getDataType();
    TR::Node * storeNode;
-   if (comp->cg()->getAccessStaticsIndirectly() && !symRef->isUnresolved() && type != TR::Address)
-      {
-      TR::SymbolReference * symRefShadow;
-      if (isRecompCounter)
-         symRefShadow = comp->getSymRefTab()->findOrCreateCounterAddressSymbolRef();
-      else
-         symRefShadow = comp->getSymRefTab()->createKnownStaticDataSymbolRef(symbol->getStaticAddress(), TR::Address);
-      TR::Node * loadaddrNode = TR::Node::createWithSymRef(node, TR::loadaddr, 0, symRefShadow);
-      storeNode = TR::Node::createWithSymRef(TR::istorei, 2, 2, loadaddrNode,
+   storeNode = TR::Node::createWithSymRef(TR::istore, 1, 1,
                     TR::Node::create(TR::iadd, 2,
-                      TR::Node::createWithSymRef(TR::iloadi, 1, 1, loadaddrNode, symRef),
-                        TR::Node::create(node, TR::iconst, 0, incAmount)), symRef);
-      }
-   else
-      {
-      storeNode = TR::Node::createWithSymRef(TR::istore, 1, 1,
-                    TR::Node::create(TR::iadd, 2,
-                      TR::Node::createWithSymRef(node, TR::iload, 0, symRef),
-                        TR::Node::create(node, TR::iconst, 0, incAmount)), symRef);
-      }
+                    TR::Node::createWithSymRef(node, TR::iload, 0, symRef),
+                    TR::Node::create(node, TR::iconst, 0, incAmount)), symRef);
    return precedingTreeTop == NULL ? TR::TreeTop::create(comp, storeNode) : TR::TreeTop::create(comp, precedingTreeTop, storeNode);
    }
 
@@ -103,22 +87,8 @@ OMR::TreeTop::createResetTree(TR::Compilation * comp, TR::Node *node, TR::Symbol
    TR::StaticSymbol * symbol = symRef->getSymbol()->castToStaticSymbol();
    TR::DataType type = symbol->getDataType();
    TR::Node * storeNode;
-   if (comp->cg()->getAccessStaticsIndirectly() && !symRef->isUnresolved() && type != TR::Address)
-      {
-      TR::SymbolReference * symRefShadow;
-      if (isRecompCounter)
-         symRefShadow = comp->getSymRefTab()->findOrCreateCounterAddressSymbolRef();
-      else
-         symRefShadow = comp->getSymRefTab()->createKnownStaticDataSymbolRef(symbol->getStaticAddress(), TR::Address);
-      TR::Node * loadaddrNode = TR::Node::createWithSymRef(node, TR::loadaddr, 0, symRefShadow);
-      storeNode = TR::Node::createWithSymRef(TR::istorei, 2, 2, loadaddrNode,
-                      TR::Node::create(node, TR::iconst, 0, resetAmount), symRef);
-      }
-   else
-      {
-      storeNode = TR::Node::createWithSymRef(TR::istore, 1, 1,
+   storeNode = TR::Node::createWithSymRef(TR::istore, 1, 1,
                     TR::Node::create(node, TR::iconst, 0, resetAmount), symRef);
-      }
    return precedingTreeTop == NULL ? TR::TreeTop::create(comp, storeNode) : TR::TreeTop::create(comp, precedingTreeTop, storeNode);
    }
 

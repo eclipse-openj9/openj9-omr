@@ -613,7 +613,6 @@ OMR::Z::CodeGenerator::initialize()
    cg->getS390Linkage()->setParameterLinkageRegisterIndex(comp->getJittedMethodSymbol());
 
    cg->getS390Linkage()->initS390RealRegisterLinkage();
-   cg->setAccessStaticsIndirectly(true);
    }
 
 
@@ -5592,66 +5591,6 @@ OMR::Z::CodeGenerator::checkIfcmpxx(TR::Node *node)
          {
          return true;
          }
-      }
-   else
-      {
-      return false;
-      }
-   }
-
-// Z
-bool
-OMR::Z::CodeGenerator::checkSimpleLoadStore(TR::Node *loadNode, TR::Node *storeNode, TR::Block *block)
-   {
-   //The pattern below leads to use index reg in addressing, LAY for example, that costs extra for instructions like MVC.
-   //   aiadd
-   //     load-addr
-   //     laod-non-const
-
-//traceMsg(comp(), "Considering storeNode %p and loadNode %p\n",storeNode,loadNode);
-
-   if (loadNode->getOpCode().isIndirect() &&
-       loadNode->getFirstChild()->getNumChildren() > 1 &&
-       loadNode->getFirstChild()->getOpCode().isAdd() &&
-       !loadNode->getFirstChild()->getSecondChild()->getOpCode().isLoadConst())
-      {
-      return false;
-      }
-   else if (storeNode->getOpCode().isIndirect() &&
-            storeNode->getFirstChild()->getNumChildren() > 1 &&
-            storeNode->getFirstChild()->getOpCode().isAdd() &&
-            !storeNode->getFirstChild()->getSecondChild()->getOpCode().isLoadConst())
-      {
-      return false;
-      }
-   else if (loadNode->getSize() != storeNode->getSize())
-      {
-      return false;
-      }
-   else if ( !self()->getAccessStaticsIndirectly() && (
-                                                (storeNode->getOpCode().hasSymbolReference() && storeNode->getSymbol()->isStatic() && !storeNode->getOpCode().isIndirect()) ||
-                                                (loadNode->getOpCode().hasSymbolReference() && loadNode->getSymbol()->isStatic() && !loadNode->getOpCode().isIndirect())
-                                               )
-            )
-      {
-
-      return false;
-      }
-   else if (loadNode->getOpCode().isLoadConst()&&
-            loadNode->getReferenceCount() == 1 )
-      {//The const may be loaded into reg and shared. So dont do it.
-      return true;
-      }
-   else if (loadNode->getOpCode().isLoadVar() &&
-            loadNode->getReferenceCount() == 1 &&
-            loadNode->getSymbolReference())
-      {
-      if (storeNode->getSize() == 1 && loadNode->getSize() == 1)
-         return true;
-      else if (self()->loadAndStoreMayOverlap(storeNode, storeNode->getSize(), loadNode, loadNode->getSize()))
-         return false;
-      else
-         return true;
       }
    else
       {

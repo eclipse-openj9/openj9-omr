@@ -438,7 +438,6 @@ public:
    bool loadAndStoreMayOverlap(TR::Node *store, size_t storeSize, TR::Node *load, size_t loadSize);
 
    bool checkIfcmpxx(TR::Node *node);
-   bool checkSimpleLoadStore(TR::Node *loadNode, TR::Node *storeNode, TR::Block *block);
    bool checkBitWiseChild(TR::Node *node);
 
    TR_StorageDestructiveOverlapInfo getStorageDestructiveOverlapInfo(TR::Node *src, size_t srcLength, TR::Node *dst, size_t dstLength);

@@ -1932,6 +1932,18 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
          TR::DebugCounter::generateRelocation(comp, firstInstruction, node, counter, seqKind);
          return;
          }
+
+      case TR_BlockFrequency:
+	 {
+         TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof(TR_RelocationRecordInformation), heapAlloc);
+         recordInfo->data1 = (uintptr_t)node->getSymbolReference();
+         recordInfo->data2 = (uintptr_t)seqKind;
+         relo = new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+            firstInstruction,
+            (uint8_t *)recordInfo,
+            TR_BlockFrequency, self());
+         break;
+         }
       }
 
    if (comp->getOption(TR_UseSymbolValidationManager) && !relo)
@@ -2086,6 +2098,17 @@ OMR::Power::CodeGenerator::addMetaDataForLoadIntConstantFixed(
          }
 
       TR::DebugCounter::generateRelocation(comp, firstInstruction, secondInstruction, node, counter, orderedPairSequence2);
+      }
+   else if (typeAddress == TR_BlockFrequency)
+      {
+      TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
+      recordInfo->data1 = (uintptr_t)node->getSymbolReference();
+      recordInfo->data2 = orderedPairSequence2;
+      self()->addExternalRelocation(new (self()->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation((uint8_t *)firstInstruction,
+                                                                                          (uint8_t *)secondInstruction,
+                                                                                          (uint8_t *)recordInfo,
+                                                                                          (TR_ExternalRelocationTargetKind)typeAddress, self()),
+                                                                                          __FILE__, __LINE__, node);
       }
    else if (typeAddress != -1)
       {

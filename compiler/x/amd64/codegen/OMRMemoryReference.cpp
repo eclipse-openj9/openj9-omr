@@ -185,7 +185,8 @@ void OMR::X86::AMD64::MemoryReference::finishInitialization(
             (cg->needRelocationsForStatics()            ||
              cg->needClassAndMethodPointerRelocations() ||
              cg->needRelocationsForBodyInfoData()       ||
-             cg->needRelocationsForPersistentInfoData()))
+             cg->needRelocationsForPersistentInfoData() ||
+             cg->needRelocationsForPersistentProfileInfoData()))
       {
       mightNeedAddressRegister = true;
       }
@@ -290,6 +291,8 @@ bool OMR::X86::AMD64::MemoryReference::needsAddressLoadInstruction(intptr_t next
    else if (sr.getSymbol() && sr.getSymbol()->isRecompilationCounter() && cg->needRelocationsForBodyInfoData())
       return true;
    else if (sr.getSymbol() && sr.getSymbol()->isCountForRecompile() && cg->needRelocationsForPersistentInfoData())
+      return true;
+   else if (sr.getSymbol() && (sr.getSymbol()->isBlockFrequency() || sr.getSymbol()->isRecompQueuedFlag()) && cg->needRelocationsForPersistentProfileInfoData())
       return true;
    else if (cg->comp()->getOption(TR_EnableHCR) && sr.getSymbol() && sr.getSymbol()->isClassObject())
       return true; // If a class gets replaced, it may no longer fit in an immediate

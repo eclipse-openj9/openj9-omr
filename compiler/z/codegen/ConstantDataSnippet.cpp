@@ -251,6 +251,25 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
          }
          break;
 
+      case TR_BlockFrequency:
+         {
+         AOTcgDiag2(comp, "add relocation (%d) cursor=%x\n", reloType, cursor);
+         TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
+         recordInfo->data1 = (uintptr_t)getNode()->getSymbolReference();
+         recordInfo->data2 = 0; // seqKind
+         TR::Relocation *relocation = new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)recordInfo, TR_BlockFrequency, cg());
+         cg()->addExternalRelocation(relocation, __FILE__, __LINE__, getNode());
+         }
+         break;
+
+      case TR_RecompQueuedFlag:
+         {
+         AOTcgDiag2(comp, "add relocation (%d) cursor=%x\n", reloType, cursor);
+         TR::Relocation *relocation = new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, NULL, TR_RecompQueuedFlag, cg());
+         cg()->addExternalRelocation(relocation, __FILE__, __LINE__, getNode());
+         }
+         break;
+
       default:
          TR_ASSERT( 0,"relocation type not handled yet");
       }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2018 IBM Corp. and others
+ * Copyright (c) 2013, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -215,13 +215,42 @@ sigHandlerFunction(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *gp
 
 /**
  * The function runs under omrsig_protect()'s protection
- * It tells main thread that it is fully started and waits for main thread telling it to finish
- * the execution
+ * It tells main thread that it is fully started and waits for main thread
+ * telling it to block the signal being tested. After it blocks that signal
+ * it tells main thred its ready for the test and waits for main thread to
+ * tell it to finish the execution
  */
 static uintptr_t
 maskProtectedFunction(struct OMRPortLibrary *portLibrary, void *arg)
 {
 	SigMaskTestInfo *info = (SigMaskTestInfo *)arg;
+	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
+	const char *testName = info->testName;
+	uint32_t flags = 0;
+	sigset_t mask;
+
+	/* initialize local variables */
+	sigemptyset(&mask);
+
+	portTestEnv->log("%s\t:maskProtectedFunction is ready for SIGMASK.\n", info->testName);
+	sendEvent(info, READY, NULL, 0);
+
+	if (!waitForEvent(testName, info, SIGMASK, &flags, sizeof(flags))) {
+		return -1;
+	}
+
+	if (0 != pthread_sigmask(SIG_SETMASK, NULL, &mask)) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "pthread_sigmask failed: %s(%d).\n", strerror(errno), errno);
+		return -1;
+	}
+
+	if (0 != flags) {
+		sigaddset(&mask, flags);
+		if (0 != pthread_sigmask(SIG_SETMASK, &mask, NULL)) {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "pthread_sigmask failed: %s(%d).\n", strerror(errno), errno);
+			return -1;
+		}
+	}
 
 	portTestEnv->log("%s\t:maskProtectedFunction is ready for test.\n", info->testName);
 	sendEvent(info, READY, NULL, 0);
@@ -336,8 +365,8 @@ sigMaskThread(void *arg)
  *
  *  Note: under heavy load test environment, the signal may not be delivered in timely fashion
  *
- * mask   thread:----s(READY)-w(SIGMASK)-----------m---s(READY)-w(PTHREADKILL)----------j----s(READY)------w(EXIT)-------s(FINISHED)---------->>
- * main   thread:-w(READY)---------s(SIGMASK)-w(READY)------------c----s(PTHREADKILL)-w(READY)----------k----s(EXIT)--w(FINISHED)--------->>
+ * mask   thread:----s(READY)-w(SIGMASK)-----------m---s(READY)-w(PTHREADKILL)----------j---s(READY)-w(SIGMASK)----------s(READY)-w(EXIT)-------s(FINISHED)---------->>
+ * main   thread:-w(READY)---------s(SIGMASK)-w(READY)------------c----s(PTHREADKILL)-w(READY)-------------s(SIGMASK)-w(READY)-----k----s(EXIT)--w(FINISHED)--------->>
  *
  * main   thread:-w(READY)---------s(SIGMASK)-w(READY)------------c----s(PTHREADKILL)----w(FINISHED)---------->>
  * unmask thread:---s(READY)-w(SIGMASK)-------m--s(READY)-w(PTHREADKILL)----------j----i----s(FINISHED)-------------->>
@@ -504,24 +533,33 @@ TEST(PortSignalExtendedTests, sig_ext_test1)
 
 		/*
 		 * test mask thread signal handling behavior
-		 * mask thread will install SIGILL handler and launch a protected function maskProtectedFunction().
+		 * mask thread will install SIGSEGV handler and launch a protected function maskProtectedFunction() 
+		 * which will block SIGSEGV and wait for the test signal.
 		 */
 		portTestEnv->log("%s\t:testing pthread_kill...\n", testName);
-		flags = OMRPORT_SIG_FLAG_MAY_RETURN | OMRPORT_SIG_FLAG_SIGILL; /* SIGILL shall not be received */
+		flags = OMRPORT_SIG_FLAG_MAY_RETURN | OMRPORT_SIG_FLAG_SIGSEGV; /* SIGSEGV shall not be received */
 		sendEvent(&maskThreadInfo, PTHREADKILL, &flags, sizeof(flags));
 		portTestEnv->log("%s\t:configure mask thread to prepare for pthread_kill test.\n", testName);
 
 		if (!waitForEvent(testName, &maskThreadInfo, READY, NULL, 0)) {
 			goto exit;
 		}
+
+		/* send SIGMASK to mask thread to block the test signal */
+		flags = SIGSEGV;
+		sendEvent(&maskThreadInfo, SIGMASK, &flags, sizeof(flags)); 
+
+		if (!waitForEvent(testName, &maskThreadInfo, READY, NULL, 0)) {
+			goto exit;
+		}
 		portTestEnv->log("%s\t:mask thread is ready to receive signal. sending pthread_kill...\n", testName);
-		/* send SIGILL to maskThread which will never receive this signal */
-		pthread_kill(osMaskThread, SIGILL);
+		/* send SIGSEGV to maskThread which will never receive this signal */
+		pthread_kill(osMaskThread, SIGSEGV);
 
 		/* check pthread_kill result */
 		/*
 		 * Expected behavior:
-		 * 1. child thread with signal mask on SIGILL shall not receive this signal and therefore NOTSIGNALED.
+		 * 1. child thread with signal mask on SIGSEGV shall not receive this signal and therefore NOTSIGNALED.
 		 */
 
 		portTestEnv->log("%s\t:notify mask thread to exit.\n", testName);

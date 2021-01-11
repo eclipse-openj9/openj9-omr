@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1745,35 +1745,36 @@ bool
 MM_Scavenger::splitIndexableObjectScanner(MM_EnvironmentStandard *env, GC_ObjectScanner *objectScanner, uintptr_t startIndex, omrobjectptr_t *rememberedSetSlot)
 {
 	bool result = false;
+	if (!objectScanner->isIndexableObjectNoSplit()) {
+		if (backOutStarted != _extensions->getScavengerBackOutState()) {
+			Assert_MM_true(objectScanner->isIndexableObject());
+			GC_IndexableObjectScanner *indexableScanner = (GC_IndexableObjectScanner *)objectScanner;
+			uintptr_t maxIndex = indexableScanner->getIndexableRange();
 
-	if (backOutStarted != _extensions->getScavengerBackOutState()) {
-		Assert_MM_true(objectScanner->isIndexableObject());
-		GC_IndexableObjectScanner *indexableScanner = (GC_IndexableObjectScanner *)objectScanner;
-		uintptr_t maxIndex = indexableScanner->getIndexableRange();
+			uintptr_t scvArraySplitAmount = getArraySplitAmount(env, maxIndex - startIndex);
+			uintptr_t endIndex = startIndex + scvArraySplitAmount;
 
-		uintptr_t scvArraySplitAmount = getArraySplitAmount(env, maxIndex - startIndex);
-		uintptr_t endIndex = startIndex + scvArraySplitAmount;
-
-		if (endIndex < maxIndex) {
-			/* try to split the remainder into a new copy cache */
-			MM_CopyScanCacheStandard* splitCache = getFreeCache(env);
-			if (NULL != splitCache) {
-				/* set up the split copy cache and clone the object scanner into the cache */
-				omrarrayptr_t arrayPtr = (omrarrayptr_t)indexableScanner->getArrayObject();
-				void* arrayTop = (void*)((uintptr_t)arrayPtr + _extensions->indexableObjectModel.getSizeInBytesWithHeader(arrayPtr));
-				splitCache->reinitCache((omrobjectptr_t)arrayPtr, arrayTop);
-				splitCache->cacheAlloc = splitCache->cacheTop;
-				splitCache->_arraySplitIndex = endIndex;
-				splitCache->_arraySplitRememberedSlot = rememberedSetSlot;
-				splitCache->flags &= OMR_SCAVENGER_CACHE_TYPE_HEAP;
-				splitCache->flags |= OMR_SCAVENGER_CACHE_TYPE_SPLIT_ARRAY;
-				indexableScanner->splitTo(env, splitCache->getObjectScanner(), scvArraySplitAmount);
+			if (endIndex < maxIndex) {
+				/* try to split the remainder into a new copy cache */
+				MM_CopyScanCacheStandard* splitCache = getFreeCache(env);
+				if (NULL != splitCache) {
+					/* set up the split copy cache and clone the object scanner into the cache */
+					omrarrayptr_t arrayPtr = (omrarrayptr_t)indexableScanner->getArrayObject();
+					void* arrayTop = (void*)((uintptr_t)arrayPtr + _extensions->indexableObjectModel.getSizeInBytesWithHeader(arrayPtr));
+					splitCache->reinitCache((omrobjectptr_t)arrayPtr, arrayTop);
+					splitCache->cacheAlloc = splitCache->cacheTop;
+					splitCache->_arraySplitIndex = endIndex;
+					splitCache->_arraySplitRememberedSlot = rememberedSetSlot;
+					splitCache->flags &= OMR_SCAVENGER_CACHE_TYPE_HEAP;
+					splitCache->flags |= OMR_SCAVENGER_CACHE_TYPE_SPLIT_ARRAY;
+					indexableScanner->splitTo(env, splitCache->getObjectScanner(), scvArraySplitAmount);
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
-				env->_scavengerStats._arraySplitCount += 1;
-				env->_scavengerStats._arraySplitAmount += scvArraySplitAmount;
+					env->_scavengerStats._arraySplitCount += 1;
+					env->_scavengerStats._arraySplitAmount += scvArraySplitAmount;
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
-				addCacheEntryToScanListAndNotify(env, splitCache);
-				result = true;
+					addCacheEntryToScanListAndNotify(env, splitCache);
+					result = true;
+				}
 			}
 		}
 	}

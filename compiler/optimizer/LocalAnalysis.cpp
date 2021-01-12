@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -488,6 +488,12 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
 #endif
    bool seenWriteBarrier = false;
    int32_t storeNumChildren = node->getNumChildren();
+   // Need to save the node's isStoreIndirect flag before the node
+   // is recreated below. The recreation is done for convenience
+   // of syntactic comparison between loads and stores of the same field.
+   // Since a store node is transformed to a load, isStoreIndirect
+   // of the original store node will become false after the recreation.
+   bool isStoreIndirect = node->getOpCode().isStoreIndirect();
 
 
    // If node is a null check, compare the
@@ -528,7 +534,7 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
 #endif
 
          TR::Node::recreate(node, _compilation->il.opCodeForCorrespondingLoadOrStore(node->getOpCodeValue()));
-         if (node->getOpCode().isStoreIndirect())
+         if (isStoreIndirect)
             {
             node->setNumChildren(1);
             }
@@ -548,6 +554,7 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
       int32_t hashValue = _hashTable->hash(node);
       HashTable::Cursor cursor(_hashTable, hashValue);
       TR::Node *other;
+      bool isOtherStoreIndirect = false;
       for (other = cursor.firstNode(); other; other = cursor.nextNode())
          {
          // Convert other node's opcode to be a load temporarily
@@ -566,12 +573,18 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
             if (other->getOpCode().isWrtBar())
                seenOtherWriteBarrier = true;
 
+            // Need to save the node's isStoreIndirect flag before the node
+            // is recreated below. The recreation is done for convenience
+            // of syntactic comparison between loads and stores of the same field.
+            // Since a store node is transformed to a load, isStoreIndirect
+            // of the original store node will become false after the recreation.
+            isOtherStoreIndirect = other->getOpCode().isStoreIndirect();
 #ifdef J9_PROJECT_SPECIFIC
             seenOtherIndirectBCDStore = other->getType().isBCD();
 #endif
             TR::Node::recreate(other, _compilation->il.opCodeForCorrespondingLoadOrStore(other->getOpCodeValue()));
 
-            if (other->getOpCode().isStoreIndirect())
+            if (isOtherStoreIndirect)
                {
                other->setNumChildren(1);
                }

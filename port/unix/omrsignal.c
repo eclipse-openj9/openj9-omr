@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1269,18 +1269,6 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 		return OMRPORT_SIG_ERROR;
 	}
 
-	/* If a process has blocked an asynchronous signal, then the signal stays
-	 * blocked in the sub-processes across fork(s) and exec(s). A blocked
-	 * signal prevents its OS signal handler to be invoked. A signal is
-	 * unblocked as an OS signal handler is installed for it in case a
-	 * parent process has blocked it.
-	 */
-	if (OMR_ARE_ALL_BITS_SET(OMRPORT_SIG_FLAG_SIGALLASYNC, portLibrarySignalNo)) {
-		if (0 != unblockSignal(unixSignalNo)) {
-			return OMRPORT_SIG_ERROR;
-		}
-	}
-
 	memset(&newAction, 0, sizeof(struct sigaction));
 
 	/* Do not block any signals. */
@@ -1380,6 +1368,17 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 		setBitMaskSignalsWithMainHandlers(portLibrarySignalNo);
 	} else {
 		unsetBitMaskSignalsWithMainHandlers(portLibrarySignalNo);
+	}
+
+
+	/* If a process has blocked a signal, then the signal stays blocked
+	 * in the sub-processes across fork(s) and exec(s). A blocked
+	 * signal prevents its OS signal handler to be invoked. A signal is
+	 * unblocked as an OS signal handler is installed for it in case a
+	 * parent process has blocked it.
+	 */
+	if (0 != unblockSignal(unixSignalNo)) {
+		return OMRPORT_SIG_ERROR;
 	}
 
 	return 0;

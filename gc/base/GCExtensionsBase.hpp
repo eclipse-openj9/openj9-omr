@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -984,7 +984,7 @@ public:
 	isSegregatedHeap()
 	{
 #if defined(OMR_GC_COMBINATION_SPEC)
-		return 0 != _isSegregatedHeap;
+		return _isSegregatedHeap;
 #elif defined(OMR_GC_SEGREGATED_HEAP)
 		return true;
 #else
@@ -1004,7 +1004,7 @@ public:
 	isVLHGC()
 	{
 #if defined(OMR_GC_COMBINATION_SPEC)
-		return 0 != _isVLHGC;
+		return _isVLHGC;
 #elif defined(OMR_GC_VLHGC)
 		return true;
 #else
@@ -1034,7 +1034,7 @@ public:
 	isMetronomeGC()
 	{
 #if defined(OMR_GC_COMBINATION_SPEC)
-		return 0 != _isMetronomeGC;
+		return _isMetronomeGC;
 #elif defined(OMR_GC_REALTIME)
 		return true;
 #else
@@ -1054,7 +1054,7 @@ public:
 	isStandardGC()
 	{
 #if defined(OMR_GC_COMBINATION_SPEC)
-		return 0 != _isStandardGC;
+		return _isStandardGC;
 #elif defined(OMR_GC_MODRON_STANDARD)
 		return true;
 #else

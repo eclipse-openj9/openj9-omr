@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -244,7 +244,8 @@ OMR::CodeGenerator::CodeGenerator(TR::Compilation *comp) :
       _outOfLineColdPathNestedDepth(0),
       _codeGenPhase(self()),
       _symbolDataTypeMap(comp->allocator()),
-      _lmmdFailed(false)
+      _lmmdFailed(false),
+      _objectFormat(NULL)
    {
    }
 
@@ -281,6 +282,8 @@ OMR::CodeGenerator::initialize()
       }
 
    cg->setIsLeafMethod();
+
+   cg->createObjectFormat();
    }
 
 TR_StackMemory

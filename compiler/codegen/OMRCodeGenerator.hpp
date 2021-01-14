@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -98,6 +98,7 @@ namespace TR { class Instruction; }
 namespace TR { class LabelSymbol; }
 namespace TR { class Linkage; }
 namespace TR { class MemoryReference; }
+namespace TR { class ObjectFormat; }
 namespace TR { class RealRegister; }
 namespace TR { class Recompilation; }
 namespace TR { class Register; }
@@ -1445,6 +1446,27 @@ public:
     */
    void redoTrampolineReservationIfNecessary(TR::Instruction *callInstr, TR::SymbolReference *instructionSymRef);
 
+   /**
+    * @brief
+    *    Create the object format for this compilation.  If the code generator
+    *    does not support the use of object formats then this function does nothing.
+    */
+   void createObjectFormat() { return; }
+
+   /**
+    * @return TR::ObjectFormat created for this \c TR::CodeGenerator.  If the value
+    *         returned is NULL then ObjectFormats are not supported.
+    */
+   TR::ObjectFormat *getObjectFormat() { return _objectFormat; }
+
+protected:
+   /**
+    * @brief Sets an ObjectFormat.  Available to \c TR::CodeGenerator classes only.
+    */
+   void setObjectFormat(TR::ObjectFormat *of) { _objectFormat = of; }
+
+public:
+
    // --------------------------------------------------------------------------
 
    bool constantAddressesCanChangeSize(TR::Node *node);
@@ -2017,6 +2039,12 @@ public:
    TR_Stack<TR::Node *> _stackOfArtificiallyInflatedNodes;
 
    CS2::HashTable<TR::Symbol*, TR::DataType, TR::Allocator> _symbolDataTypeMap;
+
+   /**
+    * The binary object format to generate code for in this compilation
+    */
+   TR::ObjectFormat *_objectFormat;
+
    };
 
 }

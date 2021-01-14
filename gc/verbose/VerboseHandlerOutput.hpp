@@ -60,7 +60,6 @@ protected:
 
 	virtual bool getThreadName(char *buf, uintptr_t bufLen, OMR_VMThread *vmThread);
 	virtual void writeVmArgs(MM_EnvironmentBase* env, MM_VerboseBuffer* buffer);
-	virtual void writeVmArgs(MM_EnvironmentBase* env) {};
 
 	bool getTimeDeltaInMicroSeconds(uint64_t *timeInMicroSeconds, uint64_t startTime, uint64_t endTime)
 	{
@@ -121,15 +120,6 @@ protected:
  	 * @param buffer The verbose buffer used to store formatted string
  	 */
 	virtual void outputInitializedRegion(MM_EnvironmentBase *env, MM_VerboseBuffer *buffer);
-
-	/**
-	* Handle any output or data tracking for the initialized phase of verbose GC.
-	* This routing handles region specific information.
-	* @param hook Hook interface used by the JVM.
-	* @param eventNum The hook event number.
-	* @param eventData hook specific event data.
-	*/
-	void handleInitializedRegion(J9HookInterface** hook, uintptr_t eventNum, void* eventData) {};
 
 	/**
 	 * Determine if the receive has inner stanza details for cycle start events.

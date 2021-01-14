@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -72,6 +72,25 @@ int32_t TR_PrefetchInsertion::perform()
       {
       if (trace())
          traceMsg(comp(), "Method does not have loops -- returning from prefetch insertion.\n");
+      return 0;
+      }
+
+   // Disallow prefetch insertion when read barriers are necessary because this optimization may insert loads
+   // of array elements past the 0th element for a backwards traversal. That is, if the primary induction
+   // variable is traversing the array backwards, on the last iteration of the loop we will be prefetching
+   // the (i - 1)th element of the array. Since the prefetch needs to load such an element, we must ensure
+   // the read barrier will not trigger on such a value which may "look like" an object. For example today,
+   // the (i - 1)th element is really the last word of the array header, which is the `dataAddr` pointer
+   // which looks like an object, but it is not. Thus the read barrier may incorrectly trigger on such a value.
+   //
+   // In theory the same issue can happen on a forward traversal since there may be padding bytes past the
+   // end of an array. For this reason we go with the safest route and just disable the entire prefetch
+   // insertion optimization if read barriers are necessary.
+   if (TR::Compiler->om.readBarrierType() != gc_modron_readbar_none)
+      {
+      if (trace())
+         traceMsg(comp(), "Skipping prefetch insertion because read barriers are required");
+
       return 0;
       }
 
@@ -433,8 +452,10 @@ void TR_PrefetchInsertion::examineNode(TR::TreeTop *treeTop, TR::Block *block, T
             int64_t stepInBytes = mulConstBytes * (mulConst * (int64_t)biv->getDeltaOnBackEdge() + addConst);
             TR_Structure *loop1= treeTop->getEnclosingBlock()->getStructureOf()->getContainingLoop();
             bool isTreetopInLoop = (loop1 && (loop1->asRegion() == loop)) ? true : false;
-            if (isTreetopInLoop && ((stepInBytes > 0 &&  stepInBytes <= TR::Compiler->vm.heapTailPaddingSizeInBytes()) ||
-                (stepInBytes < 0 && -stepInBytes <= TR::Compiler->om.contiguousArrayHeaderSizeInBytes())))
+
+            if (isTreetopInLoop && (
+               (stepInBytes > 0 &&  stepInBytes <= TR::Compiler->vm.heapTailPaddingSizeInBytes()) ||
+               (stepInBytes < 0 && -stepInBytes <= TR::Compiler->om.contiguousArrayHeaderSizeInBytes())))
                {
                // Save array access info
                //

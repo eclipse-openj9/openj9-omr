@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -249,7 +249,8 @@ TR::Register *OMR::Power::TreeEvaluator::b2iEvaluator(TR::Node *node, TR::CodeGe
         child->getOpCodeValue() != TR::d2b &&
         child->getOpCodeValue() != TR::i2b &&
         child->getOpCodeValue() != TR::l2b &&
-        child->getOpCodeValue() != TR::iRegLoad ))
+        child->getOpCodeValue() != TR::iRegLoad &&
+        child->getOpCodeValue() != TR::bRegLoad ))
       {
       trgReg = cg->gprClobberEvaluate(child);
       }

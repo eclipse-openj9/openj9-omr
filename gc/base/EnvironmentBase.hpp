@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -76,13 +76,13 @@ typedef enum {
 class MM_EnvironmentBase : public MM_BaseVirtual
 {
 private:
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
-	bool const _compressObjectReferences;
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
 	uintptr_t _workerID;
 	uintptr_t _environmentId;
 
 protected:
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+	bool const _compressObjectReferences;
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 	OMR_VM *_omrVM;
 	OMR_VMThread *_omrVMThread;
 	OMRPortLibrary *_portLibrary; /**< the port library associated with the environment */
@@ -675,11 +675,11 @@ public:
 	 */
 	MM_EnvironmentBase(OMR_VMThread *omrVMThread) :
 		MM_BaseVirtual()
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
-		, _compressObjectReferences(OMRVMTHREAD_COMPRESS_OBJECT_REFERENCES(omrVMThread))
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
 		,_workerID(0)
 		,_environmentId(0)
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+		, _compressObjectReferences(OMRVMTHREAD_COMPRESS_OBJECT_REFERENCES(omrVMThread))
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 		,_omrVM(omrVMThread->_vm)
 		,_omrVMThread(omrVMThread)
 		,_portLibrary(omrVMThread->_vm->_runtime->_portLibrary)
@@ -733,11 +733,11 @@ public:
 
 	MM_EnvironmentBase(OMR_VM *omrVM) :
 		MM_BaseVirtual()
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
-		, _compressObjectReferences(OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM))
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
 		,_workerID(0)
 		,_environmentId(0)
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+		, _compressObjectReferences(OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM))
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 		,_omrVM(omrVM)
 		,_omrVMThread(NULL)
 		,_portLibrary(omrVM->_runtime->_portLibrary)

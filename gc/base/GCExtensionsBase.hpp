@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -190,9 +190,6 @@ public:
 class MM_GCExtensionsBase : public MM_BaseVirtual {
 	/* Data Members */
 private:
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
-	bool _compressObjectReferences;
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	void* _guaranteedNurseryStart; /**< lowest address guaranteed to be in the nursery */
 	void* _guaranteedNurseryEnd; /**< highest address guaranteed to be in the nursery */
@@ -209,6 +206,9 @@ private:
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
 protected:
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+	bool _compressObjectReferences;
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 	OMR_VM* _omrVM;
 	OMR::GC::Forge _forge;
 	MM_GlobalCollector* _globalCollector; /**< The global collector for the system */
@@ -1343,9 +1343,6 @@ public:
 
 	MM_GCExtensionsBase()
 		: MM_BaseVirtual()
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
-		, _compressObjectReferences(false)
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 		, _guaranteedNurseryStart(NULL)
 		, _guaranteedNurseryEnd(NULL)
@@ -1358,6 +1355,9 @@ public:
 		, concurrentScavengerPageStartAddress((void *)UDATA_MAX)
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 #endif /* OMR_GC_MODRON_SCAVENGER */
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+		, _compressObjectReferences(false)
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 		, _omrVM(NULL)
 		,_forge()
 		, _globalCollector(NULL)

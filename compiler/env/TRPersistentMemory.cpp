@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -35,6 +35,7 @@
 #include "infra/Assert.hpp"
 #include "infra/Monitor.hpp"
 #include "infra/MonitorTable.hpp"
+#include "env/CompilerEnv.hpp"
 
 namespace TR { class Compilation; }
 namespace TR { class PersistentInfo; }
@@ -59,8 +60,14 @@ namespace TR
 
 TR_PersistentMemory * trPersistentMemory = NULL;
 
-void * TR_MemoryBase::jitPersistentAlloc(size_t size, ObjectType ot) { return ::trPersistentMemory ? ::trPersistentMemory->allocatePersistentMemory(size, ot) : 0 ; }
-void   TR_MemoryBase::jitPersistentFree(void * mem)                  { ::trPersistentMemory->freePersistentMemory(mem); }
+void *
+TR_MemoryBase::jitPersistentAlloc(size_t size, ObjectType ot)
+   {
+   TR_PersistentMemory *persistentMemory = TR::Compiler->persistentMemory();
+   return persistentMemory ? persistentMemory->allocatePersistentMemory(size, ot) : 0;
+   }
+
+void TR_MemoryBase::jitPersistentFree(void * mem) { TR::Compiler->persistentMemory()->freePersistentMemory(mem); }
 
 TR::PersistentInfo * TR_PersistentMemory::getNonThreadSafePersistentInfo() { return ::trPersistentMemory->getPersistentInfo(); }
 

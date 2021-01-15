@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020, 2020 IBM Corp. and others
+ * Copyright (c) 2020, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,19 +29,16 @@
 
 using TR::CCData;
 
-inline
 size_t CCData::dataSizeFromBytesSize(size_t sizeBytes)
    {
    return (sizeBytes + sizeof(data_t) - 1) / sizeof(data_t);
    }
 
-inline
 size_t CCData::dataAlignmentFromBytesAlignment(size_t alignmentBytes)
    {
    return (alignmentBytes + OMR_ALIGNOF(data_t) - 1) / OMR_ALIGNOF(data_t);
    }
 
-inline
 size_t CCData::byteIndexFromDataIndex(size_t dataIndex)
    {
    return dataIndex * sizeof(data_t);

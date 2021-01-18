@@ -5795,12 +5795,17 @@ TR::Register *OMR::Power::TreeEvaluator::sbyteswapEvaluator(TR::Node *node, TR::
          {
          generateTrg1Src1Instruction(cg, TR::InstOpCode::brh, node, tgtRegister, srcRegister);
          }
+      else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8))
+         {
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, tgtRegister, srcRegister, 24, CONSTANT64(0x00000000ff));
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, tgtRegister, srcRegister, 8,  CONSTANT64(0x000000ff00));
+         }
       else
          {
          TR::Register *tmpRegister = cg->allocateRegister();
 
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister, srcRegister, 24, 0x00000000ff);
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmpRegister, srcRegister, 8, 0x000000ff00);
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister, srcRegister, 24, CONSTANT64(0x00000000ff));
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmpRegister, srcRegister, 8,  CONSTANT64(0x000000ff00));
          generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmpRegister);
 
          cg->stopUsingRegister(tmpRegister);
@@ -5839,16 +5844,22 @@ TR::Register * OMR::Power::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR:
          {
          generateTrg1Src1Instruction(cg, TR::InstOpCode::brw, node, tgtRegister, srcRegister);
          }
+      else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8))
+         {
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister, srcRegister, 24, CONSTANT64(0x00ffffff00));
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, tgtRegister, srcRegister, 8,  CONSTANT64(0x0000ff0000));
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, tgtRegister, srcRegister, 8,  CONSTANT64(0x00000000ff));
+         }
       else
          {
          TR::Register *tmp1Register = cg->allocateRegister();
 
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister, srcRegister, 8, 0x00000000ff);
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 8, 0x0000ff0000);
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister, srcRegister, 8,  CONSTANT64(0x00000000ff));
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 8, CONSTANT64(0x0000ff0000));
          generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 24, 0x000000ff00);
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 24, CONSTANT64(0x000000ff00));
          generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 24, 0x00ff000000);
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 24, CONSTANT64(0x00ff000000));
          generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
 
          cg->stopUsingRegister(tmp1Register);
@@ -5890,6 +5901,25 @@ TR::Register *OMR::Power::TreeEvaluator::lbyteswapEvaluator(TR::Node *node, TR::
             {
             generateTrg1Src1Instruction(cg, TR::InstOpCode::brd, node, tgtRegister, srcLRegister);
             }
+         else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8))
+            {
+            TR::Register *srcHRegister = cg->allocateRegister();
+            TR::Register *tmpRegister = cg->allocateRegister();
+
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicl, node, srcHRegister, srcLRegister, 32, CONSTANT64(0x00ffffffff));
+
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmpRegister, srcLRegister, 24, CONSTANT64(0x00ffffff00));
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister, srcHRegister, 24, CONSTANT64(0x00ffffff00));
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, tmpRegister, srcLRegister, 8,  CONSTANT64(0x0000ff0000));
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, tgtRegister, srcHRegister, 8,  CONSTANT64(0x0000ff0000));
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, tmpRegister, srcLRegister, 8,  CONSTANT64(0x00000000ff));
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, tgtRegister, srcHRegister, 8,  CONSTANT64(0x00000000ff));
+
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldimi, node, tgtRegister, tmpRegister, 32, CONSTANT64(0xffffffff00000000));
+
+            cg->stopUsingRegister(srcHRegister);
+            cg->stopUsingRegister(tmpRegister);
+            }
          else
             {
             TR::Register *srcHRegister = cg->allocateRegister();
@@ -5897,18 +5927,18 @@ TR::Register *OMR::Power::TreeEvaluator::lbyteswapEvaluator(TR::Node *node, TR::
             TR::Register *tmp1Register = cg->allocateRegister();
             TR::Register *tmp2Register = cg->allocateRegister();
 
-            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicl, node, srcHRegister, srcLRegister, 32, 0x00ffffffff);
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rldicl, node, srcHRegister, srcLRegister, 32, CONSTANT64(0x00ffffffff));
 
-            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister, srcHRegister, 8, 0x00000000ff);
-            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtHRegister, srcLRegister, 8, 0x00000000ff);
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister, srcHRegister, 8,  CONSTANT64(0x00000000ff));
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtHRegister, srcLRegister, 8, CONSTANT64(0x00000000ff));
 
-            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcHRegister, 8, 0x0000ff0000);
-            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp2Register, srcLRegister, 8, 0x0000ff0000);
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcHRegister, 8, CONSTANT64(0x0000ff0000));
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp2Register, srcLRegister, 8, CONSTANT64(0x0000ff0000));
             generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
             generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtHRegister, tgtHRegister, tmp2Register);
 
-            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcHRegister, 24, 0x000000ff00);
-            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp2Register, srcLRegister, 24, 0x000000ff00);
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcHRegister, 24, CONSTANT64(0x000000ff00));
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp2Register, srcLRegister, 24, CONSTANT64(0x000000ff00));
             generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
             generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtHRegister, tgtHRegister, tmp2Register);
 
@@ -5941,25 +5971,34 @@ TR::Register *OMR::Power::TreeEvaluator::lbyteswapEvaluator(TR::Node *node, TR::
          generateTrg1Src1Instruction(cg, TR::InstOpCode::brw, node, tgtRegister->getLowOrder(), srcRegister->getHighOrder());
          generateTrg1Src1Instruction(cg, TR::InstOpCode::brw, node, tgtRegister->getHighOrder(), srcRegister->getLowOrder());
          }
+      else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8))
+         {
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister->getLowOrder(), srcRegister->getHighOrder(), 24, CONSTANT64(0x00ffffff00));
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister->getHighOrder(), srcRegister->getLowOrder(), 24, CONSTANT64(0x00ffffff00));
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, tgtRegister->getLowOrder(), srcRegister->getHighOrder(), 8,  CONSTANT64(0x0000ff0000));
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, tgtRegister->getHighOrder(), srcRegister->getLowOrder(), 8,  CONSTANT64(0x0000ff0000));
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, tgtRegister->getLowOrder(), srcRegister->getHighOrder(), 8,  CONSTANT64(0x00000000ff));
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwimi, node, tgtRegister->getHighOrder(), srcRegister->getLowOrder(), 8,  CONSTANT64(0x00000000ff));
+         }
       else
          {
          TR::Register *tmp1Register = cg->allocateRegister();
          TR::Register *tmp2Register = cg->allocateRegister();
 
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister->getLowOrder(), srcRegister->getHighOrder(), 8, 0x00000000ff);
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister->getHighOrder(), srcRegister->getLowOrder(), 8, 0x00000000ff);
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister->getLowOrder(), srcRegister->getHighOrder(), 8, CONSTANT64(0x00000000ff));
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister->getHighOrder(), srcRegister->getLowOrder(), 8, CONSTANT64(0x00000000ff));
 
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister->getHighOrder(), 8, 0x0000ff0000);
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp2Register, srcRegister->getLowOrder(), 8, 0x0000ff0000);
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister->getHighOrder(), 8, CONSTANT64(0x0000ff0000));
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp2Register, srcRegister->getLowOrder(), 8,  CONSTANT64(0x0000ff0000));
          generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister->getLowOrder(), tgtRegister->getLowOrder(), tmp1Register);
          generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister->getHighOrder(), tgtRegister->getHighOrder(), tmp2Register);
 
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister->getHighOrder(), 24, 0x000000ff00);
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp2Register, srcRegister->getLowOrder(), 24, 0x000000ff00);
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister->getHighOrder(), 24, CONSTANT64(0x000000ff00));
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp2Register, srcRegister->getLowOrder(), 24,  CONSTANT64(0x000000ff00));
          generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister->getLowOrder(), tgtRegister->getLowOrder(), tmp1Register);
          generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister->getHighOrder(), tgtRegister->getHighOrder(), tmp2Register);
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister->getHighOrder(), 24, 0x00ff000000);
-         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp2Register, srcRegister->getLowOrder(), 24, 0x00ff000000);
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister->getHighOrder(), 24, CONSTANT64(0x00ff000000));
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp2Register, srcRegister->getLowOrder(), 24,  CONSTANT64(0x00ff000000));
          generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister->getLowOrder(), tgtRegister->getLowOrder(), tmp1Register);
          generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister->getHighOrder(), tgtRegister->getHighOrder(), tmp2Register);
 

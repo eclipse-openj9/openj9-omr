@@ -79,8 +79,8 @@ endif()
 
 set_property(TARGET omrthreadtest PROPERTY FOLDER fvtest)
 
-add_test(NAME threadtest COMMAND $<TARGET_FILE:omrthreadtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadtest-results.xml)
-add_test(NAME threadSetAttrThreadWeightTest COMMAND $<TARGET_FILE:omrthreadtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadtest-results.xml --gtest_also_run_disabled_tests --gtest_filter=ThreadCreateTest.DISABLED_SetAttrThreadWeight)
+omr_add_test(NAME threadtest COMMAND $<TARGET_FILE:omrthreadtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadtest-results.xml)
+omr_add_test(NAME threadSetAttrThreadWeightTest COMMAND $<TARGET_FILE:omrthreadtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadtest-results.xml --gtest_also_run_disabled_tests --gtest_filter=ThreadCreateTest.DISABLED_SetAttrThreadWeight)
 if(OMR_HOST_OS STREQUAL "linux")
-	add_test(NAME threadRealtimeTest COMMAND $<TARGET_FILE:omrthreadtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadtest-results.xml --gtest_filter=ThreadCreateTest.* -realtime)
+	omr_add_test(NAME threadRealtimeTest COMMAND $<TARGET_FILE:omrthreadtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadtest-results.xml --gtest_filter=ThreadCreateTest.* -realtime)
 endif()

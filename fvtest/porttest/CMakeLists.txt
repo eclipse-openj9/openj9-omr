@@ -137,14 +137,14 @@ if(OMR_HOST_OS STREQUAL "aix")
 endif()
 
 if (NOT OMR_HOST_OS STREQUAL "aix" AND NOT OMR_HOST_OS STREQUAL "zos")
-	add_test(
+	omr_add_test(
 		NAME porttest
 		COMMAND $<TARGET_FILE:omrporttest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrporttest-results.xml
 	)
 endif()
 
 if(OMR_OPT_CUDA)
-	add_test(
+	omr_add_test(
 		NAME cuda_porttest
 		COMMAND $<TARGET_FILE:omrporttest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrporttest-results.xml --gtest_filter="Cuda*" -earlyExit
 	)

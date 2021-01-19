@@ -55,7 +55,7 @@ target_compile_options(triltest
 
 set_property(TARGET triltest PROPERTY FOLDER fvtest/tril)
 
-add_test(
+omr_add_test(
 	NAME triltest
 	COMMAND $<TARGET_FILE:triltest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/triltest-results.xml
 )

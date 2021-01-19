@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,6 +20,7 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
+include(OmrTest)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
@@ -31,7 +32,7 @@ macro(create_jitbuilder_test target)
 	target_link_libraries(${target}
 		jitbuilder
 		${CMAKE_DL_LIBS})
-	add_test(NAME ${target}_example_as_test COMMAND $<TARGET_FILE:${target}>)
+	omr_add_test(NAME ${target}_example_as_test COMMAND $<TARGET_FILE:${target}>)
 endmacro(create_jitbuilder_test)
 
 # Basic Tests: These should run properly on all platforms.

@@ -40,4 +40,4 @@ endif()
 
 set_property(TARGET omrutiltest PROPERTY FOLDER fvtest)
 
-add_test(NAME utiltest COMMAND $<TARGET_FILE:omrutiltest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrutiltest-results.xml)
+omr_add_test(NAME utiltest COMMAND $<TARGET_FILE:omrutiltest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrutiltest-results.xml)

@@ -59,7 +59,7 @@ target_link_libraries(lljb_run
 
 function(add_lljb_test test)
 	generate_module_from_cxx(${test})
-	add_test(
+	omr_add_test(
 		NAME lljb_${test}_test
 		COMMAND $<TARGET_FILE:lljb>_run ${test}.ll
 	)

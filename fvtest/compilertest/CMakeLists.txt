@@ -124,5 +124,5 @@ target_link_libraries(compilertest
 set_property(TARGET compilertest PROPERTY FOLDER fvtest)
 
 if (NOT OMR_HOST_OS STREQUAL "aix")
-	add_test(NAME CompilerTest COMMAND $<TARGET_FILE:compilertest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/compilertest-results.xml)
+	omr_add_test(NAME CompilerTest COMMAND $<TARGET_FILE:compilertest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/compilertest-results.xml)
 endif()

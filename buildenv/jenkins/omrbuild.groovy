@@ -179,6 +179,8 @@ def SPECS = [
             ]
         ],
         'test' : false
+        'testArgs' : '',
+        'junitPublish' : true
     ],
     'linux_x86' : [
         'label' : 'Linux && x86',

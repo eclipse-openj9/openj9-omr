@@ -73,7 +73,7 @@ endif()
 
 set_property(TARGET omrgctest PROPERTY FOLDER fvtest)
 
-add_test(NAME gctest
+omr_add_test(NAME gctest
 	COMMAND $<TARGET_FILE:omrgctest> "--gtest_filter=gcFunctionalTest*" "--gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrgctest-results.xml"
 	WORKING_DIRECTORY "${omr_SOURCE_DIR}"
 )

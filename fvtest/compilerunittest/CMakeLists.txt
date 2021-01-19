@@ -64,7 +64,7 @@ target_link_libraries(compunittest
 
 set_property(TARGET compunittest PROPERTY FOLDER fvtest)
 
-add_test(
+omr_add_test(
 	NAME compunittest
 	COMMAND $<TARGET_FILE:compunittest> --gtest_color=yes --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/compunittest-results.xml
 )

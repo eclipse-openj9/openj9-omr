@@ -244,9 +244,9 @@ add_dependencies(omrtraceoptiontest
 	traceOptionAgent
 )
 
-add_test(NAME rastest COMMAND $<TARGET_FILE:omrrastest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrrastest-results.xml)
-add_test(NAME subscribertest COMMAND $<TARGET_FILE:omrsubscribertest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrsubscribertest-results.xml)
-add_test(NAME traceoptiontest COMMAND $<TARGET_FILE:omrtraceoptiontest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrtraceoptiontest-results.xml)
+omr_add_test(NAME rastest COMMAND $<TARGET_FILE:omrrastest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrrastest-results.xml)
+omr_add_test(NAME subscribertest COMMAND $<TARGET_FILE:omrsubscribertest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrsubscribertest-results.xml)
+omr_add_test(NAME traceoptiontest COMMAND $<TARGET_FILE:omrtraceoptiontest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrtraceoptiontest-results.xml)
 
 set_target_properties(
 	omrrastest

@@ -20,6 +20,7 @@
 ###############################################################################
 
 include(OmrAssert)
+include(OmrTest)
 
 omr_assert(TEST OMR_EXAMPLE)
 
@@ -50,7 +51,7 @@ if(OMR_GC)
 		${OMR_PORT_LIB}
 	)
 
-	add_test(NAME gcexample COMMAND $<TARGET_FILE:gcexample>)
+	omr_add_test(NAME gcexample COMMAND $<TARGET_FILE:gcexample>)
 endif(OMR_GC)
 
 add_subdirectory(glue)

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020, 2020 IBM Corp. and others
+ * Copyright (c) 2020, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -162,7 +162,7 @@ def SPECS = [
         'label' : 'Linux && x86 && compile:riscv64',
         'reference' : defaultReference,
         'environment' : [
-            'PATH+CCACHE=/usr/lib/ccache/'
+            'PATH+CCACHE_AND_QEMU=/usr/lib/ccache/:/home/jenkins/qemu/build'
         ],
         'ccache' : true,
         'buildSystem' : 'cmake',
@@ -174,11 +174,11 @@ def SPECS = [
             ],
             [
                 'buildDir' : cmakeBuildDir,
-                'configureArgs' : '-Wdev -C../cmake/caches/Travis.cmake -DOMR_DDR=OFF -DCMAKE_FIND_ROOT_PATH=${CROSS_SYSROOT_RISCV64} -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/riscv64-linux-cross.cmake -DOMR_TOOLS_IMPORTFILE=../build_native/tools/ImportTools.cmake',
+                'configureArgs' : '-Wdev -C../cmake/caches/Travis.cmake -DOMR_DDR=OFF "-DCMAKE_FIND_ROOT_PATH=${CROSS_SYSROOT_RISCV64}" -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/riscv64-linux-cross.cmake -DOMR_TOOLS_IMPORTFILE=../build_native/tools/ImportTools.cmake "-DOMR_TEST_LAUNCHER=qemu-riscv64;-L;${CROSS_SYSROOT_RISCV64}"',
                 'compile' : defaultCompile
             ]
         ],
-        'test' : false
+        'test' : true,
         'testArgs' : '',
         'junitPublish' : true
     ],

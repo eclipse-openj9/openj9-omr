@@ -31,7 +31,7 @@ macro(create_jitbuilder_test target)
 	target_link_libraries(${target}
 		jitbuilder
 		${CMAKE_DL_LIBS})
-	add_test(NAME ${target}_example_as_test COMMAND ${target})
+	add_test(NAME ${target}_example_as_test COMMAND $<TARGET_FILE:${target}>)
 endmacro(create_jitbuilder_test)
 
 # Basic Tests: These should run properly on all platforms.

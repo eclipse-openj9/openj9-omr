@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -57,5 +57,5 @@ set_property(TARGET triltest PROPERTY FOLDER fvtest/tril)
 
 add_test(
 	NAME triltest
-	COMMAND triltest --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/triltest-results.xml
+	COMMAND $<TARGET_FILE:triltest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/triltest-results.xml
 )

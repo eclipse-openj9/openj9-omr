@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2020, 2020 IBM Corp. and others
+# Copyright (c) 2020, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -66,5 +66,5 @@ set_property(TARGET compunittest PROPERTY FOLDER fvtest)
 
 add_test(
 	NAME compunittest
-	COMMAND compunittest --gtest_color=yes --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/compunittest-results.xml
+	COMMAND $<TARGET_FILE:compunittest> --gtest_color=yes --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/compunittest-results.xml
 )

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -44,5 +44,5 @@ endif()
 set_property(TARGET omrthreadextendedtest PROPERTY FOLDER fvtest)
 
 if (NOT OMR_HOST_OS STREQUAL "zos")
-	add_test(NAME threadextendedtest COMMAND omrthreadextendedtest --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadextendedtest-results.xml)
+	add_test(NAME threadextendedtest COMMAND $<TARGET_FILE:omrthreadextendedtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadextendedtest-results.xml)
 endif()

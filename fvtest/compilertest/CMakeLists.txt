@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -124,5 +124,5 @@ target_link_libraries(compilertest
 set_property(TARGET compilertest PROPERTY FOLDER fvtest)
 
 if (NOT OMR_HOST_OS STREQUAL "aix")
-	add_test(NAME CompilerTest COMMAND compilertest --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/compilertest-results.xml)
+	add_test(NAME CompilerTest COMMAND $<TARGET_FILE:compilertest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/compilertest-results.xml)
 endif()

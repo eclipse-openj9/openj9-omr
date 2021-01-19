@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -40,4 +40,4 @@ target_link_libraries(omrvmtest
 
 set_property(TARGET omrvmtest PROPERTY FOLDER fvtest)
 
-add_test(NAME vmtest COMMAND omrvmtest --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrvmtest-results.xml)
+add_test(NAME vmtest COMMAND $<TARGET_FILE:omrvmtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrvmtest-results.xml)

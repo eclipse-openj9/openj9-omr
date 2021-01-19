@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -559,7 +559,6 @@ public:
 	double concurrentSlackFragmentationAdjustmentWeight; /**< weight(from 0.0 to 5.0) used for calculating free tenure space (how much percentage of the fragmentation need to remove from freeBytes) */
 	bool debugConcurrentMark;
 	bool optimizeConcurrentWB;
-	bool dirtCardDuringRSScan;
 	uintptr_t concurrentLevel;
 	uintptr_t concurrentBackground;
 	uintptr_t concurrentSlack; /**< number of bytes to add to the concurrent kickoff threshold buffer */
@@ -1635,7 +1634,6 @@ public:
 		, concurrentSlackFragmentationAdjustmentWeight(0.0)
 		, debugConcurrentMark(false)
 		, optimizeConcurrentWB(true)
-		, dirtCardDuringRSScan(false)
 		, concurrentLevel(8)
 		, concurrentBackground(1)
 		, concurrentSlack(0)

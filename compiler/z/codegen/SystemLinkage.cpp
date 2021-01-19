@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -69,9 +69,9 @@
 #include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/SystemLinkage.hpp"
 
-TR::SystemLinkage::SystemLinkage(TR::CodeGenerator* cg, TR_S390LinkageConventions elc, TR_LinkageConventions lc)
+TR::SystemLinkage::SystemLinkage(TR::CodeGenerator* cg, TR_LinkageConventions elc)
    :
-      TR::Linkage(cg, elc,lc),
+      TR::Linkage(cg, elc),
       _GPRSaveMask(0),
       _FPRSaveMask(0)
    {
@@ -296,7 +296,7 @@ TR::SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stackInd
 
       setFPRSaveMask(FPRSaveMask);
 
-      if (FPRSaveMask != 0 && isOSLinkageType())
+      if (FPRSaveMask != 0)
          {
          #define DELTA_ALIGN(x, align) ((x & (align-1)) ? (align -((x)&(align-1))) : 0)
          stackIndex -= DELTA_ALIGN(stackIndex, 16);

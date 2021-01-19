@@ -29,3 +29,11 @@
    TR_System,
    TR_Helper,
    TR_J9JNILinkage,
+   TR_SystemXPLink,                     // zOS XPLink convention
+
+   // zOS Type 1 linkages - all have bit 0x40 set
+   // zOS Type 1 linkage - C++ Fastlink
+   TR_SystemFastLink,                   // zOS (C++) FastLink convention
+
+   // Linux Platform Linkages
+   TR_SystemLinux,//          = 60     // zLinux convention

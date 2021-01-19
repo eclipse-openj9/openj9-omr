@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -102,7 +102,7 @@ extern bool storeHelperImmediateInstruction(TR::Node * valueChild, TR::CodeGener
 
 OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen)
    : OMR::Linkage(codeGen),
-      _explicitLinkageType(TR_S390LinkageDefault), _linkageType(TR_None), _stackSizeCheckNeeded(true), _raContextSaveNeeded(true),
+      _linkageType(TR_None), _stackSizeCheckNeeded(true), _raContextSaveNeeded(true),
       _integerReturnRegister(TR::RealRegister::NoReg),
       _floatReturnRegister(TR::RealRegister::NoReg),
       _doubleReturnRegister(TR::RealRegister::NoReg),
@@ -135,9 +135,9 @@ OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen)
  * convention.
  * Even though this method is common, its implementation is machine-specific.
  */
-OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen,TR_S390LinkageConventions elc, TR_LinkageConventions lc)
+OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen,TR_LinkageConventions lc)
    : OMR::Linkage(codeGen),
-      _explicitLinkageType(elc), _linkageType(lc), _stackSizeCheckNeeded(true), _raContextSaveNeeded(true),
+      _linkageType(lc), _stackSizeCheckNeeded(true), _raContextSaveNeeded(true),
       _integerReturnRegister(TR::RealRegister::NoReg),
       _floatReturnRegister(TR::RealRegister::NoReg),
       _doubleReturnRegister(TR::RealRegister::NoReg),
@@ -2838,27 +2838,21 @@ OMR::Z::Linkage::getLastMaskedBit(int16_t mask)
    }
 
 bool
-OMR::Z::Linkage::isOSLinkageType()
-   {
-   return (self()->getExplicitLinkageType() & TR_SystemOS_MASK) != 0;
-   }
-
-bool
 OMR::Z::Linkage::isXPLinkLinkageType()
    {
-   return self()->getExplicitLinkageType() == TR_SystemXPLink;
+   return self()->getLinkageType() == TR_SystemXPLink;
    }
 
 bool
 OMR::Z::Linkage::isFastLinkLinkageType()
    {
-   return self()->getExplicitLinkageType() == TR_SystemFastLink;
+   return self()->getLinkageType() == TR_SystemFastLink;
    }
 
 bool
 OMR::Z::Linkage::isZLinuxLinkageType()
    {
-   return self()->getExplicitLinkageType() == TR_SystemLinux;
+   return self()->getLinkageType() == TR_SystemLinux;
    }
 
 TR::Register *

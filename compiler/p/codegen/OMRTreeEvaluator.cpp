@@ -933,8 +933,6 @@ TR::Register *OMR::Power::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::Cod
    TR::MemoryReference *tempMR = NULL;
    TR::Node *valueChild;
 
-   bool usingCompressedPointers = false;
-
    if (node->getOpCode().isIndirect())
       {
       valueChild = node->getSecondChild(); //handles iistore
@@ -965,11 +963,6 @@ TR::Register *OMR::Power::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::Cod
             translatedNode = translatedNode->getFirstChild();
          if (translatedNode->getOpCode().isRightShift()) // optional
             translatedNode = translatedNode->getFirstChild();
-
-         if ((translatedNode->getOpCode().isSub()) ||
-               valueChild->isNull() ||
-               TR::Compiler->vm.heapBaseAddress() == 0)
-            usingCompressedPointers = true;
          }
       }
    else

@@ -5413,8 +5413,6 @@ istoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
       //      node->getFirstChild()->getFirstChild()->setIsProfilingCode(cg->comp());
       }
 
-
-   bool usingCompressedPointers = false;
    TR::Node *unCompressedValue = NULL;
    TR::Compilation *comp = cg->comp();
    TR::Node *translatedNode = NULL;
@@ -5449,34 +5447,6 @@ istoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
             translatedNode = translatedNode->getFirstChild();
          if (translatedNode->getOpCode().isRightShift()) // optional
             translatedNode = translatedNode->getFirstChild();
-
-         bool usingLowMemHeap = false;
-         if (TR::Compiler->vm.heapBaseAddress() == 0 ||
-               valueChild->isNull())
-            usingLowMemHeap = true;
-
-         if (translatedNode->getOpCode().isSub() || usingLowMemHeap)
-            usingCompressedPointers = true;
-         // valueChild is not updated, the compression is taken care of
-         // by the lsub (which is already tagged with a nodeflag)
-         //
-         if (usingCompressedPointers && !usingLowMemHeap)
-            {
-            unCompressedValue = valueChild;
-            while (unCompressedValue->getNumChildren() > 0 &&
-                     unCompressedValue->getOpCodeValue() != TR::a2l)
-               unCompressedValue = unCompressedValue->getFirstChild();
-            if (unCompressedValue->getOpCodeValue() == TR::a2l)
-               unCompressedValue = unCompressedValue->getFirstChild();
-            // this allows separate registers to be allocated if the base
-            // of the indirect access is the same as the value thats being
-            // compressed (e.g. O.f = O)
-            //
-            if (unCompressedValue == addrChild)
-               unCompressedValue->incReferenceCount();
-            else
-               unCompressedValue = NULL;
-            }
          }
       }
    else

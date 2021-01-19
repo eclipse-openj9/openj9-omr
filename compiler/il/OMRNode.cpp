@@ -1547,7 +1547,6 @@ TR::Node*
 OMR::Node::createCompressedRefsAnchor(TR::Node *firstChild)
    {
    TR::Node *heapBaseKonst = TR::Node::create(firstChild, TR::lconst, 0, 0);
-   heapBaseKonst->setLongInt(TR::Compiler->vm.heapBaseAddress());
    return TR::Node::create(TR::compressedRefs, 2, firstChild, heapBaseKonst);
    }
 

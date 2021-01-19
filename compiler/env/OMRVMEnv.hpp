@@ -51,8 +51,6 @@ public:
 
    int64_t maxHeapSizeInBytes() { return -1; }
 
-   uintptr_t heapBaseAddress();
-
    uintptr_t heapTailPaddingSizeInBytes();
 
    // Perhaps 'false' would be a better default

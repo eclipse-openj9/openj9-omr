@@ -261,8 +261,8 @@ static void changeHeapBaseConstToLoad(TR::Compilation *comp, TR::SymbolReference
 
    node->setVisitCount(visitCount);
 
-   if ((node->getOpCodeValue() == TR::lconst) &&
-       (node->getLongInt() == TR::Compiler->vm.heapBaseAddress()))
+   if (node->getOpCodeValue() == TR::lconst &&
+       node->getLongInt() == 0)
       {
       if (!autoSymRef)
          {
@@ -349,20 +349,6 @@ TR_GlobalRegisterAllocator::perform()
    comp()->getOptimizer()->setResetExitsGRA(0);
    comp()->getOptimizer()->setSeenBlocksGRA(0);
    comp()->getOptimizer()->setSuccessorBitsGRA(0);
-
-   if (comp()->useCompressedPointers() &&
-       comp()->cg()->materializesHeapBase() &&
-       TR::Compiler->vm.heapBaseAddress() != 0)
-      {
-      TR::SymbolReference *autoSymRef = NULL;
-      vcount_t visitCount = comp()->incVisitCount();
-      for (TR::TreeTop * tt = comp()->getStartTree(); tt; tt = tt->getNextTreeTop())
-         {
-         changeHeapBaseConstToLoad(comp(), autoSymRef, tt->getNode(), visitCount);
-         }
-      if (autoSymRef)
-         comp()->getSymRefTab()->aliasBuilder.createAliasInfo();
-      }
 
    bool globalFPAssignmentDone = false;
    _appendBlock = 0;

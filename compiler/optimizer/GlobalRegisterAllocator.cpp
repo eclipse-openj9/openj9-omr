@@ -254,41 +254,6 @@ bool TR_GlobalRegisterAllocator::isTypeAvailable(TR::SymbolReference *symref)
    return allocateForType(symref->getSymbol()->getDataType());
    }
 
-static void changeHeapBaseConstToLoad(TR::Compilation *comp, TR::SymbolReference * &autoSymRef, TR::Node *node, vcount_t visitCount)
-   {
-   if (node->getVisitCount() == visitCount)
-      return;
-
-   node->setVisitCount(visitCount);
-
-   if (node->getOpCodeValue() == TR::lconst &&
-       node->getLongInt() == 0)
-      {
-      if (!autoSymRef)
-         {
-         autoSymRef = comp->getSymRefTab()->createTemporary(comp->getMethodSymbol(), node->getDataType());
-         TR::TreeTop *startTree = comp->getStartTree();
-         TR::TreeTop *nextTree = startTree->getNextTreeTop();
-
-         TR::Node *lconstNode = TR::Node::create(node, TR::lconst, 0, 0);
-         lconstNode->setLongInt(node->getLongInt());
-         TR::Node *storeNode = TR::Node::createWithSymRef(TR::lstore, 1, 1, lconstNode, autoSymRef);
-         TR::TreeTop *tt = TR::TreeTop::create(comp, storeNode);
-         startTree->join(tt);
-         tt->join(nextTree);
-         }
-
-      TR::Node::recreate(node, TR::lload);
-      node->setSymbolReference(autoSymRef);
-      }
-
-   for (int32_t i = 0; i < node->getNumChildren(); ++i)
-      {
-      TR::Node *child = node->getChild(i);
-      changeHeapBaseConstToLoad(comp, autoSymRef, child, visitCount);
-      }
-   }
-
 void
 TR_GlobalRegisterAllocator::visitNodeForDataType(TR::Node *node)
    {

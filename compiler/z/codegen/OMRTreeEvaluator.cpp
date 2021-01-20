@@ -5415,39 +5415,11 @@ istoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
 
    TR::Node *unCompressedValue = NULL;
    TR::Compilation *comp = cg->comp();
-   TR::Node *translatedNode = NULL;
 
    if (node->getOpCode().isIndirect())
       {
       valueChild = node->getSecondChild();
       addrChild = node->getFirstChild();
-      if (comp->useCompressedPointers() &&
-            (node->getSymbolReference()->getSymbol()->getDataType() == TR::Address))
-         {
-         // pattern match the sequence
-         //     iistore f     iistore f         <- node
-         //       aload O       aload O         <- addrChild
-         //     value           l2i
-         //                       lshr
-         //                         lsub        <- translatedNode
-         //                           a2l
-         //                             value   <- valueChild
-         //                           lconst HB
-         //                         iconst shftKonst
-         //
-         // -or- if the field is known to be null
-         // iistore f
-         //    aload O
-         //    l2i
-         //      a2l
-         //        value  <- valueChild
-         //
-         translatedNode = valueChild;
-         if (translatedNode->getOpCodeValue() == TR::l2i)
-            translatedNode = translatedNode->getFirstChild();
-         if (translatedNode->getOpCode().isRightShift()) // optional
-            translatedNode = translatedNode->getFirstChild();
-         }
       }
    else
       {

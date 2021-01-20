@@ -38,8 +38,8 @@
 
 # Compiler
 /compiler/ @0xdaryl @mstoodle
-/compiler/optimizer/ @vijaysun-omr @andrewcraik
-/compiler/il/ @vijaysun-omr @Leonardo2718 @andrewcraik
+/compiler/optimizer/ @vijaysun-omr
+/compiler/il/ @vijaysun-omr @Leonardo2718
 /compiler/arm/ @0xdaryl @knn-k
 /compiler/aarch64/ @0xdaryl @knn-k
 /compiler/p/ @aviansie-ben

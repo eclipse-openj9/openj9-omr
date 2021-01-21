@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2020 IBM Corp. and others
+ * Copyright (c) 2015, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -77,13 +77,10 @@ class MM_ForwardedHeader
  * Data members
  */
 public:
-protected:
+
 private:
 	omrobjectptr_t _objectPtr;					/**< the object on which to act */
 	uintptr_t _preserved; 						/**< a backup copy of the header fields which may be modified by this class */
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
-	bool const _compressObjectReferences;
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
 
 	static const uintptr_t _forwardedTag = OMR_FORWARDED_TAG;	/**< bit mask used to mark forwarding slot value as forwarding pointer */
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
@@ -95,6 +92,11 @@ private:
 	static const uintptr_t _copySizeAlignement = (uintptr_t)SIZE_ALIGNMENT;
 	static const uintptr_t _minIncrement = (131072 & _remainingSizeMask); /**< min size of copy section; does not have to be a power of 2, but it has to be aligned with _copySizeAlignement */ 
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
+
+protected:
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+	bool const _compressObjectReferences;
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 
 /*
  * Function members
@@ -548,9 +550,9 @@ public:
 	MM_ForwardedHeader(omrobjectptr_t objectPtr, bool compressed)
 	: _objectPtr(objectPtr)
 	, _preserved(*(volatile uintptr_t *)_objectPtr)
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
 	, _compressObjectReferences(compressed)
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 	{
 	}
 

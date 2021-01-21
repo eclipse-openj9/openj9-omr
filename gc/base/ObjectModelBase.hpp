@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -61,12 +61,12 @@ class GC_ObjectModelBase : public MM_BaseVirtual
  * Member data and types
  */
 private:
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
-	bool _compressObjectReferences;
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
 	GC_ObjectModelDelegate _delegate;	/**< instance of object model delegate class */
 
 protected:
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+	bool _compressObjectReferences;
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 	uintptr_t _objectAlignmentInBytes; 	/**< cached copy of heap object alignment factor, in bytes */
 	uintptr_t _objectAlignmentShift; 	/**< cached copy of heap object alignment shift, must be log2(_objectAlignmentInBytes)  */
 
@@ -330,9 +330,9 @@ public:
 	MMINLINE void
 	setObjectAlignment(OMR_VM *omrVM)
 	{
-#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
 		_compressObjectReferences = OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM);
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 		_objectAlignmentInBytes = OMR_MAX((uintptr_t)1 << omrVM->_compressedPointersShift, OMR_MINIMUM_OBJECT_ALIGNMENT);
 		_objectAlignmentShift = OMR_MAX(omrVM->_compressedPointersShift, OMR_MINIMUM_OBJECT_ALIGNMENT_SHIFT);
 

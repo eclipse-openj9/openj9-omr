@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,14 +36,14 @@ class GC_SlotObject
 {
 private:
 	volatile fomrobject_t* _slot;		/**< stored slot address (volatile, because in concurrent GC the mutator can change the value in _slot) */
-#if defined (OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_GC_COMPRESSED_POINTERS)
 	uintptr_t _compressedPointersShift; /**< the number of bits to shift by when converting between the compressed pointers heap and real heap */
-#if defined (OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
-	bool _compressObjectReferences;
-#endif /* defined (OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
-#endif /* defined (OMR_GC_COMPRESSED_POINTERS) */
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) */
 
 protected:
+#if defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS)
+	bool const _compressObjectReferences;
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && defined(OMR_GC_FULL_POINTERS) */
 public:
 
 private:
@@ -252,9 +252,9 @@ public:
 	: _slot(slot)
 #if defined (OMR_GC_COMPRESSED_POINTERS)
 	, _compressedPointersShift(omrVM->_compressedPointersShift)
-#if defined (OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES)
+#if defined (OMR_GC_FULL_POINTERS)
 	, _compressObjectReferences(OMRVM_COMPRESS_OBJECT_REFERENCES(omrVM))
-#endif /* defined (OMR_GC_FULL_POINTERS) && !defined(OMR_OVERRIDE_COMPRESS_OBJECT_REFERENCES) */
+#endif /* defined (OMR_GC_FULL_POINTERS) */
 #endif /* defined (OMR_GC_COMPRESSED_POINTERS) */
 	{}
 };

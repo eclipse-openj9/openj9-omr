@@ -124,7 +124,7 @@ if(OMR_HOST_OS STREQUAL "aix")
 		PRIVATE
 			${OMR_PLATFORM_SHARED_COMPILE_OPTIONS}
 	)
-	
+
 	set_target_properties(aixbaddep
 		PROPERTIES
 			LINK_FLAGS "-bI:${CMAKE_CURRENT_SOURCE_DIR}/aixbaddep/dummy.imp"
@@ -136,10 +136,10 @@ if(OMR_HOST_OS STREQUAL "aix")
 	)
 endif()
 
-if (NOT OMR_HOST_OS STREQUAL "aix" AND NOT OMR_HOST_OS STREQUAL "zos")
+if (NOT OMR_HOST_OS STREQUAL "aix" AND NOT OMR_HOST_OS STREQUAL "zos" AND NOT CMAKE_CROSSCOMPILING)
 	omr_add_test(
 		NAME porttest
-		COMMAND $<TARGET_FILE:omrporttest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrporttest-results.xml
+		COMMAND $<TARGET_FILE:omrporttest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrporttest-results.xml --gtest_filter=${porttest_filter}
 	)
 endif()
 

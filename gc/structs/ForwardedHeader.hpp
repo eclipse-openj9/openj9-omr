@@ -32,6 +32,8 @@
 
 #include "HeapLinkedFreeHeader.hpp"
 
+/* @ddr_namespace: map_to_type=MM_ForwardedHeader */
+
 /* Source object header bits */
 #define OMR_FORWARDED_TAG 4
 /* If 'being copied hint' is set, it hints that destination might still be being copied (although it might have just completed).
@@ -40,7 +42,17 @@
    This hint is not necessary for correctness of copying protocol, it's just an optimization to avoid visiting destination object header
    in cases when it's likely not in data cash (GC thread encountering already forwarded object) */
 #define OMR_BEING_COPIED_HINT 2
-#define OMR_SELF_FORWARDED_TAG J9_GC_MULTI_SLOT_HOLE
+/* OMR_SELF_FORWARDED_TAG overloads existing J9_GC_MULTI_SLOT_HOLE 0x1. In a rare case, we may need iterating a
+ * Evacuate area, that may have all combinations of: non-forwarded objects (0x4 not set, 0x1 not set), strictly
+ * forwarded objects (0x4 set, 0x1 not set), self forwarded objects (0x4 set, 0x1 set) and free memory chunks
+ * (0x4 not set and 0x1 set). GC_ObjectHeapIteratorAddressOrderedList is aware of this overloading and will
+ * properly interpret when 0x1 flag is set.
+ *
+ * However, here we define OMR_SELF_FORWARDED_TAG directly as 1 and not as J9_GC_MULTI_SLOT_HOLE (due to DDR
+ * pre-preprocessor limitation of not processing #includes properly) */
+#define OMR_SELF_FORWARDED_TAG 1
+/* combine OMR_FORWARDED_TAG with OMR_BEING_COPIED_HINT and OMR_SELF_FORWARDED_TAG into one mask which should be stripped from the pointer in order to remove all tags */
+#define OMR_FORWARDED_TAG_MASK (OMR_FORWARDED_TAG | OMR_BEING_COPIED_HINT | OMR_SELF_FORWARDED_TAG)
 
 
 /* Destination object header bits, masks, consts... */

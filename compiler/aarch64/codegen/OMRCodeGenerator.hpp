@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -43,6 +43,8 @@ namespace OMR { typedef OMR::ARM64::CodeGenerator CodeGeneratorConnector; }
 class TR_ARM64OutOfLineCodeSection;
 namespace TR { class ARM64LinkageProperties; }
 namespace TR { class ARM64ConstantDataSnippet; }
+namespace TR { class RegisterDependencyConditions; }
+namespace TR { class DebugCounterBase; }
 
 /**
  * @brief Generates instructions for loading 32-bit integer value to a register
@@ -512,6 +514,51 @@ public:
     * @return true if supported, false otherwise
     */
    bool supportsSinglePrecisionSQRT() { return true; }
+
+   /**
+    * @brief Generates instructions for incrementing debug counter
+    * @param[in] cursor:   instruction cursor
+    * @param[in] counter:  debug counter
+    * @param[in] delta:    delta for debug counter 
+    * @param[in] cond:     register dependency conditions
+    * 
+    * @return instruction
+    */
+   TR::Instruction *generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, int32_t delta, TR::RegisterDependencyConditions *cond);
+
+   /**
+    * @brief Generates instructions for incrementing debug counter
+    * @param[in] cursor:   instruction cursor
+    * @param[in] counter:  debug counter
+    * @param[in] deltaReg: register holding delta for debug counter 
+    * @param[in] cond:     register dependency conditions
+    * 
+    * @return instruction
+    */
+   TR::Instruction *generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, TR::Register *deltaReg, TR::RegisterDependencyConditions *cond);
+
+   /**
+    * @brief Generates instructions for incrementing debug counter
+    * @param[in] cursor:   instruction cursor
+    * @param[in] counter:  debug counter
+    * @param[in] delta:    delta for debug counter 
+    * @param[in] srm:      scratch register manager
+    * 
+    * @return instruction
+    */
+   TR::Instruction *generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, int32_t delta, TR_ScratchRegisterManager &srm);
+
+   /**
+    * @brief Generates instructions for incrementing debug counter
+    * @param[in] cursor:   instruction cursor
+    * @param[in] counter:  debug counter
+    * @param[in] deltaReg: register holding delta for debug counter 
+    * @param[in] srm:      scratch register manager
+    * 
+    * @return instruction
+    */
+   TR::Instruction *generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, TR::Register *deltaReg, TR_ScratchRegisterManager &srm);
+
 
    private:
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -61,9 +61,10 @@ typedef void *charconvState_t; /*dummy type */
 #include "omrutil.h"
 #include "omrcomp.h"
 #include "omrport.h"
-#include "omrgetjobname.h"
-#include "omrgetjobid.h"
 #include "omrgetasid.h"
+#include "omrgetjobid.h"
+#include "omrgetjobname.h"
+#include "omrgetsysname.h"
 #include "omrstdarg.h"
 #include "hashtable_api.h"
 
@@ -1767,11 +1768,13 @@ populateWithDefaultTokens(struct OMRPortLibrary *portLibrary, struct J9StringTok
 #define JOBNAME_BUF_LEN 128
 #define JOBID_BUF_LEN 16
 #define ASID_BUF_LEN 16
+#define SYSNAME_BUF_LEN 32
 	uintptr_t pid;
 	char username[USERNAME_BUF_LEN];
 	char jobname[JOBNAME_BUF_LEN];
 	char jobid[JOBID_BUF_LEN];
 	char asid[ASID_BUF_LEN];
+	char sysname[SYSNAME_BUF_LEN];
 
 	if (NULL == tokens) {
 		return -1;
@@ -1782,6 +1785,7 @@ populateWithDefaultTokens(struct OMRPortLibrary *portLibrary, struct J9StringTok
 	omrget_jobname(portLibrary, jobname, JOBNAME_BUF_LEN);
 	omrget_jobid(portLibrary, jobid, JOBID_BUF_LEN);
 	omrget_asid(portLibrary, asid, ASID_BUF_LEN);
+	omrget_sysname(portLibrary, sysname, SYSNAME_BUF_LEN);
 
 	portLibrary->str_set_time_tokens(portLibrary, tokens, timeMillis);
 
@@ -1791,7 +1795,8 @@ populateWithDefaultTokens(struct OMRPortLibrary *portLibrary, struct J9StringTok
 		|| portLibrary->str_set_token(portLibrary, tokens, "last", "%s", "")
 		|| portLibrary->str_set_token(portLibrary, tokens, "seq", "%04u", 0)
 		|| portLibrary->str_set_token(portLibrary, tokens, "jobid", "%s", jobid)
-		|| portLibrary->str_set_token(portLibrary, tokens, "asid", "%s", asid)) {
+		|| portLibrary->str_set_token(portLibrary, tokens, "asid", "%s", asid)
+		|| portLibrary->str_set_token(portLibrary, tokens, "sysname", "%s", sysname)) {
 		/* If any of the above fail, we're out of memory */
 		return -1;
 	}

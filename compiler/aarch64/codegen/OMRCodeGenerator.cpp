@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,6 +26,7 @@
 #include "codegen/ARM64SystemLinkage.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
 #include "codegen/GCStackAtlas.hpp"
 #include "codegen/GCStackMap.hpp"
@@ -34,13 +35,15 @@
 #include "codegen/Linkage_inlines.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/RegisterConstants.hpp"
+#include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterIterator.hpp"
 #include "codegen/TreeEvaluator.hpp"
+#include "codegen/ScratchRegisterManager.hpp"
 #include "control/Recompilation.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 #include "il/StaticSymbol.hpp"
-
+#include "ras/DebugCounter.hpp"
 
 OMR::ARM64::CodeGenerator::CodeGenerator(TR::Compilation *comp) :
       OMR::CodeGenerator(comp),
@@ -674,4 +677,122 @@ void OMR::ARM64::CodeGenerator::setRealRegisterAssociation(TR::Register *virtual
 
    TR::RealRegister *realReg = self()->machine()->getRealRegister(realNum);
    self()->getLiveRegisters(virtualRegister->getKind())->setAssociation(virtualRegister, realReg);
+   }
+
+
+TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, int32_t delta, TR::RegisterDependencyConditions *cond)
+   {
+   TR::Node *node = cursor->getNode();
+
+   if (!constantIsUnsignedImm12(delta))
+      {
+      TR::Register *deltaReg = self()->allocateRegister();
+      cursor = loadConstant64(self(), node, delta, deltaReg, cursor);
+      cursor = self()->generateDebugCounterBump(cursor, counter, deltaReg, cond);
+      if (cond)
+         {
+         TR::addDependency(cond, deltaReg, TR::RealRegister::NoReg, TR_GPR, self());
+         }
+      self()->stopUsingRegister(deltaReg);
+      return cursor;
+      }
+
+   intptr_t addr = counter->getBumpCountAddress();
+
+   TR_ASSERT_FATAL(addr, "Expecting a non-null debug counter address");
+
+   TR::Register *addrReg = self()->allocateRegister();
+   TR::Register *counterReg = self()->allocateRegister();
+
+   cursor = loadAddressConstant(self(), node, addr, addrReg, cursor, false, TR_DebugCounter);
+   cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::ldrimmw, node, counterReg, new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, self()), cursor);
+   cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addimmw, node, counterReg, counterReg, delta, cursor);
+   cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::strimmw, node, new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, self()), counterReg, cursor);
+
+   if (cond)
+      {
+      uint32_t preCondCursor = cond->getAddCursorForPre();
+      uint32_t postCondCursor = cond->getAddCursorForPost();
+      TR::addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
+      TR::addDependency(cond, counterReg, TR::RealRegister::NoReg, TR_GPR, self());
+      }
+   self()->stopUsingRegister(addrReg);
+   self()->stopUsingRegister(counterReg);
+   return cursor;
+   }
+
+TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, TR::Register *deltaReg, TR::RegisterDependencyConditions *cond)
+   {
+   TR::Node *node = cursor->getNode();
+   intptr_t addr = counter->getBumpCountAddress();
+
+   TR_ASSERT_FATAL(addr, "Expecting a non-null debug counter address");
+
+   TR::Register *addrReg = self()->allocateRegister();
+   TR::Register *counterReg = self()->allocateRegister();
+
+   cursor = loadAddressConstant(self(), node, addr, addrReg, cursor, false, TR_DebugCounter);
+   cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::ldrimmw, node, counterReg, new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, self()), cursor);
+   cursor = generateTrg1Src2Instruction(self(), TR::InstOpCode::addw, node, counterReg, counterReg, deltaReg, cursor);
+   cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::strimmw, node, new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, self()), counterReg, cursor);
+
+   if (cond)
+      {
+      uint32_t preCondCursor = cond->getAddCursorForPre();
+      uint32_t postCondCursor = cond->getAddCursorForPost();
+      TR::addDependency(cond, addrReg, TR::RealRegister::NoReg, TR_GPR, self());
+      TR::addDependency(cond, counterReg, TR::RealRegister::NoReg, TR_GPR, self());
+      }
+   self()->stopUsingRegister(addrReg);
+   self()->stopUsingRegister(counterReg);
+   return cursor;
+   }
+
+TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, int32_t delta, TR_ScratchRegisterManager &srm)
+   {
+   TR::Node *node = cursor->getNode();
+
+   if (!constantIsUnsignedImm12(delta))
+      {
+      TR::Register *deltaReg = srm.findOrCreateScratchRegister();
+      cursor = loadConstant64(self(), node, delta, deltaReg, cursor);
+      cursor = self()->generateDebugCounterBump(cursor, counter, deltaReg, srm);
+      srm.reclaimScratchRegister(deltaReg);
+      return cursor;
+      }
+
+   intptr_t addr = counter->getBumpCountAddress();
+
+   TR_ASSERT_FATAL(addr, "Expecting a non-null debug counter address");
+
+   TR::Register *addrReg = srm.findOrCreateScratchRegister();
+   TR::Register *counterReg = srm.findOrCreateScratchRegister();
+
+   cursor = loadAddressConstant(self(), node, addr, addrReg, cursor, false, TR_DebugCounter);
+   cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::ldrimmw, node, counterReg, new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, self()), cursor);
+   cursor = generateTrg1Src1ImmInstruction(self(), TR::InstOpCode::addimmw, node, counterReg, counterReg, delta, cursor);
+   cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::strimmw, node, new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, self()), counterReg, cursor);
+
+   srm.reclaimScratchRegister(addrReg);
+   srm.reclaimScratchRegister(counterReg);
+   return cursor;
+   }
+
+TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, TR::Register *deltaReg, TR_ScratchRegisterManager &srm)
+   {
+   TR::Node *node = cursor->getNode();
+   intptr_t addr = counter->getBumpCountAddress();
+
+   TR_ASSERT_FATAL(addr, "Expecting a non-null debug counter address");
+
+   TR::Register *addrReg = srm.findOrCreateScratchRegister();
+   TR::Register *counterReg = srm.findOrCreateScratchRegister();
+
+   cursor = loadAddressConstant(self(), node, addr, addrReg, cursor, false, TR_DebugCounter);
+   cursor = generateTrg1MemInstruction(self(), TR::InstOpCode::ldrimmw, node, counterReg, new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, self()), cursor);
+   cursor = generateTrg1Src2Instruction(self(), TR::InstOpCode::addw, node, counterReg, counterReg, deltaReg, cursor);
+   cursor = generateMemSrc1Instruction(self(), TR::InstOpCode::strimmw, node, new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, self()), counterReg, cursor);
+   srm.reclaimScratchRegister(addrReg);
+   srm.reclaimScratchRegister(counterReg);
+   return cursor;
    }

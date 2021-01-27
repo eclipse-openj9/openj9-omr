@@ -355,6 +355,7 @@ public:
 	int loaFreeHistorySize; /**< max size of _loaFreeRatioHistory array */
 	uintptr_t lastGlobalGCFreeBytesLOA; /**< records the LOA free memory size from after Global GC cycle */
 	ConcurrentMetering concurrentMetering;
+	uintptr_t minimumContractionRatio;
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 
 	bool disableExplicitGC;
@@ -1466,6 +1467,7 @@ public:
 		, loaFreeHistorySize(15)
 		, lastGlobalGCFreeBytesLOA(0)
 		, concurrentMetering(METER_BY_SOA)
+		, minimumContractionRatio(DEFAULT_MINIMUM_CONTRACTION_RATIO)
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 		, disableExplicitGC(false)
 		, heapAlignment(HEAP_ALIGNMENT)

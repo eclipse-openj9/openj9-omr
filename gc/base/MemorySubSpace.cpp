@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1459,7 +1459,7 @@ MM_MemorySubSpace::getAvailableContractionSize(MM_EnvironmentBase* env, MM_Alloc
 uintptr_t
 MM_MemorySubSpace::getAvailableContractionSizeForRangeEndingAt(MM_EnvironmentBase* env, MM_AllocateDescription* allocDescription, void* lowAddr, void* highAddr)
 {
-	MM_MemoryPool* memoryPool = getMemoryPool((highAddr > lowAddr) ? (void*)(((uintptr_t)highAddr) - 1) : highAddr);
+	MM_MemoryPool* memoryPool = getMemoryPool();
 
 	Assert_MM_true(NULL != memoryPool); /* How did we get here? */
 	return memoryPool->getAvailableContractionSizeForRangeEndingAt(env, allocDescription, lowAddr, highAddr);

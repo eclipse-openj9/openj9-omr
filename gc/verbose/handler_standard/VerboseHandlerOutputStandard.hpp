@@ -53,8 +53,6 @@ protected:
 	virtual const char *getCycleType(uintptr_t type);
 
 	void handleGCOPStanza(MM_EnvironmentBase* env, const char *type, uintptr_t contextID, uint64_t duration, bool deltaTimeSuccess);
-	void handleGCOPOuterStanzaStart(MM_EnvironmentBase* env, const char *type, uintptr_t contextID, uint64_t duration, bool deltaTimeSuccess);
-	void handleGCOPOuterStanzaEnd(MM_EnvironmentBase* env);
 
 	virtual bool hasOutputMemoryInfoInnerStanza();
 	virtual void outputMemoryInfoInnerStanzaInternal(MM_EnvironmentBase *env, uintptr_t indent, MM_CollectionStatistics *stats);
@@ -140,7 +138,7 @@ public:
 	
 	virtual const char *getConcurrentTypeString() { return "scavenge"; }
 	
-	virtual void handleConcurrentGCOpEnd(J9HookInterface** hook, uintptr_t eventNum, void* eventData);
+	virtual void handleConcurrentEndInternal(J9HookInterface** hook, uintptr_t eventNum, void* eventData);
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -554,6 +554,7 @@ class OMR_InlinerUtil : public TR::OptimizationUtil, public OMR_InlinerHelper
       virtual TR_PrexArgInfo *computePrexInfo(TR_CallTarget *target);
       virtual TR_PrexArgInfo *computePrexInfo(TR_CallTarget *target, TR_PrexArgInfo *callerArgInfo);
       virtual void clearArgInfoForNonInvariantArguments(TR_CallTarget *target, TR_InlinerTracer* tracer);
+      virtual void clearArgInfoForNonInvariantArguments(TR_PrexArgInfo* argInfo, TR::ResolvedMethodSymbol* methodSymbol, TR_InlinerTracer* tracer);
       virtual void collectCalleeMethodClassInfo(TR_ResolvedMethod *calleeMethod);
       /*
        * Implemented by down stream projects to request for certain optimizations based on \parm target

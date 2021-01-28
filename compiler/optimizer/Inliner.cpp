@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1146,7 +1146,8 @@ TR_InlineCall::inlineCall(TR::TreeTop * callNodeTreeTop, TR_OpaqueClassBlock * t
       if (comp()->trace(OMR::inlining))
          traceMsg(comp(), "inliner: Setting current inline depth=%d\n", currentInlineDepth);
 
-      calltarget->_prexArgInfo = new (trHeapMemory()) TR_PrexArgInfo(calltarget->_myCallSite->_callNode->getNumArguments(), trMemory());
+      TR_PrexArgInfo *callerArgInfo = comp()->getCurrentInlinedCallArgInfo();
+      calltarget->_prexArgInfo = getUtil()->computePrexInfo(calltarget, callerArgInfo);
 
       // this is called on a case-by-case basis, and can get repeatedly called for recursive
       // methods triggering a loop.  Unfortunately the callStack is not pervasive
@@ -2362,7 +2363,7 @@ TR_ParameterToArgumentMapper::initialize(TR_CallStack *callStack)
                TR::SymbolReference * symRef = NULL;
                const static bool disableUseKnownObjectTempsForParms = feGetEnv("TR_DisableUseKnownObjectTempsForParmsInCallee") ? true: false;
                int argOrdinal = argIndex - _callNode->getFirstArgumentIndex();
-               TR_PrexArgument * prexArgument = _argInfo->get(argOrdinal);
+               TR_PrexArgument * prexArgument =  _argInfo ? _argInfo->get(argOrdinal) : NULL;
                // use known object temp if the argument is a known object
                if (!disableUseKnownObjectTempsForParms && prexArgument
                    && !parmMap->_parmIsModified
@@ -4600,7 +4601,8 @@ void TR_InlinerBase::inlineFromGraph(TR_CallStack *prevCallStack, TR_CallTarget 
                for (int32_t i = 0; i < site->numTargets(); i++)
                   {
                   TR_CallTarget *target = site->getTarget(i);
-                  getUtil()->computePrexInfo(target, calltarget->_prexArgInfo);
+                  // Compute arg info for target to inline, and propagate caller's arg info into callee
+                  target->_prexArgInfo = getUtil()->computePrexInfo(target, calltarget->_prexArgInfo);
                   targetsToInline.add(target);
                   }
                }
@@ -5688,6 +5690,17 @@ TR_CallSite::addTarget(TR_Memory* mem, TR_InlinerBase *inliner, TR_VirtualGuardS
    {
    TR_PrexArgInfo *myPrexArgInfo = inliner->getUtil()->createPrexArgInfoForCallTarget(guard, implementer);
 
+   // Merge call site prex arginfo into `myPrexArgInfo`
+   if (myPrexArgInfo && _ecsPrexArgInfo)
+      {
+      TR_PrexArgInfo::enhance(myPrexArgInfo, _ecsPrexArgInfo, _comp);
+      }
+   else if (_ecsPrexArgInfo)
+      {
+      // Clone call site prex arg info
+      myPrexArgInfo = new (comp()->trHeapMemory()) TR_PrexArgInfo(_ecsPrexArgInfo, comp()->trMemory());
+      }
+
    TR_CallTarget *result = new (mem,allocKind) TR_CallTarget(this,_initialCalleeSymbol,implementer,guard,receiverClass,myPrexArgInfo,ratio);
 
    addTarget(result);
@@ -6365,15 +6378,9 @@ OMR_InlinerUtil::computePrexInfo(TR_CallTarget *target, TR_PrexArgInfo *callerAr
 /**
  * \brief
  *    Clear non-invariant argument arg info for target
- *
- * \parm target
- *    Call target whose arg info is to be cleared for non-invariant arguments
- *
- * \parm tracer
- *    Inliner tracer used for trace message
  */
 void
-OMR_InlinerUtil::clearArgInfoForNonInvariantArguments(TR_CallTarget *target, TR_InlinerTracer* tracer)
+OMR_InlinerUtil::clearArgInfoForNonInvariantArguments(TR_PrexArgInfo* argInfo, TR::ResolvedMethodSymbol* methodSymbol, TR_InlinerTracer* tracer)
    {
    if (comp()->getOption(TR_DisableInlinerArgsPropagation))
       return;
@@ -6382,13 +6389,12 @@ OMR_InlinerUtil::clearArgInfoForNonInvariantArguments(TR_CallTarget *target, TR_
    if (tracePrex)
       traceMsg(comp(), "Clearing arg info for non invariant arguments\n");
 
-   TR::ResolvedMethodSymbol* methodSymbol = target->_calleeSymbol;
+   TR_ASSERT(argInfo, "argInfo can't be NULL");
+   TR_ASSERT(methodSymbol, "methodSymbol can't be NULL");
 
-   TR_PrexArgInfo* argInfo = target->_prexArgInfo;
-   if (!argInfo)
+   if (!methodSymbol->getFirstTreeTop() && tracePrex)
       {
-      if (tracePrex)
-         traceMsg(comp(), "Prex arg info not avaiable\n");
+      traceMsg(comp(), "IL trees are not generated for method, no arg info is cleared\n");
       return;
       }
 
@@ -6426,13 +6432,34 @@ OMR_InlinerUtil::clearArgInfoForNonInvariantArguments(TR_CallTarget *target, TR_
          }
       }
 
-   if (cleanedAnything)
+   if (tracePrex)
       {
-      if (tracePrex)
+      if (cleanedAnything)
+         {
          traceMsg(comp(), "ARGS PROPAGATION: argInfo %p after clear arg info for non-invariant arguments", argInfo);
-      if (tracer->heuristicLevel())
-         argInfo->dumpTrace();
+         if (tracer->heuristicLevel())
+            argInfo->dumpTrace();
+         }
+      else
+         traceMsg(comp(), "ARGS PROPAGATION: Nothing is cleared\n");
       }
+   }
+
+/**
+ * \brief
+ *    Clear non-invariant argument arg info for target
+ *
+ * \parm target
+ *    Call target whose arg info is to be cleared for non-invariant arguments
+ *
+ * \parm tracer
+ *    Inliner tracer used for trace message
+ */
+void
+OMR_InlinerUtil::clearArgInfoForNonInvariantArguments(TR_CallTarget *target, TR_InlinerTracer* tracer)
+   {
+   if (target->_prexArgInfo)
+      clearArgInfoForNonInvariantArguments(target->_prexArgInfo, target->_calleeSymbol, tracer);
    }
 
 bool

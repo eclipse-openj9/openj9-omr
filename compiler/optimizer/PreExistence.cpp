@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -54,13 +54,17 @@ TR_PrexArgument::TR_PrexArgument(
    _knownObjectIndex(knownObjectIndex)
    {
 #ifdef J9_PROJECT_SPECIFIC
-   TR::VMAccessCriticalSection prexArgumentCriticalSection(comp,
-                                                            TR::VMAccessCriticalSection::tryToAcquireVMAccess);
-
-   if (prexArgumentCriticalSection.hasVMAccess())
+   auto knot = comp->getKnownObjectTable();
+   if (knot && !knot->isNull(knownObjectIndex))
       {
-      _class = TR::Compiler->cls.objectClass(comp, comp->getKnownObjectTable()->getPointer(knownObjectIndex));
-      _classKind = ClassIsFixed;
+      TR::VMAccessCriticalSection prexArgumentCriticalSection(comp,
+                                                               TR::VMAccessCriticalSection::tryToAcquireVMAccess);
+
+      if (prexArgumentCriticalSection.hasVMAccess())
+         {
+         _class = TR::Compiler->cls.objectClass(comp, comp->getKnownObjectTable()->getPointer(knownObjectIndex));
+         _classKind = ClassIsFixed;
+         }
       }
 #endif
    }
@@ -84,3 +88,58 @@ void TR_PrexArgInfo::dumpTrace() {
       }
    traceMsg(comp,  "</argInfo>\n");
 }
+
+/**
+ * \brief
+ *    Given two `TR_PrexArgument`, return the one with more concrete argument info
+ */
+static TR_PrexArgument *strongerArgumentInfo(TR_PrexArgument *left, TR_PrexArgument *right, TR::Compilation *comp)
+   {
+   if (TR_PrexArgument::knowledgeLevel(left) > TR_PrexArgument::knowledgeLevel(right))
+      return left;
+   else if (TR_PrexArgument::knowledgeLevel(right) > TR_PrexArgument::knowledgeLevel(left))
+      return right;
+   else if (left && right)
+      {
+      if (left->getClass() && right->getClass())
+         {
+         if (comp->fe()->isInstanceOf(left->getClass(), right->getClass(), true, true, false))
+            return left;
+         else if (comp->fe()->isInstanceOf(right->getClass(), left->getClass(), true, true, false))
+            return right;
+         }
+      else if (left->getClass())
+         return left;
+      else if (right->getClass())
+         return right;
+
+      return NULL;
+      }
+   else
+      return left ? left : right;  // Return non-null prex argument when possible
+   }
+
+TR_PrexArgInfo *
+TR_PrexArgInfo::enhance(TR_PrexArgInfo *dest, TR_PrexArgInfo *source, TR::Compilation *comp)
+   {
+   // If dest is NULL, we can't simply return source, as TR_PrexArgInfo is mutable, any
+   // future change to dest will change source. Thus return a copy of source
+   //
+   if (!dest && source)
+      return new (comp->trHeapMemory()) TR_PrexArgInfo(source, comp->trMemory());
+   else if (!source)
+      return dest;
+
+   TR_ASSERT(dest->getNumArgs() == source->getNumArgs(), "Number of arguments don't match: dest %p %d arguments and source %p %d arguments", dest, dest->getNumArgs(), source, source->getNumArgs());
+
+   auto numArgsToEnhance = dest->getNumArgs();
+   for (int32_t i = 0; i < numArgsToEnhance; i++)
+      {
+      TR_PrexArgument* result = strongerArgumentInfo(dest->get(i), source->get(i), comp);
+      if (result)
+         dest->set(i, result);
+      }
+
+   return dest;
+   }
+

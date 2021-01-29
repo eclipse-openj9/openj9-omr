@@ -2698,7 +2698,7 @@ OMR::IlBuilder::traceSwitch(const char *name,
                             JBCase **cases)
    {
    TraceIL("IlBuilder[ %p ]::%s on %d [ default : %p ]", this, name, selectorValue->getID(), defaultBuilder);
-   for (int c=0;c < numCases;c++)
+   for (uint32_t c=0;c < numCases;c++)
       TraceIL(" [ %d : %p ft? %d ]", cases[c]->_value, cases[c]->_builder, cases[c]->_fallsThrough);
    TraceIL("\n");
    }

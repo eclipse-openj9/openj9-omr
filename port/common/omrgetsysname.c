@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2021 IBM Corp. and others
+ * Copyright (c) 2021, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,21 +27,24 @@
  */
 #include <string.h>
 #include "omrport.h"
-#include "omrgetasid.h"
+#include "omrgetsysname.h"
 
-#define ASID_STRING "%asid"
-#define ASID_STRING_LENGTH sizeof(ASID_STRING)
+#define SYSNAME_STRING "%sysname"
+#define SYSNAME_STRING_LENGTH sizeof(SYSNAME_STRING)
 
-/* Generic version of omrget_asid() */
+/* Generic version of omrget_sysname() */
 uintptr_t
-omrget_asid(struct OMRPortLibrary *portLibrary, char *asid, uintptr_t length)
+omrget_sysname(struct OMRPortLibrary *portLibrary, char *sysname, uintptr_t length)
 {
-	/* Check that caller provided enough space for the string */
-	if ((NULL == asid) || (length < ASID_STRING_LENGTH)) {
-		return ASID_STRING_LENGTH;
-	}
-	/* Default behaviour for platforms other than zOS, simply return the ASID string token */
-	strcpy(asid, ASID_STRING);
+	uintptr_t result = 0;
 
-	return 0;
+	/* Check that caller provided enough space for the string. */
+	if ((NULL == sysname) || (length < SYSNAME_STRING_LENGTH)) {
+		result = SYSNAME_STRING_LENGTH;
+	} else {
+		/* Default behaviour for platforms other than zOS, simply return the sysname string token. */
+		strcpy(sysname, SYSNAME_STRING);
+	}
+
+	return result;
 }

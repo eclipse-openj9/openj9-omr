@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2021 IBM Corp. and others
+ * Copyright (c) 2021, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,28 +20,34 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-/**
- * @file
- * @ingroup Port
- * @brief shared library
- */
-#include <string.h>
-#include "omrport.h"
-#include "omrgetasid.h"
+#include <stdlib.h>
+#include <sys/utsname.h>
+#include "omrgetsysname.h"
 
-#define ASID_STRING "%asid"
-#define ASID_STRING_LENGTH sizeof(ASID_STRING)
-
-/* Generic version of omrget_asid() */
+/* Get the zOS SYSNAME sysparm. */
 uintptr_t
-omrget_asid(struct OMRPortLibrary *portLibrary, char *asid, uintptr_t length)
+omrget_sysname(struct OMRPortLibrary *portLibrary, char *sysname, uintptr_t length)
 {
-	/* Check that caller provided enough space for the string */
-	if ((NULL == asid) || (length < ASID_STRING_LENGTH)) {
-		return ASID_STRING_LENGTH;
-	}
-	/* Default behaviour for platforms other than zOS, simply return the ASID string token */
-	strcpy(asid, ASID_STRING);
+	uintptr_t result = 0;
+	struct utsname osnamedetails;
+	int rc = __osname(&osnamedetails);
 
-	return 0;
+	if (rc < 0) {
+		/* Return empty string on failure. */
+		if ((NULL == sysname) || (length < 1)) {
+			result = 1;
+		} else {
+			*sysname = '\0';
+		}
+	} else {
+		/* The SYSNAME sysparm is found in the nodename field. */
+		int len = strlen(osnamedetails.nodename) + 1;
+		if ((NULL == sysname) || (len > length)) {
+			result = len;
+		} else {
+			strcpy(sysname, osnamedetails.nodename);
+		}
+	}
+
+	return result;
 }

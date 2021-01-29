@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2021 IBM Corp. and others
+ * Copyright (c) 2021, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,28 +20,22 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#ifndef omrgetsysname_h
+#define omrgetsysname_h
+
+#include "omrcomp.h"
+
 /**
- * @file
- * @ingroup Port
- * @brief shared library
+ * Get the zOS SYSNAME sysparm.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in/out] sysname Pointer to string to populate with the SYSNAME.
+ * 		On z/OS an empty string is returned if the SYSNAME is not available.
+ * 		Other platforms return the "%sysname" token.
+ * @param[in] length The length of the data area addressed by sysname.
+ *
+ * @return 0 on success, size of required buffer when the buffer is not big enough
  */
-#include <string.h>
-#include "omrport.h"
-#include "omrgetasid.h"
+uintptr_t omrget_sysname(struct OMRPortLibrary *portLibrary, char *sysname, uintptr_t length);
 
-#define ASID_STRING "%asid"
-#define ASID_STRING_LENGTH sizeof(ASID_STRING)
-
-/* Generic version of omrget_asid() */
-uintptr_t
-omrget_asid(struct OMRPortLibrary *portLibrary, char *asid, uintptr_t length)
-{
-	/* Check that caller provided enough space for the string */
-	if ((NULL == asid) || (length < ASID_STRING_LENGTH)) {
-		return ASID_STRING_LENGTH;
-	}
-	/* Default behaviour for platforms other than zOS, simply return the ASID string token */
-	strcpy(asid, ASID_STRING);
-
-	return 0;
-}
+#endif /* omrgetsysname_h */

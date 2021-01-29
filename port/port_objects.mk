@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2019 IBM Corp. and others
+# Copyright (c) 2015, 2021 IBM Corp. and others
 # 
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -68,9 +68,10 @@ else
   OBJECTS += protect_helpers
 endif
 
-OBJECTS += omrgetjobname
-OBJECTS += omrgetjobid
 OBJECTS += omrgetasid
+OBJECTS += omrgetjobid
+OBJECTS += omrgetjobname
+OBJECTS += omrgetsysname
 
 ifeq ($(OMR_HOST_ARCH),$(filter $(OMR_HOST_ARCH),s390 s390x))
   # z/OS and zLinux

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -35,6 +35,7 @@
 #include "codegen/RegisterDependencyStruct.hpp"
 #include "env/IO.hpp"
 #include "il/Block.hpp"
+#include "runtime/CodeCacheManager.hpp"
 
 static const char *opCodeToNameMap[] =
    {
@@ -411,4 +412,22 @@ TR_Debug::getRVRegisterName(uint32_t regNum, bool is64bit)
 void TR_Debug::printRVOOLSequences(TR::FILE *pOutFile)
    {
    TR_UNIMPLEMENTED();
+   }
+
+// This function assumes that if a trampoline is required then it must be to a helper function.
+// Use this API only for inquiring about branches to helpers.
+bool
+TR_Debug::isBranchToTrampoline(TR::SymbolReference *symRef, uint8_t *cursor, int32_t &distance)
+   {
+   uintptr_t target = (uintptr_t)symRef->getMethodAddress();
+   bool requiresTrampoline = false;
+
+   if (_cg->directCallRequiresTrampoline(target, (intptr_t)cursor))
+      {
+      target = TR::CodeCacheManager::instance()->findHelperTrampoline(symRef->getReferenceNumber(), (void *)cursor);
+      requiresTrampoline = true;
+      }
+
+   distance = (int32_t)(target - (intptr_t)cursor);
+   return requiresTrampoline;
    }

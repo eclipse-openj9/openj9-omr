@@ -167,6 +167,10 @@ generateLoad32BitConstant(TR::CodeGenerator* cg, TR::Node* node, int32_t value, 
             return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_GlobalValue, dependencies, cursor, literalPoolRegister);
          if (sym->isRecompilationCounter())
             return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_BodyInfoAddress, dependencies, cursor, literalPoolRegister);
+         if (cg->needRelocationsForPersistentProfileInfoData() && sym->isBlockFrequency())
+            return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_BlockFrequency, dependencies, cursor, literalPoolRegister);
+         if (cg->needRelocationsForPersistentProfileInfoData() && sym->isRecompQueuedFlag())
+            return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_RecompQueuedFlag, dependencies, cursor, literalPoolRegister);
          }
       }
 
@@ -212,6 +216,14 @@ genLoadLongConstant(TR::CodeGenerator * cg, TR::Node * node, int64_t value, TR::
       {
       TR::Instruction * temp = cursor;
       cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_DataAddress, cond, cursor, base);
+      }
+   else if (cg->needRelocationsForPersistentProfileInfoData() && sym && sym->isBlockFrequency())
+      {
+      cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_BlockFrequency, cond, cursor, base);
+      }
+   else if (cg->needRelocationsForPersistentProfileInfoData() && sym && sym->isRecompQueuedFlag())
+      {
+      cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_RecompQueuedFlag, cond, cursor, base);
       }
    else if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL && !comp->compileRelocatableCode())
       {
@@ -6234,6 +6246,14 @@ OMR::Z::TreeEvaluator::checkAndSetMemRefDataSnippetRelocationType(TR::Node * nod
       {
       reloType = TR_DataAddress;
       }
+   else if (cg->needRelocationsForPersistentProfileInfoData() && isStatic && node->getSymbol()->isBlockFrequency())
+      {
+      reloType = TR_BlockFrequency;
+      }
+   else if (cg->needRelocationsForPersistentProfileInfoData() && isStatic && node->getSymbol()->isRecompQueuedFlag())
+      {
+      reloType = TR_RecompQueuedFlag;
+      }
 
    if (reloType != 0)
       {
@@ -9424,6 +9444,18 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
                cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister,
                                                      (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(),
                                                      TR_MethodObject, NULL, NULL, NULL);
+               }
+            else if (cg->needRelocationsForPersistentProfileInfoData() && sym && sym->isBlockFrequency())
+               {
+               cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister,
+                                                        (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(),
+                                                        TR_BlockFrequency, NULL, NULL, NULL);
+               }
+            else if (cg->needRelocationsForPersistentProfileInfoData() && sym && sym->isRecompQueuedFlag())
+               {
+               cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister,
+                                                        (uintptr_t) node->getSymbol()->getStaticSymbol()->getStaticAddress(),
+                                                        TR_RecompQueuedFlag, NULL, NULL, NULL);
                }
             else
                {

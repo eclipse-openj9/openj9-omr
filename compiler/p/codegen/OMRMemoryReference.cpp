@@ -1621,6 +1621,18 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          loadAddressConstant(cg, true, nodeForSymbol, (intptr_t)ref, reg, NULL, false, TR_ClassAddress);
          return;
          }
+      else if (symbol->isBlockFrequency() && cg->needRelocationsForPersistentProfileInfoData())
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_BlockFrequency);
+         return;
+         }
+      else if (symbol->isRecompQueuedFlag() && cg->needRelocationsForPersistentProfileInfoData())
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_RecompQueuedFlag);
+         return;
+         }
       else
          {
          TR_ASSERT_FATAL(!comp->getOption(TR_UseSymbolValidationManager) || ref->isUnresolved(), "SVM relocation unhandled");
@@ -1753,6 +1765,19 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_DataAddress);
          return;
          }
+      else if (cg->needRelocationsForPersistentProfileInfoData() && symbol->isBlockFrequency())
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_BlockFrequency);
+         return;
+         }
+      else if (cg->needRelocationsForPersistentProfileInfoData() && symbol->isRecompQueuedFlag())
+         {
+         TR::Register *reg = _baseRegister = cg->allocateRegister();
+         loadAddressConstant(cg, true, nodeForSymbol, 1, reg, NULL, false, TR_RecompQueuedFlag);
+         return;
+         }
+
       else if (refIsUnresolved || useUnresSnippetToAvoidRelo)
          {
          self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false));

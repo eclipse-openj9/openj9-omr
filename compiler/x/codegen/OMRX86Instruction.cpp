@@ -1146,6 +1146,14 @@ TR::X86RegImmSymInstruction::autoSetReloKind()
       {
       setReloKind(TR_DebugCounter);
       }
+   else if (symbol->isBlockFrequency())
+      {
+      setReloKind(TR_BlockFrequency);
+      }
+   else if (symbol->isRecompQueuedFlag())
+      {
+      setReloKind(TR_RecompQueuedFlag);
+      }
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3915,6 +3923,10 @@ TR::AMD64RegImm64SymInstruction::autoSetReloKind()
       setReloKind(TR_ConstantPool);
    else if (symbol->isStatic() && !getSymbolReference()->isUnresolved() && !symbol->isClassObject() && !symbol->isNotDataAddress())
       setReloKind(TR_DataAddress);
+   else if (symbol->isBlockFrequency())
+      setReloKind(TR_BlockFrequency);
+   else if (symbol->isRecompQueuedFlag())
+      setReloKind(TR_RecompQueuedFlag);
    else
       setReloKind(-1);
    }

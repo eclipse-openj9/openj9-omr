@@ -2509,7 +2509,7 @@ MM_Scavenger::addToRememberedSetFragment(MM_EnvironmentStandard *env, omrobjectp
 		/* There wasn't enough room in the current fragment - allocate a new one */
 		if(allocateMemoryForSublistFragment(env->getOmrVMThread(), (J9VMGC_SublistFragment*)&env->_scavengerRememberedSet)) {
 			/* Failed to allocate a fragment - set the remembered set overflow state and exit */
-			if(!isRememberedSetInOverflowState()) {
+			if (!_isRememberedSetInOverflowAtTheBeginning) {
 				env->_scavengerStats._causedRememberedSetOverflow = 1;
 			}
 			setRememberedSetOverflowState();

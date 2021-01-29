@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2016, 2017 IBM Corp. and others
+Copyright (c) 2016, 2021 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -116,33 +116,62 @@ pattern-matching on the DAGs.
 
 
 
-### Representation of `(a+b)*(a-b)`  
+### Example IL Representation
 
-The following two figures show matching representations of the same expression, 
-after some common sub-expression elimination has ocurred. 
+The following two figures show matching representations of the same expression 
+`a = (a+b) * (a-b)` after some common sub-expression elimination has occurred. 
 
-    treetop----> istore a
-                    |
-                  imul--- isub---------+
-                    |                  |
-                  iadd                 |
-                    |                  |
-                    +-----> iload b <--+
-                    |                  |
-                    +-----> iload a <--+
+```
++---------+
+| treetop |
++----+----+
+     |
+     |      +----------+
+     +----->+ istore a | n1
+            +----+-----+
+                 |
+                 |     +------+
+                 +---->+ imul | n2
+                       +---+--+
+                           |
+                           |    +------+
+                           +--->+ iadd | n3
+                           |    +---+--+
+                           |        |
+                           |        |                   +---------+
+                           |        +--------+--------->+ iload a | n4
+                           |        |        ^          +---------+
+                           |        |        |
+                           |        |        |          +---------+
+                           |        +--------------+--->+ iload b | n5
+                           |                 |     ^    +---------+
+                           |                 |     |
+                           |    +------+     |     |
+                           +--->+ isub | n6  |     |
+                                +---+--+     |     |
+                                    |        |     |
+                                    |        |     |
+                                    +--------+     |
+                                    |              |
+                                    |              |
+                                    |              |
+                                    +--------------+
 
-This can be re-represented as textual representation. Note the node identifiers 
-in the leftmost column, which show how `n4` and `n5` have been reused. 
+```
 
+This can be represented textually as well. Note the node identifiers 
+in the leftmost column which show how `n4` and `n5` have been reused. 
+
+```
     n1  istore <a>
     n2    imul
     n3      iadd
-    n4        iload <b>
-    n5        iload <c>
+    n4        iload <a>
+    n5        iload <b>
     n6      isub
-    n4        ==>iload <b>
-    n5        ==>iload <c>
-
+    n4        ==>iload <a>
+    n5        ==>iload <b>
+```
 
 ## Basic Blocks
 

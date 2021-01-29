@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -979,6 +979,12 @@ infoForControl(struct OMRPortLibrary *portLibrary, struct OMRWin32SignalInfo *in
 		case 2:
 			*name = "RBP";
 			*value = &info->ContextRecord->Rbp;
+			return OMRPORT_SIG_VALUE_ADDRESS;
+
+		case OMRPORT_SIG_CONTROL_X86_EFLAGS:
+		case 3:
+			*name = "EFLAGS";
+			*value = &info->ContextRecord->EFlags;
 			return OMRPORT_SIG_VALUE_ADDRESS;
 		}
 	}

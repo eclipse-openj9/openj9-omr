@@ -925,7 +925,7 @@ TR::IlValue *
 OMR::IlBuilder::ConstInt64(int64_t value)
    {
    TR::IlValue *returnValue = newValue(Int64, TR::Node::lconst(value));
-   TraceIL("IlBuilder[ %p ]::%d is ConstInt64 %d\n", this, returnValue->getID(), value);
+   TraceIL("IlBuilder[ %p ]::%d is ConstInt64 %lld\n", this, returnValue->getID(), value);
    return returnValue;
    }
 

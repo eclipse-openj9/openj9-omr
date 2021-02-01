@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -272,7 +272,7 @@ protected:
       // find and setup the next bbStart context
       //
       TodoIndex * ti;
-      while (ti = _todoQueue.pop())
+      while (NULL != (ti = _todoQueue.pop()))
          {
          if (!isGenerated(ti->_index))
             return setupBBStartContext(ti->_index);

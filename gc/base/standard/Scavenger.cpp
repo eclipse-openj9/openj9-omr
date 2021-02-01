@@ -1700,11 +1700,12 @@ MM_Scavenger::depthCopyHotFields(MM_EnvironmentStandard *env, MM_ForwardedHeader
 
 MMINLINE void
 MM_Scavenger::copyHotField(MM_EnvironmentStandard *env, omrobjectptr_t destinationObjectPtr, uint8_t offset) {
-	GC_SlotObject hotFieldObject(_omrVM, (fomrobject_t*)(destinationObjectPtr + offset));
+	bool const compressed = _extensions->compressObjectReferences();
+	GC_SlotObject hotFieldObject(_omrVM, GC_SlotObject::addToSlotAddress((fomrobject_t*)((uintptr_t)destinationObjectPtr), offset, compressed));
 	omrobjectptr_t objectPtr = hotFieldObject.readReferenceFromSlot();
 	if (isObjectInEvacuateMemory(objectPtr)) {
 		/* Hot field needs to be copy and forwarded.  Check if the work has already been done */
-		MM_ForwardedHeader forwardHeaderHotField(objectPtr, _extensions->compressObjectReferences());
+		MM_ForwardedHeader forwardHeaderHotField(objectPtr, compressed);
 		if (!forwardHeaderHotField.isForwardedPointer()) {
 			env->_hotFieldCopyDepthCount += 1;
 			copyObject(env, &forwardHeaderHotField);

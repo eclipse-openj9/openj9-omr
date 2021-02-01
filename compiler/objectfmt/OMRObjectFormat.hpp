@@ -124,7 +124,7 @@ public:
     * @param[in] data : a populated \c TR::FunctionCallData structure with valid parameters
     *          for an encoded function call.
     */
-   virtual void printEncodedFunctionCall(TR::FILE *file, TR::FunctionCallData &data) = 0;
+   virtual uint8_t* printEncodedFunctionCall(TR::FILE *file, TR::FunctionCallData &data) = 0;
 
    };
 

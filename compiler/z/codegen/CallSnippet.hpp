@@ -82,6 +82,19 @@ class S390CallSnippet : public TR::Snippet
    static uint8_t *S390flushArgumentsToStack(uint8_t *buffer, TR::Node *callNode, int32_t argSize, TR::CodeGenerator *cg);
    static int32_t instructionCountForArguments(TR::Node *callNode, TR::CodeGenerator *cg);
 
+   /**
+    * @brief For a given call from snippet (Usually helper calls) calculate the
+    * offset needed for RIL type instructions and if the call is not reachable,
+    * create trampoline.
+    *
+    * @param targetAddr : address of the target function for call
+    * @param currentInst : bufferAddress where call instruction will be encoded
+    *
+    * @return return number of halfwords required to add to the currentInst to
+    *         get the targetAddress
+    */
+   static int32_t adjustCallOffsetWithTrampoline(uintptr_t targetAddr, uint8_t *currentInst, TR::SymbolReference *callSymRef, TR::Snippet *snippet);
+
    };
 
 }

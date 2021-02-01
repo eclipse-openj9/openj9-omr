@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -47,6 +47,7 @@
 #include "il/SymbolReference.hpp"
 #include "infra/Assert.hpp"
 #include "ras/Debug.hpp"
+#include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
 #include "z/codegen/S390Instruction.hpp"
 
@@ -195,6 +196,32 @@ TR::S390CallSnippet::S390flushArgumentsToStack(uint8_t * buffer, TR::Node * call
       }
 
    return buffer;
+   }
+
+int32_t
+TR::S390CallSnippet::adjustCallOffsetWithTrampoline(uintptr_t targetAddr, uint8_t * currentInst, TR::SymbolReference *callSymRef, TR::Snippet *snippet)
+   {
+   uintptr_t currentInstPtr = reinterpret_cast<uintptr_t>(currentInst);
+   int32_t offsetHalfWords = static_cast<int32_t>((targetAddr - currentInstPtr) / 2 );
+   TR::CodeGenerator *cg = snippet->cg();
+   if (cg->directCallRequiresTrampoline(targetAddr, currentInstPtr))
+      {
+      if (callSymRef->getReferenceNumber() < TR_S390numRuntimeHelpers)
+         targetAddr = TR::CodeCacheManager::instance()->findHelperTrampoline(callSymRef->getReferenceNumber(), reinterpret_cast<void *>(currentInstPtr));
+      else
+         targetAddr = cg->fe()->methodTrampolineLookup(cg->comp(), callSymRef, reinterpret_cast<void *>(currentInstPtr));
+
+      TR_ASSERT_FATAL(cg->comp()->target().cpu.isTargetWithinBranchRelativeRILRange(targetAddr, reinterpret_cast<intptr_t>(currentInst)),
+                        "Local trampoline must be directly reachable, address %p is out of addressible range using RIL instructions", targetAddr);
+
+      offsetHalfWords = static_cast<int32_t>((targetAddr - currentInstPtr) / 2);
+
+      snippet->setUsedTrampoline(true);
+      }
+
+   snippet->setSnippetDestAddr(targetAddr);
+
+   return offsetHalfWords;
    }
 
 /**

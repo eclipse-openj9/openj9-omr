@@ -46,6 +46,7 @@ public:
 	uintptr_t _scanTargetInBytes;	/**< The number of bytes a given concurrent task was expected to scan before terminating */
 	uintptr_t _bytesScanned;	/**< The number of bytes a given concurrent task did scan before it terminated (can be lower than _scanTargetInBytes if the termination was asynchronously requested) */
 	bool _terminationWasRequested;	/**< todo: remove after downstream projects start using _terminationRequestType */
+	uintptr_t _concurrentCycleType;	/**< The "type" of the corresponding cycle */
 	enum TerminationRequestType {
 		terminationRequest_None,
 		terminationRequest_ByGC,
@@ -65,7 +66,7 @@ public:
 		return terminationRequest_External == _terminationRequestType;
 	}
 	
-	void clear() {
+	virtual void clear() {
 		_cycleID = 0;
 		_scanTargetInBytes = 0;
 		_bytesScanned = 0;
@@ -73,12 +74,13 @@ public:
 		_terminationRequestType = terminationRequest_None;
 	}
 	 
-	MM_ConcurrentPhaseStatsBase()
+	MM_ConcurrentPhaseStatsBase(uintptr_t concurrentCycleType = OMR_GC_CYCLE_TYPE_DEFAULT)
 		: MM_Base()
 		, _cycleID(0)
 		, _scanTargetInBytes(0)
 		, _bytesScanned(0)
 		, _terminationWasRequested(false)
+		, _concurrentCycleType(concurrentCycleType)
 		, _terminationRequestType(terminationRequest_None)
 	{}
 }; 

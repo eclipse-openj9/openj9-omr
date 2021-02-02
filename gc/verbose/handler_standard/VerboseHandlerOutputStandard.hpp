@@ -52,6 +52,13 @@ protected:
 	 */	
 	virtual const char *getCycleType(uintptr_t type);
 
+	/**
+	 * Answer a string representation of a given cycle type.
+	 * @param[IN] cycle type
+	 * @return string representing the human readable "type" of the cycle.
+	 */
+	virtual const char *getConcurrentTypeString(uintptr_t type);
+
 	void handleGCOPStanza(MM_EnvironmentBase* env, const char *type, uintptr_t contextID, uint64_t duration, bool deltaTimeSuccess);
 
 	virtual bool hasOutputMemoryInfoInnerStanza();
@@ -70,6 +77,12 @@ protected:
 	virtual void handleScavengePercolateInternal(MM_EnvironmentBase* env, void* eventData);
 #endif /*defined(OMR_GC_MODRON_SCAVENGER) */
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+	/**
+	 * Answer a string representation of a given card cleaning reason.
+	 * @param[IN] card cleaning reason
+	 * @return string representing the human readable "reason" of card cleaning.
+	 */ 
+	const char *getCardCleaningReasonString(uintptr_t type);
 	virtual void handleConcurrentRememberedSetScanEndInternal(MM_EnvironmentBase *env, void* eventData);
 	virtual void handleConcurrentCardCleaningEndInternal(MM_EnvironmentBase *env, void* eventData);
 	virtual void handleConcurrentTracingEndInternal(MM_EnvironmentBase *env, void* eventData);
@@ -136,12 +149,18 @@ public:
 	 */
 	void handleScavengePercolate(J9HookInterface** hook, uintptr_t eventNum, void* eventData);
 	
-	virtual const char *getConcurrentTypeString() { return "scavenge"; }
-	
 	virtual void handleConcurrentEndInternal(J9HookInterface** hook, uintptr_t eventNum, void* eventData);
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+	/**
+	 * Write verbose stanza for a global mark end event.
+	 * @param hook Hook interface used by the JVM.
+	 * @param eventNum The hook event number.
+	 * @param eventData hook specific event data.
+	 */
+	void handleConcurrentMarkEnd(J9HookInterface** hook, uintptr_t eventNum, void* eventData);
+
 	/**
 	 * Write verbose stanza for concurrent remembered set scan event.
 	 * @param hook Hook interface used by the JVM.

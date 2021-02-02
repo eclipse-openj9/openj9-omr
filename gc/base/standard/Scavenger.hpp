@@ -942,7 +942,7 @@ public:
 		, _currentPhaseConcurrent(false)
 		, _concurrentScavengerSwitchCount(0)
 		, _shouldYield(false)
-		, _concurrentPhaseStats()
+		, _concurrentPhaseStats(OMR_GC_CYCLE_TYPE_SCAVENGE)
 #endif /* #if defined(OMR_GC_CONCURRENT_SCAVENGER) */
 
 		, _omrVM(env->getOmrVM())

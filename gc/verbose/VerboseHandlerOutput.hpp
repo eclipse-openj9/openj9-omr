@@ -104,8 +104,14 @@ protected:
 	 * @param[IN] cycle type
 	 * @return string representing the human readable "type" of the cycle.
 	 */	
-	virtual const char *getCycleType(uintptr_t type);
+	virtual const char *getCycleType(uintptr_t type) { return "unknown"; };
 
+	/**
+	 * Answer a string representation of a given cycle type.
+	 * @param[IN] cycle type
+	 * @return string representing the human readable "type" of the cycle.
+	 */
+	virtual const char *getConcurrentTypeString(uintptr_t type) { return "unknown"; };
 
 	/**
      * Output a stanza on data tracking for the initialized phase of verbose GC into a verbose buffer.
@@ -316,11 +322,12 @@ public:
 	 * @param type Human readable name for the type of the tag.
 	 * @param contextId unique identifier of the associated event this is associated with (parent/sibling relationship).
 	 * @param wallTimeMs wall clock time to be used as the timestamp for the tag.
+	 * @param reasonForTermination termination reason.
 	 * @return number of bytes consumed in the buffer.
 	 *
 	 * @note should be moved to protected once all standard usage is converted.
 	 */
-	uintptr_t getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t id, const char *type, uintptr_t contextId, uint64_t wallTimeMs);
+	uintptr_t getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t id, const char *type, uintptr_t contextId, uint64_t wallTimeMs, const char *reasonForTermination = NULL);
 
 	/**
 	 * Build the standard top level tag template.
@@ -329,13 +336,13 @@ public:
 	 * @param id unique id of the tag being built.
 	 * @param type Human readable name for the type of the tag.
 	 * @param contextId unique identifier of the associated event this is associated with (parent/sibling relationship).
+	 * @param timeus the time in microseconds taken for this piece of work.
 	 * @param wallTimeMs wall clock time to be used as the timestamp for the tag.
-	 * @param reasonForTermination termination reason.
 	 * @return number of bytes consumed in the buffer.
 	 *
 	 * @note should be moved to protected once all standard usage is converted.
 	 */
-	uintptr_t getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t id, const char *type, uintptr_t contextId, uint64_t wallTimeMs, const char *reasonForTermination);
+	uintptr_t getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t id, const char *type, uintptr_t contextId, uint64_t timeus, uint64_t wallTimeMs);
 
 	/**
 	 * Build the standard top level tag template.
@@ -351,21 +358,6 @@ public:
 	 * @note should be moved to protected once all standard usage is converted.
 	 */
 	uintptr_t getTagTemplateWithOldType(char *buf, uintptr_t bufsize, uintptr_t id, const char *oldType, const char *newType, uintptr_t contextId, uint64_t wallTimeMs);
-
-	/**
-	 * Build the standard top level tag template.
-	 * @param buf character buffer in which to create to tag template.
-	 * @param bufsize maximum size allowed in the character buffer.
-	 * @param id unique id of the tag being built.
-	 * @param type Human readable name for the type of the tag.
-	 * @param contextId unique identifier of the associated event this is associated with (parent/sibling relationship).
-	 * @param timeus the time in microseconds taken for this piece of work
-	 * @param wallTimeMs wall clock time to be used as the timestamp for the tag.
-	 * @return number of bytes consumed in the buffer.
-	 *
-	 * @note should be moved to protected once all standard usage is converted.
-	 */
-	uintptr_t getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t id, const char *type, uintptr_t contextId, uint64_t timeus, uint64_t wallTimeMs);
 
 	/**
 	 * Build the standard top level tag template.
@@ -510,7 +502,6 @@ public:
 	
 	virtual	void handleConcurrentStartInternal(J9HookInterface** hook, UDATA eventNum, void* eventData) {}
 	virtual void handleConcurrentEndInternal(J9HookInterface** hook, UDATA eventNum, void* eventData) {};
-	virtual const char *getConcurrentTypeString() { return NULL; }
 	
 	virtual void handleConcurrentGCOpStart(J9HookInterface** hook, uintptr_t eventNum, void* eventData) {}
 

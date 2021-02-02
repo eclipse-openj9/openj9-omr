@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -73,7 +73,7 @@ endif()
 
 set_property(TARGET omrgctest PROPERTY FOLDER fvtest)
 
-add_test(NAME gctest
-	COMMAND omrgctest "--gtest_filter=gcFunctionalTest*" "--gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrgctest-results.xml"
+omr_add_test(NAME gctest
+	COMMAND $<TARGET_FILE:omrgctest> "--gtest_filter=gcFunctionalTest*" "--gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrgctest-results.xml"
 	WORKING_DIRECTORY "${omr_SOURCE_DIR}"
 )

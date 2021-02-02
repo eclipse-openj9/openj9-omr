@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2018, 2020 IBM Corp. and others
+# Copyright (c) 2018, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,6 +30,10 @@ include(ExternalProject)
 
 # Make sure we have performed platform detection
 include(OmrPlatform)
+
+if(OMR_DDR AND CMAKE_CROSSCOMPILING)
+	message(FATAL_ERROR "DDR is not supported when cross-compiling. Use -DOMR_DDR=OFF to disable DDR.")
+endif()
 
 set(OMR_MODULES_DIR ${CMAKE_CURRENT_LIST_DIR})
 set(DDR_INFO_DIR "${CMAKE_BINARY_DIR}/ddr_info")

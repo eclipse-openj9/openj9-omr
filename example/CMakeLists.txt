@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,6 +20,7 @@
 ###############################################################################
 
 include(OmrAssert)
+include(OmrTest)
 
 omr_assert(TEST OMR_EXAMPLE)
 
@@ -50,7 +51,7 @@ if(OMR_GC)
 		${OMR_PORT_LIB}
 	)
 
-	add_test(NAME gcexample COMMAND gcexample)
+	omr_add_test(NAME gcexample COMMAND $<TARGET_FILE:gcexample>)
 endif(OMR_GC)
 
 add_subdirectory(glue)

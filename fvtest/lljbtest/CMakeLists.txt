@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2020, 2020 IBM Corp. and others
+# Copyright (c) 2020, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -59,9 +59,9 @@ target_link_libraries(lljb_run
 
 function(add_lljb_test test)
 	generate_module_from_cxx(${test})
-	add_test(
+	omr_add_test(
 		NAME lljb_${test}_test
-		COMMAND lljb_run ${test}.ll
+		COMMAND $<TARGET_FILE:lljb>_run ${test}.ll
 	)
 endfunction(add_lljb_test)
 

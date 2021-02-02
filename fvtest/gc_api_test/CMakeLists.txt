@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2018, 2020 IBM Corp. and others
+# Copyright (c) 2018, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -34,8 +34,8 @@ function(omr_add_gc_test testname)
 			omrgc
 			omrGtestGlue
 	)
-	add_test(
+	omr_add_test(
 		NAME    "${testname}"
-		COMMAND "${testname}" "--gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/${testname}-results.xml"
+		COMMAND "$<TARGET_FILE:${testname}>" "--gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/${testname}-results.xml"
 	)
 endfunction(omr_add_gc_test)

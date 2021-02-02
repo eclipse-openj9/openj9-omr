@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -64,4 +64,4 @@ endif()
 
 set_property(TARGET omralgotest PROPERTY FOLDER fvtest)
 
-add_test(NAME algotest COMMAND omralgotest --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omralgotest-results.xml -avltest:${CMAKE_CURRENT_SOURCE_DIR}/avltest.lst)
+omr_add_test(NAME algotest COMMAND $<TARGET_FILE:omralgotest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omralgotest-results.xml -avltest:${CMAKE_CURRENT_SOURCE_DIR}/avltest.lst)

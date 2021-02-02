@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2021 IBM Corp. and others
+# Copyright (c) 2021, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,30 +19,25 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
-omr_add_executable(omrthreadextendedtest
-	processTimeTest.cpp
-	threadCpuTimeTest.cpp
-	threadExtendedTestHelpers.cpp
-	threadExtendedTestMain.cpp
-	timeBaseTest.cpp
-)
+if(OMR_TEST_)
+	return()
+endif()
+set(OMR_TEST_ 1)
 
-
-target_link_libraries(omrthreadextendedtest
-	omrGtestGlue
-	omrtestutil
-	omrutil
-	omrcore
-	omrvmstartup
-	${OMR_PORT_LIB}
-)
-
-if(OMR_HOST_OS STREQUAL "zos")
-	target_link_libraries(omrthreadextendedtest j9a2e)
+if(NOT OMR_TEST_LAUNCHER)
+	if(OMR_EXE_LAUNCHER)
+		set(OMR_TEST_LAUNCHER "${OMR_EXE_LAUNCHER}")
+	endif()
 endif()
 
-set_property(TARGET omrthreadextendedtest PROPERTY FOLDER fvtest)
+function(omr_add_test)
+	cmake_parse_arguments(opt "" "NAME;COMMAND" "" ${ARGN})
+	if(NOT opt_COMMAND)
+		message(FATAL_ERROR "omr_add_test used without specifying COMMAND")
+	endif()
+	if(NOT opt_NAME)
+		message(FATAL_ERROR "omr_add_test used without specifying NAME")
+	endif()
 
-if (NOT OMR_HOST_OS STREQUAL "zos")
-	omr_add_test(NAME threadextendedtest COMMAND $<TARGET_FILE:omrthreadextendedtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadextendedtest-results.xml)
-endif()
+	add_test(NAME "${opt_NAME}" COMMAND ${OMR_TEST_LAUNCHER} ${opt_COMMAND} ${opt_UNPARSED_ARGUMENTS})
+endfunction()

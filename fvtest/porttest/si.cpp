@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,6 +24,10 @@
  * $Revision: 1.64 $
  * $Date: 2012-12-05 05:27:54 $
  */
+#if defined(J9ZOS390)
+#define _UNIX03_SOURCE
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -42,8 +46,7 @@
 #include <sys/resource.h> /* For RLIM_INFINITY */
 #endif /* !defined(OMR_OS_WINDOWS) */
 
-#if defined(J9ZOS390)
-#define _UNIX03_SOURCE
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 #include "atoe.h"
 #endif
 
@@ -1769,11 +1772,11 @@ TEST(PortSysinfoTest, sysinfo_test_get_tmp3)
 	const char *utf8 = "/tmp/test/";
 	const char *utf8_file = "/tmp/test/test.txt";
 	char *origEnvRef = getenv("TMPDIR");
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	char *envVarInEbcdic = a2e_string("TMPDIR");
 	char *origEnvInEbcdic = NULL;
 	char *utf8InEbcdic = a2e_string(utf8);
-#endif /* defined(J9ZOS390) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
 	reportTestEntry(OMRPORTLIB, testName);
 
@@ -1781,17 +1784,17 @@ TEST(PortSysinfoTest, sysinfo_test_get_tmp3)
 		origEnv = (char *)omrmem_allocate_memory(strlen(origEnvRef) + 1, OMRMEM_CATEGORY_PORT_LIBRARY);
 		if (NULL != origEnv) {
 			strcpy(origEnv, origEnvRef);
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 			origEnvInEbcdic = a2e_string(origEnv);
-#endif /* defined(J9ZOS390) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 		}
 	}
 
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	rc = setenv(envVarInEbcdic, utf8InEbcdic, 1);
-#else /* defined(J9ZOS390) */
+#else /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
 	rc = setenv("TMPDIR", (const char *)utf8, 1);
-#endif /* defined(J9ZOS390) */
+#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
 
 #endif /* defined(OMR_OS_WINDOWS) */
 
@@ -1845,21 +1848,21 @@ TEST(PortSysinfoTest, sysinfo_test_get_tmp3)
 	if (NULL != origEnv) {
 #if defined(OMR_OS_WINDOWS)
 		_wputenv_s(L"TMP", origEnv);
-#elif defined(J9ZOS390) /* defined(OMR_OS_WINDOWS) */
+#elif defined(J9ZOS390) && !defined(OMR_EBCDIC)  /* defined(OMR_OS_WINDOWS) */
 		setenv(envVarInEbcdic, origEnvInEbcdic, 1);
-#else /* defined(J9ZOS390) */
+#else /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 		setenv("TMPDIR", origEnv, 1);
 #endif /* defined(OMR_OS_WINDOWS) */
 		omrmem_free_memory(origEnv);
 	} else {
 #if defined(OMR_OS_WINDOWS)
 		_wputenv_s(L"TMP", L"");
-#elif !defined(J9ZOS390) /* defined(OMR_OS_WINDOWS) */
+#elif !defined(J9ZOS390) && !defined(OMR_EBCDIC) /* defined(OMR_OS_WINDOWS) */
 		unsetenv("TMPDIR");
 #endif /* defined(OMR_OS_WINDOWS) */
 	}
 
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	if (NULL != envVarInEbcdic) {
 		free(envVarInEbcdic);
 	}
@@ -1869,7 +1872,7 @@ TEST(PortSysinfoTest, sysinfo_test_get_tmp3)
 	if (NULL != utf8InEbcdic) {
 		free(utf8InEbcdic);
 	}
-#endif /* defined(J9ZOS390) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
 	if (NULL != buffer) {
 		omrmem_free_memory(buffer);
@@ -1891,11 +1894,11 @@ TEST(PortSysinfoTest, sysinfo_test_get_tmp4)
 	char *oldTmpDir = NULL;
 	char *oldTmpDirValue = NULL;
 	const char *modifiedTmpDir = "omrsysinfo_test_get_tmp4_dir";
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	char *envVarInEbcdic = a2e_string(envVar);
 	char *oldTmpDirValueInEbcdic = NULL;
 	char *modifiedTmpDirInEbcdic = a2e_string(modifiedTmpDir);
-#endif /* defined(J9ZOS390) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
 	reportTestEntry(OMRPORTLIB, testName);
 
@@ -1904,17 +1907,17 @@ TEST(PortSysinfoTest, sysinfo_test_get_tmp4)
 		oldTmpDirValue = (char *)omrmem_allocate_memory(strlen(oldTmpDir) + 1, OMRMEM_CATEGORY_PORT_LIBRARY);
 		if (NULL != oldTmpDirValue) {
 			strcpy(oldTmpDirValue, oldTmpDir);
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 			oldTmpDirValueInEbcdic = a2e_string(oldTmpDirValue);
-#endif /* defined(J9ZOS390) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 		}
 	}
 
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	rc = setenv(envVarInEbcdic, modifiedTmpDirInEbcdic, 1);
-#else /* defined(J9ZOS390) */
+#else /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 	rc = setenv(envVar, modifiedTmpDir, 1);
-#endif /* defined(J9ZOS390) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 	if (0 != rc) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "error in updating environment variable TMPDIR, rc: %zd\n", rc);
 	}
@@ -1960,7 +1963,7 @@ TEST(PortSysinfoTest, sysinfo_test_get_tmp4)
 	}
 
 	/* restore TMPDIR */
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	if (NULL != oldTmpDirValue) {
 		setenv(envVarInEbcdic, oldTmpDirValueInEbcdic, 1);
 		omrmem_free_memory(oldTmpDirValue);
@@ -1974,14 +1977,14 @@ TEST(PortSysinfoTest, sysinfo_test_get_tmp4)
 	if (NULL != modifiedTmpDirInEbcdic) {
 		free(modifiedTmpDirInEbcdic);
 	}
-#else /* defined(J9ZOS390) */
+#else /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 	if (NULL != oldTmpDirValue) {
 		setenv(envVar, oldTmpDirValue, 1);
 		omrmem_free_memory(oldTmpDirValue);
 	} else {
 		unsetenv(envVar);
 	}
-#endif /* defined(J9ZOS390) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
 	reportTestExit(OMRPORTLIB, testName);
 }

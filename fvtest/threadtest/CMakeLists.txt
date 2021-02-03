@@ -61,10 +61,6 @@ if(OMR_OS_WINDOWS)
 	)
 endif()
 
-if(OMR_OS_ZOS)
-	target_link_libraries(omrthreadtest j9a2e)
-endif()
-
 set_property(TARGET omrthreadtest PROPERTY FOLDER fvtest)
 
 omr_add_test(NAME threadtest COMMAND $<TARGET_FILE:omrthreadtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadtest-results.xml)

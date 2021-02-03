@@ -36,10 +36,6 @@ if(OMR_OS_WINDOWS)
 	)
 endif()
 
-if(OMR_OS_ZOS)
-	target_link_libraries(omrsigtest j9a2e)
-endif()
-
 target_include_directories(omrsigtest
 	PRIVATE
 		.

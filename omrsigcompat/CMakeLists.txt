@@ -76,9 +76,6 @@ target_compile_options(omrsig
 if(OMR_HOST_OS MATCHES "linux|osx")
 	target_link_libraries(omrsig PRIVATE dl)
 endif()
-if(OMR_OS_ZOS)
-	target_link_libraries(omrsig PRIVATE j9a2e)
-endif()
 
 install(
 	TARGETS omrsig

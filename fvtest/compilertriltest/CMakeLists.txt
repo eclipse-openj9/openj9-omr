@@ -64,10 +64,6 @@ target_link_libraries(comptest
 	tril
 )
 
-if(OMR_OS_ZOS)
-	target_link_libraries(comptest j9a2e)
-endif()
-
 set_property(TARGET comptest PROPERTY FOLDER fvtest)
 
 omr_add_test(

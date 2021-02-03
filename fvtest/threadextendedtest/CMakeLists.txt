@@ -36,10 +36,6 @@ target_link_libraries(omrthreadextendedtest
 	${OMR_PORT_LIB}
 )
 
-if(OMR_OS_ZOS)
-	target_link_libraries(omrthreadextendedtest j9a2e)
-endif()
-
 set_property(TARGET omrthreadextendedtest PROPERTY FOLDER fvtest)
 
 if(NOT OMR_OS_ZOS)

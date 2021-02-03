@@ -32,16 +32,15 @@ list(APPEND OMR_PLATFORM_DEFINITIONS
 	-DZOS
 )
 
-list(APPEND OMR_PLATFORM_INCLUDE_DIRECTORIES
-	${CMAKE_SOURCE_DIR}/util/a2e/headers
-	/usr/lpp/cbclib/include
-	/usr/include
-)
+# CMake ignores any include directories which appear in IMPLICIT_INCLUDE_DIRECTORIES.
+# This causes an issue with a2e since we need to re-specify them after clearing default search path.
+list(REMOVE_ITEM CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES /usr/include)
+list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES /usr/include)
 
 # Create helper targets for specifying ascii/ebcdic options
 add_library(omr_ascii INTERFACE)
 target_compile_definitions(omr_ascii INTERFACE -DIBM_ATOE)
-target_compile_options(omr_ascii INTERFACE "-Wc,convlit(ISO8859-1)")
+target_compile_options(omr_ascii INTERFACE "-Wc,convlit(ISO8859-1),nose,se(${CMAKE_CURRENT_LIST_DIR}/../../../../util/a2e/headers)")
 target_link_libraries(omr_ascii INTERFACE j9a2e)
 
 add_library(omr_ebcdic INTERFACE)

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2015, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,6 +28,8 @@ static void cleanUnknownDiesInCU(Dwarf_CU_Context *cu);
 static int parseDwarfInfo(char *line, Dwarf_Die *lastCreatedDie, Dwarf_Die *currentDie,
 	size_t *lastIndent, unordered_map<Dwarf_Die *, Dwarf_Off> *refToPopulate, Dwarf_Error *error);
 static int parseCompileUnit(char *line, size_t *lastIndent, Dwarf_Error *error);
+static int createDwarfDie(Dwarf_Half tag, Dwarf_Die *lastCreatedDie,
+	Dwarf_Die *currentDie, size_t *lastIndent, size_t spaces, Dwarf_Error *error);
 static int parseDwarfDie(char *line, Dwarf_Die *lastCreatedDie,
 	Dwarf_Die *currentDie, size_t *lastIndent, size_t spaces, Dwarf_Error *error);
 static void parseTagString(char *string, size_t length, Dwarf_Half *tag);
@@ -240,6 +242,9 @@ parseDwarfInfo(char *line, Dwarf_Die *lastCreatedDie, Dwarf_Die *currentDie,
 			if (DW_DLV_OK == ret && DW_TAG_unknown != (*lastCreatedDie)->_tag) {
 				Dwarf_Die_s::refMap[address] = *lastCreatedDie;
 			}
+		} else if (0 == strncmp(endOfAddress + spaces, "Unknown DW_TAG constant", 23)) {
+			/* Create a placeholder DIE for a tag that dwarfdump-classic doesn't understand. */
+			ret = createDwarfDie(DW_TAG_unknown, lastCreatedDie, currentDie, lastIndent, spaces, error);
 		} else if (0 == strncmp(endOfAddress + spaces, "NULL", 4)) {
 			/* A "NULL" line indicates going up one level in the Die tree.
 			 * Process it only if the current level contained a Die that was
@@ -353,27 +358,28 @@ parseCompileUnit(char *line, size_t *lastIndent, Dwarf_Error *error)
 }
 
 static int
-parseDwarfDie(char *line, Dwarf_Die *lastCreatedDie,
+createDwarfDie(Dwarf_Half tag, Dwarf_Die *lastCreatedDie,
 	Dwarf_Die *currentDie, size_t *lastIndent, size_t spaces, Dwarf_Error *error)
 {
 	int ret = DW_DLV_OK;
-	Dwarf_Half tag = DW_TAG_unknown;
-	size_t span = strcspn(line, " ");
-	parseTagString(line, span, &tag);
-
 	Dwarf_Die newDie = new Dwarf_Die_s;
+
 	if (NULL == newDie) {
 		ret = DW_DLV_ERROR;
 		setError(error, DW_DLE_MAF);
 	} else {
 		newDie->_tag = tag;
-		newDie->_attribute = NULL;
-		newDie->_context = Dwarf_CU_Context::_currentCU;
-		newDie->_child = NULL;
+		newDie->_parent = NULL;
 		newDie->_sibling = NULL;
+#if defined(AIXPPC)
+		newDie->_previous = NULL;
+#endif /* defined (AIXPPC) */
+		newDie->_child = NULL;
+		newDie->_context = Dwarf_CU_Context::_currentCU;
+		newDie->_attribute = NULL;
+
 		if (0 == *lastIndent) {
 			/* No last indent indicates that this Die is at the start of a CU. */
-			newDie->_parent = NULL;
 			Dwarf_CU_Context::_currentCU->_die = newDie;
 		} else if (spaces > *lastIndent) {
 			/* If the Die is indented farther than the last Die, it is a first child. */
@@ -393,6 +399,17 @@ parseDwarfDie(char *line, Dwarf_Die *lastCreatedDie,
 		*lastIndent = spaces;
 	}
 	return ret;
+}
+
+static int
+parseDwarfDie(char *line, Dwarf_Die *lastCreatedDie,
+	Dwarf_Die *currentDie, size_t *lastIndent, size_t spaces, Dwarf_Error *error)
+{
+	Dwarf_Half tag = DW_TAG_unknown;
+	size_t span = strcspn(line, " ");
+	parseTagString(line, span, &tag);
+
+	return createDwarfDie(tag, lastCreatedDie, currentDie, lastIndent, spaces, error);
 }
 
 static const pair<const char *, Dwarf_Half> tagStrings[] = {
@@ -551,7 +568,6 @@ parseAttrType(char *string, size_t length, Dwarf_Half *type, Dwarf_Half *form)
 	}
 }
 
-
 /* Runs a shell command to get the path for a tool DDR needs (dwarfdump)
  * If successful, returns true and stores the path in 'buffer' variable.
  * If not, returns false.
@@ -559,6 +575,7 @@ parseAttrType(char *string, size_t length, Dwarf_Half *type, Dwarf_Half *form)
 static bool
 findTool(char **buffer, const char *command)
 {
+	bool found = false;
 	FILE *fp = popen(command, "r");
 	if (NULL != fp) {
 		size_t cap = 0;
@@ -569,10 +586,9 @@ findTool(char **buffer, const char *command)
 			if ('\n' == (*buffer)[len - 1]) {
 				(*buffer)[len - 1] = '\0';
 			}
-			pclose(fp);
-			return true;
+			found = true;
 		}
 		pclose(fp);
 	}
-	return false;
+	return found;
 }

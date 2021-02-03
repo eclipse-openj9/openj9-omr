@@ -167,38 +167,38 @@ void OMR::Power::LoadStoreHandlerImpl::generateLoadSequence(TR::CodeGenerator *c
 void OMR::Power::LoadStoreHandlerImpl::generatePairedLoadSequence(TR::CodeGenerator *cg, TR::Register *trgReg, TR::Node *node, TR::MemoryReference *memRef)
     {
     #ifdef J9_PROJECT_SPECIFIC
+    if (node->getSymbolReference()->isUnresolved())
+        {
+        TR::SymbolReference *vrlSymRef = cg->comp()->getSymRefTab()->findOrCreateVolatileReadLongSymbolRef(cg->comp()->getMethodSymbol());
+
+        memRef->getUnresolvedSnippet()->setIs32BitLong();
+
+        TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(4, 4, cg->trMemory());
+        TR::addDependency(deps, trgReg->getHighOrder(), TR::RealRegister::gr3, TR_GPR, cg);
+        TR::addDependency(deps, trgReg->getLowOrder(), TR::RealRegister::gr4, TR_GPR, cg);
+        TR::addDependency(deps, NULL, TR::RealRegister::gr11, TR_GPR, cg);
+
+        TR::addDependency(deps, memRef->getBaseRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
+        deps->getPreConditions()->getRegisterDependency(3)->setExcludeGPR0();
+        deps->getPostConditions()->getRegisterDependency(3)->setExcludeGPR0();
+
+        generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, trgReg->getHighOrder(), memRef);
+        generateDepImmSymInstruction(
+            cg,
+            TR::InstOpCode::bl,
+            node,
+            reinterpret_cast<uintptr_t>(vrlSymRef->getSymbol()->castToMethodSymbol()->getMethodAddress()),
+            deps,
+            vrlSymRef
+        );
+
+        cg->machine()->setLinkRegisterKilled(true);
+        }
     // Since non-volatiles are implemented as two separate loads, we must use a special sequence to perform the load in
     // a single instruction even when SMP is disabled.
-    if (node->getSymbol()->isSyncVolatile())
+    else if (node->getSymbol()->isSyncVolatile())
         {
-        if (node->getSymbolReference()->isUnresolved())
-            {
-            TR::SymbolReference *vrlSymRef = cg->comp()->getSymRefTab()->findOrCreateVolatileReadLongSymbolRef(cg->comp()->getMethodSymbol());
-
-            memRef->getUnresolvedSnippet()->setIs32BitLong();
-
-            TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(4, 4, cg->trMemory());
-            TR::addDependency(deps, trgReg->getHighOrder(), TR::RealRegister::gr3, TR_GPR, cg);
-            TR::addDependency(deps, trgReg->getLowOrder(), TR::RealRegister::gr4, TR_GPR, cg);
-            TR::addDependency(deps, NULL, TR::RealRegister::gr11, TR_GPR, cg);
-
-            TR::addDependency(deps, memRef->getBaseRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
-            deps->getPreConditions()->getRegisterDependency(3)->setExcludeGPR0();
-            deps->getPostConditions()->getRegisterDependency(3)->setExcludeGPR0();
-
-            generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, trgReg->getHighOrder(), memRef);
-            generateDepImmSymInstruction(
-                cg,
-                TR::InstOpCode::bl,
-                node,
-                reinterpret_cast<uintptr_t>(vrlSymRef->getSymbol()->castToMethodSymbol()->getMethodAddress()),
-                deps,
-                vrlSymRef
-            );
-
-            cg->machine()->setLinkRegisterKilled(true);
-            }
-        else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX))
+        if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX))
             {
             TR::Register *tempHiReg = cg->allocateRegister(TR_FPR);
             TR::Register *tempLoReg = cg->allocateRegister(TR_FPR);
@@ -309,35 +309,35 @@ void OMR::Power::LoadStoreHandlerImpl::generatePairedStoreSequence(TR::CodeGener
 #ifdef J9_PROJECT_SPECIFIC
     StoreSyncRequirements sync = getStoreSyncRequirements(cg, node);
 
-    if (sync != StoreSyncRequirements::None)
+    if (node->getSymbolReference()->isUnresolved())
         {
-        if (node->getSymbolReference()->isUnresolved())
-            {
-            TR::Register *addrReg = cg->allocateRegister();
-            TR::SymbolReference *vwlSymRef = cg->comp()->getSymRefTab()->findOrCreateVolatileWriteLongSymbolRef(cg->comp()->getMethodSymbol());
+        TR::Register *addrReg = cg->allocateRegister();
+        TR::SymbolReference *vwlSymRef = cg->comp()->getSymRefTab()->findOrCreateVolatileWriteLongSymbolRef(cg->comp()->getMethodSymbol());
 
-            memRef->getUnresolvedSnippet()->setIs32BitLong();
+        memRef->getUnresolvedSnippet()->setIs32BitLong();
 
-            TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, cg->trMemory());
-            TR::addDependency(deps, addrReg, TR::RealRegister::gr3, TR_GPR, cg);
-            TR::addDependency(deps, srcReg->getHighOrder(), TR::RealRegister::gr4, TR_GPR, cg);
-            TR::addDependency(deps, srcReg->getLowOrder(), TR::RealRegister::gr5, TR_GPR, cg);
-            TR::addDependency(deps, NULL, TR::RealRegister::gr11, TR_GPR, cg);
+        TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, cg->trMemory());
+        TR::addDependency(deps, addrReg, TR::RealRegister::gr3, TR_GPR, cg);
+        TR::addDependency(deps, srcReg->getHighOrder(), TR::RealRegister::gr4, TR_GPR, cg);
+        TR::addDependency(deps, srcReg->getLowOrder(), TR::RealRegister::gr5, TR_GPR, cg);
+        TR::addDependency(deps, NULL, TR::RealRegister::gr11, TR_GPR, cg);
 
-            generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, addrReg, memRef);
-            generateDepImmSymInstruction(
-                cg,
-                TR::InstOpCode::bl,
-                node,
-                reinterpret_cast<uintptr_t>(vwlSymRef->getSymbol()->castToMethodSymbol()->getMethodAddress()),
-                deps,
-                vwlSymRef
-            );
+        generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, addrReg, memRef);
+        generateDepImmSymInstruction(
+            cg,
+            TR::InstOpCode::bl,
+            node,
+            reinterpret_cast<uintptr_t>(vwlSymRef->getSymbol()->castToMethodSymbol()->getMethodAddress()),
+            deps,
+            vwlSymRef
+        );
 
-            cg->machine()->setLinkRegisterKilled(true);
-            cg->stopUsingRegister(addrReg);
-            }
-        else if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX))
+        cg->machine()->setLinkRegisterKilled(true);
+        cg->stopUsingRegister(addrReg);
+        }
+    else if (sync != StoreSyncRequirements::None)
+        {
+        if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_PPC_HAS_VSX))
             {
             TR::Register *tempHiReg = cg->allocateRegister(TR_FPR);
             TR::Register *tempLoReg = cg->allocateRegister(TR_FPR);

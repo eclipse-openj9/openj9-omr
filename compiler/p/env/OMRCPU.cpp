@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -192,19 +192,3 @@ OMR::Power::CPU::getOldProcessorTypeFromNewProcessorType(OMRProcessorArchitectur
    return TR_FirstPPCProcessor;
    }
 
-void
-OMR::Power::CPU::applyUserOptions()
-   {
-   // P10 support is not yet well-tested, so it's currently gated behind an environment
-   // variable to prevent it from being used by accident by users who use old versions of
-   // OMR once P10 chips become available.
-   if (_processorDescription.processor == OMR_PROCESSOR_PPC_P10)
-      {
-      static bool enableP10 = feGetEnv("TR_EnableExperimentalPower10Support");
-      if (!enableP10)
-         {
-         _processorDescription.processor = OMR_PROCESSOR_PPC_P9;
-         _processorDescription.physicalProcessor = OMR_PROCESSOR_PPC_P9;
-         }
-      }
-   }

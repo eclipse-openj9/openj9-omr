@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -202,6 +202,10 @@ TR::RVSystemLinkage::RVSystemLinkage(TR::CodeGenerator *cg)
    _properties._methodMetaDataRegister      = TR::RealRegister::NoReg;
    _properties._stackPointerRegister        = TR::RealRegister::sp;
    _properties._framePointerRegister        = TR::RealRegister::s0;
+
+   _properties._computedCallTargetRegister  = TR::RealRegister::NoReg;
+   _properties._vtableIndexArgumentRegister = TR::RealRegister::NoReg;
+   _properties._j9methodArgumentRegister    = TR::RealRegister::NoReg;
 
    _properties._numberOfDependencyGPRegisters = 32; // To be determined
    setOffsetToFirstParm(0); // To be determined

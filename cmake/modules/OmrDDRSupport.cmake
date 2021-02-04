@@ -31,7 +31,8 @@ include(ExternalProject)
 # Make sure we have performed platform detection
 include(OmrPlatform)
 
-if(OMR_DDR AND CMAKE_CROSSCOMPILING)
+# DDR is may supported when cross compiling, unless we are on Windows with CYGWIN in which case we do have support
+if(OMR_DDR AND NOT OMR_OS_WINDOWS AND CMAKE_CROSSCOMPILING)
 	message(FATAL_ERROR "DDR is not supported when cross-compiling. Use -DOMR_DDR=OFF to disable DDR.")
 endif()
 

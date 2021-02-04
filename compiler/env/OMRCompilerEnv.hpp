@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,6 +42,7 @@ namespace OMR { typedef OMR::CompilerEnv CompilerEnvConnector; }
 #include "env/ArithEnv.hpp"
 #include "env/VMEnv.hpp"
 #include "env/VMMethodEnv.hpp"
+#include "env/TRMemory.hpp"
 
 namespace TR { class CompilerEnv; }
 
@@ -110,6 +111,8 @@ public:
    void initialize();
 
    TR::PersistentAllocator &persistentAllocator() { return _persistentAllocator; }
+
+   TR_PersistentMemory *persistentMemory() { return ::trPersistentMemory; }
 
    OMRPortLibrary * const omrPortLib;
 

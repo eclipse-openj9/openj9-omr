@@ -288,6 +288,11 @@ namespace OMR
 class OMR_EXTENSIBLE Compilation
    {
    friend class ::TR_DebugExt;
+
+protected:
+   
+   inline TR::Compilation *self();
+
 public:
 
    TR_ALLOC(TR_Memory::Compilation)
@@ -309,7 +314,7 @@ public:
 
    ~Compilation() throw();
 
-   inline TR::Compilation *self();
+   
 
    TR::Region &region() { return _heapMemoryRegion; }
 

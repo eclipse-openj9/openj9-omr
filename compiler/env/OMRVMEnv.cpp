@@ -44,15 +44,6 @@ OMR::VMEnv::self()
    return static_cast<TR::VMEnv *>(this);
    }
 
-
-uintptr_t
-OMR::VMEnv::heapBaseAddress()
-   {
-   TR_UNIMPLEMENTED();
-   return 0;
-   }
-
-
 uintptr_t
 OMR::VMEnv::heapTailPaddingSizeInBytes()
    {

@@ -512,7 +512,6 @@ TR_Debug::dumpOptions(
       {
       TR_VerboseLog::writeLine("");
       TR_VerboseLog::writeLine(TR_Vlog_INFO, "     compressedRefs shiftAmount=%d", TR::Compiler->om.compressedReferenceShift());
-      TR_VerboseLog::writeLine(TR_Vlog_INFO, "     compressedRefs isLowMemHeap=%d", (TR::Compiler->vm.heapBaseAddress() == 0));
       }
 #endif
       TR_VerboseLog::vlogRelease();

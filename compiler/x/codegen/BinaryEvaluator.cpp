@@ -755,7 +755,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerAddEvaluator(TR::Node *node, TR::C
           (secondChild->getRegister() == NULL)                            &&
           ((TR::TreeEvaluator::constNodeValueIs32BitSigned(secondChild, &constValue, cg)) ||
            (comp->useCompressedPointers() &&
-           (constValue == TR::Compiler->vm.heapBaseAddress()) &&
+           (constValue == 0) &&
             firstChild->getReferenceCount() > 1 && !isMemOp))             &&
             performTransformation(comp, "O^O analyseAddForLEA: checking that second node is a memory reference %x\n", constValue))
          {
@@ -3024,7 +3024,6 @@ TR::Register *OMR::X86::TreeEvaluator::integerUshrEvaluator(TR::Node *node, TR::
       }
 
    if (comp->useCompressedPointers() && nodeIs64Bit &&
-         (TR::Compiler->vm.heapBaseAddress() == 0) &&
          (node->getFirstChild()->getOpCodeValue() == TR::a2l))
       {
       node->setIsHighWordZero(true);

@@ -254,41 +254,6 @@ bool TR_GlobalRegisterAllocator::isTypeAvailable(TR::SymbolReference *symref)
    return allocateForType(symref->getSymbol()->getDataType());
    }
 
-static void changeHeapBaseConstToLoad(TR::Compilation *comp, TR::SymbolReference * &autoSymRef, TR::Node *node, vcount_t visitCount)
-   {
-   if (node->getVisitCount() == visitCount)
-      return;
-
-   node->setVisitCount(visitCount);
-
-   if ((node->getOpCodeValue() == TR::lconst) &&
-       (node->getLongInt() == TR::Compiler->vm.heapBaseAddress()))
-      {
-      if (!autoSymRef)
-         {
-         autoSymRef = comp->getSymRefTab()->createTemporary(comp->getMethodSymbol(), node->getDataType());
-         TR::TreeTop *startTree = comp->getStartTree();
-         TR::TreeTop *nextTree = startTree->getNextTreeTop();
-
-         TR::Node *lconstNode = TR::Node::create(node, TR::lconst, 0, 0);
-         lconstNode->setLongInt(node->getLongInt());
-         TR::Node *storeNode = TR::Node::createWithSymRef(TR::lstore, 1, 1, lconstNode, autoSymRef);
-         TR::TreeTop *tt = TR::TreeTop::create(comp, storeNode);
-         startTree->join(tt);
-         tt->join(nextTree);
-         }
-
-      TR::Node::recreate(node, TR::lload);
-      node->setSymbolReference(autoSymRef);
-      }
-
-   for (int32_t i = 0; i < node->getNumChildren(); ++i)
-      {
-      TR::Node *child = node->getChild(i);
-      changeHeapBaseConstToLoad(comp, autoSymRef, child, visitCount);
-      }
-   }
-
 void
 TR_GlobalRegisterAllocator::visitNodeForDataType(TR::Node *node)
    {
@@ -349,20 +314,6 @@ TR_GlobalRegisterAllocator::perform()
    comp()->getOptimizer()->setResetExitsGRA(0);
    comp()->getOptimizer()->setSeenBlocksGRA(0);
    comp()->getOptimizer()->setSuccessorBitsGRA(0);
-
-   if (comp()->useCompressedPointers() &&
-       comp()->cg()->materializesHeapBase() &&
-       TR::Compiler->vm.heapBaseAddress() != 0)
-      {
-      TR::SymbolReference *autoSymRef = NULL;
-      vcount_t visitCount = comp()->incVisitCount();
-      for (TR::TreeTop * tt = comp()->getStartTree(); tt; tt = tt->getNextTreeTop())
-         {
-         changeHeapBaseConstToLoad(comp(), autoSymRef, tt->getNode(), visitCount);
-         }
-      if (autoSymRef)
-         comp()->getSymRefTab()->aliasBuilder.createAliasInfo();
-      }
 
    bool globalFPAssignmentDone = false;
    _appendBlock = 0;

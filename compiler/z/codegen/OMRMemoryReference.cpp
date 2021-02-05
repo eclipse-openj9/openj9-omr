@@ -1304,7 +1304,7 @@ OMR::Z::MemoryReference::populateAddTree(TR::Node * subTree, TR::CodeGenerator *
    if (integerChild->getOpCode().isLoadConst() &&
        (!comp->useCompressedPointers() ||
        (integerChild->getOpCodeValue() != TR::lconst) ||
-       (integerChild->getLongInt() != TR::Compiler->vm.heapBaseAddress())))
+       (integerChild->getLongInt() != 0)))
       {
       self()->populateMemoryReference(addressChild, cg);
       if ((subTree->getOpCodeValue() != TR::iadd) && (subTree->getOpCodeValue() != TR::aiadd) && (subTree->getOpCodeValue() != TR::isub))

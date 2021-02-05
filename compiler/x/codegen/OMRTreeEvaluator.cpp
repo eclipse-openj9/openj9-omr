@@ -676,8 +676,7 @@ bool OMR::X86::TreeEvaluator::genNullTestSequence(TR::Node *node,
          TR::Register *tempReg = cg->allocateRegister();
          // addition of the negative number should result in 0
          //
-         int64_t value = -(int64_t)TR::Compiler->vm.heapBaseAddress();
-         generateRegImm64Instruction(MOV8RegImm64, node, tempReg, value, cg);
+         generateRegImm64Instruction(MOV8RegImm64, node, tempReg, 0, cg);
          if (n->getFirstChild()->getOpCode().isShift() && n->getFirstChild()->getFirstChild()->getRegister())
             {
             TR::Register * r = n->getFirstChild()->getFirstChild()->getRegister();
@@ -840,27 +839,10 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
          if (translatedNode->getOpCode().isRightShift())
             translatedNode = translatedNode->getFirstChild(); //optional
 
-         if (TR::Compiler->vm.heapBaseAddress() == 0 ||
-               valueChild->isNull())
-            usingLowMemHeap = true;
+         usingLowMemHeap = true;
 
-         if (isSequence && (translatedNode->getOpCode().isSub() || usingLowMemHeap))
+         if (isSequence)
             usingCompressedPointers = true;
-
-         if (usingCompressedPointers)
-            {
-            if (!usingLowMemHeap)
-               {
-               while ((valueChild->getNumChildren() > 0) &&
-                        (valueChild->getOpCodeValue() != TR::a2l))
-                  valueChild = valueChild->getFirstChild();
-               if (valueChild->getOpCodeValue() == TR::a2l)
-               valueChild = valueChild->getFirstChild();
-               // this is required so that different registers are
-               // allocated for the actual store and translated values
-               valueChild->incReferenceCount();
-               }
-            }
          }
       }
    else

@@ -5425,71 +5425,13 @@ istoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
       //      node->getFirstChild()->getFirstChild()->setIsProfilingCode(cg->comp());
       }
 
-
-   bool usingCompressedPointers = false;
    TR::Node *unCompressedValue = NULL;
    TR::Compilation *comp = cg->comp();
-   TR::Node *translatedNode = NULL;
 
    if (node->getOpCode().isIndirect())
       {
       valueChild = node->getSecondChild();
       addrChild = node->getFirstChild();
-      if (comp->useCompressedPointers() &&
-            (node->getSymbolReference()->getSymbol()->getDataType() == TR::Address))
-         {
-         // pattern match the sequence
-         //     iistore f     iistore f         <- node
-         //       aload O       aload O         <- addrChild
-         //     value           l2i
-         //                       lshr
-         //                         lsub        <- translatedNode
-         //                           a2l
-         //                             value   <- valueChild
-         //                           lconst HB
-         //                         iconst shftKonst
-         //
-         // -or- if the field is known to be null
-         // iistore f
-         //    aload O
-         //    l2i
-         //      a2l
-         //        value  <- valueChild
-         //
-         translatedNode = valueChild;
-         if (translatedNode->getOpCodeValue() == TR::l2i)
-            translatedNode = translatedNode->getFirstChild();
-         if (translatedNode->getOpCode().isRightShift()) // optional
-            translatedNode = translatedNode->getFirstChild();
-
-         bool usingLowMemHeap = false;
-         if (TR::Compiler->vm.heapBaseAddress() == 0 ||
-               valueChild->isNull())
-            usingLowMemHeap = true;
-
-         if (translatedNode->getOpCode().isSub() || usingLowMemHeap)
-            usingCompressedPointers = true;
-         // valueChild is not updated, the compression is taken care of
-         // by the lsub (which is already tagged with a nodeflag)
-         //
-         if (usingCompressedPointers && !usingLowMemHeap)
-            {
-            unCompressedValue = valueChild;
-            while (unCompressedValue->getNumChildren() > 0 &&
-                     unCompressedValue->getOpCodeValue() != TR::a2l)
-               unCompressedValue = unCompressedValue->getFirstChild();
-            if (unCompressedValue->getOpCodeValue() == TR::a2l)
-               unCompressedValue = unCompressedValue->getFirstChild();
-            // this allows separate registers to be allocated if the base
-            // of the indirect access is the same as the value thats being
-            // compressed (e.g. O.f = O)
-            //
-            if (unCompressedValue == addrChild)
-               unCompressedValue->incReferenceCount();
-            else
-               unCompressedValue = NULL;
-            }
-         }
       }
    else
       {

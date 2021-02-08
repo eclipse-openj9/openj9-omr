@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -508,6 +508,14 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
    {
    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, cg);
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
+   bool lazyVolatile = false;
+   if (node->getSymbolReference()->getSymbol()->isShadow() &&
+       node->getSymbolReference()->getSymbol()->isOrdered() && cg->comp()->target().isSMP())
+      {
+      needSync = true;
+      lazyVolatile = true;
+      }
+
    TR::Node *valueChild;
 
    if (node->getOpCode().isIndirect())
@@ -526,7 +534,11 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
    generateMemSrc1Instruction(cg, op, node, tempMR, cg->evaluate(valueChild));
    if (needSync)
       {
-      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xF); // dmb SY
+      // ordered and lazySet operations will not generate a post-write sync
+      if (!lazyVolatile)
+         {
+         generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xF); // dmb SY
+         }
       }
 
    cg->decReferenceCount(valueChild);

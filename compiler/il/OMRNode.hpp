@@ -601,9 +601,6 @@ public:
    // A common query used by the optimizer
    inline bool            isSingleRef();
 
-   // A common query used by the code generators
-   inline bool            isSingleRefUnevaluated();
-
    TR_YesNoMaybe          hasBeenRun();
 
    /// Given a monenter node, return the persistent class identifer that's being synchronized

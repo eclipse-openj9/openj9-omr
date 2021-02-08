@@ -1205,7 +1205,10 @@ genericLongShiftSingle(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::
       // Generate RISBG for lshl + i2l sequence
       if (node->getOpCodeValue() == TR::lshl)
          {
-         if (firstChild->getOpCodeValue() == TR::i2l && firstChild->isSingleRefUnevaluated() && (firstChild->isNonNegative() || firstChild->getFirstChild()->isNonNegative()))
+         if (firstChild->getOpCodeValue() == TR::i2l && 
+             firstChild->getReferenceCount() == 1 &&
+             firstChild->getRegister() == NULL && 
+                (firstChild->isNonNegative() || firstChild->getFirstChild()->isNonNegative()))
             {
             srcReg = cg->evaluate(firstChild->getFirstChild());
             trgReg = cg->allocateRegister();
@@ -1268,7 +1271,8 @@ genericLongShiftSingle(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::
       bool skippedAnd = false;
       if ((shiftOp == TR::InstOpCode::SRLG ||
            shiftOp == TR::InstOpCode::SLLG) &&
-          secondChild->isSingleRefUnevaluated() &&
+          secondChild->getReferenceCount() == 1 &&
+          secondChild->getRegister() == NULL &&
           secondChild->getOpCode().isAnd() && secondChild->getOpCode().isInteger() &&
           secondChild->getSecondChild()->getOpCode().isLoadConst() &&
           secondChild->getSecondChild()->getConst<int64_t>() == 63)
@@ -1594,7 +1598,8 @@ genericRotateLeft(TR::Node * node, TR::CodeGenerator * cg)
          }
       if (shiftChild &&
             shiftChild->getSecondChild()->getOpCode().isLoadConst() &&
-            shiftChild->isSingleRefUnevaluated() &&
+            shiftChild->getReferenceCount() == 1 &&
+            shiftChild->getRegister() == NULL &&
             performTransformation(cg->comp(), "O^O Combine or/shift into rotate node [%p]\n", node))
          {
          uint32_t shiftBy = shiftChild->getSecondChild()->getInt();
@@ -2619,29 +2624,33 @@ OMR::Z::TreeEvaluator::imulEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Node* firstChild = node->getFirstChild();
    TR::Node* halfwordNode = NULL;
    TR::Node* regNode = NULL;
-
-   TR::Register * targetRegister = NULL;
-   TR::Register * sourceRegister = NULL;
    bool isMultHalf = false;
 
-   if(firstChild->getOpCodeValue() == TR::s2i &&
+   if (firstChild->getOpCodeValue() == TR::s2i &&
       firstChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
-      firstChild->isSingleRefUnevaluated() &&
-      firstChild->getFirstChild()->isSingleRefUnevaluated())
+      firstChild->getReferenceCount() == 1 &&
+      firstChild->getRegister() == NULL &&
+      firstChild->getFirstChild()->getReferenceCount() == 1 &&
+      firstChild->getFirstChild()->getRegister() == NULL)
       {
       isMultHalf = true;
       halfwordNode = firstChild;
       regNode = secondChild;
       }
-   else if(secondChild->getOpCodeValue() == TR::s2i &&
+   else if (secondChild->getOpCodeValue() == TR::s2i &&
            secondChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
-           secondChild->isSingleRefUnevaluated() &&
-           secondChild->getFirstChild()->isSingleRefUnevaluated())
+           secondChild->getReferenceCount() == 1 &&
+           secondChild->getRegister() == NULL &&
+           secondChild->getFirstChild()->getReferenceCount() == 1 &&
+           secondChild->getFirstChild()->getRegister() == NULL)
       {
       isMultHalf = true;
       halfwordNode = secondChild;
       regNode = firstChild;
       }
+
+   TR::Register * targetRegister = NULL;
+   TR::Register * sourceRegister = NULL;
 
    if (secondChild->getOpCode().isLoadConst())
       {

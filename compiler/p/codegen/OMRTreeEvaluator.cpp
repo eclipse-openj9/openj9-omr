@@ -980,7 +980,9 @@ TR::Register *OMR::Power::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::Cod
    bool reverseStore = false;
    // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
    static bool reverseStoreEnabled = feGetEnv("TR_EnableReverseLoadStore");
-   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::ibyteswap && valueChild->isSingleRefUnevaluated())
+   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::ibyteswap && 
+      valueChild->getReferenceCount() == 1 &&
+      valueChild->getRegister() == NULL)
       {
       reverseStore = true;
 
@@ -1167,7 +1169,9 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
    bool reverseStore = false;
    // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
    static bool reverseStoreEnabled = feGetEnv("TR_EnableReverseLoadStore");
-   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::lbyteswap && valueChild->isSingleRefUnevaluated() &&
+   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::lbyteswap && 
+      valueChild->getReferenceCount() == 1 &&
+      valueChild->getRegister() == NULL &&
       cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7))
       {
       reverseStore = true;
@@ -1482,7 +1486,9 @@ TR::Register *OMR::Power::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::Cod
    bool reverseStore = false;
    // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
    static bool reverseStoreEnabled = feGetEnv("TR_EnableReverseLoadStore");
-   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::sbyteswap && valueChild->isSingleRefUnevaluated())
+   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::sbyteswap && 
+      valueChild->getReferenceCount() == 1 &&
+      valueChild->getRegister() == NULL)
       {
       reverseStore = true;
 

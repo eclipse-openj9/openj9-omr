@@ -294,7 +294,9 @@ OMR::Z::TreeEvaluator::dsqrtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Node * firstChild = node->getFirstChild();
    TR::Register * targetRegister = cg->allocateRegister(TR_FPR);
 
-   if (firstChild->isSingleRefUnevaluated() && firstChild->getOpCodeValue() == TR::dloadi)
+   if (firstChild->getOpCodeValue() == TR::dloadi &&
+       firstChild->getReferenceCount() == 1 && 
+       firstChild->getRegister() == NULL)
       {
       generateRXEInstruction(cg, TR::InstOpCode::SQDB, node, targetRegister, TR::MemoryReference::create(cg, firstChild), 0);
       }

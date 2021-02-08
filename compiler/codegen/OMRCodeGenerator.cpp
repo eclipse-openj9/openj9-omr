@@ -3190,9 +3190,12 @@ OMR::CodeGenerator::isInMemoryInstructionCandidate(TR::Node * node)
    // 2) valueChild
    // 3) address under valueChild
 
-   if (node->getFirstChild()->isSingleRefUnevaluated() &&
-       valueChild->isSingleRefUnevaluated() &&
-       valueChild->getFirstChild()->isSingleRefUnevaluated())
+   if (node->getFirstChild()->getReferenceCount() == 1 &&
+       node->getFirstChild()->getRegister() == NULL &&
+       valueChild->getReferenceCount() == 1 &&
+       valueChild->getRegister() == NULL &&
+       valueChild->getFirstChild()->getReferenceCount() == 1 &&
+       valueChild->getFirstChild()->getRegister() == NULL)
       {
       }
    else

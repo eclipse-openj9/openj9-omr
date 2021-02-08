@@ -784,11 +784,14 @@ OMR::Z::TreeEvaluator::returnEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
 bool OMR::Z::TreeEvaluator::isCandidateForButestEvaluation(TR::Node * node)
    {
+   TR::Node* firstChild = node->getFirstChild();
+   TR::Node* secondChild = node->getSecondChild();
    return node->getOpCode().isIf() &&
-          node->getFirstChild()->getOpCodeValue() == TR::butest &&
-          node->getFirstChild()->isSingleRefUnevaluated() &&
-          node->getSecondChild()->getOpCode().isLoadConst() &&
-          node->getSecondChild()->getType().isInt32();
+          firstChild->getOpCodeValue() == TR::butest &&
+          firstChild->getReferenceCount() == 1 &&
+          firstChild->getRegister() == NULL &&
+          secondChild->getOpCode().isLoadConst() &&
+          secondChild->getType().isInt32();
    }
 
 bool OMR::Z::TreeEvaluator::isCandidateForCompareEvaluation(TR::Node * node)
@@ -801,7 +804,7 @@ bool OMR::Z::TreeEvaluator::isCandidateForCompareEvaluation(TR::Node * node)
 
 bool OMR::Z::TreeEvaluator::isSingleRefUnevalAndCompareOrBu2iOverCompare(TR::Node * node)
    {
-   if (!node->isSingleRefUnevaluated())
+   if (node->getReferenceCount() != 1 || node->getRegister() != NULL)
       return false;
 
    if (node->getOpCodeValue() == TR::bu2i)
@@ -2275,7 +2278,7 @@ OMR::Z::TreeEvaluator::commonButestEvaluator(TR::Node * node, TR::CodeGenerator 
          secondChild->getOpCode().getName(),secondChild);
 
    uint8_t tmMask = secondChild->getUnsignedByte();
-   if (firstChild->isSingleRefUnevaluated())
+   if (firstChild->getReferenceCount() == 1 && firstChild->getRegister() == NULL)
       {
       TR::MemoryReference * mr = TR::MemoryReference::create(cg, firstChild);
       generateSIInstruction(cg, TR::InstOpCode::TM, node, mr, tmMask);
@@ -2322,7 +2325,7 @@ OMR::Z::TreeEvaluator::inlineIfBifEvaluator(TR::Node * ifNode, TR::CodeGenerator
       //    bu2i
       //      cmpOpNode
       //    cmpValNode
-      // We have previously verified that cmpOpNode isSingleRefUnevaluated(), so therefore the bu2i must also be isSingleRefEvaluated()
+      // We have previously verified that cmpOpNode has a reference count of 1 and has not previously been evaluator, so therefore the bu2i must also be isSingleRefEvaluated()
       // and we should dec ref count here
       cg->decReferenceCount(ifNode->getFirstChild());
       }

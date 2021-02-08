@@ -257,8 +257,10 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
          {
          if(firstChild->getOpCodeValue() == TR::s2l &&
                  firstChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
-                 firstChild->isSingleRefUnevaluated() &&
-                 firstChild->getFirstChild()->isSingleRefUnevaluated())
+                 firstChild->getReferenceCount() == 1 &&
+                 firstChild->getRegister() == NULL &&
+                 firstChild->getFirstChild()->getReferenceCount() == 1 &&
+                 firstChild->getFirstChild()->getRegister() == NULL)
             {
             /* Use MGH when 64<-64x16 and the multiplier is a short int in storage
              * AND it's never loaded before. */
@@ -267,7 +269,8 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
             memToRegOpCode = TR::InstOpCode::MGH;
             }
          else if(firstChild->getOpCodeValue() == TR::lloadi &&
-                 firstChild->isSingleRefUnevaluated())
+                 firstChild->getReferenceCount() == 1 &&
+                 firstChild->getRegister() == NULL)
             {
             /* Use MSGC when 64<-64x64 and the multiplier is a long in storage
              * AND it's never loaded before */
@@ -278,7 +281,8 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
       else if(root->getOpCodeValue() == TR::imul)
          {
          if(firstChild->getOpCodeValue() == TR::iloadi &&
-                 firstChild->isSingleRefUnevaluated())
+                 firstChild->getReferenceCount() == 1 &&
+                 firstChild->getRegister() == NULL)
             {
              /* Use MSC when 32<-32x32 and the multiplier is an int in storage
               * AND it's never loaded before */
@@ -733,8 +737,10 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
     */
    if (secondChild->getOpCodeValue() == TR::s2i &&
        secondChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
-       secondChild->isSingleRefUnevaluated() &&
-       secondChild->getFirstChild()->isSingleRefUnevaluated())
+       secondChild->getReferenceCount() == 1 &&
+       secondChild->getRegister() == NULL &&
+       secondChild->getFirstChild()->getReferenceCount() == 1 &&
+       secondChild->getFirstChild()->getRegister() == NULL)
       {
       setMem2();
       memToRegOpCode = TR::InstOpCode::AH;
@@ -745,8 +751,10 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
    if (cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_2) &&
        secondChild->getOpCodeValue() == TR::s2l &&
        secondChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
-       secondChild->isSingleRefUnevaluated() &&
-       secondChild->getFirstChild()->isSingleRefUnevaluated())
+       secondChild->getReferenceCount() == 1 &&
+       secondChild->getRegister() == NULL &&
+       secondChild->getFirstChild()->getReferenceCount() == 1 &&
+       secondChild->getFirstChild()->getRegister() == NULL)
       {
       setMem2();
       memToRegOpCode = TR::InstOpCode::AGH;

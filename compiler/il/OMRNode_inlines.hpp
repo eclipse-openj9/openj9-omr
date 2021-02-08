@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -132,20 +132,6 @@ OMR::Node::createWithSymRef(TR::ILOpCodes op, uint16_t numChildren,
 /**
  * Misc public functions
  */
-
-// A common query used by the optimizer
-bool
-OMR::Node::isSingleRef()
-   {
-   return self()->getReferenceCount() == 1;
-   }
-
-// A common query used by the code generators
-bool
-OMR::Node::isSingleRefUnevaluated()
-   {
-   return self()->isSingleRef() && !self()->getRegister();
-   }
 
 int32_t
 OMR::Node::getNumArguments()

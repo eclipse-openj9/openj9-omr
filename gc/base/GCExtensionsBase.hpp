@@ -560,7 +560,6 @@ public:
 	double concurrentSlackFragmentationAdjustmentWeight; /**< weight(from 0.0 to 5.0) used for calculating free tenure space (how much percentage of the fragmentation need to remove from freeBytes) */
 	bool debugConcurrentMark;
 	bool optimizeConcurrentWB;
-	bool dirtCardDuringRSScan;
 	uintptr_t concurrentLevel;
 	uintptr_t concurrentBackground;
 	uintptr_t concurrentSlack; /**< number of bytes to add to the concurrent kickoff threshold buffer */
@@ -1625,7 +1624,6 @@ public:
 		, concurrentSlackFragmentationAdjustmentWeight(0.0)
 		, debugConcurrentMark(false)
 		, optimizeConcurrentWB(true)
-		, dirtCardDuringRSScan(false)
 		, concurrentLevel(8)
 		, concurrentBackground(1)
 		, concurrentSlack(0)

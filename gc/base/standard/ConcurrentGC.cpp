@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3499,15 +3499,13 @@ MM_ConcurrentGC::finalCleanCards(MM_EnvironmentBase *env)
 void
 MM_ConcurrentGC::scanRememberedSet(MM_EnvironmentBase *env)
 {
-	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	MM_SublistPuddle *puddle;
  	omrobjectptr_t *slotPtr, objectPtr;
- 	uintptr_t RSObjects = 0;
- 	uintptr_t bytesTraced = 0;
  	uintptr_t maxPushes = _markingScheme->getWorkPackets()->getSlotsInPacket() / 2;
 	/* Get a fresh work stack */
 	env->_workStack.reset(env, _markingScheme->getWorkPackets());
 	env->_workStack.clearPushCount();
+	env->_markStats.clear();
 
 	GC_SublistIterator rememberedSetIterator(&_extensions->rememberedSet);
 	while((puddle = rememberedSetIterator.nextList()) != NULL) {
@@ -3523,31 +3521,25 @@ MM_ConcurrentGC::scanRememberedSet(MM_EnvironmentBase *env)
 					&& (objectPtr <  _heapAlloc)
 					&& _markingScheme->isMarkedOutline(objectPtr)
 					&& !_cardTable->isObjectInDirtyCardNoCheck(env,objectPtr)) {
-						RSObjects += 1;
-						if (_extensions->dirtCardDuringRSScan) {
-							_cardTable->dirtyCard(env, objectPtr);
-						} else {
-							/* VMDESIGN 2048 -- due to barrier elision optimizations, the JIT may not have dirtied
-							 * cards for some objects in the remembered set. Therefore we may discover references
-							 * to both nursery and tenure objects while scanning remembered objects.
+						/* VMDESIGN 2048 -- due to barrier elision optimizations, the JIT may not have dirtied
+						 * cards for some objects in the remembered set. Therefore we may discover references
+						 * to both nursery and tenure objects while scanning remembered objects.
+						 */
+						_markingScheme->scanObject(env,objectPtr, SCAN_REASON_REMEMBERED_SET_SCAN);
+
+						/* Have we pushed enough new references? */
+						if(env->_workStack.getPushCount() >= maxPushes) {
+							/* To reduce the chances of mark stack overflow, we do some marking
+							 * of what we have just pushed.
+							 *
+							 * WARNING. If we HALTED concurrent then we will process any remaining
+							 * workpackets at this point. This will make RS processing appear more
+							 * expensive than it really is.
 							 */
-
-							bytesTraced += _markingScheme->scanObject(env,objectPtr, SCAN_REASON_REMEMBERED_SET_SCAN);
-
-							/* Have we pushed enough new references? */
-							if(env->_workStack.getPushCount() >= maxPushes) {
-								/* To reduce the chances of mark stack overflow, we do some marking
-								 * of what we have just pushed.
-								 *
-								 * WARNING. If we HALTED concurrent then we will process any remaining
-								 * workpackets at this point. This will make RS processing appear more
-								 * expensive than it really is.
-								 */
-								while(NULL != (objectPtr = (omrobjectptr_t)env->_workStack.popNoWait(env))) {
-									bytesTraced += _markingScheme->scanObject(env, objectPtr, SCAN_REASON_PACKET);
-								}
-								env->_workStack.clearPushCount();
+							while(NULL != (objectPtr = (omrobjectptr_t)env->_workStack.popNoWait(env))) {
+								_markingScheme->scanObject(env, objectPtr, SCAN_REASON_PACKET);
 							}
+							env->_workStack.clearPushCount();
 						}
 				}
 			}
@@ -3555,18 +3547,18 @@ MM_ConcurrentGC::scanRememberedSet(MM_EnvironmentBase *env)
 	}
 
 	env->_workStack.clearPushCount();
-	/* sort of abusing addToWorkStallTime to record the point when thread is finished with RS Scan Work
-	 * Since popNoWait is used, we never stalled before this point. All stall time will be from this point till RS scan end event */
-	env->_workPacketStats.addToWorkStallTime(0, omrtime_hires_clock());
+
+	/* Call completeScan to allow for improved RS scanning parallelism */
+	_markingScheme->completeScan(env);
 
 	/* Flush this threads reference object buffer, work stack, returning any packets to appropriate lists */
 	flushLocalBuffers(env);
 
 	/* Add RS objects found to global count */
-	_stats.incRSObjectsFound(RSObjects);
+	_stats.incRSObjectsFound(env->_markStats._objectsScanned);
 
 	/* ..and amount traced */
-	_stats.incRSScanTraceCount(bytesTraced);
+	_stats.incRSScanTraceCount(env->_markStats._bytesScanned);
 }
 
 /**

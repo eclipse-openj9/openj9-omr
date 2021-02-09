@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -18,6 +18,17 @@
 #
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
+
+if(CMAKE_C_COMPILER_IS_XLCLANG)
+	macro(omr_toolconfig_global_setup)
+		# For XLClang, remove any usages of -qhalt=e or -qhalt=s provided by default
+		# in the CMAKE CXX/C/ASM FLAGS, since xlclang/xlclang++ are not compatible
+		# with the e or s options.
+		omr_remove_flags(CMAKE_ASM_FLAGS -qhalt=e)
+		omr_remove_flags(CMAKE_CXX_FLAGS -qhalt=s)
+		omr_remove_flags(CMAKE_C_FLAGS   -qhalt=e)
+	endmacro(omr_toolconfig_global_setup)
+endif()
 
 if(OMR_HOST_ARCH STREQUAL "ppc")
 	set(OMR_WARNING_AS_ERROR_FLAG -qhalt=w)
@@ -53,22 +64,35 @@ if(OMR_HOST_ARCH STREQUAL "ppc")
 	list(APPEND TR_COMPILE_OPTIONS
 		-qarch=pwr7
 		-qtls
-		-qnotempinc
-		-qenum=small
-		-qmbcs
 		-qfuncsect
 		-qsuppress=1540-1087:1540-1088:1540-1090:1540-029:1500-029
 		-qdebug=nscrep
 	)
+
+	if(NOT CMAKE_C_COMPILER_IS_XLCLANG)
+		# xlc/xlc++ options
+		list(APPEND TR_COMPILE_OPTIONS
+			-qnotempinc
+			-qenum=small
+			-qmbcs
+		)
+	endif()
 
 	# Configure the platform dependent library for multithreading
 	set(OMR_PLATFORM_THREAD_LIBRARY -lpthread)
 endif()
 
 if(OMR_OS_AIX)
-	list(APPEND OMR_PLATFORM_COMPILE_OPTIONS -qinfo=pro)
 	list(APPEND OMR_PLATFORM_C_COMPILE_OPTIONS -qlanglvl=extended)
 	list(APPEND OMR_PLATFORM_CXX_COMPILE_OPTIONS -qlanglvl=extended0x)
+
+	if(CMAKE_C_COMPILER_IS_XLCLANG)
+		# xlclang/xlclang++ options
+		list(APPEND OMR_PLATFORM_COMPILE_OPTIONS -qxlcompatmacros)
+	else()
+		# xlc/xlc++ options
+		list(APPEND OMR_PLATFORM_COMPILE_OPTIONS -qinfo=pro)
+	endif()
 
 	set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} -lm -liconv -ldl -lperfstat")
 
@@ -177,7 +201,16 @@ elseif(OMR_OS_ZOS)
 endif()
 
 set(SPP_CMD ${CMAKE_C_COMPILER})
-set(SPP_FLAGS -E -P)
+
+if(CMAKE_C_COMPILER_IS_XLCLANG)
+	# xlclang/xlclang++ options
+	# The -P option doesn't sit well with XLClang, so it's not included. It causes:
+	# "ld: 0711-317 ERROR: Undefined symbol: <SYMBOL>" when libj9jit29.so is getting linked.
+	set(SPP_FLAGS -E)
+else()
+	# xlc/xlc++ options
+	set(SPP_FLAGS -E -P)
+endif()
 
 if(OMR_OS_ZOS)
 	function(_omr_toolchain_process_exports TARGET_NAME)

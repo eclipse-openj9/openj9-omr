@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -75,7 +75,7 @@ endfunction()
 
 # Translate from CMake's view of the system to the OMR view of the system.
 # Exports a number of variables indicating platform, os, endianness, etc.
-# - OMR_ARCH_{AARCH64,X86,ARM,S390} # TODO: Add POWER
+# - OMR_ARCH_{AARCH64,X86,ARM,S390,POWER}
 # - OMR_ENV_DATA{32,64}
 # - OMR_ENV_TARGET_DATASIZE (either 32 or 64)
 # - OMR_ENV_LITTLE_ENDIAN
@@ -198,8 +198,17 @@ macro(omr_detect_system_information)
 				# just use GNU config
 				set(_OMR_TOOLCONFIG "gnu")
 			endif()
-		elseif(CMAKE_C_COMPILER_ID STREQUAL "XL" OR CMAKE_C_COMPILER_ID STREQUAL "zOS")
+		elseif(CMAKE_C_COMPILER_ID MATCHES "^XL(Clang)?$" OR CMAKE_C_COMPILER_ID STREQUAL "zOS")
+			# In CMake 3.14 and prior, XLClang uses CMAKE_C_COMPILER_ID "XL"
+			# In CMake 3.15 and beyond, XLClang uses CMAKE_C_COMPILER_ID "XLClang"
 			set(_OMR_TOOLCONFIG "xlc")
+			if(CMAKE_C_COMPILER MATCHES ".*xlclang$")
+				# Checking the CMAKE_C_COMPILER command is necessary to determine if XLClang is
+				# the compiler, since XLClang might have CMAKE_C_COMPILER_ID "XL" or "XLClang"
+				# depending on the CMake version. Without this check, it's ambiguous whether the
+				# compiler is XLC or XLClang.
+				set(CMAKE_C_COMPILER_IS_XLCLANG TRUE CACHE BOOL "XLClang is the C compiler")
+			endif()
 		else()
 			message(FATAL_ERROR "OMR: Unknown compiler ID: '${CMAKE_CXX_COMPILER_ID}'")
 		endif()

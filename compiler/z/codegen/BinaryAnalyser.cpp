@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -113,8 +113,10 @@ TR_S390BinaryAnalyser::genericAnalyser(TR::Node * root,
    bool is16BitMemory2Operand = false;
    if (secondChild->getOpCodeValue() == TR::s2i &&
        secondChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
-       secondChild->isSingleRefUnevaluated() &&
-       secondChild->getFirstChild()->isSingleRefUnevaluated())
+       secondChild->getReferenceCount() == 1 &&
+       secondChild->getRegister() == NULL &&
+       secondChild->getFirstChild()->getReferenceCount() == 1 &&
+       secondChild->getFirstChild()->getRegister() == NULL)
       {
       bool supported = true;
 
@@ -314,8 +316,10 @@ TR_S390BinaryAnalyser::longSubtractAnalyser(TR::Node * root)
    if (cg()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14) &&
        secondChild->getOpCodeValue() == TR::s2l &&
        secondChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
-       secondChild->isSingleRefUnevaluated() &&
-       secondChild->getFirstChild()->isSingleRefUnevaluated())
+       secondChild->getReferenceCount() == 1 &&
+       secondChild->getRegister() == NULL &&
+       secondChild->getFirstChild()->getReferenceCount() == 1 &&
+       secondChild->getFirstChild()->getRegister() == NULL)
       {
       setMem2();
       memToRegOpCode = TR::InstOpCode::SGH;

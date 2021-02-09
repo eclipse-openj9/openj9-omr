@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1990,7 +1990,7 @@ tryGenerateSIComparisons(TR::Node *node, TR::Node *constNode, TR::Node *otherNod
 
       // The conversion must not be in a register or want to be in a register
       //
-      if (!otherNode->isSingleRefUnevaluated())
+      if (otherNode->getReferenceCount() != 1 || otherNode->getRegister() != NULL)
          return 0;
       }
 
@@ -2001,7 +2001,7 @@ tryGenerateSIComparisons(TR::Node *node, TR::Node *constNode, TR::Node *otherNod
 
    // The operand must not be in a register, or want to be in a register
    //
-   if (!operand->isSingleRefUnevaluated())
+   if (operand->getReferenceCount() != 1 || operand->getRegister() != NULL)
       return 0;
 
    uint8_t operandSize = operand->getSize();
@@ -2247,8 +2247,8 @@ tryGenerateCLCForComparison(TR::Node *node, TR::CodeGenerator *cg)
       // The conversions must not be in registers, or want to
       // be in registers
       //
-      if (!firstChild ->isSingleRefUnevaluated() ||
-          !secondChild->isSingleRefUnevaluated())
+      if (firstChild->getReferenceCount() != 1 || firstChild->getRegister() != NULL ||
+          secondChild->getReferenceCount() != 1 || secondChild->getRegister() != NULL)
          return 0;
 
       operand1 = firstChild ->getFirstChild();
@@ -2268,8 +2268,8 @@ tryGenerateCLCForComparison(TR::Node *node, TR::CodeGenerator *cg)
    // Make sure that neither operand is in a register, or wants to be a in
    // a register.
    //
-   if (!operand1->isSingleRefUnevaluated() ||
-       !operand2->isSingleRefUnevaluated())
+   if (operand1->getReferenceCount() != 1 || operand1->getRegister() != NULL ||
+       operand2->getReferenceCount() != 1 || operand2->getRegister() != NULL)
       return 0;
 
    // the operands must both be memory references
@@ -2561,7 +2561,7 @@ tryGenerateConversionRXComparison(TR::Node *node, TR::CodeGenerator *cg, bool *i
       // The conversion must not be in a register, or want to be in a
       // register
       //
-      if (!conversion->isSingleRefUnevaluated())
+      if (conversion->getReferenceCount() != 1 || conversion->getRegister() != NULL)
          {
          return 0;
          }
@@ -2600,7 +2600,8 @@ tryGenerateConversionRXComparison(TR::Node *node, TR::CodeGenerator *cg, bool *i
          // otherwise an su2i will be changed to an s2i and then a CR could be used and this would be incorrect
          if (regNode->isZeroExtension()               &&
              regNode->getFirstChild()->getSize() == 2 &&
-             regNode->isSingleRefUnevaluated() &&
+             regNode->getReferenceCount() == 1 &&
+             regNode->getRegister() == NULL &&
              performTransformation(comp,
                                     "O^O Convert zero extension node [%p] to sign extension so that we can use CH/CGH\n",
                                      regNode))
@@ -2620,7 +2621,7 @@ tryGenerateConversionRXComparison(TR::Node *node, TR::CodeGenerator *cg, bool *i
    // Make sure the mem ref node isn't in a register, and doesn't
    // need to be in a register
    //
-   if (!memNode->isSingleRefUnevaluated())
+   if (memNode->getReferenceCount() != 1 || memNode->getRegister() != NULL)
       {
       return 0;
       }
@@ -5242,7 +5243,10 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
          {
          TR::Node* valueNode = storeNode->getOpCode().isIndirect() ? storeNode->getChild(1) : storeNode->getChild(0);
 
-         if (valueNode->getOpCode().isLoadVar() && valueNode->isSingleRefUnevaluated() && !valueNode->hasUnresolvedSymbolReference())
+         if (valueNode->getOpCode().isLoadVar() && 
+             valueNode->getReferenceCount() == 1 &&
+             valueNode->getRegister() == NULL &&
+             !valueNode->hasUnresolvedSymbolReference())
             {
             // Pattern match the following trees:
             //
@@ -5276,16 +5280,20 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
 
             return true;
             }
-         else if (valueNode->getOpCode().isConversion() && valueNode->isSingleRefUnevaluated() && !valueNode->hasUnresolvedSymbolReference())
+         else if (valueNode->getOpCode().isConversion() && 
+                  valueNode->getReferenceCount() == 1 &&
+                  valueNode->getRegister() == NULL &&
+                  !valueNode->hasUnresolvedSymbolReference())
             {
             TR::Node* conversionNode = valueNode;
 
             TR::Node* valueNode = conversionNode->getChild(0);
 
             // Make sure this is an integral truncation conversion
-            if (valueNode->getOpCode().isIntegralLoadVar()
-                    && valueNode->isSingleRefUnevaluated()
-                    && !valueNode->hasUnresolvedSymbolReference())
+            if (valueNode->getOpCode().isIntegralLoadVar() &&
+                valueNode->getReferenceCount() == 1 &&
+                valueNode->getRegister() == NULL &&
+                !valueNode->hasUnresolvedSymbolReference())
                {
                if (valueNode->getSize() > storeNode->getSize())
                   {
@@ -16439,7 +16447,7 @@ OMR::Z::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *returnReg = cg->allocateRegister(TR_VRF);
    uint8_t ESMask = getVectorElementSizeMask(firstChild->getSize());
-   bool inRegister = !firstChild->isSingleRefUnevaluated();
+   bool inRegister = firstChild->getReferenceCount() != 1 || firstChild->getRegister() != NULL;
 
    if (firstChild->getOpCode().isLoadConst() &&
        firstChild->getOpCode().isInteger() &&
@@ -16622,7 +16630,7 @@ OMR::Z::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    // if elementNode is constant then we can use the Vector Load Element version of the instructions
    // but only if valueNode is a constant or a memory reference
    // otherwise we have to use the Vector Load GR From VR Element version
-   bool inRegister = !valueNode->isSingleRefUnevaluated();
+   bool inRegister = valueNode->getReferenceCount() != 1 || valueNode->getRegister() != NULL;
 
    int32_t size = valueNode->getSize();
 

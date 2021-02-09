@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -959,10 +959,13 @@ FPtoIntBitsTypeCoercionHelper(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register * sourceReg = NULL;
    TR::DataType nodeType = node->getDataType();
 
-   if (node->getFirstChild()->isSingleRefUnevaluated() &&
-          node->getFirstChild()->getOpCode().isLoadVar())
+   TR::Node* firstChild = node->getFirstChild();
+
+   if (firstChild->getOpCode().isLoadVar() &&
+       firstChild->getReferenceCount() == 1 &&
+       firstChild->getRegister() == NULL)
       {
-      TR::MemoryReference * tempmemref = TR::MemoryReference::create(cg, node->getFirstChild());
+      TR::MemoryReference * tempmemref = TR::MemoryReference::create(cg, firstChild);
       if (nodeType == TR::Int64)
          targetReg = genericLoadHelper<64, 64, MemReg>(node, cg, tempmemref, NULL, false, true);
       else
@@ -971,7 +974,7 @@ FPtoIntBitsTypeCoercionHelper(TR::Node * node, TR::CodeGenerator * cg)
    else
       {
       // Evaluate child, where sourceReg should be an FPR.
-      sourceReg = cg->evaluate(node->getFirstChild());
+      sourceReg = cg->evaluate(firstChild);
       TR::SymbolReference * f2iSR = cg->allocateLocalTemp(nodeType);
 
       // It seems the FP instruction performance is sub-optimal (i.e. LGDR), and we're better
@@ -1046,7 +1049,7 @@ FPtoIntBitsTypeCoercionHelper(TR::Node * node, TR::CodeGenerator * cg)
           }
        }
     node->setRegister(targetReg);
-    cg->decReferenceCount(node->getFirstChild());
+    cg->decReferenceCount(firstChild);
 
     if (node->getNumChildren() == 2)
        cg->decReferenceCount(node->getSecondChild());

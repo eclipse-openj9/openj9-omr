@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -108,7 +108,7 @@ function(ppc_spp2s_files out_var compiler)
 			file(MAKE_DIRECTORY ${out_dir}) # just in case it doesn't exist already
 
 			add_custom_command(OUTPUT ${ipp_out_f}
-				COMMAND ${SPP_CMD} ${SPP_FLAGS} ${SPP_DEFINES} ${SPP_INCLUDES} -E -P ${absolute_in_f} > ${ipp_out_f}
+				COMMAND ${SPP_CMD} ${SPP_FLAGS} ${SPP_DEFINES} ${SPP_INCLUDES} ${absolute_in_f} > ${ipp_out_f}
 				DEPENDS ${in_f}
 				WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 				COMMENT "Running preprocessing ${in_f} to create ${ipp_out_f}"

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2019, 2020 IBM Corp. and others
+# Copyright (c) 2019, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -141,6 +141,12 @@ function(process_source_files src_files)
 		)
 
 		set(pp_command "@CMAKE_C_COMPILER@")
+		if("@CMAKE_C_COMPILER_IS_XLCLANG@")
+			# XLClang seems to have trouble with *.h and *.hpp files here, claiming:
+			# "error: invalid argument '-std=gnu++0x' not allowed with 'C/ObjC'"
+			# Adding this option to the command alleviates this issue.
+			list(APPEND pp_command "-xc++")
+		endif()
 		list(APPEND pp_command ${BASE_ARGS} "-E" "${stub_file}")
 		add_custom_command(
 			OUTPUT "${annt_file}"

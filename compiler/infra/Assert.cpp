@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -44,13 +44,6 @@ void OMR_NORETURN TR::trap()
    static char * noDebug = feGetEnv("TR_NoDebuggerBreakPoint");
    if (!noDebug)
       {
-      static char *crashLogOnAssume = feGetEnv("TR_crashLogOnAssume");
-      if (crashLogOnAssume)
-         {
-         //FIXME: this doesn't work on z/OS
-         *(volatile int*)(0) = 0; // let crashlog do its thing
-         }
-
 #ifdef _MSC_VER
 #ifdef DEBUG
       DebugBreak();
@@ -66,7 +59,12 @@ void OMR_NORETURN TR::trap()
          }
 #endif //ifdef DEBUG
 #else // of _MSC_VER
-      abort();
+
+      // SIGABRT only has one global signal handler, so we cannot guard function calls against SIGABRT using the port
+      // library APIs. Raising a SIGTRAP is useful for downstream projects who may want to catch such signals for 
+      // compilation thread crashes and requeue such compilations (for another attempt, or perhaps to generate
+      // additional diagnostic data).
+      raise(SIGTRAP);
 #endif // ifdef _MSC_VER
       }
    exit(1337);

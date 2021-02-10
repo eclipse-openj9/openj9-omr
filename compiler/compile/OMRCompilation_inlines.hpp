@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,10 +19,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef OMR_COMPILATION_INLINE_INCL
-#define OMR_COMPILATION_INLINE_INCL
+#ifndef OMR_COMPILATION_INLINES_INCL
+#define OMR_COMPILATION_INLINES_INCL
 
-#include "compile/OMRCompilation.hpp"
+#include "compile/Compilation.hpp"
 
 TR::Compilation *
 OMR::Compilation::self()

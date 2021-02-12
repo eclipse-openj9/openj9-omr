@@ -134,42 +134,6 @@ TR::RVSystemLinkage::RVSystemLinkage(TR::CodeGenerator *cg)
    _properties._registerFlags[TR::RealRegister::ft10] = 0;
    _properties._registerFlags[TR::RealRegister::ft11] = 0;
 
-
-   _properties._numIntegerArgumentRegisters  = 8;
-   _properties._firstIntegerArgumentRegister = 0;
-
-   _properties._argumentRegisters[0]  = TR::RealRegister::a0;
-   _properties._argumentRegisters[1]  = TR::RealRegister::a1;
-   _properties._argumentRegisters[2]  = TR::RealRegister::a2;
-   _properties._argumentRegisters[3]  = TR::RealRegister::a3;
-   _properties._argumentRegisters[4]  = TR::RealRegister::a4;
-   _properties._argumentRegisters[5]  = TR::RealRegister::a5;
-   _properties._argumentRegisters[6]  = TR::RealRegister::a6;
-   _properties._argumentRegisters[7]  = TR::RealRegister::a7;
-
-   _properties._firstIntegerReturnRegister = 0;
-   _properties._returnRegisters[0]  = TR::RealRegister::a0;
-   _properties._returnRegisters[1]  = TR::RealRegister::a1;
-
-   _properties._numFloatArgumentRegisters    = 8;
-   _properties._firstFloatArgumentRegister   = 8;
-
-   _properties._argumentRegisters[8+0]  = TR::RealRegister::fa0;
-   _properties._argumentRegisters[8+1]  = TR::RealRegister::fa1;
-   _properties._argumentRegisters[8+2]  = TR::RealRegister::fa2;
-   _properties._argumentRegisters[8+3]  = TR::RealRegister::fa3;
-   _properties._argumentRegisters[8+4]  = TR::RealRegister::fa4;
-   _properties._argumentRegisters[8+5]  = TR::RealRegister::fa5;
-   _properties._argumentRegisters[8+6]  = TR::RealRegister::fa6;
-   _properties._argumentRegisters[8+7]  = TR::RealRegister::fa7;
-
-   _properties._firstFloatReturnRegister   = 2;
-   _properties._returnRegisters[2+0]  = TR::RealRegister::fa0;
-   _properties._returnRegisters[2+1]  = TR::RealRegister::fa1;
-
-   _properties._numAllocatableIntegerRegisters = 7 + 11 + 6; // t0-t6 + s1-s11 + a2-a7
-   _properties._numAllocatableFloatRegisters   = 32;
-
    _properties._methodMetaDataRegister      = TR::RealRegister::NoReg;
    _properties._stackPointerRegister        = TR::RealRegister::sp;
    _properties._framePointerRegister        = TR::RealRegister::s0;
@@ -177,6 +141,8 @@ TR::RVSystemLinkage::RVSystemLinkage(TR::CodeGenerator *cg)
    _properties._computedCallTargetRegister  = TR::RealRegister::NoReg;
    _properties._vtableIndexArgumentRegister = TR::RealRegister::NoReg;
    _properties._j9methodArgumentRegister    = TR::RealRegister::NoReg;
+
+   _properties.initialize();
 
    _properties._numberOfDependencyGPRegisters = 32; // To be determined
    setOffsetToFirstParm(0); // To be determined

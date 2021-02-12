@@ -31,6 +31,58 @@
 #include "il/Node_inlines.hpp"
 #include "il/ParameterSymbol.hpp"
 
+void TR::RVLinkageProperties::initialize()
+   {
+   /*
+    * Note: following code depends on zero initialization of all members!
+    */
+
+   _numAllocatableIntegerRegisters = TR::RealRegister::LastGPR - TR::RealRegister::FirstGPR + 1;
+   _numAllocatableFloatRegisters = TR::RealRegister::LastFPR - TR::RealRegister::FirstFPR + 1;
+
+   _firstIntegerArgumentRegister = 0;
+   _numIntegerArgumentRegisters = 0;
+   _firstIntegerReturnRegister = 0;
+   int numIntegerReturnRegisters = 0;
+
+   for (auto regNum = TR::RealRegister::FirstGPR; regNum <= TR::RealRegister::LastGPR; regNum++)
+      {
+      if (_registerFlags[regNum] & RV_Reserved)
+         {
+         _numAllocatableIntegerRegisters--;
+         }
+      if (_registerFlags[regNum] & IntegerArgument)
+         {
+         _argumentRegisters[_firstIntegerArgumentRegister + _numIntegerArgumentRegisters++] = regNum;
+         }
+      if (_registerFlags[regNum] & IntegerReturn)
+         {
+         _returnRegisters[_firstIntegerReturnRegister + numIntegerReturnRegisters++] = regNum;
+         }
+      }
+
+   _firstFloatArgumentRegister = _firstIntegerArgumentRegister + _numIntegerArgumentRegisters;
+   _numFloatArgumentRegisters = 0;
+   _firstFloatReturnRegister = _firstIntegerArgumentRegister + numIntegerReturnRegisters;
+   int numFloatReturnRegisters = 0;
+
+   for (auto regNum = TR::RealRegister::FirstFPR; regNum <= TR::RealRegister::LastFPR; regNum++)
+         {
+         if (_registerFlags[regNum] & RV_Reserved)
+            {
+            _numAllocatableFloatRegisters--;
+            }
+         if (_registerFlags[regNum] & FloatArgument)
+            {
+            _argumentRegisters[_firstFloatArgumentRegister + _numFloatArgumentRegisters++] = regNum;
+            }
+         if (_registerFlags[regNum] & FloatReturn)
+            {
+            _returnRegisters[_firstFloatReturnRegister + numFloatReturnRegisters++] = regNum;
+            }
+         }
+   }
+
 void OMR::RV::Linkage::mapStack(TR::ResolvedMethodSymbol *method)
    {
    /* do nothing */

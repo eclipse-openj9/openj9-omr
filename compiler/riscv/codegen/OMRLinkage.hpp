@@ -292,9 +292,16 @@ struct RVLinkageProperties
    int32_t getOffsetToFirstLocal() const {return _offsetToFirstLocal;}
 
    uint32_t getNumberOfDependencyGPRegisters() const {return _numberOfDependencyGPRegisters;}
-   };
 
-}
+   /**
+    * @brief Initialize derived properties from register flags. This *must* be called
+    * after _registerFlags are populated.
+    */
+   void initialize();
+
+   }; // struct RVLinkageProperties
+
+}; // namespace TR
 
 namespace OMR
 {

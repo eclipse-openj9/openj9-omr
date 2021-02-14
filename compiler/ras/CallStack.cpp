@@ -23,7 +23,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "env/TRMemory.hpp"
+#include "env/CompilerEnv.hpp"
+#include "env/RawAllocator.hpp"
 #include "ras/CallStackIterator.hpp"
 #include "compile/Compilation.hpp"
 #include "omrformatconsts.h"
@@ -173,7 +174,7 @@ const char *TR_PPCCallStackIterator::getProcedureName()
 
          short name_len = *((short *) x);
          x += sizeof(_tb_table->tb_ext.name_len);
-         char *z = (char*) TR::globalAllocator().allocate(name_len+4);
+         char *z = reinterpret_cast<char *>(TR::Compiler->rawAllocator.allocate(name_len+4));
          strncpy(z, x, name_len);
          z[name_len] = '\0';
 
@@ -488,18 +489,18 @@ TR_WinCallStackIterator::TR_WinCallStackIterator() :
 
       DWORD64  dwDisplacement;
       // Allocate buffer to retrieve symbol info
-      PSYMBOL_INFO pSymbol = (PSYMBOL_INFO) TR::globalAllocator("CallStackIterator").allocate (
+      PSYMBOL_INFO pSymbol = reinterpret_cast<PSYMBOL_INFO>(TR::Compiler->rawAllocator.allocate(
             (sizeof(SYMBOL_INFO) +
              MAX_SYM_NAME*sizeof(TCHAR) +
              sizeof(ULONG64) - 1) /
-            sizeof(ULONG64));
+            sizeof(ULONG64)));
 
       pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
       pSymbol->MaxNameLen = MAX_SYM_NAME;
 
       if (SymFromAddr(hProcess, StackFrame.AddrPC.Offset, &dwDisplacement, pSymbol))
          {
-         _function_names[_trace_size] = (char *) TR::globalAllocator("CallStackIterator").allocate (strlen(pSymbol->Name) * sizeof (char) + 1);
+         _function_names[_trace_size] = reinterpret_cast<char *>(TR::Compiler->rawAllocator.allocate(strlen(pSymbol->Name) * sizeof (char) + 1));
          strcpy(_function_names[_trace_size], pSymbol->Name);
          }
 

@@ -1007,28 +1007,6 @@ namespace TR
 
    typedef CS2::stat_allocator    < CS2PersistentAllocator > GlobalBaseAllocator;
 
-   class GlobalSingletonAllocator: public GlobalBaseAllocator
-      {
-   public:
-      static GlobalSingletonAllocator &instance()
-         {
-         if (_instance == NULL)
-            createInstance();
-
-         return *_instance;
-         }
-
-   private:
-      GlobalSingletonAllocator(const GlobalBaseAllocator &a) : GlobalBaseAllocator(a)
-         {
-         TR_ASSERT(!_instance, "GlobalSingletonAllocator must be initialized only once");
-         _instance = this;
-         }
-
-      static void createInstance();
-      static GlobalSingletonAllocator *_instance;
-      };
-
    /*
     * some common CS2 datatypes
     */

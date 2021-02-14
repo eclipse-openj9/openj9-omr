@@ -1003,10 +1003,6 @@ namespace TR
    typedef CS2::heap_allocator< 65536, 12, TRCS2MemoryAllocator > ThreadLocalAllocator;
    typedef CS2::shared_allocator < ThreadLocalAllocator > Allocator;
 
-   typedef TRPersistentMemoryAllocator CS2PersistentAllocator;
-
-   typedef CS2::stat_allocator    < CS2PersistentAllocator > GlobalBaseAllocator;
-
    /*
     * some common CS2 datatypes
     */

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1996, 2016 IBM Corp. and others
+ * Copyright (c) 1996, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -54,73 +54,6 @@ namespace CS2 {
     }
 
     template <class ostr, class allocator> ostr& stats(ostr &o, allocator &a) { return o;}
-  };
-
-  template <class base_allocator>
-  class stat_allocator: private base_allocator {
-  public:
-    void *allocate(size_t size, const char *name = NULL) {
-      void *ret = (void *) base_allocator::allocate(size,name);
-      if (collect_stats) {
-        alloc_cnt+=1; alloc_size += size;
-        watermark += size;
-        if (watermark > high_watermark) high_watermark = watermark;
-      }
-      return ret;
-    }
-    void deallocate(void *pointer, size_t size, const char *name = NULL) {
-      base_allocator::deallocate(pointer,size,name);
-      if (collect_stats){
-        dealloc_cnt+=1; dealloc_size += size;
-        watermark -= size;
-      }
-    }
-    void *reallocate(size_t newsize, void *pointer, size_t size, const char *name = NULL) {
-      if (collect_stats) {
-        realloc_cnt+=1; realloc_size += size;
-        watermark += (newsize-size);
-        if (watermark > high_watermark) high_watermark = watermark;
-      }
-      return base_allocator::reallocate(newsize,pointer,size,name);
-    }
-
-    template <class ostr, class allocator> ostr& stats(ostr &o, allocator &a) { return base_allocator::stats(o, a);}
-
-    stat_allocator(const base_allocator &a = base_allocator(), bool _stats=false ) :
-      base_allocator(a),
-      collect_stats(_stats),
-      alloc_cnt(0),
-      dealloc_cnt(0),
-      realloc_cnt(0),
-      alloc_size(0),
-      realloc_size(0),
-      dealloc_size(0),
-      watermark(0),
-      high_watermark(0)
-    {}
-
-    ~stat_allocator() {
-      if (collect_stats && alloc_cnt!=0) {
-        printf("  ALLOC= %llu SIZE=%llu AVG=%llu\n", (long long unsigned int)alloc_cnt, (long long unsigned int)alloc_size, (long long unsigned int)(alloc_cnt==0?0:alloc_size/alloc_cnt));
-        printf("DEALLOC= %llu SIZE=%llu AVG=%llu\n", (long long unsigned int)dealloc_cnt, (long long unsigned int)dealloc_size, (long long unsigned int)(dealloc_cnt==0?0:dealloc_size/alloc_cnt));
-        printf("REALLOC= %llu SIZE=%llu AVG=%llu\n", (long long unsigned int)realloc_cnt, (long long unsigned int)realloc_size, (long long unsigned int)(realloc_cnt==0?0:realloc_size/alloc_cnt));
-
-        printf("FINAL SIZE=%lld\n", (long long unsigned int)watermark);
-        printf("HIGH WATER MARK=%lld\n", (long long unsigned int)high_watermark);
-      }
-    }
-  private:
-  bool collect_stats;
-  uint64_t alloc_cnt;
-  uint64_t dealloc_cnt;
-  uint64_t realloc_cnt;
-
-  uint64_t alloc_size;
-  uint64_t realloc_size;
-  uint64_t dealloc_size;
-
-  uint64_t watermark;
-  uint64_t high_watermark;
   };
 
   template <size_t segmentsize = 65536, uint32_t segmentcount= 10, class base_allocator = ::CS2::malloc_allocator>

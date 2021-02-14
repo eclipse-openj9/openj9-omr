@@ -1029,21 +1029,11 @@ namespace TR
       static GlobalSingletonAllocator *_instance;
       };
 
-   typedef CS2::shared_allocator < GlobalSingletonAllocator > GlobalAllocator;
-
-   static GlobalAllocator globalAllocator(const char *name = NULL)
-      {
-      return GlobalAllocator(GlobalSingletonAllocator::instance());
-      }
-
    /*
     * some common CS2 datatypes
     */
    typedef CS2::ASparseBitVector<TR::Allocator> SparseBitVector;
    typedef CS2::ABitVector<TR::Allocator>       BitVector;
-
-   typedef CS2::ASparseBitVector<TR::GlobalAllocator> GlobalSparseBitVector;
-   typedef CS2::ABitVector<TR::GlobalAllocator>       GlobalBitVector;
 
    class AllocatedMemoryMeter
       {

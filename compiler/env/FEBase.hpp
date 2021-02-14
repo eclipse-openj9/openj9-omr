@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -74,7 +74,7 @@ class FEBase : public FECommon
    JitConfig            _config;
    TR::CodeCacheManager _codeCacheManager;
 
-   // these two are deprecated in favour of TR::GlobalAllocator and TR::Allocator
+   // this is deprecated in favour of TR::Allocator
    TR_PersistentMemory       _persistentMemory; // global memory
 
    public:

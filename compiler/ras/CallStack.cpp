@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -84,26 +84,27 @@ void TR_PPCCallStackIterator::_set_tb_table()
       ++pc;
       _tb_table = (struct tbtable *)pc;
       if (_tb_table->tb.has_tboff)
-    {
-    char *x = (char *)(&_tb_table->tb_ext);
-    if (_tb_table->tb.fixedparms + _tb_table->tb.floatparms != 0)
-       {
-       x += sizeof(_tb_table->tb_ext.parminfo);
-       }
-    if (((unsigned int *) (uintptr_t) _tb_table - *((unsigned int *) x)) > pc)
-       {
-       _tb_table = NULL;
-       return;
-       }
-    else
-       {
-       _offset_in_proc = ((uintptr_t) pc) - ((uintptr_t) _tb_table - *((unsigned int *) x));
-       }
-    }
+         {
+         char *x = (char *)(&_tb_table->tb_ext);
+         if (_tb_table->tb.fixedparms + _tb_table->tb.floatparms != 0)
+            {
+            x += sizeof(_tb_table->tb_ext.parminfo);
+            }
+         if (((unsigned int *) (uintptr_t) _tb_table - *((unsigned int *) x)) > pc)
+            {
+            _tb_table = NULL;
+            return;
+            }
+         else
+            {
+            _offset_in_proc = ((uintptr_t) pc) - ((uintptr_t) _tb_table - *((unsigned int *) x));
+            }
+         }
       else
-    {
-    _offset_in_proc = 0;
-    }
+         {
+         _offset_in_proc = 0;
+         }
+
       return;
       }
    }
@@ -125,17 +126,19 @@ bool TR_PPCCallStackIterator::getNext()
       {
       // We're going to assume that the LR is always saved
       struct stack_mark_t
-    {
-    struct stack_mark_t *  back_chain;
-    uintptr_t     saved_cr;
-    uintptr_t     saved_lr;
-    } *stack_mark = (struct stack_mark_t *) _tos;
+         {
+         struct stack_mark_t *  back_chain;
+         uintptr_t     saved_cr;
+         uintptr_t     saved_lr;
+         } *stack_mark = (struct stack_mark_t *) _tos;
+
       _tos = (void *) stack_mark->back_chain;
       _pc = (void *) stack_mark->back_chain->saved_lr;
       _set_tb_table();
       _done = (_tb_table == NULL);
       if (_tos == NULL) _done = true;
       }
+
    return !_done;
    }
 
@@ -148,45 +151,47 @@ const char *TR_PPCCallStackIterator::getProcedureName()
    else
       {
       if (_tb_table->tb.name_present)
-    {
-    char *x = (char *)(&_tb_table->tb_ext);
-    if (_tb_table->tb.fixedparms + _tb_table->tb.floatparms != 0)
-       {
-       x += sizeof(_tb_table->tb_ext.parminfo);
-       }
-    if (_tb_table->tb.has_tboff)
-       {
-       x += sizeof(_tb_table->tb_ext.tb_offset);
-       }
-    if (_tb_table->tb.int_hndl)
-       {
-       x += sizeof(_tb_table->tb_ext.hand_mask);
-       }
-    if (_tb_table->tb.has_ctl)
-       {
-       int y = *((int *) x);
-       x += sizeof(_tb_table->tb_ext.ctl_info) + (y * sizeof(_tb_table->tb_ext.ctl_info_disp[0]));
-       }
-    short name_len = *((short *) x);
-    x += sizeof(_tb_table->tb_ext.name_len);
-    char *z = (char*) TR::globalAllocator().allocate(name_len+4);
-    strncpy(z, x, name_len);
-    z[name_len] = '\0';
+         {
+         char *x = (char *)(&_tb_table->tb_ext);
+         if (_tb_table->tb.fixedparms + _tb_table->tb.floatparms != 0)
+            {
+            x += sizeof(_tb_table->tb_ext.parminfo);
+            }
+         if (_tb_table->tb.has_tboff)
+            {
+            x += sizeof(_tb_table->tb_ext.tb_offset);
+            }
+         if (_tb_table->tb.int_hndl)
+            {
+            x += sizeof(_tb_table->tb_ext.hand_mask);
+            }
+         if (_tb_table->tb.has_ctl)
+            {
+            int y = *((int *) x);
+            x += sizeof(_tb_table->tb_ext.ctl_info) + (y * sizeof(_tb_table->tb_ext.ctl_info_disp[0]));
+            }
+
+         short name_len = *((short *) x);
+         x += sizeof(_tb_table->tb_ext.name_len);
+         char *z = (char*) TR::globalAllocator().allocate(name_len+4);
+         strncpy(z, x, name_len);
+         z[name_len] = '\0';
+
 #if defined (__clang__)
-    int status = 0;
-    size_t demangled_name_length = 0;
-    char *n = abi::__cxa_demangle(z, NULL, &demangled_name_length, &status);
-    return n;
+         int status = 0;
+         size_t demangled_name_length = 0;
+         char *n = abi::__cxa_demangle(z, NULL, &demangled_name_length, &status);
+         return n;
 #else
-    char *ptoc;
-    Name *n = Demangle(z, ptoc); // Probably does a new...which is bad!
-    return n == NULL ? z : n->Text();
+         char *ptoc;
+         Name *n = Demangle(z, ptoc); // Probably does a new...which is bad!
+         return n == NULL ? z : n->Text();
 #endif
-    }
+         }
       else
-    {
-    return NULL;
-    }
+         {
+         return NULL;
+         }
       }
    }
 

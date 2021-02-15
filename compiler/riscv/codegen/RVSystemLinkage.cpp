@@ -53,100 +53,105 @@ addDependency(
    dep->addPreCondition(vreg, rnum);
    dep->addPostCondition(vreg, rnum);
    }
+
+TR::RVSystemLinkageProperties::RVSystemLinkageProperties()
+   : TR::RVLinkageProperties()
+   {
+   _properties = IntegersInRegisters|FloatsInRegisters|RightToLeft;
+
+   _registerFlags[TR::RealRegister::zero] = Preserved|RV_Reserved; // zero
+   _registerFlags[TR::RealRegister::ra]   = Preserved|RV_Reserved; // return address
+   _registerFlags[TR::RealRegister::sp]   = Preserved|RV_Reserved; // sp
+   _registerFlags[TR::RealRegister::gp]   = Preserved|RV_Reserved; // gp
+   _registerFlags[TR::RealRegister::tp]   = Preserved|RV_Reserved; // tp
+
+   _registerFlags[TR::RealRegister::t0]   = Preserved|RV_Reserved; // fp
+   _registerFlags[TR::RealRegister::t1]   = 0;
+   _registerFlags[TR::RealRegister::t2]   = 0;
+
+   _registerFlags[TR::RealRegister::s0]   = Preserved;
+   _registerFlags[TR::RealRegister::s1]   = Preserved;
+
+   _registerFlags[TR::RealRegister::a0]   = IntegerArgument | IntegerReturn;
+   _registerFlags[TR::RealRegister::a1]   = IntegerArgument | IntegerReturn;
+   _registerFlags[TR::RealRegister::a2]   = IntegerArgument;
+   _registerFlags[TR::RealRegister::a3]   = IntegerArgument;
+   _registerFlags[TR::RealRegister::a4]   = IntegerArgument;
+   _registerFlags[TR::RealRegister::a5]   = IntegerArgument;
+   _registerFlags[TR::RealRegister::a6]   = IntegerArgument;
+   _registerFlags[TR::RealRegister::a7]   = IntegerArgument;
+
+   _registerFlags[TR::RealRegister::s2]   = Preserved;
+   _registerFlags[TR::RealRegister::s3]   = Preserved;
+   _registerFlags[TR::RealRegister::s4]   = Preserved;
+   _registerFlags[TR::RealRegister::s5]   = Preserved;
+   _registerFlags[TR::RealRegister::s6]   = Preserved;
+   _registerFlags[TR::RealRegister::s7]   = Preserved;
+   _registerFlags[TR::RealRegister::s8]   = Preserved;
+   _registerFlags[TR::RealRegister::s9]   = Preserved;
+   _registerFlags[TR::RealRegister::s10]  = Preserved;
+   _registerFlags[TR::RealRegister::s11]  = Preserved;
+
+   _registerFlags[TR::RealRegister::t3]   = 0;
+   _registerFlags[TR::RealRegister::t4]   = 0;
+   _registerFlags[TR::RealRegister::t5]   = 0;
+   _registerFlags[TR::RealRegister::t6]   = 0;
+
+   _registerFlags[TR::RealRegister::ft0]  = 0;
+   _registerFlags[TR::RealRegister::ft1]  = 0;
+   _registerFlags[TR::RealRegister::ft2]  = 0;
+   _registerFlags[TR::RealRegister::ft3]  = 0;
+   _registerFlags[TR::RealRegister::ft4]  = 0;
+   _registerFlags[TR::RealRegister::ft5]  = 0;
+   _registerFlags[TR::RealRegister::ft6]  = 0;
+   _registerFlags[TR::RealRegister::ft7]  = 0;
+
+   _registerFlags[TR::RealRegister::fs0]  = Preserved;
+   _registerFlags[TR::RealRegister::fs1]  = Preserved;
+
+   _registerFlags[TR::RealRegister::fa0]  = FloatArgument | FloatReturn;
+   _registerFlags[TR::RealRegister::fa1]  = FloatArgument | FloatReturn;
+   _registerFlags[TR::RealRegister::fa2]  = FloatArgument;
+   _registerFlags[TR::RealRegister::fa3]  = FloatArgument;
+   _registerFlags[TR::RealRegister::fa4]  = FloatArgument;
+   _registerFlags[TR::RealRegister::fa5]  = FloatArgument;
+   _registerFlags[TR::RealRegister::fa6]  = FloatArgument;
+   _registerFlags[TR::RealRegister::fa7]  = FloatArgument;
+
+   _registerFlags[TR::RealRegister::fs2]  = Preserved;
+   _registerFlags[TR::RealRegister::fs3]  = Preserved;
+   _registerFlags[TR::RealRegister::fs4]  = Preserved;
+   _registerFlags[TR::RealRegister::fs5]  = Preserved;
+   _registerFlags[TR::RealRegister::fs6]  = Preserved;
+   _registerFlags[TR::RealRegister::fs7]  = Preserved;
+   _registerFlags[TR::RealRegister::fs8]  = Preserved;
+   _registerFlags[TR::RealRegister::fs9]  = Preserved;
+   _registerFlags[TR::RealRegister::fs10] = Preserved;
+   _registerFlags[TR::RealRegister::fs11] = Preserved;
+   _registerFlags[TR::RealRegister::ft8]  = 0;
+   _registerFlags[TR::RealRegister::ft9]  = 0;
+   _registerFlags[TR::RealRegister::ft10] = 0;
+   _registerFlags[TR::RealRegister::ft11] = 0;
+
+   _methodMetaDataRegister      = TR::RealRegister::NoReg;
+   _stackPointerRegister        = TR::RealRegister::sp;
+   _framePointerRegister        = TR::RealRegister::s0;
+
+   _computedCallTargetRegister  = TR::RealRegister::NoReg;
+   _vtableIndexArgumentRegister = TR::RealRegister::NoReg;
+   _j9methodArgumentRegister    = TR::RealRegister::NoReg;
+
+   _numberOfDependencyGPRegisters = 32; // To be determined
+   _offsetToFirstLocal            = 0; // To be determined
+
+   initialize();
+   }
+
+
 TR::RVSystemLinkage::RVSystemLinkage(TR::CodeGenerator *cg)
    : TR::Linkage(cg)
    {
-   int i;
-
-   _properties._properties = IntegersInRegisters|FloatsInRegisters|RightToLeft;
-
-   _properties._registerFlags[TR::RealRegister::zero] = Preserved|RV_Reserved; // zero
-   _properties._registerFlags[TR::RealRegister::ra]   = Preserved|RV_Reserved; // return address
-   _properties._registerFlags[TR::RealRegister::sp]   = Preserved|RV_Reserved; // sp
-   _properties._registerFlags[TR::RealRegister::gp]   = Preserved|RV_Reserved; // gp
-   _properties._registerFlags[TR::RealRegister::tp]   = Preserved|RV_Reserved; // tp
-
-   _properties._registerFlags[TR::RealRegister::t0]   = Preserved|RV_Reserved; // fp
-   _properties._registerFlags[TR::RealRegister::t1]   = 0;
-   _properties._registerFlags[TR::RealRegister::t2]   = 0;
-
-   _properties._registerFlags[TR::RealRegister::s0]   = Preserved;
-   _properties._registerFlags[TR::RealRegister::s1]   = Preserved;
-
-   _properties._registerFlags[TR::RealRegister::a0]   = IntegerArgument | IntegerReturn;
-   _properties._registerFlags[TR::RealRegister::a1]   = IntegerArgument | IntegerReturn;
-   _properties._registerFlags[TR::RealRegister::a2]   = IntegerArgument;
-   _properties._registerFlags[TR::RealRegister::a3]   = IntegerArgument;
-   _properties._registerFlags[TR::RealRegister::a4]   = IntegerArgument;
-   _properties._registerFlags[TR::RealRegister::a5]   = IntegerArgument;
-   _properties._registerFlags[TR::RealRegister::a6]   = IntegerArgument;
-   _properties._registerFlags[TR::RealRegister::a7]   = IntegerArgument;
-
-   _properties._registerFlags[TR::RealRegister::s2]   = Preserved;
-   _properties._registerFlags[TR::RealRegister::s3]   = Preserved;
-   _properties._registerFlags[TR::RealRegister::s4]   = Preserved;
-   _properties._registerFlags[TR::RealRegister::s5]   = Preserved;
-   _properties._registerFlags[TR::RealRegister::s6]   = Preserved;
-   _properties._registerFlags[TR::RealRegister::s7]   = Preserved;
-   _properties._registerFlags[TR::RealRegister::s8]   = Preserved;
-   _properties._registerFlags[TR::RealRegister::s9]   = Preserved;
-   _properties._registerFlags[TR::RealRegister::s10]  = Preserved;
-   _properties._registerFlags[TR::RealRegister::s11]  = Preserved;
-
-   _properties._registerFlags[TR::RealRegister::t3]   = 0;
-   _properties._registerFlags[TR::RealRegister::t4]   = 0;
-   _properties._registerFlags[TR::RealRegister::t5]   = 0;
-   _properties._registerFlags[TR::RealRegister::t6]   = 0;
-
-   _properties._registerFlags[TR::RealRegister::ft0]  = 0;
-   _properties._registerFlags[TR::RealRegister::ft1]  = 0;
-   _properties._registerFlags[TR::RealRegister::ft2]  = 0;
-   _properties._registerFlags[TR::RealRegister::ft3]  = 0;
-   _properties._registerFlags[TR::RealRegister::ft4]  = 0;
-   _properties._registerFlags[TR::RealRegister::ft5]  = 0;
-   _properties._registerFlags[TR::RealRegister::ft6]  = 0;
-   _properties._registerFlags[TR::RealRegister::ft7]  = 0;
-
-   _properties._registerFlags[TR::RealRegister::fs0]  = Preserved;
-   _properties._registerFlags[TR::RealRegister::fs1]  = Preserved;
-
-   _properties._registerFlags[TR::RealRegister::fa0]  = FloatArgument | FloatReturn;
-   _properties._registerFlags[TR::RealRegister::fa1]  = FloatArgument | FloatReturn;
-   _properties._registerFlags[TR::RealRegister::fa2]  = FloatArgument;
-   _properties._registerFlags[TR::RealRegister::fa3]  = FloatArgument;
-   _properties._registerFlags[TR::RealRegister::fa4]  = FloatArgument;
-   _properties._registerFlags[TR::RealRegister::fa5]  = FloatArgument;
-   _properties._registerFlags[TR::RealRegister::fa6]  = FloatArgument;
-   _properties._registerFlags[TR::RealRegister::fa7]  = FloatArgument;
-
-   _properties._registerFlags[TR::RealRegister::fs2]  = Preserved;
-   _properties._registerFlags[TR::RealRegister::fs3]  = Preserved;
-   _properties._registerFlags[TR::RealRegister::fs4]  = Preserved;
-   _properties._registerFlags[TR::RealRegister::fs5]  = Preserved;
-   _properties._registerFlags[TR::RealRegister::fs6]  = Preserved;
-   _properties._registerFlags[TR::RealRegister::fs7]  = Preserved;
-   _properties._registerFlags[TR::RealRegister::fs8]  = Preserved;
-   _properties._registerFlags[TR::RealRegister::fs9]  = Preserved;
-   _properties._registerFlags[TR::RealRegister::fs10] = Preserved;
-   _properties._registerFlags[TR::RealRegister::fs11] = Preserved;
-   _properties._registerFlags[TR::RealRegister::ft8]  = 0;
-   _properties._registerFlags[TR::RealRegister::ft9]  = 0;
-   _properties._registerFlags[TR::RealRegister::ft10] = 0;
-   _properties._registerFlags[TR::RealRegister::ft11] = 0;
-
-   _properties._methodMetaDataRegister      = TR::RealRegister::NoReg;
-   _properties._stackPointerRegister        = TR::RealRegister::sp;
-   _properties._framePointerRegister        = TR::RealRegister::s0;
-
-   _properties._computedCallTargetRegister  = TR::RealRegister::NoReg;
-   _properties._vtableIndexArgumentRegister = TR::RealRegister::NoReg;
-   _properties._j9methodArgumentRegister    = TR::RealRegister::NoReg;
-
-   _properties.initialize();
-
-   _properties._numberOfDependencyGPRegisters = 32; // To be determined
    setOffsetToFirstParm(0); // To be determined
-   _properties._offsetToFirstLocal            = 0; // To be determined
    }
 
 

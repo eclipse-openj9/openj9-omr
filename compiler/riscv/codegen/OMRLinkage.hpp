@@ -298,9 +298,7 @@ struct RVLinkageProperties
     * after _registerFlags are populated.
     */
    void initialize();
-
    }; // struct RVLinkageProperties
-
 }; // namespace TR
 
 namespace OMR

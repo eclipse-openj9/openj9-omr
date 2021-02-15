@@ -55,7 +55,6 @@ addDependency(
    }
 
 TR::RVSystemLinkageProperties::RVSystemLinkageProperties()
-   : TR::RVLinkageProperties()
    {
    _properties = IntegersInRegisters|FloatsInRegisters|RightToLeft;
 
@@ -147,6 +146,8 @@ TR::RVSystemLinkageProperties::RVSystemLinkageProperties()
    initialize();
    }
 
+const TR::RVSystemLinkageProperties
+TR::RVSystemLinkage::_properties;
 
 TR::RVSystemLinkage::RVSystemLinkage(TR::CodeGenerator *cg)
    : TR::Linkage(cg)

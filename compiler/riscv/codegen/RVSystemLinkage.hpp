@@ -46,7 +46,7 @@ class RVSystemLinkage : public TR::Linkage
    {
    protected:
 
-   TR::RVSystemLinkageProperties _properties;
+   static const TR::RVSystemLinkageProperties _properties;
 
    public:
 

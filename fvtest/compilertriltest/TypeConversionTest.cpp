@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,6 +24,7 @@
 #include "omrformatconsts.h"
 
 #include <cmath>
+#include <string.h>
 
 #if defined(J9ZOS390) || defined(AIXPPC)
 namespace std
@@ -1608,3 +1609,273 @@ TEST_P(DoubleNormalizeNan, UsingLoadConst) {
 }
 
 INSTANTIATE_TEST_CASE_P(TypeConversionTest, DoubleNormalizeNan, ::testing::ValuesIn(normalize_dnan_values()));
+
+float ibits2f(int32_t x) {
+    float f;
+    memcpy(&f, &x, sizeof(x));
+    return f;
+}
+
+class Int32BitsToFloat : public TRTest::UnaryOpTest<float,int32_t> {};
+
+TEST_P(Int32BitsToFloat, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[256] = {0};
+    std::snprintf(inputTrees, 256,
+        "(method return=Float"
+        "  (block"
+        "    (freturn"
+        "      (ibits2f"
+        "        (iconst %d) ) ) ) )",
+        param.value);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<float (*)()>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point();
+    if (std::isnan(exp)) {
+        ASSERT_EQ(std::isnan(exp), std::isnan(act));
+    } else {
+        ASSERT_EQ(exp, act);
+    }
+}
+
+TEST_P(Int32BitsToFloat, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char *inputTrees = "(method return=Float args=[Int32] (block (freturn (ibits2f (iload parm=0)))))";
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<float (*)(int32_t)>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point(param.value);
+    if (std::isnan(exp)) {
+        ASSERT_EQ(std::isnan(exp), std::isnan(act));
+    } else {
+        ASSERT_EQ(exp, act);
+    }
+}
+
+INSTANTIATE_TEST_CASE_P(TypeConversionTest, Int32BitsToFloat, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_values<int32_t>()),
+    ::testing::Values(
+        std::tuple<const char*, float(*)(int32_t)>("ibits2f", ibits2f) )));
+
+int32_t fbits2i(float x) {
+    int32_t i;
+    memcpy(&i, &x, sizeof(x));
+    return i;
+}
+
+class FloatBitsToInt32 : public TRTest::UnaryOpTest<int32_t,float> {};
+
+TEST_P(FloatBitsToInt32, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    if ( std::isnan(param.value) ) {
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5808)";
+        SKIP_ON_OSX(KnownBug) << "See issue #5809";
+        SKIP_ON_RISCV(KnownBug) << "See issue #5810";
+    }
+
+    char inputTrees[256] = {0};
+    std::snprintf(inputTrees, 256,
+        "(method return=Int32"
+        "  (block"
+        "    (ireturn"
+        "      (fbits2i"
+        "        (fconst %f) ) ) ) )",
+        param.value);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)()>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(FloatBitsToInt32, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char *inputTrees =
+        "(method return=Int32 args=[Float]"
+        "  (block"
+        "    (ireturn"
+        "      (fbits2i"
+        "        (fload parm=0) ) ) ) )";
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(float)>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point(param.value);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(TypeConversionTest, FloatBitsToInt32, ::testing::Combine(
+    ::testing::ValuesIn(
+        TRTest::filter(TRTest::const_values<float>(), smallFp_filter<float>)),
+    ::testing::Values(
+        std::tuple<const char*, int32_t(*)(float)>("fbits2i", fbits2i) )));
+
+double lbits2d(int64_t x) {
+    double d;
+    memcpy(&d, &x, sizeof(x));
+    return d;
+}
+
+class Int64BitsToDouble : public TRTest::UnaryOpTest<double,int64_t> {};
+
+TEST_P(Int64BitsToDouble, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[256] = {0};
+    std::snprintf(inputTrees, 256,
+        "(method return=Double"
+        "  (block"
+        "    (dreturn"
+        "      (lbits2d"
+        "        (lconst %lld) ) ) ) )",
+        param.value);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<double (*)()>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point();
+    if (std::isnan(exp)) {
+        ASSERT_EQ(std::isnan(exp), std::isnan(act));
+    } else {
+        ASSERT_EQ(exp, act);
+    }
+}
+
+TEST_P(Int64BitsToDouble, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char *inputTrees =
+        "(method return=Double args=[Int64]"
+        "  (block"
+        "    (dreturn"
+        "      (lbits2d"
+        "        (lload parm=0) ) ) ) )";
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<double (*)(int64_t)>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point(param.value);
+    if (std::isnan(exp)) {
+        ASSERT_EQ(std::isnan(exp), std::isnan(act));
+    } else {
+        ASSERT_EQ(exp, act);
+    }
+}
+
+INSTANTIATE_TEST_CASE_P(TypeConversionTest, Int64BitsToDouble, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_values<int64_t>()),
+    ::testing::Values(
+        std::tuple<const char*, double(*)(int64_t)>("lbits2d", lbits2d) )));
+
+int64_t dbits2l(double x) {
+    int64_t l;
+    memcpy(&l, &x, sizeof(x));
+    return l;
+}
+
+class DoubleBitsToInt64 : public TRTest::UnaryOpTest<int64_t,double> {};
+
+TEST_P(DoubleBitsToInt64, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    if ( std::isnan(param.value) ) {
+        SKIP_ON_ZOS(KnownBug) << "TRIL parser cannot handle NaN values on zOS (see issue #5183)";
+        SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5808)";
+        SKIP_ON_OSX(KnownBug) << "See issue #5809";
+    }
+
+    char inputTrees[512] = {0};
+    std::snprintf(inputTrees, 512,
+        "(method return=Int64"
+        "  (block"
+        "    (lreturn"
+        "      (dbits2l"
+        "        (dconst %lf) ) ) ) )",
+        param.value);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int64_t (*)()>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(DoubleBitsToInt64, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char *inputTrees =
+        "(method return=Int64 args=[Double]"
+        "  (block"
+        "    (lreturn"
+        "      (dbits2l"
+        "        (dload parm=0) ) ) ) )";
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int64_t (*)(double)>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point(param.value);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(TypeConversionTest, DoubleBitsToInt64, ::testing::Combine(
+    ::testing::ValuesIn(
+        TRTest::filter(TRTest::const_values<double>(), smallFp_filter<double>)),
+    ::testing::Values(
+        std::tuple<const char*, int64_t(*)(double)>("dbits2l", dbits2l) )));

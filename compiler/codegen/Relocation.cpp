@@ -489,6 +489,7 @@ const char *TR::ExternalRelocation::_externalRelocationTargetKindNames[TR_NumExt
    "TR_InlinedSpecialMethod (105)",
    "TR_InlinedAbstractMethod (106)",
    "TR_Breakpoint (107)",
+   "TR_InlinedMethodPointer (108)",
    };
 
 uintptr_t TR::ExternalRelocation::_globalValueList[TR_NumGlobalValueItems] =

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -57,6 +57,7 @@
 #include "il/TreeTop_inlines.hpp"
 #include "infra/Assert.hpp"
 #include "p/codegen/GenerateInstructions.hpp"
+#include "p/codegen/LoadStoreHandler.hpp"
 #include "p/codegen/PPCInstruction.hpp"
 #include "p/codegen/PPCTableOfConstants.hpp"
 #include "runtime/Runtime.hpp"
@@ -67,239 +68,194 @@ static TR::Register *doublePrecisionEvaluator(TR::Node *node, TR::InstOpCode::Mn
 
 TR::Register *OMR::Power::TreeEvaluator::ibits2fEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Node                *child = node->getFirstChild();
-   TR::Register            *target = cg->allocateSinglePrecisionRegister();
+   TR::Node *child = node->getFirstChild();
+   TR::Register *trgReg = cg->allocateSinglePrecisionRegister();
 
-   if (child->getRegister() == NULL && child->getReferenceCount() == 1 &&
-       child->getOpCode().isLoadVar())
+   if (child->getRegister() == NULL && child->getReferenceCount() == 1 && child->getOpCode().isLoadVar())
       {
-      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, target, tempMR);
-      tempMR->decNodeReferenceCounts(cg);
+      TR::LoadStoreHandler::generateLoadNodeSequence(cg, trgReg, child, TR::InstOpCode::lfs, 4);
       }
    else
       {
-      generateMvFprGprInstructions(cg, node, gprSp2fpr, cg->comp()->target().is64Bit(),target, cg->evaluate(child));
+      generateMvFprGprInstructions(cg, node, gprSp2fpr, cg->comp()->target().is64Bit(), trgReg, cg->evaluate(child));
       cg->decReferenceCount(child);
       }
 
-   node->setRegister(target);
-   return target;
+   node->setRegister(trgReg);
+   return trgReg;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Node                *child  = node->getFirstChild();
-   TR::Register            *target = cg->allocateRegister();
-   TR::Register            *floatReg;
-   bool                   childEval = true;
+   TR::Node *child = node->getFirstChild();
+   TR::Register *trgReg = cg->allocateRegister();
 
-
-   if (child->getRegister() == NULL && child->getReferenceCount() == 1 &&
-       child->getOpCode().isLoadVar())
+   if (child->getRegister() == NULL && child->getReferenceCount() == 1 && child->getOpCode().isLoadVar() && !node->normalizeNanValues())
       {
-      childEval = false;
-      floatReg = cg->allocateSinglePrecisionRegister();
-      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, floatReg, TR::MemoryReference::createWithMemRef(cg, node, *tempMR, 0, 4));
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, target, tempMR);
-      tempMR->decNodeReferenceCounts(cg);
+      TR::LoadStoreHandler::generateLoadNodeSequence(cg, trgReg, child, TR::InstOpCode::lwz, 4);
       }
    else
       {
-      floatReg = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) ? cg->gprClobberEvaluate(child) : cg->evaluate(child);
-      generateMvFprGprInstructions(cg, node, fpr2gprSp, cg->comp()->target().is64Bit(),target, floatReg);
-      childEval = floatReg == child->getRegister();
+      TR::Register *floatReg = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) ? cg->gprClobberEvaluate(child) : cg->evaluate(child);
+      generateMvFprGprInstructions(cg, node, fpr2gprSp, cg->comp()->target().is64Bit(), trgReg, floatReg);
+
+      if (node->normalizeNanValues())
+         {
+         TR::Register *condReg = cg->allocateRegister(TR_CCR);
+
+         TR::LabelSymbol *nanNormalizeStartLabel = generateLabelSymbol(cg);
+         TR::LabelSymbol *nanNormalizeEndLabel = generateLabelSymbol(cg);
+
+         nanNormalizeStartLabel->setStartInternalControlFlow();
+         nanNormalizeEndLabel->setEndInternalControlFlow();
+
+         TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
+         deps->addPostCondition(condReg, TR::RealRegister::NoReg);
+         deps->addPostCondition(trgReg, TR::RealRegister::NoReg);
+
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, condReg, floatReg, floatReg);
+         generateLabelInstruction(cg, TR::InstOpCode::label, node, nanNormalizeStartLabel);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, PPCOpProp_BranchLikely, node, nanNormalizeEndLabel, condReg);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, trgReg, 0x7fc0);
+         generateDepLabelInstruction(cg, TR::InstOpCode::label, node, nanNormalizeEndLabel, deps);
+
+         cg->stopUsingRegister(condReg);
+         }
+
+      if (floatReg != child->getRegister())
+         cg->stopUsingRegister(floatReg);
       cg->decReferenceCount(child);
       }
 
-   // There's a special-case check for NaN values, which have to be
-   // normalized to a particular NaN value.
-   //
-   if (node->normalizeNanValues())
-      {
-      TR::Register *condReg = cg->allocateRegister(TR_CCR);
-
-      TR::LabelSymbol *nanNormalizeStartLabel = generateLabelSymbol(cg);
-      TR::LabelSymbol *nanNormalizeEndLabel = generateLabelSymbol(cg);
-
-      nanNormalizeStartLabel->setStartInternalControlFlow();
-      nanNormalizeEndLabel->setEndInternalControlFlow();
-
-      TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
-      deps->addPostCondition(condReg, TR::RealRegister::NoReg);
-      deps->addPostCondition(target, TR::RealRegister::NoReg);
-
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, condReg, floatReg, floatReg);
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, nanNormalizeStartLabel);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, PPCOpProp_BranchLikely, node, nanNormalizeEndLabel, condReg);
-      generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, target, 0x7fc0);
-      generateDepLabelInstruction(cg, TR::InstOpCode::label, node, nanNormalizeEndLabel, deps);
-
-      cg->stopUsingRegister(condReg);
-      }
-
-   if (!childEval)
-      cg->stopUsingRegister(floatReg);
-
-   node->setRegister(target);
-   return target;
+   node->setRegister(trgReg);
+   return trgReg;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Node                *child  = node->getFirstChild();
-   TR::Register            *target = cg->allocateRegister(TR_FPR);
+   TR::Node *child = node->getFirstChild();
+   TR::Register *trgReg = cg->allocateRegister(TR_FPR);
 
-   if (child->getRegister() == NULL && child->getReferenceCount() == 1 &&
-       child->getOpCode().isLoadVar())
+   if (child->getRegister() == NULL && child->getReferenceCount() == 1 && child->getOpCode().isLoadVar())
       {
-      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 8);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, target, tempMR);
-      tempMR->decNodeReferenceCounts(cg);
+      TR::LoadStoreHandler::generateLoadNodeSequence(cg, trgReg, child, TR::InstOpCode::lfd, 8);
+      }
+   else if (cg->comp()->target().is64Bit())
+      {
+      generateMvFprGprInstructions(cg, node, gpr2fprHost64, true, trgReg, cg->evaluate(child));
+      cg->decReferenceCount(child);
       }
    else
       {
-      if (cg->comp()->target().is64Bit())
-         generateMvFprGprInstructions(cg, node, gpr2fprHost64, true, target, cg->evaluate(child));
-      else
-         {
-         TR::Register *longReg = cg->evaluate(child);
-         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8))
-            {
-            TR::Register * tmp1 = cg->allocateRegister(TR_FPR);
-            generateMvFprGprInstructions(cg, node, gpr2fprHost32, false, target, longReg->getHighOrder(), longReg->getLowOrder(), tmp1);
-            cg->stopUsingRegister(tmp1);
-            }
-         else
-            generateMvFprGprInstructions(cg, node, gpr2fprHost32, false, target, longReg->getHighOrder(), longReg->getLowOrder());
-         }
+      TR::Register *longReg = cg->evaluate(child);
+      TR::Register *tempReg = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) ? cg->allocateRegister(TR_FPR) : NULL;
+
+      generateMvFprGprInstructions(cg, node, gpr2fprHost32, false, trgReg, longReg->getHighOrder(), longReg->getLowOrder(), tempReg);
+
+      if (tempReg)
+         cg->stopUsingRegister(tempReg);
       cg->decReferenceCount(child);
       }
 
-   node->setRegister(target);
-   return target;
+   node->setRegister(trgReg);
+   return trgReg;
+   }
+
+TR::Register *dbits2l32Evaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *child = node->getFirstChild();
+   TR::Register *trgReg = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
+
+   if (child->getOpCode().isLoadVar() && !child->getRegister() && child->getReferenceCount() == 1 && !node->normalizeNanValues())
+      {
+      TR::LoadStoreHandler::generatePairedLoadNodeSequence(cg, trgReg, child);
+      }
+   else
+      {
+      TR::Register *doubleReg = cg->evaluate(child);
+      TR::Register *tempReg = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) ? cg->allocateRegister(TR_FPR) : NULL;
+
+      generateMvFprGprInstructions(cg, node, fpr2gprHost32, false, trgReg->getHighOrder(), trgReg->getLowOrder(), doubleReg, tempReg);
+
+      if (tempReg)
+         cg->stopUsingRegister(tempReg);
+
+      if (node->normalizeNanValues())
+         {
+         TR::Register *condReg = cg->allocateRegister(TR_CCR);
+
+         TR::LabelSymbol *nanNormalizeStartLabel = generateLabelSymbol(cg);
+         TR::LabelSymbol *nanNormalizeEndLabel = generateLabelSymbol(cg);
+
+         TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
+         TR::addDependency(deps, condReg, TR::RealRegister::NoReg, TR_CCR, cg);
+         TR::addDependency(deps, trgReg->getLowOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
+         TR::addDependency(deps, trgReg->getHighOrder(), TR::RealRegister::NoReg, TR_GPR, cg);
+
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, condReg, doubleReg, doubleReg);
+         generateLabelInstruction(cg, TR::InstOpCode::label, node, nanNormalizeStartLabel);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, PPCOpProp_BranchLikely, node, nanNormalizeEndLabel, condReg);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, trgReg->getHighOrder(), 0x7ff8);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, trgReg->getLowOrder(), 0);
+         generateDepLabelInstruction(cg, TR::InstOpCode::label, node, nanNormalizeEndLabel, deps);
+
+         cg->stopUsingRegister(condReg);
+         }
+
+      cg->decReferenceCount(child);
+      }
+
+   node->setRegister(trgReg);
+   return trgReg;
+   }
+
+TR::Register *dbits2l64Evaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *child = node->getFirstChild();
+   TR::Register *trgReg = cg->allocateRegister();
+
+   if (child->getRegister() == NULL && child->getReferenceCount() == 1 && child->getOpCode().isLoadVar() && !node->normalizeNanValues())
+      {
+      TR::LoadStoreHandler::generateLoadNodeSequence(cg, trgReg, child, TR::InstOpCode::ld, 8);
+      }
+   else
+      {
+      TR::Register *doubleReg = cg->evaluate(child);
+      generateMvFprGprInstructions(cg, node, fpr2gprHost64, true, trgReg, doubleReg);
+
+      if (node->normalizeNanValues())
+         {
+         TR::Register *condReg = cg->allocateRegister(TR_CCR);
+
+         TR::LabelSymbol *nanNormalizeStartLabel = generateLabelSymbol(cg);
+         TR::LabelSymbol *nanNormalizeEndLabel = generateLabelSymbol(cg);
+
+         TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
+         TR::addDependency(deps, condReg, TR::RealRegister::NoReg, TR_CCR, cg);
+         TR::addDependency(deps, trgReg, TR::RealRegister::NoReg, TR_GPR, cg);
+
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, condReg, doubleReg, doubleReg);
+         generateLabelInstruction(cg, TR::InstOpCode::label, node, nanNormalizeStartLabel);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, PPCOpProp_BranchLikely, node, nanNormalizeEndLabel, condReg);
+         loadConstant(cg, node, (int64_t)CONSTANT64(0x7ff8000000000000), trgReg);
+         generateDepLabelInstruction(cg, TR::InstOpCode::label, node, nanNormalizeEndLabel, deps);
+
+         cg->stopUsingRegister(condReg);
+         }
+
+      cg->decReferenceCount(child);
+      }
+
+   node->setRegister(trgReg);
+   return trgReg;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Node                *child   = node->getFirstChild();
-   TR::Register            *lowReg  = NULL;
-   TR::Register            *highReg = NULL;
-   TR::Register            *lReg = NULL;
-   TR::Register            *doubleReg;
-   bool                    childEval = true;
-
-   if (child->getRegister() == NULL && child->getReferenceCount() == 1 &&
-       child->getOpCode().isLoadVar())
-      {
-      childEval = false;
-      TR::MemoryReference  *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 8);
-      doubleReg = cg->allocateRegister(TR_FPR);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, doubleReg, tempMR);
-
-      if (cg->comp()->target().is64Bit())
-         {
-         lReg  = cg->allocateRegister();
-         TR::MemoryReference  *tempMR2 = TR::MemoryReference::createWithMemRef(cg, node, *tempMR, 0, 8);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::ld, node, lReg, tempMR2);
-         tempMR2->decNodeReferenceCounts(cg);
-         }
-      else
-         {
-         lowReg  = cg->allocateRegister();
-         highReg = cg->allocateRegister();
-
-         TR::MemoryReference *highMem, *lowMem;
-         highMem = TR::MemoryReference::createWithMemRef(cg, node, *tempMR, 0, 4);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, highReg, highMem);
-         lowMem = TR::MemoryReference::createWithMemRef(cg, node, *tempMR, 4, 4);
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, lowReg, lowMem);
-
-         highMem->decNodeReferenceCounts(cg);
-         lowMem->decNodeReferenceCounts(cg);
-         }
-      tempMR->decNodeReferenceCounts(cg);
-      }
-   else
-      {
-      doubleReg = cg->evaluate(child);
-
-      if (cg->comp()->target().is64Bit())
-         {
-         lReg  = cg->allocateRegister();
-         generateMvFprGprInstructions(cg, node, fpr2gprHost64, true, lReg, doubleReg);
-         }
-      else
-         {
-         highReg = cg->allocateRegister();
-         lowReg = cg->allocateRegister();
-         if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8))
-            {
-            TR::Register * tmp1 = cg->allocateRegister(TR_FPR);
-            generateMvFprGprInstructions(cg, node, fpr2gprHost32, false, highReg, lowReg, doubleReg, tmp1);
-            cg->stopUsingRegister(tmp1);
-            }
-         else
-            generateMvFprGprInstructions(cg, node, fpr2gprHost32, false, highReg, lowReg, doubleReg);
-         }
-      cg->decReferenceCount(child);
-      }
-
-   // There's a special-case check for NaN values, which have to be
-   // normalized to a particular NaN value.
-   //
-   if (node->normalizeNanValues())
-      {
-      TR::Register *condReg = cg->allocateRegister(TR_CCR);
-
-      TR::LabelSymbol *nanNormalizeStartLabel = generateLabelSymbol(cg);
-      TR::LabelSymbol *nanNormalizeEndLabel = generateLabelSymbol(cg);
-
-      uint16_t numDeps = cg->comp()->target().is64Bit() ? 2 : 3;
-      TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(numDeps, numDeps, cg->trMemory());
-      TR::addDependency(deps, condReg, TR::RealRegister::NoReg, TR_CCR, cg);
-      if (cg->comp()->target().is64Bit())
-         {
-         TR::addDependency(deps, lReg, TR::RealRegister::NoReg, TR_GPR, cg);
-         }
-      else
-         {
-         TR::addDependency(deps, lowReg, TR::RealRegister::NoReg, TR_GPR, cg);
-         TR::addDependency(deps, highReg, TR::RealRegister::NoReg, TR_GPR, cg);
-         }
-
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::fcmpu, node, condReg, doubleReg, doubleReg);
-      generateLabelInstruction(cg, TR::InstOpCode::label, node, nanNormalizeStartLabel);
-      generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, PPCOpProp_BranchLikely, node, nanNormalizeEndLabel, condReg);
-      if (cg->comp()->target().is64Bit())
-         {
-         loadConstant(cg, node, (int64_t)CONSTANT64(0x7ff8000000000000), lReg);
-         }
-      else
-         {
-         generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, highReg, 0x7ff8);
-         generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, lowReg, 0);
-         }
-      generateDepLabelInstruction(cg, TR::InstOpCode::label, node, nanNormalizeEndLabel, deps);
-
-      cg->stopUsingRegister(condReg);
-      }
-
-   if (!childEval)
-      cg->stopUsingRegister(doubleReg);
-
    if (cg->comp()->target().is64Bit())
-      {
-      node->setRegister(lReg);
-      return lReg;
-      }
+      return dbits2l64Evaluator(node, cg);
    else
-      {
-      TR::RegisterPair *target = cg->allocateRegisterPair(lowReg, highReg);
-      node->setRegister(target);
-      return target;
-      }
+      return dbits2l32Evaluator(node, cg);
    }
 
 static TR::Register *fconstHandler(TR::Node *node, TR::CodeGenerator *cg, float value)
@@ -331,119 +287,23 @@ TR::Register *OMR::Power::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::Cod
 // also handles TR::floadi
 TR::Register *OMR::Power::TreeEvaluator::floadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *tempReg = node->setRegister(cg->allocateSinglePrecisionRegister());
-   TR::MemoryReference *tempMR;
-   bool needSync= node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP();
+   TR::Register *trgReg = cg->allocateSinglePrecisionRegister();
 
-   // If the reference is volatile or potentially volatile, the layout needs to be
-   // fixed for patching if it turns out to be not a volatile atfer all.
-   tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 4);
+   TR::LoadStoreHandler::generateLoadNodeSequence(cg, trgReg, node, TR::InstOpCode::lfs, 4);
 
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, tempReg, tempMR);
-   if (needSync)
-      {
-      TR::TreeEvaluator::postSyncConditions(node, cg, tempReg, tempMR, TR::InstOpCode::isync);
-      }
-   tempMR->decNodeReferenceCounts(cg);
-
-   return tempReg;
-   }
-
-
-TR::Register *OMR::Power::TreeEvaluator::dloadHelper(TR::Node *node, TR::CodeGenerator *cg, TR::Register *tempReg, TR::InstOpCode::Mnemonic opcode)
-   {
-   TR::Compilation *comp = cg->comp();
-   TR::MemoryReference *tempMR;
-   bool needSync= node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP();
-   if (cg->comp()->target().is32Bit() && needSync && !cg->is64BitProcessor())
-      {
-      TR::Register *addrReg = cg->allocateRegister();
-      TR::SymbolReference *vrlRef = comp->getSymRefTab()->findOrCreateVolatileReadDoubleSymbolRef(comp->getMethodSymbol());
-
-      if (node->getSymbolReference()->isUnresolved())
-         {
-#ifdef J9_PROJECT_SPECIFIC
-         // NOTE NOTE -- If the reference is volatile or potentially volatile, the layout
-         // needs to be fixed for patching if it turns out to be not a volatile after all.
-         tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
-
-         if (opcode == TR::InstOpCode::lxvdsx)
-            tempMR->forceIndexedForm(node, cg);
-
-         generateTrg1MemInstruction(cg, opcode, node, tempReg, tempMR);
-         tempMR->getUnresolvedSnippet()->setIsSpecialDouble();
-         tempMR->getUnresolvedSnippet()->setInSyncSequence();
-#endif
-         }
-      else
-         {
-         tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
-         if (tempMR->getIndexRegister() != NULL)
-            generateTrg1Src2Instruction (cg, TR::InstOpCode::add, node, addrReg, tempMR->getBaseRegister(), tempMR->getIndexRegister());
-         else
-            generateTrg1MemInstruction (cg, TR::InstOpCode::addi2, node, addrReg, tempMR);
-         }
-      TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, cg->trMemory());
-      TR::addDependency(dependencies, tempReg, TR::RealRegister::fp0, TR_FPR, cg);
-      TR::addDependency(dependencies, addrReg, TR::RealRegister::gr3, TR_GPR, cg);
-      TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
-      if (node->getSymbolReference()->isUnresolved())
-         {
-         if (tempMR->getBaseRegister() != NULL)
-            {
-            TR::addDependency(dependencies, tempMR->getBaseRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
-            dependencies->getPreConditions()->getRegisterDependency(3)->setExcludeGPR0();
-            dependencies->getPostConditions()->getRegisterDependency(3)->setExcludeGPR0();
-            }
-         if (tempMR->getIndexRegister() != NULL)
-            TR::addDependency(dependencies, tempMR->getIndexRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
-         }
-      generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node,
-                                   (uintptr_t)vrlRef->getSymbol()->castToMethodSymbol()->getMethodAddress(),
-                                   dependencies, vrlRef);
-
-      // tempMR registers possibly repeatedly declared dead but no harm.
-      dependencies->stopUsingDepRegs(cg, tempReg);
-      cg->machine()->setLinkRegisterKilled(true);
-      }
-   else
-      {
-      // If the reference is volatile or potentially volatile, the layout needs to be
-      // fixed for patching if it turns out to be not a volatile after all.
-      tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
-
-      if (opcode == TR::InstOpCode::lxvdsx || opcode == TR::InstOpCode::lxsdx)
-         {
-         if (tempMR->hasDelayedOffset())
-            {
-            TR::Register *tmpReg = cg->allocateRegister();
-            generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, tmpReg, tempMR);
-            tempMR->decNodeReferenceCounts(cg);
-
-            tempMR = TR::MemoryReference::createWithIndexReg(cg, NULL, tmpReg, 16);
-            }
-         else
-            {
-            tempMR->forceIndexedForm(node, cg);
-            }
-         }
-      generateTrg1MemInstruction(cg, opcode, node, tempReg, tempMR);
-      if (needSync)
-         {
-         TR::TreeEvaluator::postSyncConditions(node, cg, tempReg, tempMR, TR::InstOpCode::isync);
-         }
-      }
-
-   tempMR->decNodeReferenceCounts(cg);
-
-   return tempReg;
+   node->setRegister(trgReg);
+   return trgReg;
    }
 
 // also handles TR::dloadi
 TR::Register *OMR::Power::TreeEvaluator::dloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *tempReg = node->setRegister(cg->allocateRegister(TR_FPR));
-   return TR::TreeEvaluator::dloadHelper(node, cg, tempReg, TR::InstOpCode::lfd);
+   TR::Register *trgReg = cg->allocateRegister(TR_FPR);
+
+   TR::LoadStoreHandler::generateLoadNodeSequence(cg, trgReg, node, TR::InstOpCode::lfd, 8);
+
+   node->setRegister(trgReg);
+   return trgReg;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -605,19 +465,10 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
       cg->decReferenceCount(child);
       return resReg;
       }
-   else if (child->getRegister() == NULL &&
-            child->getOpCode().isLoadVar())
+   else if (!child->getRegister() && child->getReferenceCount() == 1 && child->getOpCode().isLoadVar())
       {
-      if (child->getReferenceCount() > 1)
-         {
-         TR::Node *newNode = child->duplicateTree(false);
-
-         cg->evaluate(child);
-         cg->decReferenceCount(child);
-         child = newNode;
-         }
-
-      return TR::TreeEvaluator::dloadHelper(child, cg, resReg, TR::InstOpCode::lxvdsx);
+      TR::LoadStoreHandler::generateLoadNodeSequence(cg, resReg, child, TR::InstOpCode::lxvdsx, 8, true);
+      return resReg;
       }
    else
       {
@@ -698,21 +549,12 @@ TR::Register *OMR::Power::TreeEvaluator::vdsetelemEvaluator(TR::Node *node, TR::
       int elem = thirdChild->getInt();
       TR_ASSERT(elem == 0 || elem == 1, "Element can only be 0 or 1\n");
 
-      if (secondChild->getRegister() == NULL &&
-         secondChild->getOpCode().isLoadVar())
+      if (!secondChild->getRegister() && secondChild->getReferenceCount() == 1 && secondChild->getOpCode().isLoadVar())
          {
-         if (secondChild->getReferenceCount() > 1)
-            {
-            TR::Node *newNode = secondChild->duplicateTree(false);
-             cg->evaluate(secondChild);
-            cg->decReferenceCount(secondChild);
-            secondChild = newNode;
-            }
-
-         TR::TreeEvaluator::dloadHelper(secondChild, cg, resReg, TR::InstOpCode::lxsdx);
-	      }
-         else
-	      {
+         TR::LoadStoreHandler::generateLoadNodeSequence(cg, resReg, secondChild, TR::InstOpCode::lxsdx, 8, true);
+         }
+      else
+         {
          TR::Register *fprReg = cg->evaluate(secondChild);
          generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, fprReg, fprReg);
 
@@ -763,142 +605,51 @@ TR::Register *OMR::Power::TreeEvaluator::vdsetelemEvaluator(TR::Node *node, TR::
    return resReg;
    }
 
-
-//handles both fstore and ifstore
+// Also handles fstorei
 TR::Register *OMR::Power::TreeEvaluator::fstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   bool indirect = node->getOpCode().isIndirect();
-   int childIndex = indirect?1:0;
-   TR::Node *child = node->getChild(childIndex);
+   TR::Node *srcChild = node->getOpCode().isIndirect() ? node->getSecondChild() : node->getFirstChild();
 
-   // Special case storing an int value into a float variable
-   //
-   if (child->getRegister()==NULL && child->getOpCodeValue() == TR::ibits2f)
+   if (!srcChild->getRegister() && srcChild->getReferenceCount() == 1 && srcChild->getOpCodeValue() == TR::ibits2f)
       {
-      if (child->getReferenceCount()>1)
-         node->setAndIncChild(childIndex, child->getFirstChild());
-      else
-         node->setChild(childIndex, child->getFirstChild());
-      TR::Node::recreate(node, indirect?TR::istorei:TR::istore);
-      TR::TreeEvaluator::istoreEvaluator(node, cg);
-      node->setChild(childIndex, child);
-      TR::Node::recreate(node, indirect?TR::fstorei:TR::fstore);
-      cg->decReferenceCount(child);
-      return NULL;
-      }
+      TR::Register *srcReg = cg->evaluate(srcChild->getFirstChild());
+      TR::LoadStoreHandler::generateStoreNodeSequence(cg, srcReg, node, TR::InstOpCode::stw, 4);
 
-   TR::Register *valueReg = cg->evaluate(child);
-   TR::MemoryReference *tempMR;
-   bool    needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
-
-   // If the reference is volatile or potentially volatile, the layout needs to be
-   // fixed for patching if it turns out to be not a volatile after all.
-   tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 4);
-
-   if (needSync)
-      generateInstruction(cg, TR::InstOpCode::lwsync, node);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stfs, node, tempMR, valueReg);
-   if (needSync)
-      {
-      TR::TreeEvaluator::postSyncConditions(node, cg, valueReg, tempMR, TR::InstOpCode::sync);
-      }
-   cg->decReferenceCount(child);
-   tempMR->decNodeReferenceCounts(cg);
-
-   return NULL;
-   }
-
-//handles both dstore and idstore
-TR::Register* OMR::Power::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   bool indirect = node->getOpCode().isIndirect();
-   int childIndex = indirect?1:0;
-   TR::Node *child = node->getChild(childIndex);
-   bool  isUnresolved = node->getSymbolReference()->isUnresolved();
-   TR::Compilation *comp = cg->comp();
-
-   // Special case storing a long value into a double variable
-   //
-   if (child->getRegister()==NULL && child->getOpCodeValue() == TR::lbits2d)
-      {
-      if (child->getReferenceCount()>1)
-         node->setAndIncChild(childIndex, child->getFirstChild());
-      else
-         node->setChild(childIndex, child->getFirstChild());
-      TR::Node::recreate(node, indirect?TR::lstorei:TR::lstore);
-      TR::TreeEvaluator::lstoreEvaluator(node, cg);
-      node->setChild(childIndex, child);
-      TR::Node::recreate(node, indirect?TR::dstorei:TR::dstore);
-      cg->decReferenceCount(child);
-      return NULL;
-      }
-
-
-   TR::Register *valueReg = cg->evaluate(child);
-   bool needSync= node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP();
-   TR::MemoryReference *tempMR;
-   if (cg->comp()->target().is32Bit() && needSync && !cg->is64BitProcessor())
-      {
-      TR::Register *addrReg = cg->allocateRegister();
-      TR::SymbolReference    *vrlRef = comp->getSymRefTab()->findOrCreateVolatileWriteDoubleSymbolRef(comp->getMethodSymbol());
-      TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, cg->trMemory());
-      if (isUnresolved)
-         {
-#ifdef J9_PROJECT_SPECIFIC
-         // NOTE NOTE -- If the reference is volatile or potentially volatile, the layout
-         // needs to be fixed for patching if it turns out to be not a volatile after all.
-         tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, tempMR, valueReg);
-         tempMR->getUnresolvedSnippet()->setIsSpecialDouble();
-         tempMR->getUnresolvedSnippet()->setInSyncSequence();
-#endif
-         }
-      else
-         {
-         tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
-         if (tempMR->getIndexRegister() != NULL)
-             generateTrg1Src2Instruction (cg, TR::InstOpCode::add, node, addrReg, tempMR->getBaseRegister(), tempMR->getIndexRegister());
-         else
-             generateTrg1MemInstruction (cg, TR::InstOpCode::addi2, node, addrReg, tempMR);
-         }
-      TR::addDependency(dependencies, valueReg, TR::RealRegister::fp0, TR_FPR, cg);
-      TR::addDependency(dependencies, addrReg, TR::RealRegister::gr3, TR_GPR, cg);
-      TR::addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
-      if (isUnresolved)
-         {
-         if (tempMR->getBaseRegister() != NULL)
-            {
-            TR::addDependency(dependencies, tempMR->getBaseRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
-            dependencies->getPreConditions()->getRegisterDependency(3)->setExcludeGPR0();
-            dependencies->getPostConditions()->getRegisterDependency(3)->setExcludeGPR0();
-            }
-         if (tempMR->getIndexRegister() != NULL)
-            TR::addDependency(dependencies, tempMR->getIndexRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
-         }
-      generateDepImmSymInstruction(cg, TR::InstOpCode::bl, node,
-         (uintptr_t)vrlRef->getSymbol()->castToMethodSymbol()->getMethodAddress(),
-         dependencies, vrlRef);
-
-      // tempMR registers may be repeatedly declared dead but no harm.
-      dependencies->stopUsingDepRegs(cg);
-
-      cg->machine()->setLinkRegisterKilled(true);
+      cg->decReferenceCount(srcChild->getFirstChild());
       }
    else
       {
-      // If the reference is volatile or potentially volatile, the layout needs to be
-      // fixed for patching if it turns out to be not a volatile after all.
-      tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node, 8);
-      if (needSync)
-         generateInstruction(cg, TR::InstOpCode::lwsync, node);
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, tempMR, valueReg);
-      if (needSync)
-         {
-         TR::TreeEvaluator::postSyncConditions(node, cg, valueReg, tempMR, TR::InstOpCode::sync);
-         }
+      TR::Register *srcReg = cg->evaluate(srcChild);
+      TR::LoadStoreHandler::generateStoreNodeSequence(cg, srcReg, node, TR::InstOpCode::stfs, 4);
       }
-   tempMR->decNodeReferenceCounts(cg);
-   cg->decReferenceCount(child);
+
+   cg->decReferenceCount(srcChild);
+   return NULL;
+   }
+
+// Also handles dstorei
+TR::Register *OMR::Power::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *srcChild = node->getOpCode().isIndirect() ? node->getSecondChild() : node->getFirstChild();
+
+   if (!srcChild->getRegister() && srcChild->getReferenceCount() == 1 && srcChild->getOpCodeValue() == TR::lbits2d)
+      {
+      TR::Register *srcReg = cg->evaluate(srcChild->getFirstChild());
+
+      if (cg->comp()->target().is64Bit())
+         TR::LoadStoreHandler::generateStoreNodeSequence(cg, srcReg, node, TR::InstOpCode::std, 8);
+      else
+         TR::LoadStoreHandler::generatePairedStoreNodeSequence(cg, srcReg, node);
+
+      cg->decReferenceCount(srcChild->getFirstChild());
+      }
+   else
+      {
+      TR::Register *srcReg = cg->evaluate(srcChild);
+      TR::LoadStoreHandler::generateStoreNodeSequence(cg, srcReg, node, TR::InstOpCode::stfd, 8);
+      }
+
+   cg->decReferenceCount(srcChild);
    return NULL;
    }
 
@@ -1322,16 +1073,13 @@ TR::Register *OMR::Power::TreeEvaluator::i2fEvaluator(TR::Node *node, TR::CodeGe
        (node->getOpCodeValue() == TR::iu2f && (child->getOpCodeValue() == TR::iload || child->getOpCodeValue() == TR::iloadi))) ||
        (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6) &&
        (node->getOpCodeValue() == TR::i2f && (child->getOpCodeValue() == TR::iload || child->getOpCodeValue() == TR::iloadi)))) &&
-       child->getReferenceCount() == 1 && child->getRegister() == NULL &&
-       !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
+       child->getReferenceCount() == 1 && child->getRegister() == NULL)
       {
-      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
-      tempMR->forceIndexedForm(node, cg);
       tempReg = cg->allocateRegister(TR_FPR); // This one is 64bit
       trgReg = cg->allocateSinglePrecisionRegister(); // Allocate here
       if (node->getOpCodeValue() == TR::i2f)
          {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfiwax, node, tempReg, tempMR);
+         TR::LoadStoreHandler::generateLoadNodeSequence(cg, tempReg, child, TR::InstOpCode::lfiwax, 4, true);
          if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7))
             {
             generateTrg1Src1Instruction(cg, TR::InstOpCode::fcfids, node, trgReg, tempReg);
@@ -1344,10 +1092,8 @@ TR::Register *OMR::Power::TreeEvaluator::i2fEvaluator(TR::Node *node, TR::CodeGe
          }
       else
          {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfiwzx, node, tempReg, tempMR);  // TR::iu2f, must be P7
-         generateTrg1Src1Instruction(cg, TR::InstOpCode::fcfidus, node, trgReg, tempReg);
+         TR::LoadStoreHandler::generateLoadNodeSequence(cg, tempReg, child, TR::InstOpCode::lfiwzx, 4, true);
          }
-      tempMR->decNodeReferenceCounts(cg);
       cg->stopUsingRegister(tempReg);
       }
    else
@@ -1371,24 +1117,19 @@ TR::Register *OMR::Power::TreeEvaluator::i2dEvaluator(TR::Node *node, TR::CodeGe
        (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P6) &&
        node->getOpCodeValue() == TR::i2d && (child->getOpCodeValue() == TR::iload || child->getOpCodeValue() == TR::iloadi))) &&
        child->getReferenceCount()==1 &&
-       child->getRegister() == NULL &&
-       !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
+       child->getRegister() == NULL)
       {
-      // possible TODO: if refcount > 1, do both load and lfiwax?
-      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
-      tempMR->forceIndexedForm(node, cg);
       trgReg = cg->allocateRegister(TR_FPR);
       if (node->getOpCodeValue() == TR::i2d)
          {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfiwax, node, trgReg, tempMR);
+         TR::LoadStoreHandler::generateLoadNodeSequence(cg, trgReg, child, TR::InstOpCode::lfiwax, 4, true);
          generateTrg1Src1Instruction(cg, TR::InstOpCode::fcfid, node, trgReg, trgReg);
          }
       else
          {
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfiwzx, node, trgReg, tempMR); // iu2d
+         TR::LoadStoreHandler::generateLoadNodeSequence(cg, trgReg, child, TR::InstOpCode::lfiwzx, 4, true);
          generateTrg1Src1Instruction(cg, TR::InstOpCode::fcfidu, node, trgReg, trgReg);
          }
-      tempMR->decNodeReferenceCounts(cg);
       }
    else
       {
@@ -1559,16 +1300,12 @@ TR::Register *OMR::Power::TreeEvaluator::l2fEvaluator(TR::Node *node, TR::CodeGe
        node->getOpCodeValue() == TR::l2f &&
        (child->getOpCodeValue() == TR::lload || child->getOpCodeValue() == TR::lloadi) &&
        child->getReferenceCount()==1 &&
-       child->getRegister() == NULL &&
-       !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
+       child->getRegister() == NULL)
       {
-      TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
-      tempMR->forceIndexedForm(node, cg);
       TR::Register *tempReg = cg->allocateRegister(TR_FPR); // Double
       trgReg = cg->allocateSinglePrecisionRegister(TR_FPR); // Single
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lfdx, node, tempReg, tempMR);
+      TR::LoadStoreHandler::generateLoadNodeSequence(cg, tempReg, child, TR::InstOpCode::lfd, 8);
       generateTrg1Src1Instruction(cg, TR::InstOpCode::fcfids, node, trgReg, tempReg);
-      tempMR->decNodeReferenceCounts(cg);
       cg->stopUsingRegister(tempReg);
       }
    else
@@ -1587,15 +1324,11 @@ TR::Register *OMR::Power::TreeEvaluator::l2dEvaluator(TR::Node *node, TR::CodeGe
        node->getOpCodeValue() == TR::l2d &&
        (child->getOpCodeValue() == TR::lload || child->getOpCodeValue() == TR::lloadi) &&
        child->getReferenceCount()==1 &&
-       child->getRegister() == NULL &&
-       !(child->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP()))
+       child->getRegister() == NULL)
       {
-         TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, child, 4);
-         tempMR->forceIndexedForm(node, cg);
-         trgReg = cg->allocateRegister(TR_FPR); // Double
-         generateTrg1MemInstruction(cg, TR::InstOpCode::lfdx, node, trgReg, tempMR);
-         generateTrg1Src1Instruction(cg, TR::InstOpCode::fcfid, node, trgReg, trgReg);
-         tempMR->decNodeReferenceCounts(cg);
+      trgReg = cg->allocateRegister(TR_FPR);
+      TR::LoadStoreHandler::generateLoadNodeSequence(cg, trgReg, child, TR::InstOpCode::lfd, 8);
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::fcfid, node, trgReg, trgReg);
       }
    else
       {

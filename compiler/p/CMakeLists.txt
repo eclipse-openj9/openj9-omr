@@ -1,5 +1,5 @@
 #################################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -50,5 +50,6 @@ compiler_library(p
 	${CMAKE_CURRENT_LIST_DIR}/codegen/TreeEvaluatorVMX.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/UnaryEvaluator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRConstantDataSnippet.cpp
+	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRLoadStoreHandler.cpp
 	${CMAKE_CURRENT_LIST_DIR}/env/OMRCPU.cpp
 )

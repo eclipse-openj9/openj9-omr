@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -68,12 +68,8 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *lloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *floadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *dloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *dloadHelper(TR::Node *node, TR::CodeGenerator *cg, TR::Register *reg, TR::InstOpCode::Mnemonic op);
    static TR::Register *bloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *buloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *commonByteLoadEvaluator(TR::Node *node, bool signExtend, TR::CodeGenerator *cg);
    static TR::Register *sloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *cloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg); // ibm@59591
    static TR::Register *istoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -81,7 +77,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *dstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *sstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *cstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ilstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *astoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);  // ibm@59591
    static TR::Register *dwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -184,10 +179,9 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *i2bEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *i2cEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *i2sEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *i2lEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *iu2lEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *l2bEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *l2buEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *l2cEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *l2sEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *l2iEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *l2fEvaluator(TR::Node *node, TR::CodeGenerator *cg);

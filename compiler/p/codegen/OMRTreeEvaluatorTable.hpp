@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -173,7 +173,7 @@
 #define _lxorEvaluator TR::TreeEvaluator::lxorEvaluator
 #define _bxorEvaluator TR::TreeEvaluator::ixorEvaluator
 #define _sxorEvaluator TR::TreeEvaluator::ixorEvaluator
-#define _i2lEvaluator TR::TreeEvaluator::s2lEvaluator
+#define _i2lEvaluator TR::TreeEvaluator::i2lEvaluator
 #define _i2fEvaluator TR::TreeEvaluator::i2fEvaluator
 #define _i2dEvaluator TR::TreeEvaluator::i2dEvaluator
 #define _i2bEvaluator TR::TreeEvaluator::i2bEvaluator
@@ -518,10 +518,10 @@
 #define _vdRegStoreEvaluator TR::TreeEvaluator::fRegStoreEvaluator
 #define _iuloadEvaluator TR::TreeEvaluator::iloadEvaluator
 #define _luloadEvaluator TR::TreeEvaluator::lloadEvaluator
-#define _buloadEvaluator TR::TreeEvaluator::buloadEvaluator
+#define _buloadEvaluator TR::TreeEvaluator::bloadEvaluator
 #define _iuloadiEvaluator TR::TreeEvaluator::iloadEvaluator
 #define _luloadiEvaluator TR::TreeEvaluator::lloadEvaluator
-#define _buloadiEvaluator TR::TreeEvaluator::buloadEvaluator
+#define _buloadiEvaluator TR::TreeEvaluator::bloadEvaluator
 #define _iustoreEvaluator TR::TreeEvaluator::istoreEvaluator
 #define _lustoreEvaluator TR::TreeEvaluator::lstoreEvaluator
 #define _bustoreEvaluator TR::TreeEvaluator::bstoreEvaluator
@@ -548,10 +548,10 @@
 #define _luRegLoadEvaluator TR::TreeEvaluator::gprRegLoadEvaluator
 #define _iuRegStoreEvaluator TR::TreeEvaluator::gprRegStoreEvaluator
 #define _luRegStoreEvaluator TR::TreeEvaluator::gprRegStoreEvaluator
-#define _cloadEvaluator TR::TreeEvaluator::cloadEvaluator
-#define _cloadiEvaluator TR::TreeEvaluator::cloadEvaluator
-#define _cstoreEvaluator TR::TreeEvaluator::cstoreEvaluator
-#define _cstoreiEvaluator TR::TreeEvaluator::cstoreEvaluator
+#define _cloadEvaluator TR::TreeEvaluator::sloadEvaluator
+#define _cloadiEvaluator TR::TreeEvaluator::sloadEvaluator
+#define _cstoreEvaluator TR::TreeEvaluator::sstoreEvaluator
+#define _cstoreiEvaluator TR::TreeEvaluator::sstoreEvaluator
 #define _monentEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _monexitEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _monexitfenceEvaluator TR::TreeEvaluator::badILOpEvaluator
@@ -756,4 +756,3 @@
 
 #include "il/Opcodes.enum"
 #undef OPCODE_MACRO
-

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -343,9 +343,9 @@ class Optimizer
    protected:
    TR::OptimizationManager *      _opts[OMR::numGroups];
 
-   private:
-
    TR::Optimizer *self();
+
+   private:
 
    int32_t performOptimization(const OptimizationStrategy *, int32_t firstOptIndex, int32_t lastOptIndex, int32_t doTiming);
 

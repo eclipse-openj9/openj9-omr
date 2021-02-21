@@ -43,16 +43,12 @@
    contiguousArraySizeSymbol = firstCommonNonhelperNonArrayShadowSymbol,
    discontiguousArraySizeSymbol,
    arrayClassRomPtrSymbol,
-   classRomPtrSymbol,
    javaLangClassFromClassSymbol,
    classFromJavaLangClassSymbol,
    addressOfClassOfMethodSymbol,
-   ramStaticsFromClassSymbol,
    componentClassSymbol,
-   componentClassAsPrimitiveSymbol,
    isArraySymbol,
    isClassAndDepthFlagsSymbol,
-   initializeStatusFromClassSymbol,
    isClassFlagsSymbol,
    vftSymbol,
    currentThreadSymbol,
@@ -69,9 +65,6 @@
    currentTimeMaxPrecisionSymbol,
    headerFlagsSymbol,
    singlePrecisionSQRTSymbol,
-   threadPrivateFlagsSymbol,  // private flags slot on j9vmthread
-   arrayletSpineFirstElementSymbol,// address of contiguous arraylet spine first element
-   dltBlockSymbol,            // DLT Block field in j9vmthread
    countForRecompileSymbol,   // global boolean indicating when methods should start counting for guarded recompilations
    gcrPatchPointSymbol,       // address where we need to patch GCR guard instruction
    counterAddressSymbol,      // address of invokation counter for indirect loads and stores
@@ -100,6 +93,7 @@
     *   The call is not to be codegen evaluated, it should be cleaned up before codegen.
     */
    potentialOSRPointHelperSymbol,
+
    /** \brief
     *
     *  A call with this symbol marks a place that has been optimized with runtime assumptions. Such place needs protection of OSR
@@ -114,6 +108,7 @@
     *   The call is not to be codegen evaluated, it should be cleaned up before codegen.
     */
    osrFearPointHelperSymbol,
+
    /** \brief
     *
     * A call with this symbol marks a place where we want/need escape analysis to add heapifications for any stack allocated
@@ -129,21 +124,9 @@
     *   The call is not to be codegen evaluated, it should be cleaned up by postEscapeAnalysis.
     */
    eaEscapeHelperSymbol,
-   lowTenureAddressSymbol,    // on j9vmthread
-   highTenureAddressSymbol,   // on j9vmthread
-   fragmentParentSymbol,
-   globalFragmentSymbol,
    instanceShapeSymbol,
    instanceDescriptionSymbol,
    descriptionWordFromPtrSymbol,
-   classFromJavaLangClassAsPrimitiveSymbol,
-   javaVMSymbol,
-   heapBaseSymbol,
-   heapTopSymbol,
-   j9methodExtraFieldSymbol,
-   j9methodConstantPoolSymbol,
-   startPCLinkageInfoSymbol,
-   instanceShapeFromROMClassSymbol,
 
    /** \brief Performs an equality comparison between two objects.
     *
@@ -308,26 +291,7 @@
    jProfileValueSymbol,
    jProfileValueWithNullCHKSymbol,
 
-   /** \brief
-    * This symbol represents the tempSlot field in j9vmthread. It will provide a mechanism for the compiler
-    * to insert temporary information that the VM can use - such as the number of args when calling
-    * signature-polymorphic methods that are implemented in the VM as internal natives. The VM can use that
-    * information in a number of ways, such as locating items on the stack.
-    *
-    * \code
-    *    istore  <j9VMThreadTempSlotField>
-    *       iconst <number of args for the call to the signature-polymorphic VM internal native method>
-    *    icall <VM internal native method>
-    *       <object the VM needs to locate>
-    *       <parm1>
-    *       <parm2>
-    *       .
-    *       .
-    * \endcode
-    */
-   j9VMThreadTempSlotFieldSymbol,
-
-   OMRlastPrintableCommonNonhelperSymbol = j9VMThreadTempSlotFieldSymbol,
+   OMRlastPrintableCommonNonhelperSymbol = jProfileValueWithNullCHKSymbol,
 
    firstPerCodeCacheHelperSymbol,
    lastPerCodeCacheHelperSymbol = firstPerCodeCacheHelperSymbol + TR_numCCPreLoadedCode - 1,

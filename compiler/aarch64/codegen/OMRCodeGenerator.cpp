@@ -366,6 +366,13 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
          }
       }
 
+   if (!constantIsSignedImm21((intptr_t)self()->getBinaryBufferCursor() - (intptr_t)self()->getBinaryBufferStart()))
+      {
+      // Workaround for huge code
+      // Range of conditional branch instruction is +/- 1MB
+      self()->comp()->failCompilation<TR::AssertionFailure>("Generated code is too large");
+      }
+
    self()->getLinkage()->performPostBinaryEncoding();
    }
 

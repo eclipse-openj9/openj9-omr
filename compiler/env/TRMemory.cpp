@@ -416,16 +416,6 @@ TR_Memory::freeMemory(void *p, TR_AllocationKind kind, ObjectType ot)
 
 namespace TR
    {
-   GlobalSingletonAllocator* GlobalSingletonAllocator::_instance = NULL;
-
-   void GlobalSingletonAllocator::createInstance()
-      {
-      TR_ASSERT(::trPersistentMemory != NULL, "Attempting to use GlobalAllocator too early. It cannot be used until TR_PersistentMemory has been initialized.");
-      static CS2PersistentAllocator persistentAllocator(::trPersistentMemory);
-      static GlobalBaseAllocator globalBaseAllocator(persistentAllocator);
-      static GlobalSingletonAllocator globalSingletonAllocator(globalBaseAllocator);
-      }
-
    AllocatedMemoryMeter::Metric AllocatedMemoryMeter::_currentMemUsage = 0;
    // profile everything until read options
    uint8_t AllocatedMemoryMeter::_enabled = heapAlloc | stackAlloc | persistentAlloc;

@@ -1003,47 +1003,11 @@ namespace TR
    typedef CS2::heap_allocator< 65536, 12, TRCS2MemoryAllocator > ThreadLocalAllocator;
    typedef CS2::shared_allocator < ThreadLocalAllocator > Allocator;
 
-   typedef TRPersistentMemoryAllocator CS2PersistentAllocator;
-
-   typedef CS2::stat_allocator    < CS2PersistentAllocator > GlobalBaseAllocator;
-
-   class GlobalSingletonAllocator: public GlobalBaseAllocator
-      {
-   public:
-      static GlobalSingletonAllocator &instance()
-         {
-         if (_instance == NULL)
-            createInstance();
-
-         return *_instance;
-         }
-
-   private:
-      GlobalSingletonAllocator(const GlobalBaseAllocator &a) : GlobalBaseAllocator(a)
-         {
-         TR_ASSERT(!_instance, "GlobalSingletonAllocator must be initialized only once");
-         _instance = this;
-         }
-
-      static void createInstance();
-      static GlobalSingletonAllocator *_instance;
-      };
-
-   typedef CS2::shared_allocator < GlobalSingletonAllocator > GlobalAllocator;
-
-   static GlobalAllocator globalAllocator(const char *name = NULL)
-      {
-      return GlobalAllocator(GlobalSingletonAllocator::instance());
-      }
-
    /*
     * some common CS2 datatypes
     */
    typedef CS2::ASparseBitVector<TR::Allocator> SparseBitVector;
    typedef CS2::ABitVector<TR::Allocator>       BitVector;
-
-   typedef CS2::ASparseBitVector<TR::GlobalAllocator> GlobalSparseBitVector;
-   typedef CS2::ABitVector<TR::GlobalAllocator>       GlobalBitVector;
 
    class AllocatedMemoryMeter
       {

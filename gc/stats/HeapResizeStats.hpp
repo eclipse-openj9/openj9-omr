@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -69,6 +69,7 @@ private:
 
 	uint64_t 				_ticksInGC[RATIO_RESIZE_HISTORIES];
 	uint64_t 				_ticksOutsideGC[RATIO_RESIZE_HISTORIES];
+	bool					_excludeCurrentGCTimeFromStats;
 
 protected:
 public:
@@ -173,7 +174,11 @@ public:
 			return 0;
 		}			
 	}
-	
+
+	MMINLINE void resetExcludeCurrentGCTimeFromStats() { _excludeCurrentGCTimeFromStats = FALSE; }
+	MMINLINE void setExcludeCurrentGCTimeFromStats() { _excludeCurrentGCTimeFromStats = TRUE; }
+	MMINLINE bool getExcludeCurrentGCTimeFromStats() { return _excludeCurrentGCTimeFromStats; }
+
 	MM_HeapResizeStats() :
 		MM_Base(),
 		_lastAFEndTime(0),
@@ -190,7 +195,8 @@ public:
 		_lastContractTime(0),
 		_lastGCPercentage(0),
 		_lastTimeOutsideGC(0),
-		_globalGCCountAtAF(0)
+		_globalGCCountAtAF(0),
+		_excludeCurrentGCTimeFromStats(true)
 	{
 		resetRatioTicks();
 	}

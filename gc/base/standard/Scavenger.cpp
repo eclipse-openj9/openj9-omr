@@ -4629,6 +4629,11 @@ MM_Scavenger::percolateGarbageCollect(MM_EnvironmentBase *env,  MM_MemorySubSpac
 	/* Set last percolate reason */
 	_extensions->heap->getPercolateStats()->setLastPercolateReason(percolateReason);
 
+	/* Percolate Global due to Critical regions was not due to tight (Tenure) heap, hence should not really affect its resizing. */
+	if (CRITICAL_REGIONS == percolateReason) {
+		_extensions->heap->getResizeStats()->setExcludeCurrentGCTimeFromStats();
+	}
+
 	/* Percolate the collect to parent MSS */
 	bool result = subSpace->percolateGarbageCollect(env, allocDescription, gcCode);
 

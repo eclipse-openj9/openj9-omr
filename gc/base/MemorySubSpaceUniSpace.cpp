@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -286,8 +286,7 @@ MM_MemorySubSpaceUniSpace::timeForHeapContract(MM_EnvironmentBase *env, MM_Alloc
 	}
 	
 	/* Don't shrink if -Xmaxf1.0 specfied, i.e max free is 100% */
-	uintptr_t heapFreeMaximumHeuristicMultiplier = getHeapFreeMaximumHeuristicMultiplier(env);
-	if (100 == _extensions->heapFreeMaximumRatioMultiplier || heapFreeMaximumHeuristicMultiplier >= 100) {
+	if (100 == _extensions->heapFreeMaximumRatioMultiplier) {
 		Trc_MM_MemorySubSpaceUniSpace_timeForHeapContract_Exit2(env->getLanguageVMThread());
 		return false;
 	}

@@ -1419,7 +1419,8 @@ globalGCHookAFCycleStart(J9HookInterface** hook, uintptr_t eventNum, void* event
 	OMR_VMThread *omrVMThread = event->currentThread;
 	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(omrVMThread->_vm);
 	OMRPORT_ACCESS_FROM_OMRVMTHREAD(omrVMThread);
-	
+
+	extensions->heap->getResizeStats()->resetExcludeCurrentGCTimeFromStats();
 	extensions->heap->getResizeStats()->setThisAFStartTime(omrtime_hires_clock());
 	extensions->heap->getResizeStats()->setLastTimeOutsideGC();
 	extensions->heap->getResizeStats()->setGlobalGCCountAtAF(extensions->globalGCStats.gcCount);
@@ -1436,7 +1437,11 @@ globalGCHookAFCycleEnd(J9HookInterface** hook, uintptr_t eventNum, void* eventDa
 	if((event->subSpaceType == MEMORY_TYPE_NEW) && ((extensions->heap->getResizeStats()->getGlobalGCCountAtAF()) == (extensions->globalGCStats.gcCount))){
 		return;
 	}
-		
+
+	if (extensions->heap->getResizeStats()->getExcludeCurrentGCTimeFromStats()) {
+		return;
+	}
+
 	/* ..and remember time of last AF end */
 	extensions->heap->getResizeStats()->setLastAFEndTime(omrtime_hires_clock());
 	

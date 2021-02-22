@@ -178,9 +178,13 @@ void OMR::Power::LoadStoreHandlerImpl::generatePairedLoadSequence(TR::CodeGenera
         TR::addDependency(deps, trgReg->getLowOrder(), TR::RealRegister::gr4, TR_GPR, cg);
         TR::addDependency(deps, NULL, TR::RealRegister::gr11, TR_GPR, cg);
 
-        TR::addDependency(deps, memRef->getBaseRegister(), TR::RealRegister::NoReg, TR_GPR, cg);
-        deps->getPreConditions()->getRegisterDependency(3)->setExcludeGPR0();
-        deps->getPostConditions()->getRegisterDependency(3)->setExcludeGPR0();
+        TR::Register *baseReg = memRef->getBaseRegister();
+        if (baseReg)
+            {
+            TR::addDependency(deps, baseReg, TR::RealRegister::NoReg, TR_GPR, cg);
+            deps->getPreConditions()->getRegisterDependency(3)->setExcludeGPR0();
+            deps->getPostConditions()->getRegisterDependency(3)->setExcludeGPR0();
+            }
 
         generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, trgReg->getHighOrder(), memRef);
         generateDepImmSymInstruction(
@@ -321,6 +325,14 @@ void OMR::Power::LoadStoreHandlerImpl::generatePairedStoreSequence(TR::CodeGener
         TR::addDependency(deps, srcReg->getHighOrder(), TR::RealRegister::gr4, TR_GPR, cg);
         TR::addDependency(deps, srcReg->getLowOrder(), TR::RealRegister::gr5, TR_GPR, cg);
         TR::addDependency(deps, NULL, TR::RealRegister::gr11, TR_GPR, cg);
+
+        TR::Register *baseReg = memRef->getBaseRegister();
+        if (baseReg)
+            {
+            TR::addDependency(deps, baseReg, TR::RealRegister::NoReg, TR_GPR, cg);
+            deps->getPreConditions()->getRegisterDependency(4)->setExcludeGPR0();
+            deps->getPostConditions()->getRegisterDependency(4)->setExcludeGPR0();
+            }
 
         generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, addrReg, memRef);
         generateDepImmSymInstruction(

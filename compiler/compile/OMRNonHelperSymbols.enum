@@ -1,0 +1,297 @@
+/*******************************************************************************
+ * Copyright (c) 2000, 2021 IBM Corp. and others
+ *
+ * This program and the accompanying materials are made available under
+ * the terms of the Eclipse Public License 2.0 which accompanies this
+ * distribution and is available at http://eclipse.org/legal/epl-2.0
+ * or the Apache License, Version 2.0 which accompanies this distribution
+ * and is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the
+ * Eclipse Public License, v. 2.0 are satisfied: GNU General Public License,
+ * version 2 with the GNU Classpath Exception [1] and GNU General Public
+ * License, version 2 with the OpenJDK Assembly Exception [2].
+ *
+ * [1] https://www.gnu.org/software/classpath/license.html
+ * [2] http://openjdk.java.net/legal/assembly-exception.html
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
+ *******************************************************************************/
+
+/*
+ * This file will be included within an enum.  Only comments, preprocessor macros,
+ * and enumerator definitions are permitted.
+ */
+
+   arraySetSymbol,
+   arrayCopySymbol,
+   arrayCmpSymbol,
+   prefetchSymbol,
+
+   killsAllMethodSymbol,                           // A dummy method whose alias set includes all
+   usesAllMethodSymbol,                            // A dummy method whose use only alias set includes all
+
+   firstArrayShadowSymbol,
+
+   firstArrayletShadowSymbol = firstArrayShadowSymbol + TR::NumTypes,
+
+   firstCommonNonhelperNonArrayShadowSymbol = firstArrayletShadowSymbol + TR::NumTypes,
+
+   OMRfirstPrintableCommonNonhelperSymbol = firstCommonNonhelperNonArrayShadowSymbol,
+
+   contiguousArraySizeSymbol = firstCommonNonhelperNonArrayShadowSymbol,
+   discontiguousArraySizeSymbol,
+   arrayClassRomPtrSymbol,
+   javaLangClassFromClassSymbol,
+   classFromJavaLangClassSymbol,
+   addressOfClassOfMethodSymbol,
+   componentClassSymbol,
+   isArraySymbol,
+   isClassAndDepthFlagsSymbol,
+   isClassFlagsSymbol,
+   vftSymbol,
+   currentThreadSymbol,
+   recompilationCounterSymbol,
+   excpSymbol,
+   indexableSizeSymbol,
+   resolveCheckSymbol,
+   arrayTranslateSymbol,
+   arrayTranslateAndTestSymbol,
+   long2StringSymbol,
+   bitOpMemSymbol,
+   reverseLoadSymbol,
+   reverseStoreSymbol,
+   currentTimeMaxPrecisionSymbol,
+   headerFlagsSymbol,
+   singlePrecisionSQRTSymbol,
+   countForRecompileSymbol,   // global boolean indicating when methods should start counting for guarded recompilations
+   gcrPatchPointSymbol,       // address where we need to patch GCR guard instruction
+   counterAddressSymbol,      // address of invokation counter for indirect loads and stores
+   startPCSymbol,             // startPC of the compiled method
+   compiledMethodSymbol,      // J9Method of the compiled method
+   thisRangeExtensionSymbol,
+   profilingBufferCursorSymbol,// profilingBufferCursor slot on j9vmthread
+   profilingBufferEndSymbol,  // profilingBufferEnd slot on j9vmthread
+   profilingBufferSymbol,     // profilingBuffer on j9vmthread
+   osrBufferSymbol,     // osrBuffer slot on j9vmthread
+   osrScratchBufferSymbol,    //osrScratchBuffer slot on  j9vmthread
+   osrFrameIndexSymbol,       // osrFrameIndex slot on j9vmthread
+   osrReturnAddressSymbol,       // osrFrameIndex slot on j9vmthread
+
+   /** \brief
+    *
+    *  A call with this symbol marks a place in the jitted code where OSR transition to the VM interpreter is supported.
+    *  The transition target bytecode is the bytecode index on the call plus an induction offset which is stored on the
+    *  call node.
+    *
+    *  \code
+    *    call <potentialOSRPointHelperSymbol>
+    *  \endcode
+    *
+    *  \note
+    *   The call is not to be codegen evaluated, it should be cleaned up before codegen.
+    */
+   potentialOSRPointHelperSymbol,
+
+   /** \brief
+    *
+    *  A call with this symbol marks a place that has been optimized with runtime assumptions. Such place needs protection of OSR
+    *  points. When the assumption becomes wrong, the execution of jitted code with the assumption has to be transition to the VM
+    *  interpreter before running the invalid code.
+    *
+    *  \code
+    *    call <osrFearPointHelperSymbol>
+    *  \endcode
+    *
+    *  \note
+    *   The call is not to be codegen evaluated, it should be cleaned up before codegen.
+    */
+   osrFearPointHelperSymbol,
+
+   /** \brief
+    *
+    * A call with this symbol marks a place where we want/need escape analysis to add heapifications for any stack allocated
+    * objects. The primary use case is to force escape of all live local objects ahead of a throw to an OSR catch block
+    * but they may also be inserted to facilitate peeking of methods under HCR or other uses. Calls to this helper should
+    * only exist while escape analysis is running
+    *
+    * \code
+    *   call <eaEscapeHelperSymbol>
+    * \endcode
+    *
+    * \note
+    *   The call is not to be codegen evaluated, it should be cleaned up by postEscapeAnalysis.
+    */
+   eaEscapeHelperSymbol,
+   instanceShapeSymbol,
+   instanceDescriptionSymbol,
+   descriptionWordFromPtrSymbol,
+
+   /** \brief Performs an equality comparison between two objects.
+    *
+    * The comparison takes two references to objects as arguments.
+    * It is up to users to define to define and implement the semantics of this operation.
+    */
+   objectEqualityComparisonSymbol,
+
+   /** \brief
+    *
+    *  This symbol is used by the code generator to recognize and inline a call which emulates the following
+    *  tree sequence:
+    *
+    *  \code
+    *  monent
+    *    object
+    *  ...
+    *  aloadi / iloadi / lloadi
+    *    ==>object
+    *  ...
+    *  monexitfence
+    *  monexit
+    *    ==>object
+    *  \endcode
+    *
+    *  Where <c>object</c> is a valid object reference. The sequence represents a field load within a
+    *  synchronized region. Since a full monent / monexit operation for a single load is expensive, some code
+    *  generators can emit an optimized instruction sequence to load the field atomically while conforming
+    *  to the monent / monexit semantics.
+    */
+   synchronizedFieldLoadSymbol,
+
+   /** \brief
+    *
+    *  This symbol represents an intrinsic call of the following format:
+    *
+    *  \code
+    *    icall/lcall <atomicAddSymbol>
+    *      <address>
+    *      <value>
+    *  \endcode
+    *
+    *  Which performs the following operation atomically:
+    *
+    *  \code
+    *    [address] = [address] + <value>
+    *    return <value>
+    *  \endcode
+    *
+    *  The data type of \c <value> indicates the width of the operation.
+    */
+   atomicAddSymbol,
+
+   /** \brief
+    *
+    *  This symbol represents an intrinsic call of the following format:
+    *
+    *  \code
+    *    icall/lcall <atomicFetchAndAddSymbol>
+    *      <address>
+    *      <value>
+    *  \endcode
+    *
+    *  Which performs the following operation atomically:
+    *
+    *  \code
+    *    temp = [address]
+    *    [address] = [address] + <value>
+    *    return temp
+    *  \endcode
+    *
+    *  The data type of \c <value> indicates the width of the operation.
+    */
+   atomicFetchAndAddSymbol,
+   atomicFetchAndAdd32BitSymbol,
+   atomicFetchAndAdd64BitSymbol,
+
+   /** \brief
+    *
+    *  This symbol represents an intrinsic call of the following format:
+    *
+    *  \code
+    *    icall/lcall <atomicSwapSymbol>
+    *      <address>
+    *      <value>
+    *  \endcode
+    *
+    *  Which performs the following operation atomically:
+    *
+    *  \code
+    *    temp = [address]
+    *    [address] = <value>
+    *    return temp
+    *  \endcode
+    *
+    *  The data type of \c <value> indicates the width of the operation.
+    */
+   atomicSwapSymbol,
+   atomicSwap32BitSymbol,
+   atomicSwap64BitSymbol,
+
+   /** \brief
+    *
+    *  This symbol represents an intrinsic call of the following format:
+    *
+    *  \code
+    *    icall <atomicCompareAndSwapReturnStatusSymbol>
+    *      <address>
+    *      <old value>
+    *      <new value>
+    *  \endcode
+    *
+    *  Which performs the following operation atomically:
+    *
+    *  \code
+    *    temp = [address]
+    *    if (temp == <old value>)
+    *      [address] = <new value>
+    *      return true
+    *    else
+    *      return false
+    *  \endcode
+    *
+    *  The data type of \c <old value> indicates the width of the operation.
+    */
+   atomicCompareAndSwapReturnStatusSymbol,
+
+   /** \brief
+    *
+    *  This symbol represents an intrinsic call of the following format:
+    *
+    *  \code
+    *    icall/lcall <atomicCompareAndSwapReturnValueSymbol>
+    *      <address>
+    *      <old value>
+    *      <new value>
+    *  \endcode
+    *
+    *  Which performs the following operation atomically:
+    *
+    *  \code
+    *    temp = [address]
+    *    if (temp == <old value>)
+    *      [address] = <new value>
+    *    return temp
+    *  \endcode
+    *
+    *  The data type of \c <old value> indicates the width of the operation.
+    */
+   atomicCompareAndSwapReturnValueSymbol,
+
+   /** \brief
+    *
+    * These symbols represent placeholder calls for profiling value which will be lowered into trees later.
+    *
+    * \code
+    *    call <jProfileValue/jProfileValueWithNullCHK>
+    *       <value to be profiled>
+    *       <table address>
+    * \endcode
+    */
+   jProfileValueSymbol,
+   jProfileValueWithNullCHKSymbol,
+
+   OMRlastPrintableCommonNonhelperSymbol = jProfileValueWithNullCHKSymbol,
+
+   firstPerCodeCacheHelperSymbol,
+   lastPerCodeCacheHelperSymbol = firstPerCodeCacheHelperSymbol + TR_numCCPreLoadedCode - 1,

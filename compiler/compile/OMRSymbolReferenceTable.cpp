@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include "omrformatconsts.h"
 #include "codegen/CodeGenerator.hpp"
 #include "env/FrontEnd.hpp"
 #include "env/KnownObjectTable.hpp"
@@ -2092,4 +2093,83 @@ OMR::SymbolReferenceTable::rememberOriginalUnimprovedSymRef(
       improved->getReferenceNumber(),
       entryPreventingInsertion->second,
       original->getReferenceNumber());
+   }
+
+
+const char *OMR::SymbolReferenceTable::_commonNonHelperSymbolNames[] =
+   {
+   "<contiguousArraySize>",
+   "<discontiguousArraySize>",
+   "<arrayClassRomPtr>",
+   "<javaLangClassFromClass>",
+   "<classFromJavaLangClass>",
+   "<addressOfClassOfMethod>",
+   "<componentClass>",
+   "<isArray>",
+   "<isClassAndDepthFlags>",
+   "<isClassFlags>",
+   "<vft>",
+   "<currentThread>",
+   "<recompilationCounter>",
+   "<excp>",
+   "<indexableSize>",
+   "<resolveCheck>",
+   "<arrayTranslate>",
+   "<arrayTranslateAndTest>",
+   "<long2String>",
+   "<bitOpMem>",
+   "<reverseLoad>",
+   "<reverseStore>",
+   "<currentTimeMaxPrecision>",
+   "<headerFlags>",
+   "<singlePrecisionSQRT>",
+   "<countForRecompile>",
+   "<gcrPatchPoint>",
+   "<counterAddress>",
+   "<startPC>",
+   "<compiledMethod>",
+   "<thisRangeExtension>",
+   "<profilingBufferCursor>",
+   "<profilingBufferEnd>",
+   "<profilingBuffer>",
+   "<osrBuffer>",
+   "<osrScratchBuffer>",
+   "<osrFrameIndex>",
+   "<osrReturnAddress>",
+   "<potentialOSRPointHelper>",
+   "<osrFearPointHelper>",
+   "<eaEscapeHelper>",
+   "<instanceShape>",
+   "<instanceDescription>",
+   "<descriptionWordFromPtr>",
+   "<objectEqualityComparison>",
+   "<synchronizedFieldLoad>",
+   "<atomicAdd>",
+   "<atomicFetchAndAdd>",
+   "<atomicFetchAndAdd32Bit>",
+   "<atomicFetchAndAdd64Bit>",
+   "<atomicSwap>",
+   "<atomicSwap32Bit>",
+   "<atomicSwap64Bit>",
+   "<atomicCompareAndSwapReturnStatus>",
+   "<atomicCompareAndSwapReturnValue>",
+   "<jProfileValueSymbol>",
+   "<jProfileValueWithNullCHKSymbol>"
+   };
+
+
+const char *
+OMR::SymbolReferenceTable::getNonHelperSymbolName(CommonNonhelperSymbol nonHelper)
+   {
+   TR_ASSERT_FATAL(nonHelper >= OMRfirstPrintableCommonNonhelperSymbol &&
+                   nonHelper <= OMRlastPrintableCommonNonhelperSymbol,
+                   "unknown non helper %" OMR_PRId32, static_cast<int32_t>(nonHelper));
+
+#if 0
+   static_assert(sizeof(_commonNonHelperSymbolNames)/sizeof(_commonNonHelperSymbolNames[0]) ==
+                 static_cast<int32_t>(OMRlastPrintableCommonNonhelperSymbol - OMRfirstPrintableCommonNonhelperSymbol + 1),
+                 "_commonNonHelperSymbolNames array must match CommonNonHelperSymbol enumeration");
+#endif
+
+   return _commonNonHelperSymbolNames[static_cast<int32_t>(nonHelper - OMRfirstPrintableCommonNonhelperSymbol)];
    }

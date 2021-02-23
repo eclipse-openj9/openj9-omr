@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -100,6 +100,8 @@ class SymbolReferenceTable
       firstArrayletShadowSymbol = firstArrayShadowSymbol + TR::NumTypes,
 
       firstCommonNonhelperNonArrayShadowSymbol = firstArrayletShadowSymbol + TR::NumTypes,
+
+      OMRfirstPrintableCommonNonhelperSymbol = firstCommonNonhelperNonArrayShadowSymbol,
 
       contiguousArraySizeSymbol = firstCommonNonhelperNonArrayShadowSymbol,
       discontiguousArraySizeSymbol,
@@ -388,6 +390,8 @@ class SymbolReferenceTable
        */
       j9VMThreadTempSlotFieldSymbol,
 
+      OMRlastPrintableCommonNonhelperSymbol = j9VMThreadTempSlotFieldSymbol,
+
       firstPerCodeCacheHelperSymbol,
       lastPerCodeCacheHelperSymbol = firstPerCodeCacheHelperSymbol + TR_numCCPreLoadedCode - 1,
 
@@ -485,6 +489,15 @@ class SymbolReferenceTable
             allSymRefs[symRefNumber] = true;
          }
       }
+
+   /**
+    * @brief Retrieve the textual name of the given NonHelperSymbol
+    *
+    * @param[in] nonHelper : the nonHelper symbol
+    *
+    * @return Textual name of the NonHelperSymbol
+    */
+   static const char *getNonHelperSymbolName(CommonNonhelperSymbol nonHelper);
 
    // --------------------------------------------------------------------------
 
@@ -840,6 +853,10 @@ class SymbolReferenceTable
 
    // J9
 #define _numNonUserFieldClasses 4
+
+   private:
+
+   static const char *_commonNonHelperSymbolNames[];
 
    };
 

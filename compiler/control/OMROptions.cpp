@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -480,7 +480,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disablePRBE",                        "O\tdisable partial redundancy branch elimination",  SET_OPTION_BIT(TR_DisablePRBE), "F"},
    {"disablePRE",                         "O\tdisable partial redundancy elimination",         TR::Options::disableOptimization, partialRedundancyElimination, 0, "P"},
    {"disablePreexistenceDuringGracePeriod","O\tdisable preexistence during CLP grace period",  SET_OPTION_BIT(TR_DisablePrexistenceDuringGracePeriod), "F"},
-   {"disablePrefetchInsertion",           "O\tdisable prefetch insertion",                     TR::Options::disableOptimization, prefetchInsertion, 0, "P"},
    {"disableProfiledInlining",            "O\tdisable inlining based on profiled this values", SET_OPTION_BIT(TR_DisableProfiledInlining), "F"},
    {"disableProfiledMethodInlining",      "O\tdisable inlining based on profiled methods", SET_OPTION_BIT(TR_DisableProfiledMethodInlining), "F"},
    {"disableProfiledNodeVersioning",      "O\tdisable profiled node versioning",               TR::Options::disableOptimization, profiledNodeVersioning, 0, "P"},
@@ -1183,7 +1182,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
 #endif
    {"traceOSRLiveRangeAnalysis",        "L\ttrace OSR live range analysis",                TR::Options::traceOptimization, osrLiveRangeAnalysis, 0, "P"},
    {"tracePRE",                         "L\ttrace partial redundancy elimination",        TR::Options::traceOptimization, partialRedundancyElimination, 0, "P"},
-   {"tracePrefetchInsertion",           "L\ttrace prefetch insertion",                     TR::Options::traceOptimization, prefetchInsertion, 0, "P"},
    {"tracePREForSubNodeReplacement",    "L\ttrace partial redundancy elimination focussed on optimal subnode replacement", SET_OPTION_BIT(TR_TracePREForOptimalSubNodeReplacement), "P" },
    {"traceProfiledNodeVersioning",      "L\ttrace profiled node versioning",               TR::Options::traceOptimization, profiledNodeVersioning, 0, "P"},
 #ifdef J9_PROJECT_SPECIFIC
@@ -2625,17 +2623,6 @@ OMR::Options::jitPreProcess()
          }
 
       self()->setOption(TR_EnableAnnotations);
-
-      TR::Compilation* comp = TR::comp();
-      if (comp && TR::Compiler->om.canGenerateArraylets())
-         {
-         _disabledOptimizations[prefetchInsertion] = true;
-         }
-
-#if defined(TR_HOST_ARM64)
-      // Prefetch is not supported on ARM64 yet
-      _disabledOptimizations[prefetchInsertion] = true;
-#endif
 
       self()->setOption(TR_DisableThunkTupleJ2I); // JSR292:TODO: Figure out how to do this without confusing startPCIfAlreadyCompiled
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2020 IBM Corp. and others
+ * Copyright (c) 2013, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1204,6 +1204,10 @@ const J9CudaLibraryDescriptor runtimeLibraries[] = {
 /*
  * Include forward-compatible support for runtime libraries.
  */
+#if CUDART_VERSION <= 11020
+	OMRCUDA_LIBRARY_ENTRY(11, 2),
+#endif /* CUDART_VERSION <= 11020 */
+
 #if CUDART_VERSION <= 11010
 	OMRCUDA_LIBRARY_ENTRY(11, 1),
 #endif /* CUDART_VERSION <= 11010 */

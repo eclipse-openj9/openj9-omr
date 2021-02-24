@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,10 +28,9 @@ include(OmrAssert)
 include(OmrDetectSystemInformation)
 include(OmrUtility)
 
-
 omr_detect_system_information()
 
-if(NOT OMR_HOST_OS STREQUAL "zos")
+if(NOT OMR_OS_ZOS)
 	enable_language(ASM)
 endif()
 

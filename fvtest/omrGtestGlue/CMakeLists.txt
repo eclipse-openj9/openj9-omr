@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -57,15 +57,13 @@ target_link_libraries(omrGtestGlue
 		omr_main_function
 )
 
-#TODO  system thread library should be linked in a more generic way.
-if(NOT OMR_HOST_OS STREQUAL "win")
-	if(NOT OMR_HOST_OS STREQUAL "zos")
-		target_link_libraries(omrGtest pthread)
-	endif()
+# TODO system thread library should be linked in a more generic way.
+if(NOT (OMR_OS_WINDOWS OR OMR_OS_ZOS))
+	target_link_libraries(omrGtest pthread)
 endif()
 #target_link_libraries(omrGtest INTERFACE omrGtestGlue)
 
-if(OMR_HOST_OS STREQUAL "zos" OR OMR_HOST_OS STREQUAL "aix")
+if(OMR_OS_AIX OR OMR_OS_ZOS)
 	list(APPEND OMR_GTEST_DEFINITIONS
 		-DGTEST_ENV_HAS_STD_TUPLE_
 		-D__IBMCPP_TR1__

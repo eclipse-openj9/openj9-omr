@@ -26,7 +26,7 @@ omr_add_executable(omrsigtest
 )
 
 #TODO: hack for windows. These libraries should be linked on dependants
-if(OMR_HOST_OS STREQUAL "win")
+if(OMR_OS_WINDOWS)
 	target_link_libraries(omrsigtest
 		ws2_32
 		shell32
@@ -36,7 +36,7 @@ if(OMR_HOST_OS STREQUAL "win")
 	)
 endif()
 
-if(OMR_HOST_OS STREQUAL "zos")
+if(OMR_OS_ZOS)
 	target_link_libraries(omrsigtest j9a2e)
 endif()
 

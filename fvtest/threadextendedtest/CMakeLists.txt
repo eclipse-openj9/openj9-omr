@@ -27,7 +27,6 @@ omr_add_executable(omrthreadextendedtest
 	timeBaseTest.cpp
 )
 
-
 target_link_libraries(omrthreadextendedtest
 	omrGtestGlue
 	omrtestutil
@@ -37,12 +36,12 @@ target_link_libraries(omrthreadextendedtest
 	${OMR_PORT_LIB}
 )
 
-if(OMR_HOST_OS STREQUAL "zos")
+if(OMR_OS_ZOS)
 	target_link_libraries(omrthreadextendedtest j9a2e)
 endif()
 
 set_property(TARGET omrthreadextendedtest PROPERTY FOLDER fvtest)
 
-if (NOT OMR_HOST_OS STREQUAL "zos")
+if(NOT OMR_OS_ZOS)
 	omr_add_test(NAME threadextendedtest COMMAND $<TARGET_FILE:omrthreadextendedtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadextendedtest-results.xml)
 endif()

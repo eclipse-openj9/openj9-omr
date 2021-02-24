@@ -66,8 +66,8 @@ if(OMR_OPT_CUDA)
 	)
 endif()
 
-# TODO: Remove if(NOT OMR_HOST_OS STREQUAL "win") after OMRSOCK API is implemented on Windows.
-if(NOT OMR_HOST_OS STREQUAL "win")
+# TODO: Remove if(NOT OMR_OS_WINDOWS) after OMRSOCK API is implemented on Windows.
+if(NOT OMR_OS_WINDOWS)
 	target_sources(omrporttest
 		PRIVATE
 			omrsockTest.cpp
@@ -85,13 +85,13 @@ target_link_libraries(omrporttest
 	${OMR_PORT_LIB}
 )
 
-if(OMR_HOST_OS STREQUAL "win")
+if(OMR_OS_WINDOWS)
 	target_link_libraries(omrporttest
 		ws2_32
 	)
 endif()
 
-if(OMR_HOST_OS STREQUAL "zos")
+if(OMR_OS_ZOS)
 	target_link_libraries(omrporttest
 		j9a2e
 	)
@@ -115,7 +115,7 @@ omr_add_exports(sltestlib
 	sl_test1_function
 )
 
-if(OMR_HOST_OS STREQUAL "aix")
+if(OMR_OS_AIX)
 	omr_add_library(aixbaddep SHARED
 		aixbaddep/sltest.c
 	)
@@ -136,7 +136,7 @@ if(OMR_HOST_OS STREQUAL "aix")
 	)
 endif()
 
-if (NOT OMR_HOST_OS STREQUAL "aix" AND NOT OMR_HOST_OS STREQUAL "zos" AND NOT CMAKE_CROSSCOMPILING)
+if (NOT (OMR_OS_AIX OR OMR_OS_ZOS OR CMAKE_CROSSCOMPILING))
 	omr_add_test(
 		NAME porttest
 		COMMAND $<TARGET_FILE:omrporttest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrporttest-results.xml --gtest_filter=${porttest_filter}

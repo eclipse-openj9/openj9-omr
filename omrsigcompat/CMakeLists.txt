@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,7 +26,7 @@ omr_add_library(omrsig SHARED
 	omrsig.cpp
 )
 
-if(OMR_HOST_OS STREQUAL "win")
+if(OMR_OS_WINDOWS)
 	target_compile_definitions(omrsig PRIVATE -DMSVC_RUNTIME_DLL="${OMR_MSVC_CRT}")
 endif()
 
@@ -76,17 +76,9 @@ target_compile_options(omrsig
 if(OMR_HOST_OS MATCHES "linux|osx")
 	target_link_libraries(omrsig PRIVATE dl)
 endif()
-if(OMR_HOST_OS STREQUAL "zos")
+if(OMR_OS_ZOS)
 	target_link_libraries(omrsig PRIVATE j9a2e)
 endif()
-#TODO ensure we are linking in the same way as source makefile:
-#MODULE_STATIC_LIBS += omrutil
-#ifneq (,$(findstring linux,$(OMR_HOST_OS)))
-	#MODULE_SHARED_LIBS += pthread
-#endif
-#ifneq (,$(findstring osx,$(OMR_HOST_OS)))
-	#MODULE_SHARED_LIBS += pthread
-#endif
 
 install(
 	TARGETS omrsig

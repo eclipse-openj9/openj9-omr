@@ -30,7 +30,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Add bigobj compiler options for TypeConversionTest.cpp under Windows
-if(OMR_HOST_OS STREQUAL "win")
+if(OMR_OS_WINDOWS)
 	add_compile_options(-bigobj)
 endif()
 
@@ -64,7 +64,7 @@ target_link_libraries(comptest
 	tril
 )
 
-if(OMR_HOST_OS STREQUAL "zos")
+if(OMR_OS_ZOS)
 	target_link_libraries(comptest j9a2e)
 endif()
 

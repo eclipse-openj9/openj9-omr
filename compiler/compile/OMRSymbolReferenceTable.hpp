@@ -70,8 +70,6 @@ class SymbolReferenceTable
 
    TR_ALLOC(TR_Memory::SymbolReferenceTable)
 
-   TR::SymbolReferenceTable *self();
-
    TR::Compilation *comp() { return _compilation; }
    TR_FrontEnd *fe() { return _fe; }
    TR_Memory *trMemory() { return _trMemory; }
@@ -761,6 +759,9 @@ class SymbolReferenceTable
    TR::SymbolReference *getOriginalUnimprovedSymRef(TR::SymbolReference *symRef);
 
    protected:
+
+   TR::SymbolReferenceTable *self();
+
    /** \brief
     *    This function creates the symbol reference given a temp symbol and the known object index
     *

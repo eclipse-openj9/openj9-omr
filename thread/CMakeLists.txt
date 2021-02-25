@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -25,7 +25,6 @@ include(OmrFindFiles)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_tracegen(j9thr.tdf)
-
 
 set(OBJECTS "")
 set(VPATHS "")
@@ -53,18 +52,16 @@ if(OMR_THR_JLM)
 	list(APPEND OBJECTS omrthreadjlm.c)
 endif(OMR_THR_JLM)
 
-if(NOT OMR_HOST_OS STREQUAL "win")
+if(NOT OMR_OS_WINDOWS)
 	list(APPEND OBJECTS unixpriority.c)
 else()
 	list(APPEND OBJECTS dllmain.c)
 	list(APPEND VPATHS win32)
 endif()
 
-
 include_directories(.)
 
-
-if(OMR_HOST_OS STREQUAL "zos")
+if(OMR_OS_ZOS)
 	list(APPEND VPATHS
 		zos390
 		unix
@@ -73,21 +70,20 @@ if(OMR_HOST_OS STREQUAL "zos")
 	list(APPEND OBJECTS thrcputime.s)
 endif()
 
-if(OMR_HOST_OS STREQUAL "linux")
+if(OMR_OS_LINUX)
 	list(APPEND VPATHS
 		linux
 		unix
 	)
 	include_directories(linux unix)
-
 endif()
 
-if(OMR_HOST_OS STREQUAL "osx")
+if(OMR_OS_OSX)
 	list(APPEND VPATHS osx unix)
 	include_directories(osx unix)
 endif()
 
-if(OMR_HOST_OS STREQUAL "aix")
+if(OMR_OS_AIX)
 	list(APPEND VPATHS aix unix)
 	include_directories(aix unix)
 endif()
@@ -100,7 +96,6 @@ list(APPEND VPATHS common)
 #ifeq ($(OMR_TOOLCHAIN),gcc)
 #  MODULE_CFLAGS += -Wno-unused
 #endif
-
 
 omr_find_files(resolvedPaths
 	PATHS ${VPATHS}

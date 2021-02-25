@@ -34,7 +34,7 @@ target_include_directories(omrutiltest
 	$<TARGET_PROPERTY:omrGtestGlue,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
-if(OMR_HOST_OS STREQUAL "zos")
+if(OMR_OS_ZOS)
 	target_link_libraries(omrutiltest j9a2e)
 endif()
 

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -54,13 +54,10 @@ target_link_libraries(tril PUBLIC
 	${CMAKE_DL_LIBS}
 )
 
-#TODO  system thread library should be linked in a more generic way.
-if(NOT OMR_HOST_OS STREQUAL "win")
-	if(NOT OMR_HOST_OS STREQUAL "zos")
-		target_link_libraries(tril PUBLIC pthread)
-	endif()
+# TODO system thread library should be linked in a more generic way.
+if(NOT (OMR_OS_WINDOWS OR OMR_OS_ZOS))
+	target_link_libraries(tril PUBLIC pthread)
 endif()
-
 
 omr_add_executable(tril_dumper NOWARNINGS compiler.cpp)
 target_link_libraries(tril_dumper tril)

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -53,7 +53,7 @@ target_compile_definitions(omrutil_obj
 list(APPEND VPATH .)
 
 if(OMR_ARCH_S390)
-	if(OMR_HOST_OS STREQUAL zos)
+	if(OMR_OS_ZOS)
 		if(OMR_ENV_DATA64)
 			list(APPEND OBJECTS j9memclrz10_64.s)
 			list(APPEND OBJECTS omrget_userExtendedPrivateAreaMemoryType.s)
@@ -96,19 +96,15 @@ if(OMR_ARCH_S390)
 endif()
 
 if(OMR_ARCH_POWER)
-	if(OMR_HOST_OS STREQUAL linux)
-		if(OMR_ENV_DATA64)
-			if(OMR_ENV_LITTLE_ENDIAN)
-				list(APPEND OBJECTS gettoc.s)
+	if(OMR_OS_LINUX AND OMR_ENV_DATA64 AND OMR_ENV_LITTLE_ENDIAN)
+		list(APPEND OBJECTS gettoc.s)
 
-				list(APPEND VPATH unix/linux/ppc/64le)
-				target_include_directories(omrutil_obj PRIVATE unix/linux/ppc/64le)
-			endif()
-		endif()
+		list(APPEND VPATH unix/linux/ppc/64le)
+		target_include_directories(omrutil_obj PRIVATE unix/linux/ppc/64le)
 	endif()
 	if(NOT OMR_ENV_DATA64)
 		list(APPEND OBJECTS cas8help.s)
-		if(OMR_HOST_OS STREQUAL linux)
+		if(OMR_OS_LINUX)
 			list(APPEND VPATH unix/linux/ppc/32)
 			target_include_directories(omrutil_obj PRIVATE unix/linux/ppc/32)
 		else()
@@ -119,7 +115,7 @@ if(OMR_ARCH_POWER)
 endif()
 
 if(OMR_ARCH_RISCV)
-	if(OMR_HOST_OS STREQUAL linux)
+	if(OMR_OS_LINUX)
 		list(APPEND OBJECTS cas32helper.s)
 		list(APPEND VPATH unix/linux/riscv/32)
 		target_include_directories(omrutil_obj PRIVATE unix/linux/riscv/32)
@@ -153,7 +149,7 @@ list(APPEND OBJECTS
 	xml.c
 )
 
-if(OMR_HOST_OS STREQUAL "win")
+if(OMR_OS_WINDOWS)
 	target_sources(omrutil_obj
 		PRIVATE
 			win/omrgetdbghelp.c
@@ -172,7 +168,6 @@ target_sources(omrutil_obj PRIVATE ${resolvedPaths})
 # So instead we manually apply the interface properties
 target_sources(omrutil_obj PRIVATE $<TARGET_PROPERTY:${OMR_UTIL_GLUE_TARGET},INTERFACE_SOURCES>)
 target_include_directories(omrutil_obj PUBLIC $<TARGET_PROPERTY:${OMR_UTIL_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>)
-
 
 target_enable_ddr(omrutil_obj)
 ddr_set_add_targets(omrddr omrutil_obj)

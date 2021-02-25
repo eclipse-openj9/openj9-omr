@@ -48,7 +48,7 @@ target_link_libraries(omralgotest
 target_include_directories(omralgotest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 #TODO hack to get building
-if(OMR_HOST_OS STREQUAL "win")
+if(OMR_OS_WINDOWS)
 	target_link_libraries(omralgotest
 		ws2_32
 		shell32
@@ -58,7 +58,7 @@ if(OMR_HOST_OS STREQUAL "win")
 	)
 endif()
 
-if(OMR_HOST_OS STREQUAL "zos")
+if(OMR_OS_ZOS)
 	target_link_libraries(omralgotest j9a2e)
 endif()
 

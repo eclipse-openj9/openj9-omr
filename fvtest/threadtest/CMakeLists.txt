@@ -42,18 +42,6 @@ omr_add_executable(omrthreadtest
 	#OBJECTS += forkResetTest forkResetRWMutexTest
 #endif
 
-
-#ifeq (linux,$(OMR_HOST_OS))
-	#MODULE_SHARED_LIBS += rt pthread
-#endif
-#ifeq (osx,$(OMR_HOST_OS))
-	#MODULE_SHARED_LIBS += iconv pthread
-#endif
-#ifeq (aix,$(OMR_HOST_OS))
-	#MODULE_SHARED_LIBS += iconv perfstat
-#endif
-
-
 target_link_libraries(omrthreadtest
 	omrGtestGlue
 	omrtestutil
@@ -63,7 +51,7 @@ target_link_libraries(omrthreadtest
 	${OMR_PORT_LIB}
 	${OMR_THREAD_LIB}
 )
-if(OMR_HOST_OS STREQUAL "win")
+if(OMR_OS_WINDOWS)
 	target_link_libraries(omrthreadtest
 		ws2_32
 		shell32
@@ -73,7 +61,7 @@ if(OMR_HOST_OS STREQUAL "win")
 	)
 endif()
 
-if(OMR_HOST_OS STREQUAL "zos")
+if(OMR_OS_ZOS)
 	target_link_libraries(omrthreadtest j9a2e)
 endif()
 
@@ -81,6 +69,6 @@ set_property(TARGET omrthreadtest PROPERTY FOLDER fvtest)
 
 omr_add_test(NAME threadtest COMMAND $<TARGET_FILE:omrthreadtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadtest-results.xml)
 omr_add_test(NAME threadSetAttrThreadWeightTest COMMAND $<TARGET_FILE:omrthreadtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadtest-results.xml --gtest_also_run_disabled_tests --gtest_filter=ThreadCreateTest.DISABLED_SetAttrThreadWeight)
-if(OMR_HOST_OS STREQUAL "linux")
+if(OMR_OS_LINUX)
 	omr_add_test(NAME threadRealtimeTest COMMAND $<TARGET_FILE:omrthreadtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadtest-results.xml --gtest_filter=ThreadCreateTest.* -realtime)
 endif()

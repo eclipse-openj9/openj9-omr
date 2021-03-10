@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -896,10 +896,7 @@ TR_Debug::printIRTrees(TR::FILE *pOutFile, const char * title, TR::ResolvedMetho
          if (targetMethodHandleIndex != TR::KnownObjectTable::UNKNOWN)
             trfprintf(pOutFile, "obj%d.", targetMethodHandleIndex);
 
-         trfprintf(pOutFile, "%s\n",
-            _comp->compileRelocatableCode() ?
-                       ((TR_AOTMethodInfo *)ics._methodInfo)->resolvedMethod->signature(comp()->trMemory(), heapAlloc) :
-                       fe()->sampleSignature(ics._methodInfo, 0, 0, _comp->trMemory()));
+         trfprintf(pOutFile, "%s\n", fe()->sampleSignature(ics._methodInfo, 0, 0, _comp->trMemory()));
 
          if (debug("printInlinePath"))
             {

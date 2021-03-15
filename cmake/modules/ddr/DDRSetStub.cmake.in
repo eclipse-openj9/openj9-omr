@@ -151,7 +151,7 @@ function(process_source_files src_files)
 		add_custom_command(
 			OUTPUT "${annt_file}"
 			DEPENDS "${stub_file}"
-			COMMAND ${pp_command} | awk "/^\$/ { next } /^DDRFILE_BEGIN /,/^DDRFILE_END / { print \"@\" $0 }" > ${annt_file}
+			COMMAND ${pp_command} | awk "/^DDRFILE_BEGIN /,/^DDRFILE_END / { gsub(/[\\t\\r ]*$/, \"\"); if (NF != 0) { print \"@\" $0 } }" > ${annt_file}
 			VERBATIM
 		)
 	endforeach()

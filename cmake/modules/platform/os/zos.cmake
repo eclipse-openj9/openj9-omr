@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -52,11 +52,6 @@ install(TARGETS omr_ascii omr_ebcdic
 )
 
 macro(omr_os_global_setup)
-	# TODO: Move this out and after platform config.
-	enable_language(ASM-ZOS)
-
-	omr_append_flags(CMAKE_ASM-ZOS_FLAGS ${OMR_PLATFORM_COMPILE_OPTIONS})
-
 	# TODO below is a chunk of the original makefile which still needs to be ported
 	# # This is the first option applied to the C++ linking command.
 	# # It is not applied to the C linking command.

@@ -30,9 +30,7 @@ include(OmrUtility)
 
 omr_detect_system_information()
 
-if(NOT OMR_OS_ZOS)
-	enable_language(ASM)
-endif()
+enable_language(ASM)
 
 # pick up OS info
 include(platform/os/${OMR_HOST_OS})

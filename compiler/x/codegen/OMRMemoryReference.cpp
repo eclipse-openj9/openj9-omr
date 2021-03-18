@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -189,7 +189,15 @@ OMR::X86::MemoryReference::MemoryReference(
          // We can't do this when the access is unresolved.
          //
          TR::Node *base = rootLoadOrStore->getFirstChild();
+
+         // Use the register evaluated from the loadaddr as the base object
+         // in a memory reference rather than accessing directly from the
+         // stack.
+         //
+         static bool useLoadAddrRegisterForLocalObjectMemRef = feGetEnv("TR_useLoadAddrRegisterForLocalObjectMemRef") ? true : false;
+
          if (!isUnresolved &&
+             !useLoadAddrRegisterForLocalObjectMemRef &&
              base->getOpCodeValue() == TR::loadaddr &&
              base->getSymbol()->isLocalObject())
             {

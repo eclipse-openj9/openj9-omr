@@ -334,7 +334,8 @@ typedef enum
    TR_InlinedAbstractMethod               = 106,
    TR_Breakpoint                          = 107,
    TR_InlinedMethodPointer                = 108,
-   TR_NumExternalRelocationKinds          = 109,
+   TR_VMINLMethod                         = 109,
+   TR_NumExternalRelocationKinds          = 110,
    TR_ExternalRelocationTargetKindMask    = 0xff,
    } TR_ExternalRelocationTargetKind;
 

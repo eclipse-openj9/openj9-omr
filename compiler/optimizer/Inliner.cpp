@@ -226,7 +226,6 @@ int32_t TR_TrivialInliner::perform()
       inliner.performInlining(sym);
       }
 
-   comp()->setSupressEarlyInlining(false);
    return 1; // cost??
    }
 

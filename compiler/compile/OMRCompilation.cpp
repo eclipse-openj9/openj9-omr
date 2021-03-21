@@ -360,10 +360,6 @@ OMR::Compilation::Compilation(
 
       if (optimizationPlan->isGPUCompileCPUCode())
           _flags.set(IsGPUCompileCPUCode);
-
-
-      self()->setGPUBlockDimX(optimizationPlan->getGPUBlockDimX());
-      self()->setGPUParms(optimizationPlan->getGPUParms());
       }
 
    // if we are not in the selective NoOptServer mode

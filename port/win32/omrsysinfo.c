@@ -306,10 +306,10 @@ WIN32_WINNT version constants :
 
 	if (NULL == PPG_si_osType) {
 		char *defaultTypeName = "Windows";
-#if !defined(_WIN32_WINNT_WINBLUE) || (_WIN32_WINNT_MAXVER < _WIN32_WINNT_WINBLUE)
-		/* Windows 8 or earlier */
+#if !defined(_WIN32_WINNT_WIN10) || (_WIN32_WINNT_MAXVER < _WIN32_WINNT_WIN10)
 		OSVERSIONINFOEX versionInfo;
-#endif
+#endif /* !defined(_WIN32_WINNT_WIN10) || (_WIN32_WINNT_MAXVER < _WIN32_WINNT_WIN10) */
+
 		PPG_si_osType = defaultTypeName; /* by default, use the "unrecognized version" string */
 		PPG_si_osTypeOnHeap = NULL;
 
@@ -322,6 +322,19 @@ WIN32_WINNT version constants :
 				/* Starting with major version 10, use the registry to get the version */
 				PPG_si_osType = defaultTypeName;
 				isServerMajorVersion10 = TRUE;
+			} else
+#else /* defined(_WIN32_WINNT_WIN10) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WIN10) */
+			versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
+/* GetVersionEx() is deprecated, but still needed when using older compilers. Suppress the warning. */
+#pragma warning( suppress : 4996 )
+			if (GetVersionEx((OSVERSIONINFO *) &versionInfo)) {
+				if (10 <= versionInfo.dwMajorVersion) {
+					isServerMajorVersion10 = TRUE;
+				}
+			}
+			if (isServerMajorVersion10) {
+				PPG_si_osType = defaultTypeName;
+				/* Windows 10+ is detected, don't check the following cases. */
 			} else
 #endif /* defined(_WIN32_WINNT_WIN10) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WIN10) */
 			if (IsWindows8Point1OrGreater()) {
@@ -340,6 +353,28 @@ WIN32_WINNT version constants :
 			if (IsWindows10OrGreater()) {
 				/* May need to check ReleaseId when next Windows version is released */
 				PPG_si_osType = "Windows 10";
+			} else
+#else /* defined(_WIN32_WINNT_WIN10) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WIN10) */
+			versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
+/* GetVersionEx() is deprecated, but still needed when using older compilers. Suppress the warning. */
+#pragma warning( suppress : 4996 )
+			if (GetVersionEx((OSVERSIONINFO *) &versionInfo)) {
+				if ((VER_PLATFORM_WIN32_NT == versionInfo.dwPlatformId) && (10 <= versionInfo.dwMajorVersion)) {
+					PPG_si_osType = NULL;
+					if (VER_NT_WORKSTATION == versionInfo.wProductType) {
+						if ((10 == versionInfo.dwMajorVersion) && (0 == versionInfo.dwMinorVersion)) {
+							PPG_si_osType = "Windows 10";
+						}
+					} else {
+						isServerMajorVersion10 = TRUE;
+					}
+				}
+			}
+			if ((PPG_si_osType != defaultTypeName) || isServerMajorVersion10) {
+				if (NULL == PPG_si_osType) {
+					PPG_si_osType = defaultTypeName;
+				}
+				/* Windows 10+ is detected, don't check the following cases. */
 			} else
 #endif /* defined(_WIN32_WINNT_WIN10) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WIN10) */
 			if (IsWindows8Point1OrGreater()) {

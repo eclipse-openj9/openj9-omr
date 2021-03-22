@@ -488,7 +488,7 @@ WIN32_WINNT version constants :
 							} else {
 								size_t bufferSize = sizeof(WINDOWS_SERVER_PREFIX) + valueSize + 1;
 								char *productNameBuffer = portLibrary->mem_allocate_memory(portLibrary,
-										valueSize, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+										bufferSize, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 								if (NULL != productNameBuffer) {
 									/* Print the version string using the format used by Microsoft */
 									portLibrary->str_printf(portLibrary, productNameBuffer, bufferSize,

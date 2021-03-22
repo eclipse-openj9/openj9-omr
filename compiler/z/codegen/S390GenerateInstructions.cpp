@@ -2303,6 +2303,56 @@ generateLoadLiteralPoolAddress(TR::CodeGenerator * cg, TR::Node * node, TR::Regi
    return  cursor;
    }
 
+/**
+ * @brief Remember data snippets containing class pointers that need to be patched
+ *        on class unloading or redefinition events
+ *
+ * @param[in] cg : \c TR::CodeGenerator object
+ * @param[in] node : \c TR::Node which referenced class pointer
+ * @param[in] snippet : data snippet containing the class pointer
+ * @param[in] classPtr : class address which may require updating
+ *
+ */
+static void rememberSnippetsToBePatchedOnClassUnloadOrRedefinition(
+      TR::CodeGenerator *cg,
+      TR::Node *node,
+      TR::Snippet *snippet,
+      intptr_t classPtr)
+   {
+   cg->getSnippetsToBePatchedOnClassRedefinition()->push_front(snippet);
+
+   if (node->isClassUnloadingConst())
+      {
+      TR::Compilation *comp = cg->comp();
+      TR_OpaqueClassBlock* unloadableClass = NULL;
+
+      bool isMethod = node->getOpCodeValue() == TR::loadaddr ? false : node->isMethodPointerConstant();
+
+      if (isMethod)
+         {
+         unloadableClass = reinterpret_cast<TR_OpaqueClassBlock *>(cg->fe()->createResolvedMethod(
+            cg->trMemory(), reinterpret_cast<TR_OpaqueMethodBlock *>(classPtr),
+            comp->getCurrentMethod())->classOfMethod());
+         }
+      else
+         {
+         unloadableClass = reinterpret_cast<TR_OpaqueClassBlock *>(classPtr);
+         }
+
+      if (!TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
+         {
+         if (isMethod)
+            {
+            cg->getMethodSnippetsToBePatchedOnClassUnload()->push_front(snippet);
+            }
+         else
+            {
+            cg->getSnippetsToBePatchedOnClassUnload()->push_front(snippet);
+            }
+         }
+      }
+   }
+
 TR::Instruction *
 generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * node, TR::Register * treg, int32_t imm,
                              TR::RegisterDependencyConditions * cond, TR::Instruction * preced, TR::Register * base, bool isPICCandidate)
@@ -2342,28 +2392,11 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       targetsnippet = dataref->getConstantDataSnippet();
       cursor = generateRXInstruction(cg, op, node, treg, dataref);
       }
+
    // HCR in generateRegLitRefInstruction 32-bit: register const data snippet for common case
    if (comp->getOption(TR_EnableHCR) && isPICCandidate )
       {
-      cg->getSnippetsToBePatchedOnClassRedefinition()->push_front(targetsnippet);
-      if (node->isClassUnloadingConst())
-         {
-         TR_OpaqueClassBlock* unloadableClass = NULL;
-         bool isMethod = node->getOpCodeValue() == TR::loadaddr ? false : node->isMethodPointerConstant();
-       if (isMethod)
-            {
-            unloadableClass = (TR_OpaqueClassBlock *) cg->fe()->createResolvedMethod(cg->trMemory(), (TR_OpaqueMethodBlock *)(intptr_t)imm,
-               comp->getCurrentMethod())->classOfMethod();
-            if (!TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
-               cg->getMethodSnippetsToBePatchedOnClassUnload()->push_front(targetsnippet);
-            }
-         else
-            {
-            unloadableClass = (TR_OpaqueClassBlock *) (intptr_t)imm;
-            if (!TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
-               cg->getSnippetsToBePatchedOnClassUnload()->push_front(targetsnippet);
-            }
-         }
+      rememberSnippetsToBePatchedOnClassUnloadOrRedefinition(cg, node, targetsnippet, static_cast<intptr_t>(imm));
       }
    if (alloc)
       {
@@ -2501,25 +2534,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       // HCR in generateRegLitRefInstruction 64-bit: register const data snippet used by z10
       if (comp->getOption(TR_EnableHCR) && isPICCandidate)
          {
-         cg->getSnippetsToBePatchedOnClassRedefinition()->push_front(constDataSnip);
-         if (node->isClassUnloadingConst())
-            {
-            TR_OpaqueClassBlock* unloadableClass = NULL;
-            bool isMethod = node->getOpCodeValue() == TR::loadaddr ? false : node->isMethodPointerConstant();
-            if (isMethod)
-               {
-               unloadableClass = (TR_OpaqueClassBlock *) cg->fe()->createResolvedMethod(cg->trMemory(), (TR_OpaqueMethodBlock *) imm,
-                  comp->getCurrentMethod())->classOfMethod();
-               if (!TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
-                  cg->getMethodSnippetsToBePatchedOnClassUnload()->push_front(constDataSnip);
-               }
-            else
-               {
-               unloadableClass = (TR_OpaqueClassBlock *) imm;
-               if (!TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
-                  cg->getSnippetsToBePatchedOnClassUnload()->push_front(constDataSnip);
-               }
-            }
+         rememberSnippetsToBePatchedOnClassUnloadOrRedefinition(cg, node, constDataSnip, static_cast<intptr_t>(imm));
          }
 
       cursor = new (INSN_HEAP) TR::S390RILInstruction(op, node, treg, constDataSnip, cg);
@@ -2554,28 +2569,11 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       dataref = generateS390MemoryReference(imm, TR::Int64, cg, base);
       targetsnippet = dataref->getConstantDataSnippet();
       }
+
    // HCR in generateRegLitRefInstruction 64-bit: register const data snippet for common case
    if (comp->getOption(TR_EnableHCR) && isPICCandidate )
       {
-      cg->getSnippetsToBePatchedOnClassRedefinition()->push_front(targetsnippet);
-      if (node->isClassUnloadingConst())
-         {
-         TR_OpaqueClassBlock* unloadableClass = NULL;
-         bool isMethod = node->getOpCodeValue() == TR::loadaddr ? false : node->isMethodPointerConstant();
-         if (isMethod)
-            {
-            unloadableClass = (TR_OpaqueClassBlock *) cg->fe()->createResolvedMethod(cg->trMemory(), (TR_OpaqueMethodBlock *) imm,
-               comp->getCurrentMethod())->classOfMethod();
-            if (!TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
-               cg->getMethodSnippetsToBePatchedOnClassUnload()->push_front(targetsnippet);
-            }
-         else
-            {
-            unloadableClass = (TR_OpaqueClassBlock *) imm;
-            if (!TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
-               cg->getSnippetsToBePatchedOnClassUnload()->push_front(targetsnippet);
-            }
-         }
+      rememberSnippetsToBePatchedOnClassUnloadOrRedefinition(cg, node, targetsnippet, static_cast<intptr_t>(imm));
       }
 
    if (!LGRLinst)

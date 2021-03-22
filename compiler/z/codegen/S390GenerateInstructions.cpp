@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -360,7 +360,7 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
 
    return returnInstruction;
    }
-   
+
 /**
  * Generate a compare and a branch instruction.  if z10 is available, this will
  * attempt to generate a COMPARE AND BRANCH instruction, otherwise the a
@@ -2345,7 +2345,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    // HCR in generateRegLitRefInstruction 32-bit: register const data snippet for common case
    if (comp->getOption(TR_EnableHCR) && isPICCandidate )
       {
-      comp->getSnippetsToBePatchedOnClassRedefinition()->push_front(targetsnippet);
+      cg->getSnippetsToBePatchedOnClassRedefinition()->push_front(targetsnippet);
       if (node->isClassUnloadingConst())
          {
          TR_OpaqueClassBlock* unloadableClass = NULL;
@@ -2355,13 +2355,13 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
             unloadableClass = (TR_OpaqueClassBlock *) cg->fe()->createResolvedMethod(cg->trMemory(), (TR_OpaqueMethodBlock *)(intptr_t)imm,
                comp->getCurrentMethod())->classOfMethod();
             if (!TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
-               comp->getMethodSnippetsToBePatchedOnClassUnload()->push_front(targetsnippet);
+               cg->getMethodSnippetsToBePatchedOnClassUnload()->push_front(targetsnippet);
             }
          else
             {
             unloadableClass = (TR_OpaqueClassBlock *) (intptr_t)imm;
             if (!TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
-               comp->getSnippetsToBePatchedOnClassUnload()->push_front(targetsnippet);
+               cg->getSnippetsToBePatchedOnClassUnload()->push_front(targetsnippet);
             }
          }
       }
@@ -2501,7 +2501,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       // HCR in generateRegLitRefInstruction 64-bit: register const data snippet used by z10
       if (comp->getOption(TR_EnableHCR) && isPICCandidate)
          {
-         comp->getSnippetsToBePatchedOnClassRedefinition()->push_front(constDataSnip);
+         cg->getSnippetsToBePatchedOnClassRedefinition()->push_front(constDataSnip);
          if (node->isClassUnloadingConst())
             {
             TR_OpaqueClassBlock* unloadableClass = NULL;
@@ -2511,13 +2511,13 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
                unloadableClass = (TR_OpaqueClassBlock *) cg->fe()->createResolvedMethod(cg->trMemory(), (TR_OpaqueMethodBlock *) imm,
                   comp->getCurrentMethod())->classOfMethod();
                if (!TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
-                  comp->getMethodSnippetsToBePatchedOnClassUnload()->push_front(constDataSnip);
+                  cg->getMethodSnippetsToBePatchedOnClassUnload()->push_front(constDataSnip);
                }
             else
                {
                unloadableClass = (TR_OpaqueClassBlock *) imm;
                if (!TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
-                  comp->getSnippetsToBePatchedOnClassUnload()->push_front(constDataSnip);
+                  cg->getSnippetsToBePatchedOnClassUnload()->push_front(constDataSnip);
                }
             }
          }
@@ -2557,7 +2557,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    // HCR in generateRegLitRefInstruction 64-bit: register const data snippet for common case
    if (comp->getOption(TR_EnableHCR) && isPICCandidate )
       {
-      comp->getSnippetsToBePatchedOnClassRedefinition()->push_front(targetsnippet);
+      cg->getSnippetsToBePatchedOnClassRedefinition()->push_front(targetsnippet);
       if (node->isClassUnloadingConst())
          {
          TR_OpaqueClassBlock* unloadableClass = NULL;
@@ -2567,13 +2567,13 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
             unloadableClass = (TR_OpaqueClassBlock *) cg->fe()->createResolvedMethod(cg->trMemory(), (TR_OpaqueMethodBlock *) imm,
                comp->getCurrentMethod())->classOfMethod();
             if (!TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
-               comp->getMethodSnippetsToBePatchedOnClassUnload()->push_front(targetsnippet);
+               cg->getMethodSnippetsToBePatchedOnClassUnload()->push_front(targetsnippet);
             }
          else
             {
             unloadableClass = (TR_OpaqueClassBlock *) imm;
             if (!TR::Compiler->cls.sameClassLoaders(comp, unloadableClass, comp->getCurrentMethod()->classOfMethod()))
-               comp->getSnippetsToBePatchedOnClassUnload()->push_front(targetsnippet);
+               cg->getSnippetsToBePatchedOnClassUnload()->push_front(targetsnippet);
             }
          }
       }
@@ -3041,13 +3041,13 @@ generateReplicateNodeInVectorReg(TR::Node * node, TR::CodeGenerator *cg, TR::Reg
  * \brief
  *    Shift the source register to the left and put its selected bits into the target register
  *    and clear the rest of target register's bits.
- * 
+ *
  * \note
  *    In this API, we try to follow the restrictions which can be applied to all paths. The restrictions include:
  *    1. If targetRegister and sourceRegister designate the same reg, it will first shift and then the selected bits of the shifted value are inserted
  *       into the corresponding bits of the unshifted register contents.
  *    2. The shift direction of sourceRegister cannot be negative(right) direction. So shiftAmount cannot be negative.
- *    3. toBit must be larger or equal to fromBit in the API. 
+ *    3. toBit must be larger or equal to fromBit in the API.
  *    4. Considering restrictions above, we can conclude the following value restrictions for the parameters:
  *       1) fromBit <= toBit    2) 0 <= fromBit <= 0b00111111 = 63     3) 0 <= toBit <= 0b00111111 = 63      4) shiftAmount >= 0
 */
@@ -3073,9 +3073,9 @@ void generateShiftThenKeepSelected64Bit(TR::Node * node, TR::CodeGenerator *cg,
  * \brief
  *    Shift the source register to the left and put its selected bits into the target register
  *    and clear the rest of target register's bits.
- * 
+ *
  * \note
- *    The usage of this API will be the same as the 64-bit version. 
+ *    The usage of this API will be the same as the 64-bit version.
  *    The API's corresponding value restrictions are:
  *       1) fromBit <= toBit    2) 0 <= fromBit <= 0b00011110 = 31     3) 0 <= toBit <= 0b00011111 = 31      4) shiftAmount >= 0
 */
@@ -3225,7 +3225,7 @@ template TR::Instruction * generateS390CompareAndBranchInstruction<int64_t>(
                     bool needsCC = true,
                     bool targetIsFarAndCold = false,
                     TR::Instruction        *preced = 0,
-                    TR::RegisterDependencyConditions *cond = 0); 
+                    TR::RegisterDependencyConditions *cond = 0);
 
 TR::Instruction*
 generateAlignmentNopInstruction(TR::CodeGenerator *cg, TR::Node *node, uint32_t alignment, TR::Instruction *preced)

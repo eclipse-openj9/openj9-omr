@@ -290,7 +290,7 @@ class OMR_EXTENSIBLE Compilation
    friend class ::TR_DebugExt;
 
 protected:
-   
+
    inline TR::Compilation *self();
 
 public:
@@ -314,7 +314,7 @@ public:
 
    ~Compilation() throw();
 
-   
+
 
    TR::Region &region() { return _heapMemoryRegion; }
 
@@ -566,9 +566,7 @@ public:
 
    bool isPICSite(TR::Instruction *instruction);
 
-   TR::list<TR::Snippet*> *getSnippetsToBePatchedOnClassUnload() { return &_snippetsToBePatchedOnClassUnload; }
-   TR::list<TR::Snippet*> *getMethodSnippetsToBePatchedOnClassUnload() { return &_methodSnippetsToBePatchedOnClassUnload; }
-   TR::list<TR::Snippet*> *getSnippetsToBePatchedOnClassRedefinition() { return &_snippetsToBePatchedOnClassRedefinition; }
+   TR::list<TR::Snippet*> *getSnippetsToBePatchedOnClassRedefinition();
 
    TR_RegisterCandidates *getGlobalRegisterCandidates() { return _globalRegisterCandidates; }
    void setGlobalRegisterCandidates(TR_RegisterCandidates *t) { _globalRegisterCandidates = t; }
@@ -1218,7 +1216,6 @@ private:
    TR::list<TR::Instruction*>               _staticMethodPICSites;
    TR::list<TR::Snippet*>                   _snippetsToBePatchedOnClassUnload;
    TR::list<TR::Snippet*>                   _methodSnippetsToBePatchedOnClassUnload;
-   TR::list<TR::Snippet*>                   _snippetsToBePatchedOnClassRedefinition;
 
    TR::list<TR::ResolvedMethodSymbol*>      _genILSyms;
 

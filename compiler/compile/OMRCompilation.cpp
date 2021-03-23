@@ -242,7 +242,6 @@ OMR::Compilation::Compilation(
    _staticMethodPICSites(getTypedAllocator<TR::Instruction*>(self()->allocator())),
    _snippetsToBePatchedOnClassUnload(getTypedAllocator<TR::Snippet*>(self()->allocator())),
    _methodSnippetsToBePatchedOnClassUnload(getTypedAllocator<TR::Snippet*>(self()->allocator())),
-   _snippetsToBePatchedOnClassRedefinition(getTypedAllocator<TR::Snippet*>(self()->allocator())),
    _genILSyms(getTypedAllocator<TR::ResolvedMethodSymbol*>(self()->allocator())),
    _noEarlyInline(true),
    _returnInfo(TR_VoidReturn),
@@ -2797,4 +2796,10 @@ const TR::TypeLayout* OMR::Compilation::typeLayout(TR_OpaqueClassBlock * clazz)
       _typeLayoutMap.insert(std::make_pair(clazz, layout));
       return layout;
       }
+   }
+
+TR::list<TR::Snippet*> *
+OMR::Compilation::getSnippetsToBePatchedOnClassRedefinition()
+   {
+   return self()->cg()->getSnippetsToBePatchedOnClassRedefinition();
    }

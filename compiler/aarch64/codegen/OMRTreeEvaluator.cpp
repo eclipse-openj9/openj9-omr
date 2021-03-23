@@ -37,12 +37,25 @@
 #include "il/ParameterSymbol.hpp"
 #include "il/StaticSymbol.hpp"
 
-TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node *node, intptr_t address, TR::Register *targetRegister, TR_ExternalRelocationTargetKind reloKind, TR::Instruction *cursor)
+TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node *node, intptr_t address, TR::Register *targetRegister, TR_ExternalRelocationTargetKind reloKind, bool isClassUnloadingConst, TR::Instruction *cursor)
    {
+   TR::Compilation *comp = cg->comp();
    // We use LDR literal to load a value from the snippet. Offset to PC will be patched by LabelRelative24BitRelocation
    auto snippet = cg->findOrCreate8ByteConstant(node, address);
    auto labelSym = snippet->getSnippetLabel();
    snippet->setReloType(reloKind);
+
+   if (isClassUnloadingConst)
+      {
+      if (node->isMethodPointerConstant())
+         {
+         comp->getMethodSnippetsToBePatchedOnClassUnload()->push_front(snippet);
+         }
+      else
+         {
+         comp->getSnippetsToBePatchedOnClassUnload()->push_front(snippet);
+         }
+      }
    return generateTrg1ImmSymInstruction(cg, TR::InstOpCode::ldrx, node, targetRegister, 0, labelSym, cursor);
    }
 

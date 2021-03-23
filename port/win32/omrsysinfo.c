@@ -579,44 +579,59 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 	/* OS Version format 	: <CurrentVersion> build <CurrentBuildNumber> <CSDVersion>
 	 * Sample				: 6.1 build 7601 Service Pack 1
 	 * */
-	if (NULL == PPG_si_osVersion) {
 #if defined(_WIN32_WINNT_WINBLUE) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WINBLUE)
+	if (NULL == PPG_si_osVersion) {
 #if defined(_WIN32_WINNT_WIN10) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WIN10)
-			if (IsWindows10OrGreater()) {
-				PPG_si_osVersion = "10.0 build 10240";
-			} else
+		if (IsWindows10OrGreater()) {
+			/* Build information for Windows 10 can't be hard coded, use GetVersionEx() below. */
+			PPG_si_osVersion = NULL;
+		} else
+#else /* defined(_WIN32_WINNT_WIN10) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WIN10) */
+		OSVERSIONINFOW versionInfo;
+		versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
+/* GetVersionEx() is deprecated, but still needed to detect Windows 10 when using older compilers. Suppress the warning. */
+#pragma warning( suppress : 4996 )
+		if (GetVersionExW(&versionInfo) && (10 <= versionInfo.dwMajorVersion)) {
+			/* Build information for Windows 10 can't be hard coded, use GetVersionEx() below. */
+			PPG_si_osVersion = NULL;
+		} else
 #endif /* defined(_WIN32_WINNT_WIN10) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WIN10) */
-			if (IsWindows8Point1OrGreater()) {
-				PPG_si_osVersion = "6.3 build 9600";
-			} else if (IsWindows8OrGreater()) {
-				PPG_si_osVersion = "6.2 build 9200";
-			} else if (IsWindows7SP1OrGreater()) {
-				PPG_si_osVersion = "6.1 build 7601 Sevice Pack 1";
-			} else if (IsWindows7OrGreater()) {
-				PPG_si_osVersion = "6.1 build 7600";
-			} else if (IsWindowsVistaSP2OrGreater()) {
-				PPG_si_osVersion = "6.0 build 6002 Sevice Pack 2";
-			} else if (IsWindowsVistaSP1OrGreater()) {
-				PPG_si_osVersion = "6.0 build 6001 Sevice Pack 1";
-			} else if (IsWindowsVistaOrGreater()) {
-				PPG_si_osVersion = "6.0 build 6000";
+		if (IsWindows8Point1OrGreater()) {
+			PPG_si_osVersion = "6.3 build 9600";
+		} else if (IsWindows8OrGreater()) {
+			PPG_si_osVersion = "6.2 build 9200";
+		} else if (IsWindows7SP1OrGreater()) {
+			PPG_si_osVersion = "6.1 build 7601 Sevice Pack 1";
+		} else if (IsWindows7OrGreater()) {
+			PPG_si_osVersion = "6.1 build 7600";
+		} else if (IsWindowsVistaSP2OrGreater()) {
+			PPG_si_osVersion = "6.0 build 6002 Sevice Pack 2";
+		} else if (IsWindowsVistaSP1OrGreater()) {
+			PPG_si_osVersion = "6.0 build 6001 Sevice Pack 1";
+		} else if (IsWindowsVistaOrGreater()) {
+			PPG_si_osVersion = "6.0 build 6000";
 /*  The Windows XP Service Packs do not update the version number. */
-			} else if (IsWindowsXPSP3OrGreater()) {
-				PPG_si_osVersion = "5.1 build 2600 Sevice Pack 3";
-			} else if (IsWindowsXPSP2OrGreater()) {
-				PPG_si_osVersion = "5.1 build 2600 Sevice Pack 2";
-			} else if (IsWindowsXPSP1OrGreater()) {
-				PPG_si_osVersion = "5.1 build 2600 Sevice Pack 1";
-			} else if (IsWindowsXPOrGreater()) {
-				PPG_si_osVersion = "5.1 build 2600";
-			}
-#else /* defined(_WIN32_WINNT_WINBLUE) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WINBLUE) */
+		} else if (IsWindowsXPSP3OrGreater()) {
+			PPG_si_osVersion = "5.1 build 2600 Sevice Pack 3";
+		} else if (IsWindowsXPSP2OrGreater()) {
+			PPG_si_osVersion = "5.1 build 2600 Sevice Pack 2";
+		} else if (IsWindowsXPSP1OrGreater()) {
+			PPG_si_osVersion = "5.1 build 2600 Sevice Pack 1";
+		} else if (IsWindowsXPOrGreater()) {
+			PPG_si_osVersion = "5.1 build 2600";
+		}
+	}
+#endif /* defined(_WIN32_WINNT_WINBLUE) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WINBLUE) */
+
+	if (NULL == PPG_si_osVersion) {
 		OSVERSIONINFOW versionInfo;
 		int len = sizeof("0123456789.0123456789 build 0123456789 ") + 1;
 		char *buffer;
 		uintptr_t position;
 
-		versionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
+		versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
+/* GetVersionEx() is deprecated, but still useful to get the Windows 10 build information. Suppress the warning. */
+#pragma warning( suppress : 4996 )
 		if (!GetVersionExW(&versionInfo)) {
 			return NULL;
 		}
@@ -639,7 +654,6 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 			WideCharToMultiByte(OS_ENCODING_CODE_PAGE, OS_ENCODING_WC_FLAGS, versionInfo.szCSDVersion, -1, &buffer[position], (int)(len - position - 1), NULL, NULL);
 		}
 		PPG_si_osVersion = buffer;
-#endif /* defined(_WIN32_WINNT_WINBLUE) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WINBLUE) */
 	}
 	return PPG_si_osVersion;
 }

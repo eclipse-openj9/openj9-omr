@@ -49,11 +49,11 @@ TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node *n
       {
       if (node->isMethodPointerConstant())
          {
-         comp->getMethodSnippetsToBePatchedOnClassUnload()->push_front(snippet);
+         cg->getMethodSnippetsToBePatchedOnClassUnload()->push_front(snippet);
          }
       else
          {
-         comp->getSnippetsToBePatchedOnClassUnload()->push_front(snippet);
+         cg->getSnippetsToBePatchedOnClassUnload()->push_front(snippet);
          }
       }
    return generateTrg1ImmSymInstruction(cg, TR::InstOpCode::ldrx, node, targetRegister, 0, labelSym, cursor);
@@ -341,7 +341,7 @@ addMetaDataForLoadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node *node, TR
  * @param[in] trgReg : target register
  * @param[in] cursor : instruction cursor
  * @param[in] typeAddress : type of address
- */ 
+ */
 static TR::Instruction *
 loadAddressConstantRelocatable(TR::CodeGenerator *cg, TR::Node *node, intptr_t value, TR::Register *trgReg, TR::Instruction *cursor=NULL, int16_t typeAddress = -1)
    {

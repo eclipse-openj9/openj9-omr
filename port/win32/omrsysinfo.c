@@ -654,6 +654,7 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 			WideCharToMultiByte(OS_ENCODING_CODE_PAGE, OS_ENCODING_WC_FLAGS, versionInfo.szCSDVersion, -1, &buffer[position], (int)(len - position - 1), NULL, NULL);
 		}
 		PPG_si_osVersion = buffer;
+		PPG_si_osVersionOnHeap = buffer;
 	}
 	return PPG_si_osVersion;
 }
@@ -1024,14 +1025,11 @@ void
 omrsysinfo_shutdown(struct OMRPortLibrary *portLibrary)
 {
 	if (NULL != portLibrary->portGlobals) {
-#if defined(_WIN32_WINNT_WINBLUE) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WINBLUE)
-		PPG_si_osVersion = NULL;
-#else
-		if (PPG_si_osVersion) {
-			portLibrary->mem_free_memory(portLibrary, PPG_si_osVersion);
-			PPG_si_osVersion = NULL;
+		if (NULL != PPG_si_osVersionOnHeap) {
+			portLibrary->mem_free_memory(portLibrary, PPG_si_osVersionOnHeap);
+			PPG_si_osVersionOnHeap = NULL;
 		}
-#endif
+		PPG_si_osVersion = NULL;
 
 		if (NULL != PPG_si_osTypeOnHeap) {
 			portLibrary->mem_free_memory(portLibrary, PPG_si_osTypeOnHeap);

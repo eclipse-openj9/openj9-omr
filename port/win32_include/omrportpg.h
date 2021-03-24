@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -132,6 +132,7 @@ typedef struct OMRPortPlatformGlobals {
 	char *si_osType;
 	char *si_osTypeOnHeap;
 	char *si_osVersion;
+	char *si_osVersionOnHeap;
 	uint64_t time_hiresClockFrequency;
 	void *tty_consoleEventBuffer;  /* windows.h cannot be included here and it has a complex definition so use void * in place of INPUT_RECORD* */
 	omrthread_monitor_t tty_consoleBufferMonitor;
@@ -169,6 +170,7 @@ typedef struct OMRPortPlatformGlobals {
 #define PPG_si_osType (portLibrary->portGlobals->platformGlobals.si_osType)
 #define PPG_si_osTypeOnHeap (portLibrary->portGlobals->platformGlobals.si_osTypeOnHeap)
 #define PPG_si_osVersion (portLibrary->portGlobals->platformGlobals.si_osVersion)
+#define PPG_si_osVersionOnHeap (portLibrary->portGlobals->platformGlobals.si_osVersionOnHeap)
 #define PPG_time_hiresClockFrequency (portLibrary->portGlobals->platformGlobals.time_hiresClockFrequency)
 #define PPG_tty_consoleEventBuffer (portLibrary->portGlobals->platformGlobals.tty_consoleEventBuffer)
 #define PPG_tty_consoleBufferMonitor (portLibrary->portGlobals->platformGlobals.tty_consoleBufferMonitor)

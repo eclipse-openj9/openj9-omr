@@ -21,6 +21,7 @@
 
 #include "optimizer/Optimizer.hpp"
 
+#include "optimizer/Optimizer_inlines.hpp"
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -2793,8 +2794,6 @@ OMR::Optimizer::valueNumberInfoBuildType()
    return PrePartitionVN;
    }
 
-
-inline
 TR::Optimizer *OMR::Optimizer::self()
    {
    return (static_cast<TR::Optimizer *>(this));

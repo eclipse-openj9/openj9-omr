@@ -19,8 +19,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef TR_OPTIMIZER_INLINES_INCL
-#define TR_OPTIMIZER_INLINES_INCL
+#ifndef OPTIMIZER_INLINES_INCL
+#define OPTIMIZER_INLINES_INCL
 
 #include "optimizer/OMROptimizer_inlines.hpp"
 

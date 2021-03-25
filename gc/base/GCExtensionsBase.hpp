@@ -362,9 +362,9 @@ public:
 	uintptr_t heapAlignment;
 	uintptr_t absoluteMinimumOldSubSpaceSize;
 	uintptr_t absoluteMinimumNewSubSpaceSize;
-	
+
 	float darkMatterCompactThreshold; /**< Value used to trigger compaction when dark matter ratio reaches this percentage of memory pools memory*/
-	
+
 	uintptr_t parSweepChunkSize;
 	uintptr_t heapExpansionMinimumSize;
 	uintptr_t heapExpansionMaximumSize;
@@ -378,12 +378,12 @@ public:
 	uintptr_t heapContractionStabilizationCount; /**< GC count required before the heap is allowed to contract due to excessvie time after last heap expansion */
 
 	float heapSizeStartupHintConservativeFactor; /**< Use only a fraction of hints stored in SC */
-	float heapSizeStartupHintWeightNewValue;		/**< Learn slowly by historic averaging of stored hints */	
+	float heapSizeStartupHintWeightNewValue;		/**< Learn slowly by historic averaging of stored hints */
 	bool useGCStartupHints; /**< Enabled/disable usage of heap sizing startup hints from Shared Cache */
 
 	uintptr_t workpacketCount; /**< this value is ONLY set if -Xgcworkpackets is specified - otherwise the workpacket count is determined heuristically */
 	uintptr_t packetListSplit; /**< the number of ways to split packet lists, set by -XXgc:packetListLockSplit=, or determined heuristically based on the number of GC threads */
-	
+
 	uintptr_t markingArraySplitMaximumAmount; /**< maximum number of elements to split array scanning work in marking scheme */
 	uintptr_t markingArraySplitMinimumAmount; /**< minimum number of elements to split array scanning work in marking scheme */
 
@@ -464,7 +464,7 @@ public:
 	uint32_t maxHotFieldListLength;
 	uintptr_t minCpuUtil;
 	/* End of options relating to dynamicBreadthFirstScanOrdering */
-#if defined(OMR_GC_MODRON_SCAVENGER) 
+#if defined(OMR_GC_MODRON_SCAVENGER)
 	uintptr_t scvTenureRatioHigh;
 	uintptr_t scvTenureRatioLow;
 	uintptr_t scvTenureFixedTenureAge; /**< The tenure age to use for the Fixed scavenger tenure strategy. */
@@ -643,7 +643,7 @@ public:
 	MM_HeapMap* previousMarkMap; /**< the previous valid mark map. This can be used to walk marked objects in regions which have _markMapUpToDate set to true */
 
 	MM_GlobalAllocationManager* globalAllocationManager; /**< Used for attaching threads to AllocationContexts */
-	
+
 #if defined(OMR_GC_REALTIME) || defined(OMR_GC_SEGREGATED_HEAP)
 	uintptr_t managedAllocationContextCount; /**< The number of allocation contexts which will be instantiated and managed by the GlobalAllocationManagerRealtime (currently 2*cpu_count) */
 #endif /* OMR_GC_REALTIME || OMR_GC_SEGREGATED_HEAP */
@@ -722,7 +722,7 @@ public:
 	bool numaForced; /**< if true, specifies if numa is disabled or enabled (actual value stored in NUMA Manager) by command line option */
 
 	bool padToPageSize;
-	
+
 	bool fvtest_disableExplictMainThread; /**< Test option to disable creation of explicit main GC thread */
 
 #if defined(OMR_GC_VLHGC)
@@ -810,7 +810,7 @@ public:
 
 	bool alwaysCallWriteBarrier; /**< was -Xgc:alwayscallwritebarrier specified? */
 	bool alwaysCallReadBarrier; /**< was -Xgc:alwaysCallReadBarrier specified? */
-	
+
 	bool _holdRandomThreadBeforeHandlingWorkUnit; /**< Whether we should randomly hold up a thread entering MM_ParallelTask::handleNextWorkUnit() */
 	uintptr_t _holdRandomThreadBeforeHandlingWorkUnitPeriod; /**< How often (in terms of number of times MM_ParallelTask::handleNextWorkUnit() is called) to randomly hold up a thread entering MM_ParallelTask::handleNextWorkUnit() */
 	bool _forceRandomBackoutsAfterScan; /**< Whether we should force MM_Scavenger::completeScan() to randomly fail due to backout */
@@ -922,7 +922,7 @@ public:
 		return false;
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 	}
-	
+
 	MMINLINE bool
 	isConcurrentScavengerHWSupported()
 	{
@@ -932,7 +932,7 @@ public:
 		return false;
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 	}
-	
+
    MMINLINE bool
    isSoftwareRangeCheckReadBarrierEnabled()
    {
@@ -944,7 +944,7 @@ public:
    }
 
 	bool isConcurrentScavengerInProgress();
-	
+
 	MMINLINE bool
 	isScavengerEnabled()
 	{
@@ -1086,28 +1086,28 @@ public:
 		*start = _guaranteedNurseryStart;
 		*end = _guaranteedNurseryEnd;
 	}
-	
+
 	MMINLINE bool isRememberedSetInOverflowState() { return _isRememberedSetInOverflow; }
 	MMINLINE void setRememberedSetOverflowState() { _isRememberedSetInOverflow = true; }
 	MMINLINE void clearRememberedSetOverflowState() { _isRememberedSetInOverflow = false; }
-	
+
 	MMINLINE void setScavengerBackOutState(BackOutState backOutState) { _backOutState = backOutState; }
 	MMINLINE BackOutState getScavengerBackOutState() { return _backOutState; }
 	MMINLINE bool isScavengerBackOutFlagRaised() { return backOutFlagCleared < _backOutState; }
-	
+
 	MMINLINE bool shouldScavengeNotifyGlobalGCOfOldToOldReference() { return _concurrentGlobalGCInProgress; }
 	MMINLINE void setConcurrentGlobalGCInProgress(bool inProgress) { _concurrentGlobalGCInProgress = inProgress; }
-#endif /* OMR_GC_MODRON_SCAVENGER */
 
 	/**
 	 * Determine whether Adaptive Threading is enabled. AdaptiveGCThreading flag
 	 * is not sufficient; Adaptive threading must be ignored if GC thread count is forced.
 	 * @return TRUE if adaptive threading routines can proceed, FALSE otherwise
 	 */
-	MMINLINE bool adaptiveThreadigEnabled()
+	MMINLINE bool adaptiveThreadingEnabled()
 	{
 		return (adaptiveGCThreading && !gcThreadCountForced);
 	}
+#endif /* OMR_GC_MODRON_SCAVENGER */
 
 	/**
 	 * Returns TRUE if an object is old, FALSE otherwise.
@@ -1130,7 +1130,7 @@ public:
 		return ((uintptr_t)baseSlotPtr >= (uintptr_t)_tenureBase) && ((uintptr_t)topSlotPtr - (uintptr_t)_tenureBase) < _tenureSize;
 	}
 
-	MMINLINE bool 
+	MMINLINE bool
 	isFvtestForce(uintptr_t *forceMax, uintptr_t *forceCntr)
 	{
 		bool result = false;
@@ -1144,25 +1144,25 @@ public:
 		return result;
 	}
 
-	MMINLINE bool 
+	MMINLINE bool
 	isFvtestForceSweepChunkArrayCommitFailure()
 	{
 		return isFvtestForce(&fvtest_forceSweepChunkArrayCommitFailure, &fvtest_forceSweepChunkArrayCommitFailureCounter);
 	}
 
-	MMINLINE bool 
+	MMINLINE bool
 	isFvtestForceMarkMapCommitFailure()
 	{
 		return isFvtestForce(&fvtest_forceMarkMapCommitFailure, &fvtest_forceMarkMapCommitFailureCounter);
 	}
 
-	MMINLINE bool 
+	MMINLINE bool
 	isFvtestForceMarkMapDecommitFailure()
 	{
 		return isFvtestForce(&fvtest_forceMarkMapDecommitFailure, &fvtest_forceMarkMapDecommitFailureCounter);
 	}
 
-	MMINLINE bool 
+	MMINLINE bool
 	isFvtestForceReferenceChainWalkerMarkMapCommitFailure()
 	{
 		return isFvtestForce(&fvtest_forceReferenceChainWalkerMarkMapCommitFailure, &fvtest_forceReferenceChainWalkerMarkMapCommitFailureCounter);
@@ -1388,7 +1388,7 @@ public:
 		, incrementScavengerStats()
 		, scavengerStats()
 		, copyScanRatio()
-#endif /* OMR_GC_MODRON_SCAVENGER */		
+#endif /* OMR_GC_MODRON_SCAVENGER */
 #if defined(OMR_GC_VLHGC)
 		, globalVLHGCStats()
 #endif /* OMR_GC_VLHGC */
@@ -1412,7 +1412,7 @@ public:
 		, freeOldHeapSizeOnLastGlobalGC(UDATA_MAX)
 		, concurrentKickoffTenuringHeadroom((float)0.02)
 		, tenureBytesDeviationBoost((float)2)
-#endif /* OMR_GC_MODRON_SCAVENGER */		
+#endif /* OMR_GC_MODRON_SCAVENGER */
 #if defined(OMR_GC_REALTIME)
 		, sATBBarrierRememberedSet(NULL)
 #endif /* defined(OMR_GC_REALTIME) */
@@ -1490,8 +1490,8 @@ public:
 		, heapExpansionStabilizationCount(0)
 		, heapContractionStabilizationCount(3)
 		, heapSizeStartupHintConservativeFactor((float)0.7)
-		, heapSizeStartupHintWeightNewValue((float)0.8)	
-		, useGCStartupHints(true)	
+		, heapSizeStartupHintWeightNewValue((float)0.8)
+		, useGCStartupHints(true)
 		, workpacketCount(0) /* only set if -Xgcworkpackets specified */
 		, packetListSplit(0)
 		, markingArraySplitMaximumAmount(DEFAULT_ARRAY_SPLIT_MAXIMUM_SIZE)

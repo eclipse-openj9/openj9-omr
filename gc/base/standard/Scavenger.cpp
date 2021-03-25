@@ -223,7 +223,7 @@ MM_Scavenger::initialize(MM_EnvironmentBase *env)
 
 	/* initialize the global scavenger gcCount */
 	_extensions->scavengerStats._gcCount = 0;
-	
+
 	if (!_scavengeCacheFreeList.initialize(env, NULL)) {
 		return false;
 	}
@@ -262,7 +262,7 @@ MM_Scavenger::initialize(MM_EnvironmentBase *env)
 	}
 
 	/**
-	 *incrementNewSpaceSize = 
+	 *incrementNewSpaceSize =
 	 *  Xmnx <= 32MB		---> Xmnx
 	 *  32MB < Xmnx < 4GB	---> MAX(Xmnx/16, 32MB)
 	 *  Xmnx >= 4GB			---> 256MB
@@ -409,7 +409,7 @@ MM_Scavenger::mainSetupForGC(MM_EnvironmentStandard *env)
 	_evacuateMemorySubSpace = _activeSubSpace->getMemorySubSpaceAllocate();
 	_survivorMemorySubSpace = _activeSubSpace->getMemorySubSpaceSurvivor();
 	_tenureMemorySubSpace = _activeSubSpace->getTenureMemorySubSpace();
-	
+
 	/* Accumulate pre-scavenge allocation statistics */
 	MM_HeapStats heapStatsSemiSpace;
 	MM_HeapStats heapStatsTenureSpace;
@@ -434,7 +434,7 @@ MM_Scavenger::mainSetupForGC(MM_EnvironmentStandard *env)
 
 	/* Record the tenure mask */
 	_tenureMask = calculateTenureMask();
-	
+
 	_activeSubSpace->mainSetupForGC(env);
 
 	_activeSubSpace->cacheRanges(_evacuateMemorySubSpace, &_evacuateSpaceBase, &_evacuateSpaceTop);
@@ -488,7 +488,7 @@ MM_Scavenger::calculateMaxCacheCount(uintptr_t activeMemorySize)
 void
 MM_Scavenger::calculateRecommendedWorkingThreads(MM_EnvironmentStandard *env)
 {
-	if (!_extensions->adaptiveThreadigEnabled() || _extensions->isConcurrentScavengerEnabled()) {
+	if (!_extensions->adaptiveThreadingEnabled() || _extensions->isConcurrentScavengerEnabled()) {
 		return;
 	}
 
@@ -948,22 +948,22 @@ MM_Scavenger::calcGCStats(MM_EnvironmentStandard *env)
 		/* First collection  ? */
 		if (scavengerGCStats->_gcCount > 1 ) {
 			scavengerGCStats->_avgInitialFree = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgInitialFree, (float)initialFree, INITIAL_FREE_HISTORY_WEIGHT);
-			
+
 #if defined(OMR_GC_LARGE_OBJECT_AREA)
-			tenureAggregateBytes = scavengerGCStats->_tenureAggregateBytes - scavengerGCStats->_tenureLOABytes;															
+			tenureAggregateBytes = scavengerGCStats->_tenureAggregateBytes - scavengerGCStats->_tenureLOABytes;
 			scavengerGCStats->_avgTenureLOABytes = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgTenureLOABytes,
 																		(float)scavengerGCStats->_tenureLOABytes,
 																		TENURE_BYTES_HISTORY_WEIGHT);
 #else /* OMR_GC_LARGE_OBJECT_AREA */
 			tenureAggregateBytes = scavengerGCStats->_tenureAggregateBytes;
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
-			scavengerGCStats->_avgTenureBytes = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgTenureBytes, 
-																					(float)tenureAggregateBytes, 
+			scavengerGCStats->_avgTenureBytes = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgTenureBytes,
+																					(float)tenureAggregateBytes,
 																					TENURE_BYTES_HISTORY_WEIGHT);
 			tenureBytesDeviation = (float)tenureAggregateBytes - scavengerGCStats->_avgTenureBytes;
-			scavengerGCStats->_avgTenureBytesDeviation = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgTenureBytesDeviation, 
-																				MM_Math::abs(tenureBytesDeviation), 
-																				TENURE_BYTES_HISTORY_WEIGHT);																											
+			scavengerGCStats->_avgTenureBytesDeviation = (uintptr_t)MM_Math::weightedAverage((float)scavengerGCStats->_avgTenureBytesDeviation,
+																				MM_Math::abs(tenureBytesDeviation),
+																				TENURE_BYTES_HISTORY_WEIGHT);
 		} else {
 			scavengerGCStats->_avgInitialFree = initialFree;
 
@@ -976,10 +976,10 @@ MM_Scavenger::calcGCStats(MM_EnvironmentStandard *env)
             	omrtty_printf("Tenured bytes: %zu\navgTenureBytes: %zu\ntenureBytesDeviation: %f\navgTenureBytesDeviation: %zu\n",
 				tenureAggregateBytes,
 				scavengerGCStats->_avgTenureBytes,
-				tenureBytesDeviation, 
+				tenureBytesDeviation,
 				scavengerGCStats->_avgTenureBytesDeviation);
 			}
-#endif /* OMR_GC_MODRON_CONCURRENT_MARK */	
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 	}
 }
 
@@ -1640,7 +1640,7 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	uintptr_t initialSizeToCopy = 0;
 	bool allowDuplicate = false;
 	bool allowDuplicateOrConcurrentDisabled = true;
-	
+
 	if (IS_CONCURRENT_ENABLED) {
 		/* For smaller objects, we allow duplicate (copy first and try to win forwarding).
 		 * For larger objects, there is only one copy (threads setup destination header, one wins, and other participate in copying or wait till copy is complete).
@@ -1703,7 +1703,7 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 		valgrindFreeObject(_extensions,(uintptr_t) forwardedHeader->getObject());
-	
+
 		// Object is definitely dead but at many places (glue : ScavangerRootScanner)
 		// We use it's forwardedHeader to check it.
 		valgrindMakeMemDefined((uintptr_t) forwardedHeader->getObject(), sizeof(MM_ForwardedHeader));
@@ -1756,7 +1756,7 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 			scavStats->getFlipHistory(0)->_flipBytes[oldObjectAge + 1] += objectReserveSizeInBytes;
 		}
 
-		/* depth copy the hot fields of an object if scavenger dynamicBreadthFirstScanOrdering is enabled */	
+		/* depth copy the hot fields of an object if scavenger dynamicBreadthFirstScanOrdering is enabled */
 		depthCopyHotFields(env, forwardedHeader, destinationObjectPtr);
 	} else {
 		/* We have not used the reserved space now, but we will for subsequent allocations. If this space was reserved for an individual object,
@@ -2188,7 +2188,7 @@ MM_Scavenger::shouldDoFinalNotify(MM_EnvironmentStandard *env)
 {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (_extensions->concurrentScavengeExhaustiveTermination && isCurrentPhaseConcurrent() && !_scavengeCacheFreeList.areAllCachesReturned()) {
-		
+
 		/* GC threads ran out of work, but not all copy caches are back to the global free pool. They are kept by mutator threads.
 		 * Activate Async Signal handler which will force Mutator threads to flush their copy caches for scanning. */
 		_delegate.signalThreadsToFlushCaches(env);
@@ -3199,7 +3199,7 @@ MM_Scavenger::getFreeCache(MM_EnvironmentStandard *env)
 
 	MM_CopyScanCacheStandard *cache = _scavengeCacheFreeList.popCache(env);
 
-	if (NULL == cache) {	
+	if (NULL == cache) {
 		env->_scavengerStats._scanCacheOverflow = 1;
 		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 		uint64_t duration = omrtime_current_time_millis();
@@ -3210,7 +3210,7 @@ MM_Scavenger::getFreeCache(MM_EnvironmentStandard *env)
 		cache = _scavengeCacheFreeList.popCache(env);
 		if (NULL == cache) {
 			resizePerformed = _scavengeCacheFreeList.resizeCacheEntries(env, 1+_scavengeCacheFreeList.getAllocatedCacheCount(), 0);
-		}		
+		}
 		omrthread_monitor_exit(_freeCacheMonitor);
 		if (resizePerformed) {
 			cache = _scavengeCacheFreeList.popCache(env);
@@ -3797,7 +3797,7 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 					/* A reverse forwarded object is a hole whose 'next' pointer actually points at the original object.
 					 * This keeps tenure space walkable once the reverse forwarded objects are abandoned.
 					 */
-					UDATA evacuateObjectSizeInBytes = _extensions->objectModel.getConsumedSizeInBytesWithHeader(forwardedObject);					
+					UDATA evacuateObjectSizeInBytes = _extensions->objectModel.getConsumedSizeInBytesWithHeader(forwardedObject);
 					MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(forwardedObject);
 #if defined(OMR_VALGRIND_MEMCHECK)
 					valgrindMempoolAlloc(_extensions,(uintptr_t) originalObject, (uintptr_t) evacuateObjectSizeInBytes);
@@ -3809,7 +3809,7 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
 					omrtty_printf("{SCAV: Back out forward pointer %p[%p]@%p -> %p[%p]}\n", objectPtr, *objectPtr, forwardedObject, freeHeader->getNext(env), freeHeader->getSize());
 					Assert_MM_true(objectPtr == originalObject);
-#endif /* OMR_SCAVENGER_TRACE_BACKOUT */			
+#endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 				}
 			}
 		}
@@ -4292,7 +4292,7 @@ MM_Scavenger::mainThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_AllocateD
 }
 
 void
-MM_Scavenger::processLargeAllocateStatsBeforeGC(MM_EnvironmentBase *env) 
+MM_Scavenger::processLargeAllocateStatsBeforeGC(MM_EnvironmentBase *env)
 {
 	MM_MemorySpace *defaultMemorySpace = _extensions->heap->getDefaultMemorySpace();
 	MM_MemorySubSpace *defaultMemorySubspace = defaultMemorySpace->getDefaultMemorySubSpace();
@@ -4303,14 +4303,14 @@ MM_Scavenger::processLargeAllocateStatsBeforeGC(MM_EnvironmentBase *env)
 		/* SemiSpace stats include only Mutator stats (no Collector stats during flipping) */
 		defaultMemorySubspace->getTopLevelMemorySubSpace(MEMORY_TYPE_NEW)->mergeLargeObjectAllocateStats(env);
 	}
-	
-	/* TODO: remove the below 2 lines(resetLargeObjectAllocateStats), so that we do not loose direct mutator allocation info */ 
+
+	/* TODO: remove the below 2 lines(resetLargeObjectAllocateStats), so that we do not loose direct mutator allocation info */
 	MM_MemoryPool *tenureMemoryPool = tenureMemorySubspace->getMemoryPool();
 	tenureMemoryPool->resetLargeObjectAllocateStats();
 }
 
-void 
-MM_Scavenger::processLargeAllocateStatsAfterGC(MM_EnvironmentBase *env) 
+void
+MM_Scavenger::processLargeAllocateStatsAfterGC(MM_EnvironmentBase *env)
 {
 	MM_MemorySpace *defaultMemorySpace = _extensions->heap->getDefaultMemorySpace();
 	MM_MemorySubSpace *tenureMemorySubspace = defaultMemorySpace->getTenureMemorySubSpace();
@@ -4584,7 +4584,7 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 	 */
 	if (expandFailed()) {
 		Trc_MM_Scavenger_percolate_expandFailed(env->getLanguageVMThread());
-	
+
 		/* We do an aggressive percolate if the last scavenge also percolated */
 		uint32_t aggressivePercolate = _extensions->heap->getPercolateStats()->getScavengesSincePercolate() <= 1 ? J9MMCONSTANT_IMPLICIT_GC_PERCOLATE_AGGRESSIVE : J9MMCONSTANT_IMPLICIT_GC_PERCOLATE;
 
@@ -4660,7 +4660,7 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 
 	/**
-	 * Language percolation trigger	
+	 * Language percolation trigger
 	 * Allow the CollectorLanguageInterface to advise if percolation should occur.
 	 */
 	PercolateReason percolateReason = NONE_SET;
@@ -5107,7 +5107,7 @@ MM_Scavenger::calculateTenureMaskUsingFixed(uintptr_t tenureAge)
 	return mask;
 }
 
-void 
+void
 MM_Scavenger::resetTenureLargeAllocateStats(MM_EnvironmentBase *env)
 {
 	MM_MemorySpace *defaultMemorySpace = _extensions->heap->getDefaultMemorySpace();
@@ -5638,7 +5638,7 @@ MM_Scavenger::mainThreadConcurrentCollect(MM_EnvironmentBase *env)
 		if (_shouldYield) {
 			if (NULL == _extensions->gcExclusiveAccessThreadId) {
 				/* We terminated concurrent cycle due to a external request. We will not move to 'complete' phase,
-				 * but stay in concurrent scan phase and try to resume work after the external party is done 
+				 * but stay in concurrent scan phase and try to resume work after the external party is done
 				 * (when we are able to regain VM access)
 				 */
 				getConcurrentPhaseStats()->_terminationRequestType = MM_ConcurrentPhaseStatsBase::terminationRequest_External;

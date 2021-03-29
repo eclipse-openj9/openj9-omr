@@ -404,6 +404,10 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, T
       {
       tempReg = cg->allocateRegister(TR_FPR);
       }
+   else if (op == TR::InstOpCode::vldrimmq)
+      {
+      tempReg = cg->allocateRegister(TR_VRF);
+      }
    else
       {
       tempReg = cg->allocateRegister();
@@ -510,6 +514,13 @@ OMR::ARM64::TreeEvaluator::cloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return commonLoadEvaluator(node, TR::InstOpCode::ldrhimm, cg);
    }
 
+// also handles vloadi
+TR::Register *
+OMR::ARM64::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonLoadEvaluator(node, TR::InstOpCode::vldrimmq, cg);
+   }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{
@@ -606,6 +617,13 @@ OMR::ARM64::TreeEvaluator::astoreEvaluator(TR::Node *node, TR::CodeGenerator *cg
    TR::InstOpCode::Mnemonic op = isCompressedClassPointerOfObjectHeader ? TR::InstOpCode::strimmw : TR::InstOpCode::strimmx;
 
    return commonStoreEvaluator(node, op, cg);
+   }
+
+// also handles vstorei
+TR::Register *
+OMR::ARM64::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return commonStoreEvaluator(node, TR::InstOpCode::vstrimmq, cg);
    }
 
 TR::Register *

@@ -864,8 +864,24 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
                }
             else if (isImm12OffsetInstruction(enc))
                {
-               uint32_t size = (enc >> 30) & 3; /* b=0, h=1, w=2, x=3 */
-               uint32_t shifted = displacement >> size;
+               uint32_t size = (enc >> 30) & 3; /* b=0, h=1, w=2, x=3, q=0 */
+               uint32_t opc = (enc >> 22) & 3; /* 8bit, 16bit, 32bit, 64bit: 0 or 1; 128bit: 2 or 3 */
+               uint32_t bitsToShift;
+
+               if (opc == 2 || opc == 3)
+                  {
+                  bitsToShift = 4;
+                  }
+               else if (opc == 0 || opc == 1)
+                  {
+                  bitsToShift = size;
+                  }
+               else
+                  {
+                  TR_ASSERT_FATAL(false, "Instruction format is unknown.");
+                  }
+
+               uint32_t shifted = displacement >> bitsToShift;
 
                if (size > 0)
                   {
@@ -1027,8 +1043,24 @@ uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::InstOpCode op)
                }
             else if (isImm12OffsetInstruction(enc))
                {
-               uint32_t size = (enc >> 30) & 3; /* b=0, h=1, w=2, x=3 */
-               uint32_t shifted = displacement >> size;
+               uint32_t size = (enc >> 30) & 3; /* b=0, h=1, w=2, x=3, q=0 */
+               uint32_t opc = (enc >> 22) & 3; /* 8bit, 16bit, 32bit, 64bit: 0 or 1; 128bit: 2 or 3 */
+               uint32_t bitsToShift;
+
+               if (opc == 2 || opc == 3)
+                  {
+                  bitsToShift = 4;
+                  }
+               else if (opc == 0 || opc == 1)
+                  {
+                  bitsToShift = size;
+                  }
+               else
+                  {
+                  TR_ASSERT_FATAL(false, "Instruction format is unknown.");
+                  }
+
+               uint32_t shifted = displacement >> bitsToShift;
 
                if (size > 0)
                   {

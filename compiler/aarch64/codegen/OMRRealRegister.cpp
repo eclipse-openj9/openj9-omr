@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,7 +32,7 @@ OMR::ARM64::RealRegister::regMaskToRealRegister(TR_RegisterMask mask, TR_Registe
 
    if (rk == TR_GPR)
       rr = FirstGPR;
-   else if (rk == TR_FPR)
+   else if ((rk == TR_FPR) || (rk == TR_VRF))
       rr = FirstFPR;
 
    return cg->machine()->getRealRegister(RegNum(rr+bitPos));
@@ -43,7 +43,7 @@ OMR::ARM64::RealRegister::getAvailableRegistersMask(TR_RegisterKinds rk)
    {
    if (rk == TR_GPR)
       return AvailableGPRMask;
-   else if (rk == TR_FPR)
+   else if ((rk == TR_FPR) || (rk == TR_VRF))
       return AvailableFPRMask;
    else
       return 0;

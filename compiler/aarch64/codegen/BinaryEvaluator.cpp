@@ -253,6 +253,55 @@ OMR::ARM64::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return genericBinaryEvaluator(node, TR::InstOpCode::subx, TR::InstOpCode::subimmx, true, cg);
    }
 
+// vector add
+static TR::Register *
+inlineVectorBinaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *lhsReg = NULL, *rhsReg = NULL;
+
+   lhsReg = cg->evaluate(firstChild);
+   rhsReg = cg->evaluate(secondChild);
+
+   TR_ASSERT(lhsReg->getKind() == TR_VRF, "unexpected Register kind\n");
+   TR_ASSERT(rhsReg->getKind() == TR_VRF, "unexpected Register kind\n");
+
+   TR::Register *resReg = cg->allocateRegister(TR_VRF);
+
+   node->setRegister(resReg);
+   generateTrg1Src2Instruction(cg, op, node, resReg, lhsReg, rhsReg);
+
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   return resReg;
+   }
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::InstOpCode::Mnemonic addOp;
+   switch(node->getDataType())
+      {
+      case TR::VectorInt8:
+         addOp = TR::InstOpCode::vadd16b;
+         break;
+      case TR::VectorInt16:
+         addOp = TR::InstOpCode::vadd8h;
+         break;
+      case TR::VectorFloat:
+         addOp = TR::InstOpCode::vfadd4s;
+         break;
+      case TR::VectorDouble:
+         addOp = TR::InstOpCode::vfadd2d;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorBinaryOp(node, cg, addOp);
+   }
+
 // Multiply a register by a 32-bit constant
 static void mulConstant32(TR::Node *node, TR::Register *treg, TR::Register *sreg, int32_t value, TR::CodeGenerator *cg)
    {

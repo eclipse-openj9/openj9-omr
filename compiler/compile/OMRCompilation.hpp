@@ -978,9 +978,6 @@ public:
    void setHasMethodHandleInvoke() { _flags.set(HasMethodHandleInvoke); }
    bool getHasMethodHandleInvoke() { return _flags.testAny(HasMethodHandleInvoke); }
 
-   bool supressEarlyInlining() { return _noEarlyInline; }
-   void setSupressEarlyInlining(bool b) { _noEarlyInline = b; }
-
    void setHasColdBlocks()
       {
       _flags.set(HasColdBlocks);
@@ -1233,8 +1230,6 @@ private:
    TR::list<TR::ResolvedMethodSymbol*>      _genILSyms;
 
    TR::SymbolReferenceTable*            _symRefTab;
-
-   bool                               _noEarlyInline;
 
    TR_ReturnInfo                      _returnInfo;
 

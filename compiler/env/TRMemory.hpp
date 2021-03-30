@@ -451,8 +451,10 @@ public:
 
       Debug,
 
+      // JITServer types
       ClientSessionData,
       ROMClass,
+      JITServerAOTCache,
 
       SymbolValidationManager,
 

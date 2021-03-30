@@ -305,8 +305,10 @@ const char * objectName[] =
 
    "Debug",
 
+   // JITServer types
    "ClientSessionData",
    "ROMClass",
+   "JITServerAOTCache",
 
    "SymbolValidationManager",
 

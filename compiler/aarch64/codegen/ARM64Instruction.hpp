@@ -3012,7 +3012,35 @@ class ARM64MemInstruction : public TR::Instruction
     * @return offset
     */
    virtual int32_t getOffset() {return getMemoryReference()->getOffset();}
-
+   /**
+    * @brief Answers whether this instruction references the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction references the virtual register
+    */
+   virtual bool refsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction uses the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction uses the virtual register
+    */
+   virtual bool usesRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction defines the virtual register
+    */
+   virtual bool defsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given real register
+    * @param[in] reg : real register
+    * @return true when the instruction defines the real register
+    */
+   virtual bool defsRealRegister(TR::Register *reg);
+   /**
+    * @brief Assigns registers
+    * @param[in] kindToBeAssigned : register kind
+    */
+   virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
    /**
     * @brief Generates binary encoding of the instruction
     * @return instruction cursor

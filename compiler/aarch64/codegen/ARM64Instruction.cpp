@@ -358,12 +358,12 @@ void TR::ARM64Trg1Src3Instruction::assignRegisters(TR_RegisterKinds kindToBeAssi
 
 bool TR::ARM64MemSrc1Instruction::refsRegister(TR::Register *reg)
    {
-   return (getMemoryReference()->refsRegister(reg) || reg == getSource1Register());
+   return (TR::ARM64MemInstruction::refsRegister(reg) || reg == getSource1Register());
    }
 
 bool TR::ARM64MemSrc1Instruction::usesRegister(TR::Register *reg)
    {
-   return (getMemoryReference()->refsRegister(reg) || reg == getSource1Register());
+   return (TR::ARM64MemInstruction::usesRegister(reg) || reg == getSource1Register());
    }
 
 bool TR::ARM64MemSrc1Instruction::defsRegister(TR::Register *reg)
@@ -534,6 +534,40 @@ TR::ARM64MemInstruction::ARM64MemInstruction(TR::InstOpCode::Mnemonic op,
    {
    mr->bookKeepingRegisterUses(self(), cg);
    TR::InstructionDelegate::setupImplicitNullPointerException(cg, this);
+   }
+
+bool TR::ARM64MemInstruction::refsRegister(TR::Register *reg)
+   {
+   return getMemoryReference()->refsRegister(reg);
+   }
+
+bool TR::ARM64MemInstruction::usesRegister(TR::Register *reg)
+   {
+   return getMemoryReference()->refsRegister(reg);
+   }
+
+bool TR::ARM64MemInstruction::defsRegister(TR::Register *reg)
+   {
+   return false;
+   }
+
+bool TR::ARM64MemInstruction::defsRealRegister(TR::Register *reg)
+   {
+   return false;
+   }
+
+void TR::ARM64MemInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+   {
+   TR::Machine *machine = cg()->machine();
+   TR::MemoryReference *mref = getMemoryReference();
+
+   if (getDependencyConditions())
+      getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());
+
+   mref->assignRegisters(this, cg());
+
+   if (getDependencyConditions())
+      getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
    }
 
 // TR::ARM64Trg1MemSrc1Instruction:: member functions

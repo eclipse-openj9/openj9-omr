@@ -98,6 +98,8 @@ OMR::ARM64::CodeGenerator::initialize()
 
    cg->setSupportsByteswap();
 
+   cg->setSupportsAlignedAccessOnly();
+
    if (!comp->getOption(TR_DisableTraps) && TR::Compiler->vm.hasResumableTrapHandler(comp))
       {
       _numberBytesReadInaccessible = 4096;

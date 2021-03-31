@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -89,7 +89,7 @@ OMR::ARM64::RegisterDependencyConditions::RegisterDependencyConditions(
          {
          TR_RegisterKinds kind = reg->getKind();
 
-         TR_ASSERT_FATAL((kind == TR_GPR) || (kind == TR_FPR), "Invalid register kind.");
+         TR_ASSERT_FATAL((kind == TR_GPR) || (kind == TR_FPR) || (kind == TR_VRF), "Invalid register kind.");
 
          if (kind == TR_GPR)
             {
@@ -102,6 +102,11 @@ OMR::ARM64::RegisterDependencyConditions::RegisterDependencyConditions(
                copyReg->setPinningArrayPointer(reg->getPinningArrayPointer());
                }
             iCursor = generateMovInstruction(cg, node, copyReg, reg, true, iCursor);
+            }
+         else if (kind == TR_VRF)
+            {
+               copyReg = cg->allocateRegister(TR_VRF);
+               iCursor = generateTrg1Src2Instruction(cg, TR::InstOpCode::vorr2d, node, copyReg, reg, reg, iCursor);
             }
          else
             {
@@ -369,6 +374,9 @@ void TR_ARM64RegisterDependencyGroup::assignRegisters(
                      break;
                   case TR_FPR:
                      opCode = TR::InstOpCode::vldrimmd;
+                     break;
+                  case TR_VRF:
+                     opCode = TR::InstOpCode::vldrimmq;
                      break;
                   default:
                      TR_ASSERT(0, "\nRegister kind not supported in OOL spill\n");

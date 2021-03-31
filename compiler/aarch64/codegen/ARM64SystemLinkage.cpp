@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -289,12 +289,16 @@ TR::ARM64SystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
 
    stackIndex = 8; // [sp+0] is for link register
 
-   // map non-long/double automatics
+   // map non-long/double, and non-vector automatics
    while (localCursor != NULL)
       {
       if (localCursor->getGCMapIndex() < 0
           && localCursor->getDataType() != TR::Int64
-          && localCursor->getDataType() != TR::Double)
+          && localCursor->getDataType() != TR::Double
+          && localCursor->getDataType() != TR::VectorInt8
+          && localCursor->getDataType() != TR::VectorInt16
+          && localCursor->getDataType() != TR::VectorFloat
+          && localCursor->getDataType() != TR::VectorDouble)
          {
          localCursor->setOffset(stackIndex);
          stackIndex += (localCursor->getSize() + 3) & (~3);
@@ -317,6 +321,24 @@ TR::ARM64SystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
          }
       localCursor = automaticIterator.getNext();
       }
+
+   stackIndex += (stackIndex & 0x8) ? 8 : 0; // align to 16 bytes
+   automaticIterator.reset();
+   localCursor = automaticIterator.getFirst();
+
+   // map vector automatics
+   while (localCursor != NULL)
+      {
+      if (localCursor->getDataType() == TR::VectorInt8
+          || localCursor->getDataType() == TR::VectorInt16
+          || localCursor->getDataType() == TR::VectorFloat
+          || localCursor->getDataType() == TR::VectorDouble)
+         {
+         localCursor->setOffset(stackIndex);
+         stackIndex += (localCursor->getSize() + 15) & (~15);
+         }
+      localCursor = automaticIterator.getNext();
+      }
    method->setLocalMappingCursor(stackIndex);
 
    // allocate space for preserved registers (x19-x28, v8-v15)
@@ -333,7 +355,7 @@ TR::ARM64SystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
       TR::RealRegister *rr = machine->getRealRegister((TR::RealRegister::RegNum)r);
       if (rr->getHasBeenAssignedInMethod())
          {
-         stackIndex += 8;
+         stackIndex += 16;
          }
       }
 
@@ -544,8 +566,8 @@ TR::ARM64SystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Paramet
       if (rr->getHasBeenAssignedInMethod())
          {
          TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
-         cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::vstrimmd, firstNode, stackSlot, rr, cursor);
-         offset += 8;
+         cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::vstrimmq, firstNode, stackSlot, rr, cursor);
+         offset += 16;
          }
       }
    cursor = copyParametersToHomeLocation(cursor);
@@ -580,8 +602,8 @@ TR::ARM64SystemLinkage::createEpilogue(TR::Instruction *cursor)
       if (rr->getHasBeenAssignedInMethod())
          {
          TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
-         cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::vldrimmd, lastNode, rr, stackSlot, cursor);
-         offset += 8;
+         cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::vldrimmq, lastNode, rr, stackSlot, cursor);
+         offset += 16;
          }
       }
 

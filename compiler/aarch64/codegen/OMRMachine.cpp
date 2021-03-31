@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -125,6 +125,7 @@ TR::RealRegister *OMR::ARM64::Machine::findBestFreeRegister(TR::Instruction *cur
          last  = TR::RealRegister::LastAssignableGPR;
          break;
       case TR_FPR:
+      case TR_VRF:
          first = maskI = TR::RealRegister::FirstFPR;
          last  = TR::RealRegister::LastFPR;
          break;
@@ -242,6 +243,7 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
             last = TR::RealRegister::LastGPR;
             break;
          case TR_FPR:
+         case TR_VRF:
             first = maskI = TR::RealRegister::FirstFPR;
             last = TR::RealRegister::LastFPR;
             break;
@@ -345,6 +347,7 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
             }
          break;
       case TR_FPR:
+      case TR_VRF:
          if (!comp->getOption(TR_DisableOOL) &&
             (cg->isOutOfLineColdPath() || cg->isOutOfLineHotPath()) &&
             registerToSpill->getBackingStorage())
@@ -427,6 +430,9 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
       case TR_FPR:
          loadOp = TR::InstOpCode::vldrimmd;
          break;
+      case TR_VRF:
+         loadOp = TR::InstOpCode::vldrimmq;
+         break;
       default:
          TR_ASSERT(false, "Unsupported RegisterKind.");
          break;
@@ -499,6 +505,10 @@ TR::RealRegister *OMR::ARM64::Machine::reverseSpillState(TR::Instruction *curren
             dataSize = 8;
             storeOp = TR::InstOpCode::vstrimmd;
             break;
+         case TR_VRF:
+            dataSize = 16;
+            storeOp = TR::InstOpCode::vstrimmq;
+            break;
          default:
             TR_ASSERT(false, "Unsupported RegisterKind.");
             break;
@@ -515,6 +525,9 @@ TR::RealRegister *OMR::ARM64::Machine::reverseSpillState(TR::Instruction *curren
             break;
          case TR_FPR:
             dataSize = 8;
+            break;
+         case TR_VRF:
+            dataSize = 16;
             break;
          default:
             TR_ASSERT(false, "Unsupported RegisterKind.");
@@ -612,6 +625,9 @@ TR::RealRegister *OMR::ARM64::Machine::reverseSpillState(TR::Instruction *curren
          case TR_FPR:
             storeOp = TR::InstOpCode::vstrimmd;
             break;
+         case TR_VRF:
+            storeOp = TR::InstOpCode::vstrimmq;
+            break;
          default:
             TR_ASSERT(false, "Unsupported RegisterKind.");
             break;
@@ -688,6 +704,9 @@ static void registerCopy(TR::Instruction *precedingInstruction,
          break;
       case TR_FPR:
          generateTrg1Src1Instruction(cg, TR::InstOpCode::fmovd, node, targetReg, sourceReg, precedingInstruction);
+         break;
+      case TR_VRF:
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::vorr2d, node, targetReg, sourceReg, sourceReg, precedingInstruction);
          break;
       default:
          TR_ASSERT(false, "Unsupported RegisterKind.");
@@ -780,7 +799,7 @@ void OMR::ARM64::Machine::coerceRegisterAssignment(TR::Instruction *currentInstr
       TR::RealRegister *spareReg = NULL;
       TR::Register *currentTargetVirtual = targetRegister->getAssignedRegister();
 
-      bool needTemp = (rk == TR_FPR); // xor is unavailable for register exchange
+      bool needTemp = (rk == TR_FPR || rk == TR_VRF); // xor is unavailable for register exchange
 
       if (targetRegister->getState() == TR::RealRegister::Blocked)
          {

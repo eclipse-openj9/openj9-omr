@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -468,7 +468,7 @@
 #define _vdecEvaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define _vnegEvaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define _vcomEvaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define _vaddEvaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define _vaddEvaluator TR::TreeEvaluator::vaddEvaluator 
 #define _vsubEvaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define _vmulEvaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define _vdivEvaluator TR::TreeEvaluator::unImpOpEvaluator 
@@ -489,10 +489,10 @@
 #define _vucmpleEvaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define _vcmpgeEvaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define _vucmpgeEvaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define _vloadEvaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define _vloadiEvaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define _vstoreEvaluator TR::TreeEvaluator::unImpOpEvaluator 
-#define _vstoreiEvaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define _vloadEvaluator TR::TreeEvaluator::vloadEvaluator 
+#define _vloadiEvaluator TR::TreeEvaluator::vloadEvaluator 
+#define _vstoreEvaluator TR::TreeEvaluator::vstoreEvaluator 
+#define _vstoreiEvaluator TR::TreeEvaluator::vstoreEvaluator 
 #define _vrandEvaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define _vreturnEvaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define _vcallEvaluator TR::TreeEvaluator::unImpOpEvaluator 

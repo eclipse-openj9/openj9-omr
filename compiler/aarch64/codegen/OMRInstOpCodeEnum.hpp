@@ -483,6 +483,10 @@
 		vadd8h,                                                  	/* 0x4E608400	ADD      	 */
 		vfadd4s,                                                  	/* 0x4E20D400	FADD      	 */
 		vfadd2d,                                                  	/* 0x4E60D400	FADD      	 */
+		vsub16b,                                                  	/* 0x6E208400	SUB      	 */
+		vsub8h,                                                  	/* 0x6E608400	SUB      	 */
+		vfsub4s,                                                  	/* 0x4EA0D400	FSUB      	 */
+		vfsub2d,                                                  	/* 0x4EE0D400	FSUB      	 */
 /* Hint instructions */
 		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */

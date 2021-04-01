@@ -469,7 +469,7 @@
 #define _vnegEvaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define _vcomEvaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define _vaddEvaluator TR::TreeEvaluator::vaddEvaluator 
-#define _vsubEvaluator TR::TreeEvaluator::unImpOpEvaluator 
+#define _vsubEvaluator TR::TreeEvaluator::vsubEvaluator 
 #define _vmulEvaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define _vdivEvaluator TR::TreeEvaluator::unImpOpEvaluator 
 #define _vremEvaluator TR::TreeEvaluator::unImpOpEvaluator 

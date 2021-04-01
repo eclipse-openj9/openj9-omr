@@ -388,7 +388,43 @@ class SymbolReferenceTable
        */
       j9VMThreadTempSlotFieldSymbol,
 
-      OMRlastPrintableCommonNonhelperSymbol = j9VMThreadTempSlotFieldSymbol,
+      /** \brief
+       * This symbol represents a computed static call for methods that have not been compiled yet, but may
+       * get compiled in the future. This provides a mechanism to create a much faster alternate path in the
+       * trees to invoke methods that have been compiled that would otherwise require going down a more
+       * expensive path (such as through invocation of a VM internal native method, for example).
+       *
+       * \code
+       *    ificmpeq goto block_2
+       *       <object field storing the address of the compiled method>
+       *       iconst 0
+       *
+       *block_1:
+       *   icalli <computedStaticCallSymbol>
+       *       <address of compiled method>
+       *       <param1>
+       *       <param2>
+       *       .
+       *       .
+       *   goto block_3
+       *
+       *block_2:
+       *   icall <original call to VM internal native method>
+       *       <param1>
+       *       <param2>
+       *       .
+       *       .
+       *
+       *block_3:
+       *       .
+       *       .
+       *
+       * \endcode
+       *
+       */
+      computedStaticCallSymbol,
+
+      OMRlastPrintableCommonNonhelperSymbol = computedStaticCallSymbol,
 
       firstPerCodeCacheHelperSymbol,
       lastPerCodeCacheHelperSymbol = firstPerCodeCacheHelperSymbol + TR_numCCPreLoadedCode - 1,

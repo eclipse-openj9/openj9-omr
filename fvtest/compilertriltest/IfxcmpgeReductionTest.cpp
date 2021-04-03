@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 IBM Corp. and others
+ * Copyright (c) 2017, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -92,6 +92,7 @@ class Int8ReductionTest : public IfxcmpgeReductionTest<int8_t> {};
 
 TEST_P(Int8ReductionTest, Reduction)
    {
+   SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support ifbcmpge (see issue #5893)";
    SKIP_ON_RISCV(MissingImplementation);
 
    auto param = to_struct(GetParam());
@@ -138,6 +139,7 @@ class UInt8ReductionTest : public IfxcmpgeReductionTest<uint8_t> {};
 
 TEST_P(UInt8ReductionTest, Reduction)
    {
+   SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support ifbucmpge (see issue #5893)";
    SKIP_ON_RISCV(MissingImplementation);
 
    auto param = to_struct(GetParam());
@@ -184,6 +186,7 @@ class Int16ReductionTest : public IfxcmpgeReductionTest<int16_t> {};
 
 TEST_P(Int16ReductionTest, Reduction)
    {
+   SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support ifscmpge (see issue #5893)";
    SKIP_ON_RISCV(MissingImplementation);
 
    auto param = to_struct(GetParam());
@@ -230,6 +233,7 @@ class UInt16ReductionTest : public IfxcmpgeReductionTest<uint16_t> {};
 
 TEST_P(UInt16ReductionTest, Reduction)
    {
+   SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support ifsucmpge (see issue #5893)";
    SKIP_ON_RISCV(MissingImplementation);
 
    auto param = to_struct(GetParam());

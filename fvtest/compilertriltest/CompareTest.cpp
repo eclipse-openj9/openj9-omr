@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -898,6 +898,10 @@ TEST_P(FloatCompare, UsingConst) {
         SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF((param.opcode == "fcmpl" || param.opcode == "fcmpg") && OMRPORT_ARCH_AARCH64 == arch, MissingImplementation)
+        << "The AArch64 codegen does not yet support fcmpl/fcmpg (see issue #5895)";
+
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, 1024,
        "(method return=Int32 "
@@ -929,6 +933,10 @@ TEST_P(FloatCompare, UsingRhsConst) {
         SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF((param.opcode == "fcmpl" || param.opcode == "fcmpg") && OMRPORT_ARCH_AARCH64 == arch, MissingImplementation)
+        << "The AArch64 codegen does not yet support fcmpl/fcmpg (see issue #5895)";
+
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, 1024,
        "(method return=Int32 args=[Float] "
@@ -954,6 +962,10 @@ TEST_P(FloatCompare, UsingRhsConst) {
 
 TEST_P(FloatCompare, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
+
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF((param.opcode == "fcmpl" || param.opcode == "fcmpg") && OMRPORT_ARCH_AARCH64 == arch, MissingImplementation)
+        << "The AArch64 codegen does not yet support fcmpl/fcmpg (see issue #5895)";
 
     char inputTrees[160] = {0};
     std::snprintf(inputTrees, 160,
@@ -1056,6 +1068,10 @@ TEST_P(DoubleCompare, UsingConst) {
         SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF((param.opcode == "dcmpl" || param.opcode == "dcmpg") && OMRPORT_ARCH_AARCH64 == arch, MissingImplementation)
+        << "The AArch64 codegen does not yet support dcmpl/dcmpg (see issue #5895)";
+
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, 1024,
        "(method return=Int32 "
@@ -1087,6 +1103,10 @@ TEST_P(DoubleCompare, UsingRhsConst) {
         SKIP_ON_WINDOWS(KnownBug) << "TRIL parser cannot handle NaN values on Windows (see issue #5324)";
     }
 
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF((param.opcode == "dcmpl" || param.opcode == "dcmpg") && OMRPORT_ARCH_AARCH64 == arch, MissingImplementation)
+        << "The AArch64 codegen does not yet support dcmpl/dcmpg (see issue #5895)";
+
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, 1024,
        "(method return=Int32 args=[Double] "
@@ -1112,6 +1132,10 @@ TEST_P(DoubleCompare, UsingRhsConst) {
 
 TEST_P(DoubleCompare, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
+
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF((param.opcode == "dcmpl" || param.opcode == "dcmpg") && OMRPORT_ARCH_AARCH64 == arch, MissingImplementation)
+        << "The AArch64 codegen does not yet support dcmpl/dcmpg (see issue #5895)";
 
     char inputTrees[160] = {0};
     std::snprintf(inputTrees, 160,

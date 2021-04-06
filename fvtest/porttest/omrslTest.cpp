@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,6 +36,16 @@
 #include "testHelpers.hpp"
 #include "testProcessHelpers.hpp"
 #include "omrfileTest.h"
+
+#if defined(J9ZOS39064)
+/* We replicate the function pointer definitions from omrcel4ro31 here to avoid unnecessarily
+ * having to expose omr_cel4ro31_is_supported() in omrport.h. These are static definitions
+ * off fast vector from CCA control block that are not subject to change. Final offset is
+ * updated to +8 to test for routine address.
+ */
+#define CEL4RO31_FNPTR (*(uintptr_t *)((char *)(*(int *)(((char *)__gtca())+1096))+8))
+#define CELQGIPB_FNPTR (*(uintptr_t *)((char *)(*(int *)(((char *)__gtca())+1096))+96))
+#endif /* defined(J9ZOS39064) */
 
 /**
  * Verify port library properly setup to run sl tests
@@ -270,3 +280,41 @@ exit:
 	reportTestExit(OMRPORTLIB, testName);
 }
 #endif /* defined(AIXPPC) */
+
+#if defined(J9ZOS39064)
+/**
+ * Basic test: load the port Library 31-bit test dll via CEL4RO31 interface
+ */
+TEST(PortSlTest, sl_testOpen31bitDLLviaCEL4RO31)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrsl_testOpen31bitDLLviaCEL4RO31";
+	uintptr_t dllHandle = 0;
+	uintptr_t funcHandle = 0;
+	uintptr_t rc = 0;
+	char sharedLibName[] = "sltestlib31";
+	char functionName[] = "sl_testOpen31bitDLLviaCEL4RO31_function";
+	const char *functionArgs = "()V";
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+	if ((NULL != CEL4RO31_FNPTR) && (NULL != CELQGIPB_FNPTR)) {
+		/* Only attempt the test if the underlying LE support is available. */
+		rc = omrsl_open_shared_library(sharedLibName, &dllHandle, OMRPORT_SLOPEN_DECORATE | OMRPORT_SLOPEN_ATTEMPT_31BIT_OPEN);
+		if (0 != rc) {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "Unable to open %s, \n", sharedLibName, omrerror_last_error_message());
+			goto exit;
+		}
+		rc = omrsl_lookup_name(dllHandle, functionName, &funcHandle, functionArgs);
+		if (0 != rc) {
+			outputErrorMessage(
+				PORTTEST_ERROR_ARGS, "Unable to lookup function %s from library %s, \n",
+				functionName, sharedLibName, omrerror_last_error_message());
+			goto exit;
+		}
+	}
+
+exit:
+	reportTestExit(OMRPORTLIB, testName);
+}
+#endif /* defined(J9ZOS39064) */

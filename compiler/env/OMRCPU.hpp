@@ -114,6 +114,11 @@ public:
     */
    static TR::CPU detectRelocatable(OMRPortLibrary * const omrPortLib);
 
+   /**
+    * @brief API to initialize platform specific target processor info if it exists
+    */
+   static void initializeTargetProcessorInfo() {}
+
    TR_Processor setProcessor(TR_Processor p) { return(_processor = p); }
 
    // Processor identity and generation comparisons

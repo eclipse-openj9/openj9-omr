@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,7 +30,7 @@ void TR::ARM64LabelInstruction::assignRegistersForOutOfLineCodeSection(TR_Regist
    TR::Compilation *comp = cg()->comp();
 
    bool isLabel = getOpCodeValue() == TR::InstOpCode::label;
-   bool isBranch = (getOpCodeValue() == TR::InstOpCode::b) || (getKind() == IsConditionalBranch) || (getKind() == IsCompareBranch) || (getKind() == IsTestBitBranch);
+   bool isBranch = (getOpCodeValue() == TR::InstOpCode::b) || (getKind() == IsConditionalBranch) || (getKind() == IsCompareBranch) || (getKind() == IsTestBitBranch) || (getKind() == IsVirtualGuardNOP);
 
    cg()->freeUnlatchedRegisters();
    // this is the return label from OOL

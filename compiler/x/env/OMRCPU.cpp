@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -69,44 +69,23 @@ OMR::X86::CPU::detect(OMRPortLibrary * const omrPortLib)
    return TR::CPU(processorDescription);
    }
 
+void
+OMR::X86::CPU::initializeTargetProcessorInfo()
+   {
+   OMR::X86::CodeGenerator::initializeX86TargetProcessorInfo();
+   }
+
 TR_X86CPUIDBuffer *
 OMR::X86::CPU::queryX86TargetCPUID()
    {
    static TR_X86CPUIDBuffer *buf = NULL;
-   auto jitConfig = TR::JitConfig::instance();
 
-   if (jitConfig && jitConfig->getProcessorInfo() == NULL)
+   if (!buf)
       {
-      buf = (TR_X86CPUIDBuffer *) malloc(sizeof(TR_X86CPUIDBuffer));
+      buf = reinterpret_cast<TR_X86CPUIDBuffer *>(malloc(sizeof(TR_X86CPUIDBuffer)));
       if (!buf)
-         return 0;
+         return NULL;
       jitGetCPUID(buf);
-      jitConfig->setProcessorInfo(buf);
-      }
-   else
-      {
-      if (!buf)
-         {
-         if (jitConfig && jitConfig->getProcessorInfo())
-            {
-            buf = (TR_X86CPUIDBuffer *)jitConfig->getProcessorInfo();
-            }
-         else
-            {
-            buf = (TR_X86CPUIDBuffer *) malloc(sizeof(TR_X86CPUIDBuffer));
-
-            if (!buf)
-               memcpy(buf->_vendorId, "Poughkeepsie", 12); // 12 character dummy string (NIL term not used)
-
-            buf->_processorSignature = 0;
-            buf->_brandIdEtc = 0;
-            buf->_featureFlags = 0x00000000;
-            buf->_cacheDescription.l1instr = 0;
-            buf->_cacheDescription.l1data  = 0;
-            buf->_cacheDescription.l2      = 0;
-            buf->_cacheDescription.l3      = 0;
-            }
-         }
       }
 
    return buf;
@@ -254,7 +233,10 @@ OMR::X86::CPU::is(OMRProcessorArchitecture p)
    {
    if (TR::Compiler->omrPortLib == NULL)
       return self()->is_old_api(p);
-   TR_ASSERT_FATAL(self()->is_test(p), "old api and new api did not match, processor %d", p);
+
+   static bool disableOldVersionCPUDetectionTest = feGetEnv("TR_DisableOldVersionCPUDetectionTest");
+   if (!disableOldVersionCPUDetectionTest)
+      TR_ASSERT_FATAL(self()->is_test(p), "old api and new api did not match, processor %d", p);
 
    return _processorDescription.processor == p;
    }
@@ -264,7 +246,10 @@ OMR::X86::CPU::supportsFeature(uint32_t feature)
    {
    if (TR::Compiler->omrPortLib == NULL)
       return self()->supports_feature_old_api(feature);
-   TR_ASSERT_FATAL(self()->supports_feature_test(feature), "old api and new api did not match, feature %d", feature);
+
+   static bool disableOldVersionCPUDetectionTest = feGetEnv("TR_DisableOldVersionCPUDetectionTest");
+   if (!disableOldVersionCPUDetectionTest)
+      TR_ASSERT_FATAL(self()->supports_feature_test(feature), "old api and new api did not match, feature %d", feature);
 
    OMRPORT_ACCESS_FROM_OMRPORT(TR::Compiler->omrPortLib);
    return TRUE == omrsysinfo_processor_has_feature(&_processorDescription, feature);

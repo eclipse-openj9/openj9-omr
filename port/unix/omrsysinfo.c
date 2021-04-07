@@ -3505,7 +3505,11 @@ omrsysinfo_get_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 
 		switch (resourceRequested) {
 		case OMRPORT_RESOURCE_ADDRESS_SPACE:
+#if defined(J9ZOS39064)
+			resource = RLIMIT_MEMLIMIT;
+#else /* defined(J9ZOS39064) */
 			resource = RLIMIT_AS;
+#endif /* defined(J9ZOS39064) */
 			break;
 		case OMRPORT_RESOURCE_CORE_FILE:
 			resource = RLIMIT_CORE;
@@ -3571,7 +3575,11 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 
 		switch (resourceRequested) {
 		case OMRPORT_RESOURCE_ADDRESS_SPACE:
+#if defined(J9ZOS39064)
+			resource = RLIMIT_MEMLIMIT;
+#else /* defined(J9ZOS39064) */
 			resource = RLIMIT_AS;
+#endif /* defined(J9ZOS39064) */
 			break;
 		case OMRPORT_RESOURCE_CORE_FILE:
 			resource = RLIMIT_CORE;

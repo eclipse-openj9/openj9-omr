@@ -712,6 +712,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ImmSymInstruction *instr)
    else
       trfprintf(pOutFile, "%s \t" POINTER_PRINTF_FORMAT, getOpCodeName(&instr->getOpCode()), instr->getAddrImmediate());
 
+   printInstructionComment(pOutFile, 1, instr);
+
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
@@ -776,6 +778,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ConditionalBranchInstruction *instr
       {
       trfprintf(pOutFile, " (%s)", getName(snippet));
       }
+   printInstructionComment(pOutFile, 1, instr);
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
@@ -795,6 +798,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64CompareBranchInstruction *instr)
       {
       trfprintf(pOutFile, " (%s)", getName(snippet));
       }
+   printInstructionComment(pOutFile, 1, instr);
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
@@ -815,6 +819,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64TestBitBranchInstruction *instr)
       {
       trfprintf(pOutFile, " (%s)", getName(snippet));
       }
+   printInstructionComment(pOutFile, 1, instr);
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
@@ -826,6 +831,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64RegBranchInstruction *instr)
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getTargetRegister(), TR_DoubleWordReg);
+   printInstructionComment(pOutFile, 1, instr);
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());

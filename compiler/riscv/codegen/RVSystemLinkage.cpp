@@ -58,6 +58,13 @@ TR::RVSystemLinkageProperties::RVSystemLinkageProperties()
    {
    _properties = IntegersInRegisters|FloatsInRegisters|RightToLeft;
 
+   /*
+    * _registerFlags for each register are defined in architectural order,
+    * that is, from x0 to x31, f0 to f31.
+    *
+    * See https://github.com/riscv/riscv-elf-psabi-doc/blob/master/riscv-elf.md#integer-register-convention
+    */
+
    _registerFlags[TR::RealRegister::zero] = Preserved|RV_Reserved; // zero
    _registerFlags[TR::RealRegister::ra]   = Preserved|RV_Reserved; // return address
    _registerFlags[TR::RealRegister::sp]   = Preserved|RV_Reserved; // sp

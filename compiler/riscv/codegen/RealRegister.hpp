@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -57,4 +57,17 @@ inline TR::RealRegister *toRealRegister(TR::Register *r)
    return static_cast<TR::RealRegister *>(r);
    }
 
+
+inline TR::RealRegister::RegNum& operator++(TR::RealRegister::RegNum& rn)
+   {
+   rn = static_cast<TR::RealRegister::RegNum>(static_cast<int>(rn + 1));
+   return rn;
+   }
+
+inline TR::RealRegister::RegNum operator++(TR::RealRegister::RegNum& in, int)
+   {
+   TR::RealRegister::RegNum out = in;
+   ++in;
+   return out;
+   }
 #endif

@@ -79,6 +79,39 @@ class RVMemoryArgument
 #define CallerAllocatesBackingStore 0x20
 #define RV_Reserved                 0x40
 
+#define FOR_EACH_REGISTER(machine, block)                                        \
+   for (int regNum = TR::RealRegister::FirstGPR; regNum <= TR::RealRegister::LastGPR; regNum++) \
+      {                                                                          \
+      TR::RealRegister *reg                                                      \
+                   = machine->getRealRegister((TR::RealRegister::RegNum)regNum); \
+      { block; }                                                                 \
+      }                                                                          \
+   for (int regNum = TR::RealRegister::FirstFPR; regNum <= TR::RealRegister::FirstFPR; regNum++) \
+      {                                                                          \
+      TR::RealRegister *reg                                                      \
+                   = machine->getRealRegister((TR::RealRegister::RegNum)regNum); \
+      { block; }                                                                 \
+      }
+
+#define FOR_EACH_RESERVED_REGISTER(machine, props, block)                        \
+   FOR_EACH_REGISTER(machine,                                                    \
+   if (props._registerFlags[(TR::RealRegister::RegNum)regNum] & RV_Reserved)     \
+      { block; }                                                                 \
+   )
+
+#define FOR_EACH_CALLEE_SAVED_REGISTER(machine, props, block)                    \
+   FOR_EACH_REGISTER(machine,                                                    \
+   if (props._registerFlags[(TR::RealRegister::RegNum)regNum] == Preserved)      \
+      { block; }                                                                 \
+   )
+
+#define FOR_EACH_ASSIGNED_CALLEE_SAVED_REGISTER(machine, props, block)           \
+   FOR_EACH_CALLEE_SAVED_REGISTER(machine, props,                                \
+   if (reg->getHasBeenAssignedInMethod())                                        \
+      { block; }                                                                 \
+   )
+
+
 struct RVLinkageProperties
    {
    uint32_t _properties;
@@ -259,9 +292,14 @@ struct RVLinkageProperties
    int32_t getOffsetToFirstLocal() const {return _offsetToFirstLocal;}
 
    uint32_t getNumberOfDependencyGPRegisters() const {return _numberOfDependencyGPRegisters;}
-   };
 
-}
+   /**
+    * @brief Initialize derived properties from register flags. This *must* be called
+    * after _registerFlags are populated.
+    */
+   void initialize();
+   }; // struct RVLinkageProperties
+}; // namespace TR
 
 namespace OMR
 {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 IBM Corp. and others
+ * Copyright (c) 2017, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -299,6 +299,8 @@ class Int8ShiftAndRotate : public ShiftAndRotateArithmetic<int8_t> {};
 TEST_P(Int8ShiftAndRotate, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support bshl/bshr (see issue #5892)";
+
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int8"
@@ -326,6 +328,8 @@ TEST_P(Int8ShiftAndRotate, UsingConst) {
 TEST_P(Int8ShiftAndRotate, UsingRhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support bshl/bshr (see issue #5892)";
+
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int8 args=[Int8]"
@@ -352,6 +356,8 @@ TEST_P(Int8ShiftAndRotate, UsingRhsConst) {
 TEST_P(Int8ShiftAndRotate, UsingLhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support bshl/bshr (see issue #5892)";
+
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int8 args=[Int32]"
@@ -377,6 +383,8 @@ TEST_P(Int8ShiftAndRotate, UsingLhsConst) {
 
 TEST_P(Int8ShiftAndRotate, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
+
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support bshl/bshr (see issue #5892)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -411,6 +419,8 @@ class Int16ShiftAndRotate : public ShiftAndRotateArithmetic<int16_t> {};
 TEST_P(Int16ShiftAndRotate, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support sshl/sshr (see issue #5892)";
+
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int16"
@@ -438,6 +448,8 @@ TEST_P(Int16ShiftAndRotate, UsingConst) {
 TEST_P(Int16ShiftAndRotate, UsingRhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support sshl/sshr (see issue #5892)";
+
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int16 args=[Int16]"
@@ -464,6 +476,8 @@ TEST_P(Int16ShiftAndRotate, UsingRhsConst) {
 TEST_P(Int16ShiftAndRotate, UsingLhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support sshl/sshr (see issue #5892)";
+
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int16 args=[Int32]"
@@ -489,6 +503,8 @@ TEST_P(Int16ShiftAndRotate, UsingLhsConst) {
 
 TEST_P(Int16ShiftAndRotate, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
+
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support sshl/sshr (see issue #5892)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -737,6 +753,8 @@ class UInt8ShiftAndRotate : public ShiftAndRotateArithmetic<uint8_t> {};
 TEST_P(UInt8ShiftAndRotate, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support bushr (see issue #5892)";
+
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int8"
@@ -764,6 +782,8 @@ TEST_P(UInt8ShiftAndRotate, UsingConst) {
 TEST_P(UInt8ShiftAndRotate, UsingRhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support bushr (see issue #5892)";
+
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int8 args=[Int8]"
@@ -790,6 +810,8 @@ TEST_P(UInt8ShiftAndRotate, UsingRhsConst) {
 TEST_P(UInt8ShiftAndRotate, UsingLhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support bushr (see issue #5892)";
+
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int8 args=[Int32]"
@@ -815,6 +837,8 @@ TEST_P(UInt8ShiftAndRotate, UsingLhsConst) {
 
 TEST_P(UInt8ShiftAndRotate, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
+
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support bushr (see issue #5892)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -848,6 +872,8 @@ class UInt16ShiftAndRotate : public ShiftAndRotateArithmetic<uint16_t> {};
 TEST_P(UInt16ShiftAndRotate, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support sushr (see issue #5892)";
+
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int16"
@@ -875,6 +901,8 @@ TEST_P(UInt16ShiftAndRotate, UsingConst) {
 TEST_P(UInt16ShiftAndRotate, UsingRhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support sushr (see issue #5892)";
+
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int16 args=[Int16]"
@@ -901,6 +929,8 @@ TEST_P(UInt16ShiftAndRotate, UsingRhsConst) {
 TEST_P(UInt16ShiftAndRotate, UsingLhsConst) {
     auto param = TRTest::to_struct(GetParam());
 
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support sushr (see issue #5892)";
+
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int16 args=[Int32]"
@@ -926,6 +956,8 @@ TEST_P(UInt16ShiftAndRotate, UsingLhsConst) {
 
 TEST_P(UInt16ShiftAndRotate, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
+
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support sushr (see issue #5892)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -1272,6 +1304,8 @@ class UInt16MaskThenShift : public MaskThenShiftArithmetic<uint16_t> {};
 TEST_P(UInt16MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
 
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support sushr (see issue #5892)";
+
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int16 args=[Int16]"
@@ -1307,6 +1341,8 @@ class Int16MaskThenShift : public MaskThenShiftArithmetic<int16_t> {};
 
 TEST_P(Int16MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
+
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support sshr (see issue #5892)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -1344,6 +1380,8 @@ class UInt8MaskThenShift : public MaskThenShiftArithmetic<uint8_t> {};
 TEST_P(UInt8MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
 
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support bushr (see issue #5892)";
+
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
         "(method return=Int8 args=[Int8]"
@@ -1379,6 +1417,8 @@ class Int8MaskThenShift : public MaskThenShiftArithmetic<int8_t> {};
 
 TEST_P(Int8MaskThenShift, UsingLoadParam) {
     auto param = to_mask_then_shift_struct(GetParam());
+
+    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support bshr (see issue #5892)";
 
     char inputTrees[300] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),

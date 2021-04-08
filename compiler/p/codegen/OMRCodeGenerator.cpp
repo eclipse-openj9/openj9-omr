@@ -1587,8 +1587,7 @@ bool OMR::Power::CodeGenerator::isRotateAndMask(TR::Node * node)
              firstOp == TR::iushr) &&
              firstChild->getSecondChild()->getOpCodeValue() == TR::iconst  &&
             firstChild->getSecondChild()->getInt() > 0 &&
-            (firstOp == TR::iushr ||
-             leadingZeroes(secondChild->getInt()) >=
+            (leadingZeroes(secondChild->getInt()) >=
               firstChild->getSecondChild()->getInt())))))
       return true;
    else

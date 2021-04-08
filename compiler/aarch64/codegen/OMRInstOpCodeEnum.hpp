@@ -487,6 +487,12 @@
 		vsub8h,                                                  	/* 0x6E608400	SUB      	 */
 		vfsub4s,                                                  	/* 0x4EA0D400	FSUB      	 */
 		vfsub2d,                                                  	/* 0x4EE0D400	FSUB      	 */
+		vmul16b,                                                  	/* 0x4E209C00	MUL      	 */
+		vmul8h,                                                  	/* 0x4E609C00	MUL      	 */
+		vfmul4s,                                                  	/* 0x6E20DC00	FMUL      	 */
+		vfmul2d,                                                  	/* 0x6E60DC00	FMUL      	 */
+		vfdiv4s,                                                  	/* 0x6E20FC00	FDIV      	 */
+		vfdiv2d,                                                  	/* 0x6E60FC00	FDIV      	 */
 /* Hint instructions */
 		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */

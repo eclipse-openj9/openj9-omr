@@ -59,8 +59,7 @@ typedef struct OMR_CEL4RO31_controlBlock {
 	uint32_t functionOffset;        /**< (Input) Offset to RO31_function section from start of RO31_CB. Req'd for dll query flag. */
 	uint32_t argumentsOffset;       /**< (Input) Offset to outgoing arguments section from start of RO31_CB. Req'd for function execution flag. */
 	uint32_t dllHandle;             /**< DLL handle of target program (Input) DLL handle if dll query flag. (Output) DLL handle if dll load flag. */
-	uint32_t functionEnv;           /**< Environment of target Program (Input) Environment if function execution flag. (Output) Environment if dll query flag. */
-	uint32_t functionEntryPoint;    /**< Entry point of target program (Input) Entry point if function execution flag. (Output) Entry point if dll query flag. */
+	uint32_t functionDescriptor;    /**< Function descriptor of target function (Input) Func Desc if function execution flag. (Output) Func Desc if dll query flag. */
 	uint32_t gpr15ReturnValue;      /**< (Output) Return GPR buffer containing 32-bit GPR15 value when target program returned after execution. */
 	uint32_t gpr0ReturnValue;       /**< (Output) Return GPR buffer containing 32-bit GPR0 value when target program returned after execution. */
 	uint32_t gpr1ReturnValue;       /**< (Output) Return GPR buffer containing 32-bit GPR1 value when target program returned after execution. */

@@ -1015,10 +1015,6 @@ public:
 #endif
 
    bool isGPUCompileCPUCode() { return _flags.testAny(IsGPUCompileCPUCode);}
-   void setGPUBlockDimX(int32_t dim) { _gpuBlockDimX = dim; }
-   int32_t getGPUBlockDimX() { return _gpuBlockDimX; }
-   void setGPUParms(void * parms) { _gpuParms = parms; }
-   void *getGPUParms() { return _gpuParms; }
    ListHeadAndTail<char*>& getGPUPtxList() { return _gpuPtxList; }
    ListHeadAndTail<int32_t>& getGPUKernelLineNumberList() { return _gpuKernelLineNumberList; } //TODO: fix to get real line numbers
    void incGPUPtxCount() { _gpuPtxCount++; }
@@ -1321,8 +1317,6 @@ private:
 
    TR::IlVerifier                    *_ilVerifier;
 
-   int32_t _gpuBlockDimX;
-   void * _gpuParms;
    ListHeadAndTail<char*> _gpuPtxList;
    ListHeadAndTail<int32_t> _gpuKernelLineNumberList; //TODO: fix to get real line numbers
    int32_t _gpuPtxCount;

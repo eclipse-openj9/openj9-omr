@@ -327,6 +327,50 @@ OMR::ARM64::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return inlineVectorBinaryOp(node, cg, subOp);
    }
 
+TR::Register *
+OMR::ARM64::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::InstOpCode::Mnemonic mulOp;
+   switch(node->getDataType())
+      {
+      case TR::VectorInt8:
+         mulOp = TR::InstOpCode::vmul16b;
+         break;
+      case TR::VectorInt16:
+         mulOp = TR::InstOpCode::vmul8h;
+         break;
+      case TR::VectorFloat:
+         mulOp = TR::InstOpCode::vfmul4s;
+         break;
+      case TR::VectorDouble:
+         mulOp = TR::InstOpCode::vfmul2d;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorBinaryOp(node, cg, mulOp);
+   }
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::InstOpCode::Mnemonic divOp;
+   switch(node->getDataType())
+      {
+      case TR::VectorFloat:
+         divOp = TR::InstOpCode::vfdiv4s;
+         break;
+      case TR::VectorDouble:
+         divOp = TR::InstOpCode::vfdiv2d;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorBinaryOp(node, cg, divOp);
+   }
+
 // Multiply a register by a 32-bit constant
 static void mulConstant32(TR::Node *node, TR::Register *treg, TR::Register *sreg, int32_t value, TR::CodeGenerator *cg)
    {

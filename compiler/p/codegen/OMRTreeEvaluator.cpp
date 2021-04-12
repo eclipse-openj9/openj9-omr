@@ -116,6 +116,7 @@ void loadFloatConstant(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic loadOp, T
    if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
       {
       TR::Instruction *loadInstr;
+      TR::Register *tmpReg = NULL;
 
       // Since we're using Trg1Imm instructions (to allow patching of the PC-relative offset), we
       // have to use the prefixed form of the load without relying on MemoryReference expansion or
@@ -129,14 +130,17 @@ void loadFloatConstant(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic loadOp, T
             loadInstr = generateTrg1ImmInstruction(cg, TR::InstOpCode::plfd, node, trgReg, 0);
             break;
          case TR::InstOpCode::lxvdsx:
-            loadInstr = generateTrg1ImmInstruction(cg, TR::InstOpCode::paddi, node, trgReg, 0);
-            generateTrg1MemInstruction(cg, loadOp, node, trgReg, TR::MemoryReference::createWithIndexReg(cg, NULL, trgReg, length));
+            tmpReg = cg->allocateRegister();
+            loadInstr = generateTrg1ImmInstruction(cg, TR::InstOpCode::paddi, node, tmpReg, 0);
+            generateTrg1MemInstruction(cg, loadOp, node, trgReg, TR::MemoryReference::createWithIndexReg(cg, NULL, tmpReg, length));
             break;
          default:
             TR_ASSERT_FATAL_WITH_NODE(node, false, "Unhandled load instruction %s in loadFloatConstant", TR::InstOpCode(loadOp).getMnemonicName());
          }
 
       cg->findOrCreateFloatConstant(value, type, loadInstr, NULL, NULL, NULL);
+      if (tmpReg)
+         cg->stopUsingRegister(tmpReg);
       return;
       }
    else if (cg->comp()->target().is64Bit())

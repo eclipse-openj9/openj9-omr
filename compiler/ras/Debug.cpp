@@ -3936,7 +3936,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_PPCarrayAnd:                                      return "_arrayand";
          case TR_PPCarrayCmp:                                      return "_arraycmp";
          case TR_PPCoverlapArrayCopy:                              return "overlapArrayCopy";
-         case TR_PPCarrayCmpVMX:                                   return "__arrayCmpVMX";
          case TR_PPCarrayCmpLenVMX:                                return "__arrayCmpLenVMX";
          case TR_PPCarrayCmpScalar:                                return "__arrayCmpScalar";
          case TR_PPCarrayCmpLenScalar:                             return "__arrayCmpLenScalar";

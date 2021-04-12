@@ -1116,6 +1116,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
             print(pOutFile, instr->getSource1Register(), TR_WordReg); 
             }
          }
+      if (!done)
+         {
+         done = true;
+         trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+         print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+         print(pOutFile, instr->getSource1Register(), TR_WordReg);
+         trfprintf(pOutFile, ", %d, %d", immr, imms);
+         }
       }
    else if (op == TR::InstOpCode::ubfmx || op == TR::InstOpCode::ubfmw)
       {
@@ -1171,6 +1179,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
             print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
             print(pOutFile, instr->getSource1Register(), TR_WordReg);
             }
+         }
+      if (!done)
+         {
+         done = true;
+         trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+         print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+         print(pOutFile, instr->getSource1Register(), TR_WordReg);
+         trfprintf(pOutFile, ", %d, %d", immr, imms);
          }
       }
    else if (op == TR::InstOpCode::andimmx || op == TR::InstOpCode::andimmw ||

@@ -347,9 +347,6 @@ public:
    TR::SymbolReference &getForwardHalfWordArrayCopySymbolReference();
    TR::SymbolReference &getReferenceArrayCopySymbolReference() { return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCreferenceArrayCopy); }
    TR::SymbolReference &getGeneralArrayCopySymbolReference() { return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCgeneralArrayCopy); }
-   TR::SymbolReference &getArrayCmpLenVMXSymbolReference() { return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCarrayCmpLenVMX); }
-   TR::SymbolReference &getArrayCmpScalarSymbolReference() { return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCarrayCmpScalar); }
-   TR::SymbolReference &getArrayCmpLenScalarSymbolReference() { return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCarrayCmpLenScalar); }
    TR::SymbolReference &getSamplingPatchCallSiteSymbolReference() { return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCsamplingPatchCallSite); }
    TR::SymbolReference &getSamplingRecompileMethodSymbolReference() { return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCsamplingRecompileMethod); }
    TR::SymbolReference &getCountingPatchCallSiteSymbolReference() { return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCcountingPatchCallSite); }

@@ -1508,17 +1508,66 @@ MM_Scavenger::copyObject(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwar
 	return copy(env, forwardedHeader);
 }
 
+void
+MM_Scavenger::forwardingFailed(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHeader, omrobjectptr_t destinationObjectPtr, MM_CopyScanCacheStandard *copyCache)
+{
+	/* We have not used the reserved space now, but we will for subsequent allocations. If this space was reserved for an individual object,
+	 * we might have created a TLH remainder from previous cache just before reserving this space. This space eventaully can create another remainder.
+	 * At that point, ideally (to recycle as much memory as possible) we could enqueue this remainder, but as a simple solution we will now abandon
+	 * the current remainder (we assert across the code, there is at most one at a give point of time).
+	 * If we see large amount of discards even with low discard threshold, we may reconsider enqueueing discarded TLHs.
+	 */
+	if (0 != (copyCache->flags & OMR_SCAVENGER_CACHE_TYPE_TENURESPACE)) {
+		abandonTenureTLHRemainder(env);
+	} else if (0 != (copyCache->flags & OMR_SCAVENGER_CACHE_TYPE_SEMISPACE)) {
+		abandonSurvivorTLHRemainder(env);
+	} else {
+		Assert_MM_unreachable();
+	}
+
+	/* Failed to forward (someone else did it). Re-fetch the forwarding info and (for Concurrent Scavenger only) ensure
+	 * it's fully copied before letting the caller expose this new version of the object */
+	MM_ForwardedHeader(forwardedHeader->getObject(), _extensions->compressObjectReferences()).copyOrWait(destinationObjectPtr);
+}
+
+MMINLINE void
+MM_Scavenger::forwardingSucceeded(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard *copyCache, void *newCacheAlloc, uintptr_t oldObjectAge, uintptr_t objectCopySizeInBytes, uintptr_t objectReserveSizeInBytes)
+{
+	/* Move the cache allocate pointer to reflect the consumed memory */
+	copyCache->cacheAlloc = newCacheAlloc;
+
+	/* object has been copied so if scanning hierarchically set effectiveCopyCache to support aliasing check */
+	env->_effectiveCopyScanCache = copyCache;
+
+	/* Update the stats */
+	MM_ScavengerStats *scavStats = &env->_scavengerStats;
+	if (0 != (copyCache->flags & OMR_SCAVENGER_CACHE_TYPE_TENURESPACE)) {
+		scavStats->_tenureAggregateCount += 1;
+		scavStats->_tenureAggregateBytes += objectCopySizeInBytes;
+		scavStats->getFlipHistory(0)->_tenureBytes[oldObjectAge + 1] += objectReserveSizeInBytes;
+#if defined(OMR_GC_LARGE_OBJECT_AREA)
+		if (0 != (copyCache->flags & OMR_SCAVENGER_CACHE_TYPE_LOA)) {
+			scavStats->_tenureLOACount += 1;
+			scavStats->_tenureLOABytes += objectCopySizeInBytes;
+		}
+#endif /* OMR_GC_LARGE_OBJECT_AREA */
+	} else {
+		Assert_MM_true(0 != (copyCache->flags & OMR_SCAVENGER_CACHE_TYPE_SEMISPACE));
+		scavStats->_flipCount += 1;
+		scavStats->_flipBytes += objectCopySizeInBytes;
+		scavStats->getFlipHistory(0)->_flipBytes[oldObjectAge + 1] += objectReserveSizeInBytes;
+	}
+}
+
 omrobjectptr_t
 MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHeader)
 {
-	omrobjectptr_t destinationObjectPtr;
 	uintptr_t objectCopySizeInBytes, objectReserveSizeInBytes;
 	uintptr_t hotFieldsDescriptor = 0;
 	uintptr_t hotFieldsAlignment = 0;
 	uintptr_t* hotFieldPadBase = NULL;
 	uintptr_t hotFieldPadSize = 0;
-	MM_CopyScanCacheStandard *copyCache;
-	void *newCacheAlloc;
+	MM_CopyScanCacheStandard *copyCache = NULL;
 	bool const compressed = _extensions->compressObjectReferences();
 
 	if (isBackOutFlagRaised()) {
@@ -1598,7 +1647,7 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	}
 
 	/* Check if memory was reserved successfully */
-	if(NULL == copyCache) {
+	if (NULL == copyCache) {
 		/* Failure - the scavenger must back out the work it has done. */
 		/* raise the alert and return (with NULL) */
 		setBackOutFlag(env, backOutFlagRaised);
@@ -1611,7 +1660,7 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	}
 
 	/* Memory has been reserved */
-	destinationObjectPtr = (omrobjectptr_t)copyCache->cacheAlloc;
+	omrobjectptr_t destinationObjectPtr = (omrobjectptr_t)copyCache->cacheAlloc;
 	/* now correct for the hot field alignment */
 	if (0 != hotFieldsAlignment) {
 		uintptr_t remainingInCacheLine = _cacheLineAlignment - ((uintptr_t)destinationObjectPtr % _cacheLineAlignment);
@@ -1632,7 +1681,7 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	}
 
 	/* and correct for the double array alignment */
-	newCacheAlloc = (void *) (((uint8_t *)destinationObjectPtr) + objectReserveSizeInBytes);
+	void *newCacheAlloc = (void *) (((uint8_t *)destinationObjectPtr) + objectReserveSizeInBytes);
 
 	omrobjectptr_t originalDestinationObjectPtr = destinationObjectPtr;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
@@ -1661,11 +1710,13 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 		destinationObjectPtr = forwardedHeader->setForwardedObject(destinationObjectPtr);
 	}
 
+	/* outter if-forwarding-succeeded check */
 	if (originalDestinationObjectPtr == destinationObjectPtr) {
-		/* Succeeded in forwarding the object, or we allow duplicate (did not even tried to forward yet). */
+		/* Succeeded in forwarding the object [nonCS],
+		 * or we allow duplicate (did not even tried to forward yet) [CS].
+		 */
 
 		if (NULL != hotFieldPadBase) {
-			bool const compressed = _extensions->compressObjectReferences();
 			/* lay down a hole (XXX:  This assumes that we are using AOL (address-ordered-list)) */
 			MM_HeapLinkedFreeHeader::fillWithHoles(hotFieldPadBase, hotFieldPadSize, compressed);
 		}
@@ -1716,67 +1767,38 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 #endif /* OMR_SCAVENGER_TRACE_COPY */
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	/* Concurrent Scavenger can update forwarding pointer only after the object has been copied
-	 * (since mutator may access the object as soon as forwarding pointer is installed) */
-	}
-	if (allowDuplicate) {
-		/* On weak memory model, ensure that this candidate copy is visible
-		 * before (potentially) winning forwarding */
-		MM_AtomicOperations::storeSync();
-		destinationObjectPtr = forwardedHeader->setForwardedObject(destinationObjectPtr);
-	}
-	if (originalDestinationObjectPtr == destinationObjectPtr) {
-		/* Succeeded in forwarding the object */
+		/* Concurrent Scavenger can update forwarding pointer only after the object has been copied
+		 * (since mutator may access the object as soon as forwarding pointer is installed) */
+		if (allowDuplicate) {
+			/* On weak memory model, ensure that this candidate copy is visible
+			 * before (potentially) winning forwarding */
+			MM_AtomicOperations::storeSync();
+			destinationObjectPtr = forwardedHeader->setForwardedObject(destinationObjectPtr);
+		}
+
+		/* nested if-forwarding-succeeded check */
+		if (originalDestinationObjectPtr == destinationObjectPtr) {
+			/* Succeeded in forwarding the object */
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
+			forwardingSucceeded(env, copyCache, newCacheAlloc, oldObjectAge, objectCopySizeInBytes, objectReserveSizeInBytes);
 
-		/* Move the cache allocate pointer to reflect the consumed memory */
-		assume0(copyCache->cacheAlloc <= copyCache->cacheTop);
-		copyCache->cacheAlloc = newCacheAlloc;
-		assume0(copyCache->cacheAlloc <= copyCache->cacheTop);
+			/* depth copy the hot fields of an object if scavenger dynamicBreadthFirstScanOrdering is enabled */
+			depthCopyHotFields(env, forwardedHeader, destinationObjectPtr);
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		} else { /* CS build flag  enabled: mid point of nested if-forwarding-succeeded check */
 
-		/* object has been copied so if scanning hierarchically set effectiveCopyCache to support aliasing check */
-		env->_effectiveCopyScanCache = copyCache;
+			forwardingFailed(env, forwardedHeader, destinationObjectPtr, copyCache);
 
-		/* Update the stats */
-		MM_ScavengerStats *scavStats = &env->_scavengerStats;
-		if(copyCache->flags & OMR_SCAVENGER_CACHE_TYPE_TENURESPACE) {
-			scavStats->_tenureAggregateCount += 1;
-			scavStats->_tenureAggregateBytes += objectCopySizeInBytes;
-			scavStats->getFlipHistory(0)->_tenureBytes[oldObjectAge + 1] += objectReserveSizeInBytes;
-#if defined(OMR_GC_LARGE_OBJECT_AREA)
-			if (copyCache->flags & OMR_SCAVENGER_CACHE_TYPE_LOA) {
-				scavStats->_tenureLOACount += 1;
-				scavStats->_tenureLOABytes += objectCopySizeInBytes;
-			}
-#endif /* OMR_GC_LARGE_OBJECT_AREA */
-		} else {
-			Assert_MM_true(copyCache->flags & OMR_SCAVENGER_CACHE_TYPE_SEMISPACE);
-			scavStats->_flipCount += 1;
-			scavStats->_flipBytes += objectCopySizeInBytes;
-			scavStats->getFlipHistory(0)->_flipBytes[oldObjectAge + 1] += objectReserveSizeInBytes;
-		}
+		} /* CS build flag  enabled: end of nested if-forwarding-succeeded check */
+#endif
+	} else { /* CS build flag  enabled: mid point of outter   if-forwarding-succeeded check
+	          * CS build flag disabled: mid point of the only if-forwarding-succeeded check */
 
-		/* depth copy the hot fields of an object if scavenger dynamicBreadthFirstScanOrdering is enabled */
-		depthCopyHotFields(env, forwardedHeader, destinationObjectPtr);
-	} else {
-		/* We have not used the reserved space now, but we will for subsequent allocations. If this space was reserved for an individual object,
-		 * we might have created a TLH remainder from previous cache just before reserving this space. This space eventaully can create another remainder.
-		 * At that point, ideally (to recycle as much memory as possibly) we could enqueue this remainder, but as a simple solution we will now abandon
-		 * the current remainder (we assert across the code, there is at most one at a give point of time).
-		 * If we see large amount of discards even with low discard threshold, we may reconsider enqueueing discarded TLHs.
-		 */
-		if (copyCache->flags & OMR_SCAVENGER_CACHE_TYPE_TENURESPACE) {
-			abandonTenureTLHRemainder(env);
-		} else if (copyCache->flags & OMR_SCAVENGER_CACHE_TYPE_SEMISPACE) {
-			abandonSurvivorTLHRemainder(env);
-		} else {
-			Assert_MM_unreachable();
-		}
+		forwardingFailed(env, forwardedHeader, destinationObjectPtr, copyCache);
 
-		/* Failed to forward (someone else did it). Re-fetch the forwarding info and (for Concurrent Scavenger only) ensure
-		 * it's fully copied before letting the caller expose this new version of the object */
-		MM_ForwardedHeader(forwardedHeader->getObject(), compressed).copyOrWait(destinationObjectPtr);
-	}
+	} /* CS build flag  enabled: end of outter   if-forwarding-succeeded check
+	   * CS build flag disabled: end of the only if-forwarding-succeeded check */
+
 	/* return value for updating the slot */
 	return destinationObjectPtr;
 }

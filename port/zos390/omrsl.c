@@ -274,12 +274,11 @@ omrsl_lookup_name(struct OMRPortLibrary *portLibrary, uintptr_t descriptor, char
 			ro31ControlBlock->dllHandle = (uint32_t)handle;
 			omr_cel4ro31_call(ro31InfoBlock);
 			if (OMR_CEL4RO31_RETCODE_OK == ro31ControlBlock->retcode) {
-				/* CEL4RO31 returns the function descriptor (FDCB) in the functionEntryPoint member */
-				address = (void *)ro31ControlBlock->functionEntryPoint;
+				address = (void *)ro31ControlBlock->functionDescriptor;
 				address = (void *)(OMRPORT_SL_ZOS_31BIT_TARGET_HIGHTAG | (uintptr_t)address);
 			}
 			omr_cel4ro31_deinit(ro31InfoBlock);
-			DMESSAGE(("omrsl_lookup_name: Attempted to 31-bit DLL function [%s] from DLL handle: %p - return code: [%d] Function Pointer: [%p]\n", name, handle, ro31InfoBlock->ro31ControlBlock.retcode, address))
+			DMESSAGE(("omrsl_lookup_name: Attempted to query 31-bit DLL function [%s] from DLL handle: %p - return code: [%d] Function Pointer: [%p]\n", name, handle, ro31InfoBlock->ro31ControlBlock.retcode, address))
 		}
 	} else
 #endif /* defined(J9ZOS39064) */

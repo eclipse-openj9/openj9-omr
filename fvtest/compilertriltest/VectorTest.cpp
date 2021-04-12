@@ -40,11 +40,6 @@ TEST_F(VectorTest, VDoubleAdd) {
 
     ASSERT_NOTNULL(trees);
     //TODO: Re-enable this test on S390 after issue #1843 is resolved. 
-    //
-    // This test is currently disabled on Z platforms because not all Z platforms
-    // have vector support. Determining whether a specific platform has the support
-    // at runtime is currently not possible in tril. So the test is being disabled altogether
-    // on Z for now.
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
@@ -54,8 +49,7 @@ TEST_F(VectorTest, VDoubleAdd) {
 
 
     auto entry_point = compiler.getEntryPoint<void (*)(double[],double[],double[])>();
-    //TODO: What do we query to determine vector width?  
-    // -- This test currently assumes 128bit SIMD  
+    // This test currently assumes 128bit SIMD
 
     double output[] =  {0.0, 0.0};
     double inputA[] =  {1.0, 2.0};
@@ -81,11 +75,6 @@ TEST_F(VectorTest, VInt8Add) {
 
     ASSERT_NOTNULL(trees);
     //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    //
-    // This test is currently disabled on Z platforms because not all Z platforms
-    // have vector support. Determining whether a specific platform has the support
-    // at runtime is currently not possible in tril. So the test is being disabled altogether
-    // on Z for now.
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
@@ -96,8 +85,7 @@ TEST_F(VectorTest, VInt8Add) {
 
 
     auto entry_point = compiler.getEntryPoint<void (*)(int8_t[],int8_t[],int8_t[])>();
-    //TODO: What do we query to determine vector width?
-    // -- This test currently assumes 128bit SIMD
+    // This test currently assumes 128bit SIMD
 
     int8_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     int8_t inputA[] =  {7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, 7};
@@ -125,11 +113,6 @@ TEST_F(VectorTest, VInt16Add) {
 
     ASSERT_NOTNULL(trees);
     //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    //
-    // This test is currently disabled on Z platforms because not all Z platforms
-    // have vector support. Determining whether a specific platform has the support
-    // at runtime is currently not possible in tril. So the test is being disabled altogether
-    // on Z for now.
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
@@ -140,8 +123,7 @@ TEST_F(VectorTest, VInt16Add) {
 
 
     auto entry_point = compiler.getEntryPoint<void (*)(int16_t[],int16_t[],int16_t[])>();
-    //TODO: What do we query to determine vector width?
-    // -- This test currently assumes 128bit SIMD
+    // This test currently assumes 128bit SIMD
 
     int16_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0};
     int16_t inputA[] =  {60, 45, 30, 0, -3, -2, -1, 2};
@@ -169,11 +151,6 @@ TEST_F(VectorTest, VFloatAdd) {
 
     ASSERT_NOTNULL(trees);
     //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    //
-    // This test is currently disabled on Z platforms because not all Z platforms
-    // have vector support. Determining whether a specific platform has the support
-    // at runtime is currently not possible in tril. So the test is being disabled altogether
-    // on Z for now.
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
@@ -183,8 +160,7 @@ TEST_F(VectorTest, VFloatAdd) {
 
 
     auto entry_point = compiler.getEntryPoint<void (*)(float[],float[],float[])>();
-    //TODO: What do we query to determine vector width?
-    // -- This test currently assumes 128bit SIMD
+    // This test currently assumes 128bit SIMD
 
     float output[] =  {0.0f, 0.0f, 0.0f, 0.0f};
     float inputA[] =  {6.0f, 0.0f, -0.1f, 0.6f};
@@ -212,11 +188,6 @@ TEST_F(VectorTest, VInt8Sub) {
 
     ASSERT_NOTNULL(trees);
     //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    //
-    // This test is currently disabled on Z platforms because not all Z platforms
-    // have vector support. Determining whether a specific platform has the support
-    // at runtime is currently not possible in tril. So the test is being disabled altogether
-    // on Z for now.
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
@@ -227,8 +198,7 @@ TEST_F(VectorTest, VInt8Sub) {
 
 
     auto entry_point = compiler.getEntryPoint<void (*)(int8_t[],int8_t[],int8_t[])>();
-    //TODO: What do we query to determine vector width?
-    // -- This test currently assumes 128bit SIMD
+    // This test currently assumes 128bit SIMD
 
     int8_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     int8_t inputA[] =  {7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, 9};
@@ -256,11 +226,6 @@ TEST_F(VectorTest, VInt16Sub) {
 
     ASSERT_NOTNULL(trees);
     //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    //
-    // This test is currently disabled on Z platforms because not all Z platforms
-    // have vector support. Determining whether a specific platform has the support
-    // at runtime is currently not possible in tril. So the test is being disabled altogether
-    // on Z for now.
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
@@ -271,8 +236,7 @@ TEST_F(VectorTest, VInt16Sub) {
 
 
     auto entry_point = compiler.getEntryPoint<void (*)(int16_t[],int16_t[],int16_t[])>();
-    //TODO: What do we query to determine vector width?
-    // -- This test currently assumes 128bit SIMD
+    // This test currently assumes 128bit SIMD
 
     int16_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0};
     int16_t inputA[] =  {60, 45, 30, 0, -3, -2, -1, 9};
@@ -300,11 +264,6 @@ TEST_F(VectorTest, VFloatSub) {
 
     ASSERT_NOTNULL(trees);
     //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    //
-    // This test is currently disabled on Z platforms because not all Z platforms
-    // have vector support. Determining whether a specific platform has the support
-    // at runtime is currently not possible in tril. So the test is being disabled altogether
-    // on Z for now.
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
@@ -314,8 +273,7 @@ TEST_F(VectorTest, VFloatSub) {
 
 
     auto entry_point = compiler.getEntryPoint<void (*)(float[],float[],float[])>();
-    //TODO: What do we query to determine vector width?
-    // -- This test currently assumes 128bit SIMD
+    // This test currently assumes 128bit SIMD
 
     float output[] =  {0.0f, 0.0f, 0.0f, 0.0f};
     float inputA[] =  {6.0f, 0.0f, -0.1f, 2.0f};
@@ -343,11 +301,6 @@ TEST_F(VectorTest, VDoubleSub) {
 
     ASSERT_NOTNULL(trees);
     //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    //
-    // This test is currently disabled on Z platforms because not all Z platforms
-    // have vector support. Determining whether a specific platform has the support
-    // at runtime is currently not possible in tril. So the test is being disabled altogether
-    // on Z for now.
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
@@ -357,8 +310,7 @@ TEST_F(VectorTest, VDoubleSub) {
 
 
     auto entry_point = compiler.getEntryPoint<void (*)(double[],double[],double[])>();
-    //TODO: What do we query to determine vector width?
-    // -- This test currently assumes 128bit SIMD
+    // This test currently assumes 128bit SIMD
 
     double output[] =  {0.0, 0.0};
     double inputA[] =  {1.0, -1.5};
@@ -384,11 +336,6 @@ TEST_F(VectorTest, VInt8Mul) {
 
     ASSERT_NOTNULL(trees);
     //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    //
-    // This test is currently disabled on Z platforms because not all Z platforms
-    // have vector support. Determining whether a specific platform has the support
-    // at runtime is currently not possible in tril. So the test is being disabled altogether
-    // on Z for now.
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
@@ -401,8 +348,7 @@ TEST_F(VectorTest, VInt8Mul) {
 
 
     auto entry_point = compiler.getEntryPoint<void (*)(int8_t[],int8_t[],int8_t[])>();
-    //TODO: What do we query to determine vector width?
-    // -- This test currently assumes 128bit SIMD
+    // This test currently assumes 128bit SIMD
 
     int8_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     int8_t inputA[] =  {7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, 7};
@@ -430,11 +376,6 @@ TEST_F(VectorTest, VInt16Mul) {
 
     ASSERT_NOTNULL(trees);
     //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    //
-    // This test is currently disabled on Z platforms because not all Z platforms
-    // have vector support. Determining whether a specific platform has the support
-    // at runtime is currently not possible in tril. So the test is being disabled altogether
-    // on Z for now.
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
@@ -445,8 +386,7 @@ TEST_F(VectorTest, VInt16Mul) {
 
 
     auto entry_point = compiler.getEntryPoint<void (*)(int16_t[],int16_t[],int16_t[])>();
-    //TODO: What do we query to determine vector width?
-    // -- This test currently assumes 128bit SIMD
+    // This test currently assumes 128bit SIMD
 
     int16_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0};
     int16_t inputA[] =  {60, 45, 30, 0, -3, -2, -1, 2};
@@ -474,11 +414,6 @@ TEST_F(VectorTest, VFloatMul) {
 
     ASSERT_NOTNULL(trees);
     //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    //
-    // This test is currently disabled on Z platforms because not all Z platforms
-    // have vector support. Determining whether a specific platform has the support
-    // at runtime is currently not possible in tril. So the test is being disabled altogether
-    // on Z for now.
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
@@ -488,8 +423,7 @@ TEST_F(VectorTest, VFloatMul) {
 
 
     auto entry_point = compiler.getEntryPoint<void (*)(float[],float[],float[])>();
-    //TODO: What do we query to determine vector width?
-    // -- This test currently assumes 128bit SIMD
+    // This test currently assumes 128bit SIMD
 
     float output[] =  {0.0f, 0.0f, 0.0f, 0.0f};
     float inputA[] =  {6.0f, 0.0f, -0.1f, 0.6f};
@@ -517,11 +451,6 @@ TEST_F(VectorTest, VDoubleMul) {
 
     ASSERT_NOTNULL(trees);
     //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    //
-    // This test is currently disabled on Z platforms because not all Z platforms
-    // have vector support. Determining whether a specific platform has the support
-    // at runtime is currently not possible in tril. So the test is being disabled altogether
-    // on Z for now.
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
@@ -531,8 +460,7 @@ TEST_F(VectorTest, VDoubleMul) {
 
 
     auto entry_point = compiler.getEntryPoint<void (*)(double[],double[],double[])>();
-    //TODO: What do we query to determine vector width?
-    // -- This test currently assumes 128bit SIMD
+    // This test currently assumes 128bit SIMD
 
     double output[] =  {0.0, 0.0};
     double inputA[] =  {1.0, -1.5};
@@ -558,11 +486,6 @@ TEST_F(VectorTest, VFloatDiv) {
 
     ASSERT_NOTNULL(trees);
     //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    //
-    // This test is currently disabled on Z platforms because not all Z platforms
-    // have vector support. Determining whether a specific platform has the support
-    // at runtime is currently not possible in tril. So the test is being disabled altogether
-    // on Z for now.
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
@@ -572,8 +495,7 @@ TEST_F(VectorTest, VFloatDiv) {
 
 
     auto entry_point = compiler.getEntryPoint<void (*)(float[],float[],float[])>();
-    //TODO: What do we query to determine vector width?
-    // -- This test currently assumes 128bit SIMD
+    // This test currently assumes 128bit SIMD
 
     float output[] =  {0.0f, 0.0f, 0.0f, 0.0f};
     float inputA[] =  {6.0f, 0.0f, -9.0f, 0.6f};
@@ -601,11 +523,6 @@ TEST_F(VectorTest, VDoubleDiv) {
 
     ASSERT_NOTNULL(trees);
     //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    //
-    // This test is currently disabled on Z platforms because not all Z platforms
-    // have vector support. Determining whether a specific platform has the support
-    // at runtime is currently not possible in tril. So the test is being disabled altogether
-    // on Z for now.
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
@@ -615,8 +532,7 @@ TEST_F(VectorTest, VDoubleDiv) {
 
 
     auto entry_point = compiler.getEntryPoint<void (*)(double[],double[],double[])>();
-    //TODO: What do we query to determine vector width?
-    // -- This test currently assumes 128bit SIMD
+    // This test currently assumes 128bit SIMD
 
     double output[] =  {0.0, 0.0};
     double inputA[] =  {12.0, -1.5};

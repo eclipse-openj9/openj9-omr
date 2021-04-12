@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1687,6 +1687,12 @@ TR_YesNoMaybe OMR::ValuePropagation::isCastClassObject(TR::VPClassType *type)
          }
       }
    return TR_maybe;
+   }
+
+
+TR_YesNoMaybe OMR::ValuePropagation::isArrayCompTypeValueType(TR::VPConstraint *arrayConstraint)
+   {
+   return TR::Compiler->om.areValueTypesEnabled() ? TR_maybe : TR_no;
    }
 
 void OMR::ValuePropagation::checkTypeRelationship(TR::VPConstraint *lhs, TR::VPConstraint *rhs,
@@ -6413,7 +6419,7 @@ void OMR::ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blo
 
             temp.add(nextComparisonNode);
 
-            if (arrayIndex->_baseNode && arrayIndex->_instanceOfClass && 
+            if (arrayIndex->_baseNode && arrayIndex->_instanceOfClass &&
                 arrayIndex->_baseNode->getOpCode().getOpCodeValue() == TR::iloadi)
                {
                // InstanceOf check for the object we load the array index from

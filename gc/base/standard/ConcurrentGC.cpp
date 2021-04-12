@@ -385,6 +385,8 @@ MM_ConcurrentGC::reportConcurrentCollectionStart(MM_EnvironmentBase *env)
 void
 MM_ConcurrentGC::reportConcurrentCollectionEnd(MM_EnvironmentBase *env, uint64_t duration)
 {
+	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
+
 	Trc_MM_ConcurrentCollectionEnd(env->getLanguageVMThread(),
 		_extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_NEW),
 		_extensions->heap->getActiveMemorySize(MEMORY_TYPE_NEW),
@@ -393,6 +395,21 @@ MM_ConcurrentGC::reportConcurrentCollectionEnd(MM_EnvironmentBase *env, uint64_t
 		(_extensions-> largeObjectArea ? _extensions->heap->getApproximateActiveFreeLOAMemorySize(MEMORY_TYPE_OLD) : 0 ),
 		(_extensions-> largeObjectArea ? _extensions->heap->getActiveLOAMemorySize(MEMORY_TYPE_OLD) : 0 )
 	);
+
+	if (J9_EVENT_IS_HOOKED(_extensions->privateHookInterface, J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_END)) {
+		MM_CommonGCEndData commonData;
+		_extensions->heap->initializeCommonGCEndData(env, &commonData);
+
+		ALWAYS_TRIGGER_J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_END(
+				_extensions->privateHookInterface,
+				env->getOmrVMThread(),
+				omrtime_hires_clock(),
+				J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_END,
+				duration,
+				env->getExclusiveAccessTime(),
+				&commonData
+		);
+	}
 }
 
 void

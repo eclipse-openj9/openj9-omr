@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -259,6 +259,20 @@ public:
 	MMINLINE bool copyAndForward(MM_EnvironmentStandard *env, GC_SlotObject *slotObject);
 
 	MMINLINE bool copyAndForward(MM_EnvironmentStandard *env, volatile omrobjectptr_t *objectPtrIndirect);
+
+	/**
+	 * Handle the path after a failed attempt to forward an object:
+	 * try to reuse or abandon reserved memory for this threads destination object candidate.
+	 * Infrequent path, hence not inlined.
+	 */
+	void forwardingFailed(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHeader, omrobjectptr_t destinationObjectPtr, MM_CopyScanCacheStandard *copyCache);
+	
+	/**
+	 * Handle the path after a succeesful attempt to forward an object:
+	 * Update the alloc pointer and update various stats.
+	 * Frequent path, hence inlined.
+	 */	
+	MMINLINE void forwardingSucceeded(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard *copyCache, void *newCacheAlloc, uintptr_t oldObjectAge, uintptr_t objectCopySizeInBytes, uintptr_t objectReserveSizeInBytes);
 
 	MMINLINE omrobjectptr_t copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHeader);
 	

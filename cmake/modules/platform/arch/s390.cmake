@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,7 +24,7 @@
 # the distinction
 set(TR_HOST_ARCH z)
 set(TR_HOST_BITS 64)
-list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_S390 TR_TARGET_S390 _LONG_LONG)
+list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_S390 TR_TARGET_S390)
 
 if(OMR_ENV_DATA64)
 	list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_64BIT TR_TARGET_64BIT BITVECTOR_64BIT)

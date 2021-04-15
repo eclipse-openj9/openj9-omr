@@ -1159,6 +1159,10 @@ typedef struct J9ProcessorInfos {
 /* Windows current thread ANSI code page */
 #define J9STR_CODE_WINTHREADACP 8
 
+/* flags for omrstr_ftime_ex */
+#define OMRSTR_FTIME_FLAG_LOCAL 0 /* result should be produced for local timezone */
+#define OMRSTR_FTIME_FLAG_UTC   1 /* result should be produced for UTC timezone */
+
 #if defined(J9ZOS390)
 /*
  * OMR on z/OS translates the output of certain system calls such as getenv to ASCII using functions in atoe.c; see stdlib.h for a list.
@@ -2203,6 +2207,8 @@ typedef struct OMRPortLibrary {
 	int32_t (*file_blockingasync_lock_bytes)(struct OMRPortLibrary *portLibrary, intptr_t fd, int32_t lockFlags, uint64_t offset, uint64_t length) ;
 	/** see @ref omrstr.c::omrstr_ftime "omrstr_ftime"*/
 	uintptr_t (*str_ftime)(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, const char *format, int64_t timeMillis) ;
+	/** see @ref omrstr.c::omrstr_ftime_ex "omrstr_ftime_ex"*/
+	uintptr_t (*str_ftime_ex)(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, const char *format, int64_t timeMillis, uint32_t flags);
 	/** see @ref omrmmap.c::omrmmap_startup "omrmmap_startup"*/
 	int32_t (*mmap_startup)(struct OMRPortLibrary *portLibrary) ;
 	/** see @ref omrmmap.c::omrmmap_shutdown "omrmmap_shutdown"*/
@@ -2920,7 +2926,8 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrfile_lock_bytes(param1,param2,param3,param4) privateOmrPortLibrary->file_lock_bytes(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
 #define omrfile_convert_native_fd_to_omrfile_fd(param1) privateOmrPortLibrary->file_convert_native_fd_to_omrfile_fd(privateOmrPortLibrary, (param1))
 #define omrfile_convert_omrfile_fd_to_native_fd(param1) privateOmrPortLibrary->file_convert_omrfile_fd_to_native_fd(privateOmrPortLibrary,param1)
-#define omrstr_ftime(param1,param2,param3,param4) privateOmrPortLibrary->str_ftime(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
+#define omrstr_ftime(param1,param2,param3,param4) privateOmrPortLibrary->str_ftime_ex(privateOmrPortLibrary, (param1), (param2), (param3), (param4), OMRSTR_FTIME_FLAG_LOCAL)
+#define omrstr_ftime_ex(param1,param2,param3,param4,param5) privateOmrPortLibrary->str_ftime_ex(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5))
 #define omrmmap_startup() privateOmrPortLibrary->mmap_startup(privateOmrPortLibrary)
 #define omrmmap_shutdown() privateOmrPortLibrary->mmap_shutdown(privateOmrPortLibrary)
 #define omrmmap_capabilities() privateOmrPortLibrary->mmap_capabilities(privateOmrPortLibrary)

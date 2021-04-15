@@ -765,11 +765,6 @@ public:
 		return concurrent_phase_idle != _concurrentPhase;
 	}
 	
-	/* TODO: remove once downstream projects start using isConcurrentCycleInProgress/isCurrentPhaseConcurrent */
-	bool isConcurrentInProgress() {
-		return concurrent_phase_idle != _concurrentPhase;
-	}
-	
 	bool isMutatorThreadInSyncWithCycle(MM_EnvironmentBase *env) {
 		return (env->_concurrentScavengerSwitchCount == _concurrentScavengerSwitchCount);
 	}

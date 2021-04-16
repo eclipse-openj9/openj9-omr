@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -242,8 +242,6 @@ public:
 	 * Fixup should update slots to point to the forwarded version of the object and/or remove self forwarded bit in the object itself.
 	 */
 	void fixupIndirectObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr);
-	
-	bool shouldYield() { return false; }
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 	bool initialize(MM_EnvironmentBase* env) { return true; }

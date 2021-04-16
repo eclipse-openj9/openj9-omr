@@ -3681,10 +3681,11 @@ MM_Scavenger::checkAndSetShouldYieldFlag(MM_EnvironmentStandard *env) {
 	 * Main info if we should yield comes from exclusive VM access request being broadcasted to this thread (isExclusiveAccessRequestWaiting())
 	 * But since that request in the thread is not cleared even when implicit main GC thread enters STW phase, and since this yield check is invoked
 	 * in common code that can run both during STW and concurrent phase, we have to additionally check we are indeed in concurrent phase before deciding to yield.
-	 * Most of the time we could rely on being in 'concurrent_phase_scan' but it's more reliable to actually check if exclusive access
-	 * is indeed being requested (hence shouldYield() call to delegate, too).
 	 */
-	if (!_shouldYield && env->isExclusiveAccessRequestWaiting() && _delegate.shouldYield()) {
+
+	if (isCurrentPhaseConcurrent() && env->isExclusiveAccessRequestWaiting() && !_shouldYield) {
+		/* If we are yielding we must be working concurrently, so GC better not have exclusive VM access. We can really only assert it for the current thread */
+		Assert_MM_true(0 == env->getOmrVMThread()->exclusiveCount);
 		_shouldYield = true;
 	}
 	return _shouldYield;
@@ -5648,6 +5649,8 @@ MM_Scavenger::mainThreadConcurrentCollect(MM_EnvironmentBase *env)
 		clearIncrementGCStats(env, false);
 
 		_currentPhaseConcurrent = true;
+		/* We claim to work concurrently. GC better not have exclusive VM access. We can really only assert it for the current thread */
+		Assert_MM_true(0 == env->getOmrVMThread()->exclusiveCount);
 
 		MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_SCAN, env->_cycleState);
 		/* Concurrent background task will run with different (typically lower) number of threads. */

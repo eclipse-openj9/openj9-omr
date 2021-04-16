@@ -682,16 +682,6 @@
 #define _getstackEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _deallocaEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _idozEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _dcosEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _dsinEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _dtanEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _dcoshEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _dsinhEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _dtanhEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _dacosEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _dasinEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _datanEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _datan2Evaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _dlogEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _dfloorEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _ffloorEvaluator TR::TreeEvaluator::unImpOpEvaluator

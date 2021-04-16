@@ -680,16 +680,6 @@
 #define getstackSimplifierHandler dftSimplifier
 #define deallocaSimplifierHandler dftSimplifier
 #define idozSimplifierHandler dftSimplifier
-#define dcosSimplifierHandler dftSimplifier
-#define dsinSimplifierHandler dftSimplifier
-#define dtanSimplifierHandler dftSimplifier
-#define dcoshSimplifierHandler dftSimplifier
-#define dsinhSimplifierHandler dftSimplifier
-#define dtanhSimplifierHandler dftSimplifier
-#define dacosSimplifierHandler dftSimplifier
-#define dasinSimplifierHandler dftSimplifier
-#define datanSimplifierHandler dftSimplifier
-#define datan2SimplifierHandler dftSimplifier
 #define dlogSimplifierHandler dftSimplifier
 #define dfloorSimplifierHandler dftSimplifier
 #define ffloorSimplifierHandler dftSimplifier

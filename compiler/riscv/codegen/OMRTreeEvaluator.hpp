@@ -721,16 +721,6 @@ public:
 	static TR::Register *bushflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *sushflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *idozEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *dcosEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *dsinEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *dtanEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *dcoshEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *dsinhEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *dtanhEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *dacosEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *dasinEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *datanEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *datan2Evaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dlogEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *imuloverEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dfloorEvaluator(TR::Node *node, TR::CodeGenerator *cg);

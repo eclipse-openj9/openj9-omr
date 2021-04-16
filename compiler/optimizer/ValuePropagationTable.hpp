@@ -822,16 +822,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define getstackVPHandler constrainChildren
 #define deallocaVPHandler constrainChildren
 #define idozVPHandler constrainChildren
-#define dcosVPHandler constrainChildren
-#define dsinVPHandler constrainChildren
-#define dtanVPHandler constrainChildren
-#define dcoshVPHandler constrainChildren
-#define dsinhVPHandler constrainChildren
-#define dtanhVPHandler constrainChildren
-#define dacosVPHandler constrainChildren
-#define dasinVPHandler constrainChildren
-#define datanVPHandler constrainChildren
-#define datan2VPHandler constrainChildren
 #define dlogVPHandler constrainChildren
 #define dfloorVPHandler constrainChildren
 #define ffloorVPHandler constrainChildren

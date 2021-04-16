@@ -83,8 +83,8 @@ wizard.
 Before you can make any code contributions to the Eclipse OMR GitHub repository
 you must sign the Eclipse Contributor Agreement (ECA).  This is a simple process
 outlined in the [Contribution Guidelines](../CONTRIBUTING.md#legal-considerations).
-This step is important because each of your commits must be signed off by the
-same email you used to sign the ECA.
+This step is important because the email of the author of each commit 
+must match the email you used to sign the ECA.
 
 ---
 
@@ -107,7 +107,7 @@ simply go into the project directory and enter any of the above commands
 with the project-specific name/email to use and excluding the `--global`
 argument.
 
-Please note that the email associated with the commits you make in OMR must
+Please note that the email associated with the author of the commits you make in OMR must
 be the email you used for signing the
 [ECA - Eclipse Foundation Contributor Agreement](http://www.eclipse.org/legal/ECA.php).
 Therefore, you must either configure the global `user.email` or the OMR
@@ -346,7 +346,6 @@ The guidelines are changed to:
   message.
 
 Issue: #124
-Signed-off-by: Robert Young <rwy0717@gmail.com>
 ```
 
 The first line in the commit message is the commit heading, and should
@@ -354,16 +353,11 @@ summarize what this commit is doing. After a blank line comes the body of
 the commit message containing more details about what this commit is
 about. You can be as descriptive of the changes as you wish.
 
-Next, you may include the Issue in OMR that this commit addresses,
-followed by signing off the commit.
+Next, you may include the Issue in OMR that this commit addresses.
 
 Tips: `git commit -a` combines the 2 commands:
 1. `git add -u`
 2. `git commit`
-
-You can also generate the `Signed-off-by:` information in your commit message
-from your `user.name` and `user.email` settings using the `-s` flag in your
-`git commit` command.
 
 ### Push branch to your fork
 

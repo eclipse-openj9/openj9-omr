@@ -494,7 +494,6 @@ public:
 	static TR::Register *vdcmpanyltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vdcmpanyleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vdsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *vdlogEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vincEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vdecEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -721,7 +720,6 @@ public:
 	static TR::Register *bushflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *sushflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *idozEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *dlogEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *imuloverEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dfloorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ffloorEvaluator(TR::Node *node, TR::CodeGenerator *cg);

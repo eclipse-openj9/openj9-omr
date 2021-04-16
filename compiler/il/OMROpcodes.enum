@@ -7044,22 +7044,6 @@ OPCODE_MACRO(\
    /* .description          =    vector double square root */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ vdlog, \
-   /* .name                 = */ "vdlog", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorDouble, \
-   /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
-   /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    vector double natural log */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ vinc, \
    /* .name                 = */ "vinc", \
    /* .properties1          = */ ILProp1::Add, \
@@ -10530,22 +10514,6 @@ OPCODE_MACRO(\
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
    /* .description          =    difference or zero */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ dlog, \
-   /* .name                 = */ "dlog", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ONE_CHILD(TR::Double), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    log of double, returning double */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ dfloor, \

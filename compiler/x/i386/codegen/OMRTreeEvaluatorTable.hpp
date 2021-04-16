@@ -464,7 +464,6 @@
 #define _vdcmpanyltEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vdcmpanyleEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vdsqrtEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _vdlogEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vincEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vdecEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vnegEvaluator TR::TreeEvaluator::unImpOpEvaluator
@@ -682,7 +681,6 @@
 #define _getstackEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _deallocaEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _idozEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _dlogEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _dfloorEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _ffloorEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _dceilEvaluator TR::TreeEvaluator::unImpOpEvaluator

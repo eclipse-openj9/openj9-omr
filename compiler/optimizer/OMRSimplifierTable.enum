@@ -462,7 +462,6 @@
 #define vdcmpanyltSimplifierHandler normalizeCmpSimplifier
 #define vdcmpanyleSimplifierHandler normalizeCmpSimplifier
 #define vdsqrtSimplifierHandler dftSimplifier
-#define vdlogSimplifierHandler dftSimplifier
 #define vincSimplifierHandler dftSimplifier
 #define vdecSimplifierHandler dftSimplifier
 #define vnegSimplifierHandler dftSimplifier
@@ -680,7 +679,6 @@
 #define getstackSimplifierHandler dftSimplifier
 #define deallocaSimplifierHandler dftSimplifier
 #define idozSimplifierHandler dftSimplifier
-#define dlogSimplifierHandler dftSimplifier
 #define dfloorSimplifierHandler dftSimplifier
 #define ffloorSimplifierHandler dftSimplifier
 #define dceilSimplifierHandler dftSimplifier

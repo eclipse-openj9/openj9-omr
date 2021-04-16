@@ -263,23 +263,21 @@ This patch eliminates the race condition in issue #1234.
 Closes: #1234
 ```
 
-Sign off on your commit in the footer. By doing this, you assert original
-authorship of the commit and that you are permitted to contribute it. This can
-be automatically added to your commit by passing `-s` to `git commit`, or by
-hand adding the following line to the footer of the commit.
+### Commit Authorship
 
-```
-Signed-off-by: Full Name <email>
-```
+Be sure to author commits with the same email address that you used to
+sign the Eclipse Contributor Agreement.
 
-Remember, if a blank line is found anywhere after the `Signed-off-by` line, the
-`Signed-off-by:` will be considered outside of the footer, and will fail the
-automated Signed-off-by validation.
+If there are multiple authors of a commit they should all be credited
+with a `Co-authored-by: Full Name <email address>` line at the footer
+of each commit.  Each co-author must sign the ECA.
 
-It is important that you read and understand the legal considerations found
-below when signing off or contributing any commit.
+Each time a commit is pushed, a GitHub CI check will be run
+automatically that verifies that the commit author(s) has signed the
+Eclipse Contributor Agreement.  If not, the check will fail and the
+result will be visible in the pull request.
 
-### Example commits
+### Example Commits
 
 Here is an example of a *good* commit:
 
@@ -298,15 +296,13 @@ The guidelines are changed to:
   message.
 
 Issue: #124
-Signed-off-by: Robert Young <rwy0717@gmail.com>
 ```
 
 The first line is meaningful and imperative. The body contains enough
 information that the reader understands the why and how of the commit, and its
-relation to any issues. The issue is properly tagged and the commit is signed
-off.
+relation to any issues. The issue is properly tagged.
 
-The following is a *bad* commit:
+The following is an example of a *bad* commit:
 
 ```
 FIX #124: Changing a couple random things in CONTRIBUTING.md.
@@ -315,8 +311,8 @@ Also, there are some bug fixes in the thread library.
 
 The commit rolls unrelated changes together in a very bad way. There is not
 enough information for the commit message to be useful. The first line is not
-meaningful or imperative. The message is not formatted correctly, the issue is
-improperly referenced, and the commit is not signed off by the author.
+meaningful or imperative. The message is not formatted correctly and the issue is
+improperly referenced.
 
 ### Other resources for writing good commits
 
@@ -352,14 +348,13 @@ Here is the checklist for contributions to be _acceptable_:
 1. [Create an account at Eclipse](https://dev.eclipse.org/site_login/createaccount.php).
 2. Add your GitHub user name in your account settings.
 3. [Log into the project's portal](https://projects.eclipse.org/) and sign the ["Eclipse ECA"](https://projects.eclipse.org/user/sign/cla).
-4. Ensure that you [_sign-off_](https://wiki.eclipse.org/Development_Resources/Contributing_via_Git#Signing_off_on_a_commit) your Git commits.
-5. Ensure that you use the _same_ email address as your Eclipse account in commits.
-6. Include the appropriate copyright notice and license at the top of each file.
+4. Ensure that you author the commit using the _same_ email address as your Eclipse account.
+5. Include the appropriate copyright notice and license at the top of each file.
 
 Your signing of the ECA will be verified by a webservice called 'ip-validation'
-that checks the email address that signed-off on your commits has signed the
+that checks the email address(es) that authored your commits has signed the
 ECA. **Note**: This service is case-sensitive, so ensure the email that signed
-the ECA and that signed-off on your commits is the same, down to the case.
+the ECA and that authored your commits is the same, down to the case.
 
 ### Copyright Notice and Licensing Requirements
 

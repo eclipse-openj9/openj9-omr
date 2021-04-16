@@ -1708,6 +1708,62 @@ typedef struct OMRProcessorDesc {
 #define OMR_FEATURE_X86_AVX512BW            96 + 30 /* AVX512 Byte and Word */
 #define OMR_FEATURE_X86_AVX512VL            96 + 31 /* AVX512 Vector Length */
 
+/*  AArch64 Linux features
+ *  See https://www.kernel.org/doc/html/latest/arm64/elf_hwcaps.html.
+ */
+#define OMR_FEATURE_ARM64_FP                0 /* Floating Point without FP16 */
+#define OMR_FEATURE_ARM64_ASIMD             1 /* Advanced SIMD without FP16 */
+#define OMR_FEATURE_ARM64_EVTSTRM           2 /* Event Stream */
+#define OMR_FEATURE_ARM64_AES               3 /* FEAT_AES */
+#define OMR_FEATURE_ARM64_PMULL             4 /* FEAT_PMULL */
+#define OMR_FEATURE_ARM64_SHA1              5 /* FEAT_SHA1 */
+#define OMR_FEATURE_ARM64_SHA256            6 /* FEAT_SHA256 */
+#define OMR_FEATURE_ARM64_CRC32             7 /* FEAT_CRC32 */
+#define OMR_FEATURE_ARM64_LSE               8 /* FEAT_LSE */
+#define OMR_FEATURE_ARM64_FP16              9 /* FEAT_FP16 */
+#define OMR_FEATURE_ARM64_ASIMDHP          10 /* Advanced SIMD with FP16 */
+#define OMR_FEATURE_ARM64_CPUID            11 /* CPU ID/feature register */
+#define OMR_FEATURE_ARM64_RDM              12 /* FEAT_RDM */
+#define OMR_FEATURE_ARM64_JSCVT            13 /* FEAT_JSCVT */
+#define OMR_FEATURE_ARM64_FCMA             14 /* FEAT_FCMA */
+#define OMR_FEATURE_ARM64_LRCPC            15 /* FEAT_LRCPC */
+#define OMR_FEATURE_ARM64_DPB              16 /* FEAT_DPB */
+#define OMR_FEATURE_ARM64_SHA3             17 /* FEAT_SHA3 */
+#define OMR_FEATURE_ARM64_SM3              18 /* FEAT_SM3 */
+#define OMR_FEATURE_ARM64_SM4              19 /* FEAT_SM4 */
+#define OMR_FEATURE_ARM64_DOTPROD          20 /* FEAT_DotProd */
+#define OMR_FEATURE_ARM64_SHA512           21 /* FEAT_SHA512 */
+#define OMR_FEATURE_ARM64_SVE              22 /* FEAT_SVE */
+#define OMR_FEATURE_ARM64_FHM              23 /* FEAT_FHM */
+#define OMR_FEATURE_ARM64_DIT              24 /* FEAT_DIT */
+#define OMR_FEATURE_ARM64_LSE2             25 /* FEAT_LSE2 */
+#define OMR_FEATURE_ARM64_LRCPC2           26 /* FEAT_LRCPC2 */
+#define OMR_FEATURE_ARM64_FLAGM            27 /* FEAT_FlagM */
+#define OMR_FEATURE_ARM64_SSBS             28 /* FEAT_SSBS */
+#define OMR_FEATURE_ARM64_SB               29 /* FEAT_SB */
+#define OMR_FEATURE_ARM64_PAUTH            30 /* FEAT_PAuth */
+#define OMR_FEATURE_ARM64_PACG             31 /* PACGA instruction */
+
+#define OMR_FEATURE_ARM64_DPB2             32 /* FEAT_DPB2 */
+#define OMR_FEATURE_ARM64_SVE2             33 /* FEAT_SVE2 */
+#define OMR_FEATURE_ARM64_SVE_AES          34 /* FEAT_SVE_AES */
+#define OMR_FEATURE_ARM64_SVE_PMULL128     35 /* FEAT_SVE_PMULL128 */
+#define OMR_FEATURE_ARM64_SVE_BITPERM      36 /* FEAT_SVE_BitPerm */
+#define OMR_FEATURE_ARM64_SVE_SHA3         37 /* FEAT_SVE_SHA3 */
+#define OMR_FEATURE_ARM64_SVE_SM4          38 /* FEAT_SVE_SM4 */
+#define OMR_FEATURE_ARM64_FLAGM2           39 /* FEAT_FlagM2 */
+#define OMR_FEATURE_ARM64_FRINTTS          40 /* FEAT_FRINTTS */
+#define OMR_FEATURE_ARM64_SVE_I8MM         41 /* FEAT_I8MM */
+#define OMR_FEATURE_ARM64_F32MM            42 /* FEAT_F32MM */
+#define OMR_FEATURE_ARM64_F64MM            43 /* FEAT_F64MM */
+#define OMR_FEATURE_ARM64_SVE_BF16         44 /* FEAT_BF16 */
+#define OMR_FEATURE_ARM64_I8MM             45 /* FEAT_I8MM */
+#define OMR_FEATURE_ARM64_BF16             46 /* FEAT_BF16 */
+#define OMR_FEATURE_ARM64_DGH              47 /* FEAT_DGH */
+#define OMR_FEATURE_ARM64_RNG              48 /* FEAT_RNG */
+#define OMR_FEATURE_ARM64_BTI              49 /* FEAT_BTI */
+#define OMR_FEATURE_ARM64_MTE2             50 /* FEAT_MTE2 */
+
 struct OMRControlFileStatus;
 struct OMRPortShSemParameters;
 

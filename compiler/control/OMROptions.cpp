@@ -431,7 +431,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableMaxMinOptimization",          "O\tdisable max and min optimizations",                 SET_OPTION_BIT(TR_DisableMaxMinOptimization), "F"},
    {"disableMccFreeBlockRecycling",       "O\tdo not reuse code cache freed blocks",           SET_OPTION_BIT(TR_DisableFreeCodeCacheBlockRecycling), "F", NOT_IN_SUBSET},
    {"disableMCSBypass",                   "O\tdisable allocating JNI global references to skip some levels of indirection when accessing a MutableCallSite's target MethodHandle in jitted code", SET_OPTION_BIT(TR_DisableMCSBypass), "F"},
-   {"disableMergeNew",                    "O\tdisable merge new",                              SET_OPTION_BIT(TR_DisableMergeNew), "F"},
    {"disableMergeStackMaps",              "O\tdisable stack map merging",                      SET_OPTION_BIT(TR_DisableMergeStackMaps), "P"},
    {"disableMetadataReclamation",         "I\tdisable J9JITExceptionTable reclamation", SET_OPTION_BIT(TR_DisableMetadataReclamation), "F", NOT_IN_SUBSET},
    {"disableMethodHandleInlineWithoutPeeking", "O\tInline method handle thunks using peeking in inliner ", SET_OPTION_BIT(TR_DisableMHInlineWithoutPeeking), "F" },
@@ -2693,7 +2692,7 @@ OMR::Options::jitPreProcess()
             {
             if (_aggressivenessLevel != -1) // -1 means not set
                {
-               if (OMR::Options::isAnyVerboseOptionSet()) 
+               if (OMR::Options::isAnyVerboseOptionSet())
                      TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "_aggressivenessLevel=%d; must be between 0 and 5; Option ignored", _aggressivenessLevel);
                _aggressivenessLevel = -1;
                }
@@ -3835,7 +3834,7 @@ OMR::Options::printOptions(char *options, char *envOptions)
    if (this == TR::Options::getAOTCmdLineOptions())
       optionsType = "AOT";
    TR_Debug::dumpOptions(optionsType, options, envOptions, self(), _jitOptions, TR::Options::_feOptions, _feBase, _fe);
-   if (_aggressivenessLevel > 0) 
+   if (_aggressivenessLevel > 0)
        TR_VerboseLog::writeLineLocked(TR_Vlog_INFO, "aggressivenessLevel=%d", _aggressivenessLevel);
    }
 
@@ -4596,7 +4595,7 @@ OMR::Options::setAddressEnumerationBits(char *option, void *base, TR::OptionTabl
 OMR::Options::TR_OptionStringToBit OMR::Options::_optionStringToBitMapping[] = {
 // Names cannot be reused otherwise all matching bits will be set
 // bit 0x00000001 is set if any option is present
-   
+
 // Debug Enable flags
 { "enableUnneededNarrowIntConversion", TR_EnableUnneededNarrowIntConversion },
 

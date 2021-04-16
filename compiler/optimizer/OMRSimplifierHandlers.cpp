@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -5908,7 +5908,6 @@ TR::Node *indirectStoreSimplifier(TR::Node * node, TR::Block * block, TR::Simpli
       if ((valueChild->getOpCodeValue() == TR::New) ||
           (valueChild->getOpCodeValue() == TR::newarray) ||
           (valueChild->getOpCodeValue() == TR::anewarray) ||
-          (valueChild->getOpCodeValue() == TR::MergeNew) ||
           (valueChild->getOpCodeValue() == TR::multianewarray))
          {
          bool seenGCPoint = false;

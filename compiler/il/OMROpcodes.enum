@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020, 2020 IBM Corp. and others
+ * Copyright (c) 2020, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -9634,22 +9634,6 @@ OPCODE_MACRO(\
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
    /* .description          =    JEP171: prohibits loadLoad, loadStore, storeLoad, and storeStore reordering (on globals) */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ MergeNew, \
-   /* .name                 = */ "MergeNew", \
-   /* .properties1          = */ ILProp1::TreeTop | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ ILProp2::CanRaiseException| ILProp2::MayUseSystemStack, \
-   /* .properties3          = */ ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::NoType, \
-   /* .typeProperties       = */ 0, \
-   /* .childProperties      = */ ILChildProp::Unspecified, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    Parent for New etc. nodes that can all be allocated together */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ computeCC, \

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -866,7 +866,6 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
                  opCodeValue == TR::newarray) &&
                  child->getReferenceCount() > 1) ||
                  opCodeValue == TR::multianewarray ||
-                 opCodeValue == TR::MergeNew ||
                opCodeValue == TR::checkcast ||
                opCodeValue == TR::Prefetch ||
                opCodeValue == TR::iu2l ||
@@ -914,10 +913,7 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
                          (((opCodeValue == TR::New)  ||
                             (opCodeValue == TR::anewarray ||
                               opCodeValue == TR::newarray)) &&
-                          ///child->getFirstChild()->isNonNegative()))
                            child->markedAllocationCanBeRemoved()))
-                       //        opCodeValue == TR::multianewarray ||
-                       //        opCodeValue == TR::MergeNew)
                         treeTopCanBeEliminated = true;
                      }
                   }

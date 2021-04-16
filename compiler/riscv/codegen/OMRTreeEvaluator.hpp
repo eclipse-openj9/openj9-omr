@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -657,7 +657,6 @@ public:
 	static TR::Register *loadFenceEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *storeFenceEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *fullFenceEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *MergeNewEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *computeCCEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *butestEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *sutestEvaluator(TR::Node *node, TR::CodeGenerator *cg);

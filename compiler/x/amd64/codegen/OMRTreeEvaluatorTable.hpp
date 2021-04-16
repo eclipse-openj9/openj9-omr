@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -626,7 +626,6 @@
 #define _loadFenceEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _storeFenceEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _fullFenceEvaluator TR::TreeEvaluator::badILOpEvaluator
-#define _MergeNewEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _computeCCEvaluator TR::TreeEvaluator::computeCCEvaluator
 #define _butestEvaluator TR::TreeEvaluator::butestEvaluator
 #define _sutestEvaluator TR::TreeEvaluator::sutestEvaluator

@@ -3360,14 +3360,14 @@ OMR::Node::getOwningMethod()
 
 /** \brief
  *  Used to get the ram method from the Bytecode Info.
- * 
+ *
  *  \param *comp
- *  _compilation of type TR::Compilation 
- *  
- *  @return 
+ *  _compilation of type TR::Compilation
+ *
+ *  @return
  *  Returns the ram method (TR_OpaqueMethodBlock) from function call getOwningMethod(TR::Compilation *comp, TR_ByteCodeInfo &bcInfo)
  */
-TR_OpaqueMethodBlock* 
+TR_OpaqueMethodBlock*
 OMR::Node::getOwningMethod(TR::Compilation *comp)
    {
    return TR::Node::getOwningMethod(comp, self()->getByteCodeInfo());
@@ -3377,26 +3377,26 @@ OMR::Node::getOwningMethod(TR::Compilation *comp)
 
 /** \brief
  *  Used to get the ram method from the Bytecode Info.
- * 
+ *
  *  \param *comp
  *  _compilation of type TR::Compilation
- * 
- *  \param &bcInfo 
- *  _byteCodeInfo of a node of type TR::Node  
- *  
- *  @return 
+ *
+ *  \param &bcInfo
+ *  _byteCodeInfo of a node of type TR::Node
+ *
+ *  @return
  *  Returns the ram method (TR_OpaqueMethodBlock)
  */
-TR_OpaqueMethodBlock* 
+TR_OpaqueMethodBlock*
 OMR::Node::getOwningMethod(TR::Compilation *comp, TR_ByteCodeInfo &bcInfo)
    {
-   TR_OpaqueMethodBlock *method = NULL; 
-   if (0 <= bcInfo.getCallerIndex()) 
-      method = comp->getInlinedCallSite(bcInfo.getCallerIndex())._methodInfo; 
-   else 
-      method = comp->getCurrentMethod()->getPersistentIdentifier(); 
-  
-   return method; 
+   TR_OpaqueMethodBlock *method = NULL;
+   if (0 <= bcInfo.getCallerIndex())
+      method = comp->getInlinedCallSite(bcInfo.getCallerIndex())._methodInfo;
+   else
+      method = comp->getCurrentMethod()->getPersistentIdentifier();
+
+   return method;
    }
 
 
@@ -3672,10 +3672,6 @@ OMR::Node::exceptionsRaised()
       case TR::newarray:
       case TR::anewarray:
       case TR::multianewarray:
-         possibleExceptions |= TR::Block:: CanCatchArrayNew;
-         break;
-      case TR::MergeNew:
-         possibleExceptions |= TR::Block:: CanCatchNew;
          possibleExceptions |= TR::Block:: CanCatchArrayNew;
          break;
       case TR::monexit:

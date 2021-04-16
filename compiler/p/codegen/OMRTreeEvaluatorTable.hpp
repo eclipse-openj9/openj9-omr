@@ -626,7 +626,6 @@
 #define _loadFenceEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _storeFenceEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _fullFenceEvaluator TR::TreeEvaluator::badILOpEvaluator
-#define _MergeNewEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _computeCCEvaluator TR::TreeEvaluator::computeCCEvaluator
 #define _butestEvaluator TR::TreeEvaluator::butestEvaluator
 #define _sutestEvaluator TR::TreeEvaluator::sutestEvaluator

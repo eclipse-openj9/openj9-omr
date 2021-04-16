@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -125,7 +125,7 @@ enum TR_CompilationOptions
    TR_DisableEDO                 = 0x00000040 + 1,
    TR_DisableThrowToGoto         = 0x00000080 + 1,
    TR_DisableMonitorCoarsening   = 0x00000100 + 1,
-   TR_DisableMergeNew            = 0x00000200 + 1,
+   // Available                  = 0x00000200 + 1,
    TR_DisableVirtualInlining     = 0x00000400 + 1,
    TR_DisableNonvirtualInlining  = 0x00000800 + 1,
    TR_DisableSyncMethodInlining  = 0x00001000 + 1,
@@ -1959,7 +1959,7 @@ private:
    //set hot field reduction algorithm for dynamicBreadthFirstScanOrdering
    //
    static char *setHotFieldReductionAlgorithm(char *option, void *base, TR::OptionTable *entry);
-   
+
    // Set samplingjprofiling bits
    //
    static char *setSamplingJProfilingBits(char* option, void *base, TR::OptionTable *entry);
@@ -2314,7 +2314,7 @@ protected:
    int32_t                     _initialSCount;
    int32_t                     _enableSCHintFlags;
    bool                        _insertGCRTrees; // more like a flag than an option; cannot be set by user
-   
+
    int32_t                     _maxLimitedGRACandidates;
    int32_t                     _maxLimitedGRARegs;
 

@@ -1008,8 +1008,7 @@ inline static bool callInTree(TR::TreeTop *treeTop)
        l1OpCode == TR::New             ||
        l1OpCode == TR::newarray        ||
        l1OpCode == TR::anewarray       ||
-       l1OpCode == TR::multianewarray  ||
-       l1OpCode == TR::MergeNew)
+       l1OpCode == TR::multianewarray)
       return(true);
 
    return(node->getNumChildren()!=0 && node->getFirstChild()->getOpCode().isCall() &&
@@ -2625,5 +2624,3 @@ TR::Register *addConstantToInteger(TR::Node * node, TR::Register *srcReg, int32_
 
    return addConstantToInteger(node, trgReg, srcReg, value, cg);
    }
-
-

@@ -5243,7 +5243,7 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
          {
          TR::Node* valueNode = storeNode->getOpCode().isIndirect() ? storeNode->getChild(1) : storeNode->getChild(0);
 
-         if (valueNode->getOpCode().isLoadVar() && 
+         if (valueNode->getOpCode().isLoadVar() &&
              valueNode->getReferenceCount() == 1 &&
              valueNode->getRegister() == NULL &&
              !valueNode->hasUnresolvedSymbolReference())
@@ -5280,7 +5280,7 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
 
             return true;
             }
-         else if (valueNode->getOpCode().isConversion() && 
+         else if (valueNode->getOpCode().isConversion() &&
                   valueNode->getReferenceCount() == 1 &&
                   valueNode->getRegister() == NULL &&
                   !valueNode->hasUnresolvedSymbolReference())
@@ -12374,19 +12374,6 @@ TR::Register *OMR::Z::TreeEvaluator::bitOpMemEvaluator(TR::Node * node, TR::Code
    if (byteLenNode) cg->decReferenceCount(byteLenNode);
 
    return TR::TreeEvaluator::getConditionCodeOrFold(node, cg, foldType, parent);
-   }
-
-TR::Register *OMR::Z::TreeEvaluator::libmFuncEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->getOpCode().isFloat())
-      TR::Node::recreate(node, TR::fcall);
-   else if (node->getOpCode().isDouble())
-      TR::Node::recreate(node, TR::dcall);
-   else
-      TR_ASSERT(false, "Invalid type for libmFuncEvaluator.\n");
-
-   TR::Register *trgReg = TR::TreeEvaluator::directCallEvaluator(node, cg);
-   return trgReg;
    }
 
 TR::Register *OMR::Z::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::CodeGenerator *cg)

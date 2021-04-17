@@ -16584,12 +16584,6 @@ TR::Node *d2cSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    }
 
 
-TR::Node *expSimplifier(TR::Node *node,TR::Block *block,TR::Simplifier *s)
-   {
-   simplifyChildren(node, block, s);
-   return replaceExpWithMult(node,node->getFirstChild(),node->getSecondChild(),block,s);
-   }
-
 //---------------------------------------------------------------------
 // Type coersion operators
 //

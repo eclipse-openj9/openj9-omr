@@ -1743,25 +1743,6 @@ TR::Register *OMR::Power::TreeEvaluator::fRegStoreEvaluator(TR::Node *node, TR::
    return globalReg;
    }
 
-TR::Register *OMR::Power::TreeEvaluator::iexpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR_UNIMPLEMENTED();
-   return 0;
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::lexpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR_UNIMPLEMENTED();
-   return 0;
-   }
-
-
-// also handles fexp
-TR::Register *OMR::Power::TreeEvaluator::dexpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR_UNIMPLEMENTED();
-   return 0;
-   }
 
 // also handles fxfrs
 TR::Register *OMR::Power::TreeEvaluator::dxfrsEvaluator(TR::Node *node, TR::CodeGenerator *cg)

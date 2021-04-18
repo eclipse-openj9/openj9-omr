@@ -540,10 +540,6 @@
 #define d2luSimplifierHandler d2lSimplifier
 #define d2buSimplifierHandler d2bSimplifier
 #define d2cSimplifierHandler d2cSimplifier
-#define iuRegLoadSimplifierHandler dftSimplifier
-#define luRegLoadSimplifierHandler dftSimplifier
-#define iuRegStoreSimplifierHandler dftSimplifier
-#define luRegStoreSimplifierHandler dftSimplifier
 #define cloadSimplifierHandler directLoadSimplifier
 #define cloadiSimplifierHandler indirectLoadSimplifier
 #define cstoreSimplifierHandler dftSimplifier
@@ -577,9 +573,7 @@
 #define luaddhSimplifierHandler dftSimplifier
 #define caddSimplifierHandler caddSimplifier
 #define aiaddSimplifierHandler iaddSimplifier
-#define aiuaddSimplifierHandler iaddSimplifier
 #define aladdSimplifierHandler laddSimplifier
-#define aluaddSimplifierHandler laddSimplifier
 #define lusubhSimplifierHandler dftSimplifier
 #define csubSimplifierHandler csubSimplifier
 #define imulhSimplifierHandler imulhSimplifier

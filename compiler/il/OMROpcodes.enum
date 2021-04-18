@@ -8292,70 +8292,6 @@ OPCODE_MACRO(\
    /* .description          =    convert double to char */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ iuRegLoad, \
-   /* .name                 = */ "iuRegLoad", \
-   /* .properties1          = */ ILProp1::LoadReg, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ ILChildProp::NoChildren, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    Load unsigned integer global register */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ luRegLoad, \
-   /* .name                 = */ "luRegLoad", \
-   /* .properties1          = */ ILProp1::LoadReg, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int64, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ ILChildProp::NoChildren, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    Load unsigned long integer global register */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ iuRegStore, \
-   /* .name                 = */ "iuRegStore", \
-   /* .properties1          = */ ILProp1::StoreReg | ILProp1::TreeTop, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ ONE_CHILD(TR::Int32), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    Store unsigned integer global register */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ luRegStore, \
-   /* .name                 = */ "luRegStore", \
-   /* .properties1          = */ ILProp1::StoreReg | ILProp1::TreeTop, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int64, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ ONE_CHILD(TR::Int32), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    Store long integer global register */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ cload, \
    /* .name                 = */ "cload", \
    /* .properties1          = */ ILProp1::LoadVar | ILProp1::HasSymbolRef, \
@@ -8884,22 +8820,6 @@ OPCODE_MACRO(\
    /* .description          =    add integer to address with address result (child1 a, child2 i) */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ aiuadd, \
-   /* .name                 = */ "aiuadd", \
-   /* .properties1          = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, \
-   /* .properties2          = */ ILProp2::ValueNumberShare, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Address, \
-   /* .typeProperties       = */ ILTypeProp::Reference, \
-   /* .childProperties      = */ TWO_CHILD(TR::Address, TR::Int32), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    add unsigned integer to address with address result (child1 a, child2 i) */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ aladd, \
    /* .name                 = */ "aladd", \
    /* .properties1          = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, \
@@ -8914,22 +8834,6 @@ OPCODE_MACRO(\
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
    /* .description          =    add long integer to address with address result (child1 a, child2 i) (64-bit only) */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ aluadd, \
-   /* .name                 = */ "aluadd", \
-   /* .properties1          = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, \
-   /* .properties2          = */ ILProp2::ValueNumberShare, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Address, \
-   /* .typeProperties       = */ ILTypeProp::Reference, \
-   /* .childProperties      = */ TWO_CHILD(TR::Address, TR::Int64), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    add unsigned long integer to address with address result (child1 a, child2 i) (64-bit only) */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ lusubh, \

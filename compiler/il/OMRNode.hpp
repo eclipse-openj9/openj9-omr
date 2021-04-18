@@ -301,7 +301,7 @@ public:
    /**
     * \brief
     *    Create a call to eaEscapeHelperSymbol
-    * 
+    *
     * \parm originatingByteCodeNode The node whose bytecode info is used to create the call
     */
    static TR::Node *createEAEscapeHelperCall(TR::Node *originatingByteCodeNode, int32_t numChildren);
@@ -368,23 +368,21 @@ private:
       TR_ASSERT(opvalue != TR::vconst, "use createVectorConst to create node: %s", opcode.getName());
       return true;
       }
-      
+
    static bool isNotDeprecatedUnsigned(TR::ILOpCodes opvalue)
       {
-      switch (opvalue) 
+      switch (opvalue)
          {
          //Add and Subtract
-         case TR::aiuadd: 
-         case TR::aluadd: 
-         case TR::buadd: 
-         case TR::busub: 
+         case TR::buadd:
+         case TR::busub:
          case TR::cadd:
-         case TR::csub: 
-         case TR::iuadd: 
-         case TR::iuneg: 
-         case TR::iusub: 
-         case TR::luadd: 
-         case TR::luneg: 
+         case TR::csub:
+         case TR::iuadd:
+         case TR::iuneg:
+         case TR::iusub:
+         case TR::luadd:
+         case TR::luneg:
          case TR::lusub:
 
          //Load
@@ -394,26 +392,22 @@ private:
          case TR::cloadi:
          case TR::iuload:
          case TR::iuloadi:
-         case TR::iuRegLoad:
          case TR::luload:
          case TR::luloadi:
-         case TR::luRegLoad:
 
          //Store
          case TR::bustore:
          case TR::bustorei:
          case TR::cstore:
          case TR::cstorei:
-         case TR::iuRegStore:
          case TR::iustore:
          case TR::iustorei:
-         case TR::luRegStore:
          case TR::lustore:
          case TR::lustorei:
-         
+
             return false;
-            
-         default: 
+
+         default:
             return true;
          }
       }
@@ -503,7 +497,7 @@ public:
    /// isTernaryHigh is now deprecated. Use isSelectHigh instead.
    ///
    bool                   isTernaryHigh();
-   
+
    /// Whether this node is the high or low part of a "dual", in cyclic representation.
    /// ie it represents a composite operator, together with its pair.
    /// The node and its pair have each other as its third child, completing the cycle.
@@ -635,25 +629,25 @@ public:
 
    /** \brief
     *  Used to get the ram method from the Bytecode Info.
-    * 
+    *
     *  \param *comp
     *  _compilation of type TR::Compilation
-    * 
-    *  @return 
+    *
+    *  @return
     *  Returns the ram method (TR_OpaqueMethodBlock)  from function call getOwningMethod(TR::Compilation *comp, TR_ByteCodeInfo &bcInfo)
     */
    TR_OpaqueMethodBlock* getOwningMethod(TR::Compilation *comp);
 
    /** \brief
     *  Used to get the ram method from the Bytecode Info.
-    * 
+    *
     *  \param *comp
     *  _compilation of type TR::Compilation
-    * 
-    *  \param &bcInfo 
-    *  _byteCodeInfo of a node of type TR::Node  
-    * 
-    *  @return 
+    *
+    *  \param &bcInfo
+    *  _byteCodeInfo of a node of type TR::Node
+    *
+    *  @return
     *  Returns the ram method (TR_OpaqueMethodBlock)
     */
    static TR_OpaqueMethodBlock* getOwningMethod(TR::Compilation *comp, TR_ByteCodeInfo &bcInfo);
@@ -2052,7 +2046,7 @@ protected:
        *     Represents that a load must be sign/zero extended to a particular width at the point of evaluation.
        *
        *  \details
-       *     This flag is used by load nodes to signal the code generator to emit a load and sign/zero extend 
+       *     This flag is used by load nodes to signal the code generator to emit a load and sign/zero extend
        *     instructions for the evaluation of this particular load. These flags are used in conjunction with the
        *     unneededConv flag to avoid sign/zero extension conversions which the respective load feeds into.
        */

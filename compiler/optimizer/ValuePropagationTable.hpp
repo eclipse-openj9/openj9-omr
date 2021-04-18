@@ -682,10 +682,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define d2luVPHandler constrainChildren
 #define d2buVPHandler constrainChildren
 #define d2cVPHandler constrainNarrowToChar
-#define iuRegLoadVPHandler constrainChildren
-#define luRegLoadVPHandler constrainChildren
-#define iuRegStoreVPHandler constrainChildren
-#define luRegStoreVPHandler constrainChildren
 #define cloadVPHandler constrainIntLoad
 #define cloadiVPHandler constrainIntLoad
 #define cstoreVPHandler constrainIntStore
@@ -719,9 +715,7 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define luaddhVPHandler constrainChildren
 #define caddVPHandler constrainAdd
 #define aiaddVPHandler constrainAddressRef
-#define aiuaddVPHandler constrainAddressRef
 #define aladdVPHandler constrainAddressRef
-#define aluaddVPHandler constrainAddressRef
 #define lusubhVPHandler constrainChildren
 #define csubVPHandler constrainSubtract
 #define imulhVPHandler constrainChildren

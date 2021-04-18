@@ -574,10 +574,6 @@ public:
 	static TR::Register *d2luEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *d2buEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *d2cEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iuRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *luRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iuRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *luRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *cloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *cloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *cstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -610,9 +606,7 @@ public:
 	static TR::Register *luaddhEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *caddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *aiaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *aiuaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *aladdEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *aluaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lusubhEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *csubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *imulhEvaluator(TR::Node *node, TR::CodeGenerator *cg);

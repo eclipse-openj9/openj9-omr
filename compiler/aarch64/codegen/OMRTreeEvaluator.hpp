@@ -673,14 +673,6 @@ public:
 	static TR::Register *ilatomicorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *branchEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *igotoEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *ixfrsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *lxfrsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *fxfrsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *dxfrsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *fintEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *dintEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *fnintEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *dnintEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *fsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dfloorEvaluator(TR::Node *node, TR::CodeGenerator *cg);

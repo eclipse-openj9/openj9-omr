@@ -649,14 +649,6 @@
 #define ilatomicorSimplifierHandler dftSimplifier
 #define branchSimplifierHandler dftSimplifier
 #define igotoSimplifierHandler dftSimplifier
-#define ixfrsSimplifierHandler dftSimplifier
-#define lxfrsSimplifierHandler dftSimplifier
-#define fxfrsSimplifierHandler dftSimplifier
-#define dxfrsSimplifierHandler dftSimplifier
-#define fintSimplifierHandler dftSimplifier
-#define dintSimplifierHandler dftSimplifier
-#define fnintSimplifierHandler dftSimplifier
-#define dnintSimplifierHandler dftSimplifier
 #define fsqrtSimplifierHandler fsqrtSimplifier
 #define dsqrtSimplifierHandler dsqrtSimplifier
 #define dfloorSimplifierHandler dftSimplifier

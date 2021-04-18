@@ -651,14 +651,6 @@
 #define _ilatomicorEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _branchEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _igotoEvaluator TR::TreeEvaluator::igotoEvaluator
-#define _ixfrsEvaluator TR::TreeEvaluator::ixfrsEvaluator
-#define _lxfrsEvaluator TR::TreeEvaluator::lxfrsEvaluator
-#define _fxfrsEvaluator TR::TreeEvaluator::dxfrsEvaluator
-#define _dxfrsEvaluator TR::TreeEvaluator::dxfrsEvaluator
-#define _fintEvaluator TR::TreeEvaluator::dintEvaluator
-#define _dintEvaluator TR::TreeEvaluator::dintEvaluator
-#define _fnintEvaluator TR::TreeEvaluator::dnintEvaluator
-#define _dnintEvaluator TR::TreeEvaluator::dnintEvaluator
 #define _fsqrtEvaluator TR::TreeEvaluator::fsqrtEvaluator
 #define _dsqrtEvaluator TR::TreeEvaluator::dsqrtEvaluator
 #define _dfloorEvaluator TR::TreeEvaluator::dfloorEvaluator

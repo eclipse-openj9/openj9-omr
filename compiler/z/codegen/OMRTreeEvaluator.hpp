@@ -757,8 +757,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
 
    static TR::Register *dsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *fsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *dnintEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *fnintEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
 // VM dependent routines
 

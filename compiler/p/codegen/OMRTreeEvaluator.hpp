@@ -489,11 +489,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *acmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *acmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *acmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *ixfrsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *lxfrsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *dxfrsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *dintEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *dnintEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *fsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *dsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *dfloorEvaluator(TR::Node *node, TR::CodeGenerator *cg);

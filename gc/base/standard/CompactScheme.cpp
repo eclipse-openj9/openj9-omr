@@ -1272,8 +1272,7 @@ MM_CompactScheme::doCompact(MM_EnvironmentStandard *env, MM_MemorySubSpace *memo
 			setFreeChunkSize(deadObject, deadObjectSize);
 #if defined(DEBUG)
 		if (deadObjectSize > 2*sizeof(uintptr_t)) {
-			uintptr_t junk = _extensions->objectModel.getSizeInBytesMultiSlotDeadObject(deadObject);
-			assume0(junk == deadObjectSize);
+			assume0(_extensions->objectModel.getSizeInBytesMultiSlotDeadObject(deadObject) == deadObjectSize);
 		}
 #endif /* DEBUG */
 		}

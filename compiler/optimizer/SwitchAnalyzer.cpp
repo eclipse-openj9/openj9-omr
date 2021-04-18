@@ -117,7 +117,6 @@ TR::SwitchAnalyzer::optDetailString() const throw()
 void TR::SwitchAnalyzer::analyze(TR::Node *node, TR::Block *block)
    {
    if (_blocksGeneratedByMe->isSet(block->getNumber())) return;
-   if (node->getFirstChild()->getOpCodeValue() == TR::trt) return;
 
    _switch     = node;
    _switchTree = block->getLastRealTreeTop();
@@ -1349,4 +1348,3 @@ bool TR::SwitchAnalyzer::keepAsUnique(SwitchInfo *info, int32_t itemNumber)
    {
    return false;
    }
-

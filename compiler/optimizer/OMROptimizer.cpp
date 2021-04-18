@@ -2612,23 +2612,6 @@ bool OMR::Optimizer::areNodesEquivalent(TR::Node *node1, TR::Node *node2,  TR::C
                return false;
             }
          }
-      else if (opCode1.getOpCodeValue() == TR::trtLookup)
-         {
-         if (node1->getCaseIndexUpperBound() != node2->getCaseIndexUpperBound())
-             return false;
-
-         for (int i = node1->getCaseIndexUpperBound()-1; i > 1; i--)
-            {
-            TR::Node *child1 = node1->getChild(i);
-            TR::Node *child2 = node2->getChild(i);
-            CASECONST_TYPE caseVal1 = child1->getCaseConstant();
-            CASECONST_TYPE caseVal2 = child2->getCaseConstant();
-
-            if (caseVal1 != caseVal2 ||
-                child1->getBranchDestination()->getNode() != child2->getBranchDestination()->getNode())
-               return false;
-            }
-         }
       }
 
    return true;

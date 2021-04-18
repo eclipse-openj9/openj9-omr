@@ -550,9 +550,6 @@ void TR_LocalReordering::insertDefinitionBetween(TR::TreeTop *treeTop, TR::TreeT
    if (treeTop == exitTree)
       return;
 
-   if ((treeTop->getNextTreeTop()->getNode()->getOpCodeValue() == TR::dbgFence) && (treeTop->getNextTreeTop()->getNextTreeTop() == exitTree))
-      return;
-
    TR::TreeTop *originalTree = treeTop;
    TR::Node *originalNode = originalTree->getNode();
    TR::TreeTop *currentTree = treeTop->getNextTreeTop();

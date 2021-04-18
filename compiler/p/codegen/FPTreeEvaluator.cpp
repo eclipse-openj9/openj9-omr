@@ -1917,35 +1917,6 @@ TR::Register *OMR::Power::TreeEvaluator::dsqrtEvaluator(TR::Node *node, TR::Code
    return trgReg;
    }
 
-TR::Register *OMR::Power::TreeEvaluator::getstackEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   const TR::PPCLinkageProperties &properties = cg->getProperties();
-
-   TR::Register *spReg = cg->machine()->getRealRegister(properties.getNormalStackPointerRegister());
-   TR::Register *trgReg = cg->allocateRegister();
-
-   generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, trgReg, spReg);
-
-   node->setRegister(trgReg);
-   return trgReg;
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::deallocaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Node * firstChild = node->getFirstChild();
-   TR::Register *srcReg = cg->evaluate(firstChild);
-   const TR::PPCLinkageProperties &properties = cg->getProperties();
-
-   // TODO: restore stack chain
-   TR::Register *spReg = cg->machine()->getRealRegister(properties.getNormalStackPointerRegister());
-
-   generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, spReg, srcReg);
-
-   node->setRegister(NULL);
-   cg->decReferenceCount(firstChild);
-   return NULL;
-   }
-
 TR::Register *OMR::Power::TreeEvaluator::xfRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *globalReg = node->getRegister();

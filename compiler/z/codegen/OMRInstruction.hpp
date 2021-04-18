@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -183,7 +183,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual bool isLabel()             { return _opcode.isLabel() > 0; }
    virtual bool isFloat()             { return _opcode.singleFPOp() > 0 || _opcode.doubleFPOp() > 0; }
    virtual bool isAdmin()             { return _opcode.isAdmin() > 0; }
-   virtual bool isDebugFence()        { return false; }
 
    virtual bool is4ByteLoad();
    virtual bool isRet();

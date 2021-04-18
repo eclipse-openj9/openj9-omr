@@ -3678,8 +3678,6 @@ TR::TreeTop * TR_TransformInlinedFunction::findSimpleCallReference(TR::TreeTop *
    if (callNode->getReferenceCount() == 2)
       {
       TR::TreeTop * nextTreeTop = callNodeTreeTop->getNextTreeTop();
-      while (nextTreeTop->getNode()->getOpCodeValue() == TR::dbgFence)
-         nextTreeTop = nextTreeTop->getNextTreeTop();
       TR::Node * nextTreeTopNode = nextTreeTop->getNode();
       TR::ILOpCode opcode = nextTreeTopNode->getOpCode();
       findCallNodeRecursionDepth = MAX_FIND_SIMPLE_CALL_REFERENCE_DEPTH;

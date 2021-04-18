@@ -246,7 +246,6 @@ TR::Node * byteswapSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier
 TR::Node * computeCCSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * arraysetSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * bitOpMemSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
-TR::Node * bitOpMemNDSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * arrayCmpWithPadSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * eaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * esubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);

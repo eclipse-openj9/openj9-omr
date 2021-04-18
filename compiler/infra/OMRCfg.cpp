@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -248,7 +248,6 @@ OMR::CFG::addSuccessorEdges(TR::Block * block)
       {
       case TR::table:
       case TR::lookup:
-      case TR::trtLookup:
          {
          vcount_t visitCount = comp()->incVisitCount();
          int32_t n = node->getCaseIndexUpperBound();
@@ -291,8 +290,6 @@ OMR::CFG::addSuccessorEdges(TR::Block * block)
       case TR::athrow:
          addEdge(block, getEnd());
          break;
-      case TR::Ret:
-         break; // pseudo node representing a ret opcode
       case TR::NULLCHK:
          if (node->getFirstChild()->getOpCodeValue() == TR::athrow)
             addEdge(block, getEnd());

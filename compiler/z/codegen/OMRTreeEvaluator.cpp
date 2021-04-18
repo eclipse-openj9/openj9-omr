@@ -110,7 +110,6 @@
 #ifdef J9_PROJECT_SPECIFIC
 #include "z/codegen/S390Register.hpp"
 #endif
-#include "z/codegen/TranslateEvaluator.hpp"
 
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -12492,16 +12491,6 @@ TR_S390ComputeCC::saveHostCC(TR::Node *node, TR::Register *ccReg, TR::CodeGenera
    generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, ccReg, ccReg, 60, 63|0x80, 36);
    }
 
-TR::Register *OMR::Z::TreeEvaluator::loadAutoOffsetEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *reg = cg->allocateRegister();
-   TR::MemoryReference *mr = generateS390MemoryReference(cg->machine()->getRealRegister(TR::RealRegister::GPR0), 0, cg);
-   mr->setSymbolReference(node->getSymbolReference());
-   generateRXInstruction(cg, TR::InstOpCode::LA, node, reg, mr);
-   cg->stopUsingRegister(reg);
-   return reg;
-   }
-
 /**
  * Determines the appropriate branch mask to use for a BRC following a TM/TMLL
  * resulting from a butest.
@@ -13874,11 +13863,6 @@ TR::Register* arraycmpWithPadHelper::generate()
    if(!isFoldedIf && genResultReg)
       node->setRegister(retValReg);
    return retValReg;
-   }
-
-TR::Register *OMR::Z::TreeEvaluator::trtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return inlineTrtEvaluator(node, cg, TR::InstOpCode::TRT, false, false, NULL);
    }
 
 TR::Register *OMR::Z::TreeEvaluator::integerHighestOneBit(TR::Node *node, TR::CodeGenerator *cg)

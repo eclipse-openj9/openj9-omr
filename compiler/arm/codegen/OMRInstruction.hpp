@@ -184,7 +184,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    // @@ virtual bool     isSync()           {return _opcode.isSync();}
    // @@ virtual bool     isAdmin()          {return _opcode.isAdmin();}
    // @@ virtual bool     is4ByteLoad()      {return (getOpCodeValue() == TR::InstOpCode::lwz);}
-   virtual bool     isDebugFence()     {return false;};
    virtual int32_t  getMachineOpCode();
    // @@ virtual bool     isBeginBlock();
    // @@ virtual bool     isFloat()          {return _opcode.isFloat();}

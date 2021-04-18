@@ -80,7 +80,6 @@
 #ifdef J9_PROJECT_SPECIFIC
 #include "z/codegen/S390Register.hpp"
 #endif
-#include "z/codegen/TranslateEvaluator.hpp"
 
 extern TR::Instruction *
 generateS390PackedCompareAndBranchOps(TR::Node * node,
@@ -592,16 +591,6 @@ lcmpHelper64(TR::Node * node, TR::CodeGenerator * cg)
 
 TR::Register *
 OMR::Z::TreeEvaluator::branchEvaluator(TR::Node * node, TR::CodeGenerator *cg)
-   {
-   return NULL;
-   }
-TR::Register *
-OMR::Z::TreeEvaluator::ibranchEvaluator(TR::Node * node, TR::CodeGenerator *cg)
-   {
-   return NULL;
-   }
-TR::Register *
-OMR::Z::TreeEvaluator::mbranchEvaluator(TR::Node * node, TR::CodeGenerator *cg)
    {
    return NULL;
    }
@@ -1856,7 +1845,7 @@ bool isSwitchFoldableNoncall(TR::Node * node)
    }
 
 /**
- * Lookupswitch/trtLoopup (child1 is selector expression, child2
+ * Lookupswitch (child1 is selector expression, child2
  * the default destination, subsequent children are case nodes)
  */
 TR::Register *
@@ -1879,13 +1868,6 @@ OMR::Z::TreeEvaluator::lookupEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register *tempReg = NULL;
    TR::Instruction *cursor = NULL;
 
-   if (node->getOpCodeValue() == TR::trtLookup)
-      {
-      tempReg = cg->allocateRegister();
-      //No need to set up regDep for tempReg as no need to take care of its spill for any branch
-      //which dest is out of trtLookup block.
-      }
-
    // Handle non default cases
    for (int32_t ii = 2; ii < numChildren; ii++)
       {
@@ -1899,25 +1881,16 @@ OMR::Z::TreeEvaluator::lookupEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       // Compare a key value
       TR::InstOpCode::S390BranchCondition brCond = TR::InstOpCode::COND_NOP;
 
-      if (node->getOpCodeValue() == TR::trtLookup)
+      if (type.isInt64())
          {
-         caseVal = child->getCaseConstant();
-         //Need to check tryTwoBranchPattern for a proper conversion.
-         TR_ASSERT(0, "Only caseCC and caseR2 supported\n");
+         generateS390ImmOp(cg, TR::InstOpCode::CG, node, selectorReg, selectorReg, child->getCaseConstant());
          }
       else
          {
-         if (type.isInt64())
-            {
-            generateS390ImmOp(cg, TR::InstOpCode::CG, node, selectorReg, selectorReg, child->getCaseConstant());
-            }
-         else
-            {
-            generateS390ImmOp(cg, TR::InstOpCode::C, node, selectorReg, selectorReg, child->getCaseConstant());
-            }
-
-         brCond = TR::InstOpCode::COND_BE;
+         generateS390ImmOp(cg, TR::InstOpCode::C, node, selectorReg, selectorReg, child->getCaseConstant());
          }
+
+      brCond = TR::InstOpCode::COND_BE;
 
       // If key == val -> branch to target BB
       if (child->getNumChildren() > 0)
@@ -1943,15 +1916,6 @@ OMR::Z::TreeEvaluator::lookupEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       }
 
    bool needDefaultBranch = true;
-
-   //Peek if the default branch is to the immediately following block, only for trtlookup
-   if (node->getOpCodeValue() == TR::trtLookup)
-      {
-      TR::TreeTop *defaultDest = defaultChild->getBranchDestination();
-      TR::Block *defaultDestBlock = defaultDest->getNode()->getBlock();
-      TR::Block *fallThroughBlock = cg->getCurrentEvaluationBlock()->getNextBlock();
-      needDefaultBranch = defaultDestBlock != fallThroughBlock;
-      }
 
    // Branch to Default
    if (defaultChild->getNumChildren() > 0)

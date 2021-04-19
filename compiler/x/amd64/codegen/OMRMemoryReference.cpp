@@ -500,15 +500,18 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
          }
       else if (sr.getSymbol()->isDebugCounter())
          {
-         TR::DebugCounterBase *counter = cg->comp()->getCounterFromStaticAddress(&sr);
-         if (counter == NULL)
+         if (cg->needRelocationsForStatics())
             {
-            cg->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad\n");
+            TR::DebugCounterBase *counter = cg->comp()->getCounterFromStaticAddress(&sr);
+            if (counter == NULL)
+               {
+               cg->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad\n");
+               }
+            TR::DebugCounter::generateRelocation(cg->comp(),
+                                                 displacementLocation,
+                                                 containingInstruction->getNode(),
+                                                 counter);
             }
-         TR::DebugCounter::generateRelocation(cg->comp(),
-                                              displacementLocation,
-                                              containingInstruction->getNode(),
-                                              counter);
          }
       }
    else

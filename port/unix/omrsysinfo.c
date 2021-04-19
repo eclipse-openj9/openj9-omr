@@ -83,10 +83,10 @@
 #include "omrsimap.h"
 #endif /* defined(J9ZOS390) */
 
-#if defined(LINUXPPC) || (defined(S390) && defined(LINUX) && !defined(J9ZTPF))
+#if defined(LINUXPPC) || (defined(S390) && defined(LINUX) && !defined(J9ZTPF)) || (defined(AARCH64) && defined(LINUX))
 #include "auxv.h"
 #include <strings.h>
-#endif /* defined(LINUXPPC) || (defined(S390) && defined(LINUX) && !defined(J9ZTPF)) */
+#endif /* defined(LINUXPPC) || (defined(S390) && defined(LINUX) && !defined(J9ZTPF)) || (defined(AARCH64) && defined(LINUX)) */
 
 #if (defined(S390))
 #include "omrportpriv.h"
@@ -264,6 +264,11 @@ const char * omrsysinfo_get_s390_processor_feature_name(uint32_t feature);
 #if defined(RISCV)
 static intptr_t omrsysinfo_get_riscv_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
 #endif
+
+#if defined(AARCH64) && defined(LINUX)
+static const char *omrsysinfo_get_aarch64_processor_feature_name(uint32_t feature);
+static intptr_t omrsysinfo_get_linux_aarch64_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
+#endif /* defined(AARCH64) && defined(LINUX) */
 
 static const char getgroupsErrorMsgPrefix[] = "getgroups : ";
 
@@ -632,6 +637,8 @@ omrsysinfo_get_processor_description(struct OMRPortLibrary *portLibrary, OMRProc
 		rc = omrsysinfo_get_s390_description(portLibrary, desc);
 #elif defined(RISCV)
 		rc = omrsysinfo_get_riscv_description(portLibrary, desc);
+#elif (defined(AARCH64) && defined(LINUX))
+		rc = omrsysinfo_get_linux_aarch64_description(portLibrary, desc);
 #endif
 	}
 
@@ -704,6 +711,8 @@ omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32
 	rc = omrsysinfo_get_s390_processor_feature_name(feature);
 #elif (defined(AIXPPC) || defined(LINUXPPC))
 	rc = omrsysinfo_get_ppc_processor_feature_name(feature);
+#elif (defined(AARCH64) && defined(LINUX))
+	rc = omrsysinfo_get_aarch64_processor_feature_name(feature);
 #endif
 	Trc_PRT_sysinfo_get_processor_feature_name_Exit(rc);
 	return rc;
@@ -1682,6 +1691,152 @@ omrsysinfo_get_riscv_description(struct OMRPortLibrary *portLibrary, OMRProcesso
 	return 0;
 }
 #endif /* defined(RISCV) */
+
+#if defined(AARCH64) && defined(LINUX)
+static const char *
+omrsysinfo_get_aarch64_processor_feature_name(uint32_t feature)
+{
+	switch (feature) {
+	case OMR_FEATURE_ARM64_FP:
+		return "fp";
+	case OMR_FEATURE_ARM64_ASIMD:
+		return "asimd";
+	case OMR_FEATURE_ARM64_EVTSTRM:
+		return "evtstrm";
+	case OMR_FEATURE_ARM64_AES:
+		return "aes";
+	case OMR_FEATURE_ARM64_PMULL:
+		return "pmull";
+	case OMR_FEATURE_ARM64_SHA1:
+		return "sha1";
+	case OMR_FEATURE_ARM64_SHA256:
+		return "sha2";
+	case OMR_FEATURE_ARM64_CRC32:
+		return "crc32";
+	case OMR_FEATURE_ARM64_LSE:
+		return "atomics";
+	case OMR_FEATURE_ARM64_FP16:
+		return "fphp";
+	case OMR_FEATURE_ARM64_ASIMDHP:
+		return "asimdhp";
+	case OMR_FEATURE_ARM64_CPUID:
+		return "cpuid";
+	case OMR_FEATURE_ARM64_RDM:
+		return "asimdrdm";
+	case OMR_FEATURE_ARM64_JSCVT:
+		return "jscvt";
+	case OMR_FEATURE_ARM64_FCMA:
+		return "fcma";
+	case OMR_FEATURE_ARM64_LRCPC:
+		return "lrcpc";
+	case OMR_FEATURE_ARM64_DPB:
+		return "dcpop";
+	case OMR_FEATURE_ARM64_SHA3:
+		return "sha3";
+	case OMR_FEATURE_ARM64_SM3:
+		return "sm3";
+	case OMR_FEATURE_ARM64_SM4:
+		return "sm4";
+	case OMR_FEATURE_ARM64_DOTPROD:
+		return "asimddp"; /* Advanced SIMD Dot Product */
+	case OMR_FEATURE_ARM64_SHA512:
+		return "sha512";
+	case OMR_FEATURE_ARM64_SVE:
+		return "sve";
+	case OMR_FEATURE_ARM64_FHM:
+		return "asimdfhm";
+	case OMR_FEATURE_ARM64_DIT:
+		return "dit";
+	case OMR_FEATURE_ARM64_LSE2:
+		return "uscat"; /* unaligned single copy atomicity */
+	case OMR_FEATURE_ARM64_LRCPC2:
+		return "ilrcpc"; /* immediate variants of LRCPC */
+	case OMR_FEATURE_ARM64_FLAGM:
+		return "flagm";
+	case OMR_FEATURE_ARM64_SSBS:
+		return "ssbs";
+	case OMR_FEATURE_ARM64_SB:
+		return "sb";
+	case OMR_FEATURE_ARM64_PAUTH:
+		return "paca"; /* pointer authentication code to the address */
+	case OMR_FEATURE_ARM64_PACG:
+		return "pacg"; /* pointer authentication code generic */
+	case OMR_FEATURE_ARM64_DPB2:
+		return "dcpodp"; /* data cache point of deep persistence */
+	case OMR_FEATURE_ARM64_SVE2:
+		return "sve2";
+	case OMR_FEATURE_ARM64_SVE_AES:
+		return "sveaes";
+	case OMR_FEATURE_ARM64_SVE_PMULL128:
+		return "svepmull";
+	case OMR_FEATURE_ARM64_SVE_BITPERM:
+		return "svebitperm";
+	case OMR_FEATURE_ARM64_SVE_SHA3:
+		return "svesha3";
+	case OMR_FEATURE_ARM64_SVE_SM4:
+		return "svesm4";
+	case OMR_FEATURE_ARM64_FLAGM2:
+		return "flagm2";
+	case OMR_FEATURE_ARM64_FRINTTS:
+		return "frint";	
+	case OMR_FEATURE_ARM64_SVE_I8MM:
+		return "svei8mm";
+	case OMR_FEATURE_ARM64_F32MM:
+		return "svef32mm";
+	case OMR_FEATURE_ARM64_F64MM:
+		return "svef64mm";
+	case OMR_FEATURE_ARM64_SVE_BF16:
+		return "svebf16";
+	case OMR_FEATURE_ARM64_I8MM:
+		return "i8mm";
+	case OMR_FEATURE_ARM64_BF16:
+		return "bf16";
+	case OMR_FEATURE_ARM64_DGH:
+		return "dgh";
+	case OMR_FEATURE_ARM64_RNG:
+		return "rng";
+	case OMR_FEATURE_ARM64_BTI:
+		return "bti";
+	case OMR_FEATURE_ARM64_MTE2:
+		return "mte";
+	default:
+		return "null";
+	}
+	return "null";
+}
+
+/**
+ * @internal
+ * Populates OMRProcessorDesc *desc on Linux ARM64
+ *
+ * @param[in] desc pointer to the struct that will contain the CPU type and features.
+ *
+ * @return 0 on success, -1 on failure
+ */
+static intptr_t
+omrsysinfo_get_linux_aarch64_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc)
+{
+	/* initialize auxv prior to querying the auxv */
+	if (prefetch_auxv() != 0) {
+		desc->processor = OMR_PROCESSOR_ARM64_V8_A;
+		desc->physicalProcessor = OMR_PROCESSOR_ARM64_V8_A;
+		desc->features[0] = 0;
+		desc->features[1] = 0;
+		return -1;
+	}
+
+	desc->processor = OMR_PROCESSOR_ARM64_V8_A;
+	desc->physicalProcessor = desc->processor;
+	/* Linux ARM64 features:
+	 * Can't error check these calls as both 0 & -1 are valid
+	 * bit fields that could be returned by this query.
+	 */
+	desc->features[0] = query_auxv(AT_HWCAP);
+	desc->features[1] = query_auxv(AT_HWCAP2);
+
+	return 0;
+}
+#endif /* defined(AARCH64) && defined(LINUX) */
 
 intptr_t
 omrsysinfo_get_env(struct OMRPortLibrary *portLibrary, const char *envVar, char *infoString, uintptr_t bufSize)

@@ -311,8 +311,7 @@ public:
              getOpCodeValue() != TR::arraycopy  &&
              getOpCodeValue() != TR::arrayset   &&
              getOpCodeValue() != TR::bitOpMem   &&
-             getOpCodeValue() != TR::arraycmp   &&
-             getOpCodeValue() != TR::arraycmpWithPad;
+             getOpCodeValue() != TR::arraycmp;
       }
 
    bool isCompareDouble()

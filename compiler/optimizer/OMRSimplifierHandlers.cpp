@@ -17568,16 +17568,6 @@ TR::Node *bitOpMemSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    return node;
    }
 
-// arraycmpWithPad simplifier
-//
-TR::Node *arrayCmpWithPadSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
-   {
-   simplifyChildren(node, block, s);
-
-
-   return node;
-   }
-
 TR::Node *NewSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
    simplifyChildren(node, block, s);

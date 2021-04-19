@@ -611,7 +611,6 @@
 #define _long2StringEvaluator TR::TreeEvaluator::long2StringEvaluator
 #define _bitOpMemEvaluator TR::TreeEvaluator::bitOpMemEvaluator
 #define _arraycmpEvaluator TR::TreeEvaluator::arraycmpEvaluator
-#define _arraycmpWithPadEvaluator TR::TreeEvaluator::arraycmpEvaluatorWithPad
 #define _allocationFenceEvaluator TR::TreeEvaluator::NOPEvaluator
 #define _loadFenceEvaluator TR::TreeEvaluator::barrierFenceEvaluator
 #define _storeFenceEvaluator TR::TreeEvaluator::barrierFenceEvaluator

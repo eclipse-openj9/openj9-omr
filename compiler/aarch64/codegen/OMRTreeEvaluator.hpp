@@ -631,7 +631,6 @@ public:
 	static TR::Register *long2StringEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *bitOpMemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *arraycmpWithPadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *allocationFenceEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *loadFenceEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *storeFenceEvaluator(TR::Node *node, TR::CodeGenerator *cg);

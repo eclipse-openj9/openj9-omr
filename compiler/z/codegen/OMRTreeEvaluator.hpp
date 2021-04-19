@@ -704,7 +704,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *long2StringEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bitOpMemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *arraycmpEvaluatorWithPad(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *BBStartEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *BBEndEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 

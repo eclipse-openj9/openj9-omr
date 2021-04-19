@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -48,7 +48,12 @@ class OMR_EXTENSIBLE CPU : public OMR::CPU
    {
 protected:
 
-   CPU() : OMR::CPU() {}
+   CPU() : OMR::CPU()
+      {
+      _processorDescription.processor = OMR_PROCESSOR_ARM64_V8_A;
+      _processorDescription.physicalProcessor = OMR_PROCESSOR_ARM64_V8_A;
+      memset(_processorDescription.features, 0, OMRPORT_SYSINFO_FEATURES_SIZE*sizeof(uint32_t));
+      }
    CPU(const OMRProcessorDesc& processorDescription) : OMR::CPU(processorDescription) {}
 
 public:
@@ -111,6 +116,13 @@ public:
     */
    bool getSupportsHardware64bitRotate(bool requireRotateToLeft=false) { return !requireRotateToLeft; } // only rotate to right is available
 
+   /**
+    * @brief Answers if the specified feature is supported by this cpu
+    *
+    * @param[in] feature: feature bit
+    * @returns true if feature is supported
+    */
+   bool supportsFeature(uint32_t feature);
    };
 
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,7 +20,9 @@
  *******************************************************************************/
 
 #include "env/CPU.hpp"
+#include "env/CompilerEnv.hpp"
 #include "env/jittypes.h"
+#include "omrport.h"
 
 bool
 OMR::ARM64::CPU::isTargetWithinUnconditionalBranchImmediateRange(intptr_t targetAddress, intptr_t sourceAddress)
@@ -28,4 +30,16 @@ OMR::ARM64::CPU::isTargetWithinUnconditionalBranchImmediateRange(intptr_t target
    intptr_t range = targetAddress - sourceAddress;
    return range <= self()->maxUnconditionalBranchImmediateForwardOffset() &&
           range >= self()->maxUnconditionalBranchImmediateBackwardOffset();
+   }
+
+bool
+OMR::ARM64::CPU::supportsFeature(uint32_t feature)
+   {
+   if (TR::Compiler->omrPortLib == NULL)
+      {
+      return false;
+      }
+
+   OMRPORT_ACCESS_FROM_OMRPORT(TR::Compiler->omrPortLib);
+   return (TRUE == omrsysinfo_processor_has_feature(&_processorDescription, feature));
    }

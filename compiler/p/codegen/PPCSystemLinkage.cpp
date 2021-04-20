@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1445,7 +1445,7 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
                        (refNum-1)*TR::Compiler->om.sizeofReferenceAddress(),
                        TR::Compiler->om.sizeofReferenceAddress()));
             else
-               loadAddressConstant(cg(), callNode, (int64_t)runtimeHelperValue((TR_RuntimeHelper)refNum), geReg);
+               loadAddressConstant(cg(), callNode, (int64_t)runtimeHelperValue((TR_RuntimeHelper)refNum), geReg, NULL, false, TR_AbsoluteHelperAddress);
             }
          }
 

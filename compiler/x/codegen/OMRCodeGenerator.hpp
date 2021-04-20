@@ -707,9 +707,6 @@ protected:
 
    TR::RealRegister             *_frameRegister;
 
-   TR::SymbolReference             *_wordConversionTemp;
-   TR::SymbolReference             *_doubleWordConversionTemp;
-   TR::SymbolReference             *_currentTimeMillisTemp;
    TR::SymbolReference             *_nanoTimeTemp;
 
    TR::Instruction                 *_lastCatchAppendInstruction;

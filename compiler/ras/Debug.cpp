@@ -1662,6 +1662,8 @@ TR_Debug::getName(TR::SymbolReference * symRef)
              return "<eaEscapeHelper>";
          case TR::SymbolReferenceTable::computedStaticCallSymbol:
              return "<computedStaticCallSymbol>";
+         case TR::SymbolReferenceTable::objectEqualityComparisonSymbol:
+             return "<objectEqualityComparison>";
          }
       }
 

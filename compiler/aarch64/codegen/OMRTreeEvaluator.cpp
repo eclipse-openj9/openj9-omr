@@ -418,7 +418,7 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, T
 
    if (needSync)
       {
-      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xF); // dmb SY
+      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0x9); // dmb ishld
       }
 
    tempMR->decNodeReferenceCounts(cg);
@@ -479,7 +479,7 @@ OMR::ARM64::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
    if (needSync)
       {
-      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xF); // dmb SY
+      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0x9); // dmb ishld
       }
 
    tempMR->decNodeReferenceCounts(cg);
@@ -553,7 +553,7 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
 
    if (needSync)
       {
-      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xE); // dmb ST
+      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xA); // dmb ishst
       }
    generateMemSrc1Instruction(cg, op, node, tempMR, cg->evaluate(valueChild));
    if (needSync)
@@ -561,7 +561,7 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
       // ordered and lazySet operations will not generate a post-write sync
       if (!lazyVolatile)
          {
-         generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xF); // dmb SY
+         generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xB); // dmb ish
          }
       }
 

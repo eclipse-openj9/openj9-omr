@@ -1569,6 +1569,11 @@ void TR::PPCTrg1Src1Instruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldXB(self(), cursor, src);
          break;
 
+      case FORMAT_RT_VRB:
+         fillFieldRT(self(), cursor, trg);
+         fillFieldVRB(self(), cursor, src);
+         break;
+
       default:
          TR_ASSERT_FATAL_WITH_INSTRUCTION(self(), false, "Format %d cannot be binary encoded by PPCTrg1Src1Instruction", getOpCode().getFormat());
       }
@@ -2431,6 +2436,7 @@ void TR::PPCTrg1MemInstruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillMemoryReferenceRARB(self(), cursor, memRef);
          break;
 
+      case FORMAT_XT_RA_RB:
       case FORMAT_XT_RA_RB_MEM:
          fillFieldXT(self(), cursor, trg);
          fillMemoryReferenceRARB(self(), cursor, memRef);

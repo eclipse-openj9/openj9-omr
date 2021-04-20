@@ -216,6 +216,15 @@ FORMAT_RT_BFA,
 // +------+----------+----------+----------+----------------------+
 FORMAT_VRT_VRB,
 
+// Format for instructions with an RT field encoding the target register and a VRB field
+// encoding the only source vector register:
+//
+// +------+----------+----------+----------+----------------------+
+// |      | RT       |          | VRB      |                      |
+// | 0    | 6        | 11       | 16       | 21                   |
+// +------+----------+----------+----------+----------------------+
+FORMAT_RT_VRB,
+
 // Format for instructions with an XT field encoding the target VSX register and an XB field
 // encoding the only source VSX register:
 //

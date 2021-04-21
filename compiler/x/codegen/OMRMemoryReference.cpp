@@ -300,7 +300,7 @@ OMR::X86::MemoryReference::setUnresolvedDataSnippet(TR::UnresolvedDataSnippet *s
 TR::X86DataSnippet*
 OMR::X86::MemoryReference::getDataSnippet()
    {
-   return (self()->hasUnresolvedDataSnippet() || self()->hasUnresolvedVirtualCallSnippet()) ? NULL : (TR::X86DataSnippet*)_dataSnippet;
+   return self()->hasUnresolvedDataSnippet() ? NULL : (TR::X86DataSnippet*)_dataSnippet;
    }
 
 

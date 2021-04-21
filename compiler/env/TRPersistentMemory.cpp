@@ -40,7 +40,6 @@
 namespace TR { class Compilation; }
 namespace TR { class PersistentInfo; }
 
-extern TR::Monitor *memoryAllocMonitor;
 extern const char * objectName[];
 
 namespace TR

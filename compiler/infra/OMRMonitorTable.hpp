@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -46,7 +46,6 @@ class OMR_EXTENSIBLE MonitorTable
    void free() { TR_UNIMPLEMENTED(); }
    void removeAndDestroy(TR::Monitor *monitor) { TR_UNIMPLEMENTED(); }
 
-   TR::Monitor *getMemoryAllocMonitor() { return _memoryAllocMonitor; }
    TR::Monitor *getScratchMemoryPoolMonitor() { return _scratchMemoryPoolMonitor; }
 
    protected:
@@ -54,10 +53,6 @@ class OMR_EXTENSIBLE MonitorTable
    TR::MonitorTable *self();
 
    static TR::MonitorTable *_instance;
-
-   // Used by TR_PersistentMemory
-   //
-   TR::Monitor *_memoryAllocMonitor;
 
    // Used by SCRATCH segments allocations
    // A copy of this goes into TR_PersistentMemory as well

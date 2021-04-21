@@ -2806,7 +2806,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::GCRegisterMap * map)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR::list<TR::Snippet*> & snippetList, bool isWarm)
+TR_Debug::print(TR::FILE *pOutFile, TR::list<TR::Snippet*> & snippetList)
    {
    if (pOutFile == NULL)
       return;
@@ -2822,7 +2822,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::list<TR::Snippet*> & snippetList, bool i
 
 
 void
-TR_Debug::print(TR::FILE *pOutFile, List<TR::Snippet> & snippetList, bool isWarm)
+TR_Debug::print(TR::FILE *pOutFile, List<TR::Snippet> & snippetList)
    {
    if (pOutFile == NULL)
       return;

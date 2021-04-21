@@ -644,9 +644,9 @@ public:
    TR::S390ConstantDataSnippet * createLiteralPoolSnippet(TR::Node * node);
    TR::S390ConstantInstructionSnippet *createConstantInstruction(TR::Node *node, TR::Instruction * instr);
    TR::S390ConstantDataSnippet *findOrCreateConstant(TR::Node *, void *c, uint16_t size);
-   TR::S390ConstantDataSnippet *findOrCreate2ByteConstant(TR::Node *, int16_t c, bool isWarm = 0);
-   TR::S390ConstantDataSnippet *findOrCreate4ByteConstant(TR::Node *, int32_t c, bool isWarm = 0);
-   TR::S390ConstantDataSnippet *findOrCreate8ByteConstant(TR::Node *, int64_t c, bool isWarm = 0);
+   TR::S390ConstantDataSnippet *findOrCreate2ByteConstant(TR::Node *, int16_t c);
+   TR::S390ConstantDataSnippet *findOrCreate4ByteConstant(TR::Node *, int32_t c);
+   TR::S390ConstantDataSnippet *findOrCreate8ByteConstant(TR::Node *, int64_t c);
    TR::S390ConstantDataSnippet *Create4ByteConstant(TR::Node *, int32_t c, bool writable);
    TR::S390ConstantDataSnippet *Create8ByteConstant(TR::Node *, int64_t c, bool writable);
    TR::S390ConstantDataSnippet *CreateConstant(TR::Node *, void *c, uint16_t size, bool writable);

@@ -3886,19 +3886,19 @@ OMR::Z::CodeGenerator::createLiteralPoolSnippet(TR::Node * node)
    }
 
 TR::S390ConstantDataSnippet *
-OMR::Z::CodeGenerator::findOrCreate2ByteConstant(TR::Node * node, int16_t c, bool isWarm)
+OMR::Z::CodeGenerator::findOrCreate2ByteConstant(TR::Node * node, int16_t c)
    {
    return self()->findOrCreateConstant(node, &c, 2);
    }
 
 TR::S390ConstantDataSnippet *
-OMR::Z::CodeGenerator::findOrCreate4ByteConstant(TR::Node * node, int32_t c, bool isWarm)
+OMR::Z::CodeGenerator::findOrCreate4ByteConstant(TR::Node * node, int32_t c)
    {
    return self()->findOrCreateConstant(node, &c, 4);
    }
 
 TR::S390ConstantDataSnippet *
-OMR::Z::CodeGenerator::findOrCreate8ByteConstant(TR::Node * node, int64_t c, bool isWarm)
+OMR::Z::CodeGenerator::findOrCreate8ByteConstant(TR::Node * node, int64_t c)
    {
    return self()->findOrCreateConstant(node, &c, 8);
    }

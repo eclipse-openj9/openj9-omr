@@ -63,7 +63,6 @@ namespace OMR { typedef OMR::X86::MemoryReference MemoryReferenceConnector; }
 #define MemRef_UnresolvedDataSnippet              0x0002
 #define MemRef_NeedExternalCodeAbsoluteRelocation 0x0004
 #define MemRef_ForceSIBByte                       0x0008
-#define MemRef_UnresolvedVirtualCallSnippet       0x0010
 #define MemRef_IgnoreVolatile                     0x0020
 #define MemRef_ProcessAsFPVolatile                0x0040
 #define MemRef_ProcessAsLongVolatileLow           0x0040
@@ -256,9 +255,6 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
 
    bool hasUnresolvedDataSnippet()  {return _flags.testAny(MemRef_UnresolvedDataSnippet);}
    void setHasUnresolvedDataSnippet() {_flags.set(MemRef_UnresolvedDataSnippet);}
-
-   bool hasUnresolvedVirtualCallSnippet()  {return _flags.testAny(MemRef_UnresolvedVirtualCallSnippet);}
-   void setHasUnresolvedVirtualCallSnippet() {_flags.set(MemRef_UnresolvedVirtualCallSnippet);}
 
    bool inUpcastingMode() {return _flags.testAny(MemRef_UpcastingMode);}
    void setInUpcastingMode(bool b = true) {_flags.set(MemRef_UpcastingMode, b);}

@@ -505,6 +505,24 @@ public:
    static uint32_t registerBitMask(int32_t reg);
 
    /**
+    * @brief Generates an inlined instruction sequence instead of a direct call
+    *
+    * @param[in]          node: node
+    * @param[inout]  resultReg: resultReg
+    *
+    * @return true if an inlined instruction sequence is generated
+    */
+   bool inlineDirectCall(TR::Node *node, TR::Register *&resultReg);
+
+   /**
+    * @brief Answers if intrinsics for the symbol is supported
+    *
+    * @param[in] symbol: symbol
+    * @return true if intrinsics for the symbol is supported
+    */
+   bool supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol);
+
+   /**
     * @brief Answers whether bit operations are supported or not
     * @return true if supported, false otherwise
     */

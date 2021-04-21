@@ -793,7 +793,9 @@ static bool isImm7OffsetGPRInstruction(uint32_t enc)
 static bool isExclusiveMemAccessInstruction(TR::InstOpCode::Mnemonic op)
    {
    return (op == TR::InstOpCode::ldxrx || op == TR::InstOpCode::ldxrw ||
-           op == TR::InstOpCode::stxrx || op == TR::InstOpCode::stxrw);
+           op == TR::InstOpCode::ldaxrx || op == TR::InstOpCode::ldaxrw ||
+           op == TR::InstOpCode::stxrx || op == TR::InstOpCode::stxrw ||
+           op == TR::InstOpCode::stlxrx || op == TR::InstOpCode::stlxrw);
    }
 
 

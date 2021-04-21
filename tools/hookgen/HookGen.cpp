@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2015, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -398,7 +398,7 @@ HookGen::createFile(char *path, const char *fileName)
 
 	FILE *file = fopen(buff, "wb");
 #if defined(DEBUG)
-	fprintf(stderr, "Opening %s for writing\n", temp);
+	fprintf(stderr, "Opening %s for writing\n", buff);
 #endif /* DEBUG */
 
 	free(buff);

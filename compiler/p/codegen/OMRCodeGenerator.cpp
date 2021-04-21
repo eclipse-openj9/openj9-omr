@@ -910,6 +910,11 @@ bool OMR::Power::CodeGenerator::isSnippetMatched(TR::Snippet *snippet, int32_t s
       }
    }
 
+bool OMR::Power::CodeGenerator::supportsInliningOfIsInstance()
+   {
+   return !self()->comp()->getOption(TR_DisableInlineIsInstance);
+   }
+
 bool OMR::Power::CodeGenerator::hasDataSnippets()
    {
    return (_constantData==NULL)?false:true;

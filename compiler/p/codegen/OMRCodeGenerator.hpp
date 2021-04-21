@@ -207,6 +207,7 @@ public:
    bool canEmitDataForExternallyRelocatableInstructions();
 
    bool inlineDirectCall(TR::Node *node, TR::Register *&resultReg);
+   bool supportsInliningOfIsInstance();
 
    /**
     * Return the proper linkage for this call, especially for the case when the methodSymbol

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -823,6 +823,8 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 /* J9SourceJ9StrFTime*/
 extern J9_CFUNC uintptr_t
 omrstr_ftime(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, const char *format, int64_t timeMillis);
+extern J9_CFUNC uintptr_t
+omrstr_ftime_ex(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, const char *format, int64_t timeMillis, uint32_t flags);
 
 /* J9SourceJ9Time*/
 extern J9_CFUNC uintptr_t

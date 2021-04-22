@@ -22,9 +22,8 @@
 
 #if defined(OMR_OS_WINDOWS)
 #include <windows.h>
-#else
-#include <time.h>
 #endif /* defined(OMR_OS_WINDOWS) */
+#include <time.h>
 
 #include "omrportasserts.h"
 
@@ -45,7 +44,7 @@
 
 #if defined(LINUX) || defined(AIXPPC) || defined(J9ZOS390) || defined(OSX)
 #include <iconv.h>
-typedef iconv_t  charconvState_t;
+typedef iconv_t charconvState_t;
 #define J9STR_USE_ICONV
 /* need to get the EBCDIC version of nl_langinfo */
 #define J9_USE_ORIG_EBCDIC_LANGINFO 1
@@ -88,14 +87,13 @@ extern const char *utf8;
 extern const char *utf16;
 extern const char *ebcdic;
 
-
-typedef union {
+typedef union J9FormatValue {
 	uint64_t u64;
 	double dbl;
 	void *ptr;
 } J9FormatValue;
 
-typedef struct {
+typedef struct J9FormatSpecifier {
 	uint8_t tag;
 	uint8_t index;
 	uint8_t widthIndex;
@@ -106,7 +104,7 @@ typedef struct {
 #define J9F_MAX_SPECS 16
 #define J9F_MAX_ARGS (J9F_MAX_SPECS * 3)
 
-typedef struct {
+typedef struct J9FormatData {
 	const char *formatString;
 	J9FormatValue value[J9F_MAX_ARGS];
 	uint8_t valueType[J9F_MAX_ARGS];
@@ -121,6 +119,7 @@ typedef struct J9TimeInfo {
 	uint32_t minute;
 	uint32_t hour;
 	uint32_t day;
+	uint32_t weekday;
 	uint32_t month;
 	uint32_t year;
 } J9TimeInfo;
@@ -156,11 +155,11 @@ static uintptr_t writeSpec(J9FormatData *data, J9FormatSpecifier *spec, char *re
 static const char *parseIndex(const char *format, uint8_t *result);
 static uintptr_t writeStringToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t precision, const char *value, uint8_t tag);
 static const char *parsePrecision(const char *format, J9FormatData *result);
-static uintptr_t  writeIntToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t precision, uint64_t value, uint8_t tag, int isSigned, const char *digits);
+static uintptr_t writeIntToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t precision, uint64_t value, uint8_t tag, int isSigned, const char *digits);
 static uintptr_t writeUnicodeStringToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t precision, const uint16_t *value, uint8_t tag);
-static void convertUTCMillisToLocalJ9Time(int64_t millisUTC, struct J9TimeInfo *tm);
+static void convertUTCMillisToJ9Time(int64_t millisUTC, struct J9TimeInfo *tm, uint32_t flags);
 static void setJ9TimeToEpoch(struct J9TimeInfo *tm);
-static uint32_t omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, const char *format, int64_t timeMillis);
+static uint32_t omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, const char *format, int64_t timeMillis, uint32_t flags);
 static intptr_t omrstr_set_token_from_buf(struct OMRPortLibrary *portLibrary, struct J9StringTokens *tokens, const char *key, char *tokenBuf, uint32_t tokenLen);
 static int32_t convertPlatformToMutf8(struct OMRPortLibrary *portLibrary, uint32_t codePage, const uint8_t *inBuffer, uintptr_t inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize);
 static int32_t convertMutf8ToPlatform(struct OMRPortLibrary *portLibrary, uint32_t codePage, const uint8_t *inBuffer, uintptr_t inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize);
@@ -172,13 +171,6 @@ static int32_t convertPlatformToWide(struct OMRPortLibrary *portLibrary, charcon
 static int32_t convertWideToPlatform(struct OMRPortLibrary *portLibrary, charconvState_t encodingState, uint32_t codePage, const uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize);
 static int32_t convertLatin1ToMutf8(struct OMRPortLibrary *portLibrary, const uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize);
 static int32_t convertMutf8ToLatin1(struct OMRPortLibrary *portLibrary, const uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize);
-
-#if defined(OMR_OS_WINDOWS)
-static void convertJ9TimeToSYSTEMTIME(J9TimeInfo *j9TimeInfo, SYSTEMTIME *systemTime);
-static void convertTimeMillisToJ9Time(int64_t timeMillis, J9TimeInfo *tm);
-static void convertSYSTEMTIMEToJ9Time(SYSTEMTIME *systemTime, J9TimeInfo *j9TimeInfo);
-static BOOLEAN firstDateComesBeforeSecondDate(J9TimeInfo *firstDate, J9TimeInfo *secondDate);
-#endif /* defined(OMR_OS_WINDOWS) */
 
 /**
  * Write characters to a string as specified by format.
@@ -200,7 +192,7 @@ static BOOLEAN firstDateComesBeforeSecondDate(J9TimeInfo *firstDate, J9TimeInfo 
 uintptr_t
 omrstr_printf(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, const char *format, ...)
 {
-	uintptr_t rc;
+	uintptr_t rc = 0;
 	va_list args;
 	va_start(args, format);
 	rc = portLibrary->str_vprintf(portLibrary, buf, bufLen, format, args);
@@ -254,7 +246,7 @@ omrstr_printf(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, c
 #endif
 int32_t
 omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toCode,
-			  uint8_t *inBuffer, uintptr_t inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize)
+			   uint8_t *inBuffer, uintptr_t inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize)
 {
 	int32_t result = OMRPORT_ERROR_STRING_UNSUPPORTED_ENCODING;
 
@@ -278,7 +270,7 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 	break;
 #if defined(OMR_OS_WINDOWS)
 	case J9STR_CODE_WINTHREADACP:
-	case J9STR_CODE_WINDEFAULTACP: {
+	case J9STR_CODE_WINDEFAULTACP:
 		switch (toCode) {
 		case J9STR_CODE_MUTF8:
 			result = convertPlatformToMutf8(portLibrary, (fromCode == J9STR_CODE_WINTHREADACP)? CP_THREAD_ACP: CP_ACP, inBuffer, inBufferSize, outBuffer, outBufferSize);
@@ -287,10 +279,9 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 			result = OMRPORT_ERROR_STRING_UNSUPPORTED_ENCODING;
 			break;
 		}
-	}
-	break;
+		break;
 #endif /* defined(OMR_OS_WINDOWS) */
-	case J9STR_CODE_MUTF8: {
+	case J9STR_CODE_MUTF8:
 		switch (toCode) {
 		case J9STR_CODE_PLATFORM_RAW:
 			result = convertMutf8ToPlatform(portLibrary, OS_ENCODING_CODE_PAGE, inBuffer, inBufferSize, outBuffer, outBufferSize);
@@ -321,7 +312,7 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 			uintptr_t mutf8Remaining = inBufferSize;
 			result = convertMutf8ToWide(&mutf8Cursor, &mutf8Remaining, outBuffer, outBufferSize);
 			/*
-			 * inBuffer parameters are updated to reflect  data untranslated due to insufficient space in the output buffer.
+			 * inBuffer parameters are updated to reflect data untranslated due to insufficient space in the output buffer.
 			 * In this case, all input characters should have been consumed.
 			 */
 			if (mutf8Remaining > 0) {
@@ -333,9 +324,8 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 			result = OMRPORT_ERROR_STRING_UNSUPPORTED_ENCODING;
 			break;
 		}
-	}
-	break;
-	case J9STR_CODE_UTF8: {
+		break;
+	case J9STR_CODE_UTF8:
 		switch (toCode) {
 		case J9STR_CODE_MUTF8: {
 			const uint8_t *utf8Cursor = inBuffer;
@@ -354,9 +344,8 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 			result = OMRPORT_ERROR_STRING_UNSUPPORTED_ENCODING;
 			break;
 		}
-	}
-	break;
-	case J9STR_CODE_WIDE: {
+		break;
+	case J9STR_CODE_WIDE:
 		switch (toCode) {
 		case J9STR_CODE_PLATFORM_RAW:
 			result = OMRPORT_ERROR_STRING_UNSUPPORTED_ENCODING;
@@ -366,7 +355,7 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 			uintptr_t wideRemaining = inBufferSize;
 			result = convertWideToMutf8(&wideCursor, &wideRemaining, outBuffer, outBufferSize);
 			/*
-			 * inBuffer parameters are updated to reflect  data untranslated due to insufficient space in the output buffer.
+			 * inBuffer parameters are updated to reflect data untranslated due to insufficient space in the output buffer.
 			 * In this case, all input characters should have been consumed.
 			 */
 			if (wideRemaining > 0) {
@@ -378,9 +367,8 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 			result = OMRPORT_ERROR_STRING_UNSUPPORTED_ENCODING;
 			break;
 		}
-	}
-	break;
-	case J9STR_CODE_LATIN1: {
+		break;
+	case J9STR_CODE_LATIN1:
 		switch (toCode) {
 		case J9STR_CODE_MUTF8: {
 			const uint8_t *latin1Cursor = inBuffer;
@@ -393,15 +381,13 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 			if (latin1Remaining > 0) {
 				result = OMRPORT_ERROR_STRING_BUFFER_TOO_SMALL;
 			}
-
 		}
 		break;
 		default:
 			result = OMRPORT_ERROR_STRING_UNSUPPORTED_ENCODING;
 			break;
 		}
-	}
-	break;
+		break;
 	default:
 		result = OMRPORT_ERROR_STRING_UNSUPPORTED_ENCODING;
 		break;
@@ -445,7 +431,7 @@ parseFormatString(struct OMRPortLibrary *portLibrary, J9FormatData *result)
 {
 	const char *format = result->formatString;
 
-	while (*format) {
+	while ('\0' != *format) {
 		switch (*format) {
 		case '%':
 			format++;
@@ -474,10 +460,10 @@ parseFormatString(struct OMRPortLibrary *portLibrary, J9FormatData *result)
 
 	return 0;
 }
+
 static const char *
 parseTagChar(const char *format, J9FormatData *result)
 {
-
 	switch (*format) {
 	case '0':
 		result->spec[result->specCount].tag |= J9FFLAG_ZERO;
@@ -503,10 +489,11 @@ parseTagChar(const char *format, J9FormatData *result)
 
 	return format;
 }
+
 static const char *
 parseWidth(const char *format, J9FormatData *result)
 {
-	uint8_t index;
+	uint8_t index = 0;
 
 	if (*format == '*') {
 		format = parseIndex(format + 1, &result->spec[result->specCount].widthIndex);
@@ -553,10 +540,11 @@ parseWidth(const char *format, J9FormatData *result)
 		}
 	}
 }
+
 static const char *
 parsePrecision(const char *format, J9FormatData *result)
 {
-	uint8_t index;
+	uint8_t index = 0;
 
 	if (*format == '.') {
 		format += 1;
@@ -614,10 +602,10 @@ parsePrecision(const char *format, J9FormatData *result)
 		}
 	}
 }
+
 static const char *
 parseModifier(const char *format, J9FormatData *result)
 {
-
 	switch (*format) {
 	case 'z':
 		format++;
@@ -638,6 +626,7 @@ parseModifier(const char *format, J9FormatData *result)
 
 	return format;
 }
+
 static const char *
 parseType(const char *format, J9FormatData *result)
 {
@@ -688,10 +677,11 @@ parseType(const char *format, J9FormatData *result)
 
 	return format;
 }
+
 static void
 readValues(struct OMRPortLibrary *portLibrary, J9FormatData *result, va_list args)
 {
-	uint8_t index;
+	uint8_t index = 0;
 	va_list argsCopy;
 
 	COPY_VA_LIST(argsCopy, args);
@@ -787,6 +777,7 @@ writeSpec(J9FormatData *data, J9FormatSpecifier *spec, char *result, uintptr_t l
 
 	return index;
 }
+
 /**
  * @internal
  *
@@ -809,9 +800,9 @@ writeIntToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t precision
 	uint32_t index = 0;
 	uint32_t length = 0;
 	uint32_t rightSpace = 0;
-	uint64_t temp;
+	uint64_t temp = 0;
 	size_t base = strlen(digits);
-	int32_t actualPrecision = 0;	/* precision is specified unsigned, but code may decrement temp values below zero */
+	int32_t actualPrecision = 0; /* precision is specified unsigned, but code may decrement temp values below zero */
 	char signChar = 0;
 
 	if (isSigned) {
@@ -833,14 +824,14 @@ writeIntToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t precision
 	/* find the end of the number */
 	temp = value;
 	do {
-		length++;
+		length += 1;
 		temp /= base;
-	} while (temp);
+	} while (0 != temp);
 
 	if (precision != J9F_NO_VALUE) {
 		actualPrecision = (int32_t)precision;
 
-		/* subtle: actualPrecision known to be non-negative (hence cast to uint32_t) 
+		/* subtle: actualPrecision known to be non-negative (hence cast to uint32_t)
 		 * for purposes of comparison.
 		 */
 		if ((uint32_t)actualPrecision > length) {
@@ -850,11 +841,11 @@ writeIntToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t precision
 
 	/* Account for "-" Must be after setting actualPrecision, before calculation of rightSpace */
 	if (signChar) {
-		length++;
+		length += 1;
 	}
 
 	if (width != J9F_NO_VALUE) {
-		uint32_t actualWidth = (uint32_t)width; 	/* shorten user-specified width to uint32_t */
+		uint32_t actualWidth = (uint32_t)width;	/* shorten user-specified width to uint32_t */
 
 		if (actualWidth > length) {
 			if (tag & J9FFLAG_DASH) {
@@ -891,7 +882,7 @@ writeIntToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t precision
 			index += 1;
 		}
 		temp /= base;
-	} while (temp);
+	} while (0 != temp);
 
 	/* zero extend to the left according the the requested precision */
 	while (length > 0) {
@@ -978,6 +969,7 @@ writeStringToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t precis
 
 	return leftPadding + (size_t)precision + rightPadding;
 }
+
 /*
  * @internal
  *
@@ -1001,7 +993,7 @@ writeFormattedString(struct OMRPortLibrary *portLibrary, J9FormatData *data, cha
 		return 0;
 	}
 
-	while (*format && index < length - 1) {
+	while (('\0' != *format) && (index < length - 1)) {
 		switch (*format) {
 		case '%':
 			format++;
@@ -1015,7 +1007,7 @@ writeFormattedString(struct OMRPortLibrary *portLibrary, J9FormatData *data, cha
 				format++;
 				break;
 			default:
-				if (result) {
+				if (NULL != result) {
 					index += writeSpec(data, &data->spec[specIndex], result + index, length - index);
 				} else {
 					index += writeSpec(data, &data->spec[specIndex], result, length);
@@ -1027,7 +1019,7 @@ writeFormattedString(struct OMRPortLibrary *portLibrary, J9FormatData *data, cha
 			}
 			break;
 		default:
-			if (result) {
+			if (NULL != result) {
 				result[index] = *format;
 			}
 			format++;
@@ -1044,12 +1036,13 @@ writeFormattedString(struct OMRPortLibrary *portLibrary, J9FormatData *data, cha
 		result[index] = 0;
 	}
 
-	if (NULL == result)  {
+	if (NULL == result) {
 		return index + 1; /* For the NUL terminator */
 	}
 
 	return index;
 }
+
 static uintptr_t
 writeDoubleToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t precision, double value, uint8_t type, uint8_t tag)
 {
@@ -1093,6 +1086,7 @@ writeDoubleToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t precis
 
 	return strlen(tempBuf);
 }
+
 /**
  * PortLibrary shutdown.
  *
@@ -1107,6 +1101,7 @@ void
 omrstr_shutdown(struct OMRPortLibrary *portLibrary)
 {
 }
+
 /**
  * PortLibrary startup.
  *
@@ -1126,15 +1121,16 @@ omrstr_startup(struct OMRPortLibrary *portLibrary)
 {
 	return 0;
 }
+
 static uintptr_t
 writeUnicodeStringToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t precision, const uint16_t *value, uint8_t tag)
 {
 	uint32_t numberOfUnicodeChar = 0;
 	uint32_t numberOfUTF8Char = 0;
-	uint32_t encodingLength;
+	uint32_t encodingLength = 0;
 	size_t leftPadding = 0;
 	size_t rightPadding = 0;
-	const uint16_t *currentU16;
+	const uint16_t *currentU16 = NULL;
 
 	if (precision == J9F_NO_VALUE) {
 		currentU16 = value;
@@ -1143,7 +1139,7 @@ writeUnicodeStringToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t
 			precision++;
 		}
 	} else {
-		int32_t n;
+		int32_t n = 0;
 		/* detect if the string is shorter than precision */
 		for (n = 0; n < precision; n++) {
 			if (value[n] == 0) {
@@ -1155,7 +1151,6 @@ writeUnicodeStringToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t
 
 	currentU16 = value;
 	while (numberOfUnicodeChar < precision) {
-
 		encodingLength = encodeUTF8Char((uintptr_t)*currentU16++, NULL);
 		if (numberOfUTF8Char + encodingLength > bufLen) {
 			break;
@@ -1246,470 +1241,80 @@ parseIndex(const char *format, uint8_t *result)
  * @internal
  *
  * sets tm to Epoch
- *
  */
 static void
 setJ9TimeToEpoch(struct J9TimeInfo *tm)
 {
-
 	/* set the default value to epoch */
 	tm->second = 0;
 	tm->minute = 0;
 	tm->hour = 0;
 	tm->day = 1;
+	tm->weekday = 4; /* Thursday */
 	tm->month = 1;
 	tm->year = 1970;
-
 }
 
-/*
+/**
  * @internal
  *
  * Converts the UTC time passed in as milli seconds since Epoch to local time as the J9-specific representation of time.
  *
  * @param[in] millisUTC the UTC time passed in as milli seconds since Epoch. Negative values are not allowed.
  * @param[in,out] the local time as the J9-specific representation of time. Will not pass back any values that occurred before Epoch.
+ * @param[in] flags specifies if the time should be adjusted for the local time zone
  *
  * @return the local time or Epoch
  *
  * @note will not pass back any dates that occurred before Epoch
  */
-static void convertUTCMillisToLocalJ9Time(int64_t millisUTC, struct J9TimeInfo *omrtimeInfo)
+static void convertUTCMillisToJ9Time(int64_t millisUTC, struct J9TimeInfo *omrtimeInfo, uint32_t flags)
 {
-#if !defined(OMR_OS_WINDOWS)
-
-	time_t secondsUTC;
-	struct tm localTime;
+	time_t secondsUTC = (time_t)(millisUTC / 1000);
+	struct tm osTime;
 
 	/* we don't allow dates/times prior to Epoch */
 	if (millisUTC < 0) {
+fail:
 		setJ9TimeToEpoch(omrtimeInfo);
 		return;
 	}
 
-	secondsUTC = (time_t)(millisUTC / 1000);
-	localtime_r(&secondsUTC, &localTime);
-
-	/* we don't allow times less than Epoch */
-	if (localTime.tm_year < 70) {
-		setJ9TimeToEpoch(omrtimeInfo);
-	} else {
-		omrtimeInfo->second = localTime.tm_sec;
-		omrtimeInfo->minute = localTime.tm_min;
-		omrtimeInfo->hour = localTime.tm_hour;
-		omrtimeInfo->day = localTime.tm_mday;
-		omrtimeInfo->month = localTime.tm_mon + 1;
-		omrtimeInfo->year = localTime.tm_year + 1900;
-	}
-
-	return;
-
-#else /* !defined(OMR_OS_WINDOWS) */
-
-	TIME_ZONE_INFORMATION timeZoneInformation;
-	J9TimeInfo daylightDateAsJ9TimeInfo, standardDateAsJ9TimeInfo;
-	int64_t bias;
-	DWORD rc;
-	BOOLEAN daylightBeforeStandard, standardTime;
-
-	/* set the default value to Epoch */
-	setJ9TimeToEpoch(omrtimeInfo);
-
-	{
-		SYSTEMTIME systemTimeLocal, systemTimeUTC;
-
-		convertTimeMillisToJ9Time(millisUTC, omrtimeInfo);
-		convertJ9TimeToSYSTEMTIME(omrtimeInfo, &systemTimeUTC);
-
-		if (SystemTimeToTzSpecificLocalTime(NULL, &systemTimeUTC, &systemTimeLocal)) {
-			convertSYSTEMTIMEToJ9Time(&systemTimeLocal, omrtimeInfo);
-			if (omrtimeInfo->year < 1970) {
-				/* we don't allow dates/times prior to Epoch */
-				setJ9TimeToEpoch(omrtimeInfo);
-			}
-		} else {
-			/* an error occurred, return epoch */
-			setJ9TimeToEpoch(omrtimeInfo);
-#if defined(J9STR_DEBUG)
-			printf("!!!! SystemTimeToTzSpecificLocalTime failed !!!!");
-#endif /* defined(J9STR_DEBUG) */
-		}
-		return;
-	}
-
-	/* Get the TimeZone Information needed to convert to local time */
-	rc = GetTimeZoneInformation(&timeZoneInformation);
-#if ( defined(OMR_OS_WINDOWS) || (_WIN32_WCE>=420) )
-	if (rc == TIME_ZONE_ID_INVALID) {
-		return;
-	}
-#endif
-
-
-	/* Note: timeZoneInformation.Bias is the bias to "local time" and does not account for Daylight Saving Time */
-	bias = (int64_t)timeZoneInformation.Bias;
-#if defined(J9STR_DEBUG)
-	printf("\t\tconvertUTCMillisToLocalJ9Time: bias for local time = %i hours\n", bias / 60);
-#endif
-
-	/* adjust millisUTC to get local time */
-	millisUTC -= bias * 60 * 1000;
-
-	convertTimeMillisToJ9Time(millisUTC, omrtimeInfo);
-
-	/* Now we need to adjust for daylight time */
-
-	/* First, do we even have daylight information? */
-	if (rc == TIME_ZONE_ID_UNKNOWN) {
-		/* no information on daylight saving */
-		return;
-	}
-
-	/* OK, we do have daylight information...
-	 * Check if this date falls withing daylight or standard time */
-
-	/* first get the transition dates, and convert them to J9TimeInfos so that we can compare apples and apples */
-	convertSYSTEMTIMEToJ9Time(&timeZoneInformation.DaylightDate, &daylightDateAsJ9TimeInfo);
-	convertSYSTEMTIMEToJ9Time(&timeZoneInformation.StandardDate, &standardDateAsJ9TimeInfo);
-
-	/* Now see if we're in Daylight Saving Time */
-
-	/* Are we in the northern or southern hemisphere? In the northern hemisphere we move to
-	 *  Daylight time in the spring, and back to Standard in the fall */
-	daylightBeforeStandard = firstDateComesBeforeSecondDate(&daylightDateAsJ9TimeInfo, &standardDateAsJ9TimeInfo);
-
-	if (daylightBeforeStandard) {
-		/* we're in the northern hemisphere */
-		if ((TRUE == firstDateComesBeforeSecondDate(&daylightDateAsJ9TimeInfo, omrtimeInfo))
-			&& (TRUE == firstDateComesBeforeSecondDate(omrtimeInfo, &standardDateAsJ9TimeInfo))) {
-			standardTime = FALSE;
-		} else {
-			standardTime = TRUE;
-		}
-	} else {
-		/* we're in the southern hemisphere */
-		if ((TRUE == firstDateComesBeforeSecondDate(&standardDateAsJ9TimeInfo, omrtimeInfo))
-			&& (TRUE == firstDateComesBeforeSecondDate(omrtimeInfo, &daylightDateAsJ9TimeInfo))) {
-			standardTime = TRUE;
-		} else {
-			/* we're in Standard Time*/
-			standardTime = FALSE;
-
-		}
-	}
-
-#if defined(J9STR_DEBUG)
-	if (standardTime) {
-		printf("\t\tconvertUTCMillisToLocalJ9Time: Standard Time. Bias = %i.\n", timeZoneInformation.StandardBias);
-	} else {
-		printf("\t\tconvertUTCMillisToLocalJ9Time: Daylight Time. Bias = %i.\n", timeZoneInformation.DaylightBias);
-	}
-
-	printf("\t\tmonth/day of DaylightDate: %i/%i\n", timeZoneInformation.DaylightDate.wMonth, timeZoneInformation.DaylightDate.wDay);
-	printf("\t\tmonth/day of StandardDate: %i/%i\n", timeZoneInformation.StandardDate.wMonth, timeZoneInformation.StandardDate.wDay);
-#endif
-
-	if (standardTime) {
-		/* apply standard bias */
-		millisUTC -= ((int64_t)timeZoneInformation.StandardBias) * 60 * 1000;
-	} else {
-		/* we're in Daylight time, apply daylight bias */
-		millisUTC -= ((int64_t)timeZoneInformation.DaylightBias) * 60 * 1000;
-	}
-
-	convertTimeMillisToJ9Time(millisUTC, omrtimeInfo);
-
-	return;
-
-#endif /* !defined(OMR_OS_WINDOWS) */
-
-}
-
+	if (OMR_ARE_ANY_BITS_SET(flags, OMRSTR_FTIME_FLAG_UTC)) {
 #if defined(OMR_OS_WINDOWS)
-/*
- * @internal
- *
- * Ingnoring the year, returns TRUE if the first date/time of year comes before the second date/time of year, false otherwise.
- *
- * param[in] firstDate
- * param[in] secondDate
- *
- * @return TRUE if the first date/time of year comes before the second date/time of year, false otherwise.
- *
- * @note: This method ignores the year. */
-
-static BOOLEAN
-firstDateComesBeforeSecondDate(J9TimeInfo *firstDate, J9TimeInfo *secondDate)
-{
-
-	if (firstDate->month > secondDate->month) {
-		return FALSE;
-
-	} else if (firstDate->month == secondDate->month) {
-
-		if (firstDate->day > secondDate->day) {
-			return FALSE;
-
-		} else if (firstDate->day == secondDate->day) {
-
-			if (firstDate->hour > secondDate->hour) {
-				return FALSE;
-
-			} else if (firstDate->hour == secondDate->hour) {
-
-				if (firstDate->minute > secondDate->minute) {
-					return FALSE;
-
-				} else if (firstDate->minute == secondDate->minute) {
-
-					if (firstDate->second > secondDate->second) {
-						return FALSE;
-
-					} else if (firstDate->second == secondDate->second) {
-						/* same date/time, return false */
-						return FALSE;
-
-					}
-				}
-			}
+		if (0 != gmtime_s(&osTime, &secondsUTC)) {
+			goto fail;
 		}
-	}
-
-	return TRUE;
-}
-
-/*
- * @internal
- *
- * Convert the J9-Specific representation of time to the Windows-specific representation.
- *
- * @param[in] tm the J9-specific representation of a date/time.
- * @param[out] systemTime the Windows-specific representation of time
- *
- * @note No timezone conversions are made
- *
- */
-static void
-convertJ9TimeToSYSTEMTIME(J9TimeInfo *j9TimeInfo, SYSTEMTIME *systemTime)
-{
-	systemTime->wMilliseconds = 0;
-	systemTime->wSecond = (WORD)j9TimeInfo->second;
-	systemTime->wMinute = (WORD)j9TimeInfo->minute;
-	systemTime->wHour = (WORD)j9TimeInfo->hour;
-	systemTime->wDay = (WORD)j9TimeInfo->day;
-	systemTime->wMonth = (WORD)j9TimeInfo->month;
-	systemTime->wYear = (WORD)j9TimeInfo->year;
-}
-
-/*
- * @internal
- *
- * Convert the Windows-specific representation of time into the J9-Specific representation.
- *
- * @param[in] systemTime the Windows-specific representation of time
- * @param[out] tm the J9-specific representation of a date/time.
- *
- * @note No timezone conversions are made
- *
- */
-static void
-convertSYSTEMTIMEToJ9Time(SYSTEMTIME *systemTime, J9TimeInfo *j9TimeInfo)
-{
-
-	j9TimeInfo->second = systemTime->wSecond;
-	j9TimeInfo->minute = systemTime->wMinute;
-	j9TimeInfo->hour = systemTime->wHour;
-	j9TimeInfo->day = systemTime->wDay;
-	j9TimeInfo->month = systemTime->wMonth;
-	j9TimeInfo->year = systemTime->wYear;
-
-}
-
-/*
- * @internal
- *
- * Convert the time specified in milliseconds into the J9-specific
- *  structure used to represent a date/time
- *
- * @param[in] millisUTC the time in milliseconds since Epoch
- * @param[out] tm the J9-specific representation of a date/time.
- *
- * @note No timezone conversions are made
- *
- * */
-static void
-convertTimeMillisToJ9Time(int64_t timeMillis, J9TimeInfo *tm)
-{
-
-#define J9SFT_NUM_MONTHS         (12)
-#define J9SFT_NUM_SECS_IN_MINUTE (60)
-#define J9SFT_NUM_SECS_IN_HOUR   (60*J9SFT_NUM_SECS_IN_MINUTE)
-#define J9SFT_NUM_SECS_IN_DAY    (24*(int32_t)J9SFT_NUM_SECS_IN_HOUR)
-#define J9SFT_NUM_SECS_IN_YEAR   (365*J9SFT_NUM_SECS_IN_DAY)
-#define J9SFT_NUM_SECS_IN_LEAP_YEAR (366*J9SFT_NUM_SECS_IN_DAY)
-#define J9SFT_NUM_SECS_IN_JAN (31*J9SFT_NUM_SECS_IN_DAY)
-#define J9SFT_NUM_SECS_IN_FEB (28*J9SFT_NUM_SECS_IN_DAY)
-#define J9SFT_NUM_SECS_IN_MAR (31*J9SFT_NUM_SECS_IN_DAY)
-#define J9SFT_NUM_SECS_IN_APR (30*J9SFT_NUM_SECS_IN_DAY)
-#define J9SFT_NUM_SECS_IN_MAY (31*J9SFT_NUM_SECS_IN_DAY)
-#define J9SFT_NUM_SECS_IN_JUN (30*J9SFT_NUM_SECS_IN_DAY)
-#define J9SFT_NUM_SECS_IN_JUL (31*J9SFT_NUM_SECS_IN_DAY)
-#define J9SFT_NUM_SECS_IN_AUG (31*J9SFT_NUM_SECS_IN_DAY)
-#define J9SFT_NUM_SECS_IN_SEP (30*J9SFT_NUM_SECS_IN_DAY)
-#define J9SFT_NUM_SECS_IN_OCT (31*J9SFT_NUM_SECS_IN_DAY)
-#define J9SFT_NUM_SECS_IN_NOV (30*J9SFT_NUM_SECS_IN_DAY)
-#define J9SFT_NUM_SECS_IN_DEC (31*J9SFT_NUM_SECS_IN_DAY)
-#define J9SFT_NUM_SECS_IN_LEAP_FEB (29*J9SFT_NUM_SECS_IN_DAY)
-
-	int64_t timeLeft;
-	int32_t i;
-	int32_t *secondsInMonth;
-	int32_t normalSecondsInMonth[12] = {
-		J9SFT_NUM_SECS_IN_JAN,
-		J9SFT_NUM_SECS_IN_FEB,
-		J9SFT_NUM_SECS_IN_MAR,
-		J9SFT_NUM_SECS_IN_APR,
-		J9SFT_NUM_SECS_IN_MAY,
-		J9SFT_NUM_SECS_IN_JUN,
-		J9SFT_NUM_SECS_IN_JUL,
-		J9SFT_NUM_SECS_IN_AUG,
-		J9SFT_NUM_SECS_IN_SEP,
-		J9SFT_NUM_SECS_IN_OCT,
-		J9SFT_NUM_SECS_IN_NOV,
-		J9SFT_NUM_SECS_IN_DEC
-	};
-	int32_t leapYearSecondsInMonth[12] = {
-		J9SFT_NUM_SECS_IN_JAN,
-		J9SFT_NUM_SECS_IN_LEAP_FEB,
-		J9SFT_NUM_SECS_IN_MAR,
-		J9SFT_NUM_SECS_IN_APR,
-		J9SFT_NUM_SECS_IN_MAY,
-		J9SFT_NUM_SECS_IN_JUN,
-		J9SFT_NUM_SECS_IN_JUL,
-		J9SFT_NUM_SECS_IN_AUG,
-		J9SFT_NUM_SECS_IN_SEP,
-		J9SFT_NUM_SECS_IN_OCT,
-		J9SFT_NUM_SECS_IN_NOV,
-		J9SFT_NUM_SECS_IN_DEC
-	};
-	BOOLEAN leapYear = FALSE;
-
-	if (!tm) {
-		return;
-	}
-
-	if (timeMillis < 0) {
-		return;
-	}
-
-	memset(tm, 0, sizeof(struct J9TimeInfo));
-
-	tm->year = 1970;
-
-	/* obtain the current time in seconds */
-	timeLeft = timeMillis / 1000;
-
-	/* determine the year */
-	while (timeLeft) {
-		int64_t numSecondsInAYear = J9SFT_NUM_SECS_IN_YEAR;
-		leapYear = FALSE;
-		if (tm->year % 4 == 0) {
-			/* potential leap year */
-			if ((tm->year % 100 != 0) || (tm->year % 400 == 0)) {
-				/* we have leap year! */
-				leapYear = TRUE;
-				numSecondsInAYear = J9SFT_NUM_SECS_IN_LEAP_YEAR;
-			}
+#else /* defined(OMR_OS_WINDOWS) */
+		if (NULL == gmtime_r(&secondsUTC, &osTime)) {
+			goto fail;
 		}
-
-		if (timeLeft < numSecondsInAYear) {
-			/* under a year's time left */
-			break;
-		}
-
-		/* increment the year and take the appropriate number
-		 * of seconds off the timeLeft
-		 */
-		tm->year ++;
-		timeLeft -= numSecondsInAYear;
-	}
-
-	/* determine the month */
-	if (leapYear) {
-		secondsInMonth = leapYearSecondsInMonth;
-	} else {
-		secondsInMonth = normalSecondsInMonth;
-	}
-	for (i = 0; i < J9SFT_NUM_MONTHS; i++) {
-		if (timeLeft >= secondsInMonth[i]) {
-			timeLeft -= secondsInMonth[i];
-		} else {
-			break;
-		}
-	}
-	tm->month = i + 1;
-
-	/* determine the day of the month */
-	tm->day = 1;
-	while (timeLeft) {
-		if (timeLeft >= J9SFT_NUM_SECS_IN_DAY) {
-			timeLeft -= J9SFT_NUM_SECS_IN_DAY;
-		} else {
-			break;
-		}
-		tm->day ++;
-	}
-
-	/* determine the hour of the day */
-	tm->hour = 0;
-	while (timeLeft) {
-		if (timeLeft >= J9SFT_NUM_SECS_IN_HOUR) {
-			timeLeft -= J9SFT_NUM_SECS_IN_HOUR;
-		} else {
-			break;
-		}
-		tm->hour ++;
-	}
-
-	/* determine the minute of the hour */
-	tm->minute = 0;
-	while (timeLeft) {
-		if (timeLeft >= J9SFT_NUM_SECS_IN_MINUTE) {
-			timeLeft -= J9SFT_NUM_SECS_IN_MINUTE;
-		} else {
-			break;
-		}
-		tm->minute ++;
-	}
-
-	/* and the rest is seconds */
-	tm->second = (uint32_t)timeLeft;
-
-	return;
-
-#undef J9SFT_NUM_MONTHS
-#undef J9SFT_NUM_SECS_IN_MINUTE
-#undef J9SFT_NUM_SECS_IN_HOUR
-#undef J9SFT_NUM_SECS_IN_DAY
-#undef J9SFT_NUM_SECS_IN_YEAR
-#undef J9SFT_NUM_SECS_IN_LEAP_YEAR
-#undef J9SFT_NUM_SECS_IN_JAN
-#undef J9SFT_NUM_SECS_IN_FEB
-#undef J9SFT_NUM_SECS_IN_MAR
-#undef J9SFT_NUM_SECS_IN_APR
-#undef J9SFT_NUM_SECS_IN_MAY
-#undef J9SFT_NUM_SECS_IN_JUN
-#undef J9SFT_NUM_SECS_IN_JUL
-#undef J9SFT_NUM_SECS_IN_AUG
-#undef J9SFT_NUM_SECS_IN_SEP
-#undef J9SFT_NUM_SECS_IN_OCT
-#undef J9SFT_NUM_SECS_IN_NOV
-#undef J9SFT_NUM_SECS_IN_DEC
-#undef J9SFT_NUM_SECS_IN_LEAP_FEB
-
-}
-
 #endif /* defined(OMR_OS_WINDOWS) */
+	} else {
+#if defined(OMR_OS_WINDOWS)
+		if (0 != localtime_s(&osTime, &secondsUTC)) {
+			goto fail;
+		}
+#else /* defined(OMR_OS_WINDOWS) */
+		if (NULL == localtime_r(&secondsUTC, &osTime)) {
+			goto fail;
+		}
+#endif /* defined(OMR_OS_WINDOWS) */
+	}
+
+	/* Times less than Epoch are not allowed. */
+	if (osTime.tm_year < 70) {
+		setJ9TimeToEpoch(omrtimeInfo);
+	} else {
+		omrtimeInfo->second = osTime.tm_sec;
+		omrtimeInfo->minute = osTime.tm_min;
+		omrtimeInfo->hour = osTime.tm_hour;
+		omrtimeInfo->day = osTime.tm_mday;
+		omrtimeInfo->weekday = osTime.tm_wday;
+		omrtimeInfo->month = osTime.tm_mon + 1;
+		omrtimeInfo->year = osTime.tm_year + 1900;
+	}
+}
 
 /**
  * @internal
@@ -1725,7 +1330,7 @@ tokenHashFn(void *entry, void *userData)
 
 	/* Because the token keys will mostly be single characters, using the first char as the hash
 	 * value is pretty reasonable */
-	return (uintptr_t)(*(token->key));
+	return (uintptr_t)*(token->key);
 }
 
 /**
@@ -1747,7 +1352,7 @@ tokenHashEqualFn(void *lhsEntry, void *rhsEntry, void *userData)
 	J9TokenEntry *ltoken = (J9TokenEntry *)lhsEntry;
 	J9TokenEntry *rtoken = (J9TokenEntry *)rhsEntry;
 
-	return (0 == strcmp(ltoken->key, rtoken->key));
+	return 0 == strcmp(ltoken->key, rtoken->key);
 }
 
 /**
@@ -1769,7 +1374,8 @@ populateWithDefaultTokens(struct OMRPortLibrary *portLibrary, struct J9StringTok
 #define JOBID_BUF_LEN 16
 #define ASID_BUF_LEN 16
 #define SYSNAME_BUF_LEN 32
-	uintptr_t pid;
+
+	uintptr_t pid = 0;
 	char username[USERNAME_BUF_LEN];
 	char jobname[JOBNAME_BUF_LEN];
 	char jobid[JOBID_BUF_LEN];
@@ -1789,14 +1395,15 @@ populateWithDefaultTokens(struct OMRPortLibrary *portLibrary, struct J9StringTok
 
 	portLibrary->str_set_time_tokens(portLibrary, tokens, timeMillis);
 
-	if (portLibrary->str_set_token(portLibrary, tokens, "pid", "%u", pid)
-		|| portLibrary->str_set_token(portLibrary, tokens, "job", "%s", jobname)
-		|| portLibrary->str_set_token(portLibrary, tokens, "home", "%s", "")
-		|| portLibrary->str_set_token(portLibrary, tokens, "last", "%s", "")
-		|| portLibrary->str_set_token(portLibrary, tokens, "seq", "%04u", 0)
-		|| portLibrary->str_set_token(portLibrary, tokens, "jobid", "%s", jobid)
-		|| portLibrary->str_set_token(portLibrary, tokens, "asid", "%s", asid)
-		|| portLibrary->str_set_token(portLibrary, tokens, "sysname", "%s", sysname)) {
+	if ((0 != portLibrary->str_set_token(portLibrary, tokens, "pid", "%u", pid))
+	||  (0 != portLibrary->str_set_token(portLibrary, tokens, "job", "%s", jobname))
+	||  (0 != portLibrary->str_set_token(portLibrary, tokens, "home", "%s", ""))
+	||  (0 != portLibrary->str_set_token(portLibrary, tokens, "last", "%s", ""))
+	||  (0 != portLibrary->str_set_token(portLibrary, tokens, "seq", "%04u", 0))
+	||  (0 != portLibrary->str_set_token(portLibrary, tokens, "jobid", "%s", jobid))
+	||  (0 != portLibrary->str_set_token(portLibrary, tokens, "asid", "%s", asid))
+	||  (0 != portLibrary->str_set_token(portLibrary, tokens, "sysname", "%s", sysname))
+	) {
 		/* If any of the above fail, we're out of memory */
 		return -1;
 	}
@@ -1808,7 +1415,12 @@ populateWithDefaultTokens(struct OMRPortLibrary *portLibrary, struct J9StringTok
 	}
 
 	return 0;
+
 #undef USERNAME_BUF_LEN
+#undef JOBNAME_BUF_LEN
+#undef JOBID_BUF_LEN
+#undef ASID_BUF_LEN
+#undef SYSNAME_BUF_LEN
 }
 
 /**
@@ -1850,7 +1462,7 @@ consumeToken(J9StringTokens *tokens, const char *key)
 {
 	char tokenKey[J9TOKEN_MAX_KEY_LEN];
 	J9TokenEntry lookupEntry;
-	J9TokenEntry *entry;
+	J9TokenEntry *entry = NULL;
 	char *write = tokenKey;
 
 	/* For consistency, we enforce starting on a %, this simplifies the calling code */
@@ -1866,8 +1478,7 @@ consumeToken(J9StringTokens *tokens, const char *key)
 
 	/* Let's start by reading in the largest amount we can so longer token names can
 	 * have precedence */
-	while (*key && lookupEntry.keyLen < (J9TOKEN_MAX_KEY_LEN - 1)) {
-
+	while (('\0' != *key) && (lookupEntry.keyLen < (J9TOKEN_MAX_KEY_LEN - 1))) {
 		if (*key == ' ') {
 			/* End of possible token name */
 			break;
@@ -1887,7 +1498,7 @@ consumeToken(J9StringTokens *tokens, const char *key)
 	}
 
 	/* Now let's start querying the hash table for tokens */
-	while (lookupEntry.keyLen) {
+	while (0 != lookupEntry.keyLen) {
 		entry = hashTableFind((J9HashTable *)tokens, &lookupEntry);
 		if (NULL != entry) {
 			return entry;
@@ -1899,7 +1510,6 @@ consumeToken(J9StringTokens *tokens, const char *key)
 
 	return NULL;
 }
-
 
 /* the largest 64 bit number has 20 digits */
 #define TICK_BUF_SIZE 21
@@ -1913,7 +1523,7 @@ consumeToken(J9StringTokens *tokens, const char *key)
  * 	  %Y     year    1900..????		(local time, based on millis parameter)
  *	  %y     year of century  00..99
  *	  %m     month     01..12
- *	  %b     abbreviated month name in english
+ *	  %b     abbreviated month name in English
  *	  %d     day       01..31
  *	  %H     hour      00..23
  *	  %M     minute    00..59
@@ -1921,10 +1531,9 @@ consumeToken(J9StringTokens *tokens, const char *key)
  *
  *	  %tick  high res timer
  *
- *
- * @parm[in]     portLib  the port library
- * @parm[out]    tokens   the tokens hashtable, with time in local time.
- * @parm[in]     timeMillis  the UTC time in ms to use for the date/time tokens
+ * @param[in]  portLib the port library
+ * @param[out] tokens the tokens hashtable, with time in local time.
+ * @param[in]  timeMillis the UTC time in ms to use for the date/time tokens
  *
  * @return 0 on success, otherwise -1 (out of memory)
  */
@@ -1933,17 +1542,18 @@ omrstr_set_time_tokens(struct OMRPortLibrary *portLibrary, struct J9StringTokens
 {
 	char buf[TICK_BUF_SIZE + 20]; /* TICK_BUF_SIZE + 4 + 2 + 2 + 2 + 2 + 2 + 2 + 3 + an extra byte */
 
-	omrstr_subst_time(portLibrary, buf, TICK_BUF_SIZE + 20, "%Y%y%m%d%H%M%S%b%tick", timeMillis);
+	omrstr_subst_time(portLibrary, buf, TICK_BUF_SIZE + 20, "%Y%y%m%d%H%M%S%b%tick", timeMillis, OMRSTR_FTIME_FLAG_LOCAL);
 
-	if (omrstr_set_token_from_buf(portLibrary, tokens, "Y", buf, 4)
-		|| omrstr_set_token_from_buf(portLibrary, tokens, "y", buf + 4, 2)
-		|| omrstr_set_token_from_buf(portLibrary, tokens, "m", buf + 6, 2)
-		|| omrstr_set_token_from_buf(portLibrary, tokens, "d", buf + 8, 2)
-		|| omrstr_set_token_from_buf(portLibrary, tokens, "H", buf + 10, 2)
-		|| omrstr_set_token_from_buf(portLibrary, tokens, "M", buf + 12, 2)
-		|| omrstr_set_token_from_buf(portLibrary, tokens, "S", buf + 14, 2)
-		|| omrstr_set_token_from_buf(portLibrary, tokens, "b", buf + 16, 3)
-		|| omrstr_set_token_from_buf(portLibrary, tokens, "tick", buf + 19, (uint32_t)strlen(buf + 19))) {
+	if ((0 != omrstr_set_token_from_buf(portLibrary, tokens, "Y", buf, 4))
+	||  (0 != omrstr_set_token_from_buf(portLibrary, tokens, "y", buf + 4, 2))
+	||  (0 != omrstr_set_token_from_buf(portLibrary, tokens, "m", buf + 6, 2))
+	||  (0 != omrstr_set_token_from_buf(portLibrary, tokens, "d", buf + 8, 2))
+	||  (0 != omrstr_set_token_from_buf(portLibrary, tokens, "H", buf + 10, 2))
+	||  (0 != omrstr_set_token_from_buf(portLibrary, tokens, "M", buf + 12, 2))
+	||  (0 != omrstr_set_token_from_buf(portLibrary, tokens, "S", buf + 14, 2))
+	||  (0 != omrstr_set_token_from_buf(portLibrary, tokens, "b", buf + 16, 3))
+	||  (0 != omrstr_set_token_from_buf(portLibrary, tokens, "tick", buf + 19, (uint32_t)strlen(buf + 19)))
+	) {
 		/* If any of the above fail, we're out of memory */
 		return -1;
 	}
@@ -1962,7 +1572,7 @@ omrstr_set_time_tokens(struct OMRPortLibrary *portLibrary, struct J9StringTokens
  * 	  %Y     year    1970..????
  *	  %y     year of century  00..99
  *	  %m     month     01..12
- *	  %b     abbreviated month name in english
+ *	  %b     abbreviated month name in English
  *	  %d     day       01..31
  *	  %H     hour      00..23
  *	  %M     minute    00..59
@@ -1977,10 +1587,11 @@ omrstr_set_time_tokens(struct OMRPortLibrary *portLibrary, struct J9StringTokens
  * Some platforms may include additional tokens. In particular:
  *	  %job   job name	(z/OS only)
 
- * @parm[in]     portLib  the port library
- * @parm[in]     timeMillis  the UTC time in ms to use for the date/time tokens. This value must be greater than or equal to zero.
+ * @param[in] portLib the port library
+ * @param[in] timeMillis the UTC time in ms to use for the date/time tokens. This value must be greater than or equal to zero
  *
- * @return the opaque J9StringTokens structure, or NULL if out of memory. The date/time will never be less than Epoch, which is Jan 1st, 1970, 00:00:00 AM.
+ * @return the opaque J9StringTokens structure, or NULL if out of memory. The date/time will never be less than Epoch,
+ * which is January 1, 1970, 00:00:00 AM UTC.
  */
 struct J9StringTokens *
 omrstr_create_tokens(struct OMRPortLibrary *portLibrary, int64_t timeMillis)
@@ -2009,7 +1620,7 @@ omrstr_create_tokens(struct OMRPortLibrary *portLibrary, int64_t timeMillis)
 	 * doesn't have to handle a special case. */
 	percentEntry.key = (char *)portLibrary->mem_allocate_memory(portLibrary, 2, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 	percentEntry.value = (char *)portLibrary->mem_allocate_memory(portLibrary, 2, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
-	if (NULL == percentEntry.key || NULL == percentEntry.value) {
+	if ((NULL == percentEntry.key) || (NULL == percentEntry.value)) {
 		goto fail;
 	}
 
@@ -2041,36 +1652,35 @@ fail:
  * Both key and value will be copied, so it is safe to free or overwrite them
  * once this API returns.
  *
- * @parm[in]     portLib  the port library
- * @parm[in/out] tokens   the token cookie to be modified
- * @parm[in]     key      the key to be modified (e.g. "H" to modify the hour key)
- * @parm[in]     format   a printf format string which describes how to create the value for the token
- * @parm[in]     ...      arguments which match the format string
+ * @param[in] portLib the port library
+ * @param[in/out] tokens the token cookie to be modified
+ * @param[in] key the key to be modified (e.g. "H" to modify the hour key)
+ * @param[in] format a printf format string which describes how to create the value for the token
+ * @param[in] ... arguments which match the format string
  *
  * @return 0 on success, -1 on failure. Failure can occur if the key is too large, of size 0 or
  * if we're out of memory.
- *
  */
 intptr_t
 omrstr_set_token(struct OMRPortLibrary *portLibrary, struct J9StringTokens *tokens, const char *key, const char *format, ...)
 {
 	const char *cur = key;
-	char *tokenBuf;
-	uintptr_t tokenBufLen;
+	char *tokenBuf = NULL;
+	uintptr_t tokenBufLen = 0;
 	uintptr_t keyLen = 0;
-	uintptr_t valueLen;
+	uintptr_t valueLen = 0;
 	va_list args;
 
 	/* Let's validate the key */
-	while (keyLen < J9TOKEN_MAX_KEY_LEN && *cur) {
-		if (*cur == ' ' || *cur == '%') {
+	while ((keyLen < J9TOKEN_MAX_KEY_LEN) && ('\0' != *cur)) {
+		if ((*cur == ' ') || (*cur == '%')) {
 			return -1;
 		}
 		++cur;
 		++keyLen;
 	}
 
-	if (0 == keyLen || keyLen >= J9TOKEN_MAX_KEY_LEN) {
+	if ((0 == keyLen) || (keyLen >= J9TOKEN_MAX_KEY_LEN)) {
 		return -1;
 	}
 
@@ -2086,6 +1696,7 @@ omrstr_set_token(struct OMRPortLibrary *portLibrary, struct J9StringTokens *toke
 
 	return omrstr_set_token_from_buf(portLibrary, tokens, key, tokenBuf, (uint32_t)valueLen);
 }
+
 /**
  * Add the specified key to the list of tokens.
  * If the key is already in the list, the new value supercedes the existing value.
@@ -2093,11 +1704,11 @@ omrstr_set_token(struct OMRPortLibrary *portLibrary, struct J9StringTokens *toke
  * Both key and value will be copied, so it is safe to free or overwrite them
  * once this API returns.
  *
- * @parm[in]     portLibrary  the port library
- * @parm[in/out] tokens   the token cookie to be modified
- * @parm[in]     key      the key to be modified (e.g. "H" to modify the hour key)
- * @parm[in]     tokenBuf the token (need not be null terminated)
- * @parm[in]     tokenLen the length of the token in tokenBuf
+ * @param[in] portLibrary the port library
+ * @param[in/out] tokens the token cookie to be modified
+ * @param[in] key the key to be modified (e.g. "H" to modify the hour key)
+ * @param[in] tokenBuf the token (need not be null terminated)
+ * @param[in] tokenLen the length of the token in tokenBuf
  *
  * @return 0 on success, -1 on failure. Failure can occur if the key is too large, of size 0 or
  * if we're out of memory.
@@ -2107,12 +1718,11 @@ omrstr_set_token(struct OMRPortLibrary *portLibrary, struct J9StringTokens *toke
  * buffer of 511 bytes + 1 null terminator (512 in total) is allocated for holding data. This
  * is useful is RAS where memory must be pre-allocated, allowing strings up to 511 chars + null
  * terminator to be subsequently written into these keys.
- *
  */
 static intptr_t omrstr_set_token_from_buf(struct OMRPortLibrary *portLibrary, struct J9StringTokens *tokens, const char *key, char *tokenBuf, uint32_t tokenLen)
 {
 	J9TokenEntry entry;
-	J9TokenEntry *existingEntry;
+	J9TokenEntry *existingEntry = NULL;
 
 #define TOKEN_BUF_LEN 511
 
@@ -2126,7 +1736,7 @@ static intptr_t omrstr_set_token_from_buf(struct OMRPortLibrary *portLibrary, st
 	entry.keyLen = strlen(key);
 	existingEntry = hashTableFind((J9HashTable *)tokens, &entry);
 
-	if (!existingEntry) {
+	if (NULL == existingEntry) {
 		if (NULL == (entry.key = (char *)portLibrary->mem_allocate_memory(portLibrary, entry.keyLen + 1, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY))) {
 			return -1;
 		}
@@ -2183,10 +1793,10 @@ static intptr_t omrstr_set_token_from_buf(struct OMRPortLibrary *portLibrary, st
  * If buf is not long enough to hold the result, the required length will be returned. buf will
  * always be NUL terminated if it is longer than 0 bytes.
  *
- * @parm[in]  portLib  the port library
- * @parm[out] buf      the characater buffer to write the result into
- * @parm[in]  bufLen   the length of the buffer, in bytes
- * @parm[in]  format   the format string to be processed
+ * @param[in] portLib the port library
+ * @param[out] buf the characater buffer to write the result into
+ * @param[in] bufLen the length of the buffer, in bytes
+ * @param[in] format the format string to be processed
  *
  * @return The number of characters printed not including the NUL terminator.
  *
@@ -2196,7 +1806,7 @@ static intptr_t omrstr_set_token_from_buf(struct OMRPortLibrary *portLibrary, st
 uintptr_t
 omrstr_subst_tokens(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, const char *format, struct J9StringTokens *tokens)
 {
-	J9TokenEntry *entry;
+	J9TokenEntry *entry = NULL;
 	uintptr_t cnt = 0;
 	const char *read = format;
 	char *write = buf;
@@ -2204,8 +1814,8 @@ omrstr_subst_tokens(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t buf
 	/* First case: "read only" mode, a buffer hasn't been supplied. */
 	if (NULL == buf) {
 		/* Let's parse the format string looking for tokens to replace */
-		while (*read) {
-			if (*read == '%' && (entry = consumeToken(tokens, read))) {
+		while ('\0' != *read) {
+			if ((*read == '%') && (NULL != (entry = consumeToken(tokens, read)))) {
 				/* We found an expandable token */
 				read += entry->keyLen + 1; /* +1 because of the % */
 				cnt += entry->valueLen;
@@ -2221,8 +1831,8 @@ omrstr_subst_tokens(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t buf
 	/* Second case: we're actually writing to buf. */
 	else if (bufLen > 0) {
 		/* Let's parse the format string looking for tokens to replace */
-		while ((cnt < bufLen) && *read) {
-			if (*read == '%' && (entry = consumeToken(tokens, read))) {
+		while ((cnt < bufLen) && ('\0' != *read)) {
+			if ((*read == '%') && (NULL != (entry = consumeToken(tokens, read)))) {
 				/* We found an expandable token */
 				uintptr_t maxExpandLen = bufLen - cnt;
 				uintptr_t lengthToCopy = (entry->valueLen < maxExpandLen) ? entry->valueLen : maxExpandLen;
@@ -2259,7 +1869,7 @@ omrstr_subst_tokens(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t buf
  * Discard a token cookie.
  * If tokens is NULL, no action is taken.
  *
- * @parm[in] tokens  the cookie to be freed
+ * @param[in] tokens the cookie to be freed
  */
 void
 omrstr_free_tokens(struct OMRPortLibrary *portLibrary, struct J9StringTokens *tokens)
@@ -2276,17 +1886,20 @@ omrstr_free_tokens(struct OMRPortLibrary *portLibrary, struct J9StringTokens *to
 }
 
 /**
- * Returns the UTC time that was passed in as a formatted string in local time.  Formatted according to the 'format' parameter.
+ * Returns the UTC time that was passed in as a formatted string according to
+ * the 'format' and 'flags' parameters.
  *
  * @param[in] portLibrary  The port library.
  * @param[in,out] buf A pointer to a character buffer where the resulting time string will be stored.
  * @param[in] bufLen The length of the 'buf' character buffer.
- * @param[in] format The format string, ordinary characters placed in the format string are copied.
- * to buf without conversion.  Conversion specifiers are introduced by a '%' character, and are replaced in buf as follows:.
+ * @param[in] format The format string, ordinary characters placed in the format string are copied to
+ *                   buf without conversion.  Conversion specifiers are introduced by a '%' character,
+ *                   and are replaced in buf as follows:
  * <ul>
- * <li>%b The abbreviated month name in english
- * <li>%d The  day  of the month as a decimal number (range 0 to 31).
- * <li>%H The hour as a decimal number using a 24-hour  clock (range 00 to 23).
+ * <li>%a The abbreviated weekday in English.
+ * <li>%b The abbreviated month name in English.
+ * <li>%d The day of the month as a decimal number (range 0 to 31).
+ * <li>%H The hour as a decimal number using a 24-hour clock (range 00 to 23).
  * <li>%m The month as a decimal number (range 01 to 12).
  * <li>%M The minute as a decimal number.
  * <li>%S The second as a decimal number.
@@ -2295,8 +1908,46 @@ omrstr_free_tokens(struct OMRPortLibrary *portLibrary, struct J9StringTokens *to
  * <li>%% A literal '%' character.
  * <li>all other '%' specifiers will be ignored
  * </ul>
- * @param[in] timeMillis The time value to format.  The value is expressed in milliseconds since January 1st 1970.  Note that
- * the implementation will not do any timezone correction and assumes that this value is in terms of the required timezone.
+ * @param[in] timeMillisUTC The time value to format.  The value is expressed in milliseconds since January 1, 1970 UTC.
+ * @param[in] flags  Bit-wise or of OMRSTR_FTIME_FLAG_* as defined in omrport.h.  Current options include mapping to the
+ *                   local time zone (or not).
+ *
+ * @return The number of characters placed in the array buf, not including NULL terminator.
+ *
+ * If buf is too small, will return the minimum buf size required.
+ */
+uint32_t
+omrstr_ftime_ex(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, const char *format, int64_t timeMillisUTC, uint32_t flags)
+{
+	if ((NULL != buf) && (bufLen > 0)) {
+		return omrstr_subst_time(portLibrary, buf, bufLen, format, timeMillisUTC, flags);
+	}
+	return 0;
+}
+
+/**
+ * Returns the UTC time that was passed in as a formatted string in local time.  Formatted according to the 'format' parameter.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in,out] buf A pointer to a character buffer where the resulting time string will be stored.
+ * @param[in] bufLen The length of the 'buf' character buffer.
+ * @param[in] format The format string, ordinary characters placed in the format string are copied to
+ *                   buf without conversion.  Conversion specifiers are introduced by a '%' character,
+ *                   and are replaced in buf as follows:
+ * <ul>
+ * <li>%a The abbreviated weekday in English
+ * <li>%b The abbreviated month name in English
+ * <li>%d The day  of the month as a decimal number (range 0 to 31).
+ * <li>%H The hour as a decimal number using a 24-hour clock (range 00 to 23).
+ * <li>%m The month as a decimal number (range 01 to 12).
+ * <li>%M The minute as a decimal number.
+ * <li>%S The second as a decimal number.
+ * <li>%Y The year as a decimal number including the century.
+ * <li>%y The year within the century.
+ * <li>%% A literal '%' character.
+ * <li>All other '%' specifiers will be ignored.
+ * </ul>
+ * @param[in] timeMillisUTC The time value to format.  The value is expressed in milliseconds since January 1, 1970 UTC.
  *
  * @return The number of characters placed in the array buf, not including NULL terminator.
  *
@@ -2305,10 +1956,7 @@ omrstr_free_tokens(struct OMRPortLibrary *portLibrary, struct J9StringTokens *to
 uint32_t
 omrstr_ftime(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, const char *format, int64_t timeMillisUTC)
 {
-	if (buf && bufLen > 0) {
-		return omrstr_subst_time(portLibrary, buf, bufLen, format, timeMillisUTC);
-	}
-	return 0;
+	return omrstr_ftime_ex(portLibrary, buf, bufLen, format, timeMillisUTC, OMRSTR_FTIME_FLAG_LOCAL);
 }
 
 /**
@@ -2319,7 +1967,8 @@ omrstr_ftime(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, con
  * 	  %Y     year    1900..????		(local time, based on millis parameter)
  *	  %y     year of century  00..99
  *	  %m     month     01..12
- *	  %b     abbreviated month name in english
+ *	  %a     abbreviated weekday in English
+ *	  %b     abbreviated month name in English
  *	  %d     day       01..31
  *	  %H     hour      00..23
  *	  %M     minute    00..59
@@ -2327,19 +1976,20 @@ omrstr_ftime(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, con
  *
  *	  %tick  high res timer
  *
- *
- * @parm[in]     portLibrary  the port library
- * @parm[out]    buf  the string buffer to use
- * @parm[in]     bufLen  the buffer length
- * @parm[in]     format  the format string
- * @parm[in]     timeMillis  the UTC time in ms to use for the date/time tokens
+ * @param[in] portLibrary the port library
+ * @param[out] buf the string buffer to use
+ * @param[in] bufLen the buffer length
+ * @param[in] format the format string
+ * @param[in] timeMillis the UTC time in milliseconds to use for the date/time tokens
+ * @param[in] flags bit-wise or of OMRSTR_FTIME_FLAG_* as defined in omrport.h.
+ *                  Current options include mapping to the local time zone (or not).
  *
  * @return The number of characters placed in the array buf, not including NULL terminator.
  *
  * If buf is too small, will return the minimum buf size required.
  */
 static uint32_t
-omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, const char *format, int64_t timeMillis)
+omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, const char *format, int64_t timeMillis, uint32_t flags)
 {
 	int8_t haveTick = 0;
 	uint32_t count = 0;
@@ -2349,11 +1999,15 @@ omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen
 	char ticks[TICK_BUF_SIZE];
 	uint32_t tickSize = 0;
 	J9TimeInfo tm;
-	static const char abbMonthName[12][4] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-											 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-											};
+	static const char abbWeekdayName[7][4] = {
+			"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
+	};
+	static const char abbMonthName[12][4] = {
+			"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+			"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+	};
 
-	convertUTCMillisToLocalJ9Time(timeMillis, &tm);
+	convertUTCMillisToJ9Time(timeMillis, &tm, flags);
 
 	while (0 != *read) {
 		char c = *read;
@@ -2416,6 +2070,14 @@ omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen
 				}
 				read += 2;
 				break;
+			case 'a':
+				count += 3;
+				if (count <= bufLen) {
+					writeStringToBuffer(write, 3, J9F_NO_VALUE, J9F_NO_VALUE, abbWeekdayName[tm.weekday], 0);
+					write += 3;
+				}
+				read += 2;
+				break;
 			case 'b':
 				count += 3;
 				if (count <= bufLen) {
@@ -2466,25 +2128,27 @@ omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen
 	if (count < bufLen) {
 		*write = '\0';
 	} else {
-		count++;
+		count += 1;
 	}
 	return count;
 }
 
 /* ===================== Internal functions ======================== */
+
 #define CONVERSION_BUFFER_SIZE 256
 #define WIDE_CHAR_SIZE 2
 #define BYTE_ORDER_MARK 0xFEFF
-/*
-* Two step process: convert platform encoding to wide characters, then convert wide characters to modified UTF-8.
-*  iconv() is resumable if the output buffer is full, but Windows MultiByteToWideChar() is not.
-*  @param[in] codePage specify the "platform" code page: CP_THREAD_ACP, CP_ACP (Windows ANSI code pages) or OS_ENCODING_CODE_PAGE. Ignored on non-Windows systems
- * @param[in] inBuffer  input string  to be converted
+
+/**
+ * Two step process: convert platform encoding to wide characters, then convert wide characters to modified UTF-8.
+ * iconv() is resumable if the output buffer is full, but Windows MultiByteToWideChar() is not.
+ * @param[in] codePage specify the "platform" code page: CP_THREAD_ACP, CP_ACP (Windows ANSI code pages) or OS_ENCODING_CODE_PAGE. Ignored on non-Windows systems
+ * @param[in] inBuffer input string to be converted
  * @param[in] inBufferSize input string size in bytes.
  * @param[in] outBuffer user-allocated output buffer that stores converted characters, ignored if inBufferSize is 0.
  * @param[in] outBufferSize output buffer size in bytes (zero to request the required output buffer size)
  * @return number of bytes generated, or required size of output buffer if outBufferSize is 0. Negative error code on failure.
-*/
+ */
 static int32_t
 convertPlatformToMutf8(struct OMRPortLibrary *portLibrary, uint32_t codePage, const uint8_t *inBuffer, uintptr_t inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize)
 {
@@ -2492,7 +2156,7 @@ convertPlatformToMutf8(struct OMRPortLibrary *portLibrary, uint32_t codePage, co
 	uint8_t *wideBuffer = onStackBuffer;
 	uintptr_t wideBufferSize = sizeof(onStackBuffer);
 	uintptr_t resultSize = 0; /* amount of the output buffer used, in bytes */
-	charconvState_t encodingState;
+	charconvState_t encodingState = NULL;
 	/* create mutable copies of buffer variables */
 	const uint8_t *platformCursor = inBuffer;
 	uintptr_t platformRemaining = inBufferSize;
@@ -2615,7 +2279,7 @@ convertMutf8ToPlatform(struct OMRPortLibrary *portLibrary, uint32_t codePage, co
 	uint8_t *outCursor = outBuffer;
 	uintptr_t outLimit = outBufferSize;
 	int32_t resultSize = 0;
-	charconvState_t encodingState;
+	charconvState_t encodingState = NULL;
 
 	/* set up convertor state.  Note: no convertor state is required on Windows */
 #if defined(J9STR_USE_ICONV)
@@ -2633,7 +2297,7 @@ convertMutf8ToPlatform(struct OMRPortLibrary *portLibrary, uint32_t codePage, co
 		uintptr_t wideBufferSize = sizeof(wideBuffer);
 		uintptr_t wideBufferCount = 0;
 		int32_t platformPartCount = 0;
-		
+
 		int32_t result = convertMutf8ToWide(&mutf8Cursor, &mutf8Remaining, wideBuffer, wideBufferSize);
 		if (result < 0) { /* conversion error */
 			return result;
@@ -2665,23 +2329,23 @@ convertMutf8ToPlatform(struct OMRPortLibrary *portLibrary, uint32_t codePage, co
 	return resultSize;
 }
 
-/*
-* convert platform encoding to UTF-8.
- * @param[in]  inBuffer        input string  to be converted.
- * @param[in]  inBufferSize  input string size in bytes.
- * @param[in] outBuffer    user-allocated output buffer that stores converted characters, ignored if inBufferSize is 0.
- * @param[in]  outBufferSize output buffer size in bytes (zero to request the required output buffer size)
-*/
+/**
+ * convert platform encoding to UTF-8.
+ * @param[in] inBuffer      input string  to be converted.
+ * @param[in] inBufferSize  input string size in bytes.
+ * @param[in] outBuffer     user-allocated output buffer that stores converted characters, ignored if inBufferSize is 0.
+ * @param[in] outBufferSize output buffer size in bytes (zero to request the required output buffer size)
+ */
 static int32_t
 convertPlatformToUtf8(struct OMRPortLibrary *portLibrary, const uint8_t *inBuffer, uintptr_t inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize)
 {
 	int32_t resultSize = 0;
 #if defined(J9STR_USE_ICONV)
 	/* J9STR_USE_ICONV is defined on LINUX, AIXPPC and J9ZOS390 at the beginning of the file */
-	char* inbuf =  (char*)inBuffer;
+	char* inbuf = (char*)inBuffer;
 	char* outbuf = (char*)outBuffer;
 	size_t inbytesleft = inBufferSize;
-	size_t outbytesleft = outBufferSize - 1 /* space for null-terminator */ ;
+	size_t outbytesleft = outBufferSize - 1; /* space for null-terminator */
 	charconvState_t converter = iconv_get(portLibrary, OMRPORT_LANG_TO_UTF8_ICONV_DESCRIPTOR, utf8, nl_langinfo(CODESET));
 
 	if (J9VM_INVALID_ICONV_DESCRIPTOR == converter) {
@@ -2718,19 +2382,18 @@ convertPlatformToUtf8(struct OMRPortLibrary *portLibrary, const uint8_t *inBuffe
 	return resultSize;
 }
 
-
-/*
+/**
  * Convert wide char (UTF-16) encoding to modified UTF-8.
  * May terminate early if the output buffer is too small.
  * If the buffer is large enough, the byte after the last output character is set to 0.
  * Resumable, so it updates its inputs
- * @param[inout]  inBuffer input string  to be converted.   Updated to first untranslated character.
- * @param[inout]  inBufferSize input string size in bytes.  Updated to number of untranslated characters. Must be even.
+ * @param[in,out]  inBuffer input string  to be converted.   Updated to first untranslated character.
+ * @param[in,out]  inBufferSize input string size in bytes.  Updated to number of untranslated characters. Must be even.
  * @param[in] outBuffer user-allocated output buffer that stores converted characters, ignored if outBufferSize is 0.
  * @param[in] outBufferSize output buffer size in bytes (zero to request the output buffer size).
  * @return number of bytes generated, or required size of output buffer if outBufferSize is 0.
  * @note callers are responsible for detecting buffer overflow.
-*/
+ */
 static int32_t
 convertWideToMutf8(const uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize)
 {
@@ -2756,7 +2419,7 @@ convertWideToMutf8(const uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *o
 		uint8_t *outputCursor = outBuffer;
 		while ((wideRemaining > 0) && (outputLimit > 0)) {
 			uint16_t wideChar = *((uint16_t *) wideCursor);
-			uint32_t encodeResult  = encodeUTF8CharN(wideChar, outputCursor, 3);
+			uint32_t encodeResult = encodeUTF8CharN(wideChar, outputCursor, 3);
 			if (0 == encodeResult) {
 				return OMRPORT_ERROR_STRING_ILLEGAL_STRING;
 			}
@@ -2778,19 +2441,18 @@ convertWideToMutf8(const uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *o
 	return resultSize;
 }
 
-/*
+/**
  * Convert ISO Latin-1 (8859-1) encoding to modified UTF-8.
  * May terminate early if the output buffer is too small.
  * Resumable, so it updates its inputs.
  * If the buffer is large enough, the byte after the last output character is set to 0.
- * @param[inout]  inBuffer input string  to be converted.   Updated to first untranslated character.
- * @param[inout]  inBufferSize input string size in bytes.  Updated to number of untranslated characters.
+ * @param[in,out]  inBuffer input string  to be converted.   Updated to first untranslated character.
+ * @param[in,out]  inBufferSize input string size in bytes.  Updated to number of untranslated characters.
  * @param[in] outBuffer user-allocated output buffer that stores converted characters, ignored if outBufferSize is 0.
  * @param[in] outBufferSize output buffer size in bytes (zero to request the output buffer size).
  * @return number of bytes generated, or required size of output buffer if outBufferSize is 0.
  * @note callers are responsible for detecting buffer overflow.
- *
-*/
+ */
 static int32_t
 convertLatin1ToMutf8(struct OMRPortLibrary *portLibrary, const uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize)
 {
@@ -2801,8 +2463,8 @@ convertLatin1ToMutf8(struct OMRPortLibrary *portLibrary, const uint8_t **inBuffe
 	int32_t resultSize = 0;
 
 	while ((latinRemaining > 0)
-		   && ((mutf8Remaining > 0) || (0 == outBufferSize)) /* outBufferSize == 0 indicates we just want the length */
-		   && (resultSize >= 0)
+		&& ((mutf8Remaining > 0) || (0 == outBufferSize)) /* outBufferSize == 0 indicates we just want the length */
+		&& (resultSize >= 0)
 	) {
 		/* still have input data, output space, and no errors */
 		/* convert in CONVERSION_BUFFER_SIZE-size segments */
@@ -2847,8 +2509,8 @@ convertLatin1ToMutf8(struct OMRPortLibrary *portLibrary, const uint8_t **inBuffe
  * May terminate early if the output buffer is too small.
  * If the buffer is large enough, the byte after the last output character is set to 0.
  * Resumable, so it updates its inputs
- * @param[inout]  inBuffer input string  to be converted. Updated to first untranslated character.
- * @param[inout]  inBufferSize input string size in bytes. Updated to number of untranslated characters.
+ * @param[in,out]  inBuffer input string  to be converted. Updated to first untranslated character.
+ * @param[in,out]  inBufferSize input string size in bytes. Updated to number of untranslated characters.
  * @param[in] outBuffer user-allocated output buffer that stores converted characters, ignored if outBufferSize is 0.
  * @param[in] outBufferSize output buffer size in bytes (zero to request the output buffer size).
  * @return number of bytes generated, or required size of output buffer if outBufferSize is 0.
@@ -2864,8 +2526,8 @@ convertMutf8ToLatin1(struct OMRPortLibrary *portLibrary, const uint8_t **inBuffe
 	int32_t resultSize = 0;
 
 	while ((mutf8Remaining > 0)
-			&& ((latinRemaining > 0) || (0 == outBufferSize)) /* outBufferSize == 0 indicates we just want the length */
-			&& (resultSize >= 0)
+		&& ((latinRemaining > 0) || (0 == outBufferSize)) /* outBufferSize == 0 indicates we just want the length */
+		&& (resultSize >= 0)
 	) {
 		/* still have input data, output space, and no errors */
 		/* convert in CONVERSION_BUFFER_SIZE-size segments */
@@ -2918,7 +2580,7 @@ convertMutf8ToLatin1(struct OMRPortLibrary *portLibrary, const uint8_t **inBuffe
 static BOOLEAN
 checkAndCopyUtfBytes(const uint8_t *utf8Bytes, uintptr_t numBytes, uint8_t *mutf8Bytes)
 {
-	uintptr_t cursor;
+	uintptr_t cursor = 0;
 
 	if (NULL != mutf8Bytes) {
 		mutf8Bytes[0] = utf8Bytes[0];
@@ -2932,20 +2594,20 @@ checkAndCopyUtfBytes(const uint8_t *utf8Bytes, uintptr_t numBytes, uint8_t *mutf
 	}
 	return TRUE;
 }
-/*
+
+/**
  * Convert Unicode UTF8 (including supplementary characters) encoding to modified UTF-8.
  * May terminate early if the output buffer is too small.
  * Resumable, so it updates its inputs.
  * If the buffer is large enough, the byte after the last output character is set to 0.
- * @param[inout]  inBuffer input string  to be converted.   Updated to first untranslated character.
- * @param[inout]  inBufferSize input string size in bytes.  Updated to number of untranslated characters.
+ * @param[in,out]  inBuffer input string  to be converted.   Updated to first untranslated character.
+ * @param[in,out]  inBufferSize input string size in bytes.  Updated to number of untranslated characters.
  * @param[in] outBuffer user-allocated output buffer that stores converted characters, ignored if outBufferSize is 0.
  * @param[in] outBufferSize output buffer size in bytes (zero to request the output buffer size).
  * @return number of bytes generated, or required size of output buffer if outBufferSize is 0, not including any final zero byte.
  * @note invalid characters are replaced with the Unicode code point U+FFFD	(ef bf bd)	(REPLACEMENT CHARACTER)
  * @note callers are responsible for detecting buffer overflow
- *
-*/
+ */
 static int32_t
 convertUtf8ToMutf8(struct OMRPortLibrary *portLibrary, const uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize)
 {
@@ -3030,25 +2692,25 @@ convertUtf8ToMutf8(struct OMRPortLibrary *portLibrary, const uint8_t **inBuffer,
 	return producedTotal;
 }
 
-/*
+/**
  * Convert modified UTF-8 encoding to wide char (UTF-16).
  * Resumable, so it updates its inputs
  * If the buffer is large enough, the byte after the last output character is set to 0.
- * @param[inout] inBuffer input string  to be converted.  Updated to first untranslated character.
- * @param[inout] inBufferSize  input string size in bytes. Updated to number of untranslated characters.
+ * @param[in,out] inBuffer input string to be converted.  Updated to first untranslated character.
+ * @param[in,out] inBufferSize  input string size in bytes. Updated to number of untranslated characters.
  * @param[in] outBuffer user-allocated output buffer that stores converted characters, ignored if outBufferSize is 0.
  * @param[in] outBufferSize output buffer size in bytes (zero to request the output buffer size).
  * @return number of bytes generated, or required size in bytes of output buffer if outBufferSize is 0. Negative error code on failure.
  * @note callers are responsible for detecting buffer overflow
-*/
+ */
 static int32_t
-convertMutf8ToWide(const  uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize)
+convertMutf8ToWide(const uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize)
 {
 	uintptr_t mutf8Remaining = *inBufferSize; /* number of untranslated bytes in inBuffer */
 	const uint8_t *mutf8Cursor = *inBuffer;
 	int32_t resultSize = 0;
 	if (0 == outBufferSize) { /* we just want the length */
-		uint16_t temp;
+		uint16_t temp = 0;
 		while (mutf8Remaining > 0) {
 			uint32_t bytesConsumed = decodeUTF8CharN(mutf8Cursor, &temp, mutf8Remaining);
 			if (0 == bytesConsumed) {
@@ -3076,7 +2738,7 @@ convertMutf8ToWide(const  uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *
 			*wideBufferCursor = 0; /* null terminate if possible */
 		}
 	} /* if */
-	*inBuffer = mutf8Cursor;  /* update caller's arguments */
+	*inBuffer = mutf8Cursor; /* update caller's arguments */
 	*inBufferSize = mutf8Remaining;
 	if ((outBufferSize > 0) && ((outBufferSize - resultSize) >= 2)) {
 		uint16_t *terminator = (uint16_t *) &outBuffer[resultSize];
@@ -3085,21 +2747,21 @@ convertMutf8ToWide(const  uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *
 	return resultSize;
 }
 
-/*
-* transliterate from platform encoding to wide (UTF-16).  The input buffer pointer and size are updated (except on Windows) to allow
-* resumption if the translation failed due to output buffer too small.  The output buffer may not be null.
-* The output buffer may contain additional data such as a byte order mark (0xff, 0xfe or vice versa)
-* Resumable, so it updates its inputs
-* @param [in] portLibrary port library
-* @param [in] encodingState iconv_t on on Linux, z/OS and AIX, void * on Windows (unused)
-* @param[in] codePage specify the "platform" code page: CI_ACP (Windows ANSI code page) or OS_ENCODING_CODE_PAGE.  Ignored on non-Windows systems
-* @param [inout] inBuffer point to start of buffer containing platform-encoded string.  Updated to point to start of first untranslated character
-* @param [inout] inBufferSize size in characters of the platform-encoded string.  Updated to indicate number of remaining untranslated characters.
-* @param [in] outBuffer output buffer.
-* @param [in] outBufferSize size in bytes of wideBuffer
-* @return number of bytes generated, or negative in case of error
-* @note callers are responsible for detecting buffer overflow
-*/
+/**
+ * transliterate from platform encoding to wide (UTF-16).  The input buffer pointer and size are updated (except on Windows) to allow
+ * resumption if the translation failed due to output buffer too small.  The output buffer may not be null.
+ * The output buffer may contain additional data such as a byte order mark (0xff, 0xfe or vice versa)
+ * Resumable, so it updates its inputs
+ * @param [in] portLibrary port library
+ * @param [in] encodingState iconv_t on on Linux, z/OS and AIX, void * on Windows (unused)
+ * @param[in] codePage specify the "platform" code page: CI_ACP (Windows ANSI code page) or OS_ENCODING_CODE_PAGE.  Ignored on non-Windows systems
+ * @param [in,out] inBuffer point to start of buffer containing platform-encoded string.  Updated to point to start of first untranslated character
+ * @param [in,out] inBufferSize size in characters of the platform-encoded string.  Updated to indicate number of remaining untranslated characters.
+ * @param [in] outBuffer output buffer.
+ * @param [in] outBufferSize size in bytes of wideBuffer
+ * @return number of bytes generated, or negative in case of error
+ * @note callers are responsible for detecting buffer overflow
+ */
 static int32_t
 convertPlatformToWide(struct OMRPortLibrary *portLibrary, charconvState_t encodingState, uint32_t codePage, const uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize)
 {
@@ -3145,13 +2807,13 @@ convertPlatformToWide(struct OMRPortLibrary *portLibrary, charconvState_t encodi
  * Resumable, so it updates its inputs.
  * The output buffer may contain additional data such as a byte order mark (0xff, 0xfe or vice versa).
  * If the buffer is large enough, the byte after the last output character is set to 0.
- * @param [in] portLibrary port library
- * @param [in] encodingState iconv_t on Linux, z/OS and AIX, void * on Windows (unused)
- * @param [in] codePage specify the "platform" code page: CP_THREAD_ACP, CP_ACP (Windows ANSI code pages) or OS_ENCODING_CODE_PAGE. Ignored on non-Windows systems
- * @param [inout] inBuffer input buffer. Updated to point to start of first untranslated character
- * @param [inout] inBufferSize number of wide characters in wideBuffer. Updated to number of untranslated characters
- * @param [in] outBuffer point to start of buffer to receive platform-encoded string
- * @param [in] outBufferSize size in characters of the platformBuffer. Set to 0 to get the length of bytes required to hold the output
+ * @param[in] portLibrary port library
+ * @param[in] encodingState iconv_t on Linux, z/OS and AIX, void * on Windows (unused)
+ * @param[in] codePage specify the "platform" code page: CP_THREAD_ACP, CP_ACP (Windows ANSI code pages) or OS_ENCODING_CODE_PAGE. Ignored on non-Windows systems
+ * @param[in,out] inBuffer input buffer. Updated to point to start of first untranslated character
+ * @param[in,out] inBufferSize number of wide characters in wideBuffer. Updated to number of untranslated characters
+ * @param[in] outBuffer point to start of buffer to receive platform-encoded string
+ * @param[in] outBufferSize size in characters of the platformBuffer. Set to 0 to get the length of bytes required to hold the output
  * @return number of characters generated, or negative in case of error
  */
 static int32_t
@@ -3159,7 +2821,7 @@ convertWideToPlatform(struct OMRPortLibrary *portLibrary, charconvState_t encodi
 {
 	int32_t resultSize = -1;
 #if defined(J9STR_USE_ICONV)
-	uint8_t *platformCursor = (0 == outBufferSize)? NULL : outBuffer;
+	uint8_t *platformCursor = (0 == outBufferSize) ? NULL : outBuffer;
 	uintptr_t platformLimit = outBufferSize;
 	uintptr_t wideRemaining = *inBufferSize;
 

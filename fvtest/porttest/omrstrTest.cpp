@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -61,7 +61,6 @@
 /* 1165872606740 -> 2006/12/11 16:30:06 */
 /* 1139952606740 -> 2006/02/14 16:30:06 */
 #endif
-
 
 /**
  * @internal
@@ -258,16 +257,19 @@ test_omrstr_vprintfNulChar(struct OMRPortLibrary *portLibrary, const char *testN
  * @param[in] bufLen The length of buf
  * @param[in] format Specifies the format of the time that will be written to buf
  * @param[in] timeMillis The time to format in ms
- * @param[in] expectedBuf The value that is to be expected following the call to omrstr_ftime
+ * @param[in] expectedBuf The value that is to be expected following the call to omrstr_ftime_ex
+ * @param[in] flags argument for omrstr_ftime_ex
  *
  * @return TEST_PASS if buf and expectedBuf are identical, TEST_FAIL if not
  */
 static void
-test_omrstr_ftime(struct OMRPortLibrary *portLibrary, const char *testName, char *buf, uintptr_t bufLen, const char *format, I_64 timeMillis, const char *expectedBuf)
+test_omrstr_ftime(struct OMRPortLibrary *portLibrary, const char *testName, char *buf, uintptr_t bufLen,
+		const char *format, int64_t timeMillis, uint32_t flags, const char *expectedBuf)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 
-	omrstr_ftime(buf, bufLen, format, timeMillis);
+	omrstr_ftime_ex(buf, bufLen, format, timeMillis, flags);
+
 	if (0 != strncmp(buf, expectedBuf, bufLen)) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Expected \"%s\", Got \"%s\"\n", expectedBuf, buf);
 	}
@@ -501,8 +503,8 @@ TEST(PortStrTest, str_test3)
 	const char *testName = "omrstr_test3";
 	char buf[J9STR_BUFFER_SIZE];
 	char expected[J9STR_BUFFER_SIZE];
-	uint64_t timeMillis;
-	uintptr_t ret;
+	uint64_t timeMillis = 0;
+	uintptr_t ret = 0;
 
 	reportTestEntry(OMRPORTLIB, testName);
 
@@ -510,14 +512,18 @@ TEST(PortStrTest, str_test3)
 	portTestEnv->log("\t This test could fail if you abut the international dateline (westside of dateline)\n");
 	timeMillis = 0;
 	strncpy(expected, "1970 01 Jan 01 XX:YY:00", J9STR_BUFFER_SIZE);
-	test_omrstr_ftime(OMRPORTLIB, testName, buf, J9STR_BUFFER_SIZE, "%Y %m %b %d XX:YY:%S", timeMillis, expected);
+	test_omrstr_ftime(OMRPORTLIB, testName, buf, J9STR_BUFFER_SIZE, "%Y %m %b %d XX:YY:%S", timeMillis, OMRSTR_FTIME_FLAG_LOCAL, expected);
 
-
+	strncpy(expected, "1970 01 Jan 01 00:00:00", J9STR_BUFFER_SIZE);
+	test_omrstr_ftime(OMRPORTLIB, testName, buf, J9STR_BUFFER_SIZE, "%Y %m %b %d %H:%M:%S", timeMillis, OMRSTR_FTIME_FLAG_UTC, expected);
 
 	/* Second Test: February 29th, 2004, 12:00:00, UTC. */
 	timeMillis = J9CONST64(1078056000000);
 	strncpy(expected, "2004 02 Feb 29 00", J9STR_BUFFER_SIZE);
-	test_omrstr_ftime(OMRPORTLIB, testName, buf, J9STR_BUFFER_SIZE, "%Y %m %b %d %S", timeMillis, expected);
+	test_omrstr_ftime(OMRPORTLIB, testName, buf, J9STR_BUFFER_SIZE, "%Y %m %b %d %S", timeMillis, OMRSTR_FTIME_FLAG_LOCAL, expected);
+
+	strncpy(expected, "2004 02 Feb 29 12:00:00", J9STR_BUFFER_SIZE);
+	test_omrstr_ftime(OMRPORTLIB, testName, buf, J9STR_BUFFER_SIZE, "%Y %m %b %d %H:%M:%S", timeMillis, OMRSTR_FTIME_FLAG_UTC, expected);
 
 	/* Third test: Too short a buffer */
 	ret = omrstr_ftime(buf, 3, "%Y", timeMillis);
@@ -529,19 +535,19 @@ TEST(PortStrTest, str_test3)
 	 * Use the time February 29th, 2004, 12:00:00, UTC. */
 	timeMillis = J9CONST64(1078056000000);
 	strncpy(expected, "2004 02 Feb 29 00 %pid %uid %job %home %last %seq", J9STR_BUFFER_SIZE);
-	test_omrstr_ftime(OMRPORTLIB, testName, buf, J9STR_BUFFER_SIZE, "%Y %m %b %d %S %pid %uid %job %home %last %seq", timeMillis, expected);
+	test_omrstr_ftime(OMRPORTLIB, testName, buf, J9STR_BUFFER_SIZE, "%Y %m %b %d %S %pid %uid %job %home %last %seq", timeMillis, OMRSTR_FTIME_FLAG_LOCAL, expected);
 
 	/* Fifth Test: Pass in Tokens that are not valid by default anywhere.
 	 * Use the time February 29th, 2004, 12:00:00, UTC. */
 	timeMillis = J9CONST64(1078056000000);
 	strncpy(expected, "2004 02 Feb 29 00 %zzz = %zzz", J9STR_BUFFER_SIZE);
-	test_omrstr_ftime(OMRPORTLIB, testName, buf, J9STR_BUFFER_SIZE, "%Y %m %b %d %S %zzz = %%zzz", timeMillis, expected);
+	test_omrstr_ftime(OMRPORTLIB, testName, buf, J9STR_BUFFER_SIZE, "%Y %m %b %d %S %zzz = %%zzz", timeMillis, OMRSTR_FTIME_FLAG_LOCAL, expected);
 
 	/* Sixth Test: Pass in all time tokens.
 	 * Use the time February 29th, 2004, 12:00:00, UTC. */
 	timeMillis = J9CONST64(1078056000000);
 	strncpy(expected, "04,(2004) 02,(Feb) 29 XX:00:00 %", J9STR_BUFFER_SIZE);
-	test_omrstr_ftime(OMRPORTLIB, testName, buf, J9STR_BUFFER_SIZE, "%y,(%Y) %m,(%b) %d XX:%M:%S %", timeMillis, expected);
+	test_omrstr_ftime(OMRPORTLIB, testName, buf, J9STR_BUFFER_SIZE, "%y,(%Y) %m,(%b) %d XX:%M:%S %", timeMillis, OMRSTR_FTIME_FLAG_LOCAL, expected);
 
 	reportTestExit(OMRPORTLIB, testName);
 }

@@ -5780,13 +5780,6 @@ OMR::Z::CodeGenerator::isCompressedClassPointerOfObjectHeader(TR::Node * node)
             node->getSymbolReference() == self()->getSymRefTab()->findVftSymbolRef()));
    }
 
-size_t
-OMR::Z::CodeGenerator::findOrCreateLiteral(void *value, size_t len)
-   {
-   TR_ASSERT(0, "findOrCreateLiteral unimplemented\n");
-   return 0;
-   }
-
 bool
 OMR::Z::CodeGenerator::directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress)
    {

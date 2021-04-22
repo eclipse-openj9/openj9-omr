@@ -16667,48 +16667,9 @@ OMR::Z::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
          if (valueNode->getOpCode().isLoadConst())
             {
-            TR::Register *litReg = getLitPoolBaseReg(valueNode, cg);
-            size_t offset = 0;
-
-            if (size == 1)
-               {
-               uint8_t value = valueNode->getIntegerNodeValue<uint8_t>();
-               offset = cg->findOrCreateLiteral(&value, size);
-               }
-            else if (size == 2)
-               {
-               uint16_t value = valueNode->getIntegerNodeValue<uint16_t>();
-               offset = cg->findOrCreateLiteral(&value, size);
-               }
-            else if (size == 4)
-               {
-               if (valueNode->getOpCode().isFloat())
-                  {
-                  float value = valueNode->getFloat();
-                  offset = cg->findOrCreateLiteral(&value, size);
-                  }
-               else
-                  {
-                  uint32_t value = valueNode->getIntegerNodeValue<uint32_t>();
-                  offset = cg->findOrCreateLiteral(&value, size);
-                  }
-               }
-            else if (size == 8)
-               {
-               if (valueNode->getOpCode().isDouble())
-                  {
-                  double value = valueNode->getDouble();
-                  offset = cg->findOrCreateLiteral(&value, size);
-                  }
-               else
-                  {
-                  uint64_t value = valueNode->getIntegerNodeValue<uint64_t>();
-                  offset = cg->findOrCreateLiteral(&value, size);
-                  }
-               }
-
-            memRef = new (cg->trHeapMemory()) TR::MemoryReference(litReg, offset, cg);
-            cg->stopUsingRegister(litReg);
+            // This path used to contain a call to an API which would have returned a garbage result. Rather than 100% of the
+            // time generating an invalid sequence here which is guaranteed to crash if executed, we fail the compilation.
+            cg->comp()->failCompilation<TR::CompilationException>("Existing code relied on an unimplemented API and is thus not safe. See eclipse/omr#5937.");
             }
          else
             memRef = TR::MemoryReference::create(cg, valueNode);

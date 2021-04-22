@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2019, 2020 IBM Corp. and others
+# Copyright (c) 2019, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,6 +21,8 @@
 
 # Inputs:
 # LIBRARY_FILE_NAME - name of the generated dll file (no path)
+# ARCHIVE_DIR - Archive directory for the target
+# RUNTIME_DIR - Runtime directory for the target
 # BINARY_DIR - CMake Binary Dir for the library target
 
 # xlc creates the output file name by taking the name of the generated library
@@ -30,12 +32,24 @@
 # - foo.bar.baz => foo.bar.x
 # - foo => foo.x
 
+# if ARCHIVE_DIR not set, assume it is the same as RUNTIME_DIR
+if(NOT ARCHIVE_DIR)
+	set(ARCHIVE_DIR ${RUNTIME_DIR})
+endif()
+
+if(NOT EXISTS "${ARCHVIVE_DIR}")
+	file(MAKE_DIRECTORY "${ARCHIVE_DIR}")
+endif()
 string(FIND "${LIBRARY_FILE_NAME}" "." dot_pos REVERSE)
 string(SUBSTRING "${LIBRARY_FILE_NAME}" 0 ${dot_pos} base_name)
 
 set(SRC_FILE "${CMAKE_BINARY_DIR}/${base_name}.x")
-set(DEST_FILE "${LIBRARY_FOLDER}/${base_name}.x")
-
+set(DEST_FILE "${ARCHIVE_DIR}/${base_name}.x")
 if(NOT "${SRC_FILE}" STREQUAL "${DEST_FILE}")
 	file(RENAME "${SRC_FILE}" "${DEST_FILE}")
+endif()
+
+# Work around a bug in CMake where it looks for .x files in the runime dir rather than the archive dir.
+if(NOT "${ARCHIVE_DIR}" STREQUAL "${RUNTIME_DIR}")
+	file(COPY "${DEST_FILE}" DESTINATION "${RUNTIME_DIR}")
 endif()

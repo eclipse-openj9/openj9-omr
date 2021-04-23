@@ -346,7 +346,26 @@
     */
    computedStaticCallSymbol,
 
-   OMRlastPrintableCommonNonhelperSymbol = jProfileValueWithNullCHKSymbol,
+   /** \brief
+    * This symbol represents the floatTemp1 field in j9vmthread. It will provide another mechanism for the
+    * compiler to insert temporary information at run-time that the VM can use, similar to how tempSlot is
+    * used. While the name suggests this field would contain floats, other data types could also be stored.
+    *
+    * \code
+    *    istore  <j9VMThreadTempSlotFieldSymbol>
+    *       iconst <value1>
+    *    istore  <j9VMThreadFloatTemp1Symbol>
+    *       dconst <value2>
+    *    icall <VM internal native method>
+    *       <parm1>
+    *       <parm2>
+    *       .
+    *       .
+    * \endcode
+    */
+   j9VMThreadFloatTemp1Symbol,
+
+   OMRlastPrintableCommonNonhelperSymbol = j9VMThreadFloatTemp1Symbol,
 
    firstPerCodeCacheHelperSymbol,
    lastPerCodeCacheHelperSymbol = firstPerCodeCacheHelperSymbol + TR_numCCPreLoadedCode - 1,

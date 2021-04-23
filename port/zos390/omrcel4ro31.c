@@ -33,7 +33,7 @@ typedef void cel4ro31_cwi_func(void *);
 
 /* Function descriptor of CELQGIPB runtime call from GTCA control block */
 typedef void celqgipb_cwi_func(uint32_t *, OMR_CEL4RO31_infoBlock **, uint32_t *);
-#define CELQGIPB_FNPTR ((celqgipb_cwi_func *)((char *)(*(int *)(((char *)__gtca())+1096))+48))
+#define CELQGIPB_FNPTR ((celqgipb_cwi_func *)((char *)(*(int *)(((char *)__gtca())+1096))+96))
 
 OMR_CEL4RO31_infoBlock *
 omr_cel4ro31_init(uint32_t flags, const char *moduleName, const char *functionName, uint32_t argsLength)
@@ -111,7 +111,9 @@ omr_cel4ro31_init(uint32_t flags, const char *moduleName, const char *functionNa
 	if (OMR_ARE_ANY_BITS_SET(flags, OMR_CEL4RO31_FLAG_LOAD_DLL)) {
 		moduleBlock->length = moduleNameLength;
 		strncpy(moduleBlock->moduleName, moduleName, moduleNameLength);
+#if !defined(OMR_EBCDIC)
 		__a2e_l((char *)moduleBlock->moduleName, moduleNameLength);
+#endif /* !defined(OMR_EBCDIC) */
 	}
 
 	/* For DLL query operations, we expect a function name specified. */
@@ -120,7 +122,9 @@ omr_cel4ro31_init(uint32_t flags, const char *moduleName, const char *functionNa
 	if (OMR_ARE_ANY_BITS_SET(flags, OMR_CEL4RO31_FLAG_QUERY_TARGET_FUNC)) {
 		functionBlock->length = functionNameLength;
 		strncpy(functionBlock->functionName, functionName, functionNameLength);
+#if !defined(OMR_EBCDIC)
 		__a2e_l((char *)functionBlock->functionName, functionNameLength);
+#endif /* !defined(OMR_EBCDIC) */
 	}
 
 	/* For execute target function operations, we need to ensure args is set

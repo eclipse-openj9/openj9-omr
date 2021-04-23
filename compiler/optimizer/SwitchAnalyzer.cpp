@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,18 +26,14 @@
 #include <string.h>
 #include "env/FrontEnd.hpp"
 #include "compile/Compilation.hpp"
-#include "compile/SymbolReferenceTable.hpp"
 #include "env/IO.hpp"
 #include "il/Block.hpp"
 #include "il/DataTypes.hpp"
-#include "il/ILOps.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 #include "il/TreeTop.hpp"
-#include "il/TreeTop_inlines.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
-#include "infra/Cfg.hpp"
 #include "infra/List.hpp"
 #include "infra/TRCfgEdge.hpp"
 #include "optimizer/Optimization_inlines.hpp"
@@ -47,8 +43,6 @@
 #define MIN_CASES_FOR_OPT 4
 #define SWITCH_TO_IFS_THRESHOLD 3
 #define LOOKUP_SWITCH_GEN_IN_IL_OVERRIDE 15
-
-#define ADD_BRANCH_TABLE_ADDRESS
 
 #define OPT_DETAILS "O^O SWITCH ANALYZER: "
 
@@ -820,16 +814,17 @@ void TR::SwitchAnalyzer::emit(TR_LinkHead<SwitchInfo> *chain, TR_LinkHead<Switch
    // Check if CannotOverflow flag on switch should be propagated
    // This flag indicates that the possible values of the switch operand are withing the min max range of all the case statements
    bool keepOverflow=true;
-   if(majorsInBound!=0 || majorsInEarly!=0 || !_switch->chkCannotOverflow())
-     keepOverflow=false;
-   SwitchInfo *info=chain->getFirst();
-   if(info==NULL || info->getNext()!=NULL || info->_kind != Dense)
-     keepOverflow=false;
-   if(keepOverflow==false)
-     _switch->setCannotOverflow(false); // Cancel the unneeded range check
-   else if(!performTransformation(comp(), "%sUnneeded range check on switch propagated\n", OPT_DETAILS))
-     _switch->setCannotOverflow(false); // Cancel the unneeded range check if optimization limit reached
 
+   if(majorsInBound != 0 || majorsInEarly != 0 || !_switch->chkCannotOverflow())
+      keepOverflow=false;
+
+   SwitchInfo *info=chain->getFirst();
+
+   if(info == NULL || info->getNext() != NULL || info->_kind != Dense)
+      keepOverflow = false;
+
+   if(!keepOverflow || !performTransformation(comp(), "%sUnneeded range check on switch propagated\n", OPT_DETAILS))
+      _switch->setCannotOverflow(false); // Cancel the unneeded range check
 
    // check if some element needs to be extracted because it is high frequency
    // we can pull them out and test them first before searching the rest of the chain
@@ -1257,11 +1252,7 @@ TR::Block *TR::SwitchAnalyzer::addTableBlock(SwitchInfo *dense)
 
    CASECONST_TYPE upperBound = dense->_max - dense->_min;
 
-   TR::SymbolReference *branchTableSymRef = NULL;
-
-   int32_t branchTable = 0;
-
-   TR::Node *node = TR::Node::create(_switch, TR::table, 3 + upperBound + branchTable);
+   TR::Node *node = TR::Node::create(_switch, TR::table, 3 + upperBound);
    if(_switch && _switch->chkCannotOverflow())
      node->setCannotOverflow(true); // Pass on info to code gen that table will have all cases covered and not use default case
 
@@ -1305,11 +1296,6 @@ TR::Block *TR::SwitchAnalyzer::addTableBlock(SwitchInfo *dense)
          dest = _defaultDest;
 
       node->setAndIncChild(2 + caseIndex, TR::Node::createCase(_switch, dest, caseIndex));
-      }
-
-   if (branchTable)
-      {
-      node->setAndIncChild(2 + upperBound + 1, TR::Node::createWithSymRef(_switch, TR::loadaddr, 0, branchTableSymRef));
       }
 
    _nextBlock = newBlock;

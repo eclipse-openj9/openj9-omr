@@ -136,6 +136,38 @@ if(OMR_OS_AIX)
 	)
 endif()
 
+if (OMR_OS_ZOS AND OMR_ENV_DATA64)
+	omr_add_library(sltestlib31 SHARED
+		sltestlib31/sltest.cpp
+	)
+
+	# Force 31-bit NON-XPLINK. These options appended at the end overrides
+	# the default 64-bit options from CMAKE_C_FLAGS.
+	target_compile_options(sltestlib31
+		PRIVATE
+			"-Wc,ILP32"    # Force AMODE31 generation
+			"-Wc,noxplink" # Force OS Linkage
+	)
+
+	# Force AMODE31/OS linkage for linking as well. Unfortunately,
+	# there are no -Wl,ILP32 -Wl,noxplink linker options and using LINK_FLAGS
+	# does not append the options at the very end. However, specifying
+	# -Wc,ILP32 and -Wc,noxplink, along with the *.o being AMODE31
+	# will result in the binder to build an AMODE31 shared library.
+	# This requires xlc/xlc++ to work. If we are able to use CMake 3.13
+	# or newer on z/OS one day, we should directly update target_link_options
+	# instead.
+	set_target_properties(sltestlib31
+		PROPERTIES
+			LINK_FLAGS "-Wc,ILP32 -Wc,noxplink"  # Force AMODE31/OS Linkage
+			FOLDER fvtest
+	)
+
+	omr_add_exports(sltestlib31
+		sl_testOpen31bitDLLviaCEL4RO31_function
+	)
+endif()
+
 if (NOT (OMR_OS_AIX OR OMR_OS_ZOS OR CMAKE_CROSSCOMPILING))
 	omr_add_test(
 		NAME porttest

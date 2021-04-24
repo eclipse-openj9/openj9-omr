@@ -1660,8 +1660,12 @@ TR_Debug::getName(TR::SymbolReference * symRef)
              return "<osrFearPointHelper>";
          case TR::SymbolReferenceTable::eaEscapeHelperSymbol:
              return "<eaEscapeHelper>";
+         case TR::SymbolReferenceTable::j9VMThreadTempSlotFieldSymbol:
+             return "<j9VMThreadTempSlotFieldSymbol>";
          case TR::SymbolReferenceTable::computedStaticCallSymbol:
              return "<computedStaticCallSymbol>";
+         case TR::SymbolReferenceTable::j9VMThreadFloatTemp1Symbol:
+             return "<j9VMThreadFloatTemp1Symbol>";
          case TR::SymbolReferenceTable::objectEqualityComparisonSymbol:
              return "<objectEqualityComparison>";
          }
@@ -2123,7 +2127,8 @@ static const char *commonNonhelperSymbolNames[] =
    "<jProfileValueSymbol>",
    "<jProfileValueWithNullCHKSymbol>",
    "<j9VMThreadTempSlotField>",
-   "<computedStaticCallSymbol>"
+   "<computedStaticCallSymbol>",
+   "<j9VMThreadFloatTemp1>"
    };
 
 const char *

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -5908,7 +5908,6 @@ TR::Node *indirectStoreSimplifier(TR::Node * node, TR::Block * block, TR::Simpli
       if ((valueChild->getOpCodeValue() == TR::New) ||
           (valueChild->getOpCodeValue() == TR::newarray) ||
           (valueChild->getOpCodeValue() == TR::anewarray) ||
-          (valueChild->getOpCodeValue() == TR::MergeNew) ||
           (valueChild->getOpCodeValue() == TR::multianewarray))
          {
          bool seenGCPoint = false;
@@ -12707,8 +12706,6 @@ TR::Node *bu2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    else if (firstChild->getOpCodeValue() == TR::i2b &&
             (firstChild->getFirstChild()->getOpCodeValue() == TR::butest ||
              firstChild->getFirstChild()->getOpCodeValue() == TR::arraycmp ||
-             firstChild->getFirstChild()->getOpCodeValue() == TR::trt ||
-             firstChild->getFirstChild()->getOpCodeValue() == TR::trtSimple ||
              firstChild->getFirstChild()->getOpCodeValue() == TR::icmpeq ||
              firstChild->getFirstChild()->getOpCodeValue() == TR::lcmpeq ||
              firstChild->getFirstChild()->getOpCodeValue() == TR::icmpne ||
@@ -16585,12 +16582,6 @@ TR::Node *d2cSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    }
 
 
-TR::Node *expSimplifier(TR::Node *node,TR::Block *block,TR::Simplifier *s)
-   {
-   simplifyChildren(node, block, s);
-   return replaceExpWithMult(node,node->getFirstChild(),node->getSecondChild(),block,s);
-   }
-
 //---------------------------------------------------------------------
 // Type coersion operators
 //
@@ -17574,24 +17565,6 @@ TR::Node *bitOpMemSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    if (s->comp()->getOption(TR_ScalarizeSSOps))
       {
       }
-   return node;
-   }
-
-//---------------------------------------------------------------------
-// bitOpMemND simplification
-//
-TR::Node *bitOpMemNDSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
-   {
-   return node;
-   }
-
-// arraycmpWithPad simplifier
-//
-TR::Node *arrayCmpWithPadSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
-   {
-   simplifyChildren(node, block, s);
-
-
    return node;
    }
 

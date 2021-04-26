@@ -438,14 +438,6 @@ OMR::Node::copyValidProperties(TR::Node *fromNode, TR::Node *toNode)
    if (fromConst && toConst)
       toNode->set64bitIntegralValue(fromNode->get64bitIntegralValue());
 
-   // _flags - presently incomplete
-   if ((fromOpCode == TR::bitOpMemND) && (toOpCode == TR::bitOpMem))
-      {
-      if (fromNode->isOrBitOpMem()) toNode->setOrBitOpMem(true);
-      if (fromNode->isAndBitOpMem()) toNode->setAndBitOpMem(true);
-      if (fromNode->isXorBitOpMem()) toNode->setXorBitOpMem(true);
-      }
-
    // TODO: other properties that need to be completed - see below
 #else
    // _unionBase
@@ -2510,8 +2502,6 @@ OMR::Node::computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesColl
                else
                   return recordProcessedNodeResult(receiverNode, TR_maybe, processedNodesCollected, processedNodesNotCollected);
                }
-         case TR::getstack:
-            return recordProcessedNodeResult(receiverNode, TR_no, processedNodesCollected, processedNodesNotCollected);
          default:
             TR_ASSERT(false, "Unsupported opcode %s on node " POINTER_PRINTF_FORMAT, op.getName(), curNode);
             return TR_no;
@@ -3360,14 +3350,14 @@ OMR::Node::getOwningMethod()
 
 /** \brief
  *  Used to get the ram method from the Bytecode Info.
- * 
+ *
  *  \param *comp
- *  _compilation of type TR::Compilation 
- *  
- *  @return 
+ *  _compilation of type TR::Compilation
+ *
+ *  @return
  *  Returns the ram method (TR_OpaqueMethodBlock) from function call getOwningMethod(TR::Compilation *comp, TR_ByteCodeInfo &bcInfo)
  */
-TR_OpaqueMethodBlock* 
+TR_OpaqueMethodBlock*
 OMR::Node::getOwningMethod(TR::Compilation *comp)
    {
    return TR::Node::getOwningMethod(comp, self()->getByteCodeInfo());
@@ -3377,26 +3367,26 @@ OMR::Node::getOwningMethod(TR::Compilation *comp)
 
 /** \brief
  *  Used to get the ram method from the Bytecode Info.
- * 
+ *
  *  \param *comp
  *  _compilation of type TR::Compilation
- * 
- *  \param &bcInfo 
- *  _byteCodeInfo of a node of type TR::Node  
- *  
- *  @return 
+ *
+ *  \param &bcInfo
+ *  _byteCodeInfo of a node of type TR::Node
+ *
+ *  @return
  *  Returns the ram method (TR_OpaqueMethodBlock)
  */
-TR_OpaqueMethodBlock* 
+TR_OpaqueMethodBlock*
 OMR::Node::getOwningMethod(TR::Compilation *comp, TR_ByteCodeInfo &bcInfo)
    {
-   TR_OpaqueMethodBlock *method = NULL; 
-   if (0 <= bcInfo.getCallerIndex()) 
-      method = comp->getInlinedCallSite(bcInfo.getCallerIndex())._methodInfo; 
-   else 
-      method = comp->getCurrentMethod()->getPersistentIdentifier(); 
-  
-   return method; 
+   TR_OpaqueMethodBlock *method = NULL;
+   if (0 <= bcInfo.getCallerIndex())
+      method = comp->getInlinedCallSite(bcInfo.getCallerIndex())._methodInfo;
+   else
+      method = comp->getCurrentMethod()->getPersistentIdentifier();
+
+   return method;
    }
 
 
@@ -3672,10 +3662,6 @@ OMR::Node::exceptionsRaised()
       case TR::newarray:
       case TR::anewarray:
       case TR::multianewarray:
-         possibleExceptions |= TR::Block:: CanCatchArrayNew;
-         break;
-      case TR::MergeNew:
-         possibleExceptions |= TR::Block:: CanCatchNew;
          possibleExceptions |= TR::Block:: CanCatchArrayNew;
          break;
       case TR::monexit:
@@ -6753,7 +6739,7 @@ OMR::Node::setArraysetLengthMultipleOfPointerSize(bool v)
 bool
 OMR::Node::isXorBitOpMem()
    {
-   TR_ASSERT(self()->getOpCodeValue() == TR::bitOpMem || self()->getOpCodeValue() == TR::bitOpMemND, "Opcode must be bitOpMem");
+   TR_ASSERT(self()->getOpCodeValue() == TR::bitOpMem, "Opcode must be bitOpMem");
    return _flags.testValue(bitOpMemOPMASK, bitOpMemXOR);
    }
 
@@ -6761,7 +6747,7 @@ void
 OMR::Node::setXorBitOpMem(bool v)
    {
    TR::Compilation * c = TR::comp();
-   TR_ASSERT(self()->getOpCodeValue() == TR::bitOpMem || self()->getOpCodeValue() == TR::bitOpMemND, "Opcode must be bitOpMem");
+   TR_ASSERT(self()->getOpCodeValue() == TR::bitOpMem, "Opcode must be bitOpMem");
    if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting XOR flag on node %p to %d\n", self(), v))
       _flags.setValue(bitOpMemOPMASK, bitOpMemXOR);
    }
@@ -6769,7 +6755,7 @@ OMR::Node::setXorBitOpMem(bool v)
 bool
 OMR::Node::chkXorBitOpMem()
    {
-   return (self()->getOpCodeValue() == TR::bitOpMem || self()->getOpCodeValue() == TR::bitOpMemND)
+   return (self()->getOpCodeValue() == TR::bitOpMem)
       && _flags.testValue(bitOpMemOPMASK, bitOpMemXOR);
    }
 
@@ -6784,7 +6770,7 @@ OMR::Node::printXorBitOpMem()
 bool
 OMR::Node::isOrBitOpMem()
    {
-   TR_ASSERT(self()->getOpCodeValue() == TR::bitOpMem || self()->getOpCodeValue() == TR::bitOpMemND, "Opcode must be bitOpMem");
+   TR_ASSERT(self()->getOpCodeValue() == TR::bitOpMem, "Opcode must be bitOpMem");
    return _flags.testValue(bitOpMemOPMASK, bitOpMemOR);
    }
 
@@ -6792,7 +6778,7 @@ void
 OMR::Node::setOrBitOpMem(bool v)
    {
    TR::Compilation * c = TR::comp();
-   TR_ASSERT(self()->getOpCodeValue() == TR::bitOpMem || self()->getOpCodeValue() == TR::bitOpMemND, "Opcode must be bitOpMem");
+   TR_ASSERT(self()->getOpCodeValue() == TR::bitOpMem, "Opcode must be bitOpMem");
    if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting OR flag on node %p to %d\n", self(), v))
       _flags.setValue(bitOpMemOPMASK, bitOpMemOR);
    }
@@ -6800,7 +6786,7 @@ OMR::Node::setOrBitOpMem(bool v)
 bool
 OMR::Node::chkOrBitOpMem()
    {
-   return (self()->getOpCodeValue() == TR::bitOpMem || self()->getOpCodeValue() == TR::bitOpMemND)
+   return (self()->getOpCodeValue() == TR::bitOpMem)
       && _flags.testValue(bitOpMemOPMASK, bitOpMemOR);
    }
 
@@ -6815,7 +6801,7 @@ OMR::Node::printOrBitOpMem()
 bool
 OMR::Node::isAndBitOpMem()
    {
-   TR_ASSERT(self()->getOpCodeValue() == TR::bitOpMem || self()->getOpCodeValue() == TR::bitOpMemND, "Opcode must be bitOpMem");
+   TR_ASSERT(self()->getOpCodeValue() == TR::bitOpMem, "Opcode must be bitOpMem");
    return _flags.testValue(bitOpMemOPMASK, bitOpMemAND);
    }
 
@@ -6823,7 +6809,7 @@ void
 OMR::Node::setAndBitOpMem(bool v)
    {
    TR::Compilation * c = TR::comp();
-   TR_ASSERT(self()->getOpCodeValue() == TR::bitOpMem || self()->getOpCodeValue() == TR::bitOpMemND, "Opcode must be bitOpMem");
+   TR_ASSERT(self()->getOpCodeValue() == TR::bitOpMem, "Opcode must be bitOpMem");
    if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting AND flag on node %p to %d\n", self(), v))
       _flags.setValue(bitOpMemOPMASK, bitOpMemAND);
    }
@@ -6831,7 +6817,7 @@ OMR::Node::setAndBitOpMem(bool v)
 bool
 OMR::Node::chkAndBitOpMem()
    {
-   return (self()->getOpCodeValue() == TR::bitOpMem || self()->getOpCodeValue() == TR::bitOpMemND)
+   return (self()->getOpCodeValue() == TR::bitOpMem)
       && _flags.testValue(bitOpMemOPMASK, bitOpMemAND);
    }
 

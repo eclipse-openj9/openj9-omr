@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, 2020 IBM Corp. and others
+# Copyright (c) 2016, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -46,7 +46,6 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRRegisterDependency.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRSnippet.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/S390Snippets.cpp \
-    $(JIT_OMR_DIRTY_DIR)/z/codegen/TranslateEvaluator.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRTreeEvaluator.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/UnaryEvaluator.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRInstruction.cpp \

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1139,7 +1139,7 @@ static bool peepHoleGotoToLoopHeader(TR::CFG *cfg, TR::Block *block, TR::Block *
              branchNode = branchNode->getFirstChild();
 
          if (!branchNode->isTheVirtualGuardForAGuardedInlinedCall() &&
-             (branchDest != dest) && blockIsFallThrough && (branchNode->getOpCodeValue() != TR::ibranch && branchNode->getOpCodeValue() != TR::mbranch) &&
+             (branchDest != dest) && blockIsFallThrough &&
              performTransformation(cfg->comp(), "%s applied goto-loop header peephole for block_%d dest %d\n", title, block->getNumber(), dest->getNumber()))
             {
             success = true;
@@ -1233,9 +1233,7 @@ bool TR_OrderBlocks::peepHoleBranchToLoopHeader(TR::CFG *cfg, TR::Block *block, 
 
       if (parent && parent->asRegion() && fallThroughIsSibling && !destIsSibling &&
           (fallThroughStructure->getNumber() == parent->getNumber()) &&
-          !branchNode->isTheVirtualGuardForAGuardedInlinedCall() && (branchNode->getOpCodeValue() != TR::ibranch && branchNode->getOpCodeValue() != TR::mbranch) &&
-          /* !dest->isCold() &&
- */
+          !branchNode->isTheVirtualGuardForAGuardedInlinedCall() &&
           performTransformation(comp(), "%s applied loop header peephole for block_%d fall through %d dest %d\n", title, block->getNumber(), fallThrough->getNumber(), dest->getNumber()))
          {
          success = true;

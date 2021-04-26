@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -45,7 +45,6 @@ compiler_library(z
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRegisterDependency.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRSnippet.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/S390Snippets.cpp
-	${CMAKE_CURRENT_LIST_DIR}/codegen/TranslateEvaluator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRTreeEvaluator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/UnaryEvaluator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRInstruction.cpp

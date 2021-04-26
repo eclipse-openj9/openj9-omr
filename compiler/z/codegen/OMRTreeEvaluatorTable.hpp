@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -378,7 +378,6 @@
 #define _ifsucmpleEvaluator TR::TreeEvaluator::ifsucmpleEvaluator
 #define _loadaddrEvaluator TR::TreeEvaluator::loadaddrEvaluator
 #define _ZEROCHKEvaluator TR::TreeEvaluator::ZEROCHKEvaluator
-#define _callIfEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _iRegLoadEvaluator TR::TreeEvaluator::iRegLoadEvaluator
 #define _aRegLoadEvaluator TR::TreeEvaluator::aRegLoadEvaluator
 #define _lRegLoadEvaluator TR::TreeEvaluator::lRegLoadEvaluator
@@ -466,7 +465,6 @@
 #define _vdcmpanyltEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vdcmpanyleEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vdsqrtEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _vdlogEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vincEvaluator TR::TreeEvaluator::vincEvaluator
 #define _vdecEvaluator TR::TreeEvaluator::vdecEvaluator
 #define _vnegEvaluator TR::TreeEvaluator::vnegEvaluator
@@ -546,10 +544,6 @@
 #define _d2luEvaluator TR::TreeEvaluator::d2lEvaluator
 #define _d2buEvaluator TR::TreeEvaluator::d2iEvaluator
 #define _d2cEvaluator TR::TreeEvaluator::d2iEvaluator
-#define _iuRegLoadEvaluator TR::TreeEvaluator::iRegLoadEvaluator
-#define _luRegLoadEvaluator TR::TreeEvaluator::lRegLoadEvaluator
-#define _iuRegStoreEvaluator TR::TreeEvaluator::iRegStoreEvaluator
-#define _luRegStoreEvaluator TR::TreeEvaluator::lRegStoreEvaluator
 #define _cloadEvaluator TR::TreeEvaluator::sloadEvaluator
 #define _cloadiEvaluator TR::TreeEvaluator::sloadEvaluator
 #define _cstoreEvaluator TR::TreeEvaluator::cstoreEvaluator
@@ -583,9 +577,7 @@
 #define _luaddhEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _caddEvaluator TR::TreeEvaluator::caddEvaluator
 #define _aiaddEvaluator TR::TreeEvaluator::aiaddEvaluator
-#define _aiuaddEvaluator TR::TreeEvaluator::aiaddEvaluator
 #define _aladdEvaluator TR::TreeEvaluator::aladdEvaluator
-#define _aluaddEvaluator TR::TreeEvaluator::aladdEvaluator
 #define _lusubhEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _csubEvaluator TR::TreeEvaluator::csubEvaluator
 #define _imulhEvaluator TR::TreeEvaluator::mulhEvaluator
@@ -597,11 +589,9 @@
 #define _lbits2dEvaluator TR::TreeEvaluator::lbits2dEvaluator
 #define _dbits2lEvaluator TR::TreeEvaluator::dbits2lEvaluator
 #define _lookupEvaluator TR::TreeEvaluator::lookupEvaluator
-#define _trtLookupEvaluator TR::TreeEvaluator::lookupEvaluator
 #define _CaseEvaluator TR::TreeEvaluator::NOPEvaluator
 #define _tableEvaluator TR::TreeEvaluator::tableEvaluator
 #define _exceptionRangeFenceEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _dbgFenceEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _NULLCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _ResolveCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _ResolveAndNULLCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
@@ -614,21 +604,17 @@
 #define _SpineCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _ArrayStoreCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _ArrayCHKEvaluator TR::TreeEvaluator::badILOpEvaluator
-#define _RetEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _arraycopyEvaluator TR::TreeEvaluator::arraycopyEvaluator
 #define _arraysetEvaluator TR::TreeEvaluator::arraysetEvaluator
 #define _arraytranslateEvaluator TR::TreeEvaluator::arraytranslateEvaluator
 #define _arraytranslateAndTestEvaluator TR::TreeEvaluator::arraytranslateAndTestEvaluator
 #define _long2StringEvaluator TR::TreeEvaluator::long2StringEvaluator
 #define _bitOpMemEvaluator TR::TreeEvaluator::bitOpMemEvaluator
-#define _bitOpMemNDEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _arraycmpEvaluator TR::TreeEvaluator::arraycmpEvaluator
-#define _arraycmpWithPadEvaluator TR::TreeEvaluator::arraycmpEvaluatorWithPad
 #define _allocationFenceEvaluator TR::TreeEvaluator::NOPEvaluator
 #define _loadFenceEvaluator TR::TreeEvaluator::barrierFenceEvaluator
 #define _storeFenceEvaluator TR::TreeEvaluator::barrierFenceEvaluator
 #define _fullFenceEvaluator TR::TreeEvaluator::barrierFenceEvaluator
-#define _MergeNewEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _computeCCEvaluator TR::TreeEvaluator::computeCCEvaluator
 #define _butestEvaluator TR::TreeEvaluator::butestEvaluator
 #define _sutestEvaluator TR::TreeEvaluator::badILOpEvaluator
@@ -658,53 +644,14 @@
 #define _isatomicorEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _iiatomicorEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _ilatomicorEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _dexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _branchEvaluator TR::TreeEvaluator::branchEvaluator
 #define _igotoEvaluator TR::TreeEvaluator::igotoEvaluator
-#define _bexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _buexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _sexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _cexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _iexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _iuexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _lexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _luexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _fexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _fuexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _duexpEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _ixfrsEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _lxfrsEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _fxfrsEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _dxfrsEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _fintEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _dintEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _fnintEvaluator TR::TreeEvaluator::fnintEvaluator
-#define _dnintEvaluator TR::TreeEvaluator::dnintEvaluator
 #define _fsqrtEvaluator TR::TreeEvaluator::fsqrtEvaluator
 #define _dsqrtEvaluator TR::TreeEvaluator::dsqrtEvaluator
-#define _getstackEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _deallocaEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _idozEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _dcosEvaluator TR::TreeEvaluator::libmFuncEvaluator
-#define _dsinEvaluator TR::TreeEvaluator::libmFuncEvaluator
-#define _dtanEvaluator TR::TreeEvaluator::libmFuncEvaluator
-#define _dcoshEvaluator TR::TreeEvaluator::libmFuncEvaluator
-#define _dsinhEvaluator TR::TreeEvaluator::libmFuncEvaluator
-#define _dtanhEvaluator TR::TreeEvaluator::libmFuncEvaluator
-#define _dacosEvaluator TR::TreeEvaluator::libmFuncEvaluator
-#define _dasinEvaluator TR::TreeEvaluator::libmFuncEvaluator
-#define _datanEvaluator TR::TreeEvaluator::libmFuncEvaluator
-#define _datan2Evaluator TR::TreeEvaluator::libmFuncEvaluator
-#define _dlogEvaluator TR::TreeEvaluator::libmFuncEvaluator
 #define _dfloorEvaluator TR::TreeEvaluator::dfloorEvaluator
 #define _ffloorEvaluator TR::TreeEvaluator::ffloorEvaluator
 #define _dceilEvaluator TR::TreeEvaluator::dceilEvaluator
 #define _fceilEvaluator TR::TreeEvaluator::fceilEvaluator
-#define _ibranchEvaluator TR::TreeEvaluator::ibranchEvaluator
-#define _mbranchEvaluator TR::TreeEvaluator::mbranchEvaluator
-#define _getpmEvaluator TR::TreeEvaluator::getpmEvaluator
-#define _setpmEvaluator TR::TreeEvaluator::setpmEvaluator
-#define _loadAutoOffsetEvaluator TR::TreeEvaluator::loadAutoOffsetEvaluator
 #define _imaxEvaluator TR::TreeEvaluator::imaxEvaluator
 #define _iumaxEvaluator TR::TreeEvaluator::imaxEvaluator
 #define _lmaxEvaluator TR::TreeEvaluator::lmaxEvaluator
@@ -717,8 +664,6 @@
 #define _luminEvaluator TR::TreeEvaluator::lminEvaluator
 #define _fminEvaluator TR::TreeEvaluator::fminEvaluator
 #define _dminEvaluator TR::TreeEvaluator::dminEvaluator
-#define _trtEvaluator TR::TreeEvaluator::trtEvaluator
-#define _trtSimpleEvaluator TR::TreeEvaluator::trtEvaluator
 #define _ihbitEvaluator TR::TreeEvaluator::integerHighestOneBit
 #define _ilbitEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _inolzEvaluator TR::TreeEvaluator::integerNumberOfLeadingZeros
@@ -758,4 +703,3 @@
 
 #include "il/Opcodes.enum"
 #undef OPCODE_MACRO
-

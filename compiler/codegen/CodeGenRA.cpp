@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -164,7 +164,6 @@ OMR::CodeGenerator::estimateRegisterPressure(TR::Node *node, int32_t &registerPr
        node->getOpCodeValue() == TR::newarray ||
        node->getOpCodeValue() == TR::anewarray ||
        node->getOpCodeValue() == TR::multianewarray ||
-       node->getOpCodeValue() == TR::MergeNew ||
        node->getOpCodeValue() == TR::monent ||
        node->getOpCodeValue() == TR::monexit ||
        node->getOpCodeValue() == TR::checkcast ||

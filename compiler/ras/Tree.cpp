@@ -1053,12 +1053,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Node * node, uint32_t indentation, bool 
          breakOn();
       }
 
-   if (node->getOpCodeValue() == TR::dbgFence && !debug("showDebugFence"))
-      {
-      _nodeChecklist.set(node->getGlobalIndex());
-      return 0;
-      }
-
    // If this node has already been printed, just print a reference to it.
    //
    if (_nodeChecklist.isSet(node->getGlobalIndex()))
@@ -1122,7 +1116,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Node * node, uint32_t indentation, bool 
 
          uint16_t upperBound = node->getCaseIndexUpperBound();
 
-         if (node->getOpCodeValue() == TR::lookup || node->getOpCodeValue() == TR::trtLookup)
+         if (node->getOpCodeValue() == TR::lookup)
             {
             bool unsigned_case = node->getFirstChild()->getOpCode().isUnsigned();
 
@@ -1133,39 +1127,26 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Node * node, uint32_t indentation, bool 
                printBasicPreNodeInfoAndIndent(pOutFile, node->getChild(i), indentation);
                nodeCount++;
 
-               if (node->getOpCodeValue() == TR::trtLookup)
+               if (sizeof(CASECONST_TYPE) == 8)
                   {
-                  CASECONST_TYPE caseVal = node->getChild(i)->getCaseConstant();
-                  output.append("0x%08X: ", (uint32_t) caseVal);
-                  _comp->incrNodeOpCodeLength( output.getLength() );
-                  trfprintf(pOutFile, "%s", output.getStr());
-                  output.reset();
-
-                  printDestination(pOutFile, node->getChild(i)->getBranchDestination());
+                  if (unsigned_case)
+                     output.append(INT64_PRINTF_FORMAT_HEX ":\t", node->getChild(i)->getCaseConstant());
+                  else
+                     output.append(INT64_PRINTF_FORMAT ":\t", node->getChild(i)->getCaseConstant());
                   }
                else
                   {
-                  if (sizeof(CASECONST_TYPE) == 8)
-                     {
-                     if (unsigned_case)
-                        output.append(INT64_PRINTF_FORMAT_HEX ":\t", node->getChild(i)->getCaseConstant());
-                     else
-                        output.append(INT64_PRINTF_FORMAT ":\t", node->getChild(i)->getCaseConstant());
-                     }
+                  if (unsigned_case)
+                     output.append("%u:\t", node->getChild(i)->getCaseConstant());
                   else
-                     {
-                     if (unsigned_case)
-                        output.append("%u:\t", node->getChild(i)->getCaseConstant());
-                     else
-                        output.append("%d:\t", node->getChild(i)->getCaseConstant());
-                     }
-
-                  _comp->incrNodeOpCodeLength( output.getLength() );
-                  trfprintf(pOutFile, "%s", output.getStr());
-                  output.reset();
-
-                  printDestination(pOutFile, node->getChild(i)->getBranchDestination());
+                     output.append("%d:\t", node->getChild(i)->getCaseConstant());
                   }
+
+               _comp->incrNodeOpCodeLength( output.getLength() );
+               trfprintf(pOutFile, "%s", output.getStr());
+               output.reset();
+
+               printDestination(pOutFile, node->getChild(i)->getBranchDestination());
 
                printBasicPostNodeInfo(pOutFile, node->getChild(i), indentation);
                trfprintf(pOutFile, "\n");
@@ -1346,7 +1327,7 @@ TR_Debug::printWithFixedPrefix(TR::FILE *pOutFile, TR::Node * node, uint32_t ind
 
          uint16_t upperBound = node->getCaseIndexUpperBound();
 
-         if (node->getOpCodeValue() == TR::lookup || node->getOpCodeValue() == TR::trtLookup)
+         if (node->getOpCodeValue() == TR::lookup)
             {
             for (i = 2; i < upperBound; i++)
                {
@@ -1357,38 +1338,25 @@ TR_Debug::printWithFixedPrefix(TR::FILE *pOutFile, TR::Node * node, uint32_t ind
                trfprintf(pOutFile,"\n%s%s%dn%*s  %*s",prefix, globalIndexPrefix.getStr(), globalIndex, numSpaces, "", indentation, " ");
                nodeCount++;
 
-               if (node->getOpCodeValue() == TR::trtLookup)
+               if (sizeof(CASECONST_TYPE) == 8)
                   {
-                  CASECONST_TYPE caseVal = node->getChild(i)->getCaseConstant();
-                  output.append("0x%08X: ", (uint32_t) caseVal);
-                  _comp->incrNodeOpCodeLength( output.getLength() );
-                  trfprintf(pOutFile, "%s", output.getStr());
-                  output.reset();
-
-                  printDestination(pOutFile, node->getChild(i)->getBranchDestination());
+                  if (node->getFirstChild()->getOpCode().isUnsigned())
+                     output.append(INT64_PRINTF_FORMAT_HEX ":\t", node->getChild(i)->getCaseConstant());
+                  else
+                     output.append(INT64_PRINTF_FORMAT ":\t", node->getChild(i)->getCaseConstant());
                   }
                else
                   {
-                  if (sizeof(CASECONST_TYPE) == 8)
-                     {
-                     if (node->getFirstChild()->getOpCode().isUnsigned())
-                        output.append(INT64_PRINTF_FORMAT_HEX ":\t", node->getChild(i)->getCaseConstant());
-                     else
-                        output.append(INT64_PRINTF_FORMAT ":\t", node->getChild(i)->getCaseConstant());
-                     }
+                  if (node->getFirstChild()->getOpCode().isUnsigned())
+                     output.append("%u:\t", node->getChild(i)->getCaseConstant());
                   else
-                     {
-                     if (node->getFirstChild()->getOpCode().isUnsigned())
-                        output.append("%u:\t", node->getChild(i)->getCaseConstant());
-                     else
-                        output.append("%d:\t", node->getChild(i)->getCaseConstant());
-                     }
-                  _comp->incrNodeOpCodeLength( output.getLength() );
-                  trfprintf(pOutFile, "%s", output.getStr());
-                  output.reset();
-
-                  printDestination(pOutFile, node->getChild(i)->getBranchDestination());
+                     output.append("%d:\t", node->getChild(i)->getCaseConstant());
                   }
+               _comp->incrNodeOpCodeLength( output.getLength() );
+               trfprintf(pOutFile, "%s", output.getStr());
+               output.reset();
+
+               printDestination(pOutFile, node->getChild(i)->getBranchDestination());
 
                printBasicPostNodeInfo(pOutFile, node->getChild(i), indentation);
 
@@ -2178,12 +2146,6 @@ TR_Debug::printVCG(TR::FILE *pOutFile, TR::Node * node, uint32_t indentation)
 
    int32_t i;
 
-   if (node->getOpCodeValue() == TR::dbgFence)
-      {
-      _nodeChecklist.set(node->getGlobalIndex());
-      return;
-      }
-
    if (_nodeChecklist.isSet(node->getGlobalIndex()))
       {
       trfprintf(pOutFile, "%*s==>%s at %s\\n", 12 + indentation, " ", getName(node->getOpCode()), getName(node));
@@ -2377,7 +2339,7 @@ TR_Debug::verifyTreesPass1(TR::Node *node)
             {
             expectedType = TR::Address;
             }
-            
+
          if (debug("checkTypes") && expectedType != TR::NoType)
             {
             // See if the child's type is compatible with this node's type

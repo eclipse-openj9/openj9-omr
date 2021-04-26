@@ -295,7 +295,7 @@ OMR::Z::TreeEvaluator::dsqrtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register * targetRegister = cg->allocateRegister(TR_FPR);
 
    if (firstChild->getOpCodeValue() == TR::dloadi &&
-       firstChild->getReferenceCount() == 1 && 
+       firstChild->getReferenceCount() == 1 &&
        firstChild->getRegister() == NULL)
       {
       generateRXEInstruction(cg, TR::InstOpCode::SQDB, node, targetRegister, TR::MemoryReference::create(cg, firstChild), 0);
@@ -329,70 +329,5 @@ OMR::Z::TreeEvaluator::fsqrtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
    node->setRegister(targetRegister);
    cg->decReferenceCount(firstChild);
-   return node->getRegister();
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::dnintEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Node *firstChild = node->getFirstChild();
-   TR::Register *targetRegister = NULL;
-   TR::Register *opRegister = cg->evaluate(firstChild);
-
-   if(cg->canClobberNodesRegister(firstChild))
-      {
-      targetRegister = opRegister;
-      }
-   else
-      {
-      targetRegister = cg->allocateRegister(TR_FPR);
-      }
-   generateRRInstruction(cg, TR::InstOpCode::FIDBR, node, targetRegister, opRegister);
-
-   node->setRegister(targetRegister);
-   cg->decReferenceCount(firstChild);
-   return node->getRegister();
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::fnintEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Node *firstChild = node->getFirstChild();
-   TR::Register *targetRegister = NULL;
-   TR::Register *opRegister = cg->evaluate(firstChild);
-
-   if(cg->canClobberNodesRegister(firstChild))
-      {
-      targetRegister = opRegister;
-      }
-   else
-      {
-      targetRegister = cg->allocateRegister(TR_FPR);
-      }
-   generateRRInstruction(cg, TR::InstOpCode::FIEBR, node, targetRegister, opRegister);
-
-   node->setRegister(targetRegister);
-   cg->decReferenceCount(firstChild);
-   return node->getRegister();
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::getpmEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *targetRegister = cg->allocateRegister();
-   generateRRInstruction(cg, TR::InstOpCode::IPM, node, targetRegister, targetRegister);
-
-   node->setRegister(targetRegister);
-   return node->getRegister();
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::setpmEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *opRegister = cg->evaluate(node->getFirstChild());
-   generateRRInstruction(cg, TR::InstOpCode::SPM, node, opRegister, opRegister);
-
-   node->setRegister(NULL);
-   cg->decReferenceCount(node->getFirstChild());
    return node->getRegister();
    }

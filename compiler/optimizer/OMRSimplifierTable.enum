@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -374,7 +374,6 @@
 #define ifsucmpleSimplifierHandler ifCmpWithEqualitySimplifier
 #define loadaddrSimplifierHandler dftSimplifier
 #define ZEROCHKSimplifierHandler lowerTreeSimplifier
-#define callIfSimplifierHandler lowerTreeSimplifier
 #define iRegLoadSimplifierHandler dftSimplifier
 #define aRegLoadSimplifierHandler dftSimplifier
 #define lRegLoadSimplifierHandler dftSimplifier
@@ -462,7 +461,6 @@
 #define vdcmpanyltSimplifierHandler normalizeCmpSimplifier
 #define vdcmpanyleSimplifierHandler normalizeCmpSimplifier
 #define vdsqrtSimplifierHandler dftSimplifier
-#define vdlogSimplifierHandler dftSimplifier
 #define vincSimplifierHandler dftSimplifier
 #define vdecSimplifierHandler dftSimplifier
 #define vnegSimplifierHandler dftSimplifier
@@ -542,10 +540,6 @@
 #define d2luSimplifierHandler d2lSimplifier
 #define d2buSimplifierHandler d2bSimplifier
 #define d2cSimplifierHandler d2cSimplifier
-#define iuRegLoadSimplifierHandler dftSimplifier
-#define luRegLoadSimplifierHandler dftSimplifier
-#define iuRegStoreSimplifierHandler dftSimplifier
-#define luRegStoreSimplifierHandler dftSimplifier
 #define cloadSimplifierHandler directLoadSimplifier
 #define cloadiSimplifierHandler indirectLoadSimplifier
 #define cstoreSimplifierHandler dftSimplifier
@@ -579,9 +573,7 @@
 #define luaddhSimplifierHandler dftSimplifier
 #define caddSimplifierHandler caddSimplifier
 #define aiaddSimplifierHandler iaddSimplifier
-#define aiuaddSimplifierHandler iaddSimplifier
 #define aladdSimplifierHandler laddSimplifier
-#define aluaddSimplifierHandler laddSimplifier
 #define lusubhSimplifierHandler dftSimplifier
 #define csubSimplifierHandler csubSimplifier
 #define imulhSimplifierHandler imulhSimplifier
@@ -593,11 +585,9 @@
 #define lbits2dSimplifierHandler lbits2dSimplifier
 #define dbits2lSimplifierHandler dbits2lSimplifier
 #define lookupSimplifierHandler lookupSwitchSimplifier
-#define trtLookupSimplifierHandler dftSimplifier
 #define CaseSimplifierHandler dftSimplifier
 #define tableSimplifierHandler tableSwitchSimplifier
 #define exceptionRangeFenceSimplifierHandler dftSimplifier
-#define dbgFenceSimplifierHandler dftSimplifier
 #define NULLCHKSimplifierHandler nullchkSimplifier
 #define ResolveCHKSimplifierHandler dftSimplifier
 #define ResolveAndNULLCHKSimplifierHandler dftSimplifier
@@ -610,21 +600,17 @@
 #define SpineCHKSimplifierHandler dftSimplifier
 #define ArrayStoreCHKSimplifierHandler dftSimplifier
 #define ArrayCHKSimplifierHandler dftSimplifier
-#define RetSimplifierHandler dftSimplifier
 #define arraycopySimplifierHandler dftSimplifier
 #define arraysetSimplifierHandler arraysetSimplifier
 #define arraytranslateSimplifierHandler dftSimplifier
 #define arraytranslateAndTestSimplifierHandler dftSimplifier
 #define long2StringSimplifierHandler dftSimplifier
 #define bitOpMemSimplifierHandler bitOpMemSimplifier
-#define bitOpMemNDSimplifierHandler bitOpMemNDSimplifier
 #define arraycmpSimplifierHandler dftSimplifier
-#define arraycmpWithPadSimplifierHandler arrayCmpWithPadSimplifier
 #define allocationFenceSimplifierHandler dftSimplifier
 #define loadFenceSimplifierHandler dftSimplifier
 #define storeFenceSimplifierHandler dftSimplifier
 #define fullFenceSimplifierHandler dftSimplifier
-#define MergeNewSimplifierHandler dftSimplifier
 #define computeCCSimplifierHandler computeCCSimplifier
 #define butestSimplifierHandler dftSimplifier
 #define sutestSimplifierHandler dftSimplifier
@@ -654,53 +640,14 @@
 #define isatomicorSimplifierHandler dftSimplifier
 #define iiatomicorSimplifierHandler dftSimplifier
 #define ilatomicorSimplifierHandler dftSimplifier
-#define dexpSimplifierHandler expSimplifier
 #define branchSimplifierHandler dftSimplifier
 #define igotoSimplifierHandler dftSimplifier
-#define bexpSimplifierHandler dftSimplifier
-#define buexpSimplifierHandler dftSimplifier
-#define sexpSimplifierHandler dftSimplifier
-#define cexpSimplifierHandler dftSimplifier
-#define iexpSimplifierHandler dftSimplifier
-#define iuexpSimplifierHandler dftSimplifier
-#define lexpSimplifierHandler dftSimplifier
-#define luexpSimplifierHandler dftSimplifier
-#define fexpSimplifierHandler expSimplifier
-#define fuexpSimplifierHandler expSimplifier
-#define duexpSimplifierHandler expSimplifier
-#define ixfrsSimplifierHandler dftSimplifier
-#define lxfrsSimplifierHandler dftSimplifier
-#define fxfrsSimplifierHandler dftSimplifier
-#define dxfrsSimplifierHandler dftSimplifier
-#define fintSimplifierHandler dftSimplifier
-#define dintSimplifierHandler dftSimplifier
-#define fnintSimplifierHandler dftSimplifier
-#define dnintSimplifierHandler dftSimplifier
 #define fsqrtSimplifierHandler fsqrtSimplifier
 #define dsqrtSimplifierHandler dsqrtSimplifier
-#define getstackSimplifierHandler dftSimplifier
-#define deallocaSimplifierHandler dftSimplifier
-#define idozSimplifierHandler dftSimplifier
-#define dcosSimplifierHandler dftSimplifier
-#define dsinSimplifierHandler dftSimplifier
-#define dtanSimplifierHandler dftSimplifier
-#define dcoshSimplifierHandler dftSimplifier
-#define dsinhSimplifierHandler dftSimplifier
-#define dtanhSimplifierHandler dftSimplifier
-#define dacosSimplifierHandler dftSimplifier
-#define dasinSimplifierHandler dftSimplifier
-#define datanSimplifierHandler dftSimplifier
-#define datan2SimplifierHandler dftSimplifier
-#define dlogSimplifierHandler dftSimplifier
 #define dfloorSimplifierHandler dftSimplifier
 #define ffloorSimplifierHandler dftSimplifier
 #define dceilSimplifierHandler dftSimplifier
 #define fceilSimplifierHandler dftSimplifier
-#define ibranchSimplifierHandler dftSimplifier
-#define mbranchSimplifierHandler dftSimplifier
-#define getpmSimplifierHandler dftSimplifier
-#define setpmSimplifierHandler dftSimplifier
-#define loadAutoOffsetSimplifierHandler dftSimplifier
 #define imaxSimplifierHandler imaxminSimplifier
 #define iumaxSimplifierHandler imaxminSimplifier
 #define lmaxSimplifierHandler lmaxminSimplifier
@@ -713,8 +660,6 @@
 #define luminSimplifierHandler lmaxminSimplifier
 #define fminSimplifierHandler fmaxminSimplifier
 #define dminSimplifierHandler dmaxminSimplifier
-#define trtSimplifierHandler dftSimplifier
-#define trtSimpleSimplifierHandler dftSimplifier
 #define ihbitSimplifierHandler dftSimplifier
 #define ilbitSimplifierHandler dftSimplifier
 #define inolzSimplifierHandler dftSimplifier

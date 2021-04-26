@@ -1205,9 +1205,9 @@ genericLongShiftSingle(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::
       // Generate RISBG for lshl + i2l sequence
       if (node->getOpCodeValue() == TR::lshl)
          {
-         if (firstChild->getOpCodeValue() == TR::i2l && 
+         if (firstChild->getOpCodeValue() == TR::i2l &&
              firstChild->getReferenceCount() == 1 &&
-             firstChild->getRegister() == NULL && 
+             firstChild->getRegister() == NULL &&
                 (firstChild->isNonNegative() || firstChild->getFirstChild()->isNonNegative()))
             {
             srcReg = cg->evaluate(firstChild->getFirstChild());
@@ -1888,7 +1888,7 @@ OMR::Z::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(TR::Node * nod
          //    half and bottom half of the register), then it's better to use RISBG.
          //    This is because there are no NI** instructions allowing us to specify bits in
          //    the top half and bottom half of the register to zero out.
-               
+
          if (firstChild->getReferenceCount() > 1 || lZeros > 31 || tZeros > 31
                || (lZeros > 0 && tZeros > 0))
             {
@@ -1971,7 +1971,7 @@ OMR::Z::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(TR::Node * nod
                }
             }
          else if (shiftAmount > 0)
-            {                  
+            {
             rangeEnd = lsBit - shiftAmount;
             if (msBit - shiftAmount < 0)
                {
@@ -3724,20 +3724,4 @@ TR::Register *
 OMR::Z::TreeEvaluator::cxorEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    return TR::TreeEvaluator::ixorEvaluator(node, cg);
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::dexpEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   TR_ASSERT(0, "This evaluator is not functionally correct. Do Not use.");
-
-   return TR::TreeEvaluator::libmFuncEvaluator(node, cg);
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::fexpEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   TR_ASSERT(0, "This evaluator is not functionally correct. Do Not use.");
-
-   return TR::TreeEvaluator::libmFuncEvaluator(node, cg);
    }

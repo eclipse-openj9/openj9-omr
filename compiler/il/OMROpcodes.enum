@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020, 2020 IBM Corp. and others
+ * Copyright (c) 2020, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -5636,22 +5636,6 @@ OPCODE_MACRO(\
    /* .description          =    Zero-check an int.  Symref indicates call to perform when first child is zero.  Other children are arguments to the call. */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ callIf, \
-   /* .name                 = */ "callIf", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ ILProp2::CanRaiseException| ILProp2::MayUseSystemStack, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::NoType, \
-   /* .typeProperties       = */ 0, \
-   /* .childProperties      = */ CHILD_COUNT(ILChildProp::UnspecifiedChildCount) | FIRST_CHILD(TR::Int32) | SECOND_CHILD(ILChildProp::UnspecifiedChildType) | THIRD_CHILD(ILChildProp::UnspecifiedChildType), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    Call symref if first child evaluates to true.  Other childrem are arguments to the call. */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ iRegLoad, \
    /* .name                 = */ "iRegLoad", \
    /* .properties1          = */ ILProp1::LoadReg, \
@@ -7044,22 +7028,6 @@ OPCODE_MACRO(\
    /* .description          =    vector double square root */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ vdlog, \
-   /* .name                 = */ "vdlog", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorDouble, \
-   /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
-   /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    vector double natural log */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ vinc, \
    /* .name                 = */ "vinc", \
    /* .properties1          = */ ILProp1::Add, \
@@ -8324,70 +8292,6 @@ OPCODE_MACRO(\
    /* .description          =    convert double to char */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ iuRegLoad, \
-   /* .name                 = */ "iuRegLoad", \
-   /* .properties1          = */ ILProp1::LoadReg, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ ILChildProp::NoChildren, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    Load unsigned integer global register */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ luRegLoad, \
-   /* .name                 = */ "luRegLoad", \
-   /* .properties1          = */ ILProp1::LoadReg, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int64, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ ILChildProp::NoChildren, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    Load unsigned long integer global register */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ iuRegStore, \
-   /* .name                 = */ "iuRegStore", \
-   /* .properties1          = */ ILProp1::StoreReg | ILProp1::TreeTop, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ ONE_CHILD(TR::Int32), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    Store unsigned integer global register */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ luRegStore, \
-   /* .name                 = */ "luRegStore", \
-   /* .properties1          = */ ILProp1::StoreReg | ILProp1::TreeTop, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int64, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ ONE_CHILD(TR::Int32), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    Store long integer global register */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ cload, \
    /* .name                 = */ "cload", \
    /* .properties1          = */ ILProp1::LoadVar | ILProp1::HasSymbolRef, \
@@ -8916,22 +8820,6 @@ OPCODE_MACRO(\
    /* .description          =    add integer to address with address result (child1 a, child2 i) */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ aiuadd, \
-   /* .name                 = */ "aiuadd", \
-   /* .properties1          = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, \
-   /* .properties2          = */ ILProp2::ValueNumberShare, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Address, \
-   /* .typeProperties       = */ ILTypeProp::Reference, \
-   /* .childProperties      = */ TWO_CHILD(TR::Address, TR::Int32), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    add unsigned integer to address with address result (child1 a, child2 i) */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ aladd, \
    /* .name                 = */ "aladd", \
    /* .properties1          = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, \
@@ -8946,22 +8834,6 @@ OPCODE_MACRO(\
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
    /* .description          =    add long integer to address with address result (child1 a, child2 i) (64-bit only) */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ aluadd, \
-   /* .name                 = */ "aluadd", \
-   /* .properties1          = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, \
-   /* .properties2          = */ ILProp2::ValueNumberShare, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Address, \
-   /* .typeProperties       = */ ILTypeProp::Reference, \
-   /* .childProperties      = */ TWO_CHILD(TR::Address, TR::Int64), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    add unsigned long integer to address with address result (child1 a, child2 i) (64-bit only) */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ lusubh, \
@@ -9140,22 +9012,6 @@ OPCODE_MACRO(\
    /* .description          =    lookupswitch (child1 is selector expression, child2 the default destination, subsequent children are case nodes */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ trtLookup, \
-   /* .name                 = */ "trtLookup", \
-   /* .properties1          = */ ILProp1::TreeTop | ILProp1::Switch, \
-   /* .properties2          = */ ILProp2::JumpWithMultipleTargets, \
-   /* .properties3          = */ ILProp3::HasBranchChild, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::NoType, \
-   /* .typeProperties       = */ 0, \
-   /* .childProperties      = */ ILChildProp::Unspecified, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    special lookupswitch (child1 must be trt, child2 the default destination, subsequent children are case nodes) */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ Case, \
    /* .name                 = */ "case", \
    /* .properties1          = */ ILProp1::Branch | ILProp1::TreeTop, \
@@ -9202,22 +9058,6 @@ OPCODE_MACRO(\
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
    /* .description          =    (J9) SymbolReference is the aliasing effect, initializer is where the code address gets put when binary is generated */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ dbgFence, \
-   /* .name                 = */ "dbgFence", \
-   /* .properties1          = */ ILProp1::TreeTop, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ ILProp3::ExceptionRangeFence, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::NoType, \
-   /* .typeProperties       = */ 0, \
-   /* .childProperties      = */ ILChildProp::NoChildren, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    used to delimit code (stmts) for debug info.  Has no symbol reference. */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ NULLCHK, \
@@ -9412,22 +9252,6 @@ OPCODE_MACRO(\
    /* .description          =    Array compatibility check. child 1 is object1, 2 is object2. Symbolref indicates failure action/destination */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ Ret, \
-   /* .name                 = */ "Ret", \
-   /* .properties1          = */ ILProp1::TreeTop, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::NoType, \
-   /* .typeProperties       = */ 0, \
-   /* .childProperties      = */ ILChildProp::Unspecified, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    Used by ilGen only */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ arraycopy, \
    /* .name                 = */ "arraycopy", \
    /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
@@ -9524,22 +9348,6 @@ OPCODE_MACRO(\
    /* .description          =    bit operations (AND, OR, XOR) for memory to memory */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ bitOpMemND, \
-   /* .name                 = */ "bitOpMemND", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef | ILProp3::SkipDynamicLitPoolOnInts, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::NoType, \
-   /* .typeProperties       = */ 0, \
-   /* .childProperties      = */ ILChildProp::Unspecified, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    3 operand(source1,source2,target) version of bitOpMem */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ arraycmp, \
    /* .name                 = */ "arraycmp", \
    /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
@@ -9554,22 +9362,6 @@ OPCODE_MACRO(\
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
    /* .description          =    Inline code for memory comparison of part of an array */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ arraycmpWithPad, \
-   /* .name                 = */ "arraycmpWithPad", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ ILProp2::CondCodeComputation, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef | ILProp3::SkipDynamicLitPoolOnInts, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
-   /* .childProperties      = */ ILChildProp::Unspecified, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    memory comparison when src1 length != src2 length and padding is needed */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ allocationFence, \
@@ -9634,22 +9426,6 @@ OPCODE_MACRO(\
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
    /* .description          =    JEP171: prohibits loadLoad, loadStore, storeLoad, and storeStore reordering (on globals) */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ MergeNew, \
-   /* .name                 = */ "MergeNew", \
-   /* .properties1          = */ ILProp1::TreeTop | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ ILProp2::CanRaiseException| ILProp2::MayUseSystemStack, \
-   /* .properties3          = */ ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::NoType, \
-   /* .typeProperties       = */ 0, \
-   /* .childProperties      = */ ILChildProp::Unspecified, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    Parent for New etc. nodes that can all be allocated together */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ computeCC, \
@@ -10116,22 +9892,6 @@ OPCODE_MACRO(\
    /* .description          = */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ dexp, \
-   /* .name                 = */ "dexp", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::SignedExponentiation, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Double), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    double exponent */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ branch, \
    /* .name                 = */ "branch", \
    /* .properties1          = */ ILProp1::Branch | ILProp1::CompBranchOnly | ILProp1::TreeTop, \
@@ -10164,310 +9924,6 @@ OPCODE_MACRO(\
    /* .description          =    indirect goto, branches to the address specified by a child */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ bexp, \
-   /* .name                 = */ "bexp", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::SignedExponentiation, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int8, \
-   /* .typeProperties       = */ ILTypeProp::Size_1 | ILTypeProp::Integer, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int8), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    signed byte exponent  (raise signed byte to power) */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ buexp, \
-   /* .name                 = */ "buexp", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::UnsignedExponentiation, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int8, \
-   /* .typeProperties       = */ ILTypeProp::Size_1 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int8), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    unsigned byte exponent */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ sexp, \
-   /* .name                 = */ "sexp", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::SignedExponentiation, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int16, \
-   /* .typeProperties       = */ ILTypeProp::Size_2 | ILTypeProp::Integer, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int16), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    short exponent */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ cexp, \
-   /* .name                 = */ "cexp", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::UnsignedExponentiation, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int16, \
-   /* .typeProperties       = */ ILTypeProp::Size_2 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int16), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    unsigned short exponent */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ iexp, \
-   /* .name                 = */ "iexp", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::SignedExponentiation, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int32), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    integer exponent */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ iuexp, \
-   /* .name                 = */ "iuexp", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::UnsignedExponentiation, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int32), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    unsigned integer exponent */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ lexp, \
-   /* .name                 = */ "lexp", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::SignedExponentiation, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int64, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Integer, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int64), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    long exponent */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ luexp, \
-   /* .name                 = */ "luexp", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::UnsignedExponentiation, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int64, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int64), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    unsigned long exponent */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ fexp, \
-   /* .name                 = */ "fexp", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::SignedExponentiation, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Float, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Float), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    float exponent */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ fuexp, \
-   /* .name                 = */ "fuexp", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::UnsignedExponentiation, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Float, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ TWO_CHILD(TR::Float, TR::Int32), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    float base to unsigned integral exponent */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ duexp, \
-   /* .name                 = */ "duexp", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::UnsignedExponentiation, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ TWO_CHILD(TR::Double, TR::Int32), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    double base to unsigned integral exponent */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ ixfrs, \
-   /* .name                 = */ "ixfrs", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
-   /* .childProperties      = */ ILChildProp::Unspecified, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    transfer sign integer */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ lxfrs, \
-   /* .name                 = */ "lxfrs", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int64, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Integer, \
-   /* .childProperties      = */ ILChildProp::Unspecified, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    transfer sign long */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ fxfrs, \
-   /* .name                 = */ "fxfrs", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Float, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ILChildProp::Unspecified, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    transfer sign float */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ dxfrs, \
-   /* .name                 = */ "dxfrs", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ILChildProp::Unspecified, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    transfer sign double */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ fint, \
-   /* .name                 = */ "fint", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Float, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ONE_CHILD(TR::Float), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    truncate float to int */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ dint, \
-   /* .name                 = */ "dint", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ONE_CHILD(TR::Double), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    truncate double to int */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ fnint, \
-   /* .name                 = */ "fnint", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Float, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ONE_CHILD(TR::Float), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    round float to nearest int */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ dnint, \
-   /* .name                 = */ "dnint", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ONE_CHILD(TR::Double), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    round double to nearest int */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ fsqrt, \
    /* .name                 = */ "fsqrt", \
    /* .properties1          = */ 0, \
@@ -10498,230 +9954,6 @@ OPCODE_MACRO(\
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
    /* .description          =    square root of double */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ getstack, \
-   /* .name                 = */ "getstack", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Address, \
-   /* .typeProperties       = */ ILTypeProp::Reference, \
-   /* .childProperties      = */ ILChildProp::NoChildren, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    returns current value of SP */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ dealloca, \
-   /* .name                 = */ "dealloca", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::NoType, \
-   /* .typeProperties       = */ 0, \
-   /* .childProperties      = */ ILChildProp::NoChildren, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    resets value of SP */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ idoz, \
-   /* .name                 = */ "idoz", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
-   /* .childProperties      = */ ILChildProp::Unspecified, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    difference or zero */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ dcos, \
-   /* .name                 = */ "dcos", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ONE_CHILD(TR::Double), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    cos of double, returning double */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ dsin, \
-   /* .name                 = */ "dsin", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ONE_CHILD(TR::Double), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    sin of double, returning double */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ dtan, \
-   /* .name                 = */ "dtan", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ONE_CHILD(TR::Double), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    tan of double, returning double */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ dcosh, \
-   /* .name                 = */ "dcosh", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ONE_CHILD(TR::Double), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    cos of double, returning double */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ dsinh, \
-   /* .name                 = */ "dsinh", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ONE_CHILD(TR::Double), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    sin of double, returning double */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ dtanh, \
-   /* .name                 = */ "dtanh", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ONE_CHILD(TR::Double), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    tan of double, returning double */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ dacos, \
-   /* .name                 = */ "dacos", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ONE_CHILD(TR::Double), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    arccos of double, returning double */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ dasin, \
-   /* .name                 = */ "dasin", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ONE_CHILD(TR::Double), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    arcsin of double, returning double */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ datan, \
-   /* .name                 = */ "datan", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ONE_CHILD(TR::Double), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    arctan of double, returning double */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ datan2, \
-   /* .name                 = */ "datan2", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Double), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    arctan2 of double, returning double */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ dlog, \
-   /* .name                 = */ "dlog", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Double, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Floating_Point, \
-   /* .childProperties      = */ ONE_CHILD(TR::Double), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    log of double, returning double */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ dfloor, \
@@ -10786,86 +10018,6 @@ OPCODE_MACRO(\
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
    /* .description          =    ceil of float, returning float */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ ibranch, \
-   /* .name                 = */ "ibranch", \
-   /* .properties1          = */ ILProp1::TreeTop, \
-   /* .properties2          = */ ILProp2::JumpWithMultipleTargets, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::NoType, \
-   /* .typeProperties       = */ 0, \
-   /* .childProperties      = */ ONE_CHILD(TR::Int32), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    generic indirct branch --> first child is a constant indicating the mask */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ mbranch, \
-   /* .name                 = */ "mbranch", \
-   /* .properties1          = */ ILProp1::Branch, \
-   /* .properties2          = */ ILProp2::JumpWithMultipleTargets, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::NoType, \
-   /* .typeProperties       = */ 0, \
-   /* .childProperties      = */ ILChildProp::Unspecified, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    generic branch to multiple potential targets */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ getpm, \
-   /* .name                 = */ "getpm", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ ILChildProp::Unspecified, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    get program mask */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ setpm, \
-   /* .name                 = */ "setpm", \
-   /* .properties1          = */ ILProp1::TreeTop, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ ILChildProp::Unspecified, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    set program mask */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ loadAutoOffset, \
-   /* .name                 = */ "loadAutoOffset", \
-   /* .properties1          = */ ILProp1::HasSymbolRef, \
-   /* .properties2          = */ 0, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ ILChildProp::NoChildren, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    loads the offset (from the SP) of an auto */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ imax, \
@@ -11058,38 +10210,6 @@ OPCODE_MACRO(\
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
    /* .description          =    min of 2 or more doubles */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ trt, \
-   /* .name                 = */ "trt", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
-   /* .childProperties      = */ ILChildProp::Unspecified, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    translate and test */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ trtSimple, \
-   /* .name                 = */ "trtSimple", \
-   /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef, \
-   /* .properties2          = */ ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse | ILProp3::LikeDef, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
-   /* .childProperties      = */ ILChildProp::Unspecified, \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    same as TRT but ignoring the returned source byte address and table entry value */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ ihbit, \

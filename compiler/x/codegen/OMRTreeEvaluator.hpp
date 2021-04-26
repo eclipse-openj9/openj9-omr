@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -267,7 +267,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *unsignedIntegerIfCmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *unsignedIntegerIfCmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
-   
+
    static TR::Register *tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *tfinishEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *tabortEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -296,7 +296,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *bztestnsetEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    // VM dependent routines
-   static TR::Register *VMmergenewEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static bool VMinlineCallEvaluator(TR::Node *node, bool isIndirect, TR::CodeGenerator *cg);
    static TR::Instruction *VMtestForReferenceArray(TR::Node *, TR::Register *objectReg, TR::CodeGenerator *cg);
    static bool genNullTestSequence(TR::Node *node, TR::Register *opReg, TR::Register *targetReg, TR::CodeGenerator *cg);

@@ -742,13 +742,6 @@ TR::Register *OMR::Power::TreeEvaluator::a2sEvaluator(TR::Node *node, TR::CodeGe
       return TR::TreeEvaluator::i2sEvaluator(node, cg);
    }
 
-TR::Register *OMR::Power::TreeEvaluator::libmFuncEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Node::recreate(node, TR::dcall);
-   TR::Register *trgReg = TR::TreeEvaluator::directCallEvaluator(node, cg);
-   return trgReg;
-   }
-
 TR::Register *OMR::Power::TreeEvaluator::strcmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node::recreate(node, TR::icall);

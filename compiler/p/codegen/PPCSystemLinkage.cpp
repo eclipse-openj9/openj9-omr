@@ -1363,13 +1363,6 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
 
    int32_t floatRegsUsed = (numFloatArgs>properties.getNumFloatArgRegs())?properties.getNumFloatArgRegs():numFloatArgs;
 
-
-   bool isHelper = false;
-   if (callNode->getSymbolReference()->getReferenceNumber() == TR_PPCVectorLogDouble)
-      {
-      isHelper = true;
-      }
-
    if (liveVMX || liveVSXScalar || liveVSXVector)
       {
       for (i=(TR::RealRegister::RegNum)((uint32_t)TR::RealRegister::LastFPR+1); i<=TR::RealRegister::LastVSR; i++)
@@ -1381,11 +1374,7 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                continue;
             }
 
-         if (!properties.getPreserved((TR::RealRegister::RegNum)i) || !isHelper)
-            {
-            TR::addDependency(dependencies, NULL, (TR::RealRegister::RegNum)i, TR_VSX_SCALAR, cg());
-            }
-
+         TR::addDependency(dependencies, NULL, (TR::RealRegister::RegNum)i, TR_VSX_SCALAR, cg());
          }
       }
 
@@ -1731,4 +1720,3 @@ intptr_t TR::PPCSystemLinkage::entryPointFromInterpretedMethod()
    {
    return reinterpret_cast<intptr_t>(cg()->getCodeStart());
    }
-

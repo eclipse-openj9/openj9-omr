@@ -700,7 +700,7 @@ TR::Register *OMR::Power::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::Cod
    bool reverseStore = false;
    // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
    static bool reverseStoreEnabled = feGetEnv("TR_EnableReverseLoadStore");
-   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::ibyteswap && 
+   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::ibyteswap &&
       valueChild->getReferenceCount() == 1 &&
       valueChild->getRegister() == NULL)
       {
@@ -787,7 +787,7 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
    bool reverseStore = false;
    // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
    static bool reverseStoreEnabled = feGetEnv("TR_EnableReverseLoadStore");
-   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::lbyteswap && 
+   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::lbyteswap &&
       valueChild->getReferenceCount() == 1 &&
       valueChild->getRegister() == NULL &&
       cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P7))
@@ -877,7 +877,7 @@ TR::Register *OMR::Power::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::Cod
    bool reverseStore = false;
    // TODO(#5684): Re-enable once issues with delayed indexed-form are corrected
    static bool reverseStoreEnabled = feGetEnv("TR_EnableReverseLoadStore");
-   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::sbyteswap && 
+   if (reverseStoreEnabled && valueChild->getOpCodeValue() == TR::sbyteswap &&
       valueChild->getReferenceCount() == 1 &&
       valueChild->getRegister() == NULL)
       {
@@ -2194,16 +2194,6 @@ TR::Register *OMR::Power::TreeEvaluator::vdmergeEvaluator(TR::Node *node, TR::Co
 TR::Register *OMR::Power::TreeEvaluator::vdsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
     {
     return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::xvsqrtdp);
-    }
-
-TR::Register *OMR::Power::TreeEvaluator::vdlogEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-    {
-    TR::SymbolReference *helper = cg->comp()->getSymRefTab()->findOrCreateRuntimeHelper(TR_PPCVectorLogDouble, false, false, true);
-    helper->getSymbol()->castToMethodSymbol()->setLinkage(TR_System);
-    TR::Node::recreate(node, TR::vcall);
-    node->setSymbolReference(helper);
-
-    return TR::TreeEvaluator::directCallEvaluator(node, cg);
     }
 
 TR::Register *OMR::Power::TreeEvaluator::vl2vdEvaluator(TR::Node *node, TR::CodeGenerator *cg)

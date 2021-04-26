@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -516,7 +516,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define ifsucmpleVPHandler constrainCondBranch
 #define loadaddrVPHandler constrainLoadaddr
 #define ZEROCHKVPHandler constrainZeroChk
-#define callIfVPHandler constrainChildren
 #define iRegLoadVPHandler constrainChildren
 #define aRegLoadVPHandler constrainChildren
 #define lRegLoadVPHandler constrainChildren
@@ -604,7 +603,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define vdcmpanyltVPHandler constrainCmp
 #define vdcmpanyleVPHandler constrainCmp
 #define vdsqrtVPHandler constrainChildren
-#define vdlogVPHandler constrainChildren
 #define vincVPHandler constrainChildren
 #define vdecVPHandler constrainChildren
 #define vnegVPHandler constrainChildren
@@ -684,10 +682,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define d2luVPHandler constrainChildren
 #define d2buVPHandler constrainChildren
 #define d2cVPHandler constrainNarrowToChar
-#define iuRegLoadVPHandler constrainChildren
-#define luRegLoadVPHandler constrainChildren
-#define iuRegStoreVPHandler constrainChildren
-#define luRegStoreVPHandler constrainChildren
 #define cloadVPHandler constrainIntLoad
 #define cloadiVPHandler constrainIntLoad
 #define cstoreVPHandler constrainIntStore
@@ -721,9 +715,7 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define luaddhVPHandler constrainChildren
 #define caddVPHandler constrainAdd
 #define aiaddVPHandler constrainAddressRef
-#define aiuaddVPHandler constrainAddressRef
 #define aladdVPHandler constrainAddressRef
-#define aluaddVPHandler constrainAddressRef
 #define lusubhVPHandler constrainChildren
 #define csubVPHandler constrainSubtract
 #define imulhVPHandler constrainChildren
@@ -735,11 +727,9 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define lbits2dVPHandler constrainChildren
 #define dbits2lVPHandler constrainChildren
 #define lookupVPHandler constrainSwitch
-#define trtLookupVPHandler constrainChildren
 #define CaseVPHandler constrainCase
 #define tableVPHandler constrainSwitch
 #define exceptionRangeFenceVPHandler constrainChildren
-#define dbgFenceVPHandler constrainChildren
 #define NULLCHKVPHandler constrainNullChk
 #define ResolveCHKVPHandler constrainResolveChk
 #define ResolveAndNULLCHKVPHandler constrainResolveNullChk
@@ -752,21 +742,17 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define SpineCHKVPHandler constrainChildren
 #define ArrayStoreCHKVPHandler constrainArrayStoreChk
 #define ArrayCHKVPHandler constrainArrayChk
-#define RetVPHandler constrainChildren
 #define arraycopyVPHandler constrainArraycopy
 #define arraysetVPHandler constrainChildren
 #define arraytranslateVPHandler constrainChildren
 #define arraytranslateAndTestVPHandler constrainTRT
 #define long2StringVPHandler constrainChildren
 #define bitOpMemVPHandler constrainChildren
-#define bitOpMemNDVPHandler constrainChildren
 #define arraycmpVPHandler constrainChildren
-#define arraycmpWithPadVPHandler constrainChildren
 #define allocationFenceVPHandler constrainChildren
 #define loadFenceVPHandler constrainChildren
 #define storeFenceVPHandler constrainChildren
 #define fullFenceVPHandler constrainChildren
-#define MergeNewVPHandler constrainChildren
 #define computeCCVPHandler constrainChildren
 #define butestVPHandler constrainChildren
 #define sutestVPHandler constrainChildren
@@ -796,53 +782,14 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define isatomicorVPHandler constrainChildren
 #define iiatomicorVPHandler constrainChildren
 #define ilatomicorVPHandler constrainChildren
-#define dexpVPHandler constrainChildren
 #define branchVPHandler constrainCondBranch
 #define igotoVPHandler constrainIgoto
-#define bexpVPHandler constrainChildren
-#define buexpVPHandler constrainChildren
-#define sexpVPHandler constrainChildren
-#define cexpVPHandler constrainChildren
-#define iexpVPHandler constrainChildren
-#define iuexpVPHandler constrainChildren
-#define lexpVPHandler constrainChildren
-#define luexpVPHandler constrainChildren
-#define fexpVPHandler constrainChildren
-#define fuexpVPHandler constrainChildren
-#define duexpVPHandler constrainChildren
-#define ixfrsVPHandler constrainChildren
-#define lxfrsVPHandler constrainChildren
-#define fxfrsVPHandler constrainChildren
-#define dxfrsVPHandler constrainChildren
-#define fintVPHandler constrainChildren
-#define dintVPHandler constrainChildren
-#define fnintVPHandler constrainChildren
-#define dnintVPHandler constrainChildren
 #define fsqrtVPHandler constrainChildren
 #define dsqrtVPHandler constrainChildren
-#define getstackVPHandler constrainChildren
-#define deallocaVPHandler constrainChildren
-#define idozVPHandler constrainChildren
-#define dcosVPHandler constrainChildren
-#define dsinVPHandler constrainChildren
-#define dtanVPHandler constrainChildren
-#define dcoshVPHandler constrainChildren
-#define dsinhVPHandler constrainChildren
-#define dtanhVPHandler constrainChildren
-#define dacosVPHandler constrainChildren
-#define dasinVPHandler constrainChildren
-#define datanVPHandler constrainChildren
-#define datan2VPHandler constrainChildren
-#define dlogVPHandler constrainChildren
 #define dfloorVPHandler constrainChildren
 #define ffloorVPHandler constrainChildren
 #define dceilVPHandler constrainChildren
 #define fceilVPHandler constrainChildren
-#define ibranchVPHandler constrainIgoto
-#define mbranchVPHandler constrainIgoto
-#define getpmVPHandler constrainChildren
-#define setpmVPHandler constrainChildren
-#define loadAutoOffsetVPHandler constrainChildren
 #define imaxVPHandler constrainChildren
 #define iumaxVPHandler constrainChildren
 #define lmaxVPHandler constrainChildren
@@ -855,8 +802,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define luminVPHandler constrainChildren
 #define fminVPHandler constrainChildren
 #define dminVPHandler constrainChildren
-#define trtVPHandler constrainChildren
-#define trtSimpleVPHandler constrainChildren
 #define ihbitVPHandler constrainIntegerHighestOneBit
 #define ilbitVPHandler constrainIntegerLowestOneBit
 #define inolzVPHandler constrainIntegerNumberOfLeadingZeros

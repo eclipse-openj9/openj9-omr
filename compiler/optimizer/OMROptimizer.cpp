@@ -1803,7 +1803,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
 
             LexicalTimer t("use defs (for globals definitely)", comp()->phaseTimer());
             TR::LexicalMemProfiler mp("use defs (for globals definitely)", comp()->phaseMemProfiler());
-            useDefInfo = createUseDefInfo(comp(), 
+            useDefInfo = createUseDefInfo(comp(),
                                    true, // requiresGlobals
                                    false,// prefersGlobals
                                    !manager->getDoesNotRequireLoadsAsDefsInUseDefs(),
@@ -1849,7 +1849,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
 #endif
             LexicalTimer t("use defs (for globals possibly)", comp()->phaseTimer());
             TR::LexicalMemProfiler mp("use defs (for globals possibly)", comp()->phaseMemProfiler());
-            useDefInfo = createUseDefInfo(comp(), 
+            useDefInfo = createUseDefInfo(comp(),
                                                false, // requiresGlobals
                                                manager->getPrefersGlobalsUseDefInfo() || manager->getPrefersGlobalsValueNumbering(),
                                                !manager->getDoesNotRequireLoadsAsDefsInUseDefs(),
@@ -2421,7 +2421,6 @@ bool OMR::Optimizer::areNodesEquivalent(TR::Node *node1, TR::Node *node2,  TR::C
                   opCode1.getOpCodeValue() == TR::newarray ||
                   opCode1.getOpCodeValue() == TR::anewarray ||
                   opCode1.getOpCodeValue() == TR::multianewarray ||
-                  opCode1.getOpCodeValue() == TR::MergeNew ||
                   opCode1.getOpCodeValue() == TR::monent ||
                   opCode1.getOpCodeValue() == TR::monexit)
             {
@@ -2610,23 +2609,6 @@ bool OMR::Optimizer::areNodesEquivalent(TR::Node *node1, TR::Node *node2,  TR::C
          for (int i = node1->getCaseIndexUpperBound()-1; i > 1; i--)
             {
             if (!(node1->getChild(i)->getBranchDestination()->getNode() == node2->getChild(i)->getBranchDestination()->getNode()))
-               return false;
-            }
-         }
-      else if (opCode1.getOpCodeValue() == TR::trtLookup)
-         {
-         if (node1->getCaseIndexUpperBound() != node2->getCaseIndexUpperBound())
-             return false;
-
-         for (int i = node1->getCaseIndexUpperBound()-1; i > 1; i--)
-            {
-            TR::Node *child1 = node1->getChild(i);
-            TR::Node *child2 = node2->getChild(i);
-            CASECONST_TYPE caseVal1 = child1->getCaseConstant();
-            CASECONST_TYPE caseVal2 = child2->getCaseConstant();
-
-            if (caseVal1 != caseVal2 ||
-                child1->getBranchDestination()->getNode() != child2->getBranchDestination()->getNode())
                return false;
             }
          }

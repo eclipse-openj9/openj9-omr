@@ -262,13 +262,6 @@ TR_Debug::printLoadConst(TR::Node *node, TR_PrettyPrinterString& output)
             output.append(" %g [" UINT64_PRINTF_FORMAT_HEX "]", node->getDouble(), node->getDouble(), node->getDoubleBits());
             }
          break;
-#ifdef SUPPORT_DFP
-      case TR::DecimalLongDouble:
-            {
-            output.append(" %llg", node->getLongDouble());
-            }
-         break;
-#endif
 #endif
       case TR::Address:
          if (node->getAddress() == 0)

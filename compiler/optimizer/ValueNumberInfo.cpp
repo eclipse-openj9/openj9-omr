@@ -376,9 +376,6 @@ bool TR_ValueNumberInfo::congruentNodes(TR::Node * node, TR::Node * entryNode)
 #ifdef J9_PROJECT_SPECIFIC
           case TR::DecimalFloat: isSame = (node->getInt() == entryNode->getInt()); break;
           case TR::DecimalDouble: isSame = (node->getLongInt() == entryNode->getLongInt()); break;
-#ifdef SUPPORT_DFP
-          case TR::DecimalLongDouble: isSame = (node->getLongDouble() == entryNode->getLongDouble()); break;
-#endif
 #endif
           case TR::Address:isSame = (node->getAddress() == entryNode->getAddress()); break;
           default:
@@ -572,9 +569,6 @@ void TR_ValueNumberInfo::initializeNode(TR::Node *node, int32_t &negativeValueNu
 #ifdef J9_PROJECT_SPECIFIC
             case TR::DecimalFloat: isSame = (node->getInt() == entryNode->getInt()); break;
             case TR::DecimalDouble: isSame = (node->getLongInt() == entryNode->getLongInt()); break;
-#ifdef SUPPORT_DFP
-            case TR::DecimalLongDouble: isSame = (node->getLongDouble() == entryNode->getLongDouble()); break;
-#endif
 #endif
             case TR::Address:isSame = (node->getAddress() == entryNode->getAddress()); break;
             default:

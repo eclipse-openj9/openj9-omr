@@ -1044,7 +1044,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Node * node, uint32_t indentation, bool 
          printLoadConst(pOutFile, node);
 #ifdef J9_PROJECT_SPECIFIC
       printBCDNodeInfo(pOutFile, node);
-      printDFPNodeInfo(pOutFile, node);
 #endif
       trfprintf(pOutFile, "\n");
       trfflush(pOutFile);
@@ -1232,7 +1231,6 @@ TR_Debug::printWithFixedPrefix(TR::FILE *pOutFile, TR::Node * node, uint32_t ind
             printLoadConst(pOutFile, node);
 #ifdef J9_PROJECT_SPECIFIC
          printBCDNodeInfo(pOutFile, node);
-         printDFPNodeInfo(pOutFile, node);
 #endif
 //         trfprintf(pOutFile, " at n%d", node->getGlobalIndex());
          }
@@ -1243,7 +1241,6 @@ TR_Debug::printWithFixedPrefix(TR::FILE *pOutFile, TR::Node * node, uint32_t ind
             printLoadConst(pOutFile, node);
 #ifdef J9_PROJECT_SPECIFIC
          printBCDNodeInfo(pOutFile, node);
-         printDFPNodeInfo(pOutFile, node);
 #endif
          //  trfprintf(pOutFile, " at n%d", node->getGlobalIndex());
          }
@@ -1745,7 +1742,6 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
 
 #ifdef J9_PROJECT_SPECIFIC
    printBCDNodeInfo(node, output);
-   printDFPNodeInfo(node, output);
 #endif
    }
 
@@ -1882,21 +1878,6 @@ TR_Debug::printBCDNodeInfo(TR::Node * node, TR_PrettyPrinterString& output)
       {
       output.append(" <castedToBCD=true> ");
       }
-   }
-
-void
-TR_Debug::printDFPNodeInfo(TR::FILE *pOutFile, TR::Node * node)
-   {
-   TR_PrettyPrinterString output(this);
-   printDFPNodeInfo(node, output);
-   trfprintf(pOutFile, "%s", output.getStr());
-   _comp->incrNodeOpCodeLength(output.getLength());
-   }
-
-
-void
-TR_Debug::printDFPNodeInfo(TR::Node * node, TR_PrettyPrinterString& output)
-   {
    }
 #endif
 

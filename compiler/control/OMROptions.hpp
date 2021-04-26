@@ -362,7 +362,7 @@ enum TR_CompilationOptions
    // Option word 9
    //
    // Available                           = 0x00000020 + 9,
-   // Available                           = 0x00000040 + 9, // DFP
+   // Available                           = 0x00000040 + 9,
    TR_DisableTLHPrefetch                  = 0x00000080 + 9,
    TR_DisableJProfilerThread              = 0x00000100 + 9,
    TR_DisableIProfilerThread              = 0x00000200 + 9,

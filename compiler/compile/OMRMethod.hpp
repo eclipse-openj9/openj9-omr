@@ -151,8 +151,6 @@ class Method
    virtual void setArchetypeSpecimen(bool b = true);
    virtual bool isUnsafeWithObjectArg(TR::Compilation * = NULL);
    virtual bool isUnsafeCAS(TR::Compilation * = NULL);
-   virtual bool isBigDecimalMethod (TR::Compilation * = NULL);
-   virtual bool isBigDecimalConvertersMethod (TR::Compilation * = NULL);
    virtual bool isFinalInObject();
 
 

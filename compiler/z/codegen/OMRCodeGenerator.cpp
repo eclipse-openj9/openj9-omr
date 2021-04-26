@@ -522,13 +522,9 @@ OMR::Z::CodeGenerator::initialize()
 
    if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12))
       {
-      cg->setSupportsZonedDFPConversions();
       if (comp->target().cpu.supportsFeature(OMR_FEATURE_S390_TE) && !comp->getOption(TR_DisableTM))
          cg->setSupportsTM();
       }
-
-   if (comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z13) && !comp->getOption(TR_DisableArch11PackedToDFP))
-      cg->setSupportsFastPackedDFPConversions();
 
    if (!comp->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14))
       {

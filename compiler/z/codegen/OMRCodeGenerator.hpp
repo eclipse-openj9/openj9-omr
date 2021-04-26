@@ -354,15 +354,6 @@ public:
 
    bool isCompressedClassPointerOfObjectHeader(TR::Node * node);
 
-   /**
-    * @brief Create a literal pool entry for the given value.
-    *
-    * @details
-    *    This function must be implemented and will assert if called.
-    *    See issue eclipse/omr#2180 for details.
-    */
-   size_t findOrCreateLiteral(void *value, size_t len);
-
    bool usesImplicit64BitGPRs(TR::Node *node);
    bool nodeMayCauseException(TR::Node *node);
 

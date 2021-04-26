@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -300,7 +300,7 @@ uintptr_t
 omrthread_get_stack_range(omrthread_t thread, void **stackStart, void **stackEnd)
 {
 
-#if defined(LINUX)
+#if defined(LINUX) || defined(AIXPPC)
 	pthread_attr_t attr;
 	OSTHREAD osTid = thread->handle;
 	uintptr_t rc = 0;
@@ -322,7 +322,7 @@ omrthread_get_stack_range(omrthread_t thread, void **stackStart, void **stackEnd
 		thread->os_errno = rc;
 		return (J9THREAD_ERR_GETSTACK | J9THREAD_ERR_OS_ERRNO_SET);
 	}
-#else
+#else /* (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) */
 	if ((rc = pthread_attr_getstackaddr(&attr, stackStart)) != 0) {
 		thread->os_errno = rc;
 		return (J9THREAD_ERR_GETSTACK | J9THREAD_ERR_OS_ERRNO_SET);
@@ -332,13 +332,13 @@ omrthread_get_stack_range(omrthread_t thread, void **stackStart, void **stackEnd
 		thread->os_errno = rc;
 		return (J9THREAD_ERR_GETSTACK | J9THREAD_ERR_OS_ERRNO_SET);
 	}
-#endif /* #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) */
+#endif /* (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) */
 	pthread_attr_destroy(&attr);
 
 	/* On Linux, native stack grows from high to low memory */
 	*stackEnd = (void *)((uintptr_t)*stackStart + stackSize);
 	return J9THREAD_SUCCESS;
-#elif defined(OSX)
+#elif defined(OSX) /* defined(LINUX) || defined(AIXPPC) */
 	OSTHREAD osTid = thread->handle;
 	size_t stackSize = 0;
 
@@ -348,7 +348,7 @@ omrthread_get_stack_range(omrthread_t thread, void **stackStart, void **stackEnd
 	return J9THREAD_SUCCESS;
 #else /* defined(OSX) */
 	return J9THREAD_ERR_UNSUPPORTED_PLAT;
-#endif /* defined(LINUX) */
+#endif /* defined(LINUX) || defined(AIXPPC) */
 }
 
 #if (defined(OMR_THR_JLM))

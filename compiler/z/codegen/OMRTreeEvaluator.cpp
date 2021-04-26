@@ -1821,10 +1821,6 @@ generateS390DFPLongDoubleCompareAndBranchOps(TR::Node * node, TR::CodeGenerator 
 
    TR::DataType dataType = node->getFirstChild()->getDataType();
    TR::InstOpCode::Mnemonic cmpOp = TR::InstOpCode::BAD;
-   if (dataType == TR::DecimalDouble)
-      cmpOp = TR::InstOpCode::CDTR;
-   else if (dataType == TR::DecimalLongDouble)
-      cmpOp = TR::InstOpCode::CXTR;
 
    if (cg->whichChildToEvaluate(node) == 0)
       {
@@ -2713,8 +2709,6 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
    if (TR::Float == dataType || TR::Double == dataType)
       return generateS390FloatCompareAndBranchOps(node, cg, fBranchOpCond, rBranchOpCond, retBranchOpCond, branchTarget);
 #ifdef J9_PROJECT_SPECIFIC
-   else if (dataType == TR::DecimalDouble || dataType == TR::DecimalLongDouble)
-      return generateS390DFPLongDoubleCompareAndBranchOps(node, cg, fBranchOpCond, rBranchOpCond, retBranchOpCond, branchTarget);
    else if (TR::PackedDecimal == dataType)
       return generateS390PackedCompareAndBranchOps(node, cg, fBranchOpCond, rBranchOpCond, retBranchOpCond, branchTarget);
 #endif
@@ -3288,11 +3282,6 @@ getOpCodeIfSuitableForCompareAndBranch(TR::CodeGenerator * cg, TR::Node * node, 
          break;
       case TR::Float:
       case TR::Double:
-#ifdef J9_PROJECT_SPECIFIC
-      case TR::DecimalFloat:
-      case TR::DecimalDouble:
-      case TR::DecimalLongDouble:
-#endif
       case TR::Aggregate:
          break;
      default:
@@ -9568,18 +9557,8 @@ OMR::Z::TreeEvaluator::BBStartEvaluator(TR::Node * node, TR::CodeGenerator * cg)
                TR::DataType dt = sym->getDataType();
                TR::DataType type = dt;
 
-               if (
-#ifdef J9_PROJECT_SPECIFIC
-                   !type.isLongDouble() &&
-#endif
-                   true)
                   {
                   sym->setAssignedGlobalRegisterIndex(cg->getGlobalRegister(child->getChild(i)->getGlobalRegisterNumber()));
-                  }
-               else
-                  {
-                  sym->setAssignedHighGlobalRegisterIndex(cg->getGlobalRegister(child->getChild(i)->getHighGlobalRegisterNumber()));
-                  sym->setAssignedLowGlobalRegisterIndex(cg->getGlobalRegister(child->getChild(i)->getLowGlobalRegisterNumber()));
                   }
                }
             }

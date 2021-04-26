@@ -251,18 +251,6 @@ TR_Debug::printLoadConst(TR::Node *node, TR_PrettyPrinterString& output)
             output.append(" %g [" UINT64_PRINTF_FORMAT_HEX "]", node->getDouble(), node->getDoubleBits());
             }
          break;
-#ifdef J9_PROJECT_SPECIFIC
-      case TR::DecimalFloat:
-            {
-            output.append(" %g [0x%08x]", node->getFloat(), node->getFloatBits());
-            }
-         break;
-      case TR::DecimalDouble:
-            {
-            output.append(" %g [" UINT64_PRINTF_FORMAT_HEX "]", node->getDouble(), node->getDouble(), node->getDoubleBits());
-            }
-         break;
-#endif
       case TR::Address:
          if (node->getAddress() == 0)
             output.append(" NULL");
@@ -1909,11 +1897,6 @@ TR_Debug::printDFPNodeInfo(TR::FILE *pOutFile, TR::Node * node)
 void
 TR_Debug::printDFPNodeInfo(TR::Node * node, TR_PrettyPrinterString& output)
    {
-   if (node->getType().isDFP())
-      {
-      if (node->isDFPModifyPrecision())
-         output.append(" <prec=%d> ", node->getDFPPrecision());
-      }
    }
 #endif
 

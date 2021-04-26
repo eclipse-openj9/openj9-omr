@@ -795,16 +795,8 @@ TR::S390zOSSystemLinkage::generateCallDescriptorValue(TR::Node* callNode)
             {
             case TR::Float:
             case TR::Double:
-#ifdef J9_PROJECT_SPECIFIC
-            case TR::DecimalFloat:
-            case TR::DecimalDouble:
-#endif
                numFPRsNeeded = 1;
                break;
-#ifdef J9_PROJECT_SPECIFIC
-            case TR::DecimalLongDouble:
-               break;
-#endif
             }
 
          if (numFPRsNeeded != 0)

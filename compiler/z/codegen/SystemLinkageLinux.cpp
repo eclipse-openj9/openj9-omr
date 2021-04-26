@@ -566,9 +566,6 @@ TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, 
             numIntegerArgs ++;
             break;
          case TR::Float:
-#ifdef J9_PROJECT_SPECIFIC
-         case TR::DecimalFloat:
-#endif
             indexInArgRegistersArray = numFloatArgs;
             argRegNum = getFloatArgumentRegister(indexInArgRegistersArray);
             numFloatArgs ++;
@@ -581,9 +578,6 @@ TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, 
                   }
              break;
          case TR::Double:
-#ifdef J9_PROJECT_SPECIFIC
-         case TR::DecimalDouble:
-#endif
             indexInArgRegistersArray = numFloatArgs;
             argRegNum = getFloatArgumentRegister(indexInArgRegistersArray);
             numFloatArgs ++;

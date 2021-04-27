@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -67,7 +67,6 @@ OMR::ARM::Instruction::Instruction(TR::CodeGenerator *cg, TR::Instruction *prece
                   _conditions(0),
                   _asyncBranch(false)
    {
-   self()->setBlockIndex(cg->getCurrentBlockIndex());
    }
 
 OMR::ARM::Instruction::Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node)
@@ -75,7 +74,6 @@ OMR::ARM::Instruction::Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemon
      _conditions(0),
      _asyncBranch(false)
    {
-   self()->setBlockIndex(cg->getCurrentBlockIndex());
    }
 
 // TODO: need to fix the InstOpCode initialization

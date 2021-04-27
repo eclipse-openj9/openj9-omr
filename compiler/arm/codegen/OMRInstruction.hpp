@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -90,9 +90,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    TR_ARMOpCodes getOpCodeValue()                  {return _opcode.getOpCodeValue();}
    TR_ARMOpCodes getRecordFormOpCode()             {return _opcode.getRecordFormOpCodeValue();}
    TR_ARMOpCodes setOpCodeValue(TR_ARMOpCodes op)  {return _opcode.setOpCodeValue(op);}
-
-   int32_t  getBlockIndex()            { return _blockIndex; }
-   void     setBlockIndex(int32_t i)   { _blockIndex = i; }
 
    void ARMNeedsGCMap(uint32_t mask);
 
@@ -214,7 +211,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    private:
       TR_ARMOpCode   _opcode;
-      int32_t       _blockIndex;
       TR_ARMConditionCode                  _conditionCode;
       TR::RegisterDependencyConditions *_conditions;
       bool        _asyncBranch;

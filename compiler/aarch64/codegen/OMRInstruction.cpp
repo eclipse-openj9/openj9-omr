@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,7 +32,6 @@ OMR::ARM64::Instruction::Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnem
    : OMR::Instruction(cg, op, node),
      _conditions(NULL)
    {
-   self()->setBlockIndex(cg->getCurrentBlockIndex());
    }
 
 
@@ -40,7 +39,6 @@ OMR::ARM64::Instruction::Instruction(TR::CodeGenerator *cg, TR::Instruction *pre
    : OMR::Instruction(cg, precedingInstruction, op, node),
      _conditions(NULL)
    {
-   self()->setBlockIndex(cg->getCurrentBlockIndex());
    }
 
 
@@ -48,7 +46,6 @@ OMR::ARM64::Instruction::Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnem
    : OMR::Instruction(cg, op, node),
      _conditions(cond)
    {
-   self()->setBlockIndex(cg->getCurrentBlockIndex());
    if (cond)
       cond->bookKeepingRegisterUses(self(), cg);
    }
@@ -58,7 +55,6 @@ OMR::ARM64::Instruction::Instruction(TR::CodeGenerator *cg, TR::Instruction *pre
    : OMR::Instruction(cg, precedingInstruction, op, node),
      _conditions(cond)
    {
-   self()->setBlockIndex(cg->getCurrentBlockIndex());
    if (cond)
       cond->bookKeepingRegisterUses(self(), cg);
    }

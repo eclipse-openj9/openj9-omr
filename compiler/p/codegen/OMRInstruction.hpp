@@ -132,10 +132,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual bool   isAsyncBranch()            { return _asyncBranch;}
    virtual bool   setAsyncBranch()           { return (_asyncBranch = true);}
 
-   //  Basic Block Index Routines
-   int32_t  getBlockIndex()            { return _blockIndex; }
-   void     setBlockIndex(int32_t i)   { _blockIndex = i; }
-
    void    PPCNeedsGCMap(uint32_t mask);
 
    virtual TR::Register *getMemoryDataRegister();
@@ -190,7 +186,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    private:
     //  TR::InstOpCode   _opcode;
       uint8_t        _estimatedBinaryLength;
-      int32_t       _blockIndex;
       TR::RegisterDependencyConditions *_conditions;
       bool        _asyncBranch;
 

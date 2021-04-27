@@ -812,3 +812,22 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateDebugCounterBump(TR::Instruc
    srm.reclaimScratchRegister(counterReg);
    return cursor;
    }
+
+bool
+OMR::ARM64::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol)
+   {
+   bool result = false;
+
+   switch (symbol)
+      {
+      case TR::SymbolReferenceTable::atomicAddSymbol:
+      case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
+      case TR::SymbolReferenceTable::atomicSwapSymbol:
+         {
+         result = true;
+         break;
+         }
+      }
+
+   return result;
+   }

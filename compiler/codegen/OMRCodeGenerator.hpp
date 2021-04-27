@@ -388,9 +388,6 @@ public:
    TR::Instruction *getImplicitExceptionPoint() {return _implicitExceptionPoint;}
    TR::Instruction *setImplicitExceptionPoint(TR::Instruction *p) {return (_implicitExceptionPoint = p);}
 
-   void setNextAvailableBlockIndex(int32_t blockIndex) {}
-   int32_t getNextAvailableBlockIndex() { return -1; }
-
    bool mustGenerateSwitchToInterpreterPrePrologue() { return false; }
    bool buildInterpreterEntryPoint() { return false; }
    void generateCatchBlockBBStartPrologue(TR::Node *node, TR::Instruction *fenceInstruction) { return; }
@@ -494,9 +491,6 @@ public:
 
    void startUsingRegister(TR::Register *reg);
    void stopUsingRegister(TR::Register *reg);
-
-   void setCurrentBlockIndex(int32_t blockIndex) { }
-   int32_t getCurrentBlockIndex() { return -1; }
 
    TR::Instruction *lastInstructionBeforeCurrentEvaluationTreeTop()
       {

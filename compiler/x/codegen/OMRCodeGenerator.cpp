@@ -228,12 +228,17 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
    // Determine whether or not x87 or SSE should be used for floating point.
    //
 
-#if defined(TR_TARGET_X86) && !defined(J9HAMMER)
+#if defined(TR_TARGET_X86)
+#if !defined(J9HAMMER)
    TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) == _targetProcessorInfo.supportsSSE2(), "supportsSSE2() failed\n");
 
    if (comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) && comp->target().cpu.testOSForSSESupport())
       supportsSSE2 = true;
-#endif // defined(TR_TARGET_X86) && !defined(J9HAMMER)
+#else
+   // 64-bit targets all support SSE2
+   supportsSSE2 = true;
+#endif // !defined(J9HAMMER)
+#endif // defined(TR_TARGET_X86)
 
    TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_RTM) == _targetProcessorInfo.supportsTM(), "supportsTM() failed\n");
 
@@ -255,50 +260,27 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
          }
       }
 
-   if (comp->target().is64Bit()
-#if defined(TR_TARGET_X86) && !defined(J9HAMMER)
-       || supportsSSE2
-#endif
-      )
-      {
-      self()->setUseSSEForSinglePrecision();
-      self()->setUseSSEForDoublePrecision();
-      self()->setSupportsAutoSIMD();
-      self()->setSupportsJavaFloatSemantics();
-      }
-   else
-      {
-      self()->setDisableFloatingPointGRA();
-      }
+   TR_ASSERT_FATAL(supportsSSE2, "Target processor/OS must support SSE2");
+
+   self()->setUseSSEForSinglePrecision();
+   self()->setUseSSEForDoublePrecision();
+   self()->setSupportsAutoSIMD();
+   self()->setSupportsJavaFloatSemantics();
 
    // Choose the best XMM double precision load instruction for the target architecture.
    //
-   if (self()->useSSEForDoublePrecision())
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.isAuthenticAMD() == _targetProcessorInfo.isAuthenticAMD(), "isAuthenticAMD() failed\n");
+   static char *forceMOVLPD = feGetEnv("TR_forceMOVLPDforDoubleLoads");
+   if (comp->target().cpu.isAuthenticAMD() || forceMOVLPD)
       {
-      TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.isAuthenticAMD() == _targetProcessorInfo.isAuthenticAMD(), "isAuthenticAMD() failed\n");
-      static char *forceMOVLPD = feGetEnv("TR_forceMOVLPDforDoubleLoads");
-      if (comp->target().cpu.isAuthenticAMD() || forceMOVLPD)
-         {
-         self()->setXMMDoubleLoadOpCode(MOVLPDRegMem);
-         }
-      else
-         {
-         self()->setXMMDoubleLoadOpCode(MOVSDRegMem);
-         }
+      self()->setXMMDoubleLoadOpCode(MOVLPDRegMem);
+      }
+   else
+      {
+      self()->setXMMDoubleLoadOpCode(MOVSDRegMem);
       }
 
-#if defined(TR_TARGET_X86) && !defined(J9HAMMER)
-   // Determine if software prefetches are supported.
-   //
-   // 32-bit platforms must check the processor and OS.
-   // 64-bit platforms unconditionally support prefetching.
-   //
-   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE) == _targetProcessorInfo.supportsSSE(), "supportsSSE() failed\n");
-   if (comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE) && comp->target().cpu.testOSForSSESupport())
-#endif // defined(TR_TARGET_X86) && !defined(J9HAMMER)
-      {
-      self()->setTargetSupportsSoftwarePrefetches();
-      }
+   self()->setTargetSupportsSoftwarePrefetches();
 
    // Enable software prefetch of the TLH and configure the TLH prefetching
    // geometry.

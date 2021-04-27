@@ -93,7 +93,7 @@ public:
       }
    bool isGenuineIntel();
    bool isAuthenticAMD();
-   
+
    bool requiresLFence();
    bool supportsFCOMIInstructions();
    bool supportsMFence();
@@ -101,8 +101,16 @@ public:
    bool supportsSFence();
    bool prefersMultiByteNOP();
    bool supportsAVX();
-   bool testOSForSSESupport() { return false; }
-   
+
+   /**
+    * It is generally safe to assume that all modern operating systems
+    * support preserving the SSE state.  However, to be strictly
+    * correct, this support should be verified.
+    *
+    * See issue #5964.
+    */
+   bool testOSForSSESupport() { return true; }
+
    /**
     * @brief Determines whether 32bit integer rotate is available
     *

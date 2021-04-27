@@ -4239,7 +4239,6 @@ generateS390CompareBranch(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCod
                tt = tt->getNextTreeTop();  // Effectively starts at blockEndTT, but this allows us to evaluate the last Exit block of canadidateLoadStoreConditionalBlock
 
                cg->setCurrentEvaluationBlock(canadidateLoadStoreConditionalBlock);
-               cg->setCurrentBlockIndex(canadidateLoadStoreConditionalBlock->getNumber());
                cg->setCurrentEvaluationTreeTop(tt);
                cg->resetMethodModifiedByRA();
 
@@ -9504,7 +9503,6 @@ OMR::Z::TreeEvaluator::BBStartEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    TR::Instruction * firstInstr = NULL;
    TR::Block * block = node->getBlock();
-   cg->setCurrentBlockIndex(block->getNumber());
    TR::Compilation *comp = cg->comp();
 
    bool generateFence = true;
@@ -9524,19 +9522,7 @@ OMR::Z::TreeEvaluator::BBStartEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          labelInstr = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, node->getLabel());
          if (!firstInstr)
             firstInstr = labelInstr;
-      // BB_Start has a label ==> We have an unique block number.
-         labelInstr->setBlockIndex(node->getBlock()->getNumber());
          }
-      // BB_Start has a label ==> We have an unique block number.
-      // Decrement Next Available Block Index since we didn't need to use the one automatically
-      // assigned to the above TR::InstOpCode::LABEL.
-
-      //keeping proper track of block indexes by codegen, can comment out following
-      //cg->setNextAvailableBlockIndex(cg->getNextAvailableBlockIndex() - 1);
-      // Update current block index with BB_Start's block number.
-
-      //keeping proper track of block indexes by codegen, can comment out following
-      //cg->setCurrentBlockIndex(node->getBlock()->getNumber());
       node->getLabel()->setInstruction(labelInstr);
       }
 

@@ -83,10 +83,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    public:
 
-   //  Basic Block Index Routines
-   int32_t getBlockIndex() { return _blockIndex; }
-   void setBlockIndex(int32_t i) { _blockIndex = i; }
-
    //  Register Dependency Routines
    TR::RegisterDependencyConditions* getDependencyConditions() {return _conditions;}
    TR::RegisterDependencyConditions* setDependencyConditions(TR::RegisterDependencyConditions *cond);
@@ -251,7 +247,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    private:
 
-   int32_t       _blockIndex;
    TR::RegisterDependencyConditions *_conditions;
 
    enum // _flags

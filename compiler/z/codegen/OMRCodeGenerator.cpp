@@ -590,9 +590,6 @@ OMR::Z::CodeGenerator::initialize()
    _localF2ISpill = NULL;
    _localD2LSpill = NULL;
 
-   _nextAvailableBlockIndex = -1;
-   _currentBlockIndex = -1;
-
    if (comp->getOption(TR_TraceRA))
       {
       cg->setGPRegisterIterator(new (cg->trHeapMemory()) TR::RegisterIterator(cg->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastAssignableGPR));
@@ -1050,8 +1047,6 @@ void
 OMR::Z::CodeGenerator::beginInstructionSelection()
    {
    TR::Node * startNode = self()->comp()->getStartTree()->getNode();
-
-   self()->setCurrentBlockIndex(startNode->getBlock()->getNumber());
 
    if (self()->comp()->getJittedMethodSymbol()->getLinkageConvention() == TR_Private)
       {
@@ -1809,7 +1804,6 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
          self()->comp()->setCurrentBlock(instructionCursor->getNode()->getBlock());
 
       // Main register assignment procedure
-      self()->setCurrentBlockIndex(instructionCursor->getBlockIndex());
       instructionCursor->assignRegisters(TR_GPR);
 
       handleLoadWithRegRanges(instructionCursor, self());

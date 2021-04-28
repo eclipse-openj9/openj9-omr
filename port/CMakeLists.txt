@@ -393,6 +393,10 @@ target_include_directories(omrport_obj PRIVATE
 # This flag indicates that we are compiling the port library
 target_compile_definitions(omrport_obj PRIVATE -DOMRPORT_LIBRARY_DEFINE)
 
+if(OMR_OS_AIX AND OMR_ENV_DATA64)
+	target_compile_definitions(omrport_obj PRIVATE -D__EXTABI__)
+endif()
+
 omr_add_exports(omrport_obj
 	omrport_allocate_library
 	omrport_create_library

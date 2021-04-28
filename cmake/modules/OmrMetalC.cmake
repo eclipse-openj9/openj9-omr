@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2019, 2020 IBM Corp. and others
+# Copyright (c) 2019, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -38,12 +38,9 @@ find_program(XLC_EXECUTABLE
 	DOC "The XLC compiler"
 )
 
-set(OMR_METALC_XLC_FLAGS "-qlongname" CACHE STRING "Options added to XLC when compiler METAL-C to HLASM")
+set(OMR_METALC_XLC_FLAGS "-qlongname" "-qnosearch" "-I/usr/include/metal/" CACHE STRING "Options added to XLC when compiler METAL-C to HLASM")
 set(OMR_METALC_ASM_FLAGS "-mgoff" "-I" "CBC.SCCNSAM" CACHE STRING "Options added when compiling METAL-C HLASM files")
 
-if(OMR_ENV_DATA64)
-	list(APPEND OMR_METALC_XLC_FLAGS "-q64")
-endif()
 
 # omr_compile_metalc(<mfile> <ofile>)
 #
@@ -60,6 +57,10 @@ function(omr_compile_metalc mfile ofile)
 	omr_assert(TEST XLC_EXECUTABLE)
 	omr_assert(TEST AS_EXECUTABLE)
 
+	if(OMR_ENV_DATA64)
+		list(APPEND OMR_METALC_XLC_FLAGS "-q64")
+	endif()
+
 	if(NOT IS_ABSOLUTE "${mfile}")
 		set(mfile "${CMAKE_CURRENT_SOURCE_DIR}/${mfile}")
 	endif()
@@ -72,14 +73,9 @@ function(omr_compile_metalc mfile ofile)
 	set(sfile "${ofile}.s")
 
 	add_custom_command(
-		OUTPUT "${cfile}"
-		MAIN_DEPENDENCY "${mfile}"
-		COMMAND "${CMAKE_COMMAND}" -E copy "${mfile}" "${cfile}"
-		VERBATIM
-	)
-	add_custom_command(
 		OUTPUT "${ofile}"
-		MAIN_DEPENDENCY "${cfile}"
+		DEPENDS "${mfile}"
+		COMMAND "${CMAKE_COMMAND}" -E copy "${mfile}" "${cfile}"
 		COMMAND "${XLC_EXECUTABLE}" -qmetal -S ${OMR_METALC_XLC_FLAGS} -o "${sfile}" "${cfile}"
 		COMMAND "${AS_EXECUTABLE}" ${OMR_METALC_ASM_FLAGS} -o "${ofile}" "${sfile}"
 		VERBATIM

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -767,53 +767,50 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
    int                       i, j;
    TR::Compilation          *comp = cg->comp();
 
-   if (!comp->getOption(TR_DisableOOL))
+   for (i = 0; i < numberOfRegisters; i++)
       {
-      for (i = 0; i < numberOfRegisters; i++)
+      virtReg = _dependencies[i].getRegister();
+      if (_dependencies[i].isSpilledReg())
          {
-         virtReg = _dependencies[i].getRegister();
-         if (_dependencies[i].isSpilledReg())
+         TR_ASSERT(virtReg->getBackingStorage(), "Should have a backing store if SpilledReg");
+         if (virtReg->getAssignedRealRegister())
             {
-            TR_ASSERT(virtReg->getBackingStorage(), "Should have a backing store if SpilledReg");
-            if (virtReg->getAssignedRealRegister())
+            // this happens when the register was first spilled in main line path then was reverse spilled
+            // and assigned to a real register in OOL path. We protected the backing store when doing
+            // the reverse spill so we could re-spill to the same slot now
+            if (comp->getOption(TR_TraceCG))
+               traceMsg(comp,"\nOOL: Found register spilled in main line and re-assigned inside OOL");
+            TR::Node            *currentNode = currentInstruction->getNode();
+            TR::RealRegister    *assignedReg = toRealRegister(virtReg->getAssignedRegister());
+            TR::MemoryReference *tempMR = TR::MemoryReference::createWithSymRef(cg, currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t));
+            TR_RegisterKinds     rk = virtReg->getKind();
+
+            TR::InstOpCode::Mnemonic opCode;
+            switch (rk)
                {
-               // this happens when the register was first spilled in main line path then was reverse spilled
-               // and assigned to a real register in OOL path. We protected the backing store when doing
-               // the reverse spill so we could re-spill to the same slot now
-               if (comp->getOption(TR_TraceCG))
-                  traceMsg(comp,"\nOOL: Found register spilled in main line and re-assigned inside OOL");
-               TR::Node            *currentNode = currentInstruction->getNode();
-               TR::RealRegister    *assignedReg = toRealRegister(virtReg->getAssignedRegister());
-               TR::MemoryReference *tempMR = TR::MemoryReference::createWithSymRef(cg, currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t));
-               TR_RegisterKinds     rk = virtReg->getKind();
-
-               TR::InstOpCode::Mnemonic opCode;
-               switch (rk)
-                  {
-                  case TR_GPR:
-                     opCode =TR::InstOpCode::Op_load;
-                     break;
-                  case TR_FPR:
-                     opCode = virtReg->isSinglePrecision() ? TR::InstOpCode::lfs : TR::InstOpCode::lfd;
-                     break;
-                  default:
-                     TR_ASSERT(0, "Register kind not supported in OOL spill");
-                     break;
-                  }
-
-               TR::Instruction *inst = generateTrg1MemInstruction(cg, opCode, currentNode, assignedReg, tempMR, currentInstruction);
-
-               assignedReg->setAssignedRegister(NULL);
-               virtReg->setAssignedRegister(NULL);
-               assignedReg->setState(TR::RealRegister::Free);
-               if (comp->getDebug())
-                  cg->traceRegisterAssignment("Generate reload of virt %s due to spillRegIndex dep at inst %p\n", comp->getDebug()->getName(virtReg),currentInstruction);
-               cg->traceRAInstruction(inst);
+               case TR_GPR:
+                  opCode =TR::InstOpCode::Op_load;
+                  break;
+               case TR_FPR:
+                  opCode = virtReg->isSinglePrecision() ? TR::InstOpCode::lfs : TR::InstOpCode::lfd;
+                  break;
+               default:
+                  TR_ASSERT(0, "Register kind not supported in OOL spill");
+                  break;
                }
 
-            if (!(std::find(cg->getSpilledRegisterList()->begin(), cg->getSpilledRegisterList()->end(), virtReg) != cg->getSpilledRegisterList()->end()))
-               cg->getSpilledRegisterList()->push_front(virtReg);
+            TR::Instruction *inst = generateTrg1MemInstruction(cg, opCode, currentNode, assignedReg, tempMR, currentInstruction);
+
+            assignedReg->setAssignedRegister(NULL);
+            virtReg->setAssignedRegister(NULL);
+            assignedReg->setState(TR::RealRegister::Free);
+            if (comp->getDebug())
+               cg->traceRegisterAssignment("Generate reload of virt %s due to spillRegIndex dep at inst %p\n", comp->getDebug()->getName(virtReg),currentInstruction);
+            cg->traceRAInstruction(inst);
             }
+
+         if (!(std::find(cg->getSpilledRegisterList()->begin(), cg->getSpilledRegisterList()->end(), virtReg) != cg->getSpilledRegisterList()->end()))
+            cg->getSpilledRegisterList()->push_front(virtReg);
          }
       }
 
@@ -1055,7 +1052,7 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
       {
       TR::Register *dependentRegister = getRegisterDependency(i)->getRegister();
       // dependentRegister->getAssignedRegister() is NULL if the reg has already been spilled due to a spilledReg dep
-      if (comp->getOption(TR_DisableOOL) || (!(cg->isOutOfLineColdPath()) && !(cg->isOutOfLineHotPath())))
+      if (!cg->isOutOfLineColdPath() && !cg->isOutOfLineHotPath())
          {
          TR_ASSERT(dependentRegister->getAssignedRegister(), "Assigned register can not be NULL");
          }

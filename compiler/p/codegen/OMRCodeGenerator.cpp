@@ -551,11 +551,8 @@ void OMR::Power::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAss
    TR::Block *currBlock = NULL;
    TR::Instruction * currBBEndInstr = instructionCursor;
 
-   if (!self()->comp()->getOption(TR_DisableOOL))
-      {
-      TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
-      self()->setSpilledRegisterList(spilledRegisterList);
-      }
+   TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
+   self()->setSpilledRegisterList(spilledRegisterList);
 
    if (self()->getDebug())
       self()->getDebug()->startTracingRegisterAssignment();
@@ -813,24 +810,21 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
 
    // Create exception table entries for outlined instructions.
    //
-   if (!self()->comp()->getOption(TR_DisableOOL))
+   auto oiIterator = self()->getPPCOutOfLineCodeSectionList().begin();
+   while (oiIterator != self()->getPPCOutOfLineCodeSectionList().end())
       {
-      auto oiIterator = self()->getPPCOutOfLineCodeSectionList().begin();
-      while (oiIterator != self()->getPPCOutOfLineCodeSectionList().end())
-         {
-         uint32_t startOffset = (*oiIterator)->getFirstInstruction()->getBinaryEncoding() - self()->getCodeStart();
-         uint32_t endOffset   = (*oiIterator)->getAppendInstruction()->getBinaryEncoding() - self()->getCodeStart();
+      uint32_t startOffset = (*oiIterator)->getFirstInstruction()->getBinaryEncoding() - self()->getCodeStart();
+      uint32_t endOffset   = (*oiIterator)->getAppendInstruction()->getBinaryEncoding() - self()->getCodeStart();
 
-         TR::Block * block = (*oiIterator)->getBlock();
-         bool needsETE = (*oiIterator)->getFirstInstruction()->getNode()->getOpCode().hasSymbolReference() &&
-                         (*oiIterator)->getFirstInstruction()->getNode()->getSymbolReference() &&
-                         (*oiIterator)->getFirstInstruction()->getNode()->getSymbolReference()->canCauseGC();
+      TR::Block * block = (*oiIterator)->getBlock();
+      bool needsETE = (*oiIterator)->getFirstInstruction()->getNode()->getOpCode().hasSymbolReference() &&
+                        (*oiIterator)->getFirstInstruction()->getNode()->getSymbolReference() &&
+                        (*oiIterator)->getFirstInstruction()->getNode()->getSymbolReference()->canCauseGC();
 
-         if (needsETE && block && !block->getExceptionSuccessors().empty())
-            block->addExceptionRangeForSnippet(startOffset, endOffset);
+      if (needsETE && block && !block->getExceptionSuccessors().empty())
+         block->addExceptionRangeForSnippet(startOffset, endOffset);
 
-         ++oiIterator;
-         }
+      ++oiIterator;
       }
    }
 

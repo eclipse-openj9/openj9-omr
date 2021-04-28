@@ -201,19 +201,16 @@ OMR::ARM64::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
 
    TR::Instruction *instructionCursor = self()->getAppendInstruction();
 
-   if (!comp->getOption(TR_DisableOOL))
+   if (!self()->isOutOfLineColdPath())
       {
-      if (!self()->isOutOfLineColdPath())
-         {
-         // Allocates these lists when the register assignment starts.
-         // As doRegisterAssignment is called mutiple times for the cold path of OutOfLineCodeSections,
-         // we do allocation only when we are not in the cold path.
-         TR::list<TR::Register*> *firstTimeLiveOOLRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
-         self()->setFirstTimeLiveOOLRegisterList(firstTimeLiveOOLRegisterList);
+      // Allocates these lists when the register assignment starts.
+      // As doRegisterAssignment is called mutiple times for the cold path of OutOfLineCodeSections,
+      // we do allocation only when we are not in the cold path.
+      TR::list<TR::Register*> *firstTimeLiveOOLRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
+      self()->setFirstTimeLiveOOLRegisterList(firstTimeLiveOOLRegisterList);
 
-         TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
-         self()->setSpilledRegisterList(spilledRegisterList);
-         }
+      TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
+      self()->setSpilledRegisterList(spilledRegisterList);
       }
 
    if (self()->getDebug())
@@ -346,24 +343,21 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
 
    // Create exception table entries for outlined instructions.
    //
-   if (!self()->comp()->getOption(TR_DisableOOL))
+   auto oiIterator = self()->getARM64OutOfLineCodeSectionList().begin();
+   while (oiIterator != self()->getARM64OutOfLineCodeSectionList().end())
       {
-      auto oiIterator = self()->getARM64OutOfLineCodeSectionList().begin();
-      while (oiIterator != self()->getARM64OutOfLineCodeSectionList().end())
-         {
-         uint32_t startOffset = (*oiIterator)->getFirstInstruction()->getBinaryEncoding() - self()->getCodeStart();
-         uint32_t endOffset   = (*oiIterator)->getAppendInstruction()->getBinaryEncoding() - self()->getCodeStart();
+      uint32_t startOffset = (*oiIterator)->getFirstInstruction()->getBinaryEncoding() - self()->getCodeStart();
+      uint32_t endOffset   = (*oiIterator)->getAppendInstruction()->getBinaryEncoding() - self()->getCodeStart();
 
-         TR::Block * block = (*oiIterator)->getBlock();
-         bool needsETE = (*oiIterator)->getFirstInstruction()->getNode()->getOpCode().hasSymbolReference() &&
-                         (*oiIterator)->getFirstInstruction()->getNode()->getSymbolReference() &&
-                         (*oiIterator)->getFirstInstruction()->getNode()->getSymbolReference()->canCauseGC();
+      TR::Block * block = (*oiIterator)->getBlock();
+      bool needsETE = (*oiIterator)->getFirstInstruction()->getNode()->getOpCode().hasSymbolReference() &&
+                        (*oiIterator)->getFirstInstruction()->getNode()->getSymbolReference() &&
+                        (*oiIterator)->getFirstInstruction()->getNode()->getSymbolReference()->canCauseGC();
 
-         if (needsETE && block && !block->getExceptionSuccessors().empty())
-            block->addExceptionRangeForSnippet(startOffset, endOffset);
+      if (needsETE && block && !block->getExceptionSuccessors().empty())
+         block->addExceptionRangeForSnippet(startOffset, endOffset);
 
-         ++oiIterator;
-         }
+      ++oiIterator;
       }
 
    if (!constantIsSignedImm21((intptr_t)self()->getBinaryBufferCursor() - (intptr_t)self()->getBinaryBufferStart()))

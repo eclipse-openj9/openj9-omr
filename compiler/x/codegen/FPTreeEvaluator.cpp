@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -513,8 +513,19 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
    TR_ASSERT(returnRegister, "Return node's child should evaluate to a register");
    TR::Compilation *comp = cg->comp();
 
+   const TR::X86LinkageProperties &linkageProperties = cg->getProperties();
+   TR::RealRegister::RegNum machineReturnRegister =
+      (returnRegister->isSinglePrecision())? linkageProperties.getFloatReturnRegister() : linkageProperties.getDoubleReturnRegister();
+
+   /**
+    *  On 32-bit targets, regardless of whether the target processor
+    *  supports SSE or not, some linkages may still require a floating
+    *  point value to be returned on the x87 stack (in ST0, for
+    *  example).  If so, the value in an XMM register needs to be
+    *  coerced into the appropriate x87 register.
+    */
    if (cg->comp()->target().is32Bit() &&
-       !cg->useSSEForDoublePrecision() &&
+       (machineReturnRegister >= TR::RealRegister::FirstFPR && machineReturnRegister <= TR::RealRegister::LastFPR) &&
        returnRegister->getKind() == TR_FPR)
       {
       // TODO: Modify linkage to allow the returned value to remain in an XMMR.
@@ -531,10 +542,6 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
       {
       generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cg->findOrCreate2ByteConstant(node, DOUBLE_PRECISION_ROUND_TO_NEAREST), cg), cg);
       }
-
-   const TR::X86LinkageProperties &linkageProperties = cg->getProperties();
-   TR::RealRegister::RegNum machineReturnRegister =
-      (returnRegister->isSinglePrecision())? linkageProperties.getFloatReturnRegister() : linkageProperties.getDoubleReturnRegister();
 
    TR::RegisterDependencyConditions *dependencies = NULL;
    if (machineReturnRegister != TR::RealRegister::NoReg)

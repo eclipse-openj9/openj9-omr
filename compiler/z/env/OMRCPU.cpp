@@ -197,58 +197,11 @@ OMR::Z::CPU::supportsFeatureOldAPI(uint32_t feature)
    }
 
 const char*
-OMR::Z::CPU::getProcessorName(Architecture arch)
-   {
-   const char* result = "";
-   switch (arch)
-      {
-      case Unknown:
-         result = "Unknown";
-         break;
-      case z900:
-         result = "z900";
-         break;
-      case z990:
-         result = "z990";
-         break;
-      case z9:
-         result = "z9";
-         break;
-      case z10:
-         result = "z10";
-         break;
-      case z196:
-         result = "z196";
-         break;
-      case zEC12:
-         result = "zEC12";
-         break;
-      case z13:
-         result = "z13";
-         break;
-      case z14:
-         result = "z14";
-         break;
-      case z15:
-         result = "z15";
-         break;
-      case zNext:
-         result = "zNext";
-         break;
-      default:
-         TR_ASSERT(false, "Invalid Archiecture Type: %d", arch);
-         result = "Invalid Architecture type!";
-         break;
-      }
-   return result;
-   }
-
-const char*
-OMR::Z::CPU::getProcessorName(OMRProcessorArchitecture arch)
+OMR::Z::CPU::getProcessorName()
    {
    const char* result = "";
 
-   switch(arch)
+   switch(_processorDescription.processor)
       {
       case OMR_PROCESSOR_S390_UNKNOWN:
          result = "Unknown";
@@ -284,89 +237,9 @@ OMR::Z::CPU::getProcessorName(OMRProcessorArchitecture arch)
          result = "zNext";
          break;
       default:
-         TR_ASSERT(false, "Invalid Archiecture Type: %d", arch);
          result = "Invalid Architecture type!";
          break;
       }
-   return result;
-   }
-
-const char*
-OMR::Z::CPU::getProcessorName(int32_t machineId)
-   {
-   const char* result = "";
-
-   switch (machineId)
-      {
-      case 1090:
-      case 1091:
-         result = "zPDT";
-      break;
-
-      case 2066:
-         result = "z800";
-      break;
-
-      case 2084:
-         result = "z990";
-      break;
-
-      case 2086:
-         result = "z890";
-      break;
-
-      case 2064:
-         result = "z900";
-      break;
-
-      case 2094:
-      case 2096:
-         result = "z9";
-      break;
-
-      case 2097:
-      case 2098:
-         result = "z10";
-      break;
-
-      case 2817:
-         result = "z196";
-      break;
-      
-      case 2818:
-         result = "z114";
-      break;
-
-      case 2827:
-      case 2828:
-         result = "zEC12";
-      break;
-
-      case 2964:
-      case 2965:
-         result = "z13";
-      break;
-
-      case 3906:
-      case 3907:
-         result = "z14";
-      break;
-
-      case 8561:
-      case 8562:
-         result = "z15";
-      break;
-
-      case 9998:
-      case 9999:
-         result = "zNext";
-      break;
-
-      default:
-         result = "Unknown";
-      break;
-      }
-
    return result;
    }
 

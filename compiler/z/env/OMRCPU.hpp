@@ -65,19 +65,9 @@ public:
       };
 
    /** \brief
-    *     Gets the name of the processor given the four digit machine id.
+    *     Gets the name of the processor that _processorDescription described.
     */
-   static const char* getProcessorName(int32_t machineId);
-
-   /** \brief
-    *     Gets the name of the processor given the four TR::CPU::Architecture enum type.
-    */
-   static const char* getProcessorName(Architecture arch);
-
-   /** \brief
-    *     Gets the name of the processor given the OMRProcessorArchitecture enum type.
-    */
-   static const char* getProcessorName(OMRProcessorArchitecture arch);
+   const char* getProcessorName();
 
    static TR::CPU detect(OMRPortLibrary * const omrPortLib);
 

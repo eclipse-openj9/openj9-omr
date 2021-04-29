@@ -534,14 +534,6 @@ OMR::Z::CodeGenerator::initialize()
    // Be pessimistic until we can prove we don't exit after doing code-generation
    cg->setExitPointsInMethod(true);
 
-#ifdef DEBUG
-   // Clear internal counters for internal profiling of
-   // register allocation
-   cg->clearTotalSpills();
-   cg->clearTotalRegisterXfers();
-   cg->clearTotalRegisterMoves();
-#endif
-
    // Set up vector register support for machine after zEC12.
    // This should also happen before prepareForGRA
    if (comp->getOption(TR_DisableSIMD))
@@ -1696,19 +1688,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
    {
    TR::Instruction * prevInstruction, * nextInstruction;
 
-#ifdef DEBUG
-   TR::Instruction * origPrevInstruction;
-   TR::Instruction * origNextInstruction;
-   bool dumpPreVR  = (debug("dumpVRA")  || debug("dumpVRA0"))  && self()->comp()->getOutFile() != NULL;
-   bool dumpPostVRF= (debug("dumpVRA")  || debug("dumpVRA1"))  && self()->comp()->getOutFile() != NULL;
-   bool dumpPreFP = (debug("dumpFPRA") || debug("dumpFPRA0")) && self()->comp()->getOutFile() != NULL;
-   bool dumpPostFP = (debug("dumpFPRA") || debug("dumpFPRA1")) && self()->comp()->getOutFile() != NULL;
-   bool dumpPreGP = (debug("dumpGPRA") || debug("dumpGPRA0")) && self()->comp()->getOutFile() != NULL;
-   bool dumpPostGP = (debug("dumpGPRA") || debug("dumpGPRA1")) && self()->comp()->getOutFile() != NULL;
-#endif
-
    TR::Instruction * instructionCursor = self()->getAppendInstruction();
-   int32_t instCount = 0;
    TR::Block *currBlock = NULL;
    TR::Instruction * currBBEndInstr = instructionCursor;
 
@@ -1740,16 +1720,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
    while (instructionCursor)
       {
       TR::Node *treeNode=instructionCursor->getNode();
-      if (instructionCursor->getOpCodeValue() == TR::InstOpCode::FENCE && treeNode->getOpCodeValue() == TR::BBEnd)
-         {
-#ifdef DEBUG
-         self()->setCurrentRABlock(treeNode->getBlock());
-#endif
-         }
-      else if(instructionCursor->getOpCodeValue() == TR::InstOpCode::FENCE && treeNode->getOpCodeValue() == TR::BBStart)
-         {
-         }
-      else if(instructionCursor->getOpCodeValue() == TR::InstOpCode::TBEGIN || instructionCursor->getOpCodeValue() == TR::InstOpCode::TBEGINC)
+      if(instructionCursor->getOpCodeValue() == TR::InstOpCode::TBEGIN || instructionCursor->getOpCodeValue() == TR::InstOpCode::TBEGINC)
          {
          uint16_t immValue = ((TR::S390SILInstruction*)instructionCursor)->getSourceImmediate();
          uint8_t regMask = 0;
@@ -1821,116 +1792,25 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
             }
          }
 
-      //Assertion to check that if you find a branch whose target is in the same basic block
-      //as the branch itself, that it is inside Internal Control Flow
-      // edTODO cleanup : Why is this disabled?
-      if ((instructionCursor->getOpCode().getOpCodeValue() == TR::InstOpCode::BRC) && 0) // Disabled
-         {
-         // isBranch
-         if (!self()->insideInternalControlFlow())
-            {
-            // not b2l
-            if (instructionCursor != NULL)
-               {
-               if (instructionCursor->getNode() != NULL)
-                  {
-                  if (instructionCursor->getNode()->getBranchDestination() != NULL)
-                     {
-                     if (instructionCursor->getNode()->getBranchDestination()->getNode() != NULL)
-                        {
-                        if ((instructionCursor->getNode()->getBranchDestination()->getNode()->getBlock() != NULL)&&(instructionCursor->getNode()->getBlock() != NULL))
-                           {
-                           // if branching to the same basic block then the branch should be located inside ICF
-                           // otherwise it's potentially not a case where the branch has to be inside Internal Control Flow
-                           if (instructionCursor->getNode()->getBranchDestination()->getNode()->getBlock()->getNumber() == instructionCursor->getNode()->getBlock()->getNumber())
-                              {
-                              TR_ASSERT( 1,"ASSERTION - Branch found outside Internal Control Flow that should be located inside Internal Control Flow\n");
-                              }
-                           }
-                        }
-                     }
-                  }
-               }
-            }
-         }
-
       self()->tracePostRAInstruction(instructionCursor);
 
       self()->freeUnlatchedRegisters();
       self()->buildGCMapsForInstructionAndSnippet(instructionCursor);
 
-      ++instCount;
       instructionCursor = prevInstruction;
       }
 
-      _afterRA=true;
-
-#ifdef DEBUG
-   if (debug("traceMsg90GPR") || debug("traceGPRStats"))
-      {
-      self()->printStats(instCount);
-      }
-#endif
+   _afterRA = true;
 
    // Done Local RA of GPRs, let make sure we don't have any live registers
    if (!self()->isOutOfLineColdPath())
       {
-      for (uint32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastGPR; ++i)
-         {
-         TR_ASSERT(self()->machine()->getRealRegister(i)->getState() != TR::RealRegister::Assigned,
-                    "ASSERTION: GPR registers are still assigned at end of first RA pass! %s regNum=%s\n", self()->comp()->signature(), self()->getDebug()->getName(self()->machine()->getRealRegister(i)));
-         }
-
       if (self()->getDebug())
          {
          self()->getDebug()->stopTracingRegisterAssignment();
          }
       }
    }
-
-#ifdef DEBUG
-void
-OMR::Z::CodeGenerator::incTotalSpills()
-   {
-   TR::Block * block = self()->getCurrentRABlock();
-   if (block->isCold()  /* || block->isRare(_compilation) */)
-      _totalColdSpills++;
-   else
-      _totalHotSpills++;
-   }
-
-void
-OMR::Z::CodeGenerator::incTotalRegisterXfers()
-   {
-   TR::Block * block = self()->getCurrentRABlock();
-   if (block->isCold()  /* || block->isRare(_compilation) */)
-      _totalColdRegisterXfers++;
-   else
-      _totalHotRegisterXfers++;
-   }
-
-void
-OMR::Z::CodeGenerator::incTotalRegisterMoves()
-   {
-   TR::Block * block = self()->getCurrentRABlock();
-   if (block->isCold()  /* || block->isRare(_compilation) */)
-      _totalColdRegisterMoves++;
-   else
-      _totalHotRegisterMoves++;
-   }
-
-void
-OMR::Z::CodeGenerator::printStats(int32_t instCount)
-   {
-   double totHot = (_totalHotSpills + _totalHotRegisterXfers + _totalHotRegisterMoves);
-   fprintf(stderr,
-      "REGISTER MOTION Compiled as [%10.10s] Factor [%4.4f] Contains hot blocks with [spills:%4.4d,xfers:%4.4d,moves:%4.4d] cold blocks with [spills:%4.4d,xfers:%4.4d,moves:%4.4d] for %s\n",
-      self()->comp()->getHotnessName(self()->comp()->getMethodHotness()), (double)
-      (totHot / instCount), _totalHotSpills,
-      _totalHotRegisterXfers, _totalHotRegisterMoves, _totalColdSpills, _totalColdRegisterXfers, _totalColdRegisterMoves,
-      self()->comp()->signature());
-   }
-#endif
 
 void
 OMR::Z::CodeGenerator::replaceInst(TR::Instruction* old, TR::Instruction* curr)
@@ -4045,83 +3925,6 @@ OMR::Z::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
       self()->getDebug()->print(outFile, eyeCatcher);
       }
    }
-
-#if DEBUG
-////////////////////////////////////////////////////////////////////////////////
-// OMR::Z::CodeGenerator::printRegisterMap
-////////////////////////////////////////////////////////////////////////////////
-void
-OMR::Z::CodeGenerator::dumpPreGPRegisterAssignment(TR::Instruction * instructionCursor)
-   {
-   if (self()->comp()->getOutFile() == NULL)
-      {
-      return;
-      }
-
-#if TODO
-   if (instructionCursor->totalReferencedGPRegisters() > 0)
-      {
-      TR_FrontEnd * fe = comp()->fe();
-      trfprintf(comp()->getOutFile(), "\n<< Pre-GPR assignment for instruction: %p", instructionCursor);
-      getDebug()->print(comp()->getOutFile(), instructionCursor);
-      getDebug()->printReferencedRegisterInfo(comp()->getOutFile(), instructionCursor);
-
-      if (debug("dumpGPRegStatus"))
-         {
-         getDebug()->printGPRegisterStatus(comp()->getOutFile(), machine());
-         }
-      }
-#else
-   if (debug("dumpGPRegStatus"))
-      {
-      self()->getDebug()->print(self()->comp()->getOutFile(), instructionCursor);
-      self()->getDebug()->printGPRegisterStatus(self()->comp()->getOutFile(), self()->machine());
-      }
-#endif
-   }
-
-/**
- * Dump the current instruction with the GP registers assigned and any new
- * instructions that may have been added after it.
- */
-void
-OMR::Z::CodeGenerator::dumpPostGPRegisterAssignment(TR::Instruction * instructionCursor, TR::Instruction * origNextInstruction)
-   {
-   if (self()->comp()->getOutFile() == NULL)
-      {
-      return;
-      }
-
-#if TODO
-   if (instructionCursor->totalReferencedGPRegisters() > 0)
-      {
-      TR_FrontEnd * fe = comp()->fe();
-      trfprintf(comp()->getOutFile(), "\n>> Post-GPR assignment for instruction: %p", instructionCursor);
-
-      TR::Instruction * nextInstruction = instructionCursor;
-
-      while (nextInstruction && (nextInstruction != origNextInstruction))
-         {
-         getDebug()->print(comp()->getOutFile(), nextInstruction);
-         nextInstruction = nextInstruction->getNext();
-         }
-
-      getDebug()->printReferencedRegisterInfo(comp()->getOutFile(), instructionCursor);
-
-      if (debug("dumpGPRegStatus"))
-         {
-         getDebug()->printGPRegisterStatus(comp()->getOutFile(), machine());
-         }
-      }
-#else
-   if (debug("dumpGPRegStatus"))
-      {
-      self()->getDebug()->print(self()->comp()->getOutFile(), instructionCursor);
-      self()->getDebug()->printGPRegisterStatus(self()->comp()->getOutFile(), self()->machine());
-      }
-#endif
-   }
-#endif
 
 void
 OMR::Z::CodeGenerator::setGlobalStaticBaseRegisterOnFlag()

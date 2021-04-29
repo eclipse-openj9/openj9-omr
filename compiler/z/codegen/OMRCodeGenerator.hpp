@@ -523,25 +523,6 @@ public:
 
    bool afterRA() { return _afterRA; }
 
-#ifdef DEBUG
-   void dumpPreGPRegisterAssignment(TR::Instruction *);
-   void dumpPostGPRegisterAssignment(TR::Instruction *, TR::Instruction *);
-
-   // Internal local RA counters for self evaluation
-   void clearTotalSpills()        {_totalColdSpills=0;        _totalHotSpills=0;       }
-   void clearTotalRegisterXfers() {_totalColdRegisterXfers=0; _totalHotRegisterXfers=0;}
-   void clearTotalRegisterMoves() {_totalColdRegisterMoves=0; _totalHotRegisterMoves=0;}
-
-   // current RA block is only valid during register allocation pass and is only used for debug
-   TR::Block * getCurrentRABlock()           { return _curRABlock; }
-   void setCurrentRABlock(TR::Block * block) { _curRABlock = block; }
-
-   void incTotalSpills();
-   void incTotalRegisterXfers();
-   void incTotalRegisterMoves();
-   void printStats(int32_t);
-#endif
-
    TR_S390OutOfLineCodeSection *findS390OutOfLineCodeSectionFromLabel(TR::LabelSymbol *label);
 
    TR::Instruction *generateNop(TR::Node *node, TR::Instruction *preced=0, TR_NOPKind nopKind=TR_NOPStandard);
@@ -820,16 +801,6 @@ private:
 
    /** For aggregate type GRA */
    bool considerAggregateSizeForGRA(int32_t size);
-
-#ifdef DEBUG
-   uint32_t _totalColdSpills;
-   uint32_t _totalColdRegisterXfers;
-   uint32_t _totalColdRegisterMoves;
-   uint32_t _totalHotSpills;
-   uint32_t _totalHotRegisterXfers;
-   uint32_t _totalHotRegisterMoves;
-   TR::Block * _curRABlock;
-#endif
 
    bool  TR_LiteralPoolOnDemandOnRun;
 

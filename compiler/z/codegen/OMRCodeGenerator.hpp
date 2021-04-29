@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -398,18 +398,6 @@ public:
    void setCurrentCheckNodeRegDeps(TR::RegisterDependencyConditions * daaDeps) {_currentBCDRegDeps = daaDeps;}
    TR::RegisterDependencyConditions * getCurrentCheckNodeRegDeps() {return _currentBCDRegDeps;}
 
-   // TODO : Do we need these? And if so there has to be a better way of tracking this this than what we're doing here.
-   /** Active counter used to track control flow basic blocks generated at instruction selection. */
-   int32_t _nextAvailableBlockIndex;
-   /** The index of the current basic block (used and updated during instruction selection). */
-   int32_t _currentBlockIndex;
-
-   void setNextAvailableBlockIndex(int32_t blockIndex) { _nextAvailableBlockIndex = blockIndex; }
-   int32_t getNextAvailableBlockIndex(){ return _nextAvailableBlockIndex; }
-   void incNextAvailableBlockIndex() { _nextAvailableBlockIndex++; }
-
-   void setCurrentBlockIndex(int32_t blockIndex) { _currentBlockIndex = blockIndex; }
-   int32_t getCurrentBlockIndex() { return _currentBlockIndex; }
    int32_t arrayInitMinimumNumberOfBytes() {return 16;}
 
    bool directLoadAddressMatch(TR::Node *load1, TR::Node *load2, bool trace);

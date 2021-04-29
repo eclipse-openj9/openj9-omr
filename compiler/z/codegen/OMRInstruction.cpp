@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -166,7 +166,6 @@ OMR::Z::Instruction::initialize(TR::Instruction * precedingInstruction, bool ins
    self()->initialize(cond);
 
    TR::CodeGenerator * cg = OMR::Instruction::cg();
-   self()->setBlockIndex(cg->getCurrentBlockIndex());
 
    if (cond)
       {
@@ -699,7 +698,6 @@ OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
 
       outOfLineEXInstr->setPrev(self()->getPrev()); // Temporarily set Prev() instruction of snippet to Prev() of EX just in case we insert LR_move on assignRegisters()
       self()->cg()->tracePreRAInstruction(outOfLineEXInstr);
-      self()->cg()->setCurrentBlockIndex(outOfLineEXInstr->getBlockIndex());
       outOfLineEXInstr->assignRegisters(kindToBeAssigned);
       TR::RegisterDependencyConditions *deps = outOfLineEXInstr->getDependencyConditions();
       if (deps) // merge the dependency into the EX deps

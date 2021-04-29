@@ -748,7 +748,6 @@ TR::PPCSystemLinkage::createPrologue(
 void
 TR::PPCSystemLinkage::createEpilogue(TR::Instruction *cursor)
    {
-   int32_t blockNumber = cursor->getNext()->getBlockIndex();
    TR::Machine *machine = cg()->machine();
    const TR::PPCLinkageProperties &properties = getProperties();
    TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();

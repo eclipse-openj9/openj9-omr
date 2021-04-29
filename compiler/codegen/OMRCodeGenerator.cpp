@@ -622,8 +622,6 @@ OMR::CodeGenerator::doInstructionSelection()
    {
    TR::Compilation *comp = self()->comp();
 
-   self()->setNextAvailableBlockIndex(comp->getFlowGraph()->getNextNodeNumber() + 1);
-
    // Set default value for pre-prologue size
    //
    self()->setPrePrologueSize(0);
@@ -658,7 +656,6 @@ OMR::CodeGenerator::doInstructionSelection()
          {
          TR::Block *block = node->getBlock();
          self()->setCurrentEvaluationBlock(block);
-         self()->setCurrentBlockIndex(block->getNumber());
 
          if (!block->isExtensionOfPreviousBlock())
             {

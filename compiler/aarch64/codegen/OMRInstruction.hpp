@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -160,18 +160,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
       }
 
    /**
-    * @brief Gets the basic block index
-    * @return basic block index
-    */
-   int32_t getBlockIndex()            { return _blockIndex; }
-   /**
-    * @brief Sets the basic block index
-    * @param[in] i : basic block index
-    * @return basic block index
-    */
-   void setBlockIndex(int32_t i)   { _blockIndex = i; }
-
-   /**
     * @brief Sets GCMap mask
     * @param[in] cg : CodeGenerator
     * @param[in] mask : GCMap mask
@@ -252,7 +240,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    void setWillBePatched(bool v = true) { v ? _index |= WillBePatched : _index &= ~WillBePatched; }
 
    private:
-      int32_t _blockIndex;
       TR::RegisterDependencyConditions *_conditions;
    };
 

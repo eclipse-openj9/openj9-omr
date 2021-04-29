@@ -226,8 +226,6 @@ OMR::ARM64::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
 
       self()->tracePreRAInstruction(instructionCursor);
 
-      self()->setCurrentBlockIndex(instructionCursor->getBlockIndex());
-
       instructionCursor->assignRegisters(TR_GPR);
 
       // Maintain Internal Control Flow Depth

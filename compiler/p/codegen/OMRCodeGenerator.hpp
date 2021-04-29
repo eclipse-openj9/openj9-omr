@@ -288,17 +288,6 @@ public:
 
    bool getSupportsEncodeUtf16BigWithSurrogateTest();
 
-   // Active counter used to track control flow basic blocks generated at instruction selection.
-   int32_t _nextAvailableBlockIndex;
-   // The index of the current basic block (used and updated during instruction selection).
-   int32_t _currentBlockIndex;
-
-   void setNextAvailableBlockIndex(int32_t blockIndex) { _nextAvailableBlockIndex = blockIndex; }
-   int32_t getNextAvailableBlockIndex() { return _currentBlockIndex = _nextAvailableBlockIndex; }
-   void incNextAvailableBlockIndex() { _nextAvailableBlockIndex++; }
-
-   void setCurrentBlockIndex(int32_t blockIndex) { _currentBlockIndex = blockIndex; }
-   int32_t getCurrentBlockIndex() { return _currentBlockIndex; }
    int32_t arrayInitMinimumNumberOfBytes() {return 32;}
 
    TR::SymbolReference &getDouble2LongSymbolReference()  { return *_symRefTab->findOrCreateRuntimeHelper(TR_PPCdouble2Long); }

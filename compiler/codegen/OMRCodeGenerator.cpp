@@ -218,7 +218,9 @@ OMR::CodeGenerator::CodeGenerator(TR::Compilation *comp) :
       _spill8FreeList(getTypedAllocator<TR_BackingStore*>(comp->allocator())),
       _spill16FreeList(getTypedAllocator<TR_BackingStore*>(comp->allocator())),
       _internalPointerSpillFreeList(getTypedAllocator<TR_BackingStore*>(comp->allocator())),
+      _firstTimeLiveOOLRegisterList(NULL),
       _spilledRegisterList(NULL),
+      _afterRA(false),
       _referencedRegistersList(NULL),
       _variableSizeSymRefPendingFreeList(getTypedAllocator<TR::SymbolReference*>(comp->allocator())),
       _variableSizeSymRefFreeList(getTypedAllocator<TR::SymbolReference*>(comp->allocator())),
@@ -833,6 +835,68 @@ OMR::CodeGenerator::doInstructionSelection()
    if (comp->getOption(TR_TraceCG))
       {
       diagnostic("</selection>\n");
+      }
+   }
+
+void
+OMR::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
+   {
+   TR::Instruction *prevInstr = NULL;
+   TR::Instruction *currInstr = self()->getAppendInstruction();
+
+   auto *firstTimeLiveOOLRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
+   self()->setFirstTimeLiveOOLRegisterList(firstTimeLiveOOLRegisterList);
+
+   auto *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::CFGEdge*>(self()->comp()->allocator()));
+   self()->setSpilledRegisterList(spilledRegisterList);
+
+   if (self()->getDebug())
+      {
+      self()->getDebug()->startTracingRegisterAssignment();
+      }
+
+   while (currInstr)
+      {
+      prevInstr = currInstr->getPrev();
+
+      self()->tracePreRAInstruction(currInstr);
+
+      if (currInstr->getNode()->getOpCodeValue() == TR::BBEnd)
+         {
+         self()->comp()->setCurrentBlock(currInstr->getNode()->getBlock());
+         }
+
+      // Main register assignment procedure
+      currInstr->assignRegisters(TR_GPR);
+
+      if (currInstr->isLabel())
+         {
+         if (currInstr->getLabelSymbol() != NULL)
+            {
+            if (currInstr->getLabelSymbol()->isStartInternalControlFlow())
+               {
+               self()->decInternalControlFlowNestingDepth();
+               }
+            if (currInstr->getLabelSymbol()->isEndInternalControlFlow())
+               {
+               self()->incInternalControlFlowNestingDepth();
+               }
+            }
+         }
+
+      self()->freeUnlatchedRegisters();
+      self()->buildGCMapsForInstructionAndSnippet(currInstr);
+
+      self()->tracePostRAInstruction(currInstr);
+
+      currInstr = prevInstr;
+      }
+
+   _afterRA = true;
+
+   if (self()->getDebug())
+      {
+      self()->getDebug()->stopTracingRegisterAssignment();
       }
    }
 

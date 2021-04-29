@@ -348,64 +348,6 @@ void OMR::ARM::CodeGenerator::endInstructionSelection()
       }
    }
 
-void OMR::ARM::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
-   {
-   TR::Compilation *comp = self()->comp();
-
-   if (comp->getOption(TR_TraceCG))
-      diagnostic("\nPerforming Register Assignment:\n");
-
-   TR::Instruction *instructionCursor = self()->getAppendInstruction();
-   
-   TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
-   self()->setSpilledRegisterList(spilledRegisterList);
-   
-   while (instructionCursor)
-      {
-      // TODO Use cross-platform register assignment tracing facility
-      if (comp->getOption(TR_TraceCG))
-         {
-         diagnostic("\nassigning registers for [" POINTER_PRINTF_FORMAT "]:", instructionCursor);
-         self()->getDebug()->print(comp->getOutFile(), instructionCursor);
-         }
-
-      TR::Instruction *prevInstruction = instructionCursor->getPrev();
-      TR::Instruction *nextInstruction = instructionCursor->getNext();
-      instructionCursor->assignRegisters(TR_GPR);
-      // Maintain Internal Control Flow Depth
-      // Track internal control flow on labels
-      if (instructionCursor->isLabel())
-         {
-         TR::ARMLabelInstruction *li = (TR::ARMLabelInstruction *)instructionCursor;
-
-         if (li->getLabelSymbol() != NULL)
-            {
-            if (li->getLabelSymbol()->isStartInternalControlFlow())
-               {
-               self()->decInternalControlFlowNestingDepth();
-               }
-            if (li->getLabelSymbol()->isEndInternalControlFlow())
-               {
-               self()->incInternalControlFlowNestingDepth();
-               }
-            }
-         }
-      self()->freeUnlatchedRegisters();
-      self()->buildGCMapsForInstructionAndSnippet(instructionCursor);
-
-      if (comp->getOption(TR_TraceCG))
-         {
-         diagnostic("\npost-assignment instruction(s):");
-	 TR::Instruction *instr = prevInstruction ? prevInstruction->getNext() : instructionCursor;
-         for (; instr != nextInstruction; instr = instr->getNext())
-            self()->getDebug()->print(comp->getOutFile(), instr);
-         diagnostic("\n");
-         }
-
-      instructionCursor = prevInstruction;
-      }
-   }
-
 void OMR::ARM::CodeGenerator::doBinaryEncoding()
    {
    TR::Compilation *comp = self()->comp();

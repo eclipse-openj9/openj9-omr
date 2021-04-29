@@ -97,12 +97,6 @@ public:
    void endInstructionSelection();
 
    /**
-    * @brief AArch64 local register assignment pass
-    * @param[in] kindsToAssign : mask of register kinds to assign in this pass
-    */
-   void doRegisterAssignment(TR_RegisterKinds kindsToAssign);
-
-   /**
     * @brief AArch64 binary encoding pass
     */
    void doBinaryEncoding();

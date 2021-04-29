@@ -172,12 +172,6 @@ public:
    void endInstructionSelection();
 
    /**
-    * @brief AArch64 local register assignment pass
-    * @param[in] kindsToAssign : mask of register kinds to assign in this pass
-    */
-   void doRegisterAssignment(TR_RegisterKinds kindsToAssign);
-
-   /**
     * @brief AArch64 binary encoding pass
     */
    void doBinaryEncoding();
@@ -322,20 +316,6 @@ public:
     * @param[in] v : IsOutOfLineHotPath flag
     */
    void setIsOutOfLineHotPath(bool v) { _flags.set(IsOutOfLineHotPath, v);}
-
-   /**
-    * @brief Returns the list of registers which is assigned first time in OOL cold path
-    *
-    * @return the list of registers which is assigned first time in OOL cold path
-    */
-   TR::list<TR::Register*> *getFirstTimeLiveOOLRegisterList() {return _firstTimeLiveOOLRegisterList;}
-   /**
-    * @brief Sets the list of registers which is assigned first time in OOL cold path
-    *
-    * @param r : the list of registers which is assigned first time in OOL cold path
-    * @return the list of registers
-    */
-   TR::list<TR::Register*> *setFirstTimeLiveOOLRegisterList(TR::list<TR::Register*> *r) {return _firstTimeLiveOOLRegisterList = r;}
 
    /**
     * @brief Picks register

@@ -199,9 +199,6 @@ public:
    TR_BranchPreloadCallData _outlineCall;
    TR_BranchPreloadCallData _outlineArrayCall;
 
-   TR::list<TR::Register*> *getFirstTimeLiveOOLRegisterList() {return _firstTimeLiveOOLRegisterList;}
-   TR::list<TR::Register*> *setFirstTimeLiveOOLRegisterList(TR::list<TR::Register*> *r) {return _firstTimeLiveOOLRegisterList = r;}
-
    TR::list<TR_BranchPreloadCallData*> *_callsForPreloadList;
 
    TR::list<TR_BranchPreloadCallData*> * getCallsForPreloadList() { return _callsForPreloadList; }
@@ -282,7 +279,6 @@ public:
    TR::list<TR_OpaqueClassBlock*> * getPICsListForInterfaceSnippet(TR::S390ConstantDataSnippet * ifcSnippet);
 
    void doInstructionSelection();
-   void doRegisterAssignment(TR_RegisterKinds kindsToAssign);
 
    bool loadOrStoreAddressesMatch(TR::Node *node1, TR::Node *node2);
 
@@ -774,8 +770,6 @@ protected:
    TR::list<TR::S390ConstantDataSnippet*>  _constantList;
    TR::list<TR::S390ConstantDataSnippet*>  _snippetDataList;
 
-   TR::list<TR::Register*> *_firstTimeLiveOOLRegisterList;
-
 private:
 
    // TODO: These should move into the base class. There also seems to be a little overlap between these and
@@ -816,7 +810,6 @@ private:
 
 protected:
 
-   bool _afterRA;
    flags32_t  _cgFlags;
 
    /** Miscellaneous S390CG boolean flags. */

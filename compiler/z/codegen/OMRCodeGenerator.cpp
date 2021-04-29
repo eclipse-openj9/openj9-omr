@@ -408,10 +408,8 @@ OMR::Z::CodeGenerator::CodeGenerator(TR::Compilation *comp)
      _nodesToBeEvaluatedInRegPairs(comp->allocator()),
      _ccInstruction(NULL),
      _previouslyAssignedTo(comp->allocator("LocalRA")),
-     _firstTimeLiveOOLRegisterList(NULL),
      _methodBegin(NULL),
-     _methodEnd(NULL),
-     _afterRA(false)
+     _methodEnd(NULL)
    {
    }
 
@@ -1473,10 +1471,6 @@ OMR::Z::CodeGenerator::insertInstructionPrefetchesForCalls(TR_BranchPreloadCallD
 
    }
 
-////////////////////////////////////////////////////////////////////////////////
-// OMR::Z::CodeGenerator::doRegisterAssignment
-////////////////////////////////////////////////////////////////////////////////
-
 /**
  * Do logic for determining if we want to make lit pool reg available
  */
@@ -1677,76 +1671,6 @@ OMR::Z::CodeGenerator::prepareRegistersForAssignment()
    machine->setNumberOfLockedRegisters(TR_VRF, lockedVRFs);
 
    return kindsMask;
-   }
-
-void
-OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
-   {
-   TR::Instruction * prevInstruction, * nextInstruction;
-
-   TR::Instruction * instructionCursor = self()->getAppendInstruction();
-   TR::Block *currBlock = NULL;
-   TR::Instruction * currBBEndInstr = instructionCursor;
-
-   TR::list<TR::Register*> *firstTimeLiveOOLRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
-   self()->setFirstTimeLiveOOLRegisterList(firstTimeLiveOOLRegisterList);
-
-   TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::CFGEdge*>(self()->comp()->allocator()));
-   self()->setSpilledRegisterList(spilledRegisterList);
-
-   if (self()->getDebug())
-      {
-      self()->getDebug()->startTracingRegisterAssignment();
-      }
-
-   while (instructionCursor)
-      {
-      TR::Node *treeNode=instructionCursor->getNode();
-
-      self()->tracePreRAInstruction(instructionCursor);
-
-      prevInstruction = instructionCursor->getPrev();
-
-      if (instructionCursor->getNode()->getOpCodeValue() == TR::BBEnd)
-         self()->comp()->setCurrentBlock(instructionCursor->getNode()->getBlock());
-
-      // Main register assignment procedure
-      instructionCursor->assignRegisters(TR_GPR);
-
-      // Maintain Internal Control Flow Depth
-
-      // Track internal control flow on labels
-      if (instructionCursor->getOpCode().getOpCodeValue() == TR::InstOpCode::LABEL)
-         {
-         TR::S390LabelInstruction *li = toS390LabelInstruction(instructionCursor);
-
-         if (li->getLabelSymbol() != NULL)
-            {
-            if (li->getLabelSymbol()->isStartInternalControlFlow())
-               {
-               self()->decInternalControlFlowNestingDepth();
-               }
-            if (li->getLabelSymbol()->isEndInternalControlFlow())
-               {
-               self()->incInternalControlFlowNestingDepth();
-               }
-            }
-         }
-
-      self()->tracePostRAInstruction(instructionCursor);
-
-      self()->freeUnlatchedRegisters();
-      self()->buildGCMapsForInstructionAndSnippet(instructionCursor);
-
-      instructionCursor = prevInstruction;
-      }
-
-   _afterRA = true;
-
-   if (self()->getDebug())
-      {
-      self()->getDebug()->stopTracingRegisterAssignment();
-      }
    }
 
 void

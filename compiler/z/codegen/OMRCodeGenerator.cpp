@@ -1711,12 +1711,6 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
          }
       }
 
-   // Set all CFG Blocks unvisited
-   for (currBlock = self()->comp()->getStartBlock(); currBlock != NULL; currBlock = currBlock->getNextBlock())
-     {
-     currBlock->setHasBeenVisited(false);
-     }
-
    while (instructionCursor)
       {
       TR::Node *treeNode=instructionCursor->getNode();

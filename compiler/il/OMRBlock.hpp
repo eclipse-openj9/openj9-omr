@@ -408,9 +408,6 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
    void setIsSynchronizedHandler()                    { _flags.set(_isSynchronizedHandler); }
    bool isSynchronizedHandler()                       { return _flags.testAny(_isSynchronizedHandler); }
 
-   void setHasBeenVisited(bool b = true)              { _flags.set(_hasBeenVisited, b); }
-   bool hasBeenVisited()                              { return _flags.testAny(_hasBeenVisited); }
-
    void setIsPRECandidate(bool b)                     { _flags.set(_isPRECandidate, b); }
    bool isPRECandidate()                              { return _flags.testAny(_isPRECandidate); }
 
@@ -524,7 +521,7 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
       _firstBlockInLoop                     = 0x00000020,
       _branchingBackwards                   = 0x00000040,
       _isSynchronizedHandler                = 0x00000100,
-      _hasBeenVisited                       = 0x00000400,
+      // Available                          = 0x00000400,
       _isPRECandidate                       = 0x00000800,
       _isAdded                              = 0x00001000,
       _isOSRInduceBlock                     = 0x00002000,

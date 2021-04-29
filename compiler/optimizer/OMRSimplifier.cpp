@@ -90,14 +90,6 @@ static_assert(TR::NumIlOps ==
  * Local helper functions
  */
 
-static void resetBlockVisitFlags(TR::Compilation *comp)
-   {
-   for (TR::Block *block = comp->getStartBlock(); block != NULL; block = block->getNextBlock())
-      {
-      block->setHasBeenVisited(false);
-      }
-   }
-
 static TR::TreeTop *findNextLegalTreeTop(TR::Compilation *comp, TR::Block *block)
    {
    vcount_t startVisitCount = comp->getStartTree()->getNode()->getVisitCount();
@@ -213,10 +205,6 @@ OMR::Simplifier::postPerformOnBlocks()
    {
    if (trace())
       comp()->dumpMethodTrees("Trees after simplification");
-
-#ifdef DEBUG
-   resetBlockVisitFlags(comp());
-#endif
 
    // Invalidate usedef and value number information if necessary
    //
@@ -342,15 +330,9 @@ OMR::Simplifier::simplifyExtendedBlock(TR::TreeTop * treeTop)
 
       if (b->isOSRCodeBlock() || b->isOSRCatchBlock())
          {
-         b->setHasBeenVisited();
          treeTop = b->getExit();
          continue;
          }
-
-#ifdef DEBUG
-      if (block != b)
-         b->setHasBeenVisited();
-#endif
 
       if (!block && _reassociate &&
           comp()->getFlowGraph()->getStructure() != NULL         // [99391] getStructureOf() only valid if structure isn't invalidated

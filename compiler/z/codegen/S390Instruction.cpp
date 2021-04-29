@@ -4904,6 +4904,50 @@ TR::S390SIYInstruction::generateBinaryEncoding()
 // TR::S390SILInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+TR::S390SILInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+   {
+   if (getOpCodeValue() == TR::InstOpCode::TBEGIN || getOpCodeValue() == TR::InstOpCode::TBEGINC)
+      {
+      uint16_t immValue = getSourceImmediate();
+      uint8_t regMask = 0;
+      for(int8_t i = TR::RealRegister::GPR0; i != TR::RealRegister::GPR15 + 1; i++)
+         {
+         if (cg()->machine()->realRegister(static_cast<TR::RealRegister::RegNum>(i))->getState() == TR::RealRegister::Assigned)
+            regMask |= (1 << (7 - ((i - 1) >> 1))); // bit 0 = GPR0/1, GPR0=1, GPR15=16. 'Or' with bit [(i-1)>>1]
+         }
+      immValue = immValue | (regMask<<8);
+      setSourceImmediate(immValue);
+      }
+
+   assignRegistersAndDependencies(kindToBeAssigned);
+
+   // Modify TBEGIN/TBEGINC's General Register Save Mask (GRSM) to only include
+   // live registers.
+   if (getOpCodeValue() == TR::InstOpCode::TBEGIN || getOpCodeValue() == TR::InstOpCode::TBEGINC)
+      {
+      uint8_t linkageBasedSaveMask = 0;
+
+      for (int32_t i = TR::RealRegister::GPR0; i != TR::RealRegister::GPR15 + 1; i++)
+         {
+         if (0 != cg()->getS390Linkage()->getPreserved((TR::RealRegister::RegNum)i))
+            {
+            //linkageBasedSaveMask is 8 bit mask where each bit represents consecutive even/odd regpair to save.
+            linkageBasedSaveMask |= (1 << (7 - ((i - 1) >> 1))); // bit 0 = GPR0/1, GPR0=1, GPR15=16. 'Or' with bit [(i-1)>>1]
+            }
+         }
+
+      // General Register Save Mask (GRSM)
+      uint8_t grsm = (cg()->machine()->genBitVectOfLiveGPRPairs() | linkageBasedSaveMask);
+
+      // GRSM occupies the top 8 bits of the immediate field.  Need to
+      // preserve the lower 8 bits, which has controls for AR, Floating
+      // Point and Program Interruption Filtering.
+      uint16_t originalGRSM = getSourceImmediate();
+      setSourceImmediate((grsm << 8) | (originalGRSM & 0xFF));
+      }
+   }
+
 int32_t
 TR::S390SILInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {

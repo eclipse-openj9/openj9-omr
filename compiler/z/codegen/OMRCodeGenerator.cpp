@@ -1706,23 +1706,12 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
    while (instructionCursor)
       {
       TR::Node *treeNode=instructionCursor->getNode();
-      if(instructionCursor->getOpCodeValue() == TR::InstOpCode::TBEGIN || instructionCursor->getOpCodeValue() == TR::InstOpCode::TBEGINC)
-         {
-         uint16_t immValue = ((TR::S390SILInstruction*)instructionCursor)->getSourceImmediate();
-         uint8_t regMask = 0;
-         for(int8_t i = TR::RealRegister::GPR0; i != TR::RealRegister::GPR15 + 1; i++)
-            {
-            if (self()->machine()->realRegister(static_cast<TR::RealRegister::RegNum>(i))->getState() == TR::RealRegister::Assigned)
-               regMask |= (1 << (7 - ((i - 1) >> 1))); // bit 0 = GPR0/1, GPR0=1, GPR15=16. 'Or' with bit [(i-1)>>1]
-            }
-         immValue = immValue | (regMask<<8);
-         ((TR::S390SILInstruction*)instructionCursor)->setSourceImmediate(immValue);
-         }
+
          /**
          * Find a free real register for DCB to use during generate binary encoding phase
          * @see S390DebugCounterBumpInstruction::generateBinaryEncoding()
          */
-      else if(instructionCursor->getOpCodeValue() == TR::InstOpCode::DCB)
+      if(instructionCursor->getOpCodeValue() == TR::InstOpCode::DCB)
          {
          TR::S390DebugCounterBumpInstruction *dcbInstr = static_cast<TR::S390DebugCounterBumpInstruction*>(instructionCursor);
 

@@ -3800,6 +3800,8 @@ class S390SILInstruction : public TR::S390MemInstruction
    uint16_t getSourceImmediate() { return _sourceImmediate; }
    uint16_t setSourceImmediate(uint16_t si) { return _sourceImmediate = si; }
 
+   virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
+
    virtual uint8_t *generateBinaryEncoding();
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };

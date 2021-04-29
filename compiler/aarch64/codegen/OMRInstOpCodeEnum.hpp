@@ -493,6 +493,7 @@
 		vfmul2d,                                                  	/* 0x6E60DC00	FMUL      	 */
 		vfdiv4s,                                                  	/* 0x6E20FC00	FDIV      	 */
 		vfdiv2d,                                                  	/* 0x6E60FC00	FDIV      	 */
+		vand16b,                                                  	/* 0x4E201C00	AND      	 */
 /* Hint instructions */
 		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */

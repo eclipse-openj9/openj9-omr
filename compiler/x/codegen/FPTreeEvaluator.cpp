@@ -1076,7 +1076,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
    TR::Node *child = node->getFirstChild();
 
    // TODO: Perform f2l using SSE.
-   if (child->getOpCode().isDouble() && cg->useSSEForDoublePrecision())
+   if (child->getOpCode().isDouble())
       {
       TR::RegisterDependencyConditions  *deps;
 
@@ -1158,7 +1158,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
       TR::X86RegMemInstruction          *loadLowInstr;     // loads the low dword of the converted long
 
       TR::Register *tempFPR1 = child->getOpCode().isFloat() ? cg->allocateSinglePrecisionRegister(TR_X87)
-                                                           : cg->allocateRegister(TR_X87);
+                                                            : cg->allocateRegister(TR_X87);
 
       // WARNING:
       //
@@ -1171,7 +1171,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
       // For slow conversion only, change the rounding mode on the FPU via its control word register.
       //
       int16_t fpcw = comp->getJittedMethodSymbol()->usesSinglePrecisionMode() ?
-                        SINGLE_PRECISION_ROUND_TO_ZERO : DOUBLE_PRECISION_ROUND_TO_ZERO;
+                     SINGLE_PRECISION_ROUND_TO_ZERO : DOUBLE_PRECISION_ROUND_TO_ZERO;
 
       generateMemInstruction(TR::InstOpCode::LDCWMem, node, generateX86MemoryReference(cg->findOrCreate2ByteConstant(node, fpcw), cg), cg);
 
@@ -1180,7 +1180,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
       cg->stopUsingRegister(tempFPR1);
 
       fpcw = comp->getJittedMethodSymbol()->usesSinglePrecisionMode() ?
-                SINGLE_PRECISION_ROUND_TO_NEAREST : DOUBLE_PRECISION_ROUND_TO_NEAREST;
+             SINGLE_PRECISION_ROUND_TO_NEAREST : DOUBLE_PRECISION_ROUND_TO_NEAREST;
 
       generateMemInstruction(TR::InstOpCode::LDCWMem, node, generateX86MemoryReference(cg->findOrCreate2ByteConstant(node, fpcw), cg), cg);
 
@@ -1205,12 +1205,12 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
       // Create the conversion snippet.
       //
       cg->addSnippet( new (cg->trHeapMemory()) TR::X86FPConvertToLongSnippet(reStartLabel,
-                                                        snippetLabel,
-                                                        helperSymRef,
-                                                        clobInstruction,
-                                                        loadHighInstr,
-                                                        loadLowInstr,
-                                                        cg) );
+                                                                             snippetLabel,
+                                                                             helperSymRef,
+                                                                             clobInstruction,
+                                                                             loadHighInstr,
+                                                                             loadLowInstr,
+                                                                             cg) );
 
       // Make sure the high and low long registers are assigned to something.
       //
@@ -1242,7 +1242,6 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
       return targetRegister;
       }
    }
-
 
 TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

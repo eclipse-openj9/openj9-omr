@@ -1695,20 +1695,12 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
    TR::list<TR::Register*> *firstTimeLiveOOLRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
    self()->setFirstTimeLiveOOLRegisterList(firstTimeLiveOOLRegisterList);
 
-   if (!self()->isOutOfLineColdPath())
-      {
-      TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::CFGEdge*>(self()->comp()->allocator()));
-      self()->setSpilledRegisterList(spilledRegisterList);
-      }
+   TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::CFGEdge*>(self()->comp()->allocator()));
+   self()->setSpilledRegisterList(spilledRegisterList);
 
-   if (!self()->isOutOfLineColdPath())
+   if (self()->getDebug())
       {
-      if (self()->getDebug())
-         {
-         TR_RegisterKinds rks = (TR_RegisterKinds)(TR_GPR_Mask | TR_FPR_Mask | TR_VRF_Mask);
-
-         self()->getDebug()->startTracingRegisterAssignment("backward", rks);
-         }
+      self()->getDebug()->startTracingRegisterAssignment();
       }
 
    while (instructionCursor)
@@ -1796,13 +1788,9 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
 
    _afterRA = true;
 
-   // Done Local RA of GPRs, let make sure we don't have any live registers
-   if (!self()->isOutOfLineColdPath())
+   if (self()->getDebug())
       {
-      if (self()->getDebug())
-         {
-         self()->getDebug()->stopTracingRegisterAssignment();
-         }
+      self()->getDebug()->stopTracingRegisterAssignment();
       }
    }
 

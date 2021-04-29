@@ -97,6 +97,7 @@ OMR::ARM64::CodeGenerator::initialize()
 
    cg->setSupportsSelect();
 
+   cg->setSupportsByteswap();
 
    if (!comp->getOption(TR_DisableTraps) && TR::Compiler->vm.hasResumableTrapHandler(comp))
       {

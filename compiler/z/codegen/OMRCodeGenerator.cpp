@@ -1707,34 +1707,6 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
       {
       TR::Node *treeNode=instructionCursor->getNode();
 
-         /**
-         * Find a free real register for DCB to use during generate binary encoding phase
-         * @see S390DebugCounterBumpInstruction::generateBinaryEncoding()
-         */
-      if(instructionCursor->getOpCodeValue() == TR::InstOpCode::DCB)
-         {
-         TR::S390DebugCounterBumpInstruction *dcbInstr = static_cast<TR::S390DebugCounterBumpInstruction*>(instructionCursor);
-
-         int32_t first = TR::RealRegister::FirstGPR + 1;  // skip GPR0
-         int32_t last  = TR::RealRegister::LastAssignableGPR;
-
-         TR::RealRegister * realReg;
-
-         for (int32_t i=first; i<=last; i++)
-            {
-            realReg = self()->machine()->realRegister(static_cast<TR::RealRegister::RegNum>(i));
-
-            if ( realReg->getState() == TR::RealRegister::Free)
-               {
-               dcbInstr->setAssignableReg(realReg);
-               realReg->setHasBeenAssignedInMethod(true);
-               break;
-               }
-            }
-
-            self()->traceRegisterAssignment("BEST FREE REG for DCB is %R", dcbInstr->getAssignableReg());
-         }
-
       self()->tracePreRAInstruction(instructionCursor);
 
       prevInstruction = instructionCursor->getPrev();

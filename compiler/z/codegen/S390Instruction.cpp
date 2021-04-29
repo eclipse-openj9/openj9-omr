@@ -1028,6 +1028,25 @@ TR::S390PseudoInstruction::estimateBinaryLength(int32_t currentEstimate)
 // TR::S390DebugCounterBumpInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 
+void
+TR::S390DebugCounterBumpInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+   {
+   // Find a free real register for DCB to use during binary encoding to avoid spilling scratch registers
+   for (auto i = TR::RealRegister::FirstGPR + 1; i <= TR::RealRegister::LastAssignableGPR; i++)
+      {
+      TR::RealRegister *realReg = cg()->machine()->realRegister(static_cast<TR::RealRegister::RegNum>(i));
+
+      if (realReg->getState() == TR::RealRegister::Free)
+         {
+         _assignableReg = realReg;
+         realReg->setHasBeenAssignedInMethod(true);
+         break;
+         }
+      }
+
+   assignRegistersAndDependencies(kindToBeAssigned);
+   }
+
 /**
  * This instruction is bumps the value at the snippet corresponding to the address of the debug counter count.
  * The valid opcode is TR::InstOpCode::DCB

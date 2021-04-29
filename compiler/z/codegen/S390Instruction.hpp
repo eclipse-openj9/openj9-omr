@@ -681,12 +681,6 @@ public:
         _delta(delta){}
 
    /**
-   * A real register must only be assigned for DCB to use if it is guaranteed to be free at the cursor position where DCB is inserted
-   * @param ar Real Register to be assigned
-   */
-   void setAssignableReg(TR::RealRegister * ar){ _assignableReg = ar; }
-
-   /**
    * @return Assigned Real Register
    */
    TR::RealRegister * getAssignableReg(){ return _assignableReg; }
@@ -700,6 +694,8 @@ public:
    * @return The integer amount to increment the counter
    */
    int32_t getDelta(){ return _delta; }
+
+   virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 
    virtual uint8_t *generateBinaryEncoding();
    };

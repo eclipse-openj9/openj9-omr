@@ -140,8 +140,6 @@ extern int64_t getIntegralValue(TR::Node* node);
 #define TR_MEMCPY_PAD_EQU_LEN_INDEX 6
 #define MVCL_THRESHOLD 16777216
 
-#define USE_CURRENT_DFP_ROUNDING_MODE (uint8_t)0x0
-
 enum TR_MemCpyPadTypes
    {
    OneByte,

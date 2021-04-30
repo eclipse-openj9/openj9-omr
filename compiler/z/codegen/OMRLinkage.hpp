@@ -332,8 +332,6 @@ enum TR_DispatchType
    virtual bool isAggregateReturnedInRegistersAndMemoryCall(TR::Node *callNode) { return false; }
 
    int32_t  isForceSaveIncomingParameters() { return _properties & ForceSaveIncomingParameters; }
-   int32_t  isLongDoubleReturnedOnStorage() { return _properties & LongDoubleReturnedOnStorage; }
-   int32_t  isLongDoublePassedOnStorage() { return _properties & LongDoublePassedOnStorage; }
    int32_t  isParmsMappedBeforeAutos() { return _properties & ParmsMappedBeforeAutos; }
 
    int64_t killAndAssignRegister(int64_t killMask, TR::RegisterDependencyConditions * deps,

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -623,86 +623,83 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
    bool changed;
    uint32_t availRegMask = genBitMapOfAssignableGPRs(cg, numOfDependencies);
 
-   if (!comp->getOption(TR_DisableOOL))
+   for (i = 0; i< numOfDependencies; i++)
       {
-      for (i = 0; i< numOfDependencies; i++)
+      TR::RegisterDependency &regDep = _dependencies[i];
+      virtReg = regDep.getRegister();
+      if (regDep.isSpilledReg() && !virtReg->getRealRegister())
          {
-         TR::RegisterDependency &regDep = _dependencies[i];
-         virtReg = regDep.getRegister();
-         if (regDep.isSpilledReg() && !virtReg->getRealRegister())
+         TR_ASSERT_FATAL(virtReg->getBackingStorage() != NULL, "Spilled virtual register on dependency list does not have backing storage");
+
+         if (virtReg->getAssignedRealRegister())
             {
-            TR_ASSERT_FATAL(virtReg->getBackingStorage() != NULL, "Spilled virtual register on dependency list does not have backing storage");
-
-            if (virtReg->getAssignedRealRegister())
-               {
-               // this happens when the register was first spilled in main line path then was reverse spilled
-               // and assigned to a real register in OOL path. We protected the backing store when doing
-               // the reverse spill so we could re-spill to the same slot now
-               TR::Node *currentNode = currentInstruction->getNode();
-               TR::RealRegister *assignedReg = toRealRegister(virtReg->getAssignedRegister());
-               cg->traceRegisterAssignment ("\nOOL: Found %R spilled in main line and reused inside OOL", virtReg);
-               TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, virtReg->getBackingStorage()->getSymbolReference(), cg);
-               TR::InstOpCode::Mnemonic opCode;
-               TR_RegisterKinds rk = virtReg->getKind();
-               switch (rk)
-                  {
-                  case TR_GPR:
-                     if (virtReg->is64BitReg())
-                        {
-                        opCode = TR::InstOpCode::LG;
-                        }
-                     else
-                        {
-                        opCode = TR::InstOpCode::L;
-                        }
-                     break;
-                  case TR_FPR:
-                     opCode = TR::InstOpCode::LD;
-                     break;
-                  case TR_VRF:
-                     opCode = TR::InstOpCode::VL;
-                     break;
-                  default:
-                     TR_ASSERT( 0, "\nRegister kind not supported in OOL spill\n");
-                     break;
-                  }
-
-               bool isVector = (rk == TR_VRF);
-
-               TR::Instruction *inst = isVector ? generateVRXInstruction(cg, opCode, currentNode, assignedReg, tempMR, 0, currentInstruction) :
-                                                     generateRXInstruction (cg, opCode, currentNode, assignedReg, tempMR, currentInstruction);
-               cg->traceRAInstruction(inst);
-
-               assignedReg->setAssignedRegister(NULL);
-               virtReg->setAssignedRegister(NULL);
-               assignedReg->setState(TR::RealRegister::Free);
-               }
-
-            // now we are leaving the OOL sequence, anything that was previously spilled in OOL hot path or main line
-            // should be considered as mainline spill for the next OOL sequence.
-            virtReg->getBackingStorage()->setMaxSpillDepth(1);
-            }
-         // we also need to free up all locked backing storage if we are exiting the OOL during backwards RA assignment
-         else if (currentInstruction->isLabel() && virtReg->getAssignedRealRegister())
-            {
-            TR_BackingStore * location = virtReg->getBackingStorage();
+            // this happens when the register was first spilled in main line path then was reverse spilled
+            // and assigned to a real register in OOL path. We protected the backing store when doing
+            // the reverse spill so we could re-spill to the same slot now
+            TR::Node *currentNode = currentInstruction->getNode();
+            TR::RealRegister *assignedReg = toRealRegister(virtReg->getAssignedRegister());
+            cg->traceRegisterAssignment ("\nOOL: Found %R spilled in main line and reused inside OOL", virtReg);
+            TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, virtReg->getBackingStorage()->getSymbolReference(), cg);
+            TR::InstOpCode::Mnemonic opCode;
             TR_RegisterKinds rk = virtReg->getKind();
-            int32_t dataSize;
-            if (toS390LabelInstruction(currentInstruction)->getLabelSymbol()->isStartOfColdInstructionStream() &&
-                location)
+            switch (rk)
                {
-               traceMsg (comp,"\nOOL: Releasing backing storage (%p)\n", location);
-               if (rk == TR_GPR)
-                  dataSize = TR::Compiler->om.sizeofReferenceAddress();
-               else if (rk == TR_VRF)
-                  dataSize = 16; // Will change to 32 in a few years..
-               else
-                  dataSize = 8;
-
-               location->setMaxSpillDepth(0);
-               cg->freeSpill(location,dataSize,0);
-               virtReg->setBackingStorage(NULL);
+               case TR_GPR:
+                  if (virtReg->is64BitReg())
+                     {
+                     opCode = TR::InstOpCode::LG;
+                     }
+                  else
+                     {
+                     opCode = TR::InstOpCode::L;
+                     }
+                  break;
+               case TR_FPR:
+                  opCode = TR::InstOpCode::LD;
+                  break;
+               case TR_VRF:
+                  opCode = TR::InstOpCode::VL;
+                  break;
+               default:
+                  TR_ASSERT( 0, "\nRegister kind not supported in OOL spill\n");
+                  break;
                }
+
+            bool isVector = (rk == TR_VRF);
+
+            TR::Instruction *inst = isVector ? generateVRXInstruction(cg, opCode, currentNode, assignedReg, tempMR, 0, currentInstruction) :
+                                                   generateRXInstruction (cg, opCode, currentNode, assignedReg, tempMR, currentInstruction);
+            cg->traceRAInstruction(inst);
+
+            assignedReg->setAssignedRegister(NULL);
+            virtReg->setAssignedRegister(NULL);
+            assignedReg->setState(TR::RealRegister::Free);
+            }
+
+         // now we are leaving the OOL sequence, anything that was previously spilled in OOL hot path or main line
+         // should be considered as mainline spill for the next OOL sequence.
+         virtReg->getBackingStorage()->setMaxSpillDepth(1);
+         }
+      // we also need to free up all locked backing storage if we are exiting the OOL during backwards RA assignment
+      else if (currentInstruction->isLabel() && virtReg->getAssignedRealRegister())
+         {
+         TR_BackingStore * location = virtReg->getBackingStorage();
+         TR_RegisterKinds rk = virtReg->getKind();
+         int32_t dataSize;
+         if (toS390LabelInstruction(currentInstruction)->getLabelSymbol()->isStartOfColdInstructionStream() &&
+               location)
+            {
+            traceMsg (comp,"\nOOL: Releasing backing storage (%p)\n", location);
+            if (rk == TR_GPR)
+               dataSize = TR::Compiler->om.sizeofReferenceAddress();
+            else if (rk == TR_VRF)
+               dataSize = 16; // Will change to 32 in a few years..
+            else
+               dataSize = 8;
+
+            location->setMaxSpillDepth(0);
+            cg->freeSpill(location,dataSize,0);
+            virtReg->setBackingStorage(NULL);
             }
          }
       }
@@ -1327,23 +1324,20 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          }
       }
 
-   if (!comp->getOption(TR_DisableOOL))
+   // TODO: Is this HPR related? Do we need this code?
+   for (i = 0; i < numOfDependencies; i++)
       {
-      // TODO: Is this HPR related? Do we need this code?
-      for (i = 0; i < numOfDependencies; i++)
+      if (_dependencies[i].getRegister()->getRealRegister())
          {
-         if (_dependencies[i].getRegister()->getRealRegister())
+         TR::RealRegister* realReg = toRealRegister(_dependencies[i].getRegister());
+         if (_dependencies[i].isSpilledReg())
             {
-            TR::RealRegister* realReg = toRealRegister(_dependencies[i].getRegister());
-            if (_dependencies[i].isSpilledReg())
-               {
-               virtReg = realReg->getAssignedRegister();
+            virtReg = realReg->getAssignedRegister();
 
-               traceMsg(comp,"\nOOL HPR Spill: %s", cg->getDebug()->getName(realReg));
-               traceMsg(comp,":%s\n", cg->getDebug()->getName(virtReg));
+            traceMsg(comp,"\nOOL HPR Spill: %s", cg->getDebug()->getName(realReg));
+            traceMsg(comp,":%s\n", cg->getDebug()->getName(virtReg));
 
-               virtReg->setAssignedRegister(NULL);
-               }
+            virtReg->setAssignedRegister(NULL);
             }
          }
       }

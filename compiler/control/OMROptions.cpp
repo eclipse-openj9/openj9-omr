@@ -457,7 +457,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableNoServerDuringStartup",       "M\tDo not use NoServer during startup",  SET_OPTION_BIT(TR_DisableNoServerDuringStartup), "F"},
    {"disableNoVMAccess",                  "O\tdisable compilation without holding VM access",  SET_OPTION_BIT(TR_DisableNoVMAccess), "F"},
    {"disableOnDemandLiteralPoolRegister", "O\tdisable on demand literal pool register",        SET_OPTION_BIT(TR_DisableOnDemandLiteralPoolRegister), "F"},
-   {"disableOOL",                         "O\tdisable out of line instruction selection",      SET_OPTION_BIT(TR_DisableOOL), "F"},
    {"disableOpts=",                       "O{regex}\tlist of optimizations to disable",
                                           TR::Options::setRegex, offsetof(OMR::Options, _disabledOpts), 0, "P"},
    {"disableOptTransformations=",         "O{regex}\tlist of optimizer transformations to disable",
@@ -2358,11 +2357,6 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
       {
          self()->setOption(TR_ReservingLocks, false);
       }
-#if defined(TR_HOST_S390)
-   // Lock reservation without OOL has not implemented on Z
-   if (self()->getOption(TR_DisableOOL))
-      self()->setOption(TR_ReservingLocks,false);
-#endif
 
    return true;
    }

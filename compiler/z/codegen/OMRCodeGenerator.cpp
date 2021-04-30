@@ -1712,16 +1712,13 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
    TR::Block *currBlock = NULL;
    TR::Instruction * currBBEndInstr = instructionCursor;
 
-   if (!self()->comp()->getOption(TR_DisableOOL))
-      {
-      TR::list<TR::Register*> *firstTimeLiveOOLRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
-      self()->setFirstTimeLiveOOLRegisterList(firstTimeLiveOOLRegisterList);
+   TR::list<TR::Register*> *firstTimeLiveOOLRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
+   self()->setFirstTimeLiveOOLRegisterList(firstTimeLiveOOLRegisterList);
 
-      if (!self()->isOutOfLineColdPath())
-         {
-         TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::CFGEdge*>(self()->comp()->allocator()));
-         self()->setSpilledRegisterList(spilledRegisterList);
-         }
+   if (!self()->isOutOfLineColdPath())
+      {
+      TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::CFGEdge*>(self()->comp()->allocator()));
+      self()->setSpilledRegisterList(spilledRegisterList);
       }
 
    if (!self()->isOutOfLineColdPath())
@@ -2341,29 +2338,26 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
 
    // Create exception table entries for outlined instructions.
    //
-   if (!self()->comp()->getOption(TR_DisableOOL))
+   auto oiIterator = self()->getS390OutOfLineCodeSectionList().begin();
+   while (oiIterator != self()->getS390OutOfLineCodeSectionList().end())
       {
-      auto oiIterator = self()->getS390OutOfLineCodeSectionList().begin();
-      while (oiIterator != self()->getS390OutOfLineCodeSectionList().end())
-         {
-       TR::Block * block = (*oiIterator)->getBlock();
-         TR::Node *firstNode = (*oiIterator)->getFirstInstruction()->getNode();
+      TR::Block * block = (*oiIterator)->getBlock();
+      TR::Node *firstNode = (*oiIterator)->getFirstInstruction()->getNode();
 
-         // Create Exception Table Entries for Nodes that can cause GC's.
-         bool needsETE = (firstNode->getOpCode().hasSymbolReference())? firstNode->getSymbolReference()->canCauseGC() : false;
+      // Create Exception Table Entries for Nodes that can cause GC's.
+      bool needsETE = (firstNode->getOpCode().hasSymbolReference())? firstNode->getSymbolReference()->canCauseGC() : false;
 #ifdef J9_PROJECT_SPECIFIC
-         if (firstNode->getOpCodeValue() == TR::BCDCHK || firstNode->getType().isBCD()) needsETE = true;
+      if (firstNode->getOpCodeValue() == TR::BCDCHK || firstNode->getType().isBCD()) needsETE = true;
 #endif
-         if (needsETE && block && !block->getExceptionSuccessors().empty())
-            {
-            uint32_t startOffset = (*oiIterator)->getFirstInstruction()->getBinaryEncoding() - self()->getCodeStart();
-            uint32_t endOffset   = (*oiIterator)->getAppendInstruction()->getBinaryEncoding() - self()->getCodeStart();
+      if (needsETE && block && !block->getExceptionSuccessors().empty())
+         {
+         uint32_t startOffset = (*oiIterator)->getFirstInstruction()->getBinaryEncoding() - self()->getCodeStart();
+         uint32_t endOffset   = (*oiIterator)->getAppendInstruction()->getBinaryEncoding() - self()->getCodeStart();
 
-            block->addExceptionRangeForSnippet(startOffset, endOffset);
-            }
-
-         ++oiIterator;
+         block->addExceptionRangeForSnippet(startOffset, endOffset);
          }
+
+      ++oiIterator;
       }
 
    self()->getLinkage()->performPostBinaryEncoding();

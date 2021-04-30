@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -164,70 +164,67 @@ void TR_RVRegisterDependencyGroup::assignRegisters(
    uint32_t i, j;
    bool changed;
 
-   if (!comp->getOption(TR_DisableOOL))
+   for (i = 0; i< numberOfRegisters; i++)
       {
-      for (i = 0; i< numberOfRegisters; i++)
+      virtReg = _dependencies[i].getRegister();
+      if (_dependencies[i].isSpilledReg())
          {
-         virtReg = _dependencies[i].getRegister();
-         if (_dependencies[i].isSpilledReg())
+         TR_ASSERT(virtReg->getBackingStorage(), "should have a backing store if SpilledReg");
+         if (virtReg->getAssignedRealRegister())
             {
-            TR_ASSERT(virtReg->getBackingStorage(), "should have a backing store if SpilledReg");
-            if (virtReg->getAssignedRealRegister())
-               {
-               // this happens when the register was first spilled in main line path then was reverse spilled
-               // and assigned to a real register in OOL path. We protected the backing store when doing
-               // the reverse spill so we could re-spill to the same slot now
-               traceMsg (comp,"\nOOL: Found register spilled in main line and re-assigned inside OOL");
-               TR::Node *currentNode = currentInstruction->getNode();
-               TR::RealRegister *assignedReg = toRealRegister(virtReg->getAssignedRegister());
-               TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t), cg);
-               TR_RegisterKinds rk = virtReg->getKind();
-               TR::InstOpCode::Mnemonic opCode;
-               switch (rk)
-                  {
-                  case TR_GPR:
-                     opCode = TR::InstOpCode::_ld;
-                     break;
-                  case TR_FPR:
-                     opCode = TR::InstOpCode::_fld;
-                     break;
-                  default:
-                     TR_ASSERT(0, "\nRegister kind not supported in OOL spill\n");
-                     break;
-                  }
-
-               TR::Instruction *inst = generateLOAD(opCode, currentNode, assignedReg, tempMR, cg, currentInstruction);
-
-               assignedReg->setAssignedRegister(NULL);
-               virtReg->setAssignedRegister(NULL);
-               assignedReg->setState(TR::RealRegister::Free);
-
-               if (comp->getDebug())
-                  cg->traceRegisterAssignment("Generate reload of virt %s due to spillRegIndex dep at inst %p\n", cg->comp()->getDebug()->getName(virtReg), currentInstruction);
-               cg->traceRAInstruction(inst);
-               }
-
-            if (!(std::find(cg->getSpilledRegisterList()->begin(), cg->getSpilledRegisterList()->end(), virtReg) != cg->getSpilledRegisterList()->end()))
-               cg->getSpilledRegisterList()->push_front(virtReg);
-            }
-         // we also need to free up all locked backing storage if we are exiting the OOL during backwards RA assignment
-         else if (currentInstruction->isLabel() && virtReg->getAssignedRealRegister())
-            {
-            TR::LabelInstruction *labelInstr = (TR::LabelInstruction *)currentInstruction;
-            TR_BackingStore *location = virtReg->getBackingStorage();
+            // this happens when the register was first spilled in main line path then was reverse spilled
+            // and assigned to a real register in OOL path. We protected the backing store when doing
+            // the reverse spill so we could re-spill to the same slot now
+            traceMsg (comp,"\nOOL: Found register spilled in main line and re-assigned inside OOL");
+            TR::Node *currentNode = currentInstruction->getNode();
+            TR::RealRegister *assignedReg = toRealRegister(virtReg->getAssignedRegister());
+            TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t), cg);
             TR_RegisterKinds rk = virtReg->getKind();
-            int32_t dataSize;
-            if (labelInstr->getLabelSymbol()->isStartOfColdInstructionStream() && location)
+            TR::InstOpCode::Mnemonic opCode;
+            switch (rk)
                {
-               traceMsg (comp,"\nOOL: Releasing backing storage (%p)\n", location);
-               if (rk == TR_GPR)
-                  dataSize = TR::Compiler->om.sizeofReferenceAddress();
-               else
-                  dataSize = 8;
-               location->setMaxSpillDepth(0);
-               cg->freeSpill(location, dataSize, 0);
-               virtReg->setBackingStorage(NULL);
+               case TR_GPR:
+                  opCode = TR::InstOpCode::_ld;
+                  break;
+               case TR_FPR:
+                  opCode = TR::InstOpCode::_fld;
+                  break;
+               default:
+                  TR_ASSERT(0, "\nRegister kind not supported in OOL spill\n");
+                  break;
                }
+
+            TR::Instruction *inst = generateLOAD(opCode, currentNode, assignedReg, tempMR, cg, currentInstruction);
+
+            assignedReg->setAssignedRegister(NULL);
+            virtReg->setAssignedRegister(NULL);
+            assignedReg->setState(TR::RealRegister::Free);
+
+            if (comp->getDebug())
+               cg->traceRegisterAssignment("Generate reload of virt %s due to spillRegIndex dep at inst %p\n", cg->comp()->getDebug()->getName(virtReg), currentInstruction);
+            cg->traceRAInstruction(inst);
+            }
+
+         if (!(std::find(cg->getSpilledRegisterList()->begin(), cg->getSpilledRegisterList()->end(), virtReg) != cg->getSpilledRegisterList()->end()))
+            cg->getSpilledRegisterList()->push_front(virtReg);
+         }
+      // we also need to free up all locked backing storage if we are exiting the OOL during backwards RA assignment
+      else if (currentInstruction->isLabel() && virtReg->getAssignedRealRegister())
+         {
+         TR::LabelInstruction *labelInstr = (TR::LabelInstruction *)currentInstruction;
+         TR_BackingStore *location = virtReg->getBackingStorage();
+         TR_RegisterKinds rk = virtReg->getKind();
+         int32_t dataSize;
+         if (labelInstr->getLabelSymbol()->isStartOfColdInstructionStream() && location)
+            {
+            traceMsg (comp,"\nOOL: Releasing backing storage (%p)\n", location);
+            if (rk == TR_GPR)
+               dataSize = TR::Compiler->om.sizeofReferenceAddress();
+            else
+               dataSize = 8;
+            location->setMaxSpillDepth(0);
+            cg->freeSpill(location, dataSize, 0);
+            virtReg->setBackingStorage(NULL);
             }
          }
       }

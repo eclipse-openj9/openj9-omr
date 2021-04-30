@@ -164,11 +164,8 @@ OMR::RV::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
 
    TR::Instruction *instructionCursor = self()->getAppendInstruction();
 
-   if (!comp->getOption(TR_DisableOOL))
-      {
-      TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
-      self()->setSpilledRegisterList(spilledRegisterList);
-      }
+   TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
+   self()->setSpilledRegisterList(spilledRegisterList);
 
    if (self()->getDebug())
       self()->getDebug()->startTracingRegisterAssignment();

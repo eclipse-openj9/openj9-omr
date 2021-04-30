@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -544,7 +544,7 @@ static TR::Register *compareLongsForOrder(TR_ARMConditionCode branchOp, TR::Node
    // For now we just generate pessimistic code.
    static bool disableOOLForLongCompares = (feGetEnv("TR_DisableOOLForLongCompares") != NULL);
    TR::Register *src2Reg = cg->evaluate(secondChild);
-   if (cg->comp()->getOption(TR_DisableOOL) || disableOOLForLongCompares)
+   if (disableOOLForLongCompares)
       {
       TR::ARMControlFlowInstruction *cfop = generateControlFlowInstruction(cg, ARMOp_iflong, node, deps);
       cfop->addSourceRegister(src1Reg->getHighOrder());

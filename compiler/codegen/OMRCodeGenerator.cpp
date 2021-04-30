@@ -844,11 +844,14 @@ OMR::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
    TR::Instruction *prevInstr = NULL;
    TR::Instruction *currInstr = self()->getAppendInstruction();
 
-   auto *firstTimeLiveOOLRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
-   self()->setFirstTimeLiveOOLRegisterList(firstTimeLiveOOLRegisterList);
+   if (!self()->isOutOfLineColdPath())
+      {
+      auto *firstTimeLiveOOLRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
+      self()->setFirstTimeLiveOOLRegisterList(firstTimeLiveOOLRegisterList);
 
-   auto *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::CFGEdge*>(self()->comp()->allocator()));
-   self()->setSpilledRegisterList(spilledRegisterList);
+      auto *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::CFGEdge*>(self()->comp()->allocator()));
+      self()->setSpilledRegisterList(spilledRegisterList);
+      }
 
    if (self()->getDebug())
       {

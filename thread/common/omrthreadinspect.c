@@ -335,8 +335,18 @@ omrthread_get_stack_range(omrthread_t thread, void **stackStart, void **stackEnd
 #endif /* (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) */
 	pthread_attr_destroy(&attr);
 
+#if defined(AIXPPC)
+	/* On AIX stack start means where sp begins not the low memory.
+	 * This is the opposite of how it is on linux and how this API is
+	 * intended to be used.
+	 */
+	*stackEnd = *stackStart;
+	*stackStart = (void *)((uintptr_t)*stackEnd - stackSize);
+#else /* defined(AIXPPC) */
 	/* On Linux, native stack grows from high to low memory */
 	*stackEnd = (void *)((uintptr_t)*stackStart + stackSize);
+#endif /* defined(AIXPPC) */
+
 	return J9THREAD_SUCCESS;
 #elif defined(OSX) /* defined(LINUX) || defined(AIXPPC) */
 	OSTHREAD osTid = thread->handle;

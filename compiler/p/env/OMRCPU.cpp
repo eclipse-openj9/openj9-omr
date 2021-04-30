@@ -192,3 +192,84 @@ OMR::Power::CPU::getOldProcessorTypeFromNewProcessorType(OMRProcessorArchitectur
    return TR_FirstPPCProcessor;
    }
 
+const char*
+OMR::Power::CPU::getProcessorName()
+   {
+   const char* returnString = "";
+   switch(_processorDescription.processor)
+      {
+      case OMR_PROCESSOR_PPC_PWR604:
+         returnString = "PPCPWR604";
+         break;
+
+      case OMR_PROCESSOR_PPC_PWR630:
+         returnString = "PPCpwr630 ";
+         break;
+
+      case OMR_PROCESSOR_PPC_GP:
+         returnString = "PPCgp";
+         break;
+
+      case OMR_PROCESSOR_PPC_GR:
+         returnString = "PPCgr";
+         break;
+
+      case OMR_PROCESSOR_PPC_P6:
+         returnString = "PPCp6";
+         break;
+
+      case OMR_PROCESSOR_PPC_P7:
+         returnString = "PPCp7";
+         break;
+
+      case OMR_PROCESSOR_PPC_P8:
+         returnString = "PPCp8";
+         break;
+
+      case OMR_PROCESSOR_PPC_P9:
+         returnString = "PPCp9";
+         break;
+
+      case OMR_PROCESSOR_PPC_P10:
+         returnString = "PPCp10";
+         break;
+
+      case OMR_PROCESSOR_PPC_PULSAR:
+         returnString = "PPCpulsar";
+         break;
+
+      case OMR_PROCESSOR_PPC_NSTAR:
+         returnString = "PPCnstar";
+         break;
+
+      case OMR_PROCESSOR_PPC_PWR403:
+         returnString = "PPCPWR403";
+         break;
+
+      case OMR_PROCESSOR_PPC_PWR601:
+         returnString = "PPCPWR601";
+         break;
+
+      case OMR_PROCESSOR_PPC_PWR603:
+         returnString = "PPCPWR603";
+         break;
+
+      case OMR_PROCESSOR_PPC_82XX:
+         returnString = "PPCP82xx";
+         break;
+
+      case OMR_PROCESSOR_PPC_7XX:
+         returnString = "PPC7xx";
+         break;
+
+      case OMR_PROCESSOR_PPC_PWR440:
+         returnString = "PPCPWR440";
+         break;
+
+      default:
+         returnString = "Unknown PPC processor";
+         break;
+      }
+   return returnString;
+   }
+

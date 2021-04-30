@@ -131,6 +131,12 @@ public:
    bool isAtLeast(OMRProcessorArchitecture p);
    bool isAtMost(OMRProcessorArchitecture p);
 
+   /**
+    * @brief Returns name of the current processor
+    * @returns const char* string representing the name of the current processor
+    */
+   const char* getProcessorName();
+
 private:
    
    TR_Processor getOldProcessorTypeFromNewProcessorType(OMRProcessorArchitecture p);

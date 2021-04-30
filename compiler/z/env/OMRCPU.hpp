@@ -64,9 +64,10 @@ public:
       zNext,
       };
 
-   /** \brief
-    *     Gets the name of the processor that _processorDescription described.
-    */
+   /**
+     * @brief Returns name of the current processor
+     * @returns const char* string representing the name of the current processor
+     */
    const char* getProcessorName();
 
    static TR::CPU detect(OMRPortLibrary * const omrPortLib);

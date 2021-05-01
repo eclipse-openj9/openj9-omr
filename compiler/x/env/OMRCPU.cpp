@@ -573,3 +573,83 @@ OMR::X86::CPU::supports_feature_old_api(uint32_t feature)
    return supported;
    }
 
+const char*
+OMR::X86::CPU::getProcessorName()
+   {
+   const char* returnString = "";
+   switch(_processorDescription.processor)
+      {
+      case OMR_PROCESSOR_X86_INTELPENTIUM:
+         returnString = "X86 Intel Pentium";
+         break;
+
+      case OMR_PROCESSOR_X86_INTELP6:
+         returnString = "X86 Intel P6";
+         break;
+
+      case OMR_PROCESSOR_X86_INTELPENTIUM4:
+         returnString = "X86 Intel Netburst Microarchitecture";
+         break;
+
+      case OMR_PROCESSOR_X86_INTELCORE2:
+         returnString = "X86 Intel Core2 Microarchitecture";
+         break;
+
+      case OMR_PROCESSOR_X86_INTELTULSA:
+         returnString = "X86 Intel Tulsa";
+         break;
+
+      case OMR_PROCESSOR_X86_INTELNEHALEM:
+         returnString = "X86 Intel Nehalem";
+         break;
+
+      case OMR_PROCESSOR_X86_INTELWESTMERE:
+         returnString = "X86 Intel Westmere";
+         break;
+
+      case OMR_PROCESSOR_X86_INTELSANDYBRIDGE:
+         returnString = "X86 Intel Sandy Bridge";
+         break;
+
+      case OMR_PROCESSOR_X86_INTELIVYBRIDGE:
+         returnString = "X86 Intel Ivy Bridge";
+         break;
+
+      case OMR_PROCESSOR_X86_INTELHASWELL:
+         returnString = "X86 Intel Haswell";
+         break;
+
+      case OMR_PROCESSOR_X86_INTELBROADWELL:
+         returnString = "X86 Intel Broadwell";
+         break;
+
+      case OMR_PROCESSOR_X86_INTELSKYLAKE:
+         returnString = "X86 Intel Skylake";
+         break;
+
+      case OMR_PROCESSOR_X86_AMDK5:
+         returnString = "X86 AMDK5";
+         break;
+
+      case OMR_PROCESSOR_X86_AMDK6:
+         returnString = "X86 AMDK6";
+         break;
+
+      case OMR_PROCESSOR_X86_AMDATHLONDURON:
+         returnString = "X86 AMD Athlon-Duron";
+         break;
+
+      case OMR_PROCESSOR_X86_AMDOPTERON:
+         returnString = "X86 AMD Opteron";
+         break;
+
+      case OMR_PROCESSOR_X86_AMDFAMILY15H:
+         returnString = "X86 AMD Family 15h";
+         break;
+
+      default:
+         returnString = "Unknown X86 Processor";
+         break;
+      }
+   return returnString;
+   }

@@ -123,6 +123,12 @@ public:
     * @returns true if feature is supported
     */
    bool supportsFeature(uint32_t feature);
+
+   /**
+    * @brief Returns name of the current processor
+    * @returns const char* string representing the name of the current processor
+    */
+   const char* getProcessorName();
    };
 
 }

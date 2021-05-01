@@ -104,6 +104,12 @@ public:
     * @param requireRotateToLeft if true, returns true if rotate to left operation is available.
     */
    bool getSupportsHardware64bitRotate(bool requireRotateToLeft=false) { return !requireRotateToLeft; } // only rotate to right is available
+
+   /**
+    * @brief Returns name of the current processor
+    * @returns const char* string representing the name of the current processor
+    */
+   const char* getProcessorName() { return "Unknown Arm Processor"; }
    };
 
 }

@@ -64,20 +64,11 @@ public:
       zNext,
       };
 
-   /** \brief
-    *     Gets the name of the processor given the four digit machine id.
-    */
-   static const char* getProcessorName(int32_t machineId);
-
-   /** \brief
-    *     Gets the name of the processor given the four TR::CPU::Architecture enum type.
-    */
-   static const char* getProcessorName(Architecture arch);
-
-   /** \brief
-    *     Gets the name of the processor given the OMRProcessorArchitecture enum type.
-    */
-   static const char* getProcessorName(OMRProcessorArchitecture arch);
+   /**
+     * @brief Returns name of the current processor
+     * @returns const char* string representing the name of the current processor
+     */
+   const char* getProcessorName();
 
    static TR::CPU detect(OMRPortLibrary * const omrPortLib);
 

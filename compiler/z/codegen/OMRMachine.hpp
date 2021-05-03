@@ -177,7 +177,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    uint8_t getFPRSize() const { return 8;}
    uint8_t getVRFSize() const { return 16;}
 
-   TR::RegisterDependencyConditions * createDepCondForLiveGPRs(TR::list<TR::Register*> *spilledRegisterList);
+   TR::RegisterDependencyConditions * createCondForLiveAndSpilledGPRs(TR::list<TR::Register*> *spilledRegisterList);
 
    /**
     * @return number of single cycle instructions

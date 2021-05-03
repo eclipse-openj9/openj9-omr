@@ -130,7 +130,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    void takeRegisterStateSnapShot();
    void restoreRegisterStateFromSnapShot();
 
-   TR::RegisterDependencyConditions  *createCondForLiveAndSpilledGPRs(bool cleanRegState, TR::list<TR::Register*> *spilledRegisterList = NULL);
+   TR::RegisterDependencyConditions  *createCondForLiveAndSpilledGPRs(TR::list<TR::Register*> *spilledRegisterList = NULL);
 
    void decFutureUseCountAndUnlatch(TR::Register *virtualRegister);
    void disassociateUnspilledBackingStorage();

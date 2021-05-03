@@ -1808,9 +1808,8 @@ bool OMR::Power::Machine::setLinkRegisterKilled(bool b)
    return _registerFile[TR::RealRegister::lr]->setHasBeenAssignedInMethod(b);
    }
 
-// if cleanRegState == false then this is being called to generate conditions for use in regAssocs
 TR::RegisterDependencyConditions*
-OMR::Power::Machine::createCondForLiveAndSpilledGPRs(bool cleanRegState, TR::list<TR::Register*> *spilledRegisterList)
+OMR::Power::Machine::createCondForLiveAndSpilledGPRs(TR::list<TR::Register*> *spilledRegisterList)
    {
    // Calculate number of register dependencies required.  This step is not really necessary, but
    // it is space conscious.
@@ -1845,16 +1844,14 @@ OMR::Power::Machine::createCondForLiveAndSpilledGPRs(bool cleanRegState, TR::lis
             TR_ASSERT(!spilledRegisterList || !(std::find(spilledRegisterList->begin(), spilledRegisterList->end(), virtReg) != spilledRegisterList->end())
             		,"a register should not be in both an assigned state and in the spilled list\n");
             deps->addPostCondition(virtReg, realReg->getRegisterNumber());
-            if (cleanRegState)
-               {
-               virtReg->incTotalUseCount();
-               virtReg->incFutureUseCount();
-               if (self()->cg()->isOutOfLineColdPath())
-                  virtReg->incOutOfLineUseCount();
-               virtReg->setAssignedRegister(NULL);
-               realReg->setAssignedRegister(NULL);
-               realReg->setState(TR::RealRegister::Free);
-               }
+
+            virtReg->incTotalUseCount();
+            virtReg->incFutureUseCount();
+            if (self()->cg()->isOutOfLineColdPath())
+               virtReg->incOutOfLineUseCount();
+            virtReg->setAssignedRegister(NULL);
+            realReg->setAssignedRegister(NULL);
+            realReg->setState(TR::RealRegister::Free);
             }
          }
 

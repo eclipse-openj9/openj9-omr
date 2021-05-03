@@ -2328,9 +2328,9 @@ OMR::Z::MemoryReference::propagateAlignmentInfo(OMR::Z::MemoryReference *newMemR
    }
 
 /**
- * 3 different kids of assignRegisters:
+ * 4 different kids of assignRegisters:
  *      1. TR::Instruction::assignRegisters
- *      2. TR_S390OutOfLineCodeSection::assignRegisters
+ *      2. TR_OutOfLineCodeSection::assignRegisters
  *      3. TR_S390RegisterDependencyGroup::assignRegisters
  *      4. OMR::Z::MemoryReference::assignRegisters
  *          TR::Instruction::assignRegisters calls this

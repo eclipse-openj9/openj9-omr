@@ -934,7 +934,7 @@ uint32_t OMR::ARM::Machine::_globalRegisterNumberToRealRegisterMap[MAX_ARM_GLOBA
    };
 
 TR::RegisterDependencyConditions*
-OMR::ARM::Machine::createCondForLiveAndSpilledGPRs(bool cleanRegState, TR::list<TR::Register*> *spilledRegisterList)
+OMR::ARM::Machine::createCondForLiveAndSpilledGPRs(TR::list<TR::Register*> *spilledRegisterList)
    {
    // Calculate number of register dependencies required.  This step is not really necessary, but
    // it is space conscious.
@@ -969,14 +969,12 @@ OMR::ARM::Machine::createCondForLiveAndSpilledGPRs(bool cleanRegState, TR::list<
             TR_ASSERT(!spilledRegisterList || !(std::find(spilledRegisterList->begin(), spilledRegisterList->end(), virtReg) != spilledRegisterList->end())
             		,"a register should not be in both an assigned state and in the spilled list\n");
             deps->addPostCondition(virtReg, realReg->getRegisterNumber());
-            if (cleanRegState)
-               {
-               virtReg->incTotalUseCount();
-               virtReg->incFutureUseCount();
-               virtReg->setAssignedRegister(NULL);
-               realReg->setAssignedRegister(NULL);
-               realReg->setState(TR::RealRegister::Free);
-               }
+
+            virtReg->incTotalUseCount();
+            virtReg->incFutureUseCount();
+            virtReg->setAssignedRegister(NULL);
+            realReg->setAssignedRegister(NULL);
+            realReg->setState(TR::RealRegister::Free);
             }
          }
 

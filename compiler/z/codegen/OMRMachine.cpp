@@ -4171,7 +4171,7 @@ OMR::Z::Machine::restoreRegisterStateFromSnapShot()
       }
    }
 
-TR::RegisterDependencyConditions * OMR::Z::Machine::createDepCondForLiveGPRs(TR::list<TR::Register*> *spilledRegisterList)
+TR::RegisterDependencyConditions * OMR::Z::Machine::createCondForLiveAndSpilledGPRs(TR::list<TR::Register*> *spilledRegisterList)
    {
    int32_t i, c=0;
    // Calculate number of register dependencies required. This step is not really necessary, but

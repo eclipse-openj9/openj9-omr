@@ -65,11 +65,6 @@ public:
    TR_ARM64OutOfLineCodeSection(TR::Node *callNode, TR::ILOpCodes callOp, TR::Register *targetReg, TR::LabelSymbol *entryLabel, TR::LabelSymbol *restartLabel, TR::CodeGenerator *cg);
 
    /**
-    * @brief Assigns registers
-    * @param[in] kindsToBeAssigned : kind of registers
-    */
-   void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-   /**
     * @brief Generates out-of-line code section dispatch
     */
    void generateARM64OutOfLineCodeSectionDispatch();

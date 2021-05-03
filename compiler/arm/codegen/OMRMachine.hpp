@@ -114,7 +114,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    // Snap shot methods
    void takeRegisterStateSnapShot();
    void restoreRegisterStateFromSnapShot();
-   TR::RegisterDependencyConditions  *createCondForLiveAndSpilledGPRs(bool cleanRegState, TR::list<TR::Register*> *spilledRegisterList = NULL);
+   TR::RegisterDependencyConditions  *createCondForLiveAndSpilledGPRs(TR::list<TR::Register*> *spilledRegisterList = NULL);
 
    TR::RealRegister *assignSingleRegister(TR::Register *virtualRegister, TR::Instruction *currentInstruction);
 

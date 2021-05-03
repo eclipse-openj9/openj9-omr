@@ -41,6 +41,7 @@ namespace OMR { typedef OMR::RV::Machine MachineConnector; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }
 namespace TR { class Register; }
+namespace TR { class RegisterDependencyConditions; }
 
 #define NUM_RV_GPR 32
 #define MAX_RV_GLOBAL_GPRS 27 // excluding IP0, IP1, FP, LR, and SP
@@ -163,6 +164,8 @@ public:
     */
    static TR_GlobalRegisterNumber getLastGlobalFPRRegisterNumber()
       { return MAX_RV_GLOBAL_GPRS + MAX_RV_GLOBAL_FPRS - 1; }
+
+   TR::RegisterDependencyConditions * createCondForLiveAndSpilledGPRs(TR::list<TR::Register*> *spilledRegisterList);
 
 private:
 

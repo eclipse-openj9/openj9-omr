@@ -140,7 +140,6 @@ namespace TR { class X86FPRegInstruction;                  }
 namespace TR { class X86FPRegRegInstruction;               }
 namespace TR { class X86FPMemRegInstruction;               }
 namespace TR { class X86FPRegMemInstruction;               }
-class TR_X86RegisterDependencyGroup;
 namespace TR { class X86RestartSnippet; }
 namespace TR { class X86PicDataSnippet; }
 namespace TR { class X86DivideCheckSnippet; }
@@ -783,7 +782,7 @@ public:
    void printPrefix(TR::FILE *, TR::Instruction *instr);
    int32_t printPrefixAndMnemonicWithoutBarrier(TR::FILE *, TR::Instruction *instr, int32_t barrier);
    void printPrefixAndMemoryBarrier(TR::FILE *, TR::Instruction *instr, int32_t barrier, int32_t barrierOffset);
-   void dumpDependencyGroup(TR::FILE *pOutFile, TR_X86RegisterDependencyGroup *group, int32_t numConditions, char *prefix, bool omitNullDependencies);
+   void dumpDependencyGroup(TR::FILE *pOutFile, TR::RegisterDependencyGroup *group, int32_t numConditions, char *prefix, bool omitNullDependencies);
    void dumpDependencies(TR::FILE *, TR::Instruction *);
    void printRegisterInfoHeader(TR::FILE *, TR::Instruction *);
    void printBoundaryAvoidanceInfo(TR::FILE *, TR::X86BoundaryAvoidanceInstruction *);
@@ -837,7 +836,7 @@ public:
    void printReferencedRegisterInfo(TR::FILE *, TR::X86RegRegMemInstruction *);
 
    void printFullRegisterDependencyInfo(TR::FILE *, TR::RegisterDependencyConditions * conditions);
-   void printDependencyConditions(TR_X86RegisterDependencyGroup *, uint8_t, char *, TR::FILE *);
+   void printDependencyConditions(TR::RegisterDependencyGroup *, uint8_t, char *, TR::FILE *);
 
    void print(TR::FILE *, TR::MemoryReference *, TR_RegisterSizes);
    void printReferencedRegisterInfo(TR::FILE *, TR::MemoryReference *);

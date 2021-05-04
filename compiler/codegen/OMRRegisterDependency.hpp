@@ -38,6 +38,7 @@ namespace OMR { typedef OMR::RegisterDependencyGroup RegisterDependencyGroupConn
 #endif
 
 #include "env/TRMemory.hpp"
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
 
 namespace OMR

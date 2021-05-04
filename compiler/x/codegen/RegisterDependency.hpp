@@ -34,6 +34,12 @@ template <typename ListKind> class List;
 
 namespace TR
 {
+class RegisterDependencyGroup : public OMR::RegisterDependencyGroupConnector
+   {
+   public:
+
+   RegisterDependencyGroup() : OMR::RegisterDependencyGroupConnector() {}
+   };
 
 class RegisterDependencyConditions : public OMR::RegisterDependencyConditionsConnector
    {
@@ -41,10 +47,10 @@ class RegisterDependencyConditions : public OMR::RegisterDependencyConditionsCon
 
    RegisterDependencyConditions() : OMR::RegisterDependencyConditionsConnector () {}
 
-   RegisterDependencyConditions(TR_X86RegisterDependencyIndex numPreConds, TR_X86RegisterDependencyIndex numPostConds, TR_Memory * m) :
+   RegisterDependencyConditions(uint32_t numPreConds, uint32_t numPostConds, TR_Memory * m) :
       OMR::RegisterDependencyConditionsConnector(numPreConds, numPostConds, m) {}
 
-   RegisterDependencyConditions(TR::Node *node, TR::CodeGenerator *cg, TR_X86RegisterDependencyIndex additionalRegDeps = 0, List<TR::Register> *reglist = 0) :
+   RegisterDependencyConditions(TR::Node *node, TR::CodeGenerator *cg, uint32_t additionalRegDeps = 0, List<TR::Register> *reglist = 0) :
       OMR::RegisterDependencyConditionsConnector(node, cg, additionalRegDeps, reglist) {}
 
    };

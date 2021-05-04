@@ -637,7 +637,7 @@ TR::Register *OMR::X86::Linkage::findReturnRegisterFromDependencies(TR::Node    
                                                                bool                                 isDirect)
    {
    TR::Register *returnRegister = NULL;
-   TR_X86RegisterDependencyGroup *postConditions = dependencies->getPostConditions();
+   TR::RegisterDependencyGroup *postConditions = dependencies->getPostConditions();
    switch (callNode->getDataType())
       {
       case TR::Int32:

@@ -167,7 +167,27 @@ target_sources(omrutil_obj PRIVATE ${resolvedPaths})
 # won't let object libraries link against anything.
 # So instead we manually apply the interface properties
 target_sources(omrutil_obj PRIVATE $<TARGET_PROPERTY:${OMR_UTIL_GLUE_TARGET},INTERFACE_SOURCES>)
-target_include_directories(omrutil_obj PUBLIC $<TARGET_PROPERTY:${OMR_UTIL_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>)
+
+target_include_directories(omrutil_obj
+	PUBLIC
+		$<TARGET_PROPERTY:omr_base,INTERFACE_INCLUDE_DIRECTORIES>
+	PRIVATE
+		$<TARGET_PROPERTY:${OMR_UTIL_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>
+)
+
+target_compile_definitions(omrutil_obj
+	PUBLIC
+		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_DEFINITIONS>
+	PRIVATE
+		$<TARGET_PROPERTY:${OMR_UTIL_GLUE_TARGET},INTERFACE_COMPILE_DEFINITIONS>
+)
+
+target_compile_options(omrutil_obj
+	PUBLIC
+		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_OPTIONS>
+	PRIVATE
+		$<TARGET_PROPERTY:${OMR_UTIL_GLUE_TARGET},INTERFACE_COMPILE_OPTIONS>
+)
 
 target_enable_ddr(omrutil_obj)
 ddr_set_add_targets(omrddr omrutil_obj)

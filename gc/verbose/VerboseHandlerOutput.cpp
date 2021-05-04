@@ -175,7 +175,7 @@ MM_VerboseHandlerOutput::getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t 
 }
 
 uintptr_t
-MM_VerboseHandlerOutput::getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t id, const char *type, uintptr_t contextId, uint64_t wallTimeMs)
+MM_VerboseHandlerOutput::getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t id, const char *type, uintptr_t contextId, uint64_t wallTimeMs, const char *reasonForTermination)
 {
 	OMRPORT_ACCESS_FROM_OMRVM(_omrVM);
 	uintptr_t bufPos = 0;
@@ -185,16 +185,7 @@ MM_VerboseHandlerOutput::getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t 
 	bufPos += omrstr_ftime(buf + bufPos, bufsize - bufPos, VERBOSEGC_DATE_FORMAT_POST_MS, wallTimeMs);
 	bufPos += omrstr_printf(buf + bufPos, bufsize - bufPos, "\"");
 
-	return bufPos;
-}
-
-uintptr_t
-MM_VerboseHandlerOutput::getTagTemplate(char *buf, uintptr_t bufsize, uintptr_t id, const char *type, uintptr_t contextId, uint64_t wallTimeMs, const char *reasonForTermination)
-{
-	OMRPORT_ACCESS_FROM_OMRVM(_omrVM);
-	uintptr_t bufPos = getTagTemplate(buf, bufsize, id, type, contextId, wallTimeMs);
-	
-	if (NULL != reasonForTermination){
+	if (NULL != reasonForTermination) {
 		bufPos += omrstr_printf(buf + bufPos, bufsize - bufPos, " terminationReason=\"%s\"", reasonForTermination);
 	}
 
@@ -511,12 +502,6 @@ void
 MM_VerboseHandlerOutput::handleCycleEndInnerStanzas(J9HookInterface** hook, uintptr_t eventNum, void* eventData, uintptr_t indentDepth)
 {
 	/* do nothing */
-}
-
-const char *
-MM_VerboseHandlerOutput::getCycleType(uintptr_t type)
-{
-	return "unknown";
 }
 
 const char *
@@ -927,7 +912,7 @@ MM_VerboseHandlerOutput::handleConcurrentStart(J9HookInterface** hook, UDATA eve
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	UDATA contextId = stats->_cycleID;
 	char tagTemplate[200];
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), getConcurrentTypeString(), contextId, omrtime_current_time_millis());
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), getConcurrentTypeString(stats->_concurrentCycleType), contextId, omrtime_current_time_millis());
 
 	enterAtomicReportingBlock();
 	writer->formatAndOutput(env, 0, "<concurrent-start %s>", tagTemplate);
@@ -948,7 +933,7 @@ MM_VerboseHandlerOutput::handleConcurrentEnd(J9HookInterface** hook, UDATA event
 	UDATA contextId = stats->_cycleID;
 	char tagTemplate[200];
 	const char* reasonForTermination = getConcurrentTerminationReason(stats);
-	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), getConcurrentTypeString(), contextId, omrtime_current_time_millis(), reasonForTermination);
+	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), getConcurrentTypeString(stats->_concurrentCycleType), contextId, omrtime_current_time_millis(), reasonForTermination);
 
 	enterAtomicReportingBlock();
 	writer->formatAndOutput(env, 0, "<concurrent-end %s>", tagTemplate);

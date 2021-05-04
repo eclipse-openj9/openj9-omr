@@ -294,7 +294,7 @@ public:
 	 * Notify any (concurrent) collector that might block and hold VM access
 	 * that an Exclusive VM Access is to be requested so that VM access can be released
 	 */
-	virtual void notifyAcquireExclusiveVMAccess(MM_EnvironmentBase *env) {}
+	virtual void notifyAcquireExclusiveVMAccess(MM_EnvironmentBase *env);
 	virtual bool isDisabled(MM_EnvironmentBase *env) { return _disableGC; }
 	/**
 	 * @return pointer to collector/phase specific concurrent stats structure

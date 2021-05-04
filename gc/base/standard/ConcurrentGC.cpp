@@ -504,6 +504,34 @@ MM_ConcurrentGC::reportConcurrentRememberedSetScanEnd(MM_EnvironmentBase *env, u
 	);
 }
 
+void MM_ConcurrentGC::preConcurrentInitializeStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+	_concurrentPhaseStats._cycleID = _concurrentCycleState._verboseContextID;
+	_concurrentPhaseStats._startTime = omrtime_hires_clock();
+	TRIGGER_J9HOOK_MM_PRIVATE_CONCURRENT_PHASE_START(
+			_extensions->privateHookInterface,
+			env->getOmrVMThread(),
+			omrtime_hires_clock(),
+			J9HOOK_MM_PRIVATE_CONCURRENT_PHASE_START,
+			&_concurrentPhaseStats);
+}
+
+void MM_ConcurrentGC::postConcurrentUpdateStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats, UDATA bytesConcurrentlyScanned)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+	_concurrentPhaseStats._cycleID = _concurrentCycleState._verboseContextID;
+	_concurrentPhaseStats._cardTableStats = _cardTable->getCardTableStats();
+	_concurrentPhaseStats._collectionStats = &_stats;
+
+	TRIGGER_J9HOOK_MM_PRIVATE_CONCURRENT_PHASE_END(
+		_extensions->privateHookInterface,
+		env->getOmrVMThread(),
+		omrtime_hires_clock(),
+		J9HOOK_MM_PRIVATE_CONCURRENT_PHASE_END,
+		&_concurrentPhaseStats);
+}
+
 /**
  * Aysnc callback routine to signal all threads that they needs to start dirtying cards.
  *
@@ -2226,6 +2254,8 @@ MM_ConcurrentGC::signalThreadsToActivateWriteBarrier(MM_EnvironmentBase *env)
 			reportGCCycleStart(env);
 			env->_cycleState = previousCycleState;
 
+			_concurrentPhaseStats.clear();
+			preConcurrentInitializeStatsAndReport(env);
 			_concurrentDelegate.signalThreadsToActivateWriteBarrier(env);
 			_stats.switchExecutionMode(CONCURRENT_INIT_COMPLETE, CONCURRENT_ROOT_TRACING);
 			/* Cancel any outstanding call backs on other threads as this thread has done the necessary work */
@@ -2753,8 +2783,10 @@ MM_ConcurrentGC::concurrentFinalCollection(MM_EnvironmentBase *env, MM_MemorySub
 			_extensions->sATBBarrierRememberedSet->preserveGlobalFragmentIndex(env);
 		}
 #endif /* defined(OMR_GC_REALTIME) */
+		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+		_concurrentPhaseStats._endTime = omrtime_hires_clock();
+		postConcurrentUpdateStatsAndReport(env);
 		if(env->acquireExclusiveVMAccessForGC(this, true, true)) {
-			OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 			/* We got exclusive control first so do collection */
 			reportConcurrentCollectionStart(env);
 			uint64_t startTime = omrtime_hires_clock();
@@ -2963,6 +2995,13 @@ MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 		env->_cycleState->_gcCode = MM_GCCode(gcCode);
 		env->_cycleState->_activeSubSpace = subSpace;
 		env->_cycleState->_collectionStatistics = &_collectionStatistics;
+
+		/* Report concurrent-end now, concurrent-start was reported but we didn't get
+		 * the opportunity to report concurrent-end (due to GC idle collection or concurrent halted)
+		 */
+		if ((CONCURRENT_INIT_COMPLETE < executionModeAtGC) && (CONCURRENT_FINAL_COLLECTION > executionModeAtGC)) {
+			postConcurrentUpdateStatsAndReport(env);
+		}
 	}
 
 	if (executionModeAtGC > CONCURRENT_OFF && _extensions->debugConcurrentMark) {
@@ -3771,6 +3810,16 @@ MM_ConcurrentGC::updateMeteringHistoryAfterGC(MM_EnvironmentBase *env)
 
 		/* Decide which history to replace on next collection */
 		_currentMeteringHistory = ((_currentMeteringHistory + 1) == _meteringHistorySize) ? 0 : _currentMeteringHistory + 1;
+	}
+}
+void
+MM_ConcurrentGC::notifyAcquireExclusiveVMAccess(MM_EnvironmentBase *env)
+{
+	MM_ParallelGlobalGC::notifyAcquireExclusiveVMAccess(env);
+	/* Record concurrent end time, concurrent may be halted and complete in STW */
+	if (_stats.concurrentMarkInProgress() && (CONCURRENT_FINAL_COLLECTION > _stats.getExecutionMode())) {
+		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+		_concurrentPhaseStats._endTime = omrtime_hires_clock();
 	}
 }
 #endif /* OMR_GC_LARGE_OBJECT_AREA */

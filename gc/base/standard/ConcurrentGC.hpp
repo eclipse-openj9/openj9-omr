@@ -32,6 +32,7 @@
 
 #include "ConcurrentCardTable.hpp"
 #include "ConcurrentMarkingDelegate.hpp"
+#include "ConcurrentMarkPhaseStats.hpp"
 #include "Collector.hpp"
 #include "CollectorLanguageInterface.hpp"
 #include "ConcurrentGCStats.hpp"
@@ -279,6 +280,7 @@ protected:
 
 	MM_ConcurrentSafepointCallback *_callback;
 	MM_ConcurrentGCStats _stats;
+	MM_ConcurrentMarkPhaseStats _concurrentPhaseStats;
 
 
 public:
@@ -335,6 +337,9 @@ private:
 	
 	void reportConcurrentRememberedSetScanStart(MM_EnvironmentBase *env);
 	void reportConcurrentRememberedSetScanEnd(MM_EnvironmentBase *env, uint64_t duration);
+
+	virtual void preConcurrentInitializeStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats = NULL);
+	virtual void postConcurrentUpdateStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats = NULL, UDATA bytesConcurrentlyScanned = 0);
 
 	virtual bool internalGarbageCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription);
 
@@ -470,6 +475,7 @@ public:
 	MMINLINE MM_ConcurrentGCStats *getConcurrentGCStats() { return &_stats; }
 
 	void concurrentWorkStackOverflow();
+	virtual void notifyAcquireExclusiveVMAccess(MM_EnvironmentBase *env);
 	
 	MM_ConcurrentGC(MM_EnvironmentBase *env)
 		: MM_ParallelGlobalGC(env)
@@ -518,6 +524,7 @@ public:
 		,_retuneAfterHeapResize(false)
 		,_callback(NULL)
 		,_stats()
+		,_concurrentPhaseStats()
 		{
 			_typeId = __FUNCTION__;
 		}

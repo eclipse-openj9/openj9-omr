@@ -26,6 +26,7 @@
 #include "gcutils.h"
 
 #include "ConcurrentGCStats.hpp"
+#include "ConcurrentMarkPhaseStats.hpp"
 #include "CycleState.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
@@ -243,6 +244,25 @@ MM_VerboseHandlerOutputStandard::getCycleType(uintptr_t type)
 	return cycleType;
 }
 
+const char *
+MM_VerboseHandlerOutputStandard::getConcurrentTypeString(uintptr_t type)
+{
+	const char* cycleType = NULL;
+	switch (type) {
+	case OMR_GC_CYCLE_TYPE_GLOBAL:
+		cycleType = "global mark";
+		break;
+	case OMR_GC_CYCLE_TYPE_SCAVENGE:
+		cycleType = "scavenge";
+		break;
+	default:
+		cycleType = "unknown";
+		break;
+	}
+
+	return cycleType;
+}
+
 void
 MM_VerboseHandlerOutputStandard::handleGCOPStanza(MM_EnvironmentBase* env, const char *type, uintptr_t contextID, uint64_t duration, bool deltaTimeSuccess)
 {
@@ -446,17 +466,21 @@ MM_VerboseHandlerOutputStandard::handleScavengeEnd(J9HookInterface** hook, uintp
 void
 MM_VerboseHandlerOutputStandard::handleConcurrentEndInternal(J9HookInterface** hook, uintptr_t eventNum, void* eventData)
 {
-	/* convert event from concurrent-end to scavenge-end */
-	MM_ScavengeEndEvent scavengeEndEvent;
 	MM_ConcurrentPhaseEndEvent *event = (MM_ConcurrentPhaseEndEvent *)eventData;
+	MM_ConcurrentPhaseStatsBase *stats = (MM_ConcurrentPhaseStatsBase *)event->concurrentStats;
+	if (OMR_GC_CYCLE_TYPE_GLOBAL == stats->_concurrentCycleType) {
+		handleConcurrentMarkEnd(hook, J9HOOK_MM_PRIVATE_CONCURRENT_PHASE_END, eventData);
+	} else if (OMR_GC_CYCLE_TYPE_SCAVENGE == stats->_concurrentCycleType) {
+		/* convert event from concurrent-end to scavenge-end */
+		MM_ScavengeEndEvent scavengeEndEvent;
+		scavengeEndEvent.currentThread = event->currentThread;
+		scavengeEndEvent.timestamp = event->timestamp;
+		scavengeEndEvent.eventid = event->eventid;
+		scavengeEndEvent.subSpace = NULL; //unknown info
+		scavengeEndEvent.cycleEnd = false;
 
-	scavengeEndEvent.currentThread = event->currentThread;
-	scavengeEndEvent.timestamp = event->timestamp;
-	scavengeEndEvent.eventid = event->eventid;
-	scavengeEndEvent.subSpace = NULL; //unknown info
-	scavengeEndEvent.cycleEnd = false;
-
-	handleScavengeEndNoLock(hook, J9HOOK_MM_PRIVATE_SCAVENGE_END, &scavengeEndEvent);
+		handleScavengeEndNoLock(hook, J9HOOK_MM_PRIVATE_SCAVENGE_END, &scavengeEndEvent);
+	}
 }
 
 
@@ -495,6 +519,30 @@ MM_VerboseHandlerOutputStandard::handleScavengePercolateInternal(MM_EnvironmentB
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 void
+MM_VerboseHandlerOutputStandard::handleConcurrentMarkEnd(J9HookInterface** hook, uintptr_t eventNum, void* eventData)
+{
+	MM_ConcurrentPhaseEndEvent *event = (MM_ConcurrentPhaseEndEvent *)eventData;
+	MM_ConcurrentMarkPhaseStats *stats = (MM_ConcurrentMarkPhaseStats *)event->concurrentStats;
+	MM_ConcurrentGCStats *collectionStats = stats->_collectionStats;
+	MM_EnvironmentBase* env = MM_EnvironmentBase::getEnvironment(event->currentThread);
+	MM_VerboseWriterChain* writer = _manager->getWriterChain();
+
+	uint64_t duration = 0;
+	bool deltaTimeSuccess = getTimeDeltaInMicroSeconds(&duration, stats->_startTime, stats->_endTime);
+
+	handleGCOPOuterStanzaStart(env, "trace", stats->_cycleID, duration, deltaTimeSuccess);
+	writer->formatAndOutput(env, 1, "<trace bytesTraced=\"%zu\" workStackOverflowCount=\"%zu\" />", (collectionStats->getConHelperTraceSizeCount() + collectionStats->getTraceSizeCount()), collectionStats->getConcurrentWorkStackOverflowCount());
+	if (0 == stats->_cardTableStats->getConcurrentCleanedCards()) {
+		writer->formatAndOutput(env, 1, "<card-cleaning bytesTraced=\"%zu\" cardsCleaned=\"%zu\" />", (collectionStats->getConHelperCardCleanCount() + collectionStats->getCardCleanCount()), stats->_cardTableStats->getConcurrentCleanedCards());
+	} else {
+		const char* cardCleaningReasonString = getCardCleaningReasonString(collectionStats->getCardCleaningReason());
+		writer->formatAndOutput(env, 1, "<card-cleaning reason=\"%s\" bytesTraced=\"%zu\" cardsCleaned=\"%zu\" />", cardCleaningReasonString, (collectionStats->getConHelperCardCleanCount() + collectionStats->getCardCleanCount()), stats->_cardTableStats->getConcurrentCleanedCards());
+	}
+	handleGCOPOuterStanzaEnd(env);
+	writer->flush(env);
+}
+
+void
 MM_VerboseHandlerOutputStandard::handleConcurrentRememberedSetScanEnd(J9HookInterface** hook, uintptr_t eventNum, void* eventData)
 {
 	MM_ConcurrentRememberedSetScanEndEvent* event = (MM_ConcurrentRememberedSetScanEndEvent*)eventData;
@@ -522,6 +570,25 @@ void
 MM_VerboseHandlerOutputStandard::handleConcurrentRememberedSetScanEndInternal(MM_EnvironmentBase *env, void *eventData)
 {
 	/* Empty stub */
+}
+
+const char *
+MM_VerboseHandlerOutputStandard::getCardCleaningReasonString(uintptr_t type)
+{
+	const char* cardCleaningReasonString = NULL;
+	switch (type) {
+	case TRACING_COMPLETED:
+		cardCleaningReasonString = "tracing completed";
+		break;
+	case CARD_CLEANING_THRESHOLD_REACHED:
+		cardCleaningReasonString = "card cleaning threshold reached";
+		break;
+	default:
+		cardCleaningReasonString = "unknown";
+		break;
+	}
+
+	return cardCleaningReasonString;
 }
 
 void
@@ -708,16 +775,8 @@ MM_VerboseHandlerOutputStandard::handleConcurrentCollectionStart(J9HookInterface
 		previousTime = manager->getInitializedTime();
 	}
 	uint64_t deltaTime = omrtime_hires_delta(previousTime, currentTime, OMRPORT_TIME_DELTA_IN_MICROSECONDS);
-	const char* cardCleaningReasonString = "unknown";
 
-	switch (event->cardCleaningReason) {
-	case TRACING_COMPLETED:
-		cardCleaningReasonString = "tracing completed";
-		break;
-	case CARD_CLEANING_THRESHOLD_REACHED:
-		cardCleaningReasonString = "card cleaning threshold reached";
-		break;
-	}
+	const char* cardCleaningReasonString = getCardCleaningReasonString(event->cardCleaningReason);
 
 	char tagTemplate[200];
 	enterAtomicReportingBlock();

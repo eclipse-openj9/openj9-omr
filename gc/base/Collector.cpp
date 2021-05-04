@@ -23,6 +23,7 @@
 #include "AllocateDescription.hpp"
 #include "Collector.hpp"
 #include "GCExtensionsBase.hpp"
+#include "GlobalCollector.hpp"
 #include "FrequentObjectsStats.hpp"
 #include "Heap.hpp"
 #include "MemorySubSpace.hpp"
@@ -575,4 +576,12 @@ MM_Collector::isMarked(void *objectPtr)
 {
 	Assert_MM_unreachable();
 	return false;
+}
+
+void
+MM_Collector::notifyAcquireExclusiveVMAccess(MM_EnvironmentBase *env)
+{
+	if (!_globalCollector) {
+		env->getExtensions()->getGlobalCollector()->notifyAcquireExclusiveVMAccess(env);
+	}
 }

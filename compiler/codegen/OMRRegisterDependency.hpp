@@ -85,6 +85,29 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
       _dependencies[index].setRealRegister(rr);
       }
 
+
+   bool containsVirtualRegister(TR::Register *r, uint32_t numberOfRegisters)
+      {
+      for (auto i = 0; i < numberOfRegisters; ++i)
+         {
+         if (_dependencies[i].getRegister() == r)
+            return true;
+         }
+
+      return false;
+      }
+
+   TR::Register *searchForRegister(TR::RealRegister::RegNum rr, uint32_t numberOfRegisters)
+      {
+      for (auto i = 0;  i < numberOfRegisters; ++i)
+         {
+         if (_dependencies[i].getRealRegister() == rr)
+            return _dependencies[i].getRegister();
+         }
+
+      return NULL;
+      }
+
    TR::Register *searchForRegister(TR::Register* vr, uint8_t flag, uint32_t numberOfRegisters, TR::CodeGenerator *cg)
       {
       for (auto i = 0; i < numberOfRegisters; ++i)
@@ -123,7 +146,7 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
       _dependencies[index].setRealRegister(regNum);
       }
 
-   void blockRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg)
+   void blockRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg = NULL)
       {
       for (auto i = 0; i < numberOfRegisters; ++i)
          {
@@ -134,7 +157,7 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
          }
       }
 
-   void unblockRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg)
+   void unblockRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg = NULL)
       {
       for (auto i = 0; i < numberOfRegisters; ++i)
          {
@@ -154,6 +177,20 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
             {
             cg->stopUsingRegister(depReg);
             }
+         }
+      }
+
+   void stopUsingDepRegs(uint32_t numberOfRegisters, int numRetReg, TR::Register **retReg, TR::CodeGenerator *cg)
+      {
+      for (auto i = 0; i < numberOfRegisters; ++i)
+         {
+         TR::Register *depReg = _dependencies[i].getRegister();
+         bool found = false;
+         for (int j = 0; j < numRetReg; j++)
+            if (depReg == retReg[j])
+               found = true;
+         if (!found)
+            cg->stopUsingRegister(depReg);
          }
       }
 

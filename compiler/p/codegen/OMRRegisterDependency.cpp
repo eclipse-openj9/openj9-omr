@@ -135,6 +135,14 @@ TR::RegisterDependencyConditions* TR_PPCScratchRegisterDependencyConditions::cre
    return dependencies;
    }
 
+OMR::Power::RegisterDependencyConditions::RegisterDependencyConditions(uint16_t numPreConds, uint16_t numPostConds, TR_Memory * m)
+   : _preConditions(new (numPreConds, m) TR::RegisterDependencyGroup),
+      _postConditions(new (numPostConds, m) TR::RegisterDependencyGroup),
+      _numPreConditions(numPreConds),
+      _addCursorForPre(0),
+      _numPostConditions(numPostConds),
+      _addCursorForPost(0)
+   {}
 
 OMR::Power::RegisterDependencyConditions::RegisterDependencyConditions(
                                        TR::CodeGenerator *cg,
@@ -168,8 +176,8 @@ OMR::Power::RegisterDependencyConditions::RegisterDependencyConditions(
 
    totalNum = totalNum + numLongs;
 
-   _preConditions = new (totalNum, cg->trMemory()) TR_PPCRegisterDependencyGroup;
-   _postConditions = new (totalNum, cg->trMemory()) TR_PPCRegisterDependencyGroup;
+   _preConditions = new (totalNum, cg->trMemory()) TR::RegisterDependencyGroup;
+   _postConditions = new (totalNum, cg->trMemory()) TR::RegisterDependencyGroup;
    _numPreConditions = totalNum;
    _addCursorForPre = 0;
    _numPostConditions = totalNum;
@@ -344,6 +352,86 @@ OMR::Power::RegisterDependencyConditions::RegisterDependencyConditions(
 void OMR::Power::RegisterDependencyConditions::unionNoRegPostCondition(TR::Register *reg, TR::CodeGenerator *cg)
    {
    addPostCondition(reg, TR::RealRegister::NoReg);
+   }
+
+uint32_t OMR::Power::RegisterDependencyConditions::setNumPreConditions(uint16_t n, TR_Memory * m)
+   {
+   if (_preConditions == NULL)
+      {
+      _preConditions = new (n, m) TR::RegisterDependencyGroup;
+      }
+   return (_numPreConditions = n);
+   }
+
+uint32_t OMR::Power::RegisterDependencyConditions::setNumPostConditions(uint16_t n, TR_Memory * m)
+   {
+   if (_postConditions == NULL)
+      {
+      _postConditions = new (n, m) TR::RegisterDependencyGroup;
+      }
+   return (_numPostConditions = n);
+   }
+
+void OMR::Power::RegisterDependencyConditions::addPreCondition(TR::Register *vr, TR::RealRegister::RegNum rr, uint8_t flag)
+   {
+   TR_ASSERT(_addCursorForPre < _numPreConditions, " Pre Condition array bounds overflow");
+   _preConditions->setDependencyInfo(_addCursorForPre++, vr, rr, flag);
+   }
+
+void OMR::Power::RegisterDependencyConditions::addPostCondition(TR::Register *vr, TR::RealRegister::RegNum rr, uint8_t flag)
+   {
+   TR_ASSERT(_addCursorForPost < _numPostConditions, " Post Condition array bounds overflow");
+   _postConditions->setDependencyInfo(_addCursorForPost++, vr, rr, flag);
+   }
+
+void OMR::Power::RegisterDependencyConditions::assignPreConditionRegisters(TR::Instruction *currentInstruction, TR_RegisterKinds kindToBeAssigned, TR::CodeGenerator *cg)
+   {
+   if (_preConditions != NULL)
+      {
+      cg->clearRegisterAssignmentFlags();
+      cg->setRegisterAssignmentFlag(TR_PreDependencyCoercion);
+      _preConditions->assignRegisters(currentInstruction, kindToBeAssigned, _addCursorForPre, cg);
+      }
+   }
+
+void OMR::Power::RegisterDependencyConditions::assignPostConditionRegisters(TR::Instruction *currentInstruction, TR_RegisterKinds kindToBeAssigned, TR::CodeGenerator *cg)
+   {
+   if (_postConditions != NULL)
+      {
+      cg->clearRegisterAssignmentFlags();
+      cg->setRegisterAssignmentFlag(TR_PostDependencyCoercion);
+      _postConditions->assignRegisters(currentInstruction, kindToBeAssigned, _addCursorForPost, cg);
+      }
+   }
+
+TR::Register *OMR::Power::RegisterDependencyConditions::searchPreConditionRegister(TR::RealRegister::RegNum rr)
+   {
+   return(_preConditions==NULL?NULL:_preConditions->searchForRegister(rr, _addCursorForPre));
+   }
+
+TR::Register *OMR::Power::RegisterDependencyConditions::searchPostConditionRegister(TR::RealRegister::RegNum rr)
+   {
+   return(_postConditions==NULL?NULL:_postConditions->searchForRegister(rr, _addCursorForPost));
+   }
+
+bool OMR::Power::RegisterDependencyConditions::preConditionContainsVirtual(TR::Register *r)
+   {
+   return(_preConditions==NULL?false:_preConditions->containsVirtualRegister(r, _addCursorForPre));
+   }
+
+bool OMR::Power::RegisterDependencyConditions::postConditionContainsVirtual(TR::Register *r)
+   {
+   return(_postConditions==NULL?false:_postConditions->containsVirtualRegister(r, _addCursorForPost));
+   }
+
+void OMR::Power::RegisterDependencyConditions::setPreDependencyExcludeGPR0(TR::Register *r)
+   {
+   _preConditions->setExcludeGPR0(r, _addCursorForPre);
+   }
+
+void OMR::Power::RegisterDependencyConditions::setPostDependencyExcludeGPR0(TR::Register *r)
+   {
+   _postConditions->setExcludeGPR0(r, _addCursorForPost);
    }
 
 bool OMR::Power::RegisterDependencyConditions::refsRegister(TR::Register *r)
@@ -755,7 +843,7 @@ static void assignContendedRegisters(TR::Instruction              *currentInstru
 
    }
 
-void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstruction,
+void OMR::Power::RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstruction,
                                                     TR_RegisterKinds   kindToBeAssigned,
                                                     uint32_t           numberOfRegisters,
                                                     TR::CodeGenerator *cg)

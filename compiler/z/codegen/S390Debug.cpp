@@ -471,7 +471,7 @@ TR_Debug::printInstructionComment(TR::FILE *pOutFile, int32_t tabStops, TR::Inst
 void
 TR_Debug::printAssocRegDirective(TR::FILE *pOutFile, TR::Instruction * instr)
    {
-   TR_S390RegisterDependencyGroup * depGroup = instr->getDependencyConditions()->getPostConditions();
+   TR::RegisterDependencyGroup * depGroup = instr->getDependencyConditions()->getPostConditions();
 
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s", instr->getOpCode().getMnemonicName());
@@ -2534,7 +2534,7 @@ TR_Debug::printS390RegisterDependency(TR::FILE *pOutFile, TR::Register * virtReg
    }
 
 void
-TR_Debug::printRegisterDependencies(TR::FILE *pOutFile, TR_S390RegisterDependencyGroup * rgd, int numberOfRegisters)
+TR_Debug::printRegisterDependencies(TR::FILE *pOutFile, TR::RegisterDependencyGroup * rgd, int numberOfRegisters)
    {
    if (pOutFile == NULL || rgd == NULL)
       {

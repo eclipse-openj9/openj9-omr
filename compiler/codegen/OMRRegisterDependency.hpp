@@ -31,11 +31,138 @@
    namespace OMR { typedef OMR::RegisterDependencyConditions RegisterDependencyConditionsConnector; }
 #endif
 
+#ifndef OMR_REGISTER_DEPENDENCY_GROUP_CONNECTOR
+#define OMR_REGISTER_DEPENDENCY_GROUP_CONNECTOR
+namespace OMR { class RegisterDependencyGroup; }
+namespace OMR { typedef OMR::RegisterDependencyGroup RegisterDependencyGroupConnector; }
+#endif
+
 #include "env/TRMemory.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
 
 namespace OMR
 {
+
+class OMR_EXTENSIBLE RegisterDependencyGroup
+   {
+   public:
+
+   TR_ALLOC_WITHOUT_NEW(TR_Memory::RegisterDependencyGroup)
+
+   RegisterDependencyGroup() {}
+
+   void *operator new(size_t s, int32_t numDependencies, TR_Memory *m)
+      {
+      if (numDependencies > NUM_DEFAULT_DEPENDENCIES)
+         {
+         s += (numDependencies - NUM_DEFAULT_DEPENDENCIES) * sizeof(TR::RegisterDependency);
+         }
+
+      return m->allocateHeapMemory(s, TR_MemoryBase::RegisterDependencyGroup);
+      }
+
+   TR::RegisterDependency *getRegisterDependency(uint32_t index)
+      {
+      return &_dependencies[index];
+      }
+
+   void clearDependencyInfo(uint32_t index)
+      {
+      _dependencies[index].setRegister(NULL);
+      _dependencies[index].assignFlags(0);
+      _dependencies[index].setRealRegister(TR::RealRegister::NoReg);
+      }
+
+   void setDependencyInfo(uint32_t index, TR::Register *vr, TR::RealRegister::RegDep rr, uint8_t flag)
+     {
+     setDependencyInfo(index, vr, static_cast<TR::RealRegister::RegNum>(rr), flag);
+     }
+
+   void setDependencyInfo(uint32_t index, TR::Register *vr, TR::RealRegister::RegNum rr, uint8_t flag)
+      {
+      _dependencies[index].setRegister(vr);
+      _dependencies[index].assignFlags(flag);
+      _dependencies[index].setRealRegister(rr);
+      }
+
+   TR::Register *searchForRegister(TR::Register* vr, uint8_t flag, uint32_t numberOfRegisters, TR::CodeGenerator *cg)
+      {
+      for (auto i = 0; i < numberOfRegisters; ++i)
+         {
+         if (_dependencies[i].getRegister() == vr && (_dependencies[i].getFlags() & flag))
+            return _dependencies[i].getRegister();
+         }
+
+      return NULL;
+      }
+
+   TR::Register *searchForRegister(TR::RealRegister::RegNum rr, uint8_t flag, uint32_t numberOfRegisters, TR::CodeGenerator *cg)
+      {
+      for (auto i = 0; i < numberOfRegisters; ++i)
+         {
+         if (_dependencies[i].getRealRegister() == rr && (_dependencies[i].getFlags() & flag))
+            return _dependencies[i].getRegister();
+         }
+
+      return NULL;
+      }
+
+   int32_t searchForRegisterPos(TR::Register* vr, uint8_t flag, uint32_t numberOfRegisters, TR::CodeGenerator *cg)
+      {
+      for (auto i = 0; i < numberOfRegisters; ++i)
+         {
+         if (_dependencies[i].getRegister() == vr && (_dependencies[i].getFlags() & flag))
+            return i;
+         }
+
+      return -1;
+      }
+
+   void setRealRegisterForDependency(int32_t index, TR::RealRegister::RegNum regNum)
+      {
+      _dependencies[index].setRealRegister(regNum);
+      }
+
+   void blockRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg)
+      {
+      for (auto i = 0; i < numberOfRegisters; ++i)
+         {
+         if (_dependencies[i].getRegister())
+            {
+            _dependencies[i].getRegister()->block();
+            }
+         }
+      }
+
+   void unblockRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg)
+      {
+      for (auto i = 0; i < numberOfRegisters; ++i)
+         {
+         if (_dependencies[i].getRegister())
+            {
+            _dependencies[i].getRegister()->unblock();
+            }
+         }
+      }
+
+   void stopUsingDepRegs(uint32_t numberOfRegisters, TR::Register *ret1, TR::Register *ret2, TR::CodeGenerator *cg)
+      {
+      for (auto i = 0; i < numberOfRegisters; ++i)
+         {
+         auto depReg = _dependencies[i].getRegister();
+         if (depReg != ret1 && depReg != ret2)
+            {
+            cg->stopUsingRegister(depReg);
+            }
+         }
+      }
+
+   protected:
+
+   static const size_t NUM_DEFAULT_DEPENDENCIES = 1;
+
+   TR::RegisterDependency _dependencies[NUM_DEFAULT_DEPENDENCIES];
+   };
 
 class RegisterDependencyConditions
    {

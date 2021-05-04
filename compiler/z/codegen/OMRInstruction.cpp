@@ -791,7 +791,7 @@ OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
 
       // Step 2 : loop through and set up the new associations (both on the machine and by associating the virtual
       // registers with their real dependencies)
-         TR_S390RegisterDependencyGroup * depGroup = self()->getDependencyConditions()->getPostConditions();
+         TR::RegisterDependencyGroup * depGroup = self()->getDependencyConditions()->getPostConditions();
          for (int32_t j = 0; j < last; ++j)
             {
             TR::Register * virtReg = depGroup->getRegisterDependency(j)->getRegister();
@@ -1548,8 +1548,8 @@ OMR::Z::Instruction::renameRegister(TR::Register *from, TR::Register *to)
   TR::RegisterDependencyConditions *conds = self()->getDependencyConditions();
   if (conds)
     {
-    TR_S390RegisterDependencyGroup *preConds = conds->getPreConditions();
-    TR_S390RegisterDependencyGroup *postConds = conds->getPostConditions();
+    TR::RegisterDependencyGroup *preConds = conds->getPreConditions();
+    TR::RegisterDependencyGroup *postConds = conds->getPostConditions();
 
     n = conds->getNumPreConditions();
     for (i = 0; i < n; i++)
@@ -1904,8 +1904,8 @@ OMR::Z::Instruction::setUseDefRegisters(bool updateDependencies)
       TR::Register *tempRegister;
       if ((dependencies!=NULL) && ((self()->getOpCode().getOpCodeValue() == TR::InstOpCode::DEPEND)))
          {
-         TR_S390RegisterDependencyGroup *preConditions  = dependencies->getPreConditions();
-         TR_S390RegisterDependencyGroup *postConditions = dependencies->getPostConditions();
+         TR::RegisterDependencyGroup *preConditions  = dependencies->getPreConditions();
+         TR::RegisterDependencyGroup *postConditions = dependencies->getPostConditions();
          if (preConditions!=NULL)
             {
             for (i = 0; i < dependencies->getNumPreConditions(); i++)

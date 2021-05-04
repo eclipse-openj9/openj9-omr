@@ -26,7 +26,12 @@
 
 namespace TR
 {
+class RegisterDependencyGroup : public OMR::RegisterDependencyGroupConnector
+   {
+   public:
 
+   RegisterDependencyGroup() : OMR::RegisterDependencyGroupConnector() {}
+   };
 
 class RegisterDependencyConditions : public OMR::RegisterDependencyConditionsConnector
    {
@@ -46,8 +51,8 @@ class RegisterDependencyConditions : public OMR::RegisterDependencyConditionsCon
    RegisterDependencyConditions(RegisterDependencyConditions * conds_1, RegisterDependencyConditions * conds_2, TR::CodeGenerator *cg) :
       OMR::RegisterDependencyConditionsConnector(conds_1, conds_2, cg) {}
 
-   RegisterDependencyConditions(TR_S390RegisterDependencyGroup *_preConditions,
-         TR_S390RegisterDependencyGroup *_postConditions,
+   RegisterDependencyConditions(TR::RegisterDependencyGroup *_preConditions,
+         TR::RegisterDependencyGroup *_postConditions,
             uint16_t numPreConds, uint16_t numPostConds,
             TR::CodeGenerator *cg) :
             OMR::RegisterDependencyConditionsConnector(_preConditions, _postConditions, numPreConds, numPostConds, cg) {}

@@ -84,9 +84,6 @@ class OMR_EXTENSIBLE Register: public OMR::Register
    bool is64BitReg();
    void setIs64BitReg(bool b = true);
 
-   bool isDependencySet()    {return _flags.testAny(DependencySet);}
-   void setDependencySet(bool v) {if (v) _flags.set(DependencySet);}
-
    bool alreadySignExtended()           {return _flags.testAny(AlreadySignExtended);}
    void setAlreadySignExtended()        {_flags.set(AlreadySignExtended);}
    void resetAlreadySignExtended()      {_flags.reset(AlreadySignExtended);}
@@ -120,7 +117,6 @@ class OMR_EXTENSIBLE Register: public OMR::Register
       {
          IsUsedInMemRef                = 0x0800, // 390 cannot associate GPR0 to regs used in memrefs
          Is64Bit                       = 0x0002, // 390 flag indicates that this Register contained a 64-bit value
-         DependencySet                 = 0x0200,  // 390 flag, post dependancy was assigned
 
          AlreadySignExtended           = 0x1000, // determine whether i2l should be nops
       };

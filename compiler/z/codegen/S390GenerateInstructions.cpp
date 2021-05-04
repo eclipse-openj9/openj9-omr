@@ -595,9 +595,9 @@ generateRRRInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
  * Otherwise, this function returns false.
  * Optionally, the caller can limit the search for conflicts containing only one type of real register.
  */
-bool CheckForRegisterDependencyConditionsRealRegisterMergeConflict( TR_S390RegisterDependencyGroup * conds1,
+bool CheckForRegisterDependencyConditionsRealRegisterMergeConflict( TR::RegisterDependencyGroup * conds1,
                                                                     int conds1_addCursor,
-                                                                    TR_S390RegisterDependencyGroup * conds2,
+                                                                    TR::RegisterDependencyGroup * conds2,
                                                                     int conds2_addCursor,
                                                                     TR::RegisterDependency ** conflict1,
                                                                     TR::RegisterDependency ** conflict2,

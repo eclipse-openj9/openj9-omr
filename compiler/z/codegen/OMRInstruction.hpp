@@ -49,7 +49,6 @@ namespace OMR { typedef OMR::Z::Instruction InstructionConnector; }
 
 class TR_Debug;
 namespace TR { class S390ImmInstruction; }
-class TR_S390RegisterDependencyGroup;
 namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }
 namespace TR { class MemoryReference; }

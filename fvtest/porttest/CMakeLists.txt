@@ -91,12 +91,6 @@ if(OMR_OS_WINDOWS)
 	)
 endif()
 
-if(OMR_OS_ZOS)
-	target_link_libraries(omrporttest
-		j9a2e
-	)
-endif()
-
 omr_add_library(sltestlib SHARED
 	sltestlib/sltest.c
 )

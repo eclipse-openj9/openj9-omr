@@ -52,10 +52,6 @@ target_link_libraries(omrgctest
 	${OMR_PORT_LIB}
 )
 
-if(OMR_OS_ZOS)
-	target_link_libraries(omrgctest j9a2e)
-endif()
-
 set_property(TARGET omrgctest PROPERTY FOLDER fvtest)
 
 omr_add_test(NAME gctest

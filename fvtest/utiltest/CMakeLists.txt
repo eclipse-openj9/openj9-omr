@@ -25,6 +25,7 @@ omr_add_executable(omrutiltest
 
 target_link_libraries(omrutiltest
 	#omrGtestGlue
+	omr_base
 	omrGtest
 	omrutil
 )
@@ -33,10 +34,6 @@ target_include_directories(omrutiltest
 	PRIVATE
 	$<TARGET_PROPERTY:omrGtestGlue,INTERFACE_INCLUDE_DIRECTORIES>
 )
-
-if(OMR_OS_ZOS)
-	target_link_libraries(omrutiltest j9a2e)
-endif()
 
 set_property(TARGET omrutiltest PROPERTY FOLDER fvtest)
 

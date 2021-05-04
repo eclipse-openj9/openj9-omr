@@ -397,6 +397,11 @@ target_include_directories(omrport_obj PRIVATE
 	../nls
 )
 
+# Ensure that we pull in options associated with omr_base.
+target_compile_options(omrport_obj PUBLIC $<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_OPTIONS>)
+target_compile_definitions(omrport_obj PUBLIC $<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_DEFINITIONS>)
+target_include_directories(omrport_obj PRIVATE $<TARGET_PROPERTY:omr_base,INTERFACE_INCLUDE_DIRECTORIES>)
+
 # This flag indicates that we are compiling the port library
 target_compile_definitions(omrport_obj PRIVATE -DOMRPORT_LIBRARY_DEFINE)
 

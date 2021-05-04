@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -38,6 +38,8 @@ target_link_libraries(j9a2e
 
 target_include_directories(j9a2e
 	PUBLIC
+		/usr/include
+		/usr/lpp/cbclib/include
 		$<BUILD_INTERFACE:${OMR_SOURCE_DIR}/include_core>
 		$<INSTALL_INTERFACE:${OMR_INSTALL_INC_DIR}>
 	PRIVATE

@@ -20,7 +20,7 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
-if(OMR_OS_ZOS)
+if(OMR_OS_ZOS AND NOT OMR_USE_NATIVE_ENCODING)
 	add_subdirectory(a2e)
 endif()
 add_subdirectory(avl)

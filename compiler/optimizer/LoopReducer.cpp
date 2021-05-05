@@ -1680,7 +1680,7 @@ TR_Arraytranslate::checkLoad(TR::Node * loadNode)
 //
 //Store tree should look as follows:
 //
-//icstore #reschar (result char stored into output array)
+//isstore #reschar (result char stored into output array)
 //   aiadd
 //     aload #outbase (load output base ptr)
 //     isub (add displacement to get to relative index
@@ -1696,7 +1696,7 @@ TR_Arraytranslate::checkStore(TR::Node * storeNode)
    {
    if (storeNode->getOpCodeValue() != TR::sstorei && storeNode->getOpCodeValue() != TR::bstorei)
       {
-      dumpOptDetails(comp(), "...store tree does not have icstore/ibstore - no arraytranslate reduction\n");
+      dumpOptDetails(comp(), "...store tree does not have isstore/ibstore - no arraytranslate reduction\n");
       return false;
       }
 
@@ -2464,7 +2464,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //BBEnd <escape>
    //
    //BBStart <store-char>
-   //icstore #reschar (result char stored into output array)
+   //isstore #reschar (result char stored into output array)
    //   aiadd
    //     aload #outbase (load output base ptr)
    //     isub (add displacement to get to relative index
@@ -2511,7 +2511,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //BBEnd <load-char>
    //
    //BBStart <store-char>
-   //icstore #reschar (result char stored into output array)
+   //isstore #reschar (result char stored into output array)
    //   aiadd
    //     aload #outbase (load output base ptr)
    //     isub (add displacement to get to relative index
@@ -2559,7 +2559,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //BBEnd <escape>
    //
    //BBStart <store-char>
-   //icstore #reschar (result char stored into output array)
+   //isstore #reschar (result char stored into output array)
    //   aiadd
    //     aload #outbase (load output base ptr)
    //     isub (add displacement to get to relative index
@@ -2581,7 +2581,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //
    //Simplest form of the loop is:
    //BBStart <load/store-char>
-   // icstore #reschar (result char stored into output array)
+   // isstore #reschar (result char stored into output array)
    //   aiadd
    //     aload #outbase (load output base ptr)
    //     isub (add displacement to get to relative index
@@ -2947,7 +2947,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
    //     <isload translate char>
    //     <termination value>
    //
-   //icstore #reschar (result char stored into output array)
+   //isstore #reschar (result char stored into output array)
    //   <original aiadd input tree>
    //
    //goto <escape-block>
@@ -3696,7 +3696,7 @@ TR_LoopReducer::generateArraytranslateAndTest(TR_RegionStructure * whileLoop, TR
 //The following is the type of loop that needs to be reduced to an arraycopy (byte to char arraycopy)
 //
 //BBStart (block 22) (frequency 840) (is in loop 22)
-//icstore #134[0x005f227c] Shadow[<array-shadow>]
+//isstore #134[0x005f227c] Shadow[<array-shadow>]
 //  aiadd
 //    aload #219[0x00703ac8] Auto[<temp slot 9>]
 //    isub

@@ -280,7 +280,7 @@ OMR::RV::TreeEvaluator::bstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return commonStoreEvaluator(node, TR::InstOpCode::_sb, 1, cg);
    }
 
-// also handles sstorei, cstore, cstorei
+// also handles sstorei
 TR::Register *
 OMR::RV::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

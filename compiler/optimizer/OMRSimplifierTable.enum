@@ -512,12 +512,6 @@
 #define vlRegStoreSimplifierHandler dftSimplifier
 #define vfRegStoreSimplifierHandler dftSimplifier
 #define vdRegStoreSimplifierHandler dftSimplifier
-#define iustoreSimplifierHandler directStoreSimplifier
-#define lustoreSimplifierHandler lstoreSimplifier
-#define bustoreSimplifierHandler dftSimplifier
-#define iustoreiSimplifierHandler indirectStoreSimplifier
-#define lustoreiSimplifierHandler indirectStoreSimplifier
-#define bustoreiSimplifierHandler indirectStoreSimplifier
 #define iuaddSimplifierHandler iaddSimplifier
 #define luaddSimplifierHandler laddSimplifier
 #define buaddSimplifierHandler baddSimplifier
@@ -534,8 +528,6 @@
 #define d2luSimplifierHandler d2lSimplifier
 #define d2buSimplifierHandler d2bSimplifier
 #define d2cSimplifierHandler d2cSimplifier
-#define cstoreSimplifierHandler dftSimplifier
-#define cstoreiSimplifierHandler indirectStoreSimplifier
 #define monentSimplifierHandler dftSimplifier
 #define monexitSimplifierHandler dftSimplifier
 #define monexitfenceSimplifierHandler dftSimplifier

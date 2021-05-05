@@ -514,12 +514,6 @@
 #define _vlRegStoreEvaluator TR::TreeEvaluator::SIMDRegStoreEvaluator
 #define _vfRegStoreEvaluator TR::TreeEvaluator::SIMDRegStoreEvaluator
 #define _vdRegStoreEvaluator TR::TreeEvaluator::SIMDRegStoreEvaluator
-#define _iustoreEvaluator TR::TreeEvaluator::istoreEvaluator
-#define _lustoreEvaluator TR::TreeEvaluator::lstoreEvaluator
-#define _bustoreEvaluator TR::TreeEvaluator::bstoreEvaluator
-#define _iustoreiEvaluator TR::TreeEvaluator::istoreEvaluator
-#define _lustoreiEvaluator TR::TreeEvaluator::lstoreEvaluator
-#define _bustoreiEvaluator TR::TreeEvaluator::bstoreEvaluator
 #define _iuaddEvaluator TR::TreeEvaluator::integerAddEvaluator
 #define _luaddEvaluator TR::TreeEvaluator::integerPairAddEvaluator
 #define _buaddEvaluator TR::TreeEvaluator::baddEvaluator
@@ -536,8 +530,6 @@
 #define _d2luEvaluator TR::TreeEvaluator::d2lEvaluator
 #define _d2buEvaluator TR::TreeEvaluator::d2bEvaluator
 #define _d2cEvaluator TR::TreeEvaluator::d2cEvaluator
-#define _cstoreEvaluator TR::TreeEvaluator::cstoreEvaluator
-#define _cstoreiEvaluator TR::TreeEvaluator::cstoreEvaluator
 #define _monentEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _monexitEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _monexitfenceEvaluator TR::TreeEvaluator::badILOpEvaluator

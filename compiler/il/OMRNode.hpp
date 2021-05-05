@@ -385,16 +385,6 @@ private:
          case TR::luneg:
          case TR::lusub:
 
-         //Store
-         case TR::bustore:
-         case TR::bustorei:
-         case TR::cstore:
-         case TR::cstorei:
-         case TR::iustore:
-         case TR::iustorei:
-         case TR::lustore:
-         case TR::lustorei:
-
             return false;
 
          default:

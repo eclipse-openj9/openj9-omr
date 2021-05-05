@@ -5749,7 +5749,6 @@ OMR::Z::TreeEvaluator::bloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
  *  iastoreEvaluator handled by istoreEvaluator
  *  ibstoreEvaluator handled by bstoreEvaluator
  *  isstoreEvaluator handled by sstoreEvaluator
- *  icstoreEvaluator handled by cstoreEvaluator
  */
 /**
  * istoreEvaluator - store integer
@@ -5787,17 +5786,6 @@ OMR::Z::TreeEvaluator::lstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
  */
 TR::Register *
 OMR::Z::TreeEvaluator::sstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   sstoreHelper(node, cg);
-   return NULL;
-   }
-
-/**
- * cstoreEvaluator - store unsigned short integer
- *  - also handles icstore
- */
-TR::Register *
-OMR::Z::TreeEvaluator::cstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    sstoreHelper(node, cg);
    return NULL;

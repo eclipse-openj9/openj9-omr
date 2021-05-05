@@ -1138,12 +1138,6 @@ TR::Register *OMR::X86::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::CodeG
    return TR::TreeEvaluator::integerStoreEvaluator(node, cg);
    }
 
-// also handles icstore
-TR::Register *OMR::X86::TreeEvaluator::cstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::integerStoreEvaluator(node, cg);
-   }
-
 // iistore handled by istoreEvaluator
 
 // ilstore handled by lstoreEvaluator
@@ -1153,8 +1147,6 @@ TR::Register *OMR::X86::TreeEvaluator::cstoreEvaluator(TR::Node *node, TR::CodeG
 // ibstoreEvaluator handled by bstoreEvaluator
 
 // isstoreEvaluator handled by sstoreEvaluator
-
-// icstoreEvaluator handled by cstoreEvaluator
 
 TR::Register *
 OMR::X86::TreeEvaluator::arraycmpEvaluator(

@@ -248,7 +248,6 @@ namespace TR { class ARMMonitorEnterSnippet; }
 namespace TR { class ARMMonitorExitSnippet; }
 namespace TR { class ARMStackCheckFailureSnippet; }
 namespace TR { class ARMRecompilationSnippet; }
-class TR_ARMRegisterDependencyGroup;
 
 namespace TR { class S390LabelInstruction; }
 namespace TR { class S390BranchInstruction; }
@@ -964,7 +963,7 @@ public:
    char * fullOpCodeName(TR::Instruction *instr);
    void printPrefix(TR::FILE *, TR::Instruction *);
    void printBinaryPrefix(char *prefixBuffer, TR::Instruction *);
-   void dumpDependencyGroup(TR::FILE *pOutFile, TR_ARMRegisterDependencyGroup *group, int32_t numConditions, char *prefix, bool omitNullDependencies);
+   void dumpDependencyGroup(TR::FILE *pOutFile, TR::RegisterDependencyGroup *group, int32_t numConditions, char *prefix, bool omitNullDependencies);
    void dumpDependencies(TR::FILE *, TR::Instruction *);
    void print(TR::FILE *, TR::ARMLabelInstruction *);
 #ifdef J9_PROJECT_SPECIFIC

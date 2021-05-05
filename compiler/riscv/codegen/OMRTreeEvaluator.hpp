@@ -649,14 +649,6 @@ public:
 	static TR::Register *igotoEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *fsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *ishflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *lshflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *iushflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *lushflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *bshflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *sshflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *bushflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *sushflEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *imuloverEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dfloorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ffloorEvaluator(TR::Node *node, TR::CodeGenerator *cg);

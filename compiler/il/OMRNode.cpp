@@ -528,7 +528,6 @@ OMR::Node::recreateWithSymRef(TR::Node *originalNode, TR::ILOpCodes op, TR::Symb
 TR::Node *
 OMR::Node::recreateAndCopyValidPropertiesImpl(TR::Node *originalNode, TR::ILOpCodes op, TR::SymbolReference *newSymRef)
    {
-   TR_ASSERT_FATAL(TR::Node::isNotDeprecatedUnsigned(op), "Trying to use a deprecated unsigned opcode: #%d \n", op);
    TR_ASSERT(originalNode != NULL, "trying to recreate node from a NULL originalNode.");
    if (originalNode->getOpCodeValue() == op)
       {
@@ -592,7 +591,6 @@ OMR::Node::recreateAndCopyValidPropertiesImpl(TR::Node *originalNode, TR::ILOpCo
 TR::Node *
 OMR::Node::createInternal(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *originalNode)
    {
-   TR_ASSERT_FATAL(TR::Node::isNotDeprecatedUnsigned(op), "Trying to use a deprecated unsigned opcode: #%d \n", op);
    if (!originalNode)
       return new (TR::comp()->getNodePool()) TR::Node(originatingByteCodeNode, op, numChildren);
    else

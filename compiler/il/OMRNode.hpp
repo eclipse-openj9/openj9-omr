@@ -369,12 +369,6 @@ private:
       return true;
       }
 
-   static bool isNotDeprecatedUnsigned(TR::ILOpCodes opvalue)
-      {
-      return true;
-      }
-
-
 /**
  * Public functions
  */

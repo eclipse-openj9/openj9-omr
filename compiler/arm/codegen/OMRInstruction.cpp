@@ -205,6 +205,49 @@ TR::ARMConditionalBranchInstruction *TR::ARMConditionalBranchInstruction::getARM
    return this;
    }
 
+static void removeGhostRegistersFromGCMaps(TR::CodeGenerator *cg, TR::Instruction *branchOOL)
+   {
+   // If a virtual is live at the end of the hot path and dead at the beginning it will not be killed immediatey after it's first use in the hot path
+   // if it's also used on the cold path, since RA still needs to be done on the cold path (which is where it's future use count will drop to 0), which
+   // means it will be incorrectly seen as live between it's first use and the top of the hot path.
+   // If there are any GC points between the top of the hot path and the first use the real reg holding the virtual will be included,
+   // so we need to fix this.
+   TR::Instruction *instr = branchOOL->getNext();
+   while (!instr->isLabel() || !((TR::ARMLabelInstruction*)instr)->getLabelSymbol()->isEndOfColdInstructionStream())
+      {
+      if (instr->needsGCMap())
+         {
+         TR_GCStackMap *map = instr->getGCMap();
+         TR_ASSERT( map, "Instruction should have a GC map");
+
+         // This instruction has a GC map, for every register in the register map check if that register is unassigned at the beginning of the hot path.
+         for (uint32_t regNum = TR::RealRegister::FirstGPR; regNum < TR::RealRegister::LastGPR; ++regNum)
+            {
+            uint32_t regMask = cg->registerBitMask(regNum);
+            if (map->getRegisterMap() & regMask)
+               {
+               TR::RealRegister *regInRegMap = cg->machine()->getRealRegister((TR::RealRegister::RegNum)regNum);
+               if (regInRegMap->getState() == TR::RealRegister::Free)
+                  {
+                  // This register is unassigned, check if it was defined before the GC point.
+                  TR::Instruction *prevInstr = instr->getPrev();
+                  while (prevInstr != branchOOL && !prevInstr->defsRealRegister(regInRegMap))
+                     prevInstr = prevInstr->getPrev();
+                  // If it wasn't defined before the GC point it died on the cold path and it's first use on the hot path was after the GC point
+                  // i.e. it shouldn't be in the register map.
+                  if (prevInstr == branchOOL)
+                     {
+                     map->resetRegistersBits(regMask);
+                     }
+                  }
+               }
+            }
+         }
+
+      instr = instr->getNext();
+      }
+   }
+
 void TR::ARMConditionalBranchInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    if (getDependencyConditions())
@@ -231,6 +274,8 @@ void TR::ARMConditionalBranchInstruction::assignRegisters(TR_RegisterKinds kindT
       // storage returned to the free spill list.
       //
       cg()->unlockFreeSpillList();
+
+      removeGhostRegistersFromGCMaps(cg(), self());
       }
    }
 

@@ -155,62 +155,6 @@ OMR::RV::CodeGenerator::endInstructionSelection()
       }
    }
 
-void
-OMR::RV::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
-   {
-   // Registers are assigned in backward direction
-
-   TR::Compilation *comp = self()->comp();
-
-   TR::Instruction *instructionCursor = self()->getAppendInstruction();
-
-   TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
-   self()->setSpilledRegisterList(spilledRegisterList);
-
-   if (self()->getDebug())
-      self()->getDebug()->startTracingRegisterAssignment();
-
-   while (instructionCursor)
-      {
-      TR::Instruction *prevInstruction = instructionCursor->getPrev();
-
-      self()->tracePreRAInstruction(instructionCursor);
-
-      instructionCursor->assignRegisters(TR_GPR);
-
-      // Maintain Internal Control Flow Depth
-      // Track internal control flow on labels
-      if (instructionCursor->isLabel())
-         {
-         TR::LabelInstruction *li = (TR::LabelInstruction *)instructionCursor;
-
-         if (li->getLabelSymbol() != NULL)
-            {
-            if (li->getLabelSymbol()->isStartInternalControlFlow())
-               {
-               self()->decInternalControlFlowNestingDepth();
-               }
-            if (li->getLabelSymbol()->isEndInternalControlFlow())
-               {
-               self()->incInternalControlFlowNestingDepth();
-               }
-            }
-         }
-
-      self()->freeUnlatchedRegisters();
-      self()->buildGCMapsForInstructionAndSnippet(instructionCursor);
-
-      self()->tracePostRAInstruction(instructionCursor);
-
-      instructionCursor = prevInstruction;
-      }
-
-   if (self()->getDebug())
-      {
-      self()->getDebug()->stopTracingRegisterAssignment();
-      }
-   }
-
 static void
 expandFarConditionalBranches(TR::CodeGenerator *cg)
    {

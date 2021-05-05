@@ -196,7 +196,6 @@ public:
 
    void beginInstructionSelection();
    void endInstructionSelection();
-   void doRegisterAssignment(TR_RegisterKinds kindsToAssign);
    void doBinaryEncoding();
    void processRelocations();
    void expandInstructions();

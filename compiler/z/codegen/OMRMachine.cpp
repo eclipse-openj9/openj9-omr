@@ -2745,13 +2745,6 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
       return NULL;
       }
 
-#ifdef DEBUG
-   if (rk == TR_GPR && (debug("traceMsg90GPR") || debug("traceGPRStats")))
-      {
-      self()->cg()->incTotalSpills();
-      }
-#endif
-
    // no real reg is assigned to targetRegister yet
    if (targetRegister == NULL)
       {

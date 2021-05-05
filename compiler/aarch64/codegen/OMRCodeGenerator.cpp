@@ -48,8 +48,7 @@
 OMR::ARM64::CodeGenerator::CodeGenerator(TR::Compilation *comp) :
       OMR::CodeGenerator(comp),
       _dataSnippetList(getTypedAllocator<TR::ARM64ConstantDataSnippet*>(comp->allocator())),
-      _outOfLineCodeSectionList(getTypedAllocator<TR_ARM64OutOfLineCodeSection*>(comp->allocator())),
-      _firstTimeLiveOOLRegisterList(NULL)
+      _outOfLineCodeSectionList(getTypedAllocator<TR_ARM64OutOfLineCodeSection*>(comp->allocator()))
    {
    }
 
@@ -190,71 +189,6 @@ OMR::ARM64::CodeGenerator::endInstructionSelection()
    if (_returnTypeInfoInstruction != NULL)
       {
       _returnTypeInfoInstruction->setSourceImmediate(static_cast<uint32_t>(self()->comp()->getReturnInfo()));
-      }
-   }
-
-void
-OMR::ARM64::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
-   {
-   // Registers are assigned in backward direction
-
-   TR::Compilation *comp = self()->comp();
-
-   TR::Instruction *instructionCursor = self()->getAppendInstruction();
-
-   if (!self()->isOutOfLineColdPath())
-      {
-      // Allocates these lists when the register assignment starts.
-      // As doRegisterAssignment is called mutiple times for the cold path of OutOfLineCodeSections,
-      // we do allocation only when we are not in the cold path.
-      TR::list<TR::Register*> *firstTimeLiveOOLRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
-      self()->setFirstTimeLiveOOLRegisterList(firstTimeLiveOOLRegisterList);
-
-      TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
-      self()->setSpilledRegisterList(spilledRegisterList);
-      }
-
-   if (self()->getDebug())
-      self()->getDebug()->startTracingRegisterAssignment();
-
-   while (instructionCursor)
-      {
-      TR::Instruction *prevInstruction = instructionCursor->getPrev();
-
-      self()->tracePreRAInstruction(instructionCursor);
-
-      instructionCursor->assignRegisters(TR_GPR);
-
-      // Maintain Internal Control Flow Depth
-      // Track internal control flow on labels
-      if (instructionCursor->isLabel())
-         {
-         TR::ARM64LabelInstruction *li = (TR::ARM64LabelInstruction *)instructionCursor;
-
-         if (li->getLabelSymbol() != NULL)
-            {
-            if (li->getLabelSymbol()->isStartInternalControlFlow())
-               {
-               self()->decInternalControlFlowNestingDepth();
-               }
-            if (li->getLabelSymbol()->isEndInternalControlFlow())
-               {
-               self()->incInternalControlFlowNestingDepth();
-               }
-            }
-         }
-
-      self()->freeUnlatchedRegisters();
-      self()->buildGCMapsForInstructionAndSnippet(instructionCursor);
-
-      self()->tracePostRAInstruction(instructionCursor);
-
-      instructionCursor = prevInstruction;
-      }
-
-   if (self()->getDebug())
-      {
-      self()->getDebug()->stopTracingRegisterAssignment();
       }
    }
 

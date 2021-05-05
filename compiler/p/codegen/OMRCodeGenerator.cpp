@@ -540,62 +540,6 @@ OMR::Power::CodeGenerator::mulDecompositionCostIsJustified(
       }
    }
 
-void OMR::Power::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
-   {
-   TR::Instruction *prevInstruction;
-
-   // gprs, fprs, and ccrs are all assigned in backward direction
-
-   TR::Instruction *instructionCursor = self()->getAppendInstruction();
-
-   TR::Block *currBlock = NULL;
-   TR::Instruction * currBBEndInstr = instructionCursor;
-
-   TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
-   self()->setSpilledRegisterList(spilledRegisterList);
-
-   if (self()->getDebug())
-      self()->getDebug()->startTracingRegisterAssignment();
-
-   while (instructionCursor)
-      {
-      prevInstruction = instructionCursor->getPrev();
-
-      self()->tracePreRAInstruction(instructionCursor);
-
-      instructionCursor->assignRegisters(TR_GPR);
-
-      // Maintain Internal Control Flow Depth
-      // Track internal control flow on labels
-      if (instructionCursor->isLabel())
-         {
-         TR::PPCLabelInstruction *li = (TR::PPCLabelInstruction *)instructionCursor;
-
-         if (li->getLabelSymbol() != NULL)
-            {
-            if (li->getLabelSymbol()->isStartInternalControlFlow())
-               {
-               self()->decInternalControlFlowNestingDepth();
-               }
-            if (li->getLabelSymbol()->isEndInternalControlFlow())
-               {
-               self()->incInternalControlFlowNestingDepth();
-               }
-            }
-         }
-
-      self()->freeUnlatchedRegisters();
-      self()->buildGCMapsForInstructionAndSnippet(instructionCursor);
-
-      self()->tracePostRAInstruction(instructionCursor);
-
-      instructionCursor = prevInstruction;
-      }
-
-   if (self()->getDebug())
-      self()->getDebug()->stopTracingRegisterAssignment();
-   }
-
 TR::Instruction *OMR::Power::CodeGenerator::generateNop(TR::Node *n, TR::Instruction *preced, TR_NOPKind nopKind)
    {
    TR::InstOpCode::Mnemonic nop;

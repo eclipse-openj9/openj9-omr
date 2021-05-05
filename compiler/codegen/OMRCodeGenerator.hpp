@@ -1085,6 +1085,21 @@ public:
    TR::list<TR_BackingStore*>& getCollectedSpillList() {return _collectedSpillList;}
    TR::list<TR_BackingStore*>& getAllSpillList() {return _allSpillList;}
 
+   /**
+    * @brief Returns the list of registers which is assigned first time in OOL cold path
+    *
+    * @return the list of registers which is assigned first time in OOL cold path
+    */
+   TR::list<TR::Register*> *getFirstTimeLiveOOLRegisterList() {return _firstTimeLiveOOLRegisterList;}
+   
+   /**
+    * @brief Sets the list of registers which is assigned first time in OOL cold path
+    *
+    * @param r : the list of registers which is assigned first time in OOL cold path
+    * @return the list of registers
+    */
+   TR::list<TR::Register*> *setFirstTimeLiveOOLRegisterList(TR::list<TR::Register*> *r) {return _firstTimeLiveOOLRegisterList = r;}
+
    TR::list<TR::Register*> *getSpilledRegisterList() {return _spilledRegisterList;}
    TR::list<TR::Register*> *setSpilledRegisterList(TR::list<TR::Register*> *r) {return _spilledRegisterList = r;}
 
@@ -1953,6 +1968,7 @@ public:
 
    int32_t _accumulatorNodeUsage;
 
+   TR::list<TR::Register*> *_firstTimeLiveOOLRegisterList;
    TR::list<TR::Register*> *_spilledRegisterList;
    TR::list<OMR::RegisterUsage*> *_referencedRegistersList;
    int32_t _currentPathDepth;
@@ -2002,6 +2018,9 @@ public:
    static TR_TreeEvaluatorFunctionPointer _nodeToInstrEvaluators[];
 
    protected:
+
+   /// Determines whether register allocation has been completed
+   bool _afterRA;
 
    bool _disableInternalPointers;
 

@@ -199,9 +199,6 @@ public:
    TR_BranchPreloadCallData _outlineCall;
    TR_BranchPreloadCallData _outlineArrayCall;
 
-   TR::list<TR::Register*> *getFirstTimeLiveOOLRegisterList() {return _firstTimeLiveOOLRegisterList;}
-   TR::list<TR::Register*> *setFirstTimeLiveOOLRegisterList(TR::list<TR::Register*> *r) {return _firstTimeLiveOOLRegisterList = r;}
-
    TR::list<TR_BranchPreloadCallData*> *_callsForPreloadList;
 
    TR::list<TR_BranchPreloadCallData*> * getCallsForPreloadList() { return _callsForPreloadList; }
@@ -282,7 +279,6 @@ public:
    TR::list<TR_OpaqueClassBlock*> * getPICsListForInterfaceSnippet(TR::S390ConstantDataSnippet * ifcSnippet);
 
    void doInstructionSelection();
-   void doRegisterAssignment(TR_RegisterKinds kindsToAssign);
 
    bool loadOrStoreAddressesMatch(TR::Node *node1, TR::Node *node2);
 
@@ -522,25 +518,6 @@ public:
    virtual bool isAddMemoryUpdate(TR::Node * node, TR::Node * valueChild);
 
    bool afterRA() { return _afterRA; }
-
-#ifdef DEBUG
-   void dumpPreGPRegisterAssignment(TR::Instruction *);
-   void dumpPostGPRegisterAssignment(TR::Instruction *, TR::Instruction *);
-
-   // Internal local RA counters for self evaluation
-   void clearTotalSpills()        {_totalColdSpills=0;        _totalHotSpills=0;       }
-   void clearTotalRegisterXfers() {_totalColdRegisterXfers=0; _totalHotRegisterXfers=0;}
-   void clearTotalRegisterMoves() {_totalColdRegisterMoves=0; _totalHotRegisterMoves=0;}
-
-   // current RA block is only valid during register allocation pass and is only used for debug
-   TR::Block * getCurrentRABlock()           { return _curRABlock; }
-   void setCurrentRABlock(TR::Block * block) { _curRABlock = block; }
-
-   void incTotalSpills();
-   void incTotalRegisterXfers();
-   void incTotalRegisterMoves();
-   void printStats(int32_t);
-#endif
 
    TR_S390OutOfLineCodeSection *findS390OutOfLineCodeSectionFromLabel(TR::LabelSymbol *label);
 
@@ -793,8 +770,6 @@ protected:
    TR::list<TR::S390ConstantDataSnippet*>  _constantList;
    TR::list<TR::S390ConstantDataSnippet*>  _snippetDataList;
 
-   TR::list<TR::Register*> *_firstTimeLiveOOLRegisterList;
-
 private:
 
    // TODO: These should move into the base class. There also seems to be a little overlap between these and
@@ -821,16 +796,6 @@ private:
    /** For aggregate type GRA */
    bool considerAggregateSizeForGRA(int32_t size);
 
-#ifdef DEBUG
-   uint32_t _totalColdSpills;
-   uint32_t _totalColdRegisterXfers;
-   uint32_t _totalColdRegisterMoves;
-   uint32_t _totalHotSpills;
-   uint32_t _totalHotRegisterXfers;
-   uint32_t _totalHotRegisterMoves;
-   TR::Block * _curRABlock;
-#endif
-
    bool  TR_LiteralPoolOnDemandOnRun;
 
    TR_BackingStore* _localF2ISpill;
@@ -845,7 +810,6 @@ private:
 
 protected:
 
-   bool _afterRA;
    flags32_t  _cgFlags;
 
    /** Miscellaneous S390CG boolean flags. */

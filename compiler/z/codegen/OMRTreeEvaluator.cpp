@@ -2904,10 +2904,10 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
       }
 
    // ificmpyy
-   //   c2i        ; refcnt-1, unevaluated
-   //     icload   ; evaluated
-   //   c2i        ; refcnt-1, unevaluated
-   //     icload   ; evaluated
+   //   s2i        ; refcnt-1, unevaluated
+   //     isload   ; evaluated
+   //   s2i        ; refcnt-1, unevaluated
+   //     isload   ; evaluated
    //
    // Try to generate a CR.
    // FIXME: can't the binary commutative analyser handle this? that's where this should be done
@@ -2936,9 +2936,9 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
 
    // ificmpyy
    //   bu2i               ; refcnt-1, unevaluated
-   //     ibuload/iRegLoad ; evaluated
+   //     bloadi/iRegLoad ; evaluated
    //   bu2i               ; refcnt-1, unevaluated
-   //     ibuload/iRegLoad ; evaluated
+   //     bloadi/iRegLoad ; evaluated
    //
    // Try to use a CR.
    // FIXME: can't the binary commutative analyser handle this? that's where this should be done
@@ -5689,7 +5689,6 @@ OMR::Z::TreeEvaluator::axaddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
  *   ialoadEvaluator handled by aloadEvaluator
  *   ibloadEvaluator handled by bloadEvaluator
  *   isloadEvaluator handled by sloadEvaluator
- *   icloadEvaluator handled by sloadEvaluator
  *
  * iload Evaluator: load integer
  *   - also handles iiload

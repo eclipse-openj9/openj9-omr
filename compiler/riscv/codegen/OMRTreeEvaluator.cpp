@@ -222,13 +222,6 @@ OMR::RV::TreeEvaluator::sloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return commonLoadEvaluator(node, TR::InstOpCode::_lh, 2, cg);
    }
 
-// also handles cloadi
-TR::Register *
-OMR::RV::TreeEvaluator::cloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return commonLoadEvaluator(node, TR::InstOpCode::_lhu, 2, cg);
-   }
-
 TR::Register *
 OMR::RV::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{

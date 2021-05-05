@@ -385,16 +385,6 @@ private:
          case TR::luneg:
          case TR::lusub:
 
-         //Load
-         case TR::buload:
-         case TR::buloadi:
-         case TR::cload:
-         case TR::cloadi:
-         case TR::iuload:
-         case TR::iuloadi:
-         case TR::luload:
-         case TR::luloadi:
-
          //Store
          case TR::bustore:
          case TR::bustorei:

@@ -72,7 +72,6 @@ public:
    static TR::Register *dloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *sloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *cloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *istoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *awrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg);

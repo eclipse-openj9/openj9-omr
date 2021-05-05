@@ -55,7 +55,7 @@ namespace OMR
 {
 namespace RV
 {
-class RegisterDependencyGroup : public OMR::RegisterDependencyGroup
+class OMR_EXTENSIBLE RegisterDependencyGroup : public OMR::RegisterDependencyGroup
    {
    public:
 

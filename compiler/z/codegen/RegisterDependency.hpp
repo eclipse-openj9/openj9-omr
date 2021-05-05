@@ -26,7 +26,7 @@
 
 namespace TR
 {
-class RegisterDependencyGroup : public OMR::RegisterDependencyGroupConnector {};
+class OMR_EXTENSIBLE RegisterDependencyGroup : public OMR::RegisterDependencyGroupConnector {};
 
 class RegisterDependencyConditions : public OMR::RegisterDependencyConditionsConnector
    {

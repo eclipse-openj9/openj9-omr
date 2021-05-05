@@ -57,7 +57,7 @@ namespace OMR
 {
 namespace ARM64
 {
-class RegisterDependencyGroup : public OMR::RegisterDependencyGroup
+class OMR_EXTENSIBLE RegisterDependencyGroup : public OMR::RegisterDependencyGroup
    {
    public:
 

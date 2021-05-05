@@ -69,7 +69,7 @@ namespace OMR
 {
 namespace Z
 {
-class RegisterDependencyGroup : public OMR::RegisterDependencyGroup
+class OMR_EXTENSIBLE RegisterDependencyGroup : public OMR::RegisterDependencyGroup
    {
    public:
 

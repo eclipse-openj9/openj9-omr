@@ -61,7 +61,7 @@ namespace OMR
 {
 namespace X86
 {
-class RegisterDependencyGroup : public OMR::RegisterDependencyGroup
+class OMR_EXTENSIBLE RegisterDependencyGroup : public OMR::RegisterDependencyGroup
    {
    bool _mayNeedToPopFPRegisters;
    bool _needToClearFPStack;

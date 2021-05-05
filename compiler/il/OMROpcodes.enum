@@ -7844,134 +7844,6 @@ OPCODE_MACRO(\
    /* .description          =    Store vector global register */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ iuadd, \
-   /* .name                 = */ "iuadd", \
-   /* .properties1          = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int32), \
-   /* .swapChildrenOpCode   = */ TR::iuadd, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    add 2 unsigned integers */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ luadd, \
-   /* .name                 = */ "luadd", \
-   /* .properties1          = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int64, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int64), \
-   /* .swapChildrenOpCode   = */ TR::luadd, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    add 2 unsigned long integers */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ buadd, \
-   /* .name                 = */ "buadd", \
-   /* .properties1          = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int8, \
-   /* .typeProperties       = */ ILTypeProp::Size_1 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int8), \
-   /* .swapChildrenOpCode   = */ TR::buadd, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    add 2 unsigned bytes */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ iusub, \
-   /* .name                 = */ "iusub", \
-   /* .properties1          = */ ILProp1::Sub, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int32), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    subtract 2 unsigned integers       (child1 - child2) */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ lusub, \
-   /* .name                 = */ "lusub", \
-   /* .properties1          = */ ILProp1::Sub, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int64, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int64), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    subtract 2 unsigned long integers  (child1 - child2) */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ busub, \
-   /* .name                 = */ "busub", \
-   /* .properties1          = */ ILProp1::Sub, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int8, \
-   /* .typeProperties       = */ ILTypeProp::Size_1 | ILTypeProp::Integer, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int8), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    subtract 2 unsigned bytes          (child1 - child2) */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ iuneg, \
-   /* .name                 = */ "iuneg", \
-   /* .properties1          = */ ILProp1::Neg, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int32, \
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ ONE_CHILD(TR::Int32), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    negate an unsigned integer */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ luneg, \
-   /* .name                 = */ "luneg", \
-   /* .properties1          = */ ILProp1::Neg, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int64, \
-   /* .typeProperties       = */ ILTypeProp::Size_8 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ ONE_CHILD(TR::Int64), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    negate a unsigned long integer */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ f2iu, \
    /* .name                 = */ "f2iu", \
    /* .properties1          = */ ILProp1::Conversion, \
@@ -8532,22 +8404,6 @@ OPCODE_MACRO(\
    /* .description          =    add 2 unsigned long integers (the high parts of prior luadd) as high part of 128bit addition. */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ cadd, \
-   /* .name                 = */ "cadd", \
-   /* .properties1          = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int16, \
-   /* .typeProperties       = */ ILTypeProp::Size_2 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int16), \
-   /* .swapChildrenOpCode   = */ TR::cadd, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    add 2 unsigned short integers */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ aiadd, \
    /* .name                 = */ "aiadd", \
    /* .properties1          = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, \
@@ -8594,22 +8450,6 @@ OPCODE_MACRO(\
    /* .booleanCompareOpCode = */ TR::BadILOp, \
    /* .ifCompareOpCode      = */ TR::BadILOp, \
    /* .description          =    subtract 2 unsigned long integers (the high parts of prior lusub) as high part of 128bit subtraction. */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ csub, \
-   /* .name                 = */ "csub", \
-   /* .properties1          = */ ILProp1::Sub, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::Int16, \
-   /* .typeProperties       = */ ILTypeProp::Size_2 | ILTypeProp::Unsigned, \
-   /* .childProperties      = */ TWO_SAME_CHILD(TR::Int16), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    subtract 2 unsigned short integers (child1 - child2) */ \
 )
 OPCODE_MACRO(\
    /* .opcode               = */ imulh, \

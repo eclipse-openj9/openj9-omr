@@ -2373,15 +2373,6 @@ OMR::Z::TreeEvaluator::saddEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    return node->getRegister();
    }
 
-/**
- * caddEvaluator - unsigned short integers
- */
-TR::Register *
-OMR::Z::TreeEvaluator::caddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   return generic32BitAddEvaluator(node, cg);
-   }
-
 TR::Register *
 OMR::Z::TreeEvaluator::bsubEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
@@ -2437,16 +2428,6 @@ TR::Register *
 OMR::Z::TreeEvaluator::lsubEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    return lsubHelper64(node, cg);
-   }
-
-/**
- * csubEvaluator - subtract 2 unsigned short integers
- * (child1 - child2)
- */
-TR::Register *
-OMR::Z::TreeEvaluator::csubEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   return generic32BitSubEvaluator(node, cg);
    }
 
 /**

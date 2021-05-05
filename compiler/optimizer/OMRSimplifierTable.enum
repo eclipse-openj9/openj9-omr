@@ -512,14 +512,6 @@
 #define vlRegStoreSimplifierHandler dftSimplifier
 #define vfRegStoreSimplifierHandler dftSimplifier
 #define vdRegStoreSimplifierHandler dftSimplifier
-#define iuaddSimplifierHandler iaddSimplifier
-#define luaddSimplifierHandler laddSimplifier
-#define buaddSimplifierHandler baddSimplifier
-#define iusubSimplifierHandler isubSimplifier
-#define lusubSimplifierHandler lsubSimplifier
-#define busubSimplifierHandler bsubSimplifier
-#define iunegSimplifierHandler inegSimplifier
-#define lunegSimplifierHandler lnegSimplifier
 #define f2iuSimplifierHandler f2iSimplifier
 #define f2luSimplifierHandler f2lSimplifier
 #define f2buSimplifierHandler f2bSimplifier
@@ -555,11 +547,9 @@
 #define calliSimplifierHandler dftSimplifier
 #define fenceSimplifierHandler dftSimplifier
 #define luaddhSimplifierHandler dftSimplifier
-#define caddSimplifierHandler caddSimplifier
 #define aiaddSimplifierHandler iaddSimplifier
 #define aladdSimplifierHandler laddSimplifier
 #define lusubhSimplifierHandler dftSimplifier
-#define csubSimplifierHandler csubSimplifier
 #define imulhSimplifierHandler imulhSimplifier
 #define iumulhSimplifierHandler dftSimplifier
 #define lmulhSimplifierHandler lmulhSimplifier

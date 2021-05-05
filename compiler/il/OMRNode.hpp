@@ -371,25 +371,7 @@ private:
 
    static bool isNotDeprecatedUnsigned(TR::ILOpCodes opvalue)
       {
-      switch (opvalue)
-         {
-         //Add and Subtract
-         case TR::buadd:
-         case TR::busub:
-         case TR::cadd:
-         case TR::csub:
-         case TR::iuadd:
-         case TR::iuneg:
-         case TR::iusub:
-         case TR::luadd:
-         case TR::luneg:
-         case TR::lusub:
-
-            return false;
-
-         default:
-            return true;
-         }
+      return true;
       }
 
 

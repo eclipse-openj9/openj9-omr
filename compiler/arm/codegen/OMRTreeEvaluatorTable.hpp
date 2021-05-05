@@ -514,14 +514,6 @@
 #define _vlRegStoreEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vfRegStoreEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vdRegStoreEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _iuaddEvaluator TR::TreeEvaluator::iaddEvaluator
-#define _luaddEvaluator TR::TreeEvaluator::laddEvaluator
-#define _buaddEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _iusubEvaluator TR::TreeEvaluator::isubEvaluator
-#define _lusubEvaluator TR::TreeEvaluator::lsubEvaluator
-#define _busubEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _iunegEvaluator TR::TreeEvaluator::inegEvaluator
-#define _lunegEvaluator TR::TreeEvaluator::lnegEvaluator
 #define _f2iuEvaluator TR::TreeEvaluator::f2iEvaluator
 #define _f2luEvaluator TR::TreeEvaluator::f2lEvaluator
 #define _f2buEvaluator TR::TreeEvaluator::d2bEvaluator
@@ -557,11 +549,9 @@
 #define _calliEvaluator TR::TreeEvaluator::indirectCallEvaluator
 #define _fenceEvaluator TR::TreeEvaluator::badILOpEvaluator
 #define _luaddhEvaluator TR::TreeEvaluator::badILOpEvaluator
-#define _caddEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _aiaddEvaluator TR::TreeEvaluator::iaddEvaluator
 #define _aladdEvaluator TR::TreeEvaluator::iaddEvaluator
 #define _lusubhEvaluator TR::TreeEvaluator::badILOpEvaluator
-#define _csubEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _imulhEvaluator TR::TreeEvaluator::imulhEvaluator
 #define _iumulhEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _lmulhEvaluator TR::TreeEvaluator::unImpOpEvaluator

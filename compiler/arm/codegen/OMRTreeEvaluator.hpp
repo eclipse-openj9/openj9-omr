@@ -109,14 +109,12 @@ public:
    static TR::Register *daddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *baddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *saddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *caddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *isubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *fsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *dsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ssubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *csubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *imulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *imulhEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);

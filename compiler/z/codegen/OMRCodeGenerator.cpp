@@ -2856,7 +2856,7 @@ OMR::Z::CodeGenerator::ssrClobberEvaluate(TR::Node * node, TR::MemoryReference *
                   // See addsub2 first pdstore on line_no=335 with disableVIP)
                   //
                   // ipdstore p=29 symA (store then does a ZAP and updates child VTS_2 to symA)
-                  //    aiuadd
+                  //    aiadd
                   //       aload
                   //       iconst
                   //    pdModPrecA   p=29 (passThrough so skip ssrClobber evaluate and reuse VTS_2 as a read only temp) 1 ref remaining to pdModPrecA

@@ -526,7 +526,7 @@ OMR::Z::RegisterDependencyConditions::addPreCondition(TR::Register *vr, TR::Real
    if (vr && vr->getRealRegister()!=NULL) return;
 
    TR_ASSERT_FATAL(_addCursorForPre < _numPreConditions,"addPreCondition list overflow. addCursorForPre(%d), numPreConditions(%d), virtual register name(%s) and pointer(%p)\n",_addCursorForPre, _numPreConditions,vr->getRegisterName(_cg->comp()),vr);
-   _preConditions->setDependencyInfo(_addCursorForPre++, vr, rr, flag);
+   _preConditions->setDependencyInfo(_addCursorForPre++, vr, static_cast<TR::RealRegister::RegNum>(rr), flag);
    }
 
 void
@@ -537,7 +537,7 @@ OMR::Z::RegisterDependencyConditions::addPostCondition(TR::Register *vr, TR::Rea
    // dont add dependencies if reg is real register
    if (vr && vr->getRealRegister()!=NULL) return;
    TR_ASSERT_FATAL(_addCursorForPost < _numPostConditions,"addPostCondition list overflow. addCursorForPost(%d), numPostConditions(%d), virtual register name(%s) and pointer(%p)\n",_addCursorForPost, _numPostConditions,vr->getRegisterName(_cg->comp()),vr);
-   _postConditions->setDependencyInfo(_addCursorForPost++, vr, rr, flag);
+   _postConditions->setDependencyInfo(_addCursorForPost++, vr, static_cast<TR::RealRegister::RegNum>(rr), flag);
    }
 
 void
@@ -756,7 +756,7 @@ OMR::Z::RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstr
    TR::RealRegister * dependentRealReg, * assignedRegister;
    int32_t i, j;
    bool changed;
-   uint32_t availRegMask = genBitMapOfAssignableGPRs(cg, numOfDependencies);
+   uint32_t availRegMask = self()->genBitMapOfAssignableGPRs(cg, numOfDependencies);
 
    for (i = 0; i< numOfDependencies; i++)
       {
@@ -1363,7 +1363,7 @@ OMR::Z::RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstr
 
    // Unblock all other regs
    //
-   unblockRegisters(numOfDependencies, cg);
+   self()->unblockRegisters(numOfDependencies, cg);
 
 
 
@@ -1374,14 +1374,14 @@ OMR::Z::RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstr
    //
    for (i = 0; i < numOfDependencies; i++)
       {
-      TR::Register * dependentRegister = getRegisterDependency(i)->getRegister();
+      TR::Register * dependentRegister = self()->getRegisterDependency(i)->getRegister();
 
       // We decrement the use count, and kill if there are no further uses
       // We pay special attention to pairs, as it is not the parent placeholder
       // that must have its count decremented, but rather the children.
       if (dependentRegister->getRegisterPair() == NULL &&
           dependentRegister->getAssignedRegister() != NULL &&
-          !getRegisterDependency(i)->isSpilledReg()
+          !self()->getRegisterDependency(i)->isSpilledReg()
          )
          {
          TR::Register * assignedRegister = dependentRegister->getAssignedRegister();

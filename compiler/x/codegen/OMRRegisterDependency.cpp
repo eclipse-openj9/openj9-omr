@@ -719,7 +719,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
    TR::Compilation *comp = cg->comp();
 
    TR::Machine *machine = cg->machine();
-   blockRegisters(numberOfRegisters);
+   self()->blockRegisters(numberOfRegisters);
 
    // Build a work list of assignable register dependencies so the test does not
    // have to be repeated on each pass.  Also, order the list so that real
@@ -749,7 +749,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
           && !regDep.isSpilledReg()
           && !regDep.isBestFreeReg())
          {
-         dependencies[numDependencyRegisters++] = getRegisterDependency(i);
+         dependencies[numDependencyRegisters++] = self()->getRegisterDependency(i);
          }
       else if (regDep.isNoReg())
          hasNoRegDeps = true;
@@ -818,7 +818,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
          if (virtReg && (kindsToBeAssigned & virtReg->getKindAsMask()) &&
              _dependencies[i].isByteReg())
             {
-            dependencies[numDependencyRegisters++] = getRegisterDependency(i);
+            dependencies[numDependencyRegisters++] = self()->getRegisterDependency(i);
             }
          }
 
@@ -834,7 +834,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
          if (virtReg && (kindsToBeAssigned & virtReg->getKindAsMask()) &&
              _dependencies[i].isNoReg())
             {
-            dependencies[numDependencyRegisters++] = getRegisterDependency(i);
+            dependencies[numDependencyRegisters++] = self()->getRegisterDependency(i);
             }
          }
 
@@ -850,7 +850,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
          if (virtReg && (kindsToBeAssigned & virtReg->getKindAsMask()) &&
              _dependencies[i].isBestFreeReg())
             {
-            dependencies[numDependencyRegisters++] = getRegisterDependency(i);
+            dependencies[numDependencyRegisters++] = self()->getRegisterDependency(i);
             }
          }
 
@@ -1028,7 +1028,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
       bestFreeRealRegIndex = bestFreeRealReg ? bestFreeRealReg->getRegisterNumber() : TR::RealRegister::NoReg;
       }
 
-   unblockRegisters(numberOfRegisters);
+   self()->unblockRegisters(numberOfRegisters);
 
    for (i = 0; i < numDependencyRegisters; i++)
       {

@@ -1135,10 +1135,10 @@ void OMR::Power::RegisterDependencyGroup::assignRegisters(TR::Instruction   *cur
          }
       }
 
-   unblockRegisters(numberOfRegisters);
+   self()->unblockRegisters(numberOfRegisters);
    for (i = 0; i < numberOfRegisters; i++)
       {
-      TR::Register *dependentRegister = getRegisterDependency(i)->getRegister();
+      TR::Register *dependentRegister = self()->getRegisterDependency(i)->getRegister();
       // dependentRegister->getAssignedRegister() is NULL if the reg has already been spilled due to a spilledReg dep
       if (!cg->isOutOfLineColdPath() && !cg->isOutOfLineHotPath())
          {
@@ -1148,8 +1148,8 @@ void OMR::Power::RegisterDependencyGroup::assignRegisters(TR::Instruction   *cur
          {
          TR::RealRegister *assignedRegister = dependentRegister->getAssignedRegister()->getRealRegister();
 
-         if (getRegisterDependency(i)->isNoReg())
-            getRegisterDependency(i)->setRealRegister(toRealRegister(assignedRegister)->getRegisterNumber());
+         if (self()->getRegisterDependency(i)->isNoReg())
+            self()->getRegisterDependency(i)->setRealRegister(toRealRegister(assignedRegister)->getRegisterNumber());
 
          machine->decFutureUseCountAndUnlatch(dependentRegister);
          }

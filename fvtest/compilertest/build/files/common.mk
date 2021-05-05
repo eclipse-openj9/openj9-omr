@@ -203,6 +203,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRMemoryReference.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRMachine.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRRegister.cpp \
+    $(JIT_OMR_DIRTY_DIR)/codegen/OMRRegisterDependency.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRRealRegister.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRRegisterPair.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRInstruction.cpp \

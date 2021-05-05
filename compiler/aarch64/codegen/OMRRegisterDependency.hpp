@@ -295,7 +295,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
     */
    void stopUsingDepRegs(TR::CodeGenerator *cg, TR::Register *returnRegister = NULL);
 
-   void stopUsingDepRegs(TR::CodeGenerator *cg, TR::Register * ret1=NULL, TR::Register *ret2 = NULL);
+   void stopUsingDepRegs(TR::CodeGenerator *cg, TR::Register * ret1, TR::Register *ret2);
    };
 
 } // ARM64

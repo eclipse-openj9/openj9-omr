@@ -615,7 +615,7 @@ void OMR::ARM64::RegisterDependencyGroup::assignRegisters(
    }
 
 void
-OMR::Z::RegisterDependencyConditions::stopUsingDepRegs(TR::CodeGenerator *cg, TR::Register *ret1, TR::Register *ret2)
+OMR::ARM64::RegisterDependencyConditions::stopUsingDepRegs(TR::CodeGenerator *cg, TR::Register *ret1, TR::Register *ret2)
    {
    if (_preConditions != NULL)
       _preConditions->stopUsingDepRegs(_addCursorForPre, ret1, ret2, cg);

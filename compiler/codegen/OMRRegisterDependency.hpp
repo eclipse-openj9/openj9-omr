@@ -52,6 +52,8 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
 
    RegisterDependencyGroup() {}
 
+   TR::RegisterDependencyGroup *self();
+
    void *operator new(size_t s, int32_t numDependencies, TR_Memory *m)
       {
       if (numDependencies > NUM_DEFAULT_DEPENDENCIES)
@@ -74,18 +76,12 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
       _dependencies[index].setRealRegister(TR::RealRegister::NoReg);
       }
 
-   void setDependencyInfo(uint32_t index, TR::Register *vr, TR::RealRegister::RegDep rr, uint8_t flag)
-     {
-     setDependencyInfo(index, vr, static_cast<TR::RealRegister::RegNum>(rr), flag);
-     }
-
    void setDependencyInfo(uint32_t index, TR::Register *vr, TR::RealRegister::RegNum rr, uint8_t flag)
       {
       _dependencies[index].setRegister(vr);
       _dependencies[index].assignFlags(flag);
       _dependencies[index].setRealRegister(rr);
       }
-
 
    bool containsVirtualRegister(TR::Register *r, uint32_t numberOfRegisters)
       {

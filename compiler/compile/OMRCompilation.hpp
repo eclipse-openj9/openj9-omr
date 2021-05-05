@@ -431,7 +431,7 @@ public:
 
    bool useRegisterMaps();
 
-   bool suppressAllocationInlining()      {return _options->getOption(TR_DisableAllocationInlining) || _options->getOption(TR_OptimizeForSpace);}
+   bool suppressAllocationInlining()      {return _options->getOption(TR_DisableAllocationInlining);}
 
    // ==========================================================================
    // OMR utility

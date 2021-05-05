@@ -1932,8 +1932,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
    int64_t      value = secondChild->getOpCode().isLoadConst() ? secondChild->get64bitIntegralValue() : 0;
    bool         cannotInline = false;
     if ((firstChild->getOpCodeValue() == TR::instanceof) &&
-        !(comp->getOption(TR_OptimizeForSpace) ||
-          comp->getOption(TR_DisableInlineIfInstanceOf)) &&
+        !comp->getOption(TR_DisableInlineIfInstanceOf) &&
         (firstChild->getRegister() == NULL) &&
         (node->getReferenceCount() <=1) &&
         secondChild->getOpCode().isLoadConst() &&

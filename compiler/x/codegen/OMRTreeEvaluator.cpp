@@ -902,17 +902,9 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
             }
          else
             {
-            // Memory update is a win if there is register pressure or if we are
-            // optimizing for space
-            //
-            if (comp->getOption(TR_OptimizeForSpace))
+            int32_t numRegs = cg->getLiveRegisters(TR_GPR)->getNumberOfLiveRegisters();
+            if (numRegs >= TR::RealRegister::LastAssignableGPR - 2) // -1 for VM thread reg, -1 fudge
                valueChild->setDirectMemoryUpdate(true);
-            else
-               {
-               int32_t numRegs = cg->getLiveRegisters(TR_GPR)->getNumberOfLiveRegisters();
-               if (numRegs >= TR::RealRegister::LastAssignableGPR - 2) // -1 for VM thread reg, -1 fudge
-                  valueChild->setDirectMemoryUpdate(true);
-               }
             }
          }
 

@@ -2636,7 +2636,7 @@ bool TR_BlockStructure::changeContinueLoopsToNestedLoops(TR_RegionStructure *roo
 
 bool TR_RegionStructure::changeContinueLoopsToNestedLoops(TR_RegionStructure *root)
    {
-   static bool traceMyself=(debug("TR_traceChangeContinues") != 0);
+   static bool traceMyself=(debug("TR_traceChangeContinues") != NULL);
 
    bool changed = false;
    TR_RegionStructure::Cursor si(*this);

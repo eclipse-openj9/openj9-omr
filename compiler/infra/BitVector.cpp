@@ -187,23 +187,6 @@ void TR_BitVector::setChunkSize(int32_t chunkSize)
 #endif
    }
 
-// produce a hexadecimal string for this bitvector, high bits first, low last
-const char *TR_BitVector::getHexString()
-   {
-   int32_t chunk_hexlen = (BITS_IN_CHUNK/4);
-   char *buf = _region ? (char *)_region->allocate(_numChunks*chunk_hexlen + 1) : (char*)TR_Memory::jitPersistentAlloc(_numChunks*chunk_hexlen + 1);
-   char *pos = buf;
-   #ifdef TRACK_TRBITVECTOR_MEMORY
-   _memoryUsed += _numChunks*chunk_hexlen + 1;
-   #endif
-   for (int32_t i = _numChunks-1; i >= 0; i--)
-      {
-      sprintf(pos, "%0*lX", chunk_hexlen, _chunks[i]);
-      pos += chunk_hexlen;
-      }
-   return buf;
-   }
-
 void TR_BitVector::print(TR::Compilation *comp, TR::FILE *file)
    {
    if (comp->getDebug())

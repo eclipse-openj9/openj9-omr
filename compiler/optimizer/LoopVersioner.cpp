@@ -9170,7 +9170,7 @@ bool TR_LoopVersioner::guardOkForExpr(TR::Node *node, bool onlySearching)
  * While it is not necessarily incorrect for \p node for to be unrepresentable,
  * it is unexpected and likely to cause a performance problem. So in case
  * \p node \em is unrepresentable, this method increments a static debug
- * counter matching <tt>{loopVersioner.unrepresentable/*}</tt>, and optionally
+ * counter matching <tt>{loopVersioner.unrepresentable*}</tt>, and optionally
  * fails an assertion when enabled using \c ASSERT_REPRESENTABLE_IN_VERSIONER
  * or \c TR_assertRepresentableInVersioner.
  *

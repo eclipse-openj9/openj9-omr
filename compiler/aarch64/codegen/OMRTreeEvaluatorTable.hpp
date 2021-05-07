@@ -464,7 +464,7 @@
 #define _vdsqrtEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vincEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vdecEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _vnegEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vnegEvaluator TR::TreeEvaluator::vnegEvaluator
 #define _vcomEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vaddEvaluator TR::TreeEvaluator::vaddEvaluator
 #define _vsubEvaluator TR::TreeEvaluator::vsubEvaluator

@@ -116,6 +116,43 @@ TR::Register *OMR::ARM64::TreeEvaluator::lnegEvaluator(TR::Node *node, TR::CodeG
    return tempReg;
    }
 
+static TR::Register *inlineVectorUnaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *srcReg = cg->evaluate(firstChild);
+   TR::Register *resReg = (firstChild->getReferenceCount() == 1) ? srcReg : cg->allocateRegister(TR_VRF);
+
+   node->setRegister(resReg);
+   generateTrg1Src1Instruction(cg, op, node, resReg, srcReg);
+   cg->decReferenceCount(firstChild);
+   return resReg;
+   }
+
+TR::Register *OMR::ARM64::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::InstOpCode::Mnemonic negOp;
+
+   switch(node->getDataType())
+      {
+      case TR::VectorInt8:
+         negOp = TR::InstOpCode::vneg16b;
+         break;
+      case TR::VectorInt16:
+         negOp = TR::InstOpCode::vneg8h;
+         break;
+      case TR::VectorFloat:
+         negOp = TR::InstOpCode::vfneg4s;
+         break;
+      case TR::VectorDouble:
+         negOp = TR::InstOpCode::vfneg2d;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorUnaryOp(node, cg, negOp);
+   }
+
 static TR::Register *commonIntegerAbsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();

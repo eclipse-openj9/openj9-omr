@@ -496,6 +496,11 @@
 		vand16b,                                                  	/* 0x4E201C00	AND      	 */
 		vorr16b,                                                  	/* 0x4EA01C00	ORR      	 */
 		veor16b,                                                  	/* 0x6E201C00	EOR      	 */
+	/* Vector Data-processing (1 source) */
+		vneg16b,                                                  	/* 0x6E20B800	NEG      	 */
+		vneg8h,                                                  	/* 0x6E60B800	NEG      	 */
+		vfneg4s,                                                  	/* 0x6EA0F800	FNEG      	 */
+		vfneg2d,                                                  	/* 0x6EE0F800	FNEG      	 */
 /* Hint instructions */
 		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */

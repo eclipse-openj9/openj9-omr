@@ -495,6 +495,11 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4E201C00,	/* AND      	vand16b	 */
 		0x4EA01C00,	/* ORR      	vorr16b	 */
 		0x6E201C00,	/* EOR      	veor16b	 */
+	/* Vector Data-processing (1 source) */
+		0x6E20B800,	/* NEG      	vneg16b	 */
+		0x6E60B800,	/* NEG      	vneg8h	 */
+		0x6EA0F800,	/* FNEG      	vfneg4s	 */
+		0x6EE0F800,	/* FNEG      	vfneg2d	 */
 	/* Hint instructions */
 		0xD503201F,	/* NOP          nop      */
 };

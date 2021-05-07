@@ -681,8 +681,7 @@ TR::PPCSystemLinkage::createPrologue(
    if (savedFirst <= TR::RealRegister::LastGPR)
       {
       if (cg()->comp()->target().cpu.is(OMR_PROCESSOR_PPC_GP) || cg()->comp()->target().is64Bit() ||
-          (!comp()->getOption(TR_OptimizeForSpace) &&
-           TR::RealRegister::LastGPR - savedFirst <= 3))
+          (TR::RealRegister::LastGPR - savedFirst <= 3))
          for (regIndex=TR::RealRegister::LastGPR; regIndex>=savedFirst; regIndex=(TR::RealRegister::RegNum)((uint32_t)regIndex-1))
             {
             argSize = argSize - TR::Compiler->om.sizeofReferenceAddress();
@@ -783,8 +782,7 @@ TR::PPCSystemLinkage::createEpilogue(TR::Instruction *cursor)
    if (savedFirst <= TR::RealRegister::LastGPR)
       {
       if (cg()->comp()->target().cpu.is(OMR_PROCESSOR_PPC_GP) || cg()->comp()->target().is64Bit() ||
-          (!comp()->getOption(TR_OptimizeForSpace) &&
-           TR::RealRegister::LastGPR - savedFirst <= 3))
+          (TR::RealRegister::LastGPR - savedFirst <= 3))
          for (regIndex=TR::RealRegister::LastGPR; regIndex>=savedFirst; regIndex=(TR::RealRegister::RegNum)((uint32_t)regIndex-1))
             {
             saveSize = saveSize - TR::Compiler->om.sizeofReferenceAddress();

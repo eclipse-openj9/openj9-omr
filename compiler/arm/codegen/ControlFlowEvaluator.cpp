@@ -127,8 +127,7 @@ static TR::Instruction *compareIntsForOrder(TR_ARMConditionCode  branchType,
    bool            cannotInline = false;
 
    // For TR::instanceof, the opcode must be ificmpeq/ne.
-   if (!cg->comp()->getOption(TR_OptimizeForSpace) &&
-        firstChild->getOpCodeValue() == TR::instanceof &&
+   if (firstChild->getOpCodeValue() == TR::instanceof &&
         firstChild->getRegister() == NULL &&
         node->getReferenceCount() <=1 &&
         (value == 0 || value == 1))
@@ -235,8 +234,7 @@ TR::Instruction *OMR::ARM::TreeEvaluator::compareIntsForEquality(TR_ARMCondition
    bool            cannotInline = false;
 
    // For TR::instanceof, the opcode must be ificmpeq/ne.
-   if (!cg->comp()->getOption(TR_OptimizeForSpace) &&
-        firstChild->getOpCodeValue() == TR::instanceof &&
+   if (firstChild->getOpCodeValue() == TR::instanceof &&
         firstChild->getRegister() == NULL &&
         node->getReferenceCount() <=1 &&
         (value == 0 || value == 1))

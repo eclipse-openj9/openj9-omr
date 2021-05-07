@@ -878,7 +878,7 @@ OMR::Z::TreeEvaluator::ificmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg
 
 #ifdef J9_PROJECT_SPECIFIC
    if ((firstChild->getOpCodeValue() == TR::instanceof) &&
-      !(comp->getOption(TR_OptimizeForSpace) || debug("noInlineIfInstanceOf")) &&
+      !(debug("noInlineIfInstanceOf")) &&
       (firstChild->getRegister() == NULL) &&
       (node->getReferenceCount() <= 1) &&
       secondChild->getOpCode().isLoadConst() &&

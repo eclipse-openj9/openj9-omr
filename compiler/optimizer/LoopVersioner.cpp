@@ -8095,8 +8095,8 @@ bool TR_LoopVersioner::depsForLoopEntryPrep(
       //
       TR::Node *divisor = node->getSecondChild();
       bool divisorIsNonzeroConstant =
-         divisor->getOpCodeValue() == TR::lconst && divisor->getLongInt() != 0
-         || divisor->getOpCodeValue() == TR::iconst && divisor->getInt() != 0;
+         (divisor->getOpCodeValue() == TR::lconst && divisor->getLongInt() != 0)
+         || (divisor->getOpCodeValue() == TR::iconst && divisor->getInt() != 0);
 
       if (!divisorIsNonzeroConstant)
          {

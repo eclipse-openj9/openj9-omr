@@ -1176,8 +1176,8 @@ static TR::SymbolReference * createSymRefForNode(TR::Compilation *comp, TR::Reso
                // 2. Itself is a pointer to array object.
                TR::SymbolReference *valueChildSymRef = valueChild->getSymbolReference();
                if (valueChildSymRef != NULL &&
-                  (valueChild->getOpCode().isLoadVarDirect() && valueChildSymRef->getSymbol()->isAuto()) ||
-                  (valueChild->getOpCode().isLoadReg() && valueChildSymRef->getSymbol()->castToAutoSymbol()->isInternalPointer()))
+                  ((valueChild->getOpCode().isLoadVarDirect() && valueChildSymRef->getSymbol()->isAuto()) ||
+                  (valueChild->getOpCode().isLoadReg() && valueChildSymRef->getSymbol()->castToAutoSymbol()->isInternalPointer())))
                   {
                   if (valueChildSymRef->getSymbol()->castToAutoSymbol()->isInternalPointer())
                      {

@@ -428,7 +428,7 @@
 #define _vicmpanygeEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vicmpanyltEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vicmpanyleEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _vnotEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vnotEvaluator TR::TreeEvaluator::vnotEvaluator
 #define _vbitselectEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vpermEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vsplatsEvaluator TR::TreeEvaluator::unImpOpEvaluator

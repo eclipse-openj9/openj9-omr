@@ -501,6 +501,7 @@
 		vneg8h,                                                  	/* 0x6E60B800	NEG      	 */
 		vfneg4s,                                                  	/* 0x6EA0F800	FNEG      	 */
 		vfneg2d,                                                  	/* 0x6EE0F800	FNEG      	 */
+		vnot16b,                                                  	/* 0x6E205800	NOT      	 */
 /* Hint instructions */
 		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */

@@ -500,6 +500,7 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x6E60B800,	/* NEG      	vneg8h	 */
 		0x6EA0F800,	/* FNEG      	vfneg4s	 */
 		0x6EE0F800,	/* FNEG      	vfneg2d	 */
+		0x6E205800,	/* NOT      	vnot16b	 */
 	/* Hint instructions */
 		0xD503201F,	/* NOP          nop      */
 };

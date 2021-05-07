@@ -405,14 +405,14 @@ static TR::Register *icmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, bool 
    return trgReg;
    }
 
-// also handles bcmpeq, bucmpeq, scmpeq, sucmpeq
+// also handles bcmpeq, scmpeq
 TR::Register *
 OMR::ARM64::TreeEvaluator::icmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return icmpHelper(node, TR::CC_EQ, false, cg);
    }
 
-// also handles bcmpne, bucmpne, scmpne, sucmpne
+// also handles bcmpne, scmpne
 TR::Register *
 OMR::ARM64::TreeEvaluator::icmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

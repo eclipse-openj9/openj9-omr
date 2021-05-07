@@ -741,7 +741,7 @@ TR::Register *OMR::X86::TreeEvaluator::bloadEvaluator(TR::Node *node, TR::CodeGe
    return reg;
    }
 
-// also handles isload and icload
+// also handles isload
 TR::Register *OMR::X86::TreeEvaluator::sloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::MemoryReference  *sourceMR = generateX86MemoryReference(node, cg);
@@ -777,8 +777,6 @@ OMR::X86::TreeEvaluator::fwrtbariEvaluator(TR::Node *node, TR::CodeGenerator *cg
    return TR::TreeEvaluator::floatingPointStoreEvaluator(node, cg);
    }
 
-// cloadEvaluator handled by sloadEvaluator
-
 // iiload handled by iloadEvaluator
 
 // ilload handled by lloadEvaluator
@@ -788,8 +786,6 @@ OMR::X86::TreeEvaluator::fwrtbariEvaluator(TR::Node *node, TR::CodeGenerator *cg
 // ibloadEvaluator handled by bloadEvaluator
 
 // isloadEvaluator handled by sloadEvaluator
-
-// icloadEvaluator handled by sloadEvaluator
 
 // also used for iistore, astore and iastore
 TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -1134,12 +1130,6 @@ TR::Register *OMR::X86::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::CodeG
    return TR::TreeEvaluator::integerStoreEvaluator(node, cg);
    }
 
-// also handles icstore
-TR::Register *OMR::X86::TreeEvaluator::cstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::integerStoreEvaluator(node, cg);
-   }
-
 // iistore handled by istoreEvaluator
 
 // ilstore handled by lstoreEvaluator
@@ -1149,8 +1139,6 @@ TR::Register *OMR::X86::TreeEvaluator::cstoreEvaluator(TR::Node *node, TR::CodeG
 // ibstoreEvaluator handled by bstoreEvaluator
 
 // isstoreEvaluator handled by sstoreEvaluator
-
-// icstoreEvaluator handled by cstoreEvaluator
 
 TR::Register *
 OMR::X86::TreeEvaluator::arraycmpEvaluator(

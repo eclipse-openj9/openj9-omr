@@ -509,12 +509,6 @@ OMR::ARM64::TreeEvaluator::sloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return commonLoadEvaluator(node, TR::InstOpCode::ldrshimmx, cg);
    }
 
-TR::Register *
-OMR::ARM64::TreeEvaluator::cloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return commonLoadEvaluator(node, TR::InstOpCode::ldrhimm, cg);
-   }
-
 // also handles vloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)

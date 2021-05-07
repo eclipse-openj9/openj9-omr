@@ -2904,10 +2904,10 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
       }
 
    // ificmpyy
-   //   c2i        ; refcnt-1, unevaluated
-   //     icload   ; evaluated
-   //   c2i        ; refcnt-1, unevaluated
-   //     icload   ; evaluated
+   //   s2i        ; refcnt-1, unevaluated
+   //     isload   ; evaluated
+   //   s2i        ; refcnt-1, unevaluated
+   //     isload   ; evaluated
    //
    // Try to generate a CR.
    // FIXME: can't the binary commutative analyser handle this? that's where this should be done
@@ -2936,9 +2936,9 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
 
    // ificmpyy
    //   bu2i               ; refcnt-1, unevaluated
-   //     ibuload/iRegLoad ; evaluated
+   //     bloadi/iRegLoad ; evaluated
    //   bu2i               ; refcnt-1, unevaluated
-   //     ibuload/iRegLoad ; evaluated
+   //     bloadi/iRegLoad ; evaluated
    //
    // Try to use a CR.
    // FIXME: can't the binary commutative analyser handle this? that's where this should be done
@@ -5689,7 +5689,6 @@ OMR::Z::TreeEvaluator::axaddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
  *   ialoadEvaluator handled by aloadEvaluator
  *   ibloadEvaluator handled by bloadEvaluator
  *   isloadEvaluator handled by sloadEvaluator
- *   icloadEvaluator handled by sloadEvaluator
  *
  * iload Evaluator: load integer
  *   - also handles iiload
@@ -5750,7 +5749,6 @@ OMR::Z::TreeEvaluator::bloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
  *  iastoreEvaluator handled by istoreEvaluator
  *  ibstoreEvaluator handled by bstoreEvaluator
  *  isstoreEvaluator handled by sstoreEvaluator
- *  icstoreEvaluator handled by cstoreEvaluator
  */
 /**
  * istoreEvaluator - store integer
@@ -5788,17 +5786,6 @@ OMR::Z::TreeEvaluator::lstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
  */
 TR::Register *
 OMR::Z::TreeEvaluator::sstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   sstoreHelper(node, cg);
-   return NULL;
-   }
-
-/**
- * cstoreEvaluator - store unsigned short integer
- *  - also handles icstore
- */
-TR::Register *
-OMR::Z::TreeEvaluator::cstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    sstoreHelper(node, cg);
    return NULL;

@@ -524,12 +524,6 @@ TR::Register *OMR::ARM::TreeEvaluator::sloadEvaluator(TR::Node *node, TR::CodeGe
    return commonLoadEvaluator(node, ARMOp_ldrsh, 2, cg);
    }
 
-// also handles icload
-TR::Register *OMR::ARM::TreeEvaluator::cloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return commonLoadEvaluator(node, ARMOp_ldrh, 2, cg);
-   }
-
 TR::Register *OMR::ARM::TreeEvaluator::commonLoadEvaluator(TR::Node *node,  TR_ARMOpCodes memToRegOp, int32_t memSize, TR::CodeGenerator *cg)
    {
    TR::Register *tempReg = node->setRegister(cg->allocateRegister());
@@ -709,7 +703,7 @@ TR::Register *OMR::ARM::TreeEvaluator::bstoreEvaluator(TR::Node *node, TR::CodeG
    return commonStoreEvaluator(node, ARMOp_strb, 1, cg);
    }
 
-// also handles isstore, icstore,isstore,icstore
+// also handles isstore,isstore
 TR::Register *OMR::ARM::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonStoreEvaluator(node, ARMOp_strh, 2, cg);

@@ -16378,47 +16378,6 @@ TR::Node *variableNewSimplifier(TR::Node * node, TR::Block * block, TR::Simplifi
    }
 
 //---------------------------------------------------------------------
-// Char add
-//
-
-TR::Node *caddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
-   {
-   simplifyChildren(node, block, s);
-
-   TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
-
-   if (firstChild->getOpCode().isLoadConst() && secondChild->getOpCode().isLoadConst())
-      {
-      foldCharConstant(node, firstChild->getConst<uint16_t>() + secondChild->getConst<uint16_t>(), s, false /* !anchorChildren*/);
-      return node;
-      }
-   orderChildren(node, firstChild, secondChild, s);
-
-   BINARY_IDENTITY_OP(UnsignedShortInt, 0)
-   return node;
-   }
-
-//---------------------------------------------------------------------
-// Char subtract
-//
-
-TR::Node *csubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
-   {
-   simplifyChildren(node, block, s);
-
-   TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
-
-   if (firstChild->getOpCode().isLoadConst() && secondChild->getOpCode().isLoadConst())
-      {
-      foldCharConstant(node, firstChild->getConst<uint16_t>() - secondChild->getConst<uint16_t>(), s, false /* !anchorChildren*/);
-      return node;
-      }
-
-   BINARY_IDENTITY_OP(UnsignedShortInt, 0)
-   return node;
-   }
-
-//---------------------------------------------------------------------
 // High word of 32x32 multiply
 //
 //

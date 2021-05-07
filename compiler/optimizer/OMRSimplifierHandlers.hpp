@@ -211,8 +211,6 @@ TR::Node * vsetelemSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier
 TR::Node * checkcastSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * checkcastAndNULLCHKSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * variableNewSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
-TR::Node * caddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
-TR::Node * csubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * imulhSimplifier(TR::Node * node, TR::Block *block, TR::Simplifier * s);
 TR::Node * lmulhSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * f2cSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);

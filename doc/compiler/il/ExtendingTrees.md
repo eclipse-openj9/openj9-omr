@@ -315,11 +315,7 @@ integer shift left (`lshl`). This convention applied to most arithmetic,
 logical, comparison, load and store, and conversion opcodes. Many of our opcodes
 were verbatim copies of corresponding Java bytecode opcodes. While most
 operations in bytecode are signed, there are a few 'unsigned' operations such as
-`iushr`, which represents an unsigned right shift operation. Eventually
-our IL was expanded to support non-Java languages as well, and at that time new
-opcodes were added to support unsigned integer types. We continued the
-conventions and added unsigned opcodes (e.g. `iuadd` - add of two
-unsigned integers).
+`iushr`, which represents an unsigned right shift operation.
 
 As a result our IL ended up with strict typing and a large explosion in the
 different variants of each type of operation. For example, here is a list of

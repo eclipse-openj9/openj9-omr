@@ -685,10 +685,6 @@ OMR::IL::opCodeForCorrespondingDirectLoad(TR::ILOpCodes loadOpCode)
       case TR::dload: return TR::dstore;
       case TR::aload: return TR::astore;
       case TR::vload: return TR::vstore;
-      case TR::cload: return TR::cstore;
-      case TR::buload: return TR::bstore;
-      case TR::iuload: return TR::istore;
-      case TR::luload: return TR::lstore;
       case TR::brdbar:
       case TR::srdbar:
       case TR::irdbar:
@@ -722,10 +718,6 @@ OMR::IL::opCodeForCorrespondingDirectStore(TR::ILOpCodes storeOpCode)
       case TR::astore:  return TR::aload;
       case TR::awrtbar: return TR::aload;
       case TR::vstore:  return TR::vload;
-      case TR::cstore:  return TR::sload;
-      case TR::bustore: return TR::bload;
-      case TR::iustore: return TR::iload;
-      case TR::lustore: return TR::lload;
       case TR::bwrtbar:
       case TR::swrtbar:
       case TR::iwrtbar:

@@ -369,50 +369,6 @@ private:
       return true;
       }
 
-   static bool isNotDeprecatedUnsigned(TR::ILOpCodes opvalue)
-      {
-      switch (opvalue)
-         {
-         //Add and Subtract
-         case TR::buadd:
-         case TR::busub:
-         case TR::cadd:
-         case TR::csub:
-         case TR::iuadd:
-         case TR::iuneg:
-         case TR::iusub:
-         case TR::luadd:
-         case TR::luneg:
-         case TR::lusub:
-
-         //Load
-         case TR::buload:
-         case TR::buloadi:
-         case TR::cload:
-         case TR::cloadi:
-         case TR::iuload:
-         case TR::iuloadi:
-         case TR::luload:
-         case TR::luloadi:
-
-         //Store
-         case TR::bustore:
-         case TR::bustorei:
-         case TR::cstore:
-         case TR::cstorei:
-         case TR::iustore:
-         case TR::iustorei:
-         case TR::lustore:
-         case TR::lustorei:
-
-            return false;
-
-         default:
-            return true;
-         }
-      }
-
-
 /**
  * Public functions
  */

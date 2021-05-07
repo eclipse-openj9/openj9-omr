@@ -494,6 +494,7 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x6E60FC00,	/* FDIV      	vfdiv2d	 */
 		0x4E201C00,	/* AND      	vand16b	 */
 		0x4EA01C00,	/* ORR      	vorr16b	 */
+		0x6E201C00,	/* EOR      	veor16b	 */
 	/* Hint instructions */
 		0xD503201F,	/* NOP          nop      */
 };

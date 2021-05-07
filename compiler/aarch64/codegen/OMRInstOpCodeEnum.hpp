@@ -495,6 +495,7 @@
 		vfdiv2d,                                                  	/* 0x6E60FC00	FDIV      	 */
 		vand16b,                                                  	/* 0x4E201C00	AND      	 */
 		vorr16b,                                                  	/* 0x4EA01C00	ORR      	 */
+		veor16b,                                                  	/* 0x6E201C00	EOR      	 */
 /* Hint instructions */
 		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */

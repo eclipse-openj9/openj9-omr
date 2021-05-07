@@ -403,6 +403,22 @@ OMR::ARM64::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return inlineVectorBinaryOp(node, cg, orrOp);
    }
 
+TR::Register *
+OMR::ARM64::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::InstOpCode::Mnemonic xorOp;
+   switch(node->getDataType())
+      {
+      case TR::VectorInt8:
+         xorOp = TR::InstOpCode::veor16b;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorBinaryOp(node, cg, xorOp);
+   }
+
 // Multiply a register by a 32-bit constant
 static void mulConstant32(TR::Node *node, TR::Register *treg, TR::Register *sreg, int32_t value, TR::CodeGenerator *cg)
    {

@@ -513,6 +513,7 @@ static const char *opCodeToNameMap[] =
    "vfdiv4s",
    "vfdiv2d",
    "vand16b",
+   "vorr16b",
    "nop",
    "proc",
    "fence",

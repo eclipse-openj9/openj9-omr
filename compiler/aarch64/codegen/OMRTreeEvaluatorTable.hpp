@@ -472,7 +472,7 @@
 #define _vdivEvaluator TR::TreeEvaluator::vdivEvaluator
 #define _vremEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vandEvaluator TR::TreeEvaluator::vandEvaluator
-#define _vorEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _vorEvaluator TR::TreeEvaluator::vorEvaluator
 #define _vxorEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vshlEvaluator TR::TreeEvaluator::unImpOpEvaluator
 #define _vushrEvaluator TR::TreeEvaluator::unImpOpEvaluator

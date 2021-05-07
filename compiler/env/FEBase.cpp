@@ -95,6 +95,8 @@ char *feGetEnv(const char *s)
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
 
 TR::OptionTable OMR::Options::_feOptions[] =
    {
@@ -114,6 +116,7 @@ TR::OptionTable OMR::Options::_feOptions[] =
    {0}
    };
 
+#pragma clang diagnostic pop
 
 #include "control/Recompilation.hpp"
 

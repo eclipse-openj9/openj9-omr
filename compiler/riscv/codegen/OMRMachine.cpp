@@ -499,9 +499,9 @@ static void registerExchange(TR::Instruction *precedingInstruction,
       }
    else
       {
-      registerCopy(precedingInstruction, rk, targetReg, middleReg, cg);
-      registerCopy(precedingInstruction, rk, sourceReg, targetReg, cg);
-      registerCopy(precedingInstruction, rk, middleReg, sourceReg, cg);
+      registerCopy(precedingInstruction, rk, middleReg, targetReg, cg);
+      registerCopy(precedingInstruction, rk, targetReg, sourceReg, cg);
+      registerCopy(precedingInstruction, rk, sourceReg, middleReg, cg);
       }
    }
 

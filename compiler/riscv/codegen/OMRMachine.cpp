@@ -465,6 +465,9 @@ static void registerCopy(TR::Instruction *precedingInstruction,
                          TR::RealRegister *sourceReg,
                          TR::CodeGenerator *cg)
    {
+   TR_ASSERT(sourceReg->getKind() == rk, "Source register kind mismatch.");
+   TR_ASSERT(sourceReg->getKind() == targetReg->getKind(), "Source and target register kind mismatch.");
+
    TR::Node *node = precedingInstruction->getNode();
    switch (rk)
       {
@@ -472,7 +475,8 @@ static void registerCopy(TR::Instruction *precedingInstruction,
          generateITYPE(TR::InstOpCode::_addi, node, targetReg, sourceReg, 0, cg, precedingInstruction);
          break;
       case TR_FPR:
-         TR_ASSERT(false, "Unsupported RegisterKind.");
+         TR_ASSERT(sourceReg->isSinglePrecision() == targetReg->isSinglePrecision(), "Source and target register size mismatch");
+         generateRTYPE(sourceReg->isSinglePrecision() ? TR::InstOpCode::_fsgnj_s : TR::InstOpCode::_fsgnj_d, node, targetReg, sourceReg, sourceReg, cg, precedingInstruction);
          break;
       default:
          TR_ASSERT(false, "Unsupported RegisterKind.");

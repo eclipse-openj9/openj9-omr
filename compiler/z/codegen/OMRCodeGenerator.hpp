@@ -256,6 +256,7 @@ public:
 
 protected:
 
+   
    CodeGenerator(TR::Compilation *comp);
 
 public:
@@ -781,6 +782,8 @@ private:
 
    TR::list<TR::S390WritableDataSnippet*>  _writableList;
    TR::list<TR_S390OutOfLineCodeSection*> _outOfLineCodeSectionList;
+
+   List<TR_Pair<TR::Node, int32_t> > _ialoadUnneeded; 
 
    CS2::HashTable<TR::Register *, TR::RealRegister::RegNum, TR::Allocator> _previouslyAssignedTo;
 

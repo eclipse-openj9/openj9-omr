@@ -268,7 +268,6 @@ protected:
 
    TR_BitVector *_localsThatAreStored;
    int32_t _numLocalsWhenStoreAnalysisWasDone;
-   List<TR_Pair<TR::Node, int32_t> > _ialoadUnneeded;
 
    /**
     * @brief Constructor

@@ -409,7 +409,8 @@ OMR::Z::CodeGenerator::CodeGenerator(TR::Compilation *comp)
      _ccInstruction(NULL),
      _previouslyAssignedTo(comp->allocator("LocalRA")),
      _methodBegin(NULL),
-     _methodEnd(NULL)
+     _methodEnd(NULL),
+     _ialoadUnneeded(comp->trMemory())
    {
    }
 

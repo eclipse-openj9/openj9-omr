@@ -168,7 +168,6 @@ OMR::CodeGenerator::CodeGenerator(TR::Compilation *comp) :
       _implicitExceptionPoint(0),
       _localsThatAreStored(NULL),
       _numLocalsWhenStoreAnalysisWasDone(-1),
-      _ialoadUnneeded(comp->trMemory()),
       _symRefTab(comp->getSymRefTab()),
       _vmThreadRegister(NULL),
       _stackAtlas(NULL),

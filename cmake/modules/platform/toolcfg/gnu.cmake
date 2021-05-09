@@ -35,6 +35,10 @@ list(APPEND OMR_PLATFORM_COMPILE_OPTIONS -pthread -fno-strict-aliasing)
 
 list(APPEND OMR_PLATFORM_CXX_COMPILE_OPTIONS -std=c++0x)
 
+if(CODE_COVERAGE)
+	list(APPEND OMR_PLATFORM_COMPILE_OPTIONS -fprofile-arcs -ftest-coverage)
+endif()
+
 if(OMR_ARCH_X86)
 	if(OMR_ENV_DATA64)
 		list(APPEND OMR_PLATFORM_COMPILE_OPTIONS

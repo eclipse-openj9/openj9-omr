@@ -1746,7 +1746,7 @@ TR::RegisterDependencyConditions * OMR::X86::Machine::createDepCondForLiveGPRs()
    }
 
 // if calledForDeps == false then this is being called to generate conditions for use in regAssocs
-TR::RegisterDependencyConditions * OMR::X86::Machine::createCondForLiveAndSpilledGPRs(bool calledForDeps, TR::list<TR::Register*> *spilledRegisterList)
+TR::RegisterDependencyConditions * OMR::X86::Machine::createCondForLiveAndSpilledGPRs(TR::list<TR::Register*> *spilledRegisterList)
    {
    int32_t i, c=0;
 
@@ -1785,14 +1785,12 @@ TR::RegisterDependencyConditions * OMR::X86::Machine::createCondForLiveAndSpille
             TR_ASSERT(!spilledRegisterList || !(std::find(spilledRegisterList->begin(), spilledRegisterList->end(), virtReg) != spilledRegisterList->end())
             		,"a register should not be in both an assigned state and in the spilled list\n");
             deps->addPostCondition(virtReg, realReg->getRegisterNumber(), self()->cg());
-            if (calledForDeps)
-               {
-               virtReg->incTotalUseCount();
-               virtReg->incFutureUseCount();
-               virtReg->setAssignedRegister(NULL);
-               realReg->setAssignedRegister(NULL);
-               realReg->setState(TR::RealRegister::Free);
-               }
+
+            virtReg->incTotalUseCount();
+            virtReg->incFutureUseCount();
+            virtReg->setAssignedRegister(NULL);
+            realReg->setAssignedRegister(NULL);
+            realReg->setState(TR::RealRegister::Free);
             }
          }
 

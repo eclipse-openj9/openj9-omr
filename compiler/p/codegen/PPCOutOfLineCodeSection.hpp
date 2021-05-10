@@ -50,7 +50,6 @@ public:
    TR_PPCOutOfLineCodeSection(TR::Node *callNode, TR::ILOpCodes callOp, TR::Register *targetReg, TR::LabelSymbol *entryLabel, TR::LabelSymbol *restartLabel, TR::InstOpCode::Mnemonic targetRegMovOpcode, TR::CodeGenerator *cg);
 
 public:
-   void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
    void generatePPCOutOfLineCodeSectionDispatch();
    };
 #endif

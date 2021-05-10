@@ -52,7 +52,6 @@ public:
    TR_S390OutOfLineCodeSection(TR::Node *callNode, TR::ILOpCodes callOp, TR::Register *targetReg, TR::LabelSymbol *entryLabel, TR::LabelSymbol *restartLabel, TR::InstOpCode::Mnemonic targetRegMovOpcode, TR::CodeGenerator *cg);
 
 public:
-   void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
    TR::RegisterDependencyConditions *formEvaluatedArgumentDepList();
    void generateS390OutOfLineCodeSectionDispatch();
    };

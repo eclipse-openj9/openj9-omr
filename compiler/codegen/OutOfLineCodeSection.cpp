@@ -23,7 +23,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "codegen/BackingStore.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/RegisterDependency.hpp"
 #include "codegen/TreeEvaluator.hpp"
 #include "compile/Compilation.hpp"
 #include "il/ILOps.hpp"
@@ -197,4 +200,83 @@ TR::Node *TR_OutOfLineCodeSection::createOutOfLineCallNode(TR::Node *callNode, T
       }
 
    return newCallNode;
+   }
+
+void
+TR_OutOfLineCodeSection::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
+   {
+   TR::Compilation *comp = _cg->comp();
+   if (hasBeenRegisterAssigned())
+      return;
+   // nested internal control flow assert:
+   _cg->setInternalControlFlowSafeNestingDepth(_cg->internalControlFlowNestingDepth());
+
+   // Create a dependency list on the first instruction in this stream that captures all current real register associations.
+   // This is necessary to get the register assigner back into its original state before the helper stream was processed.
+   //
+   _cg->incOutOfLineColdPathNestedDepth();
+
+   // this is to prevent the OOL entry label from resetting all register's startOfrange during RA
+   _cg->toggleIsInOOLSection();
+   TR::RegisterDependencyConditions *liveRealRegDeps = _cg->machine()->createCondForLiveAndSpilledGPRs(_cg->getSpilledRegisterList());
+
+   if (liveRealRegDeps)
+      {
+      _firstInstruction->setDependencyConditions(liveRealRegDeps);
+#if defined(TR_TARGET_ARM64)
+      liveRealRegDeps->bookKeepingRegisterUses(_firstInstruction, _cg);
+#endif
+      }
+   _cg->toggleIsInOOLSection(); // toggle it back because there is another toggle inside swapInstructionListsWithCompilation()
+
+
+   // Register assign the helper dispatch instructions.
+   swapInstructionListsWithCompilation();
+   _cg->doRegisterAssignment(kindsToBeAssigned);
+
+   TR::list<TR::Register*> *firstTimeLiveOOLRegisterList = _cg->getFirstTimeLiveOOLRegisterList();
+   TR::list<TR::Register*> *spilledRegisterList = _cg->getSpilledRegisterList();
+
+   for (auto li = firstTimeLiveOOLRegisterList->begin(); li != firstTimeLiveOOLRegisterList->end(); ++li)
+      {
+      if ((*li)->getBackingStorage())
+         {
+         (*li)->getBackingStorage()->setMaxSpillDepth(1);
+         traceMsg(comp,"Adding virtReg:%s from _firstTimeLiveOOLRegisterList to _spilledRegisterList \n", _cg->getDebug()->getName((*li)));
+         spilledRegisterList->push_front((*li));
+         }
+      }
+   _cg->getFirstTimeLiveOOLRegisterList()->clear();
+
+   swapInstructionListsWithCompilation();
+
+#if defined(TR_TARGET_ARM)
+   // If a real reg is assigned at the end of the hot path and free at the beginning, but unused on the cold path
+   // it won't show up in the liveRealRegDeps. If a dead virtual occupies that real reg we need to clean it up.
+   for (int32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastFPR; ++i)
+      {
+      TR::RealRegister *r = _cg->machine()->getRealRegister((TR::RealRegister::RegNum)i);
+      TR::Register        *v = r->getAssignedRegister();
+
+      if (v && v != r && v->getFutureUseCount() == 0)
+         {
+         v->setAssignedRegister(NULL);
+         r->setState(TR::RealRegister::Unlatched);
+         }
+      }
+#endif
+
+   _cg->decOutOfLineColdPathNestedDepth();
+
+   // Returning to mainline, reset this counter
+   _cg->setInternalControlFlowSafeNestingDepth(0);
+
+   // Link in the helper stream into the mainline code.
+   // We will end up with the OOL items attached at the bottom of the instruction stream
+   TR::Instruction *appendInstruction = _cg->getAppendInstruction();
+   appendInstruction->setNext(_firstInstruction);
+   _firstInstruction->setPrev(appendInstruction);
+   _cg->setAppendInstruction(_appendInstruction);
+
+   setHasBeenRegisterAssigned(true);
    }

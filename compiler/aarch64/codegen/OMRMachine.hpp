@@ -163,7 +163,7 @@ public:
     * @param spilledRegisterList : the list of spilled registers in main line and hot path
     * @return register dependency conditions
     */
-   TR::RegisterDependencyConditions *createDepCondForLiveGPRs(TR::list<TR::Register*> *spilledRegisterList);
+   TR::RegisterDependencyConditions *createCondForLiveAndSpilledGPRs(TR::list<TR::Register*> *spilledRegisterList);
 
    /**
     * @brief Decrease future use count of the register and unlatch it if necessary

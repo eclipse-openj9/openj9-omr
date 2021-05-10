@@ -162,7 +162,7 @@ public:
    void setCallNode(TR::Node *n) { _callNode = n; }
 
    void preEvaluatePersistentHelperArguments();
-   virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned) {}
+   virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
 
    };
 

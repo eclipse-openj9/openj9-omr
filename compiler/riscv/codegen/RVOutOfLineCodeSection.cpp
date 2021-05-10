@@ -32,11 +32,6 @@ TR_RVOutOfLineCodeSection::TR_RVOutOfLineCodeSection(TR::Node *callNode,
    generateRVOutOfLineCodeSectionDispatch();
    }
 
-void TR_RVOutOfLineCodeSection::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
-   {
-   TR_UNIMPLEMENTED();
-   }
-
 void TR_RVOutOfLineCodeSection::generateRVOutOfLineCodeSectionDispatch()
    {
    TR_UNIMPLEMENTED();

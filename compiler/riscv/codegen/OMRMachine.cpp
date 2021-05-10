@@ -29,6 +29,7 @@
 #include "codegen/Machine.hpp"
 #include "codegen/Machine_inlines.hpp"
 #include "codegen/RealRegister.hpp"
+#include "codegen/RegisterDependency.hpp"
 #include "infra/Assert.hpp"
 
 OMR::RV::Machine::Machine(TR::CodeGenerator *cg) :
@@ -726,6 +727,12 @@ OMR::RV::Machine::restoreRegisterStateFromSnapShot()
          _registerFile[i]->setAssignedRegister(NULL);
          }
       }
+   }
+
+TR::RegisterDependencyConditions *
+OMR::RV::Machine::createCondForLiveAndSpilledGPRs(TR::list<TR::Register*> *spilledRegisterList)
+   {
+   TR_UNIMPLEMENTED();
    }
 
 uint32_t OMR::RV::Machine::_globalRegisterNumberToRealRegisterMap[] =

@@ -24,6 +24,7 @@
  * definitions are permitted.
  */
 
+#include "compiler/codegen/OMRInstOpCode.enum"
 
    bad,              // Illegal Opcode
    add,              // Add

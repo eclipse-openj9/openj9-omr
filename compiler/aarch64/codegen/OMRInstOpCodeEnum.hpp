@@ -24,6 +24,8 @@
  * definitions are permitted.
  */
 
+#include "compiler/codegen/OMRInstOpCode.enum"
+
 //		Opcode                                                          BINARY    	OPCODE    	comments
 /* UNALLOCATED */
 		bad,                                                    	/* 0x00000000	BAD       	invalid operation */

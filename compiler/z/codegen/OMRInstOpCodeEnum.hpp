@@ -24,6 +24,8 @@
  * definitions are permitted.
  */
 
+#include "compiler/codegen/OMRInstOpCode.enum"
+
    /* Pseudo Instructions */
 
    ASSOCREGS,           // Register Association

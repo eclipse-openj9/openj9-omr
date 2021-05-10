@@ -27,7 +27,7 @@
 #ifndef TR_INST_OPCODE_ENUM
 #define TR_INST_OPCODE_ENUM
 
-#include "codegen/OMRInstOpCodeEnum.hpp"
+#include "codegen/OMRInstOpCode.enum"
 
 #else
 #error Nested InstOpCodeEnum include

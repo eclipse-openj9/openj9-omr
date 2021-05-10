@@ -134,7 +134,7 @@ void TR::PPCDepInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
       }
    else
       {
-      // Restore the register association using the ASSOCREGS instruction info
+      // Restore the register association using the assocreg instruction info
       int i;
       TR::RegisterDependencyConditions *assocreg = getDependencyConditions();
       TR::RegisterDependency *assoc;

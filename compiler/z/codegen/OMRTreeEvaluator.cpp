@@ -2267,7 +2267,7 @@ tryGenerateCLCForComparison(TR::Node *node, TR::CodeGenerator *cg)
    // ------------------------------
    //
    //  [0x000003ff9e44be48]   CLC      Auto[<temp slot 57>] ?+0(3,GPR5), Shadow[<vft-symbol>] 0(&GPR_6161)
-   //  [0x000003ff9e44c190]   ASSOCREGS
+   //  [0x000003ff9e44c190]   assocreg
    //  [0x000003ff9e44bf88]   BRC     MASK3(0x6), Label L0175
    //
    // \\ gnu/testlet/java/text/DateFormat/Test.test(Lgnu/testlet/TestHarness;)V
@@ -2279,7 +2279,7 @@ tryGenerateCLCForComparison(TR::Node *node, TR::CodeGenerator *cg)
    //  \\  354 JBinvokevirtual 52 gnu/testlet/java/text/DateFormat/Test.equals(Ljava/lang/Object;)Z
    //  \\      19 JBifacmpeq 24
    // 0x000003ffdf6cb13a 0000333e [0x000003ff9e44be48] d5 02 50 78 70 00          CLC      Auto[<temp slot 57>] 120(3,GPR5), Shadow[<vft-symbol>] 0(GPR7)
-   // 0x000003ffdf6cb140 00003344 [0x000003ff9e44c190]                            ASSOCREGS
+   // 0x000003ffdf6cb140 00003344 [0x000003ff9e44c190]                            assocreg
    // 0x000003ffdf6cb140 00003344 [0x000003ff9e44bf88] a7 64 12 fc                BRC     MASK3(0x6), Label L0175, labelTargetAddr=0x000003FFDF6CD738
 
    bool operand1IsVFTSymbol = operand1->getOpCode().hasSymbolReference() && (operand1->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef());
@@ -9523,7 +9523,7 @@ OMR::Z::TreeEvaluator::BBEndEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    if (!nextTT || !nextTT->getNode()->getBlock()->isExtensionOfPreviousBlock())
       {
       if (cg->enableRegisterAssociations() &&
-          cg->getAppendInstruction()->getOpCodeValue() != TR::InstOpCode::ASSOCREGS)
+          cg->getAppendInstruction()->getOpCodeValue() != TR::InstOpCode::assocreg)
          {
          cg->machine()->createRegisterAssociationDirective(cg->getAppendInstruction());
          }

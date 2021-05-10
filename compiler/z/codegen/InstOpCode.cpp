@@ -60,7 +60,7 @@ uint32_t
 OMR::Z::InstOpCode::isAdmin()
    {
    return (_mnemonic == RET ||
-           _mnemonic == ASSOCREGS ||
+           _mnemonic == assocreg ||
            _mnemonic == DEPEND ||
            _mnemonic == FENCE ||
            _mnemonic == PROC ||

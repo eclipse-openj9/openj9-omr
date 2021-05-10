@@ -26,8 +26,8 @@
 
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::ASSOCREGS,
-   /* .name        = */ "ASSOCREGS",
+   /* .mnemonic    = */ OMR::InstOpCode::assocreg,
+   /* .name        = */ "assocreg",
    /* .description = */ "Register Association",
    /* .opcode[0]   = */ 0x00,
    /* .opcode[1]   = */ 0x00,

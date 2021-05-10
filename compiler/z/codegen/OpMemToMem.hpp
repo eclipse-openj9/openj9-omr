@@ -86,7 +86,7 @@ class MemToMemMacroOp
                if(_startControlFlow==NULL)
                  {
                  _startControlFlow=cursorBefore->getNext();
-                 if(_startControlFlow->getOpCodeValue() == TR::InstOpCode::ASSOCREGS) _startControlFlow=_startControlFlow->getNext();
+                 if(_startControlFlow->getOpCodeValue() == TR::InstOpCode::assocreg) _startControlFlow=_startControlFlow->getNext();
                  }
                if(_startControlFlow != _cursor)
                  {

@@ -28,7 +28,6 @@
 
    /* Pseudo Instructions */
 
-   ASSOCREGS,           // Register Association
    BAD,                 // Bad Opcode
    BREAK,               // Breakpoint (debugger)
    DC,                  // DC

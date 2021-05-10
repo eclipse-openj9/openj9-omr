@@ -169,10 +169,10 @@ OMR::Z::Instruction::initialize(TR::Instruction * precedingInstruction, bool ins
 
    if (cond)
       {
-      // Don't want to increment total use counts for ASSOCREGS instructions
+      // Don't want to increment total use counts for assocreg instructions
       // because their register references will confuse the code that tries
       // to determine when the first use of a register takes place
-      if (condFlag || self()->getOpCodeValue() != TR::InstOpCode::ASSOCREGS)
+      if (condFlag || self()->getOpCodeValue() != TR::InstOpCode::assocreg)
          {
          cond->bookKeepingRegisterUses(self(), cg);
          if(cond->getPreConditions()) cond->getPreConditions()->incNumUses();
@@ -767,7 +767,7 @@ OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    TR::Compilation *comp = self()->cg()->comp();
 
-   if (self()->getOpCodeValue() != TR::InstOpCode::ASSOCREGS)
+   if (self()->getOpCodeValue() != TR::InstOpCode::assocreg)
       {
       self()->assignRegistersAndDependencies(kindToBeAssigned);
       }

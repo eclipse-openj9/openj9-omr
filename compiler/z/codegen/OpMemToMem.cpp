@@ -1527,7 +1527,7 @@ MemCmpVarLenMacroOp::generate(TR::Register* dstReg, TR::Register* srcReg, TR::Re
    if(_startControlFlow==NULL)
      {
      _startControlFlow=cursorBefore->getNext();
-     if(_startControlFlow->getOpCodeValue() == TR::InstOpCode::ASSOCREGS) _startControlFlow=_startControlFlow->getNext();
+     if(_startControlFlow->getOpCodeValue() == TR::InstOpCode::assocreg) _startControlFlow=_startControlFlow->getNext();
      }
    if(_startControlFlow != _cursor)
      {
@@ -1569,7 +1569,7 @@ MemCmpConstLenMacroOp::generate(TR::Register* dstReg, TR::Register* srcReg, TR::
    if(_startControlFlow==NULL)
      {
      _startControlFlow=cursorBefore->getNext();
-     if(_startControlFlow->getOpCodeValue() == TR::InstOpCode::ASSOCREGS) _startControlFlow=_startControlFlow->getNext();
+     if(_startControlFlow->getOpCodeValue() == TR::InstOpCode::assocreg) _startControlFlow=_startControlFlow->getNext();
      }
    if(_startControlFlow != _cursor)
      {
@@ -1663,7 +1663,7 @@ MemCmpVarLenSignMacroOp::generate(TR::Register* dstReg, TR::Register* srcReg, TR
    if(_startControlFlow==NULL)
      {
      _startControlFlow=cursorBefore->getNext();
-     if(_startControlFlow->getOpCodeValue() == TR::InstOpCode::ASSOCREGS) _startControlFlow=_startControlFlow->getNext();
+     if(_startControlFlow->getOpCodeValue() == TR::InstOpCode::assocreg) _startControlFlow=_startControlFlow->getNext();
      }
    if(_startControlFlow != _cursor)
      {
@@ -1712,7 +1712,7 @@ MemCmpConstLenSignMacroOp::generate(TR::Register* dstReg, TR::Register* srcReg, 
    if(_startControlFlow==NULL)
      {
      _startControlFlow=cursorBefore->getNext();
-     if(_startControlFlow->getOpCodeValue() == TR::InstOpCode::ASSOCREGS) _startControlFlow=_startControlFlow->getNext();
+     if(_startControlFlow->getOpCodeValue() == TR::InstOpCode::assocreg) _startControlFlow=_startControlFlow->getNext();
      }
    if(_startControlFlow != _cursor)
      {

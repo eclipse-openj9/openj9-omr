@@ -39,6 +39,7 @@
 
 static const char *opCodeToNameMap[] =
    {
+   "assocreg",
    "bad",
 /*
  * RISC-V instructions

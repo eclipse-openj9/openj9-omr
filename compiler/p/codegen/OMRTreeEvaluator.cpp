@@ -4767,7 +4767,7 @@ TR::Register *OMR::Power::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::Code
             numAssoc++;
             }
          }
-      // Emit an AssocRegs instruction to track the previous association
+      // Emit an assocreg instruction to track the previous association
       if( numAssoc > 0 )
          {
          assoc->setNumPostConditions(numAssoc, cg->trMemory());

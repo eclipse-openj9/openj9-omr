@@ -4061,7 +4061,7 @@ OMR::Z::Machine::createRegisterAssociationDirective(TR::Instruction * cursor)
       associations->addPostCondition(self()->getVirtualAssociatedWithReal(regNum), regNum);
       }
 
-   TR::Instruction *cursor1 = new (self()->cg()->trHeapMemory(), TR_MemoryBase::S390Instruction) TR::Instruction(cursor, TR::InstOpCode::ASSOCREGS, associations, self()->cg());
+   TR::Instruction *cursor1 = new (self()->cg()->trHeapMemory(), TR_MemoryBase::S390Instruction) TR::Instruction(cursor, TR::InstOpCode::assocreg, associations, self()->cg());
 
    if (cursor == self()->cg()->getAppendInstruction())
       {

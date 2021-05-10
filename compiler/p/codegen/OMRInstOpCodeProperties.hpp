@@ -26,6 +26,17 @@
 
 
    {
+   /* .mnemonic    = */ OMR::InstOpCode::assocreg,
+   /* .name        = */ "assocreg",
+   /* .description =    "Associate real registers with Virtual registers.", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x00000000,
+   /* .format      = */ FORMAT_NONE,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   },
+
+   {
    /* .mnemonic    = */ OMR::InstOpCode::bad,
    /* .name        = */ "bad",
    /* .description =    "Illegal Opcode", */
@@ -6255,17 +6266,6 @@
    /* .format      = */ FORMAT_DD,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
    /* .properties  = */ PPCOpProp_None,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::assocreg,
-   /* .name        = */ "assocreg",
-   /* .description =    "Associate real registers with Virtual registers.", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_NONE,
-   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },
 
    {

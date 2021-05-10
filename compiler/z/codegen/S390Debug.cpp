@@ -158,7 +158,7 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Instruction * instr)
       }
 
    //  dump the inst's pre deps
-   if (instr->getOpCodeValue() != TR::InstOpCode::ASSOCREGS && _comp->cg()->getCodeGeneratorPhase() <= TR::CodeGenPhase::BinaryEncodingPhase)
+   if (instr->getOpCodeValue() != TR::InstOpCode::assocreg && _comp->cg()->getCodeGeneratorPhase() <= TR::CodeGenPhase::BinaryEncodingPhase)
       dumpDependencies(pOutFile, instr, true, false);
 
    switch (instr->getKind())
@@ -352,10 +352,10 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Instruction * instr)
       case TR::Instruction::IsNotExtended:
       case TR::Instruction::IsE:
          {
-         // ASSOCREGS piggy backs on a vanilla TR::Instruction
-         // if (instr->getOpCodeValue() == TR::InstOpCode::ASSOCREGS) break;
+         // assocreg piggy backs on a vanilla TR::Instruction
+         // if (instr->getOpCodeValue() == TR::InstOpCode::assocreg) break;
 
-         if ((instr->getOpCodeValue() == TR::InstOpCode::ASSOCREGS) && /*(debug("traceMsg90RA"))*/
+         if ((instr->getOpCodeValue() == TR::InstOpCode::assocreg) && /*(debug("traceMsg90RA"))*/
              (_comp->getOption(TR_TraceRA)))
             {
             if (_comp->cg()->getCodeGeneratorPhase() < TR::CodeGenPhase::BinaryEncodingPhase)
@@ -371,7 +371,7 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Instruction * instr)
       }
 
    //  dump the inst's post deps
-   if (instr->getOpCodeValue() != TR::InstOpCode::ASSOCREGS && _comp->cg()->getCodeGeneratorPhase() <= TR::CodeGenPhase::BinaryEncodingPhase)
+   if (instr->getOpCodeValue() != TR::InstOpCode::assocreg && _comp->cg()->getCodeGeneratorPhase() <= TR::CodeGenPhase::BinaryEncodingPhase)
       dumpDependencies(pOutFile, instr, false, true);
    }
 

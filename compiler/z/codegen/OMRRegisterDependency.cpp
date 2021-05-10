@@ -692,7 +692,7 @@ OMR::Z::RegisterDependencyConditions::usesRegister(TR::Register * r)
 void
 OMR::Z::RegisterDependencyConditions::bookKeepingRegisterUses(TR::Instruction * instr, TR::CodeGenerator * cg, int32_t oldPreCursor, int32_t oldPostCursor)
    {
-   if (instr->getOpCodeValue() != TR::InstOpCode::ASSOCREGS)
+   if (instr->getOpCodeValue() != TR::InstOpCode::assocreg)
       {
       // We create a register association directive for each dependency
 

@@ -147,7 +147,6 @@ TR::RVSystemLinkageProperties::RVSystemLinkageProperties()
    _vtableIndexArgumentRegister = TR::RealRegister::NoReg;
    _j9methodArgumentRegister    = TR::RealRegister::NoReg;
 
-   _numberOfDependencyRegisters = 32; // To be determined
    _offsetToFirstLocal            = 0; // To be determined
 
    initialize();

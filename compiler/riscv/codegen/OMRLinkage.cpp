@@ -81,6 +81,11 @@ void TR::RVLinkageProperties::initialize()
             _returnRegisters[_firstFloatReturnRegister + numFloatReturnRegisters++] = regNum;
             }
          }
+
+   // TODO: following is safe default, can probably be lower. Q: how is this number computed?
+   _numberOfDependencyRegisters =   (TR::RealRegister::LastGPR - TR::RealRegister::FirstGPR + 1)
+                                  + (TR::RealRegister::LastFPR - TR::RealRegister::FirstFPR + 1);
+
    }
 
 void OMR::RV::Linkage::mapStack(TR::ResolvedMethodSymbol *method)

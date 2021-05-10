@@ -132,7 +132,7 @@ struct RVLinkageProperties
    TR::RealRegister::RegNum _computedCallTargetRegister; // for icallVMprJavaSendPatchupVirtual
    TR::RealRegister::RegNum _vtableIndexArgumentRegister; // for icallVMprJavaSendPatchupVirtual
    TR::RealRegister::RegNum _j9methodArgumentRegister; // for icallVMprJavaSendStatic
-   uint8_t _numberOfDependencyGPRegisters;
+   uint8_t _numberOfDependencyRegisters;
    int8_t _offsetToFirstLocal;
 
    uint32_t getNumIntArgRegs() const {return _numIntegerArgumentRegisters;}
@@ -291,7 +291,7 @@ struct RVLinkageProperties
 
    int32_t getOffsetToFirstLocal() const {return _offsetToFirstLocal;}
 
-   uint32_t getNumberOfDependencyGPRegisters() const {return _numberOfDependencyGPRegisters;}
+   uint32_t getNumberOfDependencyRegisters() const {return _numberOfDependencyRegisters;}
 
    /**
     * @brief Initialize derived properties from register flags. This *must* be called

@@ -147,7 +147,7 @@ TR::RVSystemLinkageProperties::RVSystemLinkageProperties()
    _vtableIndexArgumentRegister = TR::RealRegister::NoReg;
    _j9methodArgumentRegister    = TR::RealRegister::NoReg;
 
-   _numberOfDependencyGPRegisters = 32; // To be determined
+   _numberOfDependencyRegisters = 32; // To be determined
    _offsetToFirstLocal            = 0; // To be determined
 
    initialize();
@@ -752,8 +752,8 @@ TR::Register *TR::RVSystemLinkage::buildDispatch(TR::Node *callNode)
 
    TR::RegisterDependencyConditions *dependencies =
       new (trHeapMemory()) TR::RegisterDependencyConditions(
-         pp.getNumberOfDependencyGPRegisters(),
-         pp.getNumberOfDependencyGPRegisters(), trMemory());
+         pp.getNumberOfDependencyRegisters(),
+         pp.getNumberOfDependencyRegisters(), trMemory());
 
    int32_t totalSize = buildArgs(callNode, dependencies);
    if (totalSize > 0)

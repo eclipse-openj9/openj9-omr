@@ -352,9 +352,9 @@ omrthread_get_stack_range(omrthread_t thread, void **stackStart, void **stackEnd
 	OSTHREAD osTid = thread->handle;
 	size_t stackSize = 0;
 
-	*stackStart = pthread_get_stackaddr_np(osTid);
+	*stackEnd = pthread_get_stackaddr_np(osTid);
 	stackSize = pthread_get_stacksize_np(osTid);
-	*stackEnd = (void *)((uintptr_t)*stackStart + stackSize);
+	*stackStart = (void *)((uintptr_t)*stackEnd - stackSize);
 	return J9THREAD_SUCCESS;
 #else /* defined(OSX) */
 	return J9THREAD_ERR_UNSUPPORTED_PLAT;

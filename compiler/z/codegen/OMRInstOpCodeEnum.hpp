@@ -35,31 +35,9 @@
    DEPEND,              // Someplace to hang dependencies
    FENCE,               // Fence
    LABEL,               // Destination of a jump
-   LHHR,                // Load (High <- High)
-   LHLR,                // Load (High <- Low)
-   LLCHHR,              // Load Logical Character (High <- High)
-   LLCHLR,              // Load Logical Character (High <- low)
-   LLCLHR,              // Load Logical Character (Low <- High)
-   LLHFR,               // Load (Low <- High)
-   LLHHHR,              // Load Logical Halfword (High <- High)
-   LLHHLR,              // Load Logical Halfword (High <- low)
-   LLHLHR,              // Load Logical Halfword (Low <- High)
-   NHHR,                // AND High (High <- High)
-   NHLR,                // AND High (High <- Low)
-   NLHR,                // AND High (Low <- High)
-   OHHR,                // OR High (High <- High)
-   OHLR,                // OR High (High <- Low)
-   OLHR,                // OR High (Low <- High)
    PROC,                // Entry to the method
    RET,                 // Return
-   SLLHH,               // Shift Left Logical (High <- High)
-   SLLLH,               // Shift Left Logical (Low <- High)
-   SRLHH,               // Shift Right Logical (High <- High)
-   SRLLH,               // Shift Right Logical (Low <- High)
    VGNOP,               // ValueGuardNOP
-   XHHR,                // Exclusive OR High (High <- High)
-   XHLR,                // Exclusive OR High (High <- Low)
-   XLHR,                // Exclusive OR High (Low <- High)
 
    /* z900 Instructions */
 

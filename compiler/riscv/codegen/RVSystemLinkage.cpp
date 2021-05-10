@@ -693,28 +693,41 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
          } // end of switch
       } // end of for
 
-   // NULL deps for non-preserved and non-system regs
-   while (numIntegerArgs < properties.getNumIntArgRegs())
+   // NULL deps for unused integer argument registers
+   for (int i = numIntegerArgs; i < properties.getNumIntArgRegs(); i++)
       {
-      if (numIntegerArgs == 0 && resType.isAddress())
+      if (i == 0 && resType.isAddress())
          {
          dependencies->addPreCondition(cg()->allocateRegister(), properties.getIntegerArgumentRegister(0));
          dependencies->addPostCondition(cg()->allocateCollectedReferenceRegister(), properties.getIntegerArgumentRegister(0));
          }
       else
          {
-         TR::addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+         TR::addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(i), TR_GPR, cg());
          }
-      numIntegerArgs++;
       }
 
-   int32_t floatRegsUsed = (numFloatArgs > properties.getNumFloatArgRegs()) ? properties.getNumFloatArgRegs() : numFloatArgs;
-   for (i = (TR::RealRegister::RegNum)((uint32_t)TR::RealRegister::f0 + floatRegsUsed); i <= TR::RealRegister::LastFPR; i++)
+   // NULL deps for non-preserved non-argument integer registers
+   for (auto rn = TR::RealRegister::FirstGPR; rn <= TR::RealRegister::LastGPR; rn++)
       {
-      if (!properties.getPreserved((TR::RealRegister::RegNum)i))
+      if (!properties.getPreserved(rn) && !properties.getIntegerArgument(rn))
          {
-         // NULL dependency for non-preserved regs
-         TR::addDependency(dependencies, NULL, (TR::RealRegister::RegNum)i, TR_FPR, cg());
+         TR::addDependency(dependencies, NULL, rn, TR_FPR, cg());
+         }
+      }
+
+   // NULL deps for unused FP argument registers
+   for (int i = numFloatArgs; i < properties.getNumFloatArgRegs(); i++)
+      {
+      TR::addDependency(dependencies, NULL, properties.getFloatArgumentRegister(i), TR_FPR, cg());
+      }
+
+   // NULL deps for non-preserved non-argument FP registers
+   for (auto rn = TR::RealRegister::FirstFPR; rn <= TR::RealRegister::LastFPR; rn++)
+      {
+      if (!properties.getPreserved(rn) && !properties.getFloatArgument(rn))
+         {
+         TR::addDependency(dependencies, NULL, rn, TR_FPR, cg());
          }
       }
 

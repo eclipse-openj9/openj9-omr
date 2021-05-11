@@ -1040,15 +1040,15 @@ OMR::Z::CodeGenerator::beginInstructionSelection()
          TR::ResolvedMethodSymbol * methodSymbol = self()->comp()->getJittedMethodSymbol();
          intptr_t jniMethodTargetAddress = (intptr_t)methodSymbol->getResolvedMethod()->startAddressForJNIMethod(self()->comp());
 
-         cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, UPPER_4_BYTES(jniMethodTargetAddress), cursor, self());
+         cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::dd, startNode, UPPER_4_BYTES(jniMethodTargetAddress), cursor, self());
 
          if (self()->comp()->target().is64Bit())
             {
-            cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, LOWER_4_BYTES(jniMethodTargetAddress), cursor, self());
+            cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::dd, startNode, LOWER_4_BYTES(jniMethodTargetAddress), cursor, self());
             }
          }
 
-      _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, 0, NULL, cursor, self());
+      _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::dd, startNode, 0, NULL, cursor, self());
       }
 
    generateS390PseudoInstruction(self(), TR::InstOpCode::PROC, startNode);

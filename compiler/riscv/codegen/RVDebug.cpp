@@ -41,6 +41,7 @@ static const char *opCodeToNameMap[] =
    {
    "assocreg",
    "bad",
+   "dd",
 /*
  * RISC-V instructions
  */
@@ -50,7 +51,6 @@ static const char *opCodeToNameMap[] =
    "proc",
    "fence",
    "return",
-   "dd",
    "label"
    };
 

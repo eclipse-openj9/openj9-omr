@@ -29,7 +29,6 @@
    /* Pseudo Instructions */
 
    BREAK,               // Breakpoint (debugger)
-   DC,                  // DC
    DC2,                 // DC2
    DCB,                 // Debug Counter Bump
    DEPEND,              // Someplace to hang dependencies

@@ -1642,7 +1642,7 @@ void OMR::Z::TreeEvaluator::tableEvaluatorCaseLabelHelper(TR::Node * node, TR::C
          {
          TR::Node * caseNode = node->getChild(i + 2);
          TR::LabelSymbol * label = caseNode->getBranchDestination()->getNode()->getLabel();
-         new (cg->trHeapMemory()) TR::S390LabelInstruction(TR::InstOpCode::DC, node, label, cg);
+         new (cg->trHeapMemory()) TR::S390LabelInstruction(TR::InstOpCode::dd, node, label, cg);
          }
 
       TR::MemoryReference * tempMR = generateS390MemoryReference(reg1, selectorReg, 0, cg);

@@ -544,7 +544,6 @@
 // rxor,             // Rotate & XOR
    wrtbar,           // Write barrier directive
    proc,             // Entry to the method
-   dd,               // define word
    vgdnop,           // Virtual Guard NOP instruction
    probenop,         // Probe NOP (for RI)
    iflong,           // compare and branch long

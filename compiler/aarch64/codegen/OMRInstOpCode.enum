@@ -736,7 +736,6 @@
 		proc,  // Entry to the method
 		fence, // Fence
 		retn,  // Return
-		dd,    // Define word
 		label, // Destination of a jump
 		vgdnop, // Virtual Guard NOP instruction
 		ARM64LastOp = vgdnop,

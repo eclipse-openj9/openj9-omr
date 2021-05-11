@@ -261,15 +261,15 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
    cursor = generateS390LabelInstruction(cg, InstOpCode::LABEL, node, _entryPointMarkerLabel, cursor);
 
    // "C.E.E.1."
-   cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, 0x00C300C5, cursor);
-   cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, 0x00C500F1, cursor);
-   cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, 0x00000000, cursor);
+   cursor = generateDataConstantInstruction(cg, TR::InstOpCode::dd, node, 0x00C300C5, cursor);
+   cursor = generateDataConstantInstruction(cg, TR::InstOpCode::dd, node, 0x00C500F1, cursor);
+   cursor = generateDataConstantInstruction(cg, TR::InstOpCode::dd, node, 0x00000000, cursor);
 
    cg->addRelocation(new (cg->trHeapMemory()) InstructionLabelRelative32BitRelocation(cursor, -8, _ppa1Snippet->getSnippetLabel(), 1));
 
    // DSA size is the frame size aligned to 32-bytes which means it's least significant 5 bits are zero and are used to
    // represent the flags which are always 0 for OMR as we do not support leaf frames or direct calls to alloca()
-   cursor = generateDataConstantInstruction(cg, TR::InstOpCode::DC, node, stackFrameSize, cursor);
+   cursor = generateDataConstantInstruction(cg, TR::InstOpCode::dd, node, stackFrameSize, cursor);
 
    cursor = cursor->getNext();
 
@@ -645,17 +645,17 @@ TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instruction* cursor, TR::N
       TR::LabelSymbol* xplinkCallDescriptorEndLabel = generateLabelSymbol(cg());
 
       uint32_t nopDescriptor = 0x47000000 | (static_cast<uint32_t>(callType) << 16);
-      cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, nopDescriptor, cursor);
+      cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::dd, node, nopDescriptor, cursor);
 
       cg()->addRelocation(new (cg()->trHeapMemory()) XPLINKCallDescriptorRelocation(cursor, xplinkCallDescriptorBeginLabel));
 
       cursor = generateS390BranchInstruction(cg(), InstOpCode::BRC, InstOpCode::COND_BRC, node, xplinkCallDescriptorEndLabel, cursor);
       cursor = generateAlignmentNopInstruction(cg(), node, 8, cursor);
       cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, node, xplinkCallDescriptorBeginLabel, cursor);
-      cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, 0x00000000, cursor);
+      cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::dd, node, 0x00000000, cursor);
 
       uint32_t callDescriptorValue = generateCallDescriptorValue(callNode);
-      cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::DC, node, callDescriptorValue, cursor);
+      cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::dd, node, callDescriptorValue, cursor);
       cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, node, xplinkCallDescriptorEndLabel, cursor);
       }
    else

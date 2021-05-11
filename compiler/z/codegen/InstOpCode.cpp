@@ -64,7 +64,7 @@ OMR::Z::InstOpCode::isAdmin()
            _mnemonic == DEPEND ||
            _mnemonic == FENCE ||
            _mnemonic == PROC ||
-           _mnemonic == DC ||
+           _mnemonic == dd ||
            _mnemonic == DC2 ||
            _mnemonic == DCB);
    }

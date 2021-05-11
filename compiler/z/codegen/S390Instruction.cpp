@@ -271,7 +271,7 @@ TR::S390LabelInstruction::generateBinaryEncoding()
    memset( (void*)cursor,0,getEstimatedBinaryLength());
    uint16_t binOpCode = *(uint16_t *) (getOpCode().getOpCodeBinaryRepresentation());
 
-   if (getOpCode().getOpCodeValue() == TR::InstOpCode::DC)
+   if (getOpCode().getOpCodeValue() == TR::InstOpCode::dd)
       {
       AOTcgDiag1(comp, "add TR_AbsoluteMethodAddress cursor=%x\n", cursor);
       cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, label));
@@ -387,7 +387,7 @@ TR::S390LabelInstruction::estimateBinaryLength(int32_t  currentEstimate)
    TR::Compilation *comp = cg()->comp();
    uint8_t estimatedSize = 0;
 
-   if (getOpCode().getOpCodeValue() == TR::InstOpCode::DC)
+   if (getOpCode().getOpCodeValue() == TR::InstOpCode::dd)
       {
       estimatedSize = sizeof(uintptr_t);
       }
@@ -1128,7 +1128,7 @@ TR::S390DebugCounterBumpInstruction::generateBinaryEncoding()
 // TR::S390ImmInstruction:: member functions
 /**
  * This instruction is used to generate a constant value in JIT code
- * so the valid opcode is TR::InstOpCode::DC
+ * so the valid opcode is TR::InstOpCode::dd
  */
 uint8_t *
 TR::S390ImmInstruction::generateBinaryEncoding()
@@ -1136,7 +1136,7 @@ TR::S390ImmInstruction::generateBinaryEncoding()
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
-   TR_ASSERT( getOpCode().getOpCodeValue() == TR::InstOpCode::DC, "ImmInstruction is for TR::InstOpCode::DC only!");
+   TR_ASSERT( getOpCode().getOpCodeValue() == TR::InstOpCode::dd, "ImmInstruction is for TR::InstOpCode::dd only!");
    TR::Compilation *comp = cg()->comp();
 
    /*
@@ -5480,7 +5480,7 @@ TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
          if (nextI->getOpCodeValue() == TR::InstOpCode::LABEL ||
              nextI->getOpCodeValue() == TR::InstOpCode::BRCL ||
              nextI->getOpCodeValue() == TR::InstOpCode::BRASL ||
-             nextI->getOpCodeValue() == TR::InstOpCode::DC ||
+             nextI->getOpCodeValue() == TR::InstOpCode::dd ||
              nextI->getOpCodeValue() == TR::InstOpCode::DC2 ||
              nextI->getOpCodeValue() == TR::InstOpCode::LARL)
             break;

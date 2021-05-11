@@ -48,23 +48,23 @@
    },
 
    {
+   /* .mnemonic    = */ OMR::InstOpCode::dd,
+   /* .name        = */ ".dd",
+   /* .description = */ "Define Doubleword",
+   /* .opcode[0]   = */ 0x00,
+   /* .opcode[1]   = */ 0x00,
+   /* .format      = */ DC_FORMAT,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
+   /* .properties  = */ S390OpProp_None
+   },
+
+   {
    /* .mnemonic    = */ OMR::InstOpCode::BREAK,
    /* .name        = */ "BREAK",
    /* .description = */ "Breakpoint (debugger)",
    /* .opcode[0]   = */ 0x00,
    /* .opcode[1]   = */ 0x01,
    /* .format      = */ E_FORMAT,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::DC,
-   /* .name        = */ "DC",
-   /* .description = */ "DC",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ DC_FORMAT,
    /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
    /* .properties  = */ S390OpProp_None
    },

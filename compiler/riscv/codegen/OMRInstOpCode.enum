@@ -36,7 +36,6 @@
 		proc,  // Entry to the method
 		fence, // Fence
 		retn,  // Return
-		dd,    // Define word
 		label, // Destination of a jump
 		RVLastOp = label,
 		RVNumOpCodes = RVLastOp+1,

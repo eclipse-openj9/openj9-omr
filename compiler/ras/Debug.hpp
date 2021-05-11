@@ -93,6 +93,7 @@ namespace TR { class OptionSet; }
 namespace TR { class Options; }
 namespace TR { class RealRegister; }
 namespace TR { class Register; }
+namespace TR { class RegisterDependencyGroup; }
 namespace TR { class RegisterDependency; }
 namespace TR { class RegisterDependencyConditions; }
 namespace TR { class RegisterMappedSymbol; }
@@ -139,7 +140,6 @@ namespace TR { class X86FPRegInstruction;                  }
 namespace TR { class X86FPRegRegInstruction;               }
 namespace TR { class X86FPMemRegInstruction;               }
 namespace TR { class X86FPRegMemInstruction;               }
-class TR_X86RegisterDependencyGroup;
 namespace TR { class X86RestartSnippet; }
 namespace TR { class X86PicDataSnippet; }
 namespace TR { class X86DivideCheckSnippet; }
@@ -248,7 +248,6 @@ namespace TR { class ARMMonitorEnterSnippet; }
 namespace TR { class ARMMonitorExitSnippet; }
 namespace TR { class ARMStackCheckFailureSnippet; }
 namespace TR { class ARMRecompilationSnippet; }
-class TR_ARMRegisterDependencyGroup;
 
 namespace TR { class S390LabelInstruction; }
 namespace TR { class S390BranchInstruction; }
@@ -317,7 +316,6 @@ namespace TR { class S390JNICallDataSnippet; }
 
 namespace TR { class S390StackCheckFailureSnippet; }
 namespace TR { class S390HeapAllocSnippet; }
-class TR_S390RegisterDependencyGroup;
 namespace TR { class S390RRSInstruction; }
 namespace TR { class S390RIEInstruction; }
 namespace TR { class S390RISInstruction; }
@@ -638,7 +636,7 @@ public:
    void print(TR::FILE *, TR::ARMHelperCallSnippet *);
 #endif
 #if defined(TR_TARGET_S390)
-   virtual void printRegisterDependencies(TR::FILE *pOutFile, TR_S390RegisterDependencyGroup *rgd, int numberOfRegisters);
+   virtual void printRegisterDependencies(TR::FILE *pOutFile, TR::RegisterDependencyGroup *rgd, int numberOfRegisters);
    const char * getName(TR::RealRegister *, TR_RegisterSizes size = TR_WordReg);
 #endif
 #if defined(TR_TARGET_ARM64)
@@ -783,7 +781,7 @@ public:
    void printPrefix(TR::FILE *, TR::Instruction *instr);
    int32_t printPrefixAndMnemonicWithoutBarrier(TR::FILE *, TR::Instruction *instr, int32_t barrier);
    void printPrefixAndMemoryBarrier(TR::FILE *, TR::Instruction *instr, int32_t barrier, int32_t barrierOffset);
-   void dumpDependencyGroup(TR::FILE *pOutFile, TR_X86RegisterDependencyGroup *group, int32_t numConditions, char *prefix, bool omitNullDependencies);
+   void dumpDependencyGroup(TR::FILE *pOutFile, TR::RegisterDependencyGroup *group, int32_t numConditions, char *prefix, bool omitNullDependencies);
    void dumpDependencies(TR::FILE *, TR::Instruction *);
    void printRegisterInfoHeader(TR::FILE *, TR::Instruction *);
    void printBoundaryAvoidanceInfo(TR::FILE *, TR::X86BoundaryAvoidanceInstruction *);
@@ -837,7 +835,7 @@ public:
    void printReferencedRegisterInfo(TR::FILE *, TR::X86RegRegMemInstruction *);
 
    void printFullRegisterDependencyInfo(TR::FILE *, TR::RegisterDependencyConditions * conditions);
-   void printDependencyConditions(TR_X86RegisterDependencyGroup *, uint8_t, char *, TR::FILE *);
+   void printDependencyConditions(TR::RegisterDependencyGroup *, uint8_t, char *, TR::FILE *);
 
    void print(TR::FILE *, TR::MemoryReference *, TR_RegisterSizes);
    void printReferencedRegisterInfo(TR::FILE *, TR::MemoryReference *);
@@ -965,7 +963,7 @@ public:
    char * fullOpCodeName(TR::Instruction *instr);
    void printPrefix(TR::FILE *, TR::Instruction *);
    void printBinaryPrefix(char *prefixBuffer, TR::Instruction *);
-   void dumpDependencyGroup(TR::FILE *pOutFile, TR_ARMRegisterDependencyGroup *group, int32_t numConditions, char *prefix, bool omitNullDependencies);
+   void dumpDependencyGroup(TR::FILE *pOutFile, TR::RegisterDependencyGroup *group, int32_t numConditions, char *prefix, bool omitNullDependencies);
    void dumpDependencies(TR::FILE *, TR::Instruction *);
    void print(TR::FILE *, TR::ARMLabelInstruction *);
 #ifdef J9_PROJECT_SPECIFIC

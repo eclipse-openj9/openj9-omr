@@ -30,6 +30,15 @@
 #include "codegen/RegisterDependency.hpp"
 #include "il/Node.hpp"
 
+OMR::RV::RegisterDependencyConditions::RegisterDependencyConditions(uint16_t numPreConds, uint16_t numPostConds, TR_Memory * m)
+   :  _preConditions(new (numPreConds, m) TR::RegisterDependencyGroup),
+      _postConditions(new (numPostConds, m) TR::RegisterDependencyGroup),
+      _numPreConditions(numPreConds),
+      _addCursorForPre(0),
+      _numPostConditions(numPostConds),
+      _addCursorForPost(0)
+   {}
+
 OMR::RV::RegisterDependencyConditions::RegisterDependencyConditions(
                                        TR::CodeGenerator *cg,
                                        TR::Node          *node,
@@ -42,6 +51,74 @@ OMR::RV::RegisterDependencyConditions::RegisterDependencyConditions(
 void OMR::RV::RegisterDependencyConditions::unionNoRegPostCondition(TR::Register *reg, TR::CodeGenerator *cg)
    {
    addPostCondition(reg, TR::RealRegister::NoReg);
+   }
+
+void OMR::RV::RegisterDependencyConditions::addPreCondition(TR::Register *vr, TR::RealRegister::RegNum rr, uint8_t flag)
+   {
+   TR_ASSERT(_addCursorForPre < _numPreConditions, " Pre Condition array bounds overflow");
+   _preConditions->setDependencyInfo(_addCursorForPre++, vr, rr, flag);
+   }
+
+void OMR::RV::RegisterDependencyConditions::addPostCondition(TR::Register *vr, TR::RealRegister::RegNum rr, uint8_t flag)
+   {
+   TR_ASSERT(_addCursorForPost < _numPostConditions, " Post Condition array bounds overflow");
+   _postConditions->setDependencyInfo(_addCursorForPost++, vr, rr, flag);
+   }
+
+void OMR::RV::RegisterDependencyConditions::assignPreConditionRegisters(TR::Instruction *currentInstruction, TR_RegisterKinds kindToBeAssigned, TR::CodeGenerator *cg)
+   {
+   if (_preConditions != NULL)
+      {
+      cg->clearRegisterAssignmentFlags();
+      cg->setRegisterAssignmentFlag(TR_PreDependencyCoercion);
+      _preConditions->assignRegisters(currentInstruction, kindToBeAssigned, _addCursorForPre, cg);
+      }
+   }
+
+void OMR::RV::RegisterDependencyConditions::assignPostConditionRegisters(TR::Instruction *currentInstruction, TR_RegisterKinds kindToBeAssigned, TR::CodeGenerator *cg)
+   {
+   if (_postConditions != NULL)
+      {
+      cg->clearRegisterAssignmentFlags();
+      cg->setRegisterAssignmentFlag(TR_PostDependencyCoercion);
+      _postConditions->assignRegisters(currentInstruction, kindToBeAssigned, _addCursorForPost, cg);
+      }
+   }
+
+TR::Register *OMR::RV::RegisterDependencyConditions::searchPreConditionRegister(TR::RealRegister::RegNum rr)
+   {
+   return(_preConditions==NULL?NULL:_preConditions->searchForRegister(rr, _addCursorForPre));
+   }
+
+TR::Register *OMR::RV::RegisterDependencyConditions::searchPostConditionRegister(TR::RealRegister::RegNum rr)
+   {
+   return(_postConditions==NULL?NULL:_postConditions->searchForRegister(rr, _addCursorForPost));
+   }
+
+uint32_t OMR::RV::RegisterDependencyConditions::setNumPreConditions(uint16_t n, TR_Memory * m)
+   {
+   if (_preConditions == NULL)
+      {
+      _preConditions = new (n, m) TR::RegisterDependencyGroup;
+      }
+   if (_addCursorForPre > n)
+      {
+      _addCursorForPre = n;
+      }
+   return (_numPreConditions = n);
+   }
+
+uint32_t OMR::RV::RegisterDependencyConditions::setNumPostConditions(uint16_t n, TR_Memory * m)
+   {
+   if (_postConditions == NULL)
+      {
+      _postConditions = new (n, m) TR::RegisterDependencyGroup;
+      }
+   if (_addCursorForPost > n)
+      {
+      _addCursorForPost = n;
+      }
+   return (_numPostConditions = n);
    }
 
 bool OMR::RV::RegisterDependencyConditions::refsRegister(TR::Register *r)
@@ -150,7 +227,7 @@ OMR::RV::RegisterDependencyConditions::clone(
    return NULL;
    }
 
-void TR_RVRegisterDependencyGroup::assignRegisters(
+void OMR::RV::RegisterDependencyGroup::assignRegisters(
                         TR::Instruction *currentInstruction,
                         TR_RegisterKinds kindToBeAssigned,
                         uint32_t numberOfRegisters,

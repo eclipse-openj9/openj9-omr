@@ -218,7 +218,7 @@ TR_Debug::printPrefix(TR::FILE *pOutFile, TR::Instruction  *instr)
 
 void
 TR_Debug::printDependencyConditions(
-   TR_X86RegisterDependencyGroup *conditions,
+   TR::RegisterDependencyGroup *conditions,
    uint8_t                         numConditions,
    char                           *prefix,
    TR::FILE *pOutFile)
@@ -301,7 +301,7 @@ TR_Debug::printFullRegisterDependencyInfo(TR::FILE *pOutFile, TR::RegisterDepend
 
 void
 TR_Debug::dumpDependencyGroup(TR::FILE *                         pOutFile,
-                              TR_X86RegisterDependencyGroup *group,
+                              TR::RegisterDependencyGroup *group,
                               int32_t                         numConditions,
                               char                           *prefix,
                               bool                            omitNullDependencies)

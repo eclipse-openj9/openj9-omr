@@ -257,7 +257,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * instr)
 
 void
 TR_Debug::dumpDependencyGroup(TR::FILE *                        pOutFile,
-                              TR_ARMRegisterDependencyGroup *group,
+                              TR::RegisterDependencyGroup *group,
                               int32_t                        numConditions,
                               char                          *prefix,
                               bool                           omitNullDependencies)

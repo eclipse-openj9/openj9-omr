@@ -706,66 +706,6 @@ int32_t OMR::ValuePropagation::getPrimitiveArrayType(char primitiveArrayChar)
       }
    }
 
-bool OMR::ValuePropagation::canTransformArrayCopyCallForSmall(TR::Node *node, int32_t &srcLength, int32_t &dstLength, int32_t &elementSize, TR::DataType &type )
-   {
-   TR::Node *srcArrayNode = node->getFirstChild();
-   TR::Node *srcOffsetNode = node->getSecondChild();
-   TR::Node *dstArrayNode = node->getChild(2);
-   TR::Node *dstOffsetNode = node->getChild(3);
-   TR::Node *lengthNode= node->getChild(4);
-
-   int32_t srcSigLength, srcType;
-   int32_t dstSigLength, dstType;
-   static uint8_t primitiveArrayTypeToElementSize[] = {1, 2, 4, 8, 1, 2, 4, 8};
-   static TR::DataType primitiveArrayToTRDataType[] = {TR::Int8, TR::Int16, TR::Float, TR::Double, TR::Int8, TR::Int16, TR::Int32, TR::Int64};
-
-   const char *srcSig = srcArrayNode->getTypeSignature(srcSigLength);
-   const char *dstSig = dstArrayNode->getTypeSignature(dstSigLength);
-
-   // search for primitive arrays by looking at signature's
-   // if signature is null then see if array was created in this method (newarray).
-
-   if (srcSig && srcSigLength >= 2 && *srcSig == '[')
-      {
-      srcType = getPrimitiveArrayType(srcSig[1]);
-      }
-   else if (srcArrayNode->getOpCodeValue() == TR::newarray)
-      {
-      srcType = srcArrayNode->getSecondChild()->getInt();
-      srcLength = srcArrayNode->getFirstChild()->getOpCode().isLoadConst() ? srcArrayNode->getFirstChild()->getInt() : -1;
-      }
-   else
-      {
-      srcType = -1;
-      }
-
-   if (dstSig && dstSigLength >= 2 && *dstSig == '[')
-      {
-      dstType = getPrimitiveArrayType(dstSig[1]);
-      }
-   else if (dstArrayNode->getOpCodeValue() == TR::newarray)
-      {
-      dstType = dstArrayNode->getSecondChild()->getInt();
-      dstLength = dstArrayNode->getFirstChild()->getOpCode().isLoadConst() ? dstArrayNode->getFirstChild()->getInt() : -1;
-      }
-   else
-      {
-      dstType = -1;
-      }
-
-   // check if both arrays are primitive types and of the same type, if so then can transform the call for small (ie a primitive array copy)
-   if (srcType >= 4 && dstType >=4 && dstType == srcType)
-      {
-      elementSize = primitiveArrayTypeToElementSize[srcType-4];
-      type = primitiveArrayToTRDataType[srcType-4];
-      return true;
-      }
-   else
-      {
-      return false;
-      }
-   }
-
 
 #ifdef J9_PROJECT_SPECIFIC
 static

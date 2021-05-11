@@ -459,7 +459,6 @@ class ValuePropagation : public TR::Optimization
    void mustTakeException();
    void processTrees(TR::TreeTop *startTree, TR::TreeTop *endTree);
    void transformArrayCopyCall(TR::Node *node);
-   bool canTransformArrayCopyCallForSmall(TR::Node *node, int32_t &srcLength, int32_t &dstLength, int32_t &stride, TR::DataType &type );
    int32_t getPrimitiveArrayType(char primitiveArrayChar);
 
    bool canRunTransformToArrayCopy();

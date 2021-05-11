@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1092,7 +1092,6 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
    if ((primitiveTransform || referenceTransform) &&
        !comp()->getOption(TR_DisableArrayCopyOpts) &&
        !node->isDontTransformArrayCopyCall() &&
-        comp()->fej9()->callTheJitsArrayCopyHelper() &&
         !comp()->getOption(TR_DisableInliningOfNatives) &&
         !(srcObject && srcObject->isNullObject()) &&
         !(dstObject && dstObject->isNullObject()) &&

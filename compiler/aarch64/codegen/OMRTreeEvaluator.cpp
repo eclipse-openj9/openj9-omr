@@ -1062,63 +1062,83 @@ static TR::Register *intrinsicAtomicAdd(TR::Node *node, TR::CodeGenerator *cg)
    TR::Node *valueNode = node->getChild(1);
 
    TR::Register *addressReg = cg->evaluate(addressNode);
-   TR::Register *valueReg = cg->evaluate(valueNode);
+   TR::Register *valueReg = cg->gprClobberEvaluate(valueNode);
    const bool is64Bit = valueNode->getDataType().isInt64();
 
-   TR::Register *oldValueReg = cg->allocateRegister();
-
-   /*
-    * Generating non-intuitive instruction sequence which uses load exclusive register 
-    * and store release exclusive register followed by full memory barrier.
-    *
-    * Because this atomic add has `volatile` semantics,
-    * no loads/stores before this sequence can be reordred after it and
-    * no loads/stores after it can be reordered before it.
-    *
-    * loop:
-    *    ldxrx   oldValueReg, [addressReg]
-    *    addx    newValueReg, oldValueReg, valueReg
-    *    stlxrx  oldValueReg, newValueReg, [addressReg]
-    *    cbnzx   oldValueReg, loop
-    *    dmb     ish
-    *
-    * For rationale behind this instruction sequence,
-    * see https://patchwork.kernel.org/project/linux-arm-kernel/patch/1391516953-14541-1-git-send-email-will.deacon@arm.com/
-    *
-    */
-
-   TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
-   TR::LabelSymbol *loopLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
-
-   loopLabel->setStartInternalControlFlow();
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
-
-   auto loadop = is64Bit ? TR::InstOpCode::ldxrx : TR::InstOpCode::ldxrw;
-   auto faultingInstruction = generateTrg1MemInstruction(cg, loadop, node, oldValueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg));
-
    TR::Register *newValueReg = cg->allocateRegister();
-   generateTrg1Src2Instruction(cg, (is64Bit ? TR::InstOpCode::addx : TR::InstOpCode::addw), node, newValueReg, oldValueReg, valueReg);
+   TR::Compilation *comp = cg->comp();
 
-   // store release exclusive register
-   auto storeop = is64Bit ? TR::InstOpCode::stlxrx : TR::InstOpCode::stlxrw;
-   generateTrg1MemSrc1Instruction(cg, storeop, node, oldValueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg), newValueReg);
-   generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, oldValueReg, loopLabel);
+   static const bool disableLSE = feGetEnv("TR_aarch64DisableLSE") != NULL;
+   if (comp->target().cpu.supportsFeature(OMR_FEATURE_ARM64_LSE) && (!disableLSE))
+      {
+      /*
+       * The newValue is not required for this case,
+       * but if we use staddl, acquire semantics is not applied.
+       * We use ldaddal to ensure volatile semantics.
+       */
+      auto op = is64Bit ? TR::InstOpCode::ldaddalx : TR::InstOpCode::ldaddalw;
+      /*
+       * As Trg1MemSrc1Instruction was introduced to support ldxr/stxr instructions, target and source register convention
+       * is somewhat confusing. Its `treg` register actually is a source register and `sreg` register is a target register.
+       * This needs to be fixed at some point.
+       */
+      generateTrg1MemSrc1Instruction(cg, op, node, valueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg), newValueReg);
+      }
+   else
+      {
+      /*
+      * Generating non-intuitive instruction sequence which uses load exclusive register
+      * and store release exclusive register followed by full memory barrier.
+      *
+      * Because this atomic add has `volatile` semantics,
+      * no loads/stores before this sequence can be reordred after it and
+      * no loads/stores after it can be reordered before it.
+      *
+      * loop:
+      *    ldxrx   oldValueReg, [addressReg]
+      *    addx    newValueReg, oldValueReg, valueReg
+      *    stlxrx  oldValueReg, newValueReg, [addressReg]
+      *    cbnzx   oldValueReg, loop
+      *    dmb     ish
+      *
+      * For rationale behind this instruction sequence,
+      * see https://patchwork.kernel.org/project/linux-arm-kernel/patch/1391516953-14541-1-git-send-email-will.deacon@arm.com/
+      *
+      */
 
-   generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xB); // dmb ish
+      TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
+      TR::LabelSymbol *loopLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
+      TR::Register *oldValueReg = cg->allocateRegister();
 
-   //Set the conditions and dependencies
-   auto conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
+      loopLabel->setStartInternalControlFlow();
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
 
-   conditions->addPostCondition(newValueReg, TR::RealRegister::NoReg);
-   conditions->addPostCondition(oldValueReg, TR::RealRegister::NoReg);
-   conditions->addPostCondition(addressReg, TR::RealRegister::NoReg);
-   conditions->addPostCondition(valueReg, TR::RealRegister::NoReg);
+      auto loadop = is64Bit ? TR::InstOpCode::ldxrx : TR::InstOpCode::ldxrw;
+      generateTrg1MemInstruction(cg, loadop, node, oldValueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg));
 
-   doneLabel->setEndInternalControlFlow();
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, conditions);
+      generateTrg1Src2Instruction(cg, (is64Bit ? TR::InstOpCode::addx : TR::InstOpCode::addw), node, newValueReg, oldValueReg, valueReg);
+
+      // store release exclusive register
+      auto storeop = is64Bit ? TR::InstOpCode::stlxrx : TR::InstOpCode::stlxrw;
+      generateTrg1MemSrc1Instruction(cg, storeop, node, oldValueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg), newValueReg);
+      generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, oldValueReg, loopLabel);
+
+      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xB); // dmb ish
+
+      //Set the conditions and dependencies
+      auto conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
+
+      conditions->addPostCondition(newValueReg, TR::RealRegister::NoReg);
+      conditions->addPostCondition(oldValueReg, TR::RealRegister::NoReg);
+      conditions->addPostCondition(addressReg, TR::RealRegister::NoReg);
+      conditions->addPostCondition(valueReg, TR::RealRegister::NoReg);
+
+      doneLabel->setEndInternalControlFlow();
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, conditions);
+      cg->stopUsingRegister(oldValueReg);
+      }
 
    node->setRegister(valueReg);
-   cg->stopUsingRegister(oldValueReg);
    cg->stopUsingRegister(newValueReg);
 
    cg->decReferenceCount(addressNode);
@@ -1158,125 +1178,143 @@ TR::Register *intrinsicAtomicFetchAndAdd(TR::Node *node, TR::CodeGenerator *cg)
    TR::Register *addressReg = cg->evaluate(addressNode);
    TR::Register *valueReg = NULL;
    const bool is64Bit = valueNode->getDataType().isInt64();
-   int64_t value = 0;
-   bool negate = false;
-   bool killValueReg = false;
+   TR::Register *oldValueReg = cg->allocateRegister();
 
-   if (valueNode->getOpCode().isLoadConst() && valueNode->getRegister() == NULL)
+   TR::Compilation *comp = cg->comp();
+   static const bool disableLSE = feGetEnv("TR_aarch64DisableLSE") != NULL;
+   if (comp->target().cpu.supportsFeature(OMR_FEATURE_ARM64_LSE) && (!disableLSE))
       {
-      if (is64Bit)
+      valueReg = cg->evaluate(valueNode);
+
+      auto op = is64Bit ? TR::InstOpCode::ldaddalx : TR::InstOpCode::ldaddalw;
+      /*
+       * As Trg1MemSrc1Instruction was introduced to support ldxr/stxr instructions, target and source register convention
+       * is somewhat confusing. Its `treg` register actually is a source register and `sreg` register is a target register.
+       * This needs to be fixed at some point.
+       */
+      generateTrg1MemSrc1Instruction(cg, op, node, valueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg), oldValueReg);
+      }
+   else
+      {
+      int64_t value = 0;
+      bool negate = false;
+      bool killValueReg = false;
+      if (valueNode->getOpCode().isLoadConst() && valueNode->getRegister() == NULL)
          {
-         value = valueNode->getLongInt();
-         }
-      else
-         {
-         value = valueNode->getInt();
-         }
-      if (!constantIsUnsignedImm12(value))
-         {
-         if (constantIsUnsignedImm12(-value))
+         if (is64Bit)
             {
-            negate = true;
+            value = valueNode->getLongInt();
             }
          else
             {
-            valueReg = cg->allocateRegister();
-            killValueReg = true;
-            if(is64Bit)
+            value = valueNode->getInt();
+            }
+         if (!constantIsUnsignedImm12(value))
+            {
+            if (constantIsUnsignedImm12(-value))
                {
-               loadConstant64(cg, node, value, valueReg);
+               negate = true;
                }
             else
                {
-               loadConstant32(cg, node, value, valueReg);
+               valueReg = cg->allocateRegister();
+               killValueReg = true;
+               if(is64Bit)
+                  {
+                  loadConstant64(cg, node, value, valueReg);
+                  }
+               else
+                  {
+                  loadConstant32(cg, node, value, valueReg);
+                  }
                }
             }
          }
-      }
-   else
-      {
-      valueReg = cg->evaluate(valueNode);
-      }
-
-   TR::Register *oldValueReg = cg->allocateRegister();
-   TR::Register *tempReg = cg->allocateRegister();
-
-   /*
-    * Generating non-intuitive instruction sequence which uses load exclusive register 
-    * and store release exclusive register followed by full memory barrier.
-    *
-    * Because this atomic add has `volatile` semantics,
-    * no loads/stores before this sequence can be reordred after it and
-    * no loads/stores after it can be reordered before it.
-    *
-    * loop:
-    *    ldxrx   oldValueReg, [addressReg]
-    *    addx    newValueReg, oldValueReg, valueReg
-    *    stlxrx  tempReg, newValueReg, [addressReg]
-    *    cbnzx   tempReg, loop
-    *    dmb     ish
-    *
-    * For rationale behind this instruction sequence,
-    * see https://patchwork.kernel.org/project/linux-arm-kernel/patch/1391516953-14541-1-git-send-email-will.deacon@arm.com/
-    *
-    */
-
-   TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
-   TR::LabelSymbol *loopLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
-
-   loopLabel->setStartInternalControlFlow();
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
-
-   // load acquire exclusive register
-   auto loadop = is64Bit ? TR::InstOpCode::ldxrx : TR::InstOpCode::ldxrw;
-   generateTrg1MemInstruction(cg, loadop, node, oldValueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg));
-
-   TR::Register *newValueReg = cg->allocateRegister();
-   if (valueReg == NULL)
-      {
-      if (!negate)
+      else
          {
-         generateTrg1Src1ImmInstruction(cg, (is64Bit ? TR::InstOpCode::addimmx : TR::InstOpCode::addimmw), node, newValueReg, oldValueReg, value);
+         valueReg = cg->evaluate(valueNode);
+         }
+
+      TR::Register *newValueReg = cg->allocateRegister();
+      TR::Register *tempReg = cg->allocateRegister();
+
+      /*
+      * Generating non-intuitive instruction sequence which uses load exclusive register
+      * and store release exclusive register followed by full memory barrier.
+      *
+      * Because this atomic add has `volatile` semantics,
+      * no loads/stores before this sequence can be reordred after it and
+      * no loads/stores after it can be reordered before it.
+      *
+      * loop:
+      *    ldxrx   oldValueReg, [addressReg]
+      *    addx    newValueReg, oldValueReg, valueReg
+      *    stlxrx  tempReg, newValueReg, [addressReg]
+      *    cbnzx   tempReg, loop
+      *    dmb     ish
+      *
+      * For rationale behind this instruction sequence,
+      * see https://patchwork.kernel.org/project/linux-arm-kernel/patch/1391516953-14541-1-git-send-email-will.deacon@arm.com/
+      *
+      */
+
+      TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
+      TR::LabelSymbol *loopLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
+
+      loopLabel->setStartInternalControlFlow();
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
+
+      // load acquire exclusive register
+      auto loadop = is64Bit ? TR::InstOpCode::ldxrx : TR::InstOpCode::ldxrw;
+      generateTrg1MemInstruction(cg, loadop, node, oldValueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg));
+
+      if (valueReg == NULL)
+         {
+         if (!negate)
+            {
+            generateTrg1Src1ImmInstruction(cg, (is64Bit ? TR::InstOpCode::addimmx : TR::InstOpCode::addimmw), node, newValueReg, oldValueReg, value);
+            }
+         else
+            {
+            generateTrg1Src1ImmInstruction(cg, (is64Bit ? TR::InstOpCode::subimmx : TR::InstOpCode::subimmw), node, newValueReg, oldValueReg, -value);
+            }
          }
       else
          {
-         generateTrg1Src1ImmInstruction(cg, (is64Bit ? TR::InstOpCode::subimmx : TR::InstOpCode::subimmw), node, newValueReg, oldValueReg, -value);
+         generateTrg1Src2Instruction(cg, (is64Bit ? TR::InstOpCode::addx : TR::InstOpCode::addw), node, newValueReg, oldValueReg, valueReg);
+         }
+      // store release exclusive register
+      auto storeop = is64Bit ? TR::InstOpCode::stlxrx : TR::InstOpCode::stlxrw;
+      generateTrg1MemSrc1Instruction(cg, storeop, node, tempReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg), newValueReg);
+      generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, tempReg, loopLabel);
+
+      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xB); // dmb ish
+
+      //Set the conditions and dependencies
+      const int numDeps = (valueReg != NULL) ? 5 : 4;
+      auto conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numDeps, cg->trMemory());
+
+      conditions->addPostCondition(newValueReg, TR::RealRegister::NoReg);
+      conditions->addPostCondition(oldValueReg, TR::RealRegister::NoReg);
+      conditions->addPostCondition(addressReg, TR::RealRegister::NoReg);
+      conditions->addPostCondition(tempReg, TR::RealRegister::NoReg);
+      if (valueReg != NULL)
+         {
+         conditions->addPostCondition(valueReg, TR::RealRegister::NoReg);
+         }
+
+      doneLabel->setEndInternalControlFlow();
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, conditions);
+
+      cg->stopUsingRegister(newValueReg);
+      cg->stopUsingRegister(tempReg);
+      if (killValueReg)
+         {
+         cg->stopUsingRegister(valueReg);
          }
       }
-   else
-      {
-      generateTrg1Src2Instruction(cg, (is64Bit ? TR::InstOpCode::addx : TR::InstOpCode::addw), node, newValueReg, oldValueReg, valueReg);
-      }
-   // store release exclusive register
-   auto storeop = is64Bit ? TR::InstOpCode::stlxrx : TR::InstOpCode::stlxrw;
-   generateTrg1MemSrc1Instruction(cg, storeop, node, tempReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg), newValueReg);
-   generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, tempReg, loopLabel);
-
-   generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xB); // dmb ish
-
-   //Set the conditions and dependencies
-   const int numDeps = (valueReg != NULL) ? 5 : 4;
-   auto conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numDeps, cg->trMemory());
-
-   conditions->addPostCondition(newValueReg, TR::RealRegister::NoReg);
-   conditions->addPostCondition(oldValueReg, TR::RealRegister::NoReg);
-   conditions->addPostCondition(addressReg, TR::RealRegister::NoReg);
-   conditions->addPostCondition(tempReg, TR::RealRegister::NoReg);
-   if (valueReg != NULL)
-      {
-      conditions->addPostCondition(valueReg, TR::RealRegister::NoReg);
-      }
-
-   doneLabel->setEndInternalControlFlow();
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, conditions);
 
    node->setRegister(oldValueReg);
-   cg->stopUsingRegister(newValueReg);
-   cg->stopUsingRegister(tempReg);
-   if (killValueReg)
-      {
-      cg->stopUsingRegister(valueReg);
-      }
    cg->decReferenceCount(addressNode);
    cg->decReferenceCount(valueNode);
 
@@ -1313,65 +1351,80 @@ TR::Register *intrinsicAtomicSwap(TR::Node *node, TR::CodeGenerator *cg)
 
    TR::Register *addressReg = cg->evaluate(addressNode);
    TR::Register *valueReg = cg->evaluate(valueNode);
+   TR::Register *oldValueReg = cg->allocateRegister();
    const bool is64Bit = valueNode->getDataType().isInt64();
 
-   TR::Register *oldValueReg = cg->allocateRegister();
-   TR::Register *tempReg = cg->allocateRegister();
+   TR::Compilation *comp = cg->comp();
+   static const bool disableLSE = feGetEnv("TR_aarch64DisableLSE") != NULL;
+   if (comp->target().cpu.supportsFeature(OMR_FEATURE_ARM64_LSE) && (!disableLSE))
+      {
+      auto op = is64Bit ? TR::InstOpCode::swpalx : TR::InstOpCode::swpalw;
+      /*
+       * As Trg1MemSrc1Instruction was introduced to support ldxr/stxr instructions, target and source register convention
+       * is somewhat confusing. Its `treg` register actually is a source register and `sreg` register is a target register.
+       * This needs to be fixed at some point.
+       */
+      generateTrg1MemSrc1Instruction(cg, op, node, valueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg), oldValueReg);
+      }
+   else
+      {
+      /*
+      * Generating non-intuitive instruction sequence which uses load exclusive register
+      * and store release exclusive register followed by full memory barrier.
+      *
+      * Because this atomic swap has `volatile` semantics,
+      * no loads/stores before this sequence can be reordred after it and
+      * no loads/stores after it can be reordered before it.
+      *
+      * loop:
+      *    ldxrx   oldValueReg, [addressReg]
+      *    stlxrx  tempReg, valueReg, [addressReg]
+      *    cbnzx   tempReg, loop
+      *    dmb     ish
+      *
+      * For rationale behind this instruction sequence,
+      * see https://patchwork.kernel.org/project/linux-arm-kernel/patch/1391516953-14541-1-git-send-email-will.deacon@arm.com/
+      *
+      */
 
-   /*
-    * Generating non-intuitive instruction sequence which uses load exclusive register 
-    * and store release exclusive register followed by full memory barrier.
-    *
-    * Because this atomic swap has `volatile` semantics,
-    * no loads/stores before this sequence can be reordred after it and
-    * no loads/stores after it can be reordered before it.
-    *
-    * loop:
-    *    ldxrx   oldValueReg, [addressReg]
-    *    stlxrx  tempReg, valueReg, [addressReg]
-    *    cbnzx   tempReg, loop
-    *    dmb     ish
-    *
-    * For rationale behind this instruction sequence,
-    * see https://patchwork.kernel.org/project/linux-arm-kernel/patch/1391516953-14541-1-git-send-email-will.deacon@arm.com/
-    *
-    */
+      TR::Register *tempReg = cg->allocateRegister();
+      TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
+      TR::LabelSymbol *loopLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
 
-   TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
-   TR::LabelSymbol *loopLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
+      loopLabel->setStartInternalControlFlow();
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
 
-   loopLabel->setStartInternalControlFlow();
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
+      // load acquire exclusive register
+      auto loadop = is64Bit ? TR::InstOpCode::ldxrx : TR::InstOpCode::ldxrw;
+      generateTrg1MemInstruction(cg, loadop, node, oldValueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg));
 
-   // load acquire exclusive register
-   auto loadop = is64Bit ? TR::InstOpCode::ldxrx : TR::InstOpCode::ldxrw;
-   generateTrg1MemInstruction(cg, loadop, node, oldValueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg));
+      // store release exclusive register
+      auto storeop = is64Bit ? TR::InstOpCode::stlxrx : TR::InstOpCode::stlxrw;
+      generateTrg1MemSrc1Instruction(cg, storeop, node, tempReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg), valueReg);
+      generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, tempReg, loopLabel);
 
-   // store release exclusive register
-   auto storeop = is64Bit ? TR::InstOpCode::stlxrx : TR::InstOpCode::stlxrw;
-   generateTrg1MemSrc1Instruction(cg, storeop, node, tempReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg), valueReg);
-   generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, tempReg, loopLabel);
+      generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xB); // dmb ish
 
-   generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xB); // dmb ish
+      //Set the conditions and dependencies
+      auto conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
 
-   //Set the conditions and dependencies
-   auto conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
+      conditions->addPostCondition(oldValueReg, TR::RealRegister::NoReg);
+      conditions->addPostCondition(addressReg, TR::RealRegister::NoReg);
+      conditions->addPostCondition(valueReg, TR::RealRegister::NoReg);
+      conditions->addPostCondition(tempReg, TR::RealRegister::NoReg);
 
-   conditions->addPostCondition(oldValueReg, TR::RealRegister::NoReg);
-   conditions->addPostCondition(addressReg, TR::RealRegister::NoReg);
-   conditions->addPostCondition(valueReg, TR::RealRegister::NoReg);
-   conditions->addPostCondition(tempReg, TR::RealRegister::NoReg);
+      doneLabel->setEndInternalControlFlow();
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, conditions);
 
-   doneLabel->setEndInternalControlFlow();
-   generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, conditions);
+      cg->stopUsingRegister(tempReg);
+      }
 
    node->setRegister(oldValueReg);
-   cg->stopUsingRegister(tempReg);
 
    cg->decReferenceCount(addressNode);
    cg->decReferenceCount(valueNode);
 
-   return valueReg;
+   return oldValueReg;
    }
 
 bool OMR::ARM64::CodeGenerator::inlineDirectCall(TR::Node *node, TR::Register *&resultReg)

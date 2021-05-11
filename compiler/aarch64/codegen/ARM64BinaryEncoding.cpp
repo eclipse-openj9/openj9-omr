@@ -357,7 +357,7 @@ uint8_t *TR::ARM64AdminInstruction::generateBinaryEncoding()
    TR::InstOpCode::Mnemonic op = getOpCodeValue();
    int32_t i;
 
-   if (op == OMR::InstOpCode::fence)
+   if (op == TR::InstOpCode::fence)
       {
       TR::Node *fenceNode = getFenceNode();
       uint32_t rtype = fenceNode->getRelocationType();

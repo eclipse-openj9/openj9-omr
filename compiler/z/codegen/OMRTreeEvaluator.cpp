@@ -9481,11 +9481,11 @@ OMR::Z::TreeEvaluator::BBStartEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    if (!generateFence)
       {
       // Even though we dont generate fences for every BB, catch blocks require it.
-      if (block->isCatchBlock()) fence = generateS390PseudoInstruction(cg, TR::InstOpCode::FENCE, node, (TR::Node *) NULL);
+      if (block->isCatchBlock()) fence = generateS390PseudoInstruction(cg, TR::InstOpCode::fence, node, (TR::Node *) NULL);
       }
    else
       {
-      fence = generateS390PseudoInstruction(cg, TR::InstOpCode::FENCE, node,
+      fence = generateS390PseudoInstruction(cg, TR::InstOpCode::fence, node,
                 TR::Node::createRelative32BitFenceNode(node, &block->getInstructionBoundaries()._startPC));
 
       // Save the first instruction of the block.
@@ -9517,7 +9517,7 @@ OMR::Z::TreeEvaluator::BBEndEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::TreeTop * nextTT = cg->getCurrentEvaluationTreeTop()->getNextTreeTop();
    TR::RegisterDependencyConditions * deps = NULL;
 
-   lastInstr = generateS390PseudoInstruction(cg, TR::InstOpCode::FENCE, node, deps,
+   lastInstr = generateS390PseudoInstruction(cg, TR::InstOpCode::fence, node, deps,
    TR::Node::createRelative32BitFenceNode(node, &block->getInstructionBoundaries()._endPC));
 
    if (!nextTT || !nextTT->getNode()->getBlock()->isExtensionOfPreviousBlock())
@@ -11666,19 +11666,19 @@ OMR::Z::TreeEvaluator::barrierFenceEvaluator(TR::Node * node, TR::CodeGenerator 
    if (opCode == TR::loadFence)
       {
       // create fence nop
-      fenceInstruction = generateS390PseudoInstruction(cg, TR::InstOpCode::FENCE, node, (TR::Node *) NULL);
+      fenceInstruction = generateS390PseudoInstruction(cg, TR::InstOpCode::fence, node, (TR::Node *) NULL);
       }
    else if (opCode == TR::storeFence)
       {
       // create fence nop
-      fenceInstruction = generateS390PseudoInstruction(cg, TR::InstOpCode::FENCE, node, (TR::Node *) NULL);
+      fenceInstruction = generateS390PseudoInstruction(cg, TR::InstOpCode::fence, node, (TR::Node *) NULL);
       }
    else if (opCode == TR::fullFence)
       {
       if (node->canOmitSync())
          {
          // create fence nop
-         fenceInstruction = generateS390PseudoInstruction(cg, TR::InstOpCode::FENCE, node, (TR::Node *) NULL);
+         fenceInstruction = generateS390PseudoInstruction(cg, TR::InstOpCode::fence, node, (TR::Node *) NULL);
          }
       else
          {

@@ -538,7 +538,6 @@
    xoris,            // XOR immediate shifted
    nop,              // NoOp (ori)
    genop,            // Group Ending NoOp (ori)
-   fence,            // Fence
    shdfence,         // Scheduling Fence
    ret,              // Return
 // rxor,             // Rotate & XOR

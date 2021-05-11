@@ -882,7 +882,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390PseudoInstruction * instr)
       trfprintf(pOutFile, ", Debug Counter Bump");
       }
 
-   if (instr->getOpCodeValue() == TR::InstOpCode::FENCE)
+   if (instr->getOpCodeValue() == TR::InstOpCode::fence)
       {
       if (instr->getFenceNode() != NULL)
          {

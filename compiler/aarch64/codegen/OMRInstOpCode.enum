@@ -734,7 +734,6 @@
 		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */
 		proc,  // Entry to the method
-		fence, // Fence
 		retn,  // Return
 		label, // Destination of a jump
 		vgdnop, // Virtual Guard NOP instruction

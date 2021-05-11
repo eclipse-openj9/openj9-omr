@@ -59,6 +59,17 @@
    },
 
    {
+   /* .mnemonic    = */ OMR::InstOpCode::fence,
+   /* .name        = */ "fence",
+   /* .description =    "Fence", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x00000000,
+   /* .format      = */ FORMAT_NONE,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   },
+
+   {
    /* .mnemonic    = */ OMR::InstOpCode::add,
    /* .name        = */ "add",
    /* .description =    "Add", */
@@ -6198,17 +6209,6 @@
    /* .prefix      = */ 0x00000000,
    /* .opcode      = */ 0x60000000,
    /* .format      = */ FORMAT_DIRECT,
-   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::fence,
-   /* .name        = */ "fence",
-   /* .description =    "Fence", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_NONE,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
    },

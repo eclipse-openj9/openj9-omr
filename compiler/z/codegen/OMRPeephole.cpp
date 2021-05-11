@@ -697,7 +697,7 @@ OMR::Z::Peephole::tryToForwardBranchTarget()
    if (targetInst == NULL)
       return false;
 
-   while (targetInst->isLabel() || targetInst->getOpCodeValue() == TR::InstOpCode::FENCE)
+   while (targetInst->isLabel() || targetInst->getOpCodeValue() == TR::InstOpCode::fence)
       targetInst = targetInst->getNext();
 
    if (targetInst->getOpCodeValue() == TR::InstOpCode::BRC)

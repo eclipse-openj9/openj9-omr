@@ -101,7 +101,7 @@ TR::PPA1Snippet::emitSnippetBody()
 
    TR::Instruction* prologueEnd = prologueBegin;
 
-   while (prologueEnd != NULL && prologueEnd->getOpCodeValue() != TR::InstOpCode::FENCE)
+   while (prologueEnd != NULL && prologueEnd->getOpCodeValue() != TR::InstOpCode::fence)
       {
       prologueEnd = prologueEnd->getNext();
       }

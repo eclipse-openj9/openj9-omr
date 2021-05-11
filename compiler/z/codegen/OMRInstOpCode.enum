@@ -32,7 +32,6 @@
    DC2,                 // DC2
    DCB,                 // Debug Counter Bump
    DEPEND,              // Someplace to hang dependencies
-   FENCE,               // Fence
    LABEL,               // Destination of a jump
    PROC,                // Entry to the method
    RET,                 // Return

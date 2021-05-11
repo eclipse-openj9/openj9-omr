@@ -725,7 +725,7 @@ static void handleLoadWithRegRanges(TR::Instruction *inst, TR::CodeGenerator *cg
          bool found = false;
          while (cursor)
             {
-            if (cursor->getOpCodeValue() == TR::InstOpCode::FENCE && cursor->getNode()->getOpCodeValue() == TR::BBStart)
+            if (cursor->getOpCodeValue() == TR::InstOpCode::fence && cursor->getNode()->getOpCodeValue() == TR::BBStart)
                {
                TR::Block *block = cursor->getNode()->getBlock();
                if (!block->isExtensionOfPreviousBlock())

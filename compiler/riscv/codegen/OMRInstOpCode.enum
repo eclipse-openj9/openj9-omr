@@ -34,7 +34,6 @@
 #undef DECLARE_INSN
 /* Internal OpCodes */
 		proc,  // Entry to the method
-		fence, // Fence
 		retn,  // Return
 		label, // Destination of a jump
 		RVLastOp = label,

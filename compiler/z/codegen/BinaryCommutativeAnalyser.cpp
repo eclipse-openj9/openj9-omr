@@ -350,7 +350,7 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
          if (cg()->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_MISCELLANEOUS_INSTRUCTION_EXTENSION_2))
             {
             // Check for multiplications on z14
-            TR::InstOpCode::Mnemonic z14OpCode = TR::InstOpCode::BAD;
+            TR::InstOpCode::Mnemonic z14OpCode = TR::InstOpCode::bad;
 
             if(root->getOpCodeValue() == TR::lmul &&
                     firstRegister != NULL &&
@@ -367,7 +367,7 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
                z14OpCode = TR::InstOpCode::MSRKC;
                }
 
-            if(z14OpCode != TR::InstOpCode::BAD)
+            if(z14OpCode != TR::InstOpCode::bad)
                {
                bool isCanClobberFirstReg = cg()->canClobberNodesRegister(firstChild);
                nodeReg = isCanClobberFirstReg ? firstRegister : cg()->allocateRegister();

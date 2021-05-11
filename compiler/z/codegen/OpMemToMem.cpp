@@ -1294,7 +1294,7 @@ TR::Instruction *
 MemToMemConstLenMacroOp::generateInstruction(int32_t offset, int64_t length, TR::Instruction * cursor1)
    {
    TR::Compilation *comp = _cg->comp();
-   TR_ASSERT(_opcode != TR::InstOpCode::BAD,"no opcode set for MemToMemConstLenMacroOp node %p\n",_rootNode);
+   TR_ASSERT(_opcode != TR::InstOpCode::bad,"no opcode set for MemToMemConstLenMacroOp node %p\n",_rootNode);
    TR::Instruction * cursor=NULL;
    TR::MemoryReference * srcMR = _srcMR;
    TR::MemoryReference * dstMR = _dstMR;

@@ -27,8 +27,6 @@
 #include "compiler/codegen/OMRInstOpCode.enum"
 
 //		Opcode                                                          BINARY    	OPCODE    	comments
-/* UNALLOCATED */
-		bad,                                                    	/* 0x00000000	BAD       	invalid operation */
 /* Branch,exception generation and system Instruction */
 	/* Compare _ Branch (immediate) */
 		cbzw,                                                   	/* 0x34000000	CBZ       	 */

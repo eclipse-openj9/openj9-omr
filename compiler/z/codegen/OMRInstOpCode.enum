@@ -28,7 +28,6 @@
 
    /* Pseudo Instructions */
 
-   BAD,                 // Bad Opcode
    BREAK,               // Breakpoint (debugger)
    DC,                  // DC
    DC2,                 // DC2

@@ -296,7 +296,7 @@ OMR::Z::InstOpCode::getEquivalentLongDisplacementMnemonic(TR::InstOpCode::Mnemon
       case TR::InstOpCode::CDS:
          return TR::InstOpCode::CDSY;
       default:
-         return TR::InstOpCode::BAD;
+         return TR::InstOpCode::bad;
       }
    }
 
@@ -564,7 +564,7 @@ OMR::Z::InstOpCode::getLoadRegOpCodeFromNode(TR::CodeGenerator *cg, TR::Node *no
 TR::InstOpCode::Mnemonic
 OMR::Z::InstOpCode::getMoveHalfWordImmOpCodeFromStoreOpCode(TR::InstOpCode::Mnemonic storeOpCode)
    {
-   TR::InstOpCode::Mnemonic mvhiOpCode = TR::InstOpCode::BAD;
+   TR::InstOpCode::Mnemonic mvhiOpCode = TR::InstOpCode::bad;
    if (storeOpCode == TR::InstOpCode::ST)
       mvhiOpCode = TR::InstOpCode::MVHI;
    else if (storeOpCode == TR::InstOpCode::STG)

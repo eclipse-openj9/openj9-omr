@@ -4830,7 +4830,7 @@ class S390VRIInstruction : public S390VInstruction
    protected:
    S390VRIInstruction(
                        TR::CodeGenerator      * cg               = NULL,
-                       TR::InstOpCode::Mnemonic          op      = TR::InstOpCode::BAD,
+                       TR::InstOpCode::Mnemonic          op      = TR::InstOpCode::bad,
                        TR::Node               * n                = NULL,
                        TR::Register           * targetReg        = NULL,
                        uint16_t                constantImm16      = 0,
@@ -4891,7 +4891,7 @@ class S390VRIaInstruction : public S390VRIInstruction
    public:
    S390VRIaInstruction(
                           TR::CodeGenerator      * cg            = NULL,
-                          TR::InstOpCode::Mnemonic  op           = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic  op           = TR::InstOpCode::bad,
                           TR::Node               * n             = NULL,
                           TR::Register           * targetReg     = NULL,
                           uint16_t                constantImm2   = 0,  /* 16 bits */
@@ -4920,7 +4920,7 @@ class S390VRIbInstruction : public S390VRIInstruction
    public:
    S390VRIbInstruction(
                           TR::CodeGenerator      * cg             = NULL,
-                          TR::InstOpCode::Mnemonic          op    = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic          op    = TR::InstOpCode::bad,
                           TR::Node               * n              = NULL,
                           TR::Register           * targetReg      = NULL,
                           uint8_t                 constantImm2    = 0,    /*  8 bits */
@@ -4950,7 +4950,7 @@ class S390VRIcInstruction : public S390VRIInstruction
    public:
    S390VRIcInstruction(
                           TR::CodeGenerator      * cg               = NULL,
-                          TR::InstOpCode::Mnemonic          op               = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic          op               = TR::InstOpCode::bad,
                           TR::Node               * n                = NULL,
                           TR::Register           * targetReg        = NULL,
                           TR::Register           * sourceReg3       = NULL,
@@ -4983,7 +4983,7 @@ class S390VRIdInstruction : public S390VRIInstruction
    public:
    S390VRIdInstruction(
                           TR::CodeGenerator      * cg               = NULL,
-                          TR::InstOpCode::Mnemonic          op      = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic          op      = TR::InstOpCode::bad,
                           TR::Node               * n                = NULL,
                           TR::Register           * targetReg        = NULL,
                           TR::Register           * sourceReg2       = NULL,
@@ -5021,7 +5021,7 @@ class S390VRIeInstruction : public S390VRIInstruction
    public:
    S390VRIeInstruction(
                           TR::CodeGenerator      * cg               = NULL,
-                          TR::InstOpCode::Mnemonic          op               = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic          op               = TR::InstOpCode::bad,
                           TR::Node               * n                = NULL,
                           TR::Register           * targetReg        = NULL,
                           TR::Register           * sourceReg2       = NULL,
@@ -5059,7 +5059,7 @@ class S390VRIfInstruction : public S390VRIInstruction
    public:
    S390VRIfInstruction(
                           TR::CodeGenerator      * cg               = NULL,
-                          TR::InstOpCode::Mnemonic          op               = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic          op               = TR::InstOpCode::bad,
                           TR::Node               * n                = NULL,
                           TR::Register           * targetReg        = NULL,
                           TR::Register           * sourceReg2       = NULL,
@@ -5098,7 +5098,7 @@ class S390VRIgInstruction : public S390VRIInstruction
    public:
    S390VRIgInstruction(
                           TR::CodeGenerator      * cg               = NULL,
-                          TR::InstOpCode::Mnemonic          op      = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic          op      = TR::InstOpCode::bad,
                           TR::Node               * n                = NULL,
                           TR::Register           * targetReg        = NULL,
                           TR::Register           * sourceReg2       = NULL,
@@ -5133,7 +5133,7 @@ class S390VRIhInstruction : public S390VRIInstruction
    public:
    S390VRIhInstruction(
                           TR::CodeGenerator      * cg               = NULL,
-                          TR::InstOpCode::Mnemonic     op           = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic     op           = TR::InstOpCode::bad,
                           TR::Node               * n                = NULL,
                           TR::Register           * targetReg        = NULL,
                           uint16_t                constantImm2      = 0,    /*  16 bits */
@@ -5166,7 +5166,7 @@ class S390VRIiInstruction : public S390VRIInstruction
    public:
    S390VRIiInstruction(
                           TR::CodeGenerator      * cg               = NULL,
-                          TR::InstOpCode::Mnemonic          op      = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic          op      = TR::InstOpCode::bad,
                           TR::Node               * n                = NULL,
                           TR::Register           * targetReg        = NULL,
                           TR::Register           * sourceReg2       = NULL,
@@ -5230,7 +5230,7 @@ class S390VRRInstruction : public S390VInstruction
    protected:
    S390VRRInstruction(
                          TR::CodeGenerator       * cg  = NULL,
-                         TR::InstOpCode::Mnemonic           op  = TR::InstOpCode::BAD,
+                         TR::InstOpCode::Mnemonic           op  = TR::InstOpCode::bad,
                          TR::Node                * n   = NULL,
                          TR::Register            * targetReg  = NULL,
                          TR::Register            * sourceReg2 = NULL,
@@ -5301,7 +5301,7 @@ class S390VRRaInstruction: public S390VRRInstruction
    public:
    S390VRRaInstruction(
                           TR::CodeGenerator       * cg         = NULL,
-                          TR::InstOpCode::Mnemonic           op         = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic           op         = TR::InstOpCode::bad,
                           TR::Node                * n          = NULL,
                           TR::Register            * targetReg  = NULL,
                           TR::Register            * sourceReg2 = NULL,
@@ -5375,7 +5375,7 @@ class S390VRRcInstruction: public S390VRRInstruction
    public:
    S390VRRcInstruction(
                           TR::CodeGenerator       * cg  = NULL,
-                          TR::InstOpCode::Mnemonic           op  = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic           op  = TR::InstOpCode::bad,
                           TR::Node                * n   = NULL,
                           TR::Register            * targetReg  = NULL,
                           TR::Register            * sourceReg2 = NULL,
@@ -5408,7 +5408,7 @@ class S390VRRdInstruction: public S390VRRInstruction
    public:
    S390VRRdInstruction(
                           TR::CodeGenerator       * cg  = NULL,
-                          TR::InstOpCode::Mnemonic           op  = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic           op  = TR::InstOpCode::bad,
                           TR::Node                * n   = NULL,
                           TR::Register            * targetReg  = NULL,
                           TR::Register            * sourceReg2 = NULL,
@@ -5446,7 +5446,7 @@ class S390VRReInstruction: public S390VRRInstruction
    public:
    S390VRReInstruction(
                           TR::CodeGenerator       * cg  = NULL,
-                          TR::InstOpCode::Mnemonic           op  = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic           op  = TR::InstOpCode::bad,
                           TR::Node                * n   = NULL,
                           TR::Register            * targetReg  = NULL,
                           TR::Register            * sourceReg2 = NULL,
@@ -5484,7 +5484,7 @@ class S390VRRfInstruction: public S390VRRInstruction
    public:
    S390VRRfInstruction(
                           TR::CodeGenerator       * cg  = NULL,
-                          TR::InstOpCode::Mnemonic           op  = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic           op  = TR::InstOpCode::bad,
                           TR::Node                * n   = NULL,
                           TR::Register            * targetReg  = NULL,
                           TR::Register            * sourceReg2 = NULL, /* GPR */
@@ -5515,7 +5515,7 @@ class S390VRRgInstruction: public S390VRRInstruction
    public:
    S390VRRgInstruction(
                           TR::CodeGenerator       * cg         = NULL,
-                          TR::InstOpCode::Mnemonic  op         = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic  op         = TR::InstOpCode::bad,
                           TR::Node                * n          = NULL,
                           TR::Register            * v1Reg  = NULL)
    : S390VRRInstruction(cg, op, n, v1Reg, NULL, 0, 0, 0, 0)
@@ -5539,7 +5539,7 @@ class S390VRRhInstruction: public S390VRRInstruction
    public:
    S390VRRhInstruction(
                           TR::CodeGenerator       * cg         = NULL,
-                          TR::InstOpCode::Mnemonic         op  = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic         op  = TR::InstOpCode::bad,
                           TR::Node                * n          = NULL,
                           TR::Register            * v1Reg      = NULL,
                           TR::Register            * v2Reg      = NULL,
@@ -5568,7 +5568,7 @@ class S390VRRiInstruction: public S390VRRInstruction
    public:
    S390VRRiInstruction(
                           TR::CodeGenerator       * cg         = NULL,
-                          TR::InstOpCode::Mnemonic   op        = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic   op        = TR::InstOpCode::bad,
                           TR::Node                * n          = NULL,
                           TR::Register            * r1Reg      = NULL, /* GPR */
                           TR::Register            * v2Reg      = NULL,
@@ -5689,7 +5689,7 @@ class S390VRSInstruction : public S390VInstruction
    protected:
    S390VRSInstruction(
                          TR::CodeGenerator       * cg           = NULL,
-                         TR::InstOpCode::Mnemonic           op           = TR::InstOpCode::BAD,
+                         TR::InstOpCode::Mnemonic           op           = TR::InstOpCode::bad,
                          TR::Node                * n            = NULL,
                          TR::Register            * targetReg    = NULL,   /* VRF        */
                          TR::Register            * sourceReg    = NULL,   /* VRF or GPR */
@@ -5713,7 +5713,7 @@ class S390VRSaInstruction : public S390VStorageInstruction
    public:
    S390VRSaInstruction(
                          TR::CodeGenerator       * cg           = NULL,
-                         TR::InstOpCode::Mnemonic   op          = TR::InstOpCode::BAD,
+                         TR::InstOpCode::Mnemonic   op          = TR::InstOpCode::bad,
                          TR::Node                * n            = NULL,
                          TR::Register            * targetReg    = NULL,   /* VRF */
                          TR::Register            * sourceReg    = NULL,   /* VRF */
@@ -5754,7 +5754,7 @@ class S390VRSbInstruction : public S390VStorageInstruction
    public:
    S390VRSbInstruction(
                          TR::CodeGenerator       * cg           = NULL,
-                         TR::InstOpCode::Mnemonic           op  = TR::InstOpCode::BAD,
+                         TR::InstOpCode::Mnemonic           op  = TR::InstOpCode::bad,
                          TR::Node                * n            = NULL,
                          TR::Register            * targetReg    = NULL,   /* VRF */
                          TR::Register            * sourceReg    = NULL,   /* GPR */
@@ -5795,7 +5795,7 @@ class S390VRScInstruction : public S390VStorageInstruction
    public:
    S390VRScInstruction(
                          TR::CodeGenerator       * cg           = NULL,
-                         TR::InstOpCode::Mnemonic           op           = TR::InstOpCode::BAD,
+                         TR::InstOpCode::Mnemonic           op           = TR::InstOpCode::bad,
                          TR::Node                * n            = NULL,
                          TR::Register            * targetReg    = NULL,   /* GPR */
                          TR::Register            * sourceReg    = NULL,   /* VRF */
@@ -5843,7 +5843,7 @@ class S390VRSdInstruction : public S390VStorageInstruction
    public:
    S390VRSdInstruction(
                          TR::CodeGenerator       * cg           = NULL,
-                         TR::InstOpCode::Mnemonic     op        = TR::InstOpCode::BAD,
+                         TR::InstOpCode::Mnemonic     op        = TR::InstOpCode::bad,
                          TR::Node                * n            = NULL,
                          TR::Register            * r3Reg        = NULL,   /* GPR */
                          TR::Register            * v1Reg        = NULL,   /* VRF */
@@ -5905,7 +5905,7 @@ class S390VRVInstruction : public S390VStorageInstruction
    public:
    S390VRVInstruction(
                          TR::CodeGenerator       * cg           = NULL,
-                         TR::InstOpCode::Mnemonic           op           = TR::InstOpCode::BAD,
+                         TR::InstOpCode::Mnemonic           op           = TR::InstOpCode::bad,
                          TR::Node                * n            = NULL,
                          TR::Register            * sourceReg    = NULL,   /* VRF */
                          TR::MemoryReference * mr           = NULL,
@@ -5946,7 +5946,7 @@ class S390VRXInstruction : public S390VStorageInstruction
    public:
    S390VRXInstruction(
                          TR::CodeGenerator       * cg           = NULL,
-                         TR::InstOpCode::Mnemonic           op           = TR::InstOpCode::BAD,
+                         TR::InstOpCode::Mnemonic           op           = TR::InstOpCode::bad,
                          TR::Node              * n            = NULL,
                          TR::Register            * reg          = NULL,   /* GPR */
                          TR::MemoryReference * mr           = NULL,
@@ -5987,7 +5987,7 @@ class S390VSIInstruction : public S390VStorageInstruction
    {
    public:
    S390VSIInstruction(TR::CodeGenerator       * cg           = NULL,
-                      TR::InstOpCode::Mnemonic  op           = TR::InstOpCode::BAD,
+                      TR::InstOpCode::Mnemonic  op           = TR::InstOpCode::bad,
                       TR::Node                * n            = NULL,
                       TR::Register            * v1Reg        = NULL,
                       TR::MemoryReference     * memRef       = NULL,

@@ -2350,7 +2350,7 @@ OMR::Z::TreeEvaluator::baddEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    cg->evaluate(rhsChild);
 
    TR_S390BinaryCommutativeAnalyser temp(cg);
-   temp.genericAnalyser(node, TR::InstOpCode::AR, TR::InstOpCode::BAD, TR::InstOpCode::LR);
+   temp.genericAnalyser(node, TR::InstOpCode::AR, TR::InstOpCode::bad, TR::InstOpCode::LR);
 
    cg->decReferenceCount(lhsChild);
    cg->decReferenceCount(rhsChild);
@@ -2386,7 +2386,7 @@ OMR::Z::TreeEvaluator::bsubEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    cg->evaluate(rhsChild);
 
    TR_S390BinaryAnalyser temp(cg);
-   temp.genericAnalyser(node, TR::InstOpCode::SR, TR::InstOpCode::BAD, TR::InstOpCode::LR);
+   temp.genericAnalyser(node, TR::InstOpCode::SR, TR::InstOpCode::bad, TR::InstOpCode::LR);
 
    return node->getRegister();
    }
@@ -2572,7 +2572,7 @@ OMR::Z::TreeEvaluator::bmulEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    cg->evaluate(rhsChild);
 
    TR_S390BinaryCommutativeAnalyser temp(cg);
-   temp.genericAnalyser(node, TR::InstOpCode::MSR, TR::InstOpCode::BAD, TR::InstOpCode::LR);
+   temp.genericAnalyser(node, TR::InstOpCode::MSR, TR::InstOpCode::bad, TR::InstOpCode::LR);
 
    cg->decReferenceCount(lhsChild);
    cg->decReferenceCount(rhsChild);

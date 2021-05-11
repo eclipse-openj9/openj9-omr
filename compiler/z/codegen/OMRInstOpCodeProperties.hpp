@@ -37,8 +37,8 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::BAD,
-   /* .name        = */ "BAD",
+   /* .mnemonic    = */ OMR::InstOpCode::bad,
+   /* .name        = */ "bad",
    /* .description = */ "Bad Opcode",
    /* .opcode[0]   = */ 0x00,
    /* .opcode[1]   = */ 0x00,

@@ -234,7 +234,7 @@ TR::InstOpCode::Mnemonic getReplacementCompareAndBranchOpCode(TR::CodeGenerator 
    static char * disableS390CompareAndBranch = feGetEnv("TR_DISABLES390CompareAndBranch");
 
    if (disableS390CompareAndBranch)
-      return TR::InstOpCode::BAD ;
+      return TR::InstOpCode::bad ;
 
    switch(compareOpCode)
       {
@@ -263,7 +263,7 @@ TR::InstOpCode::Mnemonic getReplacementCompareAndBranchOpCode(TR::CodeGenerator 
          return TR::InstOpCode::CLGIJ;
          break;
       default:
-         return TR::InstOpCode::BAD;
+         return TR::InstOpCode::bad;
          break;
       }
    }
@@ -275,7 +275,7 @@ getReplacementLongDisplacementOpCode(TR::CodeGenerator* cg, TR::InstOpCode::Mnem
       {
       auto longDisplacementMnemonic = TR::InstOpCode::getEquivalentLongDisplacementMnemonic(op);
 
-      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+      if (longDisplacementMnemonic != TR::InstOpCode::bad)
          {
          op = longDisplacementMnemonic;
 
@@ -314,7 +314,7 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
    TR::Instruction * returnInstruction = NULL;
 
    // test to see if this node is suitable for compare and branch, and which
-   // compare and branch op code to use if so.  if we get TR::InstOpCode::BAD, it isn't
+   // compare and branch op code to use if so.  if we get TR::InstOpCode::bad, it isn't
    // suitable for compare and branch, and we'll generate the old fashioned way.
    TR::InstOpCode::Mnemonic replacementOpCode = getReplacementCompareAndBranchOpCode(cg, compareOpCode);
 
@@ -322,7 +322,7 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
    // compare-and-branch instructions are zEC12 and above
    if( !cg->comp()->getOption(TR_DisableCompareAndBranchInstruction) &&
            !needsCC &&
-           replacementOpCode != TR::InstOpCode::BAD &&
+           replacementOpCode != TR::InstOpCode::bad &&
            cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12))
       {
       // generate a compare and branch.
@@ -393,10 +393,10 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
    // declare a space for the instruction we'll return (the compare and branch
    // instruction, or the branch instruction if z6 support is off).
    TR::Instruction * cursor = NULL;
-   TR::InstOpCode::Mnemonic replacementOpCode = TR::InstOpCode::BAD;
+   TR::InstOpCode::Mnemonic replacementOpCode = TR::InstOpCode::bad;
 
    // test to see if this node is suitable for compare and branch, and which
-   // compare and branch op code to use if so.  if we get TR::InstOpCode::BAD, it isn't
+   // compare and branch op code to use if so.  if we get TR::InstOpCode::bad, it isn't
    // suitable for compare and branch, and we'll generate the old fashioned way.
    bool canUseReplacementOpCode = false;
    switch(compareOpCode)
@@ -418,7 +418,7 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
    // compare-and-branch instructions are zEC12 and above
    if( !cg->comp()->getOption(TR_DisableCompareAndBranchInstruction) &&
            !needsCC &&
-           replacementOpCode != TR::InstOpCode::BAD &&
+           replacementOpCode != TR::InstOpCode::bad &&
            cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_ZEC12))
       {
       cursor = (TR::S390RIEInstruction *)generateRIEInstruction(cg, replacementOpCode, node, first, (int8_t) second, branchDestination, bc, preced);

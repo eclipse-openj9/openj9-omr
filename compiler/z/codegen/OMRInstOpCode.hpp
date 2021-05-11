@@ -397,7 +397,7 @@ class InstOpCode: public OMR::InstOpCode
    {
    protected:
 
-   InstOpCode():  OMR::InstOpCode(BAD)  {}
+   InstOpCode():  OMR::InstOpCode(bad)  {}
    InstOpCode(Mnemonic m): OMR::InstOpCode(m)  {}
 
    public:

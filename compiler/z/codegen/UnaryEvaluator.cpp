@@ -159,7 +159,7 @@ OMR::Z::TreeEvaluator::iabsEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
    TR::Register * sourceRegister = cg->evaluate(firstChild);
    TR::Register * targetRegister;
-   TR::InstOpCode::Mnemonic opCode  = TR::InstOpCode::BAD;
+   TR::InstOpCode::Mnemonic opCode  = TR::InstOpCode::bad;
    if (node->getOpCodeValue() == TR::fabs)
       opCode = TR::InstOpCode::LPEBR;
    else if (node->getOpCodeValue() == TR::dabs)

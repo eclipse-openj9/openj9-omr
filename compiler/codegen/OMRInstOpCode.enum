@@ -25,3 +25,4 @@
  */
 
    assocreg,           // Register Association
+   bad,                // Bad Opcode

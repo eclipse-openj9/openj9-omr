@@ -265,9 +265,9 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
       {
       TR_ASSERT_FATAL(targetReg->getAssignedRegister()->is64BitReg() == sourceReg->getAssignedRegister()->is64BitReg(), "Attempting register exchange with one 64-bit register (%s) and one 32-bit register (%s)", getRegisterName(sourceReg, cg), getRegisterName(targetReg, cg));
 
-      TR::InstOpCode::Mnemonic opLoadReg = TR::InstOpCode::BAD;
-      TR::InstOpCode::Mnemonic opLoad = TR::InstOpCode::BAD;
-      TR::InstOpCode::Mnemonic opStore = TR::InstOpCode::BAD;
+      TR::InstOpCode::Mnemonic opLoadReg = TR::InstOpCode::bad;
+      TR::InstOpCode::Mnemonic opLoad = TR::InstOpCode::bad;
+      TR::InstOpCode::Mnemonic opStore = TR::InstOpCode::bad;
 
       if (targetReg->getAssignedRegister()->is64BitReg())
          {

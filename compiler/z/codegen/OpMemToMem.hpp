@@ -259,7 +259,7 @@ class MemToMemConstLenMacroOp : public MemToMemMacroOp
          }
    protected:
       MemToMemConstLenMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator * cg, int64_t length,
-                              TR::Register * itersReg=0, TR::InstOpCode::Mnemonic op=TR::InstOpCode::BAD, bool inNestedICF=false)
+                              TR::Register * itersReg=0, TR::InstOpCode::Mnemonic op=TR::InstOpCode::bad, bool inNestedICF=false)
         : MemToMemMacroOp(rootNode, dstNode, srcNode, cg,NULL, itersReg), _length(length), _maxCopies(16), _opcode(op), _needDep(true), _inNestedICF(inNestedICF), _nestedICFDeps(NULL)
          {
          uint64_t len = (uint64_t)length;

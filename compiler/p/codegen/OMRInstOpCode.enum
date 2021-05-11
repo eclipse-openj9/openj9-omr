@@ -26,7 +26,6 @@
 
 #include "compiler/codegen/OMRInstOpCode.enum"
 
-   bad,              // Illegal Opcode
    add,              // Add
    add_r,            // Add Rc=1
    addc,             // Add carrying

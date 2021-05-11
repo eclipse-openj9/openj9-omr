@@ -734,10 +734,10 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
    {
    TR::Compilation *comp = cg->comp();
    TR::Instruction * cursor = NULL, *resultMultReduction = NULL;
-   TR::InstOpCode::Mnemonic immOp = TR::InstOpCode::BAD;
+   TR::InstOpCode::Mnemonic immOp = TR::InstOpCode::bad;
 
    // LL: Store Golden Eagle extended immediate instruction - 6 bytes long
-   TR::InstOpCode::Mnemonic ei_immOp = TR::InstOpCode::BAD;
+   TR::InstOpCode::Mnemonic ei_immOp = TR::InstOpCode::bad;
 
    switch (memOp)
       {
@@ -1029,13 +1029,13 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
             // value = 0x****0000
             value = value >> 16;
             immOp = TR::InstOpCode::OILH;
-            ei_immOp = TR::InstOpCode::BAD; // Reset so we don't generate OILF.
+            ei_immOp = TR::InstOpCode::bad; // Reset so we don't generate OILF.
             }
          else if (!(value & 0xFFFF0000))
             {
             // value = 0x0000****
             immOp = TR::InstOpCode::OILL;
-            ei_immOp = TR::InstOpCode::BAD; // Reset so we don't generate OILF.
+            ei_immOp = TR::InstOpCode::bad; // Reset so we don't generate OILF.
             }
          }
          break;
@@ -1062,13 +1062,13 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
             {
             value = value & 0x0000FFFF;
             immOp = TR::InstOpCode::NILL;
-            ei_immOp = TR::InstOpCode::BAD; // Reset so we don't generate NILF.
+            ei_immOp = TR::InstOpCode::bad; // Reset so we don't generate NILF.
             }
          else if ((value & 0x0000FFFF) == 0x0000FFFF)
             {
             value = value >> 16;
             immOp = TR::InstOpCode::NILH;
-            ei_immOp = TR::InstOpCode::BAD; // Reset so we don't generate NILF.
+            ei_immOp = TR::InstOpCode::bad; // Reset so we don't generate NILF.
             }
          }
          break;
@@ -1148,12 +1148,12 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
       cursor = generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCodeFromNode(cg, node), node, targetRegisterNoPair, sourceRegister, (cursor != NULL) ? cursor : preced);
       }
 
-   if (ei_immOp != TR::InstOpCode::BAD)
+   if (ei_immOp != TR::InstOpCode::bad)
       {
       cursor = generateRILInstruction(cg, ei_immOp, node, targetRegisterNoPair, value, (cursor != NULL) ? cursor : preced);
       return cursor;
       }
-   else if (immOp != TR::InstOpCode::BAD)
+   else if (immOp != TR::InstOpCode::bad)
       {
       cursor = generateRIInstruction(cg, immOp, node, targetRegisterNoPair, value, (cursor != NULL) ? cursor : preced);
       return cursor;
@@ -1173,10 +1173,10 @@ generateS390ImmOp(TR::CodeGenerator * cg,
    {
    TR_ASSERT( preced == NULL, "Support has not yet been adding for preced instruction");
    TR::Instruction * cursor = NULL;
-   TR::InstOpCode::Mnemonic immOp=TR::InstOpCode::BAD;
+   TR::InstOpCode::Mnemonic immOp=TR::InstOpCode::bad;
 
    // LL: Store Golden Eagle extended immediate instruction - 6 bytes long
-   TR::InstOpCode::Mnemonic ei_immOp=TR::InstOpCode::BAD;
+   TR::InstOpCode::Mnemonic ei_immOp=TR::InstOpCode::bad;
 
    const int64_t hhMask = CONSTANT64(0x0000FFFFFFFFFFFF);
    const int64_t hlMask = CONSTANT64(0xFFFF0000FFFFFFFF);
@@ -1460,11 +1460,11 @@ generateS390ImmOp(TR::CodeGenerator * cg,
       }
 
    // LL: Golden Eagle extended immediate instructions
-   if (ei_immOp != TR::InstOpCode::BAD)
+   if (ei_immOp != TR::InstOpCode::bad)
       {
       return generateRILInstruction(cg, ei_immOp, node, targetRegister, static_cast<int32_t>(value));
       }
-   else if (immOp != TR::InstOpCode::BAD)
+   else if (immOp != TR::InstOpCode::bad)
       {
       return generateRIInstruction(cg, immOp, node, targetRegister, (int16_t)value);
       }
@@ -2084,7 +2084,7 @@ tryGenerateSIComparisons(TR::Node *node, TR::Node *constNode, TR::Node *otherNod
 
       TR::MemoryReference *memRef = TR::MemoryReference::create(cg, operand);
 
-      TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::BAD;
+      TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
       if (operandSize == 8)
          opCode = (isUnsignedCmp ? TR::InstOpCode::CLGHSI : TR::InstOpCode::CGHSI);
       else if (operandSize == 4)
@@ -2573,14 +2573,14 @@ tryGenerateConversionRXComparison(TR::Node *node, TR::CodeGenerator *cg, bool *i
       // Signed
       // memSize                    regSize
       // 2       4       8             v
-      {{ TR::InstOpCode::CH,  TR::InstOpCode::C,   TR::InstOpCode::BAD },  // 4
-       { TR::InstOpCode::BAD, TR::InstOpCode::CGF, TR::InstOpCode::CG  }}, // 8 // FIXME: CGH missing because it doesn't exist in s390ops
+      {{ TR::InstOpCode::CH,  TR::InstOpCode::C,   TR::InstOpCode::bad },  // 4
+       { TR::InstOpCode::bad, TR::InstOpCode::CGF, TR::InstOpCode::CG  }}, // 8 // FIXME: CGH missing because it doesn't exist in s390ops
 
       // Unsigned
       // memSize                     regSize
       // 2       4        8             v
-      {{ TR::InstOpCode::BAD, TR::InstOpCode::CL,   TR::InstOpCode::BAD },  // 4
-       { TR::InstOpCode::BAD, TR::InstOpCode::CLGF, TR::InstOpCode::CLG }}, // 8
+      {{ TR::InstOpCode::bad, TR::InstOpCode::CL,   TR::InstOpCode::bad },  // 4
+       { TR::InstOpCode::bad, TR::InstOpCode::CLGF, TR::InstOpCode::CLG }}, // 8
       };
 
    // FIXME: the above table needs to be intersected with the architecture.
@@ -2589,7 +2589,7 @@ tryGenerateConversionRXComparison(TR::Node *node, TR::CodeGenerator *cg, bool *i
    // forcing a signedCmp (e.g. CH) if convertToSignExtension is true
    TR::InstOpCode::Mnemonic op = choices[convertToSignExtension ? false : isUnsignedCmp][regSize == 4 ? 0 : 1][memSizeCoord];
 
-   if (op == TR::InstOpCode::BAD)
+   if (op == TR::InstOpCode::bad)
       {
       return 0;
       }
@@ -2834,7 +2834,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
             isUnsignedCmp = true;
             }
 
-         TR::InstOpCode::Mnemonic compareOpCode = TR::InstOpCode::BAD;
+         TR::InstOpCode::Mnemonic compareOpCode = TR::InstOpCode::bad;
          int64_t constValue64 = 0;
          int32_t constValue32 = 0;
          bool useConstValue64 = false;
@@ -3179,7 +3179,7 @@ getOpCodeIfSuitableForCompareAndBranch(TR::CodeGenerator * cg, TR::Node * node, 
    {
    // be pessimistic and signal we can't use compare and branch until we
    // determine otherwise.
-   TR::InstOpCode::Mnemonic opCodeToUse = TR::InstOpCode::BAD;
+   TR::InstOpCode::Mnemonic opCodeToUse = TR::InstOpCode::bad;
 
    bool isUnsignedCmp = node->getOpCode().isUnsignedCompare();
    if (dataType == TR::Address)
@@ -3239,7 +3239,7 @@ genCompareAndBranchInstructionIfPossible(TR::CodeGenerator * cg, TR::Node * node
 
    // be pessimistic and signal we can't use compare and branch until we
    // determine otherwise.
-   TR::InstOpCode::Mnemonic opCodeToUse = TR::InstOpCode::BAD;
+   TR::InstOpCode::Mnemonic opCodeToUse = TR::InstOpCode::bad;
 
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
@@ -3302,7 +3302,7 @@ genCompareAndBranchInstructionIfPossible(TR::CodeGenerator * cg, TR::Node * node
 
    opCodeToUse = getOpCodeIfSuitableForCompareAndBranch(cg, node, dataType, canUseImm8 );
 
-   if (opCodeToUse == TR::InstOpCode::BAD)
+   if (opCodeToUse == TR::InstOpCode::bad)
       {
       return NULL;
       }
@@ -4234,13 +4234,13 @@ static const TR::InstOpCode::Mnemonic loadInstrs[2/*Form*/][4/*numberOfBits*/][2
 /* 8*/   { { TR::InstOpCode::LLCR,  TR::InstOpCode::LLGCR }, { TR::InstOpCode::LBR,   TR::InstOpCode::LGBR } },
 /*16*/   { { TR::InstOpCode::LLHR,  TR::InstOpCode::LLGHR }, { TR::InstOpCode::LHR,   TR::InstOpCode::LGHR } },
 /*32*/   { { TR::InstOpCode::LR,    TR::InstOpCode::LLGFR }, { TR::InstOpCode::LR,    TR::InstOpCode::LGFR } },
-/*64*/   { { TR::InstOpCode::BAD,   TR::InstOpCode::LGR   }, { TR::InstOpCode::BAD,   TR::InstOpCode::LGR  } }
+/*64*/   { { TR::InstOpCode::bad,   TR::InstOpCode::LGR   }, { TR::InstOpCode::bad,   TR::InstOpCode::LGR  } }
       },
 /*MemReg*/{
 /* 8*/   { { TR::InstOpCode::LLC,   TR::InstOpCode::LLGC  }, { TR::InstOpCode::LB,    TR::InstOpCode::LGB } },
 /*16*/   { { TR::InstOpCode::LLH,   TR::InstOpCode::LLGH  }, { TR::InstOpCode::LH,    TR::InstOpCode::LGH } },
 /*32*/   { { TR::InstOpCode::L,     TR::InstOpCode::LLGF  }, { TR::InstOpCode::L,     TR::InstOpCode::LGF } },
-/*64*/   { { TR::InstOpCode::BAD,   TR::InstOpCode::LG    }, { TR::InstOpCode::BAD,   TR::InstOpCode::LG  } }
+/*64*/   { { TR::InstOpCode::bad,   TR::InstOpCode::LG    }, { TR::InstOpCode::bad,   TR::InstOpCode::LG  } }
       }
    };
 
@@ -4632,7 +4632,7 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
        !cg->getConditionalMovesEvaluationMode()
       )
       {
-      TR::InstOpCode::Mnemonic op = TR::InstOpCode::BAD;
+      TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
       if (node->getType().isInt32() || (!(cg->comp()->target().is64Bit()) && node->getType().isAddress() ))
          {
          op = TR::InstOpCode::LRL;
@@ -4652,7 +4652,7 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
          op = TR::InstOpCode::LGRL;
          }
 
-      TR_ASSERT(op != TR::InstOpCode::BAD, "Bad opcode selection in relative load helper!\n");
+      TR_ASSERT(op != TR::InstOpCode::bad, "Bad opcode selection in relative load helper!\n");
 
       if ((!disableFORCELRL || cg->canUseRelativeLongInstructions(staticAddress)) &&
            ((cg->comp()->target().is32Bit() && (staticAddress&0x3) == 0)  ||
@@ -5539,7 +5539,7 @@ astoreHelper(TR::Node * node, TR::CodeGenerator * cg)
       TR::Register* sourceRegister = NULL;
 
       // Try Move HalfWord Immediate instructions first
-      if (mvhiOp != TR::InstOpCode::BAD &&
+      if (mvhiOp != TR::InstOpCode::bad &&
           valueChild->getOpCode().isLoadConst() &&
           !cg->getConditionalMovesEvaluationMode())
          {
@@ -5555,9 +5555,9 @@ astoreHelper(TR::Node * node, TR::CodeGenerator * cg)
          else
             {
             // Successfully generated Move Halfword Immediate instruction
-            // Set storeOp to TR::InstOpCode::BAD, so we do not explicitly generate a
+            // Set storeOp to TR::InstOpCode::bad, so we do not explicitly generate a
             // store instruction later.
-            storeOp = TR::InstOpCode::BAD;
+            storeOp = TR::InstOpCode::bad;
             }
          }
       // aload is the child, then don't evaluate the child, generate MVC to move directly among memory
@@ -5596,11 +5596,11 @@ astoreHelper(TR::Node * node, TR::CodeGenerator * cg)
          tempMR = TR::MemoryReference::create(cg, node);
          }
 
-      // Generate the Store instruction unless storeOp is TR::InstOpCode::BAD (i.e. Move
+      // Generate the Store instruction unless storeOp is TR::InstOpCode::bad (i.e. Move
       // Halfword Immediate instruction was generated).
       if (storeOp == TR::InstOpCode::STCM)
          generateRSInstruction(cg, TR::InstOpCode::STCM, node, sourceRegister, (uint32_t) 0x7, tempMR);
-      else if (storeOp != TR::InstOpCode::BAD)
+      else if (storeOp != TR::InstOpCode::bad)
          {
          if (cg->getConditionalMovesEvaluationMode())
             generateRSInstruction(cg, (storeOp == TR::InstOpCode::STG)? TR::InstOpCode::STOCG : TR::InstOpCode::STOC, node, sourceRegister, cg->getRCondMoveBranchOpCond(), tempMR);
@@ -12073,7 +12073,7 @@ TR::Register *OMR::Z::TreeEvaluator::bitOpMemEvaluator(TR::Node * node, TR::Code
    // see if we can generate immediate instructions
    TR::InstOpCode::Mnemonic SI_opcode = isXor ? TR::InstOpCode::XI :
                               isAnd ? TR::InstOpCode::NI :
-                              isOr  ? TR::InstOpCode::OI : TR::InstOpCode::BAD;
+                              isOr  ? TR::InstOpCode::OI : TR::InstOpCode::bad;
    bool useSIFormat = false;
    char *value = NULL;
 
@@ -12176,7 +12176,7 @@ TR::Register *OMR::Z::TreeEvaluator::bitOpMemEvaluator(TR::Node * node, TR::Code
             byteSrc1Reg = cg->gprClobberEvaluate(byteSrc1Node);
          TR::InstOpCode::Mnemonic opcode = isXor ? TR::InstOpCode::XC :
                                  isAnd ? TR::InstOpCode::NC :
-                                 isOr  ? TR::InstOpCode::OC : TR::InstOpCode::BAD;
+                                 isOr  ? TR::InstOpCode::OC : TR::InstOpCode::bad;
 
          if (byteLenReg == NULL)
             {
@@ -12833,7 +12833,7 @@ OMR::Z::TreeEvaluator::inlineVectorBitSelectOp(TR::Node * node, TR::CodeGenerato
 TR::Register *
 OMR::Z::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::BAD;
+   TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::bad;
 
    if (node->getOpCodeValue() == TR::vload ||
        node->getOpCodeValue() == TR::vloadi)
@@ -12892,7 +12892,7 @@ OMR::Z::TreeEvaluator::vRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::BAD;
+   TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::bad;
 
    if (node->getOpCodeValue() == TR::vstore ||
        node->getOpCodeValue() == TR::vstorei)
@@ -12921,7 +12921,7 @@ OMR::Z::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vdremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::BAD);
+   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::bad);
    }
 
 TR::Register *
@@ -14375,7 +14375,7 @@ OMR::Z::TreeEvaluator::vdecEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::BAD;
+   TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
    switch (node->getDataType())
       {
       case TR::VectorInt8:
@@ -14472,7 +14472,7 @@ generateFusedMultiplyAddIfPossible(TR::CodeGenerator *cg, TR::Node *addNode, TR:
       case TR::InstOpCode::MSEBR:
       case TR::InstOpCode::MSDR:
       case TR::InstOpCode::MSDBR:
-         if (negateOp != TR::InstOpCode::BAD)
+         if (negateOp != TR::InstOpCode::bad)
             {
             TR::Register *tempReg = cg->allocateRegister(TR_FPR);
             generateRRInstruction(cg, negateOp, addNode, tempReg, mulLeftReg); // negate one operand of the multiply
@@ -14514,7 +14514,7 @@ OMR::Z::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       }
    else
       {
-      TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::BAD;
+      TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
       switch (node->getDataType())
          {
          case TR::VectorInt8:
@@ -14549,7 +14549,7 @@ OMR::Z::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       }
    else
       {
-      TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::BAD;
+      TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
       switch (node->getDataType())
          {
          case TR::VectorInt8:
@@ -14672,7 +14672,7 @@ OMR::Z::TreeEvaluator::vDivOrRemHelper(TR::Node *node, TR::CodeGenerator *cg, bo
 
       bool isUnsigned = divisor->isUnsigned();
       bool is64Bit = (node->getDataType() == TR::VectorInt64);
-      TR::InstOpCode::Mnemonic divOp = TR::InstOpCode::BAD;
+      TR::InstOpCode::Mnemonic divOp = TR::InstOpCode::bad;
       if (is64Bit)
          divOp = isUnsigned ? TR::InstOpCode::DLGR : TR::InstOpCode::DSGR;
       else
@@ -15212,7 +15212,7 @@ OMR::Z::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       (valueNode->getOpCode().isMemoryReference() || valueNode->getOpCode().isLoadConst()))
       {
       uint8_t m3 = elementNode->getLongInt() % (16/size);
-      TR::InstOpCode::Mnemonic op = TR::InstOpCode::BAD;
+      TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
 
       if (valueNode->getOpCode().isLoadConst() && valueNode->getOpCode().isInteger() &&
           valueNode->getLongInt() >= MIN_IMMEDIATE_VAL && valueNode->getLongInt() <= MAX_IMMEDIATE_VAL)

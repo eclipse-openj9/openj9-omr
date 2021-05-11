@@ -1974,7 +1974,7 @@ TR::Register *OMR::Z::MemoryReference::swapBaseRegister(TR::Register *br, TR::Co
 TR::Instruction *
 OMR::Z::MemoryReference::handleLargeOffset(TR::Node * node, TR::MemoryReference *interimMemoryReference, TR::Register *tempTargetRegister, TR::CodeGenerator * cg, TR::Instruction * preced)
    {
-   TR::InstOpCode::Mnemonic op = TR::InstOpCode::BAD;
+   TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
 
    if (_offset > MINLONGDISP && _offset < MAXLONGDISP)
       {
@@ -2951,7 +2951,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
       auto longDisplacementMnemonic = TR::InstOpCode::getEquivalentLongDisplacementMnemonic(instr->getOpCodeValue());
 
       if ((displacement < MAXLONGDISP && displacement > MINLONGDISP)
-         && (longDisplacementMnemonic != TR::InstOpCode::BAD
+         && (longDisplacementMnemonic != TR::InstOpCode::bad
             || instructionFormat == TR::Instruction::IsRXY
             || instructionFormat == TR::Instruction::IsRXYb
             || instructionFormat == TR::Instruction::IsRSY
@@ -2970,7 +2970,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
          // formats and S390*Instruction formats
          instructionFormat = TR::Instruction::IsRXY;
 
-         if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+         if (longDisplacementMnemonic != TR::InstOpCode::bad)
             {
             TR::DebugCounter::incStaticDebugCounter(comp, TR::DebugCounter::debugCounterName(comp, "z/memref/long-displacement-upgrade/(%s)", comp->signature()));
             }

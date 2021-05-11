@@ -26,8 +26,6 @@
 
 #include "compiler/codegen/OMRInstOpCode.enum"
 
-/* UNALLOCATED */
-		bad,
 /*
  * RISC-V instructions
  */

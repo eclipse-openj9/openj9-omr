@@ -762,7 +762,7 @@ OMR::Z::Peephole::tryToReduce64BitShiftTo32BitShift()
 
    if (performTransformation(self()->comp(), "O^O S390 PEEPHOLE: Reverting int shift at %p from SLLG/SLAG/S[LR][LA]K to SLL/SLA/SRL/SRA.\n", shiftInst))
       {
-      TR::InstOpCode::Mnemonic newOpCode = TR::InstOpCode::BAD;
+      TR::InstOpCode::Mnemonic newOpCode = TR::InstOpCode::bad;
       switch (oldOpCode)
          {
          case TR::InstOpCode::SLLG:

@@ -790,14 +790,16 @@ static bool isImm7OffsetGPRInstruction(uint32_t enc)
    }
 
 /* load/store exclusive */
-static bool isExclusiveMemAccessInstruction(TR::InstOpCode::Mnemonic op)
+static bool isExclusiveMemAccessInstruction(uint32_t enc)
    {
-   return (op == TR::InstOpCode::ldxrx || op == TR::InstOpCode::ldxrw ||
-           op == TR::InstOpCode::ldaxrx || op == TR::InstOpCode::ldaxrw ||
-           op == TR::InstOpCode::stxrx || op == TR::InstOpCode::stxrw ||
-           op == TR::InstOpCode::stlxrx || op == TR::InstOpCode::stlxrw);
+   return ((enc & 0x3f000000) == 0x08000000);
    }
 
+/* atomic operation */
+static bool isAtomicOperationInstruction(uint32_t enc)
+   {
+   return ((enc & 0x3b200c00) == 0x38200000);
+   }
 
 uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *currentInstruction, uint8_t *cursor, TR::CodeGenerator *cg)
    {
@@ -927,7 +929,12 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
                   TR_ASSERT_FATAL(false, "Offset is too large for specified instruction.");
                   }
                }
-            else if (isExclusiveMemAccessInstruction(op.getMnemonic()))
+            else if (isExclusiveMemAccessInstruction(enc))
+               {
+               TR_ASSERT(displacement == 0, "Offset must be zero for specified instruction.");
+               cursor += ARM64_INSTRUCTION_LENGTH;
+               }
+            else if (isAtomicOperationInstruction(enc))
                {
                TR_ASSERT(displacement == 0, "Offset must be zero for specified instruction.");
                cursor += ARM64_INSTRUCTION_LENGTH;
@@ -1103,7 +1110,11 @@ uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::InstOpCode op)
                   TR_ASSERT_FATAL(false, "Offset is too large for specified instruction.");
                   }
                }
-            else if (isExclusiveMemAccessInstruction(op.getMnemonic()))
+            else if (isExclusiveMemAccessInstruction(enc))
+               {
+               return ARM64_INSTRUCTION_LENGTH;
+               }
+            else if (isAtomicOperationInstruction(enc))
                {
                return ARM64_INSTRUCTION_LENGTH;
                }

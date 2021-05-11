@@ -6490,8 +6490,8 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt32, \
-   /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
+   /* .dataType             = */ TR::NoType, \
+   /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::HasNoDataType | ILTypeProp::Vector, \
    /* .childProperties      = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
    /* .reverseBranchOpCode  = */ TR::BadILOp, \

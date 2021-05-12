@@ -364,7 +364,7 @@ boundNext(TR::Instruction * currentInstruction, int32_t realNum, TR::Register * 
    TR::RealRegister::RegNum realReg = (TR::RealRegister::RegNum) realNum;
    TR::Node * nodeBBStart = NULL;
 
-   while (cursor->getOpCodeValue() != TR::InstOpCode::PROC)
+   while (cursor->getOpCodeValue() != TR::InstOpCode::proc)
       {
       TR::RegisterDependencyConditions * conditions;
       if ((conditions = cursor->getDependencyConditions()) != NULL)
@@ -2532,7 +2532,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
       }
 
    TR::Instruction * cursor = currentInstruction->getPrev();
-   while (numCandidates > 1 && cursor != NULL && cursor->getOpCodeValue() != TR::InstOpCode::label && cursor->getOpCodeValue() != TR::InstOpCode::PROC)
+   while (numCandidates > 1 && cursor != NULL && cursor->getOpCodeValue() != TR::InstOpCode::label && cursor->getOpCodeValue() != TR::InstOpCode::proc)
       {
       for (int32_t i = 0; i < numCandidates; i++)
          {

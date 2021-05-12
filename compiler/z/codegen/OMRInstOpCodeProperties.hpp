@@ -81,6 +81,17 @@
    },
 
    {
+   /* .mnemonic    = */ OMR::InstOpCode::proc,
+   /* .name        = */ "PROC",
+   /* .description = */ "Entry to the method",
+   /* .opcode[0]   = */ 0x00,
+   /* .opcode[1]   = */ 0x00,
+   /* .format      = */ PSEUDO,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
+   /* .properties  = */ S390OpProp_None
+   },
+
+   {
    /* .mnemonic    = */ OMR::InstOpCode::BREAK,
    /* .name        = */ "BREAK",
    /* .description = */ "Breakpoint (debugger)",
@@ -121,17 +132,6 @@
    /* .mnemonic    = */ OMR::InstOpCode::DEPEND,
    /* .name        = */ "DEPEND",
    /* .description = */ "Someplace to hang dependencies",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::PROC,
-   /* .name        = */ "PROC",
-   /* .description = */ "Entry to the method",
    /* .opcode[0]   = */ 0x00,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ PSEUDO,

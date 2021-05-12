@@ -63,7 +63,7 @@ OMR::Z::InstOpCode::isAdmin()
            _mnemonic == assocreg ||
            _mnemonic == DEPEND ||
            _mnemonic == fence ||
-           _mnemonic == PROC ||
+           _mnemonic == proc ||
            _mnemonic == dd ||
            _mnemonic == DC2 ||
            _mnemonic == DCB);

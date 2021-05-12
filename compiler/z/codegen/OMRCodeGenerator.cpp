@@ -1051,7 +1051,7 @@ OMR::Z::CodeGenerator::beginInstructionSelection()
       _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::dd, startNode, 0, NULL, cursor, self());
       }
 
-   generateS390PseudoInstruction(self(), TR::InstOpCode::PROC, startNode);
+   generateS390PseudoInstruction(self(), TR::InstOpCode::proc, startNode);
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1971,7 +1971,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    TR::Instruction* cursor = data.cursorInstruction;
 
    // TODO: We should be caching the PROC instruction as it's used in several places and is pretty important
-   while (cursor && cursor->getOpCodeValue() != TR::InstOpCode::PROC)
+   while (cursor && cursor->getOpCodeValue() != TR::InstOpCode::proc)
       {
       cursor = cursor->getNext();
       }

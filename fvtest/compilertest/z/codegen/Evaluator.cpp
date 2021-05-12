@@ -78,7 +78,7 @@ TestCompiler::FrontEnd::generateBinaryEncodingPrologue(
       data->estimate += 256;
       }
 
-   while (data->cursorInstruction && data->cursorInstruction->getOpCodeValue() != TR::InstOpCode::PROC)
+   while (data->cursorInstruction && data->cursorInstruction->getOpCodeValue() != TR::InstOpCode::proc)
       {
       data->estimate = data->cursorInstruction->estimateBinaryLength(data->estimate);
       data->cursorInstruction = data->cursorInstruction->getNext();

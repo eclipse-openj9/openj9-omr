@@ -44,13 +44,13 @@ static const char *opCodeToNameMap[] =
    "dd",
    "fence",
    "label",
+   "proc",
 /*
  * RISC-V instructions
  */
 #define DECLARE_INSN(mnemonic, match, mask) #mnemonic,
 #include <riscv-opc.h>
 #undef DECLARE_INSN
-   "proc",
    "return",
    };
 

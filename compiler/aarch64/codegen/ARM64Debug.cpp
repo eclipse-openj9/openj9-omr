@@ -98,6 +98,7 @@ static const char *opCodeToNameMap[] =
    "dd",
    "fence",
    "label",
+   "proc",
    "cbzw",
    "cbnzw",
    "cbzx",
@@ -749,7 +750,6 @@ static const char *opCodeToNameMap[] =
    "vfneg2d",
    "vnot16b",
    "nop",
-   "proc",
    "return",
    "vgdnop",
    };

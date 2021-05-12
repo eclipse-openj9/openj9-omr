@@ -32,7 +32,6 @@
    DC2,                 // DC2
    DCB,                 // Debug Counter Bump
    DEPEND,              // Someplace to hang dependencies
-   PROC,                // Entry to the method
    RET,                 // Return
    VGNOP,               // ValueGuardNOP
 

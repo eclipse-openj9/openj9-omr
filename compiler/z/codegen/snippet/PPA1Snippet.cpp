@@ -94,7 +94,7 @@ TR::PPA1Snippet::emitSnippetBody()
    // value. Those need to also be improved.
    TR::Instruction* prologueBegin = cg()->getFirstInstruction();
 
-   while (prologueBegin != NULL && prologueBegin->getOpCodeValue() != TR::InstOpCode::PROC)
+   while (prologueBegin != NULL && prologueBegin->getOpCodeValue() != TR::InstOpCode::proc)
       {
       prologueBegin = prologueBegin->getNext();
       }

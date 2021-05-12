@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -375,6 +375,8 @@ bool         TR_ResolvedMethod::isUnresolvedCallSiteTableEntry(int32_t callSiteI
 void *       TR_ResolvedMethod::callSiteTableEntryAddress(int32_t callSiteIndex)      { TR_UNIMPLEMENTED(); return 0; }
 bool         TR_ResolvedMethod::isUnresolvedMethodTypeTableEntry(int32_t cpIndex) { TR_UNIMPLEMENTED(); return false; }
 void *       TR_ResolvedMethod::methodTypeTableEntryAddress(int32_t cpIndex)      { TR_UNIMPLEMENTED(); return 0; }
+uint32_t     TR_ResolvedMethod::romMethodArgCountAtCallSiteIndex(int32_t callSiteIndex) {TR_UNIMPLEMENTED(); return 0;}
+uint32_t     TR_ResolvedMethod::romMethodArgCountAtCPIndex(int32_t cpIndex) {TR_UNIMPLEMENTED(); return 0;}
 
 TR_OpaqueClassBlock *TR_ResolvedMethod::getDeclaringClassFromFieldOrStatic(TR::Compilation *comp, int32_t cpIndex)  { TR_UNIMPLEMENTED(); return 0; }
 int32_t      TR_ResolvedMethod::classCPIndexOfFieldOrStatic(int32_t)       { TR_UNIMPLEMENTED(); return 0; }

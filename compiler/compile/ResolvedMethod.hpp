@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -149,6 +149,26 @@ public:
    virtual void *callSiteTableEntryAddress(int32_t callSiteIndex);
    virtual bool isUnresolvedMethodTypeTableEntry(int32_t cpIndex);
    virtual void *methodTypeTableEntryAddress(int32_t cpIndex);
+   /** \brief
+    *    Get the number of arguments in the ROM method signature of an invokedynamic call
+    *
+    *  \param callSiteIndex
+    *    The callSite index corresponding to the invocation to lookup the ROM method
+    *
+    *  \return uint32_t
+    *    The number of arguments of the ROM Method
+    */
+   virtual uint32_t romMethodArgCountAtCallSiteIndex(int32_t callSiteIndex);
+   /** \brief
+    *    Get the number of arguments in the ROM method signature of an inovokehandle call
+    *
+    *  \param cpIndex
+    *    The constant pool index for the invocation to lookup the ROM method
+    *
+    *  \return uint32_t
+    *    The number of arguments of the ROM Method
+    */
+   virtual uint32_t romMethodArgCountAtCPIndex(int32_t cpIndex);
 
    virtual bool fieldsAreSame(int32_t, TR_ResolvedMethod *, int32_t, bool &sigSame);
    virtual bool staticsAreSame(int32_t, TR_ResolvedMethod *, int32_t, bool &sigSame);

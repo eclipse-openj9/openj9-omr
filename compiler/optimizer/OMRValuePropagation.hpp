@@ -36,24 +36,11 @@
 #include "optimizer/Optimization.hpp"
 #include "optimizer/OptimizationManager.hpp"
 
-#define USE_TREES   1
-#define HEDGE_TREES 1
-
-#if USE_TREES
-   #if HEDGE_TREES
-      #define TREE_CLASS TR_HedgeTree
-      #define TREE_NODE TR_HedgeNode
-      #define TREE_ITERATOR TR_HedgeTreeIterator
-      #define TREE_HANDLER TR_HedgeTreeHandler
-      #include "infra/HedgeTree.hpp"
-   #else
-      #define TREE_CLASS TR_AVLTree
-      #define TREE_NODE TR_AVLNode
-      #define TREE_ITERATOR TR_AVLTreeIterator
-      #define TREE_HANDLER TR_AVLTreeHandler
-      #include "infra/AVLTree.hpp"
-   #endif
-#endif
+#define TREE_CLASS TR_HedgeTree
+#define TREE_NODE TR_HedgeNode
+#define TREE_ITERATOR TR_HedgeTreeIterator
+#define TREE_HANDLER TR_HedgeTreeHandler
+#include "infra/HedgeTree.hpp"
 
 #define VP_HASH_TABLE_SIZE 251
 #define VP_SPECIALKLASS -1
@@ -213,7 +200,6 @@ class ValuePropagation : public TR::Optimization
    // Value constraint. This represents constraints applied to a particular
    // value number, and is represented by a linked list of relationships.
    //
-#if USE_TREES
    class ValueConstraint : public TREE_NODE<ValueConstraint>
       {
       public:
@@ -237,60 +223,11 @@ class ValuePropagation : public TR::Optimization
    typedef TREE_CLASS<ValueConstraint> ValueConstraints;
    typedef TREE_ITERATOR<ValueConstraint> ValueConstraintIterator;
 
-#else
-   class ValueConstraint : public TR_Link<ValueConstraint>
-      {
-      public:
-      ValueConstraint(int32_t valueNumber)
-         : _valueNumber(valueNumber) {}
-
-      void initialize(int32_t valueNumber, Relationship *rel, StoreRelationship *storeRel)
-         {
-         _valueNumber = valueNumber;
-         relationships.setFirst(rel);
-         storeRelationships.setFirst(storeRel);
-         setNext(NULL);
-         }
-
-      int32_t getValueNumber() {return _valueNumber;}
-
-      TR_LinkHead<Relationship> relationships;
-      TR_LinkHead<StoreRelationship> storeRelationships;
-      void print(OMR::ValuePropagation *vp, int32_t indent);
-
-      private:
-      int32_t _valueNumber;
-
-      };
-
-   typedef TR_LinkHead<ValueConstraint> ValueConstraints;
-
-   class ValueConstraintIterator
-      {
-      public:
-      ValueConstraintIterator() : _list(NULL) {}
-      ValueConstraintIterator(ValueConstraints &list) {reset(list);}
-      void reset(ValueConstraints &list)
-         {
-         _list = &list;
-         _next = list.getFirst();
-         }
-      ValueConstraint *getFirst() {_next = _list->getFirst(); return getNext();}
-      ValueConstraint *getNext() {ValueConstraint *vc = _next; if (_next) _next = _next->getNext(); return vc;}
-      ValueConstraints *getBase() {return _list;}
-      private:
-      ValueConstraints *_list;
-      ValueConstraint  *_next;
-      };
-
-#endif
-
    ValueConstraint *createValueConstraint(int32_t valueNumber, Relationship *relationships, StoreRelationship *storeRelationships);
    void             freeValueConstraint(ValueConstraint *vc);
    void             freeValueConstraints(ValueConstraints &valueConstraints);
    ValueConstraint *copyValueConstraints(ValueConstraints &valueConstraints);
 
-#if USE_TREES
    class ValueConstraintHandler : public TREE_HANDLER <ValueConstraint>
       {
       public:
@@ -302,25 +239,6 @@ class ValuePropagation : public TR::Optimization
       private:
       OMR::ValuePropagation *_vp;
       };
-#else
-   class ValueConstraintHandler
-      {
-      public:
-      void setVP (OMR::ValuePropagation * vp);
-      ValueConstraint * allocate (int32_t key);
-      void free (ValueConstraint * vc);
-      ValueConstraint * copy (ValueConstraint * vc);
-      void empty (ValueConstraints & valueConstraints);
-      ValueConstraint * copyAll (ValueConstraints & valueConstraints);
-      ValueConstraint * getRoot (ValueConstraints & list);
-      void setRoot (ValueConstraints & list, ValueConstraint * vc);
-      ValueConstraint * find (int32_t key, ValueConstraints & list);
-      ValueConstraint * findOrCreate (int32_t key, ValueConstraints & list);
-      ValueConstraint * remove (int32_t key, ValueConstraints & list);
-      private:
-      OMR::ValuePropagation *_vp;
-      };
-#endif
 
    TR_Stack<ValueConstraint*> *_valueConstraintCache;
 

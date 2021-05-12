@@ -7950,7 +7950,6 @@ void constrainRangeByPrecision(const int64_t low, const int64_t high, const int3
       lowResult = 0;
    }
 
-#if USE_TREES
 void OMR::ValuePropagation::ValueConstraintHandler::setVP(OMR::ValuePropagation * vp)
    {
    _vp = vp;
@@ -7978,107 +7977,6 @@ TR::Compilation * OMR::ValuePropagation::ValueConstraintHandler::comp()
    {
    return _vp->comp();
    }
-
-#else
-void OMR::ValuePropagation::ValueConstraintHandler::setVP(OMR::ValuePropagation * vp)
-   {
-   _vp = vp;
-   }
-
-OMR::ValuePropagation::ValueConstraint * OMR::ValuePropagation::ValueConstraintHandler::allocate(int32_t key)
-   {
-   return _vp->createValueConstraint(key, NULL, NULL);
-   }
-
-void OMR::ValuePropagation::ValueConstraintHandler::free(ValueConstraint * vc)
-   {
-   _vp->freeValueConstraint(vc);
-   }
-
-OMR::ValuePropagation::ValueConstraint * OMR::ValuePropagation::ValueConstraintHandler::copy(ValueConstraint * vc)
-   {
-   Relationship *rel = _vp->copyRelationships(vc->relationships.getFirst());
-   StoreRelationship *storeRel = _vp->copyStoreRelationships(vc->storeRelationships.getFirst());
-   ValueConstraint *newvc = _vp->createValueConstraint(vc->getValueNumber(), rel, storeRel);
-   return newvc;
-   }
-
-void OMR::ValuePropagation::ValueConstraintHandler::empty(ValueConstraints & valueConstraints)
-   {
-   ValueConstraint *vc;
-   while (vc = valueConstraints.pop())
-      free(vc);
-   }
-
-OMR::ValuePropagation::ValueConstraint * OMR::ValuePropagation::ValueConstraintHandler::copyAll(ValueConstraints & valueConstraints)
-   {
-   TR_LinkHeadAndTail<ValueConstraint> newList;
-   ValueConstraint *vc, *newVc;
-   for (vc = valueConstraints.getFirst(); vc; vc = vc->getNext())
-      {
-      newList.append(copy(vc));
-      }
-   return newList.getFirst();
-   }
-
-OMR::ValuePropagation::ValueConstraint * OMR::ValuePropagation::ValueConstraintHandler::getRoot(ValueConstraints & list)
-   {
-   return list.getFirst();
-   }
-
-void OMR::ValuePropagation::ValueConstraintHandler::setRoot(ValueConstraints & list, ValueConstraint * vc)
-   {
-   list.setFirst(vc);
-   }
-
-OMR::ValuePropagation::ValueConstraint * OMR::ValuePropagation::ValueConstraintHandler::find(int32_t key, ValueConstraints & list)
-   {
-   ValueConstraint *prev, *cur;
-   for (cur = list.getFirst(), prev = NULL; cur; prev = cur, cur = cur->getNext())
-      {
-      if (cur->getValueNumber() < key)
-         continue;
-      if (cur->getValueNumber() > key)
-         break;
-      return cur;
-      }
-   return NULL;
-   }
-
-OMR::ValuePropagation::ValueConstraint * OMR::ValuePropagation::ValueConstraintHandler::findOrCreate(int32_t key, ValueConstraints & list)
-   {
-   ValueConstraint *prev, *cur;
-   for (cur = list.getFirst(), prev = NULL; cur; prev = cur, cur = cur->getNext())
-      {
-      if (cur->getValueNumber() < key)
-         continue;
-      if (cur->getValueNumber() > key)
-         break;
-      return cur;
-      }
-   ValueConstraint *result = allocate(key);
-   result->setNext(cur);
-   if (prev) prev->setNext(result);
-   else list.setFirst(result);
-   return result;
-   }
-
-OMR::ValuePropagation::ValueConstraint * OMR::ValuePropagation::ValueConstraintHandler::remove(int32_t key, ValueConstraints & list)
-   {
-   ValueConstraint *prev, *cur;
-   for (cur = list.getFirst(), prev = NULL; cur; prev = cur, cur = cur->getNext())
-      {
-      if (cur->getValueNumber() < key)
-         continue;
-      if (cur->getValueNumber() > key)
-         break;
-      if (prev) prev->setNext(cur->getNext());
-      else list.setFirst(cur->getNext());
-      return cur;
-      }
-   return NULL;
-   }
-#endif
 
 OMR::ValuePropagation::InductionVariable::InductionVariable(TR::Symbol * sym, TR::Node * entryDef, int32_t incrVN, TR::VPConstraint * incr, OMR::ValuePropagation * vp)
    : _symbol(sym), _entryDef(entryDef), _entryConstraint(0), _incrementVN(incrVN), _increment(incr)

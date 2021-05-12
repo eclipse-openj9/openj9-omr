@@ -63,7 +63,7 @@ isEBBTerminatingBranch(TR::Instruction *instr)
       case TR::InstOpCode::blel:             // Branch and link if less than or equal
       case TR::InstOpCode::bltl:             // Branch and link if less than
       case TR::InstOpCode::bnel:             // Branch and link if not equal
-      case TR::InstOpCode::vgdnop:           // A vgdnop can be backpatched to a branch
+      case TR::InstOpCode::vgnop:            // A vgnop can be backpatched to a branch
          return true;
       default:
          return false;
@@ -498,9 +498,8 @@ OMR::Power::Peephole::tryToRemoveRedundantMoveRegister()
                return performed;
             }
          }
-      else if (current->getOpCodeValue() == TR::InstOpCode::vgdnop)
-         // a vgdnop can be backpatched to a branch, and so we must suppress
-         // any later attempt to remove the mr
+      else if (current->getOpCodeValue() == TR::InstOpCode::vgnop)
+         // a vgnop can be backpatched to a branch, and so we must suppress any later attempt to remove the mr
          all_mr_source_uses_rewritten = false;
       else
          {

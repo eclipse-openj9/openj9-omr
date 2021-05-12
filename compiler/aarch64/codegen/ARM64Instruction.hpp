@@ -4038,7 +4038,7 @@ class ARM64VirtualGuardNOPInstruction : public TR::ARM64LabelInstruction
                                  TR::RegisterDependencyConditions *cond,
                                  TR::LabelSymbol                  *sym,
                                  TR::CodeGenerator                *cg)
-      : TR::ARM64LabelInstruction(TR::InstOpCode::vgdnop, node, sym, cond, cg),
+      : TR::ARM64LabelInstruction(TR::InstOpCode::vgnop, node, sym, cond, cg),
         _site(site)
       {
       }
@@ -4049,7 +4049,7 @@ class ARM64VirtualGuardNOPInstruction : public TR::ARM64LabelInstruction
                                  TR::LabelSymbol                  *sym,
                                  TR::Instruction                  *precedingInstruction,
                                  TR::CodeGenerator                *cg)
-      : TR::ARM64LabelInstruction(TR::InstOpCode::vgdnop, node, sym, cond, precedingInstruction, cg),
+      : TR::ARM64LabelInstruction(TR::InstOpCode::vgnop, node, sym, cond, precedingInstruction, cg),
         _site(site)
       {
       }

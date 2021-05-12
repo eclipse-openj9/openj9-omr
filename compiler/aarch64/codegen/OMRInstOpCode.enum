@@ -733,6 +733,5 @@
 /* Hint instructions */
 		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */
-		vgdnop, // Virtual Guard NOP instruction
-		ARM64LastOp = vgdnop,
+		ARM64LastOp = nop,
 		ARM64NumOpCodes = ARM64LastOp+1,

@@ -541,7 +541,6 @@
    shdfence,         // Scheduling Fence
 // rxor,             // Rotate & XOR
    wrtbar,           // Write barrier directive
-   vgdnop,           // Virtual Guard NOP instruction
    probenop,         // Probe NOP (for RI)
    iflong,           // compare and branch long
    idiv,             // integer divide

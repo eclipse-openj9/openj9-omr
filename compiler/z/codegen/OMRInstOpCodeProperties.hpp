@@ -82,7 +82,7 @@
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::proc,
-   /* .name        = */ "PROC",
+   /* .name        = */ "proc",
    /* .description = */ "Entry to the method",
    /* .opcode[0]   = */ 0x00,
    /* .opcode[1]   = */ 0x00,
@@ -97,6 +97,17 @@
    /* .description = */ "Return",
    /* .opcode[0]   = */ 0x00,
    /* .opcode[1]   = */ 0x00,
+   /* .format      = */ PSEUDO,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
+   /* .properties  = */ S390OpProp_None
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::vgnop,
+   /* .name        = */ "vgnop",
+   /* .description = */ "Virtual Guard NOP",
+   /* .opcode[0]   = */ 0xA7,
+   /* .opcode[1]   = */ 0x04,
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
    /* .properties  = */ S390OpProp_None
@@ -145,17 +156,6 @@
    /* .description = */ "Someplace to hang dependencies",
    /* .opcode[0]   = */ 0x00,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::VGNOP,
-   /* .name        = */ "VGNOP",
-   /* .description = */ "ValueGuardNOP",
-   /* .opcode[0]   = */ 0xA7,
-   /* .opcode[1]   = */ 0x04,
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
    /* .properties  = */ S390OpProp_None

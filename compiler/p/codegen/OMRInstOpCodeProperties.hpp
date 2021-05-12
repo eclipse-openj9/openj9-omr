@@ -103,6 +103,17 @@
    },
 
    {
+   /* .mnemonic    = */ OMR::InstOpCode::vgnop,
+   /* .name        = */ "vgnop",
+   /* .description =    "Virtual Guard NOP instruction", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x00000000,
+   /* .format      = */ FORMAT_UNKNOWN,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
+   /* .properties  = */ PPCOpProp_None,
+   },
+
+   {
    /* .mnemonic    = */ OMR::InstOpCode::add,
    /* .name        = */ "add",
    /* .description =    "Add", */
@@ -6272,17 +6283,6 @@
    /* .mnemonic    = */ OMR::InstOpCode::wrtbar,
    /* .name        = */ "wrtbar",
    /* .description =    "Write barrier directive", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
-   /* .properties  = */ PPCOpProp_None,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::vgdnop,
-   /* .name        = */ "vgdnop",
-   /* .description =    "Virtual Guard NOP instruction", */
    /* .prefix      = */ 0x00000000,
    /* .opcode      = */ 0x00000000,
    /* .format      = */ FORMAT_UNKNOWN,

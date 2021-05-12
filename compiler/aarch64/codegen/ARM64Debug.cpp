@@ -752,8 +752,6 @@ static const char *opCodeToNameMap[] =
    "vfneg2d",
    "vnot16b",
    "nop",
-   "return",
-   "vgdnop",
    };
 
 const char *

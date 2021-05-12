@@ -550,7 +550,7 @@ static bool nodeIsNeeded(TR::Node *checkNode, TR::Node *node)
 TR::Register *OMR::Power::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
-   // NEW to check for it feeding to a single vgdnop
+   // NEW to check for it feeding to a single vgnop
    static bool disableLoadForVGDNOP = (feGetEnv("TR_DisableLoadForVGDNOP") != NULL);
    bool checkFeedingVGDNOP = !disableLoadForVGDNOP &&
       node->getOpCodeValue() == TR::aloadi &&

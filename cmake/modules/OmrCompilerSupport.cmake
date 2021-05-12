@@ -283,8 +283,14 @@ function(create_omr_compiler_library)
 	omr_inject_object_modification_targets(COMPILER_OBJECTS ${COMPILER_NAME} ${COMPILER_OBJECTS})
 
 	# warnings as errors and enhanced warnings currently don't work
-	set(OMR_WARNINGS_AS_ERRORS OFF)
-	set(OMR_ENHANCED_WARNINGS OFF)
+	if(OMR_OS_OSX AND OMR_ARCH_X86)
+		set(OMR_WARNINGS_AS_ERRORS ON)
+		set(OMR_ENHANCED_WARNINGS OFF)
+	else()
+		set(OMR_WARNINGS_AS_ERRORS OFF)
+		set(OMR_ENHANCED_WARNINGS OFF)
+	endif()
+	
 	set(output_name_args "")
 	if(COMPILER_OUTPUT_NAME)
 		set(output_name_args "OUTPUT_NAME" "${COMPILER_OUTPUT_NAME}")

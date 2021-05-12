@@ -2073,8 +2073,8 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
          _queueWeightThresholdForStarvation = TR::Compiler->target.numberOfProcessors() <= 2 ? 1600 : 3200;
 
       // enable by default rampup improvements
-      if (! (TR::Options::getCmdLineOptions()    && TR::Options::getCmdLineOptions()->getOption(TR_DisableRampupImprovements) ||
-             TR::Options::getAOTCmdLineOptions() && TR::Options::getAOTCmdLineOptions()->getOption(TR_DisableRampupImprovements)))
+      if (! ((TR::Options::getCmdLineOptions()    && TR::Options::getCmdLineOptions()->getOption(TR_DisableRampupImprovements)) ||
+             (TR::Options::getAOTCmdLineOptions() && TR::Options::getAOTCmdLineOptions()->getOption(TR_DisableRampupImprovements))))
          {
          self()->setOption(TR_EnableDowngradeOnHugeQSZ);
          self()->setOption(TR_EnableMultipleGCRPeriods);

@@ -831,9 +831,6 @@ class TR_BitVector
       setChunkSize(numUsedChunks());
       }
 
-   // produce a hexadecimal "name" for this bitvector
-   const char *getHexString();
-
    // Print the bit vector to the log file
    //
    void print(TR::Compilation *comp, TR::FILE *file = NULL);

@@ -162,7 +162,7 @@ enum ProfilingMode
    void addDebug(const char * string);
 #else
    #define diagnostic(msg, ...) ((void)0)
-   #define debug(option)      0
+   #define debug(option)      NULL
    #define addDebug(string)   ((void)0)
 #endif
 

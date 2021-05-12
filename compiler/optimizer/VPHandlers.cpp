@@ -12232,8 +12232,8 @@ static TR_YesNoMaybe isArrayCompTypeValueType(OMR::ValuePropagation *vp, TR::VPC
          int32_t len;
          const char *sig = arrayConstraint->getClassSignature(len);
 
-         if (!sig || !arrayConstraint->isFixedClass() && sig[0] == '[' && len == 19
-                     && !strncmp(sig, "[Ljava/lang/Object;", 19))
+         if (!sig || (!arrayConstraint->isFixedClass() && sig[0] == '[' && len == 19
+                     && !strncmp(sig, "[Ljava/lang/Object;", 19)))
             {
             isValueType = TR_maybe;
             }

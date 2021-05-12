@@ -257,7 +257,7 @@ struct LoopTemps : public TR_Link<LoopTemps>
  *   kind and test type (see guardOkForExpr())
  *
  * Privatization-related debug counters:
- * - \c staticDebugCounters={loopVersioner.unrepresentable/*}
+ * - \c staticDebugCounters={loopVersioner.unrepresentable*}
  *
  * \see LoopImprovement
  * \see LoopEntryPrep
@@ -320,7 +320,7 @@ class TR_LoopVersioner : public TR_LoopTransformer
     *
     * Furthermore, to help detect cases where optimization is inhibited because
     * of an unrepresentable expression, static debug counters are available:
-    * <tt>staticDebugCounters={loopVersioner.unrepresentable/*}</tt>.
+    * <tt>staticDebugCounters={loopVersioner.unrepresentable*}</tt>.
     *
     * For an overview of privatization and the deferral of transformations see
     * TR_LoopVersioner.

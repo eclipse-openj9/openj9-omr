@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2449,12 +2449,22 @@ bool opCodeIsHoistable(TR::Node *node, TR::Compilation *comp)
 bool TR_LoopVersioner::isExprInvariant(TR::Node *node, bool ignoreHeapificationStore)
    {
    _visitedNodes.empty();
-	   return isExprInvariantRecursive(node, ignoreHeapificationStore);
-	   }
+   return isExprInvariantRecursive(node, ignoreHeapificationStore);
+   }
 
-	bool TR_LoopVersioner::isExprInvariantRecursive(TR::Node *node, bool ignoreHeapificationStore)
+bool TR_LoopVersioner::isExprInvariantRecursive(TR::Node *node, bool ignoreHeapificationStore)
    {
    static const bool paranoid = feGetEnv("TR_paranoidVersioning") != NULL;
+
+   // Do not attempt to privatize BCD type nodes because doing so can result in creating direct loads of BCD types which are currently
+   // not handled correctly within Java. BCDCHK IL will attempt to recreate a call to the original Java API for the corresponding BCD
+   // IL and it needs to be able to materialize the node representing the original byte array object. This is not possible if the byte
+   // array is stored on the stack.
+#ifdef J9_PROJECT_SPECIFIC
+   if (node->getType().isBCD())
+      return false;
+#endif
+
    if (paranoid && requiresPrivatization(node))
       return false;
 

@@ -25,7 +25,14 @@ const OMR::RV::InstOpCode::OpCodeBinaryEntry OMR::RV::InstOpCode::binaryEncoding
 {
 //		BINARY			Opcode    	Opcode		comments
 /* UNALLOCATED */
-		0x00000000,	/* BAD       	bad	invalid operation */
+		0x00000000,	/* Register Association */
+		0x00000000,	/* Bad Opcode */
+		0x00000000,	/* Define Doubleword */
+		0x00000000,	/* Fence */
+		0x00000000,	/* Destination of a jump */
+		0x00000000,	/* Entry to the method */
+		0x00000000,	/* Return */
+		0x00000000,	/* Virtual Guard NOP */
 /*
  * RISC-V instructions
  */

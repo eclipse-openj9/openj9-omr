@@ -818,12 +818,59 @@ OMR::ARM64::TreeEvaluator::dcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg
    return fcmpHelper(node, TR::CC_LS, true, cg);
    }
 
+static TR::Register *
+floatThreeWayCompareHelper(TR::Node *node, bool isDouble, bool isCmpl, TR::CodeGenerator *cg)
+   {
+   // dcmpl/fcmpl: 1 if v1 > v2, 0 if v1 == v2, -1 if v1 < v2 or unordered
+   // dcmpg/fcmpg: 1 if v1 > v2 or unordered, 0 if v1 == v2, -1 if v1 < v2
+
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Register *src2Reg = cg->evaluate(secondChild);
+   TR::Register *trgReg = cg->allocateRegister();
+   TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
+   TR::InstOpCode::Mnemonic cmpOp = isDouble ? TR::InstOpCode::fcmpd : TR::InstOpCode::fcmps;
+   TR::InstOpCode::Mnemonic movOp = isCmpl ? TR::InstOpCode::movzx : TR::InstOpCode::movnx;
+   uint32_t movVal = isCmpl ? 1 : 0;
+   TR::ARM64ConditionCode cc = isCmpl ? TR::CC_GT : TR::CC_MI;
+
+   generateSrc2Instruction(cg, cmpOp, node, src1Reg, src2Reg); // compare
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::movzx, node, trgReg, 0);
+   generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, doneLabel, TR::CC_EQ);
+   generateTrg1ImmInstruction(cg, movOp, node, trgReg, movVal); // 1 or -1
+   generateCondTrg1Src2Instruction(cg, TR::InstOpCode::csnegx, node, trgReg, trgReg, trgReg, cc);
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel);
+
+   node->setRegister(trgReg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   return trgReg;
+   }
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::fcmplEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return floatThreeWayCompareHelper(node, false, true, cg);
+   }
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::fcmpgEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return floatThreeWayCompareHelper(node, false, false, cg);
+   }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::dcmplEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::dcmplEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return floatThreeWayCompareHelper(node, true, true, cg);
+   }
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::dcmpgEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return floatThreeWayCompareHelper(node, true, false, cg);
+   }
 
 // also handles dRegLoad
 TR::Register *
@@ -1063,13 +1110,6 @@ TR::Register *
 OMR::ARM64::TreeEvaluator::dcmpleuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{
 	// TODO:ARM64: Enable TR::TreeEvaluator::dcmpleuEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
-
-TR::Register *
-OMR::ARM64::TreeEvaluator::dcmpgEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::dcmpgEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
 	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 	}
 

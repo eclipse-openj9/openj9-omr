@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -300,5 +300,76 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
 
 } // ARM64
 } // OMR
+
+// Convenience class to temporarily hold register dependencies.
+// This class allocates space for the maximum number of GPR dependencies that an evaluator can use
+// and therefore frees you from trying to determine ahead of time how many dependencies you need.
+// It can create a TR::RegisterDependencyConditions object with exactly the number of dependencies currently defined.
+// Therefore, objects of this class should be stack allocated so that they'll automatically be freed when no longer
+// needed.
+//
+class TR_ARM64ScratchRegisterDependencyConditions
+   {
+   public:
+   // NOTE:
+   // No TR_Memory type defined for this class
+   // since current is as a stack-alloc'd object.
+   // To heap-alloc, update the class def with something like:
+   //    TR_ALLOC(TR_Memory::PPCScratchRegisterDependencyConditions)
+
+   TR_ARM64ScratchRegisterDependencyConditions() : _numGPRDeps(0) {}
+
+   uint32_t getNumberOfDependencies() { return _numGPRDeps; }
+
+   /**
+    * @brief Add a new dependency
+    *
+    * @param[in] cg:   code generator
+    * @param[in] vr:   virtual register
+    * @param[in] rr:   real register
+    * @param[in] flag: flag
+    *
+    */
+   void addDependency(TR::CodeGenerator *cg, TR::Register *vr, TR::RealRegister::RegNum rr, uint8_t flag = UsesDependentRegister);
+
+   /**
+    * @brief Takes union of current dependencies and specified register
+    *
+    * @details If the virtual register is not in the current dependencies, simply add it to the dependencies.
+    *          Otherwise, if either of real register (one specified as a parameter and one in the dependencies) is NoReg,
+    *          overwrite the dependency of the virtual register with the stronger real register.
+    *
+    * @param[in] cg:   code generator
+    * @param[in] vr:   virtual register
+    * @param[in] rr:   real register
+    * @param[in] flag: flag
+    *
+    */
+   void unionDependency(TR::CodeGenerator *cg, TR::Register *vr, TR::RealRegister::RegNum rr, uint8_t flag = UsesDependentRegister);
+
+   /**
+    * @brief Takes union of current dependencies and each scratch register in the scratch register manager, using NoReg as real regisgter.
+    *
+    * @param[in] cg:   code generator
+    * @param[in] srm:  scratch register manager
+    */
+   void addScratchRegisters(TR::CodeGenerator *cg, TR_ARM64ScratchRegisterManager *srm);
+
+   /**
+    * @brief Creates dependency conditions from the scratch register dependency conditions
+    *
+    * @param[in] cg:   code generator
+    * @param[in] pre:  scratch register dependency conditions for pre conditions
+    * @param[in] post: scratch register dependency conditions for post conditions
+    *
+    */
+   static TR::RegisterDependencyConditions* createDependencyConditions(TR::CodeGenerator *cg,
+                                                                         TR_ARM64ScratchRegisterDependencyConditions *pre,
+                                                                         TR_ARM64ScratchRegisterDependencyConditions *post);
+
+   private:
+   uint32_t                    _numGPRDeps;
+   TR::RegisterDependency      _gprDeps[TR::RealRegister::LastAssignableGPR - TR::RealRegister::FirstGPR + 1];
+   };
 
 #endif

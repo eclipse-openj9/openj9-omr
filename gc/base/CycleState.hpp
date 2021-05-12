@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -51,6 +51,7 @@ public:
 
 	volatile bool _finalizationRequired; /**< Does the current cycle require finalization upon completion */
 	volatile bool _dynamicClassUnloadingEnabled; /**< Determine if dynamic class unloading is enabled for this cycle */
+	volatile bool _noCompactionAfterSweep; /* There is no compaction after sweep for this cycle */
 
 	CollectionType _collectionType; /**< What type of collection the cycle represents */
 
@@ -101,6 +102,7 @@ public:
 		, _markMap(NULL)
 		, _finalizationRequired(false)
 		, _dynamicClassUnloadingEnabled(false)
+		, _noCompactionAfterSweep(false)
 		, _collectionType(CT_GLOBAL_GARBAGE_COLLECTION)
 		, _markDelegateState(state_mark_idle)
 		, _currentIncrement(0)

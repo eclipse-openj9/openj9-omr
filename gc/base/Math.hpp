@@ -26,6 +26,7 @@
 #include "omrcfg.h"
 #include "omrcomp.h"
 #include "modronbase.h"
+#include "omrmodroncore.h"
 
 class MM_Math
 {
@@ -62,6 +63,18 @@ public:
 	/* Round value to nearlest uint32_t aligned */
 	static MMINLINE uintptr_t roundToSizeofU32(uintptr_t number) {
 		return (number + (sizeof(uint32_t) - 1)) & (~(sizeof(uint32_t) - 1));
+	}
+
+	/* Round value up to Card aligned */
+	static MMINLINE uintptr_t roundToCeilingCard(uintptr_t number) {
+		uintptr_t alignmentMask = CARD_SIZE - 1;
+		return (number + alignmentMask) & ~alignmentMask;
+	}
+
+	/* Round value down to Card aligned */
+	static MMINLINE uintptr_t roundToFloorCard(uintptr_t number) {
+		uintptr_t alignmentMask = CARD_SIZE - 1;
+		return number & ~alignmentMask;
 	}
 
 	/* returns:	 0 for 0

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,12 +32,14 @@
 #include "MemoryPoolAddressOrderedListBase.hpp"
 #include "HeapRegionDescriptor.hpp"
 #include "EnvironmentBase.hpp"
+#include "AtomicOperations.hpp"
 
 class MM_AllocateDescription;
 #if defined(OMR_GC_CONCURRENT_SWEEP)
 class MM_ConcurrentSweepScheme;
 #endif /* OMR_GC_CONCURRENT_SWEEP */
 
+#define FREE_ENTRY_END ((MM_HeapLinkedFreeHeader *) UDATA_MAX)
 /**
  * @todo Provide class documentation
  * @ingroup GC_Base_Core
@@ -60,6 +62,11 @@ private:
 	
 	MM_LargeObjectAllocateStats *_largeObjectCollectorAllocateStats;  /**< Same as _largeObjectAllocateStats except specifically for collector allocates */
 
+	uintptr_t _scannableBytes;	/**< estimate of scannable bytes in the pool (only out of sampled objects) */
+	uintptr_t _nonScannableBytes; /**< estimate of non-scannable bytes in the pool (only out of sampled objects) */
+
+	MM_HeapLinkedFreeHeader *_firstUnalignedFreeEntry; /**< it is only for Balanced GC copyforward and non empty survivor region */
+	MM_HeapLinkedFreeHeader *_prevFirstUnalignedFreeEntry;
 protected:
 public:
 	
@@ -76,8 +83,19 @@ private:
 	void *internalAllocate(MM_EnvironmentBase *env, uintptr_t sizeInBytesRequired, bool lockingRequired, MM_LargeObjectAllocateStats *largeObjectAllocateStats);
 	bool internalAllocateTLH(MM_EnvironmentBase *env, uintptr_t maximumSizeInBytesRequired, void * &addrBase, void * &addrTop, bool lockingRequired, MM_LargeObjectAllocateStats *largeObjectAllocateStats);
 
-	bool recycleHeapChunk(void *addrBase, void *addrTop, MM_HeapLinkedFreeHeader *previousFreeEntry, MM_HeapLinkedFreeHeader *nextFreeEntry);	
-	
+	MMINLINE bool doesNeedAlignment(MM_EnvironmentBase *env, MM_HeapLinkedFreeHeader *freeEntry)
+	{
+		return (freeEntry >= _firstUnalignedFreeEntry);
+	}
+
+	/**
+	 * Just aligns entries from _firstUnalignedFreeEntry to lastFreeEntryToAlign (Therefore, it incrementally aligns the pool, as we progress with allocation)
+	 * It does not make decisions which free entry to use to satisfy the allocate (the caller does it), and therefore does not try to find an alternate free entry if the aligned variant is not big enough
+	 * @param lastFreeEntryToAlign the last FreeEntry to be aligned for this call
+	 * @return aligned variant of lastFreeEntryToAlign, or null if its aligned variant is not big enough
+	 */
+	MM_HeapLinkedFreeHeader *doFreeEntryAlignmentUpTo(MM_EnvironmentBase *env, MM_HeapLinkedFreeHeader *lastFreeEntryToAlign);
+
 protected:
 public:
 	static MM_MemoryPoolAddressOrderedList *newInstance(MM_EnvironmentBase *env, uintptr_t minimumFreeEntrySize); 
@@ -114,6 +132,7 @@ public:
 	virtual void *contractWithRange(MM_EnvironmentBase *env, uintptr_t contractSize, void *lowAddress, void *highAddress);
 
 	bool recycleHeapChunk(void* chunkBase, void* chunkTop);
+	bool recycleHeapChunk(void *addrBase, void *addrTop, MM_HeapLinkedFreeHeader *previousFreeEntry, MM_HeapLinkedFreeHeader *nextFreeEntry);
 
 	virtual void *findFreeEntryEndingAtAddr(MM_EnvironmentBase *env, void *addr);
 	virtual uintptr_t getAvailableContractionSizeForRangeEndingAt(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, void *lowAddr, void *highAddr);
@@ -147,12 +166,96 @@ public:
 #endif
 
 	/**
+	 * Increase the scannable/non-scannable estimate for the receiver by the specified amount
+	 * @param scannableBytes the number of bytes to increase for scannable objects
+	 * @param non-scannableBytes the number of bytes to increase for scannable objects
+	 */
+	MMINLINE virtual void incrementScannableBytes(uintptr_t scannableBytes, uintptr_t nonScannableBytes)
+	{
+		_scannableBytes += scannableBytes;
+		_nonScannableBytes += nonScannableBytes;
+	}
+	/**
+	 * @return the recorded estimate of scannable in the receiver
+	 */
+	MMINLINE uintptr_t getScannableBytes() { return _scannableBytes; }
+	/**
+	 * @return the recorded estimate of non-scannable in the receiver
+	 */
+	MMINLINE uintptr_t getNonScannableBytes() { return _nonScannableBytes; }
+
+	/**
+	 * remove a free entry from freelist
+	 */
+	void removeFromFreeList(void *addrBase, void *addrTop, MM_HeapLinkedFreeHeader *previousFreeEntry, MM_HeapLinkedFreeHeader *nextFreeEntry)
+	{
+		bool const compressed = compressObjectReferences();
+		uintptr_t freeEntrySize = ((uintptr_t)addrTop) - ((uintptr_t)addrBase);
+		MM_HeapLinkedFreeHeader::fillWithHoles(addrBase, freeEntrySize, compressed);
+		if (previousFreeEntry) {
+			previousFreeEntry->setNext(nextFreeEntry, compressed);
+		}else {
+			_heapFreeList = nextFreeEntry;
+		}
+	}
+
+	void fillWithHoles(void *addrBase, void *addrTop)
+	{
+		bool const compressed = compressObjectReferences();
+		MM_HeapLinkedFreeHeader::fillWithHoles(addrBase, ((uintptr_t)addrTop) - ((uintptr_t)addrBase), compressed);
+	}
+
+	MMINLINE uintptr_t getAdjustedBytesForCardAlignment()
+	{
+		return _adjustedBytesForCardAlignment;
+	}
+
+	MMINLINE void setAdjustedBytesForCardAlignment(uintptr_t adjustedbytes, bool needSync)
+	{
+		if (needSync) {
+			MM_AtomicOperations::add(&(_adjustedBytesForCardAlignment), adjustedbytes);
+		} else {
+			_adjustedBytesForCardAlignment += adjustedbytes;
+		}
+	}
+
+	MMINLINE void initialFirstUnalignedFreeEntry()
+	{
+		_firstUnalignedFreeEntry = (NULL == _heapFreeList) ? FREE_ENTRY_END : _heapFreeList;
+		_prevFirstUnalignedFreeEntry =  FREE_ENTRY_END;
+	}
+
+	MMINLINE void resetFirstUnalignedFreeEntry()
+	{
+		_firstUnalignedFreeEntry =  FREE_ENTRY_END;
+		_prevFirstUnalignedFreeEntry =  FREE_ENTRY_END;
+	}
+
+	MMINLINE virtual uintptr_t getDarkMatterBytes()
+	{
+		return _darkMatterBytes + _adjustedBytesForCardAlignment;
+	}
+
+	MMINLINE virtual uintptr_t getActualFreeMemorySize()
+	{
+		return _freeMemorySize - _adjustedBytesForCardAlignment;
+	}
+
+	MMINLINE uintptr_t getFreeMemoryAndDarkMatterBytes() {
+		return getActualFreeMemorySize() + getDarkMatterBytes();
+	}
+
+	/**
 	 * Create a MemoryPoolAddressOrderedList object.
 	 */
 	MM_MemoryPoolAddressOrderedList(MM_EnvironmentBase *env, uintptr_t minimumFreeEntrySize) :
 		MM_MemoryPoolAddressOrderedListBase(env, minimumFreeEntrySize)
 		,_heapFreeList(NULL)
 		,_largeObjectCollectorAllocateStats(NULL)
+		,_scannableBytes(0)
+		,_nonScannableBytes(0)
+		,_firstUnalignedFreeEntry(FREE_ENTRY_END)
+		,_prevFirstUnalignedFreeEntry(FREE_ENTRY_END)
 	{
 		_typeId = __FUNCTION__;
 	};
@@ -161,6 +264,10 @@ public:
 		MM_MemoryPoolAddressOrderedListBase(env, minimumFreeEntrySize, name)
 		,_heapFreeList(NULL)
 		,_largeObjectCollectorAllocateStats(NULL)
+		,_scannableBytes(0)
+		,_nonScannableBytes(0)
+		,_firstUnalignedFreeEntry(FREE_ENTRY_END)
+		,_prevFirstUnalignedFreeEntry(FREE_ENTRY_END)
 	{
 		_typeId = __FUNCTION__;
 	};

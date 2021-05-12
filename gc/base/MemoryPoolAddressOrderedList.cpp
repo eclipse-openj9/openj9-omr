@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -41,6 +41,7 @@
 #include "LargeObjectAllocateStats.hpp"
 #include "HeapLinkedFreeHeader.hpp"
 #include "Heap.hpp"
+#include "Math.hpp"
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 #include "MemcheckWrapper.hpp"
@@ -80,6 +81,8 @@ MM_MemoryPoolAddressOrderedList::initialize(MM_EnvironmentBase *env)
 	MM_GCExtensionsBase *ext = env->getExtensions();
 	J9ModronAllocateHint *inactiveHint, *previousInactiveHint;
 	uintptr_t inactiveCount;
+
+	Assert_MM_true(_minimumFreeEntrySize >= CARD_SIZE);
 
 	if(!MM_MemoryPool::initialize(env)) {
 		return false;
@@ -447,7 +450,15 @@ retry:
 		candidateHintSize = allocateHintUsed->size;
 	}
 
+
 	while(currentFreeEntry) {
+		if (doesNeedAlignment(env, currentFreeEntry)) {
+			currentFreeEntry = doFreeEntryAlignmentUpTo(env, currentFreeEntry);
+			if (NULL == currentFreeEntry) {
+				currentFreeEntry = (FREE_ENTRY_END == _firstUnalignedFreeEntry) ? NULL : _firstUnalignedFreeEntry;
+				continue;
+			}
+		}
 		uintptr_t currentFreeEntrySize = currentFreeEntry->getSize();
 		/* while we are walking, keep track of the largest free entry.  We will need this in the case of allocation failure to update the pool's largest free */
 		if (currentFreeEntrySize > largestFreeEntry) {
@@ -499,9 +510,15 @@ retry:
 	recycleEntry = (MM_HeapLinkedFreeHeader *)(((uint8_t *)currentFreeEntry) + sizeInBytesRequired);
 
 	if (recycleHeapChunk(recycleEntry, ((uint8_t *)recycleEntry) + recycleEntrySize, previousFreeEntry, currentFreeEntry->getNext(compressed))) {
+		if (currentFreeEntry->getNext(compressed) == _firstUnalignedFreeEntry) {
+			_prevFirstUnalignedFreeEntry = recycleEntry;
+		}
 		updateHint(currentFreeEntry, recycleEntry);
 		_largeObjectAllocateStats->incrementFreeEntrySizeClassStats(recycleEntrySize);
 	} else {
+		if (currentFreeEntry->getNext(compressed) == _firstUnalignedFreeEntry) {
+			_prevFirstUnalignedFreeEntry = previousFreeEntry;
+		}
 		/* Adjust the free memory size and count */
 		_freeMemorySize -= recycleEntrySize;
 		_freeEntryCount -= 1;
@@ -583,9 +600,9 @@ MM_MemoryPoolAddressOrderedList::internalAllocateTLH(MM_EnvironmentBase *env, ui
 		_heapLock.acquire();
 	}
 
-#if defined(OMR_GC_CONCURRENT_SWEEP)
 retry:
 	freeEntry = _heapFreeList;
+#if defined(OMR_GC_CONCURRENT_SWEEP)
 
 	/* Check if an entry was found */
 	if(!freeEntry) {
@@ -595,13 +612,19 @@ retry:
 		goto fail_allocate;
 	}
 #else /* OMR_GC_CONCURRENT_SWEEP */
-	freeEntry = _heapFreeList;
 
 	/* Check if an entry was found */
 	if(!freeEntry) {
 		goto fail_allocate;
 	}
 #endif /* OMR_GC_CONCURRENT_SWEEP */
+
+	if (doesNeedAlignment(env, freeEntry)) {
+		freeEntry = doFreeEntryAlignmentUpTo(env, freeEntry);
+		if (NULL == freeEntry) {
+			goto retry;
+		}
+	}
 
 	/* Consume the bytes and set the return pointer values */
 	freeEntrySize = freeEntry->getSize();
@@ -634,15 +657,24 @@ retry:
 		topOfRecycledChunk = ((uint8_t *)addrTop) + recycleEntrySize;
 		/* Recycle the remaining entry back onto the free list (if applicable) */
 		if (recycleHeapChunk(addrTop, topOfRecycledChunk, NULL, entryNext)) {
+			if (entryNext == _firstUnalignedFreeEntry) {
+				_prevFirstUnalignedFreeEntry = (MM_HeapLinkedFreeHeader *)addrTop;
+			}
 			_largeObjectAllocateStats->incrementFreeEntrySizeClassStats(recycleEntrySize);
 		} else {
-			/* Adjust the free memory size and count */
+			if (entryNext == _firstUnalignedFreeEntry) {
+				_prevFirstUnalignedFreeEntry = FREE_ENTRY_END;
+			}
+		/* Adjust the free memory size and count */
 			_freeMemorySize -= recycleEntrySize;
 			_freeEntryCount -= 1;
 
 			_allocDiscardedBytes += recycleEntrySize;
 		}
 	} else {
+		if (entryNext == _firstUnalignedFreeEntry) {
+			_prevFirstUnalignedFreeEntry = FREE_ENTRY_END;
+		}
 		/* If not recycling just update the free list pointer to the next free entry */
 		_heapFreeList = entryNext;
 		/* also update the freeEntryCount as recycleHeapChunk would do this */
@@ -717,8 +749,14 @@ MM_MemoryPoolAddressOrderedList::reset(Cause cause)
 
 	clearHints();
 	_heapFreeList = (MM_HeapLinkedFreeHeader *)NULL;
+	_scannableBytes = 0;
+	_nonScannableBytes = 0;
+	_firstUnalignedFreeEntry = FREE_ENTRY_END;
+	_prevFirstUnalignedFreeEntry = FREE_ENTRY_END;
+
 
 	_lastFreeEntry = NULL;
+	_adjustedBytesForCardAlignment = 0;
 	resetFreeEntryAllocateStats(_largeObjectAllocateStats);
 	resetLargeObjectAllocateStats();
 }
@@ -755,6 +793,7 @@ MM_MemoryPoolAddressOrderedList::rebuildFreeListInRegion(MM_EnvironmentBase *env
 		/* Adjust the free memory data */
 		_freeMemorySize = rangeSize;
 		_freeEntryCount = 1;
+
 		_heapFreeList = newFreeEntry;
 		/* we already did reset, so it's safe to call increment */
 		_largeObjectAllocateStats->incrementFreeEntrySizeClassStats(rangeSize);
@@ -884,6 +923,7 @@ MM_MemoryPoolAddressOrderedList::expandWithRange(MM_EnvironmentBase *env, uintpt
 	/* Update the free list information */
 	_freeMemorySize += expandSize;
 	_freeEntryCount += 1;
+
 	_largeObjectAllocateStats->incrementFreeEntrySizeClassStats(expandSize);
 	
 	if (freeEntry->getSize() > _largestFreeEntry) {
@@ -1300,6 +1340,8 @@ MM_MemoryPoolAddressOrderedList::findAddressAfterFreeSize(MM_EnvironmentBase *en
 }
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 
+
+
 bool
 MM_MemoryPoolAddressOrderedList::recycleHeapChunk(
 	void *addrBase,
@@ -1664,7 +1706,7 @@ MM_MemoryPoolAddressOrderedList::recalculateMemoryPoolStatistics(MM_EnvironmentB
 	uintptr_t freeBytes = 0;
 	uintptr_t freeEntryCount = 0;
 	_largeObjectAllocateStats->getFreeEntrySizeClassStats()->resetCounts();
-	
+
 	MM_HeapLinkedFreeHeader *freeHeader = (MM_HeapLinkedFreeHeader *)getFirstFreeStartingAddr(env);
 	while (NULL != freeHeader) {
 		if (freeHeader->getSize() > largestFreeEntry) {
@@ -1672,8 +1714,8 @@ MM_MemoryPoolAddressOrderedList::recalculateMemoryPoolStatistics(MM_EnvironmentB
 		}
 		freeBytes += freeHeader->getSize();
 		freeEntryCount += 1;
-		freeHeader = freeHeader->getNext(compressed);
 		_largeObjectAllocateStats->incrementFreeEntrySizeClassStats(freeHeader->getSize());
+		freeHeader = freeHeader->getNext(compressed);
 	}
 	
 	updateMemoryPoolStatistics(env, freeBytes, freeEntryCount, largestFreeEntry);
@@ -1696,3 +1738,76 @@ MM_MemoryPoolAddressOrderedList::releaseFreeMemoryPages(MM_EnvironmentBase* env)
 	return releasedBytes;
 }
 #endif
+
+MM_HeapLinkedFreeHeader *
+MM_MemoryPoolAddressOrderedList::doFreeEntryAlignmentUpTo(MM_EnvironmentBase *env, MM_HeapLinkedFreeHeader *lastFreeEntryToAlign)
+{
+	MM_HeapLinkedFreeHeader *alignedLastFreeEntry = NULL;
+	bool const compressed = env->compressObjectReferences();
+	MM_HeapLinkedFreeHeader *currentFreeEntry = _firstUnalignedFreeEntry;
+	MM_HeapLinkedFreeHeader *previousFreeEntry = (FREE_ENTRY_END == _prevFirstUnalignedFreeEntry) ? NULL : _prevFirstUnalignedFreeEntry;
+
+	uintptr_t lostToAlignment = 0;
+
+	uintptr_t freeBytes = _freeMemorySize;
+	uintptr_t freeEntryCount = _freeEntryCount;
+	while ((currentFreeEntry <= lastFreeEntryToAlign) && (NULL != currentFreeEntry)) {
+		uintptr_t freeEntrySize = currentFreeEntry->getSize();
+		void *endFreeEntry = (void *) ((uintptr_t)currentFreeEntry + freeEntrySize);
+		void *newStartFreeEntry = (void*) MM_Math::roundToCeilingCard((uintptr_t) currentFreeEntry);
+		void *newEndFreeEntry   = (void*) MM_Math::roundToFloorCard((uintptr_t) endFreeEntry);
+		MM_HeapLinkedFreeHeader *nextFreeEntry = currentFreeEntry->getNext(compressed);
+
+		if (((uintptr_t)currentFreeEntry != (uintptr_t)newStartFreeEntry) || ((uintptr_t)endFreeEntry != (uintptr_t)newEndFreeEntry)) {
+			if (((uintptr_t)newEndFreeEntry - (uintptr_t)newStartFreeEntry) < _minimumFreeEntrySize) {
+				/* remove currentFreeEntry */
+				removeFromFreeList((void *)currentFreeEntry, endFreeEntry, previousFreeEntry, nextFreeEntry);
+				lostToAlignment += freeEntrySize;
+				freeEntryCount -= 1;
+				freeEntrySize = 0;
+				alignedLastFreeEntry = NULL;
+			} else {
+				if ((uintptr_t) currentFreeEntry != (uintptr_t) newStartFreeEntry) {
+					fillWithHoles((void *)currentFreeEntry, newStartFreeEntry);
+				}
+				if ((uintptr_t) endFreeEntry != (uintptr_t) newEndFreeEntry) {
+					fillWithHoles(newEndFreeEntry, endFreeEntry);
+				}
+				recycleHeapChunk(newStartFreeEntry, newEndFreeEntry, previousFreeEntry, nextFreeEntry);
+				previousFreeEntry = (MM_HeapLinkedFreeHeader *) newStartFreeEntry;
+				lostToAlignment += freeEntrySize;
+				freeEntrySize = (uintptr_t)newEndFreeEntry - (uintptr_t)newStartFreeEntry;
+				lostToAlignment -= freeEntrySize;
+				alignedLastFreeEntry = (MM_HeapLinkedFreeHeader *) newStartFreeEntry;
+			}
+		} else {
+			alignedLastFreeEntry = currentFreeEntry;
+			previousFreeEntry = currentFreeEntry;
+		}
+		currentFreeEntry = nextFreeEntry;
+	}
+
+	/* update freeBytes, freeCount, darkmatter */
+	if (lostToAlignment > 0) {
+		/* largestFreeEntry might not be accurate any more, largestFreeEntry would not be used for this case anyway */
+		if (lostToAlignment >= _adjustedBytesForCardAlignment) {
+			_adjustedBytesForCardAlignment = 0;
+		} else {
+			_adjustedBytesForCardAlignment -= lostToAlignment;
+		}
+		freeBytes -= lostToAlignment;
+		_freeMemorySize = freeBytes;
+		_freeEntryCount = freeEntryCount;
+		_darkMatterBytes += lostToAlignment;
+	}
+
+	/* update _firstUnalignedFreeEntry and _prevFirstUnalignedFreeEntry */
+	_firstUnalignedFreeEntry = (NULL == currentFreeEntry) ? FREE_ENTRY_END : currentFreeEntry;
+	if (FREE_ENTRY_END != _firstUnalignedFreeEntry) {
+		_prevFirstUnalignedFreeEntry = (NULL == previousFreeEntry) ? FREE_ENTRY_END : previousFreeEntry;
+	} else {
+		_prevFirstUnalignedFreeEntry = FREE_ENTRY_END;
+	}
+
+	return alignedLastFreeEntry;
+}

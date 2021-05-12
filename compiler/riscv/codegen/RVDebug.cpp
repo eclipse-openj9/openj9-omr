@@ -43,6 +43,7 @@ static const char *opCodeToNameMap[] =
    "bad",
    "dd",
    "fence",
+   "label",
 /*
  * RISC-V instructions
  */
@@ -51,7 +52,6 @@ static const char *opCodeToNameMap[] =
 #undef DECLARE_INSN
    "proc",
    "return",
-   "label"
    };
 
 const char *

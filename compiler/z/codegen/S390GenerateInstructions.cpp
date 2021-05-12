@@ -2174,7 +2174,7 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
             if (frequency > 6 && frequency >= minFR && (maxFR == 0 || frequency > maxFR))
                {
                TR::LabelSymbol * callLabel = generateLabelSymbol(cg);
-               TR::Instruction * instr = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, callNode, callLabel);
+               TR::Instruction * instr = generateS390LabelInstruction(cg, TR::InstOpCode::label, callNode, callLabel);
                cg->createBranchPreloadCallData(callLabel, callSymRef, instr);
                }
             }
@@ -2254,7 +2254,7 @@ generateSnippetCall(TR::CodeGenerator * cg, TR::Node * callNode, TR::Snippet * s
       // Need to put the preDeps on the label, and not on the BRASL
       // because we use virtual reg from preDeps after the BRASL
       // In particular, we use the this pointer reg, which  has a preDep to GPR1
-      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, callNode, generateLabelSymbol(cg), preDeps);
+      generateS390LabelInstruction(cg, TR::InstOpCode::label, callNode, generateLabelSymbol(cg), preDeps);
 
       callInstr = new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, killRegRA, s,
          postDeps, callSymRef, cg);

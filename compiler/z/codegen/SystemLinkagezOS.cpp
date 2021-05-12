@@ -199,7 +199,7 @@ TR::S390zOSSystemLinkage::createEpilogue(TR::Instruction * cursor)
 
    TR::Node* node = cursor->getNext()->getNode();
 
-   cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::LABEL, node, generateLabelSymbol(cg()), cursor);
+   cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::label, node, generateLabelSymbol(cg()), cursor);
 
    cursor = fillFPRsInEpilogue(node, cursor);
    cursor = fillGPRsInEpilogue(node, cursor);
@@ -258,7 +258,7 @@ void TR::S390zOSSystemLinkage::createPrologue(TR::Instruction* cursor)
 
    // Emit the Entry Point Marker
    _entryPointMarkerLabel = generateLabelSymbol(cg);
-   cursor = generateS390LabelInstruction(cg, InstOpCode::LABEL, node, _entryPointMarkerLabel, cursor);
+   cursor = generateS390LabelInstruction(cg, TR::InstOpCode::label, node, _entryPointMarkerLabel, cursor);
 
    // "C.E.E.1."
    cursor = generateDataConstantInstruction(cg, TR::InstOpCode::dd, node, 0x00C300C5, cursor);
@@ -583,13 +583,13 @@ TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::R
        callType = TR_XPLinkCallType_BRASL7;
        }
 
-    auto cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, callNode, returnFromJNICallLabel);
+    auto cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::label, callNode, returnFromJNICallLabel);
 
     genCallNOPAndDescriptor(cursor, callNode, callNode, callType);
 
     // Append post-dependencies after NOP
     TR::LabelSymbol* depsLabel = generateLabelSymbol(cg());
-    generateS390LabelInstruction(cg(), InstOpCode::LABEL, callNode, depsLabel, postDeps);
+    generateS390LabelInstruction(cg(), TR::InstOpCode::label, callNode, depsLabel, postDeps);
 }
 TR::LabelSymbol*
 TR::S390zOSSystemLinkage::getEntryPointMarkerLabel() const
@@ -651,12 +651,12 @@ TR::S390zOSSystemLinkage::genCallNOPAndDescriptor(TR::Instruction* cursor, TR::N
 
       cursor = generateS390BranchInstruction(cg(), InstOpCode::BRC, InstOpCode::COND_BRC, node, xplinkCallDescriptorEndLabel, cursor);
       cursor = generateAlignmentNopInstruction(cg(), node, 8, cursor);
-      cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, node, xplinkCallDescriptorBeginLabel, cursor);
+      cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::label, node, xplinkCallDescriptorBeginLabel, cursor);
       cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::dd, node, 0x00000000, cursor);
 
       uint32_t callDescriptorValue = generateCallDescriptorValue(callNode);
       cursor = generateDataConstantInstruction(cg(), TR::InstOpCode::dd, node, callDescriptorValue, cursor);
-      cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, node, xplinkCallDescriptorEndLabel, cursor);
+      cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::label, node, xplinkCallDescriptorEndLabel, cursor);
       }
    else
       {
@@ -1068,7 +1068,7 @@ TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction* c
                   getRealRegister(REGNUM(lastSaved + TR::RealRegister::FirstGPR)), rsa, cursor);
 
           _stackPointerUpdateLabel = generateLabelSymbol(cg());
-          cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, node, _stackPointerUpdateLabel, cursor);
+          cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::label, node, _stackPointerUpdateLabel, cursor);
 
           // AHI R4,-stackFrameSize
           cursor = addImmediateToRealRegister(spReg, (stackFrameSize) * -1, NULL, node, cursor);
@@ -1095,7 +1095,7 @@ TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction* c
                 }
 
              _stackPointerUpdateLabel = generateLabelSymbol(cg());
-             cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, node, _stackPointerUpdateLabel, cursor);
+             cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::label, node, _stackPointerUpdateLabel, cursor);
 
              cursor = addImmediateToRealRegister(spReg, (stackFrameSize) * -1, gpr3Real, node, cursor);  // R4 <- R4 - stack size
 
@@ -1117,7 +1117,7 @@ TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction* c
                 cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), node, gpr0Real, spReg, cursor);
 
              _stackPointerUpdateLabel = generateLabelSymbol(cg());
-             cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, node, _stackPointerUpdateLabel, cursor);
+             cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::label, node, _stackPointerUpdateLabel, cursor);
 
              cursor = addImmediateToRealRegister(spReg, (stackFrameSize) * -1, NULL, node, cursor);
              }
@@ -1228,7 +1228,7 @@ TR::S390zOSSystemLinkage::spillGPRsInPrologue(TR::Node* node, TR::Instruction* c
           //------------------------------
 
           // STM rx,ry,disp(R4)
-          cursor = generateS390LabelInstruction(cg(), InstOpCode::LABEL, node, stmLabel, cursor);
+          cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::label, node, stmLabel, cursor);
 
           rsaOffset =  offsetToRegSaveArea + offsetToFirstSavedReg;
           rsa = generateS390MemoryReference(spReg, rsaOffset, cg());

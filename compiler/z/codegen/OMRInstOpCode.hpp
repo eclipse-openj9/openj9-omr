@@ -609,7 +609,7 @@ class InstOpCode: public OMR::InstOpCode
    uint64_t readsFPC() {return metadata[_mnemonic].properties & S390OpProp_ReadsFPC; }
    uint64_t setsFPC() {return metadata[_mnemonic].properties & S390OpProp_SetsFPC; }
 
-   uint64_t isLabel() {return _mnemonic == LABEL;}
+   uint64_t isLabel() {return _mnemonic == label;}
 
    uint64_t usesM3() {return metadata[_mnemonic].properties & S390OpProp_UsesM3;}
    uint64_t usesM4() {return metadata[_mnemonic].properties & S390OpProp_UsesM4;}

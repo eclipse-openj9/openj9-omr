@@ -915,7 +915,7 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
       }
 
    //if (hasCompressedPointers)
-   //   generateS390LabelInstruction(cg(), TR::InstOpCode::LABEL, root, skipAdd);
+   //   generateS390LabelInstruction(cg(), TR::InstOpCode::label, root, skipAdd);
 
    cg()->decReferenceCount(firstChild);
    cg()->decReferenceCount(secondChild);

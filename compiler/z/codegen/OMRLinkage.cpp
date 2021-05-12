@@ -1603,7 +1603,7 @@ OMR::Z::Linkage::pushJNIReferenceArg(TR::Node * callNode, TR::Node * child, int3
           }
        generateRIInstruction(self()->cg(), TR::InstOpCode::getCmpHalfWordImmOpCode(), child, whatReg, 0);
 
-       generateS390LabelInstruction(self()->cg(), TR::InstOpCode::LABEL, child, cFlowRegionStart);
+       generateS390LabelInstruction(self()->cg(), TR::InstOpCode::label, child, cFlowRegionStart);
        cFlowRegionStart->setStartInternalControlFlow();
        generateS390BranchInstruction(self()->cg(), TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, child, nonNullLabel);
        generateRRInstruction(self()->cg(), TR::InstOpCode::getXORRegOpCode(), child, pushRegister, pushRegister);
@@ -1612,7 +1612,7 @@ OMR::Z::Linkage::pushJNIReferenceArg(TR::Node * callNode, TR::Node * child, int3
        conditions->addPostCondition(addrReg, TR::RealRegister::AssignAny);
        conditions->addPostCondition(whatReg, TR::RealRegister::AssignAny);
 
-       generateS390LabelInstruction(self()->cg(), TR::InstOpCode::LABEL, child, nonNullLabel, conditions);
+       generateS390LabelInstruction(self()->cg(), TR::InstOpCode::label, child, nonNullLabel, conditions);
        nonNullLabel->setEndInternalControlFlow();
 
        self()->cg()->stopUsingRegister(whatReg);
@@ -2190,7 +2190,7 @@ void OMR::Z::Linkage::generateDispatchReturnLable(TR::Node * callNode, TR::CodeG
    TR::RegisterDependencyConditions * postDeps = new (self()->trHeapMemory())
                TR::RegisterDependencyConditions(NULL, deps->getPostConditions(), 0, deps->getAddCursorForPost(), self()->cg());
 
-   generateS390LabelInstruction(codeGen, TR::InstOpCode::LABEL, callNode, endOfDirectToJNILabel, postDeps);
+   generateS390LabelInstruction(codeGen, TR::InstOpCode::label, callNode, endOfDirectToJNILabel, postDeps);
 
 #ifdef J9_PROJECT_SPECIFIC
    if (codeGen->getSupportsRuntimeInstrumentation())

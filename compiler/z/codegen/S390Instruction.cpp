@@ -314,7 +314,7 @@ TR::S390LabelInstruction::generateBinaryEncoding()
          }
 
       getLabelSymbol()->setCodeLocation(instructionStart);
-      TR_ASSERT(getOpCode().getOpCodeValue() == TR::InstOpCode::LABEL, "LabelInstr not DC or LABEL, what is it??");
+      TR_ASSERT(getOpCode().getOpCodeValue() == TR::InstOpCode::label, "LabelInstr not DC or LABEL, what is it??");
       }
 
    // Insert NOPs for loop alignment if possible
@@ -5477,7 +5477,7 @@ TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
          // the runtime patching could take place after the HCR guard has been patched
          // TODO: BRCL and BRASL are only patchable under specific conditions - this check can be
          // made more specific to let some cases through
-         if (nextI->getOpCodeValue() == TR::InstOpCode::LABEL ||
+         if (nextI->getOpCodeValue() == TR::InstOpCode::label ||
              nextI->getOpCodeValue() == TR::InstOpCode::BRCL ||
              nextI->getOpCodeValue() == TR::InstOpCode::BRASL ||
              nextI->getOpCodeValue() == TR::InstOpCode::dd ||

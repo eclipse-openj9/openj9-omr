@@ -1067,7 +1067,6 @@
    xvrsqrtesp,       // Vector Reciprocal Square Root Estimate Single-Precision
    xvsqrtsp,         // Vector Square Root Single-Precision
    xvsubsp,          // Vector Subtract Single-Precision
-   label,            // Destination of a jump
    brd,              // Byte-Reverse Doubleword
    brh,              // Byte-Reverse Halfword
    brw,              // Byte-Reverse Word

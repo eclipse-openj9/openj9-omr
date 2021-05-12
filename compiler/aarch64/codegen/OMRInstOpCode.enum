@@ -735,7 +735,6 @@
 /* Internal OpCodes */
 		proc,  // Entry to the method
 		retn,  // Return
-		label, // Destination of a jump
 		vgdnop, // Virtual Guard NOP instruction
 		ARM64LastOp = vgdnop,
 		ARM64NumOpCodes = ARM64LastOp+1,

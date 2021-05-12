@@ -93,10 +93,10 @@ class MemToMemMacroOp
                  TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(_cg);
                  TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(_cg);
 
-                 generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionStart, dependencies, _startControlFlow->getPrev());
+                 generateS390LabelInstruction(_cg, TR::InstOpCode::label, _rootNode, cFlowRegionStart, dependencies, _startControlFlow->getPrev());
                  cFlowRegionStart->setStartInternalControlFlow();
 
-                 generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionEnd, _cursor->getPrev());
+                 generateS390LabelInstruction(_cg, TR::InstOpCode::label, _rootNode, cFlowRegionEnd, _cursor->getPrev());
                  cFlowRegionEnd->setEndInternalControlFlow();
                  }
                }

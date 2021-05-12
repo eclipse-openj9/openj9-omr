@@ -465,7 +465,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::CodeGenerator *cg)
       : S390LabeledInstruction(op, n, sym, cg), _alignment(0)
       {
-      if (op==TR::InstOpCode::LABEL)
+      if (op==TR::InstOpCode::label)
          sym->setInstruction(this);
       }
 
@@ -476,7 +476,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::CodeGenerator *cg)
       : S390LabeledInstruction(op, n, sym, cond, cg), _alignment(0)
       {
-      if (op==TR::InstOpCode::LABEL)
+      if (op==TR::InstOpCode::label)
          sym->setInstruction(this);
       }
 
@@ -487,7 +487,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::CodeGenerator *cg)
       : S390LabeledInstruction(op, n, sym, precedingInstruction, cg), _alignment(0)
       {
-      if (op==TR::InstOpCode::LABEL)
+      if (op==TR::InstOpCode::label)
          sym->setInstruction(this);
       }
 
@@ -499,7 +499,7 @@ class S390LabelInstruction : public TR::S390LabeledInstruction
                            TR::CodeGenerator *cg)
       : S390LabeledInstruction(op, n, sym, cond, precedingInstruction, cg), _alignment(0)
       {
-      if (op==TR::InstOpCode::LABEL)
+      if (op==TR::InstOpCode::label)
          sym->setInstruction(this);
       }
 

@@ -35,6 +35,5 @@
 /* Internal OpCodes */
 		proc,  // Entry to the method
 		retn,  // Return
-		label, // Destination of a jump
-		RVLastOp = label,
+		RVLastOp = retn,
 		RVNumOpCodes = RVLastOp+1,

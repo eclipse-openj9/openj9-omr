@@ -681,7 +681,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390LabelInstruction * instr)
    const char * symbolName = getName(label);
    printPrefix(pOutFile, instr);
 
-   if (instr->getOpCodeValue() == TR::InstOpCode::LABEL)
+   if (instr->getOpCodeValue() == TR::InstOpCode::label)
       {
          {
          trfprintf(pOutFile, symbolName);
@@ -760,7 +760,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390BranchInstruction * instr)
 
 
    TR::LabelSymbol * label = instr->getLabelSymbol();
-   TR_ASSERT(instr->getOpCodeValue() != TR::InstOpCode::LABEL,  "assertion failure");
+   TR_ASSERT(instr->getOpCodeValue() != TR::InstOpCode::label,  "assertion failure");
 
    trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    trfprintf(pOutFile, "%s(0x%1x), ", brCondName, mask );
@@ -794,7 +794,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390BranchOnCountInstruction * instr)
    printPrefix(pOutFile, instr);
 
    TR::LabelSymbol * label = instr->getLabelSymbol();
-   TR_ASSERT(instr->getOpCodeValue() != TR::InstOpCode::LABEL, "assertion failure");
+   TR_ASSERT(instr->getOpCodeValue() != TR::InstOpCode::label, "assertion failure");
    trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    print(pOutFile, instr->getRegisterOperand(1));
    trfprintf(pOutFile, ",");
@@ -815,7 +815,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390BranchOnIndexInstruction * instr)
    printPrefix(pOutFile, instr);
 
    TR::LabelSymbol * label = instr->getLabelSymbol();
-   TR_ASSERT(instr->getOpCodeValue() != TR::InstOpCode::LABEL, "assertion failure");
+   TR_ASSERT(instr->getOpCodeValue() != TR::InstOpCode::label, "assertion failure");
    trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    print(pOutFile, instr->getRegisterOperand(1));
    trfprintf(pOutFile, ",");

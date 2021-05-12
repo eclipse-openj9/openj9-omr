@@ -1501,7 +1501,7 @@ static TR::Instruction *skipInternalControlFlow(TR::Instruction *insertInstr)
   for(insertInstr=insertInstr->getPrev(); insertInstr!=NULL; insertInstr=insertInstr->getPrev())
     {
     // Track internal control flow on labels
-    if (insertInstr->getOpCodeValue() == TR::InstOpCode::LABEL)
+    if (insertInstr->getOpCodeValue() == TR::InstOpCode::label)
       {
       TR::S390LabelInstruction *li = toS390LabelInstruction(insertInstr);
       TR::LabelSymbol *ls=li->getLabelSymbol();
@@ -1896,9 +1896,9 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    // Generate the first label by using the placement new operator such that we are guaranteed to call the correct
    // overload of the constructor which can accept a NULL preceding instruction. If cursor is NULL the generated
    // label instruction will be prepended to the start of the instruction stream.
-   _methodBegin = new (self()->trHeapMemory()) TR::S390LabelInstruction(TR::InstOpCode::LABEL, self()->comp()->getStartTree()->getNode(), generateLabelSymbol(self()), static_cast<TR::Instruction*>(NULL), self());
+   _methodBegin = new (self()->trHeapMemory()) TR::S390LabelInstruction(TR::InstOpCode::label, self()->comp()->getStartTree()->getNode(), generateLabelSymbol(self()), static_cast<TR::Instruction*>(NULL), self());
 
-   _methodEnd = generateS390LabelInstruction(self(), TR::InstOpCode::LABEL, self()->comp()->findLastTree()->getNode(), generateLabelSymbol(self()));
+   _methodEnd = generateS390LabelInstruction(self(), TR::InstOpCode::label, self()->comp()->findLastTree()->getNode(), generateLabelSymbol(self()));
 
    TR_S390BinaryEncodingData data;
    data.cursorInstruction = self()->getFirstInstruction();

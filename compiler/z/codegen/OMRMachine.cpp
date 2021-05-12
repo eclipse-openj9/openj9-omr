@@ -2532,7 +2532,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
       }
 
    TR::Instruction * cursor = currentInstruction->getPrev();
-   while (numCandidates > 1 && cursor != NULL && cursor->getOpCodeValue() != TR::InstOpCode::LABEL && cursor->getOpCodeValue() != TR::InstOpCode::PROC)
+   while (numCandidates > 1 && cursor != NULL && cursor->getOpCodeValue() != TR::InstOpCode::label && cursor->getOpCodeValue() != TR::InstOpCode::PROC)
       {
       for (int32_t i = 0; i < numCandidates; i++)
          {

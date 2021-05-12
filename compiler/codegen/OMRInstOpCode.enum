@@ -28,3 +28,4 @@
    bad,                // Bad Opcode
    dd,                 // Define Doubleword
    fence,              // Fence
+   label,              // Destination of a jump

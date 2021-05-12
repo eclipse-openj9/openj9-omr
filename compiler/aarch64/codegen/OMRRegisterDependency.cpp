@@ -622,3 +622,94 @@ OMR::ARM64::RegisterDependencyConditions::stopUsingDepRegs(TR::CodeGenerator *cg
    if (_postConditions != NULL)
       _postConditions->stopUsingDepRegs(_addCursorForPost, ret1, ret2, cg);
    }
+
+void TR_ARM64ScratchRegisterDependencyConditions::addDependency(TR::CodeGenerator *cg, TR::Register *vr, TR::RealRegister::RegNum rr, uint8_t flag)
+   {
+   TR_ASSERT_FATAL(_numGPRDeps < TR::RealRegister::LastAssignableGPR - TR::RealRegister::FirstGPR + 1, "Too many GPR dependencies");
+
+   bool isGPR = rr <= TR::RealRegister::LastAssignableGPR;
+   TR_ASSERT_FATAL(isGPR, "Expecting GPR only");
+   if (!vr)
+      {
+      vr = cg->allocateRegister(TR_GPR);
+      cg->stopUsingRegister(vr);
+      }
+   _gprDeps[_numGPRDeps].setRegister(vr);
+   _gprDeps[_numGPRDeps].assignFlags(flag);
+   _gprDeps[_numGPRDeps].setRealRegister(rr);
+   ++_numGPRDeps;
+   }
+
+void TR_ARM64ScratchRegisterDependencyConditions::unionDependency(TR::CodeGenerator *cg, TR::Register *vr, TR::RealRegister::RegNum rr, uint8_t flag)
+   {
+   TR_ASSERT_FATAL(_numGPRDeps < TR::RealRegister::LastAssignableGPR - TR::RealRegister::FirstGPR + 1, "Too many GPR dependencies");
+
+   bool isGPR = rr <= TR::RealRegister::LastAssignableGPR;
+   TR_ASSERT_FATAL(isGPR, "Expecting GPR only");
+   TR_ASSERT_FATAL(vr, "Expecting non-null virtual register");
+
+   for (int i = 0; i < _numGPRDeps; i++)
+      {
+      if (_gprDeps[i].getRegister() == vr)
+         {
+         // Keep the stronger of the two constraints
+         //
+         TR::RealRegister::RegNum min = std::min(rr, _gprDeps[i].getRealRegister());
+         TR::RealRegister::RegNum max = std::max(rr, _gprDeps[i].getRealRegister());
+         if (min == TR::RealRegister::NoReg)
+            {
+            // Anything is stronger than NoReg
+            _gprDeps[i].setRegister(vr);
+            _gprDeps[i].assignFlags(flag);
+            _gprDeps[i].setRealRegister(max);
+            }
+         else
+            {
+            TR_ASSERT_FATAL(min == max, "Specific register dependency is only compatible with itself");
+            // Nothing to do
+            }
+         return;
+         }
+      }
+
+   // vr is not in the deps list, add a new one
+   _gprDeps[_numGPRDeps].setRegister(vr);
+   _gprDeps[_numGPRDeps].assignFlags(flag);
+   _gprDeps[_numGPRDeps].setRealRegister(rr);
+   ++_numGPRDeps;
+   }
+
+void TR_ARM64ScratchRegisterDependencyConditions::addScratchRegisters(TR::CodeGenerator *cg, TR_ARM64ScratchRegisterManager *srm)
+   {
+   auto list = srm->getManagedScratchRegisterList();
+   ListIterator<TR_ManagedScratchRegister> iterator(&list);
+   TR_ManagedScratchRegister *msr = iterator.getFirst();
+
+   while (msr)
+      {
+      unionDependency(cg, msr->_reg, TR::RealRegister::NoReg);
+      msr = iterator.getNext();
+      }
+   }
+
+TR::RegisterDependencyConditions* TR_ARM64ScratchRegisterDependencyConditions::createDependencyConditions(TR::CodeGenerator *cg,
+                                                                                                          TR_ARM64ScratchRegisterDependencyConditions *pre,
+                                                                                                          TR_ARM64ScratchRegisterDependencyConditions *post)
+   {
+   int32_t preCount = pre ? pre->getNumberOfDependencies() : 0;
+   int32_t postCount = post ? post->getNumberOfDependencies() : 0;
+
+   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(preCount,
+                                                                                                                  postCount,
+                                                                                                                  cg->trMemory());
+   for (int i = 0; i < (pre ? pre->_numGPRDeps : 0); ++i)
+      {
+      dependencies->addPreCondition(pre->_gprDeps[i].getRegister(), pre->_gprDeps[i].getRealRegister(), pre->_gprDeps[i].getFlags());
+      }
+   for (int i = 0; i < (post ? post->_numGPRDeps : 0); ++i)
+      {
+      dependencies->addPostCondition(post->_gprDeps[i].getRegister(), post->_gprDeps[i].getRealRegister(), post->_gprDeps[i].getFlags());
+      }
+
+   return dependencies;
+   }

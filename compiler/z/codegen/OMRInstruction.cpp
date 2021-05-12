@@ -2117,7 +2117,7 @@ OMR::Z::Instruction::is4ByteLoad()
 bool
 OMR::Z::Instruction::isRet()
    {
-   return self()->getOpCodeValue() == TR::InstOpCode::RET;
+   return self()->getOpCodeValue() == TR::InstOpCode::retn;
    }
 
 int8_t

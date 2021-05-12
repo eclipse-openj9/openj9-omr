@@ -539,7 +539,6 @@
    nop,              // NoOp (ori)
    genop,            // Group Ending NoOp (ori)
    shdfence,         // Scheduling Fence
-   ret,              // Return
 // rxor,             // Rotate & XOR
    wrtbar,           // Write barrier directive
    vgdnop,           // Virtual Guard NOP instruction

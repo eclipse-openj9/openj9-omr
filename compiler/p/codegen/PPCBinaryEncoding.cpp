@@ -1299,7 +1299,7 @@ int32_t TR::PPCConditionalBranchInstruction::estimateBinaryLength(int32_t curren
 
 TR::Instruction *TR::PPCAdminInstruction::expandInstruction()
    {
-   if (getOpCodeValue() == TR::InstOpCode::ret)
+   if (getOpCodeValue() == TR::InstOpCode::retn)
       {
       cg()->getLinkage()->createEpilogue(self());
       }

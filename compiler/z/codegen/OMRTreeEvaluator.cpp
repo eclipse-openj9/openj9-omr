@@ -14995,7 +14995,7 @@ OMR::Z::TreeEvaluator::vreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::RegisterDependencyConditions * dependencies = NULL ;
    dependencies= new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
    dependencies->addPostCondition(returnValRegister, linkage->getVectorReturnRegister());
-   TR::Instruction * inst = generateS390PseudoInstruction(cg, TR::InstOpCode::RET, node, dependencies);
+   TR::Instruction * inst = generateS390PseudoInstruction(cg, TR::InstOpCode::retn, node, dependencies);
    cg->stopUsingRegister(returnAddressReg);
    cg->decReferenceCount(node->getFirstChild());
    return NULL ;

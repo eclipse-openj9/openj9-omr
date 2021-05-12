@@ -734,7 +734,7 @@ OMR::Z::TreeEvaluator::returnEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          break;
       }
 
-   TR::Instruction * inst = generateS390PseudoInstruction(cg, TR::InstOpCode::RET, node, dependencies);
+   TR::Instruction * inst = generateS390PseudoInstruction(cg, TR::InstOpCode::retn, node, dependencies);
    if (cg->supportsBranchPreload())
       {
       int32_t frequency = comp->getCurrentBlock()->getFrequency();

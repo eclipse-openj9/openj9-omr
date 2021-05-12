@@ -59,7 +59,7 @@ OMR::Z::InstOpCode::hasBypass()
 uint32_t
 OMR::Z::InstOpCode::isAdmin()
    {
-   return (_mnemonic == RET ||
+   return (_mnemonic == retn ||
            _mnemonic == assocreg ||
            _mnemonic == DEPEND ||
            _mnemonic == fence ||

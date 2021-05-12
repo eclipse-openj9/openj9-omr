@@ -33,6 +33,4 @@
 #include <riscv-opc.h>
 #undef DECLARE_INSN
 /* Internal OpCodes */
-		retn,  // Return
-		RVLastOp = retn,
-		RVNumOpCodes = RVLastOp+1,
+		RVNumOpCodes,

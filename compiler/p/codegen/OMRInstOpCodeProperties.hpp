@@ -92,6 +92,17 @@
    },
 
    {
+   /* .mnemonic    = */ OMR::InstOpCode::retn,
+   /* .name        = */ "retn",
+   /* .description =    "Return", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x00000000,
+   /* .format      = */ FORMAT_NONE,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
+   /* .properties  = */ PPCOpProp_None,
+   },
+
+   {
    /* .mnemonic    = */ OMR::InstOpCode::add,
    /* .name        = */ "add",
    /* .description =    "Add", */
@@ -6244,17 +6255,6 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::ret,
-   /* .name        = */ "ret",
-   /* .description =    "Return", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_NONE,
-   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
-   /* .properties  = */ PPCOpProp_None,
    },
 
    /* { */

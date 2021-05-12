@@ -99,6 +99,8 @@ static const char *opCodeToNameMap[] =
    "fence",
    "label",
    "proc",
+   "retn",
+   "vgnop",
    "cbzw",
    "cbnzw",
    "cbzx",

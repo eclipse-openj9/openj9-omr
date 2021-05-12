@@ -30,3 +30,5 @@
    fence,              // Fence
    label,              // Destination of a jump
    proc,               // Entry to the method
+   retn,               // Return
+   vgnop,              // Virtual Guard NOP

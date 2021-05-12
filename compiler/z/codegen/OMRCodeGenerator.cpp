@@ -2000,7 +2000,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          self()->setCurrentBlock(data.cursorInstruction->getNode()->getBlock());
          }
 
-      if (data.cursorInstruction->getOpCodeValue() == TR::InstOpCode::RET)
+      if (data.cursorInstruction->getOpCodeValue() == TR::InstOpCode::retn)
          {
 
          if (skipOneReturn == false)
@@ -2010,8 +2010,8 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
             data.cursorInstruction = temp->getNext();
 
             /* skipOneReturn only if epilog is generated which is indicated by instructions being */
-            /* inserted before TR::InstOpCode::RET.  If no epilog is generated, TR::InstOpCode::RET will stay               */
-            if (data.cursorInstruction->getOpCodeValue() != TR::InstOpCode::RET)
+            /* inserted before TR::InstOpCode::retn.  If no epilog is generated, TR::InstOpCode::retn will stay               */
+            if (data.cursorInstruction->getOpCodeValue() != TR::InstOpCode::retn)
                skipOneReturn = true;
             }
          else

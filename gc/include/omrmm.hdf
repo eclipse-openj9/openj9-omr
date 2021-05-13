@@ -127,6 +127,8 @@ typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uint
 		<data type="uintptr_t" name="tenureLOATotalBytes" description="total number of bytes in the LOA" />
 		<data type="uintptr_t" name="tenureAge" description="the age at which objects currently get tenured" />
 		<data type="uintptr_t" name="totalMemorySize" description="the total size of all memory spaces" />
+		<data type="uint64_t" name="incrementStartTime" description="start time of increment" />
+		<data type="uint64_t" name="incrementEndTime" description="end time of increment" />
 	</event>
 
 	<event>

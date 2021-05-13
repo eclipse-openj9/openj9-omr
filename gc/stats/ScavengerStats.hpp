@@ -75,9 +75,6 @@ public:
 	uintptr_t _failedFlipCount;
 	uintptr_t _failedFlipBytes;
 	uintptr_t _tenureAge;
-	/* The following start/end times are not used as thread local, but to record total cycle duration, done only by main thread. Ideally, these should be moved to the collector. */
-	uint64_t _startTime;
-	uint64_t _endTime;
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 	uintptr_t _releaseScanListCount;
 	uintptr_t _acquireFreeListCount;
@@ -100,8 +97,8 @@ public:
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
 
 	/* Stats Used Specifically for Adaptive Threading */
-	uint64_t _workerScavengeStartTime; /**< Timestamp taken when worker starts the scavenge task */
-	uint64_t _workerScavengeEndTime; /**< Timestamp taken when worker completes the scavenge task */
+	uint64_t _startTime; /**< Timestamp taken when worker starts the scavenge task */
+	uint64_t _endTime; /**< Timestamp taken when worker completes the scavenge task */
 
 	/* The time, in hi-res ticks, the thread spent stalled notifying other
 	 * threads during scavenge. Note: this is not all inclusive, it records notify

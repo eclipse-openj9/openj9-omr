@@ -456,7 +456,7 @@ MM_Scavenger::workerSetupForGC(MM_EnvironmentStandard *env)
 
 	/* This thread just started the scavenge task, record the timestamp.
 	 * This must be done after clearThreadGCStats or else the timestamp will be cleared. */
-	env->_scavengerStats._workerScavengeStartTime = omrtime_hires_clock();
+	env->_scavengerStats._startTime = omrtime_hires_clock();
 
 	/* Clear local language-specific stats */
 	_delegate.workerSetupForGC_clearEnvironmentLangStats(env);
@@ -510,8 +510,8 @@ MM_Scavenger::calculateRecommendedWorkingThreads(MM_EnvironmentStandard *env)
 
 	/* Calculate the average time it takes the worker threads to start collection and avgerage time workers are idle waiting for task cleanup
 	 * Calculated as (Sum_WorkerStartTime(t1 + t2 + ... + tn) - (n * collection_start)) / n  */
-	uint64_t avgTimeToStartCollection =  omrtime_hires_delta((_extensions->scavengerStats._startTime * totalThreads), _extensions->scavengerStats._workerScavengeStartTime, OMRPORT_TIME_DELTA_IN_MICROSECONDS) / totalThreads;
-	uint64_t avgTimeIdleAfterCollection =  omrtime_hires_delta(_extensions->scavengerStats._workerScavengeEndTime, (_extensions->scavengerStats._endTime * totalThreads), OMRPORT_TIME_DELTA_IN_MICROSECONDS) / totalThreads;
+	uint64_t avgTimeToStartCollection =  omrtime_hires_delta((_cycleTimes.cycleStart * totalThreads), _extensions->scavengerStats._startTime, OMRPORT_TIME_DELTA_IN_MICROSECONDS) / totalThreads;
+	uint64_t avgTimeIdleAfterCollection =  omrtime_hires_delta(_extensions->scavengerStats._endTime, (_cycleTimes.cycleEnd * totalThreads), OMRPORT_TIME_DELTA_IN_MICROSECONDS) / totalThreads;
 
 	/* Calculate average stall times */
 	uint64_t avgScanStallTime =  omrtime_hires_delta(0, (_extensions->scavengerStats._workStallTime + _extensions->scavengerStats._completeStallTime), OMRPORT_TIME_DELTA_IN_MICROSECONDS) / totalThreads;
@@ -521,7 +521,7 @@ MM_Scavenger::calculateRecommendedWorkingThreads(MM_EnvironmentStandard *env)
 	Trc_MM_Scavenger_calculateRecommendedWorkingThreads_averageStallBreakDown(env->getLanguageVMThread(), totalThreads, avgTimeToStartCollection, avgTimeIdleAfterCollection, avgScanStallTime, avgSyncStallTime, avgNotifyStallTime);
 
 	uint64_t totalStallTime =  avgTimeToStartCollection + avgTimeIdleAfterCollection + avgScanStallTime + avgSyncStallTime + avgNotifyStallTime;
-	uint64_t scavengeTotalTime = omrtime_hires_delta(_extensions->scavengerStats._startTime, _extensions->scavengerStats._endTime, OMRPORT_TIME_DELTA_IN_MICROSECONDS);
+	uint64_t scavengeTotalTime = omrtime_hires_delta(_cycleTimes.cycleStart, _cycleTimes.cycleEnd, OMRPORT_TIME_DELTA_IN_MICROSECONDS);
 
 	/* This Adaptive Threading Model aims to determine the efficiency of a cycle and predict the optimal GC thread count based on current number of threads,
 	 * directly proportional to busy time and inversely proportional to idle times.
@@ -620,7 +620,9 @@ MM_Scavenger::reportScavengeEnd(MM_EnvironmentStandard *env, bool lastIncrement)
 		omrtime_hires_clock(),
 		J9HOOK_MM_PRIVATE_SCAVENGE_END,
 		env->_cycleState->_activeSubSpace,
-		lastIncrement
+		lastIncrement,
+		_cycleTimes.incrementStart,
+		_cycleTimes.incrementEnd
 	);
 }
 
@@ -729,7 +731,9 @@ MM_Scavenger::reportGCEnd(MM_EnvironmentStandard *env)
 		(_extensions->largeObjectArea ? _extensions->heap->getApproximateActiveFreeLOAMemorySize(MEMORY_TYPE_OLD) : 0),
 		(_extensions->largeObjectArea ? _extensions->heap->getActiveLOAMemorySize(MEMORY_TYPE_OLD) :0),
 		_extensions->incrementScavengerStats._tenureAge,
-		_extensions->heap->getMemorySize()
+		_extensions->heap->getMemorySize(),
+		_cycleTimes.incrementStart,
+		_cycleTimes.incrementEnd
 	);
 }
 
@@ -743,12 +747,18 @@ void
 MM_Scavenger::clearIncrementGCStats(MM_EnvironmentBase *env, bool firstIncrement)
 {
 	_extensions->incrementScavengerStats.clear(firstIncrement);
+
+	/* Increment start time doesn't need to be cleared, it was set prior to calling this method */
+	_cycleTimes.incrementEnd = 0;
 }
 
 void
 MM_Scavenger::clearCycleGCStats(MM_EnvironmentBase *env)
 {
 	_extensions->scavengerStats.clear(true);
+
+	/* Cycle start time doesn't need to be cleared, it was set prior to calling this method */
+	_cycleTimes.cycleEnd = 0;
 }
 
 void
@@ -833,8 +843,8 @@ MM_Scavenger::mergeGCStatsBase(MM_EnvironmentBase *env, MM_ScavengerStats *final
 	_extensions->scavengerStats._syncStallCount += scavStats->_syncStallCount;
 
 	/* Adaptive Threading Stats */
-	finalGCStats->_workerScavengeStartTime += scavStats->_workerScavengeStartTime;
-	finalGCStats->_workerScavengeEndTime += scavStats->_workerScavengeEndTime;
+	finalGCStats->_startTime += scavStats->_startTime;
+	finalGCStats->_endTime += scavStats->_endTime;
 	finalGCStats->_notifyStallTime += scavStats->_notifyStallTime;
 	finalGCStats->_adjustedSyncStallTime += scavStats->_adjustedSyncStallTime;
 }
@@ -852,13 +862,13 @@ MM_Scavenger::mergeThreadGCStats(MM_EnvironmentBase *env)
 
 	/* This thread is just about to complete the scavenge task, record the timestamp.
 	 * This must be done before mergeGCStatsBase or else the timestamp won't be mereged as needed by adaptive threading. */
-	env->_scavengerStats._workerScavengeEndTime = omrtime_hires_clock();
+	env->_scavengerStats._endTime = omrtime_hires_clock();
 	mergeGCStatsBase(env, &_extensions->incrementScavengerStats, scavStats);
 
 	/* Merge language specific statistics. No known interesting data per increment - they are merged directly to aggregate cycle stats */
 	_delegate.mergeGCStats_mergeLangStats(env);
 
-	uint64_t timeToStartCollection =  omrtime_hires_delta(_extensions->scavengerStats._startTime, scavStats->_workerScavengeStartTime, OMRPORT_TIME_DELTA_IN_MICROSECONDS);
+	uint64_t timeToStartCollection =  omrtime_hires_delta(_cycleTimes.cycleStart, scavStats->_startTime, OMRPORT_TIME_DELTA_IN_MICROSECONDS);
 	uint64_t scanStall =  omrtime_hires_delta(0, (scavStats->_workStallTime + scavStats->_completeStallTime), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
 	uint64_t syncStall = omrtime_hires_delta(0, (scavStats->_adjustedSyncStallTime), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
 	uint64_t notifyStallTime = omrtime_hires_delta(0, (scavStats->_notifyStallTime), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
@@ -4195,14 +4205,14 @@ MM_Scavenger::mainThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_AllocateD
 		}
 
 		reportGCCycleStart(env);
-		_extensions->scavengerStats._startTime = omrtime_hires_clock();
+		_cycleTimes.cycleStart = omrtime_hires_clock();
 		mainSetupForGC(env);
 	}
 	clearIncrementGCStats(env, firstIncrement);
 	reportGCStart(env);
 	reportGCIncrementStart(env);
 	reportScavengeStart(env);
-	_extensions->incrementScavengerStats._startTime = omrtime_hires_clock();
+	_cycleTimes.incrementStart = omrtime_hires_clock();
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (_extensions->concurrentScavenger) {
@@ -4219,7 +4229,7 @@ MM_Scavenger::mainThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_AllocateD
 	bool lastIncrement = true;
 #endif
 
-	_extensions->incrementScavengerStats._endTime = omrtime_hires_clock();
+	_cycleTimes.incrementEnd = omrtime_hires_clock();
 
 	/* merge stats from this increment/phase to aggregate cycle stats */
 	mergeIncrementGCStats(env, lastIncrement);
@@ -4234,7 +4244,7 @@ MM_Scavenger::mainThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_AllocateD
 		 */
 		_activeSubSpace->setResizable(_cachedSemiSpaceResizableFlag);
 
-		_extensions->scavengerStats._endTime = omrtime_hires_clock();
+		_cycleTimes.cycleEnd = omrtime_hires_clock();
 
 		if(scavengeCompletedSuccessfully(env)) {
 
@@ -5722,14 +5732,16 @@ void MM_Scavenger::preConcurrentInitializeStatsAndReport(MM_EnvironmentBase *env
 			J9HOOK_MM_PRIVATE_CONCURRENT_PHASE_START,
 			stats);
 
-	_extensions->incrementScavengerStats._startTime = omrtime_hires_clock();
+	_cycleTimes.incrementStart = omrtime_hires_clock();
+	stats->_startTime = _cycleTimes.incrementStart;
 }
 
 void MM_Scavenger::postConcurrentUpdateStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats, UDATA bytesConcurrentlyScanned)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 
-	_extensions->incrementScavengerStats._endTime = omrtime_hires_clock();
+	_cycleTimes.incrementEnd = omrtime_hires_clock();
+	stats->_endTime = _cycleTimes.incrementEnd;
 
 	TRIGGER_J9HOOK_MM_PRIVATE_CONCURRENT_PHASE_END(
 		_extensions->privateHookInterface,

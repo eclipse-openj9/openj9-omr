@@ -90,14 +90,20 @@ GC_ObjectHeapBufferedIterator::getPopulator()
 	case MM_HeapRegionDescriptor::RESERVED:
 	case MM_HeapRegionDescriptor::FREE:
 	case MM_HeapRegionDescriptor::ADDRESS_ORDERED_IDLE:
+	case MM_HeapRegionDescriptor::BUMP_ALLOCATED_IDLE: /* remove it after completing transition from bumpPointer to AddressOrdered */
 		/* (for all intents and purposes, an IDLE region is the same as a FREE region) */
 	case MM_HeapRegionDescriptor::ARRAYLET_LEAF:
 		populator = &_emptyListPopulator;
+		break;
+	/* remove it after completing transition from bumpPointer to AddressOrdered */
+	case MM_HeapRegionDescriptor::BUMP_ALLOCATED:
+		populator = &_bumpAllocatedListPopulator;
 		break;
 	case MM_HeapRegionDescriptor::ADDRESS_ORDERED:
 		populator = &_addressOrderedListPopulator;
 		break;
 	case MM_HeapRegionDescriptor::ADDRESS_ORDERED_MARKED:
+	case MM_HeapRegionDescriptor::BUMP_ALLOCATED_MARKED: /* remove it after completing transition from bumpPointer to AddressOrdered */
 		populator = &_markedObjectPopulator;
 		break;
 #if defined(OMR_GC_SEGREGATED_HEAP)

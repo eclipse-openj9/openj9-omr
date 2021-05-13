@@ -330,10 +330,23 @@ public:
 	 * Sets a ADDRESS_ORDERED region to ADDRESS_ORDERED_MARKED.  Asserts if called on any other region type.
 	 * This can be extended to other region types which have a "marked" variant as they are needed.
 	 */
+/*
 	void setMarkMapValid()
 	{
 		Assert_MM_true(ADDRESS_ORDERED == getRegionType());
 		setRegionType(ADDRESS_ORDERED_MARKED);
+	}
+*/
+/* temporary change for breaking cross dependency */
+	void setMarkMapValid()
+	{
+		Assert_MM_true((ADDRESS_ORDERED == getRegionType()) || (BUMP_ALLOCATED == getRegionType()));
+		if (ADDRESS_ORDERED == getRegionType()) {
+			setRegionType(ADDRESS_ORDERED_MARKED);
+		} else {
+			setRegionType(BUMP_ALLOCATED_MARKED);
+		}
+
 	}
 	
 	/**

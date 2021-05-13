@@ -25,6 +25,7 @@
 #define OBJECTHEAPBUFFEREDITERATOR_HPP_
 
 #include "AddressOrderedListPopulator.hpp"
+#include "BumpAllocatedListPopulator.hpp" /* remove it after completing transition from bumpPointer to AddressOrdered */
 #include "EmptyListPopulator.hpp"
 #include "MarkedObjectPopulator.hpp"
 #include "ObjectHeapBufferedIteratorPopulator.hpp"
@@ -51,6 +52,7 @@ class GC_ObjectHeapBufferedIterator
 /* Data Members */
 private:
 	MM_AddressOrderedListPopulator _addressOrderedListPopulator;
+	MM_BumpAllocatedListPopulator _bumpAllocatedListPopulator; /* remove it after completing transition from bumpPointer to AddressOrdered */
 	MM_EmptyListPopulator _emptyListPopulator;
 	MM_MarkedObjectPopulator _markedObjectPopulator;
 #if defined(OMR_GC_SEGREGATED_HEAP)

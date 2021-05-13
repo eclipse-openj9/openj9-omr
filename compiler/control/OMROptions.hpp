@@ -97,7 +97,7 @@ enum TR_CompilationOptions
    TR_StrictFPCompares           = 0x00000800,
    TR_RegisterMaps               = 0x00001000,
    TR_CreatePCMaps               = 0x00002000,
-   // Available                  = 0x00004000,
+   TR_AggressiveInlining         = 0x00004000,
    TR_MimicInterpreterFrameShape = 0x00008000,
 
    TR_TraceBC                    = 0x00010000,

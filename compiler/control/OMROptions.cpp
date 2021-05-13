@@ -627,6 +627,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"dumpIprofilerMethodNamesAndCounts",  "O\tDebug Printing of Method Names and Persisted Counts.", SET_OPTION_BIT(TR_DumpPersistedIProfilerMethodNamesAndCounts), "F"},
    {"dynamicThreadPriority",              "M\tenable dynamic changing of compilation thread priority", SET_OPTION_BIT(TR_DynamicThreadPriority), "F", NOT_IN_SUBSET},
    {"earlyLPQ",                           "M\tAllow compilations from low priority queue to happen early, during startup", SET_OPTION_BIT(TR_EarlyLPQ), "F", NOT_IN_SUBSET },
+   {"enableAggressiveInlining",           "I\tSet additional options that makes inlining more aggressive ", SET_OPTION_BIT(TR_AggressiveInlining), "F", NOT_IN_SUBSET},
    {"enableAggressiveLiveness",           "I\tenable globalLiveVariablesForGC below warm", SET_OPTION_BIT(TR_EnableAggressiveLiveness), "F"},
    {"enableAggressiveLoopVersioning", "O\tOptions and thresholds that result in loop versioning occurring in more cases", SET_OPTION_BIT(TR_EnableAggressiveLoopVersioning), "F" },
    {"enableAllocationOfScratchBTL",       "M\tAllow the allocation scratch memory below the line (zOS 31-bit)", RESET_OPTION_BIT(TR_DontAllocateScratchBTL), "F", NOT_IN_SUBSET },
@@ -3691,7 +3692,11 @@ OMR::Options::jitPostProcess()
       self()->setOption(TR_EnableCodeCacheConsolidation, false);
       }
 #endif
-
+   if (self()->getOption(TR_AggressiveInlining))
+      {
+      // Note: this could override some of the inlining options set by the user
+      self()->setMoreAggressiveInlining();
+      }
    return true;
    }
 

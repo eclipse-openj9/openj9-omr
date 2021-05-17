@@ -767,6 +767,29 @@ static TR::Register *shiftHelper(TR::Node *node, TR::ARM64ShiftCode shiftType, T
 TR::Register *
 OMR::ARM64::TreeEvaluator::ishlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   if (node->getOpCodeValue() == TR::lshl)
+      {
+      TR::Node *firstChild = node->getFirstChild();
+      TR::Node *secondChild = node->getSecondChild();
+      if (firstChild->getOpCodeValue() == TR::i2l &&
+          firstChild->getRegister() == NULL &&
+          secondChild->getOpCodeValue() == TR::iconst &&
+          secondChild->getInt() < 32)
+         {
+         // Typical IL sequence in array access (sign-extend index value and shift it to left)
+         TR::Node *indexChild = firstChild->getFirstChild();
+         TR::Register *srcReg = cg->evaluate(indexChild);
+         TR::Register *trgReg = (indexChild->getReferenceCount() == 1) ? srcReg : cg->allocateRegister();
+         int32_t bitsToShift = secondChild->getInt();
+         int32_t imm = ((64 - bitsToShift) << 6) | 31; // immr = 64 - bitsToShift, imms = 31
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmx, node, trgReg, srcReg, imm);
+         node->setRegister(trgReg);
+         cg->recursivelyDecReferenceCount(firstChild);
+         cg->decReferenceCount(secondChild);
+         return trgReg;
+         }
+      }
+
    return shiftHelper(node, TR::SH_LSL, cg);
    }
 

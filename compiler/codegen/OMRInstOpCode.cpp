@@ -21,12 +21,6 @@
 
 #include "compiler/codegen/InstOpCode.hpp"
 
-uint8_t
-OMR::InstOpCode::length(Mnemonic m)
-   {
-   return 0;
-   }
-
 uint8_t *
 OMR::InstOpCode::copyBinaryToBuffer(
       Mnemonic m,

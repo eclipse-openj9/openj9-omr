@@ -62,11 +62,6 @@ class InstOpCode
    static int32_t getNumOpCodes() { return NumOpCodes; }
 
    /*
-    * Length of the encoded binary representation of an opcode.
-    */
-   static uint8_t length(Mnemonic m);
-
-   /*
     * Copies the encoded binary representation of a given mnemonic to the
     * provided buffer.  This will copy at most length() bytes.
     *

@@ -39,7 +39,8 @@ class MM_AllocateDescription;
 class MM_ConcurrentSweepScheme;
 #endif /* OMR_GC_CONCURRENT_SWEEP */
 
-#define FREE_ENTRY_END ((MM_HeapLinkedFreeHeader *) UDATA_MAX)
+#define FREE_ENTRY_END ((MM_HeapLinkedFreeHeader *)OMRPORT_VMEM_MAX_ADDRESS)
+
 /**
  * @todo Provide class documentation
  * @ingroup GC_Base_Core
@@ -85,7 +86,11 @@ private:
 
 	MMINLINE bool doesNeedAlignment(MM_EnvironmentBase *env, MM_HeapLinkedFreeHeader *freeEntry)
 	{
+#if defined(OMR_ENV_DATA64)
 		return (freeEntry >= _firstUnalignedFreeEntry);
+#else
+		return false;
+#endif /* OMR_ENV_DATA64 */
 	}
 
 	/**

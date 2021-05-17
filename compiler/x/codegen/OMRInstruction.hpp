@@ -93,7 +93,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual char *description() { return "X86"; }
    virtual Kind getKind() { return IsNotExtended; }
 
-   TR_X86OpCode& getOpCode() { return _opcode; }
+   TR::InstOpCode& getOpCode() { return _opcode; }
    TR_X86OpCodes getOpCodeValue() { return _opcode.getOpCodeValue(); }
    TR_X86OpCodes setOpCodeValue(TR_X86OpCodes op) { return _opcode.setOpCodeValue(op); }
 
@@ -172,7 +172,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    private:
 
-   TR_X86OpCode _opcode;
+   TR::InstOpCode _opcode;
    TR::RegisterDependencyConditions *_conditions;
    void assumeValidInstruction();
 

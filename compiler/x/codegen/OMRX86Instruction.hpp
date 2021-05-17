@@ -65,7 +65,7 @@ enum TR_X86MemoryBarrierKinds
    LockPrefix           = 0x08
    };
 
-extern int32_t memoryBarrierRequired(TR_X86OpCode &op, TR::MemoryReference *mr, TR::CodeGenerator *cg, bool onlyAskingAboutFences);
+extern int32_t memoryBarrierRequired(TR::InstOpCode &op, TR::MemoryReference *mr, TR::CodeGenerator *cg, bool onlyAskingAboutFences);
 extern int32_t estimateMemoryBarrierBinaryLength(int32_t barrier, TR::CodeGenerator *cg);
 extern void padUnresolvedReferenceInstruction(TR::Instruction *instr, TR::MemoryReference *mr, TR::CodeGenerator *cg);
 extern void insertUnresolvedReferenceInstructionMemoryBarrier(TR::CodeGenerator *cg, int32_t barrier, TR::Instruction *inst, TR::MemoryReference *mr, TR::Register *srcReg = NULL, TR::MemoryReference *anotherMr = NULL);

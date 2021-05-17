@@ -45,7 +45,7 @@ uint8_t *TR::X86DivideCheckSnippet::emitSnippetBody()
    // CMP realDivisorReg, -1
    //
    uint8_t rexPrefix = cg()->comp()->target().is64Bit() ? realDivisorReg->rexBits(TR::RealRegister::REX_B, false) : 0;
-   buffer = TR_X86OpCode(CMPRegImms(_divOp.isLong())).binary(buffer, rexPrefix);
+   buffer = TR::InstOpCode(CMPRegImms(_divOp.isLong())).binary(buffer, rexPrefix);
    realDivisorReg->setRMRegisterFieldInModRM(buffer-1);
    *buffer++ = -1;
 

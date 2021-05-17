@@ -2417,13 +2417,13 @@ static const char * opCodeToMnemonicMap[] =
    };
 
 const char *
-TR_Debug::getOpCodeName(TR_X86OpCode  * opCode)
+TR_Debug::getOpCodeName(TR::InstOpCode  * opCode)
    {
    return opCodeToNameMap[opCode->getOpCodeValue()];
    }
 
 const char *
-TR_Debug::getMnemonicName(TR_X86OpCode  * opCode)
+TR_Debug::getMnemonicName(TR::InstOpCode  * opCode)
    {
    if (_comp->target().isLinux())
       {

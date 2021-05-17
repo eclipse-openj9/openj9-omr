@@ -61,7 +61,7 @@ class X86RestartSnippet  : public TR::Snippet
 
    uint8_t *genRestartJump(TR_X86OpCodes branchOp, uint8_t *bufferCursor, TR::LabelSymbol *label)
       {
-      TR_X86OpCode  opcode(branchOp);
+      TR::InstOpCode  opcode(branchOp);
 
       uint8_t *destination = label->getCodeLocation();
       intptr_t  distance    = destination - (bufferCursor + 2);

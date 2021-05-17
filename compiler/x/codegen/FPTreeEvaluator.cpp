@@ -2151,8 +2151,8 @@ TR::Register *OMR::X86::TreeEvaluator::compareFloatOrDoubleForOrder(TR::Node    
                                                                 TR::CodeGenerator *cg)
    {
    if (
-      ((TR_X86OpCode::singleFPOp(fpCmpRegRegOpCode) && cg->useSSEForSinglePrecision()) ||
-       (TR_X86OpCode::doubleFPOp(fpCmpRegRegOpCode) && cg->useSSEForDoublePrecision())))
+      ((TR::InstOpCode::singleFPOp(fpCmpRegRegOpCode) && cg->useSSEForSinglePrecision()) ||
+       (TR::InstOpCode::doubleFPOp(fpCmpRegRegOpCode) && cg->useSSEForDoublePrecision())))
       {
       TR_IA32XMMCompareAnalyser temp(cg);
       return temp.xmmCompareAnalyser(node, xmmCmpRegRegOpCode, xmmCmpRegMemOpCode);

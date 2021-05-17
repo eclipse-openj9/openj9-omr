@@ -1465,7 +1465,7 @@ void padUnresolvedReferenceInstruction(TR::Instruction *instr, TR::MemoryReferen
 
 void insertUnresolvedReferenceInstructionMemoryBarrier(TR::CodeGenerator *cg, int32_t barrier, TR::Instruction *inst, TR::MemoryReference *mr, TR::Register *srcReg, TR::MemoryReference *anotherMr)
    {
-      TR_X86OpCode fenceOp;
+      TR::InstOpCode fenceOp;
       bool is5ByteFence = false;
 
       TR_ASSERT_FATAL(cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation() || cg->comp()->target().cpu.requiresLFence() == cg->getX86ProcessorInfo().requiresLFENCE(), "requiresLFence() failed\n");
@@ -3267,7 +3267,7 @@ bool TR::X86FPCompareRegRegInstruction::swapOperands()
 
    while (cursor != NULL)
       {
-      TR_X86OpCode  cursorOp = cursor->getOpCode();
+      TR::InstOpCode  cursorOp = cursor->getOpCode();
 
       if (cursorOp.isBranchOp() || cursorOp.isSetRegInstruction())
          break;

@@ -74,7 +74,7 @@ class TR_OpaqueClassBlock;
 class TR_OpaqueMethodBlock;
 
 int32_t memoryBarrierRequired(
-      TR_X86OpCode &op,
+      TR::InstOpCode &op,
       TR::MemoryReference *mr,
       TR::CodeGenerator *cg,
       bool onlyAskingAboutFences)
@@ -169,11 +169,11 @@ int32_t estimateMemoryBarrierBinaryLength(int32_t barrier, TR::CodeGenerator *cg
    if (barrier & LockOR)
       length = 5;
    else if ((barrier & kLoadFence) && cg->comp()->target().cpu.requiresLFence())
-      length = TR_X86OpCode(LFENCE).length();
+      length = TR::InstOpCode(LFENCE).length();
    else if ((barrier & kMemoryFence) == kMemoryFence)
-      length = TR_X86OpCode(MFENCE).length();
+      length = TR::InstOpCode(MFENCE).length();
    else if (barrier & kStoreFence)
-      length = TR_X86OpCode(SFENCE).length();
+      length = TR::InstOpCode(SFENCE).length();
 
    return length;
    }
@@ -1396,13 +1396,13 @@ uint8_t* TR::X86RegInstruction::generateOperand(uint8_t* cursor)
 
 uint8_t TR::X86RegInstruction::getBinaryLengthLowerBound()
    {
-   TR_X86OpCode  &opCode = getOpCode();
+   TR::InstOpCode  &opCode = getOpCode();
    return opCode.length(self()->rexBits());
    }
 
 int32_t TR::X86RegInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   TR_X86OpCode  &opCode = getOpCode();
+   TR::InstOpCode  &opCode = getOpCode();
    setEstimatedBinaryLength(opCode.length(self()->rexBits()) + rexRepeatCount());
    return currentEstimate + getEstimatedBinaryLength();
    }

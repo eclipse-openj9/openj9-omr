@@ -113,7 +113,6 @@ struct J9AnnotationInfo;
 struct J9AnnotationInfoEntry;
 struct J9PortLibrary;
 
-class TR_X86OpCode;
 namespace TR { class X86LabelInstruction;                  }
 namespace TR { class X86PaddingInstruction;                }
 namespace TR { class X86AlignmentInstruction;              }
@@ -609,8 +608,8 @@ public:
    virtual const char * getPerCodeCacheHelperName(TR_CCPreLoadedCode helper);
 
 #if defined(TR_TARGET_X86)
-   virtual const char * getOpCodeName(TR_X86OpCode *);
-   virtual const char * getMnemonicName(TR_X86OpCode *);
+   virtual const char * getOpCodeName(TR::InstOpCode *);
+   virtual const char * getMnemonicName(TR::InstOpCode *);
    virtual void         printReferencedRegisterInfo(TR::FILE *, TR::Instruction *);
    virtual void         dumpInstructionWithVFPState(TR::Instruction *instr, const TR_VFPState *prevState);
 

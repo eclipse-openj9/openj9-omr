@@ -234,7 +234,7 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
       //
       if ((value == 0 || value == -1))
          {
-         uint8_t EFlags = TR_X86OpCode::getModifiedEFlags(ops[opsRow][((value == 0) ? XOR : OR)]);
+         uint8_t EFlags = TR::InstOpCode::getModifiedEFlags(ops[opsRow][((value == 0) ? XOR : OR)]);
 
          if (existsNextInstructionToTestFlags(currentInstruction, EFlags) || cg->requiresCarry())
             {
@@ -2927,7 +2927,7 @@ static TR::Register * inlineSinglePrecisionSQRT(TR::Node *node, TR::CodeGenerato
  */
 static TR::Register* inlineAtomicMemoryUpdate(TR::Node* node, TR_X86OpCodes op, TR::CodeGenerator* cg)
    {
-   TR_ASSERT((!TR_X86OpCode(op).hasLongSource() && !TR_X86OpCode(op).hasLongTarget()) || cg->comp()->target().is64Bit(), "64-bit instruction not supported on IA32");
+   TR_ASSERT((!TR::InstOpCode(op).hasLongSource() && !TR::InstOpCode(op).hasLongTarget()) || cg->comp()->target().is64Bit(), "64-bit instruction not supported on IA32");
    TR::Register* address = cg->evaluate(node->getChild(0));
    TR::Register* value   = cg->gprClobberEvaluate(node->getChild(1), MOVRegReg());
 
@@ -3164,7 +3164,7 @@ void OMR::X86::TreeEvaluator::compareGPRegisterToConstantForEquality(TR::Node   
 
 TR::Register *OMR::X86::TreeEvaluator::fenceEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_X86OpCode fenceOp = BADIA32Op;
+   TR::InstOpCode fenceOp = BADIA32Op;
    if (node->isLoadFence() && node->isStoreFence())
       fenceOp.setOpCodeValue(MFENCE);
    else if (node->isLoadFence())
@@ -3738,7 +3738,7 @@ TR::Register *OMR::X86::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::Cod
 
    TR::Compilation *comp = cg->comp();
 
-   TR_X86OpCode prefetchOp(BADIA32Op);
+   TR::InstOpCode prefetchOp(BADIA32Op);
 
    static char * disablePrefetch = feGetEnv("TR_DisablePrefetch");
    if (comp->isOptServer() || disablePrefetch)

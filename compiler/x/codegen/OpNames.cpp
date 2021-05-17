@@ -27,13 +27,13 @@
 #include "codegen/InstOpCode.hpp"
 
 const char *
-TR_X86OpCode::getOpCodeName(TR::CodeGenerator *cg)
+TR::InstOpCode::getOpCodeName(TR::CodeGenerator *cg)
    {
    return cg->comp()->getDebug()->getOpCodeName(this);
    }
 
 const char *
-TR_X86OpCode::getMnemonicName(TR::CodeGenerator *cg)
+TR::InstOpCode::getMnemonicName(TR::CodeGenerator *cg)
    {
    return cg->comp()->getDebug()->getMnemonicName(this);
    }

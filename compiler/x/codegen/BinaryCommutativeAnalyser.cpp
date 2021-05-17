@@ -172,11 +172,11 @@ TR::Register* TR_X86BinaryCommutativeAnalyser::genericAnalyserImpl(TR::Node     
    else if (getCopyReg1())
       {
       TR::Register *tempReg;
-      if (TR_X86OpCode::fprOp(copyOpCode) == 0)
+      if (TR::InstOpCode::fprOp(copyOpCode) == 0)
          {
          tempReg = _cg->allocateRegister();
          }
-      else if (TR_X86OpCode::singleFPOp(copyOpCode))
+      else if (TR::InstOpCode::singleFPOp(copyOpCode))
          {
          tempReg = _cg->allocateSinglePrecisionRegister(TR_X87);
          }
@@ -191,11 +191,11 @@ TR::Register* TR_X86BinaryCommutativeAnalyser::genericAnalyserImpl(TR::Node     
    else if (getCopyReg2())
       {
       TR::Register *tempReg;
-      if (TR_X86OpCode::fprOp(copyOpCode) == 0)
+      if (TR::InstOpCode::fprOp(copyOpCode) == 0)
          {
          tempReg = _cg->allocateRegister();
          }
-      else if (TR_X86OpCode::singleFPOp(copyOpCode))
+      else if (TR::InstOpCode::singleFPOp(copyOpCode))
          {
          tempReg = _cg->allocateSinglePrecisionRegister(TR_X87);
          }
@@ -887,7 +887,7 @@ TR::Register *TR_X86BinaryCommutativeAnalyser::integerAddAnalyserImpl(TR::Node  
          }
 
       targetRegister = tempReg;
-      bool is64Bit = TR_X86OpCode(regRegOpCode).hasLongSource();
+      bool is64Bit = TR::InstOpCode(regRegOpCode).hasLongSource();
 
       // if eflags are required then we cannot use LEA as it doesn't set or use them
       if (needsEflags || (carry != 0))

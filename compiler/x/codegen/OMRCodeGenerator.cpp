@@ -2723,14 +2723,14 @@ uint8_t *OMR::X86::CodeGenerator::generatePadding(uint8_t              *cursor,
          if (length >= 5)
             {
             length -= 5;
-            cursor = TR_X86OpCode(JMP4).binary(cursor);
+            cursor = TR::InstOpCode(JMP4).binary(cursor);
             *(int32_t*)cursor = length;
             cursor += 4;
             }
          else
             {
             length -= 2;
-            cursor = TR_X86OpCode(JMP1).binary(cursor);
+            cursor = TR::InstOpCode(JMP1).binary(cursor);
             *(int8_t*)cursor = length;
             cursor += 1;
             }

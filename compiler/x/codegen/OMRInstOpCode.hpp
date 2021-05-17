@@ -42,12 +42,13 @@ namespace OMR
 namespace X86
 {
 
-class InstOpCode: public OMR::InstOpCode
+class InstOpCode: public OMR::InstOpCode, public TR_X86OpCode
    {
    protected:
 
-   InstOpCode():  OMR::InstOpCode(bad)  {}
-   InstOpCode(Mnemonic m): OMR::InstOpCode(m)  {}
+   InstOpCode():  OMR::InstOpCode(bad), TR_X86OpCode(BADIA32Op)  {}
+   InstOpCode(Mnemonic m): OMR::InstOpCode(m), TR_X86OpCode(BADIA32Op)  {}
+   InstOpCode(TR_X86OpCodes op):  OMR::InstOpCode(bad), TR_X86OpCode(op)        {}
 
    public:
 

@@ -26,7 +26,7 @@
 #include "compile/Compilation.hpp"
 #include "env/TRMemory.hpp"
 #include "il/ILOpCodes.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 class TR_RegisterAssignerState;
 namespace TR { class X86VFPSaveInstruction; }

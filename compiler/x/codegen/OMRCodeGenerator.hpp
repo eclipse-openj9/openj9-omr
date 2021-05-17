@@ -47,7 +47,7 @@ namespace OMR { typedef OMR::X86::CodeGenerator CodeGeneratorConnector; }
 #include "infra/BitVector.hpp"
 #include "infra/TRlist.hpp"
 #include "infra/Assert.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "x/codegen/X86Register.hpp"
 #include "env/CompilerEnv.hpp"
 

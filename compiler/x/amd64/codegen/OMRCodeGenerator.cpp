@@ -43,7 +43,7 @@
 #include "il/Node_inlines.hpp"
 #include "infra/Assert.hpp"
 #include "infra/BitVector.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 
 OMR::X86::AMD64::CodeGenerator::CodeGenerator(TR::Compilation *comp) :

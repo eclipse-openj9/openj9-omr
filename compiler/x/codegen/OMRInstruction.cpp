@@ -37,7 +37,7 @@
 #include "infra/Assert.hpp"
 #include "ras/Debug.hpp"
 #include "codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "env/CompilerEnv.hpp"
 
 namespace TR { class Node; }

@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include "codegen/Analyser.hpp"
 #include "codegen/CodeGenerator.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 #define EvalChild1   0x01
 #define EvalChild2   0x02

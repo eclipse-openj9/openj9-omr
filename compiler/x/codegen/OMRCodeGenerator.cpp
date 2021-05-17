@@ -97,7 +97,7 @@
 #include "x/codegen/OutlinedInstructions.hpp"
 #include "x/codegen/FPTreeEvaluator.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "x/codegen/X86Ops_inlines.hpp"
 
 namespace OMR { class RegisterUsage; }

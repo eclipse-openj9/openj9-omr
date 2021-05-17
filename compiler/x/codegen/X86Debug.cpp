@@ -54,7 +54,7 @@
 #include "x/codegen/DataSnippet.hpp"
 #include "x/codegen/OutlinedInstructions.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "x/codegen/X86Register.hpp"
 #include "env/CompilerEnv.hpp"
 

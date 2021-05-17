@@ -39,7 +39,7 @@
 #include "il/SymbolReference.hpp"
 #include "infra/Assert.hpp"
 #include "codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 /*
  * \brief

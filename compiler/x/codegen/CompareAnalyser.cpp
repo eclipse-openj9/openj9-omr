@@ -50,7 +50,7 @@
 #include "ras/Debug.hpp"
 #include "runtime/Runtime.hpp"
 #include "codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 static bool addressIsTemporarilyInt(TR::Node *node)
    {

@@ -31,7 +31,7 @@
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 #include "codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "env/CompilerEnv.hpp"
 
 extern TR::Register *intOrLongClobberEvaluate(TR::Node *node, bool nodeIs64Bit, TR::CodeGenerator *cg);

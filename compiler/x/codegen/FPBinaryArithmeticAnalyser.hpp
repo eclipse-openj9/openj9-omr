@@ -24,7 +24,7 @@
 
 #include <stdint.h>
 #include "il/ILOpCodes.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 namespace TR { class CodeGenerator; }
 namespace TR { class Node; }

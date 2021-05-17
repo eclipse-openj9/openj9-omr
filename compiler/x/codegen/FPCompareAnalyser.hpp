@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include "codegen/CodeGenerator.hpp"
 #include "infra/Assert.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 namespace TR { class Machine; }
 namespace TR { class Node; }

@@ -39,7 +39,7 @@ namespace OMR { typedef OMR::X86::Machine MachineConnector; }
 #include "env/TRMemory.hpp"
 #include "il/DataTypes.hpp"
 #include "infra/Assert.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "x/codegen/X86Register.hpp"
 #include "infra/TRlist.hpp"
 class TR_BackingStore;

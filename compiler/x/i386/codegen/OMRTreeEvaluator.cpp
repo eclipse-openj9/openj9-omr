@@ -67,7 +67,7 @@
 #include "x/codegen/IntegerMultiplyDecomposer.hpp"
 #include "x/codegen/SubtractAnalyser.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "codegen/IA32LinkageUtils.hpp"

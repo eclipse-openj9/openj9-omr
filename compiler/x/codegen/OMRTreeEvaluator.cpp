@@ -75,7 +75,7 @@
 #include "x/codegen/RegisterRematerialization.hpp"
 #include "x/codegen/X86Evaluator.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "x/codegen/BinaryCommutativeAnalyser.hpp"
 #include "x/codegen/SubtractAnalyser.hpp"
 

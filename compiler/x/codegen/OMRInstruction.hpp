@@ -39,7 +39,7 @@ namespace OMR { typedef OMR::X86::Instruction InstructionConnector; }
 #include <stdint.h>
 #include "codegen/InstOpCode.hpp"
 #include "codegen/RegisterConstants.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 namespace TR { class X86ImmInstruction;   }
 namespace TR { class X86LabelInstruction; }

@@ -40,7 +40,7 @@
 #include "il/Node_inlines.hpp"
 #include "il/ResolvedMethodSymbol.hpp"
 #include "codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 uint8_t
 TR_X86FPBinaryArithmeticAnalyser::getIA32FPOpPackage(TR::Node *node)

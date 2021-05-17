@@ -44,7 +44,7 @@
 #include "infra/Assert.hpp"
 #include "infra/List.hpp"
 #include "runtime/Runtime.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "env/CompilerEnv.hpp"
 
 namespace TR { class LabelRelocation; }

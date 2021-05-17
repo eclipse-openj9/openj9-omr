@@ -39,7 +39,7 @@
 #include "il/Node_inlines.hpp"
 #include "x/codegen/FPTreeEvaluator.hpp"
 #include "codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 static bool isUnevaluatedZero(TR::Node *child)
    {

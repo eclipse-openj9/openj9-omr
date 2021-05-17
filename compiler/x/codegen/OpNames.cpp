@@ -24,7 +24,7 @@
 #include "codegen/CodeGenerator.hpp"
 #include "compile/Compilation.hpp"
 #include "ras/Debug.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 const char *
 TR_X86OpCode::getOpCodeName(TR::CodeGenerator *cg)

@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include "codegen/Analyser.hpp"
 #include "codegen/CodeGenerator.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 namespace TR { class Machine; }
 namespace TR { class Node; }

@@ -35,7 +35,7 @@ namespace OMR { typedef OMR::X86::I386::TreeEvaluator TreeEvaluatorConnector; }
 
 #include "compiler/x/codegen/OMRTreeEvaluator.hpp"
 
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 namespace TR { class Register; }
 

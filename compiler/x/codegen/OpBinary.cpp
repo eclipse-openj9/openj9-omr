@@ -19,7 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
  // Heuristics for X87 second byte opcode
  // It could be eliminated if GCC/MSVC fully support initializer list

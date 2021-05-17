@@ -61,7 +61,7 @@
 #include "x/codegen/GuardedDevirtualSnippet.hpp"
 #endif
 #include "x/codegen/OutlinedInstructions.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "x/codegen/X86Register.hpp"
 
 class TR_VirtualGuardSite;

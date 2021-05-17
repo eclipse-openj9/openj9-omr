@@ -74,7 +74,7 @@
 #include "x/codegen/CompareAnalyser.hpp"
 #include "x/codegen/FPTreeEvaluator.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 class TR_OpaqueClassBlock;
 class TR_OpaqueMethodBlock;

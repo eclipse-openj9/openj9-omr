@@ -54,7 +54,7 @@
 #include "x/codegen/IntegerMultiplyDecomposer.hpp"
 #include "x/codegen/SubtractAnalyser.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "env/CompilerEnv.hpp"
 
 extern TR::Register *intOrLongClobberEvaluate(TR::Node *node, bool nodeIs64Bit, TR::CodeGenerator *cg);

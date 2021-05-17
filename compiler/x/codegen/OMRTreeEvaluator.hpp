@@ -39,7 +39,7 @@ namespace OMR { typedef OMR::X86::TreeEvaluator TreeEvaluatorConnector; }
 #include "env/jittypes.h"
 #include "il/ILOpCodes.hpp"
 #include "runtime/Runtime.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 namespace TR { class X86MemInstruction;         }
 namespace TR { class X86RegImmInstruction;      }

@@ -44,7 +44,7 @@ namespace OMR { typedef OMR::X86::Linkage LinkageConnector; }
 #include "il/DataTypes.hpp"
 #include "infra/Annotations.hpp"
 #include "infra/Assert.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "codegen/X86LinkageProperties.hpp"
 
 class TR_FrontEnd;

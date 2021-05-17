@@ -46,7 +46,7 @@
 #include "il/SymbolReference.hpp"
 #include "infra/Assert.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 static void
 zeroExtendTo32BitRegister(TR::Node          *node,

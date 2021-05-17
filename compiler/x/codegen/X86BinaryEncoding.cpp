@@ -61,7 +61,7 @@
 #include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "x/codegen/X86Ops_inlines.hpp"
 #include "codegen/StaticRelocation.hpp"
 

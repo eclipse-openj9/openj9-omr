@@ -3757,8 +3757,8 @@ void OMR::Options::openLogFile(int32_t idSuffix)
 
       if (idSuffix >= 0) // Must add the suffix to the name
          {
-         int32_t len = strlen(_logFileName);
-         if (len+12 > 1025)
+         size_t len = strlen(_logFileName);
+         if (len >= sizeof(filename) - 10) // int32_t is at most 10 decimal digits
             return; // may overflow the buffer
          sprintf(filename, "%s.%d", _logFileName, idSuffix);
          fn = filename;
@@ -3770,27 +3770,25 @@ void OMR::Options::openLogFile(int32_t idSuffix)
          if (!_suffixLogsFormat)
             {
             // Append time id. TPO may invoke TR multiple times with different partition
-            int32_t len = strlen(fn);
-            if (len+12 > 1025)
+            size_t len = strlen(fn);
+            char pid_buf[20];
+            char time_buf[20];
+            if (len >= sizeof(filename) - sizeof(pid_buf) - sizeof(time_buf))
                return; // may overflow the buffer
-            char buf[20];
-            memset(buf, 0, 20);
-            getTRPID(buf);
-            sprintf(filename, "%s.%s", fn, buf);
-            getTimeInSeconds(buf);
-            strncat(filename, ".", 1);
-            strncat(filename, buf, 20);
+            getTRPID(pid_buf);
+            getTimeInSeconds(time_buf);
+            sprintf(filename, "%s.%s.%s", fn, pid_buf, time_buf);
             fn = filename;
             }
 
           char tmp[1025];
-          fn = _fe->getFormattedName(tmp, 1025, fn, _suffixLogsFormat, true);
+          fn = _fe->getFormattedName(tmp, sizeof(tmp), fn, _suffixLogsFormat, true);
          _logFile = trfopen(fn, fmodeString, false);
          }
       else
          {
          char tmp[1025];
-         fn = _fe->getFormattedName(tmp, 1025, fn, NULL, false);
+         fn = _fe->getFormattedName(tmp, sizeof(tmp), fn, NULL, false);
          _logFile = trfopen(fn, fmodeString, false);
          }
       }
@@ -3939,8 +3937,7 @@ char * TR_MCTLogs::getLogFileName()
 void getTimeInSeconds(char *buf)
    {
    time_t timer = time(NULL);
-   sprintf(buf, "%i", (int32_t)timer % 100000);
-   buf[6] = '\0';
+   sprintf(buf, "%i", (int32_t)(timer % 100000));
    }
 
 

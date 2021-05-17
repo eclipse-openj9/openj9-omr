@@ -1547,7 +1547,7 @@ public:
 		/* Start of options relating to dynamicBreadthFirstScanOrdering */
 		, gcCountBetweenHotFieldSort(1)
 		, gcCountBetweenHotFieldSortMax(6)
-		, adaptiveGcCountBetweenHotFieldSort(true)
+		, adaptiveGcCountBetweenHotFieldSort(false)
 		, depthCopyTwoPaths(true)
 		, depthCopyThreePaths(false)
 		, alwaysDepthCopyFirstOffset(false)

@@ -98,7 +98,6 @@
 #include "x/codegen/FPTreeEvaluator.hpp"
 #include "x/codegen/X86Instruction.hpp"
 #include "codegen/InstOpCode.hpp"
-#include "x/codegen/X86Ops_inlines.hpp"
 
 namespace OMR { class RegisterUsage; }
 namespace TR { class RegisterDependencyConditions; }

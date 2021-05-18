@@ -30,7 +30,6 @@
 #include "il/LabelSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "codegen/InstOpCode.hpp"
-#include "x/codegen/X86Ops_inlines.hpp"
 
 namespace TR { class Node; }
 

@@ -34,7 +34,7 @@ compiler_library(x
 	${CMAKE_CURRENT_LIST_DIR}/codegen/IA32LinkageUtils.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/IntegerMultiplyDecomposer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRMemoryReference.cpp
-	${CMAKE_CURRENT_LIST_DIR}/codegen/OpBinary.cpp
+	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRInstOpCode.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OpNames.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OutlinedInstructions.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/RegisterRematerialization.cpp

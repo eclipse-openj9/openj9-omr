@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2021, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,8 +20,202 @@
  *******************************************************************************/
 
 #include "codegen/OMRInstOpCode.hpp"
+#include "codegen/CodeGenerator.hpp"
 
 const OMR::X86::InstOpCode::OpCodeMetaData OMR::X86::InstOpCode::metadata[NumOpCodes] =
    {
    #include "codegen/OMRInstOpCodeProperties.hpp"
    };
+
+ // Heuristics for X87 second byte opcode
+ // It could be eliminated if GCC/MSVC fully support initializer list
+#define X87_________________(x) ((uint8_t)((x & 0xE0) >> 5)), ((uint8_t)((x & 0x18) >> 3)), (uint8_t)(x & 0x07)
+#define BINARY(...) {__VA_ARGS__}
+#define PROPERTY0(...) __VA_ARGS__
+#define PROPERTY1(...) __VA_ARGS__
+
+// see compiler/x/codegen/OMRInstruction.hpp for structural information.
+const OMR::X86::InstOpCode::OpCode_t OMR::X86::InstOpCode::_binaries[] =
+   {
+#define INSTRUCTION(name, mnemonic, binary, property0, property1) binary
+#include "codegen/X86Ops.ins"
+#undef INSTRUCTION
+   };
+
+const uint32_t OMR::X86::InstOpCode::_properties[] =
+   {
+#define INSTRUCTION(name, mnemonic, binary, property0, property1) property0
+#include "codegen/X86Ops.ins"
+#undef INSTRUCTION
+   };
+
+const uint32_t OMR::X86::InstOpCode::_properties1[] =
+   {
+#define INSTRUCTION(name, mnemonic, binary, property0, property1) property1
+#include "codegen/X86Ops.ins"
+#undef INSTRUCTION
+   };
+
+void OMR::X86::InstOpCode::trackUpperBitsOnReg(TR::Register *reg, TR::CodeGenerator *cg)
+   {
+   if (cg->comp()->target().is64Bit())
+      {
+      if (clearsUpperBits())
+         {
+         reg->setUpperBitsAreZero(true);
+         }
+      else if (setsUpperBits())
+         {
+         reg->setUpperBitsAreZero(false);
+         }
+      }
+   }
+
+template <typename TBuffer> typename TBuffer::cursor_t OMR::X86::InstOpCode::OpCode_t::encode(typename TBuffer::cursor_t cursor, uint8_t rexbits) const
+   {
+   TBuffer buffer(cursor);
+   if (isX87())
+      {
+      buffer.append(opcode);
+      // Heuristics for X87 second byte opcode
+      // It could be eliminated if GCC/MSVC fully support initializer list
+      buffer.append((uint8_t)((modrm_opcode << 5) | (modrm_form << 3) | immediate_size));
+      return buffer;
+      }
+   // Prefixes
+   TR::Instruction::REX rex(rexbits);
+   rex.W = rex_w;
+   // Use AVX if possible
+
+   TR::Compilation *comp = TR::comp();
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsAVX() == TR::CodeGenerator::getX86ProcessorInfo().supportsAVX(), "supportsAVX() failed\n");
+
+   if (supportsAVX() && comp->target().cpu.supportsAVX())
+      {
+      TR::Instruction::VEX<3> vex(rex, modrm_opcode);
+      vex.m = escape;
+      vex.L = vex_l;
+      vex.p = prefixes;
+      vex.opcode = opcode;
+      if(vex.CanBeShortened())
+         {
+         buffer.append(TR::Instruction::VEX<2>(vex));
+         }
+      else
+         {
+         buffer.append(vex);
+         }
+      }
+   else
+      {
+      switch (prefixes)
+         {
+         case PREFIX___:
+            break;
+         case PREFIX_66:
+            buffer.append('\x66');
+            break;
+         case PREFIX_F2:
+            buffer.append('\xf2');
+            break;
+         case PREFIX_F3:
+            buffer.append('\xf3');
+            break;
+         default:
+            break;
+         }
+      // REX
+      if (rex.value() || rexbits)
+         {
+         buffer.append(rex);
+         }
+      // OpCode escape
+      switch (escape)
+         {
+         case ESCAPE_____:
+            break;
+         case ESCAPE_0F__:
+            buffer.append('\x0f');
+            break;
+         case ESCAPE_0F38:
+            buffer.append('\x0f');
+            buffer.append('\x38');
+            break;
+         case ESCAPE_0F3A:
+            buffer.append('\x0f');
+            buffer.append('\x3a');
+            break;
+         default:
+            break;
+         }
+      // OpCode
+      buffer.append(opcode);
+      // ModRM
+      if (modrm_form)
+         {
+         buffer.append(TR::Instruction::ModRM(modrm_opcode));
+         }
+      }
+   return buffer;
+   }
+
+void OMR::X86::InstOpCode::OpCode_t::finalize(uint8_t* cursor) const
+   {
+   // Finalize VEX prefix
+   switch (*cursor)
+      {
+      case 0xC4:
+         {
+         auto pVEX = (TR::Instruction::VEX<3>*)cursor;
+         if (vex_v == VEX_vReg_)
+            {
+            pVEX->v = ~(modrm_form == ModRM_EXT_ ? pVEX->RM() : pVEX->Reg());
+            }
+         }
+         break;
+      case 0xC5:
+         {
+         auto pVEX = (TR::Instruction::VEX<2>*)cursor;
+         if (vex_v == VEX_vReg_)
+            {
+            pVEX->v = ~(modrm_form == ModRM_EXT_ ? pVEX->RM() : pVEX->Reg());
+            }
+         }
+         break;
+      default:
+         break;
+      }
+   }
+
+void OMR::X86::InstOpCode::CheckAndFinishGroup07(uint8_t* cursor) const
+   {
+   if(info().isGroup07())
+      {
+      auto pModRM = (TR::Instruction::ModRM*)(cursor-1);
+      switch(_opCode)
+         {
+         case XEND:
+            pModRM->rm = 0x05; // 0b101
+            break;
+         default:
+            TR_ASSERT(false, "INVALID OPCODE.");
+            break;
+         }
+      }
+   }
+
+uint8_t OMR::X86::InstOpCode::length(uint8_t rex) const
+   {
+   return encode<Estimator>(0, rex);
+   }
+uint8_t* OMR::X86::InstOpCode::binary(uint8_t* cursor, uint8_t rex) const
+   {
+   uint8_t* ret = encode<Writer>(cursor, rex);
+   CheckAndFinishGroup07(ret);
+   return ret;
+   }
+void OMR::X86::InstOpCode::finalize(uint8_t* cursor) const
+   {
+   if (!isPseudoOp())
+      info().finalize(cursor);
+   }

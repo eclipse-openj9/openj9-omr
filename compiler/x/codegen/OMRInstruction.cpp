@@ -337,23 +337,3 @@ OMR::X86::Instruction::rexRepeatCount()
    {
    return _rexRepeatCount;
    }
-
-/* -----------------------------------------------------------------------------
- * The following code is here only temporarily during the transition to OMR.
- * -----------------------------------------------------------------------------
- */
-
-void TR_X86OpCode::trackUpperBitsOnReg(TR::Register *reg, TR::CodeGenerator *cg)
-   {
-   if (cg->comp()->target().is64Bit())
-      {
-      if (clearsUpperBits())
-         {
-         reg->setUpperBitsAreZero(true);
-         }
-      else if (setsUpperBits())
-         {
-         reg->setUpperBitsAreZero(false);
-         }
-      }
-   }

@@ -38,12 +38,9 @@ namespace OMR { typedef OMR::X86::InstOpCode InstOpCodeConnector; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Register; }
 
-enum TR_X86OpCodes : uint32_t
-   {
-#define INSTRUCTION(name, mnemonic, binary, property0, property1) name
-#include "codegen/X86Ops.ins"
-#undef INSTRUCTION
-   };
+typedef OMR::InstOpCode::Mnemonic TR_X86OpCodes;
+
+#include "compiler/x/codegen/OMRInstOpCode.enum.temp.defines"
 
 #define IA32LongToShortBranchConversionOffset ((int)JMP4 - (int)JMP1)
 #define IA32LengthOfShortBranch               2
@@ -493,7 +490,6 @@ class InstOpCode: public OMR::InstOpCode
 
    InstOpCode():  OMR::InstOpCode(bad), _opCode(BADIA32Op)  {}
    InstOpCode(Mnemonic m): OMR::InstOpCode(m), _opCode(BADIA32Op)  {}
-   InstOpCode(TR_X86OpCodes op):  OMR::InstOpCode(bad), _opCode(op)        {}
 
    public:
 

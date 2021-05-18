@@ -442,7 +442,7 @@ OMR::Compilation::Compilation(
       self()->setOption(TR_EnableOSR); // OSR must be enabled for NextGenHCR
       }
 
-   if (self()->isDLT() || (((self()->getMethodHotness() < warm) || self()->compileRelocatableCode() || self()->isProfilingCompilation()) && !enableOSRAtAllOptLevels && !_options->getOption(TR_FullSpeedDebug)))
+   if (self()->isDLT() || (((self()->getMethodHotness() < warm) || self()->compileRelocatableCode() || (self()->isProfilingCompilation() && self()->getProfilingMode() != JProfiling)) && !enableOSRAtAllOptLevels && !_options->getOption(TR_FullSpeedDebug)))
       {
       self()->setOption(TR_DisableOSR);
       _options->setOption(TR_EnableOSR, false);
@@ -2505,7 +2505,7 @@ OMR::Compilation::getHCRMode()
    {
    if (!self()->getOption(TR_EnableHCR))
       return TR::none;
-   if (self()->isDLT() || self()->isProfilingCompilation() || self()->getOptLevel() <= cold)
+   if (self()->isDLT() || (self()->isProfilingCompilation() && self()->getProfilingMode() != JProfiling) || self()->getOptLevel() <= cold)
       return TR::traditional;
    return self()->getOption(TR_EnableOSR) && !self()->getOption(TR_DisableNextGenHCR) ? TR::osr : TR::traditional;
    }

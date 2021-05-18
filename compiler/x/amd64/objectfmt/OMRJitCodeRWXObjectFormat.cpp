@@ -73,7 +73,7 @@ OMR::X86::AMD64::JitCodeRWXObjectFormat::emitFunctionCall(TR::FunctionCallData &
       // Helper call
       //
       TR::X86ImmSymInstruction *callImmSym = NULL;
-      const TR_X86OpCodes op = data.useCall ? CALLImm4 : JMP4;
+      const TR::InstOpCode::Mnemonic op = data.useCall ? CALLImm4 : JMP4;
 
       if (data.prevInstr)
          {
@@ -184,7 +184,7 @@ OMR::X86::AMD64::JitCodeRWXObjectFormat::emitFunctionCall(TR::FunctionCallData &
             data.out_materializeTargetAddressInstr = loadInstr;
             }
 
-         const TR_X86OpCodes op = data.useCall ? CALLReg : JMPReg;
+         const TR::InstOpCode::Mnemonic op = data.useCall ? CALLReg : JMPReg;
          if (data.prevInstr)
             {
             /**

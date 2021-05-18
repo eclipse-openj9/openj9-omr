@@ -922,7 +922,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
       bestRegister->setAssignedRegister(NULL);
       self()->cg()->getSpilledIntRegisters().push_front(bestRegister);
 
-      TR_X86OpCodes op;
+      TR::InstOpCode::Mnemonic op;
       if (bestRegister->getKind() == TR_FPR)
          {
          op = (bestRegister->isSinglePrecision()) ? MOVSSRegMem : (self()->cg()->getXMMDoubleLoadOpCode());
@@ -1253,7 +1253,7 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
          {
          // Exchange the contents of two XMM registers without an XCHG instruction.
          //
-         TR_X86OpCodes xchgOp = BADIA32Op;
+         TR::InstOpCode::Mnemonic xchgOp = BADIA32Op;
          if (virtualRegister->getKind() == TR_FPR && virtualRegister->isSinglePrecision())
             {
             xchgOp = XORPSRegReg;
@@ -1331,7 +1331,7 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
       self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
       if (currentAssignedRegister != NULL)
          {
-         TR_X86OpCodes xchgOp = BADIA32Op;
+         TR::InstOpCode::Mnemonic xchgOp = BADIA32Op;
          if (virtualRegister->getKind() == TR_FPR && virtualRegister->isSinglePrecision())
             {
             xchgOp = XORPSRegReg;
@@ -2596,7 +2596,7 @@ void OMR::X86::Machine::fpCoerceRegistersToTopOfStack(TR::Instruction *prevInstr
 
 // Determine the reverse form of an IA32 FP instruction.
 //
-TR_X86OpCodes OMR::X86::Machine::fpDetermineReverseOpCode(TR_X86OpCodes op)
+TR::InstOpCode::Mnemonic OMR::X86::Machine::fpDetermineReverseOpCode(TR::InstOpCode::Mnemonic op)
    {
 
    switch (op)
@@ -2631,7 +2631,7 @@ TR_X86OpCodes OMR::X86::Machine::fpDetermineReverseOpCode(TR_X86OpCodes op)
 
 // Determine the pop form of an IA32 FP instruction.
 //
-TR_X86OpCodes OMR::X86::Machine::fpDeterminePopOpCode(TR_X86OpCodes op)
+TR::InstOpCode::Mnemonic OMR::X86::Machine::fpDeterminePopOpCode(TR::InstOpCode::Mnemonic op)
    {
 
    switch (op)

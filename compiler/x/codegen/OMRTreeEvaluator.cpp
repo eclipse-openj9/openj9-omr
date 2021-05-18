@@ -141,7 +141,7 @@ TR::Instruction *OMR::X86::TreeEvaluator::compareGPMemoryToImmediate(TR::Node   
    // On IA32, this is called to do half of an 8-byte compare, so even though
    // the node is 64 bit, we should do a 32-bit compare
    bool is64Bit = cg->comp()->target().is64Bit()? TR::TreeEvaluator::getNodeIs64Bit(node->getFirstChild(), cg) : false;
-   TR_X86OpCodes cmpOp = (value >= -128 && value <= 127) ? CMPMemImms(is64Bit) : CMPMemImm4(is64Bit);
+   TR::InstOpCode::Mnemonic cmpOp = (value >= -128 && value <= 127) ? CMPMemImms(is64Bit) : CMPMemImm4(is64Bit);
    TR::Instruction *instr = generateMemImmInstruction(cmpOp, node, mr, value, cg);
    cg->setImplicitExceptionPoint(instr);
    return instr;
@@ -155,7 +155,7 @@ void OMR::X86::TreeEvaluator::compareGPRegisterToImmediate(TR::Node          *no
    // On IA32, this is called to do half of an 8-byte compare, so even though
    // the node is 64 bit, we should do a 32-bit compare
    bool is64Bit = cg->comp()->target().is64Bit()? TR::TreeEvaluator::getNodeIs64Bit(node->getFirstChild(), cg) : false;
-   TR_X86OpCodes cmpOp = (value >= -128 && value <= 127) ? CMPRegImms(is64Bit) : CMPRegImm4(is64Bit);
+   TR::InstOpCode::Mnemonic cmpOp = (value >= -128 && value <= 127) ? CMPRegImms(is64Bit) : CMPRegImm4(is64Bit);
    generateRegImmInstruction(cmpOp, node, cmpRegister, value, cg);
    }
 
@@ -167,7 +167,7 @@ void OMR::X86::TreeEvaluator::compareGPRegisterToImmediateForEquality(TR::Node  
    // On IA32, this is called to do half of an 8-byte compare, so even though
    // the node is 64 bit, we should do a 32-bit compare
    bool is64Bit = cg->comp()->target().is64Bit()? TR::TreeEvaluator::getNodeIs64Bit(node->getFirstChild(), cg) : false;
-   TR_X86OpCodes cmpOp = (value >= -128 && value <= 127) ? CMPRegImms(is64Bit) : CMPRegImm4(is64Bit);
+   TR::InstOpCode::Mnemonic cmpOp = (value >= -128 && value <= 127) ? CMPRegImms(is64Bit) : CMPRegImm4(is64Bit);
    if (value==0)
       generateRegRegInstruction(TESTRegReg(is64Bit), node, cmpRegister, cmpRegister, cg);
    else
@@ -182,7 +182,7 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
                                                         TR::Instruction           *currentInstruction)
    {
    TR::Compilation *comp = cg->comp();
-   static const TR_X86OpCodes ops[TR_NumRematerializableTypes+1][3] =
+   static const TR::InstOpCode::Mnemonic ops[TR_NumRematerializableTypes+1][3] =
       //    load 0      load -1     load c
       { { BADIA32Op,  BADIA32Op,  BADIA32Op   },   // LEA; should not seen here
         { XOR4RegReg, OR4RegImms, MOV4RegImm4 },   // Byte constant
@@ -413,7 +413,7 @@ OMR::X86::TreeEvaluator::insertLoadMemory(
       TR::Instruction *currentInstruction)
    {
    TR::Compilation *comp = cg->comp();
-   static const TR_X86OpCodes ops[TR_NumRematerializableTypes] =
+   static const TR::InstOpCode::Mnemonic ops[TR_NumRematerializableTypes] =
       {
       LEARegMem(),  // Load Effective Address
       L1RegMem,     // Byte
@@ -424,7 +424,7 @@ OMR::X86::TreeEvaluator::insertLoadMemory(
       L8RegMem,     // Long
       };
 
-   TR_X86OpCodes opCode = ops[type];
+   TR::InstOpCode::Mnemonic opCode = ops[type];
    if (cg->comp()->target().is64Bit())
       {
       if (type == TR_RematerializableAddress)
@@ -847,7 +847,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
    int32_t                 size   = node->getOpCode().getSize();
    TR::MemoryReference  *tempMR = NULL;
    TR::Instruction      *instr = NULL;
-   TR_X86OpCodes          opCode;
+   TR::InstOpCode::Mnemonic          opCode;
    TR::Node                *originalValueChild = valueChild;
 
    bool childIsConstant = false;
@@ -1462,7 +1462,7 @@ void OMR::X86::TreeEvaluator::genArithmeticInstructionsForOverflowCHK(TR::Node *
     *   =>child3(Operand2)
     */
 
-   TR_X86OpCodes op;
+   TR::InstOpCode::Mnemonic op;
    TR::Node *operationNode = node->getFirstChild();
    TR::Node *operand1 = node->getSecondChild();
    TR::Node *operand2 = node->getThirdChild();
@@ -1567,7 +1567,7 @@ void OMR::X86::TreeEvaluator::genArithmeticInstructionsForOverflowCHK(TR::Node *
 
 TR::Register *OMR::X86::TreeEvaluator::overflowCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_X86OpCodes opcode;
+   TR::InstOpCode::Mnemonic opcode;
    if (node->getOpCodeValue() == TR::OverflowCHK)
        opcode = JO4;
    else if (node->getOpCodeValue() == TR::UnsignedOverflowCHK)
@@ -1581,7 +1581,7 @@ TR::Register *OMR::X86::TreeEvaluator::overflowCHKEvaluator(TR::Node *node, TR::
    return NULL;
    }
 
-static void generateRepMovsInstruction(TR_X86OpCodes repmovs, TR::Node *node, TR::Register* sizeRegister, TR::RegisterDependencyConditions* dependencies, TR::CodeGenerator *cg)
+static void generateRepMovsInstruction(TR::InstOpCode::Mnemonic repmovs, TR::Node *node, TR::Register* sizeRegister, TR::RegisterDependencyConditions* dependencies, TR::CodeGenerator *cg)
    {
    switch (repmovs)
       {
@@ -1795,7 +1795,7 @@ static void arrayCopyDefault(TR::Node* node, uint8_t elementSize, TR::Register* 
    dependencies->addPostCondition(dstReg, TR::RealRegister::edi, cg);
    dependencies->addPostCondition(sizeReg, TR::RealRegister::ecx, cg);
 
-   TR_X86OpCodes repmovs;
+   TR::InstOpCode::Mnemonic repmovs;
    switch (elementSize)
       {
       case 8:
@@ -1870,7 +1870,7 @@ static void arrayCopyDefault(TR::Node* node, uint8_t elementSize, TR::Register* 
  */
 static void generateArrayElementStore(TR::Node* node, TR::Register* addressReg, int32_t index, TR::Register* valueReg, uint8_t size,  TR::CodeGenerator* cg)
    {
-   TR_X86OpCodes storeOpcode;
+   TR::InstOpCode::Mnemonic storeOpcode;
    if (valueReg->getKind() == TR_FPR)
       {
       switch (size)
@@ -1941,7 +1941,7 @@ static void generateArrayElementStore(TR::Node* node, TR::Register* addressReg, 
  */
 static void generateArrayElementLoad(TR::Node* node, TR::Register* valueReg, uint8_t size, TR::Register* addressReg, int32_t index, TR::CodeGenerator* cg)
    {
-   TR_X86OpCodes loadOpCode;
+   TR::InstOpCode::Mnemonic loadOpCode;
    if (valueReg->getKind() == TR_FPR)
       {
       switch (size)
@@ -2619,7 +2619,7 @@ static void arraySetDefault(TR::Node* node, uint8_t elementSize, TR::Register* a
    stosDependencies->addPostCondition(addressReg, TR::RealRegister::edi, cg);
 
    // Load value to EAX
-   TR_X86OpCodes movOpcode;
+   TR::InstOpCode::Mnemonic movOpcode;
    switch (valueReg->getKind())
       {
       case TR_GPR:
@@ -2635,7 +2635,7 @@ static void arraySetDefault(TR::Node* node, uint8_t elementSize, TR::Register* a
    generateRegRegInstruction(movOpcode, node, EAX, valueReg, cg);
 
    // Store EAX into memory
-   TR_X86OpCodes repOpcode;
+   TR::InstOpCode::Mnemonic repOpcode;
    int32_t shiftAmount = 0;
    switch (elementSize)
       {
@@ -2925,7 +2925,7 @@ static TR::Register * inlineSinglePrecisionSQRT(TR::Node *node, TR::CodeGenerato
  *  \param cg
  *     The code generator
  */
-static TR::Register* inlineAtomicMemoryUpdate(TR::Node* node, TR_X86OpCodes op, TR::CodeGenerator* cg)
+static TR::Register* inlineAtomicMemoryUpdate(TR::Node* node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator* cg)
    {
    TR_ASSERT((!TR::InstOpCode(op).hasLongSource() && !TR::InstOpCode(op).hasLongTarget()) || cg->comp()->target().is64Bit(), "64-bit instruction not supported on IA32");
    TR::Register* address = cg->evaluate(node->getChild(0));
@@ -3042,7 +3042,7 @@ TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::C
 
    if (SymRef && SymRef->getSymbol()->castToMethodSymbol()->isInlinedByCG())
       {
-      TR_X86OpCodes op = BADIA32Op;
+      TR::InstOpCode::Mnemonic op = BADIA32Op;
 
       if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicAddSymbol))
          {
@@ -3201,7 +3201,7 @@ TR::Register *OMR::X86::TreeEvaluator::generateLEAForLoadAddr(TR::Node *node,
       targetRegister = cg->allocateRegister();
 
    // TODO:AMD64: This often generates mov r1,imm64 followed by lea r1,[r1] which is dumb
-   TR_X86OpCodes op = LEARegMem();
+   TR::InstOpCode::Mnemonic op = LEARegMem();
    if (TR::Compiler->om.generateCompressedObjectHeaders() &&
          (node->getSymbol()->isClassObject() /*|| node->getSymbol()->isAddressOfClassObject()*/))
       op = LEA4RegMem;
@@ -3552,8 +3552,8 @@ TR::Register *OMR::X86::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
 
 
 TR::Register *OMR::X86::TreeEvaluator::conversionAnalyser(TR::Node          *node,
-                                                     TR_X86OpCodes    memoryToRegisterOp,
-                                                     TR_X86OpCodes    registerToRegisterOp,
+                                                     TR::InstOpCode::Mnemonic    memoryToRegisterOp,
+                                                     TR::InstOpCode::Mnemonic    registerToRegisterOp,
                                                      TR::CodeGenerator *cg)
    {
    TR::Node *child = node->getFirstChild();
@@ -4099,7 +4099,7 @@ enum BinaryArithmeticOps : uint32_t
    NumBinaryArithmeticOps
    };
 
-static const TR_X86OpCodes BinaryArithmeticOpCodesForReg[TR::NumOMRTypes][NumBinaryArithmeticOps] =
+static const TR::InstOpCode::Mnemonic BinaryArithmeticOpCodesForReg[TR::NumOMRTypes][NumBinaryArithmeticOps] =
    {
    //  Invalid,       Add,         Sub,         Mul,         Div,          And,         Or,       Xor
    { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // NoType
@@ -4119,7 +4119,7 @@ static const TR_X86OpCodes BinaryArithmeticOpCodesForReg[TR::NumOMRTypes][NumBin
    { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Aggregate
    };
 
-static const TR_X86OpCodes BinaryArithmeticOpCodesForMem[TR::NumOMRTypes][NumBinaryArithmeticOps] =
+static const TR::InstOpCode::Mnemonic BinaryArithmeticOpCodesForMem[TR::NumOMRTypes][NumBinaryArithmeticOps] =
    {
    //  Invalid,       Add,         Sub,         Mul,         Div,          And,         Or,       Xor
    { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // NoType
@@ -4222,7 +4222,7 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
    TR::Register* resultReg = cg->allocateRegister(operandReg0->getKind());
    resultReg->setIsSinglePrecision(operandReg0->isSinglePrecision());
 
-   TR_X86OpCodes opCode = useRegMemForm ? BinaryArithmeticOpCodesForMem[type][arithmetic] : BinaryArithmeticOpCodesForReg[type][arithmetic];
+   TR::InstOpCode::Mnemonic opCode = useRegMemForm ? BinaryArithmeticOpCodesForMem[type][arithmetic] : BinaryArithmeticOpCodesForReg[type][arithmetic];
    TR_ASSERT(opCode != BADIA32Op, "FloatingPointAndVectorBinaryArithmeticEvaluator: unsupported data type or arithmetic.");
 
    if (cg->comp()->target().cpu.supportsAVX())
@@ -4286,7 +4286,7 @@ OMR::X86::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *
             generateRegImmInstruction(SHLRegImm1(nodeIs64Bit), node, tmpReg, x, cg);
 
          // OR with result
-         TR_X86OpCodes op = (x < 8) ? OR1RegReg : ORRegReg(nodeIs64Bit);
+         TR::InstOpCode::Mnemonic op = (x < 8) ? OR1RegReg : ORRegReg(nodeIs64Bit);
          generateRegRegInstruction(op, node, resultReg, tmpReg, cg);
          }
       }

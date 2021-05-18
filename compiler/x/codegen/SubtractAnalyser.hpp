@@ -50,27 +50,27 @@ class TR_X86SubtractAnalyser  : public TR_Analyser
       {}
 
    void integerSubtractAnalyser(TR::Node      *root,
-                                TR_X86OpCodes regRegOpCode,
-                                TR_X86OpCodes regMemOpCode,
-                                TR_X86OpCodes copyOpCode,
+                                TR::InstOpCode::Mnemonic regRegOpCode,
+                                TR::InstOpCode::Mnemonic regMemOpCode,
+                                TR::InstOpCode::Mnemonic copyOpCode,
                                 bool needsEflags = false,
                                 TR::Node *borrow = 0);
 
    void integerSubtractAnalyserWithExplicitOperands(TR::Node      *root,
                                                     TR::Node      *firstChild,
                                                     TR::Node      *secondChild,
-                                                    TR_X86OpCodes regRegOpCode,
-                                                    TR_X86OpCodes regMemOpCode,
-                                                    TR_X86OpCodes copyOpCode,
+                                                    TR::InstOpCode::Mnemonic regRegOpCode,
+                                                    TR::InstOpCode::Mnemonic regMemOpCode,
+                                                    TR::InstOpCode::Mnemonic copyOpCode,
                                                     bool needsEflags = false,
                                                     TR::Node *borrow = 0);
 
    TR::Register *integerSubtractAnalyserImpl(TR::Node      *root,
                                          TR::Node      *firstChild,
                                          TR::Node      *secondChild,
-                                         TR_X86OpCodes regRegOpCode,
-                                         TR_X86OpCodes regMemOpCode,
-                                         TR_X86OpCodes copyOpCode,
+                                         TR::InstOpCode::Mnemonic regRegOpCode,
+                                         TR::InstOpCode::Mnemonic regMemOpCode,
+                                         TR::InstOpCode::Mnemonic copyOpCode,
                                          bool needsEflags,
                                          TR::Node *borrow);
 

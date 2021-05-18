@@ -52,9 +52,9 @@ class TR_X86FPCompareAnalyser
       _inputs(0) {}
 
    virtual TR::Register *fpCompareAnalyser(TR::Node       *root,
-                                          TR_X86OpCodes cmpRegRegOpCode,
-                                          TR_X86OpCodes cmpRegMemOpCode,
-                                          TR_X86OpCodes cmpiRegRegOpCode,
+                                          TR::InstOpCode::Mnemonic cmpRegRegOpCode,
+                                          TR::InstOpCode::Mnemonic cmpRegMemOpCode,
+                                          TR::InstOpCode::Mnemonic cmpiRegRegOpCode,
                                           bool           useFCOMIInstructions);
 
    // Possible actions based on the characteristics of the operands.
@@ -125,9 +125,9 @@ class TR_IA32XMMCompareAnalyser : public TR_X86FPCompareAnalyser
    TR_IA32XMMCompareAnalyser(TR::CodeGenerator *cg) : TR_X86FPCompareAnalyser(cg) {}
 
    virtual TR::Register *fpCompareAnalyser(TR::Node       *root,
-                                          TR_X86OpCodes cmpRegRegOpCode,
-                                          TR_X86OpCodes cmpRegMemOpCode,
-                                          TR_X86OpCodes cmpiRegRegOpCode,
+                                          TR::InstOpCode::Mnemonic cmpRegRegOpCode,
+                                          TR::InstOpCode::Mnemonic cmpRegMemOpCode,
+                                          TR::InstOpCode::Mnemonic cmpiRegRegOpCode,
                                           bool           useFCOMIInstructions)
       {
       TR_ASSERT(0, "TR_IA32XMMCompareAnalyser::fpCompareAnalyser() should not be called\n");
@@ -135,8 +135,8 @@ class TR_IA32XMMCompareAnalyser : public TR_X86FPCompareAnalyser
       }
 
    TR::Register *xmmCompareAnalyser(TR::Node        *root,
-                                   TR_X86OpCodes  cmpRegRegOpCode,
-                                   TR_X86OpCodes  cmpRegMemOpCode);
+                                   TR::InstOpCode::Mnemonic  cmpRegRegOpCode,
+                                   TR::InstOpCode::Mnemonic  cmpRegMemOpCode);
 
    };
 #endif

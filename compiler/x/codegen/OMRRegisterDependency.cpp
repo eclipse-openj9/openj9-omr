@@ -771,7 +771,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
 
                TR::MemoryReference *tempMR = generateX86MemoryReference(virtReg->getBackingStorage()->getSymbolReference(), cg);
 
-               TR_X86OpCodes op;
+               TR::InstOpCode::Mnemonic op;
                if (assignedReg->getKind() == TR_FPR)
                   {
                   op = (assignedReg->isSinglePrecision()) ? MOVSSRegMem : (cg->getXMMDoubleLoadOpCode());

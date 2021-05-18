@@ -86,7 +86,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node);
    Instruction(TR::CodeGenerator *cg, TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::Node *node = 0);
-   void initialize(TR::CodeGenerator *cg = NULL, TR::RegisterDependencyConditions *cond = NULL, TR_X86OpCodes op = BADIA32Op, bool flag = false);
+   void initialize(TR::CodeGenerator *cg = NULL, TR::RegisterDependencyConditions *cond = NULL, TR::InstOpCode::Mnemonic op = BADIA32Op, bool flag = false);
 
    public:
 
@@ -94,8 +94,8 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual Kind getKind() { return IsNotExtended; }
 
    TR::InstOpCode& getOpCode() { return _opcode; }
-   TR_X86OpCodes getOpCodeValue() { return _opcode.getOpCodeValue(); }
-   TR_X86OpCodes setOpCodeValue(TR_X86OpCodes op) { return _opcode.setOpCodeValue(op); }
+   TR::InstOpCode::Mnemonic getOpCodeValue() { return _opcode.getOpCodeValue(); }
+   TR::InstOpCode::Mnemonic setOpCodeValue(TR::InstOpCode::Mnemonic op) { return _opcode.setOpCodeValue(op); }
 
    virtual bool isBranchOp() {return _opcode.isBranchOp();}
    virtual bool isLabel();

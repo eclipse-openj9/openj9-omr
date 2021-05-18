@@ -64,7 +64,7 @@ OMR::X86::Instruction::Instruction(TR::CodeGenerator *cg, TR::Instruction *prece
 
 
 void
-OMR::X86::Instruction::initialize(TR::CodeGenerator *cg, TR::RegisterDependencyConditions *cond, TR_X86OpCodes op, bool flag)
+OMR::X86::Instruction::initialize(TR::CodeGenerator *cg, TR::RegisterDependencyConditions *cond, TR::InstOpCode::Mnemonic op, bool flag)
    {
    self()->assumeValidInstruction();
    self()->clobberRegsForRematerialisation();

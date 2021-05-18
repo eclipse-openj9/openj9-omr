@@ -135,7 +135,7 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
          }
       else
          {
-         TR_X86OpCodes mov = BADIA32Op;
+         TR::InstOpCode::Mnemonic mov = BADIA32Op;
          switch (resultReg->getKind())
             {
             case TR_GPR:

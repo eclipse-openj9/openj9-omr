@@ -57,53 +57,53 @@ class TR_X86BinaryCommutativeAnalyser  : public TR_Analyser
    void genericAnalyserWithExplicitOperands(TR::Node      *root,
                                             TR::Node      *firstChild,
                                             TR::Node      *secondChild,
-                                            TR_X86OpCodes regRegOpCode,
-                                            TR_X86OpCodes regMemOpCode,
-                                            TR_X86OpCodes copyOpCode,
+                                            TR::InstOpCode::Mnemonic regRegOpCode,
+                                            TR::InstOpCode::Mnemonic regMemOpCode,
+                                            TR::InstOpCode::Mnemonic copyOpCode,
                                             bool          nonClobberingDestination = false);
 
    void genericAnalyser(TR::Node      *root,
-                        TR_X86OpCodes regRegOpCode,
-                        TR_X86OpCodes regMemOpCode,
-                        TR_X86OpCodes copyOpCode,
+                        TR::InstOpCode::Mnemonic regRegOpCode,
+                        TR::InstOpCode::Mnemonic regMemOpCode,
+                        TR::InstOpCode::Mnemonic copyOpCode,
                         bool          nonClobberingDestination = false);
 
    TR::Register *genericAnalyserImpl(TR::Node      *root,
                                      TR::Node      *firstChild,
                                      TR::Node      *secondChild,
-                                     TR_X86OpCodes regRegOpCode,
-                                     TR_X86OpCodes regMemOpCode,
-                                     TR_X86OpCodes copyOpCode,
+                                     TR::InstOpCode::Mnemonic regRegOpCode,
+                                     TR::InstOpCode::Mnemonic regMemOpCode,
+                                     TR::InstOpCode::Mnemonic copyOpCode,
                                      bool          nonClobberingDestination);
 
    void genericLongAnalyser(TR::Node       *root,
-                            TR_X86OpCodes lowRegRegOpCode,
-                            TR_X86OpCodes highRegRegOpCode,
-                            TR_X86OpCodes lowRegMemOpCode,
-                            TR_X86OpCodes lowRegMemOpCode2Byte,
-                            TR_X86OpCodes lowRegMemOpCode1Byte,
-                            TR_X86OpCodes highRegMemOpCode,
-                            TR_X86OpCodes copyOpCode);
+                            TR::InstOpCode::Mnemonic lowRegRegOpCode,
+                            TR::InstOpCode::Mnemonic highRegRegOpCode,
+                            TR::InstOpCode::Mnemonic lowRegMemOpCode,
+                            TR::InstOpCode::Mnemonic lowRegMemOpCode2Byte,
+                            TR::InstOpCode::Mnemonic lowRegMemOpCode1Byte,
+                            TR::InstOpCode::Mnemonic highRegMemOpCode,
+                            TR::InstOpCode::Mnemonic copyOpCode);
 
    void integerAddAnalyser(TR::Node       *root,
-                           TR_X86OpCodes regRegOpCode,
-                           TR_X86OpCodes regMemOpCode,
+                           TR::InstOpCode::Mnemonic regRegOpCode,
+                           TR::InstOpCode::Mnemonic regMemOpCode,
                            bool needsEflags = false,
                            TR::Node       *carry = 0);// 0 by default
 
    void integerAddAnalyserWithExplicitOperands(TR::Node       *root,
                                                TR::Node *firstChild,
                                                TR::Node *secondChild,
-                                               TR_X86OpCodes regRegOpCode,
-                                               TR_X86OpCodes regMemOpCode,
+                                               TR::InstOpCode::Mnemonic regRegOpCode,
+                                               TR::InstOpCode::Mnemonic regMemOpCode,
                                                bool needsEflags = false,
                                                TR::Node *carry = 0);
 
    TR::Register* integerAddAnalyserImpl(TR::Node       *root,
                            TR::Node *firstChild,
                            TR::Node *secondChild,
-                           TR_X86OpCodes regRegOpCode,
-                           TR_X86OpCodes regMemOpCode,
+                           TR::InstOpCode::Mnemonic regRegOpCode,
+                           TR::InstOpCode::Mnemonic regMemOpCode,
                            bool needsEflags,
                            TR::Node *carry);
 

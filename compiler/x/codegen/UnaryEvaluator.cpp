@@ -62,7 +62,7 @@ TR::Register *OMR::X86::TreeEvaluator::iconstEvaluator(TR::Node *node, TR::CodeG
    }
 
 TR::Register *OMR::X86::TreeEvaluator::negEvaluatorHelper(TR::Node        *node,
-                                               TR_X86OpCodes  negInstr,
+                                               TR::InstOpCode::Mnemonic  negInstr,
                                                TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
@@ -223,7 +223,7 @@ TR::Register *OMR::X86::TreeEvaluator::i2aEvaluator(TR::Node *node, TR::CodeGene
 
 TR::Register *OMR::X86::TreeEvaluator::b2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_X86OpCodes reg4mem1Op,reg4reg1Op;
+   TR::InstOpCode::Mnemonic reg4mem1Op,reg4reg1Op;
    if(node->isUnneededConversion())
      {
      reg4mem1Op = MOVZXReg4Mem1; // these are slightly cheaper

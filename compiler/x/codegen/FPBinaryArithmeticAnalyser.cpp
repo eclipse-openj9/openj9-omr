@@ -266,7 +266,7 @@ void TR_X86FPBinaryArithmeticAnalyser::genericFPAnalyser(TR::Node *root)
       }
    else if (isOpRegConv())
       {
-      TR_X86OpCodes          regIntOp;
+      TR::InstOpCode::Mnemonic          regIntOp;
       TR::Node                *intLoad = sourceChild->getFirstChild();
       TR::MemoryReference  *tempMR = generateX86MemoryReference(intLoad, _cg);
 
@@ -322,7 +322,7 @@ void TR_X86FPBinaryArithmeticAnalyser::genericFPAnalyser(TR::Node *root)
    }
 
 
-const TR_X86OpCodes TR_X86FPBinaryArithmeticAnalyser::_opCodePackage[kNumFPPackages][kNumFPArithVariants] =
+const TR::InstOpCode::Mnemonic TR_X86FPBinaryArithmeticAnalyser::_opCodePackage[kNumFPPackages][kNumFPArithVariants] =
    {
    // PACKAGE
    //        reg1Reg2      reg2Reg1      reg1Mem2      reg2Mem1

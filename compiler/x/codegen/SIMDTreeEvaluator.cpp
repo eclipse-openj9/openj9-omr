@@ -75,7 +75,7 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDloadEvaluator(TR::Node* node, TR::Cod
    tempMR = ConvertToPatchableMemoryReference(tempMR, node, cg);
    TR::Register* resultReg = cg->allocateRegister(TR_VRF);
 
-   TR_X86OpCodes opCode = BADIA32Op;
+   TR::InstOpCode::Mnemonic opCode = BADIA32Op;
    switch (node->getSize())
       {
       case 16:
@@ -103,7 +103,7 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDstoreEvaluator(TR::Node* node, TR::Co
    tempMR = ConvertToPatchableMemoryReference(tempMR, node, cg);
    TR::Register* valueReg = cg->evaluate(valueNode);
 
-   TR_X86OpCodes opCode = BADIA32Op;
+   TR::InstOpCode::Mnemonic opCode = BADIA32Op;
    switch (node->getSize())
       {
       case 16:

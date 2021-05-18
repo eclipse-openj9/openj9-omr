@@ -219,7 +219,7 @@ TR_Debug::printRestartJump(TR::FILE *pOutFile, TR::X86RestartSnippet * snippet, 
 int32_t
 TR_Debug::printRestartJump(TR::FILE *pOutFile, TR::X86RestartSnippet * snippet, uint8_t *bufferPos, int32_t branchOp, const char *branchOpName)
    {
-   int32_t size = snippet->estimateRestartJumpLength((TR_X86OpCodes) branchOp, bufferPos - (uint8_t*)snippet->cg()->getBinaryBufferStart());
+   int32_t size = snippet->estimateRestartJumpLength((TR::InstOpCode::Mnemonic) branchOp, bufferPos - (uint8_t*)snippet->cg()->getBinaryBufferStart());
    printPrefix(pOutFile, NULL, bufferPos, size);
    printLabelInstruction(pOutFile, branchOpName, snippet->getRestartLabel());
    return size;

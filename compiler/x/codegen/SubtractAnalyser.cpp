@@ -54,9 +54,9 @@
 void TR_X86SubtractAnalyser::integerSubtractAnalyserWithExplicitOperands(TR::Node      *root,
                                                                          TR::Node      *firstChild,
                                                                          TR::Node      *secondChild,
-                                                                         TR_X86OpCodes regRegOpCode,
-                                                                         TR_X86OpCodes regMemOpCode,
-                                                                         TR_X86OpCodes copyOpCode,
+                                                                         TR::InstOpCode::Mnemonic regRegOpCode,
+                                                                         TR::InstOpCode::Mnemonic regMemOpCode,
+                                                                         TR::InstOpCode::Mnemonic copyOpCode,
                                                                          bool needsEflags, // false by default
                                                                          TR::Node *borrow)  // 0 by default
    {
@@ -72,9 +72,9 @@ void TR_X86SubtractAnalyser::integerSubtractAnalyserWithExplicitOperands(TR::Nod
  * this API is for regular sub operation nodes where the first child and second child are the operands by default
  */
 void TR_X86SubtractAnalyser::integerSubtractAnalyser(TR::Node      *root,
-                                                     TR_X86OpCodes regRegOpCode,
-                                                     TR_X86OpCodes regMemOpCode,
-                                                     TR_X86OpCodes copyOpCode,
+                                                     TR::InstOpCode::Mnemonic regRegOpCode,
+                                                     TR::InstOpCode::Mnemonic regMemOpCode,
+                                                     TR::InstOpCode::Mnemonic copyOpCode,
                                                      bool needsEflags, // false by default
                                                      TR::Node *borrow)  // 0 by default
    {
@@ -93,9 +93,9 @@ void TR_X86SubtractAnalyser::integerSubtractAnalyser(TR::Node      *root,
 TR::Register* TR_X86SubtractAnalyser::integerSubtractAnalyserImpl(TR::Node     *root,
                                                                   TR::Node     *firstChild,
                                                                   TR::Node     *secondChild,
-                                                                  TR_X86OpCodes regRegOpCode,
-                                                                  TR_X86OpCodes regMemOpCode,
-                                                                  TR_X86OpCodes copyOpCode,
+                                                                  TR::InstOpCode::Mnemonic regRegOpCode,
+                                                                  TR::InstOpCode::Mnemonic regMemOpCode,
+                                                                  TR::InstOpCode::Mnemonic copyOpCode,
                                                                   bool needsEflags,
                                                                   TR::Node *borrow)
    {
@@ -292,8 +292,8 @@ TR::Register* TR_X86SubtractAnalyser::longSubtractAnalyserImpl(TR::Node *root, T
    bool firstHighZero      = false;
    bool secondHighZero     = false; bool useSecondHighOrder = false;
 
-   TR_X86OpCodes regRegOpCode = SUB4RegReg;
-   TR_X86OpCodes regMemOpCode = SUB4RegMem;
+   TR::InstOpCode::Mnemonic regRegOpCode = SUB4RegReg;
+   TR::InstOpCode::Mnemonic regMemOpCode = SUB4RegMem;
 
    bool needsEflags = NEED_CC(root) || (root->getOpCodeValue() == TR::lusubb);
 

@@ -1972,7 +1972,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    }
 
 // different from evaluate in that it returns a clobberable register
-TR::Register *OMR::X86::CodeGenerator::gprClobberEvaluate(TR::Node * node, TR_X86OpCodes movRegRegOpCode)
+TR::Register *OMR::X86::CodeGenerator::gprClobberEvaluate(TR::Node * node, TR::InstOpCode::Mnemonic movRegRegOpCode)
    {
    TR::Register *sourceRegister = self()->evaluate(node);
 

@@ -53,37 +53,37 @@ class TR_X86CompareAnalyser  : public TR_Analyser
 
    void integerCompareAnalyser(
       TR::Node       *root,
-      TR_X86OpCodes regRegOpCode,
-      TR_X86OpCodes regMemOpCode,
-      TR_X86OpCodes memRegOpCode);
+      TR::InstOpCode::Mnemonic regRegOpCode,
+      TR::InstOpCode::Mnemonic regMemOpCode,
+      TR::InstOpCode::Mnemonic memRegOpCode);
 
    void integerCompareAnalyser(
       TR::Node       *root,
       TR::Node       *firstChild,
       TR::Node       *secondChild,
       bool           determineEvaluationOrder,
-      TR_X86OpCodes  regRegOpCode,
-      TR_X86OpCodes  regMemOpCode,
-      TR_X86OpCodes  memRegOpCode);
+      TR::InstOpCode::Mnemonic  regRegOpCode,
+      TR::InstOpCode::Mnemonic  regMemOpCode,
+      TR::InstOpCode::Mnemonic  memRegOpCode);
 
    void longOrderedCompareAndBranchAnalyser(TR::Node       *root,
-                                            TR_X86OpCodes lowBranchOpCode,
-                                            TR_X86OpCodes highBranchOpCode,
-                                            TR_X86OpCodes highReversedBranchOpCode);
+                                            TR::InstOpCode::Mnemonic lowBranchOpCode,
+                                            TR::InstOpCode::Mnemonic highBranchOpCode,
+                                            TR::InstOpCode::Mnemonic highReversedBranchOpCode);
 
 
    void longEqualityCompareAndBranchAnalyser(TR::Node        *root,
                                              TR::LabelSymbol *firstBranchLabel,
                                              TR::LabelSymbol *secondBranchLabel,
-                                             TR_X86OpCodes  secondBranchOp);
+                                             TR::InstOpCode::Mnemonic  secondBranchOp);
 
    TR::Register *longEqualityBooleanAnalyser(TR::Node       *root,
-                                            TR_X86OpCodes setOpCode,
-                                            TR_X86OpCodes combineOpCode);
+                                            TR::InstOpCode::Mnemonic setOpCode,
+                                            TR::InstOpCode::Mnemonic combineOpCode);
 
    TR::Register *longOrderedBooleanAnalyser(TR::Node       *root,
-                                           TR_X86OpCodes highSetOpCode,
-                                           TR_X86OpCodes lowSetOpCode);
+                                           TR::InstOpCode::Mnemonic highSetOpCode,
+                                           TR::InstOpCode::Mnemonic lowSetOpCode);
 
    TR::Register *longCMPAnalyser(TR::Node *root);
 

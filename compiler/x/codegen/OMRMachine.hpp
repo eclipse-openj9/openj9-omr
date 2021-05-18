@@ -211,8 +211,8 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    // Methods to support the IA32 floating point register stack.
    //
 
-   TR_X86OpCodes fpDeterminePopOpCode(TR_X86OpCodes op);
-   TR_X86OpCodes fpDetermineReverseOpCode(TR_X86OpCodes op);
+   TR::InstOpCode::Mnemonic fpDeterminePopOpCode(TR::InstOpCode::Mnemonic op);
+   TR::InstOpCode::Mnemonic fpDetermineReverseOpCode(TR::InstOpCode::Mnemonic op);
 
    TR::MemoryReference  *getDummyLocalMR(TR::DataType dt);
 

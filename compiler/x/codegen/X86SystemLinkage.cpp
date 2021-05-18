@@ -528,7 +528,7 @@ TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
       }
    else
       {
-      const TR_X86OpCodes subOp = (allocSize <= 127)? SUBRegImms() : SUBRegImm4();
+      const TR::InstOpCode::Mnemonic subOp = (allocSize <= 127)? SUBRegImms() : SUBRegImm4();
       cursor = new (trHeapMemory()) TR::X86RegImmInstruction(cursor, subOp, espReal, allocSize, cg());
       }
 
@@ -691,7 +691,7 @@ TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
       //
       allocSize = localSize;
       const uint32_t outgoingArgSize = cg()->getLargestOutgoingArgSize();
-      TR_X86OpCodes op = (outgoingArgSize <= 127) ? ADDRegImms() : ADDRegImm4();
+      TR::InstOpCode::Mnemonic op = (outgoingArgSize <= 127) ? ADDRegImms() : ADDRegImm4();
       cursor = new (trHeapMemory()) TR::X86RegImmInstruction(cursor, op, espReal, outgoingArgSize, cg());
       }
 
@@ -725,7 +725,7 @@ TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
       }
    else
       {
-      TR_X86OpCodes op = (allocSize <= 127) ? ADDRegImms() : ADDRegImm4();
+      TR::InstOpCode::Mnemonic op = (allocSize <= 127) ? ADDRegImms() : ADDRegImm4();
       cursor = new (trHeapMemory()) TR::X86RegImmInstruction(cursor, op, espReal, allocSize, cg());
       }
 

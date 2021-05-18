@@ -54,7 +54,7 @@ zeroExtendTo32BitRegister(TR::Node          *node,
                           int32_t           sourceSize,
                           TR::CodeGenerator *cg)
    {
-   TR_X86OpCodes op;
+   TR::InstOpCode::Mnemonic op;
 
    switch (sourceSize)
       {
@@ -86,9 +86,9 @@ zeroExtendTo32BitRegister(TR::Node          *node,
 void TR_X86BinaryCommutativeAnalyser::genericAnalyserWithExplicitOperands(TR::Node      *root,
                                                                           TR::Node      *firstChild,
                                                                           TR::Node      *secondChild,
-                                                                          TR_X86OpCodes regRegOpCode,
-                                                                          TR_X86OpCodes regMemOpCode,
-                                                                          TR_X86OpCodes copyOpCode,
+                                                                          TR::InstOpCode::Mnemonic regRegOpCode,
+                                                                          TR::InstOpCode::Mnemonic regMemOpCode,
+                                                                          TR::InstOpCode::Mnemonic copyOpCode,
                                                                           bool          nonClobberingDestination) //false by default
    {
    TR_ASSERT(root->getOpCodeValue() == TR::OverflowCHK, "unsupported  opcode %s for genericAnalyserWithExplicitOperands on node %p\n", _cg->comp()->getDebug()->getName(root->getOpCodeValue()), root);
@@ -103,9 +103,9 @@ void TR_X86BinaryCommutativeAnalyser::genericAnalyserWithExplicitOperands(TR::No
  * this API is for regular operation nodes where the first child and second child are the operands by default
  */
 void TR_X86BinaryCommutativeAnalyser::genericAnalyser(TR::Node      *root,
-                                                      TR_X86OpCodes regRegOpCode,
-                                                      TR_X86OpCodes regMemOpCode,
-                                                      TR_X86OpCodes copyOpCode,
+                                                      TR::InstOpCode::Mnemonic regRegOpCode,
+                                                      TR::InstOpCode::Mnemonic regMemOpCode,
+                                                      TR::InstOpCode::Mnemonic copyOpCode,
                                                       bool          nonClobberingDestination) //false by default
    {
    TR::Node *firstChild = NULL;
@@ -135,9 +135,9 @@ void TR_X86BinaryCommutativeAnalyser::genericAnalyser(TR::Node      *root,
 TR::Register* TR_X86BinaryCommutativeAnalyser::genericAnalyserImpl(TR::Node      *root,
                                                                    TR::Node      *firstChild,
                                                                    TR::Node      *secondChild,
-                                                                   TR_X86OpCodes regRegOpCode,
-                                                                   TR_X86OpCodes regMemOpCode,
-                                                                   TR_X86OpCodes copyOpCode,
+                                                                   TR::InstOpCode::Mnemonic regRegOpCode,
+                                                                   TR::InstOpCode::Mnemonic regMemOpCode,
+                                                                   TR::InstOpCode::Mnemonic copyOpCode,
                                                                    bool           nonClobberingDestination)
    {
    TR::Register *targetRegister;
@@ -242,13 +242,13 @@ TR::Register* TR_X86BinaryCommutativeAnalyser::genericAnalyserImpl(TR::Node     
    }
 
 void TR_X86BinaryCommutativeAnalyser::genericLongAnalyser(TR::Node       *root,
-                                                           TR_X86OpCodes lowRegRegOpCode,
-                                                           TR_X86OpCodes highRegRegOpCode,
-                                                           TR_X86OpCodes lowRegMemOpCode,
-                                                           TR_X86OpCodes lowRegMemOpCode2Byte,
-                                                           TR_X86OpCodes lowRegMemOpCode1Byte,
-                                                           TR_X86OpCodes highRegMemOpCode,
-                                                           TR_X86OpCodes copyOpCode)
+                                                           TR::InstOpCode::Mnemonic lowRegRegOpCode,
+                                                           TR::InstOpCode::Mnemonic highRegRegOpCode,
+                                                           TR::InstOpCode::Mnemonic lowRegMemOpCode,
+                                                           TR::InstOpCode::Mnemonic lowRegMemOpCode2Byte,
+                                                           TR::InstOpCode::Mnemonic lowRegMemOpCode1Byte,
+                                                           TR::InstOpCode::Mnemonic highRegMemOpCode,
+                                                           TR::InstOpCode::Mnemonic copyOpCode)
    {
    TR::Node *firstChild;
    TR::Node *secondChild;
@@ -704,8 +704,8 @@ void TR_X86BinaryCommutativeAnalyser::genericLongAnalyser(TR::Node       *root,
  * this API is intended for regular add operation nodes where the first child and second child are the operands by default
  */
 void TR_X86BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node      *root,
-                                                         TR_X86OpCodes regRegOpCode,
-                                                         TR_X86OpCodes regMemOpCode,
+                                                         TR::InstOpCode::Mnemonic regRegOpCode,
+                                                         TR::InstOpCode::Mnemonic regMemOpCode,
                                                          bool          needsEflags,     // false by default
                                                          TR::Node      *carry )// 0 by default
    {
@@ -743,8 +743,8 @@ void TR_X86BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node      *root,
 void TR_X86BinaryCommutativeAnalyser::integerAddAnalyserWithExplicitOperands(TR::Node      *root,
                                                                              TR::Node      *firstChild,
                                                                              TR::Node      *secondChild,
-                                                                             TR_X86OpCodes regRegOpCode,
-                                                                             TR_X86OpCodes regMemOpCode,
+                                                                             TR::InstOpCode::Mnemonic regRegOpCode,
+                                                                             TR::InstOpCode::Mnemonic regMemOpCode,
                                                                              bool          needsEflags, // false by default
                                                                              TR::Node      *carry)// 0 by default
    {
@@ -761,8 +761,8 @@ void TR_X86BinaryCommutativeAnalyser::integerAddAnalyserWithExplicitOperands(TR:
 TR::Register *TR_X86BinaryCommutativeAnalyser::integerAddAnalyserImpl(TR::Node      *root,
                                                                       TR::Node      *firstChild,
                                                                       TR::Node      *secondChild,
-                                                                      TR_X86OpCodes regRegOpCode,
-                                                                      TR_X86OpCodes regMemOpCode,
+                                                                      TR::InstOpCode::Mnemonic regRegOpCode,
+                                                                      TR::InstOpCode::Mnemonic regMemOpCode,
                                                                       bool          needsEflags,
                                                                       TR::Node      *carry)
    {
@@ -995,8 +995,8 @@ TR::Register* TR_X86BinaryCommutativeAnalyser::longAddAnalyserImpl(TR::Node *roo
    TR::Register *oneLow       = NULL;
    TR::Register *oneHigh      = NULL;
    TR::Register *targetRegister = NULL;
-   TR_X86OpCodes regRegOpCode = ADD4RegReg;
-   TR_X86OpCodes regMemOpCode = ADD4RegMem;
+   TR::InstOpCode::Mnemonic regRegOpCode = ADD4RegReg;
+   TR::InstOpCode::Mnemonic regMemOpCode = ADD4RegMem;
 
    TR::Register *firstRegister  = firstChild->getRegister();
    TR::Register *secondRegister = secondChild->getRegister();

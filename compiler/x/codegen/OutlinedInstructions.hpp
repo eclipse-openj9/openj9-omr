@@ -48,7 +48,7 @@ class TR_OutlinedInstructions
    TR::LabelSymbol      *_restartLabel;
    TR::Instruction      *_firstInstruction;
    TR::Instruction      *_appendInstruction;
-   TR_X86OpCodes        _targetRegMovOpcode;
+   TR::InstOpCode::Mnemonic        _targetRegMovOpcode;
 
    TR::Block            *_block;
    TR::CodeGenerator    *_cg;

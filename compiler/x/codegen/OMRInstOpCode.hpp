@@ -38,8 +38,6 @@ namespace OMR { typedef OMR::X86::InstOpCode InstOpCodeConnector; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Register; }
 
-typedef OMR::InstOpCode::Mnemonic TR_X86OpCodes;
-
 #include "compiler/x/codegen/OMRInstOpCode.enum.temp.defines"
 
 #define IA32LongToShortBranchConversionOffset ((int)JMP4 - (int)JMP1)
@@ -47,8 +45,8 @@ typedef OMR::InstOpCode::Mnemonic TR_X86OpCodes;
 
 // Size-parameterized opcodes
 //
-template <TR_X86OpCodes Op64, TR_X86OpCodes Op32>
-inline TR_X86OpCodes SizeParameterizedOpCode(bool is64Bit =
+template <OMR::InstOpCode::Mnemonic Op64, OMR::InstOpCode::Mnemonic Op32>
+inline OMR::InstOpCode::Mnemonic SizeParameterizedOpCode(bool is64Bit =
 #ifdef TR_TARGET_64BIT
     true
 #else
@@ -181,25 +179,25 @@ inline TR_X86OpCodes SizeParameterizedOpCode(bool is64Bit =
 
 // Size and carry-parameterized opcodes
 //
-inline TR_X86OpCodes AddMemImms (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCMemImms(is64Bit) : ADDMemImms(is64Bit) ; }
-inline TR_X86OpCodes AddRegImms (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCRegImms(is64Bit) : ADDRegImms(is64Bit) ; }
-inline TR_X86OpCodes AddRegImm4 (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCRegImm4(is64Bit) : ADDRegImm4(is64Bit) ; }
-inline TR_X86OpCodes AddMemImm4 (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCMemImm4(is64Bit) : ADDMemImm4(is64Bit) ; }
-inline TR_X86OpCodes AddMemReg  (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCMemReg(is64Bit)  : ADDMemReg(is64Bit)  ; }
-inline TR_X86OpCodes AddRegReg  (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCRegReg(is64Bit)  : ADDRegReg(is64Bit)  ; }
-inline TR_X86OpCodes AddRegMem  (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCRegMem(is64Bit)  : ADDRegMem(is64Bit)  ; }
+inline OMR::InstOpCode::Mnemonic AddMemImms (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCMemImms(is64Bit) : ADDMemImms(is64Bit) ; }
+inline OMR::InstOpCode::Mnemonic AddRegImms (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCRegImms(is64Bit) : ADDRegImms(is64Bit) ; }
+inline OMR::InstOpCode::Mnemonic AddRegImm4 (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCRegImm4(is64Bit) : ADDRegImm4(is64Bit) ; }
+inline OMR::InstOpCode::Mnemonic AddMemImm4 (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCMemImm4(is64Bit) : ADDMemImm4(is64Bit) ; }
+inline OMR::InstOpCode::Mnemonic AddMemReg  (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCMemReg(is64Bit)  : ADDMemReg(is64Bit)  ; }
+inline OMR::InstOpCode::Mnemonic AddRegReg  (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCRegReg(is64Bit)  : ADDRegReg(is64Bit)  ; }
+inline OMR::InstOpCode::Mnemonic AddRegMem  (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCRegMem(is64Bit)  : ADDRegMem(is64Bit)  ; }
 
-inline TR_X86OpCodes SubMemImms (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBMemImms(is64Bit) : SUBMemImms(is64Bit) ; }
-inline TR_X86OpCodes SubRegImms (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBRegImms(is64Bit) : SUBRegImms(is64Bit) ; }
-inline TR_X86OpCodes SubRegImm4 (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBRegImm4(is64Bit) : SUBRegImm4(is64Bit) ; }
-inline TR_X86OpCodes SubMemImm4 (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBMemImm4(is64Bit) : SUBMemImm4(is64Bit) ; }
-inline TR_X86OpCodes SubMemReg  (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBMemReg(is64Bit)  : SUBMemReg(is64Bit)  ; }
-inline TR_X86OpCodes SubRegReg  (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBRegReg(is64Bit)  : SUBRegReg(is64Bit)  ; }
-inline TR_X86OpCodes SubRegMem  (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBRegMem(is64Bit)  : SUBRegMem(is64Bit)  ; }
+inline OMR::InstOpCode::Mnemonic SubMemImms (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBMemImms(is64Bit) : SUBMemImms(is64Bit) ; }
+inline OMR::InstOpCode::Mnemonic SubRegImms (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBRegImms(is64Bit) : SUBRegImms(is64Bit) ; }
+inline OMR::InstOpCode::Mnemonic SubRegImm4 (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBRegImm4(is64Bit) : SUBRegImm4(is64Bit) ; }
+inline OMR::InstOpCode::Mnemonic SubMemImm4 (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBMemImm4(is64Bit) : SUBMemImm4(is64Bit) ; }
+inline OMR::InstOpCode::Mnemonic SubMemReg  (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBMemReg(is64Bit)  : SUBMemReg(is64Bit)  ; }
+inline OMR::InstOpCode::Mnemonic SubRegReg  (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBRegReg(is64Bit)  : SUBRegReg(is64Bit)  ; }
+inline OMR::InstOpCode::Mnemonic SubRegMem  (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBRegMem(is64Bit)  : SUBRegMem(is64Bit)  ; }
 
 //Broader sized parameterized opcodes 
-template <TR_X86OpCodes Op64, TR_X86OpCodes Op32, TR_X86OpCodes Op16, TR_X86OpCodes Op8>
-inline TR_X86OpCodes SizedParameterizedOpCode(int size =
+template <OMR::InstOpCode::Mnemonic Op64, OMR::InstOpCode::Mnemonic Op32, OMR::InstOpCode::Mnemonic Op16, OMR::InstOpCode::Mnemonic Op8>
+inline OMR::InstOpCode::Mnemonic SizedParameterizedOpCode(int size =
 #ifdef TR_TARGET_64BIT
    8
 #else
@@ -207,7 +205,7 @@ inline TR_X86OpCodes SizedParameterizedOpCode(int size =
 #endif
 )
    {
-   TR_X86OpCodes op = BADIA32Op;
+   OMR::InstOpCode::Mnemonic op = BADIA32Op;
    switch (size)
       {
       case 8:  op = Op64;      break;
@@ -481,7 +479,7 @@ class InstOpCode: public OMR::InstOpCode
    // Instructions from Group 7 OpCode Extensions need special handling as they requires specific low 3 bits of ModR/M byte
    inline void CheckAndFinishGroup07(uint8_t* cursor) const;
 
-   TR_X86OpCodes         _opCode;
+   OMR::InstOpCode::Mnemonic         _opCode;
    static const OpCode_t _binaries[];
    static const uint32_t _properties[];
    static const uint32_t _properties1[];
@@ -500,8 +498,8 @@ class InstOpCode: public OMR::InstOpCode
    static const OpCodeMetaData metadata[NumOpCodes];
 
    inline const OpCode_t& info() const                   {return _binaries[_opCode]; }
-   inline TR_X86OpCodes getOpCodeValue() const           {return _opCode;}
-   inline TR_X86OpCodes setOpCodeValue(TR_X86OpCodes op) {return (_opCode = op);}
+   inline OMR::InstOpCode::Mnemonic getOpCodeValue() const           {return _opCode;}
+   inline OMR::InstOpCode::Mnemonic setOpCodeValue(OMR::InstOpCode::Mnemonic op) {return (_opCode = op);}
 
    inline uint32_t modifiesTarget()                const {return _properties[_opCode] & IA32OpProp_ModifiesTarget;}
    inline uint32_t modifiesSource()                const {return _properties[_opCode] & IA32OpProp_ModifiesSource;}
@@ -604,7 +602,7 @@ class InstOpCode: public OMR::InstOpCode
    void convertLongBranchToShort()
       { // input must be a long branch in range JA4 - JMP4
       if (((int)_opCode >= (int)JA4) && ((int)_opCode <= (int)JMP4))
-         _opCode = (TR_X86OpCodes)((int)_opCode - IA32LongToShortBranchConversionOffset);
+         _opCode = (OMR::InstOpCode::Mnemonic)((int)_opCode - IA32LongToShortBranchConversionOffset);
       }
 
    inline uint8_t getModifiedEFlags() const {return getModifiedEFlags(_opCode); }
@@ -612,24 +610,24 @@ class InstOpCode: public OMR::InstOpCode
 
    void trackUpperBitsOnReg(TR::Register *reg, TR::CodeGenerator *cg);
 
-   inline static uint32_t singleFPOp(TR_X86OpCodes op)           {return _properties[op] & IA32OpProp_SingleFP;}
-   inline static uint32_t doubleFPOp(TR_X86OpCodes op)           {return _properties[op] & IA32OpProp_DoubleFP;}
-   inline static uint32_t gprOp(TR_X86OpCodes op)                {return (_properties[op] & (IA32OpProp_DoubleFP | IA32OpProp_SingleFP)) == 0;}
-   inline static uint32_t fprOp(TR_X86OpCodes op)                {return (_properties[op] & (IA32OpProp_DoubleFP | IA32OpProp_SingleFP));}
-   inline static uint32_t testsZeroFlag(TR_X86OpCodes op)        {return _properties[op] & IA32OpProp_TestsZeroFlag;}
-   inline static uint32_t modifiesZeroFlag(TR_X86OpCodes op)     {return _properties[op] & IA32OpProp_ModifiesZeroFlag;}
-   inline static uint32_t testsSignFlag(TR_X86OpCodes op)        {return _properties[op] & IA32OpProp_TestsSignFlag;}
-   inline static uint32_t modifiesSignFlag(TR_X86OpCodes op)     {return _properties[op] & IA32OpProp_ModifiesSignFlag;}
-   inline static uint32_t testsCarryFlag(TR_X86OpCodes op)       {return _properties[op] & IA32OpProp_TestsCarryFlag;}
-   inline static uint32_t modifiesCarryFlag(TR_X86OpCodes op)    {return _properties[op] & IA32OpProp_ModifiesCarryFlag;}
-   inline static uint32_t testsOverflowFlag(TR_X86OpCodes op)    {return _properties[op] & IA32OpProp_TestsOverflowFlag;}
-   inline static uint32_t modifiesOverflowFlag(TR_X86OpCodes op) {return _properties[op] & IA32OpProp_ModifiesOverflowFlag;}
-   inline static uint32_t testsParityFlag(TR_X86OpCodes op)      {return _properties[op] & IA32OpProp_TestsParityFlag;}
-   inline static uint32_t modifiesParityFlag(TR_X86OpCodes op)   {return _properties[op] & IA32OpProp_ModifiesParityFlag;}
-   inline static uint32_t isCallOp(TR_X86OpCodes op)             {return _properties1[op] & IA32OpProp1_CallOp;}
-   inline static uint32_t isCallImmOp(TR_X86OpCodes op)          {return op == CALLImm4 || op == CALLREXImm4; }
+   inline static uint32_t singleFPOp(OMR::InstOpCode::Mnemonic op)           {return _properties[op] & IA32OpProp_SingleFP;}
+   inline static uint32_t doubleFPOp(OMR::InstOpCode::Mnemonic op)           {return _properties[op] & IA32OpProp_DoubleFP;}
+   inline static uint32_t gprOp(OMR::InstOpCode::Mnemonic op)                {return (_properties[op] & (IA32OpProp_DoubleFP | IA32OpProp_SingleFP)) == 0;}
+   inline static uint32_t fprOp(OMR::InstOpCode::Mnemonic op)                {return (_properties[op] & (IA32OpProp_DoubleFP | IA32OpProp_SingleFP));}
+   inline static uint32_t testsZeroFlag(OMR::InstOpCode::Mnemonic op)        {return _properties[op] & IA32OpProp_TestsZeroFlag;}
+   inline static uint32_t modifiesZeroFlag(OMR::InstOpCode::Mnemonic op)     {return _properties[op] & IA32OpProp_ModifiesZeroFlag;}
+   inline static uint32_t testsSignFlag(OMR::InstOpCode::Mnemonic op)        {return _properties[op] & IA32OpProp_TestsSignFlag;}
+   inline static uint32_t modifiesSignFlag(OMR::InstOpCode::Mnemonic op)     {return _properties[op] & IA32OpProp_ModifiesSignFlag;}
+   inline static uint32_t testsCarryFlag(OMR::InstOpCode::Mnemonic op)       {return _properties[op] & IA32OpProp_TestsCarryFlag;}
+   inline static uint32_t modifiesCarryFlag(OMR::InstOpCode::Mnemonic op)    {return _properties[op] & IA32OpProp_ModifiesCarryFlag;}
+   inline static uint32_t testsOverflowFlag(OMR::InstOpCode::Mnemonic op)    {return _properties[op] & IA32OpProp_TestsOverflowFlag;}
+   inline static uint32_t modifiesOverflowFlag(OMR::InstOpCode::Mnemonic op) {return _properties[op] & IA32OpProp_ModifiesOverflowFlag;}
+   inline static uint32_t testsParityFlag(OMR::InstOpCode::Mnemonic op)      {return _properties[op] & IA32OpProp_TestsParityFlag;}
+   inline static uint32_t modifiesParityFlag(OMR::InstOpCode::Mnemonic op)   {return _properties[op] & IA32OpProp_ModifiesParityFlag;}
+   inline static uint32_t isCallOp(OMR::InstOpCode::Mnemonic op)             {return _properties1[op] & IA32OpProp1_CallOp;}
+   inline static uint32_t isCallImmOp(OMR::InstOpCode::Mnemonic op)          {return op == CALLImm4 || op == CALLREXImm4; }
 
-   inline static uint8_t getModifiedEFlags(TR_X86OpCodes op)
+   inline static uint8_t getModifiedEFlags(OMR::InstOpCode::Mnemonic op)
       {
       uint8_t flags = 0;
       if (modifiesOverflowFlag(op)) flags |= IA32EFlags_OF;
@@ -640,7 +638,7 @@ class InstOpCode: public OMR::InstOpCode
       return flags;
       }
 
-   inline static uint8_t getTestedEFlags(TR_X86OpCodes op)
+   inline static uint8_t getTestedEFlags(OMR::InstOpCode::Mnemonic op)
       {
       uint8_t flags = 0;
       if (testsOverflowFlag(op)) flags |= IA32EFlags_OF;

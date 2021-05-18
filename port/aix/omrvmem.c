@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2020 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -949,14 +949,12 @@ omrvmem_find_valid_page_size(struct OMRPortLibrary *portLibrary, uintptr_t mode,
 
 	if (0 != validPageSize) {
 		/* For executable pages search through the list of supported page sizes only if
-		 * - request is for 64K pages, or
 		 * - request is for 16M pages, and
 		 * - 64 bit system OR (32 bit system AND CodeCacheConsolidation is enabled)
 		 */
 #if defined(OMR_ENV_DATA64)
-		if ((OMRPORT_VMEM_MEMORY_MODE_EXECUTE != (OMRPORT_VMEM_MEMORY_MODE_EXECUTE & mode))
-			|| (SIXTY_FOUR_K == validPageSize)
-			|| (SIXTEEN_M == validPageSize)
+		if ((OMRPORT_VMEM_MEMORY_MODE_EXECUTE != (OMRPORT_VMEM_MEMORY_MODE_EXECUTE & mode)) ||
+			(SIXTEEN_M == validPageSize))
 #else
 		BOOLEAN codeCacheConsolidationEnabled = FALSE;
 
@@ -969,11 +967,10 @@ omrvmem_find_valid_page_size(struct OMRPortLibrary *portLibrary, uintptr_t mode,
 				codeCacheConsolidationEnabled = TRUE;
 			}
 		}
-		if ((OMRPORT_VMEM_MEMORY_MODE_EXECUTE != (OMRPORT_VMEM_MEMORY_MODE_EXECUTE & mode))
-			|| ((TRUE == codeCacheConsolidationEnabled) && (SIXTEEN_M == validPageSize))
-			|| (SIXTY_FOUR_K == validPageSize)
+		if ((OMRPORT_VMEM_MEMORY_MODE_EXECUTE != (OMRPORT_VMEM_MEMORY_MODE_EXECUTE & mode)) ||
+			((TRUE == codeCacheConsolidationEnabled) && (SIXTEEN_M == validPageSize)))
 #endif /* defined(OMR_ENV_DATA64) */
-		) {
+		{
 			uintptr_t pageIndex = 0;
 			uintptr_t *supportedPageSizes = portLibrary->vmem_supported_page_sizes(portLibrary);
 			uintptr_t *supportedPageFlags = portLibrary->vmem_supported_page_flags(portLibrary);

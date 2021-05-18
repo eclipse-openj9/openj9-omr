@@ -192,7 +192,7 @@ void OMR::X86::InstOpCode::CheckAndFinishGroup07(uint8_t* cursor) const
    if(info().isGroup07())
       {
       auto pModRM = (TR::Instruction::ModRM*)(cursor-1);
-      switch(_opCode)
+      switch(_mnemonic)
          {
          case XEND:
             pModRM->rm = 0x05; // 0b101

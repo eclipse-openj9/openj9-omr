@@ -479,15 +479,14 @@ class InstOpCode: public OMR::InstOpCode
    // Instructions from Group 7 OpCode Extensions need special handling as they requires specific low 3 bits of ModR/M byte
    inline void CheckAndFinishGroup07(uint8_t* cursor) const;
 
-   OMR::InstOpCode::Mnemonic         _opCode;
    static const OpCode_t _binaries[];
    static const uint32_t _properties[];
    static const uint32_t _properties1[];
 
    protected:
 
-   InstOpCode():  OMR::InstOpCode(bad), _opCode(BADIA32Op)  {}
-   InstOpCode(Mnemonic m): OMR::InstOpCode(m), _opCode(BADIA32Op)  {}
+   InstOpCode():  OMR::InstOpCode(BADIA32Op) {}
+   InstOpCode(Mnemonic m): OMR::InstOpCode(m) {}
 
    public:
 
@@ -497,84 +496,84 @@ class InstOpCode: public OMR::InstOpCode
 
    static const OpCodeMetaData metadata[NumOpCodes];
 
-   inline const OpCode_t& info() const                   {return _binaries[_opCode]; }
-   inline OMR::InstOpCode::Mnemonic getOpCodeValue() const           {return _opCode;}
-   inline OMR::InstOpCode::Mnemonic setOpCodeValue(OMR::InstOpCode::Mnemonic op) {return (_opCode = op);}
+   inline const OpCode_t& info() const                   {return _binaries[_mnemonic]; }
+   inline OMR::InstOpCode::Mnemonic getOpCodeValue() const           {return _mnemonic;}
+   inline OMR::InstOpCode::Mnemonic setOpCodeValue(OMR::InstOpCode::Mnemonic op) {return (_mnemonic = op);}
 
-   inline uint32_t modifiesTarget()                const {return _properties[_opCode] & IA32OpProp_ModifiesTarget;}
-   inline uint32_t modifiesSource()                const {return _properties[_opCode] & IA32OpProp_ModifiesSource;}
-   inline uint32_t usesTarget()                    const {return _properties[_opCode] & IA32OpProp_UsesTarget;}
-   inline uint32_t singleFPOp()                    const {return _properties[_opCode] & IA32OpProp_SingleFP;}
-   inline uint32_t doubleFPOp()                    const {return _properties[_opCode] & IA32OpProp_DoubleFP;}
-   inline uint32_t gprOp()                         const {return (_properties[_opCode] & (IA32OpProp_DoubleFP | IA32OpProp_SingleFP)) == 0;}
-   inline uint32_t fprOp()                         const {return (_properties[_opCode] & (IA32OpProp_DoubleFP | IA32OpProp_SingleFP));}
-   inline uint32_t hasByteImmediate()              const {return _properties[_opCode] & IA32OpProp_ByteImmediate;}
-   inline uint32_t hasShortImmediate()             const {return _properties[_opCode] & IA32OpProp_ShortImmediate;}
-   inline uint32_t hasIntImmediate()               const {return _properties[_opCode] & IA32OpProp_IntImmediate;}
-   inline uint32_t hasLongImmediate()              const {return _properties1[_opCode] & IA32OpProp1_LongImmediate;}
-   inline uint32_t hasSignExtendImmediate()        const {return _properties[_opCode] & IA32OpProp_SignExtendImmediate;}
-   inline uint32_t testsZeroFlag()                 const {return _properties[_opCode] & IA32OpProp_TestsZeroFlag;}
-   inline uint32_t modifiesZeroFlag()              const {return _properties[_opCode] & IA32OpProp_ModifiesZeroFlag;}
-   inline uint32_t testsSignFlag()                 const {return _properties[_opCode] & IA32OpProp_TestsSignFlag;}
-   inline uint32_t modifiesSignFlag()              const {return _properties[_opCode] & IA32OpProp_ModifiesSignFlag;}
-   inline uint32_t testsCarryFlag()                const {return _properties[_opCode] & IA32OpProp_TestsCarryFlag;}
-   inline uint32_t modifiesCarryFlag()             const {return _properties[_opCode] & IA32OpProp_ModifiesCarryFlag;}
-   inline uint32_t testsOverflowFlag()             const {return _properties[_opCode] & IA32OpProp_TestsOverflowFlag;}
-   inline uint32_t modifiesOverflowFlag()          const {return _properties[_opCode] & IA32OpProp_ModifiesOverflowFlag;}
-   inline uint32_t testsParityFlag()               const {return _properties[_opCode] & IA32OpProp_TestsParityFlag;}
-   inline uint32_t modifiesParityFlag()            const {return _properties[_opCode] & IA32OpProp_ModifiesParityFlag;}
-   inline uint32_t hasByteSource()                 const {return _properties[_opCode] & IA32OpProp_ByteSource;}
-   inline uint32_t hasByteTarget()                 const {return _properties[_opCode] & IA32OpProp_ByteTarget;}
-   inline uint32_t hasShortSource()                const {return _properties[_opCode] & IA32OpProp_ShortSource;}
-   inline uint32_t hasShortTarget()                const {return _properties[_opCode] & IA32OpProp_ShortTarget;}
-   inline uint32_t hasIntSource()                  const {return _properties[_opCode] & IA32OpProp_IntSource;}
-   inline uint32_t hasIntTarget()                  const {return _properties[_opCode] & IA32OpProp_IntTarget;}
-   inline uint32_t hasLongSource()                 const {return _properties1[_opCode] & IA32OpProp1_LongSource;}
-   inline uint32_t hasLongTarget()                 const {return _properties1[_opCode] & IA32OpProp1_LongTarget;}
-   inline uint32_t hasDoubleWordSource()           const {return _properties1[_opCode] & IA32OpProp1_DoubleWordSource;}
-   inline uint32_t hasDoubleWordTarget()           const {return _properties1[_opCode] & IA32OpProp1_DoubleWordTarget;}
-   inline uint32_t hasXMMSource()                  const {return _properties1[_opCode] & IA32OpProp1_XMMSource;}
-   inline uint32_t hasXMMTarget()                  const {return _properties1[_opCode] & IA32OpProp1_XMMTarget;}
-   inline uint32_t isPseudoOp()                    const {return _properties1[_opCode] & IA32OpProp1_PseudoOp;}
-   inline uint32_t needsRepPrefix()                const {return _properties1[_opCode] & IA32OpProp1_NeedsRepPrefix;}
-   inline uint32_t needsLockPrefix()               const {return _properties1[_opCode] & IA32OpProp1_NeedsLockPrefix;}
-   inline uint32_t needsXacquirePrefix()           const {return _properties1[_opCode] & IA32OpProp1_NeedsXacquirePrefix;}
-   inline uint32_t needsXreleasePrefix()           const {return _properties1[_opCode] & IA32OpProp1_NeedsXreleasePrefix;}
+   inline uint32_t modifiesTarget()                const {return _properties[_mnemonic] & IA32OpProp_ModifiesTarget;}
+   inline uint32_t modifiesSource()                const {return _properties[_mnemonic] & IA32OpProp_ModifiesSource;}
+   inline uint32_t usesTarget()                    const {return _properties[_mnemonic] & IA32OpProp_UsesTarget;}
+   inline uint32_t singleFPOp()                    const {return _properties[_mnemonic] & IA32OpProp_SingleFP;}
+   inline uint32_t doubleFPOp()                    const {return _properties[_mnemonic] & IA32OpProp_DoubleFP;}
+   inline uint32_t gprOp()                         const {return (_properties[_mnemonic] & (IA32OpProp_DoubleFP | IA32OpProp_SingleFP)) == 0;}
+   inline uint32_t fprOp()                         const {return (_properties[_mnemonic] & (IA32OpProp_DoubleFP | IA32OpProp_SingleFP));}
+   inline uint32_t hasByteImmediate()              const {return _properties[_mnemonic] & IA32OpProp_ByteImmediate;}
+   inline uint32_t hasShortImmediate()             const {return _properties[_mnemonic] & IA32OpProp_ShortImmediate;}
+   inline uint32_t hasIntImmediate()               const {return _properties[_mnemonic] & IA32OpProp_IntImmediate;}
+   inline uint32_t hasLongImmediate()              const {return _properties1[_mnemonic] & IA32OpProp1_LongImmediate;}
+   inline uint32_t hasSignExtendImmediate()        const {return _properties[_mnemonic] & IA32OpProp_SignExtendImmediate;}
+   inline uint32_t testsZeroFlag()                 const {return _properties[_mnemonic] & IA32OpProp_TestsZeroFlag;}
+   inline uint32_t modifiesZeroFlag()              const {return _properties[_mnemonic] & IA32OpProp_ModifiesZeroFlag;}
+   inline uint32_t testsSignFlag()                 const {return _properties[_mnemonic] & IA32OpProp_TestsSignFlag;}
+   inline uint32_t modifiesSignFlag()              const {return _properties[_mnemonic] & IA32OpProp_ModifiesSignFlag;}
+   inline uint32_t testsCarryFlag()                const {return _properties[_mnemonic] & IA32OpProp_TestsCarryFlag;}
+   inline uint32_t modifiesCarryFlag()             const {return _properties[_mnemonic] & IA32OpProp_ModifiesCarryFlag;}
+   inline uint32_t testsOverflowFlag()             const {return _properties[_mnemonic] & IA32OpProp_TestsOverflowFlag;}
+   inline uint32_t modifiesOverflowFlag()          const {return _properties[_mnemonic] & IA32OpProp_ModifiesOverflowFlag;}
+   inline uint32_t testsParityFlag()               const {return _properties[_mnemonic] & IA32OpProp_TestsParityFlag;}
+   inline uint32_t modifiesParityFlag()            const {return _properties[_mnemonic] & IA32OpProp_ModifiesParityFlag;}
+   inline uint32_t hasByteSource()                 const {return _properties[_mnemonic] & IA32OpProp_ByteSource;}
+   inline uint32_t hasByteTarget()                 const {return _properties[_mnemonic] & IA32OpProp_ByteTarget;}
+   inline uint32_t hasShortSource()                const {return _properties[_mnemonic] & IA32OpProp_ShortSource;}
+   inline uint32_t hasShortTarget()                const {return _properties[_mnemonic] & IA32OpProp_ShortTarget;}
+   inline uint32_t hasIntSource()                  const {return _properties[_mnemonic] & IA32OpProp_IntSource;}
+   inline uint32_t hasIntTarget()                  const {return _properties[_mnemonic] & IA32OpProp_IntTarget;}
+   inline uint32_t hasLongSource()                 const {return _properties1[_mnemonic] & IA32OpProp1_LongSource;}
+   inline uint32_t hasLongTarget()                 const {return _properties1[_mnemonic] & IA32OpProp1_LongTarget;}
+   inline uint32_t hasDoubleWordSource()           const {return _properties1[_mnemonic] & IA32OpProp1_DoubleWordSource;}
+   inline uint32_t hasDoubleWordTarget()           const {return _properties1[_mnemonic] & IA32OpProp1_DoubleWordTarget;}
+   inline uint32_t hasXMMSource()                  const {return _properties1[_mnemonic] & IA32OpProp1_XMMSource;}
+   inline uint32_t hasXMMTarget()                  const {return _properties1[_mnemonic] & IA32OpProp1_XMMTarget;}
+   inline uint32_t isPseudoOp()                    const {return _properties1[_mnemonic] & IA32OpProp1_PseudoOp;}
+   inline uint32_t needsRepPrefix()                const {return _properties1[_mnemonic] & IA32OpProp1_NeedsRepPrefix;}
+   inline uint32_t needsLockPrefix()               const {return _properties1[_mnemonic] & IA32OpProp1_NeedsLockPrefix;}
+   inline uint32_t needsXacquirePrefix()           const {return _properties1[_mnemonic] & IA32OpProp1_NeedsXacquirePrefix;}
+   inline uint32_t needsXreleasePrefix()           const {return _properties1[_mnemonic] & IA32OpProp1_NeedsXreleasePrefix;}
    inline uint32_t clearsUpperBits()               const {return hasIntTarget() && modifiesTarget();}
    inline uint32_t setsUpperBits()                 const {return hasLongTarget() && modifiesTarget();}
-   inline uint32_t hasTargetRegisterInOpcode()     const {return _properties[_opCode] & IA32OpProp_TargetRegisterInOpcode;}
-   inline uint32_t hasTargetRegisterInModRM()      const {return _properties[_opCode] & IA32OpProp_TargetRegisterInModRM;}
-   inline uint32_t hasTargetRegisterIgnored()      const {return _properties[_opCode] & IA32OpProp_TargetRegisterIgnored;}
-   inline uint32_t hasSourceRegisterInModRM()      const {return _properties[_opCode] & IA32OpProp_SourceRegisterInModRM;}
-   inline uint32_t hasSourceRegisterIgnored()      const {return _properties[_opCode] & IA32OpProp_SourceRegisterIgnored;}
-   inline uint32_t isBranchOp()                    const {return _properties[_opCode] & IA32OpProp_BranchOp;}
+   inline uint32_t hasTargetRegisterInOpcode()     const {return _properties[_mnemonic] & IA32OpProp_TargetRegisterInOpcode;}
+   inline uint32_t hasTargetRegisterInModRM()      const {return _properties[_mnemonic] & IA32OpProp_TargetRegisterInModRM;}
+   inline uint32_t hasTargetRegisterIgnored()      const {return _properties[_mnemonic] & IA32OpProp_TargetRegisterIgnored;}
+   inline uint32_t hasSourceRegisterInModRM()      const {return _properties[_mnemonic] & IA32OpProp_SourceRegisterInModRM;}
+   inline uint32_t hasSourceRegisterIgnored()      const {return _properties[_mnemonic] & IA32OpProp_SourceRegisterIgnored;}
+   inline uint32_t isBranchOp()                    const {return _properties[_mnemonic] & IA32OpProp_BranchOp;}
    inline uint32_t hasRelativeBranchDisplacement() const { return isBranchOp() || isCallImmOp(); }
    inline uint32_t isShortBranchOp()               const {return isBranchOp() && hasByteImmediate();}
-   inline uint32_t testsSomeFlag()                 const {return _properties[_opCode] & IA32OpProp_TestsSomeFlag;}
-   inline uint32_t modifiesSomeArithmeticFlags()   const {return _properties[_opCode] & IA32OpProp_SetsSomeArithmeticFlag;}
-   inline uint32_t setsCCForCompare()              const {return _properties1[_opCode] & IA32OpProp1_SetsCCForCompare;}
-   inline uint32_t setsCCForTest()                 const {return _properties1[_opCode] & IA32OpProp1_SetsCCForTest;}
-   inline uint32_t isShiftOp()                     const {return _properties1[_opCode] & IA32OpProp1_ShiftOp;}
-   inline uint32_t isRotateOp()                    const {return _properties1[_opCode] & IA32OpProp1_RotateOp;}
-   inline uint32_t isPushOp()                      const {return _properties1[_opCode] & IA32OpProp1_PushOp;}
-   inline uint32_t isPopOp()                       const {return _properties1[_opCode] & IA32OpProp1_PopOp;}
-   inline uint32_t isCallOp()                      const {return isCallOp(_opCode); }
-   inline uint32_t isCallImmOp()                   const {return isCallImmOp(_opCode); }
-   inline uint32_t supportsLockPrefix()            const {return _properties1[_opCode] & IA32OpProp1_SupportsLockPrefix;}
+   inline uint32_t testsSomeFlag()                 const {return _properties[_mnemonic] & IA32OpProp_TestsSomeFlag;}
+   inline uint32_t modifiesSomeArithmeticFlags()   const {return _properties[_mnemonic] & IA32OpProp_SetsSomeArithmeticFlag;}
+   inline uint32_t setsCCForCompare()              const {return _properties1[_mnemonic] & IA32OpProp1_SetsCCForCompare;}
+   inline uint32_t setsCCForTest()                 const {return _properties1[_mnemonic] & IA32OpProp1_SetsCCForTest;}
+   inline uint32_t isShiftOp()                     const {return _properties1[_mnemonic] & IA32OpProp1_ShiftOp;}
+   inline uint32_t isRotateOp()                    const {return _properties1[_mnemonic] & IA32OpProp1_RotateOp;}
+   inline uint32_t isPushOp()                      const {return _properties1[_mnemonic] & IA32OpProp1_PushOp;}
+   inline uint32_t isPopOp()                       const {return _properties1[_mnemonic] & IA32OpProp1_PopOp;}
+   inline uint32_t isCallOp()                      const {return isCallOp(_mnemonic); }
+   inline uint32_t isCallImmOp()                   const {return isCallImmOp(_mnemonic); }
+   inline uint32_t supportsLockPrefix()            const {return _properties1[_mnemonic] & IA32OpProp1_SupportsLockPrefix;}
    inline bool     isConditionalBranchOp()         const {return isBranchOp() && testsSomeFlag();}
-   inline uint32_t hasPopInstruction()             const {return _properties[_opCode] & IA32OpProp_HasPopInstruction;}
-   inline uint32_t isPopInstruction()              const {return _properties[_opCode] & IA32OpProp_IsPopInstruction;}
-   inline uint32_t sourceOpTarget()                const {return _properties[_opCode] & IA32OpProp_SourceOpTarget;}
-   inline uint32_t hasDirectionBit()               const {return _properties[_opCode] & IA32OpProp_HasDirectionBit;}
-   inline uint32_t isIA32Only()                    const {return _properties1[_opCode] & IA32OpProp1_IsIA32Only;}
-   inline uint32_t sourceIsMemRef()                const {return _properties1[_opCode] & IA32OpProp1_SourceIsMemRef;}
-   inline uint32_t targetRegIsImplicit()           const { return _properties1[_opCode] & IA32OpProp1_TargetRegIsImplicit;}
-   inline uint32_t sourceRegIsImplicit()           const { return _properties1[_opCode] & IA32OpProp1_SourceRegIsImplicit;}
-   inline uint32_t isFusableCompare()              const { return _properties1[_opCode] & IA32OpProp1_FusableCompare; }
+   inline uint32_t hasPopInstruction()             const {return _properties[_mnemonic] & IA32OpProp_HasPopInstruction;}
+   inline uint32_t isPopInstruction()              const {return _properties[_mnemonic] & IA32OpProp_IsPopInstruction;}
+   inline uint32_t sourceOpTarget()                const {return _properties[_mnemonic] & IA32OpProp_SourceOpTarget;}
+   inline uint32_t hasDirectionBit()               const {return _properties[_mnemonic] & IA32OpProp_HasDirectionBit;}
+   inline uint32_t isIA32Only()                    const {return _properties1[_mnemonic] & IA32OpProp1_IsIA32Only;}
+   inline uint32_t sourceIsMemRef()                const {return _properties1[_mnemonic] & IA32OpProp1_SourceIsMemRef;}
+   inline uint32_t targetRegIsImplicit()           const { return _properties1[_mnemonic] & IA32OpProp1_TargetRegIsImplicit;}
+   inline uint32_t sourceRegIsImplicit()           const { return _properties1[_mnemonic] & IA32OpProp1_SourceRegIsImplicit;}
+   inline uint32_t isFusableCompare()              const { return _properties1[_mnemonic] & IA32OpProp1_FusableCompare; }
 
    inline bool isSetRegInstruction() const
       {
-      switch(_opCode)
+      switch(_mnemonic)
          {
          case SETA1Reg:
          case SETAE1Reg:
@@ -601,12 +600,12 @@ class InstOpCode: public OMR::InstOpCode
    void finalize(uint8_t* cursor) const;
    void convertLongBranchToShort()
       { // input must be a long branch in range JA4 - JMP4
-      if (((int)_opCode >= (int)JA4) && ((int)_opCode <= (int)JMP4))
-         _opCode = (OMR::InstOpCode::Mnemonic)((int)_opCode - IA32LongToShortBranchConversionOffset);
+      if (((int)_mnemonic >= (int)JA4) && ((int)_mnemonic <= (int)JMP4))
+         _mnemonic = (OMR::InstOpCode::Mnemonic)((int)_mnemonic - IA32LongToShortBranchConversionOffset);
       }
 
-   inline uint8_t getModifiedEFlags() const {return getModifiedEFlags(_opCode); }
-   inline uint8_t getTestedEFlags()   const {return getTestedEFlags(_opCode); }
+   inline uint8_t getModifiedEFlags() const {return getModifiedEFlags(_mnemonic); }
+   inline uint8_t getTestedEFlags()   const {return getTestedEFlags(_mnemonic); }
 
    void trackUpperBitsOnReg(TR::Register *reg, TR::CodeGenerator *cg);
 

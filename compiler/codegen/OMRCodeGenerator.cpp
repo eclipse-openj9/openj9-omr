@@ -134,7 +134,26 @@ namespace TR { class RegisterDependencyConditions; }
 TR_TreeEvaluatorFunctionPointer
 OMR::CodeGenerator::_nodeToInstrEvaluators[] =
    {
-   #include "codegen/TreeEvaluatorTable.hpp"
+#define OPCODE_MACRO(\
+   opcode, \
+   name, \
+   prop1, \
+   prop2, \
+   prop3, \
+   prop4, \
+   dataType, \
+   typeProps, \
+   childProps, \
+   swapChildrenOpcode, \
+   reverseBranchOpcode, \
+   boolCompareOpcode, \
+   ifCompareOpcode, \
+   ...) TR::TreeEvaluator::opcode ## Evaluator,
+
+   TR::TreeEvaluator::BadILOpEvaluator,
+
+#include "il/Opcodes.enum"
+#undef OPCODE_MACRO
    };
 
 static_assert(TR::NumIlOps ==

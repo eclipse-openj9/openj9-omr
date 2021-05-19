@@ -671,9 +671,9 @@
    reverseBranchOpcode, \
    boolCompareOpcode, \
    ifCompareOpcode, \
-   ...) _ ## opcode ## Evaluator,
+   ...) TR::TreeEvaluator::opcode ## Evaluator,
 
-   _BadILOpEvaluator,
+   TR::TreeEvaluator::BadILOpEvaluator,
 
 #include "il/Opcodes.enum"
 #undef OPCODE_MACRO

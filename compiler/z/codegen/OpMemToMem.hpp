@@ -86,17 +86,17 @@ class MemToMemMacroOp
                if(_startControlFlow==NULL)
                  {
                  _startControlFlow=cursorBefore->getNext();
-                 if(_startControlFlow->getOpCodeValue() == TR::InstOpCode::ASSOCREGS) _startControlFlow=_startControlFlow->getNext();
+                 if(_startControlFlow->getOpCodeValue() == TR::InstOpCode::assocreg) _startControlFlow=_startControlFlow->getNext();
                  }
                if(_startControlFlow != _cursor)
                  {
                  TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(_cg);
                  TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(_cg);
 
-                 generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionStart, dependencies, _startControlFlow->getPrev());
+                 generateS390LabelInstruction(_cg, TR::InstOpCode::label, _rootNode, cFlowRegionStart, dependencies, _startControlFlow->getPrev());
                  cFlowRegionStart->setStartInternalControlFlow();
 
-                 generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionEnd, _cursor->getPrev());
+                 generateS390LabelInstruction(_cg, TR::InstOpCode::label, _rootNode, cFlowRegionEnd, _cursor->getPrev());
                  cFlowRegionEnd->setEndInternalControlFlow();
                  }
                }
@@ -259,7 +259,7 @@ class MemToMemConstLenMacroOp : public MemToMemMacroOp
          }
    protected:
       MemToMemConstLenMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator * cg, int64_t length,
-                              TR::Register * itersReg=0, TR::InstOpCode::Mnemonic op=TR::InstOpCode::BAD, bool inNestedICF=false)
+                              TR::Register * itersReg=0, TR::InstOpCode::Mnemonic op=TR::InstOpCode::bad, bool inNestedICF=false)
         : MemToMemMacroOp(rootNode, dstNode, srcNode, cg,NULL, itersReg), _length(length), _maxCopies(16), _opcode(op), _needDep(true), _inNestedICF(inNestedICF), _nestedICFDeps(NULL)
          {
          uint64_t len = (uint64_t)length;

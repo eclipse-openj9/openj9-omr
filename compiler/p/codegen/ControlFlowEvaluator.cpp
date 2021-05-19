@@ -1594,7 +1594,7 @@ TR::Register *OMR::Power::TreeEvaluator::ireturnEvaluator(TR::Node *node, TR::Co
                 linkageProperties.getIntegerReturnRegister();
    TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 0, cg->trMemory());
    dependencies->addPreCondition(returnRegister, machineReturnRegister);
-   generateAdminInstruction(cg, TR::InstOpCode::ret, node);
+   generateAdminInstruction(cg, TR::InstOpCode::retn, node);
    generateDepInstruction(cg, TR::InstOpCode::blr, node, dependencies);
    cg->decReferenceCount(node->getFirstChild());
    return NULL;
@@ -1626,7 +1626,7 @@ TR::Register *OMR::Power::TreeEvaluator::lreturnEvaluator(TR::Node *node, TR::Co
       dependencies->addPreCondition(lowReg, machineLowReturnRegister);
       dependencies->addPreCondition(highReg, machineHighReturnRegister);
       }
-   generateAdminInstruction(cg, TR::InstOpCode::ret, node);
+   generateAdminInstruction(cg, TR::InstOpCode::retn, node);
    generateDepInstruction(cg, TR::InstOpCode::blr, node, dependencies);
    cg->decReferenceCount(node->getFirstChild());
    return NULL;
@@ -1636,7 +1636,7 @@ TR::Register *OMR::Power::TreeEvaluator::lreturnEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::Power::TreeEvaluator::returnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   generateAdminInstruction(cg, TR::InstOpCode::ret, node);
+   generateAdminInstruction(cg, TR::InstOpCode::retn, node);
    generateInstruction(cg, TR::InstOpCode::blr, node);
    return NULL;
    }

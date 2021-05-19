@@ -233,6 +233,6 @@ TR::InstOpCode::S390BranchCondition getStandardIfBranchCondition(TR::ILOpCodes o
 TR::InstOpCode::S390BranchCondition getButestBranchCondition(TR::ILOpCodes opCode, int32_t compareVal);
 
 bool canUseNodeForFusedMultiply(TR::Node *node);
-bool generateFusedMultiplyAddIfPossible(TR::CodeGenerator *cg, TR::Node *addNode, TR::InstOpCode::Mnemonic op, TR::InstOpCode::Mnemonic negateOp = TR::InstOpCode::BAD);
+bool generateFusedMultiplyAddIfPossible(TR::CodeGenerator *cg, TR::Node *addNode, TR::InstOpCode::Mnemonic op, TR::InstOpCode::Mnemonic negateOp = TR::InstOpCode::bad);
 
 #endif

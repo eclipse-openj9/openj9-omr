@@ -1041,18 +1041,18 @@ OMR::Z::CodeGenerator::beginInstructionSelection()
          TR::ResolvedMethodSymbol * methodSymbol = self()->comp()->getJittedMethodSymbol();
          intptr_t jniMethodTargetAddress = (intptr_t)methodSymbol->getResolvedMethod()->startAddressForJNIMethod(self()->comp());
 
-         cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, UPPER_4_BYTES(jniMethodTargetAddress), cursor, self());
+         cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::dd, startNode, UPPER_4_BYTES(jniMethodTargetAddress), cursor, self());
 
          if (self()->comp()->target().is64Bit())
             {
-            cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, LOWER_4_BYTES(jniMethodTargetAddress), cursor, self());
+            cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::dd, startNode, LOWER_4_BYTES(jniMethodTargetAddress), cursor, self());
             }
          }
 
-      _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, 0, NULL, cursor, self());
+      _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::dd, startNode, 0, NULL, cursor, self());
       }
 
-   generateS390PseudoInstruction(self(), TR::InstOpCode::PROC, startNode);
+   generateS390PseudoInstruction(self(), TR::InstOpCode::proc, startNode);
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1502,7 +1502,7 @@ static TR::Instruction *skipInternalControlFlow(TR::Instruction *insertInstr)
   for(insertInstr=insertInstr->getPrev(); insertInstr!=NULL; insertInstr=insertInstr->getPrev())
     {
     // Track internal control flow on labels
-    if (insertInstr->getOpCodeValue() == TR::InstOpCode::LABEL)
+    if (insertInstr->getOpCodeValue() == TR::InstOpCode::label)
       {
       TR::S390LabelInstruction *li = toS390LabelInstruction(insertInstr);
       TR::LabelSymbol *ls=li->getLabelSymbol();
@@ -1897,9 +1897,9 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    // Generate the first label by using the placement new operator such that we are guaranteed to call the correct
    // overload of the constructor which can accept a NULL preceding instruction. If cursor is NULL the generated
    // label instruction will be prepended to the start of the instruction stream.
-   _methodBegin = new (self()->trHeapMemory()) TR::S390LabelInstruction(TR::InstOpCode::LABEL, self()->comp()->getStartTree()->getNode(), generateLabelSymbol(self()), static_cast<TR::Instruction*>(NULL), self());
+   _methodBegin = new (self()->trHeapMemory()) TR::S390LabelInstruction(TR::InstOpCode::label, self()->comp()->getStartTree()->getNode(), generateLabelSymbol(self()), static_cast<TR::Instruction*>(NULL), self());
 
-   _methodEnd = generateS390LabelInstruction(self(), TR::InstOpCode::LABEL, self()->comp()->findLastTree()->getNode(), generateLabelSymbol(self()));
+   _methodEnd = generateS390LabelInstruction(self(), TR::InstOpCode::label, self()->comp()->findLastTree()->getNode(), generateLabelSymbol(self()));
 
    TR_S390BinaryEncodingData data;
    data.cursorInstruction = self()->getFirstInstruction();
@@ -1972,7 +1972,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    TR::Instruction* cursor = data.cursorInstruction;
 
    // TODO: We should be caching the PROC instruction as it's used in several places and is pretty important
-   while (cursor && cursor->getOpCodeValue() != TR::InstOpCode::PROC)
+   while (cursor && cursor->getOpCodeValue() != TR::InstOpCode::proc)
       {
       cursor = cursor->getNext();
       }
@@ -2001,7 +2001,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          self()->setCurrentBlock(data.cursorInstruction->getNode()->getBlock());
          }
 
-      if (data.cursorInstruction->getOpCodeValue() == TR::InstOpCode::RET)
+      if (data.cursorInstruction->getOpCodeValue() == TR::InstOpCode::retn)
          {
 
          if (skipOneReturn == false)
@@ -2011,8 +2011,8 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
             data.cursorInstruction = temp->getNext();
 
             /* skipOneReturn only if epilog is generated which is indicated by instructions being */
-            /* inserted before TR::InstOpCode::RET.  If no epilog is generated, TR::InstOpCode::RET will stay               */
-            if (data.cursorInstruction->getOpCodeValue() != TR::InstOpCode::RET)
+            /* inserted before TR::InstOpCode::retn.  If no epilog is generated, TR::InstOpCode::retn will stay               */
+            if (data.cursorInstruction->getOpCodeValue() != TR::InstOpCode::retn)
                skipOneReturn = true;
             }
          else

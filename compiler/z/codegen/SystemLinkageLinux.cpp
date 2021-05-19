@@ -245,7 +245,7 @@ void TR::S390zLinuxSystemLinkage::createEpilogue(TR::Instruction * cursor)
 
    TR::Node* node = cursor->getNext()->getNode();
 
-   cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::LABEL, node, generateLabelSymbol(cg()), cursor);
+   cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::label, node, generateLabelSymbol(cg()), cursor);
 
    cursor = fillFPRsInEpilogue(node, cursor);
    cursor = fillGPRsInEpilogue(node, cursor);

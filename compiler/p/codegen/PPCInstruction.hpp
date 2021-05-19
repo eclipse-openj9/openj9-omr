@@ -1462,7 +1462,7 @@ class PPCVirtualGuardNOPInstruction : public PPCDepLabelInstruction
                                     TR::RegisterDependencyConditions *cond,
                                     TR::LabelSymbol                  *label,
                                     TR::CodeGenerator               *codeGen)
-      : PPCDepLabelInstruction(TR::InstOpCode::vgdnop, node, label, cond, codeGen), _site(site) {}
+      : PPCDepLabelInstruction(TR::InstOpCode::vgnop, node, label, cond, codeGen), _site(site) {}
 
    PPCVirtualGuardNOPInstruction(TR::Node                        *node,
                                     TR_VirtualGuardSite     *site,
@@ -1470,7 +1470,7 @@ class PPCVirtualGuardNOPInstruction : public PPCDepLabelInstruction
                                     TR::LabelSymbol                  *label,
                                     TR::Instruction                 *precedingInstruction,
                                     TR::CodeGenerator               *codeGen)
-      : PPCDepLabelInstruction(TR::InstOpCode::vgdnop, node, label, cond, precedingInstruction, codeGen), _site(site) {}
+      : PPCDepLabelInstruction(TR::InstOpCode::vgnop, node, label, cond, precedingInstruction, codeGen), _site(site) {}
 
    virtual Kind getKind() { return IsVirtualGuardNOP; }
 

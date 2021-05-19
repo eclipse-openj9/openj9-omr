@@ -26,8 +26,8 @@
 
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::ASSOCREGS,
-   /* .name        = */ "ASSOCREGS",
+   /* .mnemonic    = */ OMR::InstOpCode::assocreg,
+   /* .name        = */ "assocreg",
    /* .description = */ "Register Association",
    /* .opcode[0]   = */ 0x00,
    /* .opcode[1]   = */ 0x00,
@@ -37,11 +37,77 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::BAD,
-   /* .name        = */ "BAD",
+   /* .mnemonic    = */ OMR::InstOpCode::bad,
+   /* .name        = */ "bad",
    /* .description = */ "Bad Opcode",
    /* .opcode[0]   = */ 0x00,
    /* .opcode[1]   = */ 0x00,
+   /* .format      = */ PSEUDO,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
+   /* .properties  = */ S390OpProp_None
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::dd,
+   /* .name        = */ ".dd",
+   /* .description = */ "Define Doubleword",
+   /* .opcode[0]   = */ 0x00,
+   /* .opcode[1]   = */ 0x00,
+   /* .format      = */ DC_FORMAT,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
+   /* .properties  = */ S390OpProp_None
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::fence,
+   /* .name        = */ "fence",
+   /* .description = */ "Fence",
+   /* .opcode[0]   = */ 0x00,
+   /* .opcode[1]   = */ 0x00,
+   /* .format      = */ PSEUDO,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
+   /* .properties  = */ S390OpProp_None
+   },
+
+   {
+   /* .mnemonic    = */ TR::InstOpCode::label,
+   /* .name        = */ "label",
+   /* .description = */ "Destination of a jump",
+   /* .opcode[0]   = */ 0x00,
+   /* .opcode[1]   = */ 0x00,
+   /* .format      = */ PSEUDO,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
+   /* .properties  = */ S390OpProp_None
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::proc,
+   /* .name        = */ "proc",
+   /* .description = */ "Entry to the method",
+   /* .opcode[0]   = */ 0x00,
+   /* .opcode[1]   = */ 0x00,
+   /* .format      = */ PSEUDO,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
+   /* .properties  = */ S390OpProp_None
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::retn,
+   /* .name        = */ "retn",
+   /* .description = */ "Return",
+   /* .opcode[0]   = */ 0x00,
+   /* .opcode[1]   = */ 0x00,
+   /* .format      = */ PSEUDO,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
+   /* .properties  = */ S390OpProp_None
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::vgnop,
+   /* .name        = */ "vgnop",
+   /* .description = */ "Virtual Guard NOP",
+   /* .opcode[0]   = */ 0xA7,
+   /* .opcode[1]   = */ 0x04,
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
    /* .properties  = */ S390OpProp_None
@@ -54,17 +120,6 @@
    /* .opcode[0]   = */ 0x00,
    /* .opcode[1]   = */ 0x01,
    /* .format      = */ E_FORMAT,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::DC,
-   /* .name        = */ "DC",
-   /* .description = */ "DC",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ DC_FORMAT,
    /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
    /* .properties  = */ S390OpProp_None
    },
@@ -104,395 +159,6 @@
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
    /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::FENCE,
-   /* .name        = */ "FENCE",
-   /* .description = */ "Fence",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::LABEL,
-   /* .name        = */ "LABEL",
-   /* .description = */ "Destination of a jump",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::LHHR,
-   /* .name        = */ "LHHR",
-   /* .description = */ "Load (High <- High)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetHW |
-                        S390OpProp_SrcHW |
-                        S390OpProp_IsRegCopy |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::LHLR,
-   /* .name        = */ "LHLR",
-   /* .description = */ "Load (High <- Low)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetHW |
-                        S390OpProp_IsRegCopy |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::LLCHHR,
-   /* .name        = */ "LLCHHR",
-   /* .description = */ "Load Logical Character (High <- High)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetHW |
-                        S390OpProp_SrcHW |
-                        S390OpProp_IsRegCopy |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::LLCHLR,
-   /* .name        = */ "LLCHLR",
-   /* .description = */ "Load Logical Character (High <- low)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetHW |
-                        S390OpProp_IsRegCopy |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::LLCLHR,
-   /* .name        = */ "LLCLHR",
-   /* .description = */ "Load Logical Character (Low <- High)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_SrcHW |
-                        S390OpProp_IsRegCopy |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::LLHFR,
-   /* .name        = */ "LLHFR",
-   /* .description = */ "Load (Low <- High)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_SrcHW |
-                        S390OpProp_IsRegCopy |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::LLHHHR,
-   /* .name        = */ "LLHHHR",
-   /* .description = */ "Load Logical Halfword (High <- High)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetHW |
-                        S390OpProp_SrcHW |
-                        S390OpProp_IsRegCopy |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::LLHHLR,
-   /* .name        = */ "LLHHLR",
-   /* .description = */ "Load Logical Halfword (High <- low)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetHW |
-                        S390OpProp_IsRegCopy |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::LLHLHR,
-   /* .name        = */ "LLHLHR",
-   /* .description = */ "Load Logical Halfword (Low <- High)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_SrcHW |
-                        S390OpProp_IsRegCopy |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::NHHR,
-   /* .name        = */ "NHHR",
-   /* .description = */ "AND High (High <- High)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetHW |
-                        S390OpProp_SrcHW |
-                        S390OpProp_UsesTarget |
-                        S390OpProp_SetsCC |
-                        S390OpProp_SetsZeroFlag |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::NHLR,
-   /* .name        = */ "NHLR",
-   /* .description = */ "AND High (High <- Low)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetHW |
-                        S390OpProp_UsesTarget |
-                        S390OpProp_SetsCC |
-                        S390OpProp_SetsZeroFlag |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::NLHR,
-   /* .name        = */ "NLHR",
-   /* .description = */ "AND High (Low <- High)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_SrcHW |
-                        S390OpProp_UsesTarget |
-                        S390OpProp_SetsCC |
-                        S390OpProp_SetsZeroFlag |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::OHHR,
-   /* .name        = */ "OHHR",
-   /* .description = */ "OR High (High <- High)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetHW |
-                        S390OpProp_SrcHW |
-                        S390OpProp_UsesTarget |
-                        S390OpProp_SetsCC |
-                        S390OpProp_SetsZeroFlag |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::OHLR,
-   /* .name        = */ "OHLR",
-   /* .description = */ "OR High (High <- Low)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetHW |
-                        S390OpProp_UsesTarget |
-                        S390OpProp_SetsCC |
-                        S390OpProp_SetsZeroFlag |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::OLHR,
-   /* .name        = */ "OLHR",
-   /* .description = */ "OR High (Low <- High)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_SrcHW |
-                        S390OpProp_UsesTarget |
-                        S390OpProp_SetsCC |
-                        S390OpProp_SetsZeroFlag |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::PROC,
-   /* .name        = */ "PROC",
-   /* .description = */ "Entry to the method",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::RET,
-   /* .name        = */ "RET",
-   /* .description = */ "Return",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::SLLHH,
-   /* .name        = */ "SLLHH",
-   /* .description = */ "Shift Left Logical (High <- High)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetHW |
-                        S390OpProp_SrcHW |
-                        S390OpProp_UsesTarget |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::SLLLH,
-   /* .name        = */ "SLLLH",
-   /* .description = */ "Shift Left Logical (Low <- High)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_SrcHW |
-                        S390OpProp_UsesTarget |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::SRLHH,
-   /* .name        = */ "SRLHH",
-   /* .description = */ "Shift Right Logical (High <- High)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetHW |
-                        S390OpProp_SrcHW |
-                        S390OpProp_UsesTarget |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::SRLLH,
-   /* .name        = */ "SRLLH",
-   /* .description = */ "Shift Right Logical (Low <- High)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_SrcHW |
-                        S390OpProp_UsesTarget |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::VGNOP,
-   /* .name        = */ "VGNOP",
-   /* .description = */ "ValueGuardNOP",
-   /* .opcode[0]   = */ 0xA7,
-   /* .opcode[1]   = */ 0x04,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::XHHR,
-   /* .name        = */ "XHHR",
-   /* .description = */ "Exclusive OR High (High <- High)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetHW |
-                        S390OpProp_SrcHW |
-                        S390OpProp_UsesTarget |
-                        S390OpProp_SetsCC |
-                        S390OpProp_SetsZeroFlag |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::XHLR,
-   /* .name        = */ "XHLR",
-   /* .description = */ "Exclusive OR High (High <- Low)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetHW |
-                        S390OpProp_UsesTarget |
-                        S390OpProp_SetsCC |
-                        S390OpProp_SetsZeroFlag |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::XLHR,
-   /* .name        = */ "XLHR",
-   /* .description = */ "Exclusive OR High (Low <- High)",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_UNKNOWN,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_SrcHW |
-                        S390OpProp_UsesTarget |
-                        S390OpProp_SetsCC |
-                        S390OpProp_SetsZeroFlag |
-                        S390OpProp_SetsOperand1
    },
 
    {

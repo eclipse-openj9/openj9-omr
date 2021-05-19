@@ -93,7 +93,14 @@ static const char *ARM64ExtendCodeNames[] =
 
 static const char *opCodeToNameMap[] =
    {
+   "assocreg",
    "bad",
+   "dd",
+   "fence",
+   "label",
+   "proc",
+   "retn",
+   "vgnop",
    "cbzw",
    "cbnzw",
    "cbzx",
@@ -745,13 +752,6 @@ static const char *opCodeToNameMap[] =
    "vfneg2d",
    "vnot16b",
    "nop",
-   "proc",
-   "fence",
-   "return",
-   "dd",
-   "label",
-   "vgdnop",
-   "assocreg"
    };
 
 const char *

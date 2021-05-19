@@ -24,8 +24,8 @@
  * definitions are permitted.
  */
 
+#include "compiler/codegen/OMRInstOpCode.enum"
 
-   bad,              // Illegal Opcode
    add,              // Add
    add_r,            // Add Rc=1
    addc,             // Add carrying
@@ -538,15 +538,9 @@
    xoris,            // XOR immediate shifted
    nop,              // NoOp (ori)
    genop,            // Group Ending NoOp (ori)
-   fence,            // Fence
    shdfence,         // Scheduling Fence
-   ret,              // Return
 // rxor,             // Rotate & XOR
    wrtbar,           // Write barrier directive
-   proc,             // Entry to the method
-   dd,               // define word
-   assocreg,         // Associate real registers with Virtual registers.
-   vgdnop,           // Virtual Guard NOP instruction
    probenop,         // Probe NOP (for RI)
    iflong,           // compare and branch long
    idiv,             // integer divide
@@ -1070,7 +1064,6 @@
    xvrsqrtesp,       // Vector Reciprocal Square Root Estimate Single-Precision
    xvsqrtsp,         // Vector Square Root Single-Precision
    xvsubsp,          // Vector Subtract Single-Precision
-   label,            // Destination of a jump
    brd,              // Byte-Reverse Doubleword
    brh,              // Byte-Reverse Halfword
    brw,              // Byte-Reverse Word

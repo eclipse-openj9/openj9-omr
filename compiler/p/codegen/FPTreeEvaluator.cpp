@@ -663,7 +663,7 @@ TR::Register *OMR::Power::TreeEvaluator::freturnEvaluator(TR::Node *node, TR::Co
                 linkageProperties.getFloatReturnRegister();
    TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 0, cg->trMemory());
    dependencies->addPreCondition(returnRegister, machineReturnRegister);
-   generateAdminInstruction(cg, TR::InstOpCode::ret, node);
+   generateAdminInstruction(cg, TR::InstOpCode::retn, node);
    generateDepInstruction(cg, TR::InstOpCode::blr, node, dependencies);
    cg->decReferenceCount(node->getFirstChild());
    return NULL;

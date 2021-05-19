@@ -155,7 +155,7 @@ class InstOpCode: public OMR::InstOpCode
                            _mnemonic==mulhwu ||
                            _mnemonic==mulhdu;}
 
-   bool isAdmin() {return _mnemonic==ret      ||
+   bool isAdmin() {return _mnemonic==retn     ||
                           _mnemonic==fence    ||
                           _mnemonic==proc     ||
                           _mnemonic==assocreg ||

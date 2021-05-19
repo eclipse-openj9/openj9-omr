@@ -81,7 +81,7 @@ void TR_S390OutOfLineCodeSection::generateS390OutOfLineCodeSectionDispatch()
 
    TR::Compilation *comp = _cg->comp();
    TR::Register    *vmThreadReg = _cg->getMethodMetaDataRealRegister();
-   TR::Instruction  *temp = generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _callNode, _entryLabel);
+   TR::Instruction  *temp = generateS390LabelInstruction(_cg, TR::InstOpCode::label, _callNode, _entryLabel);
 
    _cg->incOutOfLineColdPathNestedDepth();
    TR_Debug * debugObj = _cg->getDebug();

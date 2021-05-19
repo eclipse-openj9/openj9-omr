@@ -265,9 +265,9 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
       {
       TR_ASSERT_FATAL(targetReg->getAssignedRegister()->is64BitReg() == sourceReg->getAssignedRegister()->is64BitReg(), "Attempting register exchange with one 64-bit register (%s) and one 32-bit register (%s)", getRegisterName(sourceReg, cg), getRegisterName(targetReg, cg));
 
-      TR::InstOpCode::Mnemonic opLoadReg = TR::InstOpCode::BAD;
-      TR::InstOpCode::Mnemonic opLoad = TR::InstOpCode::BAD;
-      TR::InstOpCode::Mnemonic opStore = TR::InstOpCode::BAD;
+      TR::InstOpCode::Mnemonic opLoadReg = TR::InstOpCode::bad;
+      TR::InstOpCode::Mnemonic opLoad = TR::InstOpCode::bad;
+      TR::InstOpCode::Mnemonic opStore = TR::InstOpCode::bad;
 
       if (targetReg->getAssignedRegister()->is64BitReg())
          {
@@ -364,7 +364,7 @@ boundNext(TR::Instruction * currentInstruction, int32_t realNum, TR::Register * 
    TR::RealRegister::RegNum realReg = (TR::RealRegister::RegNum) realNum;
    TR::Node * nodeBBStart = NULL;
 
-   while (cursor->getOpCodeValue() != TR::InstOpCode::PROC)
+   while (cursor->getOpCodeValue() != TR::InstOpCode::proc)
       {
       TR::RegisterDependencyConditions * conditions;
       if ((conditions = cursor->getDependencyConditions()) != NULL)
@@ -2532,7 +2532,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
       }
 
    TR::Instruction * cursor = currentInstruction->getPrev();
-   while (numCandidates > 1 && cursor != NULL && cursor->getOpCodeValue() != TR::InstOpCode::LABEL && cursor->getOpCodeValue() != TR::InstOpCode::PROC)
+   while (numCandidates > 1 && cursor != NULL && cursor->getOpCodeValue() != TR::InstOpCode::label && cursor->getOpCodeValue() != TR::InstOpCode::proc)
       {
       for (int32_t i = 0; i < numCandidates; i++)
          {
@@ -4061,7 +4061,7 @@ OMR::Z::Machine::createRegisterAssociationDirective(TR::Instruction * cursor)
       associations->addPostCondition(self()->getVirtualAssociatedWithReal(regNum), regNum);
       }
 
-   TR::Instruction *cursor1 = new (self()->cg()->trHeapMemory(), TR_MemoryBase::S390Instruction) TR::Instruction(cursor, TR::InstOpCode::ASSOCREGS, associations, self()->cg());
+   TR::Instruction *cursor1 = new (self()->cg()->trHeapMemory(), TR_MemoryBase::S390Instruction) TR::Instruction(cursor, TR::InstOpCode::assocreg, associations, self()->cg());
 
    if (cursor == self()->cg()->getAppendInstruction())
       {

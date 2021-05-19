@@ -45,7 +45,7 @@ class InstOpCode
 
    enum Mnemonic
       {
-      #include "codegen/InstOpCodeEnum.hpp"
+      #include "codegen/InstOpCode.enum"
       NumOpCodes
       };
 

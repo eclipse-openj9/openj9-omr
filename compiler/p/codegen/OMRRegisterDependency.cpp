@@ -531,7 +531,7 @@ void OMR::Power::RegisterDependencyConditions::bookKeepingRegisterUses(TR::Instr
    if (instr->getOpCodeValue() == TR::InstOpCode::assocreg)
       return;
 
-   // Don't track associations or emit assocregs in outlined code
+   // Don't track associations or emit assocreg in outlined code
    // Register assigner can save/restore associations across outlined sections properly, however no such mechanism exists for instruction selection
    // so we don't want these associations to clobber the associations that were set in main line code, which are more important
    // TODO: Fix this by saving/restoring the associations in swapInstructionListsWithCompilation()
@@ -570,7 +570,7 @@ void OMR::Power::RegisterDependencyConditions::bookKeepingRegisterUses(TR::Instr
 
    if (numAssoc > 0)
       {
-      // Emit an AssocRegs instruction to track the previous association
+      // Emit an assocreg instruction to track the previous association
       assoc->setNumPostConditions(numAssoc, cg->trMemory());
       generateDepInstruction(cg, TR::InstOpCode::assocreg, instr->getNode(), assoc, instr->getPrev());
       }

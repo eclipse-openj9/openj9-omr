@@ -2513,36 +2513,36 @@ bool OMR::CodeGenerator::areMergeableGuards(TR::Instruction *earlierGuard, TR::I
           && (!earlierGuard->getNode()->isStopTheWorldGuard() || laterGuard->getNode()->isStopTheWorldGuard());
    }
 
-TR::Instruction *OMR::CodeGenerator::getVirtualGuardForPatching(TR::Instruction *vgdnop)
+TR::Instruction *OMR::CodeGenerator::getVirtualGuardForPatching(TR::Instruction *vgnop)
    {
-   TR_ASSERT(vgdnop->isVirtualGuardNOPInstruction(),
-      "getGuardForPatching called with non VirtualGuardNOPInstruction [%p] - this only works for guards!", vgdnop);
+   TR_ASSERT(vgnop->isVirtualGuardNOPInstruction(),
+      "getGuardForPatching called with non VirtualGuardNOPInstruction [%p] - this only works for guards!", vgnop);
 
-   if (!vgdnop->isMergeableGuard())
-      return vgdnop;
+   if (!vgnop->isMergeableGuard())
+      return vgnop;
 
    // If there are no previous instructions the instruction must be the patch point
    // as there is nothing to merge with
-   if (!vgdnop->getPrev())
-      return vgdnop;
+   if (!vgnop->getPrev())
+      return vgnop;
 
    // Guard merging is only done when the guard trees are consecutive in treetop order
    // only separated by BBStart and BBEnd trees Skip back to the BBStart since we need
-   // to get the block for vgdnop
-   if (vgdnop->getPrev()->getNode()->getOpCodeValue() != TR::BBStart)
-      return vgdnop;
+   // to get the block for vgnop
+   if (vgnop->getPrev()->getNode()->getOpCodeValue() != TR::BBStart)
+      return vgnop;
 
    // there could be local RA generated reg-reg movs between guards so we resort to checking the
    // trees and making sure that the guards are in treetop order
    // we only merge blocks in the same extended blocks - virtual guard head merger will
    // arrange for this to happen when possible for guards
-   TR::Instruction *toReturn = vgdnop;
-   TR::Block *extendedBlockStart = vgdnop->getPrev()->getNode()->getBlock()->startOfExtendedBlock();
-   for (TR::Instruction *prevI = vgdnop->getPrev(); prevI; prevI = prevI->getPrev())
+   TR::Instruction *toReturn = vgnop;
+   TR::Block *extendedBlockStart = vgnop->getPrev()->getNode()->getBlock()->startOfExtendedBlock();
+   for (TR::Instruction *prevI = vgnop->getPrev(); prevI; prevI = prevI->getPrev())
       {
       if (prevI->isVirtualGuardNOPInstruction())
          {
-         if (self()->areMergeableGuards(prevI, vgdnop))
+         if (self()->areMergeableGuards(prevI, vgnop))
             {
             toReturn = prevI;
             }
@@ -2554,7 +2554,7 @@ TR::Instruction *OMR::CodeGenerator::getVirtualGuardForPatching(TR::Instruction 
       else
          {
          if (prevI->isMergeableGuard() &&
-             prevI->getNode()->getBranchDestination() == vgdnop->getNode()->getBranchDestination())
+             prevI->getNode()->getBranchDestination() == vgnop->getNode()->getBranchDestination())
             {
             // instruction tied to an acceptable guard so do nothing and continue
             }
@@ -2571,26 +2571,26 @@ TR::Instruction *OMR::CodeGenerator::getVirtualGuardForPatching(TR::Instruction 
             }
          }
       }
-   if (toReturn != vgdnop)
+   if (toReturn != vgnop)
       {
       TR::DebugCounter::incStaticDebugCounter(self()->comp(), TR::DebugCounter::debugCounterName(self()->comp(), "guardMerge/(%s)", self()->comp()->signature()));
       if (self()->comp()->getOption(TR_TraceCG))
-         traceMsg(self()->comp(), "vgdnop instruction [%p] begins scanning for patch instructions for mergeable guard [%p]\n", vgdnop, toReturn);
+         traceMsg(self()->comp(), "vgnop instruction [%p] begins scanning for patch instructions for mergeable guard [%p]\n", vgnop, toReturn);
       }
    return toReturn;
    }
 
 TR::Instruction
-*OMR::CodeGenerator::getInstructionToBePatched(TR::Instruction *vgdnop)
+*OMR::CodeGenerator::getInstructionToBePatched(TR::Instruction *vgnop)
    {
    TR::Instruction   * nextI;
    TR::Node          *firstBBEnd = NULL;
 
-   for (nextI=self()->getVirtualGuardForPatching(vgdnop)->getNext(); nextI!=NULL; nextI=nextI->getNext())
+   for (nextI=self()->getVirtualGuardForPatching(vgnop)->getNext(); nextI!=NULL; nextI=nextI->getNext())
       {
       if (nextI->isVirtualGuardNOPInstruction())
          {
-         if (!self()->areMergeableGuards(vgdnop, nextI))
+         if (!self()->areMergeableGuards(vgnop, nextI))
             return NULL;
          continue;
          }
@@ -2623,9 +2623,9 @@ TR::Instruction
 
 
 int32_t
-OMR::CodeGenerator::sizeOfInstructionToBePatched(TR::Instruction *vgdnop)
+OMR::CodeGenerator::sizeOfInstructionToBePatched(TR::Instruction *vgnop)
    {
-   TR::Instruction *instToBePatched = self()->getInstructionToBePatched(vgdnop);
+   TR::Instruction *instToBePatched = self()->getInstructionToBePatched(vgnop);
    if (instToBePatched)
       return instToBePatched->getBinaryLengthLowerBound();
    else
@@ -2633,17 +2633,17 @@ OMR::CodeGenerator::sizeOfInstructionToBePatched(TR::Instruction *vgdnop)
    }
 
 int32_t
-OMR::CodeGenerator::sizeOfInstructionToBePatchedHCRGuard(TR::Instruction *vgdnop)
+OMR::CodeGenerator::sizeOfInstructionToBePatchedHCRGuard(TR::Instruction *vgnop)
    {
    TR::Instruction   *nextI;
    TR::Node          *firstBBEnd = NULL;
    int32_t             accumulatedSize = 0;
 
-   for (nextI=self()->getInstructionToBePatched(vgdnop); nextI!=NULL; nextI=nextI->getNext())
+   for (nextI=self()->getInstructionToBePatched(vgnop); nextI!=NULL; nextI=nextI->getNext())
       {
       if (nextI->isVirtualGuardNOPInstruction())
          {
-         if (!self()->areMergeableGuards(vgdnop, nextI))
+         if (!self()->areMergeableGuards(vgnop, nextI))
             break;
          continue;
          }

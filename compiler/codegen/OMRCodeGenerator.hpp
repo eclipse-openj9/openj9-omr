@@ -1287,14 +1287,14 @@ public:
    // --------------------------------------------------------------------------
    // Code patching
    //
-   // Used to find out whether there is an appropriate instruction space as vgdnop space
-   int32_t sizeOfInstructionToBePatched(TR::Instruction *vgdnop);
-   int32_t sizeOfInstructionToBePatchedHCRGuard(TR::Instruction *vgdnop);
-   // Used to find which instruction is an appropriate instruction space as vgdnop space
-   TR::Instruction* getInstructionToBePatched(TR::Instruction *vgdnop);
+   // Used to find out whether there is an appropriate instruction space as vgnop space
+   int32_t sizeOfInstructionToBePatched(TR::Instruction *vgnop);
+   int32_t sizeOfInstructionToBePatchedHCRGuard(TR::Instruction *vgnop);
+   // Used to find which instruction is an appropriate instruction space as vgnop space
+   TR::Instruction* getInstructionToBePatched(TR::Instruction *vgnop);
    // Used to find the guard instruction where a given guard will actually patch
-   // currently can only return a value other than vgdnop for HCR guards
-   TR::Instruction* getVirtualGuardForPatching(TR::Instruction *vgdnop);
+   // currently can only return a value other than vgnop for HCR guards
+   TR::Instruction* getVirtualGuardForPatching(TR::Instruction *vgnop);
 
    void jitAddPicToPatchOnClassUnload(void *classPointer, void *addressToBePatched) {}
    void jitAdd32BitPicToPatchOnClassUnload(void *classPointer, void *addressToBePatched) {}

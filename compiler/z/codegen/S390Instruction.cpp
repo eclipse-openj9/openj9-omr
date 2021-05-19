@@ -271,7 +271,7 @@ TR::S390LabelInstruction::generateBinaryEncoding()
    memset( (void*)cursor,0,getEstimatedBinaryLength());
    uint16_t binOpCode = *(uint16_t *) (getOpCode().getOpCodeBinaryRepresentation());
 
-   if (getOpCode().getOpCodeValue() == TR::InstOpCode::DC)
+   if (getOpCode().getOpCodeValue() == TR::InstOpCode::dd)
       {
       AOTcgDiag1(comp, "add TR_AbsoluteMethodAddress cursor=%x\n", cursor);
       cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, label));
@@ -314,7 +314,7 @@ TR::S390LabelInstruction::generateBinaryEncoding()
          }
 
       getLabelSymbol()->setCodeLocation(instructionStart);
-      TR_ASSERT(getOpCode().getOpCodeValue() == TR::InstOpCode::LABEL, "LabelInstr not DC or LABEL, what is it??");
+      TR_ASSERT(getOpCode().getOpCodeValue() == TR::InstOpCode::label, "LabelInstr not DC or LABEL, what is it??");
       }
 
    // Insert NOPs for loop alignment if possible
@@ -387,7 +387,7 @@ TR::S390LabelInstruction::estimateBinaryLength(int32_t  currentEstimate)
    TR::Compilation *comp = cg()->comp();
    uint8_t estimatedSize = 0;
 
-   if (getOpCode().getOpCodeValue() == TR::InstOpCode::DC)
+   if (getOpCode().getOpCodeValue() == TR::InstOpCode::dd)
       {
       estimatedSize = sizeof(uintptr_t);
       }
@@ -1128,7 +1128,7 @@ TR::S390DebugCounterBumpInstruction::generateBinaryEncoding()
 // TR::S390ImmInstruction:: member functions
 /**
  * This instruction is used to generate a constant value in JIT code
- * so the valid opcode is TR::InstOpCode::DC
+ * so the valid opcode is TR::InstOpCode::dd
  */
 uint8_t *
 TR::S390ImmInstruction::generateBinaryEncoding()
@@ -1136,7 +1136,7 @@ TR::S390ImmInstruction::generateBinaryEncoding()
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
-   TR_ASSERT( getOpCode().getOpCodeValue() == TR::InstOpCode::DC, "ImmInstruction is for TR::InstOpCode::DC only!");
+   TR_ASSERT( getOpCode().getOpCodeValue() == TR::InstOpCode::dd, "ImmInstruction is for TR::InstOpCode::dd only!");
    TR::Compilation *comp = cg()->comp();
 
    /*
@@ -2385,7 +2385,7 @@ TR::S390RSInstruction::generateBinaryEncoding()
          {
          auto longDisplacementMnemonic = TR::InstOpCode::getEquivalentLongDisplacementMnemonic(getOpCodeValue());
 
-         if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+         if (longDisplacementMnemonic != TR::InstOpCode::bad)
             {
             opCode = TR::InstOpCode(longDisplacementMnemonic);
             }
@@ -3140,7 +3140,7 @@ TR::S390RXInstruction::generateBinaryEncoding()
       {
       auto longDisplacementMnemonic = TR::InstOpCode::getEquivalentLongDisplacementMnemonic(getOpCodeValue());
 
-      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+      if (longDisplacementMnemonic != TR::InstOpCode::bad)
          {
          opCode = TR::InstOpCode(longDisplacementMnemonic);
          }
@@ -4844,7 +4844,7 @@ TR::S390SIInstruction::generateBinaryEncoding()
       {
       auto longDisplacementMnemonic = TR::InstOpCode::getEquivalentLongDisplacementMnemonic(getOpCodeValue());
 
-      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+      if (longDisplacementMnemonic != TR::InstOpCode::bad)
          {
          opCode = TR::InstOpCode(longDisplacementMnemonic);
          }
@@ -5477,10 +5477,10 @@ TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
          // the runtime patching could take place after the HCR guard has been patched
          // TODO: BRCL and BRASL are only patchable under specific conditions - this check can be
          // made more specific to let some cases through
-         if (nextI->getOpCodeValue() == TR::InstOpCode::LABEL ||
+         if (nextI->getOpCodeValue() == TR::InstOpCode::label ||
              nextI->getOpCodeValue() == TR::InstOpCode::BRCL ||
              nextI->getOpCodeValue() == TR::InstOpCode::BRASL ||
-             nextI->getOpCodeValue() == TR::InstOpCode::DC ||
+             nextI->getOpCodeValue() == TR::InstOpCode::dd ||
              nextI->getOpCodeValue() == TR::InstOpCode::DC2 ||
              nextI->getOpCodeValue() == TR::InstOpCode::LARL)
             break;

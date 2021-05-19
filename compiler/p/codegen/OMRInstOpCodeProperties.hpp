@@ -26,12 +26,89 @@
 
 
    {
+   /* .mnemonic    = */ OMR::InstOpCode::assocreg,
+   /* .name        = */ "assocreg",
+   /* .description =    "Associate real registers with Virtual registers.", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x00000000,
+   /* .format      = */ FORMAT_NONE,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   },
+
+   {
    /* .mnemonic    = */ OMR::InstOpCode::bad,
    /* .name        = */ "bad",
    /* .description =    "Illegal Opcode", */
    /* .prefix      = */ 0x00000000,
    /* .opcode      = */ 0x00000000,
    /* .format      = */ FORMAT_DIRECT,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
+   /* .properties  = */ PPCOpProp_None,
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::dd,
+   /* .name        = */ ".dd",
+   /* .description =    "Define Doubleword", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x00000000,
+   /* .format      = */ FORMAT_DD,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
+   /* .properties  = */ PPCOpProp_None,
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::fence,
+   /* .name        = */ "fence",
+   /* .description =    "Fence", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x00000000,
+   /* .format      = */ FORMAT_NONE,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
+   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::label,
+   /* .name        = */ "label",
+   /* .description =    "Destination of a jump", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x00000000,
+   /* .format      = */ FORMAT_NONE,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
+   /* .properties  = */ PPCOpProp_None,
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::proc,
+   /* .name        = */ "proc",
+   /* .description =    "Entry to the method", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x00000000,
+   /* .format      = */ FORMAT_NONE,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
+   /* .properties  = */ PPCOpProp_None,
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::retn,
+   /* .name        = */ "retn",
+   /* .description =    "Return", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x00000000,
+   /* .format      = */ FORMAT_NONE,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
+   /* .properties  = */ PPCOpProp_None,
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::vgnop,
+   /* .name        = */ "vgnop",
+   /* .description =    "Virtual Guard NOP instruction", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x00000000,
+   /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
    /* .properties  = */ PPCOpProp_None,
    },
@@ -6181,17 +6258,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::fence,
-   /* .name        = */ "fence",
-   /* .description =    "Fence", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_NONE,
-   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::shdfence,
    /* .name        = */ "shdfence",
    /* .description =    "Scheduling Fence", */
@@ -6200,17 +6266,6 @@
    /* .format      = */ FORMAT_UNKNOWN,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
    /* .properties  = */ PPCOpProp_SyncSideEffectFree,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::ret,
-   /* .name        = */ "ret",
-   /* .description =    "Return", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_NONE,
-   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
-   /* .properties  = */ PPCOpProp_None,
    },
 
    /* { */
@@ -6228,50 +6283,6 @@
    /* .mnemonic    = */ OMR::InstOpCode::wrtbar,
    /* .name        = */ "wrtbar",
    /* .description =    "Write barrier directive", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
-   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
-   /* .properties  = */ PPCOpProp_None,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::proc,
-   /* .name        = */ "proc",
-   /* .description =    "Entry to the method", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_NONE,
-   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
-   /* .properties  = */ PPCOpProp_None,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::dd,
-   /* .name        = */ ".long",
-   /* .description =    "define word", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_DD,
-   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
-   /* .properties  = */ PPCOpProp_None,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::assocreg,
-   /* .name        = */ "assocreg",
-   /* .description =    "Associate real registers with Virtual registers.", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_NONE,
-   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
-   /* .properties  = */ PPCOpProp_SyncSideEffectFree,
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::vgdnop,
-   /* .name        = */ "vgdnop",
-   /* .description =    "Virtual Guard NOP instruction", */
    /* .prefix      = */ 0x00000000,
    /* .opcode      = */ 0x00000000,
    /* .format      = */ FORMAT_UNKNOWN,
@@ -12751,18 +12762,6 @@
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
    },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::label,
-   /* .name        = */ "label",
-   /* .description =    "Destination of a jump", */
-   /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_NONE,
-   /* .minimumALS  = */ OMR_PROCESSOR_PPC_UNKNOWN,
-   /* .properties  = */ PPCOpProp_None,
-   },
-
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::brd,

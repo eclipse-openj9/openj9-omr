@@ -24,9 +24,9 @@
  * definitions are permitted.
  */
 
+#include "compiler/codegen/OMRInstOpCode.enum"
+
 //		Opcode                                                          BINARY    	OPCODE    	comments
-/* UNALLOCATED */
-		bad,                                                    	/* 0x00000000	BAD       	invalid operation */
 /* Branch,exception generation and system Instruction */
 	/* Compare _ Branch (immediate) */
 		cbzw,                                                   	/* 0x34000000	CBZ       	 */
@@ -733,12 +733,5 @@
 /* Hint instructions */
 		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */
-		proc,  // Entry to the method
-		fence, // Fence
-		retn,  // Return
-		dd,    // Define word
-		label, // Destination of a jump
-		vgdnop, // Virtual Guard NOP instruction
-		assocreg, // Associate real registers with Virtual registers.
-		ARM64LastOp = assocreg,
+		ARM64LastOp = nop,
 		ARM64NumOpCodes = ARM64LastOp+1,

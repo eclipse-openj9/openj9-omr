@@ -19,24 +19,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "codegen/InstOpCode.hpp"
+/*
+ * This file will be included within an enum. Only comments and enumerator
+ * definitions are permitted.
+ */
 
-const OMR::RV::InstOpCode::OpCodeBinaryEntry OMR::RV::InstOpCode::binaryEncodings[RVNumOpCodes] =
-{
-//		BINARY			Opcode    	Opcode		comments
-/* UNALLOCATED */
-		0x00000000,	/* Register Association */
-		0x00000000,	/* Bad Opcode */
-		0x00000000,	/* Define Doubleword */
-		0x00000000,	/* Fence */
-		0x00000000,	/* Destination of a jump */
-		0x00000000,	/* Entry to the method */
-		0x00000000,	/* Return */
-		0x00000000,	/* Virtual Guard NOP */
+#include "compiler/codegen/OMRInstOpCode.enum"
+
 /*
  * RISC-V instructions
  */
-#define DECLARE_INSN(mnemonic, match, mask) match,
+#define DECLARE_INSN(mnemonic, match, mask) _ ## mnemonic,
 #include <riscv-opc.h>
 #undef DECLARE_INSN
-};
+/* Internal OpCodes */
+		RVNumOpCodes,

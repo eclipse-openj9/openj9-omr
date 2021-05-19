@@ -39,18 +39,20 @@
 
 static const char *opCodeToNameMap[] =
    {
+   "assocreg",
    "bad",
+   "dd",
+   "fence",
+   "label",
+   "proc",
+   "retn",
+   "vgnop",
 /*
  * RISC-V instructions
  */
 #define DECLARE_INSN(mnemonic, match, mask) #mnemonic,
 #include <riscv-opc.h>
 #undef DECLARE_INSN
-   "proc",
-   "fence",
-   "return",
-   "dd",
-   "label"
    };
 
 const char *

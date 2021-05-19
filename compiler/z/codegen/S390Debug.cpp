@@ -158,7 +158,7 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Instruction * instr)
       }
 
    //  dump the inst's pre deps
-   if (instr->getOpCodeValue() != TR::InstOpCode::ASSOCREGS && _comp->cg()->getCodeGeneratorPhase() <= TR::CodeGenPhase::BinaryEncodingPhase)
+   if (instr->getOpCodeValue() != TR::InstOpCode::assocreg && _comp->cg()->getCodeGeneratorPhase() <= TR::CodeGenPhase::BinaryEncodingPhase)
       dumpDependencies(pOutFile, instr, true, false);
 
    switch (instr->getKind())
@@ -352,10 +352,10 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Instruction * instr)
       case TR::Instruction::IsNotExtended:
       case TR::Instruction::IsE:
          {
-         // ASSOCREGS piggy backs on a vanilla TR::Instruction
-         // if (instr->getOpCodeValue() == TR::InstOpCode::ASSOCREGS) break;
+         // assocreg piggy backs on a vanilla TR::Instruction
+         // if (instr->getOpCodeValue() == TR::InstOpCode::assocreg) break;
 
-         if ((instr->getOpCodeValue() == TR::InstOpCode::ASSOCREGS) && /*(debug("traceMsg90RA"))*/
+         if ((instr->getOpCodeValue() == TR::InstOpCode::assocreg) && /*(debug("traceMsg90RA"))*/
              (_comp->getOption(TR_TraceRA)))
             {
             if (_comp->cg()->getCodeGeneratorPhase() < TR::CodeGenPhase::BinaryEncodingPhase)
@@ -371,7 +371,7 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Instruction * instr)
       }
 
    //  dump the inst's post deps
-   if (instr->getOpCodeValue() != TR::InstOpCode::ASSOCREGS && _comp->cg()->getCodeGeneratorPhase() <= TR::CodeGenPhase::BinaryEncodingPhase)
+   if (instr->getOpCodeValue() != TR::InstOpCode::assocreg && _comp->cg()->getCodeGeneratorPhase() <= TR::CodeGenPhase::BinaryEncodingPhase)
       dumpDependencies(pOutFile, instr, false, true);
    }
 
@@ -681,7 +681,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390LabelInstruction * instr)
    const char * symbolName = getName(label);
    printPrefix(pOutFile, instr);
 
-   if (instr->getOpCodeValue() == TR::InstOpCode::LABEL)
+   if (instr->getOpCodeValue() == TR::InstOpCode::label)
       {
          {
          trfprintf(pOutFile, symbolName);
@@ -760,7 +760,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390BranchInstruction * instr)
 
 
    TR::LabelSymbol * label = instr->getLabelSymbol();
-   TR_ASSERT(instr->getOpCodeValue() != TR::InstOpCode::LABEL,  "assertion failure");
+   TR_ASSERT(instr->getOpCodeValue() != TR::InstOpCode::label,  "assertion failure");
 
    trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    trfprintf(pOutFile, "%s(0x%1x), ", brCondName, mask );
@@ -794,7 +794,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390BranchOnCountInstruction * instr)
    printPrefix(pOutFile, instr);
 
    TR::LabelSymbol * label = instr->getLabelSymbol();
-   TR_ASSERT(instr->getOpCodeValue() != TR::InstOpCode::LABEL, "assertion failure");
+   TR_ASSERT(instr->getOpCodeValue() != TR::InstOpCode::label, "assertion failure");
    trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    print(pOutFile, instr->getRegisterOperand(1));
    trfprintf(pOutFile, ",");
@@ -815,7 +815,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390BranchOnIndexInstruction * instr)
    printPrefix(pOutFile, instr);
 
    TR::LabelSymbol * label = instr->getLabelSymbol();
-   TR_ASSERT(instr->getOpCodeValue() != TR::InstOpCode::LABEL, "assertion failure");
+   TR_ASSERT(instr->getOpCodeValue() != TR::InstOpCode::label, "assertion failure");
    trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    print(pOutFile, instr->getRegisterOperand(1));
    trfprintf(pOutFile, ",");
@@ -882,7 +882,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390PseudoInstruction * instr)
       trfprintf(pOutFile, ", Debug Counter Bump");
       }
 
-   if (instr->getOpCodeValue() == TR::InstOpCode::FENCE)
+   if (instr->getOpCodeValue() == TR::InstOpCode::fence)
       {
       if (instr->getFenceNode() != NULL)
          {

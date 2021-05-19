@@ -294,7 +294,7 @@ TR_S390CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node * root, TR:
          TR::LabelSymbol * cflowRegionStart = generateLabelSymbol(_cg);
          cflowRegionStart->setStartInternalControlFlow();
          internalControlFlowStarted = true;
-         generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, root, cflowRegionStart);
+         generateS390LabelInstruction(_cg, TR::InstOpCode::label, root, cflowRegionStart);
 
          // See if we can prove results as false
          if (brCmpHighFalseCond != TR::InstOpCode::COND_NOP)
@@ -404,7 +404,7 @@ TR_S390CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node * root, TR:
          TR::LabelSymbol * cflowRegionStart = generateLabelSymbol(_cg);
          cflowRegionStart->setStartInternalControlFlow();
          internalControlFlowStarted = true;
-         generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, root, cflowRegionStart);
+         generateS390LabelInstruction(_cg, TR::InstOpCode::label, root, cflowRegionStart);
 
          // See if we can prove results as false
          if (brCmpHighFalseCond != TR::InstOpCode::COND_NOP)
@@ -511,7 +511,7 @@ TR_S390CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node * root, TR:
          TR::LabelSymbol * cflowRegionStart = generateLabelSymbol(_cg);
          cflowRegionStart->setStartInternalControlFlow();
          internalControlFlowStarted = true;
-         generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, root, cflowRegionStart);
+         generateS390LabelInstruction(_cg, TR::InstOpCode::label, root, cflowRegionStart);
 
          // See if we can prove results as false
          if (brCmpHighFalseCond != TR::InstOpCode::COND_NOP)

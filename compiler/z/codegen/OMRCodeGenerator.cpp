@@ -220,7 +220,10 @@ OMR::Z::CodeGenerator::checkIsUnneededIALoad(TR::Node *parent, TR::Node *node, T
 
    if (node->isUnneededIALoad())
       {
-      if (parent->getOpCodeValue() == TR::ifacmpne || parent->getOpCodeValue() == TR::ificmpeq || parent->getOpCodeValue() == TR::ificmpne || parent->getOpCodeValue() == TR::ifacmpeq)
+      if (parent->getOpCodeValue() == TR::ifacmpne
+         || parent->getOpCodeValue() == TR::ificmpeq
+         || parent->getOpCodeValue() == TR::ificmpne
+         || parent->getOpCodeValue() == TR::ifacmpeq)
          {
          if (!parent->isNopableInlineGuard() || !self()->getSupportsVirtualGuardNOPing())
             {
@@ -228,10 +231,10 @@ OMR::Z::CodeGenerator::checkIsUnneededIALoad(TR::Node *parent, TR::Node *node, T
             }
          else
             {
-            TR_VirtualGuard * virtualGuard = self()->comp()->findVirtualGuardInfo(parent);
-            if (!parent->isHCRGuard() && !parent->isOSRGuard() && !self()->comp()->performVirtualGuardNOPing() &&
-                self()->comp()->isVirtualGuardNOPingRequired(virtualGuard) &&
-                virtualGuard->canBeRemoved())
+            TR_VirtualGuard *virtualGuard = self()->comp()->findVirtualGuardInfo(parent);
+            if (!((self()->comp()->performVirtualGuardNOPing() || parent->isHCRGuard() || parent->isOSRGuard())
+                     && self()->comp()->isVirtualGuardNOPingRequired(virtualGuard))
+               && virtualGuard->canBeRemoved())
                {
                node->setUnneededIALoad(false);
                }

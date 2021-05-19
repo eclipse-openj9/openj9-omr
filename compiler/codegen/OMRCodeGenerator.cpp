@@ -127,9 +127,6 @@ namespace TR { class RegisterDependencyConditions; }
     #define sucmpEvaluator badILOpEvaluator
     #define scmpEvaluator badILOpEvaluator
 #endif
-#if defined(TR_TARGET_AMD64) || defined(TR_TARGET_POWER) //ppc and amd64
-    #define zccAddSubEvaluator badILOpEvaluator
-#endif
 
 TR_TreeEvaluatorFunctionPointer
 OMR::CodeGenerator::_nodeToInstrEvaluators[] =

@@ -1492,6 +1492,18 @@ OMR::Power::TreeEvaluator::fullFenceEvaluator(TR::Node *node, TR::CodeGenerator 
    }
 
 TR::Register*
+OMR::Power::TreeEvaluator::butestEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Power::TreeEvaluator::sutestEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
 OMR::Power::TreeEvaluator::bucmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::iucmpEvaluator(node, cg);
@@ -1513,6 +1525,18 @@ TR::Register*
 OMR::Power::TreeEvaluator::scmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::icmpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Power::TreeEvaluator::iucmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Power::TreeEvaluator::icmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
 TR::Register*

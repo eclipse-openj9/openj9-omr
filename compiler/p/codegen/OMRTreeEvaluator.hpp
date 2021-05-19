@@ -292,10 +292,14 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *loadFenceEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *storeFenceEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *fullFenceEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *butestEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *sutestEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bucmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bcmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *sucmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *scmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *iucmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *icmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lucmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ificmpoEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ificmpnoEvaluator(TR::Node *node, TR::CodeGenerator *cg);

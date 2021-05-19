@@ -3820,48 +3820,42 @@ TR_X86ComputeCC::setCarryBorrow(TR::Node *flagNode, bool invertValue, TR::CodeGe
 
 TR::Register *OMR::X86::TreeEvaluator::bcmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::TreeEvaluator::compareBytesForOrder(node, cg);
-   return node->setRegister(NULL);
+   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::bucmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::TreeEvaluator::compareBytesForOrder(node, cg);
-   return node->setRegister(NULL);
+   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::scmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::TreeEvaluator::compare2BytesForOrder(node, cg);
-   return node->setRegister(NULL);
+   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::sucmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::TreeEvaluator::compare2BytesForOrder(node, cg);
-   return node->setRegister(NULL);
+   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::icmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-   return node->setRegister(NULL);
+   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::iucmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-   return node->setRegister(NULL);
+   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::butestEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return node->setRegister(NULL);
+   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::sutestEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return node->setRegister(NULL);
+   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
    }
 
 // TR::ibatomicor TR::isatomicor TR::iiatomicor TR::ilatomicor

@@ -366,6 +366,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    virtual bool getSupportsBitPermute();
 
    bool supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol);
+   
+   static bool isILOpCodeSupported(TR::ILOpCodes);
 
    bool hasTMEvaluator()                       {return true;}
 

@@ -219,3 +219,24 @@ void OMR::X86::InstOpCode::finalize(uint8_t* cursor) const
    if (!isPseudoOp())
       info().finalize(cursor);
    }
+
+#ifdef DEBUG
+
+#include "codegen/CodeGenerator.hpp"
+#include "compile/Compilation.hpp"
+#include "ras/Debug.hpp"
+#include "codegen/InstOpCode.hpp"
+
+const char *
+OMR::X86::InstOpCode::getOpCodeName(TR::CodeGenerator *cg)
+   {
+   return cg->comp()->getDebug()->getOpCodeName(reinterpret_cast<TR::InstOpCode*>(this));
+   }
+
+const char *
+OMR::X86::InstOpCode::getMnemonicName(TR::CodeGenerator *cg)
+   {
+   return cg->comp()->getDebug()->getMnemonicName(reinterpret_cast<TR::InstOpCode*>(this));
+   }
+
+#endif // ifdef DEBUG

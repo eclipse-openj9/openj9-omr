@@ -59,7 +59,6 @@ struct TR_MethodToBeCompiled;
 class TR_OptimizationPlan
    {
    public:
-   friend class TR_DebugExt;
    TR_PERSISTENT_ALLOC(TR_Memory::OptimizationPlan)
 
    // Eliminate explicit constructors so that we do not crash

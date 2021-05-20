@@ -39,7 +39,6 @@
 template<class T> class TR_Array
    {
 public:
-   friend class TR_DebugExt;
    TR_ALLOC(TR_Memory::Array);
 
 

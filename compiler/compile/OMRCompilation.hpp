@@ -287,8 +287,6 @@ namespace OMR
 
 class OMR_EXTENSIBLE Compilation
    {
-   friend class ::TR_DebugExt;
-
 protected:
 
    inline TR::Compilation *self();

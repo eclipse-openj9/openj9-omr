@@ -57,7 +57,6 @@ enum AssumptionSameJittedBodyFlags
 
 class RuntimeAssumption
    {
-   friend class ::TR_DebugExt;
    friend class ::TR_RuntimeAssumptionTable;
 
    protected:

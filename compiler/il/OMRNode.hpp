@@ -49,7 +49,6 @@ namespace OMR { typedef OMR::Node NodeConnector; }
 
 class TR_BitVector;
 class TR_Debug;
-class TR_DebugExt;
 class TR_UseOnlyAliasSetInterface;
 class TR_UseDefAliasSetInterface;
 class TR_OpaqueClassBlock;
@@ -1854,7 +1853,6 @@ private:
    TR::Node * getExtendedChild(int32_t c);
    TR_YesNoMaybe computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesCollected, TR::NodeChecklist &processedNodesNotCollected);
 
-   friend class ::TR_DebugExt;
    friend class TR::NodePool;
 
 

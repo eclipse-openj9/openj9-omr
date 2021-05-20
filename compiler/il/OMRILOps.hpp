@@ -30,7 +30,6 @@
 #include "infra/Assert.hpp"
 #include "infra/Flags.hpp"
 
-class TR_DebugExt;
 namespace TR { class SymbolReference; }
 
 namespace OMR
@@ -1413,11 +1412,6 @@ protected:
    TR::ILChildPropType childProperties() const { return _opCodeProperties[_opCode].childTypes; }
 
    static OpCodeProperties _opCodeProperties[TR::NumIlOps];
-
-private:
-
-   friend class ::TR_DebugExt;
-
    };
 
 /**

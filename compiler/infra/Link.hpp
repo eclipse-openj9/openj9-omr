@@ -103,8 +103,6 @@ private:
  */
 template <class T> class TR_Link1
    {
-   friend class TR_DebugExt;
-
    public:
    TR_Link1(T *n = 0) : _next(n), _valid(false) {  }
    T *getNext()  {

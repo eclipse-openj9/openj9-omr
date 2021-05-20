@@ -49,7 +49,6 @@ class OMR_EXTENSIBLE TreeTop
    {
 
 public:
-   friend class TR_DebugExt;
    TR_ALLOC_WITHOUT_NEW(TR_Memory::TreeTop)
 
    /// Downcast to concrete type

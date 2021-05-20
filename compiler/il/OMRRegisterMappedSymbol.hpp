@@ -129,7 +129,6 @@ public:
    void                  setMethodMetaDataType(TR_MethodMetaDataType type);
 
 protected:
-   friend class ::TR_DebugExt;
 
    TR_MethodMetaDataType  _type;
 

@@ -491,7 +491,7 @@ MM_MemoryPoolSplitAddressOrderedListBase::findAddressAfterFreeSize(MM_Environmen
 }
 
 bool
-MM_MemoryPoolSplitAddressOrderedListBase::recycleHeapChunk(MM_EnvironmentBase* env, void* addrBase, void* addrTop,
+MM_MemoryPoolSplitAddressOrderedListBase::recycleHeapChunkForFreeList(MM_EnvironmentBase* env, void* addrBase, void* addrTop,
 													   MM_HeapLinkedFreeHeader* previousFreeEntry, MM_HeapLinkedFreeHeader* nextFreeEntry, uintptr_t curFreeList)
 {
 	bool const compressed = compressObjectReferences();

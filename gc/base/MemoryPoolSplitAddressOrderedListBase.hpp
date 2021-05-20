@@ -277,7 +277,7 @@ protected:
 	virtual void *internalAllocate(MM_EnvironmentBase *env, uintptr_t sizeInBytesRequired, bool lockingRequired, MM_LargeObjectAllocateStats *largeObjectAllocateStats) = 0;
 	virtual bool internalAllocateTLH(MM_EnvironmentBase *env, uintptr_t maximumSizeInBytesRequired, void * &addrBase, void * &addrTop, bool lockingRequired, MM_LargeObjectAllocateStats *largeObjectAllocateStats) = 0;
 
-	bool recycleHeapChunk(MM_EnvironmentBase* env, void* addrBase, void* addrTop, MM_HeapLinkedFreeHeader* previousFreeEntry, MM_HeapLinkedFreeHeader* nextFreeEntry, uintptr_t curFreeList);
+	bool recycleHeapChunkForFreeList(MM_EnvironmentBase* env, void* addrBase, void* addrTop, MM_HeapLinkedFreeHeader* previousFreeEntry, MM_HeapLinkedFreeHeader* nextFreeEntry, uintptr_t curFreeList);
 
 	MMINLINE uintptr_t findGoodStartFreeList()
 	{

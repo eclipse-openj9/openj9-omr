@@ -103,6 +103,9 @@ protected:
 
 	uintptr_t _darkMatterBytes; /**< estimate of the dark matter in this pool (in bytes) */
 	uintptr_t _darkMatterSamples;
+
+	uintptr_t _scannableBytes;	/**< estimate of scannable bytes in the pool (only out of sampled objects) */
+	uintptr_t _nonScannableBytes; /**< estimate of non-scannable bytes in the pool (only out of sampled objects) */
 	/*
 	 * Function members 
 	 */
@@ -346,6 +349,67 @@ public:
 
 	MMINLINE virtual uintptr_t getDarkMatterSamples() { return _darkMatterSamples; }
 
+	MMINLINE virtual uintptr_t getFreeMemoryAndDarkMatterBytes() {
+		return getActualFreeMemorySize() + getDarkMatterBytes();
+	}
+
+	/**
+	 * Update memory pool statistical data
+	 *
+	 * @param freeBytes free bytes added
+	 * @param freeEntryCount free memory elements added
+	 * @param largestFreeEntry largest free memory element size
+	 */
+	MMINLINE void updateMemoryPoolStatistics(MM_EnvironmentBase *env, uintptr_t freeBytes, uintptr_t freeEntryCount, uintptr_t largestFreeEntry)
+	{
+		setFreeMemorySize(freeBytes);
+		setFreeEntryCount(freeEntryCount);
+		setLargestFreeEntry(largestFreeEntry);
+	}
+
+	virtual void recalculateMemoryPoolStatistics(MM_EnvironmentBase* env)
+	{
+		Assert_MM_unreachable();
+	}
+
+	virtual bool recycleHeapChunk(void* chunkBase, void* chunkTop)
+	{
+		Assert_MM_unreachable();
+		return false;
+	}
+
+	virtual void fillWithHoles(void *addrBase, void *addrTop)
+	{
+		Assert_MM_unreachable();
+	}
+
+	/**
+	 * Increase the scannable/non-scannable estimate for the receiver by the specified amount
+	 * @param scannableBytes the number of bytes to increase for scannable objects
+	 * @param non-scannableBytes the number of bytes to increase for scannable objects
+	 */
+	MMINLINE void incrementScannableBytes(uintptr_t scannableBytes, uintptr_t nonScannableBytes)
+	{
+		_scannableBytes += scannableBytes;
+		_nonScannableBytes += nonScannableBytes;
+	}
+
+	/**
+	 * @return the recorded estimate of scannable in the receiver
+	 */
+	MMINLINE uintptr_t getScannableBytes()
+	{
+		return _scannableBytes;
+	}
+
+	/**
+	 * @return the recorded estimate of non-scannable in the receiver
+	 */
+	MMINLINE uintptr_t getNonScannableBytes()
+	{
+		return _nonScannableBytes;
+	}
+
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 	/**
 	 * @return bytes of free memory in the pool released/decommited back to OS
@@ -378,8 +442,10 @@ public:
 		_allocSearchCount(0),
 		_extensions(env->getExtensions()),
 		_largeObjectAllocateStats(NULL),
-		_darkMatterBytes(0)
-		, _darkMatterSamples(0)
+		_darkMatterBytes(0),
+		_darkMatterSamples(0),
+		_scannableBytes(0),
+		_nonScannableBytes(0)
 	{
 		_typeId = __FUNCTION__;
 	}
@@ -410,8 +476,10 @@ public:
 		_allocSearchCount(0),
 		_extensions(env->getExtensions()),
 		_largeObjectAllocateStats(NULL),
-		_darkMatterBytes(0)
-		, _darkMatterSamples(0)
+		_darkMatterBytes(0),
+		_darkMatterSamples(0),
+		_scannableBytes(0),
+		_nonScannableBytes(0)
 	{
 		_typeId = __FUNCTION__;
 	}

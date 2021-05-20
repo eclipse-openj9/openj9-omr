@@ -174,34 +174,7 @@ protected:
 	void connectFinalMemoryToPool(MM_EnvironmentBase *env, void *address, uintptr_t size);
 	void abandonMemoryInPool(MM_EnvironmentBase *env, void *address, uintptr_t size);
 
-
-	/**
-	 * Check, can free memory element be connected to memory pool
-	 * 
-	 * @param address free memory start address
-	 * @param size free memory size in bytes
-	 * @return true if free memory element would be accepted
-	 */
-	MMINLINE bool canMemoryBeConnectedToPool(MM_EnvironmentBase* env, void* address, uintptr_t size)
-	{
-		return size >= getMinimumFreeEntrySize();
-	}
-	
 public:
-	/**
-	 * Update memory pool statistical data
-	 *
-	 * @param freeBytes free bytes added
-	 * @param freeEntryCount free memory elements added
-	 * @param largestFreeEntry largest free memory element size
-	 */
-	void updateMemoryPoolStatistics(MM_EnvironmentBase *env, uintptr_t freeBytes, uintptr_t freeEntryCount, uintptr_t largestFreeEntry)
-	{
-		setFreeMemorySize(freeBytes);
-		setFreeEntryCount(freeEntryCount);
-		setLargestFreeEntry(largestFreeEntry);
-	}
-
 	virtual void acquireResetLock(MM_EnvironmentBase* env);
 	virtual void releaseResetLock(MM_EnvironmentBase* env);
 
@@ -218,8 +191,6 @@ public:
 		return internalRecycleHeapChunk(addrBase, addrTop, NULL);
 	}
 	
-	MMINLINE virtual void incrementScannableBytes(uintptr_t scannableBytes, uintptr_t nonScannableBytes) {}
-
 	MMINLINE MM_SweepPoolState * getSweepPoolState()
 	{
 		Assert_MM_true(NULL != _sweepPoolState);
@@ -244,11 +215,21 @@ public:
 	
 	virtual void printCurrentFreeList(MM_EnvironmentBase* env, const char* area)=0;
 
-	virtual void recalculateMemoryPoolStatistics(MM_EnvironmentBase* env)=0;
-
 	void resetAdjustedBytesForCardAlignment()
 	{
 		_adjustedBytesForCardAlignment = 0;
+	}
+
+	/**
+	 * Check, can free memory element be connected to memory pool
+	 *
+	 * @param address free memory start address
+	 * @param size free memory size in bytes
+	 * @return true if free memory element would be accepted
+	 */
+	MMINLINE bool canMemoryBeConnectedToPool(MM_EnvironmentBase* env, void* address, uintptr_t size)
+	{
+		return size >= getMinimumFreeEntrySize();
 	}
 
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)

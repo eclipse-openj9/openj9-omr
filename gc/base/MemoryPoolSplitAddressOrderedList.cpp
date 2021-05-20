@@ -249,7 +249,7 @@ skipSearch:
 	addrBase = (void*)currentFreeEntry;
 	recycleEntry = (MM_HeapLinkedFreeHeader*)(((uint8_t*)currentFreeEntry) + sizeInBytesRequired);
 
-	if (recycleHeapChunk(env, recycleEntry, ((uint8_t*)recycleEntry) + recycleEntrySize, previousFreeEntry, currentFreeEntry->getNext(compressed), curFreeList)) {
+	if (recycleHeapChunkForFreeList(env, recycleEntry, ((uint8_t*)recycleEntry) + recycleEntrySize, previousFreeEntry, currentFreeEntry->getNext(compressed), curFreeList)) {
 		if (!skipReserved && isPreviousReservedFreeEntry(previousFreeEntry, curFreeList)) {
 			_reservedFreeEntrySize = recycleEntrySize;
 		} else if (currentFreeEntry == _previousReservedFreeEntry) {
@@ -434,7 +434,7 @@ skipSearch:
 	entryNext = freeEntry->getNext(compressed);
 
 	/* Recycle the remaining entry back onto the free list (if applicable) */
-	if (!recycleHeapChunk(env, addrTop, topOfRecycledChunk, previousFreeEntry, entryNext, curFreeList)) {
+	if (!recycleHeapChunkForFreeList(env, addrTop, topOfRecycledChunk, previousFreeEntry, entryNext, curFreeList)) {
 		/* Adjust the free memory size and count */
 		Assert_MM_true(_heapFreeLists[curFreeList]._freeSize >= recycleEntrySize);
 		Assert_MM_true(_heapFreeLists[curFreeList]._freeCount > 0);

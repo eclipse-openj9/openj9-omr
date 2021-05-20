@@ -63,9 +63,6 @@ private:
 	
 	MM_LargeObjectAllocateStats *_largeObjectCollectorAllocateStats;  /**< Same as _largeObjectAllocateStats except specifically for collector allocates */
 
-	uintptr_t _scannableBytes;	/**< estimate of scannable bytes in the pool (only out of sampled objects) */
-	uintptr_t _nonScannableBytes; /**< estimate of non-scannable bytes in the pool (only out of sampled objects) */
-
 	MM_HeapLinkedFreeHeader *_firstUnalignedFreeEntry; /**< it is only for Balanced GC copyforward and non empty survivor region */
 	MM_HeapLinkedFreeHeader *_prevFirstUnalignedFreeEntry;
 protected:
@@ -171,25 +168,6 @@ public:
 #endif
 
 	/**
-	 * Increase the scannable/non-scannable estimate for the receiver by the specified amount
-	 * @param scannableBytes the number of bytes to increase for scannable objects
-	 * @param non-scannableBytes the number of bytes to increase for scannable objects
-	 */
-	MMINLINE virtual void incrementScannableBytes(uintptr_t scannableBytes, uintptr_t nonScannableBytes)
-	{
-		_scannableBytes += scannableBytes;
-		_nonScannableBytes += nonScannableBytes;
-	}
-	/**
-	 * @return the recorded estimate of scannable in the receiver
-	 */
-	MMINLINE uintptr_t getScannableBytes() { return _scannableBytes; }
-	/**
-	 * @return the recorded estimate of non-scannable in the receiver
-	 */
-	MMINLINE uintptr_t getNonScannableBytes() { return _nonScannableBytes; }
-
-	/**
 	 * remove a free entry from freelist
 	 */
 	void removeFromFreeList(void *addrBase, void *addrTop, MM_HeapLinkedFreeHeader *previousFreeEntry, MM_HeapLinkedFreeHeader *nextFreeEntry)
@@ -246,10 +224,6 @@ public:
 		return _freeMemorySize - _adjustedBytesForCardAlignment;
 	}
 
-	MMINLINE uintptr_t getFreeMemoryAndDarkMatterBytes() {
-		return getActualFreeMemorySize() + getDarkMatterBytes();
-	}
-
 	/**
 	 * Create a MemoryPoolAddressOrderedList object.
 	 */
@@ -257,8 +231,6 @@ public:
 		MM_MemoryPoolAddressOrderedListBase(env, minimumFreeEntrySize)
 		,_heapFreeList(NULL)
 		,_largeObjectCollectorAllocateStats(NULL)
-		,_scannableBytes(0)
-		,_nonScannableBytes(0)
 		,_firstUnalignedFreeEntry(FREE_ENTRY_END)
 		,_prevFirstUnalignedFreeEntry(FREE_ENTRY_END)
 	{
@@ -269,8 +241,6 @@ public:
 		MM_MemoryPoolAddressOrderedListBase(env, minimumFreeEntrySize, name)
 		,_heapFreeList(NULL)
 		,_largeObjectCollectorAllocateStats(NULL)
-		,_scannableBytes(0)
-		,_nonScannableBytes(0)
 		,_firstUnalignedFreeEntry(FREE_ENTRY_END)
 		,_prevFirstUnalignedFreeEntry(FREE_ENTRY_END)
 	{

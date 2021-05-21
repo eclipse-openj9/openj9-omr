@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,6 +28,14 @@
 #include <stdlib.h>
 #endif /* defined(J9ZOS390) || (defined(LINUX) && defined(S390)) */
 #include <string.h>
+
+#if defined(J9ZOS39064)
+#include "omrgcconsts.h"
+#include "omriarv64.h"
+#pragma linkage (GETTTT,OS)
+#pragma map (getUserExtendedPrivateAreaMemoryType,"GETTTT")
+UDATA getUserExtendedPrivateAreaMemoryType(void);
+#endif /* defined(J9ZOS39064) */
 
 #if defined(LINUX) && defined(S390)
 /* _j9Z10Zero() is defined in j9memclrz10_31.s and j9memclrz10_64.s */
@@ -163,3 +171,29 @@ j9memset(void *dest, intptr_t value, uintptr_t size)
 {
 	memset(dest, (int) value, (size_t) size);
 }
+
+#if defined(J9ZOS39064)
+U_64
+zosGetMaxHeapSizeForCR(void)
+{
+	/*
+	 * In order to support Compressed References ZOS should support one of:
+	 * - 2_TO_64 to support heaps allocation below 64GB
+	 * - 2_TO_32 to support heaps allocation below 32GB
+	 */
+	U_64 maxHeapForCR = 0;
+	switch (getUserExtendedPrivateAreaMemoryType()) {
+	case ZOS64_VMEM_2_TO_32G:
+		maxHeapForCR = MAXIMUM_HEAP_SIZE_RECOMMENDED_FOR_3BIT_SHIFT_COMPRESSEDREFS;
+		break;
+	case ZOS64_VMEM_2_TO_64G:
+		maxHeapForCR = MAXIMUM_HEAP_SIZE_RECOMMENDED_FOR_COMPRESSEDREFS;
+		break;
+	case ZOS64_VMEM_ABOVE_BAR_GENERAL: /* FALLTHROUGH */
+	default:
+		break;
+	}
+
+	return maxHeapForCR;
+}
+#endif /* defined(J9ZOS39064) */

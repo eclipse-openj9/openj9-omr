@@ -773,6 +773,7 @@ OMR::ARM64::TreeEvaluator::ishlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       TR::Node *secondChild = node->getSecondChild();
       if (firstChild->getOpCodeValue() == TR::i2l &&
           firstChild->getRegister() == NULL &&
+          firstChild->getReferenceCount() == 1 &&
           secondChild->getOpCodeValue() == TR::iconst &&
           secondChild->getInt() < 32)
          {

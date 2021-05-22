@@ -634,7 +634,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
                   {
                   op = TR::InstOpCode::_sw;
                   }
-               mref = getOutgoingArgumentMemRef(argMemReg, argRegister, op, pushToMemory[argIndex++]);
+               mref = getOutgoingArgumentMemRef(argMemReg, argSize, argRegister, op, pushToMemory[argIndex++]);
                argSize += 8; // always 8-byte aligned
                }
             numIntegerArgs++;
@@ -685,7 +685,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
                   {
                   op = TR::InstOpCode::_fsw;
                   }
-               mref = getOutgoingArgumentMemRef(argMemReg, argRegister, op, pushToMemory[argIndex++]);
+               mref = getOutgoingArgumentMemRef(argMemReg, argSize, argRegister, op, pushToMemory[argIndex++]);
                argSize += 8; // always 8-byte aligned
                }
             numFloatArgs++;

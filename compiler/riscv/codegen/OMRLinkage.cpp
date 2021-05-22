@@ -113,12 +113,12 @@ bool OMR::RV::Linkage::hasToBeOnStack(TR::ParameterSymbol *parm)
    return(false);
    }
 
-TR::MemoryReference *OMR::RV::Linkage::getOutgoingArgumentMemRef(TR::Register *argMemReg, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::RVMemoryArgument &memArg)
+TR::MemoryReference *OMR::RV::Linkage::getOutgoingArgumentMemRef(TR::Register *argMemReg, int offset, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::RVMemoryArgument &memArg)
    {
    TR::Machine *machine = cg()->machine();
    const TR::RVLinkageProperties& properties = self()->getProperties();
 
-   TR::MemoryReference *result = new (self()->trHeapMemory()) TR::MemoryReference(argMemReg, 8, cg()); // post-increment
+   TR::MemoryReference *result = new (self()->trHeapMemory()) TR::MemoryReference(argMemReg, offset, cg()); // post-increment
    memArg.argRegister = argReg;
    memArg.argMemory = result;
    memArg.opCode = opCode; // opCode must be post-index form

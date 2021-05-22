@@ -340,12 +340,13 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    /**
     * @brief Returns a MemoryReference for an outgoing argument
     * @param[in] argMemReg : register pointing to address for the outgoing argument
+    * @param[in] offset : offset from argMemReg in bytes
     * @param[in] argReg : register for the argument
     * @param[in] opCode : instruction OpCode for store to memory
     * @param[out] memArg : struct holding memory argument information
     * @return MemoryReference for the argument
     */
-   virtual TR::MemoryReference *getOutgoingArgumentMemRef(TR::Register *argMemReg, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::RVMemoryArgument &memArg);
+   virtual TR::MemoryReference *getOutgoingArgumentMemRef(TR::Register *argMemReg, int offset, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::RVMemoryArgument &memArg);
 
    /**
     * @brief Saves arguments

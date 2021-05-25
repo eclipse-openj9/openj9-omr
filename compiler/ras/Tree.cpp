@@ -254,13 +254,11 @@ TR_Debug::printLoadConst(TR::Node *node, TR_PrettyPrinterString& output)
       case TR::Address:
          if (node->getAddress() == 0)
             output.append(" NULL");
-         else if (!inDebugExtension() &&
-                  _comp->getOption(TR_MaskAddresses))
+         else if (_comp->getOption(TR_MaskAddresses))
             output.append(" *Masked*");
          else
             output.append(" " UINT64_PRINTF_FORMAT_HEX, node->getAddress());
-         if (!inDebugExtension() &&
-             node->isClassPointerConstant())
+         if (node->isClassPointerConstant())
             {
             TR_OpaqueClassBlock *clazz = (TR_OpaqueClassBlock*)node->getAddress();
             int32_t len; char *sig = TR::Compiler->cls.classNameChars(_comp, clazz, len);
@@ -412,8 +410,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_RegionStructure * regionStructure, uint32
       return;
 
    TR_RegionStructure *versionedLoop = NULL;
-   if (!inDebugExtension() &&
-       debug("fullStructure"))
+   if (debug("fullStructure"))
       printBaseInfo(pOutFile, regionStructure, indentation);
    else
       {
@@ -425,9 +422,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_RegionStructure * regionStructure, uint32
       else if (regionStructure->isNaturalLoop())
          {
          versionedLoop = regionStructure->getVersionedLoop();
-         if (inDebugExtension())
-            type = "Natural loop (unknown version)";
-         else if (versionedLoop)
+         if (versionedLoop)
             {
             TR::Block *entryBlock = regionStructure->getEntryBlock();
             if (entryBlock->isCold())
@@ -461,9 +456,10 @@ TR_Debug::print(TR::FILE *pOutFile, TR_RegionStructure * regionStructure, uint32
 
    // Dump induction variables
    //
-   if (!inDebugExtension())
-      for (TR_InductionVariable *v = regionStructure->getFirstInductionVariable(); v; v = v->getNext())
-         print(pOutFile, v, indentation+3);
+   for (TR_InductionVariable *v = regionStructure->getFirstInductionVariable(); v; v = v->getNext())
+      {
+      print(pOutFile, v, indentation+3);
+      }
 
    // Dump members
    printSubGraph(pOutFile, regionStructure, indentation+3);
@@ -618,25 +614,22 @@ TR_Debug::printSubGraph(TR::FILE *pOutFile, TR_RegionStructure * regionStructure
 
       }
 
-   if (!inDebugExtension())
+   static char *verbose = ::feGetEnv("TR_VerboseStructures");
+   if (verbose)
       {
-      static char *verbose = ::feGetEnv("TR_VerboseStructures");
-      if (verbose)
+      trfprintf(pOutFile, "%*sPred list:\n", indentation, " ");
+      si.reset();
+      for (node = si.getCurrent(); node != NULL; node = si.getNext())
          {
-         trfprintf(pOutFile, "%*sPred list:\n", indentation, " ");
-         si.reset();
-         for (node = si.getCurrent(); node != NULL; node = si.getNext())
-            {
-            trfprintf(pOutFile, "%*s%d:", indentation+offset*2, " ", node->getNumber());
-            printPreds(pOutFile, node);
-            trfprintf(pOutFile, "\n");
-            }
-         for (exitEdge = firstExitEdge; exitEdge != NULL; exitEdge = exitEdge->getNextElement())
-            {
-            trfprintf(pOutFile, "%*s*%d:", indentation+offset*2, " ", exitEdge->getData()->getTo()->getNumber());
-            printPreds(pOutFile, exitEdge->getData()->getTo());
-            trfprintf(pOutFile, "\n");
-            }
+         trfprintf(pOutFile, "%*s%d:", indentation+offset*2, " ", node->getNumber());
+         printPreds(pOutFile, node);
+         trfprintf(pOutFile, "\n");
+         }
+      for (exitEdge = firstExitEdge; exitEdge != NULL; exitEdge = exitEdge->getNextElement())
+         {
+         trfprintf(pOutFile, "%*s*%d:", indentation+offset*2, " ", exitEdge->getData()->getTo()->getNumber());
+         printPreds(pOutFile, exitEdge->getData()->getTo());
+         trfprintf(pOutFile, "\n");
          }
       }
 
@@ -1441,9 +1434,7 @@ TR_Debug::printBasicPostNodeInfo(TR::FILE *pOutFile, TR::Node * node, uint32_t i
    if ((_comp->getNodeOpCodeLength() + indentation) < DEFAULT_NODE_LENGTH + DEFAULT_INDENT_INCREMENT)
       output.append( "%*s", DEFAULT_NODE_LENGTH + DEFAULT_INDENT_INCREMENT - ( _comp->getNodeOpCodeLength() + indentation ), "");
 
-   int32_t lineNumber = -1;
-   if (!inDebugExtension())
-      lineNumber = _comp->getLineNumber(node);
+   int32_t lineNumber = _comp->getLineNumber(node);
 
    output.append( "[%s] ",
       //node->getOpCode().getSize(),
@@ -1472,9 +1463,7 @@ TR_Debug::printBasicPostNodeInfo(TR::FILE *pOutFile, TR::Node * node, uint32_t i
 
    output.append(" vc=%d", node->getVisitCount());
 
-   if (!inDebugExtension() &&
-         _comp->getOptimizer() &&
-         _comp->getOptimizer()->getValueNumberInfo())
+   if (_comp->getOptimizer() && _comp->getOptimizer()->getValueNumberInfo())
       output.append(" vn=%d", _comp->getOptimizer()->getValueNumberInfo()->getValueNumber(node));
    else
       output.append(" vn=-");
@@ -1562,9 +1551,8 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
             output.append(" External Absolute [");
          else
             output.append(" Relative [");
-         if (inDebugExtension())
-            output.append("...");
-         else if (!_comp->getOption(TR_MaskAddresses))
+
+         if (!_comp->getOption(TR_MaskAddresses))
             {
             for (i = 0; i < node->getNumRelocations(); ++i)
                output.append(" " POINTER_PRINTF_FORMAT, node->getRelocationDestination(i));
@@ -1585,7 +1573,7 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
          output.append(" (freq %d)",block->getFrequency());
       if (block->isExtensionOfPreviousBlock())
          output.append(" (extension of previous block)");
-      if (block->isCatchBlock() && !inDebugExtension())
+      if (block->isCatchBlock())
          {
          int32_t length;
          const char *classNameChars = block->getExceptionClassNameChars();
@@ -1616,8 +1604,7 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
       TR_BlockStructure *blockStructure = block->getStructureOf();
       if (blockStructure)
          {
-         if (!inDebugExtension()
-             && _comp->getFlowGraph()->getStructure())
+         if (_comp->getFlowGraph()->getStructure())
             {
             TR_Structure *parent = blockStructure->getParent();
             while (parent)
@@ -1661,8 +1648,7 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
       if (stride > 0)
          output.append(" (stride %d)",stride);
       }
-   else if (!inDebugExtension() &&
-            (node->getOpCode().isLoadReg() || node->getOpCode().isStoreReg()) )
+   else if (node->getOpCode().isLoadReg() || node->getOpCode().isStoreReg())
       {
       if ((node->getType().isInt64() && _comp->target().is32Bit() && !_comp->cg()->use64BitRegsOn32Bit()))
          output.append(" %s:%s ", getGlobalRegisterName(node->getHighGlobalRegisterNumber()), getGlobalRegisterName(node->getLowGlobalRegisterNumber()));
@@ -1672,8 +1658,7 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
       if (node->getOpCode().isLoadReg())
          print(node->getRegLoadStoreSymbolReference(), output);
       }
-   else if (!inDebugExtension() &&
-            node->getOpCodeValue() == TR::PassThrough)
+   else if (node->getOpCodeValue() == TR::PassThrough)
       {
       // print only if under a GlRegDep
       bool isParentGlRegDep = getCurrentParent() ? (getCurrentParent()->getOpCodeValue() == TR::GlRegDeps) : false;
@@ -1756,13 +1741,8 @@ TR_Debug::printNodeFlags(TR::FILE *pOutFile, TR::Node * node)
    if (node->getFlags().getValue())
       {
       output.append(" (");
-      if (inDebugExtension())
-         output.append("...)");
-      else
-         {
-         nodePrintAllFlags(node, output);
-         output.append(")");
-         }
+      nodePrintAllFlags(node, output);
+      output.append(")");
       }
 
    trfprintf(pOutFile, "%s", output.getStr());

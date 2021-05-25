@@ -19,9 +19,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#if defined(J9ZOS390)
 #pragma csect(CODE,"TRCGBase#C")
 #pragma csect(STATIC,"TRCGBase#S")
 #pragma csect(TEST,"TRCGBase#T")
+#endif
 
 #include "codegen/CodeGenerator.hpp"
 

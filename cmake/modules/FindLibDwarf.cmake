@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,7 +30,19 @@
 #   LIBDWARF_DEFINITIONS
 
 find_package(LibElf)
-find_package(LibZ)
+
+if(NOT OMR_OS_ZOS)
+	# On z/OS we don't want libz.
+	find_package(LibZ)
+else()
+	# For technical reasons this is hard to autodetect on zos.
+	# Note: the value can still be overridden on the command line.
+	if(OMR_ENV_DATA64)
+		set(LIBDWARF_LIBRARY "/usr/lpp/cbclib/lib/libelfdwarf64.x" CACHE FILEPATH "")
+	else()
+		set(LIBDWARF_LIBRARY "/usr/lpp/cbclib/lib/libelfdwarf32.x" CACHE FILEPATH "")
+	endif()
+endif()
 
 # Find dwarf.h
 # Will set:

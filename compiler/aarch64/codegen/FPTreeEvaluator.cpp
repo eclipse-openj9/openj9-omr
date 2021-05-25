@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -842,19 +842,89 @@ OMR::ARM64::TreeEvaluator::fRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *
    return globalReg;
    }
 
+static TR::Register *
+fpMinMaxHelper(TR::Node *node, bool isDouble, TR::ARM64ConditionCode cc, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Register *src2Reg = cg->evaluate(secondChild);
+   TR::Register *trgReg;
+   TR::LabelSymbol *orderedLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
+   TR::InstOpCode::Mnemonic op;
+
+   TR_ASSERT(node->getNumChildren() == 2, "The number of children for fmax/fmin/dmax/dmin must be 2.");
+
+   if (firstChild->getReferenceCount() == 1)
+      {
+      trgReg = src1Reg;
+      }
+   else if (secondChild->getReferenceCount() == 1)
+      {
+      trgReg = src2Reg;
+      }
+   else
+      {
+      trgReg = isDouble ? cg->allocateRegister(TR_FPR) : cg->allocateSinglePrecisionRegister();
+      }
+
+   op = isDouble ? TR::InstOpCode::fcmpd : TR::InstOpCode::fcmps;
+   generateSrc2Instruction(cg, op, node, src1Reg, src2Reg);
+   generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, orderedLabel, TR::CC_VC);
+
+   // Unordered case
+   TR::Register *tmpReg = cg->allocateRegister();
+   if (isDouble)
+      {
+      loadConstant64(cg, node, DOUBLE_NAN, tmpReg);
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, trgReg, tmpReg);
+      }
+   else
+      {
+      loadConstant32(cg, node, FLOAT_NAN, tmpReg);
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_wtos, node, trgReg, tmpReg);
+      }
+   cg->stopUsingRegister(tmpReg);
+   generateLabelInstruction(cg, TR::InstOpCode::b, node, doneLabel);
+
+   // Ordered case
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, orderedLabel);
+   op = isDouble ? TR::InstOpCode::fcseld : TR::InstOpCode::fcsels;
+   generateCondTrg1Src2Instruction(cg, op, node, trgReg, src1Reg, src2Reg, cc);
+
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel);
+
+   node->setRegister(trgReg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+
+   return trgReg;
+   }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::fmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::fmaxEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return fpMinMaxHelper(node, false, TR::CC_GE, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::fminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::fminEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return fpMinMaxHelper(node, false, TR::CC_LS, cg);
+   }
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::dmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return fpMinMaxHelper(node, true, TR::CC_GE, cg);
+   }
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::dminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return fpMinMaxHelper(node, true, TR::CC_LS, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::b2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)

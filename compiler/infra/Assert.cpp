@@ -287,11 +287,6 @@ namespace TR
       NodeAssertionContext(_instruction->getNode()).printContext();
       }
 
-   void assert_with_instruction_detail(void *instr)
-      {
-      assert_with_instruction_detail(reinterpret_cast<TR::Instruction *>(instr));
-      }
-
    void OMR_NORETURN fatal_assertion_with_detail(const AssertionContext& ctx, const char *file, int line, const char *condition, const char *format, ...)
       {
       static bool alreadyAsserting = false;

@@ -299,10 +299,10 @@
 #define _sucmpgtEvaluator TR::TreeEvaluator::iucmpgtEvaluator
 #define _sucmpleEvaluator TR::TreeEvaluator::iucmpleEvaluator
 #define _lcmpEvaluator TR::TreeEvaluator::lcmpEvaluator
-#define _fcmplEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _fcmpgEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _dcmplEvaluator TR::TreeEvaluator::unImpOpEvaluator
-#define _dcmpgEvaluator TR::TreeEvaluator::unImpOpEvaluator
+#define _fcmplEvaluator TR::TreeEvaluator::fcmplEvaluator
+#define _fcmpgEvaluator TR::TreeEvaluator::fcmpgEvaluator
+#define _dcmplEvaluator TR::TreeEvaluator::dcmplEvaluator
+#define _dcmpgEvaluator TR::TreeEvaluator::dcmpgEvaluator
 #define _ificmpeqEvaluator TR::TreeEvaluator::ificmpeqEvaluator
 #define _ificmpneEvaluator TR::TreeEvaluator::ificmpneEvaluator
 #define _ificmpltEvaluator TR::TreeEvaluator::ificmpltEvaluator

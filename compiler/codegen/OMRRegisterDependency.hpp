@@ -64,6 +64,8 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
       return m->allocateHeapMemory(s, TR_MemoryBase::RegisterDependencyGroup);
       }
 
+   void operator delete(void *p, int32_t numDependencies, TR_Memory *m) {}
+
    TR::RegisterDependency *getRegisterDependency(uint32_t index)
       {
       return &_dependencies[index];

@@ -199,7 +199,6 @@ class FloatMaxMin : public TRTest::BinaryOpTest<float> {};
 TEST_P(FloatMaxMin, UsingConst) {
     SKIP_ON_X86(KnownBug) << "The X86 code generator currently doesn't support fmax/fmin (see issue #4276)";
     SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support fmax/fmin (see issue #4276)";
-    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support fmax/fmin (see issue #5894)";
 
     auto param = TRTest::to_struct(GetParam());
 
@@ -235,7 +234,6 @@ TEST_P(FloatMaxMin, UsingConst) {
 TEST_P(FloatMaxMin, UsingLoadParam) {
     SKIP_ON_X86(KnownBug) << "The X86 code generator currently doesn't support fmax/fmin (see issue #4276)";
     SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support fmax/fmin (see issue #4276)";
-    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support fmax/fmin (see issue #5894)";
 
     auto param = TRTest::to_struct(GetParam());
 
@@ -279,7 +277,6 @@ class DoubleMaxMin : public TRTest::BinaryOpTest<double> {};
 TEST_P(DoubleMaxMin, UsingConst) {
     SKIP_ON_X86(KnownBug) << "The X86 code generator currently doesn't support dmax/dmin (see issue #4276)";
     SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support dmax/dmin (see issue #4276)";
-    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support dmax/dmin (see issue #5894)";
 
     auto param = TRTest::to_struct(GetParam());
 
@@ -315,7 +312,6 @@ TEST_P(DoubleMaxMin, UsingConst) {
 TEST_P(DoubleMaxMin, UsingLoadParam) {
     SKIP_ON_X86(KnownBug) << "The X86 code generator currently doesn't support dmax/dmin (see issue #4276)";
     SKIP_ON_HAMMER(KnownBug) << "The AMD64 code generator currently doesn't support dmax/dmin (see issue #4276)";
-    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support dmax/dmin (see issue #5894)";
 
     auto param = TRTest::to_struct(GetParam());
 

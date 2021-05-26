@@ -615,6 +615,7 @@ class OMR_InlinerPolicy : public TR::OptimizationPolicy, public OMR_InlinerHelpe
       bool aggressiveSmallAppOpts() { return comp()->getOption(TR_AggressiveOpts); }
       virtual bool willBeInlinedInCodeGen(TR::RecognizedMethod method);
       virtual bool canInlineMethodWhileInstrumenting(TR_ResolvedMethod *method);
+      virtual bool shouldRemoveDifferingTargets(TR::Node *callNode);
 
       /** \brief
        *     Determines whether to skip generation of HCR guards for a particular callee during inlining.

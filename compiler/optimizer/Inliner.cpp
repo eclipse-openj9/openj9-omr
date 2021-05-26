@@ -4061,6 +4061,15 @@ bool OMR_InlinerPolicy::canInlineMethodWhileInstrumenting(TR_ResolvedMethod *met
    return true;
    }
 
+bool OMR_InlinerPolicy::shouldRemoveDifferingTargets(TR::Node *callNode)
+   {
+   //if ilgen and localopts decided that this was a direct call
+   //there isn't much sense to deal with more than one target
+   //either find a matching one
+   //or make any target look like callsite's calleeSymbol
+   return !callNode->getOpCode().isCallIndirect();
+   }
+
 void TR_InlinerBase::applyPolicyToTargets(TR_CallStack *callStack, TR_CallSite *callsite)
    {
    for (int32_t i=0; i<callsite->numTargets(); i++)
@@ -4417,11 +4426,7 @@ TR_CallSite* TR_InlinerBase::findAndUpdateCallSiteInGraph(TR_CallStack *callStac
    if (callNode->getSymbolReference()->getSymbol()->castToMethodSymbol()->isInterface() && callsite->_initialCalleeSymbol)
       debugTrace(tracer(), "findAndUpdateCallSiteInGraph: BAD: Interface call has an initialCalleeSYmbol %p for calNode %p", callsite->_initialCalleeSymbol, callNode);
 
-   //if ilgen and localopts decided that this was a direct call
-   //there isn't much sense to deal with more than one target
-   //either find a matching one
-   //or make any target look like callsite's calleeSymbol
-   if (!callNode->getOpCode().isCallIndirect())
+   if (getPolicy()->shouldRemoveDifferingTargets(callNode))
       {
       //find a matching target if there's any
       for (int32_t i = 0 ; i < callsite->numTargets() ; i++)

@@ -326,6 +326,8 @@ public:
       _returnTypeInfoInstruction = rtii;
       }
 
+   static bool isILOpCodeSupported(TR::ILOpCodes);
+
    private:
 
    enum // flags

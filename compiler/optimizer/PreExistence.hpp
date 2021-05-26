@@ -41,8 +41,6 @@ enum PrexKnowledgeLevel { NONE, PREEXISTENT, FIXED_CLASS, KNOWN_OBJECT };
 
 class TR_PrexArgument
    {
-   friend class TR_DebugExt;
-
    public:
 
    TR_ALLOC(TR_Memory::LocalOpts);

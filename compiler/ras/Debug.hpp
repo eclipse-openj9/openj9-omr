@@ -674,7 +674,6 @@ public:
    virtual void print(TR::FILE *, TR_RegionStructure * regionStructure, uint32_t indentation);
    virtual void printSubGraph(TR::FILE *, TR_RegionStructure * regionStructure, uint32_t indentation);
    virtual void print(TR::FILE *, TR_InductionVariable * inductionVariable, uint32_t indentation);
-   virtual bool inDebugExtension() { return false; }
    virtual void* dxMallocAndRead(uintptr_t size, void *remotePtr, bool dontAddToMap = false){return remotePtr;}
    virtual void* dxMallocAndReadString(void *remotePtr, bool dontAddToMap = false){return remotePtr;}
    virtual void  dxFree(void * localPtr){return;}

@@ -1006,8 +1006,7 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
    output.append(format, node->printIsInvalid8BitGlobalRegister());
    output.append(format, node->printIsDirectMemoryUpdate());
    output.append(format, node->printIsTheVirtualCallNodeForAGuardedInlinedCall());
-   if (!inDebugExtension())
-      output.append(format, node->printIsDontTransformArrayCopyCall());
+   output.append(format, node->printIsDontTransformArrayCopyCall());
    output.append(format, node->printIsNodeRecognizedArrayCopyCall());
    output.append(format, node->printCanDesynchronizeCall());
    output.append(format, node->printContainsCompressionSequence());
@@ -1087,8 +1086,7 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
    output.append(format, node->printUseCallForFloatToFixedConversion());
 #ifdef J9_PROJECT_SPECIFIC
    output.append(format, node->printCleanSignDuringPackedLeftShift());
-   if (!inDebugExtension())
-      output.append(format, node->printIsInMemoryCopyProp());
+   output.append(format, node->printIsInMemoryCopyProp());
 #endif
    output.append(format, node->printAllocationCanBeRemoved());
    output.append(format, node->printArrayTRT());
@@ -1139,8 +1137,7 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
 
    if (sym)
       {
-      if (!inDebugExtension() &&
-          _comp->cg()->getMappingAutomatics() &&
+      if (_comp->cg()->getMappingAutomatics() &&
           sym->isRegisterMappedSymbol() &&
           sym->getRegisterMappedSymbol()->getOffset() != 0)
          {
@@ -1210,53 +1207,45 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
          case TR::Symbol::IsMethod:
             {
             TR::MethodSymbol *methodSym = sym->castToMethodSymbol();
-            if (!inDebugExtension())
+            if (methodSym->isNative())
+               symRefKind.append(" native");
+            switch (methodSym->getMethodKind())
                {
-               if (methodSym->isNative())
-                  symRefKind.append(" native");
-               switch (methodSym->getMethodKind())
-                  {
-                  case TR::MethodSymbol::Virtual:
-                     symRefKind.append(" virtual");
-                     break;
-                  case TR::MethodSymbol::Interface:
-                     symRefKind.append(" interface");
-                     break;
-                  case TR::MethodSymbol::Static:
-                     symRefKind.append(" static");
-                     break;
-                  case TR::MethodSymbol::Special:
-                     symRefKind.append(" special");
-                     break;
-                  case TR::MethodSymbol::Helper:
-                     symRefKind.append(" helper");
-                     break;
-                  case TR::MethodSymbol::ComputedStatic:
-                     symRefKind.append(" computed-static");
-                     break;
-                  case TR::MethodSymbol::ComputedVirtual:
-                     symRefKind.append(" computed-virtual");
-                     break;
-                  default:
-                        symRefKind.append(" UNKNOWN");
-                     break;
-                  }
-
-               symRefKind.append(" Method");
-               symRefName.append(" %s", getName(symRef));
-               TR_OpaqueClassBlock *clazz = containingClass(symRef);
-               if (clazz)
-                  {
-                  if (TR::Compiler->cls.isInterfaceClass(_comp, clazz))
-                     otherInfo.append( " (Interface class)");
-                  else if (TR::Compiler->cls.isAbstractClass(_comp, clazz))
-                     otherInfo.append( " (Abstract class)");
-                  }
+               case TR::MethodSymbol::Virtual:
+                  symRefKind.append(" virtual");
+                  break;
+               case TR::MethodSymbol::Interface:
+                  symRefKind.append(" interface");
+                  break;
+               case TR::MethodSymbol::Static:
+                  symRefKind.append(" static");
+                  break;
+               case TR::MethodSymbol::Special:
+                  symRefKind.append(" special");
+                  break;
+               case TR::MethodSymbol::Helper:
+                  symRefKind.append(" helper");
+                  break;
+               case TR::MethodSymbol::ComputedStatic:
+                  symRefKind.append(" computed-static");
+                  break;
+               case TR::MethodSymbol::ComputedVirtual:
+                  symRefKind.append(" computed-virtual");
+                  break;
+               default:
+                     symRefKind.append(" UNKNOWN");
+                  break;
                }
-            else
+
+            symRefKind.append(" Method");
+            symRefName.append(" %s", getName(symRef));
+            TR_OpaqueClassBlock *clazz = containingClass(symRef);
+            if (clazz)
                {
-               symRefKind.append(" Method", TR_Debug::getName(symRef));
-               symRefName.append(" %s", TR_Debug::getName(symRef));
+               if (TR::Compiler->cls.isInterfaceClass(_comp, clazz))
+                  otherInfo.append( " (Interface class)");
+               else if (TR::Compiler->cls.isAbstractClass(_comp, clazz))
+                  otherInfo.append( " (Abstract class)");
                }
             }
             break;
@@ -2245,24 +2234,21 @@ TR_Debug::printBlockInfo(TR::FILE *pOutFile, TR::Node *node)
          TR_BlockStructure *blockStructure = block->getStructureOf();
          if (_comp->getFlowGraph()->getStructure() && blockStructure)
             {
-            if (!inDebugExtension())
+            TR_Structure *parent = blockStructure->getParent();
+            while (parent)
                {
-               TR_Structure *parent = blockStructure->getParent();
-               while (parent)
+               TR_RegionStructure *region = parent->asRegion();
+               if (region->isNaturalLoop() ||
+                   region->containsInternalCycles())
                   {
-                  TR_RegionStructure *region = parent->asRegion();
-                  if (region->isNaturalLoop() ||
-                      region->containsInternalCycles())
-                     {
-                     trfprintf(pOutFile, " (in loop %d)", region->getNumber());
-                     break;
-                     }
-                  parent = parent->getParent();
+                  trfprintf(pOutFile, " (in loop %d)", region->getNumber());
+                  break;
                   }
-               TR_BlockStructure *dupBlock = blockStructure->getDuplicatedBlock();
-               if (dupBlock)
-                  trfprintf(pOutFile, " (dup of block_%d)", dupBlock->getNumber());
+               parent = parent->getParent();
                }
+            TR_BlockStructure *dupBlock = blockStructure->getDuplicatedBlock();
+            if (dupBlock)
+               trfprintf(pOutFile, " (dup of block_%d)", dupBlock->getNumber());
             }
          }
       else if (node && node->getOpCodeValue() == TR::BBEnd)
@@ -3543,8 +3529,7 @@ TR_Debug::dump(TR::FILE *pOutFile, TR_CHTable * chTable)
    trfprintf(pOutFile, "                       Class Hierarchy Assumption Table\n");
    trfprintf(pOutFile, "----------------------------------------------------------------------------------------\n");
 
-   if (!inDebugExtension() &&
-       !vguards.empty())
+   if (!vguards.empty())
       {
       uint8_t *startPC = _comp->cg()->getCodeStart();
 
@@ -3753,7 +3738,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          }
       }
 #ifdef TR_TARGET_X86
-   else if ((_comp->target().cpu.isI386() || _comp->target().cpu.isAMD64()) && !inDebugExtension())
+   else if (_comp->target().cpu.isI386() || _comp->target().cpu.isAMD64())
       {
       if (index < TR_LXRH)
          {
@@ -3843,7 +3828,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          }
       }
 #elif defined (TR_TARGET_POWER)
-   else if (_comp->target().cpu.isPower() && !inDebugExtension())
+   else if (_comp->target().cpu.isPower())
       {
       switch (index)
          {
@@ -3954,7 +3939,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          }
       }
 #elif defined (TR_TARGET_S390)
-   else if (_comp->target().cpu.isZ() && !inDebugExtension())
+   else if (_comp->target().cpu.isZ())
       {
       switch (index)
          {
@@ -4041,7 +4026,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          }
       }
 #elif defined (TR_TARGET_ARM)
-   else if (_comp->target().cpu.isARM() && !inDebugExtension())
+   else if (_comp->target().cpu.isARM())
       {
       switch (index)
          {
@@ -4175,7 +4160,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          }
       }
 #elif defined (TR_TARGET_ARM64)
-   else if (_comp->target().cpu.isARM64() && !inDebugExtension())
+   else if (_comp->target().cpu.isARM64())
       {
       switch (index)
          {
@@ -4221,9 +4206,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
       }
 #endif
 #endif // J9_PROJECT_SPECIFIC
-
-   if (inDebugExtension())
-      return "platform specific - not implemented";
 
    return "unknown helper";
    }

@@ -506,7 +506,6 @@ public:
    uintptr_t _signature;        // eyecatcher
 
    friend class TR_Memory;
-   friend class TR_DebugExt;
 
    /** Used by TR_PPCTableOfCnstants */
    static TR::PersistentInfo * getNonThreadSafePersistentInfo();
@@ -612,11 +611,8 @@ class Region;
 class StackMemoryRegion;
 }
 
-class TR_DebugExt;
-
 class TR_Memory : public TR_MemoryBase
    {
-   friend class TR_DebugExt;
 public:
    TR_HeapMemory  trHeapMemory()  { return this; }
    TR_StackMemory trStackMemory() { return this; }

@@ -137,8 +137,6 @@ enum
 
 class Optimizer
    {
-   friend class ::TR_DebugExt;
-
    public:
 
    TR_ALLOC(TR_Memory::Machine)

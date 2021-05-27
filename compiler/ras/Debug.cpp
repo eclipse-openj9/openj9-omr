@@ -4202,6 +4202,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_ARM64revertToInterpreterGlue:                     return "_revertToInterpreterGlue";
          case TR_ARM64doubleRemainder:                             return "doubleRemainder";
          case TR_ARM64floatRemainder:                              return "floatRemainder";
+         case TR_ARM64jitCollapseJNIReferenceFrame:                return "jitCollapseJNIReferenceFrame";
          }
       }
 #endif

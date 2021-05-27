@@ -2180,7 +2180,7 @@ int32_t OMR::X86::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32
    for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
       {
       auto size = (*iterator)->getDataSize();
-      estimatedSnippetStart = ((estimatedSnippetStart+size-1)/size) * size;
+      estimatedSnippetStart = static_cast<int32_t>(((estimatedSnippetStart+size-1)/size) * size);
       (*iterator)->getSnippetLabel()->setEstimatedCodeLocation(estimatedSnippetStart);
       estimatedSnippetStart += (*iterator)->getLength(estimatedSnippetStart);
       }

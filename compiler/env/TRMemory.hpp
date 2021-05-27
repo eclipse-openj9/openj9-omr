@@ -908,9 +908,8 @@ public:
 
     if (scavenge) {
       for (uint32_t i=b+1; i < maxbits; i++) {
-        uint32_t chunksize=0; uint32_t elements=0;
+        uint32_t elements=0;
         if (freelist[i-minbits]) {
-          chunksize = bucketsize(i);
           elements = (1 << (i-b)); // (2^i / 2^b)
 
           // remove this segment from its freelist

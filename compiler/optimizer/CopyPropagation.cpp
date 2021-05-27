@@ -83,7 +83,7 @@ TR::Node * getNodeParent(TR::Node * lookForNode, TR::Node * curNode, vcount_t vi
 
    curNode->setVisitCount(visitCount);
 
-   for (size_t i = 0; i < curNode->getNumChildren(); i++)
+   for (auto i = 0; i < curNode->getNumChildren(); i++)
       {
       if (curNode->getChild(i) == lookForNode)
          {
@@ -246,8 +246,8 @@ class TR_ExpressionPropagation
                                          OPT_DETAILS, sourceTree, parentNode, childIndex);
                }
 
-            TR::Node * commonedNode = parentNode->getChild(childIndex);
-            parentNode->setAndIncChild(childIndex, sourceTree);
+            TR::Node * commonedNode = parentNode->getChild(static_cast<int32_t>(childIndex));
+            parentNode->setAndIncChild(static_cast<int32_t>(childIndex), sourceTree);
             targetNode->decReferenceCount();
             }
          }
@@ -1500,7 +1500,7 @@ void collectNodesForIsCorrectChecks(TR::Node * n, TR::list< TR::Node *> & checkN
       refsToCheckIfKilled[n->getSymbolReference()->getReferenceNumber()] = 1;
       }
 
-   for (size_t i = 0; i < n->getNumChildren(); i++)
+   for (auto i = 0; i < n->getNumChildren(); i++)
       {
       collectNodesForIsCorrectChecks(n->getChild(i), checkNodes, refsToCheckIfKilled, vc);
       }
@@ -1536,7 +1536,7 @@ void collectNodesForIsSafeChecks(TR::Node * n, TR::list< TR::Node *> & anchorChe
       anchorCheckNodes.push_back(n);
       }
 
-   for (size_t i = 0; i < n->getNumChildren(); i++)
+   for (auto i = 0; i < n->getNumChildren(); i++)
       {
       collectNodesForIsSafeChecks(n->getChild(i), anchorCheckNodes, vc, sawRefCountLargerThanOne);
       }
@@ -2312,7 +2312,7 @@ bool nodeContainsLoadReg(TR::Compilation * comp, TR::Node * n, vcount_t vc)
       return true;
       }
 
-   for (size_t i = 0; i < n->getNumChildren(); i++)
+   for (auto i = 0; i < n->getNumChildren(); i++)
       {
       if (nodeContainsLoadReg(comp, n->getChild(i), vc))
          {

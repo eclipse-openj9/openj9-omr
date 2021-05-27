@@ -5566,7 +5566,7 @@ void TR_CallSite::removecalltarget(TR_CallTarget *calltarget, TR_InlinerTracer *
 
 void TR_CallSite::removeTargets(TR_InlinerTracer *tracer, int index, TR_InlinerFailureReason reason)
    {
-   for (int num = _mytargets.size() - index; num > 0; --num)
+   for (auto num = _mytargets.size() - index; num > 0; --num)
       {
       removecalltarget(index,tracer,reason);
       }

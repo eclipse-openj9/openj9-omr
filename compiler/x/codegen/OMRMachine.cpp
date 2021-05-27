@@ -1769,7 +1769,7 @@ TR::RegisterDependencyConditions * OMR::X86::Machine::createCondForLiveAndSpille
          c++;
       }
 
-   c += spilledRegisterList ? spilledRegisterList->size() : 0;
+   c += spilledRegisterList ? static_cast<int32_t>(spilledRegisterList->size()) : 0;
 
    TR::RegisterDependencyConditions *deps = NULL;
 
@@ -1949,7 +1949,7 @@ TR_RegisterAssignerState::createDependenciesFromRegisterState(TR_OutlinedInstruc
          numDeps++;
       }
 
-   numDeps += _spilledRegistersList->size();
+   numDeps += static_cast<int32_t>(_spilledRegistersList->size());
 
    if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
       {

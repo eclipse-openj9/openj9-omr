@@ -116,7 +116,7 @@ static void countNodes(CS2::ABitVector< TR::Allocator > & mark,
    mark[n->getGlobalIndex()] = true;
    numNodes += 1;
 
-   for (size_t i = 0; i < n->getNumChildren(); i++)
+   for (auto i = 0; i < n->getNumChildren(); i++)
       {
       countNodes(mark, n->getChild(i), numNodes);
       }

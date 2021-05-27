@@ -40,7 +40,7 @@ class X86DataSnippet : public TR::Snippet
    virtual Kind                   getKind()                                { return IsData; }
    uint8_t*                       getRawData()                             { return _data.data(); }
    virtual size_t                 getDataSize() const                      { return _data.size(); }
-   virtual uint32_t               getLength(int32_t estimatedSnippetStart) { return getDataSize(); }
+   virtual uint32_t               getLength(int32_t estimatedSnippetStart) { return static_cast<uint32_t>(getDataSize()); }
    virtual bool                   setClassAddress(bool isClassAddress)     { return _isClassAddress = isClassAddress;}
    template <typename T> inline T getData()                                { return *((T*)getRawData()); }
 

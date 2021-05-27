@@ -4447,7 +4447,7 @@ void TR_LoopStrider::truncateIVsOnLoopExit(
          // (src -> dest) is a loop exit. Need to insert a conversion "along"
          // it. Note that src definitely has another successor, since it's in
          // loop, so the conversion can never simply be put at the end of src.
-         int preds = dest->getPredecessors().size()
+         auto preds = dest->getPredecessors().size()
             + dest->getExceptionPredecessors().size();
          if (preds > 1)
             {

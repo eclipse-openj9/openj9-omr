@@ -380,7 +380,7 @@ void
 TR_Debug::newVariableSizeSymbol(TR::AutomaticSymbol *sym)
    {
    TR_ASSERT(_comp, "Required compilation object is NULL.\n");
-   int32_t strLength = strlen(TR_VSS_NAME) + TR::getMaxSignedPrecision<TR::Int32>() + 7;
+   int32_t strLength = static_cast<int32_t>(strlen(TR_VSS_NAME)) + TR::getMaxSignedPrecision<TR::Int32>() + 7;
    char *buf = (char *)_comp->trMemory()->allocateHeapMemory(strLength);
 
    TR::SimpleRegex * regex = NULL;
@@ -4402,7 +4402,7 @@ void TR_Debug::dumpSimulatedNode(TR::Node *node, char tagChar)
    trfprintf(_file, " %c ", tagChar);
 
    // 16 chars is enough room for ArrayCopyBNDCHK which is reasonably common
-   int32_t padding = 16 - strlen(getName(node->getOpCode()));
+   int32_t padding = 16 - static_cast<int32_t>(strlen(getName(node->getOpCode())));
    if (node->getOpCode().hasSymbolReference())
       {
       // Yes, big methods can have 4-digit symref numbers
@@ -4604,7 +4604,7 @@ TR_Debug::traceRegisterAssignment(const char *format, va_list args)
    trfprintf(_file, "details:                      ");
 
    int32_t  j = 0;
-   int32_t  length = strlen(format) + 40;
+   int32_t  length = static_cast<int32_t>(strlen(format)) + 40;
    char    *buffer = (char *)_comp->trMemory()->allocateHeapMemory(length + 1);
    bool     sawPercentR = false;
 
@@ -4614,7 +4614,7 @@ TR_Debug::traceRegisterAssignment(const char *format, va_list args)
          {
          ++c;
          const char *regName = getName(va_arg(args, TR::Register *));
-         int32_t slen  = strlen(regName);
+         int32_t slen  = static_cast<int32_t>(strlen(regName));
 
          if (j + slen >= length) // re-allocate buffer if too small
             {
@@ -4772,9 +4772,9 @@ TR_Debug::traceRegisterAssigned(TR_RegisterAssignmentFlags flags, TR::Register *
            getName(realReg),
            closeParen,
            postCoercionSymbol);
-   if ((_registerAssignmentTraceCursor += strlen(buf)) > 80)
+   if ((_registerAssignmentTraceCursor += static_cast<int16_t>(strlen(buf))) > 80)
       {
-      _registerAssignmentTraceCursor = strlen(buf);
+      _registerAssignmentTraceCursor = static_cast<int16_t>(strlen(buf));
       trfprintf(_file, "\n%s", buf);
       }
    else
@@ -4803,9 +4803,9 @@ TR_Debug::traceRegisterFreed(TR::Register *virtReg, TR::Register *realReg)
            virtReg->getFutureUseCount(),
            virtReg->getTotalUseCount(),
            getName(realReg));
-   if ((_registerAssignmentTraceCursor += strlen(buf)) > 80)
+   if ((_registerAssignmentTraceCursor += static_cast<int16_t>(strlen(buf))) > 80)
       {
-      _registerAssignmentTraceCursor = strlen(buf);
+      _registerAssignmentTraceCursor = static_cast<int16_t>(strlen(buf));
       trfprintf(_file, "\n%s", buf);
       }
    else
@@ -4825,9 +4825,9 @@ TR_Debug::traceRegisterInterference(TR::Register *virtReg, TR::Register *interfe
       return;
    char buf[40];
    sprintf(buf, "%s{%d,%d}? ", getName(interferingVirtual), interferingVirtual->getAssociation(), distance);
-   if ((_registerAssignmentTraceCursor += strlen(buf)) > 80)
+   if ((_registerAssignmentTraceCursor += static_cast<int16_t>(strlen(buf))) > 80)
       {
-      _registerAssignmentTraceCursor = strlen(buf);
+      _registerAssignmentTraceCursor = static_cast<int16_t>(strlen(buf));
       trfprintf(_file, "\n%s", buf);
       }
    else
@@ -4847,9 +4847,9 @@ TR_Debug::traceRegisterWeight(TR::Register *realReg, uint32_t weight)
       return;
    char buf[30];
    sprintf(buf, "%s[0x%x]? ", getName(realReg), weight);
-   if ((_registerAssignmentTraceCursor += strlen(buf)) > 80)
+   if ((_registerAssignmentTraceCursor += static_cast<int16_t>(strlen(buf))) > 80)
       {
-      _registerAssignmentTraceCursor = strlen(buf);
+      _registerAssignmentTraceCursor = static_cast<int16_t>(strlen(buf));
       trfprintf(_file, "\n%s", buf);
       }
    else
@@ -5206,12 +5206,12 @@ static int counterCompare(const char *left, const char *right)
       {
       // The terminator indicates a change in numeric/string comparison mode
       char *terminator = numericComparisonMode ? numericEnd : numericStart;
-      int leftSectionLength = strcspn(left, terminator);
-      int rightSectionLength = strcspn(right, terminator);
+      auto leftSectionLength = strcspn(left, terminator);
+      auto rightSectionLength = strcspn(right, terminator);
       if (leftSectionLength != rightSectionLength)
          {
          return numericComparisonMode
-               ? leftSectionLength - rightSectionLength // Assume that numbers are not 0-padded, so any longer number must be bigger
+               ? static_cast<int32_t>(leftSectionLength - rightSectionLength) // Assume that numbers are not 0-padded, so any longer number must be bigger
                : strcmp(left, right);
          }
       // strncmp also works for comparing numbers with an equal number of digits
@@ -5330,7 +5330,7 @@ void TR_Debug::printDebugCounters(TR::DebugCounterGroup *counterGroup, const cha
       counterArray[count++] = c;
       if (c->getCount() != 0)
          {
-         int32_t nameLength = strlen(c->getName());
+         int32_t nameLength = static_cast<int32_t>(strlen(c->getName()));
          longestName = std::max(longestName, nameLength);
          }
       }

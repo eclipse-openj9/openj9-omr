@@ -1955,7 +1955,7 @@ OMR::CFG::setUniformEdgeFrequenciesOnNode(TR::CFGNode *node, int32_t branchToCou
          addFrequency = false;
       }
 
-   int32_t size = node->getSuccessors().size();
+   int32_t size = static_cast<int32_t>(node->getSuccessors().size());
 
    for (auto e = node->getSuccessors().begin(); e != node->getSuccessors().end(); ++e)
       {

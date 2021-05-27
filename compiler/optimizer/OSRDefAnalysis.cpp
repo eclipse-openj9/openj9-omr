@@ -155,7 +155,7 @@ void TR_OSRDefInfo::performFurtherAnalysis(AuxiliaryData &aux)
                      break;
                TR_ASSERT(symRefOrder < list->getSize(), "symref #%d on node n%dn not found\n", defSymRef->getReferenceNumber(), defNode->getGlobalIndex());
                comp()->getOSRCompilationData()->addSlotSharingInfo(point->getByteCodeInfo(),
-                     slot, symRefNum, symRefOrder, defSymRef->getSymbol()->getSize(), takesTwoSlots);
+                     slot, symRefNum, symRefOrder, static_cast<int32_t>(defSymRef->getSymbol()->getSize()), takesTwoSlots);
                if (trace())
                   {
                   TR_ByteCodeInfo& bcInfo = point->getByteCodeInfo();
@@ -1036,7 +1036,7 @@ void TR_OSRLiveRangeAnalysis::pendingPushSlotSharingInfo(TR::Node *node, TR_BitV
             traceMsg(comp(), "  Slot:%d SymRef:%d TwoSlots:%d\n", slot, symRefNum, takesTwoSlots);
 
          comp()->getOSRCompilationData()->addSlotSharingInfo(osrPoint->getByteCodeInfo(),
-            slot, symRefNum, symRefOrder, symRef->getSymbol()->getSize(), takesTwoSlots);
+            slot, symRefNum, symRefOrder, static_cast<int32_t>(symRef->getSymbol()->getSize()), takesTwoSlots);
          }
       }
 
@@ -1747,7 +1747,7 @@ void TR_OSRLiveRangeAnalysis::buildOSRSlotSharingInfo(TR::Node *node, TR_BitVect
             traceMsg(comp(), "  Slot:%d SymRef:%d TwoSlots:%d\n", slot, symRefNum, takesTwoSlots);
 
          comp()->getOSRCompilationData()->addSlotSharingInfo(osrPoint->getByteCodeInfo(),
-            slot, symRefNum, symRefOrder, symRef->getSymbol()->getSize(), takesTwoSlots);
+            slot, symRefNum, symRefOrder, static_cast<int32_t>(symRef->getSymbol()->getSize()), takesTwoSlots);
          }
       }
 

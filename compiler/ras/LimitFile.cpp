@@ -727,12 +727,12 @@ TR_FilterBST *TR_FilterBST::find(const char *methodName, int32_t methodNameLen, 
          {
          rc = strncmp(methodClass, node->getClass(), methodClassLen);
          if (rc == 0)
-            rc = methodClassLen - strlen(node->getClass());
+            rc = methodClassLen - static_cast<int32_t>(strlen(node->getClass()));
          if (rc == 0)
             {
             rc = strncmp(methodSignature, node->getSignature(), methodSignatureLen);
             if (rc == 0)
-               rc = methodSignatureLen - strlen(node->getSignature());
+               rc = methodSignatureLen - static_cast<int32_t>(strlen(node->getSignature()));
             if (rc == 0)
                break;
             }
@@ -1089,7 +1089,7 @@ TR_Debug::methodSigCanBeFound(const char *methodSig, TR::CompilationFilters * fi
          methodName = strchr(methodSignature, ':');
          methodSignatureLen = methodName - methodSignature;
          methodName++;
-         methodNameLen = strlen(methodName);
+         methodNameLen = static_cast<uint32_t>(strlen(methodName));
          }
       else
          {
@@ -1097,7 +1097,7 @@ TR_Debug::methodSigCanBeFound(const char *methodSig, TR::CompilationFilters * fi
          methodClassLen = 0;
          methodSignature = "";
          methodSignatureLen = 0;
-         methodNameLen = strlen(methodName);
+         methodNameLen = static_cast<uint32_t>(strlen(methodName));
          }
       }
    else
@@ -1111,7 +1111,7 @@ TR_Debug::methodSigCanBeFound(const char *methodSig, TR::CompilationFilters * fi
          methodName = strchr(methodSignature, ':');
          methodSignatureLen = methodName - methodSignature;
          methodName++;
-         methodNameLen = strlen(methodName);
+         methodNameLen = static_cast<uint32_t>(strlen(methodName));
          }
       else
          {
@@ -1119,7 +1119,7 @@ TR_Debug::methodSigCanBeFound(const char *methodSig, TR::CompilationFilters * fi
          methodClassLen = methodName - methodClass;
          methodName++;
          methodSignature = strchr(methodName, '(');
-         methodSignatureLen = strlen(methodSignature);
+         methodSignatureLen = static_cast<uint32_t>(strlen(methodSignature));
          TR_ASSERT(methodSignature, "unable to pattern match java method signature");
          methodNameLen = methodSignature - methodName;
          }
@@ -1272,7 +1272,7 @@ TR_Debug::loadCustomStrategy(char *fileName)
             continue;
 
          char *name = strchr(lineBuffer, ':') + 2; // 2 moves past the colon and the space
-         int32_t nameLen = strcspn(name, " \n");
+         int32_t nameLen = static_cast<int32_t>(strcspn(name, " \n"));
 
          int32_t optNum;
          for (optNum = 0; optNum < OMR::numOpts; optNum++)

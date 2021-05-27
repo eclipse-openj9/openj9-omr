@@ -327,8 +327,8 @@ struct TR_CallSite : public TR_Link<TR_CallSite>
       void                    setIsBackEdge()            {  _isBackEdge = true; }
       bool                    isIndirectCall()           { return _isIndirectCall; }
       bool                    isInterface()              { return _isInterface; }
-      int32_t                 numTargets()               { return _mytargets.size(); }
-      int32_t                 numRemovedTargets()        { return _myRemovedTargets.size(); }
+      int32_t                 numTargets()               { return static_cast<int32_t>(_mytargets.size()); }
+      int32_t                 numRemovedTargets()        { return static_cast<int32_t>(_myRemovedTargets.size()); }
 
       bool                    isForceInline()            { return _forceInline; }
 

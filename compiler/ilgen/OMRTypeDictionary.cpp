@@ -299,7 +299,7 @@ OMR::StructType::getFieldSymRef(const char *fieldName)
 
       char *fullName = (char *) comp->trMemory()->allocateHeapMemory((strlen(info->_name) + 1 + strlen(_name) + 1) * sizeof(char));
       sprintf(fullName, "%s.%s", _name, info->_name);
-      TR::Symbol *symbol = TR::Symbol::createNamedShadow(comp->trHeapMemory(), type, info->_type->getSize(), fullName);
+      TR::Symbol *symbol = TR::Symbol::createNamedShadow(comp->trHeapMemory(), type, static_cast<uint32_t>(info->_type->getSize()), fullName);
 
       // TBD: should we create a dynamic "constant" pool for accesses made by the method being compiled?
       symRef = new (comp->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab(), symbol, comp->getMethodSymbol()->getResolvedMethodIndex(), -1);
@@ -393,7 +393,7 @@ OMR::UnionType::getFieldSymRef(const char *fieldName)
 
       char *fullName = (char *) comp->trMemory()->allocateHeapMemory((strlen(info->_name) + 1 + strlen(_name) + 1) * sizeof(char));
       sprintf(fullName, "%s.%s", _name, info->_name);
-      TR::Symbol *symbol = TR::Symbol::createNamedShadow(comp->trHeapMemory(), type, info->_type->getSize(), fullName);
+      TR::Symbol *symbol = TR::Symbol::createNamedShadow(comp->trHeapMemory(), type, static_cast<uint32_t>(info->_type->getSize()), fullName);
       symRef = new (comp->trHeapMemory()) TR::SymbolReference(symRefTab, symbol, comp->getMethodSymbol()->getResolvedMethodIndex(), -1);
       symRef->setOffset(0);
       symRef->setReallySharesSymbol();

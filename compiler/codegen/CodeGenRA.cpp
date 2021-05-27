@@ -1111,7 +1111,7 @@ OMR::CodeGenerator::TR_RegisterPressureState::updateRegisterPressure(TR::Symbol 
    if (dt == TR::NoType)
       dt = symbol->getDataType();
 
-   _gprPressure += cg->gprCount(TR::DataType(dt),symbol->getSize());
+   _gprPressure += cg->gprCount(TR::DataType(dt), static_cast<int32_t>(symbol->getSize()));
    _fprPressure += cg->fprCount(TR::DataType(dt));
    _vrfPressure += cg->vrfCount(TR::DataType(dt));
 

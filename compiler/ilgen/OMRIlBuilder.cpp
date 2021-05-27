@@ -704,7 +704,7 @@ OMR::IlBuilder::VectorStoreAt(TR::IlValue *address, TR::IlValue *value)
 TR::IlValue *
 OMR::IlBuilder::CreateLocalArray(int32_t numElements, TR::IlType *elementType)
    {
-   uint32_t size = numElements * elementType->getSize();
+   uint32_t size = static_cast<uint32_t>(numElements * elementType->getSize());
    TR::SymbolReference *localArraySymRef = symRefTab()->createLocalPrimArray(size,
                                                                              methodSymbol(),
                                                                              8 /*FIXME: JVM-specific - byte*/);
@@ -726,7 +726,7 @@ TR::IlValue *
 OMR::IlBuilder::CreateLocalStruct(TR::IlType *structType)
    {
    //similar to CreateLocalArray except writing a method in StructType to get the struct size
-   uint32_t size = structType->getSize();
+   uint32_t size = static_cast<uint32_t>(structType->getSize());
    TR::SymbolReference *localStructSymRef = symRefTab()->createLocalPrimArray(size,
                                                                              methodSymbol(),
                                                                              8 /*FIXME: JVM-specific - byte*/);
@@ -838,7 +838,7 @@ OMR::IlBuilder::IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index)
          TR::ILOpCodes op = TR::DataType::getDataTypeConversion(indexType, targetType);
          indexNode = TR::Node::create(op, 1, indexNode);
          }
-      elemSizeNode = TR::Node::iconst(elemType->getSize());
+      elemSizeNode = TR::Node::iconst(static_cast<int32_t>(elemType->getSize()));
       addOp = TR::aiadd;
       mulOp = TR::imul;
       }
@@ -871,7 +871,7 @@ OMR::IlBuilder::StructFieldInstanceAddress(const char* structName, const char* f
       }
    else
       {
-      offsetValue = ConstInt32(offset);
+      offsetValue = ConstInt32(static_cast<int32_t>(offset));
       }
    auto addr = Add(obj, offsetValue);
    return ConvertTo(ptype, addr);

@@ -241,7 +241,7 @@ class ASparseBitVector : private Allocator {
     Segment() : fSegment(NULL), fSize(0), fHighBits(0), fNumValues(0) { }
     void allocate(size_t size, Allocator &a) {
       fSegment = (uint16_t *) a.allocate(size * sizeof(uint16_t));
-      fSize = size;
+      fSize = static_cast<uint16_t>(size);
       fNumValues = 0;
     }
     template <class S2>
@@ -257,7 +257,7 @@ class ASparseBitVector : private Allocator {
     void append(S2 &s, uint16_t fromIndex, uint16_t toIndex) {
       size_t n = toIndex - fromIndex;
       memcpy(&fSegment[fNumValues], &s.Indices()[fromIndex], n * sizeof(uint16_t));
-      fNumValues += n;
+      fNumValues += static_cast<uint32_t>(n);
     }
 
     // append elements of s to this Segment
@@ -272,8 +272,8 @@ class ASparseBitVector : private Allocator {
 
     void adopt(size_t numValues, size_t size, uint16_t *bits) {
       fSegment = bits;
-      fSize = size;
-      fNumValues = numValues;
+      fSize = static_cast<uint16_t>(size);
+      fNumValues = static_cast<uint32_t>(numValues);
     }
 
     void adopt(uint16_t highbits, size_t numValues, size_t size, uint16_t *bits) {
@@ -296,7 +296,7 @@ class ASparseBitVector : private Allocator {
       fSegment = (uint16_t *) a.reallocate(size*sizeof(uint16_t),
                                            fSegment,
                                            fSize * sizeof(uint16_t));
-      fSize = size;
+      fSize = static_cast<uint16_t>(size);
     }
 
     void deallocate(Allocator &a) { a.deallocate(fSegment, fSize*sizeof(uint16_t)); }
@@ -581,7 +581,7 @@ inline typename ASparseBitVector<Allocator>::SparseBitRef&  ASparseBitVector<All
   base[i].Indices()[0]=fIndex;
 
   fVector.fBase = base;
-  fVector.fNumberOfSegments=n+1;
+  fVector.fNumberOfSegments=static_cast<SparseBitIndex>(n+1);
 
   return *this;
 }
@@ -700,7 +700,7 @@ inline void ASparseBitVector<Allocator>::Compact() {
 
 template <class Allocator>
   inline typename ASparseBitVector<Allocator>::SparseBitRef ASparseBitVector<Allocator>::operator[] (size_t index) {
-  return SparseBitRef (*this, index);
+  return SparseBitRef (*this, static_cast<SparseBitIndex>(index));
 }
 
 template <class Allocator>
@@ -712,8 +712,8 @@ template <class Allocator>
 inline bool
 ASparseBitVector<Allocator>::ValueAt(size_t elementIndex) const
 {
-  Segment *s =FindSegment(elementIndex);
-  if (s) return GetSegment(*s, elementIndex);
+  Segment *s =FindSegment(static_cast<SparseBitIndex>(elementIndex));
+  if (s) return GetSegment(*s, static_cast<SparseBitIndex>(elementIndex));
   return false;
 }
 
@@ -932,7 +932,8 @@ template <class Allocator>
 inline SparseBitIndex ASparseBitVector<Allocator>::PopulationCount (SparseBitIndex numBits) const{
   CS2Assert(numBits==0xEFFFFFFFul,("Population count subset not implemented"));
 
-  size_t i, n = fNumberOfSegments, ret=0;
+  size_t i, n = fNumberOfSegments;
+  SparseBitIndex ret=0;
   for (i=0; i<n; i++) {
     Segment *s = &fBase[i];
     ret += s->PopulationCount();
@@ -1059,19 +1060,19 @@ inline SparseBitIndex ASparseBitVector<Allocator>::FindIndex(const typename ASpa
   CS2Assert(thisSegment.Indices(), ("Expecting non-null srbv segment"));
   if (high==0) high=thisSegment.fNumValues-1;
 
-  if (search <= thisSegment.Indices()[low]) return low;
-  if (search == thisSegment.Indices()[high]) return high;
-  if (search > thisSegment.Indices()[high]) return high+1;
+  if (search <= thisSegment.Indices()[low]) return static_cast<SparseBitIndex>(low);
+  if (search == thisSegment.Indices()[high]) return static_cast<SparseBitIndex>(high);
+  if (search > thisSegment.Indices()[high]) return static_cast<SparseBitIndex>(high+1);
 
   while (high-low > 16) {
     size_t mid = (high+low)/2;
     if (search < thisSegment.Indices()[mid]) high = mid;
     else if (search > thisSegment.Indices()[mid]) low = mid;
-    else return mid;
+    else return static_cast<SparseBitIndex>(mid);
   }
 
   while (low<high && thisSegment.Indices()[low] < search) low+=1;
-  return low;
+  return static_cast<SparseBitIndex>(low);
 }
 
 // FindIndex gets the segment location of SparseBitIndex.
@@ -1079,7 +1080,7 @@ inline SparseBitIndex ASparseBitVector<Allocator>::FindIndex(const typename ASpa
 // smallest bit in the segment that is larger or equal than search
 template <class Allocator>
 inline SparseBitIndex ASparseBitVector<Allocator>::AdvanceIndex(const typename ASparseBitVector<Allocator>::Segment &thisSegment, uint16_t s, SparseBitIndex l, SparseBitIndex h) const {
-  size_t search(s), low(l), high(h);
+  SparseBitIndex search(static_cast<SparseBitIndex>(s)), low(l), high(h);
   if (high==0) high=thisSegment.fNumValues-1;
 
   if (search >= thisSegment.Indices()[high]) {
@@ -1092,7 +1093,7 @@ inline SparseBitIndex ASparseBitVector<Allocator>::AdvanceIndex(const typename A
     high = long(search - value) + low;
 
   const unsigned long residue = 128; /* do linear search under this range */
-  size_t mid = (high+low)/2;
+  SparseBitIndex mid = (high+low)/2;
 
   while (high-low > residue) {
     value = thisSegment.Indices()[mid];
@@ -1230,7 +1231,7 @@ inline typename ASparseBitVector<Allocator>::Segment *ASparseBitVector<Allocator
   base[i].fNumValues = 0;
 
   fBase = base;
-  fNumberOfSegments = n+1;
+  fNumberOfSegments = static_cast<SparseBitIndex>(n+1);
 
   return &base[i];
 }

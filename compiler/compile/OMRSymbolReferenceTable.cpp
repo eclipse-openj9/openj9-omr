@@ -90,7 +90,7 @@ class TR_OpaqueMethodBlock;
 
 
 OMR::SymbolReferenceTable::SymbolReferenceTable(size_t sizeHint, TR::Compilation *comp) :
-     baseArray(comp->trMemory(), sizeHint + TR_numRuntimeHelpers),
+     baseArray(comp->trMemory(), static_cast<uint32_t>(sizeHint + TR_numRuntimeHelpers)),
      aliasBuilder(self(), sizeHint, comp),
      _trMemory(comp->trMemory()),
      _fe(comp->fe()),
@@ -943,7 +943,7 @@ OMR::SymbolReferenceTable::methodSymRefFromName(TR::ResolvedMethodSymbol * ownin
    //
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
 
-   int32_t fullSignatureLength = strlen(className) + 1 + strlen(methodName) + strlen(methodSignature);
+   auto fullSignatureLength = strlen(className) + 1 + strlen(methodName) + strlen(methodSignature);
    char *fullSignature = (char*)trMemory()->allocateMemory(1 + fullSignatureLength, stackAlloc);
    sprintf(fullSignature, "%s.%s%s", className, methodName, methodSignature);
    TR_ASSERT(strlen(fullSignature) == fullSignatureLength, "Computed fullSignatureLength must match actual length of fullSignature");
@@ -1607,7 +1607,7 @@ OMR::SymbolReferenceTable::findOrCreateAutoSymbolImpl(TR::ResolvedMethodSymbol *
 
       if (isInternalPointer)
          {
-         sym = size ? TR::AutomaticSymbol::createInternalPointer(trHeapMemory(), type, size, comp()->fe()) :
+         sym = size ? TR::AutomaticSymbol::createInternalPointer(trHeapMemory(), type, static_cast<uint32_t>(size), comp()->fe()) :
                       TR::AutomaticSymbol::createInternalPointer(trHeapMemory(), type);
          _numInternalPointers++;
          if (_numInternalPointers > comp()->maxInternalPointers())
@@ -1617,7 +1617,7 @@ OMR::SymbolReferenceTable::findOrCreateAutoSymbolImpl(TR::ResolvedMethodSymbol *
          }
       else
          {
-         sym = size ? TR::AutomaticSymbol::create(trHeapMemory(),type,size) :
+         sym = size ? TR::AutomaticSymbol::create(trHeapMemory(),type,static_cast<uint32_t>(size)) :
                       TR::AutomaticSymbol::create(trHeapMemory(),type);
          }
 

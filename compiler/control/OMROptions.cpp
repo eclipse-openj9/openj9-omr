@@ -3494,7 +3494,7 @@ OMR::Options::processOption(
       {
       i->isOptionToFind = false;
       if (!i->length)
-         i->length = strlen(i->name);
+         i->length = static_cast<int32_t>(strlen(i->name));
       }
 
    // Find the entry for this option string using a binary search
@@ -3502,7 +3502,7 @@ OMR::Options::processOption(
    // Create an object for the option to find in the table and set attributes
    TR::OptionTable optionToFind = TR::OptionTable();
    optionToFind.name = startOption;
-   optionToFind.length = strlen(optionToFind.name);
+   optionToFind.length = static_cast<int32_t>(strlen(optionToFind.name));
 
    // Since STL binary search requires total ordering, there need to be a way to differentiate
    // between the option to find and an option in the table. The isOptionToFind field is used

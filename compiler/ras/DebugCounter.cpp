@@ -563,7 +563,7 @@ TR::DebugCounter *TR::DebugCounterGroup::createCounter(const char *name, int8_t 
 const char *TR::DebugCounterGroup::counterName(TR::Compilation *comp, const char *format, va_list args)
    {
    const char *name = comp->getDebug()->formattedString(NULL, 0, format, args, persistentAlloc);
-   TR::DebugCounter *matchingCounter = findCounter(name, strlen(name));
+   TR::DebugCounter *matchingCounter = findCounter(name, static_cast<int32_t>(strlen(name)));
    if (matchingCounter)
       {
       comp->trMemory()->jitPersistentFree((void*)name);
@@ -578,7 +578,7 @@ TR::DebugCounter *TR::DebugCounterGroup::getCounter(TR::Compilation *comp, const
    // If this is not the case, the caller must make a copy of it into
    // persistent memory.
 
-   TR::DebugCounter *result = findCounter(name, strlen(name));
+   TR::DebugCounter *result = findCounter(name, static_cast<int32_t>(strlen(name)));
    if (!result)
       result = createCounter(name, fidelity, comp->trPersistentMemory());
 

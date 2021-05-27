@@ -330,7 +330,7 @@ CS2_ARTEMP inline void CS2_BASEARDECL::GrowTo (size_t newSize) {
 
   if (segmentMapIndex >= fMaxSegments) {
     if (fSegmentMap == NULL) {
-      uint32_t updatedMaxSegments = segmentMapIndex + (fMaxSegments >> 1) + 1;
+      uint32_t updatedMaxSegments = static_cast<uint32_t>(segmentMapIndex + (fMaxSegments >> 1) + 1);
       fSegmentMap = (DerivedElement **) Allocator::allocate ( updatedMaxSegments * sizeof(DerivedElement *));
       fMaxSegments = updatedMaxSegments;
     } else {
@@ -341,7 +341,7 @@ CS2_ARTEMP inline void CS2_BASEARDECL::GrowTo (size_t newSize) {
         fMaxSegments * sizeof(DerivedElement *)
         );
       fSegmentMap = static_cast<DerivedElement **>(newSegmentMapAllocation);
-      fMaxSegments = maxSegments;
+      fMaxSegments = static_cast<uint32_t>(maxSegments);
     }
 
     if (fSegmentMap == NULL) {
@@ -353,7 +353,7 @@ CS2_ARTEMP inline void CS2_BASEARDECL::GrowTo (size_t newSize) {
        newSegmentIndex < segmentMapIndex + 1;
        ++newSegmentIndex) {
     fSegmentMap[newSegmentIndex] = (DerivedElement *) Allocator::allocate ( SegmentSize());
-    fNumberOfSegments = newSegmentIndex + 1;
+    fNumberOfSegments = static_cast<uint32_t>(newSegmentIndex + 1);
   }
 
   CS2Assert (segmentMapIndex + 1 == fNumberOfSegments,
@@ -382,7 +382,7 @@ CS2_ARTEMP inline void CS2_BASEARDECL::ShrinkTo (size_t newSize) {
     Allocator::deallocate (fSegmentMap[segmentIndex], SegmentSize());
   }
 
-  fNumberOfSegments = firstDeadSegment;
+  fNumberOfSegments = static_cast<uint32_t>(firstDeadSegment);
 
   // When new new size is zero we don't need the segment map
   if (fNumberOfSegments == 0) {
@@ -472,7 +472,7 @@ template <class AElementType, class Allocator, size_t segmentBits = 8, class Ini
       typename CS2_BASEARDECL::DerivedElement *currentElement = CS2_BASEARDECL::DerivedElementAt(elementIndex);
       new (currentElement) typename CS2_BASEARDECL::DerivedElement(fInitializer);
     }
-    fNumInitialized = newSize;
+    fNumInitialized = static_cast<uint32_t>(newSize);
   }
 
   void MakeEmpty() { return ShrinkTo(0); }
@@ -483,7 +483,7 @@ template <class AElementType, class Allocator, size_t segmentBits = 8, class Ini
       for (c.SetTo(newSize); c.Valid(); c.SetToNext())
         c.DerivedElement()->~DerivedElement();
 
-      fNumInitialized = newSize;
+      fNumInitialized = static_cast<uint32_t>(newSize);
       CS2_BASEARDECL::ShrinkTo(newSize);
     }
   }

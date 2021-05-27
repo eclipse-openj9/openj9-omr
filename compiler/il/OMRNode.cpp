@@ -2910,7 +2910,7 @@ OMR::Node::containsDoNotPropagateNode(vcount_t vc)
       return true;
       }
 
-   for (size_t i = 0; i < self()->getNumChildren(); i++)
+   for (auto i = 0; i < self()->getNumChildren(); i++)
       {
       if (self()->getChild(i)->containsDoNotPropagateNode(vc))
          {

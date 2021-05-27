@@ -4598,7 +4598,7 @@ TR::Node * rematerializeNode(TR::Compilation * comp, TR::Node * node)
    TR::Node * newNode = TR::Node::copy(node);
    newNode->setReferenceCount(1);
 
-   for (size_t k = 0; k < newNode->getNumChildren(); k++)
+   for (auto k = 0; k < newNode->getNumChildren(); k++)
       {
       newNode->getChild(k)->incReferenceCount();
       }

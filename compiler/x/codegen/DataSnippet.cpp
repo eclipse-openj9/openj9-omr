@@ -153,7 +153,7 @@ void TR::X86DataSnippet::print(TR::FILE* pOutFile, TR_Debug* debug)
    uint8_t *bufferPos = getSnippetLabel()->getCodeLocation();
 
    debug->printSnippetLabel(pOutFile, getSnippetLabel(), bufferPos, debug->getName(this));
-   debug->printPrefix(pOutFile, NULL, bufferPos, getDataSize());
+   debug->printPrefix(pOutFile, NULL, bufferPos, static_cast<uint8_t>(getDataSize()));
 
    const char* toString;
    switch (getDataSize())
@@ -173,7 +173,7 @@ void TR::X86DataSnippet::print(TR::FILE* pOutFile, TR_Debug* debug)
       }
    trfprintf(pOutFile, "%s \t%s", toString, hexPrefixString());
 
-   for (int i=getDataSize()-1; i >= 0; i--)
+   for (int32_t i = static_cast<int32_t>(getDataSize()) - 1; i >= 0; i--)
       {
       trfprintf(pOutFile, "%02x", bufferPos[i]);
       }

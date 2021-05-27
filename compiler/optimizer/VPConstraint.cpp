@@ -5800,7 +5800,7 @@ void TR::VPResolvedClass::print(TR::Compilation *comp, TR::FILE *outFile)
    if (isSpecialClass((uintptr_t)_class))
       {
       sig = "<special>";
-      len = strlen(sig);
+      len = static_cast<int32_t>(strlen(sig));
       }
 
    trfprintf(outFile, "class %.*s", len, sig);

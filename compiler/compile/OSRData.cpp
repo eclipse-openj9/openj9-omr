@@ -385,7 +385,7 @@ TR_OSRCompilationData::writeInstruction2SharedSlotMap(uint8_t* buffer) const
    uint32_t sectionSize = getSizeOfInstruction2SharedSlotMap();
    *((uint32_t*)buffer) = sectionSize; buffer += sizeof(uint32_t);
    *((uint32_t*)buffer) = getMaxScratchBufferSize(); buffer += sizeof(uint32_t);
-   int32_t numberOfMappings = instruction2SharedSlotMap.size();
+   int32_t numberOfMappings = static_cast<int32_t>(instruction2SharedSlotMap.size());
    *((int32_t*)buffer) = numberOfMappings; buffer += sizeof(int32_t);
    for (auto itr = instruction2SharedSlotMap.begin(), end = instruction2SharedSlotMap.end(); itr != end; ++itr)
       {
@@ -998,7 +998,7 @@ TR::Compilation& operator<< (TR::Compilation& out, const TR_OSRCompilationData& 
    const TR_OSRCompilationData::TR_Instruction2SharedSlotMap& array1 = osrCompilationData.instruction2SharedSlotMap;
    if (array1.size() != 0)
       {
-      out << ", Instr2SharedSlotMetaData: " << array1.size() << "[\n";
+      out << ", Instr2SharedSlotMetaData: " << static_cast<const int32_t>(array1.size()) << "[\n";
       bool first = true;
       for (auto itr = array1.begin(), end = array1.end(); itr != end; ++itr)
          {

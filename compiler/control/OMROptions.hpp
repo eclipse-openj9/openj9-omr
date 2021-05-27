@@ -1524,8 +1524,8 @@ public:
    int64_t getDebugCounterWarmupSeconds(){ return _debugCounterWarmupSeconds; }
    const char *debugCounterInsertedFormat(TR_Memory *mem, const char *name, const char *format)
       {
-      int nameLen = strlen(name);
-      int formatLen = strlen(format);
+      auto nameLen = strlen(name);
+      auto formatLen = strlen(format);
       char *result = (char*)mem->allocateMemory(nameLen + formatLen + 2, heapAlloc);
       const char *splitPoint = strchr(name, '~');
       if (splitPoint)

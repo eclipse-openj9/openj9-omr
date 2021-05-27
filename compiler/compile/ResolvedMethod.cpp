@@ -557,7 +557,7 @@ void TR_ResolvedMethod::makeParameterList(TR::ResolvedMethodSymbol *methodSym)
       parmSymbol->setOrdinal(ordinal++);
 
       char *s = getParameterTypeSignature(parmIndex);
-      uint32_t len = strlen(s);
+      uint32_t len = static_cast<uint32_t>(strlen(s));
       parmSymbol->setTypeSignature(s, len);
 
       la.add(parmSymbol);

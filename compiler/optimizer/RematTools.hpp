@@ -46,7 +46,7 @@ class RematSafetyInformation
 
    void add(TR::TreeTop *argStore, TR::SparseBitVector &symRefDependencies);
    void add(TR::TreeTop *argStore, TR::TreeTop *rematStore);
-   uint32_t size() { return dependentSymRefs.size(); }
+   uint32_t size() { return static_cast<uint32_t>(dependentSymRefs.size()); }
    TR::SparseBitVector &symRefDependencies(uint32_t idx) { return dependentSymRefs[idx]; }
    TR::TreeTop *argStore(uint32_t idx) { return argumentTreeTops[idx]; }
    TR::TreeTop *rematTreeTop(uint32_t idx) { return rematTreeTops[idx]; }

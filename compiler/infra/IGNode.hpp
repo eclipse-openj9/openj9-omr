@@ -38,7 +38,7 @@ typedef int32_t  IGNodeColour;
 // Maximum number of neighbours of any node in the interference graph.
 // The formula assumes the degree can not be negative values.
 //
-#define MAX_DEGREE          ((IGNodeDegree)((1L << (sizeof(IGNodeDegree) << 3)) - 1))
+#define MAX_DEGREE          UINT_MAX
 
 #define UNCOLOURED          -1
 #define CANNOTCOLOR         -1

@@ -208,7 +208,6 @@ void TR::LocalDeadStoreElimination::transformBlock(TR::TreeTop * entryTree, TR::
    int32_t symRefCount = comp()->getSymRefCount();
 
    comp()->incOrResetVisitCount();
-   int32_t i;
    TR::Node *currentNode;
    _curTree = exitTree;
    while (!(_curTree == entryTree))

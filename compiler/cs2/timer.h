@@ -416,7 +416,6 @@ template <class Meter, class Allocator>
 
  ListIndex FindChild(const char *name, HashValue hv=0) const {
    HashIndex hi;
-   ListIndex childIndex;
    if (fChildMap.Locate((char *)name, hi, hv))
      return (fChildMap)[hi];
    return 0;
@@ -595,8 +594,6 @@ inline void PhaseMeasuringNode<Meter, Allocator>::Dump(ostream &out, uint32_t in
       out << line << "\n";
       return;
       }
-
-  uint32_t i;
 
   uint32_t offset=indent;
   if (indent>12)

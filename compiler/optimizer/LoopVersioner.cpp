@@ -996,7 +996,6 @@ bool TR_LoopVersioner::detectInvariantArrayStoreChecks(List<TR::TreeTop> *arrayS
       bool sourceInvariant = false;
       if (arrayNode && valueNode)
          {
-         vcount_t visitCount;
          //visitCount = comp()->incVisitCount();
          //sourceInvariant = isExprInvariant(valueNode, visitCount);
 
@@ -1507,7 +1506,6 @@ bool TR_LoopVersioner::detectInvariantTrees(TR_RegionStructure *whileLoop, List<
                         }
                      else
                         {
-                        TR_InductionVariable *v;
                         bool isInductionVar=false;
                         int32_t symRefNum = child->getSymbolReference()->getReferenceNumber();
                         ListElement<int32_t> *versionableInductionVar = _versionableInductionVariables.getListHead();
@@ -1774,7 +1772,6 @@ bool TR_LoopVersioner::isVersionableArrayAccess(TR::Node * indexChild)
    bool mulNodeFound=false;
    bool addNodeFound=false;
    bool goodAccess=true;
-   vcount_t visitCount;
    if(!indexChild->getOpCode().hasSymbolReference())
       {
       while (indexChild->getOpCode().isAdd() || indexChild->getOpCode().isSub() ||
@@ -6197,7 +6194,6 @@ void TR_LoopVersioner::buildSpineCheckComparisonsTree(List<TR::TreeTop> *spineCh
    {
    ListElement<TR::TreeTop> *nextTree = spineCheckTrees->getListHead();
 
-   bool isAddition;
    while (nextTree)
       {
       // NOTE: It could be a BNDCHKwithSpineCHK, since at this point no bound

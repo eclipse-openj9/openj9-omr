@@ -1214,7 +1214,6 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeNode
            *this->_temp = *(analysisInfo->_inSetInfo);
 
         bool firstSucc = true;
-        typename TR_BasicDFSetAnalysis<Container *>::TR_ContainerNodeNumberPair *nodePair;
 
         TR_SuccessorIterator successors(nodeStructure);
         int count = 0;

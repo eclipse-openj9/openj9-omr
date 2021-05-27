@@ -1956,7 +1956,6 @@ bool TR_CopyPropagation::isCorrectToPropagate(TR::Node *useNode, TR::Node *store
    TR::Block *block = currentTree->getNode()->getBlock();
    vcount_t visitCount = comp()->incOrResetVisitCount();
    TR::CFG *cfg = comp()->getFlowGraph();
-   TR::CFGEdge *nextEdge;
 
    for (auto nextEdge = block->getPredecessors().begin(); nextEdge != block->getPredecessors().end(); ++nextEdge)
       {
@@ -2132,8 +2131,6 @@ bool TR_CopyPropagation::recursive_isRedefinedBetweenStoreTreeAnd(TR::list< TR::
    vcount_t visitCount = comp()->getVisitCount();
    block->setVisitCount(visitCount);
 
-   TR::CFGEdge *nextEdge;
-
    // Visit count cannot change because it is used to mark blocks traversed.
    TR_ASSERT(saved_vc == comp()->getVisitCount(), "visit count changed in loop!");
 
@@ -2223,7 +2220,6 @@ bool TR_CopyPropagation::isCorrectToReplace(TR::Node *useNode, TR::Node *storeNo
 
    TR::Block *block = currentTree->getNode()->getBlock();
    vcount_t visitCount = comp()->incOrResetVisitCount();
-   TR::CFGEdge *nextEdge;
    TR::CFG *cfg = comp()->getFlowGraph();
    TR::SymbolReference *symbolReference = storeNode->getSymbolReference();
 

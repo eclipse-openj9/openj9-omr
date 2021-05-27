@@ -559,7 +559,6 @@ bool TR_CFGChecker::isConsistent(TR::Block *block)
    if (block == NULL)
       return true;
 
-   TR::CFGEdge *nextEdge;
    TR::Block   *nextBlock;
 
    // The only blocks allowed to have no predecessors or exception predecessors

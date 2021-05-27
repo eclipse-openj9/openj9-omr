@@ -3067,10 +3067,10 @@ OMR::Options::validateOptionsTables(void *feBase, TR_FrontEnd *fe)
    _numJitEntries = 0; // ensure value is initialized to 0 when processOptions is called
    _numVmEntries = 0; // ensure value is initialized to 0 when processOptions is called
 
-   int32_t i;
    for (opt = _jitOptions; opt->name; opt++)
       {
 #if DEBUG
+      int32_t i;
       if (opt->helpText)
          {
          for (i = 0; categories[i]; i++)
@@ -3097,6 +3097,7 @@ OMR::Options::validateOptionsTables(void *feBase, TR_FrontEnd *fe)
    for (opt = TR::Options::_feOptions; opt->name; opt++)
       {
 #if DEBUG
+      int32_t i;
       if (opt->helpText)
          {
          for (i = 0; categories[i]; i++)

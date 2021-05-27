@@ -144,8 +144,6 @@ OMR::TransformUtil::scalarizeArrayCopy(
          }
    if (cannot_use_load_store_long) return node;
 
-   TR::SymbolReference *nodeRef;
-
    targetRef = comp->getSymRefTab()->findOrCreateGenericIntShadowSymbolReference(0);
    sourceRef = targetRef;
    

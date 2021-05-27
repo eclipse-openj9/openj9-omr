@@ -412,7 +412,6 @@ class TR_BitVector
    void reset(int64_t n, bool updateLowHigh = true)
       {
       int32_t chunkIndex = getChunkIndex(n);
-      int32_t i;
       if (chunkIndex > _lastChunkWithNonZero || chunkIndex < _firstChunkWithNonZero)
          return;
       if (_chunks[chunkIndex]) {

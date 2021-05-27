@@ -1674,7 +1674,6 @@ TR::X86RegImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
       }
 
    TR::Symbol *symbol = getSymbolReference()->getSymbol();
-   TR_RelocationRecordInformation *recordInfo;
    TR::SymbolType symbolKind = TR::SymbolType::typeClass;
    switch (getReloKind())
       {
@@ -2859,7 +2858,6 @@ TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
       }
    else
       {
-      TR_RelocationRecordInformation * recordInfo;
       switch (getReloKind())
          {
          case TR_ConstantPool:

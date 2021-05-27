@@ -4487,11 +4487,11 @@ X86OpCodesTest::invokeDisabledConvertOpCodesTest()
       (uintptr_t) &LONG_ZERO
       };
 
-   uint32_t testCaseNum = 0;
-   char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
+   int32_t testCaseNum = 0;
 
    signatureCharL_J_testMethodType *a2lConst = 0;
 #if defined(TR_TARGET_32BIT)
+   char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
    testCaseNum = sizeof(aUnaryDataArr) / sizeof(aUnaryDataArr[0]);
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {

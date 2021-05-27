@@ -6507,8 +6507,6 @@ bool TR_BlockSplitter::containCycle(TR::Block *blk, TR_LinkHeadAndTail<BlockMapp
 bool TR_BlockSplitter::isLoopHeader(TR::Block * block)
    {
    TR::CFG *cfg = comp()->getFlowGraph();
-   TR::CFGEdge *edge;
-   TR::Block   *next;
    // See if this block is a loop header
    //
    TR_RegionStructure *parent;

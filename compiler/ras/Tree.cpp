@@ -706,7 +706,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR_StructureSubGraphNode * node, uint32_t in
 void
 TR_Debug::printNodesInEdgeListIterator(TR::FILE *pOutFile, TR::CFGEdgeList &li, bool fromNode)
    {
-   TR::CFGEdge *edge;
    TR::Block   *b;
    int num = 0;
    for (auto edge = li.begin(); edge != li.end(); ++edge)

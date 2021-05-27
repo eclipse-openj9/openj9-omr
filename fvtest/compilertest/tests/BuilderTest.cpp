@@ -1555,7 +1555,6 @@ bool
 MaxIfThenMethod::buildIL()
    {
    TR::IlBuilder *thenPath = NULL;
-   TR::IlValue *condition;
    IfThen(&thenPath,
       GreaterThan(
          Load("leftV"),

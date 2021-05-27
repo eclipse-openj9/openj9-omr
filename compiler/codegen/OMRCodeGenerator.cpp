@@ -2322,8 +2322,6 @@ OMR::CodeGenerator::getJitMethodEntryAlignmentBoundary()
 int32_t
 OMR::CodeGenerator::setEstimatedLocationsForSnippetLabels(int32_t estimatedSnippetStart)
    {
-   TR::Snippet *cursor;
-
    self()->setEstimatedSnippetStart(estimatedSnippetStart);
 
    for (auto iterator = _snippetList.begin(); iterator != _snippetList.end(); ++iterator)

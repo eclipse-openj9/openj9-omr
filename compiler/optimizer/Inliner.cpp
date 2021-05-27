@@ -1113,7 +1113,6 @@ TR_InlineCall::inlineCall(TR::TreeTop * callNodeTreeTop, TR_OpaqueClassBlock * t
    TR_InnerPreexistenceInfo *innerPrexInfo = getUtil()->createInnerPrexInfo(comp(), callerSymbol, 0, 0, 0, TR_NoGuard);
    callStack._innerPrexInfo = innerPrexInfo;
 
-   TR_VirtualGuardSelection *guard;
    TR::MethodSymbol *calleeSymbol = symRef->getSymbol()->castToMethodSymbol();
 
 

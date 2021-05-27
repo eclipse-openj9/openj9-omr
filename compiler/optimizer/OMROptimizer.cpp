@@ -2347,7 +2347,6 @@ TR_Hotness OMR::Optimizer::checkMaxHotnessOfInlinedMethods( TR::Compilation *com
 bool OMR::Optimizer::checkNumberOfLoopsAndBasicBlocks( TR::Compilation *comp, TR_Structure *rootStructure)
    {
    TR::CFGNode *node;
-   int32_t index;
    _numBasicBlocksInMethod = 0;
    for (node = comp->getFlowGraph()->getFirstNode(); node; node = node->getNext())
       {

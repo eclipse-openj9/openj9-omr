@@ -96,7 +96,7 @@ FooBarTest::invokeTests()
    for (i=0;i < _dataArraySize;i++)
       _dataArray[i] = _dataArraySize - i;
 
-   int32_t testID = 0, result;
+   int32_t testID = 0;
    OMR_CT_EXPECT_EQ(_foo, -1, _foo(0));
 
    for (i = 1; i < _dataArraySize;i++,testID++)

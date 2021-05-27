@@ -2255,7 +2255,6 @@ TR_Arraytranslate::getTableNode()
       {
       // need to generate a _tableNode - compiler generated table required
       int32_t defaultValue = getTermValue();
-      uint16_t start, end;
       int8_t inputBits = getByteInput() ? 8 : 16;
       int8_t outputBits= getByteOutput() ? 8 : 16;
       int32_t max       = (1 << inputBits);
@@ -4235,8 +4234,6 @@ TR_LoopReducer::addBlock(TR::Block * newBlock, TR::Block ** blockList, int numBl
 int
 TR_LoopReducer::addRegionBlocks(TR_RegionStructure * region, TR::Block ** blockList, int numBlocks, const int maxNumBlocks)
    {
-   TR::CFGEdge * edge;
-   TR::Block * b;
    TR_RegionStructure::Cursor it(*region);
    TR_StructureSubGraphNode * node;
    for (node = it.getFirst(); node != NULL; node = it.getNext())

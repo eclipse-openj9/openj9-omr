@@ -702,7 +702,6 @@ TR::CFGNode *OMR::CFG::removeNode(TR::CFGNode *node)
    // Remove the exception successors first, so that try/finally structures get
    // cleaned up in the right order. Nobody else cares about the order.
    //
-   ListElement<TR::CFGEdge> *out;
    while (!node->getExceptionSuccessors().empty())
       removeEdge(node->getExceptionSuccessors().front());
 
@@ -1169,7 +1168,6 @@ OMR::CFG::removeUnreachableBlocks()
       // has predecessors, likely loop entry
       else
          {
-         ListElement<TR::CFGEdge> *in;
          while (!node->getExceptionPredecessors().empty())
             removeEdge(node->getExceptionPredecessors().front());
          while (!node->getPredecessors().empty())

@@ -252,7 +252,6 @@ bcIndexForFakeInduce(TR::Compilation* comp, int16_t* callSiteInsertionPoint,
    if (induceOSR == NULL)
       induceOSR = fakeInduceOSR;
 
-   TR::TreeTop *lastTreeTop;
    char signatureRegex[500];
    const char * mSignature = comp->signature();
    char* p = induceOSR;
@@ -739,7 +738,7 @@ OMR::ResolvedMethodSymbol::matchInduceOSRCall(TR::TreeTop* insertionPoint,
    if (recipProbString)
       recipProb = atoi(recipProbString);
 
-   TR::Node *fakeInduceOSRCallNode, *refCallNode = NULL;
+   TR::Node *refCallNode = NULL;
    if (childPath[0] == 'b' || childPath[0] == 'a')
       {
       //callerIndex/byteCodeIndex value -3 means a wildcard *, i.e., do it for all caller/bytecode indices
@@ -1277,7 +1276,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
             }
          }
       }
-   catch (const TR::RecoverableILGenException &e)
+   catch (const TR::RecoverableILGenException &)
       {
       if (self()->comp()->isOutermostMethod())
          throw;

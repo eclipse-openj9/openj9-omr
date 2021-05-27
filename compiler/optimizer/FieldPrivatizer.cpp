@@ -163,7 +163,6 @@ int32_t TR_FieldPrivatizer::detectCanonicalizedPredictableLoops(TR_Structure *lo
          return 0;
 
    TR::Block * loopEntryBlock = regionStructure->getEntryBlock();
-   TR::CFGEdge * predecessor;
    for(auto predecessor = loopEntryBlock->getPredecessors().begin(); predecessor != loopEntryBlock->getPredecessors().end(); ++predecessor)
       {
         TR::Block * predBlock = toBlock((*predecessor)->getFrom());
@@ -958,7 +957,6 @@ void TR_FieldPrivatizer::placeStoresBackInExits(List<TR::Block> *exitBlocks, Lis
        {
        TR::Block *next;
        TR::Block *nnext;
-       TR::CFGEdge *edge;
        for (auto edge = exitBlock->getSuccessors().begin(); edge != exitBlock->getSuccessors().end();)
           {
           bool placeAtEnd = false;
@@ -1177,7 +1175,6 @@ bool TR_FieldPrivatizer::storesBackMustBePlacedInExitBlock(TR::Block *exitBlock,
       return true;
 
    TR::CFGNode *next;
-   TR::CFGEdge *edge;
    for (auto edge = toBlock->getPredecessors().begin(); edge != toBlock->getPredecessors().end(); ++edge)
       {
       next = (*edge)->getFrom();

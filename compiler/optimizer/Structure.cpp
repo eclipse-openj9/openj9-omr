@@ -2402,7 +2402,6 @@ void TR_RegionStructure::checkStructure(TR_BitVector* _blockNumbers)
          {
          succ = toStructureSubGraphNode((*edge)->getTo());
          isConsistent = false;
-         TR::CFGEdge *predEdge;
          for (auto predEdge = succ->getExceptionPredecessors().begin(); predEdge != succ->getExceptionPredecessors().end(); ++predEdge)
             {
             if ((*predEdge) == *edge)

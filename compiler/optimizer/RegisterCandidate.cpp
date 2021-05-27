@@ -2640,7 +2640,6 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                   bool hasMultiWayBranch = false;
 
                   TR::TreeTop *exitTree = blocks[blockNum]->getExit(); //Entry()->getExtendedBlockExitTreeTop();
-                  TR::TreeTop *cursorExit;
                   TR::Block *cursorBlock = blocks[blockNum];
                   TR::Node * cursorNode = cursorBlock->getLastRealTreeTop()->getNode();
                   if(cursorNode->getOpCodeValue() == TR::treetop)
@@ -2689,7 +2688,6 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                   bool hasMultiWayBranch = false;
 
                   TR::TreeTop *exitTree = blocks[blockNum]->getExit();
-                  TR::TreeTop *cursorExit;
                   TR::Block *cursorBlock = blocks[blockNum];
                   TR::Node * cursorNode = cursorBlock->getLastRealTreeTop()->getNode();
                   if (cursorNode->getOpCodeValue() == TR::treetop)
@@ -2731,7 +2729,6 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                   bool hasMultiWayBranch = false;
 
                   TR::TreeTop *exitTree = blocks[blockNum]->getExit(); //Entry()->getExtendedBlockExitTreeTop();
-                  TR::TreeTop *cursorExit;
                   TR::Block *cursorBlock = blocks[blockNum];
                   TR::Node * cursorNode = cursorBlock->getLastRealTreeTop()->getNode();
                   if (cursorNode->getOpCodeValue() == TR::treetop)
@@ -3609,7 +3606,6 @@ TR_RegisterCandidates::computeAvailableRegisters(TR_RegisterCandidate *rc, int32
             {
             overlaps = overlapLookup->second;
             }
-         CS2::HashIndex hi1, hi2;
 
          TR_RegisterCandidate *rc1 = b->getGlobalRegisters(comp())[i].getRegisterCandidateOnEntry();
          if (rc1)

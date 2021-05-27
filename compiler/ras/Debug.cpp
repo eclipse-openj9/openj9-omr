@@ -503,7 +503,6 @@ TR_Debug::performTransformationImpl(bool canOmitTransformation, const char * for
 
    const char *string = format; // without formattedString, we do our best with the format string itself
    bool alreadyFormatted = false;
-   char formatBuffer[200];
    char messageBuffer[300];
 
    // We try to avoid doing the work of formatting the string if we don't need to.
@@ -2474,7 +2473,6 @@ TR_Debug::dumpMethodInstrs(TR::FILE *pOutFile, const char *title, bool dumpTrees
    int16_t lastSourceFileIndex = -1; // ditto
    int32_t inlinedIndex = -1; // ditto
    int16_t lastInlinedIndex = -1; // ditto
-   char *sourceFileName; // ditto
    bool printLinenos = false;
    bool printBIandEI = false;
 
@@ -4424,7 +4422,6 @@ void TR_Debug::dumpSimulatedNode(TR::Node *node, char tagChar)
       }
    else if (node->getOpCode().isLoadConst())
       {
-      int32_t value;
       const int32_t limit = 99999999;
       const char * const opCodeOnlyFormatString = "%s (big)   ";
       const char * const signedFormatString     = "%s %-8d";

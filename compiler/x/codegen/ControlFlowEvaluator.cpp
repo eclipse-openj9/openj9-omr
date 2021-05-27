@@ -696,7 +696,6 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
                      {
                      // memory case
                      TR::MemoryReference  *tempMR = generateX86MemoryReference(andFirstChild, cg);
-                     TR::InstOpCode::Mnemonic testInstr;
                      if(((mask >> 8) == 0) || (andSecondChild->getSize() == 1))
                         generateMemImmInstruction(TEST1MemImm1, node, tempMR, mask, cg);
                      else if(andSecondChild->getSize() == 2)

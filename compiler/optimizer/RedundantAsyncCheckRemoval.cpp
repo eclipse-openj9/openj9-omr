@@ -712,7 +712,6 @@ TR_RedundantAsyncCheckRemoval::markExtendees(TR::Block *block, bool canHaveAYiel
    }
 
 #define FIND_LOOP_ITERATIONS(Type,Name,NAME)   \
-bool Killme_CantBeginMacroWith_HASH_HASH; \
 Type incr = incrVal->getLow##Name();  \
 Type in, out, iters, diff; \
 if (incr == 0) continue; \

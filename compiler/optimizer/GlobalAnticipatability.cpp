@@ -341,7 +341,6 @@ void TR_GlobalAnticipatability::analyzeTreeTopsInBlockStructure(TR_BlockStructur
       {
       // Ignore the effect of cold blocks on anticipatability
       //
-      TR::CFGEdge *edge;
       TR::Block   *next;
       bool hasNonColdSuccessor = false;
       bool analyzedSucc = true;

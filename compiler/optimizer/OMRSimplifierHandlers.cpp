@@ -282,7 +282,7 @@ static void convertToTestUnderMask(TR::Node *node, TR::Block *block, TR::Simplif
     *     iconst 1
     *   iconst 0
     */
-   TR::Node *iand, *iushr, *load, *constCompare;
+   TR::Node *iand, *iushr, *load;
    int32_t constVal;
    if ((iand = node->getChild(0))->getOpCodeValue() == TR::iand &&
        node->getChild(1)->getOpCode().isLoadConst() &&

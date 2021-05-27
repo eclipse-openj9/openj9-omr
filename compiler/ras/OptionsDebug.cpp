@@ -149,8 +149,6 @@ static bool regexExcludes(TR::SimpleRegex *regex, const char *string)
 void TR_Debug::dumpOptionHelp(TR::OptionTable * firstOjit, TR::OptionTable * firstOfe, TR::SimpleRegex *nameFilter)
    {
    TR_VerboseLog::vlogAcquire();
-   char *p;
-   int32_t i, lastPos;
    static int optionLineWidth=0;
 
    if (!optionLineWidth)

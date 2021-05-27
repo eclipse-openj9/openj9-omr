@@ -127,7 +127,7 @@ initializeJitBuilder(TR_RuntimeHelper *helperIDs, void **helperAddresses, int32_
       //
       TR::Compiler = new (rawAllocator) TR::CompilerEnv(rawAllocator, TR::PersistentAllocatorKit(rawAllocator));
       }
-   catch (const std::bad_alloc& ba)
+   catch (const std::bad_alloc&)
       {
       return false;
       }

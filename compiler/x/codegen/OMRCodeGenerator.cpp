@@ -703,21 +703,23 @@ static bool willNotInlineCompareAndSwapNative(TR::Node *node,
  */
 bool OMR::X86::CodeGenerator::willBeEvaluatedAsCallByCodeGen(TR::Node *node, TR::Compilation *comp)
    {
+#ifdef J9_PROJECT_SPECIFIC
    TR::SymbolReference *callSymRef = node->getSymbolReference();
    TR::MethodSymbol *methodSymbol = callSymRef->getSymbol()->castToMethodSymbol();
    switch (methodSymbol->getRecognizedMethod())
       {
-#ifdef J9_PROJECT_SPECIFIC
       case TR::sun_misc_Unsafe_compareAndSwapLong_jlObjectJJJ_Z:
          return willNotInlineCompareAndSwapNative(node, 8, comp);
       case TR::sun_misc_Unsafe_compareAndSwapInt_jlObjectJII_Z:
          return willNotInlineCompareAndSwapNative(node, 4, comp);
       case TR::sun_misc_Unsafe_compareAndSwapObject_jlObjectJjlObjectjlObject_Z:
          return willNotInlineCompareAndSwapNative(node, (comp->target().is64Bit() && !comp->useCompressedPointers()) ? 8 : 4, comp);
-#endif
+
       default:
-         return true;
+         break;
       }
+#endif
+   return true;
    }
 
 int32_t OMR::X86::CodeGenerator::getMaximumNumbersOfAssignableFPRs()

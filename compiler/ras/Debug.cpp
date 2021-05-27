@@ -1524,9 +1524,9 @@ TR_Debug::getName(TR::LabelSymbol *labelSymbol)
 const char *
 TR_Debug::getPerCodeCacheHelperName(TR_CCPreLoadedCode helper)
    {
+#if defined(TR_TARGET_POWER)
    switch (helper)
       {
-#if defined(TR_TARGET_POWER)
       case TR_AllocPrefetch: return "Alloc Prefetch";
       case TR_ObjAlloc: return "Object Alloc Helper";
       case TR_VariableLenArrayAlloc: return "Variable Length Array Alloc Helper";
@@ -1535,9 +1535,9 @@ TR_Debug::getPerCodeCacheHelperName(TR_CCPreLoadedCode helper)
       case TR_writeBarrierAndCardMark: return "Write Barrier and Card Mark Helper";
       case TR_cardMark: return "Card Mark Helper";
       case TR_arrayStoreCHK: return "Array Store Check";
-#endif // TR_TARGET_POWER
       default: break;
       }
+#endif // TR_TARGET_POWER
    return "Unknown Helper";
    }
 

@@ -4080,20 +4080,20 @@ TR_GeneralLoopUnroller::weighNaturalLoop(TR_RegionStructure *loop,
    if (cg()->getSizeOfCombinedBuffer())
       {
       bool forceUnrollCount = false;
+#ifdef J9_PROJECT_SPECIFIC
       switch (methodId)
          {
-#ifdef J9_PROJECT_SPECIFIC
          case TR::sun_nio_cs_ISO_8859_1_Encoder_encodeArrayLoop:
             forceUnrollCount = true;
             break;
          case TR::sun_nio_cs_ext_IBM1388_Encoder_encodeArrayLoop:
             forceUnrollCount = loop->getEntryBlock()->getFrequency() >= HIGH_FREQ_LOOP_CUTOFF;
             break;
-#endif
          default:
             // leave unrollCount unmodified
             break;
          }
+#endif
       if (forceUnrollCount)
          unrollCount = 7;
       }

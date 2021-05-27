@@ -3296,19 +3296,21 @@ void OMR::ValuePropagation::transformRTMultiLeafArrayCopy(TR_RealTimeArrayCopy *
 static
 const char* transformedTargetName (TR::RecognizedMethod rm)
    {
+#ifdef J9_PROJECT_SPECIFIC
    switch ( rm )
       {
-#ifdef J9_PROJECT_SPECIFIC
       case TR::sun_nio_cs_UTF_16_Encoder_encodeUTF16Big:
          return "icall  com/ibm/jit/JITHelpers.transformedEncodeUTF16Big(JJI)I";
 
       case TR::sun_nio_cs_UTF_16_Encoder_encodeUTF16Little:
          return "icall  com/ibm/jit/JITHelpers.transformedEncodeUTF16Little(JJI)I"  ;
-#endif
 
       default:
          return "arraytranslate";
       }
+#else
+   return "arraytranslate";
+#endif
    }
 
 #ifdef J9_PROJECT_SPECIFIC

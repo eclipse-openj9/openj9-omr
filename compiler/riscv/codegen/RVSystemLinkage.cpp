@@ -294,13 +294,18 @@ TR::RVSystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
                nextFltArgReg++;
                mapSingleParameter(parameter, stackIndex, true);
                }
+            else if (nextIntArgReg < getProperties().getNumIntArgRegs())
+               {
+               nextIntArgReg++;
+               mapSingleParameter(parameter, stackIndex, true);
+               }
             else
                {
                nextFltArgReg = getProperties().getNumFloatArgRegs() + 1;
                }
             break;
          case TR::Aggregate:
-            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on AArch64.");
+            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on RISC-V.");
             break;
          default:
             TR_ASSERT(false, "Unknown parameter type.");
@@ -340,13 +345,17 @@ TR::RVSystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
                {
                nextFltArgReg++;
                }
+            else if (nextIntArgReg < getProperties().getNumIntArgRegs())
+               {
+               nextIntArgReg++;
+               }
             else
                {
                mapSingleParameter(parameter, stackIndex, false);
                }
             break;
          case TR::Aggregate:
-            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on AArch64.");
+            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on RISC-V.");
             break;
          default:
             TR_ASSERT(false, "Unknown parameter type.");
@@ -439,6 +448,12 @@ TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::ParameterS
                cursor = generateSTORE(op, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::fa0 + nextFltArgReg)), codeGen, cursor);
                nextFltArgReg++;
                }
+            else if (nextIntArgReg < getProperties().getNumIntArgRegs())
+               {
+               op = (parameter->getSize() == 8) ? TR::InstOpCode::_sd : TR::InstOpCode::_sw;
+               cursor = generateSTORE(op, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::a0 + nextIntArgReg)), codeGen, cursor);
+               nextIntArgReg++;
+               }
             else
                {
                nextFltArgReg = getProperties().getNumFloatArgRegs() + 1;
@@ -516,6 +531,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
    int32_t argSize = 0;
    int32_t numIntegerArgs = 0;
    int32_t numFloatArgs = 0;
+   int32_t numFloatArgsPassedInGPRs = 0;
    int32_t totalSize;
    int32_t i;
 
@@ -538,7 +554,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
          case TR::Int32:
          case TR::Int64:
          case TR::Address:
-            if (numIntegerArgs >= properties.getNumIntArgRegs())
+            if ((numIntegerArgs + numFloatArgsPassedInGPRs) >= properties.getNumIntArgRegs())
                numMemArgs++;
             numIntegerArgs++;
             break;
@@ -546,7 +562,12 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
          case TR::Float:
          case TR::Double:
             if (numFloatArgs >= properties.getNumFloatArgRegs())
+               {
+               if ((numIntegerArgs + numFloatArgsPassedInGPRs) < properties.getNumIntArgRegs())
+                  numFloatArgsPassedInGPRs++;
+               else
                   numMemArgs++;
+               }
             numFloatArgs++;
             break;
 
@@ -571,6 +592,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
 
    numIntegerArgs = 0;
    numFloatArgs = 0;
+   numFloatArgsPassedInGPRs = 0;
 
    for (i = firstArgumentChild; i < callNode->getNumChildren(); i++)
       {
@@ -595,7 +617,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
             else
                argRegister = pushIntegerWordArg(child);
 
-            if (numIntegerArgs < properties.getNumIntArgRegs())
+            if ((numIntegerArgs + numFloatArgsPassedInGPRs) < properties.getNumIntArgRegs())
                {
                if (!cg()->canClobberNodesRegister(child, 0))
                   {
@@ -620,7 +642,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
                   }
                else
                   {
-                  TR::addDependency(dependencies, argRegister, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+                  TR::addDependency(dependencies, argRegister, properties.getIntegerArgumentRegister(numIntegerArgs + numFloatArgsPassedInGPRs), TR_GPR, cg());
                   }
                }
             else
@@ -674,6 +696,16 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
                   TR::addDependency(dependencies, argRegister, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
                   }
                }
+            else if ((numIntegerArgs + numFloatArgsPassedInGPRs) < properties.getNumIntArgRegs())
+               {
+               TR::Register *gprRegister = cg()->allocateRegister(TR_GPR);
+               TR::Register *zero = cg()->machine()->getRealRegister(TR::RealRegister::zero);
+               op = (childType == TR::Float) ? TR::InstOpCode::_fmv_x_s : TR::InstOpCode::_fmv_x_d;
+               generateRTYPE(op, callNode, gprRegister, argRegister, zero, cg());
+
+               TR::addDependency(dependencies, gprRegister, properties.getIntegerArgumentRegister(numIntegerArgs + numFloatArgsPassedInGPRs), TR_GPR, cg());
+               numFloatArgsPassedInGPRs++;
+               }
             else
                {
                // numFloatArgs >= properties.getNumFloatArgRegs()
@@ -694,7 +726,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
       } // end of for
 
    // NULL deps for unused integer argument registers
-   for (int i = numIntegerArgs; i < properties.getNumIntArgRegs(); i++)
+   for (int i = numIntegerArgs + numFloatArgsPassedInGPRs; i < properties.getNumIntArgRegs(); i++)
       {
       if (i == 0 && resType.isAddress())
          {

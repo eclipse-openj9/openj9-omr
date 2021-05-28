@@ -171,7 +171,7 @@ static bool nodeCanSurvive(TR::Node *nextNode, TR::Node *lastNodeFirstChild, TR:
    {
    if (isFieldAccess(nextNode))
       {
-      int32_t similarOffset = -1;
+      intptr_t similarOffset = -1;
       bool seenSimilarAccess = false;
       TR::Node *firstChild = nextNode->getFirstChild();
       if (lastNodeFirstChild)

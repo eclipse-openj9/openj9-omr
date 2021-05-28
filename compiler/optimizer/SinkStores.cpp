@@ -747,7 +747,7 @@ void TR_SinkStores::lookForSinkableStores()
             // Is it also legal to reset the flag given the more general control flow found in generalStoreSinking?
             if (!isExceptionFlagIsSticky())
                foundException = false;
-            int32_t prevNumTemps = _numTemps;
+            int32_t prevNumTemps = static_cast<int32_t>(_numTemps);
             TR::Node *node = tt->getNode();
             if (node->getOpCodeValue() == TR::treetop)
                node = node->getFirstChild();

@@ -1949,8 +1949,8 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    //
    for(auto oiIterator = self()->getOutlinedInstructionsList().begin(); oiIterator != self()->getOutlinedInstructionsList().end(); ++oiIterator)
       {
-      uint32_t startOffset = (*oiIterator)->getFirstInstruction()->getBinaryEncoding() - self()->getCodeStart();
-      uint32_t endOffset   = (*oiIterator)->getAppendInstruction()->getBinaryEncoding() - self()->getCodeStart();
+      uint32_t startOffset = static_cast<uint32_t>((*oiIterator)->getFirstInstruction()->getBinaryEncoding() - self()->getCodeStart());
+      uint32_t endOffset   = static_cast<uint32_t>((*oiIterator)->getAppendInstruction()->getBinaryEncoding() - self()->getCodeStart());
 
       TR::Block* block = (*oiIterator)->getBlock();
       TR::Node*  node  = (*oiIterator)->getCallNode();
@@ -2320,7 +2320,7 @@ OMR::X86::CodeGenerator::estimateBinaryLength(TR::MemoryReference *mr)
 
 void OMR::X86::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label)
    {
-   *cursor += ((uintptr_t)label->getCodeLocation());
+   *cursor += static_cast<int32_t>((reinterpret_cast<uintptr_t>(label->getCodeLocation())));
    }
 
 
@@ -2695,7 +2695,7 @@ uint8_t *OMR::X86::CodeGenerator::generatePadding(uint8_t              *cursor,
    if (length <= _paddingTable->_biggestEncoding)
       {
       // Copy bytes from the appropriate template
-      memcpy(cursor, paddingTableEncoding(_paddingTable, length), length);
+      memcpy(cursor, paddingTableEncoding(_paddingTable, static_cast<uint8_t>(length)), length);
 
       if (_paddingTable->_flags.testAny(TR_X86PaddingTable::registerMatters))
          {
@@ -2736,17 +2736,17 @@ uint8_t *OMR::X86::CodeGenerator::generatePadding(uint8_t              *cursor,
             {
             length -= 5;
             cursor = TR::InstOpCode(JMP4).binary(cursor);
-            *(int32_t*)cursor = length;
+            *(int32_t*)cursor = static_cast<int32_t>(length);
             cursor += 4;
             }
          else
             {
             length -= 2;
             cursor = TR::InstOpCode(JMP1).binary(cursor);
-            *(int8_t*)cursor = length;
+            *(int8_t*)cursor = static_cast<int8_t>(length);
             cursor += 1;
             }
-         memset(cursor, length, 0xcc); // Fill the rest with int3s
+         memset(cursor, static_cast<int32_t>(length), 0xcc); // Fill the rest with int3s
          cursor += length;
          }
       else

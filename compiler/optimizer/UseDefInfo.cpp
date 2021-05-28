@@ -794,7 +794,7 @@ void TR_UseDefInfo::findMemorySymbols(TR::Node *node)
       {
       int32_t valueNumber = _valueNumberInfo->getValueNumber(node->getFirstChild());
       uint32_t size = static_cast<uint32_t>(node->getSymbolReference()->getSymbol()->getSize());
-      uint32_t offset = node->getSymbolReference()->getOffset();
+      uint32_t offset = static_cast<uint32_t>(node->getSymbolReference()->getOffset());
 
       bool found = false;
       for (auto itr = _valueNumbersToMemorySymbolsMap[valueNumber]->begin(), end = _valueNumbersToMemorySymbolsMap[valueNumber]->end();
@@ -827,7 +827,7 @@ int32_t TR_UseDefInfo::getMemorySymbolIndex(TR::Node * node)
 
    int32_t valueNumber = _valueNumberInfo->getValueNumber(node->getFirstChild());
    uint32_t size = static_cast<uint32_t>(node->getSymbolReference()->getSymbol()->getSize());
-   uint32_t offset = node->getSymbolReference()->getOffset();
+   uint32_t offset = static_cast<uint32_t>(node->getSymbolReference()->getOffset());
 
    for (auto itr = _valueNumbersToMemorySymbolsMap[valueNumber]->begin(), end = _valueNumbersToMemorySymbolsMap[valueNumber]->end();
         itr != end; ++itr)

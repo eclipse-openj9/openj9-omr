@@ -283,13 +283,13 @@ bcIndexForFakeInduce(TR::Compilation* comp, int16_t* callSiteInsertionPoint,
          break;
          }
       p = temp+1;
-      int16_t tempInt = strtol(p, &temp, 10);
+      int16_t tempInt = static_cast<int16_t>(strtol(p, &temp, 10));
       p = temp;
       if (callSiteInsertionPoint)
          *callSiteInsertionPoint = tempInt;
       p++; //skipping the second ,
 
-      tempInt = strtol(p, &temp, 16);
+      tempInt = static_cast<int16_t>(strtol(p, &temp, 16));
       p = temp;
       if (bcIndexInsertionPoint)
          *bcIndexInsertionPoint = tempInt;
@@ -993,14 +993,13 @@ OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR:
    loadNodes.add(vmThread);
    loadNodes.add(TR::Node::iconst(firstNode, osrMethodData->getInlinedSiteIndex()));
    TR::Node *loadNode = NULL;
-   intptr_t i = 0;
 
    bool alreadyLoadedSyncObjectTemp = false;
    bool alreadyLoadedThisTempForObjectCtor = false;
 
    // Pending push temporaries
    TR_Array<List<TR::SymbolReference> > *ppsListArray = self()->getPendingPushSymRefs();
-   for (i = 0; ppsListArray && i < ppsListArray->size(); ++i)
+   for (auto i = 0; ppsListArray && i < ppsListArray->size(); ++i)
       {
       List<TR::SymbolReference> ppsList = (*ppsListArray)[i];
       ListIterator<TR::SymbolReference> ppsIt(&ppsList);
@@ -1031,7 +1030,7 @@ OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR:
 
    //  parameters and autos
    TR_Array<List<TR::SymbolReference> > *autosListArray = self()->getAutoSymRefs();
-   for (i = 0; autosListArray && i < autosListArray->size(); ++i)
+   for (auto i = 0; autosListArray && i < autosListArray->size(); ++i)
       {
       List<TR::SymbolReference> autosList = (*autosListArray)[i];
       ListIterator<TR::SymbolReference> autosIt(&autosList);
@@ -1304,13 +1303,12 @@ bool
 OMR::ResolvedMethodSymbol::sharesStackSlots(TR::Compilation *comp)
    {
    auto *methodSymbol = self();
-   intptr_t i = 0;
    bool isRequired = false;
 
    // Check for pending pushes
    TR_Array<List<TR::SymbolReference> > *ppsListArray = methodSymbol->getPendingPushSymRefs();
    bool prevTakesTwoSlots = false;
-   for (i = 0; !isRequired && ppsListArray && i < ppsListArray->size(); ++i)
+   for (auto i = 0; !isRequired && ppsListArray && i < ppsListArray->size(); ++i)
       {
       List<TR::SymbolReference> ppsList = (*ppsListArray)[i];
       ListIterator<TR::SymbolReference> ppsIt(&ppsList);
@@ -1343,7 +1341,7 @@ OMR::ResolvedMethodSymbol::sharesStackSlots(TR::Compilation *comp)
    // Check for parameters and autos
    TR_Array<List<TR::SymbolReference> > *autosListArray = methodSymbol->getAutoSymRefs();
    prevTakesTwoSlots = false;
-   for (i = 0; !isRequired && autosListArray && i < autosListArray->size(); ++i)
+   for (auto i = 0; !isRequired && autosListArray && i < autosListArray->size(); ++i)
       {
       List<TR::SymbolReference> autosList = (*autosListArray)[i];
       ListIterator<TR::SymbolReference> autosIt(&autosList);
@@ -1893,7 +1891,7 @@ OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Co
 TR_OSRPoint *
 OMR::ResolvedMethodSymbol::findOSRPoint(TR_ByteCodeInfo &bcInfo)
    {
-   for (intptr_t i = 0; i < _osrPoints.size(); ++i)
+   for (auto i = 0; i < _osrPoints.size(); ++i)
       {
       TR_ByteCodeInfo& pointBCInfo = _osrPoints[i]->getByteCodeInfo();
       if (pointBCInfo.getByteCodeIndex() == bcInfo.getByteCodeIndex() &&

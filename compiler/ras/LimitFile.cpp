@@ -127,7 +127,7 @@ TR_Debug::addFilter(char * & filterString, int32_t scanningExclude, int32_t opti
          TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE, "Bad regular expression at --> '%s'", filterCursor);
          return 0;
          }
-      nameLength = filterCursor - filterString;
+      nameLength = static_cast<int32_t>(filterCursor - filterString);
       filterBST->setRegex(regex);
       filterBST->setNext(filters->hasRegexFilter()? filters->filterRegexList : NULL);
       filters->filterRegexList = filterBST;
@@ -333,7 +333,7 @@ TR_Debug::inlinefileOption(char *option, void *base, TR::OptionTable *entry, TR:
    for (; *endOpt && *endOpt != ','; endOpt++)
       {}
 
-   int32_t len = endOpt - name;
+   int32_t len = static_cast<int32_t>(endOpt - name);
    if (!len)
       return option;
 
@@ -423,7 +423,7 @@ TR_Debug::limitfileOption(char *option, void *base, TR::OptionTable *entry, TR::
 
    for (; *endOpt && *endOpt != ','; endOpt++)
       {}
-   int32_t len = endOpt - name;
+   int32_t len = static_cast<int32_t>(endOpt - name);
    if (!len)
       return option;
 
@@ -617,12 +617,12 @@ TR_Debug::limitOption(char *option, void *base, TR::OptionTable *entry, TR::Opti
    char *p = option;
 
    // this use the old interface
-   TR_FilterBST *filter = addFilter(p, entry->parm1, 0, 0, loadLimit);
+   TR_FilterBST *filter = addFilter(p, static_cast<int32_t>(entry->parm1), 0, 0, loadLimit);
 
    if (!filter)
       return option;
 
-   int32_t len = p - option;
+   int32_t len = static_cast<int32_t>(p - option);
    char *limitName = (char *)(TR::Compiler->regionAllocator.allocate(len+1));
    memcpy(limitName, option, len);
    limitName[len] = 0;
@@ -1084,10 +1084,10 @@ TR_Debug::methodSigCanBeFound(const char *methodSig, TR::CompilationFilters * fi
          {
          methodClass = methodSig;
          methodSignature = strchr(methodSig, ':');
-         methodClassLen = methodSignature - methodClass;
+         methodClassLen = static_cast<uint32_t>(methodSignature - methodClass);
          methodSignature++;
          methodName = strchr(methodSignature, ':');
-         methodSignatureLen = methodName - methodSignature;
+         methodSignatureLen = static_cast<uint32_t>(methodName - methodSignature);
          methodName++;
          methodNameLen = static_cast<uint32_t>(strlen(methodName));
          }
@@ -1106,22 +1106,22 @@ TR_Debug::methodSigCanBeFound(const char *methodSig, TR::CompilationFilters * fi
          {
          methodClass = methodSig;
          methodSignature = strchr(methodSig, ':');
-         methodClassLen = methodSignature - methodClass;
+         methodClassLen = static_cast<uint32_t>(methodSignature - methodClass);
          methodSignature++;
          methodName = strchr(methodSignature, ':');
-         methodSignatureLen = methodName - methodSignature;
+         methodSignatureLen = static_cast<uint32_t>(methodName - methodSignature);
          methodName++;
          methodNameLen = static_cast<uint32_t>(strlen(methodName));
          }
       else
          {
          methodName  = strchr(methodSig, '.');
-         methodClassLen = methodName - methodClass;
+         methodClassLen = static_cast<uint32_t>(methodName - methodClass);
          methodName++;
          methodSignature = strchr(methodName, '(');
          methodSignatureLen = static_cast<uint32_t>(strlen(methodSignature));
          TR_ASSERT(methodSignature, "unable to pattern match java method signature");
-         methodNameLen = methodSignature - methodName;
+         methodNameLen = static_cast<uint32_t>(methodSignature - methodName);
          }
       }
 

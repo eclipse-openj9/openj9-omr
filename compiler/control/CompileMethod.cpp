@@ -128,7 +128,7 @@ generatePerfToolEntry(uint8_t *startPC, uint8_t *endPC, const char *sig, const c
    else
       name = "(compiled code)";
 
-   writePerfToolEntry(startPC, endPC - startPC, name);
+   writePerfToolEntry(startPC, static_cast<uint32_t>(endPC - startPC), name);
    }
 
 #if defined(TR_TARGET_POWER)

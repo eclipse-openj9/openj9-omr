@@ -482,7 +482,7 @@ OMR::Node::setInt(int32_t i)
    {
    TR_ASSERT(self()->getOpCodeValue() != TR::fconst, "TR::Node::setInt: used for an fconst node");
    self()->freeExtensionIfExists();
-   return  _unionBase._constValue= (int64_t)i;
+   return static_cast<int32_t>(_unionBase._constValue = (int64_t)i);
    }
 
 uint32_t

@@ -3511,8 +3511,8 @@ void OMR::ValuePropagation::setUpInductionVariables(TR_StructureSubGraphNode *no
                }
             else if (constraint->asLongConstraint())
                {
-               high = constraint->getHighLong();
-               low = constraint->getLowLong();
+               high = static_cast<int32_t>(constraint->getHighLong());
+               low = static_cast<int32_t>(constraint->getLowLong());
                }
 
             for (int32_t i = low; i <= high; i++)
@@ -5593,7 +5593,7 @@ TR::TreeTop* TR::ArraycopyTransformation::tryToSpecializeForLength(TR::TreeTop *
 
 static TR::Node *addressSizedConst(TR::Compilation *comp, TR::Node *n, intptr_t val)
    {
-   TR::Node *node = comp->target().is64Bit()? TR::Node::lconst(n, val) : TR::Node::iconst(n, val);
+   TR::Node *node = comp->target().is64Bit()? TR::Node::lconst(n, val) : TR::Node::iconst(n, static_cast<int32_t>(val));
    if (node->getOpCodeValue() == TR::lconst)
       node->setLongInt(val);
    return node;

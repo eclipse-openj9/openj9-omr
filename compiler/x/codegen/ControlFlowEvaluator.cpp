@@ -136,7 +136,7 @@ static inline TR::Instruction *generateWiderCompare(TR::Node *node, TR::Register
    // instead
    //
    generateRegRegInstruction(MOVSXReg4Reg2, node, targetReg, targetReg, cg);
-   return generateRegImmInstruction(CMP4RegImm4, node, targetReg, value, cg);
+   return generateRegImmInstruction(CMP4RegImm4, node, targetReg, static_cast<int32_t>(value), cg);
    }
 
 bool isConditionCodeSetForCompareToZero(TR::Node *node, bool justTestZeroFlag)
@@ -697,7 +697,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
                      // memory case
                      TR::MemoryReference  *tempMR = generateX86MemoryReference(andFirstChild, cg);
                      if(((mask >> 8) == 0) || (andSecondChild->getSize() == 1))
-                        generateMemImmInstruction(TEST1MemImm1, node, tempMR, mask, cg);
+                        generateMemImmInstruction(TEST1MemImm1, node, tempMR, static_cast<int32_t>(mask), cg);
                      else if(andSecondChild->getSize() == 2)
                         {
                         TR::Register *tempReg = cg->allocateRegister();
@@ -706,7 +706,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
                         cg->stopUsingRegister(tempReg);
                         }
                      else
-                        generateMemImmInstruction(TESTMemImm4(is64Bit), node, tempMR, mask, cg);
+                        generateMemImmInstruction(TESTMemImm4(is64Bit), node, tempMR, static_cast<int32_t>(mask), cg);
                      tempMR->decNodeReferenceCounts(cg);
                      }
                   else
@@ -735,7 +735,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
                         testInstr = TEST1RegImm1;
                      else
                         testInstr = TESTRegImm4(is64Bit);
-                     generateRegImmInstruction(testInstr, node, tempReg, mask, cg);
+                     generateRegImmInstruction(testInstr, node, tempReg, static_cast<int32_t>(mask), cg);
                      }
                   if (conversionSkipped)
                      {
@@ -877,7 +877,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
                {
                TR::MemoryReference  *tempMR = generateX86MemoryReference(firstChild, cg);
                if (compareSize == 1)
-                  generateMemImmInstruction(CMP1MemImm1, node, tempMR, constValue, cg);
+                  generateMemImmInstruction(CMP1MemImm1, node, tempMR, static_cast<int32_t>(constValue), cg);
                else if (compareSize == 2)
                   {
                   //shouldn't use Imm2 instructions
@@ -887,21 +887,21 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
                   cg->stopUsingRegister(tempReg);
                   }
                else
-                  TR::TreeEvaluator::compareGPMemoryToImmediate(node, tempMR, constValue, cg);
+                  TR::TreeEvaluator::compareGPMemoryToImmediate(node, tempMR, static_cast<int32_t>(constValue), cg);
                tempMR->decNodeReferenceCounts(cg);
                }
             else
                {
                TR::Register *firstChildReg = cg->evaluate(firstChild);
                if (compareSize == 1)
-                  generateRegImmInstruction(CMP1RegImm1, node, firstChildReg, constValue, cg);
+                  generateRegImmInstruction(CMP1RegImm1, node, firstChildReg, static_cast<int32_t>(constValue), cg);
                else if (compareSize == 2)
                   {
                   ///generateRegImmInstruction(CMP2RegImm2, node, firstChildReg, constValue, cg);
                   generateWiderCompare(node, firstChildReg, constValue, cg);
                   }
                else
-                  TR::TreeEvaluator::compareGPRegisterToImmediateForEquality(node, firstChildReg, constValue, cg);
+                  TR::TreeEvaluator::compareGPRegisterToImmediateForEquality(node, firstChildReg, static_cast<int32_t>(constValue), cg);
                }
 
             if (secondChild->getOpCodeValue() == TR::aconst)
@@ -917,7 +917,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
          uint32_t size = secondChild->getSize();
          TR::Register *firstChildReg = cg->evaluate(firstChild);
          if(size == 1)
-            cmpInstruction = generateRegImmInstruction(CMP1RegImm1, node, firstChildReg, constValue, cg);
+            cmpInstruction = generateRegImmInstruction(CMP1RegImm1, node, firstChildReg, static_cast<int32_t>(constValue), cg);
          else if (size == 2)
             {
             ///cmpInstruction = generateRegImmInstruction(CMP2RegImm2, node, firstChildReg, constValue, cg);
@@ -925,7 +925,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
             }
          else
             {
-            cmpInstruction = generateRegImmInstruction(CMPRegImm4(is64Bit), node, firstChildReg, constValue, cg);
+            cmpInstruction = generateRegImmInstruction(CMPRegImm4(is64Bit), node, firstChildReg, static_cast<int32_t>(constValue), cg);
             }
          TR::Symbol *symbol = NULL;
          if (node && secondChild->getOpCode().hasSymbolReference())
@@ -1046,12 +1046,12 @@ void OMR::X86::TreeEvaluator::compareIntegersForOrder(
              firstChild->getReferenceCount() == 1)
             {
             TR::MemoryReference  *tempMR = generateX86MemoryReference(firstChild, cg);
-            TR::TreeEvaluator::compareGPMemoryToImmediate(node, tempMR, constValue, cg);
+            TR::TreeEvaluator::compareGPMemoryToImmediate(node, tempMR, static_cast<int32_t>(constValue), cg);
             tempMR->decNodeReferenceCounts(cg);
             }
          else
             {
-            TR::TreeEvaluator::compareGPRegisterToImmediate(node, cg->evaluate(firstChild), constValue, cg);
+            TR::TreeEvaluator::compareGPRegisterToImmediate(node, cg->evaluate(firstChild), static_cast<int32_t>(constValue), cg);
             }
          }
 

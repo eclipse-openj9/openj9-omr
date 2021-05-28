@@ -463,7 +463,7 @@ TR_Debug::getDiagnosticFormat(const char *format, char *buffer, int32_t length)
                allowedToWrite = false;
             if (allowedToWrite)
                memcpy(&buffer[j], base, c-base+1);
-            j+=c-base;
+            j+=static_cast<int32_t>(c-base);
             }
          }
       }
@@ -724,7 +724,7 @@ TR_Debug::printPrefix(TR::FILE *pOutFile, TR::Instruction *instr, uint8_t *curso
    {
    if (cursor != NULL)
       {
-      uint32_t offset = cursor - _comp->cg()->getCodeStart();
+      uint32_t offset = static_cast<uint32_t>(cursor - _comp->cg()->getCodeStart());
 
       char prefix[MAX_PREFIX_WIDTH + 1];
 
@@ -768,7 +768,7 @@ TR_Debug::printPrefix(TR::FILE *pOutFile, TR::Instruction *instr, uint8_t *curso
             sprintf(p1, " %02x", *cursor++);
          }
 
-      int leftOver = p0 + prefixWidth - p1;
+      int32_t leftOver = static_cast<int32_t>(p0 + prefixWidth - p1);
       if (leftOver >= 1)
          {
          memset(p1, ' ', leftOver);
@@ -824,7 +824,7 @@ TR_Debug::printSnippetLabel(TR::FILE *pOutFile, TR::LabelSymbol *label, uint8_t 
    int codeByteColumnWidth = TR::Compiler->debug.codeByteColumnWidth();
    int prefixWidth         = addressFieldWidth * 2 + codeByteColumnWidth + 12; // 8 bytes of offsets, 2 spaces, and opening and closing brackets
 
-   uint32_t offset = cursor - _comp->cg()->getCodeStart();
+   uint32_t offset = static_cast<uint32_t>(cursor - _comp->cg()->getCodeStart());
 
    if (_comp->getOption(TR_MaskAddresses))
       {

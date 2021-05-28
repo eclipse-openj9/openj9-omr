@@ -259,11 +259,11 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
          else if (IS_32BIT_UNSIGNED(value))
             {
             // zero-extended 4-byte MOV
-            movInstruction = generateRegImmInstruction(currentInstruction, MOV4RegImm4, target, value, cg, reloKind);
+            movInstruction = generateRegImmInstruction(currentInstruction, MOV4RegImm4, target, static_cast<int32_t>(value), cg, reloKind);
             }
          else if (IS_32BIT_SIGNED(value)) // TODO:AMD64: Is there some way we could get RIP too?
             {
-            movInstruction = generateRegImmInstruction(currentInstruction, MOV8RegImm4, target, value, cg, reloKind);
+            movInstruction = generateRegImmInstruction(currentInstruction, MOV8RegImm4, target, static_cast<int32_t>(value), cg, reloKind);
             }
          else
             {
@@ -272,7 +272,7 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
          }
       else
          {
-         movInstruction = generateRegImmInstruction(currentInstruction, ops[opsRow][MOV], target, value, cg, reloKind);
+         movInstruction = generateRegImmInstruction(currentInstruction, ops[opsRow][MOV], target, static_cast<int32_t>(value), cg, reloKind);
          }
 
       // HCR register PIC site in TR::TreeEvaluator::insertLoadConstant
@@ -331,11 +331,11 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
             else if (IS_32BIT_UNSIGNED(value))
                {
                // zero-extended 4-byte MOV
-               movInstruction = generateRegImmInstruction(MOV4RegImm4, node, target, value, cg, reloKind);
+               movInstruction = generateRegImmInstruction(MOV4RegImm4, node, target, static_cast<int32_t>(value), cg, reloKind);
                }
             else if (IS_32BIT_SIGNED(value)) // TODO:AMD64: Is there some way we could get RIP too?
                {
-               movInstruction = generateRegImmInstruction(MOV8RegImm4, node, target, value, cg, reloKind);
+               movInstruction = generateRegImmInstruction(MOV8RegImm4, node, target, static_cast<int32_t>(value), cg, reloKind);
                }
             else
                {
@@ -344,7 +344,7 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
             }
          else
             {
-            movInstruction = generateRegImmInstruction(ops[opsRow][MOV], node, target, value, cg, reloKind);
+            movInstruction = generateRegImmInstruction(ops[opsRow][MOV], node, target, static_cast<int32_t>(value), cg, reloKind);
             }
 
          // HCR register PIC site in TR::TreeEvaluator::insertLoadConstant
@@ -2212,7 +2212,7 @@ TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
    uint32_t size;
    if (sizeNode->getOpCode().isLoadConst() && cg->comp()->target().is64Bit() && optimizeForConstantLengthArrayCopy)
       {
-      size = TR::TreeEvaluator::integerConstNodeValue(sizeNode, cg);
+      size = static_cast<uint32_t>(TR::TreeEvaluator::integerConstNodeValue(sizeNode, cg));
       if ((node->isForwardArrayCopy() || node->isBackwardArrayCopy()) && !ignoreDirectionForConstantLengthArrayCopy)
          {
          if (size <= shortConstArrayWithDirThreshold) isShortConstArrayWithDirection = true;
@@ -2426,7 +2426,7 @@ static void arraySetToZeroForShortConstantArrays(TR::Node* node, TR::Register* a
 
       for (int32_t i=0; i<4; i++)
          {
-         int32_t moves = size/packs[i];
+         int32_t moves = static_cast<int32_t>(size/packs[i]);
          for (int32_t j=0; j<moves; j++)
             {
             generateArrayElementStore(node, addressReg, index, tempReg, packs[i], cg);
@@ -2439,12 +2439,12 @@ static void arraySetToZeroForShortConstantArrays(TR::Node* node, TR::Register* a
       {
       tempReg = cg->allocateRegister(TR_FPR);
       generateRegRegInstruction(XORPDRegReg, node, tempReg, tempReg, cg);
-      int32_t moves = size/16;
+      int32_t moves = static_cast<int32_t>(size/16);
       for (int32_t i=0; i<moves; i++)
          {
          generateArrayElementStore(node, addressReg, i*16, tempReg, 16, cg);
          }
-      if (size%16 != 0) generateArrayElementStore(node, addressReg, size-16, tempReg, 16, cg);
+      if (size%16 != 0) generateArrayElementStore(node, addressReg, static_cast<int32_t>(size-16), tempReg, 16, cg);
       }
    cg->stopUsingRegister(tempReg);
    }
@@ -2452,7 +2452,7 @@ static void arraySetToZeroForShortConstantArrays(TR::Node* node, TR::Register* a
 static void arraySetForShortConstantArrays(TR::Node* node, uint8_t elementSize, TR::Register* addressReg, TR::Register* valueReg, uintptr_t size, TR::CodeGenerator* cg)
    {
    const int32_t notWorthPacking = 5;
-   const int32_t totalSize = elementSize*size;
+   const int32_t totalSize = static_cast<int32_t>(elementSize*size);
 
    int8_t packs[5] = {16, 8, 4, 2, 1};
    int8_t moves[5] = {0};
@@ -4277,7 +4277,7 @@ OMR::X86::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *
 
          // Shift to desired bit
          if (x > 0)
-            generateRegImmInstruction(SHLRegImm1(nodeIs64Bit), node, tmpReg, x, cg);
+            generateRegImmInstruction(SHLRegImm1(nodeIs64Bit), node, tmpReg, static_cast<int32_t>(x), cg);
 
          // OR with result
          TR::InstOpCode::Mnemonic op = (x < 8) ? OR1RegReg : ORRegReg(nodeIs64Bit);

@@ -987,12 +987,12 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
    TR::VPArrayInfo *srcArrayInfo;
    TR::VPArrayInfo *dstArrayInfo;
 
-   srcOffLow = srcOffset ? srcOffset->getLowInt() : TR::getMinSigned<TR::Int32>();
-   srcOffHigh = srcOffset ? srcOffset->getHighInt() : TR::getMaxSigned<TR::Int32>();
-   dstOffLow = dstOffset ? dstOffset->getLowInt() : TR::getMinSigned<TR::Int32>();
-   dstOffHigh = dstOffset ? dstOffset->getHighInt() : TR::getMaxSigned<TR::Int32>();
-   copyLenLow = copyLen ? copyLen->getLowInt() : TR::getMinSigned<TR::Int32>();
-   copyLenHigh = copyLen ? copyLen->getHighInt() : TR::getMaxSigned<TR::Int32>();
+   srcOffLow = srcOffset ? srcOffset->getLowInt() : static_cast<int32_t>(TR::getMinSigned<TR::Int32>());
+   srcOffHigh = srcOffset ? srcOffset->getHighInt() : static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
+   dstOffLow = dstOffset ? dstOffset->getLowInt() : static_cast<int32_t>(TR::getMinSigned<TR::Int32>());
+   dstOffHigh = dstOffset ? dstOffset->getHighInt() : static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
+   copyLenLow = copyLen ? copyLen->getLowInt() : static_cast<int32_t>(TR::getMinSigned<TR::Int32>());
+   copyLenHigh = copyLen ? copyLen->getHighInt() : static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
 
    // If the call must fail, don't transform it.  The rest of the block can be
    // removed.
@@ -1804,11 +1804,11 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
    //
    addBlockConstraint(srcObjNode, TR::VPNonNullObject::create(this));
    addBlockConstraint(dstObjNode, TR::VPNonNullObject::create(this));
-   srcOffHigh = srcArrayInfo ? srcArrayInfo->highBound() : TR::getMaxSigned<TR::Int32>();
+   srcOffHigh = srcArrayInfo ? srcArrayInfo->highBound() : static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
    addBlockConstraint(srcOffNode, TR::VPIntRange::create(this, 0, srcOffHigh));
-   dstOffHigh = dstArrayInfo ? dstArrayInfo->highBound() : TR::getMaxSigned<TR::Int32>();
+   dstOffHigh = dstArrayInfo ? dstArrayInfo->highBound() : static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
    addBlockConstraint(dstOffNode, TR::VPIntRange::create(this, 0, dstOffHigh));
-   addBlockConstraint(copyLenNode, TR::VPIntRange::create(this, 0, TR::getMaxSigned<TR::Int32>()));
+   addBlockConstraint(copyLenNode, TR::VPIntRange::create(this, 0, static_cast<int32_t>(TR::getMaxSigned<TR::Int32>())));
 
    }
 

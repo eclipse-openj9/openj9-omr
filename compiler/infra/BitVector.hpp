@@ -362,7 +362,7 @@ class TR_BitVector
       int32_t chunkIndex = getChunkIndex(n);
       if (chunkIndex > _lastChunkWithNonZero)
          return 0;
-      return (_chunks[chunkIndex] & getBitMask(n)) != 0;
+      return (_chunks[chunkIndex] & getBitMask(static_cast<int32_t>(n))) != 0;
       }
 
    bool isSet(int64_t n)
@@ -382,7 +382,7 @@ class TR_BitVector
          _firstChunkWithNonZero = chunkIndex;
       if (chunkIndex > _lastChunkWithNonZero)
          _lastChunkWithNonZero = chunkIndex;
-      _chunks[chunkIndex] |= getBitMask(n);
+      _chunks[chunkIndex] |= getBitMask(static_cast<int32_t>(n));
 #if BV_SANITY_CHECK
       sanityCheck("set");
 #endif
@@ -415,7 +415,7 @@ class TR_BitVector
       if (chunkIndex > _lastChunkWithNonZero || chunkIndex < _firstChunkWithNonZero)
          return;
       if (_chunks[chunkIndex]) {
-        _chunks[chunkIndex] &= ~getBitMask(n);
+        _chunks[chunkIndex] &= ~getBitMask(static_cast<int32_t>(n));
         if (updateLowHigh && _chunks[chunkIndex] == 0)
           resetLowAndHighChunks(_firstChunkWithNonZero, _lastChunkWithNonZero);
       }
@@ -655,7 +655,7 @@ class TR_BitVector
          setChunkSize(chunkIndex+1);
       for (i = chunkIndex-1; i >= 0; i--)
          _chunks[i] = (chunk_t)-1;
-      for (i = getBitIndex(chunkIndex); i < n; i++)
+      for (i = static_cast<int32_t>(getBitIndex(chunkIndex)); i < n; i++)
          _chunks[chunkIndex] |= getBitMask(i);
       _firstChunkWithNonZero = 0;
       if (_lastChunkWithNonZero < chunkIndex)
@@ -695,7 +695,7 @@ class TR_BitVector
       if (firstChunk == lastChunk)
          {
          TR_ASSERT(false, "this code is not used");
-         _chunks[firstChunk] |= getBitMask(m, n);
+         _chunks[firstChunk] |= getBitMask(static_cast<int32_t>(m), static_cast<int32_t>(n));
          }
       else
          {
@@ -764,7 +764,7 @@ class TR_BitVector
 
       if (firstChunk == lastChunk)
          {
-         _chunks[firstChunk] &= ~getBitMask(m, n);
+         _chunks[firstChunk] &= ~getBitMask(static_cast<int32_t>(m), static_cast<int32_t>(n));
          }
       else
          {
@@ -996,7 +996,7 @@ class TR_BitVector
 #ifdef DEBUG
        TR_ASSERT((((bitIndex >> SHIFT) & ~((int64_t)0x7fffffff)) == 0) || (bitIndex < 0), "Chunk index out of int32_t range. bitIndex=%lx\n",bitIndex);
 #endif
-       return bitIndex >> SHIFT;
+       return static_cast<int32_t>(bitIndex >> SHIFT);
        }
 
    // Given a bit index, calculate the bit index within chunk
@@ -1300,7 +1300,7 @@ public:
 
   static bool hasFastRandomLookup() { return true;}
   uint32_t ValueAt(uint32_t index) const { return bv.get(index); }
-  uint32_t LastOne() const { return bv.getHighestBitPosition(); }
+  uint32_t LastOne() const { return static_cast<uint32_t>(bv.getHighestBitPosition()); }
   bool hasBitWordRepresentation() const { return true; } // returns whether this bit vector is based on an array of bitWords (ie chunks of bits)
   uint32_t wordSize() const { return BITS_IN_CHUNK; } // returns size of words in bits (ie size of a chunk)
   int32_t FirstOneWordIndex() const { return bv._firstChunkWithNonZero; }
@@ -1440,7 +1440,7 @@ inline TR_BitVector & TR_BitVector::operator-= (const BitVector &sparse)
    {
      if (isEmpty() || sparse.IsZero()) return *this;
 
-     uint32_t highBit = getHighestBitPosition();
+     uint32_t highBit = static_cast<uint32_t>(getHighestBitPosition());
      typename BitVector::Cursor bi(sparse);
      for (bi.SetToFirstOne(); bi.Valid() && bi<= highBit; bi.SetToNextOne()) {
        reset(bi, false);

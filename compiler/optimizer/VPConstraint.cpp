@@ -131,29 +131,29 @@ TR::VPNotEqual          *TR::VPNotEqual::asNotEqual()                   { return
 int16_t TR::VPConstraint::getLowShort()
    {
    if (isUnsigned())
-       return TR::getMinUnsigned<TR::Int16>();
-   return TR::getMinSigned<TR::Int16>();
+       return static_cast<int16_t>(TR::getMinUnsigned<TR::Int16>());
+   return static_cast<int16_t>(TR::getMinSigned<TR::Int16>());
    }
 
 int16_t TR::VPConstraint::getHighShort()
    {
    if (isUnsigned())
-       return TR::getMaxUnsigned<TR::Int16>();
-   return TR::getMaxSigned<TR::Int16>();
+       return static_cast<int16_t>(TR::getMaxUnsigned<TR::Int16>());
+   return static_cast<int16_t>(TR::getMaxSigned<TR::Int16>());
    }
 
 int32_t TR::VPConstraint::getLowInt()
    {
    if (isUnsigned())
-      return TR::getMinUnsigned<TR::Int32>();
-   return TR::getMinSigned<TR::Int32>();
+      return static_cast<int32_t>(TR::getMinUnsigned<TR::Int32>());
+   return static_cast<int32_t>(TR::getMinSigned<TR::Int32>());
    }
 
 int32_t TR::VPConstraint::getHighInt()
    {
    if (isUnsigned())
-      return TR::getMaxUnsigned<TR::Int32>();
-   return TR::getMaxSigned<TR::Int32>();
+      return static_cast<int32_t>(TR::getMaxUnsigned<TR::Int32>());
+   return static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
    }
 
 int64_t TR::VPConstraint::getLowLong()
@@ -170,33 +170,33 @@ int64_t TR::VPConstraint::getHighLong()
 uint16_t TR::VPConstraint::getUnsignedLowShort()
    {
    if ( (getLowShort() ^ getHighShort()) >= 0)       // if both numbers are the same sign, return the small value
-      return (uint16_t)getLowShort();
+      return static_cast<uint16_t>(getLowShort());
 
-   return TR::getMinUnsigned<TR::Int16>();
+   return static_cast<uint16_t>(TR::getMinUnsigned<TR::Int16>());
    }
 
 uint16_t TR::VPConstraint::getUnsignedHighShort()
    {
    if ( (getLowShort() ^ getHighShort()) >= 0)       // if both numbers have the same sign, getHigh is the high value
-      return (uint16_t)getHighShort();
+      return static_cast<uint16_t>(getHighShort());
 
-   return TR::getMaxUnsigned<TR::Int16>();
+   return static_cast<uint16_t>(TR::getMaxUnsigned<TR::Int16>());
    }
 
 uint32_t TR::VPConstraint::getUnsignedLowInt()
    {
    if ( (getLowInt() ^ getHighInt()) >= 0)       // if both numbers are the same sign, return the small value
-      return (uint32_t)getLowInt();
+      return static_cast<uint32_t>(getLowInt());
 
-   return TR::getMinUnsigned<TR::Int32>();
+   return static_cast<uint32_t>(TR::getMinUnsigned<TR::Int32>());
    }
 
 uint32_t TR::VPConstraint::getUnsignedHighInt()
    {
    if ( (getLowInt() ^ getHighInt()) >= 0)       // if both numbers have the same sign, getHigh is the high value
-      return (uint32_t)getHighInt();
+      return static_cast<uint32_t>(getHighInt());
 
-   return TR::getMaxUnsigned<TR::Int32>();
+   return static_cast<uint32_t>(TR::getMaxUnsigned<TR::Int32>());
    }
 
 uint64_t TR::VPConstraint::getUnsignedLowLong()
@@ -920,19 +920,19 @@ TR::VPIntConst *TR::VPIntConst::create(OMR::ValuePropagation *vp, int32_t v)
 TR::VPConstraint *TR::VPShortConst::createExclusion(OMR::ValuePropagation *vp, int16_t v)
    {
    if (v == TR::getMinSigned<TR::Int16>())
-       return TR::VPShortRange::create(vp,v+1,TR::getMaxSigned<TR::Int16>());
+       return TR::VPShortRange::create(vp,v+1,static_cast<int16_t>(TR::getMaxSigned<TR::Int16>()));
    if (v == TR::getMaxSigned<TR::Int16>())
-       return TR::VPShortRange::create(vp,TR::getMinSigned<TR::Int16>(),v-1);
-   return TR::VPMergedConstraints::create(vp, TR::VPShortRange::create(vp,TR::getMinSigned<TR::Int16>(),v-1),TR::VPShortRange::create(vp,v+1,TR::getMaxSigned<TR::Int16>()));
+       return TR::VPShortRange::create(vp,static_cast<int16_t>(TR::getMinSigned<TR::Int16>()),v-1);
+   return TR::VPMergedConstraints::create(vp, TR::VPShortRange::create(vp,static_cast<int16_t>(TR::getMinSigned<TR::Int16>()),v-1),TR::VPShortRange::create(vp,v+1,static_cast<int16_t>(TR::getMaxSigned<TR::Int16>())));
    }
 
 TR::VPConstraint *TR::VPIntConst::createExclusion(OMR::ValuePropagation *vp, int32_t v)
    {
    if (v == TR::getMinSigned<TR::Int32>())
-      return TR::VPIntRange::create(vp, v+1, TR::getMaxSigned<TR::Int32>());
+      return TR::VPIntRange::create(vp, v+1, static_cast<int32_t>(TR::getMaxSigned<TR::Int32>()));
    if (v == TR::getMaxSigned<TR::Int32>())
-      return TR::VPIntRange::create(vp, TR::getMinSigned<TR::Int32>(), v-1);
-   return TR::VPMergedConstraints::create(vp, TR::VPIntRange::create(vp, TR::getMinSigned<TR::Int32>(), v-1), TR::VPIntRange::create(vp, v+1, TR::getMaxSigned<TR::Int32>()));
+      return TR::VPIntRange::create(vp, static_cast<int32_t>(TR::getMinSigned<TR::Int32>()), v-1);
+   return TR::VPMergedConstraints::create(vp, TR::VPIntRange::create(vp, static_cast<int32_t>(TR::getMinSigned<TR::Int32>()), v-1), TR::VPIntRange::create(vp, v+1, static_cast<int32_t>(TR::getMaxSigned<TR::Int32>())));
    }
 
 TR::VPShortConstraint * TR::VPShortRange::create(OMR::ValuePropagation * vp, int16_t low, int16_t high, TR_YesNoMaybe canOverflow)
@@ -973,7 +973,7 @@ TR::VPShortConstraint *TR::VPShortRange::createWithPrecision(OMR::ValuePropagati
    {
    int64_t lo, hi;
    constrainRangeByPrecision(TR::getMinSigned<TR::Int16>(), TR::getMaxSigned<TR::Int16>(), precision, lo, hi, isNonNegative);
-   return TR::VPShortRange::create(vp, lo, hi);
+   return TR::VPShortRange::create(vp, static_cast<int16_t>(lo), static_cast<int16_t>(hi));
    }
 
 TR::VPIntConstraint *TR::VPIntRange::create(OMR::ValuePropagation *vp, int32_t low, int32_t high, TR_YesNoMaybe canOverflow)
@@ -1046,7 +1046,7 @@ TR::VPIntConstraint *TR::VPIntRange::createWithPrecision(OMR::ValuePropagation *
       else if (dt == TR::Int16)
          constrainRangeByPrecision(TR::getMinSigned<TR::Int16>(), TR::getMaxUnsigned<TR::Int16>(), precision, lo, hi, isNonNegative);
       }
-   return TR::VPIntRange::create(vp, lo, hi);
+   return TR::VPIntRange::create(vp, static_cast<int32_t>(lo), static_cast<int32_t>(hi));
    }
 
 TR::VPLongConst *TR::VPLongConst::create(OMR::ValuePropagation *vp, int64_t v)
@@ -1490,7 +1490,7 @@ TR::VPArrayInfo *TR::VPArrayInfo::create(OMR::ValuePropagation *vp, char *sig)
    else
       stride = TR::Symbol::convertTypeToSize(d);
 
-   return TR::VPArrayInfo::create(vp, 0, TR::getMaxSigned<TR::Int32>() / stride, stride);
+   return TR::VPArrayInfo::create(vp, 0, static_cast<int32_t>(TR::getMaxSigned<TR::Int32>()) / stride, stride);
    }
 
 TR::VPMergedConstraints *TR::VPMergedConstraints::create(OMR::ValuePropagation *vp, TR::VPConstraint *first, TR::VPConstraint *second)
@@ -4648,8 +4648,8 @@ TR::VPConstraint *TR::VPShortConstraint::getRange(int16_t low, int16_t high, boo
          return NULL;
 
       //disjoint merged constraint
-      TR::VPConstraint* range1 = TR::VPShortRange::create(vp, TR::getMinSigned<TR::Int16>(), high, TR_yes);
-      TR::VPConstraint* range2 = TR::VPShortRange::create(vp, low, TR::getMaxSigned<TR::Int16>(), TR_yes);
+      TR::VPConstraint* range1 = TR::VPShortRange::create(vp, static_cast<int16_t>(TR::getMinSigned<TR::Int16>()), static_cast<int16_t>(high), TR_yes);
+      TR::VPConstraint* range2 = TR::VPShortRange::create(vp, static_cast<int16_t>(low), static_cast<int16_t>(TR::getMaxSigned<TR::Int16>()), TR_yes);
       return TR::VPMergedConstraints::create(vp, range1, range2);
       }
 
@@ -4686,8 +4686,8 @@ TR::VPConstraint *TR::VPIntConstraint::getRange(int32_t low, int32_t high, bool 
          return NULL;
 
       //disjoint merged constraint
-      TR::VPConstraint* range1 = TR::VPIntRange::create(vp, TR::getMinSigned<TR::Int32>(), high, TR_yes);
-      TR::VPConstraint* range2 = TR::VPIntRange::create(vp, low, TR::getMaxSigned<TR::Int32>(), TR_yes);
+      TR::VPConstraint* range1 = TR::VPIntRange::create(vp, static_cast<int32_t>(TR::getMinSigned<TR::Int32>()), high, TR_yes);
+      TR::VPConstraint* range2 = TR::VPIntRange::create(vp, low, static_cast<int32_t>(TR::getMaxSigned<TR::Int32>()), TR_yes);
       return TR::VPMergedConstraints::create(vp, range1, range2);
       }
 
@@ -5253,7 +5253,7 @@ TR::VPConstraint *TR::VPLessThanOrEqual::propagateAbsoluteConstraint(TR::VPConst
       if (newBound > oldBound)
          return NULL;
 
-      constraint = TR::VPIntRange::create(vp, newBound, TR::getMaxSigned<TR::Int32>()-increment());
+      constraint = TR::VPIntRange::create(vp, newBound, static_cast<int32_t>(TR::getMaxSigned<TR::Int32>())-increment());
       }
    if (vp->trace())
       {
@@ -5301,7 +5301,7 @@ TR::VPConstraint *TR::VPGreaterThanOrEqual::propagateAbsoluteConstraint(TR::VPCo
       if (newBound < oldBound)
          return NULL;
 
-      constraint = TR::VPIntRange::create(vp, TR::getMinSigned<TR::Int32>() - increment(), newBound);
+      constraint = TR::VPIntRange::create(vp, static_cast<int32_t>(TR::getMinSigned<TR::Int32>()) - increment(), newBound);
       }
    if (vp->trace())
       {
@@ -5401,13 +5401,13 @@ TR::VPConstraint *TR::VPNotEqual::propagateAbsoluteConstraint(TR::VPConstraint *
 //       else
 //         {
          if (excludedValue != TR::getMinSigned<TR::Int32>())
-            newConstraint = TR::VPIntRange::create(vp, TR::getMinSigned<TR::Int32>(), excludedValue-1);
+            newConstraint = TR::VPIntRange::create(vp, static_cast<int32_t>(TR::getMinSigned<TR::Int32>()), excludedValue-1);
          if (excludedValue != TR::getMaxSigned<TR::Int32>())
             {
             if (newConstraint)
-               newConstraint = newConstraint->merge(TR::VPIntRange::create(vp, excludedValue+1, TR::getMaxSigned<TR::Int32>()), vp);
+               newConstraint = newConstraint->merge(TR::VPIntRange::create(vp, excludedValue+1, static_cast<int32_t>(TR::getMaxSigned<TR::Int32>())), vp);
             else
-               newConstraint = TR::VPIntRange::create(vp, excludedValue+1, TR::getMaxSigned<TR::Int32>());
+               newConstraint = TR::VPIntRange::create(vp, excludedValue+1, static_cast<int32_t>(TR::getMaxSigned<TR::Int32>()));
             }
 //         }
       }

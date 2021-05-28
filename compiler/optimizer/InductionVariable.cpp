@@ -1794,7 +1794,7 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
                }
             else
                {
-               differenceInAdditiveConstantsNode = TR::Node::create(node, TR::iconst, 0, differenceInAdditiveConstants);
+               differenceInAdditiveConstantsNode = TR::Node::create(node, TR::iconst, 0, static_cast<int32_t>(differenceInAdditiveConstants));
                op = replacingNode->getOpCode().isAdd() ? TR::iadd : TR::isub;
                }
             adjustmentNode = TR::Node::create(op, 2, adjustmentNode, differenceInAdditiveConstantsNode);
@@ -1808,7 +1808,7 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
                }
             else
                adjustmentNode = TR::Node::create(node, TR::iconst, 0,
-                  differenceInAdditiveConstants);
+                  static_cast<int32_t>(differenceInAdditiveConstants));
             }
          }
 

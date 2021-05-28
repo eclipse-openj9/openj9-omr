@@ -240,7 +240,7 @@ TR_TranslateTable::TR_TranslateTableData* TR_TranslateTable::createTable(uint32_
          {
          for (i=endA; i<totalSize; ++i)
             {
-            bTable[i] = defaultValue;
+            bTable[i] = static_cast<uint8_t>(defaultValue);
             }
          }
       }

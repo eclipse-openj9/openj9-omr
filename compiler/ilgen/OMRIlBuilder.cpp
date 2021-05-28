@@ -1352,7 +1352,7 @@ OMR::IlBuilder::setHandlerInfo(uint32_t catchType)
    {
    TR::Block *catchBlock = getEntry();
    catchBlock->setIsCold();
-   catchBlock->setHandlerInfoWithOutBCInfo(catchType, comp()->getInlineDepth(), -1, _methodSymbol->getResolvedMethod(), comp());
+   catchBlock->setHandlerInfoWithOutBCInfo(catchType, static_cast<uint8_t>(comp()->getInlineDepth()), -1, _methodSymbol->getResolvedMethod(), comp());
    }
 
 TR::Node*

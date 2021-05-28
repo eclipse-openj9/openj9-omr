@@ -961,17 +961,17 @@ void TR::LocalDeadStoreElimination::eliminateDeadObjectInitializations()
                       if (storeNode->getFirstChild()->getSecondChild()->getLongInt() > INT_MAX)
                          removableZeroStore = false;
                       else
-                         offset = storeNode->getSymbolReference()->getOffset() +
-                                  (int32_t)storeNode->getFirstChild()->getSecondChild()->getLongInt() -
-                                  TR::Compiler->om.contiguousArrayHeaderSizeInBytes();
+                         offset = static_cast<int32_t>(storeNode->getSymbolReference()->getOffset()) +
+                                  static_cast<int32_t>(storeNode->getFirstChild()->getSecondChild()->getLongInt()) -
+                                  static_cast<int32_t>(TR::Compiler->om.contiguousArrayHeaderSizeInBytes());
                       }
                    else
-                      offset = storeNode->getSymbolReference()->getOffset() +
-                               storeNode->getFirstChild()->getSecondChild()->getInt() -
-                               TR::Compiler->om.contiguousArrayHeaderSizeInBytes();
+                      offset = static_cast<int32_t>(storeNode->getSymbolReference()->getOffset()) +
+                               static_cast<int32_t>(storeNode->getFirstChild()->getSecondChild()->getInt()) -
+                               static_cast<int32_t>(TR::Compiler->om.contiguousArrayHeaderSizeInBytes());
                    }
                 else
-                   offset = storeNode->getSymbolReference()->getOffset() - fe()->getObjectHeaderSizeInBytes();
+                   offset = storeNode->getSymbolReference()->getOffset() - static_cast<int32_t>(fe()->getObjectHeaderSizeInBytes());
 
                 if (removableZeroStore)
                    {

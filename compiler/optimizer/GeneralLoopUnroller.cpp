@@ -102,13 +102,6 @@ static TR::ILOpCodes getConstOpCode(TR::DataType type)
    return TR::iconst;
    }
 
-static inline int32_t ceiling(int64_t numer, int64_t denom)
-   {
-   return (numer % denom == 0) ?
-      numer / denom :
-      numer / denom + 1;
-   }
-
 static TR_ScratchList<TR::CFGEdge> *join(TR_ScratchList<TR::CFGEdge> *to, TR_ScratchList<TR::CFGEdge> *from)
    {
    if (from == NULL)
@@ -1571,7 +1564,7 @@ void TR_LoopUnroller::examineNode(TR::Node *node, intptr_t visitCount)
    if (node->getVisitCount() == visitCount)
       return;
 
-   node->setVisitCount(visitCount);
+   node->setVisitCount(static_cast<vcount_t>(visitCount));
 
    TR::Symbol *symbol = NULL;
    if (node->getOpCode().hasSymbolReference())
@@ -1615,7 +1608,7 @@ void TR_LoopUnroller::examineNode(TR::Node *node, intptr_t visitCount)
       }
 
    /* Walk its children */
-   for (intptr_t i = 0; i < node->getNumChildren(); i++)
+   for (auto i = 0; i < node->getNumChildren(); i++)
       {
       examineNode(node->getChild(i), visitCount);
       }
@@ -3850,7 +3843,7 @@ TR_GeneralLoopUnroller::weighNaturalLoop(TR_RegionStructure *loop,
 
          dumpOptDetails(comp(),"\t outerLoop number = %d outerLoop->getEntryBlock->GetNumber = %d\n",outerLoop->getNumber(),outerLoop->getEntryBlock()->getNumber());
          float outerLoopRelativeFrequency = outerLoopFrequency == 6 ?
-            1.3 + (10*entryBlockFrequency / (float)maxCount) :
+            1.3f + (10.0f*entryBlockFrequency / (float)maxCount) :
             entryBlockFrequency / (float)outerLoopFrequency;
 
          dumpOptDetails(comp(), "\touterloop relative frequency = %.2g\n", outerLoopRelativeFrequency);

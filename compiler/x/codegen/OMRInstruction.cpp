@@ -228,9 +228,9 @@ void OMR::X86::Instruction::adjustVFPState(TR_VFPState *state, TR::CodeGenerator
    if (state->_register == TR::RealRegister::esp)
       {
       if (self()->getOpCode().isPushOp())
-         state->_displacement += TR::Compiler->om.sizeofReferenceAddress();
+         state->_displacement += static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
       else if (self()->getOpCode().isPopOp())
-         state->_displacement -= TR::Compiler->om.sizeofReferenceAddress();
+         state->_displacement -= static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
       else if (self()->getOpCodeValue() == RET || self()->getOpCodeValue() == RETImm2 || self()->getOpCodeValue() == ReturnMarker)
          *state = cg->vfpResetInstruction()->getSavedState();
       }

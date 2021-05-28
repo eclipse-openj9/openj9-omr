@@ -273,7 +273,7 @@ static int32_t arrayElementSize(const char *signature, int32_t len, TR::Node *no
          case 'F': return 4;
          case 'D':
          case 'J': return 8;
-         case 'Z': return TR::Compiler->om.elementSizeOfBooleanArray();
+         case 'Z': return static_cast<int32_t>(TR::Compiler->om.elementSizeOfBooleanArray());
          case 'L':
          default :
                    return TR::Compiler->om.sizeofReferenceField();
@@ -1171,7 +1171,7 @@ TR::Node *constrainAnyIntLoad(OMR::ValuePropagation *vp, TR::Node *node)
 
                uintptr_t offset = vp->comp()->target().is64Bit() ? (uintptr_t)index->getUnsignedLongInt() : (uintptr_t)index->getUnsignedInt();
                uintptr_t chIdx = (offset - (uintptr_t)TR::Compiler->om.contiguousArrayHeaderSizeInBytes()) / 2;
-               uint16_t ch = constString->charAt(chIdx, vp->comp());
+               uint16_t ch = constString->charAt(static_cast<int32_t>(chIdx), vp->comp());
                if (ch != 0)
                   {
                   vp->replaceByConstant(node, TR::VPShortConst::create(vp, ch), isGlobal);
@@ -1261,7 +1261,7 @@ TR::Node *constrainAnyIntLoad(OMR::ValuePropagation *vp, TR::Node *node)
       }
 
    if (node->isNonNegative())
-      vp->addBlockConstraint(node, TR::VPIntRange::create(vp, 0, TR::getMaxSigned<TR::Int32>()));
+      vp->addBlockConstraint(node, TR::VPIntRange::create(vp, 0, static_cast<int32_t>(TR::getMaxSigned<TR::Int32>())));
 
    checkForNonNegativeAndOverflowProperties(vp, node);
 
@@ -1280,7 +1280,7 @@ TR::Node *constrainShortLoad(OMR::ValuePropagation * vp, TR::Node * node)
       vp->addGlobalConstraint(node, constraint);
 
    if (node->isNonNegative())
-      vp->addBlockConstraint(node, TR::VPShortRange::create(vp, 0, TR::getMaxSigned<TR::Int16>()));
+      vp->addBlockConstraint(node, TR::VPShortRange::create(vp, 0, static_cast<int32_t>(TR::getMaxSigned<TR::Int16>())));
 
    checkForNonNegativeAndOverflowProperties(vp, node);
 
@@ -4276,7 +4276,7 @@ TR::Node *constrainNewArray(OMR::ValuePropagation *vp, TR::Node *node)
    // TODO - should be sizeConstraint = vp->addBlockConstraint(sizeNode, TR::VPIntRange::create(vp, 0, maxSize));
    if (maxSize < TR::getMaxSigned<TR::Int32>())
       {
-      vp->addBlockConstraint(sizeNode, TR::VPIntRange::create(vp, 0, maxSize));
+      vp->addBlockConstraint(sizeNode, TR::VPIntRange::create(vp, 0, static_cast<int32_t>(maxSize)));
       sizeConstraint = vp->getConstraint(sizeNode, isGlobal);
       }
 
@@ -4290,7 +4290,7 @@ TR::Node *constrainNewArray(OMR::ValuePropagation *vp, TR::Node *node)
    if (sizeConstraint)
       vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, sizeConstraint->getLowInt(), sizeConstraint->getHighInt(), elementSize));
    else
-      vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, 0, TR::getMaxSigned<TR::Int32>(), elementSize));
+      vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, 0, static_cast<int32_t>(TR::getMaxSigned<TR::Int32>()), elementSize));
 
    node->setIsNonNull(true);
    return node;
@@ -4397,7 +4397,7 @@ TR::Node *constrainANewArray(OMR::ValuePropagation *vp, TR::Node *node)
    // TODO - should be sizeConstraint = vp->addBlockConstraint(sizeNode, TR::VPIntRange::create(vp, 0, maxSize));
    if (maxSize < TR::getMaxSigned<TR::Int32>())
       {
-      vp->addBlockConstraint(sizeNode, TR::VPIntRange::create(vp, 0, maxSize));
+      vp->addBlockConstraint(sizeNode, TR::VPIntRange::create(vp, 0, static_cast<int32_t>(maxSize)));
       sizeConstraint = vp->getConstraint(sizeNode, isGlobal);
       }
 
@@ -4426,7 +4426,7 @@ TR::Node *constrainANewArray(OMR::ValuePropagation *vp, TR::Node *node)
       vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, sizeConstraint->getLowInt(), sizeConstraint->getHighInt(), elementSize));
       }
    else
-      vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, 0, TR::getMaxSigned<TR::Int32>(), elementSize));
+      vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, 0, static_cast<int32_t>(TR::getMaxSigned<TR::Int32>()), elementSize));
 
    node->setIsNonNull(true);
    return node;
@@ -4469,7 +4469,7 @@ TR::Node *constrainMultiANewArray(OMR::ValuePropagation *vp, TR::Node *node)
       maxHeapSize = TR::Compiler->vm.maxHeapSizeInBytes();
       }
 
-   int32_t maxDimSize = TR::getMaxSigned<TR::Int32>();
+   int32_t maxDimSize = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
    if (maxHeapSize > 0)
       {
       int64_t maxHeapSizeInPointers = maxHeapSize / TR::Compiler->om.sizeofReferenceField();
@@ -4758,7 +4758,7 @@ TR::Node * constrainLongNumberOfLeadingZeros(OMR::ValuePropagation *vp, TR::Node
    return constrainHighestOneBitAndLeadingZerosHelper (vp, node, getLongConst,
                                                        getLongRange, getLong, getLowHighLongs,
                                                        createIntConstConstraint,
-                                                       createIntRangeConstraint, longNumberOfLeadingZeros, (int64_t) 0, (int64_t) -1);
+                                                       createLongRangeConstraint, longNumberOfLeadingZeros, (int64_t) 0, (int64_t) -1);
    }
 
 TR::Node * constrainIntegerLowestOneBit(OMR::ValuePropagation *vp, TR::Node *node)
@@ -4827,7 +4827,7 @@ TR::Node *constrainArraylength(OMR::ValuePropagation *vp, TR::Node *node)
    constrainChildren(vp, node);
 
    int32_t lowerBoundLimit = 0;
-   int32_t upperBoundLimit = TR::getMaxSigned<TR::Int32>();
+   int32_t upperBoundLimit = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
    int32_t elementSize     = 0;
 
    // See if the underlying array has bound limits
@@ -5233,7 +5233,7 @@ static void devirtualizeCall(OMR::ValuePropagation *vp, TR::Node *node)
             }
          }
 
-      offset = symRef->getOffset();
+      offset = static_cast<int32_t>(symRef->getOffset());
       resolvedMethod = owningMethod->getResolvedVirtualMethod(vp->comp(), thisType, offset);
       if (!resolvedMethod)
          return;
@@ -6366,7 +6366,7 @@ TR::Node *constrainIdiv(OMR::ValuePropagation *vp, TR::Node *node)
          int32_t lhsConst = lhs->asIntConst()->getInt();
          int32_t rhsConst = rhs->asIntConst()->getInt();
          if (lhsConst == TR::getMinSigned<TR::Int32>() && rhsConst == -1 && !isUnsigned)
-            constraint = TR::VPIntConst::create(vp, TR::getMinSigned<TR::Int32>());
+            constraint = TR::VPIntConst::create(vp, static_cast<int32_t>(TR::getMinSigned<TR::Int32>()));
          else if (rhsConst != 0)
             {
             if (isUnsigned)
@@ -6807,13 +6807,13 @@ TR::Node *constrainIneg(OMR::ValuePropagation *vp, TR::Node *node)
          TR::VPConstraint *constraint = NULL;
          if (low == TR::getMinSigned<TR::Int32>())
             {
-            lowConstraint = TR::VPIntRange::create(vp, TR::getMinSigned<TR::Int32>(), TR::getMinSigned<TR::Int32>(), TR_yes);
+            lowConstraint = TR::VPIntRange::create(vp, static_cast<int32_t>(TR::getMinSigned<TR::Int32>()), static_cast<int32_t>(TR::getMinSigned<TR::Int32>()), TR_yes);
             low++;
             }
 
          if (high == TR::getMinSigned<TR::Int32>())
             {
-            highConstraint = TR::VPIntRange::create(vp, TR::getMinSigned<TR::Int32>(), TR::getMinSigned<TR::Int32>(), TR_yes);
+            highConstraint = TR::VPIntRange::create(vp, static_cast<int32_t>(TR::getMinSigned<TR::Int32>()), static_cast<int32_t>(TR::getMinSigned<TR::Int32>()), TR_yes);
             high++;
             }
 
@@ -6920,8 +6920,8 @@ TR::Node *constrainIabs(OMR::ValuePropagation *vp, TR::Node *node)
          node,
          TR::VPMergedConstraints::create(
             vp,
-            TR::VPIntConst::create(vp, TR::getMinSigned<TR::Int32>()),
-            TR::VPIntRange::create(vp, 0, TR::getMaxSigned<TR::Int32>())));
+            TR::VPIntConst::create(vp, static_cast<int32_t>(TR::getMinSigned<TR::Int32>())),
+            TR::VPIntRange::create(vp, 0, static_cast<int32_t>(TR::getMaxSigned<TR::Int32>()))));
       }
    else
       {
@@ -7235,7 +7235,7 @@ static TR::Node *distributeShift(OMR::ValuePropagation *vp, TR::Node *node, int3
                   if (shiftAmount > 0)
                      constraint = TR::VPIntRange::create(vp, 0, (uint32_t)0xffffffff >> shiftAmount);
                   else
-                     constraint = TR::VPIntRange::create(vp, 0, TR::getMaxSigned<TR::Int32>());
+                     constraint = TR::VPIntRange::create(vp, 0, static_cast<int32_t>(TR::getMaxSigned<TR::Int32>()));
                   }
                }
             else
@@ -7271,8 +7271,8 @@ TR::Node *constrainIshr(OMR::ValuePropagation *vp, TR::Node *node)
          }
       else
          {
-         low = TR::getMinSigned<TR::Int32>();
-         high = TR::getMaxSigned<TR::Int32>();
+         low = static_cast<int32_t>(TR::getMinSigned<TR::Int32>());
+         high = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
          }
 
       TR::VPConstraint *constraint = TR::VPIntRange::create(vp, low >> shiftAmount, high >> shiftAmount);
@@ -7431,8 +7431,8 @@ TR::Node *constrainIushr(OMR::ValuePropagation *vp, TR::Node *node)
          //   }
          //else
          //   {
-            low = TR::getMinSigned<TR::Int32>();
-            high = TR::getMaxSigned<TR::Int32>();
+            low = static_cast<int32_t>(TR::getMinSigned<TR::Int32>());
+            high = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
          //   }
          }
 
@@ -7717,7 +7717,7 @@ TR::Node *constrainIand(OMR::ValuePropagation *vp, TR::Node *node)
                //if (isUnsigned)
                //   constraint = TR::VPIntRange::create(vp, TR::getMinUnsigned<TR::Int32>(), mask, isUnsigned);
                //else
-                  constraint = TR::VPIntRange::create(vp, TR::getMinSigned<TR::Int32>(), mask & TR::getMaxSigned<TR::Int32>());
+                  constraint = TR::VPIntRange::create(vp, static_cast<int32_t>(TR::getMinSigned<TR::Int32>()), mask & static_cast<int32_t>(TR::getMaxSigned<TR::Int32>()));
                }
             }
          }
@@ -7802,8 +7802,8 @@ TR::Node *constrainIand(OMR::ValuePropagation *vp, TR::Node *node)
    // FIXME: disabled for unsigned
    if(!constraint && (lhs || rhs)/* && !isUnsigned*/)
       {
-      int32_t lhsHigh=TR::getMaxSigned<TR::Int32>(),rhsHigh=TR::getMaxSigned<TR::Int32>();
-      int32_t lhsLow=TR::getMinSigned<TR::Int32>(),rhsLow=TR::getMinSigned<TR::Int32>();
+      int32_t lhsHigh=static_cast<int32_t>(TR::getMaxSigned<TR::Int32>()),rhsHigh=static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
+      int32_t lhsLow=static_cast<int32_t>(TR::getMinSigned<TR::Int32>()),rhsLow=static_cast<int32_t>(TR::getMinSigned<TR::Int32>());
       int32_t high,low;
 
       if(lhs && lhs->asIntRange())
@@ -8327,19 +8327,19 @@ static TR::Node *constrainNarrowIntValue(OMR::ValuePropagation *vp, TR::Node *no
 
 TR::Node *constrainNarrowToByte(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   return constrainNarrowIntValue(vp, node, TR::getMinSigned<TR::Int8>(), TR::getMaxSigned<TR::Int8>());
+   return constrainNarrowIntValue(vp, node, static_cast<int32_t>(TR::getMinSigned<TR::Int8>()), static_cast<int32_t>(TR::getMaxSigned<TR::Int8>()));
    }
 
 TR::Node *constrainNarrowToShort(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   return constrainNarrowIntValue(vp, node, TR::getMinSigned<TR::Int16>(), TR::getMaxSigned<TR::Int16>());
+   return constrainNarrowIntValue(vp, node, static_cast<int32_t>(TR::getMinSigned<TR::Int16>()), static_cast<int32_t>(TR::getMaxSigned<TR::Int16>()));
    }
 
 TR::Node *constrainNarrowToChar(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   int32_t low = TR::getMinUnsigned<TR::Int16>();
-   int32_t high = TR::getMaxUnsigned<TR::Int16>();
-   int32_t max = TR::getMaxUnsigned<TR::Int16>() + 1;
+   int32_t low = static_cast<int32_t>(TR::getMinUnsigned<TR::Int16>());
+   int32_t high = static_cast<int32_t>(TR::getMaxUnsigned<TR::Int16>());
+   int32_t max = static_cast<int32_t>(TR::getMaxUnsigned<TR::Int16>() + 1);
 
    if (findConstant(vp, node))
       return node;
@@ -8354,8 +8354,8 @@ TR::Node *constrainNarrowToChar(OMR::ValuePropagation *vp, TR::Node *node)
        || node->getFirstChild()->getOpCodeValue() == TR::b2l
        || node->getFirstChild()->getOpCodeValue() == TR::bu2l)
       {
-      max = TR::getMaxUnsigned<TR::Int8>() + 1;
-      high = TR::getMaxUnsigned<TR::Int8>();
+      max = static_cast<int32_t>(TR::getMaxUnsigned<TR::Int8>() + 1);
+      high = static_cast<int32_t>(TR::getMaxUnsigned<TR::Int8>());
       }
 
    if (constraint)
@@ -8417,7 +8417,7 @@ TR::Node *constrainNarrowToChar(OMR::ValuePropagation *vp, TR::Node *node)
 
 TR::Node *constrainNarrowToInt(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   return constrainNarrowIntValue(vp, node, TR::getMinSigned<TR::Int32>(), TR::getMaxSigned<TR::Int32>());
+   return constrainNarrowIntValue(vp, node, static_cast<int32_t>(TR::getMinSigned<TR::Int32>()), static_cast<int32_t>(TR::getMaxSigned<TR::Int32>()));
    }
 
 /*
@@ -8656,25 +8656,25 @@ static bool constrainWidenToInt(OMR::ValuePropagation *vp, TR::Node*& node, int3
 
 TR::Node *constrainB2i(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   constrainWidenToInt(vp, node, TR::getMinSigned<TR::Int8>(), TR::getMaxSigned<TR::Int8>(), false, TR::i2b);
+   constrainWidenToInt(vp, node, static_cast<int32_t>(TR::getMinSigned<TR::Int8>()), static_cast<int32_t>(TR::getMaxSigned<TR::Int8>()), false, TR::i2b);
    return node;
    }
 
 TR::Node *constrainB2s(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   constrainWidenToInt(vp, node, TR::getMinSigned<TR::Int8>(), TR::getMaxSigned<TR::Int8>(), false, TR::s2b);
+   constrainWidenToInt(vp, node, static_cast<int32_t>(TR::getMinSigned<TR::Int8>()), static_cast<int32_t>(TR::getMaxSigned<TR::Int8>()), false, TR::s2b);
    return node;
    }
 
 TR::Node *constrainBu2i(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   constrainWidenToInt(vp, node, TR::getMinUnsigned<TR::Int8>(), TR::getMaxUnsigned<TR::Int8>(), true, TR::i2b);
+   constrainWidenToInt(vp, node, static_cast<int32_t>(TR::getMinUnsigned<TR::Int8>()), static_cast<int32_t>(TR::getMaxUnsigned<TR::Int8>()), true, TR::i2b);
    return node;
    }
 
 TR::Node *constrainBu2s(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   constrainWidenToInt(vp, node, TR::getMinUnsigned<TR::Int8>(), TR::getMaxUnsigned<TR::Int8>(), true, TR::s2b);
+   constrainWidenToInt(vp, node, static_cast<int32_t>(TR::getMinUnsigned<TR::Int8>()), static_cast<int32_t>(TR::getMaxUnsigned<TR::Int8>()), true, TR::s2b);
    return node;
    }
 
@@ -8692,13 +8692,13 @@ TR::Node *constrainBu2l(OMR::ValuePropagation *vp, TR::Node *node)
 
 TR::Node *constrainS2i(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   constrainWidenToInt(vp, node, TR::getMinSigned<TR::Int16>(), TR::getMaxSigned<TR::Int16>(), false, TR::i2s);
+   constrainWidenToInt(vp, node, static_cast<int32_t>(TR::getMinSigned<TR::Int16>()), static_cast<int32_t>(TR::getMaxSigned<TR::Int16>()), false, TR::i2s);
    return node;
    }
 
 TR::Node *constrainSu2i(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   constrainWidenToInt(vp, node, TR::getMinUnsigned<TR::Int16>(), TR::getMaxUnsigned<TR::Int16>(), true, TR::i2s);
+   constrainWidenToInt(vp, node, static_cast<int32_t>(TR::getMinUnsigned<TR::Int16>()), static_cast<int32_t>(TR::getMaxUnsigned<TR::Int16>()), true, TR::i2s);
    return node;
    }
 
@@ -9362,7 +9362,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                      if (ignoreVirtualGuard && classConstraint && classConstraint->isFixedClass())
                         {
                         TR_OpaqueClassBlock *clazz  = classConstraint->getClass();
-                        int32_t    vftOffset        = vtableEntryNode->getSymbolReference()->getOffset();
+                        int32_t    vftOffset        = static_cast<int32_t>(vtableEntryNode->getSymbolReference()->getOffset());
                         intptr_t  vftEntry         = TR::Compiler->cls.getVFTEntry(vp->comp(), clazz, vftOffset);
                         bool       childrenAreEqual = (vftEntry == methodPtrNode->getAddress());
                         bool       testForEquality  = (node->getOpCodeValue() == TR::ifacmpeq);
@@ -9877,8 +9877,8 @@ void getLimits(OMR::ValuePropagation *vp, int32_t *zLow, int32_t *zHigh, TR::Nod
    {
          TR::VPConstraint *zConstraint = vp->getConstraint(symNode, isGlobal);
 
-         *zLow = TR::getMinSigned<TR::Int32>();
-         *zHigh = TR::getMaxSigned<TR::Int32>();
+         *zLow = static_cast<int32_t>(TR::getMinSigned<TR::Int32>());
+         *zHigh = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
 
          if (zConstraint)
             {
@@ -9921,8 +9921,8 @@ void getConstValue(int64_t *cConst, TR::Node *constNode)
 
 void getExtremes(int32_t *lowEnd, int32_t *highEnd)
    {
-      *lowEnd = TR::getMinSigned<TR::Int32>();
-      *highEnd = TR::getMaxSigned<TR::Int32>();
+      *lowEnd = static_cast<int32_t>(TR::getMinSigned<TR::Int32>());
+      *highEnd = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
    }
 
 void getExtremes(int64_t *lowEnd, int64_t *highEnd)
@@ -10282,8 +10282,8 @@ static TR::Node *constrainIfcmplessthan(OMR::ValuePropagation *vp, TR::Node *nod
    int32_t intBoundary;
    int64_t longBoundary;
 
-   int32_t minIntValue = /*isUnsigned ? TR::getMinUnsigned<TR::Int32>() :*/ TR::getMinSigned<TR::Int32>();
-   int32_t maxIntValue = /*isUnsigned ? TR::getMaxUnsigned<TR::Int32>() :*/ TR::getMaxSigned<TR::Int32>();
+   int32_t minIntValue = /*isUnsigned ? TR::getMinUnsigned<TR::Int32>() :*/ static_cast<int32_t>(TR::getMinSigned<TR::Int32>());
+   int32_t maxIntValue = /*isUnsigned ? TR::getMaxUnsigned<TR::Int32>() :*/ static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
    int64_t minLongValue = isUnsigned ? TR::getMinUnsigned<TR::Int64>() : TR::getMinSigned<TR::Int64>();
 
    if (lhsChild->getOpCode().isLong())
@@ -11678,7 +11678,7 @@ TR::Node *constrainBndChk(OMR::ValuePropagation *vp, TR::Node *node)
       }
 
    int32_t minIndex = 0;
-   int32_t maxIndex = TR::Compiler->om.maxArraySizeInElements(elementSize, vp->comp()) - 1;
+   int32_t maxIndex = static_cast<int32_t>(TR::Compiler->om.maxArraySizeInElements(elementSize, vp->comp()) - 1);
 
    if (sizeBefore)
       maxIndex = std::min(maxIndex, sizeBefore->getHighInt() - 1);
@@ -11711,7 +11711,7 @@ TR::Node *constrainBndChk(OMR::ValuePropagation *vp, TR::Node *node)
    // large as the low end of the index range + 1.
    //
    int32_t minSize = indexConstraint->getLowInt()+1;
-   int32_t maxSize = TR::Compiler->om.maxArraySizeInElements(elementSize, vp->comp());
+   int32_t maxSize = static_cast<int32_t>(TR::Compiler->om.maxArraySizeInElements(elementSize, vp->comp()));
    TR::VPConstraint *sizeAfter =  TR::VPIntRange::create(vp, minSize, maxSize);
    if (sizeBefore)
      sizeAfter = sizeBefore->intersect(sizeAfter, vp);
@@ -11964,7 +11964,7 @@ TR::Node *constrainBndChkWithSpineChk(OMR::ValuePropagation *vp, TR::Node *node)
       }
 
    int32_t low = 0;
-   int32_t high = TR::getMaxSigned<TR::Int32>();
+   int32_t high = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
 
    if (sizeConstraint && !isSizeContigArrayLength)
       {
@@ -12044,7 +12044,7 @@ TR::Node *constrainBndChkWithSpineChk(OMR::ValuePropagation *vp, TR::Node *node)
       if (!isSizeContigArrayLength || (low > 0))
          low++;
 
-      high = TR::getMaxSigned<TR::Int32>();
+      high = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
       if (elementSize > 0)
          {
          high = high/elementSize;
@@ -12136,7 +12136,7 @@ TR::Node *constrainArrayCopyBndChk(OMR::ValuePropagation *vp, TR::Node *node)
       }
 
    int32_t low = 0;
-   int32_t high = TR::getMaxSigned<TR::Int32>();
+   int32_t high = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
    if (elementSize > 0)
       high = high/elementSize-1;
 

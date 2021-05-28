@@ -327,7 +327,7 @@ TR_InlinerBase::setInlineThresholds(TR::ResolvedMethodSymbol *callerSymbol)
 
    if (comp()->getNodeCount() > _nodeCountThreshold)
       {
-      _nodeCountThreshold = comp()->getNodeCount() * (1.05F);    // allow a little bit of inlining anyways to get smaller methods
+      _nodeCountThreshold = static_cast<int32_t>(comp()->getNodeCount() * (1.05F));    // allow a little bit of inlining anyways to get smaller methods
       }
 
    // Code That should go to its frontend
@@ -409,7 +409,7 @@ TR_InlinerBase::linkOSRCodeBlocks()
    {
    TR_OSRCompilationData* compData = comp()->getOSRCompilationData();
    const TR_Array<TR_OSRMethodData *>& methodDataArray = compData->getOSRMethodDataArray();
-   for (intptr_t i = 0; i < methodDataArray.size(); ++i)
+   for (auto i = 0; i < methodDataArray.size(); ++i)
       {
       TR_OSRMethodData *osrMethodData = methodDataArray[i];
       if (osrMethodData == NULL

@@ -282,7 +282,7 @@ OMR::CodeGenerator::initialize()
    for (i = 0 ; i < TR_NumLinkages; ++i)
       _linkages[i] = NULL;
 
-   _maxObjectSizeGuaranteedNotToOverflow = (maxSize > UINT_MAX) ? UINT_MAX : maxSize;
+   _maxObjectSizeGuaranteedNotToOverflow = static_cast<uint32_t>((maxSize > UINT_MAX) ? UINT_MAX : maxSize);
 
    if (comp->getDebug())
       {
@@ -2300,7 +2300,7 @@ OMR::CodeGenerator::alignBinaryBufferCursor()
 
       alignedBinaryBufferCursor -= offset;
       _binaryBufferCursor = alignedBinaryBufferCursor;
-      self()->setJitMethodEntryPaddingSize(_binaryBufferCursor - _binaryBufferStart);
+      self()->setJitMethodEntryPaddingSize(static_cast<uint32_t>(_binaryBufferCursor - _binaryBufferStart));
       memset(_binaryBufferStart, 0, self()->getJitMethodEntryPaddingSize());
       }
 
@@ -2349,10 +2349,10 @@ OMR::CodeGenerator::emitSnippets()
       codeOffset = (*iterator)->emitSnippet();
       if (codeOffset != NULL)
          {
-         TR_ASSERT((*iterator)->getLength(self()->getBinaryBufferCursor()-self()->getBinaryBufferStart()) + self()->getBinaryBufferCursor() >= codeOffset,
+         TR_ASSERT((*iterator)->getLength(static_cast<int32_t>(self()->getBinaryBufferCursor()-self()->getBinaryBufferStart())) + self()->getBinaryBufferCursor() >= codeOffset,
                  "%s length estimate must be conservatively large (snippet @ " POINTER_PRINTF_FORMAT ", estimate=%d, actual=%d)",
                  self()->getDebug()->getName(*iterator), *iterator,
-                 (*iterator)->getLength(self()->getBinaryBufferCursor()-self()->getBinaryBufferStart()),
+                 (*iterator)->getLength(static_cast<int32_t>(self()->getBinaryBufferCursor()-self()->getBinaryBufferStart())),
                  codeOffset - self()->getBinaryBufferCursor());
          self()->setBinaryBufferCursor(codeOffset);
          }
@@ -2731,7 +2731,7 @@ int32_t leadingZeroes (int64_t inputWord)
       testWord = inputWord & byteMask;
       if (testWord != 0)
          {
-         byteValue = testWord >> (56 - bitCount);
+         byteValue = static_cast<uint8_t>(testWord >> (56 - bitCount));
          return bitCount + CS2::BitManipulator::LeadingZeroes(byteValue);
          }
       byteMask >>= 8;

@@ -7994,7 +7994,7 @@ bool TR_LoopVersioner::depsForLoopEntryPrep(
       TR::Node *childInRequiredForm = NULL;
       TR::Node *indexNode = NULL;
 
-      int32_t headerSize = TR::Compiler->om.contiguousArrayHeaderSizeInBytes();
+      int32_t headerSize = static_cast<int32_t>(TR::Compiler->om.contiguousArrayHeaderSizeInBytes());
       static struct temps
          {
          TR::ILOpCodes addOp;

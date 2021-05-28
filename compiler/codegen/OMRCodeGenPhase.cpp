@@ -171,7 +171,7 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
    cg->trimCodeMemoryToActualSize();
    cg->registerAssumptions();
 
-   cg->syncCode(cg->getBinaryBufferStart(), cg->getBinaryBufferCursor() - cg->getBinaryBufferStart());
+   cg->syncCode(cg->getBinaryBufferStart(), static_cast<uint32_t>(cg->getBinaryBufferCursor() - cg->getBinaryBufferStart()));
 
    if (comp->getOption(TR_EnableOSR))
      {

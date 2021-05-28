@@ -321,7 +321,7 @@ void TR_StripMiner::collectLoops(TR_Structure *str)
       // Determine the loop strip length
       //
       if (comp()->generateArraylets())
-         li->_stripLen = comp()->fe()->getArrayletMask(li->_arrayDataSize) + 1;
+         li->_stripLen = comp()->fe()->getArrayletMask(static_cast<int32_t>(li->_arrayDataSize)) + 1;
 
       // Don't strip mine loops that need offsetLoop
       //
@@ -976,7 +976,7 @@ TR::Block *TR_StripMiner::createStartOffsetLoop(LoopInfo *li, TR::Block *outerHe
    //
    TR::Node *iNode = TR::Node::createLoad(newLtNode, li->_piv->getSymRef());
    TR::ILOpCodes iandOp = isInt32 ? TR::iand : TR::land;
-   TR::Node *stripLenNode = isInt32 ? TR::Node::iconst(newLtNode, li->_stripLen-1) :
+   TR::Node *stripLenNode = isInt32 ? TR::Node::iconst(newLtNode, static_cast<int32_t>(li->_stripLen-1)) :
                                      TR::Node::lconst(newLtNode, (int64_t)(li->_stripLen-1));
    TR::Node *iAndNode = TR::Node::create(iandOp, 2, iNode, stripLenNode);
 
@@ -1316,7 +1316,7 @@ TR::Block *TR_StripMiner::stripMineLoop(LoopInfo *li, TR::Block *outerHeader)
    ListIterator<TR::CFGEdge> eItExit(&loop->getExitEdges());
    TR::CFGEdge *exitEdge = NULL;
    TR::Block *dest = NULL;
-   intptr_t freq;
+   int32_t freq;
    for (block = bIt.getFirst(); block; block = bIt.getNext())
       {
       if ((block != lt) && (block->getNumber() < _nodesInCFG))
@@ -1388,7 +1388,7 @@ TR::Block *TR_StripMiner::stripMineLoop(LoopInfo *li, TR::Block *outerHeader)
 TR::Block *TR_StripMiner::createGotoBlock(TR::Block *source, TR::Block *dest)
    {
    TR::TreeTop *destEntry = dest->getEntry();
-   intptr_t freq = (source->getFrequency() < dest->getFrequency()) ?
+   int32_t freq = (source->getFrequency() < dest->getFrequency()) ?
                     source->getFrequency() : dest->getFrequency();
 
    TR::Block *gotoBlock = TR::Block::createEmptyBlock(destEntry->getNode(), comp(), freq, source);
@@ -1424,7 +1424,7 @@ void TR_StripMiner::redirect(TR::Block *source, TR::Block *oldDest, TR::Block *n
 
    if (branchNode->getOpCode().isSwitch())
       {
-      for (intptr_t i = branchNode->getCaseIndexUpperBound() - 1; i > 0; --i)
+      for (auto i = branchNode->getCaseIndexUpperBound() - 1; i > 0; --i)
          {
          if (branchNode->getChild(i)->getBranchDestination()->getNode()->getBlock() == oldDest)
             {
@@ -1438,7 +1438,7 @@ void TR_StripMiner::redirect(TR::Block *source, TR::Block *oldDest, TR::Block *n
       }
    else if(branchNode->getOpCode().isJumpWithMultipleTargets() && branchNode->getOpCode().hasBranchChildren())
       {
-      for (intptr_t i = 0 ; i< branchNode->getNumChildren() - 1; ++i)
+      for (auto i = 0 ; i< branchNode->getNumChildren() - 1; ++i)
          {
          if (branchNode->getChild(i)->getBranchDestination()->getNode()->getBlock() == oldDest)
             {
@@ -1513,7 +1513,7 @@ TR::Block *TR_StripMiner::createLoopTest(LoopInfo *li, TR_ClonedLoopType type)
    TR::SymbolReference *tempSymRef = comp()->getSymRefTab()->createTemporary(
                                        comp()->getMethodSymbol(), isInt32 ? TR::Int32 : TR::Int64);
    TR::Node *iNode = TR::Node::createLoad(phNode, li->_piv->getSymRef());
-   TR::Node *offsetNode = isInt32 ? TR::Node::iconst(clonedPhNode, offset) :
+   TR::Node *offsetNode = isInt32 ? TR::Node::iconst(clonedPhNode, static_cast<int32_t>(offset)) :
                                    TR::Node::lconst(clonedPhNode, (int64_t)offset);
    TR::ILOpCodes opCode = li->_increasing ? (isInt32 ? TR::iadd : TR::ladd) : (isInt32 ? TR::isub : TR::lsub);
    TR::Node *storeNode = TR::Node::createStore(tempSymRef,
@@ -1559,7 +1559,7 @@ void TR_StripMiner::examineLoop(LoopInfo *li, TR_ClonedLoopType type, bool check
 
    ListIterator<TR::Block> bIt(&blocksInLoop);
    TR::Block *block = NULL;
-   intptr_t visitCount = comp()->incVisitCount();
+   auto visitCount = comp()->incVisitCount();
    for (block = bIt.getFirst(); block; block = bIt.getNext())
       {
       if (checkClone)
@@ -1784,7 +1784,7 @@ void TR_StripMiner::examineNode(LoopInfo *li, TR::Node *parent, TR::Node *node,
       }
 
    /* Walk its children */
-   for (intptr_t i = 0; i < node->getNumChildren(); ++i)
+   for (auto i = 0; i < node->getNumChildren(); ++i)
       {
       /* This loop cannot be strip mined, return */
       if (comp()->generateArraylets() &&
@@ -1832,7 +1832,7 @@ void TR_StripMiner::replaceLoopPivs(LoopInfo *li, TR::ILOpCodes newOpCode, TR::N
    for (parent = it.getFirst(); parent != NULL; parent = it.getNext())
       {
       TR::Node *parentNode = parent->getParent();
-      intptr_t childNum = parent->getChildNumber();
+      auto childNum = parent->getChildNumber();
       ListIterator<TR_Pair<TR::Node, TR::Node> > lit(&loadMapper);
       TR_Pair<TR::Node, TR::Node> *loadPair = NULL;
       TR::Node *loadNode = NULL;
@@ -1846,7 +1846,7 @@ void TR_StripMiner::replaceLoopPivs(LoopInfo *li, TR::ILOpCodes newOpCode, TR::N
          {
          value = (parentNode->getSecondChild()->getType().isInt32())?
             parentNode->getSecondChild()->getInt(): parentNode->getSecondChild()->getLongInt();
-         if (value == comp()->fe()->getArraySpineShift(li->_arrayDataSize))
+         if (value == comp()->fe()->getArraySpineShift(static_cast<int32_t>(li->_arrayDataSize)))
             skipNode = true;
          }
       else if ( parentNode->getOpCode().isAnd() &&
@@ -1854,7 +1854,7 @@ void TR_StripMiner::replaceLoopPivs(LoopInfo *li, TR::ILOpCodes newOpCode, TR::N
          {
          value = (parentNode->getSecondChild()->getType().isInt32())?
             parentNode->getSecondChild()->getInt(): parentNode->getSecondChild()->getLongInt();
-         if (value == comp()->fe()->getArrayletMask(li->_arrayDataSize))
+         if (value == comp()->fe()->getArrayletMask(static_cast<int32_t>(li->_arrayDataSize)))
             skipNode = true;
 
          }
@@ -2057,7 +2057,7 @@ bool TR_StripMiner::checkIfIncrementalIncreasesOfPIV(LoopInfo *li)
                if (isInt32)
                   pivIncInStore = node->getFirstChild()->getSecondChild()->getInt();
                else
-                  pivIncInStore = node->getFirstChild()->getSecondChild()->getLongInt();
+                  pivIncInStore = static_cast<int32_t>(node->getFirstChild()->getSecondChild()->getLongInt());
 
                if (node->getFirstChild()->getOpCode().isSub())
                   pivIncInStore= -pivIncInStore;

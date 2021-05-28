@@ -62,7 +62,7 @@ OMR::CodeGenerator::createStackAtlas()
    //
    TR::Compilation *comp = self()->comp();
    TR::ResolvedMethodSymbol * methodSymbol = comp->getMethodSymbol();
-   intptr_t stackSlotSize = TR::Compiler->om.sizeofReferenceAddress();
+   int32_t stackSlotSize = static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
 
    int32_t slotIndex = 0;
    int32_t numberOfParmSlots = 0;
@@ -341,8 +341,8 @@ OMR::CodeGenerator::remapGCIndicesInInternalPtrFormat()
          localCursor->setGCMapIndex(index);
          int32_t roundedSize = (localCursor->getSize()+3)&(~3);
          if (roundedSize == 0)
-            roundedSize = TR::Compiler->om.sizeofReferenceAddress();
-         index += roundedSize / TR::Compiler->om.sizeofReferenceAddress();
+            roundedSize = static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
+         index += roundedSize / static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
 
          if (!localCursor->isInitializedReference())
             stackAtlas->setHasUninitializedPinningArrayPointer(true);
@@ -367,8 +367,8 @@ OMR::CodeGenerator::remapGCIndicesInInternalPtrFormat()
          localCursor->setGCMapIndex(index);
          int32_t roundedSize = (localCursor->getSize()+3)&(~3);
          if (roundedSize == 0)
-            roundedSize = TR::Compiler->om.sizeofReferenceAddress();
-         index += roundedSize / TR::Compiler->om.sizeofReferenceAddress();
+            roundedSize = static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
+         index += roundedSize / static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
 
          if (!internalPtrMap)
             {
@@ -459,7 +459,7 @@ TR_GCStackMap::addToAtlas(TR::Instruction * instruction, TR::CodeGenerator *code
    // Fill in the code range and add this map to the atlas.
    //
    uint8_t * codeStart = codeGen->getCodeStart();
-   setLowestCodeOffset(instruction->getBinaryEncoding() - codeStart);
+   setLowestCodeOffset(static_cast<uint32_t>(instruction->getBinaryEncoding() - codeStart));
    codeGen->getStackAtlas()->addStackMap(this);
    bool osrEnabled = codeGen->comp()->getOption(TR_EnableOSR);
    if (osrEnabled)
@@ -471,7 +471,7 @@ TR_GCStackMap::addToAtlas(uint8_t * callSiteAddress, TR::CodeGenerator *codeGen)
    {
    // Fill in the code range and add this map to the atlas.
    //
-   uint32_t callSiteOffset = callSiteAddress - codeGen->getCodeStart();
+   uint32_t callSiteOffset = static_cast<uint32_t>(callSiteAddress - codeGen->getCodeStart());
    setLowestCodeOffset(callSiteOffset - 1);
    codeGen->getStackAtlas()->addStackMap(this);
    bool osrEnabled = codeGen->comp()->getOption(TR_EnableOSR);

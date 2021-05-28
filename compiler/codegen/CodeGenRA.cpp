@@ -411,7 +411,7 @@ OMR::CodeGenerator::allocateInternalPointerSpill(TR::AutomaticSymbol *pinningArr
       TR::AutomaticSymbol *spillSymbol =
          TR::AutomaticSymbol::createInternalPointer(self()->trHeapMemory(),
                                                    TR::Address,
-                                                   TR::Compiler->om.sizeofReferenceAddress(),
+                                                   static_cast<uint32_t>(TR::Compiler->om.sizeofReferenceAddress()),
                                                    self()->fe());
       spillSymbol->setSpillTempAuto();
       spillSymbol->setPinningArrayPointer(pinningArrayPointer);

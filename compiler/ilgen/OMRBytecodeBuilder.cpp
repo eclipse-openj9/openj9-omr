@@ -193,7 +193,7 @@ OMR::BytecodeBuilder::setHandlerInfo(uint32_t catchType)
    {
    TR::Block *catchBlock = getEntry();
    catchBlock->setIsCold();
-   catchBlock->setHandlerInfo(catchType, comp()->getInlineDepth(), -1, _methodSymbol->getResolvedMethod(), comp());
+   catchBlock->setHandlerInfo(catchType, static_cast<uint8_t>(comp()->getInlineDepth()), -1, _methodSymbol->getResolvedMethod(), comp());
    }
 
 void

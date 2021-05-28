@@ -347,7 +347,7 @@ OMR::CodeCache::initialize(TR::CodeCacheManager *manager,
       // Grab the configuration details from the JIT platform code
       //
       // (_helperTop - segment->heapBase) is heapSize
-      config.mccCallbacks().codeCacheConfig((_helperTop - _segment->segmentBase()), &_tempTrampolinesMax);
+      config.mccCallbacks().codeCacheConfig(static_cast<int32_t>(_helperTop - _segment->segmentBase()), &_tempTrampolinesMax);
       }
 
    mcc_printf("mcc_initialize: trampoline base %p\n",  _trampolineBase);

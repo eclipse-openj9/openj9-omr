@@ -818,7 +818,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerAddEvaluator(TR::Node *node, TR::C
             if (computesCarry)
                {
                generateRegRegInstruction(MOVRegReg(nodeIs64Bit), node, targetRegister, tempReg, cg);
-               generateRegImmInstruction(AddRegImm4(nodeIs64Bit, isWithCarry), node, targetRegister, constValue, cg);
+               generateRegImmInstruction(AddRegImm4(nodeIs64Bit, isWithCarry), node, targetRegister, static_cast<int32_t>(constValue), cg);
                }
             else
                {
@@ -833,9 +833,9 @@ TR::Register *OMR::X86::TreeEvaluator::integerAddEvaluator(TR::Node *node, TR::C
                if (computesCarry)
                   {
                   if (isMemOp)
-                     instr = generateMemImmInstruction(AddMemImms(nodeIs64Bit, isWithCarry), node, tempMR, constValue, cg);
+                     instr = generateMemImmInstruction(AddMemImms(nodeIs64Bit, isWithCarry), node, tempMR, static_cast<int32_t>(constValue), cg);
                   else
-                     instr = generateRegImmInstruction(AddRegImms(nodeIs64Bit, isWithCarry), node, targetRegister, constValue, cg);
+                     instr = generateRegImmInstruction(AddRegImms(nodeIs64Bit, isWithCarry), node, targetRegister, static_cast<int32_t>(constValue), cg);
                   }
                else if (constValue == 1)
                   {
@@ -854,9 +854,9 @@ TR::Register *OMR::X86::TreeEvaluator::integerAddEvaluator(TR::Node *node, TR::C
                else
                   {
                   if (isMemOp)
-                     instr = generateMemImmInstruction(ADDMemImms(nodeIs64Bit), node, tempMR, constValue, cg);
+                     instr = generateMemImmInstruction(ADDMemImms(nodeIs64Bit), node, tempMR, static_cast<int32_t>(constValue), cg);
                   else
-                     instr = generateRegImmInstruction(ADDRegImms(nodeIs64Bit), node, targetRegister, constValue, cg);
+                     instr = generateRegImmInstruction(ADDRegImms(nodeIs64Bit), node, targetRegister, static_cast<int32_t>(constValue), cg);
                   }
                }
             else if ((constValue == 128) && !computesCarry)
@@ -876,9 +876,9 @@ TR::Register *OMR::X86::TreeEvaluator::integerAddEvaluator(TR::Node *node, TR::C
                TR::TreeEvaluator::genNullTestSequence(node, targetRegister, targetRegister, cg);
 
                if (isMemOp)
-                  instr = generateMemImmInstruction(AddMemImm4(nodeIs64Bit, isWithCarry), node, tempMR, constValue, cg);
+                  instr = generateMemImmInstruction(AddMemImm4(nodeIs64Bit, isWithCarry), node, tempMR, static_cast<int32_t>(constValue), cg);
                else
-                  instr = generateRegImmInstruction(AddRegImm4(nodeIs64Bit, isWithCarry), node, targetRegister, constValue, cg);
+                  instr = generateRegImmInstruction(AddRegImm4(nodeIs64Bit, isWithCarry), node, targetRegister, static_cast<int32_t>(constValue), cg);
                }
             if (debug("traceMemOp"))
                diagnostic("\n*** Node [" POINTER_PRINTF_FORMAT "] inc by const %d", node, constValue);
@@ -1307,9 +1307,9 @@ TR::Register *OMR::X86::TreeEvaluator::integerSubEvaluator(TR::Node *node, TR::C
             if (computesCarry)
                {
                if (isMemOp)
-                  instr = generateMemImmInstruction(SubMemImms(nodeIs64Bit, isWithBorrow), node, tempMR, constValue, cg);
+                  instr = generateMemImmInstruction(SubMemImms(nodeIs64Bit, isWithBorrow), node, tempMR, static_cast<int32_t>(constValue), cg);
                else
-                  instr = generateRegImmInstruction(SubRegImms(nodeIs64Bit, isWithBorrow), node, targetRegister, constValue, cg);
+                  instr = generateRegImmInstruction(SubRegImms(nodeIs64Bit, isWithBorrow), node, targetRegister, static_cast<int32_t>(constValue), cg);
                }
             else if (constValue == 1)
                {
@@ -1328,9 +1328,9 @@ TR::Register *OMR::X86::TreeEvaluator::integerSubEvaluator(TR::Node *node, TR::C
             else
                {
                if (isMemOp)
-                  instr = generateMemImmInstruction(SUBMemImms(nodeIs64Bit), node, tempMR, constValue, cg);
+                  instr = generateMemImmInstruction(SUBMemImms(nodeIs64Bit), node, tempMR, static_cast<int32_t>(constValue), cg);
                else
-                  instr = generateRegImmInstruction(SUBRegImms(nodeIs64Bit), node, targetRegister, constValue, cg);
+                  instr = generateRegImmInstruction(SUBRegImms(nodeIs64Bit), node, targetRegister, static_cast<int32_t>(constValue), cg);
                }
             }
          else if ((constValue == 128) && !computesCarry)
@@ -1343,9 +1343,9 @@ TR::Register *OMR::X86::TreeEvaluator::integerSubEvaluator(TR::Node *node, TR::C
          else
             {
             if (isMemOp)
-               instr = generateMemImmInstruction(SubMemImm4(nodeIs64Bit, isWithBorrow), node, tempMR, constValue, cg);
+               instr = generateMemImmInstruction(SubMemImm4(nodeIs64Bit, isWithBorrow), node, tempMR, static_cast<int32_t>(constValue), cg);
             else
-               instr = generateRegImmInstruction(SubRegImm4(nodeIs64Bit, isWithBorrow), node, targetRegister, constValue, cg);
+               instr = generateRegImmInstruction(SubRegImm4(nodeIs64Bit, isWithBorrow), node, targetRegister, static_cast<int32_t>(constValue), cg);
             }
 
          if (debug("traceMemOp"))
@@ -1792,7 +1792,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerMulEvaluator(TR::Node *node, TR::C
                   opCode = IMulRegRegImm4(node->getSize());
                   }
                targetRegister = cg->allocateRegister();
-               generateRegRegImmInstruction(opCode, node, targetRegister, cg->evaluate(firstChild), value, cg);
+               generateRegRegImmInstruction(opCode, node, targetRegister, cg->evaluate(firstChild), static_cast<int32_t>(value), cg);
                }
             else
                {
@@ -1808,7 +1808,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerMulEvaluator(TR::Node *node, TR::C
                      }
                   TR::MemoryReference *tempMR = generateX86MemoryReference(firstChild, cg);
                   targetRegister = cg->allocateRegister();
-                  generateRegMemImmInstruction(opCode, node, targetRegister, tempMR, value, cg);
+                  generateRegMemImmInstruction(opCode, node, targetRegister, tempMR, static_cast<int32_t>(value), cg);
                   tempMR->decNodeReferenceCounts(cg);
                   }
                else
@@ -1822,7 +1822,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerMulEvaluator(TR::Node *node, TR::C
                      opCode = IMulRegRegImm4(node->getSize());
                      }
                   targetRegister = cg->evaluate(firstChild);
-                  generateRegRegImmInstruction(opCode, node, targetRegister, targetRegister, value, cg);
+                  generateRegRegImmInstruction(opCode, node, targetRegister, targetRegister, static_cast<int32_t>(value), cg);
                   }
                }
             }
@@ -2055,7 +2055,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
             {
             TR_ASSERT(!nodeIs64Bit, "assertion failure");
             TR_ASSERT(IS_32BIT_SIGNED(dvalue), "assertion failure");
-            generateRegImmInstruction(AND4RegImm4, node, tempRegister, (uint32_t) SIGN32 + dvalue - 1, cg);
+            generateRegImmInstruction(AND4RegImm4, node, tempRegister, static_cast<int32_t>((uint32_t) SIGN32 + dvalue - 1), cg);
             generateLabelInstruction(JNS4, node, doneLabel, cg);
             }
 
@@ -2123,7 +2123,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
                }
             else if (!nodeIs64Bit || (dvalue > 0 && dvalue <= CONSTANT64(0x80000000)))
                {
-               int32_t mask = dvalue-1;
+               int32_t mask = static_cast<int32_t>(dvalue-1);
                TR_ASSERT(mask >= 0,
                   "AMD64: mask must have sign bit clear so that, when sign-extended, it clears the upper 32 bits of tempRegister");
                generateRegImmInstruction(ANDRegImm4(nodeIs64Bit), node, edxRegister, (uint32_t)dvalue-1, cg);
@@ -2192,7 +2192,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
          // same as int32_t.
          //
          int32_t tm, ts;
-         cg->compute32BitMagicValues(dvalue, &tm, &ts);
+         cg->compute32BitMagicValues(static_cast<int32_t>(dvalue), &tm, &ts);
          m = tm;
          s = ts;
          }
@@ -2223,7 +2223,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
       // Multiply by the magic reciprocal
       //
       if (!nodeIs64Bit || IS_32BIT_SIGNED(m))
-         generateRegImmInstruction(MOVRegImm4(nodeIs64Bit), node, eaxRegister, m, cg);
+         generateRegImmInstruction(MOVRegImm4(nodeIs64Bit), node, eaxRegister, static_cast<int32_t>(m), cg);
       else
          generateRegMemInstruction(LEA8RegMem, node, eaxRegister, generateX86MemoryReference(m, cg), cg);
       generateRegRegInstruction(IMULAccReg(nodeIs64Bit), node, eaxRegister, dividendRegister, multDependencies, cg);
@@ -2243,7 +2243,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
 
       // Do the magic shift
       //
-      generateRegImmInstruction(SARRegImm1(nodeIs64Bit), node, edxRegister, s, cg);
+      generateRegImmInstruction(SARRegImm1(nodeIs64Bit), node, edxRegister, static_cast<int32_t>(s), cg);
 
       // If edx is negative, then it's off by 1, so adjust it.
       //
@@ -2284,7 +2284,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
                {
                opCode = IMULRegRegImm4(nodeIs64Bit);
                }
-            generateRegRegImmInstruction(opCode, node, edxRegister, edxRegister, dvalue, cg);
+            generateRegRegImmInstruction(opCode, node, edxRegister, edxRegister, static_cast<int32_t>(dvalue), cg);
             }
 
          generateRegRegInstruction(SUBRegReg(nodeIs64Bit), node, dividendRegister, edxRegister, multDependencies, cg);
@@ -2504,7 +2504,7 @@ TR::X86RegInstruction  *OMR::X86::TreeEvaluator::generateRegisterShift(TR::Node 
             targetRegister = TR::TreeEvaluator::intOrLongClobberEvaluate(firstChild, (SHIFT_MAY_HAVE_ADDRESS_CHILD) ? TR::TreeEvaluator::getNodeIs64Bit(firstChild, cg) : nodeIs64Bit, cg);
             }
 
-         instr = generateRegImmInstruction(immShiftOpCode, node, targetRegister, shiftAmount, cg);
+         instr = generateRegImmInstruction(immShiftOpCode, node, targetRegister, static_cast<int32_t>(shiftAmount), cg);
          }
       }
    else
@@ -2616,7 +2616,7 @@ TR::X86MemInstruction  *OMR::X86::TreeEvaluator::generateMemoryShift(TR::Node *n
          {
          if (debug("traceMemOp"))
             diagnostic("\n*** Node [" POINTER_PRINTF_FORMAT "] shift by const %d", node, shiftAmount);
-         instr = generateMemImmInstruction(immShiftOpCode, node, memRef, shiftAmount, cg);
+         instr = generateMemImmInstruction(immShiftOpCode, node, memRef, static_cast<int32_t>(shiftAmount), cg);
          }
       }
    else
@@ -2711,7 +2711,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerShlEvaluator(TR::Node *node, TR::C
       TR::Node *secondChild = node->getSecondChild();
       TR::MemoryReference  *memRef = generateX86MemoryReference(cg);
       memRef->setIndexRegister(cg->evaluate(firstChild));
-      memRef->setStride(shiftAmount);
+      memRef->setStride(static_cast<int32_t>(shiftAmount));
       TR::Register *targetRegister = cg->allocateRegister();
       generateRegMemInstruction(LEARegMem(nodeIs64Bit), node, targetRegister, memRef, cg);
       node->setRegister(targetRegister);
@@ -2742,7 +2742,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerRolEvaluator(TR::Node *node, TR::C
       else
          {
          targetRegister = TR::TreeEvaluator::intOrLongClobberEvaluate(firstChild, nodeIs64Bit, cg);
-         generateRegImmInstruction(ROLRegImm1(nodeIs64Bit), node, targetRegister, rotateAmount , cg);
+         generateRegImmInstruction(ROLRegImm1(nodeIs64Bit), node, targetRegister, static_cast<int32_t>(rotateAmount), cg);
          }
       }
    else
@@ -3241,7 +3241,7 @@ TR::Register *OMR::X86::TreeEvaluator::bushrEvaluator(TR::Node *node, TR::CodeGe
             performTransformation(comp, "O^O BUSHREvaluator: first child is not an 8-bit signed two's complement, or an 8 bit unsigned %x\n", testOpcode1))
       {
       targetRegister = cg->allocateRegister();
-      int32_t value = firstChild->get64bitIntegralValue();
+      int32_t value = static_cast<int32_t>(firstChild->get64bitIntegralValue());
       generateRegImmInstruction(MOV1RegImm1, node, targetRegister, value, cg);
       }
    else
@@ -3252,7 +3252,7 @@ TR::Register *OMR::X86::TreeEvaluator::bushrEvaluator(TR::Node *node, TR::CodeGe
    if (testOpcode2 == TR::bconst &&
        performTransformation(comp, "O^O BUSHREvaluator: first child is not an 8-bit signed two's complement, or an 8 bit unsigned %x\n", testOpcode2))
       {
-      int32_t value = secondChild->get64bitIntegralValue();
+      int32_t value = static_cast<int32_t>(secondChild->get64bitIntegralValue());
 
       if (isMemOp)
          {
@@ -3537,16 +3537,16 @@ TR::Register *OMR::X86::TreeEvaluator::logicalEvaluator(TR::Node          *node,
          if (constValue >= -128 && constValue <= 127)
             {
             if (isMemOp)
-               instr = generateMemImmInstruction(package[TR::TreeEvaluator::logicalByteMemImmOp], node, tempMR, constValue, cg);
+               instr = generateMemImmInstruction(package[TR::TreeEvaluator::logicalByteMemImmOp], node, tempMR, static_cast<int32_t>(constValue), cg);
             else
-               instr = generateRegImmInstruction(package[TR::TreeEvaluator::logicalByteImmOp], node, targetRegister, constValue, cg);
+               instr = generateRegImmInstruction(package[TR::TreeEvaluator::logicalByteImmOp], node, targetRegister, static_cast<int32_t>(constValue), cg);
             }
          else
             {
             if (isMemOp)
-               instr = generateMemImmInstruction(package[TR::TreeEvaluator::logicalMemImmOp], node, tempMR, constValue, cg);
+               instr = generateMemImmInstruction(package[TR::TreeEvaluator::logicalMemImmOp], node, tempMR, static_cast<int32_t>(constValue), cg);
             else
-               instr = generateRegImmInstruction(package[TR::TreeEvaluator::logicalImmOp], node, targetRegister, constValue, cg);
+               instr = generateRegImmInstruction(package[TR::TreeEvaluator::logicalImmOp], node, targetRegister, static_cast<int32_t>(constValue), cg);
             }
          }
       if (debug("traceMemOp") && isMemOp)

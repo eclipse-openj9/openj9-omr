@@ -695,9 +695,9 @@ TR::Block *TR::SwitchAnalyzer::checkIfDefaultIsDominant(SwitchInfo *start)
 
       TR::Block *newBlock = NULL;
       cmpOp = _isInt64 ? (_signed ? TR::iflcmplt : TR::iflucmplt) : (_signed ? TR::ificmplt : TR::ifiucmplt);
-      addIfBlock(cmpOp, absMin, _defaultDest);
+      addIfBlock(cmpOp, static_cast<CASECONST_TYPE>(absMin), _defaultDest);
       cmpOp = _isInt64 ? (_signed ? TR::iflcmpgt : TR::iflucmpgt) : (_signed ? TR::ificmpgt : TR::ifiucmpgt);
-      newBlock = addIfBlock(cmpOp, absMax, _defaultDest);
+      newBlock = addIfBlock(cmpOp, static_cast<CASECONST_TYPE>(absMax), _defaultDest);
 
       return newBlock;
       }
@@ -847,11 +847,11 @@ void TR::SwitchAnalyzer::emit(TR_LinkHead<SwitchInfo> *chain, TR_LinkHead<Switch
    switch (_switch->getChild(0)->getDataType())
       {
       case TR::Int16:
-         rangeLeft  = _signed ? TR::getMinSigned<TR::Int16>() : TR::getMinUnsigned<TR::Int16>();
-         rangeRight = _signed ? TR::getMaxSigned<TR::Int16>() : TR::getMaxUnsigned<TR::Int16>();
+         rangeLeft  = static_cast<CASECONST_TYPE>(_signed ? TR::getMinSigned<TR::Int16>() : TR::getMinUnsigned<TR::Int16>());
+         rangeRight = static_cast<CASECONST_TYPE>(_signed ? TR::getMaxSigned<TR::Int16>() : TR::getMaxUnsigned<TR::Int16>());
       default:
-         rangeLeft  = TR::getMinSigned<TR::Int32>();
-         rangeRight = TR::getMaxSigned<TR::Int32>();
+         rangeLeft  = static_cast<CASECONST_TYPE>(TR::getMinSigned<TR::Int32>());
+         rangeRight = static_cast<CASECONST_TYPE>(TR::getMaxSigned<TR::Int32>());
          break;
       }
 

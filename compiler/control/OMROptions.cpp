@@ -1370,7 +1370,7 @@ OMR::Options::set64BitSignedNumeric(char *option, void *base, TR::OptionTable *e
 char *
 OMR::Options::set32BitHexadecimal(char *option, void *base, TR::OptionTable *entry)
    {
-   *((int32_t*)((char*)base+entry->parm1)) = getHexadecimalValue(option);
+   *((int32_t*)((char*)base+entry->parm1)) = static_cast<int32_t>(getHexadecimalValue(option));
    return option;
    }
 
@@ -1384,7 +1384,7 @@ OMR::Options::set32BitSignedNumeric(char *option, void *base, TR::OptionTable *e
       sign = -1;
       option++;
       }
-   *((int32_t*)((char*)base+entry->parm1)) = sign * TR::Options::getNumericValue(option);
+   *((int32_t*)((char*)base+entry->parm1)) = sign * static_cast<int32_t>(TR::Options::getNumericValue(option));
    return option;
    }
 
@@ -1440,7 +1440,7 @@ OMR::Options::setString(char *option, void *base, TR::OptionTable *entry)
             break;
          }
       }
-   int32_t len = p - option;
+   int32_t len = static_cast<int32_t>(p - option);
    p = (char *)TR::Options::jitPersistentAlloc(len+1);
    if (p)
       {
@@ -1504,7 +1504,7 @@ OMR::Options::setDebug(char *option, void *base, TR::OptionTable *entry)
                }
             }
          }
-      int32_t len = position - option-2;
+      int32_t len = static_cast<int32_t>(position - option-2);
       if(len > 0)
          {
          entry->parm1 = (intptr_t)TR::Options::jitPersistentAlloc(len+1);
@@ -4401,7 +4401,7 @@ OMR::Options::getDefaultCountString()
 char *
 OMR::Options::setCount(char *option, void *base, TR::OptionTable *entry)
    {
-   int32_t offset = entry->parm1;
+   int32_t offset = static_cast<int32_t>(entry->parm1);
    int32_t countValue = (int32_t)TR::Options::getNumericValue(option);
 
    *((int32_t*)((char*)base+offset)) = countValue;
@@ -4616,7 +4616,7 @@ OMR::Options::setBitsFromStringSet(char *option, void *base, TR::OptionTable *en
 
    if (entry->parm2 != 0)
       {
-     *((int32_t*)((char*)base+entry->parm1)) = (intptr_t)entry->parm2;
+     *((int32_t*)((char*)base+entry->parm1)) = static_cast<int32_t>(entry->parm2);
       }
    else
       {
@@ -4649,7 +4649,7 @@ char *OMR::Options::clearBitsFromStringSet(char *option, void *base, TR::OptionT
 
    if (entry->parm2 != 0)
       {
-     *((int32_t*)((char*)base+entry->parm1)) = (intptr_t)entry->parm2;
+     *((int32_t*)((char*)base+entry->parm1)) = static_cast<int32_t>(entry->parm2);
       }
    else
       {

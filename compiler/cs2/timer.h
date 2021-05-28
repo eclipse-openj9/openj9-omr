@@ -126,7 +126,7 @@ public:
       return 0;
     LARGE_INTEGER freq;
     QueryPerformanceFrequency(&freq);
-    return double(stop - start)/freq.QuadPart*1000000;
+    return static_cast<uint64_t>(double(stop - start)/freq.QuadPart*1000000);
   }
   void Start() { QueryPerformanceCounter(&fStart); }
   void Stop()  { QueryPerformanceCounter(&fStop); }
@@ -248,7 +248,7 @@ public:
         uint32_t m     = mins%60;
 
         uint64_t hours = mins/60;
-        uint32_t h     = hours;
+        uint32_t h     = static_cast<uint32_t>(hours);
 
         float ratio = total?(float(usecs)/float(total))*100:0;
 

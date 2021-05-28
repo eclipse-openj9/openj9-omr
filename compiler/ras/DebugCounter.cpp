@@ -526,7 +526,7 @@ TR::DebugCounter *TR::DebugCounterGroup::createCounter(const char *name, int8_t 
       }
    if (separator) // There is a denominator counter
       {
-      denominator = findCounter(name, separator-name);
+      denominator = findCounter(name, static_cast<int32_t>(separator-name));
       if (!denominator)
          {
          // Can't be lazy anymore; we really need to make a copy of part of the name string

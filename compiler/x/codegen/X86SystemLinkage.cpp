@@ -768,7 +768,7 @@ TR::X86SystemLinkage::copyLinkageInfoToParameterSymbols()
          }
       else if (layoutResult.abstract & TR::parmLayoutResult::IN_LINKAGE_REG)
          {
-         paramCursor->setLinkageRegisterIndex(layoutResult.regs[0].regIndex);
+         paramCursor->setLinkageRegisterIndex(static_cast<int8_t>(layoutResult.regs[0].regIndex));
          }
       // If we're out of registers, just stop now instead of looping doing nothing
       //

@@ -330,7 +330,7 @@ OMR::IlInjector::multiplyBy(TR::Node *value, int64_t factor)
    {
    TR::Node *result;
    if (value->getDataType() == TR::Int32)
-      result = TR::Node::create(TR::imul, 2, value, TR::Node::iconst(factor));
+      result = TR::Node::create(TR::imul, 2, value, TR::Node::iconst(static_cast<int32_t>(factor)));
    else
       {
       TR_ASSERT(value->getDataType() == TR::Int64, "expecting Int32 or Int64 for multiplyBy value expression");

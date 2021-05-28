@@ -270,7 +270,7 @@ SimpleRegex::Simple *SimpleRegex::processSimple(char *&s, TR_YesNoMaybe allowAlt
                i = (int32_t)strlen(m->remainder->component->data.str);
                break;
             case wildcards:
-               i = m->remainder->component->data.counts >> 1;
+               i = static_cast<int32_t>(m->remainder->component->data.counts >> 1);
                break;
             case char_alternatives:
                i = 1;

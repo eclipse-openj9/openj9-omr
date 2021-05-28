@@ -109,7 +109,7 @@ void TR_OSRDefInfo::performFurtherAnalysis(AuxiliaryData &aux)
    // Iterate through OSR reaching definitions bit vectors and save it in method symbol's data structure.
    TR::SymbolReferenceTable *symRefTab   = comp()->getSymRefTab();
    TR::ResolvedMethodSymbol *methodSymbol = optimizer()->getMethodSymbol();
-   for (intptr_t i = 0; i < methodSymbol->getOSRPoints().size(); ++i)
+   for (auto i = 0; i < methodSymbol->getOSRPoints().size(); ++i)
       {
       TR_OSRPoint *point = (methodSymbol->getOSRPoints())[i];
       if (point == NULL) continue;
@@ -1102,7 +1102,7 @@ void TR_OSRLiveRangeAnalysis::buildDeadPendingPushSlotsInfo(TR::Node *node, TR_B
             traceMsg(comp(), "ppslot %d is dead at %d:%d\n", slot, bcInfo.getCallerIndex(), bcInfo.getByteCodeIndex());
          //symRefNum = -1 and symRefOrder = -1 indicate those slots should be zeroed in prepareForOSR
          comp()->getOSRCompilationData()->addSlotSharingInfo(osrPoint->getByteCodeInfo(),
-            slot, -1 /* symRefNum */, -1 /* symRefOrder */, TR::Compiler->om.sizeofReferenceAddress() /*symSize*/ , false /*takesTwoSlots*/);
+            slot, -1 /* symRefNum */, -1 /* symRefOrder */, static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress()) /*symSize*/ , false /*takesTwoSlots*/);
          }
       }
 
@@ -1262,7 +1262,7 @@ void TR_OSRLiveRangeAnalysis::buildDeadSlotsInfo(TR::Node *node, TR_BitVector *l
             traceMsg(comp(), "ppslot %d is dead at %d:%d\n", slot, bcInfo.getCallerIndex(), bcInfo.getByteCodeIndex());
          //symRefNum = -1 and symRefOrder = -1 indicate those slots should be zeroed in prepareForOSR
          comp()->getOSRCompilationData()->addSlotSharingInfo(osrPoint->getByteCodeInfo(),
-            slot, -1 /* symRefNum */, -1 /* symRefOrder */, TR::Compiler->om.sizeofReferenceAddress() /*symSize*/ , false /*takesTwoSlots*/);
+            slot, -1 /* symRefNum */, -1 /* symRefOrder */, static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress()) /*symSize*/ , false /*takesTwoSlots*/);
          }
       }
 
@@ -1282,7 +1282,7 @@ void TR_OSRLiveRangeAnalysis::buildDeadSlotsInfo(TR::Node *node, TR_BitVector *l
          int32_t slot =  bvi.getNextElement();
          //symRefNum = -1 and symRefOrder = -1 indicate those slots should be zeroed in prepareForOSR
          comp()->getOSRCompilationData()->addSlotSharingInfo(osrPoint->getByteCodeInfo(),
-            slot, -1 /* symRefNum */, -1 /* symRefOrder */, TR::Compiler->om.sizeofReferenceAddress() /*symSize*/ , false /*takesTwoSlots*/);
+            slot, -1 /* symRefNum */, -1 /* symRefOrder */, static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress()) /*symSize*/ , false /*takesTwoSlots*/);
          }
       }
 

@@ -1531,7 +1531,7 @@ public:
       if (splitPoint)
          {
          // Replace "~" in the name with "~:{format}"
-         int splitIndex = splitPoint - name + 1;
+         int32_t splitIndex = static_cast<int32_t>(splitPoint - name + 1);
          strncpy(result, name, splitIndex);
          result[splitIndex] = ':';
          strcpy(result + splitIndex + 1, format);

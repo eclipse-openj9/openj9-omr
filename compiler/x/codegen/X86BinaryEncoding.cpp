@@ -224,7 +224,7 @@ uint8_t* OMR::X86::Instruction::generateBinaryEncoding()
             {
             self()->getOpCode().finalize(instructionStart);
             }
-         self()->setBinaryLength(cursor - instructionStart);
+         self()->setBinaryLength(static_cast<int8_t>(cursor - instructionStart));
          self()->cg()->addAccumulatedInstructionLengthError(self()->getEstimatedBinaryLength() - self()->getBinaryLength());
          return cursor;
          }
@@ -246,7 +246,7 @@ uint8_t *TR::X86PaddingInstruction::generateBinaryEncoding()
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
    cursor = cg()->generatePadding(cursor, _length, this, _properties);
-   setBinaryLength(cursor - instructionStart);
+   setBinaryLength(static_cast<int8_t>(cursor - instructionStart));
    setBinaryEncoding(instructionStart);
    return cursor;
    }
@@ -408,7 +408,7 @@ uint8_t *TR::X86AlignmentInstruction::generateBinaryEncoding()
    intptr_t paddingLength = cg()->alignment(cursor + _minPaddingLength, _boundary, _margin);
    cursor = cg()->generatePadding(cursor, _minPaddingLength + paddingLength, this);
 
-   setBinaryLength(cursor - instructionStart);
+   setBinaryLength(static_cast<int8_t>(cursor - instructionStart));
    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
    setBinaryEncoding(instructionStart);
    return cursor;
@@ -461,14 +461,14 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
             {
             // Actual distance if target address is known exactly.
             //
-            distance = label->getCodeLocation() - (cursor + IA32LengthOfShortBranch);
+            distance = static_cast<int32_t>(label->getCodeLocation() - (cursor + IA32LengthOfShortBranch));
             }
          else
             {
             // Conservative estimate of distance if target address is not known exactly.
             // (e.g., a forward relative branch)
             //
-            distance = cg()->getBinaryBufferStart()
+            distance = static_cast<int32_t>(cg()->getBinaryBufferStart()
 
                        // +4 == Temporary and possibly incomplete fix for WebSphere problem,
                        //       the buffer start is -4 from the start of the method
@@ -476,7 +476,7 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
                        + 4
                        + label->getEstimatedCodeLocation()
                        - (cursor + IA32LengthOfShortBranch +
-                        cg()->getAccumulatedInstructionLengthError());
+                        cg()->getAccumulatedInstructionLengthError()));
             }
 
          TR_ASSERT(getOpCodeValue() != XBEGIN4 || !_permitShortening, "XBEGIN4 cannot be shortened and can only be used with a label instruction that cannot shorten - use generateLongLabel!\n");
@@ -553,7 +553,7 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
 
    addMetaDataForCodeAddress(immediateCursor);
 
-   setBinaryLength(cursor - instructionStart);
+   setBinaryLength(static_cast<int8_t>(cursor - instructionStart));
    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
    setBinaryEncoding(instructionStart);
    return cursor;
@@ -2628,7 +2628,7 @@ uint8_t* TR::X86FPMemRegInstruction::generateOperand(uint8_t* cursor)
    cursor = getMemoryReference()->generateBinaryEncoding(cursor - 1, this, cg());
    if (cursor)
       {
-      setBinaryLength(cursor - getBinaryEncoding());
+      setBinaryLength(static_cast<int8_t>(cursor - getBinaryEncoding()));
       cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
       }
    return cursor;

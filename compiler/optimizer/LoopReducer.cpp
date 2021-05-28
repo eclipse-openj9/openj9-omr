@@ -1058,11 +1058,11 @@ TR_LoopReducer::generateArraycopy(TR_InductionVariable * indVar, TR::Block * loo
 
       offset = arraycopyLoop.getStoreNode()->getSymbolReference()->getOffset();
       if (offset != 0)
-         dst = TR::Node::create(op_add, 2, dst, TR::Node::create(dst, op_const, 0, offset));
+         dst = TR::Node::create(op_add, 2, dst, TR::Node::create(dst, op_const, 0, static_cast<int32_t>(offset)));
 
       offset = arraycopyLoop.getStoreNode()->getSecondChild()->getSymbolReference()->getOffset();
       if (offset != 0)
-         src = TR::Node::create(op_add, 2, src, TR::Node::create(src, op_const, 0, offset));
+         src = TR::Node::create(op_add, 2, src, TR::Node::create(src, op_const, 0, static_cast<int32_t>(offset)));
 
       arraycopy = TR::Node::createArraycopy(src, dst, imul->duplicateTree());
       TR::DataType arraycopyElementType = storeNode->getDataType();
@@ -1258,7 +1258,7 @@ TR_LoopReducer::generateArrayset(TR_InductionVariable * indVar, TR::Block * loop
    TR::ILOpCodes op_const = comp()->target().is64Bit() ? TR::lconst : TR::iconst;
    offset = storeNode->getSymbolReference()->getOffset();
    if (offset != 0)
-      dst = TR::Node::create(op_add, 2, dst, TR::Node::create(dst, op_const, 0, offset));
+      dst = TR::Node::create(op_add, 2, dst, TR::Node::create(dst, op_const, 0, static_cast<int32_t>(offset)));
 
    TR::Node * arrayset = TR::Node::create(TR::arrayset, 3,
                                         dst,
@@ -3098,7 +3098,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
          TR::Node * pageNode = TR::Node::create(loadNode, TR::iconst, 0, mask);
          TR::Node * dupTableNode = tableNode->duplicateTree();
 
-         TR::Node * hdrSizeNode = TR::Node::create(loadNode, TR::iconst, 0, TR::Compiler->om.contiguousArrayHeaderSizeInBytes());
+         TR::Node * hdrSizeNode = TR::Node::create(loadNode, TR::iconst, 0, static_cast<int32_t>(TR::Compiler->om.contiguousArrayHeaderSizeInBytes()));
          TR::Node * addNode = TR::Node::create(TR::iadd, 2, dupTableNode, hdrSizeNode);
          TR::Node * andNode = TR::Node::create(TR::iand, 2, addNode, pageNode);
 

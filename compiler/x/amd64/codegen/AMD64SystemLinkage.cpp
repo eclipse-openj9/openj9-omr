@@ -822,7 +822,7 @@ TR::Register *TR::AMD64SystemLinkage::buildDirectDispatch(
       }
    else
       {
-      instr = generateImmSymInstruction(CALLImm4, callNode, (uintptr_t)methodSymbol->getMethodAddress(), methodSymRef, preDeps, cg());
+      instr = generateImmSymInstruction(CALLImm4, callNode, static_cast<int32_t>(reinterpret_cast<uintptr_t>(methodSymbol->getMethodAddress())), methodSymRef, preDeps, cg());
       }
 
    cg()->resetIsLeafMethod();

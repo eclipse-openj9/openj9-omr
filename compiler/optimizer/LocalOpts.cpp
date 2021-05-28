@@ -383,7 +383,7 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithoutFrequencyInfo()
                {
                if (!performTransformation(comp(), "%sReverse branch in block_%d\n", optDetailString(), prevBlock->getNumber()))
                   continue;
-               for (uintptr_t c = 0; c < prevNode->getNumChildren(); ++c)
+               for (auto c = 0; c < prevNode->getNumChildren(); ++c)
                   {
                   TR_ASSERT(prevNode->getChild(c)->getOpCodeValue() != TR::GlRegDeps, "the conditional branch node has a GlRegDep child and we're changing control flow");
                   }
@@ -6747,16 +6747,6 @@ TR_InvariantArgumentPreexistence::TR_InvariantArgumentPreexistence(TR::Optimizat
    _success = false;
    }
 
-static int32_t numSignatureChars(char *sig)
-   {
-   char *end = sig;
-   while (*end == '[')
-      ++end;
-   if (*end != 'L')
-      return end-sig+1;
-   return strchr(end,';')-sig+1;
-   }
-
 int32_t TR_InvariantArgumentPreexistence::perform()
    {
    TR::ResolvedMethodSymbol *methodSymbol = optimizer()->getMethodSymbol();
@@ -7176,7 +7166,7 @@ bool TR_InvariantArgumentPreexistence::devirtualizeVirtualCall(TR::Node *node, T
 
    TR_ASSERT(classIsCompatibleWithMethod(clazz, resolvedMethod) == TR_yes, "Class should be compatible with method");
    TR::SymbolReference *symRef = node->getSymbolReference();
-   int32_t offset = symRef->getOffset();
+   int32_t offset = static_cast<int32_t>(symRef->getOffset());
    TR_ResolvedMethod *refinedMethod = symRef->getOwningMethod(comp())->getResolvedVirtualMethod(comp(), clazz, offset);
 
    if (!refinedMethod)

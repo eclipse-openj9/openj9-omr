@@ -2160,7 +2160,7 @@ bool TR_LoopCanonicalizer::replaceInductionVariableComputationsInExits(TR_Struct
             if (_primaryInductionIncrementBlock == _entryBlock)
                {
                if (adjustmentConstChild->getDataType() == TR::Int32)
-                  adjustmentConstChild->setInt((int32_t) -1*additiveConstant);
+                  adjustmentConstChild->setInt(static_cast<int32_t>(-1*additiveConstant));
                else
                   adjustmentConstChild->setLongInt(-1*additiveConstant);
                }
@@ -2664,7 +2664,7 @@ bool TR_LoopCanonicalizer::examineTreeForInductionVariableUse(TR::Block *loopInv
 
                   TR::Node *adjustmentConstChild = TR::Node::create(constChild, constChild->getOpCodeValue(), 0, 0);
                   if (adjustmentConstChild->getDataType() == TR::Int32)
-                     adjustmentConstChild->setInt((int32_t) -1*additiveConstant);
+                     adjustmentConstChild->setInt(static_cast<int32_t>(-1*additiveConstant));
                   else
                      adjustmentConstChild->setLongInt(-1*additiveConstant);
 
@@ -2690,7 +2690,7 @@ bool TR_LoopCanonicalizer::examineTreeForInductionVariableUse(TR::Block *loopInv
                   int64_t additiveConstant = _primaryIncr;
                   TR::Node *adjustmentConstChild = 0;
                   if(dataType == TR::Int32)
-                     adjustmentConstChild = TR::Node::create(node, TR::iconst, 0, (int32_t) -1*additiveConstant);
+                     adjustmentConstChild = TR::Node::create(node, TR::iconst, 0, static_cast<int32_t>(-1*additiveConstant));
                   else
                      {
                      adjustmentConstChild = TR::Node::create(node,TR::lconst, 0, 0);

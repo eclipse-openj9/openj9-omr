@@ -1128,7 +1128,7 @@ template <class Allocator>
 inline void ASparseBitVector<Allocator>::GrowSegment(typename ASparseBitVector<Allocator>::Segment &thisSegment, uint32_t size, uint32_t numValues) {
   if (numValues > 0) {
     if (numValues <= 1024) {
-      size = 2*BitManipulator::FloorPowerOfTwo(numValues-1);
+      size = 2*static_cast<uint32_t>(BitManipulator::FloorPowerOfTwo(numValues-1));
     } else {
       // instead of doubling increase linearly
       size = 1024 + 1024 * ((numValues-1) / 1024);

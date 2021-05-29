@@ -16046,9 +16046,9 @@ TR::Node *switchSimplifier(TR::Node * node, TR::Block * block, bool isTableSwitc
             highNBits64 = lowNBits << ((shiftNode->getOpCode().getSize() * 8) - shiftAmount);
 
             // Make sure all the case nodes can be shifted safely
-            for (int caseIndex = 0; caseIndex < numCases; caseIndex++)
+            for (auto caseIndex = 0U; caseIndex < numCases; caseIndex++)
                {
-               TR::Node *caseNode = node->getChild(caseIndex + 2);
+               TR::Node *caseNode = node->getChild(static_cast<int32_t>(caseIndex + 2));
                if ((isLeftShift && ((caseNode->getCaseConstant() & lowNBits) != 0)) || (!isLeftShift && ((caseNode->getCaseConstant() & highNBits32) != 0)))
                   {
                   canTransform = false;
@@ -16085,9 +16085,9 @@ TR::Node *switchSimplifier(TR::Node * node, TR::Block * block, bool isTableSwitc
 
 
             // Adjust the case values
-            for (int caseIndex = 0; caseIndex < numCases; caseIndex++)
+            for (auto caseIndex = 0U; caseIndex < numCases; caseIndex++)
                {
-               TR::Node *caseNode = node->getChild(caseIndex + 2);
+               TR::Node *caseNode = node->getChild(static_cast<int32_t>(caseIndex + 2));
                caseNode->setCaseConstant(isLeftShift ? (caseNode->getCaseConstant() >> shiftAmount) : (caseNode->getCaseConstant() << shiftAmount));
                }
             }

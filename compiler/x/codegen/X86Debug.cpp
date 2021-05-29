@@ -608,7 +608,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86FenceInstruction  * instr)
 
       if (!_comp->getOption(TR_MaskAddresses))
          {
-         for (int32_t i = 0; i < instr->getFenceNode()->getNumRelocations(); ++i)
+         for (auto i = 0U; i < instr->getFenceNode()->getNumRelocations(); ++i)
             trfprintf(pOutFile," " POINTER_PRINTF_FORMAT, instr->getFenceNode()->getRelocationDestination(i));
          }
       trfprintf(pOutFile, " ]");

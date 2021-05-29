@@ -2092,7 +2092,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
            comp()->reportOptimizationPhaseForSnap(optNum);
 
 
-      if (comp()->getNodeCount() > origNodeCount)
+      if (comp()->getNodeCount() > unsigned(origNodeCount))
          {
          // If nodes were added, invalidate
          //

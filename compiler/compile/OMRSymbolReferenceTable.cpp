@@ -1888,7 +1888,7 @@ bool OMR::SymbolReferenceTable::isNonHelper(TR::SymbolReference *symRef, CommonN
 
 bool OMR::SymbolReferenceTable::isNonHelper(int32_t ref, CommonNonhelperSymbol s)
    {
-   if (ref >= _numHelperSymbols && ref < _numHelperSymbols + getLastCommonNonhelperSymbol() && s < getLastCommonNonhelperSymbol())
+   if (unsigned(ref) >= _numHelperSymbols && unsigned(ref) < _numHelperSymbols + getLastCommonNonhelperSymbol() && s < getLastCommonNonhelperSymbol())
       {
       return ref == getNonhelperIndex(s);
       }
@@ -1905,7 +1905,7 @@ bool OMR::SymbolReferenceTable::isNonHelper(TR::SymbolReference *symRef)
 
 bool OMR::SymbolReferenceTable::isNonHelper(int32_t ref)
    {
-   return (ref >= _numHelperSymbols && ref < _numHelperSymbols + getLastCommonNonhelperSymbol());
+   return (unsigned(ref) >= _numHelperSymbols && unsigned(ref) < _numHelperSymbols + getLastCommonNonhelperSymbol());
    }
 
 OMR::SymbolReferenceTable::CommonNonhelperSymbol OMR::SymbolReferenceTable::getNonHelperSymbol(TR::SymbolReference *symRef)

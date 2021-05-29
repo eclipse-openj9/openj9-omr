@@ -762,25 +762,25 @@ BuilderTest::invokeNestedControlFlowLoopTests()
    int32_t arrSize = 0;
 
    arrSize = sizeof(loopIfThenElseArr) / sizeof(loopIfThenElseArr[0]);
-   for(uint32_t i = 0; i < arrSize; ++i)
+   for(auto i = 0; i < arrSize; ++i)
       {
       OMR_CT_EXPECT_EQ(_forLoopUpIfThenElseMethod, forLoopIfThenElse(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]), _forLoopUpIfThenElseMethod(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]));
       }
 
    arrSize = sizeof(loopIfThenElseArr) / sizeof(loopIfThenElseArr[0]);
-   for(uint32_t i = 0; i < arrSize; ++i)
+   for(auto i = 0; i < arrSize; ++i)
       {
       OMR_CT_EXPECT_EQ(_whileDoIfThenElseMethod, whileDoIfThenElse(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]), _whileDoIfThenElseMethod(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]));
       }
 
    arrSize = sizeof(loopIfThenElseArr) / sizeof(loopIfThenElseArr[0]);
-   for(uint32_t i = 0; i < arrSize; ++i)
+   for(auto i = 0; i < arrSize; ++i)
       {
       OMR_CT_EXPECT_EQ(_doWhileIfThenElseMethod, doWhileIfThenElse(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]), _doWhileIfThenElseMethod(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]));
       }
 
    arrSize = sizeof(ifThenElseLoopArr) / sizeof(ifThenElseLoopArr[0]);
-   for(int32_t i = 0; i < arrSize; i++)
+   for(auto i = 0; i < arrSize; i++)
       {
       OMR_CT_EXPECT_EQ(_ifThenElseLoopMethod, ifThenElseLoop(ifThenElseLoopArr[i][0], ifThenElseLoopArr[i][1]), _ifThenElseLoopMethod(ifThenElseLoopArr[i][0], ifThenElseLoopArr[i][1]));
       }

@@ -1306,7 +1306,7 @@ public:
   int32_t FirstOneWordIndex() const { return bv._firstChunkWithNonZero; }
   int32_t LastOneWordIndex() const { return bv._lastChunkWithNonZero; }
   chunk_t WordAt (uint32_t wordIndex) const {
-     if (wordIndex >= bv._numChunks)
+     if (wordIndex >= unsigned(bv._numChunks))
         return 0;
      return bv._chunks[wordIndex];
   }

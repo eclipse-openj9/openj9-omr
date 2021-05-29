@@ -1689,8 +1689,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::SymbolReferenceTable * symRefTab)
    if (pOutFile != NULL && symRefTab->baseArray.size() > 0 && _comp->getOption(TR_TraceAliases))
       {
       trfprintf(pOutFile, "Symbol Reference Map for this method:\n");
-      for (int32_t i=0; i<symRefTab->baseArray.size(); i++)
-         if (symRefTab->getSymRef(i))
+      for (auto i = 0U; i<symRefTab->baseArray.size(); i++)
+         if (symRefTab->getSymRef(static_cast<int32_t>(i)))
             trfprintf(pOutFile,"  %d[" POINTER_PRINTF_FORMAT "]\n", i, symRefTab->getSymRef(i));
       }
    }
@@ -3426,7 +3426,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::GCStackAtlas * atlas)
       TR_GCStackAllocMap *stackAllocMap = atlas->getStackAllocMap();
 
       int mapBytes = (stackAllocMap->_numberOfSlotsMapped + 7) >> 3;
-      int bits = 0;
+      uint32_t bits = 0;
       bool firstBitOn = true;
       for (int i = 0; i < mapBytes; ++i)
          {
@@ -3477,7 +3477,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_GCStackMap * map, TR::GCStackAtlas *atlas
    trfprintf(pOutFile,"\n    live stack slots containing addresses --> {");
 
    int mapBytes = (map->_numberOfSlotsMapped + 7) >> 3;
-   int bits = 0;
+   uint32_t bits = 0;
    bool firstBitOn = true;
    for (int i = 0; i < mapBytes; ++i)
       {

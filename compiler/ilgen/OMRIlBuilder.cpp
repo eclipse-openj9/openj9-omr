@@ -2737,7 +2737,7 @@ OMR::IlBuilder::generateSwitchCases(TR::Node *switchNode, TR::Node *defaultNode,
    TR::IlBuilder *breakBuilder = OrphanBuilder();
    // each case handler is a sequence of two builder objects: first the one passed in via `cases`,
    //   and second a builder that branches to the breakBuilder (unless this case falls through)
-   for (int32_t c = 0; c < numCases; c++)
+   for (auto c = 0U; c < numCases; c++)
       {
       int32_t value = cases[c]->_value;
       TR::IlBuilder *handler = NULL;
@@ -2762,7 +2762,7 @@ OMR::IlBuilder::generateSwitchCases(TR::Node *switchNode, TR::Node *defaultNode,
       AppendBuilder(handler);
 
       TR::Node *caseNode = TR::Node::createCase(0, caseBlock->getEntry(), value);
-      switchNode->setAndIncChild(c+2, caseNode);
+      switchNode->setAndIncChild(static_cast<int32_t>(c+2), caseNode);
       }
 
    cfg()->addEdge(switchBlock, (*defaultBuilder)->getEntry());

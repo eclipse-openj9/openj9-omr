@@ -665,18 +665,17 @@ TR::X86FenceInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
 uint8_t *TR::X86FenceInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   int i;
 
    if (_fenceNode->getRelocationType() == TR_AbsoluteAddress)
       {
-      for (i = 0; i < _fenceNode->getNumRelocations(); ++i)
+      for (auto i = 0U; i < _fenceNode->getNumRelocations(); ++i)
          {
          *(uint8_t **)(_fenceNode->getRelocationDestination(i)) = instructionStart;
          }
       }
    else if (_fenceNode->getRelocationType() == TR_ExternalAbsoluteAddress)
       {
-      for (i = 0; i < _fenceNode->getNumRelocations(); ++i)
+      for (auto i = 0U; i < _fenceNode->getNumRelocations(); ++i)
          {
          *(uint8_t **)(_fenceNode->getRelocationDestination(i)) = instructionStart;
          addMetaDataForCodeAddress( (uint8_t *)_fenceNode->getRelocationDestination(i) );
@@ -684,14 +683,14 @@ uint8_t *TR::X86FenceInstruction::generateBinaryEncoding()
       }
    else if (_fenceNode->getRelocationType() == TR_EntryRelative32Bit)
       {
-      for (i = 0; i < _fenceNode->getNumRelocations(); ++i)
+      for (auto i = 0U; i < _fenceNode->getNumRelocations(); ++i)
          {
          *(uint32_t *)(_fenceNode->getRelocationDestination(i)) = cg()->getCodeLength();
          }
       }
    else // entryrelative16bit
       {
-      for (i = 0; i < _fenceNode->getNumRelocations(); ++i)
+      for (auto i = 0U; i < _fenceNode->getNumRelocations(); ++i)
          {
          *(uint16_t *)(_fenceNode->getRelocationDestination(i)) = (uint16_t)cg()->getCodeLength();
          }

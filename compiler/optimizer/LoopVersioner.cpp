@@ -1181,7 +1181,7 @@ TR::Node *TR_LoopVersioner::findCallNodeInBlockForGuard(TR::Node *node)
             int16_t callerIndex = ttNode->getInlinedSiteIndex();
             int16_t inlinedCallIndex = node->getInlinedSiteIndex();
 
-            if (inlinedCallIndex < comp()->getNumInlinedCallSites())
+            if (unsigned(inlinedCallIndex) < comp()->getNumInlinedCallSites())
                {
                TR_InlinedCallSite & ics = comp()->getInlinedCallSite(inlinedCallIndex);
                if ((ics._byteCodeInfo.getByteCodeIndex() == bcIndex) &&
@@ -1643,7 +1643,7 @@ TR::Node *TR_LoopVersioner::isDependentOnInvariant(TR::Node *useNode)
    cursor.SetToFirstOne();
 
    //int32_t defnIndex=cursor;
-   if(cursor<useDefInfo->getFirstRealDefIndex())
+   if(cursor<unsigned(useDefInfo->getFirstRealDefIndex()))
       return NULL;
 
    TR_ValueNumberInfo *valueNumberInfo = optimizer()->getValueNumberInfo();
@@ -8565,7 +8565,7 @@ int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loop
    ncount_t nodeCount;
    nodeCount = comp()->getAccurateNodeCount();
 
-   if ((nodeCount/(MAX_SIZE_INCREASE_FACTOR/hotnessFactor)) > (_origNodeCount/nodeCountFactor))
+   if ((nodeCount/(MAX_SIZE_INCREASE_FACTOR/hotnessFactor)) > unsigned((_origNodeCount/nodeCountFactor)))
       {
       if (trace())
          traceMsg(comp(), "Failing node count %d orig %d factor %d\n", nodeCount, _origNodeCount, nodeCountFactor);

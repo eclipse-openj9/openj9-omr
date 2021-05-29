@@ -908,7 +908,7 @@ OpCodesTest::invokeMemoryOperationTests()
    uintptr_t addressDataArray[] = {(uintptr_t)&INT_NEG, (uintptr_t)&LONG_POS, (uintptr_t)&BYTE_MAXIMUM, (uintptr_t)&SHORT_MINIMUM, (uintptr_t)&FLOAT_ZERO};
 
    int32_t rc = 0;
-   uint32_t testCaseNum = 0;
+   int32_t testCaseNum = 0;
    char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
 
    signatureCharI_I_testMethodType  *iMemCons = 0;
@@ -982,7 +982,7 @@ OpCodesTest::invokeUnaryTests()
    uint16_t ushortDataArray[] = {USHORT_POS, USHORT_MAXIMUM, USHORT_MINIMUM};
    uint8_t ubyteDataArray[] = {UBYTE_POS, UBYTE_MAXIMUM, UBYTE_MINIMUM};
 
-   uint32_t testCaseNum = 0;
+   int32_t testCaseNum = 0;
    char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
 
    int32_t rc = 0;
@@ -1007,7 +1007,7 @@ OpCodesTest::invokeUnaryTests()
 
    //ineg
    testCaseNum = sizeof(intDataArray) / sizeof(intDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_iNeg, neg(intDataArray[i]), _iNeg(intDataArray[i]));
       sprintf(resolvedMethodName, "iNegConst%d", i + 1);
@@ -1018,7 +1018,7 @@ OpCodesTest::invokeUnaryTests()
 
    //iabs
    testCaseNum = sizeof(intDataArray) / sizeof(intDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_iAbs, abs(intDataArray[i]), _iAbs(intDataArray[i]));
       sprintf(resolvedMethodName, "iAbsConst%d", i + 1);
@@ -1064,7 +1064,7 @@ OpCodesTest::invokeUnaryTests()
 
    //int 2 l,b,s
    testCaseNum = sizeof(intDataArray) / sizeof(intDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_i2b, convert(intDataArray[i], BYTE_POS), _i2b(intDataArray[i]));
       OMR_CT_EXPECT_EQ(_i2s, convert(intDataArray[i], SHORT_POS), _i2s(intDataArray[i]));
@@ -1089,7 +1089,7 @@ compileOpCodeMethod(      i2lConst, _numberOfUnaryArgs, TR::i2l,
 
    //l 2 i,b,s
    testCaseNum = sizeof(longDataArray) / sizeof(longDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_l2b, convert(longDataArray[i], BYTE_POS), _l2b(longDataArray[i]));
       OMR_CT_EXPECT_EQ(_l2s, convert(longDataArray[i], SHORT_POS), _l2s(longDataArray[i]));
@@ -1170,7 +1170,7 @@ OpCodesTest::invokeBitwiseTests()
    {
    int32_t rc = 0;
    char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
-   uint32_t testCaseNum = 0;
+   int32_t testCaseNum = 0;
 
    int32_t intAndArr [][2] =
       {
@@ -1475,7 +1475,7 @@ OpCodesTest::invokeCompareTests()
 
    //iCompare
    testCaseNum = sizeof(iCmpeqDataArr) / sizeof(iCmpeqDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_iCmpeq, compareEQ(iCmpeqDataArr[i][0], iCmpeqDataArr[i][1]), _iCmpeq(iCmpeqDataArr[i][0], iCmpeqDataArr[i][1]));
 
@@ -1496,7 +1496,7 @@ compileOpCodeMethod(      iCompareConst,
       }
 
    testCaseNum = sizeof(iCmpneDataArr) / sizeof(iCmpneDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_iCmpne, compareNE(iCmpneDataArr[i][0], iCmpneDataArr[i][1]), _iCmpne(iCmpneDataArr[i][0], iCmpneDataArr[i][1]));
 
@@ -1517,7 +1517,7 @@ compileOpCodeMethod(      iCompareConst,
       }
 
    testCaseNum = sizeof(iCmpgtDataArr) / sizeof(iCmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_iCmpgt, compareGT(iCmpgtDataArr[i][0], iCmpgtDataArr[i][1]), _iCmpgt(iCmpgtDataArr[i][0], iCmpgtDataArr[i][1]));
 
@@ -1538,7 +1538,7 @@ compileOpCodeMethod(      iCompareConst,
       }
 
    testCaseNum = sizeof(iCmpltDataArr) / sizeof(iCmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_iCmplt, compareLT(iCmpltDataArr[i][0], iCmpltDataArr[i][1]), _iCmplt(iCmpltDataArr[i][0], iCmpltDataArr[i][1]));
 
@@ -1559,7 +1559,7 @@ compileOpCodeMethod(      iCompareConst,
       }
 
    testCaseNum = sizeof(iCmpgeDataArr) / sizeof(iCmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_iCmpge, compareGE(iCmpgeDataArr[i][0], iCmpgeDataArr[i][1]), _iCmpge(iCmpgeDataArr[i][0], iCmpgeDataArr[i][1]));
 
@@ -1580,7 +1580,7 @@ compileOpCodeMethod(      iCompareConst,
       }
 
    testCaseNum = sizeof(iCmpleDataArr) / sizeof(iCmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_iCmple, compareLE(iCmpleDataArr[i][0], iCmpleDataArr[i][1]), _iCmple(iCmpleDataArr[i][0], iCmpleDataArr[i][1]));
 
@@ -1602,7 +1602,7 @@ compileOpCodeMethod(      iCompareConst,
 
    //lCompare
    testCaseNum = sizeof(lCmpneDataArr) / sizeof(lCmpneDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_lCmpne, compareNE(lCmpneDataArr[i][0], lCmpneDataArr[i][1]), _lCmpne(lCmpneDataArr[i][0], lCmpneDataArr[i][1]));
 
@@ -1625,7 +1625,7 @@ compileOpCodeMethod(      lCompareConst,
       }
 
    testCaseNum = sizeof(lCmpgtDataArr) / sizeof(lCmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_lCmpgt, compareGT(lCmpgtDataArr[i][0], lCmpgtDataArr[i][1]), _lCmpgt(lCmpgtDataArr[i][0], lCmpgtDataArr[i][1]));
 
@@ -1648,7 +1648,7 @@ compileOpCodeMethod(      lCompareConst,
       }
 
    testCaseNum = sizeof(lCmpgeDataArr) / sizeof(lCmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_lCmpge, compareGE(lCmpgeDataArr[i][0], lCmpgeDataArr[i][1]), _lCmpge(lCmpgeDataArr[i][0], lCmpgeDataArr[i][1]));
 
@@ -1669,7 +1669,7 @@ compileOpCodeMethod(      lCompareConst,
       }
 
    testCaseNum = sizeof(lCmpleDataArr) / sizeof(lCmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_lCmple, compareLE(lCmpleDataArr[i][0], lCmpleDataArr[i][1]), _lCmple(lCmpleDataArr[i][0], lCmpleDataArr[i][1]));
 
@@ -1691,7 +1691,7 @@ compileOpCodeMethod(      lCompareConst,
 
    //iuCompare
    testCaseNum = sizeof(iuCmpgtDataArr) / sizeof(iuCmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_iuCmpgt, compareGT(iuCmpgtDataArr[i][0], iuCmpgtDataArr[i][1]), _iuCmpgt(iuCmpgtDataArr[i][0], iuCmpgtDataArr[i][1]));
 
@@ -1712,7 +1712,7 @@ compileOpCodeMethod(      iuCompareConst,
       }
 
    testCaseNum = sizeof(iuCmpltDataArr) / sizeof(iuCmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_iuCmplt, compareLT(iuCmpltDataArr[i][0], iuCmpltDataArr[i][1]), _iuCmplt(iuCmpltDataArr[i][0], iuCmpltDataArr[i][1]));
 
@@ -1733,7 +1733,7 @@ compileOpCodeMethod(      iuCompareConst,
       }
 
    testCaseNum = sizeof(iuCmpleDataArr) / sizeof(iuCmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_iuCmple, compareLE(iuCmpleDataArr[i][0], iuCmpleDataArr[i][1]), _iuCmple(iuCmpleDataArr[i][0], iuCmpleDataArr[i][1]));
 
@@ -1754,7 +1754,7 @@ compileOpCodeMethod(      iuCompareConst,
       }
 
    testCaseNum = sizeof(luCmpgtDataArr) / sizeof(luCmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_luCmpgt, compareGT(luCmpgtDataArr[i][0], luCmpgtDataArr[i][1]), _luCmpgt(luCmpgtDataArr[i][0], luCmpgtDataArr[i][1]));
 
@@ -1775,7 +1775,7 @@ compileOpCodeMethod(      luCompareConst,
       }
 
    testCaseNum = sizeof(luCmpltDataArr) / sizeof(luCmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_luCmplt, compareLT(luCmpltDataArr[i][0], luCmpltDataArr[i][1]), _luCmplt(luCmpltDataArr[i][0], luCmpltDataArr[i][1]));
 
@@ -1796,7 +1796,7 @@ compileOpCodeMethod(      luCompareConst,
       }
 
    testCaseNum = sizeof(luCmpgeDataArr) / sizeof(luCmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_luCmpge, compareGE(luCmpgeDataArr[i][0], luCmpgeDataArr[i][1]), _luCmpge(luCmpgeDataArr[i][0], luCmpgeDataArr[i][1]));
 
@@ -1817,7 +1817,7 @@ compileOpCodeMethod(      luCompareConst,
       }
 
    testCaseNum = sizeof(luCmpleDataArr) / sizeof(luCmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_luCmple, compareLE(luCmpleDataArr[i][0], luCmpleDataArr[i][1]), _luCmple(luCmpleDataArr[i][0], luCmpleDataArr[i][1]));
 
@@ -1839,7 +1839,7 @@ compileOpCodeMethod(      luCompareConst,
 
    //ifiCompare
    testCaseNum = sizeof(ifIcmpeqDataArr) / sizeof(ifIcmpeqDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifIcmpeq, compareEQ(ifIcmpeqDataArr[i][0], ifIcmpeqDataArr[i][1]), _ifIcmpeq(ifIcmpeqDataArr[i][0], ifIcmpeqDataArr[i][1]));
 
@@ -1860,7 +1860,7 @@ compileOpCodeMethod(      iCompareConst,
       }
 
    testCaseNum = sizeof(ifIcmpneDataArr) / sizeof(ifIcmpneDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifIcmpne, compareNE(ifIcmpneDataArr[i][0], ifIcmpneDataArr[i][1]), _ifIcmpne(ifIcmpneDataArr[i][0], ifIcmpneDataArr[i][1]));
 
@@ -1881,7 +1881,7 @@ compileOpCodeMethod(      iCompareConst,
       }
 
    testCaseNum = sizeof(ifIcmpgtDataArr) / sizeof(ifIcmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifIcmpgt, compareGT(ifIcmpgtDataArr[i][0], ifIcmpgtDataArr[i][1]), _ifIcmpgt(ifIcmpgtDataArr[i][0], ifIcmpgtDataArr[i][1]));
 
@@ -1902,7 +1902,7 @@ compileOpCodeMethod(      iCompareConst,
       }
 
    testCaseNum = sizeof(ifIcmpltDataArr) / sizeof(ifIcmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifIcmplt, compareLT(ifIcmpltDataArr[i][0], ifIcmpltDataArr[i][1]), _ifIcmplt(ifIcmpltDataArr[i][0], ifIcmpltDataArr[i][1]));
 
@@ -1923,7 +1923,7 @@ compileOpCodeMethod(      iCompareConst,
       }
 
    testCaseNum = sizeof(ifIcmpgeDataArr) / sizeof(ifIcmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifIcmpge, compareGE(ifIcmpgeDataArr[i][0], ifIcmpgeDataArr[i][1]), _ifIcmpge(ifIcmpgeDataArr[i][0], ifIcmpgeDataArr[i][1]));
 
@@ -1944,7 +1944,7 @@ compileOpCodeMethod(      iCompareConst,
       }
 
    testCaseNum = sizeof(ifIcmpleDataArr) / sizeof(ifIcmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifIcmple, compareLE(ifIcmpleDataArr[i][0], ifIcmpleDataArr[i][1]), _ifIcmple(ifIcmpleDataArr[i][0], ifIcmpleDataArr[i][1]));
 
@@ -1966,7 +1966,7 @@ compileOpCodeMethod(      iCompareConst,
 
    //iflCompare
    testCaseNum = sizeof(ifLcmpneDataArr) / sizeof(ifLcmpneDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifLcmpne, compareNE(ifLcmpneDataArr[i][0], ifLcmpneDataArr[i][1]), _ifLcmpne(ifLcmpneDataArr[i][0], ifLcmpneDataArr[i][1]));
 
@@ -1989,7 +1989,7 @@ compileOpCodeMethod(      lCompareConst,
       }
 
    testCaseNum = sizeof(ifLcmpgeDataArr) / sizeof(ifLcmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifLcmpge, compareGE(ifLcmpgeDataArr[i][0], ifLcmpgeDataArr[i][1]), _ifLcmpge(ifLcmpgeDataArr[i][0], ifLcmpgeDataArr[i][1]));
 
@@ -2010,7 +2010,7 @@ compileOpCodeMethod(      lCompareConst,
       }
 
    testCaseNum = sizeof(ifLcmpleDataArr) / sizeof(ifLcmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifLcmple, compareLE(ifLcmpleDataArr[i][0], ifLcmpleDataArr[i][1]), _ifLcmple(ifLcmpleDataArr[i][0], ifLcmpleDataArr[i][1]));
 
@@ -2031,7 +2031,7 @@ compileOpCodeMethod(      lCompareConst,
       }
 
    testCaseNum = sizeof(ifIuCmpgtDataArr) / sizeof(ifIuCmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifIuCmpgt, compareGT(ifIuCmpgtDataArr[i][0], ifIuCmpgtDataArr[i][1]), _ifIuCmpgt(ifIuCmpgtDataArr[i][0], ifIuCmpgtDataArr[i][1]));
 
@@ -2052,7 +2052,7 @@ compileOpCodeMethod(      iuCompareConst,
       }
 
    testCaseNum = sizeof(ifIuCmpltDataArr) / sizeof(ifIuCmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifIuCmplt, compareLT(ifIuCmpltDataArr[i][0], ifIuCmpltDataArr[i][1]), _ifIuCmplt(ifIuCmpltDataArr[i][0], ifIuCmpltDataArr[i][1]));
 
@@ -2073,7 +2073,7 @@ compileOpCodeMethod(      iuCompareConst,
       }
 
    testCaseNum = sizeof(ifIuCmpgeDataArr) / sizeof(ifIuCmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifIuCmpge, compareGE(ifIuCmpgeDataArr[i][0], ifIuCmpgeDataArr[i][1]), _ifIuCmpge(ifIuCmpgeDataArr[i][0], ifIuCmpgeDataArr[i][1]));
 
@@ -2094,7 +2094,7 @@ compileOpCodeMethod(      iuCompareConst,
       }
 
    testCaseNum = sizeof(ifIuCmpleDataArr) / sizeof(ifIuCmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifIuCmple, compareLE(ifIuCmpleDataArr[i][0], ifIuCmpleDataArr[i][1]), _ifIuCmple(ifIuCmpleDataArr[i][0], ifIuCmpleDataArr[i][1]));
 
@@ -2115,7 +2115,7 @@ compileOpCodeMethod(      iuCompareConst,
       }
 
    testCaseNum = sizeof(ifLuCmpgtDataArr) / sizeof(ifLuCmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifLuCmpgt, compareGT(ifLuCmpgtDataArr[i][0], ifLuCmpgtDataArr[i][1]), _ifLuCmpgt(ifLuCmpgtDataArr[i][0], ifLuCmpgtDataArr[i][1]));
 
@@ -2136,7 +2136,7 @@ compileOpCodeMethod(      luCompareConst,
       }
 
    testCaseNum = sizeof(ifLuCmpltDataArr) / sizeof(ifLuCmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifLuCmplt, compareLT(ifLuCmpltDataArr[i][0], ifLuCmpltDataArr[i][1]), _ifLuCmplt(ifLuCmpltDataArr[i][0], ifLuCmpltDataArr[i][1]));
 
@@ -2157,7 +2157,7 @@ compileOpCodeMethod(      luCompareConst,
       }
 
    testCaseNum = sizeof(ifLuCmpgeDataArr) / sizeof(ifLuCmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifLuCmpge, compareGE(ifLuCmpgeDataArr[i][0], ifLuCmpgeDataArr[i][1]), _ifLuCmpge(ifLuCmpgeDataArr[i][0], ifLuCmpgeDataArr[i][1]));
 
@@ -2178,7 +2178,7 @@ compileOpCodeMethod(      luCompareConst,
       }
 
    testCaseNum = sizeof(ifLuCmpleDataArr) / sizeof(ifLuCmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifLuCmple, compareLE(ifLuCmpleDataArr[i][0], ifLuCmpleDataArr[i][1]), _ifLuCmple(ifLuCmpleDataArr[i][0], ifLuCmpleDataArr[i][1]));
 
@@ -2204,7 +2204,7 @@ OpCodesTest::invokeSelectTests()
    {
    int32_t rc = 0;
    char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
-   uint32_t testCaseNum = 0;
+   int32_t testCaseNum = 0;
    uint32_t testCaseNumCheck = 0;
 
    int32_t iselectChild1Arr[] =
@@ -2289,7 +2289,7 @@ OpCodesTest::invokeAddressTests()
       (uintptr_t) &LONG_ZERO
       };
 
-   uint32_t testCaseNum = 0;
+   int32_t testCaseNum = 0;
    char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
    signatureCharL_L_testMethodType *aUnaryCons = 0;
    signatureCharL_I_testMethodType *a2iConst = 0;

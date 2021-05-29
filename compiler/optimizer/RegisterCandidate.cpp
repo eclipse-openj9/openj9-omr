@@ -2493,7 +2493,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
 
          numAssigns++;
 
-         if ((rc->getWeight() < weightThreshold) && (((float) numAssigns) > (float) (numCandsThresholdFactor * (float) numCands)))
+         if ((rc->getWeight() < unsigned(weightThreshold)) && (((float) numAssigns) > (float) (numCandsThresholdFactor * (float) numCands)))
             {
             if(trace)
                traceMsg(comp(),"Leaving candidate because the compile time cost is not worth it\n");

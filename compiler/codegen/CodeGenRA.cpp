@@ -370,9 +370,8 @@ OMR::CodeGenerator::prepareRegistersForAssignment()
    TR_Array<TR::Register *>&    regArray=self()->getRegisterArray();
    TR::Register               *registerCursor;
    TR_RegisterMask           km, foundKindsMask = 0;
-   int i;
 
-   for (i=0; i < regArray.size(); i++)
+   for (auto i = 0U; i < regArray.size(); i++)
       {
       registerCursor = regArray[i];
       if (registerCursor->getKind() != TR_SSR)
@@ -2790,11 +2789,11 @@ OMR::CodeGenerator::simulateNodeEvaluation(TR::Node *node, TR_RegisterPressureSt
       }
 
    if (summary->_gprPressure < summary->PRESSURE_LIMIT)
-      TR_ASSERT(state->_gprPressure <= summary->_gprPressure, "Children of %s must record max register gprPressure in summary; %d > %d", self()->getDebug()->getName(node), state->_gprPressure, summary->_gprPressure);
+      TR_ASSERT(unsigned(state->_gprPressure) <= summary->_gprPressure, "Children of %s must record max register gprPressure in summary; %d > %d", self()->getDebug()->getName(node), state->_gprPressure, summary->_gprPressure);
    if (summary->_fprPressure < summary->PRESSURE_LIMIT )
-      TR_ASSERT(state->_fprPressure <= summary->_fprPressure, "Children of %s must record max register fprPressure in summary; %d > %d", self()->getDebug()->getName(node), state->_fprPressure, summary->_fprPressure);
+      TR_ASSERT(unsigned(state->_fprPressure) <= summary->_fprPressure, "Children of %s must record max register fprPressure in summary; %d > %d", self()->getDebug()->getName(node), state->_fprPressure, summary->_fprPressure);
    if (summary->_vrfPressure <= summary->PRESSURE_LIMIT)
-      TR_ASSERT(state->_vrfPressure <= summary->_vrfPressure, "Children of %s must record max register vrfPressure in summary; %d > %d", self()->getDebug()->getName(node), state->_vrfPressure, summary->_vrfPressure);
+      TR_ASSERT(unsigned(state->_vrfPressure) <= summary->_vrfPressure, "Children of %s must record max register vrfPressure in summary; %d > %d", self()->getDebug()->getName(node), state->_vrfPressure, summary->_vrfPressure);
 
 
    // Dec children's ref counts.
@@ -3341,15 +3340,15 @@ OMR::CodeGenerator::TR_RegisterPressureSummary::accumulate(
    // increase pressure.
 
    uint32_t gprs = state->_gprPressure + gprTemps;
-   if (gprs > state->_gprLimit && state->pressureIsAtRisk())
+   if (gprs > unsigned(state->_gprLimit) && state->pressureIsAtRisk())
       spill(TR_gprSpill, cg);
 
    uint32_t fprs = state->_fprPressure + fprTemps;
-   if (fprs > state->_fprLimit && state->pressureIsAtRisk())
+   if (fprs > unsigned(state->_fprLimit) && state->pressureIsAtRisk())
       spill(TR_fprSpill, cg);
 
    uint32_t vrfs = state->_vrfPressure + vrfTemps;
-   if (vrfs > state->_vrfLimit && state->pressureIsAtRisk())
+   if (vrfs > unsigned(state->_vrfLimit) && state->pressureIsAtRisk())
       spill(TR_vrfSpill, cg);
 
    accumulate(gprs, fprs, vrfs);

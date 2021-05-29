@@ -325,7 +325,7 @@ TR_InlinerBase::setInlineThresholds(TR::ResolvedMethodSymbol *callerSymbol)
    _maxInliningCallSites = 4095;
    _maxRecursiveCallByteCodeSizeEstimate = 1024;
 
-   if (comp()->getNodeCount() > _nodeCountThreshold)
+   if (comp()->getNodeCount() > unsigned(_nodeCountThreshold))
       {
       _nodeCountThreshold = static_cast<int32_t>(comp()->getNodeCount() * (1.05F));    // allow a little bit of inlining anyways to get smaller methods
       }
@@ -409,7 +409,7 @@ TR_InlinerBase::linkOSRCodeBlocks()
    {
    TR_OSRCompilationData* compData = comp()->getOSRCompilationData();
    const TR_Array<TR_OSRMethodData *>& methodDataArray = compData->getOSRMethodDataArray();
-   for (auto i = 0; i < methodDataArray.size(); ++i)
+   for (auto i = 0U; i < methodDataArray.size(); ++i)
       {
       TR_OSRMethodData *osrMethodData = methodDataArray[i];
       if (osrMethodData == NULL
@@ -657,7 +657,7 @@ TR_InlinerBase::exceedsSizeThreshold(TR_CallSite *callsite, int bytecodeSize, TR
       heuristicTrace(tracer()," to %d because of const arguments",bytecodeSize);
       }
 
-   if (inlineThreshold && (uint32_t)bytecodeSize > inlineThreshold)
+   if (inlineThreshold != 0 && (uint32_t)bytecodeSize > unsigned(inlineThreshold))
       {
       TR::Options::INLINE_calleeToBig ++;
       TR::Options::INLINE_calleeToBigSum += bytecodeSize;
@@ -2514,7 +2514,7 @@ TR_ParameterToArgumentMapper::mapOSRCallSiteRematTable(uint32_t siteIndex)
       }
 
    // Update the remat tables for calls within the current
-   for (int32_t childIndex = 0; childIndex < comp()->getNumInlinedCallSites(); ++childIndex)
+   for (auto childIndex = 0U; childIndex < comp()->getNumInlinedCallSites(); ++childIndex)
       {
       TR_InlinedCallSite &ics = comp()->getInlinedCallSite(childIndex);
       if (siteIndex == ics._byteCodeInfo.getCallerIndex())

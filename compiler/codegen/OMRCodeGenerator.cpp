@@ -2093,7 +2093,7 @@ OMR::CodeGenerator::compute32BitMagicValues(
          *s = div32BitMagicValues[mid][2];
          return;
          }
-      else if (d > div32BitMagicValues[mid][0])
+      else if (unsigned(d) > div32BitMagicValues[mid][0])
          {
          first = mid+1;
          }

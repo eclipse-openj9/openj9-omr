@@ -466,7 +466,7 @@ void TR_UseDefInfo::setVolatileSymbolsIndexAndRecurse(TR::BitVector &volatileSym
 void TR_UseDefInfo::findAndPopulateVolatileSymbolsIndex(TR::BitVector &volatileSymbols)
    {
 //   traceMsg(comp(), "In findAndPopulateVolatileSymbolsIndex\n");
-   for (int32_t symRefNumber = comp()->getSymRefTab()->getIndexOfFirstSymRef(); symRefNumber < comp()->getSymRefCount(); symRefNumber++)
+   for (int32_t symRefNumber = comp()->getSymRefTab()->getIndexOfFirstSymRef(); unsigned(symRefNumber) < comp()->getSymRefCount(); symRefNumber++)
       {
  //     traceMsg(comp(), "Considering symRef %d: ",symRefNumber);
       TR::SymbolReference* symRef = comp()->getSymRefTab()->getSymRef(symRefNumber);

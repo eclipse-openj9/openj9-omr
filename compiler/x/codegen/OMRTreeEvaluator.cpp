@@ -2135,9 +2135,9 @@ static void arraycopyForShortConstArrayWithoutDirection(TR::Node* node, TR::Regi
       residueCase = 4;
       }
 
-   for (int32_t i=0; i<moves[0]; i++)
+   for (auto i = 0U; i < moves[0]; i++)
       {
-      generateArrayElementStore(node, dstReg, i*16, xmmUsed[i], 16, cg);
+      generateArrayElementStore(node, dstReg, static_cast<int32_t>(i * 16), xmmUsed[i], 16, cg);
       cg->stopUsingRegister(xmmUsed[i]);
       }
 

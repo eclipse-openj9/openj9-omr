@@ -853,7 +853,7 @@ TR_Debug::printIRTrees(TR::FILE *pOutFile, const char * title, TR::ResolvedMetho
       trfprintf(pOutFile, "\nCall Stack Info\n", title, sig);
       trfprintf(pOutFile, "CalleeIndex CallerIndex ByteCodeIndex CalleeMethod\n", title, sig);
 
-      for (int32_t i = 0; i < _comp->getNumInlinedCallSites(); ++i)
+      for (auto i = 0U; i < _comp->getNumInlinedCallSites(); ++i)
          {
          TR_InlinedCallSite & ics = _comp->getInlinedCallSite(i);
          TR_ResolvedMethod  *meth = _comp->getInlinedResolvedMethod(i);
@@ -979,7 +979,7 @@ TR_Debug::formattedString(char *buf, uint32_t bufLen, const char *format, va_lis
 
    va_copy_end(args_copy);
 
-   if (resultLen + 1 > bufLen)
+   if (unsigned(resultLen + 1) > bufLen)
       {
       bufLen = resultLen + 1;
       buf = (char*)comp()->trMemory()->allocateMemory(bufLen, allocationKind);
@@ -1505,9 +1505,6 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
 
       globalIndexPrefix.append( "n" );
 
-
-   int32_t i;
-
    if (!prettyPrint || (node->getOpCodeValue() != TR::BBStart && node->getOpCodeValue() != TR::BBEnd))
       {
       output.append("%s", getName(node->getOpCode()));
@@ -1553,7 +1550,7 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
 
          if (!_comp->getOption(TR_MaskAddresses))
             {
-            for (i = 0; i < node->getNumRelocations(); ++i)
+            for (auto i = 0U; i < node->getNumRelocations(); ++i)
                output.append(" " POINTER_PRINTF_FORMAT, node->getRelocationDestination(i));
             }
          output.append(" ]");

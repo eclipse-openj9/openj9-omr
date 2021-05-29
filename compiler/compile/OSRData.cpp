@@ -135,7 +135,7 @@ TR_OSRCompilationData::addInstruction(int32_t instructionPC, TR_ByteCodeInfo bcI
 
    while (1)
       {
-      if (bcInfo.getCallerIndex()+1 >= getOSRMethodDataArray().size())
+      if (unsigned(bcInfo.getCallerIndex()+1) >= getOSRMethodDataArray().size())
          {
          if (trace)
             traceMsg(comp, "  rejected: caller index %d +1 >= %d\n", bcInfo.getCallerIndex(), getOSRMethodDataArray().size());
@@ -245,7 +245,7 @@ TR_OSRCompilationData::compressInstruction2SharedSlotMap()
          if (curInfo.size() != nextInfo.size())
             break;
 
-         int j;
+         size_t j;
          for (j = 0; j < curInfo.size(); j++)
             if (!(curInfo[j] == nextInfo[j]))
                break;
@@ -391,7 +391,7 @@ TR_OSRCompilationData::writeInstruction2SharedSlotMap(uint8_t* buffer) const
       {
       *((int32_t*)buffer) = (*itr).instructionPC; buffer += sizeof(int32_t);
       *((int32_t*)buffer) = (*itr).scratchBufferInfos.size(); buffer += sizeof(int32_t);
-      for (int j = 0; j < (*itr).scratchBufferInfos.size(); j++)
+      for (auto j = 0U; j < (*itr).scratchBufferInfos.size(); j++)
          {
          const TR_ScratchBufferInfo info = (*itr).scratchBufferInfos[j];
          buffer += info.writeToBuffer(buffer);
@@ -569,7 +569,7 @@ void TR_OSRCompilationData::buildDefiningMap(TR::Region &region)
    DefiningMaps definingMapAtOSRCodeBlocks(numOfMethods, static_cast<DefiningMap*>(NULL), comp->trMemory()->currentStackRegion());
    DefiningMaps definingMapAtPrepareForOSRCalls(numOfMethods, static_cast<DefiningMap*>(NULL), comp->trMemory()->currentStackRegion());
 
-   for (auto i = 0; i < methodDataArray.size(); ++i)
+   for (auto i = 0U; i < methodDataArray.size(); ++i)
       {
       TR_OSRMethodData *osrMethodData = methodDataArray[i];
       if (!osrMethodData)
@@ -607,7 +607,7 @@ void TR_OSRCompilationData::buildDefiningMap(TR::Region &region)
 
    if (comp->getOption(TR_TraceOSR))
       {
-      for (auto i = 0; i < methodDataArray.size(); ++i)
+      for (auto i = 0U; i < methodDataArray.size(); ++i)
          {
          TR_OSRMethodData *osrMethodData = methodDataArray[i];
          if (!osrMethodData)
@@ -625,7 +625,7 @@ void TR_OSRCompilationData::buildDefiningMap(TR::Region &region)
 void TR_OSRCompilationData::clearDefiningMap()
    {
    const TR_Array<TR_OSRMethodData *>& methodDataArray = getOSRMethodDataArray();
-   for (auto i = 0; i < methodDataArray.size(); ++i)
+   for (auto i = 0U; i < methodDataArray.size(); ++i)
       {
       TR_OSRMethodData *osrMethodData = methodDataArray[i];
       if (osrMethodData)
@@ -935,7 +935,7 @@ TR_OSRMethodData::collectSubTreeSymRefs(TR::Node *node, TR_BitVector *subTreeSym
 
 void TR_OSRCompilationData::buildSymRefOrderMap()
    {
-   for (int i = 0; i < getOSRMethodDataArray().size(); i++)
+   for (auto i = 0U; i < getOSRMethodDataArray().size(); i++)
       {
       TR_OSRMethodData* osrMethodData = getOSRMethodDataArray()[i];
       if (osrMethodData == NULL ||
@@ -953,7 +953,7 @@ void TR_OSRCompilationData::buildSymRefOrderMapAux( TR_Array<List<TR::SymbolRefe
    if (symListArray == NULL)
       return;
 
-   for (auto j = 0; j < symListArray->size(); j++)
+   for (auto j = 0U; j < symListArray->size(); j++)
       {
       List<TR::SymbolReference>& symList = (*symListArray)[j];
       bool sharedSlot = symList.getSize() > 1;
@@ -981,7 +981,7 @@ TR::Compilation& operator<< (TR::Compilation& out, const TR_OSRCompilationData& 
    {
    out << "{";
    bool first = true;
-   for (int i = 0; i < osrCompilationData.getOSRMethodDataArray().size(); i++)
+   for (auto i = 0U; i < osrCompilationData.getOSRMethodDataArray().size(); i++)
       {
       TR_OSRMethodData* osrMethodData = osrCompilationData.getOSRMethodDataArray()[i];
       if (osrMethodData == NULL || osrMethodData->getOSRCodeBlock() == NULL || osrMethodData->isEmpty()) continue;
@@ -1008,7 +1008,7 @@ TR::Compilation& operator<< (TR::Compilation& out, const TR_OSRCompilationData& 
          sprintf(tmp, "%x", (*itr).instructionPC);
          const  TR_OSRCompilationData::TR_ScratchBufferInfos& array2 = (*itr).scratchBufferInfos;
          out << tmp << " -> " << array2.size() << "[ ";
-         for (int j = 0; j < array2.size(); j++)
+         for (auto j = 0U; j < array2.size(); j++)
             {
             if (j != 0)
                out << ", ";
@@ -1113,7 +1113,7 @@ bool
 TR_OSRMethodData::inlinesAnyMethod() const
    {
    TR::Compilation* comp = getMethodSymbol()->comp();
-   for (int32_t i = 0; i < comp->getNumInlinedCallSites(); i++)
+   for (auto i = 0U; i < comp->getNumInlinedCallSites(); i++)
       {
       TR_InlinedCallSite& ics = comp->getInlinedCallSite(i);
       if (ics._byteCodeInfo.getCallerIndex() == inlinedSiteIndex)
@@ -1312,7 +1312,7 @@ TR_OSRMethodData::addInstruction(int32_t instructionPC, int32_t byteCodeIndex)
          bcInfoHashTab.DataAt(hashIndex)->getSlotInfos();
       TR_OSRCompilationData::TR_ScratchBufferInfos info(comp()->trMemory());
       //The "composition" of the three types of tuples happens here
-      for (int i = 0; i < slotInfos.size(); i++)
+      for (auto i = 0U; i < slotInfos.size(); i++)
          {
          int32_t scratchBufferOffset;
          bool found = slot2ScratchBufferOffset.Locate(slotInfos[i].slot, hashIndex);
@@ -1453,7 +1453,7 @@ TR_OSRSlotSharingInfo::addSlotInfo(int32_t slot, int32_t symRefNum, int32_t symR
    static bool trace = comp->getOption(TR_TraceOSR);
    TR::SymbolReferenceTable* symRefTab = comp->getSymRefTab();
    bool found = false;
-   for (int i = 0; i < slotInfos.size(); i++)
+   for (auto i = 0U; i < slotInfos.size(); i++)
       {
       TR_SlotInfo& info = slotInfos[i];
       if (info.symRefNum != -1)
@@ -1507,7 +1507,7 @@ TR_OSRSlotSharingInfo::addSlotInfo(int32_t slot, int32_t symRefNum, int32_t symR
 TR::Compilation& operator<< (TR::Compilation& out, const TR_OSRSlotSharingInfo* osrSlotSharingInfo)
    {
    out << "{slotInfos: [";
-   for (int i = 0; i < osrSlotSharingInfo->slotInfos.size(); i++)
+   for (auto i = 0U; i < osrSlotSharingInfo->slotInfos.size(); i++)
       {
       const TR_OSRSlotSharingInfo::TR_SlotInfo& info = osrSlotSharingInfo->slotInfos[i];
       if (i != 0)

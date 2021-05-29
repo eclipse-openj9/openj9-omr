@@ -2581,7 +2581,7 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
                            if ((uint32_t) defConstraint->getHighInt() < TR::getMaxUnsigned<TR::Int32>())
                               {
                               if ((uint32_t) defConstraint->getLowInt() < (uint32_t) constraint->getLowInt() &&
-                                  (uint32_t) constraint->getLowInt() <= defConstraint->getHighInt() )
+                                  (uint32_t) constraint->getLowInt() <= unsigned(defConstraint->getHighInt()) )
                                  {
                                  TR::VPConstraint *newDefConstraint = TR::VPIntRange::create(this, constraint->getLowInt(), defConstraint->getHighInt());
                                  defConstraint = defConstraint->intersect(newDefConstraint, this);
@@ -3782,7 +3782,7 @@ int32_t TR::GlobalValuePropagation::perform()
 
    initialize();
 
-   if ((_firstUnresolvedSymbolValueNumber - 1) <= comp()->getNodeCount())
+   if (unsigned(_firstUnresolvedSymbolValueNumber - 1) <= comp()->getNodeCount())
       {
       dumpOptDetails(comp(), "Can't do Global Value Propagation - too many nodes\n");
       return 0;
@@ -4905,7 +4905,7 @@ void OMR::ValuePropagation::printValueConstraints(ValueConstraints &valueConstra
 void OMR::ValuePropagation::printGlobalConstraints()
    {
    traceMsg(comp(), "   Global constraints:\n");
-   for (int32_t i = 0; i <= _globalConstraintsHTMaxBucketIndex; i++)
+   for (auto i = 0U; i <= _globalConstraintsHTMaxBucketIndex; i++)
       {
       GlobalConstraint *entry;
       for (entry = _globalConstraintsHashTable[i]; entry; entry = entry->next)

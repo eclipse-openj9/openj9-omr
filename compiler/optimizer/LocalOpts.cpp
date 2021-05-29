@@ -4975,7 +4975,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
          //if ((child->getFutureUseCount() & 0x7fff) == child->getReferenceCount())
          if (!seenChildren.get(i))
             {
-            if (child->getGlobalIndex() < _nodeCount)
+            if (child->getGlobalIndex() < unsigned(_nodeCount))
                {
                if (_heightArray[child->getGlobalIndex()] > maxHeight)
                   {

@@ -85,7 +85,7 @@ ResolvedMethod::signature(TR_Memory * trMemory, TR_AllocationKind allocKind)
 TR::DataType
 ResolvedMethod::parmType(uint32_t slot)
    {
-   TR_ASSERT((slot < _numParms), "Invalid slot provided for Parameter Type");
+   TR_ASSERT((slot < unsigned(_numParms)), "Invalid slot provided for Parameter Type");
    return _parmTypes[slot]->getPrimitiveType();
    }
 

@@ -109,7 +109,7 @@ void TR_OSRDefInfo::performFurtherAnalysis(AuxiliaryData &aux)
    // Iterate through OSR reaching definitions bit vectors and save it in method symbol's data structure.
    TR::SymbolReferenceTable *symRefTab   = comp()->getSymRefTab();
    TR::ResolvedMethodSymbol *methodSymbol = optimizer()->getMethodSymbol();
-   for (auto i = 0; i < methodSymbol->getOSRPoints().size(); ++i)
+   for (auto i = 0U; i < methodSymbol->getOSRPoints().size(); ++i)
       {
       TR_OSRPoint *point = (methodSymbol->getOSRPoints())[i];
       if (point == NULL) continue;
@@ -182,7 +182,7 @@ void TR_OSRDefInfo::addSharingInfo(AuxiliaryData &aux)
    TR_BitVector unionDef(getBitVectorSize(), comp()->trMemory()->currentStackRegion());
 
    bool isTwoSlotSymRefAtPrevSlot = false;
-   for (int i = 0; ppsListArray && i < ppsListArray->size(); ++i)
+   for (auto i = 0U; ppsListArray && i < ppsListArray->size(); ++i)
       {
       List<TR::SymbolReference> ppsList = (*ppsListArray)[i];
       ListIterator<TR::SymbolReference> ppsIt(&ppsList);
@@ -255,7 +255,7 @@ void TR_OSRDefInfo::addSharingInfo(AuxiliaryData &aux)
    TR_Array<List<TR::SymbolReference> > *autosListArray = _methodSymbol->getAutoSymRefs();
    prevTwoSlotUnionDef->empty();
    isTwoSlotSymRefAtPrevSlot = false;
-   for (int i = 0; autosListArray && i < autosListArray->size(); ++i)
+   for (auto i = 0U; autosListArray && i < autosListArray->size(); ++i)
       {
       List<TR::SymbolReference> autosList = (*autosListArray)[i];
       ListIterator<TR::SymbolReference> autosIt(&autosList);
@@ -811,7 +811,7 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
       }
 
    TR_Array<List<TR::SymbolReference>> *pendingPushSymRefs = comp()->getMethodSymbol()->getPendingPushSymRefs();
-   for (int32_t i = 0; pendingPushSymRefs && i < pendingPushSymRefs->size(); ++i)
+   for (auto i = 0U; pendingPushSymRefs && i < pendingPushSymRefs->size(); ++i)
       {
       List<TR::SymbolReference> &symRefsAtThisSlot = (*pendingPushSymRefs)[i];
       ListIterator<TR::SymbolReference> symRefsIt(&symRefsAtThisSlot);

@@ -243,7 +243,7 @@ void TR::X86LabelInstruction::addPostDepsToOutlinedInstructionsBranch()
    _outlinedInstructionBranch->setDependencyConditions(mergeDeps);
 
    TR::RegisterDependencyGroup *depGroup = mergeDeps->getPostConditions();
-   for (int32_t i=0; i<mergeDeps->getNumPostConditions(); i++)
+   for (auto i = 0U; i < mergeDeps->getNumPostConditions(); i++)
       {
       // Bump the use count on all cloned dependencies.
       //

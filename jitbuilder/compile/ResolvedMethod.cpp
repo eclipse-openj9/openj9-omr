@@ -104,7 +104,7 @@ JitBuilder::ResolvedMethod::externalName(TR_Memory *trMemory, TR_AllocationKind 
 TR::DataType
 JitBuilder::ResolvedMethod::parmType(uint32_t slot)
    {
-   TR_ASSERT((slot < _numParms), "Invalid slot provided for Parameter Type");
+   TR_ASSERT((slot < unsigned(_numParms)), "Invalid slot provided for Parameter Type");
    return _parmTypes[slot]->getPrimitiveType();
    }
 

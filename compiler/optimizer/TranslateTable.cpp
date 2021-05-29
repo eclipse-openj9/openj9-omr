@@ -133,8 +133,8 @@ TR_TranslateTable::TR_TranslateTableData* TR_TranslateTable::createTable(uint32_
       return _table;
       }
 
-   int totalSize = tableSize(inputSize, outputSize);
-   int allocSize = totalSize;
+   uint32_t totalSize = static_cast<uint32_t>(tableSize(inputSize, outputSize));
+   uint32_t allocSize = totalSize;
    if (allocSize > 4096)
       {
       allocSize += 4096;
@@ -174,36 +174,35 @@ TR_TranslateTable::TR_TranslateTableData* TR_TranslateTable::createTable(uint32_
       endB      = tempEnd;
       }
 
-   int i;
    if (outputSize == 16)
       {
       uint16_t* cTable = (uint16_t*) data;
-      for (i=0; i<startA; ++i)
+      for (auto i = 0U; i < startA; ++i)
          {
          cTable[i] = defaultValue;
          }
-      for (i=startA; i<endA; ++i)
+      for (auto i = startA; i < endA; ++i)
          {
-         cTable[i] = i;
+         cTable[i] = static_cast<uint16_t>(i);
          }
       if (startB != endB)
          {
-         for (i=endA; i<startB; ++i)
+         for (auto i = endA; i < startB; ++i)
             {
             cTable[i] = defaultValue;
             }
-         for (i=startB; i<endB; ++i)
+         for (auto i = startB; i < endB; ++i)
             {
-            cTable[i] = i;
+            cTable[i] = static_cast<uint16_t>(i);
             }
-         for (i=endB; i<totalSize; ++i)
+         for (auto i = endB; i < totalSize; ++i)
             {
             cTable[i] = defaultValue;
             }
          }
       else
          {
-         for (i=endA; i<totalSize; ++i)
+         for (auto i = endA; i < totalSize; ++i)
             {
             cTable[i] = defaultValue;
             }
@@ -213,32 +212,32 @@ TR_TranslateTable::TR_TranslateTableData* TR_TranslateTable::createTable(uint32_
       {
       uint8_t* bTable = (uint8_t*) data;
       uint8_t  bDefaultValue = (uint8_t) defaultValue;
-      for (i=0; i<startA; ++i)
+      for (auto i = 0U; i < startA; ++i)
          {
          bTable[i] = bDefaultValue;
          }
-      for (i=startA; i<endA; ++i)
+      for (auto i = startA; i<endA; ++i)
          {
-         bTable[i] = i;
+         bTable[i] = static_cast<uint8_t>(i);
          }
       if (startB != endB)
          {
-         for (i=endA; i<startB; ++i)
+         for (auto i = endA; i < startB; ++i)
             {
             bTable[i] = bDefaultValue;
             }
-         for (i=startB; i<endB; ++i)
+         for (auto i = startB; i < endB; ++i)
             {
-            bTable[i] = i;
+            bTable[i] = static_cast<uint8_t>(i);
             }
-         for (i=endB; i<totalSize; ++i)
+         for (auto i = endB; i < totalSize; ++i)
             {
             bTable[i] = bDefaultValue;
             }
          }
       else
          {
-         for (i=endA; i<totalSize; ++i)
+         for (auto i = endA; i < totalSize; ++i)
             {
             bTable[i] = static_cast<uint8_t>(defaultValue);
             }

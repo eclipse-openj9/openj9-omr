@@ -690,7 +690,7 @@ OMR::CodeCache::syncTempTrampolines()
          {
          //TR_ASSERT(syncBlock->_entryCount <= syncBlock->_entryListSize);
          // Synchronize all stored sync requests
-         for (uint32_t entryIdx = 0; entryIdx < syncBlock->_entryCount; entryIdx++)
+         for (auto entryIdx = 0; entryIdx < syncBlock->_entryCount; entryIdx++)
             {
             CodeCacheHashEntry *entry = syncBlock->_hashEntryArray[entryIdx];
             void *newPC = (void *) TR::Compiler->mtd.startPC(entry->_info._resolved._method);

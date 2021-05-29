@@ -413,11 +413,11 @@ OMR::IlInjector::createWithoutSymRef(TR::ILOpCodes opCode, uint32_t numArgs, ...
    va_list args;
    va_start(args, numArgs);
    TR::Node * result = TR::Node::create(opCode, numArgs);
-   for (int i = 0; i < numArgs; ++i)
+   for (auto i = 0U; i < numArgs; ++i)
       {
       TR::Node * child = va_arg(args, TR::Node *);
       TR_ASSERT(child != NULL, "Child %d must be non NULL", i);
-      result->setAndIncChild(i,child);
+      result->setAndIncChild(static_cast<int32_t>(i),child);
       }
    return result;
    }

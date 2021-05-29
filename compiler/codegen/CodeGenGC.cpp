@@ -233,7 +233,7 @@ OMR::CodeGenerator::buildGCMapForInstruction(TR::Instruction *instr)
            localCursor = automaticIterator.getNext())
          {
          int32_t mapIndex = localCursor->getGCMapIndex();
-         if (mapIndex >= 0 && mapIndex < atlas->getIndexOfFirstSpillTemp())
+         if (mapIndex >= 0 && unsigned(mapIndex) < atlas->getIndexOfFirstSpillTemp())
             {
             if (liveLocals && liveLocals->get(localCursor->getLiveLocalIndex()))
                {
@@ -296,7 +296,7 @@ OMR::CodeGenerator::buildGCMapForInstruction(TR::Instruction *instr)
             continue;
             }
 
-         TR_ASSERT( s->getGCMapIndex() >= atlas->getIndexOfFirstSpillTemp(), "Code Gen: error in building stack map");
+         TR_ASSERT(unsigned(s->getGCMapIndex()) >= atlas->getIndexOfFirstSpillTemp(), "Code Gen: error in building stack map");
          map->setBit(s->getGCMapIndex());
          }
       }

@@ -45,7 +45,7 @@
 
 #define ARRAY_ARG_SETUP(baretype, arraySize, arrayImpl, parmArg)               \
    TR::baretype **arrayImpl = new TR::baretype *[arraySize];                   \
-   for (uint32_t i=0;i < arraySize;i++)                                        \
+   for (auto i=0U;i < unsigned(arraySize);i++)                                        \
       {                                                                        \
       if (parmArg[i] != NULL)                                                  \
          arrayImpl[i] = reinterpret_cast<TR::baretype *>((parmArg[i])->_impl); \
@@ -54,7 +54,7 @@
       }
 
 #define ARRAY_ARG_RETURN(baretype, arraySize, arrayImpl, parmArg) \
-   for (uint32_t i=0;i < arraySize;i++)                           \
+   for (auto i=0U;i < unsigned(arraySize);i++)                           \
       {                                                           \
       if (arrayImpl[i] != NULL)                                   \
          {                                                        \

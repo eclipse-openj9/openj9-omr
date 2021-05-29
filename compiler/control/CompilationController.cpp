@@ -75,7 +75,10 @@ bool TR::CompilationController::init(TR::CompilationInfo *compInfo)
 void TR::CompilationController::shutdown()
    {
    if (_tlsCompObjCreated)
+      {
       tlsFree(OMR::compilation);
+      }
+      
    if (!_useController)
       return;
 

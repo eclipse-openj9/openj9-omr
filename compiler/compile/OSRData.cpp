@@ -247,7 +247,7 @@ TR_OSRCompilationData::compressInstruction2SharedSlotMap()
 
          size_t j;
          for (j = 0; j < curInfo.size(); j++)
-            if (!(curInfo[j] == nextInfo[j]))
+            if (!(curInfo[static_cast<uint32_t>(j)] == nextInfo[static_cast<uint32_t>(j)]))
                break;
          if (j != curInfo.size())
             break;

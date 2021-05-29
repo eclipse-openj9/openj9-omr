@@ -64,7 +64,7 @@ int32_t Tril::SimpleCompiler::compileWithVerifier(TR::IlVerifier* verifier) {
     // construct a `TR::ResolvedMethod` instance from the IL generator and use
     // to compile the method
     TR::ResolvedMethod resolvedMethod("file", "line", "name",
-                                      argIlTypes.size(),
+                                      static_cast<int32_t>(argIlTypes.size()),
                                       argIlTypes.size() != 0 ? &argIlTypes[0] : NULL,
                                       types.PrimitiveType(methodInfo.getReturnType()),
                                       0,

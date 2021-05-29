@@ -97,9 +97,9 @@ ResolvedMethod::computeSignatureChars()
    for (int32_t p=0;p < _numParms;p++)
       {
       TR::IlType *type = _parmTypes[p];
-      len += strlen(type->getSignatureName());
+      len += static_cast<uint32_t>(strlen(type->getSignatureName()));
       }
-   len += strlen(_returnType->getSignatureName());
+   len += static_cast<uint32_t>(strlen(_returnType->getSignatureName()));
    TR_ASSERT(len < 64, "signature array may not be large enough"); // TODO: robustness
 
    int32_t s = 0;
@@ -107,13 +107,13 @@ ResolvedMethod::computeSignatureChars()
    for (int32_t p=0;p < _numParms;p++)
       {
       name = _parmTypes[p]->getSignatureName();
-      len = strlen(name);
+      len = static_cast<uint32_t>(strlen(name));
       strncpy(_signatureChars+s, name, len);
       s += len;
       }
    _signatureChars[s++] = ')';
    name = _returnType->getSignatureName();
-   len = strlen(name);
+   len = static_cast<uint32_t>(strlen(name));
    strncpy(_signatureChars+s, name, len);
    s += len;
    _signatureChars[s++] = 0;
@@ -142,7 +142,7 @@ ResolvedMethod::localName(uint32_t slot,
       sprintf(name, "Parm %2d", slot);
       }
 
-   nameLength = strlen(name);
+   nameLength = static_cast<int32_t>(strlen(name));
    return name;
    }
 

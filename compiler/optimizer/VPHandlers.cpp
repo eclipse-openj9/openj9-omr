@@ -6931,7 +6931,7 @@ TR::Node *constrainIabs(OMR::ValuePropagation *vp, TR::Node *node)
          {
          int32_t value = low;
          if (value < 0)
-            value = -(uint32_t)value;
+            value = -value;
 
          TR::VPConstraint *constraint = TR::VPIntConst::create(vp, value);
          vp->replaceByConstant(node, constraint, isGlobal);
@@ -7008,7 +7008,7 @@ TR::Node *constrainLabs(OMR::ValuePropagation *vp, TR::Node *node)
          {
          int64_t value = low;
          if (value < 0)
-            value = -(uint64_t)value;
+            value = -value;
 
          TR::VPConstraint *constraint = TR::VPLongConst::create(vp, value);
          vp->replaceByConstant(node, constraint, isGlobal);

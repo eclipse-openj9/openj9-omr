@@ -2236,7 +2236,7 @@ OMR::CodeGenerator::computeUnsigned64BitMagicValues(uint64_t d, int32_t* s, int3
    uint64_t nc, delta, q1, r1, q2, r2;
 
    *a = 0; /* initialize "add" indicator */
-   nc = -1 - (-d)%d;
+   nc = -1 - ((~d) + 1)%d;
    p = 63; /* initialize p */
    q1 = 0x8000000000000000ull/nc; /* initialize 2**p/nc */
    r1 = 0x8000000000000000ull- q1*nc; /* initialize rem(2**p,nc) */

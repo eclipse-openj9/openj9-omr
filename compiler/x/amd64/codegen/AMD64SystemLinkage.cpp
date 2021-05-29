@@ -900,10 +900,10 @@ TR::AMD64ABILinkage::mapIncomingParms(
          {
          uint32_t align = getAlignment(parmCursor->getDataType());
          uint32_t alignMinus1 = (align <= AMD64_STACK_SLOT_SIZE) ? (AMD64_STACK_SLOT_SIZE - 1) : (align - 1);
-         uint32_t pos = -stackIndex;
+         uint32_t pos = (~stackIndex) + 1;
          pos += static_cast<uint32_t>(parmCursor->getSize());
          pos = (pos + alignMinus1) & (~alignMinus1);
-         stackIndex = -pos;
+         stackIndex = (~pos) + 1;
          parmCursor->setParameterOffset(stackIndex);
 
          if (comp()->getOption(TR_TraceCG))

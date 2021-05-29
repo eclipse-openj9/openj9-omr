@@ -27,7 +27,7 @@
 namespace TR
 {
 
-struct RegisterDependency : OMR::RegisterDependencyConnector {};
+class RegisterDependency : public OMR::RegisterDependencyConnector {};
 
 }
 

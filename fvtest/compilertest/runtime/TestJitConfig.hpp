@@ -31,7 +31,7 @@ namespace TestCompiler { class FrontEnd; }
 // Singleton JitConfig. The only instance of this is TestCompiler::FrontEnd::_jitConfig
 namespace TestCompiler
 {
-struct JitConfig : public TR::JitConfig
+class JitConfig : public TR::JitConfig
    {
    private:
    friend class TR::FEBase<FrontEnd>;

@@ -32,9 +32,8 @@ namespace JitBuilder { class FrontEnd; }
 // Singleton JitConfig. The only instance of this is JitBuilder::FrontEnd::_jitConfig
 namespace JitBuilder
 {
-struct JitConfig : public TR::JitConfig
+class JitConfig : public TR::JitConfig
    {
-   private:
    friend class TR::FEBase<FrontEnd>;
    JitConfig() : TR::JitConfig() {}
    };

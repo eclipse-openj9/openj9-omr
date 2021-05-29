@@ -311,7 +311,7 @@ class ASparseBitVector : private Allocator {
 
     uint16_t *Indices() const { return fSegment; }
 
-    bool operator==(const struct Segment &s1) const {
+    bool operator==(const Segment &s1) const {
       if (fHighBits != s1.fHighBits) return false;
       if (fNumValues != s1.fNumValues) return false;
 

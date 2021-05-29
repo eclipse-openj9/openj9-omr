@@ -4061,17 +4061,17 @@ X86OpCodesTest::invokeAddressTests()
       sprintf(resolvedMethodName, "aSelectConst1_TestCase%d", i + 1);
       compileOpCodeMethod(aSelectConst,
             _numberOfSelectArgs, TR::aselect, resolvedMethodName, _argTypesSelectAddress, TR::Address, rc, 6, 1, &aselectChild1Arr[i], 2, &aselectArr[i][0], 3, &aselectArr[i][1]);
-      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2, ADDRESS_PLACEHOLDER_3));
+      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(static_cast<int32_t>(ADDRESS_PLACEHOLDER_1), ADDRESS_PLACEHOLDER_2, ADDRESS_PLACEHOLDER_3));
 
       sprintf(resolvedMethodName, "aSelectConst2_TestCase%d", i + 1);
       compileOpCodeMethod(aSelectConst,
             _numberOfSelectArgs, TR::aselect, resolvedMethodName, _argTypesSelectAddress, TR::Address, rc, 4, 1, &aselectChild1Arr[i], 2, &aselectArr[i][0]);
-      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2, aselectArr[i][1]));
+      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(static_cast<int32_t>(ADDRESS_PLACEHOLDER_1), ADDRESS_PLACEHOLDER_2, aselectArr[i][1]));
 
       sprintf(resolvedMethodName, "aSelectConst3_TestCase%d", i + 1);
       compileOpCodeMethod(aSelectConst,
             _numberOfSelectArgs, TR::aselect, resolvedMethodName, _argTypesSelectAddress, TR::Address, rc, 4, 1, &aselectChild1Arr[i], 3, &aselectArr[i][1]);
-      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(ADDRESS_PLACEHOLDER_1, aselectArr[i][0], ADDRESS_PLACEHOLDER_3));
+      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(static_cast<int32_t>(ADDRESS_PLACEHOLDER_1), aselectArr[i][0], ADDRESS_PLACEHOLDER_3));
 
       sprintf(resolvedMethodName, "aSelectConst4_TestCase%d", i + 1);
       compileOpCodeMethod(aSelectConst,
@@ -4081,7 +4081,7 @@ X86OpCodesTest::invokeAddressTests()
       sprintf(resolvedMethodName, "aSelectConst5_TestCase%d", i + 1);
       compileOpCodeMethod(aSelectConst,
             _numberOfSelectArgs, TR::aselect, resolvedMethodName, _argTypesSelectAddress, TR::Address, rc, 2, 1, &aselectChild1Arr[i]);
-      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(ADDRESS_PLACEHOLDER_1, aselectArr[i][0], aselectArr[i][1]));
+      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(static_cast<int32_t>(ADDRESS_PLACEHOLDER_1), aselectArr[i][0], aselectArr[i][1]));
 
       sprintf(resolvedMethodName, "aSelectConst6_TestCase%d", i + 1);
       compileOpCodeMethod(aSelectConst,
@@ -4390,15 +4390,15 @@ X86OpCodesTest::invokeSelectTests()
 
       compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
             resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 6, 1, &lselectChild1Arr[i], 2, &longArr[i][0], 3, &longArr[i][1]);
-      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(LONG_PLACEHOLDER_1, LONG_PLACEHOLDER_2, LONG_PLACEHOLDER_3));
+      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(static_cast<int32_t>(LONG_PLACEHOLDER_1), LONG_PLACEHOLDER_2, LONG_PLACEHOLDER_3));
 
       compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
             resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 4, 1, &lselectChild1Arr[i], 2, &longArr[i][0]);
-      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(LONG_PLACEHOLDER_1, LONG_PLACEHOLDER_2, longArr[i][1]));
+      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(static_cast<int32_t>(LONG_PLACEHOLDER_1), LONG_PLACEHOLDER_2, longArr[i][1]));
 
       compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
             resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 4, 1, &lselectChild1Arr[i], 3, &longArr[i][1]);
-      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(LONG_PLACEHOLDER_1, longArr[i][0], LONG_PLACEHOLDER_3));
+      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(static_cast<int32_t>(LONG_PLACEHOLDER_1), longArr[i][0], LONG_PLACEHOLDER_3));
 
       compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
             resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 4, 2, &longArr[i][0], 3, &longArr[i][1]);
@@ -4406,7 +4406,7 @@ X86OpCodesTest::invokeSelectTests()
 
       compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
             resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 2, 1, &lselectChild1Arr[i]);
-      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(LONG_PLACEHOLDER_1, longArr[i][0], longArr[i][1]));
+      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(static_cast<int32_t>(LONG_PLACEHOLDER_1), longArr[i][0], longArr[i][1]));
 
       compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
             resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 2, 2, &longArr[i][0]);

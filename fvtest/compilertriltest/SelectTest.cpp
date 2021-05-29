@@ -135,10 +135,10 @@ static typename OMR::EnableIf<OMR::IsFloatingPoint<T>::VALUE, std::vector<std::t
     std::tuple<T, T> inputArray[] = {
         std::make_pair(-std::numeric_limits<T>::infinity(), std::numeric_limits<T>::infinity()),
         std::make_pair(std::numeric_limits<T>::infinity(), -std::numeric_limits<T>::infinity()),
-        std::make_pair(0.0, std::numeric_limits<T>::infinity()),
-        std::make_pair(0.0, -std::numeric_limits<T>::infinity()),
-        std::make_pair(0.0, std::numeric_limits<T>::quiet_NaN()),
-        std::make_pair(0.0, 0.0),
+        std::make_pair(T(0), std::numeric_limits<T>::infinity()),
+        std::make_pair(T(0), -std::numeric_limits<T>::infinity()),
+        std::make_pair(T(0), std::numeric_limits<T>::quiet_NaN()),
+        std::make_pair(T(0), T(0)),
     };
     return std::vector<std::tuple<T, T>>(inputArray, inputArray + sizeof(inputArray) / sizeof(*inputArray));
 }
@@ -146,11 +146,11 @@ static typename OMR::EnableIf<OMR::IsFloatingPoint<T>::VALUE, std::vector<std::t
 template <typename T>
 static std::vector<std::tuple<T, T>> resultInputs() {
     std::tuple<T, T> inputArray[] = {
-        std::make_pair(1, 0),
-        std::make_pair(0, 1),
-        std::make_pair(-1, 0),
-        std::make_pair(0, -1),
-        std::make_pair(5, 7),
+        std::make_pair(T(1), T(0)),
+        std::make_pair(T(0), T(1)),
+        std::make_pair(T(-1), T(0)),
+        std::make_pair(T(0), T(-1)),
+        std::make_pair(T(5), T(7)),
     };
     return std::vector<std::tuple<T, T>>(inputArray, inputArray + sizeof(inputArray) / sizeof(*inputArray));
 }

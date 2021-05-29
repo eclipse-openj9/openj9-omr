@@ -4801,7 +4801,7 @@ TR::Node * constrainLongNumberOfTrailingZeros(OMR::ValuePropagation *vp, TR::Nod
    return constrainLowestOneBitAndTrailingZerosHelper (vp, node, getLongConst,
                                                        getLongRange, getLong, getLowHighLongs,
                                                        createIntConstConstraint,
-                                                       createIntRangeConstraint, longNumberOfTrailingZeros, (int64_t) 0, (int64_t) -1);
+                                                       createLongRangeConstraint, longNumberOfTrailingZeros, (int64_t) 0, (int64_t) -1);
    }
 
 
@@ -4810,7 +4810,7 @@ TR::Node * constrainLongNumberOfTrailingZeros(OMR::ValuePropagation *vp, TR::Nod
    return constrainLowestOneBitAndTrailingZerosHelper  (vp, node, getLongConst,
                                                        getLongRange, getLong, getLowHighLongs,
                                                        createIntConstConstraint,
-                                                       createIntRangeConstraint, longBitCount, (int64_t) 0, (int64_t) -1);
+                                                       createLongRangeConstraint, longBitCount, (int64_t) 0, (int64_t) -1);
    }
 
 

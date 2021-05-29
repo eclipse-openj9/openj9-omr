@@ -971,7 +971,7 @@ void TR::LocalDeadStoreElimination::eliminateDeadObjectInitializations()
                                static_cast<int32_t>(TR::Compiler->om.contiguousArrayHeaderSizeInBytes());
                    }
                 else
-                   offset = storeNode->getSymbolReference()->getOffset() - static_cast<int32_t>(fe()->getObjectHeaderSizeInBytes());
+                   offset = static_cast<int32_t>(storeNode->getSymbolReference()->getOffset() - static_cast<intptr_t>(fe()->getObjectHeaderSizeInBytes()));
 
                 if (removableZeroStore)
                    {

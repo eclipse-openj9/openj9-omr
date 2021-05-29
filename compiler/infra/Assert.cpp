@@ -199,7 +199,7 @@ namespace TR
       {
       if (!_node) return;
 
-      static bool printFullContext = feGetEnv("TR_AssertFullContext");
+      static bool printFullContext = feGetEnv("TR_AssertFullContext") != NULL;
       TR::Compilation *comp = TR::comp();
       TR_Debug *debug = comp->findOrCreateDebug();
 
@@ -250,7 +250,7 @@ namespace TR
       {
       if (!_instruction) return;
 
-      static bool printFullContext = feGetEnv("TR_AssertFullContext");
+      static bool printFullContext = feGetEnv("TR_AssertFullContext") != NULL;
       static int numInstructionsInContext = feGetEnv("TR_AssertNumInstructionsInContext") ?
          atoi(feGetEnv("TR_AssertNumInstructionsInContext")) : 11;
       TR_Debug *debug = TR::comp()->findOrCreateDebug();

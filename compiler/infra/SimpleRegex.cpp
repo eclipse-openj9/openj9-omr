@@ -373,7 +373,7 @@ bool SimpleRegex::Simple::match(const char *s, bool isCaseSensitive, bool useLoc
 
 bool SimpleRegex::Regex::match(const char *s, bool isCaseSensitive, bool useLocale)
    {
-   int32_t rc = false;
+   bool rc = false;
    for (Regex *p = this; p && !rc; p = p->remainder)
       {
       rc = p->simple->match(s, isCaseSensitive, useLocale);

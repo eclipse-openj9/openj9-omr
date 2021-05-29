@@ -6473,7 +6473,7 @@ TR_InductionVariableAnalysis::analyzeExitEdges(TR_RegionStructure *loop,
                }
             }
          else
-            osrInduceExitEdge = _isOSRInduceBlock.get(toNum);
+            osrInduceExitEdge = (_isOSRInduceBlock.get(toNum) != 0);
 
          if (osrInduceExitEdge)
             {

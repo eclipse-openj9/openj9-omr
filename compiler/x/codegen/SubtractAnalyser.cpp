@@ -175,7 +175,7 @@ TR::Register* TR_X86SubtractAnalyser::integerSubtractAnalyserImpl(TR::Node     *
                // Don't do this though if condition codes are needed.  The sequence
                // depends on the carry flag being valid as if a sub was done.
                //
-               bool nodeIs64Bit = TR::InstOpCode(regRegOpCode).hasLongSource();
+               bool nodeIs64Bit = TR::InstOpCode(regRegOpCode).hasLongSource() != 0;
                generateRegInstruction(NEGReg(nodeIs64Bit), secondChild, secondRegister, _cg);
                thirdReg       = secondRegister;
                secondRegister = firstRegister;

@@ -429,7 +429,7 @@ class TR_BitVector
    // value had been set
    bool clear(int64_t n)
       {
-      bool rc = get(n);
+      bool rc = get(n) != 0;
       if (rc)
          reset(n);
 #if BV_SANITY_CHECK

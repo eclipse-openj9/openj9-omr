@@ -1166,7 +1166,7 @@ TR_Debug::methodSigCanBeFound(const char *methodSig, TR::CompilationFilters * fi
          filter = filter->findRegex(methodSig);
       }
 
-   bool excluded = filters->defaultExclude();
+   bool excluded = filters->defaultExclude() != 0;
    if (filter)
       {
       switch (filter->getFilterType())

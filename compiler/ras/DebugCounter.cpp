@@ -301,7 +301,7 @@ TR::DebugCounterBase::initializeReloData(TR::Compilation *comp, int32_t delta, i
       {
       _reloData = new (comp->trPersistentMemory()) TR::DebugCounterReloData(delta, fidelity, staticDelta);
       }
-   return _reloData;
+   return _reloData != NULL;
    }
 
 void

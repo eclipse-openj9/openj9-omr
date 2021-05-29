@@ -42,7 +42,7 @@ static TR::MemoryReference* ConvertToPatchableMemoryReference(TR::MemoryReferenc
       // Hence, the unresolved memory reference must be evaluated into a register first.
       //
       TR::Register* tempReg = cg->allocateRegister();
-      generateRegMemInstruction(LEARegMem(cg), node, tempReg, mr, cg);
+      generateRegMemInstruction(LEARegMem(), node, tempReg, mr, cg);
       mr = generateX86MemoryReference(tempReg, 0, cg);
       cg->stopUsingRegister(tempReg);
       }

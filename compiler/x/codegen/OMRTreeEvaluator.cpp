@@ -2193,8 +2193,8 @@ TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
 
    TR::DataType dt = node->getArrayCopyElementType();
    uint32_t elementSize = 1;
-   static bool useREPMOVSW = feGetEnv("TR_UseREPMOVSWForArrayCopy");
-   static bool forceByteArrayElementCopy = feGetEnv("TR_ForceByteArrayElementCopy");
+   static bool useREPMOVSW = feGetEnv("TR_UseREPMOVSWForArrayCopy") != NULL;
+   static bool forceByteArrayElementCopy = feGetEnv("TR_ForceByteArrayElementCopy") != NULL;
    if (!forceByteArrayElementCopy)
       {
       if (node->isReferenceArrayCopy() || dt == TR::Address)
@@ -2203,8 +2203,8 @@ TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
          elementSize = TR::Symbol::convertTypeToSize(dt);
       }
 
-   static bool optimizeForConstantLengthArrayCopy = feGetEnv("TR_OptimizeForConstantLengthArrayCopy");
-   static bool ignoreDirectionForConstantLengthArrayCopy = feGetEnv("TR_IgnoreDirectionForConstantLengthArrayCopy");
+   static bool optimizeForConstantLengthArrayCopy = feGetEnv("TR_OptimizeForConstantLengthArrayCopy") != NULL;
+   static bool ignoreDirectionForConstantLengthArrayCopy = feGetEnv("TR_IgnoreDirectionForConstantLengthArrayCopy") != NULL;
 #define shortConstArrayWithDirThreshold 256
 #define shortConstArrayWithoutDirThreshold  16*4
    bool isShortConstArrayWithDirection = false;

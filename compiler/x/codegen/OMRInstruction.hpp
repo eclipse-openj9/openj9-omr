@@ -97,7 +97,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    TR::InstOpCode::Mnemonic getOpCodeValue() { return _opcode.getOpCodeValue(); }
    TR::InstOpCode::Mnemonic setOpCodeValue(TR::InstOpCode::Mnemonic op) { return _opcode.setOpCodeValue(op); }
 
-   virtual bool isBranchOp() {return _opcode.isBranchOp();}
+   virtual bool isBranchOp() {return _opcode.isBranchOp() != 0;}
    virtual bool isLabel();
    virtual bool isRegRegMove();
    virtual bool isPatchBarrier();

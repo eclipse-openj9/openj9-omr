@@ -134,7 +134,7 @@ public:
      }
 
      bool find(uint32_t block) {
-       return _candidateBlocks.get(block);
+       return _candidateBlocks.get(block) != 0;
      }
      uint32_t getNumberOfLoadsAndStores(uint32_t block) {
        if (_candidateBlocks.get(block))

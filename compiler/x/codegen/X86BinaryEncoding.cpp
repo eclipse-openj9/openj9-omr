@@ -188,12 +188,12 @@ uint8_t getMemoryBarrierBinaryLengthLowerBound(int32_t barrier, TR::CodeGenerato
 // OMR::X86::Instruction:: member functions
 bool OMR::X86::Instruction::needsRepPrefix()
    {
-   return self()->getOpCode().needsRepPrefix();
+   return self()->getOpCode().needsRepPrefix() != 0;
    }
 
 bool OMR::X86::Instruction::needsLockPrefix()
    {
-   return self()->getOpCode().needsLockPrefix();
+   return self()->getOpCode().needsLockPrefix() != 0;
    }
 
 uint8_t* OMR::X86::Instruction::generateBinaryEncoding()

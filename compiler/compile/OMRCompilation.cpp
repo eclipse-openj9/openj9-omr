@@ -776,7 +776,7 @@ OMR::Compilation::getOSRTransitionTarget()
 bool
 OMR::Compilation::isOSRTransitionTarget(TR::OSRTransitionTarget target)
    {
-   return target & self()->getOSRTransitionTarget();
+   return (target & self()->getOSRTransitionTarget()) != 0;
    }
 
 /*

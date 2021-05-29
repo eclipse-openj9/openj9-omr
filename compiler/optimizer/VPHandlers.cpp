@@ -7560,7 +7560,7 @@ TR::Node *constrainIand(OMR::ValuePropagation *vp, TR::Node *node)
    if (rhs && rhs->asIntConst())
       {
       int32_t mask = rhs->asIntConst()->getInt();
-      signBitsMaskedOff = leadingZeroes(mask);
+      signBitsMaskedOff = leadingZeroes(mask) != 0;
 
       // take opportunity to remove if unneeded
       if(255 == mask && lhs) // loading from byte
@@ -8964,7 +8964,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
             {
             TR::ILOpCode lhsCmp = lhsChild->getOpCode();
             TR::ILOpCode newIfOp = lhsCmp.convertCmpToIfCmp();
-            if (branchOnEqual != bool(rhsConst))
+            if (branchOnEqual != (rhsConst != 0))
                newIfOp = newIfOp.getOpCodeForReverseBranch();
 
             if (performTransformation(vp->comp(),

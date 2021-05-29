@@ -4522,7 +4522,7 @@ OMR::Options::checkDisableFlagForAllMethods(OMR::Optimizations o, bool b)
 char *
 OMR::Options::setStaticBool(char *option, void *base, TR::OptionTable *entry)
    {
-   *((bool*)entry->parm1) = (bool)entry->parm2;
+   *((bool*)entry->parm1) = (entry->parm2 != 0);
    return option;
    }
 

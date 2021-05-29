@@ -413,7 +413,7 @@ bool TR_UseDefInfo::_runReachingDefinitions(TR_ReachingDefinitions& reachingDefi
 
    reachingDefinitions.perform();
 
-   bool succeeded = reachingDefinitions._blockAnalysisInfo;
+   bool succeeded = reachingDefinitions._blockAnalysisInfo != NULL;
    if (!succeeded)
       {
       invalidateUseDefInfo();
@@ -639,7 +639,7 @@ void TR_UseDefInfo::findTrivialSymbolsToExclude(TR::Node *node, TR::TreeTop *tre
 bool TR_UseDefInfo::isTrivialUseDefNode(TR::Node *node, AuxiliaryData &aux)
    {
    if (aux._doneTrivialNode.get(node->getGlobalIndex()))
-      return aux._isTrivialNode.get(node->getGlobalIndex());
+      return aux._isTrivialNode.get(node->getGlobalIndex()) != 0;
 
    bool result = isTrivialUseDefNodeImpl(node, aux);
    aux._doneTrivialNode.set(node->getGlobalIndex());

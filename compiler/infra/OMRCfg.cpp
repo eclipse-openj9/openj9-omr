@@ -667,22 +667,22 @@ TR::CFGEdge * TR::CFGNode::getExceptionPredecessorEdge(TR::CFGNode * n)
 
 bool TR::CFGNode::hasSuccessor(TR::CFGNode * n)
    {
-   return (bool)getSuccessorEdge(n);
+   return getSuccessorEdge(n) != NULL;
    }
 
 bool TR::CFGNode::hasExceptionSuccessor(TR::CFGNode * n)
    {
-   return (bool)getExceptionSuccessorEdge(n);
+   return getExceptionSuccessorEdge(n) != NULL;
    }
 
 bool TR::CFGNode::hasPredecessor(TR::CFGNode * n)
    {
-   return (bool)getPredecessorEdge(n);
+   return getPredecessorEdge(n) != NULL;
    }
 
 bool TR::CFGNode::hasExceptionPredecessor(TR::CFGNode * n)
    {
-   return (bool)getExceptionPredecessorEdge(n);
+   return getExceptionPredecessorEdge(n) != NULL;
    }
 
 

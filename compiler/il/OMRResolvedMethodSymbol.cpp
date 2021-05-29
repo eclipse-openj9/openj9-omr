@@ -2398,7 +2398,7 @@ OMR::ResolvedMethodSymbol::isParmVariant(TR::ParameterSymbol * parmSymbol)
                   "Parm %d (%p) cannot be owned by current method that only has %d parms", parmSymbol->getOrdinal(), parmSymbol, numberOfParameters);
    TR_ASSERT_FATAL(self()->getParmSymRef(parmSymbol->getSlot())->getSymbol()->getParmSymbol() == parmSymbol,
                   "Parm %p is not owned by current method %s", parmSymbol, self()->signature(self()->comp()->trMemory()));
-   return _variantParms->get(parmSymbol->getOrdinal());
+   return _variantParms->get(parmSymbol->getOrdinal()) != 0;
    }
 
 void

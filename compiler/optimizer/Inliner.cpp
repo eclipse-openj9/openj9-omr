@@ -1032,7 +1032,7 @@ TR_CallStack::initializeControlFlowInfo(TR::ResolvedMethodSymbol * callerSymbol)
 
    for (int32_t i = 0; i < numberOfBlocks; ++i)
       {
-      blockInfo(i)._inALoop = loopingBlocks.get(i);
+      blockInfo(i)._inALoop = (loopingBlocks.get(i) != 0);
       }
    // Walk forward following successor edges to mark blocks that are always reached
    //

@@ -355,7 +355,7 @@ TR_Debug::printBody(TR::FILE *pOutFile, TR::X86HelperCallSnippet  * snippet, uin
          {
          uint32_t pushLength;
 
-         bool useDedicatedFrameReg = _comp->cg()->getLinkage()->getProperties().getAlwaysDedicateFramePointerRegister();
+         bool useDedicatedFrameReg = _comp->cg()->getLinkage()->getProperties().getAlwaysDedicateFramePointerRegister() != 0;
          if (snippet->getOffset() >= -128 && snippet->getOffset() <= 127)
             pushLength = (useDedicatedFrameReg ? 3 : 4);
          else
@@ -436,7 +436,7 @@ uint32_t TR::X86HelperCallSnippet::getLength(int32_t estimatedSnippetStart)
 
       if (_offset != -1)
          {
-         bool useDedicatedFrameReg = cg()->getLinkage()->getProperties().getAlwaysDedicateFramePointerRegister();
+         bool useDedicatedFrameReg = cg()->getLinkage()->getProperties().getAlwaysDedicateFramePointerRegister() != 0;
          if (_offset >= -128 && _offset <= 127)
             length += (useDedicatedFrameReg ? 3 : 4);
          else

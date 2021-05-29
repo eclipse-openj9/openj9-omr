@@ -5912,7 +5912,7 @@ void TR_LoopVersioner::buildConditionalTree(
                TR::Node *storeNode = _storeTrees[indexNode->getSymbolReference()->getReferenceNumber()]->getNode();
                //int32_t exitValue = exitValue = storeNode->getFirstChild()->getSecondChild()->getInt();
 
-               loopLimit = _loopTestTree->getNode()->getSecondChild()->duplicateTree(comp());
+               loopLimit = _loopTestTree->getNode()->getSecondChild()->duplicateTree();
                if(isAddition)
                   {
                   range = TR::Node::create(TR::isub, 2, loopLimit,entryNode);
@@ -5996,7 +5996,7 @@ void TR_LoopVersioner::buildConditionalTree(
                TR_ASSERT(parent, "Parent shouldn't be null\n");
 
                TR_ASSERT(indexChildIndex>=0, "Index child index should be valid at this point\n");
-               duplicateIndexNode = conditionalNode->getChild(indexChildIndex)->duplicateTree(comp());
+               duplicateIndexNode = conditionalNode->getChild(indexChildIndex)->duplicateTree();
 
                int visitCount = comp()->incVisitCount();
                int32_t indexSymRefNum = loopDrivingSymRef->getReferenceNumber();
@@ -6019,24 +6019,24 @@ void TR_LoopVersioner::buildConditionalTree(
             if(indexNodeOccursAsSecondChild)
                {
                if (!reverseBranch)
-                  duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCodeValue(), conditionalNode->getFirstChild()->duplicateTree(comp()),duplicateIndexNode, _exitGotoTarget);
+                  duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCodeValue(), conditionalNode->getFirstChild()->duplicateTree(),duplicateIndexNode, _exitGotoTarget);
                else
-                  duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCode().getOpCodeForReverseBranch(), conditionalNode->getFirstChild()->duplicateTree(comp()), duplicateIndexNode, _exitGotoTarget);
+                  duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCode().getOpCodeForReverseBranch(), conditionalNode->getFirstChild()->duplicateTree(), duplicateIndexNode, _exitGotoTarget);
                }
             else
                {
                if (!reverseBranch)
-                  duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCodeValue(),duplicateIndexNode, conditionalNode->getSecondChild()->duplicateTree(comp()), _exitGotoTarget);
+                  duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCodeValue(),duplicateIndexNode, conditionalNode->getSecondChild()->duplicateTree(), _exitGotoTarget);
                else
-                  duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCode().getOpCodeForReverseBranch(), duplicateIndexNode, conditionalNode->getSecondChild()->duplicateTree(comp()), _exitGotoTarget);
+                  duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCode().getOpCodeForReverseBranch(), duplicateIndexNode, conditionalNode->getSecondChild()->duplicateTree(), _exitGotoTarget);
                }
             }
          else
             {
             if (!reverseBranch)
-               duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCodeValue(), conditionalNode->getFirstChild()->duplicateTree(comp()), conditionalNode->getSecondChild()->duplicateTree(comp()), _exitGotoTarget);
+               duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCodeValue(), conditionalNode->getFirstChild()->duplicateTree(), conditionalNode->getSecondChild()->duplicateTree(), _exitGotoTarget);
             else
-               duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCode().getOpCodeForReverseBranch(), conditionalNode->getFirstChild()->duplicateTree(comp()), conditionalNode->getSecondChild()->duplicateTree(comp()), _exitGotoTarget);
+               duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCode().getOpCodeForReverseBranch(), conditionalNode->getFirstChild()->duplicateTree(), conditionalNode->getSecondChild()->duplicateTree(), _exitGotoTarget);
             }
 
          if (duplicateComparisonNode->getFirstChild()->getOpCodeValue() == TR::instanceof)

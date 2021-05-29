@@ -1225,7 +1225,7 @@ inline typename ASparseBitVector<Allocator>::Segment *ASparseBitVector<Allocator
   } else {
     base = (Segment *) Allocator::allocate((n+1) * sizeof(Segment));
   }
- init:
+
   base[i].allocate(count, *this);
   base[i].fHighBits = index >> 16;
   base[i].fNumValues = 0;
@@ -1352,7 +1352,7 @@ bool ASparseBitVector<Allocator>::OrSegment(const typename ASparseBitVector<Allo
         tmpSegment.append(inputSegment,  ii0, ii);
       }
     }
-    no_more:
+
     if (tmpSegment.IsZero()) {
       if (!isInplace)
         // not inplace, so need to copy

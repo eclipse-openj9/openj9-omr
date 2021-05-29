@@ -47,6 +47,9 @@ class TR_TranslateTable
       struct TR_TranslateTableData
          {
          TR_ALLOC(TR_Memory::LoopTransformer)
+
+         TR_TranslateTableData() {}
+         
          TR_TranslateTableData* next;  // next table in linked list
          uint8_t* data;                // pointer to data table
          uint32_t defaultValue;        // default value

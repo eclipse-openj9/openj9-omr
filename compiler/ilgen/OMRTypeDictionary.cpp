@@ -241,7 +241,7 @@ OMR::StructType::AddField(const char *name, TR::IlType *typeInfo)
 
    TR::DataType primitiveType = typeInfo->getPrimitiveType();
    uint32_t align = primitiveTypeAlignment[primitiveType] - 1;
-   _size = (_size + align) & (~align);
+   _size = (_size + align) & (~static_cast<size_t>(align));
 
    OMR::FieldInfo *fieldInfo = new (PERSISTENT_NEW) OMR::FieldInfo(name, _size, typeInfo);
    if (0 != _lastField)

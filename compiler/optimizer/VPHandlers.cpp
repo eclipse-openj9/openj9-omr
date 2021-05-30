@@ -7182,7 +7182,7 @@ static TR::Node *distributeShift(OMR::ValuePropagation *vp, TR::Node *node, int3
 
       if (replaceNode)
          {
-         int64_t pow2Val = (1 << shiftAmount);
+         int64_t pow2Val = int64_t(1) << shiftAmount;
          TR::VPConstraint *lhsORrhs = NULL;
          if (replaceNode == rhsGrandChild) //lhs is the redundant expr
             lhsORrhs = rhsGConstraint;

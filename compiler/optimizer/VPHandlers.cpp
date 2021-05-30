@@ -6930,7 +6930,7 @@ TR::Node *constrainIabs(OMR::ValuePropagation *vp, TR::Node *node)
       if (low == high)
          {
          int32_t value = low;
-         if (value < 0)
+         if (value < 0 && value != static_cast<int32_t>(TR::getMinSigned<TR::Int32>()))
             value = -value;
 
          TR::VPConstraint *constraint = TR::VPIntConst::create(vp, value);
@@ -7007,7 +7007,7 @@ TR::Node *constrainLabs(OMR::ValuePropagation *vp, TR::Node *node)
       if (low == high)
          {
          int64_t value = low;
-         if (value < 0)
+         if (value < 0 && value != static_cast<int64_t>(TR::getMinSigned<TR::Int64>()))
             value = -value;
 
          TR::VPConstraint *constraint = TR::VPLongConst::create(vp, value);

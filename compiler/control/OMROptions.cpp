@@ -394,6 +394,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableIterativeSA",       "O\trevert back to a recursive version of Structural Analysis", SET_OPTION_BIT(TR_DisableIterativeSA), "P"},
    {"disableIVTT",                        "O\tdisable IV Type transformation",                 TR::Options::disableOptimization, IVTypeTransformation, 0, "P"},
    {"disableJavaEightStartupHeuristics", "M\t", SET_OPTION_BIT(TR_DisableJava8StartupHeuristics), "F", NOT_IN_SUBSET },
+   {"disableJITServerBufferedExpensiveCompilations","O\tdisable JITServer buffered expensive compilations", SET_OPTION_BIT(TR_DisableJITServerBufferedExpensiveCompilations), "F"},
    {"disableJProfiling",                  "O\tdisable JProfiling", RESET_OPTION_BIT(TR_EnableJProfiling), "F"},
    {"disableJProfilingInProfilingCompilations", "O\tDisable use of jprofiling instrumentation in profiling compilations", SET_OPTION_BIT(TR_DisableJProfilingInProfilingCompilations), "F"},
    {"disableJProfilingThread",            "O\tdisable separate thread for JProfiling", SET_OPTION_BIT(TR_DisableJProfilerThread), "F", NOT_IN_SUBSET},

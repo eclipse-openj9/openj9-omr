@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -194,7 +194,7 @@ int omrdiscard_data(void *address, int numFrames);
 /* omrget_userExtendedPrivateAreaMemoryType.s */
 #pragma linkage (GETTTT,OS)
 #pragma map (getUserExtendedPrivateAreaMemoryType,"GETTTT")
-uintptr_t getUserExtendedPrivateAreaMemoryType();
+uintptr_t getUserExtendedPrivateAreaMemoryType(void);
 
 static BOOLEAN isRmode64Supported();
 static void * reserve_memory_with_moservices(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, struct J9PortVmemParams *params, OMRMemCategory *category);

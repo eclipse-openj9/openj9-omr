@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2015 IBM Corp. and others
+ * Copyright (c) 2010, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -39,14 +39,8 @@
 #include "omrport.h"
 #include "omrportpriv.h"
 #include "omrportpg.h"
+#include "omrutilbase.h"
 #include "ut_omrport.h"
-
-/* J9VMAtomicFunctions*/
-#ifndef _J9VMATOMICFUNCTIONS_
-#define _J9VMATOMICFUNCTIONS_
-extern uintptr_t compareAndSwapUDATA(uintptr_t *location, uintptr_t oldValue, uintptr_t newValue);
-#endif /* _J9VMATOMICFUNCTIONS_ */
-
 
 /* Templates for categories that are copied into malloc'd memory in omrmem_startup_categories */
 OMRMEM_CATEGORY_NO_CHILDREN("Unknown", OMRMEM_CATEGORY_UNKNOWN);
@@ -67,14 +61,10 @@ OMRMEM_CATEGORY_NO_CHILDREN("Port Library", OMRMEM_CATEGORY_PORT_LIBRARY);
 void
 omrmem_categories_increment_counters(OMRMemCategory *category, uintptr_t size)
 {
-	uintptr_t oldValue;
-
 	Trc_Assert_PTR_mem_categories_increment_counters_NULL_category(NULL != category);
 
 	/* Increment block count */
-	do {
-		oldValue = category->liveAllocations;
-	} while (compareAndSwapUDATA(&category->liveAllocations, oldValue, oldValue + 1) != oldValue);
+	addAtomic(&category->liveAllocations, 1);
 
 	omrmem_categories_increment_bytes(category, size);
 }
@@ -87,14 +77,10 @@ omrmem_categories_increment_counters(OMRMemCategory *category, uintptr_t size)
 void
 omrmem_categories_increment_bytes(OMRMemCategory *category, uintptr_t size)
 {
-	uintptr_t oldValue;
-
 	Trc_Assert_PTR_mem_categories_increment_bytes_NULL_category(NULL != category);
 
 	/* Increment bytes */
-	do {
-		oldValue = category->liveBytes;
-	} while (compareAndSwapUDATA(&category->liveBytes, oldValue, oldValue + size) != oldValue);
+	addAtomic(&category->liveBytes, size);
 }
 
 /**
@@ -105,14 +91,10 @@ omrmem_categories_increment_bytes(OMRMemCategory *category, uintptr_t size)
 void
 omrmem_categories_decrement_counters(OMRMemCategory *category, uintptr_t size)
 {
-	uintptr_t oldValue;
-
 	Trc_Assert_PTR_mem_categories_decrement_counters_NULL_category(NULL != category);
 
 	/* Decrement block count */
-	do {
-		oldValue = category->liveAllocations;
-	} while (compareAndSwapUDATA(&category->liveAllocations, oldValue, oldValue - 1) != oldValue);
+	subtractAtomic(&category->liveAllocations, 1);
 
 	omrmem_categories_decrement_bytes(category, size);
 }
@@ -125,14 +107,10 @@ omrmem_categories_decrement_counters(OMRMemCategory *category, uintptr_t size)
 void
 omrmem_categories_decrement_bytes(OMRMemCategory *category, uintptr_t size)
 {
-	uintptr_t oldValue;
-
 	Trc_Assert_PTR_mem_categories_decrement_bytes_NULL_category(NULL != category);
 
 	/* Decrement size */
-	do {
-		oldValue = category->liveBytes;
-	} while (compareAndSwapUDATA(&category->liveBytes, oldValue, oldValue - size) != oldValue);
+	subtractAtomic(&category->liveBytes, size);
 }
 
 /**

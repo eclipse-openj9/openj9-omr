@@ -65,15 +65,23 @@ function(make_ddr_set set_name)
 		COMMAND "${CMAKE_COMMAND}" -E touch "${DDR_CONFIG_STAMP}"
 		WORKING_DIRECTORY "${DDR_BIN_DIR}"
 	)
+
+	# We need to set LIBPATH on z/OS so that ddrgen can find the a2e library
+	if(OMR_OS_ZOS)
+		set(DDRGEN_LIBPATH "env" "LIBPATH=$<TARGET_FILE_DIR:j9a2e>$\${LIBPATH:+:$$LIBPATH}")
+	else()
+		set(DDRGEN_LIBPATH)
+	endif()
+
 	if(CMAKE_GENERATOR MATCHES "Makefiles")
 		add_custom_target(${DDR_TARGET_NAME}
 			DEPENDS "${DDR_CONFIG_STAMP}"
-			COMMAND "$(MAKE)" -C "${DDR_BIN_DIR}"
+			COMMAND ${DDRGEN_LIBPATH} "$(MAKE)" -C "${DDR_BIN_DIR}"
 		)
 	else()
 		add_custom_target(${DDR_TARGET_NAME}
 			DEPENDS "${DDR_CONFIG_STAMP}"
-			COMMAND ${CMAKE_COMMAND} --build "${DDR_BIN_DIR}"
+			COMMAND ${DDRGEN_LIBPATH} ${CMAKE_COMMAND} --build "${DDR_BIN_DIR}"
 		)
 	endif()
 	set_property(TARGET "${DDR_TARGET_NAME}" PROPERTY DDR_BIN_DIR "${DDR_BIN_DIR}")

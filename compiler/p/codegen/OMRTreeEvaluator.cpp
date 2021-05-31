@@ -3134,6 +3134,125 @@ static inline void loadArrayCmpSources(TR::Node *node, TR::InstOpCode::Mnemonic 
       }
    }
 
+static TR::Register *inlineArrayCmpP10(TR::Node *node, TR::CodeGenerator *cg)
+{
+   TR::Node *src1AddrNode = node->getChild(0);
+   TR::Node *src2AddrNode = node->getChild(1);
+   TR::Node *lengthNode = node->getChild(2);
+
+   TR::Register *src1AddrReg = cg->evaluate(src1AddrNode);
+   TR::Register *src2AddrReg = cg->evaluate(src2AddrNode);
+   TR::Register *indexReg = cg->allocateRegister(TR_GPR);
+   TR::Register *returnReg =  cg->allocateRegister(TR_GPR);
+   TR::Register *tempReg = cg->gprClobberEvaluate(lengthNode);
+   TR::Register *temp2Reg = cg->allocateRegister(TR_GPR);
+
+   TR::Register *vec0Reg = cg->allocateRegister(TR_VRF);
+   TR::Register *vec1Reg = cg->allocateRegister(TR_VRF);
+   TR::Register *condReg = cg->allocateRegister(TR_CCR);
+
+   TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *loopStartLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *residueStartLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *endLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *resultLabel = generateLabelSymbol(cg);
+
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, startLabel);
+   startLabel->setStartInternalControlFlow();
+
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::li, node, indexReg, 0);
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, tempReg, 16);
+
+   // We don't need length anymore as we can calculate the appropriate index by using indexReg and the remainder
+   generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, returnReg, tempReg, 0, 0xF);
+   generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, residueStartLabel, condReg);
+
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, tempReg, tempReg, 4);
+   generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, tempReg);
+
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, loopStartLabel);
+
+   // main-loop
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::lxvb16x, node, vec0Reg, indexReg, src1AddrReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::lxvb16x, node, vec1Reg, indexReg, src2AddrReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vcmpneb_r, node, vec0Reg, vec0Reg, vec1Reg);
+
+   generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, resultLabel, condReg);
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, indexReg, indexReg, 16);
+
+   generateConditionalBranchInstruction(cg, TR::InstOpCode::bdnz, node, loopStartLabel, condReg);
+   // main-loop end
+
+   // residue start
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, residueStartLabel);
+
+   generateShiftLeftImmediateLong(cg, node, temp2Reg, returnReg, 56);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, tempReg, src1AddrReg, indexReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::lxvll, node, vec0Reg, tempReg, temp2Reg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, tempReg, src2AddrReg, indexReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::lxvll, node, vec1Reg, tempReg, temp2Reg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vcmpneb, node, vec0Reg, vec0Reg, vec1Reg);
+   // residue end
+
+   // result
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, resultLabel);
+
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::vclzlsbb, node, tempReg, vec0Reg);
+
+   if (!node->isArrayCmpLen())
+      {
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, returnReg, returnReg, -1);
+      }
+
+   // offset = matched-byte-count == 16 ? remainder : match-byte-count
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, tempReg, 16);
+   generateTrg1Src3Instruction(cg, TR::InstOpCode::isellt, node, returnReg, tempReg, returnReg, condReg);
+
+   // index = index + offset, if we need to return unmatched index, then we are done here 
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, returnReg, indexReg, returnReg);
+   
+   if (!node->isArrayCmpLen())
+      {
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::lbzx, node, tempReg, returnReg, src1AddrReg);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::lbzx, node, indexReg, returnReg, src2AddrReg);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::cmp4, node, condReg, tempReg, indexReg);
+      // result = -1,0,1
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::setb, node, tempReg, condReg);
+      // convert -1,0,1 to 1,0,2 to match current arraycmp return value
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::neg, node, tempReg, tempReg);
+      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, returnReg, tempReg, 2, 3);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, returnReg, returnReg, tempReg);
+      }
+
+   int32_t numRegs = 9;
+
+   TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numRegs, cg->trMemory());
+   dependencies->addPostCondition(src1AddrReg, TR::RealRegister::NoReg);
+   dependencies->addPostCondition(src2AddrReg, TR::RealRegister::NoReg);
+   dependencies->addPostCondition(tempReg, TR::RealRegister::NoReg);
+   dependencies->getPostConditions()->getRegisterDependency(2)->setExcludeGPR0();
+   dependencies->addPostCondition(returnReg, TR::RealRegister::NoReg);
+   dependencies->getPostConditions()->getRegisterDependency(3)->setExcludeGPR0();
+   dependencies->addPostCondition(condReg, TR::RealRegister::cr6);
+   dependencies->addPostCondition(vec0Reg, TR::RealRegister::NoReg);
+   dependencies->addPostCondition(vec1Reg, TR::RealRegister::NoReg);
+   dependencies->addPostCondition(indexReg, TR::RealRegister::NoReg);
+   dependencies->getPostConditions()->getRegisterDependency(7)->setExcludeGPR0();
+   dependencies->addPostCondition(temp2Reg, TR::RealRegister::NoReg);
+
+   generateDepLabelInstruction(cg, TR::InstOpCode::label, node, endLabel, dependencies);
+   endLabel->setEndInternalControlFlow();
+
+   node->setRegister(returnReg);
+   cg->decReferenceCount(src1AddrNode);
+   cg->decReferenceCount(src2AddrNode);
+   cg->decReferenceCount(lengthNode);
+   TR::Register *liveRegs[3] = { src1AddrReg, src2AddrReg, returnReg };
+   dependencies->stopUsingDepRegs(cg, 3, liveRegs);
+
+   return returnReg;
+}
+
 
 static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -3317,6 +3436,9 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *OMR::Power::TreeEvaluator::arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
+   static char *disableP10ArrayCmp = feGetEnv("TR_DisableP10ArrayCmp"); 
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10) && !disableP10ArrayCmp)
+      return inlineArrayCmpP10(node, cg);
    return inlineArrayCmp(node, cg);
    }
 

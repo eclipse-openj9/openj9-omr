@@ -88,6 +88,8 @@ static const char* xcmpSuffix(Comparison cmp) {
             return "gt";
         case Comparison::le:
             return "le";
+        default:
+            return "";
     }
 }
 
@@ -110,6 +112,8 @@ static int32_t xcmpOracle(Comparison cmp, CompareType c1, CompareType c2) {
             return c1 > c2;
         case Comparison::le:
             return c1 <= c2;
+        default:
+            return 0;
     }
 }
 

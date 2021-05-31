@@ -80,8 +80,8 @@ const double OpCodesTest::DOUBLE_ZERO = 0;
 
 const float OpCodesTest::FLOAT_MINIMUM = - FLT_MAX;
 const float OpCodesTest::FLOAT_MAXIMUM = FLT_MAX;
-const float OpCodesTest::FLOAT_POS = 9.31;
-const float OpCodesTest::FLOAT_NEG = -9.31;
+const float OpCodesTest::FLOAT_POS = 9.31f;
+const float OpCodesTest::FLOAT_NEG = -9.31f;
 const float OpCodesTest::FLOAT_ZERO = 0;
 
 const uint8_t OpCodesTest::UBYTE_POS = 9;
@@ -116,9 +116,9 @@ const int64_t OpCodesTest::LONG_PLACEHOLDER_1 = 100;
 const int64_t OpCodesTest::LONG_PLACEHOLDER_2 = 200;
 const int64_t OpCodesTest::LONG_PLACEHOLDER_3 = 300;
 
-const float OpCodesTest::FLOAT_PLACEHOLDER_1 = 100.11;
-const float OpCodesTest::FLOAT_PLACEHOLDER_2 = 200.12;
-const float OpCodesTest::FLOAT_PLACEHOLDER_3 = 300.13;
+const float OpCodesTest::FLOAT_PLACEHOLDER_1 = 100.11f;
+const float OpCodesTest::FLOAT_PLACEHOLDER_2 = 200.12f;
+const float OpCodesTest::FLOAT_PLACEHOLDER_3 = 300.13f;
 
 const double OpCodesTest::DOUBLE_PLACEHOLDER_1 = 100.21;
 const double OpCodesTest::DOUBLE_PLACEHOLDER_2 = 200.22;

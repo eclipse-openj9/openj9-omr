@@ -32,7 +32,10 @@
 #include "ut_omrport.h"
 #include "omrportasserts.h"
 #include "omrvmem.h"
+#if defined(J9ZOS39064)
 #include "omriarv64.h"
+#endif /* defined(J9ZOS39064) */
+
 #include "omrsimap.h"
 
 #include <errno.h>

@@ -623,10 +623,10 @@ TR_Debug::limitfileOption(char *option, void *base, TR::OptionTable *entry, TR::
 
             bool isNegative = false;
             if (*(p) == '-')
-              {
-	      p++;
-	      isNegative = true;
-	      }
+               {
+               p++;
+               isNegative = true;
+               }
 
             int32_t randNum;
             while (isdigit(p[0]))
@@ -636,21 +636,23 @@ TR_Debug::limitfileOption(char *option, void *base, TR::OptionTable *entry, TR::
                   ++p;
 
                if (isNegative)
- 		  randNum = -1*randNum;
+                  randNum = -1*randNum;
 
                if ((curPseudoRandomListElem == NULL) ||
                    (curIndex == PSEUDO_RANDOM_NUMBERS_SIZE))
-		  {
-		  int32_t sz = sizeof(TR_PseudoRandomNumbersListElement);
-		  TR_PseudoRandomNumbersListElement *newPseudoRandomListElem = (TR_PseudoRandomNumbersListElement *)(TR::Compiler->regionAllocator.allocate(sz));
+                  {
+                  int32_t sz = sizeof(TR_PseudoRandomNumbersListElement);
+                  TR_PseudoRandomNumbersListElement *newPseudoRandomListElem = (TR_PseudoRandomNumbersListElement *)(TR::Compiler->regionAllocator.allocate(sz));
                   newPseudoRandomListElem->_next = NULL;
                   curIndex = 0;
+
                   if (curPseudoRandomListElem == NULL)
-		     *pseudoRandomListHeadPtr = newPseudoRandomListElem;
+                     *pseudoRandomListHeadPtr = newPseudoRandomListElem;
                   else
                      curPseudoRandomListElem->_next =  newPseudoRandomListElem;
+
                   curPseudoRandomListElem =  newPseudoRandomListElem;
-		  }
+                  }
 
                if (curPseudoRandomListElem == NULL)
                   {
@@ -662,7 +664,7 @@ TR_Debug::limitfileOption(char *option, void *base, TR::OptionTable *entry, TR::
                curPseudoRandomListElem->_curIndex = curIndex;
 
                if (*p == PSEUDO_RANDOM_SUFFIX)
-		  break;
+                  break;
 
                if (*(p++) != ' ')
                   {
@@ -672,11 +674,11 @@ TR_Debug::limitfileOption(char *option, void *base, TR::OptionTable *entry, TR::
 
                isNegative = false;
                if (*(p) == '-')
-		  {
-		  p++;
-	          isNegative = true;
-		  }
-	       }
+                  {
+                  p++;
+                      isNegative = true;
+                  }
+               }
             }
          else if (limitReadBuffer[0] == '(' && cmdLineOptions->getOption(TR_OrderCompiles))
             {

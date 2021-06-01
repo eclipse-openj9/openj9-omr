@@ -533,8 +533,7 @@ TR_Debug::limitfileOption(char *option, void *base, TR::OptionTable *entry, TR::
    if (limitFile)
       {
       TR::CompilationFilters * filters = findOrCreateFilters(loadLimit);
-      if (!cmdLineOptions->getOption(TR_OrderCompiles))
-         filters->setDefaultExclude(true);
+      filters->setDefaultExclude(true);
 
       char          limitReadBuffer[1024];
       bool          limitFileError = false;
@@ -679,13 +678,6 @@ TR_Debug::limitfileOption(char *option, void *base, TR::OptionTable *entry, TR::
                       isNegative = true;
                   }
                }
-            }
-         else if (limitReadBuffer[0] == '(' && cmdLineOptions->getOption(TR_OrderCompiles))
-            {
-            // Recognize new sampling point
-            //
-            static TR_FilterBST *lastSamplingPoint = NULL;
-            addSamplingPoint(limitReadBuffer, lastSamplingPoint, loadLimit);
             }
          }
       if (limitFileError)

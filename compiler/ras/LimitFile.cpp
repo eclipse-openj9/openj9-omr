@@ -218,90 +218,6 @@ TR_Debug::addExcludedMethodFilter(bool loadLimit)
    }
 
 bool
-TR_Debug::addSamplingPoint(char * filterString, TR_FilterBST * & lastSamplingPoint, bool loadLimit)
-   {
-   char *p;
-   int32_t tickCount;
-   if (1 != sscanf(filterString, "(%d) ", &tickCount))
-      return false;
-   uint32_t type;
-   for (p = filterString; *p && *p != '\t'; p++)
-      {}
-   p++;
-   if (*p == 'C')
-      {
-      type = TR_FILTER_SAMPLE_COMPILED;
-      p += 9;
-      }
-   else if (*p == 'I')
-      {
-      type = TR_FILTER_SAMPLE_INTERPRETED;
-      p += 12;
-      }
-   else
-      return false;
-
-   //  Skip the method name and scan the rest of the string to see if the
-   // sampling point did anything
-   //
-   char *methodName = p;
-   //for (p++; *p && *p != '>'; p++) // WILL CATCH <init>
-   //   {}
-   //if (!*p)
-   //   return false;
-   p = strstr(p, "-->");
-   if (!p)
-      return false;
-   p += 2;
-
-   TR::CompilationFilters *filters = findOrCreateFilters(loadLimit);
-   TR_FilterBST * filterBST = new (TR::Compiler->regionAllocator) TR_FilterBST(type, tickCount);
-   if (!scanFilterName(methodName, filterBST))
-      return false;
-
-   // Make sure a full method signature was specified on the sampling log line
-   // and then reset the filter type to the proper value
-   //
-   if (filterBST->getFilterType() != TR_FILTER_SPECIFIC_METHOD)
-      return false;
-   filterBST->setFilterType(type);
-
-   // Set up the rest of the information in the filter and add it to the
-   // sampling point list.
-   int32_t count;
-   if (type == TR_FILTER_SAMPLE_INTERPRETED)
-      {
-      // Pick up new invocation count
-      //
-      if (1 != sscanf(p, "> %d", &count))
-         return false;
-      filterBST->setSampleCount(count);
-      }
-   else
-      {
-      // Pick up new compilation level, Use the top bit as a "profiled" tag bit.
-      //
-      if (1 != sscanf(p, "> recompile at level %d", &count))
-         return false;
-      filterBST->setSampleLevel(count);
-      if (strstr(p+21,", profiled"))
-         filterBST->setSampleProfiled(1);
-      else
-         filterBST->setSampleProfiled(0);
-      }
-
-   // Add the filter to the sampling point list
-   //
-   if (lastSamplingPoint)
-      lastSamplingPoint->setNext(filterBST);
-   else
-      filters->samplingPoints = filterBST;
-
-   lastSamplingPoint = filterBST;
-   return true;
-   }
-
-bool
 TR_Debug::scanInlineFilters(FILE * inlineFile, int32_t & lineNumber, TR::CompilationFilters * filters)
    {
    char          limitReadBuffer[1024];
@@ -1002,33 +918,6 @@ TR_Debug::printFilterTree(TR_FilterBST *root)
    print(root);
    if (root->getChild(1))
       printFilterTree(root->getChild(1));
-   }
-
-void
-TR_Debug::printSamplingPoints()
-   {
-   TR_VerboseLog::vlogAcquire();
-   for (TR_FilterBST *filter=_compilationFilters->samplingPoints; filter; filter = filter->getNext())
-      {
-      if (filter->getFilterType() == TR_FILTER_SAMPLE_INTERPRETED)
-         {
-         TR_VerboseLog::writeLine("(%d)\tInterpreted %s.%s%s\tcount=%d",
-            filter->getTickCount(),
-            filter->getClass(), filter->getName(), filter->getSignature(),
-            filter->getSampleCount()
-            );
-         }
-      else
-         {
-         TR_VerboseLog::writeLine("(%d)\tCompiled %s.%s%s\tlevel=%d%s",
-            filter->getTickCount(),
-            filter->getClass(), filter->getName(), filter->getSignature(),
-            filter->getSampleLevel(),
-            (filter->getSampleProfiled() ? ", profiled": "")
-            );
-         }
-      }
-   TR_VerboseLog::vlogRelease();
    }
 
 int32_t

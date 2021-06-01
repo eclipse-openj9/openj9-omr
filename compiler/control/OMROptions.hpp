@@ -1223,13 +1223,6 @@ public:
 
    int32_t getOptionSet()       {return _optionSet;}
    int32_t getTickCount()       {return _optionSet;}
-   int32_t getSampleCount()     {return _sampleInfo;}
-   int32_t getSampleLevel()     {return _sampleInfo;}
-
-   char  getSampleProfiled()  {return _sampleProfiled;}
-   void  setSampleCount(int32_t n)   {_sampleInfo = (int16_t)n;}
-   void  setSampleLevel(int32_t n)   {_sampleInfo = (int16_t)n;}
-   void  setSampleProfiled(char p) {_sampleProfiled = p;}
 
    char *getName()            {return _name;}
    void setName(char *n, int32_t l) {_name = n; _nameLen = l;}
@@ -1274,14 +1267,6 @@ public:
    // For filter position in a limit file
    int32_t _lineNumber;
 
-   // For sampling point, the new invocation count or compilation level
-   //
-   int16_t _sampleInfo;
-
-   // For sampling point, whether the compilation is to be profiled
-   //
-   char _sampleProfiled;
-
    uint32_t _nameLen;
 
    // The filter type - see definitions above
@@ -1312,10 +1297,6 @@ public:
    // Linked list for regular expressions.
    //
    TR_FilterBST  *filterRegexList;
-
-   // Linked list for sampling point information
-   //
-   TR_FilterBST  *samplingPoints;
 
    // Special filter representing excluded methods
    //

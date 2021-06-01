@@ -55,6 +55,14 @@ elseif(OMR_ARCH_S390)
 	)
 endif()
 
+if(OMR_ARCH_X86)
+	set(OMR_WARNINGS_AS_ERRORS ON)
+	set(OMR_ENHANCED_WARNINGS OFF)
+else()
+	set(OMR_WARNINGS_AS_ERRORS OFF)
+	set(OMR_ENHANCED_WARNINGS OFF)
+endif()
+
 create_omr_compiler_library(
 	NAME testcompiler
 	OBJECTS ${COMPILERTEST_FILES}

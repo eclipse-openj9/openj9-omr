@@ -1095,6 +1095,18 @@ OMR::X86::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhe
       }
    }
 
+bool
+OMR::X86::CodeGenerator::isILOpCodeSupported(TR::ILOpCodes o)
+   {
+   switch(o)
+      {
+      case TR::a2i:
+         return false;
+      default:
+         return OMR::CodeGenerator::isILOpCodeSupported(o);
+      }
+   }
+
 TR::RealRegister *
 OMR::X86::CodeGenerator::getMethodMetaDataRegister()
    {

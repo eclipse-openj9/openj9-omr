@@ -2876,28 +2876,6 @@ OMR::Z::TreeEvaluator::ldivEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    }
 
 /**
- * bdivEvaluator -  divide 2 bytes
- * (child1 / child2)
- */
-TR::Register *
-OMR::Z::TreeEvaluator::bdivEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   TR_UNIMPLEMENTED();
-   return NULL;
-   }
-
-/**
- * sdivEvaluator -  divide 2 short integers
- * (child1 / child2)
- */
-TR::Register *
-OMR::Z::TreeEvaluator::sdivEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   TR_UNIMPLEMENTED();
-   return NULL;
-   }
-
-/**
  * iremEvaluator -  remainder of 2 integers
  * (child1 % child2)
  */
@@ -3020,28 +2998,6 @@ TR::Register *
 OMR::Z::TreeEvaluator::lremEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    return lDivRemGenericEvaluator64(node, cg, REMAINDER);
-   }
-
-/**
- * bremEvaluator -  remainder of 2 bytes
- * (child1 % child2)
- */
-TR::Register *
-OMR::Z::TreeEvaluator::bremEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   TR_UNIMPLEMENTED();
-   return NULL;
-   }
-
-/**
- * sremEvaluator -  remainder of 2 short integers
- * (child1 % child2)
- */
-TR::Register *
-OMR::Z::TreeEvaluator::sremEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   TR_UNIMPLEMENTED();
-   return NULL;
    }
 
 /**

@@ -432,3 +432,14 @@ int64_t OMR::RV::CodeGenerator::getSmallestPosConstThatMustBeMaterialized()
    TR_ASSERT(0, "Not Implemented on AArch64");
    return 0;
    }
+
+bool OMR::RV::CodeGenerator::isILOpCodeSupported(TR::ILOpCodes o)
+   {
+   switch(o)
+      {
+      case TR::a2i:
+         return false;
+      default:
+         return OMR::CodeGenerator::isILOpCodeSupported(o);
+      }
+   }

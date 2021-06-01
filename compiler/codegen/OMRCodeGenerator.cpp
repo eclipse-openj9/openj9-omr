@@ -114,27 +114,29 @@
 namespace TR { class Optimizer; }
 namespace TR { class RegisterDependencyConditions; }
 
-
-#if defined(TR_TARGET_X86) || defined(TR_TARGET_POWER)
-   #define butestEvaluator badILOpEvaluator
-   #define sutestEvaluator badILOpEvaluator
-   #define iucmpEvaluator badILOpEvaluator
-   #define icmpEvaluator badILOpEvaluator
-#endif
-#ifdef TR_TARGET_X86  //x86 only
-    #define bucmpEvaluator badILOpEvaluator
-    #define bcmpEvaluator badILOpEvaluator
-    #define sucmpEvaluator badILOpEvaluator
-    #define scmpEvaluator badILOpEvaluator
-#endif
-#if defined(TR_TARGET_AMD64) || defined(TR_TARGET_POWER) //ppc and amd64
-    #define zccAddSubEvaluator badILOpEvaluator
-#endif
-
 TR_TreeEvaluatorFunctionPointer
 OMR::CodeGenerator::_nodeToInstrEvaluators[] =
    {
-   #include "codegen/TreeEvaluatorTable.hpp"
+#define OPCODE_MACRO(\
+   opcode, \
+   name, \
+   prop1, \
+   prop2, \
+   prop3, \
+   prop4, \
+   dataType, \
+   typeProps, \
+   childProps, \
+   swapChildrenOpcode, \
+   reverseBranchOpcode, \
+   boolCompareOpcode, \
+   ifCompareOpcode, \
+   ...) TR::TreeEvaluator::opcode ## Evaluator,
+
+   TR::TreeEvaluator::BadILOpEvaluator,
+
+#include "il/Opcodes.enum"
+#undef OPCODE_MACRO
    };
 
 static_assert(TR::NumIlOps ==

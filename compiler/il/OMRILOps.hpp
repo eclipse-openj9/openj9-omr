@@ -1319,13 +1319,6 @@ public:
          case TR::fconst:
          case TR::dconst:
             return TR::vsplats;
-         case TR::brem:
-         case TR::srem:
-         case TR::irem:
-         case TR::lrem:
-         case TR::frem:
-         case TR::drem:
-            return TR::vrem;
          case TR::bneg:
          case TR::sneg:
          case TR::ineg:

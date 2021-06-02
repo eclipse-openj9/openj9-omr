@@ -744,7 +744,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vDivOrRemHelper(TR::Node *node, TR::CodeGenerator *cg, bool isDivision);
    static TR::Register *vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vremEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vandEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg);

@@ -1014,7 +1014,6 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::D
          else
             return false;
       case TR::vneg:
-      case TR::vrem:
          return false;
       case TR::vxor:
       case TR::vor:

@@ -465,7 +465,6 @@
 #define vsubSimplifierHandler dftSimplifier
 #define vmulSimplifierHandler dftSimplifier
 #define vdivSimplifierHandler dftSimplifier
-#define vremSimplifierHandler dftSimplifier
 #define vandSimplifierHandler dftSimplifier
 #define vorSimplifierHandler dftSimplifier
 #define vxorSimplifierHandler dftSimplifier

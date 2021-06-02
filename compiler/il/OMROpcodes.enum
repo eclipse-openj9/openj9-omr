@@ -7092,22 +7092,6 @@ OPCODE_MACRO(\
    /* .description          =    vector divide */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ vrem, \
-   /* .name                 = */ "vrem", \
-   /* .properties1          = */ ILProp1::Rem, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::NoType, \
-   /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, \
-   /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    vector remainder */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ vand, \
    /* .name                 = */ "vand", \
    /* .properties1          = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::And, \

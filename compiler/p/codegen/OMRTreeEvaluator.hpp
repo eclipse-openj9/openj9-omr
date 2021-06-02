@@ -195,7 +195,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vdcmpallneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdcmpanyneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vcomEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vremEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vshlEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vushrEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vshrEvaluator(TR::Node *node, TR::CodeGenerator *cg);

@@ -1824,12 +1824,6 @@ OMR::X86::AMD64::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator 
    }
 
 TR::Register*
-OMR::X86::AMD64::TreeEvaluator::vremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::X86::AMD64::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);

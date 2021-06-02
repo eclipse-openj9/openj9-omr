@@ -1467,30 +1467,6 @@ OMR::Z::TreeEvaluator::vshrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register*
-OMR::Z::TreeEvaluator::vucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vcmpltEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vcmpgtEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vcmpleEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vcmpgeEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::Z::TreeEvaluator::vloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::vloadEvaluator(node, cg);

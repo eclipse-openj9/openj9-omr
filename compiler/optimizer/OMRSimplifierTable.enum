@@ -473,13 +473,9 @@
 #define vcmpeqSimplifierHandler dftSimplifier
 #define vcmpneSimplifierHandler dftSimplifier
 #define vcmpltSimplifierHandler dftSimplifier
-#define vucmpltSimplifierHandler dftSimplifier
 #define vcmpgtSimplifierHandler dftSimplifier
-#define vucmpgtSimplifierHandler dftSimplifier
 #define vcmpleSimplifierHandler dftSimplifier
-#define vucmpleSimplifierHandler dftSimplifier
 #define vcmpgeSimplifierHandler dftSimplifier
-#define vucmpgeSimplifierHandler dftSimplifier
 #define vloadSimplifierHandler directLoadSimplifier
 #define vloadiSimplifierHandler indirectLoadSimplifier
 #define vstoreSimplifierHandler directStoreSimplifier

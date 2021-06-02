@@ -1892,12 +1892,6 @@ OMR::X86::I386::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *
    }
 
 TR::Register*
-OMR::X86::I386::TreeEvaluator::vcomEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::X86::I386::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);

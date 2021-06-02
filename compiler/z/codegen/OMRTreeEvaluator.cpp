@@ -16446,18 +16446,6 @@ OMR::Z::TreeEvaluator::vl2vdEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::VCDG);
    }
 
-TR::Register *
-OMR::Z::TreeEvaluator::vcomEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *vecOneReg = cg->allocateRegister(TR_VRF);
-   TR::Register *srcVecReg = cg->evaluate(node->getChild(0));
-   generateVRIaInstruction(cg, TR::InstOpCode::VREPI, node, vecOneReg, 0xFFFF, 1);
-   generateVRRcInstruction(cg, TR::InstOpCode::VNC, node, vecOneReg, vecOneReg, srcVecReg, 0);
-   node->setRegister(vecOneReg);
-   cg->decReferenceCount(node->getChild(0));
-   return node->getRegister();
-   }
-
 bool canUseNodeForFusedMultiply(TR::Node *node)
    {
    if (node->getOpCode().isMul() && node->getRegister() == NULL && node->getReferenceCount() < 2)

@@ -904,12 +904,6 @@ OMR::Power::TreeEvaluator::vdcmpanyneEvaluator(TR::Node *node, TR::CodeGenerator
    }
 
 TR::Register*
-OMR::Power::TreeEvaluator::vcomEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::Power::TreeEvaluator::vshlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);

@@ -460,7 +460,6 @@
 #define vdcmpanyleSimplifierHandler normalizeCmpSimplifier
 #define vdsqrtSimplifierHandler dftSimplifier
 #define vnegSimplifierHandler dftSimplifier
-#define vcomSimplifierHandler dftSimplifier
 #define vaddSimplifierHandler dftSimplifier
 #define vsubSimplifierHandler dftSimplifier
 #define vmulSimplifierHandler dftSimplifier

@@ -892,18 +892,6 @@ OMR::Power::TreeEvaluator::vdcmpneEvaluator(TR::Node *node, TR::CodeGenerator *c
    }
 
 TR::Register*
-OMR::Power::TreeEvaluator::vdcmpallneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Power::TreeEvaluator::vdcmpanyneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::Power::TreeEvaluator::vcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
@@ -3420,58 +3408,6 @@ TR::Register *OMR::Power::TreeEvaluator::vdcmpanyHelper(TR::Node *node, TR::Code
 
    return resReg;
 
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::vdcmpallHelper(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)
-   {
-   TR::Node *firstChild = node->getFirstChild();
-   TR::Node *secondChild = node->getSecondChild();
-   TR::Register *lhsReg = NULL, *rhsReg = NULL;
-
-   lhsReg = cg->evaluate(firstChild);
-   rhsReg = cg->evaluate(secondChild);
-
-   TR::Register *tempReg = cg->allocateRegister(TR_VSX_VECTOR);
-   TR::Register *resReg = cg->allocateRegister(TR_GPR);
-   node->setRegister(resReg);
-
-   generateTrg1Src2Instruction(cg, op, node, tempReg, lhsReg, rhsReg);
-   generateTrg1ImmInstruction(cg, TR::InstOpCode::mfocrf, node, resReg, 0x2);
-   generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, resReg, resReg, 25, 0x1);
-
-   cg->stopUsingRegister(tempReg);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-
-   return resReg;
-
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::vdcmpalleqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vdcmpallHelper(node, cg, TR::InstOpCode::xvcmpeqdp_r);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::vdcmpallgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vdcmpallHelper(node, cg, TR::InstOpCode::xvcmpgedp_r);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::vdcmpallgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vdcmpallHelper(node, cg, TR::InstOpCode::xvcmpgtdp_r);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::vdcmpallleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   node->swapChildren();
-   return TR::TreeEvaluator::vdcmpallHelper(node, cg, TR::InstOpCode::xvcmpgedp_r);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::vdcmpallltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   node->swapChildren();
-   return TR::TreeEvaluator::vdcmpallHelper(node, cg, TR::InstOpCode::xvcmpgtdp_r);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vdcmpanyeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)

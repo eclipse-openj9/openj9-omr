@@ -209,7 +209,6 @@ public:
    static TR::Register *vdmergelEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdmergehEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdcmpallneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdcmpanyneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -603,11 +602,6 @@ public:
    static TR::Register *vdcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdcmpalleqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdcmpallgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdcmpallgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdcmpallltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdcmpallleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdcmpanyeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdcmpanygtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdcmpanygeEvaluator(TR::Node *node, TR::CodeGenerator *cg);

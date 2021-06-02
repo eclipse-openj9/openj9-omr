@@ -16429,38 +16429,6 @@ int32_t getVectorElementSizeMask(int8_t size)
    }
 
 TR::Register *
-OMR::Z::TreeEvaluator::vincEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *vecSrcReg = cg->evaluate(node->getChild(0));
-   TR::Register *vecSrc2Reg = cg->allocateRegister(TR_VRF);
-   TR::Register *vecTrgReg = cg->allocateRegister(TR_VRF);
-   TR::Node *secondChild = node->getChild(1);
-   generateReplicateNodeInVectorReg(node, cg, vecSrc2Reg, secondChild, getVectorElementSize(node));
-   generateVRRcInstruction(cg, TR::InstOpCode::VA, node, vecTrgReg, vecSrcReg, vecSrc2Reg, getVectorElementSizeMask(node));
-   node->setRegister(vecTrgReg);
-   cg->stopUsingRegister(vecSrc2Reg);
-   cg->decReferenceCount(node->getChild(0));
-   cg->decReferenceCount(node->getChild(1));
-   return node->getRegister();
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::vdecEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *vecSrcReg = cg->evaluate(node->getChild(0));
-   TR::Register *vecSrc2Reg = cg->allocateRegister(TR_VRF);
-   TR::Register *vecTrgReg = cg->allocateRegister(TR_VRF);
-   TR::Node *secondChild = node->getChild(1);
-   generateReplicateNodeInVectorReg(node, cg, vecSrc2Reg, secondChild, getVectorElementSize(node));
-   generateVRRcInstruction(cg, TR::InstOpCode::VS, node, vecTrgReg, vecSrcReg, vecSrc2Reg, getVectorElementSizeMask(node));
-   node->setRegister(vecTrgReg);
-   cg->stopUsingRegister(vecSrc2Reg);
-   cg->decReferenceCount(node->getChild(0));
-   cg->decReferenceCount(node->getChild(1));
-   return node->getRegister();
-   }
-
-TR::Register *
 OMR::Z::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;

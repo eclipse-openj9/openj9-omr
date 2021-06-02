@@ -6628,22 +6628,6 @@ OPCODE_MACRO(\
    /* .description          =    get vector select double */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ vdrem, \
-   /* .name                 = */ "vdrem", \
-   /* .properties1          = */ ILProp1::Rem, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorDouble, \
-   /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
-   /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    vector double remainder */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ vdmadd, \
    /* .name                 = */ "vdmadd", \
    /* .properties1          = */ 0, \

@@ -316,7 +316,6 @@ public:
    static TR::Register *vdsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdgetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdselEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdremEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdmaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdnmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);

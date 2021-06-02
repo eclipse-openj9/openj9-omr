@@ -208,7 +208,6 @@ public:
    static TR::Register *vimergehEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdmergelEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdmergehEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdremEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdcmpallneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdcmpanyneEvaluator(TR::Node *node, TR::CodeGenerator *cg);

@@ -886,12 +886,6 @@ OMR::Power::TreeEvaluator::vdmergehEvaluator(TR::Node *node, TR::CodeGenerator *
    }
 
 TR::Register*
-OMR::Power::TreeEvaluator::vdremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::Power::TreeEvaluator::vdcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);

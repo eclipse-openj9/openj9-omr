@@ -431,12 +431,6 @@
 #define vdcmpgeSimplifierHandler normalizeCmpSimplifier
 #define vdcmpltSimplifierHandler normalizeCmpSimplifier
 #define vdcmpleSimplifierHandler normalizeCmpSimplifier
-#define vdcmpanyeqSimplifierHandler normalizeCmpSimplifier
-#define vdcmpanyneSimplifierHandler normalizeCmpSimplifier
-#define vdcmpanygtSimplifierHandler normalizeCmpSimplifier
-#define vdcmpanygeSimplifierHandler normalizeCmpSimplifier
-#define vdcmpanyltSimplifierHandler normalizeCmpSimplifier
-#define vdcmpanyleSimplifierHandler normalizeCmpSimplifier
 #define vdsqrtSimplifierHandler dftSimplifier
 #define vnegSimplifierHandler dftSimplifier
 #define vaddSimplifierHandler dftSimplifier

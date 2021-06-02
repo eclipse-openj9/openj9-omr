@@ -3384,59 +3384,6 @@ TR::Register *OMR::Power::TreeEvaluator::vdcmpltEvaluator(TR::Node *node, TR::Co
    return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvcmpgtdp);
    }
 
-TR::Register *OMR::Power::TreeEvaluator::vdcmpanyHelper(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)
-   {
-   TR::Node *firstChild = node->getFirstChild();
-   TR::Node *secondChild = node->getSecondChild();
-   TR::Register *lhsReg = NULL, *rhsReg = NULL;
-
-   lhsReg = cg->evaluate(firstChild);
-   rhsReg = cg->evaluate(secondChild);
-
-   TR::Register *tempReg = cg->allocateRegister(TR_VSX_VECTOR);
-   TR::Register *resReg = cg->allocateRegister(TR_GPR);
-   node->setRegister(resReg);
-
-   generateTrg1Src2Instruction(cg, op, node, tempReg, lhsReg, rhsReg);
-   generateTrg1ImmInstruction(cg, TR::InstOpCode::mfocrf, node, resReg, 0x2);
-   generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, resReg, resReg, 27, 0x1);
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subfic, node, resReg, resReg, 1);
-
-   cg->stopUsingRegister(tempReg);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-
-   return resReg;
-
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::vdcmpanyeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vdcmpanyHelper(node, cg, TR::InstOpCode::xvcmpeqdp_r);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::vdcmpanygeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vdcmpanyHelper(node, cg, TR::InstOpCode::xvcmpgedp_r);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::vdcmpanygtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vdcmpanyHelper(node, cg, TR::InstOpCode::xvcmpgtdp_r);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::vdcmpanyleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   node->swapChildren();
-   return TR::TreeEvaluator::vdcmpanyHelper(node, cg, TR::InstOpCode::xvcmpgedp_r);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::vdcmpanyltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   node->swapChildren();
-   return TR::TreeEvaluator::vdcmpanyHelper(node, cg, TR::InstOpCode::xvcmpgtdp_r);
-   }
-
 TR::Register *OMR::Power::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    switch(node->getDataType())

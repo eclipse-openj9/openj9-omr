@@ -6612,54 +6612,6 @@ OPCODE_MACRO(\
    /* .description          =    get vector select double */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ vdmadd, \
-   /* .name                 = */ "vdmadd", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorDouble, \
-   /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
-   /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    vector double fused multiply add */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ vdnmsub, \
-   /* .name                 = */ "vdnmsub", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorDouble, \
-   /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
-   /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    vector double fused negative multiply subtract */ \
-)
-OPCODE_MACRO(\
-   /* .opcode               = */ vdmsub, \
-   /* .name                 = */ "vdmsub", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::LikeUse, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorDouble, \
-   /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
-   /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    vector double fused multiply subtract */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ vdmax, \
    /* .name                 = */ "vdmax", \
    /* .properties1          = */ 0, \

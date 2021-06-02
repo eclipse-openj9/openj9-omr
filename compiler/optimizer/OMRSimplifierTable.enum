@@ -435,9 +435,6 @@
 #define vdsetelemSimplifierHandler dftSimplifier
 #define vdgetelemSimplifierHandler dftSimplifier
 #define vdselSimplifierHandler dftSimplifier
-#define vdmaddSimplifierHandler dftSimplifier
-#define vdnmsubSimplifierHandler dftSimplifier
-#define vdmsubSimplifierHandler dftSimplifier
 #define vdmaxSimplifierHandler dftSimplifier
 #define vdminSimplifierHandler dftSimplifier
 #define vdcmpeqSimplifierHandler normalizeCmpSimplifier

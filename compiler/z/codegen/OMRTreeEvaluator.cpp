@@ -1311,18 +1311,6 @@ OMR::Z::TreeEvaluator::vdselEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register*
-OMR::Z::TreeEvaluator::vdnmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vdmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::Z::TreeEvaluator::vdmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
@@ -14827,50 +14815,6 @@ OMR::Z::TreeEvaluator::inlineVectorBinaryOp(TR::Node * node, TR::CodeGenerator *
    }
 
 TR::Register *
-OMR::Z::TreeEvaluator::inlineVectorBitSelectOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)
-   {
-   TR_ASSERT(node->getNumChildren() >= 3,"Select Node must contain 3 or more children");
-   // TODO Bullet proof this code better and handle more children better.
-   TR::Node *firstChild  = node->getFirstChild();
-   TR::Node *secondChild = node->getSecondChild();
-   TR::Node *thirdChild  = node->getThirdChild();
-
-   TR::Register *targetReg  = TR::TreeEvaluator::tryToReuseInputVectorRegs(node, cg);
-
-   TR::Register *sourceReg1 = cg->evaluate(firstChild);
-   TR::Register *sourceReg2 = cg->evaluate(secondChild);
-   TR::Register *sourceReg3 = cg->evaluate(thirdChild);
-
-   // !!! Masks change per instruction. *Ref to zPoP for masks* !!!
-   uint8_t mask3 = 0;
-   uint8_t mask4 = 0;
-   uint8_t mask5 = 0;
-
-   node->setRegister(targetReg);
-
-   switch (op)
-      {
-      case TR::InstOpCode::VMAL:
-      case TR::InstOpCode::VMAH:
-         mask5 = 0x2;   // mask5 = 0x2 --> word element size (mul makes it double-word)
-         // RA does allow for source registers 1 & 2 to be re-used as target
-         breakInst = generateVRRdInstruction(cg, op, node, targetReg, sourceReg1, sourceReg2, sourceReg3, 0, mask5);
-         break;
-      case TR::InstOpCode::VFMA:
-         breakInst = generateVRReInstruction(cg, op, node, targetReg, sourceReg1, sourceReg2, sourceReg3, 3, mask5);
-         break;
-      default:
-         TR_ASSERT(false, "Select Vector IL evaluation unimplemented for node : %s", cg->getDebug()->getName(node));
-      }
-
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-   cg->decReferenceCount(thirdChild);
-
-   return targetReg;
-   }
-
-TR::Register *
 OMR::Z::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::bad;
@@ -14956,12 +14900,6 @@ OMR::Z::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    srcMemRef->stopUsingMemRefRegister(cg);
 
    return NULL;
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::vdmaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::inlineVectorBitSelectOp(node, cg, TR::InstOpCode::VFMA);
    }
 
 TR::Register *

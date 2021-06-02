@@ -284,8 +284,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vdsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdgetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdselEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdnmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -723,7 +721,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
 
    static TR::Register *vselEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
-   static TR::Register *vdmaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -752,7 +749,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *inlineVectorUnaryOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);
    static TR::Register *inlineVectorBinaryOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);
-   static TR::Register *inlineVectorBitSelectOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);
 
    static TR::Register *sbyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ibyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg);

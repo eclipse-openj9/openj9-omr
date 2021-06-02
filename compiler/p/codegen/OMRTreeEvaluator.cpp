@@ -3364,21 +3364,6 @@ TR::Register *OMR::Power::TreeEvaluator::vimergeEvaluator(TR::Node *node, TR::Co
    return resReg;
    }
 
-TR::Register *OMR::Power::TreeEvaluator::vdmaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::inlineVectorBitSelectOp(node, cg, TR::InstOpCode::xvmaddadp);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::vdnmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::inlineVectorBitSelectOp(node, cg, TR::InstOpCode::xvnmsubadp);
-   }
-
-TR::Register *OMR::Power::TreeEvaluator::vdmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::inlineVectorBitSelectOp(node, cg, TR::InstOpCode::xvmsubadp);
-   }
-
 TR::Register *OMR::Power::TreeEvaluator::vdselEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::inlineVectorBitSelectOp(node, cg, TR::InstOpCode::xxsel);

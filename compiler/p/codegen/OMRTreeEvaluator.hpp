@@ -650,9 +650,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *getvelemMemoryMoveHelper(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *visetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vimergeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdmaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdnmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);

@@ -825,18 +825,6 @@ OMR::ARM64::TreeEvaluator::sucmpleEvaluator(TR::Node *node, TR::CodeGenerator *c
    }
 
 TR::Register*
-OMR::ARM64::TreeEvaluator::fcmplEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::ARM64::TreeEvaluator::fcmpgEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::ARM64::TreeEvaluator::ifacmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::iflcmpeqEvaluator(node, cg);
@@ -2223,12 +2211,6 @@ OMR::ARM64::TreeEvaluator::lumaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register*
-OMR::ARM64::TreeEvaluator::dmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::ARM64::TreeEvaluator::iuminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
@@ -2236,12 +2218,6 @@ OMR::ARM64::TreeEvaluator::iuminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::luminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::ARM64::TreeEvaluator::dminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }

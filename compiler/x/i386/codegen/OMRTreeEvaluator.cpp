@@ -2072,12 +2072,6 @@ OMR::X86::I386::TreeEvaluator::vstoreiEvaluator(TR::Node *node, TR::CodeGenerato
    }
 
 TR::Register*
-OMR::X86::I386::TreeEvaluator::vrandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::X86::I386::TreeEvaluator::vreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);

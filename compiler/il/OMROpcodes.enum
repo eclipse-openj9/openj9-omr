@@ -7492,22 +7492,6 @@ OPCODE_MACRO(\
    /* .description          =    store indirect vector */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ vrand, \
-   /* .name                 = */ "vrand", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ ILProp3::VectorReduction, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::NoType, \
-   /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, \
-   /* .childProperties      = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    AND all elements into single value of element size */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ vreturn, \
    /* .name                 = */ "vreturn", \
    /* .properties1          = */ ILProp1::Return | ILProp1::TreeTop, \

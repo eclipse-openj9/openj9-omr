@@ -1024,12 +1024,6 @@ OMR::Power::TreeEvaluator::vstoreiEvaluator(TR::Node *node, TR::CodeGenerator *c
    }
 
 TR::Register*
-OMR::Power::TreeEvaluator::vrandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::Power::TreeEvaluator::vreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
@@ -4960,9 +4954,9 @@ static TR::Register *inlineArrayCmpP10(TR::Node *node, TR::CodeGenerator *cg)
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, tempReg, 16);
    generateTrg1Src3Instruction(cg, TR::InstOpCode::isellt, node, returnReg, tempReg, returnReg, condReg);
 
-   // index = index + offset, if we need to return unmatched index, then we are done here 
+   // index = index + offset, if we need to return unmatched index, then we are done here
    generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, returnReg, indexReg, returnReg);
-   
+
    if (!node->isArrayCmpLen())
       {
       generateTrg1Src2Instruction(cg, TR::InstOpCode::lbzx, node, tempReg, returnReg, src1AddrReg);
@@ -5188,7 +5182,7 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *OMR::Power::TreeEvaluator::arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
-   static char *disableP10ArrayCmp = feGetEnv("TR_DisableP10ArrayCmp"); 
+   static char *disableP10ArrayCmp = feGetEnv("TR_DisableP10ArrayCmp");
    if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10) && !disableP10ArrayCmp)
       return inlineArrayCmpP10(node, cg);
    return inlineArrayCmp(node, cg);

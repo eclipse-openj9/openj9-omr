@@ -388,7 +388,6 @@ public:
    static TR::Register *vloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vrandEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vcallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vcalliEvaluator(TR::Node *node, TR::CodeGenerator *cg);

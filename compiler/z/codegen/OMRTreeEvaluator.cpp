@@ -17020,58 +17020,6 @@ OMR::Z::TreeEvaluator::vcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register *
-OMR::Z::TreeEvaluator::vrandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *srcVecReg = cg->evaluate(node->getChild(0));
-   TR::Register *workReg = cg->allocateRegister(TR_VRF);
-   TR::Register *workReg2 = cg->allocateRegister(TR_VRF);
-   TR::Register *shiftReg = cg->allocateRegister(TR_VRF);
-
-   int mask4 = getVectorElementSizeMask(node->getChild(0));   //0 - byte, 3 - doubleword
-
-   // copy source to work reg
-   generateVRRaInstruction(cg, TR::InstOpCode::VLR, node, workReg, srcVecReg);
-
-   // Perform vector reduction AND
-   // Strategy used here is shift by incremental powers of 2 and AND. Next iteration works on previous shift-and-AND result
-   switch(mask4)
-      {
-      case 0:   // byte
-         generateVRIaInstruction(cg, TR::InstOpCode::VLEIB, node, shiftReg, 1 << 4, 7);                      // load shiftReg
-         generateVRRcInstruction(cg, TR::InstOpCode::VSRLB, node, workReg2, workReg, shiftReg, 0, 0, 0);     // shift right logical by byte
-         generateVRRcInstruction(cg, TR::InstOpCode::VN, node, workReg, workReg, workReg2, 0, 0, 0);         // AND
-      case 1:   // halfword
-         generateVRIaInstruction(cg, TR::InstOpCode::VLEIB, node, shiftReg, 1 << 5, 7);                      // load shiftReg
-         generateVRRcInstruction(cg, TR::InstOpCode::VSRLB, node, workReg2, workReg, shiftReg, 0, 0, 0);     // shift right logical by byte
-         generateVRRcInstruction(cg, TR::InstOpCode::VN, node, workReg, workReg, workReg2, 0, 0, 0);         // AND
-      case 2:   // word
-         generateVRIaInstruction(cg, TR::InstOpCode::VLEIB, node, shiftReg, 1 << 6, 7);                      // load shiftReg
-         generateVRRcInstruction(cg, TR::InstOpCode::VSRLB, node, workReg2, workReg, shiftReg, 0, 0, 0);     // shift right logical by byte
-         generateVRRcInstruction(cg, TR::InstOpCode::VN, node, workReg, workReg, workReg2, 0, 0, 0);         // AND
-      case 3:   // doubleword
-         generateVRIaInstruction(cg, TR::InstOpCode::VLEIB, node, shiftReg, 1 << 7, 7);                      // load shiftReg
-         generateVRRcInstruction(cg, TR::InstOpCode::VSRLB, node, workReg2, workReg, shiftReg, 0, 0, 0);     // shift right logical by byte
-         generateVRRcInstruction(cg, TR::InstOpCode::VN, node, workReg, workReg, workReg2, 0, 0, 0);         // AND
-         break;
-      default: TR_ASSERT(false, "wrong mask value found: %i\n", mask4); break;
-      }
-
-   // final result is in the last element. store it into resultReg. result will be in GPR
-   // last element index. mask4=0,1,2,3 -> last element index=15,7,3,1
-   TR::MemoryReference *extractIndexMR = generateS390MemoryReference((1 << (4 - mask4)) - 1, cg);
-
-   TR::Register *resultReg = (cg->comp()->target().is32Bit() && mask4 == 3) ? cg->allocateRegister() : cg->allocateRegister();
-   generateVRScInstruction(cg, TR::InstOpCode::VLGV, node, resultReg, workReg, extractIndexMR, mask4);
-
-   cg->stopUsingRegister(workReg);
-   cg->stopUsingRegister(workReg2);
-   cg->stopUsingRegister(shiftReg);
-   node->setRegister(resultReg);
-   cg->decReferenceCount(node->getChild(0));
-   return node->getRegister();
-   }
-
-TR::Register *
 OMR::Z::TreeEvaluator::vreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Linkage * linkage = cg->getLinkage();

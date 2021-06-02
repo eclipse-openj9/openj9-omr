@@ -465,12 +465,10 @@ public:
    virtual TR_FilterBST *  addFilter(char * &, int32_t, int32_t, int32_t, TR::CompilationFilters *);
    virtual TR_FilterBST *  addFilter(char * &, int32_t, int32_t, int32_t, bool loadLimit);
    virtual TR_FilterBST *  addExcludedMethodFilter(bool loadLimit);
-   virtual bool            addSamplingPoint(char *, TR_FilterBST * &, bool loadLimit);
    virtual int32_t         scanFilterName(char *, TR_FilterBST *);
    virtual void            printFilters(TR::CompilationFilters *);
    virtual void            printFilters();
    virtual void            print(TR_FilterBST * filter);
-   virtual void            printSamplingPoints();
    virtual void         printHeader();
    virtual void         printMethodHotness();
    virtual void         printInstrDumpHeader(const char * title);

@@ -992,7 +992,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"optLevel=scorching", "O\tcompile all methods at scorching level", TR::Options::set32BitValue, offsetof(OMR::Options, _optLevel), scorching, "P"},
    {"optLevel=veryHot",   "O\tcompile all methods at veryHot level",   TR::Options::set32BitValue, offsetof(OMR::Options, _optLevel), veryHot, "P"},
    {"optLevel=warm",      "O\tcompile all methods at warm level",      TR::Options::set32BitValue, offsetof(OMR::Options, _optLevel), warm, "P"},
-   {"orderCompiles",      "C\tcompile methods in limitfile order", SET_OPTION_BIT(TR_OrderCompiles), "P" , NOT_IN_SUBSET},
    {"packedTest=",        "D{regex}\tforce particular code paths to test Java Packed Object",
         TR::Options::setRegex, offsetof(OMR::Options, _packedTest), 0, "P"},
    {"paintAllocatedFrameSlotsDead",   "C\tpaint all slots allocated in method prologue with deadf00d",    SET_OPTION_BIT(TR_PaintAllocatedFrameSlotsDead), "F"},

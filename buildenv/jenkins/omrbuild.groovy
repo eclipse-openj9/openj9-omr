@@ -40,7 +40,7 @@ def workspaceName = 'Build'
 
 def SPECS = [
     'aix_ppc-64' : [
-        'label' : 'aix && ppc',
+        'label' : 'compile:aix',
         'reference' : defaultReference,
         'environment' : [
             'PATH+TOOLS=/home/u0020236/tools',
@@ -62,7 +62,7 @@ def SPECS = [
         'junitPublish' : true
     ],
     'linux_390-64' : [
-        'label': 'Linux && 390',
+        'label': 'compile:zlinux',
         'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/',
@@ -82,7 +82,7 @@ def SPECS = [
         'junitPublish' : true
     ],
     'linux_aarch64' : [
-        'label' : 'Linux && x86 && compile:aarch64',
+        'label' : 'compile:aarch64:cross',
         'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/:/home/jenkins/aarch64/toolchain/bin',
@@ -101,7 +101,7 @@ def SPECS = [
         'test' : false
     ],
     'linux_arm' : [
-        'label' : 'Linux && x86 && compile:arm',
+        'label' : 'compile:arm:cross',
         'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/:/home/jenkins/arm/toolchain/bin',
@@ -120,7 +120,7 @@ def SPECS = [
         'test' : false
     ],
     'linux_ppc-64_le_gcc' : [
-        'label' : 'Linux && PPCLE',
+        'label' : 'compile:plinux',
         'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/',
@@ -140,7 +140,7 @@ def SPECS = [
         'junitPublish' : true
     ],
     'linux_riscv64' : [
-        'label' : 'Linux && riscv64',
+        'label' : 'compile:riscv64',
         'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/'
@@ -159,7 +159,7 @@ def SPECS = [
         'junitPublish' : true
     ],
     'linux_riscv64_cross' : [
-        'label' : 'Linux && x86 && compile:riscv64',
+        'label' : 'compile:riscv64:cross',
         'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE_AND_QEMU=/usr/lib/ccache/:/home/jenkins/qemu/build'
@@ -183,7 +183,7 @@ def SPECS = [
         'junitPublish' : true
     ],
     'linux_x86' : [
-        'label' : 'Linux && x86',
+        'label' : 'compile:xlinux',
         'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/',
@@ -203,7 +203,7 @@ def SPECS = [
         'junitPublish' : true
     ],
     'linux_x86-64' : [
-        'label' : 'Linux && x86',
+        'label' : 'compile:xlinux',
         'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/',
@@ -223,7 +223,7 @@ def SPECS = [
         'junitPublish' : true
     ],
     'linux_x86-64_cmprssptrs' : [
-        'label' : 'Linux && x86',
+        'label' : 'compile:xlinux',
         'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/',
@@ -243,7 +243,7 @@ def SPECS = [
         'junitPublish' : true
     ],
     'osx_x86-64' : [
-        'label' : 'OSX && x86',
+        'label' : 'compile:xosx',
         'reference' : defaultReference,
         'environment' : [
             'GTEST_FILTER=-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended:*DeathTest*',
@@ -264,7 +264,7 @@ def SPECS = [
         'junitPublish' : true
     ],
     'win_x86-64' : [
-        'label' : 'Windows && x86',
+        'label' : 'compile:xwindows',
         'reference' : defaultReference,
         'environment' : [
             'GTEST_FILTER=-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended:PortSysinfoTest.sysinfo_test_get_tmp3:ThreadExtendedTest.TestOtherThreadCputime',
@@ -284,7 +284,7 @@ def SPECS = [
         'junitPublish' : true
     ],
     'zos_390-64' : [
-        'label' : 'zOS && 390',
+        'label' : 'compile:zos',
         'reference' : '',
         'environment' : [
             "LIBPATH+EXTRA=/openzdk/jenkins/workspace/${workspaceName}/build"

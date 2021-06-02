@@ -1336,11 +1336,6 @@ public:
          case TR::ixor:
          case TR::lxor:
             return TR::vxor;
-         case TR::bushr:
-         case TR::sushr:
-         case TR::iushr:
-         case TR::lushr:
-            return TR::vushr;
          case TR::l2d:
             return TR::vl2vd;
          default:

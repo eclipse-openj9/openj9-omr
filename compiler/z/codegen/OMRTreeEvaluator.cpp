@@ -1449,24 +1449,6 @@ OMR::Z::TreeEvaluator::vdsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register*
-OMR::Z::TreeEvaluator::vshlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vectorElementShiftHelper(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vectorElementShiftHelper(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vshrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vectorElementShiftHelper(node, cg);
-   }
-
-TR::Register*
 OMR::Z::TreeEvaluator::vloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::vloadEvaluator(node, cg);
@@ -16755,82 +16737,6 @@ TR::Register *
 OMR::Z::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VX);
-   }
-
-/**
- * Vector Shift
- * children: source vector and 1) shift vector or 2) shift scalar
- */
-TR::Register *
-OMR::Z::TreeEvaluator::vectorElementShiftHelper(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::InstOpCode::Mnemonic opcode;
-   TR::Node *firstOperand = node->getFirstChild();
-   TR::Node *secondOperand = node->getSecondChild();
-
-   TR::Register *vecSrcReg = cg->evaluate(firstOperand);
-   TR::Register *returnReg = cg->allocateRegister(TR_VRF);
-
-   if (secondOperand->getOpCode().isLoadConst() && !secondOperand->getOpCode().isVector())
-      {
-      switch (node->getOpCodeValue())
-         {
-         case TR::vshl: opcode = TR::InstOpCode::VESL; break;
-         case TR::vushr: opcode = TR::InstOpCode::VESRL; break;
-         case TR::vshr: opcode = TR::InstOpCode::VESRA; break;
-         default: TR_ASSERT(false, "Unknown TR vector shift IL\n"); return NULL;
-         }
-
-      int64_t constVal = secondOperand->getIntegerNodeValue<int64_t>();
-      generateVRSaInstruction(cg, opcode, node, returnReg, vecSrcReg, generateS390MemoryReference(constVal, cg), getVectorElementSizeMask(firstOperand));
-      }
-   else
-      {
-      switch (node->getOpCodeValue())
-         {
-         case TR::vshl: opcode = TR::InstOpCode::VESLV; break;
-         case TR::vushr: opcode = TR::InstOpCode::VESRLV; break;
-         case TR::vshr: opcode = TR::InstOpCode::VESRAV; break;
-         default: TR_ASSERT(false, "Unknown TR vector shift IL\n"); return NULL;
-         }
-
-      uint8_t mask = getVectorElementSizeMask(firstOperand);
-
-      TR::Register *shiftReg = cg->evaluate(secondOperand);
-      if (!secondOperand->getOpCode().isVector())
-         {
-         TR::Register *tempReg = cg->allocateRegister(TR_VRF);
-
-      // On 31-bit an 8-byte sized child may come in a register pair so we have to handle this case specially
-      if (shiftReg->getRegisterPair() != NULL)
-         {
-         if (mask == 3)
-            {
-            generateVRSbInstruction(cg, TR::InstOpCode::VLVG, node, tempReg, shiftReg->getHighOrder(), generateS390MemoryReference(0, cg), 2);
-            generateVRSbInstruction(cg, TR::InstOpCode::VLVG, node, tempReg, shiftReg->getLowOrder(), generateS390MemoryReference(1, cg), 2);
-            }
-         else
-            generateVRSbInstruction(cg, TR::InstOpCode::VLVG, node, tempReg, shiftReg->getLowOrder(), generateS390MemoryReference(0, cg), mask);
-         }
-      else
-         generateVRSbInstruction(cg, TR::InstOpCode::VLVG, node, tempReg, shiftReg, generateS390MemoryReference(0, cg), mask);
-
-         generateVRIcInstruction(cg, TR::InstOpCode::VREP, node, tempReg, tempReg, 0, mask);
-         cg->stopUsingRegister(shiftReg);
-         shiftReg = tempReg;
-         }
-
-      generateVRRcInstruction(cg, opcode, node, returnReg, vecSrcReg, shiftReg, mask);
-
-      cg->stopUsingRegister(shiftReg);
-      }
-
-   node->setRegister(returnReg);
-
-   cg->decReferenceCount(firstOperand);
-   cg->decReferenceCount(secondOperand);
-
-   return returnReg;
    }
 
 TR::Register *

@@ -4766,11 +4766,6 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
             return true;
          else
             return false;
-      case TR::vushr:
-         if (dt == TR::Int32 || dt == TR::Int64)
-            return true;
-         else
-            return false;
       case TR::vl2vd:
          return true;
       default:

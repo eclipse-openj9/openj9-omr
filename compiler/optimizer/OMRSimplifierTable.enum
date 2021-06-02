@@ -467,9 +467,6 @@
 #define vandSimplifierHandler dftSimplifier
 #define vorSimplifierHandler dftSimplifier
 #define vxorSimplifierHandler dftSimplifier
-#define vshlSimplifierHandler dftSimplifier
-#define vushrSimplifierHandler dftSimplifier
-#define vshrSimplifierHandler dftSimplifier
 #define vcmpeqSimplifierHandler dftSimplifier
 #define vcmpneSimplifierHandler dftSimplifier
 #define vcmpltSimplifierHandler dftSimplifier

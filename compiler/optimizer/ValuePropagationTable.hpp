@@ -609,9 +609,6 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define vandVPHandler constrainChildren
 #define vorVPHandler constrainChildren
 #define vxorVPHandler constrainChildren
-#define vshlVPHandler constrainChildren
-#define vushrVPHandler constrainChildren
-#define vshrVPHandler constrainChildren
 #define vcmpeqVPHandler constrainCmp
 #define vcmpneVPHandler constrainCmp
 #define vcmpltVPHandler constrainCmp

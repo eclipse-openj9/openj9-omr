@@ -540,7 +540,7 @@ TR_ResolvedMethod::_genMethodILForPeeking(TR::ResolvedMethodSymbol *, TR::Compil
 
 TR::ResolvedMethodSymbol* TR_ResolvedMethod::findOrCreateJittedMethodSymbol(TR::Compilation *comp)
    {
-   return comp->createJittedMethodSymbol(this);
+   return TR::ResolvedMethodSymbol::createJittedMethodSymbol(comp->trHeapMemory(), this, comp);
    }
 
 void TR_ResolvedMethod::makeParameterList(TR::ResolvedMethodSymbol *methodSym)

@@ -630,13 +630,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vicmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vicmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vicmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpanyHelper(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, int nBit);
-   static TR::Register *vicmpanyeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpanyneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpanygtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpanygeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpanyltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpanyleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vigetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *getvelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *getvelemDirectMoveHelper(TR::Node *node, TR::CodeGenerator *cg);

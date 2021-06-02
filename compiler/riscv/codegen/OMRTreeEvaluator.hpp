@@ -312,12 +312,6 @@ public:
    static TR::Register *vicmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vicmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vicmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpanyeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpanyneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpanygtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpanygeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpanyltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpanyleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vnotEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vbitselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vpermEvaluator(TR::Node *node, TR::CodeGenerator *cg);

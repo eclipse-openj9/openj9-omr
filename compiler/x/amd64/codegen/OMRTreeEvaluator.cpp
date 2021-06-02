@@ -1518,42 +1518,6 @@ OMR::X86::AMD64::TreeEvaluator::vicmpleEvaluator(TR::Node *node, TR::CodeGenerat
    }
 
 TR::Register*
-OMR::X86::AMD64::TreeEvaluator::vicmpanyeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::X86::AMD64::TreeEvaluator::vicmpanyneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::X86::AMD64::TreeEvaluator::vicmpanygtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::X86::AMD64::TreeEvaluator::vicmpanygeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::X86::AMD64::TreeEvaluator::vicmpanyltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::X86::AMD64::TreeEvaluator::vicmpanyleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::X86::AMD64::TreeEvaluator::vnotEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);

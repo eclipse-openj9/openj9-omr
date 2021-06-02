@@ -414,12 +414,6 @@
 #define vicmpgeSimplifierHandler dftSimplifier
 #define vicmpltSimplifierHandler dftSimplifier
 #define vicmpleSimplifierHandler dftSimplifier
-#define vicmpanyeqSimplifierHandler dftSimplifier
-#define vicmpanyneSimplifierHandler dftSimplifier
-#define vicmpanygtSimplifierHandler dftSimplifier
-#define vicmpanygeSimplifierHandler dftSimplifier
-#define vicmpanyltSimplifierHandler dftSimplifier
-#define vicmpanyleSimplifierHandler dftSimplifier
 #define vnotSimplifierHandler dftSimplifier
 #define vbitselectSimplifierHandler dftSimplifier
 #define vpermSimplifierHandler dftSimplifier

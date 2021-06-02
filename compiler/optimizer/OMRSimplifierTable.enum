@@ -403,7 +403,6 @@
 #define compressedRefsSimplifierHandler anchorSimplifier
 #define BBStartSimplifierHandler dftSimplifier
 #define BBEndSimplifierHandler endBlockSimplifier
-#define viremSimplifierHandler dftSimplifier
 #define viminSimplifierHandler dftSimplifier
 #define vimaxSimplifierHandler dftSimplifier
 #define vigetelemSimplifierHandler dftSimplifier

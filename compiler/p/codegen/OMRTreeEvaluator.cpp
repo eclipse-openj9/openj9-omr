@@ -2920,67 +2920,6 @@ TR::Register *OMR::Power::TreeEvaluator::vnotEvaluator(TR::Node *node, TR::CodeG
    return resReg;
    }
 
-TR::Register *OMR::Power::TreeEvaluator::viremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Node *firstChild = node->getFirstChild();
-   TR::Node *secondChild = node->getSecondChild();
-   TR::Register *lhsReg = NULL, *rhsReg = NULL;
-
-   lhsReg = cg->evaluate(firstChild);
-   rhsReg = cg->evaluate(secondChild);
-
-   TR::Register *srcV1IdxReg = cg->allocateRegister();
-   TR::Register *srcV2IdxReg = cg->allocateRegister();
-
-   TR::SymbolReference    *srcV1 = cg->allocateLocalTemp(TR::VectorInt32);
-   TR::SymbolReference    *srcV2 = cg->allocateLocalTemp(TR::VectorInt32);
-
-   generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, srcV1IdxReg, TR::MemoryReference::createWithSymRef(cg, node, srcV1, 16));
-   generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, srcV2IdxReg, TR::MemoryReference::createWithSymRef(cg, node, srcV2, 16));
-
-   // store the src regs to memory
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, TR::MemoryReference::createWithIndexReg(cg, NULL, srcV1IdxReg, 16), lhsReg);
-   generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, TR::MemoryReference::createWithIndexReg(cg, NULL, srcV2IdxReg, 16), rhsReg);
-
-   // load each pair and compute division
-   int i;
-   for (i = 0; i < 4; i++)
-      {
-      TR::Register *srcA1Reg = cg->allocateRegister();
-      TR::Register *srcA2Reg = cg->allocateRegister();
-      TR::Register *trgAReg = cg->allocateRegister();
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwa, node, srcA1Reg, TR::MemoryReference::createWithDisplacement(cg, srcV1IdxReg, i * 4, 4));
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lwa, node, srcA2Reg, TR::MemoryReference::createWithDisplacement(cg, srcV2IdxReg, i * 4, 4));
-      if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
-         {
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::modsw, node, trgAReg, srcA1Reg, srcA2Reg);
-         }
-      else
-         {
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::divw, node, trgAReg, srcA1Reg, srcA2Reg);
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::mullw, node, trgAReg, trgAReg, srcA2Reg);
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::subf, node, trgAReg, trgAReg, srcA1Reg);
-         }
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, TR::MemoryReference::createWithDisplacement(cg, srcV1IdxReg, i * 4, 4), trgAReg);
-      cg->stopUsingRegister(srcA1Reg);
-      cg->stopUsingRegister(srcA2Reg);
-      cg->stopUsingRegister(trgAReg);
-      }
-
-   // load result
-   TR::Register *resReg = cg->allocateRegister(TR_VRF);
-   generateTrg1MemInstruction(cg, TR::InstOpCode::lxvw4x, node, resReg, TR::MemoryReference::createWithIndexReg(cg, NULL, srcV1IdxReg, 16));
-
-   cg->stopUsingRegister(srcV1IdxReg);
-   cg->stopUsingRegister(srcV2IdxReg);
-   node->setRegister(resReg);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-
-   return resReg;
-   }
-
-
 TR::Register *OMR::Power::TreeEvaluator::vigetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();

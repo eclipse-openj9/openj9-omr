@@ -1240,12 +1240,6 @@ OMR::RV::TreeEvaluator::compressedRefsEvaluator(TR::Node *node, TR::CodeGenerato
    }
 
 TR::Register*
-OMR::RV::TreeEvaluator::viremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::RV::TreeEvaluator::viminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);

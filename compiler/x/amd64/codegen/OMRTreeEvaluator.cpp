@@ -1452,12 +1452,6 @@ OMR::X86::AMD64::TreeEvaluator::PassThroughEvaluator(TR::Node *node, TR::CodeGen
    }
 
 TR::Register*
-OMR::X86::AMD64::TreeEvaluator::viremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::X86::AMD64::TreeEvaluator::viminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);

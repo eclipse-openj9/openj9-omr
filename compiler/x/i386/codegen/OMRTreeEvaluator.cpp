@@ -1550,12 +1550,6 @@ OMR::X86::I386::TreeEvaluator::PassThroughEvaluator(TR::Node *node, TR::CodeGene
    }
 
 TR::Register*
-OMR::X86::I386::TreeEvaluator::viremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::X86::I386::TreeEvaluator::viminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);

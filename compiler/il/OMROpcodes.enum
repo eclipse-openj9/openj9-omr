@@ -6100,22 +6100,6 @@ OPCODE_MACRO(\
    /* .description          =    End of Basic Block */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ virem, \
-   /* .name                 = */ "virem", \
-   /* .properties1          = */ 0, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt32, \
-   /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
-   /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    vector integer remainder */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ vimin, \
    /* .name                 = */ "vimin", \
    /* .properties1          = */ 0, \

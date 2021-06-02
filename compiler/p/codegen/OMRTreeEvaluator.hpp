@@ -630,14 +630,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vicmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vicmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vicmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpallHelper(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, int nBit);
    static TR::Register *vicmpanyHelper(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, int nBit);
-   static TR::Register *vicmpalleqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpallneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpallgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpallgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpallltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpallleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vicmpanyeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vicmpanyneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vicmpanygtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -693,8 +686,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *inlineVectorUnaryOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);
    static TR::Register *inlineVectorBinaryOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);
    static TR::Register *inlineVectorBitSelectOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);
-   static bool inlineVectorCompareBranch(TR::Node * node, TR::CodeGenerator *cg, bool isHint, bool likeliness);
-   static TR::Register *inlineVectorCompareAllOrAnyOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic vcmpOp, TR::InstOpCode::Mnemonic branchOp);
    static TR::Register *PrefetchEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *i2aEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *iu2aEvaluator(TR::Node *node, TR::CodeGenerator *cg);

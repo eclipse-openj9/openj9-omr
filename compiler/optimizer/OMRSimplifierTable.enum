@@ -414,12 +414,6 @@
 #define vicmpgeSimplifierHandler dftSimplifier
 #define vicmpltSimplifierHandler dftSimplifier
 #define vicmpleSimplifierHandler dftSimplifier
-#define vicmpalleqSimplifierHandler dftSimplifier
-#define vicmpallneSimplifierHandler dftSimplifier
-#define vicmpallgtSimplifierHandler dftSimplifier
-#define vicmpallgeSimplifierHandler dftSimplifier
-#define vicmpallltSimplifierHandler dftSimplifier
-#define vicmpallleSimplifierHandler dftSimplifier
 #define vicmpanyeqSimplifierHandler dftSimplifier
 #define vicmpanyneSimplifierHandler dftSimplifier
 #define vicmpanygtSimplifierHandler dftSimplifier

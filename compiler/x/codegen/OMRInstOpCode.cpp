@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2021, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,10 +19,59 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef X86OPS_INLINES_INCL
-#define X86OPS_INLINES_INCL
+#include "codegen/OMRInstOpCode.hpp"
+#include "codegen/CodeGenerator.hpp"
 
-template <typename TBuffer> inline typename TBuffer::cursor_t TR_X86OpCode::OpCode_t::encode(typename TBuffer::cursor_t cursor, uint8_t rexbits) const
+const OMR::X86::InstOpCode::OpCodeMetaData OMR::X86::InstOpCode::metadata[NumOpCodes] =
+   {
+   #include "codegen/OMRInstOpCodeProperties.hpp"
+   };
+
+ // Heuristics for X87 second byte opcode
+ // It could be eliminated if GCC/MSVC fully support initializer list
+#define X87_________________(x) ((uint8_t)((x & 0xE0) >> 5)), ((uint8_t)((x & 0x18) >> 3)), (uint8_t)(x & 0x07)
+#define BINARY(...) {__VA_ARGS__}
+#define PROPERTY0(...) __VA_ARGS__
+#define PROPERTY1(...) __VA_ARGS__
+
+// see compiler/x/codegen/OMRInstruction.hpp for structural information.
+const OMR::X86::InstOpCode::OpCode_t OMR::X86::InstOpCode::_binaries[] =
+   {
+#define INSTRUCTION(name, mnemonic, binary, property0, property1) binary
+#include "codegen/X86Ops.ins"
+#undef INSTRUCTION
+   };
+
+const uint32_t OMR::X86::InstOpCode::_properties[] =
+   {
+#define INSTRUCTION(name, mnemonic, binary, property0, property1) property0
+#include "codegen/X86Ops.ins"
+#undef INSTRUCTION
+   };
+
+const uint32_t OMR::X86::InstOpCode::_properties1[] =
+   {
+#define INSTRUCTION(name, mnemonic, binary, property0, property1) property1
+#include "codegen/X86Ops.ins"
+#undef INSTRUCTION
+   };
+
+void OMR::X86::InstOpCode::trackUpperBitsOnReg(TR::Register *reg, TR::CodeGenerator *cg)
+   {
+   if (cg->comp()->target().is64Bit())
+      {
+      if (clearsUpperBits())
+         {
+         reg->setUpperBitsAreZero(true);
+         }
+      else if (setsUpperBits())
+         {
+         reg->setUpperBitsAreZero(false);
+         }
+      }
+   }
+
+template <typename TBuffer> typename TBuffer::cursor_t OMR::X86::InstOpCode::OpCode_t::encode(typename TBuffer::cursor_t cursor, uint8_t rexbits) const
    {
    TBuffer buffer(cursor);
    if (isX87())
@@ -110,7 +159,7 @@ template <typename TBuffer> inline typename TBuffer::cursor_t TR_X86OpCode::OpCo
    return buffer;
    }
 
-inline void TR_X86OpCode::OpCode_t::finalize(uint8_t* cursor) const
+void OMR::X86::InstOpCode::OpCode_t::finalize(uint8_t* cursor) const
    {
    // Finalize VEX prefix
    switch (*cursor)
@@ -138,12 +187,12 @@ inline void TR_X86OpCode::OpCode_t::finalize(uint8_t* cursor) const
       }
    }
 
-inline void TR_X86OpCode::CheckAndFinishGroup07(uint8_t* cursor) const
+void OMR::X86::InstOpCode::CheckAndFinishGroup07(uint8_t* cursor) const
    {
    if(info().isGroup07())
       {
       auto pModRM = (TR::Instruction::ModRM*)(cursor-1);
-      switch(_opCode)
+      switch(_mnemonic)
          {
          case XEND:
             pModRM->rm = 0x05; // 0b101
@@ -155,19 +204,39 @@ inline void TR_X86OpCode::CheckAndFinishGroup07(uint8_t* cursor) const
       }
    }
 
-inline uint8_t TR_X86OpCode::length(uint8_t rex) const
+uint8_t OMR::X86::InstOpCode::length(uint8_t rex) const
    {
    return encode<Estimator>(0, rex);
    }
-inline uint8_t* TR_X86OpCode::binary(uint8_t* cursor, uint8_t rex) const
+uint8_t* OMR::X86::InstOpCode::binary(uint8_t* cursor, uint8_t rex) const
    {
    uint8_t* ret = encode<Writer>(cursor, rex);
    CheckAndFinishGroup07(ret);
    return ret;
    }
-inline void TR_X86OpCode::finalize(uint8_t* cursor) const
+void OMR::X86::InstOpCode::finalize(uint8_t* cursor) const
    {
    if (!isPseudoOp())
       info().finalize(cursor);
    }
-#endif
+
+#ifdef DEBUG
+
+#include "codegen/CodeGenerator.hpp"
+#include "compile/Compilation.hpp"
+#include "ras/Debug.hpp"
+#include "codegen/InstOpCode.hpp"
+
+const char *
+OMR::X86::InstOpCode::getOpCodeName(TR::CodeGenerator *cg)
+   {
+   return cg->comp()->getDebug()->getOpCodeName(reinterpret_cast<TR::InstOpCode*>(this));
+   }
+
+const char *
+OMR::X86::InstOpCode::getMnemonicName(TR::CodeGenerator *cg)
+   {
+   return cg->comp()->getDebug()->getMnemonicName(reinterpret_cast<TR::InstOpCode*>(this));
+   }
+
+#endif // ifdef DEBUG

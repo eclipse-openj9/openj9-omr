@@ -39,7 +39,7 @@
 #include "il/Node_inlines.hpp"
 #include "x/codegen/FPTreeEvaluator.hpp"
 #include "codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 static bool isUnevaluatedZero(TR::Node *child)
    {
@@ -76,9 +76,9 @@ static bool isUnevaluatedZero(TR::Node *child)
    }
 
 TR::Register *TR_X86FPCompareAnalyser::fpCompareAnalyser(TR::Node       *root,
-                                                         TR_X86OpCodes cmpRegRegOpCode,
-                                                         TR_X86OpCodes cmpRegMemOpCode,
-                                                         TR_X86OpCodes cmpiRegRegOpCode,
+                                                         TR::InstOpCode::Mnemonic cmpRegRegOpCode,
+                                                         TR::InstOpCode::Mnemonic cmpRegMemOpCode,
+                                                         TR::InstOpCode::Mnemonic cmpiRegRegOpCode,
                                                          bool           useFCOMIInstructions)
    {
    TR::Node      *firstChild,
@@ -87,7 +87,7 @@ TR::Register *TR_X86FPCompareAnalyser::fpCompareAnalyser(TR::Node       *root,
    bool          reverseMemOp = false;
    bool          reverseCmpOp = false;
    TR::Compilation* comp = _cg->comp();
-   TR_X86OpCodes cmpInstr = useFCOMIInstructions ? cmpiRegRegOpCode : cmpRegRegOpCode;
+   TR::InstOpCode::Mnemonic cmpInstr = useFCOMIInstructions ? cmpiRegRegOpCode : cmpRegRegOpCode;
 
    // Some operators must have their operands swapped to improve the generated
    // code needed to evaluate the result of the comparison.
@@ -539,8 +539,8 @@ const uint8_t TR_X86FPCompareAnalyser::_actionMap[NUM_FPCOMPARE_ACTION_SETS] =
    };
 
 TR::Register *TR_IA32XMMCompareAnalyser::xmmCompareAnalyser(TR::Node       *root,
-                                                           TR_X86OpCodes cmpRegRegOpCode,
-                                                           TR_X86OpCodes cmpRegMemOpCode)
+                                                           TR::InstOpCode::Mnemonic cmpRegRegOpCode,
+                                                           TR::InstOpCode::Mnemonic cmpRegMemOpCode)
    {
    TR::Node      *firstChild,
                 *secondChild;

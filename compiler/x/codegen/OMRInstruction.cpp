@@ -37,7 +37,7 @@
 #include "infra/Assert.hpp"
 #include "ras/Debug.hpp"
 #include "codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "env/CompilerEnv.hpp"
 
 namespace TR { class Node; }
@@ -64,7 +64,7 @@ OMR::X86::Instruction::Instruction(TR::CodeGenerator *cg, TR::Instruction *prece
 
 
 void
-OMR::X86::Instruction::initialize(TR::CodeGenerator *cg, TR::RegisterDependencyConditions *cond, TR_X86OpCodes op, bool flag)
+OMR::X86::Instruction::initialize(TR::CodeGenerator *cg, TR::RegisterDependencyConditions *cond, TR::InstOpCode::Mnemonic op, bool flag)
    {
    self()->assumeValidInstruction();
    self()->clobberRegsForRematerialisation();
@@ -336,24 +336,4 @@ uint8_t
 OMR::X86::Instruction::rexRepeatCount()
    {
    return _rexRepeatCount;
-   }
-
-/* -----------------------------------------------------------------------------
- * The following code is here only temporarily during the transition to OMR.
- * -----------------------------------------------------------------------------
- */
-
-void TR_X86OpCode::trackUpperBitsOnReg(TR::Register *reg, TR::CodeGenerator *cg)
-   {
-   if (cg->comp()->target().is64Bit())
-      {
-      if (clearsUpperBits())
-         {
-         reg->setUpperBitsAreZero(true);
-         }
-      else if (setsUpperBits())
-         {
-         reg->setUpperBitsAreZero(false);
-         }
-      }
    }

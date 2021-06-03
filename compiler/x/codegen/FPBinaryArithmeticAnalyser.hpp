@@ -24,7 +24,7 @@
 
 #include <stdint.h>
 #include "il/ILOpCodes.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 namespace TR { class CodeGenerator; }
 namespace TR { class Node; }
@@ -89,16 +89,16 @@ class TR_X86FPBinaryArithmeticAnalyser
 
    uint8_t getOpsReversed()       {return (_actionMap[_inputs] & kReverse) ? 1 : 0;}
 
-   TR_X86OpCodes getRegRegOp()   {return getOpsReversed() ? _opCodePackage[_package][kOpReg2Reg1] :
+   TR::InstOpCode::Mnemonic getRegRegOp()   {return getOpsReversed() ? _opCodePackage[_package][kOpReg2Reg1] :
                                                              _opCodePackage[_package][kOpReg1Reg2];}
 
-   TR_X86OpCodes getRegMemOp()   {return getOpsReversed() ? _opCodePackage[_package][kOpReg2Mem1] :
+   TR::InstOpCode::Mnemonic getRegMemOp()   {return getOpsReversed() ? _opCodePackage[_package][kOpReg2Mem1] :
                                                              _opCodePackage[_package][kOpReg1Mem2];}
 
-   TR_X86OpCodes getRegConvSOp() {return getOpsReversed() ? _opCodePackage[_package][kOpReg2ConvS1] :
+   TR::InstOpCode::Mnemonic getRegConvSOp() {return getOpsReversed() ? _opCodePackage[_package][kOpReg2ConvS1] :
                                                              _opCodePackage[_package][kOpReg1ConvS2];}
 
-   TR_X86OpCodes getRegConvIOp() {return getOpsReversed() ? _opCodePackage[_package][kOpReg2ConvI1] :
+   TR::InstOpCode::Mnemonic getRegConvIOp() {return getOpsReversed() ? _opCodePackage[_package][kOpReg2ConvI1] :
                                                              _opCodePackage[_package][kOpReg1ConvI2];}
 
    // Possible actions based on the characteristics of the operands.
@@ -172,7 +172,7 @@ class TR_X86FPBinaryArithmeticAnalyser
    private:
 
    static const uint8_t        _actionMap[NUM_ACTION_SETS];
-   static const TR_X86OpCodes _opCodePackage[kNumFPPackages][kNumFPArithVariants];
+   static const TR::InstOpCode::Mnemonic _opCodePackage[kNumFPPackages][kNumFPArithVariants];
    TR::CodeGenerator *          _cg;
    uint8_t                     _package;
    uint8_t                     _inputs;

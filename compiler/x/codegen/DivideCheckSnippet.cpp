@@ -29,8 +29,7 @@
 #include "il/LabelSymbol.hpp"
 #include "ras/Debug.hpp"
 #include "codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
-#include "x/codegen/X86Ops_inlines.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "env/IO.hpp"
 #include "env/CompilerEnv.hpp"
 
@@ -45,7 +44,7 @@ uint8_t *TR::X86DivideCheckSnippet::emitSnippetBody()
    // CMP realDivisorReg, -1
    //
    uint8_t rexPrefix = cg()->comp()->target().is64Bit() ? realDivisorReg->rexBits(TR::RealRegister::REX_B, false) : 0;
-   buffer = TR_X86OpCode(CMPRegImms(_divOp.isLong())).binary(buffer, rexPrefix);
+   buffer = TR::InstOpCode(CMPRegImms(_divOp.isLong())).binary(buffer, rexPrefix);
    realDivisorReg->setRMRegisterFieldInModRM(buffer-1);
    *buffer++ = -1;
 

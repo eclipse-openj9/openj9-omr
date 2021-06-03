@@ -35,7 +35,7 @@ namespace OMR { typedef OMR::X86::I386::TreeEvaluator TreeEvaluatorConnector; }
 
 #include "compiler/x/codegen/OMRTreeEvaluator.hpp"
 
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 namespace TR { class Register; }
 
@@ -555,21 +555,21 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::X86::TreeEvaluator
          TR::Node *node,
          TR::Register *cmpRegister,
          TR::Node *immedChild,
-         TR_X86OpCodes firstBranchOpCode,
-         TR_X86OpCodes secondBranchOpCode,
+         TR::InstOpCode::Mnemonic firstBranchOpCode,
+         TR::InstOpCode::Mnemonic secondBranchOpCode,
          TR::CodeGenerator *cg);
 
    static TR::Register *compareLongAndSetOrderedBoolean(
          TR::Node *node,
-         TR_X86OpCodes highSetOpCode,
-         TR_X86OpCodes lowSetOpCode,
+         TR::InstOpCode::Mnemonic highSetOpCode,
+         TR::InstOpCode::Mnemonic lowSetOpCode,
          TR::CodeGenerator *cg);
 
    static void compareLongsForOrder(
          TR::Node *node,
-         TR_X86OpCodes highOrderBranchOp,
-         TR_X86OpCodes highOrderReversedBranchOp,
-         TR_X86OpCodes lowOrderBranchOp,
+         TR::InstOpCode::Mnemonic highOrderBranchOp,
+         TR::InstOpCode::Mnemonic highOrderReversedBranchOp,
+         TR::InstOpCode::Mnemonic lowOrderBranchOp,
          TR::CodeGenerator *cg);
 
    };

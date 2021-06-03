@@ -37,17 +37,17 @@ class OMR_EXTENSIBLE Instruction : public OMR::InstructionConnector
    /*
     * Generic constructors
     */
-   inline Instruction(TR::Node *node, TR_X86OpCodes op, TR::CodeGenerator *cg);
+   inline Instruction(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg);
 
-   inline Instruction(TR_X86OpCodes op, TR::Instruction *precedingInstruction, TR::CodeGenerator *cg);
+   inline Instruction(TR::InstOpCode::Mnemonic op, TR::Instruction *precedingInstruction, TR::CodeGenerator *cg);
 
 
    /*
     * X86 specific constructors, need to call initializer to perform proper construction
     */
-   inline Instruction(TR::RegisterDependencyConditions *cond, TR::Node *node, TR_X86OpCodes op, TR::CodeGenerator *cg);
+   inline Instruction(TR::RegisterDependencyConditions *cond, TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg);
 
-   inline Instruction(TR::RegisterDependencyConditions *cond, TR_X86OpCodes op, TR::Instruction *precedingInstruction, TR::CodeGenerator *cg);
+   inline Instruction(TR::RegisterDependencyConditions *cond, TR::InstOpCode::Mnemonic op, TR::Instruction *precedingInstruction, TR::CodeGenerator *cg);
 
    };
 
@@ -55,30 +55,30 @@ class OMR_EXTENSIBLE Instruction : public OMR::InstructionConnector
 
 #include "codegen/OMRInstruction_inlines.hpp"
 
-TR::Instruction::Instruction(TR::Node *node, TR_X86OpCodes op, TR::CodeGenerator *cg) :
-   OMR::InstructionConnector(cg, TR::InstOpCode::BAD, node)
+TR::Instruction::Instruction(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg) :
+   OMR::InstructionConnector(cg, TR::InstOpCode::bad, node)
    {
    self()->setOpCodeValue(op);
    self()->initialize();
    }
 
-TR::Instruction::Instruction(TR_X86OpCodes op, TR::Instruction *precedingInstruction, TR::CodeGenerator *cg) :
-   OMR::InstructionConnector(cg, precedingInstruction, TR::InstOpCode::BAD)
+TR::Instruction::Instruction(TR::InstOpCode::Mnemonic op, TR::Instruction *precedingInstruction, TR::CodeGenerator *cg) :
+   OMR::InstructionConnector(cg, precedingInstruction, TR::InstOpCode::bad)
    {
    self()->setOpCodeValue(op);
    self()->initialize();
    }
 
-TR::Instruction::Instruction(TR::RegisterDependencyConditions *cond, TR::Node *node, TR_X86OpCodes op, TR::CodeGenerator *cg) :
-   OMR::InstructionConnector(cg, TR::InstOpCode::BAD, node)
+TR::Instruction::Instruction(TR::RegisterDependencyConditions *cond, TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg) :
+   OMR::InstructionConnector(cg, TR::InstOpCode::bad, node)
    {
    self()->setOpCodeValue(op);
    self()->setDependencyConditions(cond);
    self()->initialize(cg, cond, op, true);
    }
 
-TR::Instruction::Instruction(TR::RegisterDependencyConditions *cond, TR_X86OpCodes op, TR::Instruction *precedingInstruction, TR::CodeGenerator *cg) :
-   OMR::InstructionConnector(cg, precedingInstruction, TR::InstOpCode::BAD)
+TR::Instruction::Instruction(TR::RegisterDependencyConditions *cond, TR::InstOpCode::Mnemonic op, TR::Instruction *precedingInstruction, TR::CodeGenerator *cg) :
+   OMR::InstructionConnector(cg, precedingInstruction, TR::InstOpCode::bad)
    {
    self()->setOpCodeValue(op);
    self()->setDependencyConditions(cond);

@@ -51,7 +51,7 @@
 #include "x/codegen/OutlinedInstructions.hpp"
 #include "x/codegen/X86Evaluator.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 TR::Register*
 OMR::X86::AMD64::TreeEvaluator::BadILOpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -2870,7 +2870,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::i2lEvaluator(TR::Node *node, TR::C
       // skipSignExtension flag is set by the optimizer with more global
       // knowledge than the tree evaluator, so we will trust it.
       //
-      TR_X86OpCodes regMemOpCode,regRegOpCode;
+      TR::InstOpCode::Mnemonic regMemOpCode,regRegOpCode;
       if(   node->isNonNegative()
          || (node->skipSignExtension() && performTransformation(comp, "TREE EVALUATION: skipping sign extension on node %s despite lack of isNonNegative\n", comp->getDebug()->getName(node))))
          {
@@ -3008,7 +3008,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::
    return isNotEqualReg;
    }
 
-static TR::Register *l2fd(TR::Node *node, TR::RealRegister *target, TR_X86OpCodes opRegMem8, TR_X86OpCodes opRegReg8, TR::CodeGenerator *cg)
+static TR::Register *l2fd(TR::Node *node, TR::RealRegister *target, TR::InstOpCode::Mnemonic opRegMem8, TR::InstOpCode::Mnemonic opRegReg8, TR::CodeGenerator *cg)
    {
    TR::Node                *child = node->getFirstChild();
    TR::MemoryReference  *tempMR;

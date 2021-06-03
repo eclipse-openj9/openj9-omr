@@ -41,7 +41,7 @@
 #include "il/SymbolReference.hpp"
 #include "infra/Assert.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 namespace TR
 {
@@ -56,7 +56,7 @@ TR::Register *IA32LinkageUtils::pushIntegerWordArg(
       if (child->getOpCode().isLoadConst())
          {
          int32_t value = child->getInt();
-         TR_X86OpCodes pushOp;
+         TR::InstOpCode::Mnemonic pushOp;
          if (value >= -128 && value <= 127)
             {
             pushOp = PUSHImms;
@@ -118,7 +118,7 @@ TR::Register *IA32LinkageUtils::pushLongArg(
       {
       if (child->getOpCode().isLoadConst())
          {
-         TR_X86OpCodes pushOp;
+         TR::InstOpCode::Mnemonic pushOp;
 
          int32_t highValue = child->getLongIntHigh();
          if (highValue >= -128 && highValue <= 127)
@@ -181,7 +181,7 @@ TR::Register *IA32LinkageUtils::pushFloatArg(
       if (child->getOpCodeValue() == TR::fconst)
          {
          int32_t value = child->getFloatBits();
-         TR_X86OpCodes pushOp;
+         TR::InstOpCode::Mnemonic pushOp;
          if (value >= -128 && value <= 127)
             {
             pushOp = PUSHImms;
@@ -236,7 +236,7 @@ TR::Register *IA32LinkageUtils::pushDoubleArg(
       {
       if (child->getOpCodeValue() == TR::dconst)
          {
-         TR_X86OpCodes pushOp;
+         TR::InstOpCode::Mnemonic pushOp;
 
          int32_t highValue = child->getLongIntHigh();
          if (highValue >= -128 && highValue <= 127)

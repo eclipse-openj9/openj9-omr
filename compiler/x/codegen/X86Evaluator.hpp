@@ -26,7 +26,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "codegen/TreeEvaluator.hpp"
 
 namespace TR { class CodeGenerator; }

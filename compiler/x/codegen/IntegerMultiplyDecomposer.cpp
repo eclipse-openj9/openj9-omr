@@ -35,7 +35,7 @@
 #include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "env/CompilerEnv.hpp"
 
 namespace TR { class Register; }

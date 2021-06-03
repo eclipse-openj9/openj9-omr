@@ -47,7 +47,7 @@ namespace OMR { typedef OMR::X86::CodeGenerator CodeGeneratorConnector; }
 #include "infra/BitVector.hpp"
 #include "infra/TRlist.hpp"
 #include "infra/Assert.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "x/codegen/X86Register.hpp"
 #include "env/CompilerEnv.hpp"
 
@@ -641,7 +641,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    // The core "clobberEvaluate" logic for single registers (not register
    // pairs), parameterized by the opcode used to move the desired value into a
    // clobberable register if necessary
-   TR::Register *gprClobberEvaluate(TR::Node *node, TR_X86OpCodes movRegRegOpCode);
+   TR::Register *gprClobberEvaluate(TR::Node *node, TR::InstOpCode::Mnemonic movRegRegOpCode);
 
    TR_OutlinedInstructions *findOutlinedInstructionsFromLabel(TR::LabelSymbol *label);
    TR_OutlinedInstructions *findOutlinedInstructionsFromMergeLabel(TR::LabelSymbol *label);
@@ -735,7 +735,7 @@ protected:
 
    TR::LabelSymbol                  *_switchToInterpreterLabel;
 
-   TR_X86OpCodes                   _xmmDoubleLoadOpCode;
+   TR::InstOpCode::Mnemonic                   _xmmDoubleLoadOpCode;
 
    int32_t _numReservedIPICTrampolines; ///< number of reserved IPIC trampolines
 
@@ -851,8 +851,8 @@ protected:
 
    TR::X86ImmInstruction* getReturnTypeInfoInstruction() { return _returnTypeInfoInstruction; }
 
-   TR_X86OpCodes getXMMDoubleLoadOpCode() {return _xmmDoubleLoadOpCode;}
-   void setXMMDoubleLoadOpCode(TR_X86OpCodes o) {_xmmDoubleLoadOpCode = o;}
+   TR::InstOpCode::Mnemonic getXMMDoubleLoadOpCode() {return _xmmDoubleLoadOpCode;}
+   void setXMMDoubleLoadOpCode(TR::InstOpCode::Mnemonic o) {_xmmDoubleLoadOpCode = o;}
 
    TR::LabelSymbol *getSwitchToInterpreterLabel() {return _switchToInterpreterLabel;}
    void setSwitchToInterpreterLabel(TR::LabelSymbol *s) {_switchToInterpreterLabel = s;}

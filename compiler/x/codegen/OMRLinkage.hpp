@@ -44,7 +44,7 @@ namespace OMR { typedef OMR::X86::Linkage LinkageConnector; }
 #include "il/DataTypes.hpp"
 #include "infra/Annotations.hpp"
 #include "infra/Assert.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "codegen/X86LinkageProperties.hpp"
 
 class TR_FrontEnd;
@@ -193,7 +193,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
          }
       }
 
-   static inline TR_X86OpCodes movOpcodes(TR_MovOperandTypes operandType, TR_MovDataTypes dataType)
+   static inline TR::InstOpCode::Mnemonic movOpcodes(TR_MovOperandTypes operandType, TR_MovDataTypes dataType)
       {
       TR_ASSERT(OMR::X86::Linkage::getTargetFromComp().is64Bit() || dataType != Int8, "MOV Int8 should not occur on X86-32");
       return _movOpcodes[operandType][dataType];
@@ -241,7 +241,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
 
    static TR::Environment& getTargetFromComp();
 
-   static TR_X86OpCodes _movOpcodes[NumMovOperandTypes][NumMovDataTypes];
+   static TR::InstOpCode::Mnemonic _movOpcodes[NumMovOperandTypes][NumMovDataTypes];
    uint8_t              _minimumFirstInstructionSize;
 
    };

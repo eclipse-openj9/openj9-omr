@@ -45,7 +45,7 @@
 #include "infra/Flags.hpp"
 #include "runtime/Runtime.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 class TR_OpaqueClassBlock;
 namespace TR { class Machine; }

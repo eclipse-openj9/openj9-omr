@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2021, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,33 +19,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "x/codegen/X86Ops.hpp"
+/*
+ * This file will be included within a static table.  Only comments and
+ * definitions are permitted.
+ */
 
- // Heuristics for X87 second byte opcode
- // It could be eliminated if GCC/MSVC fully support initializer list
-#define X87_________________(x) ((uint8_t)((x & 0xE0) >> 5)), ((uint8_t)((x & 0x18) >> 3)), (uint8_t)(x & 0x07)
-#define BINARY(...) {__VA_ARGS__}
-#define PROPERTY0(...) __VA_ARGS__
-#define PROPERTY1(...) __VA_ARGS__
-
-// see compiler/x/codegen/OMRInstruction.hpp for structural information.
-const TR_X86OpCode::OpCode_t TR_X86OpCode::_binaries[] =
-   {
-#define INSTRUCTION(name, mnemonic, binary, property0, property1) binary
-#include "codegen/X86Ops.ins"
-#undef INSTRUCTION
-   };
-
-const uint32_t TR_X86OpCode::_properties[] =
-   {
-#define INSTRUCTION(name, mnemonic, binary, property0, property1) property0
-#include "codegen/X86Ops.ins"
-#undef INSTRUCTION
-   };
-
-const uint32_t TR_X86OpCode::_properties1[] =
-   {
-#define INSTRUCTION(name, mnemonic, binary, property0, property1) property1
-#include "codegen/X86Ops.ins"
-#undef INSTRUCTION
-   };

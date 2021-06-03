@@ -55,7 +55,7 @@
 #include "x/codegen/IntegerMultiplyDecomposer.hpp"
 #include "x/codegen/X86Evaluator.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 
 OMR::X86::I386::CodeGenerator::CodeGenerator(TR::Compilation *comp) :

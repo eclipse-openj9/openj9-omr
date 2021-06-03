@@ -26,7 +26,7 @@
 #include "compile/Compilation.hpp"
 #include "env/TRMemory.hpp"
 #include "il/ILOpCodes.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 class TR_RegisterAssignerState;
 namespace TR { class X86VFPSaveInstruction; }
@@ -48,7 +48,7 @@ class TR_OutlinedInstructions
    TR::LabelSymbol      *_restartLabel;
    TR::Instruction      *_firstInstruction;
    TR::Instruction      *_appendInstruction;
-   TR_X86OpCodes        _targetRegMovOpcode;
+   TR::InstOpCode::Mnemonic        _targetRegMovOpcode;
 
    TR::Block            *_block;
    TR::CodeGenerator    *_cg;

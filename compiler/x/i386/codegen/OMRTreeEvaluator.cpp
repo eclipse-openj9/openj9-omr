@@ -67,7 +67,7 @@
 #include "x/codegen/IntegerMultiplyDecomposer.hpp"
 #include "x/codegen/SubtractAnalyser.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "codegen/IA32LinkageUtils.hpp"
@@ -85,8 +85,8 @@ TR::Register *OMR::X86::I386::TreeEvaluator::longArithmeticCompareRegisterWithIm
       TR::Node       *node,
       TR::Register   *cmpRegister,
       TR::Node       *immedChild,
-      TR_X86OpCodes firstBranchOpCode,
-      TR_X86OpCodes secondBranchOpCode,
+      TR::InstOpCode::Mnemonic firstBranchOpCode,
+      TR::InstOpCode::Mnemonic secondBranchOpCode,
       TR::CodeGenerator *cg)
    {
    int32_t      lowValue       = immedChild->getLongIntLow();
@@ -131,8 +131,8 @@ TR::Register *OMR::X86::I386::TreeEvaluator::longArithmeticCompareRegisterWithIm
 
 TR::Register *OMR::X86::I386::TreeEvaluator::compareLongAndSetOrderedBoolean(
       TR::Node       *node,
-      TR_X86OpCodes highSetOpCode,
-      TR_X86OpCodes lowSetOpCode,
+      TR::InstOpCode::Mnemonic highSetOpCode,
+      TR::InstOpCode::Mnemonic lowSetOpCode,
       TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
@@ -193,9 +193,9 @@ TR::Register *OMR::X86::I386::TreeEvaluator::compareLongAndSetOrderedBoolean(
 
 void OMR::X86::I386::TreeEvaluator::compareLongsForOrder(
       TR::Node          *node,
-      TR_X86OpCodes    highOrderBranchOp,
-      TR_X86OpCodes    highOrderReversedBranchOp,
-      TR_X86OpCodes    lowOrderBranchOp,
+      TR::InstOpCode::Mnemonic    highOrderBranchOp,
+      TR::InstOpCode::Mnemonic    highOrderReversedBranchOp,
+      TR::InstOpCode::Mnemonic    lowOrderBranchOp,
       TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
@@ -3267,7 +3267,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairAddEvaluator(TR::Node *n
             instr = generateRegImmInstruction(ADD4RegImm4, node, targetRegister->getLowOrder(), lowValue, cg);
          }
 
-      TR_X86OpCodes opCode;
+      TR::InstOpCode::Mnemonic opCode;
 
       if (highValue >= -128 && highValue <= 127)
          {
@@ -3412,7 +3412,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairSubEvaluator(TR::Node *n
             instr = generateRegImmInstruction(SUB4RegImm4, node, targetRegister->getLowOrder(), lowValue, cg);
          }
 
-      TR_X86OpCodes opCode;
+      TR::InstOpCode::Mnemonic opCode;
 
       if (highValue >= -128 && highValue <= 127)
          {
@@ -3533,7 +3533,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
 
    if (secondChild->getOpCodeValue() == TR::lconst)
       {
-      TR_X86OpCodes opCode;
+      TR::InstOpCode::Mnemonic opCode;
       int32_t        lowValue  = secondChild->getLongIntLow();
       int32_t        highValue = secondChild->getLongIntHigh();
       int64_t        value     = secondChild->getLongInt();
@@ -4609,7 +4609,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::landEvaluator(TR::Node *node, TR::C
       TR::Register    *tempReg   = NULL;
       TR::Register    *lowReg;
       TR::Register    *highReg;
-      TR_X86OpCodes  opCode;
+      TR::InstOpCode::Mnemonic  opCode;
 
       if (!isMemOp)
          {
@@ -4787,7 +4787,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lorEvaluator(TR::Node *node, TR::Co
       int32_t         highValue = secondChild->getLongIntHigh();
       TR::Register    *lowReg;
       TR::Register    *highReg;
-      TR_X86OpCodes  opCode;
+      TR::InstOpCode::Mnemonic  opCode;
       TR::Register *ccReg = 0;
 
       if (!isMemOp)
@@ -4932,7 +4932,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lxorEvaluator(TR::Node *node, TR::C
       int32_t         highValue = secondChild->getLongIntHigh();
       TR::Register    *lowReg;
       TR::Register    *highReg;
-      TR_X86OpCodes  opCode;
+      TR::InstOpCode::Mnemonic  opCode;
       TR::Register *ccReg = 0;
 
       if (!isMemOp)
@@ -6138,8 +6138,8 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpltEvaluator(TR::Node *node, T
       }
    else
       {
-      TR_X86OpCodes compareOp = node->getOpCode().isUnsigned() ? JB4 : JL4;
-      TR_X86OpCodes reverseCompareOp = node->getOpCode().isUnsigned() ? JA4 : JG4;
+      TR::InstOpCode::Mnemonic compareOp = node->getOpCode().isUnsigned() ? JB4 : JL4;
+      TR::InstOpCode::Mnemonic reverseCompareOp = node->getOpCode().isUnsigned() ? JA4 : JG4;
       compareLongsForOrder(node, compareOp, reverseCompareOp, JB4, cg);
       }
    return NULL;
@@ -6153,8 +6153,8 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpgeEvaluator(TR::Node *node, T
       }
    else
       {
-      TR_X86OpCodes compareOp = node->getOpCode().isUnsigned() ? JA4 : JG4;
-      TR_X86OpCodes reverseCompareOp = node->getOpCode().isUnsigned() ? JB4 : JL4;
+      TR::InstOpCode::Mnemonic compareOp = node->getOpCode().isUnsigned() ? JA4 : JG4;
+      TR::InstOpCode::Mnemonic reverseCompareOp = node->getOpCode().isUnsigned() ? JB4 : JL4;
       compareLongsForOrder(node, compareOp, reverseCompareOp, JAE4, cg);
       }
    return NULL;
@@ -6162,16 +6162,16 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpgeEvaluator(TR::Node *node, T
 
 TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_X86OpCodes compareOp = node->getOpCode().isUnsigned() ? JA4 : JG4;
-   TR_X86OpCodes reverseCompareOp = node->getOpCode().isUnsigned() ? JB4 : JL4;
+   TR::InstOpCode::Mnemonic compareOp = node->getOpCode().isUnsigned() ? JA4 : JG4;
+   TR::InstOpCode::Mnemonic reverseCompareOp = node->getOpCode().isUnsigned() ? JB4 : JL4;
    compareLongsForOrder(node, compareOp, reverseCompareOp, JA4, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_X86OpCodes compareOp = node->getOpCode().isUnsigned() ? JB4 : JL4;
-   TR_X86OpCodes reverseCompareOp = node->getOpCode().isUnsigned() ? JA4 : JG4;
+   TR::InstOpCode::Mnemonic compareOp = node->getOpCode().isUnsigned() ? JB4 : JL4;
+   TR::InstOpCode::Mnemonic reverseCompareOp = node->getOpCode().isUnsigned() ? JA4 : JG4;
    compareLongsForOrder(node, compareOp, reverseCompareOp, JBE4, cg);
    return NULL;
    }
@@ -6261,8 +6261,8 @@ OMR::X86::I386::TreeEvaluator::integerPairByteswapEvaluator(TR::Node *node, TR::
 TR::Register*
 OMR::X86::I386::TreeEvaluator::integerPairMinMaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_X86OpCodes SETccHi = BADIA32Op;
-   TR_X86OpCodes SETccLo = BADIA32Op;
+   TR::InstOpCode::Mnemonic SETccHi = BADIA32Op;
+   TR::InstOpCode::Mnemonic SETccLo = BADIA32Op;
    switch (node->getOpCodeValue())
       {
       case TR::lmin:

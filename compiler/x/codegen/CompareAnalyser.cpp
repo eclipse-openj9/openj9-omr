@@ -50,7 +50,7 @@
 #include "ras/Debug.hpp"
 #include "runtime/Runtime.hpp"
 #include "codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 static bool addressIsTemporarilyInt(TR::Node *node)
    {
@@ -63,9 +63,9 @@ void TR_X86CompareAnalyser::integerCompareAnalyser(
    TR::Node       *firstChild,
    TR::Node       *secondChild,
    bool           determineEvaluationOrder,
-   TR_X86OpCodes  regRegOpCode,
-   TR_X86OpCodes  regMemOpCode,
-   TR_X86OpCodes  memRegOpCode)
+   TR::InstOpCode::Mnemonic  regRegOpCode,
+   TR::InstOpCode::Mnemonic  regMemOpCode,
+   TR::InstOpCode::Mnemonic  memRegOpCode)
    {
    TR::Node *realFirstChild = NULL;
    TR::Node *realSecondChild = NULL;
@@ -178,9 +178,9 @@ void TR_X86CompareAnalyser::integerCompareAnalyser(
 
 void TR_X86CompareAnalyser::integerCompareAnalyser(
    TR::Node       *root,
-   TR_X86OpCodes  regRegOpCode,
-   TR_X86OpCodes  regMemOpCode,
-   TR_X86OpCodes  memRegOpCode)
+   TR::InstOpCode::Mnemonic  regRegOpCode,
+   TR::InstOpCode::Mnemonic  regMemOpCode,
+   TR::InstOpCode::Mnemonic  memRegOpCode)
    {
    integerCompareAnalyser(
       root,
@@ -219,9 +219,9 @@ static TR::Register *optimizeIU2L(TR::Node *child, TR::ILOpCodes origOp, TR::Cod
    }
 
 void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node       *root,
-                                                                 TR_X86OpCodes lowBranchOpCode,
-                                                                 TR_X86OpCodes highBranchOpCode,
-                                                                 TR_X86OpCodes highReversedBranchOpCode)
+                                                                 TR::InstOpCode::Mnemonic lowBranchOpCode,
+                                                                 TR::InstOpCode::Mnemonic highBranchOpCode,
+                                                                 TR::InstOpCode::Mnemonic highReversedBranchOpCode)
    {
    TR::Node     *firstChild     = root->getFirstChild();
    TR::Node     *secondChild    = root->getSecondChild();
@@ -514,7 +514,7 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node       *
       deps->addPostCondition(secondLow, TR::RealRegister::NoReg, cg());
       deps->stopAddingConditions();
 
-      TR_X86OpCodes highBranchOp = highBranchOpCode;
+      TR::InstOpCode::Mnemonic highBranchOp = highBranchOpCode;
       if (firstHighZero)
          {
          if (secondHighZero == false)   // if both are ui2l, then we just need an unsigned low order compare
@@ -581,7 +581,7 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node       *
          }
       deps->stopAddingConditions();
 
-      TR_X86OpCodes highBranchOp = highBranchOpCode;
+      TR::InstOpCode::Mnemonic highBranchOp = highBranchOpCode;
       if (firstHighZero)
          {
          if (secondIU2L == false)   // if both are ui2l, then we just need an unsigned low order compare
@@ -672,7 +672,7 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node       *
          }
       deps->stopAddingConditions();
 
-      TR_X86OpCodes highBranchOp = highBranchOpCode;
+      TR::InstOpCode::Mnemonic highBranchOp = highBranchOpCode;
       if (firstIU2L)
          {
          if (secondHighZero == false)   // if both are ui2l, then we just need an unsigned low order compare
@@ -759,7 +759,7 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node       *
 void TR_X86CompareAnalyser::longEqualityCompareAndBranchAnalyser(TR::Node        *root,
                                                                   TR::LabelSymbol *firstBranchLabel,
                                                                   TR::LabelSymbol *secondBranchLabel,
-                                                                  TR_X86OpCodes  secondBranchOp)
+                                                                  TR::InstOpCode::Mnemonic  secondBranchOp)
    {
    TR::Node     *firstChild     = root->getFirstChild();
    TR::Node     *secondChild    = root->getSecondChild();
@@ -965,8 +965,8 @@ void TR_X86CompareAnalyser::longEqualityCompareAndBranchAnalyser(TR::Node       
 
 
 TR::Register *TR_X86CompareAnalyser::longEqualityBooleanAnalyser(TR::Node       *root,
-                                                                 TR_X86OpCodes setOpCode,
-                                                                 TR_X86OpCodes combineOpCode)
+                                                                 TR::InstOpCode::Mnemonic setOpCode,
+                                                                 TR::InstOpCode::Mnemonic combineOpCode)
    {
    TR::Node     *firstChild     = root->getFirstChild();
    TR::Node     *secondChild    = root->getSecondChild();
@@ -1048,8 +1048,8 @@ TR::Register *TR_X86CompareAnalyser::longEqualityBooleanAnalyser(TR::Node       
    }
 
 TR::Register *TR_X86CompareAnalyser::longOrderedBooleanAnalyser(TR::Node       *root,
-                                                                TR_X86OpCodes highSetOpCode,
-                                                                TR_X86OpCodes lowSetOpCode)
+                                                                TR::InstOpCode::Mnemonic highSetOpCode,
+                                                                TR::InstOpCode::Mnemonic lowSetOpCode)
    {
    TR::Node     *firstChild     = root->getFirstChild();
    TR::Node     *secondChild    = root->getSecondChild();

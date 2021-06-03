@@ -97,8 +97,7 @@
 #include "x/codegen/OutlinedInstructions.hpp"
 #include "x/codegen/FPTreeEvaluator.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
-#include "x/codegen/X86Ops_inlines.hpp"
+#include "codegen/InstOpCode.hpp"
 
 namespace OMR { class RegisterUsage; }
 namespace TR { class RegisterDependencyConditions; }
@@ -1985,7 +1984,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    }
 
 // different from evaluate in that it returns a clobberable register
-TR::Register *OMR::X86::CodeGenerator::gprClobberEvaluate(TR::Node * node, TR_X86OpCodes movRegRegOpCode)
+TR::Register *OMR::X86::CodeGenerator::gprClobberEvaluate(TR::Node * node, TR::InstOpCode::Mnemonic movRegRegOpCode)
    {
    TR::Register *sourceRegister = self()->evaluate(node);
 
@@ -2735,14 +2734,14 @@ uint8_t *OMR::X86::CodeGenerator::generatePadding(uint8_t              *cursor,
          if (length >= 5)
             {
             length -= 5;
-            cursor = TR_X86OpCode(JMP4).binary(cursor);
+            cursor = TR::InstOpCode(JMP4).binary(cursor);
             *(int32_t*)cursor = length;
             cursor += 4;
             }
          else
             {
             length -= 2;
-            cursor = TR_X86OpCode(JMP1).binary(cursor);
+            cursor = TR::InstOpCode(JMP1).binary(cursor);
             *(int8_t*)cursor = length;
             cursor += 1;
             }

@@ -74,7 +74,7 @@
 #include "x/codegen/CompareAnalyser.hpp"
 #include "x/codegen/FPTreeEvaluator.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
 class TR_OpaqueClassBlock;
 class TR_OpaqueMethodBlock;
@@ -260,7 +260,7 @@ static void binarySearchCaseSpace(TR::Register *selectorReg,
                                   TR::CodeGenerator *cg)
    {
    uint32_t numCases  = highChild - lowChild + 1;
-   TR_X86OpCodes opCode;
+   TR::InstOpCode::Mnemonic opCode;
    uint32_t pivot;
    if ((pivot = sumOf2ConsecutivePowersOf2(numCases)) == 0)
       {
@@ -434,7 +434,7 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
       (intptr_t*)cg->allocateCodeMemory(numBranchTableEntries * sizeof(branchTable[0]), cg->getCurrentEvaluationBlock()->isCold());
 
    TR::Register *selectorReg = cg->evaluate(node->getFirstChild());
-   TR_X86OpCodes opCode;
+   TR::InstOpCode::Mnemonic opCode;
 
    bool canSkipBoundTest = node->isSafeToSkipTableBoundCheck();
 
@@ -531,9 +531,9 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
 
 TR::Register *OMR::X86::TreeEvaluator::minmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_X86OpCodes CMP  = BADIA32Op;
-   TR_X86OpCodes MOV  = BADIA32Op;
-   TR_X86OpCodes CMOV = BADIA32Op;
+   TR::InstOpCode::Mnemonic CMP  = BADIA32Op;
+   TR::InstOpCode::Mnemonic MOV  = BADIA32Op;
+   TR::InstOpCode::Mnemonic CMOV = BADIA32Op;
    switch (node->getOpCodeValue())
       {
       case TR::imin:
@@ -696,7 +696,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
                      {
                      // memory case
                      TR::MemoryReference  *tempMR = generateX86MemoryReference(andFirstChild, cg);
-                     TR_X86OpCodes testInstr;
+                     TR::InstOpCode::Mnemonic testInstr;
                      if(((mask >> 8) == 0) || (andSecondChild->getSize() == 1))
                         generateMemImmInstruction(TEST1MemImm1, node, tempMR, mask, cg);
                      else if(andSecondChild->getSize() == 2)
@@ -730,7 +730,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
                         {
                         tempReg = cg->evaluate(andFirstChild);
                         }
-                     TR_X86OpCodes testInstr;
+                     TR::InstOpCode::Mnemonic testInstr;
                      if(((mask >> 8) == 0 && !andFirstChild->isInvalid8BitGlobalRegister()) ||
                         (andSecondChild->getSize() == 1))
                         testInstr = TEST1RegImm1;
@@ -751,7 +751,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
                else
                   {
                   TR_X86BinaryCommutativeAnalyser  temp(cg);
-                  TR_X86OpCodes testRRInstr, testMRInstr, movRRInstr;
+                  TR::InstOpCode::Mnemonic testRRInstr, testMRInstr, movRRInstr;
                   uint32_t size = firstChild->getSize();
                   if(size == 1)
                      {
@@ -981,7 +981,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
          }
 
       uint32_t size = firstChild->getSize();
-      TR_X86OpCodes cmpRRInstr, cmpRMInstr, cmpMRInstr;
+      TR::InstOpCode::Mnemonic cmpRRInstr, cmpRMInstr, cmpMRInstr;
       if(size == 1)
          {
          cmpRRInstr = CMP1RegReg;
@@ -1542,7 +1542,7 @@ bool OMR::X86::TreeEvaluator::generateIAddOrSubForOverflowCheck(TR::Node *compar
       // leftChild might appear twice in this tree, and we need a clobber evaluate only if it also appears elsewhere
       bool leftNeedsCopy = u.leftChild->getReferenceCount() > 2 || (u.leftChild->getReferenceCount() > 1 && u.operationNode->getRegister());
       TR::Register *leftReg  = leftNeedsCopy ? cg->intClobberEvaluate(u.leftChild) : cg->evaluate(u.leftChild);
-      TR_X86OpCodes opCode = u.operationNode->getOpCode().isAdd()? ADD4RegReg : SUB4RegReg;
+      TR::InstOpCode::Mnemonic opCode = u.operationNode->getOpCode().isAdd()? ADD4RegReg : SUB4RegReg;
       generateRegRegInstruction(opCode, u.operationNode, leftReg, rightReg, cg);
       if (!u.operationNode->getRegister())
          {
@@ -1581,7 +1581,7 @@ bool OMR::X86::TreeEvaluator::generateLAddOrSubForOverflowCheck(TR::Node *compar
       TR::Register *leftReg  = leftNeedsCopy? cg->longClobberEvaluate(u.leftChild) : cg->evaluate(u.leftChild);
       if (cg->comp()->target().is64Bit())
          {
-         TR_X86OpCodes opCode = u.operationNode->getOpCode().isAdd()? ADD8RegReg : SUB8RegReg;
+         TR::InstOpCode::Mnemonic opCode = u.operationNode->getOpCode().isAdd()? ADD8RegReg : SUB8RegReg;
          generateRegRegInstruction(opCode, u.operationNode, leftReg, rightReg, cg);
          }
       else if (u.operationNode->getOpCode().isAdd())
@@ -1769,7 +1769,7 @@ TR::Register *OMR::X86::TreeEvaluator::ifbcmpeqEvaluator(TR::Node *node, TR::Cod
       temp.integerCompareAnalyser(node, CMP1RegReg, CMP1RegMem, CMP1MemReg);
       }
 
-   TR_X86OpCodes opCode;
+   TR::InstOpCode::Mnemonic opCode;
    if (node->getOpCodeValue() == TR::ifbcmpeq)
       opCode = reverseBranch ? JNE4 : JE4;
    else
@@ -1958,7 +1958,7 @@ TR::Register *OMR::X86::TreeEvaluator::ifsucmpleEvaluator(TR::Node *node, TR::Co
    return NULL;
    }
 
-TR::Register *OMR::X86::TreeEvaluator::integerEqualityHelper(TR::Node *node, TR_X86OpCodes setOp, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::TreeEvaluator::integerEqualityHelper(TR::Node *node, TR::InstOpCode::Mnemonic setOp, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareIntegersForEquality(node, cg);
    TR::Register *targetRegister = cg->allocateRegister();
@@ -1985,7 +1985,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerCmpneEvaluator(TR::Node *node, TR:
 
 
 TR::Register *OMR::X86::TreeEvaluator::integerOrderHelper(TR::Node          *node,
-                                                     TR_X86OpCodes    setOp,
+                                                     TR::InstOpCode::Mnemonic    setOp,
                                                      TR::CodeGenerator *cg)
    {
    TR::Register  *targetRegister = cg->allocateRegister();
@@ -2086,7 +2086,7 @@ TR::Register *OMR::X86::TreeEvaluator::bcmpeqEvaluator(TR::Node *node, TR::CodeG
 // bcmpneEvaluator handled by bcmpeqEvaluator
 
 TR::Register *OMR::X86::TreeEvaluator::bcmpEvaluator(TR::Node        *node,
-                                                 TR_X86OpCodes  setOp,
+                                                 TR::InstOpCode::Mnemonic  setOp,
                                                  TR::CodeGenerator *cg)
    {
    TR::Register  *targetRegister = cg->allocateRegister();
@@ -2171,7 +2171,7 @@ TR::Register *OMR::X86::TreeEvaluator::scmpeqEvaluator(TR::Node *node, TR::CodeG
 // scmpneEvaluator handled by scmpeqEvaluator
 
 TR::Register *OMR::X86::TreeEvaluator::cmp2BytesEvaluator(TR::Node        *node,
-                                                      TR_X86OpCodes  setOp,
+                                                      TR::InstOpCode::Mnemonic  setOp,
                                                       TR::CodeGenerator *cg)
    {
    TR::Register *targetRegister = cg->allocateRegister();

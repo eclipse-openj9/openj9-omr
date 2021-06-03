@@ -29,8 +29,7 @@
 #include "env/jittypes.h"
 #include "il/LabelSymbol.hpp"
 #include "infra/Assert.hpp"
-#include "x/codegen/X86Ops.hpp"
-#include "x/codegen/X86Ops_inlines.hpp"
+#include "codegen/InstOpCode.hpp"
 
 namespace TR { class Node; }
 
@@ -59,9 +58,9 @@ class X86RestartSnippet  : public TR::Snippet
    void setForceLongRestartJump() {_forceLongRestartJump = true;}
    bool getForceLongRestartJump() {return _forceLongRestartJump;}
 
-   uint8_t *genRestartJump(TR_X86OpCodes branchOp, uint8_t *bufferCursor, TR::LabelSymbol *label)
+   uint8_t *genRestartJump(TR::InstOpCode::Mnemonic branchOp, uint8_t *bufferCursor, TR::LabelSymbol *label)
       {
-      TR_X86OpCode  opcode(branchOp);
+      TR::InstOpCode  opcode(branchOp);
 
       uint8_t *destination = label->getCodeLocation();
       intptr_t  distance    = destination - (bufferCursor + 2);
@@ -104,7 +103,7 @@ class X86RestartSnippet  : public TR::Snippet
       return genRestartJump(bufferCursor, _restartLabel);
       }
 
-   uint32_t estimateRestartJumpLength(TR_X86OpCodes  branchOp,
+   uint32_t estimateRestartJumpLength(TR::InstOpCode::Mnemonic  branchOp,
                                       int32_t         estimatedSnippetLocation,
                                       TR::LabelSymbol *label)
       {
@@ -135,7 +134,7 @@ class X86RestartSnippet  : public TR::Snippet
       return estimateRestartJumpLength(estimatedSnippetLocation, _restartLabel);
       }
 
-   uint32_t estimateRestartJumpLength(TR_X86OpCodes branchOp, int32_t estimatedSnippetLocation)
+   uint32_t estimateRestartJumpLength(TR::InstOpCode::Mnemonic branchOp, int32_t estimatedSnippetLocation)
       {
       return estimateRestartJumpLength(branchOp, estimatedSnippetLocation, _restartLabel);
       }

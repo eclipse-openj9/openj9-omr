@@ -54,7 +54,7 @@
 #include "x/codegen/IntegerMultiplyDecomposer.hpp"
 #include "x/codegen/SubtractAnalyser.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "env/CompilerEnv.hpp"
 
 extern TR::Register *intOrLongClobberEvaluate(TR::Node *node, bool nodeIs64Bit, TR::CodeGenerator *cg);
@@ -1778,7 +1778,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerMulEvaluator(TR::Node *node, TR::C
          // are evaluated by the generic analyser call below
          if (targetRegister == 0 && IS_32BIT_SIGNED(value) && (dataType != TR::Int8)) // decomposition failed
             {
-            TR_X86OpCodes opCode = BADIA32Op;
+            TR::InstOpCode::Mnemonic opCode = BADIA32Op;
 
             if (firstChild->getReferenceCount() > 1 ||
                 firstChild->getRegister() != 0)
@@ -2275,7 +2275,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
             }
          else
             {
-            TR_X86OpCodes opCode;
+            TR::InstOpCode::Mnemonic opCode;
             if (dvalue >= -128 && dvalue <= 127)
                {
                opCode = IMULRegRegImms(nodeIs64Bit);
@@ -2470,7 +2470,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerDivOrRemEvaluator(TR::Node *node, 
    TR_ASSERT(0, "Shouldn't get here");
    }
 
-TR::X86RegInstruction  *OMR::X86::TreeEvaluator::generateRegisterShift(TR::Node *node, TR_X86OpCodes immShiftOpCode, TR_X86OpCodes regShiftOpCode,TR::CodeGenerator *cg)
+TR::X86RegInstruction  *OMR::X86::TreeEvaluator::generateRegisterShift(TR::Node *node, TR::InstOpCode::Mnemonic immShiftOpCode, TR::InstOpCode::Mnemonic regShiftOpCode,TR::CodeGenerator *cg)
    {
    bool                  nodeIs64Bit    = TR::TreeEvaluator::getNodeIs64Bit(node, cg);
    TR::Register         *targetRegister = NULL;
@@ -2581,7 +2581,7 @@ TR::X86RegInstruction  *OMR::X86::TreeEvaluator::generateRegisterShift(TR::Node 
    return instr;
    }
 
-TR::X86MemInstruction  *OMR::X86::TreeEvaluator::generateMemoryShift(TR::Node *node, TR_X86OpCodes immShiftOpCode, TR_X86OpCodes regShiftOpCode, TR::CodeGenerator *cg)
+TR::X86MemInstruction  *OMR::X86::TreeEvaluator::generateMemoryShift(TR::Node *node, TR::InstOpCode::Mnemonic immShiftOpCode, TR::InstOpCode::Mnemonic regShiftOpCode, TR::CodeGenerator *cg)
    {
    TR_ASSERT(node->isDirectMemoryUpdate(), "assertion failure");
 
@@ -3385,7 +3385,7 @@ TR::Register *OMR::X86::TreeEvaluator::sushrEvaluator(TR::Node *node, TR::CodeGe
    return targetRegister;
    }
 
-TR_X86OpCodes OMR::X86::TreeEvaluator::_logicalOpPackage[numLogicalOpPackages][numLogicalOpForms] =
+TR::InstOpCode::Mnemonic OMR::X86::TreeEvaluator::_logicalOpPackage[numLogicalOpPackages][numLogicalOpForms] =
    {
    // band
       { AND1RegReg, AND1RegMem, MOV1RegReg, AND1RegImm1, BADIA32Op,
@@ -3427,7 +3427,7 @@ TR_X86OpCodes OMR::X86::TreeEvaluator::_logicalOpPackage[numLogicalOpPackages][n
 
 
 TR::Register *OMR::X86::TreeEvaluator::logicalEvaluator(TR::Node          *node,
-                                                   TR_X86OpCodes    package[],
+                                                   TR::InstOpCode::Mnemonic    package[],
                                                    TR::CodeGenerator *cg)
    {
    bool                 nodeIs64Bit              = TR::TreeEvaluator::getNodeIs64Bit(node, cg);

@@ -67,7 +67,7 @@
 #include "x/codegen/RegisterRematerialization.hpp"
 #include "x/codegen/X86FPConversionSnippet.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "x/codegen/X86Register.hpp"
 
 namespace TR { class Instruction; }
@@ -150,7 +150,7 @@ void OMR::X86::TreeEvaluator::insertPrecisionAdjustment(TR::Register      *reg,
                                                     TR::CodeGenerator *cg)
    {
    TR::DataType    dt;
-   TR_X86OpCodes  opStore, opLoad;
+   TR::InstOpCode::Mnemonic  opStore, opLoad;
    TR::Node        *node = root;
 
    bool            useFloatSet = true;
@@ -620,8 +620,8 @@ TR::Register *OMR::X86::TreeEvaluator::fpUnaryMaskEvaluator(TR::Node *node, TR::
       };
 
    uint8_t*      mask;
-   TR_X86OpCodes opcode;
-   TR_X86OpCodes x87op;
+   TR::InstOpCode::Mnemonic opcode;
+   TR::InstOpCode::Mnemonic x87op;
    switch (node->getOpCodeValue())
       {
       case TR::fabs:
@@ -1373,7 +1373,7 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
       {
       bool doubleSource;
       bool longTarget;
-      TR_X86OpCodes cvttOpCode;
+      TR::InstOpCode::Mnemonic cvttOpCode;
       // On AMD64, all four [fd]2[il] conversions are handled here
       // On IA32, both [fd]2i conversions are handled here
       switch (node->getOpCodeValue())
@@ -2107,7 +2107,7 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node  
       }
    else
       {
-      TR_X86OpCodes op = getBranchOrSetOpCodeForFPComparison(node->getOpCodeValue(), (accRegister == NULL));
+      TR::InstOpCode::Mnemonic op = getBranchOrSetOpCodeForFPComparison(node->getOpCodeValue(), (accRegister == NULL));
       if (generateBranch)
          {
          generateLabelInstruction(op, node, node->getBranchDestination()->getNode()->getLabel(), deps, cg);
@@ -2142,17 +2142,17 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node  
 // NULL if EFLAGS is used.
 //
 TR::Register *OMR::X86::TreeEvaluator::compareFloatOrDoubleForOrder(TR::Node        *node,
-                                                                TR_X86OpCodes  fpCmpRegRegOpCode,
-                                                                TR_X86OpCodes  fpCmpRegMemOpCode,
-                                                                TR_X86OpCodes  fpCmpiRegRegOpCode,
-                                                                TR_X86OpCodes  xmmCmpRegRegOpCode,
-                                                                TR_X86OpCodes  xmmCmpRegMemOpCode,
+                                                                TR::InstOpCode::Mnemonic  fpCmpRegRegOpCode,
+                                                                TR::InstOpCode::Mnemonic  fpCmpRegMemOpCode,
+                                                                TR::InstOpCode::Mnemonic  fpCmpiRegRegOpCode,
+                                                                TR::InstOpCode::Mnemonic  xmmCmpRegRegOpCode,
+                                                                TR::InstOpCode::Mnemonic  xmmCmpRegMemOpCode,
                                                                 bool            useFCOMIInstructions,
                                                                 TR::CodeGenerator *cg)
    {
    if (
-      ((TR_X86OpCode::singleFPOp(fpCmpRegRegOpCode) && cg->useSSEForSinglePrecision()) ||
-       (TR_X86OpCode::doubleFPOp(fpCmpRegRegOpCode) && cg->useSSEForDoublePrecision())))
+      ((TR::InstOpCode::singleFPOp(fpCmpRegRegOpCode) && cg->useSSEForSinglePrecision()) ||
+       (TR::InstOpCode::doubleFPOp(fpCmpRegRegOpCode) && cg->useSSEForDoublePrecision())))
       {
       TR_IA32XMMCompareAnalyser temp(cg);
       return temp.xmmCompareAnalyser(node, xmmCmpRegRegOpCode, xmmCmpRegMemOpCode);

@@ -60,7 +60,7 @@
 #include "infra/List.hpp"
 #include "ras/Debug.hpp"
 #include "codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "x/codegen/X86SystemLinkage.hpp"
 
 #ifdef DEBUG
@@ -75,7 +75,7 @@ OMR::X86::Linkage::Linkage(TR::CodeGenerator *cg) :
    {
    // Initialize the movOp table based on preferred load instructions for this target.
    //
-   TR_X86OpCodes op = cg->getXMMDoubleLoadOpCode() ? cg->getXMMDoubleLoadOpCode() : MOVSDRegMem;
+   TR::InstOpCode::Mnemonic op = cg->getXMMDoubleLoadOpCode() ? cg->getXMMDoubleLoadOpCode() : MOVSDRegMem;
    _movOpcodes[RegMem][Float8] = op;
    }
 
@@ -783,7 +783,7 @@ OMR::X86::Linkage::getTargetFromComp()
    }
 
 
-TR_X86OpCodes OMR::X86::Linkage::_movOpcodes[NumMovOperandTypes][NumMovDataTypes] =
+TR::InstOpCode::Mnemonic OMR::X86::Linkage::_movOpcodes[NumMovOperandTypes][NumMovDataTypes] =
    {
    //    Int4         Int8        Float4         Float8
    {    S4MemReg,    S8MemReg,  MOVSSMemReg,  MOVSDMemReg}, // MemReg

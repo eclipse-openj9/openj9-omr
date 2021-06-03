@@ -4744,11 +4744,6 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
             return true;
          else
             return false;
-      case TR::vrem:
-         if (dt == TR::Int32 || dt == TR::Int64)
-            return true;
-         else
-            return false;
       case TR::vload:
       case TR::vloadi:
       case TR::vstore:
@@ -4768,11 +4763,6 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
       case TR::getvelem:
       case TR::vsetelem:
          if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
-            return true;
-         else
-            return false;
-      case TR::vushr:
-         if (dt == TR::Int32 || dt == TR::Int64)
             return true;
          else
             return false;

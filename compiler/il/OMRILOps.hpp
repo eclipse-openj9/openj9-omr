@@ -1174,11 +1174,6 @@ public:
             case TR::icmpge:    return TR::iucmpge;
             case TR::lcmpge:    return TR::lucmpge;
 
-            case TR::vcmplt:    return TR::vucmplt;
-            case TR::vcmpgt:    return TR::vucmpgt;
-            case TR::vcmple:    return TR::vucmple;
-            case TR::vcmpge:    return TR::vucmpge;
-
             default: return op;
             }
          }
@@ -1319,13 +1314,6 @@ public:
          case TR::fconst:
          case TR::dconst:
             return TR::vsplats;
-         case TR::brem:
-         case TR::srem:
-         case TR::irem:
-         case TR::lrem:
-         case TR::frem:
-         case TR::drem:
-            return TR::vrem;
          case TR::bneg:
          case TR::sneg:
          case TR::ineg:
@@ -1348,11 +1336,6 @@ public:
          case TR::ixor:
          case TR::lxor:
             return TR::vxor;
-         case TR::bushr:
-         case TR::sushr:
-         case TR::iushr:
-         case TR::lushr:
-            return TR::vushr;
          case TR::l2d:
             return TR::vl2vd;
          default:

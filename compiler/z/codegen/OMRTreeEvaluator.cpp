@@ -1125,12 +1125,6 @@ OMR::Z::TreeEvaluator::PassThroughEvaluator(TR::Node *node, TR::CodeGenerator *c
    }
 
 TR::Register*
-OMR::Z::TreeEvaluator::viremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::Z::TreeEvaluator::viminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
@@ -1197,78 +1191,6 @@ OMR::Z::TreeEvaluator::vicmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register*
-OMR::Z::TreeEvaluator::vicmpalleqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vicmpallneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vicmpallgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vicmpallgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vicmpallltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vicmpallleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vicmpanyeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vicmpanyneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vicmpanygtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vicmpanygeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vicmpanyltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vicmpanyleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::Z::TreeEvaluator::vnotEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
@@ -1312,18 +1234,6 @@ OMR::Z::TreeEvaluator::vdgetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register*
 OMR::Z::TreeEvaluator::vdselEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vdnmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vdmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
@@ -1377,123 +1287,9 @@ OMR::Z::TreeEvaluator::vdcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register*
-OMR::Z::TreeEvaluator::vdcmpalleqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vdcmpallneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vdcmpallgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vdcmpallgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vdcmpallltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vdcmpallleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vdcmpanyeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vdcmpanyneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vdcmpanygtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vdcmpanygeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vdcmpanyltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vdcmpanyleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::Z::TreeEvaluator::vdsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vshlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vectorElementShiftHelper(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vectorElementShiftHelper(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vshrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vectorElementShiftHelper(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vcmpltEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vcmpgtEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vcmpleEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::Z::TreeEvaluator::vucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vcmpgeEvaluator(node, cg);
    }
 
 TR::Register*
@@ -14875,50 +14671,6 @@ OMR::Z::TreeEvaluator::inlineVectorBinaryOp(TR::Node * node, TR::CodeGenerator *
    }
 
 TR::Register *
-OMR::Z::TreeEvaluator::inlineVectorBitSelectOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)
-   {
-   TR_ASSERT(node->getNumChildren() >= 3,"Select Node must contain 3 or more children");
-   // TODO Bullet proof this code better and handle more children better.
-   TR::Node *firstChild  = node->getFirstChild();
-   TR::Node *secondChild = node->getSecondChild();
-   TR::Node *thirdChild  = node->getThirdChild();
-
-   TR::Register *targetReg  = TR::TreeEvaluator::tryToReuseInputVectorRegs(node, cg);
-
-   TR::Register *sourceReg1 = cg->evaluate(firstChild);
-   TR::Register *sourceReg2 = cg->evaluate(secondChild);
-   TR::Register *sourceReg3 = cg->evaluate(thirdChild);
-
-   // !!! Masks change per instruction. *Ref to zPoP for masks* !!!
-   uint8_t mask3 = 0;
-   uint8_t mask4 = 0;
-   uint8_t mask5 = 0;
-
-   node->setRegister(targetReg);
-
-   switch (op)
-      {
-      case TR::InstOpCode::VMAL:
-      case TR::InstOpCode::VMAH:
-         mask5 = 0x2;   // mask5 = 0x2 --> word element size (mul makes it double-word)
-         // RA does allow for source registers 1 & 2 to be re-used as target
-         breakInst = generateVRRdInstruction(cg, op, node, targetReg, sourceReg1, sourceReg2, sourceReg3, 0, mask5);
-         break;
-      case TR::InstOpCode::VFMA:
-         breakInst = generateVRReInstruction(cg, op, node, targetReg, sourceReg1, sourceReg2, sourceReg3, 3, mask5);
-         break;
-      default:
-         TR_ASSERT(false, "Select Vector IL evaluation unimplemented for node : %s", cg->getDebug()->getName(node));
-      }
-
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-   cg->decReferenceCount(thirdChild);
-
-   return targetReg;
-   }
-
-TR::Register *
 OMR::Z::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::bad;
@@ -15004,18 +14756,6 @@ OMR::Z::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    srcMemRef->stopUsingMemRefRegister(cg);
 
    return NULL;
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::vdremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::bad);
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::vdmaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::inlineVectorBitSelectOp(node, cg, TR::InstOpCode::VFMA);
    }
 
 TR::Register *
@@ -16429,38 +16169,6 @@ int32_t getVectorElementSizeMask(int8_t size)
    }
 
 TR::Register *
-OMR::Z::TreeEvaluator::vincEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *vecSrcReg = cg->evaluate(node->getChild(0));
-   TR::Register *vecSrc2Reg = cg->allocateRegister(TR_VRF);
-   TR::Register *vecTrgReg = cg->allocateRegister(TR_VRF);
-   TR::Node *secondChild = node->getChild(1);
-   generateReplicateNodeInVectorReg(node, cg, vecSrc2Reg, secondChild, getVectorElementSize(node));
-   generateVRRcInstruction(cg, TR::InstOpCode::VA, node, vecTrgReg, vecSrcReg, vecSrc2Reg, getVectorElementSizeMask(node));
-   node->setRegister(vecTrgReg);
-   cg->stopUsingRegister(vecSrc2Reg);
-   cg->decReferenceCount(node->getChild(0));
-   cg->decReferenceCount(node->getChild(1));
-   return node->getRegister();
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::vdecEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *vecSrcReg = cg->evaluate(node->getChild(0));
-   TR::Register *vecSrc2Reg = cg->allocateRegister(TR_VRF);
-   TR::Register *vecTrgReg = cg->allocateRegister(TR_VRF);
-   TR::Node *secondChild = node->getChild(1);
-   generateReplicateNodeInVectorReg(node, cg, vecSrc2Reg, secondChild, getVectorElementSize(node));
-   generateVRRcInstruction(cg, TR::InstOpCode::VS, node, vecTrgReg, vecSrcReg, vecSrc2Reg, getVectorElementSizeMask(node));
-   node->setRegister(vecTrgReg);
-   cg->stopUsingRegister(vecSrc2Reg);
-   cg->decReferenceCount(node->getChild(0));
-   cg->decReferenceCount(node->getChild(1));
-   return node->getRegister();
-   }
-
-TR::Register *
 OMR::Z::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
@@ -16488,18 +16196,6 @@ TR::Register *
 OMR::Z::TreeEvaluator::vl2vdEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::VCDG);
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::vcomEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *vecOneReg = cg->allocateRegister(TR_VRF);
-   TR::Register *srcVecReg = cg->evaluate(node->getChild(0));
-   generateVRIaInstruction(cg, TR::InstOpCode::VREPI, node, vecOneReg, 0xFFFF, 1);
-   generateVRRcInstruction(cg, TR::InstOpCode::VNC, node, vecOneReg, vecOneReg, srcVecReg, 0);
-   node->setRegister(vecOneReg);
-   cg->decReferenceCount(node->getChild(0));
-   return node->getRegister();
    }
 
 bool canUseNodeForFusedMultiply(TR::Node *node)
@@ -16820,12 +16516,6 @@ OMR::Z::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register *
-OMR::Z::TreeEvaluator::vremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::vDivOrRemHelper(node, cg, false);
-   }
-
-TR::Register *
 OMR::Z::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VN);
@@ -16841,82 +16531,6 @@ TR::Register *
 OMR::Z::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VX);
-   }
-
-/**
- * Vector Shift
- * children: source vector and 1) shift vector or 2) shift scalar
- */
-TR::Register *
-OMR::Z::TreeEvaluator::vectorElementShiftHelper(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::InstOpCode::Mnemonic opcode;
-   TR::Node *firstOperand = node->getFirstChild();
-   TR::Node *secondOperand = node->getSecondChild();
-
-   TR::Register *vecSrcReg = cg->evaluate(firstOperand);
-   TR::Register *returnReg = cg->allocateRegister(TR_VRF);
-
-   if (secondOperand->getOpCode().isLoadConst() && !secondOperand->getOpCode().isVector())
-      {
-      switch (node->getOpCodeValue())
-         {
-         case TR::vshl: opcode = TR::InstOpCode::VESL; break;
-         case TR::vushr: opcode = TR::InstOpCode::VESRL; break;
-         case TR::vshr: opcode = TR::InstOpCode::VESRA; break;
-         default: TR_ASSERT(false, "Unknown TR vector shift IL\n"); return NULL;
-         }
-
-      int64_t constVal = secondOperand->getIntegerNodeValue<int64_t>();
-      generateVRSaInstruction(cg, opcode, node, returnReg, vecSrcReg, generateS390MemoryReference(constVal, cg), getVectorElementSizeMask(firstOperand));
-      }
-   else
-      {
-      switch (node->getOpCodeValue())
-         {
-         case TR::vshl: opcode = TR::InstOpCode::VESLV; break;
-         case TR::vushr: opcode = TR::InstOpCode::VESRLV; break;
-         case TR::vshr: opcode = TR::InstOpCode::VESRAV; break;
-         default: TR_ASSERT(false, "Unknown TR vector shift IL\n"); return NULL;
-         }
-
-      uint8_t mask = getVectorElementSizeMask(firstOperand);
-
-      TR::Register *shiftReg = cg->evaluate(secondOperand);
-      if (!secondOperand->getOpCode().isVector())
-         {
-         TR::Register *tempReg = cg->allocateRegister(TR_VRF);
-
-      // On 31-bit an 8-byte sized child may come in a register pair so we have to handle this case specially
-      if (shiftReg->getRegisterPair() != NULL)
-         {
-         if (mask == 3)
-            {
-            generateVRSbInstruction(cg, TR::InstOpCode::VLVG, node, tempReg, shiftReg->getHighOrder(), generateS390MemoryReference(0, cg), 2);
-            generateVRSbInstruction(cg, TR::InstOpCode::VLVG, node, tempReg, shiftReg->getLowOrder(), generateS390MemoryReference(1, cg), 2);
-            }
-         else
-            generateVRSbInstruction(cg, TR::InstOpCode::VLVG, node, tempReg, shiftReg->getLowOrder(), generateS390MemoryReference(0, cg), mask);
-         }
-      else
-         generateVRSbInstruction(cg, TR::InstOpCode::VLVG, node, tempReg, shiftReg, generateS390MemoryReference(0, cg), mask);
-
-         generateVRIcInstruction(cg, TR::InstOpCode::VREP, node, tempReg, tempReg, 0, mask);
-         cg->stopUsingRegister(shiftReg);
-         shiftReg = tempReg;
-         }
-
-      generateVRRcInstruction(cg, opcode, node, returnReg, vecSrcReg, shiftReg, mask);
-
-      cg->stopUsingRegister(shiftReg);
-      }
-
-   node->setRegister(returnReg);
-
-   cg->decReferenceCount(firstOperand);
-   cg->decReferenceCount(secondOperand);
-
-   return returnReg;
    }
 
 TR::Register *
@@ -17017,58 +16631,6 @@ OMR::Z::TreeEvaluator::vcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       node->setRegister(targetReg);
       return targetReg;
       }
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::vrandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *srcVecReg = cg->evaluate(node->getChild(0));
-   TR::Register *workReg = cg->allocateRegister(TR_VRF);
-   TR::Register *workReg2 = cg->allocateRegister(TR_VRF);
-   TR::Register *shiftReg = cg->allocateRegister(TR_VRF);
-
-   int mask4 = getVectorElementSizeMask(node->getChild(0));   //0 - byte, 3 - doubleword
-
-   // copy source to work reg
-   generateVRRaInstruction(cg, TR::InstOpCode::VLR, node, workReg, srcVecReg);
-
-   // Perform vector reduction AND
-   // Strategy used here is shift by incremental powers of 2 and AND. Next iteration works on previous shift-and-AND result
-   switch(mask4)
-      {
-      case 0:   // byte
-         generateVRIaInstruction(cg, TR::InstOpCode::VLEIB, node, shiftReg, 1 << 4, 7);                      // load shiftReg
-         generateVRRcInstruction(cg, TR::InstOpCode::VSRLB, node, workReg2, workReg, shiftReg, 0, 0, 0);     // shift right logical by byte
-         generateVRRcInstruction(cg, TR::InstOpCode::VN, node, workReg, workReg, workReg2, 0, 0, 0);         // AND
-      case 1:   // halfword
-         generateVRIaInstruction(cg, TR::InstOpCode::VLEIB, node, shiftReg, 1 << 5, 7);                      // load shiftReg
-         generateVRRcInstruction(cg, TR::InstOpCode::VSRLB, node, workReg2, workReg, shiftReg, 0, 0, 0);     // shift right logical by byte
-         generateVRRcInstruction(cg, TR::InstOpCode::VN, node, workReg, workReg, workReg2, 0, 0, 0);         // AND
-      case 2:   // word
-         generateVRIaInstruction(cg, TR::InstOpCode::VLEIB, node, shiftReg, 1 << 6, 7);                      // load shiftReg
-         generateVRRcInstruction(cg, TR::InstOpCode::VSRLB, node, workReg2, workReg, shiftReg, 0, 0, 0);     // shift right logical by byte
-         generateVRRcInstruction(cg, TR::InstOpCode::VN, node, workReg, workReg, workReg2, 0, 0, 0);         // AND
-      case 3:   // doubleword
-         generateVRIaInstruction(cg, TR::InstOpCode::VLEIB, node, shiftReg, 1 << 7, 7);                      // load shiftReg
-         generateVRRcInstruction(cg, TR::InstOpCode::VSRLB, node, workReg2, workReg, shiftReg, 0, 0, 0);     // shift right logical by byte
-         generateVRRcInstruction(cg, TR::InstOpCode::VN, node, workReg, workReg, workReg2, 0, 0, 0);         // AND
-         break;
-      default: TR_ASSERT(false, "wrong mask value found: %i\n", mask4); break;
-      }
-
-   // final result is in the last element. store it into resultReg. result will be in GPR
-   // last element index. mask4=0,1,2,3 -> last element index=15,7,3,1
-   TR::MemoryReference *extractIndexMR = generateS390MemoryReference((1 << (4 - mask4)) - 1, cg);
-
-   TR::Register *resultReg = (cg->comp()->target().is32Bit() && mask4 == 3) ? cg->allocateRegister() : cg->allocateRegister();
-   generateVRScInstruction(cg, TR::InstOpCode::VLGV, node, resultReg, workReg, extractIndexMR, mask4);
-
-   cg->stopUsingRegister(workReg);
-   cg->stopUsingRegister(workReg2);
-   cg->stopUsingRegister(shiftReg);
-   node->setRegister(resultReg);
-   cg->decReferenceCount(node->getChild(0));
-   return node->getRegister();
    }
 
 TR::Register *

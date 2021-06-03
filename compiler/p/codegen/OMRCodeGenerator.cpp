@@ -1776,8 +1776,6 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
             return true;
          else
             return false;
-      case TR::vrem:
-         return false;
       case TR::vload:
       case TR::vloadi:
       case TR::vstore:

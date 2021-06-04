@@ -662,6 +662,30 @@ public:
 
    static TR::Instruction *generateVFTMaskInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *dstReg, TR::Register *srcReg, TR::Instruction *preced=NULL);
    static TR::Instruction *generateVFTMaskInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *reg, TR::Instruction *preced=NULL);
+
+   static bool stopUsingCopyReg(TR::Node *node, TR::Register *&reg, TR::CodeGenerator *cg);
+
+   /**
+    * @brief Generates array copy code with array store check
+    * @param[in] node : node
+    * @param[in] cg : CodeGenerator
+    */
+   static void genArrayCopyWithArrayStoreCHK(TR::Node *node, TR::CodeGenerator *cg)
+      {
+      // do nothing
+      }
+
+   /**
+    * @brief Generates write barrier code for array copy
+    * @param[in] node : node
+    * @param[in] srcObjReg : register for the source object
+    * @param[in] dstObjReg : register for the destination object
+    * @param[in] cg : CodeGenerator
+    */
+   static void genWrtbarForArrayCopy(TR::Node *node, TR::Register *srcObjReg, TR::Register *dstObjReg, TR::CodeGenerator *cg)
+      {
+      // do nothing
+      }
    };
 
 } // ARM64

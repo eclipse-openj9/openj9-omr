@@ -1726,7 +1726,7 @@ OMR::ARM64::TreeEvaluator::BNDCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
-static TR::Instruction *compareIntsAndBranchForArrayCopyBNDCHK(TR::ARM64ConditionCode  branchType,
+static TR::Instruction *compareIntsAndBranchForArrayCopyBNDCHK(TR::ARM64ConditionCode  branchCond,
                                            TR::Node             *node,
                                            TR::CodeGenerator    *cg,
                                            TR::SymbolReference  *sr)
@@ -1739,27 +1739,27 @@ static TR::Instruction *compareIntsAndBranchForArrayCopyBNDCHK(TR::ARM64Conditio
    bool foundConst = false;
    if (secondChild->getOpCode().isLoadConst())
       {
-      int64_t value = secondChild->get64bitIntegralValue();
+      int64_t value = static_cast<int64_t>(secondChild->getInt());
       if (constantIsUnsignedImm12(value))
          {
-         generateCompareImmInstruction(cg, node, src1Reg, value, true);
+         generateCompareImmInstruction(cg, node, src1Reg, value); // 32-bit comparison
          foundConst = true;
          }
       else if (constantIsUnsignedImm12(-value))
          {
-         generateCompareImmInstruction(cg, node, src1Reg, value, true);
+         generateCompareImmInstruction(cg, node, src1Reg, value); // 32-bit comparison
          foundConst = true;
          }
       }
-   if(!foundConst)
+   if (!foundConst)
       {
       TR::Register *src2Reg = cg->evaluate(secondChild);
-      generateCompareInstruction(cg, node, src1Reg, src2Reg, true);
+      generateCompareInstruction(cg, node, src1Reg, src2Reg); // 32-bit comparison
       }
 
    TR_ASSERT_FATAL_WITH_NODE(node, sr, "Must provide an ArrayCopyBNDCHK symref");
    cg->addSnippet(new (cg->trHeapMemory()) TR::ARM64HelperCallSnippet(cg, node, snippetLabel, sr));
-   TR::Instruction *instr = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, snippetLabel, branchType);
+   TR::Instruction *instr = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, snippetLabel, branchCond);
 
    cg->machine()->setLinkRegisterKilled(true);
    cg->decReferenceCount(firstChild);
@@ -3031,8 +3031,8 @@ inlineConstantLengthArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src
    return;
    }
 
-static bool
-stopUsingCopyReg(TR::Node *node, TR::Register *&reg, TR::CodeGenerator *cg)
+bool
+OMR::ARM64::TreeEvaluator::stopUsingCopyReg(TR::Node *node, TR::Register *&reg, TR::CodeGenerator *cg)
    {
    if (node != NULL)
       {
@@ -3065,32 +3065,70 @@ stopUsingCopyReg(TR::Node *node, TR::Register *&reg, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT_FATAL_WITH_NODE(node, node->getNumChildren() == 3, "Reference arraycopy is not supported yet");
+   bool simpleCopy = (node->getNumChildren() == 3);
+   bool arrayStoreCheckIsNeeded = !simpleCopy && !node->chkNoArrayStoreCheckArrayCopy();
 
-   TR::Node *srcAddrNode, *dstAddrNode, *lengthNode;
-   TR::Register *srcAddrReg = NULL, *dstAddrReg = NULL, *lengthReg;
-   bool stopUsingCopyReg1, stopUsingCopyReg2, stopUsingCopyReg3 = false;
+   if (arrayStoreCheckIsNeeded)
+      {
+      // call the "C" helper, handle the exception case
+      TR::TreeEvaluator::genArrayCopyWithArrayStoreCHK(node, cg);
+      return NULL;
+      }
 
-   // Primitive arraycopy
-   // child 0: Source byte address
-   // child 1: Destination byte address
-   // child 2: Copy length in bytes
-   srcAddrNode = node->getChild(0);
-   dstAddrNode = node->getChild(1);
-   lengthNode = node->getChild(2);
+   TR::Node *srcObjNode, *dstObjNode, *srcAddrNode, *dstAddrNode, *lengthNode;
+   TR::Register *srcObjReg = NULL, *dstObjReg = NULL, *srcAddrReg = NULL, *dstAddrReg = NULL, *lengthReg;
+   bool stopUsingCopyReg1, stopUsingCopyReg2, stopUsingCopyReg3, stopUsingCopyReg4, stopUsingCopyReg5 = false;
 
-   stopUsingCopyReg1 = stopUsingCopyReg(srcAddrNode, srcAddrReg, cg);
-   stopUsingCopyReg2 = stopUsingCopyReg(dstAddrNode, dstAddrReg, cg);
+   if (simpleCopy)
+      {
+      // child 0: Source byte address
+      // child 1: Destination byte address
+      // child 2: Copy length in bytes
+      srcObjNode = NULL;
+      dstObjNode = NULL;
+      srcAddrNode = node->getChild(0);
+      dstAddrNode = node->getChild(1);
+      lengthNode = node->getChild(2);
+      }
+   else
+      {
+      // child 0: Source array object
+      // child 1: Destination array object
+      // child 2: Source byte address
+      // child 3: Destination byte address
+      // child 4: Copy length in bytes
+      srcObjNode = node->getChild(0);
+      dstObjNode = node->getChild(1);
+      srcAddrNode = node->getChild(2);
+      dstAddrNode = node->getChild(3);
+      lengthNode = node->getChild(4);
+      }
+
+   stopUsingCopyReg1 = stopUsingCopyReg(srcObjNode, srcObjReg, cg);
+   stopUsingCopyReg2 = stopUsingCopyReg(dstObjNode, dstObjReg, cg);
+   stopUsingCopyReg3 = stopUsingCopyReg(srcAddrNode, srcAddrReg, cg);
+   stopUsingCopyReg4 = stopUsingCopyReg(dstAddrNode, dstAddrReg, cg);
 
    static const bool disableArrayCopyInlining = feGetEnv("TR_disableArrayCopyInlining") != NULL;
-   if (lengthNode->getOpCode().isLoadConst() && node->isForwardArrayCopy() && !disableArrayCopyInlining)
+   if ((simpleCopy || !arrayStoreCheckIsNeeded) &&
+       lengthNode->getOpCode().isLoadConst() && node->isForwardArrayCopy() && !disableArrayCopyInlining)
       {
       int64_t len = lengthNode->getType().isInt32() ? lengthNode->getInt() : lengthNode->getLongInt();
       inlineConstantLengthArrayCopy(node, len, srcAddrReg, dstAddrReg, cg);
 
+      if (!simpleCopy)
+         {
+         TR::TreeEvaluator::genWrtbarForArrayCopy(node, srcObjReg, dstObjReg, cg);
+         cg->decReferenceCount(srcObjNode);
+         cg->decReferenceCount(dstObjNode);
+         }
       if (stopUsingCopyReg1)
-         cg->stopUsingRegister(srcAddrReg);
+         cg->stopUsingRegister(srcObjReg);
       if (stopUsingCopyReg2)
+         cg->stopUsingRegister(dstObjReg);
+      if (stopUsingCopyReg3)
+         cg->stopUsingRegister(srcAddrReg);
+      if (stopUsingCopyReg4)
          cg->stopUsingRegister(dstAddrReg);
 
       cg->decReferenceCount(srcAddrNode);
@@ -3106,7 +3144,7 @@ OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator 
       TR::Register *lenCopyReg = cg->allocateRegister();
       generateMovInstruction(cg, lengthNode, lenCopyReg, lengthReg);
       lengthReg = lenCopyReg;
-      stopUsingCopyReg3 = true;
+      stopUsingCopyReg5 = true;
       }
 
    // x0-x4 are destroyed in the helper
@@ -3124,11 +3162,22 @@ OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator 
                              deps, arrayCopyHelper, NULL);
    cg->machine()->setLinkRegisterKilled(true);
 
+   if (!simpleCopy)
+      {
+      TR::TreeEvaluator::genWrtbarForArrayCopy(node, srcObjReg, dstObjReg, cg);
+      cg->decReferenceCount(srcObjNode);
+      cg->decReferenceCount(dstObjNode);
+      }
+
    if (stopUsingCopyReg1)
-      cg->stopUsingRegister(srcAddrReg);
+      cg->stopUsingRegister(srcObjReg);
    if (stopUsingCopyReg2)
-      cg->stopUsingRegister(dstAddrReg);
+      cg->stopUsingRegister(dstObjReg);
    if (stopUsingCopyReg3)
+      cg->stopUsingRegister(srcAddrReg);
+   if (stopUsingCopyReg4)
+      cg->stopUsingRegister(dstAddrReg);
+   if (stopUsingCopyReg5)
       cg->stopUsingRegister(lengthReg);
 
    cg->decReferenceCount(srcAddrNode);

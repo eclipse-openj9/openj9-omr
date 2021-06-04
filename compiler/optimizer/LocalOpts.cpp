@@ -3338,16 +3338,16 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
    bool gotosWereEliminated = false;
 
 
-   for (TR::TreeTop *treeTop = startTree, *exitTreeTop;
+   for (TR::TreeTop *treeTop = startTree, *nextBlockStartTree = NULL;
         (treeTop != endTree);
-        treeTop = exitTreeTop->getNextTreeTop())
+        treeTop = nextBlockStartTree)
       {
       // Get information about this block
       //
       TR::Node *node = treeTop->getNode();
       TR_ASSERT(node->getOpCodeValue() == TR::BBStart, "Local Opts, expected BBStart treetop");
       TR::Block *block = node->getBlock();
-      exitTreeTop     = block->getExit();
+      nextBlockStartTree = block->getExit()->getNextTreeTop();
 
       if (block->hasExceptionPredecessors())
          continue;

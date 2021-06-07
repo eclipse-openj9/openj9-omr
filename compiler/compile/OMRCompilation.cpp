@@ -384,11 +384,8 @@ OMR::Compilation::Compilation(
    //_methodSymbol must be done after symRefTab, but before codegen
    // _methodSymbol must be initialized here because creating a jitted method symbol
    //   actually inspects TR::comp()->_methodSymbol (to compare against the new object)
-   _methodSymbol = NULL;
-      {
-      _methodSymbol = TR::ResolvedMethodSymbol::createJittedMethodSymbol(self()->trHeapMemory(), compilee, self());
-      }
-
+   _methodSymbol = TR::ResolvedMethodSymbol::createJittedMethodSymbol(self()->trHeapMemory(), compilee, self());
+   
    // initPersistentCPUField and createOpCode must be done after method symbol creation
 
    if (self()->getOption(TR_EnableNodeGC))
@@ -554,13 +551,6 @@ OMR::Compilation::getHotnessName()
    {
    return TR::Compilation::getHotnessName(self()->getMethodHotness());
    }
-
-
-TR::ResolvedMethodSymbol * OMR::Compilation::createJittedMethodSymbol(TR_ResolvedMethod *resolvedMethod)
-   {
-   return TR::ResolvedMethodSymbol::createJittedMethodSymbol(self()->trHeapMemory(), resolvedMethod, self());
-   }
-
 
 bool OMR::Compilation::canAffordOSRControlFlow()
    {

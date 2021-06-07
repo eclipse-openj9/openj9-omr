@@ -1003,8 +1003,6 @@ public:
       return _flags.testAny(GenerateReadOnlyCode);
       }
 
-   TR::ResolvedMethodSymbol *createJittedMethodSymbol(TR_ResolvedMethod *resolvedMethod);
-
    bool isGPUCompilation() { return _flags.testAny(IsGPUCompilation);}
 
 #ifdef J9_PROJECT_SPECIFIC

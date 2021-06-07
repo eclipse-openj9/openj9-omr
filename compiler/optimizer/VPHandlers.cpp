@@ -4563,7 +4563,8 @@ static void getLong (TR::VPLongConst* c, int64_t& n)
    }
 
 static TR::VPConstraint* createIntConstConstraint(OMR::ValuePropagation *vp, int32_t n) {return TR::VPIntConst::create(vp, n); }
-static TR::VPConstraint* createIntRangeConstraint(OMR::ValuePropagation *vp, int32_t l, int32_t h) {return TR::VPIntRange::create(vp, l, h);}
+template <typename T>
+static TR::VPConstraint* createIntRangeConstraint(OMR::ValuePropagation *vp, T l, T h) {return TR::VPIntRange::create(vp, static_cast<int32_t>(l), static_cast<int32_t>(h));}
 static TR::VPConstraint* createLongConstConstraint(OMR::ValuePropagation *vp, int64_t n) {return TR::VPLongConst::create(vp, n); }
 static TR::VPConstraint* createLongRangeConstraint(OMR::ValuePropagation *vp, int64_t l, int64_t h) {return TR::VPLongRange::create(vp, l, h);}
 
@@ -4729,7 +4730,7 @@ TR::Node * constrainIntegerHighestOneBit(OMR::ValuePropagation *vp, TR::Node *no
                                                        getIntRange, getInt, getLowHighInts,
                                                        createIntConstConstraint,
                                                        //createIntRangeConstraint, integerToPowerOf2, (int32_t) 0, (int32_t) -1);
-                                                       createIntRangeConstraint, integerToPowerOf2, (int32_t) TR::getMaxSigned<TR::Int32>(), (int32_t) TR::getMinSigned<TR::Int32>());
+                                                       createIntRangeConstraint<int32_t>, integerToPowerOf2, (int32_t) TR::getMaxSigned<TR::Int32>(), (int32_t) TR::getMinSigned<TR::Int32>());
    }
 
 
@@ -4738,7 +4739,7 @@ TR::Node * constrainIntegerNumberOfLeadingZeros(OMR::ValuePropagation *vp, TR::N
    return constrainHighestOneBitAndLeadingZerosHelper (vp, node, getIntConst,
                                                        getIntRange, getInt, getLowHighInts,
                                                        createIntConstConstraint,
-                                                       createIntRangeConstraint, integerNumberOfLeadingZeros, (int32_t) 0, (int32_t) -1);
+                                                       createIntRangeConstraint<int32_t>, integerNumberOfLeadingZeros, (int32_t) 0, (int32_t) -1);
 
 
    }
@@ -4758,7 +4759,7 @@ TR::Node * constrainLongNumberOfLeadingZeros(OMR::ValuePropagation *vp, TR::Node
    return constrainHighestOneBitAndLeadingZerosHelper (vp, node, getLongConst,
                                                        getLongRange, getLong, getLowHighLongs,
                                                        createIntConstConstraint,
-                                                       createLongRangeConstraint, longNumberOfLeadingZeros, (int64_t) 0, (int64_t) -1);
+                                                       createIntRangeConstraint<int64_t>, longNumberOfLeadingZeros, (int64_t) 0, (int64_t) -1);
    }
 
 TR::Node * constrainIntegerLowestOneBit(OMR::ValuePropagation *vp, TR::Node *node)
@@ -4766,7 +4767,7 @@ TR::Node * constrainIntegerLowestOneBit(OMR::ValuePropagation *vp, TR::Node *nod
    return constrainLowestOneBitAndTrailingZerosHelper (vp, node, getIntConst,
                                                        getIntRange, getInt, getLowHighInts,
                                                        createIntConstConstraint,
-                                                       createIntRangeConstraint, integerLowestOneBit, (int32_t) TR::getMaxSigned<TR::Int32>(), (int32_t) TR::getMinSigned<TR::Int32>());
+                                                       createIntRangeConstraint<int32_t>, integerLowestOneBit, (int32_t) TR::getMaxSigned<TR::Int32>(), (int32_t) TR::getMinSigned<TR::Int32>());
    }
 
 
@@ -4775,7 +4776,7 @@ TR::Node * constrainIntegerLowestOneBit(OMR::ValuePropagation *vp, TR::Node *nod
    return constrainLowestOneBitAndTrailingZerosHelper (vp, node, getIntConst,
                                                        getIntRange, getInt, getLowHighInts,
                                                        createIntConstConstraint,
-                                                       createIntRangeConstraint, integerBitCount, (int32_t) 0, (int32_t) -1);
+                                                       createIntRangeConstraint<int32_t>, integerBitCount, (int32_t) 0, (int32_t) -1);
    }
 
 
@@ -4784,7 +4785,7 @@ TR::Node * constrainIntegerNumberOfTrailingZeros(OMR::ValuePropagation *vp, TR::
    return constrainLowestOneBitAndTrailingZerosHelper (vp, node, getIntConst,
                                                        getIntRange, getInt, getLowHighInts,
                                                        createIntConstConstraint,
-                                                       createIntRangeConstraint, integerNumberOfTrailingZeros, (int32_t) 0, (int32_t) -1);
+                                                       createIntRangeConstraint<int32_t>, integerNumberOfTrailingZeros, (int32_t) 0, (int32_t) -1);
    }
 
 TR::Node * constrainLongLowestOneBit(OMR::ValuePropagation *vp, TR::Node *node)
@@ -4801,7 +4802,7 @@ TR::Node * constrainLongNumberOfTrailingZeros(OMR::ValuePropagation *vp, TR::Nod
    return constrainLowestOneBitAndTrailingZerosHelper (vp, node, getLongConst,
                                                        getLongRange, getLong, getLowHighLongs,
                                                        createIntConstConstraint,
-                                                       createLongRangeConstraint, longNumberOfTrailingZeros, (int64_t) 0, (int64_t) -1);
+                                                       createIntRangeConstraint<int64_t>, longNumberOfTrailingZeros, (int64_t) 0, (int64_t) -1);
    }
 
 
@@ -4810,7 +4811,7 @@ TR::Node * constrainLongNumberOfTrailingZeros(OMR::ValuePropagation *vp, TR::Nod
    return constrainLowestOneBitAndTrailingZerosHelper  (vp, node, getLongConst,
                                                        getLongRange, getLong, getLowHighLongs,
                                                        createIntConstConstraint,
-                                                       createLongRangeConstraint, longBitCount, (int64_t) 0, (int64_t) -1);
+                                                       createIntRangeConstraint<int64_t>, longBitCount, (int64_t) 0, (int64_t) -1);
    }
 
 

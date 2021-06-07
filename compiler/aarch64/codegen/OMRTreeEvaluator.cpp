@@ -20,6 +20,7 @@
  *******************************************************************************/
 
 #include "codegen/ARM64Instruction.hpp"
+#include "codegen/ARM64HelperCallSnippet.hpp"
 #include "codegen/ARM64ShiftCode.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
@@ -1682,10 +1683,91 @@ OMR::ARM64::TreeEvaluator::BNDCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
+static TR::Instruction *compareIntsAndBranchForArrayCopyBNDCHK(TR::ARM64ConditionCode  branchType,
+                                           TR::Node             *node,
+                                           TR::CodeGenerator    *cg,
+                                           TR::SymbolReference  *sr)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::LabelSymbol *snippetLabel = generateLabelSymbol(cg);
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+
+   bool foundConst = false;
+   if (secondChild->getOpCode().isLoadConst())
+      {
+      int64_t value = secondChild->get64bitIntegralValue();
+      if (constantIsUnsignedImm12(value))
+         {
+         generateCompareImmInstruction(cg, node, src1Reg, value, true);
+         foundConst = true;
+         }
+      else if (constantIsUnsignedImm12(-value))
+         {
+         generateCompareImmInstruction(cg, node, src1Reg, value, true);
+         foundConst = true;
+         }
+      }
+   if(!foundConst)
+      {
+      TR::Register *src2Reg = cg->evaluate(secondChild);
+      generateCompareInstruction(cg, node, src1Reg, src2Reg, true);
+      }
+
+   TR_ASSERT_FATAL_WITH_NODE(node, !sr, "Must provide an ArrayCopyBNDCHK symref");
+   cg->addSnippet(new (cg->trHeapMemory()) TR::ARM64HelperCallSnippet(cg, node, snippetLabel, sr));
+   TR::Instruction *instr = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, snippetLabel, branchType);
+
+   cg->machine()->setLinkRegisterKilled(true);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   return instr;
+   }
+
 TR::Register*
 OMR::ARM64::TreeEvaluator::ArrayCopyBNDCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::SymbolReference *exceptionBNDCHK = node->getSymbolReference();
+   TR::Instruction *instr = NULL;
+
+   if (firstChild->getOpCode().isLoadConst())
+      {
+      if (secondChild->getOpCode().isLoadConst())
+         {
+         if (firstChild->getInt() < secondChild->getInt())
+            {
+            // Check will always fail, just jump to the exception handler
+            instr = generateImmSymInstruction(cg, TR::InstOpCode::bl, node, (uintptr_t)exceptionBNDCHK->getMethodAddress(), NULL, exceptionBNDCHK, NULL);
+            cg->machine()->setLinkRegisterKilled(true);
+            }
+         else
+            {
+            // Check will always succeed, no need for an instruction
+            }
+         cg->decReferenceCount(firstChild);
+         cg->decReferenceCount(secondChild);
+         }
+      else
+         {
+         node->swapChildren();
+         instr = compareIntsAndBranchForArrayCopyBNDCHK(TR::CC_GT, node, cg, exceptionBNDCHK);
+         node->swapChildren();
+         }
+      }
+   else
+      {
+      instr = compareIntsAndBranchForArrayCopyBNDCHK(TR::CC_LT, node, cg, exceptionBNDCHK);
+      }
+
+   if (instr)
+      {
+      instr->ARM64NeedsGCMap(cg, 0xFFFFFFFF);
+      }
+
+   return NULL;
    }
 
 TR::Register*

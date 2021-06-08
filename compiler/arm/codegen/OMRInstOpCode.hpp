@@ -35,8 +35,6 @@ namespace OMR { typedef OMR::ARM::InstOpCode InstOpCodeConnector; }
 
 #include "compiler/codegen/OMRInstOpCode.hpp"
 
-typedef OMR::InstOpCode::Mnemonic TR_ARMOpCodes;
-
 #include "compiler/arm/codegen/OMRInstOpCode.enum.temp.defines"
 
 namespace OMR
@@ -63,7 +61,7 @@ class InstOpCode: public OMR::InstOpCode
    {
    typedef uint32_t TR_OpCodeBinaryEntry;
 
-   TR_ARMOpCodes                    _opCode;
+   OMR::InstOpCode::Mnemonic                    _opCode;
    static const uint32_t             properties[NumOpCodes];
    static const TR_OpCodeBinaryEntry binaryEncodings[NumOpCodes];
 
@@ -80,9 +78,9 @@ class InstOpCode: public OMR::InstOpCode
 
    static const OpCodeMetaData metadata[NumOpCodes];
 
-   TR_ARMOpCodes getOpCodeValue()                  {return _opCode;}
-   TR_ARMOpCodes setOpCodeValue(TR_ARMOpCodes op) {return (_opCode = op);}
-   TR_ARMOpCodes getRecordFormOpCodeValue() {return (TR_ARMOpCodes)(_opCode+1);}
+   OMR::InstOpCode::Mnemonic getOpCodeValue()                  {return _opCode;}
+   OMR::InstOpCode::Mnemonic setOpCodeValue(OMR::InstOpCode::Mnemonic op) {return (_opCode = op);}
+   OMR::InstOpCode::Mnemonic getRecordFormOpCodeValue() {return (OMR::InstOpCode::Mnemonic)(_opCode+1);}
 
    uint32_t isRecordForm() {return properties[_opCode] & ARMOpProp_IsRecordForm;}
 

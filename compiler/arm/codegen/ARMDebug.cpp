@@ -628,7 +628,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMMemSrc1Instruction * instr)
       instr->getMemoryReference()->hasDelayedOffset() &&
       !instr->getMemoryReference()->getUnresolvedSnippet())
       {
-      TR_ARMOpCodes op = instr->getOpCodeValue();
+      TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
       int32_t offset = instr->getMemoryReference()->getOffset();
       if(op == ARMOp_strh && !constantIsUnsignedImmed8(offset))
          {
@@ -683,7 +683,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMTrg1MemInstruction * instr)
       instr->getMemoryReference()->hasDelayedOffset() &&
       !instr->getMemoryReference()->getUnresolvedSnippet())
       {
-      TR_ARMOpCodes op = instr->getOpCodeValue();
+      TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
       int32_t offset = instr->getMemoryReference()->getOffset();
       if(op == ARMOp_add && instr->getMemoryReference()->getIndexRegister())
          {
@@ -1529,7 +1529,7 @@ TR_Debug::printARMDelayedOffsetInstructions(TR::FILE *pOutFile, TR::ARMMemInstru
    bool regSpilled;
    uint8_t *bufferPos   = instr->getBinaryEncoding();
    int32_t offset       = instr->getMemoryReference()->getOffset();
-   TR_ARMOpCodes op     = instr->getOpCodeValue();
+   TR::InstOpCode::Mnemonic op     = instr->getOpCodeValue();
    TR::RealRegister *base = toRealRegister(instr->getMemoryReference()->getBaseRegister());
 
    intParts localVal(offset);

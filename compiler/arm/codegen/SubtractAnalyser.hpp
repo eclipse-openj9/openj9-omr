@@ -48,8 +48,8 @@ class TR_ARMSubtractAnalyser : public TR_Analyser
    TR_ARMSubtractAnalyser(TR::CodeGenerator *cg) : _cg(cg) {}
 
    void integerSubtractAnalyser(TR::Node       *root,
-                                TR_ARMOpCodes regToRegOpCode,
-                                TR_ARMOpCodes memToRegOpCode);
+                                TR::InstOpCode::Mnemonic regToRegOpCode,
+                                TR::InstOpCode::Mnemonic memToRegOpCode);
 
    void longSubtractAnalyser(TR::Node *root);
 

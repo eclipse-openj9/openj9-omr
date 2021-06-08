@@ -53,19 +53,19 @@ class TR_ARMBinaryCommutativeAnalyser : public TR_Analyser
    TR_ARMBinaryCommutativeAnalyser(TR::CodeGenerator *cg) : _cg(cg), reversedOperands(false) {}
 
    void genericAnalyser(TR::Node       *root,
-                        TR_ARMOpCodes regToRegOpCode,
-                        TR_ARMOpCodes copyOpCode,
+                        TR::InstOpCode::Mnemonic regToRegOpCode,
+                        TR::InstOpCode::Mnemonic copyOpCode,
                         bool           nonClobberingDestination = false);
 
    void genericLongAnalyser(TR::Node       *root,
-                            TR_ARMOpCodes lowRegToRegOpCode,
-                            TR_ARMOpCodes highRegToRegOpCode,
-                            TR_ARMOpCodes lowMemToRegOpCode,
-                            TR_ARMOpCodes highMemToRegOpCode,
-                            TR_ARMOpCodes copyOpCode);
+                            TR::InstOpCode::Mnemonic lowRegToRegOpCode,
+                            TR::InstOpCode::Mnemonic highRegToRegOpCode,
+                            TR::InstOpCode::Mnemonic lowMemToRegOpCode,
+                            TR::InstOpCode::Mnemonic highMemToRegOpCode,
+                            TR::InstOpCode::Mnemonic copyOpCode);
 
    void integerAddAnalyser(TR::Node       *root,
-                           TR_ARMOpCodes regToRegOpCode);
+                           TR::InstOpCode::Mnemonic regToRegOpCode);
 
    void longAddAnalyser(TR::Node *root);
 

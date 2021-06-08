@@ -32,7 +32,7 @@
 #include "codegen/SnippetGCMap.hpp"
 #include "codegen/GCStackAtlas.hpp" /* @@ */
 
-uint8_t *storeArgumentItem(TR_ARMOpCodes op, uint8_t *buffer, TR::RealRegister *reg, int32_t offset, TR::CodeGenerator *cg)
+uint8_t *storeArgumentItem(TR::InstOpCode::Mnemonic op, uint8_t *buffer, TR::RealRegister *reg, int32_t offset, TR::CodeGenerator *cg)
    {
    TR::RealRegister *stackPtr = cg->machine()->getRealRegister(cg->getLinkage()->getProperties().getStackPointerRegister());
    TR::InstOpCode       opCode(op);
@@ -46,7 +46,7 @@ uint8_t *storeArgumentItem(TR_ARMOpCodes op, uint8_t *buffer, TR::RealRegister *
    return(buffer+4);
    }
 
-uint8_t *loadArgumentItem(TR_ARMOpCodes op, uint8_t *buffer, TR::RealRegister *reg, int32_t offset, TR::CodeGenerator *cg)
+uint8_t *loadArgumentItem(TR::InstOpCode::Mnemonic op, uint8_t *buffer, TR::RealRegister *reg, int32_t offset, TR::CodeGenerator *cg)
    {
    TR_ASSERT(0, "fix loadArgumentItem");
    TR::RealRegister *stackPtr = cg->machine()->getRealRegister(cg->getLinkage()->getProperties().getStackPointerRegister());

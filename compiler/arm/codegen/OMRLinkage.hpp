@@ -54,7 +54,7 @@ class ARMMemoryArgument
 
    TR::Register           *argRegister;
    TR::MemoryReference *argMemory;
-   TR_ARMOpCodes          opCode;
+   TR::InstOpCode::Mnemonic          opCode;
 
 //   void *operator new[](size_t s, int flag) {return jitStackAlloc(s);}
    };
@@ -290,7 +290,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    virtual TR::MemoryReference *getOutgoingArgumentMemRef(int32_t               totalParmAreaSize,
                                                             int32_t               argOffset,
                                                             TR::Register          *argReg,
-                                                            TR_ARMOpCodes         opCode,
+                                                            TR::InstOpCode::Mnemonic         opCode,
                                                             TR::ARMMemoryArgument &memArg) = 0;
    virtual TR::Instruction *saveArguments(TR::Instruction *cursor);
    virtual TR::Instruction *flushArguments(TR::Instruction *cursor);

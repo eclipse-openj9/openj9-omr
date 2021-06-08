@@ -29,8 +29,8 @@
 #include "il/Node_inlines.hpp"
 
 void TR_ARMSubtractAnalyser::integerSubtractAnalyser(TR::Node       *root,
-                                                      TR_ARMOpCodes regToRegOpCode,
-                                                      TR_ARMOpCodes memToRegOpCode)
+                                                      TR::InstOpCode::Mnemonic regToRegOpCode,
+                                                      TR::InstOpCode::Mnemonic memToRegOpCode)
    {
    TR::Node *firstChild;
    TR::Node *secondChild;

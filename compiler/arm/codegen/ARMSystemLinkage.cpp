@@ -577,7 +577,7 @@ void TR::ARMSystemLinkage::createEpilogue(TR::Instruction *cursor)
 TR::MemoryReference *TR::ARMSystemLinkage::getOutgoingArgumentMemRef(int32_t               totalSize,
                                                                       int32_t               offset,
                                                                       TR::Register          *argReg,
-                                                                      TR_ARMOpCodes         opCode,
+                                                                      TR::InstOpCode::Mnemonic         opCode,
                                                                       TR::ARMMemoryArgument &memArg)
    {
    int32_t                spOffset = offset - (getProperties().getNumIntArgRegs() * TR::Compiler->om.sizeofReferenceAddress());

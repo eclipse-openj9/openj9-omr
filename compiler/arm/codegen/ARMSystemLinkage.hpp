@@ -53,7 +53,7 @@ class ARMSystemLinkage : public TR::Linkage
    virtual TR::MemoryReference *getOutgoingArgumentMemRef(int32_t               totalParmAreaSize,
                                                             int32_t               argOffset,
                                                             TR::Register          *argReg,
-                                                            TR_ARMOpCodes         opCode,
+                                                            TR::InstOpCode::Mnemonic         opCode,
                                                             TR::ARMMemoryArgument &memArg);
 
    virtual TR::ARMLinkageProperties& getProperties();

@@ -242,7 +242,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
 
    void adjustForResolution(TR::CodeGenerator *cg);
 
-   uint32_t estimateBinaryLength(TR_ARMOpCodes op);
+   uint32_t estimateBinaryLength(TR::InstOpCode::Mnemonic op);
 
    void decNodeReferenceCounts();
 

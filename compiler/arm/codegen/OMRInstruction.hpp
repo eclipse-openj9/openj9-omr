@@ -64,20 +64,20 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    Instruction(TR::Node *node, TR::CodeGenerator *cg);
 
-   Instruction(TR_ARMOpCodes op, TR::Node *node, TR::CodeGenerator *cg);
+   Instruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::CodeGenerator *cg);
 
    Instruction(TR::Instruction   *precedingInstruction,
-               TR_ARMOpCodes     op,
+               TR::InstOpCode::Mnemonic     op,
                TR::Node          *node,
                TR::CodeGenerator *cg);
 
-   Instruction(TR_ARMOpCodes                       op,
+   Instruction(TR::InstOpCode::Mnemonic                       op,
                TR::Node                            *node,
                TR::RegisterDependencyConditions    *cond,
                TR::CodeGenerator                   *cg);
 
    Instruction(TR::Instruction                     *precedingInstruction,
-               TR_ARMOpCodes                       op,
+               TR::InstOpCode::Mnemonic                       op,
                TR::Node                            *node,
                TR::RegisterDependencyConditions    *cond,
                TR::CodeGenerator                   *cg);
@@ -87,9 +87,9 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual Kind getKind() { return IsNotExtended; }
 
    TR::InstOpCode& getOpCode()                       {return _opcode;}
-   TR_ARMOpCodes getOpCodeValue()                  {return _opcode.getOpCodeValue();}
-   TR_ARMOpCodes getRecordFormOpCode()             {return _opcode.getRecordFormOpCodeValue();}
-   TR_ARMOpCodes setOpCodeValue(TR_ARMOpCodes op)  {return _opcode.setOpCodeValue(op);}
+   TR::InstOpCode::Mnemonic getOpCodeValue()                  {return _opcode.getOpCodeValue();}
+   TR::InstOpCode::Mnemonic getRecordFormOpCode()             {return _opcode.getRecordFormOpCodeValue();}
+   TR::InstOpCode::Mnemonic setOpCodeValue(TR::InstOpCode::Mnemonic op)  {return _opcode.setOpCodeValue(op);}
 
    void ARMNeedsGCMap(uint32_t mask);
 

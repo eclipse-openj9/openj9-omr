@@ -25,7 +25,7 @@
 
 
 TR::Instruction *generateInstruction(TR::CodeGenerator *cg,
-                                    TR_ARMOpCodes     op,
+                                    TR::InstOpCode::Mnemonic     op,
                                     TR::Node          *node,
                                     TR::Instruction   *prev)
    {
@@ -36,7 +36,7 @@ TR::Instruction *generateInstruction(TR::CodeGenerator *cg,
    }
 
 TR::Instruction *generateAdminInstruction(TR::CodeGenerator *cg,
-                                         TR_ARMOpCodes     op,
+                                         TR::InstOpCode::Mnemonic     op,
                                          TR::Node          *node,
                                          TR::Node          *fenceNode,
                                          TR::Instruction   *prev)
@@ -48,7 +48,7 @@ TR::Instruction *generateAdminInstruction(TR::CodeGenerator *cg,
    }
 
 TR::Instruction *generateAdminInstruction(TR::CodeGenerator                   *cg,
-                                         TR_ARMOpCodes                       op,
+                                         TR::InstOpCode::Mnemonic                       op,
                                          TR::Node                            *node,
                                          TR::RegisterDependencyConditions *cond,
                                          TR::Node                            *fenceNode,
@@ -61,7 +61,7 @@ TR::Instruction *generateAdminInstruction(TR::CodeGenerator                   *c
    }
 
 TR::Instruction *generateImmInstruction(TR::CodeGenerator                   *cg,
-                                          TR_ARMOpCodes                       op,
+                                          TR::InstOpCode::Mnemonic                       op,
                                           TR::Node                            *node,
                                           uint32_t                            imm,
                                           TR::RegisterDependencyConditions *cond,
@@ -75,7 +75,7 @@ TR::Instruction *generateImmInstruction(TR::CodeGenerator                   *cg,
    }
 
 TR::Instruction *generateImmInstruction(TR::CodeGenerator                   *cg,
-                                          TR_ARMOpCodes                       op,
+                                          TR::InstOpCode::Mnemonic                       op,
                                           TR::Node                            *node,
                                           uint32_t                            imm,
                                           TR::Instruction                     *prev)
@@ -88,7 +88,7 @@ TR::Instruction *generateImmInstruction(TR::CodeGenerator                   *cg,
    }
 
 TR::Instruction *generateImmInstruction(TR::CodeGenerator                   *cg,
-                                          TR_ARMOpCodes                       op,
+                                          TR::InstOpCode::Mnemonic                       op,
                                           TR::Node                            *node,
                                           uint32_t                            imm,
                                           TR_ExternalRelocationTargetKind relocationKind,
@@ -101,7 +101,7 @@ TR::Instruction *generateImmInstruction(TR::CodeGenerator                   *cg,
    }
 
 TR::Instruction *generateImmInstruction(TR::CodeGenerator                   *cg,
-                                          TR_ARMOpCodes                       op,
+                                          TR::InstOpCode::Mnemonic                       op,
                                           TR::Node                            *node,
                                           uint32_t                            imm,
                                           TR_ExternalRelocationTargetKind relocationKind,
@@ -115,7 +115,7 @@ TR::Instruction *generateImmInstruction(TR::CodeGenerator                   *cg,
    }
 
 TR::Instruction *generateImmSymInstruction(TR::CodeGenerator                   *cg,
-                                          TR_ARMOpCodes                       op,
+                                          TR::InstOpCode::Mnemonic                       op,
                                           TR::Node                            *node,
                                           uint32_t                            imm,
                                           TR::RegisterDependencyConditions *cond,
@@ -131,7 +131,7 @@ TR::Instruction *generateImmSymInstruction(TR::CodeGenerator                   *
    }
 
 TR::Instruction *generateMemSrc1Instruction(TR::CodeGenerator      *cg,
-                                           TR_ARMOpCodes          op,
+                                           TR::InstOpCode::Mnemonic          op,
                                            TR::Node               *node,
                                            TR::MemoryReference *mf,
                                            TR::Register           *sreg,
@@ -152,7 +152,7 @@ TR::Instruction *generateMemSrc1Instruction(TR::CodeGenerator      *cg,
    }
 
 TR::Instruction *generateTrg1MemInstruction(TR::CodeGenerator      *cg,
-                                           TR_ARMOpCodes          op,
+                                           TR::InstOpCode::Mnemonic          op,
                                            TR::Node               *node,
                                            TR::Register           *treg,
                                            TR::MemoryReference *mf,
@@ -173,7 +173,7 @@ TR::Instruction *generateTrg1MemInstruction(TR::CodeGenerator      *cg,
    }
 
 TR::Instruction *generateTrg1MemSrc1Instruction(TR::CodeGenerator      *cg,
-                                               TR_ARMOpCodes          op,
+                                               TR::InstOpCode::Mnemonic          op,
                                                TR::Node               *node,
                                                TR::Register           *treg,
                                                TR::MemoryReference *mf,
@@ -187,7 +187,7 @@ TR::Instruction *generateTrg1MemSrc1Instruction(TR::CodeGenerator      *cg,
    }
 
 TR::Instruction *generateTrg1ImmInstruction(TR::CodeGenerator *cg,
-                                           TR_ARMOpCodes     op,
+                                           TR::InstOpCode::Mnemonic     op,
                                            TR::Node          *node,
                                            TR::Register      *treg,
                                            uint32_t          base,
@@ -202,7 +202,7 @@ TR::Instruction *generateTrg1ImmInstruction(TR::CodeGenerator *cg,
    }
 
 TR::Instruction *generateSrc1ImmInstruction(TR::CodeGenerator *cg,
-                                           TR_ARMOpCodes     op,
+                                           TR::InstOpCode::Mnemonic     op,
                                            TR::Node          *node,
                                            TR::Register      *s1reg,
                                            uint32_t          base,
@@ -228,7 +228,7 @@ TR::Instruction *generateSrc1ImmInstruction(TR::CodeGenerator *cg,
    }
 
 TR::Instruction *generateSrc2Instruction(TR::CodeGenerator *cg,
-                                        TR_ARMOpCodes     op,
+                                        TR::InstOpCode::Mnemonic     op,
                                         TR::Node          *node,
                                         TR::Register      *s1reg,
                                         TR::Register      *s2reg,
@@ -253,7 +253,7 @@ TR::Instruction *generateSrc2Instruction(TR::CodeGenerator *cg,
    }
 
 TR::Instruction *generateTrg1Src1Instruction(TR::CodeGenerator *cg,
-                                            TR_ARMOpCodes     op,
+                                            TR::InstOpCode::Mnemonic     op,
                                             TR::Node          *node,
                                             TR::Register      *treg,
                                             TR_ARMOperand2   *s1op,
@@ -266,7 +266,7 @@ TR::Instruction *generateTrg1Src1Instruction(TR::CodeGenerator *cg,
    }
 
 TR::Instruction *generateTrg1Src1Instruction(TR::CodeGenerator *cg,
-                                            TR_ARMOpCodes     op,
+                                            TR::InstOpCode::Mnemonic     op,
                                             TR::Node          *node,
                                             TR::Register      *treg,
                                             TR::Register      *s1reg,
@@ -291,7 +291,7 @@ TR::Instruction *generateTrg1Src1Instruction(TR::CodeGenerator *cg,
    }
 
 TR::Instruction *generateTrg1Src1ImmInstruction(TR::CodeGenerator *cg,
-                                               TR_ARMOpCodes     op,
+                                               TR::InstOpCode::Mnemonic     op,
                                                TR::Node          *node,
                                                TR::Register      *treg,
                                                TR::Register      *s1reg,
@@ -319,7 +319,7 @@ TR::Instruction *generateLoadStartPCInstruction(TR::CodeGenerator *cg,
    }
 
 TR::Instruction *generateTrg1Src2Instruction(TR::CodeGenerator *cg,
-                                            TR_ARMOpCodes     op,
+                                            TR::InstOpCode::Mnemonic     op,
                                             TR::Node          *node,
                                             TR::Register      *treg,
                                             TR::Register      *s1reg,
@@ -333,7 +333,7 @@ TR::Instruction *generateTrg1Src2Instruction(TR::CodeGenerator *cg,
    }
 
 TR::Instruction *generateTrg1Src2Instruction(TR::CodeGenerator *cg,
-                                            TR_ARMOpCodes     op,
+                                            TR::InstOpCode::Mnemonic     op,
                                             TR::Node          *node,
                                             TR::Register      *treg,
                                             TR::Register      *s1reg,
@@ -361,7 +361,7 @@ TR::Instruction *generateTrg1Src2Instruction(TR::CodeGenerator *cg,
 
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
 TR::Instruction *generateTrg2Src1Instruction(TR::CodeGenerator *cg,
-                                            TR_ARMOpCodes     op,
+                                            TR::InstOpCode::Mnemonic     op,
                                             TR::Node          *node,
                                             TR::Register      *t1reg,
                                             TR::Register      *t2reg,
@@ -376,7 +376,7 @@ TR::Instruction *generateTrg2Src1Instruction(TR::CodeGenerator *cg,
 #endif
 
 TR::Instruction *generateTrg1Src2MulInstruction(TR::CodeGenerator *cg,
-                                               TR_ARMOpCodes     op,
+                                               TR::InstOpCode::Mnemonic     op,
                                                TR::Node          *node,
                                                TR::Register      *treg,
                                                TR::Register      *s1reg,
@@ -390,7 +390,7 @@ TR::Instruction *generateTrg1Src2MulInstruction(TR::CodeGenerator *cg,
    }
 
 TR::Instruction *generateTrg2Src2MulInstruction(TR::CodeGenerator *cg,
-                                               TR_ARMOpCodes     op,
+                                               TR::InstOpCode::Mnemonic     op,
                                                TR::Node          *node,
                                                TR::Register       *tregHi,
                                                TR::Register      *tregLo,
@@ -454,7 +454,7 @@ TR::Instruction *generateShiftRightByRegister(TR::CodeGenerator *cg,
    }
 
 TR::Instruction *generateLabelInstruction(TR::CodeGenerator *cg,
-                                         TR_ARMOpCodes     op,
+                                         TR::InstOpCode::Mnemonic     op,
                                          TR::Node          *node,
                                          TR::LabelSymbol    *sym,
                                          TR::Instruction   *prev,
@@ -468,7 +468,7 @@ TR::Instruction *generateLabelInstruction(TR::CodeGenerator *cg,
    }
 
 TR::Instruction *generateLabelInstruction(TR::CodeGenerator                   *cg,
-                                         TR_ARMOpCodes                       op,
+                                         TR::InstOpCode::Mnemonic                       op,
                                          TR::Node                            *node,
                                          TR::LabelSymbol                      *sym,
                                          TR::RegisterDependencyConditions *cond,
@@ -506,7 +506,7 @@ TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator         
    }
 
 TR::ARMControlFlowInstruction *generateControlFlowInstruction(TR::CodeGenerator                   *cg,
-                                                             TR_ARMOpCodes                       op,
+                                                             TR::InstOpCode::Mnemonic                       op,
                                                              TR::Node                            *node,
                                                              TR::RegisterDependencyConditions *cond)
    {

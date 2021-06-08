@@ -85,7 +85,7 @@ OMR::ARM::Instruction::Instruction(TR::Node *node, TR::CodeGenerator *cg)
    self()->setDependencyConditions(NULL);
    }
 
-OMR::ARM::Instruction::Instruction(TR_ARMOpCodes op, TR::Node *node, TR::CodeGenerator *cg)
+OMR::ARM::Instruction::Instruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::CodeGenerator *cg)
    : OMR::InstructionConnector(cg, TR::InstOpCode::bad, node)
    {
    self()->setOpCodeValue(op);
@@ -94,7 +94,7 @@ OMR::ARM::Instruction::Instruction(TR_ARMOpCodes op, TR::Node *node, TR::CodeGen
    }
 
 OMR::ARM::Instruction::Instruction(TR::Instruction   *precedingInstruction,
-            TR_ARMOpCodes     op,
+            TR::InstOpCode::Mnemonic     op,
             TR::Node          *node,
             TR::CodeGenerator *cg)
    : OMR::InstructionConnector(cg, precedingInstruction, TR::InstOpCode::bad, node)
@@ -104,7 +104,7 @@ OMR::ARM::Instruction::Instruction(TR::Instruction   *precedingInstruction,
    self()->setDependencyConditions(NULL);
    }
 
-OMR::ARM::Instruction::Instruction(TR_ARMOpCodes                       op,
+OMR::ARM::Instruction::Instruction(TR::InstOpCode::Mnemonic                       op,
             TR::Node                            *node,
             TR::RegisterDependencyConditions    *cond,
             TR::CodeGenerator                   *cg)
@@ -118,7 +118,7 @@ OMR::ARM::Instruction::Instruction(TR_ARMOpCodes                       op,
    }
 
 OMR::ARM::Instruction::Instruction(TR::Instruction                     *precedingInstruction,
-            TR_ARMOpCodes                       op,
+            TR::InstOpCode::Mnemonic                       op,
             TR::Node                            *node,
             TR::RegisterDependencyConditions    *cond,
             TR::CodeGenerator                   *cg)
@@ -313,7 +313,7 @@ TR::ARMImmInstruction *TR::ARMImmInstruction::getARMImmInstruction()
 
 // TR::ARMImmSymInstruction:: member functions
 
-TR::ARMImmSymInstruction::ARMImmSymInstruction(TR_ARMOpCodes                       op,
+TR::ARMImmSymInstruction::ARMImmSymInstruction(TR::InstOpCode::Mnemonic                       op,
                                                TR::Node                            *node,
                                                uint32_t                            imm,
                                                TR::RegisterDependencyConditions *cond,
@@ -329,7 +329,7 @@ TR::ARMImmSymInstruction::ARMImmSymInstruction(TR_ARMOpCodes                    
    }
 
 TR::ARMImmSymInstruction::ARMImmSymInstruction(TR::Instruction                           *precedingInstruction,
-                                               TR_ARMOpCodes                       op,
+                                               TR::InstOpCode::Mnemonic                       op,
                                                TR::Node                            *node,
                                                uint32_t                            imm,
                                                TR::RegisterDependencyConditions *cond,

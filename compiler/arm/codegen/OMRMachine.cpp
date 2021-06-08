@@ -114,7 +114,7 @@ TR::RealRegister *OMR::ARM::Machine::freeBestRegister(TR::Instruction     *curre
    TR::RealRegister    *best, *crtemp=NULL;
    TR::Instruction     *cursor;
    TR::Node               *currentNode = currentInstruction->getNode();
-   TR_ARMOpCodes          opCode;
+   TR::InstOpCode::Mnemonic          opCode;
    int                    numCandidates = 0;
    int                    first, last;
 
@@ -313,7 +313,7 @@ TR::RealRegister *OMR::ARM::Machine::reverseSpillState(TR::Instruction      *cur
    TR_BackingStore       *location = spilledRegister->getBackingStorage();
    TR::Node               *currentNode = currentInstruction->getNode();
    TR_RegisterKinds       rk       = spilledRegister->getKind();
-   TR_ARMOpCodes          opCode;
+   TR::InstOpCode::Mnemonic          opCode;
    TR_Debug          *debugObj = self()->cg()->getDebug();
 
    if (targetRegister == NULL)

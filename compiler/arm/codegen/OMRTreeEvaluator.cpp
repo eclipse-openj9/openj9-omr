@@ -2960,7 +2960,7 @@ TR::Register *OMR::ARM::TreeEvaluator::sloadEvaluator(TR::Node *node, TR::CodeGe
    return commonLoadEvaluator(node, ARMOp_ldrsh, 2, cg);
    }
 
-TR::Register *OMR::ARM::TreeEvaluator::commonLoadEvaluator(TR::Node *node,  TR_ARMOpCodes memToRegOp, int32_t memSize, TR::CodeGenerator *cg)
+TR::Register *OMR::ARM::TreeEvaluator::commonLoadEvaluator(TR::Node *node,  TR::InstOpCode::Mnemonic memToRegOp, int32_t memSize, TR::CodeGenerator *cg)
    {
    TR::Register *tempReg = node->setRegister(cg->allocateRegister());
    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
@@ -3151,7 +3151,7 @@ TR::Register *OMR::ARM::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::CodeG
    return commonStoreEvaluator(node, ARMOp_str, 4, cg);
    }
 
-TR::Register *OMR::ARM::TreeEvaluator::commonStoreEvaluator(TR::Node *node, TR_ARMOpCodes memToRegOp, int32_t memSize, TR::CodeGenerator *cg)
+TR::Register *OMR::ARM::TreeEvaluator::commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic memToRegOp, int32_t memSize, TR::CodeGenerator *cg)
    {
    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
@@ -3868,7 +3868,7 @@ TR::Register *OMR::ARM::TreeEvaluator::unImpOpEvaluator(TR::Node *node, TR::Code
 
 
 TR::Register *OMR::ARM::TreeEvaluator::conversionAnalyser(TR::Node          *node,
-                                                     TR_ARMOpCodes    memoryToRegisterOp,
+                                                     TR::InstOpCode::Mnemonic    memoryToRegisterOp,
                                                      bool needSignExtend,
                                                      int dstBits,
                                                      TR::CodeGenerator *cg)
@@ -3903,7 +3903,7 @@ TR::Register *OMR::ARM::TreeEvaluator::conversionAnalyser(TR::Node          *nod
 
 static void generateSignOrZeroExtend(TR::Node *node, TR::Register *dst, TR::Register *src, bool needSignExtend, int32_t bitsInDst, TR::CodeGenerator *cg)
    {
-   TR_ARMOpCodes opcode = ARMOp_bad;
+   TR::InstOpCode::Mnemonic opcode = ARMOp_bad;
 
    if (cg->comp()->target().cpu.id() >= TR_ARMv6)
       {

@@ -61,14 +61,13 @@ class InstOpCode: public OMR::InstOpCode
    {
    typedef uint32_t TR_OpCodeBinaryEntry;
 
-   OMR::InstOpCode::Mnemonic                    _opCode;
    static const uint32_t             properties[NumOpCodes];
    static const TR_OpCodeBinaryEntry binaryEncodings[NumOpCodes];
 
    protected:
 
-   InstOpCode() : OMR::InstOpCode(bad), _opCode(ARMOp_bad) {}
-   InstOpCode(Mnemonic m) : OMR::InstOpCode(m), _opCode(ARMOp_bad) {}
+   InstOpCode() : OMR::InstOpCode(bad) {}
+   InstOpCode(Mnemonic m) : OMR::InstOpCode(m) {}
 
    public:
 
@@ -78,37 +77,37 @@ class InstOpCode: public OMR::InstOpCode
 
    static const OpCodeMetaData metadata[NumOpCodes];
 
-   OMR::InstOpCode::Mnemonic getOpCodeValue()                  {return _opCode;}
-   OMR::InstOpCode::Mnemonic setOpCodeValue(OMR::InstOpCode::Mnemonic op) {return (_opCode = op);}
-   OMR::InstOpCode::Mnemonic getRecordFormOpCodeValue() {return (OMR::InstOpCode::Mnemonic)(_opCode+1);}
+   OMR::InstOpCode::Mnemonic getOpCodeValue()                  {return _mnemonic;}
+   OMR::InstOpCode::Mnemonic setOpCodeValue(OMR::InstOpCode::Mnemonic op) {return (_mnemonic = op);}
+   OMR::InstOpCode::Mnemonic getRecordFormOpCodeValue() {return (OMR::InstOpCode::Mnemonic)(_mnemonic+1);}
 
-   uint32_t isRecordForm() {return properties[_opCode] & ARMOpProp_IsRecordForm;}
+   uint32_t isRecordForm() {return properties[_mnemonic] & ARMOpProp_IsRecordForm;}
 
-   uint32_t hasRecordForm() {return properties[_opCode] & ARMOpProp_HasRecordForm;}
+   uint32_t hasRecordForm() {return properties[_mnemonic] & ARMOpProp_HasRecordForm;}
 
-   uint32_t singleFPOp() {return properties[_opCode] & ARMOpProp_SingleFP;}
+   uint32_t singleFPOp() {return properties[_mnemonic] & ARMOpProp_SingleFP;}
 
-   uint32_t doubleFPOp() {return properties[_opCode] & ARMOpProp_DoubleFP;}
+   uint32_t doubleFPOp() {return properties[_mnemonic] & ARMOpProp_DoubleFP;}
 
-   uint32_t isVFPOp() {return properties[_opCode] & ARMOpProp_VFP;}
+   uint32_t isVFPOp() {return properties[_mnemonic] & ARMOpProp_VFP;}
 
-   uint32_t gprOp() {return (properties[_opCode] & (ARMOpProp_DoubleFP | ARMOpProp_SingleFP)) == 0;}
+   uint32_t gprOp() {return (properties[_mnemonic] & (ARMOpProp_DoubleFP | ARMOpProp_SingleFP)) == 0;}
 
-   uint32_t fprOp() {return (properties[_opCode] & (ARMOpProp_DoubleFP | ARMOpProp_SingleFP));}
+   uint32_t fprOp() {return (properties[_mnemonic] & (ARMOpProp_DoubleFP | ARMOpProp_SingleFP));}
 
-   uint32_t readsCarryFlag() {return properties[_opCode] & ARMOpProp_ReadsCarryFlag;}
+   uint32_t readsCarryFlag() {return properties[_mnemonic] & ARMOpProp_ReadsCarryFlag;}
 
-   uint32_t setsCarryFlag() {return properties[_opCode] & ARMOpProp_SetsCarryFlag;}
+   uint32_t setsCarryFlag() {return properties[_mnemonic] & ARMOpProp_SetsCarryFlag;}
 
-   uint32_t setsOverflowFlag() {return properties[_opCode] & ARMOpProp_SetsOverflowFlag;}
+   uint32_t setsOverflowFlag() {return properties[_mnemonic] & ARMOpProp_SetsOverflowFlag;}
 
-   uint32_t isBranchOp() {return properties[_opCode] & ARMOpProp_BranchOp;}
+   uint32_t isBranchOp() {return properties[_mnemonic] & ARMOpProp_BranchOp;}
 
-   uint32_t isLabel() {return properties[_opCode] & ARMOpProp_Label;}
+   uint32_t isLabel() {return properties[_mnemonic] & ARMOpProp_Label;}
 
    uint8_t *copyBinaryToBuffer(uint8_t *cursor)
       {
-      *(uint32_t *)cursor = *(uint32_t *)&binaryEncodings[_opCode];
+      *(uint32_t *)cursor = *(uint32_t *)&binaryEncodings[_mnemonic];
       return cursor;
 	  }
    };

@@ -1,0 +1,169 @@
+/*******************************************************************************
+ * Copyright (c) 2021, 2021 IBM Corp. and others
+ *
+ * This program and the accompanying materials are made available under
+ * the terms of the Eclipse Public License 2.0 which accompanies this
+ * distribution and is available at http://eclipse.org/legal/epl-2.0
+ * or the Apache License, Version 2.0 which accompanies this distribution
+ * and is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the
+ * Eclipse Public License, v. 2.0 are satisfied: GNU General Public License,
+ * version 2 with the GNU Classpath Exception [1] and GNU General Public
+ * License, version 2 with the OpenJDK Assembly Exception [2].
+ *
+ * [1] https://www.gnu.org/software/classpath/license.html
+ * [2] http://openjdk.java.net/legal/assembly-exception.html
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
+ *******************************************************************************/
+
+/*
+ * This file will be included within an enum. Only comments and enumerator
+ * definitions are permitted.
+ */
+
+#define ARMOp_bad OMR::InstOpCode::ARMOp_bad
+#define ARMOp_add OMR::InstOpCode::ARMOp_add
+#define ARMOp_add_r OMR::InstOpCode::ARMOp_add_r
+#define ARMOp_adc OMR::InstOpCode::ARMOp_adc
+#define ARMOp_adc_r OMR::InstOpCode::ARMOp_adc_r
+#define ARMOp_and OMR::InstOpCode::ARMOp_and
+#define ARMOp_and_r OMR::InstOpCode::ARMOp_and_r
+#define ARMOp_b OMR::InstOpCode::ARMOp_b
+#define ARMOp_bl OMR::InstOpCode::ARMOp_bl
+#define ARMOp_bic OMR::InstOpCode::ARMOp_bic
+#define ARMOp_bic_r OMR::InstOpCode::ARMOp_bic_r
+#define ARMOp_cmp OMR::InstOpCode::ARMOp_cmp
+#define ARMOp_cmn OMR::InstOpCode::ARMOp_cmn
+#define ARMOp_eor OMR::InstOpCode::ARMOp_eor
+#define ARMOp_eor_r OMR::InstOpCode::ARMOp_eor_r
+#define ARMOp_ldfs OMR::InstOpCode::ARMOp_ldfs
+#define ARMOp_ldfd OMR::InstOpCode::ARMOp_ldfd
+#define ARMOp_ldm OMR::InstOpCode::ARMOp_ldm
+#define ARMOp_ldmia OMR::InstOpCode::ARMOp_ldmia
+#define ARMOp_ldr OMR::InstOpCode::ARMOp_ldr
+#define ARMOp_ldrb OMR::InstOpCode::ARMOp_ldrb
+#define ARMOp_ldrsb OMR::InstOpCode::ARMOp_ldrsb
+#define ARMOp_ldrh OMR::InstOpCode::ARMOp_ldrh
+#define ARMOp_ldrsh OMR::InstOpCode::ARMOp_ldrsh
+#define ARMOp_mul OMR::InstOpCode::ARMOp_mul
+#define ARMOp_mul_r OMR::InstOpCode::ARMOp_mul_r
+#define ARMOp_mla OMR::InstOpCode::ARMOp_mla
+#define ARMOp_mla_r OMR::InstOpCode::ARMOp_mla_r
+#define ARMOp_smull OMR::InstOpCode::ARMOp_smull
+#define ARMOp_smull_r OMR::InstOpCode::ARMOp_smull_r
+#define ARMOp_umull OMR::InstOpCode::ARMOp_umull
+#define ARMOp_umull_r OMR::InstOpCode::ARMOp_umull_r
+#define ARMOp_smlal OMR::InstOpCode::ARMOp_smlal
+#define ARMOp_smlal_r OMR::InstOpCode::ARMOp_smlal_r
+#define ARMOp_umlal OMR::InstOpCode::ARMOp_umlal
+#define ARMOp_umlal_r OMR::InstOpCode::ARMOp_umlal_r
+#define ARMOp_mov OMR::InstOpCode::ARMOp_mov
+#define ARMOp_mov_r OMR::InstOpCode::ARMOp_mov_r
+#define ARMOp_mvn OMR::InstOpCode::ARMOp_mvn
+#define ARMOp_mvn_r OMR::InstOpCode::ARMOp_mvn_r
+#define ARMOp_orr OMR::InstOpCode::ARMOp_orr
+#define ARMOp_orr_r OMR::InstOpCode::ARMOp_orr_r
+#define ARMOp_teq OMR::InstOpCode::ARMOp_teq
+#define ARMOp_tst OMR::InstOpCode::ARMOp_tst
+#define ARMOp_sub OMR::InstOpCode::ARMOp_sub
+#define ARMOp_sub_r OMR::InstOpCode::ARMOp_sub_r
+#define ARMOp_sbc OMR::InstOpCode::ARMOp_sbc
+#define ARMOp_sbc_r OMR::InstOpCode::ARMOp_sbc_r
+#define ARMOp_rsb OMR::InstOpCode::ARMOp_rsb
+#define ARMOp_rsb_r OMR::InstOpCode::ARMOp_rsb_r
+#define ARMOp_rsc OMR::InstOpCode::ARMOp_rsc
+#define ARMOp_rsc_r OMR::InstOpCode::ARMOp_rsc_r
+#define ARMOp_stfs OMR::InstOpCode::ARMOp_stfs
+#define ARMOp_stfd OMR::InstOpCode::ARMOp_stfd
+#define ARMOp_str OMR::InstOpCode::ARMOp_str
+#define ARMOp_strb OMR::InstOpCode::ARMOp_strb
+#define ARMOp_strh OMR::InstOpCode::ARMOp_strh
+#define ARMOp_stm OMR::InstOpCode::ARMOp_stm
+#define ARMOp_stmdb OMR::InstOpCode::ARMOp_stmdb
+#define ARMOp_swp OMR::InstOpCode::ARMOp_swp
+#define ARMOp_sxtb OMR::InstOpCode::ARMOp_sxtb
+#define ARMOp_sxth OMR::InstOpCode::ARMOp_sxth
+#define ARMOp_uxtb OMR::InstOpCode::ARMOp_uxtb
+#define ARMOp_uxth OMR::InstOpCode::ARMOp_uxth
+#define ARMOp_fence OMR::InstOpCode::ARMOp_fence
+#define ARMOp_ret OMR::InstOpCode::ARMOp_ret
+#define ARMOp_wrtbar OMR::InstOpCode::ARMOp_wrtbar
+#define ARMOp_proc OMR::InstOpCode::ARMOp_proc
+#define ARMOp_dd OMR::InstOpCode::ARMOp_dd
+#define ARMOp_dmb_v6 OMR::InstOpCode::ARMOp_dmb_v6
+#define ARMOp_dmb OMR::InstOpCode::ARMOp_dmb
+#define ARMOp_dmb_st OMR::InstOpCode::ARMOp_dmb_st
+#define ARMOp_ldrex OMR::InstOpCode::ARMOp_ldrex
+#define ARMOp_strex OMR::InstOpCode::ARMOp_strex
+#define ARMOp_iflong OMR::InstOpCode::ARMOp_iflong
+#define ARMOp_setblong OMR::InstOpCode::ARMOp_setblong
+#define ARMOp_setbool OMR::InstOpCode::ARMOp_setbool
+#define ARMOp_setbflt OMR::InstOpCode::ARMOp_setbflt
+#define ARMOp_lcmp OMR::InstOpCode::ARMOp_lcmp
+#define ARMOp_flcmpl OMR::InstOpCode::ARMOp_flcmpl
+#define ARMOp_flcmpg OMR::InstOpCode::ARMOp_flcmpg
+#define ARMOp_idiv OMR::InstOpCode::ARMOp_idiv
+#define ARMOp_irem OMR::InstOpCode::ARMOp_irem
+#define ARMOp_label OMR::InstOpCode::ARMOp_label
+#define ARMOp_vgdnop OMR::InstOpCode::ARMOp_vgdnop
+#define ARMOp_nop OMR::InstOpCode::ARMOp_nop
+#define ARMOp_fabsd OMR::InstOpCode::ARMOp_fabsd
+#define ARMOp_fabss OMR::InstOpCode::ARMOp_fabss
+#define ARMOp_faddd OMR::InstOpCode::ARMOp_faddd
+#define ARMOp_fadds OMR::InstOpCode::ARMOp_fadds
+#define ARMOp_fcmpd OMR::InstOpCode::ARMOp_fcmpd
+#define ARMOp_fcmps OMR::InstOpCode::ARMOp_fcmps
+#define ARMOp_fcmpzd OMR::InstOpCode::ARMOp_fcmpzd
+#define ARMOp_fcmpzs OMR::InstOpCode::ARMOp_fcmpzs
+#define ARMOp_fcpyd OMR::InstOpCode::ARMOp_fcpyd
+#define ARMOp_fcpys OMR::InstOpCode::ARMOp_fcpys
+#define ARMOp_fcvtds OMR::InstOpCode::ARMOp_fcvtds
+#define ARMOp_fcvtsd OMR::InstOpCode::ARMOp_fcvtsd
+#define ARMOp_fdivd OMR::InstOpCode::ARMOp_fdivd
+#define ARMOp_fdivs OMR::InstOpCode::ARMOp_fdivs
+#define ARMOp_fldd OMR::InstOpCode::ARMOp_fldd
+#define ARMOp_fldmd OMR::InstOpCode::ARMOp_fldmd
+#define ARMOp_fldms OMR::InstOpCode::ARMOp_fldms
+#define ARMOp_flds OMR::InstOpCode::ARMOp_flds
+#define ARMOp_fmacd OMR::InstOpCode::ARMOp_fmacd
+#define ARMOp_fmacs OMR::InstOpCode::ARMOp_fmacs
+#define ARMOp_fmdrr OMR::InstOpCode::ARMOp_fmdrr
+#define ARMOp_fmrrd OMR::InstOpCode::ARMOp_fmrrd
+#define ARMOp_fmrrs OMR::InstOpCode::ARMOp_fmrrs
+#define ARMOp_fmrs OMR::InstOpCode::ARMOp_fmrs
+#define ARMOp_fmrx OMR::InstOpCode::ARMOp_fmrx
+#define ARMOp_fmscd OMR::InstOpCode::ARMOp_fmscd
+#define ARMOp_fmscs OMR::InstOpCode::ARMOp_fmscs
+#define ARMOp_fmsr OMR::InstOpCode::ARMOp_fmsr
+#define ARMOp_fmsrr OMR::InstOpCode::ARMOp_fmsrr
+#define ARMOp_fmstat OMR::InstOpCode::ARMOp_fmstat
+#define ARMOp_fmuld OMR::InstOpCode::ARMOp_fmuld
+#define ARMOp_fmuls OMR::InstOpCode::ARMOp_fmuls
+#define ARMOp_fmxr OMR::InstOpCode::ARMOp_fmxr
+#define ARMOp_fnegd OMR::InstOpCode::ARMOp_fnegd
+#define ARMOp_fnegs OMR::InstOpCode::ARMOp_fnegs
+#define ARMOp_fnmacd OMR::InstOpCode::ARMOp_fnmacd
+#define ARMOp_fnmacs OMR::InstOpCode::ARMOp_fnmacs
+#define ARMOp_fnmscd OMR::InstOpCode::ARMOp_fnmscd
+#define ARMOp_fnmscs OMR::InstOpCode::ARMOp_fnmscs
+#define ARMOp_fnmuld OMR::InstOpCode::ARMOp_fnmuld
+#define ARMOp_fnmuls OMR::InstOpCode::ARMOp_fnmuls
+#define ARMOp_fsitod OMR::InstOpCode::ARMOp_fsitod
+#define ARMOp_fsitos OMR::InstOpCode::ARMOp_fsitos
+#define ARMOp_fsqrtd OMR::InstOpCode::ARMOp_fsqrtd
+#define ARMOp_fsqrts OMR::InstOpCode::ARMOp_fsqrts
+#define ARMOp_fstd OMR::InstOpCode::ARMOp_fstd
+#define ARMOp_fstmd OMR::InstOpCode::ARMOp_fstmd
+#define ARMOp_fstms OMR::InstOpCode::ARMOp_fstms
+#define ARMOp_fsts OMR::InstOpCode::ARMOp_fsts
+#define ARMOp_fsubd OMR::InstOpCode::ARMOp_fsubd
+#define ARMOp_fsubs OMR::InstOpCode::ARMOp_fsubs
+#define ARMOp_ftosizd OMR::InstOpCode::ARMOp_ftosizd
+#define ARMOp_ftosizs OMR::InstOpCode::ARMOp_ftosizs
+#define ARMOp_ftouizd OMR::InstOpCode::ARMOp_ftouizd
+#define ARMOp_ftouizs OMR::InstOpCode::ARMOp_ftouizs
+#define ARMOp_fuitod OMR::InstOpCode::ARMOp_fuitod
+#define ARMOp_fuitos OMR::InstOpCode::ARMOp_fuitos

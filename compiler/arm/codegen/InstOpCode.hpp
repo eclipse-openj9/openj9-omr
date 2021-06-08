@@ -33,7 +33,6 @@ class InstOpCode : public OMR::InstOpCodeConnector
 
    InstOpCode() : OMR::InstOpCodeConnector(bad) {}
    InstOpCode(TR::InstOpCode::Mnemonic m) : OMR::InstOpCodeConnector(m) {}
-   InstOpCode(TR_ARMOpCodes op) : OMR::InstOpCodeConnector(op) {}
    };
 }
 

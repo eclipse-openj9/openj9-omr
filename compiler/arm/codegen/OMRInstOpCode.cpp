@@ -26,7 +26,7 @@ const OMR::ARM::InstOpCode::OpCodeMetaData OMR::ARM::InstOpCode::metadata[NumOpC
    #include "codegen/OMRInstOpCodeProperties.hpp"
    };
 
-const OMR::ARM::InstOpCode::TR_OpCodeBinaryEntry OMR::ARM::InstOpCode::binaryEncodings[ARMNumOpCodes] =
+const OMR::ARM::InstOpCode::TR_OpCodeBinaryEntry OMR::ARM::InstOpCode::binaryEncodings[NumOpCodes] =
 {
    0x00000000,  // assocreg
    0x00000000,  // bad
@@ -181,7 +181,7 @@ const OMR::ARM::InstOpCode::TR_OpCodeBinaryEntry OMR::ARM::InstOpCode::binaryEnc
    0x0EB80A40   // fuitos (vcvt.f32.u32)
 };
 
-const uint32_t OMR::ARM::InstOpCode::properties[ARMNumOpCodes] =
+const uint32_t OMR::ARM::InstOpCode::properties[NumOpCodes] =
 {
 // assocreg
 0,

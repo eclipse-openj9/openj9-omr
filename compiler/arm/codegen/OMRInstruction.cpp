@@ -78,7 +78,7 @@ OMR::ARM::Instruction::Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemon
 
 // TODO: need to fix the InstOpCode initialization
 OMR::ARM::Instruction::Instruction(TR::Node *node, TR::CodeGenerator *cg)
-   : OMR::InstructionConnector(cg, TR::InstOpCode::BAD, node)
+   : OMR::InstructionConnector(cg, TR::InstOpCode::bad, node)
    {
    self()->setOpCodeValue(ARMOp_bad);
    self()->setConditionCode(ARMConditionCodeAL);
@@ -86,7 +86,7 @@ OMR::ARM::Instruction::Instruction(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 OMR::ARM::Instruction::Instruction(TR_ARMOpCodes op, TR::Node *node, TR::CodeGenerator *cg)
-   : OMR::InstructionConnector(cg, TR::InstOpCode::BAD, node)
+   : OMR::InstructionConnector(cg, TR::InstOpCode::bad, node)
    {
    self()->setOpCodeValue(op);
    self()->setConditionCode(ARMConditionCodeAL);
@@ -97,7 +97,7 @@ OMR::ARM::Instruction::Instruction(TR::Instruction   *precedingInstruction,
             TR_ARMOpCodes     op,
             TR::Node          *node,
             TR::CodeGenerator *cg)
-   : OMR::InstructionConnector(cg, precedingInstruction, TR::InstOpCode::BAD, node)
+   : OMR::InstructionConnector(cg, precedingInstruction, TR::InstOpCode::bad, node)
    {
    self()->setOpCodeValue(op);
    self()->setConditionCode(ARMConditionCodeAL);
@@ -108,7 +108,7 @@ OMR::ARM::Instruction::Instruction(TR_ARMOpCodes                       op,
             TR::Node                            *node,
             TR::RegisterDependencyConditions    *cond,
             TR::CodeGenerator                   *cg)
-   : OMR::InstructionConnector(cg, TR::InstOpCode::BAD, node)
+   : OMR::InstructionConnector(cg, TR::InstOpCode::bad, node)
    {
    self()->setOpCodeValue(op);
    self()->setConditionCode(ARMConditionCodeAL);
@@ -122,7 +122,7 @@ OMR::ARM::Instruction::Instruction(TR::Instruction                     *precedin
             TR::Node                            *node,
             TR::RegisterDependencyConditions    *cond,
             TR::CodeGenerator                   *cg)
-   : OMR::InstructionConnector(cg, precedingInstruction, TR::InstOpCode::BAD, node)
+   : OMR::InstructionConnector(cg, precedingInstruction, TR::InstOpCode::bad, node)
    {
    self()->setOpCodeValue(op);
    self()->setConditionCode(ARMConditionCodeAL);

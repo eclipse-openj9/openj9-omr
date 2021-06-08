@@ -22,7 +22,7 @@
 #ifndef ARMOUTOFLINECODESECTION_INCL
 #define ARMOUTOFLINECODESECTION_INCL
 
-#include "codegen/ARMOps.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "codegen/OutOfLineCodeSection.hpp"
 #include "env/TRMemory.hpp"
 

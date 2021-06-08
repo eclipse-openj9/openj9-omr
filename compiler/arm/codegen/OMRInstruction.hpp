@@ -35,7 +35,7 @@ namespace OMR { typedef OMR::ARM::Instruction InstructionConnector; }
 
 #include "compiler/codegen/OMRInstruction.hpp"
 
-#include "arm/codegen/ARMOps.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/GCStackMap.hpp"
 #include "codegen/RegisterConstants.hpp"

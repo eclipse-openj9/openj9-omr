@@ -33,7 +33,7 @@ namespace OMR { typedef OMR::ARM::Linkage LinkageConnector; }
 #endif
 
 #include "compiler/codegen/OMRLinkage.hpp"
-#include "codegen/ARMOps.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/RealRegister.hpp"
 #include "infra/Annotations.hpp"

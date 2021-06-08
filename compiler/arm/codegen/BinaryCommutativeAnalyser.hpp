@@ -26,7 +26,7 @@
 #ifndef ARMBINARYCOMMUTATIVEANALYSER_INCL
 #define ARMBINARYCOMMUTATIVEANALYSER_INCL
 
-#include "codegen/ARMOps.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "codegen/Register.hpp"
 #include "il/Node.hpp"
 #include "codegen/Analyser.hpp"

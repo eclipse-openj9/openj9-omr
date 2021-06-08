@@ -23,7 +23,7 @@
 #define ARMINSTRUCTION_INCL
 
 #include "codegen/Instruction.hpp"
-#include "codegen/ARMOps.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"

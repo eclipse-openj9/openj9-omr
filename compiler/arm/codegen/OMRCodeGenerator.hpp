@@ -36,7 +36,7 @@ namespace OMR { typedef OMR::ARM::CodeGenerator CodeGeneratorConnector; }
 #include "compiler/codegen/OMRCodeGenerator.hpp"
 
 #include <stdint.h>
-#include "arm/codegen/ARMOps.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/ScratchRegisterManager.hpp"
 #include "env/jittypes.h"

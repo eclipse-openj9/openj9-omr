@@ -25,7 +25,7 @@
 #include "codegen/Analyser.hpp"
 
 #include <stdint.h>
-#include "arm/codegen/ARMOps.hpp"
+#include "codegen/InstOpCode.hpp"
 
 namespace TR { class CodeGenerator; }
 namespace TR { class Node; }

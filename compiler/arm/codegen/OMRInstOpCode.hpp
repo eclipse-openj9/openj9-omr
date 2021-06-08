@@ -34,6 +34,7 @@ namespace OMR { typedef OMR::ARM::InstOpCode InstOpCodeConnector; }
 #endif
 
 #include "compiler/codegen/OMRInstOpCode.hpp"
+#include "arm/codegen/ARMOps.hpp"
 
 namespace OMR
 {

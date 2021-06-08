@@ -36,7 +36,7 @@ namespace OMR { typedef OMR::ARM::TreeEvaluator TreeEvaluatorConnector; }
 #include "compiler/codegen/OMRTreeEvaluator.hpp"
 
 #include "arm/codegen/InstOpCode.hpp"
-#include "codegen/ARMOps.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "codegen/ARMConditionCode.hpp"
 #include "il/ILOps.hpp"
 #include "runtime/Runtime.hpp"

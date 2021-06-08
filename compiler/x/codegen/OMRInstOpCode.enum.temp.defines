@@ -296,6 +296,7 @@
 #define   FISTPMem OMR::InstOpCode::FISTPMem
 #define   DISTPMem OMR::InstOpCode::DISTPMem
 #define   FLSTPMem OMR::InstOpCode::FLSTPMem
+#define   FLSTTPMem OMR::InstOpCode::FLSTTPMem
 #define   DLSTPMem OMR::InstOpCode::DLSTPMem
 #define   FSSTMemReg OMR::InstOpCode::FSSTMemReg
 #define   DSSTMemReg OMR::InstOpCode::DSSTMemReg
@@ -303,6 +304,7 @@
 #define   DSSTPMem OMR::InstOpCode::DSSTPMem
 #define   FLDLN2 OMR::InstOpCode::FLDLN2
 #define   FLDRegReg OMR::InstOpCode::FLDRegReg
+#define   FLDDUP OMR::InstOpCode::FLDDUP
 #define   DLDRegReg OMR::InstOpCode::DLDRegReg
 #define   FLDRegMem OMR::InstOpCode::FLDRegMem
 #define   DLDRegMem OMR::InstOpCode::DLDRegMem
@@ -332,6 +334,7 @@
 #define   FSTPMemReg OMR::InstOpCode::FSTPMemReg
 #define   DSTPMemReg OMR::InstOpCode::DSTPMemReg
 #define   FSTPReg OMR::InstOpCode::FSTPReg
+#define   FSTPST0 OMR::InstOpCode::FSTPST0
 #define   DSTPReg OMR::InstOpCode::DSTPReg
 #define   STCWMem OMR::InstOpCode::STCWMem
 #define   STSWMem OMR::InstOpCode::STSWMem

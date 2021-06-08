@@ -39,12 +39,12 @@
 
 #if defined(J9ZOS39064)
 /* We replicate the function pointer definitions from omrcel4ro31 here to avoid unnecessarily
- * having to expose omr_cel4ro31_is_supported() in omrport.h. These are static definitions
- * off fast vector from CCA control block that are not subject to change. Final offset is
- * updated to +8 to test for routine address.
+ * having to expose omr_cel4ro31_is_supported() in omrport.h.  These are static defintions
+ * not subject to change.
  */
-#define CEL4RO31_FNPTR (*(uintptr_t *)((char *)(*(int *)(((char *)__gtca())+1096))+8))
-#define CELQGIPB_FNPTR (*(uintptr_t *)((char *)(*(int *)(((char *)__gtca())+1096))+96))
+#define CEEPCBFLAG6_VALUE *((char *)(*(long *)(((char *)__gtca())+912))+344)
+#define CEEPCB_3164_MASK 0x4
+
 #endif /* defined(J9ZOS39064) */
 
 /**
@@ -298,7 +298,7 @@ TEST(PortSlTest, sl_testOpen31bitDLLviaCEL4RO31)
 
 	reportTestEntry(OMRPORTLIB, testName);
 
-	if ((NULL != CEL4RO31_FNPTR) && (NULL != CELQGIPB_FNPTR)) {
+	if (OMR_ARE_ANY_BITS_SET(CEEPCBFLAG6_VALUE, CEEPCB_3164_MASK)) {
 		/* Only attempt the test if the underlying LE support is available. */
 		rc = omrsl_open_shared_library(sharedLibName, &dllHandle, OMRPORT_SLOPEN_DECORATE | OMRPORT_SLOPEN_ATTEMPT_31BIT_OPEN);
 		if (0 != rc) {

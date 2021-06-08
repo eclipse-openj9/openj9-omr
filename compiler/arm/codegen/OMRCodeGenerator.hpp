@@ -88,7 +88,6 @@ namespace TR { class Machine; }
 namespace TR { class CodeGenerator; }
 namespace TR { struct ARMLinkageProperties; }
 namespace TR { class ARMImmInstruction; }
-class TR_ARMOpCode;
 namespace TR { class ARMConstantDataSnippet; }
 class TR_ARMLoadLabelItem;
 class TR_BitVector;

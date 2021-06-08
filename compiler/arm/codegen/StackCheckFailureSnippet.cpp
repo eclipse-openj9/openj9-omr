@@ -35,7 +35,7 @@
 uint8_t *storeArgumentItem(TR_ARMOpCodes op, uint8_t *buffer, TR::RealRegister *reg, int32_t offset, TR::CodeGenerator *cg)
    {
    TR::RealRegister *stackPtr = cg->machine()->getRealRegister(cg->getLinkage()->getProperties().getStackPointerRegister());
-   TR_ARMOpCode       opCode(op);
+   TR::InstOpCode       opCode(op);
    opCode.copyBinaryToBuffer(buffer);
    reg->setRegisterFieldRD(toARMCursor(buffer));
    stackPtr->setRegisterFieldRN(toARMCursor(buffer));
@@ -50,7 +50,7 @@ uint8_t *loadArgumentItem(TR_ARMOpCodes op, uint8_t *buffer, TR::RealRegister *r
    {
    TR_ASSERT(0, "fix loadArgumentItem");
    TR::RealRegister *stackPtr = cg->machine()->getRealRegister(cg->getLinkage()->getProperties().getStackPointerRegister());
-   TR_ARMOpCode       opCode(op);
+   TR::InstOpCode       opCode(op);
    opCode.copyBinaryToBuffer(buffer);
    reg->setRegisterFieldRT(toARMCursor(buffer));
    stackPtr->setRegisterFieldRD(toARMCursor(buffer));

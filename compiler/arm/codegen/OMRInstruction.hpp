@@ -86,7 +86,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    virtual Kind getKind() { return IsNotExtended; }
 
-   TR_ARMOpCode& getOpCode()                       {return _opcode;}
+   TR::InstOpCode& getOpCode()                       {return _opcode;}
    TR_ARMOpCodes getOpCodeValue()                  {return _opcode.getOpCodeValue();}
    TR_ARMOpCodes getRecordFormOpCode()             {return _opcode.getRecordFormOpCodeValue();}
    TR_ARMOpCodes setOpCodeValue(TR_ARMOpCodes op)  {return _opcode.setOpCodeValue(op);}
@@ -210,7 +210,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
 
    private:
-      TR_ARMOpCode   _opcode;
+      TR::InstOpCode   _opcode;
       TR_ARMConditionCode                  _conditionCode;
       TR::RegisterDependencyConditions *_conditions;
       bool        _asyncBranch;

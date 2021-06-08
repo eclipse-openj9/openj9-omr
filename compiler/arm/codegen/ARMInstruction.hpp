@@ -1350,9 +1350,9 @@ class ARMControlFlowInstruction : public TR::Instruction
    int32_t _numSources;
    int32_t _numTargets;
    TR::LabelSymbol *_label;
-   TR_ARMOpCode _opCode2;
-   TR_ARMOpCode _opCode3;
-   TR_ARMOpCode _cmpOp;
+   TR::InstOpCode _opCode2;
+   TR::InstOpCode _opCode3;
+   TR::InstOpCode _cmpOp;
 
    public:
 
@@ -1401,15 +1401,15 @@ class ARMControlFlowInstruction : public TR::Instruction
    TR::LabelSymbol *getLabelSymbol()                     {return _label;}
    TR::LabelSymbol *setLabelSymbol(TR::LabelSymbol *sym)  {return (_label = sym);}
 
-   TR_ARMOpCode& getOpCode2()                      {return _opCode2;}
+   TR::InstOpCode& getOpCode2()                      {return _opCode2;}
    TR_ARMOpCodes getOpCode2Value()                 {return _opCode2.getOpCodeValue();}
    TR_ARMOpCodes setOpCode2Value(TR_ARMOpCodes op) {return (_opCode2.setOpCodeValue(op));}
 
-   TR_ARMOpCode& getOpCode3()                      {return _opCode3;}
+   TR::InstOpCode& getOpCode3()                      {return _opCode3;}
    TR_ARMOpCodes getOpCode3Value()                 {return _opCode3.getOpCodeValue();}
    TR_ARMOpCodes setOpCode3Value(TR_ARMOpCodes op) {return (_opCode3.setOpCodeValue(op));}
 
-   TR_ARMOpCode& getCmpOp()                      {return _cmpOp;}
+   TR::InstOpCode& getCmpOp()                      {return _cmpOp;}
    TR_ARMOpCodes getCmpOpValue()                 {return _cmpOp.getOpCodeValue();}
    TR_ARMOpCodes setCmpOpValue(TR_ARMOpCodes op) {return (_cmpOp.setOpCodeValue(op));}
 

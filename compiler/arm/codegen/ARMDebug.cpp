@@ -134,7 +134,7 @@ static const char * opCodeToVFPMap[] =
 #endif
 
 static const char *
-getExtraVFPInstrSpecifiers(TR_ARMOpCode *opCode)
+getExtraVFPInstrSpecifiers(TR::InstOpCode *opCode)
    {
 #define FIRST_VFP_INSTR		ARMOp_fabsd
 
@@ -1795,7 +1795,7 @@ static const char * opCodeToNameMap[] =
    };
 
 const char *
-TR_Debug::getOpCodeName(TR_ARMOpCode * opCode)
+TR_Debug::getOpCodeName(TR::InstOpCode * opCode)
    {
    return opCodeToNameMap[opCode->getOpCodeValue()];
    }

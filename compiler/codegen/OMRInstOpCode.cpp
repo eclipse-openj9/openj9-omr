@@ -21,14 +21,6 @@
 
 #include "compiler/codegen/InstOpCode.hpp"
 
-uint8_t *
-OMR::InstOpCode::copyBinaryToBuffer(
-      Mnemonic m,
-      uint8_t *cursor)
-   {
-   return cursor;
-   }
-
 const char *
 OMR::InstOpCode::getOpCodeName(Mnemonic m)
    {

@@ -138,7 +138,7 @@ TR::Instruction *generateMemSrc1Instruction(TR::CodeGenerator      *cg,
                                            TR::Instruction        *prev)
    {
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
-   TR_ARMOpCode    opCode(op);
+   TR::InstOpCode    opCode(op);
    if (opCode.isVFPOp())
       {
       mf->fixupVFPOffset(node, cg);
@@ -159,7 +159,7 @@ TR::Instruction *generateTrg1MemInstruction(TR::CodeGenerator      *cg,
                                            TR::Instruction        *prev)
    {
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
-   TR_ARMOpCode    opCode(op);
+   TR::InstOpCode    opCode(op);
    if (opCode.isVFPOp())
       {
       mf->fixupVFPOffset(node, cg);
@@ -209,7 +209,7 @@ TR::Instruction *generateSrc1ImmInstruction(TR::CodeGenerator *cg,
                                            uint32_t          rotate,
                                            TR::Instruction   *prev)
    {
-   TR_ARMOpCode    opCode(op);
+   TR::InstOpCode    opCode(op);
    TR_ARMOperand2 *operand = new (cg->trHeapMemory()) TR_ARMOperand2(base, rotate);
    if (opCode.isVFPOp())
       {
@@ -234,7 +234,7 @@ TR::Instruction *generateSrc2Instruction(TR::CodeGenerator *cg,
                                         TR::Register      *s2reg,
                                         TR::Instruction   *prev)
    {
-   TR_ARMOpCode    opCode(op);
+   TR::InstOpCode    opCode(op);
    TR_ARMOperand2 *operand = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, s2reg);
    if (opCode.isVFPOp())
       {

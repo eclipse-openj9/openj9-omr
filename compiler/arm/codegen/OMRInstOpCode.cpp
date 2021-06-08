@@ -28,6 +28,14 @@ const OMR::ARM::InstOpCode::OpCodeMetaData OMR::ARM::InstOpCode::metadata[NumOpC
 
 const OMR::ARM::InstOpCode::TR_OpCodeBinaryEntry OMR::ARM::InstOpCode::binaryEncodings[ARMNumOpCodes] =
 {
+   0x00000000,  // assocreg
+   0x00000000,  // bad
+   0x00000000,  // dd
+   0x00000000,  // fence
+   0x00000000,  // label
+   0x00000000,  // proc
+   0x00000000,  // retn
+   0x00000000,  // vgnop
    0xE6000010,  // bad
    0x00800000,  // add
    0x00900000,  // add_r
@@ -175,6 +183,30 @@ const OMR::ARM::InstOpCode::TR_OpCodeBinaryEntry OMR::ARM::InstOpCode::binaryEnc
 
 const uint32_t OMR::ARM::InstOpCode::properties[ARMNumOpCodes] =
 {
+// assocreg
+0,
+
+// bad
+0,
+
+// dd
+0,
+
+// fence
+0,
+
+// label
+0,
+
+// proc
+0,
+
+// retn
+0,
+
+// vgnop
+0,
+
 // bad
 0,
 

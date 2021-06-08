@@ -36,6 +36,14 @@ namespace OMR { typedef OMR::ARM::InstOpCode InstOpCodeConnector; }
 #include "compiler/codegen/OMRInstOpCode.hpp"
 
 typedef enum  {
+   assocreg,
+   bad,
+   dd,
+   fence,
+   label,
+   proc,
+   retn,
+   vgnop,
    ARMOp_bad,              //Illegal Opcode
    ARMOp_add,              // Add
    ARMOp_add_r,            // Add with record

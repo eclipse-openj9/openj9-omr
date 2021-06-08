@@ -171,6 +171,5 @@ typedef enum  {
    ARMLastOp = ARMOp_fuitos,
    ARMNumOpCodes = ARMLastOp + 1
 } TR_ARMOpCodes;
-#include "codegen/ARMOps2.hpp"
 
 #endif

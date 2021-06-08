@@ -42,13 +42,33 @@ namespace OMR
 namespace ARM
 {
 
-class InstOpCode: public OMR::InstOpCode, public TR_ARMOpCode
+#define ARMOpProp_HasRecordForm     0x00000001
+#define ARMOpProp_SetsCarryFlag     0x00000002
+#define ARMOpProp_SetsOverflowFlag  0x00000004
+#define ARMOpProp_ReadsCarryFlag    0x00000008
+#define ARMOpProp_BranchOp          0x00000040
+#define ARMOpProp_VFP               0x00000080
+#define ARMOpProp_DoubleFP          0x00000100
+#define ARMOpProp_SingleFP          0x00000200
+#define ARMOpProp_UpdateForm        0x00000400
+#define ARMOpProp_Arch4             0x00000800
+#define ARMOpProp_IsRecordForm      0x00001000
+#define ARMOpProp_Label             0x00002000
+#define ARMOpProp_Arch6             0x00004000
+
+class InstOpCode: public OMR::InstOpCode
    {
+   typedef uint32_t TR_OpCodeBinaryEntry;
+
+   TR_ARMOpCodes                    _opCode;
+   static const uint32_t             properties[ARMNumOpCodes];
+   static const TR_OpCodeBinaryEntry binaryEncodings[ARMNumOpCodes];
+
    protected:
 
-   InstOpCode() : OMR::InstOpCode(bad), TR_ARMOpCode(ARMOp_bad) {}
-   InstOpCode(Mnemonic m) : OMR::InstOpCode(m), TR_ARMOpCode(ARMOp_bad) {}
-   InstOpCode(TR_ARMOpCodes op):  OMR::InstOpCode(bad), TR_ARMOpCode(op) {}
+   InstOpCode() : OMR::InstOpCode(bad), _opCode(ARMOp_bad) {}
+   InstOpCode(Mnemonic m) : OMR::InstOpCode(m), _opCode(ARMOp_bad) {}
+   InstOpCode(TR_ARMOpCodes op):  OMR::InstOpCode(bad), _opCode(op) {}
 
    public:
 
@@ -57,6 +77,40 @@ class InstOpCode: public OMR::InstOpCode, public TR_ARMOpCode
       };
 
    static const OpCodeMetaData metadata[NumOpCodes];
+
+   TR_ARMOpCodes getOpCodeValue()                  {return _opCode;}
+   TR_ARMOpCodes setOpCodeValue(TR_ARMOpCodes op) {return (_opCode = op);}
+   TR_ARMOpCodes getRecordFormOpCodeValue() {return (TR_ARMOpCodes)(_opCode+1);}
+
+   uint32_t isRecordForm() {return properties[_opCode] & ARMOpProp_IsRecordForm;}
+
+   uint32_t hasRecordForm() {return properties[_opCode] & ARMOpProp_HasRecordForm;}
+
+   uint32_t singleFPOp() {return properties[_opCode] & ARMOpProp_SingleFP;}
+
+   uint32_t doubleFPOp() {return properties[_opCode] & ARMOpProp_DoubleFP;}
+
+   uint32_t isVFPOp() {return properties[_opCode] & ARMOpProp_VFP;}
+
+   uint32_t gprOp() {return (properties[_opCode] & (ARMOpProp_DoubleFP | ARMOpProp_SingleFP)) == 0;}
+
+   uint32_t fprOp() {return (properties[_opCode] & (ARMOpProp_DoubleFP | ARMOpProp_SingleFP));}
+
+   uint32_t readsCarryFlag() {return properties[_opCode] & ARMOpProp_ReadsCarryFlag;}
+
+   uint32_t setsCarryFlag() {return properties[_opCode] & ARMOpProp_SetsCarryFlag;}
+
+   uint32_t setsOverflowFlag() {return properties[_opCode] & ARMOpProp_SetsOverflowFlag;}
+
+   uint32_t isBranchOp() {return properties[_opCode] & ARMOpProp_BranchOp;}
+
+   uint32_t isLabel() {return properties[_opCode] & ARMOpProp_Label;}
+
+   uint8_t *copyBinaryToBuffer(uint8_t *cursor)
+      {
+      *(uint32_t *)cursor = *(uint32_t *)&binaryEncodings[_opCode];
+      return cursor;
+	  }
    };
 }
 }

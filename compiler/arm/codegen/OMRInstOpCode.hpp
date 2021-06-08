@@ -42,12 +42,13 @@ namespace OMR
 namespace ARM
 {
 
-class InstOpCode: public OMR::InstOpCode
+class InstOpCode: public OMR::InstOpCode, public TR_ARMOpCode
    {
    protected:
 
-   InstOpCode():  OMR::InstOpCode(bad)  {}
-   InstOpCode(Mnemonic m): OMR::InstOpCode(m)  {}
+   InstOpCode() : OMR::InstOpCode(bad), TR_ARMOpCode(ARMOp_bad) {}
+   InstOpCode(Mnemonic m) : OMR::InstOpCode(m), TR_ARMOpCode(ARMOp_bad) {}
+   InstOpCode(TR_ARMOpCodes op):  OMR::InstOpCode(bad), TR_ARMOpCode(op) {}
 
    public:
 

@@ -603,7 +603,7 @@ class CppGenerator:
         writer.write("{t}* {arg} = new {t}[{num}];\n".format(t=vararg_type,arg=vararg.name(),num=vararg.array_len()))
         writer.write("va_list vararg;\n")
         writer.write("va_start(vararg, {num});\n".format(num=vararg.array_len()))
-        writer.write("for (int i = 0; i < {num}; ++i) {{ {arg}[i] = va_arg(vararg, {t}); }}\n".format(num=vararg.array_len(),arg=vararg.name(),t=vararg_type))
+        writer.write("for (auto i = 0U; i < unsigned({num}); ++i) {{ {arg}[i] = va_arg(vararg, {t}); }}\n".format(num=vararg.array_len(),arg=vararg.name(),t=vararg_type))
         writer.write("va_end(vararg);\n")
         get_ret = "" if "none" == desc.return_type().name() else "{rtype} ret = ".format(rtype=rtype)
         writer.write("{get_ret}{name}({args});\n".format(get_ret=get_ret,name=name,args=args))

@@ -322,6 +322,8 @@ public:
       return m.allocate(s);
       }
 
+   void operator delete (void *, TR_HeapMemory m) {}
+   void operator delete (void *, TR_HeapMemory m, uint32_t numberOfSlotsToMap) {}
 
    uint8_t *getMapBits()  {return _mapBits;}
    int32_t  getMapSizeInBytes()  {return (_numberOfSlotsMapped+7) >> 3;}

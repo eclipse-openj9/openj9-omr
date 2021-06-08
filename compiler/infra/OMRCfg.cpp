@@ -667,22 +667,22 @@ TR::CFGEdge * TR::CFGNode::getExceptionPredecessorEdge(TR::CFGNode * n)
 
 bool TR::CFGNode::hasSuccessor(TR::CFGNode * n)
    {
-   return (bool)getSuccessorEdge(n);
+   return getSuccessorEdge(n) != NULL;
    }
 
 bool TR::CFGNode::hasExceptionSuccessor(TR::CFGNode * n)
    {
-   return (bool)getExceptionSuccessorEdge(n);
+   return getExceptionSuccessorEdge(n) != NULL;
    }
 
 bool TR::CFGNode::hasPredecessor(TR::CFGNode * n)
    {
-   return (bool)getPredecessorEdge(n);
+   return getPredecessorEdge(n) != NULL;
    }
 
 bool TR::CFGNode::hasExceptionPredecessor(TR::CFGNode * n)
    {
-   return (bool)getExceptionPredecessorEdge(n);
+   return getExceptionPredecessorEdge(n) != NULL;
    }
 
 
@@ -702,7 +702,6 @@ TR::CFGNode *OMR::CFG::removeNode(TR::CFGNode *node)
    // Remove the exception successors first, so that try/finally structures get
    // cleaned up in the right order. Nobody else cares about the order.
    //
-   ListElement<TR::CFGEdge> *out;
    while (!node->getExceptionSuccessors().empty())
       removeEdge(node->getExceptionSuccessors().front());
 
@@ -1169,7 +1168,6 @@ OMR::CFG::removeUnreachableBlocks()
       // has predecessors, likely loop entry
       else
          {
-         ListElement<TR::CFGEdge> *in;
          while (!node->getExceptionPredecessors().empty())
             removeEdge(node->getExceptionPredecessors().front());
          while (!node->getPredecessors().empty())
@@ -1957,7 +1955,7 @@ OMR::CFG::setUniformEdgeFrequenciesOnNode(TR::CFGNode *node, int32_t branchToCou
          addFrequency = false;
       }
 
-   int32_t size = node->getSuccessors().size();
+   int32_t size = static_cast<int32_t>(node->getSuccessors().size());
 
    for (auto e = node->getSuccessors().begin(); e != node->getSuccessors().end(); ++e)
       {

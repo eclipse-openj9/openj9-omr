@@ -766,7 +766,7 @@ OMR::Compilation::getOSRTransitionTarget()
 bool
 OMR::Compilation::isOSRTransitionTarget(TR::OSRTransitionTarget target)
    {
-   return target & self()->getOSRTransitionTarget();
+   return (target & self()->getOSRTransitionTarget()) != 0;
    }
 
 /*
@@ -1339,7 +1339,7 @@ bool OMR::Compilation::incInlineDepth(TR_OpaqueMethodBlock *methodInfo, TR::Reso
    int32_t maxCallerIndex = TR_ByteCodeInfo::maxCallerIndex;
    //This restriction is due to a limited number of bits allocated to callerIndex in TR_ByteCodeInfo
    //For example, in Java TR_ByteCodeInfo::maxCallerIndex is set to 4095 (12 bits and one used for signness)
-   if (self()->getNumInlinedCallSites() >= maxCallerIndex)
+   if (self()->getNumInlinedCallSites() >= unsigned(maxCallerIndex))
       {
       traceMsg(self(), "The maximum number of inlined methods %d is reached\n", TR_ByteCodeInfo::maxCallerIndex);
       return false;
@@ -1382,7 +1382,7 @@ void OMR::Compilation::decInlineDepth(bool removeInlinedCallSitesEntry)
    {
    if (removeInlinedCallSitesEntry)
       {
-      while (self()->getCurrentInlinedSiteIndex() < _inlinedCallSites.size())
+      while (unsigned(self()->getCurrentInlinedSiteIndex()) < _inlinedCallSites.size())
          _inlinedCallSites.remove(self()->getCurrentInlinedSiteIndex());
       if (self()->getOption(TR_EnableOSR))
          {
@@ -2354,7 +2354,7 @@ OMR::Compilation::setOSRCallSiteRemat(uint32_t callSiteIndex, TR::SymbolReferenc
    // Check the pending push is valid
    uint32_t callerNumPPSlots = self()->getOSRCallSiteRematSize(callSiteIndex);
    TR_ASSERT(ppSymRef->getSymbol()->isPendingPush(), "can only perform call site remat on pending pushes");
-   TR_ASSERT(slot >= 0 && slot < callerNumPPSlots, "can only perform call site remat for the caller's pending pushes");
+   TR_ASSERT(slot >= 0 && unsigned(slot) < callerNumPPSlots, "can only perform call site remat for the caller's pending pushes");
 #endif
 
    table[slot * 2] = ppSymRef->getReferenceNumber();

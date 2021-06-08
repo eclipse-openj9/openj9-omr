@@ -108,7 +108,7 @@ TR_OSRCompilationData::addInstruction(TR::Instruction* instr)
          && node->getSymbolReference()->isOSRInductionHelper()))
       return;
 
-   int32_t instructionPC = instr->getBinaryEncoding() - instr->cg()->getCodeStart();
+   int32_t instructionPC = static_cast<int32_t>(instr->getBinaryEncoding() - instr->cg()->getCodeStart());
    TR_ByteCodeInfo& bcInfo = instr->getNode()->getByteCodeInfo();
    addInstruction(instructionPC, bcInfo);
    }
@@ -135,7 +135,7 @@ TR_OSRCompilationData::addInstruction(int32_t instructionPC, TR_ByteCodeInfo bcI
 
    while (1)
       {
-      if (bcInfo.getCallerIndex()+1 >= getOSRMethodDataArray().size())
+      if (unsigned(bcInfo.getCallerIndex()+1) >= getOSRMethodDataArray().size())
          {
          if (trace)
             traceMsg(comp, "  rejected: caller index %d +1 >= %d\n", bcInfo.getCallerIndex(), getOSRMethodDataArray().size());
@@ -245,9 +245,9 @@ TR_OSRCompilationData::compressInstruction2SharedSlotMap()
          if (curInfo.size() != nextInfo.size())
             break;
 
-         int j;
+         size_t j;
          for (j = 0; j < curInfo.size(); j++)
-            if (!(curInfo[j] == nextInfo[j]))
+            if (!(curInfo[static_cast<uint32_t>(j)] == nextInfo[static_cast<uint32_t>(j)]))
                break;
          if (j != curInfo.size())
             break;
@@ -385,19 +385,19 @@ TR_OSRCompilationData::writeInstruction2SharedSlotMap(uint8_t* buffer) const
    uint32_t sectionSize = getSizeOfInstruction2SharedSlotMap();
    *((uint32_t*)buffer) = sectionSize; buffer += sizeof(uint32_t);
    *((uint32_t*)buffer) = getMaxScratchBufferSize(); buffer += sizeof(uint32_t);
-   int32_t numberOfMappings = instruction2SharedSlotMap.size();
+   int32_t numberOfMappings = static_cast<int32_t>(instruction2SharedSlotMap.size());
    *((int32_t*)buffer) = numberOfMappings; buffer += sizeof(int32_t);
    for (auto itr = instruction2SharedSlotMap.begin(), end = instruction2SharedSlotMap.end(); itr != end; ++itr)
       {
       *((int32_t*)buffer) = (*itr).instructionPC; buffer += sizeof(int32_t);
       *((int32_t*)buffer) = (*itr).scratchBufferInfos.size(); buffer += sizeof(int32_t);
-      for (int j = 0; j < (*itr).scratchBufferInfos.size(); j++)
+      for (auto j = 0U; j < (*itr).scratchBufferInfos.size(); j++)
          {
          const TR_ScratchBufferInfo info = (*itr).scratchBufferInfos[j];
          buffer += info.writeToBuffer(buffer);
          }
       }
-   uint32_t numberOfBytesWritten = buffer - initialBuffer;
+   uint32_t numberOfBytesWritten = static_cast<uint32_t>(buffer - initialBuffer);
    TR_ASSERT(numberOfBytesWritten == sectionSize, "numberOfBytesWritten (%d) must match sectionSize (%d)", numberOfBytesWritten, sectionSize);
    return numberOfBytesWritten;
    }
@@ -428,7 +428,7 @@ TR_OSRCompilationData::writeCallerIndex2OSRCatchBlockMap(uint8_t* buffer) const
       else
          *((int32_t*)buffer) = osrMethodData->getOSRCatchBlock()->getInstructionBoundaries()._startPC; buffer += sizeof(int32_t);
       }
-   uint32_t numberOfBytesWritten = buffer - initialBuffer;
+   uint32_t numberOfBytesWritten = static_cast<uint32_t>(buffer - initialBuffer);
    TR_ASSERT(numberOfBytesWritten == sectionSize, "numberOfBytesWritten (%d) must match sectionSize (%d)", numberOfBytesWritten, sectionSize);
    return numberOfBytesWritten;
    }
@@ -448,7 +448,7 @@ void TR_OSRCompilationData::checkOSRLimits()
 
    uint32_t *frameSizes = (uint32_t *) comp->trMemory()->allocateStackMemory(numOfInlinedCalls * sizeof(uint32_t));
    uint32_t *stackFrameSizes = (uint32_t *) comp->trMemory()->allocateStackMemory(numOfInlinedCalls * sizeof(uint32_t));
-   uint32_t rootFrameSize = TR::Compiler->vm.OSRFrameSizeInBytes(comp, comp->getCurrentMethod()->getPersistentIdentifier());
+   uint32_t rootFrameSize = static_cast<uint32_t>(TR::Compiler->vm.OSRFrameSizeInBytes(comp, comp->getCurrentMethod()->getPersistentIdentifier()));
    uint32_t rootStackFrameSize = getOSRStackFrameSize(0);
    for (int i = 0; i < numOfInlinedCalls; ++i)
       {
@@ -461,7 +461,7 @@ void TR_OSRCompilationData::checkOSRLimits()
       TR_InlinedCallSite &callSite = comp->getInlinedCallSite(i);
       TR_ByteCodeInfo &bcInfo = callSite._byteCodeInfo;
 
-      frameSizes[i] = TR::Compiler->vm.OSRFrameSizeInBytes(comp, callSite._methodInfo);
+      frameSizes[i] = static_cast<uint32_t>(TR::Compiler->vm.OSRFrameSizeInBytes(comp, callSite._methodInfo));
       frameSizes[i] += (bcInfo.getCallerIndex() == -1) ? rootFrameSize : frameSizes[bcInfo.getCallerIndex()];
       stackFrameSizes[i] = getOSRStackFrameSize(i + 1);
       stackFrameSizes[i] = (bcInfo.getCallerIndex() == -1) ? rootStackFrameSize : stackFrameSizes[bcInfo.getCallerIndex()];
@@ -512,7 +512,7 @@ uint32_t TR_OSRCompilationData::getOSRStackFrameSize(uint32_t methodIndex)
       TR_OSRMethodData* osrMethodData = getOSRMethodDataArray()[methodIndex];
       if (osrMethodData != NULL)
          return (1 + osrMethodData->getMethodSymbol()->getNumParameterSlots())
-            * TR::Compiler->om.sizeofReferenceAddress();
+            * static_cast<uint32_t>(TR::Compiler->om.sizeofReferenceAddress());
       else
          return 0;
       }
@@ -569,7 +569,7 @@ void TR_OSRCompilationData::buildDefiningMap(TR::Region &region)
    DefiningMaps definingMapAtOSRCodeBlocks(numOfMethods, static_cast<DefiningMap*>(NULL), comp->trMemory()->currentStackRegion());
    DefiningMaps definingMapAtPrepareForOSRCalls(numOfMethods, static_cast<DefiningMap*>(NULL), comp->trMemory()->currentStackRegion());
 
-   for (intptr_t i = 0; i < methodDataArray.size(); ++i)
+   for (auto i = 0U; i < methodDataArray.size(); ++i)
       {
       TR_OSRMethodData *osrMethodData = methodDataArray[i];
       if (!osrMethodData)
@@ -600,14 +600,14 @@ void TR_OSRCompilationData::buildDefiningMap(TR::Region &region)
       if (!osrCatchBlockRemoved && !osrCodeBlockRemoved )
          {
          DefiningMap *finalMap = new (region) DefiningMap(DefiningMapComparator(), DefiningMapAllocator(region));
-         buildFinalMap(i-1, finalMap, definingMapAtOSRCatchBlocks[i], definingMapAtOSRCodeBlocks, definingMapAtPrepareForOSRCalls);
+         buildFinalMap(static_cast<int32_t>(i-1), finalMap, definingMapAtOSRCatchBlocks[i], definingMapAtOSRCodeBlocks, definingMapAtPrepareForOSRCalls);
          osrMethodData->setDefiningMap(finalMap);
          }
       }
 
    if (comp->getOption(TR_TraceOSR))
       {
-      for (intptr_t i = 0; i < methodDataArray.size(); ++i)
+      for (auto i = 0U; i < methodDataArray.size(); ++i)
          {
          TR_OSRMethodData *osrMethodData = methodDataArray[i];
          if (!osrMethodData)
@@ -625,7 +625,7 @@ void TR_OSRCompilationData::buildDefiningMap(TR::Region &region)
 void TR_OSRCompilationData::clearDefiningMap()
    {
    const TR_Array<TR_OSRMethodData *>& methodDataArray = getOSRMethodDataArray();
-   for (intptr_t i = 0; i < methodDataArray.size(); ++i)
+   for (auto i = 0U; i < methodDataArray.size(); ++i)
       {
       TR_OSRMethodData *osrMethodData = methodDataArray[i];
       if (osrMethodData)
@@ -935,7 +935,7 @@ TR_OSRMethodData::collectSubTreeSymRefs(TR::Node *node, TR_BitVector *subTreeSym
 
 void TR_OSRCompilationData::buildSymRefOrderMap()
    {
-   for (int i = 0; i < getOSRMethodDataArray().size(); i++)
+   for (auto i = 0U; i < getOSRMethodDataArray().size(); i++)
       {
       TR_OSRMethodData* osrMethodData = getOSRMethodDataArray()[i];
       if (osrMethodData == NULL ||
@@ -953,7 +953,7 @@ void TR_OSRCompilationData::buildSymRefOrderMapAux( TR_Array<List<TR::SymbolRefe
    if (symListArray == NULL)
       return;
 
-   for (intptr_t j = 0; j < symListArray->size(); j++)
+   for (auto j = 0U; j < symListArray->size(); j++)
       {
       List<TR::SymbolReference>& symList = (*symListArray)[j];
       bool sharedSlot = symList.getSize() > 1;
@@ -981,7 +981,7 @@ TR::Compilation& operator<< (TR::Compilation& out, const TR_OSRCompilationData& 
    {
    out << "{";
    bool first = true;
-   for (int i = 0; i < osrCompilationData.getOSRMethodDataArray().size(); i++)
+   for (auto i = 0U; i < osrCompilationData.getOSRMethodDataArray().size(); i++)
       {
       TR_OSRMethodData* osrMethodData = osrCompilationData.getOSRMethodDataArray()[i];
       if (osrMethodData == NULL || osrMethodData->getOSRCodeBlock() == NULL || osrMethodData->isEmpty()) continue;
@@ -998,7 +998,7 @@ TR::Compilation& operator<< (TR::Compilation& out, const TR_OSRCompilationData& 
    const TR_OSRCompilationData::TR_Instruction2SharedSlotMap& array1 = osrCompilationData.instruction2SharedSlotMap;
    if (array1.size() != 0)
       {
-      out << ", Instr2SharedSlotMetaData: " << array1.size() << "[\n";
+      out << ", Instr2SharedSlotMetaData: " << static_cast<const int32_t>(array1.size()) << "[\n";
       bool first = true;
       for (auto itr = array1.begin(), end = array1.end(); itr != end; ++itr)
          {
@@ -1008,7 +1008,7 @@ TR::Compilation& operator<< (TR::Compilation& out, const TR_OSRCompilationData& 
          sprintf(tmp, "%x", (*itr).instructionPC);
          const  TR_OSRCompilationData::TR_ScratchBufferInfos& array2 = (*itr).scratchBufferInfos;
          out << tmp << " -> " << array2.size() << "[ ";
-         for (int j = 0; j < array2.size(); j++)
+         for (auto j = 0U; j < array2.size(); j++)
             {
             if (j != 0)
                out << ", ";
@@ -1074,7 +1074,7 @@ TR_OSRMethodData::createOSRBlocks(TR::Node* n)
    osrCatchBlock->setIsCold();
    osrCatchBlock->setDoNotProfile();
    osrCatchBlock->setIsOSRCatchBlock();
-   osrCatchBlock->setHandlerInfoWithOutBCInfo(TR::Block::CanCatchOSR, comp()->getInlineDepth(), -1, getMethodSymbol()->getResolvedMethod(), comp());
+   osrCatchBlock->setHandlerInfoWithOutBCInfo(TR::Block::CanCatchOSR, static_cast<uint8_t>(comp()->getInlineDepth()), -1, getMethodSymbol()->getResolvedMethod(), comp());
 
    TR::CFG * cfg = getMethodSymbol()->getFlowGraph();
    cfg->addNode(osrCatchBlock);
@@ -1113,7 +1113,7 @@ bool
 TR_OSRMethodData::inlinesAnyMethod() const
    {
    TR::Compilation* comp = getMethodSymbol()->comp();
-   for (int32_t i = 0; i < comp->getNumInlinedCallSites(); i++)
+   for (auto i = 0U; i < comp->getNumInlinedCallSites(); i++)
       {
       TR_InlinedCallSite& ics = comp->getInlinedCallSite(i);
       if (ics._byteCodeInfo.getCallerIndex() == inlinedSiteIndex)
@@ -1312,7 +1312,7 @@ TR_OSRMethodData::addInstruction(int32_t instructionPC, int32_t byteCodeIndex)
          bcInfoHashTab.DataAt(hashIndex)->getSlotInfos();
       TR_OSRCompilationData::TR_ScratchBufferInfos info(comp()->trMemory());
       //The "composition" of the three types of tuples happens here
-      for (int i = 0; i < slotInfos.size(); i++)
+      for (auto i = 0U; i < slotInfos.size(); i++)
          {
          int32_t scratchBufferOffset;
          bool found = slot2ScratchBufferOffset.Locate(slotInfos[i].slot, hashIndex);
@@ -1351,7 +1351,7 @@ TR::Compilation* TR_OSRMethodData::comp() const
 int32_t
 TR_OSRMethodData::getHeaderSize() const
    {
-   return TR::Compiler->vm.OSRFrameHeaderSizeInBytes(comp());
+   return static_cast<int32_t>(TR::Compiler->vm.OSRFrameHeaderSizeInBytes(comp()));
    }
 
 int32_t
@@ -1363,14 +1363,14 @@ TR_OSRMethodData::slotIndex2OSRBufferIndex(int32_t slotIndex, int symSize, bool 
    if (slotIndex < 0)
       return
          headerSize
-         + (getMethodSymbol()->getNumPPSlots() + slotIndex + (takesTwoSlots ? -1 : 0)) * TR::Compiler->om.sizeofReferenceAddress();
+         + (getMethodSymbol()->getNumPPSlots() + slotIndex + (takesTwoSlots ? -1 : 0)) * static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
    else
       return
          headerSize + (getMethodSymbol()->getNumPPSlots() +
                        getMethodSymbol()->getResolvedMethod()->numberOfTemps() +
                        numOfSyncObjects +
                        getMethodSymbol()->getNumParameterSlots()
-                       - slotIndex - 1 + (takesTwoSlots ? -1 : 0))* TR::Compiler->om.sizeofReferenceAddress();
+                       - slotIndex - 1 + (takesTwoSlots ? -1 : 0))* static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
    }
 
 int32_t
@@ -1388,7 +1388,7 @@ int32_t
 TR_OSRMethodData::getTotalDataSize() const
    {
    int32_t numOfSyncObjects = (getMethodSymbol()->getSyncObjectTemp() != NULL)?1:0;
-   return getHeaderSize() + getTotalNumOfSlots() * TR::Compiler->om.sizeofReferenceAddress();
+   return getHeaderSize() + getTotalNumOfSlots() * static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
    }
 
 
@@ -1453,7 +1453,7 @@ TR_OSRSlotSharingInfo::addSlotInfo(int32_t slot, int32_t symRefNum, int32_t symR
    static bool trace = comp->getOption(TR_TraceOSR);
    TR::SymbolReferenceTable* symRefTab = comp->getSymRefTab();
    bool found = false;
-   for (int i = 0; i < slotInfos.size(); i++)
+   for (auto i = 0U; i < slotInfos.size(); i++)
       {
       TR_SlotInfo& info = slotInfos[i];
       if (info.symRefNum != -1)
@@ -1507,7 +1507,7 @@ TR_OSRSlotSharingInfo::addSlotInfo(int32_t slot, int32_t symRefNum, int32_t symR
 TR::Compilation& operator<< (TR::Compilation& out, const TR_OSRSlotSharingInfo* osrSlotSharingInfo)
    {
    out << "{slotInfos: [";
-   for (int i = 0; i < osrSlotSharingInfo->slotInfos.size(); i++)
+   for (auto i = 0U; i < osrSlotSharingInfo->slotInfos.size(); i++)
       {
       const TR_OSRSlotSharingInfo::TR_SlotInfo& info = osrSlotSharingInfo->slotInfos[i];
       if (i != 0)
@@ -1538,5 +1538,5 @@ int32_t TR_OSRCompilationData::TR_ScratchBufferInfo::writeToBuffer(uint8_t* buff
    *((int32_t*)buffer) = osrBufferOffset; buffer += sizeof(int32_t);
    *((int32_t*)buffer) = scratchBufferOffset; buffer += sizeof(int32_t);
    *((int32_t*)buffer) = symSize; buffer += sizeof(int32_t);
-   return buffer - bufferStart;
+   return static_cast<int32_t>(buffer - bufferStart);
    }

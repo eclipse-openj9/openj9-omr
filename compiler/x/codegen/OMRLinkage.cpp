@@ -88,7 +88,6 @@ void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
    int32_t                           offsetToFirstParm = self()->getOffsetToFirstParm();
    uint32_t                          stackIndex        = linkage.getOffsetToFirstLocal();
    TR::GCStackAtlas                  *atlas             = self()->cg()->getStackAtlas();
-   int32_t                           i;
 
    uint8_t pointerSize  = linkage.getPointerSize();
    uint8_t pointerShift = linkage.getPointerShift();
@@ -110,7 +109,7 @@ void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
    uint32_t *colourToSizeMap =
       (uint32_t *) self()->trMemory()->allocateStackMemory(self()->cg()->getLocalsIG()->getNumberOfColoursUsedToColour() * sizeof(uint32_t));
 
-   for (i=0; i<self()->cg()->getLocalsIG()->getNumberOfColoursUsedToColour(); i++)
+   for (IGNodeColour i = 0; i < self()->cg()->getLocalsIG()->getNumberOfColoursUsedToColour(); i++)
       {
       colourToOffsetMap[i] = -1;
       colourToSizeMap[i] = 0;
@@ -121,7 +120,7 @@ void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
    TR_IGNode    *igNode;
    uint32_t      size;
    IGNodeColour  colour;
-   for (i=0; i<self()->cg()->getLocalsIG()->getNumNodes(); i++)
+   for (IGNodeIndex i = 0; i < self()->cg()->getLocalsIG()->getNumNodes(); i++)
       {
       igNode = self()->cg()->getLocalsIG()->getNodeTable(i);
       colour = igNode->getColour();

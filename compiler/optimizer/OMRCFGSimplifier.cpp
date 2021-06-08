@@ -285,7 +285,7 @@ bool OMR::CFGSimplifier::simplifyInstanceOfTestToCheckcast(bool needToDuplicateT
    TR::Node *classNode = compareNode->getFirstChild()->getSecondChild();
 
    TR::Block *catchBlock = TR::Block::createEmptyBlock(compareNode, comp(), throwBlock->getFrequency());
-   catchBlock->setHandlerInfo(0, comp()->getInlineDepth(), 0, comp()->getCurrentMethod(), comp());
+   catchBlock->setHandlerInfo(0, static_cast<uint8_t>(comp()->getInlineDepth()), 0, comp()->getCurrentMethod(), comp());
    TR::Node *gotoNode = TR::Node::create(compareNode, TR::Goto, 0);
    gotoNode->setBranchDestination(throwBlock->getEntry());
    catchBlock->append(TR::TreeTop::create(comp(), gotoNode));
@@ -556,7 +556,7 @@ bool OMR::CFGSimplifier::simplifyBoundCheckWithThrowException(bool needToDuplica
    bndChkNode = compareBlock->append(TR::TreeTop::create(comp(), bndChkNode))->getNode();
 
    TR::Block *catchBlock = TR::Block::createEmptyBlock(bndChkNode, comp(), throwBlock->getFrequency());
-   catchBlock->setHandlerInfo(0, comp()->getInlineDepth(), 0, comp()->getCurrentMethod(), comp());
+   catchBlock->setHandlerInfo(0, static_cast<uint8_t>(comp()->getInlineDepth()), 0, comp()->getCurrentMethod(), comp());
    TR::Node *gotoNode = TR::Node::create(bndChkNode, TR::Goto, 0);
    gotoNode->setBranchDestination(throwBlock->getEntry());
    catchBlock->append(TR::TreeTop::create(comp(), gotoNode));
@@ -580,7 +580,7 @@ bool OMR::CFGSimplifier::simplifyBoundCheckWithThrowException(bool needToDuplica
    if (isLastBlockRetBlock) 
       {
       jmpBlock = TR::Block::createEmptyBlock(_block->getLastRealTreeTop()->getNode(), comp(), retBlock->getFrequency());
-      jmpBlock->setHandlerInfo(0, comp()->getInlineDepth(), 0, comp()->getCurrentMethod(), comp());
+      jmpBlock->setHandlerInfo(0, static_cast<uint8_t>(comp()->getInlineDepth()), 0, comp()->getCurrentMethod(), comp());
       TR::Node *jmpNode = TR::Node::create(_block->getLastRealTreeTop()->getNode(), TR::Goto, 0);
       jmpNode->setBranchDestination(retBlock->getEntry());
       jmpBlock->append(TR::TreeTop::create(comp(), jmpNode));
@@ -1019,7 +1019,7 @@ bool OMR::CFGSimplifier::simplifyNullToException(bool needToDuplicateTree)
    compareTreeTop->insertBefore(TR::TreeTop::create(comp(), nullchkNode));
 
    TR::Block *catchBlock = TR::Block::createEmptyBlock(compareNode, comp(), nullBlock->getFrequency());
-   catchBlock->setHandlerInfo(0, comp()->getInlineDepth(), 0, comp()->getCurrentMethod(), comp());
+   catchBlock->setHandlerInfo(0, static_cast<uint8_t>(comp()->getInlineDepth()), 0, comp()->getCurrentMethod(), comp());
    TR::Node *gotoNode = TR::Node::create(compareNode, TR::Goto, 0);
    gotoNode->setBranchDestination(nullBlock->getEntry());
    catchBlock->append(TR::TreeTop::create(comp(), gotoNode));

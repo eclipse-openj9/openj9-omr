@@ -614,7 +614,7 @@ static bool examineNode(TR::Node *node, intptr_t visitCount)
    if (node->getVisitCount() == visitCount)
       return false;
 
-   node->setVisitCount(visitCount);
+   node->setVisitCount(static_cast<vcount_t>(visitCount));
 
    if (node->getOpCode().isCall())
       return true;

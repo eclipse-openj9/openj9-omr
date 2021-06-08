@@ -55,7 +55,7 @@ TR_LocalAnticipatability::TR_LocalAnticipatability(TR_LocalAnalysisInfo &info, T
       traceMsg(comp(), "Starting LocalAnticipatability\n");
 
    static const char *e = feGetEnv("TR_loadaddrAsLoad");
-   _loadaddrAsLoad = e ? atoi(e) : true;
+   _loadaddrAsLoad = e ? (atoi(e) != 0) : true;
 
    initializeLocalAnalysis(true);
    TR::SymbolReferenceTable *symRefTab = comp()->getSymRefTab();

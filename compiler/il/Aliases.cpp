@@ -198,12 +198,12 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
          }
       case TR::Symbol::IsResolvedMethod:
          {
+#ifdef J9_PROJECT_SPECIFIC
          TR::ResolvedMethodSymbol * resolvedMethodSymbol = _symbol->castToResolvedMethodSymbol();
          if (!TR::comp()->getOption(TR_EnableHCR))
             {
             switch (resolvedMethodSymbol->getRecognizedMethod())
                {
-#ifdef J9_PROJECT_SPECIFIC
                case TR::java_lang_Double_longBitsToDouble:
                case TR::java_lang_Double_doubleToLongBits:
                case TR::java_lang_Float_intBitsToFloat:
@@ -239,11 +239,12 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
                case TR::java_lang_StrictMath_copySign_F:
                case TR::java_lang_StrictMath_copySign_D:
                   return NULL;
-#endif
+
                default:
                	break;
                }
             }
+#endif
          return &symRefTab->aliasBuilder.defaultMethodUseAliases();
          }
 
@@ -409,13 +410,13 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
          }
       case TR::Symbol::IsResolvedMethod:
          {
+#ifdef J9_PROJECT_SPECIFIC
          TR::ResolvedMethodSymbol * resolvedMethodSymbol = _symbol->castToResolvedMethodSymbol();
 
          if (!comp->getOption(TR_EnableHCR))
             {
             switch (resolvedMethodSymbol->getRecognizedMethod())
                {
-#ifdef J9_PROJECT_SPECIFIC
                case TR::java_lang_System_arraycopy:
                   {
                   TR_BitVector * aliases = new (aliasRegion) TR_BitVector(bvInitialSize, aliasRegion, growability);
@@ -468,11 +469,12 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
                      return &symRefTab->aliasBuilder.gcSafePointSymRefNumbers();
                   else
                      return 0;
-#endif //J9_PROJECT_SPECIFIC
+
                default:
                	break;
                }
             }
+#endif //J9_PROJECT_SPECIFIC
 
 #ifdef J9_PROJECT_SPECIFIC
          TR_ResolvedMethod * method = resolvedMethodSymbol->getResolvedMethod();

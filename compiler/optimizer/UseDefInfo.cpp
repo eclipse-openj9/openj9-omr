@@ -413,7 +413,7 @@ bool TR_UseDefInfo::_runReachingDefinitions(TR_ReachingDefinitions& reachingDefi
 
    reachingDefinitions.perform();
 
-   bool succeeded = reachingDefinitions._blockAnalysisInfo;
+   bool succeeded = reachingDefinitions._blockAnalysisInfo != NULL;
    if (!succeeded)
       {
       invalidateUseDefInfo();
@@ -466,7 +466,7 @@ void TR_UseDefInfo::setVolatileSymbolsIndexAndRecurse(TR::BitVector &volatileSym
 void TR_UseDefInfo::findAndPopulateVolatileSymbolsIndex(TR::BitVector &volatileSymbols)
    {
 //   traceMsg(comp(), "In findAndPopulateVolatileSymbolsIndex\n");
-   for (int32_t symRefNumber = comp()->getSymRefTab()->getIndexOfFirstSymRef(); symRefNumber < comp()->getSymRefCount(); symRefNumber++)
+   for (int32_t symRefNumber = comp()->getSymRefTab()->getIndexOfFirstSymRef(); unsigned(symRefNumber) < comp()->getSymRefCount(); symRefNumber++)
       {
  //     traceMsg(comp(), "Considering symRef %d: ",symRefNumber);
       TR::SymbolReference* symRef = comp()->getSymRefTab()->getSymRef(symRefNumber);
@@ -639,7 +639,7 @@ void TR_UseDefInfo::findTrivialSymbolsToExclude(TR::Node *node, TR::TreeTop *tre
 bool TR_UseDefInfo::isTrivialUseDefNode(TR::Node *node, AuxiliaryData &aux)
    {
    if (aux._doneTrivialNode.get(node->getGlobalIndex()))
-      return aux._isTrivialNode.get(node->getGlobalIndex());
+      return aux._isTrivialNode.get(node->getGlobalIndex()) != 0;
 
    bool result = isTrivialUseDefNodeImpl(node, aux);
    aux._doneTrivialNode.set(node->getGlobalIndex());
@@ -793,8 +793,8 @@ void TR_UseDefInfo::findMemorySymbols(TR::Node *node)
        _valueNumberInfo->getNext(node->getFirstChild()) != node->getFirstChild()) // value number is shared with some other node
       {
       int32_t valueNumber = _valueNumberInfo->getValueNumber(node->getFirstChild());
-      uint32_t size = node->getSymbolReference()->getSymbol()->getSize();
-      uint32_t offset = node->getSymbolReference()->getOffset();
+      uint32_t size = static_cast<uint32_t>(node->getSymbolReference()->getSymbol()->getSize());
+      uint32_t offset = static_cast<uint32_t>(node->getSymbolReference()->getOffset());
 
       bool found = false;
       for (auto itr = _valueNumbersToMemorySymbolsMap[valueNumber]->begin(), end = _valueNumbersToMemorySymbolsMap[valueNumber]->end();
@@ -826,8 +826,8 @@ int32_t TR_UseDefInfo::getMemorySymbolIndex(TR::Node * node)
       return -1;
 
    int32_t valueNumber = _valueNumberInfo->getValueNumber(node->getFirstChild());
-   uint32_t size = node->getSymbolReference()->getSymbol()->getSize();
-   uint32_t offset = node->getSymbolReference()->getOffset();
+   uint32_t size = static_cast<uint32_t>(node->getSymbolReference()->getSymbol()->getSize());
+   uint32_t offset = static_cast<uint32_t>(node->getSymbolReference()->getOffset());
 
    for (auto itr = _valueNumbersToMemorySymbolsMap[valueNumber]->begin(), end = _valueNumbersToMemorySymbolsMap[valueNumber]->end();
         itr != end; ++itr)

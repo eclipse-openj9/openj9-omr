@@ -715,7 +715,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
    TR::RealRegister         *bestFreeRealReg      = NULL;
    TR::RealRegister::RegNum  bestFreeRealRegIndex = TR::RealRegister::NoReg;
    bool                      changed;
-   int                       i, j;
+   
    TR::Compilation *comp = cg->comp();
 
    TR::Machine *machine = cg->machine();
@@ -738,7 +738,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
    int32_t firstNoRegAssoc = 0, lastNoRegAssoc = 0;
    int32_t bestFreeRegAssoc = 0;
 
-   for (i=0; i<numberOfRegisters; i++)
+   for (auto i = 0U; i<numberOfRegisters; i++)
       {
       TR::RegisterDependency &regDep = _dependencies[i];
       virtReg = regDep.getRegister();
@@ -812,7 +812,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
    if (hasByteDeps)
       {
       firstByteRegAssoc = numDependencyRegisters;
-      for (i=0; i<numberOfRegisters; i++)
+      for (auto i = 0U; i < numberOfRegisters; i++)
          {
          virtReg = _dependencies[i].getRegister();
          if (virtReg && (kindsToBeAssigned & virtReg->getKindAsMask()) &&
@@ -828,7 +828,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
    if (hasNoRegDeps)
       {
       firstNoRegAssoc = numDependencyRegisters;
-      for (i=0; i<numberOfRegisters; i++)
+      for (auto i = 0U; i < numberOfRegisters; i++)
          {
          virtReg = _dependencies[i].getRegister();
          if (virtReg && (kindsToBeAssigned & virtReg->getKindAsMask()) &&
@@ -844,7 +844,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
    if (hasBestFreeRegDeps)
       {
       bestFreeRegAssoc = numDependencyRegisters;
-      for (i=0; i<numberOfRegisters; i++)
+      for (auto i = 0U; i < numberOfRegisters; i++)
          {
          virtReg = _dependencies[i].getRegister();
          if (virtReg && (kindsToBeAssigned & virtReg->getKindAsMask()) &&
@@ -862,7 +862,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
    //
    if (numRealAssocRegisters > 1)
       {
-      for (i = 0; i < numRealAssocRegisters - 1; i++)
+      for (auto i = 0; i < numRealAssocRegisters - 1; i++)
          {
          virtReg = dependencies[i]->getRegister();
 
@@ -883,7 +883,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
             if (dependentRealReg->getState() == TR::RealRegister::Blocked &&
                 dependentRegNum != assignedRegNum)
                {
-               for (j = i+1; j < numRealAssocRegisters; j++)
+               for (auto j = i + 1; j < numRealAssocRegisters; j++)
                   {
                   TR::Register             *virtReg2         = dependencies[j]->getRegister();
                   TR::RealRegister::RegNum  dependentRegNum2 = dependencies[j]->getRealRegister();
@@ -915,7 +915,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
    do
       {
       changed = false;
-      for (i = 0; i < numRealAssocRegisters; i++)
+      for (auto i = 0; i < numRealAssocRegisters; i++)
          {
          virtReg = dependencies[i]->getRegister();
          dependentRegNum = dependencies[i]->getRealRegister();
@@ -940,7 +940,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
    do
       {
       changed = false;
-      for (i = 0; i < numRealAssocRegisters; i++)
+      for (auto i = 0; i < numRealAssocRegisters; i++)
          {
          virtReg = dependencies[i]->getRegister();
          assignedReg = toRealRegister(virtReg->getAssignedRealRegister());
@@ -970,14 +970,14 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
       {
       if (hasNoRegDeps)
          {
-         for (i=firstNoRegAssoc; i<=lastNoRegAssoc; i++)
+         for (auto i = firstNoRegAssoc; i <= lastNoRegAssoc; i++)
             dependencies[i]->getRegister()->unblock();
          }
 
       do
          {
          changed = false;
-         for (i = firstByteRegAssoc; i <= lastByteRegAssoc; i++)
+         for (auto i = firstByteRegAssoc; i <= lastByteRegAssoc; i++)
             {
             virtReg = dependencies[i]->getRegister();
             if (toRealRegister(virtReg->getAssignedRealRegister()) == NULL)
@@ -991,7 +991,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
 
       if (hasNoRegDeps)
          {
-         for (i=firstNoRegAssoc; i<=lastNoRegAssoc; i++)
+         for (auto i = firstNoRegAssoc; i <= lastNoRegAssoc; i++)
             dependencies[i]->getRegister()->block();
          }
       }
@@ -1003,7 +1003,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
       do
          {
          changed = false;
-         for (i = firstNoRegAssoc; i<=lastNoRegAssoc; i++)
+         for (auto i = firstNoRegAssoc; i<=lastNoRegAssoc; i++)
             {
             virtReg = dependencies[i]->getRegister();
             if (toRealRegister(virtReg->getAssignedRealRegister()) == NULL)
@@ -1030,7 +1030,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
 
    self()->unblockRegisters(numberOfRegisters);
 
-   for (i = 0; i < numDependencyRegisters; i++)
+   for (auto i = 0; i < numDependencyRegisters; i++)
       {
       TR::Register *virtRegister = dependencies[i]->getRegister();
       assignedReg = toRealRegister(virtRegister->getAssignedRealRegister());
@@ -1060,7 +1060,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
 
    if (cg->getUseNonLinearRegisterAssigner())
       {
-      for (i=0; i<numberOfRegisters; i++)
+      for (auto i = 0U; i < numberOfRegisters; i++)
          {
          virtReg = _dependencies[i].getRegister();
 
@@ -1117,7 +1117,7 @@ void OMR::X86::RegisterDependencyConditions::createRegisterAssociationDirective(
    // Only the registers that this instruction interferes with are modified.
    //
    TR::RegisterDependencyGroup *depGroup = getPreConditions();
-   for (int j = 0; j < getNumPreConditions(); j++)
+   for (auto j = 0U; j < getNumPreConditions(); j++)
       {
       TR::RegisterDependency  *dependency = depGroup->getRegisterDependency(j);
       if (dependency->getRegister())
@@ -1125,7 +1125,7 @@ void OMR::X86::RegisterDependencyConditions::createRegisterAssociationDirective(
       }
 
    depGroup = getPostConditions();
-   for (int k = 0; k < getNumPostConditions(); k++)
+   for (auto k = 0U; k < getNumPostConditions(); k++)
       {
       TR::RegisterDependency  *dependency = depGroup->getRegisterDependency(k);
       if (dependency->getRegister())
@@ -1139,7 +1139,7 @@ TR::RealRegister *OMR::X86::RegisterDependencyConditions::getRealRegisterFromVir
    TR::Machine *machine = cg->machine();
 
    TR::RegisterDependencyGroup *depGroup = getPostConditions();
-   for (int j = 0; j < getNumPostConditions(); j++)
+   for (auto j = 0U; j < getNumPostConditions(); j++)
       {
       TR::RegisterDependency  *dependency = depGroup->getRegisterDependency(j);
 
@@ -1150,7 +1150,7 @@ TR::RealRegister *OMR::X86::RegisterDependencyConditions::getRealRegisterFromVir
       }
 
    depGroup = getPreConditions();
-   for (int k = 0; k < getNumPreConditions(); k++)
+   for (auto k = 0U; k < getNumPreConditions(); k++)
       {
       TR::RegisterDependency  *dependency = depGroup->getRegisterDependency(k);
 
@@ -1176,7 +1176,7 @@ void OMR::X86::RegisterDependencyGroup::assignFPRegisters(TR::Instruction   *pre
 
    if (numberOfRegisters > 0)
       {
-      for (int32_t i = 0; i < numberOfRegisters; i++)
+      for (auto i = 0U; i < numberOfRegisters; i++)
          {
          TR::Register *virtReg = _dependencies[i].getRegister();
          if (virtReg && kindsToBeAssigned & virtReg->getKindAsMask())
@@ -1190,7 +1190,7 @@ void OMR::X86::RegisterDependencyGroup::assignFPRegisters(TR::Instruction   *pre
             }
          }
 
-      for (int32_t i = 0; i < numberOfRegisters; i++)
+      for (auto i = 0U; i < numberOfRegisters; i++)
          {
          TR::Register *virtReg = _dependencies[i].getRegister();
          if (virtReg && kindsToBeAssigned & virtReg->getKindAsMask())

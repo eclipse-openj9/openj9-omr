@@ -171,7 +171,7 @@ static bool nodeCanSurvive(TR::Node *nextNode, TR::Node *lastNodeFirstChild, TR:
    {
    if (isFieldAccess(nextNode))
       {
-      int32_t similarOffset = -1;
+      intptr_t similarOffset = -1;
       bool seenSimilarAccess = false;
       TR::Node *firstChild = nextNode->getFirstChild();
       if (lastNodeFirstChild)
@@ -341,7 +341,6 @@ void TR_GlobalAnticipatability::analyzeTreeTopsInBlockStructure(TR_BlockStructur
       {
       // Ignore the effect of cold blocks on anticipatability
       //
-      TR::CFGEdge *edge;
       TR::Block   *next;
       bool hasNonColdSuccessor = false;
       bool analyzedSucc = true;

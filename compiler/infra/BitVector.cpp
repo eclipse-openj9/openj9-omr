@@ -241,7 +241,7 @@ bool TR_BitContainer::intersects(TR_BitVector& v2)
    else if (_type == bitvector)
       return false;
    else
-      return v2.get(_singleBit);
+      return v2.get(_singleBit) != 0;
    }
 
 bool TR_BitContainer::intersects(TR_BitContainer& v2)
@@ -254,7 +254,7 @@ bool TR_BitContainer::intersects(TR_BitContainer& v2)
       {
       // v2 is singleton
       if (_type == bitvector && _bitVector)
-         return get(v2._singleBit);
+         return get(v2._singleBit) != 0;
       else if (_type == bitvector)
          return false;
       else

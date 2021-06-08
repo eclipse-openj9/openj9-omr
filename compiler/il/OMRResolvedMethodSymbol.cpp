@@ -252,7 +252,6 @@ bcIndexForFakeInduce(TR::Compilation* comp, int16_t* callSiteInsertionPoint,
    if (induceOSR == NULL)
       induceOSR = fakeInduceOSR;
 
-   TR::TreeTop *lastTreeTop;
    char signatureRegex[500];
    const char * mSignature = comp->signature();
    char* p = induceOSR;
@@ -284,13 +283,13 @@ bcIndexForFakeInduce(TR::Compilation* comp, int16_t* callSiteInsertionPoint,
          break;
          }
       p = temp+1;
-      int16_t tempInt = strtol(p, &temp, 10);
+      int16_t tempInt = static_cast<int16_t>(strtol(p, &temp, 10));
       p = temp;
       if (callSiteInsertionPoint)
          *callSiteInsertionPoint = tempInt;
       p++; //skipping the second ,
 
-      tempInt = strtol(p, &temp, 16);
+      tempInt = static_cast<int16_t>(strtol(p, &temp, 16));
       p = temp;
       if (bcIndexInsertionPoint)
          *bcIndexInsertionPoint = tempInt;
@@ -739,7 +738,7 @@ OMR::ResolvedMethodSymbol::matchInduceOSRCall(TR::TreeTop* insertionPoint,
    if (recipProbString)
       recipProb = atoi(recipProbString);
 
-   TR::Node *fakeInduceOSRCallNode, *refCallNode = NULL;
+   TR::Node *refCallNode = NULL;
    if (childPath[0] == 'b' || childPath[0] == 'a')
       {
       //callerIndex/byteCodeIndex value -3 means a wildcard *, i.e., do it for all caller/bytecode indices
@@ -769,7 +768,7 @@ OMR::ResolvedMethodSymbol::matchInduceOSRCall(TR::TreeTop* insertionPoint,
    else if (childPath[0] == 'g')
       {
       if ((callerIndex != -3 && refNode->getInlinedSiteIndex() != callerIndex) ||
-          (byteCodeIndex != -3 && refNode->getByteCodeIndex() < byteCodeIndex))
+          (byteCodeIndex != -3 && refNode->getByteCodeIndex() < unsigned(byteCodeIndex)))
          return 0;
       if (self()->canInjectInduceOSR(refNode))
          return 1;
@@ -994,14 +993,13 @@ OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR:
    loadNodes.add(vmThread);
    loadNodes.add(TR::Node::iconst(firstNode, osrMethodData->getInlinedSiteIndex()));
    TR::Node *loadNode = NULL;
-   intptr_t i = 0;
 
    bool alreadyLoadedSyncObjectTemp = false;
    bool alreadyLoadedThisTempForObjectCtor = false;
 
    // Pending push temporaries
    TR_Array<List<TR::SymbolReference> > *ppsListArray = self()->getPendingPushSymRefs();
-   for (i = 0; ppsListArray && i < ppsListArray->size(); ++i)
+   for (auto i = 0U; ppsListArray && i < ppsListArray->size(); ++i)
       {
       List<TR::SymbolReference> ppsList = (*ppsListArray)[i];
       ListIterator<TR::SymbolReference> ppsIt(&ppsList);
@@ -1032,7 +1030,7 @@ OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR:
 
    //  parameters and autos
    TR_Array<List<TR::SymbolReference> > *autosListArray = self()->getAutoSymRefs();
-   for (i = 0; autosListArray && i < autosListArray->size(); ++i)
+   for (auto i = 0U; autosListArray && i < autosListArray->size(); ++i)
       {
       List<TR::SymbolReference> autosList = (*autosListArray)[i];
       ListIterator<TR::SymbolReference> autosIt(&autosList);
@@ -1090,8 +1088,8 @@ OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR:
 
    // Create the OSR helper call node and set its children
    TR::Node *osrCall = TR::Node::createWithSymRef(firstNode, TR::call, loadNodes.size(), osrHelper);
-   for (int i = 0; i < loadNodes.size(); i++)
-      osrCall->setAndIncChild(i, loadNodes[i]);
+   for (auto i = 0U; i < loadNodes.size(); i++)
+      osrCall->setAndIncChild(static_cast<int32_t>(i), loadNodes[i]);
    TR_ASSERT(osrCall->getNumChildren() >= 3, "the osr helper call needs to have at least 3 children\n");
 
    // Add the call to the OSR Block
@@ -1277,7 +1275,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
             }
          }
       }
-   catch (const TR::RecoverableILGenException &e)
+   catch (const TR::RecoverableILGenException &)
       {
       if (self()->comp()->isOutermostMethod())
          throw;
@@ -1305,13 +1303,12 @@ bool
 OMR::ResolvedMethodSymbol::sharesStackSlots(TR::Compilation *comp)
    {
    auto *methodSymbol = self();
-   intptr_t i = 0;
    bool isRequired = false;
 
    // Check for pending pushes
    TR_Array<List<TR::SymbolReference> > *ppsListArray = methodSymbol->getPendingPushSymRefs();
    bool prevTakesTwoSlots = false;
-   for (i = 0; !isRequired && ppsListArray && i < ppsListArray->size(); ++i)
+   for (auto i = 0U; !isRequired && ppsListArray && i < ppsListArray->size(); ++i)
       {
       List<TR::SymbolReference> ppsList = (*ppsListArray)[i];
       ListIterator<TR::SymbolReference> ppsIt(&ppsList);
@@ -1344,7 +1341,7 @@ OMR::ResolvedMethodSymbol::sharesStackSlots(TR::Compilation *comp)
    // Check for parameters and autos
    TR_Array<List<TR::SymbolReference> > *autosListArray = methodSymbol->getAutoSymRefs();
    prevTakesTwoSlots = false;
-   for (i = 0; !isRequired && autosListArray && i < autosListArray->size(); ++i)
+   for (auto i = 0U; !isRequired && autosListArray && i < autosListArray->size(); ++i)
       {
       List<TR::SymbolReference> autosList = (*autosListArray)[i];
       ListIterator<TR::SymbolReference> autosIt(&autosList);
@@ -1800,7 +1797,7 @@ OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlots(TR::Compilation *comp, 
    if (keepStashedArgsLive)
       {
       TR_Array<int32_t> *args = osrMethodData->getArgInfo(byteCodeIndex);
-      for (int32_t i = 0; args && i < args->size(); ++i)
+      for (auto i = 0U; args && i < args->size(); ++i)
          deadSymRefs->reset((*args)[i]);
       }
 
@@ -1894,7 +1891,7 @@ OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Co
 TR_OSRPoint *
 OMR::ResolvedMethodSymbol::findOSRPoint(TR_ByteCodeInfo &bcInfo)
    {
-   for (intptr_t i = 0; i < _osrPoints.size(); ++i)
+   for (auto i = 0U; i < _osrPoints.size(); ++i)
       {
       TR_ByteCodeInfo& pointBCInfo = _osrPoints[i]->getByteCodeInfo();
       if (pointBCInfo.getByteCodeIndex() == bcInfo.getByteCodeIndex() &&
@@ -2397,11 +2394,11 @@ OMR::ResolvedMethodSymbol::isParmVariant(TR::ParameterSymbol * parmSymbol)
    if (_variantParms == NULL)
       self()->detectVariantParms();
    const auto numberOfParameters = self()->getResolvedMethod()->numberOfParameters();
-   TR_ASSERT_FATAL(parmSymbol->getOrdinal() < numberOfParameters,
+   TR_ASSERT_FATAL(unsigned(parmSymbol->getOrdinal()) < numberOfParameters,
                   "Parm %d (%p) cannot be owned by current method that only has %d parms", parmSymbol->getOrdinal(), parmSymbol, numberOfParameters);
    TR_ASSERT_FATAL(self()->getParmSymRef(parmSymbol->getSlot())->getSymbol()->getParmSymbol() == parmSymbol,
                   "Parm %p is not owned by current method %s", parmSymbol, self()->signature(self()->comp()->trMemory()));
-   return _variantParms->get(parmSymbol->getOrdinal());
+   return _variantParms->get(parmSymbol->getOrdinal()) != 0;
    }
 
 void

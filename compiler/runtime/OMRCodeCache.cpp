@@ -187,7 +187,7 @@ void
 OMR::CodeCache::writeMethodHeader(void *freeBlock, size_t size, bool isCold)
    {
    CodeCacheMethodHeader * block = (CodeCacheMethodHeader *)freeBlock;
-   block->_size = size;
+   block->_size = static_cast<uint32_t>(size);
 
    TR::CodeCacheConfig & config = _manager->codeCacheConfig();
 
@@ -232,7 +232,7 @@ OMR::CodeCache::trimCodeMemoryAllocation(void *codeMemoryStart, size_t actualSiz
       {
       _manager->decreaseCurrTotalUsedInBytes(shrinkage);
       _warmCodeAlloc -= shrinkage;
-      cacheHeader->_size = actualSizeInBytes;
+      cacheHeader->_size = static_cast<uint32_t>(actualSizeInBytes);
       return true;
       }
    else // the allocation could have been from a free block or from the cold portion
@@ -245,7 +245,7 @@ OMR::CodeCache::trimCodeMemoryAllocation(void *codeMemoryStart, size_t actualSiz
             {
             //fprintf(stderr, "---ccr--- addFreeBlock due to shrinkage\n");
             }
-         cacheHeader->_size = actualSizeInBytes;
+         cacheHeader->_size = static_cast<uint32_t>(actualSizeInBytes);
          return true;
          }
       }
@@ -347,7 +347,7 @@ OMR::CodeCache::initialize(TR::CodeCacheManager *manager,
       // Grab the configuration details from the JIT platform code
       //
       // (_helperTop - segment->heapBase) is heapSize
-      config.mccCallbacks().codeCacheConfig((_helperTop - _segment->segmentBase()), &_tempTrampolinesMax);
+      config.mccCallbacks().codeCacheConfig(static_cast<int32_t>(_helperTop - _segment->segmentBase()), &_tempTrampolinesMax);
       }
 
    mcc_printf("mcc_initialize: trampoline base %p\n",  _trampolineBase);
@@ -690,7 +690,7 @@ OMR::CodeCache::syncTempTrampolines()
          {
          //TR_ASSERT(syncBlock->_entryCount <= syncBlock->_entryListSize);
          // Synchronize all stored sync requests
-         for (uint32_t entryIdx = 0; entryIdx < syncBlock->_entryCount; entryIdx++)
+         for (auto entryIdx = 0; entryIdx < syncBlock->_entryCount; entryIdx++)
             {
             CodeCacheHashEntry *entry = syncBlock->_hashEntryArray[entryIdx];
             void *newPC = (void *) TR::Compiler->mtd.startPC(entry->_info._resolved._method);
@@ -851,7 +851,7 @@ OMR::CodeCache::allocateTempTrampolineSyncBlock()
    mcc_printf("mcc_temptrampolinesyncblock: block = %p\n",  block);
 
    block->_entryCount = 0;
-   block->_entryListSize = config.codeCacheTempTrampolineSyncArraySize();
+   block->_entryListSize = static_cast<int32_t>(config.codeCacheTempTrampolineSyncArraySize());
    block->_next = _trampolineSyncList;
    _trampolineSyncList = block;
 
@@ -947,7 +947,7 @@ OMR::CodeCache::addFreeBlock2WithCallSite(uint8_t *start,
 
    // align start on a code cache alignment boundary
    uint8_t *start_o = start;
-   uint32_t round = config.codeCacheAlignment();
+   uint32_t round = static_cast<uint32_t>(config.codeCacheAlignment());
    start = (uint8_t *)align((size_t)start, round);
 
    // make sure aligning start didn't push it past end

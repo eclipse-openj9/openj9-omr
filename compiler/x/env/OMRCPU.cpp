@@ -234,7 +234,7 @@ OMR::X86::CPU::is(OMRProcessorArchitecture p)
    if (TR::Compiler->omrPortLib == NULL)
       return self()->is_old_api(p);
 
-   static bool disableOldVersionCPUDetectionTest = feGetEnv("TR_DisableOldVersionCPUDetectionTest");
+   static bool disableOldVersionCPUDetectionTest = feGetEnv("TR_DisableOldVersionCPUDetectionTest") != NULL;
    if (!disableOldVersionCPUDetectionTest)
       TR_ASSERT_FATAL(self()->is_test(p), "old api and new api did not match, processor %d", p);
 
@@ -247,7 +247,7 @@ OMR::X86::CPU::supportsFeature(uint32_t feature)
    if (TR::Compiler->omrPortLib == NULL)
       return self()->supports_feature_old_api(feature);
 
-   static bool disableOldVersionCPUDetectionTest = feGetEnv("TR_DisableOldVersionCPUDetectionTest");
+   static bool disableOldVersionCPUDetectionTest = feGetEnv("TR_DisableOldVersionCPUDetectionTest") != NULL;
    if (!disableOldVersionCPUDetectionTest)
       TR_ASSERT_FATAL(self()->supports_feature_test(feature), "old api and new api did not match, feature %d", feature);
 

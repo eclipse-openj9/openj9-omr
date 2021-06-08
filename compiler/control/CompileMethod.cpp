@@ -98,7 +98,7 @@ writePerfToolEntry(void *start, uint32_t size, const char *name)
 
       // j9jit_fprintf(getPerfFile(), "%lX %lX %s_%s\n", (intptr_t) getMetadata()->startPC, getMetadata()->endWarmPC - getMetadata()->startPC,
       //               getCompilation()->signature(), getCompilation()->getHotnessName(getCompilation()->getMethodHotness()));
-      fprintf(perfFile, "%lX %lX %s\n", (intptr_t) start, (intptr_t) size, name);
+      fprintf(perfFile, "%" OMR_PRIdPTR " %" OMR_PRIdPTR " %s\n", (intptr_t) start, (intptr_t) size, name);
 
       // If there is a cold section, add another line
       // if (getMetadata()->startColdPC)
@@ -128,7 +128,7 @@ generatePerfToolEntry(uint8_t *startPC, uint8_t *endPC, const char *sig, const c
    else
       name = "(compiled code)";
 
-   writePerfToolEntry(startPC, endPC - startPC, name);
+   writePerfToolEntry(startPC, static_cast<uint32_t>(endPC - startPC), name);
    }
 
 #if defined(TR_TARGET_POWER)

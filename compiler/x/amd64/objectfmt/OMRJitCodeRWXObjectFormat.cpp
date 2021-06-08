@@ -77,11 +77,11 @@ OMR::X86::AMD64::JitCodeRWXObjectFormat::emitFunctionCall(TR::FunctionCallData &
 
       if (data.prevInstr)
          {
-         callImmSym = generateImmSymInstruction(data.prevInstr, op, targetAddress, methodSymRef, data.regDeps, data.cg);
+         callImmSym = generateImmSymInstruction(data.prevInstr, op, static_cast<int32_t>(targetAddress), methodSymRef, data.regDeps, data.cg);
          }
       else
          {
-         callImmSym = generateImmSymInstruction(op, data.callNode, targetAddress, methodSymRef, data.regDeps, data.cg);
+         callImmSym = generateImmSymInstruction(op, data.callNode, static_cast<int32_t>(targetAddress), methodSymRef, data.regDeps, data.cg);
          }
 
       if (data.adjustsFramePointerBy != 0)

@@ -37,7 +37,7 @@ char *
 OMR::ClassEnv::classNameChars(TR::Compilation *comp, TR::SymbolReference *symRef, int32_t & len)
    {
    char *name = "<no class name>";
-   len = strlen(name);
+   len = static_cast<int32_t>(strlen(name));
    return name;
    }
 

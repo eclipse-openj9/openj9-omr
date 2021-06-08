@@ -1794,7 +1794,7 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
                }
             else
                {
-               differenceInAdditiveConstantsNode = TR::Node::create(node, TR::iconst, 0, differenceInAdditiveConstants);
+               differenceInAdditiveConstantsNode = TR::Node::create(node, TR::iconst, 0, static_cast<int32_t>(differenceInAdditiveConstants));
                op = replacingNode->getOpCode().isAdd() ? TR::iadd : TR::isub;
                }
             adjustmentNode = TR::Node::create(op, 2, adjustmentNode, differenceInAdditiveConstantsNode);
@@ -1808,7 +1808,7 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
                }
             else
                adjustmentNode = TR::Node::create(node, TR::iconst, 0,
-                  differenceInAdditiveConstants);
+                  static_cast<int32_t>(differenceInAdditiveConstants));
             }
          }
 
@@ -4447,7 +4447,7 @@ void TR_LoopStrider::truncateIVsOnLoopExit(
          // (src -> dest) is a loop exit. Need to insert a conversion "along"
          // it. Note that src definitely has another successor, since it's in
          // loop, so the conversion can never simply be put at the end of src.
-         int preds = dest->getPredecessors().size()
+         auto preds = dest->getPredecessors().size()
             + dest->getExceptionPredecessors().size();
          if (preds > 1)
             {
@@ -6473,7 +6473,7 @@ TR_InductionVariableAnalysis::analyzeExitEdges(TR_RegionStructure *loop,
                }
             }
          else
-            osrInduceExitEdge = _isOSRInduceBlock.get(toNum);
+            osrInduceExitEdge = (_isOSRInduceBlock.get(toNum) != 0);
 
          if (osrInduceExitEdge)
             {

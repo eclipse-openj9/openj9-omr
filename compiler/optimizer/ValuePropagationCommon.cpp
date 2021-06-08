@@ -987,12 +987,12 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
    TR::VPArrayInfo *srcArrayInfo;
    TR::VPArrayInfo *dstArrayInfo;
 
-   srcOffLow = srcOffset ? srcOffset->getLowInt() : TR::getMinSigned<TR::Int32>();
-   srcOffHigh = srcOffset ? srcOffset->getHighInt() : TR::getMaxSigned<TR::Int32>();
-   dstOffLow = dstOffset ? dstOffset->getLowInt() : TR::getMinSigned<TR::Int32>();
-   dstOffHigh = dstOffset ? dstOffset->getHighInt() : TR::getMaxSigned<TR::Int32>();
-   copyLenLow = copyLen ? copyLen->getLowInt() : TR::getMinSigned<TR::Int32>();
-   copyLenHigh = copyLen ? copyLen->getHighInt() : TR::getMaxSigned<TR::Int32>();
+   srcOffLow = srcOffset ? srcOffset->getLowInt() : static_cast<int32_t>(TR::getMinSigned<TR::Int32>());
+   srcOffHigh = srcOffset ? srcOffset->getHighInt() : static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
+   dstOffLow = dstOffset ? dstOffset->getLowInt() : static_cast<int32_t>(TR::getMinSigned<TR::Int32>());
+   dstOffHigh = dstOffset ? dstOffset->getHighInt() : static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
+   copyLenLow = copyLen ? copyLen->getLowInt() : static_cast<int32_t>(TR::getMinSigned<TR::Int32>());
+   copyLenHigh = copyLen ? copyLen->getHighInt() : static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
 
    // If the call must fail, don't transform it.  The rest of the block can be
    // removed.
@@ -1804,11 +1804,11 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
    //
    addBlockConstraint(srcObjNode, TR::VPNonNullObject::create(this));
    addBlockConstraint(dstObjNode, TR::VPNonNullObject::create(this));
-   srcOffHigh = srcArrayInfo ? srcArrayInfo->highBound() : TR::getMaxSigned<TR::Int32>();
+   srcOffHigh = srcArrayInfo ? srcArrayInfo->highBound() : static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
    addBlockConstraint(srcOffNode, TR::VPIntRange::create(this, 0, srcOffHigh));
-   dstOffHigh = dstArrayInfo ? dstArrayInfo->highBound() : TR::getMaxSigned<TR::Int32>();
+   dstOffHigh = dstArrayInfo ? dstArrayInfo->highBound() : static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
    addBlockConstraint(dstOffNode, TR::VPIntRange::create(this, 0, dstOffHigh));
-   addBlockConstraint(copyLenNode, TR::VPIntRange::create(this, 0, TR::getMaxSigned<TR::Int32>()));
+   addBlockConstraint(copyLenNode, TR::VPIntRange::create(this, 0, static_cast<int32_t>(TR::getMaxSigned<TR::Int32>())));
 
    }
 
@@ -3296,19 +3296,21 @@ void OMR::ValuePropagation::transformRTMultiLeafArrayCopy(TR_RealTimeArrayCopy *
 static
 const char* transformedTargetName (TR::RecognizedMethod rm)
    {
+#ifdef J9_PROJECT_SPECIFIC
    switch ( rm )
       {
-#ifdef J9_PROJECT_SPECIFIC
       case TR::sun_nio_cs_UTF_16_Encoder_encodeUTF16Big:
          return "icall  com/ibm/jit/JITHelpers.transformedEncodeUTF16Big(JJI)I";
 
       case TR::sun_nio_cs_UTF_16_Encoder_encodeUTF16Little:
          return "icall  com/ibm/jit/JITHelpers.transformedEncodeUTF16Little(JJI)I"  ;
-#endif
 
       default:
          return "arraytranslate";
       }
+#else
+   return "arraytranslate";
+#endif
    }
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -3801,7 +3803,7 @@ TR::LocalValuePropagation::LocalValuePropagation(TR::OptimizationManager *manage
 
 int32_t TR::LocalValuePropagation::perform()
    {
-   if ((_firstUnresolvedSymbolValueNumber - 1) <= comp()->getNodeCount())
+   if (unsigned(_firstUnresolvedSymbolValueNumber - 1) <= comp()->getNodeCount())
       {
       dumpOptDetails(comp(),
          "Can't do Local Value Propagation - too many nodes\n");
@@ -3830,7 +3832,7 @@ int32_t TR::LocalValuePropagation::performOnBlock(TR::Block *block)
    {
    // Walk the trees and process
    //
-   if ((_firstUnresolvedSymbolValueNumber - 1) <= comp()->getNodeCount())
+   if (unsigned(_firstUnresolvedSymbolValueNumber - 1) <= comp()->getNodeCount())
       {
       dumpOptDetails(comp(),
          "Can't do Local Value Propagation on block %d - too many nodes\n",

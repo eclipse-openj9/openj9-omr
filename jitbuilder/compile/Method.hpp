@@ -45,9 +45,9 @@ class Method : public TR::Method
    Method() : TR::Method(TR::Method::JitBuilder) {}
 
    // FIXME: need to provide real code for this group
-   virtual uint16_t              classNameLength() { return strlen(classNameChars()); }
-   virtual uint16_t              nameLength()      { return strlen(nameChars()); }
-   virtual uint16_t              signatureLength() { return strlen(signatureChars()); }
+   virtual uint16_t              classNameLength() { return static_cast<uint16_t>(strlen(classNameChars())); }
+   virtual uint16_t              nameLength()      { return static_cast<uint16_t>(strlen(nameChars())); }
+   virtual uint16_t              signatureLength() { return static_cast<uint16_t>(strlen(signatureChars())); }
    virtual char                * nameChars()       { return "Method"; }
    virtual char                * classNameChars()  { return ""; }
    virtual char                * signatureChars()  { return "()V"; }

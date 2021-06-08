@@ -102,13 +102,6 @@ static TR::ILOpCodes getConstOpCode(TR::DataType type)
    return TR::iconst;
    }
 
-static inline int32_t ceiling(int64_t numer, int64_t denom)
-   {
-   return (numer % denom == 0) ?
-      numer / denom :
-      numer / denom + 1;
-   }
-
 static TR_ScratchList<TR::CFGEdge> *join(TR_ScratchList<TR::CFGEdge> *to, TR_ScratchList<TR::CFGEdge> *from)
    {
    if (from == NULL)
@@ -1258,280 +1251,6 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
 
       }
 
-   if (0 && _spillLoopRequired)
-      {
-      //Let
-      //B = branch block, L = loop region, X = exit destination,
-      //P = L's parent region, S = spill region
-      //define e(A) = entry block of strucutre A
-      //Notation P->Q denotes an edge from P to Q
-      //         P->Q* denotes an exit edge
-
-      //First of all, find the exitEdge in L originating from the B.
-      ListIterator<TR::CFGEdge> it(&loop->getExitEdges());
-      TR::CFGEdge *exitEdge = NULL;
-      for (edge = it.getFirst(); edge && !exitEdge; edge = it.getNext())
-         {
-         TR_StructureSubGraphNode *fromNode = toStructureSubGraphNode(edge->getFrom());
-         if (fromNode == branchNode) //this is the exit edge from the branch
-            exitEdge = edge;
-         }
-
-      //Find the exit node
-      TR_StructureSubGraphNode *exitNode =
-         findNodeInHierarchy(parent, toStructureSubGraphNode(exitEdge->getTo())->getNumber());
-
-      //Find the edge corresponding to exitEdge in the successors of the loop node
-      TR::CFGEdge *correspondingExitEdge = NULL;
-      for (auto edge = loopNode->getSuccessors().begin(); (edge != loopNode->getSuccessors().end()) && !correspondingExitEdge; ++edge)
-         if (toStructureSubGraphNode((*edge)->getTo())->getNumber() == exitNode->getNumber())
-            correspondingExitEdge = *edge;
-
-      //Add L->S in P
-      TR::CFGEdge::createEdge(loopNode,  _spillNode, trMemory());
-
-      //Look at exit edges of S, and add appropriate edges as needed
-      it.set(&_spillNode->getStructure()->asRegion()->getExitEdges());
-      for (edge = it.getFirst(); edge; edge = it.getNext())
-         {
-         TR_StructureSubGraphNode *destNode = toStructureSubGraphNode(edge->getTo());
-         int32_t destNum = destNode->getNumber();
-         TR_StructureSubGraphNode *concreteNode = findNodeInHierarchy(parent, destNum);
-
-         //Don't add edge if it already exists
-         if (!edgeAlreadyExists(_spillNode, destNum))
-            {
-            if (concreteNode->getStructure()->getParent() == parent)
-               TR::CFGEdge::createEdge(_spillNode,  concreteNode, trMemory());
-            else
-               parent->addExitEdge(_spillNode, destNum);
-            }
-         }
-
-      //Remove B->X* in L
-      removeExternalEdge(loop, branchNode, exitNode->getNumber());
-
-      //Add B->S* in L
-      addEdgeForSpillLoop(loop, exitEdge, branchNode, _spillNode, true);
-
-
-      if (1) //force block scope
-         {
-         ListIterator<TR::CFGEdge> eit(&loop->getExitEdges());
-         TR::CFGEdge *e;
-         for (e = eit.getFirst(); e; e = eit.getNext())
-            {
-            if (e->getTo()->getNumber() == exitNode->getNumber())
-               break;
-            }
-
-         if (!e) // there do not remain an edges in L going to X
-            {
-            //Remove L->X or L->X* in P
-            if (exitNode->getStructure()->getParent() == parent)
-               {
-
-               bool found = (std::find(loopNode->getSuccessors().begin(), loopNode->getSuccessors().end(), correspondingExitEdge) != loopNode->getSuccessors().end());
-               loopNode->getSuccessors().remove(correspondingExitEdge);
-               TR_ASSERT(found, "GLU: bad structure while removing edge");
-               found = (std::find(exitNode->getPredecessors().begin(), exitNode->getPredecessors().end(), correspondingExitEdge) != exitNode->getPredecessors().end());
-               exitNode->getPredecessors().remove(correspondingExitEdge);
-               TR_ASSERT(found,
-            		   "GLU: bad structure while removing edge");
-               }
-            else
-               {
-               removeExternalEdge(parent, loopNode, exitNode->getNumber());
-               }
-            }
-         }
-
-      // Swing all the blocks that have been scheduled to be swung.
-      processSwingQueue();
-
-      static       char *skipIt = feGetEnv("TR_NoGLUProper");
-      if (!skipIt)
-         {
-         if (trace())
-            {
-            traceMsg(comp(), "\nbefore n,n-3 fix:\n\n", loop->getNumber());
-            getDebug()->print(comp()->getOutFile(), _rootStructure, 6);
-            getDebug()->print(comp()->getOutFile(), _cfg);
-            comp()->dumpMethodTrees("Tree tops right before n,n-3 fix:");
-            }
-
-         TR_RegionStructure *spillLoop  = _spillNode->getStructure()->asRegion();
-         int32_t     oldSpillNum        = _spillNode->getNumber();
-         TR::Block   *oldSpillEntryBlock = spillLoop->getEntryBlock();
-         TR::TreeTop *branchTreeTop      = oldSpillEntryBlock->getLastRealTreeTop();
-         TR_BlockStructure
-            *newIfBlockStructure;
-         TR_StructureSubGraphNode
-            *newIfSubNode;
-         TR::Block   *origExitBlock;
-         TR::Node    *gotoNode;
-         TR::Block   *gotoBlock;
-
-         // Find the orig exit block
-         //
-         if (1)
-            {
-            TR_StructureSubGraphNode *node = findNodeInHierarchy(loop, origExitNum);
-
-            if (node->getStructure()->asBlock())
-               origExitBlock = node->getStructure()->asBlock()->getBlock();
-            else
-               origExitBlock = node->getStructure()->asRegion()->getEntryBlock();
-            }
-
-          TR::Block   *newIfBlock         = TR::Block::createEmptyBlock(branchTreeTop->getNode(), comp(), origExitBlock->getFrequency(), origExitBlock);
-
-         // Duplicate the branch tree from the spill entry block and place it correctly in the trees
-         // connect this block up properly in the parent region
-         //
-         if (1)
-            {
-            TR::Block   *branchDestination  = branchTreeTop->getNode()->getBranchDestination()->getNode()->getBlock();
-            TR::TreeTop *newIfTree = TR::TreeTop::create(comp(), branchTreeTop->getNode()->duplicateTree());
-            newIfBlock->append(newIfTree);
-
-            _cfg->addNode(newIfBlock);
-            newIfBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), newIfBlock->getNumber(), newIfBlock);
-            newIfSubNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(newIfBlockStructure);
-            parent->addSubNode(newIfSubNode);
-
-            gotoNode  = TR::Node::create(newIfTree->getNode(), TR::Goto);
-            gotoBlock = TR::Block::createEmptyBlock(gotoNode, comp(), newIfBlock->getFrequency(), newIfBlock);
-            gotoBlock->append(TR::TreeTop::create(comp(), gotoNode));
-            _cfg->addNode(gotoBlock);
-            TR_StructureSubGraphNode *gotoSubNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode
-               (new (_cfg->structureRegion()) TR_BlockStructure(comp(), gotoBlock->getNumber(), gotoBlock));
-            parent->addSubNode(gotoSubNode);
-
-            if (spillLoop->contains(branchDestination->getStructureOf(), parent))
-               {
-                TR::Node::recreate(newIfTree->getNode(),
-                   newIfTree->getNode()->getOpCode().getOpCodeForReverseBranch());
-                newIfTree->getNode()->setBranchDestination(origExitBlock->getEntry());
-               }
-
-            TR::Block *prevBlock = oldSpillEntryBlock->getPrevBlock();
-            prevBlock->getExit()->join(newIfBlock->getEntry());
-            newIfBlock->getExit()->join(gotoBlock->getEntry());
-            gotoBlock->getExit()->join(oldSpillEntryBlock->getEntry());
-
-            _cfg->addEdge(TR::CFGEdge::createEdge(newIfBlock,  origExitBlock, trMemory()));
-            _cfg->addEdge(TR::CFGEdge::createEdge(newIfBlock,  gotoBlock, trMemory()));
-            //_cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  oldSpillEntryBlock, trMemory()));
-
-            TR_StructureSubGraphNode *otherSuccSubNode = parent->findSubNodeInRegion(origExitBlock->getNumber());
-            if (otherSuccSubNode)
-               TR::CFGEdge::createEdge(newIfSubNode,  otherSuccSubNode, trMemory());
-            else
-               parent->addExitEdge(newIfSubNode, origExitBlock->getNumber(), false);
-            TR::CFGEdge::createEdge(newIfSubNode,  gotoSubNode, trMemory());
-            TR::CFGEdge::createEdge(gotoSubNode,   _spillNode, trMemory());
-            }
-
-         // Modify entry of the spill loop to be the the original correct entry
-         //
-         if (1)
-            {
-            TR_StructureSubGraphNode *origEntryNode;
-            TR::CFGEdgeList& list = _spillNode->getStructure()->asRegion()->getEntry()->getSuccessors();
-            for (auto edge = list.begin(); edge != list.end(); ++edge)
-               {
-               TR_StructureSubGraphNode *to = (*edge)->getTo()->asStructureSubGraphNode();
-               if (to->getStructure())
-                  {
-                  origEntryNode = to;
-                  break;
-                  }
-               }
-
-            int32_t origNum = origEntryNode->getNumber();
-            _spillNode->getStructure()->asRegion()->setEntry(origEntryNode);
-            _spillNode->setNumber(origNum);
-            _spillNode->getStructure()->setNumber(origNum);
-            }
-
-         // change the B->S* to become B->I* and
-         //
-         if (1)
-            {
-            TR_StructureSubGraphNode *fromSubNode;
-            ListIterator<TR::CFGEdge> it(&loop->getExitEdges());
-            for (TR::CFGEdge *edge = it.getFirst(); edge; edge = it.getNext())
-               {
-               if (edge->getTo()->getNumber() == oldSpillNum)
-                  {
-                  fromSubNode = edge->getFrom()->asStructureSubGraphNode();
-                  break;
-                  }
-               }
-
-            TR::Block *fromBlock = fromSubNode->getStructure()->asBlock()->getBlock();
-            TR::TreeTop *lastTree = fromBlock->getLastRealTreeTop();
-
-            if (lastTree->getNode()->getOpCode().isBranch() &&
-                lastTree->getNode()->getBranchDestination() == oldSpillEntryBlock->getEntry())
-               {
-               lastTree->getNode()->setBranchDestination(newIfBlock->getEntry());
-               }
-
-            _cfg->addEdge(TR::CFGEdge::createEdge(fromBlock,  newIfBlock, trMemory()));
-            loop->addExitEdge(fromSubNode, newIfBlock->getNumber());
-            _cfg->removeEdge(fromBlock, oldSpillEntryBlock);
-            removeExternalEdge(loop, fromSubNode, oldSpillNum);
-            }
-
-         // add L->I
-         TR::CFGEdge::createEdge(loopNode,  newIfSubNode, trMemory()); // the CFG is already fine
-
-         // Remove L->S'
-         if (1)
-            {
-            for (auto edge = loopNode->getSuccessors().begin(); edge != loopNode->getSuccessors().end(); ++edge)
-               {
-               if ((*edge)->getTo() == _spillNode)
-                  {
-                  parent->removeEdge(*edge, false);
-                  break;
-                  }
-               }
-            }
-
-         TR::Block *newEntryBlock = spillLoop->getEntryBlock();
-         gotoNode->setBranchDestination(newEntryBlock->getEntry());
-         _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock,  newEntryBlock, trMemory()));
-
-         /// Fixup the overflow test
-         if (_overflowTestBlock)
-            {
-            _overflowTestBlock->getLastRealTreeTop()->getNode()->setBranchDestination
-               (newEntryBlock->getEntry());
-            TR_StructureSubGraphNode *overflowTestNode = parent->findSubNodeInRegion
-               (_overflowTestBlock->getNumber());
-
-            _cfg->addEdge(TR::CFGEdge::createEdge(_overflowTestBlock,  newEntryBlock, trMemory()));
-            _cfg->removeEdge(_overflowTestBlock, oldSpillEntryBlock);
-            // no need to fixup structure edges - they are already fine!!!
-            }
-
-         /// fixup the loop iteration test
-         if (1 && _loopIterTestBlock)
-            {
-            TR::Block *newEntryBlock = spillLoop->getEntryBlock();
-            _loopIterTestBlock->getLastRealTreeTop()->getNode()->setBranchDestination
-               (newEntryBlock->getEntry());
-            _cfg->removeEdge(_loopIterTestBlock, oldSpillEntryBlock);
-            _cfg->addEdge(TR::CFGEdge::createEdge(_loopIterTestBlock,  newEntryBlock, trMemory()));
-            }
-
-         //printf("--glui-- in %s\n", signature(comp()->getCurrentMethod()));
-         }
-      }
-
    // Swing all the blocks that have been scheduled to be swung.
    processSwingQueue();
 
@@ -1845,7 +1564,7 @@ void TR_LoopUnroller::examineNode(TR::Node *node, intptr_t visitCount)
    if (node->getVisitCount() == visitCount)
       return;
 
-   node->setVisitCount(visitCount);
+   node->setVisitCount(static_cast<vcount_t>(visitCount));
 
    TR::Symbol *symbol = NULL;
    if (node->getOpCode().hasSymbolReference())
@@ -1889,7 +1608,7 @@ void TR_LoopUnroller::examineNode(TR::Node *node, intptr_t visitCount)
       }
 
    /* Walk its children */
-   for (intptr_t i = 0; i < node->getNumChildren(); i++)
+   for (auto i = 0; i < node->getNumChildren(); i++)
       {
       examineNode(node->getChild(i), visitCount);
       }
@@ -3280,9 +2999,9 @@ TR_LoopUnroller::TR_LoopUnroller(TR::Compilation *c, TR::Optimizer *optimizer, T
      _peelCount(peelCount), _unrollKind(unrollKind),
      _iteration(0), _firstEntryNode(0), _piv(0),
      _spillLoopRequired(false), _branchToExit(false),
-     _spillNode((TR_StructureSubGraphNode *)0xdeadf00d),
-     _overflowTestBlock((TR::Block *)0xdeadf00d),
-     _loopIterTestBlock((TR::Block *)0xdeadf00d),
+     _spillNode((TR_StructureSubGraphNode *)static_cast<intptr_t>(0xdeadf00d)),
+     _overflowTestBlock((TR::Block *)static_cast<intptr_t>(0xdeadf00d)),
+     _loopIterTestBlock((TR::Block *)static_cast<intptr_t>(0xdeadf00d)),
      _loopInvariantBlock(invariantBlock),
      _loopInvariantBlockAtEnd(false),
      _swingQueue(c->trMemory()),
@@ -4124,7 +3843,7 @@ TR_GeneralLoopUnroller::weighNaturalLoop(TR_RegionStructure *loop,
 
          dumpOptDetails(comp(),"\t outerLoop number = %d outerLoop->getEntryBlock->GetNumber = %d\n",outerLoop->getNumber(),outerLoop->getEntryBlock()->getNumber());
          float outerLoopRelativeFrequency = outerLoopFrequency == 6 ?
-            1.3 + (10*entryBlockFrequency / (float)maxCount) :
+            1.3f + (10.0f*entryBlockFrequency / (float)maxCount) :
             entryBlockFrequency / (float)outerLoopFrequency;
 
          dumpOptDetails(comp(), "\touterloop relative frequency = %.2g\n", outerLoopRelativeFrequency);
@@ -4354,20 +4073,20 @@ TR_GeneralLoopUnroller::weighNaturalLoop(TR_RegionStructure *loop,
    if (cg()->getSizeOfCombinedBuffer())
       {
       bool forceUnrollCount = false;
+#ifdef J9_PROJECT_SPECIFIC
       switch (methodId)
          {
-#ifdef J9_PROJECT_SPECIFIC
          case TR::sun_nio_cs_ISO_8859_1_Encoder_encodeArrayLoop:
             forceUnrollCount = true;
             break;
          case TR::sun_nio_cs_ext_IBM1388_Encoder_encodeArrayLoop:
             forceUnrollCount = loop->getEntryBlock()->getFrequency() >= HIGH_FREQ_LOOP_CUTOFF;
             break;
-#endif
          default:
             // leave unrollCount unmodified
             break;
          }
+#endif
       if (forceUnrollCount)
          unrollCount = 7;
       }

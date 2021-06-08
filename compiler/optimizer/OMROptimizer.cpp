@@ -2092,7 +2092,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
            comp()->reportOptimizationPhaseForSnap(optNum);
 
 
-      if (comp()->getNodeCount() > origNodeCount)
+      if (comp()->getNodeCount() > unsigned(origNodeCount))
          {
          // If nodes were added, invalidate
          //
@@ -2347,7 +2347,6 @@ TR_Hotness OMR::Optimizer::checkMaxHotnessOfInlinedMethods( TR::Compilation *com
 bool OMR::Optimizer::checkNumberOfLoopsAndBasicBlocks( TR::Compilation *comp, TR_Structure *rootStructure)
    {
    TR::CFGNode *node;
-   int32_t index;
    _numBasicBlocksInMethod = 0;
    for (node = comp->getFlowGraph()->getFirstNode(); node; node = node->getNext())
       {

@@ -796,7 +796,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
          {
          if (info->getDataType() == TR_RematerializableFloat)
             {
-            TR::MemoryReference* tempMR = generateX86MemoryReference(self()->cg()->findOrCreate4ByteConstant(currentInstruction->getNode(), info->getConstant()), self()->cg());
+            TR::MemoryReference* tempMR = generateX86MemoryReference(self()->cg()->findOrCreate4ByteConstant(currentInstruction->getNode(), static_cast<int32_t>(info->getConstant())), self()->cg());
             instr = generateRegMemInstruction(currentInstruction, MOVSSRegMem, best, tempMR, self()->cg());
             }
          else
@@ -894,7 +894,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
                }
             else
                {
-               location = self()->cg()->allocateSpill(TR::Compiler->om.sizeofReferenceAddress(), bestRegister->containsCollectedReference(), &offset);
+               location = self()->cg()->allocateSpill(static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress()), bestRegister->containsCollectedReference(), &offset);
                location->setMaxSpillDepth(self()->cg()->getCurrentPathDepth());
                if (self()->cg()->getDebug())
                   self()->cg()->traceRegisterAssignment("find or create free backing store (%p) for %s with initial max spill depth of %d and adding to list\n",
@@ -1070,7 +1070,7 @@ TR::RealRegister *OMR::X86::Machine::reverseGPRSpillState(TR::Instruction     *c
       // This is to enforce re-use of the same spill slot for a virtual register
       // while assigning non-linear control flow regions.
       //
-      self()->cg()->freeSpill(location, TR::Compiler->om.sizeofReferenceAddress(), spilledRegister->isSpilledToSecondHalf()? 4:0);
+      self()->cg()->freeSpill(location, static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress()), spilledRegister->isSpilledToSecondHalf()? 4:0);
       if (!self()->cg()->isFreeSpillListLocked())
          {
          spilledRegister->setBackingStorage(NULL);
@@ -1769,7 +1769,7 @@ TR::RegisterDependencyConditions * OMR::X86::Machine::createCondForLiveAndSpille
          c++;
       }
 
-   c += spilledRegisterList ? spilledRegisterList->size() : 0;
+   c += spilledRegisterList ? static_cast<int32_t>(spilledRegisterList->size()) : 0;
 
    TR::RegisterDependencyConditions *deps = NULL;
 
@@ -1949,7 +1949,7 @@ TR_RegisterAssignerState::createDependenciesFromRegisterState(TR_OutlinedInstruc
          numDeps++;
       }
 
-   numDeps += _spilledRegistersList->size();
+   numDeps += static_cast<int32_t>(_spilledRegistersList->size());
 
    if (comp->getOption(TR_TraceNonLinearRegisterAssigner))
       {
@@ -2222,7 +2222,7 @@ void OMR::X86::Machine::disassociateUnspilledBackingStorage()
                }
             else
                {
-               size = TR::Compiler->om.sizeofReferenceAddress();
+               size = static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
                }
             self()->cg()->freeSpill(location, size, virtReg->isSpilledToSecondHalf()? 4:0);
             virtReg->setBackingStorage(NULL);

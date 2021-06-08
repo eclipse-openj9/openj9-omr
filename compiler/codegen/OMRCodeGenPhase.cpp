@@ -19,6 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#if defined(J9ZOS390)
 //On zOS XLC linker can't handle files with same name at link time
 //This workaround with pragma is needed. What this does is essentially
 //give a different name to the codesection (csect) for this file. So it
@@ -27,7 +28,7 @@
 #pragma csect(CODE,"OMRCGPhase#C")
 #pragma csect(STATIC,"OMRCGPhase#S")
 #pragma csect(TEST,"OMRCGPhase#T")
-
+#endif
 
 #include "codegen/CodeGenPhase.hpp"
 
@@ -170,7 +171,7 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
    cg->trimCodeMemoryToActualSize();
    cg->registerAssumptions();
 
-   cg->syncCode(cg->getBinaryBufferStart(), cg->getBinaryBufferCursor() - cg->getBinaryBufferStart());
+   cg->syncCode(cg->getBinaryBufferStart(), static_cast<uint32_t>(cg->getBinaryBufferCursor() - cg->getBinaryBufferStart()));
 
    if (comp->getOption(TR_EnableOSR))
      {

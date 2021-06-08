@@ -629,7 +629,7 @@ void TR::DeadTreesElimination::prePerformOnBlocks()
           && tt->getPrevTreeTop()->getNode()->getOpCodeValue() == TR::BBStart
           && !tt->getPrevTreeTop()->getNode()->getBlock()->isExtensionOfPreviousBlock())
          {
-         requestOpt(OMR::redundantGotoElimination, tt->getEnclosingBlock());
+         requestOpt(OMR::redundantGotoElimination, true, tt->getEnclosingBlock());
          }
 
       if (node->getVisitCount() >= visitCount)
@@ -1003,6 +1003,7 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
                   {
                   requestOpt(
                      OMR::redundantGotoElimination,
+                     true,
                      prevTree->getNode()->getBlock());
                   }
                }

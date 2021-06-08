@@ -1370,7 +1370,7 @@ OMR::Options::set64BitSignedNumeric(char *option, void *base, TR::OptionTable *e
 char *
 OMR::Options::set32BitHexadecimal(char *option, void *base, TR::OptionTable *entry)
    {
-   *((int32_t*)((char*)base+entry->parm1)) = getHexadecimalValue(option);
+   *((int32_t*)((char*)base+entry->parm1)) = static_cast<int32_t>(getHexadecimalValue(option));
    return option;
    }
 
@@ -1384,7 +1384,7 @@ OMR::Options::set32BitSignedNumeric(char *option, void *base, TR::OptionTable *e
       sign = -1;
       option++;
       }
-   *((int32_t*)((char*)base+entry->parm1)) = sign * TR::Options::getNumericValue(option);
+   *((int32_t*)((char*)base+entry->parm1)) = sign * static_cast<int32_t>(TR::Options::getNumericValue(option));
    return option;
    }
 
@@ -1440,7 +1440,7 @@ OMR::Options::setString(char *option, void *base, TR::OptionTable *entry)
             break;
          }
       }
-   int32_t len = p - option;
+   int32_t len = static_cast<int32_t>(p - option);
    p = (char *)TR::Options::jitPersistentAlloc(len+1);
    if (p)
       {
@@ -1504,7 +1504,7 @@ OMR::Options::setDebug(char *option, void *base, TR::OptionTable *entry)
                }
             }
          }
-      int32_t len = position - option-2;
+      int32_t len = static_cast<int32_t>(position - option-2);
       if(len > 0)
          {
          entry->parm1 = (intptr_t)TR::Options::jitPersistentAlloc(len+1);
@@ -3067,10 +3067,10 @@ OMR::Options::validateOptionsTables(void *feBase, TR_FrontEnd *fe)
    _numJitEntries = 0; // ensure value is initialized to 0 when processOptions is called
    _numVmEntries = 0; // ensure value is initialized to 0 when processOptions is called
 
-   int32_t i;
    for (opt = _jitOptions; opt->name; opt++)
       {
 #if DEBUG
+      int32_t i;
       if (opt->helpText)
          {
          for (i = 0; categories[i]; i++)
@@ -3097,6 +3097,7 @@ OMR::Options::validateOptionsTables(void *feBase, TR_FrontEnd *fe)
    for (opt = TR::Options::_feOptions; opt->name; opt++)
       {
 #if DEBUG
+      int32_t i;
       if (opt->helpText)
          {
          for (i = 0; categories[i]; i++)
@@ -3493,7 +3494,7 @@ OMR::Options::processOption(
       {
       i->isOptionToFind = false;
       if (!i->length)
-         i->length = strlen(i->name);
+         i->length = static_cast<int32_t>(strlen(i->name));
       }
 
    // Find the entry for this option string using a binary search
@@ -3501,7 +3502,7 @@ OMR::Options::processOption(
    // Create an object for the option to find in the table and set attributes
    TR::OptionTable optionToFind = TR::OptionTable();
    optionToFind.name = startOption;
-   optionToFind.length = strlen(optionToFind.name);
+   optionToFind.length = static_cast<int32_t>(strlen(optionToFind.name));
 
    // Since STL binary search requires total ordering, there need to be a way to differentiate
    // between the option to find and an option in the table. The isOptionToFind field is used
@@ -4400,7 +4401,7 @@ OMR::Options::getDefaultCountString()
 char *
 OMR::Options::setCount(char *option, void *base, TR::OptionTable *entry)
    {
-   int32_t offset = entry->parm1;
+   int32_t offset = static_cast<int32_t>(entry->parm1);
    int32_t countValue = (int32_t)TR::Options::getNumericValue(option);
 
    *((int32_t*)((char*)base+offset)) = countValue;
@@ -4521,7 +4522,7 @@ OMR::Options::checkDisableFlagForAllMethods(OMR::Optimizations o, bool b)
 char *
 OMR::Options::setStaticBool(char *option, void *base, TR::OptionTable *entry)
    {
-   *((bool*)entry->parm1) = (bool)entry->parm2;
+   *((bool*)entry->parm1) = (entry->parm2 != 0);
    return option;
    }
 
@@ -4615,7 +4616,7 @@ OMR::Options::setBitsFromStringSet(char *option, void *base, TR::OptionTable *en
 
    if (entry->parm2 != 0)
       {
-     *((int32_t*)((char*)base+entry->parm1)) = (intptr_t)entry->parm2;
+     *((int32_t*)((char*)base+entry->parm1)) = static_cast<int32_t>(entry->parm2);
       }
    else
       {
@@ -4648,7 +4649,7 @@ char *OMR::Options::clearBitsFromStringSet(char *option, void *base, TR::OptionT
 
    if (entry->parm2 != 0)
       {
-     *((int32_t*)((char*)base+entry->parm1)) = (intptr_t)entry->parm2;
+     *((int32_t*)((char*)base+entry->parm1)) = static_cast<int32_t>(entry->parm2);
       }
    else
       {

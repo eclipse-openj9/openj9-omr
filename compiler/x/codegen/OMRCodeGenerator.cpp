@@ -375,7 +375,7 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
          {
          self()->setSupportsArraySet();
          }
-      static bool disableX86TRTO = (bool)feGetEnv("TR_disableX86TRTO");
+      static bool disableX86TRTO = feGetEnv("TR_disableX86TRTO") != NULL;
       if (!disableX86TRTO)
          {
          TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1) == self()->getX86ProcessorInfo().supportsSSE4_1(), "supportsSSE4_1() failed\n");
@@ -384,7 +384,7 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
             self()->setSupportsArrayTranslateTRTO();
             }
          }
-      static bool disableX86TROT = (bool)feGetEnv("TR_disableX86TROT");
+      static bool disableX86TROT = feGetEnv("TR_disableX86TROT") != NULL;
       if (!disableX86TROT)
          {
          TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1) == self()->getX86ProcessorInfo().supportsSSE4_1(), "supportsSSE4_1() failed\n");
@@ -703,21 +703,23 @@ static bool willNotInlineCompareAndSwapNative(TR::Node *node,
  */
 bool OMR::X86::CodeGenerator::willBeEvaluatedAsCallByCodeGen(TR::Node *node, TR::Compilation *comp)
    {
+#ifdef J9_PROJECT_SPECIFIC
    TR::SymbolReference *callSymRef = node->getSymbolReference();
    TR::MethodSymbol *methodSymbol = callSymRef->getSymbol()->castToMethodSymbol();
    switch (methodSymbol->getRecognizedMethod())
       {
-#ifdef J9_PROJECT_SPECIFIC
       case TR::sun_misc_Unsafe_compareAndSwapLong_jlObjectJJJ_Z:
          return willNotInlineCompareAndSwapNative(node, 8, comp);
       case TR::sun_misc_Unsafe_compareAndSwapInt_jlObjectJII_Z:
          return willNotInlineCompareAndSwapNative(node, 4, comp);
       case TR::sun_misc_Unsafe_compareAndSwapObject_jlObjectJjlObjectjlObject_Z:
          return willNotInlineCompareAndSwapNative(node, (comp->target().is64Bit() && !comp->useCompressedPointers()) ? 8 : 4, comp);
-#endif
+
       default:
-         return true;
+         break;
       }
+#endif
+   return true;
    }
 
 int32_t OMR::X86::CodeGenerator::getMaximumNumbersOfAssignableFPRs()
@@ -1947,8 +1949,8 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    //
    for(auto oiIterator = self()->getOutlinedInstructionsList().begin(); oiIterator != self()->getOutlinedInstructionsList().end(); ++oiIterator)
       {
-      uint32_t startOffset = (*oiIterator)->getFirstInstruction()->getBinaryEncoding() - self()->getCodeStart();
-      uint32_t endOffset   = (*oiIterator)->getAppendInstruction()->getBinaryEncoding() - self()->getCodeStart();
+      uint32_t startOffset = static_cast<uint32_t>((*oiIterator)->getFirstInstruction()->getBinaryEncoding() - self()->getCodeStart());
+      uint32_t endOffset   = static_cast<uint32_t>((*oiIterator)->getAppendInstruction()->getBinaryEncoding() - self()->getCodeStart());
 
       TR::Block* block = (*oiIterator)->getBlock();
       TR::Node*  node  = (*oiIterator)->getCallNode();
@@ -2178,7 +2180,7 @@ int32_t OMR::X86::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32
    for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
       {
       auto size = (*iterator)->getDataSize();
-      estimatedSnippetStart = ((estimatedSnippetStart+size-1)/size) * size;
+      estimatedSnippetStart = static_cast<int32_t>(((estimatedSnippetStart+size-1)/size) * size);
       (*iterator)->getSnippetLabel()->setEstimatedCodeLocation(estimatedSnippetStart);
       estimatedSnippetStart += (*iterator)->getLength(estimatedSnippetStart);
       }
@@ -2318,7 +2320,7 @@ OMR::X86::CodeGenerator::estimateBinaryLength(TR::MemoryReference *mr)
 
 void OMR::X86::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label)
    {
-   *cursor += ((uintptr_t)label->getCodeLocation());
+   *cursor += static_cast<int32_t>((reinterpret_cast<uintptr_t>(label->getCodeLocation())));
    }
 
 
@@ -2693,7 +2695,7 @@ uint8_t *OMR::X86::CodeGenerator::generatePadding(uint8_t              *cursor,
    if (length <= _paddingTable->_biggestEncoding)
       {
       // Copy bytes from the appropriate template
-      memcpy(cursor, paddingTableEncoding(_paddingTable, length), length);
+      memcpy(cursor, paddingTableEncoding(_paddingTable, static_cast<uint8_t>(length)), length);
 
       if (_paddingTable->_flags.testAny(TR_X86PaddingTable::registerMatters))
          {
@@ -2734,17 +2736,17 @@ uint8_t *OMR::X86::CodeGenerator::generatePadding(uint8_t              *cursor,
             {
             length -= 5;
             cursor = TR::InstOpCode(JMP4).binary(cursor);
-            *(int32_t*)cursor = length;
+            *(int32_t*)cursor = static_cast<int32_t>(length);
             cursor += 4;
             }
          else
             {
             length -= 2;
             cursor = TR::InstOpCode(JMP1).binary(cursor);
-            *(int8_t*)cursor = length;
+            *(int8_t*)cursor = static_cast<int8_t>(length);
             cursor += 1;
             }
-         memset(cursor, length, 0xcc); // Fill the rest with int3s
+         memset(cursor, static_cast<int32_t>(length), 0xcc); // Fill the rest with int3s
          cursor += length;
          }
       else

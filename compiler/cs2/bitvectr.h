@@ -254,13 +254,13 @@ public:
         for (wordIndex=(fIndex+kBitWordSize-1)/kBitWordSize;
              wordIndex < fWordCount;
              wordIndex+=1) {
-          word = fVector.WordAt(wordIndex);
+          word = fVector.WordAt(static_cast<uint32_t>(wordIndex));
           if (word) {
-            fIndex = wordIndex * kBitWordSize;
+            fIndex = static_cast<BitIndex>(wordIndex * kBitWordSize);
             goto find_bit;
           }
         }
-        fIndex = wordIndex * kBitWordSize;
+        fIndex = static_cast<BitIndex>(wordIndex * kBitWordSize);
         return false;
       }
     find_bit:
@@ -398,7 +398,7 @@ public:
       wordIndex = fIndex / kBitWordSize;
       bitIndex = fIndex % kBitWordSize;
 
-      bitValue = (fVector.WordAt(wordIndex) << bitIndex) >> (kBitWordSize - 1);
+      bitValue = ((fVector.WordAt(wordIndex) << bitIndex) >> (kBitWordSize - 1)) != 0;
       return bitValue;
     }
 
@@ -476,7 +476,7 @@ inline bool ABitVector<Allocator>::ValueAt (BitIndex bitIndex) const {
   wordIndex = bitIndex / kBitWordSize;
   bitIndex = bitIndex % kBitWordSize;
 
-  return (WordAt(wordIndex) << bitIndex) >> (kBitWordSize - 1);
+  return ((WordAt(wordIndex) << bitIndex) >> (kBitWordSize - 1)) != 0;
 }
 
 template <class Allocator>

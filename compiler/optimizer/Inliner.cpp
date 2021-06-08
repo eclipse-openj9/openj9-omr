@@ -325,9 +325,9 @@ TR_InlinerBase::setInlineThresholds(TR::ResolvedMethodSymbol *callerSymbol)
    _maxInliningCallSites = 4095;
    _maxRecursiveCallByteCodeSizeEstimate = 1024;
 
-   if (comp()->getNodeCount() > _nodeCountThreshold)
+   if (comp()->getNodeCount() > unsigned(_nodeCountThreshold))
       {
-      _nodeCountThreshold = comp()->getNodeCount() * (1.05F);    // allow a little bit of inlining anyways to get smaller methods
+      _nodeCountThreshold = static_cast<int32_t>(comp()->getNodeCount() * (1.05F));    // allow a little bit of inlining anyways to get smaller methods
       }
 
    // Code That should go to its frontend
@@ -409,7 +409,7 @@ TR_InlinerBase::linkOSRCodeBlocks()
    {
    TR_OSRCompilationData* compData = comp()->getOSRCompilationData();
    const TR_Array<TR_OSRMethodData *>& methodDataArray = compData->getOSRMethodDataArray();
-   for (intptr_t i = 0; i < methodDataArray.size(); ++i)
+   for (auto i = 0U; i < methodDataArray.size(); ++i)
       {
       TR_OSRMethodData *osrMethodData = methodDataArray[i];
       if (osrMethodData == NULL
@@ -657,7 +657,7 @@ TR_InlinerBase::exceedsSizeThreshold(TR_CallSite *callsite, int bytecodeSize, TR
       heuristicTrace(tracer()," to %d because of const arguments",bytecodeSize);
       }
 
-   if (inlineThreshold && (uint32_t)bytecodeSize > inlineThreshold)
+   if (inlineThreshold != 0 && (uint32_t)bytecodeSize > unsigned(inlineThreshold))
       {
       TR::Options::INLINE_calleeToBig ++;
       TR::Options::INLINE_calleeToBigSum += bytecodeSize;
@@ -1032,7 +1032,7 @@ TR_CallStack::initializeControlFlowInfo(TR::ResolvedMethodSymbol * callerSymbol)
 
    for (int32_t i = 0; i < numberOfBlocks; ++i)
       {
-      blockInfo(i)._inALoop = loopingBlocks.get(i);
+      blockInfo(i)._inALoop = (loopingBlocks.get(i) != 0);
       }
    // Walk forward following successor edges to mark blocks that are always reached
    //
@@ -1113,7 +1113,6 @@ TR_InlineCall::inlineCall(TR::TreeTop * callNodeTreeTop, TR_OpaqueClassBlock * t
    TR_InnerPreexistenceInfo *innerPrexInfo = getUtil()->createInnerPrexInfo(comp(), callerSymbol, 0, 0, 0, TR_NoGuard);
    callStack._innerPrexInfo = innerPrexInfo;
 
-   TR_VirtualGuardSelection *guard;
    TR::MethodSymbol *calleeSymbol = symRef->getSymbol()->castToMethodSymbol();
 
 
@@ -2515,7 +2514,7 @@ TR_ParameterToArgumentMapper::mapOSRCallSiteRematTable(uint32_t siteIndex)
       }
 
    // Update the remat tables for calls within the current
-   for (int32_t childIndex = 0; childIndex < comp()->getNumInlinedCallSites(); ++childIndex)
+   for (auto childIndex = 0U; childIndex < comp()->getNumInlinedCallSites(); ++childIndex)
       {
       TR_InlinedCallSite &ics = comp()->getInlinedCallSite(childIndex);
       if (siteIndex == ics._byteCodeInfo.getCallerIndex())
@@ -5567,7 +5566,7 @@ void TR_CallSite::removecalltarget(TR_CallTarget *calltarget, TR_InlinerTracer *
 
 void TR_CallSite::removeTargets(TR_InlinerTracer *tracer, int index, TR_InlinerFailureReason reason)
    {
-   for (int num = _mytargets.size() - index; num > 0; --num)
+   for (auto num = _mytargets.size() - index; num > 0; --num)
       {
       removecalltarget(index,tracer,reason);
       }

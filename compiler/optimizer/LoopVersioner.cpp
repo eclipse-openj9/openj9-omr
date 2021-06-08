@@ -996,7 +996,6 @@ bool TR_LoopVersioner::detectInvariantArrayStoreChecks(List<TR::TreeTop> *arrayS
       bool sourceInvariant = false;
       if (arrayNode && valueNode)
          {
-         vcount_t visitCount;
          //visitCount = comp()->incVisitCount();
          //sourceInvariant = isExprInvariant(valueNode, visitCount);
 
@@ -1182,7 +1181,7 @@ TR::Node *TR_LoopVersioner::findCallNodeInBlockForGuard(TR::Node *node)
             int16_t callerIndex = ttNode->getInlinedSiteIndex();
             int16_t inlinedCallIndex = node->getInlinedSiteIndex();
 
-            if (inlinedCallIndex < comp()->getNumInlinedCallSites())
+            if (unsigned(inlinedCallIndex) < comp()->getNumInlinedCallSites())
                {
                TR_InlinedCallSite & ics = comp()->getInlinedCallSite(inlinedCallIndex);
                if ((ics._byteCodeInfo.getByteCodeIndex() == bcIndex) &&
@@ -1507,7 +1506,6 @@ bool TR_LoopVersioner::detectInvariantTrees(TR_RegionStructure *whileLoop, List<
                         }
                      else
                         {
-                        TR_InductionVariable *v;
                         bool isInductionVar=false;
                         int32_t symRefNum = child->getSymbolReference()->getReferenceNumber();
                         ListElement<int32_t> *versionableInductionVar = _versionableInductionVariables.getListHead();
@@ -1645,7 +1643,7 @@ TR::Node *TR_LoopVersioner::isDependentOnInvariant(TR::Node *useNode)
    cursor.SetToFirstOne();
 
    //int32_t defnIndex=cursor;
-   if(cursor<useDefInfo->getFirstRealDefIndex())
+   if(cursor<unsigned(useDefInfo->getFirstRealDefIndex()))
       return NULL;
 
    TR_ValueNumberInfo *valueNumberInfo = optimizer()->getValueNumberInfo();
@@ -1774,7 +1772,6 @@ bool TR_LoopVersioner::isVersionableArrayAccess(TR::Node * indexChild)
    bool mulNodeFound=false;
    bool addNodeFound=false;
    bool goodAccess=true;
-   vcount_t visitCount;
    if(!indexChild->getOpCode().hasSymbolReference())
       {
       while (indexChild->getOpCode().isAdd() || indexChild->getOpCode().isSub() ||
@@ -5915,7 +5912,7 @@ void TR_LoopVersioner::buildConditionalTree(
                TR::Node *storeNode = _storeTrees[indexNode->getSymbolReference()->getReferenceNumber()]->getNode();
                //int32_t exitValue = exitValue = storeNode->getFirstChild()->getSecondChild()->getInt();
 
-               loopLimit = _loopTestTree->getNode()->getSecondChild()->duplicateTree(comp());
+               loopLimit = _loopTestTree->getNode()->getSecondChild()->duplicateTree();
                if(isAddition)
                   {
                   range = TR::Node::create(TR::isub, 2, loopLimit,entryNode);
@@ -5999,7 +5996,7 @@ void TR_LoopVersioner::buildConditionalTree(
                TR_ASSERT(parent, "Parent shouldn't be null\n");
 
                TR_ASSERT(indexChildIndex>=0, "Index child index should be valid at this point\n");
-               duplicateIndexNode = conditionalNode->getChild(indexChildIndex)->duplicateTree(comp());
+               duplicateIndexNode = conditionalNode->getChild(indexChildIndex)->duplicateTree();
 
                int visitCount = comp()->incVisitCount();
                int32_t indexSymRefNum = loopDrivingSymRef->getReferenceNumber();
@@ -6022,24 +6019,24 @@ void TR_LoopVersioner::buildConditionalTree(
             if(indexNodeOccursAsSecondChild)
                {
                if (!reverseBranch)
-                  duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCodeValue(), conditionalNode->getFirstChild()->duplicateTree(comp()),duplicateIndexNode, _exitGotoTarget);
+                  duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCodeValue(), conditionalNode->getFirstChild()->duplicateTree(),duplicateIndexNode, _exitGotoTarget);
                else
-                  duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCode().getOpCodeForReverseBranch(), conditionalNode->getFirstChild()->duplicateTree(comp()), duplicateIndexNode, _exitGotoTarget);
+                  duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCode().getOpCodeForReverseBranch(), conditionalNode->getFirstChild()->duplicateTree(), duplicateIndexNode, _exitGotoTarget);
                }
             else
                {
                if (!reverseBranch)
-                  duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCodeValue(),duplicateIndexNode, conditionalNode->getSecondChild()->duplicateTree(comp()), _exitGotoTarget);
+                  duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCodeValue(),duplicateIndexNode, conditionalNode->getSecondChild()->duplicateTree(), _exitGotoTarget);
                else
-                  duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCode().getOpCodeForReverseBranch(), duplicateIndexNode, conditionalNode->getSecondChild()->duplicateTree(comp()), _exitGotoTarget);
+                  duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCode().getOpCodeForReverseBranch(), duplicateIndexNode, conditionalNode->getSecondChild()->duplicateTree(), _exitGotoTarget);
                }
             }
          else
             {
             if (!reverseBranch)
-               duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCodeValue(), conditionalNode->getFirstChild()->duplicateTree(comp()), conditionalNode->getSecondChild()->duplicateTree(comp()), _exitGotoTarget);
+               duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCodeValue(), conditionalNode->getFirstChild()->duplicateTree(), conditionalNode->getSecondChild()->duplicateTree(), _exitGotoTarget);
             else
-               duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCode().getOpCodeForReverseBranch(), conditionalNode->getFirstChild()->duplicateTree(comp()), conditionalNode->getSecondChild()->duplicateTree(comp()), _exitGotoTarget);
+               duplicateComparisonNode = TR::Node::createif(conditionalNode->getOpCode().getOpCodeForReverseBranch(), conditionalNode->getFirstChild()->duplicateTree(), conditionalNode->getSecondChild()->duplicateTree(), _exitGotoTarget);
             }
 
          if (duplicateComparisonNode->getFirstChild()->getOpCodeValue() == TR::instanceof)
@@ -6197,7 +6194,6 @@ void TR_LoopVersioner::buildSpineCheckComparisonsTree(List<TR::TreeTop> *spineCh
    {
    ListElement<TR::TreeTop> *nextTree = spineCheckTrees->getListHead();
 
-   bool isAddition;
    while (nextTree)
       {
       // NOTE: It could be a BNDCHKwithSpineCHK, since at this point no bound
@@ -7998,7 +7994,7 @@ bool TR_LoopVersioner::depsForLoopEntryPrep(
       TR::Node *childInRequiredForm = NULL;
       TR::Node *indexNode = NULL;
 
-      int32_t headerSize = TR::Compiler->om.contiguousArrayHeaderSizeInBytes();
+      int32_t headerSize = static_cast<int32_t>(TR::Compiler->om.contiguousArrayHeaderSizeInBytes());
       static struct temps
          {
          TR::ILOpCodes addOp;
@@ -8569,7 +8565,7 @@ int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loop
    ncount_t nodeCount;
    nodeCount = comp()->getAccurateNodeCount();
 
-   if ((nodeCount/(MAX_SIZE_INCREASE_FACTOR/hotnessFactor)) > (_origNodeCount/nodeCountFactor))
+   if ((nodeCount/(MAX_SIZE_INCREASE_FACTOR/hotnessFactor)) > unsigned((_origNodeCount/nodeCountFactor)))
       {
       if (trace())
          traceMsg(comp(), "Failing node count %d orig %d factor %d\n", nodeCount, _origNodeCount, nodeCountFactor);

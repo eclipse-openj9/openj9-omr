@@ -88,7 +88,7 @@ namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class Symbol; }
 namespace TR { class SymbolReference; }
 namespace TR { class TreeTop; }
-struct TR_CallSite;
+class TR_CallSite;
 struct TR_CallTarget;
 struct TR_ParameterMapping;
 struct TR_VirtualGuardSelection;

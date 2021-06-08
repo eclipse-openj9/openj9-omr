@@ -36,8 +36,10 @@ namespace TR { using OMR::PersistentAllocatorKit; }
 namespace OMR
 {
 
-struct PersistentAllocatorKit
+class PersistentAllocatorKit
    {
+   public:
+   
    PersistentAllocatorKit(TR::RawAllocator rawAllocator) :
       rawAllocator(rawAllocator)
       {

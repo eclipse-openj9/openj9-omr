@@ -246,7 +246,7 @@ void TR_InterferenceGraph::partitionNodesIntoDegreeSets(TR_BitVector *workingSet
       {
       i = bvi.getNextElement();
 
-      if (getNodeTable(i)->getWorkingDegree() < getNumColours())
+      if (getNodeTable(i)->getWorkingDegree() < unsigned(getNumColours()))
          {
          colourableDegreeSet->set(i);
          }
@@ -338,7 +338,6 @@ bool TR_InterferenceGraph::simplify()
    {
    TR_IGNode *igNode,
              *bestSpillNode;
-   int32_t    i;
 
    if (getNumNodes()==0) return true;
 
@@ -348,7 +347,7 @@ bool TR_InterferenceGraph::simplify()
    TR_BitVector * colourableDegreeSet = new (trStackMemory()) TR_BitVector(getNumNodes(), trMemory(), stackAlloc);
    TR_BitVector * notColourableDegreeSet = new (trStackMemory()) TR_BitVector(getNumNodes(), trMemory(), stackAlloc);
 
-   for (i=0; i<getNumNodes(); i++)
+   for (auto i = 0U; i < getNumNodes(); i++)
       {
       igNode = getNodeTable(i);
       igNode->setWorkingDegree(igNode->getDegree());
@@ -406,7 +405,12 @@ bool TR_InterferenceGraph::simplify()
          while (bvi.hasMoreElements())
             {
             igNode = getNodeTable(bvi.getNextElement());
-            if (igNode->getDegree() > degree)
+
+            // TODO: This unsigned conversion was inserted while addressing warnings. The warning at this line warned
+            // us about signed/unsigned comparison. The C++ standard dictates that signed values are always converted
+            // to unsigned before the comparison. Because `degree` is initialized to -1, the unsigned conversion will
+            // produce UINT_MAX in this case, so the comparison below will never succeed and we should always assert.
+            if (igNode->getDegree() > unsigned(degree))
                {
                degree = igNode->getDegree();
                bestSpillNode = igNode;

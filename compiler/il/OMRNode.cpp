@@ -1495,7 +1495,7 @@ OMR::Node::createConstDead(TR::Node *originatingByteCodeNode, TR::DataType dt, i
    TR::Node *result = NULL;
    const int8_t dead8 = (int8_t)((extraData << 4) | 0xD);
    const int16_t dead16 = (int16_t)((extraData << 8) | 0xDD);
-   const int32_t dead32 = ((extraData << 16) | 0xdead);
+   const int32_t dead32 = static_cast<const int32_t>((extraData << 16) | 0xdead);
    const int64_t dead64 = dead32;
    char buf[20];
    memset(buf, 0, 20);
@@ -1561,7 +1561,7 @@ OMR::Node::createAddConstantToAddress(TR::Node * addr, intptr_t value, TR::Node 
       {
       ret = TR::Node::create(parentOfNewNode, TR::aiadd, 2);
       ret->setAndIncChild(0, addr);
-      ret->setAndIncChild(1, TR::Node::create(parentOfNewNode, TR::iconst, 0, value));
+      ret->setAndIncChild(1, TR::Node::create(parentOfNewNode, TR::iconst, 0, static_cast<int32_t>(value)));
       }
 
    ret->setIsInternalPointer(true);
@@ -2910,7 +2910,7 @@ OMR::Node::containsDoNotPropagateNode(vcount_t vc)
       return true;
       }
 
-   for (size_t i = 0; i < self()->getNumChildren(); i++)
+   for (auto i = 0; i < self()->getNumChildren(); i++)
       {
       if (self()->getChild(i)->containsDoNotPropagateNode(vc))
          {
@@ -4486,7 +4486,7 @@ OMR::Node::getEvaluationPriority(TR::CodeGenerator * codeGen)
       return self()->setEvaluationPriority(codeGen->getEvaluationPriority(self()));
       }
    if ((uintptr_t)(_unionA._register) & 1) // evaluation priority
-      return (uintptr_t)(_unionA._register) >> 1;
+      return static_cast<int32_t>(reinterpret_cast<uintptr_t>(_unionA._register) >> 1);
    else // already evaluated to a register - nonsensical question
       return 0;
    }

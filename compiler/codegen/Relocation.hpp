@@ -66,8 +66,10 @@ typedef enum
 namespace TR {
 
 /** encapsulates debug information about a relocation record */
-struct RelocationDebugInfo
+class RelocationDebugInfo
    {
+   public:
+   
    /** the file name of the code that generated the associated RR*/
    const char* file;
    /** the line number in the file file that created the associated RR*/

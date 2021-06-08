@@ -77,7 +77,7 @@ class VirtualMachineRegisterInStruct : public TR::VirtualMachineRegister
          TR::IlType *baseType = _integerTypeForAdjustments->baseType();
          _integerTypeForAdjustments = b->typeDictionary()->getWord();
          _isAdjustable = true;
-         _adjustByStep = baseType->getSize();
+         _adjustByStep = static_cast<uint32_t>(baseType->getSize());
          }
       else
          {

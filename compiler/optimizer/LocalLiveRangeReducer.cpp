@@ -194,7 +194,7 @@ void  TR_LocalLiveRangeReduction::collectRefInfo(TR_TreeRefInfo *treeRefInfo,TR:
    vcount_t visitCount = node->getVisitCount();
    if (node->getReferenceCount() > 1)
       {
-      if (node->getReferenceCount()> *maxRefCount)
+      if (node->getReferenceCount()> unsigned(*maxRefCount))
          *maxRefCount = node->getReferenceCount();
 
       if (visitCount >= compVisitCount) //already visited

@@ -76,7 +76,7 @@ public:
                "kbytesAllocated.details/%s",
                _identifier
                ),
-            (_region.bytesAllocated() - _initialRegionSize) / 1024
+            static_cast<int32_t>((_region.bytesAllocated() - _initialRegionSize) / 1024)
             );
          TR::DebugCounter::incStaticDebugCounter(
             &_compilation,
@@ -85,7 +85,7 @@ public:
                "segmentAllocation.details/%s",
                 _identifier
                 ),
-            (_region._segmentProvider.bytesAllocated() - _initialSegmentProviderSize) / 1024
+            static_cast<int32_t>((_region._segmentProvider.bytesAllocated() - _initialSegmentProviderSize) / 1024)
             );
          }
       }

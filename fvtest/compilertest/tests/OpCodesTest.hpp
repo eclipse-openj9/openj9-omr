@@ -267,7 +267,7 @@ class OpCodesTest : public TestDriver
    TR_ASSERT(opCodeInjector, "Didn't select an injector!");
 
    TR::IlType **argIlTypes = new TR::IlType*[opCodeArgsNum];
-   for (uint32_t a=0;a < opCodeArgsNum;a++)
+   for (auto a=0;a < opCodeArgsNum;a++)
       argIlTypes[a] = types.PrimitiveType(argTypes[a]);
 
    if (numArgs != 0)

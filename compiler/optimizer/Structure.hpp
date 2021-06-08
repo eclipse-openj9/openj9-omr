@@ -568,7 +568,7 @@ class TR_RegionStructure : public TR_Structure
 
    void addSubNode(TR_StructureSubGraphNode *subNode);
    void removeSubNode(TR_StructureSubGraphNode *subNode);
-   uint32_t numSubNodes() {return _subNodes.size();}
+   uint32_t numSubNodes() {return static_cast<uint32_t>(_subNodes.size());}
 
    // Find the subnode numbered 'number' in the current region
    // Returns null, if none of the subnodes match

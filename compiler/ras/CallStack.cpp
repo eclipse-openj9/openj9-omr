@@ -207,7 +207,7 @@ void TR_LinuxCallStackIterator::printSymbol(int32_t frame, char *sig, TR::Compil
    intptr_t offset;
    intptr_t address;
 
-   int rc = sscanf(sig, "%255[^(](%255[^+]+%lx) [%lx]", lib, func, &offset, &address);
+   int rc = sscanf(sig, "%255[^(](%255[^+]+%" OMR_PRIdPTR ") [%" OMR_PRIdPTR "]", lib, func, &offset, &address);
    if (rc == 4)
       {
       char *funcToPrint = func;

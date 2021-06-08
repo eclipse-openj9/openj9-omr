@@ -149,8 +149,6 @@ static bool regexExcludes(TR::SimpleRegex *regex, const char *string)
 void TR_Debug::dumpOptionHelp(TR::OptionTable * firstOjit, TR::OptionTable * firstOfe, TR::SimpleRegex *nameFilter)
    {
    TR_VerboseLog::vlogAcquire();
-   char *p;
-   int32_t i, lastPos;
    static int optionLineWidth=0;
 
    if (!optionLineWidth)
@@ -220,9 +218,9 @@ void TR_Debug::dumpOptionHelp(TR::OptionTable * firstOjit, TR::OptionTable * fir
          // Set up the option name
          //
          if (!entry->length)
-            entry->length = strlen(entry->name);
+            entry->length = static_cast<int32_t>(strlen(entry->name));
          TR_VerboseLog::write("%*s%s", OPTION_NAME_INDENT, " ", entry->name);
-         int32_t currentColumn = entry->length+OPTION_NAME_INDENT;
+         int32_t currentColumn = static_cast<int32_t>(entry->length+OPTION_NAME_INDENT);
 
          // Set up the argument text
          //

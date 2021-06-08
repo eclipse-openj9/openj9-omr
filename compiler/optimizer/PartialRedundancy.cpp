@@ -1553,7 +1553,7 @@ static bool isExpressionRedundant(TR::Node *node, TR_PartialRedundancy::Containe
        redundantComputations->get(node->getLocalIndex()) &&
        (node->getOpCode().isStore() || anticipatable->get(node->getLocalIndex())))
      {
-     if (node->getLocalIndex() < preIndex2)
+     if (node->getLocalIndex() < unsigned(preIndex2))
         return true;
      }
    return false;

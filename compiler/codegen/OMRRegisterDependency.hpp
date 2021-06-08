@@ -64,6 +64,8 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
       return m->allocateHeapMemory(s, TR_MemoryBase::RegisterDependencyGroup);
       }
 
+   void operator delete(void *p, int32_t numDependencies, TR_Memory *m) {}
+
    TR::RegisterDependency *getRegisterDependency(uint32_t index)
       {
       return &_dependencies[index];
@@ -85,7 +87,7 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
 
    bool containsVirtualRegister(TR::Register *r, uint32_t numberOfRegisters)
       {
-      for (auto i = 0; i < numberOfRegisters; ++i)
+      for (auto i = 0U; i < numberOfRegisters; ++i)
          {
          if (_dependencies[i].getRegister() == r)
             return true;
@@ -96,7 +98,7 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
 
    TR::Register *searchForRegister(TR::RealRegister::RegNum rr, uint32_t numberOfRegisters)
       {
-      for (auto i = 0;  i < numberOfRegisters; ++i)
+      for (auto i = 0U;  i < numberOfRegisters; ++i)
          {
          if (_dependencies[i].getRealRegister() == rr)
             return _dependencies[i].getRegister();
@@ -107,7 +109,7 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
 
    TR::Register *searchForRegister(TR::Register* vr, uint8_t flag, uint32_t numberOfRegisters, TR::CodeGenerator *cg)
       {
-      for (auto i = 0; i < numberOfRegisters; ++i)
+      for (auto i = 0U; i < numberOfRegisters; ++i)
          {
          if (_dependencies[i].getRegister() == vr && (_dependencies[i].getFlags() & flag))
             return _dependencies[i].getRegister();
@@ -118,7 +120,7 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
 
    TR::Register *searchForRegister(TR::RealRegister::RegNum rr, uint8_t flag, uint32_t numberOfRegisters, TR::CodeGenerator *cg)
       {
-      for (auto i = 0; i < numberOfRegisters; ++i)
+      for (auto i = 0U; i < numberOfRegisters; ++i)
          {
          if (_dependencies[i].getRealRegister() == rr && (_dependencies[i].getFlags() & flag))
             return _dependencies[i].getRegister();
@@ -129,7 +131,7 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
 
    int32_t searchForRegisterPos(TR::Register* vr, uint8_t flag, uint32_t numberOfRegisters, TR::CodeGenerator *cg)
       {
-      for (auto i = 0; i < numberOfRegisters; ++i)
+      for (auto i = 0U; i < numberOfRegisters; ++i)
          {
          if (_dependencies[i].getRegister() == vr && (_dependencies[i].getFlags() & flag))
             return i;
@@ -145,7 +147,7 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
 
    void blockRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg = NULL)
       {
-      for (auto i = 0; i < numberOfRegisters; ++i)
+      for (auto i = 0U; i < numberOfRegisters; ++i)
          {
          if (_dependencies[i].getRegister())
             {
@@ -156,7 +158,7 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
 
    void unblockRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg = NULL)
       {
-      for (auto i = 0; i < numberOfRegisters; ++i)
+      for (auto i = 0U; i < numberOfRegisters; ++i)
          {
          if (_dependencies[i].getRegister())
             {
@@ -167,7 +169,7 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
 
    void stopUsingDepRegs(uint32_t numberOfRegisters, TR::Register *ret1, TR::Register *ret2, TR::CodeGenerator *cg)
       {
-      for (auto i = 0; i < numberOfRegisters; ++i)
+      for (auto i = 0U; i < numberOfRegisters; ++i)
          {
          auto depReg = _dependencies[i].getRegister();
          if (depReg != ret1 && depReg != ret2)
@@ -179,7 +181,7 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
 
    void stopUsingDepRegs(uint32_t numberOfRegisters, int numRetReg, TR::Register **retReg, TR::CodeGenerator *cg)
       {
-      for (auto i = 0; i < numberOfRegisters; ++i)
+      for (auto i = 0U; i < numberOfRegisters; ++i)
          {
          TR::Register *depReg = _dependencies[i].getRegister();
          bool found = false;

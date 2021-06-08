@@ -2402,7 +2402,6 @@ void TR_RegionStructure::checkStructure(TR_BitVector* _blockNumbers)
          {
          succ = toStructureSubGraphNode((*edge)->getTo());
          isConsistent = false;
-         TR::CFGEdge *predEdge;
          for (auto predEdge = succ->getExceptionPredecessors().begin(); predEdge != succ->getExceptionPredecessors().end(); ++predEdge)
             {
             if ((*predEdge) == *edge)
@@ -3375,7 +3374,7 @@ void TR_RegionStructure::resetInvariance()
 bool TR_RegionStructure::isExprInvariant(TR::Node *expr, bool usePrecomputed)
    {
    if (_invariantExpressions && usePrecomputed)
-      return _invariantExpressions->get(expr->getGlobalIndex());
+      return _invariantExpressions->get(expr->getGlobalIndex()) != 0;
 
    return isExprTreeInvariant(expr);
    }
@@ -3394,7 +3393,7 @@ bool TR_RegionStructure::isExprTreeInvariant(TR::Node *expr)
    {
    if(!_invariantSymbols)
       computeInvariantSymbols();
-   return _invariantSymbols->get(symRef->getReferenceNumber());
+   return _invariantSymbols->get(symRef->getReferenceNumber()) != 0;
    }
 
 bool TR_RegionStructure::isSubtreeInvariant(TR::Node *node, vcount_t visitCount)

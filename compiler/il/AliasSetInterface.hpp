@@ -290,7 +290,8 @@ private:
 /*
  * Interface to initialize TR_AliasSetInterface
  */
-struct TR_UseDefAliasSetInterface : public TR_AliasSetInterface<UseDefAliasSet> {
+class TR_UseDefAliasSetInterface : public TR_AliasSetInterface<UseDefAliasSet> {
+   public:
   TR_UseDefAliasSetInterface(TR::SymbolReference *symRef,
                              bool isDirectCall = false,
                              bool includeGCSafePoint = false) :
@@ -305,7 +306,8 @@ struct TR_UseDefAliasSetInterface : public TR_AliasSetInterface<UseDefAliasSet> 
     (shares_symbol, symRef, isDirectCall, includeGCSafePoint) {}
 };
 
-struct TR_UseOnlyAliasSetInterface: public TR_AliasSetInterface<UseOnlyAliasSet> {
+class TR_UseOnlyAliasSetInterface: public TR_AliasSetInterface<UseOnlyAliasSet> {
+   public:
   TR_UseOnlyAliasSetInterface(TR::SymbolReference *symRef,
                               bool isDirectCall = false,
                               bool includeGCSafePoint = false) :

@@ -704,7 +704,7 @@ OMR::IlBuilder::VectorStoreAt(TR::IlValue *address, TR::IlValue *value)
 TR::IlValue *
 OMR::IlBuilder::CreateLocalArray(int32_t numElements, TR::IlType *elementType)
    {
-   uint32_t size = numElements * elementType->getSize();
+   uint32_t size = static_cast<uint32_t>(numElements * elementType->getSize());
    TR::SymbolReference *localArraySymRef = symRefTab()->createLocalPrimArray(size,
                                                                              methodSymbol(),
                                                                              8 /*FIXME: JVM-specific - byte*/);
@@ -726,7 +726,7 @@ TR::IlValue *
 OMR::IlBuilder::CreateLocalStruct(TR::IlType *structType)
    {
    //similar to CreateLocalArray except writing a method in StructType to get the struct size
-   uint32_t size = structType->getSize();
+   uint32_t size = static_cast<uint32_t>(structType->getSize());
    TR::SymbolReference *localStructSymRef = symRefTab()->createLocalPrimArray(size,
                                                                              methodSymbol(),
                                                                              8 /*FIXME: JVM-specific - byte*/);
@@ -838,7 +838,7 @@ OMR::IlBuilder::IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index)
          TR::ILOpCodes op = TR::DataType::getDataTypeConversion(indexType, targetType);
          indexNode = TR::Node::create(op, 1, indexNode);
          }
-      elemSizeNode = TR::Node::iconst(elemType->getSize());
+      elemSizeNode = TR::Node::iconst(static_cast<int32_t>(elemType->getSize()));
       addOp = TR::aiadd;
       mulOp = TR::imul;
       }
@@ -871,7 +871,7 @@ OMR::IlBuilder::StructFieldInstanceAddress(const char* structName, const char* f
       }
    else
       {
-      offsetValue = ConstInt32(offset);
+      offsetValue = ConstInt32(static_cast<int32_t>(offset));
       }
    auto addr = Add(obj, offsetValue);
    return ConvertTo(ptype, addr);
@@ -1352,7 +1352,7 @@ OMR::IlBuilder::setHandlerInfo(uint32_t catchType)
    {
    TR::Block *catchBlock = getEntry();
    catchBlock->setIsCold();
-   catchBlock->setHandlerInfoWithOutBCInfo(catchType, comp()->getInlineDepth(), -1, _methodSymbol->getResolvedMethod(), comp());
+   catchBlock->setHandlerInfoWithOutBCInfo(catchType, static_cast<uint8_t>(comp()->getInlineDepth()), -1, _methodSymbol->getResolvedMethod(), comp());
    }
 
 TR::Node*
@@ -2737,7 +2737,7 @@ OMR::IlBuilder::generateSwitchCases(TR::Node *switchNode, TR::Node *defaultNode,
    TR::IlBuilder *breakBuilder = OrphanBuilder();
    // each case handler is a sequence of two builder objects: first the one passed in via `cases`,
    //   and second a builder that branches to the breakBuilder (unless this case falls through)
-   for (int32_t c = 0; c < numCases; c++)
+   for (auto c = 0U; c < numCases; c++)
       {
       int32_t value = cases[c]->_value;
       TR::IlBuilder *handler = NULL;
@@ -2762,7 +2762,7 @@ OMR::IlBuilder::generateSwitchCases(TR::Node *switchNode, TR::Node *defaultNode,
       AppendBuilder(handler);
 
       TR::Node *caseNode = TR::Node::createCase(0, caseBlock->getEntry(), value);
-      switchNode->setAndIncChild(c+2, caseNode);
+      switchNode->setAndIncChild(static_cast<int32_t>(c+2), caseNode);
       }
 
    cfg()->addEdge(switchBlock, (*defaultBuilder)->getEntry());

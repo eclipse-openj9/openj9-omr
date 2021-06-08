@@ -56,7 +56,7 @@ namespace TR { class Method; }
 namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class SymbolReference; }
 namespace TR { class TreeTop; }
-struct TR_CallSite;
+class TR_CallSite;
 struct TR_VirtualGuardSelection;
 
 class TR_CallStack : public TR_Link<TR_CallStack>
@@ -265,8 +265,10 @@ struct TR_CallTarget : public TR_Link<TR_CallTarget>
    TR_CALLSITE_DEFAULT_ALLOC \
    TR_CALLSITE_INHERIT_CONSTRUCTOR_COMMON (EXTENDED,BASE)
 
-struct TR_CallSite : public TR_Link<TR_CallSite>
+class TR_CallSite : public TR_Link<TR_CallSite>
    {
+      public:
+
       TR_ALLOC(TR_Memory::Inliner);
       friend class TR_InlinerTracer;
 
@@ -327,8 +329,8 @@ struct TR_CallSite : public TR_Link<TR_CallSite>
       void                    setIsBackEdge()            {  _isBackEdge = true; }
       bool                    isIndirectCall()           { return _isIndirectCall; }
       bool                    isInterface()              { return _isInterface; }
-      int32_t                 numTargets()               { return _mytargets.size(); }
-      int32_t                 numRemovedTargets()        { return _myRemovedTargets.size(); }
+      int32_t                 numTargets()               { return static_cast<int32_t>(_mytargets.size()); }
+      int32_t                 numRemovedTargets()        { return static_cast<int32_t>(_myRemovedTargets.size()); }
 
       bool                    isForceInline()            { return _forceInline; }
 

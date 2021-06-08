@@ -282,7 +282,7 @@ static void convertToTestUnderMask(TR::Node *node, TR::Block *block, TR::Simplif
     *     iconst 1
     *   iconst 0
     */
-   TR::Node *iand, *iushr, *load, *constCompare;
+   TR::Node *iand, *iushr, *load;
    int32_t constVal;
    if ((iand = node->getChild(0))->getOpCodeValue() == TR::iand &&
        node->getChild(1)->getOpCode().isLoadConst() &&
@@ -3453,7 +3453,7 @@ TR::Node *getQuotientUsingMagicNumberMultiply(TR::Node *node, TR::Block *block, 
       else
          {
          node3 = TR::Node::create(TR::lshr, 2, node2,
-                                  TR::Node::create(node2, TR::iconst, 0, shiftAmount));
+                                  TR::Node::create(node2, TR::iconst, 0, static_cast<int32_t>(shiftAmount)));
 
          if (divisor > 0)
             {
@@ -4894,7 +4894,7 @@ static bool checkAndReplaceRotation(TR::Node *node,TR::Block *block, TR::Simplif
    if (!performTransformation(s->comp(), "%sReduced or/xor/add in node [" POINTER_PRINTF_FORMAT "] to rol\n", s->optDetailString(), node))
       return false;
 
-   TR::Node *newConstNode = TR::Node::iconst(mulConstNode, correctLeftShiftAmount);
+   TR::Node *newConstNode = TR::Node::iconst(mulConstNode, static_cast<int32_t>(correctLeftShiftAmount));
    TR::Node::recreate(node, TR::ILOpCode::getRotateOpCodeFromDt(mulConstNode->getDataType())); // this line will have to change based on T
 
    // Set the common nonconst node (child of mul and shift) as the child of rol node,
@@ -5800,12 +5800,12 @@ TR::Node *indirectLoadSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
 
          if (addressNode->getOpCode().isArrayRef())
             {
-            offset = addressNode->getSecondChild()->get64bitIntegralValue();
+            offset = static_cast<int32_t>(addressNode->getSecondChild()->get64bitIntegralValue());
             addressNode = addressNode->getFirstChild();
             }
          else
             {
-            offset = oldSymRef->getOffset();
+            offset = static_cast<int32_t>(oldSymRef->getOffset());
             }
 
          TR::SymbolReference *newSymRef = s->comp()->getSymRefTab()->createSymbolReference(
@@ -5967,12 +5967,12 @@ TR::Node *indirectStoreSimplifier(TR::Node * node, TR::Block * block, TR::Simpli
 
          if (addressNode->getOpCode().isArrayRef())
             {
-            offset = addressNode->getSecondChild()->get64bitIntegralValue();
+            offset = static_cast<int32_t>(addressNode->getSecondChild()->get64bitIntegralValue());
             addressNode = addressNode->getFirstChild();
             }
          else
             {
-            offset = oldSymRef->getOffset();
+            offset = static_cast<int32_t>(oldSymRef->getOffset());
             }
 
          TR::SymbolReference *newSymRef = s->comp()->getSymRefTab()->createSymbolReference(TR::Symbol::createShadow(s->comp()->trHeapMemory(), addressNode->getSymbol()->getDataType()), 0);
@@ -6141,7 +6141,7 @@ TR::Node *vsetelemSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
          break;
 
       // If we've seen this index before, then the outer set element overrides the inner set element, so it's safe to skip this node
-      int8_t index = vsetelemNode->getSecondChild()->get64bitIntegralValue();
+      int8_t index = static_cast<int8_t>(vsetelemNode->getSecondChild()->get64bitIntegralValue());
       if (seenIndex[index])
          continue;
 
@@ -7809,7 +7809,7 @@ TR::Node *lsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          }
       else if(firstChildOp == TR::lshl)
          {
-         shftAmnt = lmulInt;
+         shftAmnt = static_cast<int32_t>(lmulInt);
          }
 
       TR::Node * firstChild = i2lChild->getFirstChild();
@@ -8317,7 +8317,7 @@ TR::Node *imulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
        node->getFirstChild()->getOpCode().isDiv() &&
        node->getFirstChild()->getSecondChild()->getOpCode().isLoadConst() &&
        node->getSecondChild()->getOpCode().isLoadConst() &&
-       (size = node->getSecondChild()->get64bitIntegralValue()) ==
+       (size = static_cast<int32_t>(node->getSecondChild()->get64bitIntegralValue())) ==
         node->getFirstChild()->getSecondChild()->get64bitIntegralValue() &&
        ((size & (size - 1)) == 0) &&  // size is  power of 2
         size > 0)
@@ -14774,7 +14774,7 @@ TR::Node *lcmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
          {
          node->recreate(node, TR::icmpeq);
          TR::Node * newSecondChild = TR::Node::create(node, TR::iconst, 0);
-         newSecondChild->setInt(secondChild->getLongInt());
+         newSecondChild->setInt(static_cast<int32_t>(secondChild->getLongInt()));
          TR::Node * newFirstChild = TR::Node::create(node, TR::l2i, 1);
          newFirstChild->setChild(0, firstChild);
          node->setAndIncChild(0, newFirstChild);
@@ -15886,9 +15886,9 @@ TR::Node *a2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    if (firstChild->getOpCode().isLoadConst())
       {
       if (firstChild->getType().isAddress())
-         foldIntConstant(node, firstChild->getAddress(), s, false /* !anchorChildren */);
+         foldIntConstant(node, static_cast<int32_t>(firstChild->getAddress()), s, false /* !anchorChildren */);
       else
-         foldIntConstant(node, firstChild->get64bitIntegralValue(), s, false /* !anchorChildren */);
+         foldIntConstant(node, static_cast<int32_t>(firstChild->get64bitIntegralValue()), s, false /* !anchorChildren */);
       }
    else
       {
@@ -16046,9 +16046,9 @@ TR::Node *switchSimplifier(TR::Node * node, TR::Block * block, bool isTableSwitc
             highNBits64 = lowNBits << ((shiftNode->getOpCode().getSize() * 8) - shiftAmount);
 
             // Make sure all the case nodes can be shifted safely
-            for (int caseIndex = 0; caseIndex < numCases; caseIndex++)
+            for (auto caseIndex = 0U; caseIndex < numCases; caseIndex++)
                {
-               TR::Node *caseNode = node->getChild(caseIndex + 2);
+               TR::Node *caseNode = node->getChild(static_cast<int32_t>(caseIndex + 2));
                if ((isLeftShift && ((caseNode->getCaseConstant() & lowNBits) != 0)) || (!isLeftShift && ((caseNode->getCaseConstant() & highNBits32) != 0)))
                   {
                   canTransform = false;
@@ -16085,9 +16085,9 @@ TR::Node *switchSimplifier(TR::Node * node, TR::Block * block, bool isTableSwitc
 
 
             // Adjust the case values
-            for (int caseIndex = 0; caseIndex < numCases; caseIndex++)
+            for (auto caseIndex = 0U; caseIndex < numCases; caseIndex++)
                {
-               TR::Node *caseNode = node->getChild(caseIndex + 2);
+               TR::Node *caseNode = node->getChild(static_cast<int32_t>(caseIndex + 2));
                caseNode->setCaseConstant(isLeftShift ? (caseNode->getCaseConstant() >> shiftAmount) : (caseNode->getCaseConstant() << shiftAmount));
                }
             }
@@ -16400,7 +16400,7 @@ TR::Node * imulhSimplifier(TR::Node * node, TR::Block *block, TR::Simplifier * s
             uint64_t src2 = secondChild->getUnsignedInt();
             uint64_t product = src1 * src2;
             uint64_t high = product >> 32;
-            uint32_t result = high;
+            uint32_t result = static_cast<uint32_t>(high);
             TR::Node::recreate(node, TR::iconst);
             node->setUnsignedInt(result);
             }
@@ -16410,7 +16410,7 @@ TR::Node * imulhSimplifier(TR::Node * node, TR::Block *block, TR::Simplifier * s
             int64_t src2 = secondChild->getInt();
             int64_t product = src1 * src2;
             int64_t high = product >> 32;
-            int32_t result = high;
+            int32_t result = static_cast<int32_t>(high);
             TR::Node::recreate(node, TR::iconst);
             node->setInt(result);
             }

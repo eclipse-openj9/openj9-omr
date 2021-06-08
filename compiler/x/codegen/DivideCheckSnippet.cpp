@@ -122,7 +122,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86DivideCheckSnippet  * snippet) // TOD
    trfprintf(pOutFile, "cmp\t%s, -1", getName(realDivisorReg)); // TODO: Might be 64-bit register
    bufferPos += cmpSize;
 
-   int32_t size = snippet->estimateRestartJumpLength(JNE4, bufferPos - (uint8_t*)0, snippet->getDivideLabel());
+   int32_t size = snippet->estimateRestartJumpLength(JNE4, static_cast<int32_t>(bufferPos - (uint8_t*)0), snippet->getDivideLabel());
    printPrefix(pOutFile, NULL, bufferPos, size);
    printLabelInstruction(pOutFile, "jne", snippet->getDivideLabel());
    bufferPos += size;

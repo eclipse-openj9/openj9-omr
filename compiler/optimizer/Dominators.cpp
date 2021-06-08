@@ -53,7 +53,6 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
    _visitCount = c->incOrResetVisitCount();
    _trace = comp()->getOption(TR_TraceDominators);
 
-   TR::Block *block;
    TR::CFG *cfg = c->getFlowGraph();
 
    _cfg = c->getFlowGraph();
@@ -116,7 +115,7 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
       }
 
    #if DEBUG
-      for (block = toBlock(cfg->getFirstNode()); block; block = toBlock(block->getNext()))
+      for (auto block = toBlock(cfg->getFirstNode()); block; block = toBlock(block->getNext()))
          {
          TR_ASSERT(_dfNumbers[block->getNumber()] >= 0, "Unreachable block in the CFG");
          }

@@ -597,9 +597,9 @@ int32_t floatToInt(float value, bool roundUp)
    if ((pattern & 0x7f800000)==0x7f800000 && (pattern & 0x007fffff)!=0)
       result = 0;   // This is a NaN value
    else if (value <= TR::getMinSigned<TR::Int32>())
-      result = TR::getMinSigned<TR::Int32>();
+      result = static_cast<int32_t>(TR::getMinSigned<TR::Int32>());
    else if (value >= TR::getMaxSigned<TR::Int32>())
-      result = TR::getMaxSigned<TR::Int32>();
+      result = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
    else
       {
       if (roundUp)
@@ -622,9 +622,9 @@ int32_t doubleToInt(double value, bool roundUp)
        (pattern & DOUBLE_ORDER(CONSTANT64(0x000fffffffffffff))) != 0)
       result = 0;   // This is a NaN value
    else if (value <= TR::getMinSigned<TR::Int32>())
-      result = TR::getMinSigned<TR::Int32>();
+      result = static_cast<int32_t>(TR::getMinSigned<TR::Int32>());
    else if (value >= TR::getMaxSigned<TR::Int32>())
-      result = TR::getMaxSigned<TR::Int32>();
+      result = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
    else
       {
       if (roundUp)

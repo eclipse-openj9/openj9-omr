@@ -1700,10 +1700,10 @@ void TR_OrderBlocks::generateNewOrder(TR_BlockList & newBlockOrder)
          if (block)
             {
             traceMsg(comp(), "Block %d [%p]\n", block->getNumber(), block);
-            int32_t numPreds = block->getPredecessors().size();
+            int32_t numPreds = static_cast<int32_t>(block->getPredecessors().size());
             const char *predString = (numPreds == 0) ? "" : " (join)";
             traceMsg(comp(), "\t%d predecessors%s\n", numPreds, predString);
-            int32_t numSuccs = block->getSuccessors().size();
+            int32_t numSuccs = static_cast<int32_t>(block->getSuccessors().size());
             const char *succString = (numSuccs == 0) ? "" : " (split)";
             traceMsg(comp(), "\t%d successors%s\n",   numSuccs, succString);
             }

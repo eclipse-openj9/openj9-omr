@@ -108,6 +108,14 @@ list(APPEND JITBUILDER_OBJECTS
 	${JITBUILDER_API_SOURCES}
 )
 
+if(OMR_ARCH_X86)
+	set(OMR_WARNINGS_AS_ERRORS ON)
+	set(OMR_ENHANCED_WARNINGS OFF)
+else()
+	set(OMR_WARNINGS_AS_ERRORS OFF)
+	set(OMR_ENHANCED_WARNINGS OFF)
+endif()
+
 # Create jitbuilder library.
 create_omr_compiler_library(
 	NAME    jitbuilder

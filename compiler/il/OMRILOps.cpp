@@ -151,22 +151,6 @@ OMR::ILOpCode::compareOpCode(TR::DataType dt,
                }
             break;
             }
-         case TR::Float:
-            {
-            switch(ct)
-               {
-               default: return TR::BadILOp;
-               }
-            break;
-            }
-         case TR::Double:
-            {
-            switch(ct)
-               {
-               default: return TR::BadILOp;
-               }
-            break;
-            }
          case TR::Address:
             {
             switch(ct)

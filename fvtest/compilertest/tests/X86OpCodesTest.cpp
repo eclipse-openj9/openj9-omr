@@ -712,12 +712,12 @@ X86OpCodesTest::invokeFloatArithmeticTests()
    signatureCharFF_F_testMethodType * fBinaryConst = 0;
 
    int32_t rc = 0;
-   uint32_t testCaseNum = 0;
+   int32_t testCaseNum = 0;
    char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
 
    //fadd
    testCaseNum = sizeof(floatAddArr) / sizeof(floatAddArr[0]);
-   for (uint32_t i = 0 ; i < testCaseNum ; i++)
+   for (auto i = 0 ; i < testCaseNum ; i++)
       {
       OMR_CT_EXPECT_FLOAT_EQ(_fAdd, add(floatAddArr[i][0], floatAddArr[i][1]), _fAdd(floatAddArr[i][0], floatAddArr[i][1]));
 
@@ -739,7 +739,7 @@ X86OpCodesTest::invokeFloatArithmeticTests()
 
    //fsub
    testCaseNum = sizeof(floatSubArr) / sizeof(floatSubArr[0]);
-   for (uint32_t i = 0 ; i < testCaseNum ; i++)
+   for (auto i = 0 ; i < testCaseNum ; i++)
       {
       OMR_CT_EXPECT_FLOAT_EQ(_fSub, sub(floatSubArr[i][0], floatSubArr[i][1]), _fSub(floatSubArr[i][0], floatSubArr[i][1]));
 
@@ -761,7 +761,7 @@ X86OpCodesTest::invokeFloatArithmeticTests()
 
    //fmul
    testCaseNum = sizeof(floatMulArr) / sizeof(floatMulArr[0]);
-   for (uint32_t i = 0 ; i < testCaseNum ; i++)
+   for (auto i = 0 ; i < testCaseNum ; i++)
       {
       OMR_CT_EXPECT_FLOAT_EQ(_fMul, mul(floatMulArr[i][0], floatMulArr[i][1]), _fMul(floatMulArr[i][0], floatMulArr[i][1]));
 
@@ -783,7 +783,7 @@ X86OpCodesTest::invokeFloatArithmeticTests()
 
    //fdiv
    testCaseNum = sizeof(floatDivArr) / sizeof(floatDivArr[0]);
-   for (uint32_t i = 0 ; i < testCaseNum ; i++)
+   for (auto i = 0 ; i < testCaseNum ; i++)
       {
       OMR_CT_EXPECT_FLOAT_EQ(_fDiv, div(floatDivArr[i][0], floatDivArr[i][1]), _fDiv(floatDivArr[i][0], floatDivArr[i][1]));
 
@@ -896,7 +896,7 @@ void
 X86OpCodesTest::invokeMemoryOperationTests()
    {
    int32_t rc = 0;
-   uint32_t testCaseNum = 0;
+   int32_t testCaseNum = 0;
    char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
 
    signatureCharS_S_testMethodType  *sMemCons = 0;
@@ -1093,7 +1093,7 @@ X86OpCodesTest::invokeBitwiseTests()
    {
    int32_t rc = 0;
    char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
-   uint32_t testCaseNum = 0;
+   int32_t testCaseNum = 0;
 
    int8_t byteAndArr [][2] =
       {
@@ -1380,7 +1380,7 @@ X86OpCodesTest::invokeUnaryTests()
    uint16_t ushortDataArray[] = {USHORT_POS, USHORT_MAXIMUM, USHORT_MINIMUM};
    uint8_t ubyteDataArray[] = {UBYTE_POS, UBYTE_MAXIMUM, UBYTE_MINIMUM};
 
-   uint32_t testCaseNum = 0;
+   int32_t testCaseNum = 0;
    char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
 
    signatureCharI_I_testMethodType * iUnaryCons = 0;
@@ -1420,7 +1420,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //bneg
    testCaseNum = sizeof(byteDataArray) / sizeof(byteDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_bNeg, neg(byteDataArray[i]), _bNeg(byteDataArray[i]));
       sprintf(resolvedMethodName, "bNegConst%d", i + 1);
@@ -1431,7 +1431,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //sneg
    testCaseNum = sizeof(shortDataArray) / sizeof(shortDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_sNeg, neg(shortDataArray[i]), _sNeg(shortDataArray[i]));
       sprintf(resolvedMethodName, "sNegConst%d", i + 1);
@@ -1442,7 +1442,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //lneg
    testCaseNum = sizeof(longDataArray) / sizeof(longDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_lNeg, neg(longDataArray[i]), _lNeg(longDataArray[i]));
       sprintf(resolvedMethodName, "lNegConst%d", i + 1);
@@ -1453,7 +1453,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //fneg
    testCaseNum = sizeof(floatDataArray) / sizeof(floatDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_FLOAT_EQ(_fNeg, neg(floatDataArray[i]), _fNeg(floatDataArray[i]));
       sprintf(resolvedMethodName, "fNegConst%d", i + 1);
@@ -1464,7 +1464,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //dneg
    testCaseNum = sizeof(doubleDataArray) / sizeof(doubleDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_DOUBLE_EQ(_dNeg, neg(doubleDataArray[i]), _dNeg(doubleDataArray[i]));
       sprintf(resolvedMethodName, "dNegConst%d", i + 1);
@@ -1475,7 +1475,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //labs
    testCaseNum = sizeof(longDataArray) / sizeof(longDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_lAbs, abs(longDataArray[i]), _lAbs(longDataArray[i]));
       sprintf(resolvedMethodName, "lAbsConst%d", i + 1);
@@ -1486,7 +1486,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //fabs
    testCaseNum = sizeof(floatDataArray) / sizeof(floatDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_fAbs, abs(floatDataArray[i]), _fAbs(floatDataArray[i]));
       sprintf(resolvedMethodName, "fAbsConst%d", i + 1);
@@ -1497,7 +1497,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //dabs
    testCaseNum = sizeof(doubleDataArray) / sizeof(doubleDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_dAbs, abs(doubleDataArray[i]), _dAbs(doubleDataArray[i]));
       sprintf(resolvedMethodName, "dAbsConst%d", i + 1);
@@ -1508,7 +1508,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //fsqrt
    testCaseNum = sizeof(floatDataArray) / sizeof(floatDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       union
          {
@@ -1528,7 +1528,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //dsqrt
    testCaseNum = sizeof(doubleDataArray) / sizeof(doubleDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       union
          {
@@ -1605,7 +1605,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //int 2 d,f
    testCaseNum = sizeof(intDataArray) / sizeof(intDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_FLOAT_EQ(_i2f, convert(intDataArray[i], FLOAT_POS), _i2f(intDataArray[i]));
       OMR_CT_EXPECT_DOUBLE_EQ(_i2d, convert(intDataArray[i], DOUBLE_POS), _i2d(intDataArray[i]));
@@ -1623,7 +1623,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //l 2 d,f
    testCaseNum = sizeof(longDataArray) / sizeof(longDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_FLOAT_EQ(_l2f, convert(longDataArray[i], FLOAT_POS), _l2f(longDataArray[i]));
       OMR_CT_EXPECT_DOUBLE_EQ(_l2d, convert(longDataArray[i], DOUBLE_POS), _l2d(longDataArray[i]));
@@ -1673,7 +1673,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //f2d
    testCaseNum = sizeof(floatDataArray) / sizeof(floatDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_DOUBLE_EQ(_f2d, convert(floatDataArray[i], DOUBLE_POS), _f2d(floatDataArray[i]));
 
@@ -1685,7 +1685,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //d2f
    testCaseNum = sizeof(doubleDataArray) / sizeof(doubleDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_FLOAT_EQ(_d2f, convert(doubleDataArray[i], FLOAT_POS), _d2f(doubleDataArray[i]));
 
@@ -1697,7 +1697,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //b 2 i,l,s,d,f
    testCaseNum = sizeof(byteDataArray) / sizeof(byteDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_b2s, convert(byteDataArray[i], SHORT_POS), _b2s(byteDataArray[i]));
       OMR_CT_EXPECT_EQ(_b2i, convert(byteDataArray[i], INT_POS), _b2i(byteDataArray[i]));
@@ -1737,7 +1737,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //bu 2 i,l,s,d,f
    testCaseNum = sizeof(ubyteDataArray) / sizeof(ubyteDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_bu2s, convert(ubyteDataArray[i], SHORT_POS), _bu2s(ubyteDataArray[i]));
       OMR_CT_EXPECT_EQ(_bu2i, convert(ubyteDataArray[i], INT_POS), _bu2i(ubyteDataArray[i]));
@@ -1773,7 +1773,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //s 2 i,l,b
    testCaseNum = sizeof(shortDataArray) / sizeof(shortDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_s2b, convert(shortDataArray[i], BYTE_POS), _s2b(shortDataArray[i]));
       OMR_CT_EXPECT_EQ(_s2i, convert(shortDataArray[i], INT_POS), _s2i(shortDataArray[i]));
@@ -1814,7 +1814,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //su 2 i,l,f,d
    testCaseNum = sizeof(ushortDataArray) / sizeof(ushortDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_su2i, convert(ushortDataArray[i], INT_POS), _su2i(ushortDataArray[i]));
       OMR_CT_EXPECT_EQ(_su2l, convert(ushortDataArray[i], LONG_POS), _su2l(ushortDataArray[i]));
@@ -1845,7 +1845,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //iu2l
    testCaseNum = sizeof(uintDataArray) / sizeof(uintDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_iu2l, convert(uintDataArray[i], LONG_POS), _iu2l(uintDataArray[i]));
 
@@ -1857,7 +1857,7 @@ X86OpCodesTest::invokeUnaryTests()
 
    //ibyteswap
    testCaseNum = sizeof(intDataArray) / sizeof(intDataArray[0]);
-   for (uint32_t i = 0; i < testCaseNum; ++i)
+   for (auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_iByteswap, byteswap(intDataArray[i]), _iByteswap(intDataArray[i]));
       sprintf(resolvedMethodName, "iByteswapConst%d", i + 1);
@@ -2300,7 +2300,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //lcmpeq
    testCaseNum = sizeof(lCmpeqDataArr) / sizeof(lCmpeqDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_lCmpeq, compareEQ(lCmpeqDataArr[i][0], lCmpeqDataArr[i][1]), _lCmpeq(lCmpeqDataArr[i][0], lCmpeqDataArr[i][1]));
 
@@ -2322,7 +2322,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //lcmplt
    testCaseNum = sizeof(lCmpltDataArr) / sizeof(lCmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_lCmplt, compareLT(lCmpltDataArr[i][0], lCmpltDataArr[i][1]), _lCmplt(lCmpltDataArr[i][0], lCmpltDataArr[i][1]));
 
@@ -2344,7 +2344,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //dCompare
    testCaseNum = sizeof(dCmpeqDataArr) / sizeof(dCmpeqDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_dCmpeq, compareEQ(dCmpeqDataArr[i][0], dCmpeqDataArr[i][1]), _dCmpeq(dCmpeqDataArr[i][0], dCmpeqDataArr[i][1]));
 
@@ -2365,7 +2365,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(dCmpneDataArr) / sizeof(dCmpneDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_dCmpne, compareNE(dCmpneDataArr[i][0], dCmpneDataArr[i][1]), _dCmpne(dCmpneDataArr[i][0], dCmpneDataArr[i][1]));
 
@@ -2386,7 +2386,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(dCmpgtDataArr) / sizeof(dCmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_dCmpgt, compareGT(dCmpgtDataArr[i][0], dCmpgtDataArr[i][1]), _dCmpgt(dCmpgtDataArr[i][0], dCmpgtDataArr[i][1]));
 
@@ -2407,7 +2407,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(dCmpltDataArr) / sizeof(dCmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_dCmplt, compareLT(dCmpltDataArr[i][0], dCmpltDataArr[i][1]), _dCmplt(dCmpltDataArr[i][0], dCmpltDataArr[i][1]));
 
@@ -2428,7 +2428,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(dCmpgeDataArr) / sizeof(dCmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_dCmpge, compareGE(dCmpgeDataArr[i][0], dCmpgeDataArr[i][1]), _dCmpge(dCmpgeDataArr[i][0], dCmpgeDataArr[i][1]));
 
@@ -2449,7 +2449,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(dCmpleDataArr) / sizeof(dCmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_dCmple, compareLE(dCmpleDataArr[i][0], dCmpleDataArr[i][1]), _dCmple(dCmpleDataArr[i][0], dCmpleDataArr[i][1]));
 
@@ -2471,7 +2471,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //fCompare
    testCaseNum = sizeof(fCmpeqDataArr) / sizeof(fCmpeqDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_fCmpeq, compareEQ(fCmpeqDataArr[i][0], fCmpeqDataArr[i][1]), _fCmpeq(fCmpeqDataArr[i][0], fCmpeqDataArr[i][1]));
 
@@ -2492,7 +2492,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(fCmpneDataArr) / sizeof(fCmpneDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_fCmpne, compareNE(fCmpneDataArr[i][0], fCmpneDataArr[i][1]), _fCmpne(fCmpneDataArr[i][0], fCmpneDataArr[i][1]));
 
@@ -2513,7 +2513,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(fCmpgtDataArr) / sizeof(fCmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_fCmpgt, compareGT(fCmpgtDataArr[i][0], fCmpgtDataArr[i][1]), _fCmpgt(fCmpgtDataArr[i][0], fCmpgtDataArr[i][1]));
 
@@ -2534,7 +2534,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(fCmpltDataArr) / sizeof(fCmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_fCmplt, compareLT(fCmpltDataArr[i][0], fCmpltDataArr[i][1]), _fCmplt(fCmpltDataArr[i][0], fCmpltDataArr[i][1]));
 
@@ -2555,7 +2555,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(fCmpgeDataArr) / sizeof(fCmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_fCmpge, compareGE(fCmpgeDataArr[i][0], fCmpgeDataArr[i][1]), _fCmpge(fCmpgeDataArr[i][0], fCmpgeDataArr[i][1]));
 
@@ -2576,7 +2576,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(fCmpleDataArr) / sizeof(fCmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_fCmple, compareLE(fCmpleDataArr[i][0], fCmpleDataArr[i][1]), _fCmple(fCmpleDataArr[i][0], fCmpleDataArr[i][1]));
 
@@ -2599,7 +2599,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //sCompare
    testCaseNum = sizeof(sCmpeqDataArr) / sizeof(sCmpeqDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_sCmpeq, compareEQ(sCmpeqDataArr[i][0], sCmpeqDataArr[i][1]), _sCmpeq(sCmpeqDataArr[i][0], sCmpeqDataArr[i][1]));
 
@@ -2620,7 +2620,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(sCmpneDataArr) / sizeof(sCmpneDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_sCmpne, compareNE(sCmpneDataArr[i][0], sCmpneDataArr[i][1]), _sCmpne(sCmpneDataArr[i][0], sCmpneDataArr[i][1]));
 
@@ -2641,7 +2641,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(sCmpgtDataArr) / sizeof(sCmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_sCmpgt, compareGT(sCmpgtDataArr[i][0], sCmpgtDataArr[i][1]), _sCmpgt(sCmpgtDataArr[i][0], sCmpgtDataArr[i][1]));
 
@@ -2662,7 +2662,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(sCmpltDataArr) / sizeof(sCmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_sCmplt, compareLT(sCmpltDataArr[i][0], sCmpltDataArr[i][1]), _sCmplt(sCmpltDataArr[i][0], sCmpltDataArr[i][1]));
 
@@ -2683,7 +2683,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(sCmpgeDataArr) / sizeof(sCmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_sCmpge, compareGE(sCmpgeDataArr[i][0], sCmpgeDataArr[i][1]), _sCmpge(sCmpgeDataArr[i][0], sCmpgeDataArr[i][1]));
 
@@ -2704,7 +2704,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(sCmpleDataArr) / sizeof(sCmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_sCmple, compareLE(sCmpleDataArr[i][0], sCmpleDataArr[i][1]), _sCmple(sCmpleDataArr[i][0], sCmpleDataArr[i][1]));
 
@@ -2726,7 +2726,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //bCompare
    testCaseNum = sizeof(bCmpeqDataArr) / sizeof(bCmpeqDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_bCmpeq, compareEQ(bCmpeqDataArr[i][0], bCmpeqDataArr[i][1]), _bCmpeq(bCmpeqDataArr[i][0], bCmpeqDataArr[i][1]));
 
@@ -2747,7 +2747,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(bCmpgtDataArr) / sizeof(bCmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_bCmpgt, compareGT(bCmpgtDataArr[i][0], bCmpgtDataArr[i][1]), _bCmpgt(bCmpgtDataArr[i][0], bCmpgtDataArr[i][1]));
 
@@ -2768,7 +2768,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(bCmpltDataArr) / sizeof(bCmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_bCmplt, compareLT(bCmpltDataArr[i][0], bCmpltDataArr[i][1]), _bCmplt(bCmpltDataArr[i][0], bCmpltDataArr[i][1]));
 
@@ -2789,7 +2789,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(bCmpgeDataArr) / sizeof(bCmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_bCmpge, compareGE(bCmpgeDataArr[i][0], bCmpgeDataArr[i][1]), _bCmpge(bCmpgeDataArr[i][0], bCmpgeDataArr[i][1]));
 
@@ -2811,7 +2811,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //bCompare
    testCaseNum = sizeof(bCmpneDataArr) / sizeof(bCmpneDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_bCmpne, compareNE(bCmpneDataArr[i][0], bCmpneDataArr[i][1]), _bCmpne(bCmpneDataArr[i][0], bCmpneDataArr[i][1]));
 
@@ -2832,7 +2832,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(bCmpleDataArr) / sizeof(bCmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_bCmple, compareLE(bCmpleDataArr[i][0], bCmpleDataArr[i][1]), _bCmple(bCmpleDataArr[i][0], bCmpleDataArr[i][1]));
 
@@ -2854,7 +2854,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //lcmp
    testCaseNum = sizeof(lCmpDataArr) / sizeof(lCmpDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_lCmp, comparel(lCmpDataArr[i][0], lCmpDataArr[i][1]), _lCmp(lCmpDataArr[i][0], lCmpDataArr[i][1]));
 
@@ -2876,7 +2876,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //dcmpl
    testCaseNum = sizeof(dCmplDataArr) / sizeof(dCmplDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_dCmpl, comparel(dCmplDataArr[i][0], dCmplDataArr[i][1]), _dCmpl(dCmplDataArr[i][0], dCmplDataArr[i][1])) <<
             dCmplDataArr[i][0] << " : " << dCmplDataArr[i][1];
@@ -2902,7 +2902,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //dcmpg
    testCaseNum = sizeof(dCmpgDataArr) / sizeof(dCmpgDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_dCmpg, compareg(dCmpgDataArr[i][0], dCmpgDataArr[i][1]), _dCmpg(dCmpgDataArr[i][0], dCmpgDataArr[i][1])) <<
             dCmpgDataArr[i][0] << " : " << dCmpgDataArr[i][1];
@@ -2928,7 +2928,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //fcmpl
    testCaseNum = sizeof(fCmplDataArr) / sizeof(fCmplDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_fCmpl, comparel(fCmplDataArr[i][0], fCmplDataArr[i][1]), _fCmpl(fCmplDataArr[i][0], fCmplDataArr[i][1])) <<
             fCmplDataArr[i][0] << " : " << fCmplDataArr[i][1];
@@ -2954,7 +2954,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //fcmpg
    testCaseNum = sizeof(fCmpgDataArr) / sizeof(fCmpgDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_fCmpg, compareg(fCmpgDataArr[i][0], fCmpgDataArr[i][1]), _fCmpg(fCmpgDataArr[i][0], fCmpgDataArr[i][1])) <<
             fCmpgDataArr[i][0] << " : " << fCmpgDataArr[i][1];
@@ -2980,7 +2980,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //iflCompare
    testCaseNum = sizeof(ifLcmpeqDataArr) / sizeof(ifLcmpeqDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifLcmpeq, compareEQ(ifLcmpeqDataArr[i][0], ifLcmpeqDataArr[i][1]), _ifLcmpeq(ifLcmpeqDataArr[i][0], ifLcmpeqDataArr[i][1]));
 
@@ -3001,7 +3001,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifLcmpgtDataArr) / sizeof(ifLcmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifLcmpgt, compareGT(ifLcmpgtDataArr[i][0], ifLcmpgtDataArr[i][1]), _ifLcmpgt(ifLcmpgtDataArr[i][0], ifLcmpgtDataArr[i][1]));
 
@@ -3022,7 +3022,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifLcmpltDataArr) / sizeof(ifLcmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifLcmplt, compareLT(ifLcmpltDataArr[i][0], ifLcmpltDataArr[i][1]), _ifLcmplt(ifLcmpltDataArr[i][0], ifLcmpltDataArr[i][1]));
 
@@ -3044,7 +3044,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //ifdCompare
    testCaseNum = sizeof(dCmpeqDataArr) / sizeof(ifDcmpeqDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifDcmpeq, compareEQ(ifDcmpeqDataArr[i][0], ifDcmpeqDataArr[i][1]), _ifDcmpeq(ifDcmpeqDataArr[i][0], ifDcmpeqDataArr[i][1]));
 
@@ -3065,7 +3065,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifDcmpneDataArr) / sizeof(ifDcmpneDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifDcmpne, compareNE(ifDcmpneDataArr[i][0], ifDcmpneDataArr[i][1]), _ifDcmpne(ifDcmpneDataArr[i][0], ifDcmpneDataArr[i][1]));
 
@@ -3086,7 +3086,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifDcmpgtDataArr) / sizeof(ifDcmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifDcmpgt, compareGT(ifDcmpgtDataArr[i][0], ifDcmpgtDataArr[i][1]), _ifDcmpgt(ifDcmpgtDataArr[i][0], ifDcmpgtDataArr[i][1]));
 
@@ -3107,7 +3107,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifDcmpltDataArr) / sizeof(ifDcmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifDcmplt, compareLT(ifDcmpltDataArr[i][0], ifDcmpltDataArr[i][1]), _ifDcmplt(ifDcmpltDataArr[i][0], ifDcmpltDataArr[i][1]));
 
@@ -3128,7 +3128,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifDcmpgeDataArr) / sizeof(ifDcmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifDcmpge, compareGE(ifDcmpgeDataArr[i][0], ifDcmpgeDataArr[i][1]), _ifDcmpge(ifDcmpgeDataArr[i][0], ifDcmpgeDataArr[i][1]));
 
@@ -3149,7 +3149,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifDcmpleDataArr) / sizeof(ifDcmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifDcmple, compareLE(ifDcmpleDataArr[i][0], ifDcmpleDataArr[i][1]), _ifDcmple(ifDcmpleDataArr[i][0], ifDcmpleDataArr[i][1]));
 
@@ -3171,7 +3171,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //iffCompare
    testCaseNum = sizeof(ifFcmpeqDataArr) / sizeof(ifFcmpeqDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifFcmpeq, compareEQ(ifFcmpeqDataArr[i][0], ifFcmpeqDataArr[i][1]), _ifFcmpeq(ifFcmpeqDataArr[i][0], ifFcmpeqDataArr[i][1]));
 
@@ -3192,7 +3192,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifFcmpneDataArr) / sizeof(ifFcmpneDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifFcmpne, compareNE(ifFcmpneDataArr[i][0], ifFcmpneDataArr[i][1]), _ifFcmpne(ifFcmpneDataArr[i][0], ifFcmpneDataArr[i][1]));
 
@@ -3213,7 +3213,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifFcmpgtDataArr) / sizeof(ifFcmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifFcmpgt, compareGT(ifFcmpgtDataArr[i][0], ifFcmpgtDataArr[i][1]), _ifFcmpgt(ifFcmpgtDataArr[i][0], ifFcmpgtDataArr[i][1]));
 
@@ -3234,7 +3234,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifFcmpltDataArr) / sizeof(ifFcmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifFcmplt, compareLT(ifFcmpltDataArr[i][0], ifFcmpltDataArr[i][1]), _ifFcmplt(ifFcmpltDataArr[i][0], ifFcmpltDataArr[i][1]));
 
@@ -3255,7 +3255,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifFcmpgeDataArr) / sizeof(ifFcmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifFcmpge, compareGE(ifFcmpgeDataArr[i][0], ifFcmpgeDataArr[i][1]), _ifFcmpge(ifFcmpgeDataArr[i][0], ifFcmpgeDataArr[i][1]));
 
@@ -3276,7 +3276,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifFcmpleDataArr) / sizeof(ifFcmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifFcmple, compareLE(ifFcmpleDataArr[i][0], ifFcmpleDataArr[i][1]), _ifFcmple(ifFcmpleDataArr[i][0], ifFcmpleDataArr[i][1]));
 
@@ -3298,7 +3298,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //ifsCompare
    testCaseNum = sizeof(ifScmpeqDataArr) / sizeof(ifScmpeqDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifScmpeq, compareEQ(ifScmpeqDataArr[i][0], ifScmpeqDataArr[i][1]), _ifScmpeq(ifScmpeqDataArr[i][0], ifScmpeqDataArr[i][1]));
 
@@ -3319,7 +3319,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifScmpneDataArr) / sizeof(ifScmpneDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifScmpne, compareNE(ifScmpneDataArr[i][0], ifScmpneDataArr[i][1]), _ifScmpne(ifScmpneDataArr[i][0], ifScmpneDataArr[i][1]));
 
@@ -3340,7 +3340,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifScmpgtDataArr) / sizeof(ifScmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifScmpgt, compareGT(ifScmpgtDataArr[i][0], ifScmpgtDataArr[i][1]), _ifScmpgt(ifScmpgtDataArr[i][0], ifScmpgtDataArr[i][1]));
 
@@ -3361,7 +3361,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifScmpltDataArr) / sizeof(ifScmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifScmplt, compareLT(ifScmpltDataArr[i][0], ifScmpltDataArr[i][1]), _ifScmplt(ifScmpltDataArr[i][0], ifScmpltDataArr[i][1]));
 
@@ -3382,7 +3382,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifScmpgeDataArr) / sizeof(ifScmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifScmpge, compareGE(ifScmpgeDataArr[i][0], ifScmpgeDataArr[i][1]), _ifScmpge(ifScmpgeDataArr[i][0], ifScmpgeDataArr[i][1]));
 
@@ -3403,7 +3403,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifScmpleDataArr) / sizeof(ifScmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifScmple, compareLE(ifScmpleDataArr[i][0], ifScmpleDataArr[i][1]), _ifScmple(ifScmpleDataArr[i][0], ifScmpleDataArr[i][1]));
 
@@ -3425,7 +3425,7 @@ X86OpCodesTest::invokeCompareTests()
 
    //ifbCompare
    testCaseNum = sizeof(ifBcmpeqDataArr) / sizeof(ifBcmpeqDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifBcmpeq, compareEQ(ifBcmpeqDataArr[i][0], ifBcmpeqDataArr[i][1]), _ifBcmpeq(ifBcmpeqDataArr[i][0], ifBcmpeqDataArr[i][1]));
 
@@ -3446,7 +3446,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifBcmpgtDataArr) / sizeof(ifBcmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifBcmpgt, compareGT(ifBcmpgtDataArr[i][0], ifBcmpgtDataArr[i][1]), _ifBcmpgt(ifBcmpgtDataArr[i][0], ifBcmpgtDataArr[i][1]));
 
@@ -3467,7 +3467,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifBcmpltDataArr) / sizeof(ifBcmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifBcmplt, compareLT(ifBcmpltDataArr[i][0], ifBcmpltDataArr[i][1]), _ifBcmplt(ifBcmpltDataArr[i][0], ifBcmpltDataArr[i][1]));
 
@@ -3488,7 +3488,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifBcmpgeDataArr) / sizeof(ifBcmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifBcmpge, compareGE(ifBcmpgeDataArr[i][0], ifBcmpgeDataArr[i][1]), _ifBcmpge(ifBcmpgeDataArr[i][0], ifBcmpgeDataArr[i][1]));
 
@@ -3509,7 +3509,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifBcmpneDataArr) / sizeof(ifBcmpneDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifBcmpne, compareNE(ifBcmpneDataArr[i][0], ifBcmpneDataArr[i][1]), _ifBcmpne(ifBcmpneDataArr[i][0], ifBcmpneDataArr[i][1]));
 
@@ -3530,7 +3530,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifBcmpleDataArr) / sizeof(ifBcmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifBcmple, compareLE(ifBcmpleDataArr[i][0], ifBcmpleDataArr[i][1]), _ifBcmple(ifBcmpleDataArr[i][0], ifBcmpleDataArr[i][1]));
 
@@ -3551,7 +3551,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(iuCmpgeDataArr) / sizeof(iuCmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_iuCmpge, compareGE(iuCmpgeDataArr[i][0], iuCmpgeDataArr[i][1]), _iuCmpge(iuCmpgeDataArr[i][0], iuCmpgeDataArr[i][1]));
 
@@ -3572,7 +3572,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(suCmpgtDataArr) / sizeof(suCmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_suCmpgt, compareGT(suCmpgtDataArr[i][0], suCmpgtDataArr[i][1]), _suCmpgt(suCmpgtDataArr[i][0], suCmpgtDataArr[i][1])) << suCmpgtDataArr[i][0] << " : " << suCmpgtDataArr[i][1];
 
@@ -3593,7 +3593,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(suCmpltDataArr) / sizeof(suCmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_suCmplt, compareLT(suCmpltDataArr[i][0], suCmpltDataArr[i][1]), _suCmplt(suCmpltDataArr[i][0], suCmpltDataArr[i][1])) << suCmpltDataArr[i][0] << " : " << suCmpltDataArr[i][1];
 
@@ -3614,7 +3614,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(suCmpgeDataArr) / sizeof(suCmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_suCmpge, compareGE(suCmpgeDataArr[i][0], suCmpgeDataArr[i][1]), _suCmpge(suCmpgeDataArr[i][0], suCmpgeDataArr[i][1])) << suCmpgeDataArr[i][0] << " : " << suCmpgeDataArr[i][1];
 
@@ -3635,7 +3635,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(suCmpleDataArr) / sizeof(suCmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_suCmple, compareLE(suCmpleDataArr[i][0], suCmpleDataArr[i][1]), _suCmple(suCmpleDataArr[i][0], suCmpleDataArr[i][1])) << suCmpleDataArr[i][0] << " : " << suCmpleDataArr[i][1];
 
@@ -3656,7 +3656,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifBuCmpgtDataArr) / sizeof(ifBuCmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifBuCmpgt, compareGT(ifBuCmpgtDataArr[i][0], ifBuCmpgtDataArr[i][1]), _ifBuCmpgt(ifBuCmpgtDataArr[i][0], ifBuCmpgtDataArr[i][1]));
 
@@ -3677,7 +3677,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifBuCmpltDataArr) / sizeof(ifBuCmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifBuCmplt, compareLT(ifBuCmpltDataArr[i][0], ifBuCmpltDataArr[i][1]), _ifBuCmplt(ifBuCmpltDataArr[i][0], ifBuCmpltDataArr[i][1]));
 
@@ -3698,7 +3698,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifBuCmpgeDataArr) / sizeof(ifBuCmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifBuCmpge, compareGE(ifBuCmpgeDataArr[i][0], ifBuCmpgeDataArr[i][1]), _ifBuCmpge(ifBuCmpgeDataArr[i][0], ifBuCmpgeDataArr[i][1]));
 
@@ -3719,7 +3719,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifBuCmpleDataArr) / sizeof(ifBuCmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifBuCmple, compareLE(ifBuCmpleDataArr[i][0], ifBuCmpleDataArr[i][1]), _ifBuCmple(ifBuCmpleDataArr[i][0], ifBuCmpleDataArr[i][1]));
 
@@ -3740,7 +3740,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifSuCmpgtDataArr) / sizeof(ifSuCmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifSuCmpgt, compareGT(ifSuCmpgtDataArr[i][0], ifSuCmpgtDataArr[i][1]), _ifSuCmpgt(ifSuCmpgtDataArr[i][0], ifSuCmpgtDataArr[i][1])) << ifSuCmpgtDataArr[i][0] << " : " << ifSuCmpgtDataArr[i][1];
 
@@ -3761,7 +3761,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifSuCmpltDataArr) / sizeof(ifSuCmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifSuCmplt, compareLT(ifSuCmpltDataArr[i][0], ifSuCmpltDataArr[i][1]), _ifSuCmplt(ifSuCmpltDataArr[i][0], ifSuCmpltDataArr[i][1])) << ifSuCmpltDataArr[i][0] << " : " << ifSuCmpltDataArr[i][1];
 
@@ -3782,7 +3782,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifSuCmpgeDataArr) / sizeof(ifSuCmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifSuCmpge, compareGE(ifSuCmpgeDataArr[i][0], ifSuCmpgeDataArr[i][1]), _ifSuCmpge(ifSuCmpgeDataArr[i][0], ifSuCmpgeDataArr[i][1])) << ifSuCmpgeDataArr[i][0] << " : " << ifSuCmpgeDataArr[i][1];
 
@@ -3803,7 +3803,7 @@ X86OpCodesTest::invokeCompareTests()
       }
 
    testCaseNum = sizeof(ifSuCmpleDataArr) / sizeof(ifSuCmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifSuCmple, compareLE(ifSuCmpleDataArr[i][0], ifSuCmpleDataArr[i][1]), _ifSuCmple(ifSuCmpleDataArr[i][0], ifSuCmpleDataArr[i][1])) << ifSuCmpleDataArr[i][0] << " : " << ifSuCmpleDataArr[i][1];
 
@@ -3958,7 +3958,7 @@ X86OpCodesTest::invokeAddressTests()
       (uintptr_t) &INT_ZERO,    (uintptr_t) &INT_MAXIMUM
       };
 
-   uint32_t testCaseNum = 0;
+   int32_t testCaseNum = 0;
    char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
 
    signatureCharI_L_testMethodType *i2aConst = 0;
@@ -4061,17 +4061,17 @@ X86OpCodesTest::invokeAddressTests()
       sprintf(resolvedMethodName, "aSelectConst1_TestCase%d", i + 1);
       compileOpCodeMethod(aSelectConst,
             _numberOfSelectArgs, TR::aselect, resolvedMethodName, _argTypesSelectAddress, TR::Address, rc, 6, 1, &aselectChild1Arr[i], 2, &aselectArr[i][0], 3, &aselectArr[i][1]);
-      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2, ADDRESS_PLACEHOLDER_3));
+      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(static_cast<int32_t>(ADDRESS_PLACEHOLDER_1), ADDRESS_PLACEHOLDER_2, ADDRESS_PLACEHOLDER_3));
 
       sprintf(resolvedMethodName, "aSelectConst2_TestCase%d", i + 1);
       compileOpCodeMethod(aSelectConst,
             _numberOfSelectArgs, TR::aselect, resolvedMethodName, _argTypesSelectAddress, TR::Address, rc, 4, 1, &aselectChild1Arr[i], 2, &aselectArr[i][0]);
-      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2, aselectArr[i][1]));
+      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(static_cast<int32_t>(ADDRESS_PLACEHOLDER_1), ADDRESS_PLACEHOLDER_2, aselectArr[i][1]));
 
       sprintf(resolvedMethodName, "aSelectConst3_TestCase%d", i + 1);
       compileOpCodeMethod(aSelectConst,
             _numberOfSelectArgs, TR::aselect, resolvedMethodName, _argTypesSelectAddress, TR::Address, rc, 4, 1, &aselectChild1Arr[i], 3, &aselectArr[i][1]);
-      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(ADDRESS_PLACEHOLDER_1, aselectArr[i][0], ADDRESS_PLACEHOLDER_3));
+      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(static_cast<int32_t>(ADDRESS_PLACEHOLDER_1), aselectArr[i][0], ADDRESS_PLACEHOLDER_3));
 
       sprintf(resolvedMethodName, "aSelectConst4_TestCase%d", i + 1);
       compileOpCodeMethod(aSelectConst,
@@ -4081,7 +4081,7 @@ X86OpCodesTest::invokeAddressTests()
       sprintf(resolvedMethodName, "aSelectConst5_TestCase%d", i + 1);
       compileOpCodeMethod(aSelectConst,
             _numberOfSelectArgs, TR::aselect, resolvedMethodName, _argTypesSelectAddress, TR::Address, rc, 2, 1, &aselectChild1Arr[i]);
-      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(ADDRESS_PLACEHOLDER_1, aselectArr[i][0], aselectArr[i][1]));
+      OMR_CT_EXPECT_EQ(aSelectConst, select(aselectChild1Arr[i], aselectArr[i][0], aselectArr[i][1]), aSelectConst(static_cast<int32_t>(ADDRESS_PLACEHOLDER_1), aselectArr[i][0], aselectArr[i][1]));
 
       sprintf(resolvedMethodName, "aSelectConst6_TestCase%d", i + 1);
       compileOpCodeMethod(aSelectConst,
@@ -4139,7 +4139,7 @@ X86OpCodesTest::invokeAddressTests()
       }
 
    testCaseNum = sizeof(acmpgtDataArr) / sizeof(acmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_acmpgt, compareGT(acmpgtDataArr[i][0], acmpgtDataArr[i][1]), _acmpgt(acmpgtDataArr[i][0], acmpgtDataArr[i][1]));
 
@@ -4160,7 +4160,7 @@ X86OpCodesTest::invokeAddressTests()
       }
 
    testCaseNum = sizeof(acmpltDataArr) / sizeof(acmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_acmplt, compareLT(acmpltDataArr[i][0], acmpltDataArr[i][1]), _acmplt(acmpltDataArr[i][0], acmpltDataArr[i][1]));
 
@@ -4181,7 +4181,7 @@ X86OpCodesTest::invokeAddressTests()
       }
 
    testCaseNum = sizeof(acmpgeDataArr) / sizeof(acmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_acmpge, compareGE(acmpgeDataArr[i][0], acmpgeDataArr[i][1]), _acmpge(acmpgeDataArr[i][0], acmpgeDataArr[i][1]));
 
@@ -4202,7 +4202,7 @@ X86OpCodesTest::invokeAddressTests()
       }
 
    testCaseNum = sizeof(acmpleDataArr) / sizeof(acmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_acmple, compareLE(acmpleDataArr[i][0], acmpleDataArr[i][1]), _acmple(acmpleDataArr[i][0], acmpleDataArr[i][1]));
 
@@ -4266,7 +4266,7 @@ X86OpCodesTest::invokeAddressTests()
       }
 
    testCaseNum = sizeof(ifacmpgtDataArr) / sizeof(ifacmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifacmpgt, compareGT(ifacmpgtDataArr[i][0], ifacmpgtDataArr[i][1]), _ifacmpgt(ifacmpgtDataArr[i][0], ifacmpgtDataArr[i][1]));
 
@@ -4287,7 +4287,7 @@ X86OpCodesTest::invokeAddressTests()
       }
 
    testCaseNum = sizeof(ifacmpltDataArr) / sizeof(ifacmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifacmplt, compareLT(ifacmpltDataArr[i][0], ifacmpltDataArr[i][1]), _ifacmplt(ifacmpltDataArr[i][0], ifacmpltDataArr[i][1]));
 
@@ -4308,7 +4308,7 @@ X86OpCodesTest::invokeAddressTests()
       }
 
    testCaseNum = sizeof(ifacmpgeDataArr) / sizeof(ifacmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifacmpge, compareGE(ifacmpgeDataArr[i][0], ifacmpgeDataArr[i][1]), _ifacmpge(ifacmpgeDataArr[i][0], ifacmpgeDataArr[i][1]));
 
@@ -4329,7 +4329,7 @@ X86OpCodesTest::invokeAddressTests()
       }
 
    testCaseNum = sizeof(ifacmpleDataArr) / sizeof(ifacmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
+   for(auto i = 0; i < testCaseNum; ++i)
       {
       OMR_CT_EXPECT_EQ(_ifacmple, compareLE(ifacmpleDataArr[i][0], ifacmpleDataArr[i][1]), _ifacmple(ifacmpleDataArr[i][0], ifacmpleDataArr[i][1]));
 
@@ -4355,7 +4355,7 @@ X86OpCodesTest::invokeSelectTests()
    {
    int32_t rc = 0;
    char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
-   uint32_t testCaseNum = 0;
+   int32_t testCaseNum = 0;
    uint32_t testCaseNumCheck = 0;
 
    int32_t lselectChild1Arr[] =
@@ -4390,15 +4390,15 @@ X86OpCodesTest::invokeSelectTests()
 
       compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
             resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 6, 1, &lselectChild1Arr[i], 2, &longArr[i][0], 3, &longArr[i][1]);
-      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(LONG_PLACEHOLDER_1, LONG_PLACEHOLDER_2, LONG_PLACEHOLDER_3));
+      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(static_cast<int32_t>(LONG_PLACEHOLDER_1), LONG_PLACEHOLDER_2, LONG_PLACEHOLDER_3));
 
       compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
             resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 4, 1, &lselectChild1Arr[i], 2, &longArr[i][0]);
-      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(LONG_PLACEHOLDER_1, LONG_PLACEHOLDER_2, longArr[i][1]));
+      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(static_cast<int32_t>(LONG_PLACEHOLDER_1), LONG_PLACEHOLDER_2, longArr[i][1]));
 
       compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
             resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 4, 1, &lselectChild1Arr[i], 3, &longArr[i][1]);
-      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(LONG_PLACEHOLDER_1, longArr[i][0], LONG_PLACEHOLDER_3));
+      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(static_cast<int32_t>(LONG_PLACEHOLDER_1), longArr[i][0], LONG_PLACEHOLDER_3));
 
       compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
             resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 4, 2, &longArr[i][0], 3, &longArr[i][1]);
@@ -4406,7 +4406,7 @@ X86OpCodesTest::invokeSelectTests()
 
       compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
             resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 2, 1, &lselectChild1Arr[i]);
-      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(LONG_PLACEHOLDER_1, longArr[i][0], longArr[i][1]));
+      OMR_CT_EXPECT_EQ(lSelectConst, select(lselectChild1Arr[i], longArr[i][0], longArr[i][1]), lSelectConst(static_cast<int32_t>(LONG_PLACEHOLDER_1), longArr[i][0], longArr[i][1]));
 
       compileOpCodeMethod(lSelectConst, _numberOfSelectArgs, TR::lselect,
             resolvedMethodName, _argTypesSelectLong, TR::Int64, rc, 2, 2, &longArr[i][0]);
@@ -4487,11 +4487,11 @@ X86OpCodesTest::invokeDisabledConvertOpCodesTest()
       (uintptr_t) &LONG_ZERO
       };
 
-   uint32_t testCaseNum = 0;
-   char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
+   int32_t testCaseNum = 0;
 
    signatureCharL_J_testMethodType *a2lConst = 0;
 #if defined(TR_TARGET_32BIT)
+   char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
    testCaseNum = sizeof(aUnaryDataArr) / sizeof(aUnaryDataArr[0]);
    for (int32_t i = 0 ; i < testCaseNum ; i++)
       {
@@ -4519,7 +4519,7 @@ X86OpCodesTest::invokeDisabledMemoryOpCodesTest()
    int32_t rc = 0;
    int8_t byteDataArray[] = {BYTE_NEG, BYTE_POS, BYTE_MAXIMUM, BYTE_MINIMUM, BYTE_ZERO};
    int8_t byteStoreDataArray[] = {0, 0, 0, 0, 0};
-   uint32_t testCaseNum = sizeof(byteDataArray) / sizeof(byteDataArray[0]);
+   int32_t testCaseNum = sizeof(byteDataArray) / sizeof(byteDataArray[0]);
    for (int32_t i = 0 ; _bStorei != NULL && i < testCaseNum ; i++)
       {
       _bStorei((uintptr_t)(&byteStoreDataArray[i]) , byteDataArray[i]);

@@ -168,7 +168,7 @@ void OMR::X86::Instruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
          // and by associating the virtual registers with their real dependencies)
          //
          TR::RegisterDependencyGroup *depGroup = self()->getDependencyConditions()->getPostConditions();
-         for (int j = 0; j < self()->getDependencyConditions()->getNumPostConditions(); ++j)
+         for (auto j = 0U; j < self()->getDependencyConditions()->getNumPostConditions(); ++j)
             {
             TR::RegisterDependency  *dep = depGroup->getRegisterDependency(j);
             machine->setVirtualAssociatedWithReal(dep->getRealRegister(), dep->getRegister());
@@ -228,9 +228,9 @@ void OMR::X86::Instruction::adjustVFPState(TR_VFPState *state, TR::CodeGenerator
    if (state->_register == TR::RealRegister::esp)
       {
       if (self()->getOpCode().isPushOp())
-         state->_displacement += TR::Compiler->om.sizeofReferenceAddress();
+         state->_displacement += static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
       else if (self()->getOpCode().isPopOp())
-         state->_displacement -= TR::Compiler->om.sizeofReferenceAddress();
+         state->_displacement -= static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
       else if (self()->getOpCodeValue() == RET || self()->getOpCodeValue() == RETImm2 || self()->getOpCodeValue() == ReturnMarker)
          *state = cg->vfpResetInstruction()->getSavedState();
       }

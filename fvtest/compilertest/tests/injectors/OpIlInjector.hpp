@@ -127,7 +127,7 @@ class OpIlInjector : public TR::IlInjector
       if (numOptArgs == 0) return;
       _numOptArgs = numOptArgs;
       _optArgs = new ParmNode *[_numOptArgs];
-      for (int32_t i = 0; i < _numOptArgs; ++i)
+      for (auto i = 0U; i < _numOptArgs; ++i)
          _optArgs[i] = NULL;
       }
 

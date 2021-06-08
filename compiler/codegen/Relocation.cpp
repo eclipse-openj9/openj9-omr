@@ -164,8 +164,8 @@ uint8_t TR::ExternalRelocation::collectModifier()
    uint8_t * relocatableMethodCodeStart = (uint8_t *)comp->getRelocatableMethodCodeStart();
    uint8_t * updateLocation = getUpdateLocation();
 
-   int32_t distanceFromStartOfBuffer = updateLocation - relocatableMethodCodeStart;
-   int32_t distanceFromStartOfMethod = updateLocation - comp->cg()->getCodeStart();
+   int32_t distanceFromStartOfBuffer = static_cast<int32_t>(updateLocation - relocatableMethodCodeStart);
+   int32_t distanceFromStartOfMethod = static_cast<int32_t>(updateLocation - comp->cg()->getCodeStart());
    AOTcgDiag2(comp, "TR::ExternalRelocation::collectModifier distance from start of buffer=%x, from start of method=%x\n", distanceFromStartOfBuffer, distanceFromStartOfMethod);
 
    if (distanceFromStartOfBuffer < MIN_SHORT_OFFSET || distanceFromStartOfBuffer > MAX_SHORT_OFFSET)
@@ -344,8 +344,8 @@ uint8_t TR::ExternalOrderedPair32BitRelocation::collectModifier()
       updateLocation2 = getLocation2();
       }
 
-   int32_t iLoc = updateLocation - relocatableMethodCodeStart;
-   int32_t iLoc2 = updateLocation2 - relocatableMethodCodeStart;
+   int32_t iLoc = static_cast<int32_t>(updateLocation - relocatableMethodCodeStart);
+   int32_t iLoc2 = static_cast<int32_t>(updateLocation2 - relocatableMethodCodeStart);
    AOTcgDiag0(comp, "TR::ExternalOrderedPair32BitRelocation::collectModifier\n");
    if ( (iLoc < MIN_SHORT_OFFSET  || iLoc > MAX_SHORT_OFFSET ) || (iLoc2 < MIN_SHORT_OFFSET || iLoc2 > MAX_SHORT_OFFSET ) )
       return RELOCATION_TYPE_WIDE_OFFSET | RELOCATION_TYPE_ORDERED_PAIR;
@@ -373,8 +373,8 @@ void TR::ExternalOrderedPair32BitRelocation::apply(TR::CodeGenerator *codeGen)
       }
    else
       {
-      rec->addRelocationEntry(getUpdateLocation() - codeStart);
-      rec->addRelocationEntry(getLocation2() - codeStart);
+      rec->addRelocationEntry(static_cast<uint32_t>(getUpdateLocation() - codeStart));
+      rec->addRelocationEntry(static_cast<uint32_t>(getLocation2() - codeStart));
       }
    }
 

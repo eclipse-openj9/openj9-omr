@@ -95,8 +95,13 @@ char *feGetEnv(const char *s)
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 
+#if defined(LINUX)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#elif defined(OSX)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
+#endif
 
 TR::OptionTable OMR::Options::_feOptions[] =
    {
@@ -116,7 +121,11 @@ TR::OptionTable OMR::Options::_feOptions[] =
    {0}
    };
 
+#if defined(LINUX)
+#pragma GCC diagnostic pop
+#elif defined(OSX)
 #pragma clang diagnostic pop
+#endif
 
 #include "control/Recompilation.hpp"
 

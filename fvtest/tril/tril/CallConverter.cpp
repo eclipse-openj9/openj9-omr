@@ -61,7 +61,7 @@ TR::Node* CallConverter::impl(const ASTNode* tree, IlGenState* state) {
             TR::ResolvedMethod* method = new (compilation->trHeapMemory()) TR::ResolvedMethod("file",
                                                                                             "line",
                                                                                             "name",
-                                                                                            argIlTypes.size(),
+                                                                                            static_cast<int32_t>(argIlTypes.size()),
                                                                                             &argIlTypes[0],
                                                                                             returnIlType,
                                                                                             targetAddress,

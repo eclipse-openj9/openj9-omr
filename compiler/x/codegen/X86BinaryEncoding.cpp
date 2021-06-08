@@ -188,12 +188,12 @@ uint8_t getMemoryBarrierBinaryLengthLowerBound(int32_t barrier, TR::CodeGenerato
 // OMR::X86::Instruction:: member functions
 bool OMR::X86::Instruction::needsRepPrefix()
    {
-   return self()->getOpCode().needsRepPrefix();
+   return self()->getOpCode().needsRepPrefix() != 0;
    }
 
 bool OMR::X86::Instruction::needsLockPrefix()
    {
-   return self()->getOpCode().needsLockPrefix();
+   return self()->getOpCode().needsLockPrefix() != 0;
    }
 
 uint8_t* OMR::X86::Instruction::generateBinaryEncoding()
@@ -224,7 +224,7 @@ uint8_t* OMR::X86::Instruction::generateBinaryEncoding()
             {
             self()->getOpCode().finalize(instructionStart);
             }
-         self()->setBinaryLength(cursor - instructionStart);
+         self()->setBinaryLength(static_cast<int8_t>(cursor - instructionStart));
          self()->cg()->addAccumulatedInstructionLengthError(self()->getEstimatedBinaryLength() - self()->getBinaryLength());
          return cursor;
          }
@@ -246,7 +246,7 @@ uint8_t *TR::X86PaddingInstruction::generateBinaryEncoding()
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
    cursor = cg()->generatePadding(cursor, _length, this, _properties);
-   setBinaryLength(cursor - instructionStart);
+   setBinaryLength(static_cast<int8_t>(cursor - instructionStart));
    setBinaryEncoding(instructionStart);
    return cursor;
    }
@@ -408,7 +408,7 @@ uint8_t *TR::X86AlignmentInstruction::generateBinaryEncoding()
    intptr_t paddingLength = cg()->alignment(cursor + _minPaddingLength, _boundary, _margin);
    cursor = cg()->generatePadding(cursor, _minPaddingLength + paddingLength, this);
 
-   setBinaryLength(cursor - instructionStart);
+   setBinaryLength(static_cast<int8_t>(cursor - instructionStart));
    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
    setBinaryEncoding(instructionStart);
    return cursor;
@@ -461,14 +461,14 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
             {
             // Actual distance if target address is known exactly.
             //
-            distance = label->getCodeLocation() - (cursor + IA32LengthOfShortBranch);
+            distance = static_cast<int32_t>(label->getCodeLocation() - (cursor + IA32LengthOfShortBranch));
             }
          else
             {
             // Conservative estimate of distance if target address is not known exactly.
             // (e.g., a forward relative branch)
             //
-            distance = cg()->getBinaryBufferStart()
+            distance = static_cast<int32_t>(cg()->getBinaryBufferStart()
 
                        // +4 == Temporary and possibly incomplete fix for WebSphere problem,
                        //       the buffer start is -4 from the start of the method
@@ -476,7 +476,7 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
                        + 4
                        + label->getEstimatedCodeLocation()
                        - (cursor + IA32LengthOfShortBranch +
-                        cg()->getAccumulatedInstructionLengthError());
+                        cg()->getAccumulatedInstructionLengthError()));
             }
 
          TR_ASSERT(getOpCodeValue() != XBEGIN4 || !_permitShortening, "XBEGIN4 cannot be shortened and can only be used with a label instruction that cannot shorten - use generateLongLabel!\n");
@@ -553,7 +553,7 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
 
    addMetaDataForCodeAddress(immediateCursor);
 
-   setBinaryLength(cursor - instructionStart);
+   setBinaryLength(static_cast<int8_t>(cursor - instructionStart));
    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
    setBinaryEncoding(instructionStart);
    return cursor;
@@ -665,18 +665,17 @@ TR::X86FenceInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
 uint8_t *TR::X86FenceInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   int i;
 
    if (_fenceNode->getRelocationType() == TR_AbsoluteAddress)
       {
-      for (i = 0; i < _fenceNode->getNumRelocations(); ++i)
+      for (auto i = 0U; i < _fenceNode->getNumRelocations(); ++i)
          {
          *(uint8_t **)(_fenceNode->getRelocationDestination(i)) = instructionStart;
          }
       }
    else if (_fenceNode->getRelocationType() == TR_ExternalAbsoluteAddress)
       {
-      for (i = 0; i < _fenceNode->getNumRelocations(); ++i)
+      for (auto i = 0U; i < _fenceNode->getNumRelocations(); ++i)
          {
          *(uint8_t **)(_fenceNode->getRelocationDestination(i)) = instructionStart;
          addMetaDataForCodeAddress( (uint8_t *)_fenceNode->getRelocationDestination(i) );
@@ -684,14 +683,14 @@ uint8_t *TR::X86FenceInstruction::generateBinaryEncoding()
       }
    else if (_fenceNode->getRelocationType() == TR_EntryRelative32Bit)
       {
-      for (i = 0; i < _fenceNode->getNumRelocations(); ++i)
+      for (auto i = 0U; i < _fenceNode->getNumRelocations(); ++i)
          {
          *(uint32_t *)(_fenceNode->getRelocationDestination(i)) = cg()->getCodeLength();
          }
       }
    else // entryrelative16bit
       {
-      for (i = 0; i < _fenceNode->getNumRelocations(); ++i)
+      for (auto i = 0U; i < _fenceNode->getNumRelocations(); ++i)
          {
          *(uint16_t *)(_fenceNode->getRelocationDestination(i)) = (uint16_t)cg()->getCodeLength();
          }
@@ -1674,7 +1673,6 @@ TR::X86RegImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
       }
 
    TR::Symbol *symbol = getSymbolReference()->getSymbol();
-   TR_RelocationRecordInformation *recordInfo;
    TR::SymbolType symbolKind = TR::SymbolType::typeClass;
    switch (getReloKind())
       {
@@ -2629,7 +2627,7 @@ uint8_t* TR::X86FPMemRegInstruction::generateOperand(uint8_t* cursor)
    cursor = getMemoryReference()->generateBinaryEncoding(cursor - 1, this, cg());
    if (cursor)
       {
-      setBinaryLength(cursor - getBinaryEncoding());
+      setBinaryLength(static_cast<int8_t>(cursor - getBinaryEncoding()));
       cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
       }
    return cursor;
@@ -2859,7 +2857,6 @@ TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
       }
    else
       {
-      TR_RelocationRecordInformation * recordInfo;
       switch (getReloKind())
          {
          case TR_ConstantPool:

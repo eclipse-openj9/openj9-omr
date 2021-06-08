@@ -620,7 +620,7 @@ int32_t TR_ValueNumberInfo::hash(TR::Node *node)
          h = (h << 4) + (int32_t)(intptr_t)sym;
          g = h & 0xF0000000;
          h ^= g >> 24;
-         h = (h << 4) + symRef->getOffset();
+         h = (h << 4) + static_cast<uint32_t>(symRef->getOffset());
          g = h & 0xF0000000;
          h ^= g >> 24;
          }

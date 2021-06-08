@@ -56,7 +56,7 @@ OMR::IO::fclose(TR::FILE *fileId)
 void
 OMR::IO::fseek(TR::FILE *fileId, intptr_t offset, int32_t whence)
    {
-   ::fseek((::FILE *)fileId, offset, whence);
+   ::fseek((::FILE *)fileId, static_cast<long>(offset), whence);
    }
 
 

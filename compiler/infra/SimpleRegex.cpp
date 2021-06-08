@@ -270,7 +270,7 @@ SimpleRegex::Simple *SimpleRegex::processSimple(char *&s, TR_YesNoMaybe allowAlt
                i = (int32_t)strlen(m->remainder->component->data.str);
                break;
             case wildcards:
-               i = m->remainder->component->data.counts >> 1;
+               i = static_cast<int32_t>(m->remainder->component->data.counts >> 1);
                break;
             case char_alternatives:
                i = 1;
@@ -373,7 +373,7 @@ bool SimpleRegex::Simple::match(const char *s, bool isCaseSensitive, bool useLoc
 
 bool SimpleRegex::Regex::match(const char *s, bool isCaseSensitive, bool useLocale)
    {
-   int32_t rc = false;
+   bool rc = false;
    for (Regex *p = this; p && !rc; p = p->remainder)
       {
       rc = p->simple->match(s, isCaseSensitive, useLocale);

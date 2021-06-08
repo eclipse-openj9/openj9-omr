@@ -1524,14 +1524,14 @@ public:
    int64_t getDebugCounterWarmupSeconds(){ return _debugCounterWarmupSeconds; }
    const char *debugCounterInsertedFormat(TR_Memory *mem, const char *name, const char *format)
       {
-      int nameLen = strlen(name);
-      int formatLen = strlen(format);
+      auto nameLen = strlen(name);
+      auto formatLen = strlen(format);
       char *result = (char*)mem->allocateMemory(nameLen + formatLen + 2, heapAlloc);
       const char *splitPoint = strchr(name, '~');
       if (splitPoint)
          {
          // Replace "~" in the name with "~:{format}"
-         int splitIndex = splitPoint - name + 1;
+         int32_t splitIndex = static_cast<int32_t>(splitPoint - name + 1);
          strncpy(result, name, splitIndex);
          result[splitIndex] = ':';
          strcpy(result + splitIndex + 1, format);

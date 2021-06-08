@@ -383,7 +383,7 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithoutFrequencyInfo()
                {
                if (!performTransformation(comp(), "%sReverse branch in block_%d\n", optDetailString(), prevBlock->getNumber()))
                   continue;
-               for (uintptr_t c = 0; c < prevNode->getNumChildren(); ++c)
+               for (auto c = 0; c < prevNode->getNumChildren(); ++c)
                   {
                   TR_ASSERT(prevNode->getChild(c)->getOpCodeValue() != TR::GlRegDeps, "the conditional branch node has a GlRegDep child and we're changing control flow");
                   }
@@ -4598,7 +4598,7 @@ TR::Node * rematerializeNode(TR::Compilation * comp, TR::Node * node)
    TR::Node * newNode = TR::Node::copy(node);
    newNode->setReferenceCount(1);
 
-   for (size_t k = 0; k < newNode->getNumChildren(); k++)
+   for (auto k = 0; k < newNode->getNumChildren(); k++)
       {
       newNode->getChild(k)->incReferenceCount();
       }
@@ -4975,7 +4975,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
          //if ((child->getFutureUseCount() & 0x7fff) == child->getReferenceCount())
          if (!seenChildren.get(i))
             {
-            if (child->getGlobalIndex() < _nodeCount)
+            if (child->getGlobalIndex() < unsigned(_nodeCount))
                {
                if (_heightArray[child->getGlobalIndex()] > maxHeight)
                   {
@@ -6507,8 +6507,6 @@ bool TR_BlockSplitter::containCycle(TR::Block *blk, TR_LinkHeadAndTail<BlockMapp
 bool TR_BlockSplitter::isLoopHeader(TR::Block * block)
    {
    TR::CFG *cfg = comp()->getFlowGraph();
-   TR::CFGEdge *edge;
-   TR::Block   *next;
    // See if this block is a loop header
    //
    TR_RegionStructure *parent;
@@ -6747,16 +6745,6 @@ TR_InvariantArgumentPreexistence::TR_InvariantArgumentPreexistence(TR::Optimizat
    : TR::Optimization(manager)
    {
    _success = false;
-   }
-
-static int32_t numSignatureChars(char *sig)
-   {
-   char *end = sig;
-   while (*end == '[')
-      ++end;
-   if (*end != 'L')
-      return end-sig+1;
-   return strchr(end,';')-sig+1;
    }
 
 int32_t TR_InvariantArgumentPreexistence::perform()
@@ -7178,7 +7166,7 @@ bool TR_InvariantArgumentPreexistence::devirtualizeVirtualCall(TR::Node *node, T
 
    TR_ASSERT(classIsCompatibleWithMethod(clazz, resolvedMethod) == TR_yes, "Class should be compatible with method");
    TR::SymbolReference *symRef = node->getSymbolReference();
-   int32_t offset = symRef->getOffset();
+   int32_t offset = static_cast<int32_t>(symRef->getOffset());
    TR_ResolvedMethod *refinedMethod = symRef->getOwningMethod(comp())->getResolvedVirtualMethod(comp(), clazz, offset);
 
    if (!refinedMethod)

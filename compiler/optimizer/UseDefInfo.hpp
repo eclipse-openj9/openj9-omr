@@ -264,8 +264,8 @@ class TR_UseDefInfo
    int32_t getFirstRealDefIndex() { return getFirstDefIndex()+getNumDefsOnEntry();}
    int32_t getLastDefIndex() {return getNumDefNodes()-1;}
 
-   bool    isDefIndex(uint32_t index) { return index && index <= getLastDefIndex(); }
-   bool    isUseIndex(uint32_t index)  { return index >= getFirstUseIndex() && index <= getLastUseIndex(); }
+   bool    isDefIndex(uint32_t index) { return index && index <= unsigned(getLastDefIndex()); }
+   bool    isUseIndex(uint32_t index)  { return index >= unsigned(getFirstUseIndex()) && index <= unsigned(getLastUseIndex()); }
 
    bool    hasGlobalsUseDefs() {return _indexFields && _indexStatics;}
    bool    canComputeReachingDefs();
@@ -291,11 +291,11 @@ class TR_UseDefInfo
 
    public:
    bool    isExpandedDefIndex(uint32_t index)
-               { return index && index < getNumExpandedDefNodes(); }
+               { return index && index < unsigned(getNumExpandedDefNodes()); }
    bool    isExpandedUseIndex(uint32_t index)
-               { return index >= _numExpandedDefOnlyNodes && index < getExpandedTotalNodes(); }
+               { return index >= unsigned(_numExpandedDefOnlyNodes) && index < unsigned(getExpandedTotalNodes()); }
    bool    isExpandedUseDefIndex(uint32_t index)
-               { return index >= _numExpandedDefOnlyNodes && index < getNumExpandedDefNodes(); }
+               { return index >= unsigned(_numExpandedDefOnlyNodes) && index < unsigned(getNumExpandedDefNodes()); }
 
    bool getDefsForSymbol(TR_BitVector &defs, int32_t symIndex, AuxiliaryData &aux)
       {

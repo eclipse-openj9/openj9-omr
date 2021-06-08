@@ -19,9 +19,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#if defined(J9ZOS390)
 #pragma csect(CODE,"TRCGBase#C")
 #pragma csect(STATIC,"TRCGBase#S")
 #pragma csect(TEST,"TRCGBase#T")
+#endif
 
 #include "codegen/CodeGenerator.hpp"
 
@@ -280,7 +282,7 @@ OMR::CodeGenerator::initialize()
    for (i = 0 ; i < TR_NumLinkages; ++i)
       _linkages[i] = NULL;
 
-   _maxObjectSizeGuaranteedNotToOverflow = (maxSize > UINT_MAX) ? UINT_MAX : maxSize;
+   _maxObjectSizeGuaranteedNotToOverflow = static_cast<uint32_t>((maxSize > UINT_MAX) ? UINT_MAX : maxSize);
 
    if (comp->getDebug())
       {
@@ -2091,7 +2093,7 @@ OMR::CodeGenerator::compute32BitMagicValues(
          *s = div32BitMagicValues[mid][2];
          return;
          }
-      else if (d > div32BitMagicValues[mid][0])
+      else if (unsigned(d) > div32BitMagicValues[mid][0])
          {
          first = mid+1;
          }
@@ -2234,7 +2236,7 @@ OMR::CodeGenerator::computeUnsigned64BitMagicValues(uint64_t d, int32_t* s, int3
    uint64_t nc, delta, q1, r1, q2, r2;
 
    *a = 0; /* initialize "add" indicator */
-   nc = -1 - (-d)%d;
+   nc = -1 - ((~d) + 1)%d;
    p = 63; /* initialize p */
    q1 = 0x8000000000000000ull/nc; /* initialize 2**p/nc */
    r1 = 0x8000000000000000ull- q1*nc; /* initialize rem(2**p,nc) */
@@ -2298,7 +2300,7 @@ OMR::CodeGenerator::alignBinaryBufferCursor()
 
       alignedBinaryBufferCursor -= offset;
       _binaryBufferCursor = alignedBinaryBufferCursor;
-      self()->setJitMethodEntryPaddingSize(_binaryBufferCursor - _binaryBufferStart);
+      self()->setJitMethodEntryPaddingSize(static_cast<uint32_t>(_binaryBufferCursor - _binaryBufferStart));
       memset(_binaryBufferStart, 0, self()->getJitMethodEntryPaddingSize());
       }
 
@@ -2320,8 +2322,6 @@ OMR::CodeGenerator::getJitMethodEntryAlignmentBoundary()
 int32_t
 OMR::CodeGenerator::setEstimatedLocationsForSnippetLabels(int32_t estimatedSnippetStart)
    {
-   TR::Snippet *cursor;
-
    self()->setEstimatedSnippetStart(estimatedSnippetStart);
 
    for (auto iterator = _snippetList.begin(); iterator != _snippetList.end(); ++iterator)
@@ -2349,10 +2349,10 @@ OMR::CodeGenerator::emitSnippets()
       codeOffset = (*iterator)->emitSnippet();
       if (codeOffset != NULL)
          {
-         TR_ASSERT((*iterator)->getLength(self()->getBinaryBufferCursor()-self()->getBinaryBufferStart()) + self()->getBinaryBufferCursor() >= codeOffset,
+         TR_ASSERT((*iterator)->getLength(static_cast<int32_t>(self()->getBinaryBufferCursor()-self()->getBinaryBufferStart())) + self()->getBinaryBufferCursor() >= codeOffset,
                  "%s length estimate must be conservatively large (snippet @ " POINTER_PRINTF_FORMAT ", estimate=%d, actual=%d)",
                  self()->getDebug()->getName(*iterator), *iterator,
-                 (*iterator)->getLength(self()->getBinaryBufferCursor()-self()->getBinaryBufferStart()),
+                 (*iterator)->getLength(static_cast<int32_t>(self()->getBinaryBufferCursor()-self()->getBinaryBufferStart())),
                  codeOffset - self()->getBinaryBufferCursor());
          self()->setBinaryBufferCursor(codeOffset);
          }
@@ -2731,7 +2731,7 @@ int32_t leadingZeroes (int64_t inputWord)
       testWord = inputWord & byteMask;
       if (testWord != 0)
          {
-         byteValue = testWord >> (56 - bitCount);
+         byteValue = static_cast<uint8_t>(testWord >> (56 - bitCount));
          return bitCount + CS2::BitManipulator::LeadingZeroes(byteValue);
          }
       byteMask >>= 8;

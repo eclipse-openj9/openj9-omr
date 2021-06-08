@@ -712,29 +712,28 @@ TR_RedundantAsyncCheckRemoval::markExtendees(TR::Block *block, bool canHaveAYiel
    }
 
 #define FIND_LOOP_ITERATIONS(Type,Name,NAME)   \
-bool Killme_CantBeginMacroWith_HASH_HASH; \
-Type incr = incrVal->getLow##Name();  \
+Type incr = static_cast<Type>(incrVal->getLow##Name());  \
 Type in, out, iters, diff; \
 if (incr == 0) continue; \
 if (entryVal && exitVal && entryVal->as##Name##Const() && exitVal->as##Name##Const()) \
   { \
-  in = entryVal->getLow##Name(); \
-  out = exitVal->getLow##Name(); \
+  in = static_cast<Type>(entryVal->getLow##Name()); \
+  out = static_cast<Type>(exitVal->getLow##Name()); \
   } \
 else if (entryVal && entryVal->as##Name##Const()) \
   { \
   Type lo, hi; \
   if (exitVal) \
     { \
-    lo = exitVal->getLow##Name(); \
-    hi = exitVal->getHigh##Name(); \
+    lo = static_cast<Type>(exitVal->getLow##Name()); \
+    hi = static_cast<Type>(exitVal->getHigh##Name()); \
     } \
   else \
     { \
-    lo = TR::getMinSigned<NAME>(); \
-    hi = TR::getMaxSigned<NAME>(); \
+    lo = static_cast<Type>(TR::getMinSigned<NAME>()); \
+    hi = static_cast<Type>(TR::getMaxSigned<NAME>()); \
     } \
-  in = entryVal->getLow##Name(); \
+  in = static_cast<Type>(entryVal->getLow##Name()); \
   if (incr > 0 && in < lo) \
     out = lo; \
   else if (incr < 0 && in > hi) \
@@ -745,7 +744,7 @@ else if (entryVal && entryVal->as##Name##Const()) \
 else \
   continue; \
 diff = in-out; \
-if (diff == TR::getMinSigned<NAME>()) \
+if (diff == static_cast<Type>(TR::getMinSigned<NAME>())) \
    continue; \
 iters = (diff < 0) ? -diff/incr : diff/-incr;
 
@@ -1664,13 +1663,13 @@ uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
          // An exit condition that does not look recognizable disables
          // us from making any upper bound estimate
          //
-         return TR::getMaxSigned<TR::Int32>();
+         return static_cast<uint32_t>(TR::getMaxSigned<TR::Int32>());
          }
       }
 
    if (index == 0)
       {
-      return TR::getMaxSigned<TR::Int32>();
+      return static_cast<uint32_t>(TR::getMaxSigned<TR::Int32>());
       }
 
 
@@ -1746,11 +1745,11 @@ uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
                // Get rid of the increasing infinite loop (// FIXME: is this an infinite loop?)
                //
                if (incr > 0 && (opCode == TR::ificmplt || opCode == TR::ificmple))
-                  estimate = TR::getMaxSigned<TR::Int32>();
+                  estimate = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
 
                // Get rid of the decreasing infinite loop
                else if (incr < 0 && (opCode == TR::ificmpgt || opCode == TR::ificmpge))
-                  estimate = TR::getMaxSigned<TR::Int32>();
+                  estimate = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
 
                else
                   {
@@ -1763,19 +1762,19 @@ uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
             else
                {
                int32_t in    = einfo->_val;
-               int32_t lim   = cond->_limit;
+               int32_t lim   = static_cast<int32_t>(cond->_limit);
 
                // increasing infinite loops
                if (incr > 0 && (opCode == TR::ificmplt || opCode == TR::ificmple) && in > lim)
-                  estimate = TR::getMaxSigned<TR::Int32>();
+                  estimate = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
 
                // decreasing infinite loops
                else if (incr < 0 && (opCode == TR::ificmpgt || opCode == TR::ificmpge) && in < lim)
-                  estimate = TR::getMaxSigned<TR::Int32>();
+                  estimate = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
 
                // messed up induction variable info
                else if (incr == 0)
-                  estimate = TR::getMaxSigned<TR::Int32>();
+                  estimate = static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
 
                else
                   {
@@ -1805,7 +1804,7 @@ uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
       }
 
    if (estimate == -1)
-      return TR::getMaxSigned<TR::Int32>();
+      return static_cast<int32_t>(TR::getMaxSigned<TR::Int32>());
 
 
    /**

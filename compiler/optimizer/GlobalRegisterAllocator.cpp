@@ -1907,7 +1907,6 @@ TR_GlobalRegisterAllocator::prepareForBlockExit(
              !registerIsLiveAcrossEdge(exitTreeTop, exitNode, block, extgr, successorBlock, i))
             {
             TR_RegisterCandidate * rc = extgr->getCurrentRegisterCandidate();
-            TR::CFGEdge *succ;
             bool liveOnSomeSucc = true;
             if (liveOnSomeSucc &&
                 !extgr->getAutoContainsRegisterValue() &&

@@ -109,7 +109,7 @@ void TR_OSRDefInfo::performFurtherAnalysis(AuxiliaryData &aux)
    // Iterate through OSR reaching definitions bit vectors and save it in method symbol's data structure.
    TR::SymbolReferenceTable *symRefTab   = comp()->getSymRefTab();
    TR::ResolvedMethodSymbol *methodSymbol = optimizer()->getMethodSymbol();
-   for (intptr_t i = 0; i < methodSymbol->getOSRPoints().size(); ++i)
+   for (auto i = 0U; i < methodSymbol->getOSRPoints().size(); ++i)
       {
       TR_OSRPoint *point = (methodSymbol->getOSRPoints())[i];
       if (point == NULL) continue;
@@ -155,7 +155,7 @@ void TR_OSRDefInfo::performFurtherAnalysis(AuxiliaryData &aux)
                      break;
                TR_ASSERT(symRefOrder < list->getSize(), "symref #%d on node n%dn not found\n", defSymRef->getReferenceNumber(), defNode->getGlobalIndex());
                comp()->getOSRCompilationData()->addSlotSharingInfo(point->getByteCodeInfo(),
-                     slot, symRefNum, symRefOrder, defSymRef->getSymbol()->getSize(), takesTwoSlots);
+                     slot, symRefNum, symRefOrder, static_cast<int32_t>(defSymRef->getSymbol()->getSize()), takesTwoSlots);
                if (trace())
                   {
                   TR_ByteCodeInfo& bcInfo = point->getByteCodeInfo();
@@ -182,7 +182,7 @@ void TR_OSRDefInfo::addSharingInfo(AuxiliaryData &aux)
    TR_BitVector unionDef(getBitVectorSize(), comp()->trMemory()->currentStackRegion());
 
    bool isTwoSlotSymRefAtPrevSlot = false;
-   for (int i = 0; ppsListArray && i < ppsListArray->size(); ++i)
+   for (auto i = 0U; ppsListArray && i < ppsListArray->size(); ++i)
       {
       List<TR::SymbolReference> ppsList = (*ppsListArray)[i];
       ListIterator<TR::SymbolReference> ppsIt(&ppsList);
@@ -255,7 +255,7 @@ void TR_OSRDefInfo::addSharingInfo(AuxiliaryData &aux)
    TR_Array<List<TR::SymbolReference> > *autosListArray = _methodSymbol->getAutoSymRefs();
    prevTwoSlotUnionDef->empty();
    isTwoSlotSymRefAtPrevSlot = false;
-   for (int i = 0; autosListArray && i < autosListArray->size(); ++i)
+   for (auto i = 0U; autosListArray && i < autosListArray->size(); ++i)
       {
       List<TR::SymbolReference> autosList = (*autosListArray)[i];
       ListIterator<TR::SymbolReference> autosIt(&autosList);
@@ -811,7 +811,7 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
       }
 
    TR_Array<List<TR::SymbolReference>> *pendingPushSymRefs = comp()->getMethodSymbol()->getPendingPushSymRefs();
-   for (int32_t i = 0; pendingPushSymRefs && i < pendingPushSymRefs->size(); ++i)
+   for (auto i = 0U; pendingPushSymRefs && i < pendingPushSymRefs->size(); ++i)
       {
       List<TR::SymbolReference> &symRefsAtThisSlot = (*pendingPushSymRefs)[i];
       ListIterator<TR::SymbolReference> symRefsIt(&symRefsAtThisSlot);
@@ -1036,7 +1036,7 @@ void TR_OSRLiveRangeAnalysis::pendingPushSlotSharingInfo(TR::Node *node, TR_BitV
             traceMsg(comp(), "  Slot:%d SymRef:%d TwoSlots:%d\n", slot, symRefNum, takesTwoSlots);
 
          comp()->getOSRCompilationData()->addSlotSharingInfo(osrPoint->getByteCodeInfo(),
-            slot, symRefNum, symRefOrder, symRef->getSymbol()->getSize(), takesTwoSlots);
+            slot, symRefNum, symRefOrder, static_cast<int32_t>(symRef->getSymbol()->getSize()), takesTwoSlots);
          }
       }
 
@@ -1102,7 +1102,7 @@ void TR_OSRLiveRangeAnalysis::buildDeadPendingPushSlotsInfo(TR::Node *node, TR_B
             traceMsg(comp(), "ppslot %d is dead at %d:%d\n", slot, bcInfo.getCallerIndex(), bcInfo.getByteCodeIndex());
          //symRefNum = -1 and symRefOrder = -1 indicate those slots should be zeroed in prepareForOSR
          comp()->getOSRCompilationData()->addSlotSharingInfo(osrPoint->getByteCodeInfo(),
-            slot, -1 /* symRefNum */, -1 /* symRefOrder */, TR::Compiler->om.sizeofReferenceAddress() /*symSize*/ , false /*takesTwoSlots*/);
+            slot, -1 /* symRefNum */, -1 /* symRefOrder */, static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress()) /*symSize*/ , false /*takesTwoSlots*/);
          }
       }
 
@@ -1262,7 +1262,7 @@ void TR_OSRLiveRangeAnalysis::buildDeadSlotsInfo(TR::Node *node, TR_BitVector *l
             traceMsg(comp(), "ppslot %d is dead at %d:%d\n", slot, bcInfo.getCallerIndex(), bcInfo.getByteCodeIndex());
          //symRefNum = -1 and symRefOrder = -1 indicate those slots should be zeroed in prepareForOSR
          comp()->getOSRCompilationData()->addSlotSharingInfo(osrPoint->getByteCodeInfo(),
-            slot, -1 /* symRefNum */, -1 /* symRefOrder */, TR::Compiler->om.sizeofReferenceAddress() /*symSize*/ , false /*takesTwoSlots*/);
+            slot, -1 /* symRefNum */, -1 /* symRefOrder */, static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress()) /*symSize*/ , false /*takesTwoSlots*/);
          }
       }
 
@@ -1282,7 +1282,7 @@ void TR_OSRLiveRangeAnalysis::buildDeadSlotsInfo(TR::Node *node, TR_BitVector *l
          int32_t slot =  bvi.getNextElement();
          //symRefNum = -1 and symRefOrder = -1 indicate those slots should be zeroed in prepareForOSR
          comp()->getOSRCompilationData()->addSlotSharingInfo(osrPoint->getByteCodeInfo(),
-            slot, -1 /* symRefNum */, -1 /* symRefOrder */, TR::Compiler->om.sizeofReferenceAddress() /*symSize*/ , false /*takesTwoSlots*/);
+            slot, -1 /* symRefNum */, -1 /* symRefOrder */, static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress()) /*symSize*/ , false /*takesTwoSlots*/);
          }
       }
 
@@ -1747,7 +1747,7 @@ void TR_OSRLiveRangeAnalysis::buildOSRSlotSharingInfo(TR::Node *node, TR_BitVect
             traceMsg(comp(), "  Slot:%d SymRef:%d TwoSlots:%d\n", slot, symRefNum, takesTwoSlots);
 
          comp()->getOSRCompilationData()->addSlotSharingInfo(osrPoint->getByteCodeInfo(),
-            slot, symRefNum, symRefOrder, symRef->getSymbol()->getSize(), takesTwoSlots);
+            slot, symRefNum, symRefOrder, static_cast<int32_t>(symRef->getSymbol()->getSize()), takesTwoSlots);
          }
       }
 

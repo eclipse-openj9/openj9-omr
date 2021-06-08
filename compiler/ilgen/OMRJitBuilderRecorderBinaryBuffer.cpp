@@ -60,7 +60,7 @@ void
 OMR::JitBuilderRecorderBinaryBuffer::Number(int16_t num)
    {
    _buf.push_back((uint8_t)num&0xFF);
-   _buf.push_back((uint8_t)(num&0xFF00)>>8);
+   _buf.push_back((uint8_t)((num&0xFF00)>>8));
    }
 
 void

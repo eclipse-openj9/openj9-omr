@@ -792,7 +792,7 @@ TR::Register *TR::AMD64SystemLinkage::buildDirectDispatch(
    //
    TR::Register *scratchReg = NULL;
    TR::RealRegister::RegNum scratchRegIndex = getProperties().getIntegerScratchRegister(1);
-   for (int32_t i=0; i<post; i++)
+   for (auto i = 0U; i < post; i++)
       {
       if (postDeps->getPostConditions()->getRegisterDependency(i)->getRealRegister() == scratchRegIndex)
          {
@@ -822,7 +822,7 @@ TR::Register *TR::AMD64SystemLinkage::buildDirectDispatch(
       }
    else
       {
-      instr = generateImmSymInstruction(CALLImm4, callNode, (uintptr_t)methodSymbol->getMethodAddress(), methodSymRef, preDeps, cg());
+      instr = generateImmSymInstruction(CALLImm4, callNode, static_cast<int32_t>(reinterpret_cast<uintptr_t>(methodSymbol->getMethodAddress())), methodSymRef, preDeps, cg());
       }
 
    cg()->resetIsLeafMethod();
@@ -900,10 +900,10 @@ TR::AMD64ABILinkage::mapIncomingParms(
          {
          uint32_t align = getAlignment(parmCursor->getDataType());
          uint32_t alignMinus1 = (align <= AMD64_STACK_SLOT_SIZE) ? (AMD64_STACK_SLOT_SIZE - 1) : (align - 1);
-         uint32_t pos = -stackIndex;
-         pos += parmCursor->getSize();
+         uint32_t pos = (~stackIndex) + 1;
+         pos += static_cast<uint32_t>(parmCursor->getSize());
          pos = (pos + alignMinus1) & (~alignMinus1);
-         stackIndex = -pos;
+         stackIndex = (~pos) + 1;
          parmCursor->setParameterOffset(stackIndex);
 
          if (comp()->getOption(TR_TraceCG))
@@ -1050,7 +1050,7 @@ TR::AMD64SystemLinkage::setUpStackSizeForCallNode(TR::Node* node)
    const TR::X86LinkageProperties     &properties = getProperties();
    uint16_t intReg = 0, floatReg = 0;
    // AMD64 SysV ABI: The end of the input argument area shall be aligned on a 16 (32, if __m256 is passed on stack) byte boundary. In other words, the value (%rsp + 8) is always a multiple of 16 (32) when control is transferred to the function entry point.
-   int32_t alignment = AMD64_DEFAULT_STACK_ALIGNMENT;
+   uint32_t alignment = AMD64_DEFAULT_STACK_ALIGNMENT;
    int32_t sizeOfOutGoingArgs = 0;
 
    if (comp()->getOption(TR_TraceCG))
@@ -1065,7 +1065,7 @@ TR::AMD64SystemLinkage::setUpStackSizeForCallNode(TR::Node* node)
          alignment = 32;
       }
 
-   if (sizeOfOutGoingArgs > cg()->getLargestOutgoingArgSize())
+   if (unsigned(sizeOfOutGoingArgs) > cg()->getLargestOutgoingArgSize())
       {
       cg()->setLargestOutgoingArgSize(sizeOfOutGoingArgs);
       if (comp()->getOption(TR_TraceCG))

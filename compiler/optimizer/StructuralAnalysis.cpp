@@ -646,7 +646,6 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
                                             SubGraphNodes &cfgNodes,
                                             TR::Region &memRegion)
    {
-   StructInfo               *toNode;
    int32_t                   fromIndex, toIndex;
    TR_StructureSubGraphNode *from, *to;
    TR::CFGEdge               *edge;

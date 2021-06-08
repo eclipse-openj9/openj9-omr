@@ -540,7 +540,7 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
         if (UseDefAliases.containsAny(_seenSymRefs, comp()))
            {
 
-           uint32_t storeNodesSize = _storeMap->size();
+           int32_t storeNodesSize = static_cast<int32_t>(_storeMap->size());
            // If we have over 500 store nodes, get aliases and iterate over the smaller set,
            // Less than 500 nodes should not be too significant as to which set to iterate over.
            if(storeNodesSize >= 500)

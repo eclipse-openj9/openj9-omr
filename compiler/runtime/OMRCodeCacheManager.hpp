@@ -44,7 +44,6 @@ namespace TR { class CodeCacheMemorySegment; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Monitor; }
 namespace OMR { class CodeCacheHashEntrySlab; }
-namespace OMR { class FaintCacheBlock; }
 namespace OMR { typedef void CodeCacheTrampolineCode; }
 namespace OMR { class CodeCacheManager; }
 namespace TR { class StaticRelocation; }

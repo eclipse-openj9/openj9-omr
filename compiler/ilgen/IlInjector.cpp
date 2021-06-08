@@ -330,7 +330,7 @@ OMR::IlInjector::multiplyBy(TR::Node *value, int64_t factor)
    {
    TR::Node *result;
    if (value->getDataType() == TR::Int32)
-      result = TR::Node::create(TR::imul, 2, value, TR::Node::iconst(factor));
+      result = TR::Node::create(TR::imul, 2, value, TR::Node::iconst(static_cast<int32_t>(factor)));
    else
       {
       TR_ASSERT(value->getDataType() == TR::Int64, "expecting Int32 or Int64 for multiplyBy value expression");
@@ -413,11 +413,11 @@ OMR::IlInjector::createWithoutSymRef(TR::ILOpCodes opCode, uint32_t numArgs, ...
    va_list args;
    va_start(args, numArgs);
    TR::Node * result = TR::Node::create(opCode, numArgs);
-   for (int i = 0; i < numArgs; ++i)
+   for (auto i = 0U; i < numArgs; ++i)
       {
       TR::Node * child = va_arg(args, TR::Node *);
       TR_ASSERT(child != NULL, "Child %d must be non NULL", i);
-      result->setAndIncChild(i,child);
+      result->setAndIncChild(static_cast<int32_t>(i),child);
       }
    return result;
    }

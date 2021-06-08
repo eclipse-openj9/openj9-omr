@@ -309,7 +309,7 @@ TR_StorageInfo::mayOverlapWith(TR_StorageInfo *info)
             }
          else
             {
-            if (startOne + std::min(_length, info->_length) - 1 >= overlapStart)
+            if (startOne + std::min(_length, info->_length) - 1 >= unsigned(overlapStart))
                {
                // 1 + std::min(3,6) - 1 >= 3 --> 3 >= 3
                //        123456

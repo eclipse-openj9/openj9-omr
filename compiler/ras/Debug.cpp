@@ -380,7 +380,7 @@ void
 TR_Debug::newVariableSizeSymbol(TR::AutomaticSymbol *sym)
    {
    TR_ASSERT(_comp, "Required compilation object is NULL.\n");
-   int32_t strLength = strlen(TR_VSS_NAME) + TR::getMaxSignedPrecision<TR::Int32>() + 7;
+   int32_t strLength = static_cast<int32_t>(strlen(TR_VSS_NAME)) + TR::getMaxSignedPrecision<TR::Int32>() + 7;
    char *buf = (char *)_comp->trMemory()->allocateHeapMemory(strLength);
 
    TR::SimpleRegex * regex = NULL;
@@ -463,7 +463,7 @@ TR_Debug::getDiagnosticFormat(const char *format, char *buffer, int32_t length)
                allowedToWrite = false;
             if (allowedToWrite)
                memcpy(&buffer[j], base, c-base+1);
-            j+=c-base;
+            j+=static_cast<int32_t>(c-base);
             }
          }
       }
@@ -503,7 +503,6 @@ TR_Debug::performTransformationImpl(bool canOmitTransformation, const char * for
 
    const char *string = format; // without formattedString, we do our best with the format string itself
    bool alreadyFormatted = false;
-   char formatBuffer[200];
    char messageBuffer[300];
 
    // We try to avoid doing the work of formatting the string if we don't need to.
@@ -725,7 +724,7 @@ TR_Debug::printPrefix(TR::FILE *pOutFile, TR::Instruction *instr, uint8_t *curso
    {
    if (cursor != NULL)
       {
-      uint32_t offset = cursor - _comp->cg()->getCodeStart();
+      uint32_t offset = static_cast<uint32_t>(cursor - _comp->cg()->getCodeStart());
 
       char prefix[MAX_PREFIX_WIDTH + 1];
 
@@ -769,7 +768,7 @@ TR_Debug::printPrefix(TR::FILE *pOutFile, TR::Instruction *instr, uint8_t *curso
             sprintf(p1, " %02x", *cursor++);
          }
 
-      int leftOver = p0 + prefixWidth - p1;
+      int32_t leftOver = static_cast<int32_t>(p0 + prefixWidth - p1);
       if (leftOver >= 1)
          {
          memset(p1, ' ', leftOver);
@@ -825,7 +824,7 @@ TR_Debug::printSnippetLabel(TR::FILE *pOutFile, TR::LabelSymbol *label, uint8_t 
    int codeByteColumnWidth = TR::Compiler->debug.codeByteColumnWidth();
    int prefixWidth         = addressFieldWidth * 2 + codeByteColumnWidth + 12; // 8 bytes of offsets, 2 spaces, and opening and closing brackets
 
-   uint32_t offset = cursor - _comp->cg()->getCodeStart();
+   uint32_t offset = static_cast<uint32_t>(cursor - _comp->cg()->getCodeStart());
 
    if (_comp->getOption(TR_MaskAddresses))
       {
@@ -1524,9 +1523,9 @@ TR_Debug::getName(TR::LabelSymbol *labelSymbol)
 const char *
 TR_Debug::getPerCodeCacheHelperName(TR_CCPreLoadedCode helper)
    {
+#if defined(TR_TARGET_POWER)
    switch (helper)
       {
-#if defined(TR_TARGET_POWER)
       case TR_AllocPrefetch: return "Alloc Prefetch";
       case TR_ObjAlloc: return "Object Alloc Helper";
       case TR_VariableLenArrayAlloc: return "Variable Length Array Alloc Helper";
@@ -1535,9 +1534,9 @@ TR_Debug::getPerCodeCacheHelperName(TR_CCPreLoadedCode helper)
       case TR_writeBarrierAndCardMark: return "Write Barrier and Card Mark Helper";
       case TR_cardMark: return "Card Mark Helper";
       case TR_arrayStoreCHK: return "Array Store Check";
-#endif // TR_TARGET_POWER
       default: break;
       }
+#endif // TR_TARGET_POWER
    return "Unknown Helper";
    }
 
@@ -1690,8 +1689,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::SymbolReferenceTable * symRefTab)
    if (pOutFile != NULL && symRefTab->baseArray.size() > 0 && _comp->getOption(TR_TraceAliases))
       {
       trfprintf(pOutFile, "Symbol Reference Map for this method:\n");
-      for (int32_t i=0; i<symRefTab->baseArray.size(); i++)
-         if (symRefTab->getSymRef(i))
+      for (auto i = 0U; i<symRefTab->baseArray.size(); i++)
+         if (symRefTab->getSymRef(static_cast<int32_t>(i)))
             trfprintf(pOutFile,"  %d[" POINTER_PRINTF_FORMAT "]\n", i, symRefTab->getSymRef(i));
       }
    }
@@ -2474,7 +2473,6 @@ TR_Debug::dumpMethodInstrs(TR::FILE *pOutFile, const char *title, bool dumpTrees
    int16_t lastSourceFileIndex = -1; // ditto
    int32_t inlinedIndex = -1; // ditto
    int16_t lastInlinedIndex = -1; // ditto
-   char *sourceFileName; // ditto
    bool printLinenos = false;
    bool printBIandEI = false;
 
@@ -3428,7 +3426,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::GCStackAtlas * atlas)
       TR_GCStackAllocMap *stackAllocMap = atlas->getStackAllocMap();
 
       int mapBytes = (stackAllocMap->_numberOfSlotsMapped + 7) >> 3;
-      int bits = 0;
+      uint32_t bits = 0;
       bool firstBitOn = true;
       for (int i = 0; i < mapBytes; ++i)
          {
@@ -3479,7 +3477,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_GCStackMap * map, TR::GCStackAtlas *atlas
    trfprintf(pOutFile,"\n    live stack slots containing addresses --> {");
 
    int mapBytes = (map->_numberOfSlotsMapped + 7) >> 3;
-   int bits = 0;
+   uint32_t bits = 0;
    bool firstBitOn = true;
    for (int i = 0; i < mapBytes; ++i)
       {
@@ -4404,7 +4402,7 @@ void TR_Debug::dumpSimulatedNode(TR::Node *node, char tagChar)
    trfprintf(_file, " %c ", tagChar);
 
    // 16 chars is enough room for ArrayCopyBNDCHK which is reasonably common
-   int32_t padding = 16 - strlen(getName(node->getOpCode()));
+   int32_t padding = 16 - static_cast<int32_t>(strlen(getName(node->getOpCode())));
    if (node->getOpCode().hasSymbolReference())
       {
       // Yes, big methods can have 4-digit symref numbers
@@ -4424,7 +4422,6 @@ void TR_Debug::dumpSimulatedNode(TR::Node *node, char tagChar)
       }
    else if (node->getOpCode().isLoadConst())
       {
-      int32_t value;
       const int32_t limit = 99999999;
       const char * const opCodeOnlyFormatString = "%s (big)   ";
       const char * const signedFormatString     = "%s %-8d";
@@ -4607,7 +4604,7 @@ TR_Debug::traceRegisterAssignment(const char *format, va_list args)
    trfprintf(_file, "details:                      ");
 
    int32_t  j = 0;
-   int32_t  length = strlen(format) + 40;
+   int32_t  length = static_cast<int32_t>(strlen(format)) + 40;
    char    *buffer = (char *)_comp->trMemory()->allocateHeapMemory(length + 1);
    bool     sawPercentR = false;
 
@@ -4617,7 +4614,7 @@ TR_Debug::traceRegisterAssignment(const char *format, va_list args)
          {
          ++c;
          const char *regName = getName(va_arg(args, TR::Register *));
-         int32_t slen  = strlen(regName);
+         int32_t slen  = static_cast<int32_t>(strlen(regName));
 
          if (j + slen >= length) // re-allocate buffer if too small
             {
@@ -4775,9 +4772,9 @@ TR_Debug::traceRegisterAssigned(TR_RegisterAssignmentFlags flags, TR::Register *
            getName(realReg),
            closeParen,
            postCoercionSymbol);
-   if ((_registerAssignmentTraceCursor += strlen(buf)) > 80)
+   if ((_registerAssignmentTraceCursor += static_cast<int16_t>(strlen(buf))) > 80)
       {
-      _registerAssignmentTraceCursor = strlen(buf);
+      _registerAssignmentTraceCursor = static_cast<int16_t>(strlen(buf));
       trfprintf(_file, "\n%s", buf);
       }
    else
@@ -4806,9 +4803,9 @@ TR_Debug::traceRegisterFreed(TR::Register *virtReg, TR::Register *realReg)
            virtReg->getFutureUseCount(),
            virtReg->getTotalUseCount(),
            getName(realReg));
-   if ((_registerAssignmentTraceCursor += strlen(buf)) > 80)
+   if ((_registerAssignmentTraceCursor += static_cast<int16_t>(strlen(buf))) > 80)
       {
-      _registerAssignmentTraceCursor = strlen(buf);
+      _registerAssignmentTraceCursor = static_cast<int16_t>(strlen(buf));
       trfprintf(_file, "\n%s", buf);
       }
    else
@@ -4828,9 +4825,9 @@ TR_Debug::traceRegisterInterference(TR::Register *virtReg, TR::Register *interfe
       return;
    char buf[40];
    sprintf(buf, "%s{%d,%d}? ", getName(interferingVirtual), interferingVirtual->getAssociation(), distance);
-   if ((_registerAssignmentTraceCursor += strlen(buf)) > 80)
+   if ((_registerAssignmentTraceCursor += static_cast<int16_t>(strlen(buf))) > 80)
       {
-      _registerAssignmentTraceCursor = strlen(buf);
+      _registerAssignmentTraceCursor = static_cast<int16_t>(strlen(buf));
       trfprintf(_file, "\n%s", buf);
       }
    else
@@ -4850,9 +4847,9 @@ TR_Debug::traceRegisterWeight(TR::Register *realReg, uint32_t weight)
       return;
    char buf[30];
    sprintf(buf, "%s[0x%x]? ", getName(realReg), weight);
-   if ((_registerAssignmentTraceCursor += strlen(buf)) > 80)
+   if ((_registerAssignmentTraceCursor += static_cast<int16_t>(strlen(buf))) > 80)
       {
-      _registerAssignmentTraceCursor = strlen(buf);
+      _registerAssignmentTraceCursor = static_cast<int16_t>(strlen(buf));
       trfprintf(_file, "\n%s", buf);
       }
    else
@@ -5209,12 +5206,12 @@ static int counterCompare(const char *left, const char *right)
       {
       // The terminator indicates a change in numeric/string comparison mode
       char *terminator = numericComparisonMode ? numericEnd : numericStart;
-      int leftSectionLength = strcspn(left, terminator);
-      int rightSectionLength = strcspn(right, terminator);
+      auto leftSectionLength = strcspn(left, terminator);
+      auto rightSectionLength = strcspn(right, terminator);
       if (leftSectionLength != rightSectionLength)
          {
          return numericComparisonMode
-               ? leftSectionLength - rightSectionLength // Assume that numbers are not 0-padded, so any longer number must be bigger
+               ? static_cast<int32_t>(leftSectionLength - rightSectionLength) // Assume that numbers are not 0-padded, so any longer number must be bigger
                : strcmp(left, right);
          }
       // strncmp also works for comparing numbers with an equal number of digits
@@ -5333,7 +5330,7 @@ void TR_Debug::printDebugCounters(TR::DebugCounterGroup *counterGroup, const cha
       counterArray[count++] = c;
       if (c->getCount() != 0)
          {
-         int32_t nameLength = strlen(c->getName());
+         int32_t nameLength = static_cast<int32_t>(strlen(c->getName()));
          longestName = std::max(longestName, nameLength);
          }
       }

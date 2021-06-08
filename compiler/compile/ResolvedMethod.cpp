@@ -551,13 +551,13 @@ void TR_ResolvedMethod::makeParameterList(TR::ResolvedMethodSymbol *methodSym)
    int32_t ordinal = 0;
 
    uint32_t parmSlots = numberOfParameterSlots();
-   for (int32_t parmIndex = 0; parmIndex < parmSlots; ++parmIndex)
+   for (auto parmIndex = 0U; parmIndex < parmSlots; ++parmIndex)
       {
       parmSymbol = methodSym->comp()->getSymRefTab()->createParameterSymbol(methodSym, slot, parmType(parmIndex));
       parmSymbol->setOrdinal(ordinal++);
 
-      char *s = getParameterTypeSignature(parmIndex);
-      uint32_t len = strlen(s);
+      char *s = getParameterTypeSignature(static_cast<int32_t>(parmIndex));
+      uint32_t len = static_cast<uint32_t>(strlen(s));
       parmSymbol->setTypeSignature(s, len);
 
       la.add(parmSymbol);

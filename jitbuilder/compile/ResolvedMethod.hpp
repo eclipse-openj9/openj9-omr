@@ -51,7 +51,7 @@ class ResolvedMethodBase : public TR_ResolvedMethod
    {
    virtual uint16_t              nameLength()                                   { return signatureLength(); }
    virtual uint16_t              classNameLength()                              { return signatureLength(); }
-   virtual uint16_t              signatureLength()                              { return strlen(signatureChars()); }
+   virtual uint16_t              signatureLength()                              { return static_cast<uint16_t>(strlen(signatureChars())); }
 
 
    // This group of functions only make sense for Java - we ought to provide answers from that definition
@@ -120,7 +120,7 @@ class ResolvedMethod : public ResolvedMethodBase, public Method
    virtual char                * classNameChars()                           { return (char *)_fileName; }
    virtual char                * nameChars()                                { return _name; }
    virtual char                * signatureChars()                           { return _signatureChars; }
-   virtual uint16_t              signatureLength()                          { return strlen(signatureChars()); }
+   virtual uint16_t              signatureLength()                          { return static_cast<uint16_t>(strlen(signatureChars())); }
 
    virtual void                * resolvedMethodAddress()                    { return (void *)_ilInjector; }
 

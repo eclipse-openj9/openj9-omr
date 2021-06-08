@@ -729,16 +729,6 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes unsignedSubtractOpCode(TR::DataType type)
-      {
-      switch(type)
-         {
-         default: TR_ASSERT(0, "no unsigned sub opcode for this datatype");
-         }
-      TR_ASSERT_FATAL(0, "all unsigned subtract opcode has been deprecated. (eclipse/omr#2657)");
-      return TR::BadILOp;
-      }
-
    static TR::ILOpCodes multiplyOpCode(TR::DataType type)
       {
       switch(type)

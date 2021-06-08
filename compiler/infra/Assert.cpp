@@ -199,7 +199,7 @@ namespace TR
       {
       if (!_node) return;
 
-      static bool printFullContext = feGetEnv("TR_AssertFullContext");
+      static bool printFullContext = feGetEnv("TR_AssertFullContext") != NULL;
       TR::Compilation *comp = TR::comp();
       TR_Debug *debug = comp->findOrCreateDebug();
 
@@ -250,7 +250,7 @@ namespace TR
       {
       if (!_instruction) return;
 
-      static bool printFullContext = feGetEnv("TR_AssertFullContext");
+      static bool printFullContext = feGetEnv("TR_AssertFullContext") != NULL;
       static int numInstructionsInContext = feGetEnv("TR_AssertNumInstructionsInContext") ?
          atoi(feGetEnv("TR_AssertNumInstructionsInContext")) : 11;
       TR_Debug *debug = TR::comp()->findOrCreateDebug();
@@ -285,11 +285,6 @@ namespace TR
 
       fflush(stderr);
       NodeAssertionContext(_instruction->getNode()).printContext();
-      }
-
-   void assert_with_instruction_detail(void *instr)
-      {
-      assert_with_instruction_detail(reinterpret_cast<TR::Instruction *>(instr));
       }
 
    void OMR_NORETURN fatal_assertion_with_detail(const AssertionContext& ctx, const char *file, int line, const char *condition, const char *format, ...)

@@ -1889,6 +1889,7 @@ omrsysinfo_get_OS_type(struct OMRPortLibrary *portLibrary)
 }
 
 #if defined(OSX)
+#define COMPAT_PLIST_LINK "/System/Library/CoreServices/.SystemVersionPlatform.plist"
 #define KERN_OSPRODUCTVERSION "kern.osproductversion"
 #define PLIST_FILE "/System/Library/CoreServices/SystemVersion.plist"
 #define PRODUCT_VERSION_ELEMENT "<key>ProductVersion</key>"
@@ -1910,7 +1911,7 @@ const char *
 omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 {
 	if (NULL == PPG_si_osVersion) {
-		int rc = -1;
+		int64_t rc = -1;
 #if defined(OSX)
 		char *versionString = NULL;
 		char *allocatedFileBuffer = NULL;
@@ -1935,21 +1936,28 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 		if (rc < 0) { /* older version of MacOS.  Fall back to parsing the plist. */
 			intptr_t plistFile = portLibrary->file_open(portLibrary, PLIST_FILE, EsOpenRead, 0444);
 			if (plistFile >= 0) {
-				char myBuffer[512];  /* the file size is typically ~480 bytes */
-				char *buffer = myBuffer;
-				size_t len = (size_t) portLibrary->file_flength(portLibrary, plistFile);
-				rc = 0;
-				if (len >= sizeof(myBuffer)) { /* leave space for a terminating null */
-					allocatedFileBuffer = portLibrary->mem_allocate_memory(portLibrary, len + 1, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
-					buffer = allocatedFileBuffer;
+				char myBuffer[1024];  /* the file size is typically ~500 bytes */
+				char *buffer = NULL;
+				size_t fileLen = 0;
+				rc = portLibrary->file_flength(portLibrary, plistFile);
+				if (rc >= 0) {
+					fileLen = (size_t) rc;
+					if (fileLen >= sizeof(myBuffer)) { /* leave space for a terminating null */
+						allocatedFileBuffer = portLibrary->mem_allocate_memory(portLibrary, fileLen + 1,
+							OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+						buffer = allocatedFileBuffer;
+					} else {
+						buffer = myBuffer;
+					}
 				}
+				rc = 0;
 				if (NULL != buffer) {
 					char *readPtr = buffer;
-					size_t bytesRemaining = len;
+					size_t bytesRemaining = fileLen;
 					while (bytesRemaining > 0) {
 						intptr_t result = portLibrary->file_read(portLibrary, plistFile, readPtr, bytesRemaining);
 						if (result > 0) {
-							bytesRemaining -= result;
+							bytesRemaining -= (size_t)result;
 							readPtr += result;
 						} else {
 							rc = -1; /* error or unexpected EOF */
@@ -1957,7 +1965,7 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 						}
 					}
 					if (0 == rc) {
-						buffer[len] = '\0';
+						buffer[fileLen] = '\0';
 						readPtr = strstr(buffer, PRODUCT_VERSION_ELEMENT);
 						if (NULL != readPtr) {
 							readPtr = strstr(readPtr + sizeof(PRODUCT_VERSION_ELEMENT) - 1, STRING_OPEN_TAG);
@@ -1978,6 +1986,7 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 				if (rc < 0) {
 					/* free the buffer if it was allocated */
 					portLibrary->mem_free_memory(portLibrary, allocatedFileBuffer);
+					allocatedFileBuffer = NULL;
 				}
 			}
 		}
@@ -2004,6 +2013,74 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 					rc = sysctlbyname(KERN_OSPRODUCTVERSION, buffer, &resultSize, NULL, 0);
 				}
 				buffer[resultSize] = '\0';
+
+				/* 10.16 is the version returned when in a backwards compatibility context in OSX versions 11+
+				 * so we check the plink symlink as that bypasses the compatibility context and returns the
+				 * real version info.
+				 */
+				if (0 == strcmp(buffer, "10.16")) {
+					portLibrary->mem_free_memory(portLibrary, buffer);
+					buffer = NULL;
+					len = 0;
+					portLibrary->mem_free_memory(portLibrary, allocatedFileBuffer);
+					allocatedFileBuffer = NULL;
+
+					intptr_t plistFile = portLibrary->file_open(portLibrary, COMPAT_PLIST_LINK, EsOpenRead, 0444);
+					if (plistFile >= 0) {
+						char myBuffer[1024];  /* the file size is ~500 bytes, 525 on a 11.3 */
+						char *fileBuffer = myBuffer;
+						size_t fileLen = 0;
+						rc = portLibrary->file_flength(portLibrary, plistFile);
+						if (rc > 0) {
+							fileLen = (size_t) rc;
+							if (fileLen >= sizeof(myBuffer)) { /* leave space for a terminating null */
+								allocatedFileBuffer = portLibrary->mem_allocate_memory(portLibrary, fileLen + 1,
+									OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+								fileBuffer = allocatedFileBuffer;
+							} else {
+								fileBuffer = myBuffer;
+							}
+						}
+
+						rc = 0;
+						if (NULL != fileBuffer) {
+							char *readPtr = fileBuffer;
+							size_t bytesRemaining = fileLen;
+							while (bytesRemaining > 0) {
+								intptr_t result = portLibrary->file_read(portLibrary, plistFile, readPtr, bytesRemaining);
+								if (result > 0) {
+									bytesRemaining -= (size_t)result;
+									readPtr += result;
+								} else {
+									rc = -1; /* error or unexpected EOF */
+									break;
+								}
+							}
+							if (0 == rc) {
+								fileBuffer[fileLen] = '\0';
+								readPtr = strstr(fileBuffer, PRODUCT_VERSION_ELEMENT);
+								if (NULL != readPtr) {
+									readPtr = strstr(readPtr + sizeof(PRODUCT_VERSION_ELEMENT) - 1, STRING_OPEN_TAG);
+								}
+								if (NULL != readPtr) {
+									versionString = readPtr + sizeof(STRING_OPEN_TAG) - 1;
+									readPtr = strstr(versionString, STRING_CLOSE_TAG);
+								}
+								if (NULL != readPtr) {
+									resultSize = readPtr - versionString;
+									len = resultSize + 1;
+									buffer = portLibrary->mem_allocate_memory(portLibrary, len,
+										OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+									if (NULL != buffer) {
+										memcpy(buffer, versionString, resultSize);
+										buffer[resultSize] = '\0';
+									}
+								}
+							}
+						}
+						portLibrary->file_close(portLibrary, plistFile);
+					}
+				}
 			}
 			/* allocatedFileBuffer is null if it was not allocated */
 			portLibrary->mem_free_memory(portLibrary, allocatedFileBuffer);

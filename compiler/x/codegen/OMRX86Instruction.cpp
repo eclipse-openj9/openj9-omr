@@ -4317,19 +4317,19 @@ generateFenceInstruction(TR::InstOpCode::Mnemonic op, TR::Node * node, TR::Node 
 TR::X86VirtualGuardNOPInstruction  *
 generateVirtualGuardNOPInstruction(TR::Node * node, TR_VirtualGuardSite *site, TR::RegisterDependencyConditions  *deps, TR::CodeGenerator *cg)
    {
-   return new (cg->trHeapMemory()) TR::X86VirtualGuardNOPInstruction(VirtualGuardNOP, node, site, deps, cg);
+   return new (cg->trHeapMemory()) TR::X86VirtualGuardNOPInstruction(TR::InstOpCode::vgnop, node, site, deps, cg);
    }
 
 TR::X86VirtualGuardNOPInstruction  *
 generateVirtualGuardNOPInstruction(TR::Node * node, TR_VirtualGuardSite *site, TR::RegisterDependencyConditions  *deps, TR::LabelSymbol *label, TR::CodeGenerator *cg)
    {
-   return new (cg->trHeapMemory()) TR::X86VirtualGuardNOPInstruction(VirtualGuardNOP, node, site, deps, cg, label);
+   return new (cg->trHeapMemory()) TR::X86VirtualGuardNOPInstruction(TR::InstOpCode::vgnop, node, site, deps, cg, label);
    }
 
 TR::X86VirtualGuardNOPInstruction  *
 generateVirtualGuardNOPInstruction(TR::Instruction *i, TR::Node * node, TR_VirtualGuardSite *site, TR::RegisterDependencyConditions  *deps, TR::LabelSymbol *label, TR::CodeGenerator *cg)
    {
-   return new (cg->trHeapMemory()) TR::X86VirtualGuardNOPInstruction(i, VirtualGuardNOP, node, site, deps, cg, label);
+   return new (cg->trHeapMemory()) TR::X86VirtualGuardNOPInstruction(i, TR::InstOpCode::vgnop, node, site, deps, cg, label);
    }
 
 bool TR::X86VirtualGuardNOPInstruction::usesRegister(TR::Register *reg)

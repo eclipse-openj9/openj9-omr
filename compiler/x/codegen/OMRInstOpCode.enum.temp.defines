@@ -1032,7 +1032,6 @@
 #define   DBImm1 OMR::InstOpCode::DBImm1
 #define   WRTBAR OMR::InstOpCode::WRTBAR
 #define   FPREGSPILL OMR::InstOpCode::FPREGSPILL
-#define   VirtualGuardNOP OMR::InstOpCode::VirtualGuardNOP
 #define   FCMPEVAL OMR::InstOpCode::FCMPEVAL
 #define   RestoreVMThread OMR::InstOpCode::RestoreVMThread
 #define   PPS_OPCount OMR::InstOpCode::PPS_OPCount

@@ -1044,7 +1044,6 @@
    DBImm1,
    WRTBAR,
    FPREGSPILL,
-   VirtualGuardNOP,
    FCMPEVAL,
    RestoreVMThread,
    PPS_OPCount,

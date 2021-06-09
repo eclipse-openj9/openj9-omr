@@ -565,7 +565,7 @@ uint8_t TR::X86LabelInstruction::getBinaryLengthLowerBound()
    if (getOpCodeValue() == TR::InstOpCode::label)
       return 0;
 
-   if (getOpCodeValue() == VirtualGuardNOP)
+   if (getOpCodeValue() == TR::InstOpCode::vgnop)
       {
       return 0;
       }
@@ -599,7 +599,7 @@ TR::X86LabelInstruction::enlarge(
    if (!getOpCode().isBranchOp())
       return OMR::X86::EnlargementResult(0, 0);
 
-   if (!getOpCode().hasIntImmediate() || !_permitShortening || getOpCodeValue() == VirtualGuardNOP)
+   if (!getOpCode().hasIntImmediate() || !_permitShortening || getOpCodeValue() == TR::InstOpCode::vgnop)
       return OMR::X86::EnlargementResult(0, 0);
 
    if ((maxEnlargementSize < requestedEnlargementSize && !allowPartialEnlargement)

@@ -1034,7 +1034,6 @@
 #define   DWImm2 OMR::InstOpCode::DWImm2
 #define   DBImm1 OMR::InstOpCode::DBImm1
 #define   WRTBAR OMR::InstOpCode::WRTBAR
-#define   ASSOCREGS OMR::InstOpCode::ASSOCREGS
 #define   FPREGSPILL OMR::InstOpCode::FPREGSPILL
 #define   VirtualGuardNOP OMR::InstOpCode::VirtualGuardNOP
 #define   LABEL OMR::InstOpCode::LABEL

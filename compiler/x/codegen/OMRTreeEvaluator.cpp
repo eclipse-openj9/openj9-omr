@@ -3504,7 +3504,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
       TR::Machine *machine = cg->machine();
 
       if (cg->enableRegisterAssociations() &&
-          cg->getAppendInstruction()->getOpCodeValue() != ASSOCREGS)
+          cg->getAppendInstruction()->getOpCodeValue() != TR::InstOpCode::assocreg)
          {
          machine->createRegisterAssociationDirective(cg->getAppendInstruction());
          }

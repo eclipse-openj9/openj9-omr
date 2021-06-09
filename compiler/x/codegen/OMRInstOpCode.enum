@@ -1046,7 +1046,6 @@
    DWImm2,
    DBImm1,
    WRTBAR,
-   ASSOCREGS,
    FPREGSPILL,
    VirtualGuardNOP,
    LABEL,

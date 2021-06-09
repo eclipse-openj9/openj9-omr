@@ -396,7 +396,7 @@ OMR::X86::Machine::findBestFreeGPRegister(TR::Instruction   *currentInstruction,
          if (cursor->getOpCodeValue() == PROCENTRY)
             break;
 
-         if (cursor->getOpCodeValue() == ASSOCREGS)
+         if (cursor->getOpCodeValue() == TR::InstOpCode::assocreg)
             continue;
 
          for (i = 0; i < numCandidates; i++)
@@ -1532,11 +1532,11 @@ OMR::X86::Machine::createRegisterAssociationDirective(TR::Instruction *cursor)
 
    associations->stopAddingPostConditions();
 
-   new (self()->cg()->trHeapMemory()) TR::Instruction(associations, ASSOCREGS, cursor, self()->cg());
+   new (self()->cg()->trHeapMemory()) TR::Instruction(associations, TR::InstOpCode::assocreg, cursor, self()->cg());
    if (cursor == self()->cg()->getAppendInstruction())
       self()->cg()->setAppendInstruction(cursor->getNext());
 
-   // There's no need to have a virtual appear in more than one ASSOCREGS after
+   // There's no need to have a virtual appear in more than one TR::InstOpCode::assocreg after
    // its live range has ended.  One is enough.  So we clear out all the dead
    // registers from the associations.
    //

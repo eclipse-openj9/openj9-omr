@@ -69,7 +69,7 @@ OMR::X86::Instruction::initialize(TR::CodeGenerator *cg, TR::RegisterDependencyC
    self()->assumeValidInstruction();
    self()->clobberRegsForRematerialisation();
 
-   if (cond && op != ASSOCREGS)
+   if (cond && op != TR::InstOpCode::assocreg)
       {
       cond->useRegisters(self(), cg);
 
@@ -126,7 +126,7 @@ void OMR::X86::Instruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
       return;
       }
 
-   if (self()->getOpCodeValue() != ASSOCREGS)
+   if (self()->getOpCodeValue() != TR::InstOpCode::assocreg)
       {
       if ((self()->cg()->getAssignmentDirection() == self()->cg()->Backward))
          {
@@ -139,7 +139,7 @@ void OMR::X86::Instruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
          self()->getDependencyConditions()->assignPostConditionRegisters(self(), kindsToBeAssigned, self()->cg());
          }
       }
-   else if ((self()->getOpCodeValue() == ASSOCREGS) && self()->cg()->enableRegisterAssociations())
+   else if ((self()->getOpCodeValue() == TR::InstOpCode::assocreg) && self()->cg()->enableRegisterAssociations())
       {
       if (kindsToBeAssigned & TR_GPR_Mask)
          {
@@ -255,7 +255,7 @@ void OMR::X86::Instruction::clobberRegsForRematerialisation()
    //
    if (  self()->cg()->enableRematerialisation()
       && self()->getDependencyConditions()
-      && (self()->getOpCodeValue() != ASSOCREGS)  // reg associations aren't really instructions, so they don't modify anything
+      && (self()->getOpCodeValue() != TR::InstOpCode::assocreg)  // reg associations aren't really instructions, so they don't modify anything
       && (self()->getOpCodeValue() != LABEL)      // labels must already be handled properly for a variety of reasons
       && (!self()->getOpCode().isShiftOp())
       && (!self()->getOpCode().isRotateOp())      // shifts and rotates often have a postcondition on ecx but don't clobber it

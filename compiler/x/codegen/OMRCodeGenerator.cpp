@@ -2372,7 +2372,7 @@ TR::RealRegister::RegNum OMR::X86::CodeGenerator::pickNOPRegister(TR::Instructio
       static const int32_t WINDOW_SIZE = 5;
       while (j <= WINDOW_SIZE && cursor)
          {
-         if (cursor->getOpCodeValue() != FENCE &&
+         if (cursor->getOpCodeValue() != TR::InstOpCode::fence &&
              cursor->getOpCodeValue() != LABEL)
             {
             ++j;

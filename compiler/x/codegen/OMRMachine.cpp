@@ -552,7 +552,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
       if (distance > FREE_BEST_REGISTER_SEARCH_DISTANCE)
          break;
 
-      if (cursor->getOpCodeValue() == FENCE)
+      if (cursor->getOpCodeValue() == TR::InstOpCode::fence)
          {
          // Don't walk past the start of the super (extended) block.
          // This is primarily for the non-linear register assigner because
@@ -564,7 +564,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
             break;
          }
 
-      if (cursor->getOpCodeValue() == FENCE ||
+      if (cursor->getOpCodeValue() == TR::InstOpCode::fence ||
           cursor->getOpCodeValue() == FPREGSPILL)
          continue;
 

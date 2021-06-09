@@ -1025,7 +1025,6 @@
 #define   VFNMSUB213SDRegRegMem OMR::InstOpCode::VFNMSUB213SDRegRegMem
 #define   VFNMSUB231SDRegRegReg OMR::InstOpCode::VFNMSUB231SDRegRegReg
 #define   VFNMSUB231SDRegRegMem OMR::InstOpCode::VFNMSUB231SDRegRegMem
-#define   FENCE OMR::InstOpCode::FENCE
 #define   VGFENCE OMR::InstOpCode::VGFENCE
 #define   PROCENTRY OMR::InstOpCode::PROCENTRY
 #define   DQImm64 OMR::InstOpCode::DQImm64

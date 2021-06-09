@@ -3445,7 +3445,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
       }
 
    TR::Instruction *fence =
-      generateFenceInstruction(FENCE,
+      generateFenceInstruction(TR::InstOpCode::fence,
                                node,
                                TR::Node::createRelative32BitFenceNode(node, &block->getInstructionBoundaries()._startPC),
                                cg);
@@ -3490,7 +3490,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
    TR::Compilation *comp = cg->comp();
    TR::TreeTop *nextTT = cg->getCurrentEvaluationTreeTop()->getNextTreeTop();
 
-   TR::X86FenceInstruction  *instr = generateFenceInstruction(FENCE, node, TR::Node::createRelative32BitFenceNode(node, &node->getBlock()->getInstructionBoundaries()._endPC), cg);
+   TR::X86FenceInstruction  *instr = generateFenceInstruction(TR::InstOpCode::fence, node, TR::Node::createRelative32BitFenceNode(node, &node->getBlock()->getInstructionBoundaries()._endPC), cg);
 
    node->getBlock()->setLastInstruction(instr);
 

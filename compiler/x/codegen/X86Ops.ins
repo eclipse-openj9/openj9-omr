@@ -4136,7 +4136,3 @@ INSTRUCTION(AdjustFramePtr, AdjustFramePtr, // Adjust frame pointer
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(0),
             PROPERTY1(IA32OpProp1_PseudoOp)),
-INSTRUCTION(ReturnMarker, ReturnMarker, // Return Marker for linkages that do not end with a RET instruction
-            BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
-            PROPERTY0(0),
-            PROPERTY1(IA32OpProp1_PseudoOp)),

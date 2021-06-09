@@ -231,7 +231,7 @@ void OMR::X86::Instruction::adjustVFPState(TR_VFPState *state, TR::CodeGenerator
          state->_displacement += static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
       else if (self()->getOpCode().isPopOp())
          state->_displacement -= static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
-      else if (self()->getOpCodeValue() == RET || self()->getOpCodeValue() == RETImm2 || self()->getOpCodeValue() == ReturnMarker)
+      else if (self()->getOpCodeValue() == RET || self()->getOpCodeValue() == RETImm2 || self()->getOpCodeValue() == TR::InstOpCode::retn)
          *state = cg->vfpResetInstruction()->getSavedState();
       }
    }

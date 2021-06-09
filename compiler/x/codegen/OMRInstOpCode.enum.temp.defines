@@ -1038,4 +1038,3 @@
 #define   PPS_OPCount OMR::InstOpCode::PPS_OPCount
 #define   PPS_OPField OMR::InstOpCode::PPS_OPField
 #define   AdjustFramePtr OMR::InstOpCode::AdjustFramePtr
-#define   ReturnMarker OMR::InstOpCode::ReturnMarker

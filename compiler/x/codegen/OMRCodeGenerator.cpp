@@ -1623,7 +1623,7 @@ bool OMR::X86::CodeGenerator::isReturnInstruction(TR::Instruction *instr)
    {
    if (instr->getOpCodeValue() == RET ||
        instr->getOpCodeValue() == RETImm2 ||
-       instr->getOpCodeValue() == ReturnMarker
+       instr->getOpCodeValue() == TR::InstOpCode::retn
       )
       return true;
    else

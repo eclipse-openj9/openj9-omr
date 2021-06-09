@@ -152,7 +152,7 @@ bool existsNextInstructionToTestFlags(TR::Instruction *startInstr,
           cursor->getOpCodeValue() != TR::InstOpCode::label   &&
           cursor->getOpCodeValue() != RET     &&
           cursor->getOpCodeValue() != RETImm2 &&
-          cursor->getOpCodeValue() != ReturnMarker &&
+          cursor->getOpCodeValue() != TR::InstOpCode::retn &&
           !cursor->getOpCode().isBranchOp());
 
    return false;
@@ -2732,7 +2732,7 @@ TR::Instruction *OMR::X86::Machine::freeBestFPRegister(TR::Instruction *prevInst
           cursor->getOpCodeValue() != TR::InstOpCode::label   &&
           cursor->getOpCodeValue() != RET     &&
           cursor->getOpCodeValue() != RETImm2 &&
-          cursor->getOpCodeValue() != ReturnMarker &&
+          cursor->getOpCodeValue() != TR::InstOpCode::retn &&
           !cursor->getOpCode().isBranchOp())
       {
       for (int i = 0; i < numCandidates; i++)

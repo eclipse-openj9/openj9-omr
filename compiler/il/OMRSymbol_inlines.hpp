@@ -731,6 +731,18 @@ OMR::Symbol::isSyncVolatile()
    return self()->isVolatile();
    }
 
+void
+OMR::Symbol::setDummyResolvedMethod()
+   {
+   _flags2.set(DummyResolvedMethod);
+   }
+
+bool
+OMR::Symbol::isDummyResolvedMethod()
+   {
+   return _flags2.testAny(DummyResolvedMethod);
+   }
+
 TR::RegisterMappedSymbol *
 OMR::Symbol::getRegisterMappedSymbol()
    {

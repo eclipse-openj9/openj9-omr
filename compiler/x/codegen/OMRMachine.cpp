@@ -393,7 +393,7 @@ OMR::X86::Machine::findBestFreeGPRegister(TR::Instruction   *currentInstruction,
            cursor && numCandidates > 1;
            cursor = cursor->getPrev())
          {
-         if (cursor->getOpCodeValue() == PROCENTRY)
+         if (cursor->getOpCodeValue() == TR::InstOpCode::proc)
             break;
 
          if (cursor->getOpCodeValue() == TR::InstOpCode::assocreg)
@@ -543,7 +543,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
         cursor;
         cursor = cursor->getPrev())
       {
-      if (cursor->getOpCodeValue() == PROCENTRY)
+      if (cursor->getOpCodeValue() == TR::InstOpCode::proc)
          break;
 
       if (numCandidates == 0)

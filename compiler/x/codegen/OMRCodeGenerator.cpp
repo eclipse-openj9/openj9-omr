@@ -602,9 +602,9 @@ OMR::X86::CodeGenerator::beginInstructionSelection()
       }
 
    if (self()->getAppendInstruction())
-      generateInstruction(PROCENTRY, startNode, self());
+      generateInstruction(TR::InstOpCode::proc, startNode, self());
    else
-      new (self()->trHeapMemory()) TR::Instruction(PROCENTRY, (TR::Instruction *)NULL, self());
+      new (self()->trHeapMemory()) TR::Instruction(TR::InstOpCode::proc, (TR::Instruction *)NULL, self());
 
    // Set the default FPCW to single precision mode if we are allowed to.
    //
@@ -1646,10 +1646,10 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    {
    LexicalTimer pt1("code generation", self()->comp()->phaseTimer());
 
-   // Generate fixup code for the interpreter entry point right before PROCENTRY
+   // Generate fixup code for the interpreter entry point right before TR::InstOpCode::proc
    //
    TR::Instruction * procEntryInstruction = self()->getFirstInstruction();
-   while (procEntryInstruction && procEntryInstruction->getOpCodeValue() != PROCENTRY)
+   while (procEntryInstruction && procEntryInstruction->getOpCodeValue() != TR::InstOpCode::proc)
       {
       procEntryInstruction = procEntryInstruction->getNext();
       }
@@ -1712,9 +1712,9 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    TR::Instruction * estimateCursor = self()->getFirstInstruction();
    int32_t estimate = 0;
 
-   // Estimate the binary length up to PROCENTRY
+   // Estimate the binary length up to TR::InstOpCode::proc
    //
-   while (estimateCursor && estimateCursor->getOpCodeValue() != PROCENTRY)
+   while (estimateCursor && estimateCursor->getOpCodeValue() != TR::InstOpCode::proc)
       {
       estimate       = estimateCursor->estimateBinaryLength(estimate);
       estimateCursor = estimateCursor->getNext();
@@ -1932,7 +1932,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
               self()->getBinaryBufferCursor() - instructionStart);
 
       if (self()->comp()->target().is64Bit() &&
-          (cursorInstruction->getOpCodeValue() == PROCENTRY))
+          (cursorInstruction->getOpCodeValue() == TR::InstOpCode::proc))
          {
          // A hack to set the linkage info word
          //

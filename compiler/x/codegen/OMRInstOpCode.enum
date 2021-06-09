@@ -1038,7 +1038,6 @@
    VFNMSUB231SDRegRegReg,
    VFNMSUB231SDRegRegMem,
    VGFENCE,
-   PROCENTRY,
    DQImm64,
    DDImm4,
    DWImm2,

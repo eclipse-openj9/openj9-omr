@@ -482,7 +482,7 @@ TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
 
    cg()->setFrameSizeInBytes(frameSize);
 
-   // Set the VFP state for the PROCENTRY instruction
+   // Set the VFP state for the TR::InstOpCode::proc instruction
    //
    if (properties.getAlwaysDedicateFramePointerRegister())
       {

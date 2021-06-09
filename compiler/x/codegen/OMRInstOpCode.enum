@@ -1046,7 +1046,6 @@
    WRTBAR,
    FPREGSPILL,
    VirtualGuardNOP,
-   LABEL,
    FCMPEVAL,
    RestoreVMThread,
    PPS_OPCount,

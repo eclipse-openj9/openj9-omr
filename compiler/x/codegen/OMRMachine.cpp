@@ -149,7 +149,7 @@ bool existsNextInstructionToTestFlags(TR::Instruction *startInstr,
       testMask = testMask & ~(cursor->getOpCode().getModifiedEFlags());
       }
    while (testMask &&
-          cursor->getOpCodeValue() != LABEL   &&
+          cursor->getOpCodeValue() != TR::InstOpCode::label   &&
           cursor->getOpCodeValue() != RET     &&
           cursor->getOpCodeValue() != RETImm2 &&
           cursor->getOpCodeValue() != ReturnMarker &&
@@ -2729,7 +2729,7 @@ TR::Instruction *OMR::X86::Machine::freeBestFPRegister(TR::Instruction *prevInst
    TR::Instruction  *cursor = prevInstruction->getNext()->getNext();
    while (numCandidates > 1                   &&
           cursor != NULL                      &&
-          cursor->getOpCodeValue() != LABEL   &&
+          cursor->getOpCodeValue() != TR::InstOpCode::label   &&
           cursor->getOpCodeValue() != RET     &&
           cursor->getOpCodeValue() != RETImm2 &&
           cursor->getOpCodeValue() != ReturnMarker &&

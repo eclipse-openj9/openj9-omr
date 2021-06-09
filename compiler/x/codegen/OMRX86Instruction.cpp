@@ -160,7 +160,7 @@ void TR::X86LabelInstruction::initialize(TR::LabelSymbol* sym, bool b)
    _outlinedInstructionBranch = NULL;
    _reloType = TR_NoRelocation;
    _permitShortening = true;
-   if (sym && self()->getOpCodeValue() == LABEL)
+   if (sym && self()->getOpCodeValue() == TR::InstOpCode::label)
       sym->setInstruction(this);
    else if (sym)
       sym->setDirectlyTargeted();
@@ -278,14 +278,14 @@ void TR::X86LabelInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned
          //
          getDependencyConditions()->assignPostConditionRegisters(this, kindsToBeAssigned, cg());
 
-         if (getOpCodeValue() == LABEL && getLabelSymbol()->isInternalControlFlowMerge())
+         if (getOpCodeValue() == TR::InstOpCode::label && getLabelSymbol()->isInternalControlFlowMerge())
             {
             // This is the merge label of a non-linear internal control flow region.
             // Record the register assigner state before continuing on the main path.
             //
             cg()->prepareForNonLinearRegisterAssignmentAtMerge(this);
             }
-         else if (getOpCodeValue() != LABEL && getLabelSymbol()->isStartOfColdInstructionStream())
+         else if (getOpCodeValue() != TR::InstOpCode::label && getLabelSymbol()->isStartOfColdInstructionStream())
             {
             if (getLabelSymbol()->isNonLinear() && cg()->getUseNonLinearRegisterAssigner())
                {
@@ -314,7 +314,7 @@ void TR::X86LabelInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned
          //
          getDependencyConditions()->assignPreConditionRegisters(this, kindsToBeAssigned, cg());
          }
-      else if (getOpCodeValue() != LABEL && getLabelSymbol()->isStartOfColdInstructionStream())
+      else if (getOpCodeValue() != TR::InstOpCode::label && getLabelSymbol()->isStartOfColdInstructionStream())
          {
          if (getLabelSymbol()->isNonLinear() && cg()->getUseNonLinearRegisterAssigner())
             {
@@ -330,7 +330,7 @@ void TR::X86LabelInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned
             assignOutlinedInstructions(kindsToBeAssigned, this);
             }
          }
-      else if (getOpCodeValue() == LABEL && getLabelSymbol()->isInternalControlFlowMerge())
+      else if (getOpCodeValue() == TR::InstOpCode::label && getLabelSymbol()->isInternalControlFlowMerge())
          {
          // This is the merge label of a non-linear internal control flow region.
          // Record the register assigner state before continuing on the main path.
@@ -1551,7 +1551,7 @@ void insertUnresolvedReferenceInstructionMemoryBarrier(TR::CodeGenerator *cg, in
       deps->stopAddingConditions();
 
       if (deps)
-         generateLabelInstruction(fenceInst, LABEL, doneLabel, deps, cg);
+         generateLabelInstruction(fenceInst, TR::InstOpCode::label, doneLabel, deps, cg);
 
    }
 
@@ -3580,7 +3580,7 @@ void TR::X86FPRemainderRegRegInstruction::assignRegisters(TR_RegisterKinds kinds
       TR::LabelSymbol *loopLabel = TR::LabelSymbol::create(cg()->trHeapMemory(),cg());
       TR::RegisterDependencyConditions  *deps = getDependencyConditions();
 
-      new (cg()->trHeapMemory()) TR::X86LabelInstruction(getPrev(), LABEL, loopLabel, cg());
+      new (cg()->trHeapMemory()) TR::X86LabelInstruction(getPrev(), TR::InstOpCode::label, loopLabel, cg());
       TR::Instruction  *cursor = new (cg()->trHeapMemory()) TR::X86RegInstruction( this, STSWAcc, accReg, cg());
       cursor = new (cg()->trHeapMemory()) TR::X86RegImmInstruction( cursor, TEST2RegImm2, accReg, 0x0400, cg());
       new (cg()->trHeapMemory()) TR::X86LabelInstruction( cursor, JNE4, loopLabel, deps, cg());
@@ -3948,11 +3948,11 @@ TR::Instruction* generateBreakOnDFSet(TR::CodeGenerator *cg, TR::Instruction* cu
    endLabel->setEndInternalControlFlow();
 
    const int32_t dfMask = 0x400;
-   cursor = generateLabelInstruction(cursor, LABEL, begLabel, cg);
+   cursor = generateLabelInstruction(cursor, TR::InstOpCode::label, begLabel, cg);
    cursor = generateMemImmInstruction(cursor, TEST2MemImm2, generateX86MemoryReference(espReal, 0, cg), dfMask, cg);
    cursor = generateLabelInstruction(cursor, JE1, endLabel, cg);
    cursor = generateInstruction(cursor, TR::InstOpCode::bad, cg);
-   cursor = generateLabelInstruction(cursor, LABEL, endLabel, cg);
+   cursor = generateLabelInstruction(cursor, TR::InstOpCode::label, endLabel, cg);
    cursor = generateInstruction(cursor, POPFD, cg);
 
    return cursor;

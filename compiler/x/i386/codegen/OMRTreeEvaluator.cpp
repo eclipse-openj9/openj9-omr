@@ -103,7 +103,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::longArithmeticCompareRegisterWithIm
    if (cg->enableRegisterInterferences())
       cg->getLiveRegisters(TR_GPR)->setByteRegisterAssociation(targetRegister);
 
-   generateLabelInstruction(LABEL, node, startLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
    compareGPRegisterToImmediate(node, cmpRegister->getHighOrder(), highValue, cg);
    generateRegInstruction(SETNE1Reg, node, targetRegister, cg);
    generateLabelInstruction(JNE4, node, highDoneLabel, cg);
@@ -114,7 +114,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::longArithmeticCompareRegisterWithIm
    generateRegInstruction(NEG1Reg, node, targetRegister, cg);
    generateLabelInstruction(JMP4, node, doneLabel, cg);
 
-   generateLabelInstruction(LABEL, node, highDoneLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, highDoneLabel, cg);
    generateLabelInstruction(secondBranchOpCode, node, doneLabel, cg);
    generateRegInstruction(NEG1Reg, node, targetRegister, cg);
    TR::RegisterDependencyConditions  *deps = generateRegisterDependencyConditions((uint8_t)0, 3, cg);
@@ -122,7 +122,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::longArithmeticCompareRegisterWithIm
    deps->addPostCondition(cmpRegister->getHighOrder(), TR::RealRegister::NoReg, cg);
    deps->addPostCondition(targetRegister, TR::RealRegister::ByteReg, cg);
 
-   generateLabelInstruction(LABEL, node, doneLabel, deps, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, deps, cg);
 
    generateRegRegInstruction(MOVSXReg4Reg1, node, targetRegister, targetRegister, cg);
 
@@ -152,7 +152,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::compareLongAndSetOrderedBoolean(
       TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
       startLabel->setStartInternalControlFlow();
       doneLabel->setEndInternalControlFlow();
-      generateLabelInstruction(LABEL, node, startLabel, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
 
       compareGPRegisterToImmediate(node, cmpRegister->getHighOrder(), highValue, cg);
 
@@ -171,7 +171,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::compareLongAndSetOrderedBoolean(
       deps->addPostCondition(cmpRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
       deps->addPostCondition(cmpRegister->getHighOrder(), TR::RealRegister::NoReg, cg);
       deps->addPostCondition(targetRegister, TR::RealRegister::NoReg, cg);
-      generateLabelInstruction(LABEL, node, doneLabel, deps, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, deps, cg);
 
       // Result of lcmpXX is an integer.
       //
@@ -217,7 +217,7 @@ void OMR::X86::I386::TreeEvaluator::compareLongsForOrder(
 
       startLabel->setStartInternalControlFlow();
       doneLabel->setEndInternalControlFlow();
-      generateLabelInstruction(LABEL, node, startLabel, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
 
       compareGPRegisterToImmediate(node, cmpRegister->getHighOrder(), highValue, cg);
 
@@ -248,7 +248,7 @@ void OMR::X86::I386::TreeEvaluator::compareLongsForOrder(
          deps->stopAddingConditions();
          }
 
-      generateLabelInstruction(LABEL, node, doneLabel, deps, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, deps, cg);
 
       if (deps)
          deps->setMayNeedToPopFPRegisters(true);
@@ -3489,7 +3489,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
             TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
             startLabel->setStartInternalControlFlow();
             doneLabel->setEndInternalControlFlow();
-            generateLabelInstruction(LABEL, node, startLabel, cg);
+            generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
             generateLabelInstruction(JE4, node, doneLabel, cg);
             // create the array of temporary allocated registers
             TR::Register *tempRegArray[TR_X86IntegerMultiplyDecomposer::MAX_NUM_REGISTERS];
@@ -3544,7 +3544,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
             deps->addPostCondition(multiplierRegister->getHighOrder(), TR::RealRegister::NoReg, cg);
             for (i=0; i < tempRegArraySize; i++)
                deps->addPostCondition(tempRegArray[i], TR::RealRegister::NoReg, cg);
-            generateLabelInstruction(LABEL, node, doneLabel, deps, cg);
+            generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, deps, cg);
             for (i=0; i < tempRegArraySize; i++)
                cg->stopUsingRegister(tempRegArray[i]);
             }
@@ -3685,7 +3685,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
             TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
             startLabel->setStartInternalControlFlow();
             doneLabel->setEndInternalControlFlow();
-            generateLabelInstruction(LABEL, node, startLabel, cg);
+            generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
             generateLabelInstruction(JE4, node, doneLabel, cg);
 
             // reset the array of temporary registers
@@ -3742,7 +3742,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
             deps->addPostCondition(multiplierRegister->getHighOrder(), TR::RealRegister::NoReg, cg);
             for (i=0; i < tempRegArraySize; i++)
                deps->addPostCondition(tempRegArray[i], TR::RealRegister::NoReg, cg);
-            generateLabelInstruction(LABEL, node, doneLabel, deps, cg);
+            generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, deps, cg);
             for (i=0; i < tempRegArraySize; i++)
                cg->stopUsingRegister(tempRegArray[i]);
             }
@@ -3812,7 +3812,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairDivEvaluator(TR::Node *n
    startLabel->setStartInternalControlFlow();
    doneLabel->setEndInternalControlFlow();
 
-   generateLabelInstruction(LABEL, node, startLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
 
    generateRegRegInstruction(MOV4RegReg, node, highRegister, secondHigh, cg);
    generateRegRegInstruction(OR4RegReg, node, highRegister, firstHigh, cg);
@@ -3834,7 +3834,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairDivEvaluator(TR::Node *n
 
    generateLabelInstruction(JMP4, node, doneLabel, cg);
 
-   generateLabelInstruction(LABEL, node, callLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, callLabel, cg);
 
    TR::RegisterDependencyConditions  *dependencies = generateRegisterDependencyConditions((uint8_t)0, 2, cg);
    dependencies->addPostCondition(lowRegister, TR::RealRegister::eax, cg);
@@ -3867,7 +3867,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairDivEvaluator(TR::Node *n
    labelDependencies->addPostCondition(firstRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
    labelDependencies->addPostCondition(secondRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
 
-   generateLabelInstruction(LABEL, node, doneLabel, labelDependencies, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, labelDependencies, cg);
 
    TR::Register *targetRegister = cg->allocateRegisterPair(lowRegister, highRegister);
    node->setRegister(targetRegister);
@@ -3919,7 +3919,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairRemEvaluator(TR::Node *n
    startLabel->setStartInternalControlFlow();
    doneLabel->setEndInternalControlFlow();
 
-   generateLabelInstruction(LABEL, node, startLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
 
    generateRegRegInstruction(MOV4RegReg, node, highRegister, secondHigh, cg);
    generateRegRegInstruction(OR4RegReg, node, highRegister, firstHigh, cg);
@@ -3938,7 +3938,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairRemEvaluator(TR::Node *n
    generateRegRegInstruction(XOR4RegReg, node, highRegister, highRegister, cg);
    generateLabelInstruction(JMP4, node, doneLabel, cg);
 
-   generateLabelInstruction(LABEL, node, callLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, callLabel, cg);
 
    TR::RegisterDependencyConditions  *dependencies = generateRegisterDependencyConditions((uint8_t)4, 6, cg);
 
@@ -3981,7 +3981,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::integerPairRemEvaluator(TR::Node *n
    movDependencies->addPostCondition(firstRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
    movDependencies->addPostCondition(secondRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
 
-   generateLabelInstruction(LABEL, node, doneLabel, movDependencies, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, movDependencies, cg);
 
    TR::Register *targetRegister = cg->allocateRegisterPair(lowRegister, highRegister);
    node->setRegister(targetRegister);
@@ -5601,17 +5601,17 @@ TR::Register *OMR::X86::I386::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR
       {
       lab0->setStartInternalControlFlow();
       lab2->setEndInternalControlFlow();
-      generateLabelInstruction(LABEL, node, lab0, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, lab0, cg);
       generateRegImmInstruction(CMP4RegImm4, node, highReg, 0x7FF00000, cg);
       generateLabelInstruction(JG4, node, lab1, cg);
       generateLabelInstruction(JE4, node, lab3, cg);
       generateRegImmInstruction(CMP4RegImm4, node, highReg, 0xFFF00000, cg);
       generateLabelInstruction(JA4, node, lab1, cg);
       generateLabelInstruction(JB4, node, lab2, cg);
-      generateLabelInstruction(LABEL, node, lab3, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, lab3, cg);
       generateRegRegInstruction(TEST4RegReg, node, lowReg, lowReg, cg);
       generateLabelInstruction(JE4, node, lab2, cg);
-      generateLabelInstruction(LABEL, node, lab1, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, lab1, cg);
       generateRegImmInstruction(MOV4RegImm4, node, highReg, 0x7FF80000, cg);
       generateRegRegInstruction(XOR4RegReg, node, lowReg, lowReg, cg);
       }
@@ -5619,7 +5619,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR
    TR::RegisterDependencyConditions  *deps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)2, cg);
    deps->addPostCondition(lowReg, TR::RealRegister::NoReg, cg);
    deps->addPostCondition(highReg, TR::RealRegister::NoReg, cg);
-   generateLabelInstruction(LABEL, node, lab2, deps, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, lab2, deps, cg);
 
    TR::RegisterPair *target = cg->allocateRegisterPair(lowReg, highReg);
    node->setRegister(target);
@@ -5707,7 +5707,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, T
          doneLabel->setEndInternalControlFlow();
 
          cmpRegister = cg->evaluate(firstChild);
-         generateLabelInstruction(LABEL, node, startLabel, cg);
+         generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
          compareGPRegisterToConstantForEquality(node, lowValue, cmpRegister->getLowOrder(), cg);
 
          // Evaluate the global register dependencies and emit the branches by hand;
@@ -5739,7 +5739,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, T
             deps->addPostCondition(cmpRegister->getHighOrder(), TR::RealRegister::NoReg, cg);
             }
 
-         generateLabelInstruction(LABEL, node, doneLabel, deps, cg);
+         generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, deps, cg);
 
          if (!popRegisters.isEmpty())
             {

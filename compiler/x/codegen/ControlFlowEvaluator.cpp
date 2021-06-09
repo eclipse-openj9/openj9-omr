@@ -224,7 +224,7 @@ bool isConditionCodeSetForCompareToZero(TR::Node *node, bool justTestZeroFlag)
             }
          }
 
-      if (prevInstr->getOpCodeValue() == LABEL)
+      if (prevInstr->getOpCodeValue() == TR::InstOpCode::label)
          {
          // This instruction is a possible branch target.
          return false;
@@ -291,7 +291,7 @@ static void binarySearchCaseSpace(TR::Register *selectorReg,
       TR::LabelSymbol *pivotLabel = generateLabelSymbol(cg);
       startLabel->setStartInternalControlFlow();
       pivotLabel->setEndInternalControlFlow();
-      generateLabelInstruction(LABEL, lookupNode, startLabel, cg);
+      generateLabelInstruction(TR::InstOpCode::label, lookupNode, startLabel, cg);
 
       // We are guaranteed that the case children are sorted.
       // Image the Z32 number lines
@@ -324,7 +324,7 @@ static void binarySearchCaseSpace(TR::Register *selectorReg,
          {
          binarySearchCaseSpace(selectorReg, lookupNode, lowChild, pivot, evaluateDefaultGlRegDeps, cg);
          }
-      generateLabelInstruction(LABEL, lookupNode, pivotLabel, cg);
+      generateLabelInstruction(TR::InstOpCode::label, lookupNode, pivotLabel, cg);
       }
    else
       TR_ASSERT(pivot == lowChild - 1 && lowChild == highChild, "unexpected pivot value in binarySearchCaseSpace");
@@ -369,7 +369,7 @@ TR::Register *OMR::X86::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::CodeG
 
    startLabel->setStartInternalControlFlow();
    endLabel->setEndInternalControlFlow();
-   generateLabelInstruction(LABEL, node, startLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
 
    for (int i=1; i< node->getNumChildren(); i++)
       {
@@ -421,7 +421,7 @@ TR::Register *OMR::X86::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::CodeG
 
    deps->addPostCondition(selectorReg, depsRegisterIndex, cg);
    deps->stopAddingConditions();
-   generateLabelInstruction(LABEL, node, endLabel, deps, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, endLabel, deps, cg);
 
    return NULL;
    }

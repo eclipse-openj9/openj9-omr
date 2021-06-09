@@ -484,7 +484,7 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node       *
 
    startLabel->setStartInternalControlFlow();
    doneLabel->setEndInternalControlFlow();
-   generateLabelInstruction(LABEL, root, startLabel, cg());
+   generateLabelInstruction(TR::InstOpCode::label, root, startLabel, cg());
 
    if (getCmpReg1Reg2())
       {
@@ -727,7 +727,7 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node       *
       lowMR->decNodeReferenceCounts(cg());
 
    deps->stopAddingConditions();
-   generateLabelInstruction(LABEL, root, doneLabel, deps, cg());
+   generateLabelInstruction(TR::InstOpCode::label, root, doneLabel, deps, cg());
 
    if (delayedFirst)
       {
@@ -847,7 +847,7 @@ void TR_X86CompareAnalyser::longEqualityCompareAndBranchAnalyser(TR::Node       
       deps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)numAdditionalRegDeps, cg());
       }
 
-   generateLabelInstruction(LABEL, root, startLabel, cg());
+   generateLabelInstruction(TR::InstOpCode::label, root, startLabel, cg());
 
    if (getCmpReg1Reg2())
       {
@@ -938,10 +938,10 @@ void TR_X86CompareAnalyser::longEqualityCompareAndBranchAnalyser(TR::Node       
    //
    if (deps != NULL && createdFirstLabel != false)
       {
-      generateLabelInstruction(LABEL, root, firstBranchLabel, deps, cg());
+      generateLabelInstruction(TR::InstOpCode::label, root, firstBranchLabel, deps, cg());
       }
 
-   generateLabelInstruction(LABEL, root, endLabel, deps, cg());
+   generateLabelInstruction(TR::InstOpCode::label, root, endLabel, deps, cg());
 
    if (lowMR != NULL)
       lowMR->decNodeReferenceCounts(cg());
@@ -1095,7 +1095,7 @@ TR::Register *TR_X86CompareAnalyser::longOrderedBooleanAnalyser(TR::Node       *
 
    startLabel->setStartInternalControlFlow();
    doneLabel->setEndInternalControlFlow();
-   generateLabelInstruction(LABEL, root, startLabel, cg());
+   generateLabelInstruction(TR::InstOpCode::label, root, startLabel, cg());
 
    if (getCmpReg1Reg2())
       {
@@ -1149,7 +1149,7 @@ TR::Register *TR_X86CompareAnalyser::longOrderedBooleanAnalyser(TR::Node       *
       lowMR->decNodeReferenceCounts(cg());
       }
    deps->stopAddingConditions();
-   generateLabelInstruction(LABEL, root, doneLabel, deps, cg());
+   generateLabelInstruction(TR::InstOpCode::label, root, doneLabel, deps, cg());
 
    generateRegRegInstruction(MOVZXReg4Reg1, root, setRegister, setRegister, cg());
 
@@ -1207,7 +1207,7 @@ TR::Register *TR_X86CompareAnalyser::longCMPAnalyser(TR::Node *root)
 
    startLabel->setStartInternalControlFlow();
    doneLabel->setEndInternalControlFlow();
-   generateLabelInstruction(LABEL, root, startLabel, cg());
+   generateLabelInstruction(TR::InstOpCode::label, root, startLabel, cg());
 
    if (getCmpReg1Reg2())
       {
@@ -1248,7 +1248,7 @@ TR::Register *TR_X86CompareAnalyser::longCMPAnalyser(TR::Node *root)
    generateLabelInstruction(JAE4, root, doneLabel, cg());
    generateRegInstruction(NEG1Reg, root, setRegister, cg());
    generateLabelInstruction(JMP4, root, doneLabel, cg());
-   generateLabelInstruction(LABEL, root, highDoneLabel, cg());
+   generateLabelInstruction(TR::InstOpCode::label, root, highDoneLabel, cg());
    generateLabelInstruction(JGE4, root, doneLabel, cg());
    generateRegInstruction(NEG1Reg, root, setRegister, cg());
 
@@ -1268,7 +1268,7 @@ TR::Register *TR_X86CompareAnalyser::longCMPAnalyser(TR::Node *root)
       lowMR->decNodeReferenceCounts(cg());
       }
    deps->stopAddingConditions();
-   generateLabelInstruction(LABEL, root, doneLabel, deps, cg());
+   generateLabelInstruction(TR::InstOpCode::label, root, doneLabel, deps, cg());
 
    generateRegRegInstruction(MOVSXReg4Reg1, root, setRegister, setRegister, cg());
 

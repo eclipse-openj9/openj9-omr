@@ -1182,7 +1182,7 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpEvaluator(TR::Node *node, TR:
    TR::Register *xmm2Reg = cg->allocateRegister(TR_FPR);
    TR::Machine *machine = cg->machine();
 
-   generateLabelInstruction(LABEL, node, startLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
    generateRegRegInstruction(MOVRegReg(), node, deltaReg, s1Reg, cg);
    generateRegRegInstruction(SUBRegReg(), node, deltaReg, s2Reg, cg); // delta = s1 - s2
    generateRegRegInstruction(MOVRegReg(), node, qwordCounterReg, strLenReg, cg);
@@ -1191,7 +1191,7 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpEvaluator(TR::Node *node, TR:
 
    cg->stopUsingRegister(s1Reg);
 
-   generateLabelInstruction(LABEL, node, qwordLoop, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, qwordLoop, cg);
    generateRegMemInstruction(MOVUPSRegMem, node, xmm2Reg, generateX86MemoryReference(s2Reg, 0, cg), cg);
    generateRegMemInstruction(MOVUPSRegMem, node, xmm1Reg, generateX86MemoryReference(s2Reg, deltaReg, 0, cg), cg);
    generateRegRegInstruction(PCMPEQBRegReg, node, xmm1Reg, xmm2Reg, cg);
@@ -1208,14 +1208,14 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpEvaluator(TR::Node *node, TR:
 
    cg->stopUsingRegister(qwordCounterReg);
 
-   generateLabelInstruction(LABEL, node, byteStart, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, byteStart, cg);
    generateRegRegInstruction(MOVRegReg(), node, byteCounterReg, strLenReg, cg);
    generateRegImmInstruction(ANDRegImm4(), node, byteCounterReg, 0xf, cg);
    generateLabelInstruction(JE4, node, equalLabel, cg);
 
    cg->stopUsingRegister(strLenReg);
 
-   generateLabelInstruction(LABEL, node, byteLoop, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, byteLoop, cg);
    generateRegMemInstruction(L1RegMem, node, s2ByteVer1Reg, generateX86MemoryReference(s2Reg, 0, cg), cg);
    generateMemRegInstruction(CMP1MemReg, node, generateX86MemoryReference(s2Reg, deltaReg, 0, cg), s2ByteVer1Reg, cg);
    generateLabelInstruction(JNE4, node, byteUnequal, cg);
@@ -1230,7 +1230,7 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpEvaluator(TR::Node *node, TR:
 
    generateLabelInstruction(JMP4, node, equalLabel, cg);
 
-   generateLabelInstruction(LABEL, node, qwordUnequal, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, qwordUnequal, cg);
    generateRegInstruction(NOT2Reg, node, equalTestReg, cg);
    generateRegRegInstruction(BSF2RegReg, node, equalTestReg, equalTestReg, cg);
    generateRegRegInstruction(ADDRegReg(), node, deltaReg, equalTestReg, cg);
@@ -1242,18 +1242,18 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpEvaluator(TR::Node *node, TR:
    cg->stopUsingRegister(s2Reg);
    cg->stopUsingRegister(deltaReg);
 
-   generateLabelInstruction(LABEL, node, byteUnequal, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, byteUnequal, cg);
    generateLabelInstruction(JB4, node, lessThanLabel, cg);
 
-   generateLabelInstruction(LABEL, node, greaterThanLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, greaterThanLabel, cg);
    generateRegImmInstruction(MOVRegImm4(), node, resultReg, 2, cg);
    generateLabelInstruction(JMP4, node, doneLabel, cg);
 
-   generateLabelInstruction(LABEL, node, lessThanLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, lessThanLabel, cg);
    generateRegImmInstruction(MOVRegImm4(), node, resultReg, 1, cg);
    generateLabelInstruction(JMP4, node, doneLabel, cg);
 
-   generateLabelInstruction(LABEL, node, equalLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, equalLabel, cg);
    generateRegImmInstruction(MOVRegImm4(), node, resultReg, 0, cg);
 
    TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions((uint8_t) 0, 8, cg);
@@ -1266,7 +1266,7 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpEvaluator(TR::Node *node, TR:
    deps->addPostCondition(s2ByteVer2Reg, TR::RealRegister::ByteReg, cg);
    deps->addPostCondition(s2ByteVer1Reg, TR::RealRegister::ByteReg, cg);
 
-   generateLabelInstruction(LABEL, node, doneLabel, deps, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, deps, cg);
 
    node->setRegister(resultReg);
 
@@ -1311,12 +1311,12 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpLenEvaluator(TR::Node *node, 
    TR::Machine *machine = cg->machine();
 
    generateRegImmInstruction(MOVRegImm4(), node, resultReg, 0, cg);
-   generateLabelInstruction(LABEL, node, startLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
    generateRegRegInstruction(MOVRegReg(), node, qwordCounterReg, strLenReg, cg);
    generateRegImmInstruction(SHRRegImm1(), node, qwordCounterReg, 4, cg);
    generateLabelInstruction(JE4,node, byteStart, cg);
 
-   generateLabelInstruction(LABEL, node, qwordLoop, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, qwordLoop, cg);
    generateRegMemInstruction(MOVUPSRegMem, node, xmm1Reg, generateX86MemoryReference(s1Reg, resultReg, 0, cg), cg);
    generateRegMemInstruction(MOVUPSRegMem, node, xmm2Reg, generateX86MemoryReference(s2Reg, resultReg, 0, cg), cg);
    generateRegRegInstruction(PCMPEQBRegReg, node, xmm1Reg, xmm2Reg, cg);
@@ -1333,7 +1333,7 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpLenEvaluator(TR::Node *node, 
 
    generateLabelInstruction(JMP4, node, byteStart, cg);
 
-   generateLabelInstruction(LABEL, node, qwordUnequal, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, qwordUnequal, cg);
    generateRegInstruction(NOT2Reg, node, equalTestReg, cg);
    generateRegRegInstruction(BSF2RegReg, node, equalTestReg, equalTestReg, cg);
    generateRegRegInstruction(ADDRegReg(), node, resultReg, equalTestReg, cg);
@@ -1342,13 +1342,13 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpLenEvaluator(TR::Node *node, 
    cg->stopUsingRegister(qwordCounterReg);
    cg->stopUsingRegister(equalTestReg);
 
-   generateLabelInstruction(LABEL, node, byteStart, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, byteStart, cg);
    generateRegRegInstruction(MOVRegReg(), node, byteCounterReg, strLenReg, cg);
    generateRegImmInstruction(ANDRegImm4(), node, byteCounterReg, 0xf, cg);
    generateLabelInstruction(JE4, node, doneLabel, cg);
    cg->stopUsingRegister(strLenReg);
 
-   generateLabelInstruction(LABEL, node, byteLoop, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, byteLoop, cg);
    generateRegMemInstruction(L1RegMem, node, s2ByteReg, generateX86MemoryReference(s2Reg, resultReg, 0, cg), cg);
    generateMemRegInstruction(CMP1MemReg, node, generateX86MemoryReference(s1Reg, resultReg, 0, cg), s2ByteReg, cg);
    generateLabelInstruction(JNE4, node, doneLabel, cg);
@@ -1375,7 +1375,7 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpLenEvaluator(TR::Node *node, 
    deps->addPostCondition(s2Reg, TR::RealRegister::NoReg, cg);
    deps->addPostCondition(s1Reg, TR::RealRegister::NoReg, cg);
 
-   generateLabelInstruction(LABEL, node, doneLabel, deps, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, deps, cg);
    node->setRegister(resultReg);
 
    cg->decReferenceCount(s1AddrNode);
@@ -1640,7 +1640,7 @@ static void arrayCopy64BitPrimitiveOnIA32(TR::Node* node, TR::Register* dstReg, 
 
    TR::LabelSymbol* loopLabel = generateLabelSymbol(cg);
 
-   generateLabelInstruction(LABEL, node, startLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
 
    // Example:
    // ; obtain distance from source to destination
@@ -1682,13 +1682,13 @@ static void arrayCopy64BitPrimitiveOnIA32(TR::Node* node, TR::Register* dstReg, 
 
    generateRegImmInstruction(SHRRegImm1(), node, sizeReg, 3, cg);
    generateLabelInstruction(JRCXZ1, node, endLabel, cg);
-   generateLabelInstruction(LABEL, node, loopLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, loopLabel, cg);
    generateRegMemInstruction(MOVQRegMem, node, XMM, generateX86MemoryReference(srcReg, 0, cg), cg);
    generateMemRegInstruction(MOVQMemReg, node, generateX86MemoryReference(dstReg, srcReg, 0, cg), XMM, cg);
    generateRegMemInstruction(LEARegMem(), node, srcReg, generateX86MemoryReference(srcReg, scratch, 3, cg), cg);
    generateLabelInstruction(LOOP1, node, loopLabel, cg);
 
-   generateLabelInstruction(LABEL, node, endLabel, dependencies, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, endLabel, dependencies, cg);
    cg->stopUsingRegister(XMM);
    cg->stopUsingRegister(scratch);
    }
@@ -1726,7 +1726,7 @@ static void arrayCopy16BitPrimitive(TR::Node* node, TR::Register* dstReg, TR::Re
    mainBegLabel->setStartInternalControlFlow();
    mainEndLabel->setEndInternalControlFlow();
 
-   generateLabelInstruction(LABEL, node, mainBegLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, mainBegLabel, cg);
    if (node->isForwardArrayCopy())
       {
       generateRegImmInstruction(SHRRegImm1(), node, sizeReg, 2, cg);
@@ -1761,7 +1761,7 @@ static void arrayCopy16BitPrimitive(TR::Node* node, TR::Register* dstReg, TR::Re
       og.endOutlinedInstructionSequence();
       }
       }
-   generateLabelInstruction(LABEL, node, mainEndLabel, dependencies, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, mainEndLabel, dependencies, cg);
    }
 
 /** \brief
@@ -1823,7 +1823,7 @@ static void arrayCopyDefault(TR::Node* node, uint8_t elementSize, TR::Register* 
       mainBegLabel->setStartInternalControlFlow();
       mainEndLabel->setEndInternalControlFlow();
 
-      generateLabelInstruction(LABEL, node, mainBegLabel, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, mainBegLabel, cg);
 
       generateRegRegInstruction(SUBRegReg(), node, dstReg, srcReg, cg);  // dst = dst - src
       generateRegRegInstruction(CMPRegReg(), node, dstReg, sizeReg, cg); // cmp dst, size
@@ -1842,7 +1842,7 @@ static void arrayCopyDefault(TR::Node* node, uint8_t elementSize, TR::Register* 
       og.endOutlinedInstructionSequence();
       }
 
-      generateLabelInstruction(LABEL, node, mainEndLabel, dependencies, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, mainEndLabel, dependencies, cg);
       }
    }
 
@@ -2572,7 +2572,7 @@ static void arraySet64BitPrimitiveOnIA32(TR::Node* node, TR::Register* addressRe
 
    TR::LabelSymbol* loopLabel = generateLabelSymbol(cg);
 
-   generateLabelInstruction(LABEL, node, startLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
 
    // Load value to one XMM register
    switch (valueReg->getKind())
@@ -2601,11 +2601,11 @@ static void arraySet64BitPrimitiveOnIA32(TR::Node* node, TR::Register* addressRe
    //   # LOOP END
    generateRegImmInstruction(SHRRegImm1(), node, sizeReg, 3, cg);
    generateLabelInstruction(JRCXZ1, node, endLabel, cg);
-   generateLabelInstruction(LABEL, node, loopLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, loopLabel, cg);
    generateMemRegInstruction(MOVQMemReg, node, generateX86MemoryReference(addressReg, sizeReg, 3, -8, cg), XMM, cg);
    generateLabelInstruction(LOOP1, node, loopLabel, cg);
 
-   generateLabelInstruction(LABEL, node, endLabel, deps, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, endLabel, deps, cg);
    cg->stopUsingRegister(XMM);
    }
 
@@ -3425,9 +3425,9 @@ TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
          }
 
       if (node->getNumChildren() > 0)
-         inst = generateLabelInstruction(LABEL, node, label, node->getFirstChild(), &popRegisters, cg);
+         inst = generateLabelInstruction(TR::InstOpCode::label, node, label, node->getFirstChild(), &popRegisters, cg);
       else
-         inst = generateLabelInstruction(LABEL, node, node->getLabel(), cg);
+         inst = generateLabelInstruction(TR::InstOpCode::label, node, node->getLabel(), cg);
 
       if (inst->getDependencyConditions())
          inst->getDependencyConditions()->setMayNeedToPopFPRegisters(true);
@@ -3512,9 +3512,9 @@ TR::Register *OMR::X86::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
       // This label is also used by RegisterDependency to detect the end of a block.
       TR::Instruction *labelInst = NULL;
       if (node->getNumChildren() > 0)
-         labelInst = generateLabelInstruction(LABEL, node, generateLabelSymbol(cg), node->getFirstChild(), NULL, cg);
+         labelInst = generateLabelInstruction(TR::InstOpCode::label, node, generateLabelSymbol(cg), node->getFirstChild(), NULL, cg);
       else
-         labelInst = generateLabelInstruction(LABEL, node, generateLabelSymbol(cg), cg);
+         labelInst = generateLabelInstruction(TR::InstOpCode::label, node, generateLabelSymbol(cg), cg);
 
        node->getBlock()->setLastInstruction(labelInst);
 
@@ -4002,7 +4002,7 @@ OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    startLabelConditions->addPostCondition(dummyReg, TR::RealRegister::eax, cg);
    startLabelConditions->stopAddingConditions();
    cg->stopUsingRegister(dummyReg);
-   generateLabelInstruction(LABEL, node, startLabel, startLabelConditions, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, startLabel, startLabelConditions, cg);
 
    //xbegin, if fallback then go to fallbackLabel
    generateLongLabelInstruction(XBEGIN4, node, fallbackLabel, cg);
@@ -4018,7 +4018,7 @@ OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    endLabelConditions->stopAddingConditions();
 
    //Label fallback begin:
-   generateLabelInstruction(LABEL, node, fallbackLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, fallbackLabel, cg);
 
    //test eax, 0x2
    generateRegImmInstruction(TEST1AccImm1, node, accReg, 0x2, cg);
@@ -4037,7 +4037,7 @@ OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       generateLabelInstruction(JMP4, node, persistentFailureLabel, cg);
 
    //Label finish
-   generateLabelInstruction(LABEL, node, endLabel, endLabelConditions, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, endLabel, endLabelConditions, cg);
 
    cg->decReferenceCount(persistentFailureNode);
    cg->decReferenceCount(transientFailureNode);
@@ -4306,7 +4306,7 @@ OMR::X86::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *
       generateRegRegInstruction(MOV4RegReg, node, indexReg, lengthReg, cg);
 
       // Test and decrement
-      generateLabelInstruction(LABEL, node, startLabel, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
       generateLabelInstruction(JRCXZ1, node, endLabel, cg);
       generateRegImmInstruction(SUB4RegImm4, node, indexReg, 1, cg);
 
@@ -4323,7 +4323,7 @@ OMR::X86::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *
 
       // Loop
       generateLabelInstruction(JMP4, node, startLabel, cg);
-      generateLabelInstruction(LABEL, node, endLabel, deps, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, endLabel, deps, cg);
 
       cg->stopUsingRegister(indexReg);
       }

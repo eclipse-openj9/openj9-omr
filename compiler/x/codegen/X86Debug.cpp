@@ -534,7 +534,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86LabelInstruction  * instr)
    printPrefix(pOutFile, instr);
    TR::LabelSymbol *label   = instr->getLabelSymbol();
    TR::Snippet *snippet = label ? label->getSnippet() : NULL;
-   if (instr->getOpCodeValue() == LABEL)
+   if (instr->getOpCodeValue() == TR::InstOpCode::label)
       {
       print(pOutFile, label);
 

@@ -753,7 +753,7 @@ TR::AMD64SystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    postDeps->stopAddingPostConditions();
 
    TR::LabelSymbol *postDepLabel = generateLabelSymbol(cg());
-   generateLabelInstruction(LABEL, callNode, postDepLabel, postDeps, cg());
+   generateLabelInstruction(TR::InstOpCode::label, callNode, postDepLabel, postDeps, cg());
 
    return returnReg;
    }
@@ -832,7 +832,7 @@ TR::Register *TR::AMD64SystemLinkage::buildDirectDispatch(
    cg()->stopUsingRegister(scratchReg);
 
    TR::LabelSymbol *postDepLabel = generateLabelSymbol(cg());
-   generateLabelInstruction(LABEL, callNode, postDepLabel, postDeps, cg());
+   generateLabelInstruction(TR::InstOpCode::label, callNode, postDepLabel, postDeps, cg());
 
    return returnReg;
    }

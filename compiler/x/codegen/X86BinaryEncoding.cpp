@@ -423,7 +423,7 @@ TR::X86LabelInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
    {
 
    if (!getOpCode().hasRelativeBranchDisplacement() &&
-       !(getOpCodeValue() == LABEL))
+       !(getOpCodeValue() == TR::InstOpCode::label))
       {
       if (getReloType() == TR_AbsoluteMethodAddress)
          {
@@ -537,7 +537,7 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
             }
          }
       }
-   else if (getOpCodeValue() == LABEL)
+   else if (getOpCodeValue() == TR::InstOpCode::label)
       {
       label->setCodeLocation(instructionStart);
       immediateCursor = cursor;
@@ -562,7 +562,7 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
 
 uint8_t TR::X86LabelInstruction::getBinaryLengthLowerBound()
    {
-   if (getOpCodeValue() == LABEL)
+   if (getOpCodeValue() == TR::InstOpCode::label)
       return 0;
 
    if (getOpCodeValue() == VirtualGuardNOP)
@@ -637,7 +637,7 @@ int32_t TR::X86LabelInstruction::estimateBinaryLength(int32_t currentEstimate)
          }
       setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + immediateLength);
       }
-   else if (getOpCodeValue() == LABEL)
+   else if (getOpCodeValue() == TR::InstOpCode::label)
       {
       getLabelSymbol()->setEstimatedCodeLocation(currentEstimate);
       }

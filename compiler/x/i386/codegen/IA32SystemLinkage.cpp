@@ -405,7 +405,7 @@ TR::Register *TR::IA32SystemLinkage::buildDirectDispatch(TR::Node *callNode, boo
    // this label rather than on the call
    //
    TR::LabelSymbol *endSystemCallSequence = generateLabelSymbol(cg());
-   generateLabelInstruction(LABEL, callNode, endSystemCallSequence, deps, cg());
+   generateLabelInstruction(TR::InstOpCode::label, callNode, endSystemCallSequence, deps, cg());
 
    // Stop using the killed registers that are not going to persist
    //

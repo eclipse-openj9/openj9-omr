@@ -2837,14 +2837,14 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, T
          startLabel->setStartInternalControlFlow();
          endLabel  ->setEndInternalControlFlow();
 
-         generateLabelInstruction(   LABEL,       node, startLabel,               cg);
+         generateLabelInstruction(   TR::InstOpCode::label,       node, startLabel,               cg);
          generateRegMemInstruction(  CMP8RegMem,  node, treg, nan1MR,             cg);
          generateLabelInstruction(   JGE4,        node, normalizeLabel,           cg);
          generateRegMemInstruction(  CMP8RegMem,  node, treg, nan2MR,             cg);
          generateLabelInstruction(   JB4,         node, endLabel,                 cg);
-         generateLabelInstruction(   LABEL,       node, normalizeLabel,           cg);
+         generateLabelInstruction(   TR::InstOpCode::label,       node, normalizeLabel,           cg);
          generateRegImm64Instruction( MOV8RegImm64, node, treg, DOUBLE_NAN,         cg);
-         generateLabelInstruction(   LABEL,       node, endLabel,           deps, cg);
+         generateLabelInstruction(   TR::InstOpCode::label,       node, endLabel,           deps, cg);
          }
       else
          {
@@ -2871,7 +2871,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, T
          // Fast path: if subtracting nanDetector leaves CF=0 or OF=1, then it
          // must be a NaN.
          //
-         generateLabelInstruction(  LABEL,       node, startLabel,           cg);
+         generateLabelInstruction(  TR::InstOpCode::label,       node, startLabel,           cg);
          generateRegMemInstruction( CMP8RegMem,  node, treg, nanDetectorMR,  cg);
          generateLabelInstruction(  JAE4,        node, slowPathLabel,        cg);
          generateLabelInstruction(  JO4,         node, slowPathLabel,        cg);
@@ -2887,7 +2887,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, T
 
          // Merge point
          //
-         generateLabelInstruction(LABEL, node, endLabel, internalControlFlowDeps, cg);
+         generateLabelInstruction(TR::InstOpCode::label, node, endLabel, internalControlFlowDeps, cg);
          }
       }
    node->setRegister(treg);

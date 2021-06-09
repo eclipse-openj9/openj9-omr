@@ -1997,7 +1997,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
          TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
          startLabel->setStartInternalControlFlow();
          doneLabel->setEndInternalControlFlow();
-         generateLabelInstruction(LABEL, node, startLabel, cg);
+         generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
 
          // Compute remainder assuming divisor is positive, but also
          // preserve divisor's sign bit in the answer.
@@ -2066,7 +2066,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
             generateRegInstruction(DECReg(nodeIs64Bit), node, tempRegister, cg);
             generateRegImmInstruction(ORRegImm4(nodeIs64Bit), node, tempRegister, (uint32_t) -dvalue, cg);
             generateRegInstruction(INCReg(nodeIs64Bit), node, tempRegister, cg);
-            generateLabelInstruction(LABEL, node, doneLabel, deps, cg);
+            generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, deps, cg);
             }
          else
             {
@@ -2092,7 +2092,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
                generateRegImmInstruction(ROL8RegImm1, node, tempRegister, 33, cg);
                }
             generateRegInstruction(INC8Reg, node, tempRegister, cg);
-            generateLabelInstruction(LABEL, node, doneLabel, deps, cg);
+            generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, deps, cg);
             }
 
          return tempRegister;
@@ -2378,10 +2378,10 @@ TR::Register *OMR::X86::TreeEvaluator::integerDivOrRemEvaluator(TR::Node *node, 
 
          // Only TR::getMinSigned<TR::Int32>() (or TR::getMinSigned<TR::Int64>()) will overflow when compared with 1
          //
-         generateLabelInstruction (LABEL, node, startLabel, cg);
+         generateLabelInstruction (TR::InstOpCode::label, node, startLabel, cg);
          generateRegImmInstruction(CMPRegImms(nodeIs64Bit), node, eaxRegister, 1, cg);
          generateLabelInstruction (JO4,   node, overflowSnippetLabel, cg);
-         generateLabelInstruction (LABEL, node, divisionLabel, cg);
+         generateLabelInstruction (TR::InstOpCode::label, node, divisionLabel, cg);
          }
 
       // Emit the appropriate division instruction(s)
@@ -2441,7 +2441,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerDivOrRemEvaluator(TR::Node *node, 
       //
       if (needsExplicitOverflowCheck)
          {
-         generateLabelInstruction(LABEL, node, restartLabel, allDeps, cg);
+         generateLabelInstruction(TR::InstOpCode::label, node, restartLabel, allDeps, cg);
 
          TR_ASSERT(divisorRegister != NULL, "Divide check snippet needs divisor in a register");
          cg->addSnippet(new (cg->trHeapMemory()) TR::X86DivideCheckSnippet(restartLabel,

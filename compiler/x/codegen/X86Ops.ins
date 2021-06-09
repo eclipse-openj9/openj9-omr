@@ -4120,10 +4120,6 @@ INSTRUCTION(VirtualGuardNOP, vgnop, // A virtual guard encoded as a NOP instruct
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(IA32OpProp_BranchOp | IA32OpProp_TestsZeroFlag),
             PROPERTY1(IA32OpProp1_PseudoOp)),
-INSTRUCTION(LABEL, Label, // Destination of a jump
-            BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
-            PROPERTY0(0),
-            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(FCMPEVAL, fcmpEval, // Instruction selection of FP comparisons at register assignment time
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(0),

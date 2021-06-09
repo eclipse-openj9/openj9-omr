@@ -256,7 +256,7 @@ void OMR::X86::Instruction::clobberRegsForRematerialisation()
    if (  self()->cg()->enableRematerialisation()
       && self()->getDependencyConditions()
       && (self()->getOpCodeValue() != TR::InstOpCode::assocreg)  // reg associations aren't really instructions, so they don't modify anything
-      && (self()->getOpCodeValue() != LABEL)      // labels must already be handled properly for a variety of reasons
+      && (self()->getOpCodeValue() != TR::InstOpCode::label)      // labels must already be handled properly for a variety of reasons
       && (!self()->getOpCode().isShiftOp())
       && (!self()->getOpCode().isRotateOp())      // shifts and rotates often have a postcondition on ecx but don't clobber it
       ){
@@ -309,7 +309,7 @@ OMR::X86::Instruction::rexBits()
 bool
 OMR::X86::Instruction::isLabel()
    {
-   return self()->getOpCodeValue() == LABEL;
+   return self()->getOpCodeValue() == TR::InstOpCode::label;
    }
 
 uint8_t *

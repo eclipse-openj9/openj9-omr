@@ -1065,7 +1065,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToInt(TR::Node *node, TR::Symbol
          }
       }
 
-   generateLabelInstruction(LABEL, node, startLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
 
    if (!optimizeF2IWithSSE && !optimizeD2IWithSSE2)
       {
@@ -1174,7 +1174,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToInt(TR::Node *node, TR::Symbol
       deps->addPostCondition(resultReg, TR::RealRegister::NoReg, cg);
       }
 
-   generateLabelInstruction(LABEL, node, reStartLabel, deps, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, reStartLabel, deps, cg);
 
    // We want the floating point register to be live through the snippet, so if it is
    // not referenced again we must pop it off the stack here.
@@ -1227,13 +1227,13 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
       generateRegRegInstruction(CVTTSD2SIReg4Reg, node, lowReg, doubleReg, cg);
       generateRegImmInstruction(CMP4RegImm4, node, lowReg, 0x80000000, cg);
 
-      generateLabelInstruction(LABEL, node, StartLabel, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, StartLabel, cg);
       generateLabelInstruction(JE4, node, CallLabel, cg);
 
       generateRegRegInstruction(MOV4RegReg, node, highReg ,lowReg, cg);
       generateRegImmInstruction(SAR4RegImm1, node, highReg , 31, cg);
 
-      generateLabelInstruction(LABEL, node, reStartLabel, deps, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, reStartLabel, deps, cg);
 
       TR::Register *targetRegister = cg->allocateRegisterPair(lowReg, highReg);
       TR::SymbolReference *d2l = comp->getSymRefTab()->findOrCreateRuntimeHelper(TR_IA32double2LongSSE);
@@ -1271,7 +1271,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
          TR::TreeEvaluator::insertPrecisionAdjustment(doubleReg, node, cg);
          }
 
-      generateLabelInstruction(LABEL, node, startLabel, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
 
       // These instructions must be set appropriately prior to the creation
       // of the snippet near the end of this method. Also see warnings below.
@@ -1350,7 +1350,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
          deps->addPostCondition(lowReg, TR::RealRegister::NoReg, cg);
          deps->addPostCondition(highReg, TR::RealRegister::NoReg, cg);
          }
-      generateLabelInstruction(LABEL, node, reStartLabel, deps, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, reStartLabel, deps, cg);
 
       // We want the floating point register to be live through the snippet, so if it is
       // not referenced again we must pop it off the stack here.
@@ -1432,7 +1432,7 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
       startLabel->setStartInternalControlFlow();
       endLabel->setEndInternalControlFlow();
 
-      generateLabelInstruction(LABEL, node, startLabel, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
 
       if (longTarget)
          {
@@ -1479,7 +1479,7 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
       og.endOutlinedInstructionSequence();
       }
 
-      generateLabelInstruction(LABEL, node, endLabel, deps, cg);
+      generateLabelInstruction(TR::InstOpCode::label, node, endLabel, deps, cg);
       if (longTarget)
          {
          generateRegInstruction(ROR8Reg1, node, targetRegister, cg);
@@ -1758,16 +1758,16 @@ TR::Register *OMR::X86::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Code
          TR::LabelSymbol *lab2 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
          lab0->setStartInternalControlFlow();
          lab2->setEndInternalControlFlow();
-         generateLabelInstruction(LABEL, node, lab0, cg);
+         generateLabelInstruction(TR::InstOpCode::label, node, lab0, cg);
          generateRegImmInstruction(CMP4RegImm4, node, target, FLOAT_NAN_1_LOW, cg);
          generateLabelInstruction(JGE4, node, lab1, cg);
          generateRegImmInstruction(CMP4RegImm4, node, target, FLOAT_NAN_2_LOW, cg);
          generateLabelInstruction(JB4, node, lab2, cg);
-         generateLabelInstruction(LABEL, node, lab1, cg);
+         generateLabelInstruction(TR::InstOpCode::label, node, lab1, cg);
          generateRegImmInstruction(MOV4RegImm4, node, target, FLOAT_NAN, cg);
          TR::RegisterDependencyConditions  *deps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)1, cg);
          deps->addPostCondition(target, TR::RealRegister::NoReg, cg);
-         generateLabelInstruction(LABEL, node, lab2, deps, cg);
+         generateLabelInstruction(TR::InstOpCode::label, node, lab2, deps, cg);
          }
       else
          {
@@ -1793,7 +1793,7 @@ TR::Register *OMR::X86::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Code
          // Fast path: if subtracting nanDetector leaves CF=0 or OF=1, then it
          // must be a NaN.
          //
-         generateLabelInstruction(  LABEL,       node, startLabel,        cg);
+         generateLabelInstruction(  TR::InstOpCode::label,       node, startLabel,        cg);
          generateRegImmInstruction( CMP4RegImm4, node, treg, nanDetector, cg);
          generateLabelInstruction(  JAE4,        node, slowPathLabel,     cg);
          generateLabelInstruction(  JO4,         node, slowPathLabel,     cg);
@@ -1809,7 +1809,7 @@ TR::Register *OMR::X86::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Code
 
          // Merge point
          //
-         generateLabelInstruction(LABEL, node, endLabel, internalControlFlowDeps, cg);
+         generateLabelInstruction(TR::InstOpCode::label, node, endLabel, internalControlFlowDeps, cg);
          }
       }
 
@@ -2087,10 +2087,10 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node  
             deps1->setNumPostConditions(0, cg->trMemory());
             deps->setNumPreConditions(0, cg->trMemory());
             }
-         generateLabelInstruction(LABEL, node, startLabel, cg);
+         generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
          generateLabelInstruction(JPE4, node, fallThroughLabel, deps1, cg);
          generateLabelInstruction(JE4, node, node->getBranchDestination()->getNode()->getLabel(), cg);
-         generateLabelInstruction(LABEL, node, fallThroughLabel, deps, cg);
+         generateLabelInstruction(TR::InstOpCode::label, node, fallThroughLabel, deps, cg);
          }
       else
          {
@@ -2185,7 +2185,7 @@ TR::Register *OMR::X86::TreeEvaluator::generateFPCompareResult(TR::Node *node, T
 
    startLabel->setStartInternalControlFlow();
    doneLabel->setEndInternalControlFlow();
-   generateLabelInstruction(LABEL, node, startLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, startLabel, cg);
 
    TR::Register *targetRegister = cg->allocateRegister(TR_GPR);
    cg->getLiveRegisters(TR_GPR)->setByteRegisterAssociation(targetRegister);
@@ -2202,7 +2202,7 @@ TR::Register *OMR::X86::TreeEvaluator::generateFPCompareResult(TR::Node *node, T
 
    TR::RegisterDependencyConditions  *deps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)1, cg);
    deps->addPostCondition(targetRegister, TR::RealRegister::NoReg, cg);
-   generateLabelInstruction(LABEL, node, doneLabel, deps, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, deps, cg);
 
    generateRegRegInstruction(MOVSXReg4Reg1, node, targetRegister, targetRegister, cg);
 

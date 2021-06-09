@@ -1313,11 +1313,11 @@ OMR::X86::CodeGenerator::performNonLinearRegisterAssignmentAtBranch(
    if (deps)
       {
       TR::Instruction *ins =
-         generateLabelInstruction(oi->getFirstInstruction(), LABEL, generateLabelSymbol(self()), deps, self());
+         generateLabelInstruction(oi->getFirstInstruction(), TR::InstOpCode::label, generateLabelSymbol(self()), deps, self());
 
       if (self()->comp()->getOption(TR_TraceNonLinearRegisterAssigner))
          {
-         traceMsg(self()->comp(), "creating LABEL instruction %p for dependencies\n", ins);
+         traceMsg(self()->comp(), "creating TR::InstOpCode::label instruction %p for dependencies\n", ins);
          }
       }
 
@@ -1492,7 +1492,7 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(
       instructionCursor->assignRegisters(kindsToAssign);
       //code to increment or decrement counter when a internal control flow end or start label is hit
       TR::LabelSymbol *label;
-      if (((TR::X86LabelInstruction *)instructionCursor)->getOpCodeValue() == LABEL && (label = ((TR::X86LabelInstruction *)instructionCursor)->getLabelSymbol()))
+      if (((TR::X86LabelInstruction *)instructionCursor)->getOpCodeValue() == TR::InstOpCode::label && (label = ((TR::X86LabelInstruction *)instructionCursor)->getLabelSymbol()))
       {
          if (label->isStartInternalControlFlow())
          {
@@ -2373,7 +2373,7 @@ TR::RealRegister::RegNum OMR::X86::CodeGenerator::pickNOPRegister(TR::Instructio
       while (j <= WINDOW_SIZE && cursor)
          {
          if (cursor->getOpCodeValue() != TR::InstOpCode::fence &&
-             cursor->getOpCodeValue() != LABEL)
+             cursor->getOpCodeValue() != TR::InstOpCode::label)
             {
             ++j;
 
@@ -2840,7 +2840,7 @@ uint8_t *OMR::X86::CodeGenerator::generatePadding(uint8_t              *cursor,
                      }
                   if (ninst->isPatchBarrier())
                      {
-                     if (ninst->getOpCodeValue() != LABEL)
+                     if (ninst->getOpCodeValue() != TR::InstOpCode::label)
                         TR::DebugCounter::incStaticDebugCounter(self()->comp(), TR::DebugCounter::debugCounterName(self()->comp(), "vgnopNoPatchReason/%d/patchBarrier", blockFrequency));
                      else
                         TR::DebugCounter::incStaticDebugCounter(self()->comp(), TR::DebugCounter::debugCounterName(self()->comp(), "vgnopNoPatchReason/%d/controlFlowMerge", blockFrequency));

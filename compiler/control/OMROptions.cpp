@@ -524,6 +524,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableSIMDUTF16BEEncoder",           "M\tdisable inlining of SIMD UTF16 Big Endian encoder", SET_OPTION_BIT(TR_DisableSIMDUTF16BEEncoder), "F"},
    {"disableSIMDUTF16LEEncoder",           "M\tdisable inlining of SIMD UTF16 Little Endian encoder", SET_OPTION_BIT(TR_DisableSIMDUTF16LEEncoder), "F"},
    {"disableSmartPlacementOfCodeCaches",   "O\tdisable placement of code caches in memory so they are near each other and the DLLs",  SET_OPTION_BIT(TR_DisableSmartPlacementOfCodeCaches), "F", NOT_IN_SUBSET},
+   {"disableStableAnnotations",            "M\tdisable recognition of @Stable",               SET_OPTION_BIT(TR_DisableStableAnnotations), "F"},
    {"disableStaticFinalFieldFolding",      "O\tdisable generic static final field folding",                        TR::Options::disableOptimization, staticFinalFieldFolding, 0, "P"},
    {"disableStoreOnCondition",                 "O\tdisable store on condition (STOC) code gen",                         SET_OPTION_BIT(TR_DisableStoreOnCondition), "F"},
    {"disableStoreSinking",                 "O\tdisable store sinking",                         SET_OPTION_BIT(TR_DisableStoreSinking), "F"},

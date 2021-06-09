@@ -1331,8 +1331,7 @@ void TR::X86RegRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssi
 
       if (firstRegister->decFutureUseCount() == 0                      &&
           assignedFirstRegister->getState() != TR::RealRegister::Locked &&
-          firstRegister == getTargetRegister()                         &&
-          getOpCodeValue() != WRTBAR)
+          firstRegister == getTargetRegister())
          {
          cg()->traceRegFreed(firstRegister, assignedFirstRegister);
          firstRegister->setAssignedRegister(NULL);
@@ -1421,16 +1420,6 @@ void TR::X86RegRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssi
             thirdRegister->setAssignedRegister(NULL);
             assignedThirdRegister->setState(TR::RealRegister::Unlatched);
             }
-         }
-
-      if (firstRegister->getFutureUseCount() == 0                      &&
-          assignedFirstRegister->getState() != TR::RealRegister::Locked &&
-          getOpCodeValue() == WRTBAR)
-         {
-         cg()->traceRegFreed(firstRegister, assignedFirstRegister);
-         firstRegister->setAssignedRegister(NULL);
-         assignedFirstRegister->setAssignedRegister(NULL);
-         assignedFirstRegister->setState(TR::RealRegister::Free);
          }
 
       setTargetRegister(assignedFirstRegister);

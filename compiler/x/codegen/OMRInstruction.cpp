@@ -73,7 +73,7 @@ OMR::X86::Instruction::initialize(TR::CodeGenerator *cg, TR::RegisterDependencyC
       {
       cond->useRegisters(self(), cg);
 
-      if (flag && op != FPREGSPILL && cg->enableRegisterAssociations())
+      if (flag && cg->enableRegisterAssociations())
          {
          cond->createRegisterAssociationDirective(self(), cg);
          }

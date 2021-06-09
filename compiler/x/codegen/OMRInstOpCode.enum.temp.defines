@@ -1025,15 +1025,9 @@
 #define   VFNMSUB213SDRegRegMem OMR::InstOpCode::VFNMSUB213SDRegRegMem
 #define   VFNMSUB231SDRegRegReg OMR::InstOpCode::VFNMSUB231SDRegRegReg
 #define   VFNMSUB231SDRegRegMem OMR::InstOpCode::VFNMSUB231SDRegRegMem
-#define   VGFENCE OMR::InstOpCode::VGFENCE
 #define   DQImm64 OMR::InstOpCode::DQImm64
 #define   DDImm4 OMR::InstOpCode::DDImm4
 #define   DWImm2 OMR::InstOpCode::DWImm2
 #define   DBImm1 OMR::InstOpCode::DBImm1
-#define   WRTBAR OMR::InstOpCode::WRTBAR
-#define   FPREGSPILL OMR::InstOpCode::FPREGSPILL
 #define   FCMPEVAL OMR::InstOpCode::FCMPEVAL
-#define   RestoreVMThread OMR::InstOpCode::RestoreVMThread
-#define   PPS_OPCount OMR::InstOpCode::PPS_OPCount
-#define   PPS_OPField OMR::InstOpCode::PPS_OPField
 #define   AdjustFramePtr OMR::InstOpCode::AdjustFramePtr

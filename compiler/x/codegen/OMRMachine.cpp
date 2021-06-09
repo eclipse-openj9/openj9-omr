@@ -564,8 +564,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
             break;
          }
 
-      if (cursor->getOpCodeValue() == TR::InstOpCode::fence ||
-          cursor->getOpCodeValue() == FPREGSPILL)
+      if (cursor->getOpCodeValue() == TR::InstOpCode::fence)
          continue;
 
       for (i = 0; i < numCandidates; i++)

@@ -306,10 +306,6 @@ TR::IA32SystemLinkage::buildVolatileAndReturnDependencies(
       {
       deps->addPostCondition(returnReg, _properties.getFloatReturnRegister(), cg());
       }
-   else
-      {
-      // No need for a dummy dep here because FPREGSPILL instruction takes care of it
-      }
 
  // The reg dependency is left open intentionally, and need to be closed by
  // the caller. The reason is because, child class might call this method, while

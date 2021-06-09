@@ -35,6 +35,16 @@ typedef void cel4ro31_cwi_func(void *);
 typedef void celqgipb_cwi_func(uint32_t *, OMR_CEL4RO31_infoBlock **, uint32_t *);
 #define CELQGIPB_FNPTR ((celqgipb_cwi_func *)((char *)(*(int *)(((char *)__gtca())+1096))+96))
 
+/* CEEPCB_3164 indicator is the 6th bit of PCB's CEEPCBFLAG6 field (byte 344).
+ * CEECAAPCB field is byte 912 of CAA.
+ *
+ * References for AMODE64:
+ * https://www.ibm.com/docs/en/zos/2.4.0?topic=mappings-language-environment-process-control-block
+ * https://www.ibm.com/docs/en/zos/2.4.0?topic=mappings-language-environment-common-anchor-area
+ */
+#define CEEPCBFLAG6_VALUE *((char *)(*(long *)(((char *)__gtca())+912))+344)
+#define CEEPCB_3164_MASK 0x4
+
 OMR_CEL4RO31_infoBlock *
 omr_cel4ro31_init(uint32_t flags, const char *moduleName, const char *functionName, uint32_t argsLength)
 {
@@ -165,7 +175,7 @@ omr_cel4ro31_call(OMR_CEL4RO31_infoBlock *infoBlock)
 BOOLEAN
 omr_cel4ro31_is_supported(void)
 {
-	return (NULL != CEL4RO31_FNPTR) && (NULL != CELQGIPB_FNPTR);
+	return OMR_ARE_ANY_BITS_SET(CEEPCBFLAG6_VALUE, CEEPCB_3164_MASK);
 }
 
 const char*

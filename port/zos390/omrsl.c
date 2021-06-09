@@ -258,6 +258,7 @@ omrsl_lookup_name(struct OMRPortLibrary *portLibrary, uintptr_t descriptor, char
 {
 	void *address = NULL;
 	dllhandle *handle = NULL;
+	int retcode = 1; /* Default error return code when lookup fails with dllqueryfn. */
 
 	Trc_PRT_sl_lookup_name_Entry(descriptor, name, argSignature);
 
@@ -273,12 +274,13 @@ omrsl_lookup_name(struct OMRPortLibrary *portLibrary, uintptr_t descriptor, char
 			OMR_CEL4RO31_controlBlock *ro31ControlBlock = &(ro31InfoBlock->ro31ControlBlock);
 			ro31ControlBlock->dllHandle = (uint32_t)handle;
 			omr_cel4ro31_call(ro31InfoBlock);
+			retcode = ro31ControlBlock->retcode;
 			if (OMR_CEL4RO31_RETCODE_OK == ro31ControlBlock->retcode) {
 				address = (void *)ro31ControlBlock->functionDescriptor;
 				address = (void *)(OMRPORT_SL_ZOS_31BIT_TARGET_HIGHTAG | (uintptr_t)address);
 			}
 			omr_cel4ro31_deinit(ro31InfoBlock);
-			DMESSAGE(("omrsl_lookup_name: Attempted to query 31-bit DLL function [%s] from DLL handle: %p - return code: [%d] Function Pointer: [%p]\n", name, handle, ro31InfoBlock->ro31ControlBlock.retcode, address))
+			DMESSAGE(("omrsl_lookup_name: Attempted to query 31-bit DLL function [%s] from DLL handle: %p - return code: [%d] Function Pointer: [%p]\n", name, handle, retcode, address))
 		}
 	} else
 #endif /* defined(J9ZOS39064) */
@@ -288,8 +290,8 @@ omrsl_lookup_name(struct OMRPortLibrary *portLibrary, uintptr_t descriptor, char
 	}
 
 	if (address == NULL) {
-		Trc_PRT_sl_lookup_name_Exit2(name, argSignature, handle, 1);
-		return 1;
+		Trc_PRT_sl_lookup_name_Exit2(name, argSignature, handle, retcode);
+		return retcode;
 	}
 	*func = (uintptr_t)address;
 	Trc_PRT_sl_lookup_name_Exit1(*func);

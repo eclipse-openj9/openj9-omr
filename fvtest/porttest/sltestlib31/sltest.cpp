@@ -22,7 +22,7 @@
 /**
  * Test function for CEL4RO31 sl tests.
  */
-void
+extern "C" void
 sl_testOpen31bitDLLviaCEL4RO31_function(void)
 {
 }

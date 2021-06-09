@@ -531,9 +531,9 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
 
 TR::Register *OMR::X86::TreeEvaluator::minmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::InstOpCode::Mnemonic CMP  = BADIA32Op;
-   TR::InstOpCode::Mnemonic MOV  = BADIA32Op;
-   TR::InstOpCode::Mnemonic CMOV = BADIA32Op;
+   TR::InstOpCode::Mnemonic CMP  = TR::InstOpCode::bad;
+   TR::InstOpCode::Mnemonic MOV  = TR::InstOpCode::bad;
+   TR::InstOpCode::Mnemonic CMOV = TR::InstOpCode::bad;
    switch (node->getOpCodeValue())
       {
       case TR::imin:

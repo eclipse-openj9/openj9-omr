@@ -205,16 +205,16 @@ inline OMR::InstOpCode::Mnemonic SizedParameterizedOpCode(int size =
 #endif
 )
    {
-   OMR::InstOpCode::Mnemonic op = BADIA32Op;
+   OMR::InstOpCode::Mnemonic op = OMR::InstOpCode::bad;
    switch (size)
       {
       case 8:  op = Op64;      break;
       case 4:  op = Op32;      break;
       case 2:  op = Op16;      break;
       case 1:  op = Op8;       break;
-      default: op = BADIA32Op; break;
+      default: op = OMR::InstOpCode::bad; break;
       }
-   TR_ASSERT(op != BADIA32Op , "Unsupported operand size %d", size);
+   TR_ASSERT(op != OMR::InstOpCode::bad , "Unsupported operand size %d", size);
    return op;
    }
 
@@ -222,10 +222,10 @@ inline OMR::InstOpCode::Mnemonic SizedParameterizedOpCode(int size =
 #define MovRegReg      SizedParameterizedOpCode<MOV8RegReg      , MOV4RegReg      , MOV2RegReg      , MOV1RegReg  >
 #define IMulRegReg     SizedParameterizedOpCode<IMUL8RegReg     , IMUL4RegReg     , IMUL2RegReg     , IMUL1AccReg >
 #define IMulRegMem     SizedParameterizedOpCode<IMUL8RegMem     , IMUL4RegMem     , IMUL2RegMem     , IMUL1AccMem >
-#define IMulRegRegImms SizedParameterizedOpCode<IMUL8RegRegImms , IMUL4RegRegImms , IMUL2RegRegImms , BADIA32Op   >
-#define IMulRegRegImm4 SizedParameterizedOpCode<IMUL8RegRegImm4 , IMUL4RegRegImm4 , IMUL2RegRegImm2 , BADIA32Op   >
-#define IMulRegMemImms SizedParameterizedOpCode<IMUL8RegMemImms , IMUL4RegMemImms , IMUL2RegMemImms , BADIA32Op   >
-#define IMulRegMemImm4 SizedParameterizedOpCode<IMUL8RegMemImm4 , IMUL4RegMemImm4 , IMUL2RegMemImm2 , BADIA32Op   >
+#define IMulRegRegImms SizedParameterizedOpCode<IMUL8RegRegImms , IMUL4RegRegImms , IMUL2RegRegImms , OMR::InstOpCode::bad   >
+#define IMulRegRegImm4 SizedParameterizedOpCode<IMUL8RegRegImm4 , IMUL4RegRegImm4 , IMUL2RegRegImm2 , OMR::InstOpCode::bad   >
+#define IMulRegMemImms SizedParameterizedOpCode<IMUL8RegMemImms , IMUL4RegMemImms , IMUL2RegMemImms , OMR::InstOpCode::bad   >
+#define IMulRegMemImm4 SizedParameterizedOpCode<IMUL8RegMemImm4 , IMUL4RegMemImm4 , IMUL2RegMemImm2 , OMR::InstOpCode::bad   >
 
 // Property flags
 //
@@ -485,7 +485,7 @@ class InstOpCode: public OMR::InstOpCode
 
    protected:
 
-   InstOpCode():  OMR::InstOpCode(BADIA32Op) {}
+   InstOpCode():  OMR::InstOpCode(OMR::InstOpCode::bad) {}
    InstOpCode(Mnemonic m): OMR::InstOpCode(m) {}
 
    public:

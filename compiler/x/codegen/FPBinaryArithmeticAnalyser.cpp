@@ -329,8 +329,8 @@ const TR::InstOpCode::Mnemonic TR_X86FPBinaryArithmeticAnalyser::_opCodePackage[
    //        reg1ConvS2    reg1ConvI2    reg2ConvS1    reg2ConvI1
 
    // Unknown
-           { BADIA32Op,    BADIA32Op,    BADIA32Op,    BADIA32Op,
-             BADIA32Op,    BADIA32Op,    BADIA32Op,    BADIA32Op },
+           { TR::InstOpCode::bad,    TR::InstOpCode::bad,    TR::InstOpCode::bad,    TR::InstOpCode::bad,
+             TR::InstOpCode::bad,    TR::InstOpCode::bad,    TR::InstOpCode::bad,    TR::InstOpCode::bad },
 
    // fadd
            { FADDRegReg,   FADDRegReg,   FADDRegMem,   FADDRegMem,

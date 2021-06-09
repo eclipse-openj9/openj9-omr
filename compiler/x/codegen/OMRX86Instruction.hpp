@@ -94,25 +94,25 @@ class X86PaddingInstruction : public TR::Instruction
    public:
 
    X86PaddingInstruction(uint8_t length, TR::Node *node, TR::CodeGenerator *cg):
-      TR::Instruction(node, BADIA32Op, cg),
+      TR::Instruction(node, TR::InstOpCode::bad, cg),
       _length(length),
       _properties(TR_NoOpPadding)
       {}
 
    X86PaddingInstruction(uint8_t length, TR_PaddingProperties properties, TR::Node *node, TR::CodeGenerator *cg):
-      TR::Instruction(node, BADIA32Op, cg),
+      TR::Instruction(node, TR::InstOpCode::bad, cg),
       _length(length),
       _properties(properties)
       {}
 
    X86PaddingInstruction(TR::Instruction *precedingInstruction, uint8_t length, TR::CodeGenerator *cg):
-      TR::Instruction(BADIA32Op, precedingInstruction, cg),
+      TR::Instruction(TR::InstOpCode::bad, precedingInstruction, cg),
       _length(length),
       _properties(TR_NoOpPadding)
       {}
 
    X86PaddingInstruction(TR::Instruction *precedingInstruction, uint8_t length, TR_PaddingProperties properties, TR::CodeGenerator *cg):
-      TR::Instruction(BADIA32Op, precedingInstruction, cg),
+      TR::Instruction(TR::InstOpCode::bad, precedingInstruction, cg),
       _length(length),
       _properties(properties)
       {}
@@ -180,7 +180,7 @@ class X86BoundaryAvoidanceInstruction : public TR::Instruction
                                       uint8_t maxPadding,
                                       TR::Instruction *targetCode,
                                       TR::CodeGenerator *cg)
-      : TR::Instruction(BADIA32Op, targetCode->getPrev(), cg),
+      : TR::Instruction(TR::InstOpCode::bad, targetCode->getPrev(), cg),
       _sizeOfProtectiveNop(0), _atomicRegions(atomicRegions), _boundarySpacing(boundarySpacing), _maxPadding(maxPadding), _targetCode(targetCode), _minPaddingLength(0)
       {
       setNode(targetCode->getNode());
@@ -192,7 +192,7 @@ class X86BoundaryAvoidanceInstruction : public TR::Instruction
                                       uint8_t maxPadding,
                                       TR::Instruction *targetCode,
                                       TR::CodeGenerator *cg)
-      : TR::Instruction(BADIA32Op, targetCode->getPrev(), cg),
+      : TR::Instruction(TR::InstOpCode::bad, targetCode->getPrev(), cg),
       _sizeOfProtectiveNop(sizeOfProtectiveNop), _atomicRegions(atomicRegions),
       _boundarySpacing(boundarySpacing), _maxPadding(maxPadding), _targetCode(targetCode),
       _minPaddingLength(0)
@@ -205,7 +205,7 @@ class X86BoundaryAvoidanceInstruction : public TR::Instruction
                                       uint8_t boundarySpacing,
                                       uint8_t maxPadding,
                                       TR::CodeGenerator *cg)
-      : TR::Instruction(BADIA32Op, precedingInstruction, cg),
+      : TR::Instruction(TR::InstOpCode::bad, precedingInstruction, cg),
       _atomicRegions(atomicRegions), _boundarySpacing(boundarySpacing), _maxPadding(maxPadding), _targetCode(NULL),
       _sizeOfProtectiveNop(0), _minPaddingLength(0)
       {
@@ -371,56 +371,56 @@ class X86AlignmentInstruction : public TR::Instruction
    // - with vs. without dependencies
 
    X86AlignmentInstruction(TR::Node * node, uint8_t boundary, TR::CodeGenerator *cg)
-      : TR::Instruction(node, BADIA32Op, cg),
+      : TR::Instruction(node, TR::InstOpCode::bad, cg),
       _boundary(boundary),
       _margin(0),
       _minPaddingLength(0)
       {}
 
    X86AlignmentInstruction(TR::Node * node, uint8_t boundary, TR::RegisterDependencyConditions  *cond, TR::CodeGenerator *cg)
-      : TR::Instruction(cond, node, BADIA32Op, cg),
+      : TR::Instruction(cond, node, TR::InstOpCode::bad, cg),
       _boundary(boundary),
       _margin(0),
       _minPaddingLength(0)
       {}
 
    X86AlignmentInstruction(TR::Node * node, uint8_t boundary, uint8_t margin, TR::CodeGenerator *cg)
-      : TR::Instruction(node, BADIA32Op, cg),
+      : TR::Instruction(node, TR::InstOpCode::bad, cg),
       _boundary(boundary),
       _margin(margin),
       _minPaddingLength(0)
       {}
 
    X86AlignmentInstruction(TR::Node * node, uint8_t boundary, uint8_t margin, TR::RegisterDependencyConditions  *cond, TR::CodeGenerator *cg)
-      : TR::Instruction(cond, node, BADIA32Op, cg),
+      : TR::Instruction(cond, node, TR::InstOpCode::bad, cg),
       _boundary(boundary),
       _margin(margin),
       _minPaddingLength(0)
       {}
 
    X86AlignmentInstruction(TR::Instruction *precedingInstruction, uint8_t boundary, TR::CodeGenerator *cg)
-      : TR::Instruction(BADIA32Op, precedingInstruction, cg),
+      : TR::Instruction(TR::InstOpCode::bad, precedingInstruction, cg),
       _boundary(boundary),
       _margin(0),
       _minPaddingLength(0)
       {}
 
    X86AlignmentInstruction(TR::Instruction *precedingInstruction, uint8_t boundary, TR::RegisterDependencyConditions  *cond, TR::CodeGenerator *cg)
-      : TR::Instruction(cond, BADIA32Op, precedingInstruction, cg),
+      : TR::Instruction(cond, TR::InstOpCode::bad, precedingInstruction, cg),
       _boundary(boundary),
       _margin(0),
       _minPaddingLength(0)
       {}
 
    X86AlignmentInstruction(TR::Instruction *precedingInstruction, uint8_t boundary, uint8_t margin, TR::CodeGenerator *cg)
-      : TR::Instruction(BADIA32Op, precedingInstruction, cg),
+      : TR::Instruction(TR::InstOpCode::bad, precedingInstruction, cg),
       _boundary(boundary),
       _margin(margin),
       _minPaddingLength(0)
       {}
 
    X86AlignmentInstruction(TR::Instruction *precedingInstruction, uint8_t boundary, uint8_t margin, TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
-      : TR::Instruction(cond, BADIA32Op, precedingInstruction, cg),
+      : TR::Instruction(cond, TR::InstOpCode::bad, precedingInstruction, cg),
       _boundary(boundary),
       _margin(margin),
       _minPaddingLength(0)

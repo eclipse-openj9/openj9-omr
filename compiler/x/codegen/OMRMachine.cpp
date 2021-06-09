@@ -1253,7 +1253,7 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
          {
          // Exchange the contents of two XMM registers without an XCHG instruction.
          //
-         TR::InstOpCode::Mnemonic xchgOp = BADIA32Op;
+         TR::InstOpCode::Mnemonic xchgOp = TR::InstOpCode::bad;
          if (virtualRegister->getKind() == TR_FPR && virtualRegister->isSinglePrecision())
             {
             xchgOp = XORPSRegReg;
@@ -1331,7 +1331,7 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
       self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
       if (currentAssignedRegister != NULL)
          {
-         TR::InstOpCode::Mnemonic xchgOp = BADIA32Op;
+         TR::InstOpCode::Mnemonic xchgOp = TR::InstOpCode::bad;
          if (virtualRegister->getKind() == TR_FPR && virtualRegister->isSinglePrecision())
             {
             xchgOp = XORPSRegReg;

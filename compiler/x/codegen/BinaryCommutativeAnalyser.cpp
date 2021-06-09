@@ -65,11 +65,11 @@ zeroExtendTo32BitRegister(TR::Node          *node,
          op = MOVZXReg4Reg2;
          break;
       default:
-         op = BADIA32Op;
+         op = TR::InstOpCode::bad;
          break;
       }
 
-   if (op != BADIA32Op)
+   if (op != TR::InstOpCode::bad)
       generateRegRegInstruction(op, node, reg, reg, cg);
    }
 

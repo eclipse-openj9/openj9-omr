@@ -24,7 +24,6 @@
  * definitions are permitted.
  */
 
-#define   BADIA32Op OMR::InstOpCode::BADIA32Op
 #define   ADC1AccImm1 OMR::InstOpCode::ADC1AccImm1
 #define   ADC2AccImm2 OMR::InstOpCode::ADC2AccImm2
 #define   ADC4AccImm4 OMR::InstOpCode::ADC4AccImm4

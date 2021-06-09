@@ -26,7 +26,6 @@
 
 #include "compiler/codegen/OMRInstOpCode.enum"
 
-   BADIA32Op,
    ADC1AccImm1,
    ADC2AccImm2,
    ADC4AccImm4,

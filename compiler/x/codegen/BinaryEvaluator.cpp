@@ -1778,7 +1778,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerMulEvaluator(TR::Node *node, TR::C
          // are evaluated by the generic analyser call below
          if (targetRegister == 0 && IS_32BIT_SIGNED(value) && (dataType != TR::Int8)) // decomposition failed
             {
-            TR::InstOpCode::Mnemonic opCode = BADIA32Op;
+            TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
 
             if (firstChild->getReferenceCount() > 1 ||
                 firstChild->getRegister() != 0)
@@ -3388,7 +3388,7 @@ TR::Register *OMR::X86::TreeEvaluator::sushrEvaluator(TR::Node *node, TR::CodeGe
 TR::InstOpCode::Mnemonic OMR::X86::TreeEvaluator::_logicalOpPackage[numLogicalOpPackages][numLogicalOpForms] =
    {
    // band
-      { AND1RegReg, AND1RegMem, MOV1RegReg, AND1RegImm1, BADIA32Op,
+      { AND1RegReg, AND1RegMem, MOV1RegReg, AND1RegImm1, TR::InstOpCode::bad,
         AND1MemImm1,AND1MemImm1,AND1MemReg, NOT1Mem   },
    // cand/sand
       { AND2RegReg, AND2RegMem, MOV4RegReg, AND2RegImms, AND2RegImm2,
@@ -3400,7 +3400,7 @@ TR::InstOpCode::Mnemonic OMR::X86::TreeEvaluator::_logicalOpPackage[numLogicalOp
       { AND8RegReg, AND8RegMem, MOV8RegReg, AND8RegImms, AND8RegImm4,
         AND8MemImms,AND8MemImm4,AND8MemReg, NOT8Mem },
    // bor
-      { OR1RegReg,  OR1RegMem,  MOV1RegReg, OR1RegImm1,  BADIA32Op,
+      { OR1RegReg,  OR1RegMem,  MOV1RegReg, OR1RegImm1,  TR::InstOpCode::bad,
         OR1MemImm1, OR1MemImm1, OR1MemReg,  NOT1Mem   },
    // cor, sor
       { OR2RegReg,  OR2RegMem,  MOV4RegReg, OR2RegImms,  OR2RegImm2,
@@ -3412,7 +3412,7 @@ TR::InstOpCode::Mnemonic OMR::X86::TreeEvaluator::_logicalOpPackage[numLogicalOp
       { OR8RegReg,  OR8RegMem,  MOV8RegReg, OR8RegImms,  OR8RegImm4,
         OR8MemImms, OR8MemImm4, OR8MemReg,  NOT8Mem   },
    // bxor
-      { XOR1RegReg, XOR1RegMem, MOV1RegReg, XOR1RegImm1, BADIA32Op,
+      { XOR1RegReg, XOR1RegMem, MOV1RegReg, XOR1RegImm1, TR::InstOpCode::bad,
         XOR1MemImm1,XOR1MemImm1,XOR1MemReg, NOT1Mem   },
    // cxor, sxor
       { XOR2RegReg, XOR2RegMem, MOV4RegReg, XOR2RegImms, XOR2RegImm2,

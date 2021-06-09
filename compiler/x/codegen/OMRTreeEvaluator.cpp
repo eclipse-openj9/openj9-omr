@@ -184,13 +184,13 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
    TR::Compilation *comp = cg->comp();
    static const TR::InstOpCode::Mnemonic ops[TR_NumRematerializableTypes+1][3] =
       //    load 0      load -1     load c
-      { { BADIA32Op,  BADIA32Op,  BADIA32Op   },   // LEA; should not seen here
+      { { TR::InstOpCode::bad,  TR::InstOpCode::bad,  TR::InstOpCode::bad   },   // LEA; should not seen here
         { XOR4RegReg, OR4RegImms, MOV4RegImm4 },   // Byte constant
         { XOR4RegReg, OR4RegImms, MOV4RegImm4 },   // Short constant
         { XOR4RegReg, OR4RegImms, MOV4RegImm4 },   // Char constant
         { XOR4RegReg, OR4RegImms, MOV4RegImm4 },   // Int constant
         { XOR4RegReg, OR4RegImms, MOV4RegImm4 },   // 32-bit address constant
-        { XOR4RegReg, OR8RegImms, BADIA32Op   } }; // Long address constant; MOVs handled specially
+        { XOR4RegReg, OR8RegImms, TR::InstOpCode::bad   } }; // Long address constant; MOVs handled specially
 
    enum { XOR = 0, OR  = 1, MOV = 2 };
 
@@ -1534,30 +1534,30 @@ void OMR::X86::TreeEvaluator::genArithmeticInstructionsForOverflowCHK(TR::Node *
          case TR::badd:
          case TR::sadd:
          case TR::iadd:
-            addMulAnalyser.integerAddAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, needsEflags);
+            addMulAnalyser.integerAddAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::bad, needsEflags);
             break;
          case TR::ladd:
             cg->comp()->target().is32Bit() ? addMulAnalyser.longAddAnalyserWithExplicitOperands(node, operand1, operand2)
-                                           : addMulAnalyser.integerAddAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, needsEflags);
+                                           : addMulAnalyser.integerAddAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::bad, needsEflags);
             break;
          // sub group
          case TR::bsub:
-            subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV1RegReg, needsEflags);
+            subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::bad, MOV1RegReg, needsEflags);
             break;
          case TR::ssub:
          case TR::isub:
-            subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV4RegReg, needsEflags);
+            subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::bad, MOV4RegReg, needsEflags);
             break;
          case TR::lsub:
             cg->comp()->target().is32Bit() ? subAnalyser.longSubtractAnalyserWithExplicitOperands(node, operand1, operand2)
-                                           : subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV8RegReg, needsEflags);
+                                           : subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::bad, MOV8RegReg, needsEflags);
             break;
          // mul group
          case TR::imul:
-            addMulAnalyser.genericAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV4RegReg);
+            addMulAnalyser.genericAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::bad, MOV4RegReg);
             break;
          case TR::lmul:
-            addMulAnalyser.genericAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV8RegReg);
+            addMulAnalyser.genericAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::bad, MOV8RegReg);
             break;
          default:
             break;
@@ -3042,7 +3042,7 @@ TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::C
 
    if (SymRef && SymRef->getSymbol()->castToMethodSymbol()->isInlinedByCG())
       {
-      TR::InstOpCode::Mnemonic op = BADIA32Op;
+      TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
 
       if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicAddSymbol))
          {
@@ -3073,7 +3073,7 @@ TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::C
          op = XCHG8MemReg;
          }
 
-      if (op != BADIA32Op)
+      if (op != TR::InstOpCode::bad)
          {
          return inlineAtomicMemoryUpdate(node, op, cg);
          }
@@ -3164,7 +3164,7 @@ void OMR::X86::TreeEvaluator::compareGPRegisterToConstantForEquality(TR::Node   
 
 TR::Register *OMR::X86::TreeEvaluator::fenceEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::InstOpCode fenceOp = BADIA32Op;
+   TR::InstOpCode fenceOp = TR::InstOpCode::bad;
    if (node->isLoadFence() && node->isStoreFence())
       fenceOp.setOpCodeValue(MFENCE);
    else if (node->isLoadFence())
@@ -3172,7 +3172,7 @@ TR::Register *OMR::X86::TreeEvaluator::fenceEvaluator(TR::Node *node, TR::CodeGe
    else if (node->isStoreFence())
       fenceOp.setOpCodeValue(SFENCE);
 
-   if (fenceOp.getOpCodeValue() != BADIA32Op)
+   if (fenceOp.getOpCodeValue() != TR::InstOpCode::bad)
       {
       new (cg->trHeapMemory()) TR::Instruction(node, fenceOp.getOpCodeValue(), cg);
       }
@@ -3457,7 +3457,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
       {
       TR::Machine *machine = cg->machine();
       generateRegImmInstruction(TEST4RegImm4, node, machine->getRealRegister(TR::RealRegister::esp), block->getNumber(), cg);
-      generateInstruction(BADIA32Op, node, cg);
+      generateInstruction(TR::InstOpCode::bad, node, cg);
       }
 
    cg->generateDebugCounter((node->getBlock()->isExtensionOfPreviousBlock())? "cg.blocks/extensions":"cg.blocks", 1, TR::DebugCounter::Exorbitant);
@@ -3738,7 +3738,7 @@ TR::Register *OMR::X86::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::Cod
 
    TR::Compilation *comp = cg->comp();
 
-   TR::InstOpCode prefetchOp(BADIA32Op);
+   TR::InstOpCode prefetchOp(TR::InstOpCode::bad);
 
    static char * disablePrefetch = feGetEnv("TR_DisablePrefetch");
    if (comp->isOptServer() || disablePrefetch)
@@ -3775,7 +3775,7 @@ TR::Register *OMR::X86::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::Cod
       prefetchOp = PREFETCHT2;
       }
 
-   if (prefetchOp.getOpCodeValue() != BADIA32Op)
+   if (prefetchOp.getOpCodeValue() != TR::InstOpCode::bad)
       {
       // Offset node is a constant.
       if (secondChild->getOpCode().isLoadConst())
@@ -4096,41 +4096,41 @@ enum BinaryArithmeticOps : uint32_t
 static const TR::InstOpCode::Mnemonic BinaryArithmeticOpCodesForReg[TR::NumOMRTypes][NumBinaryArithmeticOps] =
    {
    //  Invalid,       Add,         Sub,         Mul,         Div,          And,         Or,       Xor
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // NoType
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int8
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int16
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int32
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int64
-   { BADIA32Op, ADDSSRegReg, SUBSSRegReg, MULSSRegReg,  DIVSSRegReg, BADIA32Op,  BADIA32Op, BADIA32Op  }, // Float
-   { BADIA32Op, ADDSDRegReg, SUBSDRegReg, MULSDRegReg,  DIVSDRegReg, BADIA32Op,  BADIA32Op, BADIA32Op  }, // Double
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Address
-   { BADIA32Op, PADDBRegReg, PSUBBRegReg, BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorInt8
-   { BADIA32Op, PADDWRegReg, PSUBWRegReg, PMULLWRegReg, BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorInt16
-   { BADIA32Op, PADDDRegReg, PSUBDRegReg, PMULLDRegReg, BADIA32Op,   PANDRegReg, PORRegReg, PXORRegReg }, // VectorInt32
-   { BADIA32Op, PADDQRegReg, PSUBQRegReg, BADIA32Op,    BADIA32Op,   PANDRegReg, PORRegReg, PXORRegReg }, // VectorInt64
-   { BADIA32Op, ADDPSRegReg, SUBPSRegReg, MULPSRegReg,  DIVPSRegReg, BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorFloat
-   { BADIA32Op, ADDPDRegReg, SUBPDRegReg, MULPDRegReg,  DIVPDRegReg, BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorDouble
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Aggregate
+   { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // NoType
+   { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Int8
+   { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Int16
+   { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Int32
+   { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Int64
+   { TR::InstOpCode::bad, ADDSSRegReg, SUBSSRegReg, MULSSRegReg,  DIVSSRegReg, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Float
+   { TR::InstOpCode::bad, ADDSDRegReg, SUBSDRegReg, MULSDRegReg,  DIVSDRegReg, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Double
+   { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Address
+   { TR::InstOpCode::bad, PADDBRegReg, PSUBBRegReg, TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // VectorInt8
+   { TR::InstOpCode::bad, PADDWRegReg, PSUBWRegReg, PMULLWRegReg, TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // VectorInt16
+   { TR::InstOpCode::bad, PADDDRegReg, PSUBDRegReg, PMULLDRegReg, TR::InstOpCode::bad,   PANDRegReg, PORRegReg, PXORRegReg }, // VectorInt32
+   { TR::InstOpCode::bad, PADDQRegReg, PSUBQRegReg, TR::InstOpCode::bad,    TR::InstOpCode::bad,   PANDRegReg, PORRegReg, PXORRegReg }, // VectorInt64
+   { TR::InstOpCode::bad, ADDPSRegReg, SUBPSRegReg, MULPSRegReg,  DIVPSRegReg, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // VectorFloat
+   { TR::InstOpCode::bad, ADDPDRegReg, SUBPDRegReg, MULPDRegReg,  DIVPDRegReg, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // VectorDouble
+   { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Aggregate
    };
 
 static const TR::InstOpCode::Mnemonic BinaryArithmeticOpCodesForMem[TR::NumOMRTypes][NumBinaryArithmeticOps] =
    {
    //  Invalid,       Add,         Sub,         Mul,         Div,          And,         Or,       Xor
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // NoType
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int8
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int16
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int32
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int64
-   { BADIA32Op, ADDSSRegMem, SUBSSRegMem, MULSSRegMem,  DIVSSRegMem, BADIA32Op,  BADIA32Op, BADIA32Op  }, // Float
-   { BADIA32Op, ADDSDRegMem, SUBSDRegMem, MULSDRegMem,  DIVSDRegMem, BADIA32Op,  BADIA32Op, BADIA32Op  }, // Double
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Address
-   { BADIA32Op, PADDBRegMem, PSUBBRegMem, BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorInt8
-   { BADIA32Op, PADDWRegMem, PSUBWRegMem, PMULLWRegMem, BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorInt16
-   { BADIA32Op, PADDDRegMem, PSUBDRegMem, PMULLDRegMem, BADIA32Op,   PANDRegMem, PORRegMem, PXORRegMem }, // VectorInt32
-   { BADIA32Op, PADDQRegMem, PSUBQRegMem, BADIA32Op,    BADIA32Op,   PANDRegMem, PORRegMem, PXORRegMem }, // VectorInt64
-   { BADIA32Op, ADDPSRegMem, SUBPSRegMem, MULPSRegMem,  DIVPSRegMem, BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorFloat
-   { BADIA32Op, ADDPDRegMem, SUBPDRegMem, MULPDRegMem,  DIVPDRegMem, BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorDouble
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Aggregate
+   { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // NoType
+   { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Int8
+   { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Int16
+   { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Int32
+   { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Int64
+   { TR::InstOpCode::bad, ADDSSRegMem, SUBSSRegMem, MULSSRegMem,  DIVSSRegMem, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Float
+   { TR::InstOpCode::bad, ADDSDRegMem, SUBSDRegMem, MULSDRegMem,  DIVSDRegMem, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Double
+   { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Address
+   { TR::InstOpCode::bad, PADDBRegMem, PSUBBRegMem, TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // VectorInt8
+   { TR::InstOpCode::bad, PADDWRegMem, PSUBWRegMem, PMULLWRegMem, TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // VectorInt16
+   { TR::InstOpCode::bad, PADDDRegMem, PSUBDRegMem, PMULLDRegMem, TR::InstOpCode::bad,   PANDRegMem, PORRegMem, PXORRegMem }, // VectorInt32
+   { TR::InstOpCode::bad, PADDQRegMem, PSUBQRegMem, TR::InstOpCode::bad,    TR::InstOpCode::bad,   PANDRegMem, PORRegMem, PXORRegMem }, // VectorInt64
+   { TR::InstOpCode::bad, ADDPSRegMem, SUBPSRegMem, MULPSRegMem,  DIVPSRegMem, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // VectorFloat
+   { TR::InstOpCode::bad, ADDPDRegMem, SUBPDRegMem, MULPDRegMem,  DIVPDRegMem, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // VectorDouble
+   { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Aggregate
    };
 
 static const TR::ILOpCodes MemoryLoadOpCodes[TR::NumOMRTypes] =
@@ -4205,7 +4205,7 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
       if (operandNode1->getRegister()                               ||
           operandNode1->getReferenceCount() != 1                    ||
           operandNode1->getOpCodeValue() != MemoryLoadOpCodes[type] ||
-          BinaryArithmeticOpCodesForMem[type][arithmetic] == BADIA32Op)
+          BinaryArithmeticOpCodesForMem[type][arithmetic] == TR::InstOpCode::bad)
          {
          useRegMemForm = false;
          }
@@ -4217,7 +4217,7 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
    resultReg->setIsSinglePrecision(operandReg0->isSinglePrecision());
 
    TR::InstOpCode::Mnemonic opCode = useRegMemForm ? BinaryArithmeticOpCodesForMem[type][arithmetic] : BinaryArithmeticOpCodesForReg[type][arithmetic];
-   TR_ASSERT(opCode != BADIA32Op, "FloatingPointAndVectorBinaryArithmeticEvaluator: unsupported data type or arithmetic.");
+   TR_ASSERT(opCode != TR::InstOpCode::bad, "FloatingPointAndVectorBinaryArithmeticEvaluator: unsupported data type or arithmetic.");
 
    if (cg->comp()->target().cpu.supportsAVX())
       {

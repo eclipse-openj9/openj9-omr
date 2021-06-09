@@ -511,7 +511,7 @@ TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
    //
    if (comp()->getOption(TR_EntryBreakPoints))
       {
-      cursor = new (trHeapMemory()) TR::Instruction(BADIA32Op, cursor, cg());
+      cursor = new (trHeapMemory()) TR::Instruction(TR::InstOpCode::bad, cursor, cg());
       }
 
    // Allocate the stack frame

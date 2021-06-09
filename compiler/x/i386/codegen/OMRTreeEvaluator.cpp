@@ -6015,8 +6015,8 @@ OMR::X86::I386::TreeEvaluator::integerPairByteswapEvaluator(TR::Node *node, TR::
 TR::Register*
 OMR::X86::I386::TreeEvaluator::integerPairMinMaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::InstOpCode::Mnemonic SETccHi = BADIA32Op;
-   TR::InstOpCode::Mnemonic SETccLo = BADIA32Op;
+   TR::InstOpCode::Mnemonic SETccHi = TR::InstOpCode::bad;
+   TR::InstOpCode::Mnemonic SETccLo = TR::InstOpCode::bad;
    switch (node->getOpCodeValue())
       {
       case TR::lmin:

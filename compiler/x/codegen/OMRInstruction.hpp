@@ -86,7 +86,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node);
    Instruction(TR::CodeGenerator *cg, TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::Node *node = 0);
-   void initialize(TR::CodeGenerator *cg = NULL, TR::RegisterDependencyConditions *cond = NULL, TR::InstOpCode::Mnemonic op = BADIA32Op, bool flag = false);
+   void initialize(TR::CodeGenerator *cg = NULL, TR::RegisterDependencyConditions *cond = NULL, TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad, bool flag = false);
 
    public:
 

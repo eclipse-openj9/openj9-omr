@@ -32,8 +32,8 @@
 
 
 void TR_ARMBinaryCommutativeAnalyser::genericAnalyser(TR::Node       *root,
-                                                       TR_ARMOpCodes regToRegOpCode,
-                                                       TR_ARMOpCodes copyOpCode,
+                                                       TR::InstOpCode::Mnemonic regToRegOpCode,
+                                                       TR::InstOpCode::Mnemonic copyOpCode,
                                                        bool          nonClobberingDestination)
    {
    TR::Node *firstChild;
@@ -114,11 +114,11 @@ void TR_ARMBinaryCommutativeAnalyser::genericAnalyser(TR::Node       *root,
    }
 
 void TR_ARMBinaryCommutativeAnalyser::genericLongAnalyser(TR::Node       *root,
-                                                           TR_ARMOpCodes lowRegToRegOpCode,
-                                                           TR_ARMOpCodes highRegToRegOpCode,
-                                                           TR_ARMOpCodes lowMemToRegOpCode,
-                                                           TR_ARMOpCodes highMemToRegOpCode,
-                                                           TR_ARMOpCodes copyOpCode)
+                                                           TR::InstOpCode::Mnemonic lowRegToRegOpCode,
+                                                           TR::InstOpCode::Mnemonic highRegToRegOpCode,
+                                                           TR::InstOpCode::Mnemonic lowMemToRegOpCode,
+                                                           TR::InstOpCode::Mnemonic highMemToRegOpCode,
+                                                           TR::InstOpCode::Mnemonic copyOpCode)
    {
    TR::Node *firstChild;
    TR::Node *secondChild;
@@ -241,7 +241,7 @@ void TR_ARMBinaryCommutativeAnalyser::genericLongAnalyser(TR::Node       *root,
 
 
 void TR_ARMBinaryCommutativeAnalyser::integerAddAnalyser(TR::Node       *root,
-                                                         TR_ARMOpCodes regToRegOpCode)
+                                                         TR::InstOpCode::Mnemonic regToRegOpCode)
    {
    TR::Node *firstChild;
    TR::Node *secondChild;

@@ -47,18 +47,18 @@ class OMR_EXTENSIBLE Instruction : public OMR::InstructionConnector
       : OMR::InstructionConnector(node, cg)
       {}
 
-   Instruction(TR_ARMOpCodes op, TR::Node *node, TR::CodeGenerator *cg)
+   Instruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::CodeGenerator *cg)
       : OMR::InstructionConnector(op, node, cg)
       {}
 
    Instruction(TR::Instruction   *precedingInstruction,
-               TR_ARMOpCodes     op,
+               TR::InstOpCode::Mnemonic     op,
                TR::Node          *node,
                TR::CodeGenerator *cg)
       : OMR::InstructionConnector(precedingInstruction, op, node, cg)
       {}
 
-   Instruction(TR_ARMOpCodes                       op,
+   Instruction(TR::InstOpCode::Mnemonic                       op,
                TR::Node                            *node,
                TR::RegisterDependencyConditions    *cond,
                TR::CodeGenerator                   *cg)
@@ -66,7 +66,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::InstructionConnector
       {}
 
    Instruction(TR::Instruction                     *precedingInstruction,
-               TR_ARMOpCodes                       op,
+               TR::InstOpCode::Mnemonic                       op,
                TR::Node                            *node,
                TR::RegisterDependencyConditions    *cond,
                TR::CodeGenerator                   *cg)

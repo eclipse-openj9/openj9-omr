@@ -1126,7 +1126,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lrolEvaluator(TR::Node *node, TR::CodeGen
    }
 
 // Help evaluating lor, lxor, land
-static TR::Register *ibooleanTypeImmediateEvaluator(TR::Node *srcNode, TR_ARMOpCodes regOp, TR::Register *srcReg, int32_t imm,
+static TR::Register *ibooleanTypeImmediateEvaluator(TR::Node *srcNode, TR::InstOpCode::Mnemonic regOp, TR::Register *srcReg, int32_t imm,
                                                   TR::CodeGenerator *cg)
    {
    TR::Register *trgReg = NULL;
@@ -1152,7 +1152,7 @@ static TR::Register *ibooleanTypeImmediateEvaluator(TR::Node *srcNode, TR_ARMOpC
 
 // Do the work for evaluating lor, lxor, land
 static inline TR::Register *lbooleanTypeEvaluator(TR::Node *node,
-                                                 TR_ARMOpCodes regOp, TR::CodeGenerator *cg)
+                                                 TR::InstOpCode::Mnemonic regOp, TR::CodeGenerator *cg)
    {
    TR::Node *     firstChild  = node->getFirstChild();
    TR::Register * src1Reg     = cg->evaluate(firstChild);
@@ -1207,7 +1207,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lxorEvaluator(TR::Node *node, TR::CodeGen
    }
 
 // called by ior,ixor,iand,iadd,isub to look for opportunities to combine a shift into these operations.
-static TR::Register *ishiftAnalyser(TR::Node *node, TR::CodeGenerator *cg,TR_ARMOpCodes regOp)
+static TR::Register *ishiftAnalyser(TR::Node *node, TR::CodeGenerator *cg,TR::InstOpCode::Mnemonic regOp)
    {
    TR_ARMOperand2 *shiftOp;
    TR::Node     *secondChild    = node->getSecondChild();
@@ -1305,7 +1305,7 @@ static TR::Register *ishiftAnalyser(TR::Node *node, TR::CodeGenerator *cg,TR_ARM
 
 // Do the work for evaluating ior, ixor, iand
 static inline TR::Register *ibooleanTypeEvaluator(TR::Node *node,
-                                                 TR_ARMOpCodes regOp, TR::CodeGenerator *cg)
+                                                 TR::InstOpCode::Mnemonic regOp, TR::CodeGenerator *cg)
    {
    TR::Register *trgReg         = NULL;
    TR::Node     *secondChild    = node->getSecondChild();

@@ -151,7 +151,7 @@ OMR::ARM::RegisterDependencyConditions::RegisterDependencyConditions( TR::Node  
 
       if (regList.find(reg) || (highReg && regList.find(highReg)))
          {
-         TR_ARMOpCodes    opCode;
+         TR::InstOpCode::Mnemonic    opCode;
          TR_RegisterKinds kind = reg->getKind();
 
          switch (kind)
@@ -354,7 +354,7 @@ void OMR::ARM::RegisterDependencyGroup::assignRegisters(TR::Instruction  *curren
             TR::Node *currentNode = currentInstruction->getNode();
             TR::RealRegister *assignedReg    = toRealRegister(virtReg->getAssignedRegister());
             TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t), cg);
-            TR_ARMOpCodes opCode;
+            TR::InstOpCode::Mnemonic opCode;
             TR_RegisterKinds rk = virtReg->getKind();
             switch (rk)
                {

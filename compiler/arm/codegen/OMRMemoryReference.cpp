@@ -843,7 +843,7 @@ uint8_t *OMR::ARM::MemoryReference::generateBinaryEncoding(TR::Instruction *curr
                                                        TR::CodeGenerator  *cg)
    {
    uint32_t           *wcursor = (uint32_t *)cursor;
-   TR_ARMOpCodes       op      = currentInstruction->getOpCodeValue();
+   TR::InstOpCode::Mnemonic       op      = currentInstruction->getOpCodeValue();
    TR::RealRegister *base    = self()->getBaseRegister() ? toRealRegister(self()->getBaseRegister()) : NULL;
    TR::RealRegister *index   = self()->getIndexRegister() ? toRealRegister(self()->getIndexRegister()) : NULL;
 
@@ -1087,7 +1087,7 @@ uint8_t *OMR::ARM::MemoryReference::generateBinaryEncoding(TR::Instruction *curr
    return cursor;
    }
 
-uint32_t OMR::ARM::MemoryReference::estimateBinaryLength(TR_ARMOpCodes op)
+uint32_t OMR::ARM::MemoryReference::estimateBinaryLength(TR::InstOpCode::Mnemonic op)
    {
    if (self()->getUnresolvedSnippet() != NULL)
       {
@@ -1176,7 +1176,7 @@ uint8_t *OMR::ARM::MemoryReference::encodeLargeARMConstant(uint32_t *wcursor, ui
    TR::RealRegister   *stackPtr;
    TR::RealRegister   *rX;
    uint32_t             preserve = *wcursor; // original instruction
-   TR_ARMOpCodes        op       = currentInstruction->getOpCodeValue();
+   TR::InstOpCode::Mnemonic        op       = currentInstruction->getOpCodeValue();
    TR::RealRegister   *base    = self()->getBaseRegister() ? toRealRegister(self()->getBaseRegister()) : NULL;
    int32_t              offset   = self()->getOffset();
    bool vfpInstruction = false;

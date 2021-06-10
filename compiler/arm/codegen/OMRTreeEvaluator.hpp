@@ -36,7 +36,7 @@ namespace OMR { typedef OMR::ARM::TreeEvaluator TreeEvaluatorConnector; }
 #include "compiler/codegen/OMRTreeEvaluator.hpp"
 
 #include "arm/codegen/InstOpCode.hpp"
-#include "codegen/ARMOps.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "codegen/ARMConditionCode.hpp"
 #include "il/ILOps.hpp"
 #include "runtime/Runtime.hpp"
@@ -694,8 +694,8 @@ public:
    static TR::Register *arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *BBStartEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *BBEndEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *commonLoadEvaluator(TR::Node *node, TR_ARMOpCodes memoryToRegisterOp, int32_t memSize, TR::CodeGenerator *cg);
-   static TR::Register *commonStoreEvaluator(TR::Node *node, TR_ARMOpCodes memToRegOp, int32_t memSize, TR::CodeGenerator *cg);
+   static TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic memoryToRegisterOp, int32_t memSize, TR::CodeGenerator *cg);
+   static TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic memToRegOp, int32_t memSize, TR::CodeGenerator *cg);
    static TR::Register *commonConstEvaluator(TR::Node *node, int32_t value, TR::CodeGenerator *cg);
 #if J9_PROJECT_SPECIFIC
    static void        VMwrtbarEvaluator(TR::Node *node, TR::Register *srcReg, TR::Register *dstReg, TR::Register *flagReg, bool needDeps, TR::CodeGenerator *cg);
@@ -737,7 +737,7 @@ public:
 
    protected:
    static TR::Register *conversionAnalyser(TR::Node          *node,
-                                          TR_ARMOpCodes    memoryToRegisterOp,
+                                          TR::InstOpCode::Mnemonic    memoryToRegisterOp,
                                           bool needSignExtend,
                                           int dstBits,
                                           TR::CodeGenerator *cg);
@@ -750,6 +750,6 @@ public:
 static void constLengthArrayCopyEvaluator(TR::Node *node, int32_t byteLen, TR::Register *src, TR::Register *dst, TR::CodeGenerator *cg);
 static void generateSignOrZeroExtend(TR::Node *node, TR::Register *dst, TR::Register *src, bool needSignExtend, int32_t bitsInDst, TR::CodeGenerator *cg);
 void simplifyANDRegImm(TR::Register *trgReg, TR::Register *srcReg, int32_t value);
-static TR::Register *ishiftAnalyser(TR::Node *node, TR::CodeGenerator *cg,TR_ARMOpCodes regOp);
+static TR::Register *ishiftAnalyser(TR::Node *node, TR::CodeGenerator *cg,TR::InstOpCode::Mnemonic regOp);
 
 #endif

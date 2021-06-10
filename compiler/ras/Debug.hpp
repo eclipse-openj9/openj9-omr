@@ -217,7 +217,6 @@ namespace TR { class PPCCallSnippet; }
 #endif
 
 
-class TR_ARMOpCode;
 namespace TR { class ARMLabelInstruction; }
 namespace TR { class ARMConditionalBranchInstruction; }
 namespace TR { class ARMVirtualGuardNOPInstruction; }
@@ -627,7 +626,7 @@ public:
 #if defined(TR_TARGET_ARM)
    virtual void printARMDelayedOffsetInstructions(TR::FILE *pOutFile, TR::ARMMemInstruction *instr);
    virtual void printARMHelperBranch(TR::SymbolReference *symRef, uint8_t *cursor, TR::FILE *outFile, const char * opcodeName = "bl");
-   virtual const char * getOpCodeName(TR_ARMOpCode *);
+   virtual const char * getOpCodeName(TR::InstOpCode *);
    const char * getName(TR::RealRegister *, TR_RegisterSizes size = TR_WordReg);
    const char * getName(uint32_t realRegisterIndex, TR_RegisterSizes = (TR_RegisterSizes)-1);
    void print(TR::FILE *, TR::ARMHelperCallSnippet *);

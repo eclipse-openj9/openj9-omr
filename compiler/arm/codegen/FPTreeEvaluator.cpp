@@ -119,7 +119,7 @@ static bool resultCanStayInFloatRegister(TR::Node *checkNode, TR::Node *node)
    return result;
    }
 
-static TR::Register *singlePrecisionEvaluator(TR::Node *node, TR_ARMOpCodes opCode, TR::CodeGenerator *cg)
+static TR::Register *singlePrecisionEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic opCode, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = NULL;
@@ -164,7 +164,7 @@ static TR::Register *singlePrecisionEvaluator(TR::Node *node, TR_ARMOpCodes opCo
    return trgReg;
    }
 
-static TR::Register *doublePrecisionEvaluator(TR::Node *node, TR_ARMOpCodes opCode, TR::CodeGenerator *cg)
+static TR::Register *doublePrecisionEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic opCode, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = NULL;
@@ -1571,7 +1571,7 @@ static bool isFPStrictMul(TR::Node *node, TR::Compilation * comp)
 /** Generate a fused multiply add from the tree (A * B) + C, where addNode is the + node
  * and mulNode the * subtree.  Not supporting noFPRA at this time
  */
-static TR::Register *generateFusedMultiplyAdd(TR::Node *addNode, TR_ARMOpCodes OpCode, TR::CodeGenerator *cg)
+static TR::Register *generateFusedMultiplyAdd(TR::Node *addNode, TR::InstOpCode::Mnemonic OpCode, TR::CodeGenerator *cg)
    {
    TR::Node     *mulNode = addNode->getFirstChild();
    TR::Node     *addChild    = addNode->getSecondChild();
@@ -1875,7 +1875,7 @@ TR::Register *OMR::ARM::TreeEvaluator::i2fEvaluator(TR::Node *node, TR::CodeGene
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *src1Reg = NULL;
    TR::Register *trgReg = NULL;
-   TR_ARMOpCodes opcode = (node->getOpCodeValue() == TR::iu2f) ? ARMOp_fuitos : ARMOp_fsitos;
+   TR::InstOpCode::Mnemonic opcode = (node->getOpCodeValue() == TR::iu2f) ? ARMOp_fuitos : ARMOp_fsitos;
 
    if (firstChild->getReferenceCount() == 1 &&
        firstChild->getRegister() == NULL &&
@@ -1928,7 +1928,7 @@ TR::Register *OMR::ARM::TreeEvaluator::i2dEvaluator(TR::Node *node, TR::CodeGene
    TR::Register *trgReg = NULL;
    TR::Register *tempReg = cg->allocateSinglePrecisionRegister();
 
-   TR_ARMOpCodes opcode = (node->getOpCodeValue() != TR::iu2d && node->getOpCodeValue() != TR::su2d) ? ARMOp_fsitod : ARMOp_fuitod;  // D[t], S[s]
+   TR::InstOpCode::Mnemonic opcode = (node->getOpCodeValue() != TR::iu2d && node->getOpCodeValue() != TR::su2d) ? ARMOp_fsitod : ARMOp_fuitod;  // D[t], S[s]
 
    if (firstChild->getReferenceCount() == 1 &&
        firstChild->getRegister() == NULL &&
@@ -2054,7 +2054,7 @@ TR::Register *OMR::ARM::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *src1Reg = NULL;
    TR::Register *trgReg = NULL;
-   TR_ARMOpCodes opcode = (node->getOpCodeValue() == TR::f2i) ? ARMOp_ftosizs : ARMOp_ftouizs;
+   TR::InstOpCode::Mnemonic opcode = (node->getOpCodeValue() == TR::f2i) ? ARMOp_ftosizs : ARMOp_ftouizs;
    TR::Register *floatTrgReg = cg->allocateSinglePrecisionRegister();
 
    if (firstChild->getReferenceCount() == 1 &&
@@ -2094,7 +2094,7 @@ TR::Register *OMR::ARM::TreeEvaluator::d2iEvaluator(TR::Node *node, TR::CodeGene
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *src1Reg = NULL;
    TR::Register *trgReg = NULL;
-   TR_ARMOpCodes opcode = (node->getOpCodeValue() == TR::d2i) ? ARMOp_ftosizd : ARMOp_ftouizd;
+   TR::InstOpCode::Mnemonic opcode = (node->getOpCodeValue() == TR::d2i) ? ARMOp_ftosizd : ARMOp_ftouizd;
    TR::Register *floatTrgReg = cg->allocateSinglePrecisionRegister();
 
    if (firstChild->getReferenceCount() == 1 &&
@@ -2213,7 +2213,7 @@ TR::Register *OMR::ARM::TreeEvaluator::d2fEvaluator(TR::Node *node, TR::CodeGene
    return trgReg;
    }
 
-static void ifFloatEvaluator(TR::Node *node, TR_ARMOpCodes opCode, TR_ARMConditionCode cond, TR::CodeGenerator *cg, bool isDouble, bool unordered)
+static void ifFloatEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic opCode, TR_ARMConditionCode cond, TR::CodeGenerator *cg, bool isDouble, bool unordered)
    {
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
@@ -2262,7 +2262,7 @@ static void ifFloatEvaluator(TR::Node *node, TR_ARMOpCodes opCode, TR_ARMConditi
       }
    }
 
-static TR::Register *setboolFloatEvaluator(TR::Node *node, TR_ARMOpCodes opCode, TR_ARMConditionCode cond, TR::CodeGenerator *cg, bool isDouble, bool unordered)
+static TR::Register *setboolFloatEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic opCode, TR_ARMConditionCode cond, TR::CodeGenerator *cg, bool isDouble, bool unordered)
    {
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();

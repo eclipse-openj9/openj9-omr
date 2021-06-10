@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2021, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,30 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "compiler/codegen/InstOpCode.hpp"
-
-const char *
-OMR::InstOpCode::getOpCodeName(Mnemonic m)
-   {
-   if (IS_OMR_MNEMONIC(m))
-      {
-      return "OMROpCode";
-      }
-   else
-      {
-      return "Unknown";
-      }
-   }
-
-const char *
-OMR::InstOpCode::getMnemonicName(Mnemonic m)
-   {
-   if (IS_OMR_MNEMONIC(m))
-      {
-      return "OMROpCode";
-      }
-   else
-      {
-      return "Unknown";
-      }
-   }
+/*
+ * This file will be included within a static table.  Only comments and
+ * definitions are permitted.
+ */

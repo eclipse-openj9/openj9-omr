@@ -25,7 +25,7 @@
 #include "codegen/Analyser.hpp"
 
 #include <stdint.h>
-#include "arm/codegen/ARMOps.hpp"
+#include "codegen/InstOpCode.hpp"
 
 namespace TR { class CodeGenerator; }
 namespace TR { class Node; }
@@ -48,8 +48,8 @@ class TR_ARMSubtractAnalyser : public TR_Analyser
    TR_ARMSubtractAnalyser(TR::CodeGenerator *cg) : _cg(cg) {}
 
    void integerSubtractAnalyser(TR::Node       *root,
-                                TR_ARMOpCodes regToRegOpCode,
-                                TR_ARMOpCodes memToRegOpCode);
+                                TR::InstOpCode::Mnemonic regToRegOpCode,
+                                TR::InstOpCode::Mnemonic memToRegOpCode);
 
    void longSubtractAnalyser(TR::Node *root);
 

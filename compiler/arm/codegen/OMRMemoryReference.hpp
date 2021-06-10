@@ -36,7 +36,7 @@ namespace OMR { typedef OMR::ARM::MemoryReference MemoryReferenceConnector; }
 #include "compiler/codegen/OMRMemoryReference.hpp"
 
 #include <stdint.h>
-#include "codegen/ARMOps.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "env/jittypes.h"
 #include "il/LabelSymbol.hpp"
 #include "il/MethodSymbol.hpp"
@@ -242,7 +242,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
 
    void adjustForResolution(TR::CodeGenerator *cg);
 
-   uint32_t estimateBinaryLength(TR_ARMOpCodes op);
+   uint32_t estimateBinaryLength(TR::InstOpCode::Mnemonic op);
 
    void decNodeReferenceCounts();
 

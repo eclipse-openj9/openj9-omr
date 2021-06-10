@@ -624,7 +624,7 @@ uint8_t *TR::ARMVirtualGuardNOPInstruction::generateBinaryEncoding()
        // 2) We might want to re-enable the code path and unpatch, in which case we would have to know what the old instruction was
          cg()->comp()->compileRelocatableCode())
       {
-      TR_ARMOpCode opCode(ARMOp_nop);
+      TR::InstOpCode opCode(ARMOp_nop);
       opCode.copyBinaryToBuffer(cursor);
       length = ARM_INSTRUCTION_LENGTH;
       }

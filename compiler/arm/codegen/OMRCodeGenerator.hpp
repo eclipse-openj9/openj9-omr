@@ -36,7 +36,7 @@ namespace OMR { typedef OMR::ARM::CodeGenerator CodeGeneratorConnector; }
 #include "compiler/codegen/OMRCodeGenerator.hpp"
 
 #include <stdint.h>
-#include "arm/codegen/ARMOps.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/ScratchRegisterManager.hpp"
 #include "env/jittypes.h"
@@ -88,14 +88,13 @@ namespace TR { class Machine; }
 namespace TR { class CodeGenerator; }
 namespace TR { struct ARMLinkageProperties; }
 namespace TR { class ARMImmInstruction; }
-class TR_ARMOpCode;
 namespace TR { class ARMConstantDataSnippet; }
 class TR_ARMLoadLabelItem;
 class TR_BitVector;
 class TR_ARMScratchRegisterManager;
 
-extern uint8_t *storeArgumentItem(TR_ARMOpCodes op, uint8_t *buffer, TR::RealRegister *reg, int32_t offset, TR::CodeGenerator *cg);
-extern uint8_t *loadArgumentItem(TR_ARMOpCodes op, uint8_t *buffer, TR::RealRegister *reg, int32_t offset, TR::CodeGenerator *cg);
+extern uint8_t *storeArgumentItem(TR::InstOpCode::Mnemonic op, uint8_t *buffer, TR::RealRegister *reg, int32_t offset, TR::CodeGenerator *cg);
+extern uint8_t *loadArgumentItem(TR::InstOpCode::Mnemonic op, uint8_t *buffer, TR::RealRegister *reg, int32_t offset, TR::CodeGenerator *cg);
 
 #include "il/Node.hpp"
 #include "arm/codegen/ARMOutOfLineCodeSection.hpp"

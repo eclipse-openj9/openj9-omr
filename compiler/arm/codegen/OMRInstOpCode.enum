@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2021, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,10 +19,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef ARMOPS_INCL
-#define ARMOPS_INCL
+/*
+ * This file will be included within an enum. Only comments and enumerator
+ * definitions are permitted.
+ */
 
-typedef enum  {
+#include "compiler/codegen/OMRInstOpCode.enum"
+
    ARMOp_bad,              //Illegal Opcode
    ARMOp_add,              // Add
    ARMOp_add_r,            // Add with record
@@ -167,10 +170,3 @@ typedef enum  {
    ARMOp_ftouizs,          // Convert float to unsigned integer (Round towards zero)
    ARMOp_fuitod,           // Convert unsigned integer to double
    ARMOp_fuitos,           // Convert unsigned integer to float
-// Last VFP instructions
-   ARMLastOp = ARMOp_fuitos,
-   ARMNumOpCodes = ARMLastOp + 1
-} TR_ARMOpCodes;
-#include "codegen/ARMOps2.hpp"
-
-#endif

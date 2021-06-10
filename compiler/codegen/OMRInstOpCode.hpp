@@ -61,13 +61,6 @@ class InstOpCode
 
    static int32_t getNumOpCodes() { return NumOpCodes; }
 
-   /*
-    * Copies the encoded binary representation of a given mnemonic to the
-    * provided buffer.  This will copy at most length() bytes.
-    *
-    * Returns the cursor position after the bytes have been copied.
-    */
-   static uint8_t *copyBinaryToBuffer(Mnemonic m, uint8_t *cursor);
    static const char *getOpCodeName(Mnemonic m);
    static const char *getMnemonicName(Mnemonic m);
 

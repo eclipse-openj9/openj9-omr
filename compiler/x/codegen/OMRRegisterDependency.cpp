@@ -192,7 +192,7 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(
                   }
                }
 
-            generateRegRegInstruction(placeToAdd, MOVRegReg(), copyReg, globalReg, cg);
+            generateRegRegInstruction(placeToAdd, TR::InstOpCode::MOVRegReg(), copyReg, globalReg, cg);
 
             if (highGlobalReg)
                {
@@ -782,7 +782,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
                   }
                else
                   {
-                  op = LRegMem();
+                  op = TR::InstOpCode::LRegMem();
                   }
 
                TR::X86RegMemInstruction *inst =

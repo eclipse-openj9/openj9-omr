@@ -857,7 +857,7 @@ OMR::X86::MemoryReference::consolidateRegisters(
       }
 
    TR::MemoryReference  *interimMemoryReference = generateX86MemoryReference(_baseRegister, _indexRegister, _stride, cg);
-   generateRegMemInstruction(LEARegMem(), node, tempTargetRegister, interimMemoryReference, cg);
+   generateRegMemInstruction(TR::InstOpCode::LEARegMem(), node, tempTargetRegister, interimMemoryReference, cg);
    self()->decNodeReferenceCounts(cg);
    _baseRegister  = tempTargetRegister;
    _baseNode      = NULL;

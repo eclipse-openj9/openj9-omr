@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -495,7 +495,7 @@ TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
       TR::RealRegister *stackPointerReg = machine()->getRealRegister(TR::RealRegister::esp);
       cursor = new (trHeapMemory()) TR::X86RegRegInstruction(
          cursor,
-         MOVRegReg(),
+         TR::InstOpCode::MOVRegReg(),
          machine()->getRealRegister(properties.getFramePointerRegister()),
          stackPointerReg,
          cg());
@@ -528,7 +528,7 @@ TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
       }
    else
       {
-      const TR::InstOpCode::Mnemonic subOp = (allocSize <= 127)? SUBRegImms() : SUBRegImm4();
+      const TR::InstOpCode::Mnemonic subOp = (allocSize <= 127)? TR::InstOpCode::SUBRegImms() : TR::InstOpCode::SUBRegImm4();
       cursor = new (trHeapMemory()) TR::X86RegImmInstruction(cursor, subOp, espReal, allocSize, cg());
       }
 
@@ -691,7 +691,7 @@ TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
       //
       allocSize = localSize;
       const uint32_t outgoingArgSize = cg()->getLargestOutgoingArgSize();
-      TR::InstOpCode::Mnemonic op = (outgoingArgSize <= 127) ? ADDRegImms() : ADDRegImm4();
+      TR::InstOpCode::Mnemonic op = (outgoingArgSize <= 127) ? TR::InstOpCode::ADDRegImms() : TR::InstOpCode::ADDRegImm4();
       cursor = new (trHeapMemory()) TR::X86RegImmInstruction(cursor, op, espReal, outgoingArgSize, cg());
       }
 
@@ -711,7 +711,7 @@ TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
       {
       // Restore stack pointer from frame pointer
       //
-      cursor = new (trHeapMemory()) TR::X86RegRegInstruction(cursor, MOVRegReg(), espReal, machine()->getRealRegister(_properties.getFramePointerRegister()), cg());
+      cursor = new (trHeapMemory()) TR::X86RegRegInstruction(cursor, TR::InstOpCode::MOVRegReg(), espReal, machine()->getRealRegister(_properties.getFramePointerRegister()), cg());
       cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, TR::InstOpCode::POPReg, machine()->getRealRegister(_properties.getFramePointerRegister()), cg());
       }
    else if (allocSize == 0)
@@ -725,7 +725,7 @@ TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
       }
    else
       {
-      TR::InstOpCode::Mnemonic op = (allocSize <= 127) ? ADDRegImms() : ADDRegImm4();
+      TR::InstOpCode::Mnemonic op = (allocSize <= 127) ? TR::InstOpCode::ADDRegImms() : TR::InstOpCode::ADDRegImm4();
       cursor = new (trHeapMemory()) TR::X86RegImmInstruction(cursor, op, espReal, allocSize, cg());
       }
 

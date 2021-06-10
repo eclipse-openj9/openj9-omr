@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -130,8 +130,8 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
                 "OutlinedInstructions: targetReg and resultReg must be both register pairs or neither register pairs.");
       if (targetRegPair)
          {
-         generateRegRegInstruction(MOVRegReg(), _callNode, targetRegPair->getLowOrder(),  resultRegPair->getLowOrder(),  _cg);
-         generateRegRegInstruction(MOVRegReg(), _callNode, targetRegPair->getHighOrder(), resultRegPair->getHighOrder(), _cg);
+         generateRegRegInstruction(TR::InstOpCode::MOVRegReg(), _callNode, targetRegPair->getLowOrder(),  resultRegPair->getLowOrder(),  _cg);
+         generateRegRegInstruction(TR::InstOpCode::MOVRegReg(), _callNode, targetRegPair->getHighOrder(), resultRegPair->getHighOrder(), _cg);
          }
       else
          {
@@ -139,7 +139,7 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
          switch (resultReg->getKind())
             {
             case TR_GPR:
-               mov = MOVRegReg();
+               mov = TR::InstOpCode::MOVRegReg();
                break;
             case TR_FPR:
             case TR_VRF:

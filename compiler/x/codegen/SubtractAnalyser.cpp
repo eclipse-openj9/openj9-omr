@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -176,10 +176,10 @@ TR::Register* TR_X86SubtractAnalyser::integerSubtractAnalyserImpl(TR::Node     *
                // depends on the carry flag being valid as if a sub was done.
                //
                bool nodeIs64Bit = TR::InstOpCode(regRegOpCode).hasLongSource() != 0;
-               generateRegInstruction(NEGReg(nodeIs64Bit), secondChild, secondRegister, _cg);
+               generateRegInstruction(TR::InstOpCode::NEGReg(nodeIs64Bit), secondChild, secondRegister, _cg);
                thirdReg       = secondRegister;
                secondRegister = firstRegister;
-               regRegOpCode   = ADDRegReg(nodeIs64Bit);
+               regRegOpCode   = TR::InstOpCode::ADDRegReg(nodeIs64Bit);
                }
             else
                {

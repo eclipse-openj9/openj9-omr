@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -789,7 +789,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
       else if (info->isRematerializableFromAddress())
          {
          TR::MemoryReference  *tempMR = generateX86MemoryReference(info->getSymbolReference(), self()->cg());
-         instr = generateRegMemInstruction(currentInstruction, LEARegMem(), best, tempMR, self()->cg());
+         instr = generateRegMemInstruction(currentInstruction, TR::InstOpCode::LEARegMem(), best, tempMR, self()->cg());
          }
       else
          {
@@ -932,7 +932,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
          }
       else
          {
-         op = LRegMem();
+         op = TR::InstOpCode::LRegMem();
          }
       instr = new (self()->cg()->trHeapMemory()) TR::X86RegMemInstruction(currentInstruction, op, best, tempMR, self()->cg());
 
@@ -1062,7 +1062,7 @@ TR::RealRegister *OMR::X86::Machine::reverseGPRSpillState(TR::Instruction     *c
       instr = new (self()->cg()->trHeapMemory())
          TR::X86MemRegInstruction(
             currentInstruction,
-            SMemReg(),
+            TR::InstOpCode::SMemReg(),
             tempMR,
             targetRegister, self()->cg());
       // Do not add a freed spill slot back onto the free list if the list is locked.
@@ -1103,7 +1103,7 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction          *cur
       else
          {
          instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
-                                             MOVRegReg(),
+                                             TR::InstOpCode::MOVRegReg(),
                                              currentAssignedRegister,
                                              targetRegister, self()->cg());
          currentAssignedRegister->setState(TR::RealRegister::Free);
@@ -1126,7 +1126,7 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction          *cur
       if (currentAssignedRegister != NULL)
          {
          instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
-                                             XCHGRegReg(),
+                                             TR::InstOpCode::XCHGRegReg(),
                                              currentAssignedRegister,
                                              targetRegister, self()->cg());
 
@@ -1158,7 +1158,7 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction          *cur
          if ((targetRegister != candidate) && (candidate != currentTargetVirtual))
             {
             instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
-                                                MOVRegReg(),
+                                                TR::InstOpCode::MOVRegReg(),
                                                 targetRegister,
                                                 candidate, self()->cg());
             currentTargetVirtual->setAssignedRegister(candidate);
@@ -1412,7 +1412,7 @@ void OMR::X86::Machine::swapGPRegisters(TR::Instruction          *currentInstruc
    {
    TR::RealRegister *realReg1 = self()->getRealRegister(regNum1);
    TR::RealRegister *realReg2 = self()->getRealRegister(regNum2);
-   TR::Instruction *instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, XCHGRegReg(), realReg1, realReg2, self()->cg());
+   TR::Instruction *instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, TR::InstOpCode::XCHGRegReg(), realReg1, realReg2, self()->cg());
 
    TR::Register *virtReg1 = realReg1->getAssignedRegister();
    TR::Register *virtReg2 = realReg2->getAssignedRegister();

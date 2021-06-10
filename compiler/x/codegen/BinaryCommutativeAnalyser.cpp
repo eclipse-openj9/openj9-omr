@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -892,7 +892,7 @@ TR::Register *TR_X86BinaryCommutativeAnalyser::integerAddAnalyserImpl(TR::Node  
       // if eflags are required then we cannot use LEA as it doesn't set or use them
       if (needsEflags || (carry != 0))
          {
-         generateRegRegInstruction(MOVRegReg(is64Bit), root, tempReg, firstRegister, _cg);
+         generateRegRegInstruction(TR::InstOpCode::MOVRegReg(is64Bit), root, tempReg, firstRegister, _cg);
          generateRegRegInstruction(regRegOpCode, root, tempReg, secondRegister, _cg);
          }
       else
@@ -900,7 +900,7 @@ TR::Register *TR_X86BinaryCommutativeAnalyser::integerAddAnalyserImpl(TR::Node  
          TR::MemoryReference  *tempMR = generateX86MemoryReference(_cg);
          tempMR->setBaseRegister(firstRegister);
          tempMR->setIndexRegister(secondRegister);
-         generateRegMemInstruction(LEARegMem(is64Bit), root, tempReg, tempMR, _cg);
+         generateRegMemInstruction(TR::InstOpCode::LEARegMem(is64Bit), root, tempReg, tempMR, _cg);
          }
       }
    else if (getOpReg1Mem2())

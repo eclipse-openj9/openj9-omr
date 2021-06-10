@@ -444,8 +444,8 @@ TR::Register *OMR::X86::TreeEvaluator::floatingPointStoreEvaluator(TR::Node *nod
       {
       TR::Register *tempRegister = cg->allocateRegister(TR_GPR);
       TR::MemoryReference  *loadMR = generateX86MemoryReference(valueChild, cg);
-      generateRegMemInstruction(LRegMem(nodeIs64Bit), node, tempRegister, loadMR, cg);
-      exceptionPoint = generateMemRegInstruction(SMemReg(nodeIs64Bit), node, tempMR, tempRegister, cg);
+      generateRegMemInstruction(TR::InstOpCode::LRegMem(nodeIs64Bit), node, tempRegister, loadMR, cg);
+      exceptionPoint = generateMemRegInstruction(TR::InstOpCode::SMemReg(nodeIs64Bit), node, tempMR, tempRegister, cg);
       cg->stopUsingRegister(tempRegister);
       loadMR->decNodeReferenceCounts(cg);
       }
@@ -462,7 +462,7 @@ TR::Register *OMR::X86::TreeEvaluator::floatingPointStoreEvaluator(TR::Node *nod
                {
                // The 64-bit static case does not require the LEA instruction as we can resolve the address in the MOV reg, imm  instruction preceeding the store.
                //
-               exceptionPoint = generateMemRegInstruction(MOVSMemReg(nodeIs64Bit), node, tempMR, sourceRegister, cg);
+               exceptionPoint = generateMemRegInstruction(TR::InstOpCode::MOVSMemReg(nodeIs64Bit), node, tempMR, sourceRegister, cg);
                }
             else
                {
@@ -475,7 +475,7 @@ TR::Register *OMR::X86::TreeEvaluator::floatingPointStoreEvaluator(TR::Node *nod
                generateRegMemInstruction(TR::InstOpCode::LEA8RegMem, node, memReg, tempMR, cg);
                TR::MemoryReference *mr = generateX86MemoryReference(memReg, 0, cg);
                TR_ASSERT(nodeIs64Bit != sourceRegister->isSinglePrecision(), "Wrong operand type to floating point store\n");
-               exceptionPoint = generateMemRegInstruction(MOVSMemReg(nodeIs64Bit), node, mr, sourceRegister, cg);
+               exceptionPoint = generateMemRegInstruction(TR::InstOpCode::MOVSMemReg(nodeIs64Bit), node, mr, sourceRegister, cg);
 
                tempMR->setProcessAsFPVolatile();
 
@@ -490,7 +490,7 @@ TR::Register *OMR::X86::TreeEvaluator::floatingPointStoreEvaluator(TR::Node *nod
          else
             {
             TR_ASSERT(nodeIs64Bit != sourceRegister->isSinglePrecision(), "Wrong operand type to floating point store\n");
-            exceptionPoint = generateMemRegInstruction(MOVSMemReg(nodeIs64Bit), node, tempMR, sourceRegister, cg);
+            exceptionPoint = generateMemRegInstruction(TR::InstOpCode::MOVSMemReg(nodeIs64Bit), node, tempMR, sourceRegister, cg);
             }
          }
       else
@@ -1463,13 +1463,13 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
                                 generateX86MemoryReference(doubleSource ? cg->findOrCreate8ByteConstant(node, 0) : cg->findOrCreate4ByteConstant(node, 0), cg),
                                 cg);
       // load max int if source is positive, note that for long case, LLONG_MAX << 1 is loaded as it will be shifted right
-      generateRegMemInstruction(CMOVARegMem(longTarget),
+      generateRegMemInstruction(TR::InstOpCode::CMOVARegMem(longTarget),
                                 node,
                                 targetRegister,
                                 generateX86MemoryReference(longTarget ? cg->findOrCreate8ByteConstant(node, LLONG_MAX << 1) : cg->findOrCreate4ByteConstant(node, INT_MAX), cg),
                                 cg);
       // load zero if source is NaN
-      generateRegMemInstruction(CMOVPRegMem(longTarget),
+      generateRegMemInstruction(TR::InstOpCode::CMOVPRegMem(longTarget),
                                 node,
                                 targetRegister,
                                 generateX86MemoryReference(longTarget ? cg->findOrCreate8ByteConstant(node, 0) : cg->findOrCreate4ByteConstant(node, 0), cg),

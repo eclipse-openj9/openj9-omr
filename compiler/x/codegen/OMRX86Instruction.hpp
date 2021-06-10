@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2780,16 +2780,16 @@ class X86VFPDedicateInstruction : public TR::X86RegMemInstruction
    public:
 
    X86VFPDedicateInstruction(TR::Instruction *precedingInstruction, TR::RealRegister *framePointerReg, TR::CodeGenerator *cg):
-      TR::X86RegMemInstruction(precedingInstruction, LEARegMem(), framePointerReg, memref(cg), cg){}
+      TR::X86RegMemInstruction(precedingInstruction, TR::InstOpCode::LEARegMem(), framePointerReg, memref(cg), cg){}
 
    X86VFPDedicateInstruction(TR::RealRegister *framePointerReg, TR::Node *node, TR::CodeGenerator *cg):
-      TR::X86RegMemInstruction(LEARegMem(), node, framePointerReg, memref(cg), cg){}
+      TR::X86RegMemInstruction(TR::InstOpCode::LEARegMem(), node, framePointerReg, memref(cg), cg){}
 
    X86VFPDedicateInstruction(TR::Instruction *precedingInstruction, TR::RealRegister *framePointerReg, TR::RegisterDependencyConditions  *cond, TR::CodeGenerator *cg):
-      TR::X86RegMemInstruction(precedingInstruction, LEARegMem(), framePointerReg, memref(cg), cond, cg){}
+      TR::X86RegMemInstruction(precedingInstruction, TR::InstOpCode::LEARegMem(), framePointerReg, memref(cg), cond, cg){}
 
    X86VFPDedicateInstruction(TR::RealRegister *framePointerReg, TR::Node *node, TR::RegisterDependencyConditions  *cond, TR::CodeGenerator *cg):
-      TR::X86RegMemInstruction(LEARegMem(), node, framePointerReg, memref(cg), cond, cg){}
+      TR::X86RegMemInstruction(TR::InstOpCode::LEARegMem(), node, framePointerReg, memref(cg), cond, cg){}
 
    virtual char *description() { return "X86VFPDedicate"; }
 

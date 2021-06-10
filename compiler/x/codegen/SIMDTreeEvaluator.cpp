@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 IBM Corp. and others
+ * Copyright (c) 2017, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,7 +42,7 @@ static TR::MemoryReference* ConvertToPatchableMemoryReference(TR::MemoryReferenc
       // Hence, the unresolved memory reference must be evaluated into a register first.
       //
       TR::Register* tempReg = cg->allocateRegister();
-      generateRegMemInstruction(LEARegMem(), node, tempReg, mr, cg);
+      generateRegMemInstruction(TR::InstOpCode::LEARegMem(), node, tempReg, mr, cg);
       mr = generateX86MemoryReference(tempReg, 0, cg);
       cg->stopUsingRegister(tempReg);
       }

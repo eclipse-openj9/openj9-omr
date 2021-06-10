@@ -123,6 +123,8 @@
 #define HOTFIELD_SHOULD_ALIGN(descriptor) (0x1 == (0x1 & (descriptor)))
 #define HOTFIELD_ALIGNMENT_BIAS(descriptor, heapObjectAlignment) (((descriptor) >> 1) * (heapObjectAlignment))
 
+enum CopyVariant : bool { STW = false, CS = true };
+
 extern "C" {
 	uintptr_t allocateMemoryForSublistFragment(void *vmThreadRawPtr, J9VMGC_SublistFragment *fragmentPrimitive);
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
@@ -1559,8 +1561,20 @@ MM_Scavenger::forwardingSucceeded(MM_EnvironmentStandard *env, MM_CopyScanCacheS
 	}
 }
 
-omrobjectptr_t
+MMINLINE omrobjectptr_t
 MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHeader)
+{
+	omrobjectptr_t result = NULL;
+	if (IS_CONCURRENT_ENABLED) {
+		result = MM_Scavenger::copyForVariant<CS>(env, forwardedHeader);
+	} else {
+		result = MM_Scavenger::copyForVariant<STW>(env, forwardedHeader);
+	}
+	return result;
+}
+
+template <bool variant> omrobjectptr_t
+MM_Scavenger::copyForVariant(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHeader)
 {
 	uintptr_t objectCopySizeInBytes, objectReserveSizeInBytes;
 	uintptr_t hotFieldsDescriptor = 0;
@@ -1690,7 +1704,7 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	bool allowDuplicate = false;
 	bool allowDuplicateOrConcurrentDisabled = true;
 
-	if (IS_CONCURRENT_ENABLED) {
+	if (CS == variant) {
 		/* For smaller objects, we allow duplicate (copy first and try to win forwarding).
 		 * For larger objects, there is only one copy (threads setup destination header, one wins, and other participate in copying or wait till copy is complete).
 		 * 1024 is somewhat arbitrary threshold, so that most of time we do not have to go through relatively expensive setup procedure.

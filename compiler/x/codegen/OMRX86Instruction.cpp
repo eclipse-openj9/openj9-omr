@@ -999,9 +999,9 @@ void TR::X86RegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
       //
       if (firstRegister == secondRegister)
          {
-         if (opCode == CVTSS2SDRegReg)
+         if (opCode == TR::InstOpCode::CVTSS2SDRegReg)
             secondRegister->setIsSinglePrecision(true);
-         else if (opCode == CVTSD2SSRegReg)
+         else if (opCode == TR::InstOpCode::CVTSD2SSRegReg)
             secondRegister->setIsSinglePrecision(false);
          }
       }
@@ -1073,16 +1073,16 @@ void TR::X86RegImmInstruction::adjustVFPState(TR_VFPState *state, TR::CodeGenera
       {
       switch (getOpCodeValue())
          {
-         case ADD4RegImms:
-         case ADD4RegImm4:
-         case ADD8RegImms:
-         case ADD8RegImm4:
+         case TR::InstOpCode::ADD4RegImms:
+         case TR::InstOpCode::ADD4RegImm4:
+         case TR::InstOpCode::ADD8RegImms:
+         case TR::InstOpCode::ADD8RegImm4:
             state->_displacement -= getSourceImmediate();
             break;
-         case SUB4RegImms:
-         case SUB4RegImm4:
-         case SUB8RegImms:
-         case SUB8RegImm4:
+         case TR::InstOpCode::SUB4RegImms:
+         case TR::InstOpCode::SUB4RegImm4:
+         case TR::InstOpCode::SUB8RegImms:
+         case TR::InstOpCode::SUB8RegImm4:
             state->_displacement += getSourceImmediate();
             break;
          default:
@@ -1461,15 +1461,15 @@ void insertUnresolvedReferenceInstructionMemoryBarrier(TR::CodeGenerator *cg, in
 
       if (barrier & LockOR)
          {
-         fenceOp.setOpCodeValue(LOR4MemImms);
+         fenceOp.setOpCodeValue(TR::InstOpCode::LOR4MemImms);
          is5ByteFence = true;
          }
       else if ((barrier & kMemoryFence) == kMemoryFence)
-         fenceOp.setOpCodeValue(MFENCE);
+         fenceOp.setOpCodeValue(TR::InstOpCode::MFENCE);
       else if ((barrier & kLoadFence) && cg->comp()->target().cpu.requiresLFence())
-         fenceOp.setOpCodeValue(LFENCE);
+         fenceOp.setOpCodeValue(TR::InstOpCode::LFENCE);
       else if (barrier & kStoreFence)
-         fenceOp.setOpCodeValue(SFENCE);
+         fenceOp.setOpCodeValue(TR::InstOpCode::SFENCE);
       else
          TR_ASSERT(false, "No valid memory barrier has been found. \n");
 
@@ -2134,7 +2134,7 @@ TR::X86RegMemInstruction::X86RegMemInstruction(TR::InstOpCode::Mnemonic         
    // a live discardable register.
    //
    if (cg->enableRematerialisation() &&
-      (getOpCodeValue() == LEA2RegMem || getOpCodeValue() ==  LEA4RegMem || getOpCodeValue() == LEA8RegMem) &&
+      (getOpCodeValue() == TR::InstOpCode::LEA2RegMem || getOpCodeValue() ==  TR::InstOpCode::LEA4RegMem || getOpCodeValue() == TR::InstOpCode::LEA8RegMem) &&
       !cg->getLiveDiscardableRegisters().empty())
       {
       cg->clobberLiveDiscardableRegisters(this, mr);
@@ -2173,7 +2173,7 @@ TR::X86RegMemInstruction::X86RegMemInstruction(TR::InstOpCode::Mnemonic         
    // a live discardable register.
    //
    if (cg->enableRematerialisation() &&
-      (getOpCodeValue() == LEA2RegMem || getOpCodeValue() ==  LEA4RegMem || getOpCodeValue() == LEA8RegMem) &&
+      (getOpCodeValue() == TR::InstOpCode::LEA2RegMem || getOpCodeValue() ==  TR::InstOpCode::LEA4RegMem || getOpCodeValue() == TR::InstOpCode::LEA8RegMem) &&
       !cg->getLiveDiscardableRegisters().empty())
       {
       cg->clobberLiveDiscardableRegisters(this, mr);
@@ -2841,7 +2841,7 @@ void TR::X86FPSTiST0RegRegInstruction::assignRegisters(TR_RegisterKinds kindsToB
                }
 
             TR::RealRegister *fpReg = machine->fpMapToStackRelativeRegister(targetRegister);
-            new (cg()->trHeapMemory()) TR::X86FPRegInstruction(cursor, FSTPReg, fpReg, cg());
+            new (cg()->trHeapMemory()) TR::X86FPRegInstruction(cursor, TR::InstOpCode::FSTPReg, fpReg, cg());
             }
          else
            //if (result & kSourceCanBePopped)
@@ -2936,7 +2936,7 @@ void TR::X86FPST0STiRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToB
                }
 
             TR::RealRegister *fpReg = machine->fpMapToStackRelativeRegister(sourceRegister);
-            new (cg()->trHeapMemory()) TR::X86FPRegInstruction(cursor, FSTPReg, fpReg, cg());
+            new (cg()->trHeapMemory()) TR::X86FPRegInstruction(cursor, TR::InstOpCode::FSTPReg, fpReg, cg());
             machine->fpStackPop();
             }
          }
@@ -3095,14 +3095,14 @@ void TR::X86FPCompareRegRegInstruction::assignRegisters(TR_RegisterKinds kindsTo
                swapOperands();
                }
 
-            if (getOpCodeValue() == FCOMIRegReg || getOpCodeValue() == DCOMIRegReg)
+            if (getOpCodeValue() == TR::InstOpCode::FCOMIRegReg || getOpCodeValue() == TR::InstOpCode::DCOMIRegReg)
                {
-               popOpCode = FCOMIPReg;
+               popOpCode = TR::InstOpCode::FCOMIPReg;
                needLateSourcePop = true;
                }
             else
                {
-               popOpCode = FCOMPP;
+               popOpCode = TR::InstOpCode::FCOMPP;
                }
             }
          else if (result & kTargetCanBePopped)
@@ -3112,13 +3112,13 @@ void TR::X86FPCompareRegRegInstruction::assignRegisters(TR_RegisterKinds kindsTo
                (void)machine->fpStackFXCH(this->getPrev(), targetRegister);
                }
 
-            if (getOpCodeValue() == FCOMIRegReg || getOpCodeValue() == DCOMIRegReg)
+            if (getOpCodeValue() == TR::InstOpCode::FCOMIRegReg || getOpCodeValue() == TR::InstOpCode::DCOMIRegReg)
                {
-               popOpCode = FCOMIPReg;
+               popOpCode = TR::InstOpCode::FCOMIPReg;
                }
             else
                {
-               popOpCode = FCOMPReg;
+               popOpCode = TR::InstOpCode::FCOMPReg;
                }
             }
          else if (result & kSourceCanBePopped)
@@ -3132,13 +3132,13 @@ void TR::X86FPCompareRegRegInstruction::assignRegisters(TR_RegisterKinds kindsTo
                   {
                   needLateSourcePop = false;
 
-                  if (getOpCodeValue() == FCOMIRegReg || getOpCodeValue() == DCOMIRegReg)
+                  if (getOpCodeValue() == TR::InstOpCode::FCOMIRegReg || getOpCodeValue() == TR::InstOpCode::DCOMIRegReg)
                      {
-                     popOpCode = FCOMIPReg;
+                     popOpCode = TR::InstOpCode::FCOMIPReg;
                      }
                   else
                      {
-                     popOpCode = FCOMPReg;
+                     popOpCode = TR::InstOpCode::FCOMPReg;
                      }
                   }
                }
@@ -3190,7 +3190,7 @@ void TR::X86FPCompareRegRegInstruction::assignRegisters(TR_RegisterKinds kindsTo
                }
 
             TR::RealRegister *realFPReg = machine->fpMapToStackRelativeRegister(sourceRegister);
-            new (cg()->trHeapMemory()) TR::X86FPRegInstruction(cursor, FSTPReg, realFPReg, cg());
+            new (cg()->trHeapMemory()) TR::X86FPRegInstruction(cursor, TR::InstOpCode::FSTPReg, realFPReg, cg());
             }
 
          machine->fpStackPop();
@@ -3243,7 +3243,7 @@ bool TR::X86FPCompareRegRegInstruction::swapOperands()
    if (debug("dumpFPRA"))
       diagnostic("%s -> ", node->getOpCode().getName());
 
-   // Communicate to FCMPEVAL what the new opcode is.
+   // Communicate to TR::InstOpCode::FCMPEVAL what the new opcode is.
    // This cobbles the tree node; probably not a good idea if
    // the IL is still needed after register assignment.
    TR::Node::recreate(node, swappedOp);
@@ -3270,7 +3270,7 @@ bool TR::X86FPCompareRegRegInstruction::swapOperands()
          diagnostic("%s -> ", cursor->getOpCode().getOpCodeName(cg()));
 
       TR::InstOpCode::Mnemonic instr = getOpCodeValue();
-      instr = getBranchOrSetOpCodeForFPComparison(swappedOp, (instr == FCOMIRegReg || instr == DCOMIRegReg));
+      instr = getBranchOrSetOpCodeForFPComparison(swappedOp, (instr == TR::InstOpCode::FCOMIRegReg || instr == TR::InstOpCode::DCOMIRegReg));
       cursor->setOpCodeValue(instr);
 
       if (debug("dumpFPRA"))
@@ -3332,7 +3332,7 @@ void TR::X86FPCompareEvalInstruction::assignRegisters(TR_RegisterKinds kindsToBe
          case TR::fcmpleu:
          case TR::dcmpgt:
          case TR::fcmpgt:
-            cursor = new (cg()->trHeapMemory()) TR::X86RegImmInstruction(cursor, AND2RegImm2, accRegister, 0x4500, cg());
+            cursor = new (cg()->trHeapMemory()) TR::X86RegImmInstruction(cursor, TR::InstOpCode::AND2RegImm2, accRegister, 0x4500, cg());
             break;
 
          case TR::ifdcmple:
@@ -3354,7 +3354,7 @@ void TR::X86FPCompareEvalInstruction::assignRegisters(TR_RegisterKinds kindsToBe
          case TR::fcmpltu:
          case TR::dcmpge:
          case TR::fcmpge:
-            cursor = new (cg()->trHeapMemory()) TR::X86RegImmInstruction(cursor, AND2RegImm2, accRegister, 0x0500, cg());
+            cursor = new (cg()->trHeapMemory()) TR::X86RegImmInstruction(cursor, TR::InstOpCode::AND2RegImm2, accRegister, 0x0500, cg());
             break;
 
          case TR::ifdcmplt:
@@ -3365,8 +3365,8 @@ void TR::X86FPCompareEvalInstruction::assignRegisters(TR_RegisterKinds kindsToBe
          case TR::fcmplt:
          case TR::dcmpgeu:
          case TR::fcmpgeu:
-            cursor = new (cg()->trHeapMemory()) TR::X86RegImmInstruction(cursor, AND2RegImm2, accRegister, 0x4500, cg());
-            cursor = new (cg()->trHeapMemory()) TR::X86RegImmInstruction(cursor, CMP2RegImm2, accRegister, 0x0100, cg());
+            cursor = new (cg()->trHeapMemory()) TR::X86RegImmInstruction(cursor, TR::InstOpCode::AND2RegImm2, accRegister, 0x4500, cg());
+            cursor = new (cg()->trHeapMemory()) TR::X86RegImmInstruction(cursor, TR::InstOpCode::CMP2RegImm2, accRegister, 0x0100, cg());
             break;
 
          case TR::ifdcmpneu:
@@ -3377,16 +3377,16 @@ void TR::X86FPCompareEvalInstruction::assignRegisters(TR_RegisterKinds kindsToBe
          case TR::iffcmpeq:
          case TR::dcmpeq:
          case TR::fcmpeq:
-            cursor = new (cg()->trHeapMemory()) TR::X86RegImmInstruction(cursor, AND2RegImm2, accRegister, 0x4500, cg());
-            cursor = new (cg()->trHeapMemory()) TR::X86RegImmInstruction(cursor, CMP2RegImm2, accRegister, 0x4000, cg());
+            cursor = new (cg()->trHeapMemory()) TR::X86RegImmInstruction(cursor, TR::InstOpCode::AND2RegImm2, accRegister, 0x4500, cg());
+            cursor = new (cg()->trHeapMemory()) TR::X86RegImmInstruction(cursor, TR::InstOpCode::CMP2RegImm2, accRegister, 0x4000, cg());
             break;
 
          case TR::fcmpl:
          case TR::fcmpg:
          case TR::dcmpl:
          case TR::dcmpg:
-            TR_ASSERT(cg()->comp()->target().is32Bit(), "AMD64 doesn't support SAHF");
-            cursor = new (cg()->trHeapMemory()) TR::Instruction(SAHF, cursor, cg());
+            TR_ASSERT(cg()->comp()->target().is32Bit(), "AMD64 doesn't support TR::InstOpCode::SAHF");
+            cursor = new (cg()->trHeapMemory()) TR::Instruction(TR::InstOpCode::SAHF, cursor, cg());
             break;
 
          default:
@@ -3415,86 +3415,86 @@ TR::InstOpCode::Mnemonic getBranchOrSetOpCodeForFPComparison(TR::ILOpCodes cmpOp
       {
       case TR::iffcmpeq:
       case TR::ifdcmpeq:
-         op = JE4;
+         op = TR::InstOpCode::JE4;
          break;
 
       case TR::fcmpeq:
       case TR::dcmpeq:
-         op = SETE1Reg;
+         op = TR::InstOpCode::SETE1Reg;
          break;
 
       case TR::iffcmpneu:
       case TR::ifdcmpneu:
       case TR::iffcmpne:
       case TR::ifdcmpne:
-         op = JNE4;
+         op = TR::InstOpCode::JNE4;
          break;
 
       case TR::fcmpneu:
       case TR::dcmpneu:
       case TR::fcmpne:
       case TR::dcmpne:
-         op = SETNE1Reg;
+         op = TR::InstOpCode::SETNE1Reg;
          break;
 
       case TR::iffcmpleu:
       case TR::ifdcmpleu:
-         op = useFCOMIInstructions ? JBE4 : JNE4;
+         op = useFCOMIInstructions ? TR::InstOpCode::JBE4 : TR::InstOpCode::JNE4;
          break;
 
       case TR::fcmpleu:
       case TR::dcmpleu:
-         op = useFCOMIInstructions ? SETBE1Reg : SETNE1Reg;
+         op = useFCOMIInstructions ? TR::InstOpCode::SETBE1Reg : TR::InstOpCode::SETNE1Reg;
          break;
 
       case TR::iffcmpgt:
       case TR::ifdcmpgt:
-         op = useFCOMIInstructions ? JA4 : JE4;
+         op = useFCOMIInstructions ? TR::InstOpCode::JA4 : TR::InstOpCode::JE4;
          break;
 
       case TR::fcmpgt:
       case TR::dcmpgt:
-         op = useFCOMIInstructions ? SETA1Reg : SETE1Reg;
+         op = useFCOMIInstructions ? TR::InstOpCode::SETA1Reg : TR::InstOpCode::SETE1Reg;
          break;
 
       case TR::iffcmpltu:
       case TR::ifdcmpltu:
-         op = useFCOMIInstructions ? JB4 : JNE4;
+         op = useFCOMIInstructions ? TR::InstOpCode::JB4 : TR::InstOpCode::JNE4;
          break;
 
       case TR::fcmpltu:
       case TR::dcmpltu:
-         op = useFCOMIInstructions ? SETB1Reg : SETNE1Reg;
+         op = useFCOMIInstructions ? TR::InstOpCode::SETB1Reg : TR::InstOpCode::SETNE1Reg;
          break;
 
       case TR::iffcmpge:
       case TR::ifdcmpge:
-         op = useFCOMIInstructions ? JAE4 : JE4;
+         op = useFCOMIInstructions ? TR::InstOpCode::JAE4 : TR::InstOpCode::JE4;
          break;
 
       case TR::fcmpge:
       case TR::dcmpge:
-         op = useFCOMIInstructions ? SETAE1Reg : SETE1Reg;
+         op = useFCOMIInstructions ? TR::InstOpCode::SETAE1Reg : TR::InstOpCode::SETE1Reg;
          break;
 
       case TR::iffcmplt:
       case TR::ifdcmplt:
-         op = useFCOMIInstructions ? JB4 : JE4;
+         op = useFCOMIInstructions ? TR::InstOpCode::JB4 : TR::InstOpCode::JE4;
          break;
 
       case TR::fcmplt:
       case TR::dcmplt:
-         op = useFCOMIInstructions ? SETB1Reg : SETE1Reg;
+         op = useFCOMIInstructions ? TR::InstOpCode::SETB1Reg : TR::InstOpCode::SETE1Reg;
          break;
 
       case TR::iffcmpgeu:
       case TR::ifdcmpgeu:
-         op = useFCOMIInstructions ? JAE4 : JNE4;
+         op = useFCOMIInstructions ? TR::InstOpCode::JAE4 : TR::InstOpCode::JNE4;
          break;
 
       case TR::fcmpgeu:
       case TR::dcmpgeu:
-         op = useFCOMIInstructions ? SETAE1Reg : SETNE1Reg;
+         op = useFCOMIInstructions ? TR::InstOpCode::SETAE1Reg : TR::InstOpCode::SETNE1Reg;
          break;
 
 #ifdef DEBUG
@@ -3570,9 +3570,9 @@ void TR::X86FPRemainderRegRegInstruction::assignRegisters(TR_RegisterKinds kinds
       TR::RegisterDependencyConditions  *deps = getDependencyConditions();
 
       new (cg()->trHeapMemory()) TR::X86LabelInstruction(getPrev(), TR::InstOpCode::label, loopLabel, cg());
-      TR::Instruction  *cursor = new (cg()->trHeapMemory()) TR::X86RegInstruction( this, STSWAcc, accReg, cg());
-      cursor = new (cg()->trHeapMemory()) TR::X86RegImmInstruction( cursor, TEST2RegImm2, accReg, 0x0400, cg());
-      new (cg()->trHeapMemory()) TR::X86LabelInstruction( cursor, JNE4, loopLabel, deps, cg());
+      TR::Instruction  *cursor = new (cg()->trHeapMemory()) TR::X86RegInstruction( this, TR::InstOpCode::STSWAcc, accReg, cg());
+      cursor = new (cg()->trHeapMemory()) TR::X86RegImmInstruction( cursor, TR::InstOpCode::TEST2RegImm2, accReg, 0x0400, cg());
+      new (cg()->trHeapMemory()) TR::X86LabelInstruction( cursor, TR::InstOpCode::JNE4, loopLabel, deps, cg());
 
       if (_accRegister->decFutureUseCount() == 0)
          {
@@ -3775,14 +3775,14 @@ void TR::X86FPRegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssig
 
       if (targetRegister->decFutureUseCount() == 0)
          {
-         if (getOpCodeValue() == FLDRegMem || getOpCodeValue() == DLDRegMem)
+         if (getOpCodeValue() == TR::InstOpCode::FLDRegMem || getOpCodeValue() == TR::InstOpCode::DLDRegMem)
             {
             // Temporary patch
             //
             // If the target register is not used, pop it off the FP stack.  This can happen after
             // the optimizer runs and eliminates unnecessary stores of unresolved data.
             //
-            new (cg()->trHeapMemory()) TR::X86FPRegInstruction(this, FSTPReg, fpReg, cg());
+            new (cg()->trHeapMemory()) TR::X86FPRegInstruction(this, TR::InstOpCode::FSTPReg, fpReg, cg());
 
             // Only two uses were added after it was determined the future use count was zero.
             //
@@ -3930,7 +3930,7 @@ TR::Instruction* generateBreakOnDFSet(TR::CodeGenerator *cg, TR::Instruction* cu
       cursor = cg->getAppendInstruction();
 
    TR::RealRegister *espReal = cg->machine()->getRealRegister(TR::RealRegister::esp);
-   cursor = generateInstruction(cursor, PUSHFD, cg);
+   cursor = generateInstruction(cursor, TR::InstOpCode::PUSHFD, cg);
    TR::LabelSymbol* begLabel = generateLabelSymbol(cg);
    TR::LabelSymbol* endLabel = generateLabelSymbol(cg);
    begLabel->setStartInternalControlFlow();
@@ -3938,11 +3938,11 @@ TR::Instruction* generateBreakOnDFSet(TR::CodeGenerator *cg, TR::Instruction* cu
 
    const int32_t dfMask = 0x400;
    cursor = generateLabelInstruction(cursor, TR::InstOpCode::label, begLabel, cg);
-   cursor = generateMemImmInstruction(cursor, TEST2MemImm2, generateX86MemoryReference(espReal, 0, cg), dfMask, cg);
-   cursor = generateLabelInstruction(cursor, JE1, endLabel, cg);
+   cursor = generateMemImmInstruction(cursor, TR::InstOpCode::TEST2MemImm2, generateX86MemoryReference(espReal, 0, cg), dfMask, cg);
+   cursor = generateLabelInstruction(cursor, TR::InstOpCode::JE1, endLabel, cg);
    cursor = generateInstruction(cursor, TR::InstOpCode::bad, cg);
    cursor = generateLabelInstruction(cursor, TR::InstOpCode::label, endLabel, cg);
-   cursor = generateInstruction(cursor, POPFD, cg);
+   cursor = generateInstruction(cursor, TR::InstOpCode::POPFD, cg);
 
    return cursor;
    }
@@ -4282,7 +4282,7 @@ generateConditionalJumpInstruction(
               popRegister != NULL;
               popRegister = popRegsIt.getNext())
             {
-            generateFPSTiST0RegRegInstruction(FSTRegReg, ifNode, popRegister, popRegister,
+            generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, ifNode, popRegister, popRegister,
             cg);
             cg->stopUsingRegister(popRegister);
             }
@@ -4557,7 +4557,7 @@ generateHelperCallInstruction(TR::Instruction * cursor, TR_RuntimeHelper index, 
    {
    TR::SymbolReference * helperSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(index);
    cg->resetIsLeafMethod();
-   return new (cg->trHeapMemory()) TR::X86ImmSymInstruction(cursor, CALLImm4, static_cast<int32_t>(reinterpret_cast<intptr_t>(helperSymRef->getMethodAddress())), helperSymRef, cg);
+   return new (cg->trHeapMemory()) TR::X86ImmSymInstruction(cursor, TR::InstOpCode::CALLImm4, static_cast<int32_t>(reinterpret_cast<intptr_t>(helperSymRef->getMethodAddress())), helperSymRef, cg);
    }
 
 TR::X86ImmSymInstruction  *
@@ -4566,7 +4566,7 @@ generateHelperCallInstruction(TR::Node * node, TR_RuntimeHelper index, TR::Regis
    TR::SymbolReference * helperSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(index);
    cg->resetIsLeafMethod();
    return generateImmSymInstruction(
-         CALLImm4,
+         TR::InstOpCode::CALLImm4,
          node,
          static_cast<int32_t>(reinterpret_cast<intptr_t>(helperSymRef->getMethodAddress())),
          helperSymRef,

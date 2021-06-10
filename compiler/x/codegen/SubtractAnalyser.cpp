@@ -232,7 +232,7 @@ TR::Register* TR_X86SubtractAnalyser::integerSubtractAnalyserImpl(TR::Node     *
 // Volatile memory operands are not allowed in long subtractions
 // if we are compiling for an SMP machine, as the carry flag can
 // get clobbered by the memory barrier immediately preceding the
-// SBB4RegMem instruction.
+// TR::InstOpCode::SBB4RegMem instruction.
 //
 bool TR_X86SubtractAnalyser::isVolatileMemoryOperand(TR::Node *node)
    {
@@ -292,8 +292,8 @@ TR::Register* TR_X86SubtractAnalyser::longSubtractAnalyserImpl(TR::Node *root, T
    bool firstHighZero      = false;
    bool secondHighZero     = false; bool useSecondHighOrder = false;
 
-   TR::InstOpCode::Mnemonic regRegOpCode = SUB4RegReg;
-   TR::InstOpCode::Mnemonic regMemOpCode = SUB4RegMem;
+   TR::InstOpCode::Mnemonic regRegOpCode = TR::InstOpCode::SUB4RegReg;
+   TR::InstOpCode::Mnemonic regMemOpCode = TR::InstOpCode::SUB4RegMem;
 
    bool needsEflags = NEED_CC(root) || (root->getOpCodeValue() == TR::lusubb);
 
@@ -362,8 +362,8 @@ TR::Register* TR_X86SubtractAnalyser::longSubtractAnalyserImpl(TR::Node *root, T
       {
       // use SBB rather than SUB
       //
-      regRegOpCode = SBB4RegReg;
-      regMemOpCode = SBB4RegMem;
+      regRegOpCode = TR::InstOpCode::SBB4RegReg;
+      regMemOpCode = TR::InstOpCode::SBB4RegMem;
       }
 
    if (getCopyReg1())
@@ -372,15 +372,15 @@ TR::Register* TR_X86SubtractAnalyser::longSubtractAnalyserImpl(TR::Node *root, T
       TR::Register     *highThird = _cg->allocateRegister();
       TR::RegisterPair *thirdReg  = _cg->allocateRegisterPair(lowThird, highThird);
       targetRegister = thirdReg;
-      generateRegRegInstruction(MOV4RegReg, root, lowThird, firstRegister->getLowOrder(), _cg);
+      generateRegRegInstruction(TR::InstOpCode::MOV4RegReg, root, lowThird, firstRegister->getLowOrder(), _cg);
 
       if (firstHighZero)
          {
-         generateRegRegInstruction(XOR4RegReg, root, highThird, highThird, _cg);
+         generateRegRegInstruction(TR::InstOpCode::XOR4RegReg, root, highThird, highThird, _cg);
          }
       else
          {
-         generateRegRegInstruction(MOV4RegReg, root, highThird, firstRegister->getHighOrder(), _cg);
+         generateRegRegInstruction(TR::InstOpCode::MOV4RegReg, root, highThird, firstRegister->getHighOrder(), _cg);
          }
 
       if (getSubReg3Reg2())
@@ -388,12 +388,12 @@ TR::Register* TR_X86SubtractAnalyser::longSubtractAnalyserImpl(TR::Node *root, T
          if (secondHighZero)
             {
             generateRegRegInstruction(regRegOpCode, root, lowThird, secondRegister, _cg);
-            generateRegImmInstruction(SBB4RegImms, root, highThird, 0, _cg);
+            generateRegImmInstruction(TR::InstOpCode::SBB4RegImms, root, highThird, 0, _cg);
             }
          else
             {
             generateRegRegInstruction(regRegOpCode, root, lowThird, secondRegister->getLowOrder(), _cg);
-            generateRegRegInstruction(SBB4RegReg, root, highThird, secondRegister->getHighOrder(), _cg);
+            generateRegRegInstruction(TR::InstOpCode::SBB4RegReg, root, highThird, secondRegister->getHighOrder(), _cg);
             }
          }
       else // assert getSubReg3Mem2() == true
@@ -414,12 +414,12 @@ TR::Register* TR_X86SubtractAnalyser::longSubtractAnalyserImpl(TR::Node *root, T
          generateRegMemInstruction(regMemOpCode, root, lowThird, lowMR, _cg);
          if (secondHighZero)
             {
-            generateRegImmInstruction(SBB4RegImms, root, highThird, 0, _cg);
+            generateRegImmInstruction(TR::InstOpCode::SBB4RegImms, root, highThird, 0, _cg);
             }
          else
             {
             TR::MemoryReference  *highMR = generateX86MemoryReference(*lowMR, 4, _cg);
-            generateRegMemInstruction(SBB4RegMem, root, highThird, highMR, _cg);
+            generateRegMemInstruction(TR::InstOpCode::SBB4RegMem, root, highThird, highMR, _cg);
             }
          lowMR->decNodeReferenceCounts(_cg);
          }
@@ -429,12 +429,12 @@ TR::Register* TR_X86SubtractAnalyser::longSubtractAnalyserImpl(TR::Node *root, T
       if (secondHighZero)
          {
          generateRegRegInstruction(regRegOpCode, root, firstRegister->getLowOrder(), secondRegister, _cg);
-         generateRegImmInstruction(SBB4RegImms, root, firstRegister->getHighOrder(), 0, _cg);
+         generateRegImmInstruction(TR::InstOpCode::SBB4RegImms, root, firstRegister->getHighOrder(), 0, _cg);
          }
       else
          {
          generateRegRegInstruction(regRegOpCode, root, firstRegister->getLowOrder(), secondRegister->getLowOrder(), _cg);
-         generateRegRegInstruction(SBB4RegReg, root, firstRegister->getHighOrder(), secondRegister->getHighOrder(), _cg);
+         generateRegRegInstruction(TR::InstOpCode::SBB4RegReg, root, firstRegister->getHighOrder(), secondRegister->getHighOrder(), _cg);
          }
       targetRegister = firstRegister;
       }
@@ -454,12 +454,12 @@ TR::Register* TR_X86SubtractAnalyser::longSubtractAnalyserImpl(TR::Node *root, T
 
       if (secondHighZero)
          {
-         generateRegImmInstruction(SBB4RegImms, root, firstRegister->getHighOrder(), 0, _cg);
+         generateRegImmInstruction(TR::InstOpCode::SBB4RegImms, root, firstRegister->getHighOrder(), 0, _cg);
          }
       else
          {
          TR::MemoryReference  *highMR = generateX86MemoryReference(*lowMR, 4, _cg);
-         generateRegMemInstruction(SBB4RegMem, root, firstRegister->getHighOrder(), highMR, _cg);
+         generateRegMemInstruction(TR::InstOpCode::SBB4RegMem, root, firstRegister->getHighOrder(), highMR, _cg);
          }
 
       targetRegister = firstRegister;

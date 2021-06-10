@@ -143,7 +143,7 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
                break;
             case TR_FPR:
             case TR_VRF:
-               mov = MOVDQURegReg;
+               mov = TR::InstOpCode::MOVDQURegReg;
                break;
             default:
                TR_ASSERT(false, "OutlinedInstructions: unsupported result register kind.");
@@ -156,7 +156,7 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
    _cg->decReferenceCount(_callNode);
 
    if (_restartLabel)
-      generateLabelInstruction(JMP4, _callNode, _restartLabel, _cg);
+      generateLabelInstruction(TR::InstOpCode::JMP4, _callNode, _restartLabel, _cg);
    else
       {
       // Java-specific.
@@ -167,7 +167,7 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
       //
       // When the handshake is removed, we can delete this zero.
       //
-      generateImmInstruction(DDImm4, _callNode, 0, _cg);
+      generateImmInstruction(TR::InstOpCode::DDImm4, _callNode, 0, _cg);
       }
 
    // Dummy label to delimit the end of the helper call dispatch sequence (for exception ranges).

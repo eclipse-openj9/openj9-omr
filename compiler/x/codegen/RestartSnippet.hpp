@@ -65,7 +65,7 @@ class X86RestartSnippet  : public TR::Snippet
       uint8_t *destination = label->getCodeLocation();
       intptr_t  distance    = destination - (bufferCursor + 2);
 
-      TR_ASSERT((branchOp >= JA4) && (branchOp <= JMP4),
+      TR_ASSERT((branchOp >= TR::InstOpCode::JA4) && (branchOp <= TR::InstOpCode::JMP4),
              "opcode must be a long branch for conditional restart in a restart snippet\n");
 
       if (getForceLongRestartJump())
@@ -95,7 +95,7 @@ class X86RestartSnippet  : public TR::Snippet
 
    uint8_t *genRestartJump(uint8_t *bufferCursor, TR::LabelSymbol *label)
       {
-      return genRestartJump(JMP4, bufferCursor, label);
+      return genRestartJump(TR::InstOpCode::JMP4, bufferCursor, label);
       }
 
    uint8_t *genRestartJump(uint8_t *bufferCursor)
@@ -118,7 +118,7 @@ class X86RestartSnippet  : public TR::Snippet
          return 2;
          }
       // long branch required
-      if (branchOp == JMP4)
+      if (branchOp == TR::InstOpCode::JMP4)
          return 5;
       else
          return 6;
@@ -126,7 +126,7 @@ class X86RestartSnippet  : public TR::Snippet
 
    uint32_t estimateRestartJumpLength(int32_t estimatedSnippetLocation, TR::LabelSymbol *label)
       {
-      return estimateRestartJumpLength(JMP4, estimatedSnippetLocation, label);
+      return estimateRestartJumpLength(TR::InstOpCode::JMP4, estimatedSnippetLocation, label);
       }
 
    uint32_t estimateRestartJumpLength(int32_t estimatedSnippetLocation)

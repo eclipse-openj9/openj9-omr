@@ -210,7 +210,7 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(
                   highCopyReg->setPinningArrayPointer(highGlobalReg->getPinningArrayPointer());
                   }
 
-               generateRegRegInstruction(MOV4RegReg, node, highCopyReg, highGlobalReg, cg);
+               generateRegRegInstruction(TR::InstOpCode::MOV4RegReg, node, highCopyReg, highGlobalReg, cg);
                }
             else
                {
@@ -224,19 +224,19 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(
             if (globalReg->isSinglePrecision())
                {
                copyReg = cg->allocateSinglePrecisionRegister(TR_FPR);
-               generateRegRegInstruction(MOVAPSRegReg, node, copyReg, child->getRegister(), cg);
+               generateRegRegInstruction(TR::InstOpCode::MOVAPSRegReg, node, copyReg, child->getRegister(), cg);
                }
             else
                {
                copyReg = cg->allocateRegister(TR_FPR);
-               generateRegRegInstruction(MOVAPDRegReg, node, copyReg, child->getRegister(), cg);
+               generateRegRegInstruction(TR::InstOpCode::MOVAPDRegReg, node, copyReg, child->getRegister(), cg);
                }
             }
          else if (globalReg->getKind() == TR_VRF)
             {
             generateRegcopyDebugCounter(cg, "vrf");
             copyReg = cg->allocateRegister(TR_VRF);
-            generateRegRegInstruction(MOVDQURegReg, node, copyReg, child->getRegister(), cg);
+            generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, copyReg, child->getRegister(), cg);
             }
 
          globalReg = copyReg;
@@ -774,11 +774,11 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
                TR::InstOpCode::Mnemonic op;
                if (assignedReg->getKind() == TR_FPR)
                   {
-                  op = (assignedReg->isSinglePrecision()) ? MOVSSRegMem : (cg->getXMMDoubleLoadOpCode());
+                  op = (assignedReg->isSinglePrecision()) ? TR::InstOpCode::MOVSSRegMem : (cg->getXMMDoubleLoadOpCode());
                   }
                else if (assignedReg->getKind() == TR_VRF)
                   {
-                  op = MOVDQURegMem;
+                  op = TR::InstOpCode::MOVDQURegMem;
                   }
                else
                   {

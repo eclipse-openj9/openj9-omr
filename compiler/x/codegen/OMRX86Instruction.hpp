@@ -1834,7 +1834,7 @@ class X86RegMemInstruction : public TR::X86RegInstruction
       // a live discardable register.
       //
       if (cg->enableRematerialisation() &&
-         (op == LEA2RegMem || op ==  LEA4RegMem || op == LEA8RegMem) &&
+         (op == TR::InstOpCode::LEA2RegMem || op ==  TR::InstOpCode::LEA4RegMem || op == TR::InstOpCode::LEA8RegMem) &&
          !cg->getLiveDiscardableRegisters().empty())
          {
          cg->clobberLiveDiscardableRegisters(this, mr);
@@ -2709,10 +2709,10 @@ class X86VFPSaveInstruction : public TR::Instruction
    public:
 
    X86VFPSaveInstruction(TR::Instruction *precedingInstruction, TR::CodeGenerator *cg) :
-      TR::Instruction(AdjustFramePtr, precedingInstruction, cg) {}
+      TR::Instruction(TR::InstOpCode::AdjustFramePtr, precedingInstruction, cg) {}
 
    X86VFPSaveInstruction(TR::Node *node, TR::CodeGenerator *cg) :
-      TR::Instruction(node, AdjustFramePtr, cg) {}
+      TR::Instruction(node, TR::InstOpCode::AdjustFramePtr, cg) {}
 
    virtual char *description() { return "X86VFPSave"; }
 
@@ -2738,11 +2738,11 @@ class X86VFPRestoreInstruction : public TR::Instruction
 
    X86VFPRestoreInstruction(TR::Instruction *precedingInstruction, TR::X86VFPSaveInstruction  *saveInstruction, TR::CodeGenerator *cg) :
       _saveInstruction(saveInstruction),
-      TR::Instruction(AdjustFramePtr, precedingInstruction, cg) {}
+      TR::Instruction(TR::InstOpCode::AdjustFramePtr, precedingInstruction, cg) {}
 
    X86VFPRestoreInstruction(TR::X86VFPSaveInstruction  *saveInstruction, TR::Node *node, TR::CodeGenerator *cg) :
       _saveInstruction(saveInstruction),
-      TR::Instruction(node, AdjustFramePtr, cg) {}
+      TR::Instruction(node, TR::InstOpCode::AdjustFramePtr, cg) {}
 
    virtual char *description() { return "X86VFPRestore"; }
 
@@ -2820,11 +2820,11 @@ class X86VFPReleaseInstruction : public TR::Instruction
 
    X86VFPReleaseInstruction(TR::Instruction *precedingInstruction, TR::X86VFPDedicateInstruction  *dedicateInstruction, TR::CodeGenerator *cg):
       _dedicateInstruction(dedicateInstruction),
-      TR::Instruction(AdjustFramePtr, precedingInstruction, cg){}
+      TR::Instruction(TR::InstOpCode::AdjustFramePtr, precedingInstruction, cg){}
 
    X86VFPReleaseInstruction(TR::X86VFPDedicateInstruction  *dedicateInstruction, TR::Node *node, TR::CodeGenerator *cg):
       _dedicateInstruction(dedicateInstruction),
-      TR::Instruction(node, AdjustFramePtr, cg){}
+      TR::Instruction(node, TR::InstOpCode::AdjustFramePtr, cg){}
 
    virtual char *description() { return "X86VFPRelease"; }
 
@@ -2873,11 +2873,11 @@ class X86VFPCallCleanupInstruction : public TR::Instruction
 
    X86VFPCallCleanupInstruction(TR::Instruction *precedingInstruction, int32_t adjustment, TR::CodeGenerator *cg):
       _stackPointerAdjustment(adjustment),
-      TR::Instruction(AdjustFramePtr, precedingInstruction, cg) {}
+      TR::Instruction(TR::InstOpCode::AdjustFramePtr, precedingInstruction, cg) {}
 
    X86VFPCallCleanupInstruction(int32_t adjustment, TR::Node *node, TR::CodeGenerator *cg):
       _stackPointerAdjustment(adjustment),
-      TR::Instruction(node, AdjustFramePtr, cg) {}
+      TR::Instruction(node, TR::InstOpCode::AdjustFramePtr, cg) {}
 
    virtual char *description() { return "X86VFPCallCleanup"; }
 

@@ -50,7 +50,7 @@ uint8_t *TR::X86DivideCheckSnippet::emitSnippetBody()
 
    // JNE divideLabel
    //
-   buffer = genRestartJump(JNE4, buffer, _divideLabel);
+   buffer = genRestartJump(TR::InstOpCode::JNE4, buffer, _divideLabel);
 
    TR::Machine *machine = cg()->machine();
    if (_divOp.isDiv() && realDividendReg->getRegisterNumber() != TR::RealRegister::eax)
@@ -122,7 +122,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86DivideCheckSnippet  * snippet) // TOD
    trfprintf(pOutFile, "cmp\t%s, -1", getName(realDivisorReg)); // TODO: Might be 64-bit register
    bufferPos += cmpSize;
 
-   int32_t size = snippet->estimateRestartJumpLength(JNE4, static_cast<int32_t>(bufferPos - (uint8_t*)0), snippet->getDivideLabel());
+   int32_t size = snippet->estimateRestartJumpLength(TR::InstOpCode::JNE4, static_cast<int32_t>(bufferPos - (uint8_t*)0), snippet->getDivideLabel());
    printPrefix(pOutFile, NULL, bufferPos, size);
    printLabelInstruction(pOutFile, "jne", snippet->getDivideLabel());
    bufferPos += size;
@@ -176,7 +176,7 @@ uint32_t TR::X86DivideCheckSnippet::getLength(int32_t estimatedSnippetStart)
       if (rexPrefix)
          fixedLength++;
       }
-   uint32_t jumpLength = estimateRestartJumpLength(JNE4,
+   uint32_t jumpLength = estimateRestartJumpLength(TR::InstOpCode::JNE4,
                                                    estimatedSnippetStart + fixedLength + 2,
                                                    _divideLabel);
 

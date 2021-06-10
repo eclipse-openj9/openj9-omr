@@ -210,7 +210,7 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
 int32_t
 TR_Debug::printRestartJump(TR::FILE *pOutFile, TR::X86RestartSnippet * snippet, uint8_t *bufferPos)
    {
-   int32_t size = snippet->estimateRestartJumpLength(JMP4, static_cast<int32_t>(bufferPos - (uint8_t*)snippet->cg()->getBinaryBufferStart()));
+   int32_t size = snippet->estimateRestartJumpLength(TR::InstOpCode::JMP4, static_cast<int32_t>(bufferPos - (uint8_t*)snippet->cg()->getBinaryBufferStart()));
    printPrefix(pOutFile, NULL, bufferPos, size);
    printLabelInstruction(pOutFile, "jmp", snippet->getRestartLabel());
    return size;

@@ -2229,7 +2229,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86CallSnippet  * snippet)
          intptr_t ramMethod = (intptr_t)methodSymbol->getMethodAddress();
 
          printPrefix(pOutFile, NULL, bufferPos, 10);
-         trfprintf(pOutFile, "mov \trdi, 0x%x\t\t# MOV8RegImm64",ramMethod);
+         trfprintf(pOutFile, "mov \trdi, 0x%x\t\t# TR::InstOpCode::MOV8RegImm64",ramMethod);
          bufferPos+=10;
 
          printPrefix(pOutFile, NULL, bufferPos, 5);
@@ -2428,10 +2428,10 @@ TR_Debug::getMnemonicName(TR::InstOpCode  * opCode)
    if (_comp->target().isLinux())
       {
       int32_t o = opCode->getOpCodeValue();
-      if (o == (int32_t) DQImm64) return dqString();
-      if (o == (int32_t) DDImm4) return ddString();
-      if (o == (int32_t) DWImm2) return dwString();
-      if (o == (int32_t) DBImm1) return dbString();
+      if (o == (int32_t) TR::InstOpCode::DQImm64) return dqString();
+      if (o == (int32_t) TR::InstOpCode::DDImm4) return ddString();
+      if (o == (int32_t) TR::InstOpCode::DWImm2) return dwString();
+      if (o == (int32_t) TR::InstOpCode::DBImm1) return dbString();
       }
    return opCodeToMnemonicMap[opCode->getOpCodeValue()];
    }

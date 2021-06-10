@@ -303,7 +303,7 @@ TR::X86SystemLinkage::savePreservedRegisters(TR::Instruction *cursor)
          TR::RealRegister *reg = machine()->getRealRegister(idx);
          if (reg->getHasBeenAssignedInMethod() && reg->getState() != TR::RealRegister::Locked)
             {
-            cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, PUSHReg, reg, cg());
+            cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, TR::InstOpCode::PUSHReg, reg, cg());
             }
          }
       }
@@ -488,7 +488,7 @@ TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
       {
       cursor = new (trHeapMemory()) TR::X86RegInstruction(
          cursor,
-         PUSHReg,
+         TR::InstOpCode::PUSHReg,
          machine()->getRealRegister(properties.getFramePointerRegister()),
          cg());
 
@@ -524,7 +524,7 @@ TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
    else if (allocSize == singleWordSize)
       {
       TR::RealRegister *realReg = getSingleWordFrameAllocationRegister();
-      cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, PUSHReg, realReg, cg());
+      cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, TR::InstOpCode::PUSHReg, realReg, cg());
       }
    else
       {
@@ -639,7 +639,7 @@ TR::X86SystemLinkage::restorePreservedRegisters(TR::Instruction *cursor)
          TR::RealRegister *reg = machine()->getRealRegister(idx);
          if (reg->getHasBeenAssignedInMethod())
             {
-            cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, POPReg, reg, cg());
+            cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, TR::InstOpCode::POPReg, reg, cg());
             }
          }
       }
@@ -712,7 +712,7 @@ TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
       // Restore stack pointer from frame pointer
       //
       cursor = new (trHeapMemory()) TR::X86RegRegInstruction(cursor, MOVRegReg(), espReal, machine()->getRealRegister(_properties.getFramePointerRegister()), cg());
-      cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, POPReg, machine()->getRealRegister(_properties.getFramePointerRegister()), cg());
+      cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, TR::InstOpCode::POPReg, machine()->getRealRegister(_properties.getFramePointerRegister()), cg());
       }
    else if (allocSize == 0)
       {
@@ -721,7 +721,7 @@ TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
    else if (allocSize == singleWordSize)
       {
       TR::RealRegister *realReg = getSingleWordFrameAllocationRegister();
-      cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, POPReg, realReg, cg());
+      cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, TR::InstOpCode::POPReg, realReg, cg());
       }
    else
       {
@@ -734,7 +734,7 @@ TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
       traceMsg(comp(), "create epilogue using system linkage, after delocating stack frame, cursor is %x.\n", cursor);
       }
 
-   if (cursor->getNext()->getOpCodeValue() == RETImm2)
+   if (cursor->getNext()->getOpCodeValue() == TR::InstOpCode::RETImm2)
       {
       toIA32ImmInstruction(cursor->getNext())->setSourceImmediate(bodySymbol->getNumParameterSlots() << getProperties().getParmSlotShift());
 

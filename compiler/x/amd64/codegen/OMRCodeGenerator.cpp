@@ -134,7 +134,7 @@ OMR::X86::AMD64::CodeGenerator::longClobberEvaluate(TR::Node *node)
    {
    TR_ASSERT(self()->comp()->target().is64Bit(), "assertion failure");
    TR_ASSERT(node->getOpCode().is8Byte() || node->getOpCode().isRef(), "assertion failure");
-   return self()->gprClobberEvaluate(node, MOV8RegReg);
+   return self()->gprClobberEvaluate(node, TR::InstOpCode::MOV8RegReg);
    }
 
 TR_GlobalRegisterNumber

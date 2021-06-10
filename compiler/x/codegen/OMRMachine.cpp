@@ -150,8 +150,8 @@ bool existsNextInstructionToTestFlags(TR::Instruction *startInstr,
       }
    while (testMask &&
           cursor->getOpCodeValue() != TR::InstOpCode::label   &&
-          cursor->getOpCodeValue() != RET     &&
-          cursor->getOpCodeValue() != RETImm2 &&
+          cursor->getOpCodeValue() != TR::InstOpCode::RET     &&
+          cursor->getOpCodeValue() != TR::InstOpCode::RETImm2 &&
           cursor->getOpCodeValue() != TR::InstOpCode::retn &&
           !cursor->getOpCode().isBranchOp());
 
@@ -779,7 +779,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
 
          if (info->getDataType() == TR_RematerializableFloat)
             {
-            instr = generateRegMemInstruction(currentInstruction, MOVSSRegMem, best, tempMR, self()->cg());
+            instr = generateRegMemInstruction(currentInstruction, TR::InstOpCode::MOVSSRegMem, best, tempMR, self()->cg());
             }
          else
             {
@@ -796,7 +796,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
          if (info->getDataType() == TR_RematerializableFloat)
             {
             TR::MemoryReference* tempMR = generateX86MemoryReference(self()->cg()->findOrCreate4ByteConstant(currentInstruction->getNode(), static_cast<int32_t>(info->getConstant())), self()->cg());
-            instr = generateRegMemInstruction(currentInstruction, MOVSSRegMem, best, tempMR, self()->cg());
+            instr = generateRegMemInstruction(currentInstruction, TR::InstOpCode::MOVSSRegMem, best, tempMR, self()->cg());
             }
          else
             {
@@ -924,11 +924,11 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
       TR::InstOpCode::Mnemonic op;
       if (bestRegister->getKind() == TR_FPR)
          {
-         op = (bestRegister->isSinglePrecision()) ? MOVSSRegMem : (self()->cg()->getXMMDoubleLoadOpCode());
+         op = (bestRegister->isSinglePrecision()) ? TR::InstOpCode::MOVSSRegMem : (self()->cg()->getXMMDoubleLoadOpCode());
          }
       else if (bestRegister->getKind() == TR_VRF)
          {
-         op = MOVDQURegMem;
+         op = TR::InstOpCode::MOVDQURegMem;
          }
       else
          {
@@ -1024,7 +1024,7 @@ TR::RealRegister *OMR::X86::Machine::reverseGPRSpillState(TR::Instruction     *c
       instr = new (self()->cg()->trHeapMemory())
          TR::X86MemRegInstruction(
             currentInstruction,
-            spilledRegister->isSinglePrecision() ? MOVSSMemReg : MOVSDMemReg,
+            spilledRegister->isSinglePrecision() ? TR::InstOpCode::MOVSSMemReg : TR::InstOpCode::MOVSDMemReg,
             tempMR,
             targetRegister, self()->cg());
 
@@ -1043,7 +1043,7 @@ TR::RealRegister *OMR::X86::Machine::reverseGPRSpillState(TR::Instruction     *c
       instr = new (self()->cg()->trHeapMemory())
          TR::X86MemRegInstruction(
             currentInstruction,
-            MOVDQUMemReg,
+            TR::InstOpCode::MOVDQUMemReg,
             tempMR,
             targetRegister, self()->cg());
 
@@ -1216,21 +1216,21 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
          if (virtualRegister->getKind() == TR_VRF)
             {
             instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
-                                                MOVDQURegReg,
+                                                TR::InstOpCode::MOVDQURegReg,
                                                 currentAssignedRegister,
                                                 targetRegister, self()->cg());
             }
          else if (virtualRegister->isSinglePrecision())
             {
             instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
-                                                MOVAPSRegReg,
+                                                TR::InstOpCode::MOVAPSRegReg,
                                                 currentAssignedRegister,
                                                 targetRegister, self()->cg());
             }
          else
             {
             instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
-                                                MOVAPDRegReg,
+                                                TR::InstOpCode::MOVAPDRegReg,
                                                 currentAssignedRegister,
                                                 targetRegister, self()->cg());
             }
@@ -1255,11 +1255,11 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
          TR::InstOpCode::Mnemonic xchgOp = TR::InstOpCode::bad;
          if (virtualRegister->getKind() == TR_FPR && virtualRegister->isSinglePrecision())
             {
-            xchgOp = XORPSRegReg;
+            xchgOp = TR::InstOpCode::XORPSRegReg;
             }
          else //virtualRegister->getKind() == TR_VRF || (virtualRegister->getKind() == TR_FPR && !virtualRegister->isSinglePrecision())
             {
-            xchgOp = XORPDRegReg;
+            xchgOp = TR::InstOpCode::XORPDRegReg;
             }
 
          self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
@@ -1294,15 +1294,15 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
             {
             if (virtualRegister->getKind() == TR_VRF)
                {
-               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVDQURegReg, targetRegister, candidate, self()->cg());
+               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, TR::InstOpCode::MOVDQURegReg, targetRegister, candidate, self()->cg());
                }
             else if (currentTargetVirtual->isSinglePrecision())
                {
-               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVAPSRegReg, targetRegister, candidate, self()->cg());
+               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, TR::InstOpCode::MOVAPSRegReg, targetRegister, candidate, self()->cg());
                }
             else
                {
-               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVAPDRegReg, targetRegister, candidate, self()->cg());
+               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, TR::InstOpCode::MOVAPDRegReg, targetRegister, candidate, self()->cg());
                }
             candidate->setState(TR::RealRegister::Blocked);
             candidate->setAssignedRegister(currentTargetVirtual);
@@ -1333,11 +1333,11 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
          TR::InstOpCode::Mnemonic xchgOp = TR::InstOpCode::bad;
          if (virtualRegister->getKind() == TR_FPR && virtualRegister->isSinglePrecision())
             {
-            xchgOp = XORPSRegReg;
+            xchgOp = TR::InstOpCode::XORPSRegReg;
             }
          else //virtualRegister->getKind() == TR_VRF || (virtualRegister->getKind() == TR_FPR && !virtualRegister->isSinglePrecision())
             {
-            xchgOp = XORPDRegReg;
+            xchgOp = TR::InstOpCode::XORPDRegReg;
             }
 
          self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
@@ -1371,15 +1371,15 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
             {
             if (virtualRegister->getKind() == TR_VRF)
                {
-               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVDQURegReg, targetRegister, candidate, self()->cg());
+               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, TR::InstOpCode::MOVDQURegReg, targetRegister, candidate, self()->cg());
                }
             else if (currentTargetVirtual->isSinglePrecision())
                {
-               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVAPSRegReg, targetRegister, candidate, self()->cg());
+               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, TR::InstOpCode::MOVAPSRegReg, targetRegister, candidate, self()->cg());
                }
             else
                {
-               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVAPDRegReg, targetRegister, candidate, self()->cg());
+               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, TR::InstOpCode::MOVAPDRegReg, targetRegister, candidate, self()->cg());
                }
             candidate->setState(TR::RealRegister::Assigned, currentTargetVirtual->isPlaceholderReg());
             candidate->setAssignedRegister(currentTargetVirtual);
@@ -2451,7 +2451,7 @@ TR::Instruction  *OMR::X86::Machine::fpStackFXCH(TR::Instruction *prevInstructio
       {
       cursor = prevInstruction;
       TR::RealRegister *realFPReg = self()->fpMapToStackRelativeRegister(vreg);
-      cursor = new (self()->cg()->trHeapMemory()) TR::X86FPRegInstruction(cursor, FXCHReg, realFPReg, self()->cg());
+      cursor = new (self()->cg()->trHeapMemory()) TR::X86FPRegInstruction(cursor, TR::InstOpCode::FXCHReg, realFPReg, self()->cg());
       }
 
    _fpStack[_fpTopOfStack] = _fpStack[vregNum];
@@ -2487,7 +2487,7 @@ TR::Instruction  *OMR::X86::Machine::fpStackFXCH(TR::Instruction *prevInstructio
    //
    TR::Instruction   *cursor = prevInstruction;
    TR::RealRegister  *realFPReg = self()->fpMapToStackRelativeRegister(stackReg);
-   cursor = new (self()->cg()->trHeapMemory()) TR::X86FPRegInstruction(cursor, FXCHReg, realFPReg, self()->cg());
+   cursor = new (self()->cg()->trHeapMemory()) TR::X86FPRegInstruction(cursor, TR::InstOpCode::FXCHReg, realFPReg, self()->cg());
 
    _fpStack[_fpTopOfStack] = _fpStack[vRegNum];
    _fpStack[vRegNum] = pTop;
@@ -2600,24 +2600,24 @@ TR::InstOpCode::Mnemonic OMR::X86::Machine::fpDetermineReverseOpCode(TR::InstOpC
 
    switch (op)
       {
-      case FADDRegReg:
-      case DADDRegReg:
-      case FMULRegReg:
-      case DMULRegReg:
-      case FCOMRegReg:
-      case DCOMRegReg:
+      case TR::InstOpCode::FADDRegReg:
+      case TR::InstOpCode::DADDRegReg:
+      case TR::InstOpCode::FMULRegReg:
+      case TR::InstOpCode::DMULRegReg:
+      case TR::InstOpCode::FCOMRegReg:
+      case TR::InstOpCode::DCOMRegReg:
          // op is unchanged for commutative instructions
          break;
 
-      case FDIVRegReg:  op = FDIVRRegReg; break;
-      case DDIVRegReg:  op = DDIVRRegReg; break;
-      case FDIVRRegReg: op = FDIVRegReg;  break;
-      case DDIVRRegReg: op = DDIVRegReg;  break;
+      case TR::InstOpCode::FDIVRegReg:  op = TR::InstOpCode::FDIVRRegReg; break;
+      case TR::InstOpCode::DDIVRegReg:  op = TR::InstOpCode::DDIVRRegReg; break;
+      case TR::InstOpCode::FDIVRRegReg: op = TR::InstOpCode::FDIVRegReg;  break;
+      case TR::InstOpCode::DDIVRRegReg: op = TR::InstOpCode::DDIVRegReg;  break;
 
-      case FSUBRegReg:  op = FSUBRRegReg; break;
-      case DSUBRegReg:  op = DSUBRRegReg; break;
-      case FSUBRRegReg: op = FSUBRegReg;  break;
-      case DSUBRRegReg: op = DSUBRegReg;  break;
+      case TR::InstOpCode::FSUBRegReg:  op = TR::InstOpCode::FSUBRRegReg; break;
+      case TR::InstOpCode::DSUBRegReg:  op = TR::InstOpCode::DSUBRRegReg; break;
+      case TR::InstOpCode::FSUBRRegReg: op = TR::InstOpCode::FSUBRegReg;  break;
+      case TR::InstOpCode::DSUBRRegReg: op = TR::InstOpCode::DSUBRegReg;  break;
 
       default:
          // no reverse instruction, return original
@@ -2635,33 +2635,33 @@ TR::InstOpCode::Mnemonic OMR::X86::Machine::fpDeterminePopOpCode(TR::InstOpCode:
 
    switch (op)
       {
-      case FADDRegReg:
-      case DADDRegReg:    op = FADDPReg;  break;
-      case FDIVRegReg:
-      case DDIVRegReg:    op = FDIVPReg;  break;
-      case FDIVRRegReg:
-      case DDIVRRegReg:   op = FDIVRPReg; break;
-      case FISTMemReg:    op = FISTPMem;  break;
-      case DISTMemReg:    op = DISTPMem;  break;
-      case FSSTMemReg:    op = FSSTPMem;  break;
-      case DSSTMemReg:    op = DSSTPMem;  break;
-      case FMULRegReg:
-      case DMULRegReg:    op = FMULPReg;  break;
-      case FSTMemReg:     op = FSTPMemReg;   break;
-      case DSTMemReg:     op = DSTPMemReg;   break;
-      case FSUBRegReg:
-      case DSUBRegReg:    op = FSUBPReg;  break;
-      case FSUBRRegReg:
-      case DSUBRRegReg:   op = FSUBRPReg; break;
-      case FCOMRegReg:
-      case DCOMRegReg:    op = FCOMPReg;  break;
-      case FCOMRegMem:    op = FCOMPMem;  break;
-      case DCOMRegMem:    op = DCOMPMem;  break;
-      case FCOMPReg:      op = FCOMPP;    break;
-      case FCOMIRegReg:
-      case DCOMIRegReg:   op = FCOMIPReg; break;
-      case FSTRegReg:     op = FSTPReg;   break;
-      case DSTRegReg:     op = DSTPReg;   break;
+      case TR::InstOpCode::FADDRegReg:
+      case TR::InstOpCode::DADDRegReg:    op = TR::InstOpCode::FADDPReg;  break;
+      case TR::InstOpCode::FDIVRegReg:
+      case TR::InstOpCode::DDIVRegReg:    op = TR::InstOpCode::FDIVPReg;  break;
+      case TR::InstOpCode::FDIVRRegReg:
+      case TR::InstOpCode::DDIVRRegReg:   op = TR::InstOpCode::FDIVRPReg; break;
+      case TR::InstOpCode::FISTMemReg:    op = TR::InstOpCode::FISTPMem;  break;
+      case TR::InstOpCode::DISTMemReg:    op = TR::InstOpCode::DISTPMem;  break;
+      case TR::InstOpCode::FSSTMemReg:    op = TR::InstOpCode::FSSTPMem;  break;
+      case TR::InstOpCode::DSSTMemReg:    op = TR::InstOpCode::DSSTPMem;  break;
+      case TR::InstOpCode::FMULRegReg:
+      case TR::InstOpCode::DMULRegReg:    op = TR::InstOpCode::FMULPReg;  break;
+      case TR::InstOpCode::FSTMemReg:     op = TR::InstOpCode::FSTPMemReg;   break;
+      case TR::InstOpCode::DSTMemReg:     op = TR::InstOpCode::DSTPMemReg;   break;
+      case TR::InstOpCode::FSUBRegReg:
+      case TR::InstOpCode::DSUBRegReg:    op = TR::InstOpCode::FSUBPReg;  break;
+      case TR::InstOpCode::FSUBRRegReg:
+      case TR::InstOpCode::DSUBRRegReg:   op = TR::InstOpCode::FSUBRPReg; break;
+      case TR::InstOpCode::FCOMRegReg:
+      case TR::InstOpCode::DCOMRegReg:    op = TR::InstOpCode::FCOMPReg;  break;
+      case TR::InstOpCode::FCOMRegMem:    op = TR::InstOpCode::FCOMPMem;  break;
+      case TR::InstOpCode::DCOMRegMem:    op = TR::InstOpCode::DCOMPMem;  break;
+      case TR::InstOpCode::FCOMPReg:      op = TR::InstOpCode::FCOMPP;    break;
+      case TR::InstOpCode::FCOMIRegReg:
+      case TR::InstOpCode::DCOMIRegReg:   op = TR::InstOpCode::FCOMIPReg; break;
+      case TR::InstOpCode::FSTRegReg:     op = TR::InstOpCode::FSTPReg;   break;
+      case TR::InstOpCode::DSTRegReg:     op = TR::InstOpCode::DSTPReg;   break;
 
       default:
          // no pop instruction, return original
@@ -2729,8 +2729,8 @@ TR::Instruction *OMR::X86::Machine::freeBestFPRegister(TR::Instruction *prevInst
    while (numCandidates > 1                   &&
           cursor != NULL                      &&
           cursor->getOpCodeValue() != TR::InstOpCode::label   &&
-          cursor->getOpCodeValue() != RET     &&
-          cursor->getOpCodeValue() != RETImm2 &&
+          cursor->getOpCodeValue() != TR::InstOpCode::RET     &&
+          cursor->getOpCodeValue() != TR::InstOpCode::RETImm2 &&
           cursor->getOpCodeValue() != TR::InstOpCode::retn &&
           !cursor->getOpCode().isBranchOp())
       {
@@ -2779,7 +2779,7 @@ TR::Instruction *OMR::X86::Machine::fpSpillFPR(TR::Instruction *prevInstruction,
       TR_ASSERT(offset == 0 || offset == 4, "assertion failure");
       vreg->setIsSpilledToSecondHalf(offset > 0);
       cursor = new (self()->cg()->trHeapMemory()) TR::X86FPMemRegInstruction(cursor,
-                                              isFloat ? FSTPMemReg : DSTPMemReg,
+                                              isFloat ? TR::InstOpCode::FSTPMemReg : TR::InstOpCode::DSTPMemReg,
                                               tempMR,
                                               self()->fpMapToStackRelativeRegister(vreg), self()->cg());
       }
@@ -2812,7 +2812,7 @@ TR::Instruction *OMR::X86::Machine::reverseFPRSpillState(TR::Instruction *prevIn
 
    TR::RealRegister *realFPReg = self()->fpMapToStackRelativeRegister(spilledRegister);
    cursor = new (self()->cg()->trHeapMemory()) TR::X86FPRegMemInstruction(cursor,
-                                           isFloat ? FLDRegMem : DLDRegMem,
+                                           isFloat ? TR::InstOpCode::FLDRegMem : TR::InstOpCode::DLDRegMem,
                                            realFPReg,
                                            tempMR, self()->cg());
 

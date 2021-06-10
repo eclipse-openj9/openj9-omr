@@ -124,11 +124,11 @@ uint8_t *TR::X86FPConvertToIntSnippet::genFPConversion(uint8_t *buffer)
    else
       {
       TR::X86RegRegInstruction  *instr = _convertInstruction->getIA32RegRegInstruction();
-      TR_ASSERT(instr != NULL, "f2i conversion instruction must be either L4RegMem or CVTTSS2SIRegReg\n");
+      TR_ASSERT(instr != NULL, "f2i conversion instruction must be either TR::InstOpCode::L4RegMem or CVTTSS2SIRegReg\n");
 
       TR::RealRegister *sourceRegister = toRealRegister(instr->getSourceRegister());
 
-      // MOVSS/MOVSD [esp], source
+      // MOVSS/TR::InstOpCode::MOVSD [esp], source
       //
       if (opcode == TR::f2i)
          *buffer++ = 0xf3;

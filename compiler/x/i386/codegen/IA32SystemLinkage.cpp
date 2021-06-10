@@ -381,7 +381,7 @@ TR::Register *TR::IA32SystemLinkage::buildDirectDispatch(TR::Node *callNode, boo
    // Call-out
    int32_t stackAdjustment = cg()->getProperties().getCallerCleanup() ? 0 : -argSize;
    cg()->resetIsLeafMethod();
-   TR::X86ImmInstruction* instr = generateImmSymInstruction(CALLImm4, callNode, (uintptr_t)methodSymbol->getMethodAddress(), methodSymRef, cg());
+   TR::X86ImmInstruction* instr = generateImmSymInstruction(TR::InstOpCode::CALLImm4, callNode, (uintptr_t)methodSymbol->getMethodAddress(), methodSymRef, cg());
    instr->setAdjustsFramePointerBy(stackAdjustment);
 
    if (cg()->getProperties().getCallerCleanup() && argSize > 0)
@@ -389,7 +389,7 @@ TR::Register *TR::IA32SystemLinkage::buildDirectDispatch(TR::Node *callNode, boo
       // Clean up arguments
       //
       generateRegImmInstruction(
-         (argSize <= 127) ? ADD4RegImms : ADD4RegImm4,
+         (argSize <= 127) ? TR::InstOpCode::ADD4RegImms : TR::InstOpCode::ADD4RegImm4,
          callNode,
          stackPointerReg,
          argSize,
@@ -415,7 +415,7 @@ TR::Register *TR::IA32SystemLinkage::buildDirectDispatch(TR::Node *callNode, boo
         callNode->getDataType() == TR::Double) &&
        callNode->getReferenceCount() == 1)
       {
-      generateFPSTiST0RegRegInstruction(FSTRegReg, callNode, returnReg, returnReg, cg());
+      generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, callNode, returnReg, returnReg, cg());
       }
 
    if (cg()->enableRegisterAssociations())

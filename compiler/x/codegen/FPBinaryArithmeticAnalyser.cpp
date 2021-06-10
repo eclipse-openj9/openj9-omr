@@ -229,7 +229,7 @@ void TR_X86FPBinaryArithmeticAnalyser::genericFPAnalyser(TR::Node *root)
 
          constMR = generateX86MemoryReference(_cg->findOrCreate8ByteConstant(root, DOUBLE_EXPONENT_SCALE), _cg);
 
-         generateFPRegMemInstruction(DLDRegMem, root, scalingRegister, constMR, _cg);
+         generateFPRegMemInstruction(TR::InstOpCode::DLDRegMem, root, scalingRegister, constMR, _cg);
          operandNeedsScaling = true;
          }
       }
@@ -241,7 +241,7 @@ void TR_X86FPBinaryArithmeticAnalyser::genericFPAnalyser(TR::Node *root)
       tempReg = _cg->allocateRegister(TR_X87);
       if (targetRegister->isSinglePrecision())
          tempReg->setIsSinglePrecision();
-      generateFPST0STiRegRegInstruction(FLDRegReg, root, tempReg, targetRegister, _cg);
+      generateFPST0STiRegRegInstruction(TR::InstOpCode::FLDRegReg, root, tempReg, targetRegister, _cg);
       targetRegister = tempReg;
       }
 
@@ -249,7 +249,7 @@ void TR_X86FPBinaryArithmeticAnalyser::genericFPAnalyser(TR::Node *root)
    //
    if (operandNeedsScaling)
       {
-      generateFPST0ST1RegRegInstruction(FSCALERegReg, root, targetRegister, scalingRegister, _cg);
+      generateFPST0ST1RegRegInstruction(TR::InstOpCode::FSCALERegReg, root, targetRegister, scalingRegister, _cg);
       }
 
    root->setRegister(targetRegister);
@@ -293,9 +293,9 @@ void TR_X86FPBinaryArithmeticAnalyser::genericFPAnalyser(TR::Node *root)
    //
    if (operandNeedsScaling)
       {
-      generateFPRegInstruction(DCHSReg, root, scalingRegister, _cg);
-      generateFPST0ST1RegRegInstruction(FSCALERegReg, root, root->getRegister(), scalingRegister, _cg);
-      generateFPSTiST0RegRegInstruction(FSTRegReg, root, scalingRegister, scalingRegister, _cg);
+      generateFPRegInstruction(TR::InstOpCode::DCHSReg, root, scalingRegister, _cg);
+      generateFPST0ST1RegRegInstruction(TR::InstOpCode::FSCALERegReg, root, root->getRegister(), scalingRegister, _cg);
+      generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, root, scalingRegister, scalingRegister, _cg);
       _cg->stopUsingRegister(scalingRegister);
       }
 
@@ -333,36 +333,36 @@ const TR::InstOpCode::Mnemonic TR_X86FPBinaryArithmeticAnalyser::_opCodePackage[
              TR::InstOpCode::bad,    TR::InstOpCode::bad,    TR::InstOpCode::bad,    TR::InstOpCode::bad },
 
    // fadd
-           { FADDRegReg,   FADDRegReg,   FADDRegMem,   FADDRegMem,
-             FSADDRegMem,  FIADDRegMem,  FSADDRegMem,  FIADDRegMem },
+           { TR::InstOpCode::FADDRegReg,   TR::InstOpCode::FADDRegReg,   TR::InstOpCode::FADDRegMem,   TR::InstOpCode::FADDRegMem,
+             TR::InstOpCode::FSADDRegMem,  TR::InstOpCode::FIADDRegMem,  TR::InstOpCode::FSADDRegMem,  TR::InstOpCode::FIADDRegMem },
 
    // dadd
-           { DADDRegReg,   DADDRegReg,   DADDRegMem,   DADDRegMem,
-             DSADDRegMem,  DIADDRegMem,  DSADDRegMem,  DIADDRegMem },
+           { TR::InstOpCode::DADDRegReg,   TR::InstOpCode::DADDRegReg,   TR::InstOpCode::DADDRegMem,   TR::InstOpCode::DADDRegMem,
+             TR::InstOpCode::DSADDRegMem,  TR::InstOpCode::DIADDRegMem,  TR::InstOpCode::DSADDRegMem,  TR::InstOpCode::DIADDRegMem },
 
    // fmul
-           { FMULRegReg,   FMULRegReg,   FMULRegMem,   FMULRegMem,
-             FSMULRegMem,  FIMULRegMem,  FSMULRegMem,  FIMULRegMem },
+           { TR::InstOpCode::FMULRegReg,   TR::InstOpCode::FMULRegReg,   TR::InstOpCode::FMULRegMem,   TR::InstOpCode::FMULRegMem,
+             TR::InstOpCode::FSMULRegMem,  TR::InstOpCode::FIMULRegMem,  TR::InstOpCode::FSMULRegMem,  TR::InstOpCode::FIMULRegMem },
 
    // dmul
-           { DMULRegReg,   DMULRegReg,   DMULRegMem,   DMULRegMem,
-             DSMULRegMem,  DIMULRegMem,  DSMULRegMem,  DIMULRegMem },
+           { TR::InstOpCode::DMULRegReg,   TR::InstOpCode::DMULRegReg,   TR::InstOpCode::DMULRegMem,   TR::InstOpCode::DMULRegMem,
+             TR::InstOpCode::DSMULRegMem,  TR::InstOpCode::DIMULRegMem,  TR::InstOpCode::DSMULRegMem,  TR::InstOpCode::DIMULRegMem },
 
    // fsub
-           { FSUBRegReg,   FSUBRRegReg,  FSUBRegMem,   FSUBRRegMem,
-             FSSUBRegMem,  FISUBRegMem,  FSSUBRRegMem, FISUBRRegMem },
+           { TR::InstOpCode::FSUBRegReg,   TR::InstOpCode::FSUBRRegReg,  TR::InstOpCode::FSUBRegMem,   TR::InstOpCode::FSUBRRegMem,
+             TR::InstOpCode::FSSUBRegMem,  TR::InstOpCode::FISUBRegMem,  TR::InstOpCode::FSSUBRRegMem, TR::InstOpCode::FISUBRRegMem },
 
    // dsub
-           { DSUBRegReg,   DSUBRRegReg,  DSUBRegMem,   DSUBRRegMem,
-             DSSUBRegMem,  DISUBRegMem,  DSSUBRRegMem, DISUBRRegMem },
+           { TR::InstOpCode::DSUBRegReg,   TR::InstOpCode::DSUBRRegReg,  TR::InstOpCode::DSUBRegMem,   TR::InstOpCode::DSUBRRegMem,
+             TR::InstOpCode::DSSUBRegMem,  TR::InstOpCode::DISUBRegMem,  TR::InstOpCode::DSSUBRRegMem, TR::InstOpCode::DISUBRRegMem },
 
    // fdiv
-           { FDIVRegReg,   FDIVRRegReg,  FDIVRegMem,   FDIVRRegMem,
-             FSDIVRegMem,  FIDIVRegMem,  FSDIVRRegMem, FIDIVRRegMem },
+           { TR::InstOpCode::FDIVRegReg,   TR::InstOpCode::FDIVRRegReg,  TR::InstOpCode::FDIVRegMem,   TR::InstOpCode::FDIVRRegMem,
+             TR::InstOpCode::FSDIVRegMem,  TR::InstOpCode::FIDIVRegMem,  TR::InstOpCode::FSDIVRRegMem, TR::InstOpCode::FIDIVRRegMem },
 
    // ddiv
-           { DDIVRegReg,   DDIVRRegReg,  DDIVRegMem,   DDIVRRegMem,
-             DSDIVRegMem,  DIDIVRegMem,  DSDIVRRegMem, DIDIVRRegMem }
+           { TR::InstOpCode::DDIVRegReg,   TR::InstOpCode::DDIVRRegReg,  TR::InstOpCode::DDIVRegMem,   TR::InstOpCode::DDIVRRegMem,
+             TR::InstOpCode::DSDIVRegMem,  TR::InstOpCode::DIDIVRegMem,  TR::InstOpCode::DSDIVRRegMem, TR::InstOpCode::DIDIVRRegMem }
    };
 
 

@@ -90,19 +90,19 @@ bool OMR::X86::Instruction::isRegRegMove()
    {
    switch (self()->getOpCodeValue())
       {
-      case FLDRegReg:
-      case DLDRegReg:
-      case MOVAPSRegReg:
-      case MOVAPDRegReg:
-      case MOVUPSRegReg:
-      case MOVUPDRegReg:
-      case MOVSSRegReg:
-      case MOVSDRegReg:
-      case MOV1RegReg:
-      case MOV2RegReg:
-      case MOV4RegReg:
-      case MOV8RegReg:
-      case MOVDQURegReg:
+      case TR::InstOpCode::FLDRegReg:
+      case TR::InstOpCode::DLDRegReg:
+      case TR::InstOpCode::MOVAPSRegReg:
+      case TR::InstOpCode::MOVAPDRegReg:
+      case TR::InstOpCode::MOVUPSRegReg:
+      case TR::InstOpCode::MOVUPDRegReg:
+      case TR::InstOpCode::MOVSSRegReg:
+      case TR::InstOpCode::MOVSDRegReg:
+      case TR::InstOpCode::MOV1RegReg:
+      case TR::InstOpCode::MOV2RegReg:
+      case TR::InstOpCode::MOV4RegReg:
+      case TR::InstOpCode::MOV8RegReg:
+      case TR::InstOpCode::MOVDQURegReg:
          return true;
       default:
          return false;
@@ -231,7 +231,7 @@ void OMR::X86::Instruction::adjustVFPState(TR_VFPState *state, TR::CodeGenerator
          state->_displacement += static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
       else if (self()->getOpCode().isPopOp())
          state->_displacement -= static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress());
-      else if (self()->getOpCodeValue() == RET || self()->getOpCodeValue() == RETImm2 || self()->getOpCodeValue() == TR::InstOpCode::retn)
+      else if (self()->getOpCodeValue() == TR::InstOpCode::RET || self()->getOpCodeValue() == TR::InstOpCode::RETImm2 || self()->getOpCodeValue() == TR::InstOpCode::retn)
          *state = cg->vfpResetInstruction()->getSavedState();
       }
    }

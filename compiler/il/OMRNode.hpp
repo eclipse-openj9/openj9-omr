@@ -1965,7 +1965,7 @@ protected:
       arraycopyDirectionForward             = 0x00004000,
       arraycopyDirectionForwardRarePath     = 0x00006000,
       noArrayStoreCheckArrayCopy            = 0x00008000,
-      arraysetLengthMultipleOfPointerSize   = 0x00020000, ///< flag used by TR::arrayset to guarantee that checking for lengths smaller than pointer size is not needed (leading to more efficient code being generated, e.g. REP STOSQ on X86
+      arraysetLengthMultipleOfPointerSize   = 0x00020000, ///< flag used by TR::arrayset to guarantee that checking for lengths smaller than pointer size is not needed (leading to more efficient code being generated, e.g. REP TR::InstOpCode::STOSQ on X86
 
       // Flags used by TR::bitOpMem
       bitOpMemOPMASK                        = 0x00003000, ///< currently, XOR, AND, OR operations are suppoerted

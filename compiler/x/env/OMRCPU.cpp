@@ -171,7 +171,7 @@ OMR::X86::CPU::isAuthenticAMD()
 bool
 OMR::X86::CPU::requiresLFence()
    {
-   return false;  /* Dummy for now, we may need LFENCE in future processors*/
+   return false;  /* Dummy for now, we may need TR::InstOpCode::LFENCE in future processors*/
    }
 
 bool

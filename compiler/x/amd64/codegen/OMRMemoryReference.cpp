@@ -614,7 +614,7 @@ OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(
 
          addressLoadInstruction = generateRegImm64SymInstruction(
             containingInstruction->getPrev(),
-            MOV8RegImm64,
+            TR::InstOpCode::MOV8RegImm64,
             _addressRegister,
             (!self()->getUnresolvedDataSnippet() &&
               sr.getSymbol()->isStatic() &&
@@ -637,7 +637,7 @@ OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(
 
          addressLoadInstruction = generateRegImm64Instruction(
             containingInstruction->getPrev(),
-            MOV8RegImm64,
+            TR::InstOpCode::MOV8RegImm64,
             _addressRegister,
             displacement,
             cg
@@ -669,7 +669,7 @@ OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(
 
       if (self()->getBaseRegister() && self()->getIndexRegister())
          {
-         TR::Instruction  *addressAddInstruction = generateRegRegInstruction(addressLoadInstruction, ADD8RegReg, self()->getAddressRegister(), self()->getBaseRegister(), cg);
+         TR::Instruction  *addressAddInstruction = generateRegRegInstruction(addressLoadInstruction, TR::InstOpCode::ADD8RegReg, self()->getAddressRegister(), self()->getBaseRegister(), cg);
          cursor = addressAddInstruction->generateBinaryEncoding();
          cg->setBinaryBufferCursor(cursor);
          }

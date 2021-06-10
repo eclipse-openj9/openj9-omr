@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2019 IBM Corp. and others
+ * Copyright (c) 2012, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -53,6 +53,35 @@ MM_LargeObjectAllocateStats::newInstance(MM_EnvironmentBase *env, uint16_t maxAl
 	return largeObjectAllocateStats;
 }
 
+void
+MM_LargeObjectAllocateStats::initializeFreeMemoryProfileMaxSizeClasses(MM_EnvironmentBase *env, uintptr_t veryLargeObjectThreshold, float sizeClassRatio, uintptr_t maxHeapSize)
+{
+	MM_GCExtensionsBase *extensions = env->getExtensions();
+	float sizeClassRatioLog = logf(sizeClassRatio);
+
+	/* ideally, freeMemoryProfileMaxSizeClasses should be initialized only once, way earlier;
+	 * but at the point where most of extension fields are initialized, maxHeapSize is not known yet
+	 */
+	if (0 == extensions->freeMemoryProfileMaxSizeClasses) {
+		uintptr_t largestClassSizeIndex = (uintptr_t)(logf((float)maxHeapSize)/sizeClassRatioLog);
+
+		/* initialize largeObjectAllocationProfilingVeryLargeObjectThreshold and largeObjectAllocationProfilingVeryLargeObjectSizeClass */
+		uintptr_t veryLargeEntrySizeClass;
+		if (extensions->memoryMax > veryLargeObjectThreshold) {
+			veryLargeEntrySizeClass = (uintptr_t)(logf((float)veryLargeObjectThreshold)/sizeClassRatioLog);
+			extensions->largeObjectAllocationProfilingVeryLargeObjectThreshold = (uintptr_t)powf(sizeClassRatio, (float)veryLargeEntrySizeClass);
+		} else {
+			veryLargeEntrySizeClass = largestClassSizeIndex + 1;
+			extensions->largeObjectAllocationProfilingVeryLargeObjectThreshold = UDATA_MAX;
+		}
+		extensions->largeObjectAllocationProfilingVeryLargeObjectSizeClass = veryLargeEntrySizeClass;
+
+		/* to prevent thread race condition -- before largeObjectAllocationProfilingVeryLargeObjectThreshold has been initialized, another thread might use the value, multi-entries is not issue. */
+		MM_AtomicOperations::writeBarrier();
+		extensions->freeMemoryProfileMaxSizeClasses = largestClassSizeIndex + 1;
+	}
+}
+
 bool
 MM_LargeObjectAllocateStats::initialize(MM_EnvironmentBase *env, uint16_t maxAllocateSizes, uintptr_t largeObjectThreshold, uintptr_t veryLargeObjectThreshold, float sizeClassRatio, uintptr_t maxHeapSize, uintptr_t tlhMaximumSize, uintptr_t tlhMinimumSize, uintptr_t factorVeryLargeEntryPool)
 {
@@ -89,27 +118,7 @@ MM_LargeObjectAllocateStats::initialize(MM_EnvironmentBase *env, uint16_t maxAll
 		return false;
 	}
 
-	/* ideally, freeMemoryProfileMaxSizeClasses should be initialized only once, way earlier;
-	 * but at the point where most of extension fields are initialized, maxHeapSize is not known yet
-	 */
-	if (0 == env->getExtensions()->freeMemoryProfileMaxSizeClasses) {
-		uintptr_t largestClassSizeIndex = (uintptr_t)(logf((float)maxHeapSize)/_sizeClassRatioLog);
-
-		/* initialize largeObjectAllocationProfilingVeryLargeObjectThreshold and largeObjectAllocationProfilingVeryLargeObjectSizeClass */
-		uintptr_t veryLargeEntrySizeClass;
-		if (env->getExtensions()->memoryMax > veryLargeObjectThreshold) {
-			veryLargeEntrySizeClass = (uintptr_t)(logf((float)veryLargeObjectThreshold)/_sizeClassRatioLog);
-			env->getExtensions()->largeObjectAllocationProfilingVeryLargeObjectThreshold = (uintptr_t)powf(_sizeClassRatio, (float)veryLargeEntrySizeClass);
-		} else {
-			veryLargeEntrySizeClass = largestClassSizeIndex + 1;
-			env->getExtensions()->largeObjectAllocationProfilingVeryLargeObjectThreshold = UDATA_MAX;
-		}
-		env->getExtensions()->largeObjectAllocationProfilingVeryLargeObjectSizeClass = veryLargeEntrySizeClass;
-
-		/* to prevent thread race condition -- before largeObjectAllocationProfilingVeryLargeObjectThreshold has been initialized, another thread might use the value, multi-entries is not issue. */
-		MM_AtomicOperations::writeBarrier();
-		env->getExtensions()->freeMemoryProfileMaxSizeClasses = largestClassSizeIndex + 1;
-	}
+	MM_LargeObjectAllocateStats::initializeFreeMemoryProfileMaxSizeClasses(env, veryLargeObjectThreshold, sizeClassRatio, maxHeapSize);
 
 	if (!_freeEntrySizeClassStats.initialize(env, _maxAllocateSizes,  env->getExtensions()->freeMemoryProfileMaxSizeClasses, env->getExtensions()->largeObjectAllocationProfilingVeryLargeObjectThreshold, factorVeryLargeEntryPool)) {
 		return false;
@@ -1044,6 +1053,7 @@ MM_LargeObjectAllocateStats::incrementFreeEntrySizeClassStats(uintptr_t freeEntr
 {
 	uintptr_t sizeClassIndex = getSizeClassIndex(freeEntrySize);
 	
+	Assert_MM_true(0 != freeEntrySizeClassStats->getMaxSizeClasses());
 	/* for this sizeClass, walk the (ascending) list of frequent allocations, and find a match, if any */
 	MM_FreeEntrySizeClassStats::FrequentAllocation *frequentAllocation = freeEntrySizeClassStats->_frequentAllocationHead[sizeClassIndex];
 	MM_FreeEntrySizeClassStats::FrequentAllocation *prevFrequentAllocation = NULL;

@@ -87,6 +87,7 @@ public:
 	/* return the 'average' number of pages which can be freed */
 	uintptr_t getPageAlignedFreeMemory(const uintptr_t sizeClassSizes[], uintptr_t pageSize);
 
+	uintptr_t getMaxSizeClasses() { return _maxSizeClasses; }
 	/**< @param factorVeryLargeEntryPool : multiple factor for _maxVeryLargeEntrySizes, default = 1, double for splitFreeList case 
 	 *   @param simulation : if true, generate _fractionFrequentAllocation array for cumulating fraction of frequentAllocation during estimating fragmentation, default = false
 	 */

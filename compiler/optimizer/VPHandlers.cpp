@@ -9735,10 +9735,16 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
 
        if (vp->trace())
           {
-          traceMsg(vp->comp(), "P2O: Considering a candidate at %p. Object Constraint : ", node);
-          lhs->print(vp);
-          traceMsg(vp->comp(), " , Guard constraint : ");
-          rhs->print(vp);
+          if (lhs)
+             {
+             traceMsg(vp->comp(), "P2O: Considering a candidate at %p. Object Constraint : ", node);
+             lhs->print(vp);
+             }
+          if (rhs)
+             {
+             traceMsg(vp->comp(), " , Guard constraint : ");
+             rhs->print(vp);
+             }
           traceMsg(vp->comp(), "\n");
           }
 

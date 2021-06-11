@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,6 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#include <algorithm>
 #include <riscv.h>
 #include "codegen/RVInstruction.hpp"
 #include "codegen/CodeGenerator.hpp"
@@ -2276,6 +2277,19 @@ OMR::RV::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
+   
+/**
+ * \brief Extracts (hiBit,loBit) from 64bit value, starting at bit 'hiBit'. Lowest bit is bit 0,
+ * highest bit is bit 63.
+ */
+static inline uint32_t extractBits(uint64_t value, uint64_t hiBit, uint64_t loBit)
+   {
+   TR_ASSERT_FATAL(hiBit <  64,          "Value of 'hiBit' must be less than 64");
+   TR_ASSERT_FATAL(loBit <= hiBit,       "Value of 'loBit' must be less or equal to hiBit");
+   TR_ASSERT_FATAL((hiBit - loBit) < 32, "Trying to extract more than 32bits");
+
+   return (value >> loBit) & ~(-1 << (hiBit - loBit + 1));
+   }
 
 TR::Instruction *loadConstant32(TR::CodeGenerator *cg, TR::Node *node, int32_t value, TR::Register *trgReg, TR::Instruction *cursor)
    {
@@ -2330,19 +2344,61 @@ TR::Instruction *loadConstant64(TR::CodeGenerator *cg, TR::Node *node, int64_t v
       }
    else
       {
-      int32_t lo32 = (int32_t)((uint64_t)value & 0xFFFFFFFF);
-      int32_t hi32 = (int32_t)((uint64_t)value >> 32);
-      if (lo32 < 0)
+      /*
+       * For truly 64bit values, we first load *high* 32bits of the value into
+       * target registers' *low* 32bits and then use a sequence of slli + addi
+       * instructions to load lower 32 bits.
+       *
+       * We load only 11bits at the time making sure the highest bit of
+       * 12bit immediate is zero - this is to overcome the fact that I-type
+       * instructions *sign-extend* the immediate value before performing the
+       * operation.
+       */
+      uint32_t hi32 = (uint32_t)((uint64_t)value >> 32);
+
+      const uint32_t nbits = RISCV_IMM_BITS - 1; // how much bits to add at each step
+      uint32_t toShift = 0; // how much to shift left before adding lower bits of the value
+      uint32_t bits = 0; // actual bits to add add each step
+
+      cursor = loadConstant32(cg, node, hi32, trgReg, cursor);
+
+       /*
+       * Add high 11 bits of the low 32 bits
+       */
+      bits = extractBits(value, 31 - 0*nbits, 31 - 1*nbits + 1);
+      toShift += hi32 == 0 ? 0 : nbits;
+      if (bits)
          {
-         hi32 += 1;
+         if (toShift)
+            cursor = generateITYPE(TR::InstOpCode::_slli, node, trgReg, trgReg, toShift, cg, cursor);
+         cursor = generateITYPE(TR::InstOpCode::_addi, node, trgReg, trgReg, bits, cg, cursor);
+         toShift = 0;
          }
 
-      cursor = loadConstant32(cg, node, lo32, trgReg, cursor);
-      TR::Register *tmpReg = cg->allocateRegister();
-      cursor = loadConstant32(cg, node, hi32, tmpReg, cursor);
-      cursor = generateITYPE(TR::InstOpCode::_slli, node, tmpReg, tmpReg, 32, cg);
-      cursor = generateRTYPE(TR::InstOpCode::_add, node, trgReg, tmpReg, trgReg, cg);
-      cg->stopUsingRegister(tmpReg);
+      /*
+       * Add middle 11 bits of the low 32 bits
+       */
+      bits = extractBits(value, 31 - 1*nbits, 31 - 2*nbits + 1);
+      toShift += nbits;
+      if (bits)
+         {
+         if (toShift)
+            cursor = generateITYPE(TR::InstOpCode::_slli, node, trgReg, trgReg, toShift, cg, cursor);
+         cursor = generateITYPE(TR::InstOpCode::_addi, node, trgReg, trgReg, bits, cg, cursor);
+         toShift = 0;
+         }
+
+      /*
+       * Add low 10 bits of the low 32 bits
+       */
+      bits = extractBits(value, 31 - 2*nbits, 0);
+      toShift += 31 - 2*nbits + 1;
+      if (toShift)
+         cursor = generateITYPE(TR::InstOpCode::_slli, node, trgReg, trgReg, toShift, cg, cursor);
+      if (bits)
+         {
+         cursor = generateITYPE(TR::InstOpCode::_addi, node, trgReg, trgReg, bits, cg, cursor);
+         }
       }
 
    if (!insertingInstructions)

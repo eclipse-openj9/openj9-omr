@@ -1714,7 +1714,7 @@ static TR::Instruction *compareIntsAndBranchForArrayCopyBNDCHK(TR::ARM64Conditio
       generateCompareInstruction(cg, node, src1Reg, src2Reg, true);
       }
 
-   TR_ASSERT_FATAL_WITH_NODE(node, !sr, "Must provide an ArrayCopyBNDCHK symref");
+   TR_ASSERT_FATAL_WITH_NODE(node, sr, "Must provide an ArrayCopyBNDCHK symref");
    cg->addSnippet(new (cg->trHeapMemory()) TR::ARM64HelperCallSnippet(cg, node, snippetLabel, sr));
    TR::Instruction *instr = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, snippetLabel, branchType);
 

@@ -43,7 +43,7 @@ void TR::RVLinkageProperties::initialize()
    _firstIntegerArgumentRegister = 0;
    _numIntegerArgumentRegisters = 0;
    _firstIntegerReturnRegister = 0;
-   int numIntegerReturnRegisters = 0;
+   uint8_t numIntegerReturnRegisters = 0;
 
    for (auto regNum = TR::RealRegister::FirstGPR; regNum <= TR::RealRegister::LastGPR; regNum++)
       {
@@ -64,7 +64,7 @@ void TR::RVLinkageProperties::initialize()
    _firstFloatArgumentRegister = _firstIntegerArgumentRegister + _numIntegerArgumentRegisters;
    _numFloatArgumentRegisters = 0;
    _firstFloatReturnRegister = _firstIntegerArgumentRegister + numIntegerReturnRegisters;
-   int numFloatReturnRegisters = 0;
+   uint8_t numFloatReturnRegisters = 0;
 
    for (auto regNum = TR::RealRegister::FirstFPR; regNum <= TR::RealRegister::LastFPR; regNum++)
          {
@@ -113,7 +113,7 @@ bool OMR::RV::Linkage::hasToBeOnStack(TR::ParameterSymbol *parm)
    return(false);
    }
 
-TR::MemoryReference *OMR::RV::Linkage::getOutgoingArgumentMemRef(TR::Register *argMemReg, int offset, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::RVMemoryArgument &memArg)
+TR::MemoryReference *OMR::RV::Linkage::getOutgoingArgumentMemRef(TR::Register *argMemReg, int32_t offset, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::RVMemoryArgument &memArg)
    {
    TR::Machine *machine = cg()->machine();
    const TR::RVLinkageProperties& properties = self()->getProperties();

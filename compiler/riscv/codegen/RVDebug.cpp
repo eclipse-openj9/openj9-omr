@@ -340,7 +340,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::RegisterDependencyConditions *conditions
    {
     if (conditions)
       {
-      int i;
+      uint32_t i;
       trfprintf(pOutFile,"\n PRE: ");
       for (i=0; i<conditions->getAddCursorForPre(); i++)
          {

@@ -726,7 +726,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
       } // end of for
 
    // NULL deps for unused integer argument registers
-   for (int i = numIntegerArgs + numFloatArgsPassedInGPRs; i < properties.getNumIntArgRegs(); i++)
+   for (auto i = numIntegerArgs + numFloatArgsPassedInGPRs; i < properties.getNumIntArgRegs(); i++)
       {
       if (i == 0 && resType.isAddress())
          {
@@ -749,7 +749,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
       }
 
    // NULL deps for unused FP argument registers
-   for (int i = numFloatArgs; i < properties.getNumFloatArgRegs(); i++)
+   for (auto i = numFloatArgs; i < properties.getNumFloatArgRegs(); i++)
       {
       TR::addDependency(dependencies, NULL, properties.getFloatArgumentRegister(i), TR_FPR, cg());
       }

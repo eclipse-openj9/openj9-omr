@@ -91,8 +91,8 @@ TR::RealRegister *OMR::RV::Machine::freeBestRegister(TR::Instruction *currentIns
    TR::Instruction *cursor;
    TR::Node *currentNode = currentInstruction->getNode();
    TR_RegisterKinds rk = (virtualRegister == NULL) ? TR_GPR : virtualRegister->getKind();
-   int numCandidates = 0;
-   int first, last;
+   int32_t numCandidates = 0;
+   TR::RealRegister::RegNum first, last;
    int32_t dataSize = 0;
    bool containsCollectedReference;
    TR::InstOpCode::Mnemonic loadOp;
@@ -119,9 +119,9 @@ TR::RealRegister *OMR::RV::Machine::freeBestRegister(TR::Instruction *currentIns
             break;
          }
 
-      for (int i = first; i <= last; i++)
+      for (auto i = first; i <= last; i++)
          {
-         TR::RealRegister *realReg = self()->getRealRegister((TR::RealRegister::RegNum)i);
+         TR::RealRegister *realReg = self()->getRealRegister(i);
          if (realReg->getState() == TR::RealRegister::Assigned)
             {
             candidates[numCandidates++] = realReg->getAssignedRegister();
@@ -134,7 +134,7 @@ TR::RealRegister *OMR::RV::Machine::freeBestRegister(TR::Instruction *currentIns
              cursor->getOpCodeValue() != TR::InstOpCode::label &&
              cursor->getOpCodeValue() != TR::InstOpCode::proc)
          {
-         for (int i = 0; i < numCandidates; i++)
+         for (int32_t i = 0; i < numCandidates; i++)
             {
             if (cursor->refsRegister(candidates[i]))
                {

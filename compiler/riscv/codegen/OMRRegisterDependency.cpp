@@ -207,11 +207,11 @@ bool OMR::RV::RegisterDependencyConditions::usesRegister(TR::Register *r)
 
 void OMR::RV::RegisterDependencyConditions::incRegisterTotalUseCounts(TR::CodeGenerator *cg)
    {
-   for (int i = 0; i < _addCursorForPre; i++)
+   for (uint16_t i = 0; i < _addCursorForPre; i++)
       {
       _preConditions->getRegisterDependency(i)->getRegister()->incTotalUseCount();
       }
-   for (int j = 0; j < _addCursorForPost; j++)
+   for (uint16_t j = 0; j < _addCursorForPost; j++)
       {
       _postConditions->getRegisterDependency(j)->getRegister()->incTotalUseCount();
       }

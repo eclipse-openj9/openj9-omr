@@ -80,28 +80,28 @@ class RVMemoryArgument
 #define RV_Reserved                 0x40
 
 #define FOR_EACH_REGISTER(machine, block)                                        \
-   for (int regNum = TR::RealRegister::FirstGPR; regNum <= TR::RealRegister::LastGPR; regNum++) \
+   for (auto regNum = TR::RealRegister::FirstGPR; regNum <= TR::RealRegister::LastGPR; regNum++) \
       {                                                                          \
       TR::RealRegister *reg                                                      \
-                   = machine->getRealRegister((TR::RealRegister::RegNum)regNum); \
+                   = machine->getRealRegister(regNum);                           \
       { block; }                                                                 \
       }                                                                          \
-   for (int regNum = TR::RealRegister::FirstFPR; regNum <= TR::RealRegister::FirstFPR; regNum++) \
+   for (auto regNum = TR::RealRegister::FirstFPR; regNum <= TR::RealRegister::FirstFPR; regNum++) \
       {                                                                          \
       TR::RealRegister *reg                                                      \
-                   = machine->getRealRegister((TR::RealRegister::RegNum)regNum); \
+                   = machine->getRealRegister(regNum);                           \
       { block; }                                                                 \
       }
 
 #define FOR_EACH_RESERVED_REGISTER(machine, props, block)                        \
    FOR_EACH_REGISTER(machine,                                                    \
-   if (props._registerFlags[(TR::RealRegister::RegNum)regNum] & RV_Reserved)     \
+   if (props._registerFlags[regNum] & RV_Reserved)                               \
       { block; }                                                                 \
    )
 
 #define FOR_EACH_CALLEE_SAVED_REGISTER(machine, props, block)                    \
    FOR_EACH_REGISTER(machine,                                                    \
-   if (props._registerFlags[(TR::RealRegister::RegNum)regNum] == Preserved)      \
+   if (props._registerFlags[regNum] == Preserved)                                \
       { block; }                                                                 \
    )
 
@@ -346,7 +346,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
     * @param[out] memArg : struct holding memory argument information
     * @return MemoryReference for the argument
     */
-   virtual TR::MemoryReference *getOutgoingArgumentMemRef(TR::Register *argMemReg, int offset, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::RVMemoryArgument &memArg);
+   virtual TR::MemoryReference *getOutgoingArgumentMemRef(TR::Register *argMemReg, int32_t offset, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::RVMemoryArgument &memArg);
 
    /**
     * @brief Saves arguments

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -37,7 +37,7 @@
  */
 static void truncate(TR::Node *node, TR::Register *reg, TR::CodeGenerator *cg)
    {
-   int bitwidth = 0;
+   uint32_t bitwidth = 0;
 
    if (node->getDataType().isInt8())
       {
@@ -345,7 +345,7 @@ OMR::RV::TreeEvaluator::ishlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Register *src1Reg;
    TR::Register *trgReg;
 
-   int width = TR::DataType::getSize(node->getDataType()) * 8;
+   auto width = TR::DataType::getSize(node->getDataType()) * 8;
 
    if (secondChild->getOpCode().isLoadConst())
       {
@@ -449,7 +449,7 @@ OMR::RV::TreeEvaluator::ishrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Register *src1Reg;
    TR::Register *trgReg;
 
-   int width = TR::DataType::getSize(node->getDataType()) * 8;
+   auto width = TR::DataType::getSize(node->getDataType()) * 8;
 
    if (secondChild->getOpCode().isLoadConst())
       {
@@ -530,7 +530,7 @@ OMR::RV::TreeEvaluator::iushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Register *src1Reg;
    TR::Register *trgReg;
 
-   int width = TR::DataType::getSize(node->getDataType()) * 8;
+   auto width = TR::DataType::getSize(node->getDataType()) * 8;
 
    if (secondChild->getOpCode().isLoadConst())
       {

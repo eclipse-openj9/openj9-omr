@@ -368,7 +368,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
 
    static TR::Register *loadMemory(TR::Node *node, TR::MemoryReference  *sourceMR, TR_RematerializableTypes type, bool markImplicitExceptionPoint, TR::CodeGenerator *cg);
    static TR::Register *conversionAnalyser(TR::Node *node, TR::InstOpCode::Mnemonic memoryToRegisterOp, TR::InstOpCode::Mnemonic registerToRegisterOp, TR::CodeGenerator *cg);
-   static TR::Register *fpConvertToInt(TR::Node *node, TR::SymbolReference *helperSymRef, TR::CodeGenerator *cg);
    static TR::Register *fpConvertToLong(TR::Node *node, TR::SymbolReference *helperSymRef, TR::CodeGenerator *cg);
    static TR::Register *generateBranchOrSetOnFPCompare(TR::Node *node, TR::Register *accRegister, bool generateBranch, TR::CodeGenerator *cg);
    static TR::Register *generateFPCompareResult(TR::Node *node, TR::Register *accRegister, TR::CodeGenerator *cg);

@@ -4579,10 +4579,6 @@ TR_BitVector *TR::GlobalValuePropagation::mergeDefinedOnAllPaths(TR_StructureSub
    bool first = true;
    for (auto itr = node->getPredecessors().begin(), end = node->getPredecessors().end(); itr != end; ++itr)
       {
-      EdgeConstraints  *constraints = getEdgeConstraints(*itr);
-      if (isUnreachablePath(constraints))
-         continue;
-      
       TR_BitVector *predDefinedOnAllPaths = (*_definedOnAllPaths)[*itr];
       if (trace())
          {

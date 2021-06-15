@@ -21,12 +21,10 @@
 
 set(OMR_C_WARNINGS_AS_ERROR_FLAG -Werror)
 set(OMR_CXX_WARNINGS_AS_ERROR_FLAG -Werror)
-set(OMR_MASM_WARNINGS_AS_ERROR_FLAG -Werror)
 set(OMR_NASM_WARNINGS_AS_ERROR_FLAG -Werror)
 
 set(OMR_C_ENHANCED_WARNINGS_FLAG -Wall)
 set(OMR_CXX_ENHANCED_WARNINGS_FLAG -Wall)
-set(OMR_MASM_ENHANCED_WARNINGS_FLAG -Wall)
 set(OMR_NASM_ENHANCED_WARNINGS_FLAG -Wall)
 
 # disable builtin strncpy buffer length check for components that use variable length

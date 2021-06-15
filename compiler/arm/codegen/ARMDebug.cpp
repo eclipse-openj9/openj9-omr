@@ -374,7 +374,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMAdminInstruction * instr)
 
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s\t", fullOpCodeName(instr));
-   if (instr->getOpCodeValue() == ARMOp_fence && instr->getFenceNode())
+   if (instr->getOpCodeValue() == TR::InstOpCode::fence && instr->getFenceNode())
       {
       TR::Node *fenceNode = instr->getFenceNode();
       if (fenceNode->getRelocationType() == TR_AbsoluteAddress)

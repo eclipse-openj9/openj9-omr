@@ -99,7 +99,6 @@ const OMR::ARM::InstOpCode::TR_OpCodeBinaryEntry OMR::ARM::InstOpCode::binaryEnc
    0x06BF0070,  // sxth
    0x06EF0070,  // uxtb
    0x06FF0070,  // uxth
-   0x00000000,  // fence
    0x00000000,  // ret
    0x00000000,  // wrtbar
    0x00000000,  // proc
@@ -392,9 +391,6 @@ ARMOpProp_Arch4,
 0,
 
 // uxth
-0,
-
-// fence
 0,
 
 // ret

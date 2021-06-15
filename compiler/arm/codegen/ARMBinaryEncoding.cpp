@@ -162,7 +162,7 @@ uint8_t *TR::ARMAdminInstruction::generateBinaryEncoding()
    uint8_t  *instructionStart = cg()->getBinaryBufferCursor();
    uint32_t i;
 
-   if (getOpCodeValue() == ARMOp_fence)
+   if (getOpCodeValue() == TR::InstOpCode::fence)
       {
       TR::Node  *fenceNode = getFenceNode();
       uint32_t  rtype     = fenceNode->getRelocationType();

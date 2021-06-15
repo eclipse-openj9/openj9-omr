@@ -89,7 +89,6 @@
    ARMOp_sxth,             // Sign extend halfword
    ARMOp_uxtb,             // Zero extend byte
    ARMOp_uxth,             // Zero extend halfword
-   ARMOp_fence,            // Fence
    ARMOp_ret,              // Return
    ARMOp_wrtbar,           // Write barrier directive
    ARMOp_proc,             // Entry to the method

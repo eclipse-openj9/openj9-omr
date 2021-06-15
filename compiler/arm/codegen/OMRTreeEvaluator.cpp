@@ -3613,7 +3613,7 @@ TR::Register *OMR::ARM::TreeEvaluator::treetopEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::ARM::TreeEvaluator::exceptionRangeFenceEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   generateAdminInstruction(cg, ARMOp_fence, node, node);
+   generateAdminInstruction(cg, TR::InstOpCode::fence, node, node);
    return NULL;
    }
 
@@ -3808,7 +3808,7 @@ TR::Register *OMR::ARM::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
       }
 
    TR::Node * fenceNode = TR::Node::createRelative32BitFenceNode(node, &block->getInstructionBoundaries()._startPC);
-   TR::Instruction * fence = generateAdminInstruction(cg, ARMOp_fence, node, deps, fenceNode);
+   TR::Instruction * fence = generateAdminInstruction(cg, TR::InstOpCode::fence, node, deps, fenceNode);
 
    if (block->isCatchBlock())
       {
@@ -3846,7 +3846,7 @@ TR::Register *OMR::ARM::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
       }
 
    // put the dependencies (if any) on the fence
-   generateAdminInstruction(cg, ARMOp_fence, node, deps, fenceNode);
+   generateAdminInstruction(cg, TR::InstOpCode::fence, node, deps, fenceNode);
 
    return NULL;
    }

@@ -87,7 +87,6 @@
 #define ARMOp_sxth OMR::InstOpCode::ARMOp_sxth
 #define ARMOp_uxtb OMR::InstOpCode::ARMOp_uxtb
 #define ARMOp_uxth OMR::InstOpCode::ARMOp_uxth
-#define ARMOp_fence OMR::InstOpCode::ARMOp_fence
 #define ARMOp_ret OMR::InstOpCode::ARMOp_ret
 #define ARMOp_wrtbar OMR::InstOpCode::ARMOp_wrtbar
 #define ARMOp_proc OMR::InstOpCode::ARMOp_proc

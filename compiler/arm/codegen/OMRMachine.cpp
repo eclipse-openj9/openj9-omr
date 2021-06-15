@@ -157,7 +157,7 @@ TR::RealRegister *OMR::ARM::Machine::freeBestRegister(TR::Instruction     *curre
       cursor = currentInstruction;
       while (numCandidates > 1                 &&
              cursor != NULL                    &&
-             cursor->getOpCodeValue() != ARMOp_label &&
+             cursor->getOpCodeValue() != TR::InstOpCode::label &&
              cursor->getOpCodeValue() != ARMOp_proc)
          {
          for (int i = 0; i < numCandidates; i++)

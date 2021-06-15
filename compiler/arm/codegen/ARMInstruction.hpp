@@ -234,7 +234,7 @@ class ARMLabelInstruction : public TR::Instruction
       setOpCodeValue(op);
       if (t1reg) t1reg->incTotalUseCount();
       if (s1reg) s1reg->incTotalUseCount();
-      if (sym!=NULL && op==ARMOp_label)
+      if (sym!=NULL && op==TR::InstOpCode::label)
          sym->setInstruction(this);
       }
 
@@ -245,7 +245,7 @@ class ARMLabelInstruction : public TR::Instruction
                        TR::CodeGenerator                   *cg)
       : TR::Instruction(op, node, cond, cg), _symbol(sym), _t1reg(NULL), _s1reg(NULL)
       {
-      if (sym!=NULL && op==ARMOp_label)
+      if (sym!=NULL && op==TR::InstOpCode::label)
          sym->setInstruction(this);
       }
 
@@ -260,7 +260,7 @@ class ARMLabelInstruction : public TR::Instruction
       {
       if (t1reg) t1reg->incTotalUseCount();
       if (s1reg) s1reg->incTotalUseCount();
-      if (sym!=NULL && op==ARMOp_label)
+      if (sym!=NULL && op==TR::InstOpCode::label)
          sym->setInstruction(this);
       }
 
@@ -272,7 +272,7 @@ class ARMLabelInstruction : public TR::Instruction
                        TR::CodeGenerator                   *cg)
       : TR::Instruction(precedingInstruction, op, node, cond, cg), _symbol(sym), _t1reg(NULL), _s1reg(NULL)
       {
-      if (sym!=NULL && op==ARMOp_label)
+      if (sym!=NULL && op==TR::InstOpCode::label)
          sym->setInstruction(this);
       }
 

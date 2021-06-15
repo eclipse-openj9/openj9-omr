@@ -317,7 +317,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMLabelInstruction * instr)
 
    TR::LabelSymbol *label   = instr->getLabelSymbol();
    TR::Snippet *snippet = label ? label->getSnippet() : NULL;
-   if (instr->getOpCodeValue() == ARMOp_label)
+   if (instr->getOpCodeValue() == TR::InstOpCode::label)
       {
       print(pOutFile, label);
       trfprintf(pOutFile, ":");

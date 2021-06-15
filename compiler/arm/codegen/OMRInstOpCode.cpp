@@ -116,7 +116,6 @@ const OMR::ARM::InstOpCode::TR_OpCodeBinaryEntry OMR::ARM::InstOpCode::binaryEnc
    0x00000000,  // flcmpg
    0x00000000,  // idiv
    0x00000000,  // irem
-   0x00000000,  // Label
    0x00000000,  // vgdnop
    0xE1A00000,  // nop (mov r0, r0)
    0x0EB00BC0,  // fabsd (vabs<c>.f64)
@@ -193,7 +192,7 @@ const uint32_t OMR::ARM::InstOpCode::properties[NumOpCodes] =
 0,
 
 // label
-0,
+ARMOpProp_Label,
 
 // proc
 0,
@@ -443,9 +442,6 @@ ARMOpProp_Arch4,
 
 // irem
 0,
-
-// Label
-ARMOpProp_Label,
 
 // vgdnop
 0,

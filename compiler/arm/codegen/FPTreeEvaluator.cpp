@@ -1064,7 +1064,7 @@ TR::Register *OMR::ARM::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeG
       trgReg = floatTrgReg;
 
    TR::LabelSymbol *fenceLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   generateLabelInstruction(cg, ARMOp_label, node, fenceLabel, deps);
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, fenceLabel, deps);
    cg->stopUsingRegister(tempReg);
    node->setRegister(trgReg);
    return trgReg;
@@ -1133,7 +1133,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeG
       trgReg = doubleTrgReg;
 
    TR::LabelSymbol *fenceLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   generateLabelInstruction(cg, ARMOp_label, node, fenceLabel, deps);
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, fenceLabel, deps);
    cg->stopUsingRegister(tempReg);
    node->setRegister(trgReg);
    return trgReg;
@@ -2616,7 +2616,7 @@ static TR::Register *generateFloatMaxMin(TR::Node *node, TR::CodeGenerator *cg, 
    cursor->setConditionCode(max ? ARMConditionCodeHI: ARMConditionCodeLT);
 
    // doneLabel
-   cursor = generateLabelInstruction(cg, ARMOp_label, node, doneLabel, deps, cursor);
+   cursor = generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, deps, cursor);
 
 
    if (noFPRA && reg->getKind() == TR_GPR)

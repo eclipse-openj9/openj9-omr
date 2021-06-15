@@ -593,7 +593,7 @@ static TR::Register *compareLongsForOrder(TR_ARMConditionCode branchOp, TR::Node
       TR::RegisterDependencyConditions *oolDeps = deps->clone(cg, newDeps);
 
       outlinedSlowPath->swapInstructionListsWithCompilation(); // OOL code to follow
-      TR::Instruction *cursorOOL = generateLabelInstruction(cg, ARMOp_label, node, startOOLLabel);
+      TR::Instruction *cursorOOL = generateLabelInstruction(cg, TR::InstOpCode::label, node, startOOLLabel);
       if (debugObj)
          debugObj->addInstructionComment(cursorOOL, "Denotes start of OOL iflong sequence");
       // XXX: Temporary fix, OOL instruction stream does not pick up live locals or monitors correctly.
@@ -606,13 +606,13 @@ static TR::Register *compareLongsForOrder(TR_ARMConditionCode branchOp, TR::Node
       cursorOOL = generateSrc2Instruction(cg, ARMOp_cmp, node, src1Reg->getLowOrder(), src2Reg->getLowOrder(), cursorOOL);
       cursorOOL = generateTrg1ImmInstruction(cg, ARMOp_mov, node, tempReg, 1, 0, cursorOOL); // Setting tempReg to 1
       cursorOOL->setConditionCode(isGT ? ARMConditionCodeHI: ARMConditionCodeLS);
-      cursorOOL = generateLabelInstruction(cg, ARMOp_label, node, returnLabel, oolDeps, cursorOOL); // Need deps 3/21 change
+      cursorOOL = generateLabelInstruction(cg, TR::InstOpCode::label, node, returnLabel, oolDeps, cursorOOL); // Need deps 3/21 change
       cursorOOL = generateLabelInstruction(cg, ARMOp_b, node, doneOOLLabel, cursorOOL);
       if (debugObj)
          debugObj->addInstructionComment(cursorOOL, "Denotes end of OOL iflong sequence: return to mainline");
       outlinedSlowPath->swapInstructionListsWithCompilation(); // Done with OOL code
 
-      cursor = generateLabelInstruction(cg, ARMOp_label, node, doneOOLLabel);
+      cursor = generateLabelInstruction(cg, TR::InstOpCode::label, node, doneOOLLabel);
       if (debugObj)
          debugObj->addInstructionComment(cursor, "OOL iflong code return label");
 
@@ -1329,14 +1329,14 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
    TR::LabelSymbol *biggerLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
    TR::LabelSymbol *linkLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
 
-   generateLabelInstruction(node, cg, ARMOp_label, backLabel);
+   generateLabelInstruction(node, cg, TR::InstOpCode::label, backLabel);
    generateTrg1Src2Instruction(node, cg, ARMOp_add, pivotRegister, highRegister, lowRegister);
    new (cg->trHeapMemory()) TR::ARMTrg1Src1Imm2Instruction(0xfffffffc, 31, pivotRegister, pivotRegister, ARMOp_rlwinm, cg);
    generateTrg1MemInstruction(cg, ARMOp_lwzx, dataRegister, new (cg->trHeapMemory()) TR_ARMMemoryReference(addrRegister, pivotRegister, cg));
    generateTrg1Src2Instruction(node, cg, ARMOp_cmp4, cndRegister, dataRegister, selector);
    generateConditionalBranchInstruction(node, cg, ARMOp_bne, searchLabel, cndRegister);
    generateLabelInstruction(node, cg, ARMOp_bl, linkLabel);
-   generateLabelInstruction(node, cg, ARMOp_label, linkLabel);
+   generateLabelInstruction(node, cg, TR::InstOpCode::label, linkLabel);
    new (cg->trHeapMemory()) TR::ARMTrg1Instruction(ARMOp_mflr, dataRegister, cg);
    generateTrg1Src1ImmInstruction(node, cg, ARMOp_addi, pivotRegister, pivotRegister, 20);
    generateTrg1Src2Instruction(node, cg, ARMOp_add, dataRegister, pivotRegister, dataRegister);
@@ -1347,14 +1347,14 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
       generateLabelInstruction(node, cg, ARMOp_b, node->getChild(ii)->getBranchDestination()->getNode()->getLabel());
       dataTable[ii-2] = node->getChild(ii)->getCaseConstant();
       }
-   generateLabelInstruction(node, cg, ARMOp_label, searchLabel);
+   generateLabelInstruction(node, cg, TR::InstOpCode::label, searchLabel);
    generateConditionalBranchInstruction(node, cg, ARMOp_bgt, biggerLabel, cndRegister);
    generateTrg1Src2Instruction(node, cg, ARMOp_cmp4, cndRegister, pivotRegister, highRegister);
    generateConditionalBranchInstruction(node, cg, ARMOp_beq, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), cndRegister);
    generateTrg1Src1ImmInstruction(node, cg, ARMOp_addi, lowRegister, pivotRegister, 4);
    generateLabelInstruction(node, cg, ARMOp_b, backLabel);
 
-   generateLabelInstruction(node, cg, ARMOp_label, biggerLabel);
+   generateLabelInstruction(node, cg, TR::InstOpCode::label, biggerLabel);
    generateTrg1Src2Instruction(node, cg, ARMOp_cmp4, cndRegister, pivotRegister, lowRegister);
    generateConditionalBranchInstruction(node, cg, ARMOp_beq, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), cndRegister);
    generateTrg1Src1ImmInstruction(node, cg, ARMOp_addi, highRegister, pivotRegister, -4);
@@ -1510,7 +1510,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ZEROCHKEvaluator(TR::Node *node, TR::Code
 
       cg->decReferenceCount(node->getFirstChild());
       }
-   generateLabelInstruction(cg, ARMOp_label, node, restartLabel);
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, restartLabel);
 
    return NULL;
    }
@@ -1743,7 +1743,7 @@ static TR::Register *generateMaxMin(TR::Node *node, TR::CodeGenerator *cg, bool 
          cursor = generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getHighOrder(), reg->getHighOrder(), cursor);
          cursor->setConditionCode(max ? ARMConditionCodeLS: ARMConditionCodeHI);
          // doneLabel
-         cursor = generateLabelInstruction(cg, ARMOp_label, node, doneLabel, deps, cursor);
+         cursor = generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, deps, cursor);
          }
       else
          {

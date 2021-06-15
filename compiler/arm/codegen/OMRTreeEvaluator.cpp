@@ -3307,7 +3307,7 @@ static void constLengthArrayCopyEvaluator(TR::Node *node, int32_t byteLen, TR::R
          armLoadConstant(node, groups,countReg,cg);
 
       TR::LabelSymbol *loopStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      generateLabelInstruction(cg, ARMOp_label, node, loopStart);
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, loopStart);
 
       for( ri = 0; ri < 4; ri++)
          {
@@ -3803,7 +3803,7 @@ TR::Register *OMR::ARM::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
 
    if (node->getLabel() != NULL)
       {
-      node->getLabel()->setInstruction(generateLabelInstruction(cg, ARMOp_label, node, node->getLabel(), deps));
+      node->getLabel()->setInstruction(generateLabelInstruction(cg, TR::InstOpCode::label, node, node->getLabel(), deps));
       deps = NULL; // put the dependencies (if any) on either the label or the fence
       }
 

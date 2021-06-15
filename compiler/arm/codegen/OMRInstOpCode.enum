@@ -106,7 +106,6 @@
    ARMOp_flcmpg,           // compare float and set result -1(less),0(equal),1(greater,unordered)
    ARMOp_idiv,             // integer divide
    ARMOp_irem,             // integer remainder
-   ARMOp_label,            // Destination of a jump
    ARMOp_vgdnop,           // A virtual guard encoded as a NOP instruction
    ARMOp_nop,              // NOP
 // VFP instructions starts here

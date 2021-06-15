@@ -330,7 +330,7 @@ TR::Register *OMR::ARM::Linkage::pushJNIReferenceArg(TR::Node *child)
 
             startLabel->setStartInternalControlFlow();
             doneLabel->setEndInternalControlFlow();
-            generateLabelInstruction(self()->cg(), ARMOp_label, child, startLabel);
+            generateLabelInstruction(self()->cg(), TR::InstOpCode::label, child, startLabel);
 
             TR::MemoryReference *tempMR = new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, self()->cg());
             generateTrg1MemInstruction(self()->cg(), ARMOp_ldr, child, objReg, tempMR);
@@ -356,7 +356,7 @@ TR::Register *OMR::ARM::Linkage::pushJNIReferenceArg(TR::Node *child)
             TR::addDependency(deps, pushReg, TR::RealRegister::NoReg, TR_GPR, self()->cg());
             TR::addDependency(deps, objReg,  TR::RealRegister::NoReg, TR_GPR, self()->cg());
 
-            generateLabelInstruction(self()->cg(), ARMOp_label, child, doneLabel, deps);
+            generateLabelInstruction(self()->cg(), TR::InstOpCode::label, child, doneLabel, deps);
             self()->cg()->decReferenceCount(child);
             }
          }

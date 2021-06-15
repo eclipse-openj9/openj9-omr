@@ -43,7 +43,7 @@ void TR_ARMOutOfLineCodeSection::generateARMOutOfLineCodeSectionDispatch()
    //
    swapInstructionListsWithCompilation();
 
-   generateLabelInstruction(_cg, ARMOp_label, _callNode, _entryLabel);
+   generateLabelInstruction(_cg, TR::InstOpCode::label, _callNode, _entryLabel);
 
    TR::Register *resultReg = NULL;
    if (_callNode->getOpCode().isCallIndirect())
@@ -61,7 +61,7 @@ void TR_ARMOutOfLineCodeSection::generateARMOutOfLineCodeSectionDispatch()
    if (_restartLabel)
       generateLabelInstruction(_cg, ARMOp_b, _callNode, _restartLabel);
 
-   generateLabelInstruction(_cg, ARMOp_label, _callNode, generateLabelSymbol(_cg));
+   generateLabelInstruction(_cg, TR::InstOpCode::label, _callNode, generateLabelSymbol(_cg));
 
    // Switch from cold helper instruction stream.
    //

@@ -31,10 +31,12 @@ if(CMAKE_C_COMPILER_IS_XLCLANG)
 endif()
 
 if(OMR_HOST_ARCH STREQUAL "ppc")
-	set(OMR_WARNING_AS_ERROR_FLAG -qhalt=w)
+	set(OMR_C_WARNINGS_AS_ERROR_FLAG -qhalt=w)
+	set(OMR_CXX_WARNINGS_AS_ERROR_FLAG -qhalt=w)
 
 	# There is no enhanced warning for XLC right now
-	set(OMR_ENHANCED_WARNING_FLAG )
+	set(OMR_C_ENHANCED_WARNINGS_FLAG )
+	set(OMR_CXX_ENHANCED_WARNINGS_FLAG )
 
 	list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
 		-qalias=noansi
@@ -119,10 +121,12 @@ elseif(OMR_OS_ZOS)
 	# TODO: This should technically be -qhalt=w however c89 compiler used to compile the C sources does not like this
 	# flag. We'll need to investigate whether we actually need c89 for C sources or if we can use xlc and what to do
 	# with this flag. For now I'm leaving it as empty.
-	set(OMR_WARNING_AS_ERROR_FLAG )
+	set(OMR_C_WARNINGS_AS_ERROR_FLAG )
+	set(OMR_CXX_WARNINGS_AS_ERROR_FLAG )
 
 	# There is no enhanced warning for XLC right now
-	set(OMR_ENHANCED_WARNING_FLAG )
+	set(OMR_C_ENHANCED_WARNINGS_FLAG )
+	set(OMR_CXX_ENHANCED_WARNINGS_FLAG )
 
 	list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
 		"\"-Wc,xplink\""               # link with xplink calling convention

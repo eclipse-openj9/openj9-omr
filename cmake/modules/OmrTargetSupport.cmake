@@ -77,16 +77,16 @@ function(omr_add_library name)
 		if(OMR_WARNINGS_AS_ERRORS)
 			target_compile_options(${name}
 				PRIVATE
-					$<$<COMPILE_LANGUAGE:C>:${OMR_WARNING_AS_ERROR_FLAG}>
-					$<$<COMPILE_LANGUAGE:CXX>:${OMR_WARNING_AS_ERROR_FLAG}>
+					$<$<COMPILE_LANGUAGE:C>:${OMR_C_WARNINGS_AS_ERROR_FLAG}>
+					$<$<COMPILE_LANGUAGE:CXX>:${OMR_CXX_WARNINGS_AS_ERROR_FLAG}>
 			)
 		endif()
 
 		if(OMR_ENHANCED_WARNINGS)
 			target_compile_options(${name}
 				PRIVATE
-					$<$<COMPILE_LANGUAGE:C>:${OMR_ENHANCED_WARNING_FLAG}>
-					$<$<COMPILE_LANGUAGE:CXX>:${OMR_ENHANCED_WARNING_FLAG}>
+					$<$<COMPILE_LANGUAGE:C>:${OMR_C_ENHANCED_WARNINGS_FLAG}>
+					$<$<COMPILE_LANGUAGE:CXX>:${OMR_CXX_ENHANCED_WARNINGS_FLAG}>
 			)
 		else()
 			target_compile_options(${name}
@@ -123,16 +123,16 @@ function(omr_add_executable name)
 		if(OMR_WARNINGS_AS_ERRORS)
 			target_compile_options(${name}
 				PRIVATE
-					$<$<COMPILE_LANGUAGE:C>:${OMR_WARNING_AS_ERROR_FLAG}>
-					$<$<COMPILE_LANGUAGE:CXX>:${OMR_WARNING_AS_ERROR_FLAG}>
+					$<$<COMPILE_LANGUAGE:C>:${OMR_C_WARNINGS_AS_ERROR_FLAG}>
+					$<$<COMPILE_LANGUAGE:CXX>:${OMR_CXX_WARNINGS_AS_ERROR_FLAG}>
 			)
 		endif()
 
 		if(OMR_ENHANCED_WARNINGS)
 			target_compile_options(${name}
 				PRIVATE
-					$<$<COMPILE_LANGUAGE:C>:${OMR_ENHANCED_WARNING_FLAG}>
-					$<$<COMPILE_LANGUAGE:CXX>:${OMR_ENHANCED_WARNING_FLAG}>
+					$<$<COMPILE_LANGUAGE:C>:${OMR_C_ENHANCED_WARNINGS_FLAG}>
+					$<$<COMPILE_LANGUAGE:CXX>:${OMR_CXX_ENHANCED_WARNINGS_FLAG}>
 			)
 		else()
 			target_compile_options(${name}

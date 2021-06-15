@@ -82,7 +82,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ireturnEvaluator(TR::Node *node, TR::Code
    TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
    TR::addDependency(deps, returnRegister, cg->getProperties().getIntegerReturnRegister(), TR_GPR, cg);
 
-   generateAdminInstruction(cg, ARMOp_ret, node, deps);
+   generateAdminInstruction(cg, TR::InstOpCode::retn, node, deps);
    cg->comp()->setReturnInfo(TR_IntReturn);
    return NULL;
    }
@@ -97,7 +97,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lreturnEvaluator(TR::Node *node, TR::Code
    TR::addDependency(deps, lowReg, cg->getProperties().getLongLowReturnRegister(), TR_GPR, cg);
    TR::addDependency(deps, highReg, cg->getProperties().getLongHighReturnRegister(), TR_GPR, cg);
 
-   generateAdminInstruction(cg, ARMOp_ret, node, deps);
+   generateAdminInstruction(cg, TR::InstOpCode::retn, node, deps);
    cg->comp()->setReturnInfo(TR_LongReturn);
    return NULL;
    }
@@ -106,7 +106,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lreturnEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::ARM::TreeEvaluator::returnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   generateAdminInstruction(cg, ARMOp_ret, node);
+   generateAdminInstruction(cg, TR::InstOpCode::retn, node);
    cg->comp()->setReturnInfo(TR_VoidReturn);
    return NULL;
    }

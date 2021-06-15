@@ -1526,7 +1526,7 @@ TR::Register *OMR::ARM::TreeEvaluator::freturnEvaluator(TR::Node *node, TR::Code
       }
    else
       TR_ASSERT(0, "Unknown register type\n");
-   generateAdminInstruction(cg, ARMOp_ret, node, deps);
+   generateAdminInstruction(cg, TR::InstOpCode::retn, node, deps);
    cg->comp()->setReturnInfo(TR_FloatReturn);
    return NULL;
    }
@@ -1549,7 +1549,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dreturnEvaluator(TR::Node *node, TR::Code
       }
    else
       TR_ASSERT(0, "Unknown register type\n");
-   generateAdminInstruction(cg, ARMOp_ret, node, deps);
+   generateAdminInstruction(cg, TR::InstOpCode::retn, node, deps);
    cg->comp()->setReturnInfo(TR_DoubleReturn);
    return NULL;
    }

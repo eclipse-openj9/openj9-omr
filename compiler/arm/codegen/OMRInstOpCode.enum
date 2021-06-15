@@ -89,7 +89,6 @@
    ARMOp_sxth,             // Sign extend halfword
    ARMOp_uxtb,             // Zero extend byte
    ARMOp_uxth,             // Zero extend halfword
-   ARMOp_ret,              // Return
    ARMOp_wrtbar,           // Write barrier directive
    ARMOp_dmb_v6,           // Data memory barrier
    ARMOp_dmb,              // Data memory barrier on ARMv7A

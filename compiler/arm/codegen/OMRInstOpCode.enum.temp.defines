@@ -91,7 +91,6 @@
 #define ARMOp_ret OMR::InstOpCode::ARMOp_ret
 #define ARMOp_wrtbar OMR::InstOpCode::ARMOp_wrtbar
 #define ARMOp_proc OMR::InstOpCode::ARMOp_proc
-#define ARMOp_dd OMR::InstOpCode::ARMOp_dd
 #define ARMOp_dmb_v6 OMR::InstOpCode::ARMOp_dmb_v6
 #define ARMOp_dmb OMR::InstOpCode::ARMOp_dmb
 #define ARMOp_dmb_st OMR::InstOpCode::ARMOp_dmb_st

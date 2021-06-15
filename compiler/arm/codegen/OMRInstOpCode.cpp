@@ -103,7 +103,6 @@ const OMR::ARM::InstOpCode::TR_OpCodeBinaryEntry OMR::ARM::InstOpCode::binaryEnc
    0x00000000,  // ret
    0x00000000,  // wrtbar
    0x00000000,  // proc
-   0x00000000,  // dd
    0x0E070FBA,  // dmb_v6
    0xF57FF05F,  // dmb
    0xF57FF05E,  // dmb_st
@@ -405,9 +404,6 @@ ARMOpProp_Arch4,
 0,
 
 // proc
-0,
-
-// dd
 0,
 
 // dmb_v6

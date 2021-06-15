@@ -1044,7 +1044,7 @@ TR::Register *OMR::ARM::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeG
    //cg->stopUsingRegister(tempReg);
 
    // Place the constant
-   generateImmInstruction(cg, ARMOp_dd, node, i32);
+   generateImmInstruction(cg, TR::InstOpCode::dd, node, i32);
    //armCG(cg)->findOrCreateFloatConstant(&value, TR::Float, cursor);
 
    if (noFPRA)
@@ -1107,13 +1107,13 @@ TR::Register *OMR::ARM::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeG
    //armCG(cg)->findOrCreateFloatConstant(&value, TR::Double, high, low);
    if (cg->comp()->target().cpu.isLittleEndian())
       {
-      generateImmInstruction(cg, ARMOp_dd, node, (int32_t)i64);
-      generateImmInstruction(cg, ARMOp_dd, node, (int32_t)((i64>>32) & 0xffffffff));
+      generateImmInstruction(cg, TR::InstOpCode::dd, node, (int32_t)i64);
+      generateImmInstruction(cg, TR::InstOpCode::dd, node, (int32_t)((i64>>32) & 0xffffffff));
       }
    else
       {
-      generateImmInstruction(cg, ARMOp_dd, node, (int32_t)((i64>>32) & 0xffffffff));
-      generateImmInstruction(cg, ARMOp_dd, node, (int32_t)i64);
+      generateImmInstruction(cg, TR::InstOpCode::dd, node, (int32_t)((i64>>32) & 0xffffffff));
+      generateImmInstruction(cg, TR::InstOpCode::dd, node, (int32_t)i64);
       }
 
    if (noFPRA)

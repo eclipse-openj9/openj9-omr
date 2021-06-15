@@ -330,13 +330,13 @@ void OMR::ARM::CodeGenerator::beginInstructionSelection()
          }
 
       _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::ARMImmInstruction(cursor, TR::InstOpCode::dd, startNode, 0, self());
-      new (self()->trHeapMemory()) TR::ARMAdminInstruction(_returnTypeInfoInstruction, ARMOp_proc, startNode, NULL, self());
+      new (self()->trHeapMemory()) TR::ARMAdminInstruction(_returnTypeInfoInstruction, TR::InstOpCode::proc, startNode, NULL, self());
 
       }
    else
       {
       _returnTypeInfoInstruction = NULL;
-      new (self()->trHeapMemory()) TR::ARMAdminInstruction((TR::Instruction *)NULL, ARMOp_proc, startNode, NULL, self());
+      new (self()->trHeapMemory()) TR::ARMAdminInstruction((TR::Instruction *)NULL, TR::InstOpCode::proc, startNode, NULL, self());
       }
    }
 

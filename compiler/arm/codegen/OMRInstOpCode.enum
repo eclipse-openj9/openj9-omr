@@ -91,7 +91,6 @@
    ARMOp_uxth,             // Zero extend halfword
    ARMOp_ret,              // Return
    ARMOp_wrtbar,           // Write barrier directive
-   ARMOp_proc,             // Entry to the method
    ARMOp_dmb_v6,           // Data memory barrier
    ARMOp_dmb,              // Data memory barrier on ARMv7A
    ARMOp_dmb_st,           // Data write memory barrier on ARMv7A

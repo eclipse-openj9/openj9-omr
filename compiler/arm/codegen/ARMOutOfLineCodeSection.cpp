@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -54,12 +54,12 @@ void TR_ARMOutOfLineCodeSection::generateARMOutOfLineCodeSectionDispatch()
    if (_targetReg)
       {
       TR_ASSERT(resultReg, "assertion failure");
-      generateTrg1Src1Instruction(_cg, TR::InstOpCode::ARMOp_mov, _callNode, _targetReg, resultReg);
+      generateTrg1Src1Instruction(_cg, TR::InstOpCode::mov, _callNode, _targetReg, resultReg);
       }
    _cg->decReferenceCount(_callNode);
 
    if (_restartLabel)
-      generateLabelInstruction(_cg, TR::InstOpCode::ARMOp_b, _callNode, _restartLabel);
+      generateLabelInstruction(_cg, TR::InstOpCode::b, _callNode, _restartLabel);
 
    generateLabelInstruction(_cg, TR::InstOpCode::label, _callNode, generateLabelSymbol(_cg));
 

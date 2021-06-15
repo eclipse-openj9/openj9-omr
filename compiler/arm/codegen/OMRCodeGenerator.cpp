@@ -299,9 +299,9 @@ TR::Instruction *OMR::ARM::CodeGenerator::generateSwitchToInterpreterPrePrologue
    uintptr_t             helperAddr = (uintptr_t)helperSymRef->getMethodAddress();
 
    // gr4 must contain the saved LR; see Recompilation.s
-   cursor = new (self()->trHeapMemory()) TR::ARMTrg1Src1Instruction(cursor, TR::InstOpCode::ARMOp_mov, node, gr4, lr, self());
+   cursor = new (self()->trHeapMemory()) TR::ARMTrg1Src1Instruction(cursor, TR::InstOpCode::mov, node, gr4, lr, self());
    cursor = self()->getLinkage()->flushArguments(cursor);
-   cursor = generateImmSymInstruction(self(), TR::InstOpCode::ARMOp_bl, node, (uintptr_t)revertToInterpreterSymRef->getMethodAddress(), new (self()->trHeapMemory()) TR::RegisterDependencyConditions((uint8_t)0,0, self()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
+   cursor = generateImmSymInstruction(self(), TR::InstOpCode::bl, node, (uintptr_t)revertToInterpreterSymRef->getMethodAddress(), new (self()->trHeapMemory()) TR::RegisterDependencyConditions((uint8_t)0,0, self()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
    cursor = generateImmInstruction(self(), TR::InstOpCode::dd, node, (int32_t)ramMethod, TR_RamMethod, cursor);
 
    if (comp->getOption(TR_EnableHCR))
@@ -451,15 +451,15 @@ TR::Register *OMR::ARM::CodeGenerator::gprClobberEvaluate(TR::Node *node)
          TR::RegisterPair *longReg = self()->allocateRegisterPair(lowReg, highReg);
          TR::Register     *temp    = self()->evaluate(node);
 
-         generateTrg1Src1Instruction(self(), TR::InstOpCode::ARMOp_mov, node, lowReg, temp->getLowOrder());
-         generateTrg1Src1Instruction(self(), TR::InstOpCode::ARMOp_mov, node, highReg, temp->getHighOrder());
+         generateTrg1Src1Instruction(self(), TR::InstOpCode::mov, node, lowReg, temp->getLowOrder());
+         generateTrg1Src1Instruction(self(), TR::InstOpCode::mov, node, highReg, temp->getHighOrder());
 
          return longReg;
          }
       else
          {
          TR::Register *targetRegister = self()->allocateRegister();
-         generateTrg1Src1Instruction(self(), TR::InstOpCode::ARMOp_mov, node, targetRegister, self()->evaluate(node));
+         generateTrg1Src1Instruction(self(), TR::InstOpCode::mov, node, targetRegister, self()->evaluate(node));
          return targetRegister;
          }
       }

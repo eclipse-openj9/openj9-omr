@@ -700,7 +700,7 @@ class ARMLoadStartPCInstruction : public TR::ARMTrg1Src2Instruction
                              TR::Register      *treg,
                              TR::SymbolReference *symRef,
                              TR::CodeGenerator *cg)
-      : TR::ARMTrg1Src2Instruction(ARMOp_sub, node, treg, cg->machine()->getRealRegister(TR::RealRegister::gr15),
+      : TR::ARMTrg1Src2Instruction(TR::InstOpCode::ARMOp_sub, node, treg, cg->machine()->getRealRegister(TR::RealRegister::gr15),
          new (cg->trHeapMemory()) TR_ARMOperand2(0xde, 24), cg), /* The value 0xde does not mean anything. It will be replaced in the binary encoding phase. */
         _symbolReference(symRef)
       {
@@ -711,7 +711,7 @@ class ARMLoadStartPCInstruction : public TR::ARMTrg1Src2Instruction
                              TR::Register      *treg,
                              TR::SymbolReference *symRef,
                              TR::CodeGenerator *cg)
-      : TR::ARMTrg1Src2Instruction(precedingInstruction, ARMOp_sub, node, treg, cg->machine()->getRealRegister(TR::RealRegister::gr15),
+      : TR::ARMTrg1Src2Instruction(precedingInstruction, TR::InstOpCode::ARMOp_sub, node, treg, cg->machine()->getRealRegister(TR::RealRegister::gr15),
          new (cg->trHeapMemory()) TR_ARMOperand2(0xde, 0), cg),  /* The value 0xde does not mean anything. It will be replaced in the binary encoding phase. */
         _symbolReference(symRef)
       {

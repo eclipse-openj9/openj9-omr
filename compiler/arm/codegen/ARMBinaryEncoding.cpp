@@ -255,7 +255,7 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
    generateConditionBinaryEncoding(instructionStart);
    TR::LabelSymbol *label;
 
-   if (getOpCodeValue() == ARMOp_bl)
+   if (getOpCodeValue() == TR::InstOpCode::ARMOp_bl)
       {
       label = getSymbolReference()->getSymbol()->getLabelSymbol();
 
@@ -339,7 +339,7 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
       }
    else
       {
-      // Place holder only: non-ARMOp_bl usage of this instruction doesn't
+      // Place holder only: non-TR::InstOpCode::ARMOp_bl usage of this instruction doesn't
       // exist at this moment.
       TR_ASSERT(0, "non bl encoding");
       int32_t distance = getSourceImmediate() - (intptr_t)cursor;
@@ -549,21 +549,21 @@ int32_t TR::ARMControlFlowInstruction::estimateBinaryLength(int32_t currentEstim
    {
    switch(getOpCodeValue())
       {
-      case ARMOp_iflong:
-      case ARMOp_setbool:
+      case TR::InstOpCode::ARMOp_iflong:
+      case TR::InstOpCode::ARMOp_setbool:
          setEstimatedBinaryLength(ARM_INSTRUCTION_LENGTH * 4);
          break;
-      case ARMOp_idiv:
-      case ARMOp_setbflt:
+      case TR::InstOpCode::ARMOp_idiv:
+      case TR::InstOpCode::ARMOp_setbflt:
          setEstimatedBinaryLength(ARM_INSTRUCTION_LENGTH * 5);
          break;
-      case ARMOp_setblong:
-      case ARMOp_flcmpg:
-      case ARMOp_flcmpl:
-      case ARMOp_irem:
+      case TR::InstOpCode::ARMOp_setblong:
+      case TR::InstOpCode::ARMOp_flcmpg:
+      case TR::InstOpCode::ARMOp_flcmpl:
+      case TR::InstOpCode::ARMOp_irem:
          setEstimatedBinaryLength(ARM_INSTRUCTION_LENGTH * 6);
          break;
-      case ARMOp_lcmp:
+      case TR::InstOpCode::ARMOp_lcmp:
          setEstimatedBinaryLength(ARM_INSTRUCTION_LENGTH * 5);
          break;
       }
@@ -624,7 +624,7 @@ uint8_t *TR::ARMVirtualGuardNOPInstruction::generateBinaryEncoding()
        // 2) We might want to re-enable the code path and unpatch, in which case we would have to know what the old instruction was
          cg()->comp()->compileRelocatableCode())
       {
-      TR::InstOpCode opCode(ARMOp_nop);
+      TR::InstOpCode opCode(TR::InstOpCode::ARMOp_nop);
       opCode.copyBinaryToBuffer(cursor);
       length = ARM_INSTRUCTION_LENGTH;
       }

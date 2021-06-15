@@ -472,7 +472,7 @@ void TR::ARMSystemLinkage::createPrologue(TR::Instruction *cursor)
 
    // allocate stack space
    auto frameSize = codeGen->getFrameSizeInBytes();
-   cursor = generateTrg1Src1ImmInstruction(codeGen, ARMOp_sub, firstNode, stackPtr, stackPtr, frameSize, 0, cursor);
+   cursor = generateTrg1Src1ImmInstruction(codeGen, TR::InstOpCode::ARMOp_sub, firstNode, stackPtr, stackPtr, frameSize, 0, cursor);
 
    // spill argument registers
    auto nextIntArgReg = 0;
@@ -491,7 +491,7 @@ void TR::ARMSystemLinkage::createPrologue(TR::Instruction *cursor)
          case TR::Address:
             if (nextIntArgReg < getProperties().getNumIntArgRegs())
                {
-               cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::gr0 + nextIntArgReg)), cursor);
+               cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::ARMOp_str, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::gr0 + nextIntArgReg)), cursor);
                nextIntArgReg++;
                }
             else
@@ -503,9 +503,9 @@ void TR::ARMSystemLinkage::createPrologue(TR::Instruction *cursor)
             nextIntArgReg += nextIntArgReg & 0x1; // round to next even number
             if (nextIntArgReg + 1 < getProperties().getNumIntArgRegs())
                {
-               cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::gr0 + nextIntArgReg)), cursor);
+               cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::ARMOp_str, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::gr0 + nextIntArgReg)), cursor);
                stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, parameter->getParameterOffset() + 4, codeGen);
-               cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::gr0 + nextIntArgReg + 1)), cursor);
+               cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::ARMOp_str, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::gr0 + nextIntArgReg + 1)), cursor);
                nextIntArgReg += 2;
                }
             else
@@ -519,7 +519,7 @@ void TR::ARMSystemLinkage::createPrologue(TR::Instruction *cursor)
          case TR::Double:
             if (nextFltArgReg < getProperties().getNumFloatArgRegs())
                {
-               cursor = generateMemSrc1Instruction(cg(), ARMOp_fstd, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::fp0 + nextFltArgReg)), cursor);
+               cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::ARMOp_fstd, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::fp0 + nextFltArgReg)), cursor);
                nextFltArgReg += 1;
                }
             else
@@ -536,12 +536,12 @@ void TR::ARMSystemLinkage::createPrologue(TR::Instruction *cursor)
    for (int r = TR::RealRegister::gr4; r <= TR::RealRegister::gr11; ++r)
       {
       auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, (TR::RealRegister::gr11 - r + 1)*4 + bodySymbol->getLocalMappingCursor(), codeGen);
-      cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)r), cursor);
+      cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::ARMOp_str, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)r), cursor);
       }
 
    // save link register (r14)
    auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, bodySymbol->getLocalMappingCursor(), codeGen);
-   cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getRealRegister(TR::RealRegister::gr14), cursor);
+   cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::ARMOp_str, firstNode, stackSlot, machine->getRealRegister(TR::RealRegister::gr14), cursor);
    }
 
 void TR::ARMSystemLinkage::createEpilogue(TR::Instruction *cursor)
@@ -555,23 +555,23 @@ void TR::ARMSystemLinkage::createEpilogue(TR::Instruction *cursor)
 
    // restore link register (r14)
    auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, bodySymbol->getLocalMappingCursor(), codeGen);
-   cursor = generateMemSrc1Instruction(cg(), ARMOp_ldr, lastNode, stackSlot, machine->getRealRegister(TR::RealRegister::gr14), cursor);
+   cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::ARMOp_ldr, lastNode, stackSlot, machine->getRealRegister(TR::RealRegister::gr14), cursor);
 
    // restore all preserved registers
    for (int r = TR::RealRegister::gr4; r <= TR::RealRegister::gr11; ++r)
       {
       auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, (TR::RealRegister::gr11 - r + 1)*4 + bodySymbol->getLocalMappingCursor(), codeGen);
-      cursor = generateMemSrc1Instruction(cg(), ARMOp_ldr, lastNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)r), cursor);
+      cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::ARMOp_ldr, lastNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)r), cursor);
       }
 
    // remove space for preserved registers
    auto frameSize = codeGen->getFrameSizeInBytes();
-   cursor = generateTrg1Src1ImmInstruction(codeGen, ARMOp_add, lastNode, stackPtr, stackPtr, frameSize, 0, cursor);
+   cursor = generateTrg1Src1ImmInstruction(codeGen, TR::InstOpCode::ARMOp_add, lastNode, stackPtr, stackPtr, frameSize, 0, cursor);
 
    // return using `mov r15, r14`
    TR::RealRegister *gr14 = machine->getRealRegister(TR::RealRegister::gr14);
    TR::RealRegister *gr15 = machine->getRealRegister(TR::RealRegister::gr15);
-   cursor = generateTrg1Src1Instruction(codeGen, ARMOp_mov, lastNode, gr15, gr14, cursor);
+   cursor = generateTrg1Src1Instruction(codeGen, TR::InstOpCode::ARMOp_mov, lastNode, gr15, gr14, cursor);
    }
 
 TR::MemoryReference *TR::ARMSystemLinkage::getOutgoingArgumentMemRef(int32_t               totalSize,

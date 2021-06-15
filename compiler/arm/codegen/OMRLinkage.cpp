@@ -123,7 +123,7 @@ TR::Instruction *OMR::ARM::Linkage::saveArguments(TR::Instruction *cursor)
                if (hasToBeOnStack)
                   {
                   argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-                  cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
+                  cursor = generateMemSrc1Instruction(codeGen, TR::InstOpCode::ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
                   }
                numIntArgs++;
                break;
@@ -133,11 +133,11 @@ TR::Instruction *OMR::ARM::Linkage::saveArguments(TR::Instruction *cursor)
             	if (hasToBeOnStack)
                   {
                   argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-                  cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
+                  cursor = generateMemSrc1Instruction(codeGen, TR::InstOpCode::ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
                   if (numIntArgs < properties.getNumIntArgRegs()-1)
                      {
                      argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs+1));
-                     cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset+4, codeGen), argRegister, cursor);
+                     cursor = generateMemSrc1Instruction(codeGen, TR::InstOpCode::ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset+4, codeGen), argRegister, cursor);
                      }
                   }
                numIntArgs += 2;
@@ -177,7 +177,7 @@ TR::Instruction *OMR::ARM::Linkage::loadUpArguments(TR::Instruction *cursor)
                 numIntArgs<properties.getNumIntArgRegs())
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-               cursor = generateTrg1MemInstruction(codeGen, ARMOp_ldr, firstNode, argRegister, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), cursor);
+               cursor = generateTrg1MemInstruction(codeGen, TR::InstOpCode::ARMOp_ldr, firstNode, argRegister, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), cursor);
                }
             numIntArgs++;
             break;
@@ -185,7 +185,7 @@ TR::Instruction *OMR::ARM::Linkage::loadUpArguments(TR::Instruction *cursor)
              if (numIntArgs<properties.getNumIntArgRegs())
                 {
                 argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-                cursor = generateTrg1MemInstruction(codeGen, ARMOp_ldr, firstNode, argRegister, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), cursor);
+                cursor = generateTrg1MemInstruction(codeGen, TR::InstOpCode::ARMOp_ldr, firstNode, argRegister, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), cursor);
                 }
              numIntArgs++;
             break;
@@ -196,11 +196,11 @@ TR::Instruction *OMR::ARM::Linkage::loadUpArguments(TR::Instruction *cursor)
                 numIntArgs<properties.getNumIntArgRegs())
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-               cursor = generateTrg1MemInstruction(codeGen, ARMOp_ldr, firstNode, argRegister, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), cursor);
+               cursor = generateTrg1MemInstruction(codeGen, TR::InstOpCode::ARMOp_ldr, firstNode, argRegister, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), cursor);
                if (numIntArgs < properties.getNumIntArgRegs()-1)
                   {
                   argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs+1));
-                  cursor = generateTrg1MemInstruction(codeGen, ARMOp_ldr, firstNode, argRegister, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset + 4, codeGen), cursor);
+                  cursor = generateTrg1MemInstruction(codeGen, TR::InstOpCode::ARMOp_ldr, firstNode, argRegister, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset + 4, codeGen), cursor);
                   }
                }
             numIntArgs += 2;
@@ -240,7 +240,7 @@ TR::Instruction *OMR::ARM::Linkage::flushArguments(TR::Instruction *cursor)
                 numIntArgs<properties.getNumIntArgRegs())
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-               cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
+               cursor = generateMemSrc1Instruction(codeGen, TR::InstOpCode::ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
                }
             numIntArgs++;
             break;
@@ -248,7 +248,7 @@ TR::Instruction *OMR::ARM::Linkage::flushArguments(TR::Instruction *cursor)
              if (numIntArgs<properties.getNumIntArgRegs())
                 {
                 argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-                cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
+                cursor = generateMemSrc1Instruction(codeGen, TR::InstOpCode::ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
                 }
              numIntArgs++;
             break;
@@ -259,11 +259,11 @@ TR::Instruction *OMR::ARM::Linkage::flushArguments(TR::Instruction *cursor)
                 numIntArgs<properties.getNumIntArgRegs())
                {
                argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs));
-               cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
+               cursor = generateMemSrc1Instruction(codeGen, TR::InstOpCode::ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, codeGen), argRegister, cursor);
                if (numIntArgs < properties.getNumIntArgRegs()-1)
                   {
                   argRegister = machine->getRealRegister(properties.getIntegerArgumentRegister(numIntArgs+1));
-                  cursor = generateMemSrc1Instruction(codeGen, ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset + 4, codeGen), argRegister, cursor);
+                  cursor = generateMemSrc1Instruction(codeGen, TR::InstOpCode::ARMOp_str, firstNode, new (self()->trHeapMemory()) TR::MemoryReference(stackPtr, offset + 4, codeGen), argRegister, cursor);
                   }
                }
             numIntArgs += 2;
@@ -298,9 +298,9 @@ TR::Register *OMR::ARM::Linkage::pushJNIReferenceArg(TR::Node *child)
             pushReg = self()->cg()->allocateRegister();
 
             // pass NULL if ref is NULL, else pass &ref
-            generateTrg1MemInstruction(self()->cg(), ARMOp_ldr, child, pushReg, tempMR);
-            generateSrc1ImmInstruction(self()->cg(), ARMOp_cmp, child, pushReg, 0, 0);
-            TR::Instruction *instr = generateTrg1Src1Instruction(self()->cg(), ARMOp_mov, child, pushReg, addrReg);
+            generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::ARMOp_ldr, child, pushReg, tempMR);
+            generateSrc1ImmInstruction(self()->cg(), TR::InstOpCode::ARMOp_cmp, child, pushReg, 0, 0);
+            TR::Instruction *instr = generateTrg1Src1Instruction(self()->cg(), TR::InstOpCode::ARMOp_mov, child, pushReg, addrReg);
             instr->setConditionCode(ARMConditionCodeNE);
 
             tempMR->decNodeReferenceCounts();
@@ -317,7 +317,7 @@ TR::Register *OMR::ARM::Linkage::pushJNIReferenceArg(TR::Node *child)
          else if (child->pointsToNull())
             {
             pushReg = self()->cg()->allocateRegister();
-            generateTrg1ImmInstruction(self()->cg(), ARMOp_mov, child, pushReg, 0, 0);
+            generateTrg1ImmInstruction(self()->cg(), TR::InstOpCode::ARMOp_mov, child, pushReg, 0, 0);
             self()->cg()->decReferenceCount(child);
             clobberable = true;
             }
@@ -333,13 +333,13 @@ TR::Register *OMR::ARM::Linkage::pushJNIReferenceArg(TR::Node *child)
             generateLabelInstruction(self()->cg(), TR::InstOpCode::label, child, startLabel);
 
             TR::MemoryReference *tempMR = new (self()->trHeapMemory()) TR::MemoryReference(addrReg, 0, self()->cg());
-            generateTrg1MemInstruction(self()->cg(), ARMOp_ldr, child, objReg, tempMR);
+            generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::ARMOp_ldr, child, objReg, tempMR);
 
             if (child->getReferenceCount() > 1)
                {
                // Since this points at a parm or local location, it is non-collectable.
                TR::Register *tempReg = self()->cg()->allocateRegister();
-               generateTrg1Src1Instruction(self()->cg(), ARMOp_mov, child, tempReg, addrReg);
+               generateTrg1Src1Instruction(self()->cg(), TR::InstOpCode::ARMOp_mov, child, tempReg, addrReg);
                pushReg = tempReg;
                }
             else
@@ -348,9 +348,9 @@ TR::Register *OMR::ARM::Linkage::pushJNIReferenceArg(TR::Node *child)
                }
             clobberable = true;
 
-            generateSrc1ImmInstruction(self()->cg(), ARMOp_cmp, child, objReg, 0, 0);
+            generateSrc1ImmInstruction(self()->cg(), TR::InstOpCode::ARMOp_cmp, child, objReg, 0, 0);
             generateConditionalBranchInstruction(self()->cg(), child, ARMConditionCodeNE, doneLabel);
-            generateTrg1ImmInstruction(self()->cg(), ARMOp_mov, child, pushReg, 0, 0);
+            generateTrg1ImmInstruction(self()->cg(), TR::InstOpCode::ARMOp_mov, child, pushReg, 0, 0);
 
             TR::RegisterDependencyConditions *deps = new (self()->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, self()->trMemory());
             TR::addDependency(deps, pushReg, TR::RealRegister::NoReg, TR_GPR, self()->cg());
@@ -372,7 +372,7 @@ TR::Register *OMR::ARM::Linkage::pushJNIReferenceArg(TR::Node *child)
          pushReg->containsCollectedReference() ? self()->cg()->allocateCollectedReferenceRegister()
                                                : self()->cg()->allocateRegister();
 
-      generateTrg1Src1Instruction(self()->cg(), ARMOp_mov, child, tempReg, pushReg);
+      generateTrg1Src1Instruction(self()->cg(), TR::InstOpCode::ARMOp_mov, child, tempReg, pushReg);
       pushReg = tempReg;
       }
 
@@ -668,7 +668,7 @@ printf("%s: numIntegerArgs %d numMemArgs %d\n", sig,  numIntegerArgs, numMemArgs
                TR::Register *tempReg = self()->cg()->allocateRegister();
                reg = self()->pushFloatArg(child);
                /* Passing a float argument in an integer register.*/
-               generateTrg1Src1Instruction(self()->cg(), ARMOp_fmrs, callNode, tempReg, reg);
+               generateTrg1Src1Instruction(self()->cg(), TR::InstOpCode::ARMOp_fmrs, callNode, tempReg, reg);
                reg = tempReg;
                }
 #endif
@@ -701,7 +701,7 @@ printf("%s: numIntegerArgs %d numMemArgs %d\n", sig,  numIntegerArgs, numMemArgs
                         tempReg = self()->cg()->allocateCollectedReferenceRegister();
                      else
                         tempReg = self()->cg()->allocateRegister();
-                     generateTrg1Src1Instruction(self()->cg(), ARMOp_mov, child, tempReg, reg);
+                     generateTrg1Src1Instruction(self()->cg(), TR::InstOpCode::ARMOp_mov, child, tempReg, reg);
                      reg = tempReg;
                      }
                   if (numIntegerArgs == 0 /* &&
@@ -739,7 +739,7 @@ printf("%s: numIntegerArgs %d numMemArgs %d\n", sig,  numIntegerArgs, numMemArgs
 #ifdef DEBUG_ARM_LINKAGE
 printf("pushing 32-bit arg %d %d %d %d\n", numIntegerArgs, memArg, totalSize, argSize); fflush(stdout);
 #endif
-                  tempMR = self()->getOutgoingArgumentMemRef(totalSize, argSize, reg, ARMOp_str, pushToMemory[memArg++]);
+                  tempMR = self()->getOutgoingArgumentMemRef(totalSize, argSize, reg, TR::InstOpCode::ARMOp_str, pushToMemory[memArg++]);
                   }
                numIntegerArgs++;
                argSize += 4;
@@ -754,7 +754,7 @@ printf("pushing 32-bit arg %d %d %d %d\n", numIntegerArgs, memArg, totalSize, ar
                TR::Register *lowReg  = self()->cg()->allocateRegister();
                TR::Register *highReg = self()->cg()->allocateRegister();
                TR::RegisterPair *tempReg = self()->cg()->allocateRegisterPair(lowReg, highReg);
-               generateTrg2Src1Instruction(self()->cg(), ARMOp_fmrrd, callNode, lowReg, highReg, reg);
+               generateTrg2Src1Instruction(self()->cg(), TR::InstOpCode::ARMOp_fmrrd, callNode, lowReg, highReg, reg);
                reg = tempReg;
                }
             else
@@ -791,12 +791,12 @@ printf("pushing 32-bit arg %d %d %d %d\n", numIntegerArgs, memArg, totalSize, ar
 
                      if (bigEndian)
                         {
-                        generateTrg1Src1Instruction(self()->cg(), ARMOp_mov, child, tempReg, reg->getRegisterPair()->getHighOrder());
+                        generateTrg1Src1Instruction(self()->cg(), TR::InstOpCode::ARMOp_mov, child, tempReg, reg->getRegisterPair()->getHighOrder());
                         reg = self()->cg()->allocateRegisterPair(reg->getRegisterPair()->getLowOrder(), tempReg);
                         }
                      else
                         {
-                        generateTrg1Src1Instruction(self()->cg(), ARMOp_mov, child, tempReg, reg->getRegisterPair()->getLowOrder());
+                        generateTrg1Src1Instruction(self()->cg(), TR::InstOpCode::ARMOp_mov, child, tempReg, reg->getRegisterPair()->getLowOrder());
                         reg = self()->cg()->allocateRegisterPair(tempReg, reg->getRegisterPair()->getHighOrder());
                         }
                      }
@@ -818,12 +818,12 @@ printf("pushing 32-bit arg %d %d %d %d\n", numIntegerArgs, memArg, totalSize, ar
                         tempReg = self()->cg()->allocateRegister();
                         if (bigEndian)
                            {
-                           generateTrg1Src1Instruction(self()->cg(), ARMOp_mov, child, tempReg, reg->getRegisterPair()->getLowOrder());
+                           generateTrg1Src1Instruction(self()->cg(), TR::InstOpCode::ARMOp_mov, child, tempReg, reg->getRegisterPair()->getLowOrder());
                            reg->getRegisterPair()->setLowOrder(tempReg, self()->cg());
                            }
                         else
                            {
-                           generateTrg1Src1Instruction(self()->cg(), ARMOp_mov, child, tempReg, reg->getRegisterPair()->getHighOrder());
+                           generateTrg1Src1Instruction(self()->cg(), TR::InstOpCode::ARMOp_mov, child, tempReg, reg->getRegisterPair()->getHighOrder());
                            reg->getRegisterPair()->setHighOrder(tempReg, self()->cg());
                            }
                         }
@@ -835,7 +835,7 @@ printf("pushing 32-bit arg %d %d %d %d\n", numIntegerArgs, memArg, totalSize, ar
 #ifdef DEBUG_ARM_LINKAGE
 printf("pushing %s word of 64-bit arg %d %d %d %d\n", bigEndian ? "low" : "high", numIntegerArgs, memArg, totalSize, argSize); fflush(stdout);
 #endif
-                     tempMR = self()->getOutgoingArgumentMemRef(totalSize, argSize, bigEndian ? reg->getRegisterPair()->getLowOrder() : reg->getRegisterPair()->getHighOrder(), ARMOp_str, pushToMemory[memArg++]);
+                     tempMR = self()->getOutgoingArgumentMemRef(totalSize, argSize, bigEndian ? reg->getRegisterPair()->getLowOrder() : reg->getRegisterPair()->getHighOrder(), TR::InstOpCode::ARMOp_str, pushToMemory[memArg++]);
                      }
                   }
                else
@@ -843,8 +843,8 @@ printf("pushing %s word of 64-bit arg %d %d %d %d\n", bigEndian ? "low" : "high"
 #ifdef DEBUG_ARM_LINKAGE
 printf("pushing 64-bit arg %d %d %d %d\n", numIntegerArgs, memArg, totalSize, argSize); fflush(stdout);
 #endif
-                  tempMR = self()->getOutgoingArgumentMemRef(totalSize, argSize, bigEndian ? reg->getRegisterPair()->getLowOrder() : reg->getRegisterPair()->getHighOrder(), ARMOp_str, pushToMemory[memArg++]);
-                  tempMR = self()->getOutgoingArgumentMemRef(totalSize, argSize + 4, bigEndian ? reg->getRegisterPair()->getHighOrder() : reg->getRegisterPair()->getLowOrder(), ARMOp_str, pushToMemory[memArg++]);
+                  tempMR = self()->getOutgoingArgumentMemRef(totalSize, argSize, bigEndian ? reg->getRegisterPair()->getLowOrder() : reg->getRegisterPair()->getHighOrder(), TR::InstOpCode::ARMOp_str, pushToMemory[memArg++]);
+                  tempMR = self()->getOutgoingArgumentMemRef(totalSize, argSize + 4, bigEndian ? reg->getRegisterPair()->getHighOrder() : reg->getRegisterPair()->getLowOrder(), TR::InstOpCode::ARMOp_str, pushToMemory[memArg++]);
                   }
                numIntegerArgs += 2;
                argSize += 8;
@@ -868,7 +868,7 @@ printf("pushing 64-bit arg %d %d %d %d\n", numIntegerArgs, memArg, totalSize, ar
                }
             else
                {
-               tempMR = getOutgoingArgumentMemRef(totalSize - argSize, reg, ARMOp_stfs, pushToMemory[memArg++]);
+               tempMR = getOutgoingArgumentMemRef(totalSize - argSize, reg, TR::InstOpCode::ARMOp_stfs, pushToMemory[memArg++]);
                }
             numFloatArgs++;
 #endif
@@ -890,7 +890,7 @@ printf("pushing 64-bit arg %d %d %d %d\n", numIntegerArgs, memArg, totalSize, ar
                }
             else
                {
-               tempMR = getOutgoingArgumentMemRef(totalSize - argSize, reg, ARMOp_stfd, pushToMemory[memArg++]);
+               tempMR = getOutgoingArgumentMemRef(totalSize - argSize, reg, TR::InstOpCode::ARMOp_stfd, pushToMemory[memArg++]);
                }
             numFloatArgs++;
 #endif
@@ -1031,7 +1031,7 @@ TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNod
         (!callSymRef->isUnresolved() && !callSymbol->isInterpreted() && ((self()->comp()->compileRelocatableCode() && callSymbol->isHelper()) || !self()->comp()->compileRelocatableCode()))))
       {
       gcPoint = generateImmSymInstruction(codeGen,
-                                          ARMOp_bl,
+                                          TR::InstOpCode::ARMOp_bl,
                                           callNode,
                                           isMyself ? 0 : (uintptr_t)callSymbol->getMethodAddress(),
                                           dependencies,
@@ -1054,7 +1054,7 @@ TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNod
 
       codeGen->addSnippet(snippet);
       gcPoint = generateImmSymInstruction(codeGen,
-                                          ARMOp_bl,
+                                          TR::InstOpCode::ARMOp_bl,
                                           callNode,
                                           0,
                                           dependencies,
@@ -1080,7 +1080,7 @@ TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNod
          if (resType.isFloatingPoint())
             {
             TR::Register *tempReg = codeGen->allocateSinglePrecisionRegister();
-            TR::Instruction *cursor = generateTrg1Src1Instruction(codeGen, ARMOp_fmsr, callNode, tempReg, returnRegister);
+            TR::Instruction *cursor = generateTrg1Src1Instruction(codeGen, TR::InstOpCode::ARMOp_fmsr, callNode, tempReg, returnRegister);
             returnRegister = tempReg;
             }
          break;
@@ -1097,7 +1097,7 @@ TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNod
          if (resType.isDouble())
             {
             TR::Register *tempReg = codeGen->allocateRegister(TR_FPR);
-            TR::Instruction *cursor = generateTrg1Src2Instruction(codeGen, ARMOp_fmdrr, callNode, tempReg, lowReg, highReg);
+            TR::Instruction *cursor = generateTrg1Src2Instruction(codeGen, TR::InstOpCode::ARMOp_fmdrr, callNode, tempReg, lowReg, highReg);
             returnRegister = tempReg;
             }
          break;

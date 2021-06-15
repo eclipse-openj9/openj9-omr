@@ -54,12 +54,12 @@ void TR_ARMOutOfLineCodeSection::generateARMOutOfLineCodeSectionDispatch()
    if (_targetReg)
       {
       TR_ASSERT(resultReg, "assertion failure");
-      generateTrg1Src1Instruction(_cg, ARMOp_mov, _callNode, _targetReg, resultReg);
+      generateTrg1Src1Instruction(_cg, TR::InstOpCode::ARMOp_mov, _callNode, _targetReg, resultReg);
       }
    _cg->decReferenceCount(_callNode);
 
    if (_restartLabel)
-      generateLabelInstruction(_cg, ARMOp_b, _callNode, _restartLabel);
+      generateLabelInstruction(_cg, TR::InstOpCode::ARMOp_b, _callNode, _restartLabel);
 
    generateLabelInstruction(_cg, TR::InstOpCode::label, _callNode, generateLabelSymbol(_cg));
 

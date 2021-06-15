@@ -56,7 +56,7 @@ void TR_ARMSubtractAnalyser::integerSubtractAnalyser(TR::Node       *root,
       TR::Register *thirdReg = root->setRegister(cg()->allocateRegister());
       if (getSubReg3Reg2())
          {
-         new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(ARMOp_sub, root, thirdReg, secondRegister, firstRegister, cg());
+         new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(TR::InstOpCode::ARMOp_sub, root, thirdReg, secondRegister, firstRegister, cg());
          }
       else // assert getSubReg3Mem2() == true
          {
@@ -68,7 +68,7 @@ void TR_ARMSubtractAnalyser::integerSubtractAnalyser(TR::Node       *root,
       }
    else if (getSubReg1Reg2())
       {
-      new (cg()->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_sub, root, firstRegister, secondRegister, cg());
+      new (cg()->trHeapMemory()) TR::ARMTrg1Src1Instruction(TR::InstOpCode::ARMOp_sub, root, firstRegister, secondRegister, cg());
       root->setRegister(firstRegister);
       }
    else // assert getSubReg1Mem2() == true
@@ -113,11 +113,11 @@ void TR_ARMSubtractAnalyser::longSubtractAnalyser(TR::Node *root)
       TR::Register     *highThird = cg()->allocateRegister();
       TR::RegisterPair *thirdReg  = cg()->allocateRegisterPair(lowThird, highThird);
       root->setRegister(thirdReg);
-      new (cg()->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_mov, root, lowThird, firstRegister->getLowOrder(), cg());
-      new (cg()->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_mov, root, highThird, firstRegister->getHighOrder(), cg());
+      new (cg()->trHeapMemory()) TR::ARMTrg1Src1Instruction(TR::InstOpCode::ARMOp_mov, root, lowThird, firstRegister->getLowOrder(), cg());
+      new (cg()->trHeapMemory()) TR::ARMTrg1Src1Instruction(TR::InstOpCode::ARMOp_mov, root, highThird, firstRegister->getHighOrder(), cg());
       if (getSubReg3Reg2())
          {
-         new (cg()->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_sub, root, lowThird, secondRegister->getLowOrder(), cg());
+         new (cg()->trHeapMemory()) TR::ARMTrg1Src1Instruction(TR::InstOpCode::ARMOp_sub, root, lowThird, secondRegister->getLowOrder(), cg());
 //         new (cg()->trHeapMemory()) TR::ARMTrg1Src1Instruction(SBB4RegReg, root, highThird, secondRegister->getHighOrder(), cg());
          }
       else // assert getSubReg3Mem2() == true

@@ -64,12 +64,12 @@ TR::Register *OMR::ARM::TreeEvaluator::gotoEvaluator(TR::Node *node, TR::CodeGen
       {
       TR::Node *child = node->getFirstChild();
       cg->evaluate(child);
-      generateLabelInstruction(cg, ARMOp_b, node, gotoLabel, generateRegisterDependencyConditions(cg, child, 0));
+      generateLabelInstruction(cg, TR::InstOpCode::ARMOp_b, node, gotoLabel, generateRegisterDependencyConditions(cg, child, 0));
       child->decReferenceCount();
       }
    else
       {
-      generateLabelInstruction(cg, ARMOp_b, node, gotoLabel);
+      generateLabelInstruction(cg, TR::InstOpCode::ARMOp_b, node, gotoLabel);
       }
    return NULL;
    }
@@ -163,12 +163,12 @@ static TR::Instruction *compareIntsForOrder(TR_ARMConditionCode  branchType,
       negated = cmpValue < 0 && cmpValue != 0x80000000; //the negative of the maximum negative int is itself so can not use cmn here
       if(constantIsImmed8r(negated ? -cmpValue : cmpValue, &base, &rotate))
          {
-         generateSrc1ImmInstruction(cg, negated ?  ARMOp_cmn : ARMOp_cmp, node, src1Reg, base, rotate);
+         generateSrc1ImmInstruction(cg, negated ?  TR::InstOpCode::ARMOp_cmn : TR::InstOpCode::ARMOp_cmp, node, src1Reg, base, rotate);
          foundConst = true;
          }
       }
    if(!foundConst)
-      generateSrc2Instruction(cg, ARMOp_cmp, node, src1Reg, cg->evaluate(secondChild));
+      generateSrc2Instruction(cg, TR::InstOpCode::ARMOp_cmp, node, src1Reg, cg->evaluate(secondChild));
 
    TR::RegisterDependencyConditions *deps = NULL;
    if (node->getNumChildren() == 3)
@@ -191,7 +191,7 @@ static TR::Instruction *compareIntsForOrder(TR_ARMConditionCode  branchType,
       }
    else
       {
-      result = generateImmSymInstruction(cg, ARMOp_bl, node, (uintptr_t)sr->getMethodAddress(), deps, sr, NULL, NULL, branchType);
+      result = generateImmSymInstruction(cg, TR::InstOpCode::ARMOp_bl, node, (uintptr_t)sr->getMethodAddress(), deps, sr, NULL, NULL, branchType);
       cg->machine()->setLinkRegisterKilled(true);
       }
 
@@ -270,12 +270,12 @@ TR::Instruction *OMR::ARM::TreeEvaluator::compareIntsForEquality(TR_ARMCondition
       negated = cmpValue < 0 && cmpValue != 0x80000000; //the negative of the maximum negative int is itself so can not use cmn here
       if(constantIsImmed8r(negated ? -cmpValue : cmpValue, &base, &rotate))
          {
-         generateSrc1ImmInstruction(cg, negated ?  ARMOp_cmn : ARMOp_cmp, node, src1Reg, base, rotate);
+         generateSrc1ImmInstruction(cg, negated ?  TR::InstOpCode::ARMOp_cmn : TR::InstOpCode::ARMOp_cmp, node, src1Reg, base, rotate);
          foundConst = true;
          }
       }
    if(!foundConst)
-      generateSrc2Instruction(cg, ARMOp_cmp, node, src1Reg, cg->evaluate(secondChild));
+      generateSrc2Instruction(cg, TR::InstOpCode::ARMOp_cmp, node, src1Reg, cg->evaluate(secondChild));
 
    TR::RegisterDependencyConditions *deps = NULL;
    if (node->getNumChildren() == 3)
@@ -298,7 +298,7 @@ TR::Instruction *OMR::ARM::TreeEvaluator::compareIntsForEquality(TR_ARMCondition
       }
    else
       {
-      result = generateImmSymInstruction(cg, ARMOp_bl, node, (uintptr_t)sr->getMethodAddress(), deps, sr, NULL, NULL, branchType);
+      result = generateImmSymInstruction(cg, TR::InstOpCode::ARMOp_bl, node, (uintptr_t)sr->getMethodAddress(), deps, sr, NULL, NULL, branchType);
       cg->machine()->setLinkRegisterKilled(true);
       }
 
@@ -473,8 +473,8 @@ TR::Register *OMR::ARM::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, TR::Cod
    //                         failed, we're done
    // bne <label>
 
-   cursor = generateSrc2Instruction(cg, ARMOp_cmp, node, src1Reg->getHighOrder(), src2Reg->getHighOrder());
-   cursor = generateSrc2Instruction(cg, ARMOp_cmp, node, src1Reg->getLowOrder(), src2Reg->getLowOrder());
+   cursor = generateSrc2Instruction(cg, TR::InstOpCode::ARMOp_cmp, node, src1Reg->getHighOrder(), src2Reg->getHighOrder());
+   cursor = generateSrc2Instruction(cg, TR::InstOpCode::ARMOp_cmp, node, src1Reg->getLowOrder(), src2Reg->getLowOrder());
    cursor->setConditionCode(ARMConditionCodeEQ);  // make the second instruction conditional
    cursor = generateConditionalBranchInstruction(cg, node, condition, destinationLabel, deps);
 
@@ -505,7 +505,7 @@ static TR::Register *compareLongAndSetOrderedBoolean(TR_ARMConditionCode branchO
    if (true)
       {
       TR::Register   *src2Reg = cg->evaluate(secondChild);
-      TR::ARMControlFlowInstruction *cfop = generateControlFlowInstruction(cg, ARMOp_setblong, node, deps);
+      TR::ARMControlFlowInstruction *cfop = generateControlFlowInstruction(cg, TR::InstOpCode::ARMOp_setblong, node, deps);
       cfop->addTargetRegister(trgReg);
       cfop->addTargetRegister(tempReg);
       cfop->addSourceRegister(src1Reg->getLowOrder());
@@ -544,7 +544,7 @@ static TR::Register *compareLongsForOrder(TR_ARMConditionCode branchOp, TR::Node
    TR::Register *src2Reg = cg->evaluate(secondChild);
    if (disableOOLForLongCompares)
       {
-      TR::ARMControlFlowInstruction *cfop = generateControlFlowInstruction(cg, ARMOp_iflong, node, deps);
+      TR::ARMControlFlowInstruction *cfop = generateControlFlowInstruction(cg, TR::InstOpCode::ARMOp_iflong, node, deps);
       cfop->addSourceRegister(src1Reg->getHighOrder());
       cfop->addSourceRegister(src1Reg->getLowOrder());
       cfop->addSourceRegister(src2Reg->getHighOrder());
@@ -563,7 +563,7 @@ static TR::Register *compareLongsForOrder(TR_ARMConditionCode branchOp, TR::Node
       TR_Debug *debugObj = cg->getDebug();
       int isGT = (branchOp == ARMConditionCodeGT);
 
-      TR::Instruction *cursor = generateSrc2Instruction(cg, ARMOp_cmp, node, src1Reg->getHighOrder(), src2Reg->getHighOrder());
+      TR::Instruction *cursor = generateSrc2Instruction(cg, TR::InstOpCode::ARMOp_cmp, node, src1Reg->getHighOrder(), src2Reg->getHighOrder());
       cursor = generateConditionalBranchInstruction(cg, node, isGT ? ARMConditionCodeLE : ARMConditionCodeGE, startOOLLabel, deps, cursor);
       if (debugObj)
          debugObj->addInstructionComment(cursor, "Branch to OOL iflong sequence");
@@ -572,7 +572,7 @@ static TR::Register *compareLongsForOrder(TR_ARMConditionCode branchOp, TR::Node
       cg->getARMOutOfLineCodeSectionList().add(outlinedSlowPath);
 
       // Hot path
-      cursor = generateTrg1ImmInstruction(cg, ARMOp_mov, node, tempReg, 1, 0, cursor); // Setting tempReg to 1
+      cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::ARMOp_mov, node, tempReg, 1, 0, cursor); // Setting tempReg to 1
 
       // Start OOL
       // The compare result has to be live until the end of the last instruction in the mainline, so put it as a dependency
@@ -601,13 +601,13 @@ static TR::Register *compareLongsForOrder(TR_ARMConditionCode branchOp, TR::Node
       cursorOOL->setLiveLocals(OOLBranchInstr->getLiveLocals());
       cursorOOL->setLiveMonitors(OOLBranchInstr->getLiveMonitors());
 
-      cursorOOL = generateTrg1ImmInstruction(cg, ARMOp_mov, node, tempReg, 0, 0, cursorOOL); // Setting tempReg to 0
+      cursorOOL = generateTrg1ImmInstruction(cg, TR::InstOpCode::ARMOp_mov, node, tempReg, 0, 0, cursorOOL); // Setting tempReg to 0
       cursorOOL = generateConditionalBranchInstruction(cg, node, isGT ? ARMConditionCodeLT : ARMConditionCodeGT, returnLabel, cursorOOL);
-      cursorOOL = generateSrc2Instruction(cg, ARMOp_cmp, node, src1Reg->getLowOrder(), src2Reg->getLowOrder(), cursorOOL);
-      cursorOOL = generateTrg1ImmInstruction(cg, ARMOp_mov, node, tempReg, 1, 0, cursorOOL); // Setting tempReg to 1
+      cursorOOL = generateSrc2Instruction(cg, TR::InstOpCode::ARMOp_cmp, node, src1Reg->getLowOrder(), src2Reg->getLowOrder(), cursorOOL);
+      cursorOOL = generateTrg1ImmInstruction(cg, TR::InstOpCode::ARMOp_mov, node, tempReg, 1, 0, cursorOOL); // Setting tempReg to 1
       cursorOOL->setConditionCode(isGT ? ARMConditionCodeHI: ARMConditionCodeLS);
       cursorOOL = generateLabelInstruction(cg, TR::InstOpCode::label, node, returnLabel, oolDeps, cursorOOL); // Need deps 3/21 change
-      cursorOOL = generateLabelInstruction(cg, ARMOp_b, node, doneOOLLabel, cursorOOL);
+      cursorOOL = generateLabelInstruction(cg, TR::InstOpCode::ARMOp_b, node, doneOOLLabel, cursorOOL);
       if (debugObj)
          debugObj->addInstructionComment(cursorOOL, "Denotes end of OOL iflong sequence: return to mainline");
       outlinedSlowPath->swapInstructionListsWithCompilation(); // Done with OOL code
@@ -617,7 +617,7 @@ static TR::Register *compareLongsForOrder(TR_ARMConditionCode branchOp, TR::Node
          debugObj->addInstructionComment(cursor, "OOL iflong code return label");
 
       // Test result and branch
-      cursor = generateSrc1ImmInstruction(cg, ARMOp_tst, node, tempReg, 1, 0, cursor);
+      cursor = generateSrc1ImmInstruction(cg, TR::InstOpCode::ARMOp_tst, node, tempReg, 1, 0, cursor);
       cursor = generateConditionalBranchInstruction(cg, node, ARMConditionCodeNE, destinationLabel, deps, cursor);
       cg->stopUsingRegister(tempReg);
       }
@@ -645,8 +645,8 @@ TR::Register *OMR::ARM::TreeEvaluator::iflcmpltEvaluator(TR::Node *node, TR::Cod
       thirdChild->decReferenceCount();
       }
 
-   generateTrg1Src2Instruction(cg, ARMOp_sub_r, node, tempReg, src1Reg->getLowOrder(), src2Reg->getLowOrder());
-   generateTrg1Src2Instruction(cg, ARMOp_sbc_r, node, tempReg, src1Reg->getHighOrder(), src2Reg->getHighOrder());
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::ARMOp_sub_r, node, tempReg, src1Reg->getLowOrder(), src2Reg->getLowOrder());
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::ARMOp_sbc_r, node, tempReg, src1Reg->getHighOrder(), src2Reg->getHighOrder());
    generateConditionalBranchInstruction(cg, node, ARMConditionCodeLT, destinationLabel, deps);
 
    firstChild->decReferenceCount();
@@ -673,8 +673,8 @@ TR::Register *OMR::ARM::TreeEvaluator::iflcmpgeEvaluator(TR::Node *node, TR::Cod
       thirdChild->decReferenceCount();
       }
 
-   generateTrg1Src2Instruction(cg, ARMOp_sub_r, node, tempReg, src1Reg->getLowOrder(), src2Reg->getLowOrder());
-   generateTrg1Src2Instruction(cg, ARMOp_sbc_r, node, tempReg, src1Reg->getHighOrder(), src2Reg->getHighOrder());
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::ARMOp_sub_r, node, tempReg, src1Reg->getLowOrder(), src2Reg->getLowOrder());
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::ARMOp_sbc_r, node, tempReg, src1Reg->getHighOrder(), src2Reg->getHighOrder());
    generateConditionalBranchInstruction(cg, node, ARMConditionCodeGE, destinationLabel, deps);
 
    firstChild->decReferenceCount();
@@ -701,8 +701,8 @@ TR::Register *OMR::ARM::TreeEvaluator::iflucmpltEvaluator(TR::Node *node, TR::Co
       thirdChild->decReferenceCount();
       }
 
-   generateTrg1Src2Instruction(cg, ARMOp_sub_r, node, tempReg, src1Reg->getLowOrder(), src2Reg->getLowOrder());
-   generateTrg1Src2Instruction(cg, ARMOp_sbc_r, node, tempReg, src1Reg->getHighOrder(), src2Reg->getHighOrder());
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::ARMOp_sub_r, node, tempReg, src1Reg->getLowOrder(), src2Reg->getLowOrder());
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::ARMOp_sbc_r, node, tempReg, src1Reg->getHighOrder(), src2Reg->getHighOrder());
    generateConditionalBranchInstruction(cg, node, ARMConditionCodeCC, destinationLabel, deps);
 
    firstChild->decReferenceCount();
@@ -729,8 +729,8 @@ TR::Register *OMR::ARM::TreeEvaluator::iflucmpgeEvaluator(TR::Node *node, TR::Co
       thirdChild->decReferenceCount();
       }
 
-   generateTrg1Src2Instruction(cg, ARMOp_sub_r, node, tempReg, src1Reg->getLowOrder(), src2Reg->getLowOrder());
-   generateTrg1Src2Instruction(cg, ARMOp_sbc_r, node, tempReg, src1Reg->getHighOrder(), src2Reg->getHighOrder());
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::ARMOp_sub_r, node, tempReg, src1Reg->getLowOrder(), src2Reg->getLowOrder());
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::ARMOp_sbc_r, node, tempReg, src1Reg->getHighOrder(), src2Reg->getHighOrder());
    generateConditionalBranchInstruction(cg, node, ARMConditionCodeCS, destinationLabel, deps);
 
    firstChild->decReferenceCount();
@@ -782,9 +782,9 @@ static TR::Register *icmpHelper(TR::Node *node, TR_ARMConditionCode cond, TR::Co
 
 // TODO: add back immediate cases
 
-   generateTrg1ImmInstruction(cg, ARMOp_mov, node, trgReg, 0, 0);
-   generateSrc2Instruction(cg, ARMOp_cmp, node, src1Reg, src2Reg);
-   movInstr = generateTrg1ImmInstruction(cg, ARMOp_mov, node, trgReg, 1, 0);
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg, 0, 0);
+   generateSrc2Instruction(cg, TR::InstOpCode::ARMOp_cmp, node, src1Reg, src2Reg);
+   movInstr = generateTrg1ImmInstruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg, 1, 0);
    movInstr->setConditionCode(cond);  // tag previous move as conditional
 
    node->setRegister(trgReg);
@@ -928,7 +928,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeGen
    // can handle registers being alive across basic block boundaries.
    // For now we just generate pessimistic code.
    TR::Register   *src2Reg = cg->evaluate(secondChild);
-   TR::ARMControlFlowInstruction *cfop = generateControlFlowInstruction(cg, ARMOp_lcmp, node, deps);
+   TR::ARMControlFlowInstruction *cfop = generateControlFlowInstruction(cg, TR::InstOpCode::ARMOp_lcmp, node, deps);
    cfop->addTargetRegister(trgReg);
    cfop->addSourceRegister(src1Reg->getLowOrder());
    cfop->addSourceRegister(src1Reg->getHighOrder());
@@ -1107,7 +1107,7 @@ static void lookupScheme1(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
       // it was checked in the caller
       uint32_t base, rotate;
       constantIsImmed8r(caseNode->getCaseConstant(), &base, &rotate);
-      generateSrc1ImmInstruction(cg, ARMOp_cmp, node, selectorReg, base, rotate);
+      generateSrc1ImmInstruction(cg, TR::InstOpCode::ARMOp_cmp, node, selectorReg, base, rotate);
 
       if (unbalanced)
          {
@@ -1134,7 +1134,7 @@ static void lookupScheme1(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
       defaultDeps = defaultDeps->clone(cg, generateRegisterDependencyConditions(cg, defDepsNode, 0));
       }
 
-   generateLabelInstruction(cg, ARMOp_b, node, defaultTargetLabel, defaultDeps);
+   generateLabelInstruction(cg, TR::InstOpCode::ARMOp_b, node, defaultTargetLabel, defaultDeps);
    }
 
 // Note: When the checks and/or lookupScheme implementations are changed with regards to number of used registers (or dependency),
@@ -1165,7 +1165,7 @@ static void lookupScheme2(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
       {
       TR::Node        *caseNode        = node->getChild(i);
       TR::LabelSymbol *caseTargetLabel = caseNode->getBranchDestination()->getNode()->getLabel();
-      generateSrc2Instruction(cg, ARMOp_cmp, node, selectorReg, caseConstReg);
+      generateSrc2Instruction(cg, TR::InstOpCode::ARMOp_cmp, node, selectorReg, caseConstReg);
       if (unbalanced)
          {
          TR::RegisterDependencyConditions *caseDeps = deps;
@@ -1187,7 +1187,7 @@ static void lookupScheme2(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
          uint32_t base, rotate;
          preInt += diff;
          constantIsImmed8r(diff, &base, &rotate);
-         generateTrg1Src1ImmInstruction(cg, ARMOp_add, node, caseConstReg, caseConstReg, base, rotate);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ARMOp_add, node, caseConstReg, caseConstReg, base, rotate);
          }
       }
 
@@ -1199,7 +1199,7 @@ static void lookupScheme2(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
       defaultDeps = defaultDeps->clone(cg, generateRegisterDependencyConditions(cg, defDepsNode, 0));
       }
 
-   generateLabelInstruction(cg, ARMOp_b, node, defaultTargetLabel, defaultDeps);
+   generateLabelInstruction(cg, TR::InstOpCode::ARMOp_b, node, defaultTargetLabel, defaultDeps);
 
    cg->stopUsingRegister(caseConstReg);
    }
@@ -1251,7 +1251,7 @@ static void lookupScheme3(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
       TR::Node        *caseNode        = node->getChild(i);
       TR::LabelSymbol *caseTargetLabel = caseNode->getBranchDestination()->getNode()->getLabel();
 
-      generateSrc2Instruction(cg, ARMOp_cmp, node, selector, dataRegister);
+      generateSrc2Instruction(cg, TR::InstOpCode::ARMOp_cmp, node, selector, dataRegister);
 
       if (unbalanced)
          {
@@ -1283,7 +1283,7 @@ static void lookupScheme3(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
       defaultDeps = defaultDeps->clone(cg, generateRegisterDependencyConditions(cg, defDepsNode, 0));
       }
 
-   generateLabelInstruction(cg, ARMOp_b, node, defaultTargetLabel, defaultDeps);
+   generateLabelInstruction(cg, TR::InstOpCode::ARMOp_b, node, defaultTargetLabel, defaultDeps);
 
    cg->stopUsingRegister(dataRegister);
    cg->stopUsingRegister(addrRegister);
@@ -1323,28 +1323,28 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
 
    armLoadConstant(node, (numberOfEntries-1)<<2, highRegister, cg);
    armLoadConstant(node, address, addrRegister, cg);
-   generateTrg1ImmInstruction(node, cg, ARMOp_mov, lowRegister, 0);
+   generateTrg1ImmInstruction(node, cg, TR::InstOpCode::ARMOp_mov, lowRegister, 0);
    TR::LabelSymbol *backLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
    TR::LabelSymbol *searchLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
    TR::LabelSymbol *biggerLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
    TR::LabelSymbol *linkLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
 
    generateLabelInstruction(node, cg, TR::InstOpCode::label, backLabel);
-   generateTrg1Src2Instruction(node, cg, ARMOp_add, pivotRegister, highRegister, lowRegister);
+   generateTrg1Src2Instruction(node, cg, TR::InstOpCode::ARMOp_add, pivotRegister, highRegister, lowRegister);
    new (cg->trHeapMemory()) TR::ARMTrg1Src1Imm2Instruction(0xfffffffc, 31, pivotRegister, pivotRegister, ARMOp_rlwinm, cg);
    generateTrg1MemInstruction(cg, ARMOp_lwzx, dataRegister, new (cg->trHeapMemory()) TR_ARMMemoryReference(addrRegister, pivotRegister, cg));
    generateTrg1Src2Instruction(node, cg, ARMOp_cmp4, cndRegister, dataRegister, selector);
    generateConditionalBranchInstruction(node, cg, ARMOp_bne, searchLabel, cndRegister);
-   generateLabelInstruction(node, cg, ARMOp_bl, linkLabel);
+   generateLabelInstruction(node, cg, TR::InstOpCode::ARMOp_bl, linkLabel);
    generateLabelInstruction(node, cg, TR::InstOpCode::label, linkLabel);
    new (cg->trHeapMemory()) TR::ARMTrg1Instruction(ARMOp_mflr, dataRegister, cg);
    generateTrg1Src1ImmInstruction(node, cg, ARMOp_addi, pivotRegister, pivotRegister, 20);
-   generateTrg1Src2Instruction(node, cg, ARMOp_add, dataRegister, pivotRegister, dataRegister);
+   generateTrg1Src2Instruction(node, cg, TR::InstOpCode::ARMOp_add, dataRegister, pivotRegister, dataRegister);
    new (cg->trHeapMemory()) TR::ARMSrc1Instruction(ARMOp_mtctr, dataRegister, cg);
    new (cg->trHeapMemory()) TR::Instruction(ARMOp_bctr, cg);
    for (int32_t ii=2; ii<total; ii++)
       {
-      generateLabelInstruction(node, cg, ARMOp_b, node->getChild(ii)->getBranchDestination()->getNode()->getLabel());
+      generateLabelInstruction(node, cg, TR::InstOpCode::ARMOp_b, node->getChild(ii)->getBranchDestination()->getNode()->getLabel());
       dataTable[ii-2] = node->getChild(ii)->getCaseConstant();
       }
    generateLabelInstruction(node, cg, TR::InstOpCode::label, searchLabel);
@@ -1352,13 +1352,13 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
    generateTrg1Src2Instruction(node, cg, ARMOp_cmp4, cndRegister, pivotRegister, highRegister);
    generateConditionalBranchInstruction(node, cg, ARMOp_beq, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), cndRegister);
    generateTrg1Src1ImmInstruction(node, cg, ARMOp_addi, lowRegister, pivotRegister, 4);
-   generateLabelInstruction(node, cg, ARMOp_b, backLabel);
+   generateLabelInstruction(node, cg, TR::InstOpCode::ARMOp_b, backLabel);
 
    generateLabelInstruction(node, cg, TR::InstOpCode::label, biggerLabel);
    generateTrg1Src2Instruction(node, cg, ARMOp_cmp4, cndRegister, pivotRegister, lowRegister);
    generateConditionalBranchInstruction(node, cg, ARMOp_beq, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), cndRegister);
    generateTrg1Src1ImmInstruction(node, cg, ARMOp_addi, highRegister, pivotRegister, -4);
-   new (cg->trHeapMemory()) TR::ARMDepLabelInstruction(ARMOp_b, backLabel, conditions, cg);
+   new (cg->trHeapMemory()) TR::ARMDepLabelInstruction(TR::InstOpCode::ARMOp_b, backLabel, conditions, cg);
    */
    }
 
@@ -1397,7 +1397,7 @@ TR::Register *OMR::ARM::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
       {
       for (i = 0; i < numBranchTableEntries; i++)
          {
-         generateSrc1ImmInstruction(cg, ARMOp_cmp, node, selectorReg, i, 0);
+         generateSrc1ImmInstruction(cg, TR::InstOpCode::ARMOp_cmp, node, selectorReg, i, 0);
          generateConditionalBranchInstruction(cg, node, ARMConditionCodeEQ, node->getChild(2+i)->getBranchDestination()->getNode()->getLabel());
          }
       generateConditionalBranchInstruction(cg, node, ARMConditionCodeAL, secondChild->getBranchDestination()->getNode()->getLabel(), conditions);
@@ -1411,11 +1411,11 @@ TR::Register *OMR::ARM::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
          {
          TR::Register *tempRegister = cg->allocateRegister();
          armLoadConstant(node, numBranchTableEntries, tempRegister, cg);
-         generateSrc2Instruction(cg, ARMOp_cmp, node, selectorReg, tempRegister);
+         generateSrc2Instruction(cg, TR::InstOpCode::ARMOp_cmp, node, selectorReg, tempRegister);
          }
       else
          {
-         generateSrc1ImmInstruction(cg, ARMOp_cmp, node, selectorReg, base, rotate);
+         generateSrc1ImmInstruction(cg, TR::InstOpCode::ARMOp_cmp, node, selectorReg, base, rotate);
          }
       generateConditionalBranchInstruction(cg, node, ARMConditionCodeCS, secondChild->getBranchDestination()->getNode()->getLabel());
 
@@ -1424,14 +1424,14 @@ TR::Register *OMR::ARM::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
       // (B) r15 <- r15 + selector * 4, (r15 is 8 ahead of (B), so the
       // code at (A) decrements selector by 1 to adjust so that the 0th
       // elem is at the right addr.
-      generateTrg1Src1ImmInstruction(cg, ARMOp_sub, node, t1Register, selectorReg, 1, 0);
-      generateTrg1Src2Instruction(cg, ARMOp_add, node, machineIP, machineIP, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, t1Register, 2));
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ARMOp_sub, node, t1Register, selectorReg, 1, 0);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::ARMOp_add, node, machineIP, machineIP, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, t1Register, 2));
 
       for (i = 2; i < total-1; i++)
          {
-         generateLabelInstruction(cg, ARMOp_b, node, node->getChild(i)->getBranchDestination()->getNode()->getLabel());
+         generateLabelInstruction(cg, TR::InstOpCode::ARMOp_b, node, node->getChild(i)->getBranchDestination()->getNode()->getLabel());
          }
-      generateLabelInstruction(cg, ARMOp_b, node, node->getChild(i)->getBranchDestination()->getNode()->getLabel(), conditions);
+      generateLabelInstruction(cg, TR::InstOpCode::ARMOp_b, node, node->getChild(i)->getBranchDestination()->getNode()->getLabel(), conditions);
       }
 
    return NULL;
@@ -1505,7 +1505,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ZEROCHKEvaluator(TR::Node *node, TR::Code
 #endif
       {
       TR::Register *value = cg->evaluate(node->getFirstChild());
-      generateSrc1ImmInstruction(cg, ARMOp_cmp, node, value, 0, 0);
+      generateSrc1ImmInstruction(cg, TR::InstOpCode::ARMOp_cmp, node, value, 0, 0);
       generateConditionalBranchInstruction(cg, node, ARMConditionCodeEQ, slowPathLabel);
 
       cg->decReferenceCount(node->getFirstChild());
@@ -1529,12 +1529,12 @@ TR::Register *OMR::ARM::TreeEvaluator::DIVCHKEvaluator(TR::Node *node, TR::CodeG
       if (dtype.isInt64())
          {
          TR::Register *trgReg = cg->allocateRegister();
-         generateTrg1Src2Instruction(cg, ARMOp_orr, node, trgReg, srcReg->getHighOrder(), srcReg->getLowOrder());
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::ARMOp_orr, node, trgReg, srcReg->getHighOrder(), srcReg->getLowOrder());
          srcReg = trgReg;
          }
-      generateSrc2Instruction(cg, ARMOp_tst, node, srcReg, srcReg);
+      generateSrc2Instruction(cg, TR::InstOpCode::ARMOp_tst, node, srcReg, srcReg);
       TR::SymbolReference *arithmeticException = node->getSymbolReference();
-      TR::Instruction *instr1 = generateImmSymInstruction(cg, ARMOp_bl, node, (uintptr_t)arithmeticException->getMethodAddress(), NULL, arithmeticException, NULL, NULL, ARMConditionCodeEQ);
+      TR::Instruction *instr1 = generateImmSymInstruction(cg, TR::InstOpCode::ARMOp_bl, node, (uintptr_t)arithmeticException->getMethodAddress(), NULL, arithmeticException, NULL, NULL, ARMConditionCodeEQ);
       instr1->ARMNeedsGCMap(0xFFFFFFFF);
       cg->machine()->setLinkRegisterKilled(true);
       }
@@ -1577,7 +1577,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ArrayCopyBNDCHKEvaluator(TR::Node *node, 
          if (firstChild->getInt() < secondChild->getInt())
             {
             // Check will always fail, just jump to the exception handler
-            instr = generateImmSymInstruction(cg, ARMOp_bl, node, (uintptr_t)BNDCHKException->getMethodAddress(), NULL, BNDCHKException, NULL, NULL, ARMConditionCodeAL);
+            instr = generateImmSymInstruction(cg, TR::InstOpCode::ARMOp_bl, node, (uintptr_t)BNDCHKException->getMethodAddress(), NULL, BNDCHKException, NULL, NULL, ARMConditionCodeAL);
             cg->machine()->setLinkRegisterKilled(true);
             }
          else
@@ -1619,7 +1619,7 @@ static void VMoutlinedHelperArrayStoreCHKEvaluator(TR::Node *node, TR::Register 
    TR::addDependency(deps, dstReg, TR::RealRegister::gr0, TR_GPR, cg);
    TR::addDependency(deps, srcReg, TR::RealRegister::gr1, TR_GPR, cg);
 
-   TR::Instruction *gcPoint = generateImmSymInstruction(cg, ARMOp_bl, node, (uintptr_t)arrayStoreChkHelper->getMethodAddress(), deps, arrayStoreChkHelper);
+   TR::Instruction *gcPoint = generateImmSymInstruction(cg, TR::InstOpCode::ARMOp_bl, node, (uintptr_t)arrayStoreChkHelper->getMethodAddress(), deps, arrayStoreChkHelper);
    gcPoint->ARMNeedsGCMap(0xFFFFFFFF);
 
    cg->machine()->setLinkRegisterKilled(true);
@@ -1639,7 +1639,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ArrayStoreCHKEvaluator(TR::Node *node, TR
 
    TR::MemoryReference *storeMR = new (cg->trHeapMemory()) TR::MemoryReference(node->getFirstChild(), TR::Compiler->om.sizeofReferenceAddress(), cg);
 
-   generateMemSrc1Instruction(cg, ARMOp_str, node, storeMR, srcReg);
+   generateMemSrc1Instruction(cg, TR::InstOpCode::ARMOp_str, node, storeMR, srcReg);
 
    if (!srcNode->isNull())
       {
@@ -1701,12 +1701,12 @@ static TR::Register *generateMaxMin(TR::Node *node, TR::CodeGenerator *cg, bool 
          }
       if (two_reg)
          {
-         generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getLowOrder(), reg->getLowOrder());
-         generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getHighOrder(), reg->getHighOrder());
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg->getLowOrder(), reg->getLowOrder());
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg->getHighOrder(), reg->getHighOrder());
          }
       else
          {
-         generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg, reg);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg, reg);
          }
       }
 
@@ -1728,29 +1728,29 @@ static TR::Register *generateMaxMin(TR::Node *node, TR::CodeGenerator *cg, bool 
          TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
 
          // First compare
-         cursor = generateSrc2Instruction(cg, ARMOp_cmp, node, trgReg->getHighOrder(), reg->getHighOrder());
+         cursor = generateSrc2Instruction(cg, TR::InstOpCode::ARMOp_cmp, node, trgReg->getHighOrder(), reg->getHighOrder());
          cursor = generateConditionalBranchInstruction(cg, node, cond, doneLabel, deps, cursor);
 
-         cursor = generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getLowOrder(), reg->getLowOrder(), cursor);
+         cursor = generateTrg1Src1Instruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg->getLowOrder(), reg->getLowOrder(), cursor);
          cursor->setConditionCode(ARMConditionCodeNE);
-         cursor = generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getHighOrder(), reg->getHighOrder(), cursor);
+         cursor = generateTrg1Src1Instruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg->getHighOrder(), reg->getHighOrder(), cursor);
          cursor->setConditionCode(ARMConditionCodeNE);
          cursor = generateConditionalBranchInstruction(cg, node, ARMConditionCodeNE, doneLabel, deps, cursor);
          // Second compare
-         cursor = generateSrc2Instruction(cg, ARMOp_cmp, node, trgReg->getLowOrder(), reg->getLowOrder(), cursor);
-         cursor = generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getLowOrder(), reg->getLowOrder(), cursor);
+         cursor = generateSrc2Instruction(cg, TR::InstOpCode::ARMOp_cmp, node, trgReg->getLowOrder(), reg->getLowOrder(), cursor);
+         cursor = generateTrg1Src1Instruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg->getLowOrder(), reg->getLowOrder(), cursor);
          cursor->setConditionCode(max ? ARMConditionCodeLS: ARMConditionCodeHI);
-         cursor = generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getHighOrder(), reg->getHighOrder(), cursor);
+         cursor = generateTrg1Src1Instruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg->getHighOrder(), reg->getHighOrder(), cursor);
          cursor->setConditionCode(max ? ARMConditionCodeLS: ARMConditionCodeHI);
          // doneLabel
          cursor = generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, deps, cursor);
          }
       else
          {
-         cursor = generateSrc2Instruction(cg, ARMOp_cmp, node, trgReg, reg);
+         cursor = generateSrc2Instruction(cg, TR::InstOpCode::ARMOp_cmp, node, trgReg, reg);
 
          cond = max ? (isUnsigned ? ARMConditionCodeLS : ARMConditionCodeLT) : (isUnsigned ? ARMConditionCodeHI : ARMConditionCodeGT);
-         cursor = generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg, reg, cursor);
+         cursor = generateTrg1Src1Instruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg, reg, cursor);
          cursor->setConditionCode(max ? ARMConditionCodeLT: ARMConditionCodeGT);
          }
       }
@@ -1791,7 +1791,7 @@ TR::Register *OMR::ARM::TreeEvaluator::igotoEvaluator(TR::Node *node, TR::CodeGe
       deps = generateRegisterDependencyConditions(cg, glregdep, 0);
       cg->decReferenceCount(glregdep);
       }
-   TR::Instruction *instr = generateTrg1Src1Instruction(cg, ARMOp_mov, node, gr15, addrReg);
+   TR::Instruction *instr = generateTrg1Src1Instruction(cg, TR::InstOpCode::ARMOp_mov, node, gr15, addrReg);
    cg->decReferenceCount(labelAddr);
    node->setRegister(NULL);
    return NULL;

@@ -117,7 +117,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lconstEvaluator(TR::Node *node, TR::CodeG
    if (constantIsImmed8r(difference, &base, &rotate))
       {
       armLoadConstant(node, lowValue, lowReg, cg);
-      generateTrg1Src1ImmInstruction(cg, ARMOp_add, node, highReg, lowReg, base, rotate);
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ARMOp_add, node, highReg, lowReg, base, rotate);
       }
    else
       {
@@ -134,7 +134,7 @@ TR::Register *OMR::ARM::TreeEvaluator::inegEvaluator(TR::Node *node, TR::CodeGen
    trgReg = cg->allocateRegister(TR_GPR);
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *sourceRegister = cg->evaluate(firstChild);
-   generateTrg1Src1ImmInstruction(cg, ARMOp_rsb, node, trgReg, sourceRegister, 0, 0);
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ARMOp_rsb, node, trgReg, sourceRegister, 0, 0);
    firstChild->decReferenceCount();
    return node->setRegister(trgReg);
    }
@@ -146,8 +146,8 @@ TR::Register *OMR::ARM::TreeEvaluator::lnegEvaluator(TR::Node *node, TR::CodeGen
    TR::Register *highReg = cg->allocateRegister();
    TR::RegisterPair *trgReg = cg->allocateRegisterPair(lowReg, highReg);
    TR::Register *sourceRegister    = cg->evaluate(firstChild);
-   generateTrg1Src1ImmInstruction(cg, ARMOp_rsb_r, node, lowReg, sourceRegister->getLowOrder(), 0, 0);
-   generateTrg1Src1ImmInstruction(cg, ARMOp_rsc, node, highReg, sourceRegister->getHighOrder(), 0, 0);
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ARMOp_rsb_r, node, lowReg, sourceRegister->getLowOrder(), 0, 0);
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ARMOp_rsc, node, highReg, sourceRegister->getHighOrder(), 0, 0);
    node->setRegister(trgReg);
    firstChild->decReferenceCount();
    return trgReg;
@@ -160,10 +160,10 @@ TR::Register *OMR::ARM::TreeEvaluator::iabsEvaluator(TR::Node *node, TR::CodeGen
    TR::Register *srcReg = cg->evaluate(firstChild);
    TR::Instruction *instr1, *instr2;
 
-   generateSrc1ImmInstruction(cg, ARMOp_cmp, node, srcReg, 0, 0);
-   instr1 = generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg, srcReg);
+   generateSrc1ImmInstruction(cg, TR::InstOpCode::ARMOp_cmp, node, srcReg, 0, 0);
+   instr1 = generateTrg1Src1Instruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg, srcReg);
    instr1->setConditionCode(ARMConditionCodeGE);
-   instr2 = generateTrg1Src1ImmInstruction(cg, ARMOp_rsb, node, trgReg, srcReg, 0, 0);
+   instr2 = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ARMOp_rsb, node, trgReg, srcReg, 0, 0);
    instr2->setConditionCode(ARMConditionCodeLT);
 
    node->setRegister(trgReg);
@@ -180,11 +180,11 @@ TR::Register *OMR::ARM::TreeEvaluator::labsEvaluator(TR::Node *node, TR::CodeGen
    TR::Register *srcReg = cg->evaluate(firstChild);
    TR::Register *tmpReg = cg->allocateRegister();
 
-   generateTrg1Src1Instruction(cg, ARMOp_mov, node, tmpReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegASRImmed, srcReg->getHighOrder(), 31));
-   generateTrg1Src2Instruction(cg, ARMOp_eor, node, lowReg, srcReg->getLowOrder(), tmpReg);
-   generateTrg1Src2Instruction(cg, ARMOp_eor, node, highReg, srcReg->getHighOrder(), tmpReg);
-   generateTrg1Src2Instruction(cg, ARMOp_sub_r, node, lowReg, lowReg, tmpReg);
-   generateTrg1Src2Instruction(cg, ARMOp_sbc, node, highReg, highReg, tmpReg);
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::ARMOp_mov, node, tmpReg, new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegASRImmed, srcReg->getHighOrder(), 31));
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::ARMOp_eor, node, lowReg, srcReg->getLowOrder(), tmpReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::ARMOp_eor, node, highReg, srcReg->getHighOrder(), tmpReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::ARMOp_sub_r, node, lowReg, lowReg, tmpReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::ARMOp_sbc, node, highReg, highReg, tmpReg);
    cg->stopUsingRegister(tmpReg);
 
    node->setRegister(trgReg);
@@ -195,19 +195,19 @@ TR::Register *OMR::ARM::TreeEvaluator::labsEvaluator(TR::Node *node, TR::CodeGen
 //also handles i2s,l2s
 TR::Register *OMR::ARM::TreeEvaluator::i2sEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return conversionAnalyser(node, ARMOp_ldrsh, true, 16, cg);
+   return conversionAnalyser(node, TR::InstOpCode::ARMOp_ldrsh, true, 16, cg);
    }
 
 //also handles su2i
 TR::Register *OMR::ARM::TreeEvaluator::i2cEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return conversionAnalyser(node, ARMOp_ldrh, false, 16, cg);
+   return conversionAnalyser(node, TR::InstOpCode::ARMOp_ldrh, false, 16, cg);
    }
 
 //also handles l2b, s2b
 TR::Register *OMR::ARM::TreeEvaluator::i2bEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return conversionAnalyser(node, ARMOp_ldrsb, true, 8, cg);
+   return conversionAnalyser(node, TR::InstOpCode::ARMOp_ldrsb, true, 8, cg);
    }
 
 
@@ -231,7 +231,7 @@ TR::Register *OMR::ARM::TreeEvaluator::b2lEvaluator(TR::Node *node, TR::CodeGene
 
    // TODO: check
    op = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegASRImmed, trgReg->getLowOrder(), 31);
-   generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getHighOrder(), op);
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg->getHighOrder(), op);
    node->setRegister(trgReg);
    child->decReferenceCount();
    return trgReg;
@@ -243,7 +243,7 @@ TR::Register *OMR::ARM::TreeEvaluator::c2lEvaluator(TR::Node *node, TR::CodeGene
    TR::Register *sourceRegister = NULL;
    TR::Register *trgReg = cg->allocateRegisterPair(cg->gprClobberEvaluate(child),
                                                              cg->allocateRegister());
-   generateTrg1ImmInstruction(cg, ARMOp_mov, node, trgReg->getHighOrder(), 0, 0);
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg->getHighOrder(), 0, 0);
    node->setRegister(trgReg);
    return trgReg;
    }
@@ -263,7 +263,7 @@ TR::Register *OMR::ARM::TreeEvaluator::l2iEvaluator(TR::Node *node, TR::CodeGene
       TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 4, cg);
       if (cg->comp()->target().cpu.isBigEndian())
          tempMR->addToOffset(node, 4, cg);
-      generateTrg1MemInstruction(cg, ARMOp_ldr, node, trgReg, tempMR);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::ARMOp_ldr, node, trgReg, tempMR);
       tempMR->decNodeReferenceCounts();
       }
    else
@@ -276,7 +276,7 @@ TR::Register *OMR::ARM::TreeEvaluator::l2iEvaluator(TR::Node *node, TR::CodeGene
       else
          {
          trgReg = cg->allocateRegister();
-         generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg, temp->getLowOrder());
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg, temp->getLowOrder());
          child->decReferenceCount();
          }
       }
@@ -289,7 +289,7 @@ TR::Register *OMR::ARM::TreeEvaluator::iu2lEvaluator(TR::Node *node, TR::CodeGen
    TR::Node *child  = node->getFirstChild();
    TR::Register *sourceRegister = NULL;
    TR::Register *trgReg = cg->allocateRegisterPair(cg->gprClobberEvaluate(child), cg->allocateRegister());
-   generateTrg1ImmInstruction(cg, ARMOp_mov, node, trgReg->getHighOrder(), 0, 0);
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg->getHighOrder(), 0, 0);
    node->setRegister(trgReg);
    child->decReferenceCount();
    return trgReg;
@@ -306,15 +306,15 @@ TR::Register *OMR::ARM::TreeEvaluator::su2lEvaluator(TR::Node *node, TR::CodeGen
        child->getOpCode().isMemoryReference() && (temp == NULL))
       {
       TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(temp, 2, cg);
-      generateTrg1MemInstruction(cg, ARMOp_ldrh, node, trgReg->getLowOrder(), tempMR);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::ARMOp_ldrh, node, trgReg->getLowOrder(), tempMR);
       tempMR->decNodeReferenceCounts();
       }
    else
       {
-      generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getLowOrder(), new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, cg->evaluate(child), 16));
-      generateTrg1Src1Instruction(cg, ARMOp_mov, node, trgReg->getLowOrder(), new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, trgReg->getLowOrder(), 16));
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg->getLowOrder(), new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, cg->evaluate(child), 16));
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg->getLowOrder(), new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, trgReg->getLowOrder(), 16));
       }
-   generateTrg1ImmInstruction(cg, ARMOp_mov, node, trgReg->getHighOrder(), 0, 0);
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg->getHighOrder(), 0, 0);
 
    node->setRegister(trgReg);
    child->decReferenceCount();
@@ -334,13 +334,13 @@ TR::Register *OMR::ARM::TreeEvaluator::bu2iEvaluator(TR::Node *node, TR::CodeGen
        child->getOpCode().isMemoryReference() && (temp == NULL))
       {
       TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(child, 1, cg);
-      generateTrg1MemInstruction(cg, ARMOp_ldrb, node, trgReg, tempMR);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::ARMOp_ldrb, node, trgReg, tempMR);
       tempMR->decNodeReferenceCounts();
       }
    else
       {
       child->decReferenceCount();
-      generateTrg1Src1ImmInstruction(cg, ARMOp_and, node, trgReg, cg->evaluate(child), 0xff, 0);
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ARMOp_and, node, trgReg, cg->evaluate(child), 0xff, 0);
       }
 
    return node->setRegister(trgReg);
@@ -357,14 +357,14 @@ TR::Register *OMR::ARM::TreeEvaluator::bu2lEvaluator(TR::Node *node, TR::CodeGen
        child->getOpCode().isMemoryReference() && (temp == NULL))
       {
       TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(temp, 1, cg);
-      generateTrg1MemInstruction(cg, ARMOp_ldrb, node, trgReg->getLowOrder(), tempMR);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::ARMOp_ldrb, node, trgReg->getLowOrder(), tempMR);
       tempMR->decNodeReferenceCounts();
       }
    else
       {
-      generateTrg1Src1ImmInstruction(cg, ARMOp_and, node, trgReg->getLowOrder(), cg->evaluate(child), 0xff, 0);
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ARMOp_and, node, trgReg->getLowOrder(), cg->evaluate(child), 0xff, 0);
       }
-   generateTrg1ImmInstruction(cg, ARMOp_mov, node, trgReg->getHighOrder(), 0, 0);
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::ARMOp_mov, node, trgReg->getHighOrder(), 0, 0);
 
    node->setRegister(trgReg);
    child->decReferenceCount();

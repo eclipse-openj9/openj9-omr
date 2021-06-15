@@ -136,7 +136,7 @@ static const char * opCodeToVFPMap[] =
 static const char *
 getExtraVFPInstrSpecifiers(TR::InstOpCode *opCode)
    {
-#define FIRST_VFP_INSTR		ARMOp_fabsd
+#define FIRST_VFP_INSTR		TR::InstOpCode::ARMOp_fabsd
 
 #if defined(__ARM_ARCH_7A__) && defined(__VFP_FP__) && !defined(__SOFTFP__)
    uint32_t index = (uint32_t)opCode->getOpCodeValue() - (uint32_t)(FIRST_VFP_INSTR);
@@ -326,7 +326,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMLabelInstruction * instr)
       else if (label->isEndInternalControlFlow())
          trfprintf(pOutFile, " (End of internal control flow)");
       }
-   else if (instr->getOpCodeValue() == ARMOp_b || instr->getOpCodeValue() == ARMOp_bl)
+   else if (instr->getOpCodeValue() == TR::InstOpCode::ARMOp_b || instr->getOpCodeValue() == TR::InstOpCode::ARMOp_bl)
       {
       trfprintf(pOutFile, "%s\t", fullOpCodeName(instr));
       print(pOutFile, label);
@@ -488,7 +488,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMTrg1Src2Instruction * instr)
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s\t", fullOpCodeName(instr));
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
-   if (instr->getOpCodeValue() == ARMOp_fmrs)
+   if (instr->getOpCodeValue() == TR::InstOpCode::ARMOp_fmrs)
       {
       if (instr->getTarget1Register())
          {
@@ -500,7 +500,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMTrg1Src2Instruction * instr)
          print(pOutFile, instr->getSource1Register(), source1Size);
          }
       }
-   else if (instr->getOpCodeValue() == ARMOp_fmsr)
+   else if (instr->getOpCodeValue() == TR::InstOpCode::ARMOp_fmsr)
       {
       if (instr->getSource1Register())
          {
@@ -512,7 +512,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMTrg1Src2Instruction * instr)
          print(pOutFile, instr->getTarget1Register(), targetSize);
          }
       }
-   else if (instr->getOpCodeValue() == ARMOp_fmdrr)
+   else if (instr->getOpCodeValue() == TR::InstOpCode::ARMOp_fmdrr)
       {
       print(pOutFile, instr->getSource2Operand(), TR_DoubleReg);
       trfprintf(pOutFile, ", ");
@@ -520,26 +520,26 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMTrg1Src2Instruction * instr)
       trfprintf(pOutFile, ", ");
       print(pOutFile, instr->getSource1Register(), TR_WordReg);
       }
-   else if (instr->getOpCodeValue() == ARMOp_fcvtds ||
-            instr->getOpCodeValue() == ARMOp_fsitod ||
-            instr->getOpCodeValue() == ARMOp_fuitod)
+   else if (instr->getOpCodeValue() == TR::InstOpCode::ARMOp_fcvtds ||
+            instr->getOpCodeValue() == TR::InstOpCode::ARMOp_fsitod ||
+            instr->getOpCodeValue() == TR::InstOpCode::ARMOp_fuitod)
       {
       print(pOutFile, instr->getTarget1Register(), TR_DoubleReg);
       trfprintf(pOutFile, ", ");
       print(pOutFile, instr->getSource2Operand(), TR_WordReg);
       }
-   else if (instr->getOpCodeValue() == ARMOp_fcvtsd  ||
-            instr->getOpCodeValue() == ARMOp_ftosizd ||
-            instr->getOpCodeValue() == ARMOp_ftouizd)
+   else if (instr->getOpCodeValue() == TR::InstOpCode::ARMOp_fcvtsd  ||
+            instr->getOpCodeValue() == TR::InstOpCode::ARMOp_ftosizd ||
+            instr->getOpCodeValue() == TR::InstOpCode::ARMOp_ftouizd)
       {
       print(pOutFile, instr->getTarget1Register(), TR_WordReg);
       trfprintf(pOutFile, ", ");
       print(pOutFile, instr->getSource2Operand(), TR_DoubleReg);
       }
-   else if (instr->getOpCodeValue() == ARMOp_fcmpzd  ||
-            instr->getOpCodeValue() == ARMOp_fcmpzs)
+   else if (instr->getOpCodeValue() == TR::InstOpCode::ARMOp_fcmpzd  ||
+            instr->getOpCodeValue() == TR::InstOpCode::ARMOp_fcmpzs)
       {
-      print(pOutFile, instr->getTarget1Register(), (instr->getOpCodeValue() == ARMOp_fcmpzd) ? TR_DoubleReg : TR_WordReg);
+      print(pOutFile, instr->getTarget1Register(), (instr->getOpCodeValue() == TR::InstOpCode::ARMOp_fcmpzd) ? TR_DoubleReg : TR_WordReg);
 #if defined(__ARM_ARCH_7A__) && defined(__VFP_FP__) && !defined(__SOFTFP__)
       trfprintf(pOutFile, ", #0.0");
 #endif
@@ -554,14 +554,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMTrg1Src2Instruction * instr)
          trfprintf(pOutFile, ", ");
          }
       // TR_RegisterSizes source1Size = TR_WordReg;
-      if (instr->getSource1Register() && instr->getOpCodeValue() != ARMOp_swp)
+      if (instr->getSource1Register() && instr->getOpCodeValue() != TR::InstOpCode::ARMOp_swp)
          {
          print(pOutFile, instr->getSource1Register(), source1Size);
          trfprintf(pOutFile, ", ");
          }
       // TR_RegisterSizes source2Size = TR_WordReg;
       print(pOutFile, instr->getSource2Operand(), source2Size);
-      if (instr->getSource1Register() && instr->getOpCodeValue() == ARMOp_swp)
+      if (instr->getSource1Register() && instr->getOpCodeValue() == TR::InstOpCode::ARMOp_swp)
          {
          trfprintf(pOutFile, ", [");
          print(pOutFile, instr->getSource1Register(), source1Size);
@@ -630,7 +630,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMMemSrc1Instruction * instr)
       {
       TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
       int32_t offset = instr->getMemoryReference()->getOffset();
-      if(op == ARMOp_strh && !constantIsUnsignedImmed8(offset))
+      if(op == TR::InstOpCode::ARMOp_strh && !constantIsUnsignedImmed8(offset))
          {
          printARMDelayedOffsetInstructions(pOutFile,instr);
          return;
@@ -685,12 +685,12 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMTrg1MemInstruction * instr)
       {
       TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
       int32_t offset = instr->getMemoryReference()->getOffset();
-      if(op == ARMOp_add && instr->getMemoryReference()->getIndexRegister())
+      if(op == TR::InstOpCode::ARMOp_add && instr->getMemoryReference()->getIndexRegister())
          {
          printARMDelayedOffsetInstructions(pOutFile,instr);
          return;
          }
-      else if((op == ARMOp_ldrsb || op == ARMOp_ldrh || op == ARMOp_ldrsh) && !constantIsUnsignedImmed8(offset))
+      else if((op == TR::InstOpCode::ARMOp_ldrsb || op == TR::InstOpCode::ARMOp_ldrh || op == TR::InstOpCode::ARMOp_ldrsh) && !constantIsUnsignedImmed8(offset))
          {
          printARMDelayedOffsetInstructions(pOutFile,instr);
          return;
@@ -1536,7 +1536,7 @@ TR_Debug::printARMDelayedOffsetInstructions(TR::FILE *pOutFile, TR::ARMMemInstru
    char *regName = (char *)_comp->trMemory()->allocateHeapMemory(6);
    sprintf(regName,"gr%d",(*(uint32_t *)bufferPos >> TR::RealRegister::pos_RD) & 0xf);
 
-   if(op == ARMOp_str || op == ARMOp_strh || op == ARMOp_strb ||
+   if(op == TR::InstOpCode::ARMOp_str || op == TR::InstOpCode::ARMOp_strh || op == TR::InstOpCode::ARMOp_strb ||
       toRealRegister(instr->getMemoryDataRegister())->getRegisterNumber() == base->getRegisterNumber())
       {
       regSpilled = true;

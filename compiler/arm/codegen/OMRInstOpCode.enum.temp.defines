@@ -24,7 +24,6 @@
  * definitions are permitted.
  */
 
-#define ARMOp_bad OMR::InstOpCode::ARMOp_bad
 #define ARMOp_add OMR::InstOpCode::ARMOp_add
 #define ARMOp_add_r OMR::InstOpCode::ARMOp_add_r
 #define ARMOp_adc OMR::InstOpCode::ARMOp_adc

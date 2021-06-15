@@ -1358,12 +1358,12 @@ class ARMControlFlowInstruction : public TR::Instruction
 
    ARMControlFlowInstruction(TR::Node *node, TR::CodeGenerator *cg) : TR::Instruction(node, cg) {}
    ARMControlFlowInstruction(TR::InstOpCode::Mnemonic  op, TR::Node *node, TR::CodeGenerator *cg)
-      : TR::Instruction(op, node, cg), _numSources(0), _numTargets(0), _label(NULL), _opCode2(ARMOp_bad)
+      : TR::Instruction(op, node, cg), _numSources(0), _numTargets(0), _label(NULL), _opCode2(TR::InstOpCode::bad)
       {
       }
 
    ARMControlFlowInstruction(TR::InstOpCode::Mnemonic  op, TR::Node *node, TR::RegisterDependencyConditions *deps, TR::CodeGenerator *cg)
-      : TR::Instruction(op, node, deps, cg), _numSources(0), _numTargets(0), _label(NULL), _opCode2(ARMOp_bad)
+      : TR::Instruction(op, node, deps, cg), _numSources(0), _numTargets(0), _label(NULL), _opCode2(TR::InstOpCode::bad)
       {
       }
 

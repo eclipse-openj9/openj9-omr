@@ -3832,7 +3832,7 @@ TR::Register *OMR::ARM::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
       if (lastInstruction->getOpCodeValue() == ARMOp_bl
               && lastInstruction->getNode()->getSymbolReference()->getReferenceNumber() == TR_aThrow)
          {
-         lastInstruction = generateInstruction(cg, ARMOp_bad, node, lastInstruction);
+         lastInstruction = generateInstruction(cg, TR::InstOpCode::bad, node, lastInstruction);
          }
       }
    TR::RegisterDependencyConditions *deps = NULL;
@@ -3903,7 +3903,7 @@ TR::Register *OMR::ARM::TreeEvaluator::conversionAnalyser(TR::Node          *nod
 
 static void generateSignOrZeroExtend(TR::Node *node, TR::Register *dst, TR::Register *src, bool needSignExtend, int32_t bitsInDst, TR::CodeGenerator *cg)
    {
-   TR::InstOpCode::Mnemonic opcode = ARMOp_bad;
+   TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::bad;
 
    if (cg->comp()->target().cpu.id() >= TR_ARMv6)
       {
@@ -3932,7 +3932,7 @@ static void generateSignOrZeroExtend(TR::Node *node, TR::Register *dst, TR::Regi
          }
       }
 
-   if (opcode != ARMOp_bad)
+   if (opcode != TR::InstOpCode::bad)
       {
       generateTrg1Src1Instruction(cg, opcode, node, dst, src);
       }

@@ -80,7 +80,7 @@ OMR::ARM::Instruction::Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemon
 OMR::ARM::Instruction::Instruction(TR::Node *node, TR::CodeGenerator *cg)
    : OMR::InstructionConnector(cg, TR::InstOpCode::bad, node)
    {
-   self()->setOpCodeValue(ARMOp_bad);
+   self()->setOpCodeValue(TR::InstOpCode::bad);
    self()->setConditionCode(ARMConditionCodeAL);
    self()->setDependencyConditions(NULL);
    }

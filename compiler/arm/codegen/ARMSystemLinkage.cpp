@@ -467,7 +467,7 @@ void TR::ARMSystemLinkage::createPrologue(TR::Instruction *cursor)
    //
    if (comp()->getOption(TR_EntryBreakPoints))
       {
-      cursor = new (trHeapMemory()) TR::Instruction(cursor, ARMOp_bad, firstNode, cg());
+      cursor = new (trHeapMemory()) TR::Instruction(cursor, TR::InstOpCode::bad, firstNode, cg());
       }
 
    // allocate stack space

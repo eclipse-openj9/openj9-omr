@@ -761,7 +761,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMControlFlowInstruction * instr)
          trfprintf(pOutFile, ", ");
          }
       }
-   if (instr->getOpCode2Value() != ARMOp_bad)
+   if (instr->getOpCode2Value() != TR::InstOpCode::bad)
       {
       trfprintf(pOutFile, ", %s", getOpCodeName(&instr->getOpCode2()));
       }

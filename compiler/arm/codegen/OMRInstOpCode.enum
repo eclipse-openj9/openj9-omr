@@ -26,7 +26,6 @@
 
 #include "compiler/codegen/OMRInstOpCode.enum"
 
-   ARMOp_bad,              //Illegal Opcode
    ARMOp_add,              // Add
    ARMOp_add_r,            // Add with record
    ARMOp_adc,              // Add with carry

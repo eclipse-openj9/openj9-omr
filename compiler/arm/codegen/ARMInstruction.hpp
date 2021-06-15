@@ -411,7 +411,7 @@ class ARMVirtualGuardNOPInstruction : public TR::ARMLabelInstruction
                                  TR::RegisterDependencyConditions *cond,
                                  TR::LabelSymbol                  *sym,
                                  TR::CodeGenerator                *cg)
-      : TR::ARMLabelInstruction(ARMOp_vgdnop, node, cond, sym, cg),
+      : TR::ARMLabelInstruction(TR::InstOpCode::vgnop, node, cond, sym, cg),
         _site(site)
       {
       }
@@ -422,7 +422,7 @@ class ARMVirtualGuardNOPInstruction : public TR::ARMLabelInstruction
                                  TR::LabelSymbol                  *sym,
                                  TR::Instruction                *precedingInstruction,
                                  TR::CodeGenerator                *cg)
-      : TR::ARMLabelInstruction(precedingInstruction, ARMOp_vgdnop, node, cond, sym, cg),
+      : TR::ARMLabelInstruction(precedingInstruction, TR::InstOpCode::vgnop, node, cond, sym, cg),
         _site(site)
       {
       }

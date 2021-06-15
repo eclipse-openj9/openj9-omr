@@ -114,7 +114,6 @@ const OMR::ARM::InstOpCode::TR_OpCodeBinaryEntry OMR::ARM::InstOpCode::binaryEnc
    0x00000000,  // flcmpg
    0x00000000,  // idiv
    0x00000000,  // irem
-   0x00000000,  // vgdnop
    0xE1A00000,  // nop (mov r0, r0)
    0x0EB00BC0,  // fabsd (vabs<c>.f64)
    0x0EB00AC0,  // fabss (vabs<c>.f32)
@@ -433,9 +432,6 @@ ARMOpProp_Arch4,
 0,
 
 // irem
-0,
-
-// vgdnop
 0,
 
 // nop

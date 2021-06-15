@@ -102,7 +102,6 @@
 #define ARMOp_flcmpg OMR::InstOpCode::ARMOp_flcmpg
 #define ARMOp_idiv OMR::InstOpCode::ARMOp_idiv
 #define ARMOp_irem OMR::InstOpCode::ARMOp_irem
-#define ARMOp_vgdnop OMR::InstOpCode::ARMOp_vgdnop
 #define ARMOp_nop OMR::InstOpCode::ARMOp_nop
 #define ARMOp_fabsd OMR::InstOpCode::ARMOp_fabsd
 #define ARMOp_fabss OMR::InstOpCode::ARMOp_fabss

@@ -731,6 +731,8 @@ static const char *opCodeToNameMap[] =
    "vorr2d",
    "vadd16b",
    "vadd8h",
+   "vadd4s",
+   "vadd2d",
    "vfadd4s",
    "vfadd2d",
    "vsub16b",

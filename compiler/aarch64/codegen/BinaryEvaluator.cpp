@@ -289,6 +289,12 @@ OMR::ARM64::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::VectorInt16:
          addOp = TR::InstOpCode::vadd8h;
          break;
+      case TR::VectorInt32:
+         addOp = TR::InstOpCode::vadd4s;
+         break;
+      case TR::VectorInt64:
+         addOp = TR::InstOpCode::vadd2d;
+         break;
       case TR::VectorFloat:
          addOp = TR::InstOpCode::vfadd4s;
          break;

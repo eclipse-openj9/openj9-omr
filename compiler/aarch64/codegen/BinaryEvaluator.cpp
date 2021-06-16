@@ -320,6 +320,12 @@ OMR::ARM64::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::VectorInt16:
          subOp = TR::InstOpCode::vsub8h;
          break;
+      case TR::VectorInt32:
+         subOp = TR::InstOpCode::vsub4s;
+         break;
+      case TR::VectorInt64:
+         subOp = TR::InstOpCode::vsub2d;
+         break;
       case TR::VectorFloat:
          subOp = TR::InstOpCode::vfsub4s;
          break;

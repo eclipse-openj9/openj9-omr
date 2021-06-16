@@ -721,6 +721,8 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4E60D400,	/* FADD      	vfadd2d	 */
 		0x6E208400,	/* SUB      	vsub16b	 */
 		0x6E608400,	/* SUB      	vsub8h	 */
+		0x6EA08400,	/* SUB      	vsub4s	 */
+		0x6EE08400,	/* SUB      	vsub2d	 */
 		0x4EA0D400,	/* FSUB      	vfsub4s	 */
 		0x4EE0D400,	/* FSUB      	vfsub2d	 */
 		0x4E209C00,	/* MUL      	vmul16b	 */

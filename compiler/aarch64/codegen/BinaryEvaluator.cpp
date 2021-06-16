@@ -351,6 +351,9 @@ OMR::ARM64::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::VectorInt16:
          mulOp = TR::InstOpCode::vmul8h;
          break;
+      case TR::VectorInt32:
+         mulOp = TR::InstOpCode::vmul4s;
+         break;
       case TR::VectorFloat:
          mulOp = TR::InstOpCode::vfmul4s;
          break;

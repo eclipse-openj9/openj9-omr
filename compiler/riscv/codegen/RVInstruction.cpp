@@ -484,7 +484,7 @@ uint8_t *TR::JtypeInstruction::generateBinaryEncoding() {
 
    if (getSymbolReference() != nullptr)
       {
-      TR_ASSERT(getLabelSymbol() == nullptr, "Both symbol reference and symbol set in J-type instruction");
+      TR_ASSERT_FATAL(getLabelSymbol() == nullptr, "Both symbol reference and symbol set in J-type instruction");
       TR::ResolvedMethodSymbol *sym = getSymbolReference()->getSymbol()->getResolvedMethodSymbol();
       TR_ResolvedMethod *resolvedMethod = sym == NULL ? NULL : sym->getResolvedMethod();
 
@@ -511,7 +511,7 @@ uint8_t *TR::JtypeInstruction::generateBinaryEncoding() {
          }
       }
 
-   TR_ASSERT(VALID_UJTYPE_IMM(offset), "Jump offset out of range");
+   TR_ASSERT_FATAL(VALID_UJTYPE_IMM(offset), "Jump offset out of range");
    *iPtr = TR_RISCV_UJTYPE (getOpCode().getMnemonic(), getTargetRegister(), offset);
 
    cursor += RISCV_INSTRUCTION_LENGTH;

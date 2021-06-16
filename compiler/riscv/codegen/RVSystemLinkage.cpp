@@ -205,7 +205,7 @@ static void mapSingleParameter(TR::ParameterSymbol *parameter, uint32_t &stackIn
       }
    else
       { // in caller's frame -- always 8-byte aligned
-      TR_ASSERT((stackIndex & 7) == 0, "Unaligned stack index.");
+      TR_ASSERT_FATAL((stackIndex & 7) == 0, "Unaligned stack index.");
       parameter->setParameterOffset(stackIndex);
       stackIndex += 8;
       }
@@ -305,10 +305,10 @@ TR::RVSystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
                }
             break;
          case TR::Aggregate:
-            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on RISC-V.");
+            TR_ASSERT_FATAL(false, "Function parameters of aggregate types are not currently supported on RISC-V.");
             break;
          default:
-            TR_ASSERT(false, "Unknown parameter type.");
+            TR_ASSERT_FATAL(false, "Unknown parameter type.");
          }
       }
 
@@ -355,10 +355,10 @@ TR::RVSystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
                }
             break;
          case TR::Aggregate:
-            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on RISC-V.");
+            TR_ASSERT_FATAL(false, "Function parameters of aggregate types are not currently supported on RISC-V.");
             break;
          default:
-            TR_ASSERT(false, "Unknown parameter type.");
+            TR_ASSERT_FATAL(false, "Unknown parameter type.");
          }
       }
    }
@@ -460,10 +460,10 @@ TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::ParameterS
                }
             break;
          case TR::Aggregate:
-            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on AArch64.");
+            TR_ASSERT_FATAL(false, "Function parameters of aggregate types are not currently supported on RISC-V.");
             break;
          default:
-            TR_ASSERT(false, "Unknown parameter type.");
+            TR_ASSERT_FATAL(false, "Unknown parameter type.");
          }
       }
 
@@ -572,7 +572,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
             break;
 
          default:
-            TR_ASSERT(false, "Argument type %s is not supported\n", childType.toString());
+            TR_ASSERT_FATAL(false, "Argument type %s is not supported\n", childType.toString());
          }
       }
 
@@ -891,7 +891,7 @@ TR::Register *TR::RVSystemLinkage::buildDispatch(TR::Node *callNode)
          break;
       default:
          retReg = NULL;
-         TR_ASSERT(false, "Unsupported direct call Opcode.");
+         TR_ASSERT_FATAL(false, "Unsupported direct call Opcode.");
       }
 
    callNode->setRegister(retReg);

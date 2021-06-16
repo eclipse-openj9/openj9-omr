@@ -477,9 +477,9 @@ uint8_t *TR::UtypeInstruction::generateBinaryEncoding() {
 // TR::JtypeInstruction:: member functions
 
 uint8_t *TR::JtypeInstruction::generateBinaryEncoding() {
-   uint8_t        *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t        *cursor           = instructionStart;
-   uint32_t *iPtr = (uint32_t*)instructionStart;
+   uint8_t  *instructionStart = cg()->getBinaryBufferCursor();
+   uint8_t  *cursor = instructionStart;
+   uint32_t *iPtr = reinterpret_cast<uint32_t*>(instructionStart);
    intptr_t offset = 0;
 
    if (getSymbolReference() != nullptr)
@@ -495,15 +495,15 @@ uint8_t *TR::JtypeInstruction::generateBinaryEncoding() {
          }
       else
          {
-         offset = (uint8_t*)getSymbolReference()->getMethodAddress() - cursor;
+         offset = reinterpret_cast<intptr_t>(getSymbolReference()->getMethodAddress()) - reinterpret_cast<intptr_t>(cursor);
          }
       }
    else
       {
-      uint8_t* destination = (uint8_t*)(getLabelSymbol()->getCodeLocation());
+      intptr_t destination = reinterpret_cast<intptr_t>(getLabelSymbol()->getCodeLocation());
       if (destination != 0)
          {
-         offset = destination - cursor;
+         offset = destination - reinterpret_cast<intptr_t>(cursor);
          }
       else
          {

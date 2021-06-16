@@ -394,7 +394,7 @@ TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::ParameterS
    TR::Node *firstNode = comp()->getStartTree()->getNode();
 
    // allocate stack space
-   uint32_t frameSize = (uint32_t)codeGen->getFrameSizeInBytes();
+   uint32_t frameSize = codeGen->getFrameSizeInBytes();
    if (VALID_ITYPE_IMM(frameSize))
       {
       cursor = generateITYPE(TR::InstOpCode::_addi, firstNode, sp, sp, -frameSize, codeGen, cursor);
@@ -432,7 +432,7 @@ TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::ParameterS
             if (nextIntArgReg < getProperties().getNumIntArgRegs())
                {
                op = (parameter->getSize() == 8) ? TR::InstOpCode::_sd : TR::InstOpCode::_sw;
-               cursor = generateSTORE(op, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::a0 + nextIntArgReg)), codeGen, cursor);
+               cursor = generateSTORE(op, firstNode, stackSlot, machine->getRealRegister(getProperties().getIntegerArgumentRegister(nextIntArgReg)), codeGen, cursor);
                nextIntArgReg++;
                }
             else
@@ -445,13 +445,13 @@ TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::ParameterS
             if (nextFltArgReg < getProperties().getNumFloatArgRegs())
                {
                op = (parameter->getSize() == 8) ? TR::InstOpCode::_fsd : TR::InstOpCode::_fsw;
-               cursor = generateSTORE(op, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::fa0 + nextFltArgReg)), codeGen, cursor);
+               cursor = generateSTORE(op, firstNode, stackSlot, machine->getRealRegister(getProperties().getFloatArgumentRegister(nextFltArgReg)), codeGen, cursor);
                nextFltArgReg++;
                }
             else if (nextIntArgReg < getProperties().getNumIntArgRegs())
                {
                op = (parameter->getSize() == 8) ? TR::InstOpCode::_sd : TR::InstOpCode::_sw;
-               cursor = generateSTORE(op, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::a0 + nextIntArgReg)), codeGen, cursor);
+               cursor = generateSTORE(op, firstNode, stackSlot, machine->getRealRegister(getProperties().getIntegerArgumentRegister(nextIntArgReg)), codeGen, cursor);
                nextIntArgReg++;
                }
             else
@@ -844,7 +844,7 @@ TR::Register *TR::RVSystemLinkage::buildDispatch(TR::Node *callNode)
           * Note, that here we load the target address into link register (`ra`). It's going to be clobbered
           * anyways and this way we do not need to allocate another one.
           */
-         loadConstant64(cg(), callNode, (int64_t)targetAddr, ra);
+         loadConstant64(cg(), callNode, reinterpret_cast<int64_t>(targetAddr), ra);
          generateITYPE(TR::InstOpCode::_jalr, callNode, ra, ra, 0, dependencies, cg());
          }
       }

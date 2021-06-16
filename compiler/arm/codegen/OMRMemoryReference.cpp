@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -280,9 +280,9 @@ void OMR::ARM::MemoryReference::fixupVFPOffset(TR::Node *node, TR::CodeGenerator
           if (constantIsImmed8r(foldedOffset, &immValue, &rotate))
              {
              if (_baseRegister == NULL)
-                generateTrg1ImmInstruction(cg, ARMOp_mov, node, newBase, immValue, rotate);
+                generateTrg1ImmInstruction(cg, TR::InstOpCode::mov, node, newBase, immValue, rotate);
              else
-                generateTrg1Src1ImmInstruction(cg, ARMOp_add, node, newBase, _baseRegister, immValue, rotate);
+                generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::add, node, newBase, _baseRegister, immValue, rotate);
              }
           else
              {
@@ -296,13 +296,13 @@ void OMR::ARM::MemoryReference::fixupVFPOffset(TR::Node *node, TR::CodeGenerator
                    if (!isFirstDone)
                       {
                       if (_baseRegister == NULL)
-                         generateTrg1ImmInstruction(cg, ARMOp_mov, node, newBase, base, shift);
+                         generateTrg1ImmInstruction(cg, TR::InstOpCode::mov, node, newBase, base, shift);
                       else
-                         generateTrg1Src1ImmInstruction(cg, ARMOp_add, node, newBase, _baseRegister, base, shift);
+                         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::add, node, newBase, _baseRegister, base, shift);
                       isFirstDone = true;
                       }
                    else
-                      generateTrg1Src1ImmInstruction(cg, ARMOp_add, node, newBase, newBase, base, shift);
+                      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::add, node, newBase, newBase, base, shift);
                    }
                 }
              }
@@ -354,9 +354,9 @@ void OMR::ARM::MemoryReference::addToOffset(TR::Node *node, int32_t amount, TR::
       if (constantIsImmed8r(foldedOffset, &immValue, &rotate))
          {
          if (_baseRegister == NULL)
-            generateTrg1ImmInstruction(cg, ARMOp_mov, node, newBase, immValue, rotate);
+            generateTrg1ImmInstruction(cg, TR::InstOpCode::mov, node, newBase, immValue, rotate);
          else
-            generateTrg1Src1ImmInstruction(cg, ARMOp_add, node, newBase, _baseRegister, immValue, rotate);
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::add, node, newBase, _baseRegister, immValue, rotate);
          }
       else
          {
@@ -370,13 +370,13 @@ void OMR::ARM::MemoryReference::addToOffset(TR::Node *node, int32_t amount, TR::
                if (!isFirstDone)
                   {
                   if (_baseRegister == NULL)
-                     generateTrg1ImmInstruction(cg, ARMOp_mov, node, newBase, base, shift);
+                     generateTrg1ImmInstruction(cg, TR::InstOpCode::mov, node, newBase, base, shift);
                   else
-                     generateTrg1Src1ImmInstruction(cg, ARMOp_add, node, newBase, _baseRegister, base, shift);
+                     generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::add, node, newBase, _baseRegister, base, shift);
                   isFirstDone = true;
                   }
                else
-                  generateTrg1Src1ImmInstruction(cg, ARMOp_add, node, newBase, newBase, base, shift);
+                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::add, node, newBase, newBase, base, shift);
                }
             }
          }
@@ -579,7 +579,7 @@ void OMR::ARM::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR::N
             tempTargetRegister = cg->allocateCollectedReferenceRegister();
          else
             tempTargetRegister = cg->allocateRegister();
-         new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(ARMOp_add, srcTree, tempTargetRegister, _indexRegister, srcReg, cg);
+         new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(TR::InstOpCode::add, srcTree, tempTargetRegister, _indexRegister, srcReg, cg);
          if (_indexRegister != tempTargetRegister)
             {
             if (_indexNode != NULL)
@@ -616,7 +616,7 @@ void OMR::ARM::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR::N
             tempTargetRegister = cg->allocateCollectedReferenceRegister();
          else
             tempTargetRegister = cg->allocateRegister();
-         new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(ARMOp_add, srcTree, tempTargetRegister, _baseRegister, _indexRegister, cg);
+         new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(TR::InstOpCode::add, srcTree, tempTargetRegister, _baseRegister, _indexRegister, cg);
          if (_baseRegister != tempTargetRegister)
             {
             self()->decNodeReferenceCounts();
@@ -643,7 +643,7 @@ void OMR::ARM::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR::N
             tempTargetRegister = cg->allocateCollectedReferenceRegister();
          else
             tempTargetRegister = cg->allocateRegister();
-         new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(ARMOp_add, srcTree, tempTargetRegister, _baseRegister, srcReg, cg);
+         new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(TR::InstOpCode::add, srcTree, tempTargetRegister, _baseRegister, srcReg, cg);
          if (_baseRegister != tempTargetRegister)
             {
             self()->decNodeReferenceCounts();
@@ -892,8 +892,8 @@ uint8_t *OMR::ARM::MemoryReference::generateBinaryEncoding(TR::Instruction *curr
 
          // finally, encode the original instruction
          *wcursor = preserve;
-         if (op == ARMOp_ldr   || op == ARMOp_ldrb || op == ARMOp_str   || op == ARMOp_strb ||
-             op == ARMOp_ldrsb || op == ARMOp_ldrh || op == ARMOp_ldrsh || op == ARMOp_strh)
+         if (op == TR::InstOpCode::ldr   || op == TR::InstOpCode::ldrb || op == TR::InstOpCode::str   || op == TR::InstOpCode::strb ||
+             op == TR::InstOpCode::ldrsb || op == TR::InstOpCode::ldrh || op == TR::InstOpCode::ldrsh || op == TR::InstOpCode::strh)
             {
             if (base)
                {
@@ -908,7 +908,7 @@ uint8_t *OMR::ARM::MemoryReference::generateBinaryEncoding(TR::Instruction *curr
                }
             }
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
-         else if (op == ARMOp_flds || op == ARMOp_fldd || op == ARMOp_fsts || op == ARMOp_fstd)
+         else if (op == TR::InstOpCode::flds || op == TR::InstOpCode::fldd || op == TR::InstOpCode::fsts || op == TR::InstOpCode::fstd)
             {
             if (base)
                {
@@ -930,7 +930,7 @@ uint8_t *OMR::ARM::MemoryReference::generateBinaryEncoding(TR::Instruction *curr
                }
             }
 #endif
-         else if (op == ARMOp_add)
+         else if (op == TR::InstOpCode::add)
             {
             if (base)
                {
@@ -945,7 +945,7 @@ uint8_t *OMR::ARM::MemoryReference::generateBinaryEncoding(TR::Instruction *curr
             }
          else
             {
-            TR_ASSERT(op == ARMOp_mov, "unknown opcode in an unresolved memory reference");
+            TR_ASSERT(op == TR::InstOpCode::mov, "unknown opcode in an unresolved memory reference");
             mBase->setRegisterFieldRM(wcursor);
             }
          wcursor++;
@@ -956,10 +956,10 @@ uint8_t *OMR::ARM::MemoryReference::generateBinaryEncoding(TR::Instruction *curr
    else
       {
       int32_t displacement;
-      if (!index && op != ARMOp_add)               // common encoding for all true load/store instructions with immediate offsets
+      if (!index && op != TR::InstOpCode::add)               // common encoding for all true load/store instructions with immediate offsets
          {
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
-         if (!(op == ARMOp_flds || op == ARMOp_fldd || op == ARMOp_fsts || op == ARMOp_fstd))
+         if (!(op == TR::InstOpCode::flds || op == TR::InstOpCode::fldd || op == TR::InstOpCode::fsts || op == TR::InstOpCode::fstd))
             {
 #endif
             base->setRegisterFieldRN(wcursor);
@@ -978,7 +978,7 @@ uint8_t *OMR::ARM::MemoryReference::generateBinaryEncoding(TR::Instruction *curr
             *wcursor &= (uint32_t)(~(1 << 24));    // unset P for post-index
          }
 
-      if (op == ARMOp_ldr || op == ARMOp_str || op == ARMOp_ldrb || op == ARMOp_strb)
+      if (op == TR::InstOpCode::ldr || op == TR::InstOpCode::str || op == TR::InstOpCode::ldrb || op == TR::InstOpCode::strb)
          {
          // addressing mode 2
          if (index)
@@ -1014,7 +1014,7 @@ uint8_t *OMR::ARM::MemoryReference::generateBinaryEncoding(TR::Instruction *curr
                }
             }
          }
-      else if (op == ARMOp_ldrsb || op == ARMOp_ldrh || op == ARMOp_ldrsh || op == ARMOp_strh) // addressing mode 3
+      else if (op == TR::InstOpCode::ldrsb || op == TR::InstOpCode::ldrh || op == TR::InstOpCode::ldrsh || op == TR::InstOpCode::strh) // addressing mode 3
          {
          if (index)
             {
@@ -1036,7 +1036,7 @@ uint8_t *OMR::ARM::MemoryReference::generateBinaryEncoding(TR::Instruction *curr
                }
             }
          }
-      else if (op == ARMOp_add)                     // op is ARMOp_add for delayed offsets (see loadAddrEvaluator)
+      else if (op == TR::InstOpCode::add)                     // op is TR::InstOpCode::add for delayed offsets (see loadAddrEvaluator)
          {
          base->setRegisterFieldRN(wcursor);
          uint32_t immBase, rotate;
@@ -1052,12 +1052,12 @@ uint8_t *OMR::ARM::MemoryReference::generateBinaryEncoding(TR::Instruction *curr
             wcursor = (uint32_t *)cursor;
             }
          }
-      else if (op == ARMOp_ldfd || op == ARMOp_stfd || op == ARMOp_ldfs || op == ARMOp_stfs)
+      else if (op == TR::InstOpCode::ldfd || op == TR::InstOpCode::stfd || op == TR::InstOpCode::ldfs || op == TR::InstOpCode::stfs)
          {
          *wcursor |= (displacement >> 2);          // offset for these coprocessor instructions is in words
          }
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
-      else if (op == ARMOp_flds || op == ARMOp_fldd || op == ARMOp_fsts || op == ARMOp_fstd)
+      else if (op == TR::InstOpCode::flds || op == TR::InstOpCode::fldd || op == TR::InstOpCode::fsts || op == TR::InstOpCode::fstd)
          {
          if (constantIsImmed10(displacement))
             {
@@ -1071,7 +1071,7 @@ uint8_t *OMR::ARM::MemoryReference::generateBinaryEncoding(TR::Instruction *curr
             }
          }
 #endif
-      else if (op == ARMOp_ldrex || op == ARMOp_strex)
+      else if (op == TR::InstOpCode::ldrex || op == TR::InstOpCode::strex)
          {
          TR_ASSERT(displacement == 0 && index == 0, "Load/store exclusive does not have displacement or index register");
          base->setRegisterFieldRN(wcursor);
@@ -1099,7 +1099,7 @@ uint32_t OMR::ARM::MemoryReference::estimateBinaryLength(TR::InstOpCode::Mnemoni
       else
          {
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
-         if ((op == ARMOp_flds || op == ARMOp_fldd || op == ARMOp_fsts || op == ARMOp_fstd) &&
+         if ((op == TR::InstOpCode::flds || op == TR::InstOpCode::fldd || op == TR::InstOpCode::fsts || op == TR::InstOpCode::fstd) &&
             _baseRegister != NULL)
             return 6 * ARM_INSTRUCTION_LENGTH;
          else
@@ -1112,7 +1112,7 @@ uint32_t OMR::ARM::MemoryReference::estimateBinaryLength(TR::InstOpCode::Mnemoni
       {
       return ARM_INSTRUCTION_LENGTH;
       }
-   else if (op == ARMOp_ldr || op == ARMOp_str || op == ARMOp_ldrb || op == ARMOp_strb || op == ARMOp_ldrex || op == ARMOp_strex)
+   else if (op == TR::InstOpCode::ldr || op == TR::InstOpCode::str || op == TR::InstOpCode::ldrb || op == TR::InstOpCode::strb || op == TR::InstOpCode::ldrex || op == TR::InstOpCode::strex)
       {
       if (constantIsImmed12(self()->getOffset()))
          {
@@ -1123,7 +1123,7 @@ uint32_t OMR::ARM::MemoryReference::estimateBinaryLength(TR::InstOpCode::Mnemoni
          return 7*ARM_INSTRUCTION_LENGTH;
          }
       }
-   else if ( op == ARMOp_ldrsb || op == ARMOp_ldrh || op == ARMOp_ldrsh || op == ARMOp_strh )
+   else if ( op == TR::InstOpCode::ldrsb || op == TR::InstOpCode::ldrh || op == TR::InstOpCode::ldrsh || op == TR::InstOpCode::strh )
       {
       if(constantIsUnsignedImmed8(self()->getOffset()))
          {
@@ -1134,7 +1134,7 @@ uint32_t OMR::ARM::MemoryReference::estimateBinaryLength(TR::InstOpCode::Mnemoni
          return 7*ARM_INSTRUCTION_LENGTH;
          }
       }
-   else if( op == ARMOp_add )
+   else if( op == TR::InstOpCode::add )
       {
       uint32_t base,rotate;
       if(constantIsImmed8r(self()->getOffset(),&base,&rotate))
@@ -1146,12 +1146,12 @@ uint32_t OMR::ARM::MemoryReference::estimateBinaryLength(TR::InstOpCode::Mnemoni
          return 7*ARM_INSTRUCTION_LENGTH;
          }
       }
-   else if (op == ARMOp_ldfd || op == ARMOp_stfd || op == ARMOp_ldfs || op == ARMOp_stfs)
+   else if (op == TR::InstOpCode::ldfd || op == TR::InstOpCode::stfd || op == TR::InstOpCode::ldfs || op == TR::InstOpCode::stfs)
       {
       return ARM_INSTRUCTION_LENGTH;
       }
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
-   else if (op == ARMOp_flds || op == ARMOp_fldd || op == ARMOp_fsts || op == ARMOp_fstd)
+   else if (op == TR::InstOpCode::flds || op == TR::InstOpCode::fldd || op == TR::InstOpCode::fsts || op == TR::InstOpCode::fstd)
       {
          if (constantIsImmed10(self()->getOffset()))
          {
@@ -1182,16 +1182,16 @@ uint8_t *OMR::ARM::MemoryReference::encodeLargeARMConstant(uint32_t *wcursor, ui
    bool vfpInstruction = false;
 
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
-   vfpInstruction = (op == ARMOp_flds || op == ARMOp_fldd || op == ARMOp_fsts || op == ARMOp_fstd);
+   vfpInstruction = (op == TR::InstOpCode::flds || op == TR::InstOpCode::fldd || op == TR::InstOpCode::fsts || op == TR::InstOpCode::fstd);
 #endif
 
-   TR_ASSERT((op == ARMOp_add || op == ARMOp_ldr || op == ARMOp_ldrb || op == ARMOp_str || op == ARMOp_strb ||
-           op == ARMOp_ldrsb || op == ARMOp_ldrh || op == ARMOp_ldrsh || op == ARMOp_strh || vfpInstruction),
+   TR_ASSERT((op == TR::InstOpCode::add || op == TR::InstOpCode::ldr || op == TR::InstOpCode::ldrb || op == TR::InstOpCode::str || op == TR::InstOpCode::strb ||
+           op == TR::InstOpCode::ldrsb || op == TR::InstOpCode::ldrh || op == TR::InstOpCode::ldrsh || op == TR::InstOpCode::strh || vfpInstruction),
            "unrecognized opcode");
 
    // if doing a ldr then can re-use the target register as the index register (if it is not also the base register),
    // stores must always spill.
-   if(op == ARMOp_str || op == ARMOp_strh || op == ARMOp_strb || vfpInstruction ||
+   if(op == TR::InstOpCode::str || op == TR::InstOpCode::strh || op == TR::InstOpCode::strb || vfpInstruction ||
       toRealRegister(currentInstruction->getMemoryDataRegister())->getRegisterNumber() == base->getRegisterNumber())
       {
       spillNeeded = true;
@@ -1245,7 +1245,7 @@ uint8_t *OMR::ARM::MemoryReference::encodeLargeARMConstant(uint32_t *wcursor, ui
       rX->setRegisterFieldRN(wcursor); // modify the original instruction to use rX as the base register
       }
 
-   if(op == ARMOp_ldr || op == ARMOp_str || op == ARMOp_ldrb || op == ARMOp_strb)
+   if(op == TR::InstOpCode::ldr || op == TR::InstOpCode::str || op == TR::InstOpCode::ldrb || op == TR::InstOpCode::strb)
       *wcursor |= 1 << 25; // set I bit for index register
 
    if(spillNeeded)
@@ -1361,9 +1361,9 @@ static void loadRelocatableConstant(TR::Node               *node,
       {
       generateLoadStartPCInstruction(cg, node, reg, ref);
       /* The constant values do not mean anything here. They will be replaced in binary encoding phase. */
-      generateTrg1Src1ImmInstruction(cg, ARMOp_sub, node, reg, reg, 0xad, 16);
-      generateTrg1Src1ImmInstruction(cg, ARMOp_sub, node, reg, reg, 0xbe, 8);
-      generateTrg1Src1ImmInstruction(cg, ARMOp_sub, node, reg, reg, 0xef, 0);
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sub, node, reg, reg, 0xad, 16);
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sub, node, reg, reg, 0xbe, 8);
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sub, node, reg, reg, 0xef, 0);
       return;
       }
 

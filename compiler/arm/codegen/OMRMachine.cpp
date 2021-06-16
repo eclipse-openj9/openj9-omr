@@ -157,8 +157,8 @@ TR::RealRegister *OMR::ARM::Machine::freeBestRegister(TR::Instruction     *curre
       cursor = currentInstruction;
       while (numCandidates > 1                 &&
              cursor != NULL                    &&
-             cursor->getOpCodeValue() != ARMOp_label &&
-             cursor->getOpCodeValue() != ARMOp_proc)
+             cursor->getOpCodeValue() != TR::InstOpCode::label &&
+             cursor->getOpCodeValue() != TR::InstOpCode::proc)
          {
          for (int i = 0; i < numCandidates; i++)
             {
@@ -286,12 +286,12 @@ TR::RealRegister *OMR::ARM::Machine::freeBestRegister(TR::Instruction     *curre
    switch (rk)
       {
       case TR_GPR:
-         generateTrg1MemInstruction(self()->cg(), ARMOp_ldr, currentNode, best, tmemref, currentInstruction);
+         generateTrg1MemInstruction(self()->cg(), TR::InstOpCode::ldr, currentNode, best, tmemref, currentInstruction);
          break;
 
       case TR_FPR:
-         //if targetRegister is FS0-FS15, using ARMOp_flds.
-         generateTrg1MemInstruction(self()->cg(), (isSinglePrecision ? ARMOp_flds : ARMOp_fldd), currentNode, best, tmemref, currentInstruction);
+         //if targetRegister is FS0-FS15, using TR::InstOpCode::flds.
+         generateTrg1MemInstruction(self()->cg(), (isSinglePrecision ? TR::InstOpCode::flds : TR::InstOpCode::fldd), currentNode, best, tmemref, currentInstruction);
          break;
 
       }
@@ -440,11 +440,11 @@ TR::RealRegister *OMR::ARM::Machine::reverseSpillState(TR::Instruction      *cur
    switch (rk)
       {
       case TR_GPR:
-         generateMemSrc1Instruction(self()->cg(), ARMOp_str, currentNode, tmemref, targetRegister, currentInstruction);
+         generateMemSrc1Instruction(self()->cg(), TR::InstOpCode::str, currentNode, tmemref, targetRegister, currentInstruction);
          break;
       case TR_FPR:
-            //if targetRegister is FS0-FS15, using ARMOp_fsts.
-            generateMemSrc1Instruction(self()->cg(), (isSinglePrecision ? ARMOp_fsts : ARMOp_fstd), currentNode, tmemref, targetRegister, currentInstruction);
+            //if targetRegister is FS0-FS15, using TR::InstOpCode::fsts.
+            generateMemSrc1Instruction(self()->cg(), (isSinglePrecision ? TR::InstOpCode::fsts : TR::InstOpCode::fstd), currentNode, tmemref, targetRegister, currentInstruction);
          break;
       }
    return targetRegister;
@@ -815,7 +815,7 @@ static void registerCopy(TR::Instruction     *precedingInstruction,
    switch (rk)
       {
       case TR_GPR:
-         new (cg->trHeapMemory()) TR::ARMTrg1Src1Instruction(precedingInstruction, ARMOp_mov, node, targetReg, sourceReg, cg);
+         new (cg->trHeapMemory()) TR::ARMTrg1Src1Instruction(precedingInstruction, TR::InstOpCode::mov, node, targetReg, sourceReg, cg);
          break;
       case TR_FPR:
          bool isTargetSinglePrecision = isSinglePrecision(targetReg->getRegisterNumber());
@@ -824,22 +824,22 @@ static void registerCopy(TR::Instruction     *precedingInstruction,
             {
             if (isSourceSinglePrecision)
                {
-                new (cg->trHeapMemory()) TR::ARMTrg1Src1Instruction(precedingInstruction, ARMOp_fcpys, node, targetReg, sourceReg, cg);
+                new (cg->trHeapMemory()) TR::ARMTrg1Src1Instruction(precedingInstruction, TR::InstOpCode::fcpys, node, targetReg, sourceReg, cg);
                }
             else
                {
-               generateTrg1Src1Instruction(cg, ARMOp_fcvtsd, node, targetReg, sourceReg);
+               generateTrg1Src1Instruction(cg, TR::InstOpCode::fcvtsd, node, targetReg, sourceReg);
                }
             }
          else
             {
             if (isSourceSinglePrecision)
                {
-               generateTrg1Src1Instruction(cg, ARMOp_fcvtds, node, targetReg, sourceReg);
+               generateTrg1Src1Instruction(cg, TR::InstOpCode::fcvtds, node, targetReg, sourceReg);
                }
             else
                {
-               new (cg->trHeapMemory()) TR::ARMTrg1Src1Instruction(precedingInstruction, ARMOp_fcpyd, node, targetReg, sourceReg, cg);
+               new (cg->trHeapMemory()) TR::ARMTrg1Src1Instruction(precedingInstruction, TR::InstOpCode::fcpyd, node, targetReg, sourceReg, cg);
                }
            }
          break;
@@ -864,9 +864,9 @@ static void registerExchange(TR::Instruction     *precedingInstruction,
       }
    else
       {
-      new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(precedingInstruction, ARMOp_eor, node, targetReg, targetReg, sourceReg, cg);
-      new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(precedingInstruction, ARMOp_eor, node, sourceReg, targetReg, sourceReg, cg);
-      new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(precedingInstruction, ARMOp_eor, node, targetReg, targetReg, sourceReg, cg);
+      new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(precedingInstruction, TR::InstOpCode::eor, node, targetReg, targetReg, sourceReg, cg);
+      new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(precedingInstruction, TR::InstOpCode::eor, node, sourceReg, targetReg, sourceReg, cg);
+      new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(precedingInstruction, TR::InstOpCode::eor, node, targetReg, targetReg, sourceReg, cg);
       }
    }
 

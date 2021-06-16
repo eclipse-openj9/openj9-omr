@@ -157,10 +157,10 @@ OMR::ARM::RegisterDependencyConditions::RegisterDependencyConditions( TR::Node  
          switch (kind)
             {
             case TR_GPR:
-               opCode = ARMOp_mov;
+               opCode = TR::InstOpCode::mov;
                break;
             case TR_FPR:
-               opCode = ARMOp_fmrs;
+               opCode = TR::InstOpCode::fmrs;
                break;
             default:
                TR_ASSERT(0, "Invalid register kind.");
@@ -359,10 +359,10 @@ void OMR::ARM::RegisterDependencyGroup::assignRegisters(TR::Instruction  *curren
             switch (rk)
                {
                case TR_GPR:
-                  opCode = ARMOp_ldr;
+                  opCode = TR::InstOpCode::ldr;
                   break;
                case TR_FPR:
-                  opCode = virtReg->isSinglePrecision() ? ARMOp_ldfs : ARMOp_ldfd;
+                  opCode = virtReg->isSinglePrecision() ? TR::InstOpCode::ldfs : TR::InstOpCode::ldfd;
                   break;
                default:
                   TR_ASSERT(0, "\nRegister kind not supported in OOL spill\n");

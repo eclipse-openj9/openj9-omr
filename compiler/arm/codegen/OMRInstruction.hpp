@@ -109,7 +109,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual bool setWriteBack()   {return false;}
    virtual bool isWriteBack()    {return false;}
 
-   virtual bool isLabel()        {return _opcode.getOpCodeValue() == ARMOp_label;}
+   virtual bool isLabel()        {return _opcode.getOpCodeValue() == TR::InstOpCode::label;}
 
    virtual TR::RegisterDependencyConditions *getDependencyConditions()
       {

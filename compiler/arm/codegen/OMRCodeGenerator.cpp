@@ -299,17 +299,17 @@ TR::Instruction *OMR::ARM::CodeGenerator::generateSwitchToInterpreterPrePrologue
    uintptr_t             helperAddr = (uintptr_t)helperSymRef->getMethodAddress();
 
    // gr4 must contain the saved LR; see Recompilation.s
-   cursor = new (self()->trHeapMemory()) TR::ARMTrg1Src1Instruction(cursor, ARMOp_mov, node, gr4, lr, self());
+   cursor = new (self()->trHeapMemory()) TR::ARMTrg1Src1Instruction(cursor, TR::InstOpCode::mov, node, gr4, lr, self());
    cursor = self()->getLinkage()->flushArguments(cursor);
-   cursor = generateImmSymInstruction(self(), ARMOp_bl, node, (uintptr_t)revertToInterpreterSymRef->getMethodAddress(), new (self()->trHeapMemory()) TR::RegisterDependencyConditions((uint8_t)0,0, self()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
-   cursor = generateImmInstruction(self(), ARMOp_dd, node, (int32_t)ramMethod, TR_RamMethod, cursor);
+   cursor = generateImmSymInstruction(self(), TR::InstOpCode::bl, node, (uintptr_t)revertToInterpreterSymRef->getMethodAddress(), new (self()->trHeapMemory()) TR::RegisterDependencyConditions((uint8_t)0,0, self()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
+   cursor = generateImmInstruction(self(), TR::InstOpCode::dd, node, (int32_t)ramMethod, TR_RamMethod, cursor);
 
    if (comp->getOption(TR_EnableHCR))
       comp->getStaticHCRPICSites()->push_front(cursor);
 
-   cursor = generateImmInstruction(self(), ARMOp_dd, node, (int32_t)helperAddr, TR_AbsoluteHelperAddress, helperSymRef, cursor);
+   cursor = generateImmInstruction(self(), TR::InstOpCode::dd, node, (int32_t)helperAddr, TR_AbsoluteHelperAddress, helperSymRef, cursor);
    // Used in FSD to store an  instruction
-   cursor = generateImmInstruction(self(), ARMOp_dd, node, 0, cursor);
+   cursor = generateImmInstruction(self(), TR::InstOpCode::dd, node, 0, cursor);
 
    return cursor;
    }
@@ -326,17 +326,17 @@ void OMR::ARM::CodeGenerator::beginInstructionSelection()
       if (methodSymbol->isJNI())
          {
          uintptr_t JNIMethodAddress = (uintptr_t) methodSymbol->getResolvedMethod()->startAddressForJNIMethod(comp);
-         cursor = new (self()->trHeapMemory()) TR::ARMImmInstruction(cursor, ARMOp_dd, startNode, (int32_t)JNIMethodAddress, self());
+         cursor = new (self()->trHeapMemory()) TR::ARMImmInstruction(cursor, TR::InstOpCode::dd, startNode, (int32_t)JNIMethodAddress, self());
          }
 
-      _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::ARMImmInstruction(cursor, ARMOp_dd, startNode, 0, self());
-      new (self()->trHeapMemory()) TR::ARMAdminInstruction(_returnTypeInfoInstruction, ARMOp_proc, startNode, NULL, self());
+      _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::ARMImmInstruction(cursor, TR::InstOpCode::dd, startNode, 0, self());
+      new (self()->trHeapMemory()) TR::ARMAdminInstruction(_returnTypeInfoInstruction, TR::InstOpCode::proc, startNode, NULL, self());
 
       }
    else
       {
       _returnTypeInfoInstruction = NULL;
-      new (self()->trHeapMemory()) TR::ARMAdminInstruction((TR::Instruction *)NULL, ARMOp_proc, startNode, NULL, self());
+      new (self()->trHeapMemory()) TR::ARMAdminInstruction((TR::Instruction *)NULL, TR::InstOpCode::proc, startNode, NULL, self());
       }
    }
 
@@ -359,7 +359,7 @@ void OMR::ARM::CodeGenerator::doBinaryEncoding()
    bool skipOneReturn = false;
    while (cursorInstruction)
       {
-      if (cursorInstruction->getOpCodeValue() == ARMOp_ret)
+      if (cursorInstruction->getOpCodeValue() == TR::InstOpCode::retn)
          {
          if (skipOneReturn == false)
             {
@@ -451,15 +451,15 @@ TR::Register *OMR::ARM::CodeGenerator::gprClobberEvaluate(TR::Node *node)
          TR::RegisterPair *longReg = self()->allocateRegisterPair(lowReg, highReg);
          TR::Register     *temp    = self()->evaluate(node);
 
-         generateTrg1Src1Instruction(self(), ARMOp_mov, node, lowReg, temp->getLowOrder());
-         generateTrg1Src1Instruction(self(), ARMOp_mov, node, highReg, temp->getHighOrder());
+         generateTrg1Src1Instruction(self(), TR::InstOpCode::mov, node, lowReg, temp->getLowOrder());
+         generateTrg1Src1Instruction(self(), TR::InstOpCode::mov, node, highReg, temp->getHighOrder());
 
          return longReg;
          }
       else
          {
          TR::Register *targetRegister = self()->allocateRegister();
-         generateTrg1Src1Instruction(self(), ARMOp_mov, node, targetRegister, self()->evaluate(node));
+         generateTrg1Src1Instruction(self(), TR::InstOpCode::mov, node, targetRegister, self()->evaluate(node));
          return targetRegister;
          }
       }

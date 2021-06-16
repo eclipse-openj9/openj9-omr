@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -162,7 +162,7 @@ uint8_t *TR::ARMAdminInstruction::generateBinaryEncoding()
    uint8_t  *instructionStart = cg()->getBinaryBufferCursor();
    uint32_t i;
 
-   if (getOpCodeValue() == ARMOp_fence)
+   if (getOpCodeValue() == TR::InstOpCode::fence)
       {
       TR::Node  *fenceNode = getFenceNode();
       uint32_t  rtype     = fenceNode->getRelocationType();
@@ -255,7 +255,7 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
    generateConditionBinaryEncoding(instructionStart);
    TR::LabelSymbol *label;
 
-   if (getOpCodeValue() == ARMOp_bl)
+   if (getOpCodeValue() == TR::InstOpCode::bl)
       {
       label = getSymbolReference()->getSymbol()->getLabelSymbol();
 
@@ -339,7 +339,7 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
       }
    else
       {
-      // Place holder only: non-ARMOp_bl usage of this instruction doesn't
+      // Place holder only: non-TR::InstOpCode::bl usage of this instruction doesn't
       // exist at this moment.
       TR_ASSERT(0, "non bl encoding");
       int32_t distance = getSourceImmediate() - (intptr_t)cursor;
@@ -549,21 +549,21 @@ int32_t TR::ARMControlFlowInstruction::estimateBinaryLength(int32_t currentEstim
    {
    switch(getOpCodeValue())
       {
-      case ARMOp_iflong:
-      case ARMOp_setbool:
+      case TR::InstOpCode::iflong:
+      case TR::InstOpCode::setbool:
          setEstimatedBinaryLength(ARM_INSTRUCTION_LENGTH * 4);
          break;
-      case ARMOp_idiv:
-      case ARMOp_setbflt:
+      case TR::InstOpCode::idiv:
+      case TR::InstOpCode::setbflt:
          setEstimatedBinaryLength(ARM_INSTRUCTION_LENGTH * 5);
          break;
-      case ARMOp_setblong:
-      case ARMOp_flcmpg:
-      case ARMOp_flcmpl:
-      case ARMOp_irem:
+      case TR::InstOpCode::setblong:
+      case TR::InstOpCode::flcmpg:
+      case TR::InstOpCode::flcmpl:
+      case TR::InstOpCode::irem:
          setEstimatedBinaryLength(ARM_INSTRUCTION_LENGTH * 6);
          break;
-      case ARMOp_lcmp:
+      case TR::InstOpCode::lcmp:
          setEstimatedBinaryLength(ARM_INSTRUCTION_LENGTH * 5);
          break;
       }
@@ -624,7 +624,7 @@ uint8_t *TR::ARMVirtualGuardNOPInstruction::generateBinaryEncoding()
        // 2) We might want to re-enable the code path and unpatch, in which case we would have to know what the old instruction was
          cg()->comp()->compileRelocatableCode())
       {
-      TR::InstOpCode opCode(ARMOp_nop);
+      TR::InstOpCode opCode(TR::InstOpCode::nop);
       opCode.copyBinaryToBuffer(cursor);
       length = ARM_INSTRUCTION_LENGTH;
       }

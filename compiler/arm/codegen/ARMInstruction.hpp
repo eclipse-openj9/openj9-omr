@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -234,7 +234,7 @@ class ARMLabelInstruction : public TR::Instruction
       setOpCodeValue(op);
       if (t1reg) t1reg->incTotalUseCount();
       if (s1reg) s1reg->incTotalUseCount();
-      if (sym!=NULL && op==ARMOp_label)
+      if (sym!=NULL && op==TR::InstOpCode::label)
          sym->setInstruction(this);
       }
 
@@ -245,7 +245,7 @@ class ARMLabelInstruction : public TR::Instruction
                        TR::CodeGenerator                   *cg)
       : TR::Instruction(op, node, cond, cg), _symbol(sym), _t1reg(NULL), _s1reg(NULL)
       {
-      if (sym!=NULL && op==ARMOp_label)
+      if (sym!=NULL && op==TR::InstOpCode::label)
          sym->setInstruction(this);
       }
 
@@ -260,7 +260,7 @@ class ARMLabelInstruction : public TR::Instruction
       {
       if (t1reg) t1reg->incTotalUseCount();
       if (s1reg) s1reg->incTotalUseCount();
-      if (sym!=NULL && op==ARMOp_label)
+      if (sym!=NULL && op==TR::InstOpCode::label)
          sym->setInstruction(this);
       }
 
@@ -272,7 +272,7 @@ class ARMLabelInstruction : public TR::Instruction
                        TR::CodeGenerator                   *cg)
       : TR::Instruction(precedingInstruction, op, node, cond, cg), _symbol(sym), _t1reg(NULL), _s1reg(NULL)
       {
-      if (sym!=NULL && op==ARMOp_label)
+      if (sym!=NULL && op==TR::InstOpCode::label)
          sym->setInstruction(this);
       }
 
@@ -411,7 +411,7 @@ class ARMVirtualGuardNOPInstruction : public TR::ARMLabelInstruction
                                  TR::RegisterDependencyConditions *cond,
                                  TR::LabelSymbol                  *sym,
                                  TR::CodeGenerator                *cg)
-      : TR::ARMLabelInstruction(ARMOp_vgdnop, node, cond, sym, cg),
+      : TR::ARMLabelInstruction(TR::InstOpCode::vgnop, node, cond, sym, cg),
         _site(site)
       {
       }
@@ -422,7 +422,7 @@ class ARMVirtualGuardNOPInstruction : public TR::ARMLabelInstruction
                                  TR::LabelSymbol                  *sym,
                                  TR::Instruction                *precedingInstruction,
                                  TR::CodeGenerator                *cg)
-      : TR::ARMLabelInstruction(precedingInstruction, ARMOp_vgdnop, node, cond, sym, cg),
+      : TR::ARMLabelInstruction(precedingInstruction, TR::InstOpCode::vgnop, node, cond, sym, cg),
         _site(site)
       {
       }
@@ -700,7 +700,7 @@ class ARMLoadStartPCInstruction : public TR::ARMTrg1Src2Instruction
                              TR::Register      *treg,
                              TR::SymbolReference *symRef,
                              TR::CodeGenerator *cg)
-      : TR::ARMTrg1Src2Instruction(ARMOp_sub, node, treg, cg->machine()->getRealRegister(TR::RealRegister::gr15),
+      : TR::ARMTrg1Src2Instruction(TR::InstOpCode::sub, node, treg, cg->machine()->getRealRegister(TR::RealRegister::gr15),
          new (cg->trHeapMemory()) TR_ARMOperand2(0xde, 24), cg), /* The value 0xde does not mean anything. It will be replaced in the binary encoding phase. */
         _symbolReference(symRef)
       {
@@ -711,7 +711,7 @@ class ARMLoadStartPCInstruction : public TR::ARMTrg1Src2Instruction
                              TR::Register      *treg,
                              TR::SymbolReference *symRef,
                              TR::CodeGenerator *cg)
-      : TR::ARMTrg1Src2Instruction(precedingInstruction, ARMOp_sub, node, treg, cg->machine()->getRealRegister(TR::RealRegister::gr15),
+      : TR::ARMTrg1Src2Instruction(precedingInstruction, TR::InstOpCode::sub, node, treg, cg->machine()->getRealRegister(TR::RealRegister::gr15),
          new (cg->trHeapMemory()) TR_ARMOperand2(0xde, 0), cg),  /* The value 0xde does not mean anything. It will be replaced in the binary encoding phase. */
         _symbolReference(symRef)
       {
@@ -1358,12 +1358,12 @@ class ARMControlFlowInstruction : public TR::Instruction
 
    ARMControlFlowInstruction(TR::Node *node, TR::CodeGenerator *cg) : TR::Instruction(node, cg) {}
    ARMControlFlowInstruction(TR::InstOpCode::Mnemonic  op, TR::Node *node, TR::CodeGenerator *cg)
-      : TR::Instruction(op, node, cg), _numSources(0), _numTargets(0), _label(NULL), _opCode2(ARMOp_bad)
+      : TR::Instruction(op, node, cg), _numSources(0), _numTargets(0), _label(NULL), _opCode2(TR::InstOpCode::bad)
       {
       }
 
    ARMControlFlowInstruction(TR::InstOpCode::Mnemonic  op, TR::Node *node, TR::RegisterDependencyConditions *deps, TR::CodeGenerator *cg)
-      : TR::Instruction(op, node, deps, cg), _numSources(0), _numTargets(0), _label(NULL), _opCode2(ARMOp_bad)
+      : TR::Instruction(op, node, deps, cg), _numSources(0), _numTargets(0), _label(NULL), _opCode2(TR::InstOpCode::bad)
       {
       }
 

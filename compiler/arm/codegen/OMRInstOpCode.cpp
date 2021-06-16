@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,14 +29,13 @@ const OMR::ARM::InstOpCode::OpCodeMetaData OMR::ARM::InstOpCode::metadata[NumOpC
 const OMR::ARM::InstOpCode::TR_OpCodeBinaryEntry OMR::ARM::InstOpCode::binaryEncodings[NumOpCodes] =
 {
    0x00000000,  // assocreg
-   0x00000000,  // bad
+   0xE6000010,  // bad
    0x00000000,  // dd
    0x00000000,  // fence
    0x00000000,  // label
    0x00000000,  // proc
    0x00000000,  // retn
    0x00000000,  // vgnop
-   0xE6000010,  // bad
    0x00800000,  // add
    0x00900000,  // add_r
    0x00A00000,  // adc
@@ -100,11 +99,7 @@ const OMR::ARM::InstOpCode::TR_OpCodeBinaryEntry OMR::ARM::InstOpCode::binaryEnc
    0x06BF0070,  // sxth
    0x06EF0070,  // uxtb
    0x06FF0070,  // uxth
-   0x00000000,  // fence
-   0x00000000,  // ret
    0x00000000,  // wrtbar
-   0x00000000,  // proc
-   0x00000000,  // dd
    0x0E070FBA,  // dmb_v6
    0xF57FF05F,  // dmb
    0xF57FF05E,  // dmb_st
@@ -119,8 +114,6 @@ const OMR::ARM::InstOpCode::TR_OpCodeBinaryEntry OMR::ARM::InstOpCode::binaryEnc
    0x00000000,  // flcmpg
    0x00000000,  // idiv
    0x00000000,  // irem
-   0x00000000,  // Label
-   0x00000000,  // vgdnop
    0xE1A00000,  // nop (mov r0, r0)
    0x0EB00BC0,  // fabsd (vabs<c>.f64)
    0x0EB00AC0,  // fabss (vabs<c>.f32)
@@ -196,7 +189,7 @@ const uint32_t OMR::ARM::InstOpCode::properties[NumOpCodes] =
 0,
 
 // label
-0,
+ARMOpProp_Label,
 
 // proc
 0,
@@ -205,9 +198,6 @@ const uint32_t OMR::ARM::InstOpCode::properties[NumOpCodes] =
 0,
 
 // vgnop
-0,
-
-// bad
 0,
 
 // add
@@ -399,19 +389,7 @@ ARMOpProp_Arch4,
 // uxth
 0,
 
-// fence
-0,
-
-// ret
-0,
-
 // wrtbar
-0,
-
-// proc
-0,
-
-// dd
 0,
 
 // dmb_v6
@@ -454,12 +432,6 @@ ARMOpProp_Arch4,
 0,
 
 // irem
-0,
-
-// Label
-ARMOpProp_Label,
-
-// vgdnop
 0,
 
 // nop

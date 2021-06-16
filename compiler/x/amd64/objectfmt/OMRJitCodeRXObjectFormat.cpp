@@ -79,11 +79,11 @@ OMR::X86::AMD64::JitCodeRXObjectFormat::emitFunctionCall(TR::FunctionCallData &d
 
       if (data.prevInstr)
          {
-         callImmSymInstr = generateImmSymInstruction(data.prevInstr, CALLImm4, 0, data.methodSymRef, data.regDeps, data.cg);
+         callImmSymInstr = generateImmSymInstruction(data.prevInstr, TR::InstOpCode::CALLImm4, 0, data.methodSymRef, data.regDeps, data.cg);
          }
       else
          {
-         callImmSymInstr = generateImmSymInstruction(CALLImm4, data.callNode, 0, data.methodSymRef, data.regDeps, data.cg);
+         callImmSymInstr = generateImmSymInstruction(TR::InstOpCode::CALLImm4, data.callNode, 0, data.methodSymRef, data.regDeps, data.cg);
          }
 
       if (data.adjustsFramePointerBy != 0)
@@ -115,11 +115,11 @@ OMR::X86::AMD64::JitCodeRXObjectFormat::emitFunctionCall(TR::FunctionCallData &d
 
    if (data.prevInstr)
       {
-      callInstr = generateCallMemInstruction(data.prevInstr, CALLMem, callMR, data.regDeps, data.cg);
+      callInstr = generateCallMemInstruction(data.prevInstr, TR::InstOpCode::CALLMem, callMR, data.regDeps, data.cg);
       }
    else
       {
-      callInstr = generateCallMemInstruction(CALLMem, data.callNode, callMR, data.regDeps, data.cg);
+      callInstr = generateCallMemInstruction(TR::InstOpCode::CALLMem, data.callNode, callMR, data.regDeps, data.cg);
       }
 
    if (data.adjustsFramePointerBy != 0)

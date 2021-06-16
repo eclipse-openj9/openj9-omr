@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 IBM Corp. and others
+ * Copyright (c) 2017, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,7 +42,7 @@ static TR::MemoryReference* ConvertToPatchableMemoryReference(TR::MemoryReferenc
       // Hence, the unresolved memory reference must be evaluated into a register first.
       //
       TR::Register* tempReg = cg->allocateRegister();
-      generateRegMemInstruction(LEARegMem(), node, tempReg, mr, cg);
+      generateRegMemInstruction(TR::InstOpCode::LEARegMem(), node, tempReg, mr, cg);
       mr = generateX86MemoryReference(tempReg, 0, cg);
       cg->stopUsingRegister(tempReg);
       }
@@ -75,11 +75,11 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDloadEvaluator(TR::Node* node, TR::Cod
    tempMR = ConvertToPatchableMemoryReference(tempMR, node, cg);
    TR::Register* resultReg = cg->allocateRegister(TR_VRF);
 
-   TR::InstOpCode::Mnemonic opCode = BADIA32Op;
+   TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
    switch (node->getSize())
       {
       case 16:
-         opCode = MOVDQURegMem;
+         opCode = TR::InstOpCode::MOVDQURegMem;
          break;
       default:
          if (cg->comp()->getOption(TR_TraceCG))
@@ -103,11 +103,11 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDstoreEvaluator(TR::Node* node, TR::Co
    tempMR = ConvertToPatchableMemoryReference(tempMR, node, cg);
    TR::Register* valueReg = cg->evaluate(valueNode);
 
-   TR::InstOpCode::Mnemonic opCode = BADIA32Op;
+   TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
    switch (node->getSize())
       {
       case 16:
-         opCode = MOVDQUMemReg;
+         opCode = TR::InstOpCode::MOVDQUMemReg;
          break;
       default:
          if (cg->comp()->getOption(TR_TraceCG))
@@ -134,30 +134,30 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDsplatsEvaluator(TR::Node* node, TR::C
    switch (node->getDataType())
       {
       case TR::VectorInt32:
-         generateRegRegInstruction(MOVDRegReg4, node, resultReg, childReg, cg);
-         generateRegRegImmInstruction(PSHUFDRegRegImm1, node, resultReg, resultReg, 0x00, cg); // 00 00 00 00 shuffle xxxA to AAAA
+         generateRegRegInstruction(TR::InstOpCode::MOVDRegReg4, node, resultReg, childReg, cg);
+         generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, resultReg, resultReg, 0x00, cg); // 00 00 00 00 shuffle xxxA to AAAA
          break;
       case TR::VectorInt64:
          if (cg->comp()->target().is32Bit())
             {
             TR::Register* tempVectorReg = cg->allocateRegister(TR_VRF);
-            generateRegRegInstruction(MOVDRegReg4, node, tempVectorReg, childReg->getHighOrder(), cg);
-            generateRegImmInstruction(PSLLQRegImm1, node, tempVectorReg, 0x20, cg);
-            generateRegRegInstruction(MOVDRegReg4, node, resultReg, childReg->getLowOrder(), cg);
-            generateRegRegInstruction(PORRegReg, node, resultReg, tempVectorReg, cg);
+            generateRegRegInstruction(TR::InstOpCode::MOVDRegReg4, node, tempVectorReg, childReg->getHighOrder(), cg);
+            generateRegImmInstruction(TR::InstOpCode::PSLLQRegImm1, node, tempVectorReg, 0x20, cg);
+            generateRegRegInstruction(TR::InstOpCode::MOVDRegReg4, node, resultReg, childReg->getLowOrder(), cg);
+            generateRegRegInstruction(TR::InstOpCode::PORRegReg, node, resultReg, tempVectorReg, cg);
             cg->stopUsingRegister(tempVectorReg);
             }
          else
             {
-            generateRegRegInstruction(MOVQRegReg8, node, resultReg, childReg, cg);
+            generateRegRegInstruction(TR::InstOpCode::MOVQRegReg8, node, resultReg, childReg, cg);
             }
-         generateRegRegImmInstruction(PSHUFDRegRegImm1, node, resultReg, resultReg, 0x44, cg); // 01 00 01 00 shuffle xxBA to BABA
+         generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, resultReg, resultReg, 0x44, cg); // 01 00 01 00 shuffle xxBA to BABA
          break;
       case TR::VectorFloat:
-         generateRegRegImmInstruction(PSHUFDRegRegImm1, node, resultReg, childReg, 0x00, cg); // 00 00 00 00 shuffle xxxA to AAAA
+         generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, resultReg, childReg, 0x00, cg); // 00 00 00 00 shuffle xxxA to AAAA
          break;
       case TR::VectorDouble:
-         generateRegRegImmInstruction(PSHUFDRegRegImm1, node, resultReg, childReg, 0x44, cg); // 01 00 01 00 shuffle xxBA to BABA
+         generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, resultReg, childReg, 0x44, cg); // 01 00 01 00 shuffle xxBA to BABA
          break;
       default:
          if (cg->comp()->getOption(TR_TraceCG))
@@ -256,16 +256,16 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDgetvelemEvaluator(TR::Node* node, TR:
           */
          if (3 == elem)
             {
-            generateRegRegInstruction(MOVDQURegReg, node, dstReg, srcVectorReg, cg);
+            generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, dstReg, srcVectorReg, cg);
             }
          else
             {
-            generateRegRegImmInstruction(PSHUFDRegRegImm1, node, dstReg, srcVectorReg, shufconst, cg);
+            generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, dstReg, srcVectorReg, shufconst, cg);
             }
 
          if (TR::VectorInt32 == firstChild->getDataType())
             {
-            generateRegRegInstruction(MOVDReg4Reg, node, resReg, dstReg, cg);
+            generateRegRegInstruction(TR::InstOpCode::MOVDReg4Reg, node, resReg, dstReg, cg);
             cg->stopUsingRegister(dstReg);
             }
          }
@@ -293,24 +293,24 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDgetvelemEvaluator(TR::Node* node, TR:
           */
          if (1 == elem)
             {
-            generateRegRegInstruction(MOVDQURegReg, node, dstReg, srcVectorReg, cg);
+            generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, dstReg, srcVectorReg, cg);
             }
          else //0 == elem
             {
-            generateRegRegImmInstruction(PSHUFDRegRegImm1, node, dstReg, srcVectorReg, 0x0e, cg);
+            generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, dstReg, srcVectorReg, 0x0e, cg);
             }
 
          if (TR::VectorInt64 == firstChild->getDataType())
             {
             if (cg->comp()->target().is32Bit())
                {
-               generateRegRegInstruction(MOVDReg4Reg, node, lowResReg, dstReg, cg);
-               generateRegRegImmInstruction(PSHUFDRegRegImm1, node, dstReg, srcVectorReg, (0 == elem) ? 0x03 : 0x01, cg);
-               generateRegRegInstruction(MOVDReg4Reg, node, highResReg, dstReg, cg);
+               generateRegRegInstruction(TR::InstOpCode::MOVDReg4Reg, node, lowResReg, dstReg, cg);
+               generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, dstReg, srcVectorReg, (0 == elem) ? 0x03 : 0x01, cg);
+               generateRegRegInstruction(TR::InstOpCode::MOVDReg4Reg, node, highResReg, dstReg, cg);
                }
             else
                {
-               generateRegRegInstruction(MOVQReg8Reg, node, resReg, dstReg, cg);
+               generateRegRegInstruction(TR::InstOpCode::MOVQReg8Reg, node, resReg, dstReg, cg);
                }
             cg->stopUsingRegister(dstReg);
             }

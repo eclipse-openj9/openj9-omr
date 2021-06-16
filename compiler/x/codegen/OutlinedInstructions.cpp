@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -109,7 +109,7 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
    cg()->setFirstInstruction(NULL);
    cg()->setAppendInstruction(NULL);
 
-   new (_cg->trHeapMemory()) TR::X86LabelInstruction(NULL, LABEL, _entryLabel, _cg);
+   new (_cg->trHeapMemory()) TR::X86LabelInstruction(NULL, TR::InstOpCode::label, _entryLabel, _cg);
 
    TR::Register *resultReg=NULL;
    if (_callNode->getOpCode().isCallIndirect())
@@ -130,20 +130,20 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
                 "OutlinedInstructions: targetReg and resultReg must be both register pairs or neither register pairs.");
       if (targetRegPair)
          {
-         generateRegRegInstruction(MOVRegReg(), _callNode, targetRegPair->getLowOrder(),  resultRegPair->getLowOrder(),  _cg);
-         generateRegRegInstruction(MOVRegReg(), _callNode, targetRegPair->getHighOrder(), resultRegPair->getHighOrder(), _cg);
+         generateRegRegInstruction(TR::InstOpCode::MOVRegReg(), _callNode, targetRegPair->getLowOrder(),  resultRegPair->getLowOrder(),  _cg);
+         generateRegRegInstruction(TR::InstOpCode::MOVRegReg(), _callNode, targetRegPair->getHighOrder(), resultRegPair->getHighOrder(), _cg);
          }
       else
          {
-         TR::InstOpCode::Mnemonic mov = BADIA32Op;
+         TR::InstOpCode::Mnemonic mov = TR::InstOpCode::bad;
          switch (resultReg->getKind())
             {
             case TR_GPR:
-               mov = MOVRegReg();
+               mov = TR::InstOpCode::MOVRegReg();
                break;
             case TR_FPR:
             case TR_VRF:
-               mov = MOVDQURegReg;
+               mov = TR::InstOpCode::MOVDQURegReg;
                break;
             default:
                TR_ASSERT(false, "OutlinedInstructions: unsupported result register kind.");
@@ -156,7 +156,7 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
    _cg->decReferenceCount(_callNode);
 
    if (_restartLabel)
-      generateLabelInstruction(JMP4, _callNode, _restartLabel, _cg);
+      generateLabelInstruction(TR::InstOpCode::JMP4, _callNode, _restartLabel, _cg);
    else
       {
       // Java-specific.
@@ -167,12 +167,12 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
       //
       // When the handshake is removed, we can delete this zero.
       //
-      generateImmInstruction(DDImm4, _callNode, 0, _cg);
+      generateImmInstruction(TR::InstOpCode::DDImm4, _callNode, 0, _cg);
       }
 
    // Dummy label to delimit the end of the helper call dispatch sequence (for exception ranges).
    //
-   generateLabelInstruction(LABEL, _callNode, TR::LabelSymbol::create(_cg->trHeapMemory(),_cg), _cg);
+   generateLabelInstruction(TR::InstOpCode::label, _callNode, TR::LabelSymbol::create(_cg->trHeapMemory(),_cg), _cg);
 
    // Switch from cold helper instruction stream.
    //
@@ -377,13 +377,13 @@ TR_OutlinedInstructionsGenerator::TR_OutlinedInstructionsGenerator(TR::LabelSymb
    _oi->setCallNode(node);
    cg->getOutlinedInstructionsList().push_front(_oi);
    _oi->swapInstructionListsWithCompilation();
-   generateLabelInstruction(LABEL, node, entryLabel, cg);
+   generateLabelInstruction(TR::InstOpCode::label, node, entryLabel, cg);
    }
 
 void
 TR_OutlinedInstructionsGenerator::endOutlinedInstructionSequence()
    {
-   generateLabelInstruction(LABEL, _oi->_callNode, generateLabelSymbol(_oi->_cg), _oi->_cg);
+   generateLabelInstruction(TR::InstOpCode::label, _oi->_callNode, generateLabelSymbol(_oi->_cg), _oi->_cg);
    _oi->swapInstructionListsWithCompilation();
    _hasEnded = true;
    }

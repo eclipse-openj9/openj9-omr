@@ -38,194 +38,8 @@ namespace OMR { typedef OMR::X86::InstOpCode InstOpCodeConnector; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Register; }
 
-#include "compiler/x/codegen/OMRInstOpCode.enum.temp.defines"
-
-#define IA32LongToShortBranchConversionOffset ((int)JMP4 - (int)JMP1)
+#define IA32LongToShortBranchConversionOffset ((int)OMR::InstOpCode::JMP4 - (int)OMR::InstOpCode::JMP1)
 #define IA32LengthOfShortBranch               2
-
-// Size-parameterized opcodes
-//
-template <OMR::InstOpCode::Mnemonic Op64, OMR::InstOpCode::Mnemonic Op32>
-inline OMR::InstOpCode::Mnemonic SizeParameterizedOpCode(bool is64Bit =
-#ifdef TR_TARGET_64BIT
-    true
-#else
-    false
-#endif
-)
-   {
-   return is64Bit ? Op64 : Op32;
-   }
-
-#define BSFRegReg      SizeParameterizedOpCode<BSF8RegReg      , BSF4RegReg      >
-#define BSWAPReg       SizeParameterizedOpCode<BSWAP8Reg       , BSWAP4Reg       >
-#define BSRRegReg      SizeParameterizedOpCode<BSR8RegReg      , BSR4RegReg      >
-#define BTRegReg       SizeParameterizedOpCode<BT8RegReg       , BT4RegReg       >
-#define CMOVBRegReg    SizeParameterizedOpCode<CMOVB8RegReg    , CMOVB4RegReg    >
-#define CMOVARegMem    SizeParameterizedOpCode<CMOVA8RegMem    , CMOVA4RegMem    >
-#define CMOVERegMem    SizeParameterizedOpCode<CMOVE8RegMem    , CMOVE4RegMem    >
-#define CMOVERegReg    SizeParameterizedOpCode<CMOVE8RegReg    , CMOVE4RegReg    >
-#define CMOVNERegMem   SizeParameterizedOpCode<CMOVNE8RegMem   , CMOVNE4RegMem   >
-#define CMOVNERegReg   SizeParameterizedOpCode<CMOVNE8RegReg   , CMOVNE4RegReg   >
-#define CMOVGERegMem   SizeParameterizedOpCode<CMOVGE8RegMem   , CMOVGE4RegMem   >
-#define CMOVGRegReg    SizeParameterizedOpCode<CMOVG8RegReg    , CMOVG4RegReg    >
-#define CMOVGERegReg   SizeParameterizedOpCode<CMOVGE8RegReg   , CMOVGE4RegReg   >
-#define CMOVLRegReg    SizeParameterizedOpCode<CMOVL8RegReg    , CMOVL4RegReg    >
-#define CMOVLERegReg   SizeParameterizedOpCode<CMOVLE8RegReg   , CMOVLE4RegReg   >
-#define CMOVPRegMem    SizeParameterizedOpCode<CMOVP8RegMem    , CMOVP4RegMem    >
-#define CMOVSRegReg    SizeParameterizedOpCode<CMOVS8RegReg    , CMOVS4RegReg    >
-#define CMPRegImms     SizeParameterizedOpCode<CMP8RegImms     , CMP4RegImms     >
-#define CMPRegImm4     SizeParameterizedOpCode<CMP8RegImm4     , CMP4RegImm4     >
-#define CMPMemImms     SizeParameterizedOpCode<CMP8MemImms     , CMP4MemImms     >
-#define CMPMemImm4     SizeParameterizedOpCode<CMP8MemImm4     , CMP4MemImm4     >
-#define MOVRegReg      SizeParameterizedOpCode<MOV8RegReg      , MOV4RegReg      >
-#define LEARegMem      SizeParameterizedOpCode<LEA8RegMem      , LEA4RegMem      >
-#define LRegMem        SizeParameterizedOpCode<L8RegMem        , L4RegMem        >
-#define SMemReg        SizeParameterizedOpCode<S8MemReg        , S4MemReg        >
-#define SMemImm4       SizeParameterizedOpCode<S8MemImm4       , S4MemImm4       >
-#define XRSMemImm4     SizeParameterizedOpCode<XRS8MemImm4     , XRS4MemImm4     >
-#define XCHGRegReg     SizeParameterizedOpCode<XCHG8RegReg     , XCHG4RegReg     >
-#define NEGReg         SizeParameterizedOpCode<NEG8Reg         , NEG4Reg         >
-#define IMULRegReg     SizeParameterizedOpCode<IMUL8RegReg     , IMUL4RegReg     >
-#define IMULRegMem     SizeParameterizedOpCode<IMUL8RegMem     , IMUL4RegMem     >
-#define IMULRegRegImms SizeParameterizedOpCode<IMUL8RegRegImms , IMUL4RegRegImms >
-#define IMULRegRegImm4 SizeParameterizedOpCode<IMUL8RegRegImm4 , IMUL4RegRegImm4 >
-#define IMULRegMemImms SizeParameterizedOpCode<IMUL8RegMemImms , IMUL4RegMemImms >
-#define IMULRegMemImm4 SizeParameterizedOpCode<IMUL8RegMemImm4 , IMUL4RegMemImm4 >
-#define INCMem         SizeParameterizedOpCode<INC8Mem         , INC4Mem         >
-#define INCReg         SizeParameterizedOpCode<INC8Reg         , INC4Reg         >
-#define DECMem         SizeParameterizedOpCode<DEC8Mem         , DEC4Mem         >
-#define DECReg         SizeParameterizedOpCode<DEC8Reg         , DEC4Reg         >
-#define ADDMemImms     SizeParameterizedOpCode<ADD8MemImms     , ADD4MemImms     >
-#define ADDRegImms     SizeParameterizedOpCode<ADD8RegImms     , ADD4RegImms     >
-#define ADDRegImm4     SizeParameterizedOpCode<ADD8RegImm4     , ADD4RegImm4     >
-#define ADCMemImms     SizeParameterizedOpCode<ADC8MemImms     , ADC4MemImms     >
-#define ADCRegImms     SizeParameterizedOpCode<ADC8RegImms     , ADC4RegImms     >
-#define ADCRegImm4     SizeParameterizedOpCode<ADC8RegImm4     , ADC4RegImm4     >
-#define SUBMemImms     SizeParameterizedOpCode<SUB8MemImms     , SUB4MemImms     >
-#define SUBRegImms     SizeParameterizedOpCode<SUB8RegImms     , SUB4RegImms     >
-#define SBBMemImms     SizeParameterizedOpCode<SBB8MemImms     , SBB4MemImms     >
-#define SBBRegImms     SizeParameterizedOpCode<SBB8RegImms     , SBB4RegImms     >
-#define ADDMemImm4     SizeParameterizedOpCode<ADD8MemImm4     , ADD4MemImm4     >
-#define ADDMemReg      SizeParameterizedOpCode<ADD8MemReg      , ADD4MemReg      >
-#define ADDRegReg      SizeParameterizedOpCode<ADD8RegReg      , ADD4RegReg      >
-#define ADDRegMem      SizeParameterizedOpCode<ADD8RegMem      , ADD4RegMem      >
-#define LADDMemReg     SizeParameterizedOpCode<LADD8MemReg     , LADD4MemReg     >
-#define LXADDMemReg    SizeParameterizedOpCode<LXADD8MemReg    , LXADD4MemReg    >
-#define ADCMemImm4     SizeParameterizedOpCode<ADC8MemImm4     , ADC4MemImm4     >
-#define ADCMemReg      SizeParameterizedOpCode<ADC8MemReg      , ADC4MemReg      >
-#define ADCRegReg      SizeParameterizedOpCode<ADC8RegReg      , ADC4RegReg      >
-#define ADCRegMem      SizeParameterizedOpCode<ADC8RegMem      , ADC4RegMem      >
-#define SUBMemImm4     SizeParameterizedOpCode<SUB8MemImm4     , SUB4MemImm4     >
-#define SUBRegImm4     SizeParameterizedOpCode<SUB8RegImm4     , SUB4RegImm4     >
-#define SUBMemReg      SizeParameterizedOpCode<SUB8MemReg      , SUB4MemReg      >
-#define SUBRegReg      SizeParameterizedOpCode<SUB8RegReg      , SUB4RegReg      >
-#define SUBRegMem      SizeParameterizedOpCode<SUB8RegMem      , SUB4RegMem      >
-#define SBBMemImm4     SizeParameterizedOpCode<SBB8MemImm4     , SBB4MemImm4     >
-#define SBBRegImm4     SizeParameterizedOpCode<SBB8RegImm4     , SBB4RegImm4     >
-#define SBBMemReg      SizeParameterizedOpCode<SBB8MemReg      , SBB4MemReg      >
-#define SBBRegReg      SizeParameterizedOpCode<SBB8RegReg      , SBB4RegReg      >
-#define SBBRegMem      SizeParameterizedOpCode<SBB8RegMem      , SBB4RegMem      >
-#define ORRegImm4      SizeParameterizedOpCode<OR8RegImm4      , OR4RegImm4      >
-#define ORRegImms      SizeParameterizedOpCode<OR8RegImms      , OR4RegImms      >
-#define ORRegMem       SizeParameterizedOpCode<OR8RegMem       , OR4RegMem       >
-#define XORRegMem      SizeParameterizedOpCode<XOR8RegMem      , XOR4RegMem      >
-#define XORRegImms     SizeParameterizedOpCode<XOR8RegImms     , XOR4RegImms     >
-#define XORRegImm4     SizeParameterizedOpCode<XOR8RegImm4     , XOR4RegImm4     >
-#define CXXAcc         SizeParameterizedOpCode<CQOAcc          , CDQAcc          >
-#define ANDRegImm4     SizeParameterizedOpCode<AND8RegImm4     , AND4RegImm4     >
-#define ANDRegReg      SizeParameterizedOpCode<AND8RegReg      , AND4RegReg      >
-#define ANDRegImms     SizeParameterizedOpCode<AND8RegImms     , AND4RegImms     >
-#define ORRegReg       SizeParameterizedOpCode<OR8RegReg       , OR4RegReg       >
-#define MOVRegImm4     SizeParameterizedOpCode<MOV8RegImm4     , MOV4RegImm4     >
-#define IMULAccReg     SizeParameterizedOpCode<IMUL8AccReg     , IMUL4AccReg     >
-#define IDIVAccMem     SizeParameterizedOpCode<IDIV8AccMem     , IDIV4AccMem     >
-#define IDIVAccReg     SizeParameterizedOpCode<IDIV8AccReg     , IDIV4AccReg     >
-#define DIVAccMem      SizeParameterizedOpCode<DIV8AccMem      , DIV4AccMem      >
-#define DIVAccReg      SizeParameterizedOpCode<DIV8AccReg      , DIV4AccReg      >
-#define NOTReg         SizeParameterizedOpCode<NOT8Reg         , NOT4Reg         >
-#define POPCNTRegReg   SizeParameterizedOpCode<POPCNT8RegReg   , POPCNT4RegReg   >
-#define ROLRegImm1     SizeParameterizedOpCode<ROL8RegImm1     , ROL4RegImm1     >
-#define ROLRegCL       SizeParameterizedOpCode<ROL8RegCL       , ROL4RegCL       >
-#define SHLMemImm1     SizeParameterizedOpCode<SHL8MemImm1     , SHL4MemImm1     >
-#define SHLMemCL       SizeParameterizedOpCode<SHL8MemCL       , SHL4MemCL       >
-#define SHLRegImm1     SizeParameterizedOpCode<SHL8RegImm1     , SHL4RegImm1     >
-#define SHLRegCL       SizeParameterizedOpCode<SHL8RegCL       , SHL4RegCL       >
-#define SARMemImm1     SizeParameterizedOpCode<SAR8MemImm1     , SAR4MemImm1     >
-#define SARMemCL       SizeParameterizedOpCode<SAR8MemCL       , SAR4MemCL       >
-#define SARRegImm1     SizeParameterizedOpCode<SAR8RegImm1     , SAR4RegImm1     >
-#define SARRegCL       SizeParameterizedOpCode<SAR8RegCL       , SAR4RegCL       >
-#define SHRMemImm1     SizeParameterizedOpCode<SHR8MemImm1     , SHR4MemImm1     >
-#define SHRMemCL       SizeParameterizedOpCode<SHR8MemCL       , SHR4MemCL       >
-#define SHRReg1        SizeParameterizedOpCode<SHR8Reg1        , SHR4Reg1        >
-#define SHRRegImm1     SizeParameterizedOpCode<SHR8RegImm1     , SHR4RegImm1     >
-#define SHRRegCL       SizeParameterizedOpCode<SHR8RegCL       , SHR4RegCL       >
-#define TESTMemImm4    SizeParameterizedOpCode<TEST8MemImm4    , TEST4MemImm4    >
-#define TESTRegImm4    SizeParameterizedOpCode<TEST8RegImm4    , TEST4RegImm4    >
-#define TESTRegReg     SizeParameterizedOpCode<TEST8RegReg     , TEST4RegReg     >
-#define TESTMemReg     SizeParameterizedOpCode<TEST8MemReg     , TEST4MemReg     >
-#define XORRegReg      SizeParameterizedOpCode<XOR8RegReg      , XOR4RegReg      >
-#define CMPRegReg      SizeParameterizedOpCode<CMP8RegReg      , CMP4RegReg      >
-#define CMPRegMem      SizeParameterizedOpCode<CMP8RegMem      , CMP4RegMem      >
-#define CMPMemReg      SizeParameterizedOpCode<CMP8MemReg      , CMP4MemReg      >
-#define CMPXCHGMemReg  SizeParameterizedOpCode<CMPXCHG8MemReg  , CMPXCHG4MemReg  >
-#define LCMPXCHGMemReg SizeParameterizedOpCode<LCMPXCHG8MemReg , LCMPXCHG4MemReg >
-#define REPSTOS        SizeParameterizedOpCode<REPSTOSQ        , REPSTOSD        >
-// Floating-point
-#define MOVSMemReg     SizeParameterizedOpCode<MOVSDMemReg     , MOVSSMemReg     >
-#define MOVSRegMem     SizeParameterizedOpCode<MOVSDRegMem     , MOVSSRegMem     >
-// FMA
-#define VFMADD231SRegRegReg  SizeParameterizedOpCode<VFMADD231SDRegRegReg, VFMADD231SSRegRegReg>
-
-// Size and carry-parameterized opcodes
-//
-inline OMR::InstOpCode::Mnemonic AddMemImms (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCMemImms(is64Bit) : ADDMemImms(is64Bit) ; }
-inline OMR::InstOpCode::Mnemonic AddRegImms (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCRegImms(is64Bit) : ADDRegImms(is64Bit) ; }
-inline OMR::InstOpCode::Mnemonic AddRegImm4 (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCRegImm4(is64Bit) : ADDRegImm4(is64Bit) ; }
-inline OMR::InstOpCode::Mnemonic AddMemImm4 (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCMemImm4(is64Bit) : ADDMemImm4(is64Bit) ; }
-inline OMR::InstOpCode::Mnemonic AddMemReg  (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCMemReg(is64Bit)  : ADDMemReg(is64Bit)  ; }
-inline OMR::InstOpCode::Mnemonic AddRegReg  (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCRegReg(is64Bit)  : ADDRegReg(is64Bit)  ; }
-inline OMR::InstOpCode::Mnemonic AddRegMem  (bool is64Bit, bool isWithCarry)  { return isWithCarry   ? ADCRegMem(is64Bit)  : ADDRegMem(is64Bit)  ; }
-
-inline OMR::InstOpCode::Mnemonic SubMemImms (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBMemImms(is64Bit) : SUBMemImms(is64Bit) ; }
-inline OMR::InstOpCode::Mnemonic SubRegImms (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBRegImms(is64Bit) : SUBRegImms(is64Bit) ; }
-inline OMR::InstOpCode::Mnemonic SubRegImm4 (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBRegImm4(is64Bit) : SUBRegImm4(is64Bit) ; }
-inline OMR::InstOpCode::Mnemonic SubMemImm4 (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBMemImm4(is64Bit) : SUBMemImm4(is64Bit) ; }
-inline OMR::InstOpCode::Mnemonic SubMemReg  (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBMemReg(is64Bit)  : SUBMemReg(is64Bit)  ; }
-inline OMR::InstOpCode::Mnemonic SubRegReg  (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBRegReg(is64Bit)  : SUBRegReg(is64Bit)  ; }
-inline OMR::InstOpCode::Mnemonic SubRegMem  (bool is64Bit, bool isWithBorrow) { return isWithBorrow  ? SBBRegMem(is64Bit)  : SUBRegMem(is64Bit)  ; }
-
-//Broader sized parameterized opcodes 
-template <OMR::InstOpCode::Mnemonic Op64, OMR::InstOpCode::Mnemonic Op32, OMR::InstOpCode::Mnemonic Op16, OMR::InstOpCode::Mnemonic Op8>
-inline OMR::InstOpCode::Mnemonic SizedParameterizedOpCode(int size =
-#ifdef TR_TARGET_64BIT
-   8
-#else
-   4
-#endif
-)
-   {
-   OMR::InstOpCode::Mnemonic op = BADIA32Op;
-   switch (size)
-      {
-      case 8:  op = Op64;      break;
-      case 4:  op = Op32;      break;
-      case 2:  op = Op16;      break;
-      case 1:  op = Op8;       break;
-      default: op = BADIA32Op; break;
-      }
-   TR_ASSERT(op != BADIA32Op , "Unsupported operand size %d", size);
-   return op;
-   }
-
-// Data type based opcodes
-#define MovRegReg      SizedParameterizedOpCode<MOV8RegReg      , MOV4RegReg      , MOV2RegReg      , MOV1RegReg  >
-#define IMulRegReg     SizedParameterizedOpCode<IMUL8RegReg     , IMUL4RegReg     , IMUL2RegReg     , IMUL1AccReg >
-#define IMulRegMem     SizedParameterizedOpCode<IMUL8RegMem     , IMUL4RegMem     , IMUL2RegMem     , IMUL1AccMem >
-#define IMulRegRegImms SizedParameterizedOpCode<IMUL8RegRegImms , IMUL4RegRegImms , IMUL2RegRegImms , BADIA32Op   >
-#define IMulRegRegImm4 SizedParameterizedOpCode<IMUL8RegRegImm4 , IMUL4RegRegImm4 , IMUL2RegRegImm2 , BADIA32Op   >
-#define IMulRegMemImms SizedParameterizedOpCode<IMUL8RegMemImms , IMUL4RegMemImms , IMUL2RegMemImms , BADIA32Op   >
-#define IMulRegMemImm4 SizedParameterizedOpCode<IMUL8RegMemImm4 , IMUL4RegMemImm4 , IMUL2RegMemImm2 , BADIA32Op   >
 
 // Property flags
 //
@@ -485,7 +299,7 @@ class InstOpCode: public OMR::InstOpCode
 
    protected:
 
-   InstOpCode():  OMR::InstOpCode(BADIA32Op) {}
+   InstOpCode():  OMR::InstOpCode(OMR::InstOpCode::bad) {}
    InstOpCode(Mnemonic m): OMR::InstOpCode(m) {}
 
    public:
@@ -575,20 +389,20 @@ class InstOpCode: public OMR::InstOpCode
       {
       switch(_mnemonic)
          {
-         case SETA1Reg:
-         case SETAE1Reg:
-         case SETB1Reg:
-         case SETBE1Reg:
-         case SETE1Reg:
-         case SETNE1Reg:
-         case SETG1Reg:
-         case SETGE1Reg:
-         case SETL1Reg:
-         case SETLE1Reg:
-         case SETS1Reg:
-         case SETNS1Reg:
-         case SETPO1Reg:
-         case SETPE1Reg:
+         case OMR::InstOpCode::SETA1Reg:
+         case OMR::InstOpCode::SETAE1Reg:
+         case OMR::InstOpCode::SETB1Reg:
+         case OMR::InstOpCode::SETBE1Reg:
+         case OMR::InstOpCode::SETE1Reg:
+         case OMR::InstOpCode::SETNE1Reg:
+         case OMR::InstOpCode::SETG1Reg:
+         case OMR::InstOpCode::SETGE1Reg:
+         case OMR::InstOpCode::SETL1Reg:
+         case OMR::InstOpCode::SETLE1Reg:
+         case OMR::InstOpCode::SETS1Reg:
+         case OMR::InstOpCode::SETNS1Reg:
+         case OMR::InstOpCode::SETPO1Reg:
+         case OMR::InstOpCode::SETPE1Reg:
             return true;
          default:
             return false;
@@ -599,8 +413,8 @@ class InstOpCode: public OMR::InstOpCode
    uint8_t* binary(uint8_t* cursor, uint8_t rex = 0) const;
    void finalize(uint8_t* cursor) const;
    void convertLongBranchToShort()
-      { // input must be a long branch in range JA4 - JMP4
-      if (((int)_mnemonic >= (int)JA4) && ((int)_mnemonic <= (int)JMP4))
+      { // input must be a long branch in range OMR::InstOpCode::JA4 - OMR::InstOpCode::JMP4
+      if (((int)_mnemonic >= (int)OMR::InstOpCode::JA4) && ((int)_mnemonic <= (int)OMR::InstOpCode::JMP4))
          _mnemonic = (OMR::InstOpCode::Mnemonic)((int)_mnemonic - IA32LongToShortBranchConversionOffset);
       }
 
@@ -624,7 +438,7 @@ class InstOpCode: public OMR::InstOpCode
    inline static uint32_t testsParityFlag(OMR::InstOpCode::Mnemonic op)      {return _properties[op] & IA32OpProp_TestsParityFlag;}
    inline static uint32_t modifiesParityFlag(OMR::InstOpCode::Mnemonic op)   {return _properties[op] & IA32OpProp_ModifiesParityFlag;}
    inline static uint32_t isCallOp(OMR::InstOpCode::Mnemonic op)             {return _properties1[op] & IA32OpProp1_CallOp;}
-   inline static uint32_t isCallImmOp(OMR::InstOpCode::Mnemonic op)          {return op == CALLImm4 || op == CALLREXImm4; }
+   inline static uint32_t isCallImmOp(OMR::InstOpCode::Mnemonic op)          {return op == OMR::InstOpCode::CALLImm4 || op == OMR::InstOpCode::CALLREXImm4; }
 
    inline static uint8_t getModifiedEFlags(OMR::InstOpCode::Mnemonic op)
       {
@@ -649,9 +463,201 @@ class InstOpCode: public OMR::InstOpCode
       }
 
 #if defined(DEBUG)
-   const char *getOpCodeName(TR::CodeGenerator *cg);
-   const char *getMnemonicName(TR::CodeGenerator *cg);
+      const char *getOpCodeName(TR::CodeGenerator *cg);
+      const char *getMnemonicName(TR::CodeGenerator *cg);
 #endif
+
+#ifdef TR_TARGET_64BIT
+#define TARGET_PARAMETERIZED_OPCODE(name, op64, op32) \
+      static inline OMR::InstOpCode::Mnemonic name(bool is64Bit = true) { return is64Bit ? op64 : op32; }
+#else
+#define TARGET_PARAMETERIZED_OPCODE(name, op64, op32) \
+      static inline OMR::InstOpCode::Mnemonic name(bool is64Bit = false) { return is64Bit ? op64 : op32; }
+#endif
+
+      TARGET_PARAMETERIZED_OPCODE(BSFRegReg      , BSF8RegReg      , BSF4RegReg      )
+      TARGET_PARAMETERIZED_OPCODE(BSWAPReg       , BSWAP8Reg       , BSWAP4Reg       )
+      TARGET_PARAMETERIZED_OPCODE(BSRRegReg      , BSR8RegReg      , BSR4RegReg      )
+      TARGET_PARAMETERIZED_OPCODE(BTRegReg       , BT8RegReg       , BT4RegReg       )
+      TARGET_PARAMETERIZED_OPCODE(CMOVBRegReg    , CMOVB8RegReg    , CMOVB4RegReg    )
+      TARGET_PARAMETERIZED_OPCODE(CMOVARegMem    , CMOVA8RegMem    , CMOVA4RegMem    )
+      TARGET_PARAMETERIZED_OPCODE(CMOVERegMem    , CMOVE8RegMem    , CMOVE4RegMem    )
+      TARGET_PARAMETERIZED_OPCODE(CMOVERegReg    , CMOVE8RegReg    , CMOVE4RegReg    )
+      TARGET_PARAMETERIZED_OPCODE(CMOVNERegMem   , CMOVNE8RegMem   , CMOVNE4RegMem   )
+      TARGET_PARAMETERIZED_OPCODE(CMOVNERegReg   , CMOVNE8RegReg   , CMOVNE4RegReg   )
+      TARGET_PARAMETERIZED_OPCODE(CMOVGERegMem   , CMOVGE8RegMem   , CMOVGE4RegMem   )
+      TARGET_PARAMETERIZED_OPCODE(CMOVGRegReg    , CMOVG8RegReg    , CMOVG4RegReg    )
+      TARGET_PARAMETERIZED_OPCODE(CMOVGERegReg   , CMOVGE8RegReg   , CMOVGE4RegReg   )
+      TARGET_PARAMETERIZED_OPCODE(CMOVLRegReg    , CMOVL8RegReg    , CMOVL4RegReg    )
+      TARGET_PARAMETERIZED_OPCODE(CMOVLERegReg   , CMOVLE8RegReg   , CMOVLE4RegReg   )
+      TARGET_PARAMETERIZED_OPCODE(CMOVPRegMem    , CMOVP8RegMem    , CMOVP4RegMem    )
+      TARGET_PARAMETERIZED_OPCODE(CMOVSRegReg    , CMOVS8RegReg    , CMOVS4RegReg    )
+      TARGET_PARAMETERIZED_OPCODE(CMPRegImms     , CMP8RegImms     , CMP4RegImms     )
+      TARGET_PARAMETERIZED_OPCODE(CMPRegImm4     , CMP8RegImm4     , CMP4RegImm4     )
+      TARGET_PARAMETERIZED_OPCODE(CMPMemImms     , CMP8MemImms     , CMP4MemImms     )
+      TARGET_PARAMETERIZED_OPCODE(CMPMemImm4     , CMP8MemImm4     , CMP4MemImm4     )
+      TARGET_PARAMETERIZED_OPCODE(MOVRegReg      , MOV8RegReg      , MOV4RegReg      )
+      TARGET_PARAMETERIZED_OPCODE(LEARegMem      , LEA8RegMem      , LEA4RegMem      )
+      TARGET_PARAMETERIZED_OPCODE(LRegMem        , L8RegMem        , L4RegMem        )
+      TARGET_PARAMETERIZED_OPCODE(SMemReg        , S8MemReg        , S4MemReg        )
+      TARGET_PARAMETERIZED_OPCODE(SMemImm4       , S8MemImm4       , S4MemImm4       )
+      TARGET_PARAMETERIZED_OPCODE(XRSMemImm4     , XRS8MemImm4     , XRS4MemImm4     )
+      TARGET_PARAMETERIZED_OPCODE(XCHGRegReg     , XCHG8RegReg     , XCHG4RegReg     )
+      TARGET_PARAMETERIZED_OPCODE(NEGReg         , NEG8Reg         , NEG4Reg         )
+      TARGET_PARAMETERIZED_OPCODE(IMULRegReg     , IMUL8RegReg     , IMUL4RegReg     )
+      TARGET_PARAMETERIZED_OPCODE(IMULRegMem     , IMUL8RegMem     , IMUL4RegMem     )
+      TARGET_PARAMETERIZED_OPCODE(IMULRegRegImms , IMUL8RegRegImms , IMUL4RegRegImms )
+      TARGET_PARAMETERIZED_OPCODE(IMULRegRegImm4 , IMUL8RegRegImm4 , IMUL4RegRegImm4 )
+      TARGET_PARAMETERIZED_OPCODE(IMULRegMemImms , IMUL8RegMemImms , IMUL4RegMemImms )
+      TARGET_PARAMETERIZED_OPCODE(IMULRegMemImm4 , IMUL8RegMemImm4 , IMUL4RegMemImm4 )
+      TARGET_PARAMETERIZED_OPCODE(INCMem         , INC8Mem         , INC4Mem         )
+      TARGET_PARAMETERIZED_OPCODE(INCReg         , INC8Reg         , INC4Reg         )
+      TARGET_PARAMETERIZED_OPCODE(DECMem         , DEC8Mem         , DEC4Mem         )
+      TARGET_PARAMETERIZED_OPCODE(DECReg         , DEC8Reg         , DEC4Reg         )
+      TARGET_PARAMETERIZED_OPCODE(ADDMemImms     , ADD8MemImms     , ADD4MemImms     )
+      TARGET_PARAMETERIZED_OPCODE(ADDRegImms     , ADD8RegImms     , ADD4RegImms     )
+      TARGET_PARAMETERIZED_OPCODE(ADDRegImm4     , ADD8RegImm4     , ADD4RegImm4     )
+      TARGET_PARAMETERIZED_OPCODE(ADCMemImms     , ADC8MemImms     , ADC4MemImms     )
+      TARGET_PARAMETERIZED_OPCODE(ADCRegImms     , ADC8RegImms     , ADC4RegImms     )
+      TARGET_PARAMETERIZED_OPCODE(ADCRegImm4     , ADC8RegImm4     , ADC4RegImm4     )
+      TARGET_PARAMETERIZED_OPCODE(SUBMemImms     , SUB8MemImms     , SUB4MemImms     )
+      TARGET_PARAMETERIZED_OPCODE(SUBRegImms     , SUB8RegImms     , SUB4RegImms     )
+      TARGET_PARAMETERIZED_OPCODE(SBBMemImms     , SBB8MemImms     , SBB4MemImms     )
+      TARGET_PARAMETERIZED_OPCODE(SBBRegImms     , SBB8RegImms     , SBB4RegImms     )
+      TARGET_PARAMETERIZED_OPCODE(ADDMemImm4     , ADD8MemImm4     , ADD4MemImm4     )
+      TARGET_PARAMETERIZED_OPCODE(ADDMemReg      , ADD8MemReg      , ADD4MemReg      )
+      TARGET_PARAMETERIZED_OPCODE(ADDRegReg      , ADD8RegReg      , ADD4RegReg      )
+      TARGET_PARAMETERIZED_OPCODE(ADDRegMem      , ADD8RegMem      , ADD4RegMem      )
+      TARGET_PARAMETERIZED_OPCODE(LADDMemReg     , LADD8MemReg     , LADD4MemReg     )
+      TARGET_PARAMETERIZED_OPCODE(LXADDMemReg    , LXADD8MemReg    , LXADD4MemReg    )
+      TARGET_PARAMETERIZED_OPCODE(ADCMemImm4     , ADC8MemImm4     , ADC4MemImm4     )
+      TARGET_PARAMETERIZED_OPCODE(ADCMemReg      , ADC8MemReg      , ADC4MemReg      )
+      TARGET_PARAMETERIZED_OPCODE(ADCRegReg      , ADC8RegReg      , ADC4RegReg      )
+      TARGET_PARAMETERIZED_OPCODE(ADCRegMem      , ADC8RegMem      , ADC4RegMem      )
+      TARGET_PARAMETERIZED_OPCODE(SUBMemImm4     , SUB8MemImm4     , SUB4MemImm4     )
+      TARGET_PARAMETERIZED_OPCODE(SUBRegImm4     , SUB8RegImm4     , SUB4RegImm4     )
+      TARGET_PARAMETERIZED_OPCODE(SUBMemReg      , SUB8MemReg      , SUB4MemReg      )
+      TARGET_PARAMETERIZED_OPCODE(SUBRegReg      , SUB8RegReg      , SUB4RegReg      )
+      TARGET_PARAMETERIZED_OPCODE(SUBRegMem      , SUB8RegMem      , SUB4RegMem      )
+      TARGET_PARAMETERIZED_OPCODE(SBBMemImm4     , SBB8MemImm4     , SBB4MemImm4     )
+      TARGET_PARAMETERIZED_OPCODE(SBBRegImm4     , SBB8RegImm4     , SBB4RegImm4     )
+      TARGET_PARAMETERIZED_OPCODE(SBBMemReg      , SBB8MemReg      , SBB4MemReg      )
+      TARGET_PARAMETERIZED_OPCODE(SBBRegReg      , SBB8RegReg      , SBB4RegReg      )
+      TARGET_PARAMETERIZED_OPCODE(SBBRegMem      , SBB8RegMem      , SBB4RegMem      )
+      TARGET_PARAMETERIZED_OPCODE(ORRegImm4      , OR8RegImm4      , OR4RegImm4      )
+      TARGET_PARAMETERIZED_OPCODE(ORRegImms      , OR8RegImms      , OR4RegImms      )
+      TARGET_PARAMETERIZED_OPCODE(ORRegMem       , OR8RegMem       , OR4RegMem       )
+      TARGET_PARAMETERIZED_OPCODE(XORRegMem      , XOR8RegMem      , XOR4RegMem      )
+      TARGET_PARAMETERIZED_OPCODE(XORRegImms     , XOR8RegImms     , XOR4RegImms     )
+      TARGET_PARAMETERIZED_OPCODE(XORRegImm4     , XOR8RegImm4     , XOR4RegImm4     )
+      TARGET_PARAMETERIZED_OPCODE(CXXAcc         , CQOAcc          , CDQAcc          )
+      TARGET_PARAMETERIZED_OPCODE(ANDRegImm4     , AND8RegImm4     , AND4RegImm4     )
+      TARGET_PARAMETERIZED_OPCODE(ANDRegReg      , AND8RegReg      , AND4RegReg      )
+      TARGET_PARAMETERIZED_OPCODE(ANDRegImms     , AND8RegImms     , AND4RegImms     )
+      TARGET_PARAMETERIZED_OPCODE(ORRegReg       , OR8RegReg       , OR4RegReg       )
+      TARGET_PARAMETERIZED_OPCODE(MOVRegImm4     , MOV8RegImm4     , MOV4RegImm4     )
+      TARGET_PARAMETERIZED_OPCODE(IMULAccReg     , IMUL8AccReg     , IMUL4AccReg     )
+      TARGET_PARAMETERIZED_OPCODE(IDIVAccMem     , IDIV8AccMem     , IDIV4AccMem     )
+      TARGET_PARAMETERIZED_OPCODE(IDIVAccReg     , IDIV8AccReg     , IDIV4AccReg     )
+      TARGET_PARAMETERIZED_OPCODE(DIVAccMem      , DIV8AccMem      , DIV4AccMem      )
+      TARGET_PARAMETERIZED_OPCODE(DIVAccReg      , DIV8AccReg      , DIV4AccReg      )
+      TARGET_PARAMETERIZED_OPCODE(NOTReg         , NOT8Reg         , NOT4Reg         )
+      TARGET_PARAMETERIZED_OPCODE(POPCNTRegReg   , POPCNT8RegReg   , POPCNT4RegReg   )
+      TARGET_PARAMETERIZED_OPCODE(ROLRegImm1     , ROL8RegImm1     , ROL4RegImm1     )
+      TARGET_PARAMETERIZED_OPCODE(ROLRegCL       , ROL8RegCL       , ROL4RegCL       )
+      TARGET_PARAMETERIZED_OPCODE(SHLMemImm1     , SHL8MemImm1     , SHL4MemImm1     )
+      TARGET_PARAMETERIZED_OPCODE(SHLMemCL       , SHL8MemCL       , SHL4MemCL       )
+      TARGET_PARAMETERIZED_OPCODE(SHLRegImm1     , SHL8RegImm1     , SHL4RegImm1     )
+      TARGET_PARAMETERIZED_OPCODE(SHLRegCL       , SHL8RegCL       , SHL4RegCL       )
+      TARGET_PARAMETERIZED_OPCODE(SARMemImm1     , SAR8MemImm1     , SAR4MemImm1     )
+      TARGET_PARAMETERIZED_OPCODE(SARMemCL       , SAR8MemCL       , SAR4MemCL       )
+      TARGET_PARAMETERIZED_OPCODE(SARRegImm1     , SAR8RegImm1     , SAR4RegImm1     )
+      TARGET_PARAMETERIZED_OPCODE(SARRegCL       , SAR8RegCL       , SAR4RegCL       )
+      TARGET_PARAMETERIZED_OPCODE(SHRMemImm1     , SHR8MemImm1     , SHR4MemImm1     )
+      TARGET_PARAMETERIZED_OPCODE(SHRMemCL       , SHR8MemCL       , SHR4MemCL       )
+      TARGET_PARAMETERIZED_OPCODE(SHRReg1        , SHR8Reg1        , SHR4Reg1        )
+      TARGET_PARAMETERIZED_OPCODE(SHRRegImm1     , SHR8RegImm1     , SHR4RegImm1     )
+      TARGET_PARAMETERIZED_OPCODE(SHRRegCL       , SHR8RegCL       , SHR4RegCL       )
+      TARGET_PARAMETERIZED_OPCODE(TESTMemImm4    , TEST8MemImm4    , TEST4MemImm4    )
+      TARGET_PARAMETERIZED_OPCODE(TESTRegImm4    , TEST8RegImm4    , TEST4RegImm4    )
+      TARGET_PARAMETERIZED_OPCODE(TESTRegReg     , TEST8RegReg     , TEST4RegReg     )
+      TARGET_PARAMETERIZED_OPCODE(TESTMemReg     , TEST8MemReg     , TEST4MemReg     )
+      TARGET_PARAMETERIZED_OPCODE(XORRegReg      , XOR8RegReg      , XOR4RegReg      )
+      TARGET_PARAMETERIZED_OPCODE(CMPRegReg      , CMP8RegReg      , CMP4RegReg      )
+      TARGET_PARAMETERIZED_OPCODE(CMPRegMem      , CMP8RegMem      , CMP4RegMem      )
+      TARGET_PARAMETERIZED_OPCODE(CMPMemReg      , CMP8MemReg      , CMP4MemReg      )
+      TARGET_PARAMETERIZED_OPCODE(CMPXCHGMemReg  , CMPXCHG8MemReg  , CMPXCHG4MemReg  )
+      TARGET_PARAMETERIZED_OPCODE(LCMPXCHGMemReg , LCMPXCHG8MemReg , LCMPXCHG4MemReg )
+      TARGET_PARAMETERIZED_OPCODE(REPSTOS        , REPSTOSQ        , REPSTOSD        )
+      // Floating-point
+      TARGET_PARAMETERIZED_OPCODE(MOVSMemReg     , MOVSDMemReg     , MOVSSMemReg     )
+      TARGET_PARAMETERIZED_OPCODE(MOVSRegMem     , MOVSDRegMem     , MOVSSRegMem     )
+      // FMA
+      TARGET_PARAMETERIZED_OPCODE(VFMADD231SRegRegReg, VFMADD231SDRegRegReg, VFMADD231SSRegRegReg)
+
+#define TARGET_CARRY_PARAMETERIZED_OPCODE(name, op64, op32) \
+      static inline OMR::InstOpCode::Mnemonic name(bool is64Bit, bool isWithCarry) { return isWithCarry ? op64(is64Bit) : op32(is64Bit); }
+
+      // Size and carry-parameterized opcodes
+      //
+      TARGET_CARRY_PARAMETERIZED_OPCODE(AddMemImms , ADCMemImms , ADDMemImms)
+      TARGET_CARRY_PARAMETERIZED_OPCODE(AddRegImms , ADCRegImms , ADDRegImms)
+      TARGET_CARRY_PARAMETERIZED_OPCODE(AddRegImm4 , ADCRegImm4 , ADDRegImm4)
+      TARGET_CARRY_PARAMETERIZED_OPCODE(AddMemImm4 , ADCMemImm4 , ADDMemImm4)
+      TARGET_CARRY_PARAMETERIZED_OPCODE(AddMemReg  , ADCMemReg  , ADDMemReg)
+      TARGET_CARRY_PARAMETERIZED_OPCODE(AddRegReg  , ADCRegReg  , ADDRegReg)
+      TARGET_CARRY_PARAMETERIZED_OPCODE(AddRegMem  , ADCRegMem  , ADDRegMem)
+      TARGET_CARRY_PARAMETERIZED_OPCODE(SubMemImms , SBBMemImms , SUBMemImms)
+      TARGET_CARRY_PARAMETERIZED_OPCODE(SubRegImms , SBBRegImms , SUBRegImms)
+      TARGET_CARRY_PARAMETERIZED_OPCODE(SubRegImm4 , SBBRegImm4 , SUBRegImm4)
+      TARGET_CARRY_PARAMETERIZED_OPCODE(SubMemImm4 , SBBMemImm4 , SUBMemImm4)
+      TARGET_CARRY_PARAMETERIZED_OPCODE(SubMemReg  , SBBMemReg  , SUBMemReg)
+      TARGET_CARRY_PARAMETERIZED_OPCODE(SubRegReg  , SBBRegReg  , SUBRegReg)
+      TARGET_CARRY_PARAMETERIZED_OPCODE(SubRegMem  , SBBRegMem  , SUBRegMem)
+
+#ifdef TR_TARGET_64BIT
+#define SIZE_PARAMETERIZED_OPCODE(name, op64, op32, op16, op8)              \
+      static inline OMR::InstOpCode::Mnemonic name(int32_t size = 8)        \
+         {                                                                  \
+         OMR::InstOpCode::Mnemonic op = OMR::InstOpCode::bad;               \
+         switch (size)                                                      \
+            {                                                               \
+            case 8: return op64;                                            \
+            case 4: return op32;                                            \
+            case 2: return op16;                                            \
+            case 1: return op8;                                             \
+            default:                                                        \
+               TR_ASSERT_FATAL(false, "Unsupported operand size %d", size); \
+               return OMR::InstOpCode::bad;                                 \
+            }                                                               \
+         }
+#else
+#define SIZE_PARAMETERIZED_OPCODE(name, op64, op32, op16, op8)              \
+      static inline OMR::InstOpCode::Mnemonic name(int32_t size = 4)        \
+         {                                                                  \
+         OMR::InstOpCode::Mnemonic op = OMR::InstOpCode::bad;               \
+         switch (size)                                                      \
+            {                                                               \
+            case 8: return op64;                                            \
+            case 4: return op32;                                            \
+            case 2: return op16;                                            \
+            case 1: return op8;                                             \
+            default:                                                        \
+               TR_ASSERT_FATAL(false, "Unsupported operand size %d", size); \
+               return OMR::InstOpCode::bad;                                 \
+            }                                                               \
+         }
+#endif
+
+      // Data type based opcodes
+      SIZE_PARAMETERIZED_OPCODE(MovRegReg      , MOV8RegReg      , MOV4RegReg      , MOV2RegReg      , MOV1RegReg  )
+      SIZE_PARAMETERIZED_OPCODE(IMulRegReg     , IMUL8RegReg     , IMUL4RegReg     , IMUL2RegReg     , IMUL1AccReg )
+      SIZE_PARAMETERIZED_OPCODE(IMulRegMem     , IMUL8RegMem     , IMUL4RegMem     , IMUL2RegMem     , IMUL1AccMem )
+      SIZE_PARAMETERIZED_OPCODE(IMulRegRegImms , IMUL8RegRegImms , IMUL4RegRegImms , IMUL2RegRegImms , bad         )
+      SIZE_PARAMETERIZED_OPCODE(IMulRegRegImm4 , IMUL8RegRegImm4 , IMUL4RegRegImm4 , IMUL2RegRegImm2 , bad         )
+      SIZE_PARAMETERIZED_OPCODE(IMulRegMemImms , IMUL8RegMemImms , IMUL4RegMemImms , IMUL2RegMemImms , bad         )
+      SIZE_PARAMETERIZED_OPCODE(IMulRegMemImm4 , IMUL8RegMemImm4 , IMUL4RegMemImm4 , IMUL2RegMemImm2 , bad         )
+
    };
 }
 }

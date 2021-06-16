@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -75,7 +75,7 @@ TR::Register *OMR::X86::TreeEvaluator::negEvaluatorHelper(TR::Node        *node,
 
 TR::Register *OMR::X86::TreeEvaluator::integerNegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::negEvaluatorHelper(node, NEGReg(TR::TreeEvaluator::getNodeIs64Bit(node, cg)), cg);
+   return TR::TreeEvaluator::negEvaluatorHelper(node, TR::InstOpCode::NEGReg(TR::TreeEvaluator::getNodeIs64Bit(node, cg)), cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::integerAbsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -85,9 +85,9 @@ TR::Register *OMR::X86::TreeEvaluator::integerAbsEvaluator(TR::Node *node, TR::C
    auto result = cg->allocateRegister(value->getKind());
 
    auto is64Bit = TR::TreeEvaluator::getNodeIs64Bit(node, cg);
-   generateRegRegInstruction(MOVRegReg(is64Bit), node, result, value, cg);
-   generateRegInstruction(NEGReg(is64Bit), node, result, cg);
-   generateRegRegInstruction(CMOVSRegReg(is64Bit), node, result, value, cg);
+   generateRegRegInstruction(TR::InstOpCode::MOVRegReg(is64Bit), node, result, value, cg);
+   generateRegInstruction(TR::InstOpCode::NEGReg(is64Bit), node, result, cg);
+   generateRegRegInstruction(TR::InstOpCode::CMOVSRegReg(is64Bit), node, result, value, cg);
 
    node->setRegister(result);
    cg->decReferenceCount(child);
@@ -96,7 +96,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerAbsEvaluator(TR::Node *node, TR::C
 
 TR::Register *OMR::X86::TreeEvaluator::bnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *targetRegister = TR::TreeEvaluator::negEvaluatorHelper(node, NEG1Reg, cg);
+   TR::Register *targetRegister = TR::TreeEvaluator::negEvaluatorHelper(node, TR::InstOpCode::NEG1Reg, cg);
 
    if (cg->enableRegisterInterferences())
       cg->getLiveRegisters(TR_GPR)->setByteRegisterAssociation(targetRegister);
@@ -106,7 +106,7 @@ TR::Register *OMR::X86::TreeEvaluator::bnegEvaluator(TR::Node *node, TR::CodeGen
 
 TR::Register *OMR::X86::TreeEvaluator::snegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::negEvaluatorHelper(node, NEG2Reg, cg);
+   return TR::TreeEvaluator::negEvaluatorHelper(node, TR::InstOpCode::NEG2Reg, cg);
    }
 
 // also handles i2s, i2c, s2b, a2s, a2c, a2b, a2bu
@@ -160,7 +160,7 @@ TR::Register *OMR::X86::TreeEvaluator::a2lEvaluator(TR::Node *node, TR::CodeGene
          copyReg->setContainsInternalPointer();
          }
 
-      generateRegRegInstruction(MOVRegReg(), node, copyReg, srcReg, cg);
+      generateRegRegInstruction(TR::InstOpCode::MOVRegReg(), node, copyReg, srcReg, cg);
       srcReg = copyReg;
       }
 
@@ -226,45 +226,45 @@ TR::Register *OMR::X86::TreeEvaluator::b2iEvaluator(TR::Node *node, TR::CodeGene
    TR::InstOpCode::Mnemonic reg4mem1Op,reg4reg1Op;
    if(node->isUnneededConversion())
      {
-     reg4mem1Op = MOVZXReg4Mem1; // these are slightly cheaper
-     reg4reg1Op = MOVZXReg4Reg1; // and valid since upper bytes tossed anyways
+     reg4mem1Op = TR::InstOpCode::MOVZXReg4Mem1; // these are slightly cheaper
+     reg4reg1Op = TR::InstOpCode::MOVZXReg4Reg1; // and valid since upper bytes tossed anyways
      }
    else
      {
-     reg4mem1Op = MOVSXReg4Mem1;
-     reg4reg1Op = MOVSXReg4Reg1;
+     reg4mem1Op = TR::InstOpCode::MOVSXReg4Mem1;
+     reg4reg1Op = TR::InstOpCode::MOVSXReg4Reg1;
      }
    return TR::TreeEvaluator::conversionAnalyser(node, reg4mem1Op, reg4reg1Op, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::bu2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::conversionAnalyser(node, MOVZXReg4Mem1, MOVZXReg4Reg1, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, TR::InstOpCode::MOVZXReg4Mem1, TR::InstOpCode::MOVZXReg4Reg1, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::b2sEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::conversionAnalyser(node, MOVSXReg2Mem1, MOVSXReg2Reg1, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, TR::InstOpCode::MOVSXReg2Mem1, TR::InstOpCode::MOVSXReg2Reg1, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::bu2sEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::conversionAnalyser(node, MOVZXReg2Mem1, MOVZXReg2Reg1, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, TR::InstOpCode::MOVZXReg2Mem1, TR::InstOpCode::MOVZXReg2Reg1, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::s2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::conversionAnalyser(node, MOVSXReg4Mem2, MOVSXReg4Reg2, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, TR::InstOpCode::MOVSXReg4Mem2, TR::InstOpCode::MOVSXReg4Reg2, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::su2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::conversionAnalyser(node, MOVZXReg4Mem2, MOVZXReg4Reg2, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, TR::InstOpCode::MOVZXReg4Mem2, TR::InstOpCode::MOVZXReg4Reg2, cg);
    }
 
 // s2b handled by i2b
 
 TR::Register *OMR::X86::TreeEvaluator::c2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::conversionAnalyser(node, MOVZXReg4Mem2, MOVZXReg4Reg2, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, TR::InstOpCode::MOVZXReg4Mem2, TR::InstOpCode::MOVZXReg4Reg2, cg);
    }

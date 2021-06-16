@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -75,7 +75,7 @@ OMR::X86::Linkage::Linkage(TR::CodeGenerator *cg) :
    {
    // Initialize the movOp table based on preferred load instructions for this target.
    //
-   TR::InstOpCode::Mnemonic op = cg->getXMMDoubleLoadOpCode() ? cg->getXMMDoubleLoadOpCode() : MOVSDRegMem;
+   TR::InstOpCode::Mnemonic op = cg->getXMMDoubleLoadOpCode() ? cg->getXMMDoubleLoadOpCode() : TR::InstOpCode::MOVSDRegMem;
    _movOpcodes[RegMem][Float8] = op;
    }
 
@@ -696,15 +696,15 @@ void OMR::X86::Linkage::coerceFPReturnValueToXMMR(TR::Node                      
    if (callNode->getOpCode().isFloat())
       {
    TR::MemoryReference  *tempMR = self()->machine()->getDummyLocalMR(TR::Float);
-      generateFPMemRegInstruction(FSTPMemReg, callNode, tempMR, fpReg, self()->cg());
-      generateRegMemInstruction(MOVSSRegMem, callNode, returnReg, generateX86MemoryReference(*tempMR, 0, self()->cg()), self()->cg());
+      generateFPMemRegInstruction(TR::InstOpCode::FSTPMemReg, callNode, tempMR, fpReg, self()->cg());
+      generateRegMemInstruction(TR::InstOpCode::MOVSSRegMem, callNode, returnReg, generateX86MemoryReference(*tempMR, 0, self()->cg()), self()->cg());
       }
    else
       {
       TR_ASSERT(callNode->getOpCode().isDouble(),
              "cannot return non-floating-point values in XMM registers\n");
       TR::MemoryReference  *tempMR = self()->machine()->getDummyLocalMR(TR::Double);
-      generateFPMemRegInstruction(DSTPMemReg, callNode, tempMR, fpReg, self()->cg());
+      generateFPMemRegInstruction(TR::InstOpCode::DSTPMemReg, callNode, tempMR, fpReg, self()->cg());
       generateRegMemInstruction(self()->cg()->getXMMDoubleLoadOpCode(), callNode, returnReg, generateX86MemoryReference(*tempMR, 0, self()->cg()), self()->cg());
       }
 
@@ -785,7 +785,7 @@ OMR::X86::Linkage::getTargetFromComp()
 TR::InstOpCode::Mnemonic OMR::X86::Linkage::_movOpcodes[NumMovOperandTypes][NumMovDataTypes] =
    {
    //    Int4         Int8        Float4         Float8
-   {    S4MemReg,    S8MemReg,  MOVSSMemReg,  MOVSDMemReg}, // MemReg
-   {    L4RegMem,    L8RegMem,  MOVSSRegMem,  MOVSDRegMem}, // RegMem
-   {  MOV4RegReg,  MOV8RegReg,  MOVSSRegReg,  MOVSDRegReg}, // RegReg
+   {    TR::InstOpCode::S4MemReg,    TR::InstOpCode::S8MemReg,  TR::InstOpCode::MOVSSMemReg,  TR::InstOpCode::MOVSDMemReg}, // MemReg
+   {    TR::InstOpCode::L4RegMem,    TR::InstOpCode::L8RegMem,  TR::InstOpCode::MOVSSRegMem,  TR::InstOpCode::MOVSDRegMem}, // RegMem
+   {  TR::InstOpCode::MOV4RegReg,  TR::InstOpCode::MOV8RegReg,  TR::InstOpCode::MOVSSRegReg,  TR::InstOpCode::MOVSDRegReg}, // RegReg
    };

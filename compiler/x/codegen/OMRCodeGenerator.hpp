@@ -208,7 +208,7 @@ struct TR_X86ProcessorInfo
    bool isGenuineIntel() {return _vendorFlags.testAny(TR_GenuineIntel);}
    bool isAuthenticAMD() {return _vendorFlags.testAny(TR_AuthenticAMD);}
 
-   bool requiresLFENCE() { return false; /* Dummy for now, we may need LFENCE in future processors*/}
+   bool requiresLFENCE() { return false; /* Dummy for now, we may need TR::InstOpCode::LFENCE in future processors*/}
 
    int32_t getX86Architecture() { return (_processorDescription & 0x000000ff);}
 

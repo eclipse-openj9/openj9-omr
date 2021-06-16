@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -306,10 +306,6 @@ TR::IA32SystemLinkage::buildVolatileAndReturnDependencies(
       {
       deps->addPostCondition(returnReg, _properties.getFloatReturnRegister(), cg());
       }
-   else
-      {
-      // No need for a dummy dep here because FPREGSPILL instruction takes care of it
-      }
 
  // The reg dependency is left open intentionally, and need to be closed by
  // the caller. The reason is because, child class might call this method, while
@@ -385,7 +381,7 @@ TR::Register *TR::IA32SystemLinkage::buildDirectDispatch(TR::Node *callNode, boo
    // Call-out
    int32_t stackAdjustment = cg()->getProperties().getCallerCleanup() ? 0 : -argSize;
    cg()->resetIsLeafMethod();
-   TR::X86ImmInstruction* instr = generateImmSymInstruction(CALLImm4, callNode, (uintptr_t)methodSymbol->getMethodAddress(), methodSymRef, cg());
+   TR::X86ImmInstruction* instr = generateImmSymInstruction(TR::InstOpCode::CALLImm4, callNode, (uintptr_t)methodSymbol->getMethodAddress(), methodSymRef, cg());
    instr->setAdjustsFramePointerBy(stackAdjustment);
 
    if (cg()->getProperties().getCallerCleanup() && argSize > 0)
@@ -393,7 +389,7 @@ TR::Register *TR::IA32SystemLinkage::buildDirectDispatch(TR::Node *callNode, boo
       // Clean up arguments
       //
       generateRegImmInstruction(
-         (argSize <= 127) ? ADD4RegImms : ADD4RegImm4,
+         (argSize <= 127) ? TR::InstOpCode::ADD4RegImms : TR::InstOpCode::ADD4RegImm4,
          callNode,
          stackPointerReg,
          argSize,
@@ -405,7 +401,7 @@ TR::Register *TR::IA32SystemLinkage::buildDirectDispatch(TR::Node *callNode, boo
    // this label rather than on the call
    //
    TR::LabelSymbol *endSystemCallSequence = generateLabelSymbol(cg());
-   generateLabelInstruction(LABEL, callNode, endSystemCallSequence, deps, cg());
+   generateLabelInstruction(TR::InstOpCode::label, callNode, endSystemCallSequence, deps, cg());
 
    // Stop using the killed registers that are not going to persist
    //
@@ -419,7 +415,7 @@ TR::Register *TR::IA32SystemLinkage::buildDirectDispatch(TR::Node *callNode, boo
         callNode->getDataType() == TR::Double) &&
        callNode->getReferenceCount() == 1)
       {
-      generateFPSTiST0RegRegInstruction(FSTRegReg, callNode, returnReg, returnReg, cg());
+      generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, callNode, returnReg, returnReg, cg());
       }
 
    if (cg()->enableRegisterAssociations())

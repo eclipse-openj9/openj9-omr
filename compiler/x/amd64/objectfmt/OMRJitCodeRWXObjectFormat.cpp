@@ -73,7 +73,7 @@ OMR::X86::AMD64::JitCodeRWXObjectFormat::emitFunctionCall(TR::FunctionCallData &
       // Helper call
       //
       TR::X86ImmSymInstruction *callImmSym = NULL;
-      const TR::InstOpCode::Mnemonic op = data.useCall ? CALLImm4 : JMP4;
+      const TR::InstOpCode::Mnemonic op = data.useCall ? TR::InstOpCode::CALLImm4 : TR::InstOpCode::JMP4;
 
       if (data.prevInstr)
          {
@@ -98,7 +98,7 @@ OMR::X86::AMD64::JitCodeRWXObjectFormat::emitFunctionCall(TR::FunctionCallData &
       TR_ASSERT_FATAL_WITH_NODE(data.callNode, data.scratchReg, "scratch register is not available");
 
       TR_ASSERT_FATAL_WITH_NODE(data.callNode, (data.adjustsFramePointerBy == 0),
-         "frame pointer adjustment not supported for CALLReg instructions");
+         "frame pointer adjustment not supported for TR::InstOpCode::CALLReg instructions");
 
       if (targetAddress == 0)
          {
@@ -110,11 +110,11 @@ OMR::X86::AMD64::JitCodeRWXObjectFormat::emitFunctionCall(TR::FunctionCallData &
           */
          if (data.prevInstr)
             {
-            callInstr = generateImmSymInstruction(data.prevInstr, CALLImm4, 0, data.methodSymRef, data.regDeps, data.cg);
+            callInstr = generateImmSymInstruction(data.prevInstr, TR::InstOpCode::CALLImm4, 0, data.methodSymRef, data.regDeps, data.cg);
             }
          else
             {
-            callInstr = generateImmSymInstruction(CALLImm4, data.callNode, 0, data.methodSymRef, data.regDeps, data.cg);
+            callInstr = generateImmSymInstruction(TR::InstOpCode::CALLImm4, data.callNode, 0, data.methodSymRef, data.regDeps, data.cg);
             }
          }
       else
@@ -132,7 +132,7 @@ OMR::X86::AMD64::JitCodeRWXObjectFormat::emitFunctionCall(TR::FunctionCallData &
                {
                loadInstr = generateRegImm64SymInstruction(
                   data.prevInstr,
-                  MOV8RegImm64,
+                  TR::InstOpCode::MOV8RegImm64,
                   data.scratchReg,
                   targetAddress,
                   data.methodSymRef,
@@ -141,7 +141,7 @@ OMR::X86::AMD64::JitCodeRWXObjectFormat::emitFunctionCall(TR::FunctionCallData &
             else
                {
                loadInstr = generateRegImm64SymInstruction(
-                  MOV8RegImm64,
+                  TR::InstOpCode::MOV8RegImm64,
                   data.callNode,
                   data.scratchReg,
                   targetAddress,
@@ -164,7 +164,7 @@ OMR::X86::AMD64::JitCodeRWXObjectFormat::emitFunctionCall(TR::FunctionCallData &
                {
                loadInstr = generateRegImm64Instruction(
                   data.prevInstr,
-                  MOV8RegImm64,
+                  TR::InstOpCode::MOV8RegImm64,
                   data.scratchReg,
                   targetAddress,
                   data.cg,
@@ -173,7 +173,7 @@ OMR::X86::AMD64::JitCodeRWXObjectFormat::emitFunctionCall(TR::FunctionCallData &
             else
                {
                loadInstr = generateRegImm64Instruction(
-                  MOV8RegImm64,
+                  TR::InstOpCode::MOV8RegImm64,
                   data.callNode,
                   data.scratchReg,
                   targetAddress,
@@ -184,7 +184,7 @@ OMR::X86::AMD64::JitCodeRWXObjectFormat::emitFunctionCall(TR::FunctionCallData &
             data.out_materializeTargetAddressInstr = loadInstr;
             }
 
-         const TR::InstOpCode::Mnemonic op = data.useCall ? CALLReg : JMPReg;
+         const TR::InstOpCode::Mnemonic op = data.useCall ? TR::InstOpCode::CALLReg : TR::InstOpCode::JMPReg;
          if (data.prevInstr)
             {
             /**

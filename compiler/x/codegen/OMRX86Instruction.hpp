@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -94,25 +94,25 @@ class X86PaddingInstruction : public TR::Instruction
    public:
 
    X86PaddingInstruction(uint8_t length, TR::Node *node, TR::CodeGenerator *cg):
-      TR::Instruction(node, BADIA32Op, cg),
+      TR::Instruction(node, TR::InstOpCode::bad, cg),
       _length(length),
       _properties(TR_NoOpPadding)
       {}
 
    X86PaddingInstruction(uint8_t length, TR_PaddingProperties properties, TR::Node *node, TR::CodeGenerator *cg):
-      TR::Instruction(node, BADIA32Op, cg),
+      TR::Instruction(node, TR::InstOpCode::bad, cg),
       _length(length),
       _properties(properties)
       {}
 
    X86PaddingInstruction(TR::Instruction *precedingInstruction, uint8_t length, TR::CodeGenerator *cg):
-      TR::Instruction(BADIA32Op, precedingInstruction, cg),
+      TR::Instruction(TR::InstOpCode::bad, precedingInstruction, cg),
       _length(length),
       _properties(TR_NoOpPadding)
       {}
 
    X86PaddingInstruction(TR::Instruction *precedingInstruction, uint8_t length, TR_PaddingProperties properties, TR::CodeGenerator *cg):
-      TR::Instruction(BADIA32Op, precedingInstruction, cg),
+      TR::Instruction(TR::InstOpCode::bad, precedingInstruction, cg),
       _length(length),
       _properties(properties)
       {}
@@ -180,7 +180,7 @@ class X86BoundaryAvoidanceInstruction : public TR::Instruction
                                       uint8_t maxPadding,
                                       TR::Instruction *targetCode,
                                       TR::CodeGenerator *cg)
-      : TR::Instruction(BADIA32Op, targetCode->getPrev(), cg),
+      : TR::Instruction(TR::InstOpCode::bad, targetCode->getPrev(), cg),
       _sizeOfProtectiveNop(0), _atomicRegions(atomicRegions), _boundarySpacing(boundarySpacing), _maxPadding(maxPadding), _targetCode(targetCode), _minPaddingLength(0)
       {
       setNode(targetCode->getNode());
@@ -192,7 +192,7 @@ class X86BoundaryAvoidanceInstruction : public TR::Instruction
                                       uint8_t maxPadding,
                                       TR::Instruction *targetCode,
                                       TR::CodeGenerator *cg)
-      : TR::Instruction(BADIA32Op, targetCode->getPrev(), cg),
+      : TR::Instruction(TR::InstOpCode::bad, targetCode->getPrev(), cg),
       _sizeOfProtectiveNop(sizeOfProtectiveNop), _atomicRegions(atomicRegions),
       _boundarySpacing(boundarySpacing), _maxPadding(maxPadding), _targetCode(targetCode),
       _minPaddingLength(0)
@@ -205,7 +205,7 @@ class X86BoundaryAvoidanceInstruction : public TR::Instruction
                                       uint8_t boundarySpacing,
                                       uint8_t maxPadding,
                                       TR::CodeGenerator *cg)
-      : TR::Instruction(BADIA32Op, precedingInstruction, cg),
+      : TR::Instruction(TR::InstOpCode::bad, precedingInstruction, cg),
       _atomicRegions(atomicRegions), _boundarySpacing(boundarySpacing), _maxPadding(maxPadding), _targetCode(NULL),
       _sizeOfProtectiveNop(0), _minPaddingLength(0)
       {
@@ -319,7 +319,7 @@ class X86LabelInstruction : public TR::Instruction
    void prohibitShortening() { _permitShortening = false; }
 
    virtual char *description() { return "X86LabelInstruction"; }
-   virtual bool isPatchBarrier() { return getOpCodeValue() == LABEL && _symbol && _symbol->isTargeted() != TR_no; }
+   virtual bool isPatchBarrier() { return getOpCodeValue() == TR::InstOpCode::label && _symbol && _symbol->isTargeted() != TR_no; }
 
    uint8_t    getReloType() {return _reloType; };
    void       setReloType(uint8_t rt) { _reloType = rt;};
@@ -371,56 +371,56 @@ class X86AlignmentInstruction : public TR::Instruction
    // - with vs. without dependencies
 
    X86AlignmentInstruction(TR::Node * node, uint8_t boundary, TR::CodeGenerator *cg)
-      : TR::Instruction(node, BADIA32Op, cg),
+      : TR::Instruction(node, TR::InstOpCode::bad, cg),
       _boundary(boundary),
       _margin(0),
       _minPaddingLength(0)
       {}
 
    X86AlignmentInstruction(TR::Node * node, uint8_t boundary, TR::RegisterDependencyConditions  *cond, TR::CodeGenerator *cg)
-      : TR::Instruction(cond, node, BADIA32Op, cg),
+      : TR::Instruction(cond, node, TR::InstOpCode::bad, cg),
       _boundary(boundary),
       _margin(0),
       _minPaddingLength(0)
       {}
 
    X86AlignmentInstruction(TR::Node * node, uint8_t boundary, uint8_t margin, TR::CodeGenerator *cg)
-      : TR::Instruction(node, BADIA32Op, cg),
+      : TR::Instruction(node, TR::InstOpCode::bad, cg),
       _boundary(boundary),
       _margin(margin),
       _minPaddingLength(0)
       {}
 
    X86AlignmentInstruction(TR::Node * node, uint8_t boundary, uint8_t margin, TR::RegisterDependencyConditions  *cond, TR::CodeGenerator *cg)
-      : TR::Instruction(cond, node, BADIA32Op, cg),
+      : TR::Instruction(cond, node, TR::InstOpCode::bad, cg),
       _boundary(boundary),
       _margin(margin),
       _minPaddingLength(0)
       {}
 
    X86AlignmentInstruction(TR::Instruction *precedingInstruction, uint8_t boundary, TR::CodeGenerator *cg)
-      : TR::Instruction(BADIA32Op, precedingInstruction, cg),
+      : TR::Instruction(TR::InstOpCode::bad, precedingInstruction, cg),
       _boundary(boundary),
       _margin(0),
       _minPaddingLength(0)
       {}
 
    X86AlignmentInstruction(TR::Instruction *precedingInstruction, uint8_t boundary, TR::RegisterDependencyConditions  *cond, TR::CodeGenerator *cg)
-      : TR::Instruction(cond, BADIA32Op, precedingInstruction, cg),
+      : TR::Instruction(cond, TR::InstOpCode::bad, precedingInstruction, cg),
       _boundary(boundary),
       _margin(0),
       _minPaddingLength(0)
       {}
 
    X86AlignmentInstruction(TR::Instruction *precedingInstruction, uint8_t boundary, uint8_t margin, TR::CodeGenerator *cg)
-      : TR::Instruction(BADIA32Op, precedingInstruction, cg),
+      : TR::Instruction(TR::InstOpCode::bad, precedingInstruction, cg),
       _boundary(boundary),
       _margin(margin),
       _minPaddingLength(0)
       {}
 
    X86AlignmentInstruction(TR::Instruction *precedingInstruction, uint8_t boundary, uint8_t margin, TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
-      : TR::Instruction(cond, BADIA32Op, precedingInstruction, cg),
+      : TR::Instruction(cond, TR::InstOpCode::bad, precedingInstruction, cg),
       _boundary(boundary),
       _margin(margin),
       _minPaddingLength(0)
@@ -1834,7 +1834,7 @@ class X86RegMemInstruction : public TR::X86RegInstruction
       // a live discardable register.
       //
       if (cg->enableRematerialisation() &&
-         (op == LEA2RegMem || op ==  LEA4RegMem || op == LEA8RegMem) &&
+         (op == TR::InstOpCode::LEA2RegMem || op ==  TR::InstOpCode::LEA4RegMem || op == TR::InstOpCode::LEA8RegMem) &&
          !cg->getLiveDiscardableRegisters().empty())
          {
          cg->clobberLiveDiscardableRegisters(this, mr);
@@ -2709,10 +2709,10 @@ class X86VFPSaveInstruction : public TR::Instruction
    public:
 
    X86VFPSaveInstruction(TR::Instruction *precedingInstruction, TR::CodeGenerator *cg) :
-      TR::Instruction(AdjustFramePtr, precedingInstruction, cg) {}
+      TR::Instruction(TR::InstOpCode::AdjustFramePtr, precedingInstruction, cg) {}
 
    X86VFPSaveInstruction(TR::Node *node, TR::CodeGenerator *cg) :
-      TR::Instruction(node, AdjustFramePtr, cg) {}
+      TR::Instruction(node, TR::InstOpCode::AdjustFramePtr, cg) {}
 
    virtual char *description() { return "X86VFPSave"; }
 
@@ -2738,11 +2738,11 @@ class X86VFPRestoreInstruction : public TR::Instruction
 
    X86VFPRestoreInstruction(TR::Instruction *precedingInstruction, TR::X86VFPSaveInstruction  *saveInstruction, TR::CodeGenerator *cg) :
       _saveInstruction(saveInstruction),
-      TR::Instruction(AdjustFramePtr, precedingInstruction, cg) {}
+      TR::Instruction(TR::InstOpCode::AdjustFramePtr, precedingInstruction, cg) {}
 
    X86VFPRestoreInstruction(TR::X86VFPSaveInstruction  *saveInstruction, TR::Node *node, TR::CodeGenerator *cg) :
       _saveInstruction(saveInstruction),
-      TR::Instruction(node, AdjustFramePtr, cg) {}
+      TR::Instruction(node, TR::InstOpCode::AdjustFramePtr, cg) {}
 
    virtual char *description() { return "X86VFPRestore"; }
 
@@ -2780,16 +2780,16 @@ class X86VFPDedicateInstruction : public TR::X86RegMemInstruction
    public:
 
    X86VFPDedicateInstruction(TR::Instruction *precedingInstruction, TR::RealRegister *framePointerReg, TR::CodeGenerator *cg):
-      TR::X86RegMemInstruction(precedingInstruction, LEARegMem(), framePointerReg, memref(cg), cg){}
+      TR::X86RegMemInstruction(precedingInstruction, TR::InstOpCode::LEARegMem(), framePointerReg, memref(cg), cg){}
 
    X86VFPDedicateInstruction(TR::RealRegister *framePointerReg, TR::Node *node, TR::CodeGenerator *cg):
-      TR::X86RegMemInstruction(LEARegMem(), node, framePointerReg, memref(cg), cg){}
+      TR::X86RegMemInstruction(TR::InstOpCode::LEARegMem(), node, framePointerReg, memref(cg), cg){}
 
    X86VFPDedicateInstruction(TR::Instruction *precedingInstruction, TR::RealRegister *framePointerReg, TR::RegisterDependencyConditions  *cond, TR::CodeGenerator *cg):
-      TR::X86RegMemInstruction(precedingInstruction, LEARegMem(), framePointerReg, memref(cg), cond, cg){}
+      TR::X86RegMemInstruction(precedingInstruction, TR::InstOpCode::LEARegMem(), framePointerReg, memref(cg), cond, cg){}
 
    X86VFPDedicateInstruction(TR::RealRegister *framePointerReg, TR::Node *node, TR::RegisterDependencyConditions  *cond, TR::CodeGenerator *cg):
-      TR::X86RegMemInstruction(LEARegMem(), node, framePointerReg, memref(cg), cond, cg){}
+      TR::X86RegMemInstruction(TR::InstOpCode::LEARegMem(), node, framePointerReg, memref(cg), cond, cg){}
 
    virtual char *description() { return "X86VFPDedicate"; }
 
@@ -2820,11 +2820,11 @@ class X86VFPReleaseInstruction : public TR::Instruction
 
    X86VFPReleaseInstruction(TR::Instruction *precedingInstruction, TR::X86VFPDedicateInstruction  *dedicateInstruction, TR::CodeGenerator *cg):
       _dedicateInstruction(dedicateInstruction),
-      TR::Instruction(AdjustFramePtr, precedingInstruction, cg){}
+      TR::Instruction(TR::InstOpCode::AdjustFramePtr, precedingInstruction, cg){}
 
    X86VFPReleaseInstruction(TR::X86VFPDedicateInstruction  *dedicateInstruction, TR::Node *node, TR::CodeGenerator *cg):
       _dedicateInstruction(dedicateInstruction),
-      TR::Instruction(node, AdjustFramePtr, cg){}
+      TR::Instruction(node, TR::InstOpCode::AdjustFramePtr, cg){}
 
    virtual char *description() { return "X86VFPRelease"; }
 
@@ -2873,11 +2873,11 @@ class X86VFPCallCleanupInstruction : public TR::Instruction
 
    X86VFPCallCleanupInstruction(TR::Instruction *precedingInstruction, int32_t adjustment, TR::CodeGenerator *cg):
       _stackPointerAdjustment(adjustment),
-      TR::Instruction(AdjustFramePtr, precedingInstruction, cg) {}
+      TR::Instruction(TR::InstOpCode::AdjustFramePtr, precedingInstruction, cg) {}
 
    X86VFPCallCleanupInstruction(int32_t adjustment, TR::Node *node, TR::CodeGenerator *cg):
       _stackPointerAdjustment(adjustment),
-      TR::Instruction(node, AdjustFramePtr, cg) {}
+      TR::Instruction(node, TR::InstOpCode::AdjustFramePtr, cg) {}
 
    virtual char *description() { return "X86VFPCallCleanup"; }
 

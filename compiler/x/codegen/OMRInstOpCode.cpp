@@ -194,7 +194,7 @@ void OMR::X86::InstOpCode::CheckAndFinishGroup07(uint8_t* cursor) const
       auto pModRM = (TR::Instruction::ModRM*)(cursor-1);
       switch(_mnemonic)
          {
-         case XEND:
+         case OMR::InstOpCode::XEND:
             pModRM->rm = 0x05; // 0b101
             break;
          default:

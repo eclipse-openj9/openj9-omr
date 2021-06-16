@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -80,7 +80,7 @@ TR::Register *TR_X86IntegerMultiplyDecomposer::decomposeIntegerMultiplier(int32_
       target = generateDecompositionInstructions(decompositionIndex, tempRegArraySize, tempRegArray);
       if (_multiplier != absMultiplier) // treats TR::getMinSigned<TR::Int64>() and TR::getMinSigned<TR::Int32>() properly, _multiplier < 0 does not
          {
-         generateRegInstruction(NEGReg(nodeIs64Bit), _node, target, _cg);
+         generateRegInstruction(TR::InstOpCode::NEGReg(nodeIs64Bit), _node, target, _cg);
          }
 
       if (report)
@@ -116,16 +116,16 @@ TR::Register *TR_X86IntegerMultiplyDecomposer::decomposeIntegerMultiplier(int32_
                {
                for (; shiftAmount > 0; --shiftAmount)
                   {
-                  generateRegRegInstruction(ADDRegReg(nodeIs64Bit), _node, target, target, _cg);
+                  generateRegRegInstruction(TR::InstOpCode::ADDRegReg(nodeIs64Bit), _node, target, target, _cg);
                   }
                }
             else
                {
-               generateRegImmInstruction(SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
+               generateRegImmInstruction(TR::InstOpCode::SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
                }
             if (_multiplier != absMultiplier) // treats TR::getMinSigned<TR::Int64>() properly, _multiplier < 0 does not
                {
-               generateRegInstruction(NEGReg(nodeIs64Bit), _node, target, _cg);
+               generateRegInstruction(TR::InstOpCode::NEGReg(nodeIs64Bit), _node, target, _cg);
                }
             if (report)
                {
@@ -147,13 +147,13 @@ TR::Register *TR_X86IntegerMultiplyDecomposer::decomposeIntegerMultiplier(int32_
                   TR_ASSERT(tempRegArraySize<=MAX_NUM_REGISTERS,"Too many temporary registers to handle");
                   tempRegArray[tempRegArraySize++] = temp;
                   }
-               generateRegRegInstruction(MOVRegReg(nodeIs64Bit), _node, temp, _sourceRegister, _cg);
+               generateRegRegInstruction(TR::InstOpCode::MOVRegReg(nodeIs64Bit), _node, temp, _sourceRegister, _cg);
                _sourceRegister = temp;
                }
             }
          else
             {
-            _sourceRegister = _cg->gprClobberEvaluate(_node->getFirstChild(), MOVRegReg(nodeIs64Bit));
+            _sourceRegister = _cg->gprClobberEvaluate(_node->getFirstChild(), TR::InstOpCode::MOVRegReg(nodeIs64Bit));
             }
          target = _cg->allocateRegister();
          if (tempRegArray)
@@ -161,39 +161,39 @@ TR::Register *TR_X86IntegerMultiplyDecomposer::decomposeIntegerMultiplier(int32_
             TR_ASSERT(tempRegArraySize<=MAX_NUM_REGISTERS,"Too many temporary registers to handle");
             tempRegArray[tempRegArraySize++] = target;
             }
-         generateRegRegInstruction(MOVRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
+         generateRegRegInstruction(TR::InstOpCode::MOVRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
          if (absMultiplier & 1)
             {
             shiftAmount = trailingZeroes(absMultiplier - 1);
-            generateRegImmInstruction(SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
-            generateRegRegInstruction(ADDRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
+            generateRegImmInstruction(TR::InstOpCode::SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
+            generateRegRegInstruction(TR::InstOpCode::ADDRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
             }
          else if (absMultiplier & 2)
             {
             shiftAmount = trailingZeroes(absMultiplier - 2);
-            generateRegImmInstruction(SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
-            generateRegRegInstruction(ADDRegReg(nodeIs64Bit), _node, _sourceRegister, _sourceRegister, _cg);
-            generateRegRegInstruction(ADDRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
+            generateRegImmInstruction(TR::InstOpCode::SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
+            generateRegRegInstruction(TR::InstOpCode::ADDRegReg(nodeIs64Bit), _node, _sourceRegister, _sourceRegister, _cg);
+            generateRegRegInstruction(TR::InstOpCode::ADDRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
             }
          else if (absMultiplier & 4)
             {
             shiftAmount = trailingZeroes(absMultiplier - 4);
-            generateRegImmInstruction(SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
-            generateRegRegInstruction(ADDRegReg(nodeIs64Bit), _node, _sourceRegister, _sourceRegister, _cg);
-            generateRegRegInstruction(ADDRegReg(nodeIs64Bit), _node, _sourceRegister, _sourceRegister, _cg);
-            generateRegRegInstruction(ADDRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
+            generateRegImmInstruction(TR::InstOpCode::SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
+            generateRegRegInstruction(TR::InstOpCode::ADDRegReg(nodeIs64Bit), _node, _sourceRegister, _sourceRegister, _cg);
+            generateRegRegInstruction(TR::InstOpCode::ADDRegReg(nodeIs64Bit), _node, _sourceRegister, _sourceRegister, _cg);
+            generateRegRegInstruction(TR::InstOpCode::ADDRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
             }
          else
             {
             shiftAmount = trailingZeroes(absMultiplier);
-            generateRegImmInstruction(SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
+            generateRegImmInstruction(TR::InstOpCode::SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
             shiftAmount = trailingZeroes((int64_t)(absMultiplier - (1ll << shiftAmount)));
-            generateRegImmInstruction(SHLRegImm1(nodeIs64Bit), _node, _sourceRegister, shiftAmount, _cg);
-            generateRegRegInstruction(ADDRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
+            generateRegImmInstruction(TR::InstOpCode::SHLRegImm1(nodeIs64Bit), _node, _sourceRegister, shiftAmount, _cg);
+            generateRegRegInstruction(TR::InstOpCode::ADDRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
             }
          if (_multiplier != absMultiplier) // treats TR::getMinSigned<TR::Int64>() properly, _multiplier < 0 does not
             {
-            generateRegInstruction(NEGReg(nodeIs64Bit), _node, target, _cg);
+            generateRegInstruction(TR::InstOpCode::NEGReg(nodeIs64Bit), _node, target, _cg);
             }
          if (_sourceRegister != _node->getFirstChild()->getRegister())
             {
@@ -219,13 +219,13 @@ TR::Register *TR_X86IntegerMultiplyDecomposer::decomposeIntegerMultiplier(int32_
                   TR_ASSERT(tempRegArraySize<=MAX_NUM_REGISTERS,"Too many temporary registers to handle");
                   tempRegArray[tempRegArraySize++] = temp;
                   }
-               generateRegRegInstruction(MOVRegReg(nodeIs64Bit), _node, temp, _sourceRegister, _cg);
+               generateRegRegInstruction(TR::InstOpCode::MOVRegReg(nodeIs64Bit), _node, temp, _sourceRegister, _cg);
                _sourceRegister = temp;
                }
             }
          else
             {
-            _sourceRegister = _cg->gprClobberEvaluate(_node->getFirstChild(), MOVRegReg(nodeIs64Bit));
+            _sourceRegister = _cg->gprClobberEvaluate(_node->getFirstChild(), TR::InstOpCode::MOVRegReg(nodeIs64Bit));
             }
          target = _cg->allocateRegister();
          if (tempRegArray)
@@ -233,35 +233,35 @@ TR::Register *TR_X86IntegerMultiplyDecomposer::decomposeIntegerMultiplier(int32_
             TR_ASSERT(tempRegArraySize<=MAX_NUM_REGISTERS,"Too many temporary registers to handle");
             tempRegArray[tempRegArraySize++] = target;
             }
-         generateRegRegInstruction(MOVRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
+         generateRegRegInstruction(TR::InstOpCode::MOVRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
          if (absMultiplier & 1)
             {
             shiftAmount = trailingZeroes(absMultiplier + 1);
-            generateRegImmInstruction(SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
-            generateRegRegInstruction(SUBRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
+            generateRegImmInstruction(TR::InstOpCode::SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
+            generateRegRegInstruction(TR::InstOpCode::SUBRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
             }
          else if (absMultiplier & 2)
             {
             shiftAmount = trailingZeroes(absMultiplier + 2);
-            generateRegImmInstruction(SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
-            generateRegRegInstruction(ADDRegReg(nodeIs64Bit), _node, _sourceRegister, _sourceRegister, _cg);
-            generateRegRegInstruction(SUBRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
+            generateRegImmInstruction(TR::InstOpCode::SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
+            generateRegRegInstruction(TR::InstOpCode::ADDRegReg(nodeIs64Bit), _node, _sourceRegister, _sourceRegister, _cg);
+            generateRegRegInstruction(TR::InstOpCode::SUBRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
             }
          else if (absMultiplier & 4)
             {
             shiftAmount = trailingZeroes(absMultiplier + 4);
-            generateRegImmInstruction(SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
-            generateRegRegInstruction(ADDRegReg(nodeIs64Bit), _node, _sourceRegister, _sourceRegister, _cg);
-            generateRegRegInstruction(ADDRegReg(nodeIs64Bit), _node, _sourceRegister, _sourceRegister, _cg);
-            generateRegRegInstruction(SUBRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
+            generateRegImmInstruction(TR::InstOpCode::SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
+            generateRegRegInstruction(TR::InstOpCode::ADDRegReg(nodeIs64Bit), _node, _sourceRegister, _sourceRegister, _cg);
+            generateRegRegInstruction(TR::InstOpCode::ADDRegReg(nodeIs64Bit), _node, _sourceRegister, _sourceRegister, _cg);
+            generateRegRegInstruction(TR::InstOpCode::SUBRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
             }
          else
             {
             shiftAmount = trailingZeroes(absMultiplier);
-            generateRegImmInstruction(SHLRegImm1(nodeIs64Bit), _node, _sourceRegister, shiftAmount, _cg);
+            generateRegImmInstruction(TR::InstOpCode::SHLRegImm1(nodeIs64Bit), _node, _sourceRegister, shiftAmount, _cg);
             shiftAmount = trailingZeroes((int64_t)(absMultiplier + (1ll << shiftAmount)));
-            generateRegImmInstruction(SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
-            generateRegRegInstruction(SUBRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
+            generateRegImmInstruction(TR::InstOpCode::SHLRegImm1(nodeIs64Bit), _node, target, shiftAmount, _cg);
+            generateRegRegInstruction(TR::InstOpCode::SUBRegReg(nodeIs64Bit), _node, target, _sourceRegister, _cg);
             }
          if (_sourceRegister != _node->getFirstChild()->getRegister())
             {
@@ -269,7 +269,7 @@ TR::Register *TR_X86IntegerMultiplyDecomposer::decomposeIntegerMultiplier(int32_
             }
          if (_multiplier != absMultiplier) // treats TR::getMinSigned<TR::Int64>() properly, _multiplier < 0 does not
             {
-            generateRegInstruction(NEGReg(nodeIs64Bit), _node, target, _cg);
+            generateRegInstruction(TR::InstOpCode::NEGReg(nodeIs64Bit), _node, target, _cg);
             }
          if (report)
             {
@@ -339,13 +339,13 @@ TR::Register *TR_X86IntegerMultiplyDecomposer::generateDecompositionInstructions
                TR_ASSERT(tempRegArraySize<=MAX_NUM_REGISTERS,"Too many temporary registers to handle");
                tempRegArray[tempRegArraySize++] = temp;
                }
-            generateRegRegInstruction(MOVRegReg(nodeIs64Bit), _node, temp, _sourceRegister, _cg);
+            generateRegRegInstruction(TR::InstOpCode::MOVRegReg(nodeIs64Bit), _node, temp, _sourceRegister, _cg);
             _sourceRegister = temp;
             }
          }
       else
          {
-         _sourceRegister = _cg->gprClobberEvaluate(_node->getFirstChild(), MOVRegReg(nodeIs64Bit));
+         _sourceRegister = _cg->gprClobberEvaluate(_node->getFirstChild(), TR::InstOpCode::MOVRegReg(nodeIs64Bit));
          }
       }
    else if (_sourceRegister == 0)
@@ -370,35 +370,35 @@ TR::Register *TR_X86IntegerMultiplyDecomposer::generateDecompositionInstructions
       switch (component._operation)
          {
          case shlRegImm:
-            generateRegImmInstruction(SHLRegImm1(nodeIs64Bit),
+            generateRegImmInstruction(TR::InstOpCode::SHLRegImm1(nodeIs64Bit),
                                       _node,
                                       registerMap[component._target],
                                       component._baseOrImmed,
                                       _cg);
          break;
          case addRegReg:
-            generateRegRegInstruction(ADDRegReg(nodeIs64Bit),
+            generateRegRegInstruction(TR::InstOpCode::ADDRegReg(nodeIs64Bit),
                                       _node,
                                       registerMap[component._target],
                                       registerMap[component._baseOrImmed],
                                       _cg);
          break;
          case subRegReg:
-            generateRegRegInstruction(SUBRegReg(nodeIs64Bit),
+            generateRegRegInstruction(TR::InstOpCode::SUBRegReg(nodeIs64Bit),
                                       _node,
                                       registerMap[component._target],
                                       registerMap[component._baseOrImmed],
                                       _cg);
          break;
          case movRegReg:
-            generateRegRegInstruction(MOVRegReg(nodeIs64Bit),
+            generateRegRegInstruction(TR::InstOpCode::MOVRegReg(nodeIs64Bit),
                                       _node,
                                       registerMap[component._target],
                                       registerMap[component._baseOrImmed],
                                       _cg);
          break;
          case leaRegReg2:
-            generateRegMemInstruction(LEARegMem(nodeIs64Bit),
+            generateRegMemInstruction(TR::InstOpCode::LEARegMem(nodeIs64Bit),
                                       _node,
                                       registerMap[component._target],
                                       generateX86MemoryReference(0,
@@ -408,7 +408,7 @@ TR::Register *TR_X86IntegerMultiplyDecomposer::generateDecompositionInstructions
                                       _cg);
          break;
          case leaRegReg4:
-            generateRegMemInstruction(LEARegMem(nodeIs64Bit),
+            generateRegMemInstruction(TR::InstOpCode::LEARegMem(nodeIs64Bit),
                                       _node,
                                       registerMap[component._target],
                                       generateX86MemoryReference(0,
@@ -418,7 +418,7 @@ TR::Register *TR_X86IntegerMultiplyDecomposer::generateDecompositionInstructions
                                       _cg);
          break;
          case leaRegReg8:
-            generateRegMemInstruction(LEARegMem(nodeIs64Bit),
+            generateRegMemInstruction(TR::InstOpCode::LEARegMem(nodeIs64Bit),
                                       _node,
                                       registerMap[component._target],
                                       generateX86MemoryReference(0,
@@ -428,7 +428,7 @@ TR::Register *TR_X86IntegerMultiplyDecomposer::generateDecompositionInstructions
                                       _cg);
          break;
          case leaRegRegReg:
-            generateRegMemInstruction(LEARegMem(nodeIs64Bit),
+            generateRegMemInstruction(TR::InstOpCode::LEARegMem(nodeIs64Bit),
                                       _node,
                                       registerMap[component._target],
                                       generateX86MemoryReference(registerMap[component._baseOrImmed],
@@ -438,7 +438,7 @@ TR::Register *TR_X86IntegerMultiplyDecomposer::generateDecompositionInstructions
                                       _cg);
          break;
          case leaRegRegReg2:
-            generateRegMemInstruction(LEARegMem(nodeIs64Bit),
+            generateRegMemInstruction(TR::InstOpCode::LEARegMem(nodeIs64Bit),
                                       _node,
                                       registerMap[component._target],
                                       generateX86MemoryReference(registerMap[component._baseOrImmed],
@@ -448,7 +448,7 @@ TR::Register *TR_X86IntegerMultiplyDecomposer::generateDecompositionInstructions
                                       _cg);
          break;
          case leaRegRegReg4:
-            generateRegMemInstruction(LEARegMem(nodeIs64Bit),
+            generateRegMemInstruction(TR::InstOpCode::LEARegMem(nodeIs64Bit),
                                       _node,
                                       registerMap[component._target],
                                       generateX86MemoryReference(registerMap[component._baseOrImmed],
@@ -458,7 +458,7 @@ TR::Register *TR_X86IntegerMultiplyDecomposer::generateDecompositionInstructions
                                       _cg);
          break;
          case leaRegRegReg8:
-            generateRegMemInstruction(LEARegMem(nodeIs64Bit),
+            generateRegMemInstruction(TR::InstOpCode::LEARegMem(nodeIs64Bit),
                                       _node,
                                       registerMap[component._target],
                                       generateX86MemoryReference(registerMap[component._baseOrImmed],

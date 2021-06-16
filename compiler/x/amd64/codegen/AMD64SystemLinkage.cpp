@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -743,7 +743,7 @@ TR::AMD64SystemLinkage::buildIndirectDispatch(TR::Node *callNode)
 
    // Dispatch
    //
-   generateRegInstruction(CALLReg, callNode, vftRegister, callDeps, cg());
+   generateRegInstruction(TR::InstOpCode::CALLReg, callNode, vftRegister, callDeps, cg());
    cg()->resetIsLeafMethod();
 
    // Build label post-conditions
@@ -753,7 +753,7 @@ TR::AMD64SystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    postDeps->stopAddingPostConditions();
 
    TR::LabelSymbol *postDepLabel = generateLabelSymbol(cg());
-   generateLabelInstruction(LABEL, callNode, postDepLabel, postDeps, cg());
+   generateLabelInstruction(TR::InstOpCode::label, callNode, postDepLabel, postDeps, cg());
 
    return returnReg;
    }
@@ -806,7 +806,7 @@ TR::Register *TR::AMD64SystemLinkage::buildDirectDispatch(
       {
       TR_ASSERT(scratchReg, "could not find second scratch register");
       auto LoadRegisterInstruction = generateRegImm64SymInstruction(
-         MOV8RegImm64,
+         TR::InstOpCode::MOV8RegImm64,
          callNode,
          scratchReg,
          (uintptr_t)methodSymbol->getMethodAddress(),
@@ -818,11 +818,11 @@ TR::Register *TR::AMD64SystemLinkage::buildDirectDispatch(
          LoadRegisterInstruction->setReloKind(TR_NativeMethodAbsolute);
          }
 
-      instr = generateRegInstruction(CALLReg, callNode, scratchReg, preDeps, cg());
+      instr = generateRegInstruction(TR::InstOpCode::CALLReg, callNode, scratchReg, preDeps, cg());
       }
    else
       {
-      instr = generateImmSymInstruction(CALLImm4, callNode, static_cast<int32_t>(reinterpret_cast<uintptr_t>(methodSymbol->getMethodAddress())), methodSymRef, preDeps, cg());
+      instr = generateImmSymInstruction(TR::InstOpCode::CALLImm4, callNode, static_cast<int32_t>(reinterpret_cast<uintptr_t>(methodSymbol->getMethodAddress())), methodSymRef, preDeps, cg());
       }
 
    cg()->resetIsLeafMethod();
@@ -832,7 +832,7 @@ TR::Register *TR::AMD64SystemLinkage::buildDirectDispatch(
    cg()->stopUsingRegister(scratchReg);
 
    TR::LabelSymbol *postDepLabel = generateLabelSymbol(cg());
-   generateLabelInstruction(LABEL, callNode, postDepLabel, postDeps, cg());
+   generateLabelInstruction(TR::InstOpCode::label, callNode, postDepLabel, postDeps, cg());
 
    return returnReg;
    }

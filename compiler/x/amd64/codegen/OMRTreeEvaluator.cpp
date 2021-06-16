@@ -2602,7 +2602,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::i2lEvaluator(TR::Node *node, TR::C
       {
       TR::Register *targetRegister = cg->allocateRegister();
 
-      generateRegImmInstruction(MOV8RegImm4, node, targetRegister, node->getFirstChild()->getInt(), cg);
+      generateRegImmInstruction(TR::InstOpCode::MOV8RegImm4, node, targetRegister, node->getFirstChild()->getInt(), cg);
 
       node->setRegister(targetRegister);
       cg->decReferenceCount(node->getFirstChild());
@@ -2630,13 +2630,13 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::i2lEvaluator(TR::Node *node, TR::C
          {
          // We prefer these plain (zero-extending) opcodes because the analyser can often eliminate them
          //
-         regMemOpCode = L4RegMem;
-         regRegOpCode = MOVZXReg8Reg4;
+         regMemOpCode = TR::InstOpCode::L4RegMem;
+         regRegOpCode = TR::InstOpCode::MOVZXReg8Reg4;
          }
       else
          {
-         regMemOpCode = MOVSXReg8Mem4;
-         regRegOpCode = MOVSXReg8Reg4;
+         regMemOpCode = TR::InstOpCode::MOVSXReg8Mem4;
+         regRegOpCode = TR::InstOpCode::MOVSXReg8Reg4;
          }
       return TR::TreeEvaluator::conversionAnalyser(node, regMemOpCode, regRegOpCode, cg);
       }
@@ -2670,7 +2670,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::l2iEvaluator(TR::Node *node, TR::C
       reg = cg->allocateRegister();
       // to support signExtension in GRA, need to preserve upper word
       // in this move
-      generateRegRegInstruction(MOV8RegReg, node, reg, childReg, cg);
+      generateRegRegInstruction(TR::InstOpCode::MOV8RegReg, node, reg, childReg, cg);
       }
 
    node->setRegister(reg);
@@ -2688,7 +2688,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::iu2lEvaluator(TR::Node *node, TR::
       {
       TR::Register *targetRegister = cg->allocateRegister();
 
-      generateRegImmInstruction(MOV4RegImm4, node, targetRegister, node->getFirstChild()->getInt(), cg); // implicitly zero extended
+      generateRegImmInstruction(TR::InstOpCode::MOV4RegImm4, node, targetRegister, node->getFirstChild()->getInt(), cg); // implicitly zero extended
 
       node->setRegister(targetRegister);
       cg->decReferenceCount(node->getFirstChild());
@@ -2696,32 +2696,32 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::iu2lEvaluator(TR::Node *node, TR::
       return targetRegister;
       }
    else
-      return TR::TreeEvaluator::conversionAnalyser(node, L4RegMem, MOVZXReg8Reg4, cg); // This zero-extends on AMD64
+      return TR::TreeEvaluator::conversionAnalyser(node, TR::InstOpCode::L4RegMem, TR::InstOpCode::MOVZXReg8Reg4, cg); // This zero-extends on AMD64
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::b2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::conversionAnalyser(node, MOVSXReg8Mem1, MOVSXReg8Reg1, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, TR::InstOpCode::MOVSXReg8Mem1, TR::InstOpCode::MOVSXReg8Reg1, cg);
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::bu2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::conversionAnalyser(node, MOVZXReg8Mem1, MOVZXReg8Reg1, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, TR::InstOpCode::MOVZXReg8Mem1, TR::InstOpCode::MOVZXReg8Reg1, cg);
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::s2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::conversionAnalyser(node, MOVSXReg8Mem2, MOVSXReg8Reg2, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, TR::InstOpCode::MOVSXReg8Mem2, TR::InstOpCode::MOVSXReg8Reg2, cg);
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::su2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::conversionAnalyser(node, MOVZXReg8Mem2, MOVZXReg8Reg2, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, TR::InstOpCode::MOVZXReg8Mem2, TR::InstOpCode::MOVZXReg8Reg2, cg);
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::c2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::conversionAnalyser(node, MOVZXReg8Mem2, MOVZXReg8Reg2, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, TR::InstOpCode::MOVZXReg8Mem2, TR::InstOpCode::MOVZXReg8Reg2, cg);
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -2733,7 +2733,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::
    TR::Register *rightRegister = cg->evaluate(secondChild);
 
    // Compare left and right operands, all finished with the operands after this.
-   generateRegRegInstruction(CMP8RegReg, node, leftRegister, rightRegister, cg);
+   generateRegRegInstruction(TR::InstOpCode::CMP8RegReg, node, leftRegister, rightRegister, cg);
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
 
@@ -2745,16 +2745,16 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::
    // The state of things in each possible case after each instruction:
    //                       left < right    left = right    left > right
    // Processor flags:      NE=1 LT=1       NE=0  LT=0      NE=1 LT=0
-   generateRegInstruction(SETL1Reg, node, isLessThanReg, cg);
+   generateRegInstruction(TR::InstOpCode::SETL1Reg, node, isLessThanReg, cg);
    // isLessThanReg:        00000001        00000000        00000000
-   generateRegInstruction(SETNE1Reg, node, isNotEqualReg, cg);
+   generateRegInstruction(TR::InstOpCode::SETNE1Reg, node, isNotEqualReg, cg);
    // isNotEqualReg:        00000001        00000000        00000001
-   generateRegInstruction(NEG1Reg, node, isLessThanReg, cg);
+   generateRegInstruction(TR::InstOpCode::NEG1Reg, node, isLessThanReg, cg);
    // isLessThanReg:        11111111        00000000        00000000
-   generateRegRegInstruction(OR1RegReg, node, isNotEqualReg, isLessThanReg, cg);
+   generateRegRegInstruction(TR::InstOpCode::OR1RegReg, node, isNotEqualReg, isLessThanReg, cg);
    // isNotEqualReg:        11111111        00000000        00000001
 
-   generateRegRegInstruction(MOVSXReg4Reg1, node, isNotEqualReg, isNotEqualReg, cg);
+   generateRegRegInstruction(TR::InstOpCode::MOVSXReg4Reg1, node, isNotEqualReg, isNotEqualReg, cg);
 
    node->setRegister(isNotEqualReg);
    cg->stopUsingRegister(isLessThanReg);
@@ -2790,12 +2790,12 @@ static TR::Register *l2fd(TR::Node *node, TR::RealRegister *target, TR::InstOpCo
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::l2fEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return l2fd(node, toRealRegister(cg->allocateSinglePrecisionRegister(TR_FPR)), CVTSI2SSRegMem8, CVTSI2SSRegReg8, cg);
+   return l2fd(node, toRealRegister(cg->allocateSinglePrecisionRegister(TR_FPR)), TR::InstOpCode::CVTSI2SSRegMem8, TR::InstOpCode::CVTSI2SSRegReg8, cg);
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::l2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return l2fd(node, toRealRegister(cg->allocateRegister(TR_FPR)), CVTSI2SDRegMem8, CVTSI2SDRegReg8, cg);
+   return l2fd(node, toRealRegister(cg->allocateRegister(TR_FPR)), TR::InstOpCode::CVTSI2SDRegMem8, TR::InstOpCode::CVTSI2SDRegReg8, cg);
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -2804,7 +2804,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::lbits2dEvaluator(TR::Node *node, T
    TR::Node      *child  = node->getFirstChild();
    TR::Register  *sreg   = cg->evaluate(child);
    TR::Register  *treg   = cg->allocateRegister(TR_FPR);
-   generateRegRegInstruction(MOVQRegReg8, node, treg, sreg, cg);
+   generateRegRegInstruction(TR::InstOpCode::MOVQRegReg8, node, treg, sreg, cg);
    node->setRegister(treg);
    cg->decReferenceCount(child);
    return treg;
@@ -2816,7 +2816,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, T
    TR::Node      *child  = node->getFirstChild();
    TR::Register  *sreg   = cg->evaluate(child);
    TR::Register  *treg   = cg->allocateRegister(TR_GPR);
-   generateRegRegInstruction(MOVQReg8Reg, node, treg, sreg, cg);
+   generateRegRegInstruction(TR::InstOpCode::MOVQReg8Reg, node, treg, sreg, cg);
    if (node->normalizeNanValues())
       {
       static char *disableFastNormalizeNaNs = feGetEnv("TR_disableFastNormalizeNaNs");
@@ -2837,14 +2837,14 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, T
          startLabel->setStartInternalControlFlow();
          endLabel  ->setEndInternalControlFlow();
 
-         generateLabelInstruction(   LABEL,       node, startLabel,               cg);
-         generateRegMemInstruction(  CMP8RegMem,  node, treg, nan1MR,             cg);
-         generateLabelInstruction(   JGE4,        node, normalizeLabel,           cg);
-         generateRegMemInstruction(  CMP8RegMem,  node, treg, nan2MR,             cg);
-         generateLabelInstruction(   JB4,         node, endLabel,                 cg);
-         generateLabelInstruction(   LABEL,       node, normalizeLabel,           cg);
-         generateRegImm64Instruction( MOV8RegImm64, node, treg, DOUBLE_NAN,         cg);
-         generateLabelInstruction(   LABEL,       node, endLabel,           deps, cg);
+         generateLabelInstruction(   TR::InstOpCode::label,       node, startLabel,               cg);
+         generateRegMemInstruction(  TR::InstOpCode::CMP8RegMem,  node, treg, nan1MR,             cg);
+         generateLabelInstruction(   TR::InstOpCode::JGE4,        node, normalizeLabel,           cg);
+         generateRegMemInstruction(  TR::InstOpCode::CMP8RegMem,  node, treg, nan2MR,             cg);
+         generateLabelInstruction(   TR::InstOpCode::JB4,         node, endLabel,                 cg);
+         generateLabelInstruction(   TR::InstOpCode::label,       node, normalizeLabel,           cg);
+         generateRegImm64Instruction( TR::InstOpCode::MOV8RegImm64, node, treg, DOUBLE_NAN,         cg);
+         generateLabelInstruction(   TR::InstOpCode::label,       node, endLabel,           deps, cg);
          }
       else
          {
@@ -2871,23 +2871,23 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, T
          // Fast path: if subtracting nanDetector leaves CF=0 or OF=1, then it
          // must be a NaN.
          //
-         generateLabelInstruction(  LABEL,       node, startLabel,           cg);
-         generateRegMemInstruction( CMP8RegMem,  node, treg, nanDetectorMR,  cg);
-         generateLabelInstruction(  JAE4,        node, slowPathLabel,        cg);
-         generateLabelInstruction(  JO4,         node, slowPathLabel,        cg);
+         generateLabelInstruction(  TR::InstOpCode::label,       node, startLabel,           cg);
+         generateRegMemInstruction( TR::InstOpCode::CMP8RegMem,  node, treg, nanDetectorMR,  cg);
+         generateLabelInstruction(  TR::InstOpCode::JAE4,        node, slowPathLabel,        cg);
+         generateLabelInstruction(  TR::InstOpCode::JO4,         node, slowPathLabel,        cg);
 
          // Slow path
          //
          {
          TR_OutlinedInstructionsGenerator og(slowPathLabel, node, cg);
-         generateRegImm64Instruction(MOV8RegImm64, node, treg, DOUBLE_NAN, cg);
-         generateLabelInstruction(JMP4, node, endLabel, cg);
+         generateRegImm64Instruction(TR::InstOpCode::MOV8RegImm64, node, treg, DOUBLE_NAN, cg);
+         generateLabelInstruction(TR::InstOpCode::JMP4, node, endLabel, cg);
          og.endOutlinedInstructionSequence();
          }
 
          // Merge point
          //
-         generateLabelInstruction(LABEL, node, endLabel, internalControlFlowDeps, cg);
+         generateLabelInstruction(TR::InstOpCode::label, node, endLabel, internalControlFlowDeps, cg);
          }
       }
    node->setRegister(treg);

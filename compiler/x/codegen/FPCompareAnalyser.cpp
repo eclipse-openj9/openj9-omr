@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -280,7 +280,7 @@ TR::Register *TR_X86FPCompareAnalyser::fpCompareAnalyser(TR::Node       *root,
    //
    if (targetRegisterForFTST)
       {
-      generateFPRegInstruction(FTSTReg, root, targetRegisterForFTST, _cg);
+      generateFPRegInstruction(TR::InstOpCode::FTSTReg, root, targetRegisterForFTST, _cg);
       }
    else if (!useFCOMIInstructions && (getCmpReg1Mem2() || reverseMemOp))
       {
@@ -328,14 +328,14 @@ TR::Register *TR_X86FPCompareAnalyser::fpCompareAnalyser(TR::Node       *root,
    TR::RegisterDependencyConditions  *dependencies = generateRegisterDependencyConditions((uint8_t)1, 1, _cg);
    dependencies->addPreCondition(accRegister, TR::RealRegister::eax, _cg);
    dependencies->addPostCondition(accRegister, TR::RealRegister::eax, _cg);
-   generateRegInstruction(STSWAcc, root, accRegister, dependencies, _cg);
+   generateRegInstruction(TR::InstOpCode::STSWAcc, root, accRegister, dependencies, _cg);
 
    // Pop the FTST target register if it is not used any more.
    //
    if (targetRegisterForFTST &&
        targetChildForFTST && targetChildForFTST->getReferenceCount() == 0)
       {
-      generateFPSTiST0RegRegInstruction(FSTRegReg, root, targetRegisterForFTST, targetRegisterForFTST, _cg);
+      generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, root, targetRegisterForFTST, targetRegisterForFTST, _cg);
       }
 
    return accRegister;

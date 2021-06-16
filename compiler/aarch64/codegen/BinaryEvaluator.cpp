@@ -289,6 +289,12 @@ OMR::ARM64::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::VectorInt16:
          addOp = TR::InstOpCode::vadd8h;
          break;
+      case TR::VectorInt32:
+         addOp = TR::InstOpCode::vadd4s;
+         break;
+      case TR::VectorInt64:
+         addOp = TR::InstOpCode::vadd2d;
+         break;
       case TR::VectorFloat:
          addOp = TR::InstOpCode::vfadd4s;
          break;
@@ -314,6 +320,12 @@ OMR::ARM64::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::VectorInt16:
          subOp = TR::InstOpCode::vsub8h;
          break;
+      case TR::VectorInt32:
+         subOp = TR::InstOpCode::vsub4s;
+         break;
+      case TR::VectorInt64:
+         subOp = TR::InstOpCode::vsub2d;
+         break;
       case TR::VectorFloat:
          subOp = TR::InstOpCode::vfsub4s;
          break;
@@ -338,6 +350,9 @@ OMR::ARM64::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          break;
       case TR::VectorInt16:
          mulOp = TR::InstOpCode::vmul8h;
+         break;
+      case TR::VectorInt32:
+         mulOp = TR::InstOpCode::vmul4s;
          break;
       case TR::VectorFloat:
          mulOp = TR::InstOpCode::vfmul4s;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -477,14 +477,14 @@ uint8_t *TR::UtypeInstruction::generateBinaryEncoding() {
 // TR::JtypeInstruction:: member functions
 
 uint8_t *TR::JtypeInstruction::generateBinaryEncoding() {
-   uint8_t        *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t        *cursor           = instructionStart;
-   uint32_t *iPtr = (uint32_t*)instructionStart;
+   uint8_t  *instructionStart = cg()->getBinaryBufferCursor();
+   uint8_t  *cursor = instructionStart;
+   uint32_t *iPtr = reinterpret_cast<uint32_t*>(instructionStart);
    intptr_t offset = 0;
 
    if (getSymbolReference() != nullptr)
       {
-      TR_ASSERT(getLabelSymbol() == nullptr, "Both symbol reference and symbol set in J-type instruction");
+      TR_ASSERT_FATAL(getLabelSymbol() == nullptr, "Both symbol reference and symbol set in J-type instruction");
       TR::ResolvedMethodSymbol *sym = getSymbolReference()->getSymbol()->getResolvedMethodSymbol();
       TR_ResolvedMethod *resolvedMethod = sym == NULL ? NULL : sym->getResolvedMethod();
 
@@ -495,15 +495,15 @@ uint8_t *TR::JtypeInstruction::generateBinaryEncoding() {
          }
       else
          {
-         TR_ASSERT(0, "Non-recursive calls not (yet) supported");
+         offset = reinterpret_cast<intptr_t>(getSymbolReference()->getMethodAddress()) - reinterpret_cast<intptr_t>(cursor);
          }
       }
    else
       {
-      uintptr_t destination = (uintptr_t)(getLabelSymbol()->getCodeLocation());
+      intptr_t destination = reinterpret_cast<intptr_t>(getLabelSymbol()->getCodeLocation());
       if (destination != 0)
          {
-         offset = destination - (uintptr_t)cursor;
+         offset = destination - reinterpret_cast<intptr_t>(cursor);
          }
       else
          {
@@ -511,7 +511,7 @@ uint8_t *TR::JtypeInstruction::generateBinaryEncoding() {
          }
       }
 
-   TR_ASSERT(VALID_UJTYPE_IMM(offset), "Jump offset out of range");
+   TR_ASSERT_FATAL(VALID_UJTYPE_IMM(offset), "Jump offset out of range");
    *iPtr = TR_RISCV_UJTYPE (getOpCode().getMnemonic(), getTargetRegister(), offset);
 
    cursor += RISCV_INSTRUCTION_LENGTH;

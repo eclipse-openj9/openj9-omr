@@ -43,7 +43,7 @@ void TR::RVLinkageProperties::initialize()
    _firstIntegerArgumentRegister = 0;
    _numIntegerArgumentRegisters = 0;
    _firstIntegerReturnRegister = 0;
-   int numIntegerReturnRegisters = 0;
+   uint8_t numIntegerReturnRegisters = 0;
 
    for (auto regNum = TR::RealRegister::FirstGPR; regNum <= TR::RealRegister::LastGPR; regNum++)
       {
@@ -64,7 +64,7 @@ void TR::RVLinkageProperties::initialize()
    _firstFloatArgumentRegister = _firstIntegerArgumentRegister + _numIntegerArgumentRegisters;
    _numFloatArgumentRegisters = 0;
    _firstFloatReturnRegister = _firstIntegerArgumentRegister + numIntegerReturnRegisters;
-   int numFloatReturnRegisters = 0;
+   uint8_t numFloatReturnRegisters = 0;
 
    for (auto regNum = TR::RealRegister::FirstFPR; regNum <= TR::RealRegister::LastFPR; regNum++)
          {
@@ -81,6 +81,11 @@ void TR::RVLinkageProperties::initialize()
             _returnRegisters[_firstFloatReturnRegister + numFloatReturnRegisters++] = regNum;
             }
          }
+
+   // TODO: following is safe default, can probably be lower. Q: how is this number computed?
+   _numberOfDependencyRegisters =   (TR::RealRegister::LastGPR - TR::RealRegister::FirstGPR + 1)
+                                  + (TR::RealRegister::LastFPR - TR::RealRegister::FirstFPR + 1);
+
    }
 
 void OMR::RV::Linkage::mapStack(TR::ResolvedMethodSymbol *method)
@@ -108,12 +113,12 @@ bool OMR::RV::Linkage::hasToBeOnStack(TR::ParameterSymbol *parm)
    return(false);
    }
 
-TR::MemoryReference *OMR::RV::Linkage::getOutgoingArgumentMemRef(TR::Register *argMemReg, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::RVMemoryArgument &memArg)
+TR::MemoryReference *OMR::RV::Linkage::getOutgoingArgumentMemRef(TR::Register *argMemReg, int32_t offset, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::RVMemoryArgument &memArg)
    {
    TR::Machine *machine = cg()->machine();
    const TR::RVLinkageProperties& properties = self()->getProperties();
 
-   TR::MemoryReference *result = new (self()->trHeapMemory()) TR::MemoryReference(argMemReg, 8, cg()); // post-increment
+   TR::MemoryReference *result = new (self()->trHeapMemory()) TR::MemoryReference(argMemReg, offset, cg()); // post-increment
    memArg.argRegister = argReg;
    memArg.argMemory = result;
    memArg.opCode = opCode; // opCode must be post-index form

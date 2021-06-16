@@ -147,7 +147,6 @@ TR::RVSystemLinkageProperties::RVSystemLinkageProperties()
    _vtableIndexArgumentRegister = TR::RealRegister::NoReg;
    _j9methodArgumentRegister    = TR::RealRegister::NoReg;
 
-   _numberOfDependencyGPRegisters = 32; // To be determined
    _offsetToFirstLocal            = 0; // To be determined
 
    initialize();
@@ -206,7 +205,7 @@ static void mapSingleParameter(TR::ParameterSymbol *parameter, uint32_t &stackIn
       }
    else
       { // in caller's frame -- always 8-byte aligned
-      TR_ASSERT((stackIndex & 7) == 0, "Unaligned stack index.");
+      TR_ASSERT_FATAL((stackIndex & 7) == 0, "Unaligned stack index.");
       parameter->setParameterOffset(stackIndex);
       stackIndex += 8;
       }
@@ -295,16 +294,21 @@ TR::RVSystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
                nextFltArgReg++;
                mapSingleParameter(parameter, stackIndex, true);
                }
+            else if (nextIntArgReg < getProperties().getNumIntArgRegs())
+               {
+               nextIntArgReg++;
+               mapSingleParameter(parameter, stackIndex, true);
+               }
             else
                {
                nextFltArgReg = getProperties().getNumFloatArgRegs() + 1;
                }
             break;
          case TR::Aggregate:
-            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on AArch64.");
+            TR_ASSERT_FATAL(false, "Function parameters of aggregate types are not currently supported on RISC-V.");
             break;
          default:
-            TR_ASSERT(false, "Unknown parameter type.");
+            TR_ASSERT_FATAL(false, "Unknown parameter type.");
          }
       }
 
@@ -341,16 +345,20 @@ TR::RVSystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
                {
                nextFltArgReg++;
                }
+            else if (nextIntArgReg < getProperties().getNumIntArgRegs())
+               {
+               nextIntArgReg++;
+               }
             else
                {
                mapSingleParameter(parameter, stackIndex, false);
                }
             break;
          case TR::Aggregate:
-            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on AArch64.");
+            TR_ASSERT_FATAL(false, "Function parameters of aggregate types are not currently supported on RISC-V.");
             break;
          default:
-            TR_ASSERT(false, "Unknown parameter type.");
+            TR_ASSERT_FATAL(false, "Unknown parameter type.");
          }
       }
    }
@@ -386,7 +394,7 @@ TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::ParameterS
    TR::Node *firstNode = comp()->getStartTree()->getNode();
 
    // allocate stack space
-   uint32_t frameSize = (uint32_t)codeGen->getFrameSizeInBytes();
+   uint32_t frameSize = codeGen->getFrameSizeInBytes();
    if (VALID_ITYPE_IMM(frameSize))
       {
       cursor = generateITYPE(TR::InstOpCode::_addi, firstNode, sp, sp, -frameSize, codeGen, cursor);
@@ -424,7 +432,7 @@ TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::ParameterS
             if (nextIntArgReg < getProperties().getNumIntArgRegs())
                {
                op = (parameter->getSize() == 8) ? TR::InstOpCode::_sd : TR::InstOpCode::_sw;
-               cursor = generateSTORE(op, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::a0 + nextIntArgReg)), codeGen, cursor);
+               cursor = generateSTORE(op, firstNode, stackSlot, machine->getRealRegister(getProperties().getIntegerArgumentRegister(nextIntArgReg)), codeGen, cursor);
                nextIntArgReg++;
                }
             else
@@ -437,8 +445,14 @@ TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::ParameterS
             if (nextFltArgReg < getProperties().getNumFloatArgRegs())
                {
                op = (parameter->getSize() == 8) ? TR::InstOpCode::_fsd : TR::InstOpCode::_fsw;
-               cursor = generateSTORE(op, firstNode, stackSlot, machine->getRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::fa0 + nextFltArgReg)), codeGen, cursor);
+               cursor = generateSTORE(op, firstNode, stackSlot, machine->getRealRegister(getProperties().getFloatArgumentRegister(nextFltArgReg)), codeGen, cursor);
                nextFltArgReg++;
+               }
+            else if (nextIntArgReg < getProperties().getNumIntArgRegs())
+               {
+               op = (parameter->getSize() == 8) ? TR::InstOpCode::_sd : TR::InstOpCode::_sw;
+               cursor = generateSTORE(op, firstNode, stackSlot, machine->getRealRegister(getProperties().getIntegerArgumentRegister(nextIntArgReg)), codeGen, cursor);
+               nextIntArgReg++;
                }
             else
                {
@@ -446,10 +460,10 @@ TR::RVSystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::ParameterS
                }
             break;
          case TR::Aggregate:
-            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on AArch64.");
+            TR_ASSERT_FATAL(false, "Function parameters of aggregate types are not currently supported on RISC-V.");
             break;
          default:
-            TR_ASSERT(false, "Unknown parameter type.");
+            TR_ASSERT_FATAL(false, "Unknown parameter type.");
          }
       }
 
@@ -517,6 +531,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
    int32_t argSize = 0;
    int32_t numIntegerArgs = 0;
    int32_t numFloatArgs = 0;
+   int32_t numFloatArgsPassedInGPRs = 0;
    int32_t totalSize;
    int32_t i;
 
@@ -539,7 +554,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
          case TR::Int32:
          case TR::Int64:
          case TR::Address:
-            if (numIntegerArgs >= properties.getNumIntArgRegs())
+            if ((numIntegerArgs + numFloatArgsPassedInGPRs) >= properties.getNumIntArgRegs())
                numMemArgs++;
             numIntegerArgs++;
             break;
@@ -547,12 +562,17 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
          case TR::Float:
          case TR::Double:
             if (numFloatArgs >= properties.getNumFloatArgRegs())
+               {
+               if ((numIntegerArgs + numFloatArgsPassedInGPRs) < properties.getNumIntArgRegs())
+                  numFloatArgsPassedInGPRs++;
+               else
                   numMemArgs++;
+               }
             numFloatArgs++;
             break;
 
          default:
-            TR_ASSERT(false, "Argument type %s is not supported\n", childType.toString());
+            TR_ASSERT_FATAL(false, "Argument type %s is not supported\n", childType.toString());
          }
       }
 
@@ -572,6 +592,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
 
    numIntegerArgs = 0;
    numFloatArgs = 0;
+   numFloatArgsPassedInGPRs = 0;
 
    for (i = firstArgumentChild; i < callNode->getNumChildren(); i++)
       {
@@ -596,7 +617,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
             else
                argRegister = pushIntegerWordArg(child);
 
-            if (numIntegerArgs < properties.getNumIntArgRegs())
+            if ((numIntegerArgs + numFloatArgsPassedInGPRs) < properties.getNumIntArgRegs())
                {
                if (!cg()->canClobberNodesRegister(child, 0))
                   {
@@ -621,7 +642,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
                   }
                else
                   {
-                  TR::addDependency(dependencies, argRegister, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+                  TR::addDependency(dependencies, argRegister, properties.getIntegerArgumentRegister(numIntegerArgs + numFloatArgsPassedInGPRs), TR_GPR, cg());
                   }
                }
             else
@@ -635,7 +656,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
                   {
                   op = TR::InstOpCode::_sw;
                   }
-               mref = getOutgoingArgumentMemRef(argMemReg, argRegister, op, pushToMemory[argIndex++]);
+               mref = getOutgoingArgumentMemRef(argMemReg, argSize, argRegister, op, pushToMemory[argIndex++]);
                argSize += 8; // always 8-byte aligned
                }
             numIntegerArgs++;
@@ -675,6 +696,16 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
                   TR::addDependency(dependencies, argRegister, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
                   }
                }
+            else if ((numIntegerArgs + numFloatArgsPassedInGPRs) < properties.getNumIntArgRegs())
+               {
+               TR::Register *gprRegister = cg()->allocateRegister(TR_GPR);
+               TR::Register *zero = cg()->machine()->getRealRegister(TR::RealRegister::zero);
+               op = (childType == TR::Float) ? TR::InstOpCode::_fmv_x_s : TR::InstOpCode::_fmv_x_d;
+               generateRTYPE(op, callNode, gprRegister, argRegister, zero, cg());
+
+               TR::addDependency(dependencies, gprRegister, properties.getIntegerArgumentRegister(numIntegerArgs + numFloatArgsPassedInGPRs), TR_GPR, cg());
+               numFloatArgsPassedInGPRs++;
+               }
             else
                {
                // numFloatArgs >= properties.getNumFloatArgRegs()
@@ -686,7 +717,7 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
                   {
                   op = TR::InstOpCode::_fsw;
                   }
-               mref = getOutgoingArgumentMemRef(argMemReg, argRegister, op, pushToMemory[argIndex++]);
+               mref = getOutgoingArgumentMemRef(argMemReg, argSize, argRegister, op, pushToMemory[argIndex++]);
                argSize += 8; // always 8-byte aligned
                }
             numFloatArgs++;
@@ -694,28 +725,41 @@ int32_t TR::RVSystemLinkage::buildArgs(TR::Node *callNode,
          } // end of switch
       } // end of for
 
-   // NULL deps for non-preserved and non-system regs
-   while (numIntegerArgs < properties.getNumIntArgRegs())
+   // NULL deps for unused integer argument registers
+   for (auto i = numIntegerArgs + numFloatArgsPassedInGPRs; i < properties.getNumIntArgRegs(); i++)
       {
-      if (numIntegerArgs == 0 && resType.isAddress())
+      if (i == 0 && resType.isAddress())
          {
          dependencies->addPreCondition(cg()->allocateRegister(), properties.getIntegerArgumentRegister(0));
          dependencies->addPostCondition(cg()->allocateCollectedReferenceRegister(), properties.getIntegerArgumentRegister(0));
          }
       else
          {
-         TR::addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+         TR::addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(i), TR_GPR, cg());
          }
-      numIntegerArgs++;
       }
 
-   int32_t floatRegsUsed = (numFloatArgs > properties.getNumFloatArgRegs()) ? properties.getNumFloatArgRegs() : numFloatArgs;
-   for (i = (TR::RealRegister::RegNum)((uint32_t)TR::RealRegister::f0 + floatRegsUsed); i <= TR::RealRegister::LastFPR; i++)
+   // NULL deps for non-preserved non-argument integer registers
+   for (auto rn = TR::RealRegister::FirstGPR; rn <= TR::RealRegister::LastGPR; rn++)
       {
-      if (!properties.getPreserved((TR::RealRegister::RegNum)i))
+      if (!properties.getPreserved(rn) && !properties.getIntegerArgument(rn))
          {
-         // NULL dependency for non-preserved regs
-         TR::addDependency(dependencies, NULL, (TR::RealRegister::RegNum)i, TR_FPR, cg());
+         TR::addDependency(dependencies, NULL, rn, TR_FPR, cg());
+         }
+      }
+
+   // NULL deps for unused FP argument registers
+   for (auto i = numFloatArgs; i < properties.getNumFloatArgRegs(); i++)
+      {
+      TR::addDependency(dependencies, NULL, properties.getFloatArgumentRegister(i), TR_FPR, cg());
+      }
+
+   // NULL deps for non-preserved non-argument FP registers
+   for (auto rn = TR::RealRegister::FirstFPR; rn <= TR::RealRegister::LastFPR; rn++)
+      {
+      if (!properties.getPreserved(rn) && !properties.getFloatArgument(rn))
+         {
+         TR::addDependency(dependencies, NULL, rn, TR_FPR, cg());
          }
       }
 
@@ -752,8 +796,8 @@ TR::Register *TR::RVSystemLinkage::buildDispatch(TR::Node *callNode)
 
    TR::RegisterDependencyConditions *dependencies =
       new (trHeapMemory()) TR::RegisterDependencyConditions(
-         pp.getNumberOfDependencyGPRegisters(),
-         pp.getNumberOfDependencyGPRegisters(), trMemory());
+         pp.getNumberOfDependencyRegisters(),
+         pp.getNumberOfDependencyRegisters(), trMemory());
 
    int32_t totalSize = buildArgs(callNode, dependencies);
    if (totalSize > 0)
@@ -774,9 +818,35 @@ TR::Register *TR::RVSystemLinkage::buildDispatch(TR::Node *callNode)
       }
    else
       {
-      TR::SymbolReference *callSymRef = callNode->getSymbolReference();
-      generateJTYPE(TR::InstOpCode::_jal, callNode, ra,
-            (uintptr_t)callSymRef->getMethodAddress(), dependencies, callSymRef, NULL, cg());
+      auto targetAddr = callNode->getSymbolReference()->getMethodAddress();
+
+      if (targetAddr == NULL)
+         {
+         /*
+          * If the target address is not known yet, we generate `jal` and hope that the target address
+          * offset would fit into 20bit immediate.
+          *
+          * This is the case of recursive calls.
+          */
+         generateJTYPE(TR::InstOpCode::_jal, callNode, ra, 0, dependencies, callNode->getSymbolReference(), NULL, cg());
+         }
+      else
+         {
+         /*
+          * If the target address is known, we load it into a register and generate `jalr`. This may be
+          * wasteful in cases the target address offset would fit into 20bit immediate of `jal`. However,
+          * more often than not, non-jitted functions (library / runtime functions) are too far to fit in
+          * the immediate value.
+          *
+          * So, until a trampolines are implemented, we pay the price and load the target address into
+          * register.
+          *
+          * Note, that here we load the target address into link register (`ra`). It's going to be clobbered
+          * anyways and this way we do not need to allocate another one.
+          */
+         loadConstant64(cg(), callNode, reinterpret_cast<int64_t>(targetAddr), ra);
+         generateITYPE(TR::InstOpCode::_jalr, callNode, ra, ra, 0, dependencies, cg());
+         }
       }
 
    cg()->machine()->setLinkRegisterKilled(true);
@@ -821,7 +891,7 @@ TR::Register *TR::RVSystemLinkage::buildDispatch(TR::Node *callNode)
          break;
       default:
          retReg = NULL;
-         TR_ASSERT(false, "Unsupported direct call Opcode.");
+         TR_ASSERT_FATAL(false, "Unsupported direct call Opcode.");
       }
 
    callNode->setRegister(retReg);

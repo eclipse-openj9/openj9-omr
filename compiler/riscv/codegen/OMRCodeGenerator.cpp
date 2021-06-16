@@ -101,7 +101,7 @@ OMR::RV::CodeGenerator::initialize()
    // Calculate inverse of getGlobalRegister function
    //
    TR_GlobalRegisterNumber grn;
-   int i;
+   uint16_t i;
 
    TR_GlobalRegisterNumber globalRegNumbers[TR::RealRegister::NumRegisters];
    for (i = 0; i < cg->getNumberOfGlobalGPRs(); i++)

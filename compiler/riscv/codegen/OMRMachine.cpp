@@ -91,8 +91,8 @@ TR::RealRegister *OMR::RV::Machine::freeBestRegister(TR::Instruction *currentIns
    TR::Instruction *cursor;
    TR::Node *currentNode = currentInstruction->getNode();
    TR_RegisterKinds rk = (virtualRegister == NULL) ? TR_GPR : virtualRegister->getKind();
-   int numCandidates = 0;
-   int first, last;
+   int32_t numCandidates = 0;
+   TR::RealRegister::RegNum first, last;
    int32_t dataSize = 0;
    bool containsCollectedReference;
    TR::InstOpCode::Mnemonic loadOp;
@@ -119,9 +119,9 @@ TR::RealRegister *OMR::RV::Machine::freeBestRegister(TR::Instruction *currentIns
             break;
          }
 
-      for (int i = first; i <= last; i++)
+      for (auto i = first; i <= last; i++)
          {
-         TR::RealRegister *realReg = self()->getRealRegister((TR::RealRegister::RegNum)i);
+         TR::RealRegister *realReg = self()->getRealRegister(i);
          if (realReg->getState() == TR::RealRegister::Assigned)
             {
             candidates[numCandidates++] = realReg->getAssignedRegister();
@@ -134,7 +134,7 @@ TR::RealRegister *OMR::RV::Machine::freeBestRegister(TR::Instruction *currentIns
              cursor->getOpCodeValue() != TR::InstOpCode::label &&
              cursor->getOpCodeValue() != TR::InstOpCode::proc)
          {
-         for (int i = 0; i < numCandidates; i++)
+         for (int32_t i = 0; i < numCandidates; i++)
             {
             if (cursor->refsRegister(candidates[i]))
                {
@@ -465,6 +465,9 @@ static void registerCopy(TR::Instruction *precedingInstruction,
                          TR::RealRegister *sourceReg,
                          TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL(sourceReg->getKind() == rk, "Source register kind mismatch.");
+   TR_ASSERT_FATAL(sourceReg->getKind() == targetReg->getKind(), "Source and target register kind mismatch.");
+
    TR::Node *node = precedingInstruction->getNode();
    switch (rk)
       {
@@ -472,10 +475,11 @@ static void registerCopy(TR::Instruction *precedingInstruction,
          generateITYPE(TR::InstOpCode::_addi, node, targetReg, sourceReg, 0, cg, precedingInstruction);
          break;
       case TR_FPR:
-         TR_ASSERT(false, "Unsupported RegisterKind.");
+         TR_ASSERT_FATAL(sourceReg->isSinglePrecision() == targetReg->isSinglePrecision(), "Source and target register size mismatch");
+         generateRTYPE(sourceReg->isSinglePrecision() ? TR::InstOpCode::_fsgnj_s : TR::InstOpCode::_fsgnj_d, node, targetReg, sourceReg, sourceReg, cg, precedingInstruction);
          break;
       default:
-         TR_ASSERT(false, "Unsupported RegisterKind.");
+         TR_ASSERT_FATAL(false, "Unsupported RegisterKind.");
          break;
       }
    }
@@ -499,9 +503,9 @@ static void registerExchange(TR::Instruction *precedingInstruction,
       }
    else
       {
-      registerCopy(precedingInstruction, rk, targetReg, middleReg, cg);
-      registerCopy(precedingInstruction, rk, sourceReg, targetReg, cg);
-      registerCopy(precedingInstruction, rk, middleReg, sourceReg, cg);
+      registerCopy(precedingInstruction, rk, middleReg, targetReg, cg);
+      registerCopy(precedingInstruction, rk, targetReg, sourceReg, cg);
+      registerCopy(precedingInstruction, rk, sourceReg, middleReg, cg);
       }
    }
 

@@ -80,28 +80,28 @@ class RVMemoryArgument
 #define RV_Reserved                 0x40
 
 #define FOR_EACH_REGISTER(machine, block)                                        \
-   for (int regNum = TR::RealRegister::FirstGPR; regNum <= TR::RealRegister::LastGPR; regNum++) \
+   for (auto regNum = TR::RealRegister::FirstGPR; regNum <= TR::RealRegister::LastGPR; regNum++) \
       {                                                                          \
       TR::RealRegister *reg                                                      \
-                   = machine->getRealRegister((TR::RealRegister::RegNum)regNum); \
+                   = machine->getRealRegister(regNum);                           \
       { block; }                                                                 \
       }                                                                          \
-   for (int regNum = TR::RealRegister::FirstFPR; regNum <= TR::RealRegister::FirstFPR; regNum++) \
+   for (auto regNum = TR::RealRegister::FirstFPR; regNum <= TR::RealRegister::FirstFPR; regNum++) \
       {                                                                          \
       TR::RealRegister *reg                                                      \
-                   = machine->getRealRegister((TR::RealRegister::RegNum)regNum); \
+                   = machine->getRealRegister(regNum);                           \
       { block; }                                                                 \
       }
 
 #define FOR_EACH_RESERVED_REGISTER(machine, props, block)                        \
    FOR_EACH_REGISTER(machine,                                                    \
-   if (props._registerFlags[(TR::RealRegister::RegNum)regNum] & RV_Reserved)     \
+   if (props._registerFlags[regNum] & RV_Reserved)                               \
       { block; }                                                                 \
    )
 
 #define FOR_EACH_CALLEE_SAVED_REGISTER(machine, props, block)                    \
    FOR_EACH_REGISTER(machine,                                                    \
-   if (props._registerFlags[(TR::RealRegister::RegNum)regNum] == Preserved)      \
+   if (props._registerFlags[regNum] == Preserved)                                \
       { block; }                                                                 \
    )
 
@@ -132,7 +132,7 @@ struct RVLinkageProperties
    TR::RealRegister::RegNum _computedCallTargetRegister; // for icallVMprJavaSendPatchupVirtual
    TR::RealRegister::RegNum _vtableIndexArgumentRegister; // for icallVMprJavaSendPatchupVirtual
    TR::RealRegister::RegNum _j9methodArgumentRegister; // for icallVMprJavaSendStatic
-   uint8_t _numberOfDependencyGPRegisters;
+   uint8_t _numberOfDependencyRegisters;
    int8_t _offsetToFirstLocal;
 
    uint32_t getNumIntArgRegs() const {return _numIntegerArgumentRegisters;}
@@ -291,7 +291,7 @@ struct RVLinkageProperties
 
    int32_t getOffsetToFirstLocal() const {return _offsetToFirstLocal;}
 
-   uint32_t getNumberOfDependencyGPRegisters() const {return _numberOfDependencyGPRegisters;}
+   uint32_t getNumberOfDependencyRegisters() const {return _numberOfDependencyRegisters;}
 
    /**
     * @brief Initialize derived properties from register flags. This *must* be called
@@ -340,12 +340,13 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    /**
     * @brief Returns a MemoryReference for an outgoing argument
     * @param[in] argMemReg : register pointing to address for the outgoing argument
+    * @param[in] offset : offset from argMemReg in bytes
     * @param[in] argReg : register for the argument
     * @param[in] opCode : instruction OpCode for store to memory
     * @param[out] memArg : struct holding memory argument information
     * @return MemoryReference for the argument
     */
-   virtual TR::MemoryReference *getOutgoingArgumentMemRef(TR::Register *argMemReg, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::RVMemoryArgument &memArg);
+   virtual TR::MemoryReference *getOutgoingArgumentMemRef(TR::Register *argMemReg, int32_t offset, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::RVMemoryArgument &memArg);
 
    /**
     * @brief Saves arguments

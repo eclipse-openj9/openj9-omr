@@ -83,7 +83,7 @@ class MethodCompiler {
                           "Attempted to get entry point using a non-function-pointer type.");
 #endif
 
-            return reinterpret_cast<T>(_entry_point);
+            return (T)(reinterpret_cast<void *>(_entry_point));
         }
 
     protected:

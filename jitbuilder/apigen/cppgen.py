@@ -471,7 +471,7 @@ class CppGenerator:
             writer.write("{fname} = clientObj_{fname};\n".format(fname=field.name()))
 
         for callback in class_desc.callbacks():
-            fmt = "{impl_cast}->{registrar}(reinterpret_cast<void*>(&{thunk}));\n"
+            fmt = "{impl_cast}->{registrar}((void*)(&{thunk}));\n"
             registrar = callback_setter_name(callback)
             thunk = self.callback_thunk_name(class_desc, callback)
             writer.write(fmt.format(impl_cast=impl_cast,registrar=registrar,thunk=thunk))

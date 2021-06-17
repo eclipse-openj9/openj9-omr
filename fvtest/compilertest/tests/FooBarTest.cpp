@@ -56,13 +56,13 @@ FooBarTest::compileTestMethods()
    _barCompilee = &barCompilee;
    TR::IlGeneratorMethodDetails barDetails(&barCompilee);
 
-   _bar = (BarMethodType *) (compileMethod(barDetails, warm, rc));
+   _bar = (BarMethodType *)(reinterpret_cast<void *>(compileMethod(barDetails, warm, rc)));
    barCompilee.setEntryPoint((void *)_bar);
 
    FooIlInjector fooIlInjector(&types, this);
    TR::ResolvedMethod fooCompilee(__FILE__, LINETOSTR(__LINE__), "foo", numberOfArguments, argTypes, Int32, 0, &fooIlInjector);
    TR::IlGeneratorMethodDetails fooDetails(&fooCompilee);
-   _foo = (FooMethodType *) (compileMethod(fooDetails, warm, rc));
+   _foo = (FooMethodType *)(reinterpret_cast<void *>(compileMethod(fooDetails, warm, rc)));
 
    }
 

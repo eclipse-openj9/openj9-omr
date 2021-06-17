@@ -57,7 +57,7 @@ class OptTestDriver : public TestDriver, public ::testing::Test
    /**
     * Returns the method most recently compiled, cast to type `T`.
     */
-   template<typename T> T getCompiledMethod() const { return reinterpret_cast<T>(_compiledMethod); }
+   template<typename T> T getCompiledMethod() const { return (T)(reinterpret_cast<void *>(_compiledMethod)); }
 
    private:
    void makeOptimizationStrategyArray(OptimizationStrategy *strategy);

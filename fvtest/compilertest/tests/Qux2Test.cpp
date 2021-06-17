@@ -47,7 +47,7 @@ Qux2Test::compileTestMethods()
    argTypes[0]= Int32;
    TR::ResolvedMethod qux2Compilee(__FILE__, LINETOSTR(__LINE__), "qux2", numberOfArguments, argTypes, Int32, 0, &quxIlInjector);
    TR::IlGeneratorMethodDetails qux2Details(&qux2Compilee);
-   _qux2 = (testMethodType *) (compileMethod(qux2Details, warm, rc));
+   _qux2 = (testMethodType *)(reinterpret_cast<void *>(compileMethod(qux2Details, warm, rc)));
    }
 
 int32_t

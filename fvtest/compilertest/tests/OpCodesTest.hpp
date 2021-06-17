@@ -337,7 +337,7 @@ class OpCodesTest : public TestDriver
                COMPILATION_IL_GEN_FAILURE == returnCode ||
                COMPILATION_REQUESTED == returnCode)
       << "compileOpCodeMethod: Compiling method " << resolvedMethodName << " failed unexpectedly";
-   resultpointer = reinterpret_cast<functiontype>(startPC);
+   resultpointer = (functiontype)(reinterpret_cast<void *>(startPC));
    return returnCode;
    }
 
@@ -366,27 +366,27 @@ class OpCodesTest : public TestDriver
          {
          case TR::Int32:
             _int32Compilee = &functionCompilee;
-            _int32CompiledMethod = (signatureCharI_I_testMethodType *) (compileMethod(functionDetails, warm, returnCode));
+            _int32CompiledMethod = (signatureCharI_I_testMethodType *)(reinterpret_cast<void *>(compileMethod(functionDetails, warm, returnCode)));
             functionCompilee.setEntryPoint((void *)_int32CompiledMethod);
             break;
          case TR::Int64:
             _int64Compilee = &functionCompilee;
-            _int64CompiledMethod = (signatureCharJ_J_testMethodType *) (compileMethod(functionDetails, warm, returnCode));
+            _int64CompiledMethod = (signatureCharJ_J_testMethodType *)(reinterpret_cast<void *>(compileMethod(functionDetails, warm, returnCode)));
             functionCompilee.setEntryPoint((void *)_int64CompiledMethod);
             break;
          case TR::Double:
             _doubleCompilee = &functionCompilee;
-            _doubleCompiledMethod = (signatureCharD_D_testMethodType *) (compileMethod(functionDetails, warm, returnCode));
+            _doubleCompiledMethod = (signatureCharD_D_testMethodType *)(reinterpret_cast<void *>(compileMethod(functionDetails, warm, returnCode)));
             functionCompilee.setEntryPoint((void *)_doubleCompiledMethod);
             break;
          case TR::Float:
             _floatCompilee = &functionCompilee;
-            _floatCompiledMethod = (signatureCharF_F_testMethodType *) (compileMethod(functionDetails, warm, returnCode));
+            _floatCompiledMethod = (signatureCharF_F_testMethodType *)(reinterpret_cast<void *>(compileMethod(functionDetails, warm, returnCode)));
             functionCompilee.setEntryPoint((void *)_floatCompiledMethod);
             break;
          case TR::Address:
             _addressCompilee = &functionCompilee;
-            _addressCompiledMethod = (signatureCharL_L_testMethodType *) (compileMethod(functionDetails, warm, returnCode));
+            _addressCompiledMethod = (signatureCharL_L_testMethodType *)(reinterpret_cast<void *>(compileMethod(functionDetails, warm, returnCode)));
             functionCompilee.setEntryPoint((void *)_addressCompiledMethod);
             break;
          default:
@@ -401,7 +401,7 @@ class OpCodesTest : public TestDriver
       uint8_t *startPC = compileMethod(callDetails, warm, returnCode);
       EXPECT_TRUE(COMPILATION_SUCCEEDED == returnCode || COMPILATION_REQUESTED == returnCode)
          << "Compiling test method " << testResolvedMethodName << " failed unexpectedly";
-      resultpointer = reinterpret_cast<functiontype>(startPC);
+      resultpointer = (functiontype)(reinterpret_cast<void *>(startPC));
       return returnCode;;
       }
 

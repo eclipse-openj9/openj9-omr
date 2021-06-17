@@ -164,6 +164,8 @@ OMR::ARM64::CodeGenerator::initialize()
 
    if (comp->target().isSMP())
       cg->setEnforceStoreOrder();
+
+   cg->setSupportsAutoSIMD();
    }
 
 void
@@ -572,6 +574,57 @@ int64_t OMR::ARM64::CodeGenerator::getSmallestPosConstThatMustBeMaterialized()
    {
    TR_ASSERT(0, "Not Implemented on AArch64");
    return 0;
+   }
+
+
+bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt)
+   {
+   // implemented vector opcodes
+   switch (opcode.getOpCodeValue())
+      {
+      case TR::vadd:
+      case TR::vsub:
+         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+            return true;
+         else
+            return false;
+      case TR::vmul:
+         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Float || dt == TR::Double)
+            return true;
+         else
+            return false; // Int64 is not supported
+      case TR::vdiv:
+         if (dt == TR::Float || dt == TR::Double)
+            return true;
+         else
+            return false; // Int8/ Int16/ Int32/ Int64 are not supported
+      case TR::vneg:
+         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Float || dt == TR::Double)
+            return true;
+         else
+            return false; // Int32/ Int64 are not supported
+      case TR::vand:
+      case TR::vor:
+      case TR::vxor:
+      case TR::vnot:
+         if (dt == TR::Int8)
+            return true;
+         else
+            return false; // Int16/ Int32/ Int64/ Float/ Double are not supported
+      case TR::vload:
+      case TR::vloadi:
+      case TR::vstore:
+      case TR::vstorei:
+      case TR::vsplats:
+         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+            return true;
+         else
+            return false;
+      default:
+         return false;
+      }
+
+   return false;
    }
 
 bool

@@ -87,7 +87,6 @@ class OMR_EXTENSIBLE RealRegister : public TR::Register
        #include "codegen/PseudoRegisterEnum.hpp"
        } RegDep;
 
-
    protected:
 
    RealRegister(TR::CodeGenerator *cg, RegNum n);
@@ -165,6 +164,44 @@ class OMR_EXTENSIBLE RealRegister : public TR::Register
    TR::CodeGenerator *_cg;
    };
 
+   inline bool operator<(const RealRegister::RegNum& lhs, const RealRegister::RegDep& rhs)
+      {
+      // Cannot use std::underlying_type here because of lack of support in xlC
+      auto lhsValue = static_cast<int32_t>(lhs);
+      auto rhsValue = static_cast<int32_t>(rhs);
+      return lhsValue < rhsValue;
+      }
+
+   inline bool operator>(const RealRegister::RegNum& lhs, const RealRegister::RegDep& rhs)
+      {
+      // Cannot use std::underlying_type here because of lack of support in xlC
+      auto lhsValue = static_cast<int32_t>(lhs);
+      auto rhsValue = static_cast<int32_t>(rhs);
+      return lhsValue > rhsValue;
+      }
+
+   inline bool operator<=(const RealRegister::RegNum& lhs, const RealRegister::RegDep& rhs)
+      {
+      return !(lhs > rhs);
+      }
+
+   inline bool operator>=(const RealRegister::RegNum& lhs, const RealRegister::RegDep& rhs)
+      {
+      return !(lhs < rhs);
+      }
+
+   inline bool operator==(const RealRegister::RegNum& lhs, const RealRegister::RegDep& rhs)
+      {
+      // Cannot use std::underlying_type here because of lack of support in xlC
+      auto lhsValue = static_cast<int32_t>(lhs);
+      auto rhsValue = static_cast<int32_t>(rhs);
+      return lhsValue == rhsValue;
+      }
+
+   inline bool operator!=(const RealRegister::RegNum& lhs, const RealRegister::RegDep& rhs)
+      {
+      return !(lhs == rhs);
+      }
 }
 
 #endif

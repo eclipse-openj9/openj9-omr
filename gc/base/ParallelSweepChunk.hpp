@@ -84,6 +84,8 @@ public:
 	uintptr_t _accumulatedFreeSize;
 	uintptr_t _accumulatedFreeHoles;
 
+	uintptr_t _minFreeSize;
+
 	/**
 	 * clear the Chunk object.
 	 */	
@@ -109,6 +111,16 @@ public:
 			_previousLargestFreeEntry = previousLargestFreeEntryCandidate;
 			_largestFreeEntry = largestFreeEntrySizeCandidate;
  		}
+	}
+
+	MMINLINE bool isFreeSizeEligibleForRecycling(uintptr_t size)
+	{
+		return size >= _minFreeSize;
+	}
+
+	MMINLINE bool isTrailingFreeCandidateEligibleForRecycling()
+	{
+		return trailingFreeCandidateSize >= _minFreeSize;
 	}
 
 	/**
@@ -147,7 +159,8 @@ public:
 		_splitCandidate(NULL),
 		_splitCandidatePreviousEntry(NULL),
 		_accumulatedFreeSize(0),
-		_accumulatedFreeHoles(0)
+		_accumulatedFreeHoles(0),
+		_minFreeSize(0)
 	{
 		_typeId = __FUNCTION__;
 	};

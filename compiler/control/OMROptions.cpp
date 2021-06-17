@@ -93,6 +93,16 @@ using namespace OMR;
 
 static char * EXCLUDED_METHOD_OPTIONS_PREFIX = "ifExcluded";
 
+#if defined(LINUX)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#elif defined(OSX)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
+#elif defined(AIXPPC) || defined(J9ZOS390)
+#pragma report(disable, "CCN6281")
+#endif
+
 // The following options must be placed in alphabetical order for them to work properly
 TR::OptionTable OMR::Options::_jitOptions[] = {
 
@@ -1274,7 +1284,13 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {NULL}
 };
 
-
+#if defined(LINUX)
+#pragma GCC diagnostic pop
+#elif defined(OSX)
+#pragma clang diagnostic pop
+#elif defined(AIXPPC) || defined(J9ZOS390)
+#pragma report(enable, "CCN6281")
+#endif
 
 int64_t
 OMR::Options::getNumericValue(char * & option)
@@ -4398,6 +4414,15 @@ OMR::Options::getDefaultCountString()
    return p;
    }
 
+#if defined(LINUX)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#elif defined(OSX)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
+#elif defined(AIXPPC) || defined(J9ZOS390)
+#pragma report(disable, "CCN6281")
+#endif
 
 char *
 OMR::Options::setCount(char *option, void *base, TR::OptionTable *entry)
@@ -4439,6 +4464,13 @@ OMR::Options::setCount(char *option, void *base, TR::OptionTable *entry)
    return option;
    }
 
+#if defined(LINUX)
+#pragma GCC diagnostic pop
+#elif defined(OSX)
+#pragma clang diagnostic pop
+#elif defined(AIXPPC) || defined(J9ZOS390)
+#pragma report(enable, "CCN6281")
+#endif
 
 // -----------------------------------------------------------------------------
 

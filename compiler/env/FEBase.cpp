@@ -101,6 +101,8 @@ char *feGetEnv(const char *s)
 #elif defined(OSX)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
+#elif defined(AIXPPC) || defined(J9ZOS390)
+#pragma report(disable, "CCN6281")
 #endif
 
 TR::OptionTable OMR::Options::_feOptions[] =
@@ -125,6 +127,8 @@ TR::OptionTable OMR::Options::_feOptions[] =
 #pragma GCC diagnostic pop
 #elif defined(OSX)
 #pragma clang diagnostic pop
+#elif defined(AIXPPC) || defined(J9ZOS390)
+#pragma report(enable, "CCN6281")
 #endif
 
 #include "control/Recompilation.hpp"

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,7 +19,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <windows.h>
+#ifndef CALLSTACK_INCL
+#define CALLSTACK_INCL
+
+#if defined(OMR_OS_WINDOWS) && defined(TR_HOST_X86) && defined(TR_HOST_32BIT)
 //
 // StackWalking API
 //
@@ -154,3 +157,7 @@ typedef BOOL  (__stdcall * StackWalk64Type)(
 StackWalk64Type StackWalk64;
 typedef BOOL (__stdcall * SymFromAddrType)( HANDLE, DWORD64, PDWORD64, PSYMBOL_INFO);
 typedef BOOL (__stdcall * SymCleanupType) ( HANDLE);
+
+#endif /* defined(OMR_OS_WINDOWS) && defined(TR_HOST_X86) && defined(TR_HOST_32BIT)) */
+
+#endif

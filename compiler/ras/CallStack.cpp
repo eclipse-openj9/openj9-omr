@@ -354,9 +354,9 @@ bool TR_MvsCallStackIterator::getNext ()
 
 #elif defined(OMR_OS_WINDOWS) && defined(TR_HOST_X86) && defined(TR_HOST_32BIT)
 
-#include "ras/CallStack.hpp"
 #include <windows.h>
 #include <Winbase.h>
+#include "ras/CallStack.hpp"
 
 uintptr_t TR_WinCallStackIterator::getOffsetInProcedure()
    {

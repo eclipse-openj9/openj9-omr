@@ -283,8 +283,8 @@ TEST_P(Int64Compare, UsingConst) {
          "(block "
            "(ireturn "
              "(%s "
-               "(lconst %lld) "
-               "(lconst %lld)))))",
+               "(lconst %" OMR_PRId64 ") "
+               "(lconst %" OMR_PRId64 ")))))",
        param.opcode.c_str(), param.lhs, param.rhs);
     auto trees = parseString(inputTrees);
 
@@ -310,7 +310,7 @@ TEST_P(Int64Compare, UsingRhsConst) {
            "(ireturn "
              "(%s "
                "(lload parm=0) "
-               "(lconst %lld)))))",
+               "(lconst %" OMR_PRId64 ")))))",
        param.opcode.c_str(), param.rhs);
     auto trees = parseString(inputTrees);
 
@@ -392,8 +392,8 @@ TEST_P(UInt64Compare, UsingConst) {
          "(block "
            "(ireturn "
              "(%s "
-               "(lconst %lld) "
-               "(lconst %lld)))))",
+               "(lconst %" OMR_PRIu64 ") "
+               "(lconst %" OMR_PRIu64 ")))))",
        param.opcode.c_str(), param.lhs, param.rhs);
     auto trees = parseString(inputTrees);
 
@@ -419,7 +419,7 @@ TEST_P(UInt64Compare, UsingRhsConst) {
            "(ireturn "
              "(%s "
                "(lload parm=0) "
-               "(lconst %lld)))))",
+               "(lconst %" OMR_PRIu64 ")))))",
        param.opcode.c_str(), param.rhs);
     auto trees = parseString(inputTrees);
 
@@ -682,7 +682,7 @@ TEST_P(Int64IfCompare, UsingConst) {
     std::snprintf(inputTrees, 256,
         "(method return=Int32 "
           "(block "
-            "(%s target=b1 (lconst %lld) (lconst %lld))) "
+            "(%s target=b1 (lconst %" OMR_PRId64 ") (lconst %" OMR_PRId64 "))) "
           "(block "
             "(ireturn (iconst %d))) "
           "(block name=b1 "
@@ -767,7 +767,7 @@ TEST_P(UInt64IfCompare, UsingConst) {
     std::snprintf(inputTrees, 256,
         "(method return=Int32 "
           "(block "
-            "(%s target=b1 (lconst %lld) (lconst %lld))) "
+            "(%s target=b1 (lconst %" OMR_PRIu64 ") (lconst %" OMR_PRIu64 "))) "
           "(block "
             "(ireturn (iconst %d))) "
           "(block name=b1 "

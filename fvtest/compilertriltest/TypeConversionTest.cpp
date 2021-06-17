@@ -658,7 +658,7 @@ TEST_P(Int64ToInt32, UsingConst) {
         "  (block"
         "    (ireturn"
         "      (l2i"
-        "        (lconst %lld) ) ) ) )",
+        "        (lconst %" OMR_PRId64 ") ) ) ) )",
         param.value);
     auto trees = parseString(inputTrees);
 
@@ -787,7 +787,7 @@ TEST_P(Int64ToFloat, UsingConst) {
         "  (block"
         "    (freturn"
         "      (l2f"
-        "        (lconst %lld) ) ) ) )",
+        "        (lconst %" OMR_PRId64 ") ) ) ) )",
         param.value);
     auto trees = parseString(inputTrees);
 
@@ -899,7 +899,7 @@ TEST_P(Int64ToDouble, UsingConst) {
         "  (block"
         "    (dreturn"
         "      (l2d"
-        "        (lconst %lld) ) ) ) )",
+        "        (lconst %" OMR_PRId64 ") ) ) ) )",
         param.value);
     auto trees = parseString(inputTrees);
 
@@ -1760,7 +1760,7 @@ TEST_P(Int64BitsToDouble, UsingConst) {
         "  (block"
         "    (dreturn"
         "      (lbits2d"
-        "        (lconst %lld) ) ) ) )",
+        "        (lconst %" OMR_PRId64 ") ) ) ) )",
         param.value);
     auto trees = parseString(inputTrees);
 

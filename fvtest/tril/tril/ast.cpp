@@ -21,6 +21,7 @@
 
 #include "ast.hpp"
 #include "omrcfg.h"
+#include "omrformatconsts.h"
 #include <stdlib.h>
 #include <string>
 
@@ -101,11 +102,7 @@ const ASTNode* findNodeByNameInTree(const ASTNode* tree, const char* name) {
 
 void printASTValueUnion(FILE* file, const ASTValue* value) {
     switch (value->getType()) {
-#if defined(OMR_ENV_DATA64)
-        case ASTValue::Integer: fprintf(file, "%llu", value->getInteger()); break;
-#else
-        case ASTValue::Integer: fprintf(file, "%lu", value->getInteger()); break;
-#endif /* OMR_ENV_DATA64 */
+        case ASTValue::Integer: fprintf(file, "%" OMR_PRIu64, value->getInteger()); break;
         case ASTValue::FloatingPoint: fprintf(file, "%f", value->getFloatingPoint()); break;
         case ASTValue::String: fprintf(file, "\"%s\"", value->getString()); break;
         default: fprintf(file, "{bad arg type %d}", value->getType());

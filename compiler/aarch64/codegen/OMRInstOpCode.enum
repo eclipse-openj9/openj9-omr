@@ -735,6 +735,12 @@
 		vfneg4s,                                                  	/* 0x6EA0F800	FNEG      	 */
 		vfneg2d,                                                  	/* 0x6EE0F800	FNEG      	 */
 		vnot16b,                                                  	/* 0x6E205800	NOT      	 */
+		vdup16b,                                               		/* 0x4E010C00	DUP      	 */
+		vdup8h,                                                  	/* 0x4E020C00	DUP      	 */
+		vdup4s,                                               		/* 0x4E040C00	DUP      	 */
+		vdup2d,                                               		/* 0x4E080C00	DUP      	 */
+		vfdup4s,                                                  	/* 0x4E040400	DUP      	 */
+		vfdup2d,                                                  	/* 0x4E080400	DUP      	 */
 /* Hint instructions */
 		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */

@@ -1176,7 +1176,48 @@ OMR::ARM64::TreeEvaluator::vpermEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::ARM64::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *srcReg = cg->evaluate(firstChild);
+
+   TR::InstOpCode::Mnemonic op;
+
+   switch (node->getDataType())
+      {
+      case TR::VectorInt8:
+         TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind\n");
+         op = TR::InstOpCode::vdup16b;
+         break;
+      case TR::VectorInt16:
+         TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind\n");
+         op = TR::InstOpCode::vdup8h;
+         break;
+      case TR::VectorInt32:
+         TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind\n");
+         op = TR::InstOpCode::vdup4s;
+         break;
+      case TR::VectorInt64:
+         TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind\n");
+         op = TR::InstOpCode::vdup2d;
+         break;
+      case TR::VectorFloat:
+         TR_ASSERT(srcReg->getKind() == TR_FPR, "unexpected Register kind\n");
+         op = TR::InstOpCode::vfdup4s;
+         break;
+      case TR::VectorDouble:
+         TR_ASSERT(srcReg->getKind() == TR_FPR, "unexpected Register kind\n");
+         op = TR::InstOpCode::vfdup2d;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+	      return NULL;
+      }
+
+   TR::Register *resReg = cg->allocateRegister(TR_VRF);
+   node->setRegister(resReg);
+   generateTrg1Src1Instruction(cg, op, node, resReg, srcReg);
+
+   cg->decReferenceCount(firstChild);
+   return resReg;
    }
 
 TR::Register*

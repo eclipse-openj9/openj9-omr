@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1985,20 +1985,7 @@ bool TR_PartialRedundancy::eliminateRedundantSupportedNodes(TR::Node *parent, TR
                 (currentNode->getOpCodeValue() == TR::treetop))
                currentNode = currentNode->getFirstChild();
 
-            static char *profileLongParms = feGetEnv("TR_ProfileLongParms");
-            if ((node->getType().isInt64()) &&
-                profileLongParms)
-               {
-               // Switch this compile to profiling comp() in case a
-               // potential opportunity is seen for specializing long autos is seen;
-               // in this case aggressively try to profile and recompile (reduced
-               // the profiling count)
-               //
-               if (comp()->getMethodHotness() == hot &&
-                   comp()->getRecompilationInfo())
-                  optimizer()->switchToProfiling();
-               }
-            else if (!node->getType().isInt64())
+            if (!node->getType().isInt64())
                {
                TR::ILOpCode &currentOpCode = currentNode->getOpCode();
                if (currentOpCode.isBranch() ||

@@ -3181,7 +3181,6 @@ void TR_LoopVersioner::updateDefinitionsAndCollectProfiledExprs(TR::Node *parent
          _containsCall = true;
       }
 
-   static char *profileLongParms = feGetEnv("TR_ProfileLongParms");
    if (TR_LocalAnalysis::isSupportedOpCode(node->getOpCode(), comp()))
       {
       if (node->getType().isInt32() ||
@@ -3189,27 +3188,7 @@ void TR_LoopVersioner::updateDefinitionsAndCollectProfiledExprs(TR::Node *parent
            node->getOpCode().isLoadVar() &&
            node->getSymbolReference()->getSymbol()->isAutoOrParm()))
           {
-          if (profileLongParms &&
-              comp()->getMethodHotness() == hot &&
-              comp()->getRecompilationInfo())
-             {
-             if (node->getType().isInt64())
-                {
-                if (node->getSymbolReference()->getSymbol()->isParm())
-                   {
-                   // Switch this compile to profiling compilation in case a
-                   // potential opportunity is seen for specializing long parms (which are
-                   // usually invariant) is seen
-                   //
-                   optimizer()->switchToProfiling();
-                   //printf("Profiling longs in %s from LVE\n", comp()->signature());
-                   }
-                }
-             }
-
-          if (/* comp()->getRecompilationInfo() && */ collectProfiledExprs &&
-              ((!node->getType().isInt64()) ||
-               (profileLongParms /* && (valueInfo->getTopValue() == 0) */)))
+          if (collectProfiledExprs && !node->getType().isInt64())
              {
 #ifdef J9_PROJECT_SPECIFIC
              TR_ValueInfo *valueInfo = static_cast<TR_ValueInfo*>(TR_ValueProfileInfoManager::getProfiledValueInfo(node, comp(), ValueInfo));
@@ -3222,8 +3201,7 @@ void TR_LoopVersioner::updateDefinitionsAndCollectProfiledExprs(TR::Node *parent
                     // Only collect nodes from unspecialized blocks to avoid specializing the same nodes twice
                     !block->isSpecialized())
                    {
-                   if ((!node->getType().isInt64()) ||
-                       (profileLongParms && (valueInfo->getTopValue() == 0)))
+                   if (!node->getType().isInt64())
                       {
 
                      // Zero length contiguous array lengths mean further profiling is necessary

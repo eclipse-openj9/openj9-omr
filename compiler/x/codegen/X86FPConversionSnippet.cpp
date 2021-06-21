@@ -458,19 +458,14 @@ void TR::X86FPConvertToLongSnippet::analyseLongConversion()
    // to the snippets being sized and emitted.
    //
    TR_ASSERT(((_loadHighInstruction && _loadHighInstruction->getTargetRegister()) &&
-            (_loadLowInstruction && _loadLowInstruction->getTargetRegister()) &&
-            (_clobberInstruction && _clobberInstruction->getSourceRegister())),
+            (_loadLowInstruction && _loadLowInstruction->getTargetRegister())),
            "analyseLongConversion() ==> register assignment is a prerequisite!\n");
 
    _action = 0;
 
    _lowRegister = toRealRegister(_loadLowInstruction->getTargetRegister());
    _highRegister = toRealRegister(_loadHighInstruction->getTargetRegister());
-   _doubleRegister = toRealRegister(_clobberInstruction->getSourceRegister());
 
-   TR::Machine * machine = cg()->machine();
-
-   _action |= ((_doubleRegister->getRegisterNumber() != TR::RealRegister::st0) << 7);
    _action |= ((_lowRegister->getRegisterNumber() == TR::RealRegister::eax) << 3);
    _action |= ((_lowRegister->getRegisterNumber() == TR::RealRegister::edx) << 2);
    _action |= ((_highRegister->getRegisterNumber() == TR::RealRegister::eax) << 1);

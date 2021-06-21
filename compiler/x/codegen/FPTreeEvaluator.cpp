@@ -748,59 +748,6 @@ TR::Register *OMR::X86::TreeEvaluator::fpRemEvaluator(TR::Node *node, TR::CodeGe
    return targetRegister;
    }
 
-
-TR::Register *OMR::X86::TreeEvaluator::commonFPRemEvaluator(TR::Node          *node,
-                                                       TR::CodeGenerator *cg,
-                                                       bool              isDouble)
-   {
-   TR::Node *divisor = node->getSecondChild();
-   TR::Node *dividend = node->getFirstChild();
-   TR::Compilation *comp = cg->comp();
-
-   TR::Register *divisorReg = cg->evaluate( divisor);
-   TR_ASSERT(divisorReg->getKind() == TR_X87, "X87 Instructions only.");
-
-   if (divisorReg->needsPrecisionAdjustment())
-      TR::TreeEvaluator::insertPrecisionAdjustment(divisorReg, divisor, cg);
-
-   TR::Register *dividendReg = cg->evaluate( dividend);
-   TR_ASSERT(dividendReg->getKind() == TR_X87, "X87 Instructions only.");
-
-   if (dividendReg->needsPrecisionAdjustment())
-      TR::TreeEvaluator::insertPrecisionAdjustment(dividendReg, dividend, cg);
-
-   if (isDouble)
-      dividendReg = cg->doubleClobberEvaluate(dividend);
-   else
-      dividendReg = cg->floatClobberEvaluate(dividend);
-
-   TR::Register *accReg = cg->allocateRegister();
-   TR::RegisterDependencyConditions  *deps = generateRegisterDependencyConditions((uint8_t) 0, 1, cg);
-   deps->addPostCondition( accReg, TR::RealRegister::eax, cg);
-
-   generateFPRemainderRegRegInstruction( TR::InstOpCode::FPREMRegReg, node, dividendReg, divisorReg, accReg, deps, cg);
-   cg->stopUsingRegister(accReg);
-
-   node->setRegister( dividendReg);
-   cg->decReferenceCount( dividend);
-
-   if (divisorReg && divisorReg->getKind() == TR_X87 && divisor->getReferenceCount() == 1)
-      generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, node, divisorReg, divisorReg, cg);
-
-   cg->decReferenceCount( divisor);
-
-   dividendReg->setMayNeedPrecisionAdjustment();
-
-   if ((node->getOpCode().isFloat() && !comp->getJittedMethodSymbol()->usesSinglePrecisionMode()) ||
-       comp->getCurrentMethod()->isStrictFP() ||
-       comp->getOption(TR_StrictFP))
-      {
-      dividendReg->setNeedsPrecisionAdjustment();
-      }
-
-   return dividendReg;
-   }
-
 // also handles b2f, bu2f, s2f, su2f evaluators
 TR::Register *OMR::X86::TreeEvaluator::i2fEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

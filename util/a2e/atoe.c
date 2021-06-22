@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2001, 2018 IBM Corp. and others
+ * Copyright (c) 2001, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -903,31 +903,6 @@ atoe_fgets(char *buffer, int num, FILE *file)
 	return (char *)0;
 }
 
-
-/**************************************************************************
- * name        - atoe_gets
- * description -
- * parameters  -
- * returns     -
- *************************************************************************/
-char *
-atoe_gets(char *buffer)
-{
-	char *abuf;
-
-	Log(1, "Entry: atoe_gets\n");
-
-	if (gets(buffer)) {
-		int len = strlen(buffer);
-		abuf = e2a(buffer, len);
-		memcpy(buffer, abuf, len);
-
-		free(abuf);
-		return buffer;
-	}
-
-	return (char *)0;
-}
 
 /**************************************************************************
  * name        - atoe_unlink

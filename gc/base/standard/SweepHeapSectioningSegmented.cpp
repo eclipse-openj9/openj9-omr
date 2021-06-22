@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,14 +21,17 @@
  *******************************************************************************/
 
 #include "omrcfg.h"
+#include "omrcomp.h"
 
 #include "SweepHeapSectioningSegmented.hpp"
+#include "SweepPoolManager.hpp"
 
 #include "EnvironmentBase.hpp"
 #include "Heap.hpp"
 #include "HeapRegionIterator.hpp"
 #include "HeapRegionDescriptor.hpp"
 #include "NonVirtualMemory.hpp"
+#include "MemoryPool.hpp"
 #include "MemorySubSpace.hpp"
 #include "ParallelDispatcher.hpp"
 #include "ParallelSweepChunk.hpp"
@@ -173,6 +176,10 @@ MM_SweepHeapSectioningSegmented::reassignChunks(MM_EnvironmentBase *env)
 				chunk->chunkBase = (void *)heapChunkBase;
 				chunk->chunkTop = (void *)heapChunkTop;
 				chunk->memoryPool = pool;
+				Assert_MM_true(NULL != pool);
+				/* Some memory pools, like the one in LOA, may have larger min free size then in the rest of the heap being swept */
+				chunk->_minFreeSize = OMR_MAX(pool->getMinimumFreeEntrySize(), pool->getSweepPoolManager()->getMinimumFreeSize());
+
 				chunk->_coalesceCandidate = (heapChunkBase != region->getLowAddress());
 				chunk->_previous= previousChunk;
 				if(NULL != previousChunk) {

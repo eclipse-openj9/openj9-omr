@@ -47,16 +47,14 @@ class MM_HeapLinkedFreeHeader;
 class MM_SweepPoolManagerAddressOrderedListBase : public MM_SweepPoolManager
 {
 private:
-
 protected:
+public:
 
+private:
+protected:
 	MMINLINE void calculateTrailingDetails(MM_ParallelSweepChunk *sweepChunk, uintptr_t *trailingCandidate, uintptr_t trailingCandidateSlotCount);
 	MMINLINE virtual void connectChunkPostProcess(MM_ParallelSweepChunk *chunk, MM_SweepPoolState *sweepState, MM_HeapLinkedFreeHeader* splitCandidate, MM_HeapLinkedFreeHeader* splitCandidatePreviousEntry){}
 	MMINLINE virtual void addFreeMemoryPostProcess(MM_EnvironmentBase *env, MM_MemoryPoolAddressOrderedListBase *memoryPool, void *addrBase, void *addrTop, bool needSync, void *oldAddrTop = NULL) {}
-	MMINLINE virtual bool isEligibleForFreeMemory(MM_EnvironmentBase *env, MM_MemoryPoolAddressOrderedListBase *memoryPool, void* address, uintptr_t size)
-	{
-		return memoryPool->canMemoryBeConnectedToPool(env, address, size);
-	}
 
 	MMINLINE void updateLargestFreeEntryInChunk(MM_ParallelSweepChunk *chunk, MM_SweepPoolState *sweepState, MM_HeapLinkedFreeHeader* previousFreeEntry)
 	{

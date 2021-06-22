@@ -4201,6 +4201,9 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_ARM64doubleRemainder:                             return "doubleRemainder";
          case TR_ARM64floatRemainder:                              return "floatRemainder";
          case TR_ARM64jitCollapseJNIReferenceFrame:                return "jitCollapseJNIReferenceFrame";
+         case TR_ARM64arrayCopy:                                   return "__arrayCopy";
+         case TR_ARM64forwardArrayCopy:                            return "__forwardArrayCopy";
+         case TR_ARM64backwardArrayCopy:                           return "__backwardArrayCopy";
          }
       }
 #endif

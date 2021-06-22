@@ -1163,6 +1163,7 @@ public:
    void print(TR::FILE *, TR::ARM64StackCheckFailureSnippet *);
    void print(TR::FILE *, TR::ARM64ForceRecompilationSnippet *);
    void print(TR::FILE *, TR::ARM64RecompilationSnippet *);
+   uint8_t *printARM64ArgumentsFlush(TR::FILE *, TR::Node *, uint8_t *, int32_t);
 #endif
    void print(TR::FILE *, TR::ARM64HelperCallSnippet *);
 

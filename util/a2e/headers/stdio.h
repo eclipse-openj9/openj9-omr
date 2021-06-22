@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2001, 2015 IBM Corp. and others
+ * Copyright (c) 2001, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -55,7 +55,6 @@
         FILE *     atoe_freopen   (const char*, const char*, FILE*);
         size_t     atoe_fwrite    (const void*, size_t, size_t, FILE*);
         char      *atoe_fgets (char *, int, FILE *);
-        char *     atoe_gets      (char *);
         void       atoe_perror    (const char*);
         int        atoe_printf    (const char*, ...);
         int        atoe_putchar   (int);
@@ -80,7 +79,6 @@
 		#undef freopen
 		#undef fwrite
 		#undef fgets
-		#undef gets
 		#undef perror
 		#undef printf
 		#undef putchar
@@ -100,7 +98,6 @@
 		#define freopen         atoe_freopen
 		#define fwrite          atoe_fwrite
 		#define fgets           atoe_fgets
-		#define gets            atoe_gets
 		#define perror          atoe_perror
 		#define printf          atoe_printf
 		#define putchar         atoe_putchar

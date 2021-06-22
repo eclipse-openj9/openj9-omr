@@ -55,7 +55,6 @@ Build Status
 | Windows x86-64 | [![Windows x86-64 Status](https://ci.eclipse.org/omr/job/Build-win_x86-64/badge/icon)](https://ci.eclipse.org/omr/job/Build-win_x86-64/) |
 | Linux x86 | [![Build Status](https://ci.eclipse.org/omr/job/Build-linux_x86/badge/icon)](https://ci.eclipse.org/omr/job/Build-linux_x86/) |
 | Linux x86-64 | [![Linux x86-64 Status](https://ci.eclipse.org/omr/job/Build-linux_x86-64/badge/icon)](https://ci.eclipse.org/omr/job/Build-linux_x86-64/) |
-| Linux x86-64 Compressed Pointers | [![Build Status](https://ci.eclipse.org/omr/job/Build-linux_x86-64_cmprssptrs/badge/icon)](https://ci.eclipse.org/omr/job/Build-linux_x86-64_cmprssptrs/) |
 | Linux AArch64 (ARM 64-bit) | [![Build-linux_aarch64 Status](https://ci.eclipse.org/omr/job/Build-linux_aarch64/badge/icon)](https://ci.eclipse.org/omr/job/Build-linux_aarch64/) |
 | Linux ARM 32-bit | [![Build-linux_arm Status](https://ci.eclipse.org/omr/job/Build-linux_arm/badge/icon)](https://ci.eclipse.org/omr/job/Build-linux_arm/) |
 | OSX x86-64 | [![Build Status](https://ci.eclipse.org/omr/job/Build-osx_x86-64/badge/icon)](https://ci.eclipse.org/omr/job/Build-osx_x86-64/) |

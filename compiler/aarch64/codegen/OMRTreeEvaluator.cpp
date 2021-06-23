@@ -19,8 +19,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "codegen/ARM64Instruction.hpp"
 #include "codegen/ARM64HelperCallSnippet.hpp"
+#include "codegen/ARM64Instruction.hpp"
 #include "codegen/ARM64ShiftCode.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
@@ -1184,32 +1184,32 @@ OMR::ARM64::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *c
    switch (node->getDataType())
       {
       case TR::VectorInt8:
-         TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind\n");
+         TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind");
          op = TR::InstOpCode::vdup16b;
          break;
       case TR::VectorInt16:
-         TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind\n");
+         TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind");
          op = TR::InstOpCode::vdup8h;
          break;
       case TR::VectorInt32:
-         TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind\n");
+         TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind");
          op = TR::InstOpCode::vdup4s;
          break;
       case TR::VectorInt64:
-         TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind\n");
+         TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind");
          op = TR::InstOpCode::vdup2d;
          break;
       case TR::VectorFloat:
-         TR_ASSERT(srcReg->getKind() == TR_FPR, "unexpected Register kind\n");
+         TR_ASSERT(srcReg->getKind() == TR_FPR, "unexpected Register kind");
          op = TR::InstOpCode::vfdup4s;
          break;
       case TR::VectorDouble:
-         TR_ASSERT(srcReg->getKind() == TR_FPR, "unexpected Register kind\n");
+         TR_ASSERT(srcReg->getKind() == TR_FPR, "unexpected Register kind");
          op = TR::InstOpCode::vfdup2d;
          break;
       default:
-         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
-	      return NULL;
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
       }
 
    TR::Register *resReg = cg->allocateRegister(TR_VRF);
@@ -2490,7 +2490,7 @@ loadAddressConstant(TR::CodeGenerator *cg, TR::Node *node, intptr_t value, TR::R
 TR::Register *
 OMR::ARM64::TreeEvaluator::unImpOpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{
-	TR_ASSERT_FATAL(false, "Opcode %s is not implemented\n", node->getOpCode().getName());
+	TR_ASSERT_FATAL(false, "Opcode %s is not implemented", node->getOpCode().getName());
 	return NULL;
 	}
 

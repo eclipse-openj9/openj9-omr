@@ -147,7 +147,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeG
          negOp = TR::InstOpCode::vfneg2d;
          break;
       default:
-         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
          return NULL;
       }
    return inlineVectorUnaryOp(node, cg, negOp);
@@ -163,7 +163,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::vnotEvaluator(TR::Node *node, TR::CodeG
          notOp = TR::InstOpCode::vnot16b;
          break;
       default:
-         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
          return NULL;
       }
    return inlineVectorUnaryOp(node, cg, notOp);

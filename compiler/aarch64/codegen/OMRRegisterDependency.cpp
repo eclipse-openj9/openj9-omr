@@ -454,7 +454,7 @@ void OMR::ARM64::RegisterDependencyGroup::assignRegisters(
                   opCode = TR::InstOpCode::vldrimmq;
                   break;
                default:
-                  TR_ASSERT(0, "\nRegister kind not supported in OOL spill\n");
+                  TR_ASSERT(0, "\nRegister kind not supported in OOL spill");
                   break;
                }
 

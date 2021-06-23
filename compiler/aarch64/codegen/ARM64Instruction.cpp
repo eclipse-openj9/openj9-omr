@@ -47,7 +47,7 @@ void TR::ARM64LabelInstruction::assignRegistersForOutOfLineCodeSection(TR_Regist
       // Switch to the outlined instruction stream and assign registers.
       //
       TR_ARM64OutOfLineCodeSection *oi = cg()->findARM64OutOfLineCodeSectionFromLabel(getLabelSymbol());
-      TR_ASSERT(oi, "Could not find ARM64OutOfLineCodeSection stream from label.  instr=%p, label=%p\n", this, getLabelSymbol());
+      TR_ASSERT(oi, "Could not find ARM64OutOfLineCodeSection stream from label.  instr=%p, label=%p", this, getLabelSymbol());
       if (!oi->hasBeenRegisterAssigned())
          oi->assignRegisters(kindToBeAssigned);
       }
@@ -65,7 +65,7 @@ void TR::ARM64LabelInstruction::assignRegistersForOutOfLineCodeSection(TR_Regist
          // in the OOL section can jump to the end of section and then only one branch (the
          // last instruction of an OOL section) jumps to the merge-point. In other words, OOL
          // section must contain exactly one exit point.
-         TR_ASSERT(cg()->getAppendInstruction() == this, "OOL section must have only one branch to the merge point\n");
+         TR_ASSERT(cg()->getAppendInstruction() == this, "OOL section must have only one branch to the merge point");
          // Start RA for OOL cold path, restore register state from snap shot
          TR::Machine *machine = cg()->machine();
          if (comp->getOption(TR_TraceRA))

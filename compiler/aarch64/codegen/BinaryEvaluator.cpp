@@ -264,8 +264,8 @@ inlineVectorBinaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnem
    lhsReg = cg->evaluate(firstChild);
    rhsReg = cg->evaluate(secondChild);
 
-   TR_ASSERT(lhsReg->getKind() == TR_VRF, "unexpected Register kind\n");
-   TR_ASSERT(rhsReg->getKind() == TR_VRF, "unexpected Register kind\n");
+   TR_ASSERT(lhsReg->getKind() == TR_VRF, "unexpected Register kind");
+   TR_ASSERT(rhsReg->getKind() == TR_VRF, "unexpected Register kind");
 
    TR::Register *resReg = cg->allocateRegister(TR_VRF);
 
@@ -302,7 +302,7 @@ OMR::ARM64::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          addOp = TR::InstOpCode::vfadd2d;
          break;
       default:
-         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
          return NULL;
       }
    return inlineVectorBinaryOp(node, cg, addOp);
@@ -333,7 +333,7 @@ OMR::ARM64::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          subOp = TR::InstOpCode::vfsub2d;
          break;
       default:
-         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
          return NULL;
       }
    return inlineVectorBinaryOp(node, cg, subOp);
@@ -361,7 +361,7 @@ OMR::ARM64::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          mulOp = TR::InstOpCode::vfmul2d;
          break;
       default:
-         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
          return NULL;
       }
    return inlineVectorBinaryOp(node, cg, mulOp);
@@ -380,7 +380,7 @@ OMR::ARM64::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          divOp = TR::InstOpCode::vfdiv2d;
          break;
       default:
-         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
          return NULL;
       }
    return inlineVectorBinaryOp(node, cg, divOp);
@@ -396,7 +396,7 @@ OMR::ARM64::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          andOp = TR::InstOpCode::vand16b;
          break;
       default:
-         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
          return NULL;
       }
    return inlineVectorBinaryOp(node, cg, andOp);
@@ -412,7 +412,7 @@ OMR::ARM64::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          orrOp = TR::InstOpCode::vorr16b;
          break;
       default:
-         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
          return NULL;
       }
    return inlineVectorBinaryOp(node, cg, orrOp);
@@ -428,7 +428,7 @@ OMR::ARM64::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          xorOp = TR::InstOpCode::veor16b;
          break;
       default:
-         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
          return NULL;
       }
    return inlineVectorBinaryOp(node, cg, xorOp);

@@ -312,7 +312,7 @@ TR::Linkage *OMR::ARM64::CodeGenerator::createLinkage(TR_LinkageConventions lc)
          linkage = new (self()->trHeapMemory()) TR::ARM64SystemLinkage(self());
          break;
       default:
-         TR_ASSERT(false, "using system linkage for unrecognized convention %d\n", lc);
+         TR_ASSERT(false, "using system linkage for unrecognized convention %d", lc);
          linkage = new (self()->trHeapMemory()) TR::ARM64SystemLinkage(self());
       }
    self()->setLinkage(lc, linkage);

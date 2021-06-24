@@ -38,7 +38,7 @@
 
 void TR::PPCPairedRelocation::mapRelocation(TR::CodeGenerator *cg)
    {
-   if (cg->comp()->getOption(TR_AOT))
+   if (cg->comp()->compileRelocatableCode())
       {
       // The validation and inlined method ExternalRelocations are added after
       // binary encoding is finished so that their actual relocation records

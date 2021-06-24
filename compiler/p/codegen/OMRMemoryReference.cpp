@@ -1545,10 +1545,10 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
    bool isStaticField = isStatic && (ref->getCPIndex() > 0) && !symbol->isClassObject();
    bool isClass = isStatic && symbol->isClassObject();
    bool isPicSite = isClass;
-   if (isPicSite && !cg->comp()->compileRelocatableCode()
+   if (isPicSite
+       && !cg->comp()->compileRelocatableCode()
        && cg->wantToPatchClassPointer((TR_OpaqueClassBlock*)symbol->getStaticSymbol()->getStaticAddress(), node))
       {
-      TR_ASSERT(!comp->getOption(TR_AOT), "HCR: AOT is currently no supported");
       TR::Register *reg = _baseRegister = cg->allocateRegister();
       intptr_t address = (intptr_t)symbol->getStaticSymbol()->getStaticAddress();
       loadAddressConstantInSnippet(cg, node ? node : cg->getCurrentEvaluationTreeTop()->getNode(), address, reg, NULL, isStore?TR::InstOpCode::Op_st :TR::InstOpCode::Op_load, false, NULL);

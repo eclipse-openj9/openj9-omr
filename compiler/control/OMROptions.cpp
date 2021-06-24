@@ -122,8 +122,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"alwaysFatalAssert",       "I\tAlways execute fatal assertion for testing purposes",           SET_OPTION_BIT(TR_AlwaysFatalAssert), "F"},
    {"alwaysSafeFatalAssert", "I\tAlways issue a safe fatal assertion for testing purposes",      SET_OPTION_BIT(TR_AlwaysSafeFatal), "F"},
    {"alwaysWorthInliningThreshold=", "O<nnn>\t", TR::Options::set32BitNumeric, offsetof(OMR::Options, _alwaysWorthInliningThreshold), 0, "F%d" },
-   {"aot",                "O\tahead-of-time compilation",
-        SET_OPTION_BIT(TR_AOT), "F", NOT_IN_SUBSET},
    {"aotOnlyFromBootstrap", "O\tahead-of-time compilation allowed only for methods from bootstrap classes",
         SET_OPTION_BIT(TR_AOTCompileOnlyFromBootstrap), "F", NOT_IN_SUBSET },
    {"aotrtDebugLevel=", "R<nnn>\tprint aotrt debug output according to level", TR::Options::set32BitNumeric, offsetof(OMR::Options,_newAotrtDebugLevel), 0, "F%d"},

@@ -1232,7 +1232,7 @@ static void lookupScheme3(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
       }
 
    /* TODO: AOT fixup */
-   if (!cg->comp()->getOption(TR_AOT))
+   if (!cg->comp()->compileRelocatableCode())
       {
       armLoadConstant(node, address, addrRegister, cg, NULL);
       }

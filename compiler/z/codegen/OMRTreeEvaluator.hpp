@@ -401,6 +401,23 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *ibitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lbitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
+   /**
+    * Used when inlining Integer|Long.highestOneBit()
+    */
+   static TR::Register *inlineHighestOneBit(TR::Node *node, TR::CodeGenerator *cg, bool isLong);
+
+   /**
+    * Used when inlining Integer|Long.numberOfLeadingZeros
+    * or builtin_clz/builtin_clzll
+    */
+   static TR::Register *inlineNumberOfLeadingZeros(TR::Node *node, TR::CodeGenerator * cg, bool isLong);
+
+   /**
+    * Used when inlining Integer|Long.numberOfTrailingZeros()
+    * or builtin_ctz/builtin_ctzll
+    */
+   static TR::Register *inlineNumberOfTrailingZeros(TR::Node *node, TR::CodeGenerator *cg, int32_t subfconst);
+
    static TR::Register *aconstEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *iconstEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *lconstEvaluator(TR::Node *node, TR::CodeGenerator *cg);

@@ -2278,7 +2278,7 @@ TR_Debug::getName(TR::RealRegister * reg, TR_RegisterSizes size)
    if (!reg) return "<null>";
 
    TR::RealRegister::RegNum regNum = reg->getRegisterNumber();
-   bool isVRF = (size == TR_VectorReg &&
+   bool isVRF = (size == TR_VectorReg128 &&
                  regNum >= TR::RealRegister::FirstVRF &&
                  regNum <= TR::RealRegister::LastVRF);
 
@@ -2755,7 +2755,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390VRIInstruction * instr)
       {
       if (i != 1)
          trfprintf(pOutFile, ",");
-      print(pOutFile, instr->getRegisterOperand(i), TR_VectorReg);
+      print(pOutFile, instr->getRegisterOperand(i), TR_VectorReg128);
       }
 
    switch(instr->getKind())
@@ -2831,7 +2831,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390VRRInstruction * instr)
       bool isGPR = (instr->getKind() == TR::Instruction::IsVRRf && (i == 2 || i == 3)) ||
               (instr->getKind() == TR::Instruction::IsVRRi && (i == 1));
 
-      print(pOutFile, instr->getRegisterOperand(i), (isGPR)?TR_WordReg:TR_VectorReg);
+      print(pOutFile, instr->getRegisterOperand(i), (isGPR)?TR_WordReg:TR_VectorReg128);
       }
 
    if (instr->getPrintM3())
@@ -2862,7 +2862,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390VStorageInstruction * instr)
    bool secondRegIsGPR = (instKind == TR::Instruction::IsVRSb) || (instKind == TR::Instruction::IsVRSd);
 
    // 1st register operand
-   print(pOutFile, instr->getRegisterOperand(1), (firstRegIsGPR)?TR_WordReg:TR_VectorReg);
+   print(pOutFile, instr->getRegisterOperand(1), (firstRegIsGPR)?TR_WordReg:TR_VectorReg128);
 
    // 2nd register operand, if any
    trfprintf(pOutFile, ",");
@@ -2870,7 +2870,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390VStorageInstruction * instr)
        instKind != TR::Instruction::IsVRV &&
        instKind != TR::Instruction::IsVSI)
       {
-      print(pOutFile, instr->getRegisterOperand(2),(secondRegIsGPR)?TR_WordReg:TR_VectorReg);
+      print(pOutFile, instr->getRegisterOperand(2),(secondRegIsGPR)?TR_WordReg:TR_VectorReg128);
       trfprintf(pOutFile, ",");
       }
 

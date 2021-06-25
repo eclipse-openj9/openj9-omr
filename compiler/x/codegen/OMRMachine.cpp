@@ -280,6 +280,10 @@ OMR::X86::Machine::findBestFreeGPRegister(TR::Instruction   *currentInstruction,
          last  = TR::RealRegister::LastAssignableGPR;
          break;
       case TR_QuadWordReg:
+      case TR_VectorReg128:
+      case TR_VectorReg256:
+      case TR_VectorReg512:
+         // xmm/ymm/zmm are aliased
          first = TR::RealRegister::FirstXMMR;
          last  = TR::RealRegister::LastXMMR;
          break;
@@ -462,6 +466,10 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
          last = TR::RealRegister::LastAssignableGPR;
          break;
       case TR_QuadWordReg:
+      case TR_VectorReg128:
+      case TR_VectorReg256:
+      case TR_VectorReg512:
+         // xmm/ymm/zmm are aliased
          first = TR::RealRegister::FirstXMMR;
          last  = TR::RealRegister::LastXMMR;
          break;

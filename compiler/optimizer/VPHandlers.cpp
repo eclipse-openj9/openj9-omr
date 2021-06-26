@@ -9402,18 +9402,8 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
    if (node->isTheVirtualGuardForAGuardedInlinedCall() &&
        node->isNonoverriddenGuard())
       {
-   //TR_VirtualGuard *virtualGuard = vp->comp()->findVirtualGuardInfo(node);
-      TR::Node *callNode = NULL;
-      TR::TreeTop *targetTree = node->getBranchDestination();
-      TR::Node *nextRealNode = targetTree->getNextRealTreeTop()->getNode();
-      if (nextRealNode->getOpCode().isTreeTop() && (nextRealNode->getNumChildren() > 0))
-         nextRealNode = nextRealNode->getFirstChild();
+      TR::Node *callNode = node->getVirtualCallNodeForGuard();
 
-      if (nextRealNode->isTheVirtualCallNodeForAGuardedInlinedCall())
-         callNode = nextRealNode;
-
-      //if (!virtualGuard->isInlineGuard())
-      //  callNode = virtualGuard->getCallNode();
       if (callNode &&
           callNode->getOpCode().isCallIndirect())
          {

@@ -32,7 +32,6 @@
 #if defined(J9ZOS39064)
 #include "omrgcconsts.h"
 #include "omriarv64.h"
-#pragma linkage (GETTTT,OS)
 #pragma map (getUserExtendedPrivateAreaMemoryType,"GETTTT")
 UDATA getUserExtendedPrivateAreaMemoryType(void);
 #endif /* defined(J9ZOS39064) */

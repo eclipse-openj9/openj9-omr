@@ -254,6 +254,7 @@ TR::IlValue *
 OMR::IlBuilder::NewValue(TR::IlType *dt)
    {
    TR_ASSERT_FATAL(0, "should not create a value without a TR::Node");
+   return 0;
    }
 
 TR::IlValue *

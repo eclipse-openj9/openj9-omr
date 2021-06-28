@@ -459,6 +459,8 @@ OMR::Z::CPU::setSupportsMiscellaneousInstructionExtensions2Facility(bool value)
       {
       _flags.reset(S390SupportsMIE2);
       }
+
+   return value;
    }
 
 bool

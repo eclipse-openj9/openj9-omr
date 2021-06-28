@@ -178,30 +178,44 @@ void OMR::ValuePropagation::initialize()
    int32_t numParms = comp()->getMethodSymbol()->getParameterList().getSize();
    _parmInfo = (int32_t *) trMemory()->allocateStackMemory(numParms * sizeof(int32_t));
    _parmTypeValid = (bool *) trMemory()->allocateStackMemory(numParms * sizeof(bool));
-   // mark all parms as invariant (0) to begin with
-   //
-   memset(_parmInfo, 0, numParms * sizeof(int32_t));
+
    // mark info to be true
    for (int32_t i = 0; i < numParms; i++)
       _parmTypeValid[i] = true;
 
-   for (TR::TreeTop *tt = comp()->getStartTree();
-         tt;
-         tt = tt->getNextTreeTop())
+   // we cant assume parm info to be valid for DLT compiles
+   // the type may change after execution begins
+   if (comp()->isDLT())
       {
-      TR::Node *node = tt->getNode();
-      if (node && node->getOpCodeValue() == TR::treetop)
-         node = node->getFirstChild();
-
-      if (node && node->getOpCode().isStoreDirect())
-         {
-         TR::Symbol *sym = node->getSymbolReference()->getSymbol();
-         if (sym->isParm())
+         for (int32_t i = 0; i < numParms; i++)
             {
-            // parm is no longer invariant
-            //
-            int32_t index = sym->getParmSymbol()->getOrdinal();
-            _parmInfo[index] = 1;
+            _parmInfo[i] = 1;
+            }
+      }
+   else
+      {
+      // mark all parms as invariant (0) to begin with
+      //
+      memset(_parmInfo, 0, numParms * sizeof(int32_t));
+
+      for (TR::TreeTop *tt = comp()->getStartTree();
+           tt;
+           tt = tt->getNextTreeTop())
+         {
+         TR::Node *node = tt->getNode();
+         if (node && node->getOpCodeValue() == TR::treetop)
+            node = node->getFirstChild();
+
+         if (node && node->getOpCode().isStoreDirect())
+            {
+            TR::Symbol *sym = node->getSymbolReference()->getSymbol();
+            if (sym->isParm())
+               {
+               // parm is no longer invariant
+               //
+               int32_t index = sym->getParmSymbol()->getOrdinal();
+               _parmInfo[index] = 1;
+               }
             }
          }
       }

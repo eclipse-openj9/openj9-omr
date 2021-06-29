@@ -29,7 +29,6 @@
 #include "EnvironmentBase.hpp"
 #include "Heap.hpp"
 #include "HeapRegionIterator.hpp"
-#include "HeapRegionDescriptor.hpp"
 #include "NonVirtualMemory.hpp"
 #include "MemoryPool.hpp"
 #include "MemorySubSpace.hpp"
@@ -48,19 +47,7 @@
 uintptr_t
 MM_SweepHeapSectioningSegmented::estimateTotalChunkCount(MM_EnvironmentBase *env)
 {
-	uintptr_t totalChunkCountEstimate;
-
-	if(0 == _extensions->parSweepChunkSize) {
-		/* -Xgc:sweepchunksize= has NOT been specified, so we set it heuristically.
-		 *
-		 *                  maxheapsize
-		 * chunksize =   ----------------   (rounded up to the nearest 256k)
-		 *               threadcount * 32
-		 */
-		_extensions->parSweepChunkSize = MM_Math::roundToCeiling(256*1024, _extensions->heap->getMaximumMemorySize() / (_extensions->dispatcher->threadCountMaximum() * 32));
-	}
-
-	totalChunkCountEstimate = MM_Math::roundToCeiling(_extensions->parSweepChunkSize, _extensions->heap->getMaximumMemorySize()) / _extensions->parSweepChunkSize;
+	uintptr_t totalChunkCountEstimate = MM_SweepHeapSectioning::estimateTotalChunkCount(env);
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	/* Because object memory segments have not been allocated yet, we cannot get the real numbers.
@@ -104,101 +91,6 @@ MM_SweepHeapSectioningSegmented::calculateActualChunkNumbers() const
 			/* Add extra chunks if more than one memory pool */
 			totalChunkCount += (poolCount - 1);
 		}
-	}
-
-	return totalChunkCount;
-}
-
-/**
- * Reset and reassign each chunk to a range of heap memory.
- * Given the current updated listed of chunks and the corresponding heap memory, walk the chunk
- * list reassigning each chunk to an appropriate range of memory.  This will clear each chunk
- * structure and then assign its basic values that connect it to a range of memory (base/top,
- * pool, segment, etc).
- * @return the total number of chunks in the system.
- */
-uintptr_t
-MM_SweepHeapSectioningSegmented::reassignChunks(MM_EnvironmentBase *env)
-{
-	MM_ParallelSweepChunk *chunk; /* Sweep table chunk (global) */
-	MM_ParallelSweepChunk *previousChunk;
-	uintptr_t totalChunkCount;  /* Total chunks in system */
-
-	MM_SweepHeapSectioningIterator sectioningIterator(this);
-
-	totalChunkCount = 0;
-	previousChunk = NULL;
-
-	MM_HeapRegionManager *regionManager = _extensions->getHeap()->getHeapRegionManager();
-	GC_HeapRegionIterator regionIterator(regionManager);
-	MM_HeapRegionDescriptor *region = NULL;
-
-	while (NULL != (region = regionIterator.nextRegion())) {
-		if (region->isCommitted()) {
-			/* TODO:  this must be rethought for Tarok since it treats all regions identically but some might require different sweep logic */
-			uintptr_t *heapChunkBase = (uintptr_t *)region->getLowAddress();  /* Heap chunk base pointer */
-			uintptr_t *regionHighAddress = (uintptr_t *)region->getHighAddress();
-
-			while (heapChunkBase < regionHighAddress) {
-				void *poolHighAddr;
-				uintptr_t *heapChunkTop;
-				MM_MemoryPool *pool;
-
-				chunk = sectioningIterator.nextChunk();
-				Assert_MM_true(chunk != NULL);  /* Should never return NULL */
-				totalChunkCount += 1;
-
-				/* Clear all data in the chunk (including sweep implementation specific information) */
-				chunk->clear();
-
-				if(((uintptr_t)regionHighAddress - (uintptr_t)heapChunkBase) < _extensions->parSweepChunkSize) {
-					/* corner case - we will wrap our address range */
-					heapChunkTop = regionHighAddress;
-				} else {
-					/* normal case - just increment by the chunk size */
-					heapChunkTop = (uintptr_t *)((uintptr_t)heapChunkBase + _extensions->parSweepChunkSize);
-				}
-
-				/* Find out if the range of memory we are considering spans 2 different pools.  If it does,
-				 * the current chunk can only be attributed to one, so we limit the upper range of the chunk
-				 * to the first pool and will continue the assignment at the upper address range.
-				 */
-				pool = region->getSubSpace()->getMemoryPool(env, heapChunkBase, heapChunkTop, poolHighAddr);
-				if (NULL == poolHighAddr) {
-					heapChunkTop = (heapChunkTop > regionHighAddress ? regionHighAddress : heapChunkTop);
-				} else {
-					/* Yes ..so adjust chunk boundaries */
-					assume0(poolHighAddr > heapChunkBase && poolHighAddr < heapChunkTop);
-					heapChunkTop = (uintptr_t *) poolHighAddr;
-				}
-
-				/* All values for the chunk have been calculated - assign them */
-				chunk->chunkBase = (void *)heapChunkBase;
-				chunk->chunkTop = (void *)heapChunkTop;
-				chunk->memoryPool = pool;
-				Assert_MM_true(NULL != pool);
-				/* Some memory pools, like the one in LOA, may have larger min free size then in the rest of the heap being swept */
-				chunk->_minFreeSize = OMR_MAX(pool->getMinimumFreeEntrySize(), pool->getSweepPoolManager()->getMinimumFreeSize());
-
-				chunk->_coalesceCandidate = (heapChunkBase != region->getLowAddress());
-				chunk->_previous= previousChunk;
-				if(NULL != previousChunk) {
-					previousChunk->_next = chunk;
-				}
-
-				/* Move to the next chunk */
-				heapChunkBase = heapChunkTop;
-
-				/* and remember address of previous chunk */
-				previousChunk = chunk;
-
-				assume0((uintptr_t)heapChunkBase == MM_Math::roundToCeiling(_extensions->heapAlignment,(uintptr_t)heapChunkBase));
-			}
-		}
-	}
-
-	if(NULL != previousChunk) {
-		previousChunk->_next = NULL;
 	}
 
 	return totalChunkCount;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,6 +30,14 @@
 #include "MemorySubSpace.hpp"
 #include "ParallelSweepChunk.hpp"
 #include "SweepHeapSectioning.hpp"
+
+#include "Heap.hpp"
+#include "HeapRegionManager.hpp"
+#include "MemoryPool.hpp"
+#include "HeapRegionIterator.hpp"
+#include "HeapRegionDescriptor.hpp"
+#include "SweepPoolManager.hpp"
+#include "ParallelDispatcher.hpp"
 
 /**
  * Internal storage memory pool for heap sectioning chunks.
@@ -338,4 +346,115 @@ uintptr_t
 MM_SweepHeapSectioning::getBackingStoreSize()
 {
 	return _baseArray->_used * sizeof(MM_ParallelSweepChunk);
+}
+
+/**
+ * Return the expected total sweep chunks that will be used in the system.
+ * Called during initialization, this routine looks at the maximum size of the heap and expected
+ * configuration (generations, regions, etc) and determines the approximate maximum number of chunks
+ * that will be required for a sweep at any given time.  It is safe to underestimate the number of chunks,
+ * as the sweep sectioning mechanism will compensate, but the expectation is that by having all
+ * chunk memory allocated in one go will keep the data localized and fragment system memory less.
+ * @return estimated upper bound number of chunks that will be required by the system.
+ */
+uintptr_t
+MM_SweepHeapSectioning::estimateTotalChunkCount(MM_EnvironmentBase *env)
+{
+	uintptr_t totalChunkCountEstimate;
+
+	if(0 == _extensions->parSweepChunkSize) {
+		/* -Xgc:sweepchunksize= has NOT been specified, so we set it heuristically.
+		 *
+		 *                  maxheapsize
+		 * chunksize =   ----------------   (rounded up to the nearest 256k)
+		 *               threadcount * 32
+		 */
+		_extensions->parSweepChunkSize = MM_Math::roundToCeiling(256*1024, _extensions->heap->getMaximumMemorySize() / (_extensions->dispatcher->threadCountMaximum() * 32));
+	}
+
+	totalChunkCountEstimate = MM_Math::roundToCeiling(_extensions->parSweepChunkSize, _extensions->heap->getMaximumMemorySize()) / _extensions->parSweepChunkSize;
+
+	return totalChunkCountEstimate;
+}
+
+uintptr_t
+MM_SweepHeapSectioning::reassignChunks(MM_EnvironmentBase *env)
+{
+	MM_ParallelSweepChunk *chunk; /* Sweep table chunk (global) */
+	MM_ParallelSweepChunk *previousChunk = NULL;
+	uintptr_t totalChunkCount = 0;  /* Total chunks in system */
+
+	MM_SweepHeapSectioningIterator sectioningIterator(this);
+
+	MM_HeapRegionManager *regionManager = _extensions->getHeap()->getHeapRegionManager();
+	GC_HeapRegionIterator regionIterator(regionManager);
+	MM_HeapRegionDescriptor *region = NULL;
+
+	while (NULL != (region = regionIterator.nextRegion())) {
+		if (isReadyToSweep(env, region)) {
+			uintptr_t *heapChunkBase = (uintptr_t *)region->getLowAddress();  /* Heap chunk base pointer */
+			uintptr_t *regionHighAddress = (uintptr_t *)region->getHighAddress();
+
+			while (heapChunkBase < regionHighAddress) {
+				void *poolHighAddr = NULL;
+				uintptr_t *heapChunkTop = NULL;
+
+				chunk = sectioningIterator.nextChunk();
+				Assert_MM_true(chunk != NULL);  /* Should never return NULL */
+				totalChunkCount += 1;
+
+				/* Clear all data in the chunk (including sweep implementation specific information) */
+				chunk->clear();
+
+				if(((uintptr_t)regionHighAddress - (uintptr_t)heapChunkBase) < _extensions->parSweepChunkSize) {
+					/* corner case - we will wrap our address range */
+					heapChunkTop = regionHighAddress;
+				} else {
+					/* normal case - just increment by the chunk size */
+					heapChunkTop = (uintptr_t *)((uintptr_t)heapChunkBase + _extensions->parSweepChunkSize);
+				}
+
+				/* Find out if the range of memory we are considering spans 2 different pools.  If it does,
+				 * the current chunk can only be attributed to one, so we limit the upper range of the chunk
+				 * to the first pool and will continue the assignment at the upper address range.
+				 */
+				MM_MemoryPool *pool = region->getSubSpace()->getMemoryPool(env, heapChunkBase, heapChunkTop, poolHighAddr);
+				if (NULL == poolHighAddr) {
+					heapChunkTop = (heapChunkTop > regionHighAddress ? regionHighAddress : heapChunkTop);
+				} else {
+					/* Yes ..so adjust chunk boundaries */
+					Assert_MM_true(poolHighAddr > heapChunkBase && poolHighAddr < heapChunkTop);
+					heapChunkTop = (uintptr_t *) poolHighAddr;
+				}
+
+				/* All values for the chunk have been calculated - assign them */
+				chunk->chunkBase = (void *)heapChunkBase;
+				chunk->chunkTop = (void *)heapChunkTop;
+				chunk->memoryPool = pool;
+				Assert_MM_true(NULL != pool);
+				/* Some memory pools, like the one in LOA, may have larger min free size then in the rest of the heap being swept */
+				chunk->_minFreeSize = OMR_MAX(pool->getMinimumFreeEntrySize(), pool->getSweepPoolManager()->getMinimumFreeSize());
+
+				chunk->_coalesceCandidate = (heapChunkBase != region->getLowAddress());
+				chunk->_previous= previousChunk;
+				if(NULL != previousChunk) {
+					previousChunk->_next = chunk;
+				}
+
+				/* Move to the next chunk */
+				heapChunkBase = heapChunkTop;
+
+				/* and remember address of previous chunk */
+				previousChunk = chunk;
+
+				Assert_MM_true((uintptr_t)heapChunkBase == MM_Math::roundToCeiling(_extensions->heapAlignment,(uintptr_t)heapChunkBase));
+			}
+		}
+	}
+
+	if(NULL != previousChunk) {
+		previousChunk->_next = NULL;
+	}
+
+	return totalChunkCount;
 }

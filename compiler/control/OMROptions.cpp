@@ -4761,6 +4761,7 @@ char *OMR::Options::_verboseOptionNames[TR_NumVerboseOptions] =
    "profiling",
    "JITServer",
    "aotcompression",
+   "JITServerConns",
    };
 
 

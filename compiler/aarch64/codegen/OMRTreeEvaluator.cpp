@@ -2659,7 +2659,57 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
       {
       generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xA); // dmb ishst
       }
-   generateMemSrc1Instruction(cg, op, node, tempMR, cg->evaluate(valueChild));
+
+   TR::Node *valueChildRoot = NULL;
+   /*
+    *  Pattern matching compressed refs sequence of address constant NULL
+    +
+    *  treetop
+    *    istorei
+    *      aload
+    *      l2i (X==0 )
+    *        lushr (compressionSequence )
+    *          a2l
+    *            aconst NULL (X==0 sharedMemory )
+    *          iconst 3
+    */
+   if (cg->comp()->useCompressedPointers() &&
+       (node->getSymbolReference()->getSymbol()->getDataType() == TR::Address) &&
+       (valueChild->getDataType() != TR::Address) &&
+       (valueChild->getOpCodeValue() == TR::l2i) &&
+       (valueChild->isZero()))
+      {
+      TR::Node *tmpNode = valueChild;
+      while (tmpNode->getNumChildren() && tmpNode->getOpCodeValue() != TR::a2l)
+         tmpNode = tmpNode->getFirstChild();
+      if (tmpNode->getNumChildren())
+         tmpNode = tmpNode->getFirstChild();
+
+      if (tmpNode->getDataType().isAddress() && tmpNode->isConstZeroValue() && (tmpNode->getRegister() == NULL))
+         {
+         valueChildRoot = valueChild;
+         }
+      }
+
+   /*
+    * Use xzr as source register of str instruction
+    * if valueChild is a compressed refs sequence of address constant NULL,
+    * or valueChild is a zero constant integer.
+    */
+   if ((valueChildRoot != NULL) || (valueChild->getDataType().isIntegral() && valueChild->isConstZeroValue() && (valueChild->getRegister() == NULL)))
+      {
+      TR::Register *zeroReg = cg->allocateRegister();
+      generateMemSrc1Instruction(cg, op, node, tempMR, zeroReg);
+      TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg->trMemory());
+      deps->addPostCondition(zeroReg, TR::RealRegister::xzr);
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, generateLabelSymbol(cg), deps);
+      cg->stopUsingRegister(zeroReg);
+      }
+   else
+      {
+      generateMemSrc1Instruction(cg, op, node, tempMR, cg->evaluate(valueChild));
+      }
+
    if (needSync)
       {
       // ordered and lazySet operations will not generate a post-write sync
@@ -2669,7 +2719,14 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
          }
       }
 
-   cg->decReferenceCount(valueChild);
+   if (valueChildRoot != NULL)
+      {
+      cg->recursivelyDecReferenceCount(valueChildRoot);
+      }
+   else
+      {
+      cg->decReferenceCount(valueChild);
+      }
    tempMR->decNodeReferenceCounts(cg);
 
    return NULL;

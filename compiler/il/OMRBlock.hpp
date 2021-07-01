@@ -508,8 +508,6 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
 
    static StandardException _standardExceptions[];
 
-   static StandardException _valueTypesExceptions[];
-
    enum // flag bits for _flags
       {
       _isExtensionOfPreviousBlock           = 0x00000001,

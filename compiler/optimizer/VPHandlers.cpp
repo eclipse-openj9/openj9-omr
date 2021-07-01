@@ -12306,15 +12306,10 @@ TR::Node *constrainArrayStoreChk(OMR::ValuePropagation *vp, TR::Node *node)
       TR::VPConstraint *object = vp->getConstraint(objectRef, isGlobal);
       TR::VPConstraint *array  = vp->getConstraint(arrayRef, isGlobal);
 
-      TR_YesNoMaybe arrayCompIsValueType = vp->isArrayCompTypeValueType(array);
-
       // If the object reference is null we can remove this check, if the
       // array's element type is not a value type
-      // Null references are not allowed for value types, so only remove the
-      // check if the array type is resolved and cannot be of a type whose
-      // actual component type can be a value type
       //
-      if (object && object->isNullObject() && arrayCompIsValueType == TR_no)
+      if (object && object->isNullObject())
          {
          canBeRemoved = true;
          }
@@ -12365,21 +12360,7 @@ TR::Node *constrainArrayStoreChk(OMR::ValuePropagation *vp, TR::Node *node)
                if (isInstance == TR_yes)
                   {
                   vp->registerPreXClass(object);
-
-                  // Arrays with value type component types must throw NPE if
-                  // the value assigned is null.  Can only remove the check if
-                  // the array cannot have a value type as its component type
-                  // or the value cannot be a null reference
-                  //
-                  // VALUE_TYPES_TODO:  For case where array component type is
-                  // definitely a value type and source might be null, can
-                  // remove the ArrayStoreCHK and add a NullCHK of the source
-                  // object.
-                  //
-                  if (arrayCompIsValueType == TR_no || object->isNonNullObject())
-                     {
-                     canBeRemoved = true;
-                     }
+                  canBeRemoved = true;
                   }
                else if (isInstance == TR_no && debug("enableMustFailArrayStoreCheckOpt"))
                   {

@@ -1955,13 +1955,6 @@ OMR::Block::StandardException OMR::Block::_standardExceptions[] =
    {99, "", 0 }
    };
 
-OMR::Block::StandardException OMR::Block::_valueTypesExceptions[] =
-   {
-   {20, "NullPointerException", CanCatchArrayStoreCheck },
-   {99, "", 0 }
-   };
-
-
 static TR::Node *
 findFirstReference(TR::Node * n, TR::Symbol * sym, vcount_t visitCount)
    {
@@ -2475,24 +2468,6 @@ OMR::Block::setExceptionClassName(char *name, int32_t length, TR::Compilation *c
          {
          _catchBlockExtension->_exceptionsCaught |= excp.exceptions;
          break;
-         }
-      }
-
-   // For value types support, certain kinds of catch blocks are able to catch
-   // additional exceptions that might be thrown by check operations
-   //
-   if (TR::Compiler->om.areValueTypesEnabled())
-      {
-      for (int32_t i = 0; ; ++i)
-         {
-         StandardException &excp = _valueTypesExceptions[i];
-         if (excp.length > length)
-            break;
-         if (excp.length == length && !strncmp(name, excp.name, length))
-            {
-            _catchBlockExtension->_exceptionsCaught |= excp.exceptions;
-            break;
-            }
          }
       }
    }

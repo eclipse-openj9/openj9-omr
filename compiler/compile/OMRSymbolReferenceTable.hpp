@@ -213,6 +213,19 @@ class SymbolReferenceTable
        */
       objectEqualityComparisonSymbol,
 
+      /**
+       * \brief Tests, in some consumer-specific way, whether the array operand has a component type that
+       * is a non-nullable class, and if so, performs a NULLCHK on the value that needs to be assigned to
+       * an element of the array
+       *
+       * \code
+       *   call <nonNullableArrayNullStoreCheck>
+       *     value-reference-to-be-stored
+       *     array-reference-to-which-value-will-be-stored
+       * \endcode
+       */
+      nonNullableArrayNullStoreCheckSymbol,
+
       /** \brief
        *
        *  This symbol is used by the code generator to recognize and inline a call which emulates the following

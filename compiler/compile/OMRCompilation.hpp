@@ -346,6 +346,12 @@ public:
    //
    bool compileRelocatableCode() { return false; }
 
+   // Is this compilation producing portable code?  This should generally
+   // return true, for example, for compilations to be used in a
+   // snapshot/restore setting.
+   //
+   bool compilePortableCode() { return false; }
+
    // Maximum number of internal pointers that can be managed.
    //
    int32_t maxInternalPointers();

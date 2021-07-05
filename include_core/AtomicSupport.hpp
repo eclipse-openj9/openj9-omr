@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -74,6 +74,8 @@
 		inline void __yield() { _mm_pause(); }
 #elif defined(__GNUC__) && (defined(J9X86) || defined(J9HAMMER))
 		inline void __yield() { __asm volatile ("pause"); }
+#elif defined(J9ZOS390)
+		inline void __yield() { __asm__ volatile (" nop 0"); }
 #else
 		inline void __yield() { __asm volatile ("# AtomicOperations::__yield"); }
 #endif /* __GNUC__ && (J9X86 || J9HAMMER) */
@@ -88,6 +90,8 @@
 		 * nop instruction requires operand https://bugzilla.redhat.com/show_bug.cgi?id=506417
 		 */
 		inline void __nop() { __asm__ volatile ("nop 0"); }
+#elif defined(J9ZOS390)
+		inline void __nop() { __asm__ volatile (" nop 0"); }
 #else /* GCC && XL */
 		inline void __nop() { __asm__ volatile ("nop"); }
 #endif

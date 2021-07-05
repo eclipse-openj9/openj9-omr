@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 IBM Corp. and others
+ * Copyright (c) 2017, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,6 +22,10 @@
 #include <cstring>
 #include <gtest/gtest.h>
 #include "ast.hpp"
+
+#if defined(AIXPPC) || defined(J9ZOS390)
+#pragma report(disable, "CCN8924")
+#endif
 
 TEST(ASTValueTest, CreateInt64ASTValue) {
    auto baseValue = 3UL;
@@ -616,3 +620,7 @@ TEST(ASTNodeTest, GetSecondNamedArgumentTest) {
    argList = argList->next->next;
    ASSERT_EQ(*argList, *arg);
 }
+
+#if defined(AIXPPC) || defined(J9ZOS390)
+#pragma report(enable, "CCN8924")
+#endif

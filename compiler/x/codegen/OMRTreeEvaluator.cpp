@@ -184,13 +184,13 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
    TR::Compilation *comp = cg->comp();
    static const TR::InstOpCode::Mnemonic ops[TR_NumRematerializableTypes+1][3] =
       //    load 0      load -1     load c
-      { { TR::InstOpCode::bad,  TR::InstOpCode::bad,  TR::InstOpCode::bad   },   // LEA; should not seen here
+      { { TR::InstOpCode::UD2,  TR::InstOpCode::UD2,  TR::InstOpCode::UD2   },   // LEA; should not seen here
         { TR::InstOpCode::XOR4RegReg, TR::InstOpCode::OR4RegImms, TR::InstOpCode::MOV4RegImm4 },   // Byte constant
         { TR::InstOpCode::XOR4RegReg, TR::InstOpCode::OR4RegImms, TR::InstOpCode::MOV4RegImm4 },   // Short constant
         { TR::InstOpCode::XOR4RegReg, TR::InstOpCode::OR4RegImms, TR::InstOpCode::MOV4RegImm4 },   // Char constant
         { TR::InstOpCode::XOR4RegReg, TR::InstOpCode::OR4RegImms, TR::InstOpCode::MOV4RegImm4 },   // Int constant
         { TR::InstOpCode::XOR4RegReg, TR::InstOpCode::OR4RegImms, TR::InstOpCode::MOV4RegImm4 },   // 32-bit address constant
-        { TR::InstOpCode::XOR4RegReg, TR::InstOpCode::OR8RegImms, TR::InstOpCode::bad   } }; // Long address constant; MOVs handled specially
+        { TR::InstOpCode::XOR4RegReg, TR::InstOpCode::OR8RegImms, TR::InstOpCode::UD2   } }; // Long address constant; MOVs handled specially
 
    enum { XOR = 0, OR  = 1, MOV = 2 };
 
@@ -1534,30 +1534,30 @@ void OMR::X86::TreeEvaluator::genArithmeticInstructionsForOverflowCHK(TR::Node *
          case TR::badd:
          case TR::sadd:
          case TR::iadd:
-            addMulAnalyser.integerAddAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::bad, needsEflags);
+            addMulAnalyser.integerAddAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::UD2, needsEflags);
             break;
          case TR::ladd:
             cg->comp()->target().is32Bit() ? addMulAnalyser.longAddAnalyserWithExplicitOperands(node, operand1, operand2)
-                                           : addMulAnalyser.integerAddAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::bad, needsEflags);
+                                           : addMulAnalyser.integerAddAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::UD2, needsEflags);
             break;
          // sub group
          case TR::bsub:
-            subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::bad, TR::InstOpCode::MOV1RegReg, needsEflags);
+            subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::UD2, TR::InstOpCode::MOV1RegReg, needsEflags);
             break;
          case TR::ssub:
          case TR::isub:
-            subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::bad, TR::InstOpCode::MOV4RegReg, needsEflags);
+            subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::UD2, TR::InstOpCode::MOV4RegReg, needsEflags);
             break;
          case TR::lsub:
             cg->comp()->target().is32Bit() ? subAnalyser.longSubtractAnalyserWithExplicitOperands(node, operand1, operand2)
-                                           : subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::bad, TR::InstOpCode::MOV8RegReg, needsEflags);
+                                           : subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::UD2, TR::InstOpCode::MOV8RegReg, needsEflags);
             break;
          // mul group
          case TR::imul:
-            addMulAnalyser.genericAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::bad, TR::InstOpCode::MOV4RegReg);
+            addMulAnalyser.genericAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::UD2, TR::InstOpCode::MOV4RegReg);
             break;
          case TR::lmul:
-            addMulAnalyser.genericAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::bad, TR::InstOpCode::MOV8RegReg);
+            addMulAnalyser.genericAnalyserWithExplicitOperands(node, operand1, operand2, op, TR::InstOpCode::UD2, TR::InstOpCode::MOV8RegReg);
             break;
          default:
             break;
@@ -3457,7 +3457,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
       {
       TR::Machine *machine = cg->machine();
       generateRegImmInstruction(TR::InstOpCode::TEST4RegImm4, node, machine->getRealRegister(TR::RealRegister::esp), block->getNumber(), cg);
-      generateInstruction(TR::InstOpCode::bad, node, cg);
+      generateInstruction(TR::InstOpCode::INT3, node, cg);
       }
 
    cg->generateDebugCounter((node->getBlock()->isExtensionOfPreviousBlock())? "cg.blocks/extensions":"cg.blocks", 1, TR::DebugCounter::Exorbitant);

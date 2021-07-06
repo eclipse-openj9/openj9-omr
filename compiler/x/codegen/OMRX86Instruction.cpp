@@ -3940,7 +3940,7 @@ TR::Instruction* generateBreakOnDFSet(TR::CodeGenerator *cg, TR::Instruction* cu
    cursor = generateLabelInstruction(cursor, TR::InstOpCode::label, begLabel, cg);
    cursor = generateMemImmInstruction(cursor, TR::InstOpCode::TEST2MemImm2, generateX86MemoryReference(espReal, 0, cg), dfMask, cg);
    cursor = generateLabelInstruction(cursor, TR::InstOpCode::JE1, endLabel, cg);
-   cursor = generateInstruction(cursor, TR::InstOpCode::bad, cg);
+   cursor = generateInstruction(cursor, TR::InstOpCode::INT3, cg);
    cursor = generateLabelInstruction(cursor, TR::InstOpCode::label, endLabel, cg);
    cursor = generateInstruction(cursor, TR::InstOpCode::POPFD, cg);
 

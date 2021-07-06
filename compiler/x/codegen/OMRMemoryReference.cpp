@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1640,6 +1640,20 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
 
          displacement = self()->getDisplacement();
          TR_ASSERT(IS_32BIT_SIGNED(displacement), "64-bit displacement should have been replaced in TR_AMD64MemoryReference::generateBinaryEncoding");
+
+         uint8_t divisor = 16;
+         divisor = containingInstruction->getOpCode().info().isEvex256() ? 32 : divisor;
+         divisor = containingInstruction->getOpCode().info().isEvex512() ? 64 : divisor;
+
+         if (!isForceWideDisplacement() && containingInstruction->getOpCode().info().isEvex() && displacement % divisor == 0 && IS_8BIT_SIGNED(displacement / divisor))
+            {
+            displacement /= divisor;
+            }
+         else if (containingInstruction->getOpCode().info().isEvex())
+            {
+            setForceWideDisplacement();
+            }
+
          base->setRMRegisterFieldInModRM(cursor++);
          immediateCursor = cursor;
 
@@ -1701,6 +1715,20 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
          immediateCursor = cursor;
 
          TR_ASSERT(IS_32BIT_SIGNED(displacement), "64-bit displacement should have been replaced in TR_AMD64MemoryReference::generateBinaryEncoding");
+
+         uint8_t divisor = 16;
+         divisor = containingInstruction->getOpCode().info().isEvex256() ? 32 : divisor;
+         divisor = containingInstruction->getOpCode().info().isEvex512() ? 64 : divisor;
+
+         if (!isForceWideDisplacement() && containingInstruction->getOpCode().info().isEvex() && displacement % divisor == 0 && IS_8BIT_SIGNED(displacement / divisor))
+            {
+            displacement /= divisor;
+            }
+         else if (containingInstruction->getOpCode().info().isEvex())
+            {
+            setForceWideDisplacement();
+            }
+
          if (displacement >= -128 &&
              displacement <= 127  &&
              !self()->isForceWideDisplacement())

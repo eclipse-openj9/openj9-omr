@@ -93,44 +93,8 @@ class OMR_EXTENSIBLE RealRegister : public OMR::X86::RealRegister
 
    static RegNum xmmIndex(uint8_t r)
       {
-      switch(r)
-         {
-         case 0:
-            return OMR::RealRegister::xmm0;
-         case 1:
-            return OMR::RealRegister::xmm1;
-         case 2:
-            return OMR::RealRegister::xmm2;
-         case 3:
-            return OMR::RealRegister::xmm3;
-         case 4:
-            return OMR::RealRegister::xmm4;
-         case 5:
-            return OMR::RealRegister::xmm5;
-         case 6:
-            return OMR::RealRegister::xmm6;
-         case 7:
-            return OMR::RealRegister::xmm7;
-         case 8:
-            return OMR::RealRegister::xmm8;
-         case 9:
-            return OMR::RealRegister::xmm9;
-         case 10:
-            return OMR::RealRegister::xmm10;
-         case 11:
-            return OMR::RealRegister::xmm11;
-         case 12:
-            return OMR::RealRegister::xmm12;
-         case 13:
-            return OMR::RealRegister::xmm13;
-         case 14:
-            return OMR::RealRegister::xmm14;
-         case 15:
-            return OMR::RealRegister::xmm15;
-         default:
-            TR_ASSERT(false, "xmmIndex is only valid for registers xmm0 to xmm15");
-            return OMR::RealRegister::NoReg;
-         }
+      TR_ASSERT_FATAL(r >= 0 && r <= 15, "xmm index is ony valid for xmm 0 to 15");
+      return static_cast<RegNum>(OMR::RealRegister::xmm0 + r);
       }
 
    static RegMask gprMask(RegNum idx)
@@ -244,7 +208,7 @@ class OMR_EXTENSIBLE RealRegister : public OMR::X86::RealRegister
          case OMR::RealRegister::xmm15:
             return OMR::RealRegister::xmm15Mask;
          default:
-            TR_ASSERT(false, "xmmrMask is only valid for registers xmm0 to xmm15");
+            TR_ASSERT(false, "xmmrMask is only valid for registers xmm0 to xmm31");
             return OMR::RealRegister::noRegMask;
          }
       }
@@ -265,6 +229,59 @@ class OMR_EXTENSIBLE RealRegister : public OMR::X86::RealRegister
    void setRegisterFieldInVEX(uint8_t *opcodeByte)
       {
       *opcodeByte ^= ((_fullRegisterBinaryEncodings[_registerNumber].needsRexForByte << 3) | _fullRegisterBinaryEncodings[_registerNumber].id) << 3; // vvvv is in bits 3-6 of last byte of VEX
+      }
+
+   void setSourceRegisterFieldInEVEX(uint8_t *opcodeByte)
+      {
+      uint8_t regNum = getRegisterNumber() - xmm0;
+      uint8_t bits = 0;
+      *opcodeByte &= 0x9F;
+
+      if (regNum & 0x10)
+         {
+         bits |= 0x4;
+         }
+
+      if (regNum & 0x8)
+         {
+         bits |= 0x2;
+         }
+
+      *opcodeByte |= (~bits & 0x6) << 4;
+      }
+
+   void setSource2ndRegisterFieldInEVEX(uint8_t *opcodeByte)
+      {
+      uint8_t regNum = getRegisterNumber() - xmm0;
+
+      *opcodeByte &= 0x87; // zero out vvvv bits
+      *opcodeByte |= (~(regNum << 3)) & 0x78;
+      uint8_t *evexP1 = opcodeByte + 1;
+      *evexP1 &= 0xf7;
+
+      if (!(regNum & 0x10))
+         {
+         *evexP1 |= 0x8;
+         }
+      }
+
+   void setTargetRegisterFieldInEVEX(uint8_t *opcodeByte)
+      {
+      uint8_t regNum = getRegisterNumber() - xmm0;
+      uint8_t bits = 0;
+      *opcodeByte &= 0x6F;
+
+      if (regNum & 0x10)
+         {
+         bits |= 0x1;
+         }
+
+      if (regNum & 0x8)
+         {
+         bits |= 0x8;
+         }
+
+      *opcodeByte |= (~bits & 0x9) << 4;
       }
 
    void setRegisterFieldInModRM(uint8_t *modRMByte)

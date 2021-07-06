@@ -67,6 +67,7 @@
    xmm6                    = 24,
    xmm7                    = 25,
    LastXMMR                = xmm7,
+   LastSSE2XMMReg          = LastXMMR,
 
    YMMRMaskOffset          = LastGPR,
    ymm0                    = xmm0,

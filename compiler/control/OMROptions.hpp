@@ -1072,6 +1072,7 @@ enum TR_VerboseFlags
    TR_VerboseProfiling,
    TR_VerboseJITServer,
    TR_VerboseAOTCompression,
+   TR_VerboseJITServerConns,
    //If adding new options add an entry to _verboseOptionNames as well
    TR_NumVerboseOptions        // Must be the last one;
    };

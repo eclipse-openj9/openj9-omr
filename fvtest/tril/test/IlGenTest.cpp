@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 IBM Corp. and others
+ * Copyright (c) 2017, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -62,7 +62,7 @@ TEST_F(IlGenTest, Return3) {
     ASSERT_EQ(0, rc) << "Compilation failed";
     ASSERT_NOTNULL(entry_point) << "Entry point of compiled body cannot be null";
 
-    auto entry = reinterpret_cast<int32_t(*)(void)>(entry_point);
+    auto entry = (int32_t(*)(void))(reinterpret_cast<void *>(entry_point));
     ASSERT_EQ(3, entry()) << "Compiled body did not return expected value";
 }
 #endif

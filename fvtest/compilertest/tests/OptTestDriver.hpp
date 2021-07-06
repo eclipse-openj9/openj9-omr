@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2020 IBM Corp. and others
+ * Copyright (c) 2016, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -57,7 +57,7 @@ class OptTestDriver : public TestDriver, public ::testing::Test
    /**
     * Returns the method most recently compiled, cast to type `T`.
     */
-   template<typename T> T getCompiledMethod() const { return reinterpret_cast<T>(_compiledMethod); }
+   template<typename T> T getCompiledMethod() const { return (T)(reinterpret_cast<void *>(_compiledMethod)); }
 
    private:
    void makeOptimizationStrategyArray(OptimizationStrategy *strategy);

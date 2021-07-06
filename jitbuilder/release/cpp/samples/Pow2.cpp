@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 IBM Corp. and others
+ * Copyright (c) 2016, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,6 +27,7 @@
 #include <errno.h>
 
 #include "Pow2.hpp"
+#include "omrformatconsts.h"
 
 Pow2Method::Pow2Method(OMR::JitBuilder::TypeDictionary *types)
    : OMR::JitBuilder::MethodBuilder(types)
@@ -115,7 +116,7 @@ main(int argc, char *argv[])
    for (int32_t i=0;i < n;i++)
       r = pow2((int64_t) 45);
 
-   printf("pow2(45) is %lld\n", r);
+   printf("pow2(45) is %" OMR_PRId64 "\n", r);
 
    printf ("Step 5: shutdown JIT\n");
    shutdownJit();

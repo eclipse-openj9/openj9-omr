@@ -9163,6 +9163,8 @@ bool TR_LoopVersioner::guardOkForExpr(TR::Node *node, bool onlySearching)
             node,
             (int)kind);
       }
+
+   return false;
    }
 
 /**

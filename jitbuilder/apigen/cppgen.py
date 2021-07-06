@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 ###############################################################################
-# Copyright (c) 2018, 2020 IBM Corp. and others
+# Copyright (c) 2018, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -471,7 +471,7 @@ class CppGenerator:
             writer.write("{fname} = clientObj_{fname};\n".format(fname=field.name()))
 
         for callback in class_desc.callbacks():
-            fmt = "{impl_cast}->{registrar}(reinterpret_cast<void*>(&{thunk}));\n"
+            fmt = "{impl_cast}->{registrar}((void*)(&{thunk}));\n"
             registrar = callback_setter_name(callback)
             thunk = self.callback_thunk_name(class_desc, callback)
             writer.write(fmt.format(impl_cast=impl_cast,registrar=registrar,thunk=thunk))

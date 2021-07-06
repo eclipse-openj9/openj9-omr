@@ -6506,7 +6506,7 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
 
    TR::SymbolReference * symRef = node->getSymbolReference();
    TR::Symbol * symbol = symRef->getSymbol();
-   uintptr_t staticAddress = symbol->isStatic() ? (uintptr_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress() : NULL;
+   uintptr_t staticAddress = symbol->isStatic() ? reinterpret_cast<uintptr_t>(symRef->getSymbol()->getStaticSymbol()->getStaticAddress()) : 0;
 
    if (symbol->isStatic() &&
        !symRef->isUnresolved() &&
@@ -6851,7 +6851,7 @@ bool relativeLongStoreHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Node *
    {
    TR::SymbolReference * symRef = node->getSymbolReference();
    TR::Symbol * symbol = symRef->getSymbol();
-   uintptr_t staticAddress = symbol->isStatic() ? (uintptr_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress() : NULL;
+   uintptr_t staticAddress = symbol->isStatic() ? reinterpret_cast<uintptr_t>(symRef->getSymbol()->getStaticSymbol()->getStaticAddress()) : 0;
 
    if (symbol->isStatic() &&
        !symRef->isUnresolved() &&

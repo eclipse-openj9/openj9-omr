@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 IBM Corp. and others
+ * Copyright (c) 2017, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -83,7 +83,7 @@ class MethodCompiler {
                           "Attempted to get entry point using a non-function-pointer type.");
 #endif
 
-            return reinterpret_cast<T>(_entry_point);
+            return (T)(reinterpret_cast<void *>(_entry_point));
         }
 
     protected:

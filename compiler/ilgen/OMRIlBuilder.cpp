@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -254,6 +254,7 @@ TR::IlValue *
 OMR::IlBuilder::NewValue(TR::IlType *dt)
    {
    TR_ASSERT_FATAL(0, "should not create a value without a TR::Node");
+   return 0;
    }
 
 TR::IlValue *
@@ -271,7 +272,7 @@ OMR::IlBuilder::Copy(TR::IlValue *value)
 
    TR::IlValue *newVal = newValue(newSymRef->getSymbol()->getDataType(), loadTemp(newSymRef));
 
-   TraceIL("IlBuilder[ %p ]::Copy value (%d) dataType (%d) to newVal (%d) at cpIndex (%d)\n", this, value->getID(), dt, newVal->getID(), newSymRef->getCPIndex());
+   TraceIL("IlBuilder[ %p ]::Copy value (%d) dataType (%d) to newVal (%d) at cpIndex (%d)\n", this, value->getID(), dt.getDataType(), newVal->getID(), newSymRef->getCPIndex());
 
    return newVal;
    }
@@ -794,7 +795,7 @@ OMR::IlBuilder::LoadAt(TR::IlType *dt, TR::IlValue *address)
    {
    TR_ASSERT_FATAL(address->getDataType() == TR::Address, "LoadAt needs an address operand");
    TR::IlValue *returnValue = indirectLoadNode(dt, loadValue(address));
-   TraceIL("IlBuilder[ %p ]::%d is LoadAt type %d address %d\n", this, returnValue->getID(), dt->getPrimitiveType(), address->getID());
+   TraceIL("IlBuilder[ %p ]::%d is LoadAt type %d address %d\n", this, returnValue->getID(), dt->getPrimitiveType().getDataType(), address->getID());
    return returnValue;
    }
 
@@ -803,7 +804,7 @@ OMR::IlBuilder::VectorLoadAt(TR::IlType *dt, TR::IlValue *address)
    {
    TR_ASSERT_FATAL(address->getDataType() == TR::Address, "LoadAt needs an address operand");
    TR::IlValue *returnValue = indirectLoadNode(dt, loadValue(address), true);
-   TraceIL("IlBuilder[ %p ]::%d is VectorLoadAt type %d address %d\n", this, returnValue->getID(), dt->getPrimitiveType(), address->getID());
+   TraceIL("IlBuilder[ %p ]::%d is VectorLoadAt type %d address %d\n", this, returnValue->getID(), dt->getPrimitiveType().getDataType(), address->getID());
    return returnValue;
    }
 

@@ -148,6 +148,7 @@ elseif(OMR_OS_ZOS)
 		"\"-Wl,compat=${OMR_ZOS_LINK_COMPAT}\""
 		"\"-Wc,langlvl(extended)\""
 		-qlanglvl=extended0x
+		-qasm
 	)
 
 	list(APPEND OMR_PLATFORM_SHARED_COMPILE_OPTIONS

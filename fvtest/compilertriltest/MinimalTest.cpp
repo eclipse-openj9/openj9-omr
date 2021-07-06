@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -57,7 +57,7 @@ class StaticSignatureMethodBuilder : public TR::MethodBuilder
       TR::ResolvedMethod resolvedMethod(this);
       TR::IlGeneratorMethodDetails details(&resolvedMethod);
       int32_t rc = 0;
-      FunctionPtr entry = (FunctionPtr)compileMethodFromDetails(NULL, details, warm, rc);
+      FunctionPtr entry = (FunctionPtr)(reinterpret_cast<void *>(compileMethodFromDetails(NULL, details, warm, rc)));
       return entry;
       }
    };

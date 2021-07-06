@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -47,7 +47,7 @@ Qux2Test::compileTestMethods()
    argTypes[0]= Int32;
    TR::ResolvedMethod qux2Compilee(__FILE__, LINETOSTR(__LINE__), "qux2", numberOfArguments, argTypes, Int32, 0, &quxIlInjector);
    TR::IlGeneratorMethodDetails qux2Details(&qux2Compilee);
-   _qux2 = (testMethodType *) (compileMethod(qux2Details, warm, rc));
+   _qux2 = (testMethodType *)(reinterpret_cast<void *>(compileMethod(qux2Details, warm, rc)));
    }
 
 int32_t

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -66,12 +66,12 @@ BuilderTest::compileTestMethods()
 
    IterativeFibonnaciMethod iterFibMethodBuilder(&types, this);
    rc = compileMethodBuilder(&iterFibMethodBuilder, &entry);
-   _iterativeFibMethod = (IterativeFibFunctionType *) entry;
+   _iterativeFibMethod = (IterativeFibFunctionType *)(reinterpret_cast<void *>(entry));
 
 #if (defined(TR_TARGET_X86) && defined(TR_TARGET_64BIT)) || defined(TR_TARGET_S390)
    RecursiveFibonnaciMethod recFibMethodBuilder(&types, this);
    rc = compileMethodBuilder(&recFibMethodBuilder, &entry);
-   _recursiveFibMethod = (RecursiveFibFunctionType *) entry;
+   _recursiveFibMethod = (RecursiveFibFunctionType *)(reinterpret_cast<void *>(entry));
 #endif
    }
 
@@ -85,67 +85,67 @@ BuilderTest::compileControlFlowTestMethods()
 
    BasicForLoopUpMethod basicForLoopUpMethodBuilder(&types, this);
    rc = compileMethodBuilder(&basicForLoopUpMethodBuilder, &entry);
-   _basicForLoopUpMethod = (BasicForLoopFunctionType *) entry;
+   _basicForLoopUpMethod = (BasicForLoopFunctionType *)(reinterpret_cast<void *>(entry));
 
    BasicForLoopDownMethod basicForLoopDownMethodBuilder(&types, this);
    rc = compileMethodBuilder(&basicForLoopDownMethodBuilder, &entry);
-   _basicForLoopDownMethod = (BasicForLoopFunctionType *) entry;
+   _basicForLoopDownMethod = (BasicForLoopFunctionType *)(reinterpret_cast<void *>(entry));
 
    ShootoutNestedLoopMethod shootoutNestedLoopMethodBuilder(&types, this);
    rc = compileMethodBuilder(&shootoutNestedLoopMethodBuilder, &entry);
-   _shootoutNestedLoopMethod = (signatureCharI_I_testMethodType *) entry;
+   _shootoutNestedLoopMethod = (signatureCharI_I_testMethodType *)(reinterpret_cast<void *>(entry));
 
    AbsDiffIfThenElseMethod absDiffIfThenElseMethodBuilder(&types, this);
    rc = compileMethodBuilder(&absDiffIfThenElseMethodBuilder, &entry);
-   _absDiffIfThenElseMethod = (IfFunctionType *) entry;
+   _absDiffIfThenElseMethod = (IfFunctionType *)(reinterpret_cast<void *>(entry));
 
    MaxIfThenMethod maxIfThenMethodBuilder(&types, this);
    rc = compileMethodBuilder(&maxIfThenMethodBuilder, &entry);
-   _maxIfThenMethod = (IfFunctionType *) entry;
+   _maxIfThenMethod = (IfFunctionType *)(reinterpret_cast<void *>(entry));
 
    DoWhileFibonnaciMethod doWhileFibonnaciMethodBuilder(&types, this);
    rc = compileMethodBuilder(&doWhileFibonnaciMethodBuilder, &entry);
-   _doWhileFibMethod = (DoWhileFibFunctionType *) entry;
+   _doWhileFibMethod = (DoWhileFibFunctionType *)(reinterpret_cast<void *>(entry));
 
    DoWhileWithBreakMethod doWhileWithBreakMethodBuilder(&types, this);
    rc = compileMethodBuilder(&doWhileWithBreakMethodBuilder, &entry);
-   _doWhileWithBreakMethod = (DoWhileFunctionType *) entry;
+   _doWhileWithBreakMethod = (DoWhileFunctionType *)(reinterpret_cast<void *>(entry));
 
    DoWhileWithContinueMethod doWhileWithContinueMethodBuilder(&types, this);
    rc = compileMethodBuilder(&doWhileWithContinueMethodBuilder, &entry);
-   _doWhileWithContinueMethod = (DoWhileFunctionType *) entry;
+   _doWhileWithContinueMethod = (DoWhileFunctionType *)(reinterpret_cast<void *>(entry));
 
    DoWhileWithBreakAndContinueMethod doWhileWithBreakAndContinueMethodBuilder(&types, this);
    rc = compileMethodBuilder(&doWhileWithBreakAndContinueMethodBuilder, &entry);
-   _doWhileWithBreakAndContinueMethod = (DoWhileFunctionType *) entry;
+   _doWhileWithBreakAndContinueMethod = (DoWhileFunctionType *)(reinterpret_cast<void *>(entry));
 
    WhileDoFibonnaciMethod whileDoFibonnaciMethodBuilder(&types, this);
    rc = compileMethodBuilder(&whileDoFibonnaciMethodBuilder, &entry);
-   _whileDoFibMethod = (WhileDoFibFunctionType *) entry;
+   _whileDoFibMethod = (WhileDoFibFunctionType *)(reinterpret_cast<void *>(entry));
 
    WhileDoWithBreakMethod whileDoWithBreakMethodBuilder(&types, this);
    rc = compileMethodBuilder(&whileDoWithBreakMethodBuilder, &entry);
-   _whileDoWithBreakMethod = (WhileDoFunctionType *) entry;
+   _whileDoWithBreakMethod = (WhileDoFunctionType *)(reinterpret_cast<void *>(entry));
 
    WhileDoWithContinueMethod whileDoWithContinueMethodBuilder(&types, this);
    rc = compileMethodBuilder(&whileDoWithContinueMethodBuilder, &entry);
-   _whileDoWithContinueMethod = (WhileDoFunctionType *) entry;
+   _whileDoWithContinueMethod = (WhileDoFunctionType *)(reinterpret_cast<void *>(entry));
 
    WhileDoWithBreakAndContinueMethod whileDoWithBreakAndContinueMethodBuilder(&types, this);
    rc = compileMethodBuilder(&whileDoWithBreakAndContinueMethodBuilder, &entry);
-   _whileDoWithBreakAndContinueMethod = (WhileDoFunctionType *) entry;
+   _whileDoWithBreakAndContinueMethod = (WhileDoFunctionType *)(reinterpret_cast<void *>(entry));
 
    ForLoopContinueMethod forLoopContinueMethodBuilder(&types, this);
    rc = compileMethodBuilder(&forLoopContinueMethodBuilder, &entry);
-   _forLoopContinueMethod = (ForLoopContinueFunctionType *) entry;
+   _forLoopContinueMethod = (ForLoopContinueFunctionType *)(reinterpret_cast<void *>(entry));
 
    ForLoopBreakMethod forLoopBreakMethodBuilder(&types, this);
    rc = compileMethodBuilder(&forLoopBreakMethodBuilder, &entry);
-   _forLoopBreakMethod = (ForLoopBreakFunctionType *) entry;
+   _forLoopBreakMethod = (ForLoopBreakFunctionType *)(reinterpret_cast<void *>(entry));
 
    ForLoopBreakAndContinueMethod forLoopBreakAndContinueMethodBuilder(&types, this);
    rc = compileMethodBuilder(&forLoopBreakAndContinueMethodBuilder, &entry);
-   _forLoopBreakAndContinueMethod = (ForLoopBreakAndContinueFunctionType *) entry;
+   _forLoopBreakAndContinueMethod = (ForLoopBreakAndContinueFunctionType *)(reinterpret_cast<void *>(entry));
    }
 
 void
@@ -158,19 +158,19 @@ BuilderTest::compileNestedControlFlowLoopTestMethods()
 
    IfThenElseLoopMethod ifThenElseLoopMethod(&types, this);
    rc = compileMethodBuilder(&ifThenElseLoopMethod, &entry);
-   _ifThenElseLoopMethod = (IfFunctionType *) entry;
+   _ifThenElseLoopMethod = (IfFunctionType *)(reinterpret_cast<void *>(entry));
 
    ForLoopUPIfThenElseMethod forLoopIfThenElseMethod(&types, this);
    rc = compileMethodBuilder(&forLoopIfThenElseMethod, &entry);
-   _forLoopUpIfThenElseMethod = (LoopIfThenElseFunctionType *) entry;
+   _forLoopUpIfThenElseMethod = (LoopIfThenElseFunctionType *)(reinterpret_cast<void *>(entry));
 
    DoWhileIfThenElseMethod doWhileIfThenElseMethod(&types, this);
    rc = compileMethodBuilder(&doWhileIfThenElseMethod, &entry);
-   _doWhileIfThenElseMethod = (LoopIfThenElseFunctionType *) entry;
+   _doWhileIfThenElseMethod = (LoopIfThenElseFunctionType *)(reinterpret_cast<void *>(entry));
 
    WhileDoIfThenElseMethod whileDoIfThenElseMethod(&types, this);
    rc = compileMethodBuilder(&whileDoIfThenElseMethod, &entry);
-   _whileDoIfThenElseMethod = (LoopIfThenElseFunctionType *) entry;
+   _whileDoIfThenElseMethod = (LoopIfThenElseFunctionType *)(reinterpret_cast<void *>(entry));
    }
 
 int32_t

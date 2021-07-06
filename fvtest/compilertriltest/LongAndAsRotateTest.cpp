@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 IBM Corp. and others
+ * Copyright (c) 2017, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -119,7 +119,7 @@ TEST_P(i2lLongAndAsRotateTest, SimpleTest)
          "  (lreturn                         "
          "  (land                            "
          "      (i2l (iload parm=0))         "
-         "      (lconst %llu)))))            ",
+         "      (lconst %" OMR_PRIu64 ")))))            ",
          param.constantValue
          );
 
@@ -159,7 +159,7 @@ TEST_P(i2lLongAndAsRotateTest, iConstTest)
          "            (iconst %d)            "
          "         )                         "
          "      )                            " 
-         "      (lconst %llu)))))            ",
+         "      (lconst %" OMR_PRIu64 "))))) ",
          constValue,
          param.constantValue
          );
@@ -197,13 +197,13 @@ TEST_P(i2lLongAndAsRotateTest, GreaterThanOneRefCount1)
          "            (i2l id=\"myNode\"                       "
          "               (iload parm=0)                        "
          "            )                                        "
-         "            (lconst %llu)                            "
+         "            (lconst %" OMR_PRIu64 ")                 "
          "         )                                           "
          "      )                                              "
          "      (lreturn                                       "
          "         (land                                       "
          "            (@id \"myNode\")                         "
-         "            (lconst %llu)                            "
+         "            (lconst %" OMR_PRIu64 ")                 "
          "         )                                           "
          "      )                                              "
          "   )                                                 "
@@ -250,7 +250,7 @@ TEST_P(i2lLongAndAsRotateTest, GreaterThanOneRefCount2)
          "                  (iconst %d)                        "
          "               )                                     "
          "            )                                        "
-         "            (lconst %llu)                            "
+         "            (lconst %" OMR_PRIu64 ")                 "
          "         )                                           "
          "      )                                              "
          "      (lreturn                                       "
@@ -261,7 +261,7 @@ TEST_P(i2lLongAndAsRotateTest, GreaterThanOneRefCount2)
          "                  (iconst %d)                        "
          "               )                                     "
          "            )                                        "
-         "            (lconst %llu)                            "
+         "            (lconst %" OMR_PRIu64 ")                 "
          "         )                                           "
          "      )                                              "
          "   )                                                 "
@@ -302,7 +302,7 @@ TEST_P(iu2lLongAndAsRotateTest, SimpleTest)
          "  (lreturn                         "
          "  (land                            " 
          "      (iu2l (iload parm=0))        "
-         "      (lconst %llu)))))            ",
+         "      (lconst %" OMR_PRIu64 "))))) ",
          param.constantValue
          );
 
@@ -344,7 +344,7 @@ TEST_P(iu2lLongAndAsRotateTest, iConstTest)
          "            (iconst %u)            "
          "         )                         "
          "      )                            "
-         "      (lconst %llu)))))            ",
+         "      (lconst %" OMR_PRIu64 "))))) ",
          constValue,
          param.constantValue
          );
@@ -383,13 +383,13 @@ TEST_P(iu2lLongAndAsRotateTest, GreaterThanOneRefCount1)
          "            (iu2l id=\"myNode\"                      "
          "               (iload parm=0)                        "
          "            )                                        "
-         "            (lconst %llu)                            "
+         "            (lconst %" OMR_PRIu64 ")                 "
          "         )                                           "
          "      )                                              "
          "      (lreturn                                       "
          "         (land                                       "
          "            (@id \"myNode\")                         "
-         "            (lconst %llu)                            "
+         "            (lconst %" OMR_PRIu64 ")                 "
          "         )                                           "
          "      )                                              "
          "   )                                                 "
@@ -437,7 +437,7 @@ TEST_P(iu2lLongAndAsRotateTest, GreaterThanOneRefCount2)
          "                  (iconst %u)                        "
          "               )                                     "
          "            )                                        "
-         "            (lconst %llu)                            "
+         "            (lconst %" OMR_PRIu64 ")                 "
          "         )                                           "
          "      )                                              "
          "      (lreturn                                       "
@@ -448,7 +448,7 @@ TEST_P(iu2lLongAndAsRotateTest, GreaterThanOneRefCount2)
          "                  (iconst %u)                        "
          "               )                                     "
          "            )                                        "
-         "            (lconst %llu)                            "
+         "            (lconst %" OMR_PRIu64 ")                 "
          "         )                                           "
          "      )                                              "
          "   )                                                 "

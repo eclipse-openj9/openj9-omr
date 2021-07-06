@@ -162,6 +162,9 @@ class InstOpCode: public OMR::InstOpCode
       VEX_L256 = 0x1,
       VEX_L512 = 0x2,
       VEX_L___ = 0x3, // Instruction does not support VEX encoding
+      EVEX_L128 = 0x4,
+      EVEX_L256 = 0x5,
+      EVEX_L512 = 0x6,
       };
    enum TR_OpCodeVEX_v : uint8_t
       {
@@ -205,7 +208,7 @@ class InstOpCode: public OMR::InstOpCode
       };
    struct OpCode_t
       {
-      uint8_t vex_l : 2;
+      uint8_t vex_l : 3;
       uint8_t vex_v : 1;
       uint8_t prefixes : 2;
       uint8_t rex_w : 1;
@@ -236,6 +239,22 @@ class InstOpCode: public OMR::InstOpCode
       inline bool supportsAVX() const
          {
          return vex_l != VEX_L___;
+         }
+      inline bool isEvex() const
+         {
+         return vex_l >= EVEX_L128;
+         }
+      inline bool isEvex128() const
+         {
+           return vex_l == EVEX_L128;
+         }
+      inline bool isEvex256() const
+         {
+           return vex_l == EVEX_L256;
+         }
+      inline bool isEvex512() const
+         {
+           return vex_l == EVEX_L512;
          }
       // check if the instruction is X87
       inline bool isX87() const

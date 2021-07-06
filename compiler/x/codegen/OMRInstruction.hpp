@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -282,7 +282,69 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    template<size_t VEX_SIZE>
    struct VEX
       {
-      VEX() {TR_ASSERT(false, "INVALID VEX PREFIX");}
+      VEX() {TR_ASSERT_FATAL(false, "INVALID VEX PREFIX");}
+      };
+
+   struct EVEX
+      {
+      // 0x62 P0 P1 P2
+      // Byte 0: 0x62
+      uint8_t escape;
+      // Byte 1 : P0
+      uint8_t mm : 2;   // P0[0] : m0, m1
+      uint8_t zero : 2; // P0[2] : 0b00
+      uint8_t r : 1;    // P0[4] : R'
+      uint8_t B : 1;    // P0[5] : B
+      uint8_t X : 1;    // P0[6] : X
+      uint8_t R : 1;    // P0[7] : R
+      // Byte 2 : P1
+      uint8_t p : 2;    // P1[0] : p1, p0
+      uint8_t one : 1;  // P1[2] : 0b1
+      uint8_t v : 4;    // P1[3] : v0, v1, v2, v3
+      uint8_t W : 1;    // P1[7] : W
+
+      // Byte 3 : P2
+      uint8_t a : 3;    // P2[0] : a0, a1, a2 -- write mask {k1-k7}
+      uint8_t V : 1;    // P2[3] : V'
+      uint8_t b : 1;    // P2[4] : b
+      uint8_t L : 2;    // P2[5] : L, L'
+      uint8_t Z : 1;    // P2[7] : z
+      // Byte 4: opcode
+      uint8_t opcode;
+      // Byte 5: ModRM
+      ModRM   modrm;
+
+      inline EVEX() {}
+
+      inline EVEX(const REX& rex, uint8_t ModRMOpCode) : modrm(ModRMOpCode)
+         {
+         escape = '\x62';
+         // reserved bits
+         one = 1;
+         zero = 0;
+         Z = 0;
+         b = 0;
+
+         R = ~rex.R;
+         X = ~rex.X;
+         B = ~rex.B;
+
+         r = ~(rex.R & modrm.reg);
+
+         W = rex.W;
+         v = 0xf; //0b1111
+         V = v >> 3;
+         a = 0;
+         }
+
+      inline uint8_t Reg() const
+         {
+         return modrm.Reg(~R);
+         }
+      inline uint8_t RM() const
+         {
+         return modrm.RM(~B);
+         }
       };
    };
 

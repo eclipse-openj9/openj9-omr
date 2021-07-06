@@ -207,7 +207,7 @@ OMR::X86::Machine::Machine
 
 void OMR::X86::Machine::resetXMMGlobalRegisters()
    {
-   for (int32_t i = 0; i < TR::RealRegister::NumXMMRegisters; i++)
+   for (int32_t i = 0; i < TR::RealRegister::LastXMMR - TR::RealRegister::FirstXMMR + 1; i++)
       self()->setXMMGlobalRegister(i, NULL);
    }
 
@@ -2827,6 +2827,12 @@ TR::Instruction *OMR::X86::Machine::fpSpillStack(TR::Instruction *prevInstructio
 
    return cursor;
    }
+
+uint32_t OMR::X86::Machine::maxAssignableRegisters()
+   {
+   return TR::RealRegister::LastXMMR - TR::RealRegister::FirstXMMR + 1 + TR::RealRegister::LastAssignableGPR - TR::RealRegister::FirstGPR;
+   }
+
 
 
 #if defined(DEBUG)

@@ -365,7 +365,11 @@ TR::Register *OMR::X86::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::CodeG
    bool selectorRegInGlRegDeps = false;
    TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
    TR::LabelSymbol *endLabel = generateLabelSymbol(cg);
-   TR::RegisterDependencyConditions  *deps = generateRegisterDependencyConditions((uint8_t) 0, TR::RealRegister::MaxAssignableRegisters, cg);
+
+   TR::Machine *machine = cg->machine();
+   uint32_t maxAssignableRegisters = machine->maxAssignableRegisters();
+
+   TR::RegisterDependencyConditions  *deps = generateRegisterDependencyConditions((uint8_t) 0, maxAssignableRegisters, cg);
 
    startLabel->setStartInternalControlFlow();
    endLabel->setEndInternalControlFlow();

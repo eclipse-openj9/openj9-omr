@@ -58,21 +58,34 @@ TR::RelocationDebugInfo* TR::Relocation::getDebugInfo()
    {
    return this->_genData;
    }
+
+void TR::LabelRelocation::assertLabelDefined()
+   {
+   TR_ASSERT_FATAL(
+      _label->getCodeLocation() != NULL,
+      "cannot relocate reference to undefined label: %s (%p)\n",
+      _label->getName(TR::comp()->getDebug()),
+      _label);
+   }
+
 void TR::LabelRelative8BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
    AOTcgDiag2(codeGen->comp(), "TR::LabelRelative8BitRelocation::apply cursor=" POINTER_PRINTF_FORMAT " label=" POINTER_PRINTF_FORMAT "\n", getUpdateLocation(), getLabel());
+   assertLabelDefined();
    codeGen->apply8BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
    }
 
 void TR::LabelRelative12BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
    AOTcgDiag2(codeGen->comp(), "TR::LabelRelative12BitRelocation::apply cursor=" POINTER_PRINTF_FORMAT " label=" POINTER_PRINTF_FORMAT "\n", getUpdateLocation(), getLabel());
+   assertLabelDefined();
    codeGen->apply12BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel(), isCheckDisp());
    }
 
 void TR::LabelRelative16BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
    AOTcgDiag2(codeGen->comp(), "TR::LabelRelative16BitRelocation::apply cursor=" POINTER_PRINTF_FORMAT " label=" POINTER_PRINTF_FORMAT "\n", getUpdateLocation(), getLabel());
+   assertLabelDefined();
    if(getAddressDifferenceDivisor() == 1)
    codeGen->apply16BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
    else
@@ -82,12 +95,14 @@ void TR::LabelRelative16BitRelocation::apply(TR::CodeGenerator *codeGen)
 void TR::LabelRelative24BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
    AOTcgDiag2(codeGen->comp(), "TR::LabelRelative24BitRelocation::apply cursor=" POINTER_PRINTF_FORMAT " label=" POINTER_PRINTF_FORMAT "\n", getUpdateLocation(), getLabel());
+   assertLabelDefined();
    codeGen->apply24BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
    }
 
 void TR::LabelRelative32BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
    AOTcgDiag2(codeGen->comp(), "TR::LabelRelative32BitRelocation::apply cursor=" POINTER_PRINTF_FORMAT " label=" POINTER_PRINTF_FORMAT "\n", getUpdateLocation(), getLabel());
+   assertLabelDefined();
    codeGen->apply32BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
    }
 
@@ -95,6 +110,7 @@ void TR::LabelAbsoluteRelocation::apply(TR::CodeGenerator *codeGen)
    {
    intptr_t *cursor = (intptr_t *)getUpdateLocation();
    AOTcgDiag2(codeGen->comp(), "TR::LabelAbsoluteRelocation::apply cursor=" POINTER_PRINTF_FORMAT " label=" POINTER_PRINTF_FORMAT "\n", cursor, getLabel());
+   assertLabelDefined();
    *cursor = (intptr_t)getLabel()->getCodeLocation();
    }
 
@@ -124,7 +140,7 @@ void
 TR::InstructionLabelRelative16BitRelocation::apply(TR::CodeGenerator* cg)
    {
    uint8_t* p = getUpdateLocation();
-
+   assertLabelDefined();
    *reinterpret_cast<int16_t*>(p) = static_cast<int16_t>(getLabel()->getCodeLocation() - p) / _divisor;
    }
 
@@ -154,7 +170,7 @@ void
 TR::InstructionLabelRelative32BitRelocation::apply(TR::CodeGenerator* cg)
    {
    uint8_t* p = getUpdateLocation();
-
+   assertLabelDefined();
    *reinterpret_cast<int32_t*>(p) = static_cast<int32_t>(getLabel()->getCodeLocation() - p) / _divisor;
    }
 

@@ -3388,7 +3388,7 @@ TR::Register *OMR::X86::TreeEvaluator::sushrEvaluator(TR::Node *node, TR::CodeGe
 TR::InstOpCode::Mnemonic OMR::X86::TreeEvaluator::_logicalOpPackage[numLogicalOpPackages][numLogicalOpForms] =
    {
    // band
-      { TR::InstOpCode::AND1RegReg, TR::InstOpCode::AND1RegMem, TR::InstOpCode::MOV1RegReg, TR::InstOpCode::AND1RegImm1, TR::InstOpCode::bad,
+      { TR::InstOpCode::AND1RegReg, TR::InstOpCode::AND1RegMem, TR::InstOpCode::MOV1RegReg, TR::InstOpCode::AND1RegImm1, TR::InstOpCode::UD2,
         TR::InstOpCode::AND1MemImm1,TR::InstOpCode::AND1MemImm1,TR::InstOpCode::AND1MemReg, TR::InstOpCode::NOT1Mem   },
    // cand/sand
       { TR::InstOpCode::AND2RegReg, TR::InstOpCode::AND2RegMem, TR::InstOpCode::MOV4RegReg, TR::InstOpCode::AND2RegImms, TR::InstOpCode::AND2RegImm2,
@@ -3400,7 +3400,7 @@ TR::InstOpCode::Mnemonic OMR::X86::TreeEvaluator::_logicalOpPackage[numLogicalOp
       { TR::InstOpCode::AND8RegReg, TR::InstOpCode::AND8RegMem, TR::InstOpCode::MOV8RegReg, TR::InstOpCode::AND8RegImms, TR::InstOpCode::AND8RegImm4,
         TR::InstOpCode::AND8MemImms,TR::InstOpCode::AND8MemImm4,TR::InstOpCode::AND8MemReg, TR::InstOpCode::NOT8Mem },
    // bor
-      { TR::InstOpCode::OR1RegReg,  TR::InstOpCode::OR1RegMem,  TR::InstOpCode::MOV1RegReg, TR::InstOpCode::OR1RegImm1,  TR::InstOpCode::bad,
+      { TR::InstOpCode::OR1RegReg,  TR::InstOpCode::OR1RegMem,  TR::InstOpCode::MOV1RegReg, TR::InstOpCode::OR1RegImm1,  TR::InstOpCode::UD2,
         TR::InstOpCode::OR1MemImm1, TR::InstOpCode::OR1MemImm1, TR::InstOpCode::OR1MemReg,  TR::InstOpCode::NOT1Mem   },
    // cor, sor
       { TR::InstOpCode::OR2RegReg,  TR::InstOpCode::OR2RegMem,  TR::InstOpCode::MOV4RegReg, TR::InstOpCode::OR2RegImms,  TR::InstOpCode::OR2RegImm2,
@@ -3412,7 +3412,7 @@ TR::InstOpCode::Mnemonic OMR::X86::TreeEvaluator::_logicalOpPackage[numLogicalOp
       { TR::InstOpCode::OR8RegReg,  TR::InstOpCode::OR8RegMem,  TR::InstOpCode::MOV8RegReg, TR::InstOpCode::OR8RegImms,  TR::InstOpCode::OR8RegImm4,
         TR::InstOpCode::OR8MemImms, TR::InstOpCode::OR8MemImm4, TR::InstOpCode::OR8MemReg,  TR::InstOpCode::NOT8Mem   },
    // bxor
-      { TR::InstOpCode::XOR1RegReg, TR::InstOpCode::XOR1RegMem, TR::InstOpCode::MOV1RegReg, TR::InstOpCode::XOR1RegImm1, TR::InstOpCode::bad,
+      { TR::InstOpCode::XOR1RegReg, TR::InstOpCode::XOR1RegMem, TR::InstOpCode::MOV1RegReg, TR::InstOpCode::XOR1RegImm1, TR::InstOpCode::UD2,
         TR::InstOpCode::XOR1MemImm1,TR::InstOpCode::XOR1MemImm1,TR::InstOpCode::XOR1MemReg, TR::InstOpCode::NOT1Mem   },
    // cxor, sxor
       { TR::InstOpCode::XOR2RegReg, TR::InstOpCode::XOR2RegMem, TR::InstOpCode::MOV4RegReg, TR::InstOpCode::XOR2RegImms, TR::InstOpCode::XOR2RegImm2,

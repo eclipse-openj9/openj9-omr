@@ -19,6 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#include <utility>
 #include "codegen/ARM64HelperCallSnippet.hpp"
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/ARM64ShiftCode.hpp"
@@ -2169,6 +2170,87 @@ TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node *n
    return generateTrg1ImmSymInstruction(cg, TR::InstOpCode::ldrx, node, targetRegister, 0, labelSym, cursor);
    }
 
+bool shouldLoadNegatedConstant32(int32_t value)
+   {
+   int32_t negatedValue = -value;
+   if ((value >= -65535 && value <= 65535) ||
+       ((value & 0xFFFF) == 0) ||
+       ((value & 0xFFFF) == 0xFFFF))
+      {
+      return false;
+      }
+   else if ((negatedValue >= -65535 && negatedValue <= 65535) ||
+       ((negatedValue & 0xFFFF) == 0) ||
+       ((negatedValue & 0xFFFF) == 0xFFFF))
+      {
+      return true;
+      }
+   else
+      {
+      return false;
+      }
+   }
+
+/**
+ * @brief Helper function for analyzing instructions required for loading 64bit constant value.
+ *        This functions returns a pair of number of instructions required and a bool flag.
+ *        If the bool flag is true, movz instruction should be used. Otherwise, movz should be used.
+ *
+ * @param[out] h : 4 elements array of 16bit integer
+ * @param[in] value: 64bit value to load
+ *
+ * @return a pair of number of instructions required and a bool flag
+ */
+static
+std::pair<int32_t, bool> analyzeLoadConstant64(uint16_t h[4], int64_t value)
+   {
+   int32_t count0000 = 0, countFFFF = 0;
+   int32_t i;
+
+   for (i = 0; i < 4; i++)
+      {
+      h[i] = (value >> (i * 16)) & 0xFFFF;
+      if (h[i] == 0)
+         {
+         count0000++;
+         }
+      else if (h[i] == 0xFFFF)
+         {
+         countFFFF++;
+         }
+      }
+
+   return std::make_pair(4 - std::max(count0000, countFFFF), count0000 >= countFFFF);
+   }
+
+bool shouldLoadNegatedConstant64(int64_t value)
+   {
+   int64_t negatedValue = -value;
+   // If upper 48bit of value is all 0 or value is -1
+   if (((value & (~static_cast<int64_t>(0xffff))) == 0) || (~value == 0LL))
+      {
+      return false;
+      }
+   else if ((negatedValue & (~static_cast<int64_t>(0xffff))) == 0)
+      {
+      return true;
+      }
+   uint16_t h[4];
+
+   auto numInstrAndUseMovz = analyzeLoadConstant64(h, value);
+   if (numInstrAndUseMovz.first == 1)
+      {
+      return false;
+      }
+   auto numInstrAndUseMovzNeg = analyzeLoadConstant64(h, negatedValue);
+   if (numInstrAndUseMovzNeg.first == 1)
+      {
+      return true;
+      }
+
+   return numInstrAndUseMovzNeg.first < numInstrAndUseMovz.first;
+   }
+
 TR::Instruction *loadConstant32(TR::CodeGenerator *cg, TR::Node *node, int32_t value, TR::Register *trgReg, TR::Instruction *cursor)
    {
    TR::Instruction *insertingInstructions = cursor;
@@ -2237,23 +2319,9 @@ TR::Instruction *loadConstant64(TR::CodeGenerator *cg, TR::Node *node, int64_t v
    else
       {
       uint16_t h[4];
-      int32_t count0000 = 0, countFFFF = 0;
-      int32_t use_movz;
       int32_t i;
-
-      for (i = 0; i < 4; i++)
-         {
-         h[i] = (value >> (i * 16)) & 0xFFFF;
-         if (h[i] == 0)
-            {
-            count0000++;
-            }
-         else if (h[i] == 0xFFFF)
-            {
-            countFFFF++;
-            }
-         }
-      use_movz = (count0000 >= countFFFF);
+      auto numInstrAndUseMovz = analyzeLoadConstant64(h, value);
+      int32_t use_movz = numInstrAndUseMovz.second;
 
       TR::Instruction *start = cursor;
 

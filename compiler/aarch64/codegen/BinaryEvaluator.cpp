@@ -159,16 +159,54 @@ generateMaddOrMsub(TR::Node *node, TR::Node *mulNode, TR::Node *anotherNode, TR:
        mulNode->getReferenceCount() == 1 &&
        mulNode->getRegister() == NULL)
       {
-      TR::Register *trgReg = cg->allocateRegister();
-      TR::Register *mulSrc1Reg = cg->evaluate(mulNode->getFirstChild());
-      TR::Register *mulSrc2Reg = cg->evaluate(mulNode->getSecondChild());
+      TR::Register *trgReg;
+      TR::Node *mulFirstChild = mulNode->getFirstChild();
+      TR::Node *mulSecondChild = mulNode->getSecondChild();
+      TR::Register *mulSrc1Reg = cg->evaluate(mulFirstChild);
+      TR::Register *mulSrc2Reg = cg->evaluate(mulSecondChild);
       TR::Register *src3Reg = cg->evaluate(anotherNode);
+      if (node->getOpCodeValue() != TR::aladd)
+         {
+         if (mulFirstChild->getReferenceCount() == 1)
+            {
+            trgReg = mulSrc1Reg;
+            }
+         else if (mulSecondChild->getReferenceCount() == 1)
+            {
+            trgReg = mulSrc2Reg;
+            }
+         else if (anotherNode->getReferenceCount() == 1)
+            {
+            trgReg = src3Reg;
+            }
+         else
+            {
+            trgReg = cg->allocateRegister();
+            }
+         }
+      else
+         {
+         /*
+          * Because trgReg can contain an internal pointer, we cannot use the same virtual register
+          * for trgReg and sources for aladd except for the case
+          * where src1Reg also contains an internal pointer and has the same pinning array as the node.
+          */
+         if ((1 == mulFirstChild->getReferenceCount()) && node->isInternalPointer() && mulSrc1Reg->containsInternalPointer() &&
+            (node->getPinningArrayPointer() == mulSrc1Reg->getPinningArrayPointer()))
+            {
+            trgReg = mulSrc1Reg;
+            }
+         else
+            {
+            trgReg = cg->allocateRegister();
+            }
+         }
 
       generateTrg1Src3Instruction(cg, op, node, trgReg, mulSrc1Reg, mulSrc2Reg, src3Reg);
 
       node->setRegister(trgReg);
-      cg->decReferenceCount(mulNode->getFirstChild());
-      cg->decReferenceCount(mulNode->getSecondChild());
+      cg->decReferenceCount(mulFirstChild);
+      cg->decReferenceCount(mulSecondChild);
       cg->decReferenceCount(mulNode);
       cg->decReferenceCount(anotherNode);
       return trgReg;

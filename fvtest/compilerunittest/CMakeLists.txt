@@ -31,6 +31,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(COMPCGTEST_FILES
 	main.cpp
+	CodeGenTest.cpp
 )
 
 if(OMR_ARCH_POWER)
@@ -41,6 +42,11 @@ if(OMR_ARCH_POWER)
 	)
 endif()
 
+if(OMR_ARCH_X86)
+	list(APPEND COMPCGTEST_FILES
+		x/BinaryEncoder.cpp
+	)
+endif()
 
 list(APPEND COMPCGTEST_FILES
 	abstractinterpreter/AbsInterpreterTest.cpp

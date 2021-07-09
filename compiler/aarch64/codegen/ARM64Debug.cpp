@@ -1288,13 +1288,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
    if (op == TR::InstOpCode::subsimmx || op == TR::InstOpCode::subsimmw ||
        op == TR::InstOpCode::addsimmx || op == TR::InstOpCode::addsimmw)
       {
+      done = true;
       TR::Register *r = instr->getTargetRegister();
       if (r && r->getRealRegister()
           && toRealRegister(r)->getRegisterNumber() == TR::RealRegister::xzr)
          {
          // cmp/cmn alias
          char *mnemonic = NULL;
-         done = true;
          switch (op)
             {
             case TR::InstOpCode::subsimmx:
@@ -1312,6 +1312,30 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
          trfprintf(pOutFile, "%s \t", mnemonic);
          print(pOutFile, instr->getSource1Register(), TR_WordReg);
          trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
+         }
+      else
+         {
+         trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+         print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+         print(pOutFile, instr->getSource1Register(), TR_WordReg);
+         trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
+         }
+      if (instr->getNbit())
+         {
+         trfprintf(pOutFile, ", LSL #%d", 12);
+         }
+      }
+   else if ((op == TR::InstOpCode::subimmx || op == TR::InstOpCode::subimmw ||
+             op == TR::InstOpCode::addimmx || op == TR::InstOpCode::addimmw))
+      {
+      done = true;
+      trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+      print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+      print(pOutFile, instr->getSource1Register(), TR_WordReg);
+      trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
+      if (instr->getNbit())
+         {
+         trfprintf(pOutFile, ", LSL #%d", 12);
          }
       }
    else if (op == TR::InstOpCode::sbfmx || op == TR::InstOpCode::sbfmw)
@@ -1495,6 +1519,10 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ZeroSrc1ImmInstruction *instr)
       trfprintf(pOutFile, "cmpimm%c \t", (op == TR::InstOpCode::subsimmx) ? 'x' : 'w');
       print(pOutFile, instr->getSource1Register(), TR_WordReg);
       trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
+      if (instr->getNbit())
+         {
+         trfprintf(pOutFile, ", LSL #%d", 12);
+         }
       }
    else if (op == TR::InstOpCode::addsimmx || op == TR::InstOpCode::addsimmw)
       {
@@ -1503,6 +1531,10 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ZeroSrc1ImmInstruction *instr)
       trfprintf(pOutFile, "cmnimm%c \t", (op == TR::InstOpCode::addsimmx) ? 'x' : 'w');
       print(pOutFile, instr->getSource1Register(), TR_WordReg);
       trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
+      if (instr->getNbit())
+         {
+         trfprintf(pOutFile, ", LSL #%d", 12);
+         }
       }
    else if (op == TR::InstOpCode::andsimmx || op == TR::InstOpCode::andsimmw)
       {

@@ -208,9 +208,28 @@ TR::Instruction *generateTrg1Src1Instruction(TR::CodeGenerator *cg, TR::InstOpCo
 TR::Instruction *generateTrg1Src1ImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::Register *treg, TR::Register *s1reg, uint32_t imm, TR::Instruction *preced)
    {
+   bool isShifted = false;
+
+   if ((op == TR::InstOpCode::addimmx) || (op == TR::InstOpCode::addimmw) ||
+      (op == TR::InstOpCode::addsimmx) || (op == TR::InstOpCode::addsimmw) ||
+      (op == TR::InstOpCode::subimmx) || (op == TR::InstOpCode::subimmw) ||
+      (op == TR::InstOpCode::subsimmx) || (op == TR::InstOpCode::subsimmw))
+      {
+      if (constantIsUnsignedImm12(imm))
+         {
+         isShifted = false;
+         }
+      else
+         {
+         TR_ASSERT_FATAL(constantIsUnsignedImm12Shifted(imm), "immediate value out of range");
+         isShifted = true;
+         imm = imm >> 12;
+         }
+      }
+
    if (preced)
-      return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, s1reg, imm, preced, cg);
-   return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node,treg, s1reg, imm, cg);
+      return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, s1reg, isShifted, imm, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node,treg, s1reg, isShifted, imm, cg);
    }
 
 TR::Instruction *generateTrg1Src2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
@@ -392,24 +411,38 @@ TR::Instruction *generateCompareImmInstruction(TR::CodeGenerator *cg, TR::Node *
    TR::Register *sreg, int32_t imm, bool is64bit, TR::Instruction *preced)
    {
    TR::InstOpCode::Mnemonic op;
+   bool isShifted = false;
 
    if (constantIsUnsignedImm12(imm))
       {
       /* Alias of SUBS instruction */
       op = is64bit ? TR::InstOpCode::subsimmx : TR::InstOpCode::subsimmw;
       }
-   else
+   else if (constantIsUnsignedImm12Shifted(imm))
       {
-      TR_ASSERT_FATAL(constantIsUnsignedImm12(-imm), "Immediate value is out of range for cmp/cmn");
-
+      op = is64bit ? TR::InstOpCode::subsimmx : TR::InstOpCode::subsimmw;
+      isShifted = true;
+      imm = imm >> 12;
+      }
+   else if (constantIsUnsignedImm12(-imm))
+      {
       /* Alias of ADDS instruction */
       op = is64bit ? TR::InstOpCode::addsimmx : TR::InstOpCode::addsimmw;
       imm = -imm;
       }
+   else
+      {
+      TR_ASSERT_FATAL(constantIsUnsignedImm12Shifted(-imm), "Immediate value is out of range for cmp/cmn");
+
+      /* Alias of ADDS instruction */
+      op = is64bit ? TR::InstOpCode::addsimmx : TR::InstOpCode::addsimmw;
+      isShifted = true;
+      imm = (-imm) >> 12;
+      }
 
    if (preced)
-      return new (cg->trHeapMemory()) TR::ARM64ZeroSrc1ImmInstruction(op, node, sreg, imm, preced, cg);
-   return new (cg->trHeapMemory()) TR::ARM64ZeroSrc1ImmInstruction(op, node, sreg, imm, cg);
+      return new (cg->trHeapMemory()) TR::ARM64ZeroSrc1ImmInstruction(op, node, sreg, isShifted, imm, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64ZeroSrc1ImmInstruction(op, node, sreg, isShifted, imm, cg);
    }
 
 TR::Instruction *generateTestImmInstruction(TR::CodeGenerator *cg, TR::Node *node,

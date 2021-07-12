@@ -179,6 +179,103 @@ generateMaddOrMsub(TR::Node *node, TR::Node *mulNode, TR::Node *anotherNode, TR:
       }
    }
 
+/**
+ * @brief Generates add (shifted register) or sub (shifted register) instruction if possible
+ *
+ * @param[in]  node:  node
+ * @param[in]    op:  mnemonic for this node
+ * @param[in]    cg:  code generator
+ *
+ * @return register which contains the result of the operation. NULL if the operation cannot be encoded in add or sub shifted register instruction.
+ */
+static TR::Register *
+generateAddOrSubShifted(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Node *source1Node = NULL;
+   TR::Node *source2Node = NULL;
+   TR::Node *shiftNode = NULL;
+
+   int32_t shiftValue;
+
+   if ((!firstChild->getOpCode().isLoadConst()) &&
+       (secondChild->getReferenceCount() == 1) &&
+       (secondChild->getRegister() == NULL) &&
+       secondChild->getOpCode().isShift() &&
+       (secondChild->getSecondChild()->getOpCodeValue() == TR::iconst))
+      {
+      source1Node = firstChild;
+      source2Node = secondChild->getFirstChild();
+      shiftValue = secondChild->getSecondChild()->getInt();
+      shiftNode = secondChild;
+      }
+   else if (node->getOpCode().isAdd() &&
+             (!secondChild->getOpCode().isLoadConst()) &&
+             (firstChild->getReferenceCount() == 1) &&
+             (firstChild->getRegister() == NULL) &&
+             firstChild->getOpCode().isShift() &&
+             (firstChild->getSecondChild()->getOpCodeValue() == TR::iconst))
+      {
+      source1Node = secondChild;
+      source2Node = firstChild->getFirstChild();
+      shiftValue = firstChild->getSecondChild()->getInt();
+      shiftNode = firstChild;
+      }
+   else
+      {
+      return NULL;
+      }
+
+   const bool is64bit = node->getDataType().isInt64();
+   if ((shiftValue <= 0) || (shiftValue > (is64bit ? 63 : 31)))
+      {
+      return NULL;
+      }
+   TR::Register *treg;
+   TR::Register *s1reg = cg->evaluate(source1Node);
+   TR::Register *s2reg = cg->evaluate(source2Node);
+   if (node->getOpCodeValue() != TR::aladd)
+      {
+      if (source1Node->getReferenceCount() == 1)
+         {
+         treg = s1reg;
+         }
+      else if (source2Node->getReferenceCount() == 1)
+         {
+         treg = s2reg;
+         }
+      else
+         {
+         treg = cg->allocateRegister();
+         }
+      }
+   else
+      {
+      /*
+       * Because treg can contain an internal pointer, we cannot use the same virtual register
+       * for treg and sources for aladd except for the case
+       * where s1reg also contains an internal pointer and has the same pinning array as the node.
+       */
+      if ((1 == source1Node->getReferenceCount()) && node->isInternalPointer() && s1reg->containsInternalPointer() &&
+         (node->getPinningArrayPointer() == s1reg->getPinningArrayPointer()))
+         {
+         treg = s1reg;
+         }
+      else
+         {
+         treg = cg->allocateRegister();
+         }
+      }
+   TR::ARM64ShiftCode code = (shiftNode->getOpCode().isLeftShift() ? TR::SH_LSL : (shiftNode->getOpCode().isShiftLogical() ? TR::SH_LSR : TR::SH_ASR));
+
+   generateTrg1Src2ShiftedInstruction(cg, op, node, treg, s1reg, s2reg, code, shiftValue);
+   node->setRegister(treg);
+   cg->recursivelyDecReferenceCount(shiftNode);
+   cg->decReferenceCount(source1Node);
+   return treg;
+   }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -192,6 +289,12 @@ OMR::ARM64::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       return retReg;
       }
    retReg = generateMaddOrMsub(node, secondChild, firstChild, TR::InstOpCode::maddw, cg); // x + y*z
+   if (retReg)
+      {
+      return retReg;
+      }
+
+   retReg = generateAddOrSubShifted(node, TR::InstOpCode::addw, cg);
    if (retReg)
       {
       return retReg;
@@ -218,6 +321,12 @@ OMR::ARM64::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       return retReg;
       }
 
+   retReg = generateAddOrSubShifted(node, TR::InstOpCode::addx, cg);
+   if (retReg)
+      {
+      return retReg;
+      }
+
    return genericBinaryEvaluator(node, TR::InstOpCode::addx, TR::InstOpCode::addimmx, true, cg);
    }
 
@@ -234,6 +343,12 @@ OMR::ARM64::TreeEvaluator::isubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       return retReg;
       }
 
+   retReg = generateAddOrSubShifted(node, TR::InstOpCode::subw, cg);
+   if (retReg)
+      {
+      return retReg;
+      }
+
    return genericBinaryEvaluator(node, TR::InstOpCode::subw, TR::InstOpCode::subimmw, false, cg);
    }
 
@@ -245,6 +360,12 @@ OMR::ARM64::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Register *retReg;
 
    retReg = generateMaddOrMsub(node, secondChild, firstChild, TR::InstOpCode::msubx, cg); // x - y*z
+   if (retReg)
+      {
+      return retReg;
+      }
+
+   retReg = generateAddOrSubShifted(node, TR::InstOpCode::subx, cg);
    if (retReg)
       {
       return retReg;

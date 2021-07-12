@@ -95,11 +95,11 @@ genericBinaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic regOp, TR::InstO
          value = secondChild->getInt();
          }
       /* When regOp == regOpImm, an immediate version of the instruction does not exist. */
-      if(constantIsUnsignedImm12(value) && regOp != regOpImm)
+      if((constantIsUnsignedImm12(value) || constantIsUnsignedImm12Shifted(value)) && regOp != regOpImm)
          {
          generateTrg1Src1ImmInstruction(cg, regOpImm, node, trgReg, src1Reg, value);
          }
-      else if (constantIsUnsignedImm12(-value) &&
+      else if ((constantIsUnsignedImm12(-value) || constantIsUnsignedImm12Shifted(-value))  &&
                (regOpImm == TR::InstOpCode::addimmw || regOpImm == TR::InstOpCode::addimmx ||
                 regOpImm == TR::InstOpCode::subimmw || regOpImm == TR::InstOpCode::subimmx))
          {

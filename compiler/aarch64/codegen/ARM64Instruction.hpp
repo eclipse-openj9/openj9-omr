@@ -122,6 +122,16 @@ inline bool constantIsUnsignedImm12(uint64_t intValue)
    }
 
 /*
+ * @brief Answers if the unsigned integer value can be encoded in a 12-bit field with 12 bits shift
+ * @param[in] intValue : unsigned integer value
+ * @return true if the value can be encoded in a 12-bit field with 12 bits shift, false otherwise
+ */
+inline bool constantIsUnsignedImm12Shifted(uint64_t intValue)
+   {
+   return ((intValue & (~(static_cast<uint64_t>(0xfff000)))) == 0);
+   }
+
+/*
  * @brief Answers if the signed integer value can be placed in a 16-bit field
  * @param[in] intValue : signed integer value
  * @return true if the value can be placed in 16-bit field, false otherwise

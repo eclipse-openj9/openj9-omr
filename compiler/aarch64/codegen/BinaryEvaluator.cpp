@@ -882,6 +882,154 @@ OMR::ARM64::TreeEvaluator::lremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return iremHelper(node, true, cg);
    }
 
+/**
+ * @brief Generates ubfm instruction for mask and shift operation if possible
+ *
+ * @param[in] shiftNode: node with shift opcode
+ * @param[in]        cg: code generator
+ *
+ * @returns register which contains the result of the operation. NULL if the operation cannot be encoded in ubfm instruction.
+ */
+static TR::Register *
+generateUBFMForMaskAndShift(TR::Node *shiftNode, TR::CodeGenerator *cg)
+   {
+   TR::Node *andNode = NULL;
+   TR::Node *shiftValueNode = NULL;
+   TR::Node *maskNode = NULL;
+   TR::Node *sourceNode = NULL;
+   if (shiftNode->getFirstChild()->getOpCode().isAnd())
+      {
+      andNode = shiftNode->getFirstChild();
+      shiftValueNode = shiftNode->getSecondChild();
+      if (!shiftValueNode->getOpCode().isLoadConst())
+         {
+         return NULL;
+         }
+      if ((andNode->getReferenceCount() > 1) || (andNode->getRegister() != NULL))
+         {
+         return NULL;
+         }
+      if (andNode->getSecondChild()->getOpCode().isLoadConst())
+         {
+         sourceNode = andNode->getFirstChild();
+         maskNode = andNode->getSecondChild();
+         }
+      else if (andNode->getFirstChild()->getOpCode().isLoadConst())
+         {
+         sourceNode = andNode->getSecondChild();
+         maskNode = andNode->getFirstChild();
+         }
+      }
+
+   if (maskNode == NULL)
+      {
+      return NULL;
+      }
+   const bool is64bit = shiftNode->getDataType().isInt64();
+   const int64_t shiftValue = shiftValueNode->getConstValue();
+
+   if ((shiftValue <= 0) || (shiftValue > (is64bit ? 63 : 31)))
+      {
+      return NULL;
+      }
+   const uint64_t maskValue = is64bit ? maskNode->getLongInt() : static_cast<uint32_t>(maskNode->getInt());
+
+   if (shiftNode->getOpCode().isLeftShift())
+      {
+      if ((maskValue << shiftValue) == 0)
+         {
+         /*
+          * The result is always 0 in this case.
+          */
+         TR::Register *reg = cg->allocateRegister();
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::movzx, shiftNode, reg, 0);
+         shiftNode->setRegister(reg);
+         cg->recursivelyDecReferenceCount(andNode);
+         cg->decReferenceCount(shiftValueNode);
+         return reg;
+         }
+
+      if (((maskValue & 1) == 1) && (((maskValue >> (is64bit ? 63 : 31)) & 1) == 0) && contiguousBits(maskValue))
+         {
+         /*
+          * maskValue has consecutive 1s from the least significant bits. The most significant bit must be 0. Otherwise, mask is all 1s.
+          * So, this mask and shift operation is copying consecutive bits starting from the least significant bits of the source register
+          * to bit position shiftValue of the destination register.
+          */
+         uint32_t width = populationCount(maskValue);
+         uint32_t imms = (width - 1);
+         uint32_t immr = (is64bit ? 64 : 32) - shiftValue;
+
+         TR::Register *reg;
+         TR::Register *sreg = cg->evaluate(sourceNode);
+         if (sourceNode->getReferenceCount() == 1)
+            {
+            reg = sreg;
+            }
+         else
+            {
+            reg = cg->allocateRegister();
+            }
+
+         generateTrg1Src1ImmInstruction(cg, (is64bit ? TR::InstOpCode::ubfmx : TR::InstOpCode::ubfmw), shiftNode, reg, sreg, (immr << 6) | imms);
+         shiftNode->setRegister(reg);
+         cg->recursivelyDecReferenceCount(andNode);
+         cg->decReferenceCount(shiftValueNode);
+         return reg;
+         }
+      }
+   else /* right shift*/
+      {
+      uint64_t shiftedMask = (maskValue >> shiftValue);
+      /*
+       * If the lsb of shiftedMask is set and the shiftedMask has consecutive 1s, then this operation is copying 
+       * consecutive 1s starting from the bit position shiftValue of the source register to the least significant bits of the destination register.
+       */
+      if (((shiftedMask & 1) == 1) && contiguousBits(shiftedMask))
+         {
+         uint32_t width = populationCount(shiftedMask);
+         uint32_t shiftRemainderWidth = (is64bit ? 64 : 32) - shiftValue;
+
+         bool isRightShift = (width == shiftRemainderWidth);  /* In this case, it works as a shift. */
+
+         uint32_t imms = (shiftValue + width - 1);
+         uint32_t immr = shiftValue;
+         TR::Register *reg;
+         TR::Register *sreg = cg->evaluate(sourceNode);
+         if (sourceNode->getReferenceCount() == 1)
+            {
+            reg = sreg;
+            }
+         else
+            {
+            reg = cg->allocateRegister();
+            }
+
+         if (isRightShift)
+            {
+            if (shiftNode->getOpCode().isShiftLogical())
+               {
+               generateLogicalShiftRightImmInstruction(cg, shiftNode, reg, sreg, shiftValue, is64bit);
+               }
+            else
+               {
+               generateArithmeticShiftRightImmInstruction(cg, shiftNode, reg, sreg, shiftValue, is64bit);
+               }
+            }
+         else
+            {
+            generateTrg1Src1ImmInstruction(cg, (is64bit ? TR::InstOpCode::ubfmx : TR::InstOpCode::ubfmw), shiftNode, reg, sreg, (immr << 6) | imms);
+            }
+         shiftNode->setRegister(reg);
+         cg->recursivelyDecReferenceCount(andNode);
+         cg->decReferenceCount(shiftValueNode);
+         return reg;
+         }
+      }
+
+   return NULL;
+   }
+
 static TR::Register *shiftHelper(TR::Node *node, TR::ARM64ShiftCode shiftType, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
@@ -964,7 +1112,11 @@ OMR::ARM64::TreeEvaluator::ishlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          return trgReg;
          }
       }
-
+   TR::Register *reg = generateUBFMForMaskAndShift(node, cg);
+   if (reg != NULL)
+      {
+      return reg;
+      }
    return shiftHelper(node, TR::SH_LSL, cg);
    }
 
@@ -972,6 +1124,11 @@ OMR::ARM64::TreeEvaluator::ishlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::ishrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::Register *reg = generateUBFMForMaskAndShift(node, cg);
+   if (reg != NULL)
+      {
+      return reg;
+      }
    return shiftHelper(node, TR::SH_ASR, cg);
    }
 
@@ -979,6 +1136,11 @@ OMR::ARM64::TreeEvaluator::ishrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::iushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::Register *reg = generateUBFMForMaskAndShift(node, cg);
+   if (reg != NULL)
+      {
+      return reg;
+      }
    return shiftHelper(node, TR::SH_LSR, cg);
    }
 
@@ -1312,9 +1474,156 @@ logicBinaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic regOp, TR::InstOpC
    return trgReg;
    }
 
+/**
+ * @brief Generates ubfm instruction for shift and mask operation if possible
+ *
+ * @param[in] andNode: node with and opcode
+ * @param[in]      cg: code generator
+ *
+ * @returns register which contains the result of the operation. NULL if the operation cannot be encoded in ubfm instruction.
+ */
+static TR::Register *
+generateUBFMForShiftAndMask(TR::Node *andNode, TR::CodeGenerator *cg)
+   {
+   TR::Node *shiftNode = NULL;
+   TR::Node *maskNode = NULL;
+   if (andNode->getFirstChild()->getOpCode().isShift())
+      {
+      shiftNode = andNode->getFirstChild();
+      maskNode = andNode->getSecondChild();
+      }
+   else if (andNode->getSecondChild()->getOpCode().isShift())
+      {
+      shiftNode = andNode->getSecondChild();
+      maskNode = andNode->getFirstChild();
+      }
+   if (shiftNode == NULL)
+      {
+      return NULL;
+      }
+
+   if ((shiftNode->getReferenceCount() == 1) &&
+       (shiftNode->getRegister() == NULL) &&
+       shiftNode->getSecondChild()->getOpCode().isLoadConst() &&
+       maskNode->getOpCode().isLoadConst())
+      {
+      const bool is64bit = shiftNode->getDataType().isInt64();
+      int64_t shiftValue = shiftNode->getSecondChild()->getConstValue();
+      if ((shiftValue <= 0) || (shiftValue > (is64bit ? 63 : 31)))
+         {
+         return NULL;
+         }
+      uint64_t maskValue = is64bit ? maskNode->getLongInt() : static_cast<uint32_t>(maskNode->getInt());
+      TR::Node *sourceNode = shiftNode->getFirstChild();
+
+      if (shiftNode->getOpCode().isLeftShift())
+         {
+         if (maskValue < (static_cast<uint64_t>(1) << shiftValue))
+            {
+            /*
+             * The result is always 0 in this case.
+             */
+            TR::Register *reg = cg->allocateRegister();
+            generateTrg1ImmInstruction(cg, TR::InstOpCode::movzx, andNode, reg, 0);
+            andNode->setRegister(reg);
+            cg->recursivelyDecReferenceCount(shiftNode);
+            cg->decReferenceCount(maskNode);
+            return reg;
+            }
+
+         uint64_t shiftedMask = (maskValue >> shiftValue);
+         if (((shiftedMask & 1) == 1) && contiguousBits(shiftedMask))
+            {
+            /*
+             * shiftedMask has consecutive 1s from the least significant bits.
+             * So, this shift and mask operation is copying consecutive bits starting from the least significant bits of the source register
+             * to bit position shiftValue of the destination register.
+             */
+            uint32_t width = populationCount(shiftedMask);
+            uint32_t imms = (width - 1);
+            uint32_t immr = (is64bit ? 64 : 32) - shiftValue;
+
+            TR::Register *reg;
+            TR::Register *sreg = cg->evaluate(sourceNode);
+            if (sourceNode->getReferenceCount() == 1)
+               {
+               reg = sreg;
+               }
+            else
+               {
+               reg = cg->allocateRegister();
+               }
+            generateTrg1Src1ImmInstruction(cg, (is64bit ? TR::InstOpCode::ubfmx : TR::InstOpCode::ubfmw), andNode, reg, sreg, (immr << 6) | imms);
+            andNode->setRegister(reg);
+            cg->recursivelyDecReferenceCount(shiftNode);
+            cg->decReferenceCount(maskNode);
+            return reg;
+            }
+         }
+      else /* right shift*/
+         {
+         /*
+          * If the lsb of maskValue is set and the msb is not set and the maskValue has consecutive 1s, then this operation is copying 
+          * consecutive 1s starting from the bit position shiftValue of the source register to the least significant bits of the destination register.
+          * We consider arithmetic shift only.
+          */
+         if ((!shiftNode->getOpCode().isShiftLogical()) && ((maskValue & 1) == 1) && (((maskValue >> (is64bit ? 63 : 31)) & 1) == 0) && contiguousBits(maskValue))
+            {
+            uint32_t width = populationCount(maskValue);
+            uint32_t shiftRemainderWidth = (is64bit ? 64 : 32) - shiftValue;
+
+            if (width > shiftRemainderWidth)
+               {
+               if (shiftNode->getOpCode().isShiftLogical())
+                  {
+                  /* If it is a logical shift, we can ignore the mask beyond the msb. */
+                  width = shiftRemainderWidth;
+                  }
+               else
+                  {
+                  return NULL;
+                  }
+               }
+            bool isLogicalShiftRight = (width == shiftRemainderWidth);  /* In this case, it works as a logical shift right. */
+
+            uint32_t imms = (shiftValue + width - 1);
+            uint32_t immr = shiftValue;
+            TR::Register *reg;
+            TR::Register *sreg = cg->evaluate(sourceNode);
+            if (sourceNode->getReferenceCount() == 1)
+               {
+               reg = sreg;
+               }
+            else
+               {
+               reg = cg->allocateRegister();
+               }
+            if (isLogicalShiftRight)
+               {
+               generateLogicalShiftRightImmInstruction(cg, andNode, reg, sreg, shiftValue, is64bit);
+               }
+            else
+               {
+               generateTrg1Src1ImmInstruction(cg, (is64bit ? TR::InstOpCode::ubfmx : TR::InstOpCode::ubfmw), andNode, reg, sreg, (immr << 6) | imms);
+               }
+            andNode->setRegister(reg);
+            cg->recursivelyDecReferenceCount(shiftNode);
+            cg->decReferenceCount(maskNode);
+            return reg;
+            }
+         }
+      }
+   return NULL;
+   }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::iandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::Register *reg = generateUBFMForShiftAndMask(node, cg);
+   if (reg != NULL)
+      {
+      return reg;
+      }
    // boolean and of 2 integers
    return logicBinaryEvaluator(node, TR::InstOpCode::andw, TR::InstOpCode::andimmw, false, cg);
    }
@@ -1322,6 +1631,11 @@ OMR::ARM64::TreeEvaluator::iandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::landEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::Register *reg = generateUBFMForShiftAndMask(node, cg);
+   if (reg != NULL)
+      {
+      return reg;
+      }
    // boolean and of 2 integers
    return logicBinaryEvaluator(node, TR::InstOpCode::andx, TR::InstOpCode::andimmx, true, cg);
    }

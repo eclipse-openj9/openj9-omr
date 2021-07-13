@@ -263,13 +263,11 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
       }
    else
       {
-      TR_ASSERT_FATAL(targetReg->getAssignedRegister()->is64BitReg() == sourceReg->getAssignedRegister()->is64BitReg(), "Attempting register exchange with one 64-bit register (%s) and one 32-bit register (%s)", getRegisterName(sourceReg, cg), getRegisterName(targetReg, cg));
-
       TR::InstOpCode::Mnemonic opLoadReg = TR::InstOpCode::bad;
       TR::InstOpCode::Mnemonic opLoad = TR::InstOpCode::bad;
       TR::InstOpCode::Mnemonic opStore = TR::InstOpCode::bad;
 
-      if (targetReg->getAssignedRegister()->is64BitReg())
+      if (targetReg->getAssignedRegister()->is64BitReg() || sourceReg->getAssignedRegister()->is64BitReg())
          {
          opLoadReg = TR::InstOpCode::LGR;
          opLoad = TR::InstOpCode::LG;
@@ -292,7 +290,7 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
          TR::Instruction * currentInstruction = precedingInstruction;
          TR_BackingStore * location;
 
-         if (targetReg->getAssignedRegister()->is64BitReg())
+         if (targetReg->getAssignedRegister()->is64BitReg() || sourceReg->getAssignedRegister()->is64BitReg())
             {
             location = cg->allocateSpill(8, false, NULL);
             }
@@ -2920,27 +2918,8 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
 bool
 OMR::Z::Machine::isAssignable(TR::Register * virtReg, TR::RealRegister * realReg)
    {
-   if (virtReg->isUsedInMemRef() && realReg == _registerFile[TR::RealRegister::GPR0])
-      {
-      return false;
-      }
-   else
-      {
-      // TODO: This is needlessly restrictive. The registerExchange API cannot handle register exchanges with one
-      // 32-bit and one 64-bit register and the code below effectively guards against calling the registerExchange
-      // API in such situations. This can definitely be relaxed and the registerExchange API taught how to handle
-      // those cases. If you look at the places this API (isAssignable) is used you will see we effectively handle
-      // it there already. That code needs to be cleaned up and consolidated into the registerExchange API.
-      if (virtReg->getKind() != TR_FPR && virtReg->getKind() != TR_VRF)
-         {
-         if (realReg->getAssignedRegister() != NULL)
-            {
-            return virtReg->is64BitReg() == realReg->getAssignedRegister()->is64BitReg();
-            }
-         }
-
-      return true;
-      }
+   // virtReg used in memory reference can not be assigned to GPR0.
+   return !(virtReg->isUsedInMemRef() && realReg == _registerFile[TR::RealRegister::GPR0]);
    }
 
 /**
@@ -3058,7 +3037,19 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          if (!self()->isAssignable(currentTargetVirtual, currentAssignedRegister))
             {
                {
-               TR_ASSERT(spareReg!=NULL, "coerce reg - blocked, sparereg cannot be NULL.");
+               /**
+                * Register exchange API takes care of exchanging between registers.
+                * In rare case, where virtual register to which real target register
+                * is assigned to is used in memory reference and currentAssignedRegister
+                * is GPR0, we can not do register exchange and in that case we would need
+                * spareReg.
+                * Currently we do not have any solution when we hit this scenario so
+                * instead of failing the JVM with Assert, fail the compilation.
+                */
+               if (spareReg == NULL)
+                  {
+                  comp->failCompilation<TR::CompilationException>("Abort compilation as we can not find a spareReg for blocked target real register");
+                  }
                self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
 
                cursor = self()->registerCopy(self()->cg(), rk, targetRegister, spareReg, currentInstruction);

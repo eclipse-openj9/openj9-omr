@@ -317,7 +317,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static void insertPrecisionAdjustment(TR::Register *reg, TR::Node *node, TR::CodeGenerator *cg);
 
    static TR::Register *coerceFPRToXMMR(TR::Node *node, TR::Register *fpRegister, TR::CodeGenerator *cg);
-   static TR::Register *coerceXMMRToFPR(TR::Node *node, TR::Register *fpRegister, TR::CodeGenerator *cg);
    static void coerceFPOperandsToXMMRs(TR::Node *node, TR::CodeGenerator *cg);
 
    enum
@@ -368,7 +367,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
 
    static TR::Register *loadMemory(TR::Node *node, TR::MemoryReference  *sourceMR, TR_RematerializableTypes type, bool markImplicitExceptionPoint, TR::CodeGenerator *cg);
    static TR::Register *conversionAnalyser(TR::Node *node, TR::InstOpCode::Mnemonic memoryToRegisterOp, TR::InstOpCode::Mnemonic registerToRegisterOp, TR::CodeGenerator *cg);
-   static TR::Register *fpConvertToInt(TR::Node *node, TR::SymbolReference *helperSymRef, TR::CodeGenerator *cg);
    static TR::Register *fpConvertToLong(TR::Node *node, TR::SymbolReference *helperSymRef, TR::CodeGenerator *cg);
    static TR::Register *generateBranchOrSetOnFPCompare(TR::Node *node, TR::Register *accRegister, bool generateBranch, TR::CodeGenerator *cg);
    static TR::Register *generateFPCompareResult(TR::Node *node, TR::Register *accRegister, TR::CodeGenerator *cg);
@@ -395,7 +393,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *integerEqualityHelper(TR::Node *node, TR::InstOpCode::Mnemonic setOp, TR::CodeGenerator *cg);
    static TR::Register *integerOrderHelper(TR::Node *node, TR::InstOpCode::Mnemonic setOp, TR::CodeGenerator *cg);
    static TR::Register *evaluateNULLCHKWithPossibleResolve(TR::Node *node, bool needResolution, TR::CodeGenerator *cg);
-   static TR::Register *commonFPRemEvaluator( TR::Node *node, TR::CodeGenerator *cg, bool isDouble);
    static TR::Register *generateLEAForLoadAddr(TR::Node *node, TR::MemoryReference *memRef, TR::SymbolReference *symRef,TR::CodeGenerator *cg, bool isInternalPointer);
 
    static bool constNodeValueIs32BitSigned(TR::Node *node, intptr_t *value, TR::CodeGenerator *cg);

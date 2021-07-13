@@ -91,7 +91,6 @@ class X86FPConvertToLongSnippet  : public TR::X86FPConversionSnippet
    {
    TR::X86RegMemInstruction          *_loadHighInstruction,
                                     *_loadLowInstruction;
-   TR::X86FPST0STiRegRegInstruction  *_clobberInstruction;
    TR::RealRegister               *_lowRegister,
                                     *_highRegister,
                                     *_doubleRegister;
@@ -115,15 +114,14 @@ class X86FPConvertToLongSnippet  : public TR::X86FPConversionSnippet
 
    X86FPConvertToLongSnippet(TR::LabelSymbol                    *restartlab,
                              TR::LabelSymbol                    *snippetlab,
-                             TR::SymbolReference               *helperSymRef,
-                             TR::X86FPST0STiRegRegInstruction  *clobInstr,
-                             TR::X86RegMemInstruction          *loadHighInstr,
-                             TR::X86RegMemInstruction          *loadLowInstr,
+                             TR::SymbolReference                *helperSymRef,
+                             TR::Node                           *node,
+                             TR::X86RegMemInstruction           *loadHighInstr,
+                             TR::X86RegMemInstruction           *loadLowInstr,
                              TR::CodeGenerator *codeGen)
-      : TR::X86FPConversionSnippet(codeGen, clobInstr->getNode(), restartlab, snippetlab, helperSymRef),
+      : TR::X86FPConversionSnippet(codeGen, node, restartlab, snippetlab, helperSymRef),
            _loadHighInstruction(loadHighInstr),
            _loadLowInstruction(loadLowInstr),
-           _clobberInstruction(clobInstr),
            _lowRegister(0),
            _highRegister(0),
            _doubleRegister(0),

@@ -119,6 +119,8 @@ class LabelRelocation : public TR::Relocation
    TR::LabelSymbol *getLabel()                  {return _label;}
    TR::LabelSymbol *setLabel(TR::LabelSymbol *l) {return (_label = l);}
 
+   protected:
+   void assertLabelDefined();
    };
 
 class LabelRelative8BitRelocation : public TR::LabelRelocation

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,6 +31,7 @@
 
 class MM_ParallelSweepChunk;
 class MM_ParallelSweepChunkArray;
+class MM_HeapRegionDescriptor;
 
 /**
  * Support for sectioning the heap into chunks useable by sweep (and compact).
@@ -50,8 +51,9 @@ protected:
 	virtual bool initialize(MM_EnvironmentBase* env);
 	void tearDown(MM_EnvironmentBase* env);
 
-	virtual uintptr_t estimateTotalChunkCount(MM_EnvironmentBase* env) = 0;
+	virtual uintptr_t estimateTotalChunkCount(MM_EnvironmentBase* env);
 	virtual uintptr_t calculateActualChunkNumbers() const = 0;
+	virtual bool isReadyToSweep(MM_EnvironmentBase* env, MM_HeapRegionDescriptor* region) { return false; }
 
 	bool initArrays(uintptr_t);
 
@@ -61,7 +63,7 @@ public:
 	virtual void kill(MM_EnvironmentBase* env);
 
 	bool update(MM_EnvironmentBase* env);
-	virtual uintptr_t reassignChunks(MM_EnvironmentBase* env) = 0;
+	virtual uintptr_t reassignChunks(MM_EnvironmentBase* env);
 
 	void* getBackingStoreAddress();
 	uintptr_t getBackingStoreSize();

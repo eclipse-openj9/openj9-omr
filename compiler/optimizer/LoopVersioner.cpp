@@ -69,6 +69,7 @@
 #include "infra/CfgEdge.hpp"
 #include "infra/CfgNode.hpp"
 #include "infra/ILWalk.hpp"
+#include "infra/String.hpp"
 #include "optimizer/Dominators.hpp"
 #include "optimizer/LocalAnalysis.hpp"
 #include "optimizer/LoopCanonicalizer.hpp"
@@ -90,10 +91,6 @@
 #include "runtime/J9Profiler.hpp"
 #include "env/PersistentCHTable.hpp"
 #include "env/VMJ9.h"
-#endif
-
-#if defined (_MSC_VER) && (_MSC_VER < 1900)
-#define snprintf _snprintf
 #endif
 
 #define DEFAULT_LOOP_LIMIT 100000000
@@ -9072,8 +9069,7 @@ bool TR_LoopVersioner::guardOkForExpr(TR::Node *node, bool onlySearching)
    if (allowEnv != NULL || forbidEnv != NULL)
       {
       char needle[32];
-      int needleLen = snprintf(needle, sizeof (needle), ",%d:%d,", (int)kind, (int)test);
-      TR_ASSERT_FATAL(0 <= needleLen && needleLen < sizeof (needle), "needle buffer is too small");
+      TR::snprintfNoTrunc(needle, sizeof (needle), ",%d:%d,", (int)kind, (int)test);
 
       if (allowEnv != NULL && containsCommaSeparated(allowEnv, needle))
          return true;

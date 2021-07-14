@@ -113,10 +113,6 @@
 #include "optimizer/SwitchAnalyzer.hpp"
 #include "env/RegionProfiler.hpp"
 
-#if defined (_MSC_VER) && _MSC_VER < 1900
-#define snprintf _snprintf
-#endif
-
 namespace TR { class AutomaticSymbol; }
 
 using namespace OMR;  // Note: used here only to avoid having to prepend all opts in strategies with OMR::

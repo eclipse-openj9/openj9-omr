@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -54,15 +54,12 @@
 #include "ilgen/IlGenRequest.hpp"
 #include "ilgen/IlGeneratorMethodDetails.hpp"
 #include "infra/Assert.hpp"
+#include "infra/String.hpp"
 #include "ras/Debug.hpp"
 #include "env/SystemSegmentProvider.hpp"
 #include "env/DebugSegmentProvider.hpp"
 #include "omrformatconsts.h"
 #include "runtime/CodeCacheManager.hpp"
-
-#if defined (_MSC_VER) && _MSC_VER < 1900
-#define snprintf _snprintf
-#endif
 
 static void
 writePerfToolEntry(void *start, uint32_t size, const char *name)
@@ -82,8 +79,8 @@ writePerfToolEntry(void *start, uint32_t size, const char *name)
       static const int maxPerfFilenameSize = 15 + sizeof(jvmPid)* 3; // "/tmp/perf-%ld.map"
       char perfFilename[maxPerfFilenameSize] = { 0 };
 
-      int numCharsWritten = snprintf(perfFilename, maxPerfFilenameSize, "/tmp/perf-%" OMR_PRId64 ".map", static_cast<int64_t>(jvmPid));
-      if (numCharsWritten > 0 && numCharsWritten < maxPerfFilenameSize)
+      bool truncated = TR::snprintfTrunc(perfFilename, maxPerfFilenameSize, "/tmp/perf-%" OMR_PRId64 ".map", static_cast<int64_t>(jvmPid));
+      if (!truncated)
          {
          perfFile = fopen(perfFilename, "a");
          }

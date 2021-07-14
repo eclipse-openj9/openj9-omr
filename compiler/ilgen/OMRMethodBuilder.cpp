@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2020 IBM Corp. and others
+ * Copyright (c) 2016, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -44,6 +44,7 @@
 #include "infra/Cfg.hpp"
 #include "infra/STLUtils.hpp"
 #include "infra/List.hpp"
+#include "infra/String.hpp"
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
 #include "ilgen/IlInjector.hpp"
 #include "ilgen/IlBuilder.hpp"
@@ -59,10 +60,6 @@
 
 #define TraceEnabled    (comp()->getOption(TR_TraceILGen))
 #define TraceIL(m, ...) {if (TraceEnabled) {traceMsg(comp(), m, ##__VA_ARGS__);}}
-
-#if defined (_MSC_VER) && _MSC_VER < 1900
-#define snprintf _snprintf
-#endif
 
 // MethodBuilder is an IlBuilder object representing an entire method /
 // function, so it conceptually has an entry point (though multiple entry
@@ -492,13 +489,13 @@ OMR::MethodBuilder::isSymbolAnArray(const char *name)
 void
 OMR::MethodBuilder::DefineLine(const char *line)
    {
-   snprintf(_definingLine, MAX_LINE_NUM_LEN * sizeof(char), "%s", line);
+   TR::snprintfNoTrunc(_definingLine, MAX_LINE_NUM_LEN * sizeof(char), "%s", line);
    }
 
 void
 OMR::MethodBuilder::DefineLine(int line)
    {
-   snprintf(_definingLine, MAX_LINE_NUM_LEN * sizeof(char), "%d", line);
+   TR::snprintfNoTrunc(_definingLine, MAX_LINE_NUM_LEN * sizeof(char), "%d", line);
    }
 
 void

@@ -125,17 +125,51 @@ genericBinaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic regOp, TR::InstO
          }
       else
          {
-         src2Reg = cg->allocateRegister();
-         if(is64Bit)
+         TR::InstOpCode::Mnemonic negatedOp = TR::InstOpCode::bad;
+
+         if ((secondChild->getReferenceCount() == 1) &&
+             (regOp == TR::InstOpCode::addw || regOp == TR::InstOpCode::addx ||
+             regOp == TR::InstOpCode::subw || regOp == TR::InstOpCode::subx) &&
+             (is64Bit ? shouldLoadNegatedConstant64(value) : shouldLoadNegatedConstant32(value)))
             {
-            loadConstant64(cg, node, value, src2Reg);
+            switch (regOp)
+               {
+               case TR::InstOpCode::addw:
+                  negatedOp = TR::InstOpCode::subw;
+                  break;
+               case TR::InstOpCode::addx:
+                  negatedOp = TR::InstOpCode::subx;
+                  break;
+               case TR::InstOpCode::subw:
+                  negatedOp = TR::InstOpCode::addw;
+                  break;
+               case TR::InstOpCode::subx:
+                  negatedOp = TR::InstOpCode::addx;
+                  break;
+               default:
+                  TR_ASSERT_FATAL(false, "Unsupported op");
+               }
+            }
+         if (negatedOp != TR::InstOpCode::bad)
+            {
+            src2Reg = cg->allocateRegister();
+
+            if(is64Bit)
+               {
+               loadConstant64(cg, node, -value, src2Reg);
+               }
+            else
+               {
+               loadConstant32(cg, node, -value, src2Reg);
+               }
+            generateTrg1Src2Instruction(cg, negatedOp, node, trgReg, src1Reg, src2Reg);
+            cg->stopUsingRegister(src2Reg);
             }
          else
             {
-            loadConstant32(cg, node, value, src2Reg);
+            src2Reg = cg->evaluate(secondChild);
+            generateTrg1Src2Instruction(cg, regOp, node, trgReg, src1Reg, src2Reg);
             }
-         generateTrg1Src2Instruction(cg, regOp, node, trgReg, src1Reg, src2Reg);
-         cg->stopUsingRegister(src2Reg);
          }
       }
    else

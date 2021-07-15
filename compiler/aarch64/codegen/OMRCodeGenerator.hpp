@@ -47,6 +47,24 @@ namespace TR { class RegisterDependencyConditions; }
 namespace TR { class DebugCounterBase; }
 
 /**
+ * @brief Answers if loading negated value is more concise
+ *
+ * @param[in] value : 32bit constant value
+ *
+ * @return true if loading negated value is more concise.
+ */
+extern bool shouldLoadNegatedConstant32(int32_t value);
+
+/**
+ * @brief Answers if loading negated value is more concise
+ *
+ * @param[in] value : 64bit constant value
+ *
+ * @return true if loading negated value is more concise.
+ */
+extern bool shouldLoadNegatedConstant64(int64_t value);
+
+/**
  * @brief Generates instructions for loading 32-bit integer value to a register
  * @param[in] cg : CodeGenerator
  * @param[in] node : node

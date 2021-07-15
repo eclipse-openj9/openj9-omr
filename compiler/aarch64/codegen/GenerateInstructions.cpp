@@ -505,6 +505,17 @@ TR::Instruction *generateNegInstruction(TR::CodeGenerator *cg, TR::Node *node,
    return new (cg->trHeapMemory()) TR::ARM64Trg1ZeroSrc1Instruction(op, node, treg, sreg, cg);
    }
 
+TR::Instruction *generateMovBitMaskInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *treg, bool N, uint32_t imm, bool is64bit, TR::Instruction *preced)
+   {
+   /* Alias of ORR instruction */
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::orrimmx : TR::InstOpCode::orrimmw;
+
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1ZeroImmInstruction(op, node, treg, N, imm, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1ZeroImmInstruction(op, node,treg, N, imm, cg);
+   }
+
 TR::Instruction *generateMulInstruction(TR::CodeGenerator *cg, TR::Node *node,
    TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, TR::Instruction *preced)
    {

@@ -846,6 +846,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsTrg1ZeroSrc1:
          print(pOutFile, (TR::ARM64Trg1ZeroSrc1Instruction *)instr);
          break;
+      case OMR::Instruction::IsTrg1ZeroImm:
+         print(pOutFile, (TR::ARM64Trg1ZeroImmInstruction *)instr);
+         break;
       case OMR::Instruction::IsTrg1Src1:
          print(pOutFile, (TR::ARM64Trg1Src1Instruction *)instr);
          break;
@@ -1506,6 +1509,54 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
    trfflush(_comp->getOutFile());
    }
 
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1ZeroImmInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+   bool done = false;
+   if (op == TR::InstOpCode::orrimmx || op == TR::InstOpCode::orrimmw)
+      {
+      // mov (bitmask immediate) alias
+      uint32_t imm12 = instr->getSourceImmediate();
+      auto immr = imm12 >> 6;
+      auto imms = imm12 & 0x3f;
+      auto n = instr->getNbit();
+      if (op == TR::InstOpCode::orrimmx)
+         {
+         uint64_t immediate;
+         if (decodeBitMasks(n, immr, imms, immediate))
+            {
+            done = true;
+            trfprintf(pOutFile, "movx \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+            trfprintf(pOutFile, ", 0x%llx", immediate);
+            }
+         }
+      else
+         {
+         uint32_t immediate;
+         if (decodeBitMasks(n, immr, imms, immediate))
+            {
+            done = true;
+            trfprintf(pOutFile, "movw \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+            trfprintf(pOutFile, ", 0x%lx", immediate);
+            }
+         }
+      }
+   if (!done)
+      {
+      trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+      print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+      trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
+      }
+
+   if (instr->getDependencyConditions())
+      print(pOutFile, instr->getDependencyConditions());
+
+   trfflush(_comp->getOutFile());
+   }
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ZeroSrc1ImmInstruction *instr)
    {

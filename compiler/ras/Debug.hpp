@@ -345,6 +345,7 @@ namespace TR { class ARM64Trg1ImmInstruction; }
 namespace TR { class ARM64Trg1ImmSymInstruction; }
 namespace TR { class ARM64Trg1Src1Instruction; }
 namespace TR { class ARM64Trg1ZeroSrc1Instruction; }
+namespace TR { class ARM64Trg1ZeroImmInstruction; }
 namespace TR { class ARM64Trg1Src1ImmInstruction; }
 namespace TR { class ARM64Trg1Src2Instruction; }
 namespace TR { class ARM64CondTrg1Src2Instruction; }
@@ -1118,6 +1119,7 @@ public:
    void print(TR::FILE *, TR::ARM64Trg1ImmSymInstruction *);
    void print(TR::FILE *, TR::ARM64Trg1Src1Instruction *);
    void print(TR::FILE *, TR::ARM64Trg1ZeroSrc1Instruction *);
+   void print(TR::FILE *, TR::ARM64Trg1ZeroImmInstruction *);
    void print(TR::FILE *, TR::ARM64Trg1Src1ImmInstruction *);
    void print(TR::FILE *, TR::ARM64Trg1Src2Instruction *);
    void print(TR::FILE *, TR::ARM64CondTrg1Src2Instruction *);

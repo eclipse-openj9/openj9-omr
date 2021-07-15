@@ -105,7 +105,7 @@ writeToZOSLog(const char *message)
 		return FALSE;
 	}
 #else
-   ebcdicbuf = message;
+	ebcdicbuf = (char *)message;
 #endif /* !defined(OMR_EBCDIC) */
 
 	/* Re-implemented using _console2() instead of WTO, to provided proper multi-line messages. See

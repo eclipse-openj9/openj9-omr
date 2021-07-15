@@ -26,7 +26,9 @@
  * @brief System logging support
  */
 #include "omrportpriv.h"
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 #include "atoe.h"
+#endif
 #include <string.h>
 #include <sys/__messag.h>
 

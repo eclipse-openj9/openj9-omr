@@ -438,30 +438,18 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
       }
    else
       {
-      if (subTree->getOpCodeValue() == TR::aiadd ||
-          subTree->getOpCodeValue() == TR::iadd)
+      if (subTree->getOpCode().isArrayRef() &&
+          subTree->getSecondChild()->getOpCode().isLoadConst())
          {
+         // array access with constant index
          TR::Node *addressChild = subTree->getFirstChild();
          TR::Node *integerChild = subTree->getSecondChild();
 
-         if (integerChild->getOpCode().isLoadConst())
-            {
-            self()->populateMemoryReference(addressChild, cg);
-            intptr_t amount = (integerChild->getOpCodeValue() == TR::iconst) ?
-                                integerChild->getInt() : integerChild->getLongInt();
-            self()->addToOffset(integerChild, amount, cg);
-            cg->decReferenceCount(integerChild);
-            }
-         else if (integerChild->getEvaluationPriority(cg) > addressChild->getEvaluationPriority(cg))
-            {
-            self()->populateMemoryReference(integerChild, cg);
-            self()->populateMemoryReference(addressChild, cg);
-            }
-         else
-            {
-            self()->populateMemoryReference(addressChild, cg);
-            self()->populateMemoryReference(integerChild, cg);
-            }
+         self()->populateMemoryReference(addressChild, cg);
+         intptr_t amount = (integerChild->getOpCodeValue() == TR::iconst) ?
+                           integerChild->getInt() : integerChild->getLongInt();
+         self()->addToOffset(integerChild, amount, cg);
+         cg->decReferenceCount(integerChild);
          }
       else if (subTree->getOpCodeValue() == TR::ishl &&
                subTree->getFirstChild()->getOpCode().isLoadConst() &&
@@ -801,6 +789,12 @@ static bool isAtomicOperationInstruction(uint32_t enc)
    return ((enc & 0x3b200c00) == 0x38200000);
    }
 
+/* vector memory access: vstrimmq or vldrimmq */
+static bool isImm12VectorMemoryAccess(uint32_t enc)
+   {
+   return ((enc & 0xffb00000) == 0x3d800000);
+   }
+
 uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *currentInstruction, uint8_t *cursor, TR::CodeGenerator *cg)
    {
    uint32_t *wcursor = (uint32_t *)cursor;
@@ -869,22 +863,7 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
             else if (isImm12OffsetInstruction(enc))
                {
                uint32_t size = (enc >> 30) & 3; /* b=0, h=1, w=2, x=3, q=0 */
-               uint32_t opc = (enc >> 22) & 3; /* 8bit, 16bit, 32bit, 64bit: 0 or 1; 128bit: 2 or 3 */
-               uint32_t bitsToShift;
-
-               if (opc == 2 || opc == 3)
-                  {
-                  bitsToShift = 4;
-                  }
-               else if (opc == 0 || opc == 1)
-                  {
-                  bitsToShift = size;
-                  }
-               else
-                  {
-                  TR_ASSERT_FATAL(false, "Instruction format is unknown.");
-                  }
-
+               uint32_t bitsToShift = isImm12VectorMemoryAccess(enc) ? 4 : size;
                uint32_t shifted = displacement >> bitsToShift;
 
                if (size > 0)
@@ -899,9 +878,9 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
                   }
                else
                   {
-                  if (op.getMnemonic() == TR::InstOpCode::ldrimmw && displacement < 0 && constantIsImm9(displacement))
+                  if (displacement < 0 && constantIsImm9(displacement))
                      {
-                     *wcursor &= 0xFEFFFFFF; /* rewrite the instruction ldrimmw -> ldurw */
+                     *wcursor &= 0xFEFFFFFF; /* rewrite the instruction ldrimm -> ldur */
                      *wcursor |= (displacement & 0x1ff) << 12; /* imm9 */
                      cursor += ARM64_INSTRUCTION_LENGTH;
                      }
@@ -1053,22 +1032,7 @@ uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::InstOpCode op)
             else if (isImm12OffsetInstruction(enc))
                {
                uint32_t size = (enc >> 30) & 3; /* b=0, h=1, w=2, x=3, q=0 */
-               uint32_t opc = (enc >> 22) & 3; /* 8bit, 16bit, 32bit, 64bit: 0 or 1; 128bit: 2 or 3 */
-               uint32_t bitsToShift;
-
-               if (opc == 2 || opc == 3)
-                  {
-                  bitsToShift = 4;
-                  }
-               else if (opc == 0 || opc == 1)
-                  {
-                  bitsToShift = size;
-                  }
-               else
-                  {
-                  TR_ASSERT_FATAL(false, "Instruction format is unknown.");
-                  }
-
+               uint32_t bitsToShift = isImm12VectorMemoryAccess(enc) ? 4 : size;
                uint32_t shifted = displacement >> bitsToShift;
 
                if (size > 0)
@@ -1082,9 +1046,9 @@ uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::InstOpCode op)
                   }
                else
                   {
-                  if (op.getMnemonic() == TR::InstOpCode::ldrimmw && displacement < 0 && constantIsImm9(displacement))
+                  if (displacement < 0 && constantIsImm9(displacement))
                      {
-                     /* rewrite the instruction ldrimmw -> ldurw in generateBinaryEncoding() */
+                     /* rewrite the instruction ldrimm -> ldur in generateBinaryEncoding() */
                      return ARM64_INSTRUCTION_LENGTH;
                      }
                   else

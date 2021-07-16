@@ -75,25 +75,35 @@ function(omr_add_library name)
 
 	if(NOT opt_NOWARNINGS AND NOT lib_type STREQUAL "INTERFACE")
 		if(OMR_WARNINGS_AS_ERRORS)
-			target_compile_options(${name}
-				PRIVATE
-					$<$<COMPILE_LANGUAGE:C>:${OMR_WARNING_AS_ERROR_FLAG}>
-					$<$<COMPILE_LANGUAGE:CXX>:${OMR_WARNING_AS_ERROR_FLAG}>
-			)
+			target_compile_options(${name} PRIVATE
+				$<$<COMPILE_LANGUAGE:C>:${OMR_C_WARNINGS_AS_ERROR_FLAG}>
+				$<$<COMPILE_LANGUAGE:CXX>:${OMR_CXX_WARNINGS_AS_ERROR_FLAG}>)
+
+			if(DEFINED CMAKE_ASM_MASM AND DEFINED OMR_MASM_WARNINGS_AS_ERROR_FLAG)
+				target_compile_options(${name} PRIVATE
+					$<$<COMPILE_LANGUAGE:MASM>:${OMR_MASM_WARNINGS_AS_ERROR_FLAG}>)
+			endif()
+
+			if(DEFINED CMAKE_ASM_NASM AND DEFINED OMR_NASM_WARNINGS_AS_ERROR_FLAG)
+				target_compile_options(${name} PRIVATE
+					$<$<COMPILE_LANGUAGE:NASM>:${OMR_NASM_WARNINGS_AS_ERROR_FLAG}>)
+			endif()
 		endif()
 
 		if(OMR_ENHANCED_WARNINGS)
-			target_compile_options(${name}
-				PRIVATE
-					$<$<COMPILE_LANGUAGE:C>:${OMR_ENHANCED_WARNING_FLAG}>
-					$<$<COMPILE_LANGUAGE:CXX>:${OMR_ENHANCED_WARNING_FLAG}>
-			)
-		else()
-			target_compile_options(${name}
-				PRIVATE
-					$<$<COMPILE_LANGUAGE:C>:${OMR_BASE_WARNING_FLAGS}>
-					$<$<COMPILE_LANGUAGE:CXX>:${OMR_BASE_WARNING_FLAGS}>
-			)
+			target_compile_options(${name} PRIVATE
+				$<$<COMPILE_LANGUAGE:C>:${OMR_C_ENHANCED_WARNINGS_FLAG}>
+				$<$<COMPILE_LANGUAGE:CXX>:${OMR_CXX_ENHANCED_WARNINGS_FLAG}>)
+
+			if(DEFINED CMAKE_ASM_MASM AND DEFINED OMR_MASM_ENHANCED_WARNINGS_FLAG)
+				target_compile_options(${name} PRIVATE
+					$<$<COMPILE_LANGUAGE:MASM>:${OMR_MASM_ENHANCED_WARNINGS_FLAG}>)
+			endif()
+
+			if(DEFINED CMAKE_ASM_NASM AND DEFINED OMR_NASM_ENHANCED_WARNINGS_FLAG)
+				target_compile_options(${name} PRIVATE
+					$<$<COMPILE_LANGUAGE:NASM>:${OMR_NASM_ENHANCED_WARNINGS_FLAG}>)
+			endif()
 		endif()
 	endif()
 
@@ -121,26 +131,36 @@ function(omr_add_executable name)
 
 	if(NOT opt_NOWARNINGS)
 		if(OMR_WARNINGS_AS_ERRORS)
-			target_compile_options(${name}
-				PRIVATE
-					$<$<COMPILE_LANGUAGE:C>:${OMR_WARNING_AS_ERROR_FLAG}>
-					$<$<COMPILE_LANGUAGE:CXX>:${OMR_WARNING_AS_ERROR_FLAG}>
-			)
+			target_compile_options(${name} PRIVATE
+				$<$<COMPILE_LANGUAGE:C>:${OMR_C_WARNINGS_AS_ERROR_FLAG}>
+				$<$<COMPILE_LANGUAGE:CXX>:${OMR_CXX_WARNINGS_AS_ERROR_FLAG}>)
+
+			if(DEFINED CMAKE_ASM_MASM AND DEFINED OMR_MASM_WARNINGS_AS_ERROR_FLAG)
+				target_compile_options(${name} PRIVATE
+					$<$<COMPILE_LANGUAGE:MASM>:${OMR_MASM_WARNINGS_AS_ERROR_FLAG}>)
+			endif()
+
+			if(DEFINED CMAKE_ASM_NASM AND DEFINED OMR_NASM_WARNINGS_AS_ERROR_FLAG)
+				target_compile_options(${name} PRIVATE
+					$<$<COMPILE_LANGUAGE:NASM>:${OMR_NASM_WARNINGS_AS_ERROR_FLAG}>)
+			endif()
 		endif()
 
 		if(OMR_ENHANCED_WARNINGS)
-			target_compile_options(${name}
-				PRIVATE
-					$<$<COMPILE_LANGUAGE:C>:${OMR_ENHANCED_WARNING_FLAG}>
-					$<$<COMPILE_LANGUAGE:CXX>:${OMR_ENHANCED_WARNING_FLAG}>
-			)
-		else()
-			target_compile_options(${name}
-				PRIVATE
-					$<$<COMPILE_LANGUAGE:C>:${OMR_BASE_WARNING_FLAGS}>
-					$<$<COMPILE_LANGUAGE:CXX>:${OMR_BASE_WARNING_FLAGS}>
-			)
-	endif()
+			target_compile_options(${name} PRIVATE
+				$<$<COMPILE_LANGUAGE:C>:${OMR_C_ENHANCED_WARNINGS_FLAG}>
+				$<$<COMPILE_LANGUAGE:CXX>:${OMR_CXX_ENHANCED_WARNINGS_FLAG}>)
+
+			if(DEFINED CMAKE_ASM_MASM AND DEFINED OMR_MASM_ENHANCED_WARNINGS_FLAG)
+				target_compile_options(${name} PRIVATE
+					$<$<COMPILE_LANGUAGE:MASM>:${OMR_MASM_ENHANCED_WARNINGS_FLAG}>)
+			endif()
+
+			if(DEFINED CMAKE_ASM_NASM AND DEFINED OMR_NASM_ENHANCED_WARNINGS_FLAG)
+				target_compile_options(${name} PRIVATE
+					$<$<COMPILE_LANGUAGE:NASM>:${OMR_NASM_ENHANCED_WARNINGS_FLAG}>)
+			endif()
+		endif()
 	endif()
 
 	if(opt_OUTPUT_NAME)

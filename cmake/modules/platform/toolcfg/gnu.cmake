@@ -19,9 +19,13 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 #############################################################################
 
-set(OMR_WARNING_AS_ERROR_FLAG -Werror)
+set(OMR_C_WARNINGS_AS_ERROR_FLAG -Werror)
+set(OMR_CXX_WARNINGS_AS_ERROR_FLAG -Werror)
+set(OMR_NASM_WARNINGS_AS_ERROR_FLAG -Werror)
 
-set(OMR_ENHANCED_WARNING_FLAG -Wall)
+set(OMR_C_ENHANCED_WARNINGS_FLAG -Wall)
+set(OMR_CXX_ENHANCED_WARNINGS_FLAG -Wall)
+set(OMR_NASM_ENHANCED_WARNINGS_FLAG -Wall)
 
 # disable builtin strncpy buffer length check for components that use variable length
 # array fields at the end of structs

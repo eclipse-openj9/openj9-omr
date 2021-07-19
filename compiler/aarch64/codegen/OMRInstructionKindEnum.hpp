@@ -42,6 +42,7 @@
       IsTrg1Imm,
          IsTrg1ImmSym,
       IsTrg1ZeroSrc1,
+      IsTrg1ZeroImm,
       IsTrg1Src1,
          IsTrg1Src1Imm,
          IsTrg1Src2,

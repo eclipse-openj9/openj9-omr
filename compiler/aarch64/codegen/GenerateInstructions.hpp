@@ -923,6 +923,26 @@ TR::Instruction *generateNegInstruction(
                   TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates MOV (bitmask immediate) instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] N : N bit (bit 22) value
+ * @param[in] imm : immediate value
+ * @param[in] is64bit : true when it is 64-bit operation
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateMovBitMaskInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::Node *node,
+                  TR::Register *treg,
+                  bool N,
+                  uint32_t imm,
+                  bool is64bit = true,
+                  TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates MUL (register) instruction
  * @param[in] cg : CodeGenerator
  * @param[in] node : node

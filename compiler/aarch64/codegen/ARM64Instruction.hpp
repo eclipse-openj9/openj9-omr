@@ -1926,6 +1926,147 @@ class ARM64Trg1ZeroSrc1Instruction : public ARM64Trg1Src1Instruction
    virtual uint8_t *generateBinaryEncoding();
    };
 
+/*
+ * This class is designated to be used for alias instruction such as movw, movx (bitmask immediate)
+ */
+class ARM64Trg1ZeroImmInstruction : public ARM64Trg1Instruction
+   {
+   uint32_t _source1Immediate;
+   bool _Nbit;
+
+   public:
+
+   /*
+    * @brief Constructor
+    * @param[in]   op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in]  imm : immediate value
+    * @param[in]   cg : CodeGenerator
+    */
+   ARM64Trg1ZeroImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                             uint32_t imm, TR::CodeGenerator *cg)
+      : ARM64Trg1Instruction(op, node, treg, cg), _source1Immediate(imm), _Nbit(false)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in]   op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in]    N : N bit value
+    * @param[in]  imm : immediate value
+    * @param[in]   cg : CodeGenerator
+    */
+   ARM64Trg1ZeroImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                             bool N, uint32_t imm, TR::CodeGenerator *cg)
+      : ARM64Trg1Instruction(op, node, treg, cg), _source1Immediate(imm), _Nbit(N)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in]                   op : instruction opcode
+    * @param[in]                 node : node
+    * @param[in]                 treg : target register
+    * @param[in]                  imm : immediate value
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in]                   cg : CodeGenerator
+    */
+   ARM64Trg1ZeroImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                             uint32_t imm,
+                             TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : ARM64Trg1Instruction(op, node, treg, precedingInstruction, cg), _source1Immediate(imm), _Nbit(false)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in]                   op : instruction opcode
+    * @param[in]                 node : node
+    * @param[in]                 treg : target register
+    * @param[in]                    N : N bit value
+    * @param[in]                  imm : immediate value
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in]                   cg : CodeGenerator
+    */
+   ARM64Trg1ZeroImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                             bool N, uint32_t imm,
+                             TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : ARM64Trg1Instruction(op, node, treg, precedingInstruction, cg), _source1Immediate(imm), _Nbit(N)
+      {
+      }
+
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsTrg1ZeroImm; }
+
+   /**
+    * @brief Gets source immediate
+    * @return source immediate
+    */
+   uint32_t getSourceImmediate() {return _source1Immediate;}
+   /**
+    * @brief Sets source immediate
+    * @param[in] si : immediate value
+    * @return source immediate
+    */
+   uint32_t setSourceImmediate(uint32_t si) {return (_source1Immediate = si);}
+
+   /**
+    * @brief Gets the N bit (bit 22)
+    * @return N bit value
+    */
+   bool getNbit() { return _Nbit;}
+   /**
+    * @brief Sets the N bit (bit 22)
+    * @param[in] n : N bit value
+    * @return N bit value
+    */
+   bool setNbit(bool n) { return (_Nbit = n);}
+
+   /**
+    * @brief Sets zero register in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertZeroRegister(uint32_t *instruction)
+      {
+      TR::RealRegister *zeroReg = cg()->machine()->getRealRegister(TR::RealRegister::xzr);
+      zeroReg->setRegisterFieldRN(instruction);
+      }
+
+   /**
+    * @brief Sets immediate field in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertImmediateField(uint32_t *instruction)
+      {
+      *instruction |= ((_source1Immediate & 0xfff) << 10); /* imm12 */
+      }
+
+   /**
+    * @brief Sets N bit (bit 22) field in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertNbit(uint32_t *instruction)
+      {
+      if (_Nbit)
+         {
+         *instruction |= (1 << 22);
+         }
+      }
+
+   /**
+    * @brief Generates binary encoding of the instruction
+    * @return instruction cursor
+    */
+   virtual uint8_t *generateBinaryEncoding();
+   };
+
+
 class ARM64Trg1Src1ImmInstruction : public ARM64Trg1Src1Instruction
    {
    uint32_t _source1Immediate;

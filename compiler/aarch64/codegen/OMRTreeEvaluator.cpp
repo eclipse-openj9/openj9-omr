@@ -2187,6 +2187,16 @@ bool shouldLoadNegatedConstant32(int32_t value)
       }
    else
       {
+      bool n;
+      uint32_t immEncoded;
+      if (logicImmediateHelper(static_cast<uint32_t>(value), false, n, immEncoded))
+         {
+         return false;
+         }
+      else if (logicImmediateHelper(static_cast<uint32_t>(negatedValue), false, n, immEncoded))
+         {
+         return true;
+         }
       return false;
       }
    }
@@ -2242,8 +2252,20 @@ bool shouldLoadNegatedConstant64(int64_t value)
       {
       return false;
       }
+
    auto numInstrAndUseMovzNeg = analyzeLoadConstant64(h, negatedValue);
    if (numInstrAndUseMovzNeg.first == 1)
+      {
+      return true;
+      }
+
+   bool n;
+   uint32_t immEncoded;
+   if (logicImmediateHelper(value, true, n, immEncoded))
+      {
+      return false;
+      }
+   else if (logicImmediateHelper(negatedValue, true, n, immEncoded))
       {
       return true;
       }
@@ -2287,11 +2309,20 @@ TR::Instruction *loadConstant32(TR::CodeGenerator *cg, TR::Node *node, int32_t v
       }
    else
       {
-      // need two instructions
-      cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::movzw, node, trgReg,
-                                          (value & 0xFFFF), cursor);
-      cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::movkw, node, trgReg,
-                                          (((value >> 16) & 0xFFFF) | TR::MOV_LSL16), cursor);
+      bool n;
+      uint32_t immEncoded;
+      if (logicImmediateHelper(static_cast<uint32_t>(value), false, n, immEncoded))
+         {
+         cursor = generateMovBitMaskInstruction(cg, node, trgReg, n, immEncoded, false, cursor);
+         }
+      else
+         {
+         // need two instructions
+         cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::movzw, node, trgReg,
+                                             (value & 0xFFFF), cursor);
+         cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::movkw, node, trgReg,
+                                             (((value >> 16) & 0xFFFF) | TR::MOV_LSL16), cursor);
+         }
       }
 
    if (!insertingInstructions)
@@ -2323,47 +2354,56 @@ TR::Instruction *loadConstant64(TR::CodeGenerator *cg, TR::Node *node, int64_t v
       auto numInstrAndUseMovz = analyzeLoadConstant64(h, value);
       int32_t use_movz = numInstrAndUseMovz.second;
 
-      TR::Instruction *start = cursor;
-
-      for (i = 0; i < 4; i++)
+      bool n;
+      uint32_t immEncoded;
+      if ((numInstrAndUseMovz.first > 1) && logicImmediateHelper(value, true, n, immEncoded))
          {
-         uint32_t shift = TR::MOV_LSL16 * i;
-         TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
-         uint32_t imm;
+         cursor = generateMovBitMaskInstruction(cg, node, trgReg, n, immEncoded, true, cursor);
+         }
+      else
+         {
+         TR::Instruction *start = cursor;
 
-         if (use_movz && (h[i] != 0))
+         for (i = 0; i < 4; i++)
             {
-            imm = h[i] | shift;
-            if (cursor != start)
+            uint32_t shift = TR::MOV_LSL16 * i;
+            TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
+            uint32_t imm;
+
+            if (use_movz && (h[i] != 0))
                {
-               op = TR::InstOpCode::movkx;
-               }
-            else
-               {
-               op = TR::InstOpCode::movzx;
-               }
-            }
-         else if (!use_movz && (h[i] != 0xFFFF))
-            {
-            if (cursor != start)
-               {
-               op = TR::InstOpCode::movkx;
                imm = h[i] | shift;
+               if (cursor != start)
+                  {
+                  op = TR::InstOpCode::movkx;
+                  }
+               else
+                  {
+                  op = TR::InstOpCode::movzx;
+                  }
+               }
+            else if (!use_movz && (h[i] != 0xFFFF))
+               {
+               if (cursor != start)
+                  {
+                  op = TR::InstOpCode::movkx;
+                  imm = h[i] | shift;
+                  }
+               else
+                  {
+                  op = TR::InstOpCode::movnx;
+                  imm = (~h[i] & 0xFFFF) | shift;
+                  }
+               }
+
+            if (op != TR::InstOpCode::bad)
+               {
+               cursor = generateTrg1ImmInstruction(cg, op, node, trgReg, imm, cursor);
                }
             else
                {
-               op = TR::InstOpCode::movnx;
-               imm = (~h[i] & 0xFFFF) | shift;
+               // generate no instruction here
                }
-            }
-
-         if (op != TR::InstOpCode::bad)
-            {
-            cursor = generateTrg1ImmInstruction(cg, op, node, trgReg, imm, cursor);
-            }
-         else
-            {
-            // generate no instruction here
             }
          }
       }

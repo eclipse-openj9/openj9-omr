@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -338,6 +338,8 @@ public:
 	 * @param bytes the number of bytes to increase the recorded estimate
 	 */
 	MMINLINE void incrementDarkMatterBytes(uintptr_t bytes) { _darkMatterBytes += bytes; }
+	MMINLINE void incrementDarkMatterBytesAtomic(uintptr_t bytes) { MM_AtomicOperations::add(&_darkMatterBytes, bytes); }
+
 	/**
 	 * @return the recorded estimate of dark matter in the receiver
 	 */
@@ -373,6 +375,12 @@ public:
 	}
 
 	virtual bool recycleHeapChunk(void* chunkBase, void* chunkTop)
+	{
+		Assert_MM_unreachable();
+		return false;
+	}
+
+	virtual bool recycleHeapChunk(MM_EnvironmentBase *env, void* chunkBase, void* chunkTop)
 	{
 		Assert_MM_unreachable();
 		return false;

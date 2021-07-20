@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -53,6 +53,7 @@ public:
 	uintptr_t _copyObjectsTotal;  /**< Total count of objects copied into survivor */
 	uintptr_t _copyBytesTotal;  /**< Total bytes copied into survivor */
 	uintptr_t _copyDiscardBytesTotal;  /**< total bytes discarded due to copying into survivor */
+	uintptr_t _TLHRemainderCount;
 	uintptr_t _scanObjectsTotal; /**< Total count of objects scanned in abort recovery */
 	uintptr_t _scanBytesTotal;   /**< Total bytes scanned in abort recovery */
 	
@@ -207,6 +208,7 @@ public:
 		_copyObjectsTotal = 0;
 		_copyBytesTotal = 0;
 		_copyDiscardBytesTotal = 0;
+		_TLHRemainderCount = 0;
 		_scanObjectsTotal = 0;
 		_scanBytesTotal = 0;
 		
@@ -300,6 +302,7 @@ public:
 		_copyObjectsTotal += stats->_copyObjectsTotal;
 		_copyBytesTotal += stats->_copyBytesTotal;
 		_copyDiscardBytesTotal += stats->_copyDiscardBytesTotal;
+		_TLHRemainderCount += stats->_TLHRemainderCount;
 		_scanObjectsTotal += stats->_scanObjectsTotal;
 		_scanBytesTotal += stats->_scanBytesTotal;
 
@@ -342,6 +345,7 @@ public:
 		,_copyObjectsTotal(0)
 		,_copyBytesTotal(0)
 		,_copyDiscardBytesTotal(0)
+		,_TLHRemainderCount(0)
 		,_scanObjectsTotal(0)
 		,_scanBytesTotal(0)
 		,_copyObjectsEden(0)

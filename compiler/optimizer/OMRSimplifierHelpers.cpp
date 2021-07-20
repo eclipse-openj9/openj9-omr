@@ -279,6 +279,28 @@ void foldShortIntConstant(TR::Node * node, int16_t value, TR::Simplifier * s, bo
    dumpOptDetails(s->comp(), " to %s %d\n", node->getOpCode().getName(), node->getShortInt());
    }
 
+void foldUByteConstant(TR::Node * node, uint8_t value, TR::Simplifier * s, bool anchorChildrenP)
+   {
+   if (!performTransformationSimplifier(node, s)) return;
+
+   if (anchorChildrenP) s->anchorChildren(node, s->_curTree);
+
+   s->prepareToReplaceNode(node, TR::bconst);
+   node->setUnsignedByte(value);
+   dumpOptDetails(s->comp(), " to %s %d\n", node->getOpCode().getName(), node->getUnsignedByte());
+   }
+
+void foldCharConstant(TR::Node * node, uint16_t value, TR::Simplifier * s, bool anchorChildrenP)
+   {
+   if (!performTransformationSimplifier(node, s)) return;
+
+   if (anchorChildrenP) s->anchorChildren(node, s->_curTree);
+
+   s->prepareToReplaceNode(node, TR::sconst);
+   node->setConst<uint16_t>(value);
+   dumpOptDetails(s->comp(), " to %s %d\n", node->getOpCode().getName(), node->getConst<uint16_t>());
+   }
+
 bool swapChildren(TR::Node * node, TR::Node * & firstChild, TR::Node * & secondChild, TR::Simplifier * s)
    {
    if (swapChildren(node, s))

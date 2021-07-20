@@ -193,76 +193,6 @@ static TR::ILOpCodes negOps[TR::NumAllTypes] = { TR::BadILOp,
  * Local helper functions
  */
 
-
-template <typename T>
-inline void setCCAddSigned(T value, T operand1, T operand2, TR::Node *node, TR::Simplifier * s)
-   {
-   // for an add (T = A + B) an overflow occurs iff the sign(A) == sign(B) and sign(T) != sign(A)
-   if (((operand1<0) == (operand2<0)) &&
-       !((value<0) == (operand1<0)))
-      s->setCC(node, OMR::ConditionCode3);
-   else if ( value < 0 )
-      s->setCC(node, OMR::ConditionCode1);
-   else if ( value > 0 )
-      s->setCC(node, OMR::ConditionCode2);
-   else
-      s->setCC(node, OMR::ConditionCode0);
-   }
-
-template <typename T>
-inline void setCCAddUnsigned(T value, T operand1, TR::Node *node, TR::Simplifier * s)
-   {
-   bool carry = value < operand1;
-
-   if (value == 0 && !carry)
-      s->setCC(node, OMR::ConditionCode0);
-   else if (value != 0 && !carry)
-      s->setCC(node, OMR::ConditionCode1);
-   else if (value == 0 && carry)
-      s->setCC(node, OMR::ConditionCode2);
-   else
-      s->setCC(node, OMR::ConditionCode3);
-   }
-
-template <typename T>
-inline void setCCSubSigned(T value, T operand1, T operand2, TR::Node *node, TR::Simplifier * s)
-   {
-   // for a sub (T = A - B) an overflow occurs iff the sign(A) != sign(B) and sign(T) == sign(B)
-   if (!((operand1<0) == (operand2<0)) &&
-       ((value<0) == (operand2<0)))
-      s->setCC(node, OMR::ConditionCode3);
-   else if ( value < 0 )
-      s->setCC(node, OMR::ConditionCode1);
-   else if ( value > 0 )
-      s->setCC(node, OMR::ConditionCode2);
-   else
-      s->setCC(node, OMR::ConditionCode0);
-   }
-
-template <typename T>
-inline void setCCSubUnsigned(T value, T operand1, TR::Node *node, TR::Simplifier * s)
-   {
-   bool borrow = value > operand1;
-
-   if (value != 0 && borrow)
-      s->setCC(node, OMR::ConditionCode1);
-   else if (value == 0 && !borrow)
-      s->setCC(node, OMR::ConditionCode2);
-   else if (value != 0 && !borrow)
-      s->setCC(node, OMR::ConditionCode3);
-   else
-      TR_ASSERT(0,"condition code of 0 is not possible for logical sub");
-   }
-
-template <typename T>
-inline void setCCOr(T value, TR::Node *node, TR::Simplifier *s)
-   {
-   if (value == (T)0)
-      s->setCC(node, OMR::ConditionCode0);
-   else
-      s->setCC(node, OMR::ConditionCode1);
-   }
-
 static void convertToTestUnderMask(TR::Node *node, TR::Block *block, TR::Simplifier *s)
    {
    // butest evaluator is only implemented on Z
@@ -16025,30 +15955,6 @@ static void foldUnsignedLongIntConstant(TR::Node * node, uint64_t value, TR::Sim
       dumpOptDetails(s->comp(), " 0x%x%08x\n", node->getLongIntHigh(), node->getLongIntLow());
    }
 
-inline OMR::TR_ConditionCodeNumber calculateSignedCC(int64_t result, bool overflow)
-   {
-   if ((result == 0) && !overflow)
-      return OMR::ConditionCode0;
-   else if ((result < 0) && !overflow)
-      return OMR::ConditionCode1;
-   else if ((result > 0) && !overflow)
-      return OMR::ConditionCode2;
-   else // (overflow)
-      return OMR::ConditionCode3;
-   }
-
-inline OMR::TR_ConditionCodeNumber calculateUnsignedCC(uint64_t result, bool carryNotBorrow)
-   {
-   if (result == 0 && !carryNotBorrow)
-      return OMR::ConditionCode0;
-   else if ((result != 0) && !carryNotBorrow)
-      return OMR::ConditionCode1;
-   else if ((result == 0) && carryNotBorrow)
-      return OMR::ConditionCode2;
-   else // if ((result != 0) && carryNotBorrow)
-      return OMR::ConditionCode3;
-   }
-
 // Both lmulh and lmulhu are adapted from Hackers Delight, Figure 8-2, pg. 132
 // uses the simple digit by digit multiplication
 //
@@ -16103,28 +16009,6 @@ static uint64_t lmulhu(uint64_t op1, uint64_t op2)
    t = u1 * v1 + w2 + (w1 >> 32);
 
    return t;
-   }
-
-static void foldUByteConstant(TR::Node * node, uint8_t value, TR::Simplifier * s, bool anchorChildrenP)
-   {
-   if (!performTransformationSimplifier(node, s)) return;
-
-   if (anchorChildrenP) s->anchorChildren(node, s->_curTree);
-
-   s->prepareToReplaceNode(node, TR::bconst);
-   node->setUnsignedByte(value);
-   dumpOptDetails(s->comp(), " to %s %d\n", node->getOpCode().getName(), node->getUnsignedByte());
-   }
-
-static void foldCharConstant(TR::Node * node, uint16_t value, TR::Simplifier * s, bool anchorChildrenP)
-   {
-   if (!performTransformationSimplifier(node, s)) return;
-
-   if (anchorChildrenP) s->anchorChildren(node, s->_curTree);
-
-   s->prepareToReplaceNode(node, TR::sconst);
-   node->setConst<uint16_t>(value);
-   dumpOptDetails(s->comp(), " to %s %d\n", node->getOpCode().getName(), node->getConst<uint16_t>());
    }
 
 static void removeRestOfBlock(TR::TreeTop *curTree, TR::Compilation *compilation)

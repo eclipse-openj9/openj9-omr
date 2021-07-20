@@ -24,13 +24,13 @@
 
 #include "il/DataTypes.hpp"
 #include "il/ILOps.hpp"
+#include "optimizer/Simplifier.hpp"
 
 namespace TR { class Block; }
 namespace TR { class Compilation; }
 namespace TR { class Node; }
 namespace TR { class Optimization; }
 namespace TR { class TreeTop; }
-namespace TR { class Simplifier; }
 class TR_RegionStructure;
 class TR_FrontEnd;
 
@@ -73,6 +73,99 @@ enum {XXCMP_EQ = 0, XXCMP_LT = 1, XXCMP_GT = 2};
  * Helper functions needed by simplifier handlers across projects
  */
 
+template <typename T>
+inline void setCCAddSigned(T value, T operand1, T operand2, TR::Node *node, TR::Simplifier * s)
+   {
+   // for an add (T = A + B) an overflow occurs iff the sign(A) == sign(B) and sign(T) != sign(A)
+   if (((operand1<0) == (operand2<0)) &&
+       !((value<0) == (operand1<0)))
+      s->setCC(node, OMR::ConditionCode3);
+   else if ( value < 0 )
+      s->setCC(node, OMR::ConditionCode1);
+   else if ( value > 0 )
+      s->setCC(node, OMR::ConditionCode2);
+   else
+      s->setCC(node, OMR::ConditionCode0);
+   }
+
+template <typename T>
+inline void setCCAddUnsigned(T value, T operand1, TR::Node *node, TR::Simplifier * s)
+   {
+   bool carry = value < operand1;
+
+   if (value == 0 && !carry)
+      s->setCC(node, OMR::ConditionCode0);
+   else if (value != 0 && !carry)
+      s->setCC(node, OMR::ConditionCode1);
+   else if (value == 0 && carry)
+      s->setCC(node, OMR::ConditionCode2);
+   else
+      s->setCC(node, OMR::ConditionCode3);
+   }
+
+template <typename T>
+inline void setCCSubSigned(T value, T operand1, T operand2, TR::Node *node, TR::Simplifier * s)
+   {
+   // for a sub (T = A - B) an overflow occurs iff the sign(A) != sign(B) and sign(T) == sign(B)
+   if (!((operand1<0) == (operand2<0)) &&
+       ((value<0) == (operand2<0)))
+      s->setCC(node, OMR::ConditionCode3);
+   else if ( value < 0 )
+      s->setCC(node, OMR::ConditionCode1);
+   else if ( value > 0 )
+      s->setCC(node, OMR::ConditionCode2);
+   else
+      s->setCC(node, OMR::ConditionCode0);
+   }
+
+template <typename T>
+inline void setCCSubUnsigned(T value, T operand1, TR::Node *node, TR::Simplifier * s)
+   {
+   bool borrow = value > operand1;
+
+   if (value != 0 && borrow)
+      s->setCC(node, OMR::ConditionCode1);
+   else if (value == 0 && !borrow)
+      s->setCC(node, OMR::ConditionCode2);
+   else if (value != 0 && !borrow)
+      s->setCC(node, OMR::ConditionCode3);
+   else
+      TR_ASSERT(0,"condition code of 0 is not possible for logical sub");
+   }
+
+template <typename T>
+inline void setCCOr(T value, TR::Node *node, TR::Simplifier *s)
+   {
+   if (value == (T)0)
+      s->setCC(node, OMR::ConditionCode0);
+   else
+      s->setCC(node, OMR::ConditionCode1);
+   }
+
+inline OMR::TR_ConditionCodeNumber calculateSignedCC(int64_t result, bool overflow)
+   {
+   if ((result == 0) && !overflow)
+      return OMR::ConditionCode0;
+   else if ((result < 0) && !overflow)
+      return OMR::ConditionCode1;
+   else if ((result > 0) && !overflow)
+      return OMR::ConditionCode2;
+   else // (overflow)
+      return OMR::ConditionCode3;
+   }
+
+inline OMR::TR_ConditionCodeNumber calculateUnsignedCC(uint64_t result, bool carryNotBorrow)
+   {
+   if (result == 0 && !carryNotBorrow)
+      return OMR::ConditionCode0;
+   else if ((result != 0) && !carryNotBorrow)
+      return OMR::ConditionCode1;
+   else if ((result == 0) && carryNotBorrow)
+      return OMR::ConditionCode2;
+   else // if ((result != 0) && carryNotBorrow)
+      return OMR::ConditionCode3;
+   }
+
 void simplifyChildren(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 bool performTransformationSimplifier(TR::Node * node, TR::Simplifier * s);
 void setIsHighWordZero(TR::Node * node, TR::Simplifier * s);
@@ -83,6 +176,8 @@ void foldLongIntConstant(TR::Node * node, int64_t value, TR::Simplifier * s, boo
 void foldFloatConstant(TR::Node * node, float value, TR::Simplifier * s);
 void foldDoubleConstant(TR::Node * node, double value, TR::Simplifier * s);
 void foldByteConstant(TR::Node * node, int8_t value, TR::Simplifier * s, bool anchorChildrenP);
+void foldUByteConstant(TR::Node * node, uint8_t value, TR::Simplifier * s, bool anchorChildrenP);
+void foldCharConstant(TR::Node * node, uint16_t value, TR::Simplifier * s, bool anchorChildrenP);
 void foldShortIntConstant(TR::Node * node, int16_t value, TR::Simplifier * s, bool anchorChildrenP);
 bool swapChildren(TR::Node * node, TR::Node * & firstChild, TR::Node * & secondChild, TR::Simplifier * s);
 bool isExprInvariant(TR_RegionStructure *region, TR::Node *node);

@@ -132,6 +132,7 @@ enum
    IfEAOpportunitiesMarkLastRun,
    IfEAOpportunitiesAndNotOptServer,
    IfAggressiveLiveness,
+   IfVectorAPI,  // JEP414: Extra analysis required to optimize Vector API
    MarkLastRun
    };
 

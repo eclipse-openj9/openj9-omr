@@ -1544,6 +1544,12 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
             }
          break;
          }
+      case IfVectorAPI:
+         {
+         if (comp()->getMethodSymbol()->hasVectorAPI()) // TODO: add disable option and check it here
+            doThisOptimization = true;
+         }
+         break;
       case MarkLastRun:
          doThisOptimization = true;
          TR_ASSERT(optNum < OMR::numOpts ,"No current support for marking groups as last (optNum=%d,numOpt=%d\n",optNum,OMR::numOpts); //make sure we didn't mark groups

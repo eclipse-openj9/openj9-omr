@@ -38,7 +38,6 @@ namespace OMR { typedef OMR::Options OptionsConnector; }
 #include <string.h>
 #include "env/FrontEnd.hpp"
 #include "compile/CompilationTypes.hpp"
-#include "control/OMROptions.hpp"
 #include "control/OptionsUtil.hpp"
 #include "env/Processors.hpp"
 #include "env/RawAllocator.hpp"

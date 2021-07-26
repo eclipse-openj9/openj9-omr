@@ -663,7 +663,7 @@ static TR::Node *addSimplifierCommon(TR::Node* node, TR::Block * block, TR::Simp
 
             setExprInvariant(region, newSecondChild);
 
-            simplifyChildren(node, block, s);
+            s->simplifyChildren(node, block);
             }
          }
       // R9_2:
@@ -748,7 +748,7 @@ static TR::Node *addSimplifierCommon(TR::Node* node, TR::Block * block, TR::Simp
 template <class T>
 static TR::Node *addSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    if (node->getOpCodeValue() == TR::iuaddc)
       return node;
@@ -1075,7 +1075,7 @@ TR::Node *subSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
    scount_t futureUseCountOfFirstChild = node->getFirstChild()->getFutureUseCount();
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    if (node->getOpCodeValue() == TR::iusubb)
       return node;
@@ -1464,40 +1464,6 @@ static void normalizeConstantShiftAmount(TR::Node * node, int32_t shiftMask, TR:
       }
    }
 
-static void normalizeShiftAmount(TR::Node * node, int32_t normalizationConstant, TR::Simplifier * s)
-   {
-   if (s->comp()->cg()->needsNormalizationBeforeShifts() &&
-       !node->isNormalizedShift())
-      {
-      TR::Node * secondChild = node->getSecondChild();
-      //
-      // Some platforms like IA32 obey Java semantics for shifts even if the
-      // shift amount is greater than 31. However other platforms like PPC need
-      // to normalize the shift amount to range (0, 31) before shifting in order
-      // to obey Java semantics. This can be captured in the IL and commoning/hoisting
-      // can be done (look at Compressor.compress).
-      //
-      if ((secondChild->getOpCodeValue() != TR::iconst) &&
-          ((secondChild->getOpCodeValue() != TR::iand) ||
-           (secondChild->getSecondChild()->getOpCodeValue() != TR::iconst) ||
-           (secondChild->getSecondChild()->getInt() != normalizationConstant)))
-         {
-         if (performTransformation(s->comp(), "%sPlatform specific normalization of shift node [%s]\n", s->optDetailString(), node->getName(s->getDebug())))
-            {
-            //
-            // Not normalized yet
-            //
-            TR::Node * secondChild = node->getSecondChild();
-            TR::Node * normalizedNode = TR::Node::create(TR::iand, 2, secondChild, TR::Node::create(secondChild, TR::iconst, 0, normalizationConstant));
-            secondChild->recursivelyDecReferenceCount();
-            node->setAndIncChild(1, normalizedNode);
-            node->setNormalizedShift(true);
-            s->_alteredBlock = true;
-            }
-         }
-      }
-   }
-
 static void orderChildrenByHighWordZero(TR::Node * node, TR::Node * & firstChild, TR::Node * & secondChild, TR::Simplifier * s)
    {
    if (!secondChild->getOpCode().isLoadConst() &&
@@ -1601,7 +1567,7 @@ static bool reduceLongOp(TR::Node * node, TR::Block * block, TR::Simplifier * s,
                   TR::Node::recreate(node, newConversionOp);
                   }
                s->_alteredBlock = true;
-               simplifyChildren(node, block, s);
+               s->simplifyChildren(node, block);
                return true;
                }
             }
@@ -1624,7 +1590,7 @@ static bool reduceLongOp(TR::Node * node, TR::Block * block, TR::Simplifier * s,
             TR::Node::recreate(node, newConversionOp);
             }
          s->_alteredBlock = true;
-         simplifyChildren(node, block, s);
+         s->simplifyChildren(node, block);
          return true;
          }
       break;
@@ -1671,7 +1637,7 @@ static bool reduceLongOp(TR::Node * node, TR::Block * block, TR::Simplifier * s,
       }
 
    s->_alteredBlock = true;
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    return true;
    }
 
@@ -1710,7 +1676,7 @@ static void fold2SmallerIntConstant(TR::Node * node, TR::Node *child, TR::DataTy
 
 static TR::Node *intDemoteSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::ILOpCode op = node->getOpCode();
 
@@ -5382,19 +5348,19 @@ TR::Node *dftSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
    if (node->getOpCode().isBranch() && (removeIfToFollowingBlock(node, block, s) == NULL))
       return NULL;
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    return node;
    }
 
 TR::Node *lstoreSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    return node;
    }
 
 TR::Node *directLoadSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s); // For all those direct loads with child nodes...
+   s->simplifyChildren(node, block); // For all those direct loads with child nodes...
    TR::TransformUtil::transformDirectLoad(s->comp(), node);
    return node;
    }
@@ -5404,7 +5370,7 @@ TR::Node *indirectLoadSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
    if (node->getOpCode().isLoadIndirect())
       node->getFirstChild()->setIsNonNegative(true);
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    // Give the FrontEnd the first shot at this
    //
@@ -5536,7 +5502,7 @@ TR::Node *indirectStoreSimplifier(TR::Node * node, TR::Block * block, TR::Simpli
    if (node->getOpCode().isStoreIndirect())
       node->getFirstChild()->setIsNonNegative(true);
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
@@ -5699,7 +5665,7 @@ TR::Node *indirectStoreSimplifier(TR::Node * node, TR::Block * block, TR::Simpli
 
 TR::Node *astoreSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    // Check if we are storing an address of a deleted label
    if (isDeletedLabelLoadaddr(node->getFirstChild()) &&
@@ -5713,7 +5679,7 @@ TR::Node *astoreSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *directStoreSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node * child = node->getFirstChild();
    TR::SymbolReference * symRef = node->getSymbolReference();
    if (child->getOpCode().isLoadVar()  &&
@@ -5870,7 +5836,7 @@ TR::Node *vsetelemSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
       return s->simplify(vsplatsNode, block);
       }
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    return node;
    }
@@ -5893,25 +5859,25 @@ TR::Node *gotoSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *ifdCallSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    return s->simplifyiCallMethods(node, block);
    }
 
 TR::Node *lcallSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    return s->simplifylCallMethods(node, block);
    }
 
 TR::Node *acallSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    return s->simplifyaCallMethods(node, block);
    }
 
 TR::Node *vcallSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    return node;
    }
 
@@ -5965,7 +5931,7 @@ TR::Node *treetopSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 // for anchors: compressed pointers
 TR::Node *anchorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    if (!s->comp()->useAnchors())
       return node;
 
@@ -6009,7 +5975,7 @@ TR::Node *anchorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    if (node->getOpCodeValue() == TR::iuaddc)
       return node;
@@ -6442,7 +6408,7 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *laddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    if (node->getOpCodeValue() == TR::luaddc)
       return node;
@@ -6717,7 +6683,7 @@ TR::Node *laddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *faddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -6753,7 +6719,7 @@ TR::Node *faddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *daddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -6800,7 +6766,7 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
    scount_t futureUseCountOfFirstChild = node->getFirstChild()->getFutureUseCount();
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    if (node->getOpCodeValue() == TR::iusubb)
       return node;
@@ -7260,7 +7226,7 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *lsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    if (node->getOpCodeValue() == TR::lusubb)
       return node;
@@ -7824,7 +7790,7 @@ TR::Node *lsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *fsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -7858,7 +7824,7 @@ TR::Node *fsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *dsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -7901,7 +7867,7 @@ TR::Node *ssubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *imulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -8266,7 +8232,7 @@ TR::Node *imulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *lmulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    if (node->isAdjunct())
       {
@@ -8479,7 +8445,7 @@ TR::Node *lmulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *fmulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -8526,7 +8492,7 @@ TR::Node *fmulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *dmulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -8556,7 +8522,7 @@ TR::Node *dmulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *bmulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -8576,7 +8542,7 @@ TR::Node *bmulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *smulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -8600,7 +8566,7 @@ TR::Node *smulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *idivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    if (node->getOpCodeValue() == TR::iudiv)
       {
@@ -8814,7 +8780,7 @@ TR::Node *idivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    if (node->getOpCodeValue() == TR::ludiv)
       {
@@ -9136,7 +9102,7 @@ TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *fdivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -9196,7 +9162,7 @@ TR::Node *fdivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *ddivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -9235,7 +9201,7 @@ TR::Node *ddivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *bdivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -9251,7 +9217,7 @@ TR::Node *bdivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *sdivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -9272,7 +9238,7 @@ TR::Node *sdivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 TR::Node *iremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
    bool isUnsigned = node->getOpCode().isUnsigned();
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -9405,7 +9371,7 @@ TR::Node *iremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *lremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -9588,7 +9554,7 @@ TR::Node *lremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *fremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -9624,7 +9590,7 @@ TR::Node *fremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *dremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -9643,7 +9609,7 @@ TR::Node *dremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *bremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -9658,7 +9624,7 @@ TR::Node *bremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *sremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -9677,7 +9643,7 @@ TR::Node *sremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *inegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -9734,7 +9700,7 @@ TR::Node *inegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *lnegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -9772,7 +9738,7 @@ TR::Node *lnegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *fnegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -9858,7 +9824,7 @@ TR::Node *fnegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *dnegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -9911,7 +9877,7 @@ TR::Node *dnegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *bnegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node *firstChild = node->getFirstChild();
 
@@ -9925,7 +9891,7 @@ TR::Node *bnegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *snegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node * firstChild = node->getFirstChild();
 
    if (firstChild->getOpCode().isLoadConst())
@@ -9937,7 +9903,7 @@ TR::Node *snegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *constSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    return node;
    }
@@ -9950,7 +9916,7 @@ TR::Node *lconstSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *ilfdabsSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    static bool AllowFlagBasedTransformationForFloatOrDouble = feGetEnv("TR_AllowFlagBasedTransformationForFloatOrDouble") != NULL;
 
@@ -10008,7 +9974,7 @@ TR::Node *ilfdabsSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *ishlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -10046,7 +10012,7 @@ TR::Node *ishlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *lshlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -10088,7 +10054,7 @@ TR::Node *lshlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *bshlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -10104,7 +10070,7 @@ TR::Node *bshlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *sshlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -10123,7 +10089,7 @@ TR::Node *sshlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *ishrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -10143,7 +10109,7 @@ TR::Node *ishrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *lshrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -10157,12 +10123,13 @@ TR::Node *lshrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    BINARY_IDENTITY_OP(Int, 0)
 
    normalizeShiftAmount(node, 63, s);
+
    return node;
    }
 
 TR::Node *bshrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -10178,7 +10145,7 @@ TR::Node *bshrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *sshrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -10188,6 +10155,7 @@ TR::Node *sshrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       return node;
       }
    BINARY_IDENTITY_OP(Int, 0)
+
    return node;
    }
 
@@ -10197,7 +10165,7 @@ TR::Node *sshrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *iushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -10278,6 +10246,7 @@ TR::Node *iushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
       }
 
    normalizeShiftAmount(node, 31, s);
+
    return node;
    }
 
@@ -10323,7 +10292,7 @@ TR::Node *lushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
          }
       }
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    firstChild = node->getFirstChild();
    secondChild = node->getSecondChild();
@@ -10415,12 +10384,13 @@ TR::Node *lushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
       }
 
    normalizeShiftAmount(node, 63, s);
+
    return node;
    }
 
 TR::Node *bushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -10436,7 +10406,7 @@ TR::Node *bushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
 
 TR::Node *sushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -10446,6 +10416,7 @@ TR::Node *sushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
       return node;
       }
    BINARY_IDENTITY_OP(Int, 0)
+
    return node;
    }
 
@@ -10455,7 +10426,7 @@ TR::Node *sushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
 
 TR::Node *irolSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node *firstChild  = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
 
@@ -10480,7 +10451,7 @@ TR::Node *irolSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *lrolSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
@@ -10508,7 +10479,7 @@ TR::Node *lrolSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *iandSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -10655,7 +10626,7 @@ TR::Node *iandSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *landSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -10853,7 +10824,7 @@ TR::Node *landSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *bandSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -10870,7 +10841,7 @@ TR::Node *bandSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *sandSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -11011,7 +10982,7 @@ TR::Node *removeRedundantIntegralOrPattern2(TR::Node * node, TR::Block * block, 
 
 TR::Node *iorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -11161,7 +11132,7 @@ TR::Node *iorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *lorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -11313,7 +11284,7 @@ TR::Node *lorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *borSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -11382,7 +11353,7 @@ TR::Node *borSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *sorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -11416,7 +11387,7 @@ TR::Node *sorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *ixorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
    if (firstChild == secondChild)
@@ -11505,7 +11476,7 @@ TR::Node *ixorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *lxorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
    if (firstChild == secondChild)
@@ -11629,7 +11600,7 @@ TR::Node *lxorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *bxorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -11646,7 +11617,7 @@ TR::Node *bxorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *sxorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -11668,7 +11639,7 @@ TR::Node *sxorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 template <class T>
 inline TR::Node* sqrtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node* child = node->getChild(0);
    if (child->getOpCode().isLoadConst() &&
        performTransformation(s->comp(), "%sSimplify sqrt of const child at [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
@@ -11694,7 +11665,7 @@ TR::Node *dsqrtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
 
 TR::Node *i2lSimplifier(TR::Node * node, TR::Block *  block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -11773,7 +11744,7 @@ TR::Node *i2lSimplifier(TR::Node * node, TR::Block *  block, TR::Simplifier * s)
 
 TR::Node *i2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -11787,7 +11758,7 @@ TR::Node *i2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *i2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -11801,7 +11772,7 @@ TR::Node *i2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *i2bSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -11836,7 +11807,7 @@ TR::Node *i2bSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *i2sSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -11870,7 +11841,7 @@ TR::Node *i2sSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *i2aSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -11940,7 +11911,7 @@ TR::Node *i2aSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *iu2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -11983,7 +11954,7 @@ TR::Node *iu2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *iu2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -11997,7 +11968,7 @@ TR::Node *iu2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *iu2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12020,7 +11991,7 @@ TR::Node *l2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *l2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12039,7 +12010,7 @@ TR::Node *l2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *l2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node * firstChild = node->getFirstChild();
 
    if (firstChild->getOpCodeValue() == TR::lconst)
@@ -12063,7 +12034,7 @@ TR::Node *l2sSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *l2aSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12145,7 +12116,7 @@ TR::Node *l2aSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *lu2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12164,7 +12135,7 @@ TR::Node *lu2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *lu2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node * firstChild = node->getFirstChild();
 
    if (firstChild->getOpCodeValue() == TR::lconst)
@@ -12185,7 +12156,7 @@ TR::Node *f2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 #ifdef TR_HOST_X86
    return dftSimplifier(node, block, s);
 #else
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12204,7 +12175,7 @@ TR::Node *f2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 #ifdef TR_HOST_X86
    return dftSimplifier(node, block, s);
 #else
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12220,7 +12191,7 @@ TR::Node *f2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *f2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12235,7 +12206,7 @@ TR::Node *f2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *f2bSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12250,7 +12221,7 @@ TR::Node *f2bSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *f2sSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12269,7 +12240,7 @@ TR::Node *f2sSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *d2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12294,7 +12265,7 @@ TR::Node *d2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *d2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12309,7 +12280,7 @@ TR::Node *d2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *d2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12340,7 +12311,7 @@ TR::Node *d2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *d2bSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12355,7 +12326,7 @@ TR::Node *d2bSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *d2sSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12374,7 +12345,7 @@ TR::Node *d2sSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *b2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node * firstChild = node->getFirstChild();
 
    if (firstChild->getOpCode().isLoadConst())
@@ -12386,7 +12357,7 @@ TR::Node *b2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *b2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node * firstChild = node->getFirstChild();
 
    if (firstChild->getOpCode().isLoadConst())
@@ -12398,7 +12369,7 @@ TR::Node *b2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *b2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node * firstChild = node->getFirstChild();
    if (firstChild->getOpCode().isLoadConst())
       {
@@ -12410,7 +12381,7 @@ TR::Node *b2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *b2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12424,7 +12395,7 @@ TR::Node *b2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *b2sSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node * firstChild = node->getFirstChild();
 
    if (firstChild->getOpCode().isLoadConst())
@@ -12440,7 +12411,7 @@ TR::Node *b2sSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *bu2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12528,7 +12499,7 @@ TR::Node *bu2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *bu2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node * firstChild = node->getFirstChild();
 
    if (firstChild->getOpCode().isLoadConst())
@@ -12609,7 +12580,7 @@ TR::Node *bu2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *bu2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node * firstChild = node->getFirstChild();
    if (firstChild->getOpCode().isLoadConst())
       {
@@ -12622,7 +12593,7 @@ TR::Node *bu2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *bu2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
    if (firstChild->getOpCode().isLoadConst())
@@ -12635,7 +12606,7 @@ TR::Node *bu2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *bu2sSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node * firstChild = node->getFirstChild();
 
    if (firstChild->getOpCode().isLoadConst())
@@ -12651,7 +12622,7 @@ TR::Node *bu2sSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *s2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12694,7 +12665,7 @@ TR::Node *s2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *s2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node * firstChild = node->getFirstChild();
 
    if (firstChild->getOpCode().isLoadConst())
@@ -12736,7 +12707,7 @@ TR::Node *s2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *s2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node * firstChild = node->getFirstChild();
 
    if (firstChild->getOpCode().isLoadConst())
@@ -12748,7 +12719,7 @@ TR::Node *s2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *s2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12761,7 +12732,7 @@ TR::Node *s2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *s2bSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12790,7 +12761,7 @@ TR::Node *s2bSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *su2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * firstGrandChild;
 
@@ -12835,7 +12806,7 @@ TR::Node *su2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *su2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -12850,7 +12821,7 @@ TR::Node *su2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *su2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node *firstChild = node->getFirstChild();
 
    if (firstChild->getOpCode().isLoadConst())
@@ -12862,7 +12833,7 @@ TR::Node *su2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *su2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node *firstChild = node->getFirstChild();
 
    if (firstChild->getOpCode().isLoadConst())
@@ -13075,7 +13046,7 @@ TR::Node *ificmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // further transformations to be done on the children.
    simplifyISelectCompare(node, s);
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13201,7 +13172,7 @@ TR::Node *ificmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // further transformations to be done on the children.
    simplifyISelectCompare(node, s);
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13308,7 +13279,7 @@ TR::Node *ificmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // further transformations to be done on the children.
    simplifyISelectCompare(node, s);
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13357,7 +13328,7 @@ TR::Node *ificmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // further transformations to be done on the children.
    simplifyISelectCompare(node, s);
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13406,7 +13377,7 @@ TR::Node *ificmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // further transformations to be done on the children.
    simplifyISelectCompare(node, s);
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13455,7 +13426,7 @@ TR::Node *ificmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // further transformations to be done on the children.
    simplifyISelectCompare(node, s);
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13507,7 +13478,7 @@ TR::Node *iflcmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // further transformations to be done on the children.
    simplifyISelectCompare(node, s);
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13551,7 +13522,7 @@ TR::Node *iflcmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // further transformations to be done on the children.
    simplifyISelectCompare(node, s);
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13595,7 +13566,7 @@ TR::Node *iflcmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // further transformations to be done on the children.
    simplifyISelectCompare(node, s);
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13637,7 +13608,7 @@ TR::Node *iflcmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // further transformations to be done on the children.
    simplifyISelectCompare(node, s);
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13679,7 +13650,7 @@ TR::Node *iflcmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // further transformations to be done on the children.
    simplifyISelectCompare(node, s);
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13721,7 +13692,7 @@ TR::Node *iflcmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // further transformations to be done on the children.
    simplifyISelectCompare(node, s);
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
 
@@ -13767,7 +13738,7 @@ TR::Node *normalizeCmpSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
    if (node->getOpCode().isBranch() && (removeIfToFollowingBlock(node, block, s) == NULL))
       return NULL;
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -13989,7 +13960,7 @@ TR::Node *ifacmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14027,7 +13998,7 @@ TR::Node *ifacmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14061,7 +14032,7 @@ TR::Node *ifCmpWithEqualitySimplifier(TR::Node * node, TR::Block * block, TR::Si
    {
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14169,7 +14140,7 @@ TR::Node *ifCmpWithoutEqualitySimplifier(TR::Node * node, TR::Block * block, TR:
    {
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14266,7 +14237,7 @@ TR::Node *ifCmpWithoutEqualitySimplifier(TR::Node * node, TR::Block * block, TR:
 
 TR::Node *icmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14417,7 +14388,7 @@ TR::Node *icmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *icmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14440,7 +14411,7 @@ TR::Node *icmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *icmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14463,7 +14434,7 @@ TR::Node *icmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *icmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14486,7 +14457,7 @@ TR::Node *icmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *icmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14509,7 +14480,7 @@ TR::Node *icmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *icmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14536,7 +14507,7 @@ TR::Node *icmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *lcmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14608,7 +14579,7 @@ TR::Node *lcmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *lcmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14702,7 +14673,7 @@ TR::Node *lcmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *lcmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14741,7 +14712,7 @@ TR::Node *lcmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *lcmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14764,7 +14735,7 @@ TR::Node *lcmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *lcmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14787,7 +14758,7 @@ TR::Node *lcmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *lcmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14814,7 +14785,7 @@ TR::Node *lcmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *lucmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14835,7 +14806,7 @@ TR::Node *lucmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *lucmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14856,7 +14827,7 @@ TR::Node *lucmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *lucmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14877,7 +14848,7 @@ TR::Node *lucmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *lucmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14902,7 +14873,7 @@ TR::Node *lucmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *acmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14923,7 +14894,7 @@ TR::Node *acmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *acmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14948,7 +14919,7 @@ TR::Node *acmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *bcmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -14969,7 +14940,7 @@ TR::Node *bcmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *bcmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -15000,7 +14971,7 @@ TR::Node *bcmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *bcmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -15022,7 +14993,7 @@ TR::Node *bcmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *bcmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -15044,7 +15015,7 @@ TR::Node *bcmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *bcmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -15066,7 +15037,7 @@ TR::Node *bcmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *bcmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -15092,7 +15063,7 @@ TR::Node *bcmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *scmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -15113,7 +15084,7 @@ TR::Node *scmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *scmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -15134,7 +15105,7 @@ TR::Node *scmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *scmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -15156,7 +15127,7 @@ TR::Node *scmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *scmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -15177,7 +15148,7 @@ TR::Node *scmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *scmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -15198,7 +15169,7 @@ TR::Node *scmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *scmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -15219,7 +15190,7 @@ TR::Node *scmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *sucmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -15240,7 +15211,7 @@ TR::Node *sucmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *sucmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -15261,7 +15232,7 @@ TR::Node *sucmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *sucmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -15282,7 +15253,7 @@ TR::Node *sucmpgtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *sucmpleSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
 
@@ -15319,7 +15290,7 @@ TR::Node *passThroughSimplifier(TR::Node * node, TR::Block * block, TR::Simplifi
    {
    // Collapse multiple levels of pass-through
    //
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -15532,7 +15503,7 @@ static bool isBooleanExpression(TR::Node *node)
 
 TR::Node *selectSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    if (node->getFirstChild()->getOpCode().isLoadConst())
       {
@@ -15666,7 +15637,7 @@ TR::Node *selectSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 
 TR::Node *a2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -15687,7 +15658,7 @@ TR::Node *a2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *a2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -15722,7 +15693,7 @@ TR::Node *a2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 //
 TR::Node *switchSimplifier(TR::Node * node, TR::Block * block, bool isTableSwitch, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -16087,7 +16058,7 @@ TR::Node *checkcastSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier
          }
       }
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    return node;
    }
 
@@ -16106,7 +16077,7 @@ TR::Node *checkcastAndNULLCHKSimplifier(TR::Node * node, TR::Block * block, TR::
 
 TR::Node *variableNewSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    if (  node->getOpCodeValue() == TR::variableNew
       && node->getFirstChild()->getOpCodeValue() == TR::loadaddr
@@ -16125,7 +16096,7 @@ TR::Node *variableNewSimplifier(TR::Node * node, TR::Block * block, TR::Simplifi
 
 TR::Node * imulhSimplifier(TR::Node * node, TR::Block *block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
    orderChildren(node, firstChild, secondChild, s);
 
@@ -16211,7 +16182,7 @@ TR::Node * imulhSimplifier(TR::Node * node, TR::Block *block, TR::Simplifier * s
 
 TR::Node *lmulhSimplifier(TR::Node * node, TR::Block *block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    if (node->isDualHigh())
       {
@@ -16248,7 +16219,7 @@ TR::Node *lmulhSimplifier(TR::Node * node, TR::Block *block, TR::Simplifier * s)
 
 TR::Node *f2cSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -16267,7 +16238,7 @@ TR::Node *f2cSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *d2cSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -16286,7 +16257,7 @@ TR::Node *d2cSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 //
 TR::Node *ibits2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -16310,7 +16281,7 @@ TR::Node *ibits2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *lbits2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -16334,7 +16305,7 @@ TR::Node *lbits2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *fbits2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -16364,7 +16335,7 @@ TR::Node *fbits2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *dbits2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
 
@@ -16396,7 +16367,7 @@ TR::Node *ifxcmpoSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
    {
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::ILOpCodes opCode = node->getOpCodeValue();
    TR_ASSERT((opCode == TR::ificmpo) || (opCode == TR::ificmpno) || (opCode == TR::iflcmpo) || (opCode == TR::iflcmpno), "unsupported ifxcmpo opcode");
@@ -16421,7 +16392,7 @@ TR::Node *ifxcmnoSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
    {
    if (removeIfToFollowingBlock(node, block, s) == NULL)
       return NULL;
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::ILOpCodes opCode = node->getOpCodeValue();
    TR_ASSERT((opCode == TR::ificmno) || (opCode == TR::ificmnno) || (opCode == TR::iflcmno) || (opCode == TR::iflcmnno), "unsupported ifxcmno opcode");
@@ -16470,10 +16441,10 @@ TR::Node *nullchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
        nullCheckRefOp == TR::multianewarray)
       {
       TR::Node::recreate(node, TR::treetop);
-      simplifyChildren(node, block, s);
+      s->simplifyChildren(node, block);
       return node;
       }
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Compilation *comp = TR::comp();
    if (node->getFirstChild()->getNumChildren() == 0)
@@ -16595,7 +16566,7 @@ TR::Node *divchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 //
 TR::Node *bndchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node     * boundChild = node->getFirstChild();
    TR::Node     * indexChild = node->getSecondChild();
@@ -16697,7 +16668,7 @@ TR::Node *bndchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
 //
 TR::Node *arraycopybndchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node     * lhsChild = node->getFirstChild();
    TR::Node     * rhsChild = node->getSecondChild();
@@ -16831,7 +16802,7 @@ TR::Node *arraycopybndchkSimplifier(TR::Node * node, TR::Block * block, TR::Simp
 //
 TR::Node *bndchkwithspinechkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    int32_t boundChildNum = 2;
    int32_t indexChildNum = 3;
@@ -17074,7 +17045,7 @@ TR::Node *lucmpSimplifier(TR::Node *node, TR::Block *block, TR::Simplifier * s)
 
 TR::Node *imaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
@@ -17122,7 +17093,7 @@ TR::Node *imaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 // Used for lmax, lumax, lmin, lumin
 TR::Node *lmaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
@@ -17169,7 +17140,7 @@ TR::Node *lmaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *fmaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
@@ -17204,7 +17175,7 @@ TR::Node *fmaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *dmaxminSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    double min, max;
    TR::Node * firstChild = node->getFirstChild();
@@ -17244,7 +17215,7 @@ TR::Node *computeCCSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier
    TR::Node *firstChild = node->getFirstChild();
    TR::ILOpCode& ccOriginalChildOp = firstChild->getOpCode();
 
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    OMR::TR_ConditionCodeNumber cc = s->getCC(firstChild);
    if (cc != OMR::ConditionCodeInvalid)
@@ -17265,7 +17236,7 @@ TR::Node *computeCCSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier
 
 TR::Node * arraysetSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    // Reduce Int64 fill to lower size fill - this generates much more efficient code on z, and there
    // is no reason not to do this if elem child has repeating pattern.
@@ -17290,7 +17261,7 @@ TR::Node * arraysetSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier
 //
 TR::Node *bitOpMemSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    if (s->comp()->getOption(TR_ScalarizeSSOps))
       {
       }
@@ -17299,7 +17270,7 @@ TR::Node *bitOpMemSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
 TR::Node *NewSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
    return node;
    }
 
@@ -17320,7 +17291,7 @@ TR::Node *lowerTreeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier
 // Simplification of arrayLength operator
 TR::Node *arrayLengthSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
+   s->simplifyChildren(node, block);
 
    TR::Node *firstChild = node->getFirstChild();
    TR::ILOpCodes firstChildOp = firstChild->getOpCodeValue();

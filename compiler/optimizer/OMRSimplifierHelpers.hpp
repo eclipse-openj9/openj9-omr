@@ -40,7 +40,7 @@ enum {XXCMP_EQ = 0, XXCMP_LT = 1, XXCMP_GT = 2};
 
 #define XXCMP_SIMPLIFIER(node, block, s, Type)                          \
 {                                                                       \
- simplifyChildren(node, block, s);                                      \
+ s->simplifyChildren(node, block);                                      \
  TR::Node *firstChild  = node->getFirstChild();                          \
  TR::Node *secondChild = node->getSecondChild();                         \
  int8_t table[3] = XXCMP_TABLE;                                         \
@@ -166,7 +166,6 @@ inline OMR::TR_ConditionCodeNumber calculateUnsignedCC(uint64_t result, bool car
       return OMR::ConditionCode3;
    }
 
-void simplifyChildren(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 bool performTransformationSimplifier(TR::Node * node, TR::Simplifier * s);
 void setIsHighWordZero(TR::Node * node, TR::Simplifier * s);
 TR::Node *_gotoSimplifier(TR::Node * node, TR::Block * block,  TR::TreeTop* curTree,  TR::Optimization * s);
@@ -202,5 +201,6 @@ void removePaddingNode(TR::Node *node, TR::Simplifier *s);
 void stopUsingSingleNode(TR::Node *node, bool removePadding, TR::Simplifier *s);
 TR::TreeTop *findTreeTop(TR::Node * callNode, TR::Block * block);
 TR::Node *removeIfToFollowingBlock(TR::Node * node, TR::Block * block, TR::Simplifier * s);
+void normalizeShiftAmount(TR::Node * node, int32_t normalizationConstant, TR::Simplifier * s);
 
 #endif

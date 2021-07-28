@@ -252,7 +252,9 @@ public:
    bool hasCheckcastsOrInstanceOfs()         { return _methodFlags2.testAny(HasCheckCasts|HasInstanceOfs); }
    bool hasBranches()                        { return _methodFlags2.testAny(HasBranches); }
    void setHasBranches(bool b)               { _methodFlags2.set(HasBranches, b); }
-
+   bool hasVectorAPI()                       { return _methodFlags2.testAny(HasVectorAPI); }
+   void setHasVectorAPI(bool b)              { _methodFlags2.set(HasVectorAPI, b); }
+   
    int32_t getNumberOfBackEdges();
 
    bool canDirectNativeCall()                { return _properties.testAny(CanDirectNativeCall); }

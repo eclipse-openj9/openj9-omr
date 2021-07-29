@@ -329,6 +329,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {DisableFastStringIndexOfString,       "O\tdisable fast String.indexOf",                    SET_OPTION_BIT(TR_DisableFastStringIndexOf), "F"},
    {"disableFieldPrivatization",          "O\tdisable field privatization",                    TR::Options::disableOptimization, fieldPrivatization, 0, "P"},
    {"disableForcedEXInlining",            "O\tdisable forced EX inlining",                     SET_OPTION_BIT(TR_DisableForcedEXInlining), "F"},
+   {"disableForceInlineAnnotations",      "M\tdisable recognition of @ForceInline",            SET_OPTION_BIT(TR_DisableForceInlineAnnotations), "F"},
    {"disableFPCodeGen",                   "O\tdisable floating point code generation",               SET_OPTION_BIT(TR_DisableFPCodeGen), "F"},
    {"disableFPE",                         "C\tdisable FPE",                                    SET_OPTION_BIT(TR_DisableFPE), "F"},
    {"disableGCRPatching",                 "R\tdisable patching of the GCR guard",              RESET_OPTION_BIT(TR_EnableGCRPatching), "F"},

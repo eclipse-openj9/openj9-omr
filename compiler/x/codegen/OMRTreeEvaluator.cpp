@@ -2878,34 +2878,16 @@ static TR::Register * inlineSinglePrecisionSQRT(TR::Node *node, TR::CodeGenerato
   TR::Register *opRegister = NULL;
   opRegister = cg->evaluate(operand);
 
-  if (opRegister->getKind() == TR_FPR)
-    {
-      if (operand->getReferenceCount()==1)
-   targetRegister = opRegister;
-      else
-   targetRegister = cg->allocateSinglePrecisionRegister(TR_FPR);
+  TR_ASSERT_FATAL(opRegister->getKind() == TR_FPR, "Unexpected register kind, expecting TR_FPR.");
 
-      generateRegRegInstruction(TR::InstOpCode::SQRTSSRegReg, node, targetRegister, opRegister, cg);
-    }
+  if (operand->getReferenceCount() == 1)
+    targetRegister = opRegister;
   else
-    {
-      targetRegister = cg->floatClobberEvaluate(operand);
+    targetRegister = cg->allocateSinglePrecisionRegister(TR_FPR);
 
-      if (targetRegister)
-         {
-         if (targetRegister->needsPrecisionAdjustment() || targetRegister->mayNeedPrecisionAdjustment())
-            {
-            TR::TreeEvaluator::insertPrecisionAdjustment(targetRegister, operand, cg);
-            }
-         targetRegister->setMayNeedPrecisionAdjustment();
-         targetRegister->setNeedsPrecisionAdjustment();
-         }
-
-      generateFPRegInstruction(TR::InstOpCode::FSQRTReg, node, targetRegister, cg);
-    }
-
-
+  generateRegRegInstruction(TR::InstOpCode::SQRTSSRegReg, node, targetRegister, opRegister, cg);
   node->setRegister(targetRegister);
+
   if (firstChild)
     cg->recursivelyDecReferenceCount(firstChild);
 
@@ -3090,19 +3072,7 @@ TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::C
    // If the method to be called is marked as an inline method, see if it can
    // actually be generated inline.
    //
-   TR::Register *returnRegister = TR::TreeEvaluator::performCall(node, false, true, cg);
-
-   // A strictfp caller needs to adjust double return values;
-   // a float callee always returns values that have correct precision.
-   //
-   if (returnRegister &&
-       returnRegister->needsPrecisionAdjustment() &&
-       comp->getCurrentMethod()->isStrictFP())
-      {
-      TR::TreeEvaluator::insertPrecisionAdjustment(returnRegister, node, cg);
-      }
-
-   return returnRegister;
+   return TR::TreeEvaluator::performCall(node, false, true, cg);
    }
 
 // TR::icalli, TR::acalli, TR::lcalli, TR::fcalli, TR::dcalli, TR::calli handled by indirectCallEvaluator
@@ -3123,16 +3093,6 @@ TR::Register *OMR::X86::TreeEvaluator::indirectCallEvaluator(TR::Node *node, TR:
       }
    else
       returnRegister = TR::TreeEvaluator::performCall(node, true, true, cg);
-
-   // A strictfp caller needs to adjust double return values;
-   // a float callee always returns values that have correct precision.
-   //
-   if (returnRegister &&
-       returnRegister->needsPrecisionAdjustment() &&
-       comp->getCurrentMethod()->isStrictFP())
-      {
-      TR::TreeEvaluator::insertPrecisionAdjustment(returnRegister, node, cg);
-      }
 
    return returnRegister;
    }

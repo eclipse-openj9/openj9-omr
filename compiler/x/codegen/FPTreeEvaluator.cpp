@@ -120,59 +120,6 @@ void OMR::X86::TreeEvaluator::coerceFPOperandsToXMMRs(TR::Node *node, TR::CodeGe
       }
    }
 
-void OMR::X86::TreeEvaluator::insertPrecisionAdjustment(TR::Register      *reg,
-                                                    TR::Node          *root,
-                                                    TR::CodeGenerator *cg)
-   {
-   TR::DataType    dt;
-   TR::InstOpCode::Mnemonic  opStore, opLoad;
-   TR::Node        *node = root;
-
-   bool            useFloatSet = true;
-
-   if (node->getOpCode().isBooleanCompare())
-      {
-      node = root->getFirstChild();
-      }
-
-   if ((node->getOpCode().isDouble() && (node->getOpCodeValue() != TR::f2d)) ||
-       (node->getOpCode().isBooleanCompare() && node->getFirstChild()->getDataType() != TR::Float) ||
-       node->getOpCodeValue() == TR::d2i ||
-       node->getOpCodeValue() == TR::d2l)
-      {
-      useFloatSet = false;
-      }
-
-#ifdef DEBUG
-   else if (!(node->getOpCodeValue() == TR::f2d) &&
-            !(node->getOpCode().isFloat()) &&
-            !(node->getOpCodeValue() == TR::f2i) &&
-            !(node->getOpCodeValue() == TR::f2l))
-      {
-      diagnostic("insertPrecisionAdjustment() ==> invalid node type for precision adjustment!");
-      }
-#endif
-
-   if (useFloatSet)
-      {
-      opStore = TR::InstOpCode::FSTPMemReg;
-      opLoad = TR::InstOpCode::FLDRegMem;
-      dt = TR::Float;
-      }
-   else
-      {
-      opStore = TR::InstOpCode::DSTPMemReg;
-      opLoad = TR::InstOpCode::DLDRegMem;
-      dt = TR::Double;
-      }
-
-   TR::MemoryReference  *tempMR = (cg->machine())->getDummyLocalMR(dt);
-   generateFPMemRegInstruction(opStore, node, tempMR, reg, cg);
-   generateFPRegMemInstruction(opLoad, node, reg, tempMR, cg);
-   reg->resetNeedsPrecisionAdjustment();
-   reg->resetMayNeedPrecisionAdjustment();
-   }
-
 
 TR::Register *OMR::X86::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -467,10 +414,6 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
       generateMemRegInstruction(xmmOpCode, node, tempMR, returnRegister, cg);
       generateMemInstruction(x87OpCode, node, generateX86MemoryReference(*tempMR, 0, cg), cg);
       }
-   else if (returnRegister->mayNeedPrecisionAdjustment())
-      {
-      TR::TreeEvaluator::insertPrecisionAdjustment(returnRegister, node, cg);
-      }
 
    // Restore the default FPCW if it has been forced to single precision mode.
    //
@@ -514,16 +457,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpBinaryArithmeticEvaluator(TR::Node     
                                                               bool              isFloat,
                                                               TR::CodeGenerator *cg)
    {
-   if (cg->useSSEForSinglePrecision() && cg->useSSEForDoublePrecision())
-      {
       return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
-      }
-   else
-      {
-      TR_X86FPBinaryArithmeticAnalyser  temp(node, cg);
-      temp.genericFPAnalyser(node);
-      return node->getRegister();
-      }
    }
 
 TR::Register *OMR::X86::TreeEvaluator::fpUnaryMaskEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -559,28 +493,23 @@ TR::Register *OMR::X86::TreeEvaluator::fpUnaryMaskEvaluator(TR::Node *node, TR::
 
    uint8_t*      mask;
    TR::InstOpCode::Mnemonic opcode;
-   TR::InstOpCode::Mnemonic x87op;
    switch (node->getOpCodeValue())
       {
       case TR::fabs:
          mask = MASK_FABS;
          opcode = TR::InstOpCode::PANDRegMem;
-         x87op = TR::InstOpCode::FABSReg;
          break;
       case TR::dabs:
          mask = MASK_DABS;
          opcode = TR::InstOpCode::PANDRegMem;
-         x87op = TR::InstOpCode::DABSReg;
          break;
       case TR::fneg:
          mask = MASK_FNEG;
          opcode = TR::InstOpCode::PXORRegMem;
-         x87op = TR::InstOpCode::FCHSReg;
          break;
       case TR::dneg:
          mask = MASK_DNEG;
          opcode = TR::InstOpCode::PXORRegMem;
-         x87op = TR::InstOpCode::DCHSReg;
          break;
       default:
          TR_ASSERT(false, "Unsupported OpCode");
@@ -595,28 +524,12 @@ TR::Register *OMR::X86::TreeEvaluator::fpUnaryMaskEvaluator(TR::Node *node, TR::
       result->setIsSinglePrecision();
       }
 
-   if (value->getKind() != TR_FPR) // Legacy supported for X87, to be deleted
+   // TODO 3-OP Optimization
+   if (result != value)
       {
-      if (value->needsPrecisionAdjustment())
-         TR::TreeEvaluator::insertPrecisionAdjustment(value, node, cg);
-      if (value->mayNeedPrecisionAdjustment())
-         result->setMayNeedPrecisionAdjustment();
-
-      if (result != value)
-         {
-         generateFPST0STiRegRegInstruction(value->isSinglePrecision() ? TR::InstOpCode::FLDRegReg : TR::InstOpCode::DLDRegReg, node, result, value, cg);
-         }
-      generateFPRegInstruction(x87op, node, result, cg);
+      generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, result, value, cg);
       }
-   else
-      {
-      // TODO 3-OP Optimization
-      if (result != value)
-         {
-         generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, result, value, cg);
-         }
-      generateRegMemInstruction(opcode, node, result, generateX86MemoryReference(cg->findOrCreate16ByteConstant(node, mask), cg), cg);
-      }
+   generateRegMemInstruction(opcode, node, result, generateX86MemoryReference(cg->findOrCreate16ByteConstant(node, mask), cg), cg);
 
    node->setRegister(result);
    cg->decReferenceCount(child);
@@ -696,7 +609,6 @@ TR::Register *OMR::X86::TreeEvaluator::ddivEvaluator(TR::Node *node, TR::CodeGen
 TR::Register *OMR::X86::TreeEvaluator::fpRemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    bool         nodeIsDouble = node->getDataType() == TR::Double;
-   TR::Register *targetRegister;
    TR::Compilation *comp = cg->comp();
    const TR::X86LinkageProperties &linkageProperties = cg->getLinkage(comp->getJittedMethodSymbol()->getLinkageConvention())->getProperties();
 
@@ -714,30 +626,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpRemEvaluator(TR::Node *node, TR::CodeGe
       }
 
    TR::SymbolReference *helperSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(remainderHelper);
-   targetRegister = TR::TreeEvaluator::performHelperCall(node, helperSymRef, nodeIsDouble ? TR::dcall : TR::fcall, false, cg);
-
-   if ((!nodeIsDouble && cg->useSSEForSinglePrecision()) ||
-       (nodeIsDouble && cg->useSSEForDoublePrecision()))
-      return targetRegister;
-
-   if (nodeIsDouble &&
-       (comp->getCurrentMethod()->isStrictFP() ||
-        comp->getOption(TR_StrictFP)))
-      {
-      // Strict double op.
-      //
-      targetRegister->setMayNeedPrecisionAdjustment();
-      targetRegister->setNeedsPrecisionAdjustment();
-      }
-   else if (!nodeIsDouble && !comp->getJittedMethodSymbol()->usesSinglePrecisionMode())
-      {
-      // Float op in a double-precision method.
-      //
-      targetRegister->setMayNeedPrecisionAdjustment();
-      targetRegister->setNeedsPrecisionAdjustment();
-      }
-
-   return targetRegister;
+   return TR::TreeEvaluator::performHelperCall(node, helperSymRef, nodeIsDouble ? TR::dcall : TR::fcall, false, cg);
    }
 
 // also handles b2f, bu2f, s2f, su2f evaluators

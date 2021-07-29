@@ -1080,7 +1080,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
                              TR::Options::setStaticNumeric, (intptr_t)&OMR::Options::_stopThrottlingTime, 0, "F%d", NOT_IN_SUBSET },
    {"storeSinkingLastOpt=", "C<nnn>\tLast store sinking optimization to perform", TR::Options::set32BitNumeric, offsetof(OMR::Options, _storeSinkingLastOpt), static_cast<uintptr_t>(-1) , "F%d"},
    {"stressTrampolines", "O\tenables trampolines to always be used for method and helper calls", SET_OPTION_BIT(TR_StressTrampolines), "F"},
-   {"strictFPCompares",   "C\tassume strictFP semantics for floating point compares only", SET_OPTION_BIT(TR_StrictFPCompares), "F" },
    {"subtractLoopyMethodCounts",   "C\tSubtract loopy method counts instead of dividing", SET_OPTION_BIT(TR_SubtractLoopyMethodCounts), "F", NOT_IN_SUBSET},
    {"subtractMethodCountsWhenIprofilerIsOff",   "C\tSubtract method counts instead of dividing when Iprofiler is off", SET_OPTION_BIT(TR_SubtractMethodCountsWhenIprofilerIsOff), "F", NOT_IN_SUBSET},
    {"suffixLogs",          "O\tadd the date/time/pid suffix to the file name of the logs", SET_OPTION_BIT(TR_EnablePIDExtension), "F"},

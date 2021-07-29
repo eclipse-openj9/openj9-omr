@@ -5134,236 +5134,6 @@ static void bitTestingOp(TR::Node * node, TR::Simplifier *s)
      }
   }
 
-/**
- * analyse expression and determine if it's result will exceed the precision of the node's
- * type.  The motivation is to see if using FMA whose intermediate result has higher precision
- * than the arguments, would be identical to an FP strict implementation.  If so, then
- * we can substitute (a*b)+c expression trees at codegeneration time with fma instructions,
- * if supported on the platform.
-
-   In general we can use fmadd/fmsub if.
-     - Multiply and add/subtract are in same method and
-           - One child of multiply is double and other is power of 2 and method is not strictfp
-           - One child of multiply is f2d or i2d and other is double const of <(53-24) or <(53-31)
-        bits precision ,but result might overflow a double range or denormalised precision
-     - Children of multiplies are both f2d
-     - One child of multiply is f2d or i2d and other is double const of <(53-24) or <(53-31) bits precision
-       and result cannot overflow a double range or precision.  This is currently not handled as it requires
-       value propagation of floats.
-
-  NOTE: rounding of very large values can cause overflow, but these constants would have to be:
-  i2d: |constant| must be < 2^993
-  f2d: |constant| must be < 2^896 and >= 2^-901
- */
-
-static bool isOperationFPCompliant(TR::Node *parent,TR::Node *arithExprNode, TR::Simplifier *s)
-   {
-   static char * nofma = feGetEnv("TR_NOFMA");
-   if (nofma) return false;
-
-   if (!s->cg()->supportsFusedMultiplyAdd()) return false; // no point if FMA not supported
-
-   if (!arithExprNode->getOpCode().isMul()) return false;
-
-   if (s->comp()->getOption(TR_IgnoreIEEERestrictions)) return true;
-
-   TR::Node *mulNode = arithExprNode;
-   bool traceIt = false;
-   bool i2dConv=false;
-   bool f2dConv=false;
-
-   /** if both children are being converted to double, and they're going from
-    * less precision to double precision then it's safe to convert them */
-   if (mulNode->getDataType()== TR::Double && mulNode->getFirstChild()->getOpCode().isConversion() &&
-      mulNode->getSecondChild()->getOpCode().isConversion())
-     { // long->double is only case where we must give up
-     if (mulNode->getFirstChild()->getOpCode().isLong())
-        {
-        if (traceIt) traceMsg(s->comp(), "Node: %p fails because conversion type is long\n",mulNode->getFirstChild());
-        return false;
-        }
-     if (mulNode->getSecondChild()->getOpCode().isLong())
-        {
-        if (traceIt) traceMsg(s->comp(), "Node: %p fails because conversion type is long\n",mulNode->getSecondChild());
-        return false;
-        }
-     if (traceIt) traceMsg(s->comp(), "Node: %p passes because conversion type is <long\n",mulNode);
-     return true;
-     }
-
-   bool sameCaller = mulNode->getInlinedSiteIndex() == parent->getInlinedSiteIndex();
-
-   bool mulChildIsConst = mulNode->getSecondChild()->getOpCode().isLoadConst();
-   TR::Node *mulConstChild = mulNode->getSecondChild();
-   TR::Node *mulNonConstChild = mulNode->getFirstChild();
-
-   /**
-     * assume that constants have already been folded */
-   if (mulNode->getFirstChild()->getOpCode().isLoadConst())
-      {
-      mulChildIsConst = true;
-      mulConstChild = mulNode->getFirstChild();
-      mulNonConstChild = mulNode->getSecondChild();
-      }
-
-   // 'constant' may be loaded out of literal pool
-   if (!mulChildIsConst && s->cg()->supportsOnDemandLiteralPool())
-      {
-      if (mulNonConstChild->getOpCode().isLoadIndirect() && // the "nonconst' node is actually the const
-         mulNonConstChild->getSymbolReference()->isLiteralPoolAddress())
-         {
-         TR::Node * temp = mulConstChild;
-         mulConstChild = mulNonConstChild;
-         mulNonConstChild = temp;
-         mulChildIsConst=true;
-         }
-
-      if (mulChildIsConst || (mulConstChild->getOpCode().isLoadIndirect() &&
-         mulConstChild->getSymbolReference()->isLiteralPoolAddress()))
-         {
-         // offset in the sym ref points to the constant node
-         TR::Node *constNode = (TR::Node *)(mulConstChild->getSymbolReference()->getOffset());
-         if (traceIt) traceMsg(s->comp(), "LiteralPool load detected:%p points to %p\n",mulConstChild,constNode);
-         mulConstChild = constNode;
-         mulChildIsConst = true;
-         }
-      }
-
-   if (!mulChildIsConst)
-      {
-      if (traceIt) traceMsg(s->comp(), "Node %p fails since not a const\n",mulNode);
-      return false;
-      }
-
-   // We guarantee at this point that the 2nd child is the constant
-
-   if (!sameCaller)
-      {
-      if (traceIt) traceMsg(s->comp(), "Node: %p fails because split between two methods \n",mulNode);
-      return false;
-      }
-
-   // we look at trailing zeros of the constant ie how 'small' is the number, and that
-   // number indicates the kind of precision of the result.  Subtract this number
-   // from the precision of current type and if smaller than the precision limit then
-   // a fused multiply will have same results as lower-precision mult.
-   // So, for example  i2f: float has 24 bits of precision, so the most precision
-   // we have 53-24 bits of precision 'available'--anything requiring more bits will
-   // give different results between fused multiply and double multiply
-   // So the constant must not cause the precision to increase by more than
-   // this 'available' bits.  So, if the constant is 1000...010000000000,
-   // then there are 10 zeros and hence can increase precision requirements by 53-10=43 bits.
-   // available precision is 53-24 = 19, 43 > 19 (=14) so can't use fmul
-   // This boils down to whether precision of the constant is greater than the precision of the
-   // non-const argument (aka the conversion operator).
-   //
-   if (mulNonConstChild->getOpCode().isConversion())
-      {
-      uint32_t precisionLimit=53; // bit count must be more than this to assure no rounding issues
-      switch(mulNonConstChild->getOpCodeValue())
-         {
-         case TR::i2d: precisionLimit = 31; i2dConv = true; break;
-         case TR::f2d: precisionLimit = 24; f2dConv = true; break;
-         default: break;
-         /*
-          these nodes are actually never generated by J9, so no chance to test them
-         case TR::b2d: precisionLimit = 8; break; //unsigned
-         case TR::su2d: precisionLimit = 16; break; //unsigned
-         case TR::s2d: precisionLimit = 15; break; //signed
-         */
-         }
-
-      double possibleRoundedValue=1;// if not a float or double value, doesn't matter
-      ///
-      /// The Java language spec
-      /// lists bit sizes for doubles.  53 bits used for precision exponent, 11 for magnitude
-      /// and leading one for sign.  So check # bits in precision only by masking
-      /// off these first 11+1 bits
-      uint32_t bitcount;
-      switch(mulConstChild->getDataType())
-         {
-         // I don't believe it is possible to reach here with anything other than a floating
-         // point const child; even in the case of a literal pool load.
-         case TR::Float:
-           {
-           union {
-               float f;
-               int32_t i;
-           } u;
-           u.f = mulConstChild->getFloat();
-           possibleRoundedValue = fabs(u.f);
-           bitcount = trailingZeroes(u.i & 0x007fffff); // just look @ mantissa
-           break;
-           }
-         case TR::Double: // rely on fact same storage used for longs
-            if (mulConstChild->getDataType() == TR::Double)
-               {
-               possibleRoundedValue = fabs(mulConstChild->getDouble());
-               }
-            bitcount = trailingZeroes(mulConstChild->getLongIntLow());
-            if (32 == bitcount) bitcount+=  trailingZeroes(0x000fffff & mulConstChild->getLongIntHigh());
-
-            if (traceIt) traceMsg(s->comp(), "Node:%p  bitcount:%d hex:%x%x value:%g\n",mulConstChild,bitcount,
-                mulConstChild->getLongIntHigh(),mulConstChild->getLongIntLow(),
-                mulConstChild->getDouble());
-
-            break;
-
-            {
-         case TR::Int8:
-         case TR::Int16:
-         case TR::Int32:
-         case TR::Int64:
-            TR_ASSERT(0, "We should not reach here for these data types.");
-            return false;
-            }
-
-         default:
-            return false;
-         }
-
-        // check for huge constants where rounding could cause overflow
-        if (i2dConv)
-           {
-           if (possibleRoundedValue >= FMA_CONST_HIGHBOUNDI2D)
-              {
-               if (traceIt) traceMsg(s->comp(), "Fails because |constant| %e exceeds %e\n",possibleRoundedValue,FMA_CONST_HIGHBOUNDI2D);
-               return false;
-              }
-           }
-        else if (f2dConv)
-           {
-           if (possibleRoundedValue >= FMA_CONST_HIGHBOUNDF2D || possibleRoundedValue < FMA_CONST_LOWBOUND)
-              {
-               if (traceIt) traceMsg(s->comp(), "Fails because |constant| %e exceeds range %e-%e \n",possibleRoundedValue,FMA_CONST_LOWBOUND,
-                                   FMA_CONST_HIGHBOUNDF2D);
-               return false;
-              }
-           }
-
-      if (bitcount > precisionLimit) return true;
-      else if (traceIt)
-        traceMsg(s->comp(), "Node:%p failed bitcount:%d >= precision:%d\n",mulConstChild,bitcount,precisionLimit);
-      }
-
-   bool loadConstIsPowerOfTwoDbl = (mulConstChild->getDataType() == TR::Double) &&
-                isNZDoublePowerOfTwo(mulConstChild->getDouble());
-
-   bool loadConstIsPowerOfTwoFloat = (mulConstChild->getDataType() == TR::Float) &&
-                isNZFloatPowerOfTwo(mulConstChild->getFloat());
-
-   bool isStrictfp =  s->comp()->getCurrentMethod()->isStrictFP() || s->comp()->getOption(TR_StrictFP);
-
-
-   if ((loadConstIsPowerOfTwoDbl || loadConstIsPowerOfTwoFloat) && !isStrictfp)
-      return true;
-   else if (traceIt)
-      traceMsg(s->comp(), "Fails because not power of 2 or !strict\n",mulConstChild);
-
-   if (traceIt) traceMsg(s->comp(), "Fails because strict, no const or bitcount exceeded\n");
-   return false;
-   }
-
 // Convert a branch that uses bitwise operators into proper logical
 // control flow.
 //
@@ -7012,8 +6782,6 @@ TR::Node *faddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    firstChild = node->getFirstChild();
    secondChild = node->getSecondChild();
 
-   if (isOperationFPCompliant(node, firstChild, s)) firstChild->setIsFPStrictCompliant(true);
-   if (isOperationFPCompliant(node, secondChild, s))secondChild->setIsFPStrictCompliant(true);
    return node;
    }
 
@@ -7045,8 +6813,6 @@ TR::Node *daddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    //
    BINARY_IDENTITY_OP(LongInt, DOUBLE_NEG_ZERO)
 
-   if (isOperationFPCompliant(node, firstChild, s)) firstChild->setIsFPStrictCompliant(true);
-   if (isOperationFPCompliant(node, secondChild, s))secondChild->setIsFPStrictCompliant(true);
    return node;
    }
 
@@ -8093,9 +7859,6 @@ TR::Node *fsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    firstChild  = node->getFirstChild();
    secondChild = node->getSecondChild();
 
-   if (isOperationFPCompliant(node,firstChild, s)) firstChild->setIsFPStrictCompliant(true);
-   if (isOperationFPCompliant(node,secondChild, s))secondChild->setIsFPStrictCompliant(true);
-
    return node;
    }
 
@@ -8125,8 +7888,6 @@ TR::Node *dsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    //
    BINARY_IDENTITY_OP(LongInt, DOUBLE_POS_ZERO)
 
-   if (isOperationFPCompliant(node, firstChild, s)) firstChild->setIsFPStrictCompliant(true);
-   if (isOperationFPCompliant(node, secondChild, s))secondChild->setIsFPStrictCompliant(true);
    return node;
    }
 

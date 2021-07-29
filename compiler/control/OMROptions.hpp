@@ -91,9 +91,7 @@ enum TR_CompilationOptions
    // Regardless of any class or method modifiers, assume strictFP semantics
    // when evaluating all floating point expressions.
    TR_StrictFP                   = 0x00000400,
-   // Regardless of any class or method modifiers, assume strictFP semantics
-   // when evaluating floating point compares only.
-   TR_StrictFPCompares           = 0x00000800,
+   // Available                  = 0x00000800,
    TR_RegisterMaps               = 0x00001000,
    TR_CreatePCMaps               = 0x00002000,
    TR_AggressiveInlining         = 0x00004000,

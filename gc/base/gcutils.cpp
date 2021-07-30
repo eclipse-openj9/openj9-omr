@@ -190,6 +190,8 @@ getContractReasonAsString(ContractReason reason)
 		return "heap reconfiguration";
 	case FORCED_NURSERY_CONTRACT:
 		return "forced nursery contract";
+	case SOFT_MX_CONTRACT:
+		return "satisfy softmx";	
 	default:
 		return "unknown";
 	}

@@ -4204,6 +4204,8 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_ARM64arrayCopy:                                   return "__arrayCopy";
          case TR_ARM64forwardArrayCopy:                            return "__forwardArrayCopy";
          case TR_ARM64backwardArrayCopy:                           return "__backwardArrayCopy";
+         case TR_ARM64interfaceCompleteSlot2:                      return "_interfaceCompleteSlot2";
+         case TR_ARM64interfaceSlotsUnavailable:                   return "_interfaceSlotsUnavailable";
          }
       }
 #endif

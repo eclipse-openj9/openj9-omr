@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -793,7 +793,7 @@ class BtypeInstruction : public StypeInstruction
        TR::Instruction          *precedingInstruction,
        TR::CodeGenerator        *cg
        )
-     : StypeInstruction(op, n, s1reg, s2reg, 0, cg),
+     : StypeInstruction(op, n, s1reg, s2reg, 0, precedingInstruction, cg),
        _symbol(sym),
        _estimatedBinaryLocation(0)
      {

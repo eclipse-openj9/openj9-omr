@@ -24,6 +24,7 @@
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/ARM64ShiftCode.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGeneratorUtils.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
 #include "codegen/GenerateInstructions.hpp"
@@ -1769,6 +1770,8 @@ static TR::Instruction *compareIntsAndBranchForArrayCopyBNDCHK(TR::ARM64Conditio
 TR::Register*
 OMR::ARM64::TreeEvaluator::ArrayCopyBNDCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   // check that child[0] >= child[1], if not branch to check failure
+   // If the first child is a constant and the second isn't, swap the children
 
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
@@ -2937,12 +2940,203 @@ OMR::ARM64::TreeEvaluator::arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *
 	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 	}
 
+static void
+inlineConstantLengthArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *srcReg, TR::Register *dstReg, TR::CodeGenerator *cg)
+   {
+   if (byteLen == 0)
+      return;
+
+   int64_t iteration64 = byteLen >> 6;
+   int32_t residue64 = byteLen & 0x3F;
+   TR::Register *dataReg1 = (byteLen >= 16) ? cg->allocateRegister(TR_VRF) : NULL;
+   TR::Register *dataReg2 = (residue64 & 0xF) ? cg->allocateRegister() : NULL;
+
+   if (iteration64 > 1)
+      {
+      TR::Register *cntReg = cg->allocateRegister();
+      loadConstant64(cg, node, iteration64, cntReg);
+
+      TR::LabelSymbol *loopLabel = generateLabelSymbol(cg);
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
+
+      // Copy 16x4 bytes in a loop
+      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpostq, node, dataReg1, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, 16, cg));
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpostq, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, 16, cg), dataReg1);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpostq, node, dataReg1, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, 16, cg));
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpostq, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, 16, cg), dataReg1);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpostq, node, dataReg1, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, 16, cg));
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpostq, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, 16, cg), dataReg1);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpostq, node, dataReg1, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, 16, cg));
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpostq, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, 16, cg), dataReg1);
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subimmx, node, cntReg, cntReg, 1);
+      generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, cntReg, loopLabel);
+
+      cg->stopUsingRegister(cntReg);
+      }
+   else if (iteration64 == 1)
+      {
+      residue64 += 64;
+      }
+
+   int32_t offset = 0;
+   while (residue64 > 0)
+      {
+      TR::InstOpCode::Mnemonic loadOp;
+      TR::InstOpCode::Mnemonic storeOp;
+      int32_t dataSize;
+      TR::Register *dataReg = (residue64 >= 16) ? dataReg1 : dataReg2;
+
+      if (residue64 >= 16)
+         {
+         loadOp  = TR::InstOpCode::vldrimmq;
+         storeOp = TR::InstOpCode::vstrimmq;
+         dataSize = 16;
+         }
+      else if (residue64 >= 8)
+         {
+         loadOp  = TR::InstOpCode::ldrimmx;
+         storeOp = TR::InstOpCode::strimmx;
+         dataSize = 8;
+         }
+      else if (residue64 >= 4)
+         {
+         loadOp  = TR::InstOpCode::ldrimmw;
+         storeOp = TR::InstOpCode::strimmw;
+         dataSize = 4;
+         }
+      else if (residue64 >= 2)
+         {
+         loadOp  = TR::InstOpCode::ldrhimm;
+         storeOp = TR::InstOpCode::strhimm;
+         dataSize = 2;
+         }
+      else
+         {
+         loadOp  = TR::InstOpCode::ldrbimm;
+         storeOp = TR::InstOpCode::strbimm;
+         dataSize = 1;
+         }
+
+      generateTrg1MemInstruction(cg, loadOp, node, dataReg, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, offset, cg));
+      generateMemSrc1Instruction(cg, storeOp, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, offset, cg), dataReg);
+      offset += dataSize;
+      residue64 -= dataSize;
+      }
+
+   if (dataReg1)
+      cg->stopUsingRegister(dataReg1);
+   if (dataReg2)
+      cg->stopUsingRegister(dataReg2);
+
+   return;
+   }
+
+static bool
+stopUsingCopyReg(TR::Node *node, TR::Register *&reg, TR::CodeGenerator *cg)
+   {
+   if (node != NULL)
+      {
+      reg = cg->evaluate(node);
+      if (!cg->canClobberNodesRegister(node))
+         {
+         TR::Register *copyReg;
+         if (reg->containsInternalPointer() || !reg->containsCollectedReference())
+            {
+            copyReg = cg->allocateRegister();
+            if (reg->containsInternalPointer())
+               {
+               copyReg->setPinningArrayPointer(reg->getPinningArrayPointer());
+               copyReg->setContainsInternalPointer();
+               }
+            }
+         else
+            {
+            copyReg = cg->allocateCollectedReferenceRegister();
+            }
+         generateMovInstruction(cg, node, copyReg, reg);
+         reg = copyReg;
+         return true;
+         }
+      }
+
+   return false;
+   }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::arraycopyEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getNumChildren() == 3, "Reference arraycopy is not supported yet");
+
+   TR::Node *srcAddrNode, *dstAddrNode, *lengthNode;
+   TR::Register *srcAddrReg = NULL, *dstAddrReg = NULL, *lengthReg;
+   bool stopUsingCopyReg1, stopUsingCopyReg2, stopUsingCopyReg3 = false;
+
+   // Primitive arraycopy
+   // child 0: Source byte address
+   // child 1: Destination byte address
+   // child 2: Copy length in bytes
+   srcAddrNode = node->getChild(0);
+   dstAddrNode = node->getChild(1);
+   lengthNode = node->getChild(2);
+
+   stopUsingCopyReg1 = stopUsingCopyReg(srcAddrNode, srcAddrReg, cg);
+   stopUsingCopyReg2 = stopUsingCopyReg(dstAddrNode, dstAddrReg, cg);
+
+   static const bool disableArrayCopyInlining = feGetEnv("TR_disableArrayCopyInlining") != NULL;
+   if (lengthNode->getOpCode().isLoadConst() && node->isForwardArrayCopy() && !disableArrayCopyInlining)
+      {
+      int64_t len = lengthNode->getType().isInt32() ? lengthNode->getInt() : lengthNode->getLongInt();
+      inlineConstantLengthArrayCopy(node, len, srcAddrReg, dstAddrReg, cg);
+
+      if (stopUsingCopyReg1)
+         cg->stopUsingRegister(srcAddrReg);
+      if (stopUsingCopyReg2)
+         cg->stopUsingRegister(dstAddrReg);
+
+      cg->decReferenceCount(srcAddrNode);
+      cg->decReferenceCount(dstAddrNode);
+      cg->decReferenceCount(lengthNode);
+
+      return NULL;
+      }
+
+   lengthReg = cg->evaluate(lengthNode);
+   if (!cg->canClobberNodesRegister(lengthNode))
+      {
+      TR::Register *lenCopyReg = cg->allocateRegister();
+      generateMovInstruction(cg, lengthNode, lenCopyReg, lengthReg);
+      lengthReg = lenCopyReg;
+      stopUsingCopyReg3 = true;
+      }
+
+   // x0-x4 are destroyed in the helper
+   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(5, 5, cg->trMemory());
+   TR::addDependency(deps, lengthReg, TR::RealRegister::x0, TR_GPR, cg);
+   TR::addDependency(deps, srcAddrReg, TR::RealRegister::x1, TR_GPR, cg);
+   TR::addDependency(deps, dstAddrReg, TR::RealRegister::x2, TR_GPR, cg);
+   TR::addDependency(deps, NULL, TR::RealRegister::x3, TR_GPR, cg);
+   TR::addDependency(deps, NULL, TR::RealRegister::x4, TR_GPR, cg);
+
+   TR::SymbolReference *arrayCopyHelper = cg->symRefTab()->findOrCreateRuntimeHelper(TR_ARM64arrayCopy, false, false, false);
+
+   generateImmSymInstruction(cg, TR::InstOpCode::bl, node,
+                             (uintptr_t)arrayCopyHelper->getMethodAddress(),
+                             deps, arrayCopyHelper, NULL);
+   cg->machine()->setLinkRegisterKilled(true);
+
+   if (stopUsingCopyReg1)
+      cg->stopUsingRegister(srcAddrReg);
+   if (stopUsingCopyReg2)
+      cg->stopUsingRegister(dstAddrReg);
+   if (stopUsingCopyReg3)
+      cg->stopUsingRegister(lengthReg);
+
+   cg->decReferenceCount(srcAddrNode);
+   cg->decReferenceCount(dstAddrNode);
+   cg->decReferenceCount(lengthNode);
+
+   return NULL;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::asynccheckEvaluator(TR::Node *node, TR::CodeGenerator *cg)

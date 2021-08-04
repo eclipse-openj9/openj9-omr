@@ -535,6 +535,12 @@ public:
    bool supportsSinglePrecisionSQRT() { return true; }
 
    /**
+    * @brief Answers whether Unsafe.copyMemory transformation is supported or not
+    * @return true if supported, false otherwise
+    */
+   bool canTransformUnsafeCopyToArrayCopy() { return true; }
+
+   /**
     * @brief Generates instructions for incrementing debug counter
     * @param[in] cursor:   instruction cursor
     * @param[in] counter:  debug counter

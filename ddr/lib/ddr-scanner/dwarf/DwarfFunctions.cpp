@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 IBM Corp. and others
+ * Copyright (c) 2015, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -203,7 +203,7 @@ dwarf_formflag(Dwarf_Attribute attr, Dwarf_Bool *returned_flag, Dwarf_Error *err
 }
 
 int
-dwarf_formudata(Dwarf_Attribute attr, Dwarf_Unsigned  *returned_val, Dwarf_Error *error)
+dwarf_formudata(Dwarf_Attribute attr, Dwarf_Unsigned *returned_val, Dwarf_Error *error)
 {
 	int ret = DW_DLV_OK;
 	if ((NULL == attr) || (NULL == returned_val)) {

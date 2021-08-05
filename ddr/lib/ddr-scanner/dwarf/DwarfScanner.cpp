@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2020 IBM Corp. and others
+ * Copyright (c) 2015, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1284,7 +1284,7 @@ evaluateOffset(Dwarf_Ptr expr, Dwarf_Unsigned len, Dwarf_Unsigned *offset)
 				}
 			} else if ((DW_OP_lit0 <= opcode) && (opcode <= DW_OP_lit31)) {
 				values.push((Dwarf_Unsigned)(opcode - DW_OP_lit0));
-			} else  {
+			} else {
 				printf("Unsupported opcode(%d) in exprloc\n", opcode);
 				return false;
 			}
@@ -1414,7 +1414,12 @@ DwarfScanner::addClassField(Dwarf_Die die, ClassType *newClass, const string &fi
 					ERRMSG("Getting form of offset attribute: %s\n", dwarf_errmsg(error));
 					goto FreeAttrThenDone;
 				}
-				if (DW_FORM_exprloc == form) {
+				if ((DW_FORM_block   == form)
+				||  (DW_FORM_block1  == form)
+				||  (DW_FORM_block2  == form)
+				||  (DW_FORM_block4  == form)
+				||  (DW_FORM_exprloc == form)
+				) {
 					Dwarf_Block *block = NULL;
 					if (DW_DLV_ERROR == dwarf_formblock(attr, &block, &error)) {
 						ERRMSG("Getting block/exprloc of offset attribute: %s\n", dwarf_errmsg(error));
@@ -1423,7 +1428,7 @@ DwarfScanner::addClassField(Dwarf_Die die, ClassType *newClass, const string &fi
 					bool ok = evaluateOffset(block->bl_data, block->bl_len, &offset);
 					dwarf_dealloc(_debug, block, DW_DLA_BLOCK);
 					if (!ok) {
-						ERRMSG("Cannot evalue offset expression for %s.%s\n",
+						ERRMSG("Cannot evaluate offset expression for %s.%s\n",
 								newClass->_name.c_str(), fieldName.c_str());
 						goto FreeAttrThenDone;
 					}

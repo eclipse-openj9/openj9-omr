@@ -129,8 +129,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"assignEveryGlobalRegister", "I\tnever refuse to assign any possible register for GRA in spite of the resulting potential spills", SET_OPTION_BIT(TR_AssignEveryGlobalRegister), "F"},
    {"assumeStartupPhaseUntilToldNotTo", "M\tUse compiler.Command(""endOfStartup"") to exit startup phase",
                  SET_OPTION_BIT(TR_AssumeStartupPhaseUntilToldNotTo), "F" },
-   {"assumeStrictFP",     "C\talways assume strictFP semantics",
-        SET_OPTION_BIT(TR_StrictFP), "F" },
    {"bcount=",            "O<nnn>\tnumber of invocations before compiling methods with loops",
         TR::Options::setCount, offsetof(OMR::Options,_initialBCount), 0, "F%d"},
    {"bestAvailOpt",       "O\tdeprecated; equivalent to optLevel=warm",

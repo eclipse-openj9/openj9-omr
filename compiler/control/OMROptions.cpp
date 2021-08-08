@@ -578,6 +578,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableUTF16BEEncoder",              "M\tdisable inlining of UTF16 Big Endian encoder", SET_OPTION_BIT(TR_DisableUTF16BEEncoder), "F"},
    {"disableValueProfiling",              "O\tdisable value profiling",                        SET_OPTION_BIT(TR_DisableValueProfiling), "F"},
    {"disableVariablePrecisionDAA",        "O\tdisable variable precision DAA optimizations",   SET_OPTION_BIT(TR_DisableVariablePrecisionDAA), "F"},
+   {"disableVectorAPIExpansion",          "M\tdisable expansion of Vector API",               SET_OPTION_BIT(TR_DisableVectorAPIExpansion), "F"},
    {"disableVectorBCD",                   "O\tdisable vector instructions for DAA BCD intrinsics ", SET_OPTION_BIT(TR_DisableVectorBCD), "F"},
    {"disableVectorRegGRA",                "O\tdisable global register allocation for vector regs",   SET_OPTION_BIT(TR_DisableVectorRegGRA), "F"},
    {"disableVerification",                "O\tdisable verification of internal data structures between passes", SET_OPTION_BIT(TR_DisableVerification), "F"},
@@ -1233,6 +1234,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceUseDefs",                     "L\ttrace use def info",                           SET_OPTION_BIT(TR_TraceUseDefs), "F"},
    {"traceValueNumbers",                "L\ttrace value number info",                      SET_OPTION_BIT(TR_TraceValueNumbers), "F"},
    {"traceVarHandleTransformer",        "L\ttrace VarHandle transformer",                  TR::Options::traceOptimization, varHandleTransformer, 0, "P"},  // Java specific option
+   {"traceVectorAPIExpansion",           "M\ttrace Vector API expansion",                 SET_OPTION_BIT(TR_TraceVectorAPIExpansion), "F"},
    {"traceVirtualGuardHeadMerger",      "L\ttrace virtual head merger",                    TR::Options::traceOptimization, virtualGuardHeadMerger, 0, "P"},
    {"traceVirtualGuardTailSplitter",    "L\ttrace virtual guard tail splitter",            TR::Options::traceOptimization, virtualGuardTailSplitter, 0, "P"},
    {"traceVPConstraints",               "L\ttrace the execution of value propagation merging and intersecting", SET_OPTION_BIT(TR_TraceVPConstraints), "F"},

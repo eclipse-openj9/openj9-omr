@@ -339,7 +339,6 @@ static bool tryFoldCompileTimeLoad(
    bool &isGlobal)
    {
    isGlobal = true;
-
    if (!node->getOpCode().isLoad())
       return false;
    else if (node->getOpCode().isLoadReg())
@@ -446,6 +445,30 @@ static bool tryFoldCompileTimeLoad(
                return true;
                }
             return didSomething;
+            }
+         else if (node->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef()
+                  && node->getFirstChild() == curNode
+                  && constraint->isNonNullObject()
+                  && constraint->getClassType()
+                  && constraint->getClassType()->asFixedClass()
+                  && constraint->getClass())
+            {
+            TR_OpaqueClassBlock *clazz = constraint->getClass();
+#ifdef J9_PROJECT_SPECIFIC
+            TR_J9VMBase *fej9 = vp->comp()->fej9();
+            // Non SVM AOT can deal with transformed loadaddr of system class only while Symbol Validation Manager can handle any class.
+            // Skip the transformation under non SVM AOT when class is not loaded by bootstrap class loader.
+            if (vp->comp()->compileRelocatableCode() && !vp->comp()->getOption(TR_UseSymbolValidationManager) && fej9->getClassLoader(clazz) != fej9->getSystemClassLoader())
+               return false;
+#endif
+            if (vp->trace())
+               traceMsg(vp->comp(), "VP Transforming VFTLoad to loadaddr: as n%dn is VFT load of known class", node->getGlobalIndex());
+            node->setNumChildren(0);
+            TR::Node::recreateWithSymRef(node, TR::loadaddr, vp->comp()->getSymRefTab()->findOrCreateClassSymbol(vp->comp()->getMethodSymbol(), -1, clazz));
+            node->setFlags(0);
+            vp->removeNode(curNode, true);
+            TR::DebugCounter::incStaticDebugCounter(vp->comp(), TR::DebugCounter::debugCounterName(vp->comp(), "VFTLoadKnownObject/(%s)/%s", vp->comp()->signature(), vp->comp()->getHotnessName(vp->comp()->getMethodHotness())));
+            return true;
             }
          else if (!curNode->getOpCode().isLoadIndirect())
             {

@@ -5,6 +5,80 @@ pr:
 
 jobs:
   - job:
+    displayName: 'Check line endings'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - script: |
+          allFiles=`git diff -C --diff-filter=ACM --name-only origin/master HEAD --`
+          if [ x"$allFiles" = x ] ; then
+            echo "There are no files to check for line endings."
+          else
+            badFiles=
+            for file in $allFiles ; do
+              type=`file -b $file`
+              case "$type" in
+                *empty*)
+                  echo "Empty file: '$file'"
+                  ;;
+                *text*)
+                  lcFile=`echo $file | tr '[:upper:]' '[:lower:]'`
+                  case "$lcFile" in
+                    *.bat | *.cmd)
+                      case "$type" in
+                        *CRLF*)
+                          echo "Good windows script: '$file' type: '$type'"
+                          ;;
+                        *)
+                          echo "ERROR - should have CRLF line terminators: '$file' type: '$type'"
+                          badFiles="$badFiles $file"
+                          ;;
+                      esac
+                      ;;
+                    *)
+                      case "$type" in
+                        *CR*)
+                          echo "ERROR - should have LF line terminators: '$file' type: '$type'"
+                          badFiles="$badFiles $file"
+                          ;;
+                        *)
+                          echo "Good text file: '$file' type: '$type'"
+                          ;;
+                      esac
+                      ;;
+                  esac
+                  ;;
+                *)
+                  echo "Non-text file: '$file' type: '$type'"
+                  ;;
+              esac
+            done
+            hashes='###################################'
+            if [ x"$badFiles" != x ] ; then
+              echo "$hashes"
+              echo "The following files were modified and have incorrect line endings:"
+              for file in $badFiles ; do
+                echo "$file"
+              done
+              echo "$hashes"
+              exit 1
+            else
+              git config core.whitespace blank-at-eof,blank-at-eol,cr-at-eol,space-before-tab
+              checkErrors=`git diff --check origin/master HEAD --`
+              if [ x"$checkErrors" = x ] ; then
+                echo "All modified files appear to have correct line endings."
+              else
+                echo "Found the following whitespace problems:"
+                echo "$hashes"
+                git diff --check origin/master HEAD --
+                echo "$hashes"
+                exit 1
+              fi
+            fi
+          fi
+        displayName: 'Check modified files'
+
+  - job:
     displayName: 'x86-64 Windows'
     pool:
       vmImage: vs2017-win2016

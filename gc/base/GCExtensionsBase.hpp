@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -77,6 +77,7 @@ class MM_RememberedSetSATB;
 class MM_Scavenger;
 #endif /* OMR_GC_MODRON_SCAVENGER */
 class MM_SizeClasses;
+class MM_SparseVirtualMemory;
 class MM_SweepHeapSectioning;
 class MM_SweepPoolManager;
 class MM_SweepPoolManagerAddressOrderedList;
@@ -280,6 +281,8 @@ public:
 	bool isArrayletDoubleMapRequested;
 	bool isArrayletDoubleMapAvailable;
 #endif /* OMR_GC_DOUBLE_MAP_ARRAYLETS */
+	bool isVirtualLargeObjectHeapRequested;
+	bool isVirtualLargeObjectHeapEnabled;
 	uintptr_t requestedPageSize;
 	uintptr_t requestedPageFlags;
 	uintptr_t gcmetadataPageSize;
@@ -570,6 +573,7 @@ public:
 	float excessiveGCFreeSizeRatio;
 
 	MM_Heap* heap;
+	MM_SparseVirtualMemory *largeObjectVirtualMemory; /**< Virtual memory for large objects (objectSize > arrayletLeafSize). Live large objects are committed to this separate virtual memory space when isVirtualLargeObjectHeapEnabled is true */
 	MM_HeapRegionManager* heapRegionManager; /**< The heap region manager used to view the heap as regions of memory */
 	MM_MemoryManager* memoryManager; /**< memory manager used to access to virtual memory instances */
 	uintptr_t aggressive;
@@ -1430,6 +1434,8 @@ public:
 		, isArrayletDoubleMapRequested(false)
 		, isArrayletDoubleMapAvailable(false)
 #endif /* OMR_GC_DOUBLE_MAP_ARRAYLETS */
+		, isVirtualLargeObjectHeapRequested(false)
+		, isVirtualLargeObjectHeapEnabled(false)
 		, requestedPageSize(0)
 		, requestedPageFlags(OMRPORT_VMEM_PAGE_FLAG_NOT_USED)
 		, gcmetadataPageSize(0)
@@ -1655,6 +1661,7 @@ public:
 		, excessiveGCratio(95)
 		, excessiveGCFreeSizeRatio((float)0.03)
 		, heap(NULL)
+		, largeObjectVirtualMemory(NULL)
 		, heapRegionManager(NULL)
 		, memoryManager(NULL)
 		, aggressive(0)

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -49,12 +49,10 @@ class MM_VirtualMemory : public MM_BaseVirtual {
  * Data members
  */
 private:
-	uintptr_t _pageSize; /**< Page size for this virtual memory object (before reservation requested, after reservation real) */
 	uintptr_t _pageFlags; /**< Flags describing the pages used for the virtual memory object */
 	uintptr_t _tailPadding; /**< The number of bytes of padding at the end of the virtual memory. This padding will be committed into, but not reported as available */
 	void* _heapBase; /**< The lowest usable address in the reserved block, once alignment and padding are taken into account */
 	void* _heapTop; /**< One byte past the highest usable address in the reserved block, once alignment and padding are taken into account */
-	uintptr_t _reserveSize; /**< The total number of bytes reserved, starting from _baseAddress */
 	uintptr_t _mode; /**< requested memory mode (memory flags combination) */
 	uintptr_t _consumerCount; /**< number of memory consumers attached to this virtual memory instance */
 	J9PortVmemIdentifier _identifier;
@@ -63,6 +61,8 @@ protected:
 	MM_GCExtensionsBase* _extensions;
 	void* _baseAddress; /**< The address returned from port - needed for freeing memory at shutdown */
 	uintptr_t _heapAlignment;
+	uintptr_t _pageSize; /**< Page size for this virtual memory object (before reservation requested, after reservation real) */
+	uintptr_t _reserveSize; /**< The total number of bytes reserved, starting from _baseAddress */
 
 public:
 /*
@@ -88,18 +88,18 @@ protected:
 
 	MM_VirtualMemory(MM_EnvironmentBase* env, uintptr_t heapAlignment, uintptr_t pageSize, uintptr_t pageFlags, uintptr_t tailPadding, uintptr_t mode)
 		: MM_BaseVirtual()
-		, _pageSize(pageSize)
 		, _pageFlags(pageFlags)
 		, _tailPadding(tailPadding)
 		, _heapBase(0)
 		, _heapTop(0)
-		, _reserveSize(0)
 		, _mode(mode)
 		, _consumerCount(0)
 		, _identifier()
 		, _extensions(env->getExtensions())
 		, _baseAddress(NULL)
 		, _heapAlignment(heapAlignment)
+		, _pageSize(pageSize)
+		, _reserveSize(0)
 	{
 		_typeId = __FUNCTION__;
 	}
@@ -136,6 +136,14 @@ protected:
 	{
 		return _heapTop;
 	};
+
+	/**
+	 * Return the heap file descriptor.
+	 */
+	MMINLINE int getHeapFileDescriptor()
+	{
+		return _identifier.fd;
+	}
 
 	/** 
 	 * Return the size of the pages used in the virtual memory object

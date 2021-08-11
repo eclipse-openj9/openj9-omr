@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2021 IBM Corp. and others
+# Copyright (c) 2017, 2022 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -149,6 +149,7 @@ set(OMR_GC_MODRON_COMPACTION OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_MODRON_CONCURRENT_MARK OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_MODRON_SCAVENGER OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_DOUBLE_MAP_ARRAYLETS OFF CACHE BOOL "TODO: Document")
+set(OMR_GC_DOUBLE_MAPPING_FOR_SPARSE_HEAP_ALLOCATION OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_CONCURRENT_SCAVENGER OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_CONCURRENT_SWEEP OFF CACHE BOOL "TODO: Document")
 set(OMR_GC_IDLE_HEAP_MANAGER OFF CACHE BOOL "TODO: Document")

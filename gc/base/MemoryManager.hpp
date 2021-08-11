@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -272,6 +272,14 @@ public:
 	{
 		return handle->getMemoryBase();
 	};
+
+	/**
+	 * Return file descriptor associated with heap
+	 *
+	 * @param handle pointer to memory handle
+	 * @return file descriptor associated with heap, if non existent return -1
+	 */
+	int getHeapFileDescriptor(MM_MemoryHandle* handle);
 
 	/**
 	 * Return the top of the heap of the virtual memory object.

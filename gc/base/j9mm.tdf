@@ -967,3 +967,38 @@ TraceEvent=Trc_MM_IncrementalGenerationalGC_calculateConcurrentMarkWorkTime Over
 TraceEvent=Trc_MM_SweepEndBalancedGC Overhead=1 Level=1 Group=gclogger Template="Sweep end. Duration %llu us"
 
 TraceEvent=Trc_MM_SchedulingDelegate_partialGarbageCollectCompleted_stats Overhead=1 Level=1 Group=kickoff Template="Evacuated %zu Eden + %zu non-Eden regions into copy-forward %zu + %zu and compact %zu regions. Eden was %zu regions."
+
+TraceException=Trc_MM_VirtualMemory_decommitMemory_failure noEnv Overhead=1 Level=1 Group=arraylet Template="Failed to decommit memory: address: %p, size: %zu"
+
+TraceEvent=Trc_MM_SparseVirtualMemory_commitMemory_success noEnv Overhead=1 Level=1 Group=arraylet Template="Successfully committed memory: sparseHeapAddress: %p, size: %p, inHeapObjectPointer (spine): %p"
+TraceException=Trc_MM_SparseVirtualMemory_commitMemory_failure noEnv Overhead=1 Level=1 Group=arraylet Template="Failed to commit memory: sparseHeapAddress: %p, size: %p, inHeapObjectPointer (spine): %p"
+TraceEvent=Trc_MM_SparseVirtualMemory_decommitMemory_success noEnv Overhead=1 Level=1 Group=arraylet Template="Successfully decommitted memory: sparseHeapAddress: %p, size: %p"
+TraceException=Trc_MM_SparseVirtualMemory_decommitMemory_failure noEnv Overhead=1 Level=1 Group=arraylet Template="Failed to decommit memory: sparseHeapAddress: %p, size: %p"
+
+TraceEvent=Trc_MM_SparseVirtualMemory_releaseDoubleMappedRegion_success noEnv Overhead=1 Level=1 Group=arraylet Template="Successfully released double mapped region: dataPtr: %p, identifier->address: %p, dataSize: %p, identifier->size: %p"
+TraceException=Trc_MM_SparseVirtualMemory_releaseDoubleMappedRegion_failure noEnv Overhead=1 Level=1 Group=arraylet Template="Failed to release double mapped region: dataPtr: %p, identifier->address: %p, dataSize: %p, identifier->size: %p"
+
+TraceEvent=Trc_MM_SparseVirtualMemory_createSparseVirtualMemory_success noEnv Overhead=1 Level=1 Group=arraylet Template="Successfully created sparse virtual memory: getHeapTop: %p, getHeapBase: %p, in_heap_size: %p, maxHeapSize: %p, region size: %p, num of region: %zu,  sparseHeap size: %p, sparseDataPool: %p"
+TraceException=Trc_MM_SparseVirtualMemory_createSparseVirtualMemory_failure noEnv Overhead=1 Level=1 Group=arraylet Template="Failed to create sparse virtual memory: getHeapTop: %p, getHeapBase: %p, in_heap_size: %p, maxHeapSize: %p, region size: %p, num of region: %zu,  sparseHeap size: %p, sparseDataPool: %p"
+
+TraceEvent=Trc_MM_SparseAddressOrderedFixedSizeDataPool_allocation_success noEnv Overhead=1 Level=1 Group=arraylet Template="Successfully allocated space for new SparseAddressOrderedFixedSizeDataPool instance. New instance created with sparseHeapBase: %p, sparseDataPoolSize: %p"
+TraceException=Trc_MM_SparseAddressOrderedFixedSizeDataPool_allocation_failure noEnv Overhead=1 Level=1 Group=arraylet Template="Failed to allocate space for new SparseAddressOrderedFixedSizeDataPool instance. Failed new instance had sparseHeapBase: %p, sparseDataPoolSize: %p"
+
+TraceEvent=Trc_MM_SparseAddressOrderedFixedSizeDataPool_initialization_success noEnv Overhead=1 Level=1 Group=gclogger Template="Successfully intialized SparseAddressOrderedFixedSizeDataPool: sparseHeapBase: %p, freeListPool: %p, objectToSparseDataTable: %p, heapFreeList: %p"
+TraceException=Trc_MM_SparseAddressOrderedFixedSizeDataPool_initialization_failure noEnv Overhead=1 Level=1 Group=arraylet Template="Failed to initialize SparseAddressOrderedFixedSizeDataPool: sparseHeapBase: %p, freeListPool: %p, objectToSparseDataTable: %p, heapFreeList: %p"
+
+TraceEvent=Trc_MM_SparseAddressOrderedFixedSizeDataPool_insertEntry_success noEnv Overhead=1 Level=1 Group=arraylet Template="Successfully inserted an entry into objectToSparseDataTable: sparseHeapObjectDataPointer: %p, adjustedSize: %p, inHeapObjectPointer (spine): %p"
+TraceException=Trc_MM_SparseAddressOrderedFixedSizeDataPool_insertEntry_failure noEnv Overhead=1 Level=1 Group=arraylet Template="Failed to insert an entry into objectToSparseDataTable: sparseHeapObjectDataPointer: %p, adjustedSize: %p, inHeapObjectPointer (spine): %p"
+
+TraceEvent=Trc_MM_SparseAddressOrderedFixedSizeDataPool_removeEntry_success noEnv Overhead=1 Level=1 Group=arraylet Template="Successfully removed an entry from objectToSparseDataTable: sparseHeapObjectDataPointer: %p"
+TraceException=Trc_MM_SparseAddressOrderedFixedSizeDataPool_removeEntry_failure noEnv Overhead=1 Level=1 Group=arraylet Template="Failed to remove an entry from objectToSparseDataTable: sparseHeapObjectDataPointer: %p"
+
+TraceEvent=Trc_MM_SparseAddressOrderedFixedSizeDataPool_findEntry_success noEnv Overhead=1 Level=3 Group=arraylet Template="Successfully found entry from objectToSparseDataTable: sparseHeapObjectDataPointer: %p"
+TraceEvent=Trc_MM_SparseAddressOrderedFixedSizeDataPool_updateEntry_success noEnv Overhead=1 Level=1 Group=arraylet Template="Successfully found and updated entry from objectToSparseDataTable after the in-heap object has moved: sparseHeapObjectDataPointer: %p, old inHeapObjectPointer (old spine): %p, updated inHeapObjectPointer (updated spine): %p"
+TraceException=Trc_MM_SparseAddressOrderedFixedSizeDataPool_findEntry_failure noEnv Overhead=1 Level=1 Group=arraylet Template="Failed to find entry from objectToSparseDataTable or sparseHeapObjectDataPointer does not match the entry found in the table: sparseHeapObjectDataPointer: %p"
+
+TraceEvent=Trc_MM_SparseAddressOrderedFixedSizeDataPool_freeListEntryFoundForData_success noEnv Overhead=1 Level=1 Group=arraylet Template="Successfully found a sparse heap free list entry for requested data: freeListEntryAddrToStoreData: %p, size: %p, _freeListPoolFreeNodesCount: %zu, _approximateFreeMemorySize: %p, _freeListPoolAllocBytes: %p"
+TraceEvent=Trc_MM_SparseAddressOrderedFixedSizeDataPool_returnFreeListEntry_success noEnv Overhead=1 Level=1 Group=arraylet Template="Successfully returned a sparse heap free list entry for data: dataAddr: %p, size: %p, _freeListPoolFreeNodesCount: %zu, _approximateFreeMemorySize: %p, _freeListPoolAllocBytes: %p"
+
+TraceEntry=Trc_MM_getSparseAddressAndDecommitLeaves_Entry Overhead=1 Level=3 Group=arraylet Template="MM_IndexableObjectAllocationModel::getSparseAddressAndDecommitLeaves_Entry: inHeapObjectPointer (spine): %p, bytesToAllocate: %p, arrayletLeafCount: %zu, arrayletLeafSize: %p"
+TraceExit=Trc_MM_getSparseAddressAndDecommitLeaves_Exit Overhead=1 Level=3 Group=arraylet Template="MM_IndexableObjectAllocationModel::getSparseAddressAndDecommitLeaves_Exit: inHeapObjectPointer (spine): %p, bytesStillRemainingToAllocate (should be zero if allocated successfully to sparse heap): %zu"

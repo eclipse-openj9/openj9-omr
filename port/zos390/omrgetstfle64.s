@@ -1,5 +1,5 @@
 ***********************************************************************
-* Copyright (c) 2013, 2016 IBM Corp. and others
+* Copyright (c) 2013, 2021 IBM Corp. and others
 * 
 * This program and the accompanying materials are made available 
 * under the terms of the Eclipse Public License 2.0 which accompanies 
@@ -34,6 +34,9 @@
 * it in as such so that we can compile on any platform.
 
         TITLE 'omrgetstfle64.s'
+Z_GSTFLE      CSECT
+Z_GSTFLE      AMODE 64
+Z_GSTFLE      RMODE ANY
 
 CARG1 EQU 1
 CRA EQU 7
@@ -41,11 +44,9 @@ RETURNOFFSET EQU 2
 r0 EQU 0
 r3 EQU 3
 
-Z_GSTFLE  DS 0D
      ENTRY Z_GSTFLE
 Z_GSTFLE  ALIAS C'getstfle'
 Z_GSTFLE  XATTR SCOPE(X),LINKAGE(XPLINK)
-Z_GSTFLE      AMODE 64
 
   lgr   r0,CARG1
   DC X'b2b02000'

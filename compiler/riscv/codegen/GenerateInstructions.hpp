@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -37,6 +37,7 @@ namespace TR { class Register; }
 namespace TR { class RegisterDependencyConditions; }
 namespace TR { class Snippet; }
 namespace TR { class SymbolReference; }
+class TR_VirtualGuardSite;
 
 /*
  * @brief Generates simple instruction
@@ -209,4 +210,12 @@ TR::Instruction *generateJTYPE( TR::InstOpCode::Mnemonic op,
                                 TR::CodeGenerator *cg,
                                 TR::Instruction   *previous = NULL);
 
+#ifdef J9_PROJECT_SPECIFIC
+TR::Instruction *generateVGNOP( TR::Node *n,
+                                TR_VirtualGuardSite *site,
+                                TR::RegisterDependencyConditions *cond,
+                                TR::LabelSymbol *sym,
+                                TR::CodeGenerator *cg,
+                                TR::Instruction *previous = NULL);
+#endif // J9_PROJECT_SPECIFIC
 #endif

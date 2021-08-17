@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2021 IBM Corp. and others
+ * Copyright (c) 2019, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,6 +42,9 @@
 #include "env/CompilerEnv.hpp"
 #include "env/Processors.hpp"
 #include "env/TRMemory.hpp"
+#ifdef J9_PROJECT_SPECIFIC
+#include "env/CHTable.hpp"
+#endif
 #include "il/DataTypes.hpp"                       // for CONSTANT64
 #include "il/ILOps.hpp"                           // for ILOpCode
 #include "il/Node.hpp"                            // for Node
@@ -579,3 +582,73 @@ uint8_t *TR::DataInstruction::generateBinaryEncoding() {
    cursor += RISCV_INSTRUCTION_LENGTH;
    return cursor;
 }
+
+#ifdef J9_PROJECT_SPECIFIC
+uint8_t *TR::VGNOPInstruction::generateBinaryEncoding()
+   {
+   uint8_t *cursor = cg()->getBinaryBufferCursor();
+   TR::LabelSymbol *label = getLabelSymbol();
+   int32_t length = 0;
+   TR::Instruction *guardForPatching = cg()->getVirtualGuardForPatching(this);
+
+   // a previous guard is patching to the same destination and we can recycle the patch
+   // point so setup the patching location to use this previous guard and generate no
+   // instructions ourselves
+   if ((guardForPatching != this) &&
+         // AOT needs an explicit nop, even if there are patchable instructions at this site because
+         // 1) Those instructions might have AOT data relocations (and therefore will be incorrectly patched again)
+         // 2) We might want to re-enable the code path and unpatch, in which case we would have to know what the old instruction was
+         !cg()->comp()->compileRelocatableCode())
+      {
+      _site->setLocation(guardForPatching->getBinaryEncoding());
+      setBinaryLength(0);
+      setBinaryEncoding(cursor);
+      if (label->getCodeLocation() == NULL)
+         {
+         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
+         }
+      else
+         {
+         _site->setDestination(label->getCodeLocation());
+         }
+      cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
+      return cursor;
+      }
+
+   // We need to revisit this to improve it to support empty patching
+
+   _site->setLocation(cursor);
+   if (label->getCodeLocation() == NULL)
+      {
+      _site->setDestination(cursor);
+      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
+
+#ifdef DEBUG
+   if (debug("traceVGNOP"))
+      printf("####> virtual location = %p, label (relocation) = %p\n", cursor, label);
+#endif
+      }
+   else
+      {
+       _site->setDestination(label->getCodeLocation());
+#ifdef DEBUG
+   if (debug("traceVGNOP"))
+      printf("####> virtual location = %p, label location = %p\n", cursor, label->getCodeLocation());
+#endif
+      }
+
+   setBinaryEncoding(cursor);
+   uint32_t *iPtr = (uint32_t*)cursor;
+   *iPtr = TR_RISCV_ITYPE(TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::_addi), 0, 0, 0);
+   length = RISCV_INSTRUCTION_LENGTH;
+   setBinaryLength(length);
+   return cursor+length;
+   }
+
+int32_t TR::VGNOPInstruction::estimateBinaryLength(int32_t currentEstimate)
+   {
+   // This is a conservative estimation for reserving NOP space.
+   setEstimatedBinaryLength(RISCV_INSTRUCTION_LENGTH);
+   return currentEstimate+RISCV_INSTRUCTION_LENGTH;
+   }
+#endif //J9_PROJECT_SPECIFIC

@@ -458,7 +458,8 @@ static bool tryFoldCompileTimeLoad(
             TR_J9VMBase *fej9 = vp->comp()->fej9();
             // Non SVM AOT can deal with transformed loadaddr of system class only while Symbol Validation Manager can handle any class.
             // Skip the transformation under non SVM AOT when class is not loaded by bootstrap class loader.
-            if (vp->comp()->compileRelocatableCode() && !vp->comp()->getOption(TR_UseSymbolValidationManager) && fej9->getClassLoader(clazz) != fej9->getSystemClassLoader())
+            // TODO: Disabling tranformation on Power for non SVM AOT because it does not add external relocation record. Enable this once it is fixed.
+            if (vp->comp()->compileRelocatableCode() && !vp->comp()->getOption(TR_UseSymbolValidationManager) && (vp->comp()->target().cpu.isPower() || fej9->getClassLoader(clazz) != fej9->getSystemClassLoader()))
                return false;
 #endif
             if (vp->trace())

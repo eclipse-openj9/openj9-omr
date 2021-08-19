@@ -9871,7 +9871,7 @@ TR_LoopVersioner::LoopEntryPrep *TR_LoopVersioner::createLoopEntryPrep(
       {
       // This is the top-level call. Ensure that node's flags have been reset
       // for code motion.
-      node->resetFlagsForCodeMotion();
+      node->resetFlagsAndPropertiesForCodeMotion();
       }
 
    // Because node will no longer appear verbatim in the trees, print it to

@@ -37,6 +37,7 @@ namespace OMR { typedef OMR::Node NodeConnector; }
 #include <string.h>
 #include "codegen/RegisterConstants.hpp"
 #include "cs2/hashtab.h"
+#include "env/KnownObjectTable.hpp"
 #include "env/TRMemory.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
@@ -816,6 +817,24 @@ public:
    inline scount_t setLocalIndex(scount_t li);
    inline scount_t incLocalIndex();
    inline scount_t decLocalIndex();
+
+   /**
+    * @brief Sets a known object index on this node
+    * @param[in] koi : the known object index
+    */
+   void setKnownObjectIndex(TR::KnownObjectTable::Index koi) { _knownObjectIndex = koi; }
+
+   /**
+    * @brief Retrieve the known object index associated with this node, if any.
+    * @return Known object index, or TR::KnownObjectTable::UNKNOWN if none.
+    */
+   TR::KnownObjectTable::Index getKnownObjectIndex() { return _knownObjectIndex; }
+
+   /**
+    * @brief Inquires whether this node has a known object index associated with it.
+    * @return true if a known object index is cached; false otherwise.
+    */
+   bool hasKnownObjectIndex() { return _knownObjectIndex != TR::KnownObjectTable::UNKNOWN; }
 
    inline scount_t getFutureUseCount();
    inline scount_t setFutureUseCount(scount_t li);
@@ -1641,8 +1660,8 @@ public:
    bool chkOpsNodeRequiresConditionCodes();
    const char *printRequiresConditionCodes();
 
-   // Clear out relevant flags set on the node.
-   void resetFlagsForCodeMotion();
+   // Clear out relevant flags and properties set on the node.
+   void resetFlagsAndPropertiesForCodeMotion();
 
    /**
     * Node flags functions end
@@ -1838,6 +1857,15 @@ protected:
 
    /// References to this node.
    rcount_t _referenceCount;
+
+   /// Known object index associated with this node, if any.
+   ///
+   /// This field allows for more accurate placement of known object information
+   /// as it applies to a particular node.
+   ///
+   /// If no such information is available this field is TR::KnownObjectTable::UNKNOWN
+   ///
+   TR::KnownObjectTable::Index _knownObjectIndex;
 
    UnionA                 _unionA;
 

@@ -117,6 +117,7 @@ OMR::Node::Node()
      _visitCount(0),
      _localIndex(0),
      _referenceCount(0),
+     _knownObjectIndex(TR::KnownObjectTable::UNKNOWN),
      _byteCodeInfo(),
      _unionBase(),
      _unionPropertyA()
@@ -138,6 +139,7 @@ OMR::Node::Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t nu
      _visitCount(0),
      _localIndex(0),
      _referenceCount(0),
+     _knownObjectIndex(TR::KnownObjectTable::UNKNOWN),
      _byteCodeInfo(),
      _unionBase(),
      _unionPropertyA()
@@ -167,6 +169,7 @@ OMR::Node::Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t nu
    self()->setReferenceCount(0);
    self()->setVisitCount(0);
    self()->setLocalIndex(0);
+   self()->setKnownObjectIndex(TR::KnownObjectTable::UNKNOWN),
    memset( &(_unionA), 0, sizeof( _unionA ) );
    if (self()->getGlobalIndex() == MAX_NODE_COUNT)
       {
@@ -237,6 +240,7 @@ OMR::Node::Node(TR::Node * from, uint16_t numChildren)
      _visitCount(0),
      _localIndex(0),
      _referenceCount(0),
+     _knownObjectIndex(TR::KnownObjectTable::UNKNOWN),
      _byteCodeInfo(),
      _unionBase(),
      _unionPropertyA()
@@ -257,6 +261,7 @@ OMR::Node::Node(TR::Node * from, uint16_t numChildren)
    self()->setReferenceCount(from->getReferenceCount());
    self()->setVisitCount(from->getVisitCount());
    self()->setLocalIndex(from->getLocalIndex());
+   self()->setKnownObjectIndex(from->getKnownObjectIndex());
    _unionA = from->_unionA;
 
    if (self()->getGlobalIndex() == MAX_NODE_COUNT)
@@ -390,7 +395,7 @@ OMR::Node::copyValidProperties(TR::Node *fromNode, TR::Node *toNode)
    UnionPropertyA_Type fromUnionPropertyA_Type = fromNode->getUnionPropertyA_Type();
    UnionPropertyA_Type toUnionPropertyA_Type = toNode->getUnionPropertyA_Type();
 
-   toNode->copyChildren(fromNode); 
+   toNode->copyChildren(fromNode);
 
    if (fromUnionPropertyA_Type == toUnionPropertyA_Type)
       {
@@ -602,6 +607,7 @@ OMR::Node::createInternal(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, u
       vcount_t visitCount = originalNode->getVisitCount();
       scount_t localIndex = originalNode->getLocalIndex();
       rcount_t referenceCount = originalNode->getReferenceCount();
+      TR::KnownObjectTable::Index knownObjectIndex = originalNode->getKnownObjectIndex();
       UnionA unionA = originalNode->_unionA;
       const TR_ByteCodeInfo byteCodeInfo = originalNode->getByteCodeInfo();  // copy bytecode info into temporary variable
       //TR::Node * node = new (TR::comp()->getNodePool(), poolIndex) TR::Node(0, op, numChildren);
@@ -612,6 +618,7 @@ OMR::Node::createInternal(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, u
       node->setVisitCount(visitCount);
       node->setLocalIndex(localIndex);
       node->setReferenceCount(referenceCount);
+      node->setKnownObjectIndex(knownObjectIndex);
       node->_unionA = unionA;
 
       return node;
@@ -1746,7 +1753,7 @@ TR::Node *
 OMR::Node::duplicateTreeForCodeMotion()
    {
    TR::Node *result = self()->duplicateTree(true);
-   result->resetFlagsForCodeMotion();
+   result->resetFlagsAndPropertiesForCodeMotion();
    return result;
    }
 
@@ -8605,7 +8612,7 @@ OMR::Node::printRequiresConditionCodes()
    }
 
 static void
-resetFlagsForCodeMotionHelper(TR::Node *node, TR::NodeChecklist &visited)
+resetFlagsAndPropertiesForCodeMotionHelper(TR::Node *node, TR::NodeChecklist &visited)
    {
    if (visited.contains(node))
       return;
@@ -8614,7 +8621,7 @@ resetFlagsForCodeMotionHelper(TR::Node *node, TR::NodeChecklist &visited)
 
    int32_t childNum;
    for (childNum = 0; childNum < node->getNumChildren(); childNum++)
-      resetFlagsForCodeMotionHelper(node->getChild(childNum), visited);
+      resetFlagsAndPropertiesForCodeMotionHelper(node->getChild(childNum), visited);
 
    if (node->getOpCodeValue() != TR::loadaddr)
       {
@@ -8641,6 +8648,9 @@ resetFlagsForCodeMotionHelper(TR::Node *node, TR::NodeChecklist &visited)
 
    if (node->chkIsReferenceNonNull())
       node->setReferenceIsNonNull(false);
+
+   if (node->hasKnownObjectIndex())
+      node->setKnownObjectIndex(TR::KnownObjectTable::UNKNOWN);
    }
 
 // Clear out relevant flags set on the node; this will ensure
@@ -8649,10 +8659,10 @@ resetFlagsForCodeMotionHelper(TR::Node *node, TR::NodeChecklist &visited)
 // as well (over the ones that are already reset).
 //
 void
-OMR::Node::resetFlagsForCodeMotion()
+OMR::Node::resetFlagsAndPropertiesForCodeMotion()
    {
    TR::NodeChecklist visited(TR::comp());
-   resetFlagsForCodeMotionHelper(self(), visited);
+   resetFlagsAndPropertiesForCodeMotionHelper(self(), visited);
    }
 
 /**

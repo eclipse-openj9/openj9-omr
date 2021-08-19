@@ -500,7 +500,7 @@ int32_t TR_PartialRedundancy::perform()
       if (nextRedundantComputation != 0)
          {
          supportedNodesAsArray[nextRedundantComputation] =  supportedNodesAsArray[nextRedundantComputation]->duplicateTreeWithCommoning(comp()->allocator());
-         supportedNodesAsArray[nextRedundantComputation]->resetFlagsForCodeMotion();
+         supportedNodesAsArray[nextRedundantComputation]->resetFlagsAndPropertiesForCodeMotion();
          }
       }
 

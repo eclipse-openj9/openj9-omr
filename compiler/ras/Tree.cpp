@@ -1510,6 +1510,8 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
       output.append("%s", getName(node->getOpCode()));
       }
 
+   if (node->hasKnownObjectIndex())
+      output.append(" (node obj%d)", node->getKnownObjectIndex());
 
    if (node->getOpCode().isNullCheck())
       {

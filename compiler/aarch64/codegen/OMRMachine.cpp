@@ -663,12 +663,10 @@ static void registerCopy(TR::Instruction *precedingInstruction,
                          TR::CodeGenerator *cg)
    {
    TR::Node *node = precedingInstruction->getNode();
-   TR::RealRegister *zeroReg;
    switch (rk)
       {
       case TR_GPR:
-         zeroReg = cg->machine()->getRealRegister(TR::RealRegister::xzr);
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::orrx, node, targetReg, zeroReg, sourceReg, precedingInstruction); /* mov (register) */
+         generateMovInstruction(cg, node, targetReg, sourceReg, true, precedingInstruction);
          break;
       case TR_FPR:
          generateTrg1Src1Instruction(cg, TR::InstOpCode::fmovd, node, targetReg, sourceReg, precedingInstruction);

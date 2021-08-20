@@ -559,8 +559,8 @@
 #define MFVSRD(ra,vrs)                  .long 0x7c000066 | ra < 16 | (vrs & 31) < 21 | (vrs & 32) > 5
 #define MTVSRD(vrt,ra)                  .long 0x7c000166 | ra < 16 | (vrt & 31) < 21 | (vrt & 32) > 5
 #define MTVSRWZ(vrt,ra)                 .long 0x7c0001e6 | ra < 16 | (vrt & 31) < 21 | (vrt & 32) > 5
-#define LXV(vrt,ra,dq)                  .long 0xf4000001 | ra < 16 | (vrt & 31) < 21 | (vrt & 32) > 2 | (dq & 0xfff0)
-#define STXV(vrs,ra,dq)                 .long 0xf4000005 | ra < 16 | (vrs & 31) < 21 | (vrs & 32) > 2 | (dq & 0xfff0)
+#define LXV(vrt,ra,dq)                  .long 0xf4000001 | ra < 16 | (vrt & 31) < 21 | (vrt & 32) > 2 | ((dq) & 0x0000fff0)
+#define STXV(vrs,ra,dq)                 .long 0xf4000005 | ra < 16 | (vrs & 31) < 21 | (vrs & 32) > 2 | ((dq) & 0x0000fff0)
 #define LXVL(vrt,ra,rb)                 .long 0x7c00021a | ra < 16 | rb < 11 | (vrt & 31) < 21 | (vrt & 32) > 5
 #define STXVL(vrs,ra,rb)                .long 0x7c00031a | ra < 16 | rb < 11 | (vrs & 31) < 21 | (vrs & 32) > 5
 #define ISELLT(rt,ra,rb,bc)             .long 0x7c00001e | rt < 21 | ra < 16 | rb < 11 | bc < 8

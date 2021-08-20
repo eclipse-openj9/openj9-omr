@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2199,44 +2199,47 @@ bool TR_CompactNullChecks::replacePassThroughIfPossible(TR::Node *currentNode, T
            (opCode.isCallIndirect() && (i==1))) &&
           (currentParent == NULL || !currentParent->getOpCode().isResolveCheck())
           )
-          {
-          bool canCompact = false;
-          if (_isNextTree ||
-              (opCode.isArrayLength()) ||
-              (opCode.isLoadVar() && !writtenSymbols->get(currentNode->getSymbolReference()->getReferenceNumber())))
-             canCompact = true;
+         {
+         bool canCompact = false;
+         if (_isNextTree ||
+            (opCode.isArrayLength()) ||
+            (opCode.isLoadVar() && !writtenSymbols->get(currentNode->getSymbolReference()->getReferenceNumber())))
+            canCompact = true;
 
-          if (canCompact &&
-              performTransformation(comp(), "%sCompact null check %p with node %p in next tree\n", optDetailString(), prevNode, currentNode))
-             {
-               //if (!_isNextTree)
-               // printf("Found a new opportunity in %s\n", comp()->signature());
+         // compacting null check into computed calls will result in the null check not being performed before dispatching into the
+         // call target if there is no need for dereferencing the reference child for the dispatch
+         if (opCode.isCallIndirect() && opCode.hasSymbolReference() && currentNode->getSymbol()->castToMethodSymbol()->isComputed())
+            canCompact = false;
 
-             if (opCode.isTreeTop())
-                {
-                if (!(comp()->useAnchors() && currentTree->getNode()->getOpCode().isAnchor()))
-                   (*isTreeTopNode) = true;
-                }
+         if (canCompact &&
+            performTransformation(comp(), "%sCompact null check %p with node %p in next tree\n", optDetailString(), prevNode, currentNode))
+            {
 
-             prevNode->getFirstChild()->recursivelyDecReferenceCount();
-             prevNode->setAndIncChild(0, currentNode);
-             if (child->getOpCodeValue() != TR::loadaddr) //For loadaddr, IsNonNull is always true
-                child->setIsNonNull(false); // it is no longer known that the reference is non null
+            if (opCode.isTreeTop())
+               {
+               if (!(comp()->useAnchors() && currentTree->getNode()->getOpCode().isAnchor()))
+                  (*isTreeTopNode) = true;
+               }
 
-             if (0 && comp()->useAnchors() &&
-                   currentTree->getNode()->getOpCode().isAnchor())
-                {
-                TR::TreeTop *prevTree = currentTree;
-                while (prevTree->getNode() != prevNode)
-                   prevTree = prevTree->getPrevTreeTop();
-                TR::TreeTop *preceedingTree = currentTree->getPrevTreeTop();
-                preceedingTree->join(currentTree->getNextTreeTop());
-                prevTree->getPrevTreeTop()->join(currentTree);
-                currentTree->join(prevTree);
-                }
-             return true;
-             }
-          }
+            prevNode->getFirstChild()->recursivelyDecReferenceCount();
+            prevNode->setAndIncChild(0, currentNode);
+            if (child->getOpCodeValue() != TR::loadaddr) //For loadaddr, IsNonNull is always true
+               child->setIsNonNull(false); // it is no longer known that the reference is non null
+
+            if (0 && comp()->useAnchors() &&
+                  currentTree->getNode()->getOpCode().isAnchor())
+               {
+               TR::TreeTop *prevTree = currentTree;
+               while (prevTree->getNode() != prevNode)
+                  prevTree = prevTree->getPrevTreeTop();
+               TR::TreeTop *preceedingTree = currentTree->getPrevTreeTop();
+               preceedingTree->join(currentTree->getNextTreeTop());
+               prevTree->getPrevTreeTop()->join(currentTree);
+               currentTree->join(prevTree);
+               }
+            return true;
+            }
+         }
       }
 
    return false;

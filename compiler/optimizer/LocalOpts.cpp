@@ -2226,17 +2226,6 @@ bool TR_CompactNullChecks::replacePassThroughIfPossible(TR::Node *currentNode, T
             if (child->getOpCodeValue() != TR::loadaddr) //For loadaddr, IsNonNull is always true
                child->setIsNonNull(false); // it is no longer known that the reference is non null
 
-            if (0 && comp()->useAnchors() &&
-                  currentTree->getNode()->getOpCode().isAnchor())
-               {
-               TR::TreeTop *prevTree = currentTree;
-               while (prevTree->getNode() != prevNode)
-                  prevTree = prevTree->getPrevTreeTop();
-               TR::TreeTop *preceedingTree = currentTree->getPrevTreeTop();
-               preceedingTree->join(currentTree->getNextTreeTop());
-               prevTree->getPrevTreeTop()->join(currentTree);
-               currentTree->join(prevTree);
-               }
             return true;
             }
          }

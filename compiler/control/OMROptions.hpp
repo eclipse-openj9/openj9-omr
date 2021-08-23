@@ -1577,6 +1577,7 @@ public:
    int32_t getBigCalleeThresholdForColdCallsAtHot() const  {return _bigCalleeThresholdForColdCallsAtHot;}
    int32_t getBigCalleeFrequencyCutoffAtHot() const   {return _bigCalleeFreqCutoffAtHot;}
    int32_t getBigCalleeScorchingOptThreshold() const  {return _bigCalleeScorchingOptThreshold;}
+   void setBigCalleeScorchingOptThreshold(int32_t t) { _bigCalleeScorchingOptThreshold = t; }
    int32_t getLargeCompiledMethodExemptionFreqCutoff() const {return _largeCompiledMethodExemptionFreqCutoff;}
    int32_t getMaxSzForVPInliningWarm() const          {return _maxSzForVPInliningWarm;}
    int32_t getInlinerVeryLargeCompiledMethodThreshold() const {return _inlinerVeryLargeCompiledMethodThreshold;}

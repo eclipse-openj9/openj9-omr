@@ -2232,11 +2232,22 @@ TR_Debug::verifyTrees(TR::ResolvedMethodSymbol *methodSymbol)
    for (tt = firstTree; tt; tt = tt->getNextTreeTop())
       verifyTreesPass2(tt->getNode(), true);
 
-   size_t size = _comp->getNodeCount() * sizeof(TR::Node*);
-   TR::Node **nodesByGlobalIndex = (TR::Node**)_comp->trMemory()->allocateStackMemory(size);
-   memset(nodesByGlobalIndex, 0, size);
-   for (tt = firstTree; tt; tt = tt->getNextTreeTop())
-      verifyGlobalIndices(tt->getNode(), nodesByGlobalIndex);
+   // Disable verifyGlobalIndices() by default because the allocation below of
+   // nodesByGlobalIndex exposes a leak in TR::Region / TR::SegmentProvider
+   // when there are many nodes. This check has been effectively doing nothing
+   // in most builds anyway because it just traverses the trees doing
+   // TR_ASSERT().
+   static const bool enableVerifyGlobalIndices =
+      feGetEnv("TR_enableVerifyGlobalIndices") != NULL;
+
+   if (enableVerifyGlobalIndices)
+      {
+      size_t size = _comp->getNodeCount() * sizeof(TR::Node*);
+      TR::Node **nodesByGlobalIndex = (TR::Node**)_comp->trMemory()->allocateStackMemory(size);
+      memset(nodesByGlobalIndex, 0, size);
+      for (tt = firstTree; tt; tt = tt->getNextTreeTop())
+         verifyGlobalIndices(tt->getNode(), nodesByGlobalIndex);
+      }
    }
 
 // Node verification. This is done in 2 passes. In pass 1 the reference count is

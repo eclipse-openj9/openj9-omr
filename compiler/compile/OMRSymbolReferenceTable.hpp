@@ -443,7 +443,13 @@ class SymbolReferenceTable
        */
       j9VMThreadFloatTemp1Symbol,
 
-      OMRlastPrintableCommonNonhelperSymbol = j9VMThreadFloatTemp1Symbol,
+
+      /** \brief
+       * This symbol represents the vTableIndex field in struct J9JNIMethodID
+       */
+      J9JNIMethodIDvTableIndexFieldSymbol,
+
+      OMRlastPrintableCommonNonhelperSymbol = J9JNIMethodIDvTableIndexFieldSymbol,
 
       firstPerCodeCacheHelperSymbol,
       lastPerCodeCacheHelperSymbol = firstPerCodeCacheHelperSymbol + TR_numCCPreLoadedCode - 1,

@@ -1656,6 +1656,8 @@ TR_Debug::getName(TR::SymbolReference * symRef)
              return "<j9VMThreadFloatTemp1Symbol>";
          case TR::SymbolReferenceTable::objectEqualityComparisonSymbol:
              return "<objectEqualityComparison>";
+         case TR::SymbolReferenceTable::J9JNIMethodIDvTableIndexFieldSymbol:
+             return "<J9JNIMethodIDvTableIndexFieldSymbol>";
          }
       }
 
@@ -2116,7 +2118,8 @@ static const char *commonNonhelperSymbolNames[] =
    "<jProfileValueWithNullCHKSymbol>",
    "<j9VMThreadTempSlotField>",
    "<computedStaticCallSymbol>",
-   "<j9VMThreadFloatTemp1>"
+   "<j9VMThreadFloatTemp1>",
+   "<J9JNIMethodIDvTableIndexFieldSymbol>"
    };
 
 const char *

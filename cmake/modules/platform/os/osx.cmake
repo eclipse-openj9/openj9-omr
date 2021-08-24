@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,7 +29,7 @@ list(APPEND OMR_PLATFORM_DEFINITIONS
 # the distinction
 list(APPEND TR_COMPILE_DEFINITIONS -DSUPPORTS_THREAD_LOCAL -DOSX)
 
-if(OMR_ENV_DATA64)
+if(OMR_ENV_DATA64 AND NOT OMR_ARCH_AARCH64)
 	# Set page zero size to 4KB for mapping memory below 4GB.
 	list(APPEND OMR_PLATFORM_EXE_LINKER_OPTIONS
 		-pagezero_size 0x1000

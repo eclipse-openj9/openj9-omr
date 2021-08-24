@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2020 IBM Corp. and others
+# Copyright (c) 2015, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -211,7 +211,7 @@ else ifeq (riscv,$(OMR_HOST_ARCH))
 else ifeq (aarch64,$(OMR_HOST_ARCH))
   GLOBAL_CFLAGS+=-march=armv8-a+simd -Wno-unused-but-set-variable
   GLOBAL_CXXFLAGS+=-march=armv8-a+simd -Wno-unused-but-set-variable
-  GLOBAL_CPPFLAGS+=-DJ9AARCH64 -DAARCH64GNU -DAARCH64 -DFIXUP_UNALIGNED -Wno-unused-but-set-variable
+  GLOBAL_CPPFLAGS+=-DJ9AARCH64 -DAARCH64 -DFIXUP_UNALIGNED -Wno-unused-but-set-variable
 else
   ifeq (arm,$(OMR_HOST_ARCH))
     GLOBAL_CFLAGS+=$(ARM_ARCH_FLAGS) -Wno-unused-but-set-variable

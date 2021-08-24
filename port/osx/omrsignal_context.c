@@ -93,6 +93,7 @@ infoForSignal(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int32
 uint32_t
 infoForFPR(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
+#if defined(OMR_ARCH_X86)
 	mcontext_t *context = (mcontext_t *)&info->platformSignalInfo.context->uc_mcontext;
 	_STRUCT_X86_FLOAT_STATE64 *floatState = &(*context)->__fs;
 
@@ -165,11 +166,15 @@ infoForFPR(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int32_t 
 		*name = "";
 		return OMRPORT_SIG_VALUE_UNDEFINED;
 	}
+#else /* defined(OMR_ARCH_X86) */
+	return OMRPORT_SIG_VALUE_UNDEFINED;
+#endif /* defined(OMR_ARCH_X86) */
 }
 
 uint32_t
 infoForGPR(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
+#if defined(OMR_ARCH_X86)
 	mcontext_t *context = (mcontext_t *)&info->platformSignalInfo.context->uc_mcontext;
 	_STRUCT_X86_THREAD_STATE64 *threadState = &(*context)->__ss;
 
@@ -248,11 +253,15 @@ infoForGPR(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int32_t 
 		*name = "";
 		return OMRPORT_SIG_VALUE_UNDEFINED;
 	}
+#else /* defined(OMR_ARCH_X86) */
+	return OMRPORT_SIG_VALUE_UNDEFINED;
+#endif /* defined(OMR_ARCH_X86) */
 }
 
 uint32_t
 infoForControl(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
+#if defined(OMR_ARCH_X86)
 	mcontext_t *context = (mcontext_t *)&info->platformSignalInfo.context->uc_mcontext;
 	_STRUCT_X86_THREAD_STATE64 *threadState = &(*context)->__ss;
 	_STRUCT_X86_EXCEPTION_STATE64 *exceptionState = &(*context)->__es;
@@ -310,11 +319,15 @@ infoForControl(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int3
 		*name = "";
 		return OMRPORT_SIG_VALUE_UNDEFINED;
 	}
+#else /* defined(OMR_ARCH_X86) */
+	return OMRPORT_SIG_VALUE_UNDEFINED;
+#endif /* defined(OMR_ARCH_X86) */
 }
 
 uint32_t
 infoForModule(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
+#if defined(OMR_ARCH_X86)
 	Dl_info *dl_info = &(info->platformSignalInfo.dl_info);
 	mcontext_t *context = (mcontext_t *)&info->platformSignalInfo.context->uc_mcontext;
 	int dl_result = dladdr((void *)(*context)->__ss.__rip, dl_info);
@@ -355,4 +368,7 @@ infoForModule(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int32
 		*name = "";
 		return OMRPORT_SIG_VALUE_UNDEFINED;
 	}
+#else /* defined(OMR_ARCH_X86) */
+	return OMRPORT_SIG_VALUE_UNDEFINED;
+#endif /* defined(OMR_ARCH_X86) */
 }

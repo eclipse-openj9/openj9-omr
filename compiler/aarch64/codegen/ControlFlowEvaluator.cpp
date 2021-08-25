@@ -109,10 +109,11 @@ static TR::Instruction *ificmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, 
    TR::LabelSymbol *dstLabel;
    TR::Instruction *result;
    TR::RegisterDependencyConditions *deps;
+   bool secondChildNeedsRelocation = cg->profiledPointersRequireRelocation() && (secondChild->getOpCodeValue() == TR::aconst) &&
+                                       (secondChild->isClassPointerConstant() || secondChild->isMethodPointerConstant());
 
 #ifdef J9_PROJECT_SPECIFIC
-if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == TR::aconst &&
-   (secondChild->isClassPointerConstant() || secondChild->isMethodPointerConstant()))
+if (secondChildNeedsRelocation)
    {
    if (node->isProfiledGuard())
       {
@@ -176,7 +177,7 @@ if (cg->profiledPointersRequireRelocation() && secondChild->getOpCodeValue() == 
          }
       }
 
-   if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
+   if ((!secondChildNeedsRelocation) && secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
       {
       int64_t value = is64bit ? secondChild->getLongInt() : secondChild->getInt();
       if (constantIsUnsignedImm12(value) || constantIsUnsignedImm12(-value) ||
@@ -371,8 +372,10 @@ static TR::Register *icmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, bool 
    TR::Node *secondChild = node->getSecondChild();
    TR::Register *src1Reg = cg->evaluate(firstChild);
    bool useRegCompare = true;
+   bool secondChildNeedsRelocation = cg->profiledPointersRequireRelocation() && (secondChild->getOpCodeValue() == TR::aconst) &&
+                                       (secondChild->isClassPointerConstant() || secondChild->isMethodPointerConstant());
 
-   if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
+   if ((!secondChildNeedsRelocation) && secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
       {
       int64_t value = is64bit ? secondChild->getLongInt() : secondChild->getInt();
       if (constantIsUnsignedImm12(value) || constantIsUnsignedImm12(-value) ||

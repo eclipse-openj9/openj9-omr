@@ -138,7 +138,8 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
             {
             return &symRefTab->aliasBuilder.defaultMethodUseAliases();
             }
-         if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::objectEqualityComparisonSymbol))
+         if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::objectEqualityComparisonSymbol)
+             || symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::objectInequalityComparisonSymbol))
             {
             return &symRefTab->aliasBuilder.defaultMethodUseAliases();
             }

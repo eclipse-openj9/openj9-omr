@@ -4081,7 +4081,6 @@ void TR::GlobalValuePropagation::processStructure(TR_StructureSubGraphNode *node
    TR_RegionStructure *region = node->getStructure()->asRegion();
    if (region)
       {
-      _defMergedNodes->empty();
       if (region->isAcyclic())
          {
          processAcyclicRegion(node, lastTimeThrough, insideLoop);
@@ -4097,6 +4096,10 @@ void TR::GlobalValuePropagation::processStructure(TR_StructureSubGraphNode *node
       }
    else
       {
+      // Only commoned nodes within a block need to be set in _defMergedNodes.
+      // So it should be reset here
+      TR_ASSERT_FATAL(!node->getStructure()->asBlock()->getBlock()->isExtensionOfPreviousBlock(), "This optimization does not run on extended blocks");
+      _defMergedNodes->empty();
       processBlock(node, lastTimeThrough, insideLoop);
       }
    }

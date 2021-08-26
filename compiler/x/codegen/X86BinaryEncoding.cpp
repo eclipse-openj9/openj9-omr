@@ -2897,15 +2897,18 @@ TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
 
          case TR_DebugCounter:
             {
-            TR::DebugCounterBase *counter = cg()->comp()->getCounterFromStaticAddress(getSymbolReference());
-            if (counter == NULL)
+            if (cg()->needRelocationsForStatics())
                {
-               cg()->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress\n");
+               TR::DebugCounterBase *counter = cg()->comp()->getCounterFromStaticAddress(getSymbolReference());
+               if (counter == NULL)
+                  {
+                  cg()->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress\n");
+                  }
+               TR::DebugCounter::generateRelocation(cg()->comp(),
+                                                    cursor,
+                                                    getNode(),
+                                                    counter);
                }
-            TR::DebugCounter::generateRelocation(cg()->comp(),
-                                                 cursor,
-                                                 getNode(),
-                                                 counter);
             }
             break;
          case TR_BlockFrequency:

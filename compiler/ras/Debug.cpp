@@ -3692,7 +3692,8 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_releaseVMAccess:           return "jitReleaseVMAccess";
          case TR_throwCurrentException:     return "jitThrowCurrentException";
          case TR_throwClassCastException:   return "jitThrowClassCastException";
-         case TR_acmpHelper:                return "jitAcmpHelper";
+         case TR_acmpeqHelper:              return "jitAcmpeqHelper";
+         case TR_acmpneHelper:              return "jitAcmpneHelper";
 
          case TR_IncompatibleClassChangeError:return "jitThrowIncompatibleClassChangeError";
          case TR_newInstanceImplAccessCheck:return "jitNewInstanceImplAccessCheck";

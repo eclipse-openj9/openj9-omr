@@ -1,4 +1,4 @@
-# Loop Canonicalizer and Loop Versioner
+# Loop Canonicalizer, Loop Versioner, and Loop Specializer
 
 ## 1. Loop Canonicalizer
 
@@ -287,3 +287,89 @@ the outer loop decide where to send it. It will send it to the header of the slo
 a switch table at the header of the outer loop and a switch table at the header of the inner loop. There are cascades of
 switch tables until the desired inner loop is reached. The overhead of these switch tables is less likely executed because
 the slow loop is likely not executed based on the assumption that the original guard in the fast loop will not fail.
+
+## 4. Loop Specializer
+
+[Loop Specializer](https://github.com/eclipse/omr/blob/e3a15a993c8aba80582aa1d6f3071e122acbd4c4/compiler/optimizer/LoopVersioner.hpp#L1061-L1071)
+subclasses Loop Versioner and shares about 90% of the code with Loop Versioner. The reason that Loop Specializer shares
+so much code with Loop Versioner is that the transformation it performs is quite like what Loop Versioner does.
+
+Profiler profiles various things at the run time, for example block frequency, or the values of a specific
+expression, etc. Loop Specializer is based on the value profiling information. We keep track of loop invariant values
+or expressions. If they are always a certain value, the loop can be specialized with respect to that value.
+
+In the following example, `n` is loop invariant. It would be great if we know what the value `n` is. If we know `n` is
+a small value like `10` or `4`, rather than testing if the value is between `0` and `n`, we could test if the value is
+between `0` and `10`, or whatever the value is profiled as. The loop could be unrolled completely and would be eliminated.
+Even if the loop cannot be unrolled completely, knowing the precise bounds of the constant allows subsequent optimizations
+such as [Value Propagation](https://github.com/eclipse/omr/blob/6cc32df405cd1dd688470e0b5b13fcc5938e2921/doc/compiler/optimizer/ValuePropagation.md)
+to further constrain expressions within the loop, which may enable further optimization.
+
+```
+for (int i=0; i < n; ++) {
+   … // n is loop invariant and the profiled value is 10 or a small value
+}
+```
+The intent of Loop Specializer is to introduce constants into loops as much as possible. It can only be done to the
+expressions that do not change within the loop. `n` is profiled because it is loop invariant. If `n` takes the value
+`10` 100% times when it is profiled, when it comes to the next compilation, we look at the profiling information for
+`n`, and we could check outside the loop as below:
+
+```
+if (n == 10) {
+    for (int i = 0; i < 10; ++i) {
+    ... // n == 10 can be constant propagated inside the loop
+    }
+} else {
+    // original loop
+}
+```
+
+### Loop Versioner & Loop Specializer
+
+Loop Versioner runs before Loop Specializer. As mentioned in section 2, Loop Versioner creates tests corresponding to
+exception checks. There is a fast version of the loop and there is a slow version of the loop. The fast version has all
+the checks that could be removed have been removed. The slow version has all the checks intact. The Loop Specializer
+does not do anything to the slow version of the loop. Loop Specializer specializes the fast version of the loop.
+
+After both Loop Versioner and Loop Specializer have run, there are three versions of the loop. (1) One version is marked
+as cold with all the checks, and nothing is changed to constants. (2) Another version of the loop has all the checks that
+could be removed have been removed, and all the expressions that could be transformed into constants have been transformed.
+(3) The third version of the loop is somewhere in between. This intermediate loop is versioned but not specialized. It has
+all the checks that could be removed have been removed, but the constants are not specialized or substituted in the loop.
+
+### Reasons That Loop Specializer Is Not Combined With Loop Versioner
+
+Profiling information is not as strong or guaranteed as exception checks are. The exception checks should not fail in well
+behaved programs. However, values or expressions could change in well behaved programs.  In Loop Versioner or Loop Specializer,
+the tests are all or nothing. Even if one condition fails in the loop pre-header, it goes to the slow version of the loop
+or the less optimized version.
+
+For example, if a version that has `50` exception checks and one profiling condition and the profiled value changes, that
+one condition failing sends the control to the slow version of the loop where there are `50` exception checks, and that
+one value is not a constant. It is a too high of price to pay. Therefore, it is not preferred to combine the extremely
+high probability tests with nearly high probability tests. They should be separated. The extremely high probability tests
+should remain in one version. Nearly high probability tests should have their version of the loop. That is why there are
+three versions of the loop.
+
+### Similarities to Loop Versioner
+
+For example, there is an expression `x.f.g` that is profiled, and it is loop invariant. If there is a check `x.f.g == 10`
+in the loop, the expression can be hoisted to the loop pre-header. If `x.f.g` equals to `10`, the execution goes to the
+fast version of the loop. Otherwise, it goes to the slow version of the loop.
+
+We must ask if it is safe to check `x.f.g == 10` outside the loop. What if `x` is `NULL`? We do not want to crash or raise
+an exception in this comparison. We need to lay down a set of tests before the test `x.f.g == 10`. We must test if
+`x != NULL && x.f != NULL` before testing `x.f.g == 10`. In this case, two more tests must be laid down first to ensure
+we do not crash or throw an exception when accessing this expression outside the loop. The last one is the actual expression
+test based on the value that is profiled. This involves multiple tests and any of the tests fail will send the control
+flow to the slow version of the loop. Some of these tests are exception check related tests, which are similar to how
+Loop Versioner would have checked to ensure that we are allowed to access what we want to access.
+
+Multiple values can be invariant in a loop. They could be profiled into different values. Multiple tests must be laid down
+for all of them. We do not create a separate loop for each of the expressions that are profiled. There are only three
+versions of the loop after both Loop Versioner and Loop Specializer run. Loop Versioner will version with respect to all
+the checks. Loop Specializer will specialize with respect to all the profiled values. The specialized version will have
+all the expressions that we want to specialize are converted into constants. The unspecialized version will have none of
+those expressions converted into constants. Like Loop versioner, all checks are gone in one version, and all checks are
+intact in another.

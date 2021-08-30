@@ -1542,7 +1542,8 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
          }
       case IfVectorAPI:
          {
-         if (comp()->getMethodSymbol()->hasVectorAPI()) // TODO: add disable option and check it here
+         if (comp()->getMethodSymbol()->hasVectorAPI() &&
+             !comp()->getOption(TR_DisableVectorAPIExpansion))
             doThisOptimization = true;
          }
          break;

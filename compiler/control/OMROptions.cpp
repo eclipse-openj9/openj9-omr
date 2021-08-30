@@ -122,8 +122,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"alwaysFatalAssert",       "I\tAlways execute fatal assertion for testing purposes",           SET_OPTION_BIT(TR_AlwaysFatalAssert), "F"},
    {"alwaysSafeFatalAssert", "I\tAlways issue a safe fatal assertion for testing purposes",      SET_OPTION_BIT(TR_AlwaysSafeFatal), "F"},
    {"alwaysWorthInliningThreshold=", "O<nnn>\t", TR::Options::set32BitNumeric, offsetof(OMR::Options, _alwaysWorthInliningThreshold), 0, "F%d" },
-   {"aot",                "O\tahead-of-time compilation",
-        SET_OPTION_BIT(TR_AOT), "F", NOT_IN_SUBSET},
    {"aotOnlyFromBootstrap", "O\tahead-of-time compilation allowed only for methods from bootstrap classes",
         SET_OPTION_BIT(TR_AOTCompileOnlyFromBootstrap), "F", NOT_IN_SUBSET },
    {"aotrtDebugLevel=", "R<nnn>\tprint aotrt debug output according to level", TR::Options::set32BitNumeric, offsetof(OMR::Options,_newAotrtDebugLevel), 0, "F%d"},
@@ -289,7 +287,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableCompactNullChecks",           "O\tdisable compact null checks",                    TR::Options::disableOptimization, compactNullChecks, 0, "P"},
    {"disableCompareAndBranchInstruction", "O\tdisable compareAndBranch instruction",           SET_OPTION_BIT(TR_DisableCompareAndBranchInstruction), "F"},
    {"disableCompilationAfterDLT",         "O\tdisable queueing of normal compilation for method that has been DLT compiled.", SET_OPTION_BIT(TR_DisableCompilationAfterDLT), "F"},
-   {"disableCompilationThread",           "M\tdisable compilation on a separate thread",       SET_OPTION_BIT(TR_DisableCompilationThread), "F"},
    {"disableConservativeColdInlining",   "O\tDo not be conservative with inlining at cold", SET_OPTION_BIT(TR_DisableConservativeColdInlining), "F" },
    {"disableConservativeHotRecompForServerMode", "R\tDo not be more conservative in server mode", SET_OPTION_BIT(TR_DisableConservativeHotRecompilationForServerMode), "F", NOT_IN_SUBSET},
    {"disableConservativeInlining",        "O\tDo not be conservative with inlining", SET_OPTION_BIT(TR_DisableConservativeInlining), "F" },
@@ -2289,9 +2286,6 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
          TR::Options::getAOTCmdLineOptions()->setOption(TR_DisableConservativeColdInlining);
          TR::Options::getCmdLineOptions()->setOption(TR_DisableConservativeColdInlining);
          }
-
-      if (self()->getOption(TR_DisableCompilationThread))
-         self()->setOption(TR_DisableNoVMAccess);
 
       // YieldVMAccess and NoVMAccess are incompatible. If the user enables YieldVMAccess
       // make sure NoVMAccess is disabled

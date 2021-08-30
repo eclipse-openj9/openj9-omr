@@ -84,7 +84,7 @@ enum TR_CompilationOptions
    // Option word 0
    //
    TR_AOTCompileOnlyFromBootstrap= 0x00000020,
-   TR_AOT                        = 0x00000040,
+   // Available                  = 0x00000040,
    TR_ReportMethodEnter          = 0x00000080,
    TR_ReportMethodExit           = 0x00000100,
    TR_EntryBreakPoints           = 0x00000200,
@@ -189,8 +189,8 @@ enum TR_CompilationOptions
    TR_DisableAotAtCheapWarm               = 0x00001000 + 3,
    TR_Profile                             = 0x00002000 + 3,
    TR_DisableAsyncCompilation             = 0x00004000 + 3,
-   TR_DisableCompilationThread            = 0x00008000 + 3,
-   TR_EnableCompilationThread             = 0x00010000 + 3,
+   // Available                           = 0x00008000 + 3,
+   // Available                           = 0x00010000 + 3,
    TR_EnableJITServerHeuristics           = 0x00020000 + 3,
    TR_SoftFailOnAssume                    = 0x00040000 + 3,
    TR_DisableNewBlockOrdering             = 0x00080000 + 3,

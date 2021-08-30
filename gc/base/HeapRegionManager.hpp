@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,7 +28,7 @@
 
 #include "BaseVirtual.hpp"
 #include "HeapRegionDescriptor.hpp"
-#include "LightweightNonReentrantReaderWriterLock.hpp"
+#include "LightweightNonReentrantRWLock.hpp"
 #include "ModronAssertions.h"
 
 class MM_EnvironmentBase;
@@ -67,7 +67,7 @@ class MM_HeapRegionManager : public MM_BaseVirtual {
 public:
 protected:
 	friend class MM_InterRegionRememberedSet;
-	MM_LightweightNonReentrantReaderWriterLock _heapRegionListMonitor; /**< monitor that controls modification of the heap region linked list */
+	MM_LightweightNonReentrantRWLock _heapRegionListMonitor; /**< monitor that controls modification of the heap region linked list */
 	MM_HeapRegionDescriptor* _auxRegionDescriptorList; /**< address ordered doubly linked list for auxiliary heap regions */
 	uintptr_t _auxRegionCount; /**< number of heap regions on the auxiliary list */
 

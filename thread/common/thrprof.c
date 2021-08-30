@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -217,7 +217,7 @@ omrthread_get_cpu_time_ex(omrthread_t thread, int64_t *cpuTime)
 		unsigned char *output_buffer = (unsigned char *) &threadData;
 		uint32_t output_size = sizeof(struct j9pg_thread_data);
 		uint32_t input_size = sizeof(struct pgtha);
-		int32_t ret_val = 0;
+		uint32_t ret_val = 0;
 		uint32_t ret_code = 0;
 		uint32_t reason_code = 0;
 		uint32_t data_offset = 0;
@@ -749,7 +749,7 @@ omrthread_get_process_times(omrthread_process_time_t *processTime)
 		unsigned char *output_buffer = (unsigned char *) &threadData;
 		uint32_t output_size = sizeof(struct j9pg_thread_data);
 		struct pgthc *pgthc = NULL;
-		int32_t ret_val = 0;
+		uint32_t ret_val = 0;
 		uint32_t ret_code = 0;
 		uint32_t reason_code = 0;
 		uint32_t data_offset = 0;

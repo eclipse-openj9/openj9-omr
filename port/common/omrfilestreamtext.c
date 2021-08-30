@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2018 IBM Corp. and others
+ * Copyright (c) 2015, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -41,7 +41,9 @@
 
 #if defined(J9ZOS390)
 /* Needed for a translation table from ascii -> ebcdic */
+#if !defined(OMR_EBCDIC)
 #include "atoe.h"
+#endif
 
 /* a2e overrides many functions to use ASCII strings.
  * We need the native EBCDIC string

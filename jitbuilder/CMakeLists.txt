@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,8 +23,6 @@
 include(OmrCompilerSupport)
 
 find_package(PythonInterp REQUIRED)
-
-set(OMR_WARNINGS_AS_ERRORS OFF)
 
 # JitBuilder Files
 set(JITBUILDER_OBJECTS
@@ -108,7 +106,7 @@ list(APPEND JITBUILDER_OBJECTS
 	${JITBUILDER_API_SOURCES}
 )
 
-if(OMR_ARCH_X86)
+if(OMR_ARCH_X86 OR OMR_ARCH_S390)
 	set(OMR_WARNINGS_AS_ERRORS ON)
 	set(OMR_ENHANCED_WARNINGS OFF)
 else()

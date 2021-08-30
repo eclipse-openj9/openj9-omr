@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,6 +32,7 @@ compiler_library(infra
 	${CMAKE_CURRENT_LIST_DIR}/OMRMonitorTable.cpp
 	${CMAKE_CURRENT_LIST_DIR}/Random.cpp
 	${CMAKE_CURRENT_LIST_DIR}/SimpleRegex.cpp
+	${CMAKE_CURRENT_LIST_DIR}/String.cpp
 	${CMAKE_CURRENT_LIST_DIR}/STLUtils.cpp
 	${CMAKE_CURRENT_LIST_DIR}/Timer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/TreeServices.cpp

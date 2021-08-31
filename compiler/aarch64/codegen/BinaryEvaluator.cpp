@@ -636,11 +636,11 @@ static void mulConstant32(TR::Node *node, TR::Register *treg, TR::Register *sreg
       }
    else if (value == 1)
       {
-      generateMovInstruction(cg, node, treg, sreg);
+      generateMovInstruction(cg, node, treg, sreg, false);
       }
    else if (value == -1)
       {
-      generateNegInstruction(cg, node, treg, sreg);
+      generateNegInstruction(cg, node, treg, sreg, false);
       }
    else
       {
@@ -660,11 +660,11 @@ static void mulConstant64(TR::Node *node, TR::Register *treg, TR::Register *sreg
       }
    else if (value == 1)
       {
-      generateMovInstruction(cg, node, treg, sreg);
+      generateMovInstruction(cg, node, treg, sreg, true);
       }
    else if (value == -1)
       {
-      generateNegInstruction(cg, node, treg, sreg);
+      generateNegInstruction(cg, node, treg, sreg, true);
       }
    else
       {

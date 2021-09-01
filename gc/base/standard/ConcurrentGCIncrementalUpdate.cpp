@@ -120,7 +120,12 @@ MM_ConcurrentGCIncrementalUpdate::initialize(MM_EnvironmentBase *env)
 bool
 MM_ConcurrentGCIncrementalUpdate::heapAddRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress)
 {
-	bool clearCards = (CONCURRENT_OFF < _stats.getExecutionMode()) && subspace->isConcurrentCollectable();
+	/* CS check is added to preemptively clean new cards during expansion when in the middle of a CS cycle, even if CM is off. CS cycle during
+	 * expansion can be overlapped with KO, in which case we can miss to update the init table (or update it too late) when we KO after the cleanCards check.
+	 * It it known that this will cause cards to be cleared unnecessarily during the expand given CM is off + CS. This is fine because cleaning cards
+	 * (memset) is negligible, each 512 bytes of expanded heap will require to memset of 1 byte and CS shouldn't be expanding Tenure too frequently.
+	 */
+	bool clearCards = ((CONCURRENT_OFF < _stats.getExecutionMode()) || _extensions->isConcurrentScavengerInProgress()) && subspace->isConcurrentCollectable();
 
 	/* Expand any superclass structures including mark bits*/
 	bool result = MM_ConcurrentGC::heapAddRange(env, subspace, size, lowAddress, highAddress);

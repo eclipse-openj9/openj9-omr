@@ -3366,8 +3366,6 @@ MM_ConcurrentGC::heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace *sub
 void
 MM_ConcurrentGC::heapReconfigured(MM_EnvironmentBase *env, HeapReconfigReason reason, MM_MemorySubSpace *subspace, void *lowAddress, void *highAddress)
 {
-	Assert_MM_true(reason != HEAP_RECONFIG_NONE);
-
 	/* _rebuildInitWorkForAdd/_rebuildInitWorkForRemove are not sufficient for determining on how to proceed with headReconfigured
 	 * We end up here in the following scenarios:
 	 *  1) During heap expand - after heapAddRange
@@ -3381,22 +3379,10 @@ MM_ConcurrentGC::heapReconfigured(MM_EnvironmentBase *env, HeapReconfigReason re
 	 *  Similarly, we can end up here after scavenger tilt with any of the flags set.
 	 */
 
-	if ((lowAddress != NULL) && (highAddress != NULL)) {
-		Assert_MM_true(_rebuildInitWorkForAdd && (reason == HEAP_RECONFIG_EXPAND));
-		/* If we are within a concurrent cycle we need to initialize the mark bits
-		 * for new region of heap now
-		 */
-		if (CONCURRENT_OFF < _stats.getExecutionMode()) {
-			/* If subspace is concurrently collectible then clear bits otherwise
-			 * set the bits on to stop tracing INTO this area during concurrent
-			 * mark cycle.
-			 */
-			_markingScheme->setMarkBitsInRange(env, lowAddress, highAddress, subspace->isConcurrentCollectable());
-		}
-	}
+	Assert_MM_true(reason != HEAP_RECONFIG_NONE);
 
 	/* If called outside a global collection for a heap expand/contract.. */
-	if((reason == HEAP_RECONFIG_CONTRACT) || (reason == HEAP_RECONFIG_EXPAND)) {
+	if ((reason == HEAP_RECONFIG_CONTRACT) || (reason == HEAP_RECONFIG_EXPAND)) {
 		Assert_MM_true(_rebuildInitWorkForAdd || _rebuildInitWorkForRemove);
 		if (!_stwCollectionInProgress) {
 			/* ... and a concurrent cycle has not yet started then we
@@ -3418,6 +3404,19 @@ MM_ConcurrentGC::heapReconfigured(MM_EnvironmentBase *env, HeapReconfigReason re
 		}
 	}
 
+	if ((lowAddress != NULL) && (highAddress != NULL)) {
+		Assert_MM_true(reason == HEAP_RECONFIG_EXPAND);
+		/* If we are within a concurrent cycle we need to initialize the mark bits
+		 * for new region of heap now
+		 */
+		if (CONCURRENT_OFF < _stats.getExecutionMode()) {
+			/* If subspace is concurrently collectible then clear bits otherwise
+			 * set the bits on to stop tracing INTO this area during concurrent
+			 * mark cycle.
+			 */
+			_markingScheme->setMarkBitsInRange(env, lowAddress, highAddress, subspace->isConcurrentCollectable());
+		}
+	}
 
 	/* Expand any superclass structures */
 	MM_ParallelGlobalGC::heapReconfigured(env, reason, subspace, lowAddress, highAddress);

@@ -19,14 +19,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-//  __   ___  __   __   ___  __       ___  ___  __
-// |  \ |__  |__) |__) |__  /  `  /\   |  |__  |  \
-// |__/ |___ |    |  \ |___ \__, /~~\  |  |___ |__/
-//
-// This file is now deprecated and its contents are slowly
-// being moved back to codegen and other directories. Please do not
-// add more interfaces here.
-//
+/*  __   ___  __   __   ___  __       ___  ___  __
+ * |  \ |__  |__) |__) |__  /  `  /\   |  |__  |  \
+ * |__/ |___ |    |  \ |___ \__, /~~\  |  |___ |__/
+ *
+ * This file is now deprecated and its contents are slowly
+ * being moved back to codegen and other directories. Please do not
+ * add more interfaces here.
+ */
 
 #ifndef DEBUG_INCL
 #define DEBUG_INCL

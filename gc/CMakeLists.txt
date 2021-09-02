@@ -66,6 +66,11 @@ target_compile_definitions(omrgc_tracegen
 		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_DEFINITIONS>
 )
 
+target_compile_options(omrgc_tracegen
+	PUBLIC
+		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_OPTIONS>
+)
+
 set(omrgc_sources
 	base/AddressOrderedListPopulator.cpp
 	base/AllocationContext.cpp

@@ -2,8 +2,82 @@ trigger:
   - master
 pr:
   - master
- 
+
 jobs:
+  - job:
+    displayName: 'Check line endings'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - script: |
+          allFiles=`git diff -C --diff-filter=ACM --name-only origin/master HEAD --`
+          if [ x"$allFiles" = x ] ; then
+            echo "There are no files to check for line endings."
+          else
+            badFiles=
+            for file in $allFiles ; do
+              type=`file -b $file`
+              case "$type" in
+                *empty*)
+                  echo "Empty file: '$file'"
+                  ;;
+                *text*)
+                  lcFile=`echo $file | tr '[:upper:]' '[:lower:]'`
+                  case "$lcFile" in
+                    *.bat | *.cmd)
+                      case "$type" in
+                        *CRLF*)
+                          echo "Good windows script: '$file' type: '$type'"
+                          ;;
+                        *)
+                          echo "ERROR - should have CRLF line terminators: '$file' type: '$type'"
+                          badFiles="$badFiles $file"
+                          ;;
+                      esac
+                      ;;
+                    *)
+                      case "$type" in
+                        *CR*)
+                          echo "ERROR - should have LF line terminators: '$file' type: '$type'"
+                          badFiles="$badFiles $file"
+                          ;;
+                        *)
+                          echo "Good text file: '$file' type: '$type'"
+                          ;;
+                      esac
+                      ;;
+                  esac
+                  ;;
+                *)
+                  echo "Non-text file: '$file' type: '$type'"
+                  ;;
+              esac
+            done
+            hashes='###################################'
+            if [ x"$badFiles" != x ] ; then
+              echo "$hashes"
+              echo "The following files were modified and have incorrect line endings:"
+              for file in $badFiles ; do
+                echo "$file"
+              done
+              echo "$hashes"
+              exit 1
+            else
+              git config core.whitespace blank-at-eof,blank-at-eol,cr-at-eol,space-before-tab
+              checkErrors=`git diff --check origin/master HEAD --`
+              if [ x"$checkErrors" = x ] ; then
+                echo "All modified files appear to have correct line endings."
+              else
+                echo "Found the following whitespace problems:"
+                echo "$hashes"
+                git diff --check origin/master HEAD --
+                echo "$hashes"
+                exit 1
+              fi
+            fi
+          fi
+        displayName: 'Check modified files'
+
   - job:
     displayName: 'x86-64 Windows'
     pool:
@@ -12,30 +86,30 @@ jobs:
       - script: |
           mkdir build
         displayName: 'Create build directory'
- 
+
       - script: |
           set PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.16299.0\x64;%PATH%
           cmake .. -G "Visual Studio 15 2017 Win64" -C../cmake/caches/Windows.cmake .. -DOMR_DDR=0 -DOMR_TEST_COMPILER=ON -DOMR_JITBUILDER_TEST=ON
         displayName: 'Configure'
         workingDirectory: 'build'
- 
+
       - script: |
           cmake --build . -- -maxCpuCount
         displayName: 'Build'
         workingDirectory: 'build'
- 
+
       - script: |
           ctest -V -C Debug
         displayName: "Test"
         workingDirectory: 'build'
- 
+
       - task: PublishTestResults@2
         condition: succeededOrFailed()
         inputs:
           testResultsFormat: 'JUnit'
           testResultsFiles: '**/*results.xml'
         displayName: 'Publish results'
- 
+
   - job:
     displayName: 'x86-64 Linux'
     pool:
@@ -46,54 +120,54 @@ jobs:
       - script: |
           sudo apt-get install -y ccache libelf-dev libdwarf-dev
         displayName: 'Install prerequisites'
- 
+
       - script: |
           PARALLELISM=$(grep -c '^processor' /proc/cpuinfo)
           echo "Number of parallel jobs: $PARALLELISM"
           echo "##vso[task.setvariable variable=NUMBER_OF_PROCESSORS]$PARALLELISM"
           echo "##vso[task.prependpath]/usr/lib/ccache"
         displayName: 'Initialize environment'
-       
+
       - script: |
           mkdir build
         displayName: 'Create build directory'
-        
+
       - task: Cache@2
         inputs:
           key: 'ccache | "$(Agent.OS)" | azure-pipelines.cache'
           path: $(CCACHE_DIR)
         displayName: 'Save/Restore ccache'
- 
+
       - script: |
           ccache -s -z
         displayName: 'Print cache stats'
- 
+
       - script: |
           cmake -C ../cmake/caches/Travis.cmake ..
         displayName: 'Configure'
         workingDirectory: 'build'
- 
+
       - script: |
           make -j$NUMBER_OF_PROCESSORS
         displayName: 'Build'
         workingDirectory: 'build'
- 
+
       - script: |
           ccache -s -z
         displayName: 'Print cache stats'
- 
+
       - script: |
           ctest -V -j$NUMBER_OF_PROCESSORS
         displayName: "Test"
         workingDirectory: 'build'
- 
+
       - task: PublishTestResults@2
         condition: succeededOrFailed()
         inputs:
           testResultsFormat: 'JUnit'
           testResultsFiles: '**/*results.xml'
         displayName: 'Publish results'
- 
+
   - job:
     displayName: 'x86-64 macOS'
     pool:
@@ -104,57 +178,57 @@ jobs:
       - script: |
           brew install ccache
         displayName: 'Install prerequisites'
- 
+
       - script: |
           sudo sysctl -w kern.maxproc=25000
           sudo sysctl -w kern.maxprocperuid=25000
-         
+
           PARALLELISM=$(sysctl -a | grep machdep.cpu.core_count | cut -d ' ' -f 2)
           echo "Number of parallel jobs: $PARALLELISM"
           echo "##vso[task.setvariable variable=NUMBER_OF_PROCESSORS]$PARALLELISM"
           echo "##vso[task.prependpath]/usr/local/opt/ccache/libexec"
         displayName: 'Initialize environment'
- 
+
       - script: |
           mkdir build
         displayName: 'Create build directory'
- 
+
       - task: Cache@2
         inputs:
           key: 'ccache | "$(Agent.OS)" | azure-pipelines.cache'
           path: $(CCACHE_DIR)
         displayName: 'Save/Restore ccache'
- 
+
       - script: |
           ccache -s -z
         displayName: 'Print cache stats'
- 
+
       - script: |
           cmake -C ../cmake/caches/Travis.cmake ..
         displayName: 'Configure'
         workingDirectory: 'build'
- 
+
       - script: |
           make -j$NUMBER_OF_PROCESSORS
         displayName: 'Build'
         workingDirectory: 'build'
- 
+
       - script: |
           ccache -s -z
         displayName: 'Print cache stats'
- 
+
       - script: |
           ctest -V -j$NUMBER_OF_PROCESSORS
         displayName: "Test"
         workingDirectory: 'build'
- 
+
       - task: PublishTestResults@2
         condition: succeededOrFailed()
         inputs:
           testResultsFormat: 'JUnit'
           testResultsFiles: '**/*results.xml'
         displayName: 'Publish results'
-        
+
   - job:
     displayName: 'Linter'
     pool:
@@ -171,28 +245,28 @@ jobs:
       - script: |
           sudo apt-get install -y ccache clang-3.8 libclang-3.8-dev llvm-3.8 llvm-3.8-dev
         displayName: 'Install prerequisites'
- 
+
       - script: |
           PARALLELISM=$(grep -c '^processor' /proc/cpuinfo)
           echo "Number of parallel jobs: $PARALLELISM"
           echo "##vso[task.setvariable variable=NUMBER_OF_PROCESSORS]$PARALLELISM"
           echo "##vso[task.prependpath]/usr/lib/ccache"
         displayName: 'Initialize environment'
-       
+
       - task: Cache@2
         inputs:
           key: 'ccache | "$(Agent.OS)" | azure-pipelines.cache'
           path: $(CCACHE_DIR)
         displayName: 'Save/Restore ccache'
- 
+
       - script: |
           ccache -s -z
         displayName: 'Print cache stats'
- 
+
       - script: |
           make -f run_configure.mk OMRGLUE=./example/glue RUN_LINT=yes RUN_BUILD=no HAS_AUTOCONF=1 all
         displayName: 'Configure'
- 
+
       - script: |
           make -j$NUMBER_OF_PROCESSORS lint
         displayName: 'Run linter for x86'
@@ -200,21 +274,21 @@ jobs:
           TARGET_ARCH: x
           TARGET_SUBARCH: amd64
           TARGET_BITS: 64
- 
+
       - script: |
           make -j$NUMBER_OF_PROCESSORS lint
         displayName: 'Run linter for Power'
         env:
           TARGET_ARCH: p
           TARGET_BITS: 64
- 
+
       - script: |
           make -j$NUMBER_OF_PROCESSORS lint
         displayName: 'Run linter for z/Architecture'
         env:
           TARGET_ARCH: z
           TARGET_BITS: 64
- 
+
       - script: |
           ccache -s -z
         displayName: 'Print cache stats'

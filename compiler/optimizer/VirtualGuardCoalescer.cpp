@@ -916,7 +916,7 @@ TR_InnerPreexistence::GuardInfo::GuardInfo(TR::Compilation * comp, TR::Block *bl
    {
    TR::Node *guardNode = block->getLastRealTreeTop()->getNode();
    TR::Node * callNode = guardNode->getVirtualCallNodeForGuard();
-   TR_ASSERT(callNode->getOpCode().isIndirect(), "Guarded calls must be indirect");
+   TR_ASSERT_FATAL(callNode->getOpCode().isIndirect(), "Guarded calls must be indirect");
 
    _argVNs = new (comp->trStackMemory()) TR_BitVector(20, comp->trMemory(), stackAlloc, growable);
    _innerSubTree = new (comp->trStackMemory()) TR_BitVector(numInlinedSites, comp->trMemory(), stackAlloc, notGrowable);

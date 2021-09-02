@@ -80,6 +80,10 @@ extern const ValuePropagationPtr constraintHandlers[];
 typedef TR::typed_allocator<std::pair<TR::CFGEdge * const, TR_BitVector*>, TR::Region &> DefinedOnAllPathsMapAllocator;
 typedef std::map<TR::CFGEdge *, TR_BitVector *, std::less<TR::CFGEdge *>, DefinedOnAllPathsMapAllocator> DefinedOnAllPathsMap;
 
+typedef TR::typed_allocator<std::pair<TR::Node * const, List<TR_Pair<TR::TreeTop, TR::CFGEdge>> *>, TR::Region &> CallNodeToGuardNodesMapAllocator;
+typedef std::map<TR::Node *, List<TR_Pair<TR::TreeTop, TR::CFGEdge>> *, std::less<TR::Node *>, CallNodeToGuardNodesMapAllocator> CallNodeToGuardNodesMap;
+
+
 namespace TR {
 
 class ArraycopyTransformation : public TR::Optimization
@@ -765,6 +769,8 @@ class ValuePropagation : public TR::Optimization
    //
    TR_Array<TR::CFGEdge *> *_edgesToBeRemoved;
 
+   CallNodeToGuardNodesMap *_callNodeToGuardNodes;
+   
    // Cached constraints
    //
    TR::VPNullObject        *_nullObjectConstraint;

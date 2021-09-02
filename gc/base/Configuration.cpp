@@ -466,6 +466,13 @@ MM_Configuration::initializeGCParameters(MM_EnvironmentBase* env)
 	if (0 == extensions->cacheListSplit) {
 		extensions->cacheListSplit = (extensions->gcThreadCount - 1) / 8  +  1;
 	}
+	if (extensions->scavengerEnabled) {
+		if (MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_NONE == extensions->scavengerScanOrdering) {
+			extensions->scavengerScanOrdering = MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL;
+		} else if (MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_DYNAMIC_BREADTH_FIRST == extensions->scavengerScanOrdering) {
+			extensions->adaptiveGcCountBetweenHotFieldSort = true;
+		}
+	}
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
 	/* initialize default split freelist split amount */
@@ -473,11 +480,6 @@ MM_Configuration::initializeGCParameters(MM_EnvironmentBase* env)
 #if defined(OMR_GC_MODRON_SCAVENGER)
 		if (extensions->scavengerEnabled) {
 			extensions->splitFreeListSplitAmount = (extensions->gcThreadCount - 1) / 8  +  1;
-			if (MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_NONE == extensions->scavengerScanOrdering) {
-				extensions->scavengerScanOrdering = MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL;
-			} else if (MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_DYNAMIC_BREADTH_FIRST == extensions->scavengerScanOrdering) {
-				extensions->adaptiveGcCountBetweenHotFieldSort = true;
-			}
 		} else
 #endif /* OMR_GC_MODRON_SCAVENGER */
 		{

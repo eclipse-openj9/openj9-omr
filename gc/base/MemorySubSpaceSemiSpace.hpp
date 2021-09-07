@@ -75,7 +75,7 @@ private:
 	uintptr_t _tiltedAverageBytesFlippedDelta;
 
 	double _averageScavengeTimeRatio;
-	uint64_t _lastScavengeEndTime;
+	uint64_t _lastGCEndTime;
 
 	double _desiredSurvivorSpaceRatio;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
@@ -187,7 +187,7 @@ public:
 		,_tiltedAverageBytesFlipped(0)
 		,_tiltedAverageBytesFlippedDelta(0)
 		,_averageScavengeTimeRatio(0.0)
-		,_lastScavengeEndTime(0)
+		,_lastGCEndTime(0)
 		,_desiredSurvivorSpaceRatio(0.0)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)		
 		,_bytesAllocatedDuringConcurrent(0)

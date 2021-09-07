@@ -44,8 +44,6 @@ MM_ScavengerStats::MM_ScavengerStats()
 	,_failedFlipCount(0)
 	,_failedFlipBytes(0)
 	,_tenureAge(0)
-	,_startTime(0)
-	,_endTime(0)
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 	,_releaseScanListCount(0)
 	,_acquireFreeListCount(0)
@@ -66,8 +64,8 @@ MM_ScavengerStats::MM_ScavengerStats()
 	,_depthDeepestStructure(0)
 	,_copyScanUpdates(0)
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
-	,_workerScavengeStartTime(0)
-	,_workerScavengeEndTime(0)
+	,_startTime(0)
+	,_endTime(0)
 	,_notifyStallTime(0)
 	,_adjustedSyncStallTime(0)
 	,_avgInitialFree(0)
@@ -201,8 +199,8 @@ MM_ScavengerStats::clear(bool firstIncrement)
 
 	_adjustedSyncStallTime = 0;
 	_notifyStallTime = 0;
-	_workerScavengeEndTime = 0;
-	_workerScavengeStartTime = 0;
+	_startTime = 0;
+	_endTime = 0;
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	_readObjectBarrierCopy = 0;

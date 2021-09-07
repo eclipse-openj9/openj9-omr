@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -51,7 +51,7 @@ public:
       _allocated(other._allocated),
       _next(this)
       {
-      TR_ASSERT(_allocated == 0 && other._next == &other, "Copying segment descriptor that's in use");
+      TR_ASSERT_FATAL(_allocated == 0 && other._next == &other, "Copying segment descriptor that's in use");
       }
 
    ~MemorySegment() throw() {}
@@ -63,7 +63,7 @@ public:
 
    void * allocate(size_t bytes)
       {
-      TR_ASSERT( !(_allocated + bytes > _size), "Requested allocation would overflow");
+      TR_ASSERT_FATAL( !(_allocated + bytes > _size), "Requested allocation would overflow");
       uint8_t * requested = static_cast<uint8_t *>(_segment) + _allocated;
       _allocated += bytes;
       return requested;
@@ -86,13 +86,13 @@ public:
 
    void link(MemorySegment &next) throw()
       {
-      TR_ASSERT(_next == this, "Already linked");
+      TR_ASSERT_FATAL(_next == this, "Already linked");
       _next = &next;
       }
 
    MemorySegment &unlink() throw()
       {
-      TR_ASSERT(_next != 0 && _next != this, "Already unlinked");
+      TR_ASSERT_FATAL(_next != 0 && _next != this, "Already unlinked");
       MemorySegment &chain = *_next;
       _next = this;
       return chain;
@@ -100,7 +100,7 @@ public:
 
    MemorySegment &next() const throw()
       {
-      TR_ASSERT(_next, "_next should never be null");
+      TR_ASSERT_FATAL(_next, "_next should never be null");
       return *_next;
       }
 

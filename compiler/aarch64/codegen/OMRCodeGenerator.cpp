@@ -256,6 +256,13 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
 
    self()->setEstimatedCodeLength(data.estimate);
 
+   if (!constantIsSignedImm21(data.estimate))
+      {
+      // Workaround for huge code
+      // Range of conditional branch instruction is +/- 1MB
+      self()->comp()->failCompilation<TR::AssertionFailure>("Generated code is too large");
+      }
+
    data.cursorInstruction = self()->getFirstInstruction();
    uint8_t *coldCode = NULL;
    uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedCodeLength(), 0, &coldCode);
@@ -295,13 +302,6 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
          block->addExceptionRangeForSnippet(startOffset, endOffset);
 
       ++oiIterator;
-      }
-
-   if (!constantIsSignedImm21((intptr_t)self()->getBinaryBufferCursor() - (intptr_t)self()->getBinaryBufferStart()))
-      {
-      // Workaround for huge code
-      // Range of conditional branch instruction is +/- 1MB
-      self()->comp()->failCompilation<TR::AssertionFailure>("Generated code is too large");
       }
 
    self()->getLinkage()->performPostBinaryEncoding();

@@ -1450,7 +1450,7 @@ OMR::SymbolReferenceTable::findOrCreateMethodSymbol(
               && owningMethodIndex == symRef->getOwningMethodIndex()
               && cpIndex != -1
               && symRef->getSymbol()->getMethodSymbol()->getMethodKind() == callKind
-              && !(resolvedMethod && symRef->isUnresolved())
+              && !(resolvedMethod && (symRef->isUnresolved() || symRef->getSymbol()->isDummyResolvedMethod()))
             )
           return symRef;
         }

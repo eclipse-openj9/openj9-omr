@@ -3858,9 +3858,7 @@ TR::S390VRRInstruction::getExtendedMnemonicName()
 /** \details
  *
  *  VRR Generate Binary Encoding for most sub-types of the VRR instruction format
- *
- *  VRR-g,h,i have their own implementations due to format differences.
-*/
+ */
 uint8_t *
 TR::S390VRRInstruction::generateBinaryEncoding()
    {
@@ -3881,6 +3879,9 @@ TR::S390VRRInstruction::generateBinaryEncoding()
       case TR::Instruction::IsVRRd: maskIn0 = getM5(); maskIn1 = getM6(); break;
       case TR::Instruction::IsVRRe: maskIn0 = getM6(); maskIn2 = getM5(); break;
       case TR::Instruction::IsVRRf: break; // no mask
+      case TR::Instruction::IsVRRg: break; // no mask
+      case TR::Instruction::IsVRRh: maskIn1 = getM3(); break;
+      case TR::Instruction::IsVRRi: maskIn1 = getM3(); maskIn2 = getM4(); break;
       default: break;
       }
    setMaskField(reinterpret_cast<uint32_t *>(cursor), maskIn1, 1);
@@ -3889,10 +3890,22 @@ TR::S390VRRInstruction::generateBinaryEncoding()
 
    // Operands 1-4, sets RXB when in setRegisterXField() methods
    if (getRegisterOperand(1) != NULL)
-      toRealRegister(getRegisterOperand(1))->setRegister1Field(reinterpret_cast<uint32_t *>(cursor));
+      {
+      // First register operand for VRR-g and VRR-h maps to second register field (12-16 bits)
+      if (getKind() == TR::Instruction::IsVRRg || getKind() == TR::Instruction::IsVRRh)
+         toRealRegister(getRegisterOperand(1))->setRegister2Field(reinterpret_cast<uint32_t *>(cursor));
+      else
+         toRealRegister(getRegisterOperand(1))->setRegister1Field(reinterpret_cast<uint32_t *>(cursor));
+      }
 
    if (getRegisterOperand(2) != NULL)
-      toRealRegister(getRegisterOperand(2))->setRegister2Field(reinterpret_cast<uint32_t *>(cursor));
+      {
+      // Second register operand for VRR-h maps to third register field (16-20 bits)
+      if (getKind() == TR::Instruction::IsVRRh)
+         toRealRegister(getRegisterOperand(2))->setRegister3Field(reinterpret_cast<uint32_t *>(cursor));
+      else
+         toRealRegister(getRegisterOperand(2))->setRegister2Field(reinterpret_cast<uint32_t *>(cursor));
+      }
 
    if (getRegisterOperand(3) != NULL)
       toRealRegister(getRegisterOperand(3))->setRegister3Field(reinterpret_cast<uint32_t *>(cursor));
@@ -3933,7 +3946,6 @@ TR::S390VRRaInstruction::generateBinaryEncoding()
    TR_ASSERT(getRegisterOperand(1) != NULL, "First Operand should not be NULL!");
    TR_ASSERT(getRegisterOperand(2) != NULL, "2nd Operand should not be NULL!");
 
-   // Generate Binary Encoding
    return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
@@ -3950,7 +3962,6 @@ TR::S390VRRbInstruction::generateBinaryEncoding()
    TR_ASSERT(getRegisterOperand(2) != NULL, "2nd Operand should not be NULL!");
    TR_ASSERT(getRegisterOperand(3) != NULL, "3rd Operand should not be NULL!");
 
-   // Generate Binary Encoding
    return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
@@ -3967,7 +3978,6 @@ TR::S390VRRcInstruction::generateBinaryEncoding()
    TR_ASSERT(getRegisterOperand(2) != NULL, "2nd Operand should not be NULL!");
    TR_ASSERT(getRegisterOperand(3) != NULL, "3rd Operand should not be NULL!");
 
-   // Generate Binary Encoding
    return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
@@ -3985,7 +3995,6 @@ TR::S390VRRdInstruction::generateBinaryEncoding()
    TR_ASSERT(getRegisterOperand(3) != NULL, "3rd Operand should not be NULL!");
    TR_ASSERT(getRegisterOperand(4) != NULL, "4th Operand should not be NULL!");
 
-   // Generate Binary Encoding
    return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
@@ -4003,7 +4012,6 @@ TR::S390VRReInstruction::generateBinaryEncoding()
    TR_ASSERT(getRegisterOperand(3) != NULL, "3rd Operand should not be NULL!");
    TR_ASSERT(getRegisterOperand(4) != NULL, "4th Operand should not be NULL!");
 
-   // Generate Binary Encoding
    return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
@@ -4020,7 +4028,6 @@ TR::S390VRRfInstruction::generateBinaryEncoding()
    TR_ASSERT(getRegisterOperand(2) != NULL, "2nd Operand should not be NULL!");
    TR_ASSERT(getRegisterOperand(3) != NULL, "3rd Operand should not be NULL!");
 
-   // Generate Binary Encoding
    return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
@@ -4033,27 +4040,9 @@ uint8_t *
 TR::S390VRRgInstruction::generateBinaryEncoding()
    {
    // Error Checking
-   TR::Register* v1Reg = getRegisterOperand(1);
-   TR_ASSERT( v1Reg != NULL, "VRR-g V1 should not be NULL!");
+   TR_ASSERT( getRegisterOperand(1) != NULL, "VRR-g V1 should not be NULL!");
 
-   uint8_t * instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t * cursor = instructionStart;
-   memset((void*)cursor, 0, getEstimatedBinaryLength());
-
-   // Copy binary
-   getOpCode().copyBinaryToBuffer(instructionStart);
-
-   // Operands 1 at the second field
-   toRealRegister(v1Reg)->setRegister2Field(reinterpret_cast<uint32_t *>(cursor));
-
-   // Cursor move
-   // update binary length
-   // update binary length estimate error
-   cursor += getOpCode().getInstructionLength();
-   setBinaryLength(cursor - instructionStart);
-   setBinaryEncoding(instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   return cursor;
+   return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
 /** \details
@@ -4065,34 +4054,10 @@ uint8_t *
 TR::S390VRRhInstruction::generateBinaryEncoding()
    {
    // Error Checking
-   TR::Register* v1Reg = getRegisterOperand(1);
-   TR::Register* v2Reg = getRegisterOperand(2);
-   TR_ASSERT(v1Reg != NULL, "VRR-h operand should not be NULL!");
-   TR_ASSERT(v2Reg != NULL, "VRR-h Operand should not be NULL!");
+   TR_ASSERT(getRegisterOperand(1) != NULL, "VRR-h V1 should not be NULL!");
+   TR_ASSERT(getRegisterOperand(2) != NULL, "VRR-h V2 should not be NULL!");
 
-   uint8_t * instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t * cursor = instructionStart;
-   memset((void*)cursor, 0, getEstimatedBinaryLength());
-
-   // Copy binary
-   getOpCode().copyBinaryToBuffer(instructionStart);
-
-   // Masks
-   uint8_t mask3 = getM3();
-   setMaskField(reinterpret_cast<uint32_t *>(cursor), mask3, 1);
-
-   // Operands
-   toRealRegister(v1Reg)->setRegister2Field(reinterpret_cast<uint32_t *>(cursor));
-   toRealRegister(v2Reg)->setRegister3Field(reinterpret_cast<uint32_t *>(cursor));
-
-   // Cursor move
-   // update binary length
-   // update binary length estimate error
-   cursor += getOpCode().getInstructionLength();
-   setBinaryLength(cursor - instructionStart);
-   setBinaryEncoding(instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   return cursor;
+   return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
 /** \details
@@ -4104,33 +4069,10 @@ uint8_t *
 TR::S390VRRiInstruction::generateBinaryEncoding()
    {
    // Error Checking
-   TR::Register* r1Reg = getRegisterOperand(1);
-   TR::Register* v2Reg = getRegisterOperand(2);
-   TR_ASSERT(r1Reg != NULL, "First Operand should not be NULL!");
-   TR_ASSERT(v2Reg != NULL, "2nd Operand should not be NULL!");
+   TR_ASSERT(getRegisterOperand(1) != NULL, "VRR-i R1 should not be NULL!");
+   TR_ASSERT(getRegisterOperand(2) != NULL, "VRR-i V1 should not be NULL!");
 
-   uint8_t * instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t * cursor = instructionStart;
-   memset((void*)cursor, 0, getEstimatedBinaryLength());
-
-   // Copy binary
-   getOpCode().copyBinaryToBuffer(instructionStart);
-
-   setMaskField(reinterpret_cast<uint32_t *>(cursor), getM3(), 1);
-   setMaskField(reinterpret_cast<uint32_t *>(cursor), getM4(), 2);
-
-   // Operands
-   toRealRegister(r1Reg)->setRegister1Field(reinterpret_cast<uint32_t *>(cursor));
-   toRealRegister(v2Reg)->setRegister2Field(reinterpret_cast<uint32_t *>(cursor));
-
-   // Cursor move
-   // update binary length
-   // update binary length estimate error
-   cursor += getOpCode().getInstructionLength();
-   setBinaryLength(cursor - instructionStart);
-   setBinaryEncoding(instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   return cursor;
+   return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
 /** \details

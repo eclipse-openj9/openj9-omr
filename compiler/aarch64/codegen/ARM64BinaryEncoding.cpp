@@ -121,6 +121,10 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
 
       TR::ResolvedMethodSymbol *sym = symRef->getSymbol()->getResolvedMethodSymbol();
 
+      if (cg()->hasCodeCacheSwitched())
+         {
+         cg()->redoTrampolineReservationIfNecessary(this, symRef);
+         }
       if (cg()->comp()->isRecursiveMethodTarget(sym))
          {
          intptr_t jitToJitStart = cg()->getLinkage()->entryPointFromCompiledMethod();
@@ -142,11 +146,6 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
       else
          {
          TR::MethodSymbol *method = symRef->getSymbol()->getMethodSymbol();
-
-         if (cg()->hasCodeCacheSwitched())
-            {
-            cg()->redoTrampolineReservationIfNecessary(this, symRef);
-            }
 
          if (method && method->isHelper())
             {

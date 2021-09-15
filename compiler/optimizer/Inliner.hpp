@@ -56,9 +56,6 @@
 #include "ras/LogTracer.hpp"
 
 
-#define MIN_PROFILED_CALL_FREQUENCY (.65f) // lowered this from .80f since opportunities were being missed in WAS; in those cases getting rid of the call even in 65% of the cases was beneficial probably due to the improved icache impact
-#define TWO_CALL_PROFILED_FREQUENCY (.30f)
-#define MAX_FAN_IN (.60f)
 const float SECOND_BEST_MIN_CALL_FREQUENCY = .2275f; //65% of 35%
 
 #define partialTrace(r, ...) \

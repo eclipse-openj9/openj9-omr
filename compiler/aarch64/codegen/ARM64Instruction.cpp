@@ -736,12 +736,22 @@ void TR::ARM64CompareBranchInstruction::assignRegisters(TR_RegisterKinds kindToB
    TR::Register *source1Virtual = getSource1Register();
 
    if (getDependencyConditions())
+      {
+      uint32_t numPreConditions = getDependencyConditions()->getAddCursorForPre();
       getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());
+
+      getDependencyConditions()->getPreConditions()->blockRegisters(numPreConditions);
+      }
 
    TR::RealRegister *assignedSource1Register = machine->assignOneRegister(this, source1Virtual);
 
    if (getDependencyConditions())
+      {
+      uint32_t numPreConditions = getDependencyConditions()->getAddCursorForPre();
+      getDependencyConditions()->getPreConditions()->unblockRegisters(numPreConditions);
+
       getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
+      }
 
    setSource1Register(assignedSource1Register);
 
@@ -776,12 +786,22 @@ void TR::ARM64TestBitBranchInstruction::assignRegisters(TR_RegisterKinds kindToB
    TR::Register *source1Virtual = getSource1Register();
 
    if (getDependencyConditions())
+      {
+      uint32_t numPreConditions = getDependencyConditions()->getAddCursorForPre();
       getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());
+
+      getDependencyConditions()->getPreConditions()->blockRegisters(numPreConditions);
+      }
 
    TR::RealRegister *assignedSource1Register = machine->assignOneRegister(this, source1Virtual);
 
    if (getDependencyConditions())
+      {
+      uint32_t numPreConditions = getDependencyConditions()->getAddCursorForPre();
+      getDependencyConditions()->getPreConditions()->unblockRegisters(numPreConditions);
+
       getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
+      }
 
    setSource1Register(assignedSource1Register);
 
@@ -816,12 +836,22 @@ void TR::ARM64RegBranchInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
    TR::Register *targetVirtual = getTargetRegister();
 
    if (getDependencyConditions())
+      {
+      uint32_t numPreConditions = getDependencyConditions()->getAddCursorForPre();
       getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());
+
+      getDependencyConditions()->getPreConditions()->blockRegisters(numPreConditions);
+      }
 
    TR::RealRegister *assignedTargetRegister = machine->assignOneRegister(this, targetVirtual);
 
    if (getDependencyConditions())
+      {
+      uint32_t numPreConditions = getDependencyConditions()->getAddCursorForPre();
+      getDependencyConditions()->getPreConditions()->unblockRegisters(numPreConditions);
+
       getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
+      }
 
    setTargetRegister(assignedTargetRegister);
    }

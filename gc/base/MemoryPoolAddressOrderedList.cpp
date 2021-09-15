@@ -456,6 +456,8 @@ retry:
 			currentFreeEntry = doFreeEntryAlignmentUpTo(env, currentFreeEntry);
 			if (NULL == currentFreeEntry) {
 				currentFreeEntry = (FREE_ENTRY_END == _firstUnalignedFreeEntry) ? NULL : _firstUnalignedFreeEntry;
+				previousFreeEntry = (FREE_ENTRY_END == _prevFirstUnalignedFreeEntry) ? NULL : _prevFirstUnalignedFreeEntry;
+				walkCount += 1;
 				continue;
 			}
 		}
@@ -1352,6 +1354,16 @@ MM_MemoryPoolAddressOrderedList::recycleHeapChunk(
 	bool const compressed = compressObjectReferences();
 	Assert_MM_true(addrBase <= addrTop);
 	Assert_MM_true((NULL == nextFreeEntry) || (addrTop <= nextFreeEntry));
+#if defined(DEBUG)
+	/* confirming there is no gap between previous free entry and addrBase */
+	MM_HeapLinkedFreeHeader *current = NULL;
+	if (previousFreeEntry) {
+		current = previousFreeEntry->getNext(compressed);
+	} else if (_heapFreeList) {
+		current = _heapFreeList;
+	}
+	Assert_MM_true((current == NULL) || (((uintptr_t)current + current->getSize()) >= (uintptr_t)addrBase));
+#endif
 	if (internalRecycleHeapChunk(addrBase, addrTop, nextFreeEntry)) {
 		if (previousFreeEntry) {
 			Assert_MM_true(previousFreeEntry < addrBase);

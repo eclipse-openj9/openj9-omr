@@ -95,6 +95,50 @@ TR::Register *OMR::ARM64::TreeEvaluator::gotoEvaluator(TR::Node *node, TR::CodeG
    return NULL;
    }
 
+/**
+ * @brief Returns the number of integer or address child nodes of the GlRegDeps node
+ *
+ * @param[in]  glRegDepsNode: GlRegDeps node
+ * @param[in]             cg: Code Generator
+ * @return the number of integer or address child nodes of the GlRegDeps node
+ */
+static uint32_t countIntegerAndAddressTypesInGlRegDeps(TR::Node *glRegDepsNode, TR::CodeGenerator *cg)
+   {
+   uint32_t n = glRegDepsNode->getNumChildren();
+   uint32_t numIntNodes = 0;
+
+   for (int i = 0; i < n; i++)
+      {
+      TR::Node *child = glRegDepsNode->getChild(i);
+      /*
+       *  For PassThrough node, we need to check the data type of the child node of PassThrough.
+       *    GlRegDeps
+       *       PassThrough x15
+       *         ==>acalli
+       *
+       *   For RegLoad node, we check the data type of the RegLoad node.
+       *   GlRegDeps
+       *      aRegLoad x15
+       *      iRegLoad x14
+       *      dRegLoad d31
+       *      dRegLoad d30
+       */
+      if (child->getOpCodeValue() == TR::PassThrough)
+         {
+         child = child->getFirstChild();
+         }
+
+      if (!(child->getDataType().isFloatingPoint() || child->getDataType().isVector()))
+         {
+         numIntNodes++;
+         }
+      }
+   if (cg->comp()->getOption(TR_TraceCG))
+      traceMsg(cg->comp(), "%d integer/address nodes found in GlRegDeps node %p\n", numIntNodes, glRegDepsNode);
+
+   return numIntNodes;
+   }
+
 static TR::Instruction *ificmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, bool is64bit, TR::CodeGenerator *cg)
    {
    if (virtualGuardHelper(node, cg))
@@ -143,7 +187,7 @@ if (secondChildNeedsRelocation)
              * We need to use a b.cond instruction instead for that case.
              */
             && ((node->getNumChildren() != 3) ||
-             (node->getChild(2)->getNumChildren() != cg->getLinkage()->getProperties().getNumAllocatableIntegerRegisters())))
+             (countIntegerAndAddressTypesInGlRegDeps(node->getChild(2), cg) < cg->getLinkage()->getProperties().getNumAllocatableIntegerRegisters())))
          {
          TR::InstOpCode::Mnemonic op;
          if (cc == TR::CC_EQ )
@@ -158,7 +202,12 @@ if (secondChildNeedsRelocation)
             TR_ASSERT(thirdChild->getOpCodeValue() == TR::GlRegDeps, "The third child of a compare must be a TR::GlRegDeps");
             cg->evaluate(thirdChild);
 
-            deps = generateRegisterDependencyConditions(cg, thirdChild, 0);
+            deps = generateRegisterDependencyConditions(cg, thirdChild, 1);
+            uint32_t numPreConditions = deps->getAddCursorForPre();
+            if (!deps->getPreConditions()->containsVirtualRegister(src1Reg, numPreConditions))
+               {
+               TR::addDependency(deps, src1Reg, TR::RealRegister::NoReg, TR_GPR, cg);
+               }
             result = generateCompareBranchInstruction(cg, op, node, src1Reg, dstLabel, deps);
             }
          else

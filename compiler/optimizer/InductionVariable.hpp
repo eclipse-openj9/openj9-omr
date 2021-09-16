@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -542,7 +542,7 @@ class TR_InductionVariableAnalysis : public TR::Optimization
                                 TR::SymbolReference *symRef);
    TR::Node *getEntryValue(TR::Block *block, TR::SymbolReference *symRef,
                           TR_BitVector *nodesDone,
-                          TR_Array<TR::Node *> &cachedVales);
+                          TR_Array<TR::Node *> &cachedVales, int32_t depth=0);
 
    bool isProgressionalStore(TR::Node *node, TR_ProgressionKind *kind, int64_t *incr);
    bool getProgression(TR::Node *expr, TR::SymbolReference *storeRef, TR::SymbolReference **ref, TR_ProgressionKind *prog, int64_t *incr);

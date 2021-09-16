@@ -1125,7 +1125,7 @@ void OMR::Power::MemoryReference::mapOpCode(TR::Instruction *currentInstruction)
             break;
          }
       }
-   else if ((self()->getOffset() < LOWER_IMMED || self()->getOffset() > UPPER_IMMED || self()->getLabel()) && currentInstruction->cg()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
+   else if ((self()->getUnresolvedSnippet() == NULL) && (self()->getOffset() < LOWER_IMMED || self()->getOffset() > UPPER_IMMED || self()->getLabel()) && currentInstruction->cg()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
       {
       switch (currentInstruction->getOpCodeValue())
          {

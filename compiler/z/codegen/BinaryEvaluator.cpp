@@ -1224,7 +1224,7 @@ genericLongShiftSingle(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::
 
             return trgReg;
             }
-         else if (firstChild->getOpCodeValue() == TR::land)
+         else if (firstChild->getOpCodeValue() == TR::land && firstChild->getReferenceCount() == 1)
             {
             if (trgReg = TR::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(firstChild, cg, value, node->getOpCodeValue() == TR::lshl))
                {
@@ -1238,7 +1238,7 @@ genericLongShiftSingle(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::
       else if (node->getOpCodeValue() == TR::lshr || node->getOpCodeValue() == TR::lushr)
          {
          // Generate RISBGN for (lshr + land) and (lushr + land) sequences
-         if (firstChild->getOpCodeValue() == TR::land)
+         if (firstChild->getOpCodeValue() == TR::land && firstChild->getReferenceCount() == 1)
             {
             if (trgReg = TR::TreeEvaluator::tryToReplaceShiftLandWithRotateInstruction(firstChild, cg, -value, node->getOpCodeValue() == TR::lshr))
                {

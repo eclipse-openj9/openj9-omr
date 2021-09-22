@@ -86,11 +86,11 @@ MM_ConfigurationStandard::initialize(MM_EnvironmentBase* env)
 	}
 
 	if (!extensions->heapExpansionGCRatioThreshold._wasSpecified) {
-		extensions->heapExpansionGCRatioThreshold._valueSpecified = extensions->heapExpansionGCTimeThreshold;
+		extensions->heapExpansionGCRatioThreshold._valueSpecified = 13;
 	}
 
 	if (!extensions->heapContractionGCRatioThreshold._wasSpecified) {
-		extensions->heapContractionGCRatioThreshold._valueSpecified = extensions->heapContractionGCTimeThreshold;
+		extensions->heapContractionGCRatioThreshold._valueSpecified = 5;
 	}
 
 	return result;

@@ -52,8 +52,8 @@ public:
 		uint64_t avgPgcTimeUs;
 		uint64_t avgPgcIntervalUs;
 		uint64_t pgcCountSinceGMPEnd;
-		uint64_t reservedSize;
-		uint64_t freeTenure;
+		uintptr_t reservedSize;
+		uintptr_t freeTenure;
 		intptr_t edenRegionChange;
 		bool readyToResizeAtGlobalEnd;
 

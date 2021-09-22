@@ -533,7 +533,7 @@ TraceEvent=Trc_MM_J9AllocateIndexableObject_outOfLineObjectAllocation Overhead=1
 TraceEvent=Trc_MM_J9AllocateObject_outOfLineObjectAllocation Overhead=1 Level=1 Template="object allocated out-of-line sampled: class=%p (%.*s); object size=%zu"
 
 TraceEntry=Trc_MM_MemorySubSpaceTarok_calculateExpandSize_Entry Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpaceTarok_calculateExpandSize Entry Bytes required = %zu"
-TraceExit=Trc_MM_MemorySubSpaceTarok_calculateExpandSize_Exit1 Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpaceTarok_calculateExpandSize Exit1 Desired free bytes = %zu, current free bytes = %zu, returning expand size of %zu bytes"
+TraceExit=Trc_MM_MemorySubSpaceTarok_calculateExpandSize_Exit1 Obsolete Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpaceTarok_calculateExpandSize Exit1 Desired free bytes = %zu, current free bytes = %zu, returning expand size of %zu bytes"
 TraceEntry=Trc_MM_MemorySubSpaceTarok_checkForRatioExpand_Entry Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpaceTarok_checkForRatioExpand Entry Bytes required = %zu"
 TraceExit=Trc_MM_MemorySubSpaceTarok_checkForRatioExpand_Exit1 Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpaceTarok_checkForRatioExpand Exit1 Free space already at -Xmaxf limit"
 TraceExit=Trc_MM_MemorySubSpaceTarok_checkForRatioExpand_Exit2 Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpaceTarok_checkForRatioExpand Exit2 Percentage of time spent in garbage collection = %u, expansion not required"
@@ -551,7 +551,7 @@ TraceExit=Trc_MM_MemorySubSpaceTarok_timeForHeapContract_Exit4 Overhead=1 Level=
 TraceExit=Trc_MM_MemorySubSpaceTarok_timeForHeapContract_Exit5 Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpaceTarok_timeForHeapContract Exit5 Do not contract a expansion ocurred on one of previous three garbage collection cycles"
 TraceExit=Trc_MM_MemorySubSpaceTarok_timeForHeapContract_Exit6 Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpaceTarok_timeForHeapContract Exit6 Do not contract as free bytes at start of system garbage collect, %zu, less than minimum free bytes, %zu"
 TraceExit=Trc_MM_MemorySubSpaceTarok_timeForHeapContract_Exit7 Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpaceTarok_timeForHeapContract Exit7 Contraction required, size = %zu bytes"
-TraceEntry=Trc_MM_MemorySubSpaceTarok_calculateTargetContractSize_Entry Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpaceTarok_calculateTargetContractSize Entry Allocation size = %zu, ratio contract %s"
+TraceEntry=Trc_MM_MemorySubSpaceTarok_calculateTargetContractSize_Entry Obsolete Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpaceTarok_calculateTargetContractSize Entry Allocation size = %zu, ratio contract %s"
 TraceEvent=Trc_MM_MemorySubSpaceTarok_calculateTargetContractSize_Event1 Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpaceTarok_calculateTargetContractSize Event1 Contraction size = %zu bytes"
 TraceEvent=Trc_MM_MemorySubSpaceTarok_calculateTargetContractSize_Event2 Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpaceTarok_calculateTargetContractSize Event2 Contraction size = %zu bytes, maximum contraction size = %zu bytes"
 TraceExit=Trc_MM_MemorySubSpaceTarok_calculateTargetContractSize_Exit1 Overhead=1 Level=1 Group=resize Template="MM_MemorySubSpaceTarok_calculateTargetContractSize Exit contraction size = %zu bytes"

@@ -4210,6 +4210,14 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_ARM64arrayCopy:                                   return "__arrayCopy";
          case TR_ARM64forwardArrayCopy:                            return "__forwardArrayCopy";
          case TR_ARM64backwardArrayCopy:                           return "__backwardArrayCopy";
+         case TR_ARM64forwardQuadWordArrayCopy:                    return "__fwQuadWordCopyLoop";
+         case TR_ARM64forwardDoubleWordArrayCopy:                  return "__fwDoubleWordArrayCopy";
+         case TR_ARM64forwardWordArrayCopy:                        return "__fwWordArrayCopy";
+         case TR_ARM64forwardHalfWordArrayCopy:                    return "__fwHalfWordArrayCopy";
+         case TR_ARM64backwardQuadWordArrayCopy:                   return "__bwQuadWordCopyLoop";
+         case TR_ARM64backwardDoubleWordArrayCopy:                 return "__bwDoubleWordArrayCopy";
+         case TR_ARM64backwardWordArrayCopy:                       return "__bwWordArrayCopy";
+         case TR_ARM64backwardHalfWordArrayCopy:                   return "__bwHalfWordArrayCopy";
          case TR_ARM64interfaceCompleteSlot2:                      return "_interfaceCompleteSlot2";
          case TR_ARM64interfaceSlotsUnavailable:                   return "_interfaceSlotsUnavailable";
          }

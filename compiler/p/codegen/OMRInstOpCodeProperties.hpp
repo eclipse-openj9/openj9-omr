@@ -9665,18 +9665,18 @@
                         PPCOpProp_IsVSX,
    },
 
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::lxvh8x, */
-   /* .name        =    "lxvh8x", */
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::lxvh8x,
+   /* .name        = */ "lxvh8x",
    /* .description =    "Load VSX vector Hword*8 indexed", */
-   /* .prefix      =    0x00000000, */
-   /* .opcode      =    0x7C000658, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    OMR_PROCESSOR_PPC_P9, */
-   /* .properties  =    PPCOpProp_IsLoad | */
-   /*                   PPCOpProp_ExcludeR0ForRA | */
-   /*                   PPCOpProp_IsVSX, */
-   /* }, */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x7C000658,
+   /* .format      = */ FORMAT_XT_RA_RB,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P9,
+   /* .properties  = */ PPCOpProp_IsLoad |
+                        PPCOpProp_ExcludeR0ForRA |
+                        PPCOpProp_IsVSX,
+   },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::lxvll,
@@ -14380,8 +14380,8 @@
    /* .name        = */ "vrlq",
    /* .description =    "Vector Rotate Left Quadword", */
    /* .prefix      = */ 0x00000000,
-   /* .opcode      = */ 0x00000000,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .opcode      = */ 0x10000005,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_P10,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,

@@ -818,7 +818,7 @@
 // lxsihzx,          // Load VSX scalar as integer Hword & zero indexed
    lxv,              // Load VSX vector
    lxvb16x,          // Load VSX vector byte*16 indexed
-// lxvh8x,           // Load VSX vector Hword*8 indexed
+   lxvh8x,           // Load VSX vector Hword*8 indexed
    lxvll,            // Load VSX vector left-justified with length
 // lxvwsx,           // Load VSX vector word & splat indexed
 // lxvx,             // Load VSX vector indexed

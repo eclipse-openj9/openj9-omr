@@ -391,8 +391,6 @@ public:
 	uintptr_t heapFreeMinimumRatioMultiplier;
 	uintptr_t heapFreeMaximumRatioDivisor;
 	uintptr_t heapFreeMaximumRatioMultiplier;
-	uintptr_t heapExpansionGCTimeThreshold; /**< max percentage of time spent in gc before expansion - TO BE REMOVED IN FAVOUR OF `heapExpansionGCRatioThreshold` */
-	uintptr_t heapContractionGCTimeThreshold; /**< min percentage of time spent in gc before contraction - TO BE REMOVED IN FAVOUR OF `heapContractionGCRatioThreshold` */
 
 	MM_UserSpecifiedParameterUDATA heapExpansionGCRatioThreshold; /**< max percentage of time spent in gc before expansion */
 	MM_UserSpecifiedParameterUDATA heapContractionGCRatioThreshold; /**< min percentage of time spent in gc before contraction */
@@ -528,9 +526,6 @@ public:
 	bool dynamicNewSpaceSizing;
 	bool debugDynamicNewSpaceSizing;
 	bool dnssAvoidMovingObjects;
-
-	double dnssExpectedTimeRatioMinimum; /**< TO BE REMOVED IN FAVOUR OF `dnssExpectedRatioMinimum` - When the gc ratio for new/nursery space is below this value, new/nursery space should contract */
-	double dnssExpectedTimeRatioMaximum; /**< TO BE REMOVED IN FAVOUR OF `dnssExpectedRatioMaximum` - When the gc ratio for new/nursery space is above this value, new/nursery space should expand */
 
 	MM_UserSpecifiedParameterDouble dnssExpectedRatioMinimum; /**< When the gc ratio for new/nursery space is below this value, new/nursery space should contract */
 	MM_UserSpecifiedParameterDouble dnssExpectedRatioMaximum; /**< When the gc ratio for new/nursery space is above this value, new/nursery space should expand */
@@ -1515,8 +1510,6 @@ public:
 		, heapFreeMinimumRatioMultiplier(30)
 		, heapFreeMaximumRatioDivisor(100)
 		, heapFreeMaximumRatioMultiplier(60)
-		, heapExpansionGCTimeThreshold(13)
-		, heapContractionGCTimeThreshold(5)
 		, heapExpansionGCRatioThreshold()
 		, heapContractionGCRatioThreshold()
 		, heapExpansionStabilizationCount(0)
@@ -1631,8 +1624,6 @@ public:
 		, dynamicNewSpaceSizing(true)
 		, debugDynamicNewSpaceSizing(false)
 		, dnssAvoidMovingObjects(true)
-		, dnssExpectedTimeRatioMinimum(0.01)
-		, dnssExpectedTimeRatioMaximum(0.05)
 		, dnssExpectedRatioMinimum()
 		, dnssExpectedRatioMaximum()
 		, dnssWeightedTimeRatioFactorIncreaseSmall(0.2)

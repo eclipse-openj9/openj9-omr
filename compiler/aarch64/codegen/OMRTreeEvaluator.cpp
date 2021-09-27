@@ -2941,7 +2941,7 @@ OMR::ARM64::TreeEvaluator::arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *
 	}
 
 static void
-inlineConstantLengthArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *srcReg, TR::Register *dstReg, TR::CodeGenerator *cg)
+inlineConstantLengthForwardArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *srcReg, TR::Register *dstReg, TR::CodeGenerator *cg)
    {
    if (byteLen == 0)
       return;
@@ -3020,6 +3020,99 @@ inlineConstantLengthArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src
       generateTrg1MemInstruction(cg, loadOp, node, dataReg, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, offset, cg));
       generateMemSrc1Instruction(cg, storeOp, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, offset, cg), dataReg);
       offset += dataSize;
+      residue64 -= dataSize;
+      }
+
+   if (dataReg1)
+      cg->stopUsingRegister(dataReg1);
+   if (dataReg2)
+      cg->stopUsingRegister(dataReg2);
+
+   return;
+   }
+
+static void
+inlineConstantLengthBackwardArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *srcReg, TR::Register *dstReg, TR::CodeGenerator *cg)
+   {
+   if (byteLen == 0)
+      return;
+
+   int64_t iteration64 = byteLen >> 6;
+   int32_t residue64 = byteLen & 0x3F;
+   TR::Register *dataReg1 = (byteLen >= 16) ? cg->allocateRegister(TR_VRF) : NULL;
+   TR::Register *dataReg2 = (residue64 & 0xF) ? cg->allocateRegister() : NULL;
+
+   // Adjusting scrReg and dstReg
+   addConstant64(cg, node, srcReg, srcReg, byteLen);
+   addConstant64(cg, node, dstReg, dstReg, byteLen);
+
+   if (iteration64 > 1)
+      {
+      TR::Register *cntReg = cg->allocateRegister();
+      loadConstant64(cg, node, iteration64, cntReg);
+
+      TR::LabelSymbol *loopLabel = generateLabelSymbol(cg);
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
+
+      // Copy 16x4 bytes in a loop
+      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpreq, node, dataReg1, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, -16, cg));
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpreq, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, -16, cg), dataReg1);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpreq, node, dataReg1, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, -16, cg));
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpreq, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, -16, cg), dataReg1);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpreq, node, dataReg1, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, -16, cg));
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpreq, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, -16, cg), dataReg1);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpreq, node, dataReg1, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, -16, cg));
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpreq, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, -16, cg), dataReg1);
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subimmx, node, cntReg, cntReg, 1);
+      generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, cntReg, loopLabel);
+
+      cg->stopUsingRegister(cntReg);
+      }
+   else if (iteration64 == 1)
+      {
+      residue64 += 64;
+      }
+
+   while (residue64 > 0)
+      {
+      TR::InstOpCode::Mnemonic loadOp;
+      TR::InstOpCode::Mnemonic storeOp;
+      int32_t dataSize;
+      TR::Register *dataReg = (residue64 >= 16) ? dataReg1 : dataReg2;
+
+      if (residue64 >= 16)
+         {
+         loadOp  = TR::InstOpCode::vldrpreq;
+         storeOp = TR::InstOpCode::vstrpreq;
+         dataSize = 16;
+         }
+      else if (residue64 >= 8)
+         {
+         loadOp  = TR::InstOpCode::ldrprex;
+         storeOp = TR::InstOpCode::strprex;
+         dataSize = 8;
+         }
+      else if (residue64 >= 4)
+         {
+         loadOp  = TR::InstOpCode::ldrprew;
+         storeOp = TR::InstOpCode::strprew;
+         dataSize = 4;
+         }
+      else if (residue64 >= 2)
+         {
+         loadOp  = TR::InstOpCode::ldrhpre;
+         storeOp = TR::InstOpCode::strhpre;
+         dataSize = 2;
+         }
+      else
+         {
+         loadOp  = TR::InstOpCode::ldrbpre;
+         storeOp = TR::InstOpCode::strbpre;
+         dataSize = 1;
+         }
+
+      generateTrg1MemInstruction(cg, loadOp, node, dataReg, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, -dataSize, cg));
+      generateMemSrc1Instruction(cg, storeOp, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, -dataSize, cg), dataReg);
       residue64 -= dataSize;
       }
 
@@ -3111,10 +3204,14 @@ OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator 
 
    static const bool disableArrayCopyInlining = feGetEnv("TR_disableArrayCopyInlining") != NULL;
    if ((simpleCopy || !arrayStoreCheckIsNeeded) &&
-       lengthNode->getOpCode().isLoadConst() && node->isForwardArrayCopy() && !disableArrayCopyInlining)
+       (node->isForwardArrayCopy() || node->isBackwardArrayCopy()) &&
+       lengthNode->getOpCode().isLoadConst() && !disableArrayCopyInlining)
       {
       int64_t len = lengthNode->getType().isInt32() ? lengthNode->getInt() : lengthNode->getLongInt();
-      inlineConstantLengthArrayCopy(node, len, srcAddrReg, dstAddrReg, cg);
+      if (node->isForwardArrayCopy())
+         inlineConstantLengthForwardArrayCopy(node, len, srcAddrReg, dstAddrReg, cg);
+      else
+         inlineConstantLengthBackwardArrayCopy(node, len, srcAddrReg, dstAddrReg, cg);
 
       if (!simpleCopy)
          {

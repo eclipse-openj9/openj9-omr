@@ -72,7 +72,9 @@ TR_FieldPrivatizer::TR_FieldPrivatizer(TR::OptimizationManager *manager)
      _privatizedFieldSymRefs(manager->trMemory(), stackAlloc),
      _privatizedRegCandidates(manager->trMemory()),
      _appendCalls(manager->trMemory()),
-     _privatizedFieldNodes(manager->trMemory())
+     _privatizedFieldNodes(manager->trMemory()),
+     _subtreeCheckedForInstanceOf(manager->comp()),
+     _subtreeHasInstanceOf(manager->comp())
    {
    }
 
@@ -412,6 +414,44 @@ int32_t TR_FieldPrivatizer::detectCanonicalizedPredictableLoops(TR_Structure *lo
 
 
 
+bool TR_FieldPrivatizer::subtreeHasInstanceOf(TR::Node *node)
+   {
+   bool hasInstanceOf = false;
+
+   if (_subtreeCheckedForInstanceOf.contains(node))
+      {
+      hasInstanceOf = _subtreeHasInstanceOf.contains(node);
+      }
+   else
+      {
+      if (node->getOpCodeValue() == TR::instanceof)
+         {
+         hasInstanceOf = true;
+         }
+      else
+         {
+         for (int i = 0; i < node->getNumChildren(); i++)
+            {
+            if (subtreeHasInstanceOf(node->getChild(i)))
+               {
+               hasInstanceOf = true;
+               }
+            }
+         }
+
+      _subtreeCheckedForInstanceOf.add(node);
+      if (hasInstanceOf)
+         {
+         _subtreeHasInstanceOf.add(node);
+         }
+      }
+
+   return hasInstanceOf;
+   }
+
+
+
+
 
 bool TR_FieldPrivatizer::containsEscapePoints(TR_Structure *structure, bool &containsStringPeephole)
    {
@@ -427,8 +467,19 @@ bool TR_FieldPrivatizer::containsEscapePoints(TR_Structure *structure, bool &con
          {
          TR::Node *currentNode = currentTree->getNode();
 
-         if (currentNode->exceptionsRaised())
+         // Check for situations that can be a problem for privatization:
+         //   (1) Exceptions that might be thrown
+         //   (2) A virtual guard or instanceof, as it might guard access of a field
+         //       that might not be valid in any particular execution of the loop.
+         //       The checks for virtual guards and instanceof could be refined
+         //       further, as they might be unrelated to the fields that are of
+         //       interest.
+         if (currentNode->exceptionsRaised()
+             || currentNode->isTheVirtualGuardForAGuardedInlinedCall()
+             || subtreeHasInstanceOf(currentNode))
+            {
             result = true;
+            }
 
          // DISABLED for now, although an excellent general purpose opt,
          // this causes a regression, because the loop runs <= 1 times

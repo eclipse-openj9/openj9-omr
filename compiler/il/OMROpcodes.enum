@@ -7415,7 +7415,7 @@ OPCODE_MACRO(\
    /* .opcode               = */ instanceof, \
    /* .name                 = */ "instanceof", \
    /* .properties1          = */ ILProp1::HasSymbolRef, \
-   /* .properties2          = */ ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, \
+   /* .properties2          = */ ILProp2::MayUseSystemStack, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
    /* .dataType             = */ TR::Int32, \

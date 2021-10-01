@@ -73,8 +73,8 @@ TR_FieldPrivatizer::TR_FieldPrivatizer(TR::OptimizationManager *manager)
      _privatizedRegCandidates(manager->trMemory()),
      _appendCalls(manager->trMemory()),
      _privatizedFieldNodes(manager->trMemory()),
-     _subtreeCheckedForInstanceOf(manager->comp()),
-     _subtreeHasInstanceOf(manager->comp())
+     _subtreeCheckedForSpecialConditions(manager->comp()),
+     _subtreeHasSpecialCondition(manager->comp())
    {
    }
 
@@ -414,39 +414,53 @@ int32_t TR_FieldPrivatizer::detectCanonicalizedPredictableLoops(TR_Structure *lo
 
 
 
-bool TR_FieldPrivatizer::subtreeHasInstanceOf(TR::Node *node)
+bool TR_FieldPrivatizer::subtreeHasSpecialCondition(TR::Node *node)
    {
-   bool hasInstanceOf = false;
+   bool hasSpecialCondition = false;
 
-   if (_subtreeCheckedForInstanceOf.contains(node))
+   if (_subtreeCheckedForSpecialConditions.contains(node))
       {
-      hasInstanceOf = _subtreeHasInstanceOf.contains(node);
+      hasSpecialCondition = _subtreeHasSpecialCondition.contains(node);
       }
    else
       {
-      if (node->getOpCodeValue() == TR::instanceof)
+      TR::ILOpCodes opCode = node->getOpCodeValue();
+
+      if (opCode == TR::instanceof)
          {
-         hasInstanceOf = true;
+         hasSpecialCondition = true;
+         }
+      else if (opCode == TR::acmpeq || opCode == TR::acmpne || opCode == TR::ifacmpeq || opCode == TR::ifacmpne)
+         {
+         TR::Node *leftChild = node->getFirstChild();
+         TR::Node *rightChild = node->getSecondChild();
+
+         if ((leftChild->getOpCodeValue() == TR::aconst && leftChild->getAddress() == 0)
+             || (rightChild->getOpCodeValue() == TR::aconst && rightChild->getAddress() == 0))
+            {
+            hasSpecialCondition = true;
+            }
          }
       else
          {
          for (int i = 0; i < node->getNumChildren(); i++)
             {
-            if (subtreeHasInstanceOf(node->getChild(i)))
+            if (subtreeHasSpecialCondition(node->getChild(i)))
                {
-               hasInstanceOf = true;
+               hasSpecialCondition = true;
                }
             }
          }
 
-      _subtreeCheckedForInstanceOf.add(node);
-      if (hasInstanceOf)
+      _subtreeCheckedForSpecialConditions.add(node);
+
+      if (hasSpecialCondition)
          {
-         _subtreeHasInstanceOf.add(node);
+         _subtreeHasSpecialCondition.add(node);
          }
       }
 
-   return hasInstanceOf;
+   return hasSpecialCondition;
    }
 
 
@@ -468,15 +482,26 @@ bool TR_FieldPrivatizer::containsEscapePoints(TR_Structure *structure, bool &con
          TR::Node *currentNode = currentTree->getNode();
 
          // Check for situations that can be a problem for privatization:
+         //
          //   (1) Exceptions that might be thrown
-         //   (2) A virtual guard or instanceof, as it might guard access of a field
-         //       that might not be valid in any particular execution of the loop.
-         //       The checks for virtual guards and instanceof could be refined
-         //       further, as they might be unrelated to the fields that are of
-         //       interest.
+         //   (2) Certain conditions that are being checked, as they might be
+         //       used to guard access of a field that might not be valid in any
+         //       particular execution of the loop.  The only conditions checked
+         //       for currently are inlined method guards, instanceof tests and
+         //       comparisons to null.
+         //
+         // N.B., checking for inline guards, instanceof and null comparisons
+         // helps to avoid some potential errors in privatization temporarily,
+         // but a more general, correct, solution needs to replace this -
+         // one that proves the type of the object whose fields might be
+         // privatized must be of the expected type in the loop, and that
+         // ensures any conditional access in the original loop is handled
+         // correctly.  This follow on work will be performed under OMR issue
+         // <https://github.com/eclipse/omr/issues/6199>
+         //
          if (currentNode->exceptionsRaised()
              || currentNode->isTheVirtualGuardForAGuardedInlinedCall()
-             || subtreeHasInstanceOf(currentNode))
+             || subtreeHasSpecialCondition(currentNode))
             {
             result = true;
             }

@@ -84,6 +84,7 @@ coredump_to_file(mach_port_t task_port, pid_t pid)
 
 	if (-1 == corefile_fd) {
 		perror("open()");
+		kr = KERN_FAILURE;
 		goto done;
 	}
 
@@ -192,6 +193,8 @@ coredump_to_file(mach_port_t task_port, pid_t pid)
 
 		seg_file_off += segments[i].vmsize;
 		file_off += sizeof(struct segment_command_64);
+
+		kr = KERN_SUCCESS; /* reset kr since a failure from mach_vm_read is not fatal */
 	}
 
 	mh64.ncmds += segment_count;
@@ -409,30 +412,33 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 	mach_port_t pass_port = MACH_PORT_NULL;
 	mach_port_t special_port = MACH_PORT_NULL;
 
-	/* set core name, defaults to "core.%u" if none given */
-	if (NULL == filename || ('\0' == filename[0])) {
-		snprintf(corefile_name, PATH_MAX, "core.%u", parent_pid);
+	/* filename cannot be null */
+	if (NULL == filename) {
+		return 1;
+	}
+	/* set default file name if none given */
+	if ('\0' == filename[0]) {
+		snprintf(filename, PATH_MAX, "core.%u", parent_pid);
+	}
+	lastSep = strrchr(filename, DIR_SEPARATOR);
+	if (NULL != lastSep) {
+		strncpy(corefile_name, lastSep + 1, PATH_MAX);
 	} else {
-		lastSep = strrchr(filename, DIR_SEPARATOR);
-		if (NULL != lastSep) {
-			strncpy(corefile_name, lastSep + 1, PATH_MAX);
-		} else {
-			strncpy(corefile_name, filename, PATH_MAX);
-		}
+		strncpy(corefile_name, filename, PATH_MAX);
 	}
 
 	/* save the original special port so we can restore it after using it to pass the task port */
 	kr = task_get_bootstrap_port(mach_task_self(), &special_port);
 	if (KERN_SUCCESS != kr) {
 		mach_error("failed get special port:\n", kr);
-		return kr;
+		goto done;
 	}
 	pass_port = mach_task_self();
 	/* pass parent task port to child through special port inheritance */
 	kr = task_set_bootstrap_port(mach_task_self(), pass_port);
 	if (KERN_SUCCESS != kr) {
 		mach_error("failed set special port:\n", kr);
-		return kr;
+		goto done;
 	}
 
 	child_pid = fork();
@@ -440,18 +446,17 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 		kr = task_get_bootstrap_port(mach_task_self(), &pass_port);
 		if (KERN_SUCCESS != kr) {
 			mach_error("failed get special port:\n", kr);
-			return kr;
-		}
-		/* Move to specified folder before dumping */
-		if (NULL != lastSep) {
-			/* keep separator for cases such as when the path is '/' */
-			lastSep[1] = '\0';
-			if (0 != chdir(filename)) {
-				perror("failed to change directories for dump");
-				return KERN_FAILURE;
+		} else {
+			/* Move to specified folder before dumping */
+			if (NULL != lastSep) {
+				/* keep separator for cases such as when the path is '/' */
+				lastSep[1] = '\0';
+				if (0 != chdir(filename)) {
+					perror("failed to change directories, attempting to create dump in current dir");
+				}
 			}
+			kr = coredump_to_file(pass_port, parent_pid);
 		}
-		kr = coredump_to_file(pass_port, parent_pid);
 		raise(SIGKILL); /* kill child process without running any exit procedures */
 	} else if (child_pid < 0) { /* fork failed */
 		perror("forking for core dump failed");
@@ -461,11 +466,22 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 		kr = task_set_bootstrap_port(mach_task_self(), special_port);
 		if (KERN_SUCCESS != kr) {
 			mach_error("failed set special port:\n", kr);
-			return kr;
+			goto done;
 		}
 	} /* 0 == child_pid */
 
-	return kr;
+done:
+	if (KERN_SUCCESS == kr) {
+		/* check if the core file has been created in the right directory */
+		if (0 == access(filename, F_OK)) {
+			return 0;
+		}
+		/* check for corefile in current working directory */
+		if ((NULL != lastSep) && (0 == access(corefile_name, F_OK))) {
+			return 0;
+		}
+	}
+	return 1;
 }
 
 int32_t

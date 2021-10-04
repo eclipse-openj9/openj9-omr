@@ -2113,11 +2113,11 @@ typedef struct OMRPortLibrary {
 	void (*exit_shutdown_and_exit)(struct OMRPortLibrary *portLibrary, int32_t exitCode) ;
 	/** self_handle*/
 	void *self_handle;
-	/** see @ref omrdump.c::omrdump_create "omrdump_create"*/
+	/** see @ref omrosdump.c::omrdump_create "omrdump_create" */
 	uintptr_t (*dump_create)(struct OMRPortLibrary *portLibrary, char *filename, char *dumpType, void *userData) ;
-	/** see @ref omrdump.c::omrdump_startup "omrdump_startup"*/
+	/** see @ref omrosdump.c::omrdump_startup "omrdump_startup" */
 	int32_t (*dump_startup)(struct OMRPortLibrary *portLibrary) ;
-	/** see @ref omrdump.c::omrdump_shutdown "omrdump_shutdown"*/
+	/** see @ref omrosdump.c::omrdump_shutdown "omrdump_shutdown" */
 	void (*dump_shutdown)(struct OMRPortLibrary *portLibrary) ;
 	/** see @ref j9nls.c::j9nls_startup "j9nls_startup" Deprecated*/
 	int32_t (*nls_startup)(struct OMRPortLibrary *portLibrary) ;

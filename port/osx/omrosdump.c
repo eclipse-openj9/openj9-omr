@@ -442,6 +442,15 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 			mach_error("failed get special port:\n", kr);
 			return kr;
 		}
+		/* Move to specified folder before dumping */
+		if (NULL != lastSep) {
+			/* keep separator for cases such as when the path is '/' */
+			lastSep[1] = '\0';
+			if (0 != chdir(filename)) {
+				perror("failed to change directories for dump");
+				return KERN_FAILURE;
+			}
+		}
 		kr = coredump_to_file(pass_port, parent_pid);
 		raise(SIGKILL); /* kill child process without running any exit procedures */
 	} else if (child_pid < 0) { /* fork failed */

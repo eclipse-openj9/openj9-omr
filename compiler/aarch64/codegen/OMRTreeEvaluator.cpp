@@ -3155,6 +3155,75 @@ OMR::ARM64::TreeEvaluator::stopUsingCopyReg(TR::Node *node, TR::Register *&reg, 
    return false;
    }
 
+static void
+generateCallToArrayCopyHelper(TR::Node *node, TR::Register *srcAddrReg, TR::Register *dstAddrReg, TR::Register *lengthReg,  TR::RegisterDependencyConditions *deps, TR::CodeGenerator *cg)
+   {
+   // Start of assembly helper path.
+   TR_RuntimeHelper helper;
+   TR::DataType dt = node->getArrayCopyElementType();
+   uint32_t elementSize;
+   if (node->isReferenceArrayCopy() || dt == TR::Address)
+      elementSize = TR::Compiler->om.sizeofReferenceField();
+   else
+      elementSize = TR::Symbol::convertTypeToSize(dt);
+
+   if (node->isForwardArrayCopy())
+      {
+      switch (elementSize)
+         {
+         case 16:
+            helper = TR_ARM64forwardQuadWordArrayCopy;
+            break;
+         case 8:
+            helper = TR_ARM64forwardDoubleWordArrayCopy;
+            break;
+         case 4:
+            helper = TR_ARM64forwardWordArrayCopy;
+            break;
+         case 2:
+            helper = TR_ARM64forwardHalfWordArrayCopy;
+            break;
+         default:
+            helper = TR_ARM64forwardArrayCopy;
+            break;
+         }
+      }
+   else if (node->isBackwardArrayCopy())
+      {
+      // Adjusting src and dst addresses
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, srcAddrReg, srcAddrReg, lengthReg);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, dstAddrReg, dstAddrReg, lengthReg);
+      switch (elementSize)
+         {
+         case 16:
+            helper = TR_ARM64backwardQuadWordArrayCopy;
+            break;
+         case 8:
+            helper = TR_ARM64backwardDoubleWordArrayCopy;
+            break;
+         case 4:
+            helper = TR_ARM64backwardWordArrayCopy;
+            break;
+         case 2:
+            helper = TR_ARM64backwardHalfWordArrayCopy;
+            break;
+         default:
+            helper = TR_ARM64backwardArrayCopy;
+            break;
+         }
+      }
+   else // We are not sure it is forward or we have to do backward.
+      helper = TR_ARM64arrayCopy;
+
+   TR::SymbolReference *arrayCopyHelper = cg->symRefTab()->findOrCreateRuntimeHelper(helper, false, false, false);
+
+   generateImmSymInstruction(cg, TR::InstOpCode::bl, node,
+                             (uintptr_t)arrayCopyHelper->getMethodAddress(),
+                             deps, arrayCopyHelper, NULL);
+   cg->machine()->setLinkRegisterKilled(true);
+
+   return;
+   }
 TR::Register *
 OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -3252,12 +3321,7 @@ OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator 
    TR::addDependency(deps, NULL, TR::RealRegister::x3, TR_GPR, cg);
    TR::addDependency(deps, NULL, TR::RealRegister::x4, TR_GPR, cg);
 
-   TR::SymbolReference *arrayCopyHelper = cg->symRefTab()->findOrCreateRuntimeHelper(TR_ARM64arrayCopy, false, false, false);
-
-   generateImmSymInstruction(cg, TR::InstOpCode::bl, node,
-                             (uintptr_t)arrayCopyHelper->getMethodAddress(),
-                             deps, arrayCopyHelper, NULL);
-   cg->machine()->setLinkRegisterKilled(true);
+   generateCallToArrayCopyHelper(node, srcAddrReg, dstAddrReg, lengthReg, deps, cg);
 
    if (!simpleCopy)
       {

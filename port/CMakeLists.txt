@@ -64,6 +64,8 @@ if(OMR_OS_AIX)
 	list(APPEND OBJECTS omrgetsp.s)
 endif()
 
+# This is only relevant on z/OS, but it doesn't hurt to specify it globally.
+set(OMR_TDUMP_VALIDATION OFF CACHE BOOL "Should dump type 'IEATDUMP_VALIDATE' be recognized?")
 
 if(OMR_OS_ZOS)
 	omr_compile_metalc(
@@ -88,6 +90,9 @@ if(OMR_OS_ZOS)
 		omruserid.s
 		omrzfs.c
 	)
+	if(OMR_TDUMP_VALIDATION)
+		list(APPEND OBJECTS omrgenerate_ieat_dumpv.s)
+	endif()
 	#TODO more objects here. See port_objects.mk:55
 	if(OMR_ENV_DATA64)
 		list(APPEND OBJECTS

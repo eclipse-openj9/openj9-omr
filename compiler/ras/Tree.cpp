@@ -1011,21 +1011,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Node * node, uint32_t indentation, bool 
    if (pOutFile == NULL) return 0;
    TR_ASSERT(node != NULL, "node is NULL\n");
 
-   TR::SimpleRegex * regex = NULL;
-
-   if (regex)
-      {
-      char buf[20];
-      sprintf(buf, "%s", getName(node));
-
-      char * p = buf;
-      while (*p!='N')
-         p++;
-
-      if (TR::SimpleRegex::match(regex, p))
-         breakOn();
-      }
-
    // If this node has already been printed, just print a reference to it.
    //
    if (_nodeChecklist.isSet(node->getGlobalIndex()))

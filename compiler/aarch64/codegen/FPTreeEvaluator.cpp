@@ -240,7 +240,7 @@ OMR::ARM64::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeGenerator *cg
 
       dvalue.d = node->getDouble();
 
-      if(dvalue.d == +0.0d && signbit(dvalue.d) == 0)
+      if(dvalue.d == +0.0 && signbit(dvalue.d) == 0)
          {
          generateTrgInstruction(cg, TR::InstOpCode::movi0d, node, trgReg);
          }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -51,11 +51,16 @@ OMR::RV::TreeEvaluator::ireturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return genericReturnEvaluator(node, cg->getProperties().getIntegerReturnRegister(), TR_GPR, TR_IntReturn, cg);
    }
 
-// also handles areturn
 TR::Register *
 OMR::RV::TreeEvaluator::lreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return genericReturnEvaluator(node, cg->getProperties().getLongReturnRegister(), TR_GPR, TR_LongReturn, cg);
+   }
+
+TR::Register *
+OMR::RV::TreeEvaluator::areturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return genericReturnEvaluator(node, cg->getProperties().getLongReturnRegister(), TR_GPR, TR_ObjectReturn, cg);
    }
 
 // void return

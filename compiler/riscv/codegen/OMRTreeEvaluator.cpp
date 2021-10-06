@@ -299,12 +299,6 @@ OMR::RV::TreeEvaluator::GotoEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register*
-OMR::RV::TreeEvaluator::areturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::lreturnEvaluator(node, cg);
-   }
-
-TR::Register*
 OMR::RV::TreeEvaluator::ReturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::returnEvaluator(node, cg);

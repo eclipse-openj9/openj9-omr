@@ -799,21 +799,6 @@ TR_Debug::printPrefix(TR::FILE *pOutFile, TR::Instruction *instr, uint8_t *curso
       trfprintf(pOutFile, "\n [%s]\t", getName(instr));
       }
 
-   TR::SimpleRegex * regex = NULL;
-
-   if (regex)
-      {
-      char buf[20];
-      sprintf(buf, "%s", getName(instr));
-
-      char * p = buf;
-      while (*p!='I')
-         p++;
-
-      if (TR::SimpleRegex::match(regex, p))
-         breakOn();
-      }
-
    return cursor;
    }
 

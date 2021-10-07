@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -73,7 +73,7 @@ TR::FILE *TR_Debug::findLogFile(TR::Options *cmdLineOptions, TR::OptionSet *optS
       {
       for (TR::OptionSet *prev = cmdLineOptions->getFirstOptionSet(); prev && prev != optSet; prev = prev->getNext())
          {
-         fileName = prev->getOptions()->getLogFileName();
+         fileName = prev->getOptions() ? prev->getOptions()->getLogFileName() : NULL;
          if (fileName && !STRICMP(logFileName, fileName))
             {
             logFile = prev->getOptions()->getLogFile();
@@ -129,7 +129,7 @@ void TR_Debug::findLogFile(const char *logFileName, TR::Options *cmdOptions, TR:
       }
    for (TR::OptionSet *optSet = cmdOptions->getFirstOptionSet(); optSet; optSet = optSet->getNext())
       {
-      if (optSet->getOptions()->getLogFileName() && !STRICMP(logFileName, optSet->getOptions()->getLogFileName()))
+      if (optSet->getOptions() && optSet->getOptions()->getLogFileName() && !STRICMP(logFileName, optSet->getOptions()->getLogFileName()))
          {
          if (index < arraySize)
             optionsArray[index] = optSet->getOptions();

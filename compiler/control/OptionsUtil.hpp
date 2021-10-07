@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -148,7 +148,7 @@ public:
 
    OptionSet(char *s) { init(s); }
 
-   void init(char *s) { _optionString = s; _next = 0; _methodRegex = 0; _optLevelRegex = 0; _start=0; _end=0; }
+   void init(char *s) { _optionString = s; _next = 0; _methodRegex = 0; _optLevelRegex = 0; _start=0; _end=0; _options = NULL; }
 
    OptionSet *getNext() {return _next;}
 
@@ -176,11 +176,8 @@ private:
    TR::SimpleRegex *_optLevelRegex;
    int32_t _start;
    int32_t _end;
-   union
-      {
-      TR::Options *_options;
-      char *_optionString;
-      };
+   TR::Options *_options;
+   char *_optionString;
    };
 
 }

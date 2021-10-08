@@ -140,6 +140,16 @@ class TR_FieldPrivatizer : public TR_LoopTransformer
    void detectFieldsThatCannotBePrivatized(TR::Node *, vcount_t);
    void detectFieldsThatCannotBePrivatized(TR_Structure *, vcount_t);
    bool canPrivatizeFieldSymRef(TR::Node *);
+
+   /**
+    * Checks whether \c currentNode represents a \ref TR::instanceof
+    * operation or whether any of its subtrees do.
+    *
+    * @param currentNode the node to check
+    * @return \c true if the subtree contains a \c TR::instanceof
+    * operation; \c false, otherwise.
+    */
+   bool subtreeHasSpecialCondition(TR::Node *currentNode);
    bool containsEscapePoints(TR_Structure *, bool &);
    void addPrivatizedRegisterCandidates(TR_Structure *);
    bool isStringPeephole(TR::Node *, TR::TreeTop *);
@@ -163,6 +173,26 @@ class TR_FieldPrivatizer : public TR_LoopTransformer
    List<TR::TreeTop> _appendCalls;
 
    TR_PostDominators *_postDominators;
+
+   /**
+    * Tracks whether the subtree rooted at a node has been
+    * checked via a call to \ref subtreeHasSpecialCondition(TR::Node*)
+    * to see whether it contains any "special conditions".
+    *
+    * If this checklist does not contain the node, that
+    * method must be called to perform the checking;
+    * if it does contain the node, the node is present in
+    * \ref _subtreeHasSpecialCondition if and only if the
+    * subtree rooted at the node contains any of those special
+    * conditions.
+    */
+   TR::NodeChecklist _subtreeCheckedForSpecialConditions;
+
+   /**
+    * Tracks whether a node or one or its subtrees performs a
+    * \ref TR::instanceof operation or a comparison to \c null.
+    */
+   TR::NodeChecklist _subtreeHasSpecialCondition;
    };
 
 

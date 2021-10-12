@@ -72,7 +72,9 @@ TR_FieldPrivatizer::TR_FieldPrivatizer(TR::OptimizationManager *manager)
      _privatizedFieldSymRefs(manager->trMemory(), stackAlloc),
      _privatizedRegCandidates(manager->trMemory()),
      _appendCalls(manager->trMemory()),
-     _privatizedFieldNodes(manager->trMemory())
+     _privatizedFieldNodes(manager->trMemory()),
+     _subtreeCheckedForSpecialConditions(manager->comp()),
+     _subtreeHasSpecialCondition(manager->comp())
    {
    }
 
@@ -412,6 +414,58 @@ int32_t TR_FieldPrivatizer::detectCanonicalizedPredictableLoops(TR_Structure *lo
 
 
 
+bool TR_FieldPrivatizer::subtreeHasSpecialCondition(TR::Node *node)
+   {
+   bool hasSpecialCondition = false;
+
+   if (_subtreeCheckedForSpecialConditions.contains(node))
+      {
+      hasSpecialCondition = _subtreeHasSpecialCondition.contains(node);
+      }
+   else
+      {
+      TR::ILOpCodes opCode = node->getOpCodeValue();
+
+      if (opCode == TR::instanceof)
+         {
+         hasSpecialCondition = true;
+         }
+      else if (opCode == TR::acmpeq || opCode == TR::acmpne || opCode == TR::ifacmpeq || opCode == TR::ifacmpne)
+         {
+         TR::Node *leftChild = node->getFirstChild();
+         TR::Node *rightChild = node->getSecondChild();
+
+         if ((leftChild->getOpCodeValue() == TR::aconst && leftChild->getAddress() == 0)
+             || (rightChild->getOpCodeValue() == TR::aconst && rightChild->getAddress() == 0))
+            {
+            hasSpecialCondition = true;
+            }
+         }
+      else
+         {
+         for (int i = 0; i < node->getNumChildren(); i++)
+            {
+            if (subtreeHasSpecialCondition(node->getChild(i)))
+               {
+               hasSpecialCondition = true;
+               }
+            }
+         }
+
+      _subtreeCheckedForSpecialConditions.add(node);
+
+      if (hasSpecialCondition)
+         {
+         _subtreeHasSpecialCondition.add(node);
+         }
+      }
+
+   return hasSpecialCondition;
+   }
+
+
+
+
 
 bool TR_FieldPrivatizer::containsEscapePoints(TR_Structure *structure, bool &containsStringPeephole)
    {
@@ -427,8 +481,30 @@ bool TR_FieldPrivatizer::containsEscapePoints(TR_Structure *structure, bool &con
          {
          TR::Node *currentNode = currentTree->getNode();
 
-         if (currentNode->exceptionsRaised())
+         // Check for situations that can be a problem for privatization:
+         //
+         //   (1) Exceptions that might be thrown
+         //   (2) Certain conditions that are being checked, as they might be
+         //       used to guard access of a field that might not be valid in any
+         //       particular execution of the loop.  The only conditions checked
+         //       for currently are inlined method guards, instanceof tests and
+         //       comparisons to null.
+         //
+         // N.B., checking for inline guards, instanceof and null comparisons
+         // helps to avoid some potential errors in privatization temporarily,
+         // but a more general, correct, solution needs to replace this -
+         // one that proves the type of the object whose fields might be
+         // privatized must be of the expected type in the loop, and that
+         // ensures any conditional access in the original loop is handled
+         // correctly.  This follow on work will be performed under OMR issue
+         // <https://github.com/eclipse/omr/issues/6199>
+         //
+         if (currentNode->exceptionsRaised()
+             || currentNode->isTheVirtualGuardForAGuardedInlinedCall()
+             || subtreeHasSpecialCondition(currentNode))
+            {
             result = true;
+            }
 
          // DISABLED for now, although an excellent general purpose opt,
          // this causes a regression, because the loop runs <= 1 times

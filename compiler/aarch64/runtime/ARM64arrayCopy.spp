@@ -19,19 +19,21 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-	.file	"ARM64ArrayCopy.s"
+	.file	"ARM64arrayCopy.s"
 
-	.global	__arrayCopy
-	.global	__forwardArrayCopy
-	.global	__backwardArrayCopy
-	.global	__fwHalfWordArrayCopy
-	.global	__fwWordArrayCopy
-	.global	__fwDoubleWordArrayCopy
-	.global	__fwQuadWordArrayCopy
-	.global	__bwHalfWordArrayCopy
-	.global	__bwWordArrayCopy
-	.global	__bwDoubleWordArrayCopy
-	.global	__bwQuadWordArrayCopy
+#include "aarch64/runtime/arm64asmdefs.inc"
+
+	.global	FUNC_LABEL(__arrayCopy)
+	.global	FUNC_LABEL(__forwardArrayCopy)
+	.global	FUNC_LABEL(__backwardArrayCopy)
+	.global	FUNC_LABEL(__fwHalfWordArrayCopy)
+	.global	FUNC_LABEL(__fwWordArrayCopy)
+	.global	FUNC_LABEL(__fwDoubleWordArrayCopy)
+	.global	FUNC_LABEL(__fwQuadWordArrayCopy)
+	.global	FUNC_LABEL(__bwHalfWordArrayCopy)
+	.global	FUNC_LABEL(__bwWordArrayCopy)
+	.global	FUNC_LABEL(__bwDoubleWordArrayCopy)
+	.global	FUNC_LABEL(__bwQuadWordArrayCopy)
 
 	.text
 	.align	2
@@ -44,25 +46,25 @@
 //        x1 - src addr
 //        x2 - dst addr
 
-__fwHalfWordArrayCopy:
+FUNC_LABEL(__fwHalfWordArrayCopy):
 	cbz	x0, finished			// return if no bytes to copy
 	cmp	x1, x2
 	beq	finished			// return if srcAddr == dstAddr
 	b	fwBothAlign2
 
-__fwWordArrayCopy:
+FUNC_LABEL(__fwWordArrayCopy):
 	cbz	x0, finished			// return if no bytes to copy
 	cmp	x1, x2
 	beq	finished			// return if srcAddr == dstAddr
 	b	fwBothAlign4
 
-__fwDoubleWordArrayCopy:
+FUNC_LABEL(__fwDoubleWordArrayCopy):
 	cbz	x0, finished			// return if no bytes to copy
 	cmp	x1, x2
 	beq	finished			// return if srcAddr == dstAddr
 	b	fwBothAlign8
 
-__fwQuadWordArrayCopy:
+FUNC_LABEL(__fwQuadWordArrayCopy):
 	cbz	x0, finished			// return if no bytes to copy
 	cmp	x1, x2
 	beq	finished			// return if srcAddr == dstAddr
@@ -76,25 +78,25 @@ __fwQuadWordArrayCopy:
 //        x1 - src addr + length
 //        x2 - dst addr + length
 
-__bwHalfWordArrayCopy:
+FUNC_LABEL(__bwHalfWordArrayCopy):
 	cbz	x0, finished			// return if no bytes to copy
 	cmp	x1, x2
 	beq	finished			// return if srcAddr == dstAddr
 	b	bwBothAlign2
 
-__bwWordArrayCopy:
+FUNC_LABEL(__bwWordArrayCopy):
 	cbz	x0, finished			// return if no bytes to copy
 	cmp	x1, x2
 	beq	finished			// return if srcAddr == dstAddr
 	b	bwBothAlign4
 
-__bwDoubleWordArrayCopy:
+FUNC_LABEL(__bwDoubleWordArrayCopy):
 	cbz	x0, finished			// return if no bytes to copy
 	cmp	x1, x2
 	beq	finished			// return if srcAddr == dstAddr
 	b	bwBothAlign8
 
-__bwQuadWordArrayCopy:
+FUNC_LABEL(__bwQuadWordArrayCopy):
 	cbz	x0, finished			// return if no bytes to copy
 	cmp	x1, x2
 	beq	finished			// return if srcAddr == dstAddr
@@ -107,7 +109,7 @@ __bwQuadWordArrayCopy:
 //        x2 - dst addr
 // trash: x3, x4
 
-__arrayCopy:
+FUNC_LABEL(__arrayCopy):
 	cbz	x0, finished			// return if no bytes to copy
 	subs	x3, x2, x1
 	beq	finished			// return if srcAddr == dstAddr
@@ -125,7 +127,7 @@ __arrayCopy:
 //        x2 - dst addr
 // trash: x3, x4
 
-__forwardArrayCopy:
+FUNC_LABEL(__forwardArrayCopy):
 	cbz	x0, finished			// return if no bytes to copy
 	cmp	x1, x2
 	beq	finished			// return if srcAddr == dstAddr
@@ -253,7 +255,7 @@ adjustAddressForBackwardCopy:
 //        x2 - dst addr + length
 // trash: x3, x4
 
-__backwardArrayCopy:
+FUNC_LABEL(__backwardArrayCopy):
 	cbz	x0, finished			// return if no bytes to copy
 	cmp	x1, x2
 	beq	finished			// return if srcAddr == dstAddr

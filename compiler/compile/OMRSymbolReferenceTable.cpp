@@ -2143,6 +2143,8 @@ const char *OMR::SymbolReferenceTable::_commonNonHelperSymbolNames[] =
    "<instanceDescription>",
    "<descriptionWordFromPtr>",
    "<objectEqualityComparison>",
+   "<objectInequalityComparison>",
+   "<nonNullableArrayNullStoreCheck>",
    "<synchronizedFieldLoad>",
    "<atomicAdd>",
    "<atomicFetchAndAdd>",

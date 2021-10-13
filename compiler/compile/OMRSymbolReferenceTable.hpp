@@ -206,12 +206,25 @@ class SymbolReferenceTable
       startPCLinkageInfoSymbol,
       instanceShapeFromROMClassSymbol,
 
-      /** \brief Performs an equality comparison between two objects.
+      /**
+       * \brief Performs an equality comparison between two objects.
        *
        * The comparison takes two references to objects as arguments.
-       * It is up to users to define to define and implement the semantics of this operation.
+       * It is up to users to define and implement the semantics of this operation.
+       *
+       * \see objectInequalityComparisonSymbol
        */
       objectEqualityComparisonSymbol,
+
+      /**
+       * \brief Performs a test for inequality between two objects.
+       *
+       * The comparison takes two references to objects as arguments.
+       * It is up to users to define and implement the semantics of this operation.
+       *
+       * \see objectEqualityComparisonSymbol
+       */
+      objectInequalityComparisonSymbol,
 
       /**
        * \brief Tests, in some consumer-specific way, whether the array operand has a component type that

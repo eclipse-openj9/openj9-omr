@@ -2951,6 +2951,15 @@ TR::VPConstraint *TR::VPClassType::typeIntersectLocation(
       if (!location) return NULL;
       }
 
+   if (location->isClassObject() == TR_yes && classObject != TR_yes)
+      {
+      // Bundling this (the type constraint) with location into a VPClass would
+      // change the meaning of the type. Alone, this represents the type of the
+      // constrained value, but combined with location, it would instead be
+      // interpreted as the type represented by the constrained value.
+      return location;
+      }
+
    return TR::VPClass::create(vp, this, NULL, NULL, NULL, location);
    }
 

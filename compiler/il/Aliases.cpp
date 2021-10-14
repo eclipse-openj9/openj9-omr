@@ -198,6 +198,8 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
             case TR_newValueNoZeroInit:
             case TR_newArray:
             case TR_multiANewArray:
+            case TR_jitLookupDynamicInterfaceMethod:
+            case TR_jitLookupDynamicPublicInterfaceMethod:
             default:
                return &symRefTab->aliasBuilder.defaultMethodUseAliases();
             }
@@ -376,6 +378,8 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
             case TR_jitProfileLongValue:
             case TR_jitProfileBigDecimalValue:
             case TR_jitProfileParseBuffer:
+            case TR_jitLookupDynamicInterfaceMethod:
+            case TR_jitLookupDynamicPublicInterfaceMethod:
 
                return 0;
 

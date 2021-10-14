@@ -165,6 +165,9 @@ class TR_OptimizationPlan
    bool isInducedByDLT() const { return _flags.testAny(InducedByDLT); }
    void setInducedByDLT(bool b) { _flags.set(InducedByDLT, b); }
 
+   bool getDisableEDO() const { return _flags.testAny(DisableEDO); }
+   void setDisableEDO(bool b) { _flags.set(DisableEDO, b); }
+
    // --------------------------------------------------------------------------
    // GPU
    //
@@ -219,7 +222,8 @@ class TR_OptimizationPlan
       DontFailOnPurpose       = 0x00100000, // Mostly needed to avoid failing for the purpose of upgrading to a higher opt level
       RelaxedCompilationLimits= 0x00200000, // Compilation can use larger limits because method is very very hot
       DowngradedDueToSamplingJProfiling=0x00400000, // Compilation was downgraded to cold just because we wanted to do JProfiling
-      InducedByDLT             =0x00800000, // Compilation that follows a DLT compilation
+      InducedByDLT            = 0x00800000, // Compilation that follows a DLT compilation
+      DisableEDO              = 0x01000000, // Do not insert EDO profiling trees for this compilation
    };
    private:
    TR_OptimizationPlan  *_next;       // to link events in the pool

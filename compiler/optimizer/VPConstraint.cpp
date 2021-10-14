@@ -2935,8 +2935,24 @@ TR::VPClassType *TR::VPClassType::classTypesCompatible(TR::VPClassType * otherTy
       }
    }
 
+TR::VPConstraint *TR::VPClassType::typeIntersectLocation(
+   TR::VPObjectLocation *location, OMR::ValuePropagation *vp)
+   {
+   TR_YesNoMaybe classObject = isClassObject();
+   if (classObject != TR_maybe)
+      {
+      auto impliedKind = classObject == TR_yes
+         ? TR::VPObjectLocation::ClassObject
+         : TR::VPObjectLocation::NotClassObject;
 
+      auto impliedLocation = TR::VPObjectLocation::create(vp, impliedKind);
 
+      location = (TR::VPObjectLocation *) impliedLocation->intersect(location, vp);
+      if (!location) return NULL;
+      }
+
+   return TR::VPClass::create(vp, this, NULL, NULL, NULL, location);
+   }
 
 // this routine encapsulates code that used to exist
 // in VPClass::intersect
@@ -3424,16 +3440,7 @@ TR::VPConstraint *TR::VPResolvedClass::intersect1(TR::VPConstraint *other, OMR::
       return TR::VPClass::create(vp, this, NULL, NULL, other->asArrayInfo(), NULL);
    else if (other->asObjectLocation())
       {
-      TR::VPObjectLocation *location = other->asObjectLocation();
-      TR_YesNoMaybe classObject = isClassObject();
-      if (classObject != TR_maybe)
-         {
-         location = TR::VPObjectLocation::create(vp, classObject == TR_yes ?
-                                                TR::VPObjectLocation::ClassObject : TR::VPObjectLocation::NotClassObject);
-         location = (TR::VPObjectLocation *) location->intersect(other->asObjectLocation(), vp);
-         if (!location) return NULL;
-         }
-      return TR::VPClass::create(vp, this, NULL, NULL, NULL, location);
+      return typeIntersectLocation(other->asObjectLocation(), vp);
       }
    return this;
    }
@@ -3524,16 +3531,7 @@ TR::VPConstraint *TR::VPFixedClass::intersect1(TR::VPConstraint *other, OMR::Val
       return TR::VPClass::create(vp, this, NULL, NULL, other->asArrayInfo(), NULL);
    else if (other->asObjectLocation())
       {
-      TR::VPObjectLocation *location = other->asObjectLocation();
-      TR_YesNoMaybe classObject = isClassObject();
-      if (classObject != TR_maybe)
-         {
-         location = TR::VPObjectLocation::create(vp, classObject == TR_yes ?
-                                                TR::VPObjectLocation::ClassObject : TR::VPObjectLocation::NotClassObject);
-         location = (TR::VPObjectLocation *) location->intersect(other->asObjectLocation(), vp);
-         if (!location) return NULL;
-         }
-      return TR::VPClass::create(vp, this, NULL, NULL, NULL, location);
+      return typeIntersectLocation(other->asObjectLocation(), vp);
       }
    return NULL;
    }
@@ -3635,7 +3633,7 @@ TR::VPConstraint *TR::VPUnresolvedClass::intersect1(TR::VPConstraint *other, OMR
    else if (other->asArrayInfo())
       return TR::VPClass::create(vp, this, NULL, NULL, other->asArrayInfo(), NULL);
    else if (other->asObjectLocation())
-      return TR::VPClass::create(vp, this, NULL, NULL, NULL, other->asObjectLocation()); // FIXME: unless rtresolve, should be on heap
+      return typeIntersectLocation(other->asObjectLocation(), vp);
    return this;
    }
 

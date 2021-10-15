@@ -2942,7 +2942,7 @@ TR::VPConstraint *TR::VPClassType::typeIntersectLocation(
    if (classObject != TR_maybe)
       {
       auto impliedKind = classObject == TR_yes
-         ? TR::VPObjectLocation::ClassObject
+         ? TR::VPObjectLocation::JavaLangClassObject
          : TR::VPObjectLocation::NotClassObject;
 
       auto impliedLocation = TR::VPObjectLocation::create(vp, impliedKind);

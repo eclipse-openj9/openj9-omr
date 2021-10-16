@@ -2136,10 +2136,6 @@ protected:
           char *         _envOptions;
    static char *         _compilationStrategyName;
 
-
-   static TR::OptionFunctionPtr _processingMethod[];
-   static TR::OptionFunctionPtr _negateProcessingMethod[];
-
    // Option flag words
    //
    uint32_t                    _options[TR_OWM+1];

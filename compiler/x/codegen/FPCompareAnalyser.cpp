@@ -256,26 +256,6 @@ TR::Register *TR_X86FPCompareAnalyser::fpCompareAnalyser(TR::Node       *root,
          }
       }
 
-   // Adjust the FP precision of feeding operands.
-   //
-   if (firstRegister &&
-       (firstRegister->needsPrecisionAdjustment() ||
-        comp->getOption(TR_StrictFPCompares) ||
-        (firstRegister->mayNeedPrecisionAdjustment() && secondChild->getOpCode().isLoadConst()) ||
-        (firstRegister->mayNeedPrecisionAdjustment() && !secondRegister)))
-      {
-      TR::TreeEvaluator::insertPrecisionAdjustment(firstRegister, root, _cg);
-      }
-
-   if (secondRegister &&
-       (secondRegister->needsPrecisionAdjustment() ||
-        comp->getOption(TR_StrictFPCompares) ||
-        (secondRegister->mayNeedPrecisionAdjustment() && firstChild->getOpCode().isLoadConst()) ||
-        (secondRegister->mayNeedPrecisionAdjustment() && !firstRegister)))
-      {
-      TR::TreeEvaluator::insertPrecisionAdjustment(secondRegister, root, _cg);
-      }
-
    // Generate the compare instruction.
    //
    if (targetRegisterForFTST)

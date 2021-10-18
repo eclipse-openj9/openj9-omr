@@ -166,7 +166,6 @@ class TR_X86FPBinaryArithmeticAnalyser
                   TR::Node     *secondChild,
                   TR::Register *secondRegister);
 
-   void genericFPAnalyser(TR::Node *root);
    bool isIntToFPConversion(TR::Node *child);
 
    private:

@@ -2071,16 +2071,7 @@ TR::Register *OMR::X86::CodeGenerator::floatClobberEvaluate(TR::Node * node)
       TR::Register * temp           = self()->evaluate(node);
       TR::Register * targetRegister = self()->allocateSinglePrecisionRegister(temp->getKind());
 
-      if (temp->needsPrecisionAdjustment())
-         TR::TreeEvaluator::insertPrecisionAdjustment(temp, node, self());
-
-      if (temp->mayNeedPrecisionAdjustment())
-         targetRegister->setMayNeedPrecisionAdjustment();
-
-      if (temp->getKind() == TR_FPR)
-         generateRegRegInstruction(TR::InstOpCode::MOVAPSRegReg, node, targetRegister, temp, self());
-      else
-         generateFPST0STiRegRegInstruction(TR::InstOpCode::FLDRegReg, node, targetRegister, temp, self());
+      generateRegRegInstruction(TR::InstOpCode::MOVAPSRegReg, node, targetRegister, temp, self());
 
       return targetRegister;
       }
@@ -2098,16 +2089,7 @@ TR::Register *OMR::X86::CodeGenerator::doubleClobberEvaluate(TR::Node * node)
       TR::Register * temp           = self()->evaluate(node);
       TR::Register * targetRegister = self()->allocateRegister(temp->getKind());
 
-      if (temp->needsPrecisionAdjustment())
-         TR::TreeEvaluator::insertPrecisionAdjustment(temp, node, self());
-
-      if (temp->mayNeedPrecisionAdjustment())
-         targetRegister->setMayNeedPrecisionAdjustment();
-
-      if (temp->getKind() == TR_FPR)
-         generateRegRegInstruction(TR::InstOpCode::MOVAPDRegReg, node, targetRegister, temp, self());
-      else
-         generateFPST0STiRegRegInstruction(TR::InstOpCode::DLDRegReg, node, targetRegister, temp, self());
+      generateRegRegInstruction(TR::InstOpCode::MOVAPDRegReg, node, targetRegister, temp, self());
 
       return targetRegister;
       }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,6 +31,13 @@ extern void arm64CodeSync(unsigned char *codeStart, unsigned int codeSize);
 extern "C" void _patchVirtualGuard(uint8_t *locationAddr, uint8_t *destinationAddr, int32_t smpFlag)
    {
    int64_t distance = (int64_t)destinationAddr - (int64_t)locationAddr;
+
+#if defined(OSX)
+   pthread_jit_write_protect_np(0);
+#endif
    *(uint32_t *)locationAddr = TR::InstOpCode::getOpCodeBinaryEncoding(TR::InstOpCode::b) | ((distance >> 2) & 0x3ffffff); /* imm26 */
    arm64CodeSync((unsigned char *)locationAddr, ARM64_INSTRUCTION_LENGTH);
+#if defined(OSX)
+   pthread_jit_write_protect_np(1);
+#endif
    }

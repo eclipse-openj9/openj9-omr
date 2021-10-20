@@ -1420,6 +1420,24 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
             print(pOutFile, instr->getSource1Register(), TR_WordReg);
             trfprintf(pOutFile, ", %d", 63 - imms);
             }
+         else if (imms < immr)
+            {
+            // ubfiz alias
+            done = true;
+            trfprintf(pOutFile, "ubfizx \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d, %d", 64 - immr, imms + 1);
+            }
+         else
+            {
+            // ubfx alias
+            done = true;
+            trfprintf(pOutFile, "ubfxx \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d, %d", immr, imms + 1 - immr);
+            }
          }
       else if ((op == TR::InstOpCode::ubfmw) && ((immr & (1 << 6)) == 0) && ((imms & (1 << 6)) == 0))
          {
@@ -1448,6 +1466,24 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
             trfprintf(pOutFile, "uxt%cx \t", (imms == 7) ? 'b' : 'h');
             print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
             print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            }
+         else if (imms < immr)
+            {
+            // ubfiz alias
+            done = true;
+            trfprintf(pOutFile, "ubfizw \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d, %d", 32 - immr, imms + 1);
+            }
+         else
+            {
+            // ubfx alias
+            done = true;
+            trfprintf(pOutFile, "ubfxw \t");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d, %d", immr, imms + 1 - immr);
             }
          }
       if (!done)

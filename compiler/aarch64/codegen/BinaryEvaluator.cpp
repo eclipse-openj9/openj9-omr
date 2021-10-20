@@ -991,8 +991,6 @@ generateUBFMForMaskAndShift(TR::Node *shiftNode, TR::CodeGenerator *cg)
           * to bit position shiftValue of the destination register.
           */
          uint32_t width = populationCount(maskValue);
-         uint32_t imms = (width - 1);
-         uint32_t immr = (is64bit ? 64 : 32) - shiftValue;
 
          TR::Register *reg;
          TR::Register *sreg = cg->evaluate(sourceNode);
@@ -1005,7 +1003,7 @@ generateUBFMForMaskAndShift(TR::Node *shiftNode, TR::CodeGenerator *cg)
             reg = cg->allocateRegister();
             }
 
-         generateTrg1Src1ImmInstruction(cg, (is64bit ? TR::InstOpCode::ubfmx : TR::InstOpCode::ubfmw), shiftNode, reg, sreg, (immr << 6) | imms);
+         generateUBFIZInstruction(cg, shiftNode, reg, sreg, static_cast<uint32_t>(shiftValue), width, is64bit);
          shiftNode->setRegister(reg);
          cg->recursivelyDecReferenceCount(andNode);
          cg->decReferenceCount(shiftValueNode);
@@ -1026,8 +1024,6 @@ generateUBFMForMaskAndShift(TR::Node *shiftNode, TR::CodeGenerator *cg)
 
          bool isRightShift = (width == shiftRemainderWidth);  /* In this case, it works as a shift. */
 
-         uint32_t imms = (shiftValue + width - 1);
-         uint32_t immr = shiftValue;
          TR::Register *reg;
          TR::Register *sreg = cg->evaluate(sourceNode);
          if (sourceNode->getReferenceCount() == 1)
@@ -1052,7 +1048,7 @@ generateUBFMForMaskAndShift(TR::Node *shiftNode, TR::CodeGenerator *cg)
             }
          else
             {
-            generateTrg1Src1ImmInstruction(cg, (is64bit ? TR::InstOpCode::ubfmx : TR::InstOpCode::ubfmw), shiftNode, reg, sreg, (immr << 6) | imms);
+            generateUBFXInstruction(cg, shiftNode, reg, sreg, static_cast<uint32_t>(shiftValue), width, is64bit);
             }
          shiftNode->setRegister(reg);
          cg->recursivelyDecReferenceCount(andNode);
@@ -1574,8 +1570,6 @@ generateUBFMForShiftAndMask(TR::Node *andNode, TR::CodeGenerator *cg)
              * to bit position shiftValue of the destination register.
              */
             uint32_t width = populationCount(shiftedMask);
-            uint32_t imms = (width - 1);
-            uint32_t immr = (is64bit ? 64 : 32) - shiftValue;
 
             TR::Register *reg;
             TR::Register *sreg = cg->evaluate(sourceNode);
@@ -1587,7 +1581,7 @@ generateUBFMForShiftAndMask(TR::Node *andNode, TR::CodeGenerator *cg)
                {
                reg = cg->allocateRegister();
                }
-            generateTrg1Src1ImmInstruction(cg, (is64bit ? TR::InstOpCode::ubfmx : TR::InstOpCode::ubfmw), andNode, reg, sreg, (immr << 6) | imms);
+            generateUBFIZInstruction(cg, andNode, reg, sreg, static_cast<uint32_t>(shiftValue), width, is64bit);
             andNode->setRegister(reg);
             cg->recursivelyDecReferenceCount(shiftNode);
             cg->decReferenceCount(maskNode);
@@ -1620,8 +1614,6 @@ generateUBFMForShiftAndMask(TR::Node *andNode, TR::CodeGenerator *cg)
                }
             bool isLogicalShiftRight = (width == shiftRemainderWidth);  /* In this case, it works as a logical shift right. */
 
-            uint32_t imms = (shiftValue + width - 1);
-            uint32_t immr = shiftValue;
             TR::Register *reg;
             TR::Register *sreg = cg->evaluate(sourceNode);
             if (sourceNode->getReferenceCount() == 1)
@@ -1638,7 +1630,7 @@ generateUBFMForShiftAndMask(TR::Node *andNode, TR::CodeGenerator *cg)
                }
             else
                {
-               generateTrg1Src1ImmInstruction(cg, (is64bit ? TR::InstOpCode::ubfmx : TR::InstOpCode::ubfmw), andNode, reg, sreg, (immr << 6) | imms);
+               generateUBFXInstruction(cg, andNode, reg, sreg, static_cast<uint32_t>(shiftValue), width, is64bit);
                }
             andNode->setRegister(reg);
             cg->recursivelyDecReferenceCount(shiftNode);

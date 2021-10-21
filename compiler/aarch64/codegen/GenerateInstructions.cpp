@@ -556,6 +556,26 @@ TR::ARM64ExceptionInstruction *generateExceptionInstruction(TR::CodeGenerator *c
    return new (cg->trHeapMemory()) TR::ARM64ExceptionInstruction(op, node, imm, cg);
    }
 
+TR::Instruction *generateUBFXInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *treg, TR::Register *sreg, uint32_t lsb, uint32_t width, bool is64bit, TR::Instruction *preced)
+   {
+   uint32_t imms = (lsb + width - 1);
+   uint32_t immr = lsb;
+   TR_ASSERT_FATAL((is64bit && (immr <= 63) && (imms <= 63)) || ((!is64bit) && (immr <= 31) && (imms <= 31)),
+                   "immediate field for ubfm is out of range: is64bit=%d, immr=%d, imms=%d", is64bit, immr, imms);
+   return generateTrg1Src1ImmInstruction(cg, is64bit ? TR::InstOpCode::ubfmx : TR::InstOpCode::ubfmw, node, treg, sreg, (immr << 6) | imms, preced);
+   }
+
+TR::Instruction *generateUBFIZInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *treg, TR::Register *sreg, uint32_t lsb, uint32_t width, bool is64bit, TR::Instruction *preced)
+   {
+   uint32_t imms = width - 1;
+   uint32_t immr = (is64bit ? 64 : 32) - lsb;
+   TR_ASSERT_FATAL((is64bit && (immr <= 63) && (imms <= 63)) || ((!is64bit) && (immr <= 31) && (imms <= 31)),
+                   "immediate field for ubfm is out of range: is64bit=%d, immr=%d, imms=%d", is64bit, immr, imms);
+   return generateTrg1Src1ImmInstruction(cg, is64bit ? TR::InstOpCode::ubfmx : TR::InstOpCode::ubfmw, node, treg, sreg, (immr << 6) | imms, preced);
+   }
+
 #ifdef J9_PROJECT_SPECIFIC
 TR::Instruction *generateVirtualGuardNOPInstruction(TR::CodeGenerator *cg,  TR::Node *n, TR_VirtualGuardSite *site,
    TR::RegisterDependencyConditions *cond, TR::LabelSymbol *sym, TR::Instruction *preced)

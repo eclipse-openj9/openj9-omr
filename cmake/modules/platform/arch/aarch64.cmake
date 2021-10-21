@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2018, 2018 IBM Corp. and others
+# Copyright (c) 2018, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,11 +22,16 @@
 list(APPEND OMR_PLATFORM_DEFINITIONS
 	-DAARCH64
 	-DJ9AARCH64
-	-DAARCH64GNU
 	-DFIXUP_UNALIGNED
 	-march=armv8-a+simd
-	-Wno-unused-but-set-variable
 )
+
+# Apple clang does not support the following option.
+if(NOT (CMAKE_C_COMPILER_ID MATCHES "^(Apple)?Clang$"))
+	list(APPEND OMR_PLATFORM_DEFINITIONS
+		-Wno-unused-but-set-variable
+	)
+endif()
 
 set(TR_HOST_ARCH aarch64)
 set(TR_HOST_BITS 64)

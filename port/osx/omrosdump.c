@@ -51,9 +51,11 @@
 struct thread_command_full_64 {
 	uint32_t cmd;
 	uint32_t cmdsize;
+#if defined(OMR_ARCH_X86)
 	x86_thread_state_t thread_state;
 	x86_float_state_t float_state;
 	x86_exception_state_t exceptions;
+#endif /* defined(OMR_ARCH_X86) */
 };
 
 static char corefile_name[PATH_MAX];
@@ -131,6 +133,7 @@ coredump_to_file(mach_port_t task_port, pid_t pid)
 			goto done;
 		}
 		file_off += sizeof(uint32_t);
+#if defined(OMR_ARCH_X86)
 		written = pwrite(corefile_fd, &threads[i].thread_state, sizeof(x86_thread_state_t), file_off);
 		if (written < 0) {
 			perror("pwrite() error writing threads:");
@@ -152,6 +155,7 @@ coredump_to_file(mach_port_t task_port, pid_t pid)
 			goto done;
 		}
 		file_off += sizeof(x86_exception_state_t);
+#endif /* defined(OMR_ARCH_X86) */
 		mh64.sizeofcmds += threads[i].cmdsize;
 	}
 	mh64.ncmds += thread_count;
@@ -221,6 +225,7 @@ done:
 static kern_return_t
 list_thread_commands(mach_port_t task_port, struct thread_command_full_64 **thread_commands, natural_t *thread_count)
 {
+#if defined(OMR_ARCH_X86)
 	kern_return_t kr = KERN_SUCCESS;
 	thread_act_array_t thread_info;
 	struct thread_command_full_64 *threads = NULL;
@@ -279,6 +284,9 @@ done:
 	}
 	mach_vm_deallocate(mach_task_self(), (mach_vm_address_t)thread_info, (*thread_count) * sizeof(thread_act_t));
 	return kr;
+#else /* defined(OMR_ARCH_X86) */
+	return KERN_FAILURE;
+#endif /* defined(OMR_ARCH_X86) */
 }
 
 static kern_return_t

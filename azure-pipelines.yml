@@ -113,7 +113,7 @@ jobs:
   - job:
     displayName: 'x86-64 Linux'
     pool:
-      vmImage: 'ubuntu-16.04'
+      vmImage: 'ubuntu-18.04'
     variables:
       CCACHE_DIR: $(Pipeline.Workspace)/ccache
     steps:
@@ -230,6 +230,7 @@ jobs:
         displayName: 'Publish results'
 
   - job:
+    condition: False
     displayName: 'Linter'
     pool:
       vmImage: 'ubuntu-16.04'

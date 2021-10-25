@@ -1,19 +1,19 @@
 ###############################################################################
-# Copyright (c) 2015, 2019 IBM Corp. and others
-# 
+# Copyright (c) 2015, 2021 IBM Corp. and others
+#
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
 # distribution and is available at https://www.eclipse.org/legal/epl-2.0/
 # or the Apache License, Version 2.0 which accompanies this distribution and
 # is available at https://www.apache.org/licenses/LICENSE-2.0.
-#      
+#
 # This Source Code may also be made available under the following
 # Secondary Licenses when the conditions for such availability set
 # forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
 # General Public License, version 2 with the GNU Classpath
 # Exception [1] and GNU General Public License, version 2 with the
 # OpenJDK Assembly Exception [2].
-#    
+#
 # [1] https://www.gnu.org/software/classpath/license.html
 # [2] http://openjdk.java.net/legal/assembly-exception.html
 #
@@ -116,15 +116,6 @@ endif
 ifeq (1,$(OMR_THR_ADAPTIVE_SPIN))
 define WRITE_ADAPTIVE_SPIN_THREAD_EXPORTS
 @echo jlm_adaptive_spin_init >>$@
-endef
-endif
-
-ifeq (1,$(OMR_THR_TRACING))
-define WRITE_TRACING_THREAD_EXPORTS
-@echo omrthread_monitor_dump_trace >>$@
-@echo omrthread_monitor_dump_all >>$@
-@echo omrthread_dump_trace >>$@
-@echo omrthread_reset_tracing >>$@
 endef
 endif
 
@@ -280,5 +271,4 @@ $(WRITE_COMMON_THREAD_EXPORTS)
 $(WRITE_ZOS_THREAD_EXPORTS)
 $(WRITE_JLM_THREAD_EXPORTS)
 $(WRITE_ADAPTIVE_SPIN_THREAD_EXPORTS)
-$(WRITE_TRACING_THREAD_EXPORTS)
 endef

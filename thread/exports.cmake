@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2019, 2019 IBM Corp. and others
+# Copyright (c) 2019, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -183,16 +183,6 @@ endif()
 if(OMR_THR_ADAPTIVE_SPIN)
 	omr_add_exports(j9thr_obj
 		jlm_adaptive_spin_init
-	)
-endif()
-
-
-if(OMR_THR_TRACING)
-	omr_add_exports(j9thr_obj
-		omrthread_monitor_dump_trace
-		omrthread_monitor_dump_all
-		omrthread_dump_trace
-		omrthread_reset_tracing
 	)
 endif()
 

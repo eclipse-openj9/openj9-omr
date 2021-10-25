@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2020 IBM Corp. and others
+# Copyright (c) 2015, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -96,7 +96,6 @@ OMR_THR_JLM := @OMR_THR_JLM@
 OMR_THR_JLM_HOLD_TIMES := @OMR_THR_JLM_HOLD_TIMES@
 OMR_THR_LOCK_NURSERY := @OMR_THR_LOCK_NURSERY@
 OMR_THR_THREE_TIER_LOCKING := @OMR_THR_THREE_TIER_LOCKING@
-OMR_THR_TRACING := @OMR_THR_TRACING@
 OMR_THR_YIELD_ALG := @OMR_THR_YIELD_ALG@
 OMR_THR_SPIN_WAKE_CONTROL := @OMR_THR_SPIN_WAKE_CONTROL@
 OMR_THR_MCS_LOCKS := @OMR_THR_MCS_LOCKS@

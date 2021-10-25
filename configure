@@ -706,7 +706,6 @@ OMR_GC_MODRON_SCAVENGER
 OMR_GC_MODRON_CONCURRENT_MARK
 OMR_GC_MODRON_COMPACTION
 OMR_GC_DYNAMIC_CLASS_UNLOADING
-OMR_THR_TRACING
 OMR_THR_LOCK_NURSERY
 OMR_THR_JLM_HOLD_TIMES
 OMR_THR_JLM
@@ -853,7 +852,6 @@ enable_OMR_THR_ADAPTIVE_SPIN
 enable_OMR_THR_JLM
 enable_OMR_THR_JLM_HOLD_TIMES
 enable_OMR_THR_LOCK_NURSERY
-enable_OMR_THR_TRACING
 enable_OMR_GC_DYNAMIC_CLASS_UNLOADING
 enable_OMR_GC_MODRON_COMPACTION
 enable_OMR_GC_MODRON_CONCURRENT_MARK
@@ -1613,8 +1611,6 @@ Optional Features:
   --disable-OMR_THR_JLM_HOLD_TIMES
 
   --disable-OMR_THR_LOCK_NURSERY
-
-  --enable-OMR_THR_TRACING
 
   --enable-OMR_GC_DYNAMIC_CLASS_UNLOADING
 
@@ -2879,8 +2875,8 @@ case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 
 OMR_COMPANY_NAME=${OMR_COMPANY_NAME:-""}
 OMR_COMPANY_COPYRIGHT=${OMR_COMPANY_COPYRIGHT:-""}
-OMR_PRODUCT_NAME=${OMR_PRODUCT_NAME:-"OMR"}
 OMR_PRODUCT_DESCRIPTION=${OMR_PRODUCT_DESCRIPTION:-"OMR 0.1 "}
+OMR_PRODUCT_NAME=${OMR_PRODUCT_NAME:-"OMR"}
 OMR_PRODUCT_VERSION=${OMR_PRODUCT_VERSION:-"0.1"}
 
 OMR_ZOS_COMPILE_ARCHITECTURE=${OMR_ZOS_COMPILE_ARCHITECTURE:-"7"}
@@ -5301,25 +5297,7 @@ fi
 ############### Flags that are always disabled
 # Each flag must have a corresponding entry in omrcfg.h.in
 
-# Check whether --enable-OMR_THR_TRACING was given.
-if test "${enable_OMR_THR_TRACING+set}" = set; then :
-  enableval=$enable_OMR_THR_TRACING; if test "x${enableval}" = xyes; then :
-  OMR_THR_TRACING=1
-
-   $as_echo "#define OMR_THR_TRACING 1" >>confdefs.h
-
-else
-  OMR_THR_TRACING=0
-
-
-fi
-else
-  OMR_THR_TRACING=0
-
-
-fi
-
-
+# (no flags are always disabled)
 
 ############### Flags that are conditionally enabled.
 # Each flag must have a corresponding entry in omrcfg.h.in

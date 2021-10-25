@@ -297,7 +297,7 @@ static void constrainBaseObjectOfIndirectAccess(OMR::ValuePropagation *vp, TR::N
    TR_ResolvedMethod *method = node->getSymbolReference()->getOwningMethod(vp->comp());
    char *baseObjectSig = method->classNameOfFieldOrStatic(node->getSymbolReference()->getCPIndex(), baseObjectSigLen);
    if (baseObjectSig)
-      baseObjectSig = classNameToSignature(baseObjectSig, baseObjectSigLen, vp->comp());
+      baseObjectSig = TR::Compiler->cls.classNameToSignature(baseObjectSig, baseObjectSigLen, vp->comp());
    if (baseObjectSig)
       {
       TR_OpaqueClassBlock *baseClass = vp->fe()->getClassFromSignature(baseObjectSig, baseObjectSigLen, method);
@@ -1710,7 +1710,7 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
                   classNameOfFieldOrStatic = symRef->getOwningMethod(vp->comp())->classNameOfFieldOrStatic(symRef->getCPIndex(), len);
                   if (classNameOfFieldOrStatic)
                      {
-                     classNameOfFieldOrStatic=classNameToSignature(classNameOfFieldOrStatic, len, vp->comp());
+                     classNameOfFieldOrStatic = TR::Compiler->cls.classNameToSignature(classNameOfFieldOrStatic, len, vp->comp());
                      TR_OpaqueClassBlock * curClass  = vp->fe()->getClassFromSignature(classNameOfFieldOrStatic, len, symRef->getOwningMethod(vp->comp()));
                      TR_OpaqueClassBlock * owningClass = vp->comp()->getJittedMethodSymbol()->getResolvedMethod()->containingClass();
                      if (owningClass == curClass)
@@ -1839,7 +1839,7 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
       else
          {
          len = vp->_curBlock->getExceptionClassNameLength();
-         sig = classNameToSignature(vp->_curBlock->getExceptionClassNameChars(), len, vp->comp());
+         sig = TR::Compiler->cls.classNameToSignature(vp->_curBlock->getExceptionClassNameChars(), len, vp->comp());
          constraint = TR::VPUnresolvedClass::create(vp, sig, len, symRef->getOwningMethod(vp->comp()));
          }
       vp->addGlobalConstraint(node, constraint);
@@ -5211,7 +5211,7 @@ static void devirtualizeCall(OMR::ValuePropagation *vp, TR::Node *node)
 
       TR::Method * originalMethod = methodSymbol->getMethod();
       len = originalMethod->classNameLength();
-      s = classNameToSignature(originalMethod->classNameChars(), len, vp->comp());
+      s = TR::Compiler->cls.classNameToSignature(originalMethod->classNameChars(), len, vp->comp());
       originalMethodClass = vp->fe()->getClassFromSignature(s, len, owningMethod);
 
       if (!originalMethodClass)
@@ -5431,7 +5431,7 @@ static bool canFoldNonOverriddenGuard(OMR::ValuePropagation *vp, TR::Node *callN
             }
          }
       }
-      return false;      
+      return false;
    }
 
 
@@ -5528,7 +5528,7 @@ TR::Node *constrainCall(OMR::ValuePropagation *vp, TR::Node *node)
          {
          char *sig = symbol->getMethod()->classNameChars();
          int32_t len = symbol->getMethod()->classNameLength();
-         sig = classNameToSignature(sig, len, vp->comp());
+         sig = TR::Compiler->cls.classNameToSignature(sig, len, vp->comp());
          TR_ResolvedMethod *method = node->getSymbolReference()->getOwningMethod(vp->comp());
          TR::VPConstraint *constraint = TR::VPUnresolvedClass::create(vp, sig, len, method);
          int32_t firstArgIndex = node->getFirstArgumentIndex();
@@ -9513,7 +9513,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
 
             if (!list)
                list = new (vp->comp()->trStackMemory()) List<TR_Pair<TR::TreeTop, TR::CFGEdge>>(vp->comp()->trMemory());
-            
+
             list->setRegion(vp->comp()->trMemory()->currentStackRegion());
             list->add(pair);
             }
@@ -9848,7 +9848,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
              TR::Method *interfaceMethod = interfaceMethodSymbol->getMethod();
              //re-using len and sig for getting a class of a call
              len = interfaceMethod->classNameLength();
-             sig = classNameToSignature(interfaceMethod->classNameChars(), len, vp->comp());
+             sig = TR::Compiler->cls.classNameToSignature(interfaceMethod->classNameChars(), len, vp->comp());
              callClass = vp->comp()->fe()->getClassFromSignature(sig, len, owningMethod, true);
              }
 

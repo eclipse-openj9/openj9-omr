@@ -1081,7 +1081,7 @@ bool TR_LocalAnalysisInfo::collectSupportedNodes(TR::Node *node, TR::Node *paren
             const char *otherSig = otherSymRef->getOwningMethod(_compilation)->classNameOfFieldOrStatic(otherSymRef->getCPIndex(), otherLen);
             if (otherSig)
                {
-               otherSig = classNameToSignature(otherSig, otherLen, _compilation);
+               otherSig = TR::Compiler->cls.classNameToSignature(otherSig, otherLen, _compilation);
                otherClassObject = _compilation->fe()->getClassFromSignature(otherSig, otherLen, otherSymRef->getOwningMethod(_compilation));
                }
 

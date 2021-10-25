@@ -2655,7 +2655,7 @@ bool TR_LoopVersioner::checkProfiledGuardSuitability(TR_ScratchList<TR::Block> *
             TR::MethodSymbol *method = callSymRef->getSymbol()->castToMethodSymbol();
             TR_ResolvedMethod *owningMethod = callSymRef->getOwningMethod(comp);
             int32_t len = method->getMethod()->classNameLength();
-            char *s = classNameToSignature(method->getMethod()->classNameChars(), len, comp);
+            char *s = TR::Compiler->cls.classNameToSignature(method->getMethod()->classNameChars(), len, comp);
             TR_OpaqueClassBlock *classOfMethod = comp->fe()->getClassFromSignature(s, len, owningMethod, true);
             traceMsg(comp, "Found profiled gaurd %p is on interface %s\n", guardNode, TR::Compiler->cls.classNameChars(comp, classOfMethod, len));
             }

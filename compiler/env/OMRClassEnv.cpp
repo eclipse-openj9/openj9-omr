@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -60,9 +60,18 @@ OMR::ClassEnv::classUnloadAssumptionNeedsRelocation(TR::Compilation *comp)
    return comp->compileRelocatableCode();
    }
 
-bool 
+bool
 OMR::ClassEnv::containsZeroOrOneConcreteClass(TR::Compilation *comp, List<TR_PersistentClassInfo>* subClasses)
    {
    TR_UNIMPLEMENTED();
    return false;
+   }
+
+char *
+OMR::ClassEnv::classNameToSignature(const char *name, int32_t &len, TR::Compilation *comp, TR_AllocationKind allocKind, TR_OpaqueClassBlock *clazz)
+   {
+   char *sig = (char *)comp->trMemory()->allocateMemory(len+1, allocKind);
+   memcpy(sig,name,len);
+   sig[len] = '\0';
+   return sig;
    }

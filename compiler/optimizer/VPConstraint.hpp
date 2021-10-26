@@ -621,6 +621,8 @@ class VPClassType : public TR::VPConstraint
    TR::VPClassType *classTypesCompatible(TR::VPClassType * otherType, OMR::ValuePropagation *vp);
 
    protected:
+   TR::VPConstraint *typeIntersectLocation(TR::VPObjectLocation *location, OMR::ValuePropagation *vp);
+
    const char *_sig;
    int32_t _len;
    };

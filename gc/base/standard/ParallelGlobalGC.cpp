@@ -1534,6 +1534,17 @@ MM_ParallelGlobalGC::isMarked(void *objectPtr)
 }
 
 void
+MM_ParallelGlobalGC::checkColorAndMark(MM_EnvironmentBase* env, omrobjectptr_t objectPtr)
+{
+#if defined(OMR_GC_REALTIME)
+	if (_extensions->isSATBBarrierActive()) {
+		Assert_MM_true(GC_MARK == env->getAllocationColor());
+		_markingScheme->markObject(env, objectPtr, true);
+	}
+#endif /* defined(OMR_GC_REALTIME) */
+}
+
+void
 MM_ParallelGlobalGC::completeExternalConcurrentCycle(MM_EnvironmentBase *env)
 {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)

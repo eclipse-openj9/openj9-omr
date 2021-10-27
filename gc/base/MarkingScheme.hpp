@@ -106,7 +106,7 @@ public:
 	 *  Create Root Scanner and Mark all roots including classes and classloaders if dynamic class unloading is enabled
 	 *  @param[in] env - passed Environment 
 	 */
-	void markLiveObjectsRoots(MM_EnvironmentBase *env);
+	void markLiveObjectsRoots(MM_EnvironmentBase *env, bool processLists = true);
 
 	/**
 	 *  Scan (complete)

@@ -44,10 +44,17 @@ class MM_ParallelDispatcher;
  */
 class MM_ParallelMarkTask : public MM_ParallelTask
 {
+public:
+	enum MarkAction {
+		MARK_ALL = 1,
+		MARK_ROOTS,
+	};
+
 private:
 	MM_MarkingScheme *_markingScheme;
 	const bool _initMarkMap;
 	MM_CycleState *_cycleState;  /**< Collection cycle state active for the task */
+	const MarkAction _action;
 	
 public:
 	virtual uintptr_t getVMStateID();
@@ -69,11 +76,13 @@ public:
 			MM_ParallelDispatcher *dispatcher, 
 			MM_MarkingScheme *markingScheme, 
 			bool initMarkMap,
-			MM_CycleState *cycleState) :
+			MM_CycleState *cycleState,
+			MarkAction action = MARK_ALL) :
 		MM_ParallelTask(env, dispatcher)
 		,_markingScheme(markingScheme)
 		,_initMarkMap(initMarkMap)
 		,_cycleState(cycleState)
+		,_action(action)
 	{
 		_typeId = __FUNCTION__;
 	};

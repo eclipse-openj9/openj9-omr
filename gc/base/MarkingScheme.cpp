@@ -358,7 +358,7 @@ MM_MarkingScheme::markLiveObjectsInit(MM_EnvironmentBase *env, bool initMarkMap)
  *  @param[in] shouldScan instruct should scanning also be active while roots are marked   
  */
 void
-MM_MarkingScheme::markLiveObjectsRoots(MM_EnvironmentBase *env)
+MM_MarkingScheme::markLiveObjectsRoots(MM_EnvironmentBase *env, bool processLists)
 {
 	_delegate.scanRoots(env);
 }

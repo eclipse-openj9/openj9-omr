@@ -46,9 +46,19 @@ MM_ParallelMarkTask::run(MM_EnvironmentBase *env)
 	env->_workStack.prepareForWork(env, (MM_WorkPackets *)(_markingScheme->getWorkPackets()));
 
 	_markingScheme->markLiveObjectsInit(env, _initMarkMap);
-	_markingScheme->markLiveObjectsRoots(env);
-	_markingScheme->markLiveObjectsScan(env);
-	_markingScheme->markLiveObjectsComplete(env);
+
+	switch (_action) {
+		case MARK_ALL:
+			_markingScheme->markLiveObjectsRoots(env, true);
+			_markingScheme->markLiveObjectsScan(env);
+			_markingScheme->markLiveObjectsComplete(env);
+			break;
+		case MARK_ROOTS:
+			_markingScheme->markLiveObjectsRoots(env, false);
+			break;
+		default:
+			Assert_MM_unreachable();
+	}
 
 	env->_workStack.flush(env);
 }

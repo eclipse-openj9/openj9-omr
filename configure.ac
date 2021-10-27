@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2020 IBM Corp. and others
+# Copyright (c) 2015, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -412,7 +412,7 @@ OMRCFG_DEFINE_FLAG_ON([OMR_THR_LOCK_NURSERY])
 ############### Flags that are always disabled
 # Each flag must have a corresponding entry in omrcfg.h.in
 
-OMRCFG_DEFINE_FLAG_OFF([OMR_THR_TRACING])
+# (no flags are always disabled)
 
 ############### Flags that are conditionally enabled.
 # Each flag must have a corresponding entry in omrcfg.h.in

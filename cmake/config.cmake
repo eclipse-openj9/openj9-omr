@@ -198,8 +198,7 @@ if(OMR_THR_YIELD_ALG)
 		MESSAGE "OMR_THR_YIELD_ALG enabled, but not supported on current platform"
 	)
 endif()
-#TODO set to disabled. Stuff fails to compile when its on
-set(OMR_THR_TRACING OFF CACHE BOOL "TODO: Document")
+# TODO set to disabled. Stuff fails to compile when its on
 set(OMR_THR_MCS_LOCKS OFF CACHE BOOL "Enable the usage of the MCS lock in the OMR thread monitor.")
 
 #TODO this should maybe be a OMRTHREAD_LIB string variable?

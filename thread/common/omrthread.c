@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2059,7 +2059,7 @@ copyAttr(omrthread_attr_t *attrTo, const omrthread_attr_t *attrFrom)
 	}
 
 	return rc;
-	
+
 destroyAttr:
 	omrthread_attr_destroy((omrthread_attr_t *)&attrTo);
 copyAttrDone:
@@ -2155,10 +2155,6 @@ threadDestroy(omrthread_t thread, int globalAlreadyLocked)
 #if defined(OMR_THR_MCS_LOCKS)
 	free_mcs_nodes(thread->library, thread->mcsNodes);
 #endif /* defined(OMR_THR_MCS_LOCKS) */
-
-#ifdef OMR_THR_TRACING
-	omrthread_dump_trace(thread);
-#endif
 
 #if defined(OMR_OS_WINDOWS)
 	/* Acquire the global monitor mutex (if needed) while performing handle closing and freeing. */
@@ -3440,10 +3436,6 @@ omrthread_monitor_destroy(omrthread_monitor_t monitor)
 
 	GLOBAL_LOCK(self, CALLER_MONITOR_DESTROY);
 
-#if defined(OMR_THR_TRACING)
-	omrthread_monitor_dump_trace(monitor);
-#endif /* defined(OMR_THR_TRACING) */
-
 	if (monitor->owner || monitor_maximum_wait_number(monitor)) {
 		/* This monitor is in use! It was probably abandoned when a thread was cancelled.
 		 * There's actually a very small timing hole here -- if the thread had just locked the
@@ -3481,10 +3473,6 @@ omrthread_monitor_destroy_nolock(omrthread_t self, omrthread_monitor_t monitor)
 {
 	ASSERT(self);
 	ASSERT(monitor);
-
-#if defined(OMR_THR_TRACING)
-	omrthread_monitor_dump_trace(monitor);
-#endif /* defined(OMR_THR_TRACING) */
 
 	if (monitor->owner || monitor_maximum_wait_number(monitor)) {
 		/* This monitor is in use! It was probably abandoned when a thread was cancelled.
@@ -3553,7 +3541,7 @@ static omrthread_monitor_t
 monitor_allocate(omrthread_t self, intptr_t policy, intptr_t policyData)
 {
 	omrthread_monitor_t newMonitor = NULL;
-	omrthread_library_t lib = NULL; 
+	omrthread_library_t lib = NULL;
 	omrthread_monitor_pool_t pool = NULL;
 	intptr_t rc = 0;
 
@@ -5413,34 +5401,6 @@ free_monitor_pools(void)
 	lib->monitor_pool = 0;
 }
 
-
-#if (defined(OMR_THR_TRACING))
-/**
- * Dump information about a monitor to stderr
- *
- * @param[in] monitor monitor to be dumped (non-NULL)
- * @return none
- *
- * @see omrthread_monitor_dump_all
- */
-void
-omrthread_monitor_dump_trace(omrthread_monitor_t monitor)
-{
-	fprintf(stderr,
-			"<thr_mon: %s enter=%u hold=%u exit=%u hldtm=%I64d blktm=%I64d>\n",
-			monitor->tracing.monitor_name
-			? monitor->tracing.monitor_name
-			: ((monitor->flags & J9THREAD_MONITOR_OBJECT) ? "(object)" : "(null)"),
-			monitor->tracing.enter_count,
-			monitor->tracing.hold_count,
-			monitor->tracing.exit_count,
-			monitor->tracing.holdtime_sum,
-			0);
-	fflush(stderr);
-}
-
-#endif /* OMR_THR_TRACING */
-
 #if defined(OMR_THR_MCS_LOCKS)
 /**
  * Create and initialize an OMRThreadMCSNodes structure.
@@ -5486,62 +5446,6 @@ free_mcs_nodes(omrthread_library_t lib, omrthread_mcs_nodes_t mcsNodes)
 	omrthread_free_memory(lib, mcsNodes);
 }
 #endif /* defined(OMR_THR_MCS_LOCKS) */
-
-#if (defined(OMR_THR_TRACING))
-/**
- * Dump information about all monitors currently in use.
- *
- * @return none
- * @see omrthread_monitor_dump_trace
- */
-void
-omrthread_monitor_dump_all(void)
-{
-	omrthread_monitor_t monitor = NULL;
-	omrthread_monitor_walk_state_t walkState;
-	omrthread_monitor_init_walk(&walkState);
-
-	while (NULL != (monitor = omrthread_monitor_walk(&walkState))) {
-		omrthread_monitor_dump_trace(monitor);
-	}
-
-}
-
-#endif /* OMR_THR_TRACING */
-
-
-#if (defined(OMR_THR_TRACING))
-/**
- * @internal
- *
- *  Dump a thread's tracing values to stderr.
- *
- *  @param[in] thread thread with tracing values to dump
- *  @return none
- */
-void
-omrthread_dump_trace(omrthread_t thread)
-{
-	int i;
-	fprintf(stderr,
-			"<thr_thr: id=%p createtime=%I64d now=%I64d holdtime=%I64d>\n",
-			thread,
-			thread->tracing.createtime,
-			GetCycles(),
-			thread->tracing.holdtime);
-	for (i = 0; i < sizeof(thread->tracing.count) / sizeof(thread->tracing.count[0]); i++) {
-		fprintf(stderr,
-				"<thr_lock: id=%p location=%2d count=%u time=%I64d>\n",
-				thread,
-				i + 1,
-				thread->tracing.count[i],
-				thread->tracing.gettime[i]);
-	}
-	fflush(stderr);
-}
-
-#endif /* OMR_THR_TRACING */
-
 
 /**
  * Check if the current awakened thread was a target for a notify request.

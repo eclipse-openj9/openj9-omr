@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -499,16 +499,6 @@ void
 omrthread_detach(omrthread_t thread);
 
 
-#if (defined(OMR_THR_TRACING))
-/**
-* @brief
-* @param thread
-* @return void
-*/
-void
-omrthread_dump_trace(omrthread_t thread);
-#endif /* OMR_THR_TRACING */
-
 /**
 * @brief
 * @param monitor
@@ -746,28 +736,6 @@ void
 omrthread_monitor_flush_destroyed_monitor_list(omrthread_t self);
 
 
-#if (defined(OMR_THR_TRACING))
-/**
-* @brief
-* @param void
-* @return void
-*/
-void
-omrthread_monitor_dump_all(void);
-#endif /* OMR_THR_TRACING */
-
-
-#if (defined(OMR_THR_TRACING))
-/**
-* @brief
-* @param monitor
-* @return void
-*/
-void
-omrthread_monitor_dump_trace(omrthread_monitor_t monitor);
-#endif /* OMR_THR_TRACING */
-
-
 /**
 * @brief
 * @param monitor
@@ -982,17 +950,6 @@ omrthread_priority_interrupt(omrthread_t thread);
 */
 uintptr_t
 omrthread_priority_interrupted(omrthread_t thread);
-
-
-#if (defined(OMR_THR_TRACING))
-/**
-* @brief
-* @param void
-* @return void
-*/
-void
-omrthread_reset_tracing(void);
-#endif /* OMR_THR_TRACING */
 
 
 /**

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2020 IBM Corp. and others
+ * Copyright (c) 2015, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -102,12 +102,6 @@
  * ifRemoved: object header will contain the monitor word
  */
 #undef OMR_THR_LOCK_NURSERY
-
-/**
- * Output lots of thread statistics (Pentium only)
- * ifRemoved: Turn off in production VMs
- */
-#undef OMR_THR_TRACING
 
 #undef OMRTHREAD_LIB_AIX
 #undef OMRTHREAD_LIB_UNIX

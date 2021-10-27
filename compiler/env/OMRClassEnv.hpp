@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -34,6 +34,7 @@ namespace OMR { typedef OMR::ClassEnv ClassEnvConnector; }
 #include <stdint.h>
 #include "infra/Annotations.hpp"
 #include "env/jittypes.h"
+#include "env/TRMemory.hpp"
 
 struct OMR_VMThread;
 namespace TR { class ClassEnv; }
@@ -135,6 +136,30 @@ public:
    char *classSignature(TR::Compilation *comp, TR_OpaqueClassBlock * clazz, TR_Memory *) { return NULL; }
 
    /**
+    * \brief
+    *    Constructs a class signature char string based on the class name
+    *
+    * \param[in] name
+    *    The class name
+    *
+    * \param[in,out] len
+    *    The input is the length of the class name. Returns the length of the signature
+    *
+    * \param[in] comp
+    *    The compilation object
+    *
+    * \param[in] allocKind
+    *    The type of the memory allocation
+    *
+    * \param[in] clazz
+    *    The class that the class name belongs to
+    *
+    * \return
+    *    A class signature char string
+    */
+   char *classNameToSignature(const char *name, int32_t &len, TR::Compilation *comp, TR_AllocationKind allocKind = stackAlloc, TR_OpaqueClassBlock *clazz = NULL);
+
+   /**
     * Get the virtual function table entry at a specific offset from the class
     *
     * @param clazz The RAM class pointer to read from
@@ -150,10 +175,10 @@ public:
     *
     *  \param region
     *     The region used to allocate TypeLayout.
-    * 
+    *
     *  \param opaqueClazz
     *     Class of the type whose layout needs to be populated.
-    * 
+    *
     *  \return
     *     Returns a NULL pointer.
     */
@@ -162,10 +187,10 @@ public:
    /**
     * @brief Determine if a list of classes contains less than two concrete classes.
     * A class is considered concrete if it is not an interface or an abstract class
-    * 
+    *
     * @param subClasses List of subclasses to be checked.
-    * 
-    * @return Returns 'true' if the given list of classes contains less than 
+    *
+    * @return Returns 'true' if the given list of classes contains less than
     * 2 concrete classes and false otherwise.
     */
    bool containsZeroOrOneConcreteClass(TR::Compilation *comp, List<TR_PersistentClassInfo>* subClasses);

@@ -3403,6 +3403,8 @@ TR::Register *OMR::Power::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeG
    {
    switch(node->getDataType())
      {
+     case TR::VectorInt8:   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsububm);
+     case TR::VectorInt16:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsubuhm);
      case TR::VectorInt32:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsubuwm);
      case TR::VectorInt64:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsubudm);
      case TR::VectorFloat:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvsubsp);

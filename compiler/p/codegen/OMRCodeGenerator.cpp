@@ -1773,9 +1773,11 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
    switch (opcode.getOpCodeValue())
       {
       case TR::vadd:
-         if (dt == TR::Int16 || dt == TR::Int8)
-            return true;
       case TR::vsub:
+         if (dt == TR::Int16 || dt == TR::Int8 || dt == TR::Int32 || dt == TR::Float || dt == TR::Double)
+            return true;
+         else
+            return false;
       case TR::vmul:
       case TR::vdiv:
       case TR::vneg:

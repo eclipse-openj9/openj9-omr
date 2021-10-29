@@ -3473,41 +3473,7 @@ TR::Register *OMR::Power::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeG
 
 TR::Register *OMR::Power::TreeEvaluator::vmulInt32Helper(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Node *firstChild;
-   TR::Node *secondChild;
-   TR::Register *lhsReg, *rhsReg;
-   TR::Register *resReg;
-   TR::Register *tempA;
-   TR::Register *tempB;
-   TR::Register *tempC;
-
-   firstChild = node->getFirstChild();
-   secondChild = node->getSecondChild();
-   lhsReg = NULL;
-   rhsReg = NULL;
-
-   lhsReg = cg->evaluate(firstChild);
-   rhsReg = cg->evaluate(secondChild);
-
-   resReg = cg->allocateRegister(TR_VRF);
-   tempA = cg->allocateRegister(TR_VRF);
-   tempB = cg->allocateRegister(TR_VRF);
-   tempC = cg->allocateRegister(TR_VRF);
-   node->setRegister(resReg);
-   generateTrg1ImmInstruction(cg, TR::InstOpCode::vspltisw, node, tempA, -16);
-   generateTrg1ImmInstruction(cg, TR::InstOpCode::vspltisw, node, tempB, 0);
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::vmulouh, node, tempC, lhsReg, rhsReg);
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::vrlw, node, resReg, rhsReg, tempA);
-   generateTrg1Src3Instruction(cg, TR::InstOpCode::vmsumuhm, node, tempB, lhsReg, resReg, tempB);
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::vslw, node, tempA, tempB, tempA);
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::vadduhm, node, resReg, tempA, tempC);
-
-   cg->stopUsingRegister(tempA);
-   cg->stopUsingRegister(tempB);
-   cg->stopUsingRegister(tempC);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-   return resReg;
+   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vmuluwm);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vmulFloatHelper(TR::Node *node, TR::CodeGenerator *cg)

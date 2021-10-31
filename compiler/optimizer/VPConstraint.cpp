@@ -1203,7 +1203,7 @@ TR::VPClassType *TR::VPClassType::create(OMR::ValuePropagation *vp, TR::SymbolRe
    int32_t len;
    char *name = TR::Compiler->cls.classNameChars(vp->comp(), symRef, len);
    TR_ASSERT(name, "can't get class name from symbol reference");
-   char *sig = classNameToSignature(name, len, vp->comp());
+   char *sig = TR::Compiler->cls.classNameToSignature(name, len, vp->comp());
    //return TR::VPUnresolvedClass::create(vp, sig, len, symRef->getOwningMethod(vp->comp()));
    return TR::VPClassType::create(vp, sig, len, symRef->getOwningMethod(vp->comp()), isFixedClass);
    }

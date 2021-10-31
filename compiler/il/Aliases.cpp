@@ -1044,28 +1044,6 @@ OMR::SymbolReference::storeCanBeRemoved()
            (self()->isTemporary(comp) && !s->behaveLikeNonTemp()));
    }
 
-char *
-classNameToSignature(const char *name, int32_t &len, TR::Compilation * comp, TR_AllocationKind allocKind)
-   {
-   char * sig;
-
-   if (name[0] == '[')
-      {
-      sig = (char *)comp->trMemory()->allocateMemory(len+1, allocKind);
-      memcpy(sig,name,len);
-      }
-   else
-      {
-      len += 2;
-      sig = (char *)comp->trMemory()->allocateMemory(len+1, allocKind);
-      sig[0] = 'L';
-      memcpy(sig+1,name,len-2);
-      sig[len-1]=';';
-      }
-   sig[len] = 0; // null terminated string
-   return sig;
-   }
-
 const char *
 OMR::SymbolReference::getTypeSignature(int32_t & len, TR_AllocationKind allocKind, bool *isFixed)
    {

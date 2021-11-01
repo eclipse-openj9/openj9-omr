@@ -3466,9 +3466,42 @@ TR::Register *OMR::Power::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeG
        return TR::TreeEvaluator::vmulFloatHelper(node,cg);
      case TR::VectorDouble:
        return TR::TreeEvaluator::vmulDoubleHelper(node,cg);
+     case TR::VectorInt16:
+       return TR::TreeEvaluator::vmulInt16Helper(node,cg);
      default:
        TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
      }
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::vmulInt16Helper(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild;
+   TR::Node *secondChild;
+   TR::Register *lhsReg, *rhsReg;
+   TR::Register *productReg;
+   TR::Register *temp;
+
+   firstChild = node->getFirstChild();
+   secondChild = node->getSecondChild();
+   lhsReg = NULL;
+   rhsReg = NULL;
+
+   lhsReg = cg->evaluate(firstChild);
+   rhsReg = cg->evaluate(secondChild);
+
+   productReg = cg->allocateRegister(TR_VRF);
+   temp = cg->allocateRegister(TR_VRF);
+
+   node->setRegister(productReg);
+
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::vspltish, node, temp, 0);
+   generateTrg1Src3Instruction(cg, TR::InstOpCode::vmladduhm, node, productReg, lhsReg, rhsReg, temp);
+
+   cg->stopUsingRegister(temp);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+
+   return productReg;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vmulInt32Helper(TR::Node *node, TR::CodeGenerator *cg)

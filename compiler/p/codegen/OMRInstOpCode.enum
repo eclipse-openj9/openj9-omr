@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -711,7 +711,7 @@
    vsubuws,          // vector subtract unsigned word saturate
 // vmhaddshs,        // Vector Multiply-High-Add Signed Hword Saturate
 // vmhraddshs,       // Vector Multiply-High-Round-Add Signed Hword Saturate
-// vmladduhm,        // Vector Multiply-Low-Add Unsigned Hword Modulo
+   vmladduhm,        // Vector Multiply-Low-Add Unsigned Hword Modulo
 // vmsummbm,         // Vector Multiply-Sum Mixed Byte Modulo
 // vmsumshm,         // Vector Multiply-Sum Signed Hword Modulo
 // vmsumshs,         // Vector Multiply-Sum Signed Hword Saturate

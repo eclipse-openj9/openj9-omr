@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -8353,17 +8353,17 @@
    /*                   PPCOpProp_SyncSideEffectFree, */
    /* }, */
 
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::vmladduhm, */
-   /* .name        =    "vmladduhm", */
-   /* .description =    "Vector Multiply-Low-Add Unsigned Hword Modulo", */
-   /* .prefix      =    0x00000000, */
-   /* .opcode      =    0x10000022, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    OMR_PROCESSOR_PPC_P6, */
-   /* .properties  =    PPCOpProp_IsVMX | */
-   /*                   PPCOpProp_SyncSideEffectFree, */
-   /* }, */
+   {
+   /* .mnemonic    = */   OMR::InstOpCode::vmladduhm,
+   /* .name        = */   "vmladduhm",
+   /* .description =      "Vector Multiply-Low-Add Unsigned Hword Modulo", */
+   /* .prefix      = */   0x00000000,
+   /* .opcode      = */   0x10000022,
+   /* .format      = */   FORMAT_VRT_VRA_VRB_VRC,
+   /* .minimumALS  = */   OMR_PROCESSOR_PPC_P6,
+   /* .properties  = */   PPCOpProp_IsVMX | 
+                          PPCOpProp_SyncSideEffectFree,
+   },
 
    /* { */
    /* .mnemonic    =    OMR::InstOpCode::vmsummbm, */

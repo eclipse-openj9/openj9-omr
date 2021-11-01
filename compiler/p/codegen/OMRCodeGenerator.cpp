@@ -1779,6 +1779,8 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
          else
             return false;
       case TR::vmul:
+         if (dt == TR::Int16)
+            return true;
       case TR::vdiv:
       case TR::vneg:
          if (dt == TR::Int32 || dt == TR::Float || dt == TR::Double)

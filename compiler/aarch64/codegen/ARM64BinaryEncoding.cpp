@@ -29,6 +29,8 @@
 #include "codegen/InstructionDelegate.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/Relocation.hpp"
+#include "compile/Compilation.hpp"
+#include "il/Node_inlines.hpp"
 #include "il/StaticSymbol.hpp"
 #include "runtime/CodeCacheManager.hpp"
 
@@ -452,12 +454,13 @@ uint8_t *TR::ARM64Trg1ImmSymInstruction::generateBinaryEncoding()
             cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
             }
          }
-      else if ((getOpCodeValue() == TR::InstOpCode::adr) && sym->isStartPC())
+      else if ((getOpCodeValue() == TR::InstOpCode::adr) && (sym->isStartPC() || sym->isGCRPatchPoint()))
          {
          intptr_t offset = reinterpret_cast<intptr_t>(reinterpret_cast<uint8_t *>(sym->getStaticSymbol()->getStaticAddress()) - cursor);
          if (!constantIsSignedImm21(offset))
             {
-            cg()->comp()->failCompilation<TR::CompilationException>("offset (%ld) is too far for adr", offset);
+            cg()->comp()->failCompilation<TR::CompilationException>("offset (%ld) is too far for adr (symbol = %s)", offset,
+                                                                     (sym->isStartPC() ? "<start-PC>" : "<gcr-patch-point>"));
             }
          setSourceImmediate(offset);
          }
@@ -536,6 +539,29 @@ uint8_t *TR::ARM64ZeroSrc1ImmInstruction::generateBinaryEncoding()
    insertSource1Register(toARM64Cursor(cursor));
    insertImmediateField(toARM64Cursor(cursor));
    insertNbit(toARM64Cursor(cursor));
+
+   TR::Compilation *comp = cg()->comp();
+   // If this memory reference is about my count for recompile,
+   // then it's the cmp instruction that I need to patch
+   if (comp->getOption(TR_EnableGCRPatching))
+      {
+      TR::Node *node = self()->getNode();
+      if (node && (node->getOpCodeValue() == TR::ificmpeq || node->getOpCodeValue() == TR::ificmpne))
+         {
+         if (node->getFirstChild()->getOpCodeValue() == TR::iload)
+            {
+            TR::SymbolReference *symref = node->getFirstChild()->getSymbolReference();
+            if (symref)
+               {
+               TR::Symbol *symbol = symref->getSymbol();
+               if (symbol && symbol->isCountForRecompile())
+                  {
+                  comp->getSymRefTab()->findOrCreateGCRPatchPointSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(cursor);
+                  }
+               }
+            }
+         }
+      }
    cursor += ARM64_INSTRUCTION_LENGTH;
    setBinaryLength(ARM64_INSTRUCTION_LENGTH);
    setBinaryEncoding(instructionStart);

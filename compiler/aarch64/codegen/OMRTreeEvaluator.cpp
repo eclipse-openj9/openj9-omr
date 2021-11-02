@@ -2842,6 +2842,33 @@ OMR::ARM64::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg
 TR::Register *
 OMR::ARM64::TreeEvaluator::bstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::Compilation *comp = cg->comp();
+   if (comp->getOption(TR_EnableGCRPatching))
+      {
+      TR::SymbolReference *symref = node->getSymbolReference();
+      if (symref)
+         {
+         TR::Symbol *symbol = symref->getSymbol();
+         if (symbol->isGCRPatchPoint())
+            {
+            TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, cg);
+            TR::SymbolReference *patchGCRHelperRef = cg->symRefTab()->findOrCreateRuntimeHelper(TR_ARM64PatchGCRHelper);
+            TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
+            TR::Register *tempReg = cg->allocateRegister();
+            deps->addPostCondition(tempMR->getBaseRegister(), TR::RealRegister::x0);
+            deps->addPostCondition(tempReg, TR::RealRegister::x1);
+            TR::Instruction *blInstruction = generateImmSymInstruction(cg, TR::InstOpCode::bl, node,
+                                                                        reinterpret_cast<uintptr_t>(patchGCRHelperRef->getMethodAddress()),
+                                                                        deps, patchGCRHelperRef, NULL);
+
+            cg->stopUsingRegister(tempReg);
+            cg->recursivelyDecReferenceCount(node->getFirstChild());
+            tempMR->decNodeReferenceCounts(cg);
+            cg->machine()->setLinkRegisterKilled(true);
+            return NULL;
+            }
+         }
+      }
    return commonStoreEvaluator(node, TR::InstOpCode::strbimm, cg);
    }
 

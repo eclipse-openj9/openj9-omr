@@ -63,6 +63,12 @@ static void loadRelocatableConstant(TR::Node *node,
       return;
       }
 
+   if (symbol->isGCRPatchPoint())
+      {
+      generateTrg1ImmSymInstruction(cg, TR::InstOpCode::adr, node, reg, addr, symbol);
+      return;
+      }
+
    if (ref->isUnresolved() || comp->compileRelocatableCode())
       {
       TR::Node *GCRnode = node;

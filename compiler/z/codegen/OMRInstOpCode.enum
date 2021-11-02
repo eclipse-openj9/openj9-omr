@@ -1175,6 +1175,7 @@
 
    /* zNext Instructions */
    VCLZDP,              // VECTOR COUNT LEADING ZERO DIGITS
+   VPKZR,               // VECTOR PACK ZONED REGISTER
    VUPKZL,              // VECTOR UNPACK ZONED LOW
    VUPKZH,              // VECTOR UNPACK ZONED HIGH
 

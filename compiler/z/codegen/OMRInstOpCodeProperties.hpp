@@ -15981,6 +15981,19 @@
    },
 
    {
+   /* .mnemonic    = */ OMR::InstOpCode::VPKZR,
+   /* .name        = */ "VPKZR",
+   /* .description = */ "VECTOR PACK ZONED REGISTER",
+   /* .opcode[0]   = */ 0xE6,
+   /* .opcode[1]   = */ 0x70,
+   /* .format      = */ VRIf_FORMAT,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_ZNEXT,
+   /* .properties  = */ S390OpProp_SetsCC |
+                        S390OpProp_SetsOperand1 |
+                        S390OpProp_UsesM5
+   },
+
+   {
    /* .mnemonic    = */ OMR::InstOpCode::VUPKZL,
    /* .name        = */ "VUPKZL",
    /* .description = */ "VECTOR UNPACK ZONED LOW",

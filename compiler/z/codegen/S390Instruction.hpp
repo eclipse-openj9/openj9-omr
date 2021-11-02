@@ -5583,6 +5583,14 @@ class S390VRRiInstruction: public S390VRRInstruction
    uint8_t * generateBinaryEncoding();
    };
 
+/**
+ * VRR-k
+ *    _____________________________________________________________
+ *   | Op Code | V1 | V2 | ///////// | M3 | /////// | RXB | Op Code |
+ *   |_________|____|____|___________|____|_________|_____|_________|
+ *   0        8    12   16           24    28       36   40    47
+ *
+ */
 class S390VRRkInstruction: public S390VRRInstruction
    {
    public:
@@ -5590,11 +5598,10 @@ class S390VRRkInstruction: public S390VRRInstruction
                           TR::CodeGenerator       * cg         = NULL,
                           TR::InstOpCode::Mnemonic   op        = TR::InstOpCode::bad,
                           TR::Node                * n          = NULL,
-                          TR::Register            * v1Reg      = NULL,
-                          TR::Register            * v2Reg      = NULL,
-                          uint8_t                   mask3      = 0,
-                          uint8_t                   mask4      = 0)
-   : S390VRRInstruction(cg, op, n, v1Reg, v2Reg, mask3, mask4, 0, 0)
+                          TR::Register            * targetReg  = NULL, /* VRF */
+                          TR::Register            * sourceReg  = NULL, /* VRF */
+                          uint8_t                   mask3      = 0)    /* 4 bits */
+   : S390VRRInstruction(cg, op, n, targetReg, sourceReg, mask3, 0, 0, 0)
       {
       }
 

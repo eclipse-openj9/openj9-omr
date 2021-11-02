@@ -1696,7 +1696,8 @@ generateVRIfInstruction(
            op == TR::InstOpCode::VMP ||
            op == TR::InstOpCode::VMSP ||
            op == TR::InstOpCode::VSDP ||
-           op == TR::InstOpCode::VRP)
+           op == TR::InstOpCode::VRP ||
+           op == TR::InstOpCode::VPKZR)
       {
       generateS390DAAExceptionRestoreSnippet(cg, n, instr, op, false);
       }
@@ -1886,11 +1887,18 @@ TR::Instruction * generateVRRkInstruction(
                       TR::InstOpCode::Mnemonic  op         ,
                       TR::Node                * n          ,
                       TR::Register            * targetReg  ,    /* VRF */
-                      TR::Register            * sourceReg2 ,    /* VRF */
-                      uint8_t                   mask3      ,    /* 4 bits*/
-                      uint8_t                   mask4)
+                      TR::Register            * sourceReg  ,    /* VRF */
+                      uint8_t                   mask3)          /* 4 bits*/
    {
-   TR::Instruction* instr = new (INSN_HEAP) TR::S390VRRkInstruction(cg, op, n, targetReg, sourceReg2, mask3, mask4);
+   TR::Instruction* instr = new (INSN_HEAP) TR::S390VRRkInstruction(cg, op, n, targetReg, sourceReg, mask3);
+
+#ifdef J9_PROJECT_SPECIFIC
+   if (op == TR::InstOpCode::VUPKZH || op == TR::InstOpCode::VUPKZL)
+      {
+      generateS390DAAExceptionRestoreSnippet(cg, n, instr, op, false);
+      }
+#endif
+
    return instr;
    }
 

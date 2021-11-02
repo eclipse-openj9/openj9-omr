@@ -2342,7 +2342,7 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
    // GRA block splitter cannot handle. So, for now, the optimization is
    // disabled.
    //
-   // https://github.com/eclipse/openj9/issues/9712 was opened to track the
+   // https://github.com/eclipse-openj9/openj9/issues/9712 was opened to track the
    // work to re-enable the optimization.
    //
    // Unfortunately, the design of the option processing framework requires

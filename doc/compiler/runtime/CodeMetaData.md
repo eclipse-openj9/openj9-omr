@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2017, 2017 IBM Corp. and others
+Copyright (c) 2017, 2021 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -52,9 +52,9 @@ code metadata instances. The manager class constructor allocates an AVL tree
 in persistent memory to facilitate storage and lookup of code metadata instances 
 created by the compiler. Each tree node in the AVL tree is a hash table representing 
 a piece of code cache segment. A node is created and added to the AVL tree when a 
-new code cache segment is allocated. For [Eclipse OpenJ9](https://github.com/eclipse/openj9), 
+new code cache segment is allocated. For [Eclipse OpenJ9](https://github.com/eclipse-openj9/openj9),
 code cache segment size is configured to be 2MB. Entries in each hash table correspond 
-to equal chunks of the associated code cache. For [Eclipse OpenJ9](https://github.com/eclipse/openj9), 
+to equal chunks of the associated code cache. For [Eclipse OpenJ9](https://github.com/eclipse-openj9/openj9),
 each hash table has 4096 entries and each entry is responsible for 512 bytes of the 2MB 
 code cache. A hash table entry points to a metadata pointer or a list of metadata 
 pointers whose compiled code occupies a part of the chunk or the entire chunk of 
@@ -66,7 +66,7 @@ which means threads with VM access have to be stopped before the operation
 can be carried out. However, to add an entry to a hash table or to look up a metadata 
 pointer given a PC address, only VM access is required, which means the operation can be 
 carried out concurrently with other threads holding VM access. Removing a metadata 
-pointer from a hash table in [Eclipse OpenJ9](https://github.com/eclipse/openj9) is 
+pointer from a hash table in [Eclipse OpenJ9](https://github.com/eclipse-openj9/openj9) is
 done at the end of garbage collection when a method is unloaded or recompiled and 
 reclaimed, and exclusive VM access is already obtained.
 
@@ -83,4 +83,3 @@ prepended with the new one and the existing metadata pointer (with its
 low bit set) will terminate the list. If the entry is already a list of metadata 
 pointers, either add the new metadata to the list if there is enough space 
 or allocate space to copy the existing list and then add the new metadata pointer.
-

@@ -247,7 +247,6 @@ TR::SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stackInd
 
    // Now map the locals
    //
-   setLocalsAreaBeginOffset(stackIndex);
    ListIterator<TR::AutomaticSymbol> automaticIterator(&method->getAutomaticList());
    TR::AutomaticSymbol * localCursor = automaticIterator.getFirst();
    automaticIterator.reset();
@@ -326,7 +325,6 @@ TR::SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stackInd
    method->setLocalMappingCursor(stackIndex);
 
    stackIndex -= (stackIndex & 0x4) ? 4 : 0;
-   setLocalsAreaEndOffset(stackIndex);
    }
 
 void TR::SystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol * p, uint32_t & stackIndex)

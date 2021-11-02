@@ -1084,7 +1084,7 @@ omrsysinfo_get_aix_ppc_description(struct OMRPortLibrary *portLibrary, OMRProces
 
 #if (defined(S390) || defined(J9ZOS390))
 
-#define LAST_DOUBLE_WORD	2
+#define LAST_DOUBLE_WORD	3
 
 /**
  * @internal
@@ -1115,6 +1115,8 @@ omrsysinfo_test_stfle(struct OMRPortLibrary *portLibrary, uint64_t stfleBit)
 		rc = (0 != (mem->dw2 & (((uint64_t)1) << (127 - stfleBit))));
 	} else if (stfleBit < 192 && *stfleRead >= 2) {
 		rc = (0 != (mem->dw3 & (((uint64_t)1) << (191 - stfleBit))));
+	} else if (stfleBit < 256 && *stfleRead >= 3) {
+		rc = (0 != (mem->dw4 & (((uint64_t)1) << (255 - stfleBit))));
 	}
 
 	return rc;
@@ -1586,6 +1588,21 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 		}
 	}
 
+   /* zNext facility and processor detection */
+
+	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY_2)) {
+#if defined(J9ZOS390)
+		if (omrsysinfo_get_s390_zos_supports_vector_extension_facility())
+#elif defined(LINUX) && !defined(J9ZTPF) /* defined(J9ZOS390) */
+		if (OMR_ARE_ALL_BITS_SET(auxvFeatures, OMR_HWCAP_S390_VXRS))
+#endif /* defined(LINUX) && !defined(J9ZTPF) */
+		{
+			omrsysinfo_set_feature(desc, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY_2);
+
+			desc->processor = OMR_PROCESSOR_S390_ZNEXT;
+		}
+	}
+
 	/* Set Side Effect Facility without setting GP12. This is because
 	 * this GP12-only STFLE bit can also be enabled on zEC12 (GP10)
 	 */
@@ -1670,6 +1687,8 @@ omrsysinfo_get_s390_processor_feature_name(uint32_t feature)
 		return "vec_e2";
 	case OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY:
 		return "vec_pde";
+        case OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY_2:
+		return "vec_pde2";
 	default:
 		return "null";
 	}

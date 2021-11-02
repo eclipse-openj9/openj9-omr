@@ -75,6 +75,11 @@ OMR::Z::CPU::detect(OMRPortLibrary * const omrPortLib)
       omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY, FALSE);
       }
 
+   if (processorDescription.processor < OMR_PROCESSOR_S390_ZNEXT)
+      {
+      omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY_2, FALSE);
+      }
+
    return TR::CPU(processorDescription);
    }
 
@@ -189,6 +194,9 @@ OMR::Z::CPU::supportsFeatureOldAPI(uint32_t feature)
          break;
       case OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1:
          supported = self()->getSupportsVectorFacilityEnhancement1();
+         break;
+      case OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY_2:
+         supported = self()->getSupportsVectorPackedDecimalEnhancementFacility2();
          break;
       default:
          TR_ASSERT_FATAL(false, "Unknown processor feature: %d!\n", feature);
@@ -552,5 +560,25 @@ OMR::Z::CPU::isTargetWithinBranchRelativeRILRange(intptr_t targetAddress, intptr
    {
    return (targetAddress == sourceAddress + ((intptr_t)((int32_t)((targetAddress - sourceAddress) / 2))) * 2) &&
             (targetAddress % 2 == 0);
+   }
+
+bool
+OMR::Z::CPU::getSupportsVectorPackedDecimalEnhancementFacility2()
+   {
+   return _flags.testAny(S390SupportsVectorPDEnhancementFacility2);
+   }
+
+bool
+OMR::Z::CPU::setSupportsVectorPackedDecimalEnhancementFacility2(bool value)
+   {
+   if (value)
+      {
+      _flags.set(S390SupportsVectorPDEnhancementFacility2);
+      }
+   else
+      {
+      _flags.reset(S390SupportsVectorPDEnhancementFacility2);
+      }
+   return value;
    }
 

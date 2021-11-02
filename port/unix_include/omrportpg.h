@@ -60,6 +60,7 @@ typedef struct OMRSTFLEFacilities {
 	uint64_t dw1;
 	uint64_t dw2;
 	uint64_t dw3;
+	uint64_t dw4;
 } OMRSTFLEFacilities;
 
 typedef struct OMRSTFLECache {

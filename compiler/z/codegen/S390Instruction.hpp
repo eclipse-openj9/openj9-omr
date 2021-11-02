@@ -5583,6 +5583,26 @@ class S390VRRiInstruction: public S390VRRInstruction
    uint8_t * generateBinaryEncoding();
    };
 
+class S390VRRkInstruction: public S390VRRInstruction
+   {
+   public:
+   S390VRRkInstruction(
+                          TR::CodeGenerator       * cg         = NULL,
+                          TR::InstOpCode::Mnemonic   op        = TR::InstOpCode::bad,
+                          TR::Node                * n          = NULL,
+                          TR::Register            * v1Reg      = NULL,
+                          TR::Register            * v2Reg      = NULL,
+                          uint8_t                   mask3      = 0,
+                          uint8_t                   mask4      = 0)
+   : S390VRRInstruction(cg, op, n, v1Reg, v2Reg, mask3, mask4, 0, 0)
+      {
+      }
+
+   char *description() { return "S390VRRkInstruction"; }
+   Kind getKind() { return IsVRRk; }
+   uint8_t * generateBinaryEncoding();
+   };
+
 /**
  * S390VStorageInstruction Class Definition
  *

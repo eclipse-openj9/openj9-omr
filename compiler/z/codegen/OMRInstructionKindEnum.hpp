@@ -78,6 +78,7 @@ IsReg,             ///< Target is register
    IsVRRg,
    IsVRRh,
    IsVRRi,
+   IsVRRk,
    IsVRSa,         ///< Is VRS (Vector Register-and-Storage) Operation and extended opCode field
    IsVRSb,
    IsVRSc,

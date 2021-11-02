@@ -1881,6 +1881,19 @@ TR::Instruction * generateVRRiInstruction(
    return instr;
    }
 
+TR::Instruction * generateVRRkInstruction(
+                      TR::CodeGenerator       * cg         ,
+                      TR::InstOpCode::Mnemonic  op         ,
+                      TR::Node                * n          ,
+                      TR::Register            * targetReg  ,    /* VRF */
+                      TR::Register            * sourceReg2 ,    /* VRF */
+                      uint8_t                   mask3      ,    /* 4 bits*/
+                      uint8_t                   mask4)
+   {
+   TR::Instruction* instr = new (INSN_HEAP) TR::S390VRRkInstruction(cg, op, n, targetReg, sourceReg2, mask3, mask4);
+   return instr;
+   }
+
 /****** VRS ******/
 /* Note subtle differences between register types and optionality of masks between these 3*/
 TR::Instruction *

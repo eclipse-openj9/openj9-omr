@@ -4062,6 +4062,42 @@ TR::S390VRRhInstruction::generateBinaryEncoding()
 
 /** \details
  *
+ * VRR-k generate binary encoding
+ * Performs error checking on the operands and then deleagte the encoding work to its parent class
+ */
+uint8_t *
+TR::S390VRRkInstruction::generateBinaryEncoding()
+   {
+   // Error Checking
+   TR::Register* v1Reg = getRegisterOperand(1);
+   TR::Register* v2Reg = getRegisterOperand(2);
+
+   uint8_t * instructionStart = cg()->getBinaryBufferCursor();
+   uint8_t * cursor = instructionStart;
+   memset((void*)cursor, 0, getEstimatedBinaryLength());
+
+   // Copy binary
+   getOpCode().copyBinaryToBuffer(instructionStart);
+
+   setMaskField(reinterpret_cast<uint32_t *>(cursor), getM3(), 1);
+   setMaskField(reinterpret_cast<uint32_t *>(cursor), getM4(), 2);
+
+   // Operands
+   toRealRegister(v1Reg)->setRegister1Field(reinterpret_cast<uint32_t *>(cursor));
+   toRealRegister(v2Reg)->setRegister2Field(reinterpret_cast<uint32_t *>(cursor));
+
+   // Cursor move
+   // update binary length
+   // update binary length estimate error
+   cursor += getOpCode().getInstructionLength();
+   setBinaryLength(cursor - instructionStart);
+   setBinaryEncoding(instructionStart);
+   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
+   return cursor;
+   }
+
+/** \details
+ *
  * VRR-i generate binary encoding
  * Performs error checking on the operands and then deleagte the encoding work to its parent class
  */

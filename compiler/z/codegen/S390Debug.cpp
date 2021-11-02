@@ -335,6 +335,7 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Instruction * instr)
       case TR::Instruction::IsVRRg:
       case TR::Instruction::IsVRRh:
       case TR::Instruction::IsVRRi:
+      case TR::Instruction::IsVRRk:
             print(pOutFile, (TR::S390VRRInstruction *) instr);
          break;
       case TR::Instruction::IsVRSa:

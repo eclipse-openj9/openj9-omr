@@ -1173,4 +1173,9 @@
    VSRD,                // vector shift right double by bit
    VSTRS,               // vector string search
 
-   S390LastOp = VSTRS,
+   /* zNext Instructions */
+   VCLZDP,              // VECTOR COUNT LEADING ZERO DIGITS
+   VUPKZL,              // VECTOR UNPACK ZONED LOW
+   VUPKZH,              // VECTOR UNPACK ZONED HIGH
+
+   S390LastOp = VUPKZH,

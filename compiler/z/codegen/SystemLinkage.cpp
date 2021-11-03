@@ -236,10 +236,7 @@ TR::SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stackInd
 //        end offsets are really begin offsets and vice versa.
 // ====== COMPLEXITY ALERT
 
-   setStackSizeCheckNeeded(true);
-
-
-   // process incomming parameters
+   // process incoming parameters
    if (!isZLinuxLinkageType())
        {
        initParamOffset(method,getOutgoingParmAreaBeginOffset()+ stackIndex);

@@ -2105,8 +2105,8 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
 #ifdef LINUX // On Linux compilation threads can be starved
          self()->setOption(TR_EnableAppThreadYield);
 #endif
-#if defined(TR_TARGET_X86)
-         // Currently GCR patching only works correctly on x86
+#if defined(TR_TARGET_X86) || defined(TR_TARGET_ARM64)
+         // Currently GCR patching only works correctly on x86 and aarch64
          self()->setOption(TR_EnableGCRPatching);
 #else
 

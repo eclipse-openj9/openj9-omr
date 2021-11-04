@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2019 IBM Corp. and others
+# Copyright (c) 2017, 2021 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -68,7 +68,10 @@ if(OMR_ENV_DATA64)
 		# /NODEFAULTLIB:MSVCRTD
 	)
 elseif(OMR_ENV_DATA32)
-	list(APPEND OMR_PLATFORM_LINKER_OPTIONS
+	list(APPEND OMR_PLATFORM_EXE_LINKER_OPTIONS
+		/SAFESEH
+	)
+	list(APPEND OMR_PLATFORM_SHARED_LINKER_OPTIONS
 		/SAFESEH
 	)
 	list(APPEND OMR_PLATFORM_SHARED_LINKER_OPTIONS

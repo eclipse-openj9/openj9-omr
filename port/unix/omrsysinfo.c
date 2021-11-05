@@ -2731,9 +2731,12 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 		}
 #elif defined(LINUX) && !defined(OMRZTPF)
 		cpu_set_t cpuSet;
-		int32_t size = sizeof(cpuSet); /* Size in bytes */
+		int32_t error = 0;
+		size_t size = sizeof(cpuSet); /* Size in bytes */
 		pid_t mainProcess = getpid();
-		int32_t error = sched_getaffinity(mainProcess, size, &cpuSet);
+		memset(&cpuSet, 0, size);
+
+		error = sched_getaffinity(mainProcess, size, &cpuSet);
 
 		if (0 == error) {
 			toReturn = CPU_COUNT(&cpuSet);
@@ -2744,7 +2747,7 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 				int32_t numCPUs = sysconf(_SC_NPROCESSORS_CONF);
 				cpu_set_t *allocatedCpuSet = CPU_ALLOC(numCPUs);
 				if (NULL != allocatedCpuSet) {
-					size_t size = CPU_ALLOC_SIZE(numCPUs);
+					size = CPU_ALLOC_SIZE(numCPUs);
 					CPU_ZERO_S(size, allocatedCpuSet);
 					error = sched_getaffinity(mainProcess, size, allocatedCpuSet);
 					if (0 == error) {

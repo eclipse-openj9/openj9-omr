@@ -3546,7 +3546,7 @@ omrsysinfo_startup(struct OMRPortLibrary *portLibrary)
 	 */
 	if (0 == attachedPortLibraries) {
 		if (omrthread_monitor_init_with_name(&cgroupEntryListMonitor, 0, "cgroup entry list monitor")) {
-			return -1;
+			return OMRPORT_ERROR_STARTUP_SYSINFO_MONITOR_INIT;
 		}
 	}
 	attachedPortLibraries += 1;

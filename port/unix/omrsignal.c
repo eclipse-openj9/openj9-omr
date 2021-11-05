@@ -768,7 +768,9 @@ omrsig_startup(struct OMRPortLibrary *portLibrary)
 			oldActions[index].restore = 0;
 		}
 
-		result = initializeSignalTools(portLibrary);
+		if (0 != initializeSignalTools(portLibrary)) {
+			result = OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS;
+		}
 
 	}
 	omrthread_monitor_exit(globalMonitor);

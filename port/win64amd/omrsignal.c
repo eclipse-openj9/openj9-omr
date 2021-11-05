@@ -572,7 +572,9 @@ omrsig_startup(struct OMRPortLibrary *portLibrary)
 		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
 			handlerInfo[index].restore = 0;
 		}
-		result = initializeSignalTools(portLibrary);
+		if (0 != initializeSignalTools(portLibrary)) {
+			result = OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS;
+		}
 	}
 
 	memset(&unwindHistoryTable, 0, sizeof(UNWIND_HISTORY_TABLE));

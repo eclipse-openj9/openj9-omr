@@ -100,7 +100,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual bool isBranchOp() {return _opcode.isBranchOp() != 0;}
    virtual bool isLabel();
    virtual bool isRegRegMove();
-   virtual bool isPatchBarrier();
+   virtual bool isPatchBarrier(TR::CodeGenerator *cg);
 
    TR::RegisterDependencyConditions *getDependencyConditions() {return _conditions;}
    TR::RegisterDependencyConditions *setDependencyConditions(TR::RegisterDependencyConditions *cond) { return (_conditions = cond); }
@@ -117,7 +117,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual bool     needsRepPrefix();
    virtual bool     needsLockPrefix();
    virtual EnlargementResult enlarge(int32_t requestedEnlargementSize, int32_t maxEnlargementSize, bool allowPartialEnlargement) { return EnlargementResult(0, 0); }
-   
+
    virtual TR::X86RegInstruction *getX86RegInstruction() { return NULL; }
 
    virtual TR::X86LabelInstruction *getX86LabelInstruction() { return NULL; }

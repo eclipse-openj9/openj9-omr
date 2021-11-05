@@ -2820,7 +2820,7 @@ uint8_t *OMR::X86::CodeGenerator::generatePadding(uint8_t              *cursor,
                      TR::DebugCounter::incStaticDebugCounter(self()->comp(), TR::DebugCounter::debugCounterName(self()->comp(), "vgnopNoPatchReason/%d/staticPIC", blockFrequency));
                      break;
                      }
-                  if (ninst->isPatchBarrier())
+                  if (ninst->isPatchBarrier(self()))
                      {
                      if (ninst->getOpCodeValue() != TR::InstOpCode::label)
                         TR::DebugCounter::incStaticDebugCounter(self()->comp(), TR::DebugCounter::debugCounterName(self()->comp(), "vgnopNoPatchReason/%d/patchBarrier", blockFrequency));

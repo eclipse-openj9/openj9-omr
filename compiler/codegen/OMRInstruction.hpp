@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -178,8 +178,10 @@ class OMR_EXTENSIBLE Instruction
 
    /*
     * Answers whether the instruction can be included in a guard patch point
+    *
+    * @param[in] cg : CodeGenerator object
     */
-   virtual bool isPatchBarrier() { return false; }
+   virtual bool isPatchBarrier(TR::CodeGenerator *cg) { return false; }
 
    /*
     * A 24-bit value indicating an approximate ordering of instructions.  Note that for an

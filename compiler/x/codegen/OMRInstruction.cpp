@@ -109,7 +109,7 @@ bool OMR::X86::Instruction::isRegRegMove()
       }
    }
 
-bool OMR::X86::Instruction::isPatchBarrier()
+bool OMR::X86::Instruction::isPatchBarrier(TR::CodeGenerator *cg)
    {
    Kind kind = self()->getKind();
    return kind == TR::Instruction::IsPatchableCodeAlignment

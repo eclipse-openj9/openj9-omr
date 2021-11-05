@@ -320,7 +320,7 @@ class PPCLabelInstruction : public TR::Instruction
       }
 
    virtual Kind getKind() { return IsLabel; }
-   virtual bool isPatchBarrier() { return getOpCodeValue() == TR::InstOpCode::label && _symbol && _symbol->isTargeted() != TR_no; }
+   virtual bool isPatchBarrier(TR::CodeGenerator *cg) { return getOpCodeValue() == TR::InstOpCode::label && _symbol && _symbol->isTargeted(cg) != TR_no; }
 
    TR::LabelSymbol *getLabelSymbol() {return _symbol;}
    TR::LabelSymbol *setLabelSymbol(TR::LabelSymbol *sym)

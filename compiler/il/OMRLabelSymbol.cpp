@@ -89,9 +89,9 @@ OMR::LabelSymbol::LabelSymbol(TR::CodeGenerator *cg, TR::Block *labb) :
    }
 
 TR_YesNoMaybe
-OMR::LabelSymbol::isTargeted()
+OMR::LabelSymbol::isTargeted(TR::CodeGenerator *cg)
    {
-   if (TR::comp()->cg() && TR::comp()->cg()->getCodeGeneratorPhase() <= TR::CodeGenPhase::InstructionSelectionPhase)
+   if (cg->getCodeGeneratorPhase() <= TR::CodeGenPhase::InstructionSelectionPhase)
       return TR_maybe;
    return _directlyTargeted ? TR_yes : TR_no;
    }

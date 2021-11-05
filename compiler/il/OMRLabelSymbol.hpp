@@ -95,7 +95,7 @@ public:
    TR::Snippet * setSnippet(TR::Snippet *s) { return (_snippet = s); }
 
    void setDirectlyTargeted() { _directlyTargeted = true; }
-   TR_YesNoMaybe isTargeted();
+   TR_YesNoMaybe isTargeted(TR::CodeGenerator *cg);
 
 private:
 

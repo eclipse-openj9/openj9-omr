@@ -65,9 +65,6 @@ public:
    TR::LabelSymbol * self();
 
    template <typename AllocatorType>
-   static TR::LabelSymbol * create(AllocatorType);
-
-   template <typename AllocatorType>
    static TR::LabelSymbol * create(AllocatorType, TR::CodeGenerator*);
 
    template <typename AllocatorType>
@@ -75,9 +72,8 @@ public:
 
 protected:
 
-   LabelSymbol();
-   LabelSymbol(TR::CodeGenerator *codeGen);
-   LabelSymbol(TR::CodeGenerator *codeGen, TR::Block *labb);
+   LabelSymbol(TR::CodeGenerator *cg);
+   LabelSymbol(TR::CodeGenerator *cg, TR::Block *labb);
 
 public:
 

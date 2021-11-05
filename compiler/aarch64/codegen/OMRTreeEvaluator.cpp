@@ -3308,6 +3308,8 @@ OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator 
    TR::addDependency(deps, dstAddrReg, TR::RealRegister::x2, TR_GPR, cg);
    TR::addDependency(deps, NULL, TR::RealRegister::x3, TR_GPR, cg);
    TR::addDependency(deps, NULL, TR::RealRegister::x4, TR_GPR, cg);
+   TR::Register *x3Reg = deps->searchPostConditionRegister(TR::RealRegister::x3);
+   TR::Register *x4Reg = deps->searchPostConditionRegister(TR::RealRegister::x4);
 
    generateCallToArrayCopyHelper(node, srcAddrReg, dstAddrReg, lengthReg, deps, cg);
 
@@ -3328,6 +3330,9 @@ OMR::ARM64::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator 
       cg->stopUsingRegister(dstAddrReg);
    if (stopUsingCopyReg5)
       cg->stopUsingRegister(lengthReg);
+
+   cg->stopUsingRegister(x3Reg);
+   cg->stopUsingRegister(x4Reg);
 
    cg->decReferenceCount(srcAddrNode);
    cg->decReferenceCount(dstAddrNode);

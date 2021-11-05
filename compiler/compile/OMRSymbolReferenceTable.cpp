@@ -1226,6 +1226,7 @@ OMR::SymbolReferenceTable::findOrCreateGCRPatchPointSymbolRef()
       sym->setStaticAddress(0);
       sym->setGCRPatchPoint(); // set the flag
       sym->setNotDataAddress();
+      sym->setStaticAddressWithinMethodBounds();
       element(gcrPatchPointSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), gcrPatchPointSymbol, sym);
       }
    return element(gcrPatchPointSymbol);
@@ -1241,6 +1242,7 @@ OMR::SymbolReferenceTable::findOrCreateStartPCSymbolRef()
       sym->setStaticAddress(0);
       sym->setStartPC();
       sym->setNotDataAddress();
+      sym->setStaticAddressWithinMethodBounds();
       element(startPCSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), startPCSymbol, sym);
       }
    return element(startPCSymbol);

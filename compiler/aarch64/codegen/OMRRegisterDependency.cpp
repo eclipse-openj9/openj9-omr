@@ -411,6 +411,14 @@ void OMR::ARM64::RegisterDependencyConditions::stopUsingDepRegs(TR::CodeGenerato
       _postConditions->stopUsingDepRegs(getAddCursorForPost(), NULL, returnRegister, cg);
    }
 
+void OMR::ARM64::RegisterDependencyConditions::stopUsingDepRegs(TR::CodeGenerator *cg, int numRetReg, TR::Register **retReg)
+   {
+   if (_preConditions != NULL)
+      _preConditions->stopUsingDepRegs(getAddCursorForPre(), numRetReg, retReg, cg);
+   if (_postConditions != NULL)
+      _postConditions->stopUsingDepRegs(getAddCursorForPost(), numRetReg, retReg, cg);
+   }
+
 void OMR::ARM64::RegisterDependencyGroup::assignRegisters(
                         TR::Instruction *currentInstruction,
                         TR_RegisterKinds kindToBeAssigned,

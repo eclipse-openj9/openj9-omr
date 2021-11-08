@@ -456,6 +456,7 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
                            integerChild->getInt() : integerChild->getLongInt();
          self()->addToOffset(integerChild, amount, cg);
          cg->decReferenceCount(integerChild);
+         cg->decReferenceCount(subTree);
          }
       else if (subTree->getOpCodeValue() == TR::ishl &&
                subTree->getFirstChild()->getOpCode().isLoadConst() &&

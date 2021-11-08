@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -470,7 +470,9 @@ omrsig_startup(struct OMRPortLibrary *portLibrary)
 		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
 			handlerInfo[index].restore = 0;
 		}
-		result = initializeSignalTools(portLibrary);
+		if (0 != initializeSignalTools(portLibrary)) {
+			result = OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS;
+		}
 	}
 
 	omrthread_monitor_exit(globalMonitor);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1998, 2020 IBM Corp. and others
+ * Copyright (c) 1998, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -103,6 +103,8 @@
 #define OMRPORT_ERROR_STARTUP_SHSEM (OMRPORT_ERROR_STARTUP_BASE -23)
 #define OMRPORT_ERROR_STARTUP_SHMEM (OMRPORT_ERROR_STARTUP_BASE -24)
 #define OMRPORT_ERROR_STARTUP_SHMEM_MOSERVICE (OMRPORT_ERROR_STARTUP_BASE -25)
+#define OMRPORT_ERROR_STARTUP_SYSINFO_MONITOR_INIT (OMRPORT_ERROR_STARTUP_BASE -26)
+#define OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS (OMRPORT_ERROR_STARTUP_BASE -27)
 
 /** @} */
 

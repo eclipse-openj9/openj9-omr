@@ -296,6 +296,14 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    void stopUsingDepRegs(TR::CodeGenerator *cg, TR::Register *returnRegister = NULL);
 
    void stopUsingDepRegs(TR::CodeGenerator *cg, TR::Register * ret1, TR::Register *ret2);
+
+   /**
+    * @brief Kills placeholder registers held by the RegisterDependencyConditions
+    * @param[in] cg : CodeGenerator
+    * @param[in] numRetReg : number of regisgters in retReg
+    * @param[in] retReg : an array of return registers
+    */
+   void stopUsingDepRegs(TR::CodeGenerator *cg, int numRetReg, TR::Register **retReg);
    };
 
 } // ARM64

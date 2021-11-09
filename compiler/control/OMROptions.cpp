@@ -45,6 +45,7 @@
 #include "il/DataTypes.hpp"
 #include "il/ILOps.hpp"
 #include "infra/SimpleRegex.hpp"
+#include "infra/String.hpp"
 #include "ras/Debug.hpp"
 #include "ras/IgnoreLocale.hpp"
 
@@ -3749,8 +3750,8 @@ OMR::Options::requiresLogFile()
    }
 
 
-void getTimeInSeconds(char *buf);
-void getTRPID(char *buf);
+void getTimeInSeconds(char *buf, size_t size);
+void getTRPID(char *buf, size_t size);
 
 
 void OMR::Options::openLogFile(int32_t idSuffix)
@@ -3775,9 +3776,10 @@ void OMR::Options::openLogFile(int32_t idSuffix)
       if (idSuffix >= 0) // Must add the suffix to the name
          {
          size_t len = strlen(_logFileName);
-         if (len >= FN_BUF_SIZE - 10) // int32_t is at most 10 decimal digits
-            return; // may overflow the buffer
-         sprintf(destBuf, "%s.%d", _logFileName, idSuffix);
+         bool truncated = TR::snprintfTrunc(
+            destBuf, FN_BUF_SIZE, "%s.%d", _logFileName, idSuffix);
+         if (truncated)
+            return;
          fn = destBuf;
          std::swap(destBuf, otherBuf);
          }
@@ -3791,11 +3793,12 @@ void OMR::Options::openLogFile(int32_t idSuffix)
             size_t len = strlen(fn);
             char pid_buf[20];
             char time_buf[20];
-            if (len >= FN_BUF_SIZE - sizeof(pid_buf) - sizeof(time_buf))
-               return; // may overflow the buffer
-            getTRPID(pid_buf);
-            getTimeInSeconds(time_buf);
-            sprintf(destBuf, "%s.%s.%s", fn, pid_buf, time_buf);
+            getTRPID(pid_buf, sizeof(pid_buf));
+            getTimeInSeconds(time_buf, sizeof(time_buf));
+            bool truncated = TR::snprintfTrunc(
+               destBuf, FN_BUF_SIZE, "%s.%s.%s", fn, pid_buf, time_buf);
+            if (truncated)
+               return;
             fn = destBuf;
             std::swap(destBuf, otherBuf);
             }
@@ -3953,30 +3956,32 @@ char * TR_MCTLogs::getLogFileName()
 
 
 #include <ctime>
-void getTimeInSeconds(char *buf)
+void getTimeInSeconds(char *buf, size_t size)
    {
    time_t timer = time(NULL);
-   sprintf(buf, "%i", (int32_t)(timer % 100000));
+   TR::snprintfNoTrunc(buf, size, "%i", (int)(timer % 100000));
    }
 
 
 #ifdef _MSC_VER
 #include <process.h>
-void getTRPID(char *buf)
+int getTRPID()
    {
-   auto pid = _getpid();
-   sprintf(buf, "%i", (int32_t)pid);
+   return _getpid();
    }
 #else
 #include <sys/types.h>
 #include <unistd.h>
-void getTRPID(char *buf)
+int getTRPID()
    {
-   pid_t pid = getpid();
-   sprintf(buf, "%i", (int32_t)pid);
+   return (int)getpid();
    }
 #endif
 
+void getTRPID(char *buf, size_t size)
+   {
+   TR::snprintfNoTrunc(buf, size, "%i", getTRPID());
+   }
 
 // -----------------------------------------------------------------------------
 // Optlevels and counts
@@ -4402,14 +4407,21 @@ OMR::Options::getDefaultCountString()
             break;
          }
 
-   char *p = (char*)TR::Options::jitPersistentAlloc(100);
+   size_t pSize = 100;
+   char *p = (char*)TR::Options::jitPersistentAlloc(pSize);
 
    if (p)
       {
       if (bcountFirst)
-         sprintf(p, str, _initialBCount, _initialMILCount, _initialCount);
+         {
+         TR::snprintfNoTrunc(
+            p, pSize, str, _initialBCount, _initialMILCount, _initialCount);
+         }
       else
-         sprintf(p, str, _initialCount, _initialBCount, _initialMILCount);
+         {
+         TR::snprintfNoTrunc(
+            p, pSize, str, _initialCount, _initialBCount, _initialMILCount);
+         }
       }
 
    return p;

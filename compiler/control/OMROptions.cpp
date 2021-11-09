@@ -3764,16 +3764,22 @@ void OMR::Options::openLogFile(int32_t idSuffix)
       if (_suffixLogsFormat)
          self()->setOption(TR_EnablePIDExtension);
 
-      char filename[1025];
+#define FN_BUF_SIZE 1025
+      char buf0[FN_BUF_SIZE];
+      char buf1[FN_BUF_SIZE];
+      char *destBuf = buf0;
+      char *otherBuf = buf1;
+
       char *fn = _logFileName;
 
       if (idSuffix >= 0) // Must add the suffix to the name
          {
          size_t len = strlen(_logFileName);
-         if (len >= sizeof(filename) - 10) // int32_t is at most 10 decimal digits
+         if (len >= FN_BUF_SIZE - 10) // int32_t is at most 10 decimal digits
             return; // may overflow the buffer
-         sprintf(filename, "%s.%d", _logFileName, idSuffix);
-         fn = filename;
+         sprintf(destBuf, "%s.%d", _logFileName, idSuffix);
+         fn = destBuf;
+         std::swap(destBuf, otherBuf);
          }
 
       char *fmodeString = "wb+";
@@ -3785,24 +3791,25 @@ void OMR::Options::openLogFile(int32_t idSuffix)
             size_t len = strlen(fn);
             char pid_buf[20];
             char time_buf[20];
-            if (len >= sizeof(filename) - sizeof(pid_buf) - sizeof(time_buf))
+            if (len >= FN_BUF_SIZE - sizeof(pid_buf) - sizeof(time_buf))
                return; // may overflow the buffer
             getTRPID(pid_buf);
             getTimeInSeconds(time_buf);
-            sprintf(filename, "%s.%s.%s", fn, pid_buf, time_buf);
-            fn = filename;
+            sprintf(destBuf, "%s.%s.%s", fn, pid_buf, time_buf);
+            fn = destBuf;
+            std::swap(destBuf, otherBuf);
             }
 
-          char tmp[1025];
-          fn = _fe->getFormattedName(tmp, sizeof(tmp), fn, _suffixLogsFormat, true);
+         fn = _fe->getFormattedName(destBuf, FN_BUF_SIZE, fn, _suffixLogsFormat, true);
          _logFile = trfopen(fn, fmodeString, false);
          }
       else
          {
-         char tmp[1025];
-         fn = _fe->getFormattedName(tmp, sizeof(tmp), fn, NULL, false);
+         fn = _fe->getFormattedName(destBuf, FN_BUF_SIZE, fn, NULL, false);
          _logFile = trfopen(fn, fmodeString, false);
          }
+
+#undef FN_BUF_SIZE
       }
 
    if (_logFile != NULL)

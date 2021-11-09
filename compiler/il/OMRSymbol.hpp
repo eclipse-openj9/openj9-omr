@@ -353,6 +353,9 @@ public:
    inline void setConstantPoolAddress();
    inline bool isConstantPoolAddress();
 
+   inline void setStaticAddressWithinMethodBounds();
+   inline bool isStaticAddressWithinMethodBounds();
+
    // flag methods specific to resolved
    //
    inline bool isJittedMethod();
@@ -516,6 +519,7 @@ public:
       CountForRecompile         = 0x02000000,
       RecompilationCounter      = 0x01000000,
       GCRPatchPoint             = 0x00400000,
+      StaticAddressWithinMethodBounds = 0x00800000, // Address is inside a method body and can be accessed with RIP addressing without relocations
 
       //Only Used by Symbols for which isResolvedMethod is true;
       IsJittedMethod            = 0x80000000,

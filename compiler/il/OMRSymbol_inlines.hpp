@@ -596,6 +596,19 @@ OMR::Symbol::setConstantPoolAddress()
    }
 
 bool
+OMR::Symbol::isStaticAddressWithinMethodBounds()
+   {
+   return self()->isStatic() && _flags.testAny(StaticAddressWithinMethodBounds);
+   }
+
+void
+OMR::Symbol::setStaticAddressWithinMethodBounds()
+   {
+   TR_ASSERT(self()->isStatic(), "Symbol must be static");
+   _flags.set(StaticAddressWithinMethodBounds);
+   }
+
+bool
 OMR::Symbol::isConstMethodHandle()
    {
    return self()->isStatic() && _flags2.testAny(ConstMethodHandle);

@@ -319,7 +319,7 @@ class X86LabelInstruction : public TR::Instruction
    void prohibitShortening() { _permitShortening = false; }
 
    virtual char *description() { return "X86LabelInstruction"; }
-   virtual bool isPatchBarrier() { return getOpCodeValue() == TR::InstOpCode::label && _symbol && _symbol->isTargeted() != TR_no; }
+   virtual bool isPatchBarrier(TR::CodeGenerator *cg) { return getOpCodeValue() == TR::InstOpCode::label && _symbol && _symbol->isTargeted(cg) != TR_no; }
 
    uint8_t    getReloType() {return _reloType; };
    void       setReloType(uint8_t rt) { _reloType = rt;};

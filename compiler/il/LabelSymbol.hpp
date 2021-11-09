@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -34,18 +34,15 @@ class OMR_EXTENSIBLE LabelSymbol : public OMR::LabelSymbolConnector
 
 protected:
 
-   LabelSymbol() :
-      OMR::LabelSymbolConnector() { }
+   LabelSymbol(TR::CodeGenerator *cg) :
+      OMR::LabelSymbolConnector(cg) { }
 
-   LabelSymbol(TR::CodeGenerator *codeGen) :
-      OMR::LabelSymbolConnector(codeGen) { }
-
-   LabelSymbol(TR::CodeGenerator *codeGen, TR::Block *labb):
-      OMR::LabelSymbolConnector(codeGen, labb) { }
+   LabelSymbol(TR::CodeGenerator *cg, TR::Block *labb):
+      OMR::LabelSymbolConnector(cg, labb) { }
 
 private:
 
-   // When adding another class to the heirarchy, add it as a friend here
+   // When adding another class to the hierarchy, add it as a friend here
    friend class OMR::LabelSymbol;
 
    };

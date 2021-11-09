@@ -2597,7 +2597,7 @@ TR::Instruction
          continue;
          }
 
-      if (nextI->isPatchBarrier() || self()->comp()->isPICSite(nextI))
+      if (nextI->isPatchBarrier(self()) || self()->comp()->isPICSite(nextI))
          return NULL;
 
       if (nextI->getEstimatedBinaryLength() > 0)
@@ -2650,7 +2650,7 @@ OMR::CodeGenerator::sizeOfInstructionToBePatchedHCRGuard(TR::Instruction *vgnop)
          continue;
          }
 
-      if (nextI->isPatchBarrier() || self()->comp()->isPICSite(nextI))
+      if (nextI->isPatchBarrier(self()) || self()->comp()->isPICSite(nextI))
          break;
 
       accumulatedSize += nextI->getBinaryLengthLowerBound();

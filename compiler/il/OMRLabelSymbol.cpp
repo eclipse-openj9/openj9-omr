@@ -47,24 +47,18 @@ OMR::LabelSymbol::self()
    }
 
 template <typename AllocatorType>
-TR::LabelSymbol * OMR::LabelSymbol::create(AllocatorType t)
+TR::LabelSymbol * OMR::LabelSymbol::create(AllocatorType t, TR::CodeGenerator *cg)
    {
-   return new (t) TR::LabelSymbol();
+   return new (t) TR::LabelSymbol(cg);
    }
 
 template <typename AllocatorType>
-TR::LabelSymbol * OMR::LabelSymbol::create(AllocatorType t, TR::CodeGenerator* c)
+TR::LabelSymbol * OMR::LabelSymbol::create(AllocatorType t, TR::CodeGenerator *cg, TR::Block *b)
    {
-   return new (t) TR::LabelSymbol(c);
+   return new (t) TR::LabelSymbol(cg, b);
    }
 
-template <typename AllocatorType>
-TR::LabelSymbol * OMR::LabelSymbol::create(AllocatorType t, TR::CodeGenerator* c, TR::Block* b)
-   {
-   return new (t) TR::LabelSymbol(c,b);
-   }
-
-OMR::LabelSymbol::LabelSymbol() :
+OMR::LabelSymbol::LabelSymbol(TR::CodeGenerator *cg) :
    TR::Symbol(),
    _instruction(NULL),
    _codeLocation(NULL),
@@ -74,43 +68,30 @@ OMR::LabelSymbol::LabelSymbol() :
    {
    self()->setIsLabel();
 
-   TR::Compilation *comp = TR::comp();
-   if (comp && comp->getDebug())
-      comp->getDebug()->newLabelSymbol(self());
+   TR_Debug *debug = cg->comp()->getDebug();
+   if (debug)
+      debug->newLabelSymbol(self());
    }
 
-OMR::LabelSymbol::LabelSymbol(TR::CodeGenerator *codeGen) :
+OMR::LabelSymbol::LabelSymbol(TR::CodeGenerator *cg, TR::Block *labb) :
    TR::Symbol(),
    _instruction(NULL),
    _codeLocation(NULL),
    _estimatedCodeLocation(0),
-   _snippet(NULL)
+   _snippet(NULL),
+   _directlyTargeted(false)
    {
    self()->setIsLabel();
 
-   TR::Compilation *comp = TR::comp();
-   if (comp && comp->getDebug())
-      comp->getDebug()->newLabelSymbol(self());
-   }
-
-OMR::LabelSymbol::LabelSymbol(TR::CodeGenerator *codeGen, TR::Block *labb) :
-   TR::Symbol(),
-   _instruction(NULL),
-   _codeLocation(NULL),
-   _estimatedCodeLocation(0),
-   _snippet(NULL)
-   {
-   self()->setIsLabel();
-
-   TR::Compilation *comp = TR::comp();
-   if (comp && comp->getDebug())
-      comp->getDebug()->newLabelSymbol(self());
+   TR_Debug *debug = cg->comp()->getDebug();
+   if (debug)
+      debug->newLabelSymbol(self());
    }
 
 TR_YesNoMaybe
-OMR::LabelSymbol::isTargeted()
+OMR::LabelSymbol::isTargeted(TR::CodeGenerator *cg)
    {
-   if (TR::comp()->cg() && TR::comp()->cg()->getCodeGeneratorPhase() <= TR::CodeGenPhase::InstructionSelectionPhase)
+   if (cg->getCodeGeneratorPhase() <= TR::CodeGenPhase::InstructionSelectionPhase)
       return TR_maybe;
    return _directlyTargeted ? TR_yes : TR_no;
    }
@@ -154,23 +135,16 @@ template <typename AllocatorType>
 TR::LabelSymbol *
 OMR::LabelSymbol::createRelativeLabel(AllocatorType m, TR::CodeGenerator * cg, intptr_t offset)
    {
-   TR::LabelSymbol * rel = new (m) TR::LabelSymbol();
+   TR::LabelSymbol * rel = new (m) TR::LabelSymbol(cg);
    rel->makeRelativeLabelSymbol(offset);
    return rel;
    }
 
 // Explicit instantiation
-template TR::LabelSymbol * OMR::LabelSymbol::create(TR_HeapMemory t);
-template TR::LabelSymbol * OMR::LabelSymbol::create(TR_HeapMemory t, TR::CodeGenerator* c);
-template TR::LabelSymbol * OMR::LabelSymbol::create(TR_HeapMemory t, TR::CodeGenerator* c, TR::Block* b);
-template TR::LabelSymbol * OMR::LabelSymbol::createRelativeLabel(TR_HeapMemory m, TR::CodeGenerator * cg, intptr_t offset);
+template TR::LabelSymbol * OMR::LabelSymbol::create(TR_HeapMemory t, TR::CodeGenerator* cg);
+template TR::LabelSymbol * OMR::LabelSymbol::create(TR_HeapMemory t, TR::CodeGenerator* cg, TR::Block* b);
+template TR::LabelSymbol * OMR::LabelSymbol::createRelativeLabel(TR_HeapMemory m, TR::CodeGenerator* cg, intptr_t offset);
 
-template TR::LabelSymbol * OMR::LabelSymbol::create(TR_StackMemory t);
-template TR::LabelSymbol * OMR::LabelSymbol::create(TR_StackMemory t, TR::CodeGenerator* c);
-template TR::LabelSymbol * OMR::LabelSymbol::create(TR_StackMemory t, TR::CodeGenerator* c, TR::Block* b);
-template TR::LabelSymbol * OMR::LabelSymbol::createRelativeLabel(TR_StackMemory m, TR::CodeGenerator * cg, intptr_t offset);
-
-template TR::LabelSymbol * OMR::LabelSymbol::create(PERSISTENT_NEW_DECLARE t);
-template TR::LabelSymbol * OMR::LabelSymbol::create(PERSISTENT_NEW_DECLARE t, TR::CodeGenerator* c);
-template TR::LabelSymbol * OMR::LabelSymbol::create(PERSISTENT_NEW_DECLARE t, TR::CodeGenerator* c, TR::Block* b);
-template TR::LabelSymbol * OMR::LabelSymbol::createRelativeLabel(PERSISTENT_NEW_DECLARE m, TR::CodeGenerator * cg, intptr_t offset);
+template TR::LabelSymbol * OMR::LabelSymbol::create(TR_StackMemory t, TR::CodeGenerator* cg);
+template TR::LabelSymbol * OMR::LabelSymbol::create(TR_StackMemory t, TR::CodeGenerator* cg, TR::Block* b);
+template TR::LabelSymbol * OMR::LabelSymbol::createRelativeLabel(TR_StackMemory m, TR::CodeGenerator* cg, intptr_t offset);

@@ -624,11 +624,11 @@ class S390PseudoInstruction : public TR::Instruction
 
    virtual uint8_t *generateBinaryEncoding();
 
-   uint64_t setCallDescValue(uint64_t cdv, TR_Memory * m)
+   uint64_t setCallDescValue(uint64_t cdv, TR_Memory * m, TR::CodeGenerator *cg)
       {
       if (!_callDescLabel)
          {
-         _callDescLabel = TR::LabelSymbol::create(m->trHeapMemory());
+         _callDescLabel = TR::LabelSymbol::create(m->trHeapMemory(), cg);
          }
       return _callDescValue = cdv;
       }

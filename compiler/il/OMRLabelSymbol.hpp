@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -50,8 +50,6 @@ namespace TR { class StaticSymbol; }
 namespace TR { class SymbolReference; }
 template <class T> class List;
 
-typedef uintptr_t TR_UniqueCompilationId;
-const TR_UniqueCompilationId nullCompilationId(~(TR_UniqueCompilationId) 0);
 
 namespace OMR
 {
@@ -67,9 +65,6 @@ public:
    TR::LabelSymbol * self();
 
    template <typename AllocatorType>
-   static TR::LabelSymbol * create(AllocatorType);
-
-   template <typename AllocatorType>
    static TR::LabelSymbol * create(AllocatorType, TR::CodeGenerator*);
 
    template <typename AllocatorType>
@@ -77,9 +72,8 @@ public:
 
 protected:
 
-   LabelSymbol();
-   LabelSymbol(TR::CodeGenerator *codeGen);
-   LabelSymbol(TR::CodeGenerator *codeGen, TR::Block *labb);
+   LabelSymbol(TR::CodeGenerator *cg);
+   LabelSymbol(TR::CodeGenerator *cg, TR::Block *labb);
 
 public:
 
@@ -101,7 +95,7 @@ public:
    TR::Snippet * setSnippet(TR::Snippet *s) { return (_snippet = s); }
 
    void setDirectlyTargeted() { _directlyTargeted = true; }
-   TR_YesNoMaybe isTargeted();
+   TR_YesNoMaybe isTargeted(TR::CodeGenerator *cg);
 
 private:
 

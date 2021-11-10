@@ -39,16 +39,16 @@ MM_WorkPacketsSATB *
 MM_WorkPacketsSATB::newInstance(MM_EnvironmentBase *env)
 {
 	MM_WorkPacketsSATB *workPackets;
-	
+
 	workPackets = (MM_WorkPacketsSATB *)env->getForge()->allocate(sizeof(MM_WorkPacketsSATB), MM_AllocationCategory::WORK_PACKETS, J9_GET_CALLSITE());
 	if (workPackets) {
 		new(workPackets) MM_WorkPacketsSATB(env);
 		if (!workPackets->initialize(env)) {
 			workPackets->kill(env);
-			workPackets = NULL;	
+			workPackets = NULL;
 		}
 	}
-	
+
 	return workPackets;
 }
 
@@ -230,6 +230,19 @@ MM_WorkPacketsSATB::getInputPacketFromOverflow(MM_EnvironmentBase *env)
 	}
 
 	return NULL;
+}
+
+void
+MM_WorkPacketsSATB::resetAllPackets(MM_EnvironmentBase *env)
+{
+	MM_Packet *packet;
+
+	while (NULL != (packet = getPacket(env, &_inUseBarrierPacketList))) {
+		packet->resetData(env);
+		putPacket(env, packet);
+	}
+
+	MM_WorkPackets::resetAllPackets(env);
 }
 
 #endif /* OMR_GC_REALTIME */

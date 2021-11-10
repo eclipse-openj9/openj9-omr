@@ -1371,6 +1371,9 @@ public:
 		return (fvtest_disableInlineAllocation || instrumentableAllocateHookEnabled || disableInlineCacheForAllocationThreshold);
 	}
 
+	bool isSATBBarrierActive();
+	bool usingSATBBarrier();
+
 	MM_GCExtensionsBase()
 		: MM_BaseVirtual()
 #if defined(OMR_GC_MODRON_SCAVENGER)

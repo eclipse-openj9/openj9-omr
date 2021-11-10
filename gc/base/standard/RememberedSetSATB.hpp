@@ -45,7 +45,7 @@ public:
 	/* Constructors & destructors */
 	static MM_RememberedSetSATB *newInstance(MM_EnvironmentBase *env, MM_WorkPacketsSATB *workPackets);
 	void kill(MM_EnvironmentBase *env);
-	
+
 	MM_RememberedSetSATB(MM_EnvironmentBase *env, MM_WorkPacketsSATB *workPackets) :
 		MM_BaseNonVirtual(),
 		_workPackets(workPackets)
@@ -58,9 +58,9 @@ public:
 		 * restores a valid, non-reserved value.
 		 */
 		_rememberedSetStruct.globalFragmentIndex = J9GC_REMEMBERED_SET_RESERVED_INDEX;
-		_rememberedSetStruct.preservedGlobalFragmentIndex = J9GC_REMEMBERED_SET_RESERVED_INDEX + 1; 
+		_rememberedSetStruct.preservedGlobalFragmentIndex = J9GC_REMEMBERED_SET_RESERVED_INDEX + 1;
 	};
-	
+
 	/* New methods */
 	void initializeFragment(MM_EnvironmentBase* env, MM_GCRememberedSetFragment* fragment); /* "Nulls" out a fragment. */
 	void storeInFragment(MM_EnvironmentBase* env, MM_GCRememberedSetFragment* fragment, UDATA* value); /* This guarantees the store will occur, but a new fragment may be fetched. */
@@ -71,19 +71,19 @@ public:
 	void restoreGlobalFragmentIndex(MM_EnvironmentBase* env); /* Called by the code that enables the barrier. */
 	/* Used to determine if the realtime write barrier is enabled. */
 	MMINLINE bool
-	isGlobalFragmentIndexPreserved(MM_EnvironmentBase* env)
+	isGlobalFragmentIndexPreserved(MM_EnvironmentBase* env = NULL)
 	{
 		return (J9GC_REMEMBERED_SET_RESERVED_INDEX == _rememberedSetStruct.globalFragmentIndex);
 	}
 	void flushFragments(MM_EnvironmentBase* env); /* Ensures all fragments will be seen as invalid next time they are accessed. */
 	bool refreshFragment(MM_EnvironmentBase *env, MM_GCRememberedSetFragment* fragment);
-	
+
 protected:
 	bool initialize(MM_EnvironmentBase *env);
 	void tearDown(MM_EnvironmentBase *env);
 	UDATA getLocalFragmentIndex(MM_EnvironmentBase* env, const MM_GCRememberedSetFragment* fragment);
 	UDATA getGlobalFragmentIndex(MM_EnvironmentBase* env);
-	
+
 private:
 	void setGlobalIndex(MM_EnvironmentBase* env, UDATA indexValue); /* Increments the appropriate global index (global or preserved). */
 };

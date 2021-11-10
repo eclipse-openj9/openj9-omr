@@ -240,6 +240,7 @@ protected:
 	friend class MM_PacketList;
 	friend class MM_PacketSlotIterator;
 	friend class MM_WorkPackets;
+	friend class MM_WorkPacketsSATB;
 };
 
 #endif /* PACKET_HPP_ */

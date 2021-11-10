@@ -35,6 +35,7 @@
 #include "ConcurrentGCStats.hpp"
 #include "GCExtensionsBase.hpp"
 #include "GlobalAllocationManager.hpp"
+#include "GlobalCollector.hpp"
 #include "Heap.hpp"
 #include "MemorySpace.hpp"
 #include "ModronAssertions.h"
@@ -90,6 +91,12 @@ MM_EnvironmentBase::initialize(MM_GCExtensionsBase *extensions)
 	setAllocationColor(extensions->newThreadAllocationColor);
 
 	if (extensions->isStandardGC() || extensions->isVLHGC()) {
+		if (GC_MARK == extensions->newThreadAllocationColor) {
+			/* For a Standard config, thread allocation color can only be set by SATB barrier */
+			Assert_MM_true(extensions->isSATBBarrierActive());
+			setThreadScanned(true);
+		}
+
 		/* pass veryLargeObjectThreshold = 0 to initialize limited size of veryLargeEntryPool for thread (to reduce footprint), 
 		 * but if the threshold is bigger than maxHeap size, we would pass orignal threshold to indicate no veryLargeEntryPool needed 
 		 */

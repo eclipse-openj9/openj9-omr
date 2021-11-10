@@ -100,6 +100,8 @@ public:
  	*/
 	virtual void deleteSweepPoolState(MM_EnvironmentBase* env, void* sweepPoolState) = 0;
 
+	virtual void checkColorAndMark(MM_EnvironmentBase* env, omrobjectptr_t objectPt) { Assert_MM_unreachable(); }
+
 	MM_GlobalCollector()
 		: MM_Collector()
 		, _delegate()

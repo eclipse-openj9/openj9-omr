@@ -38,12 +38,15 @@ protected:
 
 public:
 	static MM_WorkPacketsSATB *newInstance(MM_EnvironmentBase *env);
-	
+
 	virtual bool initialize(MM_EnvironmentBase *env);
 	virtual void tearDown(MM_EnvironmentBase *env);
-	
+
 	MM_IncrementalOverflow *getIncrementalOverflowHandler() const { return (MM_IncrementalOverflow*)_overflowHandler; }
-	
+
+	MMINLINE bool effectiveTraceExhausted() { return ((_emptyPacketList.getCount() + _inUseBarrierPacketList.getCount()) == _activePackets); };
+
+	MMINLINE uintptr_t getBarrierPacketCount() { return (_inUseBarrierPacketList.getCount()); };
 
 	MMINLINE bool inUsePacketsAvailable(MM_EnvironmentBase *env) { return !_inUseBarrierPacketList.isEmpty();}
 
@@ -53,6 +56,8 @@ public:
 	virtual void putFullPacket(MM_EnvironmentBase *env, MM_Packet *packet);
 
 	void moveInUseToNonEmpty(MM_EnvironmentBase *env);
+
+	void resetAllPackets(MM_EnvironmentBase *env);
 
 	/**
 	 * Create a MM_WorkPacketsRealtime object.

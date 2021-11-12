@@ -613,9 +613,7 @@ omrsig_startup(struct OMRPortLibrary *portLibrary)
 		for (index = 0; index < MAX_UNIX_SIGNAL_TYPES ;index++) {
 			oldActions[index].restore = 0;
 		}
-		if (0 != initializeSignalTools(portLibrary)) {
-			result = OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS;
-		}
+		result = initializeSignalTools(portLibrary);
 	}
 	omrthread_monitor_exit(globalMonitor);
 
@@ -1151,50 +1149,50 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 
 	/* use this to record the end of the list of signal infos */
 	if(omrthread_tls_alloc(&tlsKey))		{
-		return -1;
+		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS1;
 	}
 
 	/* use this to record the last signal that occured such that we can call omrsig_handler in omrexit_shutdown_and_exit */
 	if(omrthread_tls_alloc(&tlsKeyCurrentSignal)) {
-		return -1;
+		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS2;
 	}
 
 	if(omrthread_monitor_init_with_name( &mainHandlerMonitor, 0, "portLibrary_omrsig_mainHandler_monitor" ) ) {
-		return -1;
+		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS3;
 	}
 
 	if(omrthread_monitor_init_with_name( &asyncReporterShutdownMonitor, 0, "portLibrary_omrsig_asynch_reporter_shutdown_monitor" ) ) {
-		return -1;
+		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS4;
 	}
 
 	if(omrthread_monitor_init_with_name( &asyncMonitor, 0, "portLibrary_omrsig_async_monitor" ) ) {
-		return -1;
+		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS5;
 	}
 
 	/* The asynchronous signal reporter will wait on this semaphore  */
 	if(0 != sem_init(&wakeUpASyncReporter, 0, 0))	 {
-		return -1;
+		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS6;
 	}
 
 	/* The asynchronous signal reporter keeps track of the number of pending singals with these... */  
 	if(0 != sem_init(&sigQuitPendingSem, 0, 0))		{
-		return -1;
+		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS7;
 	}
 	if(0 != sem_init(&sigAbrtPendingSem, 0, 0))		{
-		return -1;
+		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS8;
 	}
 	if(0 != sem_init(&sigTermPendingSem, 0, 0))		{
-		return -1;
+		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS9;
 	}
 	if(0 != sem_init(&sigReconfigPendingSem, 0, 0))	{
-		return -1;
+		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS10;
 	}
 	if(0 != sem_init(&sigXfszPendingSem, 0, 0))		{
-		return -1;
+		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS11;
 	}
 #if defined(OMR_PORT_ASYNC_HANDLER)
 	if(J9THREAD_SUCCESS != createThreadWithCategory(&asynchSignalReporterThread, 256 * 1024, J9THREAD_PRIORITY_MAX, 0, &asynchSignalReporter, NULL, J9THREAD_CATEGORY_SYSTEM_THREAD)) {
-		return -1;
+		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS12;
 	}
 #endif
 	return 0;

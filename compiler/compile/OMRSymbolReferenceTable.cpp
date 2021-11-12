@@ -1664,15 +1664,22 @@ OMR::SymbolReferenceTable::findOrCreateAutoSymbolImpl(TR::ResolvedMethodSymbol *
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateShadowSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t cpIndex, bool isStore)
    {
-      TR_UNIMPLEMENTED();
-      return NULL;
+   TR_UNIMPLEMENTED();
+   return NULL;
    }
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrFabricateShadowSymbol(TR_OpaqueClassBlock *containingClass, TR::DataType type, uint32_t offset, bool isVolatile, bool isPrivate, bool isFinal, const char * name, const char * signature)
    {
-      TR_UNIMPLEMENTED();
-      return NULL;
+   TR_UNIMPLEMENTED();
+   return NULL;
+   }
+
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrFabricateFlattenedArrayElementFieldShadowSymbol(TR_OpaqueClassBlock *arrayComponentClass, TR::DataType type, uint32_t offset, bool isPrivate, const char * name, const char * signature)
+   {
+   TR_UNIMPLEMENTED();
+   return NULL;
    }
 
 TR::SymbolReference *
@@ -1786,7 +1793,7 @@ OMR::SymbolReferenceTable::findOrCreatePendingPushTemporary(
    }
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::createNamedStatic(TR::ResolvedMethodSymbol *owningMethodSymbol, TR::DataType type, const char *name) 
+OMR::SymbolReferenceTable::createNamedStatic(TR::ResolvedMethodSymbol *owningMethodSymbol, TR::DataType type, const char *name)
    {
    TR::StaticSymbol * sym = TR::StaticSymbol::createNamed(trHeapMemory(),type, name);
    return new (trHeapMemory()) TR::SymbolReference(self(),sym,owningMethodSymbol->getResolvedMethodIndex(),owningMethodSymbol->incTempIndex(fe()));
@@ -2026,7 +2033,7 @@ OMR::SymbolReferenceTable::findOrCreateJProfileValuePlaceHolderWithNullCHKSymbol
       sym->setHelper();
       element(jProfileValueWithNullCHKSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), jProfileValueWithNullCHKSymbol, sym);
       }
-   return element(jProfileValueWithNullCHKSymbol); 
+   return element(jProfileValueWithNullCHKSymbol);
    }
 
 TR::SymbolReference *

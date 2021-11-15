@@ -82,8 +82,9 @@ enum TR_VlogTag
 class TR_VerboseLog
    {
    public:
-   //writeLine and write provide multi line write capabilities, and are to be used with vlogAcquire() and vlogRelease(),
-   //this ensures nice formatted verbose logs
+   // writeLine and write provide multi line write capabilities, and are to be
+   // used with CriticalSection or vlogAcquire() and vlogRelease() to ensure
+   // nicely formatted verbose logs
    static void write(const char *format, ...);
    static void write(TR_VlogTag tag, const char *format, ...);
    static void writeLine(TR_VlogTag tag, const char *format, ...);
@@ -92,6 +93,29 @@ class TR_VerboseLog
    static void writeLineLocked(TR_VlogTag tag, const char *format, ...);
    static void vlogAcquire(); //defined in each front end
    static void vlogRelease(); //defined in each front end
+
+   class CriticalSection
+      {
+      public:
+      CriticalSection(bool lock = true) : _locked(false)
+         {
+         if (lock)
+            {
+            vlogAcquire();
+            _locked = true;
+            }
+         }
+
+      ~CriticalSection()
+         {
+         if (_locked)
+            vlogRelease();
+         }
+
+      private:
+      bool _locked;
+      };
+
    //only called once early on, after we can print to the vlog
    static void initialize(void *config);
    private:

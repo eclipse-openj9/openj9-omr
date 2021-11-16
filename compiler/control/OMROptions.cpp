@@ -2236,7 +2236,7 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
 
       if (self()->getOption(TR_MimicInterpreterFrameShape))
          {
-         TR_VerboseLog::vlogAcquire();
+         TR_VerboseLog::CriticalSection vlogLock;
          if (self()->getFixedOptLevel() != -1 && self()->getFixedOptLevel() != noOpt)
             TR_VerboseLog::writeLine(TR_Vlog_FSD, "Ignoring user specified optLevel");
          if (_countString)
@@ -2255,7 +2255,6 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
                }
             }
          _countString = 0;
-         TR_VerboseLog::vlogRelease();
          }
 
       if (TR::Options::isAnyVerboseOptionSet(TR_VerboseOptimizer)
@@ -3093,12 +3092,11 @@ OMR::Options::validateOptionsTables(void *feBase, TR_FrontEnd *fe)
          }
       if (_numJitEntries > 0 && stricmp_ignore_locale((opt-1)->name, opt->name) >= 0)
          {
-         TR_VerboseLog::vlogAcquire();
+         TR_VerboseLog::CriticalSection vlogLock;
          TR_VerboseLog::write(TR_Vlog_FAILURE, "JIT option table entries out of order: ");
          TR_VerboseLog::write((opt-1)->name);
          TR_VerboseLog::write(", ");
          TR_VerboseLog::writeLine(opt->name);
-         TR_VerboseLog::vlogRelease();
          return false;
          }
 #endif
@@ -3120,12 +3118,11 @@ OMR::Options::validateOptionsTables(void *feBase, TR_FrontEnd *fe)
          }
       if (_numVmEntries > 0 && stricmp_ignore_locale((opt-1)->name, opt->name) >= 0)
          {
-         TR_VerboseLog::vlogAcquire();
+         TR_VerboseLog::CriticalSection vlogLock;
          TR_VerboseLog::writeLine(TR_Vlog_FAILURE,"FE option table entries out of order: ");
          TR_VerboseLog::write((opt-1)->name);
          TR_VerboseLog::write(", ");
          TR_VerboseLog::write(opt->name);
-         TR_VerboseLog::vlogRelease();
          return false;
          }
 #endif

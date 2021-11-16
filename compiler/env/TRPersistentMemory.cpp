@@ -107,11 +107,10 @@ TR_PersistentMemory::printMemStats()
 void
 TR_PersistentMemory::printMemStatsToVlog()
    {
-   TR_VerboseLog::vlogAcquire();
+   TR_VerboseLog::CriticalSection vlogLock;
    TR_VerboseLog::writeLine(TR_Vlog_MEMORY, "TR_PersistentMemory Stats:");
    for (uint32_t i = 0; i < TR_MemoryBase::NumObjectTypes; i++)
       {
       TR_VerboseLog::writeLine(TR_Vlog_MEMORY, "\t_totalPersistentAllocations[%s]=%lu", objectName[i], (unsigned long)_totalPersistentAllocations[i]);
       }
-   TR_VerboseLog::vlogRelease();
    }

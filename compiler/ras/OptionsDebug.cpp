@@ -148,7 +148,6 @@ static bool regexExcludes(TR::SimpleRegex *regex, const char *string)
 
 void TR_Debug::dumpOptionHelp(TR::OptionTable * firstOjit, TR::OptionTable * firstOfe, TR::SimpleRegex *nameFilter)
    {
-   TR_VerboseLog::vlogAcquire();
    static int optionLineWidth=0;
 
    if (!optionLineWidth)
@@ -162,6 +161,7 @@ void TR_Debug::dumpOptionHelp(TR::OptionTable * firstOjit, TR::OptionTable * fir
 
    TR::OptionTable * entry;
 
+   TR_VerboseLog::CriticalSection vlogLock;
    TR_VerboseLog::writeLine(TR_Vlog_INFO,"Usage: -Xjit:option([,option]*)\n");
 
    for (int32_t cat = 0; optionCategories[cat]; cat++)
@@ -276,7 +276,6 @@ void TR_Debug::dumpOptionHelp(TR::OptionTable * firstOjit, TR::OptionTable * fir
       }
    TR_VerboseLog::writeLine("");
    TR_VerboseLog::writeLine(TR_Vlog_INFO, "");
-   TR_VerboseLog::vlogRelease();
    }
 
 void
@@ -290,7 +289,6 @@ TR_Debug::dumpOptions(
       void * feBase,
       TR_FrontEnd *fe)
    {
-   TR_VerboseLog::vlogAcquire();
    TR::OptionTable *entry;
    char *base;
    TR::Compilation* comp = TR::comp();
@@ -300,6 +298,8 @@ TR_Debug::dumpOptions(
 #ifdef J9_PROJECT_SPECIFIC
    TR_J9VMBase *fej9 = (TR_J9VMBase *)fe;
 #endif
+
+   TR_VerboseLog::CriticalSection vlogLock;
 
    if(!vmCounter)
       TR_VerboseLog::writeLine(TR_Vlog_INFO,"_______________________________________");
@@ -512,5 +512,4 @@ TR_Debug::dumpOptions(
       TR_VerboseLog::writeLine(TR_Vlog_INFO, "     compressedRefs shiftAmount=%d", TR::Compiler->om.compressedReferenceShift());
       }
 #endif
-      TR_VerboseLog::vlogRelease();
    }

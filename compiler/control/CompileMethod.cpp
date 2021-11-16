@@ -377,7 +377,7 @@ compileMethodFromDetails(
          if (TR::Options::isAnyVerboseOptionSet(TR_VerboseCompileEnd, TR_VerbosePerformance))
             {
             const char *signature = compilee.signature(&trMemory);
-            TR_VerboseLog::vlogAcquire();
+            TR_VerboseLog::CriticalSection vlogLock;
             TR_VerboseLog::write(TR_Vlog_COMP, "(%s) %s @ " POINTER_PRINTF_FORMAT "-" POINTER_PRINTF_FORMAT,
                                            compiler.getHotnessName(compiler.getMethodHotness()),
                                            signature,
@@ -394,7 +394,6 @@ compileMethodFromDetails(
                }
 
             trfflush(jitConfig->options.vLogFile);
-            TR_VerboseLog::vlogRelease();
             }
 
          if (

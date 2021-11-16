@@ -100,7 +100,7 @@ public:
          // Dump the options
          if (TR::Options::getVerboseOption(TR_VerbosePerformance))
             {
-            TR_VerboseLog::vlogAcquire();
+            TR_VerboseLog::CriticalSection vlogLock;
             TR_VerboseLog::write("Profiling %s compile time with:", comp->signature());
             char **iter = options;
             while (*iter)
@@ -109,7 +109,6 @@ public:
                iter++;
                }
             TR_VerboseLog::writeLine("");
-            TR_VerboseLog::vlogRelease();
             }
 
          _pid = fork();

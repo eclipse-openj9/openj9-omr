@@ -1596,6 +1596,7 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 
 	/* The asynchronous signal reporter will wait on this semaphore  */
 	if (SIGSEM_ERROR == SIGSEM_INIT(wakeUpASyncReporter, SIGSEM_NAME(0))) {
+		perror("initializeSignalTools() SIGSEM_INIT");
 		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS7;
 	}
 	SIGSEM_UNLINK(SIGSEM_NAME(0));

@@ -3460,17 +3460,63 @@ TR::Register *OMR::Power::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeG
    {
    switch(node->getDataType())
      {
+     case TR::VectorInt8:
+       return TR::TreeEvaluator::vmulInt8Helper(node, cg);
+     case TR::VectorInt16:
+       return TR::TreeEvaluator::vmulInt16Helper(node,cg);
      case TR::VectorInt32:
        return TR::TreeEvaluator::vmulInt32Helper(node,cg);
      case TR::VectorFloat:
        return TR::TreeEvaluator::vmulFloatHelper(node,cg);
      case TR::VectorDouble:
        return TR::TreeEvaluator::vmulDoubleHelper(node,cg);
-     case TR::VectorInt16:
-       return TR::TreeEvaluator::vmulInt16Helper(node,cg);
      default:
        TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
      }
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::vmulInt8Helper(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild;
+   TR::Node *secondChild;
+   TR::Register *lhsReg, *rhsReg;
+   TR::Register *productReg;
+   TR::Register *temp;
+   TR::Register *shiftReg;
+
+   firstChild = node->getFirstChild();
+   secondChild = node->getSecondChild();
+
+   lhsReg = cg->evaluate(firstChild);
+   rhsReg = cg->evaluate(secondChild);
+
+   productReg = cg->allocateRegister(TR_VRF);
+   temp = cg->allocateRegister(TR_VRF);
+   shiftReg = cg->allocateRegister(TR_VRF);
+
+   node->setRegister(productReg);
+
+   //set shift amount to 1 byte
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::vspltisb, node, shiftReg, 8);
+
+   //multiply even bytes and shift to correct location
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vmuleub, node, productReg, lhsReg, rhsReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vslh, node, productReg, productReg, shiftReg);
+
+   //multiply odd byte and shift left (to discard upper byte of product) and then right (to relocate to correct position)
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vmuloub, node, temp, lhsReg, rhsReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vslh, node, temp, temp, shiftReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vsrh, node, temp, temp, shiftReg);
+
+   //add odd and even bytes together to get full vector of products
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vaddubm, node, productReg, productReg, temp);
+
+   cg->stopUsingRegister(temp);
+   cg->stopUsingRegister(shiftReg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+
+   return productReg;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vmulInt16Helper(TR::Node *node, TR::CodeGenerator *cg)
@@ -3483,8 +3529,6 @@ TR::Register *OMR::Power::TreeEvaluator::vmulInt16Helper(TR::Node *node, TR::Cod
 
    firstChild = node->getFirstChild();
    secondChild = node->getSecondChild();
-   lhsReg = NULL;
-   rhsReg = NULL;
 
    lhsReg = cg->evaluate(firstChild);
    rhsReg = cg->evaluate(secondChild);

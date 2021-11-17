@@ -638,6 +638,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmulInt8Helper(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vmulInt16Helper(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vmulInt32Helper(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vmulFloatHelper(TR::Node *node, TR::CodeGenerator *cg);

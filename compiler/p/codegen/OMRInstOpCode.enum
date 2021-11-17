@@ -718,10 +718,10 @@
 // vmsumubm,         // Vector Multiply-Sum Unsigned Byte Modulo
 // vmsumuhs,         // Vector Multiply-Sum Unsigned Hword Saturate
 // vmulesb,          // Vector Multiply Even Signed Byte
-// vmuleub,          // Vector Multiply Even Unsigned Byte
+   vmuleub,          // Vector Multiply Even Unsigned Byte
 // vmuleuh,          // Vector Multiply Even Unsigned Hword
 // vmulosb,          // Vector Multiply Odd Signed Byte
-// vmuloub,          // Vector Multiply Odd Unsigned Byte
+   vmuloub,          // Vector Multiply Odd Unsigned Byte
    vmulesh,          // vector multiply even signed halfword
    vmulosh,          // vector multiply odd signed halfword
    vmulouh,          // vector multiply odd unsigned halfword

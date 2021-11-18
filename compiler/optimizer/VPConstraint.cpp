@@ -1833,7 +1833,7 @@ TR::VPConstraint *TR::VPLongConstraint::merge1(TR::VPConstraint *other, OMR::Val
             lowVal = otherInt->getLow();
          else
             lowVal = getLow();
-         if ((int64_t)otherLong->getHigh() <= (int64_t)getHigh())
+         if ((int64_t)otherInt->getHigh() <= (int64_t)getHigh())
             highVal = getHigh();
          else
             highVal = otherInt->getHigh();

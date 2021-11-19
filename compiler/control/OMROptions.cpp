@@ -3980,18 +3980,6 @@ void getTRPID(char *buf, size_t size)
    TR::snprintfNoTrunc(buf, size, "%i", getTRPID());
    }
 
-// Allow downstream projects still referring to getTRPID(char*) to build. Once
-// such calls from downstream projects are updated to use the new signature
-// just above, it will be possible to remove this once more.
-void getTRPID(char *buf)
-   {
-   // This function used to be implemented using sprintf(), which behaves as
-   // though the size is infinite. For this temporary stub, just pass a size
-   // that is much larger than necessary for %i. Callers will get proper bounds
-   // checking once they are updated to call getTRPID(char*, size_t) instead.
-   getTRPID(buf, 64);
-   }
-
 // -----------------------------------------------------------------------------
 // Optlevels and counts
 // -----------------------------------------------------------------------------

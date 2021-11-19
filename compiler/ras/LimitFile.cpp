@@ -786,6 +786,7 @@ void TR_FilterBST::insert(TR_FilterBST *node)
 void
 TR_Debug::print(TR_FilterBST * filter)
    {
+   TR_VerboseLog::CriticalSection vlogLock;
    /*
    if (filter->_optionSet)
       TR_VerboseLog::write("   {%d}", filter->_optionSet);
@@ -793,7 +794,6 @@ TR_Debug::print(TR_FilterBST * filter)
    if (filter->_lineNumber)
       TR_VerboseLog::write("   [%d]", filter->_lineNumber);
    */
-   TR_VerboseLog::vlogAcquire();
 
    switch (filter->_filterType)
       {
@@ -861,8 +861,6 @@ TR_Debug::print(TR_FilterBST * filter)
          printFilters(filter->subGroup);
          TR_VerboseLog::write("   ]\n");
          }
-      
-      TR_VerboseLog::vlogRelease();
    }
 
 void
@@ -895,7 +893,7 @@ TR_Debug::printFilters(TR::CompilationFilters * filters)
 void
 TR_Debug::printFilters()
    {
-   TR_VerboseLog::vlogAcquire();
+   TR_VerboseLog::CriticalSection vlogLock;
    TR_VerboseLog::writeLine("<compilationFilters>");
    printFilters(_compilationFilters);
    TR_VerboseLog::writeLine("</compilationFilters>");
@@ -907,7 +905,6 @@ TR_Debug::printFilters()
    TR_VerboseLog::writeLine("<inlineFilters>");
    printFilters(_inlineFilters);
    TR_VerboseLog::writeLine("</inlineFilters>");
-   TR_VerboseLog::vlogRelease();
    }
 
 void
@@ -1250,7 +1247,7 @@ TR_Debug::methodCanBeRelocated(TR_Memory *trMemory, TR_ResolvedMethod *method, T
 int32_t *
 TR_Debug::loadCustomStrategy(char *fileName)
    {
-   TR_VerboseLog::vlogAcquire();
+   TR_VerboseLog::CriticalSection vlogLock;
    int32_t *customStrategy = NULL;
    FILE *optFile = fopen(fileName, "r");
    if (optFile)
@@ -1308,6 +1305,5 @@ TR_Debug::loadCustomStrategy(char *fileName)
       {
       TR_VerboseLog::writeLine(TR_Vlog_INFO, "optFile not found: '%s'", fileName);
       }
-   TR_VerboseLog::vlogRelease();
    return customStrategy;
    }

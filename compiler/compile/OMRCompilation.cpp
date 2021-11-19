@@ -1124,7 +1124,7 @@ int32_t OMR::Compilation::compile()
          {
          int32_t jittedBodyHash = strHash(self()->signature());
          char callerBuf[501], calleeBuf[501];
-         TR_VerboseLog::vlogAcquire();
+         TR_VerboseLog::CriticalSection vlogLock;
          TR_VerboseLog::writeLine(TR_Vlog_INL, "%d methods inlined into %x %s @ %p", self()->getNumInlinedCallSites(), jittedBodyHash, self()->signature(), self()->cg()->getCodeStart());
          for (int32_t i = 0; i < self()->getNumInlinedCallSites(); i++)
             {
@@ -1182,7 +1182,6 @@ int32_t OMR::Compilation::compile()
                   }
                }
             }
-         TR_VerboseLog::vlogRelease();
          }
 #endif
       }

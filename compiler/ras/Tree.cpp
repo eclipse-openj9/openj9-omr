@@ -253,9 +253,9 @@ TR_Debug::printLoadConst(TR::Node *node, TR_PrettyPrinterString& output)
          break;
       case TR::Address:
          if (node->getAddress() == 0)
-            output.append(" NULL");
+            output.appends(" NULL");
          else if (_comp->getOption(TR_MaskAddresses))
-            output.append(" *Masked*");
+            output.appends(" *Masked*");
          else
             output.append(" " UINT64_PRINTF_FORMAT_HEX, node->getAddress());
          if (node->isClassPointerConstant())
@@ -265,9 +265,9 @@ TR_Debug::printLoadConst(TR::Node *node, TR_PrettyPrinterString& output)
             if (clazz)
                {
                if (TR::Compiler->cls.isInterfaceClass(_comp, clazz))
-                  output.append(" Interface");
+                  output.appends(" Interface");
                else if (TR::Compiler->cls.isAbstractClass(_comp, clazz))
-                  output.append(" Abstract");
+                  output.appends(" Abstract");
                }
             output.append(" (%.*s.class)", len, sig);
             }
@@ -1074,7 +1074,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Node * node, uint32_t indentation, bool 
          printBasicPreNodeInfoAndIndent(pOutFile, node->getSecondChild(), indentation);
          nodeCount++;
 
-         output.append("default ");
+         output.appends("default ");
          _comp->incrNodeOpCodeLength( output.getLength() );
          trfprintf(pOutFile, "%s", output.getStr());
          output.reset();
@@ -1259,7 +1259,7 @@ TR_Debug::printWithFixedPrefix(TR::FILE *pOutFile, TR::Node * node, uint32_t ind
 
    _comp->setNodeOpCodeLength(0);
 
-      globalIndexPrefix.append( "n" );
+   globalIndexPrefix.appends("n");
 
    globalIndex = node->getGlobalIndex();
    numSpaces = getNumSpacesAfterIndex( globalIndex, MAX_GLOBAL_INDEX_LENGTH );
@@ -1337,7 +1337,7 @@ TR_Debug::printWithFixedPrefix(TR::FILE *pOutFile, TR::Node * node, uint32_t ind
 
          trfprintf(pOutFile,"\n%s%s%dn%*s  %*s",prefix, globalIndexPrefix.getStr(), globalIndex, numSpaces, "", indentation, " ");
          nodeCount++;
-         output.append("default ");
+         output.appends("default ");
          _comp->incrNodeOpCodeLength( output.getLength() );
          trfprintf(pOutFile, "%s", output.getStr());
          output.reset();
@@ -1446,7 +1446,7 @@ TR_Debug::printDestination( TR::TreeTop *treeTop, TR_PrettyPrinterString& output
 
    TR::Node *node = treeTop->getNode();
    TR::Block *block = node->getBlock();
-   output.append(" --> ");
+   output.appends(" --> ");
    if (block->getNumber() >= 0)
       output.append("block_%d", block->getNumber());
       output.append(" BBStart at n%dn", node->getGlobalIndex());
@@ -1467,7 +1467,7 @@ TR_Debug::printBasicPreNodeInfoAndIndent(TR::FILE *pOutFile, TR::Node * node, ui
       trfprintf(pOutFile, "\n");
       }
 
-      globalIndexPrefix.append( "n" );
+   globalIndexPrefix.appends("n");
 
    numSpaces = getNumSpacesAfterIndex( node->getGlobalIndex(), MAX_GLOBAL_INDEX_LENGTH );
    trfprintf(pOutFile, "%s%dn%*s %*s", globalIndexPrefix.getStr(), node->getGlobalIndex(), numSpaces, "", indentation, " ");
@@ -1481,7 +1481,7 @@ TR_Debug::printBasicPostNodeInfo(TR::FILE *pOutFile, TR::Node * node, uint32_t i
    TR_PrettyPrinterString output(this);
    if (pOutFile == NULL) return;
 
-   output.append("  ");
+   output.appends("  ");
    if ((_comp->getNodeOpCodeLength() + indentation) < DEFAULT_NODE_LENGTH + DEFAULT_INDENT_INCREMENT)
       output.append( "%*s", DEFAULT_NODE_LENGTH + DEFAULT_INDENT_INCREMENT - ( _comp->getNodeOpCodeLength() + indentation ), "");
 
@@ -1517,17 +1517,17 @@ TR_Debug::printBasicPostNodeInfo(TR::FILE *pOutFile, TR::Node * node, uint32_t i
    if (_comp->getOptimizer() && _comp->getOptimizer()->getValueNumberInfo())
       output.append(" vn=%d", _comp->getOptimizer()->getValueNumberInfo()->getValueNumber(node));
    else
-      output.append(" vn=-");
+      output.appends(" vn=-");
 
    if (node->getLocalIndex())
       output.append(" li=%d", node->getLocalIndex());
    else
-      output.append(" li=-");
+      output.appends(" li=-");
 
    if (node->getUseDefIndex())
       output.append(" udi=%d", node->getUseDefIndex());
    else
-      output.append(" udi=-");
+      output.appends(" udi=-");
 
    output.append(" nc=%d", node->getNumChildren());
 
@@ -1555,7 +1555,7 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
    {
    TR_PrettyPrinterString globalIndexPrefix(this);
 
-      globalIndexPrefix.append( "n" );
+   globalIndexPrefix.appends("n");
 
    if (!prettyPrint || (node->getOpCodeValue() != TR::BBStart && node->getOpCodeValue() != TR::BBEnd))
       {
@@ -1569,14 +1569,14 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
       {
       if (node->getNullCheckReference())
          output.append(" on %s%dn", globalIndexPrefix.getStr(), node->getNullCheckReference()->getGlobalIndex());
-      else output.append(" on null NullCheckReference ----- INVALID tree!!");
+      else output.appends(" on null NullCheckReference ----- INVALID tree!!");
       }
    else if (node->getOpCodeValue() == TR::allocationFence)
       {
       if(node->getAllocation())
          output.append(" on %s%dn", globalIndexPrefix.getStr(), node->getAllocation()->getGlobalIndex());
       else
-         output.append(" on ALL");
+         output.appends(" on ALL");
       }
 
    if (node->getOpCode().hasSymbolReference() && node->getSymbolReference())
@@ -1596,18 +1596,18 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
       if (node->getNumRelocations() > 0)
          {
          if (node->getRelocationType() == TR_AbsoluteAddress)
-            output.append(" Absolute [");
+            output.appends(" Absolute [");
          else if (node->getRelocationType() == TR_ExternalAbsoluteAddress)
-            output.append(" External Absolute [");
+            output.appends(" External Absolute [");
          else
-            output.append(" Relative [");
+            output.appends(" Relative [");
 
          if (!_comp->getOption(TR_MaskAddresses))
             {
             for (auto i = 0U; i < node->getNumRelocations(); ++i)
                output.append(" " POINTER_PRINTF_FORMAT, node->getRelocationDestination(i));
             }
-         output.append(" ]");
+         output.appends(" ]");
          }
       }
    else if (node->getOpCodeValue() == TR::BBStart)
@@ -1622,7 +1622,7 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
       if (block->getFrequency()>=0)
          output.append(" (freq %d)",block->getFrequency());
       if (block->isExtensionOfPreviousBlock())
-         output.append(" (extension of previous block)");
+         output.appends(" (extension of previous block)");
       if (block->isCatchBlock())
          {
          int32_t length;
@@ -1641,16 +1641,16 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
 
          if (block->isOSRCatchBlock())
             {
-            output.append(" (OSR handler)");
+            output.appends(" (OSR handler)");
             }
          }
       if (block->isSuperCold())
-         output.append(" (super cold)");
+         output.appends(" (super cold)");
       else if (block->isCold())
-         output.append(" (cold)");
+         output.appends(" (cold)");
 
       if (block->isLoopInvariantBlock())
-         output.append(" (loop pre-header)");
+         output.appends(" (loop pre-header)");
       TR_BlockStructure *blockStructure = block->getStructureOf();
       if (blockStructure)
          {
@@ -1682,14 +1682,14 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
          {
          output.append(" </block_%d>",block->getNumber());
          if (block->isSuperCold())
-            output.append(" (super cold)");
+            output.appends(" (super cold)");
          else if (block->isCold())
-            output.append(" (cold)");
+            output.appends(" (cold)");
          }
 
 
       if ((nextBlock = block->getNextBlock()) && !nextBlock->isExtensionOfPreviousBlock()) //end of a block that is not the last block and the next block is not an extension of it
-         output.append(" =====");
+         output.appends(" =====");
       }
    else if (node->getOpCode().isArrayLength())
       {
@@ -1742,32 +1742,32 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
 
       if (getCurrentParent() && getCurrentParent()->getOpCodeValue() == TR::newarray && getCurrentParent()->getSecondChild() == node)
          {
-         output.append("   ; array type is ");
+         output.appends("   ; array type is ");
          switch (node->getInt())
             {
             case 4:
-               output.append("boolean");
+               output.appends("boolean");
                break;
             case 5:
-               output.append("char");
+               output.appends("char");
                break;
             case 6:
-               output.append("float");
+               output.appends("float");
                break;
             case 7:
-               output.append("double");
+               output.appends("double");
                break;
             case 8:
-               output.append("byte");
+               output.appends("byte");
                break;
             case 9:
-               output.append("short");
+               output.appends("short");
                break;
             case 10:
-               output.append("int");
+               output.appends("int");
                break;
             case 11:
-               output.append("long");
+               output.appends("long");
                break;
             default:
                TR_ASSERT(0, "Wrong array type");
@@ -1790,9 +1790,9 @@ TR_Debug::printNodeFlags(TR::FILE *pOutFile, TR::Node * node)
 
    if (node->getFlags().getValue())
       {
-      output.append(" (");
+      output.appends(" (");
       nodePrintAllFlags(node, output);
-      output.append(")");
+      output.appends(")");
       }
 
    trfprintf(pOutFile, "%s", output.getStr());
@@ -1864,22 +1864,22 @@ TR_Debug::printBCDNodeInfo(TR::Node * node, TR_PrettyPrinterString& output)
          }
       if (!node->getOpCode().isStore())
          {
-         output.append("sign=");
+         output.appends("sign=");
          if (node->hasKnownOrAssumedCleanSign() || node->hasKnownOrAssumedPreferredSign() || node->hasKnownOrAssumedSignCode())
             {
             if (node->signStateIsKnown())
-               output.append("known(");
+               output.appends("known(");
             else
-               output.append("assumed(");
+               output.appends("assumed(");
             if (node->hasKnownOrAssumedCleanSign())
-               output.append("clean");
+               output.appends("clean");
             if (node->hasKnownOrAssumedPreferredSign())
                output.append("%spreferred",node->hasKnownOrAssumedCleanSign() ? "/":"");
             if (node->hasKnownOrAssumedSignCode())
                output.append("%s%s",
                              node->hasKnownOrAssumedCleanSign() || node->hasKnownOrAssumedPreferredSign() ? "/":"",
                              getName(node->hasKnownSignCode() ? node->getKnownSignCode() : node->getAssumedSignCode()));
-            output.append(") ");
+            output.appends(") ");
             }
          else if (node->getOpCode().isLoad())
             {
@@ -1887,7 +1887,7 @@ TR_Debug::printBCDNodeInfo(TR::Node * node, TR_PrettyPrinterString& output)
             }
          else
             {
-            output.append("? ");
+            output.appends("? ");
             }
          }
       if (node->isSetSignValueOnNode())
@@ -1906,7 +1906,7 @@ TR_Debug::printBCDNodeInfo(TR::Node * node, TR_PrettyPrinterString& output)
       }
    if (node->castedToBCD())
       {
-      output.append(" <castedToBCD=true> ");
+      output.appends(" <castedToBCD=true> ");
       }
    }
 #endif

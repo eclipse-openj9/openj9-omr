@@ -1145,39 +1145,39 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
    if (sym)
       {
       if (symRef->isUnresolved())
-         symRefKind.append(" unresolved");
+         symRefKind.appends(" unresolved");
       switch (symRef->hasBeenAccessedAtRuntime())
          {
-         case TR_yes: symRefKind.append( " accessed");    break;
-         case TR_no:  symRefKind.append( " notAccessed"); break;
+         case TR_yes: symRefKind.appends( " accessed");    break;
+         case TR_no:  symRefKind.appends( " notAccessed"); break;
          default: break;
          }
       if (symRef->getSymbol()->isFinal())
-         symRefKind.append(" final");
+         symRefKind.appends(" final");
       if (symRef->getSymbol()->isVolatile())
-         symRefKind.append(" volatile");
+         symRefKind.appends(" volatile");
       switch (sym->getKind())
          {
          case TR::Symbol::IsAutomatic:
             symRefName.append(" %s", getName(symRef));
             if (sym->getAutoSymbol()->getName() == NULL)
-               symRefKind.append(" Auto");
+               symRefKind.appends(" Auto");
             else
                symRefKind.append(" %s", sym->getAutoSymbol()->getName());
             break;
          case TR::Symbol::IsParameter:
-            symRefKind.append(" Parm");
+            symRefKind.appends(" Parm");
             symRefName.append(" %s", getName(symRef));
             break;
          case TR::Symbol::IsStatic:
             if(symRef->isFromLiteralPool())
              {
-               symRefKind.append(" DLP-Static");
+               symRefKind.appends(" DLP-Static");
                symRefName.append( " %s", getName(symRef));
              }
             else
                {
-               symRefKind.append(" Static");
+               symRefKind.appends(" Static");
                if (sym->isNamed())
                   {
                   symRefName.append(" \"%s\"", ((TR::StaticSymbol*)sym)->getName());
@@ -1191,44 +1191,44 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
             {
             TR::MethodSymbol *methodSym = sym->castToMethodSymbol();
             if (methodSym->isNative())
-               symRefKind.append(" native");
+               symRefKind.appends(" native");
             switch (methodSym->getMethodKind())
                {
                case TR::MethodSymbol::Virtual:
-                  symRefKind.append(" virtual");
+                  symRefKind.appends(" virtual");
                   break;
                case TR::MethodSymbol::Interface:
-                  symRefKind.append(" interface");
+                  symRefKind.appends(" interface");
                   break;
                case TR::MethodSymbol::Static:
-                  symRefKind.append(" static");
+                  symRefKind.appends(" static");
                   break;
                case TR::MethodSymbol::Special:
-                  symRefKind.append(" special");
+                  symRefKind.appends(" special");
                   break;
                case TR::MethodSymbol::Helper:
-                  symRefKind.append(" helper");
+                  symRefKind.appends(" helper");
                   break;
                case TR::MethodSymbol::ComputedStatic:
-                  symRefKind.append(" computed-static");
+                  symRefKind.appends(" computed-static");
                   break;
                case TR::MethodSymbol::ComputedVirtual:
-                  symRefKind.append(" computed-virtual");
+                  symRefKind.appends(" computed-virtual");
                   break;
                default:
-                     symRefKind.append(" UNKNOWN");
+                     symRefKind.appends(" UNKNOWN");
                   break;
                }
 
-            symRefKind.append(" Method");
+            symRefKind.appends(" Method");
             symRefName.append(" %s", getName(symRef));
             TR_OpaqueClassBlock *clazz = containingClass(symRef);
             if (clazz)
                {
                if (TR::Compiler->cls.isInterfaceClass(_comp, clazz))
-                  otherInfo.append( " (Interface class)");
+                  otherInfo.appends(" (Interface class)");
                else if (TR::Compiler->cls.isAbstractClass(_comp, clazz))
-                  otherInfo.append( " (Abstract class)");
+                  otherInfo.appends(" (Abstract class)");
                }
             }
             break;
@@ -1241,18 +1241,18 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
                }
             else
                {
-               symRefKind.append(" Shadow");
+               symRefKind.appends(" Shadow");
                symRefName.append(" %s", getName(symRef));
                }
             break;
          case TR::Symbol::IsMethodMetaData:
-            symRefKind.append(" MethodMeta");
+            symRefKind.appends(" MethodMeta");
             symRefName.append(" %s", symRef->getSymbol()->getMethodMetaDataSymbol()->getName());
             break;
          case TR::Symbol::IsLabel:
             print(sym->castToLabelSymbol(), labelSymbol);
             if (!labelSymbol.isEmpty())
-               labelSymbol.append( " " );
+               labelSymbol.appends(" ");
             break;
          default:
             TR_ASSERT(0, "unexpected symbol kind");
@@ -1281,7 +1281,7 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
           output.append (" (%s)",TR::DataType::getName(sym->getDataType()));
           if (sym->isVolatile())
              {
-             output.append(" [volatile]");
+             output.appends(" [volatile]");
              }
           }
       }

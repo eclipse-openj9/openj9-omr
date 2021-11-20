@@ -1109,7 +1109,6 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
                           symRefName(this),
                           symRefKind(this),
                           otherInfo(this),
-                          symRefWCodeId(this),
                           symRefObjIndex(this),
                           labelSymbol(this);
 
@@ -1269,9 +1268,9 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
        output.appendf("%s:%*s", symRefNum.getStr(), numSpaces, "");
 
        if (hideHelperMethodInfo)
-          output.appendf(" %s%s[%s]%s", labelSymbol.getStr(), symRefWCodeId.getStr(), symRefOffset.getStr(), symRefObjIndex.getStr());
+          output.appendf(" %s[%s]%s", labelSymbol.getStr(), symRefOffset.getStr(), symRefObjIndex.getStr());
        else
-          output.appendf(" %s%s%s[%s%s%s]%s%s", symRefName.getStr(), labelSymbol.getStr(), symRefWCodeId.getStr(), symRefKind.getStr(), symRefOffset.isEmpty() ? "" : " ",
+          output.appendf(" %s%s[%s%s%s]%s%s", symRefName.getStr(), labelSymbol.getStr(), symRefKind.getStr(), symRefOffset.isEmpty() ? "" : " ",
                 symRefOffset.getStr(), symRefObjIndex.getStr(), otherInfo.getStr());
 
        output.appendf(" [%s]", symRefAddress.getStr());
@@ -1288,10 +1287,10 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
    else
       {
       if (hideHelperMethodInfo)
-         output.appendf(" %s%s[%s%s%s]%s", labelSymbol.getStr(), symRefWCodeId.getStr(), symRefNum.getStr(), symRefOffset.isEmpty() ? "" : " ", symRefOffset.getStr(),
+         output.appendf(" %s[%s%s%s]%s", labelSymbol.getStr(), symRefNum.getStr(), symRefOffset.isEmpty() ? "" : " ", symRefOffset.getStr(),
                symRefObjIndex.getStr());
       else
-         output.appendf(" %s%s%s[%s%s%s%s%s]%s%s", symRefName.getStr(), labelSymbol.getStr(), symRefWCodeId.getStr(), symRefNum.getStr(), symRefKind.isEmpty() ? "" : " ",
+         output.appendf(" %s%s[%s%s%s%s%s]%s%s", symRefName.getStr(), labelSymbol.getStr(), symRefNum.getStr(), symRefKind.isEmpty() ? "" : " ",
                symRefKind.getStr(), symRefOffset.isEmpty() ? "" : " ", symRefOffset.getStr(), symRefObjIndex.getStr(), otherInfo.getStr());
       }
 

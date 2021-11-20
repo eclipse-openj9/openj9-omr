@@ -1248,7 +1248,15 @@ class TR_PrettyPrinterString
    {
    public:
       TR_PrettyPrinterString(TR_Debug* debug);
-      void append(const char* format, ...);
+
+      /**
+       * @brief Append a null-terminated string with format specifiers to the buffer.
+       *        The buffer is guaranteed not to overflow and will be null-terminated.
+       *
+       * @param[in] format : null-terminated string to append with optional format specifiers
+       * @param[in] ... : optional arguments for format specifiers
+       */
+      void appendf(char const *format, ...);
 
       /**
        * @brief Append a null-terminated string to the buffer.  No format specifiers

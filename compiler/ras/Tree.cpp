@@ -992,9 +992,29 @@ void TR_PrettyPrinterString::append(const char* format, ...)
    {
    va_list args;
    va_start (args, format);
-   len+=vsnprintf(buffer+len,2000-len,format,args);
+   len += vsnprintf(buffer+len, maxBufferLength-len, format, args);
    va_end(args);
 
+   }
+
+void TR_PrettyPrinterString::appends(char const *str)
+   {
+   size_t const strLen0 = strlen(str) + 1; // include terminating '\0'
+   size_t const bufLenBytes = maxBufferLength-len;
+
+   char *buf = buffer+len;
+
+   if (strLen0 < bufLenBytes)
+      {
+      memcpy(buf, str, strLen0);
+      len += static_cast<int32_t>(strLen0 - 1);
+      }
+   else if (bufLenBytes != 0)
+      {
+      memcpy(buf, str, bufLenBytes-1);
+      buf[bufLenBytes-1] = '\0';
+      len += static_cast<int32_t>(bufLenBytes - 1);
+      }
    }
 
 int32_t

@@ -1252,14 +1252,13 @@ TR_Debug::printWithFixedPrefix(TR::FILE *pOutFile, TR::Node * node, uint32_t ind
    uint32_t numSpaces,
             globalIndex;
 
-   TR_PrettyPrinterString globalIndexPrefix(this),
-                          output(this);
+   TR_PrettyPrinterString output(this);
 
    if (pOutFile == NULL) return 0;
 
    _comp->setNodeOpCodeLength(0);
 
-   globalIndexPrefix.appends("n");
+   char const * const globalIndexPrefix = "n";
 
    globalIndex = node->getGlobalIndex();
    numSpaces = getNumSpacesAfterIndex( globalIndex, MAX_GLOBAL_INDEX_LENGTH );
@@ -1270,7 +1269,7 @@ TR_Debug::printWithFixedPrefix(TR::FILE *pOutFile, TR::Node * node, uint32_t ind
       {
       if (printRefCounts)
          {
-         trfprintf(pOutFile, "%s%s%dn%*s  (%3d) %*s==>%s", prefix, globalIndexPrefix.getStr(), globalIndex, numSpaces, "", node->getReferenceCount(), indentation, " ", getName(node->getOpCode()));
+         trfprintf(pOutFile, "%s%s%dn%*s  (%3d) %*s==>%s", prefix, globalIndexPrefix, globalIndex, numSpaces, "", node->getReferenceCount(), indentation, " ", getName(node->getOpCode()));
          if (node->getOpCode().isLoadConst())
             printLoadConst(pOutFile, node);
 #ifdef J9_PROJECT_SPECIFIC
@@ -1280,7 +1279,7 @@ TR_Debug::printWithFixedPrefix(TR::FILE *pOutFile, TR::Node * node, uint32_t ind
          }
       else
          {
-         trfprintf(pOutFile, "%s%s%dn%*s  %*s==>%s", prefix, globalIndexPrefix.getStr(), globalIndex, numSpaces, "", indentation, " ", getName(node->getOpCode()));
+         trfprintf(pOutFile, "%s%s%dn%*s  %*s==>%s", prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ", getName(node->getOpCode()));
          if (node->getOpCode().isLoadConst())
             printLoadConst(pOutFile, node);
 #ifdef J9_PROJECT_SPECIFIC
@@ -1305,9 +1304,9 @@ TR_Debug::printWithFixedPrefix(TR::FILE *pOutFile, TR::Node * node, uint32_t ind
    _nodeChecklist.set(node->getGlobalIndex());
 
    if (printRefCounts)
-      trfprintf(pOutFile, "%s%s%dn%*s  (%3d) %*s",prefix, globalIndexPrefix.getStr(), globalIndex, numSpaces, "", node->getReferenceCount(), indentation, " ");
+      trfprintf(pOutFile, "%s%s%dn%*s  (%3d) %*s",prefix, globalIndexPrefix, globalIndex, numSpaces, "", node->getReferenceCount(), indentation, " ");
    else
-      trfprintf(pOutFile, "%s%s%dn%*s  %*s",prefix, globalIndexPrefix.getStr(), globalIndex, numSpaces, "", indentation, " ");
+      trfprintf(pOutFile, "%s%s%dn%*s  %*s",prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ");
 
    int32_t nodeCount = 1; // Count this node
    int32_t i;
@@ -1335,7 +1334,7 @@ TR_Debug::printWithFixedPrefix(TR::FILE *pOutFile, TR::Node * node, uint32_t ind
          globalIndex = node->getSecondChild()->getGlobalIndex();
          numSpaces = getNumSpacesAfterIndex( globalIndex, MAX_GLOBAL_INDEX_LENGTH );
 
-         trfprintf(pOutFile,"\n%s%s%dn%*s  %*s",prefix, globalIndexPrefix.getStr(), globalIndex, numSpaces, "", indentation, " ");
+         trfprintf(pOutFile,"\n%s%s%dn%*s  %*s",prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ");
          nodeCount++;
          output.appends("default ");
          _comp->incrNodeOpCodeLength( output.getLength() );
@@ -1357,7 +1356,7 @@ TR_Debug::printWithFixedPrefix(TR::FILE *pOutFile, TR::Node * node, uint32_t ind
                globalIndex = node->getChild(i)->getGlobalIndex();
                numSpaces = getNumSpacesAfterIndex( globalIndex, MAX_GLOBAL_INDEX_LENGTH );
 
-               trfprintf(pOutFile,"\n%s%s%dn%*s  %*s",prefix, globalIndexPrefix.getStr(), globalIndex, numSpaces, "", indentation, " ");
+               trfprintf(pOutFile,"\n%s%s%dn%*s  %*s",prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ");
                nodeCount++;
 
                if (sizeof(CASECONST_TYPE) == 8)
@@ -1393,7 +1392,7 @@ TR_Debug::printWithFixedPrefix(TR::FILE *pOutFile, TR::Node * node, uint32_t ind
                globalIndex = node->getChild(i)->getGlobalIndex();
                numSpaces = getNumSpacesAfterIndex( globalIndex, MAX_GLOBAL_INDEX_LENGTH );
 
-               trfprintf(pOutFile,"\n%s%s%dn%*s  %*s",prefix, globalIndexPrefix.getStr(), globalIndex, numSpaces, "", indentation, " ");
+               trfprintf(pOutFile,"\n%s%s%dn%*s  %*s",prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ");
                nodeCount++;
                output.appendf("%d", i-2);
                _comp->incrNodeOpCodeLength( output.getLength() );
@@ -1456,7 +1455,6 @@ void
 TR_Debug::printBasicPreNodeInfoAndIndent(TR::FILE *pOutFile, TR::Node * node, uint32_t indentation)
    {
    uint32_t numSpaces;
-   TR_PrettyPrinterString globalIndexPrefix(this);
 
    if (pOutFile == NULL) return;
 
@@ -1467,10 +1465,10 @@ TR_Debug::printBasicPreNodeInfoAndIndent(TR::FILE *pOutFile, TR::Node * node, ui
       trfprintf(pOutFile, "\n");
       }
 
-   globalIndexPrefix.appends("n");
+   char const * const globalIndexPrefix = "n";
 
    numSpaces = getNumSpacesAfterIndex( node->getGlobalIndex(), MAX_GLOBAL_INDEX_LENGTH );
-   trfprintf(pOutFile, "%s%dn%*s %*s", globalIndexPrefix.getStr(), node->getGlobalIndex(), numSpaces, "", indentation, " ");
+   trfprintf(pOutFile, "%s%dn%*s %*s", globalIndexPrefix, node->getGlobalIndex(), numSpaces, "", indentation, " ");
 
    _comp->setNodeOpCodeLength( 0 );
    }
@@ -1553,9 +1551,7 @@ TR_Debug::printNodeInfo(TR::FILE *pOutFile, TR::Node * node)
 void
 TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool prettyPrint)
    {
-   TR_PrettyPrinterString globalIndexPrefix(this);
-
-   globalIndexPrefix.appends("n");
+   char const * const globalIndexPrefix = "n";
 
    if (!prettyPrint || (node->getOpCodeValue() != TR::BBStart && node->getOpCodeValue() != TR::BBEnd))
       {
@@ -1568,13 +1564,13 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
    if (node->getOpCode().isNullCheck())
       {
       if (node->getNullCheckReference())
-         output.appendf(" on %s%dn", globalIndexPrefix.getStr(), node->getNullCheckReference()->getGlobalIndex());
+         output.appendf(" on %s%dn", globalIndexPrefix, node->getNullCheckReference()->getGlobalIndex());
       else output.appends(" on null NullCheckReference ----- INVALID tree!!");
       }
    else if (node->getOpCodeValue() == TR::allocationFence)
       {
       if(node->getAllocation())
-         output.appendf(" on %s%dn", globalIndexPrefix.getStr(), node->getAllocation()->getGlobalIndex());
+         output.appendf(" on %s%dn", globalIndexPrefix, node->getAllocation()->getGlobalIndex());
       else
          output.appends(" on ALL");
       }

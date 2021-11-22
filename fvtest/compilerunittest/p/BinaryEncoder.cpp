@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020, 2020 IBM Corp. and others
+ * Copyright (c) 2020, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2331,6 +2331,12 @@ INSTANTIATE_TEST_CASE_P(VMX, PPCTrg1Src2EncodingTest, ::testing::ValuesIn(*TRTes
     std::make_tuple(TR::InstOpCode::vmuluwm,  TR::RealRegister::vr31, TR::RealRegister::vr0,  TR::RealRegister::vr0,  0x13e00089u),
     std::make_tuple(TR::InstOpCode::vmuluwm,  TR::RealRegister::vr0,  TR::RealRegister::vr31, TR::RealRegister::vr0,  0x101f0089u),
     std::make_tuple(TR::InstOpCode::vmuluwm,  TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr31, 0x1000f889u),
+    std::make_tuple(TR::InstOpCode::vmuleub,  TR::RealRegister::vr31, TR::RealRegister::vr0,  TR::RealRegister::vr0,  0x13e00208u),
+    std::make_tuple(TR::InstOpCode::vmuleub,  TR::RealRegister::vr0,  TR::RealRegister::vr31, TR::RealRegister::vr0,  0x101f0208u),
+    std::make_tuple(TR::InstOpCode::vmuleub,  TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr31, 0x1000fa08u),
+    std::make_tuple(TR::InstOpCode::vmuloub,  TR::RealRegister::vr31, TR::RealRegister::vr0,  TR::RealRegister::vr0,  0x13e00008u),
+    std::make_tuple(TR::InstOpCode::vmuloub,  TR::RealRegister::vr0,  TR::RealRegister::vr31, TR::RealRegister::vr0,  0x101f0008u),
+    std::make_tuple(TR::InstOpCode::vmuloub,  TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr31, 0x1000f808u),
     std::make_tuple(TR::InstOpCode::vnor,     TR::RealRegister::vr31, TR::RealRegister::vr0,  TR::RealRegister::vr0,  0x13e00504u),
     std::make_tuple(TR::InstOpCode::vnor,     TR::RealRegister::vr0,  TR::RealRegister::vr31, TR::RealRegister::vr0,  0x101f0504u),
     std::make_tuple(TR::InstOpCode::vnor,     TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr31, 0x1000fd04u),
@@ -2439,7 +2445,11 @@ INSTANTIATE_TEST_CASE_P(VMX, PPCTrg1Src3EncodingTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::vsel,     TR::RealRegister::vr31, TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr0,  0x13e0002au),
     std::make_tuple(TR::InstOpCode::vsel,     TR::RealRegister::vr0,  TR::RealRegister::vr31, TR::RealRegister::vr0,  TR::RealRegister::vr0,  0x101f002au),
     std::make_tuple(TR::InstOpCode::vsel,     TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr31, TR::RealRegister::vr0,  0x1000f82au),
-    std::make_tuple(TR::InstOpCode::vsel,     TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr31, 0x100007eau)
+    std::make_tuple(TR::InstOpCode::vsel,     TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr31, 0x100007eau),
+    std::make_tuple(TR::InstOpCode::vmladduhm,TR::RealRegister::vr31, TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr0,  0x13e00022u),
+    std::make_tuple(TR::InstOpCode::vmladduhm,TR::RealRegister::vr0,  TR::RealRegister::vr31, TR::RealRegister::vr0,  TR::RealRegister::vr0,  0x101f0022u),
+    std::make_tuple(TR::InstOpCode::vmladduhm,TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr31, TR::RealRegister::vr0,  0x1000f822u),
+    std::make_tuple(TR::InstOpCode::vmladduhm,TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr31, 0x100007e2u)
 ));
 
 INSTANTIATE_TEST_CASE_P(VMX, PPCRecordFormSanityTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::InstOpCode::Mnemonic, TR::InstOpCode::Mnemonic, BinaryInstruction>>(
@@ -2482,6 +2492,9 @@ INSTANTIATE_TEST_CASE_P(VMX, PPCRecordFormSanityTest, ::testing::ValuesIn(*TRTes
     std::make_tuple(TR::InstOpCode::vmulosh,  TR::InstOpCode::bad,        BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::vmulouh,  TR::InstOpCode::bad,        BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::vmuluwm,  TR::InstOpCode::bad,        BinaryInstruction()),
+    std::make_tuple(TR::InstOpCode::vmladduhm,TR::InstOpCode::bad,        BinaryInstruction()),
+    std::make_tuple(TR::InstOpCode::vmuleub,  TR::InstOpCode::bad,        BinaryInstruction()),
+    std::make_tuple(TR::InstOpCode::vmuloub,  TR::InstOpCode::bad,        BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::vnor,     TR::InstOpCode::bad,        BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::vor,      TR::InstOpCode::bad,        BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::vperm,    TR::InstOpCode::bad,        BinaryInstruction()),

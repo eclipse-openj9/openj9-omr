@@ -160,6 +160,10 @@ struct TR_X86ProcessorInfo
    bool supportsSSE4_2()                   {return testFeatureFlags2(TR_SSE4_2);}
    bool supportsAVX()                      {return testFeatureFlags2(TR_AVX) && enabledXSAVE();}
    bool supportsAVX2()                     {return testFeatureFlags8(TR_AVX2) && enabledXSAVE();}
+   bool supportsAVX512F()                  {return testFeatureFlags8(TR_AVX512F) && enabledXSAVE();}
+   bool supportsAVX512BW()                 {return testFeatureFlags8(TR_AVX512BW) && enabledXSAVE();}
+   bool supportsAVX512DQ()                 {return testFeatureFlags8(TR_AVX512DQ) && enabledXSAVE();}
+   bool supportsAVX512VL()                 {return testFeatureFlags8(TR_AVX512VL) && enabledXSAVE();}
    bool supportsBMI1()                     {return testFeatureFlags8(TR_BMI1) && enabledXSAVE();}
    bool supportsBMI2()                     {return testFeatureFlags8(TR_BMI2) && enabledXSAVE();}
    bool supportsFMA()                      {return testFeatureFlags2(TR_FMA) && enabledXSAVE();}

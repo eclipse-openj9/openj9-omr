@@ -92,6 +92,16 @@ TR::ARM64ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
                }
             break;
 
+         case TR_ConstantPool:
+            {
+            uint8_t *targetAddress = reinterpret_cast<uint8_t *>(*(reinterpret_cast<uint64_t*>(cursor)));
+            uint8_t *targetAddress2 = getNode() ? reinterpret_cast<uint8_t *>(getNode()->getInlinedSiteIndex()) : reinterpret_cast<uint8_t *>(-1);
+            TR::Relocation *relo = new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, targetAddress,
+                                                                        targetAddress2, reloType, cg());
+            cg()->addExternalRelocation(relo, __FILE__, __LINE__, node);
+            }
+            break;
+
          default:
             break;
          }

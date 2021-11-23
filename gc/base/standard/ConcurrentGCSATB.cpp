@@ -27,7 +27,7 @@
 
 #include "omrcfg.h"
 
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK) && defined(OMR_GC_REALTIME)
 
 #define J9_EXTERNAL_TO_VM
 
@@ -41,6 +41,10 @@
 
 #include "AllocateDescription.hpp"
 #include "ConcurrentGCSATB.hpp"
+#include "ParallelMarkTask.hpp"
+#include "ConcurrentCompleteTracingTask.hpp"
+#include "OMRVMInterface.hpp"
+#include "ParallelDispatcher.hpp"
 #include "RememberedSetSATB.hpp"
 #include "WorkPacketsConcurrent.hpp"
 
@@ -66,6 +70,24 @@ MM_ConcurrentGCSATB::newInstance(MM_EnvironmentBase *env)
 }
 
 /**
+ * Initialize a new MM_ConcurrentGCSATB object.
+ *
+ * @return TRUE if initialization completed OK;FALSE otheriwse
+ */
+bool
+MM_ConcurrentGCSATB::initialize(MM_EnvironmentBase *env)
+{
+	if (!MM_ConcurrentGC::initialize(env)) {
+		goto error_no_memory;
+	}
+
+	return true;
+
+error_no_memory:
+	return false;
+}
+
+/**
  * Destroy instance of an ConcurrentGCSATB object.
  *
  */
@@ -85,6 +107,12 @@ MM_ConcurrentGCSATB::kill(MM_EnvironmentBase *env)
 void
 MM_ConcurrentGCSATB::tearDown(MM_EnvironmentBase *env)
 {
+#if defined(OMR_GC_REALTIME)
+	if (NULL != _extensions->sATBBarrierRememberedSet) {
+		_extensions->sATBBarrierRememberedSet->kill(env);
+		_extensions->sATBBarrierRememberedSet = NULL;
+	}
+#endif /* defined(OMR_GC_REALTIME) */
 	/* ..and then tearDown our super class */
 	MM_ConcurrentGC::tearDown(env);
 }
@@ -301,28 +329,169 @@ MM_ConcurrentGCSATB::adjustTraceTarget()
 void
 MM_ConcurrentGCSATB::setupForConcurrent(MM_EnvironmentBase *env)
 {
+	GC_OMRVMInterface::flushCachesForGC(env);
+
 #if defined(OMR_GC_REALTIME)
+	/* Activate SATB Write Barrier */
 	_extensions->sATBBarrierRememberedSet->restoreGlobalFragmentIndex(env);
 #endif /* defined(OMR_GC_REALTIME) */
+
+	_extensions->newThreadAllocationColor = GC_MARK;
+	_concurrentDelegate.setupClassScanning(env);
+
+	MM_ParallelMarkTask markRootsTask(env, _dispatcher, _markingScheme, false, env->_cycleState, MM_ParallelMarkTask::MARK_ROOTS);
+	_dispatcher->run(env, &markRootsTask);
+
+	/* The mark task flushed this thread's work stack, which also NULLs the thread local reference to the work packets.
+	 * We must set it again as this thread will need it to, it will continue to do another loop for paying tax after exiting here (taxPaid is not set in this path, CONCURRENT_INIT_COMPLETE state).  */
+	env->_workStack.prepareForWork(env, _markingScheme->getWorkPackets());
+
+	setThreadsScanned(env);
+	_stats.switchExecutionMode(CONCURRENT_INIT_COMPLETE, CONCURRENT_TRACE_ONLY);
 }
 
 uintptr_t
 MM_ConcurrentGCSATB::doConcurrentTrace(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, uintptr_t sizeToTrace, MM_MemorySubSpace *subspace, bool threadAtSafePoint)
 {
-	/* To be implemented */
-	return 0;
+	uintptr_t sizeTraced = 0;
+	uintptr_t sizeTracedPreviously = (uintptr_t)-1;
+	uintptr_t remainingFree;
+
+	/* Determine how much "taxable" free space remains to be allocated. */
+#if defined(OMR_GC_MODRON_SCAVENGER)
+	if(_extensions->scavengerEnabled) {
+		remainingFree = MM_ConcurrentGC::potentialFreeSpace(env, allocDescription);
+	} else
+#endif /* OMR_GC_MODRON_SCAVENGER */
+	{
+		MM_MemoryPool *pool = allocDescription->getMemoryPool();
+		/* in the case of Tarok phase4, the pool from the allocation description doesn't have enough context to help guide concurrent decisions so we need the parent */
+		MM_MemoryPool *targetPool = pool->getParent();
+		if (NULL == targetPool) {
+			/* if pool is the top-level, however, it is best for the job */
+			targetPool = pool;
+		}
+		remainingFree = targetPool->getApproximateFreeMemorySize();
+	}
+
+	Assert_MM_true(env->isThreadScanned());
+
+	if (periodicalTuningNeeded(env,remainingFree)) {
+		periodicalTuning(env, remainingFree);
+
+		Assert_MM_true(_markingScheme->getWorkPackets()->getDeferredPacketCount() == 0);
+	}
+
+	uintptr_t bytesTraced = 0;
+	bool completedConcurrentScanning = false;
+	if (_concurrentDelegate.startConcurrentScanning(env, &bytesTraced, &completedConcurrentScanning)) {
+		if (completedConcurrentScanning) {
+			resumeConHelperThreads(env);
+		}
+		flushLocalBuffers(env);
+		Trc_MM_concurrentClassMarkEnd(env->getLanguageVMThread(), sizeTraced);
+		_concurrentDelegate.concurrentScanningStarted(env, bytesTraced);
+		sizeTraced += bytesTraced;
+	}
+
+	/* Loop marking  until we have paid all our tax, another thread requests exclusive VM access to do a gc, or another thread has switched to exhausted */
+	while ((!env->isExclusiveAccessRequestWaiting()) && (sizeTraced < sizeToTrace) &&
+			(sizeTraced != sizeTracedPreviously) && (CONCURRENT_TRACE_ONLY >= _stats.getExecutionMode())
+	) {
+
+		sizeTracedPreviously = sizeTraced;
+
+		/* Scan objects until there are no more, the trace size has been achieved, or gc is waiting */
+		uintptr_t bytesTraced = localMark(env,(sizeToTrace - sizeTraced));
+		if (bytesTraced > 0) {
+			/* Update global count of amount  traced */
+			_stats.incTraceSizeCount(bytesTraced);
+			/* ..and local count */
+			sizeTraced += bytesTraced;
+		}
+
+		/* TODO: If there's no work and we haven't scanned enough, then consider flushing/scanning the threads in use barrier packet. */
+		if (sizeTraced < sizeToTrace) {
+			/* Must be no local work left at this point! */
+			Assert_MM_true(!env->_workStack.inputPacketAvailable());
+			Assert_MM_true(!env->_workStack.outputPacketAvailable());
+			Assert_MM_true(!env->_workStack.deferredPacketAvailable());
+
+			if ((((MM_WorkPacketsSATB *)_markingScheme->getWorkPackets())->effectiveTraceExhausted())) {
+				break;
+			} else if (!env->isExclusiveAccessRequestWaiting()) {
+				resumeConHelperThreads(env);
+			}
+		}
+	} /* of while sizeTraced < sizeToTrace */
+
+	/* If no more work left (and concurrent scanning is complete or disabled) then switch to exhausted now */
+	if ((((MM_WorkPacketsSATB *)_markingScheme->getWorkPackets())->effectiveTraceExhausted()) && _concurrentDelegate.isConcurrentScanningComplete(env)) {
+		if(_stats.switchExecutionMode(CONCURRENT_TRACE_ONLY, CONCURRENT_EXHAUSTED)) {
+			/* Tell all MSS to use slow path allocate and so get to a safe  point before paying allocation tax. */
+			subspace->setAllocateAtSafePointOnly(env, true);
+		}
+	}
+
+	/* If there is work available on input lists then notify any waiting concurrent helpers */
+	if ((!env->isExclusiveAccessRequestWaiting()) && (_markingScheme->getWorkPackets()->inputPacketAvailable(env))) {
+		resumeConHelperThreads(env);
+	}
+
+	/* Must be no local work left at this point! */
+	Assert_MM_true(!env->_workStack.inputPacketAvailable());
+	Assert_MM_true(!env->_workStack.outputPacketAvailable());
+	Assert_MM_true(!env->_workStack.deferredPacketAvailable());
+
+	return sizeTraced;
 }
 
 void
 MM_ConcurrentGCSATB::completeConcurrentTracing(MM_EnvironmentBase *env, uintptr_t executionModeAtGC)
 {
+	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+
 #if defined(OMR_GC_REALTIME)
+	/* Flush barrier packets */
 	if (((MM_WorkPacketsSATB *)_markingScheme->getWorkPackets())->inUsePacketsAvailable(env)) {
-		((MM_WorkPacketsSATB *)_markingScheme->getWorkPackets())->moveInUseToNonEmpty(env);
-		_extensions->sATBBarrierRememberedSet->flushFragments(env);
+			((MM_WorkPacketsSATB *)_markingScheme->getWorkPackets())->moveInUseToNonEmpty(env);
+			_extensions->sATBBarrierRememberedSet->flushFragments(env);
 	}
+
+	/* Deactivate barrier */
 	_extensions->sATBBarrierRememberedSet->preserveGlobalFragmentIndex(env);
 #endif /* defined(OMR_GC_REALTIME) */
+
+	_extensions->newThreadAllocationColor = GC_UNMARK;
+
+	if (CONCURRENT_FINAL_COLLECTION > executionModeAtGC) {
+		reportConcurrentHalted(env);
+	}
+
+	/* Get assistance from all worker threads to complete processing of any remaining work packets.*/
+	if (!_markingScheme->getWorkPackets()->isAllPacketsEmpty()) {
+		reportConcurrentCompleteTracingStart(env);
+		uint64_t startTime = omrtime_hires_clock();
+		MM_ConcurrentCompleteTracingTask completeTracingTask(env, _dispatcher, this, env->_cycleState);
+		_dispatcher->run(env, &completeTracingTask);
+		reportConcurrentCompleteTracingEnd(env, omrtime_hires_clock() - startTime);
+	}
+
+	GC_OMRVMInterface::flushCachesForGC(env);
+
+	Assert_MM_true(_markingScheme->getWorkPackets()->isAllPacketsEmpty());
+}
+
+void
+MM_ConcurrentGCSATB::setThreadsScanned(MM_EnvironmentBase *env)
+{
+	GC_OMRVMThreadListIterator vmThreadListIterator(env->getOmrVMThread());
+	OMR_VMThread *walkThread;
+	while ((walkThread = vmThreadListIterator.nextOMRVMThread()) != NULL) {
+		MM_EnvironmentBase *walkEnv = MM_EnvironmentBase::getEnvironment(walkThread);
+		walkEnv->setAllocationColor(GC_MARK);
+		walkEnv->setThreadScanned(true);
+	}
 }
 
 void
@@ -385,4 +554,4 @@ MM_ConcurrentGCSATB::reportConcurrentCollectionStart(MM_EnvironmentBase *env)
 	}
 }
 
-#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK && OMR_GC_REALTIME */

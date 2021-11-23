@@ -30,7 +30,7 @@
 #include "MarkingDelegate.hpp"
 
 void
-MM_MarkingDelegate::scanRoots(MM_EnvironmentBase *env)
+MM_MarkingDelegate::scanRoots(MM_EnvironmentBase *env, bool processLists)
 {
 	OMR_VM_Example *omrVM = (OMR_VM_Example *)env->getOmrVM()->_language_vm;
 	J9HashTableState state;

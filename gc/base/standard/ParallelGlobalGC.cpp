@@ -1012,7 +1012,7 @@ MM_ParallelGlobalGC::mainThreadRestartAllocationCaches(MM_EnvironmentBase *env)
 		 * into the STW thread scan phase.
 		 */  
 		walkEnv->setThreadScanned(false);
-
+		walkEnv->setAllocationColor(GC_UNMARK);
 		walkEnv->_objectAllocationInterface->restartCache(env);
 	}
 }

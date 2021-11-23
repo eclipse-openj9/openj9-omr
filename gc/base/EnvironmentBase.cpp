@@ -35,7 +35,6 @@
 #include "ConcurrentGCStats.hpp"
 #include "GCExtensionsBase.hpp"
 #include "GlobalAllocationManager.hpp"
-#include "GlobalCollector.hpp"
 #include "Heap.hpp"
 #include "MemorySpace.hpp"
 #include "ModronAssertions.h"

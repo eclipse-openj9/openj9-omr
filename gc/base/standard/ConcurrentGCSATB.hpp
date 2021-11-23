@@ -29,7 +29,7 @@
 
 #include "OMR_VM.hpp"
 
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK) && defined(OMR_GC_REALTIME)
 #include "ConcurrentGC.hpp"
 
 /**
@@ -48,7 +48,11 @@ private:
 	/*
 	 * Function members
 	 */
+private:
+	void setThreadsScanned(MM_EnvironmentBase *env);
+
 protected:
+	bool initialize(MM_EnvironmentBase *env);
 	void tearDown(MM_EnvironmentBase *env);
 
 	virtual uintptr_t doConcurrentTrace(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, uintptr_t sizeToTrace, MM_MemorySubSpace *subspace, bool tlhAllocation);
@@ -84,6 +88,6 @@ public:
 		}
 };
 
-#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK && OMR_GC_REALTIME */
 
 #endif /* CONCURRENTGCSATB_HPP_ */

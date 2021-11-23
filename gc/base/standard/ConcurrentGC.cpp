@@ -1495,6 +1495,7 @@ MM_ConcurrentGC::concurrentMark(MM_EnvironmentBase *env, MM_MemorySubSpace *subs
 						taxPaid = true;
 					}
 				} else {
+					Assert_MM_true(_extensions->configuration->isIncrementalUpdateBarrierEnabled());
 					/* TODO: Once optimizeConcurrentWB enabled by default this code will be deleted */
 					_stats.switchExecutionMode(CONCURRENT_INIT_COMPLETE, CONCURRENT_ROOT_TRACING);
 				}
@@ -1519,6 +1520,7 @@ MM_ConcurrentGC::concurrentMark(MM_EnvironmentBase *env, MM_MemorySubSpace *subs
 				break;
 
 			case CONCURRENT_ROOT_TRACING:
+				Assert_MM_true(_extensions->configuration->isIncrementalUpdateBarrierEnabled());
 				nextExecutionMode = _concurrentDelegate.getNextTracingMode(CONCURRENT_ROOT_TRACING);
 				Assert_GC_true_with_message(env, (CONCURRENT_ROOT_TRACING < nextExecutionMode) || (CONCURRENT_TRACE_ONLY == nextExecutionMode), "MM_ConcurrentMarkingDelegate::getNextTracingMode(CONCURRENT_ROOT_TRACING) = %zu\n", nextExecutionMode);
 				if(_stats.switchExecutionMode(CONCURRENT_ROOT_TRACING, nextExecutionMode)) {
@@ -1529,6 +1531,7 @@ MM_ConcurrentGC::concurrentMark(MM_EnvironmentBase *env, MM_MemorySubSpace *subs
 				break;
 
 			default:
+				Assert_MM_true(_extensions->configuration->isIncrementalUpdateBarrierEnabled());
 				/* Client language defines 1 or more execution modes with values > CONCURRENT_ROOT_TRACING */
 				Assert_GC_true_with_message(env, (CONCURRENT_ROOT_TRACING < executionMode) && (CONCURRENT_TRACE_ONLY > executionMode), "MM_ConcurrentStats::_executionMode = %zu\n", executionMode);
 				nextExecutionMode = _concurrentDelegate.getNextTracingMode(executionMode);

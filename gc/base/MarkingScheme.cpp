@@ -360,7 +360,7 @@ MM_MarkingScheme::markLiveObjectsInit(MM_EnvironmentBase *env, bool initMarkMap)
 void
 MM_MarkingScheme::markLiveObjectsRoots(MM_EnvironmentBase *env, bool processLists)
 {
-	_delegate.scanRoots(env);
+	_delegate.scanRoots(env, processLists);
 }
 
 void

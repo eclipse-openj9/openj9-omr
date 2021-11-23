@@ -392,7 +392,12 @@ TR::Register *OMR::X86::TreeEvaluator::loadConstant(TR::Node * node, intptr_t va
 
    TR::Instruction *instr = TR::TreeEvaluator::insertLoadConstant(node, targetRegister, value, type, cg);
 
-   if (cg->enableRematerialisation())
+   // Do not rematerialize register for class pointer or method pointer if
+   // it's AOT compilation because it doesn't have node info in register
+   // rematerialization to create relocation record for the class pointer
+   // or the method pointer.
+   if (cg->enableRematerialisation() &&
+       !(cg->comp()->compileRelocatableCode() && node && node->getOpCodeValue() == TR::aconst && (node->isClassPointerConstant() || node->isMethodPointerConstant())))
       {
       if (node && node->getOpCode().hasSymbolReference() && node->getSymbol() && node->getSymbol()->isClassObject())
          (TR::Compiler->om.generateCompressedObjectHeaders() || cg->comp()->target().is32Bit()) ? type = TR_RematerializableInt : type = TR_RematerializableLong;

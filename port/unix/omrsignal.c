@@ -1554,7 +1554,7 @@ static int32_t
 initializeSignalTools(OMRPortLibrary *portLibrary)
 {
 #if defined(OSX)
-	char semNames[6][128] = {{0}};
+	char semName[31 /* SEM_NAME_LEN */ + 1];
 #endif /* defined(OSX) */
 	
 	/* use this to record the end of the list of signal infos */
@@ -1587,19 +1587,21 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 
 #if !defined(J9ZOS390)
 #if defined(OSX)
-	/* OSX only has named semaphores. They are not shared across processes, so unlink immediately. */
-	portLibrary->str_printf(portLibrary, semNames[0], 128, "/omr/wakeUpASyncReporter-%d", getpid());
-#define SIGSEM_NAME(_i) semNames[_i]
+	/* OSX only has named semaphores. They are not shared across processes, so unlink immediately.
+	 * The semaphore name length must fit within the SEM_NAME_LEN (31) limit.
+	 */
+	portLibrary->str_printf(portLibrary, semName, sizeof(semName), "/omr-WUASR%x-%x", (uint32_t)getpid(), (uint32_t)portLibrary->time_nano_time(portLibrary));
+#define SIGSEM_NAME semName
 #else /* defined(OSX) */
-#define SIGSEM_NAME(_i) NULL
+#define SIGSEM_NAME NULL
 #endif /* defined(OSX) */
 
 	/* The asynchronous signal reporter will wait on this semaphore  */
-	if (SIGSEM_ERROR == SIGSEM_INIT(wakeUpASyncReporter, SIGSEM_NAME(0))) {
+	if (SIGSEM_ERROR == SIGSEM_INIT(wakeUpASyncReporter, SIGSEM_NAME)) {
 		perror("initializeSignalTools() SIGSEM_INIT");
 		return OMRPORT_ERROR_STARTUP_SIGNAL_TOOLS7;
 	}
-	SIGSEM_UNLINK(SIGSEM_NAME(0));
+	SIGSEM_UNLINK(SIGSEM_NAME);
 #undef SIGSEM_NAME
 
 #else /* !defined(J9ZOS390) */

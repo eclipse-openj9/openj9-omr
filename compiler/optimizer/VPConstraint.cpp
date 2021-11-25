@@ -623,6 +623,13 @@ bool TR::VPKnownObject::isArrayWithConstantElements(TR::Compilation * comp)
    return knot->isArrayWithConstantElements(_index);
    }
 
+bool TR::VPKnownObject::isArrayWithStableElements(TR::Compilation * comp)
+   {
+   TR::KnownObjectTable *knot = comp->getKnownObjectTable();
+   TR_ASSERT(knot, "TR::KnownObjectTable should not be null");
+   return knot->isArrayWithStableElements(_index);
+   }
+
 TR_YesNoMaybe TR::VPClassType::isArray()
    {
    if (_sig[0] == '[')

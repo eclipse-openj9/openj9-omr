@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -85,6 +85,14 @@ OMR::KnownObjectTable::isArrayWithConstantElements(Index index)
       return true;
    return false;
    }
+
+bool
+OMR::KnownObjectTable::isArrayWithStableElements(Index index)
+   {
+   TR_ASSERT(index != UNKNOWN && 0 <= index && index < self()->getEndIndex(), "isArrayWithStableElements(%d): index must be in range 0..%d", index, self()->getEndIndex());
+   return false;
+   }
+
 
 uintptr_t *
 OMR::KnownObjectTable::getPointerLocation(Index index)

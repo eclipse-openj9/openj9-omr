@@ -1871,6 +1871,13 @@ TR_InlinerBase::addGuardForVirtual(
    else if (!disableHCRGuards && comp()->getHCRMode() != TR::none)
       createdHCRGuard = true;
 
+#if defined(J9VM_OPT_OPENJDK_METHODHANDLE)
+// for inlined callee methods that do not have HCR guards, setting createdHCRGuard to false
+// prevents creating an OSR transition point to be taken in cases such as a failed TR_ProfiledGuard
+   if (skipHCRGuardForCallee)
+      createdHCRGuard = false;
+#endif
+
    static const char *disableFSDGuard = feGetEnv("TR_DisableFSDGuard");
    if ( !disableFSDGuard && comp()->getOption(TR_FullSpeedDebug) && guard->_kind != TR_BreakpointGuard)
       {

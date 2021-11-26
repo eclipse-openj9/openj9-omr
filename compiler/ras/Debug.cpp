@@ -311,20 +311,24 @@ TR_Debug::newNode(TR::Node *node)
 void
 TR_Debug::newLabelSymbol(TR::LabelSymbol *labelSymbol)
    {
-   TR_ASSERT(_comp, "Required compilation object is NULL.\n");
-   char buf[20];
-   TR::SimpleRegex * regex = NULL;
-
    _comp->getToNumberMap().Add((void *)labelSymbol, (intptr_t)_nextLabelNumber);
-   sprintf(buf, "L%04x", _nextLabelNumber);
 
-   regex = _comp->getOptions()->getBreakOnCreate();
-   if (regex && TR::SimpleRegex::match(regex, buf, false))
-      breakOn();
+   if (_comp->getOptions()->getBreakOnCreate() ||
+       _comp->getOptions()->getDebugOnCreate())
+      {
+      char buf[20];
+      TR::SimpleRegex * regex = NULL;
 
-   regex = _comp->getOptions()->getDebugOnCreate();
-   if (regex && TR::SimpleRegex::match(regex, buf, false))
-      debugOnCreate();
+      sprintf(buf, "L%04x", _nextLabelNumber);
+
+      regex = _comp->getOptions()->getBreakOnCreate();
+      if (regex && TR::SimpleRegex::match(regex, buf, false))
+         breakOn();
+
+      regex = _comp->getOptions()->getDebugOnCreate();
+      if (regex && TR::SimpleRegex::match(regex, buf, false))
+         debugOnCreate();
+      }
 
    _nextLabelNumber++;
    }

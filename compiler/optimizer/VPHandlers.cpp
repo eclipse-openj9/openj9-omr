@@ -410,7 +410,7 @@ static bool tryFoldCompileTimeLoad(
                   // Invalidate alias info so that it can be recomputed in the next optimization that needs it
                   vp->optimizer()->setAliasSetsAreValid(false);
                   }
-               else
+               else if (!constraint->getKnownObject()->isArrayWithStableElements(vp->comp()))
                   break;
                }
 

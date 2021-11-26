@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -86,6 +86,10 @@ public:
 
    // API for checking if an known object is an array with immutable elements
    bool isArrayWithConstantElements(Index index);
+
+   // API for checking if an known object is an array whose elements are immutable
+   // unless they are zero
+   bool isArrayWithStableElements(Index index);
 
    Index getOrCreateIndexAt(uintptr_t *objectReferenceLocation);
    Index getOrCreateIndexAt(uintptr_t *objectReferenceLocation, bool isArrayWithConstantElements);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -960,7 +960,8 @@ class VPKnownObject : public TR::VPFixedClass
    virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, OMR::ValuePropagation *vp);
 
    virtual TR_YesNoMaybe isJavaLangClassObject();
-   virtual bool isArrayWithConstantElements(TR::Compilation * comp);
+   bool isArrayWithConstantElements(TR::Compilation * comp);
+   bool isArrayWithStableElements(TR::Compilation * comp);
 
    virtual bool mustBeEqual(TR::VPConstraint *other, OMR::ValuePropagation *vp);
    virtual bool mustBeNotEqual(TR::VPConstraint *other, OMR::ValuePropagation *vp);

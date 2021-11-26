@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -711,17 +711,17 @@
    vsubuws,          // vector subtract unsigned word saturate
 // vmhaddshs,        // Vector Multiply-High-Add Signed Hword Saturate
 // vmhraddshs,       // Vector Multiply-High-Round-Add Signed Hword Saturate
-// vmladduhm,        // Vector Multiply-Low-Add Unsigned Hword Modulo
+   vmladduhm,        // Vector Multiply-Low-Add Unsigned Hword Modulo
 // vmsummbm,         // Vector Multiply-Sum Mixed Byte Modulo
 // vmsumshm,         // Vector Multiply-Sum Signed Hword Modulo
 // vmsumshs,         // Vector Multiply-Sum Signed Hword Saturate
 // vmsumubm,         // Vector Multiply-Sum Unsigned Byte Modulo
 // vmsumuhs,         // Vector Multiply-Sum Unsigned Hword Saturate
 // vmulesb,          // Vector Multiply Even Signed Byte
-// vmuleub,          // Vector Multiply Even Unsigned Byte
+   vmuleub,          // Vector Multiply Even Unsigned Byte
 // vmuleuh,          // Vector Multiply Even Unsigned Hword
 // vmulosb,          // Vector Multiply Odd Signed Byte
-// vmuloub,          // Vector Multiply Odd Unsigned Byte
+   vmuloub,          // Vector Multiply Odd Unsigned Byte
    vmulesh,          // vector multiply even signed halfword
    vmulosh,          // vector multiply odd signed halfword
    vmulouh,          // vector multiply odd unsigned halfword

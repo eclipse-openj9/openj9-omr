@@ -290,19 +290,22 @@ TR_Debug::roundAddressEnumerationCounters(uint32_t boundary)
 void
 TR_Debug::newNode(TR::Node *node)
    {
-   char buf[20];
-   TR::SimpleRegex * regex;
+   if (_comp->getOptions()->getBreakOnCreate() ||
+       _comp->getOptions()->getDebugOnCreate())
+      {
+      char buf[20];
+      TR::SimpleRegex * regex;
 
-   sprintf(buf, "ND_%04x", node->getGlobalIndex());
+      sprintf(buf, "ND_%04x", node->getGlobalIndex());
 
-   regex = _comp->getOptions()->getBreakOnCreate();
-   if (regex && TR::SimpleRegex::match(regex, buf, false))
-      breakOn();
+      regex = _comp->getOptions()->getBreakOnCreate();
+      if (regex && TR::SimpleRegex::match(regex, buf, false))
+         breakOn();
 
-   regex = _comp->getOptions()->getDebugOnCreate();
-   if (regex && TR::SimpleRegex::match(regex, buf, false))
-      debugOnCreate();
-
+      regex = _comp->getOptions()->getDebugOnCreate();
+      if (regex && TR::SimpleRegex::match(regex, buf, false))
+         debugOnCreate();
+      }
    }
 
 void

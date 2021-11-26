@@ -361,26 +361,27 @@ TR_Debug::newInstruction(TR::Instruction *instr)
 void
 TR_Debug::newRegister(TR::Register *reg)
    {
-   TR_ASSERT(_comp, "Required compilation object is NULL.\n");
-   char buf[20];
-   TR::SimpleRegex * regex;
-
-   regex = _comp->getOptions()->getBreakOnCreate();
-
    if (_comp->getAddressEnumerationOption(TR_EnumerateRegister))
       _comp->getToNumberMap().Add((void *)reg, (intptr_t)_nextRegisterNumber);
 
-   sprintf(buf, "GPR_%04x", _nextRegisterNumber );
+   if (_comp->getOptions()->getBreakOnCreate() ||
+       _comp->getOptions()->getDebugOnCreate())
+      {
+      char buf[20];
+      TR::SimpleRegex * regex;
 
-   regex = _comp->getOptions()->getBreakOnCreate();
-   if (regex && TR::SimpleRegex::match(regex, buf, false))
-      breakOn();
+      sprintf(buf, "GPR_%04x", _nextRegisterNumber );
 
-   regex = _comp->getOptions()->getDebugOnCreate();
-   if (regex && TR::SimpleRegex::match(regex, buf, false))
-      debugOnCreate();
+      regex = _comp->getOptions()->getBreakOnCreate();
+      if (regex && TR::SimpleRegex::match(regex, buf, false))
+         breakOn();
 
-    _nextRegisterNumber++;
+      regex = _comp->getOptions()->getDebugOnCreate();
+      if (regex && TR::SimpleRegex::match(regex, buf, false))
+         debugOnCreate();
+      }
+
+   _nextRegisterNumber++;
    }
 
 void

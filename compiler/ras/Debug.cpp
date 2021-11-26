@@ -387,24 +387,26 @@ TR_Debug::newRegister(TR::Register *reg)
 void
 TR_Debug::newVariableSizeSymbol(TR::AutomaticSymbol *sym)
    {
-   TR_ASSERT(_comp, "Required compilation object is NULL.\n");
    int32_t strLength = static_cast<int32_t>(strlen(TR_VSS_NAME)) + TR::getMaxSignedPrecision<TR::Int32>() + 7;
    char *buf = (char *)_comp->trMemory()->allocateHeapMemory(strLength);
-
-   TR::SimpleRegex * regex = NULL;
-
-   _comp->getToStringMap().Add((void *)sym, buf);
    sprintf(buf, "%s_%d",  TR_VSS_NAME, _nextVariableSizeSymbolNumber);
 
-   regex = _comp->getOptions()->getBreakOnCreate();
-   if (regex && TR::SimpleRegex::match(regex, buf, false))
-      breakOn();
+   _comp->getToStringMap().Add((void *)sym, buf);
 
-   regex = _comp->getOptions()->getDebugOnCreate();
-   if (regex && TR::SimpleRegex::match(regex, buf, false))
-      debugOnCreate();
+   if (_comp->getOptions()->getBreakOnCreate() ||
+       _comp->getOptions()->getDebugOnCreate())
+      {
+      TR::SimpleRegex * regex = NULL;
+      regex = _comp->getOptions()->getBreakOnCreate();
+      if (regex && TR::SimpleRegex::match(regex, buf, false))
+         breakOn();
 
-    _nextVariableSizeSymbolNumber++;
+      regex = _comp->getOptions()->getDebugOnCreate();
+      if (regex && TR::SimpleRegex::match(regex, buf, false))
+         debugOnCreate();
+      }
+
+   _nextVariableSizeSymbolNumber++;
    }
 
 void

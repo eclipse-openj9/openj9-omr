@@ -79,8 +79,6 @@ extern int32_t addressWidth;
 void
 TR_Debug::printTopLegend(TR::FILE *pOutFile)
    {
-   //-index--|--------------------------------------node---------------------------------------|--address---|-----bci-----|-rc-|-vc-|-vn-|--li--|-udi-|-nc-|--sa--
-
    if (pOutFile == NULL) return;
 
    trfprintf(pOutFile, "\n------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
@@ -92,9 +90,9 @@ TR_Debug::printBottomLegend(TR::FILE *pOutFile)
    {
    if (pOutFile == NULL) return;
 
-   trfprintf(pOutFile,    "\n"
-                              "index:       node global index\n"
-                              );
+   trfprintf(pOutFile, "\n"
+                       "index:       node global index\n"
+                       );
    char const *lineOrStatement = "line-number";
    char const *bciOrLoc        = "bci";
    char const *bciOrLocVerbose = "bytecode-index";
@@ -102,15 +100,15 @@ TR_Debug::printBottomLegend(TR::FILE *pOutFile)
    trfprintf(pOutFile, "%s=[x,y,z]: byte-code-info [callee-index, %s, %s]\n",
                  bciOrLoc, bciOrLocVerbose, lineOrStatement);
 
-   trfprintf(pOutFile,    "rc:          reference count\n"
-                              "vc:          visit count\n"
-                              "vn:          value number\n"
-                              "li:          local index\n"
-                              "udi:         use/def index\n"
-                              "nc:          number of children\n"
-                              "addr:        address size in bytes\n"
-                              "flg:         node flags\n"
-                        );
+   trfprintf(pOutFile, "rc:          reference count\n"
+                       "vc:          visit count\n"
+                       "vn:          value number\n"
+                       "li:          local index\n"
+                       "udi:         use/def index\n"
+                       "nc:          number of children\n"
+                       "addr:        address size in bytes\n"
+                       "flg:         node flags\n"
+                       );
    trfflush(pOutFile);
    }
 
@@ -194,51 +192,42 @@ TR_Debug::printLoadConst(TR::FILE *pOutFile, TR::Node *node)
 void
 TR_Debug::printLoadConst(TR::Node *node, TR_PrettyPrinterString& output)
    {
+   char const *fmtStr;
    bool isUnsigned = node->getOpCode().isUnsigned();
    switch (node->getDataType())
       {
       case TR::Int8:
-         if(isUnsigned)
+         if (isUnsigned)
             output.appendf(" %3u", node->getUnsignedByte());
          else
             output.appendf(" %3d", node->getByte());
          break;
       case TR::Int16:
-         if (valueIsProbablyHex(node))
-            output.appendf(" 0x%4x", node->getConst<uint16_t>());
-         else
-            output.appendf(" '%5d' ", node->getConst<uint16_t>());
+         fmtStr = valueIsProbablyHex(node) ? " 0x%4x" : " '%5d' ";
+         output.appendf(fmtStr, node->getConst<uint16_t>());
          break;
       case TR::Int32:
-         if(isUnsigned)
+         if (isUnsigned)
             {
-            if (valueIsProbablyHex(node))
-               output.appendf(" 0x%x", node->getUnsignedInt());
-            else
-               output.appendf(" %u", node->getUnsignedInt());
+            fmtStr = valueIsProbablyHex(node) ? " 0x%x" : " %u";
+            output.appendf(fmtStr, node->getUnsignedInt());
             }
          else
             {
-            if (valueIsProbablyHex(node))
-               output.appendf(" 0x%x", node->getInt());
-            else
-               output.appendf(" %d", node->getInt());
+            fmtStr = valueIsProbablyHex(node) ? " 0x%x" : " %d";
+            output.appendf(fmtStr, node->getInt());
             }
          break;
       case TR::Int64:
-         if(isUnsigned)
+         if (isUnsigned)
             {
-            if (valueIsProbablyHex(node))
-               output.appendf(" " UINT64_PRINTF_FORMAT_HEX, node->getUnsignedLongInt());
-            else
-               output.appendf(" " UINT64_PRINTF_FORMAT , node->getUnsignedLongInt());
+            fmtStr = valueIsProbablyHex(node) ? " " UINT64_PRINTF_FORMAT_HEX : " " UINT64_PRINTF_FORMAT;
+            output.appendf(fmtStr, node->getUnsignedLongInt());
             }
          else
             {
-            if (valueIsProbablyHex(node))
-               output.appendf(" " INT64_PRINTF_FORMAT_HEX, node->getLongInt());
-            else
-               output.appendf(" " INT64_PRINTF_FORMAT , node->getLongInt());
+            fmtStr = valueIsProbablyHex(node) ? " " INT64_PRINTF_FORMAT_HEX : " " INT64_PRINTF_FORMAT;
+            output.appendf(fmtStr, node->getLongInt());
             }
          break;
       case TR::Float:
@@ -1104,20 +1093,16 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Node * node, uint32_t indentation, bool 
                printBasicPreNodeInfoAndIndent(pOutFile, node->getChild(i), indentation);
                nodeCount++;
 
+               char const *fmtStr;
                if (sizeof(CASECONST_TYPE) == 8)
                   {
-                  if (unsigned_case)
-                     output.appendf(INT64_PRINTF_FORMAT_HEX ":\t", node->getChild(i)->getCaseConstant());
-                  else
-                     output.appendf(INT64_PRINTF_FORMAT ":\t", node->getChild(i)->getCaseConstant());
+                  fmtStr = unsigned_case ? INT64_PRINTF_FORMAT_HEX ":\t" : INT64_PRINTF_FORMAT ":\t";
                   }
                else
                   {
-                  if (unsigned_case)
-                     output.appendf("%u:\t", node->getChild(i)->getCaseConstant());
-                  else
-                     output.appendf("%d:\t", node->getChild(i)->getCaseConstant());
+                  fmtStr = unsigned_case ? "%u:\t" : "%d:\t";
                   }
+               output.appendf(fmtStr, node->getChild(i)->getCaseConstant());
 
                _comp->incrNodeOpCodeLength( output.getLength() );
                trfprintf(pOutFile, "%s", output.getStr());
@@ -1270,23 +1255,18 @@ TR_Debug::printWithFixedPrefix(TR::FILE *pOutFile, TR::Node * node, uint32_t ind
       if (printRefCounts)
          {
          trfprintf(pOutFile, "%s%s%dn%*s  (%3d) %*s==>%s", prefix, globalIndexPrefix, globalIndex, numSpaces, "", node->getReferenceCount(), indentation, " ", getName(node->getOpCode()));
-         if (node->getOpCode().isLoadConst())
-            printLoadConst(pOutFile, node);
-#ifdef J9_PROJECT_SPECIFIC
-         printBCDNodeInfo(pOutFile, node);
-#endif
-//         trfprintf(pOutFile, " at n%d", node->getGlobalIndex());
          }
       else
          {
          trfprintf(pOutFile, "%s%s%dn%*s  %*s==>%s", prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ", getName(node->getOpCode()));
-         if (node->getOpCode().isLoadConst())
-            printLoadConst(pOutFile, node);
-#ifdef J9_PROJECT_SPECIFIC
-         printBCDNodeInfo(pOutFile, node);
-#endif
-         //  trfprintf(pOutFile, " at n%d", node->getGlobalIndex());
          }
+
+      if (node->getOpCode().isLoadConst())
+         printLoadConst(pOutFile, node);
+#ifdef J9_PROJECT_SPECIFIC
+      printBCDNodeInfo(pOutFile, node);
+#endif
+
       if (_comp->cg()->getAppendInstruction() != NULL && node->getDataType() != TR::NoType && node->getRegister() != NULL)
          {
          output.appendf(" (in %s)", getName(node->getRegister()));
@@ -1359,20 +1339,18 @@ TR_Debug::printWithFixedPrefix(TR::FILE *pOutFile, TR::Node * node, uint32_t ind
                trfprintf(pOutFile,"\n%s%s%dn%*s  %*s",prefix, globalIndexPrefix, globalIndex, numSpaces, "", indentation, " ");
                nodeCount++;
 
+               char const *fmtStr;
                if (sizeof(CASECONST_TYPE) == 8)
                   {
-                  if (node->getFirstChild()->getOpCode().isUnsigned())
-                     output.appendf(INT64_PRINTF_FORMAT_HEX ":\t", node->getChild(i)->getCaseConstant());
-                  else
-                     output.appendf(INT64_PRINTF_FORMAT ":\t", node->getChild(i)->getCaseConstant());
+                  fmtStr = (node->getFirstChild()->getOpCode().isUnsigned()) ?
+                     INT64_PRINTF_FORMAT_HEX ":\t" :
+                     INT64_PRINTF_FORMAT ":\t";
                   }
                else
                   {
-                  if (node->getFirstChild()->getOpCode().isUnsigned())
-                     output.appendf("%u:\t", node->getChild(i)->getCaseConstant());
-                  else
-                     output.appendf("%d:\t", node->getChild(i)->getCaseConstant());
+                  fmtStr = (node->getFirstChild()->getOpCode().isUnsigned()) ? "%u:\t" : "%d:\t";
                   }
+               output.appendf(fmtStr, node->getChild(i)->getCaseConstant());
                _comp->incrNodeOpCodeLength( output.getLength() );
                trfprintf(pOutFile, "%s", output.getStr());
                output.reset();
@@ -1448,7 +1426,7 @@ TR_Debug::printDestination( TR::TreeTop *treeTop, TR_PrettyPrinterString& output
    output.appends(" --> ");
    if (block->getNumber() >= 0)
       output.appendf("block_%d", block->getNumber());
-      output.appendf(" BBStart at n%dn", node->getGlobalIndex());
+   output.appendf(" BBStart at n%dn", node->getGlobalIndex());
    }
 
 void
@@ -1485,10 +1463,7 @@ TR_Debug::printBasicPostNodeInfo(TR::FILE *pOutFile, TR::Node * node, uint32_t i
 
    int32_t lineNumber = _comp->getLineNumber(node);
 
-   output.appendf( "[%s] ",
-      //node->getOpCode().getSize(),
-      //getName(node->getDataType()),
-      getName(node));
+   output.appendf("[%s] ", getName(node));
 
    char const * bciOrLoc = "bci";
 
@@ -1498,7 +1473,6 @@ TR_Debug::printBasicPostNodeInfo(TR::FILE *pOutFile, TR::Node * node, uint32_t i
          "%s=[%d,%d,-] rc=", bciOrLoc,
          node->getByteCodeInfo().getCallerIndex(),
          node->getByteCodeInfo().getByteCodeIndex());
-      output.appendf("%d", node->getReferenceCount());
       }
    else
       {
@@ -1507,10 +1481,9 @@ TR_Debug::printBasicPostNodeInfo(TR::FILE *pOutFile, TR::Node * node, uint32_t i
          node->getByteCodeInfo().getCallerIndex(),
          node->getByteCodeInfo().getByteCodeIndex(),
          lineNumber);
-      output.appendf("%d", node->getReferenceCount());
       }
 
-   output.appendf(" vc=%d", node->getVisitCount());
+   output.appendf("%d vc=%d", node->getReferenceCount(), node->getVisitCount());
 
    if (_comp->getOptimizer() && _comp->getOptimizer()->getValueNumberInfo())
       output.appendf(" vn=%d", _comp->getOptimizer()->getValueNumberInfo()->getValueNumber(node));
@@ -1739,35 +1712,40 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
       if (getCurrentParent() && getCurrentParent()->getOpCodeValue() == TR::newarray && getCurrentParent()->getSecondChild() == node)
          {
          output.appends("   ; array type is ");
+
+         char *typeStr;
          switch (node->getInt())
             {
             case 4:
-               output.appends("boolean");
+               typeStr = "boolean";
                break;
             case 5:
-               output.appends("char");
+               typeStr = "char";
                break;
             case 6:
-               output.appends("float");
+               typeStr = "float";
                break;
             case 7:
-               output.appends("double");
+               typeStr = "double";
                break;
             case 8:
-               output.appends("byte");
+               typeStr = "byte";
                break;
             case 9:
-               output.appends("short");
+               typeStr = "short";
                break;
             case 10:
-               output.appends("int");
+               typeStr = "int";
                break;
             case 11:
-               output.appends("long");
+               typeStr = "long";
                break;
             default:
-               TR_ASSERT(0, "Wrong array type");
+               TR_ASSERT_FATAL(0, "Unexpected array type");
+               typeStr = "unknown";
             }
+
+         output.appends(typeStr);
          }
       }
 

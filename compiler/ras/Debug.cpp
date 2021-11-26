@@ -288,23 +288,26 @@ TR_Debug::roundAddressEnumerationCounters(uint32_t boundary)
    }
 
 void
+TR_Debug::breakOrDebugOnCreate(char *artifactName)
+   {
+   TR::SimpleRegex *regex = _comp->getOptions()->getBreakOnCreate();
+   if (regex && TR::SimpleRegex::match(regex, artifactName, false))
+      breakOn();
+
+   regex = _comp->getOptions()->getDebugOnCreate();
+   if (regex && TR::SimpleRegex::match(regex, artifactName, false))
+      debugOnCreate();
+   }
+
+void
 TR_Debug::newNode(TR::Node *node)
    {
    if (_comp->getOptions()->getBreakOnCreate() ||
        _comp->getOptions()->getDebugOnCreate())
       {
       char buf[20];
-      TR::SimpleRegex * regex;
-
       sprintf(buf, "ND_%04x", node->getGlobalIndex());
-
-      regex = _comp->getOptions()->getBreakOnCreate();
-      if (regex && TR::SimpleRegex::match(regex, buf, false))
-         breakOn();
-
-      regex = _comp->getOptions()->getDebugOnCreate();
-      if (regex && TR::SimpleRegex::match(regex, buf, false))
-         debugOnCreate();
+      breakOrDebugOnCreate(buf);
       }
    }
 
@@ -317,17 +320,8 @@ TR_Debug::newLabelSymbol(TR::LabelSymbol *labelSymbol)
        _comp->getOptions()->getDebugOnCreate())
       {
       char buf[20];
-      TR::SimpleRegex * regex = NULL;
-
       sprintf(buf, "L%04x", _nextLabelNumber);
-
-      regex = _comp->getOptions()->getBreakOnCreate();
-      if (regex && TR::SimpleRegex::match(regex, buf, false))
-         breakOn();
-
-      regex = _comp->getOptions()->getDebugOnCreate();
-      if (regex && TR::SimpleRegex::match(regex, buf, false))
-         debugOnCreate();
+      breakOrDebugOnCreate(buf);
       }
 
    _nextLabelNumber++;
@@ -336,25 +330,16 @@ TR_Debug::newLabelSymbol(TR::LabelSymbol *labelSymbol)
 void
 TR_Debug::newInstruction(TR::Instruction *instr)
    {
-   TR_ASSERT(_comp, "Required compilation object is NULL.\n");
    if (_comp->getAddressEnumerationOption(TR_EnumerateInstruction) ||
-      _comp->getOptions()->getBreakOnCreate())
+      _comp->getOptions()->getBreakOnCreate() ||
+      _comp->getOptions()->getDebugOnCreate())
       {
       char buf[20];
-      TR::SimpleRegex * regex;
-
       _comp->getToNumberMap().Add((void *)instr, (intptr_t)_nextInstructionNumber);
       sprintf(buf, "IN_%04x", _nextInstructionNumber);
-
-      regex = _comp->getOptions()->getBreakOnCreate();
-      if (regex && TR::SimpleRegex::match(regex, buf, false))
-         breakOn();
-
-      regex = _comp->getOptions()->getDebugOnCreate();
-      if (regex && TR::SimpleRegex::match(regex, buf, false))
-         debugOnCreate();
-
+      breakOrDebugOnCreate(buf);
       }
+
    _nextInstructionNumber++;
    }
 
@@ -368,17 +353,8 @@ TR_Debug::newRegister(TR::Register *reg)
        _comp->getOptions()->getDebugOnCreate())
       {
       char buf[20];
-      TR::SimpleRegex * regex;
-
       sprintf(buf, "GPR_%04x", _nextRegisterNumber );
-
-      regex = _comp->getOptions()->getBreakOnCreate();
-      if (regex && TR::SimpleRegex::match(regex, buf, false))
-         breakOn();
-
-      regex = _comp->getOptions()->getDebugOnCreate();
-      if (regex && TR::SimpleRegex::match(regex, buf, false))
-         debugOnCreate();
+      breakOrDebugOnCreate(buf);
       }
 
    _nextRegisterNumber++;
@@ -396,14 +372,7 @@ TR_Debug::newVariableSizeSymbol(TR::AutomaticSymbol *sym)
    if (_comp->getOptions()->getBreakOnCreate() ||
        _comp->getOptions()->getDebugOnCreate())
       {
-      TR::SimpleRegex * regex = NULL;
-      regex = _comp->getOptions()->getBreakOnCreate();
-      if (regex && TR::SimpleRegex::match(regex, buf, false))
-         breakOn();
-
-      regex = _comp->getOptions()->getDebugOnCreate();
-      if (regex && TR::SimpleRegex::match(regex, buf, false))
-         debugOnCreate();
+      breakOrDebugOnCreate(buf);
       }
 
    _nextVariableSizeSymbolNumber++;

@@ -414,6 +414,14 @@ public:
    virtual void newInstruction(TR::Instruction *);
    virtual void addInstructionComment(TR::Instruction *, char*, ...);
 
+   /**
+    * @brief Check whether to trigger debugger breakpoint or launch debugger
+    *        when \c artifact name is created.
+    *
+    * @param[in] artifactName : name of artifact to break or debug on
+    */
+   void breakOrDebugOnCreate(char *artifactName);
+
    virtual TR::CompilationFilters * getInlineFilters() { return _inlineFilters; }
 
    virtual TR_FrontEnd *fe() { return _fe; }

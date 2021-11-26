@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1059,9 +1059,9 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"scount=",            "O<nnn>\tnumber of invocations before loading relocatable method in shared cache",
         TR::Options::setCount, offsetof(OMR::Options,_initialSCount), 1, "F%d"},
    {"scratchSpaceLimit=",    "C<nnn>\ttotal heap and stack memory limit, in KB",
-                                         TR::Options::setStaticNumericKBAdjusted, (intptr_t)&OMR::Options::_scratchSpaceLimit, 0, "F%d (KB)"},
+                                         TR::Options::setStaticNumericKBAdjusted, (intptr_t)&OMR::Options::_scratchSpaceLimit, 0, "F%d (bytes)"},
    {"scratchSpaceLowerBound=",    "C<nnn>\tlower bound of total heap and stack memory limit, in KB",
-                                         TR::Options::setStaticNumericKBAdjusted, (intptr_t)&OMR::Options::_scratchSpaceLowerBound, 0, "F%d (KB)"},
+                                         TR::Options::setStaticNumericKBAdjusted, (intptr_t)&OMR::Options::_scratchSpaceLowerBound, 0, "F%d (bytes)"},
    {"searchCount=",      "O<nnn>\tcount of the max search to perform",
         TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_lastSearchCount), 0, "F%d"},
    {"slipTrap=",                          "O{regex}\trecord entry/exit for slit/trap for methods listed",

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1163,9 +1163,56 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Node * node, uint32_t indentation, bool 
    }
 
 uint32_t
-TR_Debug::getIntLength( uint32_t num ) const
+TR_Debug::getIntLength(uint32_t num) const
    {
-       return ( num == 0 ? 1 : ((int) log10( (double)num ) + 1) );
+   // The fastest means is a binary search over the range of possible
+   // uint32_t values.  The maximum number of digits for a 32-bit unsigned
+   // integer is 10.
+   //
+   if (num < 100000)
+      {
+      if (num < 100)
+         {
+         if (num < 10)
+            return 1;  // 0-9
+         else
+            return 2; // 10-99
+         }
+      else
+         {
+         if (num < 10000)
+            {
+            if (num < 1000)
+               return 3; // 100-999
+            else
+               return 4; // 1000-9999
+            }
+         else
+            return 5; // 10000-99999
+         }
+      }
+   else
+      {
+      if (num < 10000000)
+         {
+         if (num < 1000000)
+            return 6; // 100_000-999_999
+         else
+            return 7; // 1_000_000-9_999_999
+         }
+      else
+         {
+         if (num < 100000000)
+            return 8; // 10_000_000-99_999_999
+         else
+            {
+            if (num < 1000000000)
+               return 9; // 100_000_000-999_999_999
+            else
+               return 10; // 1_000_000_000-UINT_MAX
+            }
+         }
+      }
    }
 
 uint32_t

@@ -753,6 +753,8 @@ static const char *opCodeToNameMap[] =
    "veor16b",
    "vneg16b",
    "vneg8h",
+   "vneg4s",
+   "vneg2d",
    "vfneg4s",
    "vfneg2d",
    "vnot16b",

@@ -140,6 +140,12 @@ TR::Register *OMR::ARM64::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeG
       case TR::VectorInt16:
          negOp = TR::InstOpCode::vneg8h;
          break;
+      case TR::VectorInt32:
+         negOp = TR::InstOpCode::vneg4s;
+         break;
+      case TR::VectorInt64:
+         negOp = TR::InstOpCode::vneg2d;
+         break;
       case TR::VectorFloat:
          negOp = TR::InstOpCode::vfneg4s;
          break;

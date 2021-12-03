@@ -156,7 +156,7 @@ public:
 	 *
 	 * @param env The environment for the calling thread
 	 */
-	void scanRoots(MM_EnvironmentBase *env);
+	void scanRoots(MM_EnvironmentBase *env, bool processLists = true);
 
 	/**
 	 * This method is called for every live object discovered during marking. It must return an object scanner instance that

@@ -31,7 +31,9 @@
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 #include "ConcurrentGCIncrementalUpdate.hpp"
+#if defined(OMR_GC_REALTIME)
 #include "ConcurrentGCSATB.hpp"
+#endif /* OMR_GC_REALTIME */
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 #if defined(OMR_GC_CONCURRENT_SWEEP)
 #include "ConcurrentSweepGC.hpp"
@@ -128,9 +130,12 @@ MM_ConfigurationStandard::createGlobalCollector(MM_EnvironmentBase* env)
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	if (extensions->concurrentMark) {
+#if defined(OMR_GC_REALTIME)
 		if (isSnapshotAtTheBeginningBarrierEnabled()) {
 			return MM_ConcurrentGCSATB::newInstance(env);
-		} else {
+		} else
+#endif /* OMR_GC_REALTIME */
+		{
 			return MM_ConcurrentGCIncrementalUpdate::newInstance(env);
 		}
 	}

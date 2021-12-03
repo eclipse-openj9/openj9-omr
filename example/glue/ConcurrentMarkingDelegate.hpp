@@ -269,6 +269,12 @@ public:
 		return false;
 	}
 
+	MMINLINE bool
+	setupClassScanning(MM_EnvironmentBase *env)
+	{
+		return true;
+	}
+
 	/**
 	 * Deprecated. Use this default implementation unless otherwise required.
 	 */

@@ -69,9 +69,9 @@ public:
 	void restoreLocalFragmentIndex(MM_EnvironmentBase* env, MM_GCRememberedSetFragment* fragment); /* Called by the root scanner to disable the double-barrier. */
 	void preserveGlobalFragmentIndex(MM_EnvironmentBase* env); /* Called by the code that disables the barrier. */
 	void restoreGlobalFragmentIndex(MM_EnvironmentBase* env); /* Called by the code that enables the barrier. */
-	/* Used to determine if the realtime write barrier is enabled. */
+	/* Used to determine if the SATB write barrier is enabled. */
 	MMINLINE bool
-	isGlobalFragmentIndexPreserved(MM_EnvironmentBase* env = NULL)
+	isGlobalFragmentIndexPreserved()
 	{
 		return (J9GC_REMEMBERED_SET_RESERVED_INDEX == _rememberedSetStruct.globalFragmentIndex);
 	}

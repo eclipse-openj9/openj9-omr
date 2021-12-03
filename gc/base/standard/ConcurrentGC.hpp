@@ -390,6 +390,7 @@ public:
 
 	virtual void scanThread(MM_EnvironmentBase *env)
 	{
+		Assert_MM_true(!_extensions->usingSATBBarrier()); /* Threads are scanned in STW for Concurrent SATB, ensure we don't end up at this call back */
 		uintptr_t mode = _stats.getExecutionMode();
 		if ((CONCURRENT_ROOT_TRACING <= mode) && (CONCURRENT_EXHAUSTED > mode)) {
 			env->_workStack.reset(env, _markingScheme->getWorkPackets());

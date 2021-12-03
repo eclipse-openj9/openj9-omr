@@ -23,7 +23,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "env/StackMemoryRegion.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "env/FrontEnd.hpp"
 #include "codegen/GCStackAtlas.hpp"
@@ -99,9 +98,6 @@ void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
    uint32_t origSize = 0;
    bool     isFirst  = false;
 #endif
-
-   {
-   TR::StackMemoryRegion stackMemoryRegion(*self()->trMemory());
 
    int32_t *colourToOffsetMap =
       (int32_t *) self()->trMemory()->allocateStackMemory(self()->cg()->getLocalsIG()->getNumberOfColoursUsedToColour() * sizeof(int32_t));
@@ -301,8 +297,6 @@ void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
 
    atlas->setLocalBaseOffset(lowGCOffset);
    atlas->setParmBaseOffset(atlas->getParmBaseOffset() + offsetToFirstParm);
-
-   } // scope of the stack memory region
 
    if (debug("reportCL"))
       {

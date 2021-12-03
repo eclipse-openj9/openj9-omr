@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -54,6 +54,7 @@
 #include "env/IO.hpp"
 #include "env/PersistentInfo.hpp"
 #include "env/RegionProfiler.hpp"
+#include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"
 #include "il/Block.hpp"
 #include "il/Node.hpp"
@@ -126,13 +127,14 @@ OMR::CodeGenPhase::_phaseToFunctionTable[] =
 void
 OMR::CodeGenPhase::performAll()
    {
-   int i = 0;
-
-   for(; i < TR::CodeGenPhase::getListSize(); i++)
+   for(int32_t i = 0; i < TR::CodeGenPhase::getListSize(); i++)
       {
       PhaseValue phaseToDo = PhaseList[i];
+
+      TR::StackMemoryRegion stackMemoryRegion(*_cg->trMemory());
       TR::RegionProfiler rp(_cg->comp()->trMemory()->heapMemoryRegion(), *_cg->comp(), "codegen/%s/%s",
          _cg->comp()->getHotnessName(_cg->comp()->getMethodHotness()), self()->getName(phaseToDo));
+
       _phaseToFunctionTable[phaseToDo](_cg, self());
       }
    }

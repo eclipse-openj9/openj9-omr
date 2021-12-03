@@ -68,7 +68,6 @@
 #include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"
 #include "env/PersistentInfo.hpp"
-#include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
@@ -643,9 +642,6 @@ OMR::CodeGenerator::doInstructionSelection()
 
    self()->beginInstructionSelection();
 
-   {
-   TR::StackMemoryRegion stackMemoryRegion(*self()->trMemory());
-
    TR_BitVector *liveLocals = self()->getLiveLocals();
    TR_BitVector nodeChecklistBeforeDump(comp->getNodeCount(), self()->trMemory(), stackAlloc, growable);
 
@@ -821,7 +817,6 @@ OMR::CodeGenerator::doInstructionSelection()
    //
    self()->insertInstructionPrefetches();
 #endif
-   } // scope of the stack memory region
 
    if (comp->getOption(TR_TraceCG) || debug("traceGRA"))
       {

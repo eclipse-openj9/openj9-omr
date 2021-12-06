@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2021 IBM Corp. and others
+ * Copyright (c) 2019, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -9915,31 +9915,31 @@
                         PPCOpProp_IsVSX,
    },
 
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::stxvb16x, */
-   /* .name        =    "stxvb16x", */
-   /* .description =    "Store VSX vector byte*16 indexed", */
-   /* .prefix      =    0x00000000, */
-   /* .opcode      =    0x7C0007D8, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    OMR_PROCESSOR_PPC_P9, */
-   /* .properties  =    PPCOpProp_IsStore | */
-   /*                   PPCOpProp_ExcludeR0ForRA | */
-   /*                   PPCOpProp_IsVSX, */
-   /* }, */
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::stxvb16x,
+   /* .name        = */ "stxvb16x",
+   /* .description =    "Store VSX vector byte*16 indexed",*/
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x7C0007D8,
+   /* .format      = */ FORMAT_XS_RA_RB_MEM,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P9,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA |
+                        PPCOpProp_IsVSX,
+   },
 
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::stxvh8x, */
-   /* .name        =    "stxvh8x", */
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::stxvh8x,
+   /* .name        = */ "stxvh8x",
    /* .description =    "Store VSX vector Hword*8 indexed", */
-   /* .prefix      =    0x00000000, */
-   /* .opcode      =    0x7C000758, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    OMR_PROCESSOR_PPC_P9, */
-   /* .properties  =    PPCOpProp_IsStore | */
-   /*                   PPCOpProp_ExcludeR0ForRA | */
-   /*                   PPCOpProp_IsVSX, */
-   /* }, */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x7C000758,
+   /* .format      = */ FORMAT_XS_RA_RB_MEM,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P9,
+   /* .properties  = */ PPCOpProp_IsStore |
+                        PPCOpProp_ExcludeR0ForRA |
+                        PPCOpProp_IsVSX,
+   },
 
    /* { */
    /* .mnemonic    =    OMR::InstOpCode::stxvll, */

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2021 IBM Corp. and others
+ * Copyright (c) 2019, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -425,4 +425,11 @@ void OMR::RV::RegisterDependencyGroup::assignRegisters(
             }
          }
       }
+   }
+void OMR::RV::RegisterDependencyConditions::stopUsingDepRegs(TR::CodeGenerator *cg, TR::Register *notKilledReg)
+   {
+   if (_preConditions != NULL)
+      _preConditions->stopUsingDepRegs(getAddCursorForPre(), NULL, notKilledReg, cg);
+   if (_postConditions != NULL)
+      _postConditions->stopUsingDepRegs(getAddCursorForPost(), NULL, notKilledReg, cg);
    }

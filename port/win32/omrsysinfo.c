@@ -285,6 +285,7 @@ omrsysinfo_get_env(struct OMRPortLibrary *portLibrary, const char *envVar, char 
 const char *
 omrsysinfo_get_OS_type(struct OMRPortLibrary *portLibrary)
 {
+BOOLEAN isClientMajorVersion10 = FALSE;
 BOOLEAN isServerMajorVersion10 = FALSE;
 /*
 WIN32_WINNT version constants :
@@ -351,8 +352,9 @@ WIN32_WINNT version constants :
 		} else {
 #if defined(_WIN32_WINNT_WIN10) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WIN10)
 			if (IsWindows10OrGreater()) {
-				/* May need to check ReleaseId when next Windows version is released */
-				PPG_si_osType = "Windows 10";
+				/* Starting with major version 10, use the registry to get the version */
+				PPG_si_osType = defaultTypeName;
+				isClientMajorVersion10 = TRUE;
 			} else
 #else /* defined(_WIN32_WINNT_WIN10) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WIN10) */
 			versionInfo.dwOSVersionInfoSize = sizeof(versionInfo);
@@ -363,7 +365,12 @@ WIN32_WINNT version constants :
 					PPG_si_osType = NULL;
 					if (VER_NT_WORKSTATION == versionInfo.wProductType) {
 						if ((10 == versionInfo.dwMajorVersion) && (0 == versionInfo.dwMinorVersion)) {
-							PPG_si_osType = "Windows 10";
+							/* build number cutoff for Windows 11 is 22000 */
+							if (versionInfo.dwBuildNumber >= 22000) {
+								PPG_si_osType = "Windows 11";
+							} else {
+								PPG_si_osType = "Windows 10";
+							}
 						}
 					} else {
 						isServerMajorVersion10 = TRUE;
@@ -479,7 +486,11 @@ WIN32_WINNT version constants :
 				case VER_NT_WORKSTATION: {
 					switch (versionInfo.dwMinorVersion) {
 					case 0:
-						PPG_si_osType = "Windows 10";
+						if (versionInfo.dwBuildNumber >= 22000) {
+							PPG_si_osType = "Windows 11";
+						} else {
+							PPG_si_osType = "Windows 10";
+						}
 						break;
 					default:
 						PPG_si_osType = defaultTypeName;
@@ -504,32 +515,39 @@ WIN32_WINNT version constants :
 		}
 #endif /* defined(_WIN32_WINNT_WINBLUE) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WINBLUE) */
 #define PRODUCT_NAME_KEY "ProductName"
-#define RELEASE_ID_KEY "ReleaseId"
+#define CURRENT_BUILD_KEY "CurrentBuild"
 #define WINDOWS_SERVER_PREFIX "Windows Server version "
 		if (defaultTypeName == PPG_si_osType) {
 			HKEY hKey;
 			if (ERROR_SUCCESS == RegOpenKeyExA(HKEY_LOCAL_MACHINE,
 					"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0, KEY_READ, &hKey)) {
 				DWORD valueSize = 0;
-				if (isServerMajorVersion10
-						&& (ERROR_SUCCESS == RegQueryValueExA(hKey, RELEASE_ID_KEY, NULL, NULL, NULL, &valueSize))) {
-					char ridBuffer[5]; /* the ReleaseId string format is YYMM */
-					if (sizeof(ridBuffer) >= valueSize) {
-						if (ERROR_SUCCESS == RegQueryValueExA(hKey, RELEASE_ID_KEY, NULL, NULL, (LPBYTE)ridBuffer, &valueSize)) {
-							if (0 == strcmp(ridBuffer, "1607")) {
-								PPG_si_osType = "Windows Server 2016";
-							} else if (0 == strcmp(ridBuffer, "1809")) {
-								PPG_si_osType = "Windows Server 2019";
-							} else {
-								size_t bufferSize = sizeof(WINDOWS_SERVER_PREFIX) + valueSize + 1;
-								char *productNameBuffer = portLibrary->mem_allocate_memory(portLibrary,
-										bufferSize, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
-								if (NULL != productNameBuffer) {
-									/* Print the version string using the format used by Microsoft */
-									portLibrary->str_printf(portLibrary, productNameBuffer, bufferSize,
-											"%s%s", WINDOWS_SERVER_PREFIX, ridBuffer);
-									PPG_si_osTypeOnHeap = productNameBuffer;
-									PPG_si_osType = PPG_si_osTypeOnHeap;
+				/* determine Windows 11 or 10 or server equivalent since they share major and minor version numbers */
+				if ((isServerMajorVersion10 || isClientMajorVersion10)
+					&& (ERROR_SUCCESS == RegQueryValueExA(hKey, CURRENT_BUILD_KEY, NULL, NULL, NULL, &valueSize))) {
+					char currentbuildBuffer[10]; /* CurrentBuild values have been 5 digits so far, buffer created with extra space */
+					if (sizeof(currentbuildBuffer) >= valueSize) {
+						if (ERROR_SUCCESS == RegQueryValueExA(hKey, CURRENT_BUILD_KEY, NULL, NULL, (LPBYTE)currentbuildBuffer, &valueSize)) {
+							int currentBuildNumber = atoi(currentbuildBuffer);
+							if (isClientMajorVersion10) {
+								/* Windows 11 build number cutoff is 22000 */
+								if (currentBuildNumber >= 22000) {
+									PPG_si_osType = "Windows 11";
+								} else {
+									PPG_si_osType = "Windows 10";
+								}
+							}
+							else if (isServerMajorVersion10) {
+								/* Windows Server 2022 build number cutoff is 20348, Server 2019 cutoff is 17763
+								 * and Server 2016 cutoff is 14393. These versions are currently ones with major
+								 * version 10.
+								 */
+								if (currentBuildNumber >= 20348) {
+									PPG_si_osType = "Windows Server 2022";
+								} else if (currentBuildNumber >= 17763) {
+									PPG_si_osType = "Windows Server 2019";
+								} else if (currentBuildNumber >= 14393) {
+									PPG_si_osType = "Windows Server 2016";
 								}
 							}
 						}
@@ -552,7 +570,7 @@ WIN32_WINNT version constants :
 			}
 		}
 #undef PRODUCT_NAME_KEY
-#undef RELEASE_ID_KEY
+#undef CURRENT_BUILD_KEY
 #undef WINDOWS_SERVER_PREFIX
 		if (defaultTypeName == PPG_si_osType) {
 #if defined(_WIN32_WINNT_WINBLUE) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WINBLUE)

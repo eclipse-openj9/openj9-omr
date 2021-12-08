@@ -1896,7 +1896,7 @@ MM_ConcurrentGC::concurrentFinalCollection(MM_EnvironmentBase *env, MM_MemorySub
  *
  */
 void
-MM_ConcurrentGC::concurrentWorkStackOverflow()
+MM_ConcurrentGC::workStackOverflow()
 {
 	_stats.setConcurrentWorkStackOverflowOcurred(true);
 	_stats.incConcurrentWorkStackOverflowCount();
@@ -1907,14 +1907,9 @@ MM_ConcurrentGC::concurrentWorkStackOverflow()
  *
  */
 void
-MM_ConcurrentGC::clearConcurrentWorkStackOverflow()
+MM_ConcurrentGC::clearWorkStackOverflow()
 {
 	_stats.setConcurrentWorkStackOverflowOcurred(false);
-
-#if defined(OMR_GC_MODRON_SCAVENGER)
-	MM_WorkPacketsConcurrent *packets = (MM_WorkPacketsConcurrent *)_markingScheme->getWorkPackets();
-	packets->resetWorkPacketsOverflow();
-#endif /* OMR_GC_MODRON_SCAVENGER */
 }
 
 /**
@@ -2113,7 +2108,7 @@ MM_ConcurrentGC::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSpace 
 	}
 
 	 /* Reset concurrent work stack overflow flags for next cycle */
-	clearConcurrentWorkStackOverflow();
+	clearWorkStackOverflow();
 
 	/* Re tune for next concurrent cycle if we have had a heap resize or we got far enough
 	 * last time. We only re-tune on a system GC in the event of a heap resize.

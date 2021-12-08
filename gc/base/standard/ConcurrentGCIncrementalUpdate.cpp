@@ -1406,4 +1406,15 @@ MM_ConcurrentGCIncrementalUpdate::postConcurrentUpdateStatsAndReport(MM_Environm
 	MM_ConcurrentGC::postConcurrentUpdateStatsAndReport(env);
 }
 
+void
+MM_ConcurrentGCIncrementalUpdate::clearWorkStackOverflow()
+{
+	MM_ConcurrentGC::clearWorkStackOverflow();
+
+#if defined(OMR_GC_MODRON_SCAVENGER)
+	MM_WorkPacketsConcurrent *packets = (MM_WorkPacketsConcurrent *)_markingScheme->getWorkPackets();
+	packets->resetWorkPacketsOverflow();
+#endif /* OMR_GC_MODRON_SCAVENGER */
+}
+
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */

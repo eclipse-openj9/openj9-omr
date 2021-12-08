@@ -108,13 +108,13 @@ void
 MM_ConcurrentOverflow::emptyToOverflow(MM_EnvironmentBase *env, MM_Packet *packet, MM_OverflowType type)
 {
 	MM_ConcurrentGCIncrementalUpdate *collector = (MM_ConcurrentGCIncrementalUpdate *)_extensions->getGlobalCollector();
-	void *objectPtr;
+	void *objectPtr = NULL;
 
 	_overflow = true;
 
 	/* Broadcast the overflow to the concurrent collector
 	 * so it can take any remedial action */
-	collector->concurrentWorkStackOverflow();
+	collector->workStackOverflow();
 
 	_extensions->globalGCStats.workPacketStats.setSTWWorkStackOverflowOccured(true);
 	_extensions->globalGCStats.workPacketStats.incrementSTWWorkStackOverflowCount();
@@ -151,7 +151,7 @@ MM_ConcurrentOverflow::overflowItem(MM_EnvironmentBase *env, void *item, MM_Over
 	/* Broadcast the overflow to the concurrent collector
 	 * so it can take any remedial action 
 	 */
-	collector->concurrentWorkStackOverflow();
+	collector->workStackOverflow();
 
 	_extensions->globalGCStats.workPacketStats.setSTWWorkStackOverflowOccured(true);
 	_extensions->globalGCStats.workPacketStats.incrementSTWWorkStackOverflowCount();

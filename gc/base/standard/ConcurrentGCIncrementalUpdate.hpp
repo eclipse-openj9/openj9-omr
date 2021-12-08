@@ -170,6 +170,8 @@ protected:
 
 	virtual void postConcurrentUpdateStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats = NULL, UDATA bytesConcurrentlyScanned = 0);
 
+	virtual void clearWorkStackOverflow();
+
 	virtual uintptr_t getTraceTarget() {
 		if (_pass2Started) {
 			return (_traceTargetPass1 + _traceTargetPass2);

@@ -732,6 +732,8 @@
 	/* Vector Data-processing (1 source) */
 		vneg16b,                                                  	/* 0x6E20B800	NEG      	 */
 		vneg8h,                                                  	/* 0x6E60B800	NEG      	 */
+		vneg4s,                                                 	/* 0x6EA0B800	NEG      	 */
+		vneg2d,                                                 	/* 0x6EE0B800	NEG      	 */
 		vfneg4s,                                                  	/* 0x6EA0F800	FNEG      	 */
 		vfneg2d,                                                  	/* 0x6EE0F800	FNEG      	 */
 		vnot16b,                                                  	/* 0x6E205800	NOT      	 */

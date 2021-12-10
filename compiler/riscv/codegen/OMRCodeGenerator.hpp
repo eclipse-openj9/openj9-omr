@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -308,6 +308,16 @@ public:
    TR_GlobalRegisterNumber _gprLinkageGlobalRegisterNumbers[TR::RealRegister::NumRegisters]; // could be smaller
    TR_GlobalRegisterNumber _fprLinkageGlobalRegisterNumbers[TR::RealRegister::NumRegisters]; // could be smaller
 
+   /**
+    * @brief Answers whether a trampoline is required for a direct call instruction to
+    *           reach a target address.
+    *
+    * @param[in] targetAddress : the absolute address of the call target
+    * @param[in] sourceAddress : the absolute address of the call instruction
+    *
+    * @return : true if a trampoline is required; false otherwise.
+    */
+   bool directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress);
 
    /**
     * @return Retrieves the cached returnTypeInfo instruction

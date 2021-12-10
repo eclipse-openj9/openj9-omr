@@ -339,6 +339,14 @@ void OMR::RV::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *map)
    }
 
 
+bool
+OMR::RV::CodeGenerator::directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress)
+   {
+   return
+      !self()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(targetAddress, sourceAddress) ||
+      self()->comp()->getOption(TR_StressTrampolines);
+   }
+
 TR_GlobalRegisterNumber OMR::RV::CodeGenerator::pickRegister(TR_RegisterCandidate *regCan,
                                                           TR::Block **barr,
                                                           TR_BitVector &availRegs,

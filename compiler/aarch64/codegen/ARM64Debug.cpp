@@ -2005,7 +2005,23 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference *mr)
       }
 
    if (mr->getIndexRegister() != NULL)
+      {
       print(pOutFile, mr->getIndexRegister());
+      TR::ARM64ExtendCode extendCode = mr->getIndexExtendCode();
+      uint8_t scale = mr->getScale();
+
+      if ((extendCode != TR::ARM64ExtendCode::EXT_UXTX) || (scale != 0))
+         {
+         if (extendCode != TR::ARM64ExtendCode::EXT_UXTX)
+            {
+            trfprintf(pOutFile, ", %s %d", ARM64ExtendCodeNames[extendCode], scale);
+            }
+         else
+            {
+            trfprintf(pOutFile, ", lsl %d", scale);
+            }
+         }
+      }
    else
       trfprintf(pOutFile, "%d", mr->getOffset(true));
 

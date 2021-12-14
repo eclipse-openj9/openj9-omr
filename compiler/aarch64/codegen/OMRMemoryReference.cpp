@@ -116,7 +116,8 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _extraRegister(NULL),
    _unresolvedSnippet(NULL),
    _flag(0),
-   _scale(0)
+   _scale(0),
+   _length(0)
    {
    _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
    _offset = _symbolReference->getOffset();
@@ -134,7 +135,8 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _extraRegister(NULL),
    _unresolvedSnippet(NULL),
    _flag(0),
-   _scale(0)
+   _scale(0),
+   _length(0)
    {
    _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
    _offset = _symbolReference->getOffset();
@@ -143,7 +145,7 @@ OMR::ARM64::MemoryReference::MemoryReference(
 
 OMR::ARM64::MemoryReference::MemoryReference(
       TR::Register *br,
-      int32_t disp,
+      intptr_t disp,
       TR::CodeGenerator *cg) :
    _baseRegister(br),
    _baseNode(NULL),
@@ -153,7 +155,8 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _unresolvedSnippet(NULL),
    _flag(0),
    _scale(0),
-   _offset(disp)
+   _offset(disp),
+   _length(0)
    {
    _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
    }
@@ -177,7 +180,9 @@ OMR::ARM64::MemoryReference::MemoryReference(
    TR::SymbolReference *ref = rootLoadOrStore->getSymbolReference();
    TR::Symbol *symbol = ref->getSymbol();
    bool isStore = rootLoadOrStore->getOpCode().isStore();
+   TR::Node *normalizeNode = rootLoadOrStore;
 
+   _length = rootLoadOrStore->getSize();
    self()->setSymbol(symbol, cg);
 
    if (rootLoadOrStore->getOpCode().isIndirect())
@@ -220,6 +225,7 @@ OMR::ARM64::MemoryReference::MemoryReference(
             }
 
          self()->populateMemoryReference(rootLoadOrStore->getFirstChild(), cg);
+         normalizeNode = rootLoadOrStore->getFirstChild();
          }
       }
    else
@@ -251,6 +257,7 @@ OMR::ARM64::MemoryReference::MemoryReference(
          }
       }
    self()->addToOffset(rootLoadOrStore, ref->getOffset(), cg);
+   self()->normalize(normalizeNode, cg);
    }
 
 
@@ -267,7 +274,8 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _flag(0),
    _scale(0),
    _offset(0),
-   _symbolReference(symRef)
+   _symbolReference(symRef),
+   _length(0)
    {
    TR::Symbol *symbol = symRef->getSymbol();
 
@@ -300,8 +308,8 @@ OMR::ARM64::MemoryReference::MemoryReference(
 
    self()->setSymbol(symbol, cg);
    self()->addToOffset(0, symRef->getOffset(), cg);
+   self()->normalize(node, cg);
    }
-
 
 void OMR::ARM64::MemoryReference::setSymbol(TR::Symbol *symbol, TR::CodeGenerator *cg)
    {
@@ -311,88 +319,96 @@ void OMR::ARM64::MemoryReference::setSymbol(TR::Symbol *symbol, TR::CodeGenerato
    if (_baseRegister != NULL && _indexRegister != NULL &&
        (self()->hasDelayedOffset() || self()->getOffset(true) != 0))
       {
-      self()->consolidateRegisters(NULL, NULL, false, cg);
+      self()->consolidateRegisters(NULL, cg);
       }
    }
 
-
-void OMR::ARM64::MemoryReference::addToOffset(TR::Node *node, intptr_t amount, TR::CodeGenerator *cg)
+void OMR::ARM64::MemoryReference::normalize(TR::Node *node, TR::CodeGenerator *cg)
    {
+
+   if ((_indexRegister != NULL) && ((self()->getOffset() != 0) || self()->hasDelayedOffset()))
+      {
+      /* This ensures that _indexRegister is NULL when offset is not zero */
+      self()->consolidateRegisters(node, cg);
+      }
+   else if (_baseRegister == NULL)
+      {
+      self()->moveIndexToBase(node, cg);
+      }
+
    if (self()->getUnresolvedSnippet() != NULL)
       {
-      self()->setOffset(self()->getOffset() + amount);
-      return;
-      }
-
-   if (amount == 0)
-      {
-      return;
-      }
-
-   if (_baseRegister != NULL && _indexRegister != NULL)
-      {
-      self()->consolidateRegisters(NULL, NULL, false, cg);
-      }
-
-   intptr_t displacement = self()->getOffset() + amount;
-   if (!constantIsImm9(displacement))
-      {
-      TR::Register *newBase;
-
-      self()->setOffset(0);
-
-      if (_baseRegister && self()->isBaseModifiable())
-         newBase = _baseRegister;
-      else
+      if (_indexRegister != NULL)
          {
-         newBase = cg->allocateRegister();
-
-         if (_baseRegister && _baseRegister->containsInternalPointer())
-            {
-            newBase->setContainsInternalPointer();
-            newBase->setPinningArrayPointer(_baseRegister->getPinningArrayPointer());
-            }
+         /* This ensures that _indexRegister is NULL */
+         self()->consolidateRegisters(node, cg);
          }
+      return;
+      }
 
-      if (!node)
-         node = cg->getAppendInstruction()->getNode();
+   intptr_t displacement = self()->getOffset();
 
-      if (_baseRegister != NULL)
+   if (displacement != 0)
+      {
+      TR_ASSERT_FATAL(_indexRegister == NULL, "_indexRegister must be NULL if displacement is not zero");
+
+      if (!constantIsImm9(displacement))
          {
-         if (constantIsUnsignedImm12(displacement))
+         TR::Register *newBase;
+
+         self()->setOffset(0);
+
+         if (_baseRegister && self()->isBaseModifiable())
+            newBase = _baseRegister;
+         else
             {
-            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmx, node, newBase, _baseRegister, displacement);
+            newBase = cg->allocateRegister();
+
+            if (_baseRegister && _baseRegister->containsInternalPointer())
+               {
+               newBase->setContainsInternalPointer();
+               newBase->setPinningArrayPointer(_baseRegister->getPinningArrayPointer());
+               }
             }
-         else if (node->getOpCode().isLoadConst() && node->getRegister() && (node->getLongInt() == displacement))
+
+         if (_baseRegister != NULL)
             {
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, newBase, _baseRegister, node->getRegister());
+            if (constantIsUnsignedImm12(displacement))
+               {
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmx, node, newBase, _baseRegister, displacement);
+               }
+            else if (node->getOpCode().isLoadConst() && node->getRegister() && (node->getLongInt() == displacement))
+               {
+               generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, newBase, _baseRegister, node->getRegister());
+               }
+            else
+               {
+               TR::Register *tempReg = cg->allocateRegister();
+               loadConstant64(cg, node, displacement, tempReg);
+               generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, newBase, _baseRegister, tempReg);
+               cg->stopUsingRegister(tempReg);
+               }
             }
          else
             {
-            TR::Register *tempReg = cg->allocateRegister();
-            loadConstant64(cg, node, displacement, tempReg);
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, newBase, _baseRegister, tempReg);
-            cg->stopUsingRegister(tempReg);
+            loadConstant64(cg, node, displacement, newBase);
+            }
+
+         if (_baseRegister != newBase)
+            {
+            self()->decNodeReferenceCounts(cg);
+            _baseNode = NULL;
+            self()->setBaseModifiable();
+            _baseRegister = newBase;
             }
          }
-      else
-         {
-         loadConstant64(cg, node, displacement, newBase);
-         }
-
-      // the following "if" is just to avoid stopUsingRegister being called
-      // for newBase by decNodeReferenceCounts(cg);
-      if (_baseRegister == newBase && _baseNode == NULL) _baseRegister = NULL;
-
-      self()->decNodeReferenceCounts(cg);
-      _baseRegister = newBase;
-      _baseNode = NULL;
-      self()->setBaseModifiable();
       }
-   else
-      self()->setOffset(displacement);
    }
 
+void OMR::ARM64::MemoryReference::addToOffset(TR::Node *node, intptr_t amount, TR::CodeGenerator *cg)
+   {
+   self()->setOffset(self()->getOffset() + amount);
+   }
 
 void OMR::ARM64::MemoryReference::decNodeReferenceCounts(TR::CodeGenerator *cg)
    {
@@ -418,23 +434,112 @@ void OMR::ARM64::MemoryReference::decNodeReferenceCounts(TR::CodeGenerator *cg)
       }
    }
 
+int32_t OMR::ARM64::MemoryReference::getScaleForNode(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   int32_t scale = 0;
+   if (node->getOpCodeValue() == TR::ishl || node->getOpCodeValue() == TR::lshl)
+      {
+      if (node->getSecondChild()->getOpCode().isLoadConst())
+         {
+         int32_t shiftMask = (node->getOpCodeValue() == TR::lshl) ? 63 : 31;
+         int32_t shiftAmount = node->getSecondChild()->getInt() & shiftMask;
+         // shiftAmount of add extended instruction must be less then or equal to 4.
+         // shiftAmount allowed depends on the length of loads and stores.
+         if ((shiftAmount <= 4) && ((1 << shiftAmount) == _length))
+            {
+            scale = shiftAmount;
+            }
+         else
+            {
+            TR::Compilation *comp = cg->comp();
+            if (comp->getOption(TR_TraceCG))
+               {
+               traceMsg(comp, "Shift amount for index register at node %p is %d which is invalid for _length = %d\n", node, shiftAmount, _length);
+               }
+            }
+         }
+      }
+   return scale;
+   }
+
+static bool checkOffset(TR::Node *node, TR::CodeGenerator *cg, uint32_t offset, uint32_t length)
+   {
+   if ((length > 0) && ((offset & (length - 1)) == 0))
+      {
+      return true;
+      }
+   else
+      {
+      TR::Compilation *comp = cg->comp();
+      if (comp->getOption(TR_TraceCG))
+         {
+         traceMsg(comp, "offset amount at node %p is %d which is invalid for length = %d\n", node, offset, length);
+         }
+      return false;
+      }
+   }
+
+void OMR::ARM64::MemoryReference::moveIndexToBase(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if ((_baseRegister != NULL) ||  self()->isIndexSignExtended() || (_scale != 0))
+      {
+      self()->consolidateRegisters(node, cg);
+      }
+   else
+      {
+      if (self()->isIndexModifiable())
+         {
+         self()->setBaseModifiable();
+         }
+      else
+         {
+         self()->clearBaseModifiable();
+         }
+      _baseRegister = _indexRegister;
+      _baseNode = _indexNode;
+      _indexRegister = NULL;
+      _indexNode = NULL;
+      self()->clearIndexModifiable();
+      }
+   }
 
 void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR::CodeGenerator *cg)
    {
-   if (cg->comp()->useCompressedPointers())
+   TR::Compilation *comp = cg->comp();
+   bool shiftUnderAddressNode = false;
+   if (comp->useCompressedPointers())
       {
       if (subTree->getOpCodeValue() == TR::l2a && subTree->getReferenceCount() == 1 && subTree->getRegister() == NULL)
          {
          cg->decReferenceCount(subTree);
          subTree = subTree->getFirstChild();
+
+         /*
+          * We do not want to use shifted index register for compressed refs address node
+          * because shift amount might not be supported one by the mnemonic.
+          */
+         shiftUnderAddressNode = subTree->getOpCode().isShift();
          }
       }
 
-   if (subTree->getReferenceCount() > 1 || subTree->getRegister() != NULL)
+   /*
+    *  If a node has been passed into populateMemoryReference but it was
+    *  never set as a base or index node then its reference count needs
+    *  to be explicitly decremented if it already hasn't been.
+    */
+   const rcount_t refCountOnEntry = subTree->getReferenceCount();
+   TR::Node * const subTreeOnEntry = subTree;
+
+   if (subTree->getReferenceCount() > 1 || subTree->getRegister() != NULL || shiftUnderAddressNode)
       {
       if (_baseRegister != NULL)
          {
-         self()->consolidateRegisters(cg->evaluate(subTree), subTree, false, cg);
+         if (_indexRegister != NULL)
+            {
+            self()->consolidateRegisters(subTree, cg);
+            }
+         _indexRegister = cg->evaluate(subTree);
+         _indexNode = subTree;
          }
       else
          {
@@ -444,18 +549,74 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
       }
    else
       {
-      if (subTree->getOpCode().isArrayRef() &&
-          subTree->getSecondChild()->getOpCode().isLoadConst())
+      int32_t scale = 0;
+      if (subTree->getOpCode().isArrayRef())
          {
-         // array access with constant index
          TR::Node *addressChild = subTree->getFirstChild();
          TR::Node *integerChild = subTree->getSecondChild();
 
-         self()->populateMemoryReference(addressChild, cg);
-         intptr_t amount = (integerChild->getOpCodeValue() == TR::iconst) ?
-                           integerChild->getInt() : integerChild->getLongInt();
-         self()->addToOffset(integerChild, amount, cg);
-         cg->decReferenceCount(integerChild);
+         if (subTree->getSecondChild()->getOpCode().isLoadConst())
+            {
+            // array access with constant index
+            self()->populateMemoryReference(addressChild, cg);
+            intptr_t amount = (integerChild->getOpCodeValue() == TR::iconst) ?
+                              integerChild->getInt() : integerChild->getLongInt();
+            self()->addToOffset(integerChild, amount, cg);
+            if (comp->getOption(TR_TraceCG))
+               {
+               traceMsg(comp, "Capturing array access with constant index at node %p offset = %d\n", subTree, amount);
+               }
+            cg->decReferenceCount(integerChild);
+            }
+         else if (cg->whichNodeToEvaluate(addressChild, integerChild) == 1)
+            {
+            self()->populateMemoryReference(integerChild, cg);
+
+            self()->populateMemoryReference(addressChild, cg);
+            }
+         else
+            {
+            self()->populateMemoryReference(addressChild, cg);
+
+            if (_baseRegister != NULL && _indexRegister != NULL)
+               {
+               self()->consolidateRegisters(subTree, cg);
+               }
+
+            self()->populateMemoryReference(integerChild, cg);
+            }
+         cg->decReferenceCount(subTree);
+         }
+      else if ((subTree->getOpCodeValue() == TR::lsub) &&
+               (subTree->getSecondChild()->getOpCodeValue() == TR::lconst) &&
+               checkOffset(subTree->getSecondChild(), cg, -subTree->getSecondChild()->getLongInt(), _length))
+         {
+         TR::Node *constChild = subTree->getSecondChild();
+         intptr_t amount = -constChild->getLongInt();
+         self()->populateMemoryReference(subTree->getFirstChild(), cg);
+
+         self()->addToOffset(subTree, amount, cg);
+         if (comp->getOption(TR_TraceCG))
+            {
+            traceMsg(comp, "Capturing lsub node with constant value at node %p offset = %d\n", subTree, amount);
+            }
+         cg->decReferenceCount(constChild);
+         cg->decReferenceCount(subTree);
+         }
+      else if (subTree->getOpCodeValue() == TR::i2l)
+         {
+         if (_indexRegister != NULL)
+            {
+            self()->moveIndexToBase(subTree, cg);
+            }
+         TR::Node *firstChild  = subTree->getFirstChild();
+         _indexRegister = cg->evaluate(firstChild);
+         _indexNode = firstChild;
+         self()->setIndexSignExtendedWord();
+         if (comp->getOption(TR_TraceCG))
+            {
+            traceMsg(comp, "Capturing l2i node at %p\n", subTree);
+            }
          cg->decReferenceCount(subTree);
          }
       else if (subTree->getOpCodeValue() == TR::ishl &&
@@ -466,8 +627,44 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
                      subTree->getSecondChild()->getInt(), cg);
          cg->decReferenceCount(subTree->getFirstChild());
          cg->decReferenceCount(subTree->getSecondChild());
+         cg->decReferenceCount(subTree);
          }
-      else if ((subTree->getOpCodeValue() == TR::loadaddr) && !cg->comp()->compileRelocatableCode())
+      else if ((scale = self()->getScaleForNode(subTree, cg)) != 0)
+         {
+         if (_indexRegister != NULL)
+            {
+            self()->moveIndexToBase(subTree, cg);
+            }
+         TR::Node *firstChild  = subTree->getFirstChild();
+         if ((firstChild->getOpCodeValue() == TR::i2l) && (firstChild->getReferenceCount() == 1) && (firstChild->getRegister() == NULL))
+            {
+            TR::Node *i2lChild = firstChild->getFirstChild();
+            cg->evaluate(i2lChild);
+            self()->setIndexSignExtendedWord();
+            if (comp->getOption(TR_TraceCG))
+               {
+               traceMsg(comp, "Capturing i2l node at %p which is a first child of shift node %p\n", firstChild, subTree);
+               }
+            cg->decReferenceCount(firstChild);
+            firstChild = i2lChild;
+            }
+         _indexRegister = cg->evaluate(firstChild);
+         _indexNode = firstChild;
+         if (cg->canClobberNodesRegister(firstChild))
+            {
+            self()->setIndexModifiable();
+            }
+
+         TR::Node *secondChild = subTree->getSecondChild();
+         _scale = scale;
+         if (comp->getOption(TR_TraceCG))
+            {
+            traceMsg(comp, "Capturing shift node at %p, scale = %d\n", subTree, _scale);
+            }
+         cg->decReferenceCount(secondChild);
+         cg->decReferenceCount(subTree);
+         }
+      else if ((subTree->getOpCodeValue() == TR::loadaddr) && !comp->compileRelocatableCode())
          {
          TR::SymbolReference *ref = subTree->getSymbolReference();
          TR::Symbol *symbol = ref->getSymbol();
@@ -490,29 +687,19 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
             }
          if (symbol->isRegisterMappedSymbol())
             {
+            TR::Register *tempReg = (!symbol->isMethodMetaData()) ? cg->getStackPointerRegister() : cg->getMethodMetaDataRegister();
+
             if (_baseRegister != NULL)
                {
-               TR::Register *tempReg;
-               if (!symbol->isMethodMetaData())
-                  { // must be either auto or parm or error.
-                  tempReg = cg->getStackPointerRegister();
-                  }
-               else
+               if (_indexRegister != NULL)
                   {
-                  tempReg = cg->getMethodMetaDataRegister();
+                  self()->consolidateRegisters(NULL, cg);
                   }
-               self()->consolidateRegisters(tempReg, NULL, false, cg);
+               _indexRegister = tempReg;
                }
             else
                {
-               if (!symbol->isMethodMetaData())
-                  { // must be either auto or parm or error.
-                  _baseRegister = cg->getStackPointerRegister();
-                  }
-               else
-                  {
-                  _baseRegister = cg->getMethodMetaDataRegister();
-                  }
+               _baseRegister = tempReg;
                _baseNode = NULL;
                }
             }
@@ -527,129 +714,118 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
          intptr_t amount = (subTree->getOpCodeValue() == TR::iconst) ?
                              subTree->getInt() : subTree->getLongInt();
          self()->addToOffset(subTree, amount, cg);
+         cg->decReferenceCount(subTree);
          }
       else
          {
          if (_baseRegister != NULL)
             {
-            self()->consolidateRegisters(cg->evaluate(subTree), subTree, true, cg);
+            if (_indexRegister != NULL)
+               {
+               self()->consolidateRegisters(subTree, cg);
+               }
+            _indexRegister = cg->evaluate(subTree);
+            _indexNode = subTree;
+            if (cg->canClobberNodesRegister(subTree))
+               {
+               self()->setIndexModifiable();
+               }
             }
          else
             {
             _baseRegister = cg->evaluate(subTree);
             _baseNode = subTree;
-            self()->setBaseModifiable();
+            if (cg->canClobberNodesRegister(subTree))
+               {
+               self()->setBaseModifiable();
+               }
             }
          }
       }
+
+      if (refCountOnEntry == subTreeOnEntry->getReferenceCount())
+         {
+         if ((_indexNode != subTreeOnEntry) && (_baseNode != subTreeOnEntry))
+            {
+            cg->decReferenceCount(subTreeOnEntry);
+            }
+         }
    }
 
 
-void OMR::ARM64::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR::Node *srcTree, bool srcModifiable, TR::CodeGenerator *cg)
+void OMR::ARM64::MemoryReference::consolidateRegisters(TR::Node *srcTree, TR::CodeGenerator *cg)
    {
    TR::Register *tempTargetRegister;
 
-   if (self()->getUnresolvedSnippet() != NULL)
+   if ((_baseRegister != NULL) && self()->isBaseModifiable())
+      tempTargetRegister = _baseRegister;
+   else if (((_baseRegister != NULL) && (_baseRegister->containsCollectedReference() || _baseRegister->containsInternalPointer())) ||
+            _indexRegister->containsCollectedReference() || _indexRegister->containsInternalPointer())
       {
-      TR_UNIMPLEMENTED();
+      if (srcTree != NULL && srcTree->isInternalPointer() &&
+            srcTree->getPinningArrayPointer())
+         {
+         tempTargetRegister = cg->allocateRegister();
+         tempTargetRegister->setContainsInternalPointer();
+         tempTargetRegister->setPinningArrayPointer(srcTree->getPinningArrayPointer());
+         }
+      else
+         {
+         tempTargetRegister = cg->allocateCollectedReferenceRegister();
+         }
+      }
+   else
+      tempTargetRegister = cg->allocateRegister();
+
+   if (_baseRegister != NULL)
+      {
+      if (self()->isIndexSignExtended())
+         {
+         generateTrg1Src2ExtendedInstruction(cg, TR::InstOpCode::addextx, srcTree, tempTargetRegister, _baseRegister, _indexRegister, self()->getIndexExtendCode(), _scale);
+         }
+      else
+         {
+         generateTrg1Src2ShiftedInstruction(cg, TR::InstOpCode::addx, srcTree, tempTargetRegister, _baseRegister, _indexRegister, TR::SH_LSL, _scale);
+         }
+      }
+   else if (_scale != 0)
+      {
+      generateLogicalShiftLeftImmInstruction(cg, srcTree, tempTargetRegister, _indexRegister, _scale, true);
+      if (self()->isIndexSignExtended())
+         {
+         uint32_t imm = (self()->isIndexSignExtendedWord() ? 31 : (self()->isIndexSignExtendedHalf() ? 15 : 7));
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmx, srcTree, tempTargetRegister, tempTargetRegister, imm);
+         }
+      }
+   else if (self()->isIndexSignExtended())
+      {
+      uint32_t imm = (self()->isIndexSignExtendedWord() ? 31 : (self()->isIndexSignExtendedHalf() ? 15 : 7));
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmx, srcTree, tempTargetRegister, _indexRegister, imm);
       }
    else
       {
-      if (_indexRegister != NULL)
-         {
-         if (self()->isBaseModifiable())
-            tempTargetRegister = _baseRegister;
-         else if (_baseRegister->containsCollectedReference() || _baseRegister->containsInternalPointer() ||
-                  _indexRegister->containsCollectedReference() || _indexRegister->containsInternalPointer())
-            {
-            if (srcTree!=NULL && srcTree->isInternalPointer() &&
-                srcTree->getPinningArrayPointer())
-               {
-               tempTargetRegister = cg->allocateRegister();
-               tempTargetRegister->setContainsInternalPointer();
-               tempTargetRegister->setPinningArrayPointer(srcTree->getPinningArrayPointer());
-               }
-            else
-               {
-               tempTargetRegister = cg->allocateCollectedReferenceRegister();
-               }
-            }
-         else
-            tempTargetRegister = cg->allocateRegister();
-
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, srcTree, tempTargetRegister, _baseRegister, _indexRegister);
-
-         if (_baseRegister != tempTargetRegister)
-            {
-            self()->decNodeReferenceCounts(cg);
-            _baseNode = NULL;
-            }
-         else
-            {
-            if (_indexNode != NULL)
-               cg->decReferenceCount(_indexNode);
-            else
-               cg->stopUsingRegister(_indexRegister);
-            }
-         _baseRegister = tempTargetRegister;
-         self()->setBaseModifiable();
-         }
-      else if (srcReg != NULL && (self()->getOffset(true) != 0 || self()->hasDelayedOffset()))
-         {
-         if (self()->isBaseModifiable())
-            tempTargetRegister = _baseRegister;
-         else if (srcModifiable)
-            tempTargetRegister = srcReg;
-         else if (srcReg->containsCollectedReference() || srcReg->containsInternalPointer() ||
-                  _baseRegister->containsCollectedReference() || _baseRegister->containsInternalPointer())
-            {
-            if (srcTree!=NULL && srcTree->isInternalPointer() &&
-               srcTree->getPinningArrayPointer())
-               {
-               tempTargetRegister = cg->allocateRegister();
-               tempTargetRegister->setContainsInternalPointer();
-               tempTargetRegister->setPinningArrayPointer(srcTree->getPinningArrayPointer());
-               }
-            else
-               {
-               tempTargetRegister = cg->allocateCollectedReferenceRegister();
-               }
-            }
-         else
-            tempTargetRegister = cg->allocateRegister();
-
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, srcTree, tempTargetRegister, _baseRegister, srcReg);
-
-         if (_baseRegister != tempTargetRegister)
-            {
-            self()->decNodeReferenceCounts(cg);
-            _baseNode = NULL;
-            }
-         if (srcReg == tempTargetRegister)
-            {
-            self()->decNodeReferenceCounts(cg);
-            _baseNode = srcTree;
-            }
-         else
-            {
-            if (srcTree != NULL)
-               cg->decReferenceCount(srcTree);
-            else
-               cg->stopUsingRegister(srcReg);
-            }
-         _baseRegister = tempTargetRegister;
-         self()->setBaseModifiable();
-         srcReg = NULL;
-         srcTree = NULL;
-         srcModifiable=false;
-         }
-      _indexRegister = srcReg;
-      _indexNode = srcTree;
-      if (srcModifiable)
-         self()->setIndexModifiable();
-      else
-         self()->clearIndexModifiable();
+      TR_ASSERT_FATAL(false, "consolidateRegister() expects (_baseRegister != NULL) || (_scale != 0) || isIndexSignExtended()");
       }
+
+   if (_baseRegister != tempTargetRegister)
+      {
+      self()->decNodeReferenceCounts(cg);
+      _baseNode = NULL;
+      }
+   else
+      {
+      if (_indexNode != NULL)
+         cg->decReferenceCount(_indexNode);
+      else
+         cg->stopUsingRegister(_indexRegister);
+      }
+   _baseRegister = tempTargetRegister;
+   self()->setBaseModifiable();
+   _indexNode = NULL;
+   _indexRegister = NULL;
+   _scale = 0;
+   self()->clearIndexModifiable();
+   self()->clearIndexSignExtended();
    }
 
 
@@ -757,6 +933,84 @@ void OMR::ARM64::MemoryReference::assignRegisters(TR::Instruction *currentInstru
       }
    }
 
+TR::InstOpCode::Mnemonic OMR::ARM64::MemoryReference::mapOpCode(TR::InstOpCode::Mnemonic mnemonic)
+   {
+   if (self()->getIndexRegister() != NULL)
+      {
+      switch (mnemonic)
+         {
+         case TR::InstOpCode::ldrbimm:
+            return TR::InstOpCode::ldrboff;
+         case TR::InstOpCode::ldrsbimmw:
+            return TR::InstOpCode::ldrsboffw;
+         case TR::InstOpCode::ldrsbimmx:
+            return TR::InstOpCode::ldrsboffx;
+         case TR::InstOpCode::ldrhimm:
+            return TR::InstOpCode::ldrhoff;
+         case TR::InstOpCode::ldrshimmw:
+            return TR::InstOpCode::ldrshoffw;
+         case TR::InstOpCode::ldrshimmx:
+            return TR::InstOpCode::ldrshoffx;
+         case TR::InstOpCode::ldrimmw:
+            return TR::InstOpCode::ldroffw;
+         case TR::InstOpCode::ldrswimm:
+            return TR::InstOpCode::ldrswoff;
+         case TR::InstOpCode::ldrimmx:
+            return TR::InstOpCode::ldroffx;
+         case TR::InstOpCode::vldrimmb:
+            return TR::InstOpCode::vldroffb;
+         case TR::InstOpCode::vldrimmh:
+            return TR::InstOpCode::vldroffh;
+         case TR::InstOpCode::vldrimms:
+            return TR::InstOpCode::vldroffs;
+         case TR::InstOpCode::vldrimmd:
+            return TR::InstOpCode::vldroffd;
+         case TR::InstOpCode::vldrimmq:
+            return TR::InstOpCode::vldroffq;
+         case TR::InstOpCode::strbimm:
+            return TR::InstOpCode::strboff;
+         case TR::InstOpCode::strhimm:
+            return TR::InstOpCode::strhoff;
+         case TR::InstOpCode::strimmw:
+            return TR::InstOpCode::stroffw;
+         case TR::InstOpCode::strimmx:
+            return TR::InstOpCode::stroffx;
+         case TR::InstOpCode::vstrimmb:
+            return TR::InstOpCode::vstroffb;
+         case TR::InstOpCode::vstrimmh:
+            return TR::InstOpCode::vstroffh;
+         case TR::InstOpCode::vstrimms:
+            return TR::InstOpCode::vstroffs;
+         case TR::InstOpCode::vstrimmd:
+            return TR::InstOpCode::vstroffd;
+         case TR::InstOpCode::vstrimmq:
+            return TR::InstOpCode::vstroffq;
+         default:
+            break;
+         }
+      }
+      return mnemonic;
+   }
+
+/**
+ * @brief Answers whether the scale is valid for the mnemonic
+ *
+ * @param[in] scale: scale applied for index register
+ * @param[in] mnemonic: mnemonic
+ * @return true if the scale is valid
+ */
+static bool isValidScale(uint8_t scale, TR::InstOpCode::Mnemonic mnemonic)
+   {
+   return (((scale == 1) && ((mnemonic == TR::InstOpCode::ldrhoff) || (mnemonic == TR::InstOpCode::ldrshoffw) ||
+                             (mnemonic == TR::InstOpCode::ldrshoffx) || (mnemonic == TR::InstOpCode::strhoff) ||
+                             (mnemonic == TR::InstOpCode::vldroffh) || (mnemonic == TR::InstOpCode::vstroffh))) ||
+           ((scale == 2) && ((mnemonic == TR::InstOpCode::ldroffw) || (mnemonic == TR::InstOpCode::ldrswoff) ||
+                             (mnemonic == TR::InstOpCode::stroffw) ||
+                             (mnemonic == TR::InstOpCode::vldroffs) || (mnemonic == TR::InstOpCode::vstroffs))) ||
+           ((scale == 3) && ((mnemonic == TR::InstOpCode::ldroffx) || (mnemonic == TR::InstOpCode::stroffx) ||
+                             (mnemonic == TR::InstOpCode::vldroffd) || (mnemonic == TR::InstOpCode::vstroffd))) ||
+           ((scale == 4) && ((mnemonic == TR::InstOpCode::vldroffq) || (mnemonic == TR::InstOpCode::vstroffq))));
+   }
 
 /* register offset */
 static bool isRegisterOffsetInstruction(uint32_t enc)
@@ -815,6 +1069,7 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
    else
       {
       int32_t displacement = self()->getOffset(true);
+      TR_ASSERT_FATAL(!((base != NULL) && (index != NULL) && (displacement != 0)), "AArch64 does not support [base + index + offset] form of memory access");
 
       TR::InstOpCode op = currentInstruction->getOpCode();
 
@@ -826,21 +1081,29 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
          if (index)
             {
             TR_ASSERT(displacement == 0, "Non-zero offset with index register.");
+            TR_ASSERT_FATAL(!(self()->isIndexSignExtendedByte() || self()->isIndexSignExtendedHalf()), "Extend code for memory access must not be SXTB or SXTH.");
 
             if (isRegisterOffsetInstruction(enc))
                {
                base->setRegisterFieldRN(wcursor);
                index->setRegisterFieldRM(wcursor);
 
-               if (self()->getScale() == 0)
+               if (self()->isIndexSignExtendedWord())
                   {
-                  // default: LSL #0
-                  *wcursor |= 0x6 << 12;
+                  // SXTW
+                  *wcursor |= 0x6 << 13;
                   }
                else
                   {
-                  // Eclipse OMR Issue #4227 tracks this
-                  TR_UNIMPLEMENTED();
+                  // LSL
+                  *wcursor |= 0x3 << 13;
+                  }
+               uint8_t scale = self()->getScale();
+               if (scale != 0)
+                  {
+                  TR_ASSERT_FATAL(isValidScale(scale, op.getMnemonic()), "Invalid scale value %d for mnemonic", scale);
+                  // set scale bit
+                  *wcursor |= (1 << 12);
                   }
 
                cursor += ARM64_INSTRUCTION_LENGTH;

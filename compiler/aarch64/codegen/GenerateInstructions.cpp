@@ -265,7 +265,7 @@ TR::Instruction *generateTrg1Src2ShiftedInstruction(TR::CodeGenerator *cg, TR::I
    return new (cg->trHeapMemory()) TR::ARM64Trg1Src2ShiftedInstruction(op, node, treg, s1reg, s2reg, shiftType, shiftAmount, cg);
    }
 
-TR::Instruction *generateTrg1Src2ExtendtedInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+TR::Instruction *generateTrg1Src2ExtendedInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg,
    TR::ARM64ExtendCode extendType, uint32_t shiftAmount, TR::Instruction *preced)
    {

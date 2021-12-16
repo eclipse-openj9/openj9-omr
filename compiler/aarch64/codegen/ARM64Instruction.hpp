@@ -96,7 +96,7 @@ inline bool constantIsImm7(int32_t intValue)
  * @param[in] intValue : signed integer value
  * @return true if the value can be placed in 9-bit field, false otherwise
  */
-inline bool constantIsImm9(int32_t intValue)
+inline bool constantIsImm9(int64_t intValue)
    {
    return (-256 <= intValue && intValue < 256);
    }

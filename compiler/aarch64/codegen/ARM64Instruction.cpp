@@ -457,7 +457,8 @@ TR::ARM64Trg1MemInstruction::ARM64Trg1MemInstruction(TR::InstOpCode::Mnemonic op
                            TR::Node *node,
                            TR::Register *treg,
                            TR::MemoryReference *mr, TR::CodeGenerator *cg)
-   : ARM64Trg1Instruction(op, node, treg, cg), _memoryReference(mr)
+   /* Choose a correct variant of the opcode for this memory reference. */
+   : ARM64Trg1Instruction(mr->mapOpCode(op), node, treg, cg), _memoryReference(mr)
    {
    mr->bookKeepingRegisterUses(self(), cg);
    TR::InstructionDelegate::setupImplicitNullPointerException(cg, this);
@@ -468,7 +469,8 @@ TR::ARM64Trg1MemInstruction::ARM64Trg1MemInstruction(TR::InstOpCode::Mnemonic op
                            TR::Register *treg,
                            TR::MemoryReference *mr,
                            TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
-   : ARM64Trg1Instruction(op, node, treg, precedingInstruction, cg), _memoryReference(mr)
+   /* Choose a correct variant of the opcode for this memory reference. */
+   : ARM64Trg1Instruction(mr->mapOpCode(op), node, treg, precedingInstruction, cg), _memoryReference(mr)
    {
    mr->bookKeepingRegisterUses(self(), cg);
    TR::InstructionDelegate::setupImplicitNullPointerException(cg, this);
@@ -520,7 +522,8 @@ void TR::ARM64Trg1MemInstruction::assignRegisters(TR_RegisterKinds kindToBeAssig
 TR::ARM64MemInstruction::ARM64MemInstruction(TR::InstOpCode::Mnemonic op,
                      TR::Node *node,
                      TR::MemoryReference *mr, TR::CodeGenerator *cg)
-   : TR::Instruction(op, node, cg), _memoryReference(mr)
+   /* Choose a correct variant of the opcode for this memory reference. */
+   : TR::Instruction(mr->mapOpCode(op), node, cg), _memoryReference(mr)
    {
    mr->bookKeepingRegisterUses(self(), cg);
    TR::InstructionDelegate::setupImplicitNullPointerException(cg, this);
@@ -530,7 +533,8 @@ TR::ARM64MemInstruction::ARM64MemInstruction(TR::InstOpCode::Mnemonic op,
                      TR::Node *node,
                      TR::MemoryReference *mr,
                      TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
-   : TR::Instruction(op, node, precedingInstruction, cg), _memoryReference(mr)
+   /* Choose a correct variant of the opcode for this memory reference. */
+   : TR::Instruction(mr->mapOpCode(op), node, precedingInstruction, cg), _memoryReference(mr)
    {
    mr->bookKeepingRegisterUses(self(), cg);
    TR::InstructionDelegate::setupImplicitNullPointerException(cg, this);

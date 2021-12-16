@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021, 2021 IBM Corp. and others
+ * Copyright (c) 2021, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -51,12 +51,36 @@
 struct thread_command_full_64 {
 	uint32_t cmd;
 	uint32_t cmdsize;
-#if defined(OMR_ARCH_X86)
+#if defined(OMR_ARCH_AARCH64)
+	arm_thread_state64_t thread_state;
+	arm_neon_state64_t float_state;
+	arm_exception_state64_t exceptions;
+#elif defined(OMR_ARCH_X86) /* defined(OMR_ARCH_AARCH64) */
 	x86_thread_state_t thread_state;
 	x86_float_state_t float_state;
 	x86_exception_state_t exceptions;
-#endif /* defined(OMR_ARCH_X86) */
+#else /* defined(OMR_ARCH_AARCH64) */
+#error Unsupported processor
+#endif /* defined(OMR_ARCH_AARCH64) */
 };
+
+#if defined(OMR_ARCH_AARCH64)
+#define OSDUMP_THREAD_STATE ARM_THREAD_STATE64
+#define OSDUMP_THREAD_STATE_COUNT ARM_THREAD_STATE64_COUNT
+#define OSDUMP_FLOAT_STATE ARM_NEON_STATE64
+#define OSDUMP_FLOAT_STATE_COUNT ARM_NEON_STATE64_COUNT
+#define OSDUMP_EXCEPTION_STATE ARM_EXCEPTION_STATE64
+#define OSDUMP_EXCEPTION_STATE_COUNT ARM_EXCEPTION_STATE64_COUNT
+#elif defined(OMR_ARCH_X86) /* defined(OMR_ARCH_AARCH64) */
+#define OSDUMP_THREAD_STATE x86_THREAD_STATE
+#define OSDUMP_THREAD_STATE_COUNT x86_THREAD_STATE_COUNT
+#define OSDUMP_FLOAT_STATE x86_FLOAT_STATE
+#define OSDUMP_FLOAT_STATE_COUNT x86_FLOAT_STATE_COUNT
+#define OSDUMP_EXCEPTION_STATE x86_EXCEPTION_STATE
+#define OSDUMP_EXCEPTION_STATE_COUNT x86_EXCEPTION_STATE_COUNT
+#else /* defined(OMR_ARCH_AARCH64) */
+#error Unsupported processor
+#endif /* defined(OMR_ARCH_AARCH64) */
 
 static char corefile_name[PATH_MAX];
 static int corefile_fd = -1;
@@ -133,29 +157,27 @@ coredump_to_file(mach_port_t task_port, pid_t pid)
 			goto done;
 		}
 		file_off += sizeof(uint32_t);
-#if defined(OMR_ARCH_X86)
-		written = pwrite(corefile_fd, &threads[i].thread_state, sizeof(x86_thread_state_t), file_off);
+		written = pwrite(corefile_fd, &threads[i].thread_state, sizeof(threads[i].thread_state), file_off);
 		if (written < 0) {
 			perror("pwrite() error writing threads:");
 			kr = KERN_FAILURE;
 			goto done;
 		}
-		file_off += sizeof(x86_thread_state_t);
-		written = pwrite(corefile_fd, &threads[i].float_state, sizeof(x86_float_state_t), file_off);
+		file_off += sizeof(threads[i].thread_state);
+		written = pwrite(corefile_fd, &threads[i].float_state, sizeof(threads[i].float_state), file_off);
 		if (written < 0) {
 			perror("pwrite() error writing threads:");
 			kr = KERN_FAILURE;
 			goto done;
 		}
-		file_off += sizeof(x86_float_state_t);
-		written = pwrite(corefile_fd, &threads[i].exceptions, sizeof(x86_exception_state_t), file_off);
+		file_off += sizeof(threads[i].float_state);
+		written = pwrite(corefile_fd, &threads[i].exceptions, sizeof(threads[i].exceptions), file_off);
 		if (written < 0) {
 			perror("pwrite() error writing threads:");
 			kr = KERN_FAILURE;
 			goto done;
 		}
-		file_off += sizeof(x86_exception_state_t);
-#endif /* defined(OMR_ARCH_X86) */
+		file_off += sizeof(threads[i].exceptions);
 		mh64.sizeofcmds += threads[i].cmdsize;
 	}
 	mh64.ncmds += thread_count;
@@ -225,7 +247,6 @@ done:
 static kern_return_t
 list_thread_commands(mach_port_t task_port, struct thread_command_full_64 **thread_commands, natural_t *thread_count)
 {
-#if defined(OMR_ARCH_X86)
 	kern_return_t kr = KERN_SUCCESS;
 	thread_act_array_t thread_info;
 	struct thread_command_full_64 *threads = NULL;
@@ -248,22 +269,22 @@ list_thread_commands(mach_port_t task_port, struct thread_command_full_64 **thre
 		uint32_t state_int_count = 0;
 		threads[i].cmd = LC_THREAD;
 		threads[i].cmdsize = sizeof(threads[i].cmd) + sizeof(threads[i].cmdsize);
-		state_int_count = x86_THREAD_STATE_COUNT;
-		kr = thread_get_state(thread_info[i], x86_THREAD_STATE,
+		state_int_count = OSDUMP_THREAD_STATE_COUNT;
+		kr = thread_get_state(thread_info[i], OSDUMP_THREAD_STATE,
 			(thread_state_t)&threads[i].thread_state, &state_int_count);
 		if (KERN_SUCCESS != kr) {
 			goto done;
 		}
 		threads[i].cmdsize += state_int_count * sizeof(natural_t);
-		state_int_count = x86_FLOAT_STATE_COUNT;
-		kr = thread_get_state(thread_info[i], x86_FLOAT_STATE,
+		state_int_count = OSDUMP_FLOAT_STATE_COUNT;
+		kr = thread_get_state(thread_info[i], OSDUMP_FLOAT_STATE,
 			(thread_state_t)&threads[i].float_state, &state_int_count);
 		if (KERN_SUCCESS != kr) {
 			goto done;
 		}
 		threads[i].cmdsize += state_int_count * sizeof(natural_t);
-		state_int_count = x86_EXCEPTION_STATE_COUNT;
-		kr = thread_get_state(thread_info[i], x86_EXCEPTION_STATE,
+		state_int_count = OSDUMP_EXCEPTION_STATE_COUNT;
+		kr = thread_get_state(thread_info[i], OSDUMP_EXCEPTION_STATE,
 			(thread_state_t)&threads[i].exceptions, &state_int_count);
 		if (KERN_SUCCESS != kr) {
 			goto done;
@@ -284,9 +305,6 @@ done:
 	}
 	mach_vm_deallocate(mach_task_self(), (mach_vm_address_t)thread_info, (*thread_count) * sizeof(thread_act_t));
 	return kr;
-#else /* defined(OMR_ARCH_X86) */
-	return KERN_FAILURE;
-#endif /* defined(OMR_ARCH_X86) */
 }
 
 static kern_return_t

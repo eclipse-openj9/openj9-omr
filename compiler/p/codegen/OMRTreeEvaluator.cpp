@@ -3466,6 +3466,8 @@ TR::Register *OMR::Power::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeG
        return TR::TreeEvaluator::vmulInt16Helper(node,cg);
      case TR::VectorInt32:
        return TR::TreeEvaluator::vmulInt32Helper(node,cg);
+     case TR::VectorInt64:
+       return TR::TreeEvaluator::vmulInt64Helper(node,cg);
      case TR::VectorFloat:
        return TR::TreeEvaluator::vmulFloatHelper(node,cg);
      case TR::VectorDouble:
@@ -3551,6 +3553,63 @@ TR::Register *OMR::Power::TreeEvaluator::vmulInt16Helper(TR::Node *node, TR::Cod
 TR::Register *OMR::Power::TreeEvaluator::vmulInt32Helper(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vmuluwm);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::vmulInt64Helper(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P10))
+      return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vmulld);
+
+   /*
+   To perform the multiplication without the vmulld instruction, we will break it into parts.
+
+   Suppose we have two long integers (64 bits), AB and CD, where each of A, B, C, and D is one word (32 bits).
+   To get their product, AB * CD, we can do the following:
+
+   AB * CD = B*D + 2^32*(A*D + B*C) + 2^64*(A*C)
+
+   Since we are only keeping the lower 64 bits of the result, this is equivalent to:
+
+   AB * CD = B*D + 2^32*(A*D + B*C)
+   */
+
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+
+   TR::Register *lhsReg = cg->evaluate(firstChild);
+   TR::Register *rhsReg = cg->evaluate(secondChild);
+
+   TR::Register *productReg = cg->allocateRegister(TR_VRF);
+   TR::Register *tempA = cg->allocateRegister(TR_VRF);
+   TR::Register *tempB = cg->allocateRegister(TR_VRF);
+   TR::Register *shiftReg = cg->allocateRegister(TR_VRF);
+
+   node->setRegister(productReg);
+
+   //set shift amount to -32 bits. Since only the lowest 6 bits of shiftReg are used by vrld and vsld as an unsigned integer, this will result in a shift of 32 bits
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::vspltisw, node, shiftReg, -16);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vadduwm, node, shiftReg, shiftReg, shiftReg);
+
+   //productReg = B*D
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vmulouw, node, productReg, lhsReg, rhsReg);
+
+   //tempB = 2^32*(A*D + B*C)
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vrld, node, tempB, rhsReg, shiftReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vmulouw, node, tempA, lhsReg, tempB);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vmuleuw, node, tempB, lhsReg, tempB);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vaddudm, node, tempB, tempA, tempB);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vsld, node, tempB, tempB, shiftReg);
+
+   //add everything together to get final product
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vaddudm, node, productReg, productReg, tempB);
+
+   cg->stopUsingRegister(tempA);
+   cg->stopUsingRegister(tempB);
+   cg->stopUsingRegister(shiftReg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+
+   return productReg;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vmulFloatHelper(TR::Node *node, TR::CodeGenerator *cg)

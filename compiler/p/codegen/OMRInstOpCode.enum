@@ -612,9 +612,9 @@
 // vmul10uq,         // vector multiply-by-10 unsigned qword
 // vmul10euq,        // vector multiply-by-10 extended unsigned qword
 // vmulesw,          // Vector Multiply Even Signed Word
-// vmuleuw,          // Vector Multiply Even Unsigned Word
+   vmuleuw,          // Vector Multiply Even Unsigned Word
 // vmulosw,          // Vector Multiply Odd Signed Word
-// vmulouw,          // Vector Multiply Odd Unsigned Word
+   vmulouw,          // Vector Multiply Odd Unsigned Word
 // vnegw,            // vector negate word
 // vnegd,            // vector negate DWord
 // vprtybw,          // vector parity byte word
@@ -633,10 +633,10 @@
 // vbpermd,          // vector bit permute DWord
    vbpermq,          // Vector Bit Permute Qword
 // vextractbm,       // Vector Extract Byte Mask
-// vrld,             // Vector Rotate Left Dword
+   vrld,             // Vector Rotate Left Dword
 // vsbox,            // Vector AES SubBytes
    vsel,             // vector conditional select
-// vsld,             // Vector Shift Left Dword
+   vsld,             // Vector Shift Left Dword
 // vsrad,            // Vector Shift Right Algebraic Dword
 // vsrd,             // Vector Shift Right Dword
 // vsubcuq,          // Vector Subtract & write Carry Unsigned Qword

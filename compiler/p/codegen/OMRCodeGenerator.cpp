@@ -1765,7 +1765,7 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
       return false;
 
    if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
-       (opcode.getOpCodeValue() == TR::vadd || opcode.getOpCodeValue() == TR::vsub) &&
+       (opcode.getOpCodeValue() == TR::vadd || opcode.getOpCodeValue() == TR::vsub || opcode.getOpCodeValue() == TR::vmul) &&
        dt == TR::Int64)
       return true;
 

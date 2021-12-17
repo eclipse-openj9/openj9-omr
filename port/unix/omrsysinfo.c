@@ -1687,7 +1687,7 @@ omrsysinfo_get_s390_processor_feature_name(uint32_t feature)
 		return "vec_e2";
 	case OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY:
 		return "vec_pde";
-        case OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY_2:
+	case OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY_2:
 		return "vec_pde2";
 	default:
 		return "null";

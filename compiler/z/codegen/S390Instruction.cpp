@@ -4070,33 +4070,10 @@ uint8_t *
 TR::S390VRRiInstruction::generateBinaryEncoding()
    {
    // Error Checking
-   TR::Register* r1Reg = getRegisterOperand(1);
-   TR::Register* v2Reg = getRegisterOperand(2);
-   TR_ASSERT(r1Reg != NULL, "First Operand should not be NULL!");
-   TR_ASSERT(v2Reg != NULL, "2nd Operand should not be NULL!");
+   TR_ASSERT(getRegisterOperand(1) != NULL, "VRR-i R1 should not be NULL!");
+   TR_ASSERT(getRegisterOperand(2) != NULL, "VRR-i V1 should not be NULL!");
 
-   uint8_t * instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t * cursor = instructionStart;
-   memset((void*)cursor, 0, getEstimatedBinaryLength());
-
-   // Copy binary
-   getOpCode().copyBinaryToBuffer(instructionStart);
-
-   setMaskField(reinterpret_cast<uint32_t *>(cursor), getM3(), 1);
-   setMaskField(reinterpret_cast<uint32_t *>(cursor), getM4(), 2);
-
-   // Operands
-   toRealRegister(r1Reg)->setRegister1Field(reinterpret_cast<uint32_t *>(cursor));
-   toRealRegister(v2Reg)->setRegister2Field(reinterpret_cast<uint32_t *>(cursor));
-
-   // Cursor move
-   // update binary length
-   // update binary length estimate error
-   cursor += getOpCode().getInstructionLength();
-   setBinaryLength(cursor - instructionStart);
-   setBinaryEncoding(instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   return cursor;
+   return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
 /** \details

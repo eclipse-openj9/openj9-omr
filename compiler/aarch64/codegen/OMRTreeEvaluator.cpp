@@ -2622,7 +2622,7 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, T
       tempReg = cg->allocateRegister();
       }
    node->setRegister(tempReg);
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, cg);
+   TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node);
    generateTrg1MemInstruction(cg, op, node, tempReg, tempMR);
 
    if (needSync)
@@ -2677,7 +2677,7 @@ OMR::ARM64::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       {
       op = TR::InstOpCode::ldrimmx;
       }
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, cg);
+   TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node);
    generateTrg1MemInstruction(cg, op, node, tempReg, tempMR);
 
    if (node->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())
@@ -2733,7 +2733,7 @@ OMR::ARM64::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::CodeGenerator *c
 
 TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
    {
-   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, cg);
+   TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node);
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
    bool lazyVolatile = false;
    if (node->getSymbolReference()->getSymbol()->isShadow() &&
@@ -2851,7 +2851,7 @@ OMR::ARM64::TreeEvaluator::bstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg
          TR::Symbol *symbol = symref->getSymbol();
          if (symbol->isGCRPatchPoint())
             {
-            TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, cg);
+            TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node);
             TR::SymbolReference *patchGCRHelperRef = cg->symRefTab()->findOrCreateRuntimeHelper(TR_ARM64PatchGCRHelper);
             TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg->trMemory());
             TR::Register *tempReg = cg->allocateRegister();
@@ -2975,14 +2975,14 @@ inlineConstantLengthForwardArrayCopy(TR::Node *node, int64_t byteLen, TR::Regist
       generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
 
       // Copy 16x4 bytes in a loop
-      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpostq, node, dataReg1, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, 16, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpostq, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, 16, cg), dataReg1);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpostq, node, dataReg1, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, 16, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpostq, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, 16, cg), dataReg1);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpostq, node, dataReg1, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, 16, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpostq, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, 16, cg), dataReg1);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpostq, node, dataReg1, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, 16, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpostq, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, 16, cg), dataReg1);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpostq, node, dataReg1, TR::MemoryReference::createWithDisplacement(cg, srcReg, 16));
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpostq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 16), dataReg1);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpostq, node, dataReg1, TR::MemoryReference::createWithDisplacement(cg, srcReg, 16));
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpostq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 16), dataReg1);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpostq, node, dataReg1, TR::MemoryReference::createWithDisplacement(cg, srcReg, 16));
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpostq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 16), dataReg1);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpostq, node, dataReg1, TR::MemoryReference::createWithDisplacement(cg, srcReg, 16));
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpostq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, 16), dataReg1);
       generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subimmx, node, cntReg, cntReg, 1);
       generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, cntReg, loopLabel);
 
@@ -3032,8 +3032,8 @@ inlineConstantLengthForwardArrayCopy(TR::Node *node, int64_t byteLen, TR::Regist
          dataSize = 1;
          }
 
-      generateTrg1MemInstruction(cg, loadOp, node, dataReg, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, offset, cg));
-      generateMemSrc1Instruction(cg, storeOp, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, offset, cg), dataReg);
+      generateTrg1MemInstruction(cg, loadOp, node, dataReg, TR::MemoryReference::createWithDisplacement(cg, srcReg, offset));
+      generateMemSrc1Instruction(cg, storeOp, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, offset), dataReg);
       offset += dataSize;
       residue64 -= dataSize;
       }
@@ -3070,14 +3070,14 @@ inlineConstantLengthBackwardArrayCopy(TR::Node *node, int64_t byteLen, TR::Regis
       generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
 
       // Copy 16x4 bytes in a loop
-      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpreq, node, dataReg1, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, -16, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpreq, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, -16, cg), dataReg1);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpreq, node, dataReg1, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, -16, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpreq, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, -16, cg), dataReg1);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpreq, node, dataReg1, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, -16, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpreq, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, -16, cg), dataReg1);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpreq, node, dataReg1, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, -16, cg));
-      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpreq, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, -16, cg), dataReg1);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpreq, node, dataReg1, TR::MemoryReference::createWithDisplacement(cg, srcReg, -16));
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpreq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, -16), dataReg1);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpreq, node, dataReg1, TR::MemoryReference::createWithDisplacement(cg, srcReg, -16));
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpreq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, -16), dataReg1);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpreq, node, dataReg1, TR::MemoryReference::createWithDisplacement(cg, srcReg, -16));
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpreq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, -16), dataReg1);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::vldrpreq, node, dataReg1, TR::MemoryReference::createWithDisplacement(cg, srcReg, -16));
+      generateMemSrc1Instruction(cg, TR::InstOpCode::vstrpreq, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, -16), dataReg1);
       generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subimmx, node, cntReg, cntReg, 1);
       generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, cntReg, loopLabel);
 
@@ -3126,8 +3126,8 @@ inlineConstantLengthBackwardArrayCopy(TR::Node *node, int64_t byteLen, TR::Regis
          dataSize = 1;
          }
 
-      generateTrg1MemInstruction(cg, loadOp, node, dataReg, new (cg->trHeapMemory()) TR::MemoryReference(srcReg, -dataSize, cg));
-      generateMemSrc1Instruction(cg, storeOp, node, new (cg->trHeapMemory()) TR::MemoryReference(dstReg, -dataSize, cg), dataReg);
+      generateTrg1MemInstruction(cg, loadOp, node, dataReg, TR::MemoryReference::createWithDisplacement(cg, srcReg, -dataSize));
+      generateMemSrc1Instruction(cg, storeOp, node, TR::MemoryReference::createWithDisplacement(cg, dstReg, -dataSize), dataReg);
       residue64 -= dataSize;
       }
 
@@ -3444,7 +3444,7 @@ OMR::ARM64::TreeEvaluator::loadaddrEvaluator(TR::Node *node, TR::CodeGenerator *
    TR::Register *resultReg;
    TR::Symbol *sym = node->getSymbol();
    TR::Compilation *comp = cg->comp();
-   TR::MemoryReference *mref = new (cg->trHeapMemory()) TR::MemoryReference(node, node->getSymbolReference(), cg);
+   TR::MemoryReference *mref = TR::MemoryReference::createWithSymRef(cg, node, node->getSymbolReference());
 
    if (mref->getUnresolvedSnippet() != NULL)
       {
@@ -3780,7 +3780,7 @@ static TR::Register *intrinsicAtomicAdd(TR::Node *node, TR::CodeGenerator *cg)
        * is somewhat confusing. Its `treg` register actually is a source register and `sreg` register is a target register.
        * This needs to be fixed at some point.
        */
-      generateTrg1MemSrc1Instruction(cg, op, node, valueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg), newValueReg);
+      generateTrg1MemSrc1Instruction(cg, op, node, valueReg, TR::MemoryReference::createWithDisplacement(cg, addressReg, 0), newValueReg);
       }
    else
       {
@@ -3812,13 +3812,13 @@ static TR::Register *intrinsicAtomicAdd(TR::Node *node, TR::CodeGenerator *cg)
       generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
 
       auto loadop = is64Bit ? TR::InstOpCode::ldxrx : TR::InstOpCode::ldxrw;
-      generateTrg1MemInstruction(cg, loadop, node, oldValueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg));
+      generateTrg1MemInstruction(cg, loadop, node, oldValueReg, TR::MemoryReference::createWithDisplacement(cg, addressReg, 0));
 
       generateTrg1Src2Instruction(cg, (is64Bit ? TR::InstOpCode::addx : TR::InstOpCode::addw), node, newValueReg, oldValueReg, valueReg);
 
       // store release exclusive register
       auto storeop = is64Bit ? TR::InstOpCode::stlxrx : TR::InstOpCode::stlxrw;
-      generateTrg1MemSrc1Instruction(cg, storeop, node, oldValueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg), newValueReg);
+      generateTrg1MemSrc1Instruction(cg, storeop, node, oldValueReg, TR::MemoryReference::createWithDisplacement(cg, addressReg, 0), newValueReg);
       generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, oldValueReg, loopLabel);
 
       generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xB); // dmb ish
@@ -3890,7 +3890,7 @@ TR::Register *intrinsicAtomicFetchAndAdd(TR::Node *node, TR::CodeGenerator *cg)
        * is somewhat confusing. Its `treg` register actually is a source register and `sreg` register is a target register.
        * This needs to be fixed at some point.
        */
-      generateTrg1MemSrc1Instruction(cg, op, node, valueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg), oldValueReg);
+      generateTrg1MemSrc1Instruction(cg, op, node, valueReg, TR::MemoryReference::createWithDisplacement(cg, addressReg, 0), oldValueReg);
       }
    else
       {
@@ -3964,7 +3964,7 @@ TR::Register *intrinsicAtomicFetchAndAdd(TR::Node *node, TR::CodeGenerator *cg)
 
       // load acquire exclusive register
       auto loadop = is64Bit ? TR::InstOpCode::ldxrx : TR::InstOpCode::ldxrw;
-      generateTrg1MemInstruction(cg, loadop, node, oldValueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg));
+      generateTrg1MemInstruction(cg, loadop, node, oldValueReg, TR::MemoryReference::createWithDisplacement(cg, addressReg, 0));
 
       if (valueReg == NULL)
          {
@@ -3983,7 +3983,7 @@ TR::Register *intrinsicAtomicFetchAndAdd(TR::Node *node, TR::CodeGenerator *cg)
          }
       // store release exclusive register
       auto storeop = is64Bit ? TR::InstOpCode::stlxrx : TR::InstOpCode::stlxrw;
-      generateTrg1MemSrc1Instruction(cg, storeop, node, tempReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg), newValueReg);
+      generateTrg1MemSrc1Instruction(cg, storeop, node, tempReg, TR::MemoryReference::createWithDisplacement(cg, addressReg, 0), newValueReg);
       generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, tempReg, loopLabel);
 
       generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xB); // dmb ish
@@ -4062,7 +4062,7 @@ TR::Register *intrinsicAtomicSwap(TR::Node *node, TR::CodeGenerator *cg)
        * is somewhat confusing. Its `treg` register actually is a source register and `sreg` register is a target register.
        * This needs to be fixed at some point.
        */
-      generateTrg1MemSrc1Instruction(cg, op, node, valueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg), oldValueReg);
+      generateTrg1MemSrc1Instruction(cg, op, node, valueReg, TR::MemoryReference::createWithDisplacement(cg, addressReg, 0), oldValueReg);
       }
    else
       {
@@ -4094,11 +4094,11 @@ TR::Register *intrinsicAtomicSwap(TR::Node *node, TR::CodeGenerator *cg)
 
       // load acquire exclusive register
       auto loadop = is64Bit ? TR::InstOpCode::ldxrx : TR::InstOpCode::ldxrw;
-      generateTrg1MemInstruction(cg, loadop, node, oldValueReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg));
+      generateTrg1MemInstruction(cg, loadop, node, oldValueReg, TR::MemoryReference::createWithDisplacement(cg, addressReg, 0));
 
       // store release exclusive register
       auto storeop = is64Bit ? TR::InstOpCode::stlxrx : TR::InstOpCode::stlxrw;
-      generateTrg1MemSrc1Instruction(cg, storeop, node, tempReg, new (cg->trHeapMemory()) TR::MemoryReference(addressReg, 0, cg), valueReg);
+      generateTrg1MemSrc1Instruction(cg, storeop, node, tempReg, TR::MemoryReference::createWithDisplacement(cg, addressReg, 0), valueReg);
       generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzx, node, tempReg, loopLabel);
 
       generateSynchronizationInstruction(cg, TR::InstOpCode::dmb, node, 0xB); // dmb ish

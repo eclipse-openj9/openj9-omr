@@ -45,6 +45,7 @@ namespace OMR { typedef OMR::ARM64::MemoryReference MemoryReferenceConnector; }
 
 namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }
+namespace TR { class MemoryReference; }
 namespace TR { class Node; }
 namespace TR { class UnresolvedDataSnippet; }
 

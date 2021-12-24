@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -56,7 +56,7 @@ TR::MemoryReference *OMR::ARM64::Linkage::getOutgoingArgumentMemRef(TR::Register
    {
    const TR::ARM64LinkageProperties& properties = self()->getProperties();
 
-   TR::MemoryReference *result = new (self()->trHeapMemory()) TR::MemoryReference(argMemReg, 8, cg()); // post-increment
+   TR::MemoryReference *result = TR::MemoryReference::createWithDisplacement(cg(), argMemReg, 8); // post-increment
    memArg.argRegister = argReg;
    memArg.argMemory = result;
    memArg.opCode = opCode; // opCode must be post-index form
@@ -267,7 +267,7 @@ TR::Instruction *OMR::ARM64::Linkage::copyParametersToHomeLocation(TR::Instructi
                diagnostic("copyParametersToHomeLocation: Loading %d\n", ai);
 
             // ai := stack
-            TR::MemoryReference *stackMR = new (cg()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, cg());
+            TR::MemoryReference *stackMR = TR::MemoryReference::createWithDisplacement(cg(), stackPtr, offset);
             loadCursor = generateTrg1MemInstruction(cg(), getOpCodeForParmLoads(paramType), NULL, machine->getRealRegister(ai), stackMR, loadCursor);
             }
          }
@@ -291,7 +291,7 @@ TR::Instruction *OMR::ARM64::Linkage::copyParametersToHomeLocation(TR::Instructi
                   diagnostic("copyParametersToHomeLocation: Storing %d\n", sourceIndex);
 
                TR::RealRegister *linkageReg = machine->getRealRegister(sourceIndex);
-               TR::MemoryReference *stackMR = new (cg()->trHeapMemory()) TR::MemoryReference(stackPtr, offset, cg());
+               TR::MemoryReference *stackMR = TR::MemoryReference::createWithDisplacement(cg(), stackPtr, offset);
                cursor = generateMemSrc1Instruction(cg(), getOpCodeForParmStores(paramType), NULL, stackMR, linkageReg, cursor);
                }
             }

@@ -544,7 +544,7 @@ TR::ARM64SystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Paramet
    // save link register (x30)
    if (machine->getLinkRegisterKilled())
       {
-      TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, 0, codeGen);
+      TR::MemoryReference *stackSlot = TR::MemoryReference::createWithDisplacement(codeGen, sp, 0);
       cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::strimmx, firstNode, stackSlot, machine->getRealRegister(TR::RealRegister::x30), cursor);
       }
 
@@ -555,7 +555,7 @@ TR::ARM64SystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Paramet
       TR::RealRegister *rr = machine->getRealRegister((TR::RealRegister::RegNum)r);
       if (rr->getHasBeenAssignedInMethod())
          {
-         TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
+         TR::MemoryReference *stackSlot = TR::MemoryReference::createWithDisplacement(codeGen, sp, offset);
          cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::strimmx, firstNode, stackSlot, rr, cursor);
          offset += 8;
          }
@@ -565,7 +565,7 @@ TR::ARM64SystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Paramet
       TR::RealRegister *rr = machine->getRealRegister((TR::RealRegister::RegNum)r);
       if (rr->getHasBeenAssignedInMethod())
          {
-         TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
+         TR::MemoryReference *stackSlot = TR::MemoryReference::createWithDisplacement(codeGen, sp, offset);
          cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::vstrimmq, firstNode, stackSlot, rr, cursor);
          offset += 16;
          }
@@ -591,7 +591,7 @@ TR::ARM64SystemLinkage::createEpilogue(TR::Instruction *cursor)
       TR::RealRegister *rr = machine->getRealRegister((TR::RealRegister::RegNum)r);
       if (rr->getHasBeenAssignedInMethod())
          {
-         TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
+         TR::MemoryReference *stackSlot = TR::MemoryReference::createWithDisplacement(codeGen, sp, offset);
          cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::ldrimmx, lastNode, rr, stackSlot, cursor);
          offset += 8;
          }
@@ -601,7 +601,7 @@ TR::ARM64SystemLinkage::createEpilogue(TR::Instruction *cursor)
       TR::RealRegister *rr = machine->getRealRegister((TR::RealRegister::RegNum)r);
       if (rr->getHasBeenAssignedInMethod())
          {
-         TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
+         TR::MemoryReference *stackSlot = TR::MemoryReference::createWithDisplacement(codeGen, sp, offset);
          cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::vldrimmq, lastNode, rr, stackSlot, cursor);
          offset += 16;
          }
@@ -611,7 +611,7 @@ TR::ARM64SystemLinkage::createEpilogue(TR::Instruction *cursor)
    TR::RealRegister *lr = machine->getRealRegister(TR::RealRegister::lr);
    if (machine->getLinkRegisterKilled())
       {
-      TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, 0, codeGen);
+      TR::MemoryReference *stackSlot = TR::MemoryReference::createWithDisplacement(codeGen, sp, 0);
       cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::ldrimmx, lastNode, lr, stackSlot, cursor);
       }
 

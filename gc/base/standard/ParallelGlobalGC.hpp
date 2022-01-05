@@ -332,6 +332,8 @@ public:
 	 */	
 	virtual void notifyAcquireExclusiveVMAccess(MM_EnvironmentBase *env);
 
+	virtual void workStackOverflow() {}
+
 	MM_ParallelGlobalGC(MM_EnvironmentBase *env)
 		: MM_GlobalCollector()
 		, _extensions(MM_GCExtensionsBase::getExtensions(env->getOmrVM()))

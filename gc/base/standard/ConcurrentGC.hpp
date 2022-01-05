@@ -259,8 +259,6 @@ private:
 
 	virtual bool internalGarbageCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription);
 
-	void clearConcurrentWorkStackOverflow();
-
 	virtual uintptr_t getTraceTarget() = 0;
 #if defined(OMR_GC_CONCURRENT_SWEEP)
 	void concurrentSweep(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, MM_AllocateDescription *allocDescription);
@@ -342,6 +340,8 @@ protected:
 	virtual bool contractInternalConcurrentStructures(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, void *lowValidAddress, void *highValidAddress) { return true; };
 
 	virtual bool canSkipObjectRSScan(MM_EnvironmentBase *env, omrobjectptr_t objectPtr) { return false; };
+
+	virtual void clearWorkStackOverflow();
 
 	MMINLINE virtual uintptr_t getMutatorTotalTraced() { return _stats.getTraceSizeCount(); };
 
@@ -452,7 +452,7 @@ public:
 
 	MMINLINE MM_ConcurrentGCStats *getConcurrentGCStats() { return &_stats; };
 
-	void concurrentWorkStackOverflow();
+	virtual void workStackOverflow();
 	virtual void notifyAcquireExclusiveVMAccess(MM_EnvironmentBase *env);
 	
 	MM_ConcurrentGC(MM_EnvironmentBase *env)

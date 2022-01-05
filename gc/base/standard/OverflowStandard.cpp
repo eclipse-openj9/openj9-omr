@@ -69,9 +69,13 @@ MM_OverflowStandard::tearDown(MM_EnvironmentBase *env)
 void
 MM_OverflowStandard::emptyToOverflow(MM_EnvironmentBase *env, MM_Packet *packet, MM_OverflowType type)
 {
-	void *objectPtr;
+	MM_ParallelGlobalGC *collector = (MM_ParallelGlobalGC *)_extensions->getGlobalCollector();
+	void *objectPtr = NULL;
 
 	_overflow = true;
+
+	/* Broadcast the overflow to the concurrent collector so it can take any remedial action */
+	collector->workStackOverflow();
 
 	_extensions->globalGCStats.workPacketStats.setSTWWorkStackOverflowOccured(true);
 	_extensions->globalGCStats.workPacketStats.incrementSTWWorkStackOverflowCount();
@@ -88,7 +92,11 @@ MM_OverflowStandard::emptyToOverflow(MM_EnvironmentBase *env, MM_Packet *packet,
 void
 MM_OverflowStandard::overflowItem(MM_EnvironmentBase *env, void *item, MM_OverflowType type)
 {
+	MM_ParallelGlobalGC *collector = (MM_ParallelGlobalGC *)_extensions->getGlobalCollector();
 	_overflow = true;
+
+	/* Broadcast the overflow to the concurrent collector so it can take any remedial action */
+	collector->workStackOverflow();
 
 	_extensions->globalGCStats.workPacketStats.setSTWWorkStackOverflowOccured(true);
 	_extensions->globalGCStats.workPacketStats.incrementSTWWorkStackOverflowCount();

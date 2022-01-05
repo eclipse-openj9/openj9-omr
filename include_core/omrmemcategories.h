@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2020 IBM Corp. and others
+ * Copyright (c) 2010, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -89,6 +89,8 @@ typedef struct OMRMemCategorySet {
 #define OMRMEM_CATEGORY_CLASSES 0x80000011
 #define OMRMEM_CATEGORY_CLASSES_SHC_CACHE 0x80000012
 #endif /* OMR_SHARED_CACHE */
+
+#define OMRMEM_CATEGORY_VM_FFI 0x80000013
 
 /* Helper macro to convert the category codes to indices starting from 0 */
 #define OMRMEM_LANGUAGE_CATEGORY_LIMIT 0x7FFFFFFF

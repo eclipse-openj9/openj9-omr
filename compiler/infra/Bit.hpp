@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -204,6 +204,13 @@ static inline int32_t leadingOnes (uint64_t input)
    return leadingZeroes (~input);
    }
 
+#if defined(TR_HOST_ARM64) && (defined(__GNUC__) || defined(__clang__))
+// return the number of 1-bits in the argument
+static inline int32_t populationCount (int32_t inputWord)
+   {
+   return __builtin_popcount(inputWord);
+   }
+#else
 // return the number of 1-bits in the argument
 static inline int32_t populationCount (int32_t inputWord)
    {
@@ -219,12 +226,20 @@ static inline int32_t populationCount (int32_t inputWord)
    work = work + (work << 16);
    return work >> 24;
    }
+#endif
 
 static inline int32_t populationCount (uint32_t inputWord)
    {
    return populationCount((int32_t)inputWord);
    }
 
+#if defined(TR_HOST_ARM64) && (defined(__GNUC__) || defined(__clang__))
+// return the number of 1-bits in the argument
+static inline int32_t populationCount (int64_t inputWord)
+   {
+   return __builtin_popcountll(inputWord);
+   }
+#else
 // return the number of 1-bits in the argument
 static inline int32_t populationCount (int64_t inputWord)
    {
@@ -241,6 +256,7 @@ static inline int32_t populationCount (int64_t inputWord)
    work = work + (work << 32);
    return (int32_t)(work >> 56);
    }
+#endif
 
 static inline int32_t populationCount (uint64_t inputWord)
    {

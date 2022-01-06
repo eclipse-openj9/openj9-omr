@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,7 +36,7 @@ namespace TR
 
 class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
    {
-   public:
+   private:
 
    /**
     * @brief Constructor
@@ -100,6 +100,8 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
       TR::SymbolReference *symRef,
       TR::CodeGenerator *cg) :
          OMR::MemoryReferenceConnector(node, symRef, cg) {}
+
+   public:
 
    static TR::MemoryReference *create(TR::CodeGenerator *cg);
    static TR::MemoryReference *createWithIndexReg(TR::CodeGenerator *cg, TR::Register *baseReg, TR::Register *indexReg, uint8_t scale = 0, TR::ARM64ExtendCode extendCode = TR::ARM64ExtendCode::EXT_UXTX);

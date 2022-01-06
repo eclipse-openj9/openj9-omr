@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -78,19 +78,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    uint8_t _flag;
    uint8_t _scale;
 
-   public:
-
-   TR_ALLOC(TR_Memory::MemoryReference)
-
-   typedef enum
-      {
-      TR_ARM64MemoryReferenceControl_Base_Modifiable  = 0x01,
-      TR_ARM64MemoryReferenceControl_Index_Modifiable = 0x02,
-      TR_ARM64MemoryReferenceControl_Index_SignExtendedByte = 0x04,
-      TR_ARM64MemoryReferenceControl_Index_SignExtendedHalf = 0x08,
-      TR_ARM64MemoryReferenceControl_Index_SignExtendedWord = 0x10,
-      /* To be added more if necessary */
-      } TR_ARM64MemoryReferenceControl;
+   protected:
 
    /**
     * @brief Constructor
@@ -147,6 +135,20 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
     * @param[in] cg : CodeGenerator object
     */
    MemoryReference(TR::Node *node, TR::SymbolReference *symRef, TR::CodeGenerator *cg);
+
+   public:
+
+   TR_ALLOC(TR_Memory::MemoryReference)
+
+   typedef enum
+      {
+      TR_ARM64MemoryReferenceControl_Base_Modifiable  = 0x01,
+      TR_ARM64MemoryReferenceControl_Index_Modifiable = 0x02,
+      TR_ARM64MemoryReferenceControl_Index_SignExtendedByte = 0x04,
+      TR_ARM64MemoryReferenceControl_Index_SignExtendedHalf = 0x08,
+      TR_ARM64MemoryReferenceControl_Index_SignExtendedWord = 0x10,
+      /* To be added more if necessary */
+      } TR_ARM64MemoryReferenceControl;
 
    /**
     * @brief Gets base register

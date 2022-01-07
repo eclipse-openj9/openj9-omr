@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1268,6 +1268,11 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1ZeroSrc1Instruction *instr)
       {
       // mov alias
       trfprintf(pOutFile, "mov%c \t", (op == TR::InstOpCode::orrx) ? 'x' : 'w');
+      }
+   else if (op == TR::InstOpCode::ornx || op == TR::InstOpCode::ornw)
+      {
+      // mvn alias
+      trfprintf(pOutFile, "mvn%c \t", (op == TR::InstOpCode::ornx) ? 'x' : 'w');
       }
    else if (op == TR::InstOpCode::subx || op == TR::InstOpCode::subw)
       {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -252,16 +252,16 @@ generateMaddOrMsub(TR::Node *node, TR::Node *mulNode, TR::Node *anotherNode, TR:
    }
 
 /**
- * @brief Generates add (shifted register) or sub (shifted register) instruction if possible
+ * @brief Generates add/sub/and/or/eor shifted register instruction if possible
  *
  * @param[in]  node:  node
  * @param[in]    op:  mnemonic for this node
  * @param[in]    cg:  code generator
  *
- * @return register which contains the result of the operation. NULL if the operation cannot be encoded in add or sub shifted register instruction.
+ * @return register which contains the result of the operation. NULL if the operation cannot be encoded in shifted register instruction.
  */
 static TR::Register *
-generateAddOrSubShifted(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
+generateShiftedBinaryOperation(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
@@ -282,7 +282,7 @@ generateAddOrSubShifted(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGen
       shiftValue = secondChild->getSecondChild()->getInt();
       shiftNode = secondChild;
       }
-   else if (node->getOpCode().isAdd() &&
+   else if ((!node->getOpCode().isSub()) &&
              (!secondChild->getOpCode().isLoadConst()) &&
              (firstChild->getReferenceCount() == 1) &&
              (firstChild->getRegister() == NULL) &&
@@ -366,7 +366,7 @@ OMR::ARM64::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       return retReg;
       }
 
-   retReg = generateAddOrSubShifted(node, TR::InstOpCode::addw, cg);
+   retReg = generateShiftedBinaryOperation(node, TR::InstOpCode::addw, cg);
    if (retReg)
       {
       return retReg;
@@ -393,7 +393,7 @@ OMR::ARM64::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       return retReg;
       }
 
-   retReg = generateAddOrSubShifted(node, TR::InstOpCode::addx, cg);
+   retReg = generateShiftedBinaryOperation(node, TR::InstOpCode::addx, cg);
    if (retReg)
       {
       return retReg;
@@ -415,7 +415,7 @@ OMR::ARM64::TreeEvaluator::isubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       return retReg;
       }
 
-   retReg = generateAddOrSubShifted(node, TR::InstOpCode::subw, cg);
+   retReg = generateShiftedBinaryOperation(node, TR::InstOpCode::subw, cg);
    if (retReg)
       {
       return retReg;
@@ -437,7 +437,7 @@ OMR::ARM64::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       return retReg;
       }
 
-   retReg = generateAddOrSubShifted(node, TR::InstOpCode::subx, cg);
+   retReg = generateShiftedBinaryOperation(node, TR::InstOpCode::subx, cg);
    if (retReg)
       {
       return retReg;
@@ -1441,11 +1441,15 @@ logicImmediateHelper(uint64_t value, bool is64Bit, bool &n, uint32_t &immEncoded
 static inline TR::Register *
 logicBinaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic regOp, TR::InstOpCode::Mnemonic regOpImm, bool is64Bit, TR::CodeGenerator *cg)
    {
+   TR::Register *trgReg = generateShiftedBinaryOperation(node, regOp, cg);
+   if (trgReg != NULL)
+      {
+      return trgReg;
+      }
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
    TR::Register *src1Reg = cg->evaluate(firstChild);
    TR::Register *src2Reg = NULL;
-   TR::Register *trgReg = NULL;
    int64_t value = 0;
 
    if (1 == firstChild->getReferenceCount())

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -64,6 +64,6 @@ OMR::X86::RealRegister::getRealRegisterMask(TR_RegisterKinds rk, TR::RealRegiste
       return TR::RealRegister::fprMask(idx);
    else if (rk == TR_FPR || rk == TR_VRF)
       return TR::RealRegister::xmmrMask(idx);
-   else // MMX: not used
-      return TR::RealRegister::mmrMask(idx);
+   else
+      TR_ASSERT_FATAL(false, "Unknown register kind");
    }

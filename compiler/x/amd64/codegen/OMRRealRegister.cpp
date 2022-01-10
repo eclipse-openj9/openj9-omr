@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -56,14 +56,6 @@ const OMR::X86::RealRegister::TR_RegisterBinaryEncoding OMR::X86::AMD64::RealReg
    {0x05},              // st6
    {0x06},              // st6
    {0x07},              // st7
-   {0x00},              // mm0
-   {0x01},              // mm1
-   {0x02},              // mm2
-   {0x03},              // mm3
-   {0x04},              // mm4
-   {0x05},              // mm6
-   {0x06},              // mm6
-   {0x07},              // mm7
    {0x00, 0, 0},        // xmm0
    {0x01, 0, 0},        // xmm1
    {0x02, 0, 0},        // xmm2

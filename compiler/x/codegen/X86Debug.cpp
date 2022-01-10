@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1939,22 +1939,6 @@ TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
          switch (size) { case 2: case -1: return "st(6)";   default: return unknownRegisterName('s'); }
       case TR::RealRegister::st7:
          switch (size) { case 2: case -1: return "st(7)";   default: return unknownRegisterName('s'); }
-      case TR::RealRegister::mm0:
-         switch (size) { case 3: case -1: return "mm0";   default: return unknownRegisterName('m'); }
-      case TR::RealRegister::mm1:
-         switch (size) { case 3: case -1: return "mm1";   default: return unknownRegisterName('m'); }
-      case TR::RealRegister::mm2:
-         switch (size) { case 3: case -1: return "mm2";   default: return unknownRegisterName('m'); }
-      case TR::RealRegister::mm3:
-         switch (size) { case 3: case -1: return "mm3";   default: return unknownRegisterName('m'); }
-      case TR::RealRegister::mm4:
-         switch (size) { case 3: case -1: return "mm4";   default: return unknownRegisterName('m'); }
-      case TR::RealRegister::mm5:
-         switch (size) { case 3: case -1: return "mm5";   default: return unknownRegisterName('m'); }
-      case TR::RealRegister::mm6:
-         switch (size) { case 3: case -1: return "mm6";   default: return unknownRegisterName('m'); }
-      case TR::RealRegister::mm7:
-         switch (size) { case 3: case -1: return "mm7";   default: return unknownRegisterName('m'); }
       case TR::RealRegister::xmm0:
          switch (size) { case 4: case -1: return "xmm0";  default: return "?mm0"; }
       case TR::RealRegister::xmm1:

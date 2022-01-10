@@ -64,6 +64,18 @@ TR::MemoryReference *OMR::ARM64::Linkage::getOutgoingArgumentMemRef(TR::Register
    return result;
    }
 
+TR::MemoryReference *OMR::ARM64::Linkage::getOutgoingArgumentMemRef(TR::Register *baseReg, int32_t offset, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::ARM64MemoryArgument &memArg)
+   {
+   const TR::ARM64LinkageProperties& properties = self()->getProperties();
+
+   TR::MemoryReference *result = TR::MemoryReference::createWithDisplacement(cg(), baseReg, offset);
+   memArg.argRegister = argReg;
+   memArg.argMemory = result;
+   memArg.opCode = opCode;
+
+   return result;
+   }
+
 TR::Instruction *OMR::ARM64::Linkage::saveParametersToStack(TR::Instruction *cursor)
    {
    TR_UNIMPLEMENTED();

@@ -32,6 +32,10 @@
 
 #define RISCV_INSTRUCTION_LENGTH 4
 
+/**
+ * ==== R-type ====
+ */
+
 static inline uint32_t
 TR_RISCV_RTYPE(uint32_t insn, uint32_t rd, uint32_t rs1, uint32_t rs2)
    {
@@ -39,11 +43,20 @@ TR_RISCV_RTYPE(uint32_t insn, uint32_t rd, uint32_t rs1, uint32_t rs2)
    }
 
 static inline uint32_t
-TR_RISCV_RTYPE(TR::InstOpCode::Mnemonic insn, TR::Register *rd, TR::Register *rs1, TR::Register *rs2)
+TR_RISCV_RTYPE(TR::InstOpCode::Mnemonic insn, TR::RealRegister::RegNum rd, TR::RealRegister::RegNum rs1, TR::RealRegister::RegNum rs2)
    {
-   return TR_RISCV_RTYPE(TR::InstOpCode::getOpCodeBinaryEncoding(insn), toRealRegister(rd)->binaryRegCode(), toRealRegister(rs1)->binaryRegCode(), toRealRegister(rs2)->binaryRegCode());
+   return TR_RISCV_RTYPE(TR::InstOpCode::getOpCodeBinaryEncoding(insn), TR::RealRegister::binaryRegCode(rd), TR::RealRegister::binaryRegCode(rs1), TR::RealRegister::binaryRegCode(rs2));
    }
 
+static inline uint32_t
+TR_RISCV_RTYPE(TR::InstOpCode::Mnemonic insn, TR::Register *rd, TR::Register *rs1, TR::Register *rs2)
+   {
+   return TR_RISCV_RTYPE(insn, toRealRegister(rd)->getRegisterNumber(), toRealRegister(rs1)->getRegisterNumber(), toRealRegister(rs2)->getRegisterNumber());
+   }
+
+/**
+ * ==== I-type ====
+ */
 
 static inline uint32_t
 TR_RISCV_ITYPE(uint32_t insn, uint32_t rd, uint32_t rs1, uint32_t imm)
@@ -52,11 +65,20 @@ TR_RISCV_ITYPE(uint32_t insn, uint32_t rd, uint32_t rs1, uint32_t imm)
    }
 
 static inline uint32_t
-TR_RISCV_ITYPE(TR::InstOpCode::Mnemonic insn, TR::Register *rd, TR::Register *rs1, uint32_t imm)
+TR_RISCV_ITYPE(TR::InstOpCode::Mnemonic insn, TR::RealRegister::RegNum rd, TR::RealRegister::RegNum rs1, uint32_t imm)
    {
-   return TR_RISCV_ITYPE(TR::InstOpCode::getOpCodeBinaryEncoding(insn), toRealRegister(rd)->binaryRegCode(), toRealRegister(rs1)->binaryRegCode(), imm);
+   return TR_RISCV_ITYPE(TR::InstOpCode::getOpCodeBinaryEncoding(insn), TR::RealRegister::binaryRegCode(rd), TR::RealRegister::binaryRegCode(rs1), imm);
    }
 
+static inline uint32_t
+TR_RISCV_ITYPE(TR::InstOpCode::Mnemonic insn, TR::Register *rd, TR::Register *rs1, uint32_t imm)
+   {
+   return TR_RISCV_ITYPE(insn, toRealRegister(rd)->getRegisterNumber(), toRealRegister(rs1)->getRegisterNumber(), imm);
+   }
+
+/**
+ * ==== S-type ====
+ */
 
 static inline uint32_t
 TR_RISCV_STYPE(uint32_t insn, uint32_t rs1, uint32_t rs2, uint32_t imm)
@@ -65,11 +87,20 @@ TR_RISCV_STYPE(uint32_t insn, uint32_t rs1, uint32_t rs2, uint32_t imm)
    }
 
 static inline uint32_t
-TR_RISCV_STYPE(TR::InstOpCode::Mnemonic insn, TR::Register *rs1, TR::Register *rs2, uint32_t imm)
+TR_RISCV_STYPE(TR::InstOpCode::Mnemonic insn, TR::RealRegister::RegNum rs1, TR::RealRegister::RegNum rs2, uint32_t imm)
    {
-   return TR_RISCV_STYPE(TR::InstOpCode::getOpCodeBinaryEncoding(insn), toRealRegister(rs1)->binaryRegCode(), toRealRegister(rs2)->binaryRegCode(), imm);
+   return TR_RISCV_STYPE(TR::InstOpCode::getOpCodeBinaryEncoding(insn), TR::RealRegister::binaryRegCode(rs1), TR::RealRegister::binaryRegCode(rs2), imm);
    }
 
+static inline uint32_t
+TR_RISCV_STYPE(TR::InstOpCode::Mnemonic insn, TR::Register *rs1, TR::Register *rs2, uint32_t imm)
+   {
+   return TR_RISCV_STYPE(insn, toRealRegister(rs1)->getRegisterNumber(), toRealRegister(rs2)->getRegisterNumber(), imm);
+   }
+
+/**
+ * ==== B-type ====
+ */
 
 static inline uint32_t
 TR_RISCV_SBTYPE(uint32_t insn, uint32_t rs1, uint32_t rs2, uint32_t imm)
@@ -78,11 +109,20 @@ TR_RISCV_SBTYPE(uint32_t insn, uint32_t rs1, uint32_t rs2, uint32_t imm)
    }
 
 static inline uint32_t
-TR_RISCV_SBTYPE(TR::InstOpCode::Mnemonic insn, TR::Register *rs1, TR::Register *rs2, uint32_t imm)
+TR_RISCV_SBTYPE(TR::InstOpCode::Mnemonic insn, TR::RealRegister::RegNum rs1, TR::RealRegister::RegNum rs2, uint32_t imm)
    {
-   return TR_RISCV_SBTYPE(TR::InstOpCode::getOpCodeBinaryEncoding(insn), toRealRegister(rs1)->binaryRegCode(), toRealRegister(rs2)->binaryRegCode(), imm);
+   return TR_RISCV_SBTYPE(TR::InstOpCode::getOpCodeBinaryEncoding(insn), TR::RealRegister::binaryRegCode(rs1), TR::RealRegister::binaryRegCode(rs2), imm);
    }
 
+static inline uint32_t
+TR_RISCV_SBTYPE(TR::InstOpCode::Mnemonic insn, TR::Register *rs1, TR::Register *rs2, uint32_t imm)
+   {
+   return TR_RISCV_SBTYPE(insn, toRealRegister(rs1)->getRegisterNumber(), toRealRegister(rs2)->getRegisterNumber(), imm);
+   }
+
+/**
+ * ==== U-type ====
+ */
 
 static inline uint32_t
 TR_RISCV_UTYPE(uint32_t insn, uint32_t rd, uint32_t bigimm)
@@ -91,11 +131,20 @@ TR_RISCV_UTYPE(uint32_t insn, uint32_t rd, uint32_t bigimm)
    }
 
 static inline uint32_t
-TR_RISCV_UTYPE(TR::InstOpCode::Mnemonic insn, TR::Register *rd, uint32_t bigimm)
+TR_RISCV_UTYPE(TR::InstOpCode::Mnemonic insn, TR::RealRegister::RegNum rd, uint32_t bigimm)
    {
-   return TR_RISCV_UTYPE(TR::InstOpCode::getOpCodeBinaryEncoding(insn), toRealRegister(rd)->binaryRegCode(), bigimm);
+   return TR_RISCV_UTYPE(TR::InstOpCode::getOpCodeBinaryEncoding(insn), TR::RealRegister::binaryRegCode(rd), bigimm);
    }
 
+static inline uint32_t
+TR_RISCV_UTYPE(TR::InstOpCode::Mnemonic insn, TR::Register *rd, uint32_t bigimm)
+   {
+   return TR_RISCV_UTYPE(insn, toRealRegister(rd)->getRegisterNumber(), bigimm);
+   }
+
+/**
+ * ==== J-type ====
+ */
 
 static inline uint32_t
 TR_RISCV_UJTYPE(uint32_t insn, uint32_t rd, uint32_t target)
@@ -104,9 +153,15 @@ TR_RISCV_UJTYPE(uint32_t insn, uint32_t rd, uint32_t target)
    }
 
 static inline uint32_t
+TR_RISCV_UJTYPE(TR::InstOpCode::Mnemonic insn, TR::RealRegister::RegNum rd, uint32_t bigimm)
+   {
+   return TR_RISCV_UJTYPE(TR::InstOpCode::getOpCodeBinaryEncoding(insn), TR::RealRegister::binaryRegCode(rd), bigimm);
+   }
+
+static inline uint32_t
 TR_RISCV_UJTYPE(TR::InstOpCode::Mnemonic insn, TR::Register *rd, uint32_t target)
    {
-   return TR_RISCV_UJTYPE(TR::InstOpCode::getOpCodeBinaryEncoding(insn), toRealRegister(rd)->binaryRegCode(), target);
+   return TR_RISCV_UJTYPE(insn, toRealRegister(rd)->getRegisterNumber(), target);
    }
 
 static inline uint32_t

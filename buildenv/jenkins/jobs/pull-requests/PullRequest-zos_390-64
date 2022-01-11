@@ -7,7 +7,7 @@ pipeline {
         stage('Get Sources') {
             steps {
                 timestamps {
-                    checkout poll: false, scm: [$class: 'GitSCM', branches: [[name: '${sha1}']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[name: 'origin', refspec: '+refs/pull/*:refs/remotes/origin/pr/*', url: 'git://github.com/eclipse/omr.git']]]
+                    checkout poll: false, scm: [$class: 'GitSCM', branches: [[name: '${sha1}']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[name: 'origin', refspec: '+refs/pull/*:refs/remotes/origin/pr/*', url: 'git@github.com:eclipse/omr.git']]]
                 }
             }
         }

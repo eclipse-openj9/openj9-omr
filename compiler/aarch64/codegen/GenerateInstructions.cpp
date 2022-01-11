@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -487,6 +487,18 @@ TR::Instruction *generateMovInstruction(TR::CodeGenerator *cg, TR::Node *node,
    /* Alias of ORR instruction */
 
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::orrx : TR::InstOpCode::orrw;
+
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1ZeroSrc1Instruction(op, node, treg, sreg, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1ZeroSrc1Instruction(op, node, treg, sreg, cg);
+   }
+
+TR::Instruction *generateMvnInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *treg, TR::Register *sreg, bool is64bit, TR::Instruction *preced)
+   {
+   /* Alias of ORN instruction */
+
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::ornx : TR::InstOpCode::ornw;
 
    if (preced)
       return new (cg->trHeapMemory()) TR::ARM64Trg1ZeroSrc1Instruction(op, node, treg, sreg, preced, cg);

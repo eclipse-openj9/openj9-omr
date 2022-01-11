@@ -1475,25 +1475,32 @@ logicBinaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic regOp, TR::InstOpC
          {
          value = secondChild->getInt();
          }
-      bool N;
-      uint32_t immEncoded;
-      if (logicImmediateHelper(is64Bit ? value : (uint32_t)value, is64Bit, N, immEncoded))
+      if (node->getOpCode().isXor() && (value == -1))
          {
-         generateLogicalImmInstruction(cg, regOpImm, node, trgReg, src1Reg, N, immEncoded);
+         generateMvnInstruction(cg, node, trgReg, src1Reg, is64Bit);
          }
       else
          {
-         src2Reg = cg->allocateRegister();
-         if(is64Bit)
+         bool N;
+         uint32_t immEncoded;
+         if (logicImmediateHelper(is64Bit ? value : (uint32_t)value, is64Bit, N, immEncoded))
             {
-            loadConstant64(cg, node, value, src2Reg);
+            generateLogicalImmInstruction(cg, regOpImm, node, trgReg, src1Reg, N, immEncoded);
             }
          else
             {
-            loadConstant32(cg, node, value, src2Reg);
+            src2Reg = cg->allocateRegister();
+            if(is64Bit)
+               {
+               loadConstant64(cg, node, value, src2Reg);
+               }
+            else
+               {
+               loadConstant32(cg, node, value, src2Reg);
+               }
+            generateTrg1Src2Instruction(cg, regOp, node, trgReg, src1Reg, src2Reg);
+            cg->stopUsingRegister(src2Reg);
             }
-         generateTrg1Src2Instruction(cg, regOp, node, trgReg, src1Reg, src2Reg);
-         cg->stopUsingRegister(src2Reg);
          }
       }
    else

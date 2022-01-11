@@ -252,55 +252,124 @@ generateMaddOrMsub(TR::Node *node, TR::Node *mulNode, TR::Node *anotherNode, TR:
    }
 
 /**
+ * @brief Answers whether the node is a NOT node.
+ *
+ * @param[in] node: node
+ *
+ * @return true if the node is a NOT node.
+ */
+static bool
+isNot(TR::Node *node)
+   {
+   return node->getOpCode().isXor() && node->getSecondChild()->getOpCode().isLoadConst() && (node->getSecondChild()->getConstValue() == -1);
+   }
+
+/**
+ * @brief Answers whether the node is a shift node with constant amount
+ *
+ * @param[in] node: node
+ *
+ * @return true if the node is a shift node with constant amount
+ */
+static bool
+isShiftWithConstAmountNode(TR::Node *node)
+   {
+   return node->getOpCode().isShift() && (node->getSecondChild()->getOpCodeValue() == TR::iconst);
+   }
+
+/**
+ * @brief Answers whether the node can be handled as shifted register binary operation
+ *
+ * @param[in]         node: node
+ * @param[in]          lhs: left hand side operand node
+ * @param[in]          rhs: right hand side operand node
+ * @param[out] source1Node: reference to first source node
+ * @param[out] source2Node: reference to second source Node
+ * @param[out]   shiftNode: reference to shift node
+ * @param[out]     notNode: reference to NOT node
+ * @param[out]  shiftValue: reference to shift amount
+ *
+ * @return true if the node can be handled as shifted register binary operation
+ */
+static bool
+isShiftedBinaryOp(TR::Node *node, TR::Node *lhs, TR::Node *rhs, TR::Node *&source1Node, TR::Node *&source2Node, TR::Node *&shiftNode, TR::Node *&notNode, int32_t &shiftValue)
+   {
+   if ((!lhs->getOpCode().isLoadConst()) &&
+       (rhs->getReferenceCount() == 1) &&
+       (rhs->getRegister() == NULL))
+      {
+      if (isShiftWithConstAmountNode(rhs))
+        {
+         source1Node = lhs;
+         shiftNode = rhs;
+         TR::Node *shiftChild = shiftNode->getFirstChild();
+         /* ((~a) >> n) is equal to ~(a >> n) if the shift is arithmetic */
+         if (node->getOpCode().isBitwiseLogical() && (shiftChild->getReferenceCount() == 1) &&
+            (shiftChild->getRegister() == NULL) && isNot(shiftChild) &&
+            shiftNode->getOpCode().isRightShift() && (!shiftNode->getOpCode().isShiftLogical()))
+            {
+            notNode = shiftChild;
+            source2Node = notNode->getFirstChild();
+            }
+         else
+            {
+            source2Node = shiftNode->getFirstChild();
+            }
+         shiftValue = shiftNode->getSecondChild()->getInt();
+         return true;
+         }
+      else if (node->getOpCode().isBitwiseLogical() && isNot(rhs))
+         {
+         source1Node = lhs;
+         notNode = rhs;
+         TR::Node *childOfNot = notNode->getFirstChild();
+         if ((childOfNot->getReferenceCount() == 1) && (childOfNot->getRegister() == NULL) &&
+            isShiftWithConstAmountNode(childOfNot))
+            {
+            source2Node = childOfNot->getFirstChild();
+            shiftValue = childOfNot->getSecondChild()->getInt();
+            shiftNode = childOfNot;
+            }
+         else
+            {
+            source2Node = childOfNot;
+            }
+         return true;
+         }
+      }
+   return false;
+   }
+
+/**
  * @brief Generates add/sub/and/or/eor shifted register instruction if possible
  *
- * @param[in]  node:  node
- * @param[in]    op:  mnemonic for this node
- * @param[in]    cg:  code generator
+ * @param[in]   node:  node
+ * @param[in]     op:  mnemonic for this node
+ * @param[in]  notOp:  mnemonic for this node if NOT is applied to the operand (for bitwise logical op only)
+ * @param[in]     cg:  code generator
  *
  * @return register which contains the result of the operation. NULL if the operation cannot be encoded in shifted register instruction.
  */
 static TR::Register *
-generateShiftedBinaryOperation(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
+generateShiftedBinaryOperation(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::InstOpCode::Mnemonic notOp, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
    TR::Node *source1Node = NULL;
    TR::Node *source2Node = NULL;
    TR::Node *shiftNode = NULL;
+   TR::Node *notNode = NULL;
 
-   int32_t shiftValue;
+   int32_t shiftValue = 0;
 
-   if ((!firstChild->getOpCode().isLoadConst()) &&
-       (secondChild->getReferenceCount() == 1) &&
-       (secondChild->getRegister() == NULL) &&
-       secondChild->getOpCode().isShift() &&
-       (secondChild->getSecondChild()->getOpCodeValue() == TR::iconst))
-      {
-      source1Node = firstChild;
-      source2Node = secondChild->getFirstChild();
-      shiftValue = secondChild->getSecondChild()->getInt();
-      shiftNode = secondChild;
-      }
-   else if ((!node->getOpCode().isSub()) &&
-             (!secondChild->getOpCode().isLoadConst()) &&
-             (firstChild->getReferenceCount() == 1) &&
-             (firstChild->getRegister() == NULL) &&
-             firstChild->getOpCode().isShift() &&
-             (firstChild->getSecondChild()->getOpCodeValue() == TR::iconst))
-      {
-      source1Node = secondChild;
-      source2Node = firstChild->getFirstChild();
-      shiftValue = firstChild->getSecondChild()->getInt();
-      shiftNode = firstChild;
-      }
-   else
+   if (!(isShiftedBinaryOp(node, firstChild, secondChild, source1Node, source2Node, shiftNode, notNode, shiftValue) ||
+       ((!node->getOpCode().isSub()) && isShiftedBinaryOp(node, secondChild, firstChild, source1Node, source2Node, shiftNode, notNode, shiftValue))))
       {
       return NULL;
       }
 
    const bool is64bit = node->getDataType().isInt64();
-   if ((shiftValue <= 0) || (shiftValue > (is64bit ? 63 : 31)))
+   if ((shiftValue < 0) || (shiftValue > (is64bit ? 63 : 31)))
       {
       return NULL;
       }
@@ -339,11 +408,19 @@ generateShiftedBinaryOperation(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::
          treg = cg->allocateRegister();
          }
       }
-   TR::ARM64ShiftCode code = (shiftNode->getOpCode().isLeftShift() ? TR::SH_LSL : (shiftNode->getOpCode().isShiftLogical() ? TR::SH_LSR : TR::SH_ASR));
+   if (shiftNode != NULL)
+      {
+      TR::ARM64ShiftCode code = (shiftNode->getOpCode().isLeftShift() ? TR::SH_LSL : (shiftNode->getOpCode().isShiftLogical() ? TR::SH_LSR : TR::SH_ASR));
 
-   generateTrg1Src2ShiftedInstruction(cg, op, node, treg, s1reg, s2reg, code, shiftValue);
+      generateTrg1Src2ShiftedInstruction(cg, (notNode == NULL) ? op : notOp, node, treg, s1reg, s2reg, code, shiftValue);
+      }
+   else
+      {
+      generateTrg1Src2Instruction(cg, (notNode == NULL) ? op : notOp, node, treg, s1reg, s2reg);
+      }
+
    node->setRegister(treg);
-   cg->recursivelyDecReferenceCount(shiftNode);
+   cg->recursivelyDecReferenceCount((source1Node == firstChild) ? secondChild : firstChild);
    cg->decReferenceCount(source1Node);
    return treg;
    }
@@ -366,7 +443,7 @@ OMR::ARM64::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       return retReg;
       }
 
-   retReg = generateShiftedBinaryOperation(node, TR::InstOpCode::addw, cg);
+   retReg = generateShiftedBinaryOperation(node, TR::InstOpCode::addw, TR::InstOpCode::addw, cg);
    if (retReg)
       {
       return retReg;
@@ -393,7 +470,7 @@ OMR::ARM64::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       return retReg;
       }
 
-   retReg = generateShiftedBinaryOperation(node, TR::InstOpCode::addx, cg);
+   retReg = generateShiftedBinaryOperation(node, TR::InstOpCode::addx, TR::InstOpCode::addx, cg);
    if (retReg)
       {
       return retReg;
@@ -415,7 +492,7 @@ OMR::ARM64::TreeEvaluator::isubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       return retReg;
       }
 
-   retReg = generateShiftedBinaryOperation(node, TR::InstOpCode::subw, cg);
+   retReg = generateShiftedBinaryOperation(node, TR::InstOpCode::subw, TR::InstOpCode::subw, cg);
    if (retReg)
       {
       return retReg;
@@ -437,7 +514,7 @@ OMR::ARM64::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       return retReg;
       }
 
-   retReg = generateShiftedBinaryOperation(node, TR::InstOpCode::subx, cg);
+   retReg = generateShiftedBinaryOperation(node, TR::InstOpCode::subx, TR::InstOpCode::subx, cg);
    if (retReg)
       {
       return retReg;
@@ -1434,14 +1511,15 @@ logicImmediateHelper(uint64_t value, bool is64Bit, bool &n, uint32_t &immEncoded
  * @param[in] regOp : the target AArch64 instruction opcode
  * @param[in] regOpImm : the matching AArch64 immediate instruction opcode
  * regOpImm == regOp indicates that the passed opcode has no immediate form.
+ * @param[in] retNotOp : the matching AArch64 opcode where NOT is applied to its operand
  * @param[in] is64Bit : true if regOp and regOpImm are 64bit opcode.
  * @param[in] cg : codegenerator
  * @return target register
  */
 static inline TR::Register *
-logicBinaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic regOp, TR::InstOpCode::Mnemonic regOpImm, bool is64Bit, TR::CodeGenerator *cg)
+logicBinaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic regOp, TR::InstOpCode::Mnemonic regOpImm, TR::InstOpCode::Mnemonic regNotOp, bool is64Bit, TR::CodeGenerator *cg)
    {
-   TR::Register *trgReg = generateShiftedBinaryOperation(node, regOp, cg);
+   TR::Register *trgReg = generateShiftedBinaryOperation(node, regOp, regNotOp, cg);
    if (trgReg != NULL)
       {
       return trgReg;
@@ -1662,7 +1740,7 @@ OMR::ARM64::TreeEvaluator::iandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       return reg;
       }
    // boolean and of 2 integers
-   return logicBinaryEvaluator(node, TR::InstOpCode::andw, TR::InstOpCode::andimmw, false, cg);
+   return logicBinaryEvaluator(node, TR::InstOpCode::andw, TR::InstOpCode::andimmw, TR::InstOpCode::bicw, false, cg);
    }
 
 TR::Register *
@@ -1674,35 +1752,35 @@ OMR::ARM64::TreeEvaluator::landEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       return reg;
       }
    // boolean and of 2 integers
-   return logicBinaryEvaluator(node, TR::InstOpCode::andx, TR::InstOpCode::andimmx, true, cg);
+   return logicBinaryEvaluator(node, TR::InstOpCode::andx, TR::InstOpCode::andimmx, TR::InstOpCode::bicx, true, cg);
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::iorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    // boolean or of 2 integers
-   return logicBinaryEvaluator(node, TR::InstOpCode::orrw, TR::InstOpCode::orrimmw, false, cg);
+   return logicBinaryEvaluator(node, TR::InstOpCode::orrw, TR::InstOpCode::orrimmw, TR::InstOpCode::ornw, false, cg);
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::lorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    // boolean or of 2 integers
-   return logicBinaryEvaluator(node, TR::InstOpCode::orrx, TR::InstOpCode::orrimmx, true, cg);
+   return logicBinaryEvaluator(node, TR::InstOpCode::orrx, TR::InstOpCode::orrimmx, TR::InstOpCode::ornx, true, cg);
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::ixorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    // boolean xor of 2 integers
-   return logicBinaryEvaluator(node, TR::InstOpCode::eorw, TR::InstOpCode::eorimmw, false, cg);
+   return logicBinaryEvaluator(node, TR::InstOpCode::eorw, TR::InstOpCode::eorimmw, TR::InstOpCode::eonw, false, cg);
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::lxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    // boolean xor of 2 integers
-   return logicBinaryEvaluator(node, TR::InstOpCode::eorx, TR::InstOpCode::eorimmx, true, cg);
+   return logicBinaryEvaluator(node, TR::InstOpCode::eorx, TR::InstOpCode::eorimmx, TR::InstOpCode::eonx, true, cg);
    }
 
 TR::Register *

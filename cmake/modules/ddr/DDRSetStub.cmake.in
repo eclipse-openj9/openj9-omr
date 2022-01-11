@@ -140,7 +140,8 @@ function(process_source_files src_files)
 				-Doutput_file=${stub_file}
 				"${path_tool_opt}"
 				-P ${DDR_SUPPORT_DIR}/GenerateStub.cmake
-				VERBATIM
+			COMMENT ""
+			VERBATIM
 		)
 
 		set(pp_command "@CMAKE_C_COMPILER@")
@@ -159,6 +160,7 @@ function(process_source_files src_files)
 			OUTPUT "${annt_file}"
 			DEPENDS "${stub_file}"
 			COMMAND ${pp_command} | awk "/^DDRFILE_BEGIN /,/^DDRFILE_END / { gsub(/[\\t\\r ]*$/, \"\"); if (NF != 0) { print \"@\" $0 } }" > ${annt_file}
+			COMMENT ""
 			VERBATIM
 		)
 	endforeach()

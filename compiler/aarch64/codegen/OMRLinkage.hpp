@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -299,16 +299,6 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
     * @brief Initializes ARM64 RealRegister linkage
     */
    virtual void initARM64RealRegisterLinkage();
-
-   /**
-    * @brief Returns a MemoryReference for an outgoing argument
-    * @param[in] argMemReg : register pointing to address for the outgoing argument
-    * @param[in] argReg : register for the argument
-    * @param[in] opCode : instruction OpCode for store to memory
-    * @param[out] memArg : struct holding memory argument information
-    * @return MemoryReference for the argument
-    */
-   virtual TR::MemoryReference *getOutgoingArgumentMemRef(TR::Register *argMemReg, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::ARM64MemoryArgument &memArg);
 
    /**
     * @brief Returns a MemoryReference for an outgoing argument

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -50,18 +50,6 @@ void OMR::ARM64::Linkage::initARM64RealRegisterLinkage()
 void OMR::ARM64::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method)
    {
    /* do nothing */
-   }
-
-TR::MemoryReference *OMR::ARM64::Linkage::getOutgoingArgumentMemRef(TR::Register *argMemReg, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::ARM64MemoryArgument &memArg)
-   {
-   const TR::ARM64LinkageProperties& properties = self()->getProperties();
-
-   TR::MemoryReference *result = TR::MemoryReference::createWithDisplacement(cg(), argMemReg, 8); // post-increment
-   memArg.argRegister = argReg;
-   memArg.argMemory = result;
-   memArg.opCode = opCode; // opCode must be post-index form
-
-   return result;
    }
 
 TR::MemoryReference *OMR::ARM64::Linkage::getOutgoingArgumentMemRef(TR::Register *baseReg, int32_t offset, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::ARM64MemoryArgument &memArg)

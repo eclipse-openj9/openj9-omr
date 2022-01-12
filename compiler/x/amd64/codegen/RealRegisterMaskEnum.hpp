@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -52,18 +52,6 @@
    st6Mask           = 0x00000040,
    st7Mask           = 0x00000080,
    AvailableFPRMask  = 0x000000FF,
-
-   // MMXR
-   //
-   mm0Mask           = 0x00010000,
-   mm1Mask           = 0x00020000,
-   mm2Mask           = 0x00040000,
-   mm3Mask           = 0x00080000,
-   mm4Mask           = 0x00100000,
-   mm5Mask           = 0x00200000,
-   mm6Mask           = 0x00400000,
-   mm7Mask           = 0x00800000,
-   AvailableMMRMask  = 0x00FF0000,
 
    // XMMR
    //

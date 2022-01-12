@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -56,34 +56,23 @@
    LastFPR                 = st7,
    LastAssignableFPR       = st7,
 
-   mm0                     = 18,
-   FirstMMXR               = mm0,
-   mm1                     = 19,
-   mm2                     = 20,
-   mm3                     = 21,
-   mm4                     = 22,
-   mm5                     = 23,
-   mm6                     = 24,
-   mm7                     = 25,
-   LastMMXR                = mm7,
-
    XMMRMaskOffset          = LastGPR,
-   xmm0                    = 26,
+   xmm0                    = 18,
    FirstXMMR               = xmm0,
-   xmm1                    = 27,
-   xmm2                    = 28,
-   xmm3                    = 29,
-   xmm4                    = 30,
-   xmm5                    = 31,
-   xmm6                    = 32,
-   xmm7                    = 33,
+   xmm1                    = 19,
+   xmm2                    = 20,
+   xmm3                    = 21,
+   xmm4                    = 22,
+   xmm5                    = 23,
+   xmm6                    = 24,
+   xmm7                    = 25,
    LastXMMR                = xmm7,
 
-   AllFPRegisters          = 34,
-   ByteReg                 = 35,
-   BestFreeReg             = 36,
-   SpilledReg              = 37,
-   NumRegisters            = 38,
+   AllFPRegisters          = 26,
+   ByteReg                 = 27,
+   BestFreeReg             = 28,
+   SpilledReg              = 29,
+   NumRegisters            = 30,
 
    NumXMMRegisters         = LastXMMR - FirstXMMR + 1,
    MaxAssignableRegisters  = NumXMMRegisters + (LastAssignableGPR - FirstGPR + 1) - 1 // -1 for stack pointer

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -270,14 +270,14 @@ OMR::X86::Machine::findBestFreeGPRegister(TR::Instruction   *currentInstruction,
          first = TR::RealRegister::FirstGPR;
          last  = TR::RealRegister::Last8BitGPR;
          break;
+      case TR_DoubleWordReg:
+#if defined(TR_TARGET_32BIT)
+         TR_ASSERT_FATAL(0, "Unsupported register size");
+#endif
       case TR_HalfWordReg:
       case TR_WordReg:
          first = TR::RealRegister::FirstGPR;
          last  = TR::RealRegister::LastAssignableGPR;
-         break;
-      case TR_DoubleWordReg:
-         first = TR::RealRegister::FirstMMXR;
-         last  = TR::RealRegister::LastMMXR;
          break;
       case TR_QuadWordReg:
          first = TR::RealRegister::FirstXMMR;
@@ -452,14 +452,14 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
          first = TR::RealRegister::FirstGPR;
          last  = TR::RealRegister::Last8BitGPR;
          break;
+      case TR_DoubleWordReg:
+#if defined(TR_TARGET_32BIT)
+         TR_ASSERT_FATAL(0, "Unsupported register size");
+#endif
       case TR_HalfWordReg:
       case TR_WordReg:
          first = TR::RealRegister::FirstGPR;
          last = TR::RealRegister::LastAssignableGPR;
-         break;
-      case TR_DoubleWordReg:
-         first = TR::RealRegister::FirstMMXR;
-         last  = TR::RealRegister::LastMMXR;
          break;
       case TR_QuadWordReg:
          first = TR::RealRegister::FirstXMMR;
@@ -1659,15 +1659,6 @@ OMR::X86::Machine::initializeRegisterFile(const struct TR::X86LinkageProperties 
                                                   TR::RealRegister::Free,
                                                   (TR::RealRegister::RegNum)reg,
                                                   TR::RealRegister::fprMask((TR::RealRegister::RegNum)reg), self()->cg());
-      }
-
-   for(reg = TR::RealRegister::FirstMMXR; reg <= TR::RealRegister::LastMMXR; reg++)
-      {
-      _registerFile[reg] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
-                                                  properties.isPreservedRegister((TR::RealRegister::RegNum)reg) ? PRESERVED_WEIGHT : NONPRESERVED_WEIGHT,
-                                                  TR::RealRegister::Free,
-                                                  (TR::RealRegister::RegNum)reg,
-                                                  TR::RealRegister::mmrMask((TR::RealRegister::RegNum)reg), self()->cg());
       }
 
    for(reg = TR::RealRegister::FirstXMMR; reg <= TR::RealRegister::LastXMMR; reg++)

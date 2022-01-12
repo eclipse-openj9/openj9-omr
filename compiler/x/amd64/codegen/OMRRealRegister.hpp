@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -87,32 +87,6 @@ class OMR_EXTENSIBLE RealRegister : public OMR::X86::RealRegister
             return OMR::RealRegister::r15;
          default:
             TR_ASSERT(false, "rIndex is only valid for registers r8 to r15");
-            return OMR::RealRegister::NoReg;
-         }
-      }
-
-   static RegNum mmIndex(uint8_t r)
-      {
-      switch(r)
-         {
-         case 0:
-            return OMR::RealRegister::mm0;
-         case 1:
-            return OMR::RealRegister::mm1;
-         case 2:
-            return OMR::RealRegister::mm2;
-         case 3:
-            return OMR::RealRegister::mm3;
-         case 4:
-            return OMR::RealRegister::mm4;
-         case 5:
-            return OMR::RealRegister::mm5;
-         case 6:
-            return OMR::RealRegister::mm6;
-         case 7:
-            return OMR::RealRegister::mm7;
-         default:
-            TR_ASSERT(false, "mmIndex is only valid for registers mm0 to mm7");
             return OMR::RealRegister::NoReg;
          }
       }
@@ -227,34 +201,6 @@ class OMR_EXTENSIBLE RealRegister : public OMR::X86::RealRegister
             return OMR::RealRegister::st7Mask;
          default:
             TR_ASSERT(false, "fprMask is only valid for registers st0 to st7");
-            return OMR::RealRegister::noRegMask;
-         }
-      }
-
-   static RegMask mmrMask(RegNum idx)
-      {
-      switch(idx)
-         {
-         case OMR::RealRegister::NoReg:
-            return OMR::RealRegister::noRegMask;
-         case OMR::RealRegister::mm0:
-            return OMR::RealRegister::mm0Mask;
-         case OMR::RealRegister::mm1:
-            return OMR::RealRegister::mm1Mask;
-         case OMR::RealRegister::mm2:
-            return OMR::RealRegister::mm2Mask;
-         case OMR::RealRegister::mm3:
-            return OMR::RealRegister::mm3Mask;
-         case OMR::RealRegister::mm4:
-            return OMR::RealRegister::mm4Mask;
-         case OMR::RealRegister::mm5:
-            return OMR::RealRegister::mm5Mask;
-         case OMR::RealRegister::mm6:
-            return OMR::RealRegister::mm6Mask;
-         case OMR::RealRegister::mm7:
-            return OMR::RealRegister::mm7Mask;
-         default:
-            TR_ASSERT(false, "mmrMask is only valid for registers mm0 to mm7");
             return OMR::RealRegister::noRegMask;
          }
       }

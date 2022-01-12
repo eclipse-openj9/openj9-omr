@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -641,10 +641,10 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
    TR::Register *tempReg;
    int32_t argIndex = 0;
    int32_t numMemArgs = 0;
-   int32_t argSize = 0;
+   int32_t argOffset = 0;
    int32_t numIntegerArgs = 0;
    int32_t numFloatArgs = 0;
-   int32_t totalSize;
+   int32_t totalSize = 0;
    int32_t i;
 
    TR::Node *child;
@@ -667,14 +667,48 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
          case TR::Int64:
          case TR::Address:
             if (numIntegerArgs >= properties.getNumIntArgRegs())
+               {
                numMemArgs++;
+#if defined(LINUX)
+               totalSize += 8;
+#elif defined(OSX)
+               if (childType == TR::Address || childType == TR::Int64)
+                  {
+                  totalSize = (totalSize + 7) & ~7; // adjust to 8-byte boundary
+                  totalSize += 8;
+                  }
+               else
+                  {
+                  totalSize += 4;
+                  }
+#else
+#error Unsupported platform
+#endif
+               }
             numIntegerArgs++;
             break;
 
          case TR::Float:
          case TR::Double:
             if (numFloatArgs >= properties.getNumFloatArgRegs())
-                  numMemArgs++;
+               {
+               numMemArgs++;
+#if defined(LINUX)
+               totalSize += 8;
+#elif defined(OSX)
+               if (childType == TR::Double)
+                  {
+                  totalSize = (totalSize + 7) & ~7; // adjust to 8-byte boundary
+                  totalSize += 8;
+                  }
+               else
+                  {
+                  totalSize += 4;
+                  }
+#else
+#error Unsupported platform
+#endif
+               }
             numFloatArgs++;
             break;
 
@@ -693,7 +727,6 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
       argMemReg = cg()->allocateRegister();
       }
 
-   totalSize = numMemArgs * 8;
    // align to 16-byte boundary
    totalSize = (totalSize + 15) & (~15);
 
@@ -702,7 +735,6 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
 
    for (i = firstArgumentChild; i < callNode->getNumChildren(); i++)
       {
-      TR::MemoryReference *mref = NULL;
       TR::Register *argRegister;
       TR::InstOpCode::Mnemonic op;
 
@@ -754,16 +786,28 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
             else
                {
                // numIntegerArgs >= properties.getNumIntArgRegs()
+               int offsetInc;
                if (childType == TR::Address || childType == TR::Int64)
                   {
-                  op = TR::InstOpCode::strpostx;
+                  op = TR::InstOpCode::strimmx;
+                  offsetInc = 8;
+#if defined(OSX)
+                  argOffset = (argOffset + 7) & ~7; // adjust to 8-byte boundary
+#endif
                   }
                else
                   {
-                  op = TR::InstOpCode::strpostw;
+                  op = TR::InstOpCode::strimmw;
+#if defined(LINUX)
+                  offsetInc = 8;
+#elif defined(OSX)
+                  offsetInc = 4;
+#else
+#error Unsupported platform
+#endif
                   }
-               mref = getOutgoingArgumentMemRef(argMemReg, argRegister, op, pushToMemory[argIndex++]);
-               argSize += 8; // always 8-byte aligned
+               getOutgoingArgumentMemRef(argMemReg, argOffset, argRegister, op, pushToMemory[argIndex++]);
+               argOffset += offsetInc;
                }
             numIntegerArgs++;
             break;
@@ -803,16 +847,28 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
             else
                {
                // numFloatArgs >= properties.getNumFloatArgRegs()
+               int offsetInc;
                if (childType == TR::Double)
                   {
-                  op = TR::InstOpCode::vstrpostd;
+                  op = TR::InstOpCode::vstrimmd;
+                  offsetInc = 8;
+#if defined(OSX)
+                  argOffset = (argOffset + 7) & ~7; // adjust to 8-byte boundary
+#endif
                   }
                else
                   {
-                  op = TR::InstOpCode::vstrposts;
+                  op = TR::InstOpCode::vstrimms;
+#if defined(LINUX)
+                  offsetInc = 8;
+#elif defined(OSX)
+                  offsetInc = 4;
+#else
+#error Unsupported platform
+#endif
                   }
-               mref = getOutgoingArgumentMemRef(argMemReg, argRegister, op, pushToMemory[argIndex++]);
-               argSize += 8; // always 8-byte aligned
+               getOutgoingArgumentMemRef(argMemReg, argOffset, argRegister, op, pushToMemory[argIndex++]);
+               argOffset += offsetInc;
                }
             numFloatArgs++;
             break;

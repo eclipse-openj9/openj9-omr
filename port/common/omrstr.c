@@ -2133,6 +2133,91 @@ omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen
 	return count;
 }
 
+/**
+ * Retrieve the offset of local time from UTC and the current time zone name. If the current time zone could not be determined, this function will
+ * not modify its outputs.
+ *
+ *
+ * @param[in] portLibrary the port library
+ * @param[out] hourOffset the hour offset from UTC+0, which may be negative
+ * @param[out] minuteOffset the minute offset from UTC+0, in the range [0, 59]
+ * @param[out] buf the string buffer to be filled with the time zone name
+ * @param[in] bufLen the buffer length
+ *
+ * @return If the time zone could be determined, returns the number of bytes written to buf, not including the NULL terminator. Otherwise returns -1.
+ */
+int32_t
+omrstr_current_time_zone(struct OMRPortLibrary *portLibrary, int64_t *hourOffset, uint32_t *minuteOffset, char *buf, uint32_t bufLen)
+{
+	BOOLEAN zoneAvailable = FALSE;
+	int32_t zoneSecondsEast = 0;
+	const char *zoneName = NULL;
+
+#if defined(WIN32)
+	/* until a reliable mechanism is found, don't report timezone */
+#elif defined(J9ZOS390) /* defined(WIN32) */
+	time64_t timeNow = time64(NULL);
+	struct tm utc;
+	struct tm local;
+
+	if ((NULL != gmtime64_r(&timeNow, &utc)) && (NULL != localtime64_r(&timeNow, &local))) {
+		zoneAvailable = TRUE;
+		zoneSecondsEast = (int32_t)difftime64(timeNow, mktime64(&utc));
+		if (0 == local.tm_isdst) {
+			zoneName = tzname[0];
+		} else if (local.tm_isdst > 0) {
+			zoneName = tzname[1];
+			/* compensate for DST because difftime64() doesn't appear to do so */
+			zoneSecondsEast += 60 * 60;
+		}
+	}
+#else /* defined(WIN32) */
+	time_t timeNow = time(NULL);
+	struct tm utc;
+	struct tm local;
+
+	if ((NULL != gmtime_r(&timeNow, &utc)) && (NULL != localtime_r(&timeNow, &local))) {
+		zoneAvailable = TRUE;
+		zoneSecondsEast = (int32_t)difftime(timeNow, mktime(&utc));
+		if (0 == local.tm_isdst) {
+			zoneName = tzname[0];
+		} else if (local.tm_isdst > 0) {
+			zoneName = tzname[1];
+			/* compensate for DST because difftime() doesn't appear to do so */
+			zoneSecondsEast += 60 * 60;
+		}
+	}
+#endif /* defined(WIN32) */
+
+	if (zoneAvailable) {
+		uint32_t offset = ((uint32_t)((zoneSecondsEast > 0) ? zoneSecondsEast : -zoneSecondsEast)) / 60;
+		int64_t hours = offset / 60;
+		uint32_t minutes = offset % 60;
+
+		if (hourOffset) {
+			*hourOffset = (zoneSecondsEast > 0) ? hours : -hours;
+		}
+		if (minuteOffset) {
+			*minuteOffset = minutes;
+		}
+
+		const char *read = zoneName;
+		char *write = buf;
+		uint32_t idx = 0;
+		if ((NULL != write) && (NULL != read)) {
+			while ((0 != *read) && (idx < bufLen - 1)) {
+				*write++ = *read;
+				read += 1;
+				idx += 1;
+			}
+			*write = '\0';
+		}
+		return idx;
+	} else {
+		return -1;
+	}
+}
+
 /* ===================== Internal functions ======================== */
 
 #define CONVERSION_BUFFER_SIZE 256

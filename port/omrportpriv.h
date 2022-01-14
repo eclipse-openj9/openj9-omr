@@ -825,6 +825,8 @@ extern J9_CFUNC uintptr_t
 omrstr_ftime(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, const char *format, int64_t timeMillis);
 extern J9_CFUNC uintptr_t
 omrstr_ftime_ex(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, const char *format, int64_t timeMillis, uint32_t flags);
+extern J9_CFUNC int32_t
+omrstr_current_time_zone(struct OMRPortLibrary *portLibrary, int64_t *hourOffset, uint32_t *minuteOffset, char *buf, uint32_t bufLen);
 
 /* J9SourceJ9Time*/
 extern J9_CFUNC uintptr_t

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,6 +23,9 @@
 #if defined(OMR_OS_WINDOWS)
 #include <windows.h>
 #endif /* defined(OMR_OS_WINDOWS) */
+#if defined(J9ZOS390)
+#define _LARGE_TIME_API
+#endif /* defined(J9ZOS390) */
 #include <time.h>
 
 #include "omrportasserts.h"
@@ -2131,6 +2134,78 @@ omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen
 		count += 1;
 	}
 	return count;
+}
+
+/**
+ * Retrieve the offset of local time from UTC and the current time zone name. If the current time zone could not be determined, this function will
+ * not modify its outputs.
+ *
+ *
+ * @param[in] portLibrary the port library
+ * @param[out] secondsEast the offset from UTC+0 in seconds, which is negative for western offsets. Can be NULL if not needed.
+ * @param[out] zoneNameBuffer the string buffer to be filled with the time zone name. Can be NULL if not needed.
+ * @param[in] zoneNameBufferLen the buffer length
+ *
+ * @return If the time zone could be determined, returns 0. Otherwise returns -1.
+ */
+int32_t
+omrstr_current_time_zone(struct OMRPortLibrary *portLibrary, int32_t *secondsEast, char *zoneNameBuffer, size_t zoneNameBufferLen)
+{
+	BOOLEAN zoneAvailable = FALSE;
+	int32_t zoneSecondsEast = 0;
+	const char *zoneName = NULL;
+
+#if defined(WIN32)
+	/* until a reliable mechanism is found, don't report timezone */
+#elif defined(J9ZOS390) /* defined(WIN32) */
+	time64_t timeNow = time64(NULL);
+	struct tm utc;
+	struct tm local;
+
+	if ((NULL != gmtime64_r(&timeNow, &utc)) && (NULL != localtime64_r(&timeNow, &local))) {
+		zoneAvailable = TRUE;
+		zoneSecondsEast = (int32_t)difftime64(timeNow, mktime64(&utc));
+		if (0 == local.tm_isdst) {
+			zoneName = tzname[0];
+		} else if (local.tm_isdst > 0) {
+			zoneName = tzname[1];
+			/* compensate for DST because difftime64() doesn't appear to do so */
+			zoneSecondsEast += 60 * 60;
+		}
+	}
+#else /* defined(WIN32) */
+	time_t timeNow = time(NULL);
+	struct tm utc;
+	struct tm local;
+
+	if ((NULL != gmtime_r(&timeNow, &utc)) && (NULL != localtime_r(&timeNow, &local))) {
+		zoneAvailable = TRUE;
+		zoneSecondsEast = (int32_t)difftime(timeNow, mktime(&utc));
+		if (0 == local.tm_isdst) {
+			zoneName = tzname[0];
+		} else if (local.tm_isdst > 0) {
+			zoneName = tzname[1];
+			/* compensate for DST because difftime() doesn't appear to do so */
+			zoneSecondsEast += 60 * 60;
+		}
+	}
+#endif /* defined(WIN32) */
+
+	if (zoneAvailable) {
+		if (NULL != secondsEast) {
+			*secondsEast = zoneSecondsEast;
+		}
+		if (NULL != zoneNameBuffer) {
+			strncpy(zoneNameBuffer, zoneName, zoneNameBufferLen);
+			if (0 != zoneNameBufferLen) {
+				zoneNameBuffer[zoneNameBufferLen - 1] = '\0';
+			}
+		}
+
+		return 0;
+	} else {
+		return -1;
+	}
 }
 
 /* ===================== Internal functions ======================== */

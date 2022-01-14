@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2209,6 +2209,8 @@ typedef struct OMRPortLibrary {
 	uintptr_t (*str_ftime)(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, const char *format, int64_t timeMillis) ;
 	/** see @ref omrstr.c::omrstr_ftime_ex "omrstr_ftime_ex"*/
 	uintptr_t (*str_ftime_ex)(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, const char *format, int64_t timeMillis, uint32_t flags);
+	/** see @ref omrstr.c::omrstr_current_time_zone "omrstr_current_time_zone"*/
+	int32_t (*str_current_time_zone)(struct OMRPortLibrary *portLibrary, int32_t *secondsEast, char *zoneNameBuffer, size_t zoneNameBufferLen) ;
 	/** see @ref omrmmap.c::omrmmap_startup "omrmmap_startup"*/
 	int32_t (*mmap_startup)(struct OMRPortLibrary *portLibrary) ;
 	/** see @ref omrmmap.c::omrmmap_shutdown "omrmmap_shutdown"*/
@@ -2928,6 +2930,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrfile_convert_omrfile_fd_to_native_fd(param1) privateOmrPortLibrary->file_convert_omrfile_fd_to_native_fd(privateOmrPortLibrary,param1)
 #define omrstr_ftime(param1,param2,param3,param4) privateOmrPortLibrary->str_ftime_ex(privateOmrPortLibrary, (param1), (param2), (param3), (param4), OMRSTR_FTIME_FLAG_LOCAL)
 #define omrstr_ftime_ex(param1,param2,param3,param4,param5) privateOmrPortLibrary->str_ftime_ex(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5))
+#define omrstr_current_time_zone(param1,param2,param3) privateOmrPortLibrary->str_current_time_zone(privateOmrPortLibrary, (param1), (param2), (param3))
 #define omrmmap_startup() privateOmrPortLibrary->mmap_startup(privateOmrPortLibrary)
 #define omrmmap_shutdown() privateOmrPortLibrary->mmap_shutdown(privateOmrPortLibrary)
 #define omrmmap_capabilities() privateOmrPortLibrary->mmap_capabilities(privateOmrPortLibrary)

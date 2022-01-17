@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020, 2021 IBM Corp. and others
+ * Copyright (c) 2020, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -336,6 +336,7 @@ timestamps {
                                         extensions: [[$class: 'CloneOption', honorRefspec: true, timeout: 30, reference: SPECS[params.BUILDSPEC].reference]],
                                         userRemoteConfigs: [[name: 'origin',
                                             refspec: "${refspec}",
+                                            credentialsId: 'github-bot-ssh',
                                             url: "${gitConfig.getUrl()}"]
                                         ]
                                     ]

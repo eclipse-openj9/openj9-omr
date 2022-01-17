@@ -1747,7 +1747,25 @@
                 , "return": "unsignedInteger"
                 , "parms": []
                 },
+                { "name": "isArray"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "boolean"
+                , "parms": []
+                },
                 { "name": "isPointer"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "boolean"
+                , "parms": []
+                },
+                { "name": "isStruct"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "boolean"
+                , "parms": []
+                },
+                { "name": "isUnion"
                 , "overloadsuffix": ""
                 , "flags": []
                 , "return": "boolean"

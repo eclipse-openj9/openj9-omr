@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021, 2021 IBM Corp. and others
+ * Copyright (c) 2021, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,8 +21,16 @@
 
 #if defined(LINUX)
 #define FUNC_LABEL(x)	x
+#define LOAD_FUNC_PTR(reg, label) \
+	ldr	reg, label
 #elif defined(OSX)
 #define FUNC_LABEL(x)	_ ## x
+	.macro	LOAD_FUNC_PTR_MACRO	reg, label
+	adrp	\reg, \label@GOTPAGE
+	ldr	\reg, [\reg, \label@GOTPAGEOFF]
+	ldr	\reg, [\reg]
+	.endm
+#define LOAD_FUNC_PTR(reg, label)       LOAD_FUNC_PTR_MACRO reg, label
 #else
 #error Unsupported platform
 #endif

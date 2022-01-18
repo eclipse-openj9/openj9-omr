@@ -2667,7 +2667,7 @@ OMR::Options::jitPreProcess()
       //
       if (this == OMR::Options::getJITCmdLineOptions() || this == OMR::Options::getAOTCmdLineOptions())
          {
-         if (_aggressivenessLevel >= 0 && _aggressivenessLevel <= 5)
+         if (_aggressivenessLevel >= 0 && _aggressivenessLevel < LAST_AGGRESSIVENESS_LEVEL)
             {
             // Set some default values for JIT and AOT main command line options
             //
@@ -2689,6 +2689,9 @@ OMR::Options::jitPreProcess()
                   break;
                case OMR::Options::CONSERVATIVE_QUICKSTART: // conservative quickstart
                   self()->setConservativeQuickStart();
+                  break;
+               case OMR::Options::AGGRESSIVE_THROUGHPUT: // Enabled with -Xtune:throughput
+                  self()->setAggressiveThroughput();
                   break;
                } // end switch
             }
@@ -5170,6 +5173,27 @@ void OMR::Options::setConservativeDefaultBehavior()
    // conservative upgrades ?
    _coldUpgradeSampleThreshold = 30; // instead of 3 or even 2
    // query for Xaggressive must return false
+   }
+
+
+void OMR::Options::setAggressiveThroughput()
+   {
+   self()->setOption(TR_DontDowngradeToCold); // This will prevent AOT compilations as well, unless -Xaot:forceaot is present
+   self()->setOption(TR_DisableSelectiveNoOptServer);
+#ifdef J9_PROJECT_SPECIFIC
+   TR::Options::_scorchingSampleThreshold = 500; // 6% CPU
+   TR::Options::_veryHotSampleThreshold = 1000; // 3% CPU
+#endif
+   self()->setOption(TR_DisablePersistIProfile); // Want to rely on freshly collected IProfiler data
+   self()->setOption(TR_UseHigherMethodCounts); // Increase counts to gather more IProfiler data
+   // The following options are candidates for inclusion in this
+   // policy but they need more experimental validation
+   //self()->setOption(TR_ProcessHugeMethods);
+   //TR::Options::setScratchSpaceLimit(2 * DEFAULT_SCRATCH_SPACE_LIMIT_KB * 1024); // Increase scratchSpaceLimit
+   //self()->setMoreAggressiveInlining();
+#ifdef J9_PROJECT_SPECIFIC
+   //TR::Options::_bigAppThreshold = 3000;
+#endif
    }
 
 

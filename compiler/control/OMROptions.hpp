@@ -1356,6 +1356,8 @@ public:
       AGGRESSIVE_AOT,
       CONSERVATIVE_DEFAULT,
       DEFAULT,
+      AGGRESSIVE_THROUGHPUT,
+      LAST_AGGRESSIVENESS_LEVEL
    };
 
    static TR::OptionFunctionPtr negateProcessingMethod(TR::OptionFunctionPtr);
@@ -1599,6 +1601,7 @@ public:
    void setLocalAggressiveAOT();
    void setInlinerOptionsForAggressiveAOT();
    void setConservativeDefaultBehavior();
+   void setAggressiveThroughput();
 
    static bool getCountsAreProvidedByUser() { return _countsAreProvidedByUser; } // set very late in setCounts()
    static TR_YesNoMaybe startupTimeMatters() { return _startupTimeMatters; } // set very late in setCounts()

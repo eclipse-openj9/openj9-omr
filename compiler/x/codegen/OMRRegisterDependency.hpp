@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -35,8 +35,8 @@
 
 #ifndef OMR_REGISTER_DEPENDENCY_GROUP_CONNECTOR
 #define OMR_REGISTER_DEPENDENCY_GROUP_CONNECTOR
-namespace OMR { namespace X86 { class RegisterDependencyGroup; } }
-namespace OMR { typedef OMR::X86::RegisterDependencyGroup RegisterDependencyGroupConnector; }
+   namespace OMR { namespace X86 { class RegisterDependencyGroup; } }
+   namespace OMR { typedef OMR::X86::RegisterDependencyGroup RegisterDependencyGroupConnector; }
 #endif
 
 #include "compiler/codegen/OMRRegisterDependency.hpp"
@@ -63,15 +63,9 @@ namespace X86
 {
 class OMR_EXTENSIBLE RegisterDependencyGroup : public OMR::RegisterDependencyGroup
    {
-   bool _mayNeedToPopFPRegisters;
-   bool _needToClearFPStack;
-
    public:
 
-   RegisterDependencyGroup()
-      : _mayNeedToPopFPRegisters(false),
-        _needToClearFPStack(false)
-      {}
+   RegisterDependencyGroup() : OMR::RegisterDependencyGroup() {}
 
    void setDependencyInfo(uint32_t   index,
                           TR::Register                   *vr,
@@ -79,7 +73,6 @@ class OMR_EXTENSIBLE RegisterDependencyGroup : public OMR::RegisterDependencyGro
                           TR::CodeGenerator              *cg,
                           uint8_t                         flag = UsesDependentRegister,
                           bool                            isAssocRegDependency = false);
-
 
    TR::RegisterDependency *findDependency(TR::Register *vr, uint32_t stop)
       {
@@ -285,7 +278,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
                                   uint32_t   numConditions,
                                   char                           *prefix,
                                   FILE                           *pOutFile);
-#endif
+#endif /* defined(DEBUG) || defined(PROD_WITH_ASSUMES) */
 
    };
 }
@@ -298,4 +291,4 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
 TR::RegisterDependencyConditions  * generateRegisterDependencyConditions(TR::Node *, TR::CodeGenerator *, uint32_t = 0, List<TR::Register> * = 0);
 TR::RegisterDependencyConditions  * generateRegisterDependencyConditions(uint32_t, uint32_t, TR::CodeGenerator *);
 
-#endif
+#endif /* OMR_X86_REGISTER_DEPENDENCY_INCL */

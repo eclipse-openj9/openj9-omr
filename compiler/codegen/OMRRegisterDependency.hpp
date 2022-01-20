@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,8 +33,8 @@
 
 #ifndef OMR_REGISTER_DEPENDENCY_GROUP_CONNECTOR
 #define OMR_REGISTER_DEPENDENCY_GROUP_CONNECTOR
-namespace OMR { class RegisterDependencyGroup; }
-namespace OMR { typedef OMR::RegisterDependencyGroup RegisterDependencyGroupConnector; }
+   namespace OMR { class RegisterDependencyGroup; }
+   namespace OMR { typedef OMR::RegisterDependencyGroup RegisterDependencyGroupConnector; }
 #endif
 
 #include "env/TRMemory.hpp"
@@ -50,17 +50,25 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
 
    TR_ALLOC_WITHOUT_NEW(TR_Memory::RegisterDependencyGroup)
 
-   RegisterDependencyGroup() {}
+   RegisterDependencyGroup()
+#if defined(OMR_ARCH_S390)
+      : _numUses(0)
+#elif defined(OMR_ARCH_X86) /* defined(OMR_ARCH_S390) */
+      : _mayNeedToPopFPRegisters(false), _needToClearFPStack(false)
+#elif defined(__GNUC__) && !defined(__clang__) /* defined(OMR_ARCH_S390) */
+      : _unused('\0')
+#endif /* defined(OMR_ARCH_S390) */
+      {}
 
    TR::RegisterDependencyGroup *self();
 
    void *operator new(size_t s, int32_t numDependencies, TR_Memory *m)
       {
-      if (numDependencies > NUM_DEFAULT_DEPENDENCIES)
-         {
-         s += (numDependencies - NUM_DEFAULT_DEPENDENCIES) * sizeof(TR::RegisterDependency);
-         }
-
+      TR_ASSERT(numDependencies >= 0, "Number of dependencies must be non-negative");
+      s += numDependencies * sizeof(TR::RegisterDependency);
+#if defined(__clang__) || !defined(__GNUC__)
+      s -= NUM_DEFAULT_DEPENDENCIES * sizeof(TR::RegisterDependency);
+#endif /* defined(__clang__) || !defined(__GNUC__) */
       return m->allocateHeapMemory(s, TR_MemoryBase::RegisterDependencyGroup);
       }
 
@@ -195,15 +203,37 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
 
    protected:
 
-   static const size_t NUM_DEFAULT_DEPENDENCIES = 1;
+#if defined(OMR_ARCH_S390)
+   int8_t _numUses;
+#elif defined(OMR_ARCH_X86) /* defined(OMR_ARCH_S390) */
+   bool _mayNeedToPopFPRegisters;
+   bool _needToClearFPStack;
+#elif defined(__GNUC__) && !defined(__clang__) /* defined(OMR_ARCH_S390) */
+   /* a flexible array cannot be the only member of a class */
+   private:
+   char _unused;
+   protected:
+#endif /* defined(OMR_ARCH_S390) */
 
+#if defined(__GNUC__) && !defined(__clang__)
+   TR::RegisterDependency _dependencies[];
+#else /* defined(__GNUC__) && !defined(__clang__) */
+   /*
+    * Only GCC appears to support extending a classs with a flexible array member,
+    * so, for other compilers, we declare the length to be 1 and adjust accordingly
+    * in the new operator.
+    */
+   private:
+   static const size_t NUM_DEFAULT_DEPENDENCIES = 1;
+   protected:
    TR::RegisterDependency _dependencies[NUM_DEFAULT_DEPENDENCIES];
+#endif /* defined(__GNUC__) && !defined(__clang__) */
    };
 
 class RegisterDependencyConditions
    {
    protected:
-   RegisterDependencyConditions() {};
+   RegisterDependencyConditions() {}
 
    public:
    TR_ALLOC(TR_Memory::RegisterDependencyConditions)
@@ -382,4 +412,4 @@ class RegisterDependencyMap
    };
 }
 
-#endif
+#endif /* OMR_REGISTER_DEPENDENCY_INCL */

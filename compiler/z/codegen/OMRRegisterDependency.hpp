@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -73,7 +73,7 @@ class OMR_EXTENSIBLE RegisterDependencyGroup : public OMR::RegisterDependencyGro
    {
    public:
 
-   RegisterDependencyGroup() : _numUses(0) {}
+   RegisterDependencyGroup() : OMR::RegisterDependencyGroup() {}
 
    uint32_t genBitMapOfAssignableGPRs(TR::CodeGenerator *cg, uint32_t numberOfRegisters);
 
@@ -91,7 +91,6 @@ class OMR_EXTENSIBLE RegisterDependencyGroup : public OMR::RegisterDependencyGro
 
    protected:
 
-   int8_t _numUses;
    };
 
 class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
@@ -124,8 +123,8 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
                                         TR::CodeGenerator *cg);
 
    RegisterDependencyConditions(TR::RegisterDependencyGroup *_preConditions,
-				       TR::RegisterDependencyGroup *_postConditions,
-				       uint16_t numPreConds, uint16_t numPostConds, TR::CodeGenerator *cg)
+                                TR::RegisterDependencyGroup *_postConditions,
+                                uint16_t numPreConds, uint16_t numPostConds, TR::CodeGenerator *cg)
       : _preConditions(_preConditions),
         _postConditions(_postConditions),
         _numPreConditions(numPreConds),
@@ -133,7 +132,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
         _numPostConditions(numPostConds),
         _addCursorForPost(numPostConds),
         _isUsed(false),
-	_cg(cg)
+        _cg(cg)
       {}
 
    RegisterDependencyConditions()
@@ -144,7 +143,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
         _numPostConditions(0),
         _addCursorForPost(0),
         _isUsed(false),
-	_cg(NULL)
+        _cg(NULL)
       {}
 
    //VMThread work: implicitly add an extra post condition for a possible vm thread
@@ -269,10 +268,10 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    bool addPreConditionIfNotAlreadyInserted(TR::RegisterDependency *regDep);
    bool addPreConditionIfNotAlreadyInserted(TR::Register *vr,
                                             TR::RealRegister::RegNum rr,
-				                                uint8_t flag = ReferencesDependentRegister);
+                                            uint8_t flag = ReferencesDependentRegister);
    bool addPreConditionIfNotAlreadyInserted(TR::Register *vr,
                                             TR::RealRegister::RegDep rr,
-				                                uint8_t flag = ReferencesDependentRegister);
+                                            uint8_t flag = ReferencesDependentRegister);
 
    /**
     * @brief Adds the provided \c TR::RegisterDependency to the set of postconditions if it
@@ -286,10 +285,10 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
 
    bool addPostConditionIfNotAlreadyInserted(TR::Register *vr,
                                              TR::RealRegister::RegNum rr,
-				                                 uint8_t flag = ReferencesDependentRegister);
+                                             uint8_t flag = ReferencesDependentRegister);
    bool addPostConditionIfNotAlreadyInserted(TR::Register *vr,
                                              TR::RealRegister::RegDep rr,
-				                                 uint8_t flag = ReferencesDependentRegister);
+                                             uint8_t flag = ReferencesDependentRegister);
 
    TR::RegisterDependencyConditions *clone(TR::CodeGenerator *cg, int32_t additionalRegDeps);
 
@@ -335,4 +334,4 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
 }
 }
 
-#endif
+#endif /* OMR_Z_REGISTER_DEPENDENCY_INCL */

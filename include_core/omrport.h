@@ -1429,7 +1429,7 @@ typedef enum OMRProcessorArchitecture {
 /* Holds processor type and features used with omrsysinfo_get_processor_description,
  * omrsysinfo_processor_has_feature and omrsysinfo_processor_set_feature
  */
-#define OMRPORT_SYSINFO_FEATURES_SIZE 5
+#define OMRPORT_SYSINFO_FEATURES_SIZE 7
 typedef struct OMRProcessorDesc {
 	OMRProcessorArchitecture processor;
 	OMRProcessorArchitecture physicalProcessor;
@@ -1578,6 +1578,10 @@ typedef struct OMRProcessorDesc {
 /* STFLE bit 152 - Vector packed decimal enhancement facility */
 #define OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY 152
 
+/* zNext facilities */
+
+/* STFLE bit 192 - Vector-Packed-Decimal-Enhancement Facility 2 */
+#define OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY_2 192
 
 /*  Linux on Z features
  *  Auxiliary Vector Hardware Capability (AT_HWCAP) features for Linux on Z.

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -5580,6 +5580,33 @@ class S390VRRiInstruction: public S390VRRInstruction
 
    char *description() { return "S390VRRiInstruction"; }
    Kind getKind() { return IsVRRi; }
+   uint8_t * generateBinaryEncoding();
+   };
+
+/**
+ * VRR-k
+ *    _____________________________________________________________
+ *   | Op Code | V1 | V2 | ///////// | M3 | /////// | RXB | Op Code |
+ *   |_________|____|____|___________|____|_________|_____|_________|
+ *   0        8    12   16           24    28       36   40    47
+ *
+ */
+class S390VRRkInstruction: public S390VRRInstruction
+   {
+   public:
+   S390VRRkInstruction(
+                          TR::CodeGenerator       * cg         = NULL,
+                          TR::InstOpCode::Mnemonic   op        = TR::InstOpCode::bad,
+                          TR::Node                * n          = NULL,
+                          TR::Register            * targetReg  = NULL, /* VRF */
+                          TR::Register            * sourceReg  = NULL, /* VRF */
+                          uint8_t                   mask3      = 0)    /* 4 bits */
+   : S390VRRInstruction(cg, op, n, targetReg, sourceReg, mask3, 0, 0, 0)
+      {
+      }
+
+   char *description() { return "S390VRRkInstruction"; }
+   Kind getKind() { return IsVRRk; }
    uint8_t * generateBinaryEncoding();
    };
 

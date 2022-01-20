@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3882,6 +3882,7 @@ TR::S390VRRInstruction::generateBinaryEncoding()
       case TR::Instruction::IsVRRg: break; // no mask
       case TR::Instruction::IsVRRh: maskIn1 = getM3(); break;
       case TR::Instruction::IsVRRi: maskIn1 = getM3(); maskIn2 = getM4(); break;
+      case TR::Instruction::IsVRRk: maskIn1 = getM3(); break;
       default: break;
       }
    setMaskField(reinterpret_cast<uint32_t *>(cursor), maskIn1, 1);
@@ -4072,6 +4073,22 @@ TR::S390VRRiInstruction::generateBinaryEncoding()
    TR_ASSERT(getRegisterOperand(1) != NULL, "VRR-i R1 should not be NULL!");
    TR_ASSERT(getRegisterOperand(2) != NULL, "VRR-i V1 should not be NULL!");
 
+   return TR::S390VRRInstruction::generateBinaryEncoding();
+   }
+
+/** \details
+ *
+ * VRR-k generate binary encoding
+ * Performs error checking on the operands and then deleagte the encoding work to its parent class
+ */
+uint8_t *
+TR::S390VRRkInstruction::generateBinaryEncoding()
+   {
+   // Error Checking
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(this, getRegisterOperand(1) != NULL, "VRR-k V1 should not be NULL!");
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(this, getRegisterOperand(2) != NULL, "VRR-k V2 should not be NULL!");
+
+   // Generate Binary Encoding
    return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -15966,4 +15966,53 @@
                         S390OpProp_VectorStringOp |
                         S390OpProp_UsesM5 |
                         S390OpProp_UsesM6
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::VCLZDP,
+   /* .name        = */ "VCLZDP",
+   /* .description = */ "VECTOR COUNT LEADING ZERO DIGITS",
+   /* .opcode[0]   = */ 0xE6,
+   /* .opcode[1]   = */ 0x51,
+   /* .format      = */ VRRk_FORMAT,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_ZNEXT,
+   /* .properties  = */ S390OpProp_SetsOperand1 |
+                        S390OpProp_UsesM3
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::VPKZR,
+   /* .name        = */ "VPKZR",
+   /* .description = */ "VECTOR PACK ZONED REGISTER",
+   /* .opcode[0]   = */ 0xE6,
+   /* .opcode[1]   = */ 0x70,
+   /* .format      = */ VRIf_FORMAT,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_ZNEXT,
+   /* .properties  = */ S390OpProp_SetsCC |
+                        S390OpProp_SetsOperand1 |
+                        S390OpProp_UsesM5
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::VUPKZL,
+   /* .name        = */ "VUPKZL",
+   /* .description = */ "VECTOR UNPACK ZONED LOW",
+   /* .opcode[0]   = */ 0xE6,
+   /* .opcode[1]   = */ 0x5C,
+   /* .format      = */ VRRk_FORMAT,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_ZNEXT,
+   /* .properties  = */ S390OpProp_SetsOperand1 |
+                        S390OpProp_UsesM3
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::VUPKZH,
+   /* .name        = */ "VUPKZH",
+   /* .description = */ "VECTOR UNPACK ZONED HIGH",
+   /* .opcode[0]   = */ 0xE6,
+   /* .opcode[1]   = */ 0x54,
+   /* .format      = */ VRRk_FORMAT,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_ZNEXT,
+   /* .properties  = */ S390OpProp_SetsOperand1 |
+                        S390OpProp_UsesM3
    },

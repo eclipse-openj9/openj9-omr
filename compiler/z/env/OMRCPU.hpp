@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -302,6 +302,19 @@ public:
    bool isAtLeast(OMRProcessorArchitecture p);
    bool supportsFeature(uint32_t feature);
 
+   /** \brief
+    *     Determines whether the Vector Packed Decimal facility 2 is available on the current processor.
+    */
+   bool getSupportsVectorPackedDecimalEnhancementFacility2();
+
+   /** \brief
+    *     Sets Vector Packed Decimal facility 2 flag.
+    *
+    *  \param value
+    *     \c true if the Vector Packed Decimal facility is available, and \c false otherwise.
+    */
+   bool setSupportsVectorPackedDecimalEnhancementFacility2(bool value);
+
 private:
 
    bool isAtLeastOldAPI(OMRProcessorArchitecture p);
@@ -320,7 +333,7 @@ protected:
 
    enum
       {
-      // Available                             = 0x00000001,
+      S390SupportsVectorPDEnhancementFacility2 = 0x00000001,
       HasResumableTrapHandler                  = 0x00000002,
       HasFixedFrameC_CallingConvention         = 0x00000004,
       SupportsScaledIndexAddressing            = 0x00000080,

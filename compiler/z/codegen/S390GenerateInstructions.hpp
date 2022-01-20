@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1154,7 +1154,6 @@ TR::Instruction * generateVRRhInstruction(
                       TR::Register            * sourceReg2 ,    /* Vector register */
                       uint8_t                   mask3);         /* 4 bits*/
 
-
 TR::Instruction * generateVRRiInstruction(
                       TR::CodeGenerator       * cg         ,
                       TR::InstOpCode::Mnemonic  op         ,
@@ -1163,6 +1162,14 @@ TR::Instruction * generateVRRiInstruction(
                       TR::Register            * sourceReg2 ,    /* VRF */
                       uint8_t                   mask3      ,    /* 4 bits*/
                       uint8_t                   mask4 = 0);
+
+TR::Instruction * generateVRRkInstruction(
+                      TR::CodeGenerator         * cg        ,
+                      TR::InstOpCode::Mnemonic    op        ,
+                      TR::Node                  * n         ,
+                      TR::Register              * targetReg ,   /* VRF */
+                      TR::Register              * sourceReg ,   /* VRF */
+                      uint8_t                    mask3 = 0  );  /* 4 bits */
 
 /****** VRS ******/
 TR::Instruction * generateVRSaInstruction(

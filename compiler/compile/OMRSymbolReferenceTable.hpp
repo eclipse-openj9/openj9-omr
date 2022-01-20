@@ -128,6 +128,7 @@ class SymbolReferenceTable
       reverseLoadSymbol,
       reverseStoreSymbol,
       currentTimeMaxPrecisionSymbol,
+      encodeASCIISymbol,
       headerFlagsSymbol,
       singlePrecisionSQRTSymbol,
       threadPrivateFlagsSymbol,  // private flags slot on j9vmthread

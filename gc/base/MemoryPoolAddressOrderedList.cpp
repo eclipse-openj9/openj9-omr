@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1774,6 +1774,7 @@ MM_MemoryPoolAddressOrderedList::doFreeEntryAlignmentUpTo(MM_EnvironmentBase *en
 			if (((uintptr_t)newEndFreeEntry - (uintptr_t)newStartFreeEntry) < _minimumFreeEntrySize) {
 				/* remove currentFreeEntry */
 				removeFromFreeList((void *)currentFreeEntry, endFreeEntry, previousFreeEntry, nextFreeEntry);
+				removeHint(currentFreeEntry);
 				lostToAlignment += freeEntrySize;
 				freeEntryCount -= 1;
 				freeEntrySize = 0;
@@ -1781,6 +1782,7 @@ MM_MemoryPoolAddressOrderedList::doFreeEntryAlignmentUpTo(MM_EnvironmentBase *en
 			} else {
 				if ((uintptr_t) currentFreeEntry != (uintptr_t) newStartFreeEntry) {
 					fillWithHoles((void *)currentFreeEntry, newStartFreeEntry);
+					updateHint(currentFreeEntry, (MM_HeapLinkedFreeHeader *)newStartFreeEntry);
 				}
 				if ((uintptr_t) endFreeEntry != (uintptr_t) newEndFreeEntry) {
 					fillWithHoles(newEndFreeEntry, endFreeEntry);

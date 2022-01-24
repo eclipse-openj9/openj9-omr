@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -595,7 +595,7 @@ OMR::IlBuilder::indirectLoadNode(TR::IlType *dt, TR::Node *addr, bool isVectorLo
    TR_ASSERT_FATAL(primType != TR::NoType, "Dereferencing an untyped pointer.");
    TR::DataType symRefType = primType;
    if (isVectorLoad)
-      symRefType = symRefType.scalarToVector();
+      symRefType = symRefType.scalarToVector(TR::VectorLength128);
 
    TR::SymbolReference *storeSymRef = symRefTab()->findOrCreateArrayShadowSymbolRef(symRefType, addr);
 
@@ -656,7 +656,7 @@ OMR::IlBuilder::VectorStore(const char *varName, TR::IlValue *value)
    if (!dt.isVector())
       {
       valueNode = TR::Node::create(TR::vsplats, 1, valueNode);
-      dt = dt.scalarToVector();
+      dt = dt.scalarToVector(TR::VectorLength128);
       }
 
    if (!_methodBuilder->symbolDefined(varName))

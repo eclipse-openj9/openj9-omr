@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -47,6 +47,12 @@ OMR::IlType::signatureNameForType[TR::NumOMRTypes] =
    "F",  // Float
    "D",  // Double
    "L",  // Address
+   "A"   // Aggregate
+   };
+
+const char *
+OMR::IlType::signatureNameForVectorType[TR::NumVectorElementTypes] =
+   {
    "V1", // VectorInt8
    "V2", // VectorInt16
    "V4", // VectorInt32
@@ -70,6 +76,16 @@ OMR::IlType::primitiveTypeAlignment[TR::NumOMRTypes] =
 #else
    4,  // Address/Word
 #endif
+#if TR_TARGET_64BIT // HOST?
+   8,  // Address/Word
+#else
+   4,  // Address/Word
+#endif
+   };
+
+const uint8_t
+OMR::IlType::primitiveVectorTypeAlignment[TR::NumVectorElementTypes] =
+   {
    16, // VectorInt8
    16, // VectorInt16
    16, // VectorInt32
@@ -84,6 +100,10 @@ OMR::IlType::getSignatureName()
    TR::DataType dt = getPrimitiveType();
    if (dt == TR::Address)
       return (char *)_name;
+
+   if (dt.isVector())
+      return (char *) signatureNameForVectorType[dt.getVectorElementType() - 1];
+
    return (char *) signatureNameForType[dt];
    }
 

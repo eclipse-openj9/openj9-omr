@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -422,7 +422,7 @@ public:
    TR_GlobalRegisterNumber _gprLinkageGlobalRegisterNumbers[TR::RealRegister::NumRegisters]; // could be smaller
    TR_GlobalRegisterNumber _fprLinkageGlobalRegisterNumbers[TR::RealRegister::NumRegisters]; // could be smaller
 
-   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType);
+   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType, TR::VectorLength);
 
    /**
     * @brief Answers whether a trampoline is required for a direct call instruction to
@@ -544,9 +544,9 @@ public:
     * @brief Generates instructions for incrementing debug counter
     * @param[in] cursor:   instruction cursor
     * @param[in] counter:  debug counter
-    * @param[in] delta:    delta for debug counter 
+    * @param[in] delta:    delta for debug counter
     * @param[in] cond:     register dependency conditions
-    * 
+    *
     * @return instruction
     */
    TR::Instruction *generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, int32_t delta, TR::RegisterDependencyConditions *cond);
@@ -555,9 +555,9 @@ public:
     * @brief Generates instructions for incrementing debug counter
     * @param[in] cursor:   instruction cursor
     * @param[in] counter:  debug counter
-    * @param[in] deltaReg: register holding delta for debug counter 
+    * @param[in] deltaReg: register holding delta for debug counter
     * @param[in] cond:     register dependency conditions
-    * 
+    *
     * @return instruction
     */
    TR::Instruction *generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, TR::Register *deltaReg, TR::RegisterDependencyConditions *cond);
@@ -566,9 +566,9 @@ public:
     * @brief Generates instructions for incrementing debug counter
     * @param[in] cursor:   instruction cursor
     * @param[in] counter:  debug counter
-    * @param[in] delta:    delta for debug counter 
+    * @param[in] delta:    delta for debug counter
     * @param[in] srm:      scratch register manager
-    * 
+    *
     * @return instruction
     */
    TR::Instruction *generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, int32_t delta, TR_ScratchRegisterManager &srm);
@@ -577,9 +577,9 @@ public:
     * @brief Generates instructions for incrementing debug counter
     * @param[in] cursor:   instruction cursor
     * @param[in] counter:  debug counter
-    * @param[in] deltaReg: register holding delta for debug counter 
+    * @param[in] deltaReg: register holding delta for debug counter
     * @param[in] srm:      scratch register manager
-    * 
+    *
     * @return instruction
     */
    TR::Instruction *generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, TR::Register *deltaReg, TR_ScratchRegisterManager &srm);

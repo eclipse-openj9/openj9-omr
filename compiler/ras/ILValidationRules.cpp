@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 IBM Corp. and others
+ * Copyright (c) 2017, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -461,11 +461,11 @@ void TR::ValidateChildTypes::validate(TR::Node *node)
 
             const auto expChildType = opcode.expectedChildType(i);
             const auto actChildType = childOpcode.getDataType().getDataType();
-            const auto expChildTypeName = (expChildType >= TR::NumTypes) ?
+            const auto expChildTypeName = (expChildType >= TR::NumAllTypes) ?
                                            "UnspecifiedChildType" :
                                            TR::DataType::getName(expChildType);
             const auto actChildTypeName = TR::DataType::getName(actChildType);
-            TR::checkILCondition(node, (expChildType >= TR::NumTypes || actChildType == expChildType),
+            TR::checkILCondition(node, (expChildType >= TR::NumAllTypes || actChildType == expChildType),
                                  comp(), "Child %d has unexpected type %s (expected %s)",
                                  i, actChildTypeName, expChildTypeName);
             }

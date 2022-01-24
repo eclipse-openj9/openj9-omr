@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,10 +24,14 @@
 #include <ctype.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "env/jittypes.h"
+#include "env/TRMemory.hpp"
 #include "il/DataTypes.hpp"
 #include "infra/Assert.hpp"
+#include "infra/String.hpp"
 
 // When adding new types also update pDataTypeNames[] in ras/Tree.cpp
 
@@ -36,23 +40,17 @@ namespace OMR {
 #define TR_Bad TR::BadILOp
 
 static TR::ILOpCodes conversionMap[TR::NumOMRTypes][TR::NumOMRTypes] =
-//                    No      Int8     Int16    Int32    Int64    Float    Double   Addr     VectorInt8 VectorInt16 VectorInt32 VectorInt64 VectorFloat VectorDouble Aggregate
+//                       No      Int8     Int16    Int32    Int64    Float    Double   Addr     Aggregate
    {
-/* NoType */        { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,      TR_Bad },  // NoType
-/* Int8 */          { TR_Bad, TR_Bad,  TR::b2s, TR::b2i, TR::b2l, TR::b2f, TR::b2d, TR::b2a, TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,      TR_Bad },  // Int8
-/* Int16 */         { TR_Bad, TR::s2b, TR_Bad,  TR::s2i, TR::s2l, TR::s2f, TR::s2d, TR::s2a, TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,      TR_Bad },  // Int16
-/* Int32 */         { TR_Bad, TR::i2b, TR::i2s, TR_Bad,  TR::i2l, TR::i2f, TR::i2d, TR::i2a, TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,      TR_Bad },  // Int32
-/* Int64 */         { TR_Bad, TR::l2b, TR::l2s, TR::l2i, TR_Bad,  TR::l2f, TR::l2d, TR::l2a, TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,      TR_Bad },  // Int64
-/* Float */         { TR_Bad, TR::f2b, TR::f2s, TR::f2i, TR::f2l, TR_Bad,  TR::f2d, TR_Bad,  TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,      TR_Bad },  // Float
-/* Double */        { TR_Bad, TR::d2b, TR::d2s, TR::d2i, TR::d2l, TR::d2f, TR_Bad,  TR_Bad,  TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,      TR_Bad },  // Double
-/* Address */       { TR_Bad, TR::a2b, TR::a2s, TR::a2i, TR::a2l, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,      TR_Bad },  // Address
-/* VectorInt8 */    { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,    TR::v2v,    TR::v2v,    TR::v2v,    TR::v2v,    TR::v2v,     TR_Bad },  // VectorInt8
-/* VectorInt16 */   { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR::v2v,   TR_Bad,     TR::v2v,    TR::v2v,    TR::v2v,    TR::v2v,     TR_Bad },  // VectorInt16
-/* VectorInt32 */   { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR::v2v,   TR::v2v,    TR_Bad,     TR::v2v,    TR::v2v,    TR::v2v,     TR_Bad },  // VectorInt32
-/* VectorInt64 */   { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR::v2v,   TR::v2v,    TR::v2v,    TR_Bad,     TR::v2v,    TR::v2v,     TR_Bad },  // VectorInt64
-/* VectorFloat */   { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR::v2v,   TR::v2v,    TR::v2v,    TR::v2v,    TR_Bad,     TR::v2v,     TR_Bad },  // VectorFloat
-/* VectorDouble */  { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR::v2v,   TR::v2v,    TR::v2v,    TR::v2v,    TR::v2v,    TR_Bad,      TR_Bad },  // VectorDouble
-/* Aggregate */     { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,    TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,     TR_Bad,      TR_Bad },  // Aggregate
+   /* NoType */        { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad},  // NoType
+   /* Int8 */          { TR_Bad, TR_Bad,  TR::b2s, TR::b2i, TR::b2l, TR::b2f, TR::b2d, TR::b2a, TR_Bad},  // Int8
+   /* Int16 */         { TR_Bad, TR::s2b, TR_Bad,  TR::s2i, TR::s2l, TR::s2f, TR::s2d, TR::s2a, TR_Bad},  // Int16
+   /* Int32 */         { TR_Bad, TR::i2b, TR::i2s, TR_Bad,  TR::i2l, TR::i2f, TR::i2d, TR::i2a, TR_Bad},  // Int32
+   /* Int64 */         { TR_Bad, TR::l2b, TR::l2s, TR::l2i, TR_Bad,  TR::l2f, TR::l2d, TR::l2a, TR_Bad},  // Int64
+   /* Float */         { TR_Bad, TR::f2b, TR::f2s, TR::f2i, TR::f2l, TR_Bad,  TR::f2d, TR_Bad,  TR_Bad},  // Float
+   /* Double */        { TR_Bad, TR::d2b, TR::d2s, TR::d2i, TR::d2l, TR::d2f, TR_Bad,  TR_Bad,  TR_Bad},  // Double
+   /* Address */       { TR_Bad, TR::a2b, TR::a2s, TR::a2i, TR::a2l, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad},  // Address
+   /* Aggregate */     { TR_Bad, TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad,  TR_Bad},  // Aggregate
    };
 
 #undef TR_Bad
@@ -92,31 +90,16 @@ OMR::DataType::getMaxPrecisionFromType()
 TR::DataType
 OMR::DataType::getVectorIntegralType()
    {
-   switch(self()->getDataType())
-      {
-      case TR::VectorInt8:
-      case TR::VectorInt16:
-      case TR::VectorInt32:
-      case TR::VectorInt64: return self()->getDataType();
-      case TR::VectorFloat: return TR::VectorInt32;
-      case TR::VectorDouble: return TR::VectorInt64;
-      default:
-         return TR::NoType;
-         break;
-      }
-   }
+   if (!self()->isVector()) return TR::NoType;
 
-TR::DataType
-OMR::DataType::getVectorElementType()
-   {
-   switch(self()->getDataType())
+   switch(self()->getVectorElementType())
       {
-      case TR::VectorInt8: return TR::Int8;
-      case TR::VectorInt16: return TR::Int16;
-      case TR::VectorInt32: return TR::Int32;
-      case TR::VectorInt64: return TR::Int64;
-      case TR::VectorFloat: return TR::Float;
-      case TR::VectorDouble: return TR::Double;
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64: return self()->getDataType();
+      case TR::Float: return TR::DataType::createVectorType(TR::Int32, self()->getVectorLength());
+      case TR::Double: return TR::DataType::createVectorType(TR::Int64, self()->getVectorLength());
       default:
          return TR::NoType;
          break;
@@ -126,45 +109,18 @@ OMR::DataType::getVectorElementType()
 TR::DataType
 OMR::DataType::vectorToScalar()
    {
-   switch (self()->getDataType())
-      {
-      case TR::VectorInt8:
-         return TR::Int8;
-      case TR::VectorInt16:
-         return TR::Int16;
-      case TR::VectorInt32:
-         return TR::Int32;
-      case TR::VectorInt64:
-         return TR::Int64;
-      case TR::VectorFloat:
-         return TR::Float;
-      case TR::VectorDouble:
-         return TR::Double;
-      default:
-         return TR::NoType;
-      }
+   return self()->getVectorElementType();
    }
 
 TR::DataType
-OMR::DataType::scalarToVector()
+OMR::DataType::scalarToVector(TR::VectorLength length)
    {
-   switch (self()->getDataType())
-      {
-      case TR::Int8:
-         return TR::VectorInt8;
-      case TR::Int16:
-         return TR::VectorInt16;
-      case TR::Int32:
-         return TR::VectorInt32;
-      case TR::Int64:
-         return TR::VectorInt64;
-      case TR::Float:
-         return TR::VectorFloat;
-      case TR::Double:
-         return TR::VectorDouble;
-      default:
-         return TR::NoType;
-      }
+   TR::DataTypes type = self()->getDataType();
+
+   if (type > TR::NoType && type <= TR::NumVectorElementTypes)
+      return createVectorType(type, length);
+   else
+      return TR::NoType;
    }
 
 TR::DataType
@@ -198,6 +154,13 @@ OMR::DataType::getFloatTypeFromSize(int32_t size)
 TR::ILOpCodes
 OMR::DataType::getDataTypeConversion(TR::DataType t1, TR::DataType t2)
    {
+   if (t1.isVector() && t2.isVector())
+      return TR::v2v;
+
+   if (t1.isVector() || t2.isVector())
+      return TR::BadILOp;
+
+
    TR_ASSERT(t1 < TR::NumOMRTypes, "conversion opcode from unexpected datatype %s requested", t1.toString());
    TR_ASSERT(t2 < TR::NumOMRTypes, "conversion opcode to unexpected datatype %s requested", t2.toString());
    return OMR::conversionMap[t1][t2];
@@ -206,6 +169,9 @@ OMR::DataType::getDataTypeConversion(TR::DataType t1, TR::DataType t2)
 TR::ILOpCodes
 OMR::DataType::getDataTypeBitConversion(TR::DataType t1, TR::DataType t2)
    {
+   if (t1.isVector() || t2.isVector())
+      return TR::BadILOp;
+
    TR_ASSERT(t1 < TR::NumOMRTypes, "conversion opcode from unexpected datatype %s requested", t1.toString());
    TR_ASSERT(t2 < TR::NumOMRTypes, "conversion opcode to unexpected datatype %s requested", t2.toString());
    if (t1 == TR::Int32 && t2 == TR::Float)
@@ -230,12 +196,6 @@ static int32_t OMRDataTypeSizes[] =
    4,                 // TR::Float
    8,                 // TR::Double
    sizeof(intptr_t), // TR::Address
-   16,                // TR::VectorInt8
-   16,                // TR::VectorInt16
-   16,                // TR::VectorInt32
-   16,                // TR::VectorInt64
-   16,                // TR::VectorFloat
-   16,                // TR::VectorDouble
    0,                 // TR::Aggregate
    };
 
@@ -244,6 +204,19 @@ static_assert(TR::NumOMRTypes == (sizeof(OMRDataTypeSizes) / sizeof(OMRDataTypeS
 int32_t
 OMR::DataType::getSize(TR::DataType dt)
    {
+   if (dt.isVector())
+      {
+      switch (dt.getVectorLength())
+         {
+         case TR::VectorLength64:  return 8;
+         case TR::VectorLength128: return 16;
+         case TR::VectorLength256: return 32;
+         case TR::VectorLength512: return 64;
+         default:
+            TR_ASSERT_FATAL(false, "Incorrect Vector Length\n");
+         }
+      }
+
    TR_ASSERT(dt < TR::NumOMRTypes, "dataTypeSizeMap called on unrecognized data type");
    return OMRDataTypeSizes[dt];
    }
@@ -251,12 +224,14 @@ OMR::DataType::getSize(TR::DataType dt)
 void
 OMR::DataType::setSize(TR::DataType dt, int32_t newSize)
    {
+   if (dt.isVector()) return;
+
    TR_ASSERT(dt < TR::NumOMRTypes, "setDataTypeSizeInMap called on unrecognized data type");
    OMRDataTypeSizes[dt] = newSize;
    }
 
 
-static const char * OMRDataTypeNames[] =
+static const char * OMRDataTypeNames[TR::NumAllTypes] =
    {
    "NoType",
    "Int8",
@@ -266,21 +241,42 @@ static const char * OMRDataTypeNames[] =
    "Float",
    "Double",
    "Address",
-   "VectorInt8",
-   "VectorInt16",
-   "VectorInt32",
-   "VectorInt64",
-   "VectorFloat",
-   "VectorDouble",
    "Aggregate",
+   // vector names will be created at runtime
    };
 
-static_assert(TR::NumOMRTypes == (sizeof(OMRDataTypeNames) / sizeof(OMRDataTypeNames[0])), "OMRDataTypeNames is not the correct size");
+#define MAX_TYPE_NAME_LENGTH 20
+
+bool
+OMR::DataType::initVectorNames()
+   {
+   int32_t numVectorTypes = TR::NumAllTypes - TR::NumScalarTypes;
+   char *names = (char*)TR_Memory::jitPersistentAlloc(MAX_TYPE_NAME_LENGTH*numVectorTypes*sizeof(char));
+   char *name = names;
+
+   for (int32_t i = TR::NumScalarTypes; i < TR::NumAllTypes; i++)
+      {
+      TR::DataType dt((TR::DataTypes)i);
+      TR_ASSERT_FATAL(dt.isVector(), "Should be a vector type");
+      TR::snprintfNoTrunc(name, MAX_TYPE_NAME_LENGTH, "Vector%d%s", getSize(dt)*8, getName(dt.getVectorElementType()));
+      OMRDataTypeNames[dt] = name;
+      name += MAX_TYPE_NAME_LENGTH;
+      }
+   return true;
+   }
 
 const char *
 OMR::DataType::getName(TR::DataType dt)
    {
-   TR_ASSERT(dt < TR::NumOMRTypes, "Name requested for unknown datatype");
+   if (dt.isVector())
+      {
+      // to avoid any race conditions, initialize all vector names once,
+      // as soon as first one is requested
+      static bool staticallyInitialized = initVectorNames();
+      TR_ASSERT_FATAL(staticallyInitialized && (OMRDataTypeNames[dt] != NULL), "Vector names should've been initialized");
+      }
+
+   TR_ASSERT(dt < TR::NumAllTypes, "Name requested for unknown datatype");
    return OMRDataTypeNames[dt];
    }
 
@@ -288,35 +284,6 @@ const char *
 OMR::DataType::toString() const
    {
    return TR::DataType::getName(self()->getDataType());
-   }
-
-
-static const char *OMRDataTypePrefixes[] =
-   {
-   NULL,    // TR::NoType
-   "B",     // TR::Int8
-   "S",     // TR::Int16
-   "I",     // TR::Int32
-   "L",     // TR::Int64
-   "F",     // TR::Float
-   "D",     // TR::Double
-   "A",     // TR::Address
-   "VI1",   // TR::VectorInt8
-   "VI2",   // TR::VectorInt16
-   "VI4",   // TR::VectorInt32
-   "VI8",   // TR::VectorInt64
-   "VF",    // TR::VectorFloat
-   "VD",    // TR::VectorDouble
-   "AG",    // TR::Aggregate
-   };
-
-static_assert(TR::NumOMRTypes == (sizeof(OMRDataTypePrefixes) / sizeof(OMRDataTypePrefixes[0])), "OMRDataTypePrefixes is not the correct size");
-
-const char *
-OMR::DataType::getPrefix(TR::DataType dt)
-   {
-   TR_ASSERT(dt < TR::NumOMRTypes, "Prefix requested for unknown datatype");
-   return OMRDataTypePrefixes[dt];
    }
 
 void FloatingPointLimits::setMaxFloat()
@@ -356,3 +323,9 @@ namespace TR{
 }
 
 
+const TR::DataTypes OMR::DataType::Vector128Int8   = OMR::DataType::createVectorType(TR::Int8, TR::VectorLength128);
+const TR::DataTypes OMR::DataType::Vector128Int16  = OMR::DataType::createVectorType(TR::Int16, TR::VectorLength128);
+const TR::DataTypes OMR::DataType::Vector128Int32  = OMR::DataType::createVectorType(TR::Int32, TR::VectorLength128);
+const TR::DataTypes OMR::DataType::Vector128Int64  = OMR::DataType::createVectorType(TR::Int64, TR::VectorLength128);
+const TR::DataTypes OMR::DataType::Vector128Float  = OMR::DataType::createVectorType(TR::Float, TR::VectorLength128);
+const TR::DataTypes OMR::DataType::Vector128Double = OMR::DataType::createVectorType(TR::Double, TR::VectorLength128);

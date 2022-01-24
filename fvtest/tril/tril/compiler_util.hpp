@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 IBM Corp. and others
+ * Copyright (c) 2017, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,7 +27,7 @@
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "infra/Flags.hpp"
 
-namespace Tril { 
+namespace Tril {
 /**
  * @brief Gets the TR::DataTypes value from the data type's name
  * @param name is the name of the data type as a string
@@ -41,12 +41,12 @@ static TR::DataTypes getTRDataTypes(const std::string& name) {
    else if (name == "Address") return TR::Address;
    else if (name == "Float") return TR::Float;
    else if (name == "Double") return TR::Double;
-   else if (name == "VectorInt8") return TR::VectorInt8;
-   else if (name == "VectorInt16") return TR::VectorInt16;
-   else if (name == "VectorInt32") return TR::VectorInt32;
-   else if (name == "VectorInt64") return TR::VectorInt64;
-   else if (name == "VectorFloat") return TR::VectorFloat;
-   else if (name == "VectorDouble") return TR::VectorDouble;
+   else if (name == "VectorInt8") return OMR::DataType::Vector128Int8;
+   else if (name == "VectorInt16") return OMR::DataType::Vector128Int16;
+   else if (name == "VectorInt32") return OMR::DataType::Vector128Int32;
+   else if (name == "VectorInt64") return OMR::DataType::Vector128Int64;
+   else if (name == "VectorFloat") return OMR::DataType::Vector128Float;
+   else if (name == "VectorDouble") return OMR::DataType::Vector128Double;
    else if (name == "NoType") return TR::NoType;
    else {
       throw std::runtime_error(static_cast<const std::string&>(std::string("Unknown type name: ").append(name)));
@@ -54,13 +54,13 @@ static TR::DataTypes getTRDataTypes(const std::string& name) {
 }
 
 /**
- * @brief Return a parsed array of DataTypes from a node with an 
+ * @brief Return a parsed array of DataTypes from a node with an
  *        "args" list.
  * @param node is the node being processed.
- * @return the std::vector of TR::DataTypes corresponding to the 
- *         args=[Type1,Type2,...] attached to the ASTNode. 
+ * @return the std::vector of TR::DataTypes corresponding to the
+ *         args=[Type1,Type2,...] attached to the ASTNode.
  */
-static std::vector<TR::DataTypes> parseArgTypes(const ASTNode* node) { 
+static std::vector<TR::DataTypes> parseArgTypes(const ASTNode* node) {
 
    std::vector<TR::DataTypes> argTypes;
    auto argTypesArg = node->getArgByName("args");
@@ -99,20 +99,20 @@ static OMR::flags32_t parseFlags(const ASTNode* node) {
 }
 
 /**
- * @brief  Convert a linkage convention name to a LinkageConvention 
- *         appropriate for setting on a MethodSymbol. 
+ * @brief  Convert a linkage convention name to a LinkageConvention
+ *         appropriate for setting on a MethodSymbol.
  *
- * @return the linkage convention, or TR_None if the name is not 
- *         recognized. 
+ * @return the linkage convention, or TR_None if the name is not
+ *         recognized.
  */
-static TR_LinkageConventions convertStringToLinkage(const char * linkageName) { 
-   std::string ln = linkageName;  
+static TR_LinkageConventions convertStringToLinkage(const char * linkageName) {
+   std::string ln = linkageName;
    if (ln == "system") {
       return TR_System;
    }
 
    // Not found
-   return TR_None; 
+   return TR_None;
 }
 
 }

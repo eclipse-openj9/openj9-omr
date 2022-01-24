@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -44,8 +44,8 @@ OMR::AliasBuilder::AliasBuilder(TR::SymbolReferenceTable *symRefTab, size_t size
      _intStaticSymRefs(sizeHint, c->trMemory(), heapAlloc, growable),
      _nonIntPrimitiveStaticSymRefs(sizeHint, c->trMemory(), heapAlloc, growable),
      _methodSymRefs(sizeHint, c->trMemory(), heapAlloc, growable),
-     _arrayElementSymRefs(TR::NumTypes, c->trMemory(), heapAlloc, growable),
-     _arrayletElementSymRefs(TR::NumTypes, c->trMemory(), heapAlloc, growable),
+     _arrayElementSymRefs(TR::NumAllTypes, c->trMemory(), heapAlloc, growable),
+     _arrayletElementSymRefs(TR::NumAllTypes, c->trMemory(), heapAlloc, growable),
      _unsafeSymRefNumbers(sizeHint, c->trMemory(), heapAlloc, growable),
      _unsafeArrayElementSymRefs(sizeHint, c->trMemory(), heapAlloc, growable),
      _gcSafePointSymRefNumbers(sizeHint, c->trMemory(), heapAlloc, growable),

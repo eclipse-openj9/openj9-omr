@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -216,6 +216,18 @@ enum TR_SharedCacheHint
 namespace TR
 {
 
+enum VectorLength
+   {
+   NoVectorLength=0,
+   VectorLength128,
+   VectorLength256,
+   VectorLength512,
+   VectorLength64,
+   // TODO: Redefine, preferably based on platform, when some platform starts supporting other than 128-bit
+   // Defining per platform is not necessary for functional correctness but for reducing NumAllTypes
+   NumVectorLengths = VectorLength128
+   };
+
 /**
  * Data type supported by OMR and whatever the configured language is.
  */
@@ -229,18 +241,20 @@ enum DataTypes
    Float,
    Double,
    Address,
-   VectorInt8,
-   VectorInt16,
-   VectorInt32,
-   VectorInt64,
-   VectorFloat,
-   VectorDouble,
    Aggregate,
    NumOMRTypes,
 #include "il/DataTypesEnum.hpp"
-   NumTypes
+   NumScalarTypes,
+   NumVectorElementTypes = Double,
+   //
+   // this space is reserved for vector types generated at runtime
+   // the generated types can be used to index tables of size NumAllTypes as any other type
+   //
+   NumAllTypes =  NumScalarTypes + NumVectorElementTypes * NumVectorLengths
    };
 }
+
+
 
 /**
  * @name OMRDataTypeIntegerLimits
@@ -337,6 +351,16 @@ namespace OMR
 class OMR_EXTENSIBLE DataType
    {
 public:
+
+   // will be removed when all vector opcodes are switched to new ones
+   // as well as TRIL and JitBuilder
+   static const TR::DataTypes Vector128Int8;
+   static const TR::DataTypes Vector128Int16;
+   static const TR::DataTypes Vector128Int32;
+   static const TR::DataTypes Vector128Int64;
+   static const TR::DataTypes Vector128Float;
+   static const TR::DataTypes Vector128Double;
+
    DataType() : _type(TR::NoType) { }
    DataType(TR::DataTypes t) : _type(t) { }
 
@@ -387,11 +411,87 @@ public:
    bool canGetMaxPrecisionFromType();
    int32_t getMaxPrecisionFromType();
 
-   TR::DataType getVectorIntegralType();
-   TR::DataType getVectorElementType();
+  /** \brief
+   *     Checks if the type is OMR type
+   *
+   *  \return
+   *     True if OMR type and false otherwise
+   */
+   bool isOMRDataType() {return (_type < TR::NumOMRTypes) || isVector(); }
 
+  /** \brief
+   *     Returns vector type with integral element type of the same size as the original element type
+   *
+   *  \return
+   *     Vector type
+   */
+   TR::DataType getVectorIntegralType();
+
+  /** \brief
+   *     Returns vector element type
+   *
+   *  \return
+   *     Vector element type
+   */
+   inline TR::DataType getVectorElementType();
+
+   /** \brief
+   *     Returns vector length
+   *
+   *  \return
+   *     Vector length
+   */
+   inline TR::VectorLength getVectorLength();
+
+  /** \brief
+   *     Creates vector type based on element type and vector length
+   *
+   *  \param elementType
+   *     Element type
+   *
+   *  \param length
+   *     Vector length
+   *
+   *  \return
+   *     Vector data type
+   */
+   inline static TR::DataTypes createVectorType(TR::DataTypes elementType, TR::VectorLength length);
+
+  /** \brief
+   *     Converts length in bits to TR::VectorLength
+   *
+   *  \param bits
+   *     vector length in bits
+   *
+   *  \return
+   *     corresponding TR::VectorLength
+   */
+   inline static TR::VectorLength bitsToVectorLength(int32_t bits);
+
+  /** \brief
+   *     Initializes static table with all vector type names
+   *
+   */
+   static bool initVectorNames();
+
+  /** \brief
+   *     Returns vector element type
+   *
+   *  \return
+   *     Vector element type
+   */
    TR::DataType vectorToScalar();
-   TR::DataType scalarToVector();
+
+  /** \brief
+   *     Creates vector type based on element type and provided vector length
+   *
+   *  \param length
+   *     Vector length
+   *
+   *  \return
+   *     Vector type
+   */
+   TR::DataType scalarToVector(TR::VectorLength length);
 
    const char * toString() const;
 
@@ -406,7 +506,6 @@ public:
    static const char    * getName(TR::DataType dt);
    static int32_t         getSize(TR::DataType dt);
    static void            setSize(TR::DataType dt, int32_t newValue);
-   static const char    * getPrefix(TR::DataType dt);
 
    template <typename T> static bool isSignedInt8()  { return false; }
    template <typename T> static bool isSignedInt16() { return false; }

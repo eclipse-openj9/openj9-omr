@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 IBM Corp. and others
+ * Copyright (c) 2016, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -121,7 +121,9 @@ protected:
    const char           * _name;
 
    static const char    * signatureNameForType[TR::NumOMRTypes];
+   static const char    * signatureNameForVectorType[TR::NumVectorElementTypes];
    static const uint8_t   primitiveTypeAlignment[TR::NumOMRTypes];
+   static const uint8_t   primitiveVectorTypeAlignment[TR::NumVectorElementTypes];
    };
 
 } // namespace OMR

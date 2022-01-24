@@ -4719,8 +4719,9 @@ bool OMR::Z::CodeGenerator::isDispInRange(int64_t disp)
    return (MINLONGDISP <= disp) && (disp <= MAXLONGDISP);
    }
 
-bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt)
+bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt, TR::VectorLength length)
    {
+   if(length != TR::VectorLength128) return false;
 
    /*
     * Prior to z14, vector operations that operated on floating point numbers only supported

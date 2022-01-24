@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -91,7 +91,7 @@
  *                                   set to true.
  */
 TR_UseDefInfo::TR_UseDefInfo(TR::Compilation *comp, TR::CFG *cfg, TR::Optimizer *optimizer,
-      bool requiresGlobals, bool prefersGlobals, bool loadsShouldBeDefs, bool cannotOmitTrivialDefs, bool conversionRegsOnly, 
+      bool requiresGlobals, bool prefersGlobals, bool loadsShouldBeDefs, bool cannotOmitTrivialDefs, bool conversionRegsOnly,
       bool doCompletion, bool callsShouldBeUses)
    : _region(comp->trMemory()->heapMemoryRegion()),
      _compilation(comp),
@@ -1382,7 +1382,7 @@ bool TR_UseDefInfo::findUseDefNodes(
             comp()->getOptions()->realTimeGC())
       {
       localIndex = _numExpandedDefOnlyNodes;
-      _numExpandedDefOnlyNodes += TR::NumTypes + 1; // == arraylet shadows + read barrier....encode this where?  SymRefTab probably
+      _numExpandedDefOnlyNodes += TR::NumAllTypes + 1; // == arraylet shadows + read barrier....encode this where?  SymRefTab probably
       useDefIndex = _numDefOnlyNodes++;
       }
    //else

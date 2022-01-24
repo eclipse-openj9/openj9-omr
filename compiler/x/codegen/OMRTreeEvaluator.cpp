@@ -4052,14 +4052,22 @@ static const TR::InstOpCode::Mnemonic BinaryArithmeticOpCodesForReg[TR::NumOMRTy
    { TR::InstOpCode::bad, TR::InstOpCode::ADDSSRegReg, TR::InstOpCode::SUBSSRegReg, TR::InstOpCode::MULSSRegReg,  TR::InstOpCode::DIVSSRegReg, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Float
    { TR::InstOpCode::bad, TR::InstOpCode::ADDSDRegReg, TR::InstOpCode::SUBSDRegReg, TR::InstOpCode::MULSDRegReg,  TR::InstOpCode::DIVSDRegReg, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Double
    { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Address
-   { TR::InstOpCode::bad, TR::InstOpCode::PADDBRegReg, TR::InstOpCode::PSUBBRegReg, TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // VectorInt8
-   { TR::InstOpCode::bad, TR::InstOpCode::PADDWRegReg, TR::InstOpCode::PSUBWRegReg, TR::InstOpCode::PMULLWRegReg, TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // VectorInt16
-   { TR::InstOpCode::bad, TR::InstOpCode::PADDDRegReg, TR::InstOpCode::PSUBDRegReg, TR::InstOpCode::PMULLDRegReg, TR::InstOpCode::bad,   TR::InstOpCode::PANDRegReg, TR::InstOpCode::PORRegReg, TR::InstOpCode::PXORRegReg }, // VectorInt32
-   { TR::InstOpCode::bad, TR::InstOpCode::PADDQRegReg, TR::InstOpCode::PSUBQRegReg, TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::PANDRegReg, TR::InstOpCode::PORRegReg, TR::InstOpCode::PXORRegReg }, // VectorInt64
-   { TR::InstOpCode::bad, TR::InstOpCode::ADDPSRegReg, TR::InstOpCode::SUBPSRegReg, TR::InstOpCode::MULPSRegReg,  TR::InstOpCode::DIVPSRegReg, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // VectorFloat
-   { TR::InstOpCode::bad, TR::InstOpCode::ADDPDRegReg, TR::InstOpCode::SUBPDRegReg, TR::InstOpCode::MULPDRegReg,  TR::InstOpCode::DIVPDRegReg, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // VectorDouble
    { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Aggregate
+
    };
+
+static const TR::InstOpCode::Mnemonic VectorBinaryArithmeticOpCodesForReg[TR::NumVectorElementTypes][NumBinaryArithmeticOps] =
+   {
+   //  Invalid,       Add,         Sub,         Mul,         Div,          And,         Or,       Xor
+   { TR::InstOpCode::bad, TR::InstOpCode::PADDBRegReg, TR::InstOpCode::PSUBBRegReg, TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Int8
+   { TR::InstOpCode::bad, TR::InstOpCode::PADDWRegReg, TR::InstOpCode::PSUBWRegReg, TR::InstOpCode::PMULLWRegReg, TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Int16
+   { TR::InstOpCode::bad, TR::InstOpCode::PADDDRegReg, TR::InstOpCode::PSUBDRegReg, TR::InstOpCode::PMULLDRegReg, TR::InstOpCode::bad,   TR::InstOpCode::PANDRegReg, TR::InstOpCode::PORRegReg, TR::InstOpCode::PXORRegReg }, // Int32
+   { TR::InstOpCode::bad, TR::InstOpCode::PADDQRegReg, TR::InstOpCode::PSUBQRegReg, TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::PANDRegReg, TR::InstOpCode::PORRegReg, TR::InstOpCode::PXORRegReg }, // Int64
+   { TR::InstOpCode::bad, TR::InstOpCode::ADDPSRegReg, TR::InstOpCode::SUBPSRegReg, TR::InstOpCode::MULPSRegReg,  TR::InstOpCode::DIVPSRegReg, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Float
+   { TR::InstOpCode::bad, TR::InstOpCode::ADDPDRegReg, TR::InstOpCode::SUBPDRegReg, TR::InstOpCode::MULPDRegReg,  TR::InstOpCode::DIVPDRegReg, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Double
+   };
+
+
 
 static const TR::InstOpCode::Mnemonic BinaryArithmeticOpCodesForMem[TR::NumOMRTypes][NumBinaryArithmeticOps] =
    {
@@ -4072,14 +4080,21 @@ static const TR::InstOpCode::Mnemonic BinaryArithmeticOpCodesForMem[TR::NumOMRTy
    { TR::InstOpCode::bad, TR::InstOpCode::ADDSSRegMem, TR::InstOpCode::SUBSSRegMem, TR::InstOpCode::MULSSRegMem,  TR::InstOpCode::DIVSSRegMem, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Float
    { TR::InstOpCode::bad, TR::InstOpCode::ADDSDRegMem, TR::InstOpCode::SUBSDRegMem, TR::InstOpCode::MULSDRegMem,  TR::InstOpCode::DIVSDRegMem, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Double
    { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Address
-   { TR::InstOpCode::bad, TR::InstOpCode::PADDBRegMem, TR::InstOpCode::PSUBBRegMem, TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // VectorInt8
-   { TR::InstOpCode::bad, TR::InstOpCode::PADDWRegMem, TR::InstOpCode::PSUBWRegMem, TR::InstOpCode::PMULLWRegMem, TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // VectorInt16
-   { TR::InstOpCode::bad, TR::InstOpCode::PADDDRegMem, TR::InstOpCode::PSUBDRegMem, TR::InstOpCode::PMULLDRegMem, TR::InstOpCode::bad,   TR::InstOpCode::PANDRegMem, TR::InstOpCode::PORRegMem, TR::InstOpCode::PXORRegMem }, // VectorInt32
-   { TR::InstOpCode::bad, TR::InstOpCode::PADDQRegMem, TR::InstOpCode::PSUBQRegMem, TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::PANDRegMem, TR::InstOpCode::PORRegMem, TR::InstOpCode::PXORRegMem }, // VectorInt64
-   { TR::InstOpCode::bad, TR::InstOpCode::ADDPSRegMem, TR::InstOpCode::SUBPSRegMem, TR::InstOpCode::MULPSRegMem,  TR::InstOpCode::DIVPSRegMem, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // VectorFloat
-   { TR::InstOpCode::bad, TR::InstOpCode::ADDPDRegMem, TR::InstOpCode::SUBPDRegMem, TR::InstOpCode::MULPDRegMem,  TR::InstOpCode::DIVPDRegMem, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // VectorDouble
    { TR::InstOpCode::bad, TR::InstOpCode::bad,   TR::InstOpCode::bad,   TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Aggregate
    };
+
+
+static const TR::InstOpCode::Mnemonic VectorBinaryArithmeticOpCodesForMem[TR::NumVectorElementTypes][NumBinaryArithmeticOps] =
+   {
+   //  Invalid,       Add,         Sub,         Mul,         Div,          And,         Or,       Xor
+   { TR::InstOpCode::bad, TR::InstOpCode::PADDBRegMem, TR::InstOpCode::PSUBBRegMem, TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Int8
+   { TR::InstOpCode::bad, TR::InstOpCode::PADDWRegMem, TR::InstOpCode::PSUBWRegMem, TR::InstOpCode::PMULLWRegMem, TR::InstOpCode::bad,   TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Int16
+   { TR::InstOpCode::bad, TR::InstOpCode::PADDDRegMem, TR::InstOpCode::PSUBDRegMem, TR::InstOpCode::PMULLDRegMem, TR::InstOpCode::bad,   TR::InstOpCode::PANDRegMem, TR::InstOpCode::PORRegMem, TR::InstOpCode::PXORRegMem }, // Int32
+   { TR::InstOpCode::bad, TR::InstOpCode::PADDQRegMem, TR::InstOpCode::PSUBQRegMem, TR::InstOpCode::bad,    TR::InstOpCode::bad,   TR::InstOpCode::PANDRegMem, TR::InstOpCode::PORRegMem, TR::InstOpCode::PXORRegMem }, // Int64
+   { TR::InstOpCode::bad, TR::InstOpCode::ADDPSRegMem, TR::InstOpCode::SUBPSRegMem, TR::InstOpCode::MULPSRegMem,  TR::InstOpCode::DIVPSRegMem, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Float
+   { TR::InstOpCode::bad, TR::InstOpCode::ADDPDRegMem, TR::InstOpCode::SUBPDRegMem, TR::InstOpCode::MULPDRegMem,  TR::InstOpCode::DIVPDRegMem, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Double
+   };
+
 
 static const TR::ILOpCodes MemoryLoadOpCodes[TR::NumOMRTypes] =
    {
@@ -4091,18 +4106,17 @@ static const TR::ILOpCodes MemoryLoadOpCodes[TR::NumOMRTypes] =
    TR::fload  , // Float
    TR::dload  , // Double
    TR::BadILOp, // Address
-   TR::vload  , // VectorInt8
-   TR::vload  , // VectorInt16
-   TR::vload  , // VectorInt32
-   TR::vload  , // VectorInt64
-   TR::vload  , // VectorFloat
-   TR::vload  , // VectorDouble
    TR::BadILOp, // Aggregate
    };
 
 // For ILOpCode that can be translated to single SSE/AVX instructions
 TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
+   TR::DataType type = node->getDataType();
+
+   TR_ASSERT_FATAL_WITH_NODE(node, !type.isVector() || type.getVectorLength() == TR::VectorLength128,
+                             "Only 128-bit vectors are supported right now\n");
+
    auto arithmetic = BinaryArithmeticInvalid;
 
    switch (node->getOpCodeValue())
@@ -4140,8 +4154,6 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
          TR_ASSERT(false, "Unsupported OpCode");
       }
 
-   TR::DataType type = node->getDataType();
-
    TR::Node* operandNode0 = node->getChild(0);
    TR::Node* operandNode1 = node->getChild(1);
 
@@ -4152,8 +4164,9 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
       {
       if (operandNode1->getRegister()                               ||
           operandNode1->getReferenceCount() != 1                    ||
-          operandNode1->getOpCodeValue() != MemoryLoadOpCodes[type] ||
-          BinaryArithmeticOpCodesForMem[type][arithmetic] == TR::InstOpCode::bad)
+          operandNode1->getOpCodeValue() != (type.isVector() ? TR::vload : MemoryLoadOpCodes[type]) ||
+          (type.isVector() ? VectorBinaryArithmeticOpCodesForMem[type.getVectorElementType() - 1][arithmetic]
+                           : BinaryArithmeticOpCodesForMem[type][arithmetic]) == TR::InstOpCode::bad)
          {
          useRegMemForm = false;
          }
@@ -4164,7 +4177,11 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
    TR::Register* resultReg = cg->allocateRegister(operandReg0->getKind());
    resultReg->setIsSinglePrecision(operandReg0->isSinglePrecision());
 
-   TR::InstOpCode::Mnemonic opCode = useRegMemForm ? BinaryArithmeticOpCodesForMem[type][arithmetic] : BinaryArithmeticOpCodesForReg[type][arithmetic];
+   TR::InstOpCode::Mnemonic opCode = useRegMemForm ? (type.isVector() ? VectorBinaryArithmeticOpCodesForMem[type.getVectorElementType() - 1][arithmetic] :
+                                                                        BinaryArithmeticOpCodesForMem[type][arithmetic]) :
+                                                                        (type.isVector() ? VectorBinaryArithmeticOpCodesForReg[type.getVectorElementType() - 1][arithmetic] :
+                                                                        BinaryArithmeticOpCodesForReg[type][arithmetic]);
+
    TR_ASSERT(opCode != TR::InstOpCode::bad, "FloatingPointAndVectorBinaryArithmeticEvaluator: unsupported data type or arithmetic.");
 
    if (cg->comp()->target().cpu.supportsAVX())

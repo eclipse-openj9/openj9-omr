@@ -931,10 +931,6 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
             numFloatArgs++;
             break;
 
-         case TR::VectorDouble:
-            // TODO : finish implementation
-            numVectorArgs++;
-            break;
          case TR::Aggregate:
             {
             size_t size = child->getSymbolReference()->getSymbol()->getSize();
@@ -949,6 +945,14 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
             }
             break;
          default:
+            if (child->getDataType().isVector() &&
+                child->getDataType().getVectorElementType() == TR::Double)
+               {
+               // TODO : finish implementation
+               numVectorArgs++;
+               break;
+               }
+
             TR_ASSERT(false, "Argument type %s is not supported\n", child->getDataType().toString());
          }
       }
@@ -1286,7 +1290,10 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
 
             }    // end of for loop
             break;
-         case TR::VectorDouble:
+
+         default:
+            if (!childType.isVector() || childType.getVectorElementType() != TR::Double)
+               break;
             argRegister = pushThis(child);
             TR::Register * argReg;
             argReg = argRegister;

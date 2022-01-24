@@ -119,7 +119,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
 
    List<TR::Register>      *_spilledRegistersList;
 
-   TR::SymbolReference     *_dummyLocal[TR::NumTypes];
+   TR::SymbolReference     *_dummyLocal[TR::NumAllTypes];
 
    int32_t                 _fpStackShape[TR_X86FPStackRegister::NumRegisters];
    int32_t                 _fpTopOfStack;

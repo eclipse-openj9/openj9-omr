@@ -2570,29 +2570,32 @@ TR::Register *OMR::Power::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::InstOpCode::Mnemonic opcode;
    TR_RegisterKinds kind;
 
-   switch(node->getDataType())
+   switch(node->getDataType().getVectorElementType())
      {
-     case TR::VectorInt8:
+     case TR::Int8:
          opcode = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9) ? TR::InstOpCode::lxvb16x : TR::InstOpCode::lxvw4x;
          kind = TR_VRF;
          break;
-     case TR::VectorInt16:
+     case TR::Int16:
          opcode = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9) ? TR::InstOpCode::lxvh8x : TR::InstOpCode::lxvw4x;
          kind = TR_VRF;
          break;
-     case TR::VectorInt32:
-     case TR::VectorFloat:
+     case TR::Int32:
+     case TR::Float:
 	      opcode = TR::InstOpCode::lxvw4x;
 	      kind = TR_VRF;
 	      break;
-     case TR::VectorInt64:
+     case TR::Int64:
 	      opcode = TR::InstOpCode::lxvd2x;
 	      kind = TR_VRF;
          break;
-     case TR::VectorDouble:
+     case TR::Double:
 	      opcode = TR::InstOpCode::lxvd2x;
 	      kind = TR_VSX_VECTOR;
 	      break;
@@ -2610,22 +2613,25 @@ TR::Register *OMR::Power::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::Power::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s lenght:%d", node->getDataType().toString(), node->getDataType().getVectorLength());
+
    TR::InstOpCode::Mnemonic opcode;
 
-   switch(node->getDataType())
+   switch(node->getDataType().getVectorElementType())
      {
-     case TR::VectorInt8:
+     case TR::Int8:
          opcode = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9) ? TR::InstOpCode::stxvb16x : TR::InstOpCode::stxvw4x;
          break;
-     case TR::VectorInt16:
+     case TR::Int16:
          opcode = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9) ? TR::InstOpCode::stxvh8x : TR::InstOpCode::stxvw4x;
          break;
-     case TR::VectorInt32:
-     case TR::VectorFloat:
+     case TR::Int32:
+     case TR::Float:
          opcode = TR::InstOpCode::stxvw4x;
          break;
-     case TR::VectorInt64:
-     case TR::VectorDouble:
+     case TR::Int64:
+     case TR::Double:
          opcode = TR::InstOpCode::stxvd2x;
          break;
      default:
@@ -2800,13 +2806,16 @@ TR::Register *OMR::Power::TreeEvaluator::vimaxEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::Power::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
 
-   switch (node->getDataType())
+   switch (node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
-      case TR::VectorInt16:
-      case TR::VectorInt32:
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
          opCode = TR::InstOpCode::vand;
          break;
       default:
@@ -2819,13 +2828,16 @@ TR::Register *OMR::Power::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeG
 
 TR::Register *OMR::Power::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
 
-   switch (node->getDataType())
+   switch (node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
-      case TR::VectorInt16:
-      case TR::VectorInt32:
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
          opCode = TR::InstOpCode::vor;
          break;
       default:
@@ -2837,13 +2849,16 @@ TR::Register *OMR::Power::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGe
 
 TR::Register *OMR::Power::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
 
-   switch (node->getDataType())
+   switch (node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
-      case TR::VectorInt16:
-      case TR::VectorInt32:
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
          opCode = TR::InstOpCode::vxor;
          break;
       default:
@@ -2874,7 +2889,7 @@ TR::Register *OMR::Power::TreeEvaluator::vigetelemEvaluator(TR::Node *node, TR::
    TR::Register *resReg = node->setRegister(cg->allocateRegister());
 
    TR::Register *addrReg = cg->evaluate(firstChild);
-   TR::SymbolReference    *localTemp = cg->allocateLocalTemp(TR::VectorInt32);
+   TR::SymbolReference    *localTemp = cg->allocateLocalTemp(TR::DataType::createVectorType(TR::Int32, TR::VectorLength128));
    generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, resReg, TR::MemoryReference::createWithSymRef(cg, node, localTemp, 16));
    generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, TR::MemoryReference::createWithIndexReg(cg, NULL, resReg, 16), addrReg);
 
@@ -2930,17 +2945,21 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemDirectMoveHelper(TR::Node *node
    TR::Register *tempVectorReg = cg->allocateRegister(TR_VSX_VECTOR);
 
    int32_t elementCount = -1;
-   switch (firstChild->getDataType())
+
+   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   switch (firstChild->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
-      case TR::VectorInt16:
+      case TR::Int8:
+      case TR::Int16:
          TR_ASSERT(false, "unsupported vector type %s in getvelemEvaluator.\n", firstChild->getDataType().toString());
          break;
-      case TR::VectorInt32:
+      case TR::Int32:
          elementCount = 4;
          resReg = cg->allocateRegister();
          break;
-      case TR::VectorInt64:
+      case TR::Int64:
          elementCount = 2;
          if (cg->comp()->target().is32Bit())
             {
@@ -2953,11 +2972,11 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemDirectMoveHelper(TR::Node *node
             resReg = cg->allocateRegister();
             }
          break;
-      case TR::VectorFloat:
+      case TR::Float:
          elementCount = 4;
          resReg = cg->allocateSinglePrecisionRegister();
          break;
-      case TR::VectorDouble:
+      case TR::Double:
          elementCount = 2;
          resReg = cg->allocateRegister(TR_FPR);
          break;
@@ -2980,18 +2999,19 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemDirectMoveHelper(TR::Node *node
           * The splat is skipped if the data is already in the right slot.
           * If the splat is skipped, the input data will be in srcVectorReg instead of intermediateResReg.
           */
-         bool skipSplat = (firstChild->getDataType() == TR::VectorInt32 && 1 == elem) || (firstChild->getDataType() == TR::VectorFloat && 0 == elem);
+         bool skipSplat = (firstChild->getDataType().getVectorElementType() == TR::Int32 && 1 == elem) ||
+                          (firstChild->getDataType().getVectorElementType() == TR::Float && 0 == elem);
 
          if (!skipSplat)
             {
             generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xxspltw, node, intermediateResReg, srcVectorReg, elem);
             }
 
-         if (firstChild->getDataType() == TR::VectorInt32)
+         if (firstChild->getDataType().getVectorElementType() == TR::Int32)
             {
             generateMvFprGprInstructions(cg, node, fpr2gprLow, false, resReg, skipSplat ? srcVectorReg : intermediateResReg);
             }
-         else //firstChild->getDataType() == TR::VectorFloat
+         else // TR::Float
             {
             generateTrg1Src1Instruction(cg, TR::InstOpCode::xscvspdp, node, resReg, skipSplat ? srcVectorReg : intermediateResReg);
             }
@@ -3008,15 +3028,15 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemDirectMoveHelper(TR::Node *node
             generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxsldwi, node, intermediateResReg, srcVectorReg, srcVectorReg, 0x2);
             }
 
-         if (cg->comp()->target().is32Bit() && firstChild->getDataType() == TR::VectorInt64)
+         if (cg->comp()->target().is32Bit() && firstChild->getDataType().getVectorElementType() == TR::Int64)
             {
             generateMvFprGprInstructions(cg, node, fpr2gprHost32, false, highResReg, lowResReg, readElemOne ? intermediateResReg : srcVectorReg, tempVectorReg);
             }
-         else if (firstChild->getDataType() == TR::VectorInt64)
+         else if (firstChild->getDataType().getVectorElementType() == TR::Int64)
             {
             generateMvFprGprInstructions(cg, node, fpr2gprHost64, false, resReg, readElemOne ? intermediateResReg : srcVectorReg);
             }
-         else //firstChild->getDataType() == TR::VectorDouble
+         else // TR::Double
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, readElemOne ? intermediateResReg : srcVectorReg, readElemOne ? intermediateResReg : srcVectorReg);
             }
@@ -3038,7 +3058,7 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemDirectMoveHelper(TR::Node *node
       deps->addPostCondition(indexReg, TR::RealRegister::NoReg);
       deps->addPostCondition(condReg, TR::RealRegister::NoReg);
 
-      if (firstChild->getDataType() == TR::VectorInt32)
+      if (firstChild->getDataType().getVectorElementType() == TR::Int32)
          {
          /*
           * Conditional statements are used to determine if the indexReg has the value 0, 1, 2 or 3. Other values are invalid.
@@ -3069,7 +3089,7 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemDirectMoveHelper(TR::Node *node
          generateDepLabelInstruction(cg, TR::InstOpCode::label, node, jumpLabelDone, deps);
          generateMvFprGprInstructions(cg, node, fpr2gprLow, false, resReg, intermediateResReg);
          }
-      else if (firstChild->getDataType() == TR::VectorFloat)
+      else if (firstChild->getDataType().getVectorElementType() == TR::Float)
          {
          /*
           * Conditional statements are used to determine if the indexReg has the value 0, 1, 2 or 3. Other values are invalid.
@@ -3118,11 +3138,11 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemDirectMoveHelper(TR::Node *node
          generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxsldwi, node, intermediateResReg, srcVectorReg, srcVectorReg, 0x2);
          generateDepLabelInstruction(cg, TR::InstOpCode::label, node, jumpLabelDone, deps);
 
-         if (cg->comp()->target().is32Bit() && firstChild->getDataType() == TR::VectorInt64)
+         if (cg->comp()->target().is32Bit() && firstChild->getDataType().getVectorElementType() == TR::Int64)
             {
             generateMvFprGprInstructions(cg, node, fpr2gprHost32, false, highResReg, lowResReg, intermediateResReg, tempVectorReg);
             }
-         else if (firstChild->getDataType() == TR::VectorInt64)
+         else if (firstChild->getDataType().getVectorElementType() == TR::Int64)
             {
             generateMvFprGprInstructions(cg, node, fpr2gprHost64, false, resReg, intermediateResReg);
             }
@@ -3156,18 +3176,22 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemMemoryMoveHelper(TR::Node *node
    int32_t elementCount = 4;
    TR::InstOpCode::Mnemonic loadOpCode = TR::InstOpCode::lwz;
    TR::InstOpCode::Mnemonic vecStoreOpCode = TR::InstOpCode::stxvw4x;
-   switch (firstChild->getDataType())
+
+   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   switch (firstChild->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
-      case TR::VectorInt16:
+      case TR::Int8:
+      case TR::Int16:
          TR_ASSERT(false, "unsupported vector type %s in getvelemEvaluator.\n", firstChild->getDataType().toString());
          break;
-      case TR::VectorInt32:
+      case TR::Int32:
          elementCount = 4;
          loadOpCode = TR::InstOpCode::lwz;
          vecStoreOpCode = TR::InstOpCode::stxvw4x;
          break;
-      case TR::VectorInt64:
+      case TR::Int64:
          elementCount = 2;
          if (cg->comp()->target().is64Bit())
             loadOpCode = TR::InstOpCode::ld;
@@ -3175,13 +3199,13 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemMemoryMoveHelper(TR::Node *node
             loadOpCode = TR::InstOpCode::lwz;
          vecStoreOpCode = TR::InstOpCode::stxvd2x;
          break;
-      case TR::VectorFloat:
+      case TR::Float:
          elementCount = 4;
          loadOpCode = TR::InstOpCode::lfs;
          fResReg = cg->allocateSinglePrecisionRegister();
          vecStoreOpCode = TR::InstOpCode::stxvw4x;
          break;
-      case TR::VectorDouble:
+      case TR::Double:
          elementCount = 2;
          loadOpCode = TR::InstOpCode::lfd;
          fResReg = cg->allocateRegister(TR_FPR);
@@ -3202,12 +3226,14 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemMemoryMoveHelper(TR::Node *node
 
       TR_ASSERT(elem >= 0 && elem < elementCount, "Element can only be 0 to %u\n", elementCount - 1);
 
-      if (firstChild->getDataType() == TR::VectorFloat || firstChild->getDataType() == TR::VectorDouble)
+      if (firstChild->getDataType().getVectorElementType() == TR::Float ||
+          firstChild->getDataType().getVectorElementType() == TR::Double)
          {
          generateTrg1MemInstruction(cg, loadOpCode, node, fResReg, TR::MemoryReference::createWithDisplacement(cg, resReg, elem * (16 / elementCount), 16 / elementCount));
          cg->stopUsingRegister(resReg);
          }
-      else if (cg->comp()->target().is32Bit() && firstChild->getDataType() == TR::VectorInt64)
+      else if (cg->comp()->target().is32Bit() &&
+               firstChild->getDataType().getVectorElementType() == TR::Int64)
          {
          if (!cg->comp()->target().cpu.isLittleEndian())
             {
@@ -3233,7 +3259,8 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemMemoryMoveHelper(TR::Node *node
       cg->decReferenceCount(firstChild);
       cg->decReferenceCount(secondChild);
 
-      if (firstChild->getDataType() == TR::VectorFloat || firstChild->getDataType() == TR::VectorDouble)
+      if (firstChild->getDataType().getVectorElementType() == TR::Float ||
+          firstChild->getDataType().getVectorElementType() == TR::Double)
          {
          node->setRegister(fResReg);
          return fResReg;
@@ -3249,12 +3276,14 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemMemoryMoveHelper(TR::Node *node
    TR::Register *offsetReg = cg->allocateRegister();
    generateTrg1Src1ImmInstruction (cg, TR::InstOpCode::mulli, node, offsetReg, idxReg, 16 / elementCount);
 
-   if (firstChild->getDataType() == TR::VectorFloat || firstChild->getDataType() == TR::VectorDouble)
+   if (firstChild->getDataType().getVectorElementType() == TR::Float ||
+       firstChild->getDataType().getVectorElementType() == TR::Double)
       {
       generateTrg1MemInstruction(cg, loadOpCode, node, fResReg, TR::MemoryReference::createWithIndexReg(cg, resReg, offsetReg, 16 / elementCount));
       cg->stopUsingRegister(resReg);
       }
-   else if (cg->comp()->target().is32Bit() && firstChild->getDataType() == TR::VectorInt64)
+   else if (cg->comp()->target().is32Bit() &&
+            firstChild->getDataType().getVectorElementType() == TR::Int64)
       {
       if (!cg->comp()->target().cpu.isLittleEndian())
          {
@@ -3284,7 +3313,8 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemMemoryMoveHelper(TR::Node *node
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
 
-   if (firstChild->getDataType() == TR::VectorFloat || firstChild->getDataType() == TR::VectorDouble)
+   if (firstChild->getDataType().getVectorElementType() == TR::Float ||
+       firstChild->getDataType().getVectorElementType() == TR::Double)
       {
       node->setRegister(fResReg);
       return fResReg;
@@ -3300,6 +3330,10 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemMemoryMoveHelper(TR::Node *node
 TR::Register *OMR::Power::TreeEvaluator::visetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
+
+   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::Node *secondChild = node->getSecondChild();
    TR::Node *thirdChild = node->getThirdChild();
    TR::Register *vectorReg = cg->evaluate(firstChild);
@@ -3307,7 +3341,7 @@ TR::Register *OMR::Power::TreeEvaluator::visetelemEvaluator(TR::Node *node, TR::
    TR::Register *resReg = node->setRegister(cg->allocateRegister(TR_VRF));
 
    TR::Register *addrReg = cg->allocateRegister();
-   TR::SymbolReference    *localTemp = cg->allocateLocalTemp(TR::VectorInt32);
+   TR::SymbolReference    *localTemp = cg->allocateLocalTemp(TR::DataType::createVectorType(TR::Int32, TR::VectorLength128));
    generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, addrReg, TR::MemoryReference::createWithSymRef(cg, node, localTemp, 16));
    generateMemSrc1Instruction(cg, TR::InstOpCode::stxvw4x, node, TR::MemoryReference::createWithIndexReg(cg, NULL, addrReg, 16), vectorReg);
 
@@ -3399,14 +3433,17 @@ TR::Register *OMR::Power::TreeEvaluator::vdcmpltEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::Power::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   switch(node->getDataType())
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   switch(node->getDataType().getVectorElementType())
      {
-     case TR::VectorInt8:   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vaddubm);
-     case TR::VectorInt16:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vadduhm);
-     case TR::VectorInt32:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vadduwm);
-     case TR::VectorInt64:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vaddudm);
-     case TR::VectorFloat:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvaddsp);
-     case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvadddp);
+     case TR::Int8:   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vaddubm);
+     case TR::Int16:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vadduhm);
+     case TR::Int32:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vadduwm);
+     case TR::Int64:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vaddudm);
+     case TR::Float:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvaddsp);
+     case TR::Double: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvadddp);
      default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
      }
    }
@@ -3414,27 +3451,33 @@ TR::Register *OMR::Power::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeG
 
 TR::Register *OMR::Power::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   switch(node->getDataType())
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   switch(node->getDataType().getVectorElementType())
      {
-     case TR::VectorInt8:   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsububm);
-     case TR::VectorInt16:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsubuhm);
-     case TR::VectorInt32:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsubuwm);
-     case TR::VectorInt64:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsubudm);
-     case TR::VectorFloat:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvsubsp);
-     case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvsubdp);
+     case TR::Int8:   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsububm);
+     case TR::Int16:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsubuhm);
+     case TR::Int32:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsubuwm);
+     case TR::Int64:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsubudm);
+     case TR::Float:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvsubsp);
+     case TR::Double: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvsubdp);
      default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
      }
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   switch(node->getDataType())
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   switch(node->getDataType().getVectorElementType())
      {
-     case TR::VectorInt32:
+     case TR::Int32:
        return TR::TreeEvaluator::vnegInt32Helper(node,cg);
-     case TR::VectorFloat:
+     case TR::Float:
        return TR::TreeEvaluator::vnegFloatHelper(node,cg);
-     case TR::VectorDouble:
+     case TR::Double:
        return TR::TreeEvaluator::vnegDoubleHelper(node,cg);
      default:
        TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
@@ -3471,19 +3514,22 @@ TR::Register *OMR::Power::TreeEvaluator::vnegDoubleHelper(TR::Node *node, TR::Co
 
 TR::Register *OMR::Power::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   switch(node->getDataType())
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   switch(node->getDataType().getVectorElementType())
      {
-     case TR::VectorInt8:
+     case TR::Int8:
        return TR::TreeEvaluator::vmulInt8Helper(node, cg);
-     case TR::VectorInt16:
+     case TR::Int16:
        return TR::TreeEvaluator::vmulInt16Helper(node,cg);
-     case TR::VectorInt32:
+     case TR::Int32:
        return TR::TreeEvaluator::vmulInt32Helper(node,cg);
-     case TR::VectorInt64:
+     case TR::Int64:
        return TR::TreeEvaluator::vmulInt64Helper(node,cg);
-     case TR::VectorFloat:
+     case TR::Float:
        return TR::TreeEvaluator::vmulFloatHelper(node,cg);
-     case TR::VectorDouble:
+     case TR::Double:
        return TR::TreeEvaluator::vmulDoubleHelper(node,cg);
      default:
        TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
@@ -3637,13 +3683,16 @@ TR::Register *OMR::Power::TreeEvaluator::vmulDoubleHelper(TR::Node *node, TR::Co
 
 TR::Register *OMR::Power::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   switch(node->getDataType())
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   switch(node->getDataType().getVectorElementType())
      {
-     case TR::VectorInt32:
+     case TR::Int32:
 	return TR::TreeEvaluator::vdivInt32Helper(node, cg);
-     case TR::VectorFloat:
+     case TR::Float:
 	return TR::TreeEvaluator::vdivFloatHelper(node, cg);
-     case TR::VectorDouble:
+     case TR::Double:
 	return TR::TreeEvaluator::vdivDoubleHelper(node, cg);
      default:
        TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
@@ -3662,6 +3711,9 @@ TR::Register *OMR::Power::TreeEvaluator::vdivDoubleHelper(TR::Node *node, TR::Co
 
 TR::Register *OMR::Power::TreeEvaluator::vdivInt32Helper(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
    TR::Register *lhsReg = NULL, *rhsReg = NULL;
@@ -3672,8 +3724,8 @@ TR::Register *OMR::Power::TreeEvaluator::vdivInt32Helper(TR::Node *node, TR::Cod
    TR::Register *srcV1IdxReg = cg->allocateRegister();
    TR::Register *srcV2IdxReg = cg->allocateRegister();
 
-   TR::SymbolReference    *srcV1 = cg->allocateLocalTemp(TR::VectorInt32);
-   TR::SymbolReference    *srcV2 = cg->allocateLocalTemp(TR::VectorInt32);
+   TR::SymbolReference    *srcV1 = cg->allocateLocalTemp(TR::DataType::createVectorType(TR::Int32, TR::VectorLength128));
+   TR::SymbolReference    *srcV2 = cg->allocateLocalTemp(TR::DataType::createVectorType(TR::Int32, TR::VectorLength128));
 
    generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, srcV1IdxReg, TR::MemoryReference::createWithSymRef(cg, node, srcV1, 16));
    generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, srcV2IdxReg, TR::MemoryReference::createWithSymRef(cg, node, srcV2, 16));

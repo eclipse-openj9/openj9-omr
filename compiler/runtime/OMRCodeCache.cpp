@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -186,6 +186,10 @@ OMR::CodeCache::unreserve()
 void
 OMR::CodeCache::writeMethodHeader(void *freeBlock, size_t size, bool isCold)
    {
+#if defined(OSX) && defined(AARCH64)
+   pthread_jit_write_protect_np(0);
+#endif
+
    CodeCacheMethodHeader * block = (CodeCacheMethodHeader *)freeBlock;
    block->_size = static_cast<uint32_t>(size);
 
@@ -196,6 +200,10 @@ OMR::CodeCache::writeMethodHeader(void *freeBlock, size_t size, bool isCold)
    else
       memcpy(block->_eyeCatcher, config.coldEyeCatcher(), sizeof(block->_eyeCatcher));
    block->_metaData = NULL;
+
+#if defined(OSX) && defined(AARCH64)
+   pthread_jit_write_protect_np(1);
+#endif
    }
 
 
@@ -232,7 +240,13 @@ OMR::CodeCache::trimCodeMemoryAllocation(void *codeMemoryStart, size_t actualSiz
       {
       _manager->decreaseCurrTotalUsedInBytes(shrinkage);
       _warmCodeAlloc -= shrinkage;
+#if defined(OSX) && defined(AARCH64)
+      pthread_jit_write_protect_np(0);
+#endif
       cacheHeader->_size = static_cast<uint32_t>(actualSizeInBytes);
+#if defined(OSX) && defined(AARCH64)
+      pthread_jit_write_protect_np(1);
+#endif
       return true;
       }
    else // the allocation could have been from a free block or from the cold portion
@@ -245,7 +259,13 @@ OMR::CodeCache::trimCodeMemoryAllocation(void *codeMemoryStart, size_t actualSiz
             {
             //fprintf(stderr, "---ccr--- addFreeBlock due to shrinkage\n");
             }
+#if defined(OSX) && defined(AARCH64)
+         pthread_jit_write_protect_np(0);
+#endif
          cacheHeader->_size = static_cast<uint32_t>(actualSizeInBytes);
+#if defined(OSX) && defined(AARCH64)
+         pthread_jit_write_protect_np(1);
+#endif
          return true;
          }
       }
@@ -300,7 +320,13 @@ OMR::CodeCache::initialize(TR::CodeCacheManager *manager,
    _sizeOfLargestFreeWarmBlock = 0;
    _lastAllocatedBlock = NULL; // MP
 
+#if defined(OSX) && defined(AARCH64)
+   pthread_jit_write_protect_np(0);
+#endif
    *((TR::CodeCache **)(_segment->segmentBase())) = self(); // Write a pointer to this cache at the beginning of the segment
+#if defined(OSX) && defined(AARCH64)
+   pthread_jit_write_protect_np(1);
+#endif
    _warmCodeAlloc = _segment->segmentBase() + sizeof(this);
 
    _warmCodeAlloc = (uint8_t *)align((size_t)_warmCodeAlloc, config.codeCacheAlignment());
@@ -961,6 +987,10 @@ OMR::CodeCache::addFreeBlock2WithCallSite(uint8_t *start,
       return false;
       }
 
+#if defined(OSX) && defined(AARCH64)
+   pthread_jit_write_protect_np(0);
+#endif
+
    uint64_t size = end - start; // Size of space to be freed
 
    // Destroy the eyeCatcher; note that there might not be an eyecatcher at all
@@ -1079,6 +1109,10 @@ OMR::CodeCache::addFreeBlock2WithCallSite(uint8_t *start,
 
    if (config.doSanityChecks())
       self()->checkForErrors();
+
+#if defined(OSX) && defined(AARCH64)
+   pthread_jit_write_protect_np(1);
+#endif
 
    return true;
    }
@@ -1251,6 +1285,10 @@ OMR::CodeCache::removeFreeBlock(size_t blockSize,
    // separate link and adjust the sizes of the two split resulting blocks
    if (curr->_size - blockSize >= MIN_SIZE_BLOCK)
       {
+#if defined(OSX) && defined(AARCH64)
+      pthread_jit_write_protect_np(0);
+#endif
+
       size_t splitSize = curr->_size - blockSize; // remaining portion
       curr->_size = blockSize;
       curr = (CodeCacheFreeCacheBlock *) ((uint8_t *) curr + blockSize);
@@ -1261,14 +1299,28 @@ OMR::CodeCache::removeFreeBlock(size_t blockSize,
          prev->_next = curr;
       else
          _freeBlockList = curr;
+
+#if defined(OSX) && defined(AARCH64)
+      pthread_jit_write_protect_np(1);
+#endif
+
       return curr;
       }
    else // Use the entire block
       {
+#if defined(OSX) && defined(AARCH64)
+      pthread_jit_write_protect_np(0);
+#endif
+
       if (prev)
          prev->_next = next;
       else
          _freeBlockList = next;
+
+#if defined(OSX) && defined(AARCH64)
+      pthread_jit_write_protect_np(1);
+#endif
+
       return NULL;
       }
    }

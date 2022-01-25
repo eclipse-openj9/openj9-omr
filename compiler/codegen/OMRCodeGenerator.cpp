@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2344,6 +2344,10 @@ OMR::CodeGenerator::emitSnippets()
    uint8_t *codeOffset;
    uint8_t *retVal;
 
+#if defined(OSX) && defined(AARCH64)
+   pthread_jit_write_protect_np(0);
+#endif
+
    for (auto iterator = _snippetList.begin(); iterator != _snippetList.end(); ++iterator)
       {
       codeOffset = (*iterator)->emitSnippet();
@@ -2366,6 +2370,10 @@ OMR::CodeGenerator::emitSnippets()
       {
       self()->emitDataSnippets();
       }
+
+#if defined(OSX) && defined(AARCH64)
+   pthread_jit_write_protect_np(1);
+#endif
 
    return retVal;
    }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2020 IBM Corp. and others
+ * Copyright (c) 2016, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -496,6 +496,13 @@ reserveMemory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t byteA
 		flags = MAP_ANON | MAP_PRIVATE;
 		useBackingSharedFile = FALSE;
 	}
+
+#if defined(AARCH64)
+	if (category->categoryCode == OMRMEM_CATEGORY_JIT_CODE_CACHE) {
+		flags |= MAP_JIT;
+		protectionFlags &= ~PROT_EXEC;
+	}
+#endif /* defined(AARCH64) */
 
 	result = mmap(address, (size_t)byteAmount, protectionFlags, flags, fd, 0);
 	if (MAP_FAILED == result) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -45,6 +45,10 @@
 #include "il/Node_inlines.hpp"
 #include "il/StaticSymbol.hpp"
 #include "ras/DebugCounter.hpp"
+
+#if defined(OSX)
+#include <pthread.h> // for pthread_jit_write_protect_np
+#endif
 
 OMR::ARM64::CodeGenerator::CodeGenerator(TR::Compilation *comp) :
       OMR::CodeGenerator(comp),
@@ -268,6 +272,10 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
    uint8_t *coldCode = NULL;
    uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedCodeLength(), 0, &coldCode);
 
+#if defined(OSX)
+   pthread_jit_write_protect_np(0);
+#endif
+
    self()->setBinaryBufferStart(temp);
    self()->setBinaryBufferCursor(temp);
    self()->alignBinaryBufferCursor();
@@ -306,6 +314,10 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
       }
 
    self()->getLinkage()->performPostBinaryEncoding();
+
+#if defined(OSX)
+   pthread_jit_write_protect_np(1);
+#endif
    }
 
 TR::Linkage *OMR::ARM64::CodeGenerator::createLinkage(TR_LinkageConventions lc)
@@ -544,9 +556,15 @@ void OMR::ARM64::CodeGenerator::apply16BitLabelRelativeRelocation(int32_t *curso
    // for "tbz/tbnz" instruction
    TR_ASSERT(label->getCodeLocation(), "Attempt to relocate to a NULL label address!");
 
+#if defined(OSX)
+   pthread_jit_write_protect_np(0);
+#endif
    intptr_t distance = reinterpret_cast<intptr_t>(label->getCodeLocation() - reinterpret_cast<uint8_t *>(cursor));
    TR_ASSERT_FATAL(constantIsSignedImm16(distance), "offset (%d) is too large for imm14", distance);
    *cursor |= ((distance >> 2) & 0x3fff) << 5; // imm14
+#if defined(OSX)
+   pthread_jit_write_protect_np(1);
+#endif
    }
 
 void OMR::ARM64::CodeGenerator::apply24BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label)
@@ -554,8 +572,14 @@ void OMR::ARM64::CodeGenerator::apply24BitLabelRelativeRelocation(int32_t *curso
    // for "b.cond" instruction
    TR_ASSERT(label->getCodeLocation(), "Attempt to relocate to a NULL label address!");
 
+#if defined(OSX)
+   pthread_jit_write_protect_np(0);
+#endif
    intptr_t distance = (uintptr_t)label->getCodeLocation() - (uintptr_t)cursor;
    *cursor |= ((distance >> 2) & 0x7ffff) << 5; // imm19
+#if defined(OSX)
+   pthread_jit_write_protect_np(1);
+#endif
    }
 
 void OMR::ARM64::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label)
@@ -563,8 +587,14 @@ void OMR::ARM64::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t *curso
    // for unconditional "b" instruction
    TR_ASSERT(label->getCodeLocation(), "Attempt to relocate to a NULL label address!");
 
+#if defined(OSX)
+   pthread_jit_write_protect_np(0);
+#endif
    intptr_t distance = (uintptr_t)label->getCodeLocation() - (uintptr_t)cursor;
    *cursor |= ((distance >> 2) & 0x3ffffff); // imm26
+#if defined(OSX)
+   pthread_jit_write_protect_np(1);
+#endif
    }
 
 int64_t OMR::ARM64::CodeGenerator::getLargestNegConstThatMustBeMaterialized()

@@ -335,7 +335,8 @@ typedef enum
    TR_Breakpoint                          = 107,
    TR_InlinedMethodPointer                = 108,
    TR_VMINLMethod                         = 109,
-   TR_NumExternalRelocationKinds          = 110,
+   TR_ValidateJ2IThunkFromMethod          = 110,
+   TR_NumExternalRelocationKinds          = 111,
    TR_ExternalRelocationTargetKindMask    = 0xff,
    } TR_ExternalRelocationTargetKind;
 

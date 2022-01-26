@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -355,7 +355,7 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
             }
          else
             {
-            location = cg->allocateSpill(8, false, NULL);
+            location = cg->allocateSpill((rk == TR_FPR) ? 8 : 16, false, NULL);
             if (debugObj)
                cg->traceRegisterAssignment("\nSpilling FPR %R to (%p)\n", registerToSpill, location);
             }

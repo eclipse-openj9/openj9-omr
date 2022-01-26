@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -492,8 +492,10 @@ void OMR::ARM64::RegisterDependencyGroup::assignRegisters(
             traceMsg (comp,"\nOOL: Releasing backing storage (%p)\n", location);
             if (rk == TR_GPR)
                dataSize = TR::Compiler->om.sizeofReferenceAddress();
-            else
+            else if (rk == TR_FPR)
                dataSize = 8;
+            else /* TR_VRF */
+               dataSize = 16;
             location->setMaxSpillDepth(0);
             cg->freeSpill(location, dataSize, 0);
             virtReg->setBackingStorage(NULL);

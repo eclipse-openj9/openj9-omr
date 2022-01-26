@@ -10678,17 +10678,17 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::xxspltib, */
-   /* .name        =    "xxspltib", */
+  {
+   /* .mnemonic    = */   OMR::InstOpCode::xxspltib,
+   /* .name        = */  "xxspltib",
    /* .description =    "VSX Vector Splat Immediate Byte", */
-   /* .prefix      =    0x00000000, */
-   /* .opcode      =    0xF00002D0, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    OMR_PROCESSOR_PPC_P9, */
-   /* .properties  =    PPCOpProp_IsVSX | */
-   /*                   PPCOpProp_SyncSideEffectFree, */
-   /* }, */
+   /* .prefix      = */   0x00000000,
+   /* .opcode      = */   0xF00002D0,
+   /* .format      = */   FORMAT_XT_IMM8,
+   /* .minimumALS  = */   OMR_PROCESSOR_PPC_P9,
+   /* .properties  = */   PPCOpProp_IsVSX |
+                          PPCOpProp_SyncSideEffectFree,
+   },
 
    /* { */
    /* .mnemonic    =    OMR::InstOpCode::xxperm, */

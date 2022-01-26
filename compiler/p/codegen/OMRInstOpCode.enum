@@ -898,7 +898,7 @@
    xxsel,            // VSX Select (Operands usage are diffent than fsel)
    xxsldwi,          // VSX Shift Left Double by Word Immediate
    xxspltw,          // VSX Splat Word
-// xxspltib,         // VSX Vector Splat Immediate Byte
+   xxspltib,         // VSX Vector Splat Immediate Byte
 // xxperm,           // VSX Vector Permute
    xxpermdi,         // VSX Permute Doubleword Immediate
 // xxpermr,          // VSX Vector Permute Right-indexed

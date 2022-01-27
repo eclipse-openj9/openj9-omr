@@ -2061,6 +2061,7 @@ getRegisterName(TR::RealRegister::RegNum num, bool is64bit)
       {
       case TR::RealRegister::NoReg: return "NoReg";
       case TR::RealRegister::SpilledReg: return "SpilledReg";
+      case TR::RealRegister::KillVectorRegs: return "KillVectorRegs";
       case TR::RealRegister::x0: return (is64bit ? "x0" : "w0");
       case TR::RealRegister::x1: return (is64bit ? "x1" : "w1");
       case TR::RealRegister::x2: return (is64bit ? "x2" : "w2");

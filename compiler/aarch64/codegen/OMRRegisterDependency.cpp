@@ -419,6 +419,18 @@ void OMR::ARM64::RegisterDependencyConditions::stopUsingDepRegs(TR::CodeGenerato
       _postConditions->stopUsingDepRegs(getAddCursorForPost(), numRetReg, retReg, cg);
    }
 
+
+/**
+ * @brief Answers if the register dependency is KillVectorRegs
+ *
+ * @param[in] dep : register dependency
+ * @return true if the register dependency is KillVectorRegs
+ */
+static bool killsVectorRegs(TR::RegisterDependency *dep)
+   {
+   return dep->getRealRegister() == TR::RealRegister::KillVectorRegs;
+   }
+
 void OMR::ARM64::RegisterDependencyGroup::assignRegisters(
                         TR::Instruction *currentInstruction,
                         TR_RegisterKinds kindToBeAssigned,
@@ -526,6 +538,11 @@ void OMR::ARM64::RegisterDependencyGroup::assignRegisters(
                }
             }
          }
+      // Check for directive to spill vector registers.
+      if (killsVectorRegs(&_dependencies[i]))
+         {
+         machine->spillAllVectorRegisters(currentInstruction);
+         }
       }
 
    do
@@ -540,6 +557,7 @@ void OMR::ARM64::RegisterDependencyGroup::assignRegisters(
 
          if (!regDep.isNoReg() &&
              !regDep.isSpilledReg() &&
+             !killsVectorRegs(&regDep) &&
              dependentRealReg->getState() == TR::RealRegister::Free)
             {
             machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum);
@@ -565,6 +583,7 @@ void OMR::ARM64::RegisterDependencyGroup::assignRegisters(
          dependentRealReg = machine->getRealRegister(dependentRegNum);
          if (!regDep.isNoReg() &&
              !regDep.isSpilledReg() &&
+             !killsVectorRegs(&regDep) &&
              dependentRealReg != assignedRegister)
             {
             machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum);

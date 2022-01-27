@@ -209,17 +209,11 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
    {
    TR::Register *candidates[NUM_ARM64_MAXR];
    TR::CodeGenerator *cg = self()->cg();
-   TR::Compilation *comp = cg->comp();
-   TR::Machine *machine = cg->machine();
-   TR::MemoryReference *tmemref;
-   TR_BackingStore *location;
    TR::RealRegister *best;
    TR::Instruction *cursor;
    TR::Node *currentNode = currentInstruction->getNode();
    TR_RegisterKinds rk = (virtualRegister == NULL) ? TR_GPR : virtualRegister->getKind();
    int numCandidates = 0;
-   int32_t dataSize = 0;
-   TR::InstOpCode::Mnemonic loadOp;
 
    cg->traceRegisterAssignment("FREE BEST REGISTER FOR %R", virtualRegister);
 
@@ -267,7 +261,7 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
       for (int i = first; i <= last; i++)
          {
          uint32_t iInterfere = interference & (1 << (i - maskI));
-         TR::RealRegister *realReg = machine->getRealRegister(static_cast<TR::RealRegister::RegNum>(i));
+         TR::RealRegister *realReg = self()->getRealRegister(static_cast<TR::RealRegister::RegNum>(i));
          TR::Register *tempReg;
 
          if (realReg->getState() == TR::RealRegister::Assigned)
@@ -314,12 +308,23 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
       best = toRealRegister(candidates[0]->getAssignedRegister());
       }
 
-   TR::Register *registerToSpill = candidates[0];
+   self()->spillRegister(currentInstruction, candidates[0]);
+   return best;
+   }
+
+void OMR::ARM64::Machine::spillRegister(TR::Instruction *currentInstruction, TR::Register *virtReg)
+   {
+   TR::Register *registerToSpill = virtReg;
+   TR::CodeGenerator *cg = self()->cg();
+   TR::Compilation *comp = cg->comp();
    TR_Debug *debugObj = cg->getDebug();
+   TR_RegisterKinds rk = virtReg->getKind();
+   TR::Node *currentNode = currentInstruction->getNode();
+
    const bool containsInternalPointer = registerToSpill->containsInternalPointer();
    const bool containsCollectedReference = registerToSpill->containsCollectedReference();
 
-   location = registerToSpill->getBackingStorage();
+   TR_BackingStore *location = registerToSpill->getBackingStorage();
    switch (rk)
       {
       case TR_GPR:
@@ -367,7 +372,7 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
 
    registerToSpill->setBackingStorage(location);
 
-   tmemref = TR::MemoryReference::createWithSymRef(cg, currentNode, location->getSymbolReference());
+   TR::MemoryReference *tmemref = TR::MemoryReference::createWithSymRef(cg, currentNode, location->getSymbolReference());
 
    if (!cg->isOutOfLineColdPath())
       {
@@ -414,7 +419,7 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
                   best->getAssignedRegister()->getRegisterName(comp),
                   best->getRegisterName(comp));
       }
-
+   TR::InstOpCode::Mnemonic loadOp;
    switch (rk)
       {
       case TR_GPR:
@@ -430,14 +435,15 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
          TR_ASSERT(false, "Unsupported RegisterKind.");
          break;
       }
-   generateTrg1MemInstruction(cg, loadOp, currentNode, best, tmemref, currentInstruction);
 
-   cg->traceRegFreed(registerToSpill, best);
+   TR::RealRegister *realReg = toRealRegister(virtReg->getAssignedRegister());
+   generateTrg1MemInstruction(cg, loadOp, currentNode, realReg, tmemref, currentInstruction);
 
-   best->setAssignedRegister(NULL);
-   best->setState(TR::RealRegister::Free);
+   cg->traceRegFreed(registerToSpill, realReg);
+
+   realReg->setAssignedRegister(NULL);
+   realReg->setState(TR::RealRegister::Free);
    registerToSpill->setAssignedRegister(NULL);
-   return best;
    }
 
 TR::RealRegister *OMR::ARM64::Machine::reverseSpillState(TR::Instruction *currentInstruction,
@@ -897,6 +903,26 @@ void OMR::ARM64::Machine::coerceRegisterAssignment(TR::Instruction *currentInstr
    targetRegister->setAssignedRegister(virtualRegister);
    virtualRegister->setAssignedRegister(targetRegister);
    self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+   }
+
+void OMR::ARM64::Machine::spillAllVectorRegisters(TR::Instruction  *currentInstruction)
+   {
+   int32_t first = TR::RealRegister::FirstFPR;
+   int32_t last  = TR::RealRegister::LastFPR;
+   TR::Node *node = currentInstruction->getNode();
+
+   for (int32_t i = first; i <= last; i++)
+      {
+      TR::Register *virtReg = NULL;
+      TR::RealRegister *realReg = self()->getRealRegister(static_cast<TR::RealRegister::RegNum>(i));
+
+      if ((realReg->getState() == TR::RealRegister::Assigned) &&
+          (virtReg = realReg->getAssignedRegister()) &&
+          (virtReg->getKind() == TR_VRF))
+         {
+         self()->spillRegister(currentInstruction, virtReg);
+         }
+      }
    }
 
 void OMR::ARM64::Machine::initializeRegisterFile()

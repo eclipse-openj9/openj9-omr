@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -216,6 +216,13 @@ public:
       memset(_registerAssociations, 0, sizeof(TR::Register *) * (TR::RealRegister::NumRegisters));
       }
 
+   /**
+    * @brief Spills all vector registers
+    *
+    * @param[in] currentInstruction : current instruction
+    */
+   void spillAllVectorRegisters(TR::Instruction  *currentInstruction);
+
 private:
 
    // For register snap shot
@@ -229,6 +236,14 @@ private:
    TR::Register               *_registerAssociations[TR::RealRegister::NumRegisters];
 
    void initializeRegisterFile();
+
+   /**
+    * @brief Spills the specified virtual register
+    *
+    * @param[in] currentInstruction : current instruction
+    * @param[in] virtReg            : virtual register to spill
+    */
+   void spillRegister(TR::Instruction *currentInstruction, TR::Register *virtReg);
    };
 }
 }

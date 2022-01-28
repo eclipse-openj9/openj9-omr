@@ -82,6 +82,9 @@ struct thread_command_full_64 {
 #error Unsupported processor
 #endif /* defined(OMR_ARCH_AARCH64) */
 
+#define SEG_DATA_BUFFER_SIZE 65536
+static uint8_t seg_data_buffer[SEG_DATA_BUFFER_SIZE];
+
 static char corefile_name[PATH_MAX];
 static int corefile_fd = -1;
 
@@ -190,18 +193,26 @@ coredump_to_file(mach_port_t task_port, pid_t pid)
 
 	seg_file_off = file_off + segment_count * sizeof(struct segment_command_64);
 	for (i = 0; i < segment_count; i++) {
-		vm_offset_t data_read = 0;
-		mach_msg_type_number_t data_size = 0;
+		mach_vm_address_t data_read = (mach_vm_address_t)seg_data_buffer;
+		mach_vm_size_t data_size = 0;
+		mach_vm_size_t bytes_read = 0;
 
-		kr = mach_vm_read(task_port, segments[i].vmaddr, segments[i].vmsize, &data_read, &data_size);
-		/* any memory segment that is unreadable will be added to the core as an empty segment */
-		if (KERN_SUCCESS == kr) {
-			if ((0 == data_read) || (0 == data_size)) {
-				written = 0;
-			} else {
-				written = pwrite(corefile_fd, (void *)data_read, data_size, seg_file_off);
+		for (; bytes_read < segments[i].vmsize; bytes_read += data_size) {
+			mach_vm_size_t to_read = segments[i].vmsize - bytes_read;
+			if (to_read > SEG_DATA_BUFFER_SIZE) {
+				to_read = SEG_DATA_BUFFER_SIZE;
 			}
-			mach_vm_deallocate(mach_task_self(), data_read, data_size);
+			data_size = to_read;
+			kr = mach_vm_read_overwrite(task_port, segments[i].vmaddr + bytes_read, to_read, data_read, &data_size);
+			/* any memory segment that is unreadable will be added to the core as an empty segment */
+			if (KERN_SUCCESS != kr) {
+				break;
+			}
+			if (to_read != data_size) {
+				break;
+			} else {
+				written = pwrite(corefile_fd, (void *)data_read, data_size, seg_file_off + bytes_read);
+			}
 			if (written < 0) {
 				perror("pwrite() error writing segment data:");
 				kr = KERN_FAILURE;

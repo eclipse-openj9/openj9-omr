@@ -4862,29 +4862,6 @@ TR::Node *constrainArraylength(OMR::ValuePropagation *vp, TR::Node *node)
 
    vp->getArrayLengthLimits(constraint, lowerBoundLimit, upperBoundLimit, elementSize, isKnownObj);
 
-#ifdef J9_PROJECT_SPECIFIC
-   if (constraint && !isKnownObj)
-      {
-      TR::KnownObjectTable *knot = vp->comp()->getKnownObjectTable();
-      TR::VPKnownObject *kobj = constraint->getKnownObject();
-      if (knot && kobj)
-         {
-         TR::VMAccessCriticalSection constrainArraylengthCriticalSection(vp->comp(),
-                     TR::VMAccessCriticalSection::tryToAcquireVMAccess);
-         if (constrainArraylengthCriticalSection.hasVMAccess())
-            {
-            uintptr_t array = knot->getPointer(kobj->getIndex());
-            if (vp->comp()->fej9()->isClassArray(vp->comp()->fej9()->getObjectClass(array)))
-               {
-               isKnownObj = true;
-               lowerBoundLimit = vp->comp()->fej9()->getArrayLengthInElements(array);
-               upperBoundLimit = lowerBoundLimit;
-               }
-            }
-         }
-      }
-#endif
-
    // If this is a known array object, we definitely know its length
    //
    if (isKnownObj)

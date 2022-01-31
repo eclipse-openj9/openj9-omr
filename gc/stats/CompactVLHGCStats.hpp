@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -91,6 +91,8 @@ public:
 	uint64_t _rebuildNextMarkMapStartTime;	/**< hires start time to rebuild the next mark map from the next work packets (only done in GMP is active) */
 	uint64_t _rebuildNextMarkMapEndTime;	/**< hires end time to rebuild the next mark map from the next work packets (only done in GMP is active) */
 
+	uintptr_t _survivorRegionCount; /* total count (including both eden and non-eden) that were used as destination (hence not freed) */
+
 	void clear()
 	{
 		_compactReason = COMPACT_NONE;
@@ -110,6 +112,8 @@ public:
 		_rootFixupEndTime = 0;
 		_moveStallTime = 0;
 		_rebuildStallTime = 0;
+
+		_survivorRegionCount = 0;
 	};
 
 	MMINLINE void addToMoveStallTime(uint64_t startTime, uint64_t endTime)

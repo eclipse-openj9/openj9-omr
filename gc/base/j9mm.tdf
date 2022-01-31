@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 1998, 2021 IBM Corp. and others
+// Copyright (c) 1998, 2022 IBM Corp. and others
 //
 // This program and the accompanying materials are made available under
 // the terms of the Eclipse Public License 2.0 which accompanies this
@@ -592,7 +592,7 @@ TraceEvent=Trc_MM_FrequentObjectStats_AllocationCacheIndexableObjectAllocation O
 TraceEvent=Trc_MM_FrequentObjectStats_AllocationCacheObjectAllocation Overhead=1 Level=1 Template="Frequently allocated object in allocation cache: class=%p (%.*s); object size=%zu; allocations counted=%zu, estimated total allocations:%zu"
 
 TraceEntry=Trc_MM_SchedulingDelegate_partialGarbageCollectCompleted_Entry Overhead=1 Level=1 Group=kickoff Template="MM_SchedulingDelegate_partialGarbageCollectCompleted reclaimableRegions=%zu defragmentReclaimableRegions=%zu"
-TraceEvent=Trc_MM_SchedulingDelegate_partialGarbageCollectCompleted_stats Overhead=1 Level=1 Group=kickoff Template="Evacuated %zu Eden + %zu non-Eden regions into %zu + %zu regions. Eden was %zu regions."
+TraceEvent=Trc_MM_SchedulingDelegate_partialGarbageCollectCompleted_statsOld Obsolete Overhead=1 Level=1 Group=kickoff Template="Evacuated %zu Eden + %zu non-Eden regions into %zu + %zu regions. Eden was %zu regions."
 TraceExit=Trc_MM_SchedulingDelegate_partialGarbageCollectCompleted_Exit Overhead=1 Level=1 Group=kickoff Template="MM_SchedulingDelegate_partialGarbageCollectCompleted"
 
 TraceEntry=Trc_MM_CollectionSetDelegate_createNurseryCollectionSet_Entry Overhead=1 Level=1 Group=dynamiccollectionset Template="MM_CollectionSetDelegate_createNurseryCollectionSet dynamic=%s"
@@ -965,3 +965,5 @@ TraceEvent=Trc_MM_SchedulingDelegate_updatePgcTimePrediction Overhead=1 Level=3 
 TraceEvent=Trc_MM_IncrementalGenerationalGC_calculateConcurrentMarkWorkTime Overhead=1 Level=2 Group=resize Template="IncrementalGenerationalGC_calculateConcurrentMarkWorkTime Concurrent GMP ratio %f previous increment concurrent worktime %llu Total concurrent worktime %llu"
 
 TraceEvent=Trc_MM_SweepEndBalancedGC Overhead=1 Level=1 Group=gclogger Template="Sweep end. Duration %llu us"
+
+TraceEvent=Trc_MM_SchedulingDelegate_partialGarbageCollectCompleted_stats Overhead=1 Level=1 Group=kickoff Template="Evacuated %zu Eden + %zu non-Eden regions into copy-forward %zu + %zu and compact %zu regions. Eden was %zu regions."

@@ -811,6 +811,12 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"hcrPatchClassPointers", "I\tcreate runtime assumptions for patching pointers to classes, even though they are now updated in-place", SET_OPTION_BIT(TR_HCRPatchClassPointers), "F"},
    {"help",               " \tdisplay this help information", TR::Options::helpOption, 0, 0, NULL, NOT_IN_SUBSET},
    {"help=",              " {regex}\tdisplay help for options whose names match {regex}", TR::Options::helpOption, 1, 0, NULL, NOT_IN_SUBSET},
+   {"highCodeCacheOccupancyBCount=", "R<nnn>\tthe initial invocation count used during high code cache occupancy for methods with loops",
+    TR::Options::setStaticNumeric, (intptr_t)&OMR::Options::_highCodeCacheOccupancyBCount, 0, "F%d", NOT_IN_SUBSET},
+   {"highCodeCacheOccupancyCount=", "R<nnn>\tthe initial invocation count used during high code cache occupancy",
+    TR::Options::setStaticNumeric, (intptr_t)&OMR::Options::_highCodeCacheOccupancyCount, 0, "F%d", NOT_IN_SUBSET},
+   {"highCodeCacheOccupancyPercentage=", "R<nnn>\tthe percentage at which the code cache is considered to be at high occupancy",
+    TR::Options::setStaticNumeric, (intptr_t)&OMR::Options::_highCodeCacheOccupancyPercentage, 0, "F%d", NOT_IN_SUBSET},
    {"highOpt",            "O\tdeprecated; equivalent to optLevel=hot", TR::Options::set32BitValue, offsetof(OMR::Options, _optLevel), hot},
    {"hotFieldReductionAlgorithm=",          "O\tcompilation's hot field combined block frequency reduction algorithm", TR::Options::setHotFieldReductionAlgorithm, 0, 0, "F", NOT_IN_SUBSET},
    {"hotFieldThreshold=", "M<nnn>\t The normalized frequency of a reference to a field to be marked as hot.   Values are 0 to 10000.  Default is 10",
@@ -1612,6 +1618,7 @@ int32_t       OMR::Options::_maxNumVisitedSubclasses = 500;
 
 int32_t       OMR::Options::_minProfiledCheckcastFrequency = 20; // as a percentage
 int32_t       OMR::Options::_lowCodeCacheThreshold = 256*1024; // 256KB Turn off Iprofiler if available code cache space is lower than this value
+int32_t       OMR::Options::_highCodeCacheOccupancyPercentage = 75; // in the range 0-100
 
 // If the compilation queue weight increases too much, the JIT
 // may make the application thread to sleep()
@@ -1644,6 +1651,9 @@ int32_t       OMR::Options::_trampolineSpacePercentage = 0; // 0 means no change
 
 bool          OMR::Options::_countsAreProvidedByUser = false;
 TR_YesNoMaybe OMR::Options::_startupTimeMatters = TR_maybe;
+
+int32_t       OMR::Options::_highCodeCacheOccupancyCount = 10000;
+int32_t       OMR::Options::_highCodeCacheOccupancyBCount = 10000;
 
 bool          OMR::Options::_sharedClassCache=false;
 
@@ -1984,6 +1994,12 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
    {
    if (_sampleInterval == 0) // sampleInterval==0 does make much sense
       _sampleInterval = 1;
+
+   if ((_highCodeCacheOccupancyPercentage > 100) || (_highCodeCacheOccupancyPercentage < 0))
+      {
+      fprintf(stderr, "WARNING: invalid highCodeCacheOccupancyPercentage %d, setting to 75\n", _highCodeCacheOccupancyPercentage);
+      _highCodeCacheOccupancyPercentage = 75;
+      }
 
    // POWER10 introduced prefixed loads with PC-relative addressing, so the pTOC is now obsolete
    // and should no longer be used when such instructions are available.

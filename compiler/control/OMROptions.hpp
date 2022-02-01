@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1613,6 +1613,8 @@ public:
    void    setInitialMILCount(int32_t n){ _initialMILCount = n; }
    int32_t getInitialColdRunCount()  { return _initialColdRunCount; }
    int32_t getInitialColdRunBCount() { return _initialColdRunBCount; }
+   static int32_t getHighCodeCacheOccupancyCount() { return _highCodeCacheOccupancyCount; }
+   static int32_t getHighCodeCacheOccupancyBCount() { return _highCodeCacheOccupancyBCount; }
    int32_t getMaxSpreadCountLoopless() { return _maxSpreadCountLoopless; }
    int32_t getMaxSpreadCountLoopy()    { return _maxSpreadCountLoopy; }
 
@@ -1717,6 +1719,7 @@ public:
    static int32_t _maxNumVisitedSubclasses;
    static int32_t _minProfiledCheckcastFrequency; // as a percentage
    static int32_t _lowCodeCacheThreshold; // Turn off Iprofiler if available code cache space is lower than this value
+   static int32_t _highCodeCacheOccupancyPercentage;
 
 
    static uint32_t _memExpensiveCompThreshold; // threshold for when compilations are considered memory hungry
@@ -2164,6 +2167,8 @@ protected:
    int32_t                     _initialColdRunBCount;
    int32_t                     _maxSpreadCountLoopless;
    int32_t                     _maxSpreadCountLoopy;
+   static int32_t              _highCodeCacheOccupancyCount;
+   static int32_t              _highCodeCacheOccupancyBCount;
    int32_t                     _GCRCount;
    int32_t                     _GCRDecCount;
    int32_t                     _GCRResetCount;

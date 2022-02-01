@@ -26,6 +26,7 @@
 #include "codegen/GenerateInstructions.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/Linkage_inlines.hpp"
+#include "codegen/LiveRegister.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "compile/Compilation.hpp"
 #include "il/Node.hpp"
@@ -408,4 +409,11 @@ TR::Instruction *OMR::ARM64::Linkage::copyParametersToHomeLocation(TR::Instructi
    // Return the last instruction we inserted, whether or not it was a load.
    //
    return loadCursor? loadCursor : cursor;
+   }
+
+bool OMR::ARM64::Linkage::killsVectorRegisters()
+   {
+   // We need to kill vector registers if there is any live one.
+   TR_LiveRegisters *liveRegs = cg()->getLiveRegisters(TR_VRF);
+   return (!liveRegs || liveRegs->getNumberOfLiveRegisters() > 0);
    }

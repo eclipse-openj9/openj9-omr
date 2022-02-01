@@ -397,6 +397,13 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
     * @return The instruction cursor after copies inserted.
     */
    TR::Instruction *copyParametersToHomeLocation(TR::Instruction *cursor, bool parmsHaveBeenStored = false);
+
+   /**
+    * @brief Answers if vector registers need to be spilled
+    *
+    * @return true if vector registers need to be spilled.
+    */
+   bool killsVectorRegisters();
    };
 } // ARM64
 } // TR

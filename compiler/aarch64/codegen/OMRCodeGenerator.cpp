@@ -92,8 +92,10 @@ OMR::ARM64::CodeGenerator::initialize()
 
    cg->addSupportedLiveRegisterKind(TR_GPR);
    cg->addSupportedLiveRegisterKind(TR_FPR);
+   cg->addSupportedLiveRegisterKind(TR_VRF);
    cg->setLiveRegisters(new (cg->trHeapMemory()) TR_LiveRegisters(comp), TR_GPR);
    cg->setLiveRegisters(new (cg->trHeapMemory()) TR_LiveRegisters(comp), TR_FPR);
+   cg->setLiveRegisters(new (cg->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
 
    cg->setSupportsVirtualGuardNOPing();
 

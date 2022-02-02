@@ -1478,7 +1478,7 @@ void
 OMR::ARM64::Machine::takeRegisterStateSnapShot()
    {
    int32_t i;
-   for (i = TR::RealRegister::FirstGPR; i < TR::RealRegister::NumRegisters - 2; i++) // Skipping SpilledReg and KillVectorRegs
+   for (i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableFPR; i++)
       {
       _registerStatesSnapShot[i] = _registerFile[i]->getState();
       _assignedRegisterSnapShot[i] = _registerFile[i]->getAssignedRegister();
@@ -1492,7 +1492,7 @@ void
 OMR::ARM64::Machine::restoreRegisterStateFromSnapShot()
    {
    int32_t i;
-   for (i = TR::RealRegister::FirstGPR; i < TR::RealRegister::NumRegisters - 2; i++) // Skipping SpilledReg and KillVectorRegs
+   for (i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableFPR; i++)
       {
       _registerFile[i]->setWeight(_registerWeightSnapShot[i]);
       _registerFile[i]->setFlags(_registerFlagsSnapShot[i]);
@@ -1555,7 +1555,7 @@ TR::RegisterDependencyConditions *OMR::ARM64::Machine::createCondForLiveAndSpill
    // it is space conscious
    //
    TR::Compilation *comp = self()->cg()->comp();
-   for (i = TR::RealRegister::FirstGPR; i < TR::RealRegister::NumRegisters - 2; i++) // Skipping SpilledReg and KillVectorRegs
+   for (i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableFPR; i++)
       {
       TR::RealRegister *realReg = self()->getRealRegister(static_cast<TR::RealRegister::RegNum>(i));
 
@@ -1575,7 +1575,7 @@ TR::RegisterDependencyConditions *OMR::ARM64::Machine::createCondForLiveAndSpill
    if (c)
       {
       deps = new (self()->cg()->trHeapMemory()) TR::RegisterDependencyConditions(0, c, self()->cg()->trMemory());
-      for (i = TR::RealRegister::FirstGPR; i < TR::RealRegister::NumRegisters - 2; i++) // Skipping SpilledReg and KillVectorRegs
+      for (i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableFPR; i++)
          {
          TR::RealRegister *realReg = self()->getRealRegister(static_cast<TR::RealRegister::RegNum>(i));
          if (realReg->getState() == TR::RealRegister::Assigned)

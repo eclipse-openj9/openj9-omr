@@ -762,6 +762,8 @@ void TR_FieldPrivatizer::privatizeFields(TR::Node *node, bool postDominatesEntry
          bool canPrivatizeBasedOnThisNode = performTransformation(comp(), "%s Field access %p using sym ref %d privatized ", optDetailString(), node, symRef->getReferenceNumber());
          if (canPrivatizeBasedOnThisNode)
             {
+            if (autoForField)
+               dumpOptDetails(comp(), "using auto %d\n", autoForField->getReferenceNumber());
             if (!autoForField)
                {
                // Create a new auto for this field
@@ -773,6 +775,7 @@ void TR_FieldPrivatizer::privatizeFields(TR::Node *node, bool postDominatesEntry
                _privatizedFieldSymRefs.add(symRef->getReferenceNumber(),index,autoForField);
                _privatizedRegCandidates.add(comp()->getGlobalRegisterCandidates()->findOrCreate(autoForField));
                _privatizedFieldNodes.add(node->duplicateTree());
+               dumpOptDetails(comp(), "using auto %d\n", autoForField->getReferenceNumber());
                }
             else if (!_privatizedFields->get(symRef->getReferenceNumber()))
                {
@@ -780,8 +783,25 @@ void TR_FieldPrivatizer::privatizeFields(TR::Node *node, bool postDominatesEntry
                //Even we are reusing temp, need to save this for initialization and store back
                _privatizedFieldNodes.add(node->duplicateTree());
                }
-
-            dumpOptDetails(comp(), "using auto %d\n", autoForField->getReferenceNumber());
+            else if (opCode.isWrtBar())
+               {
+               // Replace any aload/astore privatized field nodes with awrtbar nodes referencing the same symRef
+               // This will insure that the store back will generate write barriers.
+               //
+               ListElement<TR::Node> *currentNodeElem = _privatizedFieldNodes.getListHead();
+               while (currentNodeElem)
+                  {
+                  TR::Node *currentNode   = currentNodeElem->getData();
+                  if (!currentNode->getOpCode().isWrtBar() && currentNode->getSymbolReference()->getReferenceNumber() == symRef->getReferenceNumber())
+                     {
+                     dumpOptDetails(comp(), "\tReplacing privatized field list entry %p:%s with %p:%s for auto %d\n", currentNode, currentNode->getOpCode().getName(), node, opCode.getName(), currentNode->getSymbolReference()->getReferenceNumber() );
+                     _privatizedFieldNodes.addAfter(node->duplicateTree(), currentNodeElem);
+                     _privatizedFieldNodes.remove(currentNode);
+                     break;
+                     }
+                  currentNodeElem = currentNodeElem->getNextElement();
+                  }
+               }
 
             node->setSymbolReference(autoForField);
             TR::Node *newFirstChild = 0;

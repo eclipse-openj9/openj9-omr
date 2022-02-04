@@ -2554,33 +2554,6 @@ class X86FPArithmeticRegRegInstruction : public TR::X86FPRegRegInstruction
    };
 
 
-class X86FPCompareRegRegInstruction : public TR::X86FPRegRegInstruction
-   {
-   public:
-
-   X86FPCompareRegRegInstruction(TR::InstOpCode::Mnemonic    op,
-                                     TR::Node          *node,
-                                     TR::Register      *treg,
-                                     TR::Register      *sreg,
-                                     TR::CodeGenerator *cg);
-
-   X86FPCompareRegRegInstruction(TR::Instruction   *precedingInstruction,
-                                     TR::InstOpCode::Mnemonic    op,
-                                     TR::Register      *treg,
-                                     TR::Register      *sreg,
-                                     TR::CodeGenerator *cg);
-
-   virtual char *description() { return "X86FPCompareRegReg"; }
-
-   virtual Kind getKind() { return IsFPCompareRegReg; }
-
-   bool swapOperands();
-
-   virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-   virtual uint8_t* generateOperand(uint8_t* cursor);
-   };
-
-
 class X86FPCompareEvalInstruction : public TR::Instruction
    {
    TR::Register    *_accRegister;
@@ -3149,8 +3122,6 @@ TR::X86FPST0STiRegRegInstruction  * generateFPST0STiRegRegInstruction(TR::InstOp
 TR::X86FPSTiST0RegRegInstruction  * generateFPSTiST0RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, TR::Register * reg2, TR::CodeGenerator *cg, bool forcePop = false);
 
 TR::X86FPArithmeticRegRegInstruction  * generateFPArithmeticRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, TR::Register * reg2, TR::CodeGenerator *cg);
-
-TR::X86FPCompareRegRegInstruction  * generateFPCompareRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, TR::Register * reg2, TR::CodeGenerator *cg);
 
 TR::X86FPCompareEvalInstruction  * generateFPCompareEvalInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * accRegister, TR::CodeGenerator *cg);
 

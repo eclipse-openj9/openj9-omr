@@ -2554,32 +2554,6 @@ class X86FPArithmeticRegRegInstruction : public TR::X86FPRegRegInstruction
    };
 
 
-class X86FPCompareEvalInstruction : public TR::Instruction
-   {
-   TR::Register    *_accRegister;
-   uint8_t         _actionType;
-
-   public:
-
-   X86FPCompareEvalInstruction(TR::InstOpCode::Mnemonic    op,
-                                   TR::Node          *node,
-                                   TR::Register      *accRegister,
-                                   TR::CodeGenerator *cg);
-
-   X86FPCompareEvalInstruction(TR::InstOpCode::Mnemonic                       op,
-                                   TR::Node                             *node,
-                                   TR::Register                         *accRegister,
-                                   TR::RegisterDependencyConditions  *cond,
-                                   TR::CodeGenerator                    *cg);
-
-   virtual char *description() { return "X86FPCompareEval"; }
-
-   virtual Kind getKind() { return IsFPCompareEval; }
-
-   virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-   };
-
-
 class X86FPRemainderRegRegInstruction : public TR::X86FPST0ST1RegRegInstruction
    {
    TR::Register *_accRegister;
@@ -3122,10 +3096,6 @@ TR::X86FPST0STiRegRegInstruction  * generateFPST0STiRegRegInstruction(TR::InstOp
 TR::X86FPSTiST0RegRegInstruction  * generateFPSTiST0RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, TR::Register * reg2, TR::CodeGenerator *cg, bool forcePop = false);
 
 TR::X86FPArithmeticRegRegInstruction  * generateFPArithmeticRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, TR::Register * reg2, TR::CodeGenerator *cg);
-
-TR::X86FPCompareEvalInstruction  * generateFPCompareEvalInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * accRegister, TR::CodeGenerator *cg);
-
-TR::X86FPCompareEvalInstruction  * generateFPCompareEvalInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * accRegister, TR::RegisterDependencyConditions  * cond, TR::CodeGenerator *cg);
 
 TR::X86FPRemainderRegRegInstruction  * generateFPRemainderRegRegInstruction( TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, TR::Register * reg2, TR::CodeGenerator *cg);
 TR::X86FPRemainderRegRegInstruction  * generateFPRemainderRegRegInstruction( TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, TR::Register * reg2, TR::Register *accReg, TR::RegisterDependencyConditions  *cond, TR::CodeGenerator *cg);

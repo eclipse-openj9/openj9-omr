@@ -3270,7 +3270,7 @@ bool TR::X86FPCompareRegRegInstruction::swapOperands()
          diagnostic("%s -> ", cursor->getOpCode().getOpCodeName(cg()));
 
       TR::InstOpCode::Mnemonic instr = getOpCodeValue();
-      instr = getBranchOrSetOpCodeForFPComparison(swappedOp, (instr == TR::InstOpCode::FCOMIRegReg || instr == TR::InstOpCode::DCOMIRegReg));
+      instr = getBranchOrSetOpCodeForFPComparison(swappedOp);
       cursor->setOpCodeValue(instr);
 
       if (debug("dumpFPRA"))
@@ -3407,7 +3407,7 @@ void TR::X86FPCompareEvalInstruction::assignRegisters(TR_RegisterKinds kindsToBe
       }
    }
 
-TR::InstOpCode::Mnemonic getBranchOrSetOpCodeForFPComparison(TR::ILOpCodes cmpOp, bool useFCOMIInstructions)
+TR::InstOpCode::Mnemonic getBranchOrSetOpCodeForFPComparison(TR::ILOpCodes cmpOp)
    {
    TR::InstOpCode::Mnemonic op;
 
@@ -3439,62 +3439,62 @@ TR::InstOpCode::Mnemonic getBranchOrSetOpCodeForFPComparison(TR::ILOpCodes cmpOp
 
       case TR::iffcmpleu:
       case TR::ifdcmpleu:
-         op = useFCOMIInstructions ? TR::InstOpCode::JBE4 : TR::InstOpCode::JNE4;
+         op = TR::InstOpCode::JBE4;
          break;
 
       case TR::fcmpleu:
       case TR::dcmpleu:
-         op = useFCOMIInstructions ? TR::InstOpCode::SETBE1Reg : TR::InstOpCode::SETNE1Reg;
+         op = TR::InstOpCode::SETBE1Reg;
          break;
 
       case TR::iffcmpgt:
       case TR::ifdcmpgt:
-         op = useFCOMIInstructions ? TR::InstOpCode::JA4 : TR::InstOpCode::JE4;
+         op = TR::InstOpCode::JA4;
          break;
 
       case TR::fcmpgt:
       case TR::dcmpgt:
-         op = useFCOMIInstructions ? TR::InstOpCode::SETA1Reg : TR::InstOpCode::SETE1Reg;
+         op = TR::InstOpCode::SETA1Reg;
          break;
 
       case TR::iffcmpltu:
       case TR::ifdcmpltu:
-         op = useFCOMIInstructions ? TR::InstOpCode::JB4 : TR::InstOpCode::JNE4;
+         op = TR::InstOpCode::JB4;
          break;
 
       case TR::fcmpltu:
       case TR::dcmpltu:
-         op = useFCOMIInstructions ? TR::InstOpCode::SETB1Reg : TR::InstOpCode::SETNE1Reg;
+         op = TR::InstOpCode::SETB1Reg;
          break;
 
       case TR::iffcmpge:
       case TR::ifdcmpge:
-         op = useFCOMIInstructions ? TR::InstOpCode::JAE4 : TR::InstOpCode::JE4;
+         op = TR::InstOpCode::JAE4;
          break;
 
       case TR::fcmpge:
       case TR::dcmpge:
-         op = useFCOMIInstructions ? TR::InstOpCode::SETAE1Reg : TR::InstOpCode::SETE1Reg;
+         op = TR::InstOpCode::SETAE1Reg;
          break;
 
       case TR::iffcmplt:
       case TR::ifdcmplt:
-         op = useFCOMIInstructions ? TR::InstOpCode::JB4 : TR::InstOpCode::JE4;
+         op = TR::InstOpCode::JB4;
          break;
 
       case TR::fcmplt:
       case TR::dcmplt:
-         op = useFCOMIInstructions ? TR::InstOpCode::SETB1Reg : TR::InstOpCode::SETE1Reg;
+         op = TR::InstOpCode::SETB1Reg;
          break;
 
       case TR::iffcmpgeu:
       case TR::ifdcmpgeu:
-         op = useFCOMIInstructions ? TR::InstOpCode::JAE4 : TR::InstOpCode::JNE4;
+         op = TR::InstOpCode::JAE4;
          break;
 
       case TR::fcmpgeu:
       case TR::dcmpgeu:
-         op = useFCOMIInstructions ? TR::InstOpCode::SETAE1Reg : TR::InstOpCode::SETNE1Reg;
+         op = TR::InstOpCode::SETAE1Reg;
          break;
 
 #ifdef DEBUG

@@ -1386,7 +1386,7 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(
       }
    else
       {
-      TR::InstOpCode::Mnemonic op = getBranchOrSetOpCodeForFPComparison(node->getOpCodeValue(), true);
+      TR::InstOpCode::Mnemonic op = getBranchOrSetOpCodeForFPComparison(node->getOpCodeValue());
       if (generateBranch)
          {
          generateLabelInstruction(op, node, node->getBranchDestination()->getNode()->getLabel(), deps, cg);
@@ -1459,25 +1459,6 @@ TR::Register *OMR::X86::TreeEvaluator::generateFPCompareResult(TR::Node *node, T
    node->setRegister(targetRegister);
    return targetRegister;
    }
-
-
-bool OMR::X86::TreeEvaluator::canUseFCOMIInstructions(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::ILOpCodes cmpOp = node->getOpCodeValue();
-
-   TR_ASSERT_FATAL(cg->comp()->compileRelocatableCode() || cg->comp()->isOutOfProcessCompilation() || cg->comp()->compilePortableCode() || cg->comp()->target().cpu.supportsFCOMIInstructions() == cg->getX86ProcessorInfo().supportsFCOMIInstructions(), "supportsFCOMIInstuctions() failed\n");
-
-   return (!cg->comp()->target().cpu.supportsFCOMIInstructions() ||
-           cmpOp == TR::iffcmpneu ||
-           cmpOp == TR::iffcmpeq  ||
-           cmpOp == TR::ifdcmpneu ||
-           cmpOp == TR::ifdcmpeq ||
-           cmpOp == TR::fcmpneu ||
-           cmpOp == TR::dcmpneu ||
-           cmpOp == TR::fcmpeq ||
-           cmpOp == TR::dcmpeq) ? false : true;
-   }
-
 
 TR::Register *OMR::X86::TreeEvaluator::compareFloatAndBranchEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

@@ -368,7 +368,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *fpConvertToLong(TR::Node *node, TR::SymbolReference *helperSymRef, TR::CodeGenerator *cg);
    static TR::Register *generateBranchOrSetOnFPCompare(TR::Node *node, bool generateBranch, TR::CodeGenerator *cg);
    static TR::Register *generateFPCompareResult(TR::Node *node, TR::CodeGenerator *cg);
-   static bool canUseFCOMIInstructions(TR::Node *node, TR::CodeGenerator *cg);
    static void compareFloatOrDoubleForOrder(TR::Node *, TR::InstOpCode::Mnemonic, TR::InstOpCode::Mnemonic, TR::CodeGenerator *);
    static void removeLiveDiscardableStatics(TR::CodeGenerator *cg);
 

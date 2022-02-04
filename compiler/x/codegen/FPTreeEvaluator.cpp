@@ -1289,10 +1289,10 @@ TR::Register *OMR::X86::TreeEvaluator::dRegStoreEvaluator(TR::Node *node, TR::Co
 
 
 
-TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node     *node,
-                                                                  TR::Register *accRegister,
-                                                                  bool         generateBranch,
-                                                                  TR::CodeGenerator *cg)
+TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(
+      TR::Node *node,
+      bool generateBranch,
+      TR::CodeGenerator *cg)
    {
    List<TR::Register> popRegisters(cg->trMemory());
    TR::Register *targetRegister = NULL;
@@ -1310,19 +1310,6 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node  
          }
       }
 
-   // If not using FCOMI/UCOMISS/UCOMISD, then we must be interpreting the FPSW in AH;
-   // generate an TR::InstOpCode::FCMPEVAL pseudo-instruction, which will emit the interpretation code
-   // at register assignment time (when we have finalized the sense of the comparison).
-   //
-   if (accRegister != NULL)
-      {
-      TR::RegisterDependencyConditions  *accRegDep = generateRegisterDependencyConditions((uint8_t) 1, 1, cg);
-      accRegDep->addPreCondition(accRegister, TR::RealRegister::eax, cg);
-      accRegDep->addPostCondition(accRegister, TR::RealRegister::eax, cg);
-      generateFPCompareEvalInstruction(TR::InstOpCode::FCMPEVAL, node, accRegister, accRegDep, cg);
-      cg->stopUsingRegister(accRegister);
-      }
-
    // If using UCOMISS/UCOMISD *and* we could not avoid (if)(f|d)cmp(neu|eq),
    // generate multiple instructions. We always avoid FCOMI in these cases.
    // Otherwise, select the appropriate branch or set opcode and emit the
@@ -1330,9 +1317,8 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node  
    //
    TR::ILOpCodes cmpOp = node->getOpCodeValue();
 
-   if (accRegister == NULL &&
-       ( cmpOp == TR::iffcmpneu || cmpOp == TR::fcmpneu ||
-         cmpOp == TR::ifdcmpneu || cmpOp == TR::dcmpneu ))
+   if (cmpOp == TR::iffcmpneu || cmpOp == TR::fcmpneu ||
+       cmpOp == TR::ifdcmpneu || cmpOp == TR::dcmpneu )
       {
       if (generateBranch)
          {
@@ -1362,9 +1348,8 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node  
          cg->stopUsingRegister(tempRegister);
          }
       }
-   else if (accRegister == NULL &&
-            ( cmpOp == TR::iffcmpeq || cmpOp == TR::fcmpeq ||
-              cmpOp == TR::ifdcmpeq || cmpOp == TR::dcmpeq ))
+   else if (cmpOp == TR::iffcmpeq || cmpOp == TR::fcmpeq ||
+            cmpOp == TR::ifdcmpeq || cmpOp == TR::dcmpeq )
       {
       if (generateBranch)
          {
@@ -1401,7 +1386,7 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node  
       }
    else
       {
-      TR::InstOpCode::Mnemonic op = getBranchOrSetOpCodeForFPComparison(node->getOpCodeValue(), (accRegister == NULL));
+      TR::InstOpCode::Mnemonic op = getBranchOrSetOpCodeForFPComparison(node->getOpCodeValue(), true);
       if (generateBranch)
          {
          generateLabelInstruction(op, node, node->getBranchDestination()->getNode()->getLabel(), deps, cg);
@@ -1443,17 +1428,8 @@ void OMR::X86::TreeEvaluator::compareFloatOrDoubleForOrder(
    }
 
 
-TR::Register *OMR::X86::TreeEvaluator::generateFPCompareResult(TR::Node *node, TR::Register *accRegister, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::TreeEvaluator::generateFPCompareResult(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (accRegister != NULL)
-      {
-      TR::RegisterDependencyConditions  *accRegDep = generateRegisterDependencyConditions((uint8_t) 1, 1, cg);
-      accRegDep->addPreCondition(accRegister, TR::RealRegister::eax, cg);
-      accRegDep->addPostCondition(accRegister, TR::RealRegister::eax, cg);
-      generateFPCompareEvalInstruction(TR::InstOpCode::FCMPEVAL, node, accRegister, accRegDep, cg);
-      cg->stopUsingRegister(accRegister);
-      }
-
    TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
    TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
 
@@ -1510,7 +1486,7 @@ TR::Register *OMR::X86::TreeEvaluator::compareFloatAndBranchEvaluator(TR::Node *
       TR::InstOpCode::UCOMISSRegReg,
       TR::InstOpCode::UCOMISSRegMem,
       cg);
-   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, NULL, true, cg);
+   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, true, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::compareDoubleAndBranchEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -1520,7 +1496,7 @@ TR::Register *OMR::X86::TreeEvaluator::compareDoubleAndBranchEvaluator(TR::Node 
       TR::InstOpCode::UCOMISDRegReg,
       TR::InstOpCode::UCOMISDRegMem,
       cg);
-   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, NULL, true, cg);
+   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, true, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::compareFloatAndSetEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -1530,7 +1506,7 @@ TR::Register *OMR::X86::TreeEvaluator::compareFloatAndSetEvaluator(TR::Node *nod
       TR::InstOpCode::UCOMISSRegReg,
       TR::InstOpCode::UCOMISSRegMem,
       cg);
-   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, NULL, false, cg);
+   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, false, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::compareDoubleAndSetEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -1540,7 +1516,7 @@ TR::Register *OMR::X86::TreeEvaluator::compareDoubleAndSetEvaluator(TR::Node *no
       TR::InstOpCode::UCOMISDRegReg,
       TR::InstOpCode::UCOMISDRegMem,
       cg);
-   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, NULL, false, cg);
+   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, false, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::compareFloatEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -1550,7 +1526,7 @@ TR::Register *OMR::X86::TreeEvaluator::compareFloatEvaluator(TR::Node *node, TR:
       TR::InstOpCode::UCOMISSRegReg,
       TR::InstOpCode::UCOMISSRegMem,
       cg);
-   return TR::TreeEvaluator::generateFPCompareResult(node, NULL, cg);
+   return TR::TreeEvaluator::generateFPCompareResult(node, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::compareDoubleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -1560,5 +1536,5 @@ TR::Register *OMR::X86::TreeEvaluator::compareDoubleEvaluator(TR::Node *node, TR
       TR::InstOpCode::UCOMISDRegReg,
       TR::InstOpCode::UCOMISDRegMem,
       cg);
-   return TR::TreeEvaluator::generateFPCompareResult(node, NULL, cg);
+   return TR::TreeEvaluator::generateFPCompareResult(node, cg);
    }

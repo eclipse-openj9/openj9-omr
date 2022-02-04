@@ -1430,22 +1430,16 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node  
    }
 
 
-
 // Create FP compare code for the specified comparison class.
-// Returns the register in which FP status word has been stored;
-// NULL if EFLAGS is used.
 //
-TR::Register *OMR::X86::TreeEvaluator::compareFloatOrDoubleForOrder(TR::Node        *node,
-                                                                TR::InstOpCode::Mnemonic  fpCmpRegRegOpCode,
-                                                                TR::InstOpCode::Mnemonic  fpCmpRegMemOpCode,
-                                                                TR::InstOpCode::Mnemonic  fpCmpiRegRegOpCode,
-                                                                TR::InstOpCode::Mnemonic  xmmCmpRegRegOpCode,
-                                                                TR::InstOpCode::Mnemonic  xmmCmpRegMemOpCode,
-                                                                bool            useFCOMIInstructions,
-                                                                TR::CodeGenerator *cg)
+void OMR::X86::TreeEvaluator::compareFloatOrDoubleForOrder(
+      TR::Node *node,
+      TR::InstOpCode::Mnemonic xmmCmpRegRegOpCode,
+      TR::InstOpCode::Mnemonic xmmCmpRegMemOpCode,
+      TR::CodeGenerator *cg)
    {
    TR_IA32XMMCompareAnalyser temp(cg);
-   return temp.xmmCompareAnalyser(node, xmmCmpRegRegOpCode, xmmCmpRegMemOpCode);
+   temp.xmmCompareAnalyser(node, xmmCmpRegRegOpCode, xmmCmpRegMemOpCode);
    }
 
 
@@ -1511,60 +1505,60 @@ bool OMR::X86::TreeEvaluator::canUseFCOMIInstructions(TR::Node *node, TR::CodeGe
 
 TR::Register *OMR::X86::TreeEvaluator::compareFloatAndBranchEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   bool useFCOMIInstructions = TR::TreeEvaluator::canUseFCOMIInstructions(node, cg);
-   TR::Register *accRegister = TR::TreeEvaluator::compareFloatOrDoubleForOrder(node,
-                                                           TR::InstOpCode::FCOMRegReg, TR::InstOpCode::FCOMRegMem, TR::InstOpCode::FCOMIRegReg,
-                                                           TR::InstOpCode::UCOMISSRegReg, TR::InstOpCode::UCOMISSRegMem,
-                                                           useFCOMIInstructions, cg);
-   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, accRegister, true, cg);
+   TR::TreeEvaluator::compareFloatOrDoubleForOrder(
+      node,
+      TR::InstOpCode::UCOMISSRegReg,
+      TR::InstOpCode::UCOMISSRegMem,
+      cg);
+   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, NULL, true, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::compareDoubleAndBranchEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   bool useFCOMIInstructions = TR::TreeEvaluator::canUseFCOMIInstructions(node, cg);
-   TR::Register *accRegister = TR::TreeEvaluator::compareFloatOrDoubleForOrder(node,
-                                                           TR::InstOpCode::DCOMRegReg, TR::InstOpCode::DCOMRegMem, TR::InstOpCode::DCOMIRegReg,
-                                                           TR::InstOpCode::UCOMISDRegReg, TR::InstOpCode::UCOMISDRegMem,
-                                                           useFCOMIInstructions, cg);
-   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, accRegister, true, cg);
+   TR::TreeEvaluator::compareFloatOrDoubleForOrder(
+      node,
+      TR::InstOpCode::UCOMISDRegReg,
+      TR::InstOpCode::UCOMISDRegMem,
+      cg);
+   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, NULL, true, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::compareFloatAndSetEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   bool useFCOMIInstructions = TR::TreeEvaluator::canUseFCOMIInstructions(node, cg);
-   TR::Register *accRegister = TR::TreeEvaluator::compareFloatOrDoubleForOrder(node,
-                                                           TR::InstOpCode::FCOMRegReg, TR::InstOpCode::FCOMRegMem, TR::InstOpCode::FCOMIRegReg,
-                                                           TR::InstOpCode::UCOMISSRegReg, TR::InstOpCode::UCOMISSRegMem,
-                                                           useFCOMIInstructions, cg);
-   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, accRegister, false, cg);
+   TR::TreeEvaluator::compareFloatOrDoubleForOrder(
+      node,
+      TR::InstOpCode::UCOMISSRegReg,
+      TR::InstOpCode::UCOMISSRegMem,
+      cg);
+   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, NULL, false, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::compareDoubleAndSetEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   bool useFCOMIInstructions = TR::TreeEvaluator::canUseFCOMIInstructions(node, cg);
-   TR::Register *accRegister = TR::TreeEvaluator::compareFloatOrDoubleForOrder(node,
-                                                           TR::InstOpCode::DCOMRegReg, TR::InstOpCode::DCOMRegMem, TR::InstOpCode::DCOMIRegReg,
-                                                           TR::InstOpCode::UCOMISDRegReg, TR::InstOpCode::UCOMISDRegMem,
-                                                           useFCOMIInstructions, cg);
-   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, accRegister, false, cg);
+   TR::TreeEvaluator::compareFloatOrDoubleForOrder(
+      node,
+      TR::InstOpCode::UCOMISDRegReg,
+      TR::InstOpCode::UCOMISDRegMem,
+      cg);
+   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, NULL, false, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::compareFloatEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   bool useFCOMIInstructions = TR::TreeEvaluator::canUseFCOMIInstructions(node, cg);
-   TR::Register *accRegister = TR::TreeEvaluator::compareFloatOrDoubleForOrder(node,
-                                                           TR::InstOpCode::FCOMRegReg, TR::InstOpCode::FCOMRegMem, TR::InstOpCode::FCOMIRegReg,
-                                                           TR::InstOpCode::UCOMISSRegReg, TR::InstOpCode::UCOMISSRegMem,
-                                                           useFCOMIInstructions, cg);
-   return TR::TreeEvaluator::generateFPCompareResult(node, accRegister, cg);
+   TR::TreeEvaluator::compareFloatOrDoubleForOrder(
+      node,
+      TR::InstOpCode::UCOMISSRegReg,
+      TR::InstOpCode::UCOMISSRegMem,
+      cg);
+   return TR::TreeEvaluator::generateFPCompareResult(node, NULL, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::compareDoubleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   bool useFCOMIInstructions = TR::TreeEvaluator::canUseFCOMIInstructions(node, cg);
-   TR::Register *accRegister = TR::TreeEvaluator::compareFloatOrDoubleForOrder(node,
-                                                           TR::InstOpCode::DCOMRegReg, TR::InstOpCode::DCOMRegMem, TR::InstOpCode::DCOMIRegReg,
-                                                           TR::InstOpCode::UCOMISDRegReg, TR::InstOpCode::UCOMISDRegMem,
-                                                           useFCOMIInstructions, cg);
-   return TR::TreeEvaluator::generateFPCompareResult(node, accRegister, cg);
+   TR::TreeEvaluator::compareFloatOrDoubleForOrder(
+      node,
+      TR::InstOpCode::UCOMISDRegReg,
+      TR::InstOpCode::UCOMISDRegMem,
+      cg);
+   return TR::TreeEvaluator::generateFPCompareResult(node, NULL, cg);
    }

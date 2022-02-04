@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -369,7 +369,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *generateBranchOrSetOnFPCompare(TR::Node *node, TR::Register *accRegister, bool generateBranch, TR::CodeGenerator *cg);
    static TR::Register *generateFPCompareResult(TR::Node *node, TR::Register *accRegister, TR::CodeGenerator *cg);
    static bool canUseFCOMIInstructions(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *compareFloatOrDoubleForOrder(TR::Node *, TR::InstOpCode::Mnemonic, TR::InstOpCode::Mnemonic, TR::InstOpCode::Mnemonic, TR::InstOpCode::Mnemonic, TR::InstOpCode::Mnemonic, bool, TR::CodeGenerator *);
+   static void compareFloatOrDoubleForOrder(TR::Node *, TR::InstOpCode::Mnemonic, TR::InstOpCode::Mnemonic, TR::CodeGenerator *);
    static void removeLiveDiscardableStatics(TR::CodeGenerator *cg);
 
    static bool analyseAddForLEA(TR::Node *node, TR::CodeGenerator *cg);

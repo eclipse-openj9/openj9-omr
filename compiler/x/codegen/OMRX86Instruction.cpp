@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3457,11 +3457,15 @@ TR::InstOpCode::Mnemonic getBranchOrSetOpCodeForFPComparison(TR::ILOpCodes cmpOp
          op = TR::InstOpCode::SETA1Reg;
          break;
 
+      case TR::iffcmplt:
+      case TR::ifdcmplt:
       case TR::iffcmpltu:
       case TR::ifdcmpltu:
          op = TR::InstOpCode::JB4;
          break;
 
+      case TR::fcmplt:
+      case TR::dcmplt:
       case TR::fcmpltu:
       case TR::dcmpltu:
          op = TR::InstOpCode::SETB1Reg;
@@ -3469,29 +3473,13 @@ TR::InstOpCode::Mnemonic getBranchOrSetOpCodeForFPComparison(TR::ILOpCodes cmpOp
 
       case TR::iffcmpge:
       case TR::ifdcmpge:
-         op = TR::InstOpCode::JAE4;
-         break;
-
-      case TR::fcmpge:
-      case TR::dcmpge:
-         op = TR::InstOpCode::SETAE1Reg;
-         break;
-
-      case TR::iffcmplt:
-      case TR::ifdcmplt:
-         op = TR::InstOpCode::JB4;
-         break;
-
-      case TR::fcmplt:
-      case TR::dcmplt:
-         op = TR::InstOpCode::SETB1Reg;
-         break;
-
       case TR::iffcmpgeu:
       case TR::ifdcmpgeu:
          op = TR::InstOpCode::JAE4;
          break;
 
+      case TR::fcmpge:
+      case TR::dcmpge:
       case TR::fcmpgeu:
       case TR::dcmpgeu:
          op = TR::InstOpCode::SETAE1Reg;

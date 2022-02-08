@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1340,22 +1340,17 @@ bool simplifyJ9ClassFlags(OMR::ValuePropagation *vp, TR::Node *node, bool isLong
    TR::VPConstraint *base = vp->getConstraint(node->getFirstChild(), isGlobal);
    TR::SymbolReference *symRef = node->getSymbolReference();
 
-   if (symRef == vp->comp()->getSymRefTab()->findClassAndDepthFlagsSymbolRef())
+   if (symRef == vp->comp()->getSymRefTab()->findClassAndDepthFlagsSymbolRef() &&
+         base &&
+         base->isJ9ClassObject() == TR_yes &&
+         base->getClassType() &&
+         base->getClassType()->asFixedClass())
       {
-      if (node->getFirstChild()->getOpCode().hasSymbolReference() &&
-            (node->getFirstChild()->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef()))
-         {
-         TR::VPConstraint *baseObject = vp->getConstraint(node->getFirstChild()->getFirstChild(), isGlobal);
-         if (baseObject && baseObject->getClassType() &&
-               baseObject->getClassType()->asFixedClass())
-            {
-            cdfValue = vp->comp()->fej9()->getClassDepthAndFlagsValue(baseObject->getClassType()->getClass());
-            // if the type is a java.lang.Object, make the control branch to the call
-            //
-            if (baseObject->getClassType()->asFixedClass()->isJavaLangObject(vp))
-               cdfValue = TR::Compiler->cls.flagValueForFinalizerCheck(vp->comp());
-            }
-         }
+      cdfValue = vp->comp()->fej9()->getClassDepthAndFlagsValue(base->getClassType()->getClass());
+      // if the type is a java.lang.Object, make the control branch to the call
+      //
+      if (base->getClassType()->asFixedClass()->isJavaLangObject(vp))
+         cdfValue = TR::Compiler->cls.flagValueForFinalizerCheck(vp->comp());
       }
    else if (symRef == vp->comp()->getSymRefTab()->findClassFlagsSymbolRef())
       {

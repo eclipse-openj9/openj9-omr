@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,25 +29,28 @@
 #define _GNU_SOURCE
 #endif
 
-#include "omrport.h"
-#include "omrportpriv.h"
-#include "omrsignal_context.h"
+/*
+ * Include system header files first because omrsignal_context.h removes the
+ * definition of __USE_GNU needed to see the declaration of dl_iterate_phdr(3).
+ */
 
 #include <dlfcn.h>
+#include <elf.h>
 #include <execinfo.h>
+#include <fcntl.h>
+#include <link.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "omrport.h"
+#include "omrportpriv.h"
+#include "omrsignal_context.h"
 #include "omrintrospect.h"
-
-uintptr_t protectedBacktrace(struct OMRPortLibrary *port, void *arg);
-uintptr_t backtrace_sigprotect(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, void **address_array, int capacity);
 
 struct frameData {
 	void **address_array;
-	unsigned int capacity;
+	uintptr_t capacity;
 };
-
 
 /*
  * NULL handler. We only care about preventing the signal from propagating up the call stack, no need to do
@@ -62,7 +65,7 @@ handler(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *gpInfo, void 
 /*
  * Wrapped call to libc backtrace function
  */
-uintptr_t
+static uintptr_t
 protectedBacktrace(struct OMRPortLibrary *port, void *arg)
 {
 	struct frameData *addresses = (struct frameData *)arg;
@@ -74,20 +77,22 @@ protectedBacktrace(struct OMRPortLibrary *port, void *arg)
  * array to see if we got any frames as we may be able to provide a partial backtrace. We also record that the stack walk
  * was incomplete so that information is available after the fuction returns.
  */
-uintptr_t
-backtrace_sigprotect(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, void **address_array, int capacity)
+static uintptr_t
+backtrace_sigprotect(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, void **address_array, uintptr_t capacity)
 {
-	uintptr_t ret;
-	struct frameData args;
-	args.address_array = address_array;
-	args.capacity = capacity;
-
-	memset(address_array, 0, sizeof(void *) * capacity);
-
 	if (omrthread_self()) {
+		uintptr_t ret = 0;
+		struct frameData args;
+		args.address_array = address_array;
+		args.capacity = capacity;
+
+		memset(address_array, 0, sizeof(void *) * capacity);
+
 		if (portLibrary->sig_protect(portLibrary, protectedBacktrace, &args, handler, NULL, OMRPORT_SIG_FLAG_SIGALLSYNC | OMRPORT_SIG_FLAG_MAY_RETURN, &ret) != 0) {
 			/* check to see if there were any addresses populated */
-			for (ret = 0; ret < args.capacity && address_array[ret] != NULL; ret++);
+			for (ret = 0; (ret < args.capacity) && (NULL != address_array[ret]);) {
+				ret += 1; /* count frames */
+			}
 
 			threadInfo->error = FAULT_DURING_BACKTRACE;
 		}
@@ -98,11 +103,289 @@ backtrace_sigprotect(struct OMRPortLibrary *portLibrary, J9PlatformThread *threa
 	}
 }
 
+/*
+ * Read an ELF file header and do some basic validation.
+ */
+static BOOLEAN
+elf_read_header(int fd, ElfW(Ehdr) *file_header)
+{
+	if (sizeof(*file_header) != read(fd, file_header, sizeof(*file_header))) {
+		return FALSE;
+	}
 
+	/* check the expected magic number */
+	if ((ELFMAG0 != file_header->e_ident[EI_MAG0])
+	||  (ELFMAG1 != file_header->e_ident[EI_MAG1])
+	||  (ELFMAG2 != file_header->e_ident[EI_MAG2])
+	||  (ELFMAG3 != file_header->e_ident[EI_MAG3])
+	) {
+		return FALSE;
+	}
+
+	/* check that the class is appropriate for this process */
+#if defined(OMR_ENV_DATA64)
+	if (ELFCLASS64 != file_header->e_ident[EI_CLASS]) {
+		return FALSE;
+	}
+#else /* defined(OMR_ENV_DATA64) */
+	if (ELFCLASS32 != file_header->e_ident[EI_CLASS]) {
+		return FALSE;
+	}
+#endif /* defined(OMR_ENV_DATA64) */
+
+	/* check that data is ordered suitably for this process */
+#if defined(OMR_ENV_LITTLE_ENDIAN)
+	if (ELFDATA2LSB != file_header->e_ident[EI_DATA]) {
+		return FALSE;
+	}
+#else /* defined(OMR_ENV_LITTLE_ENDIAN) */
+	if (ELFDATA2MSB != file_header->e_ident[EI_DATA]) {
+		return FALSE;
+	}
+#endif /* defined(OMR_ENV_LITTLE_ENDIAN) */
+
+	/* check that the file is a shared library or an executable */
+	if ((ET_DYN != file_header->e_type) && (ET_EXEC != file_header->e_type)) {
+		return FALSE;
+	}
+
+	/* check that section headers have the expected size */
+	if (sizeof(ElfW(Shdr)) != file_header->e_shentsize) {
+		return FALSE;
+	}
+
+	/* everything appears to be ok */
+	return TRUE;
+}
+
+struct ElfSymbolData {
+	/*
+	 * The offset of an interesting location. Initially, this is an offset
+	 * in the virtual address space of the process (i.e. a virtual address).
+	 * Once the program header containing that address is identified, it is
+	 * updated to represent the offset in the file whose contents have been
+	 * loaded at that virtual address. Finally, once a symbol is found that
+	 * spans that file offset, it is modified to represent an offset from
+	 * that symbol.
+	 */
+	uintptr_t offset;
+	/*
+	 * The name of the related symbol. This will be the empty string if no
+	 * suitable symbol can be found.
+	 */
+	char name[256];
+};
+
+/*
+ * Open the specified file and try to locate a symbol for a function which
+ * includes the required offset. If found, the function name and instruction
+ * offset are returned in *data.
+ */
+static void
+elf_find_symbol(const char *fileName, struct ElfSymbolData *data)
+{
+	int fd = open(fileName, O_RDONLY, 0);
+	ElfW(Ehdr) file_header;
+
+	if (fd < 0) {
+		/* cannot open file */
+		return;
+	}
+
+	if (elf_read_header(fd, &file_header)) {
+		uintptr_t section = 0;
+		uintptr_t section_count = file_header.e_shnum;
+		uintptr_t offset = data->offset;
+		uintptr_t file_offset = 0;
+		uintptr_t symbol_offset = 0;
+		uintptr_t loaded_section_index = 0;
+		ElfW(Shdr) loaded_section;
+		ElfW(Shdr) symtab_section;
+		ElfW(Shdr) strtab_section;
+		ElfW(Sym) symbol;
+
+		/* seek to the section header table */
+		if ((off_t)-1 == lseek(fd, file_header.e_shoff, SEEK_SET)) {
+			goto done;
+		}
+
+		/* find the loaded section that includes the offset of interest */
+		for (loaded_section_index = 0;; ++loaded_section_index) {
+			if (loaded_section_index >= section_count) {
+				goto done;
+			}
+
+			/* read the next section header */
+			if (sizeof(loaded_section) != read(fd, &loaded_section, sizeof(loaded_section))) {
+				goto done;
+			}
+
+			if (OMR_ARE_NO_BITS_SET(loaded_section.sh_flags, SHF_ALLOC)) {
+				/* we're only interested in sections that are in memory during exection */
+				continue;
+			}
+
+			if ((loaded_section.sh_offset <= offset) && ((offset - loaded_section.sh_offset) < loaded_section.sh_size)) {
+				/*
+				 * this is the section we want; translate the offset to a virtual address
+				 * as defined by the section header for consistency with symbol values
+				 * found in a symbol table section
+				 */
+				offset = offset - loaded_section.sh_offset + loaded_section.sh_addr;
+				break;
+			}
+		}
+
+		/* seek to the section header table again */
+		if ((off_t)-1 == lseek(fd, file_header.e_shoff, SEEK_SET)) {
+			goto done;
+		}
+
+		for (section = 0; section < section_count; ++section) {
+			/* read the next section header */
+			if (sizeof(symtab_section) != read(fd, &symtab_section, sizeof(symtab_section))) {
+				goto done;
+			}
+
+			if (SHT_SYMTAB != symtab_section.sh_type) {
+				/* we're only interested in symbol table entries */
+				continue;
+			}
+
+			/* check that the entry has the expected size */
+			if (sizeof(symbol) != symtab_section.sh_entsize) {
+				goto done;
+			}
+
+			/*
+			 * the link in a symbol table entry makes reference to a
+			 * string table section: make sure the index is reasonable
+			 */
+			if (symtab_section.sh_link >= section_count) {
+				goto done;
+			}
+
+			/* seek to the related string table section */
+			file_offset = file_header.e_shoff + (symtab_section.sh_link * sizeof(ElfW(Shdr)));
+			if ((off_t)-1 == lseek(fd, file_offset, SEEK_SET)) {
+				goto done;
+			}
+
+			/* read the string table section */
+			if (sizeof(strtab_section) != read(fd, &strtab_section, sizeof(strtab_section))) {
+				goto done;
+			}
+
+			/* check that the string table section has the expected type */
+			if (SHT_STRTAB != strtab_section.sh_type) {
+				goto done;
+			}
+
+			/* seek to the symbol table */
+			if ((off_t)-1 == lseek(fd, symtab_section.sh_offset, SEEK_SET)) {
+				goto done;
+			}
+
+			for (symbol_offset = sizeof(symbol); symbol_offset <= symtab_section.sh_size; symbol_offset += sizeof(symbol)) {
+				if (sizeof(symbol) != read(fd, &symbol, sizeof(symbol))) {
+					goto done;
+				}
+
+				/* skip entries that don't describe functions */
+#if defined(OMR_ENV_DATA64)
+				if (STT_FUNC != ELF64_ST_TYPE(symbol.st_info)) {
+					continue;
+				}
+#else /* defined(OMR_ENV_DATA64) */
+				if (STT_FUNC != ELF32_ST_TYPE(symbol.st_info)) {
+					continue;
+				}
+#endif /* defined(OMR_ENV_DATA64) */
+
+				/* skip entries unrelated to the loaded segment */
+				if (symbol.st_shndx != loaded_section_index) {
+					continue;
+				}
+
+				/* skip functions that don't include the offset of interest */
+				if ((offset < symbol.st_value) || ((offset - symbol.st_value) >= symbol.st_size)) {
+					continue;
+				}
+
+				/* we can't answer a name if the symbol doesn't have one */
+				if (0 == symbol.st_name) {
+					goto done;
+				}
+
+				/* check that the name is within the related string table */
+				if (symbol.st_name >= strtab_section.sh_size) {
+					goto done;
+				}
+
+				/* seek to the beginning of the symbol name */
+				if ((off_t)-1 == lseek(fd, strtab_section.sh_offset + symbol.st_name, SEEK_SET)) {
+					goto done;
+				}
+
+				/* read the symbol name */
+				if (read(fd, data->name, sizeof(data->name)) <= 0) {
+					/* ensure the name is empty to signal failure */
+					data->name[0] = '\0';
+				} else {
+					/* names are NUL-terminated, but may be too long */
+					data->name[sizeof(data->name) - 1] = '\0';
+					data->offset = offset - symbol.st_value;
+				}
+				goto done;
+			}
+		}
+	}
+
+done:
+	close(fd);
+}
+
+static int
+elf_ph_handler(struct dl_phdr_info *info, size_t size, void *arg)
+{
+	struct ElfSymbolData *data = (struct ElfSymbolData *)arg;
+	uintptr_t address = data->offset;
+	const char *fileName = info->dlpi_name;
+	ElfW(Half) ph_index = 0;
+
+	if ('\0' == *fileName) {
+		/* an empty string refers to the main program */
+		fileName = "/proc/self/exe";
+	} else if ('/' != *fileName) {
+		/*
+		 * We need an absolute path so we can open the file to read
+		 * the symbol table. Skip this group of program headers.
+		 */
+		return 0;
+	}
+
+	for (ph_index = 0; ph_index < info->dlpi_phnum; ++ph_index) {
+		const ElfW(Phdr) *ph = &info->dlpi_phdr[ph_index];
+
+		if (PT_LOAD == ph->p_type) {
+			uintptr_t load_start = info->dlpi_addr + ph->p_vaddr;
+
+			if ((address >= load_start) && ((address - load_start) < ph->p_filesz)) {
+				/* translate to an offset in the loaded file */
+				data->offset = address - load_start + ph->p_offset;
+				elf_find_symbol(fileName, data);
+				/* a non-zero return value tells dl_iterate_phdr() to stop iterating */
+				return 1;
+			}
+		}
+	}
+
+	return 0;
+}
 
 /* This function constructs a backtrace from a CPU context. Generally there are only one or two
  * values in the context that are actually used to construct the stack but these vary by platform
- * so arn't detailed here. If no heap is specified then this function will use malloc to allocate
+ * so aren't detailed here. If no heap is specified then this function will use malloc to allocate
  * the memory necessary for the stack frame structures which must be freed by the caller.
  *
  * @param portLbirary a pointer to an initialized port library
@@ -117,15 +400,15 @@ uintptr_t
 omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap, void *signalInfo)
 {
 	void *addresses[50];
-	J9PlatformStackFrame **nextFrame;
+	J9PlatformStackFrame **nextFrame = NULL;
 	J9PlatformStackFrame *junkFrames = NULL;
 	J9PlatformStackFrame *prevFrame = NULL;
 	OMRUnixSignalInfo *sigInfo = (OMRUnixSignalInfo *)signalInfo;
-	int i;
+	uintptr_t i = 0;
 	int discard = 0;
-	int ret;
+	uintptr_t ret = 0;
 	const char *regName = "";
-	void **faultingAddress = 0;
+	void **faultingAddress = NULL;
 
 	if (threadInfo == NULL || (threadInfo->context == NULL && sigInfo == NULL)) {
 		return 0;
@@ -139,21 +422,20 @@ omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9Platfor
 		infoForControl(portLibrary, sigInfo, 0, &regName, (void **)&faultingAddress);
 	}
 
-	ret = backtrace_sigprotect(portLibrary, threadInfo, addresses, sizeof(addresses) / sizeof(void *));
+	ret = backtrace_sigprotect(portLibrary, threadInfo, addresses, sizeof(addresses) / sizeof(addresses[0]));
 
 	nextFrame = &threadInfo->callstack;
 	for (i = 0; i < ret; i++) {
-		if (heap != NULL) {
+		if (NULL != heap) {
 			*nextFrame = portLibrary->heap_allocate(portLibrary, heap, sizeof(J9PlatformStackFrame));
 		} else {
 			*nextFrame = portLibrary->mem_allocate_memory(portLibrary, sizeof(J9PlatformStackFrame), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 		}
 
-		if (*nextFrame == NULL) {
-			if (!threadInfo->error) {
+		if (NULL == *nextFrame) {
+			if (0 == threadInfo->error) {
 				threadInfo->error = ALLOCATION_FAILURE;
 			}
-
 			break;
 		}
 
@@ -166,7 +448,7 @@ omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9Platfor
 		nextFrame = &(*nextFrame)->parent_frame;
 
 		/* check to see if we should truncate the stack trace to omit handler frames */
-		if (prevFrame && faultingAddress && addresses[i] == *faultingAddress) {
+		if ((NULL != prevFrame) && (NULL != faultingAddress) && (addresses[i] == *faultingAddress)) {
 			/* discard all frames up to this point */
 			junkFrames = threadInfo->callstack;
 			threadInfo->callstack = prevFrame->parent_frame;
@@ -181,7 +463,7 @@ omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9Platfor
 		}
 
 		/* save the frame we've just set up so that we can blank it if necessary */
-		if (prevFrame == NULL) {
+		if (NULL == prevFrame) {
 			prevFrame = threadInfo->callstack;
 		} else {
 			prevFrame = prevFrame->parent_frame;
@@ -189,11 +471,11 @@ omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9Platfor
 	}
 
 	/* if we discarded any frames then free them */
-	while (junkFrames != NULL) {
+	while (NULL != junkFrames) {
 		J9PlatformStackFrame *tmp = junkFrames;
 		junkFrames = tmp->parent_frame;
 
-		if (heap != NULL) {
+		if (NULL != heap) {
 			portLibrary->heap_free(portLibrary, heap, tmp);
 		} else {
 			portLibrary->mem_free_memory(portLibrary, tmp);
@@ -218,83 +500,83 @@ omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9Platfor
 uintptr_t
 omrintrospect_backtrace_symbols_raw(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap)
 {
-	J9PlatformStackFrame *frame;
-	int i;
+	J9PlatformStackFrame *frame = threadInfo->callstack;
+	struct ElfSymbolData data;
+	uintptr_t frame_count = 0;
 
-	for (i = 0, frame = threadInfo->callstack; frame != NULL; frame = frame->parent_frame, i++) {
+	for (; NULL != frame; frame = frame->parent_frame) {
 		char output_buf[512];
 		char *cursor = output_buf;
+		char *cursor_end = cursor + sizeof(output_buf) - 1; /* leave room NUL-terminator */
 		Dl_info dlInfo;
-		uintptr_t length;
+		uintptr_t length = 0;
 		uintptr_t iar = frame->instruction_pointer;
-		uintptr_t symbol_offset = 0;
 		uintptr_t module_offset = 0;
 		const char *symbol_name = "";
 		const char *module_name = "<unknown>";
-		short symbol_length = 0;
 
-		memset(&dlInfo, 0, sizeof(Dl_info));
+		memset(&dlInfo, 0, sizeof(dlInfo));
 
 		/* do the symbol resolution while we're here */
 		if (dladdr((void *)iar, &dlInfo)) {
-			if (dlInfo.dli_sname != NULL) {
-				uintptr_t sym = (uintptr_t)dlInfo.dli_saddr;
-				symbol_name = dlInfo.dli_sname;
-				symbol_length = strlen(symbol_name);
-				symbol_offset = iar - (uintptr_t)sym;
-			}
-
-			if (dlInfo.dli_fname != NULL) {
+			if (NULL != dlInfo.dli_fname) {
 				/* strip off the full path if possible */
 				module_name = strrchr(dlInfo.dli_fname, '/');
-				if (module_name != NULL) {
-					module_name++;
+				if (NULL != module_name) {
+					module_name += 1;
 				} else {
 					module_name = dlInfo.dli_fname;
 				}
 			}
 
-			if (dlInfo.dli_fbase != NULL) {
+			if (NULL != dlInfo.dli_fbase) {
 				/* set the module offset */
 				module_offset = iar - (uintptr_t)dlInfo.dli_fbase;
 			}
+
+			symbol_name = dlInfo.dli_sname;
+			if (NULL != symbol_name) {
+				data.offset = iar - (uintptr_t)dlInfo.dli_saddr;
+			} else {
+				memset(&data, 0, sizeof(data));
+				data.offset = iar;
+				dl_iterate_phdr(elf_ph_handler, &data);
+				symbol_name = data.name;
+			}
 		}
 
-		/* sanity check */
-		if (symbol_name == NULL) {
-			symbol_name = "";
-			symbol_length = 0;
+		/* symbol_name+offset (instruction_pointer [module+offset]) */
+		if ('\0' != *symbol_name) {
+			cursor += omrstr_printf(portLibrary, cursor, cursor_end - cursor,
+					"%s+0x%x", symbol_name, data.offset);
 		}
-
-		/* symbol_name+offset (id, instruction_pointer [module+offset]) */
-		if (symbol_length > 0) {
-			cursor += omrstr_printf(portLibrary, cursor, sizeof(output_buf) - (cursor - output_buf), "%.*s", symbol_length, symbol_name);
-			cursor += omrstr_printf(portLibrary, cursor, sizeof(output_buf) - (cursor - output_buf), "+0x%x ", symbol_offset);
+		cursor += omrstr_printf(portLibrary, cursor, cursor_end - cursor,
+				" (0x%p", frame->instruction_pointer);
+		if ('\0' != *module_name) {
+			cursor += omrstr_printf(portLibrary, cursor, cursor_end - cursor,
+					" [%s+0x%x]", module_name, module_offset);
 		}
-		cursor += omrstr_printf(portLibrary, cursor, sizeof(output_buf) - (cursor - output_buf), "(0x%p", frame->instruction_pointer);
-		if (module_name[0] != '\0') {
-			cursor += omrstr_printf(portLibrary, cursor, sizeof(output_buf) - (cursor - output_buf), " [%s+0x%x]", module_name, module_offset);
-		}
-		*(cursor++) = ')';
-		*cursor = 0;
+		cursor += omrstr_printf(portLibrary, cursor, cursor_end - cursor,
+				")", frame->instruction_pointer);
+		*cursor = '\0';
 
 		length = (cursor - output_buf) + 1;
-		if (heap != NULL) {
+		if (NULL != heap) {
 			frame->symbol = portLibrary->heap_allocate(portLibrary, heap, length);
 		} else {
 			frame->symbol = portLibrary->mem_allocate_memory(portLibrary, length, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 		}
 
-		if (frame->symbol != NULL) {
+		if (NULL != frame->symbol) {
 			strncpy(frame->symbol, output_buf, length);
+			frame_count += 1;
 		} else {
 			frame->symbol = NULL;
-			if (!threadInfo->error) {
+			if (0 == threadInfo->error) {
 				threadInfo->error = ALLOCATION_FAILURE;
 			}
-			i--;
 		}
 	}
 
-	return i;
+	return frame_count;
 }

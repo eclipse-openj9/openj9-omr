@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2021 IBM Corp. and others
+# Copyright (c) 2017, 2022 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -43,6 +43,9 @@ include(platform/toolcfg/${OMR_TOOLCONFIG})
 
 # verify toolconfig
 include(platform/toolcfg/verify)
+
+# handle cross compilation logic
+include(OmrCrossCompile)
 
 macro(omr_platform_global_setup)
 	omr_assert(WARNING TEST NOT OMR_PLATFORM_GLOBALLY_INITIALIZED

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2018, 2021 IBM Corp. and others
+# Copyright (c) 2018, 2022 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,7 +32,7 @@ include(ExternalProject)
 include(OmrPlatform)
 
 # DDR is may supported when cross compiling, unless we are on Windows with CYGWIN in which case we do have support
-if(OMR_DDR AND NOT OMR_OS_WINDOWS AND CMAKE_CROSSCOMPILING)
+if(OMR_DDR AND OMR_CROSSCOMPILING)
 	message(FATAL_ERROR "DDR is not supported when cross-compiling. Use -DOMR_DDR=OFF to disable DDR.")
 endif()
 

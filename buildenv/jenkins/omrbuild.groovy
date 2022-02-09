@@ -168,13 +168,8 @@ def SPECS = [
         'buildSystem' : 'cmake',
         'builds' : [
             [
-                'buildDir' : 'build_native',
-                'configureArgs' : '-DOMR_THREAD=OFF -DOMR_PORT=OFF -DOMR_OMRSIG=OFF -DOMR_GC=OFF -DOMR_FVTEST=OFF',
-                'compile' : defaultCompile
-            ],
-            [
                 'buildDir' : cmakeBuildDir,
-                'configureArgs' : '-Wdev -C../cmake/caches/Travis.cmake -DOMR_DDR=OFF "-DCMAKE_FIND_ROOT_PATH=${CROSS_SYSROOT_RISCV64}" -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/riscv64-linux-cross.cmake -DOMR_TOOLS_IMPORTFILE=../build_native/tools/ImportTools.cmake "-DOMR_TEST_LAUNCHER=qemu-riscv64;-L;${CROSS_SYSROOT_RISCV64}"',
+                'configureArgs' : '-Wdev -C../cmake/caches/Travis.cmake -DOMR_DDR=OFF  -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/riscv64-linux-cross.cmake "-DCMAKE_SYSROOT=${CROSS_SYSROOT_RISCV64}"',
                 'compile' : defaultCompile
             ]
         ],

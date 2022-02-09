@@ -25,7 +25,8 @@ endif()
 set(OMR_CROSS_COMPILE_ 1)
 
 # Building on cygwin but using MSVC will look like cross compiling, but we don't consider it to be.
-if(CMAKE_CROSSCOMPILING AND NOT CYGWIN)
+# Note: At the moment this test is overly broad while reliable detection method is investigated.
+if(CMAKE_CROSSCOMPILING AND NOT OMR_OS_WINDOWS)
 	set(OMR_CROSSCOMPILING ON CACHE INTERNAL "")
 else()
 	set(OMR_CROSSCOMPILING OFF CACHE INTERNAL "")

@@ -1393,6 +1393,7 @@ bool TR_LoopVersioner::detectInvariantTrees(TR_RegionStructure *whileLoop, List<
              && (thisChild || nextRealNode)
              && node->isTheVirtualGuardForAGuardedInlinedCall()
              && !node->isHCRGuard()
+             && !node->isDirectMethodGuard()
              && !node->isBreakpointGuard())
             {
             if (!guardInfo)
@@ -1463,7 +1464,7 @@ bool TR_LoopVersioner::detectInvariantTrees(TR_RegionStructure *whileLoop, List<
                   }
                }
             }
-         else if (!node->isHCRGuard() && !node->isBreakpointGuard())
+         else if (!node->isHCRGuard() && !node->isDirectMethodGuard() && !node->isBreakpointGuard())
             {
             for (int32_t childNum=0;childNum < node->getNumChildren(); childNum++)
                {

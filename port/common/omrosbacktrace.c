@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -73,7 +73,7 @@ protectedIntrospectBacktraceThread(struct OMRPortLibrary *port, void *arg)
 uintptr_t
 omrintrospect_backtrace_thread(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap, void *signalInfo)
 {
-	uintptr_t ret;
+	uintptr_t ret = 0;
 	struct threadData args;
 	args.threadInfo = threadInfo;
 	args.heap = heap;
@@ -83,11 +83,13 @@ omrintrospect_backtrace_thread(struct OMRPortLibrary *portLibrary, J9PlatformThr
 		if (portLibrary->sig_protect(portLibrary, protectedIntrospectBacktraceThread, &args, handler, NULL, OMRPORT_SIG_FLAG_SIGALLSYNC | OMRPORT_SIG_FLAG_MAY_RETURN, &ret) == 0) {
 			return ret;
 		} else {
-			J9PlatformStackFrame *frame;
-			int frames = 0;
+			J9PlatformStackFrame *frame = NULL;
+			uintptr_t frames = 0;
 
 			/* see if there is a partial backtrace we can return */
-			for (frame = threadInfo->callstack; frame != NULL; frame = frame->parent_frame, frames++);
+			for (frame = threadInfo->callstack; frame != NULL; frame = frame->parent_frame, frames += 1) {
+				/* count frames */
+			}
 
 			threadInfo->error = FAULT_DURING_BACKTRACE;
 			return frames;
@@ -120,7 +122,7 @@ protectedIntrospectBacktraceSymbols(struct OMRPortLibrary *port, void *arg)
 uintptr_t
 omrintrospect_backtrace_symbols(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap)
 {
-	uintptr_t ret;
+	uintptr_t ret = 0;
 	struct threadData args;
 	args.threadInfo = threadInfo;
 	args.heap = heap;
@@ -136,6 +138,3 @@ omrintrospect_backtrace_symbols(struct OMRPortLibrary *portLibrary, J9PlatformTh
 		return omrintrospect_backtrace_symbols_raw(portLibrary, threadInfo, heap);
 	}
 }
-
-
-

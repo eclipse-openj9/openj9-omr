@@ -116,6 +116,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"aggressiveRecompilationChances=", "O<nnn>\tnumber of chances per method to recompile with the "
                                        "aggressive recompilation mechanism",
                                TR::Options::setStaticNumeric, (intptr_t)&OMR::Options::_aggressiveRecompilationChances, 0, "F%d", NOT_IN_SUBSET},
+   {"aggressiveSwitchingToProfiling", "O\tAllow switching hot methods to profiling more aggressively", SET_OPTION_BIT(TR_AggressiveSwitchingToProfiling), "F" },
    {"allowVPRangeNarrowingBasedOnDeclaredType",
       "I\tallow value propagation to assume that integers declared "
       "narrower than 32-bits (boolean, byte, char, short) are in-range",

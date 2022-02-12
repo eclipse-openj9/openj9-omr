@@ -84,7 +84,7 @@ enum TR_CompilationOptions
    // Option word 0
    //
    TR_AOTCompileOnlyFromBootstrap= 0x00000020,
-   // Available                  = 0x00000040,
+   TR_AggressiveSwitchingToProfiling = 0x00000040,
    TR_ReportMethodEnter          = 0x00000080,
    TR_ReportMethodExit           = 0x00000100,
    TR_EntryBreakPoints           = 0x00000200,

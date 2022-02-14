@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2021 IBM Corp. and others
+ * Copyright (c) 2019, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -837,8 +837,8 @@
 // stxsibx,          // Store VSX scalar as integer byte indexed
 // stxsihx,          // Store VSX scalar as integer Hword indexed
    stxv,             // Store VSX vector
-// stxvb16x,         // Store VSX vector byte*16 indexed
-// stxvh8x,          // Store VSX vector Hword*8 indexed
+   stxvb16x,         // Store VSX vector byte*16 indexed
+   stxvh8x,          // Store VSX vector Hword*8 indexed
 // stxvll,           // Store VSX vector left-justified with length
 // stxvx,            // Store VSX vector indexed
 // xsabsqp,          // VSX scalar absolute QP

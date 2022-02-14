@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2576,22 +2576,28 @@ TR::Register *OMR::Power::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::Code
    switch(node->getDataType())
      {
      case TR::VectorInt8:
+         opcode = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9) ? TR::InstOpCode::lxvb16x : TR::InstOpCode::lxvw4x;
+         kind = TR_VRF;
+         break;
      case TR::VectorInt16:
+         opcode = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9) ? TR::InstOpCode::lxvh8x : TR::InstOpCode::lxvw4x;
+         kind = TR_VRF;
+         break;
      case TR::VectorInt32:
      case TR::VectorFloat:
-	opcode = TR::InstOpCode::lxvw4x;
-	kind = TR_VRF;
-	break;
+	      opcode = TR::InstOpCode::lxvw4x;
+	      kind = TR_VRF;
+	      break;
      case TR::VectorInt64:
-	opcode = TR::InstOpCode::lxvd2x;
-	kind = TR_VRF;
-        break;
+	      opcode = TR::InstOpCode::lxvd2x;
+	      kind = TR_VRF;
+         break;
      case TR::VectorDouble:
-	opcode = TR::InstOpCode::lxvd2x;
-	kind = TR_VSX_VECTOR;
-	break;
+	      opcode = TR::InstOpCode::lxvd2x;
+	      kind = TR_VSX_VECTOR;
+	      break;
      default:
-	TR_ASSERT(false, "unknown vector load TRIL: unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
+	      TR_ASSERT(false, "unknown vector load TRIL: unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
      }
 
    TR::Register *dstReg = cg->allocateRegister(kind);
@@ -2609,14 +2615,21 @@ TR::Register *OMR::Power::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::Cod
    switch(node->getDataType())
      {
      case TR::VectorInt8:
+         opcode = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9) ? TR::InstOpCode::stxvb16x : TR::InstOpCode::stxvw4x;
+         break;
      case TR::VectorInt16:
+         opcode = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9) ? TR::InstOpCode::stxvh8x : TR::InstOpCode::stxvw4x;
+         break;
      case TR::VectorInt32:
      case TR::VectorFloat:
-             opcode = TR::InstOpCode::stxvw4x; break;
+         opcode = TR::InstOpCode::stxvw4x;
+         break;
      case TR::VectorInt64:
      case TR::VectorDouble:
-             opcode = TR::InstOpCode::stxvd2x; break;
-     default: TR_ASSERT(false, "unknown vector store TRIL: unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
+         opcode = TR::InstOpCode::stxvd2x;
+         break;
+     default:
+         TR_ASSERT(false, "unknown vector store TRIL: unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
      }
 
    TR::Node *valueChild = node->getOpCode().isStoreDirect() ? node->getFirstChild() : node->getSecondChild();

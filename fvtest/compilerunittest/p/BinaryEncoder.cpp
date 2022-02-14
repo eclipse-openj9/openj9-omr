@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020, 2021 IBM Corp. and others
+ * Copyright (c) 2020, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -4454,7 +4454,17 @@ INSTANTIATE_TEST_CASE_P(StoreIndex, PPCMemSrc1EncodingTest, ::testing::ValuesIn(
     std::make_tuple(TR::InstOpCode::stxvw4x, MemoryReference(TR::RealRegister::gr31, TR::RealRegister::gr0 ), TR::RealRegister::vsr0,  0x7c1f0718u, false),
     std::make_tuple(TR::InstOpCode::stxvw4x, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr31), TR::RealRegister::vsr0,  0x7c00ff18u, false),
     std::make_tuple(TR::InstOpCode::stxvw4x, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), TR::RealRegister::vsr31, 0x7fe00718u, false),
-    std::make_tuple(TR::InstOpCode::stxvw4x, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), TR::RealRegister::vsr63, 0x7fe00719u, false)
+    std::make_tuple(TR::InstOpCode::stxvw4x, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), TR::RealRegister::vsr63, 0x7fe00719u, false),
+    std::make_tuple(TR::InstOpCode::stxvh8x, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), TR::RealRegister::vsr0,  0x7c000758u, false),
+    std::make_tuple(TR::InstOpCode::stxvh8x, MemoryReference(TR::RealRegister::gr31, TR::RealRegister::gr0 ), TR::RealRegister::vsr0,  0x7c1f0758u, false),
+    std::make_tuple(TR::InstOpCode::stxvh8x, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr31), TR::RealRegister::vsr0,  0x7c00ff58u, false),
+    std::make_tuple(TR::InstOpCode::stxvh8x, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), TR::RealRegister::vsr31, 0x7fe00758u, false),
+    std::make_tuple(TR::InstOpCode::stxvh8x, MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), TR::RealRegister::vsr63, 0x7fe00759u, false),
+    std::make_tuple(TR::InstOpCode::stxvb16x,MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), TR::RealRegister::vsr0,  0x7c0007d8u, false),
+    std::make_tuple(TR::InstOpCode::stxvb16x,MemoryReference(TR::RealRegister::gr31, TR::RealRegister::gr0 ), TR::RealRegister::vsr0,  0x7c1f07d8u, false),
+    std::make_tuple(TR::InstOpCode::stxvb16x,MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr31), TR::RealRegister::vsr0,  0x7c00ffd8u, false),
+    std::make_tuple(TR::InstOpCode::stxvb16x,MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), TR::RealRegister::vsr31, 0x7fe007d8u, false),
+    std::make_tuple(TR::InstOpCode::stxvb16x,MemoryReference(TR::RealRegister::gr0,  TR::RealRegister::gr0 ), TR::RealRegister::vsr63, 0x7fe007d9u, false)
 )));
 
 INSTANTIATE_TEST_CASE_P(StoreIndex, PPCRecordFormSanityTest, ::testing::Values(
@@ -4484,7 +4494,9 @@ INSTANTIATE_TEST_CASE_P(StoreIndex, PPCRecordFormSanityTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::stxsiwx, TR::InstOpCode::bad,     BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::stxsspx, TR::InstOpCode::bad,     BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::stxvd2x, TR::InstOpCode::bad,     BinaryInstruction()),
-    std::make_tuple(TR::InstOpCode::stxvw4x, TR::InstOpCode::bad,     BinaryInstruction())
+    std::make_tuple(TR::InstOpCode::stxvw4x, TR::InstOpCode::bad,     BinaryInstruction()),
+    std::make_tuple(TR::InstOpCode::stxvh8x, TR::InstOpCode::bad,     BinaryInstruction()),
+    std::make_tuple(TR::InstOpCode::stxvb16x,TR::InstOpCode::bad,     BinaryInstruction())
 ));
 
 INSTANTIATE_TEST_CASE_P(StoreVSXLength, PPCSrc3EncodingTest, ::testing::Values(

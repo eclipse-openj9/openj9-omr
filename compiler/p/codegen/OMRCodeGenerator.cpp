@@ -1788,6 +1788,11 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
                return true;
             else
                return false;
+         case OMR::vfma:
+            if (et == TR::Float || et == TR::Double)
+               return true;
+            else
+               return false;
          default:
             return false;
          }

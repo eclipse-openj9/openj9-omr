@@ -652,6 +652,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vnegInt32Helper(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vnegFloatHelper(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vnegDoubleHelper(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdmergeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -664,7 +665,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vdcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vl2vdEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *inlineVectorUnaryOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);
    static TR::Register *inlineVectorBinaryOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);

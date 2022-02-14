@@ -3850,7 +3850,59 @@ TR::Register *OMR::Power::TreeEvaluator::vdsqrtEvaluator(TR::Node *node, TR::Cod
 
 TR::Register* OMR::Power::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::DataType type = node->getDataType().getVectorElementType();
+   if (type != TR::Float && type != TR::Double)
+      {
+      TR_ASSERT(false, "unsupported vector type %s\n", type.toString());
+      return NULL;
+      }
+
+   TR::InstOpCode::Mnemonic op;
+
+   TR::Node *firstChild  = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Node *thirdChild  = node->getThirdChild();
+
+   //resReg = firstReg * secondReg + thirdReg
+   TR::Register *firstReg  = cg->evaluate(firstChild);
+   TR::Register *secondReg = cg->evaluate(secondChild);
+   TR::Register *thirdReg  = cg->evaluate(thirdChild);
+
+   TR::Register *resReg;
+
+   /* Since the VSX FMA instruction reuses one of its source registers as the target register,
+      we need to make sure the selected target register is clobberable */
+   if (cg->canClobberNodesRegister(thirdChild))
+      {
+      resReg = thirdReg;
+      op = (type == TR::Float) ? TR::InstOpCode::xvmaddasp : TR::InstOpCode::xvmaddadp;
+      generateTrg1Src2Instruction(cg, op, node, thirdReg, firstReg, secondReg);
+      }
+   else if (cg->canClobberNodesRegister(firstChild))
+      {
+      resReg = firstReg;
+      op = (type == TR::Float) ? TR::InstOpCode::xvmaddmsp : TR::InstOpCode::xvmaddmdp;
+      generateTrg1Src2Instruction(cg, op, node, firstReg, secondReg, thirdReg);
+      }
+   else if (cg->canClobberNodesRegister(secondChild))
+      {
+      resReg = secondReg;
+      op = (type == TR::Float) ? TR::InstOpCode::xvmaddmsp : TR::InstOpCode::xvmaddmdp;
+      generateTrg1Src2Instruction(cg, op, node, secondReg, firstReg, thirdReg);
+      }
+   else //if no source registers can be clobbered, copy the contents of one of the sources into a new register and use it as the target
+      {
+      resReg = cg->allocateRegister(TR_VSX_VECTOR);
+      op = (type == TR::Float) ? TR::InstOpCode::xvmaddasp : TR::InstOpCode::xvmaddadp;
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, thirdReg, thirdReg);
+      generateTrg1Src2Instruction(cg, op, node, resReg, firstReg, secondReg);
+      }
+
+   node->setRegister(resReg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   cg->decReferenceCount(thirdChild);
+   return resReg;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vl2vdEvaluator(TR::Node *node, TR::CodeGenerator *cg)

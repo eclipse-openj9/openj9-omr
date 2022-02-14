@@ -70,6 +70,10 @@ typedef void *charconvState_t; /*dummy type */
 #include "omrstdarg.h"
 #include "hashtable_api.h"
 
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
+#include "atoe.h"
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
+
 #define J9FTYPE_U64 1
 #define J9FTYPE_U32 2
 #define J9FTYPE_DBL 3
@@ -2195,17 +2199,28 @@ omrstr_current_time_zone(struct OMRPortLibrary *portLibrary, int32_t *secondsEas
 		if (NULL != secondsEast) {
 			*secondsEast = zoneSecondsEast;
 		}
-		if (NULL != zoneNameBuffer) {
-			strncpy(zoneNameBuffer, zoneName, zoneNameBufferLen);
-			if (0 != zoneNameBufferLen) {
-				zoneNameBuffer[zoneNameBufferLen - 1] = '\0';
-			}
-		}
+		if ((NULL != zoneNameBuffer) && (0 != zoneNameBufferLen) && (NULL != zoneName)) {
+			size_t fullLength = strlen(zoneName);
+			size_t trimLength = (fullLength < zoneNameBufferLen) ? fullLength : (zoneNameBufferLen - 1);
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
+			char *finalZoneName = e2a(zoneName, trimLength);
+#else /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
+			const char *finalZoneName = zoneName;
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 
-		return 0;
-	} else {
-		return -1;
+			if (NULL == finalZoneName) {
+				trimLength = 0;
+			} else {
+				memcpy(zoneNameBuffer, finalZoneName, trimLength);
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
+				free(finalZoneName);
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
+			}
+			zoneNameBuffer[trimLength] = '\0';
+		}
 	}
+
+	return zoneAvailable ? 0 : -1;
 }
 
 /* ===================== Internal functions ======================== */

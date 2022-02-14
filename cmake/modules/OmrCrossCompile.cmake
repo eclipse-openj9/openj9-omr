@@ -24,10 +24,15 @@ if(OMR_CROSS_COMPILE_)
 endif()
 set(OMR_CROSS_COMPILE_ 1)
 
-# Building on cygwin but using MSVC will look like cross compiling, but we don't consider it to be.
-# Note: At the moment this test is overly broad while reliable detection method is investigated.
-if(CMAKE_CROSSCOMPILING AND NOT OMR_OS_WINDOWS)
-	set(OMR_CROSSCOMPILING ON CACHE INTERNAL "")
+
+if(CMAKE_CROSSCOMPILING)
+	# CMake considers cygwin/mingw/msys to be different from Windows, however we don't.
+	# For our purposes we consider it all Windows, and not a cross compile.
+	if(OMR_OS_WINDOWS AND "${CMAKE_HOST_SYSTEM_NAME}" MATCHES "CYGWIN|MINGW|MSYS")
+		set(OMR_CROSSCOMPILING OFF CACHE INTERNAL "")
+	else()
+		set(OMR_CROSSCOMPILING ON CACHE INTERNAL "")
+	endif()
 else()
 	set(OMR_CROSSCOMPILING OFF CACHE INTERNAL "")
 endif()

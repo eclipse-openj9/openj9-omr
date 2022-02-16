@@ -81,7 +81,7 @@ jobs:
   - job:
     displayName: 'x86-64 Windows'
     pool:
-      vmImage: vs2017-win2016
+      vmImage: windows-2019
     steps:
       - script: |
           mkdir build
@@ -89,7 +89,7 @@ jobs:
 
       - script: |
           set PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.16299.0\x64;%PATH%
-          cmake .. -G "Visual Studio 15 2017 Win64" -C../cmake/caches/Windows.cmake .. -DOMR_DDR=0 -DOMR_TEST_COMPILER=ON -DOMR_JITBUILDER_TEST=ON
+          cmake .. -G "Visual Studio 16 2019" -A x64 -C../cmake/caches/Windows.cmake .. -DOMR_DDR=0 -DOMR_TEST_COMPILER=ON -DOMR_JITBUILDER_TEST=ON
         displayName: 'Configure'
         workingDirectory: 'build'
 
@@ -100,7 +100,7 @@ jobs:
 
       - script: |
           ctest -V -C Debug
-        displayName: "Test"
+        displayName: 'Test'
         workingDirectory: 'build'
 
       - task: PublishTestResults@2
@@ -158,7 +158,7 @@ jobs:
 
       - script: |
           ctest -V -j$NUMBER_OF_PROCESSORS
-        displayName: "Test"
+        displayName: 'Test'
         workingDirectory: 'build'
 
       - task: PublishTestResults@2
@@ -219,7 +219,7 @@ jobs:
 
       - script: |
           ctest -V -j$NUMBER_OF_PROCESSORS
-        displayName: "Test"
+        displayName: 'Test'
         workingDirectory: 'build'
 
       - task: PublishTestResults@2

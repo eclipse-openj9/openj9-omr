@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -609,12 +609,12 @@ typedef struct U_128 {
 #define OMR_ALIGNOF(x) alignof(x)
 #endif /* defined(_MSC_VER) && (1900 > _MSC_VER) */
 
-#if (__cplusplus >= 201103L)
+#if defined(__cplusplus) && (__cplusplus >= 201103L)
 #if defined(__GNUC__) && (__GNUC__ < 5) /* GCC<=5 claims C++11 support but doesn't actually provide this trait; it does however provide a close enough extension. */
 #define OMR_IS_TRIVIALLY_COPYABLE(t) __has_trivial_copy(t)
 #else /* C++>=11 && (!GCC || GCC>=5) */
 #define OMR_IS_TRIVIALLY_COPYABLE(t) std::is_trivially_copyable<t>::value
 #endif /* defined(__GNUC__) && (__GNUC__ < 5) */
-#endif /* (__cplusplus >= 201103L) */
+#endif /* defined(__cplusplus) && (__cplusplus >= 201103L) */
 
 #endif /* OMRCOMP_H */

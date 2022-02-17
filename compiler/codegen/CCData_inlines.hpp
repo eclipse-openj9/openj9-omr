@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020, 2020 IBM Corp. and others
+ * Copyright (c) 2020, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,7 +22,7 @@
 #ifndef OMR_CCDATA_INLINES_INCL
 #define OMR_CCDATA_INLINES_INCL
 
-#if (__cplusplus >= 201103L)
+#if defined(__cplusplus) && (__cplusplus >= 201103L)
 #include <type_traits>
 #include "omrcomp.h"
 #endif
@@ -43,7 +43,7 @@ CCData::key_t CCData::key(const T value)
 template <typename T>
 bool CCData::put(const T value, const key_t * const key, index_t &index)
    {
-#if (__cplusplus >= 201103L)
+#if defined(__cplusplus) && (__cplusplus >= 201103L)
    static_assert(OMR_IS_TRIVIALLY_COPYABLE(T), "T must be trivially copyable.");
 #endif
    return put(&value, sizeof(value), alignof(value), key, index);
@@ -52,7 +52,7 @@ bool CCData::put(const T value, const key_t * const key, index_t &index)
 template <typename T>
 bool CCData::get(const index_t index, T &value) const
    {
-#if (__cplusplus >= 201103L)
+#if defined(__cplusplus) && (__cplusplus >= 201103L)
    static_assert(OMR_IS_TRIVIALLY_COPYABLE(T), "T must be trivially copyable.");
 #endif
    return get(index, &value, sizeof(value));

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1996, 2018 IBM Corp. and others
+ * Copyright (c) 1996, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -525,7 +525,7 @@ template <class AElementType, class Allocator, size_t segmentBits = 8, class Ini
     if (pmid!=from)
       Swap(CS2_BASEARDECL::ElementAt(pmid), CS2_BASEARDECL::ElementAt(from));
 
-    size_t i,low=from+1, high=to-1;
+    size_t low=from+1, high=to-1;
 
     AElementType &pivot=CS2_BASEARDECL::ElementAt(from);
     do {

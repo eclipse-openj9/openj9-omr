@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -49,7 +49,7 @@ class TR_PseudoRandomNumbersListElement
    public:
 
    TR_PseudoRandomNumbersListElement()
-     :_next(0), _curIndex(0)
+     :_curIndex(0), _next(0)
       {}
 
    int32_t _pseudoRandomNumbers[PSEUDO_RANDOM_NUMBERS_SIZE];
@@ -68,12 +68,12 @@ class PersistentInfo
    friend class ::OMR::Options;
    PersistentInfo(TR_PersistentMemory *pm) :
          _persistentMemory(pm),
-         _lastDebugCounterResetSeconds(0),
          _pseudoRandomNumbersListHead(NULL),
          _curPseudoRandomNumbersListElem(NULL),
          _curIndex(0),
-         _dynamicCounters(NULL),
          _staticCounters(NULL),
+         _dynamicCounters(NULL),
+         _lastDebugCounterResetSeconds(0),
          _persistentTOC(NULL)
       {}
 

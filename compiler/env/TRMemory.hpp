@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1108,14 +1108,14 @@ namespace TR
       static char* Name(bool csv = false)
          {
          if (csv)
-            return "Allocs";
+            return const_cast<char *>("Allocs");
          else
-            return "Memory Usage (bytes)";
+            return const_cast<char *>("Memory Usage (bytes)");
          }
 
       static char *UnitsText(bool alternativeFormat = false /* ignored */)
          {
-            return "allocated (% total)  freed (% total)  maxLive (% total)";
+            return const_cast<char *>("allocated (% total)  freed (% total)  maxLive (% total)");
          }
 
       static uint32_t sprintf_part(char *line, uint64_t bytes, uint64_t total)

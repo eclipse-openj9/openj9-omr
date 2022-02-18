@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -56,9 +56,9 @@ class TR_BitContainer
    public:
    TR_ALLOC(TR_Memory::BitVector)
 
-   TR_BitContainer() : _type(bitvector), _bitVector(NULL) {}
-   TR_BitContainer(int32_t index) : _type(singleton), _singleBit(index) {}
-   TR_BitContainer(TR_BitVector *bv) : _type(bitvector), _bitVector(bv) {}
+   TR_BitContainer() : _bitVector(NULL), _type(bitvector) {}
+   TR_BitContainer(int32_t index) : _singleBit(index), _type(singleton) {}
+   TR_BitContainer(TR_BitVector *bv) : _bitVector(bv), _type(bitvector) {}
    operator TR_BitVector *()
       {
       TR_ASSERT(_type == bitvector, "BitContainer cannot be converted to BitVector\n");
@@ -160,8 +160,8 @@ class TR_BitVector
 
    // Construct an empty bit vector. All bits are initially off.
    //
-   TR_BitVector() : _numChunks(0), _chunks(NULL), _firstChunkWithNonZero(0), _lastChunkWithNonZero(-1), _growable(growable), _region(0) { }
-   TR_BitVector(TR::Region &region) : _numChunks(0), _chunks(NULL), _firstChunkWithNonZero(0), _lastChunkWithNonZero(-1), _growable(growable), _region(&region) { }
+   TR_BitVector() : _chunks(NULL), _region(0), _numChunks(0), _firstChunkWithNonZero(0), _lastChunkWithNonZero(-1), _growable(growable) { }
+   TR_BitVector(TR::Region &region) : _chunks(NULL), _region(&region), _numChunks(0), _firstChunkWithNonZero(0), _lastChunkWithNonZero(-1), _growable(growable) { }
 
    /**
     * @brief Constructor to create a new BitVector by reading serialized data from the memory buffer
@@ -270,7 +270,7 @@ class TR_BitVector
    // Construct a bit vector from a second bit vector
    //
    TR_BitVector(const TR_BitVector &v2)
-      : _numChunks(0), _firstChunkWithNonZero(0), _lastChunkWithNonZero(-1), _chunks(NULL), _growable(growable)
+      : _chunks(NULL), _numChunks(0), _firstChunkWithNonZero(0), _lastChunkWithNonZero(-1), _growable(growable)
       {
       _region = v2._region;
       *this = v2;
@@ -1348,8 +1348,6 @@ private:
 //
 template <class BitVector>
 inline void Assign(BitVector &cs2bv, TR_BitVector &trbv, bool clear=true) {
-  uint32_t count=0;
-
   if (clear)
      cs2bv = CS2_TR_BitVector(trbv);
   else

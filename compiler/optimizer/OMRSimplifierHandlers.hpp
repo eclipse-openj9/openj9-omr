@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -265,5 +265,24 @@ TR::Node * lowerTreeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifie
 TR::Node * arrayLengthSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 
 TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier * s);
+
+typedef TR::Node *(* SimplifierPtr)(TR::Node *node, TR::Block *block, TR::Simplifier *s);
+
+class SimplifierPtrTable
+   {
+   private:
+   static const SimplifierPtr table[];
+
+   static void checkTableSize();
+
+   public:
+
+   SimplifierPtrTable() {}; // some compilers require a default constructor for this class
+
+   SimplifierPtr operator[] (TR::ILOpCode opcode) const
+      {
+      return table[opcode.getTableIndex()];
+      }
+   };
 
 #endif

@@ -25,13 +25,13 @@
 class VectorTest : public TRTest::JitTest {};
 
 
-TEST_F(VectorTest, VDoubleAdd) { 
+TEST_F(VectorTest, VDoubleAdd) {
 
    auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
                      "  (block                                                        "
                      "     (vstorei type=VectorDouble offset=0                        "
                      "         (aload parm=0)                                         "
-                     "            (vadd                                               "
+                     "            (vaddVector128Double                                "
                      "                 (vloadi type=VectorDouble (aload parm=1))      "
                      "                 (vloadi type=VectorDouble (aload parm=2))))    "
                      "     (return)))                                                 ";
@@ -39,7 +39,7 @@ TEST_F(VectorTest, VDoubleAdd) {
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved. 
+    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
@@ -55,9 +55,9 @@ TEST_F(VectorTest, VDoubleAdd) {
     double inputA[] =  {1.0, 2.0};
     double inputB[] =  {1.0, 2.0};
 
-    entry_point(output,inputA,inputB); 
-    EXPECT_DOUBLE_EQ(inputA[0] + inputB[0], output[0]); // Epsilon = 4ULP -- is this necessary? 
-    EXPECT_DOUBLE_EQ(inputA[1] + inputB[1], output[1]); // Epsilon = 4ULP -- is this necessary? 
+    entry_point(output,inputA,inputB);
+    EXPECT_DOUBLE_EQ(inputA[0] + inputB[0], output[0]); // Epsilon = 4ULP -- is this necessary?
+    EXPECT_DOUBLE_EQ(inputA[1] + inputB[1], output[1]); // Epsilon = 4ULP -- is this necessary?
 }
 
 TEST_F(VectorTest, VInt8Add) {
@@ -66,7 +66,7 @@ TEST_F(VectorTest, VInt8Add) {
                      "  (block                                                        "
                      "     (vstorei type=VectorInt8 offset=0                          "
                      "         (aload parm=0)                                         "
-                     "            (vadd                                               "
+                     "            (vaddVector128Int8                                  "
                      "                 (vloadi type=VectorInt8 (aload parm=1))        "
                      "                 (vloadi type=VectorInt8 (aload parm=2))))      "
                      "     (return)))                                                 ";
@@ -104,7 +104,7 @@ TEST_F(VectorTest, VInt16Add) {
                      "  (block                                                        "
                      "     (vstorei type=VectorInt16 offset=0                         "
                      "         (aload parm=0)                                         "
-                     "            (vadd                                               "
+                     "            (vaddVector128Int16                                 "
                      "                 (vloadi type=VectorInt16 (aload parm=1))       "
                      "                 (vloadi type=VectorInt16 (aload parm=2))))     "
                      "     (return)))                                                 ";
@@ -142,7 +142,7 @@ TEST_F(VectorTest, VFloatAdd) {
                      "  (block                                                        "
                      "     (vstorei type=VectorFloat offset=0                         "
                      "         (aload parm=0)                                         "
-                     "            (vadd                                               "
+                     "            (vaddVector128Float                                 "
                      "                 (vloadi type=VectorFloat (aload parm=1))       "
                      "                 (vloadi type=VectorFloat (aload parm=2))))     "
                      "     (return)))                                                 ";
@@ -169,7 +169,7 @@ TEST_F(VectorTest, VFloatAdd) {
     entry_point(output,inputA,inputB);
 
     for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_FLOAT_EQ(inputA[i] + inputB[i], output[i]); // Epsilon = 4ULP -- is this necessary? 
+        EXPECT_FLOAT_EQ(inputA[i] + inputB[i], output[i]); // Epsilon = 4ULP -- is this necessary?
     }
 }
 

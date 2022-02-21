@@ -995,9 +995,23 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::D
     * The cases that return false are placeholders that should be updated as support for more vector evaluators is added.
     */
    // implemented vector opcodes
+
+   if (opcode.isVectorOpCode() && opcode.getVectorOperation() == OMR::vadd)
+      {
+      TR::DataType ot = opcode.getVectorResultDataType();
+
+      if (ot.getVectorLength() != TR::VectorLength128) return false;
+
+      TR::DataType et = ot.getVectorElementType();
+
+      if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
+         return true;
+      else
+         return false;
+      }
+
    switch (opcode.getOpCodeValue())
       {
-      case TR::vadd:
       case TR::vsub:
          if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
             return true;

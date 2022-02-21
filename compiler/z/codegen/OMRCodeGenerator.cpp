@@ -4732,10 +4732,23 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
       return false;
       }
 
+   if (opcode.isVectorOpCode() && opcode.getVectorOperation() == OMR::vadd)
+      {
+      TR::DataType ot = opcode.getVectorResultDataType();
+
+      if (ot.getVectorLength() != TR::VectorLength128) return false;
+
+      TR::DataType et = opcode.getVectorResultDataType().getVectorElementType();
+
+      if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
+         return true;
+      else
+         return false;
+      }
+
    // implemented vector opcodes
    switch (opcode.getOpCodeValue())
       {
-      case TR::vadd:
       case TR::vsub:
       case TR::vmul:
       case TR::vdiv:

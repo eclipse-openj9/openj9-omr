@@ -115,8 +115,10 @@
 namespace TR { class Optimizer; }
 namespace TR { class RegisterDependencyConditions; }
 
+OMR::TreeEvaluatorFunctionPointerTable OMR::CodeGenerator::_nodeToInstrEvaluators;
+
 TR_TreeEvaluatorFunctionPointer
-OMR::CodeGenerator::_nodeToInstrEvaluators[] =
+OMR::TreeEvaluatorFunctionPointerTable::table[] =
    {
 #define OPCODE_MACRO(\
    opcode, \
@@ -138,11 +140,35 @@ OMR::CodeGenerator::_nodeToInstrEvaluators[] =
 
 #include "il/Opcodes.enum"
 #undef OPCODE_MACRO
+
+#define VECTOR_OPERATION_MACRO(\
+   operation, \
+   name, \
+   prop1, \
+   prop2, \
+   prop3, \
+   prop4, \
+   dataType, \
+   typeProps, \
+   childProps, \
+   swapChildrenOpcode, \
+   reverseBranchOpcode, \
+   boolCompareOpcode, \
+   ifCompareOpcode, \
+   ...) TR::TreeEvaluator::operation ## Evaluator,
+
+#include "il/VectorOperations.enum"
+#undef VECTOR_OPERATION_MACRO
    };
 
-static_assert(TR::NumIlOps ==
-              (sizeof(OMR::CodeGenerator::_nodeToInstrEvaluators) / sizeof(OMR::CodeGenerator::_nodeToInstrEvaluators[0])),
-              "NodeToInstrEvaluators is not the correct size");
+
+void OMR::TreeEvaluatorFunctionPointerTable::checkTableSize()
+   {
+   static_assert((TR::NumScalarIlOps + OMR::NumVectorOperations) ==
+              (sizeof(table) / sizeof(table[0])),
+              "OMR::TreeEvaluatorFunctionPointerTable::table is not the correct size");
+   }
+
 
 #define OPT_DETAILS "O^O CODE GENERATION: "
 

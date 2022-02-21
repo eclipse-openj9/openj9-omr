@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -46,10 +46,11 @@ OMR::OpCodeProperties OMR::ILOpCode::_opCodeProperties[] =
 #include "il/ILOpCodeProperties.hpp"
    };
 
+
 void
 OMR::ILOpCode::checkILOpArrayLengths()
    {
-   for (int i = TR::FirstOMROp; i < TR::NumIlOps; i++)
+   for (int i = TR::FirstOMROp; i < TR::NumScalarIlOps; i++)
       {
       TR::ILOpCodes opCode = (TR::ILOpCodes)i;
       TR::ILOpCode  op(opCode);
@@ -67,7 +68,7 @@ OMR::ILOpCode::setTarget()
    {
    if (TR::Compiler->target.is64Bit())
       {
-      for (int32_t i = 0; i < TR::NumIlOps; ++i)
+      for (int32_t i = 0; i < opCodePropertiesSize; ++i)
          {
          flags32_t *tp = (flags32_t*)(&_opCodeProperties[i].typeProperties); // so ugly
          if (tp->getValue() == ILTypeProp::Reference)
@@ -80,7 +81,7 @@ OMR::ILOpCode::setTarget()
       }
    else
       {
-      for (int32_t i = 0; i < TR::NumIlOps; ++i)
+      for (int32_t i = 0; i < opCodePropertiesSize; ++i)
          {
          flags32_t *tp = (flags32_t*)(&_opCodeProperties[i].typeProperties); // so ugly
          if (tp->getValue() == ILTypeProp::Reference)

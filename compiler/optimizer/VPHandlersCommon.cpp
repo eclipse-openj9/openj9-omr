@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -161,6 +161,9 @@ TR::Node *constrainVcall(OMR::ValuePropagation *vp, TR::Node *node)
 
 #include "optimizer/ValuePropagationTable.hpp" // IWYU pragma: keep
 
-static_assert(TR::NumIlOps ==
-              (sizeof(constraintHandlers) / sizeof(constraintHandlers[0])),
-              "constraintHandlers is not the correct size");
+void ValuePropagationPtrTable::checkTableSize()
+   {
+   static_assert((TR::NumScalarIlOps + OMR::NumVectorOperations) ==
+                 (sizeof(table) / sizeof(table[0])),
+                 "ValuePropagationPtrTable::table[] is not the correct size");
+   }

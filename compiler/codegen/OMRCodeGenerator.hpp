@@ -245,6 +245,20 @@ namespace TR
 namespace OMR
 {
 
+class TreeEvaluatorFunctionPointerTable
+   {
+   private:
+   static TR_TreeEvaluatorFunctionPointer table[];
+
+   static void checkTableSize();
+
+   public:
+   TR_TreeEvaluatorFunctionPointer& operator[] (TR::ILOpCode opcode)
+      {
+      return table[opcode.getTableIndex()];
+      }
+   };
+
 class OMR_EXTENSIBLE CodeGenerator
    {
 
@@ -459,7 +473,7 @@ public:
    // --------------------------------------------------------------------------
    // Tree evaluation
    //
-   static TR_TreeEvaluatorFunctionPointer *getTreeEvaluatorTable() {return _nodeToInstrEvaluators;}
+   static TreeEvaluatorFunctionPointerTable getTreeEvaluatorTable() {return _nodeToInstrEvaluators;}
 
    int32_t getEvaluationPriority(TR::Node*node);
    int32_t whichNodeToEvaluate(TR::Node*first, TR::Node* second);      // Decide which of two nodes should be evaluated first.
@@ -2012,7 +2026,8 @@ public:
    flags16_t _enabledFlags;
 
    public:
-   static TR_TreeEvaluatorFunctionPointer _nodeToInstrEvaluators[];
+
+   static TreeEvaluatorFunctionPointerTable _nodeToInstrEvaluators;
 
    protected:
 

@@ -6580,22 +6580,6 @@ OPCODE_MACRO(\
    /* .description          =    vector negation */ \
 )
 OPCODE_MACRO(\
-   /* .opcode               = */ vadd, \
-   /* .name                 = */ "vadd", \
-   /* .properties1          = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::Add, \
-   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3          = */ 0, \
-   /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::NoType, \
-   /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Vector | ILTypeProp::HasNoDataType, \
-   /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
-   /* .swapChildrenOpCode   = */ TR::BadILOp, \
-   /* .reverseBranchOpCode  = */ TR::BadILOp, \
-   /* .booleanCompareOpCode = */ TR::BadILOp, \
-   /* .ifCompareOpCode      = */ TR::BadILOp, \
-   /* .description          =    vector add */ \
-)
-OPCODE_MACRO(\
    /* .opcode               = */ vsub, \
    /* .name                 = */ "vsub", \
    /* .properties1          = */ ILProp1::Sub, \

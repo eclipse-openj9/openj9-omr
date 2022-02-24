@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -74,10 +74,25 @@ protected:
 	virtual void oldToOldReferenceCreated(MM_EnvironmentBase *env, omrobjectptr_t objectPtr) {};
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
+	virtual bool acquireExclusiveVMAccessForCycleStart(MM_EnvironmentBase *env)
+	{
+		/* Caches must always be flushed, for both initial/final STW cycle.
+		 *
+		 * SATB marks all newly allocated objectes during active concurrent cycle.
+		 * Since it's done on TLH granularity we have to flush the current ones and start creating new ones, once the cycle starts.
+		 */
+		return env->acquireExclusiveVMAccessForGC(this, true, true);
+	}
+
 public:
 	virtual uintptr_t getVMStateID() { return OMRVMSTATE_GC_COLLECTOR_CONCURRENTGC; };
 	static MM_ConcurrentGCSATB *newInstance(MM_EnvironmentBase *env);
 	virtual void kill(MM_EnvironmentBase *env);
+
+	virtual void preAllocCacheFlush(MM_EnvironmentBase *env, void *base, void *top);
+
+	/* Refer to preAllocCacheFlush implementation for reasoning behind this. */
+	virtual uintptr_t reservedForGCAllocCacheSize() { return (_extensions->isSATBBarrierActive() ? OMR_MINIMUM_OBJECT_SIZE : 0); }
 
 	MM_ConcurrentGCSATB(MM_EnvironmentBase *env)
 		: MM_ConcurrentGC(env)

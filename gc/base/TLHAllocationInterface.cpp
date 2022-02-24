@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -84,7 +84,7 @@ MM_TLHAllocationInterface::initialize(MM_EnvironmentBase *env)
 	}
 
 	if (result) {
-		reconnect(env, false);
+		reconnect(env);
 	}
 
 	return result;
@@ -117,25 +117,14 @@ MM_TLHAllocationInterface::kill(MM_EnvironmentBase *env)
  * The environment is either newly created or has had its properties changed such that the existing cache is
  * no longer valid.  An example of this is a change of memory space.  Perform the necessary flushing and
  * re-initialization of the cache details such that new allocations will occur in the correct fashion.
- * 
- * @param shouldFlush determines whether the existing cache information should be flushed back to the heap.
  */
  void
- MM_TLHAllocationInterface::reconnect(MM_EnvironmentBase *env, bool shouldFlush)
+ MM_TLHAllocationInterface::reconnect(MM_EnvironmentBase *env)
 {
-	 MM_GCExtensionsBase *extensions = env->getExtensions();
-
-	 if(shouldFlush) {
-		extensions->allocationStats.merge(&_stats);
-		_stats.clear();
-		/* Since AllocationStats have been reset, reset the base */
-		_bytesAllocatedBase = 0;
-	}
-	
-	_tlhAllocationSupport.reconnect(env, shouldFlush);
+	_tlhAllocationSupport.reconnect(env);
 
 #if defined(OMR_GC_NON_ZERO_TLH)
-	_tlhAllocationSupportNonZero.reconnect(env, shouldFlush);
+	_tlhAllocationSupportNonZero.reconnect(env);
 #endif /* defined(OMR_GC_NON_ZERO_TLH) */
 };
 
@@ -203,14 +192,10 @@ MM_TLHAllocationInterface::allocateObject(MM_EnvironmentBase *env, MM_AllocateDe
 
 	}
 
-	if ((extensions->usingSATBBarrier()) && (NULL != result)) {
-		/* This is temporarily required to support a Standard SATB configuration. Any obj allocated while SATB is active must be marked to preserve the tri-color invariant.
-		 * This is sufficient as allocations are all done OOL with SATB. The final implementation will have TLH marked instead and specific
-		 * object marking will be left to the subspace/AC */
-		(extensions->getGlobalCollector())->checkColorAndMark(env, (omrobjectptr_t)result);
-	}
-
 	if ((NULL != result) && !allocDescription->isCompletedFromTlh()) {
+		/* Objs allocated while SATB is active must be marked. Typically the TLH is marked,
+		 * however since this alloc is not completed form TLH we must mark it individually. */
+		extensions->getGlobalCollector()->checkColorAndMark(env, (omrobjectptr_t)result);
 #if defined(OMR_GC_OBJECT_ALLOCATION_NOTIFY)
 		env->objectAllocationNotify((omrobjectptr_t)result);
 #endif /* OMR_GC_OBJECT_ALLOCATION_NOTIFY */

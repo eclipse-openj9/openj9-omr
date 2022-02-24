@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -107,12 +107,10 @@ MM_ConcurrentGCSATB::kill(MM_EnvironmentBase *env)
 void
 MM_ConcurrentGCSATB::tearDown(MM_EnvironmentBase *env)
 {
-#if defined(OMR_GC_REALTIME)
 	if (NULL != _extensions->sATBBarrierRememberedSet) {
 		_extensions->sATBBarrierRememberedSet->kill(env);
 		_extensions->sATBBarrierRememberedSet = NULL;
 	}
-#endif /* defined(OMR_GC_REALTIME) */
 	/* ..and then tearDown our super class */
 	MM_ConcurrentGC::tearDown(env);
 }
@@ -331,10 +329,10 @@ MM_ConcurrentGCSATB::setupForConcurrent(MM_EnvironmentBase *env)
 {
 	GC_OMRVMInterface::flushCachesForGC(env);
 
-#if defined(OMR_GC_REALTIME)
-	/* Activate SATB Write Barrier */
+	/* Activate SATB Write Barrier
+	 * TODO: reserve/restoreGlobalFragmentIndex should have disable/enableWritterBarrier wrappers. Consider moving
+	 * much of the setupForConcurrent/completeConcurrentTracing in wrappers. */
 	_extensions->sATBBarrierRememberedSet->restoreGlobalFragmentIndex(env);
-#endif /* defined(OMR_GC_REALTIME) */
 
 	_extensions->newThreadAllocationColor = GC_MARK;
 	_concurrentDelegate.setupClassScanning(env);
@@ -451,7 +449,6 @@ MM_ConcurrentGCSATB::completeConcurrentTracing(MM_EnvironmentBase *env, uintptr_
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 
-#if defined(OMR_GC_REALTIME)
 	/* Flush barrier packets */
 	if (((MM_WorkPacketsSATB *)_markingScheme->getWorkPackets())->inUsePacketsAvailable(env)) {
 			((MM_WorkPacketsSATB *)_markingScheme->getWorkPackets())->moveInUseToNonEmpty(env);
@@ -460,7 +457,6 @@ MM_ConcurrentGCSATB::completeConcurrentTracing(MM_EnvironmentBase *env, uintptr_
 
 	/* Deactivate barrier */
 	_extensions->sATBBarrierRememberedSet->preserveGlobalFragmentIndex(env);
-#endif /* defined(OMR_GC_REALTIME) */
 
 	_extensions->newThreadAllocationColor = GC_UNMARK;
 
@@ -476,8 +472,6 @@ MM_ConcurrentGCSATB::completeConcurrentTracing(MM_EnvironmentBase *env, uintptr_
 		_dispatcher->run(env, &completeTracingTask);
 		reportConcurrentCompleteTracingEnd(env, omrtime_hires_clock() - startTime);
 	}
-
-	GC_OMRVMInterface::flushCachesForGC(env);
 
 	Assert_MM_true(_markingScheme->getWorkPackets()->isAllPacketsEmpty());
 }
@@ -554,4 +548,26 @@ MM_ConcurrentGCSATB::reportConcurrentCollectionStart(MM_EnvironmentBase *env)
 	}
 }
 
+/**
+ * TLH is about to be cleared, we must premark it if SATB is active. This is
+ * non-trival to do, we must know the start of the last object to mark the proper range of the TLH.
+ * Arbitrary bits at the end of the TLH can’t be marked, this is problematic for sweep.
+ *
+ * To get around this issue we seal the TLH with a bogus/dummy obj at the
+ * end of the TLH (done before call to this method). With this, we know the precise addr to batch mark to. We have
+ * guaranteed that we have at least min obj size available in the TLH by reservering it when the TLH was initially allocated.
+ *
+ * @param base The base address of the cache
+ * @param top  The start of the last obj in the cache
+ */
+void
+MM_ConcurrentGCSATB::preAllocCacheFlush(MM_EnvironmentBase *env, void *base, void *top) {
+	Assert_MM_true(_extensions->isSATBBarrierActive());
+
+	uintptr_t lastTLHobjSize = _extensions->objectModel.getConsumedSizeInBytesWithHeader((omrobjectptr_t)top);
+	Assert_MM_true(OMR_MINIMUM_OBJECT_SIZE == lastTLHobjSize);
+
+	/* Mark all newly allocated objects */
+	_markingScheme->markObjectsForRange(env, (uint8_t *)base, (uint8_t *)top);
+}
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK && OMR_GC_REALTIME */

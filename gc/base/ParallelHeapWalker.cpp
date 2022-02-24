@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -108,7 +108,7 @@ MM_ParallelHeapWalker::allObjectsDoParallel(MM_EnvironmentBase *env, MM_HeapWalk
 	/* determine the size of the segment chunks to use for parallel walks */
 	uintptr_t threadCount = env->_currentTask->getThreadCount();
 	uintptr_t heapChunkFactor = 1;
-	if ((threadCount > 1) && _markMap->isMarkMapValid()) {
+	if ((threadCount > 1) && _markMap->isMarkMapValid() && (!extensions->usingSATBBarrier())) {
 		heapChunkFactor = threadCount * 8;
 	}
 	uintptr_t parallelChunkSize = extensions->heap->getMemorySize() / heapChunkFactor;

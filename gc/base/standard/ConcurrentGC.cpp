@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1582,7 +1582,7 @@ MM_ConcurrentGC::signalThreadsToActivateWriteBarrier(MM_EnvironmentBase *env)
 		/* We may or may not have exclusive access but another thread may have beat us to it and
 		 * prepared the threads or even collected.
 		 */
-		if (env->acquireExclusiveVMAccessForGC(this, true, false)) {
+		if (acquireExclusiveVMAccessForCycleStart(env)) {
 			MM_CycleState *previousCycleState = env->_cycleState;
 			_concurrentCycleState = MM_CycleState();
 			_concurrentCycleState._type = _cycleType;
@@ -1874,7 +1874,7 @@ MM_ConcurrentGC::concurrentFinalCollection(MM_EnvironmentBase *env, MM_MemorySub
 		_concurrentPhaseStats._endTime = omrtime_hires_clock();
 		postConcurrentUpdateStatsAndReport(env);
 
-		if (env->acquireExclusiveVMAccessForGC(this, true, true)) {
+		if (acquireExclusiveVMAccessForCycleEnd(env)) {
 			/* We got exclusive control first so do collection */
 			reportConcurrentCollectionStart(env);
 			uint64_t startTime = omrtime_hires_clock();

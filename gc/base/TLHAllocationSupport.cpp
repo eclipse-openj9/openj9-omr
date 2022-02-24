@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,6 +42,7 @@
 #include "EnvironmentBase.hpp"
 #include "FrequentObjectsStats.hpp"
 #include "GCExtensionsBase.hpp"
+#include "GlobalCollector.hpp"
 #include "Math.hpp"
 #include "MemoryPool.hpp"
 #include "MemorySpace.hpp"
@@ -54,9 +55,6 @@
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 #if defined(OMR_GC_THREAD_LOCAL_HEAP)
-/**
- * Report clearing of a full allocation cache
- */
 void
 MM_TLHAllocationSupport::reportClearCache(MM_EnvironmentBase *env)
 {
@@ -66,9 +64,6 @@ MM_TLHAllocationSupport::reportClearCache(MM_EnvironmentBase *env)
 	TRIGGER_J9HOOK_MM_PRIVATE_CACHE_CLEARED(extensions->privateHookInterface, _omrVMThread, subspace, getBase(), getAlloc(), getTop());
 }
 
-/**
- * Report allocation of a new allocation cache
- */
 void
 MM_TLHAllocationSupport::reportRefreshCache(MM_EnvironmentBase *env)
 {
@@ -77,16 +72,11 @@ MM_TLHAllocationSupport::reportRefreshCache(MM_EnvironmentBase *env)
 	TRIGGER_J9HOOK_MM_PRIVATE_CACHE_REFRESHED(env->getExtensions()->privateHookInterface, _omrVMThread, subspace, getBase(), getTop());
 }
 
-/**
- * Purge the TLH data from the receiver.
- * Remove any ownership of a heap area from the receivers TLH, and make sure the heap is left in a safe,
- * or walkable state.
- *
- * @note The calling environment may not be the receivers owning environment.
- */
 void
 MM_TLHAllocationSupport::clear(MM_EnvironmentBase *env)
 {
+	Assert_MM_true(_reservedBytesForGC == 0);
+
 	MM_MemoryPool *memoryPool = getMemoryPool();
 
 	/* Any previous cache to clear  ? */
@@ -97,39 +87,17 @@ MM_TLHAllocationSupport::clear(MM_EnvironmentBase *env)
 	wipeTLH(env);
 }
 
-/**
- * Reconnect the cache to the owning environment.
- * The environment is either newly created or has had its properties changed such that the existing cache is
- * no longer valid.  An example of this is a change of memory space.  Perform the necessary flushing and
- * re-initialization of the cache details such that new allocations will occur in the correct fashion.
- *
- * @param shouldFlush determines whether the existing cache information should be flushed back to the heap.
- */
  void
- MM_TLHAllocationSupport::reconnect(MM_EnvironmentBase *env, bool shouldFlush)
+ MM_TLHAllocationSupport::reconnect(MM_EnvironmentBase *env)
 {
 	 MM_GCExtensionsBase *extensions = env->getExtensions();
 
-	if(shouldFlush) {
-		_abandonedList = NULL;
-		_abandonedListSize = 0;
-		clear(env);
-	} else {
-		/* Clear current information accumulated */
-		setAllZeroes();
-	}
+	/* Clear current information accumulated */
+	setAllZeroes();
 
 	_tlh->refreshSize = extensions->tlhInitialSize;
 }
 
-/**
- * Restart the cache from its current start to an appropriate base state.
- * Reset the cache details back to a starting state that is appropriate for where it currently is.
- * In this case, the state reset takes into account the ending refresh size and sets an appropriate
- * new starting point.
- *
- * @note The previous cache contents are expected to have been flushed back to the heap.
- */
 void
 MM_TLHAllocationSupport::restart(MM_EnvironmentBase *env)
 {
@@ -145,9 +113,6 @@ MM_TLHAllocationSupport::restart(MM_EnvironmentBase *env)
 	_tlh->refreshSize = MM_Math::roundToCeiling(extensions->tlhInitialSize, refreshSize / 2);
 }
 
-/**
- * Refresh the TLH.
- */
 bool
 MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool shouldCollectOnFailure)
 {
@@ -171,6 +136,12 @@ MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription
 	}
 
 	MM_AllocationStats *stats = _objectAllocationInterface->getAllocationStats();
+
+	void *lastTLHobj = restoreTLHTopForGC(env);
+
+	if (NULL != lastTLHobj) {
+		extensions->getGlobalCollector()->preAllocCacheFlush(env, getBase(), lastTLHobj);
+	}
 
 	stats->_tlhDiscardedBytes += getRemainingSize();
 	uintptr_t usedSize = getUsedSize();
@@ -288,22 +259,20 @@ MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription
 			if (getRefreshSize() < tlhMaximumSize) {
 				setRefreshSize(getRefreshSize() + extensions->tlhIncrementSize);
 			}
+			reserveTLHTopForGC(env);
 		}
 	}
 
 	return didRefresh;
 }
 
-
-/**
- * Attempt to allocate an object in this TLH.
- */
 void *
 MM_TLHAllocationSupport::allocateFromTLH(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool shouldCollectOnFailure)
 {
+	MM_GCExtensionsBase* extensions = env->getExtensions();
 	void *memPtr = NULL;
 
-	Assert_MM_true(!env->getExtensions()->isSegregatedHeap());
+	Assert_MM_true(!extensions->isSegregatedHeap());
 	uintptr_t sizeInBytesRequired = allocDescription->getContiguousBytes();
 	/* If there's insufficient space, refresh the current TLH */
 	if (sizeInBytesRequired > getSize()) {
@@ -312,6 +281,7 @@ MM_TLHAllocationSupport::allocateFromTLH(MM_EnvironmentBase *env, MM_AllocateDes
 
 	/* Try to fit the allocate into the current TLH */
 	if(sizeInBytesRequired <= getSize()) {
+		Assert_MM_true(_reservedBytesForGC == extensions->getGlobalCollector()->reservedForGCAllocCacheSize());
 		memPtr = (void *)getAlloc();
 		setAlloc((void *)((uintptr_t)getAlloc() + sizeInBytesRequired));
 #if defined(OMR_GC_TLH_PREFETCH_FTA)
@@ -329,18 +299,12 @@ MM_TLHAllocationSupport::allocateFromTLH(MM_EnvironmentBase *env, MM_AllocateDes
 	return memPtr;
 }
 
-/**
- * Replenish the allocation interface TLH cache with new storage.
- * This is a placeholder function for all non-TLH implementing configurations until a further revision of the code finally pushes TLH
- * functionality down to the appropriate level, and not so high that all configurations must recognize it.
- * For this implementation we simply redirect back to the supplied memory pool and if successful, populate the localized TLH and supplied
- * AllocationDescription with the appropriate information.
- * @return true on successful TLH replenishment, false otherwise.
- */
 void *
 MM_TLHAllocationSupport::allocateTLH(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, MM_MemorySubSpace *memorySubSpace, MM_MemoryPool *memoryPool)
 {
 	void *addrBase, *addrTop;
+
+	Assert_MM_true(_reservedBytesForGC == 0);
 
 	if(memoryPool->allocateTLH(env, allocDescription, getRefreshSize(), addrBase, addrTop)) {
 		setupTLH(env, addrBase, addrTop, memorySubSpace, memoryPool);
@@ -354,6 +318,12 @@ MM_TLHAllocationSupport::allocateTLH(MM_EnvironmentBase *env, MM_AllocateDescrip
 void
 MM_TLHAllocationSupport::flushCache(MM_EnvironmentBase *env)
 {
+	void *lastTLHobj = restoreTLHTopForGC(env);
+
+	if (NULL != lastTLHobj) {
+		env->getExtensions()->getGlobalCollector()->preAllocCacheFlush(env, getBase(), lastTLHobj);
+	}
+
 	/* Since AllocationStats have been reset, reset the base as well*/
 	_abandonedList = NULL;
 	_abandonedListSize = 0;
@@ -363,6 +333,7 @@ MM_TLHAllocationSupport::flushCache(MM_EnvironmentBase *env)
 void
 MM_TLHAllocationSupport::setupTLH(MM_EnvironmentBase *env, void *addrBase, void *addrTop, MM_MemorySubSpace *memorySubSpace, MM_MemoryPool *memoryPool)
 {
+	Assert_MM_true(_reservedBytesForGC == 0);
 	MM_GCExtensionsBase *extensions = env->getExtensions();
 
 	if (extensions->doFrequentObjectAllocationSampling){
@@ -419,4 +390,48 @@ MM_TLHAllocationSupport::objectAllocationNotify(MM_EnvironmentBase *env, void *h
 }
 #endif /* OMR_GC_OBJECT_ALLOCATION_NOTIFY */
 
+void
+MM_TLHAllocationSupport::reserveTLHTopForGC(MM_EnvironmentBase *env)
+{
+	uintptr_t bytesToReserveForGC = env->getExtensions()->getGlobalCollector()->reservedForGCAllocCacheSize();
+
+	Assert_MM_true(_reservedBytesForGC == 0);
+
+	if (bytesToReserveForGC > 0) {
+		_reservedBytesForGC = bytesToReserveForGC;
+		setTop((void *) ((uintptr_t) getTop() - _reservedBytesForGC));
+	}
+}
+
+void *
+MM_TLHAllocationSupport::restoreTLHTopForGC(MM_EnvironmentBase *env)
+{
+	MM_GCExtensionsBase *extensions = env->getExtensions();
+	void *lastTLHobj = NULL;
+
+	if (NULL == getBase()) {
+		Assert_MM_true(NULL == getTop());
+		Assert_MM_true(0 == _reservedBytesForGC);
+
+	} else {
+		Assert_MM_true(NULL != getTop());
+
+		if (_reservedBytesForGC > 0) {
+			Assert_MM_true(extensions->usingSATBBarrier());
+			Assert_MM_true(_reservedBytesForGC == extensions->getGlobalCollector()->reservedForGCAllocCacheSize());
+
+			setTop((void *)((uintptr_t) getTop() + _reservedBytesForGC));
+			_reservedBytesForGC = 0;
+
+			if (getUsedSize() > 0) {
+				lastTLHobj = getAlloc();
+
+				extensions->objectModel.initializeMinimumSizeObject(env, lastTLHobj);
+				setAlloc((void *)((uintptr_t) lastTLHobj + OMR_MINIMUM_OBJECT_SIZE));
+			}
+		}
+	}
+
+	return lastTLHobj;
+}
 #endif /* defined(OMR_GC_THREAD_LOCAL_HEAP) */

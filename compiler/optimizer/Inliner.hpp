@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -107,7 +107,7 @@ class TR_InlinerTracer : public TR_LogTracer
       TR_PersistentMemory * trPersistentMemory(){ return _trMemory->trPersistentMemory(); }
 
       // determine the tracing level
-      bool partialLevel() 
+      bool partialLevel()
          {
          static const bool enableTracePartialInlining = feGetEnv("TR_EnableTracePartialInlining") != NULL;
          return enableTracePartialInlining;
@@ -128,7 +128,6 @@ class TR_InlinerTracer : public TR_LogTracer
       void dumpCallStack (TR_CallStack *, const char *fmt, ...);
       void dumpCallSite (TR_CallSite *, const char *fmt, ...);
       void dumpCallTarget (TR_CallTarget *, const char *fmt, ...);
-      void dumpInline (TR_LinkHead<TR_CallTarget> *targets, const char *fmt, ...);
       void dumpPartialInline (TR_InlineBlocks *partialInline);
 
       void dumpDeadCalls(TR_LinkHead<TR_CallSite> *sites);

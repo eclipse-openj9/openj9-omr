@@ -2607,7 +2607,6 @@ OMR::Options::jitPreProcess()
    self()->setOption(TR_EnableCodeCacheConsolidation);
 #endif
 
-   self()->setOption(TR_DisableZNext);
    // --------------------------------------------------------------------------
    // J9-only
    //

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3283,17 +3283,17 @@ OMR::Node::getVirtualCallTreeForGuard()
    TR::TreeTop * callTree = NULL;
    TR::Compilation *comp = TR::comp();
    int32_t guardInlinedSiteIndex = guard->getInlinedSiteIndex();
-      
+
    if (guardInlinedSiteIndex < 0)
       {
       // EscapeAnalysis can create a guard with index -1
       // in that case, return conservative result
       return NULL;
       }
-   
+
    int32_t guardCallerIndex = comp->getInlinedCallSite(guardInlinedSiteIndex)._byteCodeInfo.getCallerIndex();
    uint32_t guardCallerByteCodeIndex = comp->getInlinedCallSite(guardInlinedSiteIndex)._byteCodeInfo.getByteCodeIndex();
-   
+
    while (1)
       {
       // Call node is not necessarily the first real tree top in the call block
@@ -3331,7 +3331,7 @@ OMR::Node::getVirtualCallTreeForGuard()
                callNode->getByteCodeIndex() != guardCallerByteCodeIndex ||
                !callNode->isTheVirtualCallNodeForAGuardedInlinedCall())
          {
-         return NULL;         
+         return NULL;
          }
       else
          {
@@ -7134,38 +7134,6 @@ OMR::Node::printSkipSignExtension()
    {
    return self()->skipSignExtension() ? "SkipSignExt " : "";
    }
-
-
-
-bool
-OMR::Node::needsPrecisionAdjustment()
-   {
-   TR_ASSERT(self()->getOpCodeValue() == TR::fRegLoad || self()->getOpCodeValue() == TR::dRegLoad, "Opcode must be FP global reg load");
-   return _flags.testAny(precisionAdjustment);
-   }
-
-void
-OMR::Node::setNeedsPrecisionAdjustment(bool v)
-   {
-   TR::Compilation * c = TR::comp();
-   TR_ASSERT(self()->getOpCodeValue() == TR::fRegLoad || self()->getOpCodeValue() == TR::dRegLoad, "Opcode must be FP global reg load");
-   if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting needsPrecisionAdjustment flag on node %p to %d\n", self(), v))
-      _flags.set(precisionAdjustment, v);
-   }
-
-bool
-OMR::Node::chkNeedsPrecisionAdjustment()
-   {
-   return (self()->getOpCodeValue() == TR::fRegLoad || self()->getOpCodeValue() == TR::dRegLoad) && _flags.testAny(precisionAdjustment);
-   }
-
-const char *
-OMR::Node::printNeedsPrecisionAdjustment()
-   {
-   return self()->chkNeedsPrecisionAdjustment() ? "precisionAdjustment " : "";
-   }
-
-
 
 bool
 OMR::Node::isUseBranchOnCount()

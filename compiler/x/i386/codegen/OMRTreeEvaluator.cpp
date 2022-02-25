@@ -5352,7 +5352,6 @@ TR::Register *OMR::X86::I386::TreeEvaluator::l2fEvaluator(TR::Node *node, TR::Co
       }
 
    target->setMayNeedPrecisionAdjustment();
-   target->setNeedsPrecisionAdjustment();
    cg->stopUsingRegister(target);
 
    target = coerceST0ToFPR(node, TR::Float, cg);
@@ -5388,7 +5387,6 @@ TR::Register *OMR::X86::I386::TreeEvaluator::l2dEvaluator(TR::Node *node, TR::Co
       }
 
    target->setMayNeedPrecisionAdjustment();
-   target->setNeedsPrecisionAdjustment();
    cg->stopUsingRegister(target);
 
    target = coerceST0ToFPR(node, TR::Double, cg);

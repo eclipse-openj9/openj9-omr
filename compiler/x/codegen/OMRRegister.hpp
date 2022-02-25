@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -78,9 +78,6 @@ class OMR_EXTENSIBLE Register: public OMR::Register
    /*
     * Method for manipulating flags
     */
-   bool needsPrecisionAdjustment()      {return _flags.testAny(NeedsPrecisionAdjustment);}
-   void setNeedsPrecisionAdjustment();
-   void resetNeedsPrecisionAdjustment() {_flags.reset(NeedsPrecisionAdjustment);}
 
    bool mayNeedPrecisionAdjustment()      {return _flags.testAny(MayNeedPrecisionAdjustment);}
    void setMayNeedPrecisionAdjustment()   {_flags.set(MayNeedPrecisionAdjustment);}
@@ -110,11 +107,7 @@ class OMR_EXTENSIBLE Register: public OMR::Register
 
    enum
       {
-      NeedsPrecisionAdjustment      = 0x0002, // IA32 flag that indicates that a store/reload of
-                                              // the value in this register is required before
-                                              // it can be used in further computations. Required
-                                              // for single-precision FP registers (unless method
-                                              // is in single precision mode).
+      // AVAILABLE                  = 0x0002,
       MayNeedPrecisionAdjustment    = 0x0004, // IA32 flag that indicates that a store/reload of
                                               // the value in this register may be required before
                                               // it can be used in an FP-strict expression.

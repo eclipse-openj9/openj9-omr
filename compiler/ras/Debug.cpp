@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1029,7 +1029,6 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
    output.append(format, node->printIsArrayChkReferenceArray1());
    output.append(format, node->printIsArrayChkPrimitiveArray2());
    output.append(format, node->printIsArrayChkReferenceArray2());
-   output.append(format, node->printNeedsPrecisionAdjustment());
    output.append(format, node->printIsSignExtendedTo32BitAtSource());
    output.append(format, node->printIsSignExtendedTo64BitAtSource());
    output.append(format, node->printIsZeroExtendedTo32BitAtSource());

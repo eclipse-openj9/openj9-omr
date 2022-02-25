@@ -4182,10 +4182,10 @@ TR::Node *constrainCheckcast(OMR::ValuePropagation *vp, TR::Node *node)
          }
 
 #ifdef J9_PROJECT_SPECIFIC
-      if (definitionNode)
+      if (definitionNode && node->getSecondChild()->getOpCodeValue() == TR::loadaddr)
          {
          TR::SymbolReference * classSymRef = node->getSecondChild()->getSymbolReference();
-         if (classSymRef && !classSymRef->isUnresolved())
+         if (!classSymRef->isUnresolved())
             {
             TR::StaticSymbol * classSym = classSymRef->getSymbol()->getStaticSymbol();
             if (classSym)

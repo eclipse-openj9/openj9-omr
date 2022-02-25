@@ -3814,7 +3814,6 @@ generateLabelInstruction(TR::InstOpCode::Mnemonic     opCode,
                          TR::Node           *node,
                          TR::LabelSymbol     *label,
                          TR::Node           *glRegDep,
-                         List<TR::Register> *popRegisters,
                          bool               evaluateGlRegDeps,
                          TR::CodeGenerator *cg)
    {
@@ -3827,7 +3826,7 @@ generateLabelInstruction(TR::InstOpCode::Mnemonic     opCode,
       generateLabelInstruction(opCode,
                                node,
                                label,
-                               generateRegisterDependencyConditions(glRegDep, cg, 0, popRegisters),
+                               generateRegisterDependencyConditions(glRegDep, cg, 0),
                                cg);
 
    return instr;
@@ -3854,7 +3853,6 @@ generateJumpInstruction(
                                       jumpNode,
                                       destinationLabel,
                                       jumpNode->getFirstChild(),
-                                      0,
                                       evaluateGlRegDeps,
                                       cg) :
              inst = generateLabelInstruction(opCode,
@@ -3876,22 +3874,8 @@ generateConditionalJumpInstruction(
 
    if (ifNode->getNumChildren() == 3)
       {
-      List<TR::Register> popRegisters(cg->trMemory());
       TR::Node* glRegDep = ifNode->getChild(2);
-      inst = generateLabelInstruction(opCode, ifNode, destinationLabel, glRegDep, &popRegisters, cg);
-
-      if (!popRegisters.isEmpty())
-         {
-         ListIterator<TR::Register> popRegsIt(&popRegisters);
-         for (TR::Register *popRegister = popRegsIt.getFirst();
-              popRegister != NULL;
-              popRegister = popRegsIt.getNext())
-            {
-            generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, ifNode, popRegister, popRegister,
-            cg);
-            cg->stopUsingRegister(popRegister);
-            }
-         }
+      inst = generateLabelInstruction(opCode, ifNode, destinationLabel, glRegDep, true, cg);
       }
    else
       {

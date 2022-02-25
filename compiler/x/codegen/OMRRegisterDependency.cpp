@@ -86,8 +86,7 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(uint16_t nu
 OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(
       TR::Node *node,
       TR::CodeGenerator *cg,
-      uint16_t additionalRegDeps,
-      List<TR::Register> *popRegisters)
+      uint16_t additionalRegDeps)
    :_numPreConditions(-1),_numPostConditions(-1),
     _addCursorForPre(0),_addCursorForPost(0)
    {
@@ -1288,5 +1287,5 @@ generateRegisterDependencyConditions(TR::Node           *node,
                                      uint32_t           additionalRegDeps,
                                      List<TR::Register> *popRegisters)
    {
-   return new (cg->trHeapMemory()) TR::RegisterDependencyConditions(node, cg, additionalRegDeps, popRegisters);
+   return new (cg->trHeapMemory()) TR::RegisterDependencyConditions(node, cg, additionalRegDeps);
    }

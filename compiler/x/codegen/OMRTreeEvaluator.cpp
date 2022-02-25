@@ -3356,7 +3356,6 @@ TR::Register *OMR::X86::TreeEvaluator::passThroughEvaluator(TR::Node *node, TR::
 TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Block *block = node->getBlock();
-   List<TR::Register> popRegisters(cg->trMemory());
    TR::Compilation *comp = cg->comp();
 
    cg->setCurrentBlock(block);
@@ -3390,7 +3389,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
          }
 
       if (node->getNumChildren() > 0)
-         inst = generateLabelInstruction(TR::InstOpCode::label, node, label, node->getFirstChild(), &popRegisters, cg);
+         inst = generateLabelInstruction(TR::InstOpCode::label, node, label, node->getFirstChild(), true, cg);
       else
          inst = generateLabelInstruction(TR::InstOpCode::label, node, node->getLabel(), cg);
 
@@ -3421,16 +3420,6 @@ TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
       }
 
    cg->generateDebugCounter((node->getBlock()->isExtensionOfPreviousBlock())? "cg.blocks/extensions":"cg.blocks", 1, TR::DebugCounter::Exorbitant);
-
-   if (!popRegisters.isEmpty())
-      {
-      ListIterator<TR::Register> popRegsIt(&popRegisters);
-      for (TR::Register *popRegister = popRegsIt.getFirst(); popRegister != NULL; popRegister = popRegsIt.getNext())
-         {
-         generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, node, popRegister, popRegister, cg);
-         cg->stopUsingRegister(popRegister);
-         }
-      }
 
    if (block->isCatchBlock())
       {
@@ -3472,7 +3461,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
       // This label is also used by RegisterDependency to detect the end of a block.
       TR::Instruction *labelInst = NULL;
       if (node->getNumChildren() > 0)
-         labelInst = generateLabelInstruction(TR::InstOpCode::label, node, generateLabelSymbol(cg), node->getFirstChild(), NULL, cg);
+         labelInst = generateLabelInstruction(TR::InstOpCode::label, node, generateLabelSymbol(cg), node->getFirstChild(), true, cg);
       else
          labelInst = generateLabelInstruction(TR::InstOpCode::label, node, generateLabelSymbol(cg), cg);
 
@@ -3931,8 +3920,7 @@ OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       {
       GRANode = fallThroughNode->getFirstChild();
       cg->evaluate(GRANode);
-      List<TR::Register> popRegisters(cg->trMemory());
-      fallThroughConditions = generateRegisterDependencyConditions(GRANode, cg, 0, &popRegisters);
+      fallThroughConditions = generateRegisterDependencyConditions(GRANode, cg, 0);
       cg->decReferenceCount(GRANode);
       }
 
@@ -3940,8 +3928,7 @@ OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       {
       GRANode = persistentFailureNode->getFirstChild();
       cg->evaluate(GRANode);
-      List<TR::Register> popRegisters(cg->trMemory());
-      persistentConditions = generateRegisterDependencyConditions(GRANode, cg, 0, &popRegisters);
+      persistentConditions = generateRegisterDependencyConditions(GRANode, cg, 0);
       cg->decReferenceCount(GRANode);
       }
 
@@ -3949,8 +3936,7 @@ OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       {
       GRANode = transientFailureNode->getFirstChild();
       cg->evaluate(GRANode);
-      List<TR::Register> popRegisters(cg->trMemory());
-      transientConditions = generateRegisterDependencyConditions(GRANode, cg, 0, &popRegisters);
+      transientConditions = generateRegisterDependencyConditions(GRANode, cg, 0);
       cg->decReferenceCount(GRANode);
       }
 

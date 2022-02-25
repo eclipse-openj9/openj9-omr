@@ -450,7 +450,6 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node       *
    TR::MemoryReference               *highMR           = NULL;
    TR::RegisterDependencyConditions  *deps             = NULL;
    uint32_t                           numAdditionalRegDeps = 5;
-   List<TR::Register>                 popRegisters(cg()->trMemory());
 
    if (getCmpReg1Mem2())
       {
@@ -475,7 +474,7 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node       *
       //
       TR::Node *third = root->getChild(2);
       cg()->evaluate(third);
-      deps = generateRegisterDependencyConditions(third, cg(), numAdditionalRegDeps, &popRegisters);
+      deps = generateRegisterDependencyConditions(third, cg(), numAdditionalRegDeps);
       }
    else
       {
@@ -741,16 +740,6 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node       *
 
    cg()->decReferenceCount(firstChild);
    cg()->decReferenceCount(secondChild);
-
-   if (!popRegisters.isEmpty())
-      {
-      ListIterator<TR::Register> popRegsIt(&popRegisters);
-      for (TR::Register *popRegister = popRegsIt.getFirst(); popRegister != NULL; popRegister = popRegsIt.getNext())
-         {
-         generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, root, popRegister, popRegister, cg());
-         cg()->stopUsingRegister(popRegister);
-         }
-      }
    }
 
 void TR_X86CompareAnalyser::longEqualityCompareAndBranchAnalyser(TR::Node        *root,
@@ -801,7 +790,6 @@ void TR_X86CompareAnalyser::longEqualityCompareAndBranchAnalyser(TR::Node       
    TR::MemoryReference               *highMR               = NULL;
    bool                               createdFirstLabel    = (firstBranchLabel == NULL ? true : false);
    uint32_t                           numAdditionalRegDeps = 5;
-   List<TR::Register>                 popRegisters(cg()->trMemory());
 
    if (getCmpReg1Mem2())
       {
@@ -827,11 +815,11 @@ void TR_X86CompareAnalyser::longEqualityCompareAndBranchAnalyser(TR::Node       
       if (firstBranchLabel == NULL)
          {
          firstBranchLabel = TR::LabelSymbol::create(cg()->trHeapMemory(),cg());
-         deps = generateRegisterDependencyConditions(third, cg(), numAdditionalRegDeps, &popRegisters);
+         deps = generateRegisterDependencyConditions(third, cg(), numAdditionalRegDeps);
          }
       else
          {
-         deps = generateRegisterDependencyConditions(third, cg(), numAdditionalRegDeps, &popRegisters);
+         deps = generateRegisterDependencyConditions(third, cg(), numAdditionalRegDeps);
          }
       }
    else
@@ -945,16 +933,6 @@ void TR_X86CompareAnalyser::longEqualityCompareAndBranchAnalyser(TR::Node       
 
    cg()->decReferenceCount(firstChild);
    cg()->decReferenceCount(secondChild);
-
-   if (!popRegisters.isEmpty())
-      {
-      ListIterator<TR::Register> popRegsIt(&popRegisters);
-      for (TR::Register *popRegister = popRegsIt.getFirst(); popRegister != NULL; popRegister = popRegsIt.getNext())
-         {
-         generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, root, popRegister, popRegister, cg());
-         cg()->stopUsingRegister(popRegister);
-         }
-      }
    }
 
 

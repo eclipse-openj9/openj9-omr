@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,7 +30,6 @@ class TR_Memory;
 namespace TR { class CodeGenerator; }
 namespace TR { class Node; }
 namespace TR { class Register; }
-template <typename ListKind> class List;
 
 namespace TR
 {
@@ -45,8 +44,8 @@ class RegisterDependencyConditions : public OMR::RegisterDependencyConditionsCon
    RegisterDependencyConditions(uint32_t numPreConds, uint32_t numPostConds, TR_Memory * m) :
       OMR::RegisterDependencyConditionsConnector(numPreConds, numPostConds, m) {}
 
-   RegisterDependencyConditions(TR::Node *node, TR::CodeGenerator *cg, uint32_t additionalRegDeps = 0, List<TR::Register> *reglist = 0) :
-      OMR::RegisterDependencyConditionsConnector(node, cg, additionalRegDeps, reglist) {}
+   RegisterDependencyConditions(TR::Node *node, TR::CodeGenerator *cg, uint32_t additionalRegDeps = 0) :
+      OMR::RegisterDependencyConditionsConnector(node, cg, additionalRegDeps) {}
 
    };
 }

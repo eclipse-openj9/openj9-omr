@@ -1166,22 +1166,9 @@ TR::Register *OMR::X86::TreeEvaluator::igotoEvaluator(TR::Node* node, TR::CodeGe
       TR::Node* secondChild = node->getSecondChild();
       TR_ASSERT(secondChild->getOpCodeValue() == TR::GlRegDeps, "second child of a igoto should be a TR::GlRegDeps");
       cg->evaluate(secondChild);
-      List<TR::Register> popRegisters(cg->trMemory());
 
-      secondChildDeps = generateRegisterDependencyConditions(secondChild, cg, 0, &popRegisters);
+      secondChildDeps = generateRegisterDependencyConditions(secondChild, cg, 0);
       cg->decReferenceCount(secondChild);
-
-      if (!popRegisters.isEmpty())
-         {
-         ListIterator<TR::Register> popRegsIt(&popRegisters);
-         for (TR::Register *popRegister = popRegsIt.getFirst();
-              popRegister != NULL;
-              popRegister = popRegsIt.getNext())
-            {
-            generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, node, popRegister, popRegister, cg);
-            cg->stopUsingRegister(popRegister);
-            }
-         }
       }
 
    TR::Register* jumpTargetReg  = cg->evaluate(node->getFirstChild());
@@ -2273,13 +2260,12 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
       site = comp->addSideEffectNOPSite();
       }
 
-   List<TR::Register> popRegisters(cg->trMemory());
    TR::RegisterDependencyConditions  *deps = 0;
    if (node->getNumChildren() == 3)
       {
       TR::Node *third = node->getChild(2);
       cg->evaluate(third);
-      deps = generateRegisterDependencyConditions(third, cg, 1, &popRegisters);
+      deps = generateRegisterDependencyConditions(third, cg, 1);
       deps->stopAddingConditions();
       }
 
@@ -2310,16 +2296,6 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
 
    cg->recursivelyDecReferenceCount(node->getFirstChild());
    cg->recursivelyDecReferenceCount(node->getSecondChild());
-
-   if (!popRegisters.isEmpty())
-      {
-      ListIterator<TR::Register> popRegsIt(&popRegisters);
-      for (TR::Register *popRegister = popRegsIt.getFirst(); popRegister != NULL; popRegister = popRegsIt.getNext())
-         {
-         generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, node, popRegister, popRegister, cg);
-         cg->stopUsingRegister(popRegister);
-         }
-      }
 
    return true;
 #else

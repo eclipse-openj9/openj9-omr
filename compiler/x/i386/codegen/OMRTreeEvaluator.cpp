@@ -213,7 +213,6 @@ void OMR::X86::I386::TreeEvaluator::compareLongsForOrder(
       TR::LabelSymbol *startLabel       = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
       TR::LabelSymbol *doneLabel        = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
       TR::LabelSymbol *destinationLabel = node->getBranchDestination()->getNode()->getLabel();
-      List<TR::Register> popRegisters(cg->trMemory());
 
       startLabel->setStartInternalControlFlow();
       doneLabel->setEndInternalControlFlow();
@@ -226,7 +225,7 @@ void OMR::X86::I386::TreeEvaluator::compareLongsForOrder(
          {
          TR::Node *third = node->getChild(2);
          cg->evaluate(third);
-         deps = generateRegisterDependencyConditions(third, cg, 2, &popRegisters);
+         deps = generateRegisterDependencyConditions(third, cg, 2);
          deps->addPostCondition(cmpRegister->getHighOrder(), TR::RealRegister::NoReg, cg);
          deps->addPostCondition(cmpRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
          deps->stopAddingConditions();
@@ -249,16 +248,6 @@ void OMR::X86::I386::TreeEvaluator::compareLongsForOrder(
          }
 
       generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, deps, cg);
-
-      if (!popRegisters.isEmpty())
-         {
-         ListIterator<TR::Register> popRegsIt(&popRegisters);
-         for (TR::Register *popRegister = popRegsIt.getFirst(); popRegister != NULL; popRegister = popRegsIt.getNext())
-            {
-            generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, node, popRegister, popRegister, cg);
-            cg->stopUsingRegister(popRegister);
-            }
-         }
 
       cg->decReferenceCount(firstChild);
       cg->decReferenceCount(secondChild);
@@ -5690,7 +5679,6 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, T
          }
       else
          {
-         List<TR::Register>  popRegisters(cg->trMemory());
          TR::LabelSymbol     *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
          TR::LabelSymbol     *doneLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
 
@@ -5710,7 +5698,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, T
             {
             TR::Node *third = node->getChild(2);
             cg->evaluate(third);
-            deps = generateRegisterDependencyConditions(third, cg, 2, &popRegisters);
+            deps = generateRegisterDependencyConditions(third, cg, 2);
             deps->addPostCondition(cmpRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
             deps->addPostCondition(cmpRegister->getHighOrder(), TR::RealRegister::NoReg, cg);
             deps->stopAddingConditions();
@@ -5730,16 +5718,6 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, T
             }
 
          generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, deps, cg);
-
-         if (!popRegisters.isEmpty())
-            {
-            ListIterator<TR::Register> popRegsIt(&popRegisters);
-            for (TR::Register *popRegister = popRegsIt.getFirst(); popRegister != NULL; popRegister = popRegsIt.getNext())
-               {
-               generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, node, popRegister, popRegister, cg);
-               cg->stopUsingRegister(popRegister);
-               }
-            }
          }
 
       cg->decReferenceCount(firstChild);
@@ -5762,7 +5740,6 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpneEvaluator(TR::Node *node, T
    if (secondChild->getOpCodeValue() == TR::lconst &&
        secondChild->getRegister() == NULL)
       {
-      List<TR::Register>                    popRegisters(cg->trMemory());
       int32_t                              lowValue    = secondChild->getLongIntLow();
       int32_t                              highValue   = secondChild->getLongIntHigh();
       TR::Node                             *firstChild  = node->getFirstChild();
@@ -5837,22 +5814,12 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpneEvaluator(TR::Node *node, T
             {
             TR::Node *third = node->getChild(2);
             cg->evaluate(third);
-            deps = generateRegisterDependencyConditions(third, cg, 1, &popRegisters);
+            deps = generateRegisterDependencyConditions(third, cg, 1);
             deps->stopAddingConditions();
             generateLabelInstruction(TR::InstOpCode::JNE4, node, destinationLabel, deps, cg);
             compareGPRegisterToConstantForEquality(node, highValue, cmpRegister->getHighOrder(), cg);
             generateLabelInstruction(TR::InstOpCode::JNE4, node, destinationLabel, deps, cg);
             cg->decReferenceCount(third);
-
-            if (!popRegisters.isEmpty())
-               {
-               ListIterator<TR::Register> popRegsIt(&popRegisters);
-               for (TR::Register *popRegister = popRegsIt.getFirst(); popRegister != NULL; popRegister = popRegsIt.getNext())
-                  {
-                  generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, node, popRegister, popRegister, cg);
-                  cg->stopUsingRegister(popRegister);
-                  }
-               }
             }
          else
             {

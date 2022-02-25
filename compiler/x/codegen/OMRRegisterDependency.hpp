@@ -133,7 +133,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
 
    RegisterDependencyConditions(uint16_t numPreConds, uint16_t numPostConds, TR_Memory * m);
 
-   RegisterDependencyConditions(TR::Node *node, TR::CodeGenerator *cg, uint16_t additionalRegDeps = 0, List<TR::Register> * = 0);
+   RegisterDependencyConditions(TR::Node *node, TR::CodeGenerator *cg, uint16_t additionalRegDeps = 0);
 
    void unionNoRegPostCondition(TR::Register *reg, TR::CodeGenerator *cg);
 

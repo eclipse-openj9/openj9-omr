@@ -1124,6 +1124,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceCatchBlockRemoval",           "L\ttrace catch block removal",                    TR::Options::traceOptimization, catchBlockRemoval, 0, "P"},
    {"traceCFGSimplification",           "L\ttrace Control Flow Graph simplification",      TR::Options::traceOptimization, CFGSimplification, 0, "P"},
    {"traceCG",                          "L\tdump output of code generation passes",        SET_OPTION_BIT(TR_TraceCG), "P" },
+   {"traceCheckcastAndProfiledGuardCoalescer", "L\ttrace checkcast/profiled guard coalescer", TR::Options::traceOptimization, checkcastAndProfiledGuardCoalescer, 0, "P"},
    {"traceCodeGen",                     "L\tdump output of code generation passes",        SET_OPTION_BIT(TR_TraceCG), "P" },
    {"traceColdBlockMarker",             "L\ttrace detection of cold blocks",               TR::Options::traceOptimization, coldBlockMarker, 0, "P"},
    {"traceColdBlockOutlining",          "L\ttrace outlining of cold blocks",               TR::Options::traceOptimization, coldBlockOutlining, 0, "P"},

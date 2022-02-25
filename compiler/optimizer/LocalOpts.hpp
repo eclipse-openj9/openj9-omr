@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -750,12 +750,28 @@ class TR_CheckcastAndProfiledGuardCoalescer : public TR::Optimization
       }
 
    virtual int32_t perform();
-   void doBasicCase (TR::TreeTop* checkcastTree, TR::TreeTop* profiledGuardTree);
-
    virtual const char * optDetailString() const throw();
 
    private:
-      TR::Node* storeObjectInATemporary (TR::TreeTop* checkcastTree);
+
+   typedef TR::list<TR::Node*, TR::Region&> NodeList;
+   typedef TR::typed_allocator<std::pair<const int32_t, NodeList>, TR::Region&> IntToNodesAllocator;
+   typedef std::map<int32_t, NodeList, std::less<int32_t>, IntToNodesAllocator> IntToNodesMap;
+
+   bool processSubtree(
+      TR::NodeChecklist &visited,
+      TR::NodeChecklist &fresh,
+      IntToNodesMap &freshByAuto,
+      TR::Node *node);
+
+   bool sameValue(
+      TR::Node *obj,
+      TR::Node *castObj,
+      TR::SymbolReference *castObjAuto,
+      TR::NodeChecklist &fresh);
+
+   void traceCannotTransform(TR::Node *node, const char *why);
+   void traceCannotTransformDueToMerge(TR::Block *mergeBlock);
    };
 
 class TR_ColdBlockMarker : public TR_BlockManipulator

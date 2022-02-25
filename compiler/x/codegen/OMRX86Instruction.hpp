@@ -304,17 +304,16 @@ class X86LabelInstruction : public TR::Instruction
    {
    TR::LabelSymbol *_symbol;
    TR::X86LabelInstruction *_outlinedInstructionBranch;
-   bool _needToClearFPStack;
    uint8_t _reloType;
    bool _permitShortening;
-   void initialize(TR::LabelSymbol *sym, bool b);
+   void initialize(TR::LabelSymbol *sym);
 
    public:
 
-   X86LabelInstruction(TR::InstOpCode::Mnemonic op, TR::Node * node, TR::LabelSymbol *sym, TR::CodeGenerator *cg, bool b = false);
-   X86LabelInstruction(TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::LabelSymbol *sym, TR::CodeGenerator *cg, bool b = false);
-   X86LabelInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::LabelSymbol *sym, TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg, bool b = false);
-   X86LabelInstruction(TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::LabelSymbol *sym, TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg, bool b = false);
+   X86LabelInstruction(TR::InstOpCode::Mnemonic op, TR::Node * node, TR::LabelSymbol *sym, TR::CodeGenerator *cg);
+   X86LabelInstruction(TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::LabelSymbol *sym, TR::CodeGenerator *cg);
+   X86LabelInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::LabelSymbol *sym, TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg);
+   X86LabelInstruction(TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::LabelSymbol *sym, TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg);
 
    void prohibitShortening() { _permitShortening = false; }
 
@@ -329,9 +328,6 @@ class X86LabelInstruction : public TR::Instruction
 
    TR::LabelSymbol *getLabelSymbol()                    {return _symbol;}
    TR::LabelSymbol *setLabelSymbol(TR::LabelSymbol *sym) {return (_symbol = sym);}
-
-   bool getNeedToClearFPStack()             {return _needToClearFPStack;}
-   void setNeedToClearFPStack(bool b)       {_needToClearFPStack = b;}
 
    virtual TR::Snippet *getSnippetForGC();
    virtual uint8_t    *generateBinaryEncoding();

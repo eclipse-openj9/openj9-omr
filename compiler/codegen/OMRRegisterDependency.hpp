@@ -54,7 +54,7 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
 #if defined(OMR_ARCH_S390)
       : _numUses(0)
 #elif defined(OMR_ARCH_X86) /* defined(OMR_ARCH_S390) */
-      : _mayNeedToPopFPRegisters(false), _needToClearFPStack(false)
+      : _mayNeedToPopFPRegisters(false)
 #elif defined(__GNUC__) && !defined(__clang__) /* defined(OMR_ARCH_S390) */
       : _unused('\0')
 #endif /* defined(OMR_ARCH_S390) */
@@ -207,7 +207,6 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
    int8_t _numUses;
 #elif defined(OMR_ARCH_X86) /* defined(OMR_ARCH_S390) */
    bool _mayNeedToPopFPRegisters;
-   bool _needToClearFPStack;
 #elif defined(__GNUC__) && !defined(__clang__) /* defined(OMR_ARCH_S390) */
    /* a flexible array cannot be the only member of a class */
    private:
@@ -313,7 +312,7 @@ class RegisterDependencyMap
       TR_ASSERT(&deps[index] == dep, "Dependency pointer/index mismatch!");
       addDependency(dep->getRealRegister(), dep->getRegister()->getAssignedRealRegister(), index);
       }
-   
+
    /** \brief
     *     Gets the dependency whose source (virtual register) is currently assigned to \param regNum.
     *
@@ -337,7 +336,7 @@ class RegisterDependencyMap
     *     The real register target to look for.
     *
     *  \return
-    *     The dependency whose target (real register) is \param regNum if such a dependency exists; <c>NULL</c> 
+    *     The dependency whose target (real register) is \param regNum if such a dependency exists; <c>NULL</c>
     *     otherwise.
     */
    TR::RegisterDependency* getDependencyWithTarget(TR::RealRegister::RegNum regNum)

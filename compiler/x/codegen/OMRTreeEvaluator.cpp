@@ -3397,8 +3397,6 @@ TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
       if (inst->getDependencyConditions())
          inst->getDependencyConditions()->setMayNeedToPopFPRegisters(true);
 
-      inst->setNeedToClearFPStack(true);
-
       node->getLabel()->setInstruction(inst);
       block->setFirstInstruction(inst);
 

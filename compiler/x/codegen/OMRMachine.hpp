@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -253,7 +253,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    void fpStackPush(TR::Register *virtReg);
    void fpStackCoerce(TR::Register *virtReg, int32_t location);
    TR::Register *fpStackPop();
-   void popEntireStack();
 
    TR::Instruction  *fpStackFXCH(TR::Instruction *currentInstruction,
                                    TR::Register    *virtReg,

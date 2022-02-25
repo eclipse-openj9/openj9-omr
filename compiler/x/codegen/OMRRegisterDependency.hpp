@@ -105,9 +105,6 @@ class OMR_EXTENSIBLE RegisterDependencyGroup : public OMR::RegisterDependencyGro
    void setMayNeedToPopFPRegisters(bool b) {_mayNeedToPopFPRegisters = b;}
    bool getMayNeedToPopFPRegisters() {return _mayNeedToPopFPRegisters;}
 
-   void setNeedToClearFPStack(bool b) {_needToClearFPStack = b;}
-   bool getNeedToClearFPStack() {return _needToClearFPStack;}
-
    void blockRealDependencyRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg);
    void unblockRealDependencyRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg);
    };
@@ -148,8 +145,6 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    TR::RegisterDependencyGroup *getPreConditions()  {return _preConditions;}
 
    void setMayNeedToPopFPRegisters(bool b);
-
-   void setNeedToClearFPStack(bool b);
 
    uint32_t getNumPreConditions() {return _numPreConditions;}
 

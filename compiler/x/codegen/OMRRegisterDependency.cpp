@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -474,34 +474,23 @@ void OMR::X86::RegisterDependencyConditions::setMayNeedToPopFPRegisters(bool b)
       _postConditions->setMayNeedToPopFPRegisters(b);
    }
 
-void OMR::X86::RegisterDependencyConditions::setNeedToClearFPStack(bool b)
-   {
-   if (_preConditions)
-      _preConditions->setNeedToClearFPStack(b);
-   else
-      {
-      if (_postConditions)
-         _postConditions->setNeedToClearFPStack(b);
-      }
-   }
-
 TR::RegisterDependency *OMR::X86::RegisterDependencyConditions::findPreCondition (TR::Register *vr)
    {
    return _preConditions ->findDependency(vr, _addCursorForPre );
    }
 
 TR::RegisterDependency *OMR::X86::RegisterDependencyConditions::findPostCondition(TR::Register *vr)
-   { 
+   {
    return _postConditions->findDependency(vr, _addCursorForPost);
    }
-   
+
 TR::RegisterDependency *OMR::X86::RegisterDependencyConditions::findPreCondition (TR::RealRegister::RegNum rr)
-   { 
+   {
    return _preConditions ->findDependency(rr, _addCursorForPre );
    }
 
 TR::RegisterDependency *OMR::X86::RegisterDependencyConditions::findPostCondition(TR::RealRegister::RegNum rr)
-   { 
+   {
    return _postConditions->findDependency(rr, _addCursorForPost);
    }
 
@@ -715,7 +704,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
    TR::RealRegister         *bestFreeRealReg      = NULL;
    TR::RealRegister::RegNum  bestFreeRealRegIndex = TR::RealRegister::NoReg;
    bool                      changed;
-   
+
    TR::Compilation *comp = cg->comp();
 
    TR::Machine *machine = cg->machine();

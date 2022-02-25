@@ -3394,9 +3394,6 @@ TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
       else
          inst = generateLabelInstruction(TR::InstOpCode::label, node, node->getLabel(), cg);
 
-      if (inst->getDependencyConditions())
-         inst->getDependencyConditions()->setMayNeedToPopFPRegisters(true);
-
       node->getLabel()->setInstruction(inst);
       block->setFirstInstruction(inst);
 

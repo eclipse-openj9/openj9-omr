@@ -466,14 +466,6 @@ uint32_t OMR::X86::RegisterDependencyConditions::setNumPostConditions(uint32_t n
    return (_numPostConditions = n);
    }
 
-void OMR::X86::RegisterDependencyConditions::setMayNeedToPopFPRegisters(bool b)
-   {
-   if (_preConditions)
-      _preConditions->setMayNeedToPopFPRegisters(b);
-   if (_postConditions)
-      _postConditions->setMayNeedToPopFPRegisters(b);
-   }
-
 TR::RegisterDependency *OMR::X86::RegisterDependencyConditions::findPreCondition (TR::Register *vr)
    {
    return _preConditions ->findDependency(vr, _addCursorForPre );

@@ -2311,11 +2311,6 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
    cg->recursivelyDecReferenceCount(node->getFirstChild());
    cg->recursivelyDecReferenceCount(node->getSecondChild());
 
-   if (deps)
-      {
-      deps->setMayNeedToPopFPRegisters(true);
-      }
-
    if (!popRegisters.isEmpty())
       {
       ListIterator<TR::Register> popRegsIt(&popRegisters);

@@ -1298,7 +1298,6 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(
          TR::Node *third = node->getChild(2);
          cg->evaluate(third);
          deps = generateRegisterDependencyConditions(third, cg, 1, &popRegisters);
-         deps->setMayNeedToPopFPRegisters(true);
          deps->stopAddingConditions();
          }
       }
@@ -1319,7 +1318,7 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(
          // on the last one.
          //
          TR::RegisterDependencyConditions  *deps1 = NULL;
-         if (deps && deps->getPreConditions() && deps->getPreConditions()->getMayNeedToPopFPRegisters())
+         if (deps && deps->getPreConditions())
             {
             deps1 = deps->clone(cg);
             deps1->setNumPostConditions(0, cg->trMemory());
@@ -1353,7 +1352,7 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(
          fallThroughLabel->setEndInternalControlFlow();
 
          TR::RegisterDependencyConditions  *deps1 = NULL;
-         if (deps && deps->getPreConditions() && deps->getPreConditions()->getMayNeedToPopFPRegisters())
+         if (deps && deps->getPreConditions())
             {
             deps1 = deps->clone(cg);
             deps1->setNumPostConditions(0, cg->trMemory());

@@ -3880,11 +3880,6 @@ generateConditionalJumpInstruction(
       TR::Node* glRegDep = ifNode->getChild(2);
       inst = generateLabelInstruction(opCode, ifNode, destinationLabel, glRegDep, &popRegisters, cg);
 
-      if (inst->getDependencyConditions())
-         {
-         inst->getDependencyConditions()->setMayNeedToPopFPRegisters(true);
-         }
-
       if (!popRegisters.isEmpty())
          {
          ListIterator<TR::Register> popRegsIt(&popRegisters);

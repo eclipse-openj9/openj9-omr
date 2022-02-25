@@ -53,8 +53,6 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
    RegisterDependencyGroup()
 #if defined(OMR_ARCH_S390)
       : _numUses(0)
-#elif defined(OMR_ARCH_X86) /* defined(OMR_ARCH_S390) */
-      : _mayNeedToPopFPRegisters(false)
 #elif defined(__GNUC__) && !defined(__clang__) /* defined(OMR_ARCH_S390) */
       : _unused('\0')
 #endif /* defined(OMR_ARCH_S390) */
@@ -205,8 +203,6 @@ class OMR_EXTENSIBLE RegisterDependencyGroup
 
 #if defined(OMR_ARCH_S390)
    int8_t _numUses;
-#elif defined(OMR_ARCH_X86) /* defined(OMR_ARCH_S390) */
-   bool _mayNeedToPopFPRegisters;
 #elif defined(__GNUC__) && !defined(__clang__) /* defined(OMR_ARCH_S390) */
    /* a flexible array cannot be the only member of a class */
    private:

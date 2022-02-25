@@ -250,9 +250,6 @@ void OMR::X86::I386::TreeEvaluator::compareLongsForOrder(
 
       generateLabelInstruction(TR::InstOpCode::label, node, doneLabel, deps, cg);
 
-      if (deps)
-         deps->setMayNeedToPopFPRegisters(true);
-
       if (!popRegisters.isEmpty())
          {
          ListIterator<TR::Register> popRegsIt(&popRegisters);
@@ -5718,7 +5715,6 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, T
             TR::Node *third = node->getChild(2);
             cg->evaluate(third);
             deps = generateRegisterDependencyConditions(third, cg, 2, &popRegisters);
-            deps->setMayNeedToPopFPRegisters(true);
             deps->addPostCondition(cmpRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
             deps->addPostCondition(cmpRegister->getHighOrder(), TR::RealRegister::NoReg, cg);
             deps->stopAddingConditions();
@@ -5846,7 +5842,6 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpneEvaluator(TR::Node *node, T
             TR::Node *third = node->getChild(2);
             cg->evaluate(third);
             deps = generateRegisterDependencyConditions(third, cg, 1, &popRegisters);
-            deps->setMayNeedToPopFPRegisters(true);
             deps->stopAddingConditions();
             generateLabelInstruction(TR::InstOpCode::JNE4, node, destinationLabel, deps, cg);
             compareGPRegisterToConstantForEquality(node, highValue, cmpRegister->getHighOrder(), cg);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -742,9 +742,6 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node       *
    cg()->decReferenceCount(firstChild);
    cg()->decReferenceCount(secondChild);
 
-   if (deps)
-      deps->setMayNeedToPopFPRegisters(true);
-
    if (!popRegisters.isEmpty())
       {
       ListIterator<TR::Register> popRegsIt(&popRegisters);
@@ -948,9 +945,6 @@ void TR_X86CompareAnalyser::longEqualityCompareAndBranchAnalyser(TR::Node       
 
    cg()->decReferenceCount(firstChild);
    cg()->decReferenceCount(secondChild);
-
-   if (deps)
-      deps->setMayNeedToPopFPRegisters(true);
 
    if (!popRegisters.isEmpty())
       {

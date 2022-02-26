@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -146,15 +146,6 @@ static TR::InstOpCode::Mnemonic getFloatToIntLogicalConversion(TR::CodeGenerator
       }
 
    return convertOpCode;
-   }
-
-static bool
-strictFPForMultiplyAndAdd(TR::CodeGenerator * cg)
-   {
-   //return 'true' - multiply-and-add is not a valid operation to perform with current JLS
-   //return (isStrictFP(cg->comp()->getCurrentMethod()) ||
-   //        cg->comp()->assumeDefaultStrictFP());
-   return true;
    }
 
 inline TR::Register *

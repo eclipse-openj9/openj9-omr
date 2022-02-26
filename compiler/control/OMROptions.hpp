@@ -88,9 +88,7 @@ enum TR_CompilationOptions
    TR_ReportMethodEnter          = 0x00000080,
    TR_ReportMethodExit           = 0x00000100,
    TR_EntryBreakPoints           = 0x00000200,
-   // Regardless of any class or method modifiers, assume strictFP semantics
-   // when evaluating all floating point expressions.
-   TR_StrictFP                   = 0x00000400,
+   // Available                  = 0x00000400,
    // Available                  = 0x00000800,
    TR_RegisterMaps               = 0x00001000,
    TR_CreatePCMaps               = 0x00002000,

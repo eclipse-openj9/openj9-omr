@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,18 +29,6 @@
 namespace TR { class CodeGenerator; }
 namespace TR { class Node; }
 namespace TR { class Register; }
-
-// Exponent bias for scaling operands of double precision multiplies and
-// divides in strictfp mode.
-//
-// DOUBLE_EXPONENT_SCALE = -(16383-1023)
-//
-#if !defined(_LONG_LONG) && !defined(LINUX)
-#define DOUBLE_EXPONENT_SCALE 0xc0ce000000000000L
-#else
-#define DOUBLE_EXPONENT_SCALE 0xc0ce000000000000LL
-#endif
-
 
 // Total possible action sets based on the characteristics of the node children.
 //

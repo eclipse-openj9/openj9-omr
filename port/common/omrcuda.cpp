@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2021 IBM Corp. and others
+ * Copyright (c) 2013, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -224,7 +224,7 @@ struct J9CudaFunctionTable {
 									 unsigned int blockDimX, unsigned int blockDimY, unsigned int blockDimZ,
 									 unsigned int sharedMemBytes, CUstream stream, void **kernelParms, void **extra);
 	CUresult (CUDAAPI *LinkAddData)(CUlinkState state, CUjitInputType type, void *data,
-								    size_t size, const char *name, unsigned int numOptions, CUjit_option *options, void **optionValues);
+									size_t size, const char *name, unsigned int numOptions, CUjit_option *options, void **optionValues);
 	CUresult (CUDAAPI *LinkComplete)(CUlinkState state, void **cubinOut, size_t *sizeOut);
 	CUresult (CUDAAPI *LinkCreate)(unsigned int numOptions, CUjit_option *options, void **optionValues, CUlinkState *stateOut);
 	CUresult (CUDAAPI *LinkDestroy)(CUlinkState state);
@@ -1204,64 +1204,114 @@ const J9CudaLibraryDescriptor runtimeLibraries[] = {
 /*
  * Include forward-compatible support for runtime libraries.
  */
+
+#if CUDART_VERSION <= 11060
+	OMRCUDA_LIBRARY_ENTRY(11, 6),
+	/* 11.6.0 - January 2022 */
+	/* 11.6.1 - February 2022 */
+#endif /* CUDART_VERSION <= 11060 */
+
+#if CUDART_VERSION <= 11050
+	OMRCUDA_LIBRARY_ENTRY(11, 5),
+	/* 11.5.0 - October 2021 */
+	/* 11.5.1 - November 2021 */
+	/* 11.5.2 - February 2022 */
+#endif /* CUDART_VERSION <= 11050 */
+
+#if CUDART_VERSION <= 11040
+	OMRCUDA_LIBRARY_ENTRY(11, 4),
+	/* 11.4.0 - June 2021 */
+	/* 11.4.1 - August 2021 */
+	/* 11.4.2 - September 2021 */
+	/* 11.4.3 - November 2021 */
+	/* 11.4.4 - February 2022 */
+#endif /* CUDART_VERSION <= 11040 */
+
+#if CUDART_VERSION <= 11030
+	OMRCUDA_LIBRARY_ENTRY(11, 3),
+	/* 11.3.0 - April 2021 */
+	/* 11.3.1 - May 2021 */
+#endif /* CUDART_VERSION <= 11030 */
+
 #if CUDART_VERSION <= 11020
 	OMRCUDA_LIBRARY_ENTRY(11, 2),
+	/* 11.2.0 - December 2020 */
+	/* 11.2.1 - February 2021 */
+	/* 11.2.2 - March 2021 */
 #endif /* CUDART_VERSION <= 11020 */
 
 #if CUDART_VERSION <= 11010
 	OMRCUDA_LIBRARY_ENTRY(11, 1),
+	/* 11.1.0 - September 2020 */
+	/* 11.1.1 - October 2020 */
 #endif /* CUDART_VERSION <= 11010 */
 
 #if CUDART_VERSION <= 11000
 	OMRCUDA_LIBRARY_ENTRY(11, 0),
+	/* 11.0.0 - March 2020 */
+	/* 11.0.1 - June 2020 */
+	/* 11.0.2 - July 2020 */
+	/* 11.0.3 - August 2020 */
 #endif /* CUDART_VERSION <= 11000 */
 
 #if CUDART_VERSION <= 10020
 	OMRCUDA_LIBRARY_ENTRY(10, 2),
+	/* 10.2.0 - November 2019 */
 #endif /* CUDART_VERSION <= 10020 */
 
 #if CUDART_VERSION <= 10010
 	OMRCUDA_LIBRARY_ENTRY(10, 1),
+	/* 10.1.0 - February 2019 */
 #endif /* CUDART_VERSION <= 10010 */
 
 #if CUDART_VERSION <= 10000
 	OMRCUDA_LIBRARY_ENTRY(10, 0),
+	/* 10.0.0 - September 2018 */
 #endif /* CUDART_VERSION <= 10000 */
 
 #if CUDART_VERSION <= 9020
 	OMRCUDA_LIBRARY_ENTRY(9, 2),
+	/* 9.2.0 - May 2018 */
 #endif /* CUDART_VERSION <= 9020 */
 
 #if CUDART_VERSION <= 9010
 	OMRCUDA_LIBRARY_ENTRY(9, 1),
+	/* 9.1.0 - December 2017 */
 #endif /* CUDART_VERSION <= 9010 */
 
 #if CUDART_VERSION <= 9000
 	OMRCUDA_LIBRARY_ENTRY(9, 0),
+	/* 9.0.0 - September 2017 */
 #endif /* CUDART_VERSION <= 9000 */
 
 #if CUDART_VERSION <= 8000
 	OMRCUDA_LIBRARY_ENTRY(8, 0),
+	/* 8.0.0 - September 2016 */
 #endif /* CUDART_VERSION <= 8000 */
 
 #if CUDART_VERSION <= 7050
 	OMRCUDA_LIBRARY_ENTRY(7, 5),
+	/* 7.5.0 - September 2015 */
 #endif /* CUDART_VERSION <= 7050 */
 
 #if CUDART_VERSION <= 7000
 	OMRCUDA_LIBRARY_ENTRY(7, 0),
+	/* 7.0.0 - March 2015 */
 #endif /* CUDART_VERSION <= 7000 */
 
 #if CUDART_VERSION <= 6050
 	OMRCUDA_LIBRARY_ENTRY(6, 5),
+	/* 6.5.0 - August 2014 */
 #endif /* CUDART_VERSION <= 6050 */
 
 #if CUDART_VERSION <= 6000
 	OMRCUDA_LIBRARY_ENTRY(6, 0),
+	/* 6.0.0 - April 2014 */
 #endif /* CUDART_VERSION <= 6000 */
 
 #if CUDART_VERSION <= 5050
 	OMRCUDA_LIBRARY_ENTRY(5, 5)
+	/* 5.5.0 - July 2013 */
 #endif /* CUDART_VERSION <= 5050 */
 
 #undef OMRCUDA_LIBRARY_ENTRY

@@ -2935,9 +2935,9 @@ inline TR::X86LabelInstruction  * generateLabelInstruction(TR::InstOpCode::Mnemo
 TR::X86LabelInstruction  * generateLongLabelInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::LabelSymbol *sym, TR::RegisterDependencyConditions  * cond, TR::CodeGenerator *cg);
 TR::X86LabelInstruction  * generateLongLabelInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::LabelSymbol *sym, TR::CodeGenerator *cg);
 
-TR::X86LabelInstruction  * generateJumpInstruction(TR::InstOpCode::Mnemonic op, TR::Node * jumpNode, TR::CodeGenerator *cg, bool needsVMThreadRegister = false, bool evaluateGlRegDeps = true);
+TR::X86LabelInstruction  * generateJumpInstruction(TR::InstOpCode::Mnemonic op, TR::Node * jumpNode, TR::CodeGenerator *cg, bool evaluateGlRegDeps = true);
 
-TR::X86LabelInstruction  * generateConditionalJumpInstruction(TR::InstOpCode::Mnemonic op, TR::Node * ifNode, TR::CodeGenerator *cg, bool needsVMThreadRegister = false);
+TR::X86LabelInstruction  * generateConditionalJumpInstruction(TR::InstOpCode::Mnemonic op, TR::Node * ifNode, TR::CodeGenerator *cg);
 
 TR::X86FenceInstruction  * generateFenceInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Node *, TR::CodeGenerator *cg);
 

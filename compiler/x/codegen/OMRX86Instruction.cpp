@@ -3850,13 +3850,12 @@ static TR_AtomicRegion longBranchAtomicRegions[] =
 
 TR::X86LabelInstruction *
 generateJumpInstruction(
-   TR::InstOpCode::Mnemonic     opCode,
-   TR::Node          *jumpNode,
-   TR::CodeGenerator *cg,
-   bool              needsVMThreadRegister,
-   bool              evaluateGlRegDeps)
+      TR::InstOpCode::Mnemonic opCode,
+      TR::Node *jumpNode,
+      TR::CodeGenerator *cg,
+      bool evaluateGlRegDeps)
    {
-   TR::LabelSymbol          *destinationLabel = jumpNode->getBranchDestination()->getNode()->getLabel();
+   TR::LabelSymbol *destinationLabel = jumpNode->getBranchDestination()->getNode()->getLabel();
    TR::X86LabelInstruction *inst;
 
    (jumpNode->getNumChildren() > 0) ?
@@ -3877,14 +3876,12 @@ generateJumpInstruction(
 
 TR::X86LabelInstruction *
 generateConditionalJumpInstruction(
-   TR::InstOpCode::Mnemonic     opCode,
-   TR::Node          *ifNode,
-   TR::CodeGenerator *cg,
-   bool              needsVMThreadRegister)
+      TR::InstOpCode::Mnemonic opCode,
+      TR::Node *ifNode,
+      TR::CodeGenerator *cg)
    {
-   TR::Compilation *comp = cg->comp();
-   TR::X86LabelInstruction  * inst;
-   TR::LabelSymbol           * destinationLabel = ifNode->getBranchDestination()->getNode()->getLabel();
+   TR::X86LabelInstruction *inst;
+   TR::LabelSymbol *destinationLabel = ifNode->getBranchDestination()->getNode()->getLabel();
 
    if (ifNode->getNumChildren() == 3)
       {

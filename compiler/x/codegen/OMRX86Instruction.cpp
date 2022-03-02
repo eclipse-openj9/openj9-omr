@@ -3137,80 +3137,6 @@ TR::InstOpCode::Mnemonic getBranchOrSetOpCodeForFPComparison(TR::ILOpCodes cmpOp
    return op;
    }
 
-////////////////////////////////////////////////////////////////////////////////
-// TR::X86FPRemainderRegRegInstruction:: member functions
-////////////////////////////////////////////////////////////////////////////////
-
-TR::X86FPRemainderRegRegInstruction::X86FPRemainderRegRegInstruction( TR::InstOpCode::Mnemonic  op,
-                                                                       TR::Node        *node,
-                                                                       TR::Register    *treg,
-                                                                       TR::Register    *sreg,
-                                                                       TR::CodeGenerator *cg)
-   : TR::X86FPST0ST1RegRegInstruction( op, node, treg, sreg, cg)
-   {
-   }
-
-TR::X86FPRemainderRegRegInstruction::X86FPRemainderRegRegInstruction( TR::InstOpCode::Mnemonic  op,
-                                                                       TR::Node        *node,
-                                                                       TR::Register    *treg,
-                                                                       TR::Register    *sreg,
-                                                                       TR::Register    *accReg,
-                                                                       TR::RegisterDependencyConditions  *cond,
-                                                                       TR::CodeGenerator *cg)
-   : TR::X86FPST0ST1RegRegInstruction( op, node, treg, sreg, cond, cg), _accRegister(accReg)
-   {
-   useRegister(accReg);
-   }
-
-TR::X86FPRemainderRegRegInstruction::X86FPRemainderRegRegInstruction( TR::Instruction *precedingInstruction,
-                                                                       TR::InstOpCode::Mnemonic  op,
-                                                                       TR::Register    *treg,
-                                                                       TR::Register    *sreg,
-                                                                       TR::CodeGenerator *cg)
-   : TR::X86FPST0ST1RegRegInstruction( precedingInstruction, op, treg, sreg, cg)
-   {
-   }
-
-void TR::X86FPRemainderRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
-   {
-
-   if (kindsToBeAssigned & TR_GPR_Mask) //TODO: Move this code generation in FPTreeEvaluator.cpp rather than doing it here
-      {
-      OMR::X86::Instruction::assignRegisters( kindsToBeAssigned);
-
-      TR::RealRegister *accReg = toRealRegister(_accRegister->getAssignedRegister());
-      TR::LabelSymbol *loopLabel = TR::LabelSymbol::create(cg()->trHeapMemory(),cg());
-      TR::RegisterDependencyConditions  *deps = getDependencyConditions();
-
-      new (cg()->trHeapMemory()) TR::X86LabelInstruction(getPrev(), TR::InstOpCode::label, loopLabel, cg());
-      TR::Instruction  *cursor = new (cg()->trHeapMemory()) TR::X86RegInstruction( this, TR::InstOpCode::STSWAcc, accReg, cg());
-      cursor = new (cg()->trHeapMemory()) TR::X86RegImmInstruction( cursor, TR::InstOpCode::TEST2RegImm2, accReg, 0x0400, cg());
-      new (cg()->trHeapMemory()) TR::X86LabelInstruction( cursor, TR::InstOpCode::JNE4, loopLabel, deps, cg());
-
-      if (_accRegister->decFutureUseCount() == 0)
-         {
-         _accRegister->setAssignedRegister(NULL);
-         accReg->setState(TR::RealRegister::Free);
-         accReg->setAssignedRegister(NULL);
-         }
-      }
-
-   else if (kindsToBeAssigned & TR_X87_Mask)
-      {
-      TR::Register    *sourceRegister = getSourceRegister();
-      TR::Register    *targetRegister = getTargetRegister();
-      TR::Machine *machine = cg()->machine();
-      TR::RealRegister *fpReg;
-
-      TR::X86FPRegRegInstruction::assignTargetSourceRegisters();
-      machine->fpCoerceRegistersToTopOfStack(this->getPrev(), targetRegister, sourceRegister, true);
-
-      fpReg = machine->fpMapToStackRelativeRegister(sourceRegister);
-      setSourceRegister(fpReg);
-      fpReg = machine->fpMapToStackRelativeRegister(targetRegister);
-      setTargetRegister(fpReg);
-      }
-   }
 
 ////////////////////////////////////////////////////////////////////////////////
 // TR::X86FPMemRegInstruction:: member functions
@@ -4257,18 +4183,6 @@ TR::X86FPArithmeticRegRegInstruction  *
 generateFPArithmeticRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node * node, TR::Register * treg, TR::Register * sreg, TR::CodeGenerator *cg)
    {
    return new (cg->trHeapMemory()) TR::X86FPArithmeticRegRegInstruction(op, node, treg, sreg, cg);
-   }
-
-TR::X86FPRemainderRegRegInstruction  *
-generateFPRemainderRegRegInstruction( TR::InstOpCode::Mnemonic op, TR::Node * node, TR::Register * treg, TR::Register * sreg, TR::CodeGenerator *cg)
-   {
-   return new (cg->trHeapMemory()) TR::X86FPRemainderRegRegInstruction( op, node, treg, sreg, cg);
-   }
-
-TR::X86FPRemainderRegRegInstruction  *
-generateFPRemainderRegRegInstruction( TR::InstOpCode::Mnemonic op, TR::Node * node, TR::Register * treg, TR::Register * sreg, TR::Register *accReg, TR::RegisterDependencyConditions  *cond, TR::CodeGenerator *cg)
-   {
-   return new (cg->trHeapMemory()) TR::X86FPRemainderRegRegInstruction( op, node, treg, sreg, accReg, cond, cg);
    }
 
 TR::X86FPMemRegInstruction  *

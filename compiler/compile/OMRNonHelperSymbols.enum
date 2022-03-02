@@ -63,6 +63,7 @@
    reverseLoadSymbol,
    reverseStoreSymbol,
    currentTimeMaxPrecisionSymbol,
+   encodeASCIISymbol,
    headerFlagsSymbol,
    singlePrecisionSQRTSymbol,
    countForRecompileSymbol,   // global boolean indicating when methods should start counting for guarded recompilations

@@ -257,7 +257,6 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
 
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
    uint32_t numReferencedGPRegisters(TR::CodeGenerator *);
-   uint32_t numReferencedFPRegisters(TR::CodeGenerator *);
    void printFullRegisterDependencyInfo(FILE *pOutFile);
    void printDependencyConditions(TR::RegisterDependencyGroup *conditions,
                                   uint32_t   numConditions,

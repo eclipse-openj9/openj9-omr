@@ -1131,11 +1131,6 @@ TR::RealRegister *OMR::X86::RegisterDependencyConditions::getRealRegisterFromVir
    }
 
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
-uint32_t OMR::X86::RegisterDependencyConditions::numReferencedFPRegisters(TR::CodeGenerator * cg)
-   {
-   return 0;
-   }
-
 uint32_t OMR::X86::RegisterDependencyConditions::numReferencedGPRegisters(TR::CodeGenerator * cg)
    {
    uint32_t total = 0;

@@ -489,16 +489,9 @@ void OMR::X86::RegisterDependencyConditions::assignPreConditionRegisters(TR::Ins
    {
    if (_preConditions != NULL)
       {
-      if ((kindsToBeAssigned & TR_X87_Mask))
-         {
-         _preConditions->assignFPRegisters(currentInstruction, kindsToBeAssigned, _numPreConditions, cg);
-         }
-      else
-         {
-         cg->clearRegisterAssignmentFlags();
-         cg->setRegisterAssignmentFlag(TR_PreDependencyCoercion);
-         _preConditions->assignRegisters(currentInstruction, kindsToBeAssigned, _numPreConditions, cg);
-         }
+      cg->clearRegisterAssignmentFlags();
+      cg->setRegisterAssignmentFlag(TR_PreDependencyCoercion);
+      _preConditions->assignRegisters(currentInstruction, kindsToBeAssigned, _numPreConditions, cg);
       }
    }
 
@@ -506,16 +499,9 @@ void OMR::X86::RegisterDependencyConditions::assignPostConditionRegisters(TR::In
    {
    if (_postConditions != NULL)
       {
-      if ((kindsToBeAssigned & TR_X87_Mask))
-         {
-         _postConditions->assignFPRegisters(currentInstruction, kindsToBeAssigned, _numPostConditions, cg);
-         }
-      else
-         {
-         cg->clearRegisterAssignmentFlags();
-         cg->setRegisterAssignmentFlag(TR_PostDependencyCoercion);
-         _postConditions->assignRegisters(currentInstruction, kindsToBeAssigned, _numPostConditions, cg);
-         }
+      cg->clearRegisterAssignmentFlags();
+      cg->setRegisterAssignmentFlag(TR_PostDependencyCoercion);
+      _postConditions->assignRegisters(currentInstruction, kindsToBeAssigned, _numPostConditions, cg);
       }
    }
 
@@ -1143,72 +1129,6 @@ TR::RealRegister *OMR::X86::RegisterDependencyConditions::getRealRegisterFromVir
    TR_ASSERT(0, "getRealRegisterFromVirtual: shouldn't get here");
    return 0;
    }
-
-
-void OMR::X86::RegisterDependencyGroup::assignFPRegisters(TR::Instruction   *prevInstruction,
-                                                       TR_RegisterKinds  kindsToBeAssigned,
-                                                       uint32_t          numberOfRegisters,
-                                                       TR::CodeGenerator *cg)
-   {
-
-   TR::Machine *machine = cg->machine();
-   TR::Instruction *cursor  = prevInstruction;
-
-   if (numberOfRegisters > 0)
-      {
-      for (auto i = 0U; i < numberOfRegisters; i++)
-         {
-         TR::Register *virtReg = _dependencies[i].getRegister();
-         if (virtReg && kindsToBeAssigned & virtReg->getKindAsMask())
-            {
-            if (((virtReg->getFutureUseCount() != 0) &&
-                 (virtReg->getTotalUseCount() != virtReg->getFutureUseCount())) &&
-                !virtReg->getAssignedRealRegister())
-               {
-               cursor = machine->reverseFPRSpillState(cursor, virtReg);
-               }
-            }
-         }
-
-      for (auto i = 0U; i < numberOfRegisters; i++)
-         {
-         TR::Register *virtReg = _dependencies[i].getRegister();
-         if (virtReg && kindsToBeAssigned & virtReg->getKindAsMask())
-            {
-            if (virtReg->getTotalUseCount() != virtReg->getFutureUseCount())
-               {
-               if (!machine->isFPRTopOfStack(virtReg))
-                  {
-                  cursor = machine->fpStackFXCH(cursor, virtReg);
-                  }
-
-               if (virtReg->decFutureUseCount() == 0)
-                  {
-                  machine->fpStackPop();
-                  }
-               }
-            else
-               {
-               // If this is the first reference of a register, then this must be the caller
-               // side return value.  Assume it already exists on the FP stack.  The required
-               // stack must be available at this point.
-               //
-               if (virtReg->decFutureUseCount() != 0)
-                  {
-                  machine->fpStackPush(virtReg);
-                  }
-               }
-            }
-         else if (_dependencies[i].isAllFPRegisters())
-            {
-            // Spill the entire FP stack to memory.
-            //
-            cursor = machine->fpSpillStack(cursor);
-            }
-         }
-      }
-   }
-
 
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
 uint32_t OMR::X86::RegisterDependencyConditions::numReferencedFPRegisters(TR::CodeGenerator * cg)

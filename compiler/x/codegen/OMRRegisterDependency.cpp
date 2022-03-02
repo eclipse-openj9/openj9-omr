@@ -1133,31 +1133,7 @@ TR::RealRegister *OMR::X86::RegisterDependencyConditions::getRealRegisterFromVir
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
 uint32_t OMR::X86::RegisterDependencyConditions::numReferencedFPRegisters(TR::CodeGenerator * cg)
    {
-   TR::Machine *machine = cg->machine();
-   uint32_t total = 0;
-   TR::Register *reg;
-
-   for (int32_t i=0; i<_numPreConditions; i++)
-      {
-      reg = _preConditions->getRegisterDependency(i)->getRegister();
-      if ((reg && reg->getKind() == TR_X87) ||
-          (!reg && _preConditions->getRegisterDependency(i)->isAllFPRegisters()))
-         {
-         total++;
-         }
-      }
-
-   for (int32_t i=0; i<_numPostConditions; i++)
-      {
-      reg = _postConditions->getRegisterDependency(i)->getRegister();
-      if ((reg && reg->getKind() == TR_X87) ||
-          (!reg && _postConditions->getRegisterDependency(i)->isAllFPRegisters()))
-         {
-         total++;
-         }
-      }
-
-   return total;
+   return 0;
    }
 
 uint32_t OMR::X86::RegisterDependencyConditions::numReferencedGPRegisters(TR::CodeGenerator * cg)

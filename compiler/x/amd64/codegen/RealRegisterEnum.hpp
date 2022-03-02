@@ -86,11 +86,10 @@
    LastSpillReg            = xmm15,
    LastXMMR                = xmm15,
 
-   AllFPRegisters          = 42,
-   ByteReg                 = 43,
-   BestFreeReg             = 44,
-   SpilledReg              = 45,
-   NumRegisters            = 46,
+   ByteReg                 = 42,
+   BestFreeReg             = 43,
+   SpilledReg              = 44,
+   NumRegisters            = 45,
 
    NumXMMRegisters         = LastXMMR - FirstXMMR + 1,
    MaxAssignableRegisters  = NumXMMRegisters + (LastAssignableGPR - FirstGPR + 1) - 1 // -1 for stack pointer

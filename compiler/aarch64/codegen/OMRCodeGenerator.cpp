@@ -175,6 +175,9 @@ OMR::ARM64::CodeGenerator::initialize()
       cg->setEnforceStoreOrder();
 
    cg->setSupportsAutoSIMD();
+   // Enable compaction of local stack slots.  i.e. variables with non-overlapping live ranges
+   // can share the same slot.
+   cg->setSupportsCompactedLocals();
    }
 
 void

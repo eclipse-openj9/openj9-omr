@@ -285,6 +285,16 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    Linkage (TR::CodeGenerator *cg) : OMR::Linkage(cg) {}
 
    /**
+    * @brief Adjust stack index so that local references are aligned properly
+    * @param[in/out] stackIndex : index on stack
+    */
+   virtual void alignLocalReferences(uint32_t &stackIndex);
+   /**
+    * @brief Maps symbols to locations on stack with locals compaction enabled
+    * @param[in]: method : method for which symbols are mapped on stack
+    */
+   virtual void mapCompactedStack(TR::ResolvedMethodSymbol *method);
+   /**
     * @brief Maps symbols to locations on stack
     * @param[in] method : method for which symbols are mapped on stack
     */
@@ -295,6 +305,19 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
     * @param[in/out] stackIndex : index on stack
     */
    virtual void mapSingleAutomatic(TR::AutomaticSymbol *p, uint32_t &stackIndex);
+   /**
+    * @brief Maps an automatic symbol to an index on stack
+    * @param[in] p : automatic symbol
+    * @param[in] size : size
+    * @param[in/out] stackIndex : index on stack
+    */
+   virtual void mapSingleAutomatic(TR::AutomaticSymbol *p, uint32_t size, uint32_t &stackIndex);
+   /**
+    * @brief Maps incoming parameters to locations on stack
+    * @param[in] method : method for which symbols are mapped on stack
+    */
+   virtual void mapIncomingParms(TR::ResolvedMethodSymbol *method);
+
    /**
     * @brief Initializes ARM64 RealRegister linkage
     */

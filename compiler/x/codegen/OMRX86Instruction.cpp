@@ -2934,103 +2934,6 @@ void TR::X86FPST0STiRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToB
       }
    }
 
-////////////////////////////////////////////////////////////////////////////////
-// TR::X86FPArithmeticRegRegInstruction:: member functions
-////////////////////////////////////////////////////////////////////////////////
-
-TR::X86FPArithmeticRegRegInstruction::X86FPArithmeticRegRegInstruction(TR::InstOpCode::Mnemonic  op,
-                                                                           TR::Node        *node,
-                                                                           TR::Register    *treg,
-                                                                           TR::Register    *sreg,
-                                                                           TR::CodeGenerator *cg)
-   : TR::X86FPRegRegInstruction(sreg, treg, node, op, cg)
-   {
-   }
-
-TR::X86FPArithmeticRegRegInstruction::X86FPArithmeticRegRegInstruction(TR::Instruction *precedingInstruction,
-                                                                           TR::InstOpCode::Mnemonic  op,
-                                                                           TR::Register    *treg,
-                                                                           TR::Register    *sreg,
-                                                                           TR::CodeGenerator *cg)
-   : TR::X86FPRegRegInstruction(sreg, treg, op, precedingInstruction, cg)
-   {
-   }
-
-void TR::X86FPArithmeticRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
-   {
-
-   if (kindsToBeAssigned & TR_X87_Mask)
-      {
-      TR::Register *sourceRegister = getSourceRegister();
-      TR::Register *targetRegister = getTargetRegister();
-      TR::Machine *machine = cg()->machine();
-      uint32_t             result = 0;
-      TR::RealRegister      *fpReg;
-
-      result = TR::X86FPRegRegInstruction::assignTargetSourceRegisters();
-
-      TR_ASSERT( result & kSourceOnFPStack,
-              "TR::X86FPArithmeticRegRegInstruction::assignRegisters ==> source not on FP stack!" );
-
-      TR_ASSERT( result & kTargetOnFPStack,
-              "TR::X86FPArithmeticRegRegInstruction::assignRegisters ==> target not on FP stack!" );
-
-      //Dead tree elimination doesn't always eliminate dead trees and we can eventually pop the target as well, TODO: ensure proper stack balance.
-      //TR_ASSERT( !(result & kTargetCanBePopped),
-      //        "TR::X86FPArithmeticRegRegInstruction::assignRegisters ==> target register cannot be popped!" );
-
-      if (result & kSourceCanBePopped)
-         {
-         TR::InstOpCode::Mnemonic popOpCode;
-
-         if (!machine->isFPRTopOfStack(sourceRegister) &&
-              machine->isFPRTopOfStack(targetRegister))
-            {
-            // The target operand is already at TOS: generate a reverse and pop instruction.
-            //
-            TR::InstOpCode::Mnemonic reverseOpCode = machine->fpDetermineReverseOpCode(getOpCodeValue());
-            popOpCode = machine->fpDeterminePopOpCode(reverseOpCode);
-
-            (void)machine->fpStackFXCH(this->getPrev(), sourceRegister, false);
-
-            // don't exchange operands - they're virtual registers; the StackFXCH does the exchange
-            }
-         else
-            {
-            popOpCode = machine->fpDeterminePopOpCode(getOpCodeValue());
-            if (!machine->isFPRTopOfStack(sourceRegister))
-               {
-               (void)machine->fpStackFXCH(this->getPrev(), sourceRegister);
-               }
-            }
-
-         setOpCodeValue(popOpCode);
-         }
-      else
-         {
-         // Both operands are live after the instruction.
-         //
-         if ( !machine->isFPRTopOfStack(targetRegister) &&
-              !machine->isFPRTopOfStack(sourceRegister) )
-            {
-            (void)machine->fpStackFXCH(this->getPrev(), targetRegister);
-            }
-         }
-
-      // Final assignment of real registers to this instruction
-      //
-      fpReg = machine->fpMapToStackRelativeRegister(sourceRegister);
-      setSourceRegister(fpReg);
-      fpReg = machine->fpMapToStackRelativeRegister(targetRegister);
-      setTargetRegister(fpReg);
-
-      if (result & kSourceCanBePopped)
-         {
-         machine->fpStackPop();
-         }
-      }
-   }
-
 
 TR::InstOpCode::Mnemonic getBranchOrSetOpCodeForFPComparison(TR::ILOpCodes cmpOp)
    {
@@ -4177,12 +4080,6 @@ TR::X86FPSTiST0RegRegInstruction  *
 generateFPSTiST0RegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node * node, TR::Register * treg, TR::Register * sreg, TR::CodeGenerator *cg, bool forcePop)
    {
    return new (cg->trHeapMemory()) TR::X86FPSTiST0RegRegInstruction(op, node, treg, sreg, cg, forcePop);
-   }
-
-TR::X86FPArithmeticRegRegInstruction  *
-generateFPArithmeticRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node * node, TR::Register * treg, TR::Register * sreg, TR::CodeGenerator *cg)
-   {
-   return new (cg->trHeapMemory()) TR::X86FPArithmeticRegRegInstruction(op, node, treg, sreg, cg);
    }
 
 TR::X86FPMemRegInstruction  *

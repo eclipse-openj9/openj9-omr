@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -735,6 +735,12 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4E201C00,	/* AND      	vand16b	 */
 		0x4EA01C00,	/* ORR      	vorr16b	 */
 		0x6E201C00,	/* EOR      	veor16b	 */
+		0x4E209400,	/* MLA       	vmla16b	 */
+		0x4E609400,	/* MLA       	vmla8h	 */
+		0x4EA09400,	/* MLA       	vmla4s	 */
+		0x4E20CC00,	/* FMLA      	vfmla4s	 */
+		0x4E60CC00,	/* FMLA      	vfmla2d	 */
+
 	/* Vector Data-processing (1 source) */
 		0x6E20B800,	/* NEG      	vneg16b	 */
 		0x6E60B800,	/* NEG      	vneg8h	 */

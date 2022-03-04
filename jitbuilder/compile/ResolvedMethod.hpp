@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2020 IBM Corp. and others
+ * Copyright (c) 2014, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -67,7 +67,6 @@ class ResolvedMethodBase : public TR_ResolvedMethod
    virtual bool                  isProtected()                                  { return false; }
    virtual bool                  isPublic()                                     { return true; }
    virtual bool                  isFinal()                                      { return false; }
-   virtual bool                  isStrictFP()                                   { return false; }
    virtual bool                  isSubjectToPhaseChange(TR::Compilation *comp)  { return false; }
 
    virtual bool                  hasBackwardBranches()                          { return false; }

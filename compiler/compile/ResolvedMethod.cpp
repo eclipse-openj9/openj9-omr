@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -319,7 +319,6 @@ bool         TR_ResolvedMethod::isPrivate()                                { TR_
 bool         TR_ResolvedMethod::isProtected()                              { TR_UNIMPLEMENTED(); return false; }
 bool         TR_ResolvedMethod::isPublic()                                 { TR_UNIMPLEMENTED(); return false; }
 bool         TR_ResolvedMethod::isFinal()                                  { TR_UNIMPLEMENTED(); return false; }
-bool         TR_ResolvedMethod::isStrictFP()                               { TR_UNIMPLEMENTED(); return false; }
 bool         TR_ResolvedMethod::isInterpreted()                            { TR_UNIMPLEMENTED(); return false; }
 bool         TR_ResolvedMethod::isInterpretedForHeuristics()               { TR_UNIMPLEMENTED(); return false; }
 bool         TR_ResolvedMethod::hasBackwardBranches()                      { TR_UNIMPLEMENTED(); return false; }

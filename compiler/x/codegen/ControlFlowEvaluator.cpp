@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -317,7 +317,7 @@ static void binarySearchCaseSpace(TR::Register *selectorReg,
       if (lowChild == pivot)
          {
          generateJumpInstruction(TR::InstOpCode::JE4, lookupNode->getChild(lowChild), cg);
-         generateJumpInstruction(TR::InstOpCode::JMP4, lookupNode->getChild(1), cg, false, evaluateDefaultGlRegDeps);
+         generateJumpInstruction(TR::InstOpCode::JMP4, lookupNode->getChild(1), cg, evaluateDefaultGlRegDeps);
          evaluateDefaultGlRegDeps = false;
          }
       else
@@ -347,7 +347,7 @@ static void binarySearchCaseSpace(TR::Register *selectorReg,
       generateRegImmInstruction(opCode, lookupNode, selectorReg, highValue, cg);
 
       generateJumpInstruction(TR::InstOpCode::JE4, lookupNode->getChild(highChild), cg);
-      generateJumpInstruction(TR::InstOpCode::JMP4, lookupNode->getChild(1), cg, false, evaluateDefaultGlRegDeps);
+      generateJumpInstruction(TR::InstOpCode::JMP4, lookupNode->getChild(1), cg, evaluateDefaultGlRegDeps);
       evaluateDefaultGlRegDeps = false;
       }
    else
@@ -455,7 +455,7 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
 
       // The glRegDep is hung off the default case statement.
       //
-      generateJumpInstruction(TR::InstOpCode::JAE4, secondChild, cg, true);
+      generateJumpInstruction(TR::InstOpCode::JAE4, secondChild, cg);
       }
    else
       {
@@ -1153,7 +1153,7 @@ void OMR::X86::TreeEvaluator::compareBytesForOrder(TR::Node *node, TR::CodeGener
 
 TR::Register *OMR::X86::TreeEvaluator::gotoEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   generateJumpInstruction(TR::InstOpCode::JMP4, node, cg, false);
+   generateJumpInstruction(TR::InstOpCode::JMP4, node, cg);
    return NULL;
    }
 
@@ -1378,7 +1378,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpeqEvaluator(TR::Node *node, T
          cg->evaluate(firstChild);
          cg->evaluate(secondChild);
 
-         generateConditionalJumpInstruction(TR::InstOpCode::JO4, node, cg, true);
+         generateConditionalJumpInstruction(TR::InstOpCode::JO4, node, cg);
 
          cg->decReferenceCount(firstChild);
          cg->decReferenceCount(secondChild);
@@ -1398,7 +1398,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpeqEvaluator(TR::Node *node, T
 
    TR::TreeEvaluator::compareIntegersForEquality(node, cg);
 
-   generateConditionalJumpInstruction(TR::InstOpCode::JE4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JE4, node, cg);
    return NULL;
    }
 
@@ -1452,7 +1452,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, T
             cg->evaluate(firstChild);
             cg->evaluate(secondChild);
 
-            generateConditionalJumpInstruction(TR::InstOpCode::JNO4, node, cg, true);
+            generateConditionalJumpInstruction(TR::InstOpCode::JNO4, node, cg);
 
             cg->decReferenceCount(firstChild);
             cg->decReferenceCount(secondChild);
@@ -1492,7 +1492,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, T
              generateMemImmInstruction(TR::InstOpCode::TEST4MemImm4, node, sourceMR, ( ((int32_t)-1) << node->getFirstChild()->getSecondChild()->getInt() ), cg);
              }
 
-         TR::X86LabelInstruction *instr = generateConditionalJumpInstruction(TR::InstOpCode::JNE4, node, cg, true);
+         TR::X86LabelInstruction *instr = generateConditionalJumpInstruction(TR::InstOpCode::JNE4, node, cg);
          generateMergedGuardCodeIfNeeded(node, cg, instr);
 
          cg->recursivelyDecReferenceCount(node->getFirstChild());
@@ -1520,7 +1520,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, T
       //            }
       //         }
 
-      TR::X86LabelInstruction *instr = generateConditionalJumpInstruction(TR::InstOpCode::JNE4, node, cg, true);
+      TR::X86LabelInstruction *instr = generateConditionalJumpInstruction(TR::InstOpCode::JNE4, node, cg);
       generateMergedGuardCodeIfNeeded(node, cg, instr);
 
       return NULL;
@@ -1616,12 +1616,12 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpltEvaluator(TR::Node *node, T
          TR::TreeEvaluator::generateLAddOrSubForOverflowCheck(node, cg)
        : TR::TreeEvaluator::generateIAddOrSubForOverflowCheck(node, cg))
       {
-      generateConditionalJumpInstruction(TR::InstOpCode::JO4, node, cg, true);
+      generateConditionalJumpInstruction(TR::InstOpCode::JO4, node, cg);
       }
    else
       {
       TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-      generateConditionalJumpInstruction(TR::InstOpCode::JL4, node, cg, true);
+      generateConditionalJumpInstruction(TR::InstOpCode::JL4, node, cg);
       }
    return NULL;
    }
@@ -1632,12 +1632,12 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpgeEvaluator(TR::Node *node, T
          TR::TreeEvaluator::generateLAddOrSubForOverflowCheck(node, cg)
        : TR::TreeEvaluator::generateIAddOrSubForOverflowCheck(node, cg))
       {
-      generateConditionalJumpInstruction(TR::InstOpCode::JNO4, node, cg, true);
+      generateConditionalJumpInstruction(TR::InstOpCode::JNO4, node, cg);
       }
    else
       {
       TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-      generateConditionalJumpInstruction(TR::InstOpCode::JGE4, node, cg, true);
+      generateConditionalJumpInstruction(TR::InstOpCode::JGE4, node, cg);
       }
    return NULL;
    }
@@ -1645,42 +1645,42 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpgeEvaluator(TR::Node *node, T
 TR::Register *OMR::X86::TreeEvaluator::integerIfCmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JG4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JG4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::integerIfCmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JLE4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JLE4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::unsignedIntegerIfCmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JB4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JB4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::unsignedIntegerIfCmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JAE4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JAE4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::unsignedIntegerIfCmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JA4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JA4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::unsignedIntegerIfCmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JBE4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JBE4, node, cg);
    return NULL;
    }
 
@@ -1774,7 +1774,7 @@ TR::Register *OMR::X86::TreeEvaluator::ifbcmpeqEvaluator(TR::Node *node, TR::Cod
    else
       opCode = reverseBranch ? TR::InstOpCode::JE4 : TR::InstOpCode::JNE4;
 
-   generateConditionalJumpInstruction(opCode, node, cg, true);
+   generateConditionalJumpInstruction(opCode, node, cg);
    return NULL;
    }
 
@@ -1783,56 +1783,56 @@ TR::Register *OMR::X86::TreeEvaluator::ifbcmpeqEvaluator(TR::Node *node, TR::Cod
 TR::Register *OMR::X86::TreeEvaluator::ifbcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareBytesForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JL4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JL4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::ifbucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareBytesForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JB4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JB4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::ifbcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareBytesForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JGE4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JGE4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::ifbucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareBytesForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JAE4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JAE4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::ifbcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareBytesForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JG4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JG4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::ifbucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareBytesForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JA4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JA4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::ifbcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareBytesForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JLE4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JLE4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::ifbucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareBytesForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JBE4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JBE4, node, cg);
    return NULL;
    }
 
@@ -1894,8 +1894,7 @@ TR::Register *OMR::X86::TreeEvaluator::ifscmpeqEvaluator(TR::Node *node, TR::Cod
       TR_X86CompareAnalyser  temp(cg);
       temp.integerCompareAnalyser(node, TR::InstOpCode::CMP2RegReg, TR::InstOpCode::CMP2RegMem, TR::InstOpCode::CMP2MemReg);
       }
-   generateConditionalJumpInstruction(node->getOpCodeValue() == TR::ifscmpeq ? TR::InstOpCode::JE4 : TR::InstOpCode::JNE4,
-                                      node, cg, true);
+   generateConditionalJumpInstruction(node->getOpCodeValue() == TR::ifscmpeq ? TR::InstOpCode::JE4 : TR::InstOpCode::JNE4, node, cg);
    return NULL;
    }
 
@@ -1904,56 +1903,56 @@ TR::Register *OMR::X86::TreeEvaluator::ifscmpeqEvaluator(TR::Node *node, TR::Cod
 TR::Register *OMR::X86::TreeEvaluator::ifscmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compare2BytesForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JL4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JL4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::ifscmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compare2BytesForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JGE4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JGE4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::ifscmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compare2BytesForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JG4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JG4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::ifscmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compare2BytesForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JLE4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JLE4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::ifsucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compare2BytesForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JB4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JB4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::ifsucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compare2BytesForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JAE4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JAE4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::ifsucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compare2BytesForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JA4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JA4, node, cg);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::ifsucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compare2BytesForOrder(node, cg);
-   generateConditionalJumpInstruction(TR::InstOpCode::JBE4, node, cg, true);
+   generateConditionalJumpInstruction(TR::InstOpCode::JBE4, node, cg);
    return NULL;
    }
 

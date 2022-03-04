@@ -24,6 +24,7 @@
 
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GenerateInstructions.hpp"
+#include "codegen/GCStackAtlas.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/Linkage_inlines.hpp"
 #include "codegen/LiveRegister.hpp"
@@ -32,6 +33,295 @@
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 #include "il/ParameterSymbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "infra/IGNode.hpp"
+#include "infra/InterferenceGraph.hpp"
+
+typedef bool (*localSizeTestMethod) (uint32_t size);
+static bool isLocalSize4Byte(uint32_t size)
+   {
+   return (size == 4);
+   }
+static bool isLocalSize8Byte(uint32_t size)
+   {
+   return (size == 8);
+   }
+static bool isLocalSizeLargerThan8Byte(uint32_t size)
+   {
+   return (size > 8);
+   }
+
+void OMR::ARM64::Linkage::alignLocalReferences(uint32_t &stackIndex)
+   {
+   // do nothing
+   }
+
+void OMR::ARM64::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
+   {
+   const TR::ARM64LinkageProperties& linkageProperties = getProperties();
+   ListIterator<TR::AutomaticSymbol> automaticIterator(&method->getAutomaticList());
+   TR::AutomaticSymbol *localCursor;
+   TR::CodeGenerator *cg = self()->cg();
+   TR::Compilation *comp = self()->comp();
+
+   TR::GCStackAtlas *atlas = cg->getStackAtlas();
+
+   { // scope of the stack memory region starts here
+   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   const IGNodeColour numberOfColors = cg->getLocalsIG()->getNumberOfColoursUsedToColour();
+
+   int32_t *colourToOffsetMap = reinterpret_cast<int32_t *>(trMemory()->allocateStackMemory(numberOfColors * sizeof(int32_t)));
+
+   uint32_t *colourToSizeMap = reinterpret_cast<uint32_t *>(trMemory()->allocateStackMemory(numberOfColors * sizeof(uint32_t)));
+
+   for (IGNodeColour i = 0; i < numberOfColors; i++)
+      {
+      colourToOffsetMap[i] = -1;
+      colourToSizeMap[i] = 0;
+      }
+
+   // Find maximum allocation size for each shared local.
+   //
+   for (localCursor = automaticIterator.getFirst(); localCursor; localCursor = automaticIterator.getNext())
+      {
+      TR_IGNode *igNode = cg->getLocalsIG()->getIGNodeForEntity(localCursor);
+      if (igNode != NULL) // if the local doesn't have an interference graph node, we will just map it without attempt to compact, so we can ignore it
+         {
+         IGNodeColour colour = igNode->getColour();
+
+         TR_ASSERT_FATAL(colour != UNCOLOURED, "uncoloured local %p (igNode=%p) found in locals IG\n",
+                 localCursor, igNode);
+
+         if (!(localCursor->isInternalPointer() || localCursor->isPinningArrayPointer() || localCursor->holdsMonitoredObject()))
+            {
+            uint32_t size = localCursor->getRoundedSize();
+            if (size > colourToSizeMap[colour])
+               {
+               colourToSizeMap[colour] = size;
+               }
+            }
+         }
+      }
+
+   // Map all garbage collected references together so we can concisely represent
+   // stack maps. They must be mapped so that the GC map index in each local
+   // symbol is honoured.
+   int32_t firstLocalOffset = linkageProperties.getOffsetToFirstLocal();
+   uint32_t stackIndex = firstLocalOffset;
+   int32_t lowGCOffset = stackIndex;
+   int32_t firstLocalGCIndex = atlas->getNumberOfParmSlotsMapped();
+#ifdef DEBUG
+   uint32_t origSize = 0;
+   bool     isFirst  = false;
+#endif
+   // Here we map the garbage collected references onto the stack
+   // This stage is reversed later on, since in CodeGenGC we actually set all of the GC offsets
+   // so effectively the local stack compaction of collected references happens there
+   // but we must perform this stage to determine the size of the stack that contains object temp slots
+   for (localCursor = automaticIterator.getFirst(); localCursor; localCursor = automaticIterator.getNext())
+      {
+      if (localCursor->getGCMapIndex() >= 0)
+         {
+         TR_IGNode *igNode = cg->getLocalsIG()->getIGNodeForEntity(localCursor);
+         bool performSharing = true;
+         if (igNode)
+            {
+            IGNodeColour colour = igNode->getColour();
+
+            if (localCursor->isInternalPointer() || localCursor->isPinningArrayPointer() || localCursor->holdsMonitoredObject())
+               {
+               // Regardless of colouring on the local, map an internal
+               // pointer or a pinning array local. These kinds of locals
+               // do not participate in the compaction of locals phase and
+               // are handled specially (basically the slots are not shared for
+               // these autos).
+               //
+               mapSingleAutomatic(localCursor, stackIndex);
+               }
+            else if (colourToOffsetMap[colour] == -1)
+               {
+               mapSingleAutomatic(localCursor, stackIndex);
+               colourToOffsetMap[colour] = localCursor->getOffset();
+#ifdef DEBUG
+               isFirst = true;
+#endif
+               }
+            else
+               {
+               performSharing = performTransformation(comp, "O^O COMPACT LOCALS: Sharing slot for local %p\n", localCursor);
+
+               if (performSharing)
+                  localCursor->setOffset(colourToOffsetMap[colour]);
+               else
+                  {
+                  mapSingleAutomatic(localCursor, stackIndex);
+                  colourToOffsetMap[colour] = localCursor->getOffset();
+#ifdef DEBUG
+                  isFirst = true;
+#endif
+                  }
+               }
+
+#ifdef DEBUG
+            if (debug("reportCL"))
+               {
+               diagnostic("%s ref local %p (colour=%d): %s\n", isFirst ? "First" : "Shared", localCursor, colour, comp->signature());
+               isFirst = false;
+               }
+#endif
+            }
+         else
+            {
+            mapSingleAutomatic(localCursor, stackIndex);
+            }
+
+#ifdef DEBUG
+         origSize += localCursor->getRoundedSize();
+#endif
+         }
+      }
+
+   alignLocalReferences(stackIndex);
+
+   const uint8_t pointerSize = TR::Compiler->om.sizeofReferenceAddress();
+
+   // Here is where we reverse the previous stage
+   // We map local references again to set the stack position correct according to
+   // the GC map index, which is set in CodeGenGC
+   //
+   automaticIterator.reset();
+   for (localCursor = automaticIterator.getFirst(); localCursor; localCursor = automaticIterator.getNext())
+      {
+      if (localCursor->getGCMapIndex() >= 0)
+         {
+         int32_t newOffset = stackIndex + pointerSize * (localCursor->getGCMapIndex() - firstLocalGCIndex);
+         if (comp->getOption(TR_TraceCG))
+            {
+            traceMsg(comp, "\nmapCompactedStack: changing %s (GC index %d) offset from %d to %d",
+               comp->getDebug()->getName(localCursor), localCursor->getGCMapIndex(), localCursor->getOffset(), newOffset);
+            }
+
+         localCursor->setOffset(newOffset);
+
+         TR_ASSERT_FATAL((localCursor->getOffset() <= 0), "Local %p (GC index %d) offset cannot be positive (stackIndex = %d)\n", localCursor, localCursor->getGCMapIndex(), stackIndex);
+
+         if (localCursor->getGCMapIndex() == atlas->getIndexOfFirstInternalPointer())
+            {
+            atlas->setOffsetOfFirstInternalPointer(localCursor->getOffset() - firstLocalOffset);
+            }
+         }
+      }
+
+   method->setObjectTempSlots((lowGCOffset - stackIndex) / pointerSize);
+   lowGCOffset = stackIndex;
+
+   // Now map the rest of the locals
+   //
+   localSizeTestMethod testMethods[3] = {&isLocalSize4Byte, &isLocalSize8Byte, &isLocalSizeLargerThan8Byte};
+   uint32_t alignments[3] = {4, 8, 16};
+
+   // First, map 4-byte autos, then 8-byte autos, finally others (vectors and stack allocated objects).
+   for (int32_t i = 0; i < 3; i++)
+      {
+      // Ensure the frame is properly aligned.
+      //
+      uint32_t roundup = (alignments[i] - 1);
+#ifdef DEBUG
+      origSize == (origSize + roundup) & (~roundup);
+#endif
+      stackIndex &= ~roundup;
+
+      automaticIterator.reset();
+      for (localCursor = automaticIterator.getFirst(); localCursor; localCursor = automaticIterator.getNext())
+         {
+         if (localCursor->getGCMapIndex() < 0)
+            {
+            TR_IGNode *igNode = self()->cg()->getLocalsIG()->getIGNodeForEntity(localCursor);
+            if (igNode)
+               {
+               IGNodeColour colour = igNode->getColour();
+
+               if (testMethods[i](colourToSizeMap[colour]))
+                  {
+                  if (colourToOffsetMap[colour] == -1)
+                     {
+                     stackIndex &= ~roundup;
+                     mapSingleAutomatic(localCursor, colourToSizeMap[colour], stackIndex);
+                     colourToOffsetMap[colour] = localCursor->getOffset();
+   #ifdef DEBUG
+                     isFirst = true;
+   #endif
+                     }
+                  else  // share local with already mapped stack slot
+                     {
+                     if (comp->getOption(TR_TraceCG))
+                        traceMsg(comp, "O^O COMPACT LOCALS: Sharing slot for local %p (colour = %d)\n", localCursor, colour);
+
+                     localCursor->setOffset(colourToOffsetMap[colour]);
+                     }
+
+   #ifdef DEBUG
+                  origSize += localCursor->getRoundedSize();
+
+                  if (debug("reportCL"))
+                     {
+                     diagnostic("%s local %p (colour=%d): %s\n",
+                                 isFirst ? "First" : "Shared",
+                                 localCursor, colour,
+                                 self()->comp()->signature());
+                     isFirst = false;
+                     }
+   #endif
+                  }
+               }
+            else if (testMethods[i](localCursor->getRoundedSize()))
+               {
+   #ifdef DEBUG
+               origSize += localCursor->getRoundedSize();
+               if(debug("reportCL"))
+                  diagnostic("No ig node exists for local %p, mapping regularly\n", localCursor);
+   #endif
+               stackIndex &= ~roundup;
+               mapSingleAutomatic(localCursor, stackIndex);
+               }
+            }
+         }
+      }
+
+   method->setScalarTempSlots((lowGCOffset - stackIndex) / pointerSize);
+   method->setLocalMappingCursor(stackIndex);
+
+   mapIncomingParms(method);
+
+   atlas->setLocalBaseOffset(lowGCOffset - firstLocalOffset);
+   atlas->setParmBaseOffset(atlas->getParmBaseOffset() + getOffsetToFirstParm() - firstLocalOffset);
+   } // scope of the stack memory region ends here
+
+   if (debug("reportCL"))
+      {
+      automaticIterator.reset();
+      diagnostic("SYMBOL OFFSETS\n");
+      for (localCursor = automaticIterator.getFirst(); localCursor; localCursor = automaticIterator.getNext())
+         {
+         diagnostic("Local %p, offset=%d\n", localCursor, localCursor->getOffset());
+         }
+
+#ifdef DEBUG
+      diagnostic("\n**** Mapped locals size: %d (orig map size=%d, shared size=%d)  %s\n",
+                  (linkage.getOffsetToFirstLocal() - stackIndex),
+                  origSize,
+                  origSize - (linkage.getOffsetToFirstLocal() - stackIndex),
+                  self()->comp()->signature());
+
+      accumMappedSize += (linkage.getOffsetToFirstLocal() - stackIndex);
+      accumOrigSize += origSize;
+
+      diagnostic("\n**** Accumulated totals: mapped size=%d, shared size=%d, original size=%d after %s\n",
+                  accumMappedSize, accumOrigSize-accumMappedSize, accumOrigSize,
+                  self()->comp()->signature());
+#endif
+      }
+   }
 
 void OMR::ARM64::Linkage::mapStack(TR::ResolvedMethodSymbol *method)
    {
@@ -39,6 +329,16 @@ void OMR::ARM64::Linkage::mapStack(TR::ResolvedMethodSymbol *method)
    }
 
 void OMR::ARM64::Linkage::mapSingleAutomatic(TR::AutomaticSymbol *p, uint32_t &stackIndex)
+   {
+   mapSingleAutomatic(p, p->getRoundedSize(), stackIndex);
+   }
+
+void OMR::ARM64::Linkage::mapSingleAutomatic(TR::AutomaticSymbol *p, uint32_t size, uint32_t &stackIndex)
+   {
+   p->setOffset(stackIndex -= size);
+   }
+
+void OMR::ARM64::Linkage::mapIncomingParms(TR::ResolvedMethodSymbol *method)
    {
    /* do nothing */
    }

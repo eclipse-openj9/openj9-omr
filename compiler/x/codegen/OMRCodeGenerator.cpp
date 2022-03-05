@@ -261,8 +261,6 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
 
    TR_ASSERT_FATAL(supportsSSE2, "Target processor/OS must support SSE2");
 
-   self()->setUseSSEForSinglePrecision();
-   self()->setUseSSEForDoublePrecision();
    self()->setSupportsAutoSIMD();
    self()->setSupportsJavaFloatSemantics();
 
@@ -3063,20 +3061,8 @@ void OMR::X86::CodeGenerator::dumpPostGPRegisterAssignment(TR::Instruction * ins
 #endif
 
 bool
-OMR::X86::CodeGenerator::useSSEFor(TR::DataType type)
-   {
-   if (type == TR::Float)
-      return self()->useSSEForSinglePrecision();
-   else if (type == TR::Double)
-      return self()->useSSEForDoublePrecision();
-   else
-      return false;
-   }
-
-bool
 OMR::X86::CodeGenerator::needToAvoidCommoningInGRA()
    {
-   if (!self()->useSSEForSinglePrecision() && !self()->useSSEForDoublePrecision()) return true;
    return false;
    }
 

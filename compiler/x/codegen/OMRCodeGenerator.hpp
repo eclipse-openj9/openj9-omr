@@ -746,8 +746,8 @@ protected:
       EnableSinglePrecisionMethods             = 0x00000008, ///< support changing FPCW to single precision for individual methods
       EnableRegisterInterferences              = 0x00000010, ///< consider register interferences during register assignment
       EnableRegisterWeights                    = 0x00000020, ///< use register weights in choosing a best register candidate
-      UseSSEForSinglePrecision                 = 0x00000040, ///< use SSE extensions for single precision
-      UseSSEForDoublePrecision                 = 0x00000080, ///< use SSE extensions for double precision
+      // Available                             = 0x00000040,
+      // Available                             = 0x00000080,
       EnableImplicitDivideCheck                = 0x00000100, ///< platform can catch hardware exceptions for divide overflow and divide by zero
       GenerateMasmListingSyntax                = 0x00000200, ///< generate Masm-style syntax in the debug listings
       MapAutosTo8ByteSlots                     = 0x00000400, ///< don't round up sizes of autos to an 8-byte slot size when the stack is mapped
@@ -801,25 +801,6 @@ protected:
       return _flags.testAny(EnableRegisterAssociations);
       }
    void setEnableRegisterAssociations() {_flags.set(EnableRegisterAssociations);}
-
-   bool useSSEForSinglePrecision()
-      {
-      return _flags.testAny(UseSSEForSinglePrecision);
-      }
-   void setUseSSEForSinglePrecision() {_flags.set(UseSSEForSinglePrecision);}
-
-   bool useSSEForDoublePrecision()
-      {
-      return _flags.testAny(UseSSEForDoublePrecision);
-      }
-   void setUseSSEForDoublePrecision() {_flags.set(UseSSEForDoublePrecision);}
-
-   bool useSSEForSingleAndDoublePrecision()
-      {
-      return _flags.testAll(UseSSEForSinglePrecision | UseSSEForDoublePrecision);
-      }
-
-   bool useSSEFor(TR::DataType type);
 
    bool targetSupportsSoftwarePrefetches()
       {

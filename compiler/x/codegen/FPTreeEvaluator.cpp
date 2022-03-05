@@ -418,13 +418,6 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
       generateMemInstruction(x87OpCode, node, generateX86MemoryReference(*tempMR, 0, cg), cg);
       }
 
-   // Restore the default FPCW if it has been forced to single precision mode.
-   //
-   if (comp->getJittedMethodSymbol()->usesSinglePrecisionMode() && !cg->useSSEForDoublePrecision())
-      {
-      generateMemInstruction(TR::InstOpCode::LDCWMem, node, generateX86MemoryReference(cg->findOrCreate2ByteConstant(node, DOUBLE_PRECISION_ROUND_TO_NEAREST), cg), cg);
-      }
-
    TR::RegisterDependencyConditions *dependencies = NULL;
    if (machineReturnRegister != TR::RealRegister::NoReg)
       {

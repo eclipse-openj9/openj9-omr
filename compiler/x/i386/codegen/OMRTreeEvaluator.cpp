@@ -2762,7 +2762,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR:
 
          if (isVolatile)
             {
-            if (cg->useSSEForDoublePrecision() && performTransformation(comp, "O^O Using SSE for volatile store %s\n", cg->getDebug()->getName(node)))
+            if (performTransformation(comp, "O^O Using SSE for volatile store %s\n", cg->getDebug()->getName(node)))
                {
                //Get stack piece
                TR::MemoryReference *stackLow  = cg->machine()->getDummyLocalMR(TR::Int64);
@@ -5424,7 +5424,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::performLload(TR::Node *node, TR::Me
       {
       TR::Machine *machine = cg->machine();
 
-      if (cg->useSSEForDoublePrecision() && performTransformation(comp, "O^O Using SSE for volatile load %s\n", cg->getDebug()->getName(node)))
+      if (performTransformation(comp, "O^O Using SSE for volatile load %s\n", cg->getDebug()->getName(node)))
          {
          TR_X86ProcessorInfo &p = cg->getX86ProcessorInfo();
 

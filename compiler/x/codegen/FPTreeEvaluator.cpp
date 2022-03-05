@@ -106,21 +106,6 @@ TR::Register *OMR::X86::TreeEvaluator::coerceFPRToXMMR(TR::Node *node, TR::Regis
    }
 
 
-void OMR::X86::TreeEvaluator::coerceFPOperandsToXMMRs(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   for (int i = 0; i < node->getNumChildren(); i++)
-      {
-      TR::Node     *child = node->getChild(i);
-      TR::Register *reg   = child->getRegister();
-
-      if (reg && reg->getKind() == TR_X87 /* && child->getReferenceCount() > 1 */)
-         {
-         TR::TreeEvaluator::coerceFPRToXMMR(child, reg, cg);
-         }
-      }
-   }
-
-
 TR::Register *OMR::X86::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *targetRegister = cg->allocateSinglePrecisionRegister(TR_FPR);
@@ -1048,10 +1033,7 @@ TR::Register *OMR::X86::TreeEvaluator::d2lEvaluator(TR::Node *node, TR::CodeGene
 TR::Register *OMR::X86::TreeEvaluator::d2fEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *child = node->getFirstChild();
-   TR::Register *targetRegister;
-
-   TR::TreeEvaluator::coerceFPOperandsToXMMRs(node, cg);
-   targetRegister = cg->doubleClobberEvaluate(child);
+   TR::Register *targetRegister = cg->doubleClobberEvaluate(child);
    targetRegister->setIsSinglePrecision(true);
    generateRegRegInstruction(TR::InstOpCode::CVTSD2SSRegReg, node, targetRegister, targetRegister, cg);
 

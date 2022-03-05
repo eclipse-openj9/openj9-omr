@@ -380,8 +380,6 @@ TR::Register *TR_IA32XMMCompareAnalyser::xmmCompareAnalyser(TR::Node       *root
       _cg->evaluate(secondChild);
       }
 
-   TR::TreeEvaluator::coerceFPOperandsToXMMRs(root, _cg);
-
    firstRegister  = firstChild->getRegister();
    secondRegister = secondChild->getRegister();
 

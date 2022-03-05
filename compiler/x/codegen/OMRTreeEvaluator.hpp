@@ -314,7 +314,20 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
       TR::SymbolReference &symRef,
       TR::CodeGenerator   *cg);
 
-   static TR::Register *coerceFPRToXMMR(TR::Node *node, TR::Register *fpRegister, TR::CodeGenerator *cg);
+   /**
+    * @brief Coerce the value in x87 ST0 into a TR_FPR register.
+    *
+    * @param[in] node : \c TR::Node under evaluation
+    * @param[in] dt : \c TR::DataType in ST0
+    * @param[in] cg : \c TR::CodeGenerator object
+    * @param[in] xmmReg : Optional \c TR::Register with \c TR_FPR kind to store the
+    *               coerced result.  If provided, then St0 will be coerecd into that
+    *               register.  Otherwise, a new \c TR_FPR register will be allocated
+    *               to hold the result and returned.
+    *
+    * @return \c TR::Register of kind \c TR_FPR that holds the coerced result
+    */
+   static TR::Register *coerceST0ToFPR(TR::Node *node, TR::DataType dt, TR::CodeGenerator *cg, TR::Register *xmmReg = NULL);
 
    enum
       {

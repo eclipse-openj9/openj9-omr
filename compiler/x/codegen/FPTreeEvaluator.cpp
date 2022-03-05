@@ -79,30 +79,48 @@ namespace TR { class Instruction; }
 
 // Prototypes
 
-TR::Register *OMR::X86::TreeEvaluator::coerceFPRToXMMR(TR::Node *node, TR::Register *fpRegister, TR::CodeGenerator *cg)
+/**
+ * @brief Coerce the value in x87 ST0 into a TR_FPR register.
+ *
+ * @param[in] node : \c TR::Node under evaluation
+ * @param[in] dt : \c TR::DataType in ST0
+ * @param[in] cg : \c TR::CodeGenerator object
+ * @param[in] xmmReg : Optional \c TR::Register with \c TR_FPR kind to store the
+ *               coerced result.  If provided, then St0 will be coerecd into that
+ *               register.  Otherwise, a new \c TR_FPR register will be allocated
+ *               to hold the result and returned.
+ *
+ * @return \c TR::Register of kind \c TR_FPR that holds the coerced result
+ */
+TR::Register *OMR::X86::TreeEvaluator::coerceST0ToFPR(TR::Node *node, TR::DataType dt, TR::CodeGenerator *cg, TR::Register *xmmReg)
    {
-   TR_ASSERT(fpRegister && fpRegister->getKind() == TR_X87, "incorrect register type for XMMR coercion\n");
-
-   TR::Register *xmmRegister = cg->allocateRegister(TR_FPR);
-
-   if (fpRegister->isSinglePrecision())
+   if (!xmmReg)
       {
-      xmmRegister->setIsSinglePrecision();
-      TR::MemoryReference  *tempMR = cg->machine()->getDummyLocalMR(TR::Float);
-      generateFPMemRegInstruction(TR::InstOpCode::FSTMemReg, node, tempMR, fpRegister, cg);
-      generateRegMemInstruction(TR::InstOpCode::MOVSSRegMem, node, xmmRegister, generateX86MemoryReference(*tempMR, 0, cg), cg);
+      xmmReg = cg->allocateRegister(TR_FPR);
+      if (dt == TR::Float)
+         {
+         xmmReg->setIsSinglePrecision();
+         }
+      }
+
+   TR::InstOpCode::Mnemonic st0FlushOp, xmm0LoadOp;
+   TR::MemoryReference *flushMR = cg->machine()->getDummyLocalMR(dt);
+
+   if (node->getDataType() == TR::Float)
+      {
+      st0FlushOp = TR::InstOpCode::FSTPMemReg;
+      xmm0LoadOp = TR::InstOpCode::MOVSSRegMem;
       }
    else
       {
-      TR::MemoryReference  *tempMR = cg->machine()->getDummyLocalMR(TR::Double);
-      generateFPMemRegInstruction(TR::InstOpCode::DSTMemReg, node, tempMR, fpRegister, cg);
-      generateRegMemInstruction(cg->getXMMDoubleLoadOpCode(), node, xmmRegister, generateX86MemoryReference(*tempMR, 0, cg), cg);
+      st0FlushOp = TR::InstOpCode::DSTPMemReg;
+      xmm0LoadOp = cg->getXMMDoubleLoadOpCode();
       }
 
-   cg->stopUsingRegister(fpRegister);
+   generateMemInstruction(st0FlushOp, node, flushMR, cg);
+   generateRegMemInstruction(xmm0LoadOp, node, xmmReg, generateX86MemoryReference(*flushMR, 0, cg), cg);
 
-   node->setRegister(xmmRegister);
-   return xmmRegister;
+   return xmmReg;
    }
 
 

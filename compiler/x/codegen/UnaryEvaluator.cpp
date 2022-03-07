@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -92,6 +92,54 @@ TR::Register *OMR::X86::TreeEvaluator::integerAbsEvaluator(TR::Node *node, TR::C
    node->setRegister(result);
    cg->decReferenceCount(child);
    return result;
+   }
+
+TR::Register*
+OMR::X86::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions(0, 1, cg);
+   TR::Node *valueNode = node->getChild(0);
+   TR::Register *resultReg = cg->allocateRegister(TR_VRF);
+   TR::Register *valueReg = cg->evaluate(valueNode);
+
+   deps->addPostCondition(resultReg, TR::RealRegister::NoReg, cg);
+   deps->stopAddingConditions();
+
+   // -valueReg = 0 - valueReg
+   generateRegRegInstruction(TR::InstOpCode::PXORRegReg, node, resultReg, resultReg, cg);
+   TR::InstOpCode::Mnemonic subOpcode;
+
+   switch (node->getDataType())
+      {
+      case TR::VectorInt8:
+         subOpcode = TR::InstOpCode::PSUBBRegReg;
+         break;
+      case TR::VectorInt16:
+         subOpcode = TR::InstOpCode::PSUBWRegReg;
+         break;
+      case TR::VectorInt32:
+         subOpcode = TR::InstOpCode::PSUBDRegReg;
+         break;
+      case TR::VectorInt64:
+         subOpcode = TR::InstOpCode::PSUBQRegReg;
+         break;
+      case TR::VectorFloat:
+         subOpcode = TR::InstOpCode::SUBPSRegReg;
+         break;
+      case TR::VectorDouble:
+         subOpcode = TR::InstOpCode::SUBPDRegReg;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, 0, "Unsupported data type for vneg opcode.");
+         break;
+      }
+
+   generateRegRegInstruction(subOpcode, node, resultReg, valueReg, deps, cg);
+
+   node->setRegister(resultReg);
+   cg->decReferenceCount(valueNode);
+
+   return resultReg;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::bnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)

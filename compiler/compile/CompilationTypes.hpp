@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -201,7 +201,7 @@ public:
    struct Method : TR_Link<Method>
       {
       Method(char * name, int32_t nameLen, char * sig, int32_t sigLen)
-         : _name(name), _nameLen(nameLen), _sig(sig), _sigLen(sigLen)
+         : _name(name), _sig(sig), _nameLen(nameLen), _sigLen(sigLen)
          { }
       char * _name, * _sig;
       int32_t _nameLen, _sigLen;

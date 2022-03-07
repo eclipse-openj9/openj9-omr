@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -551,8 +551,8 @@ CS2_HT_TEMP inline bool CS2_HT_DECL::Add(const AKeyType& key, const ADataType& d
 CS2_HT_TEMP inline const ADataType& CS2_HT_DECL::Get(const AKeyType& key) const
 {
   HashIndex hashIndex;
-  const bool found = Locate(key, hashIndex);
-  CS2Assert(found, ("Key was not found."));
+  if(false == Locate(key, hashIndex))
+    CS2Assert(false, ("Key was not found."));
   return DataAt(hashIndex);
 }
 
@@ -977,10 +977,9 @@ inline CS2_HT_DECL::Add (const AKeyType &key, const ADataType &data,
   if (fNextFree == 0) {
     Grow();
 
-    // The grow routine rehashes everything, so we need to rehash this key.
-    bool foundThisRecord = Locate (key, hashIndex, hashValue);
-    CS2Assert (! foundThisRecord,
-            ("Failed to relocate entry to an empty record\n"));
+  // The grow routine rehashes everything, so we need to rehash this key.
+  if(false == Locate (key, hashIndex, hashValue))
+    CS2Assert (false, ("Failed to relocate entry to an empty record\n"));
   }
 
   // hashIndex points at either an invalid hash table entry or the last

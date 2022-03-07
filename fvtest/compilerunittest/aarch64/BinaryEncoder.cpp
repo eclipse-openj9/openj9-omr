@@ -44,6 +44,17 @@ std::ostream &operator<<(std::ostream &os, const ARM64BinaryInstruction &instr) 
     return os;
 }
 
+class ARM64Trg1Src1EncodingTest : public TRTest::BinaryEncoderTest<ARM64_INSTRUCTION_ALIGNMENT>, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, ARM64BinaryInstruction>> {};
+
+TEST_P(ARM64Trg1Src1EncodingTest, encode) {
+    auto trgReg = cg()->machine()->getRealRegister(std::get<1>(GetParam()));
+    auto src1Reg = cg()->machine()->getRealRegister(std::get<2>(GetParam()));
+
+    auto instr = generateTrg1Src1Instruction(cg(), std::get<0>(GetParam()), fakeNode, trgReg, src1Reg);
+
+    ASSERT_EQ(std::get<3>(GetParam()), encodeInstruction(instr));
+}
+
 class ARM64Trg1Src2EncodingTest : public TRTest::BinaryEncoderTest<ARM64_INSTRUCTION_ALIGNMENT>, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, ARM64BinaryInstruction>> {};
 
 TEST_P(ARM64Trg1Src2EncodingTest, encode) {
@@ -55,6 +66,18 @@ TEST_P(ARM64Trg1Src2EncodingTest, encode) {
 
     ASSERT_EQ(std::get<4>(GetParam()), encodeInstruction(instr));
 }
+
+INSTANTIATE_TEST_CASE_P(VectorSQRT, ARM64Trg1Src1EncodingTest, ::testing::Values(
+    std::make_tuple(TR::InstOpCode::vfsqrt4s,  TR::RealRegister::v15, TR::RealRegister::v0, "6ea1f80f"),
+    std::make_tuple(TR::InstOpCode::vfsqrt4s,  TR::RealRegister::v31, TR::RealRegister::v0, "6ea1f81f"),
+    std::make_tuple(TR::InstOpCode::vfsqrt4s,  TR::RealRegister::v0, TR::RealRegister::v15, "6ea1f9e0"),
+    std::make_tuple(TR::InstOpCode::vfsqrt4s,  TR::RealRegister::v0, TR::RealRegister::v31, "6ea1fbe0"),
+
+    std::make_tuple(TR::InstOpCode::vfsqrt2d,  TR::RealRegister::v15, TR::RealRegister::v0, "6ee1f80f"),
+    std::make_tuple(TR::InstOpCode::vfsqrt2d,  TR::RealRegister::v31, TR::RealRegister::v0, "6ee1f81f"),
+    std::make_tuple(TR::InstOpCode::vfsqrt2d,  TR::RealRegister::v0, TR::RealRegister::v15, "6ee1f9e0"),
+    std::make_tuple(TR::InstOpCode::vfsqrt2d,  TR::RealRegister::v0, TR::RealRegister::v31, "6ee1fbe0")
+));
 
 INSTANTIATE_TEST_CASE_P(VectorMLA, ARM64Trg1Src2EncodingTest, ::testing::Values(
     std::make_tuple(TR::InstOpCode::vfmla4s,  TR::RealRegister::v15, TR::RealRegister::v0, TR::RealRegister::v0, "4e20cc0f"),

@@ -678,9 +678,6 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 	/* Floating-Point Immediate */
 		0x1E201000,	/* FMOV      	fmovimms	 */
 		0x1E601000,	/* FMOV      	fmovimmd	 */
-	/* Move Immediate */
-		0x0F000400,	/* MOVI      	movi0s	 */
-		0x2F00E400,	/* MOVI      	movi0d	 */
 	/* Floating-Point Compare */
 		0x1E202000,	/* FCMP      	fcmps	 */
 		0x1E202008,	/* FCMP      	fcmps_zero	 */
@@ -711,6 +708,20 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x1E604800,	/* FMAX      	fmaxd	 */
 		0x1E205800,	/* FMIN      	fmins	 */
 		0x1E605800,	/* FMIN      	fmind	 */
+	/* Vector Immediate */
+		0x4F00E400,	/* MOVI      	vmovi16b */
+		0x4F008400,	/* MOVI      	vmovi8h	 */
+		0x0F000400,	/* MOVI      	vmovi2s	 */
+		0x4F000400,	/* MOVI      	vmovi4s	 */
+		0x4F00C400,	/* MOVI      	vmovi4s_one */
+		0x2F00E400,	/* MOVI      	movid	 */
+		0x6F00E400,	/* MOVI      	vmovi2d	 */
+		0x4F00F400,	/* FMOV      	vfmov4s	 */
+		0x6F00F400,	/* FMOV      	vfmov2d	 */
+		0x6F008400,	/* MVNI      	vmovi8h	 */
+		0x6F000400,	/* MVNI      	vmovi4s	 */
+		0x6F00C400,	/* MVNI      	vmovi4s_one */
+
 	/* Vector Data-processing (2 source) */
 		0x4EA01C00,	/* ORR      	vorr2d	 */
 		0x4E208400,	/* ADD      	vadd16b	 */

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1625,9 +1625,110 @@ class ARM64Trg1ImmInstruction : public ARM64Trg1Instruction
          {
          *instruction |= ((_sourceImmediate & 0x1ffffc) << 3) | ((_sourceImmediate & 0x3) << 29);
          }
+      else if (op == TR::InstOpCode::vmovi16b || op == TR::InstOpCode::vmovi8h ||
+               op == TR::InstOpCode::vmovi4s || op == TR::InstOpCode::vmovi4s_one ||
+               op == TR::InstOpCode::vmovi2s || op == TR::InstOpCode::movid ||
+               op == TR::InstOpCode::vmovi2d || op == TR::InstOpCode::vfmov4s ||
+               op == TR::InstOpCode::vfmov2d || op == TR::InstOpCode::vmvni8h ||
+               op == TR::InstOpCode::vmvni4s || op == TR::InstOpCode::vmvni4s_one)
+         {
+         *instruction |= ((_sourceImmediate & 0xe0) << 11) | ((_sourceImmediate & 0x1f) << 5);
+         }
       else
          {
          TR_ASSERT(false, "Unsupported opcode in ARM64Trg1ImmInstruction.");
+         }
+      }
+
+   /**
+    * @brief Generates binary encoding of the instruction
+    * @return instruction cursor
+    */
+   virtual uint8_t *generateBinaryEncoding();
+   };
+
+class ARM64Trg1ImmShiftedInstruction : public ARM64Trg1ImmInstruction
+   {
+   uint32_t _shiftAmount;
+
+   public:
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] imm : immediate value
+    * @param[in] shiftAmount : shiftAmount
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1ImmShiftedInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                            uint32_t imm, uint32_t shiftAmount, TR::CodeGenerator *cg)
+      : ARM64Trg1ImmInstruction(op, node, treg, imm, cg), _shiftAmount(shiftAmount)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] imm : immediate value
+    * @param[in] shiftAmount : shiftAmount
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1ImmShiftedInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                            uint32_t imm, uint32_t shiftAmount,
+                            TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : ARM64Trg1ImmInstruction(op, node, treg, imm, precedingInstruction, cg), _shiftAmount(shiftAmount)
+      {
+      }
+
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsTrg1ImmShifted; }
+
+   /**
+    * @brief Gets shift amount
+    * @return shift amount
+    */
+   uint32_t getShiftAmount() {return _shiftAmount;}
+   /**
+    * @brief Sets shift amount
+    * @param[in] sa : shift amount
+    * @return shift amount
+    */
+   uint32_t setShiftAmount(uint32_t sa) {return (_shiftAmount = sa);}
+
+   /**
+    * @brief Sets shift type and amount in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertShift(uint32_t *instruction)
+      {
+      TR::InstOpCode::Mnemonic op = getOpCodeValue();
+      if ((op == TR::InstOpCode::vmovi8h) || (op == TR::InstOpCode::vmvni8h))
+         {
+         TR_ASSERT_FATAL((_shiftAmount == 0) || (_shiftAmount == 8), "shiftAmount other than 0 or 8 is not allowed for vmovi8h and vmvni8h");
+         *instruction |= (_shiftAmount >> 3) << 13;
+         }
+      else if ((op == TR::InstOpCode::vmovi4s) || (op == TR::InstOpCode::vmvni4s))
+         {
+         TR_ASSERT_FATAL((_shiftAmount == 0) || (_shiftAmount == 8) || (_shiftAmount == 16) || (_shiftAmount == 24),
+                        "shiftAmount other than 0, 8, 16, or 24 is not allowed for vmovi4s and vmvni4s");
+         *instruction |= (_shiftAmount >> 3) << 13;
+         }
+      else if ((op == TR::InstOpCode::vmovi4s_one) || (op == TR::InstOpCode::vmvni4s_one))
+         {
+         TR_ASSERT_FATAL((_shiftAmount == 8) || (_shiftAmount == 16), "shiftAmount other than 8 or 16 is not allowed for vmovi8h and vmvni8h");
+
+         *instruction |= (_shiftAmount >> 4) << 12;
+         }
+      else
+         {
+         TR_ASSERT_FATAL(false, "Unsupported opcode in ARM64Trg1ImmShiftedInstruction.");
          }
       }
 

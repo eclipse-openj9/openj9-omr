@@ -387,6 +387,26 @@ TR::Instruction *generateTrg1ImmInstruction(
                    TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates shifted imm--to-trg instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] imm : immediate value
+ * @param[in] shiftAmount : shift amount
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateTrg1ImmShiftedInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   uint32_t imm,
+                   uint32_t shiftAmount,
+                   TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates imm-to-trg label instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode

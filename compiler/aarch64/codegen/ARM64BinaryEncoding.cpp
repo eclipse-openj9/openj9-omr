@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -430,6 +430,20 @@ uint8_t *TR::ARM64Trg1ImmInstruction::generateBinaryEncoding()
    cursor = getOpCode().copyBinaryToBuffer(instructionStart);
    insertTargetRegister(toARM64Cursor(cursor));
    insertImmediateField(toARM64Cursor(cursor));
+   cursor += ARM64_INSTRUCTION_LENGTH;
+   setBinaryLength(ARM64_INSTRUCTION_LENGTH);
+   setBinaryEncoding(instructionStart);
+   return cursor;
+   }
+
+uint8_t *TR::ARM64Trg1ImmShiftedInstruction::generateBinaryEncoding()
+   {
+   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
+   uint8_t *cursor = instructionStart;
+   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
+   insertTargetRegister(toARM64Cursor(cursor));
+   insertImmediateField(toARM64Cursor(cursor));
+   insertShift(toARM64Cursor(cursor));
    cursor += ARM64_INSTRUCTION_LENGTH;
    setBinaryLength(ARM64_INSTRUCTION_LENGTH);
    setBinaryEncoding(instructionStart);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2017 IBM Corp. and others
+ * Copyright (c) 2014, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -131,7 +131,7 @@ typedef struct create_attr_t {
 	omrthread_prio_t priority;
 	omrthread_schedpolicy_t policy;
 
-	size_t osStacksize;
+	uintptr_t osStacksize;
 	int osPriority;
 	int osPolicy;
 	int osInheritsched;
@@ -157,7 +157,7 @@ static int threadmain(void *arg);
 static uintptr_t canCreateThread(const create_attr_t *expected, const omrthread_attr_t attr);
 static uintptr_t isAttrOk(const create_attr_t *expected, const omrthread_attr_t actual);
 static void initDefaultExpected(create_attr_t *expected);
-static size_t getOsStacksize(size_t stacksize);
+static uintptr_t getOsStacksize(uintptr_t stacksize);
 static int getOsPolicy(omrthread_schedpolicy_t policy, omrthread_prio_t priority);
 static void getCurrentOsSched(int *priority, int *policy);
 static int numaSetAffinitySuspendedThreadMain(void *arg);
@@ -482,8 +482,8 @@ getOsPolicy(omrthread_schedpolicy_t policy, omrthread_prio_t priority)
 	return ospolicy;
 }
 
-static size_t
-getOsStacksize(size_t stacksize)
+static uintptr_t
+getOsStacksize(uintptr_t stacksize)
 {
 	if (stacksize == 0) {
 		stacksize = STACK_DEFAULT_SIZE;
@@ -492,9 +492,10 @@ getOsStacksize(size_t stacksize)
 #if defined(LINUX) || defined(OSX)
 	/* Linux allocates 2MB if you ask for a stack smaller than STACK_MIN */
 	{
-		size_t pageSafeMinimumStack = 2 * sysconf(_SC_PAGESIZE);
+		/* sysconf won't return a negative value for _SC_PAGESIZE. */
+		uintptr_t pageSafeMinimumStack = (uintptr_t)(2 * sysconf(_SC_PAGESIZE));
 
-		if (pageSafeMinimumStack < PTHREAD_STACK_MIN) {
+		if (pageSafeMinimumStack < (uintptr_t)PTHREAD_STACK_MIN) {
 			pageSafeMinimumStack = PTHREAD_STACK_MIN;
 		}
 		if (stacksize < pageSafeMinimumStack) {
@@ -514,7 +515,7 @@ initDefaultExpected(create_attr_t *expected)
 	expected->priority = J9THREAD_PRIORITY_NORMAL;
 	expected->policy = J9THREAD_SCHEDPOLICY_INHERIT;
 
-	expected->osStacksize = getOsStacksize((size_t)expected->stacksize);
+	expected->osStacksize = getOsStacksize(expected->stacksize);
 	expected->osPriority = getOsPriority(expected->priority);
 	expected->osPolicy = getOsPolicy(expected->policy, expected->priority);
 	if (expected->osPolicy == -1) {

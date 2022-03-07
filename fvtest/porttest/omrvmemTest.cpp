@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -709,7 +709,6 @@ TEST(PortVmemTest, vmem_test_double_mapping)
 	uintptr_t HEAP_SIZE = SIXTEEN_MB; // 16MB
 	uintptr_t regionSize = SIXTEEN_KB; // 16KB
 	char vals[REGION_COUNT] = {'3', '5', '6', '8', '9', '0', '1', '2'};
-	uintptr_t totalRegionsSize = 0;
 	void* regionAddrs[REGION_COUNT];
 
 	reportTestEntry(OMRPORTLIB, testName);
@@ -811,7 +810,6 @@ TEST(PortVmemTest, vmem_test_double_mapping)
 			uintptr_t i = 0;
 			for(; i < REGION_COUNT; i++) {
 				regionAddrs[i] = (void *)((uintptr_t)memPtr + regionsOffsets[i]);
-				totalRegionsSize += regionSize;
 			}
 
 			for(i = 0; i < REGION_COUNT; i++) {
@@ -917,7 +915,6 @@ TEST(PortVmemTest, vmem_test_double_mapping_fixed_address)
 	uintptr_t SECOND_HEAP_SIZE = HEAP_SIZE * 3;
 	uintptr_t regionSize = SIXTEEN_KB; // 16KB
 	char vals[REGION_COUNT] = {'3', '5', '6', '8', '9', '0', '1', '2'};
-	uintptr_t totalRegionsSize = 0;
 	void* regionAddrs[REGION_COUNT];
 
 	reportTestEntry(OMRPORTLIB, testName);
@@ -1031,7 +1028,6 @@ TEST(PortVmemTest, vmem_test_double_mapping_fixed_address)
 			uintptr_t i = 0;
 			for(; i < REGION_COUNT; i++) {
 				regionAddrs[i] = (void*)((uintptr_t)memPtr + regionsOffsets[i]);
-				totalRegionsSize += regionSize;
 			}
 
 			/* Initialization of regions complete */

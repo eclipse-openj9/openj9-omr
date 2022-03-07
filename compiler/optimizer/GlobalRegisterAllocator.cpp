@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1046,42 +1046,6 @@ TR_GlobalRegisterAllocator::transformNode(
          if (!value)
             {
             value = gr->getValue();
-            if (comp()->cg()->needToAvoidCommoningInGRA() && value &&
-                (!value->getOpCode().isLoadReg() && !value->getOpCode().isLoadVar()) &&
-                 (symbol->getDataType() == TR::Float
-                  || symbol->getDataType() == TR::Double
-                  ) &&
-                (!parent->getOpCode().isStore() &&
-                 (parent->getOpCodeValue() != TR::fRegStore) &&
-                 (parent->getOpCodeValue() != TR::dRegStore) &&
-                 (parent->getOpCodeValue() != TR::GlRegDeps) &&
-                 (parent->getOpCodeValue() != TR::PassThrough)))
-
-               {
-
-               StoresInBlockInfo *storeInfo = findRegInStoreInfo(gr);
-               TR_ASSERT(storeInfo, "Must have a store before a load in this block\n");
-
-               if (!storeInfo->_origStoreExists)
-                  {
-                  TR::TreeTop *regStoreTT = storeInfo->_lastStore;
-                  TR::Node *regStoreNode =  regStoreTT->getNode();
-                  TR_RegisterCandidate * rc = gr->getCurrentRegisterCandidate();
-                  TR_ASSERT(rc, "must have a candidate\n");
-                  TR::Node * store = TR::Node::createWithSymRef(comp()->il.opCodeForDirectStore(rc->getDataType()), 1, 1, regStoreNode->getFirstChild(),rc->getSymbolReference());
-
-                  if (regStoreNode->needsSignExtension())
-                     store->setNeedsSignExtension(true);
-
-                  TR::TreeTop *prevTree = regStoreTT->getPrevTreeTop();
-                  TR::TreeTop *storeTreeTop = TR::TreeTop::create(comp(), prevTree, store);
-                  storeInfo->_origStoreExists = true;
-                  }
-               dumpOptDetails(comp(), "%s did not change load var [%p] of symRef#%d to load reg because float/double issues\n",
-                              OPT_DETAILS, node, node->getSymbolReference()->getReferenceNumber());
-               return;
-
-               }
 
             dumpOptDetails(comp(), "%s change load var [%p] of %s symRef#%d to load reg\n",
                            OPT_DETAILS,
@@ -1363,19 +1327,6 @@ TR_GlobalRegisterAllocator::transformNode(
             if (avoidDuplicateFPStackValues)
                return;
             StoresInBlockInfo *storeInfo = NULL;
-            if (comp()->cg()->needToAvoidCommoningInGRA() && fpStore)
-               {
-
-               storeInfo = findRegInStoreInfo(gr);
-               if (!storeInfo)
-                  {
-                  storeInfo = new (trStackMemory()) StoresInBlockInfo;
-                  _storesInBlockInfo.add(storeInfo);
-                  }
-               storeInfo->_gr = gr;
-               storeInfo->_lastStore = tt;
-               storeInfo->_origStoreExists = false;
-               }
 
             bool storeIntact = false;
             TR::Node *newValueNode = NULL;
@@ -1416,8 +1367,6 @@ TR_GlobalRegisterAllocator::transformNode(
                TR::TreeTop *prevTree = tt->getPrevTreeTop();
                TR::TreeTop *newStore = TR::TreeTop::create(comp(), prevTree, newNode);
                node = newNode;
-               if (comp()->cg()->needToAvoidCommoningInGRA() && fpStore)
-                  storeInfo->_origStoreExists = true;
                }
             else
                {

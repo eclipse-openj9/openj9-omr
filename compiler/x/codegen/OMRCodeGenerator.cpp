@@ -3060,12 +3060,6 @@ void OMR::X86::CodeGenerator::dumpPostGPRegisterAssignment(TR::Instruction * ins
    }
 #endif
 
-bool
-OMR::X86::CodeGenerator::needToAvoidCommoningInGRA()
-   {
-   return false;
-   }
-
 int32_t
 OMR::X86::CodeGenerator::arrayTranslateMinimumNumberOfElements(bool isByteSource, bool isByteTarget)
    {

@@ -814,8 +814,6 @@ protected:
       }
    void setEnableTLHPrefetching() {_flags.set(EnableTLHPrefetching);}
 
-   bool needToAvoidCommoningInGRA();
-
    bool generateMasmListingSyntax()    {return _flags.testAny(GenerateMasmListingSyntax);}
    void setGenerateMasmListingSyntax() {_flags.set(GenerateMasmListingSyntax);}
 

@@ -755,7 +755,8 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4E080C00,	/* DUP      	vdup2d   */
 		0x4E040400,	/* DUP      	vfdup4s  */
 		0x4E080400,	/* DUP      	vfdup2d  */
-
+		0x6EA1F800,	/* FSQRT   	vfsqrt4s */
+		0x6EE1F800,	/* FSQRT   	vfsqrt2d */
 	/* Hint instructions */
 		0xD503201F,	/* NOP          nop      */
 };

@@ -748,6 +748,8 @@
 		vdup2d,                                               		/* 0x4E080C00	DUP      	 */
 		vfdup4s,                                                  	/* 0x4E040400	DUP      	 */
 		vfdup2d,                                                  	/* 0x4E080400	DUP      	 */
+		vfsqrt4s,                                                	/* 0x6EA1F800	FSQRT   	 */
+		vfsqrt2d,                                                	/* 0x6EE1F800	FSQRT   	 */
 /* Hint instructions */
 		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */

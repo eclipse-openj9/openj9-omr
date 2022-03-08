@@ -1024,6 +1024,11 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::D
             return true;
          else
             return false;
+      case TR::vdsqrt:
+          if (dt == TR::Double)
+              return true;
+          else
+              return false;
       case TR::vload:
       case TR::vloadi:
       case TR::vstore:

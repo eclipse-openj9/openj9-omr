@@ -43,7 +43,7 @@ TEST_P(XLabelEncodingTest, encode) {
         fakeNode,
         label,
         cg()
-   );
+    );
 
     ASSERT_EQ(
         std::get<2>(GetParam()),
@@ -59,7 +59,35 @@ TEST_P(XRegRegEncodingTest, encode) {
 
     auto instr = generateRegRegInstruction(std::get<0>(GetParam()), fakeNode, regA, regB, cg());
 
+    TR::InstOpCode opcode = std::get<0>(GetParam());
+    if (opcode.info().supportsAVX() && !cg()->comp()->target().cpu.supportsAVX()) {
+        // For some reason, choosing SSE/AVX instruction variant is not decided until binary encoding
+        // temporarily skip this test because if the hardware does support AVX
+        return;
+    }
+
     ASSERT_EQ(std::get<3>(GetParam()), encodeInstruction(instr));
+}
+
+class XRegMemEncodingTest : public TRTest::BinaryEncoderTest<>, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, int32_t, TRTest::BinaryInstruction>> {};
+
+TEST_P(XRegMemEncodingTest, encode) {
+    auto regA = cg()->machine()->getRealRegister(std::get<1>(GetParam()));
+    auto mrBaseReg = cg()->machine()->getRealRegister(std::get<2>(GetParam()));
+    auto mrOffset = std::get<3>(GetParam());
+
+    auto mr = generateX86MemoryReference(mrBaseReg, mrOffset, cg());
+    auto instr = generateRegMemInstruction(std::get<0>(GetParam()), fakeNode, regA, mr, cg());
+
+    TR::InstOpCode opcode = std::get<0>(GetParam());
+
+    if (opcode.info().supportsAVX() && !cg()->comp()->target().cpu.supportsAVX()) {
+        // For some reason, choosing SSE/AVX instruction variant is not decided until binary encoding
+        // temporarily skip this test because if the hardware does support AVX
+        return;
+    }
+
+    ASSERT_EQ(std::get<4>(GetParam()), encodeInstruction(instr));
 }
 
 INSTANTIATE_TEST_CASE_P(Special, XDirectEncodingTest, ::testing::Values(
@@ -160,5 +188,16 @@ INSTANTIATE_TEST_CASE_P(Branch, XRegRegEncodingTest, ::testing::ValuesIn(*TRTest
     std::make_tuple(TR::InstOpCode::SBB8RegReg,      TR::RealRegister::ecx,  TR::RealRegister::eax, "481bc8"),
 
     std::make_tuple(TR::InstOpCode::SHRD4RegRegCL,   TR::RealRegister::eax,  TR::RealRegister::ecx, "0fadc8"),
-    std::make_tuple(TR::InstOpCode::SHRD4RegRegCL,   TR::RealRegister::ecx,  TR::RealRegister::eax, "0fadc1")
+    std::make_tuple(TR::InstOpCode::SHRD4RegRegCL,   TR::RealRegister::ecx,  TR::RealRegister::eax, "0fadc1"),
+
+    std::make_tuple(TR::InstOpCode::SQRTPDRegReg,   TR::RealRegister::xmm0,  TR::RealRegister::xmm1, "660f51c1"),
+    std::make_tuple(TR::InstOpCode::SQRTPDRegReg,   TR::RealRegister::xmm9,  TR::RealRegister::xmm4, "66440f51cc"),
+
+    std::make_tuple(TR::InstOpCode::VSQRTPDRegReg,   TR::RealRegister::xmm0,  TR::RealRegister::xmm1, "c5f951c1"),
+    std::make_tuple(TR::InstOpCode::VSQRTPDRegReg,   TR::RealRegister::xmm9,  TR::RealRegister::xmm4, "c57951cc")
+)));
+
+INSTANTIATE_TEST_CASE_P(X86RegMem, XRegMemEncodingTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, int32_t, TRTest::BinaryInstruction>>(
+     std::make_tuple(TR::InstOpCode::VSQRTPDRegMem, TR::RealRegister::xmm1,  TR::RealRegister::ecx, 0x8, "c5f9514908"),
+     std::make_tuple(TR::InstOpCode::VSQRTPDRegMem, TR::RealRegister::xmm10, TR::RealRegister::eax, 0x0, "c5795110")
 )));

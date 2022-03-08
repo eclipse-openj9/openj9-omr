@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1027,8 +1027,6 @@ public:
 
    TR_Array<TR::Register *>& getRegisterArray() {return _registerArray;}
 
-   bool needToAvoidCommoningInGRA() {return false;}
-
    bool considerTypeForGRA(TR::Node *node) {return true;}
    bool considerTypeForGRA(TR::DataType dt) {return true;}
    bool considerTypeForGRA(TR::SymbolReference *symRef) {return true;}
@@ -1090,7 +1088,7 @@ public:
     * @return the list of registers which is assigned first time in OOL cold path
     */
    TR::list<TR::Register*> *getFirstTimeLiveOOLRegisterList() {return _firstTimeLiveOOLRegisterList;}
-   
+
    /**
     * @brief Sets the list of registers which is assigned first time in OOL cold path
     *

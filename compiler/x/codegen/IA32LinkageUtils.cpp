@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -217,10 +217,7 @@ TR::Register *IA32LinkageUtils::pushFloatArg(
    TR::RealRegister *espReal = cg->machine()->getRealRegister(TR::RealRegister::esp);
    generateRegImmInstruction(TR::InstOpCode::SUB4RegImms, child, espReal, 4, cg);
 
-   if (cg->useSSEForSinglePrecision() && pushRegister->getKind() == TR_FPR)
-      generateMemRegInstruction(TR::InstOpCode::MOVSSMemReg, child, generateX86MemoryReference(espReal, 0, cg), pushRegister, cg);
-   else
-      generateFPMemRegInstruction(TR::InstOpCode::FSTMemReg, child, generateX86MemoryReference(espReal, 0, cg), pushRegister, cg);
+   generateMemRegInstruction(TR::InstOpCode::MOVSSMemReg, child, generateX86MemoryReference(espReal, 0, cg), pushRegister, cg);
 
    cg->decReferenceCount(child);
    return pushRegister;
@@ -286,10 +283,7 @@ TR::Register *IA32LinkageUtils::pushDoubleArg(
    TR::RealRegister *espReal = cg->machine()->getRealRegister(TR::RealRegister::esp);
    generateRegImmInstruction(TR::InstOpCode::SUB4RegImms, child, espReal, 8, cg);
 
-   if (cg->useSSEForSinglePrecision() && pushRegister->getKind() == TR_FPR)
-      generateMemRegInstruction(TR::InstOpCode::MOVSDMemReg, child, generateX86MemoryReference(espReal, 0, cg), pushRegister, cg);
-   else
-      generateFPMemRegInstruction(TR::InstOpCode::DSTMemReg, child, generateX86MemoryReference(espReal, 0, cg), pushRegister, cg);
+   generateMemRegInstruction(TR::InstOpCode::MOVSDMemReg, child, generateX86MemoryReference(espReal, 0, cg), pushRegister, cg);
 
    cg->decReferenceCount(child);
    return pushRegister;

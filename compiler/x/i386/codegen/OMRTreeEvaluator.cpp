@@ -2762,7 +2762,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR:
 
          if (isVolatile)
             {
-            if (cg->useSSEForDoublePrecision() && performTransformation(comp, "O^O Using SSE for volatile store %s\n", cg->getDebug()->getName(node)))
+            if (performTransformation(comp, "O^O Using SSE for volatile store %s\n", cg->getDebug()->getName(node)))
                {
                //Get stack piece
                TR::MemoryReference *stackLow  = cg->machine()->getDummyLocalMR(TR::Int64);
@@ -5362,9 +5362,11 @@ TR::Register *OMR::X86::I386::TreeEvaluator::l2fEvaluator(TR::Node *node, TR::Co
 
    target->setMayNeedPrecisionAdjustment();
    target->setNeedsPrecisionAdjustment();
+   cg->stopUsingRegister(target);
+
+   target = coerceST0ToFPR(node, TR::Float, cg);
+
    node->setRegister(target);
-   if (cg->useSSEForSinglePrecision())
-      target = coerceFPRToXMMR(node, target, cg);
 
    return target;
    }
@@ -5396,9 +5398,11 @@ TR::Register *OMR::X86::I386::TreeEvaluator::l2dEvaluator(TR::Node *node, TR::Co
 
    target->setMayNeedPrecisionAdjustment();
    target->setNeedsPrecisionAdjustment();
+   cg->stopUsingRegister(target);
+
+   target = coerceST0ToFPR(node, TR::Double, cg);
+
    node->setRegister(target);
-   if (cg->useSSEForDoublePrecision())
-      target = coerceFPRToXMMR(node, target, cg);
 
    return target;
    }
@@ -5420,7 +5424,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::performLload(TR::Node *node, TR::Me
       {
       TR::Machine *machine = cg->machine();
 
-      if (cg->useSSEForDoublePrecision() && performTransformation(comp, "O^O Using SSE for volatile load %s\n", cg->getDebug()->getName(node)))
+      if (performTransformation(comp, "O^O Using SSE for volatile load %s\n", cg->getDebug()->getName(node)))
          {
          TR_X86ProcessorInfo &p = cg->getX86ProcessorInfo();
 

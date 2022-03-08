@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -675,40 +675,12 @@ TR::Register *OMR::X86::Linkage::findReturnRegisterFromDependencies(TR::Node    
 
 // FIXME: This should be replaced by thunk code in the PicBuilder.
 //
-void OMR::X86::Linkage::coerceFPReturnValueToXMMR(TR::Node                             *callNode,
-                                              TR::RegisterDependencyConditions  *dependencies,
-                                              TR::MethodSymbol                     *methodSymbol,
-                                              TR::Register                         *returnReg)
+void OMR::X86::Linkage::coerceFPReturnValueToXMMR(TR::Node *callNode,
+                                              TR::RegisterDependencyConditions *dependencies,
+                                              TR::MethodSymbol *methodSymbol,
+                                              TR::Register *returnReg)
    {
-   TR_ASSERT(returnReg->getKind() == TR_FPR,
-          "cannot coerce FP return values into non-XMM registers\n");
-
-   // A call to an FP-returning INL method that preserves all registers
-   // expects the return register in dependency 0.
-   //
-   //   int depNum = ((methodSymbol->isVMInternalNative() || methodSymbol->isJITInternalNative()) && methodSymbol->preservesAllRegisters()) ? 0 : 3;
-   //   TR::Register *fpReg = dependencies->getPostConditions()->getRegisterDependency(depNum)->getRegister();
-
-   TR::Register *fpReg = callNode->getOpCode().isFloat() ? self()->cg()->allocateSinglePrecisionRegister(TR_X87)
-                                                        : self()->cg()->allocateRegister(TR_X87);
-   fpReg->incTotalUseCount();
-
-   if (callNode->getOpCode().isFloat())
-      {
-   TR::MemoryReference  *tempMR = self()->machine()->getDummyLocalMR(TR::Float);
-      generateFPMemRegInstruction(TR::InstOpCode::FSTPMemReg, callNode, tempMR, fpReg, self()->cg());
-      generateRegMemInstruction(TR::InstOpCode::MOVSSRegMem, callNode, returnReg, generateX86MemoryReference(*tempMR, 0, self()->cg()), self()->cg());
-      }
-   else
-      {
-      TR_ASSERT(callNode->getOpCode().isDouble(),
-             "cannot return non-floating-point values in XMM registers\n");
-      TR::MemoryReference  *tempMR = self()->machine()->getDummyLocalMR(TR::Double);
-      generateFPMemRegInstruction(TR::InstOpCode::DSTPMemReg, callNode, tempMR, fpReg, self()->cg());
-      generateRegMemInstruction(self()->cg()->getXMMDoubleLoadOpCode(), callNode, returnReg, generateX86MemoryReference(*tempMR, 0, self()->cg()), self()->cg());
-      }
-
-   self()->cg()->stopUsingRegister(fpReg);
+   TR::TreeEvaluator::coerceST0ToFPR(callNode, callNode->getDataType(), self()->cg(), returnReg);
    }
 
 

@@ -1601,6 +1601,8 @@ TR_Debug::getName(TR::SymbolReference * symRef)
             return "<arraycmp>";
          case TR::SymbolReferenceTable::currentTimeMaxPrecisionSymbol:
             return "<currentTimeMaxPrecision>";
+         case TR::SymbolReferenceTable::encodeASCIISymbol:
+            return "<encodeASCII>";
          case TR::SymbolReferenceTable::singlePrecisionSQRTSymbol:
             return "<fsqrt>";
          case TR::SymbolReferenceTable::killsAllMethodSymbol:
@@ -2056,6 +2058,7 @@ static const char *commonNonhelperSymbolNames[] =
    "<reverseLoad>",
    "<reverseStore>",
    "<currentTimeMaxPrecision>",
+   "<encodeASCII>",
    "<headerFlags>",
    "<singlePrecisionSQRT>",
    "<threadPrivateFlags>",

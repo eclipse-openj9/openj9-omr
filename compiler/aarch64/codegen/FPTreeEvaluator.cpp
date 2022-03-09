@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -206,7 +206,7 @@ OMR::ARM64::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeGenerator *cg
 
       if(fvalue.f == +0.0f && signbit(fvalue.f) == 0)
          {
-         generateTrgInstruction(cg, TR::InstOpCode::movi0s, node, trgReg);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi2s, node, trgReg, 0);
          }
       else
          {
@@ -242,7 +242,7 @@ OMR::ARM64::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeGenerator *cg
 
       if(dvalue.d == +0.0 && signbit(dvalue.d) == 0)
          {
-         generateTrgInstruction(cg, TR::InstOpCode::movi0d, node, trgReg);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::movid, node, trgReg, 0);
          }
       else
          {

@@ -700,8 +700,6 @@ static const char *opCodeToNameMap[] =
    "scvtf_xtod",
    "fmovimms",
    "fmovimmd",
-   "movi0s",
-   "movi0d",
    "fcmps",
    "fcmps_zero",
    "fcmpd",
@@ -728,6 +726,18 @@ static const char *opCodeToNameMap[] =
    "fmaxd",
    "fmins",
    "fmind",
+   "vmovi16b",
+   "vmovi8h",
+   "vmovi2s",
+   "vmovi4s",
+   "vmovi4s_one",
+   "movid",
+   "vmovi2d",
+   "vfmov4s",
+   "vfmov2d",
+   "vmvni8h",
+   "vmvni4s",
+   "vmvni4s_one",
    "vorr2d",
    "vadd16b",
    "vadd8h",
@@ -848,6 +858,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
          break;
       case OMR::Instruction::IsTrg1Imm:
          print(pOutFile, (TR::ARM64Trg1ImmInstruction *)instr);
+         break;
+      case OMR::Instruction::IsTrg1ImmShifted:
+         print(pOutFile, (TR::ARM64Trg1ImmShiftedInstruction *)instr);
          break;
       case OMR::Instruction::IsTrg1ImmSym:
          print(pOutFile, (TR::ARM64Trg1ImmSymInstruction *)instr);
@@ -1198,17 +1211,63 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1ImmInstruction *instr)
          }
       trfprintf(pOutFile, ", " POINTER_PRINTF_FORMAT, (instr->getBinaryEncoding() + offset));
       }
-   else if ((op == TR::InstOpCode::fmovimms) || (op == TR::InstOpCode::fmovimmd))
+   else if (op == TR::InstOpCode::fmovimms || op == TR::InstOpCode::fmovimmd ||
+            op == TR::InstOpCode::vfmov4s || op == TR::InstOpCode::vfmov2d)
       {
       uint32_t imm = instr->getSourceImmediate() & 0xFF;
       trfprintf(pOutFile, ", 0x%02x (%lf)", imm, getDoubleFromImm8(imm));
       }
-   else
+   else if (op == TR::InstOpCode::movzx || op == TR::InstOpCode::movzw ||
+            op == TR::InstOpCode::movnx || op == TR::InstOpCode::movnw ||
+            op == TR::InstOpCode::movkx || op == TR::InstOpCode::movkw)
       {
       uint32_t imm = instr->getSourceImmediate() & 0xFFFF;
       uint32_t shift = (instr->getSourceImmediate() & 0x30000) >> 12;
       trfprintf(pOutFile, ", 0x%04x", imm);
       if (shift != 0)
+         {
+         trfprintf(pOutFile, ", LSL #%d", shift);
+         }
+      }
+   else if (op == TR::InstOpCode::vmovi2d)
+      {
+      uint8_t imm8 = instr->getSourceImmediate() & 0xFF;
+      uint64_t imm = 0;
+      for (int i = 0; i < 8; i++)
+         {
+         if ((imm8 & (1 << i)) != 0)
+            {
+            imm |= 0xff << (i * 8);
+            }
+         }
+      trfprintf(pOutFile, ", 0x%08llx", imm);
+      }
+   else
+      {
+      uint32_t imm = instr->getSourceImmediate() & 0xFF;
+      trfprintf(pOutFile, ", 0x%02x", imm);
+      }
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1ImmShiftedInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+
+   TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+   uint32_t imm = instr->getSourceImmediate() & 0xFF;
+   uint32_t shift = instr->getShiftAmount();
+   trfprintf(pOutFile, ", 0x%02x", imm);
+   if (shift != 0)
+      {
+      if ((op == TR::InstOpCode::vmovi4s_one) || (op == TR::InstOpCode::vmvni4s_one))
+         {
+         trfprintf(pOutFile, ", MSL #%d", shift);
+         }
+      else
          {
          trfprintf(pOutFile, ", LSL #%d", shift);
          }

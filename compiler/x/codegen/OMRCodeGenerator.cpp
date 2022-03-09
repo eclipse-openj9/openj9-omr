@@ -1013,7 +1013,10 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::D
          else
             return false;
       case TR::vneg:
-         return false;
+         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+            return true;
+         else
+            return false;
       case TR::vxor:
       case TR::vor:
       case TR::vand:

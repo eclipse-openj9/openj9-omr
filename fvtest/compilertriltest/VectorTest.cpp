@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2021 IBM Corp. and others
+ * Copyright (c) 2017, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -681,8 +681,6 @@ TEST_F(VectorTest, VInt8Neg) {
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
     SKIP_ON_POWER(MissingImplementation);
-    SKIP_ON_X86(MissingImplementation);
-    SKIP_ON_HAMMER(MissingImplementation);
 
     Tril::DefaultCompiler compiler(trees);
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
@@ -719,8 +717,6 @@ TEST_F(VectorTest, VInt16Neg) {
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
     SKIP_ON_POWER(MissingImplementation);
-    SKIP_ON_X86(MissingImplementation);
-    SKIP_ON_HAMMER(MissingImplementation);
 
     Tril::DefaultCompiler compiler(trees);
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
@@ -757,8 +753,6 @@ TEST_F(VectorTest, VInt32Neg) {
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
     SKIP_ON_POWER(MissingImplementation);
-    SKIP_ON_X86(MissingImplementation);
-    SKIP_ON_HAMMER(MissingImplementation);
 
     Tril::DefaultCompiler compiler(trees);
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
@@ -795,8 +789,6 @@ TEST_F(VectorTest, VInt64Neg) {
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
     SKIP_ON_POWER(MissingImplementation);
-    SKIP_ON_X86(MissingImplementation);
-    SKIP_ON_HAMMER(MissingImplementation);
 
     Tril::DefaultCompiler compiler(trees);
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
@@ -832,8 +824,6 @@ TEST_F(VectorTest, VFloatNeg) {
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_X86(MissingImplementation);
-    SKIP_ON_HAMMER(MissingImplementation);
 
     Tril::DefaultCompiler compiler(trees);
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
@@ -869,8 +859,6 @@ TEST_F(VectorTest, VDoubleNeg) {
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_X86(MissingImplementation);
-    SKIP_ON_HAMMER(MissingImplementation);
 
     Tril::DefaultCompiler compiler(trees);
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;

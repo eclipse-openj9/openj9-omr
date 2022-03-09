@@ -768,6 +768,12 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4E080400,	/* DUP      	vfdup2d  */
 		0x6EA1F800,	/* FSQRT   	vfsqrt4s */
 		0x6EE1F800,	/* FSQRT   	vfsqrt2d */
+		0x4E20B800,	/* ABS     	vabs16b  */
+		0x4E60B800,	/* ABS     	vabs8h   */
+		0x4EA0B800,	/* ABS     	vabs4s   */
+		0x4EE0B800,	/* ABS     	vabs2d   */
+		0x4EA0F800,	/* ABS     	vfabs4s  */
+		0x4EE0F800,	/* ABS     	vfabs2d  */
 	/* Hint instructions */
 		0xD503201F,	/* NOP          nop      */
 };

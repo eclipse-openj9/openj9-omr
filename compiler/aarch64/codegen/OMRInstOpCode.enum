@@ -744,6 +744,16 @@
 		vmla4s,                                                  	/* 0x4EA09400	MLA      	 */
 		vfmla4s,                                                  	/* 0x4E20CC00	FMLA      	 */
 		vfmla2d,                                                  	/* 0x4E60CC00	FMLA      	 */
+		vsmin16b,                                                 	/* 0x4E206C00	SMIN      	 */
+		vsmin8h,                                                  	/* 0x4E606C00	SMIN      	 */
+		vsmin4s,                                                  	/* 0x4EA06C00	SMIN      	 */
+		vfmin4s,                                                  	/* 0x4EA0F400	FMIN      	 */
+		vfmin2d,                                                  	/* 0x4EE0F400	FMIN      	 */
+		vsmax16b,                                                 	/* 0x4E206400	SMAX      	 */
+		vsmax8h,                                                  	/* 0x4E606400	SMAX      	 */
+		vsmax4s,                                                  	/* 0x4EA06400	SMAX      	 */
+		vfmax4s,                                                  	/* 0x4E20F400	FMAX      	 */
+		vfmax2d,                                                  	/* 0x4E60F400	FMAX      	 */
 	/* Vector Data-processing (1 source) */
 		vneg16b,                                                  	/* 0x6E20B800	NEG      	 */
 		vneg8h,                                                  	/* 0x6E60B800	NEG      	 */

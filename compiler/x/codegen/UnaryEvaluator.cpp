@@ -97,13 +97,9 @@ TR::Register *OMR::X86::TreeEvaluator::integerAbsEvaluator(TR::Node *node, TR::C
 TR::Register*
 OMR::X86::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions(0, 1, cg);
    TR::Node *valueNode = node->getChild(0);
    TR::Register *resultReg = cg->allocateRegister(TR_VRF);
    TR::Register *valueReg = cg->evaluate(valueNode);
-
-   deps->addPostCondition(resultReg, TR::RealRegister::NoReg, cg);
-   deps->stopAddingConditions();
 
    // -valueReg = 0 - valueReg
    generateRegRegInstruction(TR::InstOpCode::PXORRegReg, node, resultReg, resultReg, cg);
@@ -134,7 +130,7 @@ OMR::X86::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          break;
       }
 
-   generateRegRegInstruction(subOpcode, node, resultReg, valueReg, deps, cg);
+   generateRegRegInstruction(subOpcode, node, resultReg, valueReg, cg);
 
    node->setRegister(resultReg);
    cg->decReferenceCount(valueNode);

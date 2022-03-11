@@ -737,6 +737,7 @@
 		vfdiv4s,                                                  	/* 0x6E20FC00	FDIV      	 */
 		vfdiv2d,                                                  	/* 0x6E60FC00	FDIV      	 */
 		vand16b,                                                  	/* 0x4E201C00	AND      	 */
+		vbic16b,                                                  	/* 0x4E601C00	BIC      	 */
 		vorr16b,                                                  	/* 0x4EA01C00	ORR      	 */
 		veor16b,                                                  	/* 0x6E201C00	EOR      	 */
 		vmla16b,                                                  	/* 0x4E209400	MLA      	 */

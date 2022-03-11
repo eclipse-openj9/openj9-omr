@@ -744,6 +744,7 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x6E20FC00,	/* FDIV      	vfdiv4s	 */
 		0x6E60FC00,	/* FDIV      	vfdiv2d	 */
 		0x4E201C00,	/* AND      	vand16b	 */
+		0x4E601C00,	/* BIC      	vbic16b	 */
 		0x4EA01C00,	/* ORR      	vorr16b	 */
 		0x6E201C00,	/* EOR      	veor16b	 */
 		0x4E209400,	/* MLA       	vmla16b	 */

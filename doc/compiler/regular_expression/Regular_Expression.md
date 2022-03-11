@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2016, 2017 IBM Corp. and others
+Copyright (c) 2016, 2022 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -58,7 +58,7 @@ Regular Expression               |  Matches
 `{*(I)*}`                        |  All methods that accept a single parameter of type `int`
 `{*.[^a]*}`                      |  All methods whose names do not begin with "a"
 `{java/lang/[A-M]*}`             |  All methods of all classes in the java.lang package whose names start with the letters A through M
-`{*.a*|*)V}`                     |  All methods that begin with "a" or return `void`
+`{*.a*\|*)V}`                    |  All methods that begin with "a" or return `void`
 `{*)[[]*}`                       |  All methods that return any kind of array
 
 Note that the use of brackets for character sets interferes with their use within method signatures as array type specifiers. The last example above shows how the left bracket character can be escaped by enclosing it in brackets.

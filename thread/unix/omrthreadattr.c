@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2016 IBM Corp. and others
+ * Copyright (c) 2007, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -466,9 +466,10 @@ setStacksize(pthread_attr_t *pattr, uintptr_t stacksize)
 #if defined(LINUX) || defined(OSX)
 	/* Linux allocates 2MB if you ask for a stack smaller than STACK_MIN */
 	{
-		long pageSafeMinimumStack = 2 * sysconf(_SC_PAGESIZE);
+		/* sysconf won't return a negative value for _SC_PAGESIZE. */
+		uintptr_t pageSafeMinimumStack = (uintptr_t)(2 * sysconf(_SC_PAGESIZE));
 
-		if (pageSafeMinimumStack < PTHREAD_STACK_MIN) {
+		if (pageSafeMinimumStack < (uintptr_t)PTHREAD_STACK_MIN) {
 			pageSafeMinimumStack = PTHREAD_STACK_MIN;
 		}
 		if (stacksize < pageSafeMinimumStack) {

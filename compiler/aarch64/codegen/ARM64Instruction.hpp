@@ -1630,7 +1630,9 @@ class ARM64Trg1ImmInstruction : public ARM64Trg1Instruction
                op == TR::InstOpCode::vmovi2s || op == TR::InstOpCode::movid ||
                op == TR::InstOpCode::vmovi2d || op == TR::InstOpCode::vfmov4s ||
                op == TR::InstOpCode::vfmov2d || op == TR::InstOpCode::vmvni8h ||
-               op == TR::InstOpCode::vmvni4s || op == TR::InstOpCode::vmvni4s_one)
+               op == TR::InstOpCode::vmvni4s || op == TR::InstOpCode::vmvni4s_one ||
+               op == TR::InstOpCode::vbicimm8h || op == TR::InstOpCode::vbicimm4s ||
+               op == TR::InstOpCode::vorrimm8h || op == TR::InstOpCode::vorrimm4s)
          {
          *instruction |= ((_sourceImmediate & 0xe0) << 11) | ((_sourceImmediate & 0x1f) << 5);
          }
@@ -1709,15 +1711,17 @@ class ARM64Trg1ImmShiftedInstruction : public ARM64Trg1ImmInstruction
    void insertShift(uint32_t *instruction)
       {
       TR::InstOpCode::Mnemonic op = getOpCodeValue();
-      if ((op == TR::InstOpCode::vmovi8h) || (op == TR::InstOpCode::vmvni8h))
+      if ((op == TR::InstOpCode::vmovi8h) || (op == TR::InstOpCode::vmvni8h) ||
+          (op == TR::InstOpCode::vbicimm8h) || (op == TR::InstOpCode::vorrimm8h))
          {
-         TR_ASSERT_FATAL((_shiftAmount == 0) || (_shiftAmount == 8), "shiftAmount other than 0 or 8 is not allowed for vmovi8h and vmvni8h");
+         TR_ASSERT_FATAL((_shiftAmount == 0) || (_shiftAmount == 8), "shiftAmount other than 0 or 8 is not allowed for vmovi8h, vmvni8h, vbicimm8h and vorrimm8h");
          *instruction |= (_shiftAmount >> 3) << 13;
          }
-      else if ((op == TR::InstOpCode::vmovi4s) || (op == TR::InstOpCode::vmvni4s))
+      else if ((op == TR::InstOpCode::vmovi4s) || (op == TR::InstOpCode::vmvni4s) ||
+               (op == TR::InstOpCode::vbicimm4s) || (op == TR::InstOpCode::vorrimm4s))
          {
          TR_ASSERT_FATAL((_shiftAmount == 0) || (_shiftAmount == 8) || (_shiftAmount == 16) || (_shiftAmount == 24),
-                        "shiftAmount other than 0, 8, 16, or 24 is not allowed for vmovi4s and vmvni4s");
+                        "shiftAmount other than 0, 8, 16, or 24 is not allowed for vmovi4s, vmvni4s, vbicimm4s and vorrimm4s");
          *instruction |= (_shiftAmount >> 3) << 13;
          }
       else if ((op == TR::InstOpCode::vmovi4s_one) || (op == TR::InstOpCode::vmvni4s_one))

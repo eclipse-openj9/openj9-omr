@@ -721,6 +721,10 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x6F008400,	/* MVNI      	vmovi8h	 */
 		0x6F000400,	/* MVNI      	vmovi4s	 */
 		0x6F00C400,	/* MVNI      	vmovi4s_one */
+		0x6F009400,	/* BIC      	vbicimm8h */
+		0x6F001400,	/* BIC      	vbicimm4s */
+		0x4F009400,	/* ORR      	vorrimm8h */
+		0x4F001400,	/* ORR      	vorrimm4s */
 
 	/* Vector Data-processing (2 source) */
 		0x4EA01C00,	/* ORR      	vorr2d	 */

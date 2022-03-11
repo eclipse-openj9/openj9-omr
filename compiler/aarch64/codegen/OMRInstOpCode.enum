@@ -715,6 +715,10 @@
 		vmvni8h,                                                	/* 0x6F008400,	MVNI      	 */
 		vmvni4s,                                                	/* 0x6F000400,	MVNI      	 */
 		vmvni4s_one,                                            	/* 0x6F00C400,	MVNI      	 */
+		vbicimm8h,                                              	/* 0x6F009400,	BIC       	 */
+		vbicimm4s,                                              	/* 0x6F001400,	BIC       	 */
+		vorrimm8h,                                              	/* 0x4F009400,	ORR       	 */
+		vorrimm4s,                                              	/* 0x4F001400,	ORR       	 */
 	/* Vector Data-processing (2 source) */
 		vorr2d,                                                  	/* 0x4EA01C00   ORR       	 */
 		vadd16b,                                                  	/* 0x4E208400	ADD      	 */

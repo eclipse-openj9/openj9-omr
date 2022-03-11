@@ -115,7 +115,7 @@ OMR::ARM64::RegisterDependencyConditions::RegisterDependencyConditions(
          else if (kind == TR_VRF)
             {
                copyReg = cg->allocateRegister(TR_VRF);
-               iCursor = generateTrg1Src2Instruction(cg, TR::InstOpCode::vorr2d, node, copyReg, reg, reg, iCursor);
+               iCursor = generateTrg1Src2Instruction(cg, TR::InstOpCode::vorr16b, node, copyReg, reg, reg, iCursor);
             }
          else
             {

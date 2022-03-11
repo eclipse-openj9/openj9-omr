@@ -727,7 +727,6 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4F001400,	/* ORR      	vorrimm4s */
 
 	/* Vector Data-processing (2 source) */
-		0x4EA01C00,	/* ORR      	vorr2d	 */
 		0x4E208400,	/* ADD      	vadd16b	 */
 		0x4E608400,	/* ADD      	vadd8h	 */
 		0x4EA08400,	/* ADD      	vadd4s	 */

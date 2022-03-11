@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -779,8 +779,6 @@ static void
 printProgramHeaders(struct OMRPortLibrary *portLibrary, intptr_t fd, uintptr_t addrSize, Elf64_Off phoff, Elf64_Half phnum)
 {
 	uintptr_t count = 0;
-	int offset = 0;
-	int bytesread = 0;
 	int position;
 
 	Elf64_Phdr  elfPgmHdr;
@@ -793,16 +791,16 @@ printProgramHeaders(struct OMRPortLibrary *portLibrary, intptr_t fd, uintptr_t a
 	position = portLibrary->file_seek(portLibrary, fd, 0, EsSeekCur);
 
 	/* set the start position */
-	offset = portLibrary->file_seek(portLibrary, fd, phoff, EsSeekSet);
+	J9_IGNORE_RETURNVAL(portLibrary->file_seek(portLibrary, fd, phoff, EsSeekSet));
 
 	if (32 == addrSize) {
 		for (count = 0; count < phnum; count++) {
-			bytesread = portLibrary->file_read(portLibrary, fd, p32elfPgmHdr, sizeof(Elf32_Phdr));
+			J9_IGNORE_RETURNVAL(portLibrary->file_read(portLibrary, fd, p32elfPgmHdr, sizeof(Elf32_Phdr)));
 			printProgramHeader(portLibrary, 32, (Elf64_Phdr *)p32elfPgmHdr, count);
 		}
 	} else if (64 == addrSize) {
 		for (count = 0; count < phnum; count++) {
-			bytesread = portLibrary->file_read(portLibrary, fd, p64elfPgmHdr, sizeof(Elf64_Phdr));
+			J9_IGNORE_RETURNVAL(portLibrary->file_read(portLibrary, fd, p64elfPgmHdr, sizeof(Elf64_Phdr)));
 			printProgramHeader(portLibrary, 64, p64elfPgmHdr, count);
 		}
 	}
@@ -822,9 +820,6 @@ printMemoryMap(struct OMRPortLibrary *portLibrary, uintptr_t addrSize)
 	uint8_t *start = 0;
 	uint8_t *end = 0;
 	char flags[5];
-	int offset;
-	char device[6];
-	int inode;
 	char path[256];
 
 	memset(outbuf, '\0', sizeof(outbuf));
@@ -862,24 +857,11 @@ printMemoryMap(struct OMRPortLibrary *portLibrary, uintptr_t addrSize)
 
 					/* get the offset */
 					next++;
-					offset = strtoull(next, &next, 16);
+					J9_IGNORE_RETURNVAL(strtoull(next, &next, 16));
 
-					/* get the device as a string */
-					next++;
-					device[0] = *next;
-					next++;
-					device[1] = *next;
-					next++;
-					device[2] = *next;
-					next++;
-					device[3] = *next;
-					next++;
-					device[4] = *next;
-					device[5] = '\0';
-
-					/* get the inode */
-					next++;
-					inode = strtoull(next, &next, 10);
+					/* skip over the device (+5) and get the inode (+1) */
+					next += 6;
+					J9_IGNORE_RETURNVAL(strtoull(next, &next, 10));
 
 					/* get the path */
 					while (isspace(*next)) {
@@ -975,11 +957,8 @@ getSharedAndPrivateDataSegments(struct OMRPortLibrary *portLibrary, intptr_t fd,
 						next++;
 						J9_IGNORE_RETURNVAL(strtoull(next, &next, 16));
 
-						/* skip over the device */
-						next += 5;
-
-						/* get the inode */
-						next++;
+						/* skip over the device (+5) and get the inode (+1) */
+						next += 6;
 						J9_IGNORE_RETURNVAL(strtoull(next, &next, 10));
 
 						/* get the path */

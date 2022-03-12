@@ -678,7 +678,7 @@ static void registerCopy(TR::Instruction *precedingInstruction,
          generateTrg1Src1Instruction(cg, TR::InstOpCode::fmovd, node, targetReg, sourceReg, precedingInstruction);
          break;
       case TR_VRF:
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::vorr2d, node, targetReg, sourceReg, sourceReg, precedingInstruction);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::vorr16b, node, targetReg, sourceReg, sourceReg, precedingInstruction);
          break;
       default:
          TR_ASSERT(false, "Unsupported RegisterKind.");

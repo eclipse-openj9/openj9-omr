@@ -520,12 +520,20 @@ TR::Register *OMR::X86::TreeEvaluator::fpUnaryMaskEvaluator(TR::Node *node, TR::
       result->setIsSinglePrecision();
       }
 
-   // TODO 3-OP Optimization
-   if (result != value)
+   TR::MemoryReference *mr = generateX86MemoryReference(cg->findOrCreate16ByteConstant(node, mask), cg);
+
+   if (cg->comp()->target().cpu.supportsAVX())
       {
-      generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, result, value, cg);
+      generateRegRegMemInstruction(opcode, node, result, value, mr, cg);
       }
-   generateRegMemInstruction(opcode, node, result, generateX86MemoryReference(cg->findOrCreate16ByteConstant(node, mask), cg), cg);
+   else
+      {
+      if (result != value)
+         {
+         generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, result, value, cg);
+         }
+      generateRegMemInstruction(opcode, node, result, mr, cg);
+      }
 
    node->setRegister(result);
    cg->decReferenceCount(child);

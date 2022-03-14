@@ -1295,7 +1295,6 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(
       bool generateBranch,
       TR::CodeGenerator *cg)
    {
-   List<TR::Register> popRegisters(cg->trMemory());
    TR::Register *targetRegister = NULL;
    TR::RegisterDependencyConditions *deps = NULL;
 
@@ -1305,8 +1304,7 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(
          {
          TR::Node *third = node->getChild(2);
          cg->evaluate(third);
-         deps = generateRegisterDependencyConditions(third, cg, 1, &popRegisters);
-         deps->setMayNeedToPopFPRegisters(true);
+         deps = generateRegisterDependencyConditions(third, cg, 1);
          deps->stopAddingConditions();
          }
       }
@@ -1327,7 +1325,7 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(
          // on the last one.
          //
          TR::RegisterDependencyConditions  *deps1 = NULL;
-         if (deps && deps->getPreConditions() && deps->getPreConditions()->getMayNeedToPopFPRegisters())
+         if (deps && deps->getPreConditions())
             {
             deps1 = deps->clone(cg);
             deps1->setNumPostConditions(0, cg->trMemory());
@@ -1361,7 +1359,7 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(
          fallThroughLabel->setEndInternalControlFlow();
 
          TR::RegisterDependencyConditions  *deps1 = NULL;
-         if (deps && deps->getPreConditions() && deps->getPreConditions()->getMayNeedToPopFPRegisters())
+         if (deps && deps->getPreConditions())
             {
             deps1 = deps->clone(cg);
             deps1->setNumPostConditions(0, cg->trMemory());
@@ -1398,16 +1396,6 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(
          cg->getLiveRegisters(TR_GPR)->setByteRegisterAssociation(targetRegister);
          generateRegInstruction(op, node, targetRegister, cg);
          generateRegRegInstruction(TR::InstOpCode::MOVZXReg4Reg1, node, targetRegister, targetRegister, cg);
-         }
-      }
-
-   if (!popRegisters.isEmpty())
-      {
-      ListIterator<TR::Register> popRegsIt(&popRegisters);
-      for (TR::Register *popRegister = popRegsIt.getFirst(); popRegister != NULL; popRegister = popRegsIt.getNext())
-         {
-         generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, node, popRegister, popRegister, cg);
-         cg->stopUsingRegister(popRegister);
          }
       }
 

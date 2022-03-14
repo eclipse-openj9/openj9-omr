@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1347,12 +1347,6 @@ public:
    bool skipSignExtension();
    void setSkipSignExtension(bool b);
    const char * printSkipSignExtension();
-
-   // Flag used by FP regLoad/regStore
-   bool needsPrecisionAdjustment();
-   void setNeedsPrecisionAdjustment(bool v);
-   bool chkNeedsPrecisionAdjustment();
-   const char * printNeedsPrecisionAdjustment();
 
    // Flag used by TR_if or TR::istore/TR::iRegStore or TR::iadd, TR::ladd, TR::isub, TR::lsub
    bool isUseBranchOnCount();

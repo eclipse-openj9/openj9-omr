@@ -102,12 +102,6 @@ class OMR_EXTENSIBLE RegisterDependencyGroup : public OMR::RegisterDependencyGro
                           uint32_t          numberOfRegisters,
                           TR::CodeGenerator *cg);
 
-   void setMayNeedToPopFPRegisters(bool b) {_mayNeedToPopFPRegisters = b;}
-   bool getMayNeedToPopFPRegisters() {return _mayNeedToPopFPRegisters;}
-
-   void setNeedToClearFPStack(bool b) {_needToClearFPStack = b;}
-   bool getNeedToClearFPStack() {return _needToClearFPStack;}
-
    void blockRealDependencyRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg);
    void unblockRealDependencyRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg);
    };
@@ -139,17 +133,13 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
 
    RegisterDependencyConditions(uint16_t numPreConds, uint16_t numPostConds, TR_Memory * m);
 
-   RegisterDependencyConditions(TR::Node *node, TR::CodeGenerator *cg, uint16_t additionalRegDeps = 0, List<TR::Register> * = 0);
+   RegisterDependencyConditions(TR::Node *node, TR::CodeGenerator *cg, uint16_t additionalRegDeps = 0);
 
    void unionNoRegPostCondition(TR::Register *reg, TR::CodeGenerator *cg);
 
    TR::RegisterDependencyConditions  *clone(TR::CodeGenerator *cg, uint32_t additionalRegDeps = 0);
 
    TR::RegisterDependencyGroup *getPreConditions()  {return _preConditions;}
-
-   void setMayNeedToPopFPRegisters(bool b);
-
-   void setNeedToClearFPStack(bool b);
 
    uint32_t getNumPreConditions() {return _numPreConditions;}
 

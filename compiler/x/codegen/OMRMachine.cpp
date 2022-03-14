@@ -2400,16 +2400,6 @@ TR::Register *OMR::X86::Machine::fpStackPop()
    }
 
 
-// Pop every value off the FP stack.
-//
-void OMR::X86::Machine::popEntireStack()
-   {
-   int32_t topOfStack = self()->getFPTopOfStack();
-   for (int32_t i = 0; i < topOfStack+1; i++)
-      self()->fpStackPop();
-   }
-
-
 // Exchange a register with the top register on the FP stack.
 // It is assumed that both registers of interest are on the FP stack.
 //

@@ -153,10 +153,9 @@ TR::RealRegister *assignGPRegister(TR::Instruction   *instr,
 ////////////////////////////////////////////////////////////////////////////////
 // TR::X86LabelInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
-void TR::X86LabelInstruction::initialize(TR::LabelSymbol* sym, bool b)
+void TR::X86LabelInstruction::initialize(TR::LabelSymbol *sym)
    {
    _symbol = sym;
-   _needToClearFPStack = b;
    _outlinedInstructionBranch = NULL;
    _reloType = TR_NoRelocation;
    _permitShortening = true;
@@ -169,43 +168,39 @@ void TR::X86LabelInstruction::initialize(TR::LabelSymbol* sym, bool b)
 TR::X86LabelInstruction::X86LabelInstruction(TR::InstOpCode::Mnemonic      op,
                                              TR::Node*          node,
                                              TR::LabelSymbol*   sym,
-                                             TR::CodeGenerator* cg,
-                                             bool               b)
+                                             TR::CodeGenerator* cg)
   : TR::Instruction(node, op, cg)
    {
-   initialize(sym, b);
+   initialize(sym);
    }
 
 TR::X86LabelInstruction::X86LabelInstruction(TR::Instruction*   precedingInstruction,
                                              TR::InstOpCode::Mnemonic      op,
                                              TR::LabelSymbol*   sym,
-                                             TR::CodeGenerator* cg,
-                                             bool               b)
+                                             TR::CodeGenerator* cg)
   : TR::Instruction(op, precedingInstruction, cg)
    {
-   initialize(sym, b);
+   initialize(sym);
    }
 
 TR::X86LabelInstruction::X86LabelInstruction(TR::InstOpCode::Mnemonic                     op,
                                              TR::Node*                         node,
                                              TR::LabelSymbol*                  sym,
                                              TR::RegisterDependencyConditions* cond,
-                                             TR::CodeGenerator*                cg,
-                                             bool                              b)
+                                             TR::CodeGenerator*                cg)
   : TR::Instruction(cond, node, op, cg)
    {
-   initialize(sym, b);
+   initialize(sym);
    }
 
 TR::X86LabelInstruction::X86LabelInstruction(TR::Instruction*                  precedingInstruction,
                                              TR::InstOpCode::Mnemonic                     op,
                                              TR::LabelSymbol*                  sym,
                                              TR::RegisterDependencyConditions* cond,
-                                             TR::CodeGenerator*                cg,
-                                             bool                              b)
+                                             TR::CodeGenerator*                cg)
   : TR::Instruction(cond, op, precedingInstruction, cg)
    {
-   initialize(sym, b);
+   initialize(sym);
    }
 
 TR::X86LabelInstruction  *TR::X86LabelInstruction::getX86LabelInstruction()
@@ -263,10 +258,6 @@ void TR::X86LabelInstruction::addPostDepsToOutlinedInstructionsBranch()
 void TR::X86LabelInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
    TR::Compilation *comp = cg()->comp();
-   if (getNeedToClearFPStack())
-      {
-      cg()->machine()->popEntireStack();
-      }
 
    if (kindsToBeAssigned & TR_GPR_Mask)
       {
@@ -3823,7 +3814,6 @@ generateLabelInstruction(TR::InstOpCode::Mnemonic     opCode,
                          TR::Node           *node,
                          TR::LabelSymbol     *label,
                          TR::Node           *glRegDep,
-                         List<TR::Register> *popRegisters,
                          bool               evaluateGlRegDeps,
                          TR::CodeGenerator *cg)
    {
@@ -3836,7 +3826,7 @@ generateLabelInstruction(TR::InstOpCode::Mnemonic     opCode,
       generateLabelInstruction(opCode,
                                node,
                                label,
-                               generateRegisterDependencyConditions(glRegDep, cg, 0, popRegisters),
+                               generateRegisterDependencyConditions(glRegDep, cg, 0),
                                cg);
 
    return instr;
@@ -3863,7 +3853,6 @@ generateJumpInstruction(
                                       jumpNode,
                                       destinationLabel,
                                       jumpNode->getFirstChild(),
-                                      0,
                                       evaluateGlRegDeps,
                                       cg) :
              inst = generateLabelInstruction(opCode,
@@ -3885,27 +3874,8 @@ generateConditionalJumpInstruction(
 
    if (ifNode->getNumChildren() == 3)
       {
-      List<TR::Register> popRegisters(cg->trMemory());
       TR::Node* glRegDep = ifNode->getChild(2);
-      inst = generateLabelInstruction(opCode, ifNode, destinationLabel, glRegDep, &popRegisters, cg);
-
-      if (inst->getDependencyConditions())
-         {
-         inst->getDependencyConditions()->setMayNeedToPopFPRegisters(true);
-         }
-
-      if (!popRegisters.isEmpty())
-         {
-         ListIterator<TR::Register> popRegsIt(&popRegisters);
-         for (TR::Register *popRegister = popRegsIt.getFirst();
-              popRegister != NULL;
-              popRegister = popRegsIt.getNext())
-            {
-            generateFPSTiST0RegRegInstruction(TR::InstOpCode::FSTRegReg, ifNode, popRegister, popRegister,
-            cg);
-            cg->stopUsingRegister(popRegister);
-            }
-         }
+      inst = generateLabelInstruction(opCode, ifNode, destinationLabel, glRegDep, true, cg);
       }
    else
       {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -78,13 +78,6 @@ class OMR_EXTENSIBLE Register: public OMR::Register
    /*
     * Method for manipulating flags
     */
-   bool needsPrecisionAdjustment()      {return _flags.testAny(NeedsPrecisionAdjustment);}
-   void setNeedsPrecisionAdjustment();
-   void resetNeedsPrecisionAdjustment() {_flags.reset(NeedsPrecisionAdjustment);}
-
-   bool mayNeedPrecisionAdjustment()      {return _flags.testAny(MayNeedPrecisionAdjustment);}
-   void setMayNeedPrecisionAdjustment()   {_flags.set(MayNeedPrecisionAdjustment);}
-   void resetMayNeedPrecisionAdjustment();
 
    bool hasBetterSpillPlacement()          {return _flags.testAny(HasBetterSpillPlacement);}
    void setHasBetterSpillPlacement(bool v) {if (v) _flags.set(HasBetterSpillPlacement); else _flags.reset(HasBetterSpillPlacement);}
@@ -110,14 +103,8 @@ class OMR_EXTENSIBLE Register: public OMR::Register
 
    enum
       {
-      NeedsPrecisionAdjustment      = 0x0002, // IA32 flag that indicates that a store/reload of
-                                              // the value in this register is required before
-                                              // it can be used in further computations. Required
-                                              // for single-precision FP registers (unless method
-                                              // is in single precision mode).
-      MayNeedPrecisionAdjustment    = 0x0004, // IA32 flag that indicates that a store/reload of
-                                              // the value in this register may be required before
-                                              // it can be used in an FP-strict expression.
+      // AVAILABLE                  = 0x0002,
+      // AVAILABLE                  = 0x0004,
       NeedsLazyClobbering           = 0x0800, // X86 service releases only (well, originally the intent): node refcount = 1 is not enough to determine that this can be clobbered; must also check register node count
       UpperBitsAreZero              = 0x2000, // AMD64 many 32bit operations clear the upper bits
       HasBetterSpillPlacement       = 0x0100,

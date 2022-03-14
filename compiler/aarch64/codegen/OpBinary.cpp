@@ -726,6 +726,51 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4F009400,	/* ORR      	vorrimm8h */
 		0x4F001400,	/* ORR      	vorrimm4s */
 
+	/* Vector Compare */
+		0x6E208C00,	/* CMEQ      	vcmeq16b */
+		0x6E608C00,	/* CMEQ      	vcmeq8b */
+		0x6EA08C00,	/* CMEQ      	vcmeq4s */
+		0x6EE08C00,	/* CMEQ      	vcmeq2d */
+		0x4E209800,	/* CMEQ      	vcmeq16b_zero */
+		0x4E609800,	/* CMEQ      	vcmeq8h_zero */
+		0x4EA09800,	/* CMEQ      	vcmeq4s_zero */
+		0x4EE09800,	/* CMEQ      	vcmeq2d_zero */
+		0x6E203C00,	/* CMHS      	vcmhs16b */
+		0x6E603C00,	/* CMHS      	vcmhs8h */
+		0x6EA03C00,	/* CMHS      	vcmhs4s */
+		0x6EE03C00,	/* CMHS      	vcmhs2d */
+		0x4E203C00,	/* CMGE      	vcmge16b */
+		0x4E603C00,	/* CMGE      	vcmge8h */
+		0x4EA03C00,	/* CMGE      	vcmge4s */
+		0x4EE03C00,	/* CMGE      	vcmge2d */
+		0x6E208800,	/* CMGE      	vcmge16b_zero */
+		0x6E608800,	/* CMGE      	vcmge8h_zero */
+		0x6EA08800,	/* CMGE      	vcmge4s_zero */
+		0x6EE08800,	/* CMGE      	vcmge2d_zero */
+		0x6E203400,	/* CMHI      	vcmhi16b */
+		0x6E603400,	/* CMHI      	vcmhi8h */
+		0x6EA03400,	/* CMHI      	vcmhi4s */
+		0x6EE03400,	/* CMHI      	vcmhi2d */
+		0x4E203400,	/* CMGT      	vcmgt16b */
+		0x4E603400,	/* CMGT      	vcmgt8h */
+		0x4EA03400,	/* CMGT      	vcmgt4s */
+		0x4EE03400,	/* CMGT      	vcmgt2d */
+		0x4E208800,	/* CMGT      	vcmgt16b_zero */
+		0x4E608800,	/* CMGT      	vcmgt8h_zero */
+		0x4EA08800,	/* CMGT      	vcmgt4s_zero */
+		0x4EE08800,	/* CMGT      	vcmgt2d_zero */
+		0x6E209800,	/* CMLE      	vcmle16b_zero */
+		0x6E609800,	/* CMLE      	vcmle8h_zero */
+		0x6EA09800,	/* CMLE      	vcmle4s_zero */
+		0x6EE09800,	/* CMLE      	vcmle2d_zero */
+		0x4E20A800,	/* CMLT      	vcmlt16b_zero */
+		0x4E60A800,	/* CMLT      	vcmlt8h_zero */
+		0x4EA0A800,	/* CMLT      	vcmlt4s_zero */
+		0x4EE0A800,	/* CMLT      	vcmlt2d_zero */
+		0x4E208C00,	/* CMTST      	vcmtst16b */
+		0x4E608C00,	/* CMTST      	vcmtst8h */
+		0x4EA08C00,	/* CMTST      	vcmtst4s */
+		0x4EE08C00,	/* CMTST      	vcmtst2d */
 	/* Vector Data-processing (2 source) */
 		0x4E208400,	/* ADD      	vadd16b	 */
 		0x4E608400,	/* ADD      	vadd8h	 */

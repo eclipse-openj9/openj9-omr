@@ -97,11 +97,6 @@ class OMR_EXTENSIBLE RegisterDependencyGroup : public OMR::RegisterDependencyGro
                         uint32_t          numberOfRegisters,
                         TR::CodeGenerator *cg);
 
-   void assignFPRegisters(TR::Instruction   *currentInstruction,
-                          TR_RegisterKinds  kindsToBeAssigned,
-                          uint32_t          numberOfRegisters,
-                          TR::CodeGenerator *cg);
-
    void blockRealDependencyRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg);
    void unblockRealDependencyRegisters(uint32_t numberOfRegisters, TR::CodeGenerator *cg);
    };
@@ -262,7 +257,6 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
 
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
    uint32_t numReferencedGPRegisters(TR::CodeGenerator *);
-   uint32_t numReferencedFPRegisters(TR::CodeGenerator *);
    void printFullRegisterDependencyInfo(FILE *pOutFile);
    void printDependencyConditions(TR::RegisterDependencyGroup *conditions,
                                   uint32_t   numConditions,

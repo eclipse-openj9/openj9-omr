@@ -771,6 +771,26 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4E608C00,	/* CMTST      	vcmtst8h */
 		0x4EA08C00,	/* CMTST      	vcmtst4s */
 		0x4EE08C00,	/* CMTST      	vcmtst2d */
+		0x4E20E400,	/* FCMEQ      	vfcmeq4s */
+		0x4E60E400,	/* FCMEQ      	vfcmeq2d */
+		0x4EA0D800,	/* FCMEQ      	vfcmeq4s_zero */
+		0x4EE0D800,	/* FCMEQ      	vfcmeq2d_zero */
+		0x6E20E400,	/* FCMGE      	vfcmge4s */
+		0x6E60E400,	/* FCMGE      	vfcmge2d */
+		0x6EA0C800,	/* FCMGE      	vfcmge4s_zero */
+		0x6EE0C800,	/* FCMGE      	vfcmge2d_zero */
+		0x6EA0E400,	/* FCMGT      	vfcmgt4s */
+		0x6EE0E400,	/* FCMGT      	vfcmgt2d */
+		0x4EA0C800,	/* FCMGT      	vfcmgt4s_zero */
+		0x4EE0C800,	/* FCMGT      	vfcmgt2d_zero */
+		0x6EA0D800,	/* FCMLE      	vfcmle4s_zero */
+		0x6EE0D800,	/* FCMLE      	vfcmle2d_zero */
+		0x4EA0E800,	/* FCMLT      	vfcmlt4s_zero */
+		0x4EE0E800,	/* FCMLT      	vfcmlt2d_zero */
+		0x6E20EC00,	/* FACGE      	vfacge4s */
+		0x6E60EC00,	/* FACGE      	vfacge2d */
+		0x6EA0EC00,	/* FACGT      	vfacgt4s */
+		0x6EE0EC00,	/* FACGT      	vfacgt2d */
 	/* Vector Data-processing (2 source) */
 		0x4E208400,	/* ADD      	vadd16b	 */
 		0x4E608400,	/* ADD      	vadd8h	 */

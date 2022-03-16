@@ -2571,6 +2571,29 @@ uint8_t* TR::X86FPST0ST1RegRegInstruction::generateOperand(uint8_t* cursor)
    }
 
 
+// TR::X86FPArithmeticRegRegInstruction:: member functions
+
+uint8_t* TR::X86FPArithmeticRegRegInstruction::generateOperand(uint8_t* cursor)
+   {
+   uint8_t *opCode = cursor - 1;
+
+   TR::Machine *machine = cg()->machine();
+   applyRegistersToOpCode(opCode, machine);
+   if (getOpCode().hasDirectionBit())
+      {
+      applyDirectionBitToOpCode(opCode, machine);
+      }
+
+   if (getOpCode().modifiesTarget())
+      {
+      opCode = cursor - 2;
+      applyDestinationBitToOpCode(opCode, machine);
+      }
+
+   return cursor;
+   }
+
+
 // TR::X86FPST0STiRegRegInstruction:: member functions
 
 uint8_t* TR::X86FPST0STiRegRegInstruction::generateOperand(uint8_t* cursor)

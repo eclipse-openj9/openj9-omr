@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -215,7 +215,7 @@ uint32_t OMR::X86::Instruction::totalReferencedFPRegisters(TR::CodeGenerator * c
    {
    if (self()->getDependencyConditions())
       {
-      return self()->getNumOperandReferencedFPRegisters();
+      return self()->getNumOperandReferencedFPRegisters() + self()->getDependencyConditions()->numReferencedFPRegisters(cg);
       }
 
    return self()->getNumOperandReferencedFPRegisters();

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1494,8 +1494,17 @@ OMR::Z::MemoryReference::populateShiftLeftTree(TR::Node * subTree, TR::CodeGener
 
    if (!strengthReducedShift)
       {
-      _indexRegister = cg->evaluate(subTree);
-      _indexNode = subTree;
+      if (subTree->containsCompressionSequence())
+         {
+         // Evaluate the object reference into base register as this is part of a decompression sequence.
+         _baseRegister = cg->evaluate(subTree);
+         _baseNode = subTree;
+         }
+      else
+         {
+         _indexRegister = cg->evaluate(subTree);
+         _indexNode = subTree;
+         }
       }
    }
 

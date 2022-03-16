@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-Copyright (c) 2010, 2020 IBM Corp. and others
+Copyright (c) 2010, 2022 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1149,6 +1149,18 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-excepti
 		<data type="uintptr_t" name="eventid" description="unique identifier for event" />
 		<data type="uintptr_t" name="succeeded" description="was the allocation successful TRUE/FALSE" />
 		<data type="uintptr_t" name="bytesRequested" description="bytes requested for the allocation" />
+	</event>
+
+	<event>
+		<name>J9HOOK_MM_PRIVATE_CONCURRENT_SATB_TOGGLED</name>
+		<description>
+			Triggered when the SATB barrier is enabled or disabled.
+		</description>
+		<struct>MM_ConcurrentSATBEvent</struct>
+		<data type="struct OMR_VMThread*" name="currentThread" description="current thread" />
+		<data type="uint64_t" name="timestamp" description="time of event" />
+		<data type="uintptr_t" name="eventid" description="unique identifier for event" />
+		<data type="bool" name="satbEnabled" description="True if SATB is active" />
 	</event>
 
 </interface>

@@ -47,6 +47,21 @@
 #include "MemcheckWrapper.hpp"
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
+#include "HeapRegionManager.hpp"
+#include "HeapRegionDescriptor.hpp"
+
+/**
+ * Called when SATB barrier is enabled/disabled. We use this to set the TLH alignment base.
+ */
+void
+concurrentSATBToggled(J9HookInterface **hook, uintptr_t eventNum, void *eventData, void *userData)
+{
+	MM_ConcurrentSATBEvent *event = (MM_ConcurrentSATBEvent *)eventData;
+	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(event->currentThread);
+
+	((MM_MemoryPoolAddressOrderedList *)userData)->setParallelGCAlignment(env, event->satbEnabled);
+}
+
 /**
  * Create and initialize a new instance of the receiver.
  */
@@ -172,6 +187,11 @@ MM_MemoryPoolAddressOrderedList::initializeSweepPool(MM_EnvironmentBase *env)
 void
 MM_MemoryPoolAddressOrderedList::tearDown(MM_EnvironmentBase *env)
 {
+	if (MEMORY_TYPE_OLD == _memorySubSpace->getTypeFlags()) {
+		J9HookInterface **mmPrivateHooks = J9_HOOK_INTERFACE(_extensions->privateHookInterface);
+		(*mmPrivateHooks)->J9HookUnregister(mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_SATB_TOGGLED, concurrentSATBToggled, (void *)this);
+	}
+
 	MM_MemoryPool::tearDown(env);
 
 	if (NULL != _sweepPoolState) {
@@ -452,11 +472,11 @@ retry:
 
 
 	while(currentFreeEntry) {
-		if (doesNeedAlignment(env, currentFreeEntry)) {
-			currentFreeEntry = doFreeEntryAlignmentUpTo(env, currentFreeEntry);
+		if (doesNeedCardAlignment(env, currentFreeEntry)) {
+			currentFreeEntry = doFreeEntryCardAlignmentUpTo(env, currentFreeEntry);
 			if (NULL == currentFreeEntry) {
-				currentFreeEntry = (FREE_ENTRY_END == _firstUnalignedFreeEntry) ? NULL : _firstUnalignedFreeEntry;
-				previousFreeEntry = (FREE_ENTRY_END == _prevFirstUnalignedFreeEntry) ? NULL : _prevFirstUnalignedFreeEntry;
+				currentFreeEntry = (FREE_ENTRY_END == _firstCardUnalignedFreeEntry) ? NULL : _firstCardUnalignedFreeEntry;
+				previousFreeEntry = (FREE_ENTRY_END == _prevCardUnalignedFreeEntry) ? NULL : _prevCardUnalignedFreeEntry;
 				walkCount += 1;
 				continue;
 			}
@@ -512,15 +532,11 @@ retry:
 	recycleEntry = (MM_HeapLinkedFreeHeader *)(((uint8_t *)currentFreeEntry) + sizeInBytesRequired);
 
 	if (recycleHeapChunk(recycleEntry, ((uint8_t *)recycleEntry) + recycleEntrySize, previousFreeEntry, currentFreeEntry->getNext(compressed))) {
-		if (currentFreeEntry->getNext(compressed) == _firstUnalignedFreeEntry) {
-			_prevFirstUnalignedFreeEntry = recycleEntry;
-		}
+		updatePrevCardUnalignedFreeEntry(currentFreeEntry->getNext(compressed), recycleEntry);
 		updateHint(currentFreeEntry, recycleEntry);
 		_largeObjectAllocateStats->incrementFreeEntrySizeClassStats(recycleEntrySize);
 	} else {
-		if (currentFreeEntry->getNext(compressed) == _firstUnalignedFreeEntry) {
-			_prevFirstUnalignedFreeEntry = previousFreeEntry;
-		}
+		updatePrevCardUnalignedFreeEntry(currentFreeEntry->getNext(compressed), previousFreeEntry);
 		/* Adjust the free memory size and count */
 		_freeMemorySize -= recycleEntrySize;
 		_freeEntryCount -= 1;
@@ -587,6 +603,34 @@ MM_MemoryPoolAddressOrderedList::collectorAllocate(MM_EnvironmentBase *env, MM_A
 	return addr;
 }
 
+bool
+MM_MemoryPoolAddressOrderedList::alignTLHForParallelGC(MM_EnvironmentBase *env,  MM_HeapLinkedFreeHeader *freeEntry, uintptr_t *consumedSize)
+{
+	/* Determine the boundaries (based on alignment params) that contain the tlh being inited. */
+	void *tlhBase = (void *)freeEntry;
+
+	Assert_MM_true(tlhBase >= _parallelGCAlignmentBase);
+
+	uintptr_t remainder = ((uintptr_t)tlhBase - (uintptr_t)_parallelGCAlignmentBase) % _parallelGCAlignmentSize;
+	void *baseBoundary = (void *)((uintptr_t)tlhBase - remainder);
+	/* topBoundary may not be the real top boundary for the expected chunk, it's not wrapped around pool/region boundaries, which is fine. */
+	void *topBoundary = (void *)((uintptr_t)baseBoundary + _parallelGCAlignmentSize);
+
+	void *tlhTopProjection = (void *)(((uintptr_t)freeEntry) + *consumedSize);
+
+	if (tlhTopProjection >  topBoundary) {
+		uintptr_t offset = ((uintptr_t)tlhTopProjection - (uintptr_t)topBoundary);
+		*consumedSize -= offset;
+	}
+
+	/* TODO: Consider topBoundary as the TLH base and clip the tlh from the base for alignment. */
+	if (*consumedSize < _minimumFreeEntrySize) {
+		return false;
+	}
+
+	return true;
+}
+
 MMINLINE bool
 MM_MemoryPoolAddressOrderedList::internalAllocateTLH(MM_EnvironmentBase *env, uintptr_t maximumSizeInBytesRequired, void * &addrBase, void * &addrTop, bool lockingRequired, MM_LargeObjectAllocateStats *largeObjectAllocateStats)
 {
@@ -621,22 +665,25 @@ retry:
 	}
 #endif /* OMR_GC_CONCURRENT_SWEEP */
 
-	if (doesNeedAlignment(env, freeEntry)) {
-		freeEntry = doFreeEntryAlignmentUpTo(env, freeEntry);
+	if (doesNeedCardAlignment(env, freeEntry)) {
+		freeEntry = doFreeEntryCardAlignmentUpTo(env, freeEntry);
 		if (NULL == freeEntry) {
 			goto retry;
 		}
 	}
 
-	/* Consume the bytes and set the return pointer values */
 	freeEntrySize = freeEntry->getSize();
-	Assert_MM_true(freeEntrySize >= _minimumFreeEntrySize);
-	consumedSize = (maximumSizeInBytesRequired > freeEntrySize) ? freeEntrySize : maximumSizeInBytesRequired;
+
 	_largeObjectAllocateStats->decrementFreeEntrySizeClassStats(freeEntrySize);
 
-	/* If the leftover chunk is smaller than the minimum size, hand it out */
+	if (0 == (consumedSize = getConsumedSizeForTLH(env, freeEntry, maximumSizeInBytesRequired))) {
+		goto retry;
+	}
+
+	/* If the leftover chunk is smaller than the minimum size, hand it out. Handing out the leftover chunk may break alignment,
+	 * ensure we don't require alignment first. */
 	recycleEntrySize = freeEntrySize - consumedSize;
-	if (recycleEntrySize && (recycleEntrySize < _minimumFreeEntrySize)) {
+	if (recycleEntrySize && (recycleEntrySize < _minimumFreeEntrySize) && !isAlignmentForParallelGCRequired()) {
 		consumedSize += recycleEntrySize;
 		recycleEntrySize = 0;
 	}
@@ -659,24 +706,18 @@ retry:
 		topOfRecycledChunk = ((uint8_t *)addrTop) + recycleEntrySize;
 		/* Recycle the remaining entry back onto the free list (if applicable) */
 		if (recycleHeapChunk(addrTop, topOfRecycledChunk, NULL, entryNext)) {
-			if (entryNext == _firstUnalignedFreeEntry) {
-				_prevFirstUnalignedFreeEntry = (MM_HeapLinkedFreeHeader *)addrTop;
-			}
+			updatePrevCardUnalignedFreeEntry(entryNext, (MM_HeapLinkedFreeHeader *)addrTop);
 			_largeObjectAllocateStats->incrementFreeEntrySizeClassStats(recycleEntrySize);
 		} else {
-			if (entryNext == _firstUnalignedFreeEntry) {
-				_prevFirstUnalignedFreeEntry = FREE_ENTRY_END;
-			}
-		/* Adjust the free memory size and count */
+			updatePrevCardUnalignedFreeEntry(entryNext, FREE_ENTRY_END);
+			/* Adjust the free memory size and count */
 			_freeMemorySize -= recycleEntrySize;
 			_freeEntryCount -= 1;
 
 			_allocDiscardedBytes += recycleEntrySize;
 		}
 	} else {
-		if (entryNext == _firstUnalignedFreeEntry) {
-			_prevFirstUnalignedFreeEntry = FREE_ENTRY_END;
-		}
+		updatePrevCardUnalignedFreeEntry(entryNext, FREE_ENTRY_END);
 		/* If not recycling just update the free list pointer to the next free entry */
 		_heapFreeList = entryNext;
 		/* also update the freeEntryCount as recycleHeapChunk would do this */
@@ -696,6 +737,37 @@ fail_allocate:
 		_heapLock.release();
 	}
 	return false;
+}
+
+uintptr_t
+MM_MemoryPoolAddressOrderedList::getConsumedSizeForTLH(MM_EnvironmentBase *env, MM_HeapLinkedFreeHeader *freeEntry, uintptr_t maximumSizeInBytesRequired) {
+	bool const compressed = compressObjectReferences();
+
+	/* Consume the bytes and set the return pointer values */
+	uintptr_t freeEntrySize = freeEntry->getSize();
+	Assert_MM_true(freeEntrySize >= _minimumFreeEntrySize);
+	uintptr_t consumedSize = (maximumSizeInBytesRequired > freeEntrySize) ? freeEntrySize : maximumSizeInBytesRequired;
+
+	if (isAlignmentForParallelGCRequired()) {
+		if (!alignTLHForParallelGC(env, freeEntry, &consumedSize)) {
+			/* If alignment was required and it failed (i.e resulted in consumedSize < minEntrySize), abandon entry and retry */
+			abandonHeapChunk((void *)freeEntry, (void *)(((uintptr_t)freeEntry) + freeEntrySize));
+
+			_freeMemorySize -= freeEntrySize;
+			_allocDiscardedBytes += freeEntrySize;
+
+			MM_HeapLinkedFreeHeader *entryNext = freeEntry->getNext(compressed);
+
+			updatePrevCardUnalignedFreeEntry(entryNext, FREE_ENTRY_END);
+
+			_heapFreeList = entryNext;
+			_freeEntryCount -= 1;
+
+			consumedSize = 0;
+		}
+	}
+
+	return consumedSize;
 }
 
 void *
@@ -753,8 +825,8 @@ MM_MemoryPoolAddressOrderedList::reset(Cause cause)
 	_heapFreeList = (MM_HeapLinkedFreeHeader *)NULL;
 	_scannableBytes = 0;
 	_nonScannableBytes = 0;
-	_firstUnalignedFreeEntry = FREE_ENTRY_END;
-	_prevFirstUnalignedFreeEntry = FREE_ENTRY_END;
+	_firstCardUnalignedFreeEntry = FREE_ENTRY_END;
+	_prevCardUnalignedFreeEntry = FREE_ENTRY_END;
 
 
 	_lastFreeEntry = NULL;
@@ -1779,12 +1851,12 @@ MM_MemoryPoolAddressOrderedList::releaseFreeMemoryPages(MM_EnvironmentBase* env)
 #endif
 
 MM_HeapLinkedFreeHeader *
-MM_MemoryPoolAddressOrderedList::doFreeEntryAlignmentUpTo(MM_EnvironmentBase *env, MM_HeapLinkedFreeHeader *lastFreeEntryToAlign)
+MM_MemoryPoolAddressOrderedList::doFreeEntryCardAlignmentUpTo(MM_EnvironmentBase *env, MM_HeapLinkedFreeHeader *lastFreeEntryToAlign)
 {
 	MM_HeapLinkedFreeHeader *alignedLastFreeEntry = NULL;
 	bool const compressed = env->compressObjectReferences();
-	MM_HeapLinkedFreeHeader *currentFreeEntry = _firstUnalignedFreeEntry;
-	MM_HeapLinkedFreeHeader *previousFreeEntry = (FREE_ENTRY_END == _prevFirstUnalignedFreeEntry) ? NULL : _prevFirstUnalignedFreeEntry;
+	MM_HeapLinkedFreeHeader *currentFreeEntry = _firstCardUnalignedFreeEntry;
+	MM_HeapLinkedFreeHeader *previousFreeEntry = (FREE_ENTRY_END == _prevCardUnalignedFreeEntry) ? NULL : _prevCardUnalignedFreeEntry;
 
 	uintptr_t lostToAlignment = 0;
 
@@ -1842,13 +1914,37 @@ MM_MemoryPoolAddressOrderedList::doFreeEntryAlignmentUpTo(MM_EnvironmentBase *en
 		_darkMatterBytes += lostToAlignment;
 	}
 
-	/* update _firstUnalignedFreeEntry and _prevFirstUnalignedFreeEntry */
-	_firstUnalignedFreeEntry = (NULL == currentFreeEntry) ? FREE_ENTRY_END : currentFreeEntry;
-	if (FREE_ENTRY_END != _firstUnalignedFreeEntry) {
-		_prevFirstUnalignedFreeEntry = (NULL == previousFreeEntry) ? FREE_ENTRY_END : previousFreeEntry;
+	/* update _firstCardUnalignedFreeEntry and _prevCardUnalignedFreeEntry */
+	_firstCardUnalignedFreeEntry = (NULL == currentFreeEntry) ? FREE_ENTRY_END : currentFreeEntry;
+	if (FREE_ENTRY_END != _firstCardUnalignedFreeEntry) {
+		_prevCardUnalignedFreeEntry = (NULL == previousFreeEntry) ? FREE_ENTRY_END : previousFreeEntry;
 	} else {
-		_prevFirstUnalignedFreeEntry = FREE_ENTRY_END;
+		_prevCardUnalignedFreeEntry = FREE_ENTRY_END;
 	}
 
 	return alignedLastFreeEntry;
+}
+
+void
+MM_MemoryPoolAddressOrderedList::setParallelGCAlignment(MM_EnvironmentBase *env, bool alignmentEnabled)
+{
+	if (alignmentEnabled) {
+		_parallelGCAlignmentBase = _memorySubSpace->getFirstRegion()->getLowAddress();
+		_parallelGCAlignmentSize = _extensions->parSweepChunkSize;
+	} else {
+		_parallelGCAlignmentBase = NULL;
+		_parallelGCAlignmentSize = 0;
+	}
+}
+
+void
+MM_MemoryPoolAddressOrderedList::setSubSpace(MM_MemorySubSpace *memorySubSpace)
+{
+	if (MEMORY_TYPE_OLD == memorySubSpace->getTypeFlags()) {
+		/* Move the registration and the hook in higher level entities. They know exactly when they create the OLD subspace/pool. */
+		J9HookInterface **mmPrivateHooks = J9_HOOK_INTERFACE(_extensions->privateHookInterface);
+		(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_SATB_TOGGLED, concurrentSATBToggled, OMR_GET_CALLSITE(), (void *)this);
+	}
+
+	MM_MemoryPool::setSubSpace(memorySubSpace);
 }

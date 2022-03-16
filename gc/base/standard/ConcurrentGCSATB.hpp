@@ -84,6 +84,8 @@ protected:
 		return env->acquireExclusiveVMAccessForGC(this, true, true);
 	}
 
+	void enableSATB(MM_EnvironmentBase *env);
+	void disableSATB(MM_EnvironmentBase *env);
 public:
 	virtual uintptr_t getVMStateID() { return OMRVMSTATE_GC_COLLECTOR_CONCURRENTGC; };
 	static MM_ConcurrentGCSATB *newInstance(MM_EnvironmentBase *env);

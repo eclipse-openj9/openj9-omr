@@ -329,10 +329,7 @@ MM_ConcurrentGCSATB::setupForConcurrent(MM_EnvironmentBase *env)
 {
 	GC_OMRVMInterface::flushCachesForGC(env);
 
-	/* Activate SATB Write Barrier
-	 * TODO: reserve/restoreGlobalFragmentIndex should have disable/enableWritterBarrier wrappers. Consider moving
-	 * much of the setupForConcurrent/completeConcurrentTracing in wrappers. */
-	_extensions->sATBBarrierRememberedSet->restoreGlobalFragmentIndex(env);
+	enableSATB(env);
 
 	_extensions->newThreadAllocationColor = GC_MARK;
 	_concurrentDelegate.setupClassScanning(env);
@@ -346,6 +343,36 @@ MM_ConcurrentGCSATB::setupForConcurrent(MM_EnvironmentBase *env)
 
 	setThreadsScanned(env);
 	_stats.switchExecutionMode(CONCURRENT_INIT_COMPLETE, CONCURRENT_TRACE_ONLY);
+}
+
+void
+MM_ConcurrentGCSATB::enableSATB(MM_EnvironmentBase *env) {
+	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
+
+	/* Activate SATB Write Barrier */
+	_extensions->sATBBarrierRememberedSet->restoreGlobalFragmentIndex(env);
+
+	TRIGGER_J9HOOK_MM_PRIVATE_CONCURRENT_SATB_TOGGLED(
+		_extensions->privateHookInterface,
+		env->getOmrVMThread(),
+		omrtime_hires_clock(),
+		J9HOOK_MM_PRIVATE_CONCURRENT_SATB_TOGGLED,
+		true);
+}
+
+void
+MM_ConcurrentGCSATB::disableSATB(MM_EnvironmentBase *env) {
+	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
+
+	/* Deactivate barrier */
+	_extensions->sATBBarrierRememberedSet->preserveGlobalFragmentIndex(env);
+
+	TRIGGER_J9HOOK_MM_PRIVATE_CONCURRENT_SATB_TOGGLED(
+		_extensions->privateHookInterface,
+		env->getOmrVMThread(),
+		omrtime_hires_clock(),
+		J9HOOK_MM_PRIVATE_CONCURRENT_SATB_TOGGLED,
+		false);
 }
 
 uintptr_t
@@ -455,8 +482,7 @@ MM_ConcurrentGCSATB::completeConcurrentTracing(MM_EnvironmentBase *env, uintptr_
 			_extensions->sATBBarrierRememberedSet->flushFragments(env);
 	}
 
-	/* Deactivate barrier */
-	_extensions->sATBBarrierRememberedSet->preserveGlobalFragmentIndex(env);
+	disableSATB(env);
 
 	_extensions->newThreadAllocationColor = GC_UNMARK;
 

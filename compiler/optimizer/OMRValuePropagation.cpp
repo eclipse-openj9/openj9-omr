@@ -2101,7 +2101,7 @@ TR::VPConstraint *OMR::ValuePropagation::mergeDefConstraints(TR::Node *node, int
             // the parameter.
             //
             TR::SymbolReference *symRef = node->getSymbolReference();
-            if (symRef && symRef->getSymbol()->getParmSymbol() && _parmValues)
+            if (symRef && symRef->getSymbol()->getParmSymbol() && _parmValues && isParmInvariant(symRef->getSymbol()))
                {
                int32_t parmNum = symRef->getSymbol()->getParmSymbol()->getOrdinal();
                defConstraint = _parmValues[parmNum];
@@ -4726,7 +4726,7 @@ TR_BitVector *TR::GlobalValuePropagation::mergeDefinedOnAllPaths(TR_StructureSub
       EdgeConstraints  *constraints = getEdgeConstraints(*itr);
       if (isUnreachablePath(constraints))
          continue;
-      
+
       TR_BitVector *predDefinedOnAllPaths = (*_definedOnAllPaths)[*itr];
       if (trace())
          {

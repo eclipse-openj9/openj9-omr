@@ -4027,7 +4027,7 @@ void OMR::ValuePropagation::getParmValues()
 bool OMR::ValuePropagation::isParmInvariant(TR::Symbol *sym)
    {
    int32_t index = sym->getParmSymbol()->getOrdinal();
-   return (_parmInfo[index] ? false : true);
+   return (_parmMayBeVariant[index] ? false : true);
    }
 
 

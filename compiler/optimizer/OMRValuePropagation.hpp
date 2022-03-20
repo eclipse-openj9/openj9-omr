@@ -834,7 +834,7 @@ class ValuePropagation : public TR::Optimization
    TR_Array<TR::CFGEdge *> *_edgesToBeRemoved;
 
    CallNodeToGuardNodesMap *_callNodeToGuardNodes;
-   
+
    // Cached constraints
    //
    TR::VPNullObject        *_nullObjectConstraint;
@@ -909,7 +909,7 @@ class ValuePropagation : public TR::Optimization
    List<ObjCloneInfo> _objectCloneTypes;
    List<ArrayCloneInfo> _arrayCloneTypes;
 
-   int32_t    *_parmInfo;
+   int32_t    *_parmMayBeVariant;
    bool       *_parmTypeValid;
 
    };

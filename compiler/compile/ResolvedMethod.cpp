@@ -491,8 +491,8 @@ void TR_ResolvedMethod::setOwningMethod(TR_ResolvedMethod*)                     
 TR_ResolvedMethod * TR_ResolvedMethod::getResolvedStaticMethod (TR::Compilation *, int32_t, bool *)           { TR_UNIMPLEMENTED(); return 0; }
 TR_ResolvedMethod * TR_ResolvedMethod::getResolvedSpecialMethod(TR::Compilation *, int32_t, bool *)           { TR_UNIMPLEMENTED(); return 0; }
 TR_ResolvedMethod * TR_ResolvedMethod::getResolvedVirtualMethod(TR::Compilation *, int32_t, bool, bool *)     { TR_UNIMPLEMENTED(); return 0; }
-TR_ResolvedMethod * TR_ResolvedMethod::getResolvedDynamicMethod(TR::Compilation *, int32_t, bool *)           { TR_UNIMPLEMENTED(); return 0; }
-TR_ResolvedMethod * TR_ResolvedMethod::getResolvedHandleMethod (TR::Compilation *, int32_t, bool *)           { TR_UNIMPLEMENTED(); return 0; }
+TR_ResolvedMethod * TR_ResolvedMethod::getResolvedDynamicMethod(TR::Compilation *, int32_t, bool *, bool *)   { TR_UNIMPLEMENTED(); return 0; }
+TR_ResolvedMethod * TR_ResolvedMethod::getResolvedHandleMethod (TR::Compilation *, int32_t, bool *, bool *)   { TR_UNIMPLEMENTED(); return 0; }
 TR_ResolvedMethod * TR_ResolvedMethod::getResolvedHandleMethodWithSignature(TR::Compilation *, int32_t, char *) { TR_UNIMPLEMENTED(); return 0; }
 
 uint32_t

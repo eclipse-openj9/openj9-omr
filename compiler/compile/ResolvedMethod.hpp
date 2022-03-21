@@ -224,8 +224,8 @@ public:
 
    virtual TR_ResolvedMethod *getResolvedStaticMethod (TR::Compilation *, int32_t cpIndex, bool * unresolvedInCP = 0);
    virtual TR_ResolvedMethod *getResolvedSpecialMethod(TR::Compilation *, int32_t cpIndex, bool * unresolvedInCP = 0);
-   virtual TR_ResolvedMethod *getResolvedDynamicMethod(TR::Compilation *, int32_t cpIndex, bool * unresolvedInCP = 0);
-   virtual TR_ResolvedMethod *getResolvedHandleMethod(TR::Compilation *, int32_t cpIndex, bool * unresolvedInCP = 0);
+   virtual TR_ResolvedMethod *getResolvedDynamicMethod(TR::Compilation *, int32_t cpIndex, bool * unresolvedInCP = 0, bool * isInvokeCacheAppendixNull = 0);
+   virtual TR_ResolvedMethod *getResolvedHandleMethod(TR::Compilation *, int32_t cpIndex, bool * unresolvedInCP = 0, bool * isInvokeCacheAppendixNull = 0);
    virtual TR_ResolvedMethod *getResolvedHandleMethodWithSignature(TR::Compilation *, int32_t cpIndex, char *signature);
    virtual TR_ResolvedMethod *getResolvedVirtualMethod(TR::Compilation *, int32_t cpIndex, bool ignoreReResolve = true, bool * unresolvedInCP = 0);
 

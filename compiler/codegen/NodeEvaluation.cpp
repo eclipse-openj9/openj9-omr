@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -280,7 +280,7 @@ OMR::CodeGenerator::whichChildToEvaluate(TR::Node * node)
    // Use tree depth as an indicator of priority.
    //
    int32_t nodePriority = 0;
-   int32_t bestPriority = INT_MAX;
+   int32_t bestPriority = INT_MIN;
    int32_t bestChild = 0;
 
    for (int32_t childCount = 0; childCount < node->getNumChildren(); ++childCount)

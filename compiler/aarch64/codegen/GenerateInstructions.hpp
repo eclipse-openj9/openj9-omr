@@ -1102,6 +1102,27 @@ TR::Instruction *generateUBFIZInstruction(
                   bool is64bit,
                   TR::Instruction *preced = NULL);
 
+/**
+ * @brief Generates vector shift left immediate instruction
+ *
+ * @param[in] cg          : CodeGenerator
+ * @param[in] op          : opcode
+ * @param[in] node        : node
+ * @param[in] treg        : target register
+ * @param[in] sreg        : source register
+ * @param[in] shiftAmount : shift amount
+ * @param[in] preced  : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateVectorShiftImmediateInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::InstOpCode::Mnemonic op,
+                  TR::Node *node,
+                  TR::Register *treg,
+                  TR::Register *sreg,
+                  uint32_t shiftAmount,
+                  TR::Instruction *preced = NULL);
+
 #ifdef J9_PROJECT_SPECIFIC
 /*
  * @brief Generates virtual guard nop instruction

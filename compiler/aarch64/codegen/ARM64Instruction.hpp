@@ -2316,7 +2316,16 @@ class ARM64Trg1Src1ImmInstruction : public ARM64Trg1Src1Instruction
     */
    void insertImmediateField(uint32_t *instruction)
       {
-      *instruction |= ((_source1Immediate & 0xfff) << 10); /* imm12 */
+      TR::InstOpCode::Mnemonic op = getOpCodeValue();
+
+      if ((op >= TR::InstOpCode::vshl16b) && (op <= TR::InstOpCode::vushr2d))
+         {
+         *instruction |= ((_source1Immediate & 0x7f) << 16); /* immh:immb */
+         }
+      else
+         {
+         *instruction |= ((_source1Immediate & 0xfff) << 10); /* imm12 */
+         }
       }
 
    /**

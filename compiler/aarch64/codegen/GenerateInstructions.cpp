@@ -596,6 +596,18 @@ TR::Instruction *generateUBFIZInstruction(TR::CodeGenerator *cg, TR::Node *node,
    return generateTrg1Src1ImmInstruction(cg, is64bit ? TR::InstOpCode::ubfmx : TR::InstOpCode::ubfmw, node, treg, sreg, (immr << 6) | imms, preced);
    }
 
+TR::Instruction *generateVectorShiftImmediateInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *treg, TR::Register *sreg, uint32_t shiftAmount, TR::Instruction *preced)
+   {
+   bool isShiftLeft = (op <= TR::InstOpCode::vshl2d);
+   uint32_t elementSize = 8 << ((op - TR::InstOpCode::vshl16b) & 3);
+   TR_ASSERT_FATAL_WITH_NODE(node, (elementSize == 8) || (elementSize == 16) || (elementSize == 32) || (elementSize == 64), "Illegal element size: %d", elementSize);
+   TR_ASSERT_FATAL_WITH_NODE(node, (shiftAmount >= 0) && (shiftAmount < elementSize), "Illegal shift amount: %d", shiftAmount);
+
+   uint32_t imm = isShiftLeft ? (shiftAmount + elementSize) : (elementSize * 2 - shiftAmount);
+   return generateTrg1Src1ImmInstruction(cg, op, node, treg, sreg, imm, preced);
+   }
+
 #ifdef J9_PROJECT_SPECIFIC
 TR::Instruction *generateVirtualGuardNOPInstruction(TR::CodeGenerator *cg,  TR::Node *n, TR_VirtualGuardSite *site,
    TR::RegisterDependencyConditions *cond, TR::LabelSymbol *sym, TR::Instruction *preced)

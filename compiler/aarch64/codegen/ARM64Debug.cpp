@@ -742,6 +742,18 @@ static const char *opCodeToNameMap[] =
    "vbicimm4s",
    "vorrimm8h",
    "vorrimm4s",
+   "vshl16b",
+   "vshl8h",
+   "vshl4s",
+   "vshl2d",
+   "vsshr16b",
+   "vsshr8h",
+   "vsshr4s",
+   "vsshr2d",
+   "vushr16b",
+   "vushr8h",
+   "vushr4s",
+   "vushr2d",
    "vcmeq16b",
    "vcmeq8h",
    "vcmeq4s",
@@ -1686,6 +1698,18 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
             trfprintf(pOutFile, ", 0x%lx", immediate);
             }
          }
+      }
+   else if ((op >= TR::InstOpCode::vshl16b) && (op <= TR::InstOpCode::vushr2d))
+      {
+      done = true;
+      bool isShiftLeft = (op <= TR::InstOpCode::vshl2d);
+      uint32_t elementSize = 8 << ((op - TR::InstOpCode::vshl16b) & 3);
+      uint32_t imm = instr->getSourceImmediate();
+      uint32_t shiftAmount = isShiftLeft ? (imm - elementSize) : (elementSize * 2 - imm);
+      trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+      print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+      print(pOutFile, instr->getSource1Register(), TR_WordReg);
+      trfprintf(pOutFile, ", %d", shiftAmount);
       }
 
    if (!done)

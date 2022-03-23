@@ -36,6 +36,46 @@
 
 extern TR::Register *intOrLongClobberEvaluate(TR::Node *node, bool nodeIs64Bit, TR::CodeGenerator *cg);
 
+TR::Register *OMR::X86::TreeEvaluator::unaryVectorArithmeticEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *valueNode = node->getChild(0);
+   TR::Register *resultReg = cg->allocateRegister(TR_VRF);
+
+   bool supportsAvx = cg->comp()->target().cpu.supportsAVX();
+   TR::InstOpCode::Mnemonic regRegOpcode;
+   TR::InstOpCode::Mnemonic regMemOpcode;
+
+   switch (node->getOpCodeValue())
+      {
+      case TR::vdsqrt:
+         regRegOpcode = supportsAvx ? OMR::InstOpCode::VSQRTPDRegReg : OMR::InstOpCode::SQRTPDRegReg;
+         regMemOpcode = supportsAvx ? OMR::InstOpCode::VSQRTPDRegMem : OMR::InstOpCode::bad;
+         // SSE RegMem instruction requires 16-byte alignment
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, 0, "Opcode not supported by unaryVectorArithmeticEvaluator");
+         break;
+      }
+
+   if (valueNode->getRegister() == NULL && valueNode->getReferenceCount() == 1 && regMemOpcode != TR::InstOpCode::bad)
+      {
+      TR::MemoryReference *mr = generateX86MemoryReference(valueNode, cg);
+      generateRegMemInstruction(regMemOpcode, node, resultReg, mr, cg);
+      mr->decNodeReferenceCounts(cg);
+      }
+   else
+      {
+      TR_ASSERT_FATAL(regRegOpcode != TR::InstOpCode::bad, "Illegal opcode for unary operation");
+      TR::Register *valueReg = cg->evaluate(valueNode);
+      generateRegRegInstruction(regRegOpcode, node, resultReg, valueReg, cg);
+      cg->decReferenceCount(valueNode);
+      }
+
+   node->setRegister(resultReg);
+
+   return resultReg;
+   }
+
 TR::Register *OMR::X86::TreeEvaluator::bconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *reg = TR::TreeEvaluator::loadConstant(node, node->getInt(), TR_RematerializableByte, cg);

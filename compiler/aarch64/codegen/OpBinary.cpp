@@ -725,7 +725,18 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x6F001400,	/* BIC      	vbicimm4s */
 		0x4F009400,	/* ORR      	vorrimm8h */
 		0x4F001400,	/* ORR      	vorrimm4s */
-
+		0x4F085400,	/* SHL      	vshl16b  */
+		0x4F105400,	/* SHL      	vshl8h	 */
+		0x4F205400,	/* SHL      	vshl4s	 */
+		0x4F405400,	/* SHL      	vshl2d	 */
+		0x4F080400,	/* SSHR      	vsshr16b */
+		0x4F100400,	/* SSHR      	vsshr8h	 */
+		0x4F200400,	/* SSHR      	vsshr4s	 */
+		0x4F400400,	/* SSHR      	vsshr2d	 */
+		0x6F080400,	/* USHR      	vushr16b */
+		0x6F100400,	/* USHR      	vushr8h	 */
+		0x6F200400,	/* USHR      	vushr4s	 */
+		0x6F400400,	/* USHR      	vushr2d	 */
 	/* Vector Compare */
 		0x6E208C00,	/* CMEQ      	vcmeq16b */
 		0x6E608C00,	/* CMEQ      	vcmeq8b */

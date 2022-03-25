@@ -92,7 +92,7 @@ class TR_RegionAnalysis
 
    TR_RegionAnalysis(TR::Compilation *comp, TR_Dominators &dominators, TR::CFG * cfg, TR::Region &workingRegion) :
       _workingRegion(workingRegion),
-      _structureRegion(comp->getFlowGraph()->structureMemoryRegion()),
+      _structureMemoryRegion(comp->getFlowGraph()->structureMemoryRegion()),
       _compilation(comp),
       _infoTable(NULL),
       _dominators(dominators),
@@ -100,7 +100,7 @@ class TR_RegionAnalysis
       {
       }
    TR::Region &_workingRegion;
-   TR::Region &_structureRegion;
+   TR::Region &_structureMemoryRegion;
    TR::Compilation *_compilation;
 
    /** The StructInfoTable is 1-based */

@@ -373,7 +373,7 @@ TR_RegionStructure *TR_RegionAnalysis::findNaturalLoop(StructInfo &node,
    if (numBackEdges == 0)
       return NULL;
 
-   TR_RegionStructure *region = new (_structureRegion) TR_RegionStructure(_compilation, node._structure->getNumber() /* node._nodeIndex */);
+   TR_RegionStructure *region = new (_structureMemoryRegion) TR_RegionStructure(_compilation, node._structure->getNumber() /* node._nodeIndex */);
    if (cyclesFound)
       {
       if (trace())
@@ -526,7 +526,7 @@ TR_RegionStructure *TR_RegionAnalysis::findRegion(StructInfo &node,
          return NULL;
       }
 
-   TR_RegionStructure *region = new (_structureRegion) TR_RegionStructure(_compilation, node._structure->getNumber() /* node._nodeIndex */);
+   TR_RegionStructure *region = new (_structureMemoryRegion) TR_RegionStructure(_compilation, node._structure->getNumber() /* node._nodeIndex */);
    if (cyclesFound)
       {
       if (trace())
@@ -671,7 +671,7 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
       StructInfo &fromNode = getInfo(fromIndex);
 
       if (cfgNodes[fromIndex] == NULL)
-         cfgNodes[fromIndex] = new (_structureRegion) TR_StructureSubGraphNode(fromNode._structure);
+         cfgNodes[fromIndex] = new (_structureMemoryRegion) TR_StructureSubGraphNode(fromNode._structure);
       from = cfgNodes[fromIndex];
       region->addSubNode(from);
 
@@ -683,12 +683,12 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
          if (cfgNodes[toIndex] == NULL)
             {
             if (regionNodes.get(toIndex))
-               cfgNodes[toIndex] = new (_structureRegion) TR_StructureSubGraphNode(toNode._structure);
+               cfgNodes[toIndex] = new (_structureMemoryRegion) TR_StructureSubGraphNode(toNode._structure);
             else
-               cfgNodes[toIndex] = new (_structureRegion) TR_StructureSubGraphNode(toNode._structure->getNumber(), _structureRegion);
+               cfgNodes[toIndex] = new (_structureMemoryRegion) TR_StructureSubGraphNode(toNode._structure->getNumber(), _structureMemoryRegion);
             }
          to = cfgNodes[toIndex];
-         edge = TR::CFGEdge::createEdge(from,  to, _structureRegion);
+         edge = TR::CFGEdge::createEdge(from,  to, _structureMemoryRegion);
          if (regionNodes.get(toIndex))
             {
             toNode._pred.reset(fromIndex);
@@ -718,12 +718,12 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
          if (cfgNodes[toIndex] == NULL)
             {
             if (regionNodes.get(toIndex))
-               cfgNodes[toIndex] = new (_structureRegion) TR_StructureSubGraphNode(toNode._structure);
+               cfgNodes[toIndex] = new (_structureMemoryRegion) TR_StructureSubGraphNode(toNode._structure);
             else
-               cfgNodes[toIndex] = new (_structureRegion) TR_StructureSubGraphNode(toNode._structure->getNumber(), _structureRegion);
+               cfgNodes[toIndex] = new (_structureMemoryRegion) TR_StructureSubGraphNode(toNode._structure->getNumber(), _structureMemoryRegion);
             }
          to = cfgNodes[toIndex];
-         edge = TR::CFGEdge::createExceptionEdge(from, to, _structureRegion);
+         edge = TR::CFGEdge::createExceptionEdge(from, to, _structureMemoryRegion);
          if (regionNodes.get(toIndex))
             {
             toNode._exceptionPred.reset(fromIndex);

@@ -345,7 +345,7 @@ struct {
 
 #if defined(LINUX)
 
-#define OMR_CGROUP_V1_MOUNT_POINT "/sys/fs/cgroup"
+#define OMR_CGROUP_MOUNT_POINT "/sys/fs/cgroup"
 #define ROOT_CGROUP "/"
 #define SYSTEMD_INIT_CGROUP "/init.scope"
 #define OMR_PROC_PID_ONE_CGROUP_FILE "/proc/1/cgroup"
@@ -5401,15 +5401,15 @@ isCgroupV1Available(struct OMRPortLibrary *portLibrary)
 	BOOLEAN result = TRUE;
 
 	/* If tmpfs is mounted on /sys/fs/cgroup, then it indicates cgroup v1 system is available */
-	rc = statfs(OMR_CGROUP_V1_MOUNT_POINT, &buf);
+	rc = statfs(OMR_CGROUP_MOUNT_POINT, &buf);
 	if (0 != rc) {
 		int32_t osErrCode = errno;
-		Trc_PRT_isCgroupV1Available_statfs_failed(OMR_CGROUP_V1_MOUNT_POINT, osErrCode);
+		Trc_PRT_isCgroupV1Available_statfs_failed(OMR_CGROUP_MOUNT_POINT, osErrCode);
 		portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_SYSINFO_SYS_FS_CGROUP_STATFS_FAILED);
 		result = FALSE;
 	} else if (TMPFS_MAGIC != buf.f_type) {
-		Trc_PRT_isCgroupV1Available_tmpfs_not_mounted(OMR_CGROUP_V1_MOUNT_POINT);
-		portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_SYS_FS_CGROUP_TMPFS_NOT_MOUNTED, "tmpfs is not mounted on " OMR_CGROUP_V1_MOUNT_POINT);
+		Trc_PRT_isCgroupV1Available_tmpfs_not_mounted(OMR_CGROUP_MOUNT_POINT);
+		portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_SYS_FS_CGROUP_TMPFS_NOT_MOUNTED, "tmpfs is not mounted on " OMR_CGROUP_MOUNT_POINT);
 		result = FALSE;
 	}
 
@@ -5708,14 +5708,14 @@ getAbsolutePathOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_
 	}
 
 	/* absolute path of the file to be read is: /sys/fs/cgroup/subsystemNames[subsystem]/cgroup/filenName */
-	fullPathLen = portLibrary->str_printf(portLibrary, NULL, (uint32_t)-1, "%s/%s/%s/%s", OMR_CGROUP_V1_MOUNT_POINT, subsystemNames[subsystem], cgroup, fileName);
+	fullPathLen = portLibrary->str_printf(portLibrary, NULL, (uint32_t)-1, "%s/%s/%s/%s", OMR_CGROUP_MOUNT_POINT, subsystemNames[subsystem], cgroup, fileName);
 	if (fullPathLen > *bufferLength) {
 		*bufferLength = fullPathLen;
 		rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_STRING_BUFFER_TOO_SMALL, "buffer size should be %d bytes", fullPathLen);
 		goto _end;
 	}
 
-	portLibrary->str_printf(portLibrary, fullPath, fullPathLen, "%s/%s/%s/%s", OMR_CGROUP_V1_MOUNT_POINT, subsystemNames[subsystem], cgroup, fileName);
+	portLibrary->str_printf(portLibrary, fullPath, fullPathLen, "%s/%s/%s/%s", OMR_CGROUP_MOUNT_POINT, subsystemNames[subsystem], cgroup, fileName);
 
 _end:
 	return rc;
@@ -5884,11 +5884,18 @@ isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
 	/* Assume we are not in container */
 	*inContainer = FALSE;
 
-	if (isCgroupV1Available(portLibrary)) {
+	/* Check for existence of files that signify running in a container (Docker and Podman respectively). Not completely
+	 * reliable as these files may not be available, but it should work for most cases.
+	 */
+	if ((0 == access("/.dockerenv", F_OK)) || (0 == access("/run/.containerenv", F_OK))) {
+		*inContainer = TRUE;
+	} else if (isCgroupV1Available(portLibrary)) {
 		/* Read PID 1's cgroup file /proc/1/cgroup and check cgroup name for each subsystem.
 		 * If cgroup name for each subsystem points to the root cgroup "/",
 		 * then the process is not running in a container.
 		 * For any other cgroup name, assume we are in a container.
+		 * Note that this will not work if namespaces are enabled in the container as all
+		 * cgroup names will be the root cgroup.
 		 */
 		cgroupFile = fopen(OMR_PROC_PID_ONE_CGROUP_FILE, "r");
 

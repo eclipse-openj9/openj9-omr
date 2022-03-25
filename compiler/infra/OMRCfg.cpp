@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -82,7 +82,7 @@ OMR::CFG::addNode(TR::CFGNode *n, TR_RegionStructure *parent, bool isEntryInPare
          TR_BlockStructure *blockStructure = block->getStructureOf();
          TR_StructureSubGraphNode *blockNode = NULL;
          if (!blockStructure)
-            blockStructure = new (structureRegion()) TR_BlockStructure(comp(), block->getNumber(), block);
+            blockStructure = new (structureMemoryRegion()) TR_BlockStructure(comp(), block->getNumber(), block);
          else
             {
             TR_StructureSubGraphNode *node;
@@ -101,7 +101,7 @@ OMR::CFG::addNode(TR::CFGNode *n, TR_RegionStructure *parent, bool isEntryInPare
 
          if (!blockNode)
             {
-            blockNode = new (structureRegion()) TR_StructureSubGraphNode(blockStructure);
+            blockNode = new (structureMemoryRegion()) TR_StructureSubGraphNode(blockStructure);
             if (!isEntryInParent)
                {
                parent->addSubNode(blockNode);
@@ -342,7 +342,7 @@ TR_Structure *
 OMR::CFG::invalidateStructure()
    {
    setStructure(NULL);
-   TR::Region::reset(_structureRegion, comp()->trMemory()->heapMemoryRegion());
+   TR::Region::reset(_structureMemoryRegion, comp()->trMemory()->heapMemoryRegion());
    return getStructure();
    }
 
@@ -1770,7 +1770,7 @@ OMR::CFG::clone()
    //
    setStructure(0);
 
-   TR_BlockCloner *cloner = new (structureRegion()) TR_BlockCloner(self(), false, true);
+   TR_BlockCloner *cloner = new (structureMemoryRegion()) TR_BlockCloner(self(), false, true);
    TR::Block *clonedBlock = cloner->cloneBlocks(comp()->getStartTree()->getNode()->getBlock(), lastTreeTop->getNode()->getBlock());
    lastTreeTop->join(clonedBlock->getEntry());
 

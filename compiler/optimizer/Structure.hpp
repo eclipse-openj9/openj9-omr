@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -280,7 +280,7 @@ class TR_StructureSubGraphNode : public TR::CFGNode
    // Create a node for a concrete structure
    //
    TR_StructureSubGraphNode(TR_Structure *s)
-      : TR::CFGNode(s->getNumber(), s->cfg()->structureRegion()), _structure(s)  {s->setSubGraphNode(this);}
+      : TR::CFGNode(s->getNumber(), s->cfg()->structureMemoryRegion()), _structure(s)  {s->setSubGraphNode(this);}
 
    TR_StructureSubGraphNode(int32_t n, TR::Region &region)
       : TR::CFGNode(n, region), _structure(0) {}
@@ -420,8 +420,8 @@ class TR_RegionStructure : public TR_Structure
 
    TR_RegionStructure(TR::Compilation * c, int32_t index)
       : TR_Structure(c, index), _invariantSymbols(NULL), _blocksAtSameNestingLevel(NULL), _piv(NULL),
-        _basicIVs(c->getFlowGraph()->structureRegion()), _exitEdges(c->getFlowGraph()->structureRegion()),
-         _subNodes(c->getFlowGraph()->structureRegion()), _invariantExpressions(NULL)
+        _basicIVs(c->getFlowGraph()->structureMemoryRegion()), _exitEdges(c->getFlowGraph()->structureMemoryRegion()),
+        _subNodes(c->getFlowGraph()->structureMemoryRegion()), _invariantExpressions(NULL)
       {
       }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -92,7 +92,7 @@ class TR_RegionAnalysis
 
    TR_RegionAnalysis(TR::Compilation *comp, TR_Dominators &dominators, TR::CFG * cfg, TR::Region &workingRegion) :
       _workingRegion(workingRegion),
-      _structureRegion(comp->getFlowGraph()->structureRegion()),
+      _structureRegion(comp->getFlowGraph()->structureMemoryRegion()),
       _compilation(comp),
       _infoTable(NULL),
       _dominators(dominators),

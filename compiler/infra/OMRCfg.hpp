@@ -97,14 +97,14 @@ class CFG
    TR_ALLOC(TR_Memory::CFG)
 
    CFG(TR::Compilation *c, TR::ResolvedMethodSymbol *m) :
-      _structureRegion(c->trMemory()->heapMemoryRegion()),
+      _structureMemoryRegion(c->trMemory()->heapMemoryRegion()),
       _internalRegion(c->trMemory()->heapMemoryRegion())
       {
          init(c, m);
       }
 
    CFG(TR::Compilation *c, TR::ResolvedMethodSymbol *m, TR::Region &r) :
-      _structureRegion(c->trMemory()->heapMemoryRegion()),
+      _structureMemoryRegion(c->trMemory()->heapMemoryRegion()),
       _internalRegion(r)
       {
          init(c, m);
@@ -146,7 +146,8 @@ class CFG
    TR_Memory *trMemory() { return comp()->trMemory(); }
    TR_HeapMemory trHeapMemory() { return trMemory(); }
    TR_StackMemory trStackMemory() { return trMemory(); }
-   TR::Region &structureRegion() { return _structureRegion; }
+   TR::Region &structureMemoryRegion() { return _structureMemoryRegion; }
+   TR::Region &structureRegion() { return _structureMemoryRegion; }
 
    void setStartAndEnd(TR::CFGNode * s, TR::CFGNode * e) { addNode(s); addNode(e); setStart(s); setEnd(e); }
 
@@ -181,7 +182,7 @@ class CFG
    TR::CFGEdge *addEdge(TR::CFGNode *f, TR::CFGNode *t);
 
    /**
-    * Create and store exception edge from CFGNode f to CFGNode t 
+    * Create and store exception edge from CFGNode f to CFGNode t
     *
     * The new edge will not be added if there is an existing exception edge
     * from the "from" node to an existing block which catches the same
@@ -351,7 +352,7 @@ protected:
 
    TR::CFGNode *_pStart;
    TR::CFGNode *_pEnd;
-   TR::Region _structureRegion;
+   TR::Region _structureMemoryRegion;
    TR::Region _internalRegion;
    TR_Structure *_rootStructure;
 

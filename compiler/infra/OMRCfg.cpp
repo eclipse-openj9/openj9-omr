@@ -156,7 +156,7 @@ OMR::CFG::addEdge(TR::CFGNode *f, TR::CFGNode *t)
 
    TR_ASSERT(!f->hasExceptionSuccessor(t), "adding a non exception edge when there's already an exception edge");
 
-   TR::CFGEdge * e = TR::CFGEdge::createEdge(f, t, _internalRegion);
+   TR::CFGEdge * e = TR::CFGEdge::createEdge(f, t, _internalMemoryRegion);
    addEdge(e);
    return e;
    }
@@ -225,7 +225,7 @@ OMR::CFG::addExceptionEdgeUnchecked(
 
    TR_ASSERT(!f->hasSuccessor(t), "adding an exception edge when there's already a non exception edge");
 
-   TR::CFGEdge* e = TR::CFGEdge::createExceptionEdge(f,t, _internalRegion);
+   TR::CFGEdge* e = TR::CFGEdge::createExceptionEdge(f,t, _internalMemoryRegion);
    _numEdges++;
 
    // Tell the control tree to modify the structures containing this edge
@@ -3271,7 +3271,7 @@ OMR::CFG::findReachableBlocks(TR_BitVector *result)
    }
 
 TR::Region&
-OMR::CFG::getInternalRegion()
+OMR::CFG::getInternalMemoryRegion()
    {
-   return self()->_internalRegion;
+   return self()->_internalMemoryRegion;
    }

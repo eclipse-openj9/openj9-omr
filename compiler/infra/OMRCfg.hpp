@@ -98,14 +98,14 @@ class CFG
 
    CFG(TR::Compilation *c, TR::ResolvedMethodSymbol *m) :
       _structureMemoryRegion(c->trMemory()->heapMemoryRegion()),
-      _internalRegion(c->trMemory()->heapMemoryRegion())
+      _internalMemoryRegion(c->trMemory()->heapMemoryRegion())
       {
          init(c, m);
       }
 
    CFG(TR::Compilation *c, TR::ResolvedMethodSymbol *m, TR::Region &r) :
       _structureMemoryRegion(c->trMemory()->heapMemoryRegion()),
-      _internalRegion(r)
+      _internalMemoryRegion(r)
       {
          init(c, m);
       }
@@ -344,7 +344,7 @@ class CFG
    //
    void getBranchCountersFromProfilingData(TR::Node *node, TR::Block *block, int32_t *taken, int32_t *notTaken) { return; }
 
-   TR::Region& getInternalRegion();
+   TR::Region& getInternalMemoryRegion();
 
 protected:
    TR::Compilation *_compilation;
@@ -353,7 +353,7 @@ protected:
    TR::CFGNode *_pStart;
    TR::CFGNode *_pEnd;
    TR::Region _structureMemoryRegion;
-   TR::Region _internalRegion;
+   TR::Region _internalMemoryRegion;
    TR_Structure *_rootStructure;
 
    TR_LinkHead1<TR::CFGNode> _nodes;

@@ -95,7 +95,7 @@ OMR::Block::Block(TR_Memory * m) :
    }
 
 OMR::Block::Block(TR::CFG &cfg) :
-   TR::CFGNode(cfg.getInternalRegion())
+   TR::CFGNode(cfg.getInternalMemoryRegion())
    {
    self()->init(NULL, NULL);
    self()->setFrequency(-1);
@@ -113,7 +113,7 @@ OMR::Block::Block(TR::TreeTop *entry, TR::TreeTop *exit, TR_Memory * m) :
    }
 
 OMR::Block::Block(TR::TreeTop *entry, TR::TreeTop *exit, TR::CFG &cfg) :
-   TR::CFGNode(cfg.getInternalRegion())
+   TR::CFGNode(cfg.getInternalMemoryRegion())
    {
    self()->init(entry, exit);
    self()->setFrequency(-1);
@@ -142,7 +142,7 @@ OMR::Block::init(TR::TreeTop *entry, TR::TreeTop *exit)
 TR::Block*
 OMR::Block::createBlock(TR::TreeTop *entry, TR::TreeTop *exit, TR::CFG &cfg)
    {
-   return new (cfg.getInternalRegion()) TR::Block(entry, exit, cfg);
+   return new (cfg.getInternalMemoryRegion()) TR::Block(entry, exit, cfg);
    }
 
 /// Copy constructor

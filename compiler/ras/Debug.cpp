@@ -288,40 +288,41 @@ TR_Debug::roundAddressEnumerationCounters(uint32_t boundary)
    }
 
 void
-TR_Debug::newNode(TR::Node *node)
+TR_Debug::breakOrDebugOnCreate(char *artifactName)
    {
-   char buf[20];
-   TR::SimpleRegex * regex;
-
-   sprintf(buf, "ND_%04x", node->getGlobalIndex());
-
-   regex = _comp->getOptions()->getBreakOnCreate();
-   if (regex && TR::SimpleRegex::match(regex, buf, false))
+   TR::SimpleRegex *regex = _comp->getOptions()->getBreakOnCreate();
+   if (regex && TR::SimpleRegex::match(regex, artifactName, false))
       breakOn();
 
    regex = _comp->getOptions()->getDebugOnCreate();
-   if (regex && TR::SimpleRegex::match(regex, buf, false))
+   if (regex && TR::SimpleRegex::match(regex, artifactName, false))
       debugOnCreate();
+   }
 
+void
+TR_Debug::newNode(TR::Node *node)
+   {
+   if (_comp->getOptions()->getBreakOnCreate() ||
+       _comp->getOptions()->getDebugOnCreate())
+      {
+      char buf[20];
+      sprintf(buf, "ND_%04x", node->getGlobalIndex());
+      breakOrDebugOnCreate(buf);
+      }
    }
 
 void
 TR_Debug::newLabelSymbol(TR::LabelSymbol *labelSymbol)
    {
-   TR_ASSERT(_comp, "Required compilation object is NULL.\n");
-   char buf[20];
-   TR::SimpleRegex * regex = NULL;
-
    _comp->getToNumberMap().Add((void *)labelSymbol, (intptr_t)_nextLabelNumber);
-   sprintf(buf, "L%04x", _nextLabelNumber);
 
-   regex = _comp->getOptions()->getBreakOnCreate();
-   if (regex && TR::SimpleRegex::match(regex, buf, false))
-      breakOn();
-
-   regex = _comp->getOptions()->getDebugOnCreate();
-   if (regex && TR::SimpleRegex::match(regex, buf, false))
-      debugOnCreate();
+   if (_comp->getOptions()->getBreakOnCreate() ||
+       _comp->getOptions()->getDebugOnCreate())
+      {
+      char buf[20];
+      sprintf(buf, "L%04x", _nextLabelNumber);
+      breakOrDebugOnCreate(buf);
+      }
 
    _nextLabelNumber++;
    }
@@ -329,74 +330,52 @@ TR_Debug::newLabelSymbol(TR::LabelSymbol *labelSymbol)
 void
 TR_Debug::newInstruction(TR::Instruction *instr)
    {
-   TR_ASSERT(_comp, "Required compilation object is NULL.\n");
    if (_comp->getAddressEnumerationOption(TR_EnumerateInstruction) ||
-      _comp->getOptions()->getBreakOnCreate())
+      _comp->getOptions()->getBreakOnCreate() ||
+      _comp->getOptions()->getDebugOnCreate())
       {
       char buf[20];
-      TR::SimpleRegex * regex;
-
       _comp->getToNumberMap().Add((void *)instr, (intptr_t)_nextInstructionNumber);
       sprintf(buf, "IN_%04x", _nextInstructionNumber);
-
-      regex = _comp->getOptions()->getBreakOnCreate();
-      if (regex && TR::SimpleRegex::match(regex, buf, false))
-         breakOn();
-
-      regex = _comp->getOptions()->getDebugOnCreate();
-      if (regex && TR::SimpleRegex::match(regex, buf, false))
-         debugOnCreate();
-
+      breakOrDebugOnCreate(buf);
       }
+
    _nextInstructionNumber++;
    }
 
 void
 TR_Debug::newRegister(TR::Register *reg)
    {
-   TR_ASSERT(_comp, "Required compilation object is NULL.\n");
-   char buf[20];
-   TR::SimpleRegex * regex;
-
-   regex = _comp->getOptions()->getBreakOnCreate();
-
    if (_comp->getAddressEnumerationOption(TR_EnumerateRegister))
       _comp->getToNumberMap().Add((void *)reg, (intptr_t)_nextRegisterNumber);
 
-   sprintf(buf, "GPR_%04x", _nextRegisterNumber );
+   if (_comp->getOptions()->getBreakOnCreate() ||
+       _comp->getOptions()->getDebugOnCreate())
+      {
+      char buf[20];
+      sprintf(buf, "GPR_%04x", _nextRegisterNumber );
+      breakOrDebugOnCreate(buf);
+      }
 
-   regex = _comp->getOptions()->getBreakOnCreate();
-   if (regex && TR::SimpleRegex::match(regex, buf, false))
-      breakOn();
-
-   regex = _comp->getOptions()->getDebugOnCreate();
-   if (regex && TR::SimpleRegex::match(regex, buf, false))
-      debugOnCreate();
-
-    _nextRegisterNumber++;
+   _nextRegisterNumber++;
    }
 
 void
 TR_Debug::newVariableSizeSymbol(TR::AutomaticSymbol *sym)
    {
-   TR_ASSERT(_comp, "Required compilation object is NULL.\n");
    int32_t strLength = static_cast<int32_t>(strlen(TR_VSS_NAME)) + TR::getMaxSignedPrecision<TR::Int32>() + 7;
    char *buf = (char *)_comp->trMemory()->allocateHeapMemory(strLength);
-
-   TR::SimpleRegex * regex = NULL;
-
-   _comp->getToStringMap().Add((void *)sym, buf);
    sprintf(buf, "%s_%d",  TR_VSS_NAME, _nextVariableSizeSymbolNumber);
 
-   regex = _comp->getOptions()->getBreakOnCreate();
-   if (regex && TR::SimpleRegex::match(regex, buf, false))
-      breakOn();
+   _comp->getToStringMap().Add((void *)sym, buf);
 
-   regex = _comp->getOptions()->getDebugOnCreate();
-   if (regex && TR::SimpleRegex::match(regex, buf, false))
-      debugOnCreate();
+   if (_comp->getOptions()->getBreakOnCreate() ||
+       _comp->getOptions()->getDebugOnCreate())
+      {
+      breakOrDebugOnCreate(buf);
+      }
 
-    _nextVariableSizeSymbolNumber++;
+   _nextVariableSizeSymbolNumber++;
    }
 
 void
@@ -968,133 +947,133 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
    {
    char *format = "%s";
 
-   output.append(format, node->printHasFoldedImplicitNULLCHK());
-   output.append(format, node->printIsHighWordZero());
-   output.append(format, node->printIsUnsigned());
-   output.append(format, node->printIsClassPointerConstant());
-   output.append(format, node->printIsMethodPointerConstant());
-   output.append(format, node->printIsSafeToSkipTableBoundCheck());
-   output.append(format, node->printIsProfilingCode());
-   output.append(format, node->printIsZero());
-   output.append(format, node->printIsNonZero());
-   output.append(format, node->printIsNonNegative());
-   output.append(format, node->printIsNonPositive());
-   output.append(format, node->printPointsToNull());
-   output.append(format, node->printRequiresConditionCodes());
-   output.append(format, node->printIsUnneededConversion());
-   output.append(format, node->printParentSupportsLazyClobber());
-   output.append(format, node->printIsFPStrictCompliant());
-   output.append(format, node->printCannotOverflow());
-   output.append(format, node->printPointsToNonNull());
+   output.appendf(format, node->printHasFoldedImplicitNULLCHK());
+   output.appendf(format, node->printIsHighWordZero());
+   output.appendf(format, node->printIsUnsigned());
+   output.appendf(format, node->printIsClassPointerConstant());
+   output.appendf(format, node->printIsMethodPointerConstant());
+   output.appendf(format, node->printIsSafeToSkipTableBoundCheck());
+   output.appendf(format, node->printIsProfilingCode());
+   output.appendf(format, node->printIsZero());
+   output.appendf(format, node->printIsNonZero());
+   output.appendf(format, node->printIsNonNegative());
+   output.appendf(format, node->printIsNonPositive());
+   output.appendf(format, node->printPointsToNull());
+   output.appendf(format, node->printRequiresConditionCodes());
+   output.appendf(format, node->printIsUnneededConversion());
+   output.appendf(format, node->printParentSupportsLazyClobber());
+   output.appendf(format, node->printIsFPStrictCompliant());
+   output.appendf(format, node->printCannotOverflow());
+   output.appendf(format, node->printPointsToNonNull());
 
-   output.append(format, node->printIsInvalid8BitGlobalRegister());
-   output.append(format, node->printIsDirectMemoryUpdate());
-   output.append(format, node->printIsTheVirtualCallNodeForAGuardedInlinedCall());
-   output.append(format, node->printIsDontTransformArrayCopyCall());
-   output.append(format, node->printIsNodeRecognizedArrayCopyCall());
-   output.append(format, node->printCanDesynchronizeCall());
-   output.append(format, node->printContainsCompressionSequence());
-   output.append(format, node->printIsInternalPointer());
-   output.append(format, node->printIsMaxLoopIterationGuard());
-   output.append(format, node->printIsProfiledGuard()     );
-   output.append(format, node->printIsInterfaceGuard()    );
-   output.append(format, node->printIsAbstractGuard()     );
-   output.append(format, node->printIsHierarchyGuard()    );
-   output.append(format, node->printIsNonoverriddenGuard());
-   output.append(format, node->printIsSideEffectGuard()   );
-   output.append(format, node->printIsDummyGuard()        );
-   output.append(format, node->printIsHCRGuard()          );
-   output.append(format, node->printIsOSRGuard()          );
-   output.append(format, node->printIsBreakpointGuard()          );
-   output.append(format, node->printIsMutableCallSiteTargetGuard() );
-   output.append(format, node->printIsByteToByteTranslate());
-   output.append(format, node->printIsByteToCharTranslate());
-   output.append(format, node->printIsCharToByteTranslate());
-   output.append(format, node->printIsCharToCharTranslate());
-   output.append(format, node->printSetSourceIsByteArrayTranslate() );
-   output.append(format, node->printSetTargetIsByteArrayTranslate() );
-   output.append(format, node->printSetTermCharNodeIsHint()         );
-   output.append(format, node->printSetTableBackedByRawStorage()    );
-   output.append(format, node->printIsForwardArrayCopy());
-   output.append(format, node->printIsBackwardArrayCopy());
-   output.append(format, node->printIsRarePathForwardArrayCopy());
-   output.append(format, node->printIsNoArrayStoreCheckArrayCopy());
-   output.append(format, node->printIsReferenceArrayCopy());
-   output.append(format, node->printIsHalfWordElementArrayCopy());
-   output.append(format, node->printIsWordElementArrayCopy());
-   output.append(format, node->printIsHeapObjectWrtBar());
-   output.append(format, node->printIsNonHeapObjectWrtBar());
-   output.append(format, node->printIsSkipWrtBar());
-   output.append(format, node->printIsArrayChkPrimitiveArray1());
-   output.append(format, node->printIsArrayChkReferenceArray1());
-   output.append(format, node->printIsArrayChkPrimitiveArray2());
-   output.append(format, node->printIsArrayChkReferenceArray2());
-   output.append(format, node->printIsSignExtendedTo32BitAtSource());
-   output.append(format, node->printIsSignExtendedTo64BitAtSource());
-   output.append(format, node->printIsZeroExtendedTo32BitAtSource());
-   output.append(format, node->printIsZeroExtendedTo64BitAtSource());
-   output.append(format, node->printNeedsSignExtension());
-   output.append(format, node->printSkipSignExtension());
-   output.append(format, node->printSetUseSignExtensionMode());
-   output.append(format, node->printIsSeenRealReference());
-   output.append(format, node->printNormalizeNanValues());
-   output.append(format, node->printCannotTrackLocalUses());
-   output.append(format, node->printIsSkipSync());
-   output.append(format, node->printIsReadMonitor());
-   output.append(format, node->printIsLocalObjectMonitor());
-   output.append(format, node->printIsPrimitiveLockedRegion());
-   output.append(format, node->printIsSyncMethodMonitor());
-   output.append(format, node->printIsStaticMonitor());
-   output.append(format, node->printIsNormalizedShift());
-   output.append(format, node->printIsSimpleDivCheck());
-   output.append(format, node->printIsOmitSync());
-   output.append(format, node->printIsNOPLongStore());
-   output.append(format, node->printIsStoredValueIsIrrelevant());
-   output.append(format, node->printIsThrowInsertedByOSR());
-   output.append(format, node->printCanSkipZeroInitialization());
-   output.append(format, node->printIsDontMoveUnderBranch());
-   output.append(format, node->printIsPrivatizedInlinerArg());
-   output.append(format, node->printArrayCmpLen());
-   output.append(format, node->printArrayCmpSign());
-   output.append(format, node->printXorBitOpMem());
-   output.append(format, node->printOrBitOpMem());
-   output.append(format, node->printAndBitOpMem());
+   output.appendf(format, node->printIsInvalid8BitGlobalRegister());
+   output.appendf(format, node->printIsDirectMemoryUpdate());
+   output.appendf(format, node->printIsTheVirtualCallNodeForAGuardedInlinedCall());
+   output.appendf(format, node->printIsDontTransformArrayCopyCall());
+   output.appendf(format, node->printIsNodeRecognizedArrayCopyCall());
+   output.appendf(format, node->printCanDesynchronizeCall());
+   output.appendf(format, node->printContainsCompressionSequence());
+   output.appendf(format, node->printIsInternalPointer());
+   output.appendf(format, node->printIsMaxLoopIterationGuard());
+   output.appendf(format, node->printIsProfiledGuard()     );
+   output.appendf(format, node->printIsInterfaceGuard()    );
+   output.appendf(format, node->printIsAbstractGuard()     );
+   output.appendf(format, node->printIsHierarchyGuard()    );
+   output.appendf(format, node->printIsNonoverriddenGuard());
+   output.appendf(format, node->printIsSideEffectGuard()   );
+   output.appendf(format, node->printIsDummyGuard()        );
+   output.appendf(format, node->printIsHCRGuard()          );
+   output.appendf(format, node->printIsOSRGuard()          );
+   output.appendf(format, node->printIsBreakpointGuard()          );
+   output.appendf(format, node->printIsMutableCallSiteTargetGuard() );
+   output.appendf(format, node->printIsByteToByteTranslate());
+   output.appendf(format, node->printIsByteToCharTranslate());
+   output.appendf(format, node->printIsCharToByteTranslate());
+   output.appendf(format, node->printIsCharToCharTranslate());
+   output.appendf(format, node->printSetSourceIsByteArrayTranslate() );
+   output.appendf(format, node->printSetTargetIsByteArrayTranslate() );
+   output.appendf(format, node->printSetTermCharNodeIsHint()         );
+   output.appendf(format, node->printSetTableBackedByRawStorage()    );
+   output.appendf(format, node->printIsForwardArrayCopy());
+   output.appendf(format, node->printIsBackwardArrayCopy());
+   output.appendf(format, node->printIsRarePathForwardArrayCopy());
+   output.appendf(format, node->printIsNoArrayStoreCheckArrayCopy());
+   output.appendf(format, node->printIsReferenceArrayCopy());
+   output.appendf(format, node->printIsHalfWordElementArrayCopy());
+   output.appendf(format, node->printIsWordElementArrayCopy());
+   output.appendf(format, node->printIsHeapObjectWrtBar());
+   output.appendf(format, node->printIsNonHeapObjectWrtBar());
+   output.appendf(format, node->printIsSkipWrtBar());
+   output.appendf(format, node->printIsArrayChkPrimitiveArray1());
+   output.appendf(format, node->printIsArrayChkReferenceArray1());
+   output.appendf(format, node->printIsArrayChkPrimitiveArray2());
+   output.appendf(format, node->printIsArrayChkReferenceArray2());
+   output.appendf(format, node->printIsSignExtendedTo32BitAtSource());
+   output.appendf(format, node->printIsSignExtendedTo64BitAtSource());
+   output.appendf(format, node->printIsZeroExtendedTo32BitAtSource());
+   output.appendf(format, node->printIsZeroExtendedTo64BitAtSource());
+   output.appendf(format, node->printNeedsSignExtension());
+   output.appendf(format, node->printSkipSignExtension());
+   output.appendf(format, node->printSetUseSignExtensionMode());
+   output.appendf(format, node->printIsSeenRealReference());
+   output.appendf(format, node->printNormalizeNanValues());
+   output.appendf(format, node->printCannotTrackLocalUses());
+   output.appendf(format, node->printIsSkipSync());
+   output.appendf(format, node->printIsReadMonitor());
+   output.appendf(format, node->printIsLocalObjectMonitor());
+   output.appendf(format, node->printIsPrimitiveLockedRegion());
+   output.appendf(format, node->printIsSyncMethodMonitor());
+   output.appendf(format, node->printIsStaticMonitor());
+   output.appendf(format, node->printIsNormalizedShift());
+   output.appendf(format, node->printIsSimpleDivCheck());
+   output.appendf(format, node->printIsOmitSync());
+   output.appendf(format, node->printIsNOPLongStore());
+   output.appendf(format, node->printIsStoredValueIsIrrelevant());
+   output.appendf(format, node->printIsThrowInsertedByOSR());
+   output.appendf(format, node->printCanSkipZeroInitialization());
+   output.appendf(format, node->printIsDontMoveUnderBranch());
+   output.appendf(format, node->printIsPrivatizedInlinerArg());
+   output.appendf(format, node->printArrayCmpLen());
+   output.appendf(format, node->printArrayCmpSign());
+   output.appendf(format, node->printXorBitOpMem());
+   output.appendf(format, node->printOrBitOpMem());
+   output.appendf(format, node->printAndBitOpMem());
 #ifdef J9_PROJECT_SPECIFIC
-   output.append(format, node->printSkipCopyOnStore());
-   output.append(format, node->printSkipCopyOnLoad());
-   output.append(format, node->printSkipPadByteClearing());
-   output.append(format, node->printUseStoreAsAnAccumulator());
-   output.append(format, node->printCleanSignInPDStoreEvaluator());
+   output.appendf(format, node->printSkipCopyOnStore());
+   output.appendf(format, node->printSkipCopyOnLoad());
+   output.appendf(format, node->printSkipPadByteClearing());
+   output.appendf(format, node->printUseStoreAsAnAccumulator());
+   output.appendf(format, node->printCleanSignInPDStoreEvaluator());
 #endif
-   output.append(format, node->printUseCallForFloatToFixedConversion());
+   output.appendf(format, node->printUseCallForFloatToFixedConversion());
 #ifdef J9_PROJECT_SPECIFIC
-   output.append(format, node->printCleanSignDuringPackedLeftShift());
-   output.append(format, node->printIsInMemoryCopyProp());
+   output.appendf(format, node->printCleanSignDuringPackedLeftShift());
+   output.appendf(format, node->printIsInMemoryCopyProp());
 #endif
-   output.append(format, node->printAllocationCanBeRemoved());
-   output.append(format, node->printArrayTRT());
-   output.append(format, node->printCannotTrackLocalStringUses());
-   output.append(format, node->printCharArrayTRT());
-   output.append(format, node->printEscapesInColdBlock());
-   output.append(format, node->printIsDirectMethodGuard());
+   output.appendf(format, node->printAllocationCanBeRemoved());
+   output.appendf(format, node->printArrayTRT());
+   output.appendf(format, node->printCannotTrackLocalStringUses());
+   output.appendf(format, node->printCharArrayTRT());
+   output.appendf(format, node->printEscapesInColdBlock());
+   output.appendf(format, node->printIsDirectMethodGuard());
 #ifdef J9_PROJECT_SPECIFIC
-   output.append(format, node->printIsDontInlineUnsafePutOrderedCall());
+   output.appendf(format, node->printIsDontInlineUnsafePutOrderedCall());
 #endif
-   output.append(format, node->printIsHeapificationStore());
-   output.append(format, node->printIsHeapificationAlloc());
-   output.append(format, node->printIsIdentityless());
-   output.append(format, node->printIsLiveMonitorInitStore());
-   output.append(format, node->printIsMethodEnterExitGuard());
-   output.append(format, node->printReturnIsDummy());
+   output.appendf(format, node->printIsHeapificationStore());
+   output.appendf(format, node->printIsHeapificationAlloc());
+   output.appendf(format, node->printIsIdentityless());
+   output.appendf(format, node->printIsLiveMonitorInitStore());
+   output.appendf(format, node->printIsMethodEnterExitGuard());
+   output.appendf(format, node->printReturnIsDummy());
 #ifdef J9_PROJECT_SPECIFIC
-   output.append(format, node->printSharedMemory());
+   output.appendf(format, node->printSharedMemory());
 #endif
-   output.append(format, node->printSourceCellIsTermChar());
+   output.appendf(format, node->printSourceCellIsTermChar());
 #ifdef J9_PROJECT_SPECIFIC
-   output.append(format, node->printSpineCheckWithArrayElementChild());
+   output.appendf(format, node->printSpineCheckWithArrayElementChild());
 #endif
-   output.append(format, node->printStoreAlreadyEvaluated());
-   output.append(format, node->printCopyToNewVirtualRegister());
+   output.appendf(format, node->printStoreAlreadyEvaluated());
+   output.appendf(format, node->printCopyToNewVirtualRegister());
    }
 
 
@@ -1109,13 +1088,12 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
                           symRefName(this),
                           symRefKind(this),
                           otherInfo(this),
-                          symRefWCodeId(this),
                           symRefObjIndex(this),
                           labelSymbol(this);
 
    TR::Symbol * sym = symRef->getSymbol();
 
-   symRefAddress.append("%s", getName(sym));
+   symRefAddress.appendf("%s", getName(sym));
 
 
    if (sym)
@@ -1130,59 +1108,59 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
 
    if (symRef->getOffset() + displacement)
       {
-      symRefOffset.append( "%+d", displacement + symRef->getOffset());
+      symRefOffset.appendf( "%+d", displacement + symRef->getOffset());
       }
 
    if (symRef->getKnownObjectIndex() != TR::KnownObjectTable::UNKNOWN)
-      symRefObjIndex.append( " (obj%d)", (int)symRef->getKnownObjectIndex());
+      symRefObjIndex.appendf( " (obj%d)", (int)symRef->getKnownObjectIndex());
    else if (sym && sym->isFixedObjectRef() && comp()->getKnownObjectTable() && !symRef->isUnresolved())
       {
       TR::KnownObjectTable::Index i = comp()->getKnownObjectTable()->getExistingIndexAt((uintptr_t*)sym->castToStaticSymbol()->getStaticAddress());
       if (i != TR::KnownObjectTable::UNKNOWN)
-         symRefObjIndex.append( " (==obj%d)", (int)i);
+         symRefObjIndex.appendf( " (==obj%d)", (int)i);
       }
 
    if (sym)
       {
       if (symRef->isUnresolved())
-         symRefKind.append(" unresolved");
+         symRefKind.appends(" unresolved");
       switch (symRef->hasBeenAccessedAtRuntime())
          {
-         case TR_yes: symRefKind.append( " accessed");    break;
-         case TR_no:  symRefKind.append( " notAccessed"); break;
+         case TR_yes: symRefKind.appends( " accessed");    break;
+         case TR_no:  symRefKind.appends( " notAccessed"); break;
          default: break;
          }
       if (symRef->getSymbol()->isFinal())
-         symRefKind.append(" final");
+         symRefKind.appends(" final");
       if (symRef->getSymbol()->isVolatile())
-         symRefKind.append(" volatile");
+         symRefKind.appends(" volatile");
       switch (sym->getKind())
          {
          case TR::Symbol::IsAutomatic:
-            symRefName.append(" %s", getName(symRef));
+            symRefName.appendf(" %s", getName(symRef));
             if (sym->getAutoSymbol()->getName() == NULL)
-               symRefKind.append(" Auto");
+               symRefKind.appends(" Auto");
             else
-               symRefKind.append(" %s", sym->getAutoSymbol()->getName());
+               symRefKind.appendf(" %s", sym->getAutoSymbol()->getName());
             break;
          case TR::Symbol::IsParameter:
-            symRefKind.append(" Parm");
-            symRefName.append(" %s", getName(symRef));
+            symRefKind.appends(" Parm");
+            symRefName.appendf(" %s", getName(symRef));
             break;
          case TR::Symbol::IsStatic:
             if(symRef->isFromLiteralPool())
              {
-               symRefKind.append(" DLP-Static");
-               symRefName.append( " %s", getName(symRef));
+               symRefKind.appends(" DLP-Static");
+               symRefName.appendf(" %s", getName(symRef));
              }
             else
                {
-               symRefKind.append(" Static");
+               symRefKind.appends(" Static");
                if (sym->isNamed())
                   {
-                  symRefName.append(" \"%s\"", ((TR::StaticSymbol*)sym)->getName());
+                  symRefName.appendf(" \"%s\"", ((TR::StaticSymbol*)sym)->getName());
                   }
-               symRefName.append(" %s", getName(symRef));
+               symRefName.appendf(" %s", getName(symRef));
                }
             break;
 
@@ -1191,44 +1169,44 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
             {
             TR::MethodSymbol *methodSym = sym->castToMethodSymbol();
             if (methodSym->isNative())
-               symRefKind.append(" native");
+               symRefKind.appends(" native");
             switch (methodSym->getMethodKind())
                {
                case TR::MethodSymbol::Virtual:
-                  symRefKind.append(" virtual");
+                  symRefKind.appends(" virtual");
                   break;
                case TR::MethodSymbol::Interface:
-                  symRefKind.append(" interface");
+                  symRefKind.appends(" interface");
                   break;
                case TR::MethodSymbol::Static:
-                  symRefKind.append(" static");
+                  symRefKind.appends(" static");
                   break;
                case TR::MethodSymbol::Special:
-                  symRefKind.append(" special");
+                  symRefKind.appends(" special");
                   break;
                case TR::MethodSymbol::Helper:
-                  symRefKind.append(" helper");
+                  symRefKind.appends(" helper");
                   break;
                case TR::MethodSymbol::ComputedStatic:
-                  symRefKind.append(" computed-static");
+                  symRefKind.appends(" computed-static");
                   break;
                case TR::MethodSymbol::ComputedVirtual:
-                  symRefKind.append(" computed-virtual");
+                  symRefKind.appends(" computed-virtual");
                   break;
                default:
-                     symRefKind.append(" UNKNOWN");
+                     symRefKind.appends(" UNKNOWN");
                   break;
                }
 
-            symRefKind.append(" Method");
-            symRefName.append(" %s", getName(symRef));
+            symRefKind.appends(" Method");
+            symRefName.appendf(" %s", getName(symRef));
             TR_OpaqueClassBlock *clazz = containingClass(symRef);
             if (clazz)
                {
                if (TR::Compiler->cls.isInterfaceClass(_comp, clazz))
-                  otherInfo.append( " (Interface class)");
+                  otherInfo.appends(" (Interface class)");
                else if (TR::Compiler->cls.isAbstractClass(_comp, clazz))
-                  otherInfo.append( " (Abstract class)");
+                  otherInfo.appends(" (Abstract class)");
                }
             }
             break;
@@ -1236,62 +1214,62 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
          case TR::Symbol::IsShadow:
             if (sym->isNamedShadowSymbol() && sym->getNamedShadowSymbol()->getName() != NULL)
                {
-               symRefKind.append(" %s", sym->getNamedShadowSymbol()->getName());
-               symRefName.append(" %s", getName(symRef));
+               symRefKind.appendf(" %s", sym->getNamedShadowSymbol()->getName());
+               symRefName.appendf(" %s", getName(symRef));
                }
             else
                {
-               symRefKind.append(" Shadow");
-               symRefName.append(" %s", getName(symRef));
+               symRefKind.appends(" Shadow");
+               symRefName.appendf(" %s", getName(symRef));
                }
             break;
          case TR::Symbol::IsMethodMetaData:
-            symRefKind.append(" MethodMeta");
-            symRefName.append(" %s", symRef->getSymbol()->getMethodMetaDataSymbol()->getName());
+            symRefKind.appends(" MethodMeta");
+            symRefName.appendf(" %s", symRef->getSymbol()->getMethodMetaDataSymbol()->getName());
             break;
          case TR::Symbol::IsLabel:
             print(sym->castToLabelSymbol(), labelSymbol);
             if (!labelSymbol.isEmpty())
-               labelSymbol.append( " " );
+               labelSymbol.appends(" ");
             break;
          default:
             TR_ASSERT(0, "unexpected symbol kind");
          }
-         otherInfo.append( " [flags 0x%x 0x%x ]", sym->getFlags(),sym->getFlags2());
+         otherInfo.appendf( " [flags 0x%x 0x%x ]", sym->getFlags(),sym->getFlags2());
       }
 
    numSpaces = getNumSpacesAfterIndex( symRef->getReferenceNumber(), getIntLength(_comp->getSymRefTab()->baseArray.size()) );
 
-      symRefNum.append("#%d", symRef->getReferenceNumber());
+      symRefNum.appendf("#%d", symRef->getReferenceNumber());
 
    if (verbose)
       {
-       output.append("%s:%*s", symRefNum.getStr(), numSpaces, "");
+       output.appendf("%s:%*s", symRefNum.getStr(), numSpaces, "");
 
        if (hideHelperMethodInfo)
-          output.append(" %s%s[%s]%s", labelSymbol.getStr(), symRefWCodeId.getStr(), symRefOffset.getStr(), symRefObjIndex.getStr());
+          output.appendf(" %s[%s]%s", labelSymbol.getStr(), symRefOffset.getStr(), symRefObjIndex.getStr());
        else
-          output.append(" %s%s%s[%s%s%s]%s%s", symRefName.getStr(), labelSymbol.getStr(), symRefWCodeId.getStr(), symRefKind.getStr(), symRefOffset.isEmpty() ? "" : " ",
+          output.appendf(" %s%s[%s%s%s]%s%s", symRefName.getStr(), labelSymbol.getStr(), symRefKind.getStr(), symRefOffset.isEmpty() ? "" : " ",
                 symRefOffset.getStr(), symRefObjIndex.getStr(), otherInfo.getStr());
 
-       output.append(" [%s]", symRefAddress.getStr());
+       output.appendf(" [%s]", symRefAddress.getStr());
 
        if(sym)
           {
-          output.append (" (%s)",TR::DataType::getName(sym->getDataType()));
+          output.appendf(" (%s)",TR::DataType::getName(sym->getDataType()));
           if (sym->isVolatile())
              {
-             output.append(" [volatile]");
+             output.appends(" [volatile]");
              }
           }
       }
    else
       {
       if (hideHelperMethodInfo)
-         output.append(" %s%s[%s%s%s]%s", labelSymbol.getStr(), symRefWCodeId.getStr(), symRefNum.getStr(), symRefOffset.isEmpty() ? "" : " ", symRefOffset.getStr(),
+         output.appendf(" %s[%s%s%s]%s", labelSymbol.getStr(), symRefNum.getStr(), symRefOffset.isEmpty() ? "" : " ", symRefOffset.getStr(),
                symRefObjIndex.getStr());
       else
-         output.append(" %s%s%s[%s%s%s%s%s]%s%s", symRefName.getStr(), labelSymbol.getStr(), symRefWCodeId.getStr(), symRefNum.getStr(), symRefKind.isEmpty() ? "" : " ",
+         output.appendf(" %s%s[%s%s%s%s%s]%s%s", symRefName.getStr(), labelSymbol.getStr(), symRefNum.getStr(), symRefKind.isEmpty() ? "" : " ",
                symRefKind.getStr(), symRefOffset.isEmpty() ? "" : " ", symRefOffset.getStr(), symRefObjIndex.getStr(), otherInfo.getStr());
       }
 
@@ -1309,7 +1287,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::LabelSymbol * labelSymbol)
 void
 TR_Debug::print(TR::LabelSymbol * labelSymbol, TR_PrettyPrinterString& output)
    {
-   output.append( "%s", getName(labelSymbol));
+   output.appendf( "%s", getName(labelSymbol));
    }
 
 const char *

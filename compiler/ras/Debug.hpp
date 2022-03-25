@@ -414,6 +414,14 @@ public:
    virtual void newInstruction(TR::Instruction *);
    virtual void addInstructionComment(TR::Instruction *, char*, ...);
 
+   /**
+    * @brief Check whether to trigger debugger breakpoint or launch debugger
+    *        when \c artifact name is created.
+    *
+    * @param[in] artifactName : name of artifact to break or debug on
+    */
+   void breakOrDebugOnCreate(char *artifactName);
+
    virtual TR::CompilationFilters * getInlineFilters() { return _inlineFilters; }
 
    virtual TR_FrontEnd *fe() { return _fe; }
@@ -1248,14 +1256,35 @@ class TR_PrettyPrinterString
    {
    public:
       TR_PrettyPrinterString(TR_Debug* debug);
-      void append(const char* format, ...);
+
+      /**
+       * @brief Append a null-terminated string with format specifiers to the buffer.
+       *        The buffer is guaranteed not to overflow and will be null-terminated.
+       *
+       * @param[in] format : null-terminated string to append with optional format specifiers
+       * @param[in] ... : optional arguments for format specifiers
+       */
+      void appendf(char const *format, ...);
+
+      /**
+       * @brief Append a null-terminated string to the buffer.  No format specifiers
+       *        are permitted.  The buffer is guaranteed not to overflow and will be
+       *        null-terminated.
+       *
+       * @param[in] str : null-terminated string to append
+       */
+      void appends(char const *str);
+
       const char* getStr() {return buffer;}
-      int getLength() {return len;}
+      int32_t getLength() {return len;}
       void reset() {buffer[0] = '\0'; len = 0;}
       bool isEmpty() { return len <= 0; }
+
+      static const int32_t maxBufferLength = 2000;
+
    private:
-      char buffer[2000];
-      int len;
+      char buffer[maxBufferLength];
+      int32_t len;
       TR::Compilation *_comp;
       TR_Debug *_debug;
    };

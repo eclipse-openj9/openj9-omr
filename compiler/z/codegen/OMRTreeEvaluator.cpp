@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -6469,7 +6469,6 @@ TR::Register *
 sloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempMR, bool isReversed)
    {
    TR::Compilation *comp = cg->comp();
-   //TR_ASSERTC( !isReversed,comp, "need to write logic for reverse load still");
 
    TR::Register * tempReg = cg->allocateRegister();
 
@@ -6569,8 +6568,6 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
 TR::Register *
 iloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempMR, bool isReversed)
    {
-   //TR_ASSERTC( !isReversed,cg->comp(), "need to write logic for reverse load still");
-
    TR::Register * tempReg = cg->allocateRegister();
 
    if (relativeLongLoadHelper(cg, node, tempReg))
@@ -11456,8 +11453,6 @@ OMR::Z::TreeEvaluator::arraycmpEvaluator(TR::Node * node, TR::CodeGenerator * cg
 
       if (elemsExpr->getOpCode().isLoadConst())
          {
-         //TR_ASSERTC( elemsExpr->getSize() <=4,comp, "If this is not true why are we truncating?");
-         // remove the assertion for now
          int32_t elems = (int32_t) getIntegralValue(elemsExpr); //get number of elements (in bytes)
          bool    clobber = (comp->getOption(TR_DisableSSOpts) || elems>256 || elems==0 || node->isArrayCmpSign());
          if (!node->isArrayCmpSign())
@@ -12507,8 +12502,6 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
    //     baseReg = cg->gprClobberEvaluate(baseAddr);
 
    cg->decReferenceCount(elemsExpr);
-   //TR_ASSERTC( elemsExpr->getSize() <=4,comp, "If this is not true we should not be truncating");
-   //someone should investigate why this assertion is not being hit
 
    if (mvcCopy)
       {

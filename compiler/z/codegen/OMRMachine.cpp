@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1007,10 +1007,6 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
       assignedRegister->setState(TR::RealRegister::Free);
       assignedRegister = newAssignedRegister;
       }
-
-   // Make sure we only try to assign real regs to virt regs
-   //   TR_ASSERTC(comp, targetRegister->getRealRegister()==NULL,
-   //   "assignBestRegisterSingle: Trying to assign a real reg to a real reg in inst\n");
 
    // Have we already assigned a real register
    if (assignedRegister == NULL)
@@ -2706,7 +2702,7 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
             location->getMaxSpillDepth() != 2 )
          location->setMaxSpillDepth(3);
       }
-      
+
    best->setAssignedRegister(NULL);
    best->setState(TR::RealRegister::Free);
 
@@ -4195,14 +4191,7 @@ TR::RegisterDependencyConditions * OMR::Z::Machine::createCondForLiveAndSpilledG
          if (realReg->getState() == TR::RealRegister::Assigned)
             {
             TR::Register *virtReg = realReg->getAssignedRegister();
-            //if (!spilledRegisterList || !spilledRegisterList->find(virtReg))
-            //{
-                //TR_ASSERTC(comp, !spilledRegisterList || !spilledRegisterList->find(virtReg),
-                // "a register should not be in both an assigned state and in the spilled list\n");
             deps->addPostCondition(virtReg, realReg->getRegisterNumber());
-               //}
-
-            //virtReg->incTotalUseCount();
             virtReg->incFutureUseCount();
             }
          }

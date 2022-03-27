@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1456,17 +1456,6 @@ TR_OSRSlotSharingInfo::addSlotInfo(int32_t slot, int32_t symRefNum, int32_t symR
    for (auto i = 0U; i < slotInfos.size(); i++)
       {
       TR_SlotInfo& info = slotInfos[i];
-      if (info.symRefNum != -1)
-         {
-         if ((info.slot == slot) &&
-            (info.symRefNum != symRefNum) &&
-            (symRefTab->getSymRef(info.symRefNum)->getSymbol()->getDataType() == symRefTab->getSymRef(symRefNum)->getSymbol()->getDataType()))
-            {
-            //Two different variables sharing the same slot, can be live at a certain node (when there is a loop). So commenting the assertion out for now.
-            //TR_ASSERTC(0, comp, "ERROR: For slot %d symref #%d conflicts with symref#%d\n",
-            //    symRefNum, info.symRefNum, slot);
-            }
-         }
 
       if ((info.slot == slot) && (info.symRefNum == symRefNum))
          {

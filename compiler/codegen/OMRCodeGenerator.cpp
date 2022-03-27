@@ -2022,10 +2022,9 @@ OMR::CodeGenerator::processRelocations()
    while(iterator != _relocationList.end())
       {
       // Traverse the non-AOT/non-external labels first
-	  (*iterator)->apply(self());
+      (*iterator)->apply(self());
       ++iterator;
       }
-   //TR_ASSERTC(missedSite == -1, comp(), "Site %d is missing relocation\n", missedSite);
    }
 
 #if defined(TR_HOST_ARM)

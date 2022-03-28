@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -134,7 +134,7 @@ OMR::ValuePropagation::ValuePropagation(TR::OptimizationManager *manager)
      _arrayCloneCalls(trMemory()),
      _objectCloneTypes(trMemory()),
      _arrayCloneTypes(trMemory()),
-     _parmInfo(NULL),
+     _parmMayBeVariant(NULL),
      _parmTypeValid(NULL),
      _constNodeInfo(comp()->allocator())
    {
@@ -176,27 +176,28 @@ void OMR::ValuePropagation::initialize()
    // determine if there are any invariant parms
    //
    int32_t numParms = comp()->getMethodSymbol()->getParameterList().getSize();
-   _parmInfo = (int32_t *) trMemory()->allocateStackMemory(numParms * sizeof(int32_t));
+   _parmMayBeVariant = (int32_t *) trMemory()->allocateStackMemory(numParms * sizeof(int32_t));
    _parmTypeValid = (bool *) trMemory()->allocateStackMemory(numParms * sizeof(bool));
 
    // mark info to be true
    for (int32_t i = 0; i < numParms; i++)
       _parmTypeValid[i] = true;
 
-   // we cant assume parm info to be valid for DLT compiles
-   // the type may change after execution begins
+   // We cannot assume the parm will be invariant for DLT compiles because
+   // the parm slot may be reused and shared prior to the DLT body executing.
+   //
    if (comp()->isDLT())
       {
-         for (int32_t i = 0; i < numParms; i++)
-            {
-            _parmInfo[i] = 1;
-            }
+      for (int32_t i = 0; i < numParms; i++)
+         {
+         _parmMayBeVariant[i] = 1;
+         }
       }
    else
       {
       // mark all parms as invariant (0) to begin with
       //
-      memset(_parmInfo, 0, numParms * sizeof(int32_t));
+      memset(_parmMayBeVariant, 0, numParms * sizeof(int32_t));
 
       for (TR::TreeTop *tt = comp()->getStartTree();
            tt;
@@ -214,7 +215,7 @@ void OMR::ValuePropagation::initialize()
                // parm is no longer invariant
                //
                int32_t index = sym->getParmSymbol()->getOrdinal();
-               _parmInfo[index] = 1;
+               _parmMayBeVariant[index] = 1;
                }
             }
          }

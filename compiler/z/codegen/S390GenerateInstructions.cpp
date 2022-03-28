@@ -2167,8 +2167,6 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
       imm = (uintptr_t) callSymRef->getMethodAddress();
       }
 
-   AOTcgDiag2(comp, "\nimm=%x isHelper=%x\n", imm, isHelper);
-
    // Since N3 generate TR::InstOpCode::BRASL -- only need 1 instruction, and no worry
    // about the displacement
    // Calling myself
@@ -2222,7 +2220,7 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
                tempInst->setSymbolReference(callSymRef);
             }
 #endif
-         AOTcgDiag1(comp, "\ntempInst=%x\n", tempInst);
+
          return tempInst;
          }
 #if !defined(TR_TARGET_64BIT) || (defined(TR_TARGET_64BIT) && defined(J9ZOS390))
@@ -2450,7 +2448,6 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
 
       targetSnippet->setSymbolReference(new (INSN_HEAP) TR::SymbolReference(comp->getSymRefTab()));
       targetSnippet->setReloType(reloType);
-      AOTcgDiag4(comp, "generateRegLitRefInstruction constantDataSnippet=%x symbolReference=%x symbol=%x reloType=%x\n", targetSnippet, targetSnippet->getSymbolReference(), targetSnippet->getSymbolReference()->getSymbol(), reloType);
 
       cursor = (TR::S390RILInstruction *) generateRILInstruction(cg, (op == TR::InstOpCode::LG)?TR::InstOpCode::LGRL:TR::InstOpCode::LRL, node, treg, targetSnippet, preced);
       return cursor;
@@ -2480,9 +2477,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       {
       dataref = generateS390MemoryReference((int32_t)imm, TR::Int32, cg, base, node);
       }
-   AOTcgDiag5(comp, "generateRegLitRefInstruction dataref=%x constantDataSnippet=%x symbolReference=%x symbol=%x reloType=%x\n",
-      dataref, dataref->getConstantDataSnippet(), dataref->getSymbolReference(),
-      dataref->getSymbolReference()->getSymbol(), reloType);
+
    dataref->getConstantDataSnippet()->setSymbolReference(dataref->getSymbolReference());
    dataref->getConstantDataSnippet()->setReloType(reloType);
    cursor = generateRXInstruction(cg, op, node, treg, dataref);

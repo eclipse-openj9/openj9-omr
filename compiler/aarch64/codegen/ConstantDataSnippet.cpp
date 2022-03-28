@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -64,7 +64,6 @@ TR::ARM64ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
             symbolKind = TR::SymbolType::typeMethod;
             // intentional fall through
          case TR_ClassPointer:
-            AOTcgDiag2(comp, "add relocation (%d) cursor=%x\n", reloType, cursor);
             if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
                {
                TR_ASSERT_FATAL(getData<uint8_t *>(), "Static Sym can not be NULL");

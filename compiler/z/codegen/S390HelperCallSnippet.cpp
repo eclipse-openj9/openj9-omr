@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -134,7 +134,7 @@ TR::S390HelperCallSnippet::emitSnippetBody()
    this->setSnippetDestAddr(destAddr);
 
    *(int32_t *) cursor = (int32_t)((destAddr - branchInstructionStartAddress) / 2);
-   AOTcgDiag1(cg()->comp(), "add TR_HelperAddress cursor=%x\n", cursor);
+
    cg()->addProjectSpecializedRelocation(cursor, (uint8_t*) helperSymRef, NULL, TR_HelperAddress,
                              __FILE__, __LINE__, getNode());
    cursor += sizeof(int32_t);

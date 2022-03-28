@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021, 2021 IBM Corp. and others
+ * Copyright (c) 2021, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -52,10 +52,10 @@ OMR::Z::JitCodeRWXObjectFormat::emitFunctionCall(TR::FunctionCallData &data)
    TR_ASSERT_FATAL_WITH_NODE(callNode, targetAddress != NULL, "Unable to make a call as targetAddress for the Call is not found.");
 
 
-   // Now as we are going to make call, we need Return Address register. 
+   // Now as we are going to make call, we need Return Address register.
    TR_ASSERT_FATAL_WITH_NODE(callNode, data.returnAddressReg != NULL, "returnAddressReg should be set to make a function call.");
 
-   
+
    // We do not need to check if the address is addressible using RIL type
    // instruction, as the instruction API will check for it and generate
    // trampolines if needed.
@@ -105,13 +105,13 @@ OMR::Z::JitCodeRWXObjectFormat::encodeFunctionCall(TR::FunctionCallData &data)
 
       *reinterpret_cast<int16_t *>(cursor) = cg->comp()->target().is64Bit() ? 0x0004 : 0x0014;
       cursor += sizeof(int16_t);
-      
+
 		// BCR   rEP
       *reinterpret_cast<int16_t *>(cursor) = 0x07F0 + static_cast<int16_t>(cg->getEntryPointRegister() - 1);
       cursor += sizeof(int16_t);
 
       // Now updating the offset in LARL instruction
-      *reinterpret_cast<int32_t *>(larlOffsetAddress) = static_cast<int32_t>(((uintptr_t)cursor + data.snippet->getPadBytes() - larlInstructionAddress ) / 2); 
+      *reinterpret_cast<int32_t *>(larlOffsetAddress) = static_cast<int32_t>(((uintptr_t)cursor + data.snippet->getPadBytes() - larlInstructionAddress ) / 2);
       }
    else
       {
@@ -121,7 +121,6 @@ OMR::Z::JitCodeRWXObjectFormat::encodeFunctionCall(TR::FunctionCallData &data)
       *reinterpret_cast<int32_t *>(cursor) = TR::S390CallSnippet::adjustCallOffsetWithTrampoline(targetAddress, instrAddr, callSymRef, data.snippet);
       // TODO: We should be able to use reloKind field from the FunctionCallData to add relocation.
       // Probably only change apart from the hardcoded TR_HelperAddress is to get the correct Diagnostic message for AOT.
-      AOTcgDiag1(cg->comp(), "add TR_AbsoluteHelperAddress cursor=%x\n", cursor);
       cg->addProjectSpecializedRelocation(cursor, (uint8_t*) callSymRef, NULL, TR_HelperAddress,
                                     __FILE__, __LINE__, callNode);
       cursor += sizeof(int32_t);

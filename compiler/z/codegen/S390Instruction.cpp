@@ -273,7 +273,6 @@ TR::S390LabelInstruction::generateBinaryEncoding()
 
    if (getOpCode().getOpCodeValue() == TR::InstOpCode::dd)
       {
-      AOTcgDiag1(comp, "add TR_AbsoluteMethodAddress cursor=%x\n", cursor);
       cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, label));
       cg()->addProjectSpecializedRelocation(cursor, NULL, NULL, TR_AbsoluteMethodAddress,
                              __FILE__, __LINE__, getNode());
@@ -633,7 +632,6 @@ TR::S390BranchInstruction::generateBinaryEncoding()
          }
       else
          {
-         AOTcgDiag1(comp, "add TR_AbsoluteMethodAddress cursor=%x\n", cursor);
          cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(relocationPoint, label));
          cg()->addProjectSpecializedRelocation(relocationPoint, NULL, NULL, TR_AbsoluteMethodAddress,
                                 __FILE__, __LINE__, getNode());
@@ -773,7 +771,6 @@ TR::S390BranchOnCountInstruction::generateBinaryEncoding()
             }
          else
             {
-            AOTcgDiag1(comp, "add TR_AbsoluteMethodAddress cursor=%x\n", relocationPoint);
             cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(relocationPoint, label));
             cg()->addProjectSpecializedRelocation(relocationPoint, NULL, NULL, TR_AbsoluteMethodAddress,
                                    __FILE__, __LINE__, getNode());
@@ -889,8 +886,6 @@ TR::S390BranchOnIndexInstruction::generateBinaryEncoding()
          }
       else
          {
-         AOTcgDiag1(cg()->comp(), "add TR_AbsoluteMethodAddress cursor=%x\n", relocationPoint);
-
          cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(relocationPoint, label));
          cg()->addProjectSpecializedRelocation(relocationPoint, NULL, NULL, TR_AbsoluteMethodAddress,
                                 __FILE__, __LINE__, getNode());
@@ -2141,7 +2136,6 @@ TR::S390RILInstruction::generateBinaryEncoding()
 #endif
             if (isHelper)
                {
-               AOTcgDiag2(comp, "add TR_HelperAddress cursor=%p i2=%p\n", cursor, i2);
                cg()->addProjectSpecializedRelocation(cursor+2, (uint8_t*) getSymbolReference(), NULL, TR_HelperAddress,
                                          __FILE__, __LINE__, getNode());
                }
@@ -2282,7 +2276,6 @@ TR::S390RILInstruction::generateBinaryEncoding()
             TR_ResolvedMethod *resolvedMethod = resolvedMethodSym ? resolvedMethodSym->getResolvedMethod() : NULL;
             if (sym && (sym->castToMethodSymbol()->isHelper() || cg()->callUsesHelperImplementation(sym)))
                {
-               AOTcgDiag1(comp, "add TR_HelperAddress cursor=%x\n", cursor);
                cg()->addProjectSpecializedRelocation(cursor+2, (uint8_t*) getSymbolReference(), NULL, TR_HelperAddress,
                      __FILE__, __LINE__, getNode());
                }
@@ -5378,7 +5371,6 @@ TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
 
       //bool brcRangeExceeded = (distance<MIN_IMMEDIATE_VAL || distance>MAX_IMMEDIATE_VAL);
 
-      AOTcgDiag1(comp, "add TR_AbsoluteMethodAddress cursor=%x\n", (uint8_t *) (&_site->getDestination()));
       cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
 
       doRelocation = true;

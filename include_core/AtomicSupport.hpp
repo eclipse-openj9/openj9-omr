@@ -33,7 +33,7 @@
 #include <tpf/cmpswp.h>
 #endif
 
-#if defined(__xlC__)
+#if defined(__xlC__) && defined(AIXPPC)
 #include <sys/atomic_op.h>
 #endif
 
@@ -417,10 +417,10 @@ public:
 		csg((csg_t *)&oldValue, (csg_t *)address, (csg_t)newValue);
 		return oldValue;
 #elif defined(__xlC__) /* defined(OMRZTPF) */
-#if defined(__64BIT__)
+#if defined(__64BIT__) || !defined(AIXPPC)
 		__compare_and_swaplp((volatile long*)address, (long*)&oldValue, (long)newValue);
 #else /* defined(__64BIT__) */
-		/* __compare_and_swaplp is valid only in 64-bit mode. */
+		/* On AIX __compare_and_swaplp is valid only in 64-bit mode. */
 		compare_and_swaplp((atomic_l)address, (long*)&oldValue, (long)newValue);
 #endif /* defined(__64BIT__) */
 		return oldValue;

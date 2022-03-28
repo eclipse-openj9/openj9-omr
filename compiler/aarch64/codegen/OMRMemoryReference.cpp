@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -533,8 +533,20 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
    bool shiftUnderAddressNode = false;
    if (comp->useCompressedPointers())
       {
-      if (subTree->getOpCodeValue() == TR::l2a && subTree->getReferenceCount() == 1 && subTree->getRegister() == NULL)
+      if (subTree->getOpCodeValue() == TR::l2a && subTree->getReferenceCount() == 1 && subTree->getRegister() == NULL &&
+          self()->getUnresolvedSnippet() == NULL)
          {
+         /*
+          * We need to avoid skipping l2a node when the memory reference has a UnresolvedDataSnippet because skipping l2a
+          * makes the base register non-collected reference register.
+          * When a UnresolvedDataSnippet exists, the memory reference will generate multiple instructions.
+          * The first instruction is the branch to the UnresolvedDataSnippet which will be patched when the resolution
+          * finishes, and the last instruction is the actual load using the base register and resolved offset.
+          * The branch to the resolution helper can trigger GC, but if the base register is not a collected reference
+          * register, the valule of the base register will not be updated by GC.
+          * This is a tactical solution for OpenJ9 issue 14663.
+          */
+
          cg->decReferenceCount(subTree);
          subTree = subTree->getFirstChild();
 

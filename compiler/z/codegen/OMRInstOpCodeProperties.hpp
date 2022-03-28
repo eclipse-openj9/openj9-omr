@@ -1081,7 +1081,7 @@
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget |
-                        S390OpProp_SetsOperand3 |
+                        S390OpProp_SetsOperand2 |
                         S390OpProp_SetsCC
    },
 
@@ -1714,7 +1714,7 @@
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget |
-                        S390OpProp_SetsOperand3 |
+                        S390OpProp_SetsOperand2 |
                         S390OpProp_SetsCC
    },
 
@@ -2811,7 +2811,8 @@
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z900,
    /* .properties  = */ S390OpProp_DoubleFP |
-                        S390OpProp_SetsOperand1
+                        S390OpProp_SetsOperand1 |
+                        S390OpProp_IsRegCopy
    },
 
    {
@@ -2887,7 +2888,8 @@
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z900,
    /* .properties  = */ S390OpProp_SingleFP |
-                        S390OpProp_SetsOperand1
+                        S390OpProp_SetsOperand1 |
+                        S390OpProp_IsRegCopy
    },
 
    {
@@ -3702,7 +3704,8 @@
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
-                        S390OpProp_SetsOperand1
+                        S390OpProp_SetsOperand1 |
+                        S390OpProp_IsRegCopy
    },
 
    {
@@ -5670,7 +5673,7 @@
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z900,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_LongDispSupported |
-                        S390OpProp_SetsOperand3
+                        S390OpProp_SetsOperand2
    },
 
    {
@@ -5748,7 +5751,7 @@
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsStore |
                         S390OpProp_LongDispSupported |
-                        S390OpProp_SetsOperand3
+                        S390OpProp_SetsOperand2
    },
 
    {
@@ -5786,7 +5789,7 @@
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z900,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_Is32Bit |
-                        S390OpProp_SetsOperand3
+                        S390OpProp_SetsOperand2
    },
 
    {
@@ -5798,7 +5801,7 @@
    /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z900,
    /* .properties  = */ S390OpProp_IsStore |
-                        S390OpProp_SingleFP |
+                        S390OpProp_DoubleFP |
                         S390OpProp_LongDispSupported
    },
 
@@ -5811,7 +5814,7 @@
    /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z900,
    /* .properties  = */ S390OpProp_IsStore |
-                        S390OpProp_DoubleFP |
+                        S390OpProp_SingleFP |
                         S390OpProp_LongDispSupported
    },
 
@@ -5865,7 +5868,7 @@
                         S390OpProp_Is32Bit |
                         S390OpProp_LongDispSupported |
                         S390OpProp_UsesRegRangeForTarget |
-                        S390OpProp_SetsOperand3
+                        S390OpProp_SetsOperand2
    },
 
    {
@@ -6770,7 +6773,7 @@
                         S390OpProp_Is64Bit |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget |
-                        S390OpProp_SetsOperand3 |
+                        S390OpProp_SetsOperand2 |
                         S390OpProp_SetsCC
    },
 
@@ -6793,7 +6796,7 @@
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget |
-                        S390OpProp_SetsOperand3 |
+                        S390OpProp_SetsOperand2 |
                         S390OpProp_SetsCC
    },
 
@@ -6978,7 +6981,7 @@
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget |
-                        S390OpProp_SetsOperand3 |
+                        S390OpProp_SetsOperand2 |
                         S390OpProp_SetsCC
    },
 
@@ -6999,7 +7002,7 @@
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget |
-                        S390OpProp_SetsOperand3 |
+                        S390OpProp_SetsOperand2 |
                         S390OpProp_SetsCC
    },
 
@@ -8132,7 +8135,7 @@
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z990,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_LongDispSupported |
-                        S390OpProp_SetsOperand3
+                        S390OpProp_SetsOperand2
    },
 
    {
@@ -8147,7 +8150,7 @@
                         S390OpProp_LongDispSupported |
                         S390OpProp_TargetHW |
                         S390OpProp_SrcHW |
-                        S390OpProp_SetsOperand3
+                        S390OpProp_SetsOperand2
    },
 
    {
@@ -8161,7 +8164,7 @@
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsStore |
                         S390OpProp_LongDispSupported |
-                        S390OpProp_SetsOperand3
+                        S390OpProp_SetsOperand2
    },
 
    {
@@ -8174,7 +8177,7 @@
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z990,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_Is64Bit |
-                        S390OpProp_SetsOperand3
+                        S390OpProp_SetsOperand2
    },
 
    {
@@ -8200,7 +8203,8 @@
    /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z990,
    /* .properties  = */ S390OpProp_IsStore |
-                        S390OpProp_LongDispSupported
+                        S390OpProp_LongDispSupported |
+                        S390OpProp_DoubleFP
    },
 
    {
@@ -8212,7 +8216,8 @@
    /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z990,
    /* .properties  = */ S390OpProp_IsStore |
-                        S390OpProp_LongDispSupported
+                        S390OpProp_LongDispSupported |
+                        S390OpProp_SingleFP
    },
 
    {
@@ -8255,7 +8260,7 @@
                         S390OpProp_Is64Bit |
                         S390OpProp_LongDispSupported |
                         S390OpProp_UsesRegRangeForTarget |
-                        S390OpProp_SetsOperand3
+                        S390OpProp_SetsOperand2
    },
 
    {
@@ -8268,7 +8273,7 @@
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z990,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_LongDispSupported |
-                        S390OpProp_SetsOperand3
+                        S390OpProp_SetsOperand2
    },
 
    {
@@ -8297,7 +8302,7 @@
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsStore |
                         S390OpProp_LongDispSupported |
-                        S390OpProp_UsesRegPairForTarget
+                        S390OpProp_UsesRegPairForSource
    },
 
    {
@@ -9214,7 +9219,9 @@
                         S390OpProp_DoubleFP |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
-                        S390OpProp_SetsOperand1
+                        S390OpProp_SetsOperand1 |
+                        S390OpProp_UsesM3 |
+                        S390OpProp_UsesM4
    },
 
    {
@@ -9227,7 +9234,9 @@
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z9,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_DoubleFP |
-                        S390OpProp_SetsOperand1
+                        S390OpProp_SetsOperand1 |
+                        S390OpProp_UsesM3 |
+                        S390OpProp_UsesM4
    },
 
    {
@@ -11475,7 +11484,9 @@
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z196,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is32Bit |
-                        S390OpProp_SetsOperand1
+                        S390OpProp_SetsOperand1 |
+                        S390OpProp_UsesM3 |
+                        S390OpProp_UsesM4
    },
 
    {
@@ -11488,7 +11499,9 @@
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z196,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
-                        S390OpProp_SetsOperand1
+                        S390OpProp_SetsOperand1 |
+                        S390OpProp_UsesM3 |
+                        S390OpProp_UsesM4
    },
 
    {
@@ -11501,7 +11514,9 @@
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_SingleFP |
-                        S390OpProp_SetsOperand1
+                        S390OpProp_SetsOperand1 |
+                        S390OpProp_UsesM3 |
+                        S390OpProp_UsesM4
    },
 
    {
@@ -11513,7 +11528,10 @@
    /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z196,
    /* .properties  = */ S390OpProp_Is64Bit |
-                        S390OpProp_SetsOperand1
+                        S390OpProp_SingleFP |
+                        S390OpProp_SetsOperand1 |
+                        S390OpProp_UsesM3 |
+                        S390OpProp_UsesM4
    },
 
    {
@@ -13070,7 +13088,8 @@
    /* .opcode[1]   = */ 0x3C,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z13,
-   /* .properties  = */ S390OpProp_SetsCC
+   /* .properties  = */ S390OpProp_SetsCC |
+                        S390OpProp_ImplicitlyUsesGPR0
    },
 
    {
@@ -13808,7 +13827,8 @@
    /* .format      = */ VRX_FORMAT,
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z13,
    /* .properties  = */ S390OpProp_IsLoad |
-                        S390OpProp_SetsOperand1
+                        S390OpProp_SetsOperand1 |
+                        S390OpProp_UsesM3
    },
 
    {
@@ -14691,7 +14711,8 @@
    /* .opcode[1]   = */ 0x0E,
    /* .format      = */ VRX_FORMAT,
    /* .minimumALS  = */ OMR_PROCESSOR_S390_Z13,
-   /* .properties  = */ S390OpProp_IsStore
+   /* .properties  = */ S390OpProp_IsStore |
+                        S390OpProp_UsesM3
    },
 
    {

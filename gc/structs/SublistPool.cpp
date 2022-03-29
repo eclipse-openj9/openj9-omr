@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -186,6 +186,16 @@ MM_SublistPool::allocate(MM_EnvironmentBase *env, MM_SublistFragment *fragment)
 		Assert_MM_true(emptyPuddle->isEmpty());
 		Assert_MM_true(NULL == emptyPuddle->getNext());
 	 	_currentSize += emptyPuddle->totalSize();
+
+		/* Use writeBarrier to make sure other threads/CPUs see cleared puddle and initialized pointers (done in MM_SublistPuddle::initialize) before it's exposed
+		 * via _allocPuddle after what the other threads will start allocating fragments from it. Note that _allocPuddle is accessible for consumption outside
+		 * of this critical section (see the start of this method)! We cannot rely on monitor exit (which should have write barrier, too)
+		 * to enforce clearing and initialization of this new puddle - it's too late.
+		 * We could do it a bit later than this point, just before assigning emptyPuddle to _allocPuddle, but existing new puddles don't need the barrier - they are cleared way back,
+		 * and implicitly one way or another their clearing have been enforced, by now. A more optimal point is here, that is specific for newly allocated puddles.
+		 */
+		MM_AtomicOperations::writeBarrier();
+
 	}
  
  	/* Allocate the fragment from the puddle. We are guaranteed to succeed because

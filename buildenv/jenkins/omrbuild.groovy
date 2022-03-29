@@ -331,7 +331,6 @@ timestamps {
                                         extensions: [[$class: 'CloneOption', honorRefspec: true, timeout: 30, reference: SPECS[params.BUILDSPEC].reference]],
                                         userRemoteConfigs: [[name: 'origin',
                                             refspec: "${refspec}",
-                                            credentialsId: 'github-bot-ssh',
                                             url: "${gitConfig.getUrl()}"]
                                         ]
                                     ]

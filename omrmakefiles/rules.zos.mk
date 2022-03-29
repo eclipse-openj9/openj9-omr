@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2020 IBM Corp. and others
+# Copyright (c) 2015, 2022 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -63,12 +63,15 @@ endif # ENABLE_DDR
 ifeq ($(OMR_OPTIMIZE),1)
     COPTFLAGS=-O3 -Wc,"TUNE($(OMR_ZOS_COMPILE_TUNE))" -Wc,"inline(auto,noreport,600,5000)"
 
-    # OMRTODO: The COMPAT=ZOSV1R13 option does not appear to be related to
-    # optimizations.  This linker option is supplied only on the compile line,
+    # 28 Feb 2022: ZOSV2R3 is adopted since ZOSV1R13 is discontinued.
+    #
+    # Note: The COMPAT=ZOSV1R13 option does not appear to be related to
+    # optimizations. This linker option is supplied only on the compile line,
     # and never when we link. It might be relevant to note that this was added
     # at the same time as the compilation flag "-Wc,target=ZOSV1R10", which
     # would give a performance boost.
-    # option means: "COMPAT=ZOSV1R13 is the minimum level that supports conditional sequential RLDs"
+    #
+    # COMPAT=ZOSV1R13 is the minimum level that supports conditional sequential RLDs.
     # http://www-01.ibm.com/support/knowledgecenter/SSLTBW_2.1.0/com.ibm.zos.v2r1.ieab100/compat.htm
     COPTFLAGS+=-Wl,compat=$(OMR_ZOS_LINK_COMPAT)
 else

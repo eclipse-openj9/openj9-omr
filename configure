@@ -4,6 +4,7 @@
 #
 #
 # Copyright (C) 1992-1996, 1998-2012 Free Software Foundation, Inc.
+# Copyright (c) 2015, 2022 IBM Corp. and others
 #
 #
 # This configure script is free software; the Free Software Foundation
@@ -1745,13 +1746,13 @@ Some influential environment variables:
               A description of the product which is integrating OMR. (Default:
               OMR 0.1 )
   OMR_ZOS_COMPILE_ARCHITECTURE
-              The z/OS compile machine architecture. (Default: 7)
+              The z/OS compile machine architecture. (Default: 10)
   OMR_ZOS_COMPILE_TARGET
-              The z/OS compile target operating system. (Default: zOSV1R13)
+              The z/OS compile target operating system. (Default: ZOSV2R3)
   OMR_ZOS_COMPILE_TUNE
-              The z/OS compile machine architecture tuning. (Default: 10)
+              The z/OS compile machine architecture tuning. (Default: 12)
   OMR_ZOS_LINK_COMPAT
-              The z/OS link compatible operating system. (Default: ZOSV1R13)
+              The z/OS link compatible operating system. (Default: ZOSV2R3)
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -2879,10 +2880,10 @@ OMR_PRODUCT_DESCRIPTION=${OMR_PRODUCT_DESCRIPTION:-"OMR 0.1 "}
 OMR_PRODUCT_NAME=${OMR_PRODUCT_NAME:-"OMR"}
 OMR_PRODUCT_VERSION=${OMR_PRODUCT_VERSION:-"0.1"}
 
-OMR_ZOS_COMPILE_ARCHITECTURE=${OMR_ZOS_COMPILE_ARCHITECTURE:-"7"}
-OMR_ZOS_COMPILE_TARGET=${OMR_ZOS_COMPILE_TARGET:-"zOSV1R13"}
-OMR_ZOS_COMPILE_TUNE=${OMR_ZOS_COMPILE_TUNE:-"10"}
-OMR_ZOS_LINK_COMPAT=${OMR_ZOS_LINK_COMPAT:-"ZOSV1R13"}
+OMR_ZOS_COMPILE_ARCHITECTURE=${OMR_ZOS_COMPILE_ARCHITECTURE:-"10"}
+OMR_ZOS_COMPILE_TARGET=${OMR_ZOS_COMPILE_TARGET:-"ZOSV2R3"}
+OMR_ZOS_COMPILE_TUNE=${OMR_ZOS_COMPILE_TUNE:-"12"}
+OMR_ZOS_LINK_COMPAT=${OMR_ZOS_LINK_COMPAT:-"ZOSV2R3"}
 
 # Check whether --enable-optimized was given.
 if test "${enable_optimized+set}" = set; then :

@@ -282,7 +282,7 @@ def SPECS = [
         'label' : 'compile:zos',
         'reference' : '',
         'environment' : [
-            "LIBPATH+EXTRA=/openzdk/jenkins/workspace/${workspaceName}/build",
+            "LIBPATH+EXTRA=/u/user1/workspace/${workspaceName}/build",
             "_C89_ACCEPTABLE_RC=0",
             "_CXX_ACCEPTABLE_RC=0"
         ],
@@ -331,7 +331,6 @@ timestamps {
                                         extensions: [[$class: 'CloneOption', honorRefspec: true, timeout: 30, reference: SPECS[params.BUILDSPEC].reference]],
                                         userRemoteConfigs: [[name: 'origin',
                                             refspec: "${refspec}",
-                                            credentialsId: 'github-bot-ssh',
                                             url: "${gitConfig.getUrl()}"]
                                         ]
                                     ]

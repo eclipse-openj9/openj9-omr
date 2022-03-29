@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2021 IBM Corp. and others
+# Copyright (c) 2015, 2022 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -67,13 +67,13 @@ AC_ARG_VAR([OMR_PRODUCT_DESCRIPTION],
   [A description of the product which is integrating OMR.] (Default: AC_PACKAGE_STRING AC_PACKAGE_URL))
 
 AC_ARG_VAR([OMR_ZOS_COMPILE_ARCHITECTURE],
-  [The z/OS compile machine architecture. (Default: 7)])
+  [The z/OS compile machine architecture. (Default: 10)])
 AC_ARG_VAR([OMR_ZOS_COMPILE_TARGET],
-  [The z/OS compile target operating system. (Default: zOSV1R13)])
+  [The z/OS compile target operating system. (Default: ZOSV2R3)])
 AC_ARG_VAR([OMR_ZOS_COMPILE_TUNE],
-  [The z/OS compile machine architecture tuning. (Default: 10)])
+  [The z/OS compile machine architecture tuning. (Default: 12)])
 AC_ARG_VAR([OMR_ZOS_LINK_COMPAT],
-  [The z/OS link compatible operating system. (Default: ZOSV1R13)])
+  [The z/OS link compatible operating system. (Default: ZOSV2R3)])
 
 OMR_COMPANY_NAME=${OMR_COMPANY_NAME:-""}
 OMR_COMPANY_COPYRIGHT=${OMR_COMPANY_COPYRIGHT:-""}
@@ -81,10 +81,10 @@ OMR_PRODUCT_DESCRIPTION=${OMR_PRODUCT_DESCRIPTION:-"AC_PACKAGE_STRING AC_PACKAGE
 OMR_PRODUCT_NAME=${OMR_PRODUCT_NAME:-"AC_PACKAGE_NAME"}
 OMR_PRODUCT_VERSION=${OMR_PRODUCT_VERSION:-"AC_PACKAGE_VERSION"}
 
-OMR_ZOS_COMPILE_ARCHITECTURE=${OMR_ZOS_COMPILE_ARCHITECTURE:-"7"}
-OMR_ZOS_COMPILE_TARGET=${OMR_ZOS_COMPILE_TARGET:-"zOSV1R13"}
-OMR_ZOS_COMPILE_TUNE=${OMR_ZOS_COMPILE_TUNE:-"10"}
-OMR_ZOS_LINK_COMPAT=${OMR_ZOS_LINK_COMPAT:-"ZOSV1R13"}
+OMR_ZOS_COMPILE_ARCHITECTURE=${OMR_ZOS_COMPILE_ARCHITECTURE:-"10"}
+OMR_ZOS_COMPILE_TARGET=${OMR_ZOS_COMPILE_TARGET:-"ZOSV2R3"}
+OMR_ZOS_COMPILE_TUNE=${OMR_ZOS_COMPILE_TUNE:-"12"}
+OMR_ZOS_LINK_COMPAT=${OMR_ZOS_LINK_COMPAT:-"ZOSV2R3"}
 
 AC_ARG_ENABLE([optimized],
 	AS_HELP_STRING([--enable-optimized], [Create an optimized build. (Default: yes)]),

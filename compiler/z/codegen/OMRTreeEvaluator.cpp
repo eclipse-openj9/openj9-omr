@@ -65,7 +65,6 @@
 #include "env/CompilerEnv.hpp"
 #include "env/ObjectModel.hpp"
 #include "env/PersistentInfo.hpp"
-#include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"
 #include "env/defines.h"
 #include "env/jittypes.h"

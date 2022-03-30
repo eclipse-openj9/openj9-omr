@@ -1045,7 +1045,6 @@ MM_ConcurrentCardTable::finalCleanCards(MM_EnvironmentBase *env, uintptr_t *byte
 	uintptr_t traceCount = 0;
 	Card * nextDirtyCard;
 	omrobjectptr_t objectPtr;
-	uintptr_t objects;
 	uintptr_t cards = 0;
 	bool phase2 = false;
 
@@ -1082,9 +1081,7 @@ MM_ConcurrentCardTable::finalCleanCards(MM_EnvironmentBase *env, uintptr_t *byte
 
 		/* Then iterate over all marked objects in the heap between the two addresses */
 		MM_HeapMapIterator markedObjectIterator(_extensions, markMap, heapBase, heapTop);
-		objects = 0;
 		while (NULL != (objectPtr = markedObjectIterator.nextObject())) {
-			objects +=1;
 			traceCount += _markingScheme->scanObject(env, objectPtr, SCAN_REASON_DIRTY_CARD);
 		}
 

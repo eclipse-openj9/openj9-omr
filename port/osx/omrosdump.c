@@ -340,8 +340,6 @@ list_segment_commands(mach_port_t task_port, struct segment_command_64 **segment
 		vm_size_t size = 0;
 		vm_address_t old_addr = address;
 		mach_msg_type_number_t info_count = VM_REGION_SUBMAP_INFO_COUNT_64;
-		vm_offset_t data_read = 0;
-		mach_msg_type_number_t data_size = 0;
 
 		if (*segment_count >= segment_array_size) {
 			segment_array_size += segment_array_size / 2;
@@ -385,9 +383,6 @@ list_segment_commands(mach_port_t task_port, struct segment_command_64 **segment
 		segments[*segment_count].maxprot    = vm_info.max_protection;
 		segments[*segment_count].initprot   = vm_info.protection;
 		segments[*segment_count].nsects     = 0;
-
-		data_read = 0;
-		data_size = 0;
 
 		*segment_count += 1;
 		address += size;

@@ -1196,7 +1196,6 @@ MM_CompactScheme::doCompact(MM_EnvironmentStandard *env, MM_MemorySubSpace *memo
 
 	omrobjectptr_t objectPtr = 0;
 	omrobjectptr_t nextObject = 0;
-	uintptr_t evacuatedBytes = 0;
 	intptr_t page = -1; /* invalid value */
 	intptr_t counter = 0; /* obj on page, first is zero */
 	CompactTableEntry entry;
@@ -1220,7 +1219,6 @@ MM_CompactScheme::doCompact(MM_EnvironmentStandard *env, MM_MemorySubSpace *memo
 			if (pageByteCount > deadObjectSize) {
 				break;
 			}
-			evacuatedBytes += pageByteCount;
 		}
 
 		uintptr_t objectSize = _extensions->objectModel.getConsumedSizeInBytesWithHeader(objectPtr);

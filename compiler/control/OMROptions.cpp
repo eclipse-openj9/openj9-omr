@@ -2630,7 +2630,14 @@ OMR::Options::jitPreProcess()
          self()->setOption(TR_DisableJProfilingInProfilingCompilations);
       self()->setOption(TR_DisableHeapAllocOOL);
       if (!(TR::Compiler->target.cpu.isZ() && TR::Compiler->target.isLinux()))
+         {
          self()->setOption(TR_UseIdleTime);
+         }
+      else if (TR::Compiler->target.is32Bit())
+         {
+         // On 31-Bit Linux on Z, zNext exploitation is disabled by default.
+         self()->setOption(TR_DisableZNext);
+         }
 
 #if defined(TR_HOST_X86) || defined(TR_HOST_S390)
       // Dual TLH disabled on default on X and Z

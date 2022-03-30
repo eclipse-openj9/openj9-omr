@@ -849,6 +849,9 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x6E604400,	/* USHL      	vushl8h	 */
 		0x6EA04400,	/* USHL      	vushl4s	 */
 		0x6EE04400,	/* USHL      	vushl2d	 */
+		0x6EE01C00,	/* BIF       	vbif16b	 */
+		0x6EA01C00,	/* BIT       	vbit16b	 */
+		0x6E601C00,	/* BSL       	vbsl16b	 */
 	/* Vector Data-processing (1 source) */
 		0x6E20B800,	/* NEG      	vneg16b	 */
 		0x6E60B800,	/* NEG      	vneg8h	 */

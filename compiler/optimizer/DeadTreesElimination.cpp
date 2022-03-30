@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1041,7 +1041,33 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
                TR::Node *lastNode = lastTree->getNode();
                TR::Node *prevLastNode = prevLastTree->getNode();
 
-               if (lastNode->getOpCode().isIf() && !lastNode->getOpCode().isCompBranchOnly() &&
+               // If the node being moved is volatile, the order of the trees cannot
+               // be changed because that is the order containsNode used to check if
+               // canMoveIfVolatile should be true or not.
+               // For example, if the order of the trees look like below, adjusting
+               // the lastTree and prevLastTree in the following code would end up
+               // mistakenly reordering the RegStore nodes whose children are volatile
+               // loads.
+               //
+               // E.g
+               // === Before adjusting lastTree & prevLastTree
+               // TT1
+               // TT2 (iRegStore) <--- prevLastTree
+               //    iloadi (volatile)
+               // TTBeingMoved (iRegStore)
+               //    iloadi (volatile)
+               // TT3 <--- lastTree
+               //
+               // === After adjusting lastTree & prevLastTree
+               // TT1 <--- prevLastTree
+               // TTBeingMoved (iRegStore) // Incorrect: should not be before TT2
+               //    iloadi (volatile)
+               // TT2 (iRegStore) <--- lastTree  // Incorrect: should not be after TTBeingMoved
+               //    iloadi (volatile)
+               // TT3
+
+               if (!node->getFirstChild()->mightHaveVolatileSymbolReference() &&
+                   lastNode->getOpCode().isIf() && !lastNode->getOpCode().isCompBranchOnly() &&
                    prevLastNode->getOpCode().isStoreReg() &&
                    ((prevLastNode->getFirstChild() == lastNode->getFirstChild()) ||
                     (prevLastNode->getFirstChild() == lastNode->getSecondChild())))

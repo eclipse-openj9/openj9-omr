@@ -841,7 +841,14 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4EA06400,	/* SMAX      	vsmax4s	 */
 		0x4E20F400,	/* FMAX      	vfmax4s	 */
 		0x4E60F400,	/* FMAX      	vfmax2d	 */
-
+		0x4E204400,	/* SSHL      	vsshl16b */
+		0x4E604400,	/* SSHL      	vsshl8h	 */
+		0x4EA04400,	/* SSHL      	vsshl4s	 */
+		0x4EE04400,	/* SSHL      	vsshl2d	 */
+		0x6E204400,	/* USHL      	vushl16b */
+		0x6E604400,	/* USHL      	vushl8h	 */
+		0x6EA04400,	/* USHL      	vushl4s	 */
+		0x6EE04400,	/* USHL      	vushl2d	 */
 	/* Vector Data-processing (1 source) */
 		0x6E20B800,	/* NEG      	vneg16b	 */
 		0x6E60B800,	/* NEG      	vneg8h	 */

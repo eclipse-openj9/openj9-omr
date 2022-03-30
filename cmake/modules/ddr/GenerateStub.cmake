@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2018, 2021 IBM Corp. and others
+# Copyright (c) 2018, 2022 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -39,15 +39,16 @@ macro(convert_path output filename)
 		# remove excess whitespace and save into result variable
 		string(STRIP "${_converted_path}" ${output})
 	else()
-		# no defined tool to convert path names. Do nothing
+		# no defined tool to convert path names, so do nothing
 		set(${output} "${filename}")
 	endif()
 endmacro()
 
+file(WRITE "${output_file}" "/* generated file, DO NOT EDIT */\nconst char ddr_source[] = \"${input_file}\";\n")
+
 execute_process(COMMAND grep -E -q "@ddr_(namespace|options):" ${input_file} RESULT_VARIABLE rc)
 if(NOT rc EQUAL 0)
-	# input didn't have any DDR directives, so just dump an empty file
-	file(WRITE ${output_file} "")
+	# input doesn't have any DDR directives, so leave the file (mostly) empty
 	set(rc 0)
 else()
 	execute_process(COMMAND awk -f ${AWK_SCRIPT} ${input_file} OUTPUT_VARIABLE awk_result RESULT_VARIABLE rc)
@@ -55,7 +56,6 @@ else()
 	if(NOT rc EQUAL 0)
 		message(FATAL_ERROR "GenerateStub: Invoking awk script failed (${rc})")
 	else()
-		file(WRITE "${output_file}" "/* generated file, DO NOT EDIT */\n")
 		if(pre_includes)
 			foreach(inc_file IN LISTS pre_includes)
 				convert_path(native_inc_file "${inc_file}")

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -132,6 +132,9 @@ genSystemCoreUsingGencore(struct OMRPortLibrary *portLibrary, char *filename)
 	BOOLEAN filenameWasEmpty = FALSE;
 	struct coredumpinfo coreDumpInfo;
 	int rc = -1;
+#if defined(DUMP_DBG)
+	int savedErrno;
+#endif /* defined(DUMP_DBG) */
 
 	if (*filename == '\0') {
 		filenameWasEmpty = TRUE;
@@ -166,19 +169,20 @@ genSystemCoreUsingGencore(struct OMRPortLibrary *portLibrary, char *filename)
 #if defined(DUMP_DBG)
 	portLibrary->tty_printf(portLibrary, "\tomrdump_create: attempting to generate corefile, filename: %s\n", coreDumpInfo.name);
 	fflush(stdout);
-#endif
+#endif /* defined(DUMP_DBG) */
 
 	coreDumpInfo.pid = getpid();
 	coreDumpInfo.flags = GENCORE_VERSION_1;
 	rc = gencore(&coreDumpInfo);
 
 #if defined(DUMP_DBG)
+	savedErrno = errno;
 	portLibrary->tty_printf(portLibrary, "\tomrdump_create: gencore/coredump returned: %i\n", rc);
 	if (rc == -1) {
-		portLibrary->tty_printf(portLibrary, "\tomrdump_create: errno: %u %s\n", errno, portLibrary->error_last_error_message(portLibrary));
+		portLibrary->tty_printf(portLibrary, "\tomrdump_create: errno: %i %s\n", savedErrno, portLibrary->error_last_error_message(portLibrary));
 	}
 	fflush(stdout);
-#endif
+#endif /* defined(DUMP_DBG) */
 
 
 	if (rc == 0) {
@@ -227,7 +231,7 @@ findOSPreferredCoreDir(struct OMRPortLibrary *portLibrary, char *coreFilePath)
 		sysconfig(GET_COREPATH, buffer, MAXPATHLEN);
 #if defined(DUMP_DBG)
 		portLibrary->tty_printf(portLibrary, "\tsysconfig corepath: %s\n", buffer);
-#endif
+#endif /* defined(DUMP_DBG) */
 	}
 
 	bufferLen = strlen(buffer);
@@ -246,7 +250,7 @@ findOSPreferredCoreDir(struct OMRPortLibrary *portLibrary, char *coreFilePath)
 
 #if defined(DUMP_DBG)
 	portLibrary->tty_printf(portLibrary, "\tcorepath set to: %s\n", buffer);
-#endif
+#endif /* defined(DUMP_DBG) */
 
 	return;
 }
@@ -278,7 +282,7 @@ getPEnvValue(struct OMRPortLibrary *portLibrary, char *envVar, char *value)
 		if (!strncmp(penv[i], scanFor, strlen(scanFor))) {
 #if defined(DUMP_DBG)
 			portLibrary->tty_printf(portLibrary, "\tfound: %s\n", penv[i]);
-#endif
+#endif /* defined(DUMP_DBG) */
 			strncpy(value, penv[i] + strlen(scanFor), EsMaxPath);
 			return 0;
 		}

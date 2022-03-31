@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -7656,95 +7656,624 @@ int32_t TR_CheckcastAndProfiledGuardCoalescer::perform()
    if (comp()->getOption(TR_DisableCheckcastAndProfiledGuardCoalescer))
       return 1;
 
+   TR::SymbolReferenceTable *srTab = comp()->getSymRefTab();
+
+   TR::NodeChecklist visited(comp());
+
+   // Set of auto loads that have the latest value of their corresponding autos.
+   TR::NodeChecklist fresh(comp());
+
+   // Map from auto symbol reference number to the list of all current fresh
+   // loads of that auto.
+   IntToNodesMap freshByAuto(
+      std::less<int32_t>(), comp()->trMemory()->currentStackRegion());
+
    bool done = false;
-   bool transformationIsValid = true;
+   TR::Block *curBlock = NULL;
    TR::TreeTop *checkcastTree = NULL;
+
+   // Only relevant when we have a candidate checkcast. The transformation can
+   // be prevented by simply nulling out checkcastTree.
+   TR::Node *cast = NULL;
+   TR::Node *castObj = NULL;
+   TR::Node *castLoadaddr = NULL;
+   TR_OpaqueClassBlock *castType = NULL;
+   TR::Block *castBlock = NULL;
+   TR::Block *castCatchBlock = NULL;
+
+   // The auto (if any) which can be loaded to rematerialize the object from
+   // the candidate checkcast.
+   TR::SymbolReference *castObjAuto = NULL;
 
    for (TR::TreeTop *tt = comp()->getStartTree(); tt; tt = tt->getNextTreeTop())
       {
       TR::Node *node = tt->getNode();
 
+      // Find and remember (address-typed) auto loads evaluated in this tree,
+      // and detect whether any indirect load is evaluated here.
+      bool treeHasIndirectLoad = processSubtree(visited, fresh, freshByAuto, node);
+      if (treeHasIndirectLoad
+          && checkcastTree != NULL
+          && node->getOpCodeValue() != TR::ifacmpne) // load ok in profiled guard
+         {
+         // It's possible for the safety of the indirect load to depend on the
+         // checkcast, in which case the two can't be reordered.
+         //
+         // It's tempting to look specifically for loads known to be relative
+         // to the cast object, but we must be conservative if there is any
+         // load that *might* access the cast object. For example, it's
+         // possible that two autos refer to the same object, and one is used
+         // for checkcast while the other is used for the indirect load. That
+         // would guarantee the safety of the load even if it's no longer
+         // possible for the compiler to prove that the autos are equal.
+         //
+         // A possible way to make this test more precise in the future would
+         // be to have processSubtree() accept castType and detect only loads
+         // that could depend on a cast to castType, i.e. loads of fields of
+         // castType or its supertypes, or array elements if castType is an
+         // array type, or unsafe loads.
+         //
+         // However, such precision would require special care. It's possible
+         // for future improvements to analyses elsewhere in the compiler to
+         // create nonobvious guarantees. For example, a smart enough future
+         // analysis could determine that because one object is a particular
+         // type, we know additionally that a different object is a different
+         // particular type. In the presence of such an analysis, it would be
+         // possible for a load to depend on the checkcast even if it loads a
+         // field of a type unrelated to castType. Similar situations could be
+         // possible with other operations whose safety conditions are even
+         // more seemingly unrelated, e.g. integer division (not currently
+         // protected against).
+         //
+         // Indirect stores don't need to be handled here because they will be
+         // rejected below due to their side-effects.
+         //
+         traceCannotTransform(node, "will evaluate an indirect load");
+         checkcastTree = NULL;
+         }
+
       switch (node->getOpCodeValue())
          {
          case TR::BBStart:
-            checkcastTree = NULL;
-            break;
-         case TR::checkcast:
-         case TR::checkcastAndNULLCHK:
-            checkcastTree = tt;
-            transformationIsValid = true;
-            break;
-         case TR::NULLCHK:
-            if (!checkcastTree || node->getNullCheckReference() != checkcastTree->getNode()->getFirstChild())
+            {
+            curBlock = node->getBlock(); // always keep this up to date
+            if (checkcastTree == NULL)
+               break; // nothing else to do
+
+            // Decide whether we can keep considering the same candidate
+            if (curBlock->isExtensionOfPreviousBlock())
+               break; // ok
+
+            if (curBlock->getPredecessors().size() != 1)
                {
-               transformationIsValid = false;
+               traceCannotTransformDueToMerge(curBlock);
+               checkcastTree = NULL;
+               break;
                }
-            break;
-         case TR::ifacmpne:
-            if (node->isProfiledGuard() && node->getFirstChild() && checkcastTree)
+
+            TR_ASSERT_FATAL(
+               curBlock->getExceptionPredecessors().empty(),
+               "catch block_%d has a non-exception predecessor",
+               curBlock->getNumber());
+
+            // This is basically like being in an extended block, except that
+            // there won't be any commoning, i.e. there won't be any more
+            // occurrences of castObj. However, if castObjAuto is set, it's
+            // still possible to find loads that match. Without castObjAuto,
+            // it's pointless, so give up.
+            if (castObjAuto == NULL)
                {
-               TR_ASSERT(checkcastTree->getNode()->getFirstChild()->getOpCode().hasSymbolReference(), "the first checkcast child [%p] should have a symref!", checkcastTree->getNode()->getFirstChild());
-               TR_ASSERT(checkcastTree->getNode()->getFirstChild()->getOpCode().hasSymbolReference(), "the second checkcast child [%p] should have a symref!", checkcastTree->getNode()->getSecondChild());
-
-               TR_VirtualGuard *virtualGuard = comp()->findVirtualGuardInfo(node);
-               TR::Node *vftLoad = node->getFirstChild();
-               if (virtualGuard &&
-                   transformationIsValid &&
-                   virtualGuard->getTestType() == TR_VftTest &&
-                   vftLoad->getOpCodeValue() == TR::aloadi &&
-                   vftLoad->getSymbolReference() == comp()->getSymRefTab()->findVftSymbolRef() &&
-                   !checkcastTree->getNode()->getSecondChild()->getSymbolReference()->isUnresolved() &&
-                   vftLoad->getFirstChild()->getOpCode().hasSymbolReference() &&
-                   !vftLoad->getFirstChild()->getSymbolReference()->isUnresolved() &&
-                   vftLoad->getFirstChild()->getSymbolReference() == checkcastTree->getNode()->getFirstChild()->getSymbolReference() &&
-                   performTransformation(comp(), "%s Merging checkcast [%p] and profiled guard [%p] (basic case)\n", optDetailString(), checkcastTree->getNode(), node))
+               checkcastTree = NULL;
+               if (trace())
                   {
-                  // Transformation
-
-                  // Insert a nullchk if we are dealing with checkcastAndNULLCHK
-                  //
-                  if (checkcastTree->getNode()->getOpCodeValue() == TR::checkcastAndNULLCHK)
-                     {
-                     TR::Node    *passThroughNode = TR::Node::create(TR::PassThrough, 1, checkcastTree->getNode()->getFirstChild());
-                     TR::Node    *nullCheckNode = TR::Node::createWithSymRef(TR::NULLCHK, 1, 1, passThroughNode, comp()->getSymRefTab()->findOrCreateNullCheckSymbolRef(NULL));
-                     TR::TreeTop *nullCheckTreeTop = TR::TreeTop::create(comp(), nullCheckNode);
-                     checkcastTree->insertBefore(nullCheckTreeTop);
-                     }
-
-                  doBasicCase(checkcastTree, tt);
-                  done = true;
-                  checkcastTree = NULL;
-                  optimizer()->setRequestOptimization(OMR::compactNullChecks, true, tt->getEnclosingBlock());
+                  traceMsg(
+                     comp(),
+                     "Cannot transform because the reference "
+                     "can no longer be recognized in block_%d\n",
+                     curBlock->getNumber());
                   }
                }
+
             break;
-         case TR::ifacmpeq:
-            // It's safe to move a checkcast across a null test on the same object if we fall through when non-null
-            if (checkcastTree)
+            }
+
+         case TR::checkcast:
+         case TR::checkcastAndNULLCHK:
+            {
+            // If there was a previous candidate checkcast, this checkcast is
+            // between it and any later profiled guard. Usually we should be
+            // able to set checkcastTree again to the current tt.
+            checkcastTree = NULL;
+
+            TR::Node *typeChild = node->getChild(1);
+            if (typeChild->getOpCodeValue() != TR::loadaddr
+                || typeChild->getSymbolReference()->isUnresolved())
+               break; // type is unknown
+
+            checkcastTree = tt;
+            cast = node;
+            castObj = cast->getChild(0);
+            castLoadaddr = typeChild;
+            castType = (TR_OpaqueClassBlock*)(
+               typeChild->getSymbol()->getStaticSymbol()->getStaticAddress());
+
+            if (fresh.contains(castObj))
+               castObjAuto = castObj->getSymbolReference();
+            else
+               castObjAuto = NULL;
+
+            castBlock = curBlock;
+            castCatchBlock = NULL;
+
+            // Determine which block (if any) would catch an exception thrown
+            // due to an unexpected type of object at this checkcast.
+            if (!castBlock->getExceptionSuccessors().empty())
                {
-               if (node->getFirstChild() != checkcastTree->getNode()->getFirstChild() ||
-                   !node->getSecondChild()->getOpCode().isLoadConst() ||
-                   node->getSecondChild()->getAddress() != 0)
+               // Use a new region just in case oehi allocates a large array
+               TR::Region region(comp()->trMemory()->currentStackRegion());
+               TR_OrderedExceptionHandlerIterator oehi(curBlock, region);
+               for (TR::Block *b = oehi.getFirst(); b != NULL; b = oehi.getNext())
                   {
-                  transformationIsValid = false;
+                  if (b->canCatchExceptions(TR::Block::CanCatchCheckCast))
+                     {
+                     castCatchBlock = b;
+                     break;
+                     }
+                  }
+               }
+
+            if (trace())
+               {
+               traceMsg(
+                  comp(),
+                  "\nConsidering checkcast n%un [%p]\nCast object is n%un [%p]",
+                  cast->getGlobalIndex(),
+                  cast,
+                  castObj->getGlobalIndex(),
+                  castObj);
+
+               if (castObjAuto != NULL)
+                  traceMsg(comp(), " or #%d", castObjAuto->getReferenceNumber());
+
+               traceMsg(comp(), "\n");
+
+               if (castCatchBlock == NULL)
+                  {
+                  traceMsg(comp(), "Exception escapes\n");
                   }
                else
                   {
-                  // Jump to the next BBStart, next iteration of the loop will start at the tree following the BBStart
-                  tt = tt->getNextTreeTop()->getNextTreeTop();
-                  traceMsg(comp(), "Found suitable ifacmpeq [%p] after checkcast [%p], safe to continue to next block in search of a profiled guard\n", node, checkcastTree->getNode());
+                  traceMsg(
+                     comp(),
+                     "Exception will be caught by block_%d\n",
+                     castCatchBlock->getNumber());
                   }
-               }
-            break;
-         default:
-            if (!node->getOpCode().isStore() ||
-                !node->getOpCode().hasSymbolReference() ||
-                !node->getSymbolReference()->getUseonlyAliases().isZero(comp()))
-               {
-               transformationIsValid = false;
                }
 
             break;
+            }
+
+         case TR::ifacmpne:
+            {
+            if (checkcastTree == NULL)
+               break; // no candidate, so there's nothing to do
+
+            // Reset checkcastTree now so that it doesn't have to be reset on
+            // every exit from this case. If we transform, then the tree will
+            // be removed. Otherwise, there is a control flow operation between
+            // the checkcast and any subsequent profiled guard. Either way, the
+            // current checkcastTree will no longer be a candidate for this
+            // transformation.
+            TR::TreeTop *castTT = checkcastTree;
+            checkcastTree = NULL;
+
+            if (!node->isProfiledGuard())
+               {
+               traceCannotTransform(node, "is not a profiled guard");
+               break;
+               }
+
+            if (trace())
+               {
+               traceMsg(
+                  comp(),
+                  "Found profiled guard n%un [%p]\n",
+                  node->getGlobalIndex(),
+                  node);
+               }
+
+            TR_VirtualGuard *guard = comp()->findVirtualGuardInfo(node);
+            if (guard == NULL)
+               {
+               // not sure whether this is possible, but break is safe
+               traceCannotTransform(node, "does not have virtual guard info");
+               break;
+               }
+
+            // Find the receiver object node used in the guard, and the type
+            // bound that will be known for the receiver when the guard passes.
+            TR::Node *receiver = NULL;
+            TR_OpaqueClassBlock *guardTypeBound = NULL;
+            if (guard->getTestType() == TR_VftTest)
+               {
+               TR::Node *vftLoad = node->getChild(0);
+               TR::Node *aconstClass = node->getChild(1);
+
+               if (vftLoad->getOpCodeValue() != TR::aloadi
+                   || vftLoad->getSymbolReference() != srTab->findVftSymbolRef()
+                   || aconstClass->getOpCodeValue() != TR::aconst
+                   || !aconstClass->isClassPointerConstant())
+                  {
+                  traceCannotTransform(node, "does not have the expected VFT test shape");
+                  break;
+                  }
+
+               receiver = vftLoad->getChild(0);
+               guardTypeBound = (TR_OpaqueClassBlock*)aconstClass->getAddress();
+               }
+            else if (guard->getTestType() == TR_MethodTest)
+               {
+               TR::Node *vftEntryLoad = node->getChild(0);
+               TR::Node *aconstMethod = node->getChild(1);
+
+               TR::Node *vftLoad = NULL;
+               if (vftEntryLoad->getOpCodeValue() == TR::aloadi)
+                  vftLoad = vftEntryLoad->getChild(0);
+
+               if (vftLoad->getOpCodeValue() != TR::aloadi
+                   || vftLoad->getSymbolReference() != srTab->findVftSymbolRef()
+                   || aconstMethod->getOpCodeValue() != TR::aconst
+                   || !aconstMethod->isMethodPointerConstant())
+                  {
+                  traceCannotTransform(node, "does not have the expected method test shape");
+                  break;
+                  }
+
+               receiver = vftLoad->getChild(0);
+               guardTypeBound = fe()->getClassOfMethod(
+                  (TR_OpaqueMethodBlock*)aconstMethod->getAddress());
+               }
+
+            if (receiver == NULL || guardTypeBound == NULL)
+               {
+               // failed to understand the guard
+               traceCannotTransform(node, "does not use a recognized guard test");
+               break;
+               }
+
+            // The receiver must be the same object that was cast in the checkcast
+            if (!sameValue(receiver, castObj, castObjAuto, fresh))
+               {
+               traceCannotTransform(node, "tests a (possibly) different object");
+               break;
+               }
+
+            // Check that guardTypeBound guarantees checkcast success
+            bool fixedObjectType = false; // could be true for vft test, but doesn't matter
+            bool fixedCastType = true;
+            TR_YesNoMaybe expectedReceiverPassesCheckcast =
+               comp()->fe()->isInstanceOf(
+                  guardTypeBound, castType, fixedObjectType, fixedCastType);
+
+            if (expectedReceiverPassesCheckcast != TR_yes)
+               {
+               traceCannotTransform(node, "does not guarantee checkcast success");
+               break;
+               }
+
+            TR::Block *slowPathBlock =
+               node->getBranchDestination()->getNode()->getBlock();
+
+            TR_ASSERT_FATAL(
+               slowPathBlock->getExceptionPredecessors().empty(),
+               "guard n%un [%p] target block_%d is also a catch block",
+               node->getGlobalIndex(),
+               node,
+               slowPathBlock->getNumber());
+
+            if (slowPathBlock->getPredecessors().size() > 1)
+               {
+               // It's still safe to transform as long as curBlock is
+               // immediately followed by a block that:
+               // - only contains a conditional branch,
+               // - is not a jump target, and
+               // - is the only other predecessor of slowPathBlock.
+               //
+               // In this case, the checkcast will be run unnecessarily if/when
+               // the later branch is taken, but it will definitely pass. The
+               // transformation should still be a win because checkcast is
+               // eliminated in the case where neither the profiled guard nor
+               // the following branch is taken.
+               //
+               // This catches the case where the inlined body is protected by
+               // a profiled guard followed by an HCR guard.
+               //
+               TR::Block *hotBlock = curBlock->getNextBlock();
+               TR::Node *ifNode = NULL;
+               if (hotBlock->getPredecessors().size() == 1)
+                  {
+                  TR::Node *n = hotBlock->getFirstRealTreeTop()->getNode();
+                  if (n->getOpCode().isIf())
+                     {
+                     TR::Block *nDest =
+                        n->getBranchDestination()->getNode()->getBlock();
+                     if (nDest == slowPathBlock
+                         && slowPathBlock->getPredecessors().size() == 2)
+                        {
+                        ifNode = n;
+                        }
+                     }
+                  }
+
+               if (ifNode == NULL)
+                  {
+                  traceCannotTransformDueToMerge(slowPathBlock);
+                  break; // can't move checkcast past the merge point
+                  }
+
+               if (trace())
+                  {
+                  traceMsg(
+                     comp(),
+                     "Merge point block_%d is ok because "
+                     "the only other predecessor is the conditional n%un [%p]\n",
+                     slowPathBlock->getNumber(),
+                     ifNode->getGlobalIndex(),
+                     ifNode);
+                  }
+               }
+
+            // OK to transform! Ask permission
+            if (!performTransformation(
+                  comp(),
+                  "%s Merging checkcast n%un [%p] and profiled guard n%un [%p]\n",
+                  optDetailString(),
+                  cast->getGlobalIndex(),
+                  cast,
+                  node->getGlobalIndex(),
+                  node))
+               break;
+
+            // Transformation
+            done = true;
+            optimizer()->setRequestOptimization(
+               OMR::compactNullChecks, true, tt->getEnclosingBlock());
+
+            // Insert a nullchk if we are dealing with checkcastAndNULLCHK
+            // (because only the checkcast part is eliminated/moved)
+            bool generateNullCheck = cast->getOpCodeValue() == TR::checkcastAndNULLCHK;
+            if (generateNullCheck)
+               {
+#ifdef J9_PROJECT_SPECIFIC
+               TR::Node *bciNode = comp()->findNullChkInfo(cast);
+#else
+               TR::Node *bciNode = cast;
+#endif
+
+               TR::Node *passThroughNode =
+                  TR::Node::create(bciNode, TR::PassThrough, 1, castObj);
+
+               TR::SymbolReference *nullCheckSR =
+                  srTab->findOrCreateNullCheckSymbolRef(NULL);
+
+               TR::Node *nullCheck = TR::Node::createWithSymRef(
+                  bciNode, TR::NULLCHK, 1, passThroughNode, nullCheckSR);
+
+               castTT->insertBefore(TR::TreeTop::create(comp(), nullCheck));
+               }
+
+            // Recreate the checkcast on the slow path.
+            if (castObjAuto != NULL)
+               {
+               // It's already possible to rematerialize the object reference
+               // at the guard and therefore also at the beginning of the
+               // target block, so no additional store is needed.
+               //
+               // Anchor castObj because the original checkcast will be
+               // removed, unless a null check was generated just above, which
+               // also prevents castObj from swinging down.
+               //
+               // The type child doesn't need to be anchored because we've
+               // already checked that it's a loadaddr.
+               //
+               if (!generateNullCheck)
+                  generateAnchor(castObj, castTT);
+               }
+            else
+               {
+               // Can't remat using an existing castObjAuto, so we have to
+               // store castObj into a new temp.
+               castObjAuto = srTab->createTemporary(
+                  comp()->getMethodSymbol(), TR::Address);
+
+               TR::Node *storeNode = TR::Node::createStore(cast, castObjAuto, castObj);
+               castTT->insertBefore(TR::TreeTop::create(comp(), storeNode));
+
+               if (trace())
+                  {
+                  traceMsg(
+                     comp(),
+                     "Created temp #%d for checkcast reference\n",
+                     castObjAuto->getReferenceNumber());
+                  }
+               }
+
+            castTT->unlink(true);
+
+            TR::SymbolReference *checkcastSR =
+               srTab->findOrCreateCheckCastSymbolRef(comp()->getMethodSymbol());
+
+            TR::Node *coldCast =
+               TR::Node::createWithSymRef(cast, TR::checkcast, 2, checkcastSR);
+
+            coldCast->setAndIncChild(0, TR::Node::createLoad(cast, castObjAuto));
+            coldCast->setAndIncChild(1, castLoadaddr->duplicateTree());
+
+            TR::TreeTop *coldCastTT = TR::TreeTop::create(comp(), coldCast);
+            slowPathBlock->prepend(coldCastTT);
+
+            // Make sure that if an exception is thrown from this block, it
+            // goes to the same handler as it would have for the original
+            // checkcast.
+            //
+            // No need to fix commoning here, because nothing is commoned
+            // between coldCastTT and the rest of the block.
+            //
+            TR::CFG *cfg = comp()->getFlowGraph();
+            slowPathBlock->split(coldCastTT->getNextTreeTop(), cfg);
+            while (!slowPathBlock->getExceptionSuccessors().empty())
+               cfg->removeEdge(slowPathBlock->getExceptionSuccessors().front());
+
+            if (castCatchBlock != NULL)
+               cfg->addExceptionEdge(slowPathBlock, castCatchBlock);
+
+            break;
+            }
+
+         case TR::ifacmpeq:
+            {
+            if (checkcastTree == NULL)
+               break;
+
+            // It's safe to move a checkcast across a null test on the same
+            // object if we fall through when non-null
+            TR::Node *lhs = node->getChild(0);
+            TR::Node *rhs = node->getChild(1);
+            if (!sameValue(lhs, castObj, castObjAuto, fresh)
+                || rhs->getOpCodeValue() != TR::aconst
+                || rhs->getAddress() != 0)
+               {
+               traceCannotTransform(node, "is not a suitable null test");
+               checkcastTree = NULL;
+               }
+
+            break;
+            }
+
+         case TR::NULLCHK:
+            if (checkcastTree != NULL
+                && !sameValue(node->getNullCheckReference(), castObj, castObjAuto, fresh))
+               {
+               traceCannotTransform(node, "tests a (possibly) different object");
+               checkcastTree = NULL;
+               break;
+               }
+
+            // Fall through to inspect the child the same way as tree-top. This
+            // way we catch side-effects (calls, indirect stores) under NULLCHK
+
+         case TR::treetop:
+            node = node->getChild(0);
+            // fall through
+
+         default:
+            {
+            TR::ILOpCode op = node->getOpCode();
+            if (op.isStoreDirect())
+               {
+               TR::SymbolReference *dest = node->getSymbolReference();
+               if (dest->getSymbol()->isAutoOrParm())
+                  {
+                  // After storing, there won't be any fresh loads of dest
+                  // anymore. We only care about references for this purpose.
+                  if (op.getOpCodeValue() == TR::astore)
+                     {
+                     TR::Node *val = node->getChild(0);
+                     if (fresh.contains(val) && val->getSymbolReference() == dest)
+                        break; // store does nothing, ignore
+
+                     if (dest == castObjAuto)
+                        {
+                        castObjAuto = NULL; // it is no longer possible to remat
+                        if (trace())
+                           {
+                           traceMsg(
+                              comp(),
+                              "astore n%un [%p] updates #%d, "
+                              "which may now differ from n%un [%p]\n",
+                              node->getGlobalIndex(),
+                              node,
+                              dest->getReferenceNumber(),
+                              castObj->getGlobalIndex(),
+                              castObj);
+                           }
+                        }
+
+                     auto entry = freshByAuto.find(dest->getReferenceNumber());
+                     if (entry != freshByAuto.end())
+                        {
+                        NodeList &loads = entry->second;
+                        for (auto it = loads.begin(); it != loads.end(); ++it)
+                           {
+                           TR::Node *load = *it;
+                           TR_ASSERT_FATAL(
+                              fresh.contains(load),
+                              "expected n%un [%p] to be a fresh load of #%d",
+                              load->getGlobalIndex(),
+                              load,
+                              dest->getReferenceNumber());
+
+                           fresh.remove(load);
+                           }
+
+                        loads.clear();
+                        }
+                     }
+
+                  // Now we only need to determine whether to invalidate the
+                  // current candidate checkcast (if any).
+                  if (checkcastTree == NULL)
+                     break; // nothing to do
+
+                  // Stores to autos are OK as long as the stored auto is dead
+                  // after taking an exception from checkcast. If it's live on
+                  // the exception path, then the exception path will see the
+                  // new value even though it's supposed to see the old one,
+                  // since the exception is supposed to have been thrown before
+                  // the store.
+
+                  // We know that an auto is dead on exception if there is no
+                  // exception path from the candidate checkcast.
+                  if (castCatchBlock == NULL)
+                     break; // dest is dead on exception, ok to reorder
+
+                  // The use-only alias set of the checkcast symref contains
+                  // all autos that are live on exception (though it may and
+                  // often will also contain autos that are not).
+                  auto excUses = cast->getSymbolReference()->getUseonlyAliases();
+                  if (!excUses.contains(dest, comp()))
+                     break; // dest is dead on exception, ok to reorder
+
+                  // We could get more opportunities by computing liveness, but
+                  // for now, let's just say dest is possibly live on exception.
+                  traceCannotTransform(
+                     node, "updates an auto that may be live on exception");
+
+                  checkcastTree = NULL;
+                  break;
+                  }
+               }
+
+            // The checkcast cannot in general be reordered past control flow
+            // or side effects. Reject the candidate if necessary.
+            if (checkcastTree == NULL)
+               break; // nothing to do
+
+            if (op.isStore()
+                || op.isBranch()
+                || op.isSwitch()
+                || op.isJumpWithMultipleTargets()
+                || op.isCall()
+                || op.isReturn()
+                || node->canGCandExcept()
+                || !node->mayKill().isZero(comp()))
+               {
+               traceCannotTransform(node, "has a control or side-effect");
+               checkcastTree = NULL;
+               }
+
+            break;
+            }
          }
 
       }
@@ -7755,46 +8284,104 @@ int32_t TR_CheckcastAndProfiledGuardCoalescer::perform()
       optimizer()->setValueNumberInfo(NULL);
       }
 
+   if (trace())
+      traceMsg(comp(), "\n");
+
    return done;
    }
 
-TR::Node* TR_CheckcastAndProfiledGuardCoalescer::storeObjectInATemporary(TR::TreeTop* checkcastTree)
+// Add all unvisited (i.e. previously unevaluated) auto aload nodes in the
+// subtree rooted at node to fresh, freshByAuto. Also determine whether the
+// subtree contains any previously unevaluated indirect loads.
+bool TR_CheckcastAndProfiledGuardCoalescer::processSubtree(
+   TR::NodeChecklist &visited,
+   TR::NodeChecklist &fresh,
+   IntToNodesMap &freshByAuto,
+   TR::Node *node)
    {
-   TR::Node *obj = checkcastTree->getNode()->getFirstChild();
-   TR::SymbolReference *tempCheckcastSymRef = comp()->getSymRefTab()->createTemporary(comp()->getMethodSymbol(), obj->getDataType() ,false);
+   bool hasIndirectLoad = false;
 
-   if (obj->isNotCollected())
-      tempCheckcastSymRef->getSymbol()->setNotCollected();
+   if (visited.contains(node))
+      return hasIndirectLoad;
 
-   TR::Node *storeNode = TR::Node::createStore(tempCheckcastSymRef, obj);
-   TR::TreeTop *storeTree = TR::TreeTop::create(comp(), storeNode);
-   checkcastTree->insertBefore(storeTree);
-   return storeNode;
+   visited.add(node);
+
+   // freshness is relevant only for reference-typed autos
+   if (node->getOpCodeValue() == TR::aload)
+      {
+      TR::SymbolReference *src = node->getSymbolReference();
+      if (src->getSymbol()->isAutoOrParm())
+         {
+         fresh.add(node);
+
+         NodeList empty(comp()->trMemory()->currentStackRegion());
+         auto insertResult = freshByAuto.insert(
+            std::make_pair(src->getReferenceNumber(), empty));
+
+         auto entry = insertResult.first;
+         NodeList &srcFreshLoads = entry->second;
+         srcFreshLoads.push_back(node);
+         }
+      }
+   else if (node->getOpCode().isLoadIndirect())
+      {
+      hasIndirectLoad = true;
+      }
+
+   int32_t numChildren = node->getNumChildren();
+   for (int32_t i = 0; i < numChildren; i++)
+      {
+      if (processSubtree(visited, fresh, freshByAuto, node->getChild(i)))
+         hasIndirectLoad = true;
+      }
+
+   return hasIndirectLoad;
    }
 
-void TR_CheckcastAndProfiledGuardCoalescer::doBasicCase(TR::TreeTop* checkcastTree, TR::TreeTop* profiledGuardTree)
+// Determine whether obj is guaranteed to refer to the same instance as castObj
+// or (if non-null) castObjAuto. When castObjAuto is non-null, the value
+// obtained by loading castObjAuto here is assumed to be the same as castObj.
+bool TR_CheckcastAndProfiledGuardCoalescer::sameValue(
+   TR::Node *obj,
+   TR::Node *castObj,
+   TR::SymbolReference *castObjAuto,
+   TR::NodeChecklist &fresh)
    {
-   TR::Block *slowPathBlock = profiledGuardTree->getNode()->getBranchDestination()->getNode()->getBlock();
+   if (obj == castObj)
+      return true;
 
-   // Spill the first node of the checkcast (the object operand) into a temp to be used in a slow path block.
-   //
-   TR::Node *storeNode = storeObjectInATemporary(checkcastTree);
-   TR::SymbolReference *tempCheckcastSymRef = storeNode->getSymbolReference();
-
-   // Recreate the checkcast using the temp created above on the slow path.
-   //
-   TR::Node *classConst = TR::Node::createWithSymRef(checkcastTree->getNode()->getSecondChild(), TR::loadaddr, 0, checkcastTree->getNode()->getSecondChild()->getSymbolReference());
-
-   TR::TreeTop *checkCastInsertionPoint = slowPathBlock->getEntry();
-
-   TR::Node *newCheckcastNode = TR::Node::createWithSymRef(TR::checkcast, 2, TR::Node::createLoad(storeNode, tempCheckcastSymRef), classConst, 0, comp()->getSymRefTab()->findOrCreateCheckCastSymbolRef(comp()->getMethodSymbol()));
-   TR::TreeTop *newCheckcastTree = TR::TreeTop::create(comp(), newCheckcastNode);
-   checkCastInsertionPoint->insertAfter(newCheckcastTree);
-
-   // Lastly, remove the original checkcastTree.
-   //
-   checkcastTree->unlink(true);
+   return castObjAuto != NULL
+      && obj->getOpCodeValue() == TR::aload
+      && obj->getSymbolReference() == castObjAuto
+      && fresh.contains(obj);
    }
+
+void TR_CheckcastAndProfiledGuardCoalescer::traceCannotTransform(
+   TR::Node *node, const char *why)
+   {
+   if (!trace())
+      return;
+
+   traceMsg(
+      comp(),
+      "Cannot transform because %s n%un [%p] %s\n",
+      node->getOpCode().getName(),
+      node->getGlobalIndex(),
+      node,
+      why);
+   }
+
+void TR_CheckcastAndProfiledGuardCoalescer::traceCannotTransformDueToMerge(
+   TR::Block *mergeBlock)
+   {
+   if (!trace())
+      return;
+
+   traceMsg(
+      comp(),
+      "Cannot transform because the start of block_%d is a merge point\n",
+      mergeBlock->getNumber());
+}
 
 const char *
 TR_CheckcastAndProfiledGuardCoalescer::optDetailString() const throw()

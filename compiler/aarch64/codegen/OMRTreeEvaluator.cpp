@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1734,27 +1734,47 @@ static TR::Instruction *compareIntsAndBranchForArrayCopyBNDCHK(TR::ARM64Conditio
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
    TR::LabelSymbol *snippetLabel = generateLabelSymbol(cg);
-   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Register *src1Reg;
+   TR::Register *src2Reg;
 
-   bool foundConst = false;
-   if (secondChild->getOpCode().isLoadConst())
+   if (firstChild->getOpCodeValue() == TR::isub &&
+       firstChild->getRegister() == NULL &&
+       firstChild->getReferenceCount() == 1 &&
+       secondChild->getOpCode().isLoadConst() &&
+       secondChild->getInt() == 0)
       {
-      int64_t value = static_cast<int64_t>(secondChild->getInt());
-      if (constantIsUnsignedImm12(value))
-         {
-         generateCompareImmInstruction(cg, node, src1Reg, value); // 32-bit comparison
-         foundConst = true;
-         }
-      else if (constantIsUnsignedImm12(-value))
-         {
-         generateCompareImmInstruction(cg, node, src1Reg, value); // 32-bit comparison
-         foundConst = true;
-         }
-      }
-   if (!foundConst)
-      {
-      TR::Register *src2Reg = cg->evaluate(secondChild);
+      TR::Node *sub1Child = firstChild->getFirstChild();
+      TR::Node *sub2Child = firstChild->getSecondChild();
+      src1Reg = cg->evaluate(sub1Child);
+      src2Reg = cg->evaluate(sub2Child);
       generateCompareInstruction(cg, node, src1Reg, src2Reg); // 32-bit comparison
+      cg->decReferenceCount(sub1Child);
+      cg->decReferenceCount(sub2Child);
+      }
+   else
+      {
+      src1Reg = cg->evaluate(firstChild);
+
+      bool foundConst = false;
+      if (secondChild->getOpCode().isLoadConst())
+         {
+         int64_t value = static_cast<int64_t>(secondChild->getInt());
+         if (constantIsUnsignedImm12(value))
+            {
+            generateCompareImmInstruction(cg, node, src1Reg, value); // 32-bit comparison
+            foundConst = true;
+            }
+         else if (constantIsUnsignedImm12(-value))
+            {
+            generateCompareImmInstruction(cg, node, src1Reg, value); // 32-bit comparison
+            foundConst = true;
+            }
+         }
+      if (!foundConst)
+         {
+         src2Reg = cg->evaluate(secondChild);
+         generateCompareInstruction(cg, node, src1Reg, src2Reg); // 32-bit comparison
+         }
       }
 
    TR_ASSERT_FATAL_WITH_NODE(node, sr, "Must provide an ArrayCopyBNDCHK symref");

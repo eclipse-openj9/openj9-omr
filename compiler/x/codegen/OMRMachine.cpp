@@ -197,7 +197,7 @@ OMR::X86::Machine::Machine
    self()->resetFPStackRegisters();
    self()->resetXMMGlobalRegisters();
 
-   for (int i=0; i<TR::NumTypes; i++)
+   for (int i=0; i<TR::NumAllTypes; i++)
       {
       _dummyLocal[i] = NULL;
       }

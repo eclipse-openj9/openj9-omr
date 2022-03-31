@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -132,24 +132,27 @@ TR::Register *OMR::ARM64::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeG
    {
    TR::InstOpCode::Mnemonic negOp;
 
-   switch(node->getDataType())
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   switch(node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
+      case TR::Int8:
          negOp = TR::InstOpCode::vneg16b;
          break;
-      case TR::VectorInt16:
+      case TR::Int16:
          negOp = TR::InstOpCode::vneg8h;
          break;
-      case TR::VectorInt32:
+      case TR::Int32:
          negOp = TR::InstOpCode::vneg4s;
          break;
-      case TR::VectorInt64:
+      case TR::Int64:
          negOp = TR::InstOpCode::vneg2d;
          break;
-      case TR::VectorFloat:
+      case TR::Float:
          negOp = TR::InstOpCode::vfneg4s;
          break;
-      case TR::VectorDouble:
+      case TR::Double:
          negOp = TR::InstOpCode::vfneg2d;
          break;
       default:
@@ -163,9 +166,12 @@ TR::Register *OMR::ARM64::TreeEvaluator::vnotEvaluator(TR::Node *node, TR::CodeG
    {
    TR::InstOpCode::Mnemonic notOp;
 
-   switch(node->getDataType())
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   switch(node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
+      case TR::Int8:
          notOp = TR::InstOpCode::vnot16b;
          break;
       default:

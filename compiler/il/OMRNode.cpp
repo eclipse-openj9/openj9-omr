@@ -2120,11 +2120,6 @@ OMR::Node::isConstZeroBytes()
          return self()->getFloatBits() == 0;
       case TR::Double:
          return self()->getDoubleBits() == 0;
-      case TR::VectorInt8:
-      case TR::VectorInt16:
-      case TR::VectorInt32:
-      case TR::VectorInt64:
-      case TR::VectorDouble:
       default:
          TR_ASSERT(false, "Unrecognized const node %s can't be checked for zero bytes");
          return false;
@@ -2160,11 +2155,6 @@ OMR::Node::isConstZeroValue()
          TR::Compilation *comp = TR::comp();
          return self()->getDoubleBits() == DOUBLE_POS_ZERO;
          }
-      case TR::VectorInt8:
-      case TR::VectorInt16:
-      case TR::VectorInt32:
-      case TR::VectorInt64:
-      case TR::VectorDouble:
       default:
          TR_ASSERT(false, "Unrecognized constant node can't be checked for zero");
          return false;
@@ -5269,7 +5259,8 @@ OMR::Node::computeDataType()
          else if (_opCode.isVectorReduction())
             _unionPropertyA._dataType = self()->getFirstChild()->getDataType().getVectorElementType().getDataType();
          else if (_opCode.getOpCodeValue() == TR::vsplats)
-            _unionPropertyA._dataType = self()->getFirstChild()->getDataType().scalarToVector().getDataType();
+            // TODO: convert vsplats into 'true' vector opcode that has proper element type and length
+            _unionPropertyA._dataType = self()->getFirstChild()->getDataType().scalarToVector(TR::VectorLength128).getDataType();
          else
             _unionPropertyA._dataType = self()->getFirstChild()->getDataType().getDataType();
 

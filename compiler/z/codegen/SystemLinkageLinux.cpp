@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -363,7 +363,6 @@ TR::S390zLinuxSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethod
                {
                lri = numFPRArgs;
                }
-            
             numFPRArgs++;
             break;
             }
@@ -374,23 +373,24 @@ TR::S390zLinuxSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethod
             break;
             }
 
-         case TR::VectorInt8:
-         case TR::VectorInt16:
-         case TR::VectorInt32:
-         case TR::VectorInt64:
-         case TR::VectorDouble:
-            {
-            if (numVRFArgs < getNumVectorArgumentRegisters())
-               {
-               lri = numVRFArgs;
-               }
-
-            numVRFArgs++;
-            break;
-            }
-
          default:
             {
+            if (paramCursor->getDataType().isVector())
+               {
+               TR::DataType elementType = paramCursor->getDataType().getVectorElementType();
+               if (elementType == TR::Int8 || elementType == TR::Int16 ||
+                   elementType == TR::Int32 || elementType == TR::Int64 || elementType == TR::Double)
+                  {
+                  if (numVRFArgs < getNumVectorArgumentRegisters())
+                     {
+                     lri = numVRFArgs;
+                     }
+
+                  numVRFArgs++;
+                  break;
+                  }
+               }
+
             TR_ASSERT_FATAL(false, "Unknown data type %s", paramCursor->getDataType().toString());
             break;
             }
@@ -589,16 +589,21 @@ TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, 
                      }
                   }
             break;
-         case TR::VectorInt8:
-         case TR::VectorInt16:
-         case TR::VectorInt32:
-         case TR::VectorInt64:
-         case TR::VectorDouble:
-            indexInArgRegistersArray = numVectorArgs;
-            argRegNum = getVectorArgumentRegister(indexInArgRegistersArray);
-            numVectorArgs ++;
+         default:
+            {
+            if (parmCursor->getDataType().isVector())
+               {
+               TR::DataType elementType = parmCursor->getDataType().getVectorElementType();
+               if (elementType == TR::Int8 || elementType == TR::Int16 ||
+                   elementType == TR::Int32 || elementType == TR::Int64 || elementType == TR::Double)
+                  {
+                  indexInArgRegistersArray = numVectorArgs;
+                  argRegNum = getVectorArgumentRegister(indexInArgRegistersArray);
+                  numVectorArgs++;
+                  }
+               }
             break;
-         default: break;
+            }
          }
       if (argRegNum == TR::RealRegister::NoReg)
          {

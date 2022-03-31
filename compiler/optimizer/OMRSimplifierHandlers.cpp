@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -163,25 +163,25 @@
          }\
       }
 
-static TR::ILOpCodes addOps[TR::NumTypes] = { TR::BadILOp,
+static TR::ILOpCodes addOps[TR::NumAllTypes] = { TR::BadILOp,
                                                TR::badd,    TR::sadd,    TR::iadd,    TR::ladd,
                                                TR::fadd,    TR::dadd,
                                                TR::BadILOp, TR::BadILOp, TR::BadILOp,
                                                TR::BadILOp, TR::BadILOp,  TR::BadILOp};
 
-static TR::ILOpCodes subOps[TR::NumTypes] = { TR::BadILOp,
+static TR::ILOpCodes subOps[TR::NumAllTypes] = { TR::BadILOp,
                                                TR::bsub,    TR::ssub,    TR::isub,    TR::lsub,
                                                TR::fsub,    TR::dsub,
                                                TR::asub,    TR::BadILOp, TR::BadILOp,
                                                TR::BadILOp, TR::BadILOp, TR::BadILOp};
 
-static TR::ILOpCodes constOps[TR::NumTypes] = { TR::BadILOp,
+static TR::ILOpCodes constOps[TR::NumAllTypes] = { TR::BadILOp,
                                                  TR::bconst,  TR::sconst,  TR::iconst,    TR::lconst,
                                                  TR::fconst,  TR::dconst,
                                                  TR::aconst,  TR::BadILOp,  TR::BadILOp,
                                                  TR::BadILOp, TR::BadILOp, TR::BadILOp};
 
-static TR::ILOpCodes negOps[TR::NumTypes] = { TR::BadILOp,
+static TR::ILOpCodes negOps[TR::NumAllTypes] = { TR::BadILOp,
                                                TR::bneg,    TR::sneg,    TR::ineg,    TR::lneg,
                                                TR::fneg,    TR::dneg,
                                                TR::BadILOp, TR::BadILOp, TR::BadILOp,

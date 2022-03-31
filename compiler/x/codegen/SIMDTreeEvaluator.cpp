@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2021 IBM Corp. and others
+ * Copyright (c) 2017, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -127,17 +127,20 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDstoreEvaluator(TR::Node* node, TR::Co
 
 TR::Register* OMR::X86::TreeEvaluator::SIMDsplatsEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::Node* childNode = node->getChild(0);
    TR::Register* childReg = cg->evaluate(childNode);
 
    TR::Register* resultReg = cg->allocateRegister(TR_VRF);
-   switch (node->getDataType())
+   switch (node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt32:
+      case TR::Int32:
          generateRegRegInstruction(TR::InstOpCode::MOVDRegReg4, node, resultReg, childReg, cg);
          generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, resultReg, resultReg, 0x00, cg); // 00 00 00 00 shuffle xxxA to AAAA
          break;
-      case TR::VectorInt64:
+      case TR::Int64:
          if (cg->comp()->target().is32Bit())
             {
             TR::Register* tempVectorReg = cg->allocateRegister(TR_VRF);
@@ -153,10 +156,10 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDsplatsEvaluator(TR::Node* node, TR::C
             }
          generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, resultReg, resultReg, 0x44, cg); // 01 00 01 00 shuffle xxBA to BABA
          break;
-      case TR::VectorFloat:
+      case TR::Float:
          generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, resultReg, childReg, 0x00, cg); // 00 00 00 00 shuffle xxxA to AAAA
          break;
-      case TR::VectorDouble:
+      case TR::Double:
          generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, resultReg, childReg, 0x44, cg); // 01 00 01 00 shuffle xxBA to BABA
          break;
       default:
@@ -182,17 +185,21 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDgetvelemEvaluator(TR::Node* node, TR:
    TR::Register* highResReg = 0;
 
    int32_t elementCount = -1;
-   switch (firstChild->getDataType())
+
+   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   switch (firstChild->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
-      case TR::VectorInt16:
+      case TR::Int8:
+      case TR::Int16:
          TR_ASSERT(false, "unsupported vector type %s in SIMDgetvelemEvaluator.\n", firstChild->getDataType().toString());
          break;
-      case TR::VectorInt32:
+      case TR::Int32:
          elementCount = 4;
          resReg = cg->allocateRegister();
          break;
-      case TR::VectorInt64:
+      case TR::Int64:
          elementCount = 2;
          if (cg->comp()->target().is32Bit())
             {
@@ -205,11 +212,11 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDgetvelemEvaluator(TR::Node* node, TR:
             resReg = cg->allocateRegister();
             }
          break;
-      case TR::VectorFloat:
+      case TR::Float:
          elementCount = 4;
          resReg = cg->allocateSinglePrecisionRegister(TR_FPR);
          break;
-      case TR::VectorDouble:
+      case TR::Double:
          elementCount = 2;
          resReg = cg->allocateRegister(TR_FPR);
          break;
@@ -241,7 +248,7 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDgetvelemEvaluator(TR::Node* node, TR:
           * for float, dstReg and resReg are the same because PSHUFD can work directly with TR_FPR registers
           * for Int32, the result needs to be moved from the dstReg to a TR_GPR resReg.
           */
-         if (TR::VectorInt32 == firstChild->getDataType())
+         if (TR::Int32 == firstChild->getDataType().getVectorElementType())
             {
             dstReg = cg->allocateRegister(TR_VRF);
             }
@@ -263,7 +270,7 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDgetvelemEvaluator(TR::Node* node, TR:
             generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, dstReg, srcVectorReg, shufconst, cg);
             }
 
-         if (TR::VectorInt32 == firstChild->getDataType())
+         if (TR::Int32 == firstChild->getDataType().getVectorElementType())
             {
             generateRegRegInstruction(TR::InstOpCode::MOVDReg4Reg, node, resReg, dstReg, cg);
             cg->stopUsingRegister(dstReg);
@@ -275,11 +282,11 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDgetvelemEvaluator(TR::Node* node, TR:
           * for double, dstReg and resReg are the same because PSHUFD can work directly with TR_FPR registers
           * for Int64, the result needs to be moved from the dstReg to a TR_GPR resReg.
           */
-         if (TR::VectorInt64 == firstChild->getDataType())
+         if (TR::Int64 == firstChild->getDataType().getVectorElementType())
             {
             dstReg = cg->allocateRegister(TR_VRF);
             }
-         else //TR::VectorDouble == firstChild->getDataType()
+         else //TR::Double == firstChild->getDataType().getVectorElementType()
             {
             dstReg = resReg;
             }
@@ -300,7 +307,7 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDgetvelemEvaluator(TR::Node* node, TR:
             generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, dstReg, srcVectorReg, 0x0e, cg);
             }
 
-         if (TR::VectorInt64 == firstChild->getDataType())
+         if (TR::Int64 == firstChild->getDataType().getVectorElementType())
             {
             if (cg->comp()->target().is32Bit())
                {

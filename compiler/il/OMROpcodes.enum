@@ -6106,7 +6106,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt32, \
+   /* .dataType             = */ OMR::DataType::Vector128Int32, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6122,7 +6122,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt32, \
+   /* .dataType             = */ OMR::DataType::Vector128Int32, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6154,7 +6154,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt32, \
+   /* .dataType             = */ OMR::DataType::Vector128Int32, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6170,7 +6170,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt32, \
+   /* .dataType             = */ OMR::DataType::Vector128Int32, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6186,7 +6186,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt32, \
+   /* .dataType             = */ OMR::DataType::Vector128Int32, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6202,7 +6202,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt32, \
+   /* .dataType             = */ OMR::DataType::Vector128Int32, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6218,7 +6218,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt32, \
+   /* .dataType             = */ OMR::DataType::Vector128Int32, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6234,7 +6234,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt32, \
+   /* .dataType             = */ OMR::DataType::Vector128Int32, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6250,7 +6250,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt32, \
+   /* .dataType             = */ OMR::DataType::Vector128Int32, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6266,7 +6266,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt32, \
+   /* .dataType             = */ OMR::DataType::Vector128Int32, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6298,7 +6298,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt32, \
+   /* .dataType             = */ OMR::DataType::Vector128Int32, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector | ILTypeProp::HasNoDataType, \
    /* .childProperties      = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6314,7 +6314,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt32, \
+   /* .dataType             = */ OMR::DataType::Vector128Int32, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector | ILTypeProp::HasNoDataType, \
    /* .childProperties      = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6346,7 +6346,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorDouble, \
+   /* .dataType             = */ OMR::DataType::Vector128Double, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
    /* .childProperties      = */ ILChildProp::Unspecified, \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6362,7 +6362,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorDouble, \
+   /* .dataType             = */ OMR::DataType::Vector128Double, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
    /* .childProperties      = */ ILChildProp::Unspecified, \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6378,7 +6378,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorDouble, \
+   /* .dataType             = */ OMR::DataType::Vector128Double, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
    /* .childProperties      = */ ILChildProp::Unspecified, \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6410,7 +6410,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorDouble, \
+   /* .dataType             = */ OMR::DataType::Vector128Double, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
    /* .childProperties      = */ ILChildProp::Unspecified, \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6426,7 +6426,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Max, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorDouble, \
+   /* .dataType             = */ OMR::DataType::Vector128Double, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6442,7 +6442,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE | ILProp2::Min, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorDouble, \
+   /* .dataType             = */ OMR::DataType::Vector128Double, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6458,7 +6458,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ ILProp3::CompareTrueIfEqual, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt64, \
+   /* .dataType             = */ OMR::DataType::Vector128Int64, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::vdcmpeq, \
@@ -6474,7 +6474,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt64, \
+   /* .dataType             = */ OMR::DataType::Vector128Int64, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::vdcmpne, \
@@ -6490,7 +6490,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ ILProp3::CompareTrueIfGreater, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt64, \
+   /* .dataType             = */ OMR::DataType::Vector128Int64, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::vdcmplt, \
@@ -6506,7 +6506,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt64, \
+   /* .dataType             = */ OMR::DataType::Vector128Int64, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::vdcmple, \
@@ -6522,7 +6522,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ ILProp3::CompareTrueIfLess, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt64, \
+   /* .dataType             = */ OMR::DataType::Vector128Int64, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::vdcmpgt, \
@@ -6538,7 +6538,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt64, \
+   /* .dataType             = */ OMR::DataType::Vector128Int64, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
    /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::vdcmpge, \
@@ -6554,7 +6554,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3          = */ ILProp3::LikeUse, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorDouble, \
+   /* .dataType             = */ OMR::DataType::Vector128Double, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Floating_Point | ILTypeProp::Vector, \
    /* .childProperties      = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -6938,7 +6938,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ ILProp2::ValueNumberShare, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorDouble, \
+   /* .dataType             = */ OMR::DataType::Vector128Double, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Vector, \
    /* .childProperties      = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -7002,7 +7002,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt8, \
+   /* .dataType             = */ OMR::DataType::Vector128Int8, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ ILChildProp::NoChildren, \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -7018,7 +7018,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt16, \
+   /* .dataType             = */ OMR::DataType::Vector128Int16, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ ILChildProp::NoChildren, \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -7034,7 +7034,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt32, \
+   /* .dataType             = */ OMR::DataType::Vector128Int32, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ ILChildProp::NoChildren, \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -7050,7 +7050,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt64, \
+   /* .dataType             = */ OMR::DataType::Vector128Int64, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ ILChildProp::NoChildren, \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -7066,7 +7066,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorFloat, \
+   /* .dataType             = */ OMR::DataType::Vector128Float, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ ILChildProp::NoChildren, \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -7082,7 +7082,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorDouble, \
+   /* .dataType             = */ OMR::DataType::Vector128Double, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ ILChildProp::NoChildren, \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -7098,7 +7098,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt8, \
+   /* .dataType             = */ OMR::DataType::Vector128Int8, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -7114,7 +7114,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt16, \
+   /* .dataType             = */ OMR::DataType::Vector128Int16, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -7130,7 +7130,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt32, \
+   /* .dataType             = */ OMR::DataType::Vector128Int32, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -7146,7 +7146,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorInt64, \
+   /* .dataType             = */ OMR::DataType::Vector128Int64, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -7162,7 +7162,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorFloat, \
+   /* .dataType             = */ OMR::DataType::Vector128Float, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \
@@ -7178,7 +7178,7 @@ OPCODE_MACRO(\
    /* .properties2          = */ 0, \
    /* .properties3          = */ 0, \
    /* .properties4          = */ 0, \
-   /* .dataType             = */ TR::VectorDouble, \
+   /* .dataType             = */ OMR::DataType::Vector128Double, \
    /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Integer | ILTypeProp::Vector, \
    /* .childProperties      = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOpCode   = */ TR::BadILOp, \

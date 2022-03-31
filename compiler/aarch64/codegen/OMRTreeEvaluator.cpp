@@ -1183,29 +1183,32 @@ OMR::ARM64::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *c
 
    TR::InstOpCode::Mnemonic op;
 
-   switch (node->getDataType())
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   switch (node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
+      case TR::Int8:
          TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind");
          op = TR::InstOpCode::vdup16b;
          break;
-      case TR::VectorInt16:
+      case TR::Int16:
          TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind");
          op = TR::InstOpCode::vdup8h;
          break;
-      case TR::VectorInt32:
+      case TR::Int32:
          TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind");
          op = TR::InstOpCode::vdup4s;
          break;
-      case TR::VectorInt64:
+      case TR::Int64:
          TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind");
          op = TR::InstOpCode::vdup2d;
          break;
-      case TR::VectorFloat:
+      case TR::Float:
          TR_ASSERT(srcReg->getKind() == TR_FPR, "unexpected Register kind");
          op = TR::InstOpCode::vfdup4s;
          break;
-      case TR::VectorDouble:
+      case TR::Double:
          TR_ASSERT(srcReg->getKind() == TR_FPR, "unexpected Register kind");
          op = TR::InstOpCode::vfdup2d;
          break;

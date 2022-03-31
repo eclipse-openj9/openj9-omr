@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -674,6 +674,8 @@ public:
 
    static TR::ILOpCodes addOpCode(TR::DataType type, bool is64Bit)
       {
+      if (type.isVector()) return TR::vadd;
+
       switch(type)
          {
          case TR::Int8:     return TR::badd;
@@ -683,12 +685,6 @@ public:
          case TR::Address:  return (is64Bit) ? TR::aladd : TR::aiadd;
          case TR::Float:    return TR::fadd;
          case TR::Double:   return TR::dadd;
-         case TR::VectorInt8:   return TR::vadd;
-         case TR::VectorInt16:  return TR::vadd;
-         case TR::VectorInt32:  return TR::vadd;
-         case TR::VectorInt64:  return TR::vadd;
-         case TR::VectorFloat:  return TR::vadd;
-         case TR::VectorDouble: return TR::vadd;
          default: TR_ASSERT(0, "no add opcode for this datatype");
          }
       return TR::BadILOp;
@@ -710,6 +706,8 @@ public:
 
    static TR::ILOpCodes subtractOpCode(TR::DataType type)
       {
+      if (type.isVector()) return TR::vsub;
+
       switch(type)
          {
          case TR::Int8:    return TR::bsub;
@@ -718,12 +716,6 @@ public:
          case TR::Int64:   return TR::lsub;
          case TR::Float:   return TR::fsub;
          case TR::Double:  return TR::dsub;
-         case TR::VectorInt8:   return TR::vsub;
-         case TR::VectorInt16:  return TR::vsub;
-         case TR::VectorInt32:  return TR::vsub;
-         case TR::VectorInt64:  return TR::vsub;
-         case TR::VectorFloat:  return TR::vsub;
-         case TR::VectorDouble: return TR::vsub;
          default: TR_ASSERT(0, "no sub opcode for this datatype");
          }
       return TR::BadILOp;
@@ -731,6 +723,8 @@ public:
 
    static TR::ILOpCodes multiplyOpCode(TR::DataType type)
       {
+      if (type.isVector()) return TR::vmul;
+
       switch(type)
          {
          case TR::Int8:    return TR::bmul;
@@ -739,12 +733,6 @@ public:
          case TR::Int64:   return TR::lmul;
          case TR::Float:   return TR::fmul;
          case TR::Double:  return TR::dmul;
-         case TR::VectorInt8:   return TR::vmul;
-         case TR::VectorInt16:  return TR::vmul;
-         case TR::VectorInt32:  return TR::vmul;
-         case TR::VectorInt64:  return TR::vmul;
-         case TR::VectorFloat:  return TR::vmul;
-         case TR::VectorDouble: return TR::vmul;
          default: TR_ASSERT(0, "no mul opcode for this datatype");
          }
       return TR::BadILOp;
@@ -752,6 +740,8 @@ public:
 
    static TR::ILOpCodes divideOpCode(TR::DataType type)
       {
+      if (type.isVector()) return TR::vdiv;
+
       switch(type)
          {
          case TR::Int8:    return TR::bdiv;
@@ -760,12 +750,6 @@ public:
          case TR::Int64:   return TR::ldiv;
          case TR::Float:   return TR::fdiv;
          case TR::Double:  return TR::ddiv;
-         case TR::VectorInt8:   return TR::vdiv;
-         case TR::VectorInt16:  return TR::vdiv;
-         case TR::VectorInt32:  return TR::vdiv;
-         case TR::VectorInt64:  return TR::vdiv;
-         case TR::VectorFloat:  return TR::vdiv;
-         case TR::VectorDouble: return TR::vdiv;
          default: TR_ASSERT(0, "no div opcode for this datatype");
          }
       return TR::BadILOp;

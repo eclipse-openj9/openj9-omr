@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -56,7 +56,8 @@ public:
       return _type;
       }
 
-   virtual char *getSignatureName() { return (char *) signatureNameForType[_type]; }
+   virtual char *getSignatureName() { return _type.isVector() ? (char *) signatureNameForVectorType[_type.getVectorElementType() - 1] :
+                                                                (char *) signatureNameForType[_type]; }
 
    virtual size_t getSize() { return TR::DataType::getSize(_type); }
 
@@ -240,7 +241,9 @@ OMR::StructType::AddField(const char *name, TR::IlType *typeInfo)
       return;
 
    TR::DataType primitiveType = typeInfo->getPrimitiveType();
-   uint32_t align = primitiveTypeAlignment[primitiveType] - 1;
+   uint32_t align = (primitiveType.isVector() ? primitiveVectorTypeAlignment[primitiveType.getVectorElementType() - 1] :
+                                                primitiveTypeAlignment[primitiveType]) - 1;
+
    _size = (_size + align) & (~static_cast<size_t>(align));
 
    OMR::FieldInfo *fieldInfo = new (PERSISTENT_NEW) OMR::FieldInfo(name, _size, typeInfo);
@@ -449,10 +452,10 @@ OMR::TypeDictionary::MemoryManager::~MemoryManager()
 
 // Copy constructor is private but it must be defined
 // to avoid undefined behavior, since we can't use `delete`
-OMR::TypeDictionary::TypeDictionary(const TypeDictionary &src) : 
+OMR::TypeDictionary::TypeDictionary(const TypeDictionary &src) :
    _client(0),
    _structsByName(str_comparator, trMemory()->heapMemoryRegion()),
-   _unionsByName(str_comparator, trMemory()->heapMemoryRegion()) 
+   _unionsByName(str_comparator, trMemory()->heapMemoryRegion())
    {}
 
 OMR::TypeDictionary::TypeDictionary() :
@@ -460,6 +463,13 @@ OMR::TypeDictionary::TypeDictionary() :
    _structsByName(str_comparator, trMemory()->heapMemoryRegion()),
    _unionsByName(str_comparator, trMemory()->heapMemoryRegion())
    {
+   TR::DataTypes Vector128Int8   = OMR::DataType::createVectorType(TR::Int8, TR::VectorLength128);
+   TR::DataTypes Vector128Int16  = OMR::DataType::createVectorType(TR::Int16, TR::VectorLength128);
+   TR::DataTypes Vector128Int32  = OMR::DataType::createVectorType(TR::Int32, TR::VectorLength128);
+   TR::DataTypes Vector128Int64  = OMR::DataType::createVectorType(TR::Int64, TR::VectorLength128);
+   TR::DataTypes Vector128Float  = OMR::DataType::createVectorType(TR::Float, TR::VectorLength128);
+   TR::DataTypes Vector128Double = OMR::DataType::createVectorType(TR::Double, TR::VectorLength128);
+
    // primitive types
    NoType       = _primitiveType[TR::NoType]                = new (PERSISTENT_NEW) OMR::PrimitiveType("NoType", TR::NoType);
    Int8         = _primitiveType[TR::Int8]                  = new (PERSISTENT_NEW) OMR::PrimitiveType("Int8", TR::Int8);
@@ -469,12 +479,12 @@ OMR::TypeDictionary::TypeDictionary() :
    Float        = _primitiveType[TR::Float]                 = new (PERSISTENT_NEW) OMR::PrimitiveType("Float", TR::Float);
    Double       = _primitiveType[TR::Double]                = new (PERSISTENT_NEW) OMR::PrimitiveType("Double", TR::Double);
    Address      = _primitiveType[TR::Address]               = new (PERSISTENT_NEW) OMR::PrimitiveType("Address", TR::Address);
-   VectorInt8   = _primitiveType[TR::VectorInt8]            = new (PERSISTENT_NEW) OMR::PrimitiveType("VectorInt8", TR::VectorInt8);
-   VectorInt16  = _primitiveType[TR::VectorInt16]           = new (PERSISTENT_NEW) OMR::PrimitiveType("VectorInt16", TR::VectorInt16);
-   VectorInt32  = _primitiveType[TR::VectorInt32]           = new (PERSISTENT_NEW) OMR::PrimitiveType("VectorInt32", TR::VectorInt32);
-   VectorInt64  = _primitiveType[TR::VectorInt64]           = new (PERSISTENT_NEW) OMR::PrimitiveType("VectorInt64", TR::VectorInt64);
-   VectorFloat  = _primitiveType[TR::VectorFloat]           = new (PERSISTENT_NEW) OMR::PrimitiveType("VectorFloat", TR::VectorFloat);
-   VectorDouble = _primitiveType[TR::VectorDouble]          = new (PERSISTENT_NEW) OMR::PrimitiveType("VectorDouble", TR::VectorDouble);
+   VectorInt8   = _primitiveType[Vector128Int8]             = new (PERSISTENT_NEW) OMR::PrimitiveType("VectorInt8", Vector128Int8);
+   VectorInt16  = _primitiveType[Vector128Int16]            = new (PERSISTENT_NEW) OMR::PrimitiveType("VectorInt16", Vector128Int16);
+   VectorInt32  = _primitiveType[Vector128Int32]            = new (PERSISTENT_NEW) OMR::PrimitiveType("VectorInt32", Vector128Int32);
+   VectorInt64  = _primitiveType[Vector128Int64]            = new (PERSISTENT_NEW) OMR::PrimitiveType("VectorInt64", Vector128Int64);
+   VectorFloat  = _primitiveType[Vector128Float]            = new (PERSISTENT_NEW) OMR::PrimitiveType("VectorFloat", Vector128Float);
+   VectorDouble = _primitiveType[Vector128Double]           = new (PERSISTENT_NEW) OMR::PrimitiveType("VectorDouble", Vector128Double);
 
    // pointer to primitive types
    pNoType       = _pointerToPrimitiveType[TR::NoType]       = new (PERSISTENT_NEW) OMR::PointerType(NoType);
@@ -485,16 +495,16 @@ OMR::TypeDictionary::TypeDictionary() :
    pFloat        = _pointerToPrimitiveType[TR::Float]        = new (PERSISTENT_NEW) OMR::PointerType(Float);
    pDouble       = _pointerToPrimitiveType[TR::Double]       = new (PERSISTENT_NEW) OMR::PointerType(Double);
    pAddress      = _pointerToPrimitiveType[TR::Address]      = new (PERSISTENT_NEW) OMR::PointerType(Address);
-   pVectorInt8   = _pointerToPrimitiveType[TR::VectorInt8]   = new (PERSISTENT_NEW) OMR::PointerType(VectorInt8);
-   pVectorInt16  = _pointerToPrimitiveType[TR::VectorInt16]  = new (PERSISTENT_NEW) OMR::PointerType(VectorInt16);
-   pVectorInt32  = _pointerToPrimitiveType[TR::VectorInt32]  = new (PERSISTENT_NEW) OMR::PointerType(VectorInt32);
-   pVectorInt64  = _pointerToPrimitiveType[TR::VectorInt64]  = new (PERSISTENT_NEW) OMR::PointerType(VectorInt64);
-   pVectorFloat  = _pointerToPrimitiveType[TR::VectorFloat]  = new (PERSISTENT_NEW) OMR::PointerType(VectorFloat);
-   pVectorDouble = _pointerToPrimitiveType[TR::VectorDouble] = new (PERSISTENT_NEW) OMR::PointerType(VectorDouble);
+   pVectorInt8   = _pointerToPrimitiveType[Vector128Int8]   = new (PERSISTENT_NEW) OMR::PointerType(VectorInt8);
+   pVectorInt16  = _pointerToPrimitiveType[Vector128Int16]  = new (PERSISTENT_NEW) OMR::PointerType(VectorInt16);
+   pVectorInt32  = _pointerToPrimitiveType[Vector128Int32]  = new (PERSISTENT_NEW) OMR::PointerType(VectorInt32);
+   pVectorInt64  = _pointerToPrimitiveType[Vector128Int64]  = new (PERSISTENT_NEW) OMR::PointerType(VectorInt64);
+   pVectorFloat  = _pointerToPrimitiveType[Vector128Float]  = new (PERSISTENT_NEW) OMR::PointerType(VectorFloat);
+   pVectorDouble = _pointerToPrimitiveType[Vector128Double] = new (PERSISTENT_NEW) OMR::PointerType(VectorDouble);
 
    if (TR::Compiler->target.is64Bit())
       {
-      Word =  _primitiveType[TR::Int64]; 
+      Word =  _primitiveType[TR::Int64];
       pWord =  _pointerToPrimitiveType[TR::Int64];
       }
    else
@@ -575,7 +585,7 @@ TR::IlType *
 OMR::TypeDictionary::DefineUnion(const char *unionName)
    {
    TR_ASSERT_FATAL(_unionsByName.find(unionName) == _unionsByName.end(), "Union '%s' already exists", unionName);
-   
+
    OMR::UnionType *newType = new (PERSISTENT_NEW) OMR::UnionType(unionName, trMemory());
    _unionsByName.insert(std::make_pair(unionName, newType));
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -577,7 +577,7 @@ bool decodeConversionOpcode(TR::ILOpCode op, TR::DataType nodeDataType, TR::Data
       {
       targetDataType = nodeDataType;
       TR::ILOpCodes opValue = op.getOpCodeValue();
-      for (int i = 0; i < TR::NumTypes; i++)
+      for (int i = 0; i < TR::NumAllTypes; i++)
           {
           sourceDataType = (TR::DataTypes)i;
           if (opValue == TR::ILOpCode::getProperConversion(sourceDataType, targetDataType, false /*!wantZeroExtension*/))

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 IBM Corp. and others
+ * Copyright (c) 2016, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -59,7 +59,7 @@ public:
     * @brief Begin definition of a new structure type
     * @param structName the name of the new type
     * @return pointer to IlType instance of the new type being defined
-    * 
+    *
     * The name of the new type will have to be used when specifying
     * fields of the type. This method must be invoked once before any
     * calls to `DefineField()` and `CloseStruct()`.
@@ -72,14 +72,14 @@ public:
     * @param fieldName the name of the field
     * @param type the IlType instance representing the type of the field
     * @param offset the offset of the field within the structure (in bytes)
-    * 
+    *
     * Fields defined using this method must be defined in offset order.
     * Specifically, the `offset` on any call to this method must be greater
     * than or equal to the size of the new struct at the time of the call
     * (`getSize() <= offset`). Failure to meet this condition will result
     * in a runtime failure. This was done as an initial attempt to prevent
     * struct fields from overlapping in memory.
-    * 
+    *
     * This method can only be called after a call to `DefineStruct` and
     * before a call to `CloseStruct` with the same `structName`.
     */
@@ -90,13 +90,13 @@ public:
     * @param structName the name of the struct type on which to define the field
     * @param fieldName the name of the field
     * @param type the IlType instance representing the type of the field
-    * 
+    *
     * This is an overloaded method. Since no offset for the new struct field is
     * specified, it will be added to the end of the struct using alignment rules
     * internally defined by JitBuilder. These are not guaranteed match the rules
     * used by a C/C++ compiler as alignment rules are compiler specific. However,
     * the alignment should be the same in most cases.
-    * 
+    *
     * This method can only be called after a call to `DefineStruct` and
     * before a call to `CloseStruct` with the same `structName`.
     */
@@ -106,7 +106,7 @@ public:
     * @brief End definition of a new structure type
     * @param structName the name of the new type of which the definition is ended
     * @param finalSize the final size (in bytes) of the type
-    * 
+    *
     * The `finalSize` of the struct must be greater than or equal to the size of
     * the new struct at the time of the call (`getSize() <= finalSize`). If
     * `finalSize` is greater, the size of the struct will be adjusted. Failure to
@@ -119,7 +119,7 @@ public:
    /**
     * @brief End definition of a new structure type
     * @param structName the name of the new type of which the definition is ended
-    * 
+    *
     * This is an overloaded method. Since the final size of the struct is not
     * specified, the size of the new struct at the time of call to this method
     * will be the final size of the new struct type.
@@ -241,7 +241,7 @@ protected:
 
 public:
    // convenience for primitive types
-   TR::IlType       * _primitiveType[TR::NumOMRTypes];
+   TR::IlType       * _primitiveType[TR::NumAllTypes];
    TR::IlType       * NoType;
    TR::IlType       * Int8;
    TR::IlType       * Int16;
@@ -258,7 +258,7 @@ public:
    TR::IlType       * VectorFloat;
    TR::IlType       * VectorDouble;
 
-   TR::IlType       * _pointerToPrimitiveType[TR::NumOMRTypes];
+   TR::IlType       * _pointerToPrimitiveType[TR::NumAllTypes];
    TR::IlType       * pNoType;
    TR::IlType       * pInt8;
    TR::IlType       * pInt16;

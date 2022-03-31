@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -256,7 +256,6 @@ public:
 
 protected:
 
-   
    CodeGenerator(TR::Compilation *comp);
 
 public:
@@ -750,7 +749,7 @@ public:
 
    virtual bool isDispInRange(int64_t disp);
 
-   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType);
+   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType, TR::VectorLength);
 
    TR::Instruction *_ccInstruction;
    TR::Instruction* ccInstruction() { return _ccInstruction; }

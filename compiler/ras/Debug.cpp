@@ -1519,7 +1519,7 @@ TR_Debug::getName(TR::SymbolReference * symRef)
    if (index < nonhelperIndex)
       {
       if (index >= numHelperSymbols + TR::SymbolReferenceTable::firstArrayShadowSymbol &&
-          index < numHelperSymbols + TR::SymbolReferenceTable::firstArrayShadowSymbol + TR::NumTypes)
+          index < numHelperSymbols + TR::SymbolReferenceTable::firstArrayShadowSymbol + TR::NumAllTypes)
          return "<array-shadow>";
       if (index >= numHelperSymbols + TR::SymbolReferenceTable::firstPerCodeCacheHelperSymbol &&
           index <= numHelperSymbols + TR::SymbolReferenceTable::lastPerCodeCacheHelperSymbol)

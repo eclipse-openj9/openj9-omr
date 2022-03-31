@@ -295,10 +295,7 @@ TR::ARM64SystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
       if (localCursor->getGCMapIndex() < 0
           && localCursor->getDataType() != TR::Int64
           && localCursor->getDataType() != TR::Double
-          && localCursor->getDataType() != TR::VectorInt8
-          && localCursor->getDataType() != TR::VectorInt16
-          && localCursor->getDataType() != TR::VectorFloat
-          && localCursor->getDataType() != TR::VectorDouble)
+          && !localCursor->getDataType().isVector())
          {
          localCursor->setOffset(stackIndex);
          stackIndex += (localCursor->getSize() + 3) & (~3);
@@ -329,10 +326,7 @@ TR::ARM64SystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
    // map vector automatics
    while (localCursor != NULL)
       {
-      if (localCursor->getDataType() == TR::VectorInt8
-          || localCursor->getDataType() == TR::VectorInt16
-          || localCursor->getDataType() == TR::VectorFloat
-          || localCursor->getDataType() == TR::VectorDouble)
+      if (localCursor->getDataType().isVector())
          {
          localCursor->setOffset(stackIndex);
          stackIndex += (localCursor->getSize() + 15) & (~15);

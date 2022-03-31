@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -742,26 +742,30 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                         self()->removeOSCOnSavedArgument((TR::Instruction *)cursor, self()->getRealRegister(regNum), offset);
                      }
                   break;
-               case TR::VectorInt8:
-               case TR::VectorInt16:
-               case TR::VectorInt32:
-               case TR::VectorInt64:
-               case TR::VectorDouble:
-                  if (genBinary)
+               default:
+                  if (dtype.isVector())
                      {
-                     cursor =  (void *) TR::S390CallSnippet::storeArgumentItem(TR::InstOpCode::VST, (uint8_t *) cursor, self()->getRealRegister(regNum),
+                     TR::DataType elementType = dtype.getVectorElementType();
+                     if (elementType == TR::Int8 || elementType == TR::Int16 ||
+                         elementType == TR::Int32 || elementType == TR::Int64 || elementType == TR::Double)
+                        {
+                        if (genBinary)
+                           {
+                           cursor =  (void *) TR::S390CallSnippet::storeArgumentItem(TR::InstOpCode::VST, (uint8_t *) cursor, self()->getRealRegister(regNum),
                                           offset, self()->cg());
-                     }
-                  else
-                     {
-                     TR::MemoryReference* mr = generateS390MemoryReference(stackPtr, offset, self()->cg(), param_name);
-                     cursor =  generateRXInstruction(self()->cg(), TR::InstOpCode::VST, firstNode, self()->getRealRegister(regNum),
+                           }
+                        else
+                           {
+                           TR::MemoryReference* mr = generateS390MemoryReference(stackPtr, offset, self()->cg(), param_name);
+                           cursor =  generateRXInstruction(self()->cg(), TR::InstOpCode::VST, firstNode, self()->getRealRegister(regNum),
                                           mr, (TR::Instruction *) cursor);
-                     ((TR::Instruction*)cursor)->setBinLocalFreeRegs(binLocalRegs);
-                     if (!InPreProlog && !globalAllocatedRegisters.isSet(regNum))
-                        self()->removeOSCOnSavedArgument((TR::Instruction *)cursor, self()->getRealRegister(regNum), offset);
+                           ((TR::Instruction*)cursor)->setBinLocalFreeRegs(binLocalRegs);
+                           if (!InPreProlog && !globalAllocatedRegisters.isSet(regNum))
+                              self()->removeOSCOnSavedArgument((TR::Instruction *)cursor, self()->getRealRegister(regNum), offset);
+                           }
+                        break;
+                        }
                      }
-                  break;
 
                } //switch(dtype)
 
@@ -1213,12 +1217,14 @@ OMR::Z::Linkage::getOpCodeForLinkage(TR::Node * child, bool isStore, bool isRegR
               return (isStore)? TR::InstOpCode::STE : (isRegReg)? TR::InstOpCode::LER : TR::InstOpCode::LE;
          case TR::Double:
               return (isStore)? TR::InstOpCode::STD : (isRegReg)? TR::InstOpCode::LDR : TR::InstOpCode::LD;
-         case TR::VectorInt8:
-         case TR::VectorInt16:
-         case TR::VectorInt32:
-         case TR::VectorInt64:
-         case TR::VectorDouble:
-              return (isStore)? TR::InstOpCode::VST : (isRegReg)? TR::InstOpCode::VLR : TR::InstOpCode::VL;
+         default:
+            if (child->getDataType().isVector())
+               {
+               TR::DataType elementType = child->getDataType().getVectorElementType();
+               if (elementType == TR::Int8 || elementType == TR::Int16 ||
+                   elementType == TR::Int32 || elementType == TR::Int64 || elementType == TR::Double)
+                  return (isStore)? TR::InstOpCode::VST : (isRegReg)? TR::InstOpCode::VLR : TR::InstOpCode::VL;
+               }
          }
       return TR::InstOpCode::NOP;
    }
@@ -1919,14 +1925,18 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
                   numIntegerArgs ++;
                }
             break;
-         case TR::VectorInt8:
-         case TR::VectorInt16:
-         case TR::VectorInt32:
-         case TR::VectorInt64:
-         case TR::VectorDouble:
-            argRegister = self()->pushVectorArg(callNode, child, numVectorArgs, i, &stackOffset, dependencies);
-            numVectorArgs++;
-            break;
+         default:
+            if (child->getDataType().isVector())
+               {
+               TR::DataType elementType = child->getDataType().getVectorElementType();
+               if (elementType == TR::Int8 || elementType == TR::Int16 ||
+                   elementType == TR::Int32 || elementType == TR::Int64 || elementType == TR::Double)
+                  {
+                  argRegister = self()->pushVectorArg(callNode, child, numVectorArgs, i, &stackOffset, dependencies);
+                  numVectorArgs++;
+                  break;
+                  }
+               }
          }
 
          if (self()->isFastLinkLinkageType())
@@ -1980,16 +1990,20 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
             //add extra return register dependency
             killMask = self()->addFECustomizedReturnRegDependency(killMask, self(), resType, dependencies);
             break;
-         case TR::VectorInt8:
-         case TR::VectorInt16:
-         case TR::VectorInt32:
-         case TR::VectorInt64:
-         case TR::VectorDouble:
-            resultReg = self()->cg()->allocateRegister(TR_VRF);
-            self()->cg()->setRealRegisterAssociation(resultReg, self()->getVectorReturnRegister());
-            dependencies->addPostCondition(resultReg, self()->getVectorReturnRegister(),DefinesDependentRegister);
-            killMask &= (~(0x1L << REGINDEX(self()->getVectorReturnRegister())));
-            break;
+         default:
+            if (resDataType.isVector())
+               {
+               TR::DataType elementType = resDataType.getVectorElementType();
+               if (elementType == TR::Int8 || elementType == TR::Int16 ||
+                   elementType == TR::Int32 || elementType == TR::Int64 || elementType == TR::Double)
+                  {
+                  resultReg = self()->cg()->allocateRegister(TR_VRF);
+                  self()->cg()->setRealRegisterAssociation(resultReg, self()->getVectorReturnRegister());
+                  dependencies->addPostCondition(resultReg, self()->getVectorReturnRegister(),DefinesDependentRegister);
+                  killMask &= (~(0x1L << REGINDEX(self()->getVectorReturnRegister())));
+                  break;
+                  }
+               }
       }
 
 

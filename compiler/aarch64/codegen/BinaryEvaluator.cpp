@@ -550,25 +550,28 @@ inlineVectorBinaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnem
 TR::Register *
 OMR::ARM64::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::InstOpCode::Mnemonic addOp;
-   switch(node->getDataType())
+   switch(node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
+      case TR::Int8:
          addOp = TR::InstOpCode::vadd16b;
          break;
-      case TR::VectorInt16:
+      case TR::Int16:
          addOp = TR::InstOpCode::vadd8h;
          break;
-      case TR::VectorInt32:
+      case TR::Int32:
          addOp = TR::InstOpCode::vadd4s;
          break;
-      case TR::VectorInt64:
+      case TR::Int64:
          addOp = TR::InstOpCode::vadd2d;
          break;
-      case TR::VectorFloat:
+      case TR::Float:
          addOp = TR::InstOpCode::vfadd4s;
          break;
-      case TR::VectorDouble:
+      case TR::Double:
          addOp = TR::InstOpCode::vfadd2d;
          break;
       default:
@@ -581,25 +584,28 @@ OMR::ARM64::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::InstOpCode::Mnemonic subOp;
-   switch(node->getDataType())
+   switch(node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
+      case TR::Int8:
          subOp = TR::InstOpCode::vsub16b;
          break;
-      case TR::VectorInt16:
+      case TR::Int16:
          subOp = TR::InstOpCode::vsub8h;
          break;
-      case TR::VectorInt32:
+      case TR::Int32:
          subOp = TR::InstOpCode::vsub4s;
          break;
-      case TR::VectorInt64:
+      case TR::Int64:
          subOp = TR::InstOpCode::vsub2d;
          break;
-      case TR::VectorFloat:
+      case TR::Float:
          subOp = TR::InstOpCode::vfsub4s;
          break;
-      case TR::VectorDouble:
+      case TR::Double:
          subOp = TR::InstOpCode::vfsub2d;
          break;
       default:
@@ -612,22 +618,25 @@ OMR::ARM64::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::InstOpCode::Mnemonic mulOp;
-   switch(node->getDataType())
+   switch(node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
+      case TR::Int8:
          mulOp = TR::InstOpCode::vmul16b;
          break;
-      case TR::VectorInt16:
+      case TR::Int16:
          mulOp = TR::InstOpCode::vmul8h;
          break;
-      case TR::VectorInt32:
+      case TR::Int32:
          mulOp = TR::InstOpCode::vmul4s;
          break;
-      case TR::VectorFloat:
+      case TR::Float:
          mulOp = TR::InstOpCode::vfmul4s;
          break;
-      case TR::VectorDouble:
+      case TR::Double:
          mulOp = TR::InstOpCode::vfmul2d;
          break;
       default:
@@ -640,13 +649,16 @@ OMR::ARM64::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::InstOpCode::Mnemonic divOp;
-   switch(node->getDataType())
+   switch(node->getDataType().getVectorElementType())
       {
-      case TR::VectorFloat:
+      case TR::Float:
          divOp = TR::InstOpCode::vfdiv4s;
          break;
-      case TR::VectorDouble:
+      case TR::Double:
          divOp = TR::InstOpCode::vfdiv2d;
          break;
       default:
@@ -659,10 +671,13 @@ OMR::ARM64::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::InstOpCode::Mnemonic andOp;
-   switch(node->getDataType())
+   switch(node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
+      case TR::Int8:
          andOp = TR::InstOpCode::vand16b;
          break;
       default:
@@ -675,10 +690,13 @@ OMR::ARM64::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::InstOpCode::Mnemonic orrOp;
-   switch(node->getDataType())
+   switch(node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
+      case TR::Int8:
          orrOp = TR::InstOpCode::vorr16b;
          break;
       default:
@@ -691,10 +709,13 @@ OMR::ARM64::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::InstOpCode::Mnemonic xorOp;
-   switch(node->getDataType())
+   switch(node->getDataType().getVectorElementType())
       {
-      case TR::VectorInt8:
+      case TR::Int8:
          xorOp = TR::InstOpCode::veor16b;
          break;
       default:
@@ -1091,7 +1112,7 @@ generateUBFMForMaskAndShift(TR::Node *shiftNode, TR::CodeGenerator *cg)
       {
       uint64_t shiftedMask = (maskValue >> shiftValue);
       /*
-       * If the lsb of shiftedMask is set and the shiftedMask has consecutive 1s, then this operation is copying 
+       * If the lsb of shiftedMask is set and the shiftedMask has consecutive 1s, then this operation is copying
        * consecutive 1s starting from the bit position shiftValue of the source register to the least significant bits of the destination register.
        */
       if (((shiftedMask & 1) == 1) && contiguousBits(shiftedMask))
@@ -1680,7 +1701,7 @@ generateUBFMForShiftAndMask(TR::Node *andNode, TR::CodeGenerator *cg)
       else /* right shift*/
          {
          /*
-          * If the lsb of maskValue is set and the msb is not set and the maskValue has consecutive 1s, then this operation is copying 
+          * If the lsb of maskValue is set and the msb is not set and the maskValue has consecutive 1s, then this operation is copying
           * consecutive 1s starting from the bit position shiftValue of the source register to the least significant bits of the destination register.
           * We consider arithmetic shift only.
           */

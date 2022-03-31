@@ -137,6 +137,11 @@ TR::Register *OMR::X86::TreeEvaluator::integerAbsEvaluator(TR::Node *node, TR::C
 TR::Register*
 OMR::X86::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::DataType type = node->getDataType();
+
+   TR_ASSERT_FATAL_WITH_NODE(node, type.getVectorLength() == TR::VectorLength128,
+                             "Only 128-bit vectors are supported right now\n");
+
    TR::Node *valueNode = node->getChild(0);
    TR::Register *resultReg = cg->allocateRegister(TR_VRF);
    TR::Register *valueReg = cg->evaluate(valueNode);
@@ -145,24 +150,24 @@ OMR::X86::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    generateRegRegInstruction(TR::InstOpCode::PXORRegReg, node, resultReg, resultReg, cg);
    TR::InstOpCode::Mnemonic subOpcode;
 
-   switch (node->getDataType())
+   switch (type.getVectorElementType())
       {
-      case TR::VectorInt8:
+      case TR::Int8:
          subOpcode = TR::InstOpCode::PSUBBRegReg;
          break;
-      case TR::VectorInt16:
+      case TR::Int16:
          subOpcode = TR::InstOpCode::PSUBWRegReg;
          break;
-      case TR::VectorInt32:
+      case TR::Int32:
          subOpcode = TR::InstOpCode::PSUBDRegReg;
          break;
-      case TR::VectorInt64:
+      case TR::Int64:
          subOpcode = TR::InstOpCode::PSUBQRegReg;
          break;
-      case TR::VectorFloat:
+      case TR::Float:
          subOpcode = TR::InstOpCode::SUBPSRegReg;
          break;
-      case TR::VectorDouble:
+      case TR::Double:
          subOpcode = TR::InstOpCode::SUBPDRegReg;
          break;
       default:

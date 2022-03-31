@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 IBM Corp. and others
+ * Copyright (c) 2017, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,6 +23,7 @@
 #define OMR_DATATYPES_INLINES_INCL
 
 #include "il/OMRDataTypes.hpp"
+#include "infra/Assert.hpp"
 
 TR::DataType*
 OMR::DataType::self()
@@ -80,8 +81,7 @@ OMR::DataType::isFloatingPoint()
 bool
 OMR::DataType::isVector()
    {
-   return self()->getDataType() == TR::VectorInt8 || self()->getDataType() == TR::VectorInt16 || self()->getDataType() == TR::VectorInt32 || self()->getDataType() == TR::VectorInt64 ||
-                        self()->getDataType() == TR::VectorFloat || self()->getDataType() == TR::VectorDouble;
+   return _type >= TR::NumScalarTypes;
    }
 
 bool
@@ -199,5 +199,49 @@ OMR::DataType::operator>(TR::DataTypes rhs)
    {		
    return _type > rhs;		
    }		
+
+TR::DataTypes
+OMR::DataType::createVectorType(TR::DataTypes elementType, TR::VectorLength length)
+   {
+   TR_ASSERT_FATAL(elementType > TR::NoType && elementType <= TR::NumVectorElementTypes,
+                   "Invalid vector element type %d\n", elementType);
+   TR_ASSERT_FATAL(length > TR::NoVectorLength && length <= TR::NumVectorLengths,
+                   "Invalid vector length %d\n", length);
+
+   TR::DataTypes type = static_cast<TR::DataTypes>(TR::NumScalarTypes + (length-1) * TR::NumVectorElementTypes + elementType - 1);
+
+   return type;
+   }
+
+TR::DataType
+OMR::DataType::getVectorElementType()
+   {
+   TR_ASSERT_FATAL(isVector(), "getVectorElementType() is called on non-vector type\n");
+
+   return static_cast<TR::DataTypes>((_type - TR::NumScalarTypes) % TR::NumVectorElementTypes + 1);
+   }
+
+TR::VectorLength
+OMR::DataType::getVectorLength()
+   {
+   TR_ASSERT_FATAL(isVector(), "getVectorLength() is called on non-vector type\n");
+
+   return static_cast<TR::VectorLength>((_type - TR::NumScalarTypes) / TR::NumVectorElementTypes + 1);
+   }
+
+TR::VectorLength
+OMR::DataType::bitsToVectorLength(int32_t bits)
+   {
+   TR::VectorLength length = TR::NoVectorLength;
+   switch (bits)
+      {
+      case 64:  length = TR::VectorLength64; break;
+      case 128: length = TR::VectorLength128; break;
+      case 256: length = TR::VectorLength256; break;
+      case 512: length = TR::VectorLength512; break;
+      }
+
+   return length;
+   }
 
 #endif // OMR_DATATYPES_INLINES_INCL

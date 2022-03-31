@@ -5774,32 +5774,40 @@ _end:
 }
 
 /**
- * Reads the Cgroup metric (if has multiple searched for metric key and reads it) and returns the value to the param `value`
+ * Reads the cgroup metric (if has multiple searched for metric key and reads it) and returns the
+ * value to the param value.
  *
- * @param[in] portLibrary pointer to OMRPortLibrary
- * @param[in] subsystemFlag flag of type OMR_CGROUP_SUBSYSTEMS_* representing the cgroup subsystem
- * @param[in] fileName name of the file under cgroup subsystem
- * @param[in] metricKeyInFile name of the cgroup metric which is in a group of metrics in a cgroup subsystem file
- * @param[in/out] value pointer to char * which stores the value for the specified cgroup subsystem metric
- * @param[in/out] fileContent double pointer to allocate memory and write file content in case of a multiline file with more than 1 metric available in it
+ * @param[in] portLibrary pointer to OMRPortLibrary.
+ * @param[in] subsystemFlag flag of type OMR_CGROUP_SUBSYSTEMS_* representing the cgroup subsystem.
+ * @param[in] fileName name of the file under cgroup subsystem.
+ * @param[in] metricKeyInFile name of the cgroup metric which is in a group of metrics in a cgroup
+ * subsystem file.
+ * @param[in/out] value pointer to char * which stores the value for the specified cgroup subsystem
+ * metric.
+ * @param[in/out] fileContent double pointer to allocate memory and write file content in case of a
+ * multiline file with more than 1 metric available in it.
  *
- * @return 0 on success, negative error code on any error
+ * @return 0 on success, negative error code on any error.
  */
 static int32_t
 readCgroupMetricFromFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, const char *metricKeyInFile, char **fileContent, char *value)
 {
 	int32_t rc = 0;
 	FILE *file = NULL;
+
 	rc = getHandleOfCgroupSubsystemFile(portLibrary, subsystemFlag, fileName, &file);
 	if (0 != rc) {
 		goto _end;
 	}
-	if (NULL == metricKeyInFile) { /* If `metricKeyInFile` is NULL then it states the file has only one Cgroup metric to be read */
+
+	if (NULL == metricKeyInFile) {
+		/* The file has only one cgroup metric to be read. */
 		if (NULL == fgets(value, MAX_LINE_LENGTH, file)) {
 			rc = OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_METRIC_NOT_AVAILABLE;
 		}
 		goto _end;
-	} else { /* Else we read the file to a buffer and pick the metrics from it later */
+	} else {
+		/* Read the file to a buffer and pick the metrics from it later. */
 		*fileContent = portLibrary->mem_allocate_memory(portLibrary, CGROUP_METRIC_FILE_CONTENT_MAX_LIMIT, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 		if (NULL != *fileContent) {
 			size_t returnvalue = fread(*fileContent, 1, CGROUP_METRIC_FILE_CONTENT_MAX_LIMIT, file);

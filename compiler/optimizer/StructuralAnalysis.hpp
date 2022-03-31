@@ -90,8 +90,8 @@ class TR_RegionAnalysis
       int32_t getNumber() { return _originalBlock ? _originalBlock->getNumber() : -1; }
       };
 
-   TR_RegionAnalysis(TR::Compilation *comp, TR_Dominators &dominators, TR::CFG * cfg, TR::Region &workingRegion) :
-      _workingRegion(workingRegion),
+   TR_RegionAnalysis(TR::Compilation *comp, TR_Dominators &dominators, TR::CFG * cfg, TR::Region &workingMemoryRegion) :
+      _workingMemoryRegion(workingMemoryRegion),
       _structureMemoryRegion(comp->getFlowGraph()->structureMemoryRegion()),
       _compilation(comp),
       _infoTable(NULL),
@@ -99,7 +99,7 @@ class TR_RegionAnalysis
       _cfg(cfg)
       {
       }
-   TR::Region &_workingRegion;
+   TR::Region &_workingMemoryRegion;
    TR::Region &_structureMemoryRegion;
    TR::Compilation *_compilation;
 

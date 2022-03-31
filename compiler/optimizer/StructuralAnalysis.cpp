@@ -116,7 +116,7 @@ void TR_RegionAnalysis::createLeafStructures(TR::CFG *cfg, TR::Region &region)
 
    _totalNumberOfNodes = 0;
 
-   _infoTable = (StructInfo**) _workingRegion.allocate((cfg->getNumberOfNodes()+1)*sizeof(StructInfo*));
+   _infoTable = (StructInfo**) _workingMemoryRegion.allocate((cfg->getNumberOfNodes()+1)*sizeof(StructInfo*));
 
    // We need two passes to initialize the array of StructInfo objects
    // because the order of nodes is not necessarily sequential.

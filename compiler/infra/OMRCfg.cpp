@@ -365,7 +365,7 @@ bool OMR::alwaysTrue(TR::CFGEdge * e)
    }
 
 
-TR_OrderedExceptionHandlerIterator::TR_OrderedExceptionHandlerIterator(TR::Block * tryBlock, TR::Region &workingRegion)
+TR_OrderedExceptionHandlerIterator::TR_OrderedExceptionHandlerIterator(TR::Block * tryBlock, TR::Region &workingMemoryRegion)
    {
    if (tryBlock->getExceptionSuccessors().empty())
       _dim = 0;
@@ -382,7 +382,7 @@ TR_OrderedExceptionHandlerIterator::TR_OrderedExceptionHandlerIterator(TR::Block
          }
 
       _dim = handlerDim * inlineDim;
-      _handlers = (TR::Block **)workingRegion.allocate(_dim*sizeof(TR::Block *));
+      _handlers = (TR::Block **)workingMemoryRegion.allocate(_dim*sizeof(TR::Block *));
       memset(_handlers, 0, _dim*sizeof(TR::Block *));
 
       for (auto e = tryBlock->getExceptionSuccessors().begin(); e != tryBlock->getExceptionSuccessors().end(); ++e)

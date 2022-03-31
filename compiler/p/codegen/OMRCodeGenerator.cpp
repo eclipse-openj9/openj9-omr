@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1801,6 +1801,8 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
          else
             return false;
       case TR::vsplats:
+         if ((dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double))
+            return true;
       case TR::getvelem:
          if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
             return true;

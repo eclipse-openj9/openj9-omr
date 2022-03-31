@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -926,7 +926,17 @@ FORMAT_VRS_D34_RA_R,
 // |     | XS        | RA       | d1                              |
 // | 0   | 5         | 11       | 16                              |
 // +-----+-----------+----------+---------------------------------+
-FORMAT_XS5_D34_RA_R
+FORMAT_XS5_D34_RA_R,
+
+
+// Formats for instructions with an XT field encoding the target VSX register and an IMM8
+// field:
+//
+// +------+----------+------+----------------+----------------+----+
+// |      | XT       |      | IMM8           |                | XT |
+// | 0    | 6        | 11   | 13             | 21             | 31 |
+// +------+----------+------+----------------+----------------+----+
+FORMAT_XT_IMM8
 
 };
 

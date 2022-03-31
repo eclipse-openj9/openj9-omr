@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1019,6 +1019,20 @@ static void fillFieldR(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
    cursor[0] |= (val << 20);
    }
 
+/**
+ * Fills in the 8-bit IMM8 field of a binary-encoded instruction with the provided immediate value:
+ *
+ * +----------------------+---------------------------------------+
+ * |                      | IMM8            |                     |
+ * | 0                    | 13              | 21                  |
+ * +----------------------+---------------------------------------+
+ */
+static void fillFieldIMM8(TR::Instruction *instr, uint32_t *cursor, uint32_t val)
+   {
+   TR_ASSERT_FATAL_WITH_INSTRUCTION(instr, (val & 0xffu) == val || isValidInSignExtendedField(val, 0xffu), "0x%x is out-of-range for IMM8(8) field", val);
+   *cursor |= (val & 0xff) << 11;
+   }
+
 uint8_t *
 OMR::Power::Instruction::generateBinaryEncoding()
    {
@@ -1660,6 +1674,11 @@ TR::PPCTrg1ImmInstruction::fillBinaryEncodingFields(uint32_t *cursor)
          fillFieldXT5(self(), cursor + 1, trg);
          fillFieldD34(self(), cursor, static_cast<int64_t>(static_cast<int32_t>(imm)));
          fillFieldR(self(), cursor, 1);
+         break;
+
+      case FORMAT_XT_IMM8:
+         fillFieldXT(self(), cursor, trg);
+         fillFieldIMM8(self(), cursor, imm);
          break;
 
       default:

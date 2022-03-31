@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -313,25 +313,35 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
 
    if (node->getDataType() == TR::VectorInt8)
       {
-      TR::SymbolReference    *temp    = cg->allocateLocalTemp(TR::VectorInt8);
-      TR::MemoryReference *tempMR  = TR::MemoryReference::createWithSymRef(cg, node, temp, 1);
-      TR::Register *srcReg = cg->evaluate(child);
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, tempMR, srcReg);
-
-      TR::Register *tmpReg = cg->allocateRegister();
-
-      generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, tmpReg, tempMR);
-      tempMR = TR::MemoryReference::createWithIndexReg(cg, NULL, tmpReg, 16);
-      cg->stopUsingRegister(tmpReg);
-
       TR::Register *trgReg = cg->allocateRegister(TR_VRF);
 
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lxvd2x, node, trgReg, tempMR);
-#if defined(__LITTLE_ENDIAN__)
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::vspltb, node, trgReg, trgReg, 7);
-#else
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::vspltb, node, trgReg, trgReg, 0);
-#endif
+      //use single xxspltib instruction where possible
+      if (child->getOpCode().isLoadConst() && cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
+         {
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::xxspltib, node, trgReg, child->getConstValue());
+         }
+      else
+         {
+         TR::SymbolReference *temp    = cg->allocateLocalTemp(TR::VectorInt8);
+         TR::MemoryReference *tempMR  = TR::MemoryReference::createWithSymRef(cg, node, temp, 1);
+
+         TR::Register *srcReg = cg->evaluate(child);
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stb, node, tempMR, srcReg);
+
+         TR::Register *tmpReg = cg->allocateRegister();
+
+         generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, tmpReg, tempMR);
+         tempMR = TR::MemoryReference::createWithIndexReg(cg, NULL, tmpReg, 16);
+         cg->stopUsingRegister(tmpReg);
+
+         generateTrg1MemInstruction(cg, TR::InstOpCode::lxvd2x, node, trgReg, tempMR);
+      #if defined(__LITTLE_ENDIAN__)
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::vspltb, node, trgReg, trgReg, 7);
+      #else
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::vspltb, node, trgReg, trgReg, 0);
+      #endif
+         }
+
       node->setRegister(trgReg);
       cg->decReferenceCount(child);
       return trgReg;

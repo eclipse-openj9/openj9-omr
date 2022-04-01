@@ -8000,7 +8000,29 @@ int32_t TR_CheckcastAndProfiledGuardCoalescer::perform()
                      if (nDest == slowPathBlock
                          && slowPathBlock->getPredecessors().size() == 2)
                         {
-                        ifNode = n;
+                        // Check for an indirect load that will be evaluated in
+                        // the hot conditional tree. If there is one, then the
+                        // transformation would move checkcast across it too.
+                        //
+                        // It's safe to processSubtree() here because between
+                        // tt and n there is only a BBEnd and a BBStart. When
+                        // the tt loop reaches this conditional tree, the
+                        // redundant processSubtree() call will just do nothing
+                        // and return false. The false result will be fine
+                        // (even if the result is true here) because there
+                        // won't be a candidate checkcast anymore.
+                        //
+                        if (processSubtree(visited, fresh, freshByAuto, n))
+                           {
+                           // leave ifNode unset
+                           traceCannotTransform(
+                              node,
+                              "(hot conditional) will evaluate an indirect load");
+                           }
+                        else
+                           {
+                           ifNode = n;
+                           }
                         }
                      }
                   }

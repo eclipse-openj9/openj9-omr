@@ -3514,7 +3514,15 @@ TR::Register *OMR::Power::TreeEvaluator::vnegDoubleHelper(TR::Node *node, TR::Co
 
 TR::Register *OMR::Power::TreeEvaluator::vabsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   switch(node->getDataType().getVectorElementType())
+     {
+     case TR::Float:
+       return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::xvabssp);
+     case TR::Double:
+       return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::xvabsdp);
+     default:
+       TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
+     }
 }
 
 TR::Register *OMR::Power::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)

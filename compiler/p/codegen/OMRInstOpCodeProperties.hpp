@@ -12008,7 +12008,7 @@
    /* .description =    "Vector Absolute Value Double-Precision", */
    /* .prefix      = */ 0x00000000,
    /* .opcode      = */ 0xF0000764,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XB,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
@@ -12021,7 +12021,7 @@
    /* .description =    "Vector Absolute Value Single-Precision", */
    /* .prefix      = */ 0x00000000,
    /* .opcode      = */ 0xF0000664,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XB,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,

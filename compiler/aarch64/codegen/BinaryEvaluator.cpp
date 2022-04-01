@@ -678,6 +678,9 @@ OMR::ARM64::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    switch(node->getDataType().getVectorElementType())
       {
       case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
          andOp = TR::InstOpCode::vand16b;
          break;
       default:
@@ -697,6 +700,9 @@ OMR::ARM64::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    switch(node->getDataType().getVectorElementType())
       {
       case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
          orrOp = TR::InstOpCode::vorr16b;
          break;
       default:
@@ -716,6 +722,9 @@ OMR::ARM64::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    switch(node->getDataType().getVectorElementType())
       {
       case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
          xorOp = TR::InstOpCode::veor16b;
          break;
       default:

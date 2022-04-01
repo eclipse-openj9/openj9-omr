@@ -643,10 +643,10 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
       case TR::vor:
       case TR::vxor:
       case TR::vnot:
-         if (dt == TR::Int8)
+         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Int64)
             return true;
          else
-            return false; // Int16/ Int32/ Int64/ Float/ Double are not supported
+            return false; // Float/ Double are not supported
       case TR::vload:
       case TR::vloadi:
       case TR::vstore:

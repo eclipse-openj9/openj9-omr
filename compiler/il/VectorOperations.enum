@@ -259,3 +259,19 @@ VECTOR_OPERATION_MACRO(\
    /* .ifCompareOpCode      = */ TR::BadILOp, \
    /* .description          =    vector splats */ \
 )
+VECTOR_OPERATION_MACRO(\
+   /* .opcode               = */ vabs, \
+   /* .name                 = */ "vabs", \
+   /* .properties1          = */ 0, \
+   /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3          = */ ILProp3::Abs, \
+   /* .properties4          = */ 0, \
+   /* .dataType             = */ TR::NoType, \
+   /* .typeProperties       = */ ILTypeProp::Vector, \
+   /* .childProperties      = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOpCode   = */ TR::BadILOp, \
+   /* .reverseBranchOpCode  = */ TR::BadILOp, \
+   /* .booleanCompareOpCode = */ TR::BadILOp, \
+   /* .ifCompareOpCode      = */ TR::BadILOp, \
+   /* .description          =    vector absolute value */ \
+)

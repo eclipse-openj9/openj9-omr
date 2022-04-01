@@ -7756,11 +7756,16 @@ int32_t TR_CheckcastAndProfiledGuardCoalescer::perform()
                "catch block_%d has a non-exception predecessor",
                curBlock->getNumber());
 
+            // The predecessor is necessarily the textually previous block.
+            // Otherwise, the previous block would end with control flow that
+            // does not fall through, and checkcastTree would have been unset.
+            //
             // This is basically like being in an extended block, except that
             // there won't be any commoning, i.e. there won't be any more
             // occurrences of castObj. However, if castObjAuto is set, it's
             // still possible to find loads that match. Without castObjAuto,
             // it's pointless, so give up.
+            //
             if (castObjAuto == NULL)
                {
                checkcastTree = NULL;

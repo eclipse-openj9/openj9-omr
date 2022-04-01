@@ -702,6 +702,9 @@ protected:
    TR::X86ImmInstruction *_returnTypeInfoInstruction;
    const TR::X86LinkageProperties  *_linkageProperties;
 
+   TR_VFPState                     _vfpState;
+   TR::X86VFPSaveInstruction       *_vfpResetInstruction;
+
    private:
 
    bool nodeIsFoldableMemOperand(TR::Node *node, TR::Node *parent, TR_RegisterPressureState *state);
@@ -726,9 +729,6 @@ protected:
    int32_t                         _instructionPatchAlignmentBoundary;
    int32_t                         _PicSlotCount;
    int32_t                         _lowestCommonCodePatchingAlignmentBoundary;
-
-   TR_VFPState                     _vfpState;
-   TR::X86VFPSaveInstruction       *_vfpResetInstruction;
 
    TR_X86PaddingTable             *_paddingTable;
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -96,7 +96,7 @@ void TR_RegionAnalysis::simpleIterator (TR_Stack<int32_t>& workStack,
 
 void TR_RegionAnalysis::StructInfo::initialize(TR::Compilation * comp, int32_t index, TR::Block *block)
    {
-   _structure       = new (comp->getFlowGraph()->structureRegion()) TR_BlockStructure(comp, block->getNumber(), block);
+   _structure       = new (comp->getFlowGraph()->structureMemoryRegion()) TR_BlockStructure(comp, block->getNumber(), block);
    _originalBlock   = block;
    _nodeIndex       = index;
    }
@@ -116,7 +116,7 @@ void TR_RegionAnalysis::createLeafStructures(TR::CFG *cfg, TR::Region &region)
 
    _totalNumberOfNodes = 0;
 
-   _infoTable = (StructInfo**) _workingRegion.allocate((cfg->getNumberOfNodes()+1)*sizeof(StructInfo*));
+   _infoTable = (StructInfo**) _workingMemoryRegion.allocate((cfg->getNumberOfNodes()+1)*sizeof(StructInfo*));
 
    // We need two passes to initialize the array of StructInfo objects
    // because the order of nodes is not necessarily sequential.
@@ -373,7 +373,7 @@ TR_RegionStructure *TR_RegionAnalysis::findNaturalLoop(StructInfo &node,
    if (numBackEdges == 0)
       return NULL;
 
-   TR_RegionStructure *region = new (_structureRegion) TR_RegionStructure(_compilation, node._structure->getNumber() /* node._nodeIndex */);
+   TR_RegionStructure *region = new (_structureMemoryRegion) TR_RegionStructure(_compilation, node._structure->getNumber() /* node._nodeIndex */);
    if (cyclesFound)
       {
       if (trace())
@@ -526,7 +526,7 @@ TR_RegionStructure *TR_RegionAnalysis::findRegion(StructInfo &node,
          return NULL;
       }
 
-   TR_RegionStructure *region = new (_structureRegion) TR_RegionStructure(_compilation, node._structure->getNumber() /* node._nodeIndex */);
+   TR_RegionStructure *region = new (_structureMemoryRegion) TR_RegionStructure(_compilation, node._structure->getNumber() /* node._nodeIndex */);
    if (cyclesFound)
       {
       if (trace())
@@ -671,7 +671,7 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
       StructInfo &fromNode = getInfo(fromIndex);
 
       if (cfgNodes[fromIndex] == NULL)
-         cfgNodes[fromIndex] = new (_structureRegion) TR_StructureSubGraphNode(fromNode._structure);
+         cfgNodes[fromIndex] = new (_structureMemoryRegion) TR_StructureSubGraphNode(fromNode._structure);
       from = cfgNodes[fromIndex];
       region->addSubNode(from);
 
@@ -683,12 +683,12 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
          if (cfgNodes[toIndex] == NULL)
             {
             if (regionNodes.get(toIndex))
-               cfgNodes[toIndex] = new (_structureRegion) TR_StructureSubGraphNode(toNode._structure);
+               cfgNodes[toIndex] = new (_structureMemoryRegion) TR_StructureSubGraphNode(toNode._structure);
             else
-               cfgNodes[toIndex] = new (_structureRegion) TR_StructureSubGraphNode(toNode._structure->getNumber(), _structureRegion);
+               cfgNodes[toIndex] = new (_structureMemoryRegion) TR_StructureSubGraphNode(toNode._structure->getNumber(), _structureMemoryRegion);
             }
          to = cfgNodes[toIndex];
-         edge = TR::CFGEdge::createEdge(from,  to, _structureRegion);
+         edge = TR::CFGEdge::createEdge(from,  to, _structureMemoryRegion);
          if (regionNodes.get(toIndex))
             {
             toNode._pred.reset(fromIndex);
@@ -718,12 +718,12 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
          if (cfgNodes[toIndex] == NULL)
             {
             if (regionNodes.get(toIndex))
-               cfgNodes[toIndex] = new (_structureRegion) TR_StructureSubGraphNode(toNode._structure);
+               cfgNodes[toIndex] = new (_structureMemoryRegion) TR_StructureSubGraphNode(toNode._structure);
             else
-               cfgNodes[toIndex] = new (_structureRegion) TR_StructureSubGraphNode(toNode._structure->getNumber(), _structureRegion);
+               cfgNodes[toIndex] = new (_structureMemoryRegion) TR_StructureSubGraphNode(toNode._structure->getNumber(), _structureMemoryRegion);
             }
          to = cfgNodes[toIndex];
-         edge = TR::CFGEdge::createExceptionEdge(from, to, _structureRegion);
+         edge = TR::CFGEdge::createExceptionEdge(from, to, _structureMemoryRegion);
          if (regionNodes.get(toIndex))
             {
             toNode._exceptionPred.reset(fromIndex);

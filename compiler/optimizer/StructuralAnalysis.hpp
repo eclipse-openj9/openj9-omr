@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -90,17 +90,17 @@ class TR_RegionAnalysis
       int32_t getNumber() { return _originalBlock ? _originalBlock->getNumber() : -1; }
       };
 
-   TR_RegionAnalysis(TR::Compilation *comp, TR_Dominators &dominators, TR::CFG * cfg, TR::Region &workingRegion) :
-      _workingRegion(workingRegion),
-      _structureRegion(comp->getFlowGraph()->structureRegion()),
+   TR_RegionAnalysis(TR::Compilation *comp, TR_Dominators &dominators, TR::CFG * cfg, TR::Region &workingMemoryRegion) :
+      _workingMemoryRegion(workingMemoryRegion),
+      _structureMemoryRegion(comp->getFlowGraph()->structureMemoryRegion()),
       _compilation(comp),
       _infoTable(NULL),
       _dominators(dominators),
       _cfg(cfg)
       {
       }
-   TR::Region &_workingRegion;
-   TR::Region &_structureRegion;
+   TR::Region &_workingMemoryRegion;
+   TR::Region &_structureMemoryRegion;
    TR::Compilation *_compilation;
 
    /** The StructInfoTable is 1-based */

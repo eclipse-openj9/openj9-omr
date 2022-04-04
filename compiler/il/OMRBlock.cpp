@@ -95,7 +95,7 @@ OMR::Block::Block(TR_Memory * m) :
    }
 
 OMR::Block::Block(TR::CFG &cfg) :
-   TR::CFGNode(cfg.getInternalRegion())
+   TR::CFGNode(cfg.getInternalMemoryRegion())
    {
    self()->init(NULL, NULL);
    self()->setFrequency(-1);
@@ -113,7 +113,7 @@ OMR::Block::Block(TR::TreeTop *entry, TR::TreeTop *exit, TR_Memory * m) :
    }
 
 OMR::Block::Block(TR::TreeTop *entry, TR::TreeTop *exit, TR::CFG &cfg) :
-   TR::CFGNode(cfg.getInternalRegion())
+   TR::CFGNode(cfg.getInternalMemoryRegion())
    {
    self()->init(entry, exit);
    self()->setFrequency(-1);
@@ -142,7 +142,7 @@ OMR::Block::init(TR::TreeTop *entry, TR::TreeTop *exit)
 TR::Block*
 OMR::Block::createBlock(TR::TreeTop *entry, TR::TreeTop *exit, TR::CFG &cfg)
    {
-   return new (cfg.getInternalRegion()) TR::Block(entry, exit, cfg);
+   return new (cfg.getInternalMemoryRegion()) TR::Block(entry, exit, cfg);
    }
 
 /// Copy constructor
@@ -1624,9 +1624,9 @@ OMR::Block::split(TR::TreeTop * startOfNewBlock, TR::CFG * cfg, bool fixupCommon
       TR_BlockStructure *thisBlockStructure = self()->getStructureOf();
       if (thisBlockStructure)
          {
-         TR_BlockStructure *blockStructure2 = new (cfg->structureRegion()) TR_BlockStructure(comp, block2->getNumber(), block2);
+         TR_BlockStructure *blockStructure2 = new (cfg->structureMemoryRegion()) TR_BlockStructure(comp, block2->getNumber(), block2);
          TR_RegionStructure *parentStructure = thisBlockStructure->getParent()->asRegion();
-         TR_StructureSubGraphNode *blockStructureNode2 = new (cfg->structureRegion()) TR_StructureSubGraphNode(blockStructure2);
+         TR_StructureSubGraphNode *blockStructureNode2 = new (cfg->structureMemoryRegion()) TR_StructureSubGraphNode(blockStructure2);
          TR_StructureSubGraphNode *subNode;
          TR_RegionStructure::Cursor si(*parentStructure);
          for (subNode = si.getCurrent(); subNode != NULL; subNode = si.getNext())

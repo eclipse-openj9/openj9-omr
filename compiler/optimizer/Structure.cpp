@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -195,7 +195,7 @@ class TR_RegionStructure::ExitExtraction
       , _cfg(_comp->getFlowGraph())
       , _trace(_comp->getOption(TR_TraceExitExtraction))
       , _memRegion(memRegion)
-      , _structureRegion(_cfg->structureRegion())
+      , _structureMemoryRegion(_cfg->structureMemoryRegion())
       , _workStack(_memRegion)
       , _queued(std::less<TR_Structure*>(), _memRegion)
       , _regionContents(RcCmp(), _memRegion)
@@ -234,7 +234,7 @@ class TR_RegionStructure::ExitExtraction
    const bool _trace;
 
    TR::Region &_memRegion;
-   TR::Region &_structureRegion;
+   TR::Region &_structureMemoryRegion;
    StructureVec _workStack;
    StructureSet _queued;
    RegionContents _regionContents;
@@ -792,9 +792,9 @@ void TR_RegionStructure::ExitExtraction::moveNodeIntoParent(
    // Parent needs an edge from region to node
    auto * const regionNode = parent->subNodeFromStructure(region);
    if (nodeIsHandler)
-      TR::CFGEdge::createExceptionEdge(regionNode, node, _structureRegion);
+      TR::CFGEdge::createExceptionEdge(regionNode, node, _structureMemoryRegion);
    else
-      TR::CFGEdge::createEdge(regionNode, node, _structureRegion);
+      TR::CFGEdge::createEdge(regionNode, node, _structureMemoryRegion);
 
    if (_trace)
       {
@@ -955,9 +955,9 @@ void TR_RegionStructure::ExitExtraction::moveOutgoingEdgeToParent(
    else
       {
       if (isExceptionEdge)
-         TR::CFGEdge::createExceptionEdge(node, redirect, _structureRegion);
+         TR::CFGEdge::createExceptionEdge(node, redirect, _structureMemoryRegion);
       else
-         TR::CFGEdge::createEdge(node, redirect, _structureRegion);
+         TR::CFGEdge::createEdge(node, redirect, _structureMemoryRegion);
 
       if (_trace)
          {
@@ -1729,7 +1729,7 @@ bool TR_RegionStructure::containsOnlyAcyclicRegions()
 TR_Structure *TR_BlockStructure::cloneStructure(TR::Block **correspondingBlocks, TR_StructureSubGraphNode **correspodingSubNodes, List<TR_Structure> *whileLoops, List<TR_Structure> *correspondingWhileLoops)
    {
    TR::Block *correspondingBlock = correspondingBlocks[getNumber()];
-   TR_BlockStructure *clonedBlockStructure = new (cfg()->structureRegion()) TR_BlockStructure(comp(), correspondingBlock->getNumber(), correspondingBlock);
+   TR_BlockStructure *clonedBlockStructure = new (cfg()->structureMemoryRegion()) TR_BlockStructure(comp(), correspondingBlock->getNumber(), correspondingBlock);
    clonedBlockStructure->setNestingDepth(getNestingDepth());
    clonedBlockStructure->setMaxNestingDepth(getMaxNestingDepth());
    clonedBlockStructure->setDuplicatedBlock(this);
@@ -1741,8 +1741,8 @@ TR_Structure *TR_BlockStructure::cloneStructure(TR::Block **correspondingBlocks,
 
 TR_Structure *TR_RegionStructure::cloneStructure(TR::Block **correspondingBlocks, TR_StructureSubGraphNode **correspondingSubNodes, List<TR_Structure> *whileLoops, List<TR_Structure> *correspondingWhileLoops)
    {
-   TR::Region &structureRegion = cfg()->structureRegion();
-   TR_RegionStructure *clonedRegionStructure = new (structureRegion) TR_RegionStructure(comp(), correspondingBlocks[getNumber()]->getNumber());
+   TR::Region &structureMemoryRegion = cfg()->structureMemoryRegion();
+   TR_RegionStructure *clonedRegionStructure = new (structureMemoryRegion) TR_RegionStructure(comp(), correspondingBlocks[getNumber()]->getNumber());
    clonedRegionStructure->setAsCanonicalizedLoop(isCanonicalizedLoop());
    clonedRegionStructure->setContainsInternalCycles(containsInternalCycles());
 
@@ -1753,7 +1753,7 @@ TR_Structure *TR_RegionStructure::cloneStructure(TR::Block **correspondingBlocks
       {
       subStruct = subNode->getStructure();
       TR_Structure *clonedSubStruct = subStruct->cloneStructure(correspondingBlocks, correspondingSubNodes, whileLoops, correspondingWhileLoops);
-      TR_StructureSubGraphNode *clonedSubNode = new (structureRegion) TR_StructureSubGraphNode(clonedSubStruct);
+      TR_StructureSubGraphNode *clonedSubNode = new (structureMemoryRegion) TR_StructureSubGraphNode(clonedSubStruct);
       clonedRegionStructure->addSubNode(clonedSubNode);
       if (subNode == getEntry())
          clonedRegionStructure->setEntry(clonedSubNode);
@@ -1807,7 +1807,7 @@ TR_Structure *TR_RegionStructure::cloneStructure(TR::Block **correspondingBlocks
    TR_InductionVariable *prevClonedInductionVariable = NULL;
    while (currInductionVariable)
       {
-      TR_InductionVariable *currClonedInductionVariable = new (structureRegion) TR_InductionVariable();
+      TR_InductionVariable *currClonedInductionVariable = new (structureMemoryRegion) TR_InductionVariable();
       memcpy(currClonedInductionVariable, currInductionVariable, sizeof(TR_InductionVariable));
       if (!prevClonedInductionVariable)
          clonedRegionStructure->addInductionVariable(currClonedInductionVariable);
@@ -1963,7 +1963,7 @@ void TR_RegionStructure::addEdge(TR::CFGEdge *edge, bool isExceptionEdge)
       fromStruct->addExternalEdge(from->getStructureOf(), to->getNumber(), isExceptionEdge);
       }
 
-   TR::Region &structureRegion = cfg()->structureRegion();
+   TR::Region &structureMemoryRegion = cfg()->structureMemoryRegion();
    // Find the subgraph node for the to block
    //
    TR_StructureSubGraphNode *toNode;
@@ -1985,9 +1985,9 @@ void TR_RegionStructure::addEdge(TR::CFGEdge *edge, bool isExceptionEdge)
             {
             toStruct = to->getStructureOf();
             if (!toStruct)
-               toStruct = new ((structureRegion)) TR_BlockStructure(comp(), to->getNumber(), to);
+               toStruct = new ((structureMemoryRegion)) TR_BlockStructure(comp(), to->getNumber(), to);
             toStruct->setNumber(to->getNumber());
-            toNode = new (structureRegion) TR_StructureSubGraphNode(toStruct);
+            toNode = new (structureMemoryRegion) TR_StructureSubGraphNode(toStruct);
             addSubNode(toNode);
             toNode->setNumber(to->getNumber());
             }
@@ -2297,7 +2297,7 @@ TR_RegionStructure::addExitEdge(TR_StructureSubGraphNode *from, int32_t to, bool
       }
 
    TR::CFGEdge *edge;
-   TR::CFGNode *toNode = cursor ? cursor->getTo() : new (cfg()->structureRegion()) TR_StructureSubGraphNode(to, cfg()->structureRegion());
+   TR::CFGNode *toNode = cursor ? cursor->getTo() : new (cfg()->structureMemoryRegion()) TR_StructureSubGraphNode(to, cfg()->structureMemoryRegion());
 
    if (origEdge)
       {
@@ -2330,7 +2330,7 @@ TR_StructureSubGraphNode::create(int32_t num, TR_RegionStructure *region)
    if (edge)
       return edge->getTo()->asStructureSubGraphNode();
 
-   return new (region->cfg()->structureRegion()) TR_StructureSubGraphNode(num, region->cfg()->structureRegion());
+   return new (region->cfg()->structureMemoryRegion()) TR_StructureSubGraphNode(num, region->cfg()->structureMemoryRegion());
    }
 
 TR_StructureSubGraphNode *TR_StructureSubGraphNode::asStructureSubGraphNode() {return this;}

@@ -182,6 +182,59 @@ class OMR_EXTENSIBLE RealRegister : public OMR::X86::RealRegister
       *opcodeByte |= _fullRegisterBinaryEncodings[_registerNumber].id; // reg field is in bits 0-2 of opcode
       }
 
+   void setSourceRegisterFieldInEVEX(uint8_t *opcodeByte)
+      {
+      uint8_t regNum = getRegisterNumber() - xmm0;
+      uint8_t bits = 0;
+      *opcodeByte &= 0x9F;
+
+      if (regNum & 0x10)
+         {
+         bits |= 0x4;
+         }
+
+      if (regNum & 0x8)
+         {
+         bits |= 0x2;
+         }
+
+      *opcodeByte |= (~bits & 0x6) << 4;
+      }
+
+   void setSource2ndRegisterFieldInEVEX(uint8_t *opcodeByte)
+      {
+      uint8_t regNum = getRegisterNumber() - xmm0;
+
+      *opcodeByte &= 0x87; // zero out vvvv bits
+      *opcodeByte |= (~(regNum << 3)) & 0x78;
+      uint8_t *evexP1 = opcodeByte + 1;
+      *evexP1 &= 0xf7;
+
+      if (!(regNum & 0x10))
+         {
+         *evexP1 |= 0x8;
+         }
+      }
+
+   void setTargetRegisterFieldInEVEX(uint8_t *opcodeByte)
+      {
+      uint8_t regNum = getRegisterNumber() - xmm0;
+      uint8_t bits = 0;
+      *opcodeByte &= 0x6F;
+
+      if (regNum & 0x10)
+         {
+         bits |= 0x1;
+         }
+
+      if (regNum & 0x8)
+         {
+         bits |= 0x8;
+         }
+
+      *opcodeByte |= (~bits & 0x9) << 4;
+      }
+
    /** \brief
    *    Fill vvvv field in a VEX prefix
    *

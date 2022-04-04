@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -164,8 +164,8 @@ enum TR_X86ProcessorFeatures8
    TR_DeprecatesFPUCSDS       = 0x00002000,
    TR_MPX                     = 0x00004000,
    TR_RDT_A                   = 0x00008000,
-   // Reserved by Intel       = 0x00010000,
-   // Reserved by Intel       = 0x00020000,
+   TR_AVX512F                 = 0x00010000,
+   TR_AVX512DQ                = 0x00020000,
    TR_RDSEED                  = 0x00040000,
    TR_ADX                     = 0x00080000,
    TR_SMAP                    = 0x00100000,
@@ -178,14 +178,18 @@ enum TR_X86ProcessorFeatures8
    // Reserved by Intel       = 0x08000000,
    // Reserved by Intel       = 0x10000000,
    TR_SHA                     = 0x20000000,
-   // Reserved by Intel       = 0x40000000,
-   // Reserved by Intel       = 0x80000000,
+   TR_AVX512BW                = 0x40000000,
+   TR_AVX512VL                = 0x80000000,
    };
 
 inline uint32_t getFeatureFlags8Mask()
    {
    return  TR_HLE
-         | TR_RTM;
+         | TR_RTM
+         | TR_AVX512F
+         | TR_AVX512VL
+         | TR_AVX512BW
+         | TR_AVX512DQ;
    }
 
 enum TR_ProcessorDescription

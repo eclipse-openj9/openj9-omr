@@ -142,6 +142,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    void installRegisterFile(TR::RealRegister **registerFileCopy);
    TR::Register **captureRegisterAssociations();
    TR::list<TR::Register*> *captureSpilledRegistersList();
+   uint32_t maxAssignableRegisters();
 
    void purgeDeadRegistersFromRegisterFile();
    void adjustRegisterUseCountsUp(TR::list<OMR::RegisterUsage *> *rul, bool adjustFuture);
@@ -298,6 +299,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
 
    TR_GlobalRegisterNumber getLastGlobalFPRRegisterNumber()
       {return _numGlobalGPRs + _numGlobalFPRs - 1;}
+
 
    TR::RegisterDependencyConditions  *createDepCondForLiveGPRs();
    TR::RegisterDependencyConditions  *createCondForLiveAndSpilledGPRs(TR::list<TR::Register*> *spilledRegisterList = NULL);

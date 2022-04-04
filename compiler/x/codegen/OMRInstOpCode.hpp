@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021, 2021 IBM Corp. and others
+ * Copyright (c) 2021, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -102,8 +102,14 @@ namespace TR { class Register; }
 #define IA32OpProp1_SourceRegIsImplicit       0x00040000
 #define IA32OpProp1_TargetRegIsImplicit       0x00080000
 #define IA32OpProp1_FusableCompare            0x00100000
-#define IA32OpProp1_NeedsXacquirePrefix       0x00400000
-#define IA32OpProp1_NeedsXreleasePrefix       0x00800000
+#define IA32OpProp1_VectorIntMask             0x00200000
+#define IA32OpProp1_ZMMTarget                 0x00400000
+// Available                                  0x00800000
+#define IA32OpProp1_YMMSource                 0x01000000
+#define IA32OpProp1_YMMTarget                 0x02000000
+#define IA32OpProp1_ZMMSource                 0x04000000
+#define IA32OpProp1_VectorLongMask            0x10000000
+
 ////////////////////
 //
 // AMD64 flags
@@ -156,6 +162,9 @@ class InstOpCode: public OMR::InstOpCode
       VEX_L256 = 0x1,
       VEX_L512 = 0x2,
       VEX_L___ = 0x3, // Instruction does not support VEX encoding
+      EVEX_L128 = 0x4,
+      EVEX_L256 = 0x5,
+      EVEX_L512 = 0x6,
       };
    enum TR_OpCodeVEX_v : uint8_t
       {
@@ -199,7 +208,7 @@ class InstOpCode: public OMR::InstOpCode
       };
    struct OpCode_t
       {
-      uint8_t vex_l : 2;
+      uint8_t vex_l : 3;
       uint8_t vex_v : 1;
       uint8_t prefixes : 2;
       uint8_t rex_w : 1;
@@ -230,6 +239,22 @@ class InstOpCode: public OMR::InstOpCode
       inline bool supportsAVX() const
          {
          return vex_l != VEX_L___;
+         }
+      inline bool isEvex() const
+         {
+         return vex_l >= EVEX_L128;
+         }
+      inline bool isEvex128() const
+         {
+           return vex_l == EVEX_L128;
+         }
+      inline bool isEvex256() const
+         {
+           return vex_l == EVEX_L256;
+         }
+      inline bool isEvex512() const
+         {
+           return vex_l == EVEX_L512;
          }
       // check if the instruction is X87
       inline bool isX87() const
@@ -348,11 +373,13 @@ class InstOpCode: public OMR::InstOpCode
    inline uint32_t hasDoubleWordTarget()           const {return _properties1[_mnemonic] & IA32OpProp1_DoubleWordTarget;}
    inline uint32_t hasXMMSource()                  const {return _properties1[_mnemonic] & IA32OpProp1_XMMSource;}
    inline uint32_t hasXMMTarget()                  const {return _properties1[_mnemonic] & IA32OpProp1_XMMTarget;}
+   inline uint32_t hasYMMSource()                  const {return _properties1[_mnemonic] & IA32OpProp1_YMMSource;}
+   inline uint32_t hasYMMTarget()                  const {return _properties1[_mnemonic] & IA32OpProp1_YMMTarget;}
+   inline uint32_t hasZMMSource()                  const {return _properties1[_mnemonic] & IA32OpProp1_ZMMSource;}
+   inline uint32_t hasZMMTarget()                  const {return _properties1[_mnemonic] & IA32OpProp1_ZMMTarget;}
    inline uint32_t isPseudoOp()                    const {return _properties1[_mnemonic] & IA32OpProp1_PseudoOp;}
    inline uint32_t needsRepPrefix()                const {return _properties1[_mnemonic] & IA32OpProp1_NeedsRepPrefix;}
    inline uint32_t needsLockPrefix()               const {return _properties1[_mnemonic] & IA32OpProp1_NeedsLockPrefix;}
-   inline uint32_t needsXacquirePrefix()           const {return _properties1[_mnemonic] & IA32OpProp1_NeedsXacquirePrefix;}
-   inline uint32_t needsXreleasePrefix()           const {return _properties1[_mnemonic] & IA32OpProp1_NeedsXreleasePrefix;}
    inline uint32_t clearsUpperBits()               const {return hasIntTarget() && modifiesTarget();}
    inline uint32_t setsUpperBits()                 const {return hasLongTarget() && modifiesTarget();}
    inline uint32_t hasTargetRegisterInOpcode()     const {return _properties[_mnemonic] & IA32OpProp_TargetRegisterInOpcode;}
@@ -384,6 +411,7 @@ class InstOpCode: public OMR::InstOpCode
    inline uint32_t targetRegIsImplicit()           const { return _properties1[_mnemonic] & IA32OpProp1_TargetRegIsImplicit;}
    inline uint32_t sourceRegIsImplicit()           const { return _properties1[_mnemonic] & IA32OpProp1_SourceRegIsImplicit;}
    inline uint32_t isFusableCompare()              const { return _properties1[_mnemonic] & IA32OpProp1_FusableCompare; }
+   inline bool     isEvexInstruction()             const { return _binaries[_mnemonic].vex_l >> 2 == 1; }
 
    inline bool isSetRegInstruction() const
       {

@@ -637,7 +637,7 @@
 // vsbox,            // Vector AES SubBytes
    vsel,             // vector conditional select
    vsld,             // Vector Shift Left Dword
-// vsrad,            // Vector Shift Right Algebraic Dword
+   vsrad,            // Vector Shift Right Algebraic Dword
 // vsrd,             // Vector Shift Right Dword
 // vsubcuq,          // Vector Subtract & write Carry Unsigned Qword
 // vsubecuq,         // Vector Subtract Extended & write Carry Unsigned Qword

@@ -172,6 +172,9 @@ TR::Register *OMR::ARM64::TreeEvaluator::vnotEvaluator(TR::Node *node, TR::CodeG
    switch(node->getDataType().getVectorElementType())
       {
       case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
          notOp = TR::InstOpCode::vnot16b;
          break;
       default:

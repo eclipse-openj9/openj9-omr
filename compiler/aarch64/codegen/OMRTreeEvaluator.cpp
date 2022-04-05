@@ -2494,7 +2494,7 @@ addMetaDataForLoadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node *node, TR
          relo = new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
             firstInstruction,
             (uint8_t *)node->getSymbolReference(),
-            (uint8_t *)node->getInlinedSiteIndex(),
+            (uint8_t *)(intptr_t)node->getInlinedSiteIndex(),
             TR_DataAddress, cg);
          break;
          }
@@ -2528,7 +2528,7 @@ addMetaDataForLoadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node *node, TR
             relo = new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                firstInstruction,
                (uint8_t *)symRef,
-               (uint8_t *)(node == NULL ? -1 : node->getInlinedSiteIndex()),
+               (uint8_t *)(node == NULL ? -1 : (intptr_t)node->getInlinedSiteIndex()),
                TR_ClassAddress, cg);
             }
          break;

@@ -3680,6 +3680,9 @@ OMR::Node::exceptionsRaised()
       case TR::New:
          possibleExceptions |= TR::Block:: CanCatchNew;
          break;
+      case TR::newvalue:
+         possibleExceptions |= TR::Block:: CanCatchNewvalue;
+         break;
       case TR::newarray:
       case TR::anewarray:
       case TR::multianewarray:
@@ -8078,8 +8081,8 @@ OMR::Node::setHasMonitorClassInNode(bool v)
 bool
 OMR::Node::markedAllocationCanBeRemoved()
    {
-   TR_ASSERT(self()->getOpCodeValue() == TR::New || self()->getOpCodeValue() == TR::newarray || self()->getOpCodeValue() == TR::anewarray,
-             "Opcode must be newarray or anewarray");
+   TR_ASSERT(self()->getOpCodeValue() == TR::New || self()->getOpCodeValue() == TR::newarray ||
+             self()->getOpCodeValue() == TR::anewarray || self()->getOpCodeValue() == TR::newvalue, "Opcode must be new, newarray, anewarray, or newvalue");
    return _flags.testAny(allocationCanBeRemoved);
    }
 
@@ -8087,7 +8090,8 @@ void
 OMR::Node::setAllocationCanBeRemoved(bool v)
    {
    TR::Compilation * c = TR::comp();
-   TR_ASSERT(self()->getOpCodeValue() == TR::New || self()->getOpCodeValue() == TR::newarray || self()->getOpCodeValue() == TR::anewarray, "Opcode must be newarray or anewarray");
+   TR_ASSERT(self()->getOpCodeValue() == TR::New || self()->getOpCodeValue() == TR::newarray ||
+             self()->getOpCodeValue() == TR::anewarray || self()->getOpCodeValue() == TR::newvalue, "Opcode must be new, newarray, anewarray, or newvalue");
    if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting allocationCanBeRemoved flag on node %p to %d\n", self(), v))
       _flags.set(allocationCanBeRemoved, v);
    }
@@ -8095,7 +8099,11 @@ OMR::Node::setAllocationCanBeRemoved(bool v)
 bool
 OMR::Node::chkAllocationCanBeRemoved()
    {
-   return ((self()->getOpCodeValue() == TR::New || self()->getOpCodeValue() == TR::newarray || self()->getOpCodeValue() == TR::anewarray) && _flags.testAny(allocationCanBeRemoved));
+   return ((self()->getOpCodeValue() == TR::New ||
+            self()->getOpCodeValue() == TR::newarray ||
+            self()->getOpCodeValue() == TR::anewarray ||
+            self()->getOpCodeValue() == TR::newvalue)
+           && _flags.testAny(allocationCanBeRemoved));
    }
 
 const char *

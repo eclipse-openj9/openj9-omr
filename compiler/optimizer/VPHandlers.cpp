@@ -4241,13 +4241,76 @@ TR::Node *constrainNew(OMR::ValuePropagation *vp, TR::Node *node)
          vp->addGlobalConstraint(node, classConstraint->asClass()->getClassType());
       else
          vp->addGlobalConstraint(node, classConstraint);
+
+      // If it's an abstract class, or an interface, or a value type, the allocation
+      // cannot be removed because InstantiationError could be thrown
+      TR_OpaqueClassBlock *clazz = classConstraint->getClassType() ? classConstraint->getClassType()->getClass() : NULL;
+      if (clazz &&
+          TR::Compiler->cls.isConcreteClass(vp->comp(), clazz) &&
+          !TR::Compiler->cls.isValueTypeClass(clazz))
+         {
+         node->setAllocationCanBeRemoved(true);
+         }
       }
 
-   if (classConstraint && classConstraint->getClassType() &&
-      classConstraint->getClassType()->getClass())
+   vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
+
+   node->setIsNonNull(true);
+
+   return node;
+   }
+
+TR::Node *constrainNewvalue(OMR::ValuePropagation *vp, TR::Node *node)
+   {
+   constrainChildren(vp, node);
+
+   vp->createExceptionEdgeConstraints(TR::Block::CanCatchNewvalue, NULL, node);
+
+   bool trace = vp->trace();
+
+   // The constraints on the child can be applied to this node. We also know
+   // that the type is fixed and non-null.
+   //
+   bool isGlobal;
+   TR::VPConstraint *classConstraint = vp->getConstraint(node->getFirstChild(), isGlobal);
+   if (classConstraint)
       {
-      node->setAllocationCanBeRemoved(true);
+      // since loadaddrs are now primed with a ClassObject property,
+      // this property should not be propagated to the 'newvalue' unless the
+      // underlying type of the loadaddr is a java/lang/Class
+      //
+      // If the underlying type of the loadaddr is a java/lang/Class, the property can be propagated to 'new'
+      //
+      if (classConstraint->getClass() && !classConstraint->isFixedClass())
+         {
+         vp->addGlobalConstraint(node, TR::VPFixedClass::create(vp, classConstraint->getClass()));
+         }
+      else if (classConstraint->asClass() && classConstraint->asClass()->getClassType() &&
+               !(classConstraint->asClass()->getClassType()->isClassObject() == TR_yes))
+         {
+         vp->addGlobalConstraint(node, classConstraint->asClass()->getClassType());
+         }
+      else
+         {
+         vp->addGlobalConstraint(node, classConstraint);
+         }
+
+      // - If newvalue is used to create a non value type instance, the allocation cannot be removed
+      //   because IncompatibleClassChangeError needs to be thrown.
+      // - No need to check if it's an abstract class because value type cannot be abstract class.
+      // - If the referenced value class doesn't belongs to the same nest as the current class, IllegalAccessError
+      //   needs to be thrown and allocation cannot be removed.
+      TR_OpaqueClassBlock *clazz = classConstraint->getClassType() ? classConstraint->getClassType()->getClass() : NULL;
+      TR_OpaqueClassBlock *currentClazz = vp->comp()->getCurrentMethod()->classOfMethod();
+
+      if (clazz &&
+          TR::Compiler->cls.isValueTypeClass(clazz) &&
+          TR::Compiler->cls.isClassVisible(vp->comp(), currentClazz, clazz))
+         {
+         node->setAllocationCanBeRemoved(true);
+         }
       }
+
    vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
 
    node->setIsNonNull(true);

@@ -1927,30 +1927,30 @@ OMR::Block::createConditionalBlocksBeforeTree(TR::TreeTop * tree,
 OMR::Block::StandardException OMR::Block::_standardExceptions[] =
    {
 #define MIN_EXCEPTION_NAME_SIZE 5
-   { 5, "Error", CanCatchNew | CanCatchArrayNew },
+   { 5, "Error", CanCatchNew | CanCatchArrayNew | CanCatchNewvalue },
    { 9, "Exception", CanCatchNullCheck | CanCatchDivCheck | CanCatchBoundCheck |
                      CanCatchArrayStoreCheck | CanCatchArrayNew |
                      CanCatchCheckCast | CanCatchMonitorExit },
    { 9, "Throwable", CanCatchEverything },
-   {12, "UnknownError", CanCatchNew | CanCatchArrayNew },
-   {13, "InternalError", CanCatchNew | CanCatchArrayNew },
-   {16, "OutOfMemoryError", CanCatchNew | CanCatchArrayNew },
+   {12, "UnknownError", CanCatchNew | CanCatchArrayNew | CanCatchNewvalue },
+   {13, "InternalError", CanCatchNew | CanCatchArrayNew | CanCatchNewvalue },
+   {16, "OutOfMemoryError", CanCatchNew | CanCatchArrayNew | CanCatchNewvalue },
    {16, "RuntimeException", CanCatchNullCheck | CanCatchDivCheck |
                             CanCatchBoundCheck | CanCatchArrayStoreCheck |
                             CanCatchArrayNew | CanCatchCheckCast |
                             CanCatchMonitorExit },
    {18, "ClassCastException", CanCatchCheckCast },
-   {18, "IllegalAccessError", CanCatchArrayNew },
-   {18, "InstantiationError", CanCatchNew },
-   {18, "StackOverflowError", CanCatchNew | CanCatchArrayNew },
+   {18, "IllegalAccessError", CanCatchArrayNew | CanCatchNewvalue},
+   {18, "InstantiationError", CanCatchNew | CanCatchNewvalue },
+   {18, "StackOverflowError", CanCatchNew | CanCatchArrayNew | CanCatchNewvalue },
    {19, "ArithmeticException", CanCatchDivCheck },
    {19, "ArrayStoreException", CanCatchArrayStoreCheck },
-   {19, "VirtualMachineError", CanCatchNew | CanCatchArrayNew },
+   {19, "VirtualMachineError", CanCatchNew | CanCatchArrayNew | CanCatchNewvalue },
    {20, "NullPointerException", CanCatchNullCheck },
    {25, "IndexOutOfBoundsException", CanCatchBoundCheck },
    {26, "NegativeArraySizeException", CanCatchArrayNew },
    {28, "IllegalMonitorStateException", CanCatchMonitorExit },
-   {28, "IncompatibleClassChangeError", CanCatchNew | CanCatchArrayNew },
+   {28, "IncompatibleClassChangeError", CanCatchNew | CanCatchArrayNew | CanCatchNewvalue },
    {30, "ArrayIndexOutOfBoundsException", CanCatchBoundCheck },
 #define MAX_EXCEPTION_NAME_SIZE 30
    {99, "", 0 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021, 2022 IBM Corp. and others
+ * Copyright (c) 2021, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -92,31 +92,18 @@ template <typename TBuffer> typename TBuffer::cursor_t OMR::X86::InstOpCode::OpC
 
    if (supportsAVX() && comp->target().cpu.supportsAVX())
       {
-      if (vex_l >> 2)
+      TR::Instruction::VEX<3> vex(rex, modrm_opcode);
+      vex.m = escape;
+      vex.L = vex_l;
+      vex.p = prefixes;
+      vex.opcode = opcode;
+      if(vex.CanBeShortened())
          {
-         TR::Instruction::EVEX vex(rex, modrm_opcode);
-         vex.mm = escape;
-         vex.L = vex_l & 0x3;
-         vex.p = prefixes;
-         vex.opcode = opcode;
-         buffer.append(vex);
+         buffer.append(TR::Instruction::VEX<2>(vex));
          }
       else
          {
-         TR::Instruction::VEX<3> vex(rex, modrm_opcode);
-         vex.m = escape;
-         vex.L = vex_l;
-         vex.p = prefixes;
-         vex.opcode = opcode;
-
-         if (vex.CanBeShortened())
-            {
-            buffer.append(TR::Instruction::VEX<2>(vex));
-            }
-         else
-            {
-            buffer.append(vex);
-            }
+         buffer.append(vex);
          }
       }
    else

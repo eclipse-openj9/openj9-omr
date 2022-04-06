@@ -845,13 +845,6 @@ class X86RegInstruction : public TR::Instruction
          target->setRegisterFieldInModRM(modRM);
          }
       }
-
-   void applyTargetRegisterToEvex(uint8_t *evex)
-      {
-      TR::RealRegister *target = toRealRegister(_targetRegister);
-      target->setTargetRegisterFieldInEVEX(evex);
-      }
-
 #if defined(TR_TARGET_64BIT)
    virtual uint8_t rexBits()
       {
@@ -987,16 +980,6 @@ class X86RegRegInstruction : public TR::X86RegInstruction
          //
          source->setRegisterFieldInModRM(modRM);
          }
-      }
-
-   void applySourceRegisterToEvex(uint8_t *evex)
-      {
-      toRealRegister(getSourceRegister())->setSourceRegisterFieldInEVEX(evex);
-      }
-
-   void applyTargetRegisterToEvex(uint8_t *evex)
-      {
-      toRealRegister(getTargetRegister())->setTargetRegisterFieldInEVEX(evex);
       }
 
 #if defined(TR_TARGET_64BIT)
@@ -1317,18 +1300,6 @@ class X86RegRegRegInstruction : public TR::X86RegRegInstruction
       {
       TR::RealRegister *source = toRealRegister(_source2ndRegister);
       source->setRegisterFieldInVEX(vex);
-      }
-
-   /** \brief
-   *    Fill vvvv field in a EVEX prefix
-   *
-   *  \param vex
-   *    The address of EVEX prefix byte containing vvvv field
-   */
-   void applySource2ndRegisterToEVEX(uint8_t *vex)
-      {
-      TR::RealRegister *source = toRealRegister(_source2ndRegister);
-      source->setSource2ndRegisterFieldInEVEX(vex);
       }
 
 #ifdef DEBUG
@@ -2064,18 +2035,6 @@ class X86RegRegMemInstruction : public TR::X86RegMemInstruction
       {
       TR::RealRegister *source = toRealRegister(_source2ndRegister);
       source->setRegisterFieldInVEX(vex);
-      }
-
-   /** \brief
-   *    Fill vvvv field in a EVEX prefix
-   *
-   *  \param evex
-   *    The address of EVEX prefix byte containing vvvv field
-   */
-   void applySource2ndRegisterToEVEX(uint8_t *evex)
-      {
-      TR::RealRegister *source = toRealRegister(_source2ndRegister);
-      source->setSource2ndRegisterFieldInEVEX(evex);
       }
 
 #ifdef DEBUG

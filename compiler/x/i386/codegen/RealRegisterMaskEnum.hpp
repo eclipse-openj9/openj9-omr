@@ -47,12 +47,12 @@
 
    // XMMR
    //
-   xmm0Mask          = 0x00000001,
-   xmm1Mask          = 0x00000002,
-   xmm2Mask          = 0x00000004,
-   xmm3Mask          = 0x00000008,
-   xmm4Mask          = 0x00000010,
-   xmm5Mask          = 0x00000020,
-   xmm6Mask          = 0x00000040,
-   xmm7Mask          = 0x00000080,
-   AvailableXMMRMask = 0x000000FF,
+   xmm0Mask          = 0x00000001 << XMMRMaskOffset,
+   xmm1Mask          = 0x00000002 << XMMRMaskOffset,
+   xmm2Mask          = 0x00000004 << XMMRMaskOffset,
+   xmm3Mask          = 0x00000008 << XMMRMaskOffset,
+   xmm4Mask          = 0x00000010 << XMMRMaskOffset,
+   xmm5Mask          = 0x00000020 << XMMRMaskOffset,
+   xmm6Mask          = 0x00000040 << XMMRMaskOffset,
+   xmm7Mask          = 0x00000080 << XMMRMaskOffset,
+   AvailableXMMRMask = 0x000000FF << XMMRMaskOffset,

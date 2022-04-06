@@ -235,9 +235,7 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(
             {
             generateRegcopyDebugCounter(cg, "vrf");
             copyReg = cg->allocateRegister(TR_VRF);
-            TR::InstOpCode::Mnemonic op = cg->comp()->target().cpu.supportsAVX() ? InstOpCode::VMOVDQUYmmYmm : TR::InstOpCode::MOVDQURegReg;
-            op = cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? InstOpCode::VMOVDQUZmmZmm : op;
-            generateRegRegInstruction(op, node, copyReg, child->getRegister(), cg);
+            generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, copyReg, child->getRegister(), cg);
             }
 
          globalReg = copyReg;
@@ -760,8 +758,7 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
                   }
                else if (assignedReg->getKind() == TR_VRF)
                   {
-                  op = cg->comp()->target().cpu.supportsAVX() ? InstOpCode::VMOVDQUYmmMem : TR::InstOpCode::MOVDQURegMem;
-                  op = cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? InstOpCode::VMOVDQUZmmMem : op;
+                  op = TR::InstOpCode::MOVDQURegMem;
                   }
                else
                   {

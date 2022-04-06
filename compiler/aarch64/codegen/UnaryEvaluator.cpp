@@ -184,6 +184,28 @@ TR::Register *OMR::ARM64::TreeEvaluator::vnotEvaluator(TR::Node *node, TR::CodeG
    return inlineVectorUnaryOp(node, cg, notOp);
    }
 
+TR::Register*
+OMR::ARM64::TreeEvaluator::vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                           "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   TR::InstOpCode::Mnemonic sqrtOp;
+
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Float:
+         sqrtOp = TR::InstOpCode::vfsqrt4s;
+         break;
+      case TR::Double:
+         sqrtOp = TR::InstOpCode::vfsqrt2d;
+         break;
+      default:
+         TR_ASSERT_FATAL(false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorUnaryOp(node, cg, sqrtOp);
+   }
+
 static TR::Register *commonIntegerAbsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();

@@ -643,10 +643,8 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
       case OMR::vor:
       case OMR::vxor:
       case OMR::vnot:
-         if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64)
-            return true;
-         else
-            return false; // Float/ Double are not supported
+         // Float/ Double are not supported
+         return (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64);
       case OMR::vload:
       case OMR::vloadi:
       case OMR::vstore:
@@ -654,6 +652,7 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
       case OMR::vsplats:
          return true;
       case OMR::vfma:
+      case OMR::vsqrt:
          return (et == TR::Float || dt == TR::Double);
       default:
          return false;

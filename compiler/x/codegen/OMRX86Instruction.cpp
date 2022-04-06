@@ -104,7 +104,7 @@ TR::RealRegister *assign8BitGPRegister(TR::Instruction   *instr,
    }
 
 
-// Assign any GP (including XMM/YMM/ZMM) register to a virtual register.
+// Assign any GP (including XMM) register to a virtual register.
 //
 TR::RealRegister *assignGPRegister(TR::Instruction   *instr,
                                   TR::Register      *virtReg,
@@ -852,14 +852,10 @@ void TR::X86RegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
 
       TR_RegisterSizes firstRequestedRegSize = getOpCode().hasByteTarget() ? TR_ByteReg :
                                                getOpCode().hasXMMTarget()  ? TR_QuadWordReg :
-                                               getOpCode().hasYMMTarget()  ? TR_VectorReg256 :
-                                               getOpCode().hasZMMTarget()  ? TR_VectorReg512 :
                                                                              TR_WordReg;
 
       TR_RegisterSizes secondRequestedRegSize = getOpCode().hasByteSource() ? TR_ByteReg :
                                                 getOpCode().hasXMMSource()  ? TR_QuadWordReg :
-                                                getOpCode().hasYMMSource()  ? TR_VectorReg256 :
-                                                getOpCode().hasZMMSource()  ? TR_VectorReg512 :
                                                                               TR_WordReg;
 
       // Ensure both source and target registers have the
@@ -1289,16 +1285,9 @@ void TR::X86RegRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssi
       }
 
    TR_RegisterSizes firstRequestedRegSize  = getOpCode().hasByteTarget() ? TR_ByteReg :
-                                             getOpCode().hasXMMTarget() ? TR_QuadWordReg :
-                                             getOpCode().hasYMMTarget() ? TR_VectorReg256 :
-                                             getOpCode().hasZMMTarget() ? TR_VectorReg512 :
-                                             TR_WordReg;
-
+                                             getOpCode().hasXMMTarget() ? TR_QuadWordReg :  TR_WordReg;
    TR_RegisterSizes secondRequestedRegSize = getOpCode().hasByteSource() ? TR_ByteReg :
-                                             getOpCode().hasXMMSource()  ? TR_QuadWordReg :
-                                             getOpCode().hasYMMSource() ? TR_VectorReg256 :
-                                             getOpCode().hasZMMSource() ? TR_VectorReg512 :
-                                             TR_WordReg;
+                                             getOpCode().hasXMMSource()  ? TR_QuadWordReg : TR_WordReg;
    TR_RegisterSizes thirdRequestedRegSize  = secondRequestedRegSize;
 
    if (kindsToBeAssigned & getTargetRegister()->getKindAsMask())
@@ -1986,14 +1975,6 @@ void TR::X86MemRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
             {
             requestedRegSize = TR_QuadWordReg;
             }
-         else if (getOpCode().hasYMMSource())
-            {
-            requestedRegSize = TR_VectorReg256;
-            }
-         else if (getOpCode().hasZMMSource())
-            {
-            requestedRegSize = TR_VectorReg512;
-            }
 
          if (assignedRegister == NULL)
             {
@@ -2275,14 +2256,6 @@ void TR::X86RegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
          {
          requestedRegSize = TR_QuadWordReg;
          }
-      else if (getOpCode().hasYMMTarget())
-         {
-         requestedRegSize = TR_VectorReg256;
-         }
-      else if (getOpCode().hasZMMTarget())
-         {
-         requestedRegSize = TR_VectorReg512;
-         }
 
       if (getDependencyConditions())
          {
@@ -2480,10 +2453,7 @@ void TR::X86RegRegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssi
       TR::RealRegister *assignedTargetRegister    = NULL;
       TR::RealRegister *assignedSource2ndRegister = NULL;
       TR_RegisterSizes  requestedRegSize          = getOpCode().hasByteTarget() ? TR_ByteReg :
-                                                    getOpCode().hasXMMTarget()  ? TR_QuadWordReg :
-                                                    getOpCode().hasYMMTarget()  ? TR_VectorReg256 :
-                                                    getOpCode().hasZMMTarget()  ? TR_VectorReg512 :
-                                                    TR_WordReg;
+                                                    getOpCode().hasXMMTarget()  ? TR_QuadWordReg : TR_WordReg;
 
       if (kindsToBeAssigned & getTargetRegister()->getKindAsMask())
          {

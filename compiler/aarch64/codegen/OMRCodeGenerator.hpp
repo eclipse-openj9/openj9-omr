@@ -422,7 +422,7 @@ public:
    TR_GlobalRegisterNumber _gprLinkageGlobalRegisterNumbers[TR::RealRegister::NumRegisters]; // could be smaller
    TR_GlobalRegisterNumber _fprLinkageGlobalRegisterNumbers[TR::RealRegister::NumRegisters]; // could be smaller
 
-   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType, TR::VectorLength);
+   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType);
 
    /**
     * @brief Answers whether a trampoline is required for a direct call instruction to

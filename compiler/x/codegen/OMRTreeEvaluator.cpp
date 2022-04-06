@@ -4151,12 +4151,21 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
          arithmetic = BinaryArithmeticXor;
          break;
       default:
-         if (OMR::ILOpCode::isVectorOpCode(opcode) && OMR::ILOpCode::getVectorOperation(opcode) == OMR::vadd)
+         if (OMR::ILOpCode::isVectorOpCode(opcode))
             {
-            arithmetic = BinaryArithmeticAdd;
-            break;
+            switch (OMR::ILOpCode::getVectorOperation(opcode))
+               {
+               case OMR::vadd:
+                  arithmetic = BinaryArithmeticAdd;
+                  break;
+               default:
+                  TR_ASSERT(false, "Unsupported OpCode");
+               }
             }
-         TR_ASSERT(false, "Unsupported OpCode");
+         else
+            {
+            TR_ASSERT(false, "Unsupported OpCode");
+            }
       }
 
    TR::Node* operandNode0 = node->getChild(0);

@@ -986,28 +986,27 @@ bool OMR::X86::CodeGenerator::supportsAddressRematerialization()         { stati
 #undef CAN_REMATERIALIZE
 
 bool
-OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt, TR::VectorLength length)
+OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt)
    {
-   if(length != TR::VectorLength128) return false;
-
    /*
     * Most of the vector evaluators for opcodes used in AutoSIMD have been implemented.
     * The cases that return false are placeholders that should be updated as support for more vector evaluators is added.
     */
    // implemented vector opcodes
 
-   if (opcode.isVectorOpCode() && opcode.getVectorOperation() == OMR::vadd)
+   if (opcode.isVectorOpCode())
       {
       TR::DataType ot = opcode.getVectorResultDataType();
 
       if (ot.getVectorLength() != TR::VectorLength128) return false;
 
-      TR::DataType et = ot.getVectorElementType();
-
-      if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
-         return true;
-      else
-         return false;
+      switch (opcode.getVectorOperation())
+         {
+         case OMR::vadd:
+            return true;
+         default:
+            return false;
+         }
       }
 
    switch (opcode.getOpCodeValue())

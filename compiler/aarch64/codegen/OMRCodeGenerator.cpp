@@ -615,24 +615,23 @@ int64_t OMR::ARM64::CodeGenerator::getSmallestPosConstThatMustBeMaterialized()
    }
 
 
-bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt, TR::VectorLength length)
+bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt)
    {
-   if(length != TR::VectorLength128) return false;
-
    // implemented vector opcodes
 
-   if (opcode.isVectorOpCode() && opcode.getVectorOperation() == OMR::vadd)
+   if (opcode.isVectorOpCode())
       {
       TR::DataType ot = opcode.getVectorResultDataType();
 
       if (ot.getVectorLength() != TR::VectorLength128) return false;
 
-      TR::DataType et = ot.getVectorElementType();
-
-      if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
-         return true;
-      else
-         return false;
+      switch (opcode.getVectorOperation())
+         {
+         case OMR::vadd:
+            return true;
+         default:
+            return false;
+         }
       }
 
    switch (opcode.getOpCodeValue())

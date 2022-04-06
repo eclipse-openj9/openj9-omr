@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1998, 2018 IBM Corp. and others
+ * Copyright (c) 1998, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,7 +20,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef OMR_TRACE_INTERNAL_H_INCLUDED
+#if !defined(OMR_TRACE_INTERNAL_H_INCLUDED)
 #define OMR_TRACE_INTERNAL_H_INCLUDED
 
 #include "omrpool.h"
@@ -28,25 +28,20 @@
 #include "ute_core.h"
 #include "ute_dataformat.h"
 
-#ifdef  __cplusplus
+#if defined(__cplusplus)
 extern "C" {
-#endif
+#endif /* defined(__cplusplus) */
 
-
-#define OS_THREAD_FROM_TRACE_THREAD(thr)	((omrthread_t)(thr)->synonym1)
-#define OMR_VMTHREAD_FROM_TRACE_THREAD(thr)	((OMR_VMThread *)(thr)->synonym2)
+#define OS_THREAD_FROM_TRACE_THREAD(thr)    ((omrthread_t)(thr)->synonym1)
+#define OMR_VMTHREAD_FROM_TRACE_THREAD(thr) ((OMR_VMThread *)(thr)->synonym2)
 #define OMR_TRACE_THREAD_FROM_ENV(env) \
-	( env? OMR_TRACE_THREAD_FROM_VMTHREAD((OMR_VMThread *)env) : twThreadSelf() )
+	((NULL != (env)) ? OMR_TRACE_THREAD_FROM_VMTHREAD((OMR_VMThread *)(env)) : twThreadSelf())
 
 /*
  * =============================================================================
- *  Constants
+ * Constants
  * =============================================================================
  */
-/* Enable logging to separate exception trace buffers. This is not useful because
- * the exception trace buffers can't be sent to any subscribers.
- */
-#define OMR_ENABLE_EXCEPTION_OUTPUT 0
 
 /* Temporarily allow and ignore the output=<filename> command-line option until
  * it has been removed from all test scripts.
@@ -54,9 +49,6 @@ extern "C" {
 #define OMR_ALLOW_OUTPUT_OPTION 1
 
 #define UT_DEBUG                      "UTE_DEBUG"
-#if OMR_ENABLE_EXCEPTION_OUTPUT
-#define UT_EXCEPTION_THREAD_NAME      "Exception trace pseudo-thread"
-#endif
 #define UT_TPID                       "TPID"
 #define UT_TPNID                      "TPNID"
 
@@ -69,11 +61,8 @@ extern "C" {
 #define UT_CONTEXT_FINAL              4
 
 #define UT_NORMAL_BUFFER              0
-#if OMR_ENABLE_EXCEPTION_OUTPUT
-#define UT_EXCEPTION_BUFFER           1
-#endif /* OMR_ENABLE_EXCEPTION_OUTPUT */
 
-#define UT_TRC_BUFFER_FULL			  0x00000001 /* indicates a buffer that has been published */
+#define UT_TRC_BUFFER_FULL            0x00000001 /* indicates a buffer that has been published */
 #define UT_TRC_BUFFER_NEW             0x20000000 /* indicates an empty new buffer in use by a thread. cleared when buffer is written to. */
 #define UT_TRC_BUFFER_ACTIVE          0x80000000 /* indicates a buffer in use by a thread */
 
@@ -102,10 +91,11 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 
-#define UT_ASSERT(expr) do { \
-		if (! (expr)) { \
-			fprintf(stderr,"UT_ASSERT FAILED: %s at %s:%d\n",#expr,__FILE__,__LINE__); \
-			*((int*)0) = 42; \
+#define UT_ASSERT(expr) \
+	do { \
+		if (!(expr)) { \
+			fprintf(stderr, "UT_ASSERT FAILED: %s at %s:%d\n", #expr, __FILE__, __LINE__); \
+			*((int *)0) = 42; \
 		} \
 	} while (0)
 
@@ -117,22 +107,28 @@ extern "C" {
 #endif /* defined(OMR_OS_WINDOWS) */
 
 #define DBG_ASSERT(expr) \
-	if (OMR_TRACEGLOBAL(traceDebug) > 0) { \
-		UT_ASSERT((expr)); \
-	}
+	do { \
+		if (OMR_TRACEGLOBAL(traceDebug) > 0) { \
+			UT_ASSERT(expr); \
+		} \
+	} while (0)
 
-#define UT_DBG_PRINT( data )\
+#define UT_DBG_PRINT(data) \
 	twFprintf data;
 
 #define UT_DBGOUT(level, data) \
-	if (OMR_TRACEGLOBAL(traceDebug) >= level) { \
-		UT_DBG_PRINT(data); \
-	} else;
+	do { \
+		if (OMR_TRACEGLOBAL(traceDebug) >= (level)) { \
+			UT_DBG_PRINT(data); \
+		} \
+	} while (0)
 
 #define UT_DBGOUT_CHECKED(level, data) \
-	if ((NULL != omrTraceGlobal) && (OMR_TRACEGLOBAL(traceDebug) >= level)) { \
-		UT_DBG_PRINT(data); \
-	} else;
+	do { \
+		if ((NULL != omrTraceGlobal) && (OMR_TRACEGLOBAL(traceDebug) >= (level))) { \
+			UT_DBG_PRINT(data); \
+		} \
+	} while (0)
 
 #define UT_DBGOUT_NOGLOBAL(level, actualLevel, data) \
 	do { \
@@ -144,118 +140,114 @@ extern "C" {
 #define OMR_TRACEGLOBAL(x) (omrTraceGlobal->x)
 
 /*
- *  Forward declaration of OMR_TraceGlobal
+ * Forward declaration of OMR_TraceGlobal
  */
 typedef struct OMR_TraceGlobal OMR_TraceGlobal;
 
 /*
  * =============================================================================
- *  Trace configuration buffer (UTCF)
+ * Trace configuration buffer (UTCF)
  * =============================================================================
  */
 #define UT_TRACE_CONFIG_NAME "UTCF"
-typedef struct  UtTraceCfg {
+typedef struct UtTraceCfg {
 	UtDataHeader       header;
-	struct UtTraceCfg  *next;             /* Next trace config command        */
-	char               command[1];       /* Start of variable length section */
+	struct UtTraceCfg *next;       /* Next trace config command        */
+	char               command[1]; /* Start of variable length section */
 } UtTraceCfg;
 
 typedef struct UtDeferredConfigInfo {
-	char *componentName;
-	int32_t all;
-	int32_t firstTracePoint;
-	int32_t lastTracePoint;
-	unsigned char value;
-	int level;
-	char *groupName;
+	char                        *componentName;
+	int32_t                      all;
+	int32_t                      firstTracePoint;
+	int32_t                      lastTracePoint;
+	unsigned char                value;
+	int                          level;
+	char                        *groupName;
 	struct UtDeferredConfigInfo *next;
-	int32_t setActive;
+	int32_t                      setActive;
 } UtDeferredConfigInfo;
 
 /* The following structures will form the core of the new trace control mechanisms. */
 #define UT_TRACE_COMPONENT_DATA "UTCD"
 typedef struct UtComponentData {
-	UtDataHeader           header;
-	char                   *componentName;
-	char                   *qualifiedComponentName;
-	UtModuleInfo           *moduleInfo;
-	int                    tracepointCount;
-	int                    numFormats;
+	UtDataHeader             header;
+	char                    *componentName;
+	char                    *qualifiedComponentName;
+	UtModuleInfo            *moduleInfo;
+	int                      tracepointCount;
+	int                      numFormats;
 	char                   **tracepointFormattingStrings;
-	uint64_t               *tracepointcounters;
-	int                    alreadyfailedtoloaddetails;
-	char                   *formatStringsFileName;
-	struct UtComponentData *prev;
-	struct UtComponentData *next;
+	uint64_t                *tracepointcounters;
+	int                      alreadyfailedtoloaddetails;
+	char                    *formatStringsFileName;
+	struct UtComponentData  *prev;
+	struct UtComponentData  *next;
 } UtComponentData;
 
 #define UT_TRACE_COMPONENT_LIST "UTCL"
 typedef struct UtComponentList {
 	UtDataHeader          header;
-	UtComponentData       *head;
-	UtDeferredConfigInfo  *deferredConfigInfoHead;
+	UtComponentData      *head;
+	UtDeferredConfigInfo *deferredConfigInfoHead;
 } UtComponentList;
 
 typedef enum OMR_TraceEngineInitState {
 	OMR_TRACE_ENGINE_UNINITIALIZED = 0,
-	OMR_TRACE_ENGINE_ENABLED, /* initialized, but no threads can attach */
-	OMR_TRACE_ENGINE_MT_ENABLED, /* threads can attach */
+	OMR_TRACE_ENGINE_ENABLED,           /* initialized, but no threads can attach */
+	OMR_TRACE_ENGINE_MT_ENABLED,        /* threads can attach */
 	OMR_TRACE_ENGINE_SHUTDOWN_STARTED
 } OMR_TraceEngineInitState;
 
-#define OMR_TRACE_ENGINE_IS_ENABLED(initState)	\
+#define OMR_TRACE_ENGINE_IS_ENABLED(initState) \
 	(((initState) >= OMR_TRACE_ENGINE_ENABLED) && ((initState) <= OMR_TRACE_ENGINE_SHUTDOWN_STARTED))
 
 /*
  * =============================================================================
- *  Trace Global Data
+ * Trace Global Data
  * =============================================================================
  */
 struct OMR_TraceGlobal {
-	const OMR_VM *vm;				/* Client identifier               */
-	OMRPortLibrary *portLibrary;    /* Port Library                    */
-	OMR_TraceEngineInitState initState;
-	uint64_t startPlatform;          /* Platform timer                  */
-	uint64_t startSystem;            /* Time relative 1/1/1970          */
-	int32_t bufferSize;             /* Trace buffer size               */
-	uint32_t lostRecords;            /* Lost record counter             */
-	int32_t traceDebug;             /* Trace debug level               */
-	int32_t initialSuspendResume;   /* Initial thread suspend count    */
-	uint32_t traceSuspend;           /* Global suspend flag             */
-	int32_t dynamicBuffers;         /* Dynamic buffering requested     */
-	int32_t indentPrint;            /* Indent print trace              */
-	omrthread_monitor_t traceLock;              /* Trace monitor pointer           */
-	int32_t traceCount;             /* trace counters enabled          */
-	char *properties;             /* System properties               */
-	char *serviceInfo;            /* Service information             */
-	char *traceFormatSpec;        /* Printf template filespec        */
-#if OMR_ENABLE_EXCEPTION_OUTPUT
-	OMR_TraceThread *exceptionContext;	/* OMR_TraceThread for last excptn    */
-	OMR_TraceBuffer *exceptionTrcBuf;	/* Exception trace buffers         */
-#endif /* OMR_ENABLE_EXCEPTION_OUTPUT */
-	OMR_TraceThread *lastPrint;		/* OMR_TraceThread for last print     */
-	OMR_TraceBuffer *freeQueue;		/* Free buffer queue               */
-	omrthread_monitor_t freeQueueLock;	/* lock for free queue */
-	UtTraceCfg *config;				/* Trace selection cmds link/list  */
-	UtTraceFileHdr *traceHeader;	/* Trace file header               */
-	UtComponentList *componentList;	/* registered or configured component */
-	UtComponentList *unloadedComponentList;	/* unloaded component */
-	volatile uint32_t threadCount;	/* Number of threads being traced  */
-	volatile UtSubscription *subscribers;	/* List of external trace subscribers */
-	omrthread_monitor_t subscribersLock;	/* Enforces atomicity of updates to the list of external trace subscribers */
-	int32_t traceInCore;            /* If true then we don't queue buffers */
-	volatile uint32_t allocatedTraceBuffers;	/* The number of allocated trace buffers ????*/
-	int fatalassert;				/* Whether assertion type trace points are fatal or not. */
-	OMR_TraceLanguageInterface languageIntf;				 /* Language interface */
-	J9Pool *bufferPool;				/* Pool for allocating all UtTraceBuffers */
-	omrthread_monitor_t bufferPoolLock;	/* Lock for buffer pool. Do not allow tracepoints while locking, holding, or releasing this monitor. */
-	J9Pool *threadPool;				/* Pool for allocating all UtThreadData */
-	omrthread_monitor_t threadPoolLock;	/* Lock for thread pool. Do not allow tracepoints while locking, holding, or releasing this monitor. */
+	const OMR_VM               *vm;                     /* Client identifier               */
+	OMRPortLibrary             *portLibrary;            /* Port Library                    */
+	OMR_TraceEngineInitState    initState;
+	uint64_t                    startPlatform;          /* Platform timer                  */
+	uint64_t                    startSystem;            /* Time relative 1/1/1970          */
+	int32_t                     bufferSize;             /* Trace buffer size               */
+	uint32_t                    lostRecords;            /* Lost record counter             */
+	int32_t                     traceDebug;             /* Trace debug level               */
+	int32_t                     initialSuspendResume;   /* Initial thread suspend count    */
+	uint32_t                    traceSuspend;           /* Global suspend flag             */
+	int32_t                     dynamicBuffers;         /* Dynamic buffering requested     */
+	int32_t                     indentPrint;            /* Indent print trace              */
+	omrthread_monitor_t         traceLock;              /* Trace monitor pointer           */
+	int32_t                     traceCount;             /* trace counters enabled          */
+	char                       *properties;             /* System properties               */
+	char                       *serviceInfo;            /* Service information             */
+	char                       *traceFormatSpec;        /* Printf template filespec        */
+	OMR_TraceThread            *lastPrint;              /* OMR_TraceThread for last print     */
+	OMR_TraceBuffer            *freeQueue;              /* Free buffer queue               */
+	omrthread_monitor_t         freeQueueLock;          /* lock for free queue */
+	UtTraceCfg                 *config;                 /* Trace selection cmds link/list  */
+	UtTraceFileHdr             *traceHeader;            /* Trace file header               */
+	UtComponentList            *componentList;          /* registered or configured component */
+	UtComponentList            *unloadedComponentList;  /* unloaded component */
+	volatile uint32_t           threadCount;            /* Number of threads being traced  */
+	volatile UtSubscription    *subscribers;            /* List of external trace subscribers */
+	omrthread_monitor_t         subscribersLock;        /* Enforces atomicity of updates to the list of external trace subscribers */
+	int32_t                     traceInCore;            /* If true then we don't queue buffers */
+	volatile uint32_t           allocatedTraceBuffers;  /* The number of allocated trace buffers???? */
+	int                         fatalassert;            /* Whether assertion type trace points are fatal or not. */
+	OMR_TraceLanguageInterface  languageIntf;           /* Language interface */
+	J9Pool                     *bufferPool;             /* Pool for allocating all UtTraceBuffers */
+	omrthread_monitor_t         bufferPoolLock;         /* Lock for buffer pool. Do not allow tracepoints while locking, holding, or releasing this monitor. */
+	J9Pool                     *threadPool;             /* Pool for allocating all UtThreadData */
+	omrthread_monitor_t         threadPoolLock;         /* Lock for thread pool. Do not allow tracepoints while locking, holding, or releasing this monitor. */
 };
 
 /*
  * =============================================================================
- *  Internal function prototypes
+ * Internal function prototypes
  * =============================================================================
  */
 
@@ -277,11 +269,10 @@ uint64_t incrementTraceCounter(UtModuleInfo *moduleInfo, UtComponentList *compon
 omr_error_t addTraceConfig(OMR_TraceThread *thr, const char *cmd);
 omr_error_t addTraceConfigKeyValuePair(OMR_TraceThread *thr, const char *cmdKey, const char *cmdValue);
 
-
 /*
  * =============================================================================
- *  Functions called by users of the trace library at initialisation/shutdown time.
- *  (Runtime functions are called vi OMR_TraceInterface once initialized)
+ * Functions called by users of the trace library at initialisation/shutdown time.
+ * (Runtime functions are called vi OMR_TraceInterface once initialized)
  * =============================================================================
  */
 
@@ -488,16 +479,17 @@ void decrementRecursionCounter(OMR_TraceThread *thr);
 omr_error_t initTraceHeader(void);
 
 /** Unpacked trace wrappers. **/
-void  twFprintf(const char *fmtTemplate, ...);
-omr_error_t  twE2A(char *str);
+void twFprintf(const char *fmtTemplate, ...);
+omr_error_t twE2A(char *str);
 OMR_TraceThread *twThreadSelf(void);
 
 omr_error_t getComponentGroup(char *name, char *group, int32_t *count, int32_t **tracePts);
 void internalTrace(OMR_TraceThread *thr, UtModuleInfo *modInfo, uint32_t traceId, const char *spec, ...);
+
 /**************************************************************************
  * name        - reportCommandLineError
  * description - Report an error in a command line option and put the given
- * 			   - string in as detail in an NLS enabled message.
+ *             - string in as detail in an NLS enabled message.
  * parameters  - detailStr, args for formatting into detailStr.
  *************************************************************************/
 void reportCommandLineError(BOOLEAN atRuntime, const char *detailStr, ...);
@@ -514,7 +506,6 @@ omr_error_t trcDeregisterRecordSubscriber(OMR_TraceThread *thr, UtSubscription *
  *  All functions on the module interface (and only functions on the module interface) start
  *  with j9 **/
 void omrTrace(void *env, UtModuleInfo *modInfo, uint32_t traceId, const char *spec, ...);
-
 
 /**
  * @brief Publish a trace buffer.
@@ -546,15 +537,15 @@ OMR_TraceBuffer *recycleTraceBuffer(OMR_TraceThread *currentThr);
 
 /*
  * =============================================================================
- *  Externs
+ * Externs
  * =============================================================================
  */
 
 extern OMR_TraceGlobal *omrTraceGlobal;
 extern omrthread_tls_key_t j9uteTLSKey;
 
-#ifdef  __cplusplus
-}
-#endif
+#if defined(__cplusplus)
+} /* extern "C" */
+#endif /* defined(__cplusplus) */
 
-#endif /* !OMR_TRACE_INTERNAL_H_INCLUDED */
+#endif /* !defined(OMR_TRACE_INTERNAL_H_INCLUDED) */

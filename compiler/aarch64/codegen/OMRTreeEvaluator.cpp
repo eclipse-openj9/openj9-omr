@@ -1577,7 +1577,47 @@ OMR::ARM64::TreeEvaluator::vdsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg
 TR::Register*
 OMR::ARM64::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Node *thirdChild = node->getThirdChild();
+
+   TR::Register *firstReg  = cg->evaluate(firstChild);
+   TR::Register *secondReg  = cg->evaluate(secondChild);
+   TR::Register *thirdReg  = cg->evaluate(thirdChild);
+
+   TR::InstOpCode::Mnemonic op;
+
+   switch (node->getDataType().getVectorElementType())
+      {
+      case TR::Float:
+         op = TR::InstOpCode::vfmla4s;
+         break;
+      case TR::Double:
+         op = TR::InstOpCode::vfmla2d;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+
+   TR::Register *targetReg;
+
+   if (cg->canClobberNodesRegister(thirdChild))
+      {
+      targetReg = thirdReg;
+      }
+   else
+      {
+      targetReg = cg->allocateRegister(TR_VRF);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::vorr16b, node, targetReg, thirdReg, thirdReg);
+      }
+   generateTrg1Src2Instruction(cg, op, node, targetReg, firstReg, secondReg);
+   node->setRegister(targetReg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   cg->decReferenceCount(thirdChild);
+
+   return targetReg;
    }
 
 TR::Register*

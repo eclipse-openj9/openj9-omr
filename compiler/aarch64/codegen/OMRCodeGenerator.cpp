@@ -625,10 +625,14 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
 
       if (ot.getVectorLength() != TR::VectorLength128) return false;
 
+      TR::DataType et = ot.getVectorElementType();
+
       switch (opcode.getVectorOperation())
          {
          case OMR::vadd:
             return true;
+         case OMR::vfma:
+            return (et == TR::Float || et == TR::Double);
          default:
             return false;
          }

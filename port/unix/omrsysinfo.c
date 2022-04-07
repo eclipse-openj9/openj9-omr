@@ -375,6 +375,27 @@ struct {
 #define OMRPORT_SYSINFO_CGROUP_V2_AVAILABLE 0x2
 #define OMRPORT_SYSINFO_RUNNING_IN_CONTAINER 0x4
 
+/* Cgroup v1 and v2 memory files */
+#define CGROUP_MEMORY_STAT_FILE "memory.stat"
+
+/* Cgroup v1 memory files */
+#define CGROUP_MEMORY_LIMIT_IN_BYTES_FILE "memory.limit_in_bytes"
+#define CGROUP_MEMORY_USAGE_IN_BYTES_FILE "memory.usage_in_bytes"
+#define CGROUP_MEMORY_SWAP_LIMIT_IN_BYTES_FILE "memory.memsw.limit_in_bytes"
+#define CGROUP_MEMORY_SWAP_USAGE_IN_BYTES_FILE "memory.memsw.usage_in_bytes"
+
+#define CGROUP_MEMORY_STAT_CACHE_METRIC "cache"
+#define CGROUP_MEMORY_STAT_CACHE_METRIC_SZ (sizeof(CGROUP_MEMORY_STAT_CACHE_METRIC)-1)
+
+/* Cgroup v2 memory files */
+#define CGROUP_MEMORY_MAX_FILE "memory.max"
+#define CGROUP_MEMORY_CURRENT_FILE "memory.current"
+#define CGROUP_MEMORY_SWAP_MAX_FILE "memory.swap.max"
+#define CGROUP_MEMORY_SWAP_CURRENT_FILE "memory.swap.current"
+
+#define CGROUP_MEMORY_STAT_FILE_METRIC "file"
+#define CGROUP_MEMORY_STAT_FILE_METRIC_SZ (sizeof(CGROUP_MEMORY_STAT_FILE_METRIC)-1)
+
 /* Currently 12 subsystems or resource controllers are defined.
  */
 typedef enum OMRCgroupSubsystem {
@@ -3041,15 +3062,6 @@ _cleanup:
 	return rc;
 }
 
-#define CGROUP_MEMORY_LIMIT_IN_BYTES_FILE "memory.limit_in_bytes"
-#define CGROUP_MEMORY_USAGE_IN_BYTES_FILE "memory.usage_in_bytes"
-#define CGROUP_MEMORY_SWAP_LIMIT_IN_BYTES_FILE "memory.memsw.limit_in_bytes"
-#define CGROUP_MEMORY_SWAP_USAGE_IN_BYTES_FILE "memory.memsw.usage_in_bytes"
-#define CGROUP_MEMORY_STAT_FILE "memory.stat"
-
-#define CGROUP_MEMORY_STAT_CACHE "cache"
-#define CGROUP_MEMORY_STAT_CACHE_SZ (sizeof(CGROUP_MEMORY_STAT_CACHE)-1)
-
 #if !defined(OMRZTPF)
 /**
  * Function collects memory usage statistics from the memory subsystem of the process's cgroup.
@@ -3065,6 +3077,12 @@ retrieveLinuxCgroupMemoryStats(struct OMRPortLibrary *portLibrary, struct OMRCgr
 	int32_t rc = 0;
 	FILE *memStatFs = NULL;
 	int32_t numItemsToRead = 1;
+	const char *memLimitFile = NULL;
+	const char *memUsageFile = NULL;
+	const char *swpLimitFile = NULL;
+	const char *swpUsageFile = NULL;
+	const char *cacheMetricName = NULL;
+	size_t cacheMetricSize = 0;
 
 	Assert_PRT_true(NULL != cgroupMemInfo);
 
@@ -3074,37 +3092,61 @@ retrieveLinuxCgroupMemoryStats(struct OMRPortLibrary *portLibrary, struct OMRCgr
 	cgroupMemInfo->memoryAndSwapUsage = OMRPORT_MEMINFO_NOT_AVAILABLE;
 	cgroupMemInfo->cached = OMRPORT_MEMINFO_NOT_AVAILABLE;
 
-	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, CGROUP_MEMORY_LIMIT_IN_BYTES_FILE, numItemsToRead, "%lu", &cgroupMemInfo->memoryLimit);
+	if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V1_AVAILABLE)) {
+		memLimitFile = CGROUP_MEMORY_LIMIT_IN_BYTES_FILE;
+		memUsageFile = CGROUP_MEMORY_USAGE_IN_BYTES_FILE;
+		swpLimitFile = CGROUP_MEMORY_SWAP_LIMIT_IN_BYTES_FILE;
+		swpUsageFile = CGROUP_MEMORY_SWAP_USAGE_IN_BYTES_FILE;
+		cacheMetricName = CGROUP_MEMORY_STAT_CACHE_METRIC;
+		cacheMetricSize = CGROUP_MEMORY_STAT_CACHE_METRIC_SZ;
+	} else if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V2_AVAILABLE)) {
+		memLimitFile = CGROUP_MEMORY_MAX_FILE;
+		memUsageFile = CGROUP_MEMORY_CURRENT_FILE;
+		swpLimitFile = CGROUP_MEMORY_SWAP_MAX_FILE;
+		swpUsageFile = CGROUP_MEMORY_SWAP_CURRENT_FILE;
+		cacheMetricName = CGROUP_MEMORY_STAT_FILE_METRIC;
+		cacheMetricSize = CGROUP_MEMORY_STAT_FILE_METRIC_SZ;
+	} else {
+		Trc_PRT_Assert_ShouldNeverHappen();
+	}
+
+	rc = readCgroupMemoryFileIntOrMax(portLibrary, memLimitFile, &cgroupMemInfo->memoryLimit);
 	if (0 != rc) {
 		goto _exit;
 	}
-	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, CGROUP_MEMORY_USAGE_IN_BYTES_FILE, numItemsToRead, "%lu", &cgroupMemInfo->memoryUsage);
+	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, memUsageFile, numItemsToRead, "%lu", &cgroupMemInfo->memoryUsage);
 	if (0 != rc) {
 		goto _exit;
 	}
-	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, CGROUP_MEMORY_SWAP_LIMIT_IN_BYTES_FILE, numItemsToRead, "%lu", &cgroupMemInfo->memoryAndSwapLimit);
+	rc = readCgroupMemoryFileIntOrMax(portLibrary, swpLimitFile, &cgroupMemInfo->memoryAndSwapLimit);
 	if (0 != rc) {
 		if (OMRPORT_ERROR_FILE_NOENT == rc) {
-			/* It is possible file memory.memsw.limit_in_bytes is not present if
-			 * swap space is not configured. In such cases, set memoryAndSwapLimit to same as memoryLimit.
+			/* It is possible that the swpLimitFile is not present if swap space is not configured.
+			 * In such cases, set memoryAndSwapLimit to memoryLimit.
 			 */
 			cgroupMemInfo->memoryAndSwapLimit = cgroupMemInfo->memoryLimit;
 			rc = 0;
 		} else {
 			goto _exit;
 		}
+	} else if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V2_AVAILABLE)) {
+		/* Cgroup v2 swap limit and usage do not include the memory limit and usage. */
+		cgroupMemInfo->memoryAndSwapLimit += cgroupMemInfo->memoryLimit;
 	}
-	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, CGROUP_MEMORY_SWAP_USAGE_IN_BYTES_FILE, numItemsToRead, "%lu", &cgroupMemInfo->memoryAndSwapUsage);
+	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, swpUsageFile, numItemsToRead, "%lu", &cgroupMemInfo->memoryAndSwapUsage);
 	if (0 != rc) {
 		if (OMRPORT_ERROR_FILE_NOENT == rc) {
-			/* It is possible file memory.memsw.usage_in_bytes is not present if
-			 * swap space is not configured. In such cases, set memoryAndSwapUsage to memoryUsage.
+			/* It is possible that the swpUsageFile is not present if swap space is not configured.
+			 * In such cases, set memoryAndSwapUsage to memoryUsage.
 			 */
 			cgroupMemInfo->memoryAndSwapUsage = cgroupMemInfo->memoryUsage;
 			rc = 0;
 		} else {
 			goto _exit;
 		}
+	} else if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V2_AVAILABLE)) {
+		/* Cgroup v2 swap limit and usage do not include the memory limit and usage. */
+		cgroupMemInfo->memoryAndSwapUsage += cgroupMemInfo->memoryUsage;
 	}
 
 	/* Read value of page cache memory from memory.stat file */
@@ -3125,12 +3167,17 @@ retrieveLinuxCgroupMemoryStats(struct OMRPortLibrary *portLibrary, struct OMRCgr
 		tmpPtr = (char *)statEntry;
 
 		/* Extract "cache" value */
-		if (0 == strncmp(tmpPtr, CGROUP_MEMORY_STAT_CACHE, CGROUP_MEMORY_STAT_CACHE_SZ)) {
-			tmpPtr += CGROUP_MEMORY_STAT_CACHE_SZ;
+		if (0 == strncmp(tmpPtr, cacheMetricName, cacheMetricSize)) {
+			tmpPtr += cacheMetricSize;
 			rc = sscanf(tmpPtr, "%" SCNu64, &cgroupMemInfo->cached);
 			if (1 != rc) {
-				Trc_PRT_retrieveLinuxCgroupMemoryStats_invalidValue(CGROUP_MEMORY_STAT_CACHE, CGROUP_MEMORY_STAT_FILE);
-				rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_FILE_INVALID_VALUE, "invalid value for field %s in file %s", CGROUP_MEMORY_STAT_CACHE, CGROUP_MEMORY_STAT_FILE);
+				Trc_PRT_retrieveLinuxCgroupMemoryStats_invalidValue(cacheMetricName, CGROUP_MEMORY_STAT_FILE);
+				rc = portLibrary->error_set_last_error_with_message_format(
+						portLibrary,
+						OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_FILE_INVALID_VALUE,
+						"invalid value for field %s in file %s",
+						cacheMetricName,
+						CGROUP_MEMORY_STAT_FILE);
 			} else {
 				/* reset 'rc' to success code */
 				rc = 0;

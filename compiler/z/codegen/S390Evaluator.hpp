@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -127,6 +127,7 @@ TR::Instruction* generateLoad32BitConstant(TR::CodeGenerator* cg, TR::Node* node
 TR::Instruction * genLoadLongConstant(TR::CodeGenerator *cg, TR::Node *node, int64_t value, TR::Register *targetRegister, TR::Instruction *cursor=NULL,TR::RegisterDependencyConditions *cond = 0, TR::Register *base = 0);
 TR::Instruction * genLoadAddressConstant(TR::CodeGenerator *cg, TR::Node *node, uintptr_t value, TR::Register *targetRegister, TR::Instruction *cursor=NULL,TR::RegisterDependencyConditions *cond = 0, TR::Register *base = 0);
 TR::Instruction * genLoadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Node *node, uintptr_t value, TR::Register *targetRegister, TR::Instruction *cursor=NULL,TR::RegisterDependencyConditions *cond = 0, TR::Register *base = 0, bool isPICCandidate=false);
+TR::Instruction * genLoadProfiledClassAddressConstant(TR::CodeGenerator *cg, TR::Node *node, TR_OpaqueClassBlock *clazz, TR::Register *targetRegister, TR::Instruction *cursor = 0,TR::RegisterDependencyConditions *cond = 0, TR::Register *base = 0);
 
 TR::MemoryReference * sstoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed=false);
 TR::MemoryReference * istoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed=false);

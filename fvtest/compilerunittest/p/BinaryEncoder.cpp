@@ -2344,6 +2344,9 @@ INSTANTIATE_TEST_CASE_P(VMX, PPCTrg1Src2EncodingTest, ::testing::ValuesIn(*TRTes
     std::make_tuple(TR::InstOpCode::vsraw,    TR::RealRegister::vr31, TR::RealRegister::vr0,  TR::RealRegister::vr0,  TRTest::BinaryInstruction("13e00384")),
     std::make_tuple(TR::InstOpCode::vsraw,    TR::RealRegister::vr0,  TR::RealRegister::vr31, TR::RealRegister::vr0,  TRTest::BinaryInstruction("101f0384")),
     std::make_tuple(TR::InstOpCode::vsraw,    TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr31, TRTest::BinaryInstruction("1000fb84")),
+    std::make_tuple(TR::InstOpCode::vsrad,    TR::RealRegister::vr31, TR::RealRegister::vr0,  TR::RealRegister::vr0,  TRTest::BinaryInstruction("13e003c4")),
+    std::make_tuple(TR::InstOpCode::vsrad,    TR::RealRegister::vr0,  TR::RealRegister::vr31, TR::RealRegister::vr0,  TRTest::BinaryInstruction("101f03c4")),
+    std::make_tuple(TR::InstOpCode::vsrad,    TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr31, TRTest::BinaryInstruction("1000fbc4")),
     std::make_tuple(TR::InstOpCode::vsrb,     TR::RealRegister::vr31, TR::RealRegister::vr0,  TR::RealRegister::vr0,  TRTest::BinaryInstruction("13e00204")),
     std::make_tuple(TR::InstOpCode::vsrb,     TR::RealRegister::vr0,  TR::RealRegister::vr31, TR::RealRegister::vr0,  TRTest::BinaryInstruction("101f0204")),
     std::make_tuple(TR::InstOpCode::vsrb,     TR::RealRegister::vr0,  TR::RealRegister::vr0,  TR::RealRegister::vr31, TRTest::BinaryInstruction("1000fa04")),
@@ -2488,6 +2491,7 @@ INSTANTIATE_TEST_CASE_P(VMX, PPCRecordFormSanityTest, ::testing::ValuesIn(*TRTes
     std::make_tuple(TR::InstOpCode::vsrab,    TR::InstOpCode::bad,        TRTest::BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::vsrah,    TR::InstOpCode::bad,        TRTest::BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::vsraw,    TR::InstOpCode::bad,        TRTest::BinaryInstruction()),
+    std::make_tuple(TR::InstOpCode::vsrad,    TR::InstOpCode::bad,        TRTest::BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::vsrb,     TR::InstOpCode::bad,        TRTest::BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::vsrh,     TR::InstOpCode::bad,        TRTest::BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::vsro,     TR::InstOpCode::bad,        TRTest::BinaryInstruction()),
@@ -2702,10 +2706,22 @@ INSTANTIATE_TEST_CASE_P(VSXVectorFloat, PPCTrg1Src1EncodingTest, ::testing::Valu
     std::make_tuple(TR::InstOpCode::xvnegsp,  TR::RealRegister::vsr31, TR::RealRegister::vsr0,  TRTest::BinaryInstruction("f3e006e4")),
     std::make_tuple(TR::InstOpCode::xvnegsp,  TR::RealRegister::vsr0,  TR::RealRegister::vsr63, TRTest::BinaryInstruction("f000fee6")),
     std::make_tuple(TR::InstOpCode::xvnegsp,  TR::RealRegister::vsr0,  TR::RealRegister::vsr31, TRTest::BinaryInstruction("f000fee4")),
+    std::make_tuple(TR::InstOpCode::xvsqrtsp, TR::RealRegister::vsr63, TR::RealRegister::vsr0,  TRTest::BinaryInstruction("f3e0022d")),
+    std::make_tuple(TR::InstOpCode::xvsqrtsp, TR::RealRegister::vsr31, TR::RealRegister::vsr0,  TRTest::BinaryInstruction("f3e0022c")),
+    std::make_tuple(TR::InstOpCode::xvsqrtsp, TR::RealRegister::vsr0,  TR::RealRegister::vsr63, TRTest::BinaryInstruction("f000fa2e")),
+    std::make_tuple(TR::InstOpCode::xvsqrtsp, TR::RealRegister::vsr0,  TR::RealRegister::vsr31, TRTest::BinaryInstruction("f000fa2c")),
     std::make_tuple(TR::InstOpCode::xvsqrtdp, TR::RealRegister::vsr63, TR::RealRegister::vsr0,  TRTest::BinaryInstruction("f3e0032d")),
     std::make_tuple(TR::InstOpCode::xvsqrtdp, TR::RealRegister::vsr31, TR::RealRegister::vsr0,  TRTest::BinaryInstruction("f3e0032c")),
     std::make_tuple(TR::InstOpCode::xvsqrtdp, TR::RealRegister::vsr0,  TR::RealRegister::vsr63, TRTest::BinaryInstruction("f000fb2e")),
-    std::make_tuple(TR::InstOpCode::xvsqrtdp, TR::RealRegister::vsr0,  TR::RealRegister::vsr31, TRTest::BinaryInstruction("f000fb2c"))
+    std::make_tuple(TR::InstOpCode::xvsqrtdp, TR::RealRegister::vsr0,  TR::RealRegister::vsr31, TRTest::BinaryInstruction("f000fb2c")),
+    std::make_tuple(TR::InstOpCode::xvabssp,  TR::RealRegister::vsr63, TR::RealRegister::vsr0,  TRTest::BinaryInstruction("f3e00665")),
+    std::make_tuple(TR::InstOpCode::xvabssp,  TR::RealRegister::vsr31, TR::RealRegister::vsr0,  TRTest::BinaryInstruction("f3e00664")),
+    std::make_tuple(TR::InstOpCode::xvabssp,  TR::RealRegister::vsr0,  TR::RealRegister::vsr63, TRTest::BinaryInstruction("f000fe66")),
+    std::make_tuple(TR::InstOpCode::xvabssp,  TR::RealRegister::vsr0,  TR::RealRegister::vsr31, TRTest::BinaryInstruction("f000fe64")),
+    std::make_tuple(TR::InstOpCode::xvabsdp,  TR::RealRegister::vsr63, TR::RealRegister::vsr0,  TRTest::BinaryInstruction("f3e00765")),
+    std::make_tuple(TR::InstOpCode::xvabsdp,  TR::RealRegister::vsr31, TR::RealRegister::vsr0,  TRTest::BinaryInstruction("f3e00764")),
+    std::make_tuple(TR::InstOpCode::xvabsdp,  TR::RealRegister::vsr0,  TR::RealRegister::vsr63, TRTest::BinaryInstruction("f000ff66")),
+    std::make_tuple(TR::InstOpCode::xvabsdp,  TR::RealRegister::vsr0,  TR::RealRegister::vsr31, TRTest::BinaryInstruction("f000ff64"))
 ));
 
 INSTANTIATE_TEST_CASE_P(VSXVectorFloat, PPCTrg1Src2EncodingTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TRTest::BinaryInstruction>>(
@@ -2950,7 +2966,10 @@ INSTANTIATE_TEST_CASE_P(VSXVectorFloat, PPCRecordFormSanityTest, ::testing::Valu
     std::make_tuple(TR::InstOpCode::xvnmsubasp, TR::InstOpCode::bad,         TRTest::BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::xvnmsubmdp, TR::InstOpCode::bad,         TRTest::BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::xvnmsubmsp, TR::InstOpCode::bad,         TRTest::BinaryInstruction()),
+    std::make_tuple(TR::InstOpCode::xvsqrtsp,   TR::InstOpCode::bad,         TRTest::BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::xvsqrtdp,   TR::InstOpCode::bad,         TRTest::BinaryInstruction()),
+    std::make_tuple(TR::InstOpCode::xvabssp,    TR::InstOpCode::bad,         TRTest::BinaryInstruction()),
+    std::make_tuple(TR::InstOpCode::xvabsdp,    TR::InstOpCode::bad,         TRTest::BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::xvsubdp,    TR::InstOpCode::bad,         TRTest::BinaryInstruction()),
     std::make_tuple(TR::InstOpCode::xvsubsp,    TR::InstOpCode::bad,         TRTest::BinaryInstruction())
 ));

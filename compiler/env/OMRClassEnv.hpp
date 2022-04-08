@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -107,6 +107,7 @@ public:
    bool isClassFinal(TR::Compilation *comp, TR_OpaqueClassBlock *) { return false; }
    bool hasFinalizer(TR::Compilation *comp, TR_OpaqueClassBlock *classPointer) { return false; }
    bool isClassInitialized(TR::Compilation *comp, TR_OpaqueClassBlock *) { return false; }
+   bool isClassVisible(TR::Compilation *comp, TR_OpaqueClassBlock *sourceClass, TR_OpaqueClassBlock *destClass) { return false; }
    bool hasFinalFieldsInClass(TR::Compilation *comp, TR_OpaqueClassBlock *classPointer) { return false; }
    bool sameClassLoaders(TR::Compilation *comp, TR_OpaqueClassBlock *, TR_OpaqueClassBlock *) { return false; }
    bool isString(TR::Compilation *comp, TR_OpaqueClassBlock *clazz) { return false; }

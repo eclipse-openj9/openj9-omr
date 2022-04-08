@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -120,6 +120,7 @@ TR::Node *constrainNarrowToChar(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainNarrowToInt(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainNarrowToShort(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainNew(OMR::ValuePropagation *vp, TR::Node *node);
+TR::Node *constrainNewvalue(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainNewArray(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainNullChk(OMR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainZeroChk(OMR::ValuePropagation *vp, TR::Node *node);
@@ -631,7 +632,7 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define checkcastVPHandler constrainCheckcast
 #define checkcastAndNULLCHKVPHandler constrainCheckcastNullChk
 #define NewVPHandler constrainNew
-#define newvalueVPHandler constrainChildren
+#define newvalueVPHandler constrainNewvalue
 #define newarrayVPHandler constrainNewArray
 #define anewarrayVPHandler constrainANewArray
 #define variableNewVPHandler constrainVariableNew

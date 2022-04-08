@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 IBM Corp. and others
+ * Copyright (c) 2016, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,7 +26,9 @@
  * @brief process introspection support
  */
 
+#include <fcntl.h>
 #include <mach/mach.h>
+#include <poll.h>
 #include <pthread.h>
 #define _XOPEN_SOURCE
 #include <ucontext.h>
@@ -44,26 +46,31 @@ typedef struct PlatformWalkData {
 	/* Array of mach port thread identifiers */
 	thread_act_port_array_t threadList;
 	/* Total number of threads in the process, including calling thread */
-	long threadCount;
+	mach_msg_type_number_t threadCount;
 	/* Suspended threads unharvested */
-	int threadIndex;
+	mach_msg_type_number_t threadIndex;
 	/* Old signal handler for the suspend signal */
 	struct sigaction oldHandler;
+	/* Old mask */
+	sigset_t oldMask;
 	/* Records whether we need to clean up in resume */
-	unsigned char cleanupRequired;
+	BOOLEAN cleanupRequired;
 	/* Backpointer to encapsulating state */
 	J9ThreadWalkState *state;
 } PlatformWalkData;
 
-static void *signalHandlerContext;
+/* unable to pass data into signal handler so use global ptr */
+static J9ThreadWalkState *stateForBacktrace;
 static int pipeFileDescriptor[2];
 
 static void freeThread(J9ThreadWalkState *state, J9PlatformThread *thread);
-static int getThreadContext(J9ThreadWalkState *state);
+static int32_t getThreadContext(J9ThreadWalkState *state);
 static void resumeAllPreempted(PlatformWalkData *data);
-static int setupNativeThread(J9ThreadWalkState *state, thread_context *sigContext);
-static int suspendAllPreemptive(PlatformWalkData *data);
+static int32_t setupNativeThread(J9ThreadWalkState *state, thread_context *sigContext);
+static int32_t suspendAllPreemptive(PlatformWalkData *data);
 static void upcallHandler(int signal, siginfo_t *siginfo, void *context);
+static int32_t timedWait(int32_t seconds);
+static int32_t timeout(int64_t deadline);
 
 static void
 resumeAllPreempted(PlatformWalkData *data)
@@ -78,6 +85,9 @@ resumeAllPreempted(PlatformWalkData *data)
 		}
 
 		sigaction(SUSPEND_SIG, &data->oldHandler, NULL);
+
+		/* Restore the old signal mask. */
+		sigprocmask(SIG_SETMASK, &data->oldMask, NULL);
 	}
 
 	/* Resume each thread. */
@@ -87,10 +97,15 @@ resumeAllPreempted(PlatformWalkData *data)
 		}
 	}
 
+	close(pipeFileDescriptor[0]);
+	close(pipeFileDescriptor[1]);
+
+	data->state->portLibrary->heap_free(data->state->portLibrary, data->state->heap, data);
+	data->state->platform_data = NULL;
 }
 
-/* Store the context and send an arbitrary byte to indicate completion.
- * Pipes are async-signal-safe. signalHandlerContext should be as well
+/* Obtain the backtrace and send an arbitrary byte to indicate completion.
+ * Pipes are async-signal-safe. stateForBacktrace should be as well
  * since it is only used carefully after waiting on the pipe. Receiving
  * unexpected SUSPEND_SIG signals while iterating threads would cause
  * any implementation to misbehave.
@@ -100,20 +115,21 @@ upcallHandler(int signal, siginfo_t *siginfo, void *context)
 {
 	char *data = "A";
 
-	signalHandlerContext = context;
+	stateForBacktrace->portLibrary->introspect_backtrace_thread(stateForBacktrace->portLibrary, stateForBacktrace->current_thread, stateForBacktrace->heap, NULL);
+	stateForBacktrace->portLibrary->introspect_backtrace_symbols(stateForBacktrace->portLibrary, stateForBacktrace->current_thread, stateForBacktrace->heap);
 	write(pipeFileDescriptor[1], data, 1);
 }
 
-static int
+static int32_t
 suspendAllPreemptive(PlatformWalkData *data)
 {
-	mach_msg_type_number_t threadCount = 0;
-	data->threadCount = 0;
 	mach_port_t task = mach_task_self();
 	struct sigaction upcallAction;
-	int rc = 0;
+	int32_t rc = 0;
+	mach_msg_type_number_t threadCount = 0;
+	data->threadCount = 0;
 
-	/* Install a signal handler to get thread context info from the handler. */
+	/* Install a signal handler to get thread callstack info from the handler. */
 	upcallAction.sa_sigaction = upcallHandler;
 	upcallAction.sa_flags = SA_SIGINFO | SA_RESTART;
 
@@ -130,17 +146,29 @@ suspendAllPreemptive(PlatformWalkData *data)
 	}
 
 	if (0 == rc) {
+		sigset_t set;
+		mach_msg_type_number_t filterThreadIndex = 0;
+		mach_port_t temp = 0;
+
 		/* After this point it's safe to go through the full cleanup. */
-		data->cleanupRequired = 1;
+		data->cleanupRequired = TRUE;
+
+		/* Unblock SUSPEND_SIG for this process as abort() blocks all signals except SIGABRT. */
+		sigemptyset(&set);
+		sigaddset(&set, SUSPEND_SIG);
+		if (0 != sigprocmask(SIG_UNBLOCK, &set, &data->oldMask)) {
+			RECORD_ERROR(data->state, SIGNAL_SETUP_ERROR, -2);
+			rc = -1;
+		}
 
 		/* Suspend all threads until there are no new threads. */
 		do {
-			int i = 0;
+			mach_msg_type_number_t i = 0;
 
 			/* Get a list of the threads within the process. */
 			data->threadCount = threadCount;
 			if (KERN_SUCCESS != task_threads(task, &data->threadList, &threadCount)) {
-				RECORD_ERROR(data->state, SIGNAL_SETUP_ERROR, -1);
+				RECORD_ERROR(data->state, THREAD_COUNT_FAILURE, -1);
 				rc = -1;
 				break;
 			}
@@ -153,9 +181,18 @@ suspendAllPreemptive(PlatformWalkData *data)
 						rc = -1;
 						break;
 					}
+				} else {
+					filterThreadIndex = i;
 				}
 			}
 		} while ((threadCount > data->threadCount) && (0 == rc));
+
+		/* Swap the filterthread/current thread with first thread so that the current thread
+		 * is always the first thread iterated.
+		 */
+		temp = data->threadList[0];
+		data->threadList[0] = data->threadList[filterThreadIndex];
+		data->threadList[filterThreadIndex] = temp;
 	}
 
 	return rc;
@@ -186,10 +223,6 @@ freeThread(J9ThreadWalkState *state, J9PlatformThread *thread)
 		state->portLibrary->heap_free(state->portLibrary, state->heap, tmp);
 	}
 
-	if (NULL != thread->context) {
-		state->portLibrary->heap_free(state->portLibrary, state->heap, thread->context);
-	}
-
 	state->portLibrary->heap_free(state->portLibrary, state->heap, thread);
 
 	if (state->current_thread == thread) {
@@ -206,64 +239,60 @@ freeThread(J9ThreadWalkState *state, J9PlatformThread *thread)
  *
  * @return - 0 on success, non-zero otherwise.
  */
-static int
+static int32_t
 setupNativeThread(J9ThreadWalkState *state, thread_context *sigContext)
 {
 	PlatformWalkData *data = (PlatformWalkData *)state->platform_data;
-	int size = sizeof(thread_context);
-	int rc = 0;
-
-	if (size < sizeof(ucontext_t)) {
-		size = sizeof(ucontext_t);
-	}
+	int32_t rc = 0;
 
 	/* Allocate the thread container. */
 	state->current_thread = (J9PlatformThread *)state->portLibrary->heap_allocate(state->portLibrary, state->heap, sizeof(J9PlatformThread));
 	if (NULL == state->current_thread) {
+		RECORD_ERROR(state, ALLOCATION_FAILURE, 2);
 		rc = -1;
 	}
 	if (0 == rc) {
 		memset(state->current_thread, 0, sizeof(J9PlatformThread));
-
-		/* Allocate space for the copy of the context. */
-		state->current_thread->context = (thread_context *)state->portLibrary->heap_allocate(state->portLibrary, state->heap, size);
-		if (NULL == state->current_thread->context) {
-			rc = -1;
-		}
 	}
 
 	if (0 == rc) {
-		state->current_thread->thread_id = data->threadList[data->threadIndex];
-		state->current_thread->process_id = getpid();
+		pthread_t pt = pthread_from_mach_thread_np(data->threadList[data->threadIndex]);
+		if (NULL == pt) {
+			rc = -1;
+		} else {
+			uint64_t tid = 0;
+			if (0 == pthread_threadid_np(pt, &tid)) {
+				state->current_thread->thread_id = tid;
+				state->current_thread->process_id = getpid();
 
-		if (NULL == sigContext) {
-			/* Generate the context by installing a signal handler and raising a signal. None was provided. */
-			if (0 == getThreadContext(state)) {
-				memcpy(state->current_thread->context, signalHandlerContext, size);
+				if (data->filterThread != data->threadList[data->threadIndex]) {
+					/* Generate the callstack by installing a signal handler and raising a signal. None was provided.
+					 * Backtrace functions will be called from the signal handler.
+					 */
+					rc = getThreadContext(state);
+				}
 			} else {
 				rc = -1;
 			}
-		} else {
-			/* Copy the context. We're using the provided context instead of generating it. */
-			memcpy(state->current_thread->context, ((OMRUnixSignalInfo *)sigContext)->platformSignalInfo.context, size);
 		}
 	}
 
 	if (0 == rc) {
-		/* Populate backtraces if not present. */
-		if (NULL == state->current_thread->callstack) {
-			/* Don't pass sigContext in here as we should have fixed up the thread already. It confuses heap/not heap allocations if we
-			 * pass it here.
-			 */
-			SPECULATE_ERROR(state, FAULT_DURING_BACKTRACE, 2);
-			state->portLibrary->introspect_backtrace_thread(state->portLibrary, state->current_thread, state->heap, NULL);
-			CLEAR_ERROR(state);
-		}
+		/* Populate backtraces if not present. Should only happen for the filter thread as it was
+		 * the only thread that did not execute the signal handler.
+		 */
+		if (data->filterThread == data->threadList[data->threadIndex]) {
+			if (NULL == state->current_thread->callstack) {
+				SPECULATE_ERROR(state, FAULT_DURING_BACKTRACE, 2);
+				state->portLibrary->introspect_backtrace_thread(state->portLibrary, state->current_thread, state->heap, sigContext);
+				CLEAR_ERROR(state);
+			}
 
-		if ((NULL != state->current_thread->callstack) && (NULL == state->current_thread->callstack->symbol)) {
-			SPECULATE_ERROR(state, FAULT_DURING_BACKTRACE, 3);
-			state->portLibrary->introspect_backtrace_symbols(state->portLibrary, state->current_thread, state->heap);
-			CLEAR_ERROR(state);
+			if ((NULL != state->current_thread->callstack) && (NULL == state->current_thread->callstack->symbol)) {
+				SPECULATE_ERROR(state, FAULT_DURING_BACKTRACE, 3);
+				state->portLibrary->introspect_backtrace_symbols(state->portLibrary, state->current_thread, state->heap);
+				CLEAR_ERROR(state);
+			}
 		}
 
 		if (0 != state->current_thread->error) {
@@ -274,21 +303,18 @@ setupNativeThread(J9ThreadWalkState *state, thread_context *sigContext)
 	return rc;
 }
 
-static int
+static int32_t
 getThreadContext(J9ThreadWalkState *state)
 {
-	int ret = 0;
-	char buffer[1];
+	int32_t ret = 0;
 	PlatformWalkData *data = (PlatformWalkData *)state->platform_data;
 	thread_port_t thread = data->threadList[data->threadIndex];
 
-	/* Create a pipe to allow the resumed thread to report it has completed
-	 * sending its context info.
-	 */
-	ret = pipe(pipeFileDescriptor);
-
-	if (0 == ret) {
-		ret = pthread_kill(pthread_from_mach_thread_np(thread), SUSPEND_SIG);
+	pthread_t pthread = pthread_from_mach_thread_np(thread);
+	if (NULL != pthread) {
+		ret = pthread_kill(pthread, SUSPEND_SIG);
+	} else {
+		ret = -1;
 	}
 
 	if (0 == ret) {
@@ -300,9 +326,73 @@ getThreadContext(J9ThreadWalkState *state)
 
 	if (0 == ret) {
 		/* Wait for the signal handler to complete. */
-		if (0 == read(pipeFileDescriptor[0], buffer, 1)) {
-			ret = -1;
+		ret = timedWait(timeout(state->deadline1));
+		if (TIMEOUT == ret) {
+			RECORD_ERROR(state, TIMEOUT, 0);
 		}
+	}
+
+	return ret;
+}
+
+/**
+ * Utility function to calculate remaining time before the deadline elapses.
+ *
+ * @param deadline system time by which processing should have completed
+ *
+ * @return number of seconds before timeout.
+ */
+static int32_t
+timeout(int64_t deadline)
+{
+	int32_t secs = 0;
+	struct timespec spec;
+	if ((0 == clock_gettime(CLOCK_REALTIME, &spec)) && (deadline > spec.tv_sec)) {
+		secs = (int32_t)(deadline - spec.tv_sec);
+	}
+
+	return secs;
+}
+
+/**
+ * This function waits for data on a pipe and will block for at most `seconds` seconds.
+ *
+ * @param seconds the maximum number of seconds to block for, must be positive
+ *
+ * @return 0 if success, -1 if error, TIMEOUT if timeout occurred.
+ */
+static int32_t
+timedWait(int32_t seconds)
+{
+	int32_t ret = 0;
+
+	if (seconds > 0) {
+		struct pollfd fds;
+
+		fds.fd = pipeFileDescriptor[0];
+		fds.events = POLLIN;
+
+		ret = poll(&fds, 1, seconds * 1000);
+
+		if ((-1 == ret) || (0 != (fds.revents & (POLLHUP | POLLERR | POLLNVAL)))) {
+			/* error from poll() */
+			ret = -1;
+		} else if (0 == ret) {
+			/* timeout */
+			ret = TIMEOUT;
+		} else {
+			char buffer;
+
+			if (1 == read(fds.fd, &buffer, 1)) {
+				/* success */
+				ret = 0;
+			} else {
+				ret = -1;
+			}
+		}
+	} else {
+		/* already timed out */
+		ret = TIMEOUT;
 	}
 
 	return ret;
@@ -315,7 +405,7 @@ getThreadContext(J9ThreadWalkState *state)
  * and they will remain suspended until this function or nextDo return NULL. The context for the
  * calling thread is always presented first.
  *
- * @param heap used to contain the thread context, the stack frame representations and symbol strings. No
+ * @param heap used to contain the stack frame representations and symbol strings. No
  * 			memory is allocated outside of the heap provided. Must not be NULL.
  * @param state semi-opaque structure used as a cursor for iteration. Must not be NULL User visible fields
  *			are:
@@ -323,8 +413,8 @@ getThreadContext(J9ThreadWalkState *state)
  * 			error - numeric error description, 0 on success
  * 			error_detail - detail for the specific error
  * 			error_string - string description of error
- * @param signal_info a signal context to use. This will be used in place of the live context for the
- * 			calling thread.
+ * @param signal_info a signal context to use. This will be used to remove signal handler frames from the
+ * 			callstack.
  *
  * @return NULL if there is a problem suspending threads, gathering thread contexts or if the heap
  * is too small to contain even the context without stack trace. Errors are reported in the error,
@@ -333,9 +423,9 @@ getThreadContext(J9ThreadWalkState *state)
 J9PlatformThread *
 omrintrospect_threads_startDo_with_signal(struct OMRPortLibrary *portLibrary, J9Heap *heap, J9ThreadWalkState *state, void *signal_info)
 {
-	int result = 0;
-	PlatformWalkData *data;
-	int suspend_result = 0;
+	int32_t result = 0;
+	PlatformWalkData *data = NULL;
+	int flag = 0;
 
 	/* Construct the walk state. */
 	state->heap = heap;
@@ -343,6 +433,7 @@ omrintrospect_threads_startDo_with_signal(struct OMRPortLibrary *portLibrary, J9
 	data = (PlatformWalkData *)portLibrary->heap_allocate(portLibrary, heap, sizeof(PlatformWalkData));
 	state->platform_data = data;
 	state->current_thread = NULL;
+	stateForBacktrace = state;
 
 	if (NULL == data) {
 		RECORD_ERROR(state, ALLOCATION_FAILURE, 0);
@@ -353,9 +444,22 @@ omrintrospect_threads_startDo_with_signal(struct OMRPortLibrary *portLibrary, J9
 	data->state = state;
 	data->filterThread = mach_thread_self();
 
+	/* Create a pipe to allow the resumed thread to report it has completed
+	 * sending its callstack info.
+	 */
+	result = pipe(pipeFileDescriptor);
+	if (0 != result) {
+		RECORD_ERROR(state, INITIALIZATION_ERROR, result);
+		goto cleanup;
+	}
+	/* Initialize pipe to be non-blocking as poll() ensures read() does not block. */
+	flag = fcntl(pipeFileDescriptor[0], F_GETFL);
+	fcntl(pipeFileDescriptor[0], F_SETFL, flag | O_NONBLOCK);
+
 	/* Suspend all threads bar this one. */
-	if (0 != suspendAllPreemptive(state->platform_data)) {
-		RECORD_ERROR(state, SUSPEND_FAILURE, suspend_result);
+	result = suspendAllPreemptive(state->platform_data);
+	if (0 != result) {
+		RECORD_ERROR(state, SUSPEND_FAILURE, result);
 		goto cleanup;
 	}
 
@@ -392,11 +496,11 @@ omrintrospect_threads_startDo(struct OMRPortLibrary *portLibrary, J9Heap *heap, 
 J9PlatformThread *
 omrintrospect_threads_nextDo(J9ThreadWalkState *state)
 {
-	int result = 0;
+	int32_t result = 0;
 	PlatformWalkData *data = state->platform_data;
 
 	if (NULL == data) {
-		/* state is invalid */
+		/* State is invalid due to fatal error from startDo. */
 		RECORD_ERROR(state, INVALID_STATE, 0);
 		return NULL;
 	}
@@ -405,19 +509,26 @@ omrintrospect_threads_nextDo(J9ThreadWalkState *state)
 	freeThread(state, state->current_thread);
 
 	data->threadIndex += 1;
-	if (data->filterThread == data->threadList[data->threadIndex]) {
-		data->threadIndex += 1;
-	}
-
 	if (data->threadIndex == data->threadCount) {
 		/* Finished processing threads. */
-		return NULL;
+		goto cleanup;
 	}
 
 	result = setupNativeThread(state, NULL);
 	if (0 != result) {
+		if (NULL == state->current_thread) {
+			/* Allocation failure, can only return NULL which terminates iteration. */
+			goto cleanup;
+		} else if (TIMEOUT == result) {
+			/* Timeout, don't walk rest of threads. Wait for thread in upcallHandler to complete before
+			 * freeing thread.
+			 */
+			timedWait(timeout(state->deadline2));
+			freeThread(state, state->current_thread);
+			goto cleanup;
+		}
+		/* Other failures, non-fatal. */
 		RECORD_ERROR(state, COLLECTION_FAILURE, result);
-		goto cleanup;
 	}
 
 	return state->current_thread;

@@ -28,9 +28,9 @@ namespace TR { class Simplifier; }
 
 #include "optimizer/OMRSimplifierHandlers.hpp"
 
-const SimplifierPtrTable simplifierOpts;
+const SimplifierPointerTable simplifierOpts;
 
-const SimplifierPtr SimplifierPtrTable::table[] =
+const SimplifierPtr SimplifierPointerTable::table[] =
    {
    #include "optimizer/OMRSimplifierTable.enum"
    };

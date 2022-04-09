@@ -117,7 +117,7 @@ namespace TR { class RegisterDependencyConditions; }
 
 OMR::TreeEvaluatorFunctionPointerTable OMR::CodeGenerator::_nodeToInstrEvaluators;
 
-TR_TreeEvaluatorFunctionPointer
+OMR::TreeEvaluatorFunctionPointer
 OMR::TreeEvaluatorFunctionPointerTable::table[] =
    {
 #define OPCODE_MACRO(\

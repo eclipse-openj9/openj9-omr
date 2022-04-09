@@ -78,9 +78,9 @@ class ILOpCode
 public:
 
    // The class is capable of storing "hidden" vector opcodes and provides an interface
-   // for creating and quiering them
-   // Vector operations that return a non-vector type(e.g. reduction) or for which result
-   // and source types are different(e.g. conversion) will be handled later
+   // for creating and querying them
+   // Vector operations that return a non-vector type (e.g. reduction) or for which result
+   // and source types are different (e.g. conversion) will be handled later
    static const int32_t NumAllIlOps = TR::NumScalarIlOps + NumVectorOperations*TR::NumVectorTypes;
 
    // Deprecate?
@@ -108,7 +108,7 @@ public:
    */
    static ILOpCode createVectorOpCode(VectorOperation operation, DataType resultVectorType)
       {
-      static_assert(NumAllIlOps < ((long long)1 << (sizeof(TR::ILOpCodes)*8)), "Number of scalar and vector opcodes does not fit into TR::ILOpCodes\n");
+      static_assert(NumAllIlOps < ((uint64_t)1 << (sizeof(TR::ILOpCodes)*8)), "Number of scalar and vector opcodes does not fit into TR::ILOpCodes\n");
 
       return (TR::ILOpCodes)(TR::NumScalarIlOps + operation*TR::NumVectorTypes + (resultVectorType - TR::NumScalarTypes));
       }
@@ -166,7 +166,7 @@ public:
    */
    static VectorOperation getVectorOperation(ILOpCode op)
       {
-      TR_ASSERT_FATAL(isVectorOpCode(op), "getVectOroperation() can only be called on vector opcode\n");
+      TR_ASSERT_FATAL(isVectorOpCode(op), "getVectorOperation() can only be called on vector opcode\n");
       return (VectorOperation)((op._opCode - TR::NumScalarIlOps) / TR::NumVectorTypes);
       }
 
@@ -1384,12 +1384,15 @@ public:
          case TR::dstorei:
             return TR::vstorei;
 
-         case TR::badd: return ILOpCode::createVectorOpCode(OMR::vadd, TR::DataType::createVectorType(TR::Int8,   vectorLength)).getOpCodeValue();
-         case TR::sadd: return ILOpCode::createVectorOpCode(OMR::vadd, TR::DataType::createVectorType(TR::Int16,  vectorLength)).getOpCodeValue();
-         case TR::iadd: return ILOpCode::createVectorOpCode(OMR::vadd, TR::DataType::createVectorType(TR::Int32,  vectorLength)).getOpCodeValue();
-         case TR::ladd: return ILOpCode::createVectorOpCode(OMR::vadd, TR::DataType::createVectorType(TR::Int64,  vectorLength)).getOpCodeValue();
-         case TR::fadd: return ILOpCode::createVectorOpCode(OMR::vadd, TR::DataType::createVectorType(TR::Float,  vectorLength)).getOpCodeValue();
-         case TR::dadd: return ILOpCode::createVectorOpCode(OMR::vadd, TR::DataType::createVectorType(TR::Double, vectorLength)).getOpCodeValue();
+         case TR::badd:
+         case TR::sadd:
+         case TR::iadd:
+         case TR::ladd:
+         case TR::fadd:
+         case TR::dadd:
+            return ILOpCode::createVectorOpCode(OMR::vadd,
+                                                TR::DataType::createVectorType(opcode.getDataType().getDataType(),
+                                                                               vectorLength)).getOpCodeValue();
 
          case TR::bsub:
          case TR::ssub:

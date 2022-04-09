@@ -76,7 +76,7 @@ template <class T> class TR_Stack;
 
 typedef TR::Node* (* ValuePropagationPtr)(OMR::ValuePropagation *, TR::Node *);
 
-class ValuePropagationPtrTable
+class ValuePropagationPointerTable
    {
    private:
    static const ValuePropagationPtr table[];
@@ -85,7 +85,7 @@ class ValuePropagationPtrTable
 
    public:
 
-   ValuePropagationPtrTable() {}; // some compilers require a default constructor for this class
+   ValuePropagationPointerTable() {}; // some compilers require a default constructor for this class
 
    ValuePropagationPtr operator[] (TR::ILOpCode opcode) const
       {
@@ -93,7 +93,7 @@ class ValuePropagationPtrTable
       }
    };
 
-extern const ValuePropagationPtrTable constraintHandlers;
+extern const ValuePropagationPointerTable constraintHandlers;
 
 typedef TR::typed_allocator<std::pair<TR::CFGEdge * const, TR_BitVector*>, TR::Region &> DefinedOnAllPathsMapAllocator;
 typedef std::map<TR::CFGEdge *, TR_BitVector *, std::less<TR::CFGEdge *>, DefinedOnAllPathsMapAllocator> DefinedOnAllPathsMap;

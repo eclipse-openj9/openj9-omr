@@ -268,7 +268,7 @@ TR::Node * removeArithmeticsUnderIntegralCompare(TR::Node* node,TR::Simplifier *
 
 typedef TR::Node *(* SimplifierPtr)(TR::Node *node, TR::Block *block, TR::Simplifier *s);
 
-class SimplifierPtrTable
+class SimplifierPointerTable
    {
    private:
    static const SimplifierPtr table[];
@@ -277,7 +277,7 @@ class SimplifierPtrTable
 
    public:
 
-   SimplifierPtrTable() {}; // some compilers require a default constructor for this class
+   SimplifierPointerTable() {}; // some compilers require a default constructor for this class
 
    SimplifierPtr operator[] (TR::ILOpCode opcode) const
       {

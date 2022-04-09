@@ -853,9 +853,9 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define BCDCHKVPHandler constrainBCDCHK
 #endif
 
-const ValuePropagationPtrTable constraintHandlers;
+const ValuePropagationPointerTable constraintHandlers;
 
-const ValuePropagationPtr ValuePropagationPtrTable::table[] =
+const ValuePropagationPtr ValuePropagationPointerTable::table[] =
    {
 #define OPCODE_MACRO(\
    opcode, \

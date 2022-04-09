@@ -245,15 +245,17 @@ namespace TR
 namespace OMR
 {
 
+typedef TR::Register *(* TreeEvaluatorFunctionPointer)(TR::Node *node, TR::CodeGenerator *codeGen);
+
 class TreeEvaluatorFunctionPointerTable
    {
    private:
-   static TR_TreeEvaluatorFunctionPointer table[];
+   static TreeEvaluatorFunctionPointer table[];
 
    static void checkTableSize();
 
    public:
-   TR_TreeEvaluatorFunctionPointer& operator[] (TR::ILOpCode opcode)
+   TreeEvaluatorFunctionPointer& operator[] (TR::ILOpCode opcode)
       {
       return table[opcode.getTableIndex()];
       }

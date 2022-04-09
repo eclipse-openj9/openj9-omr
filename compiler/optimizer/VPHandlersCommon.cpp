@@ -161,9 +161,9 @@ TR::Node *constrainVcall(OMR::ValuePropagation *vp, TR::Node *node)
 
 #include "optimizer/ValuePropagationTable.hpp" // IWYU pragma: keep
 
-void ValuePropagationPtrTable::checkTableSize()
+void ValuePropagationPointerTable::checkTableSize()
    {
    static_assert((TR::NumScalarIlOps + OMR::NumVectorOperations) ==
                  (sizeof(table) / sizeof(table[0])),
-                 "ValuePropagationPtrTable::table[] is not the correct size");
+                 "ValuePropagationPointerTable::table[] is not the correct size");
    }

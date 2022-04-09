@@ -80,13 +80,13 @@
 #include "ras/Debug.hpp"
 
 
-extern const SimplifierPtrTable simplifierOpts;
+extern const SimplifierPointerTable simplifierOpts;
 
-void SimplifierPtrTable::checkTableSize()
+void SimplifierPointerTable::checkTableSize()
    {
    static_assert((TR::NumScalarIlOps + OMR::NumVectorOperations) ==
               (sizeof(table) / sizeof(table[0])),
-              "SimplifierPtrTable::table is not the correct size");
+              "SimplifierPointerTable::table is not the correct size");
    }
 
 /*

@@ -1791,11 +1791,6 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
                return false;
          case TR::vl2vd:
             return true;
-         case OMR::vsqrt:
-            if (et == TR::Float || et == TR::Double)
-               return true;
-            else
-               return false;
          default:
             return false;
          }
@@ -1830,6 +1825,11 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
             return false;
       case OMR::vabs:
          if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float || et == TR::Double)
+            return true;
+         else
+            return false;
+      case OMR::vsqrt:
+         if (et == TR::Float || et == TR::Double)
             return true;
          else
             return false;

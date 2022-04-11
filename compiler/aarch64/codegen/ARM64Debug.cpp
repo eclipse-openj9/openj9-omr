@@ -888,6 +888,12 @@ static const char *opCodeToNameMap[] =
    "vabs2d",
    "vfabs4s",
    "vfabs2d",
+   "vrev16_16b",
+   "vrev32_16b",
+   "vrev32_8h",
+   "vrev64_16b",
+   "vrev64_8h",
+   "vrev64_4s",
    "nop",
    };
 

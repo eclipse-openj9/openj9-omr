@@ -8023,6 +8023,9 @@ bool TR_LoopVersioner::requiresPrivatization(TR::Node *node)
    if (!node->getOpCode().hasSymbolReference())
       return false;
 
+   if (node->isDataAddrPointer())
+      return false;
+
    if (node->getOpCodeValue() == TR::loadaddr || node->getOpCode().isTreeTop())
       return false;
 
@@ -8194,19 +8197,26 @@ bool TR_LoopVersioner::depsForLoopEntryPrep(
    // If this is an indirect access
    //
    if (node->isInternalPointer() ||
-       (((node->getOpCode().isIndirect() && node->getOpCode().hasSymbolReference() && !node->getSymbolReference()->getSymbol()->isStatic()) || node->getOpCode().isArrayLength()) &&
-        !node->getFirstChild()->isInternalPointer()))
+         (((node->getOpCode().isIndirect() && node->getOpCode().hasSymbolReference() &&
+         !node->getSymbolReference()->getSymbol()->isStatic()) ||
+         node->getOpCode().isArrayLength()) && !node->getFirstChild()->isInternalPointer()))
       {
-      if (!node->getFirstChild()->isThisPointer())
+      TR::Node *firstChild = node->getFirstChild();
+      if (!firstChild->isThisPointer())
          {
-         dumpOptDetailsCreatingTest("null", node->getFirstChild());
-         TR::Node *ifacmpeqNode = TR::Node::createif(TR::ifacmpeq, node->getFirstChild(), TR::Node::aconst(node, 0), _exitGotoTarget);
+         // if we are dealing with dataAddr load use the child for null check.
+         // We can reach here either with dataAddr load or with parent of dataAddr load.
+         if (firstChild->isDataAddrPointer())
+            firstChild = firstChild->getFirstChild(); // Array base is the child of dataAddr load
+
+         dumpOptDetailsCreatingTest("null", firstChild);
+         TR::Node *ifacmpeqNode = TR::Node::createif(TR::ifacmpeq, firstChild, TR::Node::aconst(node, 0), _exitGotoTarget);
          LoopEntryPrep *nullTestPrep =
             addLoopEntryPrepDep(LoopEntryPrep::TEST, ifacmpeqNode, deps, visited);
 
          if (nullTestPrep == NULL)
             {
-            dumpOptDetailsFailedToCreateTest("null", node->getFirstChild());
+            dumpOptDetailsFailedToCreateTest("null", firstChild);
             return false;
             }
 
@@ -8214,7 +8224,6 @@ bool TR_LoopVersioner::depsForLoopEntryPrep(
          _curLoop->_nullTestPreps.insert(std::make_pair(refExpr, nullTestPrep));
          }
 
-      TR::Node *firstChild = node->getFirstChild();
       bool instanceOfReqd = true;
       TR_OpaqueClassBlock *otherClassObject = NULL;
       TR::Node *duplicateClassPtr = NULL;
@@ -8324,21 +8333,21 @@ bool TR_LoopVersioner::depsForLoopEntryPrep(
          {
          if (otherClassObject)
             {
-            dumpOptDetailsCreatingTest("type", node->getFirstChild());
-            TR::Node *instanceofNode = TR::Node::createWithSymRef(TR::instanceof, 2, 2, node->getFirstChild(), duplicateClassPtr, comp()->getSymRefTab()->findOrCreateInstanceOfSymbolRef(comp()->getMethodSymbol()));
+            dumpOptDetailsCreatingTest("type", firstChild);
+            TR::Node *instanceofNode = TR::Node::createWithSymRef(TR::instanceof, 2, 2, firstChild, duplicateClassPtr, comp()->getSymRefTab()->findOrCreateInstanceOfSymbolRef(comp()->getMethodSymbol()));
             TR::Node *ificmpeqNode =  TR::Node::createif(TR::ificmpeq, instanceofNode, TR::Node::create(node, TR::iconst, 0, 0), _exitGotoTarget);
             if (addLoopEntryPrepDep(LoopEntryPrep::TEST, ificmpeqNode, deps, visited) == NULL)
                {
-               dumpOptDetailsFailedToCreateTest("type", node->getFirstChild());
+               dumpOptDetailsFailedToCreateTest("type", firstChild);
                return false;
                }
             }
          else if (testIsArray)
             {
 #ifdef J9_PROJECT_SPECIFIC
-            dumpOptDetailsCreatingTest("array type", node->getFirstChild());
+            dumpOptDetailsCreatingTest("array type", firstChild);
 
-            TR::Node *vftLoad = TR::Node::createWithSymRef(TR::aloadi, 1, 1, node->getFirstChild(), comp()->getSymRefTab()->findOrCreateVftSymbolRef());
+            TR::Node *vftLoad = TR::Node::createWithSymRef(TR::aloadi, 1, 1, firstChild, comp()->getSymRefTab()->findOrCreateVftSymbolRef());
             //TR::Node *componentTypeLoad = TR::Node::create(TR::aloadi, 1, vftLoad, comp()->getSymRefTab()->findOrCreateArrayComponentTypeSymbolRef());
             TR::Node *classFlag = NULL;
             if (comp()->target().is32Bit())
@@ -8355,7 +8364,7 @@ bool TR_LoopVersioner::depsForLoopEntryPrep(
             TR::Node *cmp = TR::Node::createif(TR::ificmpne, andNode, andConstNode, _exitGotoTarget);
             if (addLoopEntryPrepDep(LoopEntryPrep::TEST, cmp, deps, visited) == NULL)
                {
-               dumpOptDetailsFailedToCreateTest("array type", node->getFirstChild());
+               dumpOptDetailsFailedToCreateTest("array type", firstChild);
                return false;
                }
 #endif
@@ -8376,81 +8385,131 @@ bool TR_LoopVersioner::depsForLoopEntryPrep(
       // This is an array access; so we need to insert explicit
       // checks to mimic the bounds check for the access.
       //
-      TR::Node *offset = node->getFirstChild()->getSecondChild();
       TR::Node *childInRequiredForm = NULL;
       TR::Node *indexNode = NULL;
-
-      int32_t headerSize = static_cast<int32_t>(TR::Compiler->om.contiguousArrayHeaderSizeInBytes());
-      static struct temps
-         {
-         TR::ILOpCodes addOp;
-         TR::ILOpCodes constOp;
-         int32_t k;
-         }
-      a[] =
-         {{TR::iadd, TR::iconst,  headerSize},
-          {TR::isub, TR::iconst, -headerSize},
-          {TR::ladd, TR::lconst,  headerSize},
-          {TR::lsub, TR::lconst, -headerSize}};
-
-      for (int32_t index = sizeof(a)/sizeof(temps) - 1; index >= 0; --index)
-         {
-         if (offset->getOpCodeValue() == a[index].addOp &&
-             offset->getSecondChild()->getOpCodeValue() == a[index].constOp &&
-             offset->getSecondChild()->getInt() == a[index].k)
-            {
-            childInRequiredForm = offset->getFirstChild();
-            break;
-            }
-         }
-
-      TR::DataType type = offset->getType();
+      TR::DataType type = TR::NoType;
 
       // compute the right shift width
-      //
       int32_t dataWidth = TR::Symbol::convertTypeToSize(node->getDataType());
-      if (comp()->useCompressedPointers() &&
-            node->getDataType() == TR::Address)
+      if (comp()->useCompressedPointers() && node->getDataType() == TR::Address)
          dataWidth = TR::Compiler->om.sizeofReferenceField();
-      int32_t shiftWidth = TR::TransformUtil::convertWidthToShift(dataWidth);
 
-      if (childInRequiredForm)
+      // Holds the array node, or the dataAddr node for off heap
+      TR::Node *arrayBaseAddressNode = NULL;
+
+      if (node->getFirstChild()->isDataAddrPointer())
          {
-         if (childInRequiredForm->getOpCodeValue() == TR::ishl || childInRequiredForm->getOpCodeValue() == TR::lshl)
-            {
-            if (childInRequiredForm->getSecondChild()->getOpCode().isLoadConst() &&
-               (childInRequiredForm->getSecondChild()->getInt() == shiftWidth))
-               indexNode = childInRequiredForm->getFirstChild();
-            }
-         else if (childInRequiredForm->getOpCodeValue() == TR::imul || childInRequiredForm->getOpCodeValue() == TR::lmul)
-            {
-            if (childInRequiredForm->getSecondChild()->getOpCode().isLoadConst() &&
-               (childInRequiredForm->getSecondChild()->getInt() == dataWidth))
-               indexNode = childInRequiredForm->getFirstChild();
-            }
+         // This protects the case when off heap allocation is enabled and array
+         // access is for the first element in the array, eliminating offset tree.
+         // *loadi <== node
+         //    aloadi dataAddr_ptr (dataAddrPointer sharedMemory )
+         //       aload objt_ptr
+
+         // If array access does not have offset tree, its accessing the first element using the dataAddrPointer
+         arrayBaseAddressNode = node->getFirstChild();
+         indexNode = TR::Node::iconst(node, 0);
+         type = TR::Int32;
          }
-
-
-     if (!indexNode)
+      else
          {
-         if (!childInRequiredForm)
+         int32_t headerSize = static_cast<int32_t>(TR::Compiler->om.contiguousArrayHeaderSizeInBytes());
+         arrayBaseAddressNode = node->getFirstChild()->getFirstChild();
+         TR::Node *offset = node->getFirstChild()->getSecondChild();
+         type = offset->getType();
+
+         /* childInRequiredForm is expected to be shift/multiply node. When
+            off heap allocation is enabled and the sibling is dataAddr pointer
+            node, instead of using objt_ptr + header_size we load address of first
+            array element from dataAddr field in the header and add the offset. */
+         if (arrayBaseAddressNode->isDataAddrPointer())
             {
-            TR::Node *constNode = TR::Node::create(node, type.isInt32() ? TR::iconst : TR::lconst, 0, 0);
-            indexNode = TR::Node::create(type.isInt32() ? TR::isub : TR::lsub, 2, offset, constNode);
-            if (type.isInt64())
-               constNode->setLongInt((int64_t)headerSize);
-            else
-               constNode->setInt((int64_t)headerSize);
+            // This is what trees will look like with dataAddr load
+            // aloadi < node
+            //    aladd
+            //       ==>aload dataAddr_ptr (dataAddrPointer sharedMemory )
+            //       shl/mul < childInRequiredForm/offset
+            childInRequiredForm = node->getFirstChild()->getSecondChild();
             }
          else
-            indexNode = childInRequiredForm;
+            {
+            // aloadi < node
+            //    aladd
+            //       ==>aload objt_ptr
+            //       add < offset
+            //          shl/mul < childInRequiredForm
+            //          const array_header
+            static struct temps
+               {
+               TR::ILOpCodes addOp;
+               TR::ILOpCodes constOp;
+               int32_t k;
+               }
+            a[] =
+               {{TR::iadd, TR::iconst,  headerSize},
+               {TR::isub, TR::iconst, -headerSize},
+               {TR::ladd, TR::lconst,  headerSize},
+               {TR::lsub, TR::lconst, -headerSize}};
+            for (int32_t index = sizeof(a)/sizeof(temps) - 1; index >= 0; --index)
+               {
+               if (offset->getOpCodeValue() == a[index].addOp &&
+                  offset->getSecondChild()->getOpCodeValue() == a[index].constOp &&
+                  offset->getSecondChild()->getInt() == a[index].k)
+                  {
+                  childInRequiredForm = offset->getFirstChild();
+                  break;
+                  }
+               }
+            }
+
+         int32_t shiftWidth = TR::TransformUtil::convertWidthToShift(dataWidth);
+
+         if (childInRequiredForm)
+            {
+            if (childInRequiredForm->getOpCodeValue() == TR::ishl || childInRequiredForm->getOpCodeValue() == TR::lshl)
+               {
+               if (childInRequiredForm->getSecondChild()->getOpCode().isLoadConst() &&
+                  (childInRequiredForm->getSecondChild()->getInt() == shiftWidth))
+                  indexNode = childInRequiredForm->getFirstChild();
+               }
+            else if (childInRequiredForm->getOpCodeValue() == TR::imul || childInRequiredForm->getOpCodeValue() == TR::lmul)
+               {
+               if (childInRequiredForm->getSecondChild()->getOpCode().isLoadConst() &&
+                  (childInRequiredForm->getSecondChild()->getInt() == dataWidth))
+                  indexNode = childInRequiredForm->getFirstChild();
+               }
+            }
+
+         if (!indexNode)
+            {
+            if (!childInRequiredForm)
+               {
+               // We don't need to subtract the header size when we are using dataAddr pointer node
+               // because we already have a pointer to the first element in the array.
+               // For Reference see Walker.cpp:calculateElementAddressInContiguousArray
+               if (arrayBaseAddressNode->isDataAddrPointer())
+                  indexNode = offset;
+               else
+                  {
+                  TR::Node *constNode = TR::Node::create(node, type.isInt32() ? TR::iconst : TR::lconst, 0, 0);
+                  indexNode = TR::Node::create(type.isInt32() ? TR::isub : TR::lsub, 2, offset, constNode);
+                  if (type.isInt64())
+                     constNode->setLongInt((int64_t)headerSize);
+                  else
+                     constNode->setInt((int64_t)headerSize);
+                  }
+               }
+            else
+               indexNode = childInRequiredForm;
 
 
-         indexNode = TR::Node::create(type.isInt32() ? TR::iushr : TR::lushr, 2, indexNode,
-                                          TR::Node::create(node, TR::iconst, 0, shiftWidth));
+            indexNode = TR::Node::create(type.isInt32() ? TR::iushr : TR::lushr, 2, indexNode,
+                                             TR::Node::create(node, TR::iconst, 0, shiftWidth));
+            }
          }
 
-      TR::Node *base = node->getFirstChild()->getFirstChild();
+      TR::Node *base = arrayBaseAddressNode;
+      if (base->isDataAddrPointer())
+         base = base->getFirstChild();
       TR::Node *arrayLengthNode = TR::Node::create(TR::arraylength, 1, base);
 
       arrayLengthNode->setArrayStride(dataWidth);

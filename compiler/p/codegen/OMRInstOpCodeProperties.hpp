@@ -12759,7 +12759,7 @@
    /* .description =    "Vector Square Root Single-Precision", */
    /* .prefix      = */ 0x00000000,
    /* .opcode      = */ 0xF000022C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XB,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,

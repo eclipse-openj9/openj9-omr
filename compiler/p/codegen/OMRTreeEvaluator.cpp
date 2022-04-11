@@ -3563,8 +3563,19 @@ TR::Register *OMR::Power::TreeEvaluator::vabsIntHelper(TR::Node *node, TR::CodeG
 
 TR::Register *OMR::Power::TreeEvaluator::vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg); 
-}
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   switch(node->getDataType().getVectorElementType())
+     {
+     case TR::Float:
+       return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::xvsqrtsp);
+     case TR::Double:
+       return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::xvsqrtdp);
+     default:
+       TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
+     }
+   }
 
 TR::Register *OMR::Power::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

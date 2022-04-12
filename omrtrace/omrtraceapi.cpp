@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2018 IBM Corp. and others
+ * Copyright (c) 2014, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -269,10 +269,6 @@ postForkCleanupGlobals(OMR_TraceThread *thr)
 	}
 	OMR_TRACEGLOBAL(lastPrint) = NULL;
 	OMR_TRACEGLOBAL(lostRecords) = 0;
-#if OMR_ENABLE_EXCEPTION_OUTPUT
-	OMR_TRACEGLOBAL(exceptionTrcBuf) = NULL;
-	OMR_TRACEGLOBAL(exceptionContext) = NULL;
-#endif /* OMR_ENABLE_EXCEPTION_OUTPUT */
 }
 
 void

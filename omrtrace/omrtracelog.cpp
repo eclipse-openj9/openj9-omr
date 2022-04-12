@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1998, 2020 IBM Corp. and others
+ * Copyright (c) 1998, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -290,15 +290,6 @@ getTrcBuf(OMR_TraceThread *thr, OMR_TraceBuffer *oldBuf, int bufferType)
 		strncpy(trcBuf->record.threadName, thr->name, UT_MAX_THREAD_NAME_LENGTH);
 		trcBuf->record.threadName[UT_MAX_THREAD_NAME_LENGTH] = '\0';
 		thr->trcBuf = trcBuf;
-#if OMR_ENABLE_EXCEPTION_OUTPUT
-	} else if (bufferType == UT_EXCEPTION_BUFFER) {
-		trcBuf->record.threadId = 0;
-		trcBuf->record.threadSyn1 = 0;
-		trcBuf->record.threadSyn2 = 0;
-
-		strcpy(trcBuf->record.threadName, UT_EXCEPTION_THREAD_NAME);
-		OMR_TRACEGLOBAL(exceptionTrcBuf) = trcBuf;
-#endif
 	}
 
 	trcBuf->record.firstEntry = offsetof(UtTraceRecord, threadName) +
@@ -679,18 +670,10 @@ traceV(OMR_TraceThread *thr, UtModuleInfo *modInfo, uint32_t traceId, const char
 	 */
 	if (bufferType == UT_NORMAL_BUFFER) {
 		if (((trcBuf = thr->trcBuf) == NULL)
-		 && ((trcBuf = getTrcBuf(thr, NULL, bufferType)) == NULL)
+		&&  ((trcBuf = getTrcBuf(thr, NULL, bufferType)) == NULL)
 		) {
 			return;
 		}
-#if OMR_ENABLE_EXCEPTION_OUTPUT
-	} else if (bufferType == UT_EXCEPTION_BUFFER) {
-		if (((trcBuf = OMR_TRACEGLOBAL(exceptionTrcBuf)) == NULL)
-		 && ((trcBuf = getTrcBuf(thr, NULL, bufferType)) == NULL)
-		) {
-			return;
-		}
-#endif
 	} else {
 		return;
 	}
@@ -1118,26 +1101,6 @@ traceV(OMR_TraceThread *thr, UtModuleInfo *modInfo, uint32_t traceId, const char
 	}
 }
 
-#if OMR_ENABLE_EXCEPTION_OUTPUT
-/*******************************************************************************
- * name        - trace
- * description - Call traceV passing trace data as a va_list
- * parameters  - OMR_TraceThread, tracepoint identifier and trace data.
- * returns     - void
- *
- ******************************************************************************/
-static void
-trace(OMR_TraceThread *thr, UtModuleInfo *modinfo, uint32_t traceId, int bufferType, const char *spec, ...)
-{
-	va_list      var;
-
-	va_start(var, spec);
-	traceV(thr, modinfo, traceId, spec, var, bufferType);
-	va_end(var);
-
-}
-#endif /* OMR_ENABLE_EXCEPTION_OUTPUT */
-
 static void
 logTracePoint(OMR_TraceThread *thr, UtModuleInfo *modInfo, uint32_t traceId, const char *spec, va_list varArgs)
 {
@@ -1159,27 +1122,6 @@ logTracePoint(OMR_TraceThread *thr, UtModuleInfo *modInfo, uint32_t traceId, con
 		COPY_VA_LIST(var, varArgs);
 		tracePrint(thr, modInfo, traceId, var);
 	}
-
-#if OMR_ENABLE_EXCEPTION_OUTPUT
-	/* Write tracepoint to the global exception buffer. (Usually GC History) */
-	if ((thr->currentOutputMask & UT_EXCEPTION) != 0) {
-		COPY_VA_LIST(var, varArgs);
-		getTraceLock(thr);
-		if (*thr != OMR_TRACEGLOBAL(exceptionContext)) {
-			/* This tracepoint is going to the global exception buffer, not to
-			 * a per-thread buffer so, record if we aren't on the same thread
-			 * as the last time we wrote a tracepoint to this buffer by writing
-			 * an extra tracepoint, dg.259, and update the exceptionContext in
-			 * UtGlobal for the next time we check this.
-			 */
-			OMR_TRACEGLOBAL(exceptionContext) = *thr;
-			/* Write Trc_TraceContext_Event1, dg.259 */
-			trace(thr, NULL, (UT_TRC_CONTEXT_ID << 8) | UT_MAXIMAL, UT_EXCEPTION_BUFFER, pointerSpec, thr);
-		}
-		traceV(thr, modInfo, traceId, spec, var, UT_EXCEPTION_BUFFER);
-		freeTraceLock(thr);
-	}
-#endif /* OMR_ENABLE_EXCEPTION_OUTPUT */
 
 	if ((traceId & UT_SPECIAL_ASSERTION) != 0) {
 		raiseAssertion();

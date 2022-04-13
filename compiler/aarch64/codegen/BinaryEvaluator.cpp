@@ -616,6 +616,61 @@ OMR::ARM64::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register *
+OMR::ARM64::TreeEvaluator::vmulInt64Helper(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   /*
+    * Vector mul instruction on aarch64 does not support 64-bit interger element.
+    *
+    * Suppose we have two long integers (64 bits), AB and CD, where each of A, B, C, and D is one word (32 bits).
+    * To get their product, AB * CD, we can do the following:
+    *
+    *  AB * CD = B*D + 2^32*(A*D + B*C) + 2^64*(A*C)
+    *
+    * Since we are only keeping the lower 64 bits of the result, this is equivalent to:
+    *
+    *  AB * CD = B*D + 2^32*(A*D + B*C)
+    *
+    * To perform (A*D + B*C), we reverse elements in AB and do 32-bit element wise multiplication for BA and CD.
+    *
+    */
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *lhsReg = cg->evaluate(firstChild);
+   TR::Register *rhsReg = cg->evaluate(secondChild);
+
+   TR::Register *tmp1Reg = cg->allocateRegister(TR_VRF);
+   TR::Register *tmp2Reg = cg->allocateRegister(TR_VRF);
+   TR::Register *productReg = cg->allocateRegister(TR_VRF);
+
+   /* Reverse 32bit words in 64bit elements */
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::vrev64_4s, node, tmp1Reg, lhsReg);
+
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vmul4s, node, tmp2Reg, tmp1Reg, rhsReg);
+   /*
+    * At this moment, upper 32bit of each 64-bit element of tmp2Reg is A*D, lower 32bit is B*C.
+    * Get A*D + B*C into the lower 32bit.
+    */
+   generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vushr2d, node, tmp1Reg, tmp2Reg, 32);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vadd4s, node, tmp2Reg, tmp1Reg, tmp2Reg);
+   /* Shift left by 32bit to have the result in the upper 32bit part. */
+   generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vshl2d, node, productReg, tmp2Reg, 32);
+
+   /* Move the lower 32-bit of the second element to the upper 32-bit of the first element. */
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp1_4s, node, tmp1Reg, lhsReg, lhsReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp1_4s, node, tmp2Reg, rhsReg, rhsReg);
+   /* Finally, get the result by UMLAL. */
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vumlal_2d, node, productReg, tmp1Reg, tmp2Reg);
+
+   node->setRegister(productReg);
+   cg->stopUsingRegister(tmp1Reg);
+   cg->stopUsingRegister(tmp2Reg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+
+   return productReg;
+   }
+
+TR::Register *
 OMR::ARM64::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
@@ -633,6 +688,8 @@ OMR::ARM64::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::Int32:
          mulOp = TR::InstOpCode::vmul4s;
          break;
+      case TR::Int64:
+         return vmulInt64Helper(node, cg);
       case TR::Float:
          mulOp = TR::InstOpCode::vfmul4s;
          break;

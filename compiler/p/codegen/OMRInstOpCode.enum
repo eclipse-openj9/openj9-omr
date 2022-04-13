@@ -606,7 +606,7 @@
 // vinsertw,         // vector insert Word
 // vinsertd,         // vector insert Dword
 // vmaxud,           // Vector Maximum Unsigned Dword
-// vminsd,           // Vector Minimum Signed Dword
+   vminsd,           // Vector Minimum Signed Dword
    vmaxsd,           // Vector Maximum Signed Dword
 // vmul10cuq,        // vector multiply-by-10 & write carry unsigned qword
 // vmul10ecuq,       // vector multiply-by-10 extended & write carry unsigned qword

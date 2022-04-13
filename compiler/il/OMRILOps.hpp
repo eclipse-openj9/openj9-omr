@@ -44,6 +44,7 @@ enum VectorOperation
    vfma,
    vload,
    vloadi,
+   vmin,
    vmul,
    vneg,
    vnot,

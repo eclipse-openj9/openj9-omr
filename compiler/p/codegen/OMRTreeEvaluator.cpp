@@ -3577,6 +3577,11 @@ TR::Register *OMR::Power::TreeEvaluator::vsqrtEvaluator(TR::Node *node, TR::Code
      }
    }
 
+TR::Register *OMR::Power::TreeEvaluator::vminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
 TR::Register *OMR::Power::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,

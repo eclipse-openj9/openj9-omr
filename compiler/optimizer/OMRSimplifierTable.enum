@@ -436,6 +436,7 @@
 #define vnegSimplifierHandler dftSimplifier
 #define vabsSimplifierHandler dftSimplifier
 #define vsqrtSimplifierHandler dftSimplifier
+#define vminSimplifierHandler dftSimplifier
 #define vaddSimplifierHandler dftSimplifier
 #define vsubSimplifierHandler dftSimplifier
 #define vmulSimplifierHandler dftSimplifier

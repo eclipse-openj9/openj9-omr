@@ -132,6 +132,22 @@ VECTOR_OPERATION_MACRO(\
    /* .description          =    load indirect vector */ \
 )
 VECTOR_OPERATION_MACRO(\
+   /* .opcode               = */ vmin, \
+   /* .name                 = */ "vmin", \
+   /* .properties1          = */ ILProp1::Commutative | ILProp1::Associative, \
+   /* .properties2          = */ ILProp2::Min | ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3          = */ 0, \
+   /* .properties4          = */ 0, \
+   /* .dataType             = */ TR::NoType, \
+   /* .typeProperties       = */ ILTypeProp::Vector, \
+   /* .childProperties      = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOpCode   = */ TR::BadILOp, \
+   /* .reverseBranchOpCode  = */ TR::BadILOp, \
+   /* .booleanCompareOpCode = */ TR::BadILOp, \
+   /* .ifCompareOpCode      = */ TR::BadILOp, \
+   /* .description          =    vector lanewise minimum */ \
+)
+VECTOR_OPERATION_MACRO(\
    /* .operation             = */ vmul, \
    /* .name                 = */ "vmul", \
    /* .properties1          = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::Mul, \

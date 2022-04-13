@@ -896,6 +896,25 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4E200800,	/* REV64   	vrev64_16b */
 		0x4E600800,	/* REV64   	vrev64_8h */
 		0x4EA00800,	/* REV64   	vrev64_4s */
+	/* Vector widening and narrowing arithmetics */
+		0x2E208000,	/* UMLAL   	vumlal_8h */
+		0x2E608000,	/* UMLAL   	vumlal_4s */
+		0x2EA08000,	/* UMLAL   	vumlal_2d */
+		0x6E208000,	/* UMLAL2  	vumlal2_8h */
+		0x6E608000,	/* UMLAL2  	vumlal2_4s */
+		0x6EA08000,	/* UMLAL2  	vumlal2_2d */
+		0x2E20A000,	/* UMLSL   	vumlsl_8h */
+		0x2E60A000,	/* UMLSL   	vumlsl_4s */
+		0x2EA0A000,	/* UMLSL   	vumlsl_2d */
+		0x6E20A000,	/* UMLSL2  	vumlsl2_8h */
+		0x6E60A000,	/* UMLSL2  	vumlsl2_4s */
+		0x6EA0A000,	/* UMLSL2  	vumlsl2_2d */
+		0x2E20C000,	/* UMULL   	vumull_8h */
+		0x2E60C000,	/* UMULL   	vumull_4s */
+		0x2EA0C000,	/* UMULL   	vumull_2d */
+		0x6E20C000,	/* UMULL2  	vumull2_8h */
+		0x6E60C000,	/* UMULL2  	vumull2_4s */
+		0x6EA0C000,	/* UMULL2  	vumull2_2d */
 	/* Hint instructions */
 		0xD503201F,	/* NOP          nop      */
 };

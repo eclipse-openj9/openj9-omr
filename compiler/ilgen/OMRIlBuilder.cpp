@@ -1261,16 +1261,44 @@ OMR::IlBuilder::Sub(TR::IlValue *left, TR::IlValue *right)
    TR::IlValue *returnValue = NULL;
    if (left->getDataType() == TR::Address)
       {
-      if (TR::Compiler->target.is64Bit() && right->getDataType() == TR::Int32)
+      TR::IlValue *zero;
+      TR::ILOpCodes op;
+      bool needSub=true;
+      if (TR::Compiler->target.is64Bit())
          {
-         right = unaryOp(TR::i2l, right);
+         zero = ConstInt64(0);
+         op = TR::aladd;
+         if (right->getDataType() == TR::Int32)
+            {
+            right = unaryOp(TR::i2l, right);
+            }
+         else if (right->getDataType() == TR::Address)
+            {
+            left = unaryOp(TR::a2l, left);
+            right = unaryOp(TR::a2l, right);
+            op = TR::lsub;
+            needSub=false;
+            }
          }
-      else if (TR::Compiler->target.is32Bit() && right->getDataType() == TR::Int64)
+      else if (TR::Compiler->target.is32Bit())
          {
-         right = unaryOp(TR::l2i, right);
+         zero = ConstInt32(0);
+         op = TR::aiadd;
+         if (right->getDataType() == TR::Int64)
+            {
+            right = unaryOp(TR::l2i, right);
+            }
+         else if (right->getDataType() == TR::Address)
+            {
+            left = unaryOp(TR::a2i, left);
+            right = unaryOp(TR::a2i, right);
+            op = TR::isub;
+            needSub=false;
+            }
          }
-      right = Sub(TR::Compiler->target.is32Bit() ? ConstInt32(0) : ConstInt64(0), right);
-      returnValue = binaryOpFromNodes(TR::Compiler->target.is32Bit() ? TR::aiadd : TR::aladd, loadValue(left), loadValue(right));
+      if (needSub)
+         right = Sub(zero, right);
+      returnValue = binaryOpFromNodes(op, loadValue(left), loadValue(right));
       }
    else
       {

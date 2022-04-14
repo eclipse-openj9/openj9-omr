@@ -223,15 +223,15 @@ OMR::StructType::AddField(const char *name, TR::IlType *typeInfo, size_t offset)
    if (_closed)
       return;
 
-   TR_ASSERT_FATAL(_size <= offset, "Offset of new struct field %s::%s is %d, which is less than the current size of the struct %d\n", _name, name, offset, _size);
-
    OMR::FieldInfo *fieldInfo = new (PERSISTENT_NEW) OMR::FieldInfo(name, offset, typeInfo);
    if (0 != _lastField)
       _lastField->setNext(fieldInfo);
    else
       _firstField = fieldInfo;
    _lastField = fieldInfo;
-   _size = offset + typeInfo->getSize();
+   size_t newSize = offset + typeInfo->getSize();
+   if (newSize > _size)
+      _size = newSize;
    }
 
 void

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 IBM Corp. and others
+ * Copyright (c) 2018, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -606,6 +606,7 @@ public:
    static TR::Register *vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmulInt64Helper(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vandEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vorEvaluator(TR::Node *node, TR::CodeGenerator *cg);

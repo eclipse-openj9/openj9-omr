@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2020 IBM Corp. and others
+ * Copyright (c) 2016, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -169,7 +169,7 @@ public:
 
    friend class OMR::MethodBuilder;
 
-   IlBuilder(TR::MethodBuilder *methodBuilder, TR::TypeDictionary *types)
+   IlBuilder(TR::MethodBuilder *methodBuilder, TR::TypeDictionary *types, int32_t bcIndex=-1)
       : TR::IlInjector(types),
       _client(0),
       _clientCallbackBuildIL(0),
@@ -182,7 +182,8 @@ public:
       _partOfSequence(false),
       _connectedTrees(false),
       _comesBack(true),
-      _isHandler(false)
+      _isHandler(false),
+      _bcIndex(bcIndex)
       {
       }
    IlBuilder(TR::IlBuilder *source);
@@ -203,6 +204,16 @@ public:
    virtual void setVMState(TR::VirtualMachineState *vmState) { }
 
    //char *getName();
+
+   /**
+    * @brief bytecode index for this builder object
+    */
+   int32_t bcIndex() { return _bcIndex; }
+   TR::IlBuilder * setBCIndex(int32_t bcIndex);
+   virtual int32_t currentByteCodeIndex() { return _bcIndex; } // override from IlGenerator
+
+   /* @brief after calling this, all IL nodes created will have this BytecodeBuilder's _bcIndex */
+   void SetCurrentIlGenerator();
 
    void print(const char *title, bool recurse=false);
    void printBlock(TR::Block *block);
@@ -724,6 +735,8 @@ protected:
     * @brief returns true if this IlBuilder object is a handler for an exception edge
     */
    bool                          _isHandler;
+
+   int32_t                       _bcIndex;
 
    virtual bool buildIL()
       {

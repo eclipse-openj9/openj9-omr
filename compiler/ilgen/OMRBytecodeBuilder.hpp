@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -39,15 +39,6 @@ public:
    BytecodeBuilder(TR::MethodBuilder *methodBuilder, int32_t bcIndex, char *name=NULL, int32_t bcLength=-1);
 
    virtual bool isBytecodeBuilder() { return true; }
-
-   /**
-    * @brief bytecode index for this builder object
-    */
-   int32_t bcIndex() { return _bcIndex; }
-   virtual int32_t currentByteCodeIndex() { return _bcIndex; } // override from IlGenerator
-
-   /* @brief after calling this, all IL nodes created will have this BytecodeBuilder's _bcIndex */
-   void SetCurrentIlGenerator();
 
    /* The name for this BytecodeBuilder. This can be very helpful for debug output */
    char *name() { return _name; }
@@ -125,7 +116,6 @@ public:
 protected:
    TR::BytecodeBuilder       * _fallThroughBuilder;
    List<TR::BytecodeBuilder> * _successorBuilders;
-   int32_t                     _bcIndex;
    char                      * _name;
    int32_t                     _bcLength;
    TR::VirtualMachineState   * _initialVMState;

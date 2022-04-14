@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -34,16 +34,16 @@ class IlBuilder : public OMR::IlBuilder
 public:
    TR_ALLOC(TR_Memory::IlGenerator)
 
-   IlBuilder(TR::MethodBuilder *methodBuilder, TR::TypeDictionary *types)
-      : OMR::IlBuilder(methodBuilder, types)
+   IlBuilder(TR::MethodBuilder *methodBuilder, TR::TypeDictionary *types, int32_t bcIndex)
+      : OMR::IlBuilder(methodBuilder, types, bcIndex)
       { }
 
    IlBuilder(TR::IlBuilder *source)
       : OMR::IlBuilder(source)
       { }
 
-   IlBuilder(TestDriver *test, TR::MethodBuilder *methodBuilder, TR::TypeDictionary *types)
-      : OMR::IlBuilder(methodBuilder, types)
+   IlBuilder(TestDriver *test, TR::MethodBuilder *methodBuilder, TR::TypeDictionary *types, int32_t bcIndex)
+      : OMR::IlBuilder(methodBuilder, types, bcIndex)
       {
       // need to explicitly initialize TestCompiler::IlInjector layer because
       // it's hiding behind our OMR::IlBuilder base class

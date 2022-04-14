@@ -98,7 +98,9 @@ OMR::IlBuilder::IlBuilder(TR::IlBuilder *source)
    _count(-1),
    _partOfSequence(false),
    _connectedTrees(false),
-   _comesBack(true)
+   _comesBack(true),
+   _isHandler(source->_isHandler),
+   _bcIndex(source->_bcIndex)
    {
    }
 
@@ -205,6 +207,26 @@ OMR::IlBuilder::printBlock(TR::Block *block)
       tt = tt->getNextTreeTop();
       }
    comp()->getDebug()->print(comp()->getOutFile(), tt);
+   }
+
+TR::IlBuilder *
+OMR::IlBuilder::setBCIndex(int32_t bcIndex)
+   {
+   _bcIndex = bcIndex;
+   return static_cast<TR::IlBuilder *>(this);
+   }
+
+/*
+ * Call this function before calling services on this builder so they will
+ * mark their IL nodes as having this builder's _bcIndex (very handy when
+ * looking at compiler logs and ultimate used to track program locations).
+ * Note: *all* generated nodes will be marked with this builder's _bcIndex until another
+ *       builder's SetCurrentIlGenerator() is called.
+ */
+void
+OMR::IlBuilder::SetCurrentIlGenerator()
+   {
+   comp()->setCurrentIlGenerator((TR_IlGenerator *)this);
    }
 
 TR::SymbolReference *

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2019 IBM Corp. and others
+ * Copyright (c) 2014, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -46,7 +46,7 @@ JitBuilder::ResolvedMethod::ResolvedMethod(TR_OpaqueMethodBlock *method)
    _signature = resolvedMethod->getSignature();
    _externalName = 0;
    _entryPoint = resolvedMethod->getEntryPoint();
-   strncpy(_signatureChars, resolvedMethod->signatureChars(), 62); // TODO: introduce concept of robustness
+   strncpy(_signatureChars, resolvedMethod->signatureChars(), MAX_SIGNATURE_LENGTH); // TODO: introduce concept of robustness
    }
 
 JitBuilder::ResolvedMethod::ResolvedMethod(TR::MethodBuilder *m)
@@ -119,7 +119,7 @@ JitBuilder::ResolvedMethod::computeSignatureChars()
       len += static_cast<uint32_t>(strlen(type->getSignatureName()));
       }
    len += static_cast<uint32_t>(strlen(_returnType->getSignatureName()));
-   TR_ASSERT(len < 64, "signature array may not be large enough"); // TODO: robustness
+   TR_ASSERT(len < MAX_SIGNATURE_LENGTH, "signature array may not be large enough"); // TODO: robustness
 
    int32_t s = 0;
    _signatureChars[s++] = '(';
@@ -127,13 +127,13 @@ JitBuilder::ResolvedMethod::computeSignatureChars()
       {
       name = _parmTypes[p]->getSignatureName();
       len = static_cast<uint32_t>(strlen(name));
-      strncpy(_signatureChars+s, name, len);
+      strncpy(_signatureChars+s, name, MAX_SIGNATURE_LENGTH-s);
       s += len;
       }
    _signatureChars[s++] = ')';
    name = _returnType->getSignatureName();
    len = static_cast<uint32_t>(strlen(name));
-   strncpy(_signatureChars+s, name, len);
+   strncpy(_signatureChars+s, name, MAX_SIGNATURE_LENGTH-s);
    s += len;
    _signatureChars[s++] = 0;
    }

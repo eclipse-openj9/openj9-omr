@@ -83,6 +83,8 @@ class ResolvedMethodBase : public TR_ResolvedMethod
       }
    };
 
+const int16_t MAX_SIGNATURE_LENGTH=128;
+
 class ResolvedMethod : public ResolvedMethodBase, public Method
    {
    public:
@@ -159,7 +161,7 @@ class ResolvedMethod : public ResolvedMethodBase, public Method
 
    char *_name;
    char *_signature;
-   char  _signatureChars[64];
+   char  _signatureChars[MAX_SIGNATURE_LENGTH];
    char *_externalName;
 
    int32_t          _numParms;

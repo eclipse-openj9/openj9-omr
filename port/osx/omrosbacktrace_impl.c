@@ -42,6 +42,7 @@
 
 #include "omrintrospect.h"
 
+#if !defined(OMR_ARCH_AARCH64)
 static uintptr_t protectedBacktrace(OMRPortLibrary *port, void *arg);
 static uintptr_t backtrace_sigprotect(OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, void **address_array, uintptr_t capacity);
 
@@ -234,6 +235,7 @@ backtrace_sigprotect(OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, 
 
 	return ret;
 }
+#endif /* !defined(OMR_ARCH_AARCH64) */
 
 /**
  * This function constructs a backtrace from a CPU context. Generally there are only one or two
@@ -252,6 +254,7 @@ backtrace_sigprotect(OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, 
 uintptr_t
 omrintrospect_backtrace_thread_raw(OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap, void *signalInfo)
 {
+#if defined(OMR_ARCH_X86)
 	void *addresses[50];
 	J9PlatformStackFrame **nextFrame = NULL;
 	J9PlatformStackFrame *junkFrames = NULL;
@@ -341,6 +344,11 @@ omrintrospect_backtrace_thread_raw(OMRPortLibrary *portLibrary, J9PlatformThread
 	}
 
 	return i - discard;
+#elif defined(OMR_ARCH_AARCH64) /* defined(OMR_ARCH_X86) */
+	return 0;
+#else /* defined(OMR_ARCH_AARCH64) */
+#error Unsupported processor
+#endif /* defined(OMR_ARCH_X86) */
 }
 
 /**
@@ -359,6 +367,7 @@ omrintrospect_backtrace_thread_raw(OMRPortLibrary *portLibrary, J9PlatformThread
 uintptr_t
 omrintrospect_backtrace_symbols_raw(OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap)
 {
+#if defined(OMR_ARCH_X86)
 	J9PlatformStackFrame *frame = NULL;
 	uintptr_t i = 0;
 
@@ -429,4 +438,9 @@ omrintrospect_backtrace_symbols_raw(OMRPortLibrary *portLibrary, J9PlatformThrea
 	}
 
 	return i;
+#elif defined(OMR_ARCH_AARCH64) /* defined(OMR_ARCH_X86) */
+	return 0;
+#else /* defined(OMR_ARCH_AARCH64) */
+#error Unsupported processor
+#endif /* defined(OMR_ARCH_X86) */
 }

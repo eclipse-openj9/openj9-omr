@@ -30,6 +30,7 @@
 #include <mach/mach.h>
 #include <poll.h>
 #include <pthread.h>
+#include <sys/time.h>
 #define _XOPEN_SOURCE
 #include <ucontext.h>
 
@@ -346,9 +347,9 @@ static int32_t
 timeout(int64_t deadline)
 {
 	int32_t secs = 0;
-	struct timespec spec;
-	if ((0 == clock_gettime(CLOCK_REALTIME, &spec)) && (deadline > spec.tv_sec)) {
-		secs = (int32_t)(deadline - spec.tv_sec);
+	struct timeval tv;
+	if ((0 == gettimeofday(&tv, NULL)) && (deadline > tv.tv_sec)) {
+		secs = (int32_t)(deadline - tv.tv_sec);
 	}
 
 	return secs;

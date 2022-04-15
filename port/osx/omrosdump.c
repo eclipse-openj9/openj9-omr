@@ -210,10 +210,10 @@ coredump_to_file(mach_port_t task_port, pid_t pid)
 			}
 			if (to_read != data_size) {
 				break;
-			} else {
-				written = pwrite(corefile_fd, (void *)data_read, data_size, seg_file_off + bytes_read);
 			}
-			if (written < 0) {
+
+			written = pwrite(corefile_fd, (void *)data_read, data_size, seg_file_off + bytes_read);
+			if (written != data_size) {
 				perror("pwrite() error writing segment data:");
 				kr = KERN_FAILURE;
 				goto done;
@@ -221,6 +221,7 @@ coredump_to_file(mach_port_t task_port, pid_t pid)
 		}
 
 		segments[i].fileoff = seg_file_off;
+		segments[i].filesize = bytes_read;
 		written = pwrite(corefile_fd, &segments[i], sizeof(struct segment_command_64), file_off);
 		if (written < 0) {
 			perror("pwrite() error writing segment commands:");
@@ -228,7 +229,7 @@ coredump_to_file(mach_port_t task_port, pid_t pid)
 			goto done;
 		}
 
-		seg_file_off += segments[i].vmsize;
+		seg_file_off += bytes_read;
 		file_off += sizeof(struct segment_command_64);
 
 		kr = KERN_SUCCESS; /* reset kr since a failure from mach_vm_read is not fatal */

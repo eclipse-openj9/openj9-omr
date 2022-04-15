@@ -1384,7 +1384,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1ImmInstruction *instr)
          {
          if ((imm8 & (1 << i)) != 0)
             {
-            imm |= 0xff << (i * 8);
+            imm |= static_cast<uint64_t>(0xff) << (i * 8);
             }
          }
       trfprintf(pOutFile, ", 0x%08llx", imm);

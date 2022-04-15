@@ -1175,51 +1175,316 @@ OMR::ARM64::TreeEvaluator::vpermEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
+/**
+ * @brief Tries to generate a SIMD 16bit shifted immediate instruction
+ *
+ * @param[in] node: node
+ * @param[in] cg: CodeGenerator
+ * @param[in] treg: target register
+ * @param[in] op: opcode
+ * @param[in] value: immediate value
+ *
+ * @return instruction cursor if an instruction is successfully generated and otherwise returns NULL
+ */
+static
+TR::Instruction *tryToGenerateImm16ShiftedInstrucion(TR::Node *node, TR::CodeGenerator *cg, TR::Register *treg, TR::InstOpCode::Mnemonic op, uint16_t value)
+   {
+   if ((value & 0xff00) == 0)
+      {
+      return generateTrg1ImmInstruction(cg, op, node, treg, value & 0xff);
+      }
+   else if ((value & 0xff) == 0)
+      {
+      return generateTrg1ImmShiftedInstruction(cg, op, node, treg, (value >> 8) & 0xff, 8);
+      }
+   return NULL;
+   }
+
+/**
+ * @brief Tries to generate a SIMD 32bit shifted immediate instruction
+ *
+ * @param[in] node: node
+ * @param[in] cg: CodeGenerator
+ * @param[in] treg: target register
+ * @param[in] op: opcode
+ * @param[in] value: immediate value
+ *
+ * @return instruction cursor if an instruction is successfully generated and otherwise returns NULL
+ */
+static
+TR::Instruction *tryToGenerateImm32ShiftedInstruction(TR::Node *node, TR::CodeGenerator *cg, TR::Register *treg, TR::InstOpCode::Mnemonic op, uint32_t value)
+   {
+   if ((value & 0xffffff00) == 0)
+      {
+      return generateTrg1ImmInstruction(cg, op, node, treg, value & 0xff);
+      }
+   else if ((value & 0xffff00ff) == 0)
+      {
+      return generateTrg1ImmShiftedInstruction(cg, op, node, treg, (value >> 8) & 0xff, 8);
+      }
+   else if ((value & 0xff00ffff) == 0)
+      {
+      return generateTrg1ImmShiftedInstruction(cg, op, node, treg, (value >> 16) & 0xff, 16);
+      }
+   else if ((value & 0xffffff) == 0)
+      {
+      return generateTrg1ImmShiftedInstruction(cg, op, node, treg, (value >> 24) & 0xff, 24);
+      }
+   return NULL;
+   }
+
+/**
+ * @brief Tries to generate a SIMD 32bit shifting ones instruction
+ *
+ * @param[in] node: node
+ * @param[in] cg: CodeGenerator
+ * @param[in] treg: target register
+ * @param[in] op: opcode
+ * @param[in] value: immediate value
+ *
+ * @return instruction cursor if an instruction is successfully generated and otherwise returns NULL
+ */
+static
+TR::Instruction *tryToGenerateImm32ShiftingOnesInstruction(TR::Node *node, TR::CodeGenerator *cg, TR::Register *treg, TR::InstOpCode::Mnemonic op, uint32_t value)
+   {
+   if ((value & 0xffff00ff) == 0xff)
+      {
+      return generateTrg1ImmShiftedInstruction(cg, op, node, treg, (value >> 8) & 0xff, 8);
+      }
+   else if ((value & 0xff00ffff) == 0xffff)
+      {
+      return generateTrg1ImmShiftedInstruction(cg, op, node, treg, (value >> 16) & 0xff, 16);
+      }
+   return NULL;
+   }
+
+/**
+ * @brief Tries to generate a SIMD 64bit immediate instruction
+ *
+ * @param[in] node: node
+ * @param[in] cg: CodeGenerator
+ * @param[in] treg: target register
+ * @param[in] op: opcode
+ * @param[in] value: immediate value
+ *
+ * @return instruction cursor if an instruction is successfully generated and otherwise returns NULL
+ */
+static
+TR::Instruction *tryToGenerateImm64Instruction(TR::Node *node, TR::CodeGenerator *cg, TR::Register *treg, TR::InstOpCode::Mnemonic op, uint64_t value)
+   {
+   /* Special encoding for the 64-bit variant of MOVI */
+   uint8_t imm = 0;
+   int32_t i;
+   for (i = 0; i < 8; i++)
+      {
+      uint8_t v = (value >> (i * 8)) & 0xff;
+      if (v == 0xff)
+         {
+         imm |= (1 << i);
+         }
+      else if (v != 0)
+         {
+         return NULL;
+         }
+      }
+   return generateTrg1ImmInstruction(cg, op, node, treg, imm);
+   }
+
+/**
+ * @brief Tries to generate a SIMD move immediate instruction for 16bit value.
+ *
+ * @param[in] node: node
+ * @param[in] cg: CodeGenerator
+ * @param[in] treg: target register
+ * @param[in] value: immediate value
+ *
+ * @return instruction cursor if an instruction is successfully generated and otherwise returns NULL
+ */
+static
+TR::Instruction *tryToGenerateMovImm16ShiftedInstruction(TR::Node *node, TR::CodeGenerator *cg, TR::Register *treg, uint16_t value)
+   {
+   uint8_t lower8bit = value & 0xff;
+   uint8_t upper8bit = (value >> 8) & 0xff;
+   if (lower8bit == upper8bit)
+      {
+      return generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi16b, node, treg, lower8bit);
+      }
+
+   TR::Instruction *instr;
+   if (instr = tryToGenerateImm16ShiftedInstrucion(node, cg, treg, TR::InstOpCode::vmovi8h, value))
+      {
+      return instr;
+      }
+   else if (instr = tryToGenerateImm16ShiftedInstrucion(node, cg, treg, TR::InstOpCode::vmvni8h, ~value))
+      {
+      return instr;
+      }
+   return NULL;
+   }
+
+/**
+ * @brief Tries to generate a SIMD move immediate instruction for 32bit value.
+ *
+ * @param[in] node: node
+ * @param[in] cg: CodeGenerator
+ * @param[in] treg: target register
+ * @param[in] value: immediate value
+ *
+ * @return instruction cursor if an instruction is successfully generated and otherwise returns NULL
+ */
+static
+TR::Instruction *tryToGenerateMovImm32ShiftedInstruction(TR::Node *node, TR::CodeGenerator *cg, TR::Register *treg, uint32_t value)
+   {
+   uint16_t lower16bit = value & 0xffff;
+   uint16_t upper16bit = (value >> 16) & 0xffff;
+   TR::Instruction *instr;
+
+   if (lower16bit == upper16bit)
+      {
+      if (instr = tryToGenerateMovImm16ShiftedInstruction(node, cg, treg, lower16bit));
+         {
+         return instr;
+         }
+      }
+   else if (instr = tryToGenerateImm32ShiftedInstruction(node, cg, treg, TR::InstOpCode::vmovi4s, value))
+      {
+      return instr;
+      }
+   else if (instr = tryToGenerateImm32ShiftedInstruction(node, cg, treg, TR::InstOpCode::vmvni4s, ~value))
+      {
+      return instr;
+      }
+   else if (instr = tryToGenerateImm32ShiftingOnesInstruction(node, cg, treg, TR::InstOpCode::vmovi4s_one, value))
+      {
+      return instr;
+      }
+   else if (instr = tryToGenerateImm32ShiftingOnesInstruction(node, cg, treg, TR::InstOpCode::vmvni4s_one, ~value))
+      {
+      return instr;
+      }
+   return NULL;
+   }
+
+TR::Instruction *
+OMR::ARM64::TreeEvaluator::vsplatsImmediateHelper(TR::Node *node, TR::CodeGenerator *cg, TR::Node *firstChild, TR::DataType elementType, TR::Register *treg)
+   {
+   if (firstChild->getOpCode().isLoadConst())
+      {
+      auto constValue = firstChild->getConstValue();
+      switch (elementType)
+         {
+         case TR::Int8:
+            return generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi16b, node, treg, constValue & 0xff);
+
+         case TR::Int16:
+            {
+            uint16_t value = static_cast<uint16_t>(constValue & 0xffff);
+            TR::Instruction *instr = tryToGenerateMovImm16ShiftedInstruction(node, cg, treg, value);
+
+            if (instr)
+               {
+               return instr;
+               }
+            break;
+            }
+
+         case TR::Int32:
+            {
+            uint32_t value = static_cast<uint32_t>(constValue & 0xffffffff);
+            TR::Instruction *instr = tryToGenerateMovImm32ShiftedInstruction(node, cg, treg, value);
+
+            if (instr)
+               {
+               return instr;
+               }
+
+            uint64_t concatValue = (static_cast<uint64_t>(value) << 32) | value;
+            if (instr = tryToGenerateImm64Instruction(node, cg, treg, TR::InstOpCode::vmovi2d, concatValue))
+               {
+               return instr;
+               }
+            break;
+            }
+
+         case TR::Int64:
+            {
+            uint32_t lower32bit = constValue & 0xffffffff;
+            uint32_t upper32bit = (constValue >> 32) & 0xffffffff;
+            TR::Instruction *instr;
+
+            if (lower32bit == upper32bit)
+               {
+               if (instr = tryToGenerateMovImm32ShiftedInstruction(node, cg, treg, lower32bit))
+                  {
+                  return instr;
+                  }
+               }
+
+            if (instr = tryToGenerateImm64Instruction(node, cg, treg, TR::InstOpCode::vmovi2d, constValue))
+               {
+               return instr;
+               }
+            break;
+            }
+
+         default:
+            break;
+         }
+
+      }
+   return NULL;
+   }
+
 TR::Register*
 OMR::ARM64::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
-   TR::Register *srcReg = cg->evaluate(firstChild);
 
    TR::InstOpCode::Mnemonic op;
 
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
-
-   switch (node->getDataType().getVectorElementType())
-      {
-      case TR::Int8:
-         TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind");
-         op = TR::InstOpCode::vdup16b;
-         break;
-      case TR::Int16:
-         TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind");
-         op = TR::InstOpCode::vdup8h;
-         break;
-      case TR::Int32:
-         TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind");
-         op = TR::InstOpCode::vdup4s;
-         break;
-      case TR::Int64:
-         TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind");
-         op = TR::InstOpCode::vdup2d;
-         break;
-      case TR::Float:
-         TR_ASSERT(srcReg->getKind() == TR_FPR, "unexpected Register kind");
-         op = TR::InstOpCode::vfdup4s;
-         break;
-      case TR::Double:
-         TR_ASSERT(srcReg->getKind() == TR_FPR, "unexpected Register kind");
-         op = TR::InstOpCode::vfdup2d;
-         break;
-      default:
-         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
-         return NULL;
-      }
+   auto elementType = node->getDataType().getVectorElementType();
 
    TR::Register *resReg = cg->allocateRegister(TR_VRF);
    node->setRegister(resReg);
-   generateTrg1Src1Instruction(cg, op, node, resReg, srcReg);
+
+   if (!vsplatsImmediateHelper(node, cg, firstChild, elementType, resReg))
+      {
+      TR::Register *srcReg = cg->evaluate(firstChild);
+      switch (elementType)
+         {
+         case TR::Int8:
+            TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind");
+            op = TR::InstOpCode::vdup16b;
+            break;
+         case TR::Int16:
+            TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind");
+            op = TR::InstOpCode::vdup8h;
+            break;
+         case TR::Int32:
+            TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind");
+            op = TR::InstOpCode::vdup4s;
+            break;
+         case TR::Int64:
+            TR_ASSERT(srcReg->getKind() == TR_GPR, "unexpected Register kind");
+            op = TR::InstOpCode::vdup2d;
+            break;
+         case TR::Float:
+            TR_ASSERT(srcReg->getKind() == TR_FPR, "unexpected Register kind");
+            op = TR::InstOpCode::vfdup4s;
+            break;
+         case TR::Double:
+            TR_ASSERT(srcReg->getKind() == TR_FPR, "unexpected Register kind");
+            op = TR::InstOpCode::vfdup2d;
+            break;
+         default:
+            TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
+            return NULL;
+         }
+
+      generateTrg1Src1Instruction(cg, op, node, resReg, srcReg);
+      }
 
    cg->decReferenceCount(firstChild);
    return resReg;

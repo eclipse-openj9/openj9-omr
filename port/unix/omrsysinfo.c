@@ -396,6 +396,13 @@ struct {
 #define CGROUP_MEMORY_STAT_FILE_METRIC "file"
 #define CGROUP_MEMORY_STAT_FILE_METRIC_SZ (sizeof(CGROUP_MEMORY_STAT_FILE_METRIC)-1)
 
+/* Cgroup v1 cpu files */
+#define CGROUP_CPU_CFS_QUOTA_US_FILE "cpu.cfs_quota_us"
+#define CGROUP_CPU_CFS_PERIOD_US_FILE "cpu.cfs_period_us"
+
+/* Cgroup v2 cpu files */
+#define CGROUP_CPU_MAX_FILE "cpu.max"
+
 /* Currently 12 subsystems or resource controllers are defined.
  */
 typedef enum OMRCgroupSubsystem {
@@ -535,6 +542,7 @@ static int32_t  getHandleOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrar
 static int32_t readCgroupMetricFromFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, const char *metricKeyInFile, char **fileContent, char *value);
 static int32_t readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, int32_t numItemsToRead, const char *format, ...);
 static int32_t isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer);
+static int32_t scanCgroupIntOrMax(struct OMRPortLibrary *portLibrary, const char *metricString, uint64_t *val);
 static int32_t readCgroupMemoryFileIntOrMax(struct OMRPortLibrary *portLibrary, const char *fileName, uint64_t *metric);
 static int32_t getCgroupMemoryLimit(struct OMRPortLibrary *portLibrary, uint64_t *limit);
 #endif /* defined(LINUX) */
@@ -2820,21 +2828,73 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 			int32_t rc = 0;
 			int64_t cpuQuota = 0;
 			uint64_t cpuPeriod = 0;
-			int32_t numItemsToRead = 1; /* cpu.cfs_quota_us and cpu.cfs_period_us files each contain only one integer value */
 
-			/* If either file read fails, ignore cgroup cpu quota limits and continue */
-			rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_CPU, "cpu.cfs_quota_us", numItemsToRead, "%ld", &cpuQuota);
-			if (0 == rc) {
-				rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_CPU, "cpu.cfs_period_us", numItemsToRead, "%lu", &cpuPeriod);
+			if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V1_AVAILABLE)) {
+				/* cpu.cfs_quota_us and cpu.cfs_period_us files each contain only one integer value. */
+				int32_t numItemsToRead = 1;
+
+				/* If either file read fails, ignore cgroup cpu quota limits and continue. */
+				rc = readCgroupSubsystemFile(
+						portLibrary,
+						OMR_CGROUP_SUBSYSTEM_CPU,
+						CGROUP_CPU_CFS_QUOTA_US_FILE,
+						numItemsToRead,
+						"%ld",
+						&cpuQuota);
 				if (0 == rc) {
-					int32_t numCpusQuota = (int32_t) (((double) cpuQuota / cpuPeriod) + 0.5);
+					rc = readCgroupSubsystemFile(
+							portLibrary,
+							OMR_CGROUP_SUBSYSTEM_CPU,
+							CGROUP_CPU_CFS_PERIOD_US_FILE,
+							numItemsToRead,
+							"%lu",
+							&cpuPeriod);
+				}
+			} else if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V2_AVAILABLE)) {
+				/* Read cpu.max file which contains the quota and period in the format
+				 * "$QUOTA $PERIOD". The value "max" for $QUOTA indicates no limit.
+				 */
+				int32_t numItemsToRead = 2;
+				char quotaString[MAX_64BIT_INT_LENGTH];
+				uint64_t quotaVal = 0;
 
-					if ((cpuQuota > 0) && (numCpusQuota < toReturn)) {
-						toReturn = numCpusQuota;
-						/* If the CPU quota rounds down to 0, then just return 1 as the closest usable value */
-						if (0 == toReturn) {
-							toReturn = 1;
+				rc = readCgroupSubsystemFile(
+						portLibrary,
+						OMR_CGROUP_SUBSYSTEM_CPU,
+						CGROUP_CPU_MAX_FILE,
+						numItemsToRead,
+						"%s %lu",
+						&quotaString,
+						&cpuPeriod);
+				if (0 != rc) {
+					Trc_PRT_sysinfo_get_number_CPUs_by_type_read_failed(CGROUP_CPU_MAX_FILE, rc);
+				} else {
+					rc = scanCgroupIntOrMax(portLibrary, quotaString, &quotaVal);
+					if (0 == rc) {
+						if (UINT64_MAX == quotaVal) {
+							cpuQuota = -1;
+						} else {
+							cpuQuota = (int64_t)quotaVal;
 						}
+					}
+				}
+			} else {
+				Trc_PRT_Assert_ShouldNeverHappen();
+			}
+
+			if (0 == rc) {
+				/* numCpusQuota is calculated from the cpu quota time allocated per cpu period. */
+				int32_t numCpusQuota = (int32_t)(((double)cpuQuota / cpuPeriod) + 0.5);
+
+				/* Overwrite toReturn if cgroup cpu quota is set (cpuQuota is not -1/unlimited)
+				 * or if numCpusQuota will limit the number of cpus available from the number
+				 * of physical cpus.
+				 */
+				if ((cpuQuota > 0) && (numCpusQuota < toReturn)) {
+					toReturn = numCpusQuota;
+					/* If the CPU quota rounds down to 0, then just return 1 as the closest usable value. */
+					if (0 == toReturn) {
+						toReturn = 1;
 					}
 				}
 			}
@@ -6236,6 +6296,55 @@ _end:
 }
 
 /**
+ * Check the metric limit obtained from a cgroup subsystem file. If it is the string
+ * "max", this indicates that the metric is not limited and this function sets val
+ * to UINT64_MAX. Otherwise, val is set to the integer value of the metric.
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary.
+ * @param[in] metricString string obtained from a cgroup subsystem file.
+ * @param[out] val pointer to uint64_t which on successful return contains
+ *      the value UINT64_MAX if the metric is not limited, and the integer
+ *      value of the metric otherwise.
+ *
+ * @return 0 on success, otherwise negative error code.
+ */
+static int32_t
+scanCgroupIntOrMax(struct OMRPortLibrary *portLibrary, const char *metricString, uint64_t *val)
+{
+	int32_t rc = 0;
+
+	if (NULL == metricString || NULL == val) {
+		Trc_PRT_scanCgroupIntOrMax_null_param(metricString, val);
+		rc = portLibrary->error_set_last_error_with_message_format(
+				portLibrary,
+				OMRPORT_ERROR_SYSINFO_CGROUP_NULL_PARAM,
+				"a parameter is null: metricString=%s val=%p",
+				metricString,
+				val);
+		goto _end;
+	}
+
+	if (0 == strcmp(metricString, "max")) {
+		*val = UINT64_MAX;
+	} else {
+		rc = sscanf(metricString, "%" SCNu64, val);
+		if (1 != rc) {
+			Trc_PRT_scanCgroupIntOrMax_scan_failed(metricString, rc);
+			rc = portLibrary->error_set_last_error_with_message_format(
+					portLibrary,
+					OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED,
+					"unexpected format of %s",
+					metricString);
+		} else {
+			rc = 0;
+		}
+	}
+
+_end:
+	return rc;
+}
+
+/**
  * Read the cgroup memory limit from the memory subsystem file. For cgroup v1, it
  * will always be a positive integer. For cgroup v2, the value in the file is
  * either a positive integer or "max" (which indicates no limit).
@@ -6267,21 +6376,7 @@ readCgroupMemoryFileIntOrMax(struct OMRPortLibrary *portLibrary, const char *fil
 			Trc_PRT_readCgroupMemoryFileIntOrMax_read_failed(fileName, rc);
 			goto _end;
 		}
-		if (0 == strcmp(memLimitString, "max")) {
-			*limit = UINT64_MAX;
-		} else {
-			rc = sscanf(memLimitString, "%" SCNu64, limit);
-			if (1 != rc) {
-				Trc_PRT_readCgroupMemoryFileIntOrMax_scan_failed(memLimitString, rc);
-				rc = portLibrary->error_set_last_error_with_message_format(
-						portLibrary,
-						OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED,
-						"unexpected format of %s",
-						memLimitString);
-				goto _end;
-			}
-			rc = 0;
-		}
+		rc = scanCgroupIntOrMax(portLibrary, memLimitString, limit);
 	} else {
 		Trc_PRT_readCgroupMemoryFileIntOrMax_unsupported_cgroup_version();
 		rc = portLibrary->error_set_last_error_with_message(

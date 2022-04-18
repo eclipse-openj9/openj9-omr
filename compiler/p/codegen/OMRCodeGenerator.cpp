@@ -1792,7 +1792,7 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
    TR::DataType et = ot.getVectorElementType();
 
    if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
-       (opcode.getVectorOperation() == OMR::vadd || opcode.getVectorOperation() == OMR::vsub || opcode.getVectorOperation() == OMR::vmul || opcode.getVectorOperation() == OMR::vabs || opcode.getVectorOperation() == OMR::vmin) &&
+       (opcode.getVectorOperation() == OMR::vadd || opcode.getVectorOperation() == OMR::vsub || opcode.getVectorOperation() == OMR::vmul || opcode.getVectorOperation() == OMR::vabs || opcode.getVectorOperation() == OMR::vmin || opcode.getVectorOperation() == OMR::vmax) &&
        et == TR::Int64)
       return true;
 
@@ -1852,7 +1852,7 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
          else
             return false;
       case OMR::vmax:
-         if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
+         if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;

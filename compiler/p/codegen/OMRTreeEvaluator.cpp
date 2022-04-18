@@ -3645,7 +3645,26 @@ TR::Register *OMR::Power::TreeEvaluator::vminEvaluator(TR::Node *node, TR::CodeG
 
 TR::Register *OMR::Power::TreeEvaluator::vmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   switch(node->getDataType().getVectorElementType())
+     {
+     case TR::Int8:
+       return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vmaxsb);
+     case TR::Int16:
+       return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vmaxsh);
+     case TR::Int32:
+       return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vmaxsw);
+     case TR::Int64:
+       return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vmaxsd);
+     case TR::Float:
+       return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vmaxfp);
+     case TR::Double:
+       return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvmaxdp);
+     default:
+       TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
+     }
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)

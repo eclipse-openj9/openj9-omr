@@ -316,6 +316,7 @@ public:
    static TR::Register *vabsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);

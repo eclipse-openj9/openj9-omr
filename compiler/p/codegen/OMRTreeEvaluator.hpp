@@ -657,6 +657,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vabsIntHelper(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic shift, TR::InstOpCode::Mnemonic add);
    static TR::Register *vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdmergeEvaluator(TR::Node *node, TR::CodeGenerator *cg);

@@ -1846,6 +1846,11 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
             return true;
          else
             return false;
+      case OMR::vmax:
+         if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
+            return true;
+         else
+            return false;
 
       case OMR::vfma:
          if (et == TR::Float || et == TR::Double)

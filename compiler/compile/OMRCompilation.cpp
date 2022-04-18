@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -240,8 +240,6 @@ OMR::Compilation::Compilation(
    _staticPICSites(getTypedAllocator<TR::Instruction*>(self()->allocator())),
    _staticHCRPICSites(getTypedAllocator<TR::Instruction*>(self()->allocator())),
    _staticMethodPICSites(getTypedAllocator<TR::Instruction*>(self()->allocator())),
-   _snippetsToBePatchedOnClassUnload(getTypedAllocator<TR::Snippet*>(self()->allocator())),
-   _methodSnippetsToBePatchedOnClassUnload(getTypedAllocator<TR::Snippet*>(self()->allocator())),
    _genILSyms(getTypedAllocator<TR::ResolvedMethodSymbol*>(self()->allocator())),
    _returnInfo(TR_VoidReturn),
    _visitCount(0),

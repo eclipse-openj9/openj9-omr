@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1222,16 +1222,12 @@ private:
    TR::list<TR::Instruction*>               _staticPICSites;
    TR::list<TR::Instruction*>               _staticHCRPICSites;
    TR::list<TR::Instruction*>               _staticMethodPICSites;
-   TR::list<TR::Snippet*>                   _snippetsToBePatchedOnClassUnload;
-   TR::list<TR::Snippet*>                   _methodSnippetsToBePatchedOnClassUnload;
-
    TR::list<TR::ResolvedMethodSymbol*>      _genILSyms;
 
    TR::SymbolReferenceTable*            _symRefTab;
 
    TR_ReturnInfo                      _returnInfo;
 
-private:
    vcount_t                           _visitCount;
    ncount_t                           _nodeCount;               // _nodeCount is a global count of number of created nodes
    ncount_t                           _accurateNodeCount;       // this number is the current number of nodes in the trees. it can go stale

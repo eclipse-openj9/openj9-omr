@@ -607,6 +607,7 @@
 // vinsertd,         // vector insert Dword
 // vmaxud,           // Vector Maximum Unsigned Dword
 // vminsd,           // Vector Minimum Signed Dword
+   vmaxsd,           // Vector Maximum Signed Dword
 // vmul10cuq,        // vector multiply-by-10 & write carry unsigned qword
 // vmul10ecuq,       // vector multiply-by-10 extended & write carry unsigned qword
 // vmul10uq,         // vector multiply-by-10 unsigned qword
@@ -732,12 +733,14 @@
    vminub,           // vector minimum unsigned byte
    vminuh,           // vector minimum unsigned halfword
    vminuw,           // vector minimum unsigned word
+   vminfp,           // vector minimum floating point
    vmaxsb,           // vector maximum signed byte
    vmaxsh,           // vector maximum signed halfword
    vmaxsw,           // vector maximum signed word
    vmaxub,           // vector maximum unsigned byte
    vmaxuh,           // vector maximum unsigned halfword
    vmaxuw,           // vector maximum unsigned word
+   vmaxfp,           // vector maximum floating point
 // vmsumudm,         // Vector Multiply-Sum Unsigned Dword
    vmsumuhm,         // vector multiply-sum unsigned halfword word modulo
 // vcipher,          // Vector AES Cipher

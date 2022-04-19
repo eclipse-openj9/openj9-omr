@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -62,19 +62,8 @@ public:
 			 * => if there is only one object to premark than low will be equal to high
 			 */
 			uint8_t *objPtrHigh = (uint8_t *)cellList + preAllocatedBytes - cellSize;
-			uintptr_t slotIndexLow, slotIndexHigh;
-			uintptr_t bitMaskLow, bitMaskHigh;
 
-			_markMap->getSlotIndexAndBlockMask((omrobjectptr_t)objPtrLow, &slotIndexLow, &bitMaskLow, false /* high bit block mask for low slot word */);
-			_markMap->getSlotIndexAndBlockMask((omrobjectptr_t)objPtrHigh, &slotIndexHigh, &bitMaskHigh, true /* low bit block mask for high slot word */);
-
-			if (slotIndexLow == slotIndexHigh) {
-				_markMap->markBlockAtomic(slotIndexLow, bitMaskLow & bitMaskHigh);
-			} else {
-				_markMap->markBlockAtomic(slotIndexLow, bitMaskLow);
-				_markMap->setMarkBlock(slotIndexLow + 1, slotIndexHigh - 1, (uintptr_t)-1);
-				_markMap->markBlockAtomic(slotIndexHigh, bitMaskHigh);
-			}
+			markObjectsForRange(env, objPtrLow, objPtrHigh);
 		}
 	}
 protected:

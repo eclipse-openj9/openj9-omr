@@ -572,7 +572,7 @@ MM_CompactScheme::compact(MM_EnvironmentBase *envBase, bool rebuildMarkBits, boo
 	 *    singlethreaded compaction per segment, and so should only be done in extreme OOM situations.
 	 *  o no worker GC threads
 	 */
-	if (aggressive || (1 == env->_currentTask->getThreadCount())) {
+	if (aggressive || (1 == env->_currentTask->getThreadCount())  || (_extensions->usingSATBBarrier())) {
 		singleThreaded = true;
 	}
 

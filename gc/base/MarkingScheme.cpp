@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -433,5 +433,33 @@ uintptr_t
 MM_MarkingScheme::setupIndexableScanner(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, MM_MarkingSchemeScanReason reason, uintptr_t *sizeToDo, uintptr_t *sizeInElementsToDo, fomrobject_t **basePtr, uintptr_t *flags)
 {
 	return _delegate.setupIndexableScanner(env, objectPtr, reason, sizeToDo, sizeInElementsToDo, basePtr, flags);
+}
+
+void
+MM_MarkingScheme::markObjectsForRange(MM_EnvironmentBase *env, uint8_t *objPtrLow, uint8_t *objPtrHigh)
+{
+	Assert_MM_true(NULL != objPtrLow);
+	Assert_MM_true(NULL != objPtrHigh);
+
+	Assert_MM_true(objPtrHigh >= objPtrLow);
+
+	uintptr_t slotIndexLow = 0;
+	uintptr_t slotIndexHigh = 0;
+	uintptr_t bitMaskLow = 0;
+	uintptr_t bitMaskHigh = 0;
+
+	/* high bit block mask for low slot word - pass in false for lowBlock */
+	_markMap->getSlotIndexAndBlockMask((omrobjectptr_t) objPtrLow, &slotIndexLow, &bitMaskLow, false);
+
+	 /* low bit block mask for high slot word - pass in true for lowBlock */
+	_markMap->getSlotIndexAndBlockMask((omrobjectptr_t) objPtrHigh, &slotIndexHigh, &bitMaskHigh, true);
+
+	if (slotIndexLow == slotIndexHigh) {
+		_markMap->markBlockAtomic(slotIndexLow, bitMaskLow & bitMaskHigh);
+	} else {
+		_markMap->markBlockAtomic(slotIndexLow, bitMaskLow);
+		_markMap->setMarkBlock(slotIndexLow + 1, slotIndexHigh - 1, (uintptr_t)-1);
+		_markMap->markBlockAtomic(slotIndexHigh, bitMaskHigh);
+	}
 }
 

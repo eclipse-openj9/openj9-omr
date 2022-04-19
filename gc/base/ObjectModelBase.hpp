@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -902,6 +902,20 @@ public:
 		setObjectFlags(destinationObjectPtr, OMR_OBJECT_METADATA_AGE_MASK, age);
 	}
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) */
+
+	/**
+	 * Initialize an object of minimal object size at given addr.
+	 *
+	 * There is an assumption that the object is not visible (referred) by anyone, so the minimum initialization can be done.
+	 *
+	 * @param[in] env The environment for the calling thread.
+	 * @param[in] allocAddr address at which the object is created.
+	 */
+	MMINLINE void
+	initializeMinimumSizeObject(MM_EnvironmentBase *env, void *allocAddr)
+	{
+		_delegate.initializeMinimumSizeObject(env, allocAddr);
+	}
 
 	/**
 	 * Constructor.

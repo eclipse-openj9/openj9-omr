@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -83,9 +83,18 @@ private:
 
 	const bool _zeroTLH; /**< if true this TLH is primary (might be cleared by batchClearTLH), if false this is secondary TLH (and it would not be cleared ever) */
 
+	uintptr_t _reservedBytesForGC; /**< Number of bytes reserved in the TLH by collector. If set, we are guaranteed to have this remaining size available when we flush/clear TLH. */
 public:
 protected:
 private:
+	/**
+	 * Replenish the allocation interface TLH cache with new storage.
+	 * This is a placeholder function for all non-TLH implementing configurations until a further revision of the code finally pushes TLH
+	 * functionality down to the appropriate level, and not so high that all configurations must recognize it.
+	 * For this implementation we simply redirect back to the supplied memory pool and if successful, populate the localized TLH and supplied
+	 * AllocationDescription with the appropriate information.
+	 * @return true on successful TLH replenishment, false otherwise.
+	 */
 	void *allocateTLH(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, MM_MemorySubSpace *memorySubSpace, MM_MemoryPool *memoryPool);
 
 	void flushCache(MM_EnvironmentBase *env);
@@ -137,13 +146,63 @@ private:
 	MMINLINE MM_MemoryPool *getMemoryPool() { return (MM_MemoryPool *)_tlh->memoryPool; };
 	MMINLINE void setMemoryPool(MM_MemoryPool *memoryPool) { _tlh->memoryPool = memoryPool; };
 
+	/**
+	 * Report clearing of a full allocation cache
+	 */
 	void reportClearCache(MM_EnvironmentBase *env);
+
+	/**
+	 * Report allocation of a new allocation cache
+	 */
 	void reportRefreshCache(MM_EnvironmentBase *env);
+
+	/**
+	 * Purge the TLH data from the receiver.
+	 * Remove any ownership of a heap area from the receivers TLH, and make sure the heap is left in a safe,
+	 * or walkable state.
+	 *
+	 * @note The calling environment may not be the receivers owning environment.
+	 */
 	void clear(MM_EnvironmentBase *env);
-	void reconnect(MM_EnvironmentBase *env, bool shouldFlush);
+
+	/**
+	 * Reconnect the cache to the owning environment.
+	 * The environment is either newly created or has had its properties changed such that the existing cache is
+	 * no longer valid.  An example of this is a change of memory space.  Perform the necessary flushing and
+	 * re-initialization of the cache details such that new allocations will occur in the correct fashion.
+	 */
+	void reconnect(MM_EnvironmentBase *env);
+
+	/**
+	 * Restart the cache from its current start to an appropriate base state.
+	 * Reset the cache details back to a starting state that is appropriate for where it currently is.
+	 * In this case, the state reset takes into account the ending refresh size and sets an appropriate
+	 * new starting point.
+	 *
+	 * @note The previous cache contents are expected to have been flushed back to the heap.
+	 */
 	void restart(MM_EnvironmentBase *env);
+
+	/**
+	 * Reserve part (top) of TLH for GC if collector requires
+	 */
+	void reserveTLHTopForGC(MM_EnvironmentBase *env);
+
+	/**
+	 * Restore TLH Top if it was reserved for GC during refresh, and then notify the collector. TLH Top must be restored before it's flushed/cleared.
+	 *
+	 * @return Address of the last object in the TLH if one is allocated during this routine, otherwise return NULL
+	 */
+	void *restoreTLHTopForGC(MM_EnvironmentBase *env);
+
+	/**
+	 * Refresh the TLH.
+	 */
 	bool refresh(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool shouldCollectOnFailure);
 
+	/**
+	 * Attempt to allocate an object in this TLH.
+	 */
 	void *allocateFromTLH(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool shouldCollectOnFailure);
 
 	void setupTLH(MM_EnvironmentBase *env, void *addrBase, void *addrTop, MM_MemorySubSpace *memorySubSpace, MM_MemoryPool *memoryPool);
@@ -191,7 +250,8 @@ private:
 		_objectAllocationInterface(NULL),
 		_abandonedList(NULL),
 		_abandonedListSize(0),
-		_zeroTLH(zeroTLH)
+		_zeroTLH(zeroTLH),
+		_reservedBytesForGC(0)
 	{};
 
 	/*

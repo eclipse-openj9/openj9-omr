@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -509,7 +509,7 @@ MM_ParallelSweepScheme::sweepChunk(MM_EnvironmentBase *env, MM_ParallelSweepChun
 	uintptr_t darkMatterBytes = 0;
 	uintptr_t darkMatterCandidates = 0;
 	uintptr_t darkMatterSamples = 0;
-	const UDATA darkMatterSampleRate = (0 == _extensions->darkMatterSampleRate)?UDATA_MAX:_extensions->darkMatterSampleRate;
+	const UDATA darkMatterSampleRate = ((0 == _extensions->darkMatterSampleRate) || (_extensions->usingSATBBarrier())) ? UDATA_MAX:_extensions->darkMatterSampleRate;
 
 	/* Process inner chunks */
 	heapSlotFreeHead = NULL;

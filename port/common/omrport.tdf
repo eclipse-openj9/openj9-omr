@@ -1,4 +1,4 @@
-// Copyright (c) 1998, 2020 IBM Corp. and others
+// Copyright (c) 1998, 2022 IBM Corp. and others
 //
 // This program and the accompanying materials are made available under
 // the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1020,9 +1020,9 @@ TraceException=Trc_PRT_isCgroupV1Available_tmpfs_not_mounted Group=sysinfo Overh
 TraceException=Trc_PRT_addCgroupEntry_oom_for_cgroup_entry Group=sysinfo Overhead=1 Level=1 NoEnv Template="addCgroupEntry: failed to allocate memory for OMRCgroupEntry"
 TraceEvent=Trc_PRT_addCgroupEntry_added_new_entry Group=sysinfo Overhead=1 Level=3 NoEnv Template="addCgroupEntry: added new cgroup entry for subsystem %s and cgroup %s"
 
-TraceException=Trc_PRT_readCgroupFile_fopen_failed Group=sysinfo Overhead=1 Level=1 NoEnv Template="readCgroupFile: fopen failed for %s with errno=%d"
-TraceException=Trc_PRT_readCgroupFile_unexpected_format Group=sysinfo Overhead=1 Level=1 NoEnv Template="readCgroupFile: unexpected format of file %s"
-TraceEvent=Trc_PRT_readCgroupFile_available_subsystems Group=sysinfo Overhead=1 Level=3 NoEnv Template="readCgroupFile: available subsystems are 0x%llx"
+TraceException=Trc_PRT_readCgroupFile_fopen_failed Obsolete Group=sysinfo Overhead=1 Level=1 NoEnv Template="readCgroupFile: fopen failed for %s with errno=%d"
+TraceException=Trc_PRT_readCgroupFile_unexpected_format Obsolete Group=sysinfo Overhead=1 Level=1 NoEnv Template="readCgroupFile: unexpected format of file %s"
+TraceEvent=Trc_PRT_readCgroupFile_available_subsystems Obsolete Group=sysinfo Overhead=1 Level=3 NoEnv Template="readCgroupFile: available subsystems are 0x%llx"
 
 TraceException=Trc_PRT_readCgroupSubsystemFile_subsystem_not_available Overhead=1 Level=1 NoEnv Template="readCgroupSubsystemFile: requested subsystem 0x%llx is not available"
 TraceException=Trc_PRT_readCgroupSubsystemFile_oom_for_filename Overhead=1 Level=1 NoEnv Template="readCgroupSubsystemFile: failed to allocate memory for file name"
@@ -1073,7 +1073,7 @@ TraceException=Trc_PRT_signal_omrsig_register_os_handler_invalid_portlibSignalFl
 TraceEntry=Trc_PRT_signal_omrsig_is_main_signal_handler_entered Group=signal Overhead=1 Level=3 NoEnv Template="omrsig_is_main_signal_handler: Entered, osHandler=%p"
 TraceExit=Trc_PRT_signal_omrsig_is_main_signal_handler_exiting Group=signal Overhead=1 Level=3 NoEnv Template="omrsig_is_main_signal_handler: Exiting, rc=%d"
 
-TraceException=Trc_PRT_readCgroupFile_fgets_failed Group=sysinfo Overhead=1 Level=3 NoEnv Template="readCgroupFile: fgets failed for %s with errno=%d"
+TraceException=Trc_PRT_readCgroupFile_fgets_failed Obsolete Group=sysinfo Overhead=1 Level=3 NoEnv Template="readCgroupFile: fgets failed for %s with errno=%d"
 TraceException=Trc_PRT_isRunningInContainer_fgets_failed Group=sysinfo Overhead=1 Level=3 NoEnv Template="isRunningInContainer: unexpected format of file %s with errno=%d"
 
 TraceException=Trc_PRT_signal_mapPortLibSignalToOSSignal_ERROR_unknown_signal Group=signal Overhead=1 Level=3 NoEnv Template="omrsignal: mapPortLibSignalToOSSignal: ERROR, unknown signal, portLibSignal=0x%X"
@@ -1604,3 +1604,15 @@ TraceEvent=Trc_PRT_double_map_regions_Release_Restore_Region Overhead=1 Level=1 
 TraceExit=Trc_PRT_double_map_regions_Release_Exit Group=double_map Overhead=1 Level=5 NoEnv Template="omrvmem_release_double_mapped_region returnCode: %d"
 TraceException=Trc_PRT_double_map_regions_Release_Failure Overhead=1 Level=1 Group=double_map NoEnv Template="Failed to mmap FIXED contiguous region of memory when releasing region"
 TraceException=Trc_PRT_double_map_regions_Release_Failure2 Overhead=1 Level=1 Group=double_map NoEnv Template="Failed to mmap FIXED contiguous region of memory. Expected address: %p, mmap returned: %p"
+
+TraceException=Trc_PRT_populateCgroupEntryList_fopen_failed Group=sysinfo Overhead=1 Level=1 NoEnv Template="populateCgroupEntryListV%d: fopen failed for %s with errno=%d"
+TraceException=Trc_PRT_populateCgroupEntryList_unexpected_format Group=sysinfo Overhead=1 Level=1 NoEnv Template="populateCgroupEntryListV%d: unexpected format of file %s"
+TraceEvent=Trc_PRT_populateCgroupEntryList_available_subsystems Group=sysinfo Overhead=1 Level=3 NoEnv Template="populateCgroupEntryListV%d: available subsystems are 0x%llx"
+TraceException=Trc_PRT_populateCgroupEntryList_fgets_failed Group=sysinfo Overhead=1 Level=3 NoEnv Template="populateCgroupEntryListV%d: fgets failed for %s with errno=%d"
+
+TraceException=Trc_PRT_readCgroupSubsystemFile_unsupported_cgroup_version Group=sysinfo Overhead=1 Level=1 NoEnv Template="readCgroupSubsystemFile: cgroup or its version is unsupported"
+TraceException=Trc_PRT_readCgroupSubsystemFile_invalid_fileName Group=sysinfo Overhead=1 Level=1 NoEnv Template="readCgroupSubsystemFile: fileName is null"
+
+TraceException=Trc_PRT_readCgroupMemoryFileIntOrMax_read_failed Group=sysinfo Overhead=1 Level=1 NoEnv Template="readCgroupMemoryFileIntOrMax: failed to read memory limit from %s with portable error code=%d"
+TraceException=Trc_PRT_readCgroupMemoryFileIntOrMax_scan_failed Group=sysinfo Overhead=1 Level=1 NoEnv Template="readCgroupMemoryFileIntOrMax: failed to scan memory limit from %s with portable error code=%d"
+TraceException=Trc_PRT_readCgroupMemoryFileIntOrMax_unsupported_cgroup_version Group=sysinfo Overhead=1 Level=1 NoEnv Template="readCgroupMemoryFileIntOrMax: cgroup or its version is unsupported"

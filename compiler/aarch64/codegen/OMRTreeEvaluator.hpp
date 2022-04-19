@@ -687,6 +687,19 @@ public:
       {
       // do nothing
       }
+
+   /**
+    * @brief Helper for generating SIMD move immediate instruction for vsplats node.
+    *
+    * @param[in] node: node
+    * @param[in] cg: CodeGenerator
+    * @param[in] firstChild: first child node
+    * @param[in] elementType: element type of the vector
+    * @param[in] treg: target register
+    *
+    * @return instruction cursor if move instuction is successfully generated and otherwise returns NULL
+    */
+   static TR::Instruction *vsplatsImmediateHelper(TR::Node *node, TR::CodeGenerator *cg, TR::Node *firstChild, TR::DataType elementType, TR::Register *treg);
    };
 
 } // ARM64

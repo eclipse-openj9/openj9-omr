@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -432,6 +432,7 @@
 #define vdcmpltSimplifierHandler normalizeCmpSimplifier
 #define vdcmpleSimplifierHandler normalizeCmpSimplifier
 #define vdsqrtSimplifierHandler dftSimplifier
+#define vfmaSimplifierHandler dftSimplifier
 #define vnegSimplifierHandler dftSimplifier
 #define vaddSimplifierHandler dftSimplifier
 #define vsubSimplifierHandler dftSimplifier
@@ -631,6 +632,26 @@
    BadILOpSimplifierHandler,
 
 #include "il/Opcodes.enum"
+
+#define VECTOR_OPERATION_MACRO(\
+   operation, \
+   name, \
+   prop1, \
+   prop2, \
+   prop3, \
+   prop4, \
+   dataType, \
+   typeProps, \
+   childProps, \
+   swapChildrenOpcode, \
+   reverseBranchOpcode, \
+   boolCompareOpcode, \
+   ifCompareOpcode, \
+   ...) operation ## SimplifierHandler,
+
+#include "il/VectorOperations.enum"
+
 #undef OPCODE_MACRO
+#undef VECTOR_OPERATION_MACRO
 
 #endif

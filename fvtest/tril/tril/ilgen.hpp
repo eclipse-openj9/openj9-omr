@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 IBM Corp. and others
+ * Copyright (c) 2017, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,6 +27,7 @@
 
 #include "ast.hpp"
 
+#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
@@ -58,7 +59,7 @@ class OpCodeTable : public TR::ILOpCode {
       static TR::ILOpCodes getOpCodeFromName(const std::string& name) {
          auto opcode = _opcodeNameMap.find(name);
          if (opcode == _opcodeNameMap.end()) {
-            for (int i = TR::FirstOMROp; i< TR::NumIlOps; i++) {
+            for (int i = TR::FirstOMROp; i< TR::NumScalarIlOps; i++) {
                const auto p_opCode = static_cast<TR::ILOpCodes>(i);
                const auto& p = TR::ILOpCode::_opCodeProperties[p_opCode];
                if (name == p.name) {
@@ -66,7 +67,31 @@ class OpCodeTable : public TR::ILOpCode {
                   return p.opcode;
                }
             }
-            return TR::BadILOp;
+            // Check if it's a vector opcode, e.g. vaddVector128Int32
+            std::size_t pos = name.find("Vector");
+
+            if (pos == std::string::npos) return TR::BadILOp;
+
+            std::string vectorOperationName = name.substr(0, pos);
+            std::string vectorTypeName = name.substr(pos);
+
+            int i;
+            for (i = TR::NumScalarIlOps; i< OMR::ILOpCode::NumAllIlOps; i++) {
+               const auto p_opCode = static_cast<TR::ILOpCodes>(i);
+               const auto& p = TR::ILOpCode::_opCodeProperties[p_opCode];
+               if (vectorOperationName == p.name) break;
+            }
+            if (i == OMR::ILOpCode::NumAllIlOps) return TR::BadILOp;
+
+            OMR::VectorOperation vop = (OMR::VectorOperation)(i - TR::NumScalarIlOps);
+            const char* cStr = &*vectorTypeName.begin();
+            TR::DataType vectorType = TR::DataType::getTypeFromName(cStr);
+
+            if (vectorType == TR::NoType) return TR::BadILOp;
+
+            TR::ILOpCodes opcode = TR::ILOpCode::createVectorOpCode(vop, vectorType).getOpCodeValue();
+            _opcodeNameMap[name] = opcode;
+            return opcode;
          }
          else {
             return opcode->second;

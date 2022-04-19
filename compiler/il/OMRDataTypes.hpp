@@ -250,7 +250,8 @@ enum DataTypes
    // this space is reserved for vector types generated at runtime
    // the generated types can be used to index tables of size NumAllTypes as any other type
    //
-   NumAllTypes =  NumScalarTypes + NumVectorElementTypes * NumVectorLengths
+   NumVectorTypes = NumVectorElementTypes * NumVectorLengths,
+   NumAllTypes =  NumScalarTypes + NumVectorTypes
    };
 }
 
@@ -504,6 +505,8 @@ public:
    static TR::ILOpCodes getDataTypeBitConversion(TR::DataType t1, TR::DataType t2);
 
    static const char    * getName(TR::DataType dt);
+   static TR::DataType getTypeFromName(const char *name);
+
    static int32_t         getSize(TR::DataType dt);
    static void            setSize(TR::DataType dt, int32_t newValue);
 

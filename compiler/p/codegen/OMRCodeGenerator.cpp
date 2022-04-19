@@ -1760,25 +1760,47 @@ OMR::Power::CodeGenerator::freeAndResetTransientLongs()
 
 
 
-bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt, TR::VectorLength length)
+bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt)
    {
-   if(length != TR::VectorLength128) return false;
-
    // alignment issues
    if (!self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
        dt != TR::Double &&
        dt != TR::Int64)
       return false;
 
+   if (opcode.isVectorOpCode())
+      {
+      TR::DataType ot = opcode.getVectorResultDataType();
+
+      if (ot.getVectorLength() != TR::VectorLength128) return false;
+
+      TR::DataType et = ot.getVectorElementType();
+
+      if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
+          opcode.getVectorOperation() == OMR::vadd && et == TR::Int64)
+         return true;
+
+      // implemented vector operations
+      switch (opcode.getVectorOperation())
+         {
+         case OMR::vadd:
+            if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float || et == TR::Double)
+               return true;
+            else
+               return false;
+         default:
+            return false;
+         }
+      }
+
    if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
-       (opcode.getOpCodeValue() == TR::vadd || opcode.getOpCodeValue() == TR::vsub || opcode.getOpCodeValue() == TR::vmul) &&
+       (opcode.getOpCodeValue() == TR::vsub || opcode.getOpCodeValue() == TR::vmul) &&
        dt == TR::Int64)
       return true;
 
    // implemented vector opcodes
    switch (opcode.getOpCodeValue())
       {
-      case TR::vadd:
       case TR::vsub:
       case TR::vmul:
          if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Float || dt == TR::Double)

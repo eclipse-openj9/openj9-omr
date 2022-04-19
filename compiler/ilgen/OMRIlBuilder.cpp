@@ -602,7 +602,7 @@ OMR::IlBuilder::indirectLoadNode(TR::IlType *dt, TR::Node *addr, bool isVectorLo
    TR::ILOpCodes loadOp = comp()->il.opCodeForIndirectArrayLoad(primType);
    if (isVectorLoad)
       {
-      loadOp = TR::ILOpCode::convertScalarToVector(loadOp);
+      loadOp = TR::ILOpCode::convertScalarToVector(loadOp, TR::VectorLength128);
       baseType = _types->PrimitiveType(symRefType);
       }
 

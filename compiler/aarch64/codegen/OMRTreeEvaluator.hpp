@@ -602,6 +602,7 @@ public:
    static TR::Register *vdcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);

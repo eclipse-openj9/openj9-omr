@@ -1704,6 +1704,12 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
       {
       output.appendf(" (%s)", getName(node->getDataType()));
       }
+   else if(node->getOpCode().isVectorOpCode())
+      {
+      // example of a vector opcode: vaddVector128Int32
+      output.appendf("%s", getName(node->getDataType()));
+      }
+
 
    if (node->getOpCode().isLoadConst())
       {

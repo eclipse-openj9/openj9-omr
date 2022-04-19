@@ -245,6 +245,22 @@ namespace TR
 namespace OMR
 {
 
+typedef TR::Register *(* TreeEvaluatorFunctionPointer)(TR::Node *node, TR::CodeGenerator *codeGen);
+
+class TreeEvaluatorFunctionPointerTable
+   {
+   private:
+   static TreeEvaluatorFunctionPointer table[];
+
+   static void checkTableSize();
+
+   public:
+   TreeEvaluatorFunctionPointer& operator[] (TR::ILOpCode opcode)
+      {
+      return table[opcode.getTableIndex()];
+      }
+   };
+
 class OMR_EXTENSIBLE CodeGenerator
    {
 
@@ -459,7 +475,7 @@ public:
    // --------------------------------------------------------------------------
    // Tree evaluation
    //
-   static TR_TreeEvaluatorFunctionPointer *getTreeEvaluatorTable() {return _nodeToInstrEvaluators;}
+   static TreeEvaluatorFunctionPointerTable getTreeEvaluatorTable() {return _nodeToInstrEvaluators;}
 
    int32_t getEvaluationPriority(TR::Node*node);
    int32_t whichNodeToEvaluate(TR::Node*first, TR::Node* second);      // Decide which of two nodes should be evaluated first.
@@ -1628,7 +1644,7 @@ public:
    bool getSupportsAutoSIMD() { return _flags4.testAny(SupportsAutoSIMD);}
    void setSupportsAutoSIMD() { _flags4.set(SupportsAutoSIMD);}
 
-   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType, TR::VectorLength) { return false; }
+   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType) { return false; }
 
    bool removeRegisterHogsInLowerTreesWalk() { return _flags3.testAny(RemoveRegisterHogsInLowerTreesWalk);}
    void setRemoveRegisterHogsInLowerTreesWalk() { _flags3.set(RemoveRegisterHogsInLowerTreesWalk);}
@@ -2012,7 +2028,8 @@ public:
    flags16_t _enabledFlags;
 
    public:
-   static TR_TreeEvaluatorFunctionPointer _nodeToInstrEvaluators[];
+
+   static TreeEvaluatorFunctionPointerTable _nodeToInstrEvaluators;
 
    protected:
 

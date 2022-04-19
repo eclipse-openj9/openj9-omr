@@ -4719,10 +4719,8 @@ bool OMR::Z::CodeGenerator::isDispInRange(int64_t disp)
    return (MINLONGDISP <= disp) && (disp <= MAXLONGDISP);
    }
 
-bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt, TR::VectorLength length)
+bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt)
    {
-   if(length != TR::VectorLength128) return false;
-
    /*
     * Prior to z14, vector operations that operated on floating point numbers only supported
     * Doubles. On z14 and onward, Float type floating point numbers are supported as well.
@@ -4732,10 +4730,29 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
       return false;
       }
 
+   if (opcode.isVectorOpCode())
+      {
+      TR::DataType ot = opcode.getVectorResultDataType();
+
+      if (ot.getVectorLength() != TR::VectorLength128) return false;
+
+      TR::DataType et = opcode.getVectorResultDataType().getVectorElementType();
+
+      switch(opcode.getVectorOperation())
+         {
+         case OMR::vadd:
+            if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
+               return true;
+            else
+               return false;
+         default:
+            return false;
+         }
+      }
+
    // implemented vector opcodes
    switch (opcode.getOpCodeValue())
       {
-      case TR::vadd:
       case TR::vsub:
       case TR::vmul:
       case TR::vdiv:

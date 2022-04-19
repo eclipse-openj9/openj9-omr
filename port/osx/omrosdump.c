@@ -52,8 +52,15 @@ struct thread_command_full_64 {
 	uint32_t cmd;
 	uint32_t cmdsize;
 #if defined(OMR_ARCH_AARCH64)
+	/*
+	 * arm_state_hdr_t is not contained in any of
+	 * arm_thread_state64_t, arm_neon_state64_t, and arm_exception_state64_t
+	 */
+	arm_state_hdr_t thread_state_hdr;
 	arm_thread_state64_t thread_state;
+	arm_state_hdr_t float_state_hdr;
 	arm_neon_state64_t float_state;
+	arm_state_hdr_t exceptions_hdr;
 	arm_exception_state64_t exceptions;
 #elif defined(OMR_ARCH_X86) /* defined(OMR_ARCH_AARCH64) */
 	x86_thread_state_t thread_state;
@@ -160,6 +167,15 @@ coredump_to_file(mach_port_t task_port, pid_t pid)
 			goto done;
 		}
 		file_off += sizeof(uint32_t);
+#if defined(OMR_ARCH_AARCH64)
+		written = pwrite(corefile_fd, &threads[i].thread_state_hdr, sizeof(threads[i].thread_state_hdr), file_off);
+		if (written < 0) {
+			perror("pwrite() error writing threads:");
+			kr = KERN_FAILURE;
+			goto done;
+		}
+		file_off += sizeof(threads[i].thread_state_hdr);
+#endif /* defined(OMR_ARCH_AARCH64) */
 		written = pwrite(corefile_fd, &threads[i].thread_state, sizeof(threads[i].thread_state), file_off);
 		if (written < 0) {
 			perror("pwrite() error writing threads:");
@@ -167,6 +183,15 @@ coredump_to_file(mach_port_t task_port, pid_t pid)
 			goto done;
 		}
 		file_off += sizeof(threads[i].thread_state);
+#if defined(OMR_ARCH_AARCH64)
+		written = pwrite(corefile_fd, &threads[i].float_state_hdr, sizeof(threads[i].float_state_hdr), file_off);
+		if (written < 0) {
+			perror("pwrite() error writing threads:");
+			kr = KERN_FAILURE;
+			goto done;
+		}
+		file_off += sizeof(threads[i].float_state_hdr);
+#endif /* defined(OMR_ARCH_AARCH64) */
 		written = pwrite(corefile_fd, &threads[i].float_state, sizeof(threads[i].float_state), file_off);
 		if (written < 0) {
 			perror("pwrite() error writing threads:");
@@ -174,6 +199,15 @@ coredump_to_file(mach_port_t task_port, pid_t pid)
 			goto done;
 		}
 		file_off += sizeof(threads[i].float_state);
+#if defined(OMR_ARCH_AARCH64)
+		written = pwrite(corefile_fd, &threads[i].exceptions_hdr, sizeof(threads[i].exceptions_hdr), file_off);
+		if (written < 0) {
+			perror("pwrite() error writing threads:");
+			kr = KERN_FAILURE;
+			goto done;
+		}
+		file_off += sizeof(threads[i].exceptions_hdr);
+#endif /* defined(OMR_ARCH_AARCH64) */
 		written = pwrite(corefile_fd, &threads[i].exceptions, sizeof(threads[i].exceptions), file_off);
 		if (written < 0) {
 			perror("pwrite() error writing threads:");
@@ -287,21 +321,39 @@ list_thread_commands(mach_port_t task_port, struct thread_command_full_64 **thre
 		if (KERN_SUCCESS != kr) {
 			goto done;
 		}
+#if defined(OMR_ARCH_AARCH64)
+		threads[i].thread_state_hdr.flavor = OSDUMP_THREAD_STATE;
+		threads[i].thread_state_hdr.count = state_int_count;
+		threads[i].cmdsize += sizeof(threads[i].thread_state_hdr) + sizeof(threads[i].thread_state);
+#elif defined(OMR_ARCH_X86) /* defined(OMR_ARCH_AARCH64) */
 		threads[i].cmdsize += state_int_count * sizeof(natural_t);
+#endif /* defined(OMR_ARCH_AARCH64) */
 		state_int_count = OSDUMP_FLOAT_STATE_COUNT;
 		kr = thread_get_state(thread_info[i], OSDUMP_FLOAT_STATE,
 			(thread_state_t)&threads[i].float_state, &state_int_count);
 		if (KERN_SUCCESS != kr) {
 			goto done;
 		}
+#if defined(OMR_ARCH_AARCH64)
+		threads[i].float_state_hdr.flavor = OSDUMP_FLOAT_STATE;
+		threads[i].float_state_hdr.count = state_int_count;
+		threads[i].cmdsize += sizeof(threads[i].float_state_hdr) + sizeof(threads[i].float_state);
+#elif defined(OMR_ARCH_X86) /* defined(OMR_ARCH_AARCH64) */
 		threads[i].cmdsize += state_int_count * sizeof(natural_t);
+#endif /* defined(OMR_ARCH_AARCH64)*/
 		state_int_count = OSDUMP_EXCEPTION_STATE_COUNT;
 		kr = thread_get_state(thread_info[i], OSDUMP_EXCEPTION_STATE,
 			(thread_state_t)&threads[i].exceptions, &state_int_count);
 		if (KERN_SUCCESS != kr) {
 			goto done;
 		}
+#if defined(OMR_ARCH_AARCH64)
+		threads[i].exceptions_hdr.flavor = OSDUMP_EXCEPTION_STATE;
+		threads[i].exceptions_hdr.count = state_int_count;
+		threads[i].cmdsize += sizeof(threads[i].exceptions_hdr) + sizeof(threads[i].exceptions);
+#elif defined(OMR_ARCH_X86) /* defined(OMR_ARCH_AARCH64) */
 		threads[i].cmdsize += state_int_count * sizeof(natural_t);
+#endif /* defined(OMR_ARCH_AARCH64) */
 	}
 
 done:

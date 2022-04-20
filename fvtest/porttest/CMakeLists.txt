@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2021 IBM Corp. and others
+# Copyright (c) 2017, 2022 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -165,13 +165,13 @@ endif()
 if (NOT (OMR_OS_AIX OR OMR_OS_ZOS OR CMAKE_CROSSCOMPILING))
 	omr_add_test(
 		NAME porttest
-		COMMAND $<TARGET_FILE:omrporttest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrporttest-results.xml --gtest_filter=${porttest_filter}
+		COMMAND $<TARGET_FILE:omrporttest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrporttest-results.xml
 	)
 endif()
 
 if(OMR_OPT_CUDA)
 	omr_add_test(
 		NAME cuda_porttest
-		COMMAND $<TARGET_FILE:omrporttest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrporttest-results.xml --gtest_filter="Cuda*" -earlyExit
+		COMMAND $<TARGET_FILE:omrporttest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrporttest-results.xml --gtest_filter=*Cuda* -earlyExit
 	)
 endif()

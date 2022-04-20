@@ -1471,6 +1471,10 @@ uint8_t* TR::X86RegRegInstruction::generateOperand(uint8_t* cursor)
    if ((getOpCode().isEvexInstruction() && getEncodingMethod() != OMR::X86::Legacy) || getEncodingMethod() >= OMR::X86::EVEX_L128)
       {
       toRealRegister(_sourceRegister)->setSourceRegisterFieldInEVEX(cursor - 5);
+
+      if (!getOpCode().isSingleSourceSIMDOperation())
+         toRealRegister(getTargetRegister())->setSource2ndRegisterFieldInEVEX(cursor - 4);
+
       toRealRegister(getTargetRegister())->setTargetRegisterFieldInEVEX(cursor - 5);
       }
    return cursor;
@@ -2405,6 +2409,8 @@ uint8_t* TR::X86RegMemInstruction::generateOperand(uint8_t* cursor)
 
    if ((getOpCode().isEvexInstruction() && getEncodingMethod() != OMR::X86::Legacy) || getEncodingMethod() >= OMR::X86::EVEX_L128)
       {
+      if (!getOpCode().isSingleSourceSIMDOperation())
+         toRealRegister(getTargetRegister())->setSource2ndRegisterFieldInEVEX(cursor - 4);
       toRealRegister(getTargetRegister())->setTargetRegisterFieldInEVEX(cursor - 5);
       }
 

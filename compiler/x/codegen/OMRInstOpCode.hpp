@@ -90,6 +90,7 @@ namespace TR { class Register; }
 #define IA32OpProp1_SetsCCForCompare          0x00000010
 #define IA32OpProp1_SetsCCForTest             0x00000020
 #define IA32OpProp1_SupportsLockPrefix        0x00000040
+#define IA32OpProp1_SIMDSingleSource          0x00000080
 #define IA32OpProp1_DoubleWordSource          0x00000100
 #define IA32OpProp1_DoubleWordTarget          0x00000200
 #define IA32OpProp1_XMMSource                 0x00000400
@@ -383,6 +384,7 @@ class InstOpCode: public OMR::InstOpCode
    inline uint32_t hasDoubleWordSource()           const {return _properties1[_mnemonic] & IA32OpProp1_DoubleWordSource;}
    inline uint32_t hasDoubleWordTarget()           const {return _properties1[_mnemonic] & IA32OpProp1_DoubleWordTarget;}
    inline uint32_t hasXMMSource()                  const {return _properties1[_mnemonic] & IA32OpProp1_XMMSource;}
+   inline uint32_t isSingleSourceSIMDOperation()   const {return _properties1[_mnemonic] & IA32OpProp1_SIMDSingleSource;}
    inline uint32_t hasXMMTarget()                  const {return _properties1[_mnemonic] & IA32OpProp1_XMMTarget;}
    inline uint32_t hasYMMSource()                  const {return _properties1[_mnemonic] & IA32OpProp1_YMMSource;}
    inline uint32_t hasYMMTarget()                  const {return _properties1[_mnemonic] & IA32OpProp1_YMMTarget;}

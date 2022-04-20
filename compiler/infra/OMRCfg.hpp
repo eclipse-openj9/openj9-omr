@@ -147,7 +147,6 @@ class CFG
    TR_HeapMemory trHeapMemory() { return trMemory(); }
    TR_StackMemory trStackMemory() { return trMemory(); }
    TR::Region &structureMemoryRegion() { return _structureMemoryRegion; }
-   TR::Region &structureRegion() { return _structureMemoryRegion; }
 
    void setStartAndEnd(TR::CFGNode * s, TR::CFGNode * e) { addNode(s); addNode(e); setStart(s); setEnd(e); }
 

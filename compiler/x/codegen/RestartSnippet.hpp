@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -70,7 +70,7 @@ class X86RestartSnippet  : public TR::Snippet
 
       if (getForceLongRestartJump())
          {
-          bufferCursor = opcode.binary(bufferCursor);
+          bufferCursor = opcode.binary(bufferCursor, OMR::X86::Encoding::Default);
           *(int32_t *)bufferCursor = (int32_t)(destination - (bufferCursor + 4));
           bufferCursor += 4;
          }
@@ -79,13 +79,13 @@ class X86RestartSnippet  : public TR::Snippet
          if (distance >= -128 && distance <= 127)
             {
             opcode.convertLongBranchToShort();
-            bufferCursor = opcode.binary(bufferCursor);
+            bufferCursor = opcode.binary(bufferCursor, OMR::X86::Encoding::Default);
             *bufferCursor = (int8_t)(destination - (bufferCursor + 1));
             bufferCursor++;
             }
          else
             {
-            bufferCursor = opcode.binary(bufferCursor);
+            bufferCursor = opcode.binary(bufferCursor, OMR::X86::Encoding::Default);
             *(int32_t *)bufferCursor = (int32_t)(destination - (bufferCursor + 4));
             bufferCursor += 4;
             }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -46,18 +46,20 @@ namespace TR { class Node; }
 // OMR::X86::Instruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 
-OMR::X86::Instruction::Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node)
+OMR::X86::Instruction::Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node, OMR::X86::Encoding encoding)
    : OMR::Instruction(cg, op, node),
       _conditions(0),
-      _rexRepeatCount(0)
+      _rexRepeatCount(0),
+      _encodingMethod(encoding)
    {
 
    }
 
-OMR::X86::Instruction::Instruction(TR::CodeGenerator *cg, TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::Node *node)
+OMR::X86::Instruction::Instruction(TR::CodeGenerator *cg, TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::Node *node, OMR::X86::Encoding encoding)
    : OMR::Instruction(cg, precedingInstruction, op, node),
       _conditions(0),
-      _rexRepeatCount(0)
+      _rexRepeatCount(0),
+      _encodingMethod(encoding)
    {
 
    }

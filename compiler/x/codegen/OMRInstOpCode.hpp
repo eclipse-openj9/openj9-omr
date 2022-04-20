@@ -154,6 +154,17 @@ namespace OMR
 namespace X86
 {
 
+typedef enum
+   {
+   VEX_L128 = 0x0,
+   VEX_L256 = 0x1,
+   Default  = 0x2,
+   Legacy   = 0x3,
+   EVEX_L128 = 0x4,
+   EVEX_L256 = 0x5,
+   EVEX_L512 = 0x6
+   } Encoding;
+
 class InstOpCode: public OMR::InstOpCode
    {
    enum TR_OpCodeVEX_L : uint8_t
@@ -272,7 +283,7 @@ class InstOpCode: public OMR::InstOpCode
          return (escape == ESCAPE_0F__) && (opcode == 0x01);
          }
       // TBuffer should only be one of the two: Estimator when calculating length, and Writer when generating binaries.
-      template <class TBuffer> typename TBuffer::cursor_t encode(typename TBuffer::cursor_t cursor, uint8_t rexbits) const;
+      template <class TBuffer> typename TBuffer::cursor_t encode(typename TBuffer::cursor_t cursor, OMR::X86::Encoding encoding, uint8_t rexbits) const;
       // finalize instruction prefix information, currently only in-use for AVX instructions for VEX.vvvv field
       void finalize(uint8_t* cursor) const;
       };
@@ -311,9 +322,9 @@ class InstOpCode: public OMR::InstOpCode
          }
       };
    // TBuffer should only be one of the two: Estimator when calculating length, and Writer when generating binaries.
-   template <class TBuffer> inline typename TBuffer::cursor_t encode(typename TBuffer::cursor_t cursor, uint8_t rex) const
+   template <class TBuffer> inline typename TBuffer::cursor_t encode(typename TBuffer::cursor_t cursor, OMR::X86::Encoding encoding, uint8_t rex) const
       {
-      return isPseudoOp() ? cursor : info().encode<TBuffer>(cursor, rex);
+      return isPseudoOp() ? cursor : info().encode<TBuffer>(cursor, encoding, rex);
       }
    // Instructions from Group 7 OpCode Extensions need special handling as they requires specific low 3 bits of ModR/M byte
    inline void CheckAndFinishGroup07(uint8_t* cursor) const;
@@ -437,8 +448,8 @@ class InstOpCode: public OMR::InstOpCode
          }
       }
 
-   uint8_t length(uint8_t rex = 0) const;
-   uint8_t* binary(uint8_t* cursor, uint8_t rex = 0) const;
+   uint8_t length(OMR::X86::Encoding encoding, uint8_t rex = 0) const;
+   uint8_t* binary(uint8_t* cursor, OMR::X86::Encoding encoding, uint8_t rex = 0) const;
    void finalize(uint8_t* cursor) const;
    void convertLongBranchToShort()
       { // input must be a long branch in range OMR::InstOpCode::JA4 - OMR::InstOpCode::JMP4

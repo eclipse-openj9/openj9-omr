@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -405,6 +405,13 @@ MM_HeapVirtualMemory::heapRemoveRange(MM_EnvironmentBase* env, MM_MemorySubSpace
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 	return result;
+}
+
+int
+MM_HeapVirtualMemory::getHeapFileDescriptor()
+{
+	MM_MemoryManager* memoryManager = MM_GCExtensionsBase::getExtensions(_omrVM)->memoryManager;
+	return memoryManager->getHeapFileDescriptor(&_vmemHandle);
 }
 
 bool

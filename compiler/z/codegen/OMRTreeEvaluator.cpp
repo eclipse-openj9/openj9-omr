@@ -2229,6 +2229,16 @@ genLoadAddressConstantInSnippet(TR::CodeGenerator * cg, TR::Node * node, uintptr
    return generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister, value, cond, NULL, base, isPICCandidate);
    }
 
+TR::Instruction *
+genLoadProfiledClassAddressConstant(TR::CodeGenerator * cg, TR::Node * node, TR_OpaqueClassBlock * clazz, TR::Register * targetRegister,
+   TR::Instruction * cursor, TR::RegisterDependencyConditions * cond, TR::Register * base)
+   {
+   uintptr_t value = reinterpret_cast<uintptr_t>(clazz);
+   TR::Node * dummy_node = TR::Node::aconst(node, value);
+   dummy_node->setIsClassPointerConstant(true);
+   return genLoadAddressConstant(cg, dummy_node, value, targetRegister, cursor, cond, base);
+   }
+
 static TR::Register *
 generateLoad32BitConstant(TR::CodeGenerator * cg, TR::Node * constExpr)
    {

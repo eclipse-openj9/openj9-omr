@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2019, 2021 IBM Corp. and others
+# Copyright (c) 2019, 2022 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -154,6 +154,10 @@ function(process_source_files src_files)
 		if("@OMR_OS_ZOS@" AND "@OMR_ENV_DATA64@")
 			# we need to set 64 bit code generation to ensure that limits.h macros are set correctly.
 			list(APPEND pp_command "-Wc,lp64")
+		endif()
+		if("@OMR_OS_WINDOWS@" AND extension MATCHES "\.hpp$")
+			# Visual Studio needs to be told that .hpp files as C++ code.
+			list(APPEND pp_command "/TP")
 		endif()
 		list(APPEND pp_command ${BASE_ARGS} "-E" "${stub_file}")
 		add_custom_command(

@@ -12390,7 +12390,8 @@
    /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree,
+                        PPCOpProp_SyncSideEffectFree |
+                        PPCOpProp_UsesTarget,
    },
 
    {
@@ -12402,7 +12403,8 @@
    /* .format      = */ FORMAT_XT_XA_XB,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
    /* .properties  = */ PPCOpProp_IsVSX |
-                        PPCOpProp_SyncSideEffectFree,
+                        PPCOpProp_SyncSideEffectFree |
+                        PPCOpProp_UsesTarget,
    },
 
    {

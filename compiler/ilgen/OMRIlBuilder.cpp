@@ -98,7 +98,9 @@ OMR::IlBuilder::IlBuilder(TR::IlBuilder *source)
    _count(-1),
    _partOfSequence(false),
    _connectedTrees(false),
-   _comesBack(true)
+   _comesBack(true),
+   _isHandler(source->_isHandler),
+   _bcIndex(source->_bcIndex)
    {
    }
 
@@ -205,6 +207,26 @@ OMR::IlBuilder::printBlock(TR::Block *block)
       tt = tt->getNextTreeTop();
       }
    comp()->getDebug()->print(comp()->getOutFile(), tt);
+   }
+
+TR::IlBuilder *
+OMR::IlBuilder::setBCIndex(int32_t bcIndex)
+   {
+   _bcIndex = bcIndex;
+   return static_cast<TR::IlBuilder *>(this);
+   }
+
+/*
+ * Call this function before calling services on this builder so they will
+ * mark their IL nodes as having this builder's _bcIndex (very handy when
+ * looking at compiler logs and ultimate used to track program locations).
+ * Note: *all* generated nodes will be marked with this builder's _bcIndex until another
+ *       builder's SetCurrentIlGenerator() is called.
+ */
+void
+OMR::IlBuilder::SetCurrentIlGenerator()
+   {
+   comp()->setCurrentIlGenerator((TR_IlGenerator *)this);
    }
 
 TR::SymbolReference *
@@ -1261,16 +1283,44 @@ OMR::IlBuilder::Sub(TR::IlValue *left, TR::IlValue *right)
    TR::IlValue *returnValue = NULL;
    if (left->getDataType() == TR::Address)
       {
-      if (TR::Compiler->target.is64Bit() && right->getDataType() == TR::Int32)
+      TR::IlValue *zero;
+      TR::ILOpCodes op;
+      bool needSub=true;
+      if (TR::Compiler->target.is64Bit())
          {
-         right = unaryOp(TR::i2l, right);
+         zero = ConstInt64(0);
+         op = TR::aladd;
+         if (right->getDataType() == TR::Int32)
+            {
+            right = unaryOp(TR::i2l, right);
+            }
+         else if (right->getDataType() == TR::Address)
+            {
+            left = unaryOp(TR::a2l, left);
+            right = unaryOp(TR::a2l, right);
+            op = TR::lsub;
+            needSub=false;
+            }
          }
-      else if (TR::Compiler->target.is32Bit() && right->getDataType() == TR::Int64)
+      else if (TR::Compiler->target.is32Bit())
          {
-         right = unaryOp(TR::l2i, right);
+         zero = ConstInt32(0);
+         op = TR::aiadd;
+         if (right->getDataType() == TR::Int64)
+            {
+            right = unaryOp(TR::l2i, right);
+            }
+         else if (right->getDataType() == TR::Address)
+            {
+            left = unaryOp(TR::a2i, left);
+            right = unaryOp(TR::a2i, right);
+            op = TR::isub;
+            needSub=false;
+            }
          }
-      right = Sub(TR::Compiler->target.is32Bit() ? ConstInt32(0) : ConstInt64(0), right);
-      returnValue = binaryOpFromNodes(TR::Compiler->target.is32Bit() ? TR::aiadd : TR::aladd, loadValue(left), loadValue(right));
+      if (needSub)
+         right = Sub(zero, right);
+      returnValue = binaryOpFromNodes(op, loadValue(left), loadValue(right));
       }
    else
       {

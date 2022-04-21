@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 IBM Corp. and others
+ * Copyright (c) 2017, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -39,9 +39,8 @@ OMR::BytecodeBuilder::BytecodeBuilder(TR::MethodBuilder *methodBuilder,
                                       int32_t bcIndex,
                                       char *name,
                                       int32_t bcLength)
-   : TR::IlBuilder(methodBuilder, methodBuilder->typeDictionary()),
+   : TR::IlBuilder(methodBuilder, methodBuilder->typeDictionary(), bcIndex),
    _fallThroughBuilder(0),
-   _bcIndex(bcIndex),
    _name(name),
    _bcLength(bcLength),
    _initialVMState(0),
@@ -51,19 +50,6 @@ OMR::BytecodeBuilder::BytecodeBuilder(TR::MethodBuilder *methodBuilder,
    initialize(methodBuilder->details(), methodBuilder->methodSymbol(),
               methodBuilder->fe(), methodBuilder->symRefTab());
    initSequence();
-   }
-
-/**
- * Call this function at the top of your bytecode iteration loop so that all services called
- * while this bytecode builder is being translated will mark their IL nodes as having this
- * BytecodeBuilder's _bcIndex (very handy when looking at compiler logs).
- * Note: *all* generated nodes will be marked with this builder's _bcIndex until another
- *       BytecodeBuilder's SetCurrentIlGenerator() is called.
- */
-void
-OMR::BytecodeBuilder::SetCurrentIlGenerator()
-   {
-   comp()->setCurrentIlGenerator((TR_IlGenerator *)this);
    }
 
 void

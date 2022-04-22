@@ -1814,6 +1814,51 @@ TR::S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t *
    return offsetHalfWords;
    }
 
+void
+TR::S390RILInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
+   {
+   uintptr_t immediateAsAddress = static_cast<uintptr_t>(static_cast<uint32_t>(getSourceImmediate()));  // double cast to zero extend
+   bool is32bit = true;
+   if (isFirstOfAddressPair())
+      {
+      immediateAsAddress |= static_cast<uintptr_t>(toS390RILInstruction(getNext())->getSourceImmediate()) << 32;
+      is32bit = false;
+      }
+
+   TR::Compilation *comp = cg()->comp();
+
+   if (std::find(comp->getStaticHCRPICSites()->begin(), comp->getStaticHCRPICSites()->end(), this) != comp->getStaticHCRPICSites()->end())
+      {
+      if (is32bit)
+         cg()->jitAdd32BitPicToPatchOnClassRedefinition(reinterpret_cast<void*>(immediateAsAddress), static_cast<void*>(cursor));
+      else
+         cg()->jitAddPicToPatchOnClassRedefinition(reinterpret_cast<void*>(immediateAsAddress), static_cast<void*>(cursor));
+      cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, reinterpret_cast<uint8_t*>(immediateAsAddress), TR_HCR, cg()), __FILE__,__LINE__, getNode());
+      }
+
+   if (std::find(comp->getStaticPICSites()->begin(), comp->getStaticPICSites()->end(), this) != comp->getStaticPICSites()->end())
+      {
+      if (immediateAsAddress && !TR::Compiler->cls.sameClassLoaders(comp, reinterpret_cast<TR_OpaqueClassBlock*>(immediateAsAddress), comp->getCurrentMethod()->classOfMethod()))
+         {
+         if (is32bit)
+            cg()->jitAdd32BitPicToPatchOnClassUnload(reinterpret_cast<void*>(immediateAsAddress), static_cast<void*>(cursor));
+         else
+            cg()->jitAddPicToPatchOnClassUnload(reinterpret_cast<void*>(immediateAsAddress), static_cast<void*>(cursor));
+         }
+      }
+   else if (std::find(comp->getStaticMethodPICSites()->begin(), comp->getStaticMethodPICSites()->end(), this) != comp->getStaticMethodPICSites()->end())
+      {
+      void *methodClass = cg()->fe()->createResolvedMethod(cg()->trMemory(), reinterpret_cast<TR_OpaqueMethodBlock*>(immediateAsAddress), comp->getCurrentMethod())->classOfMethod();
+      if (methodClass != NULL && !TR::Compiler->cls.sameClassLoaders(comp, static_cast<TR_OpaqueClassBlock*>(methodClass), comp->getCurrentMethod()->classOfMethod()))
+         {
+         if (is32bit)
+            cg()->jitAdd32BitPicToPatchOnClassUnload(methodClass, static_cast<void*>(cursor));
+         else
+            cg()->jitAddPicToPatchOnClassUnload(methodClass, static_cast<void*>(cursor));
+         }
+      }
+   }
+
 uint8_t *
 TR::S390RILInstruction::generateBinaryEncoding()
    {
@@ -2304,6 +2349,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
       // LL: Verify extended immediate instruction length must be 6
       TR_ASSERT( getOpCode().getInstructionLength()==6, "Extended immediate instruction must be length of 6\n");
       (*(int32_t *) (cursor + 2)) |= boi((int32_t) getSourceImmediate());
+      addMetaDataForCodeAddress(cursor+2);
 
       cursor += getOpCode().getInstructionLength();
       }

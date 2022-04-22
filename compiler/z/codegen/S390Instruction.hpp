@@ -2008,7 +2008,8 @@ class S390RILInstruction : public TR::Instruction
    enum
       {
       isLiteralPoolAddressFlag        = 0x01,
-      isImmediateOffsetInBytesFlag    = 0x02
+      isImmediateOffsetInBytesFlag    = 0x02,
+      isFirstOfAddressPairFlag        = 0x04,
       };
 
    /** Use to store immediate value where the immediate is not used as a relative offset in address calculation.*/
@@ -2357,6 +2358,9 @@ class S390RILInstruction : public TR::Instruction
    bool isImmediateOffsetInBytes() {return _flagsRIL.testAny(isImmediateOffsetInBytesFlag); }
    void setIsImmediateOffsetInBytes() { _flagsRIL.set(isImmediateOffsetInBytesFlag);}
 
+   bool isFirstOfAddressPair() {return _flagsRIL.testAny(isFirstOfAddressPairFlag); }
+   void setisFirstOfAddressPair() { _flagsRIL.set(isFirstOfAddressPairFlag);}
+
    uintptr_t getTargetPtr()
       { return  reinterpret_cast<uintptr_t>(_targetPtr); }
    uintptr_t setTargetPtr(uintptr_t tp)
@@ -2407,6 +2411,8 @@ class S390RILInstruction : public TR::Instruction
 
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t *generateBinaryEncoding();
+
+   void addMetaDataForCodeAddress(uint8_t *cursor);
 
    // Get value from extended immediate instructions
    int32_t getSourceImmediate()            {return _sourceImmediate;}

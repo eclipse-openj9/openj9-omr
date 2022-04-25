@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2021 IBM Corp. and others
+ * Copyright (c) 2019, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -91,8 +91,60 @@ TR::Register *OMR::RV::TreeEvaluator::gotoEvaluator(TR::Node *node, TR::CodeGene
    return NULL;
    }
 
+#ifdef J9_PROJECT_SPECIFIC
+static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (!cg->willGenerateNOPForVirtualGuard(node))
+      {
+      return false;
+      }
+
+   TR::Compilation *comp = cg->comp();
+   TR_VirtualGuard *virtualGuard = comp->findVirtualGuardInfo(node);
+
+   TR_VirtualGuardSite *site = NULL;
+
+   if (cg->comp()->compileRelocatableCode())
+      {
+      TR_UNIMPLEMENTED();
+      }
+   else if (!node->isSideEffectGuard())
+      {
+      site = virtualGuard->addNOPSite();
+      }
+   else
+      site = comp->addSideEffectNOPSite();
+
+   TR::RegisterDependencyConditions *deps;
+   if (node->getNumChildren() == 3)
+      {
+      TR::Node *third = node->getChild(2);
+      cg->evaluate(third);
+      deps = generateRegisterDependencyConditions(cg, third, 0);
+      }
+   else
+      deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 0, cg->trMemory());
+
+   if(virtualGuard->shouldGenerateChildrenCode())
+      cg->evaluateChildrenWithMultipleRefCount(node);
+
+   TR::LabelSymbol *label = node->getBranchDestination()->getNode()->getLabel();
+   generateVGNOP(node, site, deps, label, cg);
+   cg->recursivelyDecReferenceCount(node->getFirstChild());
+   cg->recursivelyDecReferenceCount(node->getSecondChild());
+
+   return true;
+   }
+#endif //J9_PROJECT_SPECIFIC
+
+
 static TR::Instruction *ificmpHelper(TR::InstOpCode::Mnemonic op, TR::Node *node, bool reverse, TR::CodeGenerator *cg)
    {
+#ifdef J9_PROJECT_SPECIFIC
+   if (virtualGuardHelper(node, cg))
+         return NULL;
+#endif
+
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
    TR::Node *thirdChild = NULL;

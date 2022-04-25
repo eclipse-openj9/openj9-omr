@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 IBM Corp. and others
+ * Copyright (c) 2019, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -218,3 +218,17 @@ TR::Instruction *generateJTYPE( TR::InstOpCode::Mnemonic op,
       return new (cg->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, label, cond, previous, cg);
    return new (cg->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, label, cond, cg);
    }
+
+#ifdef J9_PROJECT_SPECIFIC
+TR::Instruction *generateVGNOP( TR::Node *n,
+                                TR_VirtualGuardSite *site,
+                                TR::RegisterDependencyConditions *cond,
+                                TR::LabelSymbol *sym,
+                                TR::CodeGenerator *cg,
+                                TR::Instruction *previous)
+   {
+   if (previous)
+      return new (cg->trHeapMemory()) TR::VGNOPInstruction(n, site, cond, sym, previous, cg);
+   return new (cg->trHeapMemory()) TR::VGNOPInstruction(n, site, cond, sym, cg);
+   }
+#endif //J9_PROJECT_SPECIFIC

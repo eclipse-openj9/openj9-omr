@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2021 IBM Corp. and others
+ * Copyright (c) 2019, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -34,6 +34,7 @@
 #include "il/LabelSymbol.hpp"
 #include "infra/Assert.hpp"
 
+class TR_VirtualGuardSite;
 namespace TR { class SymbolReference; }
 
 #define RISCV_INSTRUCTION_LENGTH 4
@@ -1355,6 +1356,46 @@ public:
     */
    virtual uint8_t *generateBinaryEncoding();
    };
+
+#ifdef J9_PROJECT_SPECIFIC
+class VGNOPInstruction : public TR::LabelInstruction
+   {
+   private:
+   TR_VirtualGuardSite *_site;
+
+   public:
+   VGNOPInstruction(TR::Node                       *node,
+                                 TR_VirtualGuardSite              *site,
+                                 TR::RegisterDependencyConditions *cond,
+                                 TR::LabelSymbol                  *sym,
+                                 TR::CodeGenerator                *cg)
+      : TR::LabelInstruction(TR::InstOpCode::vgnop, node, sym, cond, cg),
+        _site(site)
+      {
+      }
+
+   VGNOPInstruction(TR::Node                       *node,
+                                 TR_VirtualGuardSite              *site,
+                                 TR::RegisterDependencyConditions *cond,
+                                 TR::LabelSymbol                  *sym,
+                                 TR::Instruction                  *precedingInstruction,
+                                 TR::CodeGenerator                *cg)
+      : TR::LabelInstruction(TR::InstOpCode::vgnop, node, sym, cond, precedingInstruction, cg),
+        _site(site)
+      {
+      }
+
+   virtual Kind getKind() { return IsVirtualGuardNOP; }
+
+   void setSite(TR_VirtualGuardSite *site) { _site = site; }
+   TR_VirtualGuardSite * getSite() { return _site; }
+
+   virtual uint8_t *generateBinaryEncoding();
+   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual bool     isVirtualGuardNOPInstruction() {return true;}
+   };
+#endif
+
 
 
 } // namespace TR

@@ -3577,6 +3577,48 @@ TR::Register *OMR::Power::TreeEvaluator::vsqrtEvaluator(TR::Node *node, TR::Code
      }
    }
 
+static TR::Register *vminDoubleHelper(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+
+   TR::Register *firstReg = cg->evaluate(firstChild);
+   TR::Register *secondReg = cg->evaluate(secondChild);
+
+   TR::Register *resReg = cg->allocateRegister(TR_VRF);
+
+   TR::Register *cmpReg = cg->allocateRegister(TR_VRF);
+   TR::Register *tempA = cg->allocateRegister(TR_VRF);
+   TR::Register *tempB = cg->allocateRegister(TR_VRF);
+
+   node->setRegister(resReg);
+
+   /*
+   To match with java library behavior, vmin should return NaN if EITHER of the operands is NaN.
+   However, since the VSX minimum instruction only returns NaN when BOTH operands are NaN, some extra steps are needed.
+   */
+
+   //Check the first operand for NaN elements, and convert corresponding elements in second operand to NaN
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::xvcmpeqdp, node, cmpReg, firstReg, firstReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlorc, node, tempA, secondReg, cmpReg);
+
+   //Check the second operand for NaN elements, and convert corresponding elements in first operand to NaN
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::xvcmpeqdp, node, cmpReg, secondReg, secondReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlorc, node, tempB, firstReg, cmpReg);
+
+   //VSX minimum (will return NaN if both operands are NaN)
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::xvmindp, node, resReg, tempA, tempB);
+
+   cg->stopUsingRegister(cmpReg);
+   cg->stopUsingRegister(tempA);
+   cg->stopUsingRegister(tempB);
+
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+
+   return resReg;
+   }
+
 TR::Register *OMR::Power::TreeEvaluator::vminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
@@ -3595,7 +3637,7 @@ TR::Register *OMR::Power::TreeEvaluator::vminEvaluator(TR::Node *node, TR::CodeG
      case TR::Float:
        return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vminfp);
      case TR::Double:
-       return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvmindp);
+       return vminDoubleHelper(node, cg);
      default:
        TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
      }

@@ -1796,6 +1796,11 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
        et == TR::Int64)
       return true;
 
+   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
+       (pcode.getVectorOperation() == OMR::vmin) &&
+       et == TR::Double)
+      return true;
+
    // implemented vector opcodes
    switch (opcode.getVectorOperation())
       {
@@ -1842,7 +1847,7 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
             return true;
 
       case OMR::vmin:
-         if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float || et == TR::Double)
+         if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float)
             return true;
          else
             return false;

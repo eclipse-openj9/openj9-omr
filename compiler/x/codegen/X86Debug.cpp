@@ -1470,14 +1470,17 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference  * mr, TR_RegisterSizes 
    if (pOutFile == NULL)
       return;
 
-   const char *typeSpecifier[7] = {
+   const char *typeSpecifier[10] = {
       "byte",     // TR_ByteReg
       "word",     // TR_HalfWordReg
       "dword",    // TR_WordReg
       "qword",    // TR_DoubleWordReg
       "oword",    // TR_QuadWordReg
       "dword",    // TR_FloatReg
-      "qword" };  // TR_DoubleReg
+      "qword",    // TR_DoubleReg
+      "xmmword",  // TR_VectorReg128
+      "ymmword",  // TR_VectorReg256
+      "zmmword"}; // TR_VectorReg512
 
    TR_RegisterSizes addressSize = (_comp->target().cpu.isAMD64() ? TR_DoubleWordReg : TR_WordReg);
    bool hasTerm = false;
@@ -1713,7 +1716,20 @@ TR_Debug::getTargetSizeFromInstruction(TR::Instruction  *instr)
    {
    TR_RegisterSizes targetSize;
 
-   if (instr->getOpCode().hasXMMTarget() != 0)
+   OMR::X86::Encoding encoding = instr->getEncodingMethod();
+
+   if (encoding == OMR::X86::Default)
+      {
+      encoding = static_cast<OMR::X86::Encoding>(instr->getOpCode().info().vex_l);
+      }
+
+   if (encoding == OMR::X86::VEX_L128 || encoding == OMR::X86::EVEX_L128)
+      targetSize = TR_VectorReg128;
+   else if (encoding == OMR::X86::VEX_L256 || encoding == OMR::X86::EVEX_L256)
+      targetSize = TR_VectorReg256;
+   else if (encoding == OMR::X86::EVEX_L512)
+      targetSize = TR_VectorReg512;
+   else if (instr->getOpCode().hasXMMTarget() != 0)
       targetSize = TR_QuadWordReg;
    else if (instr->getOpCode().hasYMMTarget())
       targetSize = TR_VectorReg256;
@@ -1738,13 +1754,26 @@ TR_Debug::getSourceSizeFromInstruction(TR::Instruction  *instr)
    {
    TR_RegisterSizes sourceSize;
 
-   if (instr->getOpCode().hasXMMSource() != 0)
+   OMR::X86::Encoding encoding = instr->getEncodingMethod();
+
+   if (encoding == OMR::X86::Default)
+      {
+      encoding = static_cast<OMR::X86::Encoding>(instr->getOpCode().info().vex_l);
+      }
+
+   if (encoding == OMR::X86::VEX_L128 || encoding == OMR::X86::EVEX_L128)
+      sourceSize = TR_VectorReg128;
+   else if (encoding == OMR::X86::VEX_L256 || encoding == OMR::X86::EVEX_L256)
+      sourceSize = TR_VectorReg256;
+   else if (encoding == OMR::X86::EVEX_L512)
+      sourceSize = TR_VectorReg512;
+   else if (instr->getOpCode().hasXMMSource() != 0)
       sourceSize = TR_QuadWordReg;
    else if (instr->getOpCode().hasYMMSource())
       sourceSize = TR_VectorReg256;
    else if (instr->getOpCode().hasZMMSource())
       sourceSize = TR_VectorReg512;
-   else if (instr->getOpCode().hasIntSource()!= 0)
+   else if (instr->getOpCode().hasIntSource() != 0)
       sourceSize = TR_WordReg;
    else if (instr->getOpCode().hasShortSource() != 0)
       sourceSize = TR_HalfWordReg;

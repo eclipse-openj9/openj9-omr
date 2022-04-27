@@ -2322,6 +2322,14 @@ class ARM64Trg1Src1ImmInstruction : public ARM64Trg1Src1Instruction
          {
          *instruction |= ((_source1Immediate & 0x7f) << 16); /* immh:immb */
          }
+      else if ((op >= TR::InstOpCode::vdupe16b) && (op <= TR::InstOpCode::vinsxd))
+         {
+         *instruction |= ((_source1Immediate & 0x1f) << 16); /* imm5 */
+         }
+      else if ((op >= TR::InstOpCode::vinseb) && (op <= TR::InstOpCode::vinsed))
+         {
+         *instruction |= ((_source1Immediate & 0x3ff) << 11); /* imm5 and imm4 */
+         }
       else
          {
          *instruction |= ((_source1Immediate & 0xfff) << 10); /* imm12 */

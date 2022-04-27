@@ -1472,11 +1472,11 @@ OMR::ARM64::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *c
             break;
          case TR::Float:
             TR_ASSERT(srcReg->getKind() == TR_FPR, "unexpected Register kind");
-            op = TR::InstOpCode::vfdup4s;
+            op = TR::InstOpCode::vdupe4s;
             break;
          case TR::Double:
             TR_ASSERT(srcReg->getKind() == TR_FPR, "unexpected Register kind");
-            op = TR::InstOpCode::vfdup2d;
+            op = TR::InstOpCode::vdupe2d;
             break;
          default:
             TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());

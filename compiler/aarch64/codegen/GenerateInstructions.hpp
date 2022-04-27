@@ -1111,7 +1111,7 @@ TR::Instruction *generateUBFIZInstruction(
  * @param[in] treg        : target register
  * @param[in] sreg        : source register
  * @param[in] shiftAmount : shift amount
- * @param[in] preced  : preceding instruction
+ * @param[in] preced      : preceding instruction
  * @return generated instruction
  */
 TR::Instruction *generateVectorShiftImmediateInstruction(
@@ -1121,6 +1121,93 @@ TR::Instruction *generateVectorShiftImmediateInstruction(
                   TR::Register *treg,
                   TR::Register *sreg,
                   uint32_t shiftAmount,
+                  TR::Instruction *preced = NULL);
+
+/**
+ * @brief Generates duplicate vector element instruction
+ *
+ * @param[in] cg          : CodeGenerator
+ * @param[in] op          : opcode
+ * @param[in] node        : node
+ * @param[in] treg        : target register
+ * @param[in] sreg        : source register
+ * @param[in] srcIndex    : source element index
+ * @param[in] preced      : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateVectorDupElementInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::InstOpCode::Mnemonic op,
+                  TR::Node *node,
+                  TR::Register *treg,
+                  TR::Register *sreg,
+                  uint32_t srcIndex,
+                  TR::Instruction *preced = NULL);
+
+/**
+ * @brief Generates signed or unsigned move vector element to general purpose register instruction
+ *
+ * @param[in] cg          : CodeGenerator
+ * @param[in] op          : opcode
+ * @param[in] node        : node
+ * @param[in] treg        : target register
+ * @param[in] sreg        : source register
+ * @param[in] srcIndex    : source element index
+ * @param[in] preced      : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateMovVectorElementToGPRInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::InstOpCode::Mnemonic op,
+                  TR::Node *node,
+                  TR::Register *treg,
+                  TR::Register *sreg,
+                  uint32_t srcIndex,
+                  TR::Instruction *preced = NULL);
+
+/**
+ * @brief Generates move general purpose register to vector element instruction
+ *
+ * @param[in] cg          : CodeGenerator
+ * @param[in] op          : opcode
+ * @param[in] node        : node
+ * @param[in] treg        : target register
+ * @param[in] sreg        : source register
+ * @param[in] trgIndex    : target element index
+ * @param[in] preced      : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateMovGPRToVectorElementInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::InstOpCode::Mnemonic op,
+                  TR::Node *node,
+                  TR::Register *treg,
+                  TR::Register *sreg,
+                  uint32_t trgIndex,
+                  TR::Instruction *preced = NULL);
+
+
+/**
+ * @brief Generates move vector element instruction
+ *
+ * @param[in] cg          : CodeGenerator
+ * @param[in] op          : opcode
+ * @param[in] node        : node
+ * @param[in] treg        : target register
+ * @param[in] sreg        : source register
+ * @param[in] trgIndex    : target element index
+ * @param[in] srcIndex    : source element index
+ * @param[in] preced      : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateMovVectorElementInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::InstOpCode::Mnemonic op,
+                  TR::Node *node,
+                  TR::Register *treg,
+                  TR::Register *sreg,
+                  uint32_t trgIndex,
+                  uint32_t srcIndex,
                   TR::Instruction *preced = NULL);
 
 #ifdef J9_PROJECT_SPECIFIC

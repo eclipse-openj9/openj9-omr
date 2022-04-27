@@ -890,12 +890,6 @@ static const char *opCodeToNameMap[] =
    "vfneg4s",
    "vfneg2d",
    "vnot16b",
-   "vdup16b",
-   "vdup8h",
-   "vdup4s",
-   "vdup2d",
-   "vfdup4s",
-   "vfdup2d",
    "vfsqrt4s",
    "vfsqrt2d",
    "vabs16b",
@@ -910,6 +904,31 @@ static const char *opCodeToNameMap[] =
    "vrev64_16b",
    "vrev64_8h",
    "vrev64_4s",
+   "vdup16b",
+   "vdup8h",
+   "vdup4s",
+   "vdup2d",
+   "vdupe16b",
+   "vdupe8h",
+   "vdupe4s",
+   "vdupe2d",
+   "smovwb",
+   "smovwh",
+   "smovxb",
+   "smovxh",
+   "smovxs",
+   "umovwb",
+   "umovwh",
+   "umovws",
+   "umovxd",
+   "vinsb",
+   "vinsh",
+   "vinss",
+   "vinsd",
+   "vinseb",
+   "vinseh",
+   "vinses",
+   "vinsed",
    "vumlal_8h",
    "vumlal_4s",
    "vumlal_2d",
@@ -1761,6 +1780,49 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
       print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
       print(pOutFile, instr->getSource1Register(), TR_WordReg);
       trfprintf(pOutFile, ", %d", shiftAmount);
+      }
+   else if ((op >= TR::InstOpCode::vdupe16b) && (op <= TR::InstOpCode::umovxd))
+      {
+      done = true;
+      const uint32_t elementSizeShift = (op <= TR::InstOpCode::vdupe2d) ? (op - TR::InstOpCode::vdupe16b) :
+                                        ((op <= TR::InstOpCode::smovwh) ? (op - TR::InstOpCode::smovwb) :
+                                        ((op <= TR::InstOpCode::smovxh) ? (op - TR::InstOpCode::smovxb) : (op - TR::InstOpCode::umovwb)));
+
+      const uint32_t imm5 = instr->getSourceImmediate() & 0x1f;
+      const uint32_t index = imm5 >> (elementSizeShift + 1);
+      trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+      print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+      print(pOutFile, instr->getSource1Register(), TR_WordReg);
+      trfprintf(pOutFile, ".[%d]", index);
+      }
+   else if ((op >= TR::InstOpCode::vinswb) && (op <= TR::InstOpCode::vinsxd))
+      {
+      done = true;
+      const uint32_t elementSizeShift = op - TR::InstOpCode::vinswb;
+      const uint32_t imm5 = instr->getSourceImmediate() & 0x1f;
+      const uint32_t index = imm5 >> (elementSizeShift + 1);
+
+      trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+      print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+      trfprintf(pOutFile, ".[%d]", index);
+      trfprintf(pOutFile, ", ");
+      print(pOutFile, instr->getSource1Register(), TR_WordReg);
+      }
+   else if ((op >= TR::InstOpCode::vinseb) && (op <= TR::InstOpCode::vinsed))
+      {
+      done = true;
+      const uint32_t elementSizeShift = op - TR::InstOpCode::vinseb;
+      const uint32_t imm5 = (instr->getSourceImmediate() >> 5) & 0x1f;
+      const uint32_t imm4 = instr->getSourceImmediate() & 0xf;
+      const uint32_t dstIndex = imm5 >> (elementSizeShift + 1);
+      const uint32_t srcIndex = imm4 >> elementSizeShift;
+
+      trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+      print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+      trfprintf(pOutFile, ".[%d]", dstIndex);
+      trfprintf(pOutFile, ", ");
+      print(pOutFile, instr->getSource1Register(), TR_WordReg);
+      trfprintf(pOutFile, ".[%d]", srcIndex);
       }
 
    if (!done)

@@ -876,12 +876,6 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x6EA0F800,	/* FNEG      	vfneg4s	 */
 		0x6EE0F800,	/* FNEG      	vfneg2d	 */
 		0x6E205800,	/* NOT      	vnot16b	 */
-		0x4E010C00,	/* DUP      	vdup16b  */
-		0x4E020C00,	/* DUP      	vdup8h   */
-		0x4E040C00,	/* DUP      	vdup4s   */
-		0x4E080C00,	/* DUP      	vdup2d   */
-		0x4E040400,	/* DUP      	vfdup4s  */
-		0x4E080400,	/* DUP      	vfdup2d  */
 		0x6EA1F800,	/* FSQRT   	vfsqrt4s */
 		0x6EE1F800,	/* FSQRT   	vfsqrt2d */
 		0x4E20B800,	/* ABS     	vabs16b  */
@@ -896,6 +890,38 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4E200800,	/* REV64   	vrev64_16b */
 		0x4E600800,	/* REV64   	vrev64_8h */
 		0x4EA00800,	/* REV64   	vrev64_4s */
+	/* Vector Copy */
+		/* DUP (general) */
+		0x4E010C00,	/* DUP   	vdup16b */
+		0x4E020C00,	/* DUP   	vdup8h */
+		0x4E040C00,	/* DUP   	vdup4s */
+		0x4E080C00,	/* DUP   	vdup2d */
+		/* DUP (element) */
+		0x4E010400,	/* DUP   	vdupe16b */
+		0x4E020400,	/* DUP   	vdupe8h */
+		0x4E040400,	/* DUP   	vdupe4s */
+		0x4E080400,	/* DUP   	vdupe2d */
+		/* SMOV */
+		0x0E012C00,	/* SMOV  	smovwb */
+		0x0E022C00,	/* SMOV  	smovwh */
+		0x4E012C00,	/* SMOV  	smovxb */
+		0x4E022C00,	/* SMOV  	smovxh */
+		0x4E042C00,	/* SMOV  	smovxs */
+		/* UMOV */
+		0x0E013C00,	/* UMOV  	umovwb */
+		0x0E023C00,	/* UMOV  	umovwh */
+		0x0E043C00,	/* UMOV  	umovws */
+		0x4E083C00,	/* UMOV  	umovxd */
+		/* INS (general) */
+		0x4E011C00,	/* INS  	vinswb  */
+		0x4E021C00,	/* INS  	vinswh  */
+		0x4E041C00,	/* INS  	vinsws  */
+		0x4E081C00,	/* INS  	vinsxd  */
+		/* INS (element) */
+		0x6E010400,	/* INS  	vinseb  */
+		0x6E020400,	/* INS  	vinseh  */
+		0x6E040400,	/* INS  	vinses  */
+		0x6E080400,	/* INS  	vinsed  */
 	/* Vector widening and narrowing arithmetics */
 		0x2E208000,	/* UMLAL   	vumlal_8h */
 		0x2E608000,	/* UMLAL   	vumlal_4s */

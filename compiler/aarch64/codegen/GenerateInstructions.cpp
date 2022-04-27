@@ -608,6 +608,78 @@ TR::Instruction *generateVectorShiftImmediateInstruction(TR::CodeGenerator *cg, 
    return generateTrg1Src1ImmInstruction(cg, op, node, treg, sreg, imm, preced);
    }
 
+static
+bool isVectorRegister(TR::Register *reg)
+   {
+   return (reg->getRealRegister() != NULL) ? (reg->getKind() == TR_FPR) : (reg->getKind() == TR_VRF);
+   }
+
+TR::Instruction *generateVectorDupElementInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *treg, TR::Register *sreg, uint32_t srcIndex, TR::Instruction *preced)
+   {
+   TR_ASSERT_FATAL_WITH_NODE(node, (op >= TR::InstOpCode::vdupe16b) && (op <= TR::InstOpCode::vdupe2d), "Illegal opcode for generateVectorDupElementInstruction: %d", op);
+   TR_ASSERT_FATAL_WITH_NODE(node, isVectorRegister(treg) && isVectorRegister(sreg), "The target and source register must be VRF");
+   const uint32_t elementSizeShift = op - TR::InstOpCode::vdupe16b;
+   const uint32_t nelements = 16 >> elementSizeShift;
+   TR_ASSERT_FATAL_WITH_NODE(node, (srcIndex < nelements), "srcIndex (%d) must be less than the number of elements (%d)", srcIndex, nelements);
+
+   uint32_t imm5 = (srcIndex << (elementSizeShift + 1)) & 0x1f;
+   return generateTrg1Src1ImmInstruction(cg, op, node, treg, sreg, imm5, preced);
+   }
+
+TR::Instruction *generateMovVectorElementToGPRInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *treg, TR::Register *sreg, uint32_t srcIndex, TR::Instruction *preced)
+   {
+   TR_ASSERT_FATAL_WITH_NODE(node, (op >= TR::InstOpCode::smovwb) && (op <= TR::InstOpCode::umovxd), "Illegal opcode for generateMovVectorElementToGPRInstruction: %d", op);
+   TR_ASSERT_FATAL_WITH_NODE(node, (treg->getKind() == TR_GPR) && isVectorRegister(sreg), "The target register must be GPR and the source register must be VRF");
+   const uint32_t elementSizeShift = (op >= TR::InstOpCode::umovwb) ? (op - TR::InstOpCode::umovwb) :
+                                                                      ((op >= TR::InstOpCode::smovxb) ? (op - TR::InstOpCode::smovxb) : (op - TR::InstOpCode::smovwb));
+   const uint32_t nelements = 16 >> elementSizeShift;
+   TR_ASSERT_FATAL_WITH_NODE(node, (srcIndex < nelements), "srcIndex (%d) must be less than the number of elements (%d)", srcIndex, nelements);
+
+   uint32_t imm5 = (srcIndex << (elementSizeShift + 1)) & 0x1f;
+   return generateTrg1Src1ImmInstruction(cg, op, node, treg, sreg, imm5, preced);
+   }
+
+TR::Instruction *generateMovGPRToVectorElementInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *treg, TR::Register *sreg, uint32_t trgIndex, TR::Instruction *preced)
+   {
+   TR_ASSERT_FATAL_WITH_NODE(node, (op >= TR::InstOpCode::vinswb) && (op <= TR::InstOpCode::vinsxd), "Illegal opcode for generateMovGPRToVectorElementInstruction: %d", op);
+   TR_ASSERT_FATAL_WITH_NODE(node, isVectorRegister(treg) && (sreg->getKind() == TR_GPR), "The target register must be VRF and the source register must be GPR");
+   const uint32_t elementSizeShift = op - TR::InstOpCode::vinswb;
+   const uint32_t nelements = 16 >> elementSizeShift;
+   TR_ASSERT_FATAL_WITH_NODE(node, (trgIndex < nelements), "trgIndex (%d) must be less than the number of elements (%d)", trgIndex, nelements);
+
+   uint32_t imm5 = (trgIndex << (elementSizeShift + 1)) & 0x1f;
+   return generateTrg1Src1ImmInstruction(cg, op, node, treg, sreg, imm5, preced);
+   }
+
+TR::Instruction *generateMovVectorElementInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *treg, TR::Register *sreg, uint32_t trgIndex, uint32_t srcIndex, TR::Instruction *preced)
+   {
+   TR_ASSERT_FATAL_WITH_NODE(node, (op >= TR::InstOpCode::vinseb) && (op <= TR::InstOpCode::vinsed), "Illegal opcode for generateMovVectorElementInstruction: %d", op);
+   TR_ASSERT_FATAL_WITH_NODE(node, isVectorRegister(treg) && isVectorRegister(sreg), "The target and source register must be VRF");
+   const uint32_t elementSizeShift = op - TR::InstOpCode::vinseb;
+   const uint32_t nelements = 16 >> elementSizeShift;
+   TR_ASSERT_FATAL_WITH_NODE(node, (srcIndex < nelements) && (trgIndex < nelements), "srcIndex (%d) and trgIndex (%d) must be less than the number of elements (%d)", srcIndex, trgIndex, nelements);
+
+   /* bit 16-20 */
+   uint32_t imm5 = (trgIndex << (elementSizeShift + 1)) & 0x1f;
+   /* bit 11-14 */
+   uint32_t imm4 = (srcIndex << elementSizeShift) & 0xf;
+   /*
+    * We expect imm to be inserted into bit 11-20 of the instruction.
+    *
+    * +------+--------------+--+-----------+
+    * |bitpos|20|19|18|17|16|15|14|13|12|11|
+    * +------+--------------+--+-----------+
+    * | value|    imm5      | 0|   imm4    |
+    * +------+--------------+--+-----------+
+    */
+   uint32_t imm = (imm5 << 5) | imm4;
+   return generateTrg1Src1ImmInstruction(cg, op, node, treg, sreg, imm, preced);
+   }
+
 #ifdef J9_PROJECT_SPECIFIC
 TR::Instruction *generateVirtualGuardNOPInstruction(TR::CodeGenerator *cg,  TR::Node *n, TR_VirtualGuardSite *site,
    TR::RegisterDependencyConditions *cond, TR::LabelSymbol *sym, TR::Instruction *preced)

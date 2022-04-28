@@ -367,6 +367,16 @@ struct {
 
 #define SINGLE_CGROUP_METRIC 1
 #define MAX_64BIT_INT_LENGTH 20
+/* The metricKeyInFile field in an OMRCgroupMetricInfoElement being set to this
+ * indicates that the file containing this element is in the space-separated format,
+ * i.e.
+ *  VAL0 VAL1 ...\n
+ * All 'OMRCgroupMetricInfoElement's corresponding to values in a file of this format
+ * must have their metricKeyInFile set to CGROUP_METRIC_NO_KEY and OMRCgroupMetricInfoElement
+ * arrays must list metrics in order of appearance in their file.
+ * CGROUP_METRIC_NO_KEY does not apply to newline-separated files.
+ */
+#define CGROUP_METRIC_NO_KEY -1
 
 /* Used for PPG_sysinfoControlFlags global, set bits indicate cgroup v1 availability,
  * cgroup v2 availability, and process running in container, respectively.
@@ -453,15 +463,39 @@ typedef struct OMRCgroupMetricInfoElement {
 	BOOLEAN isValueToBeChecked;
 } OMRCgroupMetricInfoElement;
 
-static struct OMRCgroupMetricInfoElement oomControlMetricElementList[] = {
+static struct OMRCgroupMetricInfoElement oomControlMetricElementListV1[] = {
 	{ "OOM Killer Disabled", "oom_kill_disable", NULL, FALSE },
 	{ "Under OOM", "under_oom", NULL, FALSE }
 };
 
-static struct OMRCgroupMetricInfoElement cpuStatMetricElementList[] = {
+static struct OMRCgroupMetricInfoElement memEventsMetricElementListV2[] = {
+	{ "Approached memory limit count", "max", NULL, FALSE },
+	{ "Reached memory limit count", "oom", NULL, FALSE }
+};
+
+static struct OMRCgroupMetricInfoElement swapEventsMetricElementListV2[] = {
+	{ "Approached swap limit count", "max", NULL, FALSE },
+	{ "Swap alloc failed count", "fail", NULL, FALSE }
+};
+
+static struct OMRCgroupMetricInfoElement cpuStatMetricElementListV1[] = {
 	{ "Period intervals elapsed count", "nr_periods", NULL, FALSE },
 	{ "Throttled count", "nr_throttled", NULL, FALSE },
 	{ "Total throttle time", "throttled_time", "nanoseconds", FALSE }
+};
+
+/* The cpu.max file contains two space separated values in the format
+ *  $QUOTA $PERIOD
+ */
+static struct OMRCgroupMetricInfoElement cpuMaxMetricElementListV2[] = {
+	{ "CPU Quota", (char *)CGROUP_METRIC_NO_KEY, "microseconds", TRUE },
+	{ "CPU Period", (char *)CGROUP_METRIC_NO_KEY, "microseconds", FALSE }
+};
+
+static struct OMRCgroupMetricInfoElement cpuStatMetricElementListV2[] = {
+	{ "Period intervals elapsed count", "nr_periods", NULL, FALSE },
+	{ "Throttled count", "nr_throttled", NULL, FALSE },
+	{ "Total throttle time", "throttled_usec", "microseconds", FALSE }
 };
 
 typedef struct OMRCgroupSubsystemMetricMap {
@@ -470,7 +504,7 @@ typedef struct OMRCgroupSubsystemMetricMap {
 	int32_t metricElementsCount;
 } OMRCgroupSubsystemMetricMap;
 
-static struct OMRCgroupSubsystemMetricMap omrCgroupMemoryMetricMap[] = {
+static struct OMRCgroupSubsystemMetricMap omrCgroupMemoryMetricMapV1[] = {
 	{ "memory.limit_in_bytes", &(OMRCgroupMetricInfoElement){ "Memory Limit", NULL, "bytes", TRUE }, SINGLE_CGROUP_METRIC },
 	{ "memory.memsw.limit_in_bytes", &(OMRCgroupMetricInfoElement){ "Memory + Swap Limit", NULL, "bytes", TRUE }, SINGLE_CGROUP_METRIC },
 	{ "memory.usage_in_bytes", &(OMRCgroupMetricInfoElement){ "Memory Usage", NULL, "bytes", FALSE }, SINGLE_CGROUP_METRIC },
@@ -479,22 +513,53 @@ static struct OMRCgroupSubsystemMetricMap omrCgroupMemoryMetricMap[] = {
 	{ "memory.memsw.max_usage_in_bytes", &(OMRCgroupMetricInfoElement){ "Memory + Swap Max Usage", NULL, "bytes", FALSE }, SINGLE_CGROUP_METRIC },
 	{ "memory.failcnt", &(OMRCgroupMetricInfoElement){ "Memory limit exceeded count", NULL, NULL, FALSE }, SINGLE_CGROUP_METRIC },
 	{ "memory.memsw.failcnt", &(OMRCgroupMetricInfoElement){ "Memory + Swap limit exceeded count", NULL, NULL, FALSE }, SINGLE_CGROUP_METRIC },
-	{ "memory.oom_control", &oomControlMetricElementList[0], sizeof(oomControlMetricElementList)/sizeof(oomControlMetricElementList[0]) }
+	{ "memory.oom_control", &oomControlMetricElementListV1[0], sizeof(oomControlMetricElementListV1)/sizeof(oomControlMetricElementListV1[0]) }
 };
+#define OMR_CGROUP_MEMORY_METRIC_MAP_V1_SIZE sizeof(omrCgroupMemoryMetricMapV1) / sizeof(omrCgroupMemoryMetricMapV1[0])
 
-static struct OMRCgroupSubsystemMetricMap omrCgroupCpuMetricMap[] = {
+static struct OMRCgroupSubsystemMetricMap omrCgroupMemoryMetricMapV2[] = {
+	{ "memory.max", &(OMRCgroupMetricInfoElement){ "Memory Limit", NULL, "bytes", TRUE }, SINGLE_CGROUP_METRIC },
+	{ "memory.swap.max", &(OMRCgroupMetricInfoElement){ "Swap Limit", NULL, "bytes", TRUE }, SINGLE_CGROUP_METRIC },
+	{ "memory.current", &(OMRCgroupMetricInfoElement){ "Memory Usage", NULL, "bytes", FALSE }, SINGLE_CGROUP_METRIC },
+	{ "memory.swap.current", &(OMRCgroupMetricInfoElement){ "Swap Usage", NULL, "bytes", FALSE }, SINGLE_CGROUP_METRIC },
+	{ "memory.events", &memEventsMetricElementListV2[0], sizeof(memEventsMetricElementListV2)/sizeof(memEventsMetricElementListV2[0]) },
+	{ "memory.swap.events", &swapEventsMetricElementListV2[0], sizeof(swapEventsMetricElementListV2)/sizeof(swapEventsMetricElementListV2[0]) }
+};
+#define OMR_CGROUP_MEMORY_METRIC_MAP_V2_SIZE sizeof(omrCgroupMemoryMetricMapV2) / sizeof(omrCgroupMemoryMetricMapV2[0])
+
+static struct OMRCgroupSubsystemMetricMap omrCgroupCpuMetricMapV1[] = {
 	{ "cpu.cfs_period_us", &(OMRCgroupMetricInfoElement){ "CPU Period", NULL, "microseconds", FALSE }, SINGLE_CGROUP_METRIC },
 	{ "cpu.cfs_quota_us", &(OMRCgroupMetricInfoElement){ "CPU Quota", NULL, "microseconds", TRUE }, SINGLE_CGROUP_METRIC },
 	{ "cpu.shares", &(OMRCgroupMetricInfoElement){ "CPU Shares", NULL, NULL, FALSE }, SINGLE_CGROUP_METRIC },
-	{ "cpu.stat", &cpuStatMetricElementList[0], sizeof(cpuStatMetricElementList)/sizeof(cpuStatMetricElementList[0]) }
+	{ "cpu.stat", &cpuStatMetricElementListV1[0], sizeof(cpuStatMetricElementListV1)/sizeof(cpuStatMetricElementListV1[0]) }
 };
+#define OMR_CGROUP_CPU_METRIC_MAP_V1_SIZE sizeof(omrCgroupCpuMetricMapV1) / sizeof(omrCgroupCpuMetricMapV1[0])
 
-static struct OMRCgroupSubsystemMetricMap omrCgroupCpusetMetricMap[] = {
+static struct OMRCgroupSubsystemMetricMap omrCgroupCpuMetricMapV2[] = {
+	{ "cpu.max", &cpuMaxMetricElementListV2[0], sizeof(cpuMaxMetricElementListV2)/sizeof(cpuMaxMetricElementListV2[0]) },
+	{ "cpu.weight", &(OMRCgroupMetricInfoElement){ "CPU Weight relative to procs in same cgroup", NULL, NULL, FALSE }, SINGLE_CGROUP_METRIC },
+	{ "cpu.stat", &cpuStatMetricElementListV2[0], sizeof(cpuStatMetricElementListV2)/sizeof(cpuStatMetricElementListV2[0]) }
+};
+#define OMR_CGROUP_CPU_METRIC_MAP_V2_SIZE sizeof(omrCgroupCpuMetricMapV2) / sizeof(omrCgroupCpuMetricMapV2[0])
+
+static struct OMRCgroupSubsystemMetricMap omrCgroupCpusetMetricMapV1[] = {
 	{ "cpuset.cpu_exclusive", &(OMRCgroupMetricInfoElement){ "CPU exclusive", NULL, NULL, FALSE }, SINGLE_CGROUP_METRIC },
 	{ "cpuset.mem_exclusive", &(OMRCgroupMetricInfoElement){ "Mem exclusive", NULL, NULL, FALSE }, SINGLE_CGROUP_METRIC },
 	{ "cpuset.cpus", &(OMRCgroupMetricInfoElement){ "CPUs", NULL, NULL, FALSE }, SINGLE_CGROUP_METRIC },
 	{ "cpuset.mems", &(OMRCgroupMetricInfoElement){ "Mems", NULL, NULL, FALSE }, SINGLE_CGROUP_METRIC }
 };
+#define OMR_CGROUP_CPUSET_METRIC_MAP_V1_SIZE sizeof(omrCgroupCpusetMetricMapV1) / sizeof(omrCgroupCpusetMetricMapV1[0])
+
+/* cpuset.cpus and cpuset.mems files may be empty, which indicates the same settings
+ * as parent cgroup, or that all cpus are available.
+ */
+static struct OMRCgroupSubsystemMetricMap omrCgroupCpusetMetricMapV2[] = {
+	{ "cpuset.cpus", &(OMRCgroupMetricInfoElement){ "CPUs", NULL, NULL, TRUE }, SINGLE_CGROUP_METRIC },
+	{ "cpuset.mems", &(OMRCgroupMetricInfoElement){ "Mems", NULL, NULL, TRUE }, SINGLE_CGROUP_METRIC },
+	{ "cpuset.cpus.effective", &(OMRCgroupMetricInfoElement){ "Effective CPUs", NULL, NULL, FALSE }, SINGLE_CGROUP_METRIC },
+	{ "cpuset.mems.effective", &(OMRCgroupMetricInfoElement){ "Effective Mems", NULL, NULL, FALSE }, SINGLE_CGROUP_METRIC }
+};
+#define OMR_CGROUP_CPUSET_METRIC_MAP_V2_SIZE sizeof(omrCgroupCpusetMetricMapV2) / sizeof(omrCgroupCpusetMetricMapV2[0])
 
 static uint32_t attachedPortLibraries;
 static omrthread_monitor_t cgroupEntryListMonitor;
@@ -545,6 +610,7 @@ static int32_t isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN 
 static int32_t scanCgroupIntOrMax(struct OMRPortLibrary *portLibrary, const char *metricString, uint64_t *val);
 static int32_t readCgroupMemoryFileIntOrMax(struct OMRPortLibrary *portLibrary, const char *fileName, uint64_t *metric);
 static int32_t getCgroupMemoryLimit(struct OMRPortLibrary *portLibrary, uint64_t *limit);
+static int32_t getCgroupSubsystemMetricMap(struct OMRPortLibrary *portLibrary, uint64_t subsystem, const struct OMRCgroupSubsystemMetricMap **subsystemMetricMap, uint32_t *numElements);
 #endif /* defined(LINUX) */
 
 #if defined(LINUX)
@@ -6439,6 +6505,75 @@ _end:
 	return rc;
 }
 
+/**
+ * Get the cgroup subsystem metric map and its number of elements given the
+ * subsystem flag and the cgroup version in use.
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary
+ * @param[in] subsystem cgroup subsystem flag
+ * @param[out] subsystemMetricMap if not null, on successful return is assigned
+ *      the metric map associated with the subsystem flag
+ * @param[out] numElements if not null, on successful return is assigned the
+ *      number of elements of the metric map associated with the subsystem flag
+ *
+ * @return 0 on success, otherwise negative error code
+ */
+static int32_t
+getCgroupSubsystemMetricMap(struct OMRPortLibrary *portLibrary, uint64_t subsystem, const struct OMRCgroupSubsystemMetricMap **subsystemMetricMap, uint32_t *numElements)
+{
+	const struct OMRCgroupSubsystemMetricMap *map = NULL;
+	uint32_t count = 0;
+	int32_t rc = 0;
+
+	Assert_PRT_true((NULL != subsystemMetricMap) || (NULL != numElements));
+	if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V1_AVAILABLE)) {
+		switch (subsystem) {
+		case OMR_CGROUP_SUBSYSTEM_MEMORY:
+			map = omrCgroupMemoryMetricMapV1;
+			count = OMR_CGROUP_MEMORY_METRIC_MAP_V1_SIZE;
+			break;
+		case OMR_CGROUP_SUBSYSTEM_CPU:
+			map = omrCgroupCpuMetricMapV1;
+			count = OMR_CGROUP_CPU_METRIC_MAP_V1_SIZE;
+			break;
+		case OMR_CGROUP_SUBSYSTEM_CPUSET:
+			map = omrCgroupCpusetMetricMapV1;
+			count = OMR_CGROUP_CPUSET_METRIC_MAP_V1_SIZE;
+			break;
+		default:
+			rc = OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_UNAVAILABLE;
+		}
+	} else if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V2_AVAILABLE)) {
+		switch (subsystem) {
+		case OMR_CGROUP_SUBSYSTEM_MEMORY:
+			map = omrCgroupMemoryMetricMapV2;
+			count = OMR_CGROUP_MEMORY_METRIC_MAP_V2_SIZE;
+			break;
+		case OMR_CGROUP_SUBSYSTEM_CPU:
+			map = omrCgroupCpuMetricMapV2;
+			count = OMR_CGROUP_CPU_METRIC_MAP_V2_SIZE;
+			break;
+		case OMR_CGROUP_SUBSYSTEM_CPUSET:
+			map = omrCgroupCpusetMetricMapV2;
+			count = OMR_CGROUP_CPUSET_METRIC_MAP_V2_SIZE;
+			break;
+		default:
+			rc = OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_UNAVAILABLE;
+		}
+	} else {
+		Trc_PRT_Assert_ShouldNeverHappen();
+	}
+
+	if (NULL != subsystemMetricMap) {
+		*subsystemMetricMap = map;
+	}
+	if (NULL != numElements) {
+		*numElements = count;
+	}
+
+	return rc;
+}
+
 #endif /* defined(LINUX) && !defined(OMRZTPF) */
 
 BOOLEAN
@@ -6619,22 +6754,8 @@ omrsysinfo_cgroup_subsystem_iterator_init(struct OMRPortLibrary *portLibrary, ui
 	state->count = 0;
 	state->subsystemid = subsystem;
 	state->fileMetricCounter = 0;
-	switch (subsystem) {
-	case OMR_CGROUP_SUBSYSTEM_MEMORY :
-		state->numElements = sizeof(omrCgroupMemoryMetricMap) / sizeof(omrCgroupMemoryMetricMap[0]);
-		break;
-	case OMR_CGROUP_SUBSYSTEM_CPU :
-		state->numElements = sizeof(omrCgroupCpuMetricMap) / sizeof(omrCgroupCpuMetricMap[0]);
-		break;
-	case OMR_CGROUP_SUBSYSTEM_CPUSET :
-		state->numElements = sizeof(omrCgroupCpusetMetricMap) / sizeof(omrCgroupCpusetMetricMap[0]);
-		break;
-	default :
-		goto _end;
-	}
-	rc = 0;
 
-_end:
+	rc = getCgroupSubsystemMetricMap(portLibrary, state->subsystemid, NULL, &state->numElements);
 #endif /* defined(LINUX) && !defined(OMRZTPF) */
 	return rc;
 }
@@ -6656,18 +6777,8 @@ omrsysinfo_cgroup_subsystem_iterator_metricKey(struct OMRPortLibrary *portLibrar
 #if defined(LINUX) && !defined(OMRZTPF)
 	if (NULL != metricKey) {
 		const struct OMRCgroupSubsystemMetricMap *subsystemMetricMap = NULL;
-		switch (state->subsystemid) {
-		case OMR_CGROUP_SUBSYSTEM_MEMORY:
-			subsystemMetricMap = omrCgroupMemoryMetricMap;
-			break;
-		case OMR_CGROUP_SUBSYSTEM_CPU:
-			subsystemMetricMap = omrCgroupCpuMetricMap;
-			break;
-		case OMR_CGROUP_SUBSYSTEM_CPUSET:
-			subsystemMetricMap = omrCgroupCpusetMetricMap;
-			break;
-		default:
-			rc = OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_UNAVAILABLE;
+		rc = getCgroupSubsystemMetricMap(portLibrary, state->subsystemid, &subsystemMetricMap, NULL);
+		if (0 != rc) {
 			goto _end;
 		}
 		if (state->fileMetricCounter < subsystemMetricMap[state->count].metricElementsCount){
@@ -6693,24 +6804,15 @@ omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, st
 	if (state->count >= state->numElements) {
 		goto _end;
 	}
-	switch (state->subsystemid) {
-	case OMR_CGROUP_SUBSYSTEM_MEMORY:
-		subsystemMetricMap = omrCgroupMemoryMetricMap;
-		break;
-	case OMR_CGROUP_SUBSYSTEM_CPU:
-		subsystemMetricMap = omrCgroupCpuMetricMap;
-		break;
-	case OMR_CGROUP_SUBSYSTEM_CPUSET:
-		subsystemMetricMap = omrCgroupCpusetMetricMap;
-		break;
-	default:
-		rc = OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_UNAVAILABLE;
+	rc = getCgroupSubsystemMetricMap(portLibrary, state->subsystemid, &subsystemMetricMap, NULL);
+	if (0 != rc) {
 		state->count += 1;
 		goto _end;
 	}
 	subsystemMetricMapElement = &subsystemMetricMap[state->count];
 	currentElement = subsystemMetricMapElement->metricInfoElementList;
 	if (NULL == state->fileContent) {
+		Assert_PRT_true(0 == state->fileMetricCounter);
 		rc = readCgroupMetricFromFile(portLibrary, state->subsystemid, subsystemMetricMapElement->metricFileName, currentElement->metricKeyInFile, &(state->fileContent), metricElement->value);
 
 		/* In error condition or single metric condition we increment the counter to continue to next metric */
@@ -6719,41 +6821,65 @@ omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, st
 			state->count += 1;
 			goto _end;
 		}
-
-		state->fileMetricCounter = 0;
 	}
 
 	if (state->fileMetricCounter < subsystemMetricMapElement->metricElementsCount) {
-		BOOLEAN isMetricFound = FALSE;
 		char *current = state->fileContent;
-		char *end = state->fileContent + strlen(state->fileContent) - 1;
-		int32_t metricKeyLen = 0;
 		currentElement += state->fileMetricCounter;
-		metricKeyLen = strlen(currentElement->metricKeyInFile);
-		while (current < end) {
-			if (0 == strncmp(current, currentElement->metricKeyInFile, metricKeyLen)) {
-				char *newLine = current;
-				current += metricKeyLen;
-				/* advance past any whitespace */
-				while ((current != end) &&  (' ' == *current)) {
+
+		if ((OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V2_AVAILABLE))
+			&& (CGROUP_METRIC_NO_KEY == (uintptr_t)currentElement->metricKeyInFile)
+		) {
+			/* File contains space-separated values with no keys. */
+			char *valueEnd = NULL;
+			int32_t i = 0;
+			for (i = 0; i < state->fileMetricCounter; i++) {
+				/* Skip values that were already read. */
+				while (' ' != *current) {
 					current += 1;
 				}
-				/* find the newline */
-				newLine = current;
-				while ('\n' != *newLine) {
-					newLine += 1;
-				}
-				strncpy(metricElement->value, current, newLine - current);
-				metricElement->value[newLine - current] = '\0';
-				isMetricFound = TRUE;
-				rc = 0;
-				break;
+				current += 1;
 			}
-			current += 1;
-		}
-		/* if we complete parse the fileContent and couldn't find the metric return error code */
-		if (!isMetricFound) {
-			rc = OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_METRIC_NOT_AVAILABLE;
+			valueEnd = current;
+			/* Find the last char of the value. */
+			while ((' ' != *valueEnd) && ('\n' != *valueEnd)) {
+				valueEnd += 1;
+			}
+			Assert_PRT_true((valueEnd - current + 1) <= sizeof(metricElement->value));
+			strncpy(metricElement->value, current, valueEnd - current);
+			metricElement->value[valueEnd - current] = '\0';
+			rc = 0;
+		} else {
+			BOOLEAN isMetricFound = FALSE;
+			char *end = state->fileContent + strlen(state->fileContent) - 1;
+			int32_t metricKeyLen = 0;
+			metricKeyLen = strlen(currentElement->metricKeyInFile);
+			while (current < end) {
+				if (0 == strncmp(current, currentElement->metricKeyInFile, metricKeyLen)) {
+					char *newLine = current;
+					current += metricKeyLen;
+					/* Advance past any whitespace. */
+					while ((current != end) &&  (' ' == *current)) {
+						current += 1;
+					}
+					/* Find the newline. */
+					newLine = current;
+					while ('\n' != *newLine) {
+						newLine += 1;
+					}
+					Assert_PRT_true((newLine - current + 1) <= sizeof(metricElement->value));
+					strncpy(metricElement->value, current, newLine - current);
+					metricElement->value[newLine - current] = '\0';
+					isMetricFound = TRUE;
+					rc = 0;
+					break;
+				}
+				current += 1;
+			}
+			/* Return an error code if the metric is not found after completely parsing fileContent. */
+			if (!isMetricFound) {
+				rc = OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_METRIC_NOT_AVAILABLE;
+			}
 		}
 
 		state->fileMetricCounter += 1;
@@ -6765,6 +6891,10 @@ omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, st
 			state->fileContent = NULL;
 		}
 		state->count += 1;
+		/* Reset fileMetricCounter here so that a call to omrsysinfo_cgroup_subsystem_iterator_metricKey
+		 * immediately after won't fail.
+		 */
+		state->fileMetricCounter = 0;
 	}
 
 _end:
@@ -6775,13 +6905,49 @@ _end:
 		 */
 		size_t len = strlen(metricElement->value);
 		metricElement->units = currentElement->metricUnit;
-		if ((len > 0) && (metricElement->value[len-1] == '\n')) {
+		if ((len > 1) && (metricElement->value[len-1] == '\n')) {
 			metricElement->value[len-1] = '\0';
 		}
 		if (currentElement->isValueToBeChecked) {
-			int64_t result = 0;
-			sscanf(metricElement->value, "%" PRId64, &result);
-			if ((result > (MAX_DEFAULT_VALUE_CHECK)) || (result < 0)) {
+			BOOLEAN notSet = FALSE;
+			if ('\n' == metricElement->value[0]) {
+				/* Empty file, see cpuset.cpus and cpuset.mems in omrCgroupCpusetMetricMapV2. */
+				notSet = TRUE;
+			} else if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V1_AVAILABLE)) {
+				int64_t result = 0;
+				rc = sscanf(metricElement->value, "%" PRId64, &result);
+				if (1 != rc) {
+					rc = portLibrary->error_set_last_error_with_message_format(
+							portLibrary,
+							OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_FILE_INVALID_VALUE,
+							"invalid value %s in file %s",
+							metricElement->value,
+							subsystemMetricMapElement->metricFileName);
+				} else {
+					if ((result > MAX_DEFAULT_VALUE_CHECK) || (result < 0)) {
+						notSet = TRUE;
+					}
+					rc = 0;
+				}
+			} else if (OMR_ARE_ANY_BITS_SET(PPG_sysinfoControlFlags, OMRPORT_SYSINFO_CGROUP_V2_AVAILABLE)) {
+				uint64_t uresult = 0;
+				rc = scanCgroupIntOrMax(portLibrary, metricElement->value, &uresult);
+				if (0 != rc) {
+					rc = portLibrary->error_set_last_error_with_message_format(
+							portLibrary,
+							OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_FILE_INVALID_VALUE,
+							"invalid value %s in file %s",
+							metricElement->value,
+							subsystemMetricMapElement->metricFileName);
+				} else if (uresult > MAX_DEFAULT_VALUE_CHECK) {
+					/* Assume that the metric is effectively unlimited and can be considered "Not Set". */
+					notSet = TRUE;
+				}
+			} else {
+				Trc_PRT_Assert_ShouldNeverHappen();
+			}
+			/* Check that the metric is set and that it is a reasonable value. */
+			if (notSet) {
 				metricElement->units = NULL;
 				strcpy(metricElement->value, "Not Set");
 			}

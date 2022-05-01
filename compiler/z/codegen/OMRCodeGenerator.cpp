@@ -4730,61 +4730,62 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
       return false;
       }
 
-   if (opcode.isVectorOpCode())
+   if (!opcode.isVectorOpCode())
       {
-      TR::DataType ot = opcode.getVectorResultDataType();
-
-      if (ot.getVectorLength() != TR::VectorLength128) return false;
-
-      TR::DataType et = opcode.getVectorResultDataType().getVectorElementType();
-
-      switch(opcode.getVectorOperation())
+      // Will be transformed into new vector opcodes soon
+      switch (opcode.getOpCodeValue())
          {
-         case OMR::vadd:
-            if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
+         case TR::getvelem:
+         case TR::vsetelem:
+            if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
                return true;
-            else
+           else
                return false;
+         case TR::vl2vd:
+            return true;
          default:
             return false;
          }
       }
 
+   TR::DataType ot = opcode.getVectorResultDataType();
+
+   if (ot.getVectorLength() != TR::VectorLength128) return false;
+
+   TR::DataType et = opcode.getVectorResultDataType().getVectorElementType();
+
    // implemented vector opcodes
-   switch (opcode.getOpCodeValue())
+   switch (opcode.getVectorOperation())
       {
-      case TR::vsub:
-      case TR::vmul:
-      case TR::vdiv:
-      case TR::vneg:
-         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+      case OMR::vadd:
+      case OMR::vsub:
+      case OMR::vmul:
+      case OMR::vdiv:
+      case OMR::vneg:
+         if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case TR::vload:
-      case TR::vloadi:
-      case TR::vstore:
-      case TR::vstorei:
-         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+      case OMR::vload:
+      case OMR::vloadi:
+      case OMR::vstore:
+      case OMR::vstorei:
+         if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case TR::vxor:
-      case TR::vor:
-      case TR::vand:
-         if (dt == TR::Int32 || dt == TR::Int64)
+      case OMR::vxor:
+      case OMR::vor:
+      case OMR::vand:
+         if (et == TR::Int32 || et == TR::Int64)
             return true;
          else
             return false;
-      case TR::vsplats:
-      case TR::getvelem:
-      case TR::vsetelem:
-         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+      case OMR::vsplats:
+         if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case TR::vl2vd:
-         return true;
       default:
         return false;
       }

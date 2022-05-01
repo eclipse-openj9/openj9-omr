@@ -994,81 +994,84 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::D
     */
    // implemented vector opcodes
 
-   if (opcode.isVectorOpCode())
+   if (!opcode.isVectorOpCode())
       {
-      TR::DataType ot = opcode.getVectorResultDataType();
-
-      if (ot.getVectorLength() != TR::VectorLength128) return false;
-
-      switch (opcode.getVectorOperation())
+      // Will be transformed into new vector opcodes soon
+      switch (opcode.getOpCodeValue())
          {
-         case OMR::vadd:
-            return true;
+         case TR::vdsqrt:
+             if (dt == TR::Double)
+                 return true;
+             else
+                 return false;
+         /*
+          * GRA does not work with vector registers on 32 bit due to a bug where xmm registers are not being assigned.
+          * This can potentially cause a performance problem in autosimd reductions.
+          * This function is where AutoSIMD checks to see if getvelem is suppored for use in reductions.
+          * The getvelem case was changed to disable the use of getvelem on 32 bit x86.
+          * This code will be reenabled as part of Issue 2035 which tracks the progress of fixing the GRA bug.
+          * GRA does not work with vector registers on 64 bit either.
+          * getvelem is now being disabled on 64 bit for the same reasons as 32 bit.
+          * This code will be reenabled as part of Issue 2280
+          */
+         case TR::getvelem:
+#if 0
+            if (self()->comp()->target().is64Bit() && (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double))
+               return true;
+            else
+#endif //closes the if 0
+               return false;
+
          default:
             return false;
          }
       }
 
-   switch (opcode.getOpCodeValue())
+   TR::DataType ot = opcode.getVectorResultDataType();
+
+   if (ot.getVectorLength() != TR::VectorLength128) return false;
+
+   TR::DataType et = ot.getVectorElementType();
+
+   switch (opcode.getVectorOperation())
       {
-      case TR::vsub:
-         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+      case OMR::vadd:
+      case OMR::vsub:
+         if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case TR::vmul:
+      case OMR::vmul:
          TR_ASSERT_FATAL(self()->comp()->compileRelocatableCode() || self()->comp()->isOutOfProcessCompilation() || self()->comp()->compilePortableCode() || self()->getX86ProcessorInfo().supportsSSE4_1() == self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1), "supportsSSE4_1() failed\n");
-         if (dt == TR::Float || dt == TR::Double || (dt == TR::Int32 && self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1)))
+         if (et == TR::Float || et == TR::Double || (et == TR::Int32 && self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1)))
             return true;
          else
             return false;
-      case TR::vdiv:
-         if (dt == TR::Float || dt == TR::Double)
+      case OMR::vdiv:
+         if (et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case TR::vneg:
-         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+      case OMR::vneg:
+         if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case TR::vxor:
-      case TR::vor:
-      case TR::vand:
-         if (dt == TR::Int32 || dt == TR::Int64)
+      case OMR::vxor:
+      case OMR::vor:
+      case OMR::vand:
+         if (et == TR::Int32 || et == TR::Int64)
             return true;
          else
             return false;
-      case TR::vdsqrt:
-          if (dt == TR::Double)
-              return true;
-          else
-              return false;
-      case TR::vload:
-      case TR::vloadi:
-      case TR::vstore:
-      case TR::vstorei:
-      case TR::vsplats:
-         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+      case OMR::vload:
+      case OMR::vloadi:
+      case OMR::vstore:
+      case OMR::vstorei:
+      case OMR::vsplats:
+         if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
             return true;
          else
-            return false;
-      /*
-       * GRA does not work with vector registers on 32 bit due to a bug where xmm registers are not being assigned.
-       * This can potentially cause a performance problem in autosimd reductions.
-       * This function is where AutoSIMD checks to see if getvelem is suppored for use in reductions.
-       * The getvelem case was changed to disable the use of getvelem on 32 bit x86.
-       * This code will be reenabled as part of Issue 2035 which tracks the progress of fixing the GRA bug.
-       * GRA does not work with vector registers on 64 bit either.
-       * getvelem is now being disabled on 64 bit for the same reasons as 32 bit.
-       * This code will be reenabled as part of Issue 2280
-       */
-      case TR::getvelem:
-#if 0
-         if (self()->comp()->target().is64Bit() && (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double))
-            return true;
-         else
-#endif //closes the if 0
             return false;
       default:
          return false;

@@ -5261,9 +5261,6 @@ OMR::Node::computeDataType()
             _unionPropertyA._dataType = self()->getFirstChild()->getDataType().getVectorIntegralType().getDataType();
          else if (_opCode.isVectorReduction())
             _unionPropertyA._dataType = self()->getFirstChild()->getDataType().getVectorElementType().getDataType();
-         else if (_opCode.getOpCodeValue() == TR::vsplats)
-            // TODO: convert vsplats into 'true' vector opcode that has proper element type and length
-            _unionPropertyA._dataType = self()->getFirstChild()->getDataType().scalarToVector(TR::VectorLength128).getDataType();
          else
             _unionPropertyA._dataType = self()->getFirstChild()->getDataType().getDataType();
 

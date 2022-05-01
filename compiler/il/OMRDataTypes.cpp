@@ -117,10 +117,7 @@ OMR::DataType::scalarToVector(TR::VectorLength length)
    {
    TR::DataTypes type = self()->getDataType();
 
-   if (type > TR::NoType && type <= TR::NumVectorElementTypes)
-      return createVectorType(type, length);
-   else
-      return TR::NoType;
+   return createVectorType(type, length);
    }
 
 TR::DataType

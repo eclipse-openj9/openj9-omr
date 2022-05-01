@@ -89,7 +89,7 @@ class OpCodeTable : public TR::ILOpCode {
 
             if (vectorType == TR::NoType) return TR::BadILOp;
 
-            TR::ILOpCodes opcode = TR::ILOpCode::createVectorOpCode(vop, vectorType).getOpCodeValue();
+            TR::ILOpCodes opcode = TR::ILOpCode::createVectorOpCode(vop, vectorType);
             _opcodeNameMap[name] = opcode;
             return opcode;
          }

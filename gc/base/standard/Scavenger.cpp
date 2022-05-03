@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -498,7 +498,7 @@ MM_Scavenger::calculateRecommendedWorkingThreads(MM_EnvironmentStandard *env)
 
 	if (_isRememberedSetInOverflowAtTheBeginning || _extensions->scavengerStats._causedRememberedSetOverflow) {
 		/* Scavenge cycle ignored for recommending threads. Scavenger had overflows, this will skew the model,
-		 * as this is the not the normal case for stalling ("Irregular" stalling with SyncAndReleaseMaster,
+		 * as this is the not the normal case for stalling ("Irregular" stalling with SyncAndReleaseMain,
 		 * this is not the norm hence we don't have to adjust for it) */
 		Trc_MM_Scavenger_calculateRecommendedWorkingThreads_exitOverflow(env->getLanguageVMThread());
 		return;

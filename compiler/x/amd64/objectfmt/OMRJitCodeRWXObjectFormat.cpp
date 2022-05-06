@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021, 2021 IBM Corp. and others
+ * Copyright (c) 2021, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -211,18 +211,18 @@ uint8_t *
 OMR::X86::AMD64::JitCodeRWXObjectFormat::encodeFunctionCall(TR::FunctionCallData &data)
    {
    const uint8_t op = data.useCall ? 0xe8 : 0xe9;   // CALL rel32 | JMP rel32
-   *data.bufferAddress++ = op;
+   *data.bufferAddress = op;
 
    int32_t disp32 = 0;
 
    if (data.methodSymRef && data.methodSymRef->getSymbol()->castToMethodSymbol()->isHelper())
       {
-      disp32 = data.cg->branchDisplacementToHelperOrTrampoline(data.bufferAddress+4, data.methodSymRef);
+      disp32 = data.cg->branchDisplacementToHelperOrTrampoline(data.bufferAddress, data.methodSymRef);
       }
    else
       {
       intptr_t targetAddress = reinterpret_cast<intptr_t>(data.methodSymRef->getMethodAddress());
-      intptr_t nextInstructionAddress = reinterpret_cast<intptr_t>(data.bufferAddress + 4);
+      intptr_t nextInstructionAddress = reinterpret_cast<intptr_t>(data.bufferAddress + 5);
 
       TR_ASSERT_FATAL(data.cg->comp()->target().cpu.isTargetWithinRIPRange(targetAddress, nextInstructionAddress),
                       "Target function address %" OMR_PRIxPTR " not reachable from %" OMR_PRIxPTR, targetAddress, data.bufferAddress);
@@ -230,7 +230,7 @@ OMR::X86::AMD64::JitCodeRWXObjectFormat::encodeFunctionCall(TR::FunctionCallData
       disp32 = static_cast<int32_t>(targetAddress - nextInstructionAddress);
       }
 
-   *(reinterpret_cast<int32_t *>(data.bufferAddress)) = disp32;
+   *(reinterpret_cast<int32_t *>(++data.bufferAddress)) = disp32;
 
    data.out_encodedMethodAddressLocation = data.bufferAddress;
 

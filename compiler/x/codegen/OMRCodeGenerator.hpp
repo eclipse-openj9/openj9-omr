@@ -868,17 +868,6 @@ protected:
 
 }
 
-
-// Trampolines
-//
-
-#if defined(TR_TARGET_64BIT)
-#define NEEDS_TRAMPOLINE(target, rip, cg) (cg->directCallRequiresTrampoline((intptr_t)target, (intptr_t)rip))
-#else
-// Give the C++ compiler a hand
-#define NEEDS_TRAMPOLINE(target, rip, cg) (0)
-#endif
-
 #define IS_32BIT_RIP(x,rip)  ((intptr_t)(x) == (intptr_t)(rip) + (int32_t)((intptr_t)(x) - (intptr_t)(rip)))
 
 class TR_X86ScratchRegisterManager: public TR_ScratchRegisterManager

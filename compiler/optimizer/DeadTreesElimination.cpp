@@ -78,69 +78,6 @@ static OMR::TreeInfo *findOrCreateTreeInfo(TR::TreeTop *treeTop, List<OMR::TreeI
    return t;
    }
 
-static bool fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::NodeChecklist &visited, bool &highGlobalIndex, TR::Optimization *opt, vcount_t evaluatedVisitCount)
-   {
-   if (node->getVisitCount() == evaluatedVisitCount)
-      return false;
-
-   if (visited.contains(node))
-      return false;
-
-   visited.add(node);
-
-   bool containsFloatingPoint = false;
-   bool anchorLoadaddr = true;
-   bool anchorArrayCmp = true;
-
-   // for arraycmp node, don't create its tree top anchor
-   // fold it into if statment and save jump instruction
-   if (node->getOpCodeValue() == TR::arraycmp &&
-      !node->isArrayCmpLen() &&
-      opt->comp()->target().cpu.isX86())
-      {
-      anchorArrayCmp = false;
-      }
-
-   if ((node->getReferenceCount() > 1) &&
-       !node->getOpCode().isLoadConst() &&
-       anchorLoadaddr &&
-       anchorArrayCmp)
-      {
-      if (!opt->comp()->getOption(TR_ProcessHugeMethods))
-         {
-         int32_t nodeCount = opt->comp()->getNodeCount();
-         int32_t nodeCountLimit = 3 * USHRT_MAX / 4;
-         if (nodeCount > nodeCountLimit)
-            {
-            dumpOptDetails(opt->comp(),
-               "%snode count %d exceeds limit %d\n",
-               opt->optDetailString(), nodeCount, nodeCountLimit);
-            highGlobalIndex = true;
-            return containsFloatingPoint;
-            }
-         }
-
-      if (node->getOpCode().isFloatingPoint())
-        containsFloatingPoint = true;
-      TR::TreeTop *nextTree = treeTop->getNextTreeTop();
-      node->incFutureUseCount();
-      TR::TreeTop *anchorTreeTop = TR::TreeTop::create(opt->comp(), TR::Node::create(TR::treetop, 1, node));
-      anchorTreeTop->getNode()->setFutureUseCount(0);
-      treeTop->join(anchorTreeTop);
-      anchorTreeTop->join(nextTree);
-      }
-   else
-      {
-      for (int32_t i = 0; i < node->getNumChildren(); ++i)
-         {
-         TR::Node *child = node->getChild(i);
-         if (fixUpTree(child, treeTop, visited, highGlobalIndex, opt, evaluatedVisitCount))
-            containsFloatingPoint = true;
-         }
-      }
-   return containsFloatingPoint;
-   }
-
 static inline bool isReadBarrierUnderTreetop(TR::Node *node)
    {
    return node->getOpCodeValue() == TR::treetop && node->getFirstChild()->getOpCode().isReadBar();
@@ -718,6 +655,69 @@ void TR::DeadTreesElimination::prePerformOnBlocks()
       }
    }
 
+bool TR::DeadTreesElimination::fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::NodeChecklist &visited, bool &highGlobalIndex, vcount_t evaluatedVisitCount)
+   {
+   if (node->getVisitCount() == evaluatedVisitCount)
+      return false;
+
+   if (visited.contains(node))
+      return false;
+
+   visited.add(node);
+
+   bool containsFloatingPoint = false;
+   bool anchorLoadaddr = true;
+   bool anchorArrayCmp = true;
+
+   // for arraycmp node, don't create its tree top anchor
+   // fold it into if statment and save jump instruction
+   if (node->getOpCodeValue() == TR::arraycmp &&
+      !node->isArrayCmpLen() &&
+      comp()->target().cpu.isX86())
+      {
+      anchorArrayCmp = false;
+      }
+
+   if ((node->getReferenceCount() > 1) &&
+       !node->getOpCode().isLoadConst() &&
+       anchorLoadaddr &&
+       anchorArrayCmp)
+      {
+      if (!comp()->getOption(TR_ProcessHugeMethods))
+         {
+         int32_t nodeCount = comp()->getNodeCount();
+         int32_t nodeCountLimit = 3 * USHRT_MAX / 4;
+         if (nodeCount > nodeCountLimit)
+            {
+            dumpOptDetails(comp(),
+               "%snode count %d exceeds limit %d\n",
+               optDetailString(), nodeCount, nodeCountLimit);
+            highGlobalIndex = true;
+            return containsFloatingPoint;
+            }
+         }
+
+      if (node->getOpCode().isFloatingPoint())
+        containsFloatingPoint = true;
+      TR::TreeTop *nextTree = treeTop->getNextTreeTop();
+      node->incFutureUseCount();
+      TR::TreeTop *anchorTreeTop = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, node));
+      anchorTreeTop->getNode()->setFutureUseCount(0);
+      treeTop->join(anchorTreeTop);
+      anchorTreeTop->join(nextTree);
+      }
+   else
+      {
+      for (int32_t i = 0; i < node->getNumChildren(); ++i)
+         {
+         TR::Node *child = node->getChild(i);
+         if (fixUpTree(child, treeTop, visited, highGlobalIndex, evaluatedVisitCount))
+            containsFloatingPoint = true;
+         }
+      }
+   return containsFloatingPoint;
+   }
+
 namespace
    {
    struct CRAnchor
@@ -951,7 +951,7 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
                // Anchor nodes with reference count > 1
                //
                bool highGlobalIndex = false;
-               if (fixUpTree(child->getChild(i), iter.currentTree(), visited, highGlobalIndex, self(), visitCount))
+               if (fixUpTree(child->getChild(i), iter.currentTree(), visited, highGlobalIndex, visitCount))
                   containsFloatingPoint = true;
                if (highGlobalIndex)
                   {

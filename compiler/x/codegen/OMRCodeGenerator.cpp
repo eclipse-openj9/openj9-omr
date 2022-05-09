@@ -1209,7 +1209,7 @@ void OMR::X86::CodeGenerator::saveBetterSpillPlacements(TR::Instruction * branch
 
 void OMR::X86::CodeGenerator::removeBetterSpillPlacementCandidate(TR::RealRegister * realReg)
    {
-   // this mechanism only supports GPR's
+   // This mechanism only supports GPR's due to interference between GPR and vector register masks
    if (realReg->getKind() != TR_GPR)
       return;
 
@@ -1255,7 +1255,7 @@ OMR::X86::CodeGenerator::findBetterSpillPlacement(
    TR::Instruction          * placement;
    TR_BetterSpillPlacement * info;
 
-   // this mechanism only supports GPR's
+   // This mechanism only supports GPR's due to interference between GPR and vector register masks
    if (virtReg->getKind() != TR_GPR)
       return NULL;
 

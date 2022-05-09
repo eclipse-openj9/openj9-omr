@@ -556,7 +556,7 @@ OMR::IL::opCodeForConst(TR::DataType dt)
    static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForConst) / sizeof(OMR::IL::opCodesForConst[0])),
               "OMR::IL::opCodesForConst is not the correct size");
 
-   if (dt.isVector()) return TR::vconst;
+   TR_ASSERT_FATAL(!dt.isVector(), "Vector constants are not supported\n");
 
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -700,18 +700,7 @@ OMR::IL::opCodeForRegisterLoad(TR::DataType dt)
    static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForRegisterLoad) / sizeof(OMR::IL::opCodesForRegisterLoad[0])),
               "OMR::IL::opCodesForRegisterLoad is not the correct size");
 
-   if (dt.isVector())
-      {
-      switch (dt.getVectorElementType())
-         {
-         case TR::Int8:   return TR::vbRegLoad;
-         case TR::Int16:  return TR::vsRegLoad;
-         case TR::Int32:  return TR::viRegLoad;
-         case TR::Int64:  return TR::vlRegLoad;
-         case TR::Float:  return TR::vfRegLoad;
-         case TR::Double: return TR::vdRegLoad;
-         }
-      }
+   if (dt.isVector()) return TR::ILOpCode::createVectorOpCode(OMR::vRegLoad, dt);
 
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -724,18 +713,7 @@ OMR::IL::opCodeForRegisterStore(TR::DataType dt)
    static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForRegisterStore) / sizeof(OMR::IL::opCodesForRegisterStore[0])),
               "OMR::IL::opCodesForRegisterStore is not the correct size");
 
-   if (dt.isVector())
-      {
-      switch (dt.getVectorElementType())
-         {
-         case TR::Int8:   return TR::vbRegStore;
-         case TR::Int16:  return TR::vsRegStore;
-         case TR::Int32:  return TR::viRegStore;
-         case TR::Int64:  return TR::vlRegStore;
-         case TR::Float:  return TR::vfRegStore;
-         case TR::Double: return TR::vdRegStore;
-         }
-      }
+   if (dt.isVector()) return TR::ILOpCode::createVectorOpCode(OMR::vRegStore, dt);
 
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -748,7 +726,7 @@ OMR::IL::opCodeForCompareEquals(TR::DataType dt)
    static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForCompareEquals) / sizeof(OMR::IL::opCodesForCompareEquals[0])),
               "OMR::IL::opCodesForCompareEquals is not the correct size");
 
-   if (dt.isVector()) return TR::vcmpeq;
+   if (dt.isVector()) return TR::ILOpCode::createVectorOpCode(OMR::vcmpeq, dt);
 
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -774,7 +752,7 @@ OMR::IL::opCodeForCompareNotEquals(TR::DataType dt)
    static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForCompareNotEquals) / sizeof(OMR::IL::opCodesForCompareNotEquals[0])),
               "OMR::IL::opCodesForCompareNotEquals is not the correct size");
 
-   if (dt.isVector()) return TR::vcmpne;
+   if (dt.isVector()) return TR::ILOpCode::createVectorOpCode(OMR::vcmpne, dt);
 
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -800,7 +778,7 @@ OMR::IL::opCodeForCompareLessThan(TR::DataType dt)
    static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForCompareLessThan) / sizeof(OMR::IL::opCodesForCompareLessThan[0])),
               "OMR::IL::opCodesForCompareLessThan is not the correct size");
 
-   if (dt.isVector()) return TR::vcmplt;
+   if (dt.isVector()) return TR::ILOpCode::createVectorOpCode(OMR::vcmplt, dt);
 
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -813,7 +791,7 @@ OMR::IL::opCodeForCompareLessOrEquals(TR::DataType dt)
    static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForCompareLessOrEquals) / sizeof(OMR::IL::opCodesForCompareLessOrEquals[0])),
               "OMR::IL::opCodesForCompareLessOrEquals is not the correct size");
 
-   if (dt.isVector()) return TR::vcmple;
+   if (dt.isVector()) return TR::ILOpCode::createVectorOpCode(OMR::vcmple, dt);
 
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -852,7 +830,7 @@ OMR::IL::opCodeForCompareGreaterThan(TR::DataType dt)
    static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForCompareGreaterThan) / sizeof(OMR::IL::opCodesForCompareGreaterThan[0])),
               "OMR::IL::opCodesForCompareGreaterThan is not the correct size");
 
-   if (dt.isVector()) return TR::vcmpgt;
+   if (dt.isVector()) return TR::ILOpCode::createVectorOpCode(OMR::vcmpgt, dt);
 
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -865,7 +843,7 @@ OMR::IL::opCodeForCompareGreaterOrEquals(TR::DataType dt)
    static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForCompareGreaterOrEquals) / sizeof(OMR::IL::opCodesForCompareGreaterOrEquals[0])),
               "OMR::IL::opCodesForCompareGreaterOrEquals is not the correct size");
 
-   if (dt.isVector()) return TR::vcmpge;
+   if (dt.isVector()) return TR::ILOpCode::createVectorOpCode(OMR::vcmpge, dt);
 
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 

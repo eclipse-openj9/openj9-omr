@@ -353,22 +353,9 @@ namespace TR
 namespace OMR
 {
 
-// temporary macro to be used only by this class
-#define OMR_TEMPORARY_CREATE_VECTOR_TYPE(elementType, length) (static_cast<TR::DataTypes>(TR::NumScalarTypes + (length - 1) * TR::NumVectorElementTypes + elementType - 1))
-
 class OMR_EXTENSIBLE DataType
    {
 public:
-
-   // Needed to initialize static opcode properties table,
-   // will be removed when all vector opcodes are switched to new ones
-   // as well as TRIL and JitBuilder
-   static const TR::DataTypes Vector128Int8   = OMR_TEMPORARY_CREATE_VECTOR_TYPE(TR::Int8,   TR::VectorLength128);
-   static const TR::DataTypes Vector128Int16  = OMR_TEMPORARY_CREATE_VECTOR_TYPE(TR::Int16,  TR::VectorLength128);
-   static const TR::DataTypes Vector128Int32  = OMR_TEMPORARY_CREATE_VECTOR_TYPE(TR::Int32,  TR::VectorLength128);
-   static const TR::DataTypes Vector128Int64  = OMR_TEMPORARY_CREATE_VECTOR_TYPE(TR::Int64,  TR::VectorLength128);
-   static const TR::DataTypes Vector128Float  = OMR_TEMPORARY_CREATE_VECTOR_TYPE(TR::Float,  TR::VectorLength128);
-   static const TR::DataTypes Vector128Double = OMR_TEMPORARY_CREATE_VECTOR_TYPE(TR::Double, TR::VectorLength128);
 
    DataType() : _type(TR::NoType) { }
    DataType(TR::DataTypes t) : _type(t) { }

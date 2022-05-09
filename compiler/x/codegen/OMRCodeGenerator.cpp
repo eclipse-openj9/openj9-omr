@@ -986,58 +986,27 @@ bool OMR::X86::CodeGenerator::supportsAddressRematerialization()         { stati
 #undef CAN_REMATERIALIZE
 
 bool
-OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt)
+OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
    {
+   TR_ASSERT_FATAL(opcode.isVectorOpCode(), "getSupportsOpCodeForAutoSIMD expects vector opcode\n");
+
    /*
     * Most of the vector evaluators for opcodes used in AutoSIMD have been implemented.
     * The cases that return false are placeholders that should be updated as support for more vector evaluators is added.
     */
-   // implemented vector opcodes
-
-   if (!opcode.isVectorOpCode())
-      {
-      // Will be transformed into new vector opcodes soon
-      switch (opcode.getOpCodeValue())
-         {
-         case TR::vdsqrt:
-             if (dt == TR::Double)
-                 return true;
-             else
-                 return false;
-         /*
-          * GRA does not work with vector registers on 32 bit due to a bug where xmm registers are not being assigned.
-          * This can potentially cause a performance problem in autosimd reductions.
-          * This function is where AutoSIMD checks to see if getvelem is suppored for use in reductions.
-          * The getvelem case was changed to disable the use of getvelem on 32 bit x86.
-          * This code will be reenabled as part of Issue 2035 which tracks the progress of fixing the GRA bug.
-          * GRA does not work with vector registers on 64 bit either.
-          * getvelem is now being disabled on 64 bit for the same reasons as 32 bit.
-          * This code will be reenabled as part of Issue 2280
-          */
-         case TR::getvelem:
-#if 0
-            if (self()->comp()->target().is64Bit() && (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double))
-               return true;
-            else
-#endif //closes the if 0
-               return false;
-
-         default:
-            return false;
-         }
-      }
 
    TR::DataType ot = opcode.getVectorResultDataType();
    TR::DataType et = ot.getVectorElementType();
 
+   TR_ASSERT_FATAL(et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double,
+                   "Unexpected vector element type\n");
+
+   // implemented vector opcodes
    switch (opcode.getVectorOperation())
       {
       case OMR::vadd:
       case OMR::vsub:
-         if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
-            return ot.getVectorLength() == TR::VectorLength128;
-         else
-            return false;
+         return ot.getVectorLength() == TR::VectorLength128;
       case OMR::vmul:
          TR_ASSERT_FATAL(self()->comp()->compileRelocatableCode() || self()->comp()->isOutOfProcessCompilation() || self()->comp()->compilePortableCode() || self()->getX86ProcessorInfo().supportsSSE4_1() == self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1), "supportsSSE4_1() failed\n");
          if (et == TR::Float || et == TR::Double || (et == TR::Int32 && self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1)))
@@ -1082,6 +1051,31 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::D
             return ot.getVectorLength() == TR::VectorLength128;
          else
             return false;
+      case OMR::vsqrt:
+          if (et == TR::Double)
+              return true;
+          else
+              return false;
+       /*
+       * GRA does not work with vector registers on 32 bit due to a bug where xmm registers are not being assigned.
+       * This can potentially cause a performance problem in autosimd reductions.
+       * This function is where AutoSIMD checks to see if vgetelem is suppored for use in reductions.
+       * The vgetelem case was changed to disable the use of vgetelem on 32 bit x86.
+       * This code will be reenabled as part of Issue 2035 which tracks the progress of fixing the GRA bug.
+       * GRA does not work with vector registers on 64 bit either.
+       * vgetelem is now being disabled on 64 bit for the same reasons as 32 bit.
+       * This code will be reenabled as part of Issue 2280
+       *
+       * TODO: disable GRA directly and enable vgetelem here so that it can be used by VectorAPIExpansion
+       */
+       case OMR::vgetelem:
+#if 0
+         if (self()->comp()->target().is64Bit() && (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double))
+            return true;
+         else
+#endif //closes the if 0
+            return false;
+
       default:
          return false;
       }

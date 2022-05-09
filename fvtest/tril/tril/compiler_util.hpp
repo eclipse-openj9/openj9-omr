@@ -41,12 +41,12 @@ static TR::DataTypes getTRDataTypes(const std::string& name) {
    else if (name == "Address") return TR::Address;
    else if (name == "Float") return TR::Float;
    else if (name == "Double") return TR::Double;
-   else if (name == "VectorInt8") return OMR::DataType::Vector128Int8;
-   else if (name == "VectorInt16") return OMR::DataType::Vector128Int16;
-   else if (name == "VectorInt32") return OMR::DataType::Vector128Int32;
-   else if (name == "VectorInt64") return OMR::DataType::Vector128Int64;
-   else if (name == "VectorFloat") return OMR::DataType::Vector128Float;
-   else if (name == "VectorDouble") return OMR::DataType::Vector128Double;
+   else if (name == "VectorInt8") return OMR::DataType::createVectorType(TR::Int8, TR::VectorLength128);
+   else if (name == "VectorInt16") return OMR::DataType::createVectorType(TR::Int16, TR::VectorLength128);
+   else if (name == "VectorInt32") return OMR::DataType::createVectorType(TR::Int32, TR::VectorLength128);
+   else if (name == "VectorInt64") return OMR::DataType::createVectorType(TR::Int64, TR::VectorLength128);
+   else if (name == "VectorFloat") return OMR::DataType::createVectorType(TR::Float, TR::VectorLength128);
+   else if (name == "VectorDouble") return OMR::DataType::createVectorType(TR::Double, TR::VectorLength128);
    else if (name == "NoType") return TR::NoType;
    else {
       throw std::runtime_error(static_cast<const std::string&>(std::string("Unknown type name: ").append(name)));

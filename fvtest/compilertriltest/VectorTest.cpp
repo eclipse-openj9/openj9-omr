@@ -1127,7 +1127,7 @@ TEST_F(VectorTest, VDoubleSQRT) {
                       "  (block                                                        "
                       "     (vstoreiVector128Double offset=0                           "
                       "         (aload parm=0)                                         "
-                      "            (vdsqrt                                             "
+                      "            (vsqrtVector128Double                               "
                       "                 (vloadiVector128Double (aload parm=1))))       "
                       "     (return)))                                                 ";
 

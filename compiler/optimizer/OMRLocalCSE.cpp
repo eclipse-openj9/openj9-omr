@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -762,12 +762,12 @@ void OMR::LocalCSE::doCommoningAgainIfPreviouslyCommoned(TR::Node *node, TR::Nod
    }
 /**
  * We can allow auto or parms which are not global during the volatile only phase
- * as we do not expect those field to be changing. This enables up to common volatiles that are based on an 
- * indirection chain of such non volatile autos or parms that are not global by definition. 
+ * as we do not expect those field to be changing. This enables up to common volatiles that are based on an
+ * indirection chain of such non volatile autos or parms that are not global by definition.
  * Following query returns true if the node can be commoned in volatile only pass
  */
 bool OMR::LocalCSE::canCommonNodeInVolatilePass(TR::Node *node)
-   {   
+   {
    return node->getOpCode().hasSymbolReference() && (node->getSymbol()->isVolatile() || node->getSymbol()->isAutoOrParm());
    }
 
@@ -1073,8 +1073,9 @@ TR::Node *OMR::LocalCSE::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
                rhsOfStoreDefNode,rhsOfStoreDefNode->getOpCode().getName(),node,node->getOpCode().getName());
 
             TR::Node *convNode = NULL;
-            if (convOp == TR::v2v)
-               convNode = TR::Node::createVectorConversion(rhsOfStoreDefNode, node->getDataType());
+            if (TR::ILOpCode::isVectorOpCode(convOp) &&
+                TR::ILOpCode::getVectorOperation(convOp) == OMR::vcast)
+               convNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(OMR::vcast, rhsOfStoreDefNode->getDataType(), node->getDataType()), 1, rhsOfStoreDefNode);
             else
                convNode = TR::Node::create(convOp, 1, rhsOfStoreDefNode);
             rhsOfStoreDefNode->decReferenceCount();

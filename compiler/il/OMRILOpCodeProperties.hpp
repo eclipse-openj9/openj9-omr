@@ -74,7 +74,7 @@
 
 
 #define VECTOR_OPERATION_MACRO(\
-   operation, \
+   vectorOperation, \
    name, \
    prop1, \
    prop2, \
@@ -83,13 +83,13 @@
    dataType, \
    typeProps, \
    childProps, \
-   swapChildrenOpcode, \
-   reverseBranchOpcode, \
+   swapVectorOperation, \
+   reverseVectorOperation, \
    boolCompareOpcode, \
    ifCompareOpcode, ...) \
    \
    { \
-   TR::BadILOp, \
+   (TR::ILOpCodes)vectorOperation, \
    name, \
    prop1, \
    prop2, \
@@ -98,11 +98,29 @@
    dataType, \
    typeProps, \
    childProps, \
-   swapChildrenOpcode, \
-   reverseBranchOpcode, \
+   (TR::ILOpCodes)swapVectorOperation,    \
+   (TR::ILOpCodes)reverseVectorOperation, \
    boolCompareOpcode, \
    ifCompareOpcode, \
    },
+
+
+   {
+     /* .operation               = */ (TR::ILOpCodes)OMR::vBadOperation,
+     /* .name                    = */ "vBadOperation",
+     /* .properties1             = */ 0,
+     /* .properties2             = */ 0,
+     /* .properties3             = */ 0,
+     /* .properties4             = */ 0,
+     /* .dataType                = */ TR::NoType,
+     /* .typeProperties          = */ 0,
+     /* .childProperties         = */ ILChildProp::NoChildren,
+     /* .swapChildrenOperation   = */ (TR::ILOpCodes)OMR::vBadOperation,
+     /* .reverseBranchOperation  = */ (TR::ILOpCodes)OMR::vBadOperation,
+     /* .booleanCompareOpCode    = */ TR::BadILOp,
+     /* .ifCompareOpCode         = */ TR::BadILOp,
+   },
+
 
 #include "il/VectorOperations.enum"
 #undef VECTOR_OPERATION_MACRO

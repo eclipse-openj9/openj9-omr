@@ -45,9 +45,9 @@ TR::Register *OMR::X86::TreeEvaluator::unaryVectorArithmeticEvaluator(TR::Node *
    TR::InstOpCode::Mnemonic regRegOpcode;
    TR::InstOpCode::Mnemonic regMemOpcode;
 
-   switch (node->getOpCodeValue())
+   switch (node->getOpCode().getVectorOperation())
       {
-      case TR::vdsqrt:
+      case OMR::vsqrt:
          regRegOpcode = supportsAvx ? OMR::InstOpCode::VSQRTPDRegReg : OMR::InstOpCode::SQRTPDRegReg;
          regMemOpcode = supportsAvx ? OMR::InstOpCode::VSQRTPDRegMem : OMR::InstOpCode::bad;
          // SSE RegMem instruction requires 16-byte alignment

@@ -615,12 +615,9 @@ int64_t OMR::ARM64::CodeGenerator::getSmallestPosConstThatMustBeMaterialized()
    }
 
 
-bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt)
+bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
    {
-   // implemented vector opcodes
-
-   if (!opcode.isVectorOpCode())
-      return false;
+   TR_ASSERT_FATAL(opcode.isVectorOpCode(), "getSupportsOpCodeForAutoSIMD expects vector opcode\n");
 
    TR::DataType ot = opcode.getVectorResultDataType();
 
@@ -631,6 +628,7 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
    TR_ASSERT_FATAL(et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double,
                    "Unexpected vector element type\n");
 
+   // implemented vector opcodes
    switch (opcode.getVectorOperation())
       {
       case OMR::vadd:
@@ -656,7 +654,7 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
          return true;
       case OMR::vfma:
       case OMR::vsqrt:
-         return (et == TR::Float || dt == TR::Double);
+         return (et == TR::Float || et == TR::Double);
       default:
          return false;
       }

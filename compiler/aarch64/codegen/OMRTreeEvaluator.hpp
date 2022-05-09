@@ -204,28 +204,61 @@ public:
    static TR::Register *MethodEnterHookEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *MethodExitHookEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *PassThroughEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vimergelEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vimergehEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdmergelEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdmergehEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
+   static TR::Register *vabsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vandEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vcallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vcalliEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vindexVectorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vnotEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vorUncheckedEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vcalliEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *v2vEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vconstEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vbitselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vfRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vfRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vfirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vgetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vcastEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vconvEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
+   static TR::Register *vmulInt64Helper(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vdivIntHelper(TR::Node *node, TR::CodeGenerator *cg);
+   /**
+    * @brief Helper for generating SIMD move immediate instruction for vsplats node.
+    *
+    * @param[in] node: node
+    * @param[in] cg: CodeGenerator
+    * @param[in] firstChild: first child node
+    * @param[in] elementType: element type of the vector
+    * @param[in] treg: target register
+    *
+    * @return instruction cursor if move instuction is successfully generated and otherwise returns NULL
+    */
+   static TR::Instruction *vsplatsImmediateHelper(TR::Node *node, TR::CodeGenerator *cg, TR::Node *firstChild, TR::DataType elementType, TR::Register *treg);
+
    static TR::Register *f2iuEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *f2luEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *f2buEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -578,59 +611,6 @@ public:
    static TR::Register *passThroughEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *BBStartEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *BBEndEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *viminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vimaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vigetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *visetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vicmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vnotEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vbitselectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vpermEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdgetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdselEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vabsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vmulInt64Helper(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdivIntHelper(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vandEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vcallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vl2vdEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *getvelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vbRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vsRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *viRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vlRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vbRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vsRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *viRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vlRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *d2iuEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *variableNewEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *multianewarrayEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -693,19 +673,6 @@ public:
       {
       // do nothing
       }
-
-   /**
-    * @brief Helper for generating SIMD move immediate instruction for vsplats node.
-    *
-    * @param[in] node: node
-    * @param[in] cg: CodeGenerator
-    * @param[in] firstChild: first child node
-    * @param[in] elementType: element type of the vector
-    * @param[in] treg: target register
-    *
-    * @return instruction cursor if move instuction is successfully generated and otherwise returns NULL
-    */
-   static TR::Instruction *vsplatsImmediateHelper(TR::Node *node, TR::CodeGenerator *cg, TR::Node *firstChild, TR::DataType elementType, TR::Register *treg);
    };
 
 } // ARM64

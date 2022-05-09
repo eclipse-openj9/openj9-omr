@@ -403,35 +403,8 @@
 #define compressedRefsSimplifierHandler anchorSimplifier
 #define BBStartSimplifierHandler dftSimplifier
 #define BBEndSimplifierHandler endBlockSimplifier
-#define viminSimplifierHandler dftSimplifier
-#define vimaxSimplifierHandler dftSimplifier
-#define vigetelemSimplifierHandler dftSimplifier
-#define visetelemSimplifierHandler dftSimplifier
-#define vimergelSimplifierHandler dftSimplifier
-#define vimergehSimplifierHandler dftSimplifier
-#define vicmpeqSimplifierHandler dftSimplifier
-#define vicmpgtSimplifierHandler dftSimplifier
-#define vicmpgeSimplifierHandler dftSimplifier
-#define vicmpltSimplifierHandler dftSimplifier
-#define vicmpleSimplifierHandler dftSimplifier
 #define vnotSimplifierHandler dftSimplifier
-#define vbitselectSimplifierHandler dftSimplifier
-#define vpermSimplifierHandler dftSimplifier
 #define vsplatsSimplifierHandler dftSimplifier
-#define vdmergelSimplifierHandler dftSimplifier
-#define vdmergehSimplifierHandler dftSimplifier
-#define vdsetelemSimplifierHandler dftSimplifier
-#define vdgetelemSimplifierHandler dftSimplifier
-#define vdselSimplifierHandler dftSimplifier
-#define vdmaxSimplifierHandler dftSimplifier
-#define vdminSimplifierHandler dftSimplifier
-#define vdcmpeqSimplifierHandler normalizeCmpSimplifier
-#define vdcmpneSimplifierHandler normalizeCmpSimplifier
-#define vdcmpgtSimplifierHandler normalizeCmpSimplifier
-#define vdcmpgeSimplifierHandler normalizeCmpSimplifier
-#define vdcmpltSimplifierHandler normalizeCmpSimplifier
-#define vdcmpleSimplifierHandler normalizeCmpSimplifier
-#define vdsqrtSimplifierHandler dftSimplifier
 #define vfmaSimplifierHandler dftSimplifier
 #define vnegSimplifierHandler dftSimplifier
 #define vabsSimplifierHandler dftSimplifier
@@ -445,7 +418,7 @@
 #define vandSimplifierHandler dftSimplifier
 #define vorSimplifierHandler dftSimplifier
 #define vxorSimplifierHandler dftSimplifier
-#define vcmpeqSimplifierHandler dftSimplifier
+#define vcmpeqSimplifierHandler dftSimplifier   // use normalizeCmpSimplifier ?
 #define vcmpneSimplifierHandler dftSimplifier
 #define vcmpltSimplifierHandler dftSimplifier
 #define vcmpgtSimplifierHandler dftSimplifier
@@ -458,24 +431,16 @@
 #define vreturnSimplifierHandler dftSimplifier
 #define vcallSimplifierHandler dftSimplifier
 #define vcalliSimplifierHandler dftSimplifier
-#define vselectSimplifierHandler dftSimplifier
-#define v2vSimplifierHandler v2vSimplifier
-#define vl2vdSimplifierHandler dftSimplifier
-#define vconstSimplifierHandler dftSimplifier
-#define getvelemSimplifierHandler dftSimplifier
+#define vbitselectSimplifierHandler dftSimplifier
+#define vcastSimplifierHandler vcastSimplifier
+#define vconvSimplifierHandler dftSimplifier
 #define vsetelemSimplifierHandler vsetelemSimplifier
-#define vbRegLoadSimplifierHandler dftSimplifier
-#define vsRegLoadSimplifierHandler dftSimplifier
-#define viRegLoadSimplifierHandler dftSimplifier
-#define vlRegLoadSimplifierHandler dftSimplifier
-#define vfRegLoadSimplifierHandler dftSimplifier
-#define vdRegLoadSimplifierHandler dftSimplifier
-#define vbRegStoreSimplifierHandler dftSimplifier
-#define vsRegStoreSimplifierHandler dftSimplifier
-#define viRegStoreSimplifierHandler dftSimplifier
-#define vlRegStoreSimplifierHandler dftSimplifier
-#define vfRegStoreSimplifierHandler dftSimplifier
-#define vdRegStoreSimplifierHandler dftSimplifier
+#define vindexVectorSimplifierHandler dftSimplifier
+#define vorUncheckedSimplifierHandler dftSimplifier
+#define vRegLoadSimplifierHandler dftSimplifier
+#define vRegStoreSimplifierHandler dftSimplifier
+#define vfirstNonZeroSimplifierHandler dftSimplifier
+#define vgetelemSimplifierHandler dftSimplifier
 #define f2iuSimplifierHandler f2iSimplifier
 #define f2luSimplifierHandler f2lSimplifier
 #define f2buSimplifierHandler f2bSimplifier
@@ -652,6 +617,8 @@
    boolCompareOpcode, \
    ifCompareOpcode, \
    ...) operation ## SimplifierHandler,
+
+   BadILOpSimplifierHandler,
 
 #include "il/VectorOperations.enum"
 

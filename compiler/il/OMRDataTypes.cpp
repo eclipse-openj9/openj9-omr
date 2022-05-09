@@ -30,6 +30,7 @@
 #include "env/jittypes.h"
 #include "env/TRMemory.hpp"
 #include "il/DataTypes.hpp"
+#include "il/ILOps.hpp"
 #include "infra/Assert.hpp"
 #include "infra/String.hpp"
 
@@ -152,7 +153,7 @@ TR::ILOpCodes
 OMR::DataType::getDataTypeConversion(TR::DataType t1, TR::DataType t2)
    {
    if (t1.isVector() && t2.isVector())
-      return TR::v2v;
+      return TR::ILOpCode::createVectorOpCode(OMR::vcast, t1, t2);
 
    if (t1.isVector() || t2.isVector())
       return TR::BadILOp;

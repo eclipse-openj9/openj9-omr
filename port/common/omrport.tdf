@@ -1614,5 +1614,10 @@ TraceException=Trc_PRT_readCgroupSubsystemFile_unsupported_cgroup_version Group=
 TraceException=Trc_PRT_readCgroupSubsystemFile_invalid_fileName Group=sysinfo Overhead=1 Level=1 NoEnv Template="readCgroupSubsystemFile: fileName is null"
 
 TraceException=Trc_PRT_readCgroupMemoryFileIntOrMax_read_failed Group=sysinfo Overhead=1 Level=1 NoEnv Template="readCgroupMemoryFileIntOrMax: failed to read memory limit from %s with portable error code=%d"
-TraceException=Trc_PRT_readCgroupMemoryFileIntOrMax_scan_failed Group=sysinfo Overhead=1 Level=1 NoEnv Template="readCgroupMemoryFileIntOrMax: failed to scan memory limit from %s with portable error code=%d"
+TraceException=Trc_PRT_readCgroupMemoryFileIntOrMax_scan_failed Obsolete Group=sysinfo Overhead=1 Level=1 NoEnv Template="readCgroupMemoryFileIntOrMax: failed to scan memory limit from %s with portable error code=%d"
 TraceException=Trc_PRT_readCgroupMemoryFileIntOrMax_unsupported_cgroup_version Group=sysinfo Overhead=1 Level=1 NoEnv Template="readCgroupMemoryFileIntOrMax: cgroup or its version is unsupported"
+
+TraceException=Trc_PRT_scanCgroupIntOrMax_scan_failed Group=sysinfo Overhead=1 Level=1 NoEnv Template="scanCgroupIntOrMax: failed to scan subsystem limit from %s with portable error code=%d"
+TraceException=Trc_PRT_scanCgroupIntOrMax_null_param Group=sysinfo Overhead=1 Level=1 NoEnv Template="scanCgroupIntOrMax: a parameter is null: metricString=%s val=%p"
+
+TraceException=Trc_PRT_sysinfo_get_number_CPUs_by_type_read_failed Group=sysinfo Overhead=1 Level=1 NoEnv Template="sysinfo_get_number_CPUs_by_type: failed to read cpu quota and period from %s with portable error code=%d"

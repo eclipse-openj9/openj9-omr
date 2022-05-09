@@ -746,6 +746,18 @@ static const char *opCodeToNameMap[] =
    "vshl8h",
    "vshl4s",
    "vshl2d",
+   "vsshll_8h",
+   "vsshll_4s",
+   "vsshll_2d",
+   "vsshll2_8h",
+   "vsshll2_4s",
+   "vsshll2_2d",
+   "vushll_8h",
+   "vushll_4s",
+   "vushll_2d",
+   "vushll2_8h",
+   "vushll2_4s",
+   "vushll2_2d",
    "vsshr16b",
    "vsshr8h",
    "vsshr4s",
@@ -754,6 +766,12 @@ static const char *opCodeToNameMap[] =
    "vushr8h",
    "vushr4s",
    "vushr2d",
+   "vshll_8h",
+   "vshll_4s",
+   "vshll_2d",
+   "vshll2_8h",
+   "vshll2_4s",
+   "vshll2_2d",
    "vcmeq16b",
    "vcmeq8h",
    "vcmeq4s",
@@ -1487,6 +1505,15 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1Instruction *instr)
 
    print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getSource1Register(), TR_WordReg);
+
+   TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+   if (op >= TR::InstOpCode::vshll_8h && op <= TR::InstOpCode::vshll2_2d)
+      {
+      uint32_t size = (TR::InstOpCode::getOpCodeBinaryEncoding(op) >> 22) & 0x3;
+      uint32_t shiftAmount = 8 << size;
+      trfprintf(pOutFile, ", %d", shiftAmount);
+      }
+
    trfflush(_comp->getOutFile());
    }
 
@@ -1772,8 +1799,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
    else if ((op >= TR::InstOpCode::vshl16b) && (op <= TR::InstOpCode::vushr2d))
       {
       done = true;
-      bool isShiftLeft = (op <= TR::InstOpCode::vshl2d);
-      uint32_t elementSize = 8 << ((op - TR::InstOpCode::vshl16b) & 3);
+      bool isShiftLeft = (op <= TR::InstOpCode::vushll2_2d);
+      uint32_t immh = (TR::InstOpCode::getOpCodeBinaryEncoding(op) >> 19) & 0xf;
+      uint32_t elementSize = 8 << (31 - leadingZeroes(immh));
       uint32_t imm = instr->getSourceImmediate();
       uint32_t shiftAmount = isShiftLeft ? (imm - elementSize) : (elementSize * 2 - imm);
       trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));

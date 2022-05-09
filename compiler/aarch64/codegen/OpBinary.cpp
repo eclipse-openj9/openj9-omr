@@ -729,6 +729,18 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4F105400,	/* SHL      	vshl8h	 */
 		0x4F205400,	/* SHL      	vshl4s	 */
 		0x4F405400,	/* SHL      	vshl2d	 */
+		0x0F08A400,	/* SSHLL    	vsshll_8h	*/
+		0x0F10A400,	/* SSHLL    	vsshll_4s	*/
+		0x0F20A400,	/* SSHLL    	vsshll_2d	*/
+		0x4F08A400,	/* SSHLL2   	vsshll2_8h	*/
+		0x4F10A400,	/* SSHLL2   	vsshll2_4s	*/
+		0x4F20A400,	/* SSHLL2   	vsshll2_2d	*/
+		0x2F08A400,	/* USHLL    	vushll_8h	*/
+		0x2F10A400,	/* USHLL    	vushll_4s	*/
+		0x2F20A400,	/* USHLL    	vushll_2d	*/
+		0x6F08A400,	/* USHLL2    	vushll2_8h	*/
+		0x6F10A400,	/* USHLL2    	vushll2_4s	*/
+		0x6F20A400,	/* USHLL2    	vushll2_2d	*/
 		0x4F080400,	/* SSHR      	vsshr16b */
 		0x4F100400,	/* SSHR      	vsshr8h	 */
 		0x4F200400,	/* SSHR      	vsshr4s	 */
@@ -737,6 +749,12 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x6F100400,	/* USHR      	vushr8h	 */
 		0x6F200400,	/* USHR      	vushr4s	 */
 		0x6F400400,	/* USHR      	vushr2d	 */
+		0x2E213800,	/* SHLL     	vshll_8h	*/
+		0x2E613800,	/* SHLL     	vshll_4s	*/
+		0x2EA13800,	/* SHLL     	vshll_2d	*/
+		0x6E213800,	/* SHLL2    	vshll2_8h	*/
+		0x6E613800,	/* SHLL2    	vshll2_4s	*/
+		0x6EA13800,	/* SHLL2    	vshll2_2d	*/
 	/* Vector Compare */
 		0x6E208C00,	/* CMEQ      	vcmeq16b */
 		0x6E608C00,	/* CMEQ      	vcmeq8b */

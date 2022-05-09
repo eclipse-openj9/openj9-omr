@@ -642,20 +642,9 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
       {
       case TR::vsub:
       case TR::vneg:
-         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
-            return true;
-         else
-            return false;
       case TR::vmul:
-         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
-            return true;
-         else
-            return false; // Int64 is not supported
       case TR::vdiv:
-         if (dt == TR::Float || dt == TR::Double)
-            return true;
-         else
-            return false; // Int8/ Int16/ Int32/ Int64 are not supported
+         return true;
       case TR::vand:
       case TR::vor:
       case TR::vxor:
@@ -669,10 +658,7 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
       case TR::vstore:
       case TR::vstorei:
       case TR::vsplats:
-         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
-            return true;
-         else
-            return false;
+         return true;
       default:
          return false;
       }

@@ -609,6 +609,7 @@ public:
    static TR::Register *vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vmulInt64Helper(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vdivIntHelper(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vandEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg);

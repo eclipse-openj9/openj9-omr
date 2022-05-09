@@ -380,7 +380,7 @@ MM_ConcurrentGC::signalThreadsToActivateWriteBarrierAsyncEventHandler(OMR_VMThre
 	MM_ConcurrentGC *collector  = (MM_ConcurrentGC *)userData;
 	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(omrVMThread);
 
-	collector->signalThreadsToActivateWriteBarrier(env);
+	collector->_concurrentDelegate.acquireExclusiveVMAccessAndSignalThreadsToActivateWriteBarrier(env);
 }
 
 /**
@@ -1487,7 +1487,7 @@ MM_ConcurrentGC::concurrentMark(MM_EnvironmentBase *env, MM_MemorySubSpace *subs
 			case CONCURRENT_INIT_COMPLETE:
 				if (_extensions->optimizeConcurrentWB) {
 					if (threadAtSafePoint) {
-						signalThreadsToActivateWriteBarrier(env);
+						_concurrentDelegate.acquireExclusiveVMAccessAndSignalThreadsToActivateWriteBarrier(env);
 					} else {
 						/* Register for this thread to get called back at safe point */
 						_callback->requestCallback(env);
@@ -1573,7 +1573,7 @@ MM_ConcurrentGC::concurrentMark(MM_EnvironmentBase *env, MM_MemorySubSpace *subs
 }
 
 void
-MM_ConcurrentGC::signalThreadsToActivateWriteBarrier(MM_EnvironmentBase *env)
+MM_ConcurrentGC::acquireExclusiveVMAccessAndSignalThreadsToActivateWriteBarrier(MM_EnvironmentBase *env)
 {
 	uintptr_t gcCount = _extensions->globalGCStats.gcCount;
 

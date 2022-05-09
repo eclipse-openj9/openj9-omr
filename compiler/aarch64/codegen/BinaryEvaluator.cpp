@@ -704,6 +704,145 @@ OMR::ARM64::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register *
+OMR::ARM64::TreeEvaluator::vdivIntHelper(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   struct DivOps
+      {
+      TR::InstOpCode::Mnemonic vectorToGPROp;
+      TR::InstOpCode::Mnemonic divOp;
+      TR::InstOpCode::Mnemonic gprToVectorOp;
+      uint32_t                 numElements;
+      };
+   static const struct DivOps ops[4] = {
+      {TR::InstOpCode::smovwb, TR::InstOpCode::sdivw, TR::InstOpCode::vinswb, 16},
+      {TR::InstOpCode::smovwh, TR::InstOpCode::sdivw, TR::InstOpCode::vinswh, 8},
+      {TR::InstOpCode::umovws, TR::InstOpCode::sdivw, TR::InstOpCode::vinsws, 4},
+      {TR::InstOpCode::umovxd, TR::InstOpCode::sdivx, TR::InstOpCode::vinsxd, 2}
+   };
+   TR::DataType eType = node->getDataType().getVectorElementType();
+   const uint32_t index = (eType == TR::Int8) ? 0 :
+                         ((eType == TR::Int16) ? 1 :
+                         ((eType == TR::Int32) ? 2 : 3));
+   struct DivOps op = ops[index];
+
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *lhsReg = cg->evaluate(firstChild);
+   TR::Register *rhsReg = cg->evaluate(secondChild);
+
+   TR::Register *resultReg = cg->allocateRegister(TR_VRF);
+   TR_ARM64ScratchRegisterManager *srm = cg->generateScratchRegisterManager();
+   TR::Register *tmp1Reg = srm->findOrCreateScratchRegister(TR_GPR);
+   TR::Register *tmp2Reg = srm->findOrCreateScratchRegister(TR_GPR);
+
+   const uint32_t numElementsPerLoop = (op.numElements > 4) ? 4 : op.numElements;
+   const uint32_t loopCount = op.numElements / numElementsPerLoop;
+
+  /*
+   * For 8-bit elements,
+   *
+   * movzw   w2, #4
+   * loop:
+   * vushr4s v2, v2, #8
+   * smovwb  w0, v0.b[0]
+   * smovwb  w1, v1.b[0]
+   * sdivw   w0, w1, w0
+   * vinswb  v2.b[3], w0
+   * smovwb  w0, v0.b[4]
+   * smovwb  w1, v1.b[4]
+   * sdivw   w0, w1, w0
+   * vinswb  v2.b[7], w0
+   * smovwb  w0, v0.b[8]
+   * smovwb  w1, v1.b[8]
+   * sdivw   w0, w1, w0
+   * vinswb  v2.b[11], w0
+   * smovwb  w0, v0.b[12]
+   * smovwb  w1, v1.b[12]
+   * sdivw   w0, w1, w0
+   * vinswb  v2.b[15], w0
+   * vushr4s v0, v0, #8
+   * vushr4s v1, v1, #8
+   * subw    w2, w2, #1
+   * cbnzw   w2, loop
+   *
+   * For 16-bit elements,
+   *
+   * movzw   w2, #2
+   * loop:
+   * vushr4s v2, v2, #16
+   * smovwh  w0, v0.h[0]
+   * smovwh  w1, v1.h[0]
+   * sdivw   w0, w1, w0
+   * vinswh  v2.h[1], w0
+   * smovwh  w0, v0.h[2]
+   * smovwh  w1, v1.h[2]
+   * sdivw   w0, w1, w0
+   * vinswh  v2.h[3], w0
+   * smovwh  w0, v0.h[4]
+   * smovwh  w1, v1.h[4]
+   * sdivw   w0, w1, w0
+   * vinswh  v2.h[5], w0
+   * smovwh  w0, v0.h[6]
+   * smovwh  w1, v1.h[6]
+   * sdivw   w0, w1, w0
+   * vinswh  v2.h[7], w0
+   * vushr4s v0, v0, #16
+   * vushr4s v1, v1, #16
+   * subw    w2, w2, #1
+   * cbnz    w2, loop
+   *
+   */
+
+   TR::LabelSymbol *loopLabel = generateLabelSymbol(cg);
+   if (loopCount > 1)
+      {
+      TR::Register *counterReg = srm->findOrCreateScratchRegister(TR_GPR);
+      TR::Register *tmp1VectorReg = srm->findOrCreateScratchRegister(TR_VRF);
+      TR::Register *tmp2VectorReg = srm->findOrCreateScratchRegister(TR_VRF);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::vorr16b, node, tmp1VectorReg, lhsReg, lhsReg);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::vorr16b, node, tmp2VectorReg, rhsReg, rhsReg);
+      loadConstant32(cg, node, loopCount, counterReg);
+      generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
+      generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vushr4s, node, resultReg, resultReg, (eType == TR::Int8) ? 8 : 16);
+      for (int32_t i = 0; i < numElementsPerLoop; i++)
+         {
+         generateMovVectorElementToGPRInstruction(cg, op.vectorToGPROp, node, tmp1Reg, tmp1VectorReg, i * loopCount);
+         generateMovVectorElementToGPRInstruction(cg, op.vectorToGPROp, node, tmp2Reg, tmp2VectorReg, i * loopCount);
+         generateTrg1Src2Instruction(cg, op.divOp, node, tmp1Reg, tmp1Reg, tmp2Reg);
+         generateMovGPRToVectorElementInstruction(cg, op.gprToVectorOp, node, resultReg, tmp1Reg, (i + 1) * loopCount - 1);
+         }
+      generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vushr4s, node, tmp1VectorReg, tmp1VectorReg, (eType == TR::Int8) ? 8 : 16);
+      generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vushr4s, node, tmp2VectorReg, tmp2VectorReg, (eType == TR::Int8) ? 8 : 16);
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::subimmw, node, counterReg, counterReg, 1);
+
+      TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3 + srm->numAvailableRegisters(), cg->trMemory());
+      cond->addPostCondition(lhsReg, TR::RealRegister::NoReg);
+      cond->addPostCondition(rhsReg, TR::RealRegister::NoReg);
+      cond->addPostCondition(resultReg, TR::RealRegister::NoReg);
+      srm->addScratchRegistersToDependencyList(cond);
+
+      generateCompareBranchInstruction(cg, TR::InstOpCode::cbnzw, node, counterReg, loopLabel, cond);
+      }
+   else
+      {
+      for (int32_t i = 0; i < numElementsPerLoop; i++)
+         {
+         generateMovVectorElementToGPRInstruction(cg, op.vectorToGPROp, node, tmp1Reg, lhsReg, i);
+         generateMovVectorElementToGPRInstruction(cg, op.vectorToGPROp, node, tmp2Reg, rhsReg, i);
+         generateTrg1Src2Instruction(cg, op.divOp, node, tmp1Reg, tmp1Reg, tmp2Reg);
+         generateMovGPRToVectorElementInstruction(cg, op.gprToVectorOp, node, resultReg, tmp1Reg, i);
+         }
+      }
+
+   node->setRegister(resultReg);
+   srm->stopUsingRegisters();
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+
+   return resultReg;
+   }
+
+TR::Register *
 OMR::ARM64::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
@@ -712,6 +851,11 @@ OMR::ARM64::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::InstOpCode::Mnemonic divOp;
    switch(node->getDataType().getVectorElementType())
       {
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         return vdivIntHelper(node, cg);
       case TR::Float:
          divOp = TR::InstOpCode::vfdiv4s;
          break;

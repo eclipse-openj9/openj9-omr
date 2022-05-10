@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -44,7 +44,7 @@ uint8_t *TR::X86DivideCheckSnippet::emitSnippetBody()
    // CMP realDivisorReg, -1
    //
    uint8_t rexPrefix = cg()->comp()->target().is64Bit() ? realDivisorReg->rexBits(TR::RealRegister::REX_B, false) : 0;
-   buffer = TR::InstOpCode(TR::InstOpCode::CMPRegImms(_divOp.isLong())).binary(buffer, rexPrefix);
+   buffer = TR::InstOpCode(TR::InstOpCode::CMPRegImms(_divOp.isLong())).binary(buffer, OMR::X86::Default, rexPrefix);
    realDivisorReg->setRMRegisterFieldInModRM(buffer-1);
    *buffer++ = -1;
 

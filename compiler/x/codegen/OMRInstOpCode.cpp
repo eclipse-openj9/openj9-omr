@@ -71,8 +71,16 @@ void OMR::X86::InstOpCode::trackUpperBitsOnReg(TR::Register *reg, TR::CodeGenera
       }
    }
 
-template <typename TBuffer> typename TBuffer::cursor_t OMR::X86::InstOpCode::OpCode_t::encode(typename TBuffer::cursor_t cursor, uint8_t rexbits) const
+template <typename TBuffer> typename TBuffer::cursor_t OMR::X86::InstOpCode::OpCode_t::encode(typename TBuffer::cursor_t cursor, OMR::X86::Encoding encoding, uint8_t rexbits) const
    {
+   TR::Compilation *comp = TR::comp();
+   uint32_t enc = encoding;
+
+   if (encoding == OMR::X86::Default)
+      {
+      enc = comp->target().cpu.supportsAVX() ? vex_l : OMR::X86::Legacy;
+      }
+
    TBuffer buffer(cursor);
    if (isX87())
       {
@@ -82,21 +90,20 @@ template <typename TBuffer> typename TBuffer::cursor_t OMR::X86::InstOpCode::OpC
       buffer.append((uint8_t)((modrm_opcode << 5) | (modrm_form << 3) | immediate_size));
       return buffer;
       }
+
    // Prefixes
    TR::Instruction::REX rex(rexbits);
    rex.W = rex_w;
-   // Use AVX if possible
 
-   TR::Compilation *comp = TR::comp();
    TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.supportsAVX() == TR::CodeGenerator::getX86ProcessorInfo().supportsAVX(), "supportsAVX() failed\n");
 
-   if (supportsAVX() && comp->target().cpu.supportsAVX())
+   if (enc != VEX_L___)
       {
-      if (vex_l >> 2)
+      if (enc >> 2)
          {
          TR::Instruction::EVEX vex(rex, modrm_opcode);
          vex.mm = escape;
-         vex.L = vex_l & 0x3;
+         vex.L = enc & 0x3;
          vex.p = prefixes;
          vex.opcode = opcode;
          buffer.append(vex);
@@ -105,7 +112,7 @@ template <typename TBuffer> typename TBuffer::cursor_t OMR::X86::InstOpCode::OpC
          {
          TR::Instruction::VEX<3> vex(rex, modrm_opcode);
          vex.m = escape;
-         vex.L = vex_l;
+         vex.L = enc;
          vex.p = prefixes;
          vex.opcode = opcode;
 
@@ -217,13 +224,13 @@ void OMR::X86::InstOpCode::CheckAndFinishGroup07(uint8_t* cursor) const
       }
    }
 
-uint8_t OMR::X86::InstOpCode::length(uint8_t rex) const
+uint8_t OMR::X86::InstOpCode::length(OMR::X86::Encoding encoding, uint8_t rex) const
    {
-   return encode<Estimator>(0, rex);
+   return encode<Estimator>(0, encoding, rex);
    }
-uint8_t* OMR::X86::InstOpCode::binary(uint8_t* cursor, uint8_t rex) const
+uint8_t* OMR::X86::InstOpCode::binary(uint8_t* cursor, OMR::X86::Encoding encoding, uint8_t rex) const
    {
-   uint8_t* ret = encode<Writer>(cursor, rex);
+   uint8_t* ret = encode<Writer>(cursor, encoding, rex);
    CheckAndFinishGroup07(ret);
    return ret;
    }

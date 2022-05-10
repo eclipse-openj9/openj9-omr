@@ -74,6 +74,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    {
    private:
    uint8_t _rexRepeatCount;
+   OMR::X86::Encoding _encodingMethod;
 
    protected:
 #if defined(TR_TARGET_64BIT)
@@ -84,8 +85,8 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    protected:
 
-   Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node);
-   Instruction(TR::CodeGenerator *cg, TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::Node *node = 0);
+   Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node, OMR::X86::Encoding encoding = Default);
+   Instruction(TR::CodeGenerator *cg, TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::Node *node = 0, OMR::X86::Encoding encoding = Default);
    void initialize(TR::CodeGenerator *cg = NULL, TR::RegisterDependencyConditions *cond = NULL, TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad, bool flag = false);
 
    public:
@@ -96,6 +97,9 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    TR::InstOpCode& getOpCode() { return _opcode; }
    TR::InstOpCode::Mnemonic getOpCodeValue() { return _opcode.getOpCodeValue(); }
    TR::InstOpCode::Mnemonic setOpCodeValue(TR::InstOpCode::Mnemonic op) { return _opcode.setOpCodeValue(op); }
+
+   OMR::X86::Encoding getEncodingMethod() { return _encodingMethod; }
+   void setEncodingMethod(OMR::X86::Encoding method) { _encodingMethod = method; }
 
    virtual bool isBranchOp() {return _opcode.isBranchOp() != 0;}
    virtual bool isLabel();

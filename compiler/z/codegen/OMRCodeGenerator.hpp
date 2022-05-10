@@ -124,9 +124,6 @@ extern int64_t getIntegralValue(TR::Node* node);
 #define LOWER_4_BYTES(x) (x)
 #endif
 
-// Multi Code Cache Routines for checking whether an entry point is within reach of a BASRL.
-#define NEEDS_TRAMPOLINE(target, rip, cg) (cg->directCallRequiresTrampoline((intptr_t)target, (intptr_t)rip))
-
 #define TR_MAX_MVC_SIZE 256
 #define TR_MAX_CLC_SIZE 256
 #define TR_MIN_SS_DISP 0

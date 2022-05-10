@@ -2331,12 +2331,13 @@ void OMR::X86::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t * cursor
 // instruction or the disp32 to a trampoline that can reach the helper.
 //
 int32_t OMR::X86::CodeGenerator::branchDisplacementToHelperOrTrampoline(
-   uint8_t            *nextInstructionAddress,
+   uint8_t *branchInstructionAddress,
    TR::SymbolReference *helper)
    {
    intptr_t helperAddress = (intptr_t)helper->getMethodAddress();
+   uint8_t *nextInstructionAddress = branchInstructionAddress + 5;  // 5 == length of wide displacement direct call or jump instruction
 
-   if (self()->directCallRequiresTrampoline(helperAddress, (intptr_t)nextInstructionAddress))
+   if (self()->directCallRequiresTrampoline(helperAddress, (intptr_t)branchInstructionAddress))
       {
       helperAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(helper->getReferenceNumber(), (void *)(nextInstructionAddress-4));
 

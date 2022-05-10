@@ -410,7 +410,16 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    TR::SymbolReference *getNanoTimeTemp();
 
-   int32_t branchDisplacementToHelperOrTrampoline(uint8_t *nextInstructionAddress, TR::SymbolReference *helper);
+   /**
+    * @brief Computes the 32-bit displacement between the given direct branch instruction
+    *        and either the target helper or a trampoline to reach the target helper
+    *
+    * @param[in] branchInstructionAddress : buffer address of the branch instruction
+    * @param[in] helper : \c TR::SymbolReference of the target helper
+    *
+    * @return The 32-bit displacement for the branch instruction
+    */
+   int32_t branchDisplacementToHelperOrTrampoline(uint8_t *branchInstructionAddress, TR::SymbolReference *helper);
 
    /**
     * \brief Reserve space in the code cache for a specified number of trampolines.
@@ -858,17 +867,6 @@ protected:
 }
 
 }
-
-
-// Trampolines
-//
-
-#if defined(TR_TARGET_64BIT)
-#define NEEDS_TRAMPOLINE(target, rip, cg) (cg->directCallRequiresTrampoline((intptr_t)target, (intptr_t)rip))
-#else
-// Give the C++ compiler a hand
-#define NEEDS_TRAMPOLINE(target, rip, cg) (0)
-#endif
 
 #define IS_32BIT_RIP(x,rip)  ((intptr_t)(x) == (intptr_t)(rip) + (int32_t)((intptr_t)(x) - (intptr_t)(rip)))
 

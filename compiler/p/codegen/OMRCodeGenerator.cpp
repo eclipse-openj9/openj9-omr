@@ -1768,81 +1768,74 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
        dt != TR::Int64)
       return false;
 
-   if (opcode.isVectorOpCode())
+   if (!opcode.isVectorOpCode())
       {
-      TR::DataType ot = opcode.getVectorResultDataType();
-
-      if (ot.getVectorLength() != TR::VectorLength128) return false;
-
-      TR::DataType et = ot.getVectorElementType();
-
-      if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
-          opcode.getVectorOperation() == OMR::vadd && et == TR::Int64)
-         return true;
-
-      // implemented vector operations
-      switch (opcode.getVectorOperation())
+      // Will be transformed into new vector opcodes soon
+      switch (opcode.getOpCodeValue())
          {
-         case OMR::vadd:
-            if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float || et == TR::Double)
+         case TR::getvelem:
+            if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
                return true;
             else
                return false;
-         case OMR::vfma:
-            if (et == TR::Float || et == TR::Double)
-               return true;
-            else
-               return false;
+         case TR::vl2vd:
+            return true;
          default:
             return false;
          }
       }
 
+   TR::DataType ot = opcode.getVectorResultDataType();
+
+   if (ot.getVectorLength() != TR::VectorLength128) return false;
+
+   TR::DataType et = ot.getVectorElementType();
+
    if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
-       (opcode.getOpCodeValue() == TR::vsub || opcode.getOpCodeValue() == TR::vmul) &&
-       dt == TR::Int64)
+       (opcode.getVectorOperation() == OMR::vadd || opcode.getVectorOperation() == OMR::vsub || opcode.getVectorOperation() == OMR::vmul) &&
+       et == TR::Int64)
       return true;
 
    // implemented vector opcodes
-   switch (opcode.getOpCodeValue())
+   switch (opcode.getVectorOperation())
       {
-      case TR::vsub:
-      case TR::vmul:
-         if (dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Float || dt == TR::Double)
+      case OMR::vadd:
+      case OMR::vsub:
+      case OMR::vmul:
+         if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case TR::vdiv:
-      case TR::vneg:
-         if (dt == TR::Int32 || dt == TR::Float || dt == TR::Double)
+      case OMR::vdiv:
+      case OMR::vneg:
+         if (et == TR::Int32 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case TR::vload:
-      case TR::vloadi:
-      case TR::vstore:
-      case TR::vstorei:
-         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+      case OMR::vload:
+      case OMR::vloadi:
+      case OMR::vstore:
+      case OMR::vstorei:
+         if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case TR::vxor:
-      case TR::vor:
-      case TR::vand:
-         if (dt == TR::Int32 || dt == TR::Int64)
+      case OMR::vxor:
+      case OMR::vor:
+      case OMR::vand:
+         if (et == TR::Int32 || et == TR::Int64)
             return true;
          else
             return false;
-      case TR::vsplats:
-         if ((dt == TR::Int8 || dt == TR::Int16 || dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double))
+      case OMR::vsplats:
+         if ((et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double))
             return true;
-      case TR::getvelem:
-         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+
+      case OMR::vfma:
+         if (et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case TR::vl2vd:
-         return true;
       default:
          return false;
       }

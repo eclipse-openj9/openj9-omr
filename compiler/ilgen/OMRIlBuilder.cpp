@@ -677,8 +677,8 @@ OMR::IlBuilder::VectorStore(const char *varName, TR::IlValue *value)
    TR::DataType dt = valueNode->getDataType();
    if (!dt.isVector())
       {
-      valueNode = TR::Node::create(TR::vsplats, 1, valueNode);
       dt = dt.scalarToVector(TR::VectorLength128);
+      valueNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(OMR::vsplats, dt), 1, valueNode);
       }
 
    if (!_methodBuilder->symbolDefined(varName))
@@ -717,9 +717,13 @@ OMR::IlBuilder::VectorStoreAt(TR::IlValue *address, TR::IlValue *value)
    TraceIL("IlBuilder[ %p ]::VectorStoreAt address %d gets %d\n", this, address->getID(), value->getID());
 
    TR::Node *valueNode = loadValue(value);
+   TR::DataType dt = valueNode->getDataType();
 
-   if (!valueNode->getDataType().isVector())
-      valueNode = TR::Node::create(TR::vsplats, 1, valueNode);
+   if (!dt.isVector())
+      {
+      dt = dt.scalarToVector(TR::VectorLength128);
+      valueNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(OMR::vsplats, dt), 1, valueNode);
+      }
 
    indirectStoreNode(loadValue(address), valueNode);
    }
@@ -1101,10 +1105,10 @@ OMR::IlBuilder::doVectorConversions(TR::Node **leftPtr, TR::Node **rightPtr)
    TR::DataType rType = right->getDataType();
 
    if (lType.isVector() && !rType.isVector())
-      *rightPtr = TR::Node::create(TR::vsplats, 1, right);
+      *rightPtr = TR::Node::create(TR::ILOpCode::createVectorOpCode(OMR::vsplats, lType), 1, right);
 
    if (!lType.isVector() && rType.isVector())
-      *leftPtr = TR::Node::create(TR::vsplats, 1, left);
+      *leftPtr = TR::Node::create(TR::ILOpCode::createVectorOpCode(OMR::vsplats, rType), 1, left);
    }
 
 TR::IlValue *

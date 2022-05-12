@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -145,7 +145,7 @@ TR::Node* GenericNodeConverter::impl(const ASTNode* tree, IlGenState* state) {
         const auto name = tree->getName();
         auto compilation = TR::comp();
         TR::DataType type;
-        if (opcode.isVector()) {
+        if (opcode.isVector() && !opcode.isVectorOpCode()) {
             // Vector types in TR IL are "typeless", insofar as they are
             // supposed to infer the vector type depending on the children.
             // Loads determine their data type based on the symref. However,

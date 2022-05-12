@@ -37,8 +37,21 @@ namespace OMR
 
 enum VectorOperation
    {
+   vload,
+   vloadi,
+   vstore,
+   vstorei,
+   vnot,
+   vneg,
    vadd,
+   vsub,
+   vmul,
+   vdiv,
+   vand,
+   vor,
+   vxor,
    vfma,
+   vsplats,
    NumVectorOperations
    };
 
@@ -106,9 +119,11 @@ public:
    *  \return
    *     Vector opcode
    */
-   static ILOpCode createVectorOpCode(VectorOperation operation, DataType resultVectorType)
+   static TR::ILOpCodes createVectorOpCode(VectorOperation operation, DataType resultVectorType)
       {
       static_assert(NumAllIlOps < ((uint64_t)1 << (sizeof(TR::ILOpCodes)*8)), "Number of scalar and vector opcodes does not fit into TR::ILOpCodes\n");
+
+      TR_ASSERT_FATAL(resultVectorType.isVector(), "createVectorOpCode should take vector type\n");
 
       return (TR::ILOpCodes)(TR::NumScalarIlOps + operation*TR::NumVectorTypes + (resultVectorType - TR::NumScalarTypes));
       }
@@ -804,7 +819,7 @@ public:
 
    static TR::ILOpCodes addOpCode(TR::DataType type, bool is64Bit)
       {
-      if (type.isVector()) return createVectorOpCode(OMR::vadd, type).getOpCodeValue();
+      if (type.isVector()) return createVectorOpCode(OMR::vadd, type);
 
       switch(type)
          {
@@ -836,7 +851,7 @@ public:
 
    static TR::ILOpCodes subtractOpCode(TR::DataType type)
       {
-      if (type.isVector()) return TR::vsub;
+      if (type.isVector()) return createVectorOpCode(OMR::vsub, type);
 
       switch(type)
          {
@@ -853,7 +868,7 @@ public:
 
    static TR::ILOpCodes multiplyOpCode(TR::DataType type)
       {
-      if (type.isVector()) return TR::vmul;
+      if (type.isVector()) return createVectorOpCode(OMR::vmul, type);
 
       switch(type)
          {
@@ -870,7 +885,7 @@ public:
 
    static TR::ILOpCodes divideOpCode(TR::DataType type)
       {
-      if (type.isVector()) return TR::vdiv;
+      if (type.isVector()) return createVectorOpCode(OMR::vdiv, type);
 
       switch(type)
          {
@@ -1353,6 +1368,11 @@ public:
       ILOpCode opcode;
       opcode.setOpCodeValue(op);
 
+      TR::DataType elementType = opcode.getDataType();
+      if (!elementType.isVectorElement()) return TR::BadILOp;
+
+      TR::DataTypes vectorType = TR::DataType::createVectorType(elementType.getDataType(), vectorLength);
+
       switch (op)
          {
          case TR::bload:
@@ -1361,28 +1381,28 @@ public:
          case TR::lload:
          case TR::fload:
          case TR::dload:
-            return TR::vload;
+            return ILOpCode::createVectorOpCode(OMR::vload, vectorType);
          case TR::bloadi:
          case TR::sloadi:
          case TR::iloadi:
          case TR::lloadi:
          case TR::floadi:
          case TR::dloadi:
-            return TR::vloadi;
+            return ILOpCode::createVectorOpCode(OMR::vloadi, vectorType);
          case TR::bstore:
          case TR::sstore:
          case TR::istore:
          case TR::lstore:
          case TR::fstore:
          case TR::dstore:
-            return TR::vstore;
+            return ILOpCode::createVectorOpCode(OMR::vstore, vectorType);
          case TR::bstorei:
          case TR::sstorei:
          case TR::istorei:
          case TR::lstorei:
          case TR::fstorei:
          case TR::dstorei:
-            return TR::vstorei;
+            return ILOpCode::createVectorOpCode(OMR::vstorei, vectorType);
 
          case TR::badd:
          case TR::sadd:
@@ -1390,60 +1410,57 @@ public:
          case TR::ladd:
          case TR::fadd:
          case TR::dadd:
-            return ILOpCode::createVectorOpCode(OMR::vadd,
-                                                TR::DataType::createVectorType(opcode.getDataType().getDataType(),
-                                                                               vectorLength)).getOpCodeValue();
-
+            return ILOpCode::createVectorOpCode(OMR::vadd, vectorType);
          case TR::bsub:
          case TR::ssub:
          case TR::isub:
          case TR::lsub:
          case TR::fsub:
          case TR::dsub:
-            return TR::vsub;
+            return ILOpCode::createVectorOpCode(OMR::vsub, vectorType);
          case TR::bmul:
          case TR::smul:
          case TR::imul:
          case TR::lmul:
          case TR::fmul:
          case TR::dmul:
-            return TR::vmul;
+            return ILOpCode::createVectorOpCode(OMR::vmul, vectorType);
          case TR::bdiv:
          case TR::sdiv:
          case TR::idiv:
          case TR::ldiv:
          case TR::fdiv:
          case TR::ddiv:
-            return TR::vdiv;
+            return ILOpCode::createVectorOpCode(OMR::vdiv, vectorType);
          case TR::bconst:
          case TR::sconst:
          case TR::iconst:
          case TR::lconst:
          case TR::fconst:
          case TR::dconst:
-            return TR::vsplats;
+            return ILOpCode::createVectorOpCode(OMR::vsplats, vectorType);
          case TR::bneg:
          case TR::sneg:
          case TR::ineg:
          case TR::lneg:
          case TR::fneg:
          case TR::dneg:
-            return TR::vneg;
+            return ILOpCode::createVectorOpCode(OMR::vneg, vectorType);
          case TR::bor:
          case TR::sor:
          case TR::ior:
          case TR::lor:
-            return TR::vor;
+            return ILOpCode::createVectorOpCode(OMR::vor, vectorType);
          case TR::band:
          case TR::sand:
          case TR::iand:
          case TR::land:
-            return TR::vand;
+            return ILOpCode::createVectorOpCode(OMR::vand, vectorType);
          case TR::bxor:
          case TR::sxor:
          case TR::ixor:
          case TR::lxor:
-            return TR::vxor;
+            return ILOpCode::createVectorOpCode(OMR::vxor, vectorType);
          case TR::l2d:
             return TR::vl2vd;
          default:

@@ -85,6 +85,12 @@ OMR::DataType::isVector()
    }
 
 bool
+OMR::DataType::isVectorElement()
+   {
+   return (_type > TR::NoType) && (_type <= TR::NumVectorElementTypes);
+   }
+
+bool
 OMR::DataType::isBFPorHFP()
    {
    return self()->getDataType() == TR::Float || self()->getDataType() == TR::Double;

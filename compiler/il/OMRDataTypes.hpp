@@ -402,6 +402,8 @@ public:
 
    inline bool isFloatingPoint();
    inline bool isVector();
+   inline bool isVectorElement();
+
    inline bool isBFPorHFP();
    inline bool isDouble();
    inline bool isFloat();

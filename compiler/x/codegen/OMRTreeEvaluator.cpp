@@ -4128,27 +4128,15 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
          break;
       case TR::fsub:
       case TR::dsub:
-      case TR::vsub:
          arithmetic = BinaryArithmeticSub;
          break;
       case TR::fmul:
       case TR::dmul:
-      case TR::vmul:
          arithmetic = BinaryArithmeticMul;
          break;
       case TR::fdiv:
       case TR::ddiv:
-      case TR::vdiv:
          arithmetic = BinaryArithmeticDiv;
-         break;
-      case TR::vand:
-         arithmetic = BinaryArithmeticAnd;
-         break;
-      case TR::vor:
-         arithmetic = BinaryArithmeticOr;
-         break;
-      case TR::vxor:
-         arithmetic = BinaryArithmeticXor;
          break;
       default:
          if (OMR::ILOpCode::isVectorOpCode(opcode))
@@ -4158,6 +4146,25 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
                case OMR::vadd:
                   arithmetic = BinaryArithmeticAdd;
                   break;
+               case OMR::vsub:
+                  arithmetic = BinaryArithmeticSub;
+                  break;
+               case OMR::vmul:
+                  arithmetic = BinaryArithmeticMul;
+                  break;
+               case OMR::vdiv:
+                  arithmetic = BinaryArithmeticDiv;
+                  break;
+               case OMR::vand:
+                  arithmetic = BinaryArithmeticAnd;
+                  break;
+               case OMR::vor:
+                  arithmetic = BinaryArithmeticOr;
+                  break;
+               case OMR::vxor:
+                  arithmetic = BinaryArithmeticXor;
+                  break;
+
                default:
                   TR_ASSERT(false, "Unsupported OpCode");
                }
@@ -4178,7 +4185,7 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
       {
       if (operandNode1->getRegister()                               ||
           operandNode1->getReferenceCount() != 1                    ||
-          operandNode1->getOpCodeValue() != (type.isVector() ? TR::vload : MemoryLoadOpCodes[type]) ||
+          operandNode1->getOpCodeValue() != (type.isVector() ? TR::ILOpCode::createVectorOpCode(OMR::vload, type) : MemoryLoadOpCodes[type]) ||
           (type.isVector() ? VectorBinaryArithmeticOpCodesForMem[type.getVectorElementType() - 1][arithmetic]
                            : BinaryArithmeticOpCodesForMem[type][arithmetic]) == TR::InstOpCode::bad)
          {

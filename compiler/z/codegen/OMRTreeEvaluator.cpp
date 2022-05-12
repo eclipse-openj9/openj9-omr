@@ -14663,8 +14663,8 @@ OMR::Z::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::bad;
 
-   if (node->getOpCodeValue() == TR::vload ||
-       node->getOpCodeValue() == TR::vloadi)
+   if (node->getOpCode().getVectorOperation() == OMR::vload ||
+       node->getOpCode().getVectorOperation() == OMR::vloadi)
       {
       opcode = TR::InstOpCode::VL;
       }
@@ -14722,8 +14722,8 @@ OMR::Z::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::bad;
 
-   if (node->getOpCodeValue() == TR::vstore ||
-       node->getOpCodeValue() == TR::vstorei)
+   if (node->getOpCode().getVectorOperation() == OMR::vstore ||
+       node->getOpCode().getVectorOperation() == OMR::vstorei)
       {
       opcode = TR::InstOpCode::VST;
       }

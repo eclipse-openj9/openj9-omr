@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -865,7 +865,6 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FILE)
 		const char *testName = "omrsysinfo_test_sysinfo_set_limit_FILE_DESCRIPTORS";
 		uint32_t rc = OMRPORT_LIMIT_UNKNOWN;
 		uint64_t originalSoftLimit = 0;
-		uint64_t finalSoftLimit = 0;
 		uint64_t softSetToHardLimit = 0;
 		uint64_t originalHardLimit = 0;
 		uint64_t currentLimit = 0;
@@ -881,7 +880,6 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FILE)
 			return;
 		}
 		portTestEnv->log(LEVEL_ERROR, "originalSoftLimit=%llu\n", originalSoftLimit);
-		finalSoftLimit = originalSoftLimit;
 
 		rc = omrsysinfo_set_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS, descriptorLimit);
 		if (0 != rc) {
@@ -980,10 +978,33 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FILE)
 				reportTestExit(OMRPORTLIB, testName);
 				return;
 			}
-			finalSoftLimit = (originalSoftLimit > newHardLimit)? newHardLimit: originalSoftLimit;
+
+			/* Verify that soft limit is unchanged. */
+			rc = omrsysinfo_get_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS, &currentLimit);
+			if (originalSoftLimit != currentLimit) {
+				outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_get_limit FAILED: soft limit changed\n");
+				reportTestExit(OMRPORTLIB, testName);
+				return;
+			}
 		} else { /* running as root */
-			const uint64_t newHardLimit = 257;
-			rc = omrsysinfo_set_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS | OMRPORT_LIMIT_HARD, newHardLimit);
+			/* Try setting hard limit below soft limit. This should fail even for root user. */
+			rc = omrsysinfo_set_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS | OMRPORT_LIMIT_HARD, descriptorLimit);
+			if ((0 == rc) && (originalSoftLimit > descriptorLimit)) {
+				outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit lowered hard limit below soft limit\n");
+				reportTestExit(OMRPORTLIB, testName);
+				return;
+			}
+
+			/* First lower soft limit. */
+			rc = omrsysinfo_set_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS, descriptorLimit);
+			if (0 != rc) {
+				outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit FAILED rc=%d\n", rc);
+				reportTestExit(OMRPORTLIB, testName);
+				return;
+			}
+
+			/* Lower hard limit to soft limit. */
+			rc = omrsysinfo_set_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS | OMRPORT_LIMIT_HARD, descriptorLimit);
 			if (0 != rc) {
 				outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit FAILED rc=%d\n", rc);
 				reportTestExit(OMRPORTLIB, testName);
@@ -996,7 +1017,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FILE)
 				reportTestExit(OMRPORTLIB, testName);
 				return;
 			}
-			if (newHardLimit == currentLimit) {
+			if (descriptorLimit == currentLimit) {
 				portTestEnv->log("omrsysinfo_set_limit set FILE_DESCRIPTORS hard limit successful\n");
 			} else {
 				outputErrorMessage(PORTTEST_ERROR_ARGS,
@@ -1013,17 +1034,15 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FILE)
 				reportTestExit(OMRPORTLIB, testName);
 				return;
 			}
-		}
 
-	/* restore original soft limit
-	   The soft limit is always <= the hard limit. If the hard limit is lowered to below the soft limit and
-	   then raised again the soft limit isn't automatically raised. */
-	rc = omrsysinfo_set_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS, finalSoftLimit);
-	if (0 != rc) {
-		outputErrorMessage(PORTTEST_ERROR_ARGS, "restoring the original soft limit FAILED rc=%d\n", rc);
-		reportTestExit(OMRPORTLIB, testName);
-		return;
-	}
+			/* Restore original soft limit. */
+			rc = omrsysinfo_set_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS, originalSoftLimit);
+			if (0 != rc) {
+				outputErrorMessage(PORTTEST_ERROR_ARGS, "restoring the original soft limit FAILED rc=%d\n", rc);
+				reportTestExit(OMRPORTLIB, testName);
+				return;
+			}
+		}
 
 	reportTestExit(OMRPORTLIB, testName);
 }

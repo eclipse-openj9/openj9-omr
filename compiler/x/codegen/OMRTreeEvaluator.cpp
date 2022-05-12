@@ -4165,12 +4165,9 @@ TR::Register* OMR::X86::TreeEvaluator::vectorBinaryArithmeticEvaluator(TR::Node*
    {
    TR::DataType type = node->getDataType();
    TR::ILOpCodes opcode = node->getOpCodeValue();
-   OMR::X86::Encoding simdEncoding = Default; // VEX.128 if supported, otherwise legacy SSE encoding
 
    TR_ASSERT_FATAL_WITH_NODE(node, OMR::ILOpCode::isVectorOpCode(opcode),
                              "Expecting a vector opcode in vectorBinaryArithmeticEvaluator");
-   TR_ASSERT_FATAL_WITH_NODE(node, !type.isVector() || type.getVectorLength() == TR::VectorLength128,
-                             "Only 128-bit vectors are supported right now\n");
 
    TR::Register* resultReg = cg->allocateRegister(TR_VRF);
    TR::Node* lhs = node->getChild(0);
@@ -4210,8 +4207,8 @@ TR::Register* OMR::X86::TreeEvaluator::vectorBinaryArithmeticEvaluator(TR::Node*
       }
    else
       {
-      generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, resultReg, lhsReg, cg, simdEncoding);
-      generateRegRegInstruction(nativeOpcode.getMnemonic(), node, resultReg, rhsReg, cg, simdEncoding);
+      generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, resultReg, lhsReg, cg);
+      generateRegRegInstruction(nativeOpcode.getMnemonic(), node, resultReg, rhsReg, cg);
       }
 
    node->setRegister(resultReg);

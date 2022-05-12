@@ -994,8 +994,14 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
     * The cases that return false are placeholders that should be updated as support for more vector evaluators is added.
     */
 
-   TR::DataType ot = opcode.getVectorResultDataType();
-   TR::DataType et = ot.getVectorElementType();
+    TR::DataType ot = opcode.getVectorResultDataType();
+    TR::DataType et = ot.getVectorElementType();
+    TR::InstOpCode nativeOpcode = TR::TreeEvaluator::getNativeSIMDOpcode(opcode.getOpCodeValue(), ot, false);
+
+   if (nativeOpcode.getMnemonic() != TR::InstOpCode::bad)
+      {
+      return nativeOpcode.getSIMDEncoding(cpu, ot.getVectorLength()) != OMR::X86::Bad;
+      }
 
    TR_ASSERT_FATAL(et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double,
                    "Unexpected vector element type\n");
@@ -1003,28 +1009,9 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
    // implemented vector opcodes
    switch (opcode.getVectorOperation())
       {
-      case TR::vadd:
-      case TR::vsub:
-         return ot.getVectorLength() == TR::VectorLength128;
-      case TR::vmul:
-         if (et == TR::Float || et == TR::Double || (et == TR::Int32 && cpu->supportsFeature(OMR_FEATURE_X86_SSE4_1)))
-            return ot.getVectorLength() == TR::VectorLength128;
-         else
-            return false;
-      case TR::vdiv:
-         if (et == TR::Float || et == TR::Double)
-            return ot.getVectorLength() == TR::VectorLength128;
-         else
-            return false;
       case TR::vneg:
-         return ot.getVectorLength() == TR::VectorLength128;
-      case TR::vxor:
-      case TR::vor:
-      case TR::vand:
-         if (et == TR::Int32 || et == TR::Int64)
-            return ot.getVectorLength() == TR::VectorLength128;
-         else
-            return false;
+         if (ot.getVectorLength() == TR::VectorLength128)
+             return true;
       case TR::vload:
       case TR::vloadi:
       case TR::vstore:

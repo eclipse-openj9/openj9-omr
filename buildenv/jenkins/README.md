@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2019, 2021 IBM Corp. and others
+Copyright (c) 2019, 2022 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -95,7 +95,7 @@ Eclipse admins must do this via a [Bugzilla](https://bugs.eclipse.org/bugs/enter
 
 ### Pipeline script from SCM subtleties with Rocket Git for z/OS
 
-Configuring Jenkins to pull the pipeline scripts from Git on z/OS is a non-trivial effort. The Rocket Git for z/OS [1] port does not support _https_ transport protocol, thus specifying the repository in the _Repository URL_ with an `https://` prefix will not work as Jenkins will encounter errors when trying to execute commands on the slave:
+Configuring Jenkins to pull the pipeline scripts from Git on z/OS is a non-trivial effort. The Rocket Git for z/OS [1] port does not support _https_ transport protocol, thus specifying the repository in the _Repository URL_ with an `https://` prefix will not work as Jenkins will encounter errors when trying to execute commands on the jenkins node:
 
 ```
 Fetching changes from the remote Git repository

@@ -1490,43 +1490,43 @@ OMR::X86::AMD64::TreeEvaluator::vmaxEvaluator(TR::Node *node, TR::CodeGenerator 
 TR::Register*
 OMR::X86::AMD64::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::AMD64::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::AMD64::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::AMD64::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::AMD64::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::AMD64::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::AMD64::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*

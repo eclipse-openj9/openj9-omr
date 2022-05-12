@@ -1569,43 +1569,43 @@ OMR::X86::I386::TreeEvaluator::vmaxEvaluator(TR::Node *node, TR::CodeGenerator *
 TR::Register*
 OMR::X86::I386::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::I386::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::I386::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::I386::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::I386::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::I386::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::I386::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register*

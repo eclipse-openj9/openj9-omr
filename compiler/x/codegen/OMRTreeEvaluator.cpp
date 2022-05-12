@@ -4110,15 +4110,106 @@ static const TR::ILOpCodes MemoryLoadOpCodes[TR::NumOMRTypes] =
    };
 
 // For ILOpCode that can be translated to single SSE/AVX instructions
-TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+TR::Register* OMR::X86::TreeEvaluator::vectorBinaryArithmeticEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
    TR::DataType type = node->getDataType();
+   TR::ILOpCodes opcode = node->getOpCodeValue();
+   OMR::X86::Encoding simdEncoding = Default; // VEX.128 if supported, otherwise legacy SSE encoding
+   BinaryArithmeticOps arithmetic;
 
+   TR_ASSERT_FATAL_WITH_NODE(node, OMR::ILOpCode::isVectorOpCode(opcode),
+                             "Expecting a vector opcode in vectorBinaryArithmeticEvaluator");
    TR_ASSERT_FATAL_WITH_NODE(node, !type.isVector() || type.getVectorLength() == TR::VectorLength128,
                              "Only 128-bit vectors are supported right now\n");
 
-   auto arithmetic = BinaryArithmeticInvalid;
+   switch (OMR::ILOpCode::getVectorOperation(opcode))
+      {
+      case TR::vadd:
+         arithmetic = BinaryArithmeticAdd;
+         break;
+      case TR::vsub:
+         arithmetic = BinaryArithmeticSub;
+         break;
+      case TR::vmul:
+         arithmetic = BinaryArithmeticMul;
+         break;
+      case TR::vdiv:
+         arithmetic = BinaryArithmeticDiv;
+         break;
+      case TR::vand:
+         arithmetic = BinaryArithmeticAnd;
+         break;
+      case TR::vor:
+         arithmetic = BinaryArithmeticOr;
+         break;
+      case TR::vxor:
+         arithmetic = BinaryArithmeticXor;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, 0, "Unsupported vector opcode in vectorBinaryArithmeticEvaluator");
+      }
+
+   TR::Register* resultReg = cg->allocateRegister(TR_VRF);
+   TR::Node* lhs = node->getChild(0);
+   TR::Node* rhs = node->getChild(1);
+   TR::InstOpCode::Mnemonic nativeOpcode;
+
+   bool useRegMemForm = cg->comp()->target().cpu.supportsAVX();
+
+   if (useRegMemForm)
+      {
+      if (rhs->getRegister() || rhs->getReferenceCount() != 1 ||
+         rhs->getOpCodeValue() != TR::ILOpCode::createVectorOpCode(TR::vload, type) ||
+         VectorBinaryArithmeticOpCodesForMem[type.getVectorElementType() - 1][arithmetic] == TR::InstOpCode::bad)
+         {
+         useRegMemForm = false;
+         }
+      }
+
+   if (useRegMemForm)
+      nativeOpcode = VectorBinaryArithmeticOpCodesForMem[type.getVectorElementType() - 1][arithmetic];
+   else
+      nativeOpcode = VectorBinaryArithmeticOpCodesForReg[type.getVectorElementType() - 1][arithmetic];
+
+   TR_ASSERT(nativeOpcode != TR::InstOpCode::bad, "Unsupported vector operation for given element type: %s",
+             type.getVectorElementType().toString());
+
+   TR::Register *lhsReg = cg->evaluate(lhs);
+   TR::Register *rhsReg = useRegMemForm ? NULL : cg->evaluate(rhs);
+
+   TR_ASSERT_FATAL_WITH_NODE(lhs, lhsReg->getKind() == TR_VRF, "Left child of vector operation must be a vector");
+   TR_ASSERT_FATAL_WITH_NODE(lhs, rhsReg == NULL || rhsReg->getKind() == TR_VRF, "Right child of vector operation must be a vector");
+
+   if (cg->comp()->target().cpu.supportsAVX())
+      {
+      if (useRegMemForm)
+         generateRegRegMemInstruction(nativeOpcode, node, resultReg, lhsReg, generateX86MemoryReference(rhs, cg), cg, simdEncoding);
+      else
+         generateRegRegRegInstruction(nativeOpcode, node, resultReg, lhsReg, rhsReg, cg, simdEncoding);
+      }
+   else
+      {
+      generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, resultReg, lhsReg, cg, simdEncoding);
+      generateRegRegInstruction(nativeOpcode, node, resultReg, rhsReg, cg, simdEncoding);
+      }
+
+   node->setRegister(resultReg);
+   cg->decReferenceCount(lhs);
+
+   if (rhs)
+       cg->decReferenceCount(rhs);
+   else
+       cg->recursivelyDecReferenceCount(rhs);
+
+   return resultReg;
+   }
+
+// For ILOpCode that can be translated to single SSE/AVX instructions
+TR::Register* OMR::X86::TreeEvaluator::floatingPointBinaryArithmeticEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::DataType type = node->getDataType();
    TR::ILOpCodes opcode = node->getOpCodeValue();
+   BinaryArithmeticOps arithmetic;
 
    switch (opcode)
       {
@@ -4139,40 +4230,7 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
          arithmetic = BinaryArithmeticDiv;
          break;
       default:
-         if (OMR::ILOpCode::isVectorOpCode(opcode))
-            {
-            switch (OMR::ILOpCode::getVectorOperation(opcode))
-               {
-               case TR::vadd:
-                  arithmetic = BinaryArithmeticAdd;
-                  break;
-               case TR::vsub:
-                  arithmetic = BinaryArithmeticSub;
-                  break;
-               case TR::vmul:
-                  arithmetic = BinaryArithmeticMul;
-                  break;
-               case TR::vdiv:
-                  arithmetic = BinaryArithmeticDiv;
-                  break;
-               case TR::vand:
-                  arithmetic = BinaryArithmeticAnd;
-                  break;
-               case TR::vor:
-                  arithmetic = BinaryArithmeticOr;
-                  break;
-               case TR::vxor:
-                  arithmetic = BinaryArithmeticXor;
-                  break;
-
-               default:
-                  TR_ASSERT(false, "Unsupported OpCode");
-               }
-            }
-         else
-            {
-            TR_ASSERT(false, "Unsupported OpCode");
-            }
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unsupported OpCode %s", cg->comp()->getDebug()->getName(node->getOpCode()));
       }
 
    TR::Node* operandNode0 = node->getChild(0);
@@ -4185,9 +4243,8 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
       {
       if (operandNode1->getRegister()                               ||
           operandNode1->getReferenceCount() != 1                    ||
-          operandNode1->getOpCodeValue() != (type.isVector() ? TR::ILOpCode::createVectorOpCode(TR::vload, type) : MemoryLoadOpCodes[type]) ||
-          (type.isVector() ? VectorBinaryArithmeticOpCodesForMem[type.getVectorElementType() - 1][arithmetic]
-                           : BinaryArithmeticOpCodesForMem[type][arithmetic]) == TR::InstOpCode::bad)
+          operandNode1->getOpCodeValue() != MemoryLoadOpCodes[type] ||
+          BinaryArithmeticOpCodesForMem[type][arithmetic] == TR::InstOpCode::bad)
          {
          useRegMemForm = false;
          }
@@ -4198,12 +4255,10 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
    TR::Register* resultReg = cg->allocateRegister(operandReg0->getKind());
    resultReg->setIsSinglePrecision(operandReg0->isSinglePrecision());
 
-   TR::InstOpCode::Mnemonic opCode = useRegMemForm ? (type.isVector() ? VectorBinaryArithmeticOpCodesForMem[type.getVectorElementType() - 1][arithmetic] :
-                                                                        BinaryArithmeticOpCodesForMem[type][arithmetic]) :
-                                                                        (type.isVector() ? VectorBinaryArithmeticOpCodesForReg[type.getVectorElementType() - 1][arithmetic] :
-                                                                        BinaryArithmeticOpCodesForReg[type][arithmetic]);
+   TR::InstOpCode::Mnemonic opCode = useRegMemForm ? BinaryArithmeticOpCodesForMem[type][arithmetic] :
+                                                     BinaryArithmeticOpCodesForReg[type][arithmetic];
 
-   TR_ASSERT(opCode != TR::InstOpCode::bad, "FloatingPointAndVectorBinaryArithmeticEvaluator: unsupported data type or arithmetic.");
+   TR_ASSERT_FATAL(opCode != TR::InstOpCode::bad, "floatingPointBinaryArithmeticEvaluator: unsupported data type or arithmetic.");
 
    if (cg->comp()->target().cpu.supportsAVX())
       {
@@ -4220,10 +4275,12 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
 
    node->setRegister(resultReg);
    cg->decReferenceCount(operandNode0);
+
    if (operandReg1)
       cg->decReferenceCount(operandNode1);
    else
       cg->recursivelyDecReferenceCount(operandNode1);
+
    return resultReg;
    }
 

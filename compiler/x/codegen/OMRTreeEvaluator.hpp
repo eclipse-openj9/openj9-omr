@@ -291,7 +291,8 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *floatingPointStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    // For ILOpCode that can be translated to single SSE/AVX instructions
-   static TR::Register *FloatingPointAndVectorBinaryArithmeticEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vectorBinaryArithmeticEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *floatingPointBinaryArithmeticEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    // For unary ILOpcodes that can be translated to a single SSE/AVX instruction
    static TR::Register *unaryVectorArithmeticEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -387,7 +388,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *performDload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg);
    static TR::Register *negEvaluatorHelper(TR::Node *node, TR::InstOpCode::Mnemonic RegInstr, TR::CodeGenerator *cg);
    static TR::Register *logicalEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic package[], TR::CodeGenerator *cg);
-   static TR::Register *fpBinaryArithmeticEvaluator(TR::Node *node, bool isFloat, TR::CodeGenerator *cg);
    static TR::Register *bcmpEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic setOp, TR::CodeGenerator *cg);
    static TR::Register *cmp2BytesEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic setOp, TR::CodeGenerator *cg);
 

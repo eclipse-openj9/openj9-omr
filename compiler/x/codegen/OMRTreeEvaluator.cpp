@@ -4198,6 +4198,9 @@ TR::Register* OMR::X86::TreeEvaluator::vectorBinaryArithmeticEvaluator(TR::Node*
    TR_ASSERT_FATAL_WITH_NODE(lhs, lhsReg->getKind() == TR_VRF, "Left child of vector operation must be a vector");
    TR_ASSERT_FATAL_WITH_NODE(lhs, rhsReg == NULL || rhsReg->getKind() == TR_VRF, "Right child of vector operation must be a vector");
 
+   OMR::X86::Encoding simdEncoding = nativeOpcode.getSIMDEncoding(&cg->comp()->target().cpu, type.getVectorLength());
+   TR_ASSERT_FATAL_WITH_NODE(node, simdEncoding != Bad, "This x86 opcode is not supported by the target CPU");
+
    if (cg->comp()->target().cpu.supportsAVX())
       {
       if (useRegMemForm)

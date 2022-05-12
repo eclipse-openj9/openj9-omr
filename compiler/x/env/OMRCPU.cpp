@@ -376,7 +376,17 @@ OMR::X86::CPU::supports_feature_test(uint32_t feature)
       case OMR_FEATURE_X86_TM:
          return TR::CodeGenerator::getX86ProcessorInfo().hasThermalMonitor() == ans;
       case OMR_FEATURE_X86_AVX:
-         return true;
+         return TR::CodeGenerator::getX86ProcessorInfo().supportsAVX() == ans;
+      case OMR_FEATURE_X86_AVX2:
+         return TR::CodeGenerator::getX86ProcessorInfo().supportsAVX2();
+      case OMR_FEATURE_X86_AVX512F:
+         return TR::CodeGenerator::getX86ProcessorInfo().supportsAVX512F();
+      case OMR_FEATURE_X86_AVX512VL:
+         return TR::CodeGenerator::getX86ProcessorInfo().supportsAVX512VL();
+      case OMR_FEATURE_X86_AVX512BW:
+         return TR::CodeGenerator::getX86ProcessorInfo().supportsAVX512BW();
+      case OMR_FEATURE_X86_AVX512DQ:
+         return TR::CodeGenerator::getX86ProcessorInfo().supportsAVX512DQ();
       default:
          return false;
       }
@@ -561,6 +571,12 @@ OMR::X86::CPU::supports_feature_old_api(uint32_t feature)
       case OMR_FEATURE_X86_TM:
          supported = TR::CodeGenerator::getX86ProcessorInfo().hasThermalMonitor();
          break;
+      case OMR_FEATURE_X86_AVX:
+          supported = TR::CodeGenerator::getX86ProcessorInfo().supportsAVX();
+          break;
+      case OMR_FEATURE_X86_AVX2:
+          supported = TR::CodeGenerator::getX86ProcessorInfo().supportsAVX2();
+          break;
       case OMR_FEATURE_X86_AVX512F:
          supported = TR::CodeGenerator::getX86ProcessorInfo().supportsAVX512F();
          break;

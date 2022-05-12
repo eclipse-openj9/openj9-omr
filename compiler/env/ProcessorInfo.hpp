@@ -186,6 +186,7 @@ inline uint32_t getFeatureFlags8Mask()
    {
    return  TR_HLE
          | TR_RTM
+         | TR_AVX2
          | TR_AVX512F
          | TR_AVX512VL
          | TR_AVX512BW

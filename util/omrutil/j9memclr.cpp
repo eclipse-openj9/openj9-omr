@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -44,8 +44,8 @@ extern "C" void J9ZERZ10(void *ptr, uintptr_t length);
 #endif
 
 #if defined(AIXPPC) || defined(LINUXPPC)
-static uintptr_t cacheLineSize = 0;
-#endif
+static uint32_t cacheLineSize = 0;
+#endif /* defined(AIXPPC) || defined(LINUXPPC) */
 
 #if defined(J9ZOS390)
 struct IHAPSA {
@@ -65,8 +65,7 @@ OMRZeroMemory(void *ptr, uintptr_t length)
 
 #if defined(AIXPPC) || defined(LINUXPPC)
 	char *addr = static_cast<char*>(ptr);
-	char *limit;
-	uintptr_t localCacheLineSize;
+	char *limit = NULL;
 
 #if defined(LINUXPPC)
 	if (length < 2048) {
@@ -80,15 +79,15 @@ OMRZeroMemory(void *ptr, uintptr_t length)
 		cacheLineSize = getCacheLineSize();
 	}
 
+	uint32_t localCacheLineSize = cacheLineSize;
+
 	/* Zeroing by dcbz is effective if requested length is at least twice larger then Data Cache Block size */
-	if (length < (2 * cacheLineSize)) {
+	if (length < (2 * localCacheLineSize)) {
 		memset(ptr, 0, (size_t)length);
 		return;
 	}
 
 	/* VMDESIGN 1314 - Allow the compile to unroll the loop below by avoiding using the global in the loop */
-
-	localCacheLineSize = cacheLineSize;
 
 	/* Zero any initial portion to first cache line boundary
 	 * Assumed here that size of first portion (from start to aligned address) is smaller then total requested size
@@ -107,7 +106,11 @@ OMRZeroMemory(void *ptr, uintptr_t length)
 	/* dcbz forms a group on POWER4, so there is no reason to unroll */
 	limit = (char *)(((uintptr_t)ptr + length) & ~(localCacheLineSize - 1));
 	for (; addr < limit; addr += localCacheLineSize) {
-		__asm__ __volatile__("dcbz 0,%0" : /* no outputs */ : "r"(addr));
+		__asm__ __volatile__(
+				"dcbz 0, %0"
+				: /* no outputs */
+				: "r"(addr)
+				: /* clobbers */ "memory");
 	}
 
 	/* zero final portion smaller than a cache line */
@@ -143,21 +146,29 @@ OMRZeroMemory(void *ptr, uintptr_t length)
 }
 
 
-uintptr_t
+uint32_t
 getCacheLineSize(void)
 {
 #if defined(AIXPPC) || defined (LINUXPPC)
 	char buf[1024];
-	uintptr_t i, ppcCacheLineSize;
+	uint32_t i = 0;
+	uint32_t ppcCacheLineSize = 0;
 
 	/* xlc -O3 inlines/unrolls this memset */
-	memset(buf, 255, 1024);
-	__asm__ __volatile__("dcbz 0,%0" : /* no outputs */ : "r"(&buf[512]));
-	for (i = 0, ppcCacheLineSize = 0; i < 1024; i++) {
-		if (buf[i] == 0) {
-			ppcCacheLineSize++;
+	memset(buf, 255, sizeof(buf));
+
+	__asm__ __volatile__(
+			"dcbz 0, %0"
+			: /* no outputs */
+			: "r"((void *)&buf[512])
+			: /* clobbers */ "memory");
+
+	for (i = 0, ppcCacheLineSize = 0; i < sizeof(buf); ++i) {
+		if (0 == buf[i]) {
+			ppcCacheLineSize += 1;
 		}
 	}
+
 	return ppcCacheLineSize;
 #else
 	return 0;

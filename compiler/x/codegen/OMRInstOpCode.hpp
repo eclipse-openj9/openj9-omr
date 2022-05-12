@@ -34,6 +34,8 @@ namespace OMR { typedef OMR::X86::InstOpCode InstOpCodeConnector; }
 #endif
 
 #include "compiler/codegen/OMRInstOpCode.hpp"
+#include "env/CPU.hpp"
+#include "il/OMRDataTypes.hpp"
 
 namespace TR { class CodeGenerator; }
 namespace TR { class Register; }

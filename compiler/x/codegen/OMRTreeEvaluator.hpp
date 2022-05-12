@@ -291,6 +291,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *floatingPointStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    // For ILOpCode that can be translated to single SSE/AVX instructions
+   static TR::InstOpCode getNativeSIMDOpcode(TR::ILOpCodes opcode, TR::DataType et, bool mem);
    static TR::Register *vectorBinaryArithmeticEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *floatingPointBinaryArithmeticEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 

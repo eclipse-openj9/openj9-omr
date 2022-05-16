@@ -95,7 +95,7 @@ typedef struct OMRPortPlatformGlobals {
 	BOOLEAN globalConverterEnabled;
 	char *si_executableName;
 #if defined(RS6000) || defined (LINUXPPC) || defined (PPC)
-	int32_t mem_ppcCacheLineSize;
+	uint32_t mem_ppcCacheLineSize;
 #endif
 #if defined(OMR_CONFIGURABLE_SUSPEND_SIGNAL)
 	int32_t introspect_threadSuspendSignal;

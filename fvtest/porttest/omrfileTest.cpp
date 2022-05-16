@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3461,70 +3461,76 @@ TEST_F(PortFileTest2, file_test27)
 
 	reportTestEntry(OMRPORTLIB, testName);
 
-	omrfile_chmod(localFilename, 0777);
-	omrfile_unlink(localFilename);
-	fd1 = FILE_OPEN_FUNCTION(OMRPORTLIB, localFilename, EsOpenCreate | EsOpenWrite, 0666);
-	if (-1 == fd1) {
-		outputErrorMessage(PORTTEST_ERROR_ARGS, "%s() failed\n", FILE_OPEN_FUNCTION_NAME);
-	} else {
-		(void)FILE_CLOSE_FUNCTION(OMRPORTLIB, fd1);
-		for (m = 0; m < nModes; ++m) {
+#if !defined(OMR_OS_WINDOWS)
+	/* Do not run following test as a root user (euid == 0) as root can bypass file permissions. */
+	if (0 != omrsysinfo_get_euid())
+#endif /* !defined(OMR_OS_WINDOWS) */
+	{
+		omrfile_chmod(localFilename, 0777);
+		omrfile_unlink(localFilename);
+		fd1 = FILE_OPEN_FUNCTION(OMRPORTLIB, localFilename, EsOpenCreate | EsOpenWrite, 0666);
+		if (-1 == fd1) {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "%s() failed\n", FILE_OPEN_FUNCTION_NAME);
+		} else {
+			(void)FILE_CLOSE_FUNCTION(OMRPORTLIB, fd1);
+			for (m = 0; m < nModes; ++m) {
 #if defined(AIXPPC) || defined(J9ZOS390)
-			if (0 != (testModes[m] & J9S_ISGID)) {
-				continue; /* sgid not support on some versions of AIX */
-			}
+				if (0 != (testModes[m] & J9S_ISGID)) {
+					continue; /* sgid not support on some versions of AIX */
+				}
 #elif defined(OSX)
-			if (0 != (testModes[m] & (J9S_ISUID | J9S_ISGID))) {
-				continue; /* sgid/suid sometimes ignored on OSX */
-			}
+				if (0 != (testModes[m] & (J9S_ISUID | J9S_ISGID))) {
+					continue; /* sgid/suid sometimes ignored on OSX */
+				}
 #endif /* defined(AIXPPC) || defined(J9ZOS390) */
 #if defined(OMR_OS_WINDOWS)
-			if (allWrite == (testModes[m] & allWrite)) {
-				expectedMode = allRead + allWrite;
-			} else {
-				expectedMode = allRead;
-			}
+				if (allWrite == (testModes[m] & allWrite)) {
+					expectedMode = allRead + allWrite;
+				} else {
+					expectedMode = allRead;
+				}
 #else
-			expectedMode = testModes[m];
+				expectedMode = testModes[m];
 #endif /* defined(OMR_OS_WINDOWS) */
-			rc = omrfile_chmod(localFilename, testModes[m]);
-			if (expectedMode != rc) {
-				outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_chmod() returned %d expected %d\n", rc, expectedMode);
-				break;
+				rc = omrfile_chmod(localFilename, testModes[m]);
+				if (expectedMode != rc) {
+					outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_chmod() returned %d expected %d\n", rc, expectedMode);
+					break;
+				}
+				fd2 = FILE_OPEN_FUNCTION(OMRPORTLIB, localFilename, EsOpenWrite, rc);
+				if (0 == (rc & ownerWritable)) {
+					if (-1 != fd2) {
+						outputErrorMessage(PORTTEST_ERROR_ARGS, "opened read-only file for writing fd=%d expected -1\n", fd2);
+						break;
+					}
+				} else {
+					if (-1 == fd2) {
+						outputErrorMessage(PORTTEST_ERROR_ARGS, "opened owner-writable file for writing failed");
+						break;
+					}
+				}
+				FILE_CLOSE_FUNCTION(OMRPORTLIB, fd2);
+				fd2 = FILE_OPEN_FUNCTION(OMRPORTLIB, localFilename, EsOpenRead, rc);
+				if (0 == (rc & ownerReadable)) {
+					if (-1 != fd2) {
+						outputErrorMessage(PORTTEST_ERROR_ARGS, "opened write-only file for reading fd=%d expected -1\n", fd2);
+						break;
+					}
+				} else {
+					if (-1 == fd2) {
+						outputErrorMessage(PORTTEST_ERROR_ARGS, "opened owner-readable file for reading failed");
+						break;
+					}
+				}
+				FILE_CLOSE_FUNCTION(OMRPORTLIB, fd2);
 			}
-			fd2 = FILE_OPEN_FUNCTION(OMRPORTLIB, localFilename, EsOpenWrite, rc);
-			if (0 == (rc & ownerWritable)) {
-				if (-1 != fd2) {
-					outputErrorMessage(PORTTEST_ERROR_ARGS, "opened read-only file for writing fd=%d expected -1\n", rc);
-					break;
-				}
-			} else {
-				if (-1 == fd2) {
-					outputErrorMessage(PORTTEST_ERROR_ARGS, "opened owner-writable file for writing failed");
-					break;
-				}
-			}
-			FILE_CLOSE_FUNCTION(OMRPORTLIB, fd2);
-			fd2 = FILE_OPEN_FUNCTION(OMRPORTLIB, localFilename, EsOpenRead, rc);
-			if (0 == (rc & ownerReadable)) {
-				if (-1 != fd2) {
-					outputErrorMessage(PORTTEST_ERROR_ARGS, "opened write-only file for reading fd=%d expected -1\n", rc);
-					break;
-				}
-			} else {
-				if (-1 == fd2) {
-					outputErrorMessage(PORTTEST_ERROR_ARGS, "opened owner-readable file for reading failed");
-					break;
-				}
-			}
-			FILE_CLOSE_FUNCTION(OMRPORTLIB, fd2);
 		}
-	}
-	omrfile_chmod(localFilename, 0777);
-	omrfile_unlink(localFilename);
-	rc = omrfile_chmod(localFilename, 0755);
-	if (-1 != rc) {
-		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_chmod() on non-existent file returned %d expected %d\n", rc, -1);
+		omrfile_chmod(localFilename, 0777);
+		omrfile_unlink(localFilename);
+		rc = omrfile_chmod(localFilename, 0755);
+		if (-1 != rc) {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_chmod() on non-existent file returned %d expected %d\n", rc, -1);
+		}
 	}
 
 	reportTestExit(OMRPORTLIB, testName);
@@ -3622,8 +3628,11 @@ TEST_F(PortFileTest2, file_test29)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_chown()set uid returned %d expected %d\n", rc, 0);
 	}
 	rc = omrfile_chown(testFile, 0, OMRPORT_FILE_IGNORE_ID);
-	if (0 == rc) {
-		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_chown() to root succeeded, should have failed\n");
+	/* Note: euid == 0 means running as root user. */
+	if ((0 == rc) && (0 != uid)) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_chown() to root as nonroot succeeded, should have failed\n");
+	} else if ((0 != rc) && (0 == uid)) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_chown() to root as root failed, should have succeeded\n");
 	}
 	omrfile_unlink(testFile);
 #endif /* !defined(OMR_OS_WINDOWS) */

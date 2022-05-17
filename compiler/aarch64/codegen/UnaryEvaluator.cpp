@@ -185,6 +185,40 @@ TR::Register *OMR::ARM64::TreeEvaluator::vnotEvaluator(TR::Node *node, TR::CodeG
    }
 
 TR::Register*
+OMR::ARM64::TreeEvaluator::vabsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                     "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   TR::InstOpCode::Mnemonic absOp;
+
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         absOp = TR::InstOpCode::vabs16b;
+         break;
+      case TR::Int16:
+         absOp = TR::InstOpCode::vabs8h;
+         break;
+      case TR::Int32:
+         absOp = TR::InstOpCode::vabs4s;
+         break;
+      case TR::Int64:
+         absOp = TR::InstOpCode::vabs2d;
+         break;
+      case TR::Float:
+         absOp = TR::InstOpCode::vfabs4s;
+         break;
+      case TR::Double:
+         absOp = TR::InstOpCode::vfabs2d;
+         break;
+      default:
+         TR_ASSERT_FATAL(false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorUnaryOp(node, cg, absOp);
+   }
+
+TR::Register*
 OMR::ARM64::TreeEvaluator::vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,

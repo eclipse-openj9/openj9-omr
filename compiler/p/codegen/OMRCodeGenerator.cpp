@@ -1770,8 +1770,19 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
 
    if (!opcode.isVectorOpCode())
       {
-      // Will be transformed into new vector opcodes soon
-      switch (opcode.getOpCodeValue())
+      TR::DataType ot = opcode.getVectorResultDataType();
+
+      if (ot.getVectorLength() != TR::VectorLength128) return false;
+
+      TR::DataType et = ot.getVectorElementType();
+
+      if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
+          (opcode.getVectorOperation() == OMR::vadd) &&
+          et == TR::Int64)
+         return true;
+
+      // implemented vector operations
+      switch (opcode.getVectorOperation())
          {
          case TR::getvelem:
             if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
@@ -1792,7 +1803,7 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
    TR::DataType et = ot.getVectorElementType();
 
    if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
-       (opcode.getVectorOperation() == OMR::vadd || opcode.getVectorOperation() == OMR::vsub || opcode.getVectorOperation() == OMR::vmul) &&
+       (opcode.getVectorOperation() == OMR::vadd || opcode.getVectorOperation() == OMR::vsub || opcode.getVectorOperation() == OMR::vmul || opcode.getVectorOperation() == OMR::vabs) &&
        et == TR::Int64)
       return true;
 
@@ -1809,6 +1820,16 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
       case OMR::vdiv:
       case OMR::vneg:
          if (et == TR::Int32 || et == TR::Float || et == TR::Double)
+            return true;
+         else
+            return false;
+      case OMR::vabs:
+         if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float || et == TR::Double)
+            return true;
+         else
+            return false;
+      case OMR::vsqrt:
+         if (et == TR::Float || et == TR::Double)
             return true;
          else
             return false;

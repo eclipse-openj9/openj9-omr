@@ -37,21 +37,23 @@ namespace OMR
 
 enum VectorOperation
    {
+   vabs,
+   vadd,
+   vand,
+   vdiv,
+   vfma,
    vload,
    vloadi,
+   vmul,
+   vneg,
+   vnot,
+   vor,
    vstore,
    vstorei,
-   vnot,
-   vneg,
-   vadd,
-   vsub,
-   vmul,
-   vdiv,
-   vand,
-   vor,
-   vxor,
-   vfma,
    vsplats,
+   vsqrt,
+   vsub,
+   vxor,
    NumVectorOperations
    };
 
@@ -806,6 +808,8 @@ public:
 
    static TR::ILOpCodes absOpCode(TR::DataType type)
       {
+      if (type.isVector()) return createVectorOpCode(OMR::vabs, type);
+
       switch(type)
          {
          case TR::Int32:   return TR::iabs;
@@ -1446,6 +1450,13 @@ public:
          case TR::fneg:
          case TR::dneg:
             return ILOpCode::createVectorOpCode(OMR::vneg, vectorType);
+
+         case TR::iabs:
+         case TR::labs:
+         case TR::fabs:
+         case TR::dabs:
+            return ILOpCode::createVectorOpCode(OMR::vabs, vectorType);
+
          case TR::bor:
          case TR::sor:
          case TR::ior:

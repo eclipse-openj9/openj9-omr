@@ -1415,6 +1415,18 @@ OMR::RV::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register*
+OMR::RV::TreeEvaluator::vabsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::RV::TreeEvaluator::vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
 OMR::RV::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);

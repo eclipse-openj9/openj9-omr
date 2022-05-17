@@ -7459,17 +7459,17 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::vsrad, */
-   /* .name        =    "vsrad", */
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::vsrad,
+   /* .name        = */ "vsrad",
    /* .description =    "Vector Shift Right Algebraic Dword", */
-   /* .prefix      =    0x00000000, */
-   /* .opcode      =    0x100003C4, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    OMR_PROCESSOR_PPC_P8, */
-   /* .properties  =    PPCOpProp_IsVMX | */
-   /*                   PPCOpProp_SyncSideEffectFree, */
-   /* }, */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x100003C4,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P8,
+   /* .properties  = */ PPCOpProp_IsVMX |
+                        PPCOpProp_SyncSideEffectFree,
+   },
 
    /* { */
    /* .mnemonic    =    OMR::InstOpCode::vsrd, */
@@ -12008,7 +12008,7 @@
    /* .description =    "Vector Absolute Value Double-Precision", */
    /* .prefix      = */ 0x00000000,
    /* .opcode      = */ 0xF0000764,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XB,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_DoubleFP |
@@ -12021,7 +12021,7 @@
    /* .description =    "Vector Absolute Value Single-Precision", */
    /* .prefix      = */ 0x00000000,
    /* .opcode      = */ 0xF0000664,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XB,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,
@@ -12759,7 +12759,7 @@
    /* .description =    "Vector Square Root Single-Precision", */
    /* .prefix      = */ 0x00000000,
    /* .opcode      = */ 0xF000022C,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_XT_XB,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
    /* .properties  = */ PPCOpProp_IsVSX |
                         PPCOpProp_SyncSideEffectFree,

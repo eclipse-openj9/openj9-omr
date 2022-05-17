@@ -21,94 +21,9 @@
 
 #include "JitTest.hpp"
 #include "default_compiler.hpp"
-#include "compilerunittest/CompilerUnitTest.hpp"
 
 class VectorTest : public TRTest::JitTest {};
 
-class ParameterizedVectorTest : public VectorTest, public ::testing::WithParamInterface<std::tuple<TR::VectorLength, TR::DataTypes>> {};
-
-TEST_P(ParameterizedVectorTest, VLoadStore) {
-    TR::VectorLength vl = std::get<0>(GetParam());
-    TR::DataTypes et = std::get<1>(GetParam());
-
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-
-    if (vl != TR::VectorLength128) {
-        SKIP_ON_POWER(MissingImplementation);
-        SKIP_ON_ARM(MissingImplementation);
-    }
-
-#if defined(TR_TARGET_X86)
-    OMRProcessorDesc desc;
-    omrsysinfo_get_processor_description(&desc);
-    bool supportsAVX = omrsysinfo_processor_has_feature(&desc, OMR_FEATURE_X86_AVX);
-    bool supportsAVX512 = omrsysinfo_processor_has_feature(&desc, OMR_FEATURE_X86_AVX512F);
-
-    if (!supportsAVX && vl == TR::VectorLength256) {
-        SKIP_ON_X86(UnsupportedFeature) << "Cannot execute 256-bit vector test without AVX hardware";
-        SKIP_ON_HAMMER(UnsupportedFeature) << "Cannot execute 256-bit vector test without AVX hardware";
-    } else if (!supportsAVX512 && vl == TR::VectorLength512) {
-        SKIP_ON_X86(UnsupportedFeature) << "Cannot execute 512-bit vector test without AVX-512 hardware";
-        SKIP_ON_HAMMER(UnsupportedFeature) << "Cannot execute 512-bit vector test without AVX-512 hardware";
-    }
-#endif
-
-    char inputTrees[1024];
-    char *formatStr = "(method return= NoType args=[Address,Address]   "
-                      "  (block                                        "
-                      "     (vstorei%s  offset=0                       "
-                      "         (aload parm=0)                         "
-                      "         (vloadi%s (aload parm=1)))             "
-                      "     (return)))                                 ";
-    TR::DataType vt = TR::DataType::createVectorType(et, vl);
-
-    sprintf(inputTrees, formatStr, vt.toString(), vt.toString());
-    auto trees = parseString(inputTrees);
-    ASSERT_NOTNULL(trees);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-    auto entry_point = compiler.getEntryPoint<void (*)(void *,void *)>();
-
-    const uint8_t maxVectorLength = 64;
-    char output[maxVectorLength] = {0};
-    char input[maxVectorLength] = {0};
-    char zero[maxVectorLength] = {0};
-
-    for (int i = 0; i < maxVectorLength; i++) {
-        input[i] = i;
-    }
-
-    entry_point(output, input);
-
-    EXPECT_EQ(0, memcmp(input, output, TR::DataType::getSize(vt)));
-    EXPECT_EQ(0, memcmp(output + TR::DataType::getSize(vt), zero, maxVectorLength - TR::DataType::getSize(vt)));
-}
-
-INSTANTIATE_TEST_CASE_P(VLoadStoreVectorTest, ParameterizedVectorTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorLength, TR::DataTypes>>(
-    std::make_tuple(TR::VectorLength128, TR::Int8),
-    std::make_tuple(TR::VectorLength128, TR::Int16),
-    std::make_tuple(TR::VectorLength128, TR::Int32),
-    std::make_tuple(TR::VectorLength128, TR::Int64),
-    std::make_tuple(TR::VectorLength128, TR::Float),
-    std::make_tuple(TR::VectorLength128, TR::Double),
-    std::make_tuple(TR::VectorLength256, TR::Int8),
-    std::make_tuple(TR::VectorLength256, TR::Int16),
-    std::make_tuple(TR::VectorLength256, TR::Int32),
-    std::make_tuple(TR::VectorLength256, TR::Int64),
-    std::make_tuple(TR::VectorLength256, TR::Float),
-    std::make_tuple(TR::VectorLength256, TR::Double),
-    std::make_tuple(TR::VectorLength512, TR::Int8),
-    std::make_tuple(TR::VectorLength512, TR::Int16),
-    std::make_tuple(TR::VectorLength512, TR::Int32),
-    std::make_tuple(TR::VectorLength512, TR::Int64),
-    std::make_tuple(TR::VectorLength512, TR::Float),
-    std::make_tuple(TR::VectorLength512, TR::Double)
-)));
 
 TEST_F(VectorTest, VDoubleAdd) {
 

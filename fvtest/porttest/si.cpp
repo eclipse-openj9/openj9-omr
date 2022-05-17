@@ -31,6 +31,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#if defined(LINUX)
+#include <linux/magic.h>
+#include <sys/vfs.h>
+#include <fstream>
+#include <regex>
+#endif /* defined(LINUX) */
 #if defined(OMR_OS_WINDOWS)
 #include <direct.h>
 #endif /* defined(OMR_OS_WINDOWS) */
@@ -2362,6 +2368,306 @@ exit:
 	return;
 }
 
+/* Cgroup tests depend on std::regex, which was fully implemented in gcc-4.9. Disable these tests if the gcc
+ * version is lower than 4.9. Ref: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+ */
+#if !defined(LINUX) || (GTEST_GCC_VER_ >= 40900)
+class CgroupTest : public ::testing::Test {
+protected:
+#if defined(LINUX)
+	static bool isV1Available;
+	static bool isV2Available;
+	static std::string memCgroup;
+	static std::string cpuCgroup;
+	static std::string cpusetCgroup;
+	const static std::map<std::string, uint64_t> supportedSubsystems;
+	constexpr static char CGROUP_MOUNT_POINT[] = "/sys/fs/cgroup";
+	static uint64_t available;
+	static bool setUpSucceeded;
+
+	/* Initialize static vars. */
+	static void
+	SetUpTestCase()
+	{
+		isV1Available = isCgroupV1Available();
+		isV2Available = isCgroupV2Available();
+		ASSERT_TRUE(isV1Available != isV2Available);
+
+		std::string path(std::string("/proc/") + std::to_string(getpid()) + std::string("/cgroup"));
+		std::ifstream cgroupFile(path);
+		std::string line;
+		ASSERT_TRUE(cgroupFile.is_open()) << "Failed to open file: " << path;
+		if (isV1Available) {
+			while ((bool)std::getline(cgroupFile, line)) {
+				std::regex v1Regex(R"(^[0-9]+:([^:]*):(.+)$)");
+				std::smatch sm;
+
+				portTestEnv->log(LEVEL_ERROR, "/proc/self/cgroup line:\n  %s\n", line.c_str());
+				ASSERT_TRUE(std::regex_match(line, sm, v1Regex));
+				ASSERT_EQ(sm[2].str().at(0), '/');
+				if (0 != sm[1].length()) {
+					std::stringstream ss(sm[1].str());
+					std::vector<std::string> subsystems;
+
+					while (ss.good()) {
+						std::string subsystem;
+						std::getline(ss, subsystem, ',');
+						subsystems.push_back(subsystem);
+					}
+					for (auto s : subsystems) {
+						auto it = supportedSubsystems.find(s);
+						if (supportedSubsystems.end() != it) {
+							available |= it->second;
+							switch(it->second) {
+							case OMR_CGROUP_SUBSYSTEM_CPU:
+								cpuCgroup = sm[2].str();
+								break;
+							case OMR_CGROUP_SUBSYSTEM_MEMORY:
+								memCgroup = sm[2].str();
+								break;
+							case OMR_CGROUP_SUBSYSTEM_CPUSET:
+								cpusetCgroup = sm[2].str();
+								break;
+							default:
+								FAIL() << "Unsupported subsystem";
+							}
+						}
+					}
+				}
+			}
+		} else {
+			ASSERT_TRUE((bool)std::getline(cgroupFile, line));
+			std::regex v2Regex(R"(^0::(.+)$)");
+			std::smatch sm;
+
+			portTestEnv->log(LEVEL_ERROR, "/proc/self/cgroup line:\n  %s\n", line.c_str());
+			ASSERT_TRUE(std::regex_match(line, sm, v2Regex));
+
+			cpuCgroup = sm[1].str();
+			memCgroup = cpuCgroup;
+			cpusetCgroup = cpuCgroup;
+			ASSERT_EQ(cpuCgroup.at(0), '/');
+			std::ifstream controllerFile(CGROUP_MOUNT_POINT + cpuCgroup + "/cgroup.controllers");
+			std::string s;
+			while (controllerFile >> s) {
+				auto it = supportedSubsystems.find(s);
+				if (supportedSubsystems.end() != it) {
+					available |= it->second;
+				}
+			}
+		}
+		setUpSucceeded = true;
+	}
+
+	void
+	SetUp() override
+	{
+		/* Skip CgroupTests if setup failed. */
+		ASSERT_TRUE(setUpSucceeded);
+	}
+
+	static bool
+	isCgroupV1Available(void)
+	{
+		struct statfs buf = {0};
+		int32_t rc = 0;
+		bool result = true;
+
+		/* If tmpfs is mounted on /sys/fs/cgroup, then it indicates cgroup v1 system is available */
+		rc = statfs("/sys/fs/cgroup", &buf);
+		if (0 != rc) {
+			result = false;
+		} else if (TMPFS_MAGIC != buf.f_type) {
+			result = false;
+		}
+
+		return result;
+	}
+
+	static bool
+	isCgroupV2Available(void)
+	{
+		bool result = false;
+
+		/* If the cgroup.controllers file exists at the root cgroup, then v2 is available. */
+		if (0 == access("/sys/fs/cgroup/cgroup.controllers", F_OK)) {
+			result = true;
+		}
+
+		return result;
+	}
+#endif /* defined(LINUX) */
+};
+
+#if defined(LINUX)
+bool CgroupTest::isV1Available = false;
+bool CgroupTest::isV2Available = false;
+std::string CgroupTest::memCgroup;
+std::string CgroupTest::cpuCgroup;
+std::string CgroupTest::cpusetCgroup;
+const std::map<std::string, uint64_t> CgroupTest::supportedSubsystems = {
+	{"cpu", OMR_CGROUP_SUBSYSTEM_CPU},
+	{"memory", OMR_CGROUP_SUBSYSTEM_MEMORY},
+	{"cpuset", OMR_CGROUP_SUBSYSTEM_CPUSET}
+};
+constexpr char CgroupTest::CGROUP_MOUNT_POINT[];
+uint64_t CgroupTest::available = 0;
+bool CgroupTest::setUpSucceeded = false;
+#endif /* defined(LINUX) */
+
+/**
+ * Test omrsysinfo_cgroup_is_system_available.
+ */
+TEST(PortSysinfoTest, sysinfo_cgroup_is_system_available)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrsysinfo_cgroup_is_system_available";
+	BOOLEAN result = FALSE;
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+	result = omrsysinfo_cgroup_is_system_available();
+
+#if defined(LINUX)
+	if (FALSE == result) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_cgroup_is_system_available returned FALSE on Linux\n");
+	}
+#else /* defined(LINUX) */
+	if (TRUE == result) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_cgroup_is_system_available returned TRUE on non-Linux\n");
+	}
+#endif /* defined(LINUX) */
+
+	reportTestExit(OMRPORTLIB, testName);
+	return;
+}
+
+/**
+ * Test omrsysinfo_cgroup_get_available_subsystems.
+ */
+TEST_F(CgroupTest, sysinfo_cgroup_get_available_subsystems)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrsysinfo_cgroup_get_available_subsystems";
+	uint64_t available = 0;
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+	available = omrsysinfo_cgroup_get_available_subsystems();
+
+#if defined(LINUX)
+	ASSERT_EQ(available, CgroupTest::available);
+#else /* defined(LINUX) */
+	if (0 != available) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_cgroup_get_available_subsystems returned nonzero on non-Linux\n");
+	}
+#endif /* defined(LINUX) */
+
+	reportTestExit(OMRPORTLIB, testName);
+	return;
+}
+
+/**
+ * Test omrsysinfo_cgroup_are_subsystems_available.
+ */
+TEST_F(CgroupTest, sysinfo_cgroup_are_subsystems_available)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrsysinfo_cgroup_are_subsystems_available";
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+#if defined(LINUX)
+	EXPECT_EQ(omrsysinfo_cgroup_are_subsystems_available(OMR_CGROUP_SUBSYSTEM_CPU), CgroupTest::available & OMR_CGROUP_SUBSYSTEM_CPU);
+	EXPECT_EQ(omrsysinfo_cgroup_are_subsystems_available(OMR_CGROUP_SUBSYSTEM_MEMORY), CgroupTest::available & OMR_CGROUP_SUBSYSTEM_MEMORY);
+	EXPECT_EQ(omrsysinfo_cgroup_are_subsystems_available(OMR_CGROUP_SUBSYSTEM_CPUSET), CgroupTest::available & OMR_CGROUP_SUBSYSTEM_CPUSET);
+
+	EXPECT_EQ(
+			omrsysinfo_cgroup_are_subsystems_available(OMR_CGROUP_SUBSYSTEM_CPU | OMR_CGROUP_SUBSYSTEM_MEMORY),
+			CgroupTest::available & (OMR_CGROUP_SUBSYSTEM_CPU | OMR_CGROUP_SUBSYSTEM_MEMORY));
+	EXPECT_EQ(
+			omrsysinfo_cgroup_are_subsystems_available(OMR_CGROUP_SUBSYSTEM_MEMORY | OMR_CGROUP_SUBSYSTEM_CPUSET),
+			CgroupTest::available & (OMR_CGROUP_SUBSYSTEM_MEMORY | OMR_CGROUP_SUBSYSTEM_CPUSET));
+	EXPECT_EQ(
+			omrsysinfo_cgroup_are_subsystems_available(OMR_CGROUP_SUBSYSTEM_CPUSET | OMR_CGROUP_SUBSYSTEM_CPU),
+			CgroupTest::available & (OMR_CGROUP_SUBSYSTEM_CPUSET | OMR_CGROUP_SUBSYSTEM_CPU));
+
+	EXPECT_EQ(
+			omrsysinfo_cgroup_are_subsystems_available(OMR_CGROUP_SUBSYSTEM_ALL),
+			CgroupTest::available & (OMR_CGROUP_SUBSYSTEM_ALL));
+#else /* defined(LINUX) */
+	if (0 != omrsysinfo_cgroup_are_subsystems_available(OMR_CGROUP_SUBSYSTEM_ALL)) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_cgroup_are_subsystems_available returned nonzero on non-Linux\n");
+	}
+#endif /* defined(LINUX) */
+
+	reportTestExit(OMRPORTLIB, testName);
+	return;
+}
+
+/**
+ * Test omrsysinfo_cgroup_get_enabled_subsystems, omrsysinfo_cgroup_enable_subsystems,
+ * and omrsysinfo_cgroup_are_subsystems_enabled.
+ */
+TEST_F(CgroupTest, sysinfo_cgroup_enable)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "sysinfo_cgroup_enable";
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+#if defined(LINUX)
+	uint64_t enabled = 0;
+	/* Clear enabled subsystems. */
+	ASSERT_EQ(omrsysinfo_cgroup_enable_subsystems(0), (uint64_t)0);
+	ASSERT_EQ(omrsysinfo_cgroup_get_enabled_subsystems(), (uint64_t)0);
+	ASSERT_EQ(
+			omrsysinfo_cgroup_are_subsystems_enabled(OMR_CGROUP_SUBSYSTEM_ALL),
+			(uint64_t)0);
+
+	enabled = CgroupTest::available & OMR_CGROUP_SUBSYSTEM_CPU;
+	EXPECT_EQ(omrsysinfo_cgroup_enable_subsystems(OMR_CGROUP_SUBSYSTEM_CPU), enabled);
+	EXPECT_EQ(omrsysinfo_cgroup_get_enabled_subsystems(), enabled);
+	EXPECT_EQ(omrsysinfo_cgroup_are_subsystems_enabled(OMR_CGROUP_SUBSYSTEM_CPU), enabled);
+	EXPECT_NE(omrsysinfo_cgroup_are_subsystems_enabled(OMR_CGROUP_SUBSYSTEM_MEMORY), OMR_CGROUP_SUBSYSTEM_MEMORY);
+	EXPECT_EQ(
+			omrsysinfo_cgroup_are_subsystems_enabled(OMR_CGROUP_SUBSYSTEM_CPU | OMR_CGROUP_SUBSYSTEM_CPUSET),
+			enabled);
+
+	/* This disables cpu subsystem. */
+	enabled = CgroupTest::available & (OMR_CGROUP_SUBSYSTEM_MEMORY | OMR_CGROUP_SUBSYSTEM_CPUSET);
+	EXPECT_EQ(
+			omrsysinfo_cgroup_enable_subsystems(OMR_CGROUP_SUBSYSTEM_MEMORY | OMR_CGROUP_SUBSYSTEM_CPUSET),
+			enabled);
+	EXPECT_EQ(
+			omrsysinfo_cgroup_get_enabled_subsystems(),
+			enabled);
+	EXPECT_EQ(omrsysinfo_cgroup_are_subsystems_enabled(OMR_CGROUP_SUBSYSTEM_MEMORY), CgroupTest::available & OMR_CGROUP_SUBSYSTEM_MEMORY);
+	EXPECT_EQ(
+			omrsysinfo_cgroup_are_subsystems_enabled(OMR_CGROUP_SUBSYSTEM_ALL),
+			enabled);
+
+	/* This disables cpu and memory subsystems. */
+	enabled = CgroupTest::available & OMR_CGROUP_SUBSYSTEM_CPUSET;
+	EXPECT_EQ(omrsysinfo_cgroup_enable_subsystems(OMR_CGROUP_SUBSYSTEM_CPUSET), enabled);
+	EXPECT_EQ(omrsysinfo_cgroup_get_enabled_subsystems(), enabled);
+	EXPECT_EQ(omrsysinfo_cgroup_are_subsystems_enabled(OMR_CGROUP_SUBSYSTEM_CPUSET), enabled);
+	EXPECT_NE(omrsysinfo_cgroup_are_subsystems_enabled(OMR_CGROUP_SUBSYSTEM_MEMORY), OMR_CGROUP_SUBSYSTEM_MEMORY);
+	EXPECT_EQ(
+			omrsysinfo_cgroup_are_subsystems_enabled(OMR_CGROUP_SUBSYSTEM_CPU | OMR_CGROUP_SUBSYSTEM_CPUSET),
+			enabled);
+#else /* defined(LINUX) */
+	ASSERT_EQ(omrsysinfo_cgroup_get_enabled_subsystems(), (uint64_t)0);
+	ASSERT_EQ(omrsysinfo_cgroup_enable_subsystems(OMR_CGROUP_SUBSYSTEM_ALL), (uint64_t)0);
+	ASSERT_EQ(
+			omrsysinfo_cgroup_are_subsystems_enabled(OMR_CGROUP_SUBSYSTEM_ALL),
+			(uint64_t)0);
+#endif /* defined(LINUX) */
+
+	reportTestExit(OMRPORTLIB, testName);
+	return;
+}
+
 /**
  * Test omrsysinfo_cgroup_get_memlimit.
  */
@@ -2402,6 +2708,57 @@ TEST(PortSysinfoTest, sysinfo_cgroup_get_memlimit)
 	reportTestExit(OMRPORTLIB, testName);
 	return;
 }
+
+/**
+ * Test omrsysinfo_get_cgroup_subsystem_list.
+ */
+TEST_F(CgroupTest, sysinfo_get_cgroup_subsystem_list)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrsysinfo_get_cgroup_subsystem_list";
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+#if defined(LINUX)
+	OMRCgroupEntry *entries = omrsysinfo_get_cgroup_subsystem_list();
+	OMRCgroupEntry *temp = entries;
+
+	if (NULL == temp) {
+		EXPECT_EQ(CgroupTest::available, (uint64_t)0);
+	} else {
+		do {
+			EXPECT_EQ(CgroupTest::available & temp->flag, temp->flag);
+			switch(temp->flag) {
+			case OMR_CGROUP_SUBSYSTEM_CPU:
+				EXPECT_EQ(temp->cgroup, cpuCgroup);
+				EXPECT_STREQ(temp->subsystem, "cpu");
+				break;
+			case OMR_CGROUP_SUBSYSTEM_MEMORY:
+				EXPECT_EQ(temp->cgroup, memCgroup);
+				EXPECT_STREQ(temp->subsystem, "memory");
+				break;
+			case OMR_CGROUP_SUBSYSTEM_CPUSET:
+				EXPECT_EQ(temp->cgroup, cpusetCgroup);
+				EXPECT_STREQ(temp->subsystem, "cpuset");
+				break;
+			default:
+				FAIL() << "Unsupported subsystem";
+			}
+			temp = temp->next;
+		} while (temp != entries);
+	}
+#else /* defined(LINUX) */
+	if (NULL != omrsysinfo_get_cgroup_subsystem_list()) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_get_cgroup_subsystem_list returned not null on non-Linux\n");
+	}
+#endif /* defined(LINUX) */
+
+	reportTestExit(OMRPORTLIB, testName);
+	return;
+}
+#else /* !defined(LINUX) || (GTEST_GCC_VER_ >= 40900) */
+#pragma message("Cgroup tests are disabled due to an unsupported compiler.")
+#endif /* !defined(LINUX) || (GTEST_GCC_VER_ >= 40900) */
 
 /**
  * Test GetProcessorDescription.

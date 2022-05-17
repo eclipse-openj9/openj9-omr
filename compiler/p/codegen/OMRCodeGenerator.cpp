@@ -1770,18 +1770,7 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
 
    if (!opcode.isVectorOpCode())
       {
-      TR::DataType ot = opcode.getVectorResultDataType();
-
-      if (ot.getVectorLength() != TR::VectorLength128) return false;
-
-      TR::DataType et = ot.getVectorElementType();
-
-      if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
-          (opcode.getVectorOperation() == OMR::vadd) &&
-          et == TR::Int64)
-         return true;
-
-      // implemented vector operations
+      // Will be transformed into new vector opcodes soon
       switch (opcode.getVectorOperation())
          {
          case TR::getvelem:

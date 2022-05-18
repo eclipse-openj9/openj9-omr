@@ -1771,7 +1771,7 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
    if (!opcode.isVectorOpCode())
       {
       // Will be transformed into new vector opcodes soon
-      switch (opcode.getVectorOperation())
+      switch (opcode.getOpCodeValue())
          {
          case TR::getvelem:
             if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)

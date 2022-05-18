@@ -4754,35 +4754,34 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
 
    TR::DataType et = opcode.getVectorResultDataType().getVectorElementType();
 
+   TR_ASSERT_FATAL(et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double, "DataType %s is not supported for vectorization", et.toString());
+
    // implemented vector opcodes
    switch (opcode.getVectorOperation())
       {
       case OMR::vadd:
       case OMR::vsub:
-      case OMR::vmul:
-      case OMR::vdiv:
-      case OMR::vneg:
-         if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
-            return true;
-         else
-            return false;
       case OMR::vload:
       case OMR::vloadi:
       case OMR::vstore:
       case OMR::vstorei:
-         if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
+      case OMR::vneg:
+      case OMR::vsplats:
+         return true;
+      case OMR::vmul:
+         if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float || et == TR::Double)
+            return true;
+         else
+            return false;
+      case OMR::vdiv:
+         if (et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
       case OMR::vxor:
       case OMR::vor:
       case OMR::vand:
-         if (et == TR::Int32 || et == TR::Int64)
-            return true;
-         else
-            return false;
-      case OMR::vsplats:
-         if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
+         if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64)
             return true;
          else
             return false;

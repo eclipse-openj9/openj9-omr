@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1044,7 +1044,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
                                     TR::Block *liveBlock = startOfExtendedBBForBB[nextBlock->getNumber()];
                                     if (_liveOnEntry.get(liveBlock->getNumber()))
                                        {
-                                       if ((_blocks.getNumberOfLoadsAndStores(blockNumber) == 0) &&
+                                       if ((_blocks.getNumberOfLoadsAndStores(liveBlock->getNumber()) != 0) &&
                                             (!dontAssignInColdBlocks(comp) || !nextBlock->isCold()))
                                           {
                                           referencedInNearestLoop = true;

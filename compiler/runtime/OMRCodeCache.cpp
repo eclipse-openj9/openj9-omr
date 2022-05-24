@@ -50,6 +50,10 @@
 #include <unistd.h>
 #endif
 
+#if defined(OSX) && defined(AARCH64)
+#include <pthread.h> // for pthread_jit_write_protect_np
+#endif
+
 namespace TR { class CodeGenerator; }
 
 /*****************************************************************************

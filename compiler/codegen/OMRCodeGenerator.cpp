@@ -112,6 +112,10 @@
 #include "stdarg.h"
 #include "OMR/Bytes.hpp"
 
+#if defined(OSX) && defined(AARCH64)
+#include <pthread.h> // for pthread_jit_write_protect_np
+#endif
+
 namespace TR { class Optimizer; }
 namespace TR { class RegisterDependencyConditions; }
 

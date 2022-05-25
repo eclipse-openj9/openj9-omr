@@ -503,6 +503,7 @@ parseAttribute(char *line, Dwarf_Die *lastCreatedDie,
 	Dwarf_Half type = DW_TAG_unknown;
 	Dwarf_Half form = DW_FORM_unknown;
 	size_t span = strcspn(line, "\t (");
+
 	parseAttrType(line, span, &type, &form);
 
 	if ((DW_AT_unknown != type) && (DW_FORM_unknown != form)) {
@@ -517,7 +518,8 @@ parseAttribute(char *line, Dwarf_Die *lastCreatedDie,
 			newAttr->_form = form;
 			newAttr->_ref = NULL;
 
-			const char *valueStart = line + span + strspn(line + span, "\t (");
+			char *valueStart = line + span + strspn(line + span, "\t (");
+			char *valueEnd = valueStart;
 
 			/* Parse the value of the attribute based on its form. */
 			if ((DW_FORM_string == form) || (DW_AT_decl_file == type)) {
@@ -537,13 +539,46 @@ parseAttribute(char *line, Dwarf_Die *lastCreatedDie,
 					newAttr->_udata = (Dwarf_Unsigned)insertIt->second + 1; /* since this attribute is indexed at 1 */
 				}
 			} else if (DW_FORM_ref1 == form) {
-				newAttr->_refdata = strtoul(valueStart, NULL, 16);
+				newAttr->_refdata = strtoul(valueStart, &valueEnd, 16);
+				/*
+				 * A comment may follow, for example,
+				 *     DW_AT_type (0x123456 "int")
+				 * just insist that some reference has been scanned.
+				 */
+				if (valueStart == valueEnd) {
+					goto parseError;
+				}
 				if (DW_TAG_unknown != (*lastCreatedDie)->_tag) {
 					refToPopulate->emplace(&newAttr->_ref, newAttr->_refdata);
 				}
 			} else if (DW_FORM_udata == form) {
-				newAttr->_udata = (Dwarf_Unsigned)strtoul(valueStart, NULL, 0);
+				if ((DW_AT_data_bit_offset == type) || (DW_AT_data_member_location == type)) {
+					if (strStartsWith(valueStart, "DW_OP_plus_uconst")) {
+						/*
+						 * Some versions of dwarfdump use expressions for field offsets, e.g.:
+						 *     DW_AT_data_member_location (DW_OP_plus_uconst 0x20)
+						 * DW_OP_plus_uconst is the only operator we need to support
+						 * so simply skip past that and any whitespace that follows.
+						 */
+						valueStart += LITERAL_STRLEN("DW_OP_plus_uconst");
+						valueStart += strspn(valueStart, "\t ");
+					}
+				}
+				newAttr->_udata = (Dwarf_Unsigned)strtoul(valueStart, &valueEnd, 0);
+				if (')' != valueEnd[strspn(valueEnd, "\t ")]) {
+					goto parseError;
+				}
 			} else if (DW_FORM_sdata == form) {
+				if ('<' == *valueStart) {
+					/*
+					 * Ignore certain attributes, for example,
+					 *     DW_AT_const_value   (<0x04> 00 00 80 3f )
+					 * These have been seen in relation to inlined functions
+					 * and provide the value of a formal parameter given at the
+					 * call site: we don't need that information.
+					 */
+					goto ignoreAttr;
+				}
 				/*
 				 * Note the use of strtoul() here even though a signed value is expected.
 				 * This is because dwarfdump-classic uses long hexadecimal notation.
@@ -557,16 +592,23 @@ parseAttribute(char *line, Dwarf_Die *lastCreatedDie,
 				 * The negative value is fine because strtoul() does range-checking
 				 * of the non-negated value (4).
 				 */
-				newAttr->_sdata = (Dwarf_Signed)strtoul(valueStart, NULL, 0);
+				newAttr->_sdata = (Dwarf_Signed)strtoul(valueStart, &valueEnd, 0);
+				if (')' != valueEnd[strspn(valueEnd, "\t ")]) {
+					goto parseError;
+				}
 			} else if (DW_FORM_flag == form) {
 				if (strStartsWith(valueStart, "true")) {
 					newAttr->_flag = 1;
 				} else if (strStartsWith(valueStart, "false")) {
 					newAttr->_flag = 0;
 				} else {
-					newAttr->_flag = 0 != strtol(valueStart, NULL, 0);
+					newAttr->_flag = 0 != strtol(valueStart, &valueEnd, 0);
+					if (')' != valueEnd[strspn(valueEnd, "\t ")]) {
+						goto parseError;
+					}
 				}
 			} else {
+parseError:
 				logParseError("parseAttribute", line);
 				ret = DW_DLV_ERROR;
 				setError(error, DW_DLE_VMM);
@@ -583,6 +625,7 @@ parseAttribute(char *line, Dwarf_Die *lastCreatedDie,
 					attr->_nextAttr = newAttr;
 				}
 			} else {
+ignoreAttr:
 				delete newAttr;
 			}
 		}

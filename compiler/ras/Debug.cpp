@@ -1626,6 +1626,8 @@ TR_Debug::getName(TR::SymbolReference * symRef)
              return "<nonNullableArrayNullStoreCheck>";
          case TR::SymbolReferenceTable::J9JNIMethodIDvTableIndexFieldSymbol:
              return "<J9JNIMethodIDvTableIndexFieldSymbol>";
+         case TR::SymbolReferenceTable::defaultValueSymbol:
+             return "<defaultValue>";
          }
       }
 
@@ -2090,7 +2092,8 @@ static const char *commonNonhelperSymbolNames[] =
    "<j9VMThreadTempSlotField>",
    "<computedStaticCallSymbol>",
    "<j9VMThreadFloatTemp1>",
-   "<J9JNIMethodIDvTableIndexFieldSymbol>"
+   "<J9JNIMethodIDvTableIndexFieldSymbol>",
+   "<defaultValue>"
    };
 
 const char *

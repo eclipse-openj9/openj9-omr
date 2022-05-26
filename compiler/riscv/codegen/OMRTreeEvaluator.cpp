@@ -2711,6 +2711,18 @@ OMR::RV::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
    generateLOAD(TR::InstOpCode::_ld, node, tempReg, tempMR, cg);
 
+#ifdef J9_PROJECT_SPECIFIC
+   /*
+    * In OpenJ9, classes are aligned on 256-bit boundaries, and the low 8 bits of the class
+    * pointer in the object header are used for flags. So to get the proper class pointer,
+    * you have to load and then clear the flags.
+    *
+    * This is why we call generateVFTMaskInstruction() here.
+    */
+   if (node->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())
+      TR::TreeEvaluator::generateVFTMaskInstruction(cg, node, tempReg);
+#endif
+
    /*
     * Enable this part when dmb instruction becomes available
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());

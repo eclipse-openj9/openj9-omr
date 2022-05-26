@@ -476,7 +476,12 @@ class SymbolReferenceTable
        */
       J9JNIMethodIDvTableIndexFieldSymbol,
 
-      OMRlastPrintableCommonNonhelperSymbol = J9JNIMethodIDvTableIndexFieldSymbol,
+      /** \brief
+       * This symbol is used to access the default instance associated with a class, if any exists
+       */
+      defaultValueSymbol,
+
+      OMRlastPrintableCommonNonhelperSymbol = defaultValueSymbol,
 
       firstPerCodeCacheHelperSymbol,
       lastPerCodeCacheHelperSymbol = firstPerCodeCacheHelperSymbol + TR_numCCPreLoadedCode - 1,

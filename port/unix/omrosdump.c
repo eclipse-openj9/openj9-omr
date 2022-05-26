@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -238,6 +238,9 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 		}
 
 		/* Apply suggested name */
+#if defined(DUMP_DBG)
+		portLibrary->tty_err_printf(portLibrary, "Attempting to rename \"%s\" to \"%s\"\n", corepath, filename);
+#endif /* defined(DUMP_DBG) */
 		if (rename(corepath, filename)) {
 			portLibrary->str_printf(portLibrary, filename, EsMaxPath, "cannot find core file: \"%s\". check \"ulimit -Hc\" is set high enough", strerror(errno));
 			return 1;

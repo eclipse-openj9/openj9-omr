@@ -107,7 +107,7 @@ appendCoreName(OMRPortLibrary *portLibrary, char *corepath, intptr_t pid)
 		}
 
 #if defined(DUMP_DBG)
-		portLibrary->tty_printf(portLibrary, "\tappendCoreName: \"%s\" matches the pidFilter \"%s\" or is a plain \"core\" file: %s\n", s, pidFilter);
+		portLibrary->tty_printf(portLibrary, "\tappendCoreName: \"%s\" matches the pidFilter \"%s\" or is a plain \"core\" file: %s\n", s, pidFilter, corepath);
 #endif /* defined(DUMP_DBG) */
 
 		/* Temporarily append current name */

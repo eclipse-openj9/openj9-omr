@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2001, 2019 IBM Corp. and others
+ * Copyright (c) 2001, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,7 +36,7 @@
 #if defined(AIXPPC)
 #include <sys/types.h>
 #include <sys/var.h>
-#endif
+#endif /* defined(AIXPPC) */
 
 #include <signal.h>
 
@@ -124,7 +124,7 @@ TEST(PortDumpTest, dump_test_create_dump_with_NO_name)
 #if defined(AIXPPC)
 	struct vario myvar;
 	int sys_parmRC;
-#endif
+#endif /* defined(AIXPPC) */
 
 	reportTestEntry(OMRPORTLIB, testName);
 
@@ -133,18 +133,18 @@ TEST(PortDumpTest, dump_test_create_dump_with_NO_name)
 #if 0
 	/* try out a NULL test (turns out this crashes) */
 	rc = omrdump_create(NULL, NULL, NULL); /* this crashes */
-#endif
+#endif /* 0 */
 
 	/* try out a more sane NULL test */
 	portTestEnv->log("calling omrdump_create with empty filename\n");
 
 #if defined(J9ZOS390)
 	rc = omrdump_create(coreFileName, "IEATDUMP", NULL);
-#else
+#else /* defined(J9ZOS390) */
 	rc = omrdump_create(coreFileName, NULL, NULL);
-#endif
+#endif /* defined(J9ZOS390) */
 
-	if (rc == 0) {
+	if (0 == rc) {
 		uintptr_t verifyFileRC = 99;
 
 		portTestEnv->log("omrdump_create claims to have written a core file to: %s\n", coreFileName);
@@ -156,7 +156,7 @@ TEST(PortDumpTest, dump_test_create_dump_with_NO_name)
 		 * So, only check for a specific filename if we are getting full core dumps */
 		sys_parmRC = sys_parm(SYSP_GET, SYSP_V_FULLCORE, &myvar);
 
-		if ((sys_parmRC == 0) && (myvar.v.v_fullcore.value == 1)) {
+		if ((0 == sys_parmRC) && (1 == myvar.v.v_fullcore.value)) {
 
 			doFileVerification = TRUE;
 		}
@@ -165,7 +165,7 @@ TEST(PortDumpTest, dump_test_create_dump_with_NO_name)
 #endif /* defined(AIXPPC) */
 		if (doFileVerification) {
 			verifyFileRC = verifyFileExists(PORTTEST_ERROR_ARGS, coreFileName);
-			if (verifyFileRC == 0) {
+			if (0 == verifyFileRC) {
 				removeDump(OMRPORTLIB, coreFileName, testName);
 			}
 		}
@@ -174,6 +174,50 @@ TEST(PortDumpTest, dump_test_create_dump_with_NO_name)
 	}
 	reportTestExit(OMRPORTLIB, testName);
 }
+
+
+
+#if !defined(J9ZOS390)
+/**
+ * Test omrdump_create(), this time passing in core file name,
+ * but with no path. It should get created in the current
+ * working directory.
+ * Verify that the returned core file name actually exists.
+ * This test hasn't been made to run on z/OS yet - it must be
+ * possible because omrdump_create with a NULL filename already
+ * does the job of generating a data set name with no path, but
+ * it would probably require someone with knowledge of the
+ * platform to determine what an acceptable name would be.
+ */
+TEST(PortDumpTest, dump_test_create_dump_with_no_path)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "dump_test_create_dump_with_no_path";
+	uintptr_t rc = 99;
+	char coreFileName[EsMaxPath];
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+	strcpy(coreFileName, testName);
+
+	portTestEnv->log("calling omrdump_create with filename: %s\n", coreFileName);
+	rc = omrdump_create(coreFileName, NULL, NULL);
+
+	if (0 == rc) {
+		uintptr_t verifyFileRC = 99;
+
+		portTestEnv->log("omrdump_create claims to have written a core file to: %s\n", coreFileName);
+		verifyFileRC = verifyFileExists(PORTTEST_ERROR_ARGS, coreFileName);
+		if (0 == verifyFileRC) {
+			removeDump(OMRPORTLIB, coreFileName, testName);
+		}
+	} else {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrdump_create returned: %u, with filename: %s\n", rc, coreFileName);
+	}
+	reportTestExit(OMRPORTLIB, testName);
+}
+#endif /* !defined(J9ZOS390) */
+
 
 
 /**
@@ -204,16 +248,16 @@ TEST(PortDumpTest, dump_test_create_dump_with_name)
 	portTestEnv->log("calling omrdump_create with filename: %s\n", coreFileName);
 #if !defined(J9ZOS390)
 	rc = omrdump_create(coreFileName, NULL, NULL);
-#else
+#else /* !defined(J9ZOS390) */
 	rc = omrdump_create(coreFileName, "IEATDUMP", NULL);
-#endif
+#endif /* !defined(J9ZOS390) */
 
-	if (rc == 0) {
+	if (0 == rc) {
 		uintptr_t verifyFileRC = 99;
 
 		portTestEnv->log("omrdump_create claims to have written a core file to: %s\n", coreFileName);
 		verifyFileRC = verifyFileExists(PORTTEST_ERROR_ARGS, coreFileName);
-		if (verifyFileRC == 0) {
+		if (0 == verifyFileRC) {
 			removeDump(OMRPORTLIB, coreFileName, testName);
 		}
 	} else {
@@ -284,16 +328,16 @@ simpleHandlerFunction(struct OMRPortLibrary *portLibrary, uint32_t gpType, void 
 
 #if defined(J9ZOS390)
 	rc = omrdump_create(info->coreFileName, "IEATDUMP", NULL);
-#else
+#else /* defined(J9ZOS390) */
 	rc = omrdump_create(info->coreFileName, NULL, NULL);
-#endif
+#endif /* defined(J9ZOS390) */
 
-	if (rc == 0) {
+	if (0 == rc) {
 		uintptr_t verifyFileRC = 99;
 
 		portTestEnv->log("omrdump_create claims to have written a core file to: %s\n", info->coreFileName);
 		verifyFileRC = verifyFileExists(PORTTEST_ERROR_ARGS, info->coreFileName);
-		if (verifyFileRC == 0) {
+		if (0 == verifyFileRC) {
 			removeDump(OMRPORTLIB, info->coreFileName, testName);
 		}
 	} else {

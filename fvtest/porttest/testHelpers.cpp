@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -309,7 +309,7 @@ verifyFileExists(struct OMRPortLibrary *portLibrary, const char *pltestFileName,
 	portTestEnv->log("checking for data set: %s\n", dumpName);
 	FILE *file = fopen(dumpName, "r");
 	if (NULL == file) {
-		outputErrorMessage(OMRPORTLIB, pltestFileName, lineNumber, testName, "\tdata set: %s does not exist!\n", -1, fileName);
+		outputErrorMessage(OMRPORTLIB, pltestFileName, lineNumber, testName, "\tdata set: %s does not exist!\n", fileName);
 	} else {
 		portTestEnv->log("data set: %s exists\n", dumpName);
 		fclose(file);
@@ -327,7 +327,7 @@ verifyFileExists(struct OMRPortLibrary *portLibrary, const char *pltestFileName,
 			portTestEnv->log("file: %s exists\n", fileName);
 			rc = 0;
 		} else {
-			outputErrorMessage(OMRPORTLIB, pltestFileName, lineNumber, testName, "\tfile: %s does not exist!\n", -1, fileName);
+			outputErrorMessage(OMRPORTLIB, pltestFileName, lineNumber, testName, "\tfile: %s does not exist!\n", fileName);
 		}
 	} else {
 		/* error in file_stat */

@@ -58,6 +58,8 @@ OMR::ILOpCode::checkILOpArrayLengths()
 
       TR_ASSERT(props.opcode == opCode, "_opCodeProperties table out of sync at index %d, has %s\n", i, op.getName());
       }
+
+   TR_ASSERT_FATAL(_opCodeProperties[TR::viRegLoad].dataType == TR::DataType::createVectorType(TR::Int32, TR::VectorLength128), "Vector type was not initialized correctly\n");
    }
 
 // FIXME: We should put the smarts in the getSize() routine in TR::DataType

@@ -965,6 +965,9 @@ static const char *opCodeToNameMap[] =
    "vumull2_8h",
    "vumull2_4s",
    "vumull2_2d",
+   "vaddv16b",
+   "vaddv8h",
+   "vaddv4s",
    "nop",
    };
 

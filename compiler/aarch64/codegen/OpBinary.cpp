@@ -959,6 +959,10 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x6E20C000,	/* UMULL2  	vumull2_8h */
 		0x6E60C000,	/* UMULL2  	vumull2_4s */
 		0x6EA0C000,	/* UMULL2  	vumull2_2d */
+	/* Vector reduce instructions */
+		0x4E31B800,	/* ADDV   	vaddv16b */
+		0x4E71B800,	/* ADDV   	vaddv8h */
+		0x4Eb1B800,	/* ADDV   	vaddv4s */
 	/* Hint instructions */
 		0xD503201F,	/* NOP          nop      */
 };

@@ -1930,3 +1930,18 @@ INSTANTIATE_TEST_CASE_P(INS2, ARM64MovVectorElementEncodingTest, ::testing::Valu
     std::make_tuple(TR::InstOpCode::vinsed, TR::RealRegister::v31, TR::RealRegister::v0, 0, 1, "6e08441f"),
     std::make_tuple(TR::InstOpCode::vinsed, TR::RealRegister::v31, TR::RealRegister::v0, 1, 1, "6e18441f")
 ));
+
+INSTANTIATE_TEST_CASE_P(VectorADDV, ARM64Trg1Src1EncodingTest, ::testing::Values(
+    std::make_tuple(TR::InstOpCode::vaddv16b, TR::RealRegister::v0, TR::RealRegister::v15, "4e31b9e0"),
+    std::make_tuple(TR::InstOpCode::vaddv8h, TR::RealRegister::v0, TR::RealRegister::v15, "4e71b9e0"),
+    std::make_tuple(TR::InstOpCode::vaddv4s, TR::RealRegister::v0, TR::RealRegister::v15, "4eb1b9e0"),
+    std::make_tuple(TR::InstOpCode::vaddv16b, TR::RealRegister::v0, TR::RealRegister::v31, "4e31bbe0"),
+    std::make_tuple(TR::InstOpCode::vaddv8h, TR::RealRegister::v0, TR::RealRegister::v31, "4e71bbe0"),
+    std::make_tuple(TR::InstOpCode::vaddv4s, TR::RealRegister::v0, TR::RealRegister::v31, "4eb1bbe0"),
+    std::make_tuple(TR::InstOpCode::vaddv16b, TR::RealRegister::v15, TR::RealRegister::v0, "4e31b80f"),
+    std::make_tuple(TR::InstOpCode::vaddv8h, TR::RealRegister::v15, TR::RealRegister::v0, "4e71b80f"),
+    std::make_tuple(TR::InstOpCode::vaddv4s, TR::RealRegister::v15, TR::RealRegister::v0, "4eb1b80f"),
+    std::make_tuple(TR::InstOpCode::vaddv16b, TR::RealRegister::v31, TR::RealRegister::v0, "4e31b81f"),
+    std::make_tuple(TR::InstOpCode::vaddv8h, TR::RealRegister::v31, TR::RealRegister::v0, "4e71b81f"),
+    std::make_tuple(TR::InstOpCode::vaddv4s, TR::RealRegister::v31, TR::RealRegister::v0, "4eb1b81f")
+));

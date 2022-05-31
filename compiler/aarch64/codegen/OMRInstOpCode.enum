@@ -958,6 +958,10 @@
 		vumull2_8h,                                              	/* 0x6E20C000	UMULL2   	 */
 		vumull2_4s,                                              	/* 0x6E60C000	UMULL2   	 */
 		vumull2_2d,                                              	/* 0x6EA0C000	UMULL2   	 */
+	/* Vector reduce instructions */
+		vaddv16b,                                               	/* 0x4E31B800	ADDV    	 */
+		vaddv8h,                                                	/* 0x4E71B800	ADDV    	 */
+		vaddv4s,                                                	/* 0x4EB1B800	ADDV    	 */
 /* Hint instructions */
 		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */

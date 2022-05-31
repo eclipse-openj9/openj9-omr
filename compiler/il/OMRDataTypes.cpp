@@ -334,11 +334,3 @@ namespace TR{
    double getMaxDouble() { return fpLimits.getMaxDouble(); }
    double getMinDouble() { return fpLimits.getMinDouble(); }
 }
-
-
-const TR::DataTypes OMR::DataType::Vector128Int8   = OMR::DataType::createVectorType(TR::Int8, TR::VectorLength128);
-const TR::DataTypes OMR::DataType::Vector128Int16  = OMR::DataType::createVectorType(TR::Int16, TR::VectorLength128);
-const TR::DataTypes OMR::DataType::Vector128Int32  = OMR::DataType::createVectorType(TR::Int32, TR::VectorLength128);
-const TR::DataTypes OMR::DataType::Vector128Int64  = OMR::DataType::createVectorType(TR::Int64, TR::VectorLength128);
-const TR::DataTypes OMR::DataType::Vector128Float  = OMR::DataType::createVectorType(TR::Float, TR::VectorLength128);
-const TR::DataTypes OMR::DataType::Vector128Double = OMR::DataType::createVectorType(TR::Double, TR::VectorLength128);

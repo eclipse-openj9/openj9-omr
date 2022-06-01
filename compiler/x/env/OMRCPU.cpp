@@ -62,7 +62,8 @@ OMR::X86::CPU::detect(OMRPortLibrary * const omrPortLib)
 
    if (TRUE == omrsysinfo_processor_has_feature(&processorDescription, OMR_FEATURE_X86_OSXSAVE))
       {
-      if (((6 & _xgetbv(0)) != 6) || feGetEnv("TR_DisableAVX")) // '6' = mask for XCR0[2:1]='11b' (XMM state and YMM state are enabled)
+      static const bool disableAVX = feGetEnv("TR_DisableAVX") != NULL;
+      if (((6 & _xgetbv(0)) != 6) || disableAVX) // '6' = mask for XCR0[2:1]='11b' (XMM state and YMM state are enabled)
          {
          // Unset OSXSAVE if not enabled via CR0
          omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_X86_OSXSAVE, FALSE);

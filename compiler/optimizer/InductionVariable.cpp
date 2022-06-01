@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -7171,7 +7171,7 @@ TR_InductionVariableAnalysis::findEntryValueForSymRef(TR_RegionStructure *loop,
 
 static int32_t getEntryValueMaxDepth()
    {
-   char * ivaMaxDepthString = feGetEnv("TR_IVAEntryValueMaxDepth");
+   static const char * ivaMaxDepthString = feGetEnv("TR_IVAEntryValueMaxDepth");
    if (ivaMaxDepthString)
       return atoi(ivaMaxDepthString);
    return 500;

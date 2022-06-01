@@ -225,7 +225,11 @@ enum VectorLength
    VectorLength64,
    // TODO: Redefine, preferably based on platform, when some platform starts supporting other than 128-bit
    // Defining per platform is not necessary for functional correctness but for reducing NumAllTypes
+#if defined(TR_TARGET_X86)
+   NumVectorLengths = VectorLength512
+#else
    NumVectorLengths = VectorLength128
+#endif
    };
 
 /**

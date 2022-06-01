@@ -75,20 +75,31 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDloadEvaluator(TR::Node* node, TR::Cod
    tempMR = ConvertToPatchableMemoryReference(tempMR, node, cg);
    TR::Register* resultReg = cg->allocateRegister(TR_VRF);
 
-   TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
+   TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::MOVDQURegMem;
+   OMR::X86::Encoding encoding = Legacy;
+
    switch (node->getSize())
       {
       case 16:
-         opCode = TR::InstOpCode::MOVDQURegMem;
+         if (cg->comp()->target().cpu.supportsAVX())
+            encoding = VEX_L128;
+         break;
+      case 32:
+         TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsAVX(), "256-bit vload requires AVX");
+         encoding = VEX_L256;
+         break;
+      case 64:
+         TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F), "512-bit vload requires AVX-512");
+         encoding = EVEX_L512;
          break;
       default:
          if (cg->comp()->getOption(TR_TraceCG))
             traceMsg(cg->comp(), "Unsupported fill size: Node = %p\n", node);
-         TR_ASSERT(false, "Unsupported fill size");
+         TR_ASSERT_FATAL(false, "Unsupported fill size");
          break;
       }
 
-   TR::Instruction* instr = generateRegMemInstruction(opCode, node, resultReg, tempMR, cg);
+   TR::Instruction* instr = generateRegMemInstruction(opCode, node, resultReg, tempMR, cg, encoding);
    if (node->getOpCode().isIndirect())
       cg->setImplicitExceptionPoint(instr);
    node->setRegister(resultReg);
@@ -103,20 +114,31 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDstoreEvaluator(TR::Node* node, TR::Co
    tempMR = ConvertToPatchableMemoryReference(tempMR, node, cg);
    TR::Register* valueReg = cg->evaluate(valueNode);
 
-   TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
+   TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::MOVDQUMemReg;
+   OMR::X86::Encoding encoding = Legacy;
+
    switch (node->getSize())
       {
       case 16:
-         opCode = TR::InstOpCode::MOVDQUMemReg;
+         if (cg->comp()->target().cpu.supportsAVX())
+            encoding = VEX_L128;
+         break;
+      case 32:
+         TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsAVX(), "256-bit vstore requires AVX");
+         encoding = VEX_L256;
+         break;
+      case 64:
+          TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F), "512-bit vstore requires AVX-512");
+         encoding = EVEX_L512;
          break;
       default:
          if (cg->comp()->getOption(TR_TraceCG))
             traceMsg(cg->comp(), "Unsupported fill size: Node = %p\n", node);
-         TR_ASSERT(false, "Unsupported fill size");
+         TR_ASSERT_FATAL(false, "Unsupported fill size");
          break;
       }
 
-   TR::Instruction* instr = generateMemRegInstruction(opCode, node, tempMR, valueReg, cg);
+   TR::Instruction* instr = generateMemRegInstruction(opCode, node, tempMR, valueReg, cg, encoding);
 
    cg->decReferenceCount(valueNode);
    tempMR->decNodeReferenceCounts(cg);

@@ -2639,7 +2639,7 @@ int32_t *computeCallsiteCounts(TR_ScratchList<TR::Block> *loopBlocks, TR::Compil
 
 bool TR_LoopVersioner::checkProfiledGuardSuitability(TR_ScratchList<TR::Block> *loopBlocks, TR::Node *guardNode, TR::SymbolReference *callSymRef, TR::Compilation *comp)
    {
-   bool disableLoopCodeRatioCheck = feGetEnv("TR_DisableLoopCodeRatioCheck") != NULL;
+   static const bool disableLoopCodeRatioCheck = feGetEnv("TR_DisableLoopCodeRatioCheck") != NULL;
    bool risky = false;
    if (comp->getMethodHotness() >= hot && callSymRef)
       {

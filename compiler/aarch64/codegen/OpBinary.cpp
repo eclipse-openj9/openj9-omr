@@ -963,6 +963,12 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4E31B800,	/* ADDV   	vaddv16b */
 		0x4E71B800,	/* ADDV   	vaddv8h */
 		0x4Eb1B800,	/* ADDV   	vaddv4s */
+		0x4E303800,	/* SADDLV 	vsaddlv8h */
+		0x4E703800,	/* SADDLV 	vsaddlv4s */
+		0x4EB03800,	/* SADDLV 	vsaddlv2d */
+		0x6E303800,	/* UADDLV 	vuaddlv8h */
+		0x6E703800,	/* UADDLV 	vuaddlv4s */
+		0x6EB03800,	/* UADDLV 	vuaddlv2d */
 	/* Hint instructions */
 		0xD503201F,	/* NOP          nop      */
 };

@@ -963,12 +963,28 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4E31B800,	/* ADDV   	vaddv16b */
 		0x4E71B800,	/* ADDV   	vaddv8h */
 		0x4Eb1B800,	/* ADDV   	vaddv4s */
+		0x6E30C800,	/* FMAXNMV 	vfmaxnmv4s */
+		0x6E30F800,	/* FMAXV  	vfmaxv4s */
+		0x6EB0C800,	/* FMINNMV 	vfminnmv4s */
+		0x6EB0F800,	/* FMINV  	vfminv4s */
 		0x4E303800,	/* SADDLV 	vsaddlv8h */
 		0x4E703800,	/* SADDLV 	vsaddlv4s */
 		0x4EB03800,	/* SADDLV 	vsaddlv2d */
+		0x4E30A800,	/* SMAXV  	vsmaxv16b */
+		0x4E70A800,	/* SMAXV  	vsmaxv8h */
+		0x4EB0A800,	/* SMAXV  	vsmaxv4s */
+		0x4E31A800,	/* SMINV  	vsminv16b */
+		0x4E71A800,	/* SMINV  	vsminv8h */
+		0x4EB1A800,	/* SMINV  	vsminv4s */
 		0x6E303800,	/* UADDLV 	vuaddlv8h */
 		0x6E703800,	/* UADDLV 	vuaddlv4s */
 		0x6EB03800,	/* UADDLV 	vuaddlv2d */
+		0x6E30A800,	/* UMAXV  	vumaxv16b */
+		0x6E70A800,	/* UMAXV  	vumaxv8h */
+		0x6EB0A800,	/* UMAXV  	vumaxv4s */
+		0x6E31A800,	/* UMINV  	vuminv16b */
+		0x6E71A800,	/* UMINV  	vuminv8h */
+		0x6EB1A800,	/* UMINV  	vuminv4s */
 	/* Hint instructions */
 		0xD503201F,	/* NOP          nop      */
 };

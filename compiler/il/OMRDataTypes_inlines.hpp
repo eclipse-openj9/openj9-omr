@@ -214,7 +214,7 @@ OMR::DataType::createVectorType(TR::DataTypes elementType, TR::VectorLength leng
    TR_ASSERT_FATAL(length > TR::NoVectorLength && length <= TR::NumVectorLengths,
                    "Invalid vector length %d\n", length);
 
-   TR::DataTypes type = static_cast<TR::DataTypes>(TR::NumScalarTypes + (length-1) * TR::NumVectorElementTypes + elementType - 1);
+   TR::DataTypes type = OMR_TEMPORARY_CREATE_VECTOR_TYPE(elementType, length);
 
    return type;
    }

@@ -335,6 +335,7 @@ class InstOpCode: public OMR::InstOpCode
    static const OpCode_t _binaries[];
    static const uint32_t _properties[];
    static const uint32_t _properties1[];
+   static const uint32_t _features[];
 
    protected:
 

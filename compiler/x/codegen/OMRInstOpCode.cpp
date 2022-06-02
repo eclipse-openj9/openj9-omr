@@ -33,25 +33,33 @@ const OMR::X86::InstOpCode::OpCodeMetaData OMR::X86::InstOpCode::metadata[NumOpC
 #define BINARY(...) {__VA_ARGS__}
 #define PROPERTY0(...) __VA_ARGS__
 #define PROPERTY1(...) __VA_ARGS__
+#define FEATURES(...) __VA_ARGS__
 
 // see compiler/x/codegen/OMRInstruction.hpp for structural information.
 const OMR::X86::InstOpCode::OpCode_t OMR::X86::InstOpCode::_binaries[] =
    {
-#define INSTRUCTION(name, mnemonic, binary, property0, property1) binary
+#define INSTRUCTION(name, mnemonic, binary, property0, property1, features) binary
 #include "codegen/X86Ops.ins"
 #undef INSTRUCTION
    };
 
 const uint32_t OMR::X86::InstOpCode::_properties[] =
    {
-#define INSTRUCTION(name, mnemonic, binary, property0, property1) property0
+#define INSTRUCTION(name, mnemonic, binary, property0, property1, features) property0
 #include "codegen/X86Ops.ins"
 #undef INSTRUCTION
    };
 
 const uint32_t OMR::X86::InstOpCode::_properties1[] =
    {
-#define INSTRUCTION(name, mnemonic, binary, property0, property1) property1
+#define INSTRUCTION(name, mnemonic, binary, property0, property1, features) property1
+#include "codegen/X86Ops.ins"
+#undef INSTRUCTION
+   };
+
+const uint32_t OMR::X86::InstOpCode::_features[] =
+   {
+#define INSTRUCTION(name, mnemonic, binary, property0, property1, features) features
 #include "codegen/X86Ops.ins"
 #undef INSTRUCTION
    };

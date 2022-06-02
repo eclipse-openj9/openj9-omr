@@ -392,6 +392,9 @@ public:
 	virtual void abortCollection(MM_EnvironmentBase *env, CollectionAbortReason reason);
 	
 	static void signalThreadsToActivateWriteBarrierAsyncEventHandler(OMR_VMThread *omrVMThread, void *userData);
+	void acquireExclusiveVMAccessAndSignalThreadsToActivateWriteBarrier(MM_EnvironmentBase *env) {
+		signalThreadsToActivateWriteBarrier(env);
+	}
 	
 	virtual void prepareHeapForWalk(MM_EnvironmentBase *env);
 

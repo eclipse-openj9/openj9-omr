@@ -7085,17 +7085,29 @@
    /*                   PPCOpProp_SyncSideEffectFree, */
    /* }, */
 
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::vminsd, */
-   /* .name        =    "vminsd", */
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::vminsd,
+   /* .name        = */ "vminsd",
    /* .description =    "Vector Minimum Signed Dword", */
-   /* .prefix      =    0x00000000, */
-   /* .opcode      =    0x100003C2, */
-   /* .format      =    FORMAT_VRT_VRA_VRB, */
-   /* .minimumALS  =    OMR_PROCESSOR_PPC_P8, */
-   /* .properties  =    PPCOpProp_IsVMX | */
-   /*                   PPCOpProp_SyncSideEffectFree, */
-   /* }, */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x100003C2,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P8,
+   /* .properties  = */ PPCOpProp_IsVMX |
+                        PPCOpProp_SyncSideEffectFree,
+   },
+
+  {
+   /* .mnemonic    = */ OMR::InstOpCode::vmaxsd,
+   /* .name        = */ "vmaxsd",
+   /* .description =    "Vector Maximum Signed Dword", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x100001C2,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P8,
+   /* .properties  = */ PPCOpProp_IsVMX |
+                        PPCOpProp_SyncSideEffectFree,
+   },
 
    /* { */
    /* .mnemonic    =    OMR::InstOpCode::vmul10cuq, */
@@ -8606,6 +8618,18 @@
    },
 
    {
+   /* .mnemonic    = */ OMR::InstOpCode::vminfp,
+   /* .name        = */ "vminfp",
+   /* .description =    "vector minimum floating point", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x1000044A,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
+   /* .properties  = */ PPCOpProp_IsVMX |
+                        PPCOpProp_SyncSideEffectFree,
+   },
+
+   {
    /* .mnemonic    = */ OMR::InstOpCode::vmaxsb,
    /* .name        = */ "vmaxsb",
    /* .description =    "vector maximum signed byte", */
@@ -8673,6 +8697,18 @@
    /* .opcode      = */ 0x10000082,
    /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_P6,
+   /* .properties  = */ PPCOpProp_IsVMX |
+                        PPCOpProp_SyncSideEffectFree,
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::vmaxfp,
+   /* .name        = */ "vmaxfp",
+   /* .description =    "vector maximum floating point", */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x1000040A,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P7,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
    },

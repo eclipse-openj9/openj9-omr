@@ -2691,9 +2691,6 @@ int32_t TR_SimplifyAnds::performOnBlock(TR::Block *block)
 
 bool isPowerOfTwo(TR::Compilation *comp, TR::Node *node)
    {
-   if (node->isPowerOfTwo())
-     return true;
-
    if (node->getOpCode().isLoadConst() &&
        isNonNegativePowerOf2(node->get64bitIntegralValue()))
       return true;

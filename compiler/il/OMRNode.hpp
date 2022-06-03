@@ -1439,10 +1439,6 @@ public:
    bool isVersionableIfWithMinExpr();
    void setIsVersionableIfWithMinExpr(TR::Compilation * c);
 
-   // Can be set on int loads and arithmetic operations
-   bool isPowerOfTwo()          { return _flags.testAny(IsPowerOfTwo); }
-   void setIsPowerOfTwo(bool b) { _flags.set(IsPowerOfTwo, b); }
-
    // Flags used by indirect stores and wrtbars for references
    bool isStoreAlreadyEvaluated();
    void setStoreAlreadyEvaluated(bool b);
@@ -2048,9 +2044,6 @@ protected:
       swappedChildren                       = 0x00020000,
       versionIfWithMaxExpr                  = 0x00010000,
       versionIfWithMinExpr                  = 0x00040000,
-
-      // Can be set on int loads and arithmetic operations
-      IsPowerOfTwo                          = 0x10000000,
 
       // Flags used by indirect stores & wrtbars for references
       storeAlreadyEvaluated                 = 0x00001000,

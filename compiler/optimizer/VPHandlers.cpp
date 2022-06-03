@@ -9348,56 +9348,34 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
       TR_VirtualGuard *virtualGuard = vp->comp()->findVirtualGuardInfo(node);
       if (virtualGuard)
          {
+         TR::VPConstraint *guardClassConstraint = NULL;
          switch (virtualGuard->getTestType())
             {
             case TR_VftTest:
                   {
 #ifdef J9_PROJECT_SPECIFIC
                   instanceofObjectRef = node->getFirstChild();
-                  instanceofObjectRefIsVft = true;
                   TR::Node *classChild = node->getSecondChild();
-                  bool foldedGuard = false;
+                  guardClassConstraint = vp->getConstraint(classChild, isGlobal);
                   static const char* enableJavaLangClassFolding = feGetEnv ("TR_EnableFoldJavaLangClass");
                   if (enableJavaLangClassFolding && (instanceofObjectRef->getOpCodeValue() == TR::aloadi) &&
                       (instanceofObjectRef->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef()))
                      {
                      TR::Node *objectChild = instanceofObjectRef->getFirstChild();
                      TR::VPConstraint *objectConstraint = vp->getConstraint(objectChild, isGlobal);
-                     TR::VPConstraint *classConstraint = vp->getConstraint(classChild, isGlobal);
 
                      //if objectConstraint is equal to java/lang/Class we can fold the guard
-                     if (ignoreVirtualGuard && classConstraint && classConstraint->getClassType() &&
+                     if (ignoreVirtualGuard && guardClassConstraint && guardClassConstraint->getClassType() &&
                          objectConstraint && objectConstraint->isClassObject() ==  TR_yes && vp->comp()->getClassClassPointer())
                         {
                         bool       testForEquality  = (node->getOpCodeValue() == TR::ifacmpeq);
-                        bool       childrenAreEqual = (vp->comp()->getClassClassPointer() == classConstraint->getClass());
+                        bool       childrenAreEqual = (vp->comp()->getClassClassPointer() == guardClassConstraint->getClass());
 
                         if (testForEquality == childrenAreEqual)
                            cannotFallThrough = true;
                         else
                            cannotBranch = true;
-                        foldedGuard = true;
                         }
-                     }
-
-                  if (!foldedGuard && (instanceofObjectRef->getOpCodeValue() == TR::aloadi) &&
-                      (instanceofObjectRef->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef()))
-                     {
-                     instanceofObjectRef = instanceofObjectRef->getFirstChild();
-                     instanceofObjectRefIsVft = false;
-                     }
-
-                  TR::VPConstraint *classConstraint = vp->getConstraint(classChild, isGlobal);
-                  //foldedGuard indicates that we already set cannotBranch or cannotFallThrough
-                  if (!foldedGuard && classConstraint && classConstraint->getClassType())
-                     {
-                     instanceofConstraint = classConstraint;
-                     instanceofDetectedAndFixedType = true;
-                     //printf("Reached here in %s\n", signature(vp->comp()->getCurrentMethod()));
-                     if (node->getOpCodeValue() == TR::ifacmpne)
-                        instanceofOnBranch = false;
-                     else
-                        instanceofOnBranch = true;
                      }
 #endif
                   }
@@ -9432,6 +9410,40 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                break;
             default:
             	break;
+            }
+
+         if (guardClassConstraint != NULL
+             && guardClassConstraint->getClassType() != NULL
+             && instanceofObjectRef != NULL
+             && !cannotBranch
+             && !cannotFallThrough)
+            {
+            instanceofOnBranch = node->getOpCodeValue() == TR::ifacmpeq;
+            instanceofConstraint = guardClassConstraint;
+            instanceofDetectedAndFixedType =
+               virtualGuard->getTestType() == TR_VftTest;
+
+            if (vp->trace())
+               {
+               int32_t sigLen = 0;
+               const char *sig = guardClassConstraint->getClassSignature(sigLen);
+               traceMsg(
+                  vp->comp(),
+                  "n%un [%p]: guard only accepts instances of %s%.*s\n",
+                  node->getGlobalIndex(),
+                  node,
+                  instanceofDetectedAndFixedType ? "(exactly) " : "",
+                  sigLen,
+                  sig);
+               }
+
+            instanceofObjectRefIsVft = true;
+            if (instanceofObjectRef->getOpCodeValue() == TR::aloadi
+                && instanceofObjectRef->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef())
+               {
+               instanceofObjectRef = instanceofObjectRef->getFirstChild();
+               instanceofObjectRefIsVft = false;
+               }
             }
          }
       }

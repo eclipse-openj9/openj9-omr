@@ -297,8 +297,6 @@ protected:
 	virtual uintptr_t doConcurrentTrace(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, uintptr_t sizeToTrace, MM_MemorySubSpace *subspace, bool tlhAllocation) = 0;
 	void concurrentMark(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace,  MM_AllocateDescription *allocDescription);
 
-	void signalThreadsToActivateWriteBarrier(MM_EnvironmentBase *env);
-
 	uintptr_t calculateInitSize(MM_EnvironmentBase *env, uintptr_t allocationSize);
 	uintptr_t calculateTraceSize(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription);
 
@@ -392,9 +390,7 @@ public:
 	virtual void abortCollection(MM_EnvironmentBase *env, CollectionAbortReason reason);
 	
 	static void signalThreadsToActivateWriteBarrierAsyncEventHandler(OMR_VMThread *omrVMThread, void *userData);
-	void acquireExclusiveVMAccessAndSignalThreadsToActivateWriteBarrier(MM_EnvironmentBase *env) {
-		signalThreadsToActivateWriteBarrier(env);
-	}
+	void acquireExclusiveVMAccessAndSignalThreadsToActivateWriteBarrier(MM_EnvironmentBase *env);
 	
 	virtual void prepareHeapForWalk(MM_EnvironmentBase *env);
 

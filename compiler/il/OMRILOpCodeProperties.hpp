@@ -89,7 +89,7 @@
    ifCompareOpcode, ...) \
    \
    { \
-   (TR::ILOpCodes)vectorOperation, \
+   (TR::ILOpCodes)TR::vectorOperation,          \
    name, \
    prop1, \
    prop2, \
@@ -106,7 +106,7 @@
 
 
    {
-     /* .operation               = */ (TR::ILOpCodes)OMR::vBadOperation,
+     /* .operation               = */ (TR::ILOpCodes)TR::vBadOperation,
      /* .name                    = */ "vBadOperation",
      /* .properties1             = */ 0,
      /* .properties2             = */ 0,
@@ -115,8 +115,8 @@
      /* .dataType                = */ TR::NoType,
      /* .typeProperties          = */ 0,
      /* .childProperties         = */ ILChildProp::NoChildren,
-     /* .swapChildrenOperation   = */ (TR::ILOpCodes)OMR::vBadOperation,
-     /* .reverseBranchOperation  = */ (TR::ILOpCodes)OMR::vBadOperation,
+     /* .swapChildrenOperation   = */ (TR::ILOpCodes)TR::vBadOperation,
+     /* .reverseBranchOperation  = */ (TR::ILOpCodes)TR::vBadOperation,
      /* .booleanCompareOpCode    = */ TR::BadILOp,
      /* .ifCompareOpCode         = */ TR::BadILOp,
    },

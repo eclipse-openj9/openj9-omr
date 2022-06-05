@@ -5583,10 +5583,10 @@ TR::Node *indirectLoadSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
 
          TR::DataType vectorType = newSymRef->getSymbol()->getDataType();
 
-         TR::Node *vloadiNode = TR::Node::createWithSymRef(TR::ILOpCode::createVectorOpCode(OMR::vloadi, vectorType), 1, 1, addressNode, newSymRef);
+         TR::Node *vloadiNode = TR::Node::createWithSymRef(TR::ILOpCode::createVectorOpCode(TR::vloadi, vectorType), 1, 1, addressNode, newSymRef);
          TR::Node *indexNode = TR::Node::iconst(offset/(node->getSize()));
 
-         TR::Node *vgetelemNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(OMR::vgetelem, vectorType), 2, vloadiNode, indexNode);
+         TR::Node *vgetelemNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(TR::vgetelem, vectorType), 2, vloadiNode, indexNode);
 
          dumpOptDetails(s->comp(),"[" POINTER_PRINTF_FORMAT "]\n", vgetelemNode);
 
@@ -5750,10 +5750,10 @@ TR::Node *indirectStoreSimplifier(TR::Node * node, TR::Block * block, TR::Simpli
 
          TR::DataType type = addressNode->getSymbol()->getDataType();
          TR::SymbolReference *newSymRef = s->comp()->getSymRefTab()->createSymbolReference(TR::Symbol::createShadow(s->comp()->trHeapMemory(), type), 0);
-         TR::Node *vloadiNode = TR::Node::createWithSymRef(TR::ILOpCode::createVectorOpCode(OMR::vloadi, type), 1, 1, addressNode, newSymRef);
+         TR::Node *vloadiNode = TR::Node::createWithSymRef(TR::ILOpCode::createVectorOpCode(TR::vloadi, type), 1, 1, addressNode, newSymRef);
          TR::Node *indexNode = TR::Node::iconst(offset/(node->getSize()));   // idx = byte offset / element size
-         TR::Node *vsetelemNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(OMR::vsetelem, type), 3, vloadiNode, indexNode, valueNode);
-         auto newVStorei = TR::Node::createWithSymRef(TR::ILOpCode::createVectorOpCode(OMR::vstorei, type), 2, 2, addressNode, vsetelemNode, newSymRef);
+         TR::Node *vsetelemNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(TR::vsetelem, type), 3, vloadiNode, indexNode, valueNode);
+         auto newVStorei = TR::Node::createWithSymRef(TR::ILOpCode::createVectorOpCode(TR::vstorei, type), 2, 2, addressNode, vsetelemNode, newSymRef);
          dumpOptDetails(s->comp(),"[" POINTER_PRINTF_FORMAT "]\n", newVStorei);
          s->replaceNode(node, newVStorei, s->_curTree);
          newVStorei->setReferenceCount(0);
@@ -5932,7 +5932,7 @@ TR::Node *vsetelemSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    // Can convert to a splat if we've seen all elements set
    if ((seenIndex.PopulationCount() * valueNode->getSize()) == node->getSize())
       {
-      TR::Node *vsplatsNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(OMR::vsplats, vectorType), 1, valueNode);
+      TR::Node *vsplatsNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(TR::vsplats, vectorType), 1, valueNode);
       s->replaceNode(node, vsplatsNode, s->_curTree);
       return s->simplify(vsplatsNode, block);
       }

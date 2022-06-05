@@ -260,7 +260,7 @@ class TreeEvaluatorFunctionPointerTable
       return table[opcode.getTableIndex()];
       }
 
-   TreeEvaluatorFunctionPointer& operator[] (OMR::VectorOperation operation)
+   TreeEvaluatorFunctionPointer& operator[] (TR::VectorOperation operation)
       {
       return table[TR::ILOpCode::getTableIndex(operation)];
       }

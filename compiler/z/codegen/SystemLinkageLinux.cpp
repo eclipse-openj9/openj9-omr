@@ -496,7 +496,7 @@ TR::S390zLinuxSystemLinkage::callNativeFunction(TR::Node * callNode,
          break;
       default:
          if (callNode->getOpCode().isVectorOpCode() &&
-             (callNode->getOpCode().getVectorOperation() == OMR::vcall || callNode->getOpCode().getVectorOperation() == OMR::vcalli))
+             (callNode->getOpCode().getVectorOperation() == TR::vcall || callNode->getOpCode().getVectorOperation() == TR::vcalli))
             {
             returnRegister = deps->searchPostConditionRegister(getVectorReturnRegister());
             break;

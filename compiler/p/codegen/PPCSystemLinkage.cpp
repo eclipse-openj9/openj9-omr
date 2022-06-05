@@ -1509,7 +1509,7 @@ TR::Register *TR::PPCSystemLinkage::buildDirectDispatch(TR::Node *callNode)
          break;
       default:
          if (callNode->getOpCode().isVectorOpCode() &&
-             callNode->getOpCode().getVectorOperation() == OMR::vcall)
+             callNode->getOpCode().getVectorOperation() == TR::vcall)
              {
              returnRegister = dependencies->searchPostConditionRegister(
                               pp.getVectorReturnRegister());

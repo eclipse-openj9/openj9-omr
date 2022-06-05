@@ -33,7 +33,6 @@ namespace OMR { typedef OMR::DataType DataTypeConnector; }
 
 #include <stddef.h>
 #include <stdint.h>
-#include "il/ILOpCodes.hpp"
 #include "infra/Annotations.hpp"
 
 #if defined(TR_HOST_ARM) && !defined(__VFP_FP__)
@@ -496,10 +495,6 @@ public:
    static TR::DataType getIntegralTypeFromPrecision(int32_t precision);
 
    static TR::DataType getFloatTypeFromSize(int32_t size);
-
-   static TR::ILOpCodes getDataTypeConversion(TR::DataType t1, TR::DataType t2);
-
-   static TR::ILOpCodes getDataTypeBitConversion(TR::DataType t1, TR::DataType t2);
 
    static const char    * getName(TR::DataType dt);
    static TR::DataType getTypeFromName(const char *name);

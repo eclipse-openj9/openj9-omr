@@ -84,7 +84,7 @@ extern const SimplifierPointerTable simplifierOpts;
 
 void SimplifierPointerTable::checkTableSize()
    {
-   static_assert((TR::NumScalarIlOps + OMR::NumVectorOperations) ==
+   static_assert((TR::NumScalarIlOps + TR::NumVectorOperations) ==
               (sizeof(table) / sizeof(table[0])),
               "SimplifierPointerTable::table is not the correct size");
    }

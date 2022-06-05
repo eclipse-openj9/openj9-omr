@@ -2064,9 +2064,9 @@ bool TR_PartialRedundancy::eliminateRedundantSupportedNodes(TR::Node *parent, TR
 
                      TR::ILOpCodes conversionOpCode = TR::ILOpCode::getProperConversion(newLoad->getDataType(), node->getDataType(), false /* !wantZeroExtension */);
                      if (TR::ILOpCode::isVectorOpCode(conversionOpCode) &&
-                         TR::ILOpCode::getVectorOperation(conversionOpCode) == OMR::vcast)
+                         TR::ILOpCode::getVectorOperation(conversionOpCode) == TR::vcast)
                         {
-                        node = TR::Node::create(TR::ILOpCode::createVectorOpCode(OMR::vcast, newLoad->getDataType(), node->getDataType()), 1, newLoad);
+                        node = TR::Node::create(TR::ILOpCode::createVectorOpCode(TR::vcast, newLoad->getDataType(), node->getDataType()), 1, newLoad);
                         }
                      else
                         {

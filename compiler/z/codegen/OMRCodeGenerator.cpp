@@ -4744,39 +4744,39 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
    // implemented vector opcodes
    switch (opcode.getVectorOperation())
       {
-      case OMR::vadd:
-      case OMR::vsub:
-      case OMR::vload:
-      case OMR::vloadi:
-      case OMR::vstore:
-      case OMR::vstorei:
-      case OMR::vneg:
-      case OMR::vsplats:
+      case TR::vadd:
+      case TR::vsub:
+      case TR::vload:
+      case TR::vloadi:
+      case TR::vstore:
+      case TR::vstorei:
+      case TR::vneg:
+      case TR::vsplats:
          return true;
-      case OMR::vmul:
+      case TR::vmul:
          if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case OMR::vdiv:
+      case TR::vdiv:
          if (et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case OMR::vxor:
-      case OMR::vor:
-      case OMR::vand:
+      case TR::vxor:
+      case TR::vor:
+      case TR::vand:
          if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64)
             return true;
          else
             return false;
-      case OMR::vgetelem:
-      case OMR::vsetelem:
+      case TR::vgetelem:
+      case TR::vsetelem:
          if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case OMR::vconv:
+      case TR::vconv:
          if (et == TR::Double &&
              opcode.getVectorSourceDataType().getVectorElementType() == TR::Int64)
             return true;

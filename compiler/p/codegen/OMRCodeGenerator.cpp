@@ -1780,75 +1780,75 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
       return false;
 
    if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
-       (opcode.getVectorOperation() == OMR::vadd || opcode.getVectorOperation() == OMR::vsub || opcode.getVectorOperation() == OMR::vmul || opcode.getVectorOperation() == OMR::vabs || opcode.getVectorOperation() == OMR::vmin || opcode.getVectorOperation() == OMR::vmax) &&
+       (opcode.getVectorOperation() == TR::vadd || opcode.getVectorOperation() == TR::vsub || opcode.getVectorOperation() == TR::vmul || opcode.getVectorOperation() == TR::vabs || opcode.getVectorOperation() == TR::vmin || opcode.getVectorOperation() == TR::vmax) &&
        et == TR::Int64)
       return true;
 
    if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
-       (opcode.getVectorOperation() == OMR::vmin || opcode.getVectorOperation() == OMR::vmax) &&
+       (opcode.getVectorOperation() == TR::vmin || opcode.getVectorOperation() == TR::vmax) &&
        et == TR::Double)
       return true;
 
    // implemented vector opcodes
    switch (opcode.getVectorOperation())
       {
-      case OMR::vadd:
-      case OMR::vsub:
-      case OMR::vmul:
+      case TR::vadd:
+      case TR::vsub:
+      case TR::vmul:
          if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case OMR::vdiv:
-      case OMR::vneg:
+      case TR::vdiv:
+      case TR::vneg:
          if (et == TR::Int32 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case OMR::vabs:
+      case TR::vabs:
          if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case OMR::vsqrt:
+      case TR::vsqrt:
          if (et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case OMR::vload:
-      case OMR::vloadi:
-      case OMR::vstore:
-      case OMR::vstorei:
+      case TR::vload:
+      case TR::vloadi:
+      case TR::vstore:
+      case TR::vstorei:
          if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case OMR::vxor:
-      case OMR::vor:
-      case OMR::vand:
+      case TR::vxor:
+      case TR::vor:
+      case TR::vand:
          if (et == TR::Int32 || et == TR::Int64)
             return true;
          else
             return false;
-      case OMR::vsplats:
+      case TR::vsplats:
             return true;
-      case OMR::vmin:
-      case OMR::vmax:
+      case TR::vmin:
+      case TR::vmax:
          if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float)
             return true;
          else
             return false;
-      case OMR::vfma:
+      case TR::vfma:
          if (et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case OMR::vgetelem:
+      case TR::vgetelem:
             if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
                return true;
             else
                return false;
-      case OMR::vconv:
+      case TR::vconv:
          if (et == TR::Double &&
              opcode.getVectorSourceDataType().getVectorElementType() == TR::Int64)
             return true;

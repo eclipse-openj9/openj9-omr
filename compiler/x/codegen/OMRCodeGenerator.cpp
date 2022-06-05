@@ -1004,33 +1004,33 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
    // implemented vector opcodes
    switch (opcode.getVectorOperation())
       {
-      case OMR::vadd:
-      case OMR::vsub:
+      case TR::vadd:
+      case TR::vsub:
          return ot.getVectorLength() == TR::VectorLength128;
-      case OMR::vmul:
+      case TR::vmul:
          TR_ASSERT_FATAL(self()->comp()->compileRelocatableCode() || self()->comp()->isOutOfProcessCompilation() || self()->comp()->compilePortableCode() || self()->getX86ProcessorInfo().supportsSSE4_1() == self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1), "supportsSSE4_1() failed\n");
          if (et == TR::Float || et == TR::Double || (et == TR::Int32 && self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1)))
             return ot.getVectorLength() == TR::VectorLength128;
          else
             return false;
-      case OMR::vdiv:
+      case TR::vdiv:
          if (et == TR::Float || et == TR::Double)
             return ot.getVectorLength() == TR::VectorLength128;
          else
             return false;
-      case OMR::vneg:
+      case TR::vneg:
          return ot.getVectorLength() == TR::VectorLength128;
-      case OMR::vxor:
-      case OMR::vor:
-      case OMR::vand:
+      case TR::vxor:
+      case TR::vor:
+      case TR::vand:
          if (et == TR::Int32 || et == TR::Int64)
             return ot.getVectorLength() == TR::VectorLength128;
          else
             return false;
-      case OMR::vload:
-      case OMR::vloadi:
-      case OMR::vstore:
-      case OMR::vstorei:
+      case TR::vload:
+      case TR::vloadi:
+      case TR::vstore:
+      case TR::vstorei:
          switch (ot.getVectorLength())
             {
             case TR::VectorLength512:
@@ -1046,12 +1046,12 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
             default:
                 return false;
             }
-      case OMR::vsplats:
+      case TR::vsplats:
          if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
             return ot.getVectorLength() == TR::VectorLength128;
          else
             return false;
-      case OMR::vsqrt:
+      case TR::vsqrt:
           if (et == TR::Double)
               return true;
           else
@@ -1068,7 +1068,7 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
        *
        * TODO: disable GRA directly and enable vgetelem here so that it can be used by VectorAPIExpansion
        */
-       case OMR::vgetelem:
+       case TR::vgetelem:
 #if 0
          if (self()->comp()->target().is64Bit() && (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double))
             return true;

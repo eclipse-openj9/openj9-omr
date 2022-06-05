@@ -631,29 +631,29 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
    // implemented vector opcodes
    switch (opcode.getVectorOperation())
       {
-      case OMR::vadd:
-      case OMR::vsub:
-      case OMR::vneg:
-      case OMR::vmul:
-      case OMR::vdiv:
-      case OMR::vabs:
-      case OMR::vmin:
-      case OMR::vmax:
+      case TR::vadd:
+      case TR::vsub:
+      case TR::vneg:
+      case TR::vmul:
+      case TR::vdiv:
+      case TR::vabs:
+      case TR::vmin:
+      case TR::vmax:
          return true;
-      case OMR::vand:
-      case OMR::vor:
-      case OMR::vxor:
-      case OMR::vnot:
+      case TR::vand:
+      case TR::vor:
+      case TR::vxor:
+      case TR::vnot:
          // Float/ Double are not supported
          return (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64);
-      case OMR::vload:
-      case OMR::vloadi:
-      case OMR::vstore:
-      case OMR::vstorei:
-      case OMR::vsplats:
+      case TR::vload:
+      case TR::vloadi:
+      case TR::vstore:
+      case TR::vstorei:
+      case TR::vsplats:
          return true;
-      case OMR::vfma:
-      case OMR::vsqrt:
+      case TR::vfma:
+      case TR::vsqrt:
          return (et == TR::Float || et == TR::Double);
       default:
          return false;

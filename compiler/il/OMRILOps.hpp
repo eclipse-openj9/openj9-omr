@@ -35,34 +35,6 @@ namespace TR { class SymbolReference; }
 namespace OMR
 {
 
-enum VectorOperation
-   {
-#define VECTOR_OPERATION_MACRO(                 \
-   operation, \
-   name, \
-   prop1, \
-   prop2, \
-   prop3, \
-   prop4, \
-   dataType, \
-   typeProps, \
-   childProps, \
-   swapChildrenOperation, \
-   reverseBranchOperation, \
-   boolCompareOpcode, \
-   ifCompareOpcode, \
-   ...) operation,
-
-   vBadOperation = 0,
-
-#include "il/VectorOperations.enum"
-#undef VECTOR_OPERATION_MACRO
-
-   NumVectorOperations,
-
-   firstTwoVectorTypeOperation = vcast
-   };
-
 /**
  * Opcode properties.
  */
@@ -98,17 +70,6 @@ class ILOpCode
 
 public:
 
-   // The class is capable of storing "hidden" vector opcodes and provides an interface
-   // for creating and querying them
-   static const int32_t NumOneVectorTypeOperations = firstTwoVectorTypeOperation;
-   static const int32_t NumTwoVectorTypeOperations = NumVectorOperations - firstTwoVectorTypeOperation;
-
-   static const int32_t NumOneVectorTypeOps = NumOneVectorTypeOperations*TR::NumVectorTypes;
-   static const int32_t NumTwoVectorTypeOps = NumTwoVectorTypeOperations*TR::NumVectorTypes*TR::NumVectorTypes;
-
-   static const int32_t NumAllIlOps = TR::NumScalarIlOps + NumOneVectorTypeOps + NumTwoVectorTypeOps;
-
-
    // Deprecate?
    ILOpCode()
       : _opCode(TR::BadILOp)
@@ -117,7 +78,7 @@ public:
    ILOpCode(TR::ILOpCodes opCode)
       : _opCode(opCode)
       {
-      TR_ASSERT(opCode < NumAllIlOps, "assertion failure");
+      TR_ASSERT(opCode < TR::NumAllIlOps, "assertion failure");
       }
 
   /** \brief
@@ -132,13 +93,11 @@ public:
    *  \return
    *     Vector opcode
    */
-   static TR::ILOpCodes createVectorOpCode(VectorOperation operation, DataType vectorType)
+   static TR::ILOpCodes createVectorOpCode(TR::VectorOperation operation, DataType vectorType)
       {
-      static_assert(NumAllIlOps < ((uint64_t)1 << (sizeof(TR::ILOpCodes)*8)), "Number of scalar and vector opcodes does not fit into TR::ILOpCodes\n");
-
       TR_ASSERT_FATAL(vectorType.isVector(), "createVectorOpCode should take vector type\n");
 
-      TR_ASSERT_FATAL(operation < firstTwoVectorTypeOperation, "Vector operation should be one vector type operation\n");
+      TR_ASSERT_FATAL(operation < TR::firstTwoVectorTypeOperation, "Vector operation should be one vector type operation\n");
 
       return (TR::ILOpCodes)(TR::NumScalarIlOps + operation*TR::NumVectorTypes + (vectorType - TR::NumScalarTypes));
       }
@@ -155,16 +114,14 @@ public:
    *  \return
    *     Vector opcode
    */
-   static TR::ILOpCodes createVectorOpCode(VectorOperation operation, DataType srcVectorType, DataType resVectorType)
+   static TR::ILOpCodes createVectorOpCode(TR::VectorOperation operation, DataType srcVectorType, DataType resVectorType)
       {
-      static_assert(NumAllIlOps < ((uint64_t)1 << (sizeof(TR::ILOpCodes)*8)), "Number of scalar and vector opcodes does not fit into TR::ILOpCodes\n");
-
       TR_ASSERT_FATAL(srcVectorType.isVector(), "createVectorOpCode should take vector source type\n");
       TR_ASSERT_FATAL(resVectorType.isVector(), "createVectorOpCode should take vector result type\n");
 
-      TR_ASSERT_FATAL(operation >= firstTwoVectorTypeOperation, "Vector operation should be two vector type operation\n");
+      TR_ASSERT_FATAL(operation >= TR::firstTwoVectorTypeOperation, "Vector operation should be two vector type operation\n");
 
-      return (TR::ILOpCodes)(TR::NumScalarIlOps + NumOneVectorTypeOps +
+      return (TR::ILOpCodes)(TR::NumScalarIlOps + TR::NumOneVectorTypeOps +
                              operation * TR::NumVectorTypes * TR::NumVectorTypes +
                              (srcVectorType - TR::NumScalarTypes) * TR::NumVectorTypes +
                              (resVectorType - TR::NumScalarTypes));
@@ -207,7 +164,7 @@ public:
    *  \return
    *     Vector operation
    */
-   VectorOperation getVectorOperation() const
+   TR::VectorOperation getVectorOperation() const
       {
       return getVectorOperation(_opCode);
       }
@@ -221,15 +178,15 @@ public:
    *  \return
    *     Vector operation
    */
-   static VectorOperation getVectorOperation(ILOpCode op)
+   static TR::VectorOperation getVectorOperation(ILOpCode op)
       {
       TR_ASSERT_FATAL(isVectorOpCode(op), "getVectorOperation() can only be called for vector opcode\n");
 
       TR::ILOpCodes opcode = op._opCode;
 
-      return (VectorOperation) ((opcode < (TR::NumScalarIlOps + NumOneVectorTypeOps)) ?
+      return (TR::VectorOperation) ((opcode < (TR::NumScalarIlOps + TR::NumOneVectorTypeOps)) ?
                                    (opcode - TR::NumScalarIlOps) / TR::NumVectorTypes :
-                                   (opcode - TR::NumScalarIlOps - NumOneVectorTypeOps) / (TR::NumVectorTypes * TR::NumVectorTypes));
+                                    (opcode - TR::NumScalarIlOps - TR::NumOneVectorTypeOps) / (TR::NumVectorTypes * TR::NumVectorTypes));
       }
 
   /** \brief
@@ -258,9 +215,9 @@ public:
 
       TR::ILOpCodes opcode = op._opCode;
 
-      return (opcode < (TR::NumScalarIlOps + NumOneVectorTypeOps)) ?
+      return (opcode < (TR::NumScalarIlOps + TR::NumOneVectorTypeOps)) ?
              (TR::DataTypes)((opcode - TR::NumScalarIlOps) % TR::NumVectorTypes + TR::NumScalarTypes) :
-             (TR::DataTypes)(((opcode - TR::NumScalarIlOps - NumOneVectorTypeOps) % (TR::NumVectorTypes * TR::NumVectorTypes)) % TR::NumVectorTypes + TR::NumScalarTypes);
+             (TR::DataTypes)(((opcode - TR::NumScalarIlOps - TR::NumOneVectorTypeOps) % (TR::NumVectorTypes * TR::NumVectorTypes)) % TR::NumVectorTypes + TR::NumScalarTypes);
       }
 
   /** \brief
@@ -289,9 +246,9 @@ public:
 
       TR::ILOpCodes opcode = op._opCode;
 
-      TR_ASSERT_FATAL(opcode >= (TR::NumScalarIlOps + NumOneVectorTypeOps), "getVectorSourceDataType() can only be called for two vector type opcodes (e.g. vconv)\n");
+      TR_ASSERT_FATAL(opcode >= (TR::NumScalarIlOps + TR::NumOneVectorTypeOps), "getVectorSourceDataType() can only be called for two vector type opcodes (e.g. vconv)\n");
 
-      return (TR::DataTypes)(((opcode - TR::NumScalarIlOps - NumOneVectorTypeOps) %
+      return (TR::DataTypes)(((opcode - TR::NumScalarIlOps - TR::NumOneVectorTypeOps) %
                              (TR::NumVectorTypes * TR::NumVectorTypes)) / TR::NumVectorTypes + TR::NumScalarTypes);
       }
 
@@ -304,10 +261,10 @@ public:
    *     Index to OMR tables
    */
    int32_t getTableIndex() const { return isVectorOpCode() ? (TR::NumScalarIlOps + getVectorOperation()) : _opCode; }
-   static int32_t getTableIndex(VectorOperation vectorOperation) { return TR::NumScalarIlOps + vectorOperation; }
+   static int32_t getTableIndex(TR::VectorOperation vectorOperation) { return TR::NumScalarIlOps + vectorOperation; }
 
    TR::ILOpCodes getOpCodeValue() const           { return (TR::ILOpCodes)_opCode; }
-   TR::ILOpCodes setOpCodeValue(TR::ILOpCodes op) { TR_ASSERT(op < NumAllIlOps, "assertion failure"); return (TR::ILOpCodes) (_opCode = op); }
+   TR::ILOpCodes setOpCodeValue(TR::ILOpCodes op) { return (TR::ILOpCodes) (_opCode = op); }
 
    /// Get the opcode to be used if the children of this opcode are swapped.
    /// e.g. ificmplt --> ificmpgt
@@ -315,9 +272,9 @@ public:
       {
       if (!isVectorOpCode()) return _opCodeProperties[getTableIndex()].swapChildrenOpCode;
 
-      VectorOperation operation = (VectorOperation)_opCodeProperties[getTableIndex()].swapChildrenOpCode;
+      TR::VectorOperation operation = (TR::VectorOperation)_opCodeProperties[getTableIndex()].swapChildrenOpCode;
 
-      if (operation < firstTwoVectorTypeOperation)
+      if (operation < TR::firstTwoVectorTypeOperation)
          return createVectorOpCode(operation, getVectorResultDataType());
       else
          return createVectorOpCode(operation, getVectorSourceDataType(), getVectorResultDataType());
@@ -329,9 +286,9 @@ public:
       {
       if (!isVectorOpCode()) return _opCodeProperties[getTableIndex()].reverseBranchOpCode;
 
-      VectorOperation operation = (VectorOperation)_opCodeProperties[getTableIndex()].reverseBranchOpCode;
+      TR::VectorOperation operation = (TR::VectorOperation)_opCodeProperties[getTableIndex()].reverseBranchOpCode;
 
-      if (operation < firstTwoVectorTypeOperation)
+      if (operation < TR::firstTwoVectorTypeOperation)
          return createVectorOpCode(operation, getVectorResultDataType());
       else
          return createVectorOpCode(operation, getVectorSourceDataType(), getVectorResultDataType());
@@ -649,9 +606,12 @@ public:
              getOpCodeValue() == TR::arraycopy;
       }
 
+   static TR::ILOpCodes getDataTypeConversion(TR::DataType t1, TR::DataType t2);
+   static TR::ILOpCodes getDataTypeBitConversion(TR::DataType t1, TR::DataType t2);
+
    static TR::ILOpCodes getProperConversion(TR::DataType sourceDataType, TR::DataType targetDataType, bool needUnsignedConversion)
       {
-      TR::ILOpCodes op = TR::DataType::getDataTypeConversion(sourceDataType, targetDataType);
+      TR::ILOpCodes op = getDataTypeConversion(sourceDataType, targetDataType);
       if (!needUnsignedConversion) return op;
 
       //FIXME: maybe its better to come up with two conversionMap tables rather
@@ -919,7 +879,7 @@ public:
 
    static TR::ILOpCodes absOpCode(TR::DataType type)
       {
-      if (type.isVector()) return createVectorOpCode(OMR::vabs, type);
+      if (type.isVector()) return createVectorOpCode(TR::vabs, type);
 
       switch(type)
          {
@@ -934,7 +894,7 @@ public:
 
    static TR::ILOpCodes addOpCode(TR::DataType type, bool is64Bit)
       {
-      if (type.isVector()) return createVectorOpCode(OMR::vadd, type);
+      if (type.isVector()) return createVectorOpCode(TR::vadd, type);
 
       switch(type)
          {
@@ -966,7 +926,7 @@ public:
 
    static TR::ILOpCodes subtractOpCode(TR::DataType type)
       {
-      if (type.isVector()) return createVectorOpCode(OMR::vsub, type);
+      if (type.isVector()) return createVectorOpCode(TR::vsub, type);
 
       switch(type)
          {
@@ -983,7 +943,7 @@ public:
 
    static TR::ILOpCodes multiplyOpCode(TR::DataType type)
       {
-      if (type.isVector()) return createVectorOpCode(OMR::vmul, type);
+      if (type.isVector()) return createVectorOpCode(TR::vmul, type);
 
       switch(type)
          {
@@ -1000,7 +960,7 @@ public:
 
    static TR::ILOpCodes divideOpCode(TR::DataType type)
       {
-      if (type.isVector()) return createVectorOpCode(OMR::vdiv, type);
+      if (type.isVector()) return createVectorOpCode(TR::vdiv, type);
 
       switch(type)
          {
@@ -1496,28 +1456,28 @@ public:
          case TR::lload:
          case TR::fload:
          case TR::dload:
-            return ILOpCode::createVectorOpCode(OMR::vload, vectorType);
+            return ILOpCode::createVectorOpCode(TR::vload, vectorType);
          case TR::bloadi:
          case TR::sloadi:
          case TR::iloadi:
          case TR::lloadi:
          case TR::floadi:
          case TR::dloadi:
-            return ILOpCode::createVectorOpCode(OMR::vloadi, vectorType);
+            return ILOpCode::createVectorOpCode(TR::vloadi, vectorType);
          case TR::bstore:
          case TR::sstore:
          case TR::istore:
          case TR::lstore:
          case TR::fstore:
          case TR::dstore:
-            return ILOpCode::createVectorOpCode(OMR::vstore, vectorType);
+            return ILOpCode::createVectorOpCode(TR::vstore, vectorType);
          case TR::bstorei:
          case TR::sstorei:
          case TR::istorei:
          case TR::lstorei:
          case TR::fstorei:
          case TR::dstorei:
-            return ILOpCode::createVectorOpCode(OMR::vstorei, vectorType);
+            return ILOpCode::createVectorOpCode(TR::vstorei, vectorType);
 
          case TR::badd:
          case TR::sadd:
@@ -1525,66 +1485,66 @@ public:
          case TR::ladd:
          case TR::fadd:
          case TR::dadd:
-            return ILOpCode::createVectorOpCode(OMR::vadd, vectorType);
+            return ILOpCode::createVectorOpCode(TR::vadd, vectorType);
          case TR::bsub:
          case TR::ssub:
          case TR::isub:
          case TR::lsub:
          case TR::fsub:
          case TR::dsub:
-            return ILOpCode::createVectorOpCode(OMR::vsub, vectorType);
+            return ILOpCode::createVectorOpCode(TR::vsub, vectorType);
          case TR::bmul:
          case TR::smul:
          case TR::imul:
          case TR::lmul:
          case TR::fmul:
          case TR::dmul:
-            return ILOpCode::createVectorOpCode(OMR::vmul, vectorType);
+            return ILOpCode::createVectorOpCode(TR::vmul, vectorType);
          case TR::bdiv:
          case TR::sdiv:
          case TR::idiv:
          case TR::ldiv:
          case TR::fdiv:
          case TR::ddiv:
-            return ILOpCode::createVectorOpCode(OMR::vdiv, vectorType);
+            return ILOpCode::createVectorOpCode(TR::vdiv, vectorType);
          case TR::bconst:
          case TR::sconst:
          case TR::iconst:
          case TR::lconst:
          case TR::fconst:
          case TR::dconst:
-            return ILOpCode::createVectorOpCode(OMR::vsplats, vectorType);
+            return ILOpCode::createVectorOpCode(TR::vsplats, vectorType);
          case TR::bneg:
          case TR::sneg:
          case TR::ineg:
          case TR::lneg:
          case TR::fneg:
          case TR::dneg:
-            return ILOpCode::createVectorOpCode(OMR::vneg, vectorType);
+            return ILOpCode::createVectorOpCode(TR::vneg, vectorType);
 
          case TR::iabs:
          case TR::labs:
          case TR::fabs:
          case TR::dabs:
-            return ILOpCode::createVectorOpCode(OMR::vabs, vectorType);
+            return ILOpCode::createVectorOpCode(TR::vabs, vectorType);
 
          case TR::bor:
          case TR::sor:
          case TR::ior:
          case TR::lor:
-            return ILOpCode::createVectorOpCode(OMR::vor, vectorType);
+            return ILOpCode::createVectorOpCode(TR::vor, vectorType);
          case TR::band:
          case TR::sand:
          case TR::iand:
          case TR::land:
-            return ILOpCode::createVectorOpCode(OMR::vand, vectorType);
+            return ILOpCode::createVectorOpCode(TR::vand, vectorType);
          case TR::bxor:
          case TR::sxor:
          case TR::ixor:
          case TR::lxor:
-            return ILOpCode::createVectorOpCode(OMR::vxor, vectorType);
+            return ILOpCode::createVectorOpCode(TR::vxor, vectorType);
          case TR::l2d:
-            return ILOpCode::createVectorOpCode(OMR::vconv, TR::DataType::createVectorType(TR::Int64, vectorLength),
+            return ILOpCode::createVectorOpCode(TR::vconv, TR::DataType::createVectorType(TR::Int64, vectorLength),
                                                             TR::DataType::createVectorType(TR::Double, vectorLength));
          default:
             return TR::BadILOp;
@@ -1613,7 +1573,7 @@ public:
       if (op == TR::fsqrt || op == TR::dsqrt)
          return true;
 
-      if (isVectorOpCode(op) && getVectorOperation(op) == OMR::vsqrt)
+      if (isVectorOpCode(op) && getVectorOperation(op) == TR::vsqrt)
          return true;
 
       return false;
@@ -1646,7 +1606,7 @@ protected:
    flags32_t typeProperties() const { return flags32_t(_opCodeProperties[getTableIndex()].typeProperties); }
    TR::ILChildPropType childProperties() const { return _opCodeProperties[getTableIndex()].childTypes; }
 
-   static const int32_t opCodePropertiesSize = TR::NumScalarIlOps + NumVectorOperations;
+   static const int32_t opCodePropertiesSize = TR::NumScalarIlOps + TR::NumVectorOperations;
    static OpCodeProperties _opCodeProperties[opCodePropertiesSize];
    };
 

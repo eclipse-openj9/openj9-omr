@@ -34,6 +34,10 @@
 #include "il/StaticSymbol.hpp"
 #include "runtime/CodeCacheManager.hpp"
 
+#if defined(OSX)
+#include <pthread.h> // for pthread_jit_write_protect_np
+#endif
+
 uint8_t *OMR::ARM64::Instruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
@@ -180,6 +184,13 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
                destination = (intptr_t)cg()->fe()->methodTrampolineLookup(cg()->comp(), symRef, (void *)cursor);
                TR_ASSERT_FATAL(cg()->comp()->target().cpu.isTargetWithinUnconditionalBranchImmediateRange(destination, (intptr_t)cursor),
                                "Call target address is out of range");
+
+#if defined(OSX)
+               // Re-acquire permission for writing to the code buffer.
+               // methodTrampolineLookup() may call createTrampoline() which will acquire/release
+               // write protection leaving the write permission disabled in this path.
+               pthread_jit_write_protect_np(0);
+#endif
                }
 
             intptr_t distance = destination - (intptr_t)cursor;

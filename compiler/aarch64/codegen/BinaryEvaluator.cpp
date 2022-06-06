@@ -935,6 +935,129 @@ OMR::ARM64::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return inlineVectorBinaryOp(node, cg, xorOp);
    }
 
+/**
+ * @brief A helper function for generating instuction sequence for min/max operations for vectors of 64-bit integer elements.
+ *
+ * @param[in] node: node
+ * @param[in] isMax: true if operation is max
+ * @param[in] cg: CodeGenerator
+ * @return register containing the result
+ */
+static TR::Register *
+vminmaxInt64Helper(TR::Node *node, bool isMax, TR::CodeGenerator *cg)
+   {
+   /*
+    * Vector min/max instruction on aarch64 does not support 64-bit interger element.
+    *
+    * For min, we do
+    *    cmge  v2.2d, v0.2d, v1.2d
+    *    bsl   v2.16b, v1.16b, v0.16b
+    *
+    * For max,
+    *    cmge  v2.2d, v0.2d, v1.2d
+    *    bsl   v2.16b, v0.16b, v1.16b
+    *
+    * The result is in v2 for both cases.
+    *
+    */
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *lhsReg = NULL;
+   TR::Register *rhsReg = NULL;
+
+   lhsReg = cg->evaluate(firstChild);
+   rhsReg = cg->evaluate(secondChild);
+
+   TR_ASSERT_FATAL_WITH_NODE(node, lhsReg->getKind() == TR_VRF, "unexpected Register kind");
+   TR_ASSERT_FATAL_WITH_NODE(node, rhsReg->getKind() == TR_VRF, "unexpected Register kind");
+
+   TR::Register *resReg = cg->allocateRegister(TR_VRF);
+
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vcmge2d, node, resReg, lhsReg, rhsReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vbsl16b, node, resReg, (isMax ? lhsReg : rhsReg), (isMax ? rhsReg : lhsReg));
+
+   node->setRegister(resReg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   return resReg;
+   }
+
+TR::Register*
+OMR::ARM64::TreeEvaluator::vminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   TR::InstOpCode::Mnemonic minOp;
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         minOp = TR::InstOpCode::vsmin16b;
+         break;
+      case TR::Int16:
+         minOp = TR::InstOpCode::vsmin8h;
+         break;
+      case TR::Int32:
+         minOp = TR::InstOpCode::vsmin4s;
+         break;
+      case TR::Int64:
+         return vminmaxInt64Helper(node, false, cg);
+      /*
+       * The behavior of vfmin and vfmax basically follows minimu/maximum of IEEE754-2019.
+       * If either one of the arguments is NaN, the result is NaN.
+       * If comparing +0 and -0, the result is -0 for min, +0 for max.
+       */
+      case TR::Float:
+         minOp = TR::InstOpCode::vfmin4s;
+         break;
+      case TR::Double:
+         minOp = TR::InstOpCode::vfmin2d;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorBinaryOp(node, cg, minOp);
+   }
+
+TR::Register*
+OMR::ARM64::TreeEvaluator::vmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   TR::InstOpCode::Mnemonic maxOp;
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         maxOp = TR::InstOpCode::vsmax16b;
+         break;
+      case TR::Int16:
+         maxOp = TR::InstOpCode::vsmax8h;
+         break;
+      case TR::Int32:
+         maxOp = TR::InstOpCode::vsmax4s;
+         break;
+      case TR::Int64:
+         return vminmaxInt64Helper(node, true, cg);
+      /*
+       * The behavior of vfmin and vfmax basically follows minimu/maximum of IEEE754-2019.
+       * If either one of the arguments is NaN, the result is NaN.
+       * If comparing +0 and -0, the result is -0 for min, +0 for max.
+       */
+      case TR::Float:
+         maxOp = TR::InstOpCode::vfmax4s;
+         break;
+      case TR::Double:
+         maxOp = TR::InstOpCode::vfmax2d;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorBinaryOp(node, cg, maxOp);
+   }
+
 // Multiply a register by a 32-bit constant
 static void mulConstant32(TR::Node *node, TR::Register *treg, TR::Register *sreg, int32_t value, TR::CodeGenerator *cg)
    {

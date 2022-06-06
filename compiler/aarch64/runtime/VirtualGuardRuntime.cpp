@@ -26,6 +26,10 @@
 #include "env/jittypes.h"
 #include <infra/Assert.hpp>
 
+#if defined(OSX)
+#include <pthread.h> // for pthread_jit_write_protect_np
+#endif
+
 extern void arm64CodeSync(unsigned char *codeStart, unsigned int codeSize);
 
 extern "C" void _patchVirtualGuard(uint8_t *locationAddr, uint8_t *destinationAddr, int32_t smpFlag)

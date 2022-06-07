@@ -178,7 +178,7 @@ def SPECS = [
         'junitPublish' : true
     ],
     'linux_x86' : [
-        'label' : 'compile:xlinux',
+        'label' : 'compile:xlinux && cgroup.v1',
         'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/',
@@ -198,7 +198,7 @@ def SPECS = [
         'junitPublish' : true
     ],
     'linux_x86-64' : [
-        'label' : 'compile:xlinux',
+        'label' : 'compile:xlinux && cgroup.v2',
         'reference' : defaultReference,
         'environment' : [
             'PATH+CCACHE=/usr/lib/ccache/',

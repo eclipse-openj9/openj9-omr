@@ -391,7 +391,22 @@ int32_t TR_LoopVersioner::performWithoutDominators()
       //   break;
       //else
       //   _counter++;
+
       TR_RegionStructure *naturalLoop = nextWhileLoop->asRegion();
+
+      // HCR guard versioning removes edges from the CFG immediately (unlike
+      // versioning of regular conditionals/virtual guards, which leaves a
+      // trivially foldable conditional tree in place). The removal of
+      // particular edges can change loops into acyclic regions, so skip any
+      // region that is no longer a loop.
+      //
+      // (OSR guard versioning also removes edges immediately, but the targets
+      // of those edges are not within any loop, so their removal can't change
+      // loops into acyclic regions.)
+      //
+      if (!naturalLoop->isNaturalLoop())
+         continue;
+
       TR::Block *entryBlock = naturalLoop->getEntryBlock();
       if (!loopIsWorthVersioning(naturalLoop))
          continue;

@@ -4832,6 +4832,7 @@ char *OMR::Options::_verboseOptionNames[TR_NumVerboseOptions] =
    "JITServer",
    "aotcompression",
    "JITServerConns",
+   "vectorAPI"
    };
 
 

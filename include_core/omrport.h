@@ -904,6 +904,12 @@ typedef struct J9ProcessorInfos {
 #define OMRPORT_MMAP_SYNC_WAIT  0x80
 #define OMRPORT_MMAP_SYNC_ASYNC  0x100
 #define OMRPORT_MMAP_SYNC_INVALIDATE  0x200
+#if defined(J9ZOS39064)
+#define OMRPORT_MMAP_FLAG_ZOS_64BIT  0x400
+#endif /* defined(J9ZOS39064) */
+#if defined(J9ZOS390)
+#define OMRPORT_MMAP_FLAG_ZOS_READ_MAPFILE  0x800
+#endif /* defined(J9ZOS390) */
 
 /* Signal classification bits. */
 #define OMRPORT_SIG_FLAG_MAY_RETURN             ((uint32_t)0x01)

@@ -1621,3 +1621,6 @@ TraceException=Trc_PRT_scanCgroupIntOrMax_scan_failed Group=sysinfo Overhead=1 L
 TraceException=Trc_PRT_scanCgroupIntOrMax_null_param Group=sysinfo Overhead=1 Level=1 NoEnv Template="scanCgroupIntOrMax: a parameter is null: metricString=%s val=%p"
 
 TraceException=Trc_PRT_sysinfo_get_number_CPUs_by_type_read_failed Group=sysinfo Overhead=1 Level=1 NoEnv Template="sysinfo_get_number_CPUs_by_type: failed to read cpu quota and period from %s with portable error code=%d"
+
+TraceExit-Exception=Trc_PRT_mmap_map_file_unix_filestatfailed_exit Group=mmap Overhead=1 Level=1 NoEnv Template="omrmmap_map_file: Could not get stats about the file"
+TraceExit-Exception=Trc_PRT_mmap_map_file_cannotallocatehandle_exit Group=mmap Overhead=1 Level=1 NoEnv Template="omrmmap_map_file: Could not allocate memory for handle"

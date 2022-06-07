@@ -101,11 +101,10 @@ if(OMR_OS_ZOS)
 	else()
 		list(APPEND OBJECTS omrvmem_support_below_bar_31.s)
 	endif()
-else()
-	list(APPEND OBJECTS protect_helpers.c)
 endif()
 
 list(APPEND OBJECTS
+	protect_helpers.c
 	omrgetasid.c
 	omrgetjobid.c
 	omrgetjobname.c

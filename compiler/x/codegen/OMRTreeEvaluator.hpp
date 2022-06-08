@@ -277,6 +277,16 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
+   static TR::Register *vreductionAddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionAndEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionFirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionMaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionMinEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionMulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionOrEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionOrUncheckedEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionXorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
    // routines for floating point values that can fit in one GPR
    static TR::Register *floatingPointStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 

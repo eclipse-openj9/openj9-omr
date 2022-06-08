@@ -386,17 +386,150 @@ VECTOR_OPERATION_MACRO(\
    /* .ifCompareOpCode         = */ TR::BadILOp, \
    /* .description             =    vector logical OR */ \
 )
-/*  TODO: add reductions
-   vreduceAdd,
-   vreduceAnd,
-   vreduceFirstNonZero,
-   vreduceMax,
-   vreduceMin,
-   vreduceMul,
-   vreduceOr,
-   vreduceOrUnchecked,
-   vreduceXor,
-*/
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ vreductionAdd, \
+   /* .name                    = */ "vreductionAdd", \
+   /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ TR::NoType, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    vector add reduction */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ vreductionAnd, \
+   /* .name                    = */ "vreductionAnd", \
+   /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ TR::NoType, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    vector and reduction */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ vreductionFirstNonZero, \
+   /* .name                    = */ "vreductionFirstNonZero", \
+   /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ TR::NoType, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    vector FirstNonZero reduction */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ vreductionMax, \
+   /* .name                    = */ "vreductionMax", \
+   /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ TR::NoType, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    vector max reduction */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ vreductionMin, \
+   /* .name                    = */ "vreductionMin", \
+   /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ TR::NoType, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    vector min reduction */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ vreductionMul, \
+   /* .name                    = */ "vreductionMul", \
+   /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ TR::NoType, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    vector mul reduction */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ vreductionOr, \
+   /* .name                    = */ "vreductionOr", \
+   /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ TR::NoType, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    vector or reduction */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ vreductionOrUnchecked, \
+   /* .name                    = */ "vreductionOrUnchecked", \
+   /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ TR::NoType, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    vector or unchecked reduction */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ vreductionXor, \
+   /* .name                    = */ "vreductionXor", \
+   /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ TR::NoType, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    vector xor reduction */ \
+)
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vreturn, \
    /* .name                    = */ "vreturn", \

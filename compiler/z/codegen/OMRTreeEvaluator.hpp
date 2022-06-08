@@ -277,6 +277,15 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vnotEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vorUncheckedEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionAddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionAndEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionFirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionMaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionMinEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionMulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionOrEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionOrUncheckedEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionXorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);

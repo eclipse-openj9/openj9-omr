@@ -428,6 +428,15 @@
 #define vloadiSimplifierHandler indirectLoadSimplifier
 #define vstoreSimplifierHandler directStoreSimplifier
 #define vstoreiSimplifierHandler indirectStoreSimplifier
+#define vreductionAddSimplifierHandler dftSimplifier
+#define vreductionAndSimplifierHandler dftSimplifier
+#define vreductionFirstNonZeroSimplifierHandler dftSimplifier
+#define vreductionMaxSimplifierHandler dftSimplifier
+#define vreductionMinSimplifierHandler dftSimplifier
+#define vreductionMulSimplifierHandler dftSimplifier
+#define vreductionOrSimplifierHandler dftSimplifier
+#define vreductionOrUncheckedSimplifierHandler dftSimplifier
+#define vreductionXorSimplifierHandler dftSimplifier
 #define vreturnSimplifierHandler dftSimplifier
 #define vcallSimplifierHandler dftSimplifier
 #define vcalliSimplifierHandler dftSimplifier

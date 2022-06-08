@@ -1132,19 +1132,43 @@ OMR::Z::TreeEvaluator::vnotEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::Z::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorElementType() == TR::Double ||
+                     (node->getDataType().getVectorElementType() == TR::Float && cg->comp()->target().cpu.getSupportsVectorFacilityEnhancement1()),
+                        "VFMA is only supported for VectorElementDataType TR::Double on z13 and onwards and TR::Float on z14 onwards");
+   TR::Register *resultReg = TR::TreeEvaluator::tryToReuseInputVectorRegs(node, cg);
+   TR::Register *va = cg->evaluate(node->getFirstChild());
+   TR::Register *vb = cg->evaluate(node->getSecondChild());
+   TR::Register *vc = cg->evaluate(node->getThirdChild());
+   generateVRReInstruction(cg, TR::InstOpCode::VFMA, node, resultReg, va, vb, vc, static_cast<uint8_t>(getVectorElementSizeMask(node)), 0);
+   node->setRegister(resultReg);
+   cg->decReferenceCount(node->getFirstChild());
+   cg->decReferenceCount(node->getSecondChild());
+   cg->decReferenceCount(node->getThirdChild());
+   return resultReg;
    }
 
 TR::Register*
 OMR::Z::TreeEvaluator::vabsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   TR::DataType dt = node->getDataType().getVectorElementType();
+   TR_ASSERT_FATAL(dt != TR::Float || cg->comp()->target().cpu.getSupportsVectorFacilityEnhancement1(),
+                  "VFPSO is only supported for VectorElementDataType TR::Double on z13 and onwards and TR::Float on z14 onwards");
+   return inlineVectorUnaryOp(node, cg, (dt == TR::Double || dt == TR::Float) ? TR::InstOpCode::VFPSO : TR::InstOpCode::VLP);
    }
 
 TR::Register*
 OMR::Z::TreeEvaluator::vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorElementType() == TR::Double ||
+                     (node->getDataType().getVectorElementType() == TR::Float && cg->comp()->target().cpu.getSupportsVectorFacilityEnhancement1()),
+                        "VFSQ is only supported for VectorElementDataType TR::Double on z13 and onwards and TR::Float on z14 onwards");
+   return inlineVectorUnaryOp(node, cg, TR::InstOpCode::VFSQ);
    }
 
 TR::Register*
@@ -14384,7 +14408,23 @@ OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node * node,
          generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, getVectorElementSizeMask(node));
          break;
       case TR::InstOpCode::VFPSO:
-         breakInst = generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0 /* invert sign */, 0, getVectorElementSizeMask(node));
+         {
+         /**
+          * TODO: VFPSO instruction is used two different vector unary operation
+          * one to complement the elements and other one to return abs value of elements.
+          * Ideally we should have passed in mode as well to inlineVectorUnaryOp, but given
+          * that the only instruction right now that is reused for different operation
+          * for the purpose of unary vector operation is used for both VABS and VNEG for
+          * Floating point operand, manually checking the opcode for node to get the
+          * operation mask
+          */
+         TR::ILOpCode opcode = node->getOpCode();
+         uint8_t mask5 = opcode.isVectorOpCode() && opcode.getVectorOperation() == TR::vabs ? 2 : 0;
+         breakInst = generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, mask5, 0, getVectorElementSizeMask(node));
+         break;
+         }
+      case TR::InstOpCode::VFSQ:
+         generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, getVectorElementSizeMask(node));
          break;
       default:
          TR_ASSERT(false, "Unary Vector IL evaluation unimplemented for node : %s\n", cg->getDebug()->getName(node));

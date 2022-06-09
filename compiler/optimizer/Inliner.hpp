@@ -229,7 +229,13 @@ struct TR_VirtualGuardSelection
 
    TR_VirtualGuardSelection
    (TR_VirtualGuardKind kind, TR_VirtualGuardTestType type = TR_NonoverriddenTest, TR_OpaqueClassBlock *thisClass= 0)
-      : _kind(kind), _type(type), _thisClass(thisClass), _highProbabilityProfiledGuard(false) {}
+      : _kind(kind)
+      , _type(type)
+      , _thisClass(thisClass)
+      , _highProbabilityProfiledGuard(false)
+      , _forceTakenSideCold(false)
+      {}
+
    TR_VirtualGuardKind  _kind;
    TR_VirtualGuardTestType  _type;
 
@@ -245,6 +251,13 @@ struct TR_VirtualGuardSelection
    // the slow path as cold so optimizations like escape analysis can
    // work on the fast path.
    bool _highProbabilityProfiledGuard;
+
+   // Force the taken side to be cold (even for guard kinds, e.g. profiled
+   // guard, that usually don't mark the taken side cold). This is for use in
+   // cases where where we have reason to believe that the guard will always
+   // pass as a practical matter, but where for correctness in some absurd
+   // corner cases it's not possible to generate a nop guard.
+   bool _forceTakenSideCold;
 
    void setIsHighProbablityProfiledGuard(bool b=true)
       {

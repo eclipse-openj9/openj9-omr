@@ -1052,10 +1052,8 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
          else
             return false;
       case TR::vsqrt:
-          if (et == TR::Double)
-              return true;
-          else
-              return false;
+         return (et == TR::Double);
+
        /*
        * GRA does not work with vector registers on 32 bit due to a bug where xmm registers are not being assigned.
        * This can potentially cause a performance problem in autosimd reductions.

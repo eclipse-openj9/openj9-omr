@@ -4729,8 +4729,8 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
 
    TR::DataType et = opcode.getVectorResultDataType().getVectorElementType();
 
-  TR_ASSERT_FATAL(et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double,
-                  "Unexpected vector element type\n");
+   TR_ASSERT_FATAL(et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double,
+                   "Unexpected vector element type\n");
 
    /*
     * Prior to z14, vector operations that operated on floating point numbers only supported

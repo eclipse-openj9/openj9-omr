@@ -83,8 +83,8 @@
    dataType, \
    typeProps, \
    childProps, \
-   swapVectorOperation, \
-   reverseVectorOperation, \
+   swapChildrenVectorOperation, \
+   reverseBranchVectorOperation, \
    boolCompareOpcode, \
    ifCompareOpcode, ...) \
    \
@@ -98,8 +98,8 @@
    dataType, \
    typeProps, \
    childProps, \
-   (TR::ILOpCodes)swapVectorOperation,    \
-   (TR::ILOpCodes)reverseVectorOperation, \
+   (TR::ILOpCodes)swapChildrenVectorOperation,    \
+   (TR::ILOpCodes)reverseBranchVectorOperation, \
    boolCompareOpcode, \
    ifCompareOpcode, \
    },

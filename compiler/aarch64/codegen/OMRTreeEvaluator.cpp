@@ -3071,25 +3071,25 @@ OMR::ARM64::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg
 TR::Register *
 OMR::ARM64::TreeEvaluator::vindexVectorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::vorUncheckedEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::vfirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::vgetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
 TR::Register *

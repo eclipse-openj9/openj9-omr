@@ -52,7 +52,7 @@ namespace TR
 
       NumVectorOperations,
 
-      firstTwoVectorTypeOperation = vcast
+      firstTwoTypeVectorOperation = vcast
       };
 
    enum ILOpCodes
@@ -60,12 +60,12 @@ namespace TR
       #include "il/ILOpCodesEnum.hpp"
       NumScalarIlOps,
 
-      NumOneVectorTypeOperations = TR::firstTwoVectorTypeOperation,
-      NumTwoVectorTypeOperations = TR::NumVectorOperations - TR::firstTwoVectorTypeOperation,
+      NumOneVectorTypeOperations = TR::firstTwoTypeVectorOperation,
+      NumTwoTypeVectorOperations = TR::NumVectorOperations - TR::firstTwoTypeVectorOperation,
 
       NumOneVectorTypeOps = NumOneVectorTypeOperations * TR::NumVectorTypes,
-      NumTwoVectorTypeOps = NumTwoVectorTypeOperations * TR::NumVectorTypes * TR::NumVectorTypes,
-      NumAllIlOps = TR::NumScalarIlOps + NumOneVectorTypeOps + NumTwoVectorTypeOps
+      NumTwoTypeVectorOps = NumTwoTypeVectorOperations * TR::NumVectorTypes * TR::NumVectorTypes,
+      NumAllIlOps = TR::NumScalarIlOps + NumOneVectorTypeOps + NumTwoTypeVectorOps
       };
    }
 

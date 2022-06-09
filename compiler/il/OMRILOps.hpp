@@ -97,7 +97,7 @@ public:
       {
       TR_ASSERT_FATAL(vectorType.isVector(), "createVectorOpCode should take vector type\n");
 
-      TR_ASSERT_FATAL(operation < TR::firstTwoVectorTypeOperation, "Vector operation should be one vector type operation\n");
+      TR_ASSERT_FATAL(operation < TR::firstTwoTypeVectorOperation, "Vector operation should be one vector type operation\n");
 
       return (TR::ILOpCodes)(TR::NumScalarIlOps + operation*TR::NumVectorTypes + (vectorType - TR::NumScalarTypes));
       }
@@ -119,7 +119,7 @@ public:
       TR_ASSERT_FATAL(srcVectorType.isVector(), "createVectorOpCode should take vector source type\n");
       TR_ASSERT_FATAL(resVectorType.isVector(), "createVectorOpCode should take vector result type\n");
 
-      TR_ASSERT_FATAL(operation >= TR::firstTwoVectorTypeOperation, "Vector operation should be two vector type operation\n");
+      TR_ASSERT_FATAL(operation >= TR::firstTwoTypeVectorOperation, "Vector operation should be two vector type operation\n");
 
       return (TR::ILOpCodes)(TR::NumScalarIlOps + TR::NumOneVectorTypeOps +
                              operation * TR::NumVectorTypes * TR::NumVectorTypes +
@@ -127,6 +127,12 @@ public:
                              (resVectorType - TR::NumScalarTypes));
       }
 
+   bool isTwoTypeVectorOpCode()
+         {
+         if (!isVectorOpCode()) return false;
+
+         return (getVectorOperation() >= TR::firstTwoTypeVectorOperation);
+         }
 
   /** \brief
    *     Checks if the opcode represents vector operation
@@ -274,7 +280,7 @@ public:
 
       TR::VectorOperation operation = (TR::VectorOperation)_opCodeProperties[getTableIndex()].swapChildrenOpCode;
 
-      if (operation < TR::firstTwoVectorTypeOperation)
+      if (operation < TR::firstTwoTypeVectorOperation)
          return createVectorOpCode(operation, getVectorResultDataType());
       else
          return createVectorOpCode(operation, getVectorSourceDataType(), getVectorResultDataType());
@@ -288,7 +294,7 @@ public:
 
       TR::VectorOperation operation = (TR::VectorOperation)_opCodeProperties[getTableIndex()].reverseBranchOpCode;
 
-      if (operation < TR::firstTwoVectorTypeOperation)
+      if (operation < TR::firstTwoTypeVectorOperation)
          return createVectorOpCode(operation, getVectorResultDataType());
       else
          return createVectorOpCode(operation, getVectorSourceDataType(), getVectorResultDataType());

@@ -267,7 +267,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ ILTypeProp::VectorResult, \
-   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .childProperties         = */ ONE_CHILD(TR::Address), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
@@ -384,7 +384,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    vector logical OR */ \
+   /* .description             =    the same as vor but is valid for FP types as well*/ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vreductionAdd, \
@@ -667,7 +667,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ ILTypeProp::VectorResult, \
-   /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .childProperties         = */ TWO_CHILD(TR::Address, ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
@@ -720,7 +720,7 @@ VECTOR_OPERATION_MACRO(\
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
-   /* .description             =    get vector element */ \
+   /* .description             =    get first non-zero vector element */ \
 )
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vgetelem, \
@@ -739,7 +739,7 @@ VECTOR_OPERATION_MACRO(\
    /* .description             =    get vector element, returns scalar */ \
 )
 //
-// firstTwoVectorTypeOperation (has to match definition in OMRILOps.hpp)
+// firstTwoTypeVectorOperation (has to match definition in OMRILOps.hpp)
 //
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vcast, \

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -239,9 +239,14 @@ class TR_SinkStores : public TR::Optimization
    bool sinkStoresWithStaticLoads()          {return _storeSinkingFlags.testAny(SinkStoresWithStaticLoads);}
    void setSinkStoresWithStaticLoads(bool b) {_storeSinkingFlags.set(SinkStoresWithStaticLoads, b);}
 
-   TR::RegisterMappedSymbol *getSinkableSymbol(TR::Node *node);
+   virtual TR::RegisterMappedSymbol *getSinkableSymbol(TR::Node *node);
 
    private:
+   virtual void lookForSinkableStores();
+   virtual void doSinking();
+   TR_EdgeInformation *findEdgeInformation(TR::CFGEdge *edge, List<TR_EdgeInformation> & edgeList);
+
+   protected:
    virtual bool storeIsSinkingCandidate(TR::Block *block,
                                         TR::Node *node,
                                         int32_t symIdx,
@@ -252,17 +257,12 @@ class TR_SinkStores : public TR::Optimization
                                         vcount_t &treeVisitCount,
                                         vcount_t &highVisitCount) = 0;
    virtual bool sinkStorePlacement(TR_MovableStore *store, bool nextStoreWasMoved) = 0;
-   void lookForSinkableStores();
-   void doSinking();
-   TR_EdgeInformation *findEdgeInformation(TR::CFGEdge *edge, List<TR_EdgeInformation> & edgeList);
    void coalesceSimilarEdgePlacements();
    void placeStoresAlongEdges(List<TR_StoreInformation> & stores, List<TR_EdgeInformation> & edges);
    void placeStoresInBlock(List<TR_StoreInformation> & stores, TR::Block *placementBlock);
-
-   protected:
-   int32_t performStoreSinking();
+   virtual int32_t performStoreSinking();
    virtual bool storeCanMoveThroughBlock(TR_BitVector *blockKilledSet, TR_BitVector *blockUsedSet, int32_t symIdx, TR_BitVector *allBlockUsedSymbols = NULL, TR_BitVector *allBlockKilledSymbols = NULL);
-   bool treeIsSinkableStore(TR::Node *node, bool sinkIndirectLoads, uint32_t &indirectLoadCount, int32_t &depth, bool &isLoadStatic, vcount_t visitCount);
+   virtual bool treeIsSinkableStore(TR::Node *node, bool sinkIndirectLoads, uint32_t &indirectLoadCount, int32_t &depth, bool &isLoadStatic, vcount_t visitCount);
    bool checkLiveMergingPaths(TR_BlockListEntry *blockEntry, int32_t symIdx);
    bool shouldSinkStoreAlongEdge(int symIdx, TR::CFGNode *block, TR::CFGNode *succBlock, int32_t sourceBlockFrequency, bool isLoadStatic, vcount_t visitCount, TR_BitVector *allEdgeInfoUsedOrKilledSymbols);
    void recordPlacementForDefAlongEdge(TR_EdgeStorePlacement *edgePlacement);

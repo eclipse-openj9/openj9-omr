@@ -1213,8 +1213,7 @@ OMR::CodeGenerator::isGlobalVRF(TR_GlobalRegisterNumber n)
 bool
 OMR::CodeGenerator::supportsMergingGuards()
    {
-   static bool enableMergingGuards = feGetEnv("TR_DisableMergingGuards") == NULL;
-   return enableMergingGuards &&
+   return !self()->comp()->getOption(TR_DisableOSRGuardMerging) &&
             self()->getSupportsVirtualGuardNOPing() &&
             self()->comp()->performVirtualGuardNOPing() &&
             !self()->comp()->compileRelocatableCode();

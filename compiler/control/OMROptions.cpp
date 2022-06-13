@@ -472,6 +472,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableOSR",                         "O\tdisable support for on-stack replacement", SET_OPTION_BIT(TR_DisableOSR), "F"},
    {"disableOSRCallSiteRemat",            "O\tdisable use of the call stack remat table in on-stack replacement", SET_OPTION_BIT(TR_DisableOSRCallSiteRemat), "F"},
    {"disableOSRExceptionEdgeRemoval",     "O\tdon't trim away unused on-stack replacement points", TR::Options::disableOptimization, osrExceptionEdgeRemoval, 0, "P"},
+   {"disableOSRGuardMerging",             "O\tdisable Merging of OSR guards", SET_OPTION_BIT(TR_DisableOSRGuardMerging), "F"},
 #ifdef J9_PROJECT_SPECIFIC
    {"disableOSRGuardRemoval",             "O\tdisable OSR guard removal",                      TR::Options::disableOptimization, osrGuardRemoval, 0, "P"},
 #endif

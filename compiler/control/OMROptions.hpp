@@ -547,7 +547,7 @@ enum TR_CompilationOptions
    TR_DoNotUsePersistentIprofiler                     = 0x00080000 + 15,
    TR_DoNotUseFastStackwalk                           = 0x00100000 + 15,
    TR_DisableOSRLiveRangeAnalysis                     = 0x00200000 + 15,
-   // Available                                       = 0x00400000 + 15,
+   TR_DisableOSRGuardMerging                         = 0x00400000 + 15,
    // Available                                       = 0x00800000 + 15,
    // Available                                       = 0x01000000 + 15,
    // Available                                       = 0x02000000 + 15,

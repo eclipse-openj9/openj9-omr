@@ -34,6 +34,7 @@
 #if defined(LINUX)
 #include <linux/magic.h>
 #include <sys/vfs.h>
+#include <sched.h>
 #include <fstream>
 #include <regex>
 #endif /* defined(LINUX) */
@@ -2383,6 +2384,11 @@ protected:
 	const static std::map<std::string, uint64_t> supportedSubsystems;
 	constexpr static char CGROUP_MOUNT_POINT[] = "/sys/fs/cgroup";
 	static uint64_t available;
+	static uint64_t memLimit;
+	static std::string memLimitString;
+	static int64_t cpuQuota;
+	static std::string cpuQuotaString;
+	static uint64_t cpuPeriod;
 	static bool setUpSucceeded;
 
 	/* Initialize static vars. */
@@ -2435,6 +2441,18 @@ protected:
 					}
 				}
 			}
+
+			if (OMR_ARE_ANY_BITS_SET(available, OMR_CGROUP_SUBSYSTEM_MEMORY)) {
+				std::ifstream memLimitFile(CGROUP_MOUNT_POINT + std::string("/memory") + memCgroup + "/memory.limit_in_bytes");
+				ASSERT_TRUE(memLimitFile >> memLimit);
+			}
+
+			if (OMR_ARE_ANY_BITS_SET(available, OMR_CGROUP_SUBSYSTEM_CPU)) {
+				std::ifstream cpuQuotaFile(CGROUP_MOUNT_POINT + std::string("/cpu") + cpuCgroup + "/cpu.cfs_quota_us");
+				ASSERT_TRUE(cpuQuotaFile >> cpuQuota);
+				std::ifstream cpuPeriodFile(CGROUP_MOUNT_POINT + std::string("/cpu") + cpuCgroup + "/cpu.cfs_period_us");
+				ASSERT_TRUE(cpuPeriodFile >> cpuPeriod);
+			}
 		} else {
 			ASSERT_TRUE((bool)std::getline(cgroupFile, line));
 			std::regex v2Regex(R"(^0::(.+)$)");
@@ -2454,6 +2472,17 @@ protected:
 				if (supportedSubsystems.end() != it) {
 					available |= it->second;
 				}
+			}
+
+			if (OMR_ARE_ANY_BITS_SET(available, OMR_CGROUP_SUBSYSTEM_MEMORY)) {
+				std::ifstream memLimitFile(CGROUP_MOUNT_POINT + memCgroup + "/memory.max");
+				ASSERT_TRUE(memLimitFile >> memLimitString);
+			}
+
+			if (OMR_ARE_ANY_BITS_SET(available, OMR_CGROUP_SUBSYSTEM_CPU)) {
+				std::ifstream cpuMaxFile(CGROUP_MOUNT_POINT + cpuCgroup + "/cpu.max");
+				ASSERT_TRUE(cpuMaxFile >> cpuQuotaString);
+				ASSERT_TRUE(cpuMaxFile >> cpuPeriod);
 			}
 		}
 		setUpSucceeded = true;
@@ -2512,6 +2541,11 @@ const std::map<std::string, uint64_t> CgroupTest::supportedSubsystems = {
 };
 constexpr char CgroupTest::CGROUP_MOUNT_POINT[];
 uint64_t CgroupTest::available = 0;
+uint64_t CgroupTest::memLimit = 0;
+std::string CgroupTest::memLimitString;
+int64_t CgroupTest::cpuQuota = 0;
+std::string CgroupTest::cpuQuotaString;
+uint64_t CgroupTest::cpuPeriod = 0;
 bool CgroupTest::setUpSucceeded = false;
 #endif /* defined(LINUX) */
 
@@ -2671,26 +2705,18 @@ TEST_F(CgroupTest, sysinfo_cgroup_enable)
 /**
  * Test omrsysinfo_cgroup_get_memlimit.
  */
-TEST(PortSysinfoTest, sysinfo_cgroup_get_memlimit)
+TEST_F(CgroupTest, sysinfo_cgroup_get_memlimit)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrsysinfo_cgroup_get_memlimit";
 	uint64_t cgroupMemLimit = 0;
 	int32_t rc = 0;
-	uint64_t enabledSubsystems = 0;
-	
+
 	reportTestEntry(OMRPORTLIB, testName);
 
-	rc = omrsysinfo_cgroup_get_memlimit(&cgroupMemLimit);
-
-#if !defined(LINUX)
-	if (OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM != rc) {
-		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_cgroup_get_memlimit returned %d, expected %d on platform that does not support cgroups\n", rc, OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM);
-	}
-#endif
-
+#if defined(LINUX)
 	/* Compare sysinfo_get_physical_memory and sysinfo_cgroup_get_memlimit after enabling memory subsystem */
-	enabledSubsystems = omrsysinfo_cgroup_enable_subsystems(OMR_CGROUP_SUBSYSTEM_MEMORY);
+	uint64_t enabledSubsystems = omrsysinfo_cgroup_enable_subsystems(OMR_CGROUP_SUBSYSTEM_MEMORY);
 	if (OMR_ARE_ALL_BITS_SET(enabledSubsystems, OMR_CGROUP_SUBSYSTEM_MEMORY)) {
 		rc = omrsysinfo_cgroup_get_memlimit(&cgroupMemLimit);
 		if ((0 != rc) && (OMRPORT_ERROR_SYSINFO_CGROUP_MEMLIMIT_NOT_SET != rc)) {
@@ -2703,7 +2729,61 @@ TEST(PortSysinfoTest, sysinfo_cgroup_get_memlimit)
 				outputErrorMessage(PORTTEST_ERROR_ARGS, "Expected omrsysinfo_cgroup_get_memlimit and omrsysinfo_get_physical_memory to return same value, but omrsysinfo_cgroup_get_memlimit returned %ld and omrsysinfo_get_physical_memory returned %ld\n", cgroupMemLimit, physicalMemLimit);
 			}
 		}
+
+		if (CgroupTest::isV1Available) {
+			if (OMRPORT_ERROR_SYSINFO_CGROUP_MEMLIMIT_NOT_SET == rc) {
+				EXPECT_GT(CgroupTest::memLimit, omrsysinfo_get_physical_memory()) << "Cgroup memory is set but omrsysinfo_cgroup_get_memlimit returned not set";
+			} else if (0 == rc) {
+				EXPECT_EQ(CgroupTest::memLimit, cgroupMemLimit);
+			}
+		} else {
+			/* CgroupTest::isV2Available */
+			if (OMRPORT_ERROR_SYSINFO_CGROUP_MEMLIMIT_NOT_SET == rc) {
+				EXPECT_EQ(CgroupTest::memLimitString, "max") << "Cgroup memory is set but omrsysinfo_cgroup_get_memlimit returned not set";
+			} else if (0 == rc) {
+				EXPECT_EQ(std::stoull(CgroupTest::memLimitString), cgroupMemLimit);
+			}
+		}
 	}
+#else /* defined(LINUX) */
+	rc = omrsysinfo_cgroup_get_memlimit(&cgroupMemLimit);
+	if (OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM != rc) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_cgroup_get_memlimit returned %d, expected %d on platform that does not support cgroups\n", rc, OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM);
+	}
+#endif /* defined(LINUX) */
+
+	reportTestExit(OMRPORTLIB, testName);
+	return;
+}
+
+/**
+ * Test omrsysinfo_cgroup_is_memlimit_set.
+ */
+TEST_F(CgroupTest, sysinfo_cgroup_is_memlimit_set)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrsysinfo_cgroup_is_memlimit_set";
+	BOOLEAN result = FALSE;
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+	result = omrsysinfo_cgroup_is_memlimit_set();
+
+#if defined(LINUX)
+	uint64_t enabledSubsystems = omrsysinfo_cgroup_enable_subsystems(OMR_CGROUP_SUBSYSTEM_MEMORY);
+	if (OMR_ARE_ALL_BITS_SET(enabledSubsystems, OMR_CGROUP_SUBSYSTEM_MEMORY)) {
+		if (CgroupTest::isV1Available) {
+			EXPECT_EQ(result, CgroupTest::memLimit <= omrsysinfo_get_physical_memory());
+		} else {
+			/* CgroupTest::isV2Available */
+			EXPECT_EQ(result, CgroupTest::memLimitString != "max");
+		}
+	}
+#else /* defined(LINUX) */
+	if (FALSE != result) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_cgroup_is_memlimit_set returned TRUE on non-Linux");
+	}
+#endif /* defined(LINUX) */
 
 	reportTestExit(OMRPORTLIB, testName);
 	return;
@@ -2756,6 +2836,90 @@ TEST_F(CgroupTest, sysinfo_get_cgroup_subsystem_list)
 	reportTestExit(OMRPORTLIB, testName);
 	return;
 }
+
+#if defined(LINUX)
+/**
+ * Test omrsysinfo_get_number_CPUs_by_type for the OMRPORT_CPU_BOUND type (specifically, fetching
+ * and calculating the number of cpus allocated to this process via cgroup).
+ */
+TEST_F(CgroupTest, sysinfo_get_number_CPUs_cgroup)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrsysinfo_get_number_CPUs_cgroup";
+	uint64_t enabledSubsystems = 0;
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+	enabledSubsystems = omrsysinfo_cgroup_enable_subsystems(OMR_CGROUP_SUBSYSTEM_CPU);
+	if (OMR_ARE_ALL_BITS_SET(enabledSubsystems, OMR_CGROUP_SUBSYSTEM_CPU)) {
+		uintptr_t result = omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_BOUND);
+		uintptr_t testResult = 0;
+
+		cpu_set_t cpuSet;
+		int32_t error = 0;
+		size_t size = sizeof(cpuSet);
+		pid_t mainProcess = getpid();
+		memset(&cpuSet, 0, size);
+
+		error = sched_getaffinity(mainProcess, size, &cpuSet);
+
+		if (0 == error) {
+			testResult = CPU_COUNT(&cpuSet);
+		} else {
+			if (EINVAL == errno) {
+				/* Too many CPUs for the fixed cpu_set_t structure. */
+				int32_t numCPUs = sysconf(_SC_NPROCESSORS_CONF);
+				cpu_set_t *allocatedCpuSet = CPU_ALLOC(numCPUs);
+				if (NULL != allocatedCpuSet) {
+					size = CPU_ALLOC_SIZE(numCPUs);
+					CPU_ZERO_S(size, allocatedCpuSet);
+					error = sched_getaffinity(mainProcess, size, allocatedCpuSet);
+					if (0 == error) {
+						testResult = CPU_COUNT_S(size, allocatedCpuSet);
+					}
+					CPU_FREE(allocatedCpuSet);
+				}
+			}
+		}
+
+		ASSERT_NE(testResult, (uintptr_t)0);
+		if (CgroupTest::isV1Available) {
+			int32_t numCpusQuota = (int32_t)(((double)CgroupTest::cpuQuota / cpuPeriod) + 0.5);
+
+			if ((CgroupTest::cpuQuota <= 0) || (numCpusQuota >= (int32_t)testResult)) {
+				ASSERT_EQ(result, testResult);
+			} else {
+				if (0 == numCpusQuota) {
+					ASSERT_EQ(result, (uintptr_t)1);
+				} else {
+					std::cout << "result: " << result << "\n";
+					ASSERT_EQ(result, (uintptr_t)numCpusQuota);
+				}
+			}
+		} else {
+			/* Cgroup::isV2Available */
+			if (CgroupTest::cpuQuotaString == "max") {
+				ASSERT_EQ(result, testResult);
+			} else {
+				int32_t numCpusQuota = (int32_t)((std::stod(CgroupTest::cpuQuotaString) / cpuPeriod) + 0.5);
+
+				if (numCpusQuota >= (int32_t)testResult) {
+					ASSERT_EQ(result, testResult);
+				} else {
+					if (0 == numCpusQuota) {
+						ASSERT_EQ(result, (uintptr_t)1);
+					} else {
+						ASSERT_EQ(result, (uintptr_t)numCpusQuota);
+					}
+				}
+			}
+		}
+	}
+
+	reportTestExit(OMRPORTLIB, testName);
+	return;
+}
+#endif /* defined(LINUX) */
 #else /* !defined(LINUX) || (GTEST_GCC_VER_ >= 40900) */
 #pragma message("Cgroup tests are disabled due to an unsupported compiler.")
 #endif /* !defined(LINUX) || (GTEST_GCC_VER_ >= 40900) */

@@ -990,6 +990,10 @@
 		vaddp4s,                                                	/* 0x4EA0BC00	ADDP         	 */
 		vaddp2d,                                                	/* 0x4EE0BC00	ADDP         	 */
 		addp2d,                                                 	/* 0x5EF1B800	ADDP (scalar)	 */
+		vfaddp4s,                                               	/* 0x6E20D400	FADDP        	 */
+		vfaddp2d,                                               	/* 0x6E60D400	FADDP        	 */
+		faddp2s,                                                	/* 0x7E30D800	FADDP(scalar)	 */
+		faddp2d,                                                	/* 0x7E70D800	FADDP(scalar)	 */
 /* Hint instructions */
 		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */

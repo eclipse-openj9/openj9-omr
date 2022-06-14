@@ -1507,10 +1507,119 @@ OMR::ARM64::TreeEvaluator::vstoreiEvaluator(TR::Node *node, TR::CodeGenerator *c
    return TR::TreeEvaluator::vstoreEvaluator(node, cg);
    }
 
+/**
+ * @brief A helper function for generating instuction sequence for reduction add operations for vectors of integer elements.
+ *
+ * @param[in] node: node
+ * @param[in] et: element type
+ * @param[in] cg: CodeGenerator
+ * @return general purpose register containing the result
+ */
+static TR::Register*
+vreductionAddIntHelper(TR::Node *node, TR::DataType et, TR::CodeGenerator *cg)
+   {
+   TR::Node *sourceChild = node->getFirstChild();
+   TR::Register *sourceReg = cg->evaluate(sourceChild);
+
+   TR_ASSERT_FATAL_WITH_NODE(node, sourceReg->getKind() == TR_VRF, "unexpected Register kind");
+
+   TR::InstOpCode::Mnemonic addOp;
+   TR::InstOpCode::Mnemonic movOp;
+   switch (et)
+      {
+      case TR::Int8:
+         addOp = TR::InstOpCode::vaddv16b;
+         movOp = TR::InstOpCode::smovwb;
+         break;
+      case TR::Int16:
+         addOp = TR::InstOpCode::vaddv8h;
+         movOp = TR::InstOpCode::smovwh;
+         break;
+      case TR::Int32:
+         addOp = TR::InstOpCode::vaddv4s;
+         movOp = TR::InstOpCode::umovws;
+         break;
+      case TR::Int64:
+         addOp = TR::InstOpCode::addp2d;
+         movOp = TR::InstOpCode::umovxd;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
+         break;
+      }
+
+   TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
+   TR::Register *resReg = cg->allocateRegister(TR_GPR);
+
+   generateTrg1Src1Instruction(cg, addOp, node, tmpReg, sourceReg);
+   generateMovVectorElementToGPRInstruction(cg, movOp, node, resReg, tmpReg, 0);
+
+   cg->stopUsingRegister(tmpReg);
+   node->setRegister(resReg);
+   cg->decReferenceCount(sourceChild);
+
+   return resReg;
+   }
+
+/**
+ * @brief A helper function for generating instuction sequence for reduction add operations for vectors of float elements.
+ *
+ * @param[in] node: node
+ * @param[in] et: element type
+ * @param[in] cg: CodeGenerator
+ * @return floating point register containing the result
+ */
+static TR::Register*
+vreductionAddFloatHelper(TR::Node *node, TR::DataType et, TR::CodeGenerator *cg)
+   {
+   TR::Node *sourceChild = node->getFirstChild();
+   TR::Register *sourceReg = cg->evaluate(sourceChild);
+
+   TR_ASSERT_FATAL_WITH_NODE(node, sourceReg->getKind() == TR_VRF, "unexpected Register kind");
+   TR::Register *resReg = cg->allocateRegister(TR_FPR);
+   if (et == TR::Float)
+      {
+      TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::vfaddp4s, node, tmpReg, sourceReg, sourceReg);
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::faddp2s, node, resReg, tmpReg);
+      cg->stopUsingRegister(tmpReg);
+      }
+   else if (et == TR::Double)
+      {
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::faddp2d, node, resReg, sourceReg);
+      }
+   else
+      {
+      TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
+      }
+
+   node->setRegister(resReg);
+   cg->decReferenceCount(sourceChild);
+
+   return resReg;
+   }
+
 TR::Register*
 OMR::ARM64::TreeEvaluator::vreductionAddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
+
+   TR::DataType et = node->getFirstChild()->getDataType().getVectorElementType();
+   switch(et)
+      {
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         return vreductionAddIntHelper(node, et, cg);
+      case TR::Float:
+      case TR::Double:
+         return vreductionAddFloatHelper(node, et, cg);
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      }
    }
 
 TR::Register*

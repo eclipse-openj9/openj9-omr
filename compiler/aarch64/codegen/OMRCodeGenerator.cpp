@@ -639,6 +639,7 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
       case TR::vabs:
       case TR::vmin:
       case TR::vmax:
+      case TR::vreductionAdd:
          return true;
       case TR::vand:
       case TR::vor:

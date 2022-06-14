@@ -985,6 +985,12 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x6E31A800,	/* UMINV  	vuminv16b */
 		0x6E71A800,	/* UMINV  	vuminv8h */
 		0x6EB1A800,	/* UMINV  	vuminv4s */
+	/* Vector pairwise instructions */
+		0x4E20BC00,	/* ADDP   	vaddp16b */
+		0x4E60BC00,	/* ADDP   	vaddp8h */
+		0x4EA0BC00,	/* ADDP   	vaddp4s */
+		0x4EE0BC00,	/* ADDP   	vaddp2d */
+		0x5EF1B800,	/* ADDP (scalar) addp2d */
 	/* Hint instructions */
 		0xD503201F,	/* NOP          nop      */
 };

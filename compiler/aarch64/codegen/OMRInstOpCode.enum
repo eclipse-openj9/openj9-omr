@@ -984,6 +984,12 @@
 		vuminv16b,                                               	/* 0x6E31A800	UMINV   	 */
 		vuminv8h,                                                	/* 0x6E71A800	UMINV   	 */
 		vuminv4s,                                                	/* 0x6EB1A800	UMINV   	 */
+	/* Vector pairwise instructions */
+		vaddp16b,                                               	/* 0x4E20BC00	ADDP         	 */
+		vaddp8h,                                                	/* 0x4E60BC00	ADDP         	 */
+		vaddp4s,                                                	/* 0x4EA0BC00	ADDP         	 */
+		vaddp2d,                                                	/* 0x4EE0BC00	ADDP         	 */
+		addp2d,                                                 	/* 0x5EF1B800	ADDP (scalar)	 */
 /* Hint instructions */
 		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */

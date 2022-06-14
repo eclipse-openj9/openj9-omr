@@ -990,6 +990,11 @@ static const char *opCodeToNameMap[] =
    "vuminv16b",
    "vuminv8h",
    "vuminv4s",
+   "vaddp16b",
+   "vaddp8h",
+   "vaddp4s",
+   "vaddp2d",
+   "addp2d",
    "nop",
    };
 

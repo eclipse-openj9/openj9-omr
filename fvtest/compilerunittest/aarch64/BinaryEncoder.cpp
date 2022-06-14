@@ -2082,3 +2082,29 @@ INSTANTIATE_TEST_CASE_P(ScalarAddp, ARM64Trg1Src1EncodingTest, ::testing::Values
     std::make_tuple(TR::InstOpCode::addp2d, TR::RealRegister::v15, TR::RealRegister::v0, "5ef1b80f"),
     std::make_tuple(TR::InstOpCode::addp2d, TR::RealRegister::v31, TR::RealRegister::v0, "5ef1b81f")
 ));
+
+INSTANTIATE_TEST_CASE_P(VectorFAddp, ARM64Trg1Src2EncodingTest, ::testing::Values(
+    std::make_tuple(TR::InstOpCode::vfaddp4s, TR::RealRegister::v15, TR::RealRegister::v0, TR::RealRegister::v0, "6e20d40f"),
+    std::make_tuple(TR::InstOpCode::vfaddp4s, TR::RealRegister::v31, TR::RealRegister::v0, TR::RealRegister::v0, "6e20d41f"),
+    std::make_tuple(TR::InstOpCode::vfaddp4s, TR::RealRegister::v0, TR::RealRegister::v15, TR::RealRegister::v0, "6e20d5e0"),
+    std::make_tuple(TR::InstOpCode::vfaddp4s, TR::RealRegister::v0, TR::RealRegister::v31, TR::RealRegister::v0, "6e20d7e0"),
+    std::make_tuple(TR::InstOpCode::vfaddp4s, TR::RealRegister::v0, TR::RealRegister::v0, TR::RealRegister::v15, "6e2fd400"),
+    std::make_tuple(TR::InstOpCode::vfaddp4s, TR::RealRegister::v0, TR::RealRegister::v0, TR::RealRegister::v31, "6e3fd400"),
+    std::make_tuple(TR::InstOpCode::vfaddp2d, TR::RealRegister::v15, TR::RealRegister::v0, TR::RealRegister::v0, "6e60d40f"),
+    std::make_tuple(TR::InstOpCode::vfaddp2d, TR::RealRegister::v31, TR::RealRegister::v0, TR::RealRegister::v0, "6e60d41f"),
+    std::make_tuple(TR::InstOpCode::vfaddp2d, TR::RealRegister::v0, TR::RealRegister::v15, TR::RealRegister::v0, "6e60d5e0"),
+    std::make_tuple(TR::InstOpCode::vfaddp2d, TR::RealRegister::v0, TR::RealRegister::v31, TR::RealRegister::v0, "6e60d7e0"),
+    std::make_tuple(TR::InstOpCode::vfaddp2d, TR::RealRegister::v0, TR::RealRegister::v0, TR::RealRegister::v15, "6e6fd400"),
+    std::make_tuple(TR::InstOpCode::vfaddp2d, TR::RealRegister::v0, TR::RealRegister::v0, TR::RealRegister::v31, "6e7fd400")
+));
+
+INSTANTIATE_TEST_CASE_P(ScalarFAddp, ARM64Trg1Src1EncodingTest, ::testing::Values(
+    std::make_tuple(TR::InstOpCode::faddp2s, TR::RealRegister::v0, TR::RealRegister::v15, "7e30d9e0"),
+    std::make_tuple(TR::InstOpCode::faddp2s, TR::RealRegister::v0, TR::RealRegister::v31, "7e30dbe0"),
+    std::make_tuple(TR::InstOpCode::faddp2s, TR::RealRegister::v15, TR::RealRegister::v0, "7e30d80f"),
+    std::make_tuple(TR::InstOpCode::faddp2s, TR::RealRegister::v31, TR::RealRegister::v0, "7e30d81f"),
+    std::make_tuple(TR::InstOpCode::faddp2d, TR::RealRegister::v0, TR::RealRegister::v15, "7e70d9e0"),
+    std::make_tuple(TR::InstOpCode::faddp2d, TR::RealRegister::v0, TR::RealRegister::v31, "7e70dbe0"),
+    std::make_tuple(TR::InstOpCode::faddp2d, TR::RealRegister::v15, TR::RealRegister::v0, "7e70d80f"),
+    std::make_tuple(TR::InstOpCode::faddp2d, TR::RealRegister::v31, TR::RealRegister::v0, "7e70d81f")
+));

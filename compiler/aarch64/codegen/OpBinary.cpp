@@ -991,6 +991,10 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4EA0BC00,	/* ADDP   	vaddp4s */
 		0x4EE0BC00,	/* ADDP   	vaddp2d */
 		0x5EF1B800,	/* ADDP (scalar) addp2d */
+		0x6E20D400,	/* FADDP  	vfaddp4s */
+		0x6E60D400,	/* FADDP  	vfaddp2d */
+		0x7E30D800,	/* FADDP(scalar) faddp2s */
+		0x7E70D800,	/* FADDP(scalar) faddp2d */
 	/* Hint instructions */
 		0xD503201F,	/* NOP          nop      */
 };

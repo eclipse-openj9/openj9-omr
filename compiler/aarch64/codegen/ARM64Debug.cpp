@@ -995,6 +995,10 @@ static const char *opCodeToNameMap[] =
    "vaddp4s",
    "vaddp2d",
    "addp2d",
+   "vfaddp4s",
+   "vfaddp2d",
+   "faddp2s",
+   "faddp2d",
    "nop",
    };
 

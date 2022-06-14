@@ -37,8 +37,8 @@
 
 class TR_GlobalRegister;
 class TR_NodeMappings;
-class TR_RegisterCandidate;
-class TR_RegisterCandidates;
+namespace TR { class RegisterCandidate; }
+namespace TR { class RegisterCandidates; }
 class TR_StructureSubGraphNode;
 namespace TR { class Block; }
 namespace TR { class Symbol; }
@@ -69,10 +69,10 @@ struct TR_SymRefCandidatePair
    {
    TR_ALLOC(TR_Memory::GlobalRegisterAllocator)
 
-   TR_SymRefCandidatePair(TR::SymbolReference *symRef, TR_RegisterCandidate *rc) : _symRef(symRef), _rc(rc) {}
+   TR_SymRefCandidatePair(TR::SymbolReference *symRef, TR::RegisterCandidate *rc) : _symRef(symRef), _rc(rc) {}
 
    TR::SymbolReference *_symRef;
-   TR_RegisterCandidate *_rc;
+   TR::RegisterCandidate *_rc;
    };
 
 class TR_LiveRangeSplitter : public TR::Optimization
@@ -87,9 +87,9 @@ class TR_LiveRangeSplitter : public TR::Optimization
    virtual int32_t perform();
    virtual const char * optDetailString() const throw();
 
-   typedef TR::typed_allocator<std::pair<uint32_t const, TR_RegisterCandidate*>, TR::Region&> SymRefCandidateMapAllocator;
+   typedef TR::typed_allocator<std::pair<uint32_t const, TR::RegisterCandidate*>, TR::Region&> SymRefCandidateMapAllocator;
    typedef std::less<uint32_t> SymRefCandidateMapComparator;
-   typedef std::map<uint32_t, TR_RegisterCandidate*, SymRefCandidateMapComparator, SymRefCandidateMapAllocator> SymRefCandidateMap;
+   typedef std::map<uint32_t, TR::RegisterCandidate*, SymRefCandidateMapComparator, SymRefCandidateMapAllocator> SymRefCandidateMap;
 
    void splitLiveRanges();
    void splitLiveRanges(TR_StructureSubGraphNode *structureNode);
@@ -164,14 +164,14 @@ public:
    TR::Node *           resolveTypeMismatch(TR::DataType inputOldType, TR::Node *oldNode, TR::Node *newNode);
 
 private:
-   typedef TR::typed_allocator<std::pair<uint32_t const, TR_RegisterCandidate*>, TR::Region&> SymRefCandidateMapAllocator;
+   typedef TR::typed_allocator<std::pair<uint32_t const, TR::RegisterCandidate*>, TR::Region&> SymRefCandidateMapAllocator;
    typedef std::less<uint32_t> SymRefCandidateMapComparator;
-   typedef std::map<uint32_t, TR_RegisterCandidate*, SymRefCandidateMapComparator, SymRefCandidateMapAllocator> SymRefCandidateMap;
+   typedef std::map<uint32_t, TR::RegisterCandidate*, SymRefCandidateMapComparator, SymRefCandidateMapAllocator> SymRefCandidateMap;
 
    void                findIfThenRegisterCandidates();
    void                findLoopAutoRegisterCandidates();
    void                findLoopsAndCorrespondingAutos(TR_StructureSubGraphNode *, vcount_t, SymRefCandidateMap &);
-   void                findLoopsAndAutosNoStructureInfo(vcount_t visitCount, TR_RegisterCandidate **registerCandidates);
+   void                findLoopsAndAutosNoStructureInfo(vcount_t visitCount, TR::RegisterCandidate **registerCandidates);
    void                initializeControlFlowInfo();
    void                markAutosUsedIn(TR::Node *, TR::Node *, TR::Node *, TR::Node **, TR::Block *, List<TR::Block> *, vcount_t, int32_t, SymRefCandidateMap &, TR_BitVector *, TR_BitVector *, bool);
    void                signExtendAllDefNodes(TR::Node *, List<TR::Node> *);
@@ -208,7 +208,7 @@ private:
    void                reloadNonRegStarVariables(TR::TreeTop *, TR::Node *, TR::Block *, bool);
 
    bool                registerIsLiveAcrossEdge(TR::TreeTop *, TR::Node *, TR::Block *, TR_GlobalRegister *, TR::Block * &, int32_t);
-   TR::Block *          createNewSuccessorBlock(TR::Block *, TR::Block *, TR::TreeTop *, TR::Node *, TR_RegisterCandidate * rc);
+   TR::Block *          createNewSuccessorBlock(TR::Block *, TR::Block *, TR::TreeTop *, TR::Node *, TR::RegisterCandidate * rc);
    TR::Block *          extendBlock(TR::Block *, TR::Block *);
    TR::Block *          createBlock(TR::Block *, TR::Block *);
    bool                tagCandidates(TR::Block *, bool);
@@ -239,8 +239,8 @@ private:
 
    /*
    void splitLiveRanges();
-   void splitLiveRanges(TR_StructureSubGraphNode *structureNode, vcount_t visitCount, TR_RegisterCandidate **registerCandidates);
-   void replaceAutosUsedIn(TR::Node *node, TR::Node *parent, TR::Block * block, List<TR::Block> *blocksInLoop, vcount_t visitCount, int32_t executionFrequency, TR_RegisterCandidate **registerCandidates, TR_SymRefCandidatePair **correspondingSymRefs, TR_BitVector *replacedAutosInCurrentLoop, TR_StructureSubGraphNode *loop, TR::Block *loopInvariantBlock);
+   void splitLiveRanges(TR_StructureSubGraphNode *structureNode, vcount_t visitCount, TR::RegisterCandidate **registerCandidates);
+   void replaceAutosUsedIn(TR::Node *node, TR::Node *parent, TR::Block * block, List<TR::Block> *blocksInLoop, vcount_t visitCount, int32_t executionFrequency, TR::RegisterCandidate **registerCandidates, TR_SymRefCandidatePair **correspondingSymRefs, TR_BitVector *replacedAutosInCurrentLoop, TR_StructureSubGraphNode *loop, TR::Block *loopInvariantBlock);
    void placeStoresInPreHeaderAndInLoopExits(TR::Node *node, TR_StructureSubGraphNode *loop, TR::Block *loopInvariantBlock, List<TR::Block> *blocksInLoop, TR::SymbolReference *orig, TR::SymbolReference *replacement);
    void appendStoreToBlock(TR::SymbolReference *storeSymRef, TR::SymbolReference *loadSymRef, TR::Block *block, TR::Node *node);
    */
@@ -259,7 +259,7 @@ private:
    TR_BitVector *_signExtAdjustmentNotReqd;
    TR_BitVector *_signExtDifference;
    TR_BitVector *_valueModifiedSymRefs;
-   TR_RegisterCandidates * _candidates;
+   TR::RegisterCandidates * _candidates;
 
    TR::Node **_nodesForSymRefs;
 

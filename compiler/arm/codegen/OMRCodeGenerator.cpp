@@ -588,11 +588,11 @@ TR_ARMOutOfLineCodeSection *OMR::ARM::CodeGenerator::findOutLinedInstructionsFro
    return NULL;
    }
 
-TR_GlobalRegisterNumber OMR::ARM::CodeGenerator::pickRegister(TR_RegisterCandidate            *regCan,
+TR_GlobalRegisterNumber OMR::ARM::CodeGenerator::pickRegister(TR::RegisterCandidate            *regCan,
                                                           TR::Block                          ** barr,
                                                           TR_BitVector                      &  availRegs,
                                                           TR_GlobalRegisterNumber           &  highRegisterNumber,
-                                                          TR_LinkHead<TR_RegisterCandidate> *  candidates)
+                                                          TR_LinkHead<TR::RegisterCandidate> *  candidates)
    {
    // Tactical GRA
    // We delegate the decision to use register pressure simulation to common code.
@@ -601,7 +601,7 @@ TR_GlobalRegisterNumber OMR::ARM::CodeGenerator::pickRegister(TR_RegisterCandida
    // }
    }
 
-bool OMR::ARM::CodeGenerator::allowGlobalRegisterAcrossBranch(TR_RegisterCandidate *rc, TR::Node * branchNode)
+bool OMR::ARM::CodeGenerator::allowGlobalRegisterAcrossBranch(TR::RegisterCandidate *rc, TR::Node * branchNode)
    {
    // If return false, processLiveOnEntryBlocks has to dis-qualify any candidates which are referenced
    // within any CASE of a SWITCH statement.

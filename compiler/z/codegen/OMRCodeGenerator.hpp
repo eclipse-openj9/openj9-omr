@@ -89,7 +89,7 @@ class TR_BackingStore;
 class TR_GCStackMap;
 class TR_OpaquePseudoRegister;
 class TR_PseudoRegister;
-class TR_RegisterCandidate;
+namespace TR { class RegisterCandidate; }
 namespace TR { class S390ConstantDataSnippet; }
 namespace TR { class S390ConstantInstructionSnippet; }
 namespace TR { class S390EyeCatcherDataSnippet; }
@@ -326,7 +326,7 @@ public:
    void resetGlobalRegister(TR::RealRegister::RegNum reg, TR_BitVector &globalRegisters);
    void setGlobalRegister(TR::RealRegister::RegNum reg, TR_BitVector &globalRegisters);
    void setRegister(TR::RealRegister::RegNum reg, TR_BitVector &registers);
-   void removeUnavailableRegisters(TR_RegisterCandidate * rc, TR::Block * * blocks, TR_BitVector & availableRegisters);
+   void removeUnavailableRegisters(TR::RegisterCandidate * rc, TR::Block * * blocks, TR_BitVector & availableRegisters);
    void setUnavailableRegistersUsage(TR_Array<TR_BitVector>  &_liveOnEntryUsage, TR_Array<TR_BitVector>   &_liveOnExitUsage);
 
    void genMemCpy(TR::MemoryReference *targetMR, TR::Node *targetNode, TR::MemoryReference *sourceMR, TR::Node *sourceNode, int64_t copySize);
@@ -482,7 +482,7 @@ public:
    int32_t getMaximumNumbersOfAssignableGPRs();
    int32_t getMaximumNumbersOfAssignableFPRs();
    int32_t getMaximumNumbersOfAssignableVRs();
-   bool allowGlobalRegisterAcrossBranch(TR_RegisterCandidate *, TR::Node *);
+   bool allowGlobalRegisterAcrossBranch(TR::RegisterCandidate *, TR::Node *);
    void setRealRegisterAssociation(TR::Register     *reg,
                                    TR::RealRegister::RegNum realNum);
    bool isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataType dt);

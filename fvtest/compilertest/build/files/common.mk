@@ -155,7 +155,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/optimizer/ReachingDefinitions.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/OMRRecognizedCallTransformer.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/RedundantAsyncCheckRemoval.cpp \
-    $(JIT_OMR_DIRTY_DIR)/optimizer/RegisterCandidate.cpp \
+    $(JIT_OMR_DIRTY_DIR)/optimizer/OMRRegisterCandidate.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/OMRSimplifier.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/OMRSimplifierHelpers.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/OMRSimplifierHandlers.cpp \

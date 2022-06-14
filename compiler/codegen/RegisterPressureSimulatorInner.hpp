@@ -45,10 +45,10 @@
       {
       TR::Block     *_currentBlock;
       TR::TreeTop   *_currentTreeTop;
-      TR_RegisterCandidate *_candidate;       // NULL when candidate is to be ignored
+      TR::RegisterCandidate *_candidate;       // NULL when candidate is to be ignored
       TR_BitVector &_alreadyAssignedOnEntry;  // One bit per symbol reference
       TR_BitVector &_alreadyAssignedOnExit;   // (ditto)
-      TR_LinkHead<TR_RegisterCandidate> *_candidatesAlreadyAssigned;
+      TR_LinkHead<TR::RegisterCandidate> *_candidatesAlreadyAssigned;
 
       int32_t       _gprPressure;             // (int32_t so increments will match decrements even with enormous register pressure)
       int32_t       _fprPressure;             // (ditto)
@@ -69,7 +69,7 @@
       uint32_t                     _memrefNestDepth; // Recursion depth of simulateMemoryReference; used for diagnostics
       TR_SimulatedMemoryReference *_currentMemref;
 
-      TR_RegisterPressureState(TR_RegisterCandidate *candidate, bool candidateIsLiveOnEntry, TR_BitVector &alreadyAssignedOnEntry, TR_BitVector &alreadyAssignedOnExit, TR_LinkHead<TR_RegisterCandidate> *candidatesAlreadyAssigned, uint32_t gprLimit, uint32_t fprLimit, uint32_t vrfLimit, vcount_t visitCountForInit):
+      TR_RegisterPressureState(TR::RegisterCandidate *candidate, bool candidateIsLiveOnEntry, TR_BitVector &alreadyAssignedOnEntry, TR_BitVector &alreadyAssignedOnExit, TR_LinkHead<TR::RegisterCandidate> *candidatesAlreadyAssigned, uint32_t gprLimit, uint32_t fprLimit, uint32_t vrfLimit, vcount_t visitCountForInit):
          _currentBlock(NULL),
          _currentTreeTop(NULL),
          _candidate(candidate),
@@ -91,7 +91,7 @@
          _rematNestDepth(0),
          _currentMemref(0)
          {}
-      TR_RegisterPressureState(const TR_RegisterPressureState &other, TR_RegisterCandidate *candidate, bool candidateIsLiveOnEntry, vcount_t visitCountForInit):
+      TR_RegisterPressureState(const TR_RegisterPressureState &other, TR::RegisterCandidate *candidate, bool candidateIsLiveOnEntry, vcount_t visitCountForInit):
          _currentBlock              (other._currentBlock),
          _currentTreeTop            (other._currentTreeTop),
          _candidate                 (candidate),

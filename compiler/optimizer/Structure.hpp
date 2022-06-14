@@ -49,8 +49,8 @@ class TR_DataFlowAnalysis;
 class TR_LocalTransparency;
 class TR_PrimaryInductionVariable;
 class TR_RegionStructure;
-class TR_RegisterCandidate;
 class TR_StructureSubGraphNode;
+namespace TR { class RegisterCandidate; }
 namespace TR { class VPConstraint; }
 namespace TR { class RegisterMappedSymbol; }
 namespace TR { class SymbolReference; }
@@ -565,7 +565,7 @@ class TR_RegionStructure : public TR_Structure
 
    bool isSymbolRefInvariant(TR::SymbolReference *);
 
-   void addGlobalRegisterCandidateToExits(TR_RegisterCandidate *);
+   void addGlobalRegisterCandidateToExits(TR::RegisterCandidate *);
 
    void addSubNode(TR_StructureSubGraphNode *subNode);
    void removeSubNode(TR_StructureSubGraphNode *subNode);

@@ -157,11 +157,11 @@ OMR::X86::I386::CodeGenerator::longClobberEvaluate(TR::Node *node)
 
 TR_GlobalRegisterNumber
 OMR::X86::I386::CodeGenerator::pickRegister(
-      TR_RegisterCandidate *rc,
+      TR::RegisterCandidate *rc,
       TR::Block **allBlocks,
       TR_BitVector &availableRegisters,
       TR_GlobalRegisterNumber &highRegisterNumber,
-      TR_LinkHead<TR_RegisterCandidate> *candidates)
+      TR_LinkHead<TR::RegisterCandidate> *candidates)
    {
    if (!self()->comp()->getOption(TR_DisableRegisterPressureSimulation))
       {
@@ -278,7 +278,7 @@ OMR::X86::I386::CodeGenerator::pickRegister(
 
          _assignedGlobalRegisters->empty();
          int32_t numAssignedGlobalRegs = 0;
-         TR_RegisterCandidate *prev;
+         TR::RegisterCandidate *prev;
          for (prev = candidates->getFirst(); prev; prev = prev->getNext())
             {
             bool gprCandidate = true;

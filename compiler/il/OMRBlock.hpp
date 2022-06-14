@@ -57,8 +57,8 @@ class TR_GlobalRegister;
 class TR_GlobalRegisterAllocator;
 class TR_Memory;
 class TR_RegionStructure;
-class TR_RegisterCandidate;
-class TR_RegisterCandidates;
+namespace TR { class RegisterCandidate; }
+namespace TR { class RegisterCandidates; }
 class TR_ResolvedMethod;
 namespace TR { class Block; }
 namespace TR { class CFGEdge; }

@@ -1159,7 +1159,7 @@ void TR_BlockStructure::collectExitBlocks(List<TR::Block> *exitBlocks, List<TR::
    }
 
 
-void TR_RegionStructure::addGlobalRegisterCandidateToExits(TR_RegisterCandidate *inductionCandidate)
+void TR_RegionStructure::addGlobalRegisterCandidateToExits(TR::RegisterCandidate *inductionCandidate)
    {
    TR_ScratchList<TR::Block> exitBlocks(trMemory());
    collectExitBlocks(&exitBlocks);

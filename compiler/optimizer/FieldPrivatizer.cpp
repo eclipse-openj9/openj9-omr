@@ -1185,7 +1185,7 @@ void TR_FieldPrivatizer::placeStoresBackInExit(TR::Block *block, bool placeAtEnd
    ListElement<TR::Node> *currentNodeElem = _privatizedFieldNodes.getListHead();
    TR::SymbolReference *currentSymRef     = NULL;
    TR_HashId          index              = 0;
-   ListElement<TR_RegisterCandidate> *privatizedCandidate = _privatizedRegCandidates.getListHead();
+   ListElement<TR::RegisterCandidate> *privatizedCandidate = _privatizedRegCandidates.getListHead();
 
    int32_t blockWeight = 1;
    optimizer()->getStaticFrequency(block, &blockWeight);
@@ -1286,7 +1286,7 @@ bool TR_FieldPrivatizer::storesBackMustBePlacedInExitBlock(TR::Block *exitBlock,
 
 void TR_FieldPrivatizer::addPrivatizedRegisterCandidates(TR_Structure *structure)
    {
-   ListElement<TR_RegisterCandidate> *privatizedCandidate = _privatizedRegCandidates.getListHead();
+   ListElement<TR::RegisterCandidate> *privatizedCandidate = _privatizedRegCandidates.getListHead();
    while (privatizedCandidate)
       {
       if (performTransformation(comp(), "%s Adding auto %d (created for privatization) as a global register candidate in loop %d\n", optDetailString(), privatizedCandidate->getData()->getSymbolReference()->getReferenceNumber(), structure->getNumber()))

@@ -2402,7 +2402,7 @@ void OMR::X86::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap * map
    map->setInternalPointerMap(internalPtrMap);
    }
 
-bool OMR::X86::CodeGenerator::allowGlobalRegisterAcrossBranch(TR_RegisterCandidate * rc, TR::Node * node)
+bool OMR::X86::CodeGenerator::allowGlobalRegisterAcrossBranch(TR::RegisterCandidate * rc, TR::Node * node)
    {
    // if a float is being kept alive across a switch make sure it's live across
    // all case destinations
@@ -3067,7 +3067,7 @@ TR::Instruction *OMR::X86::CodeGenerator::generateDebugCounterBump(TR::Instructi
    return self()->generateDebugCounterBump(cursor, counter, deltaReg, NULL);
    }
 
-void OMR::X86::CodeGenerator::removeUnavailableRegisters(TR_RegisterCandidate * rc, TR::Block * * blocks, TR_BitVector & availableRegisters)
+void OMR::X86::CodeGenerator::removeUnavailableRegisters(TR::RegisterCandidate * rc, TR::Block * * blocks, TR_BitVector & availableRegisters)
    {
    TR_BitVectorIterator loe(rc->getBlocksLiveOnExit());
    TR::SymbolReference*  rcSymRef = rc->getSymbolReference();

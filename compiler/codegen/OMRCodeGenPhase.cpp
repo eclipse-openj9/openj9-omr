@@ -81,7 +81,7 @@
 #include <utility>
 
 class TR_BackingStore;
-class TR_RegisterCandidate;
+namespace TR { class RegisterCandidate; }
 class TR_Structure;
 
 /*
@@ -458,7 +458,7 @@ OMR::CodeGenPhase::performSetupForInstructionSelectionPhase(TR::CodeGenerator * 
       cg->initializeRegisterPressureSimulator();
       for (TR::Block *block = comp->getStartBlock(); block; block = block->getNextExtendedBlock())
          {
-         TR_LinkHead<TR_RegisterCandidate> emptyCandidateList;
+         TR_LinkHead<TR::RegisterCandidate> emptyCandidateList;
          TR::CodeGenerator::TR_RegisterPressureState state(NULL, 0, emptyBitVector, emptyBitVector, &emptyCandidateList, cg->getNumberOfGlobalGPRs(), cg->getNumberOfGlobalFPRs(), cg->getNumberOfGlobalVRFs(), vc);
          TR::CodeGenerator::TR_RegisterPressureSummary summary(state._gprPressure, state._fprPressure, state._vrfPressure);
          cg->simulateBlockEvaluation(block, &state, &summary);

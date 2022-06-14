@@ -400,7 +400,7 @@ OMR::Compilation::Compilation(
 
    _recompilationInfo = _codeGenerator->getSupportsRecompilation() ? _codeGenerator->allocateRecompilationInfo() : NULL;
 
-   _globalRegisterCandidates = new (self()->trHeapMemory()) TR_RegisterCandidates(self());
+   _globalRegisterCandidates = new (self()->trHeapMemory()) TR::RegisterCandidates(self());
 
 #ifdef J9_PROJECT_SPECIFIC
    if (_recompilationInfo && options.getOptLevelDowngraded())

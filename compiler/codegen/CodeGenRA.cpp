@@ -1041,7 +1041,7 @@ OMR::CodeGenerator::needSpillTemp(TR_LiveReference * cursor, TR::Node *parent, T
    }
 
 bool
-OMR::CodeGenerator::allowGlobalRegisterAcrossBranch(TR_RegisterCandidate *, TR::Node * branchNode)
+OMR::CodeGenerator::allowGlobalRegisterAcrossBranch(TR::RegisterCandidate *, TR::Node * branchNode)
    {
    return !(branchNode->getOpCode().isJumpWithMultipleTargets()) || debug("enableSwitch");
    }
@@ -1146,11 +1146,11 @@ OMR::CodeGenerator::TR_RegisterPressureState::updateRegisterPressure(TR::Symbol 
 
 
 TR_GlobalRegisterNumber
-OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
+OMR::CodeGenerator::pickRegister(TR::RegisterCandidate     *rc,
                                TR::Block               * *allBlocks,
                                TR_BitVector            & availableRegisters,
                                TR_GlobalRegisterNumber & highRegisterNumber,
-                               TR_LinkHead<TR_RegisterCandidate> *candidatesAlreadyAssigned)
+                               TR_LinkHead<TR::RegisterCandidate> *candidatesAlreadyAssigned)
    {
    static volatile bool isInitialized=false;
    static volatile uint8_t gprsWithheldFromPickRegister=0, fprsWithheldFromPickRegister=0, vrfWithheldFromPickRegister=0, gprsWithheldFromPickRegisterWhenWarm=0;
@@ -1317,7 +1317,7 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
                                                      self()->getNumberOfGlobalFPRs()+meniscus-fprDelta,
                                                      self()->getNumberOfGlobalVRFs()+meniscus-vrfDelta,
                                                      0);
-            for (TR_RegisterCandidate *candidate = candidatesAlreadyAssigned->getFirst(); candidate; candidate = candidate->getNext())
+            for (TR::RegisterCandidate *candidate = candidatesAlreadyAssigned->getFirst(); candidate; candidate = candidate->getNext())
                {
                if (candidate->getBlocksLiveOnEntry().get(block->getNumber()))
                   {
@@ -1497,7 +1497,7 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
                   {
                   TR::Node *node = tt->getNode();
                   bool isUnpreferred;
-                  TR_RegisterCandidate *candidate = self()->findCoalescenceForRegisterCopy(node, rc, &isUnpreferred);
+                  TR::RegisterCandidate *candidate = self()->findCoalescenceForRegisterCopy(node, rc, &isUnpreferred);
 
                   if (candidate)
                      {
@@ -1579,7 +1579,7 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
 
                   if (!candidate)
                      {
-                     TR_RegisterCandidate *candidate = self()->findUsedCandidate(node, rc, &visitedNodesForCandidateUse);
+                     TR::RegisterCandidate *candidate = self()->findUsedCandidate(node, rc, &visitedNodesForCandidateUse);
                      if (candidate)
                         {
                         if (self()->traceSimulateTreeEvaluation())
@@ -1966,16 +1966,16 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
    return 0; // eliminate warning
    }
 
-TR_RegisterCandidate *
-OMR::CodeGenerator::findCoalescenceForRegisterCopy(TR::Node *node, TR_RegisterCandidate *rc, bool *isUnpreferred)
+TR::RegisterCandidate *
+OMR::CodeGenerator::findCoalescenceForRegisterCopy(TR::Node *node, TR::RegisterCandidate *rc, bool *isUnpreferred)
    {
-   TR_RegisterCandidate *candidate = NULL;
+   TR::RegisterCandidate *candidate = NULL;
    if (node->getOpCode().isStoreDirect() && node->getFirstChild()->getOpCode().isLoadVarDirect())
       {
       if (self()->comp()->getOption(TR_TraceRegisterPressureDetails))
          traceMsg(self()->comp(), "            found copy %s\n", self()->getDebug()->getName(node));
 
-      TR_RegisterCandidate *storedCand = self()->comp()->getGlobalRegisterCandidates()->find(node->getSymbolReference());
+      TR::RegisterCandidate *storedCand = self()->comp()->getGlobalRegisterCandidates()->find(node->getSymbolReference());
 
       if (storedCand)
          {
@@ -1985,7 +1985,7 @@ OMR::CodeGenerator::findCoalescenceForRegisterCopy(TR::Node *node, TR_RegisterCa
          candidate = storedCand;
          }
 
-      TR_RegisterCandidate *loadedCand = self()->comp()->getGlobalRegisterCandidates()->find(node->getFirstChild()->getSymbolReference());
+      TR::RegisterCandidate *loadedCand = self()->comp()->getGlobalRegisterCandidates()->find(node->getFirstChild()->getSymbolReference());
       if (loadedCand)
          {
          int32_t storedSymRefNum = node->getSymbolReference()->getReferenceNumber();
@@ -1998,7 +1998,7 @@ OMR::CodeGenerator::findCoalescenceForRegisterCopy(TR::Node *node, TR_RegisterCa
    }
 
 TR_GlobalRegisterNumber
-OMR::CodeGenerator::findCoalescenceRegisterForParameter(TR::Node *callNode, TR_RegisterCandidate *rc, uint32_t childIndex, bool *isUnpreferred)
+OMR::CodeGenerator::findCoalescenceRegisterForParameter(TR::Node *callNode, TR::RegisterCandidate *rc, uint32_t childIndex, bool *isUnpreferred)
    {
    TR::Node *paramNode = callNode->getChild(childIndex);
    if (paramNode->getOpCode().isLoadVarDirect())
@@ -2010,15 +2010,15 @@ OMR::CodeGenerator::findCoalescenceRegisterForParameter(TR::Node *callNode, TR_R
    }
 
 
-TR_RegisterCandidate *
-OMR::CodeGenerator::findUsedCandidate(TR::Node *node, TR_RegisterCandidate *rc, TR_BitVector *visitedNodes)
+TR::RegisterCandidate *
+OMR::CodeGenerator::findUsedCandidate(TR::Node *node, TR::RegisterCandidate *rc, TR_BitVector *visitedNodes)
    {
    if (visitedNodes->isSet(node->getGlobalIndex()))
       return NULL;
    else
       visitedNodes->set(node->getGlobalIndex());
 
-   TR_RegisterCandidate *gprToCoalesce = NULL;
+   TR::RegisterCandidate *gprToCoalesce = NULL;
    if (node->getOpCode().isLoadVarDirect() || node->getOpCode().isStoreDirect())
       gprToCoalesce = self()->comp()->getGlobalRegisterCandidates()->find(node->getSymbolReference());
 
@@ -2208,12 +2208,12 @@ inline void leaveSpaceForRegisterPressureState(OMR::CodeGenerator::TR_RegisterPr
    standardNodeSimulationAnnotations(state, comp);
    }
 
-static TR_RegisterCandidate *findCandidate(TR::SymbolReference *symRef, TR_LinkHead<TR_RegisterCandidate> *candidates, TR_RegisterCandidate *anotherCandidate=NULL)
+static TR::RegisterCandidate *findCandidate(TR::SymbolReference *symRef, TR_LinkHead<TR::RegisterCandidate> *candidates, TR::RegisterCandidate *anotherCandidate=NULL)
    {
    if (anotherCandidate && anotherCandidate->getSymbolReference() == symRef)
       return anotherCandidate;
 
-   TR_RegisterCandidate *result;
+   TR::RegisterCandidate *result;
    for (result = candidates->getFirst(); result && result->getSymbolReference() != symRef; result = result->getNext());
    return result;
    }
@@ -2223,7 +2223,7 @@ static void rememberMostRecentValue(TR::SymbolReference *symRef, TR::Node *value
    if (  state->_alreadyAssignedOnExit.isSet(symRef->getReferenceNumber())
       || (state->_candidate && (state->getCandidateSymRef() == symRef)))
       {
-      TR_RegisterCandidate *candidate = findCandidate(symRef, state->_candidatesAlreadyAssigned, state->_candidate);
+      TR::RegisterCandidate *candidate = findCandidate(symRef, state->_candidatesAlreadyAssigned, state->_candidate);
       TR_ASSERT(candidate, "rememberMostRecentValue: there should be a matching candidate for #%d %s", symRef->getReferenceNumber(), cg->getDebug()->getName(symRef));
       if (candidate)
          candidate->setMostRecentValue(valueNode);
@@ -2232,7 +2232,7 @@ static void rememberMostRecentValue(TR::SymbolReference *symRef, TR::Node *value
 
 static void
 keepMostRecentValueAliveIfLiveOnEntryToSuccessor(
-      TR_RegisterCandidate *candidate,
+      TR::RegisterCandidate *candidate,
       TR::TreeTop *exitPoint,
       TR::CFGNode *successor,
       OMR::CodeGenerator::TR_RegisterPressureState *state,
@@ -2255,7 +2255,7 @@ keepMostRecentValueAliveIfLiveOnEntryToSuccessor(
 
 static void
 killMostRecentValueIfKeptAliveUntilCurrentTreeTop(
-      TR_RegisterCandidate *candidate,
+      TR::RegisterCandidate *candidate,
       OMR::CodeGenerator::TR_RegisterPressureState *state,
       TR::CodeGenerator *cg)
    {
@@ -2423,7 +2423,7 @@ OMR::CodeGenerator::simulationPrePass(
    else if (node->getOpCode().isLoadVarDirect())
       {
       rememberMostRecentValue(node->getSymbolReference(), node, state, self());
-      TR_RegisterCandidate *rc = findCandidate(node->getSymbolReference(), state->_candidatesAlreadyAssigned, state->_candidate);
+      TR::RegisterCandidate *rc = findCandidate(node->getSymbolReference(), state->_candidatesAlreadyAssigned, state->_candidate);
       if (rc)
          rc->setLastLoad(node);
       }
@@ -2434,7 +2434,7 @@ OMR::CodeGenerator::simulationPrePass(
          if (state->_candidate)
             keepMostRecentValueAliveIfLiveOnEntryToSuccessor(state->_candidate, tt, (*e)->getTo(), state, self());
          if (state->_candidatesAlreadyAssigned)
-            for (TR_RegisterCandidate *candidate = state->_candidatesAlreadyAssigned->getFirst(); candidate; candidate = candidate->getNext())
+            for (TR::RegisterCandidate *candidate = state->_candidatesAlreadyAssigned->getFirst(); candidate; candidate = candidate->getNext())
                keepMostRecentValueAliveIfLiveOnEntryToSuccessor(candidate, tt, (*e)->getTo(), state, self());
          }
       }
@@ -2558,7 +2558,7 @@ OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureSt
          // Kill anything that's being kept alive until here
          //
          killMostRecentValueIfKeptAliveUntilCurrentTreeTop(state->_candidate, state, self());
-         for (TR_RegisterCandidate *candidate = state->_candidatesAlreadyAssigned->getFirst(); candidate; candidate = candidate->getNext())
+         for (TR::RegisterCandidate *candidate = state->_candidatesAlreadyAssigned->getFirst(); candidate; candidate = candidate->getNext())
             killMostRecentValueIfKeptAliveUntilCurrentTreeTop(candidate, state, self());
          }
 

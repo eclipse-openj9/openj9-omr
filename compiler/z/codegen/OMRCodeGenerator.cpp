@@ -2382,7 +2382,7 @@ void OMR::Z::CodeGenerator::simulateNodeEvaluation(TR::Node * node, TR_RegisterP
    }
 
 bool
-OMR::Z::CodeGenerator::allowGlobalRegisterAcrossBranch(TR_RegisterCandidate * rc, TR::Node * branchNode)
+OMR::Z::CodeGenerator::allowGlobalRegisterAcrossBranch(TR::RegisterCandidate * rc, TR::Node * branchNode)
    {
    // If return false, processLiveOnEntryBlocks has to dis-qualify any candidates which are referenced
    // within any CASE of a SWITCH statement.
@@ -4260,7 +4260,7 @@ OMR::Z::CodeGenerator::setUnavailableRegisters(TR::Block *b, TR_BitVector &unava
    }
 
 void
-OMR::Z::CodeGenerator::removeUnavailableRegisters(TR_RegisterCandidate * rc, TR::Block * * blocks, TR_BitVector & availableRegisters)
+OMR::Z::CodeGenerator::removeUnavailableRegisters(TR::RegisterCandidate * rc, TR::Block * * blocks, TR_BitVector & availableRegisters)
    {
    TR_BitVectorIterator loe(rc->getBlocksLiveOnExit());
 

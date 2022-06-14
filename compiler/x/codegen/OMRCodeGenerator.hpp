@@ -417,7 +417,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::RealRegister *getFrameRegister()                       {return _frameRegister;}
    TR::RealRegister *getMethodMetaDataRegister();
 
-   bool allowGlobalRegisterAcrossBranch(TR_RegisterCandidate *, TR::Node *);
+   bool allowGlobalRegisterAcrossBranch(TR::RegisterCandidate *, TR::Node *);
 
    void buildRegisterMapForInstruction(TR_GCStackMap *map);
 
@@ -681,7 +681,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void initializeVFPState(TR::RealRegister::RegNum reg, int32_t displacement){ _vfpState._register = reg; _vfpState._displacement = displacement; }
 
 
-   void removeUnavailableRegisters(TR_RegisterCandidate * rc, TR::Block * * blocks, TR_BitVector & availableRegisters);
+   void removeUnavailableRegisters(TR::RegisterCandidate * rc, TR::Block * * blocks, TR_BitVector & availableRegisters);
 
    TR::Instruction *generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, int32_t delta, TR::RegisterDependencyConditions *cond);
    TR::Instruction *generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, TR::Register *deltaReg, TR::RegisterDependencyConditions *cond);

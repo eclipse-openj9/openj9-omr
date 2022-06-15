@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -154,10 +154,14 @@ omrtime_current_time_millis(struct OMRPortLibrary *portLibrary)
 uint64_t
 omrtime_hires_clock(struct OMRPortLibrary *portLibrary)
 {
+#if defined(OSX)
+	return clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW) / 1000;
+#else /* defined(OSX) */
 	struct timeval tp;
 
 	gettimeofday(&tp, NULL);
 	return ((uint64_t)tp.tv_sec * 1000000) + (uint64_t)tp.tv_usec;
+#endif /* defined(OSX) */
 }
 /**
  * Query OS for clock frequency

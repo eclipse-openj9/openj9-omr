@@ -53,7 +53,7 @@ namespace OMR { typedef OMR::Block BlockConnector; }
 class TR_BitVector;
 class TR_BlockStructure;
 class TR_Debug;
-class TR_GlobalRegister;
+namespace TR { class GlobalRegister; }
 class TR_GlobalRegisterAllocator;
 class TR_Memory;
 class TR_RegionStructure;
@@ -286,7 +286,7 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
    TR_BlockStructure *setStructureOf(TR_BlockStructure *p) { return (_pStructureOf = p); }
    int32_t getNestingDepth();
 
-   TR_Array<TR_GlobalRegister> & getGlobalRegisters(TR::Compilation *);
+   TR_Array<TR::GlobalRegister> & getGlobalRegisters(TR::Compilation *);
    void clearGlobalRegisters() { _globalRegisters = NULL; }
 
    struct InstructionBoundaries : TR_Link<InstructionBoundaries>
@@ -543,7 +543,7 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
    TR_BlockStructure *                   _pStructureOf;
 
    // TODO: This member is only used during GRA and should be moved out.
-   TR_Array<TR_GlobalRegister> *         _globalRegisters;
+   TR_Array<TR::GlobalRegister> *         _globalRegisters;
 
    InstructionBoundaries                 _instructionBoundaries;
    TR_LinkHead<InstructionBoundaries>    _snippetBoundaries;

@@ -71,6 +71,8 @@
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "optimizer/Structure.hpp"
+#include "optimizer/GlobalRegister.hpp"
+#include "optimizer/GlobalRegister_inlines.hpp"
 #include "ras/Debug.hpp"
 
 
@@ -2113,6 +2115,14 @@ void
 OMR::RegisterCandidates::initCandidateForSymRefs()
    {
    _candidateForSymRefs = new (trStackMemory()) SymRefCandidateMap(SymRefCandidateMapComparator(), SymRefCandidateMapAllocator(trMemory()->currentStackRegion()));
+   }
+
+void
+OMR::RegisterCandidates::initStartOfExtendedBBForBB()
+   {
+   _startOfExtendedBBForBB.init(trMemory(),
+      (uint32_t)(comp()->getFlowGraph()->getNextNodeNumber() * sizeof(TR::Block *) * 1.5),
+         false, stackAlloc);
    }
 
 static void assign_candidate_loop_trace_increment(TR::Compilation *comp, TR::RegisterCandidate * rc, unsigned count)

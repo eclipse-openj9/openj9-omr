@@ -35,7 +35,7 @@
 #include "optimizer/OptimizationManager.hpp"
 #include "optimizer/UseDefInfo.hpp"
 
-class TR_GlobalRegister;
+namespace TR { class GlobalRegister; }
 class TR_NodeMappings;
 namespace TR { class RegisterCandidate; }
 namespace TR { class RegisterCandidates; }
@@ -50,7 +50,7 @@ struct StoresInBlockInfo : public TR_Link<StoresInBlockInfo>
    {
    TR_ALLOC(TR_Memory::GlobalRegisterAllocator)
 
-   TR_GlobalRegister  *_gr;
+   TR::GlobalRegister  *_gr;
    TR::TreeTop *_lastStore;
    bool _origStoreExists;
    };
@@ -163,10 +163,11 @@ public:
    TR::Node *           resolveTypeMismatch(TR::Node *oldNode, TR::Node *newNode);
    TR::Node *           resolveTypeMismatch(TR::DataType inputOldType, TR::Node *oldNode, TR::Node *newNode);
 
-private:
    typedef TR::typed_allocator<std::pair<uint32_t const, TR::RegisterCandidate*>, TR::Region&> SymRefCandidateMapAllocator;
    typedef std::less<uint32_t> SymRefCandidateMapComparator;
    typedef std::map<uint32_t, TR::RegisterCandidate*, SymRefCandidateMapComparator, SymRefCandidateMapAllocator> SymRefCandidateMap;
+
+private:
 
    void                findIfThenRegisterCandidates();
    void                findLoopAutoRegisterCandidates();
@@ -192,28 +193,28 @@ private:
    void                assignRegisters();
    void                assignRegisters(TR::Block *);
    void                transformBlock(TR::TreeTop *);
-   void                transformNode(TR::Node *, TR::Node *, int32_t, TR::TreeTop *, TR::Block * &, TR_Array<TR_GlobalRegister> &, TR_NodeMappings *);
-   TR_GlobalRegister * getGlobalRegister(TR::Symbol *, TR_Array<TR_GlobalRegister> &, TR::Block *);
-   TR_GlobalRegister * getGlobalRegisterWithoutChangingCurrentCandidate(TR::Symbol *, TR_Array<TR_GlobalRegister> &, TR::Block *);
-   void                transformBlockExit(TR::TreeTop *, TR::Node *, TR::Block *, TR_Array<TR_GlobalRegister> &, TR::Block *);
-   void                transformMultiWayBranch(TR::TreeTop *, TR::Node *, TR::Block *, TR_Array<TR_GlobalRegister> &, bool regStarTransformDone = false);
-   void                addCandidateReloadsToEntry(TR::TreeTop *, TR_Array<TR_GlobalRegister> &, TR::Block *);
-   void                addRegLoadsToEntry(TR::TreeTop *, TR_Array<TR_GlobalRegister> &, TR::Block *);
-   void                addGlRegDepToExit(TR_Array<TR::Node *> &, TR::Node *, TR_Array<TR_GlobalRegister> &, TR::Block *);
-   void                addStoresForCatchBlockLoads(TR::TreeTop *appendPoint, TR_Array<TR_GlobalRegister> &extBlockRegisters, TR::Block *throwingBlock);
+   void                transformNode(TR::Node *, TR::Node *, int32_t, TR::TreeTop *, TR::Block * &, TR_Array<TR::GlobalRegister> &, TR_NodeMappings *);
+   TR::GlobalRegister * getGlobalRegister(TR::Symbol *, TR_Array<TR::GlobalRegister> &, TR::Block *);
+   TR::GlobalRegister * getGlobalRegisterWithoutChangingCurrentCandidate(TR::Symbol *, TR_Array<TR::GlobalRegister> &, TR::Block *);
+   void                transformBlockExit(TR::TreeTop *, TR::Node *, TR::Block *, TR_Array<TR::GlobalRegister> &, TR::Block *);
+   void                transformMultiWayBranch(TR::TreeTop *, TR::Node *, TR::Block *, TR_Array<TR::GlobalRegister> &, bool regStarTransformDone = false);
+   void                addCandidateReloadsToEntry(TR::TreeTop *, TR_Array<TR::GlobalRegister> &, TR::Block *);
+   void                addRegLoadsToEntry(TR::TreeTop *, TR_Array<TR::GlobalRegister> &, TR::Block *);
+   void                addGlRegDepToExit(TR_Array<TR::Node *> &, TR::Node *, TR_Array<TR::GlobalRegister> &, TR::Block *);
+   void                addStoresForCatchBlockLoads(TR::TreeTop *appendPoint, TR_Array<TR::GlobalRegister> &extBlockRegisters, TR::Block *throwingBlock);
    TR::TreeTop *        findPrevTreeTop(TR::TreeTop * &, TR::Node * &, TR::Block *, TR::Block *);
-   void                prepareForBlockExit(TR::TreeTop * &, TR::Node * &, TR::Block *, TR_Array<TR_GlobalRegister> &,
+   void                prepareForBlockExit(TR::TreeTop * &, TR::Node * &, TR::Block *, TR_Array<TR::GlobalRegister> &,
                                            TR::Block *, TR_Array<TR::Node *> &);
-   bool                markCandidateForReloadInSuccessors(int32_t, TR_GlobalRegister *, TR_GlobalRegister *, TR::Block *, bool);
+   bool                markCandidateForReloadInSuccessors(int32_t, TR::GlobalRegister *, TR::GlobalRegister *, TR::Block *, bool);
    void                reloadNonRegStarVariables(TR::TreeTop *, TR::Node *, TR::Block *, bool);
 
-   bool                registerIsLiveAcrossEdge(TR::TreeTop *, TR::Node *, TR::Block *, TR_GlobalRegister *, TR::Block * &, int32_t);
+   bool                registerIsLiveAcrossEdge(TR::TreeTop *, TR::Node *, TR::Block *, TR::GlobalRegister *, TR::Block * &, int32_t);
    TR::Block *          createNewSuccessorBlock(TR::Block *, TR::Block *, TR::TreeTop *, TR::Node *, TR::RegisterCandidate * rc);
    TR::Block *          extendBlock(TR::Block *, TR::Block *);
    TR::Block *          createBlock(TR::Block *, TR::Block *);
    bool                tagCandidates(TR::Block *, bool);
    bool                tagCandidates(TR::Block *, uint32_t, bool);
-   int32_t             numberOfRegistersLiveOnEntry(TR_Array<TR_GlobalRegister> &, bool);
+   int32_t             numberOfRegistersLiveOnEntry(TR_Array<TR::GlobalRegister> &, bool);
    TR::Node *           createStoreToRegister();
    TR::Node *           createStoreFromRegister();
    TR::Node *           createLoadFromRegister();
@@ -227,7 +228,7 @@ private:
    TR_PairedSymbols   *findPairedSymbols(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2);
    TR_ScratchList<TR_PairedSymbols>   *getPairedSymbols() { return &_pairedSymbols; }
 
-   StoresInBlockInfo * findRegInStoreInfo(TR_GlobalRegister *);
+   StoresInBlockInfo * findRegInStoreInfo(TR::GlobalRegister *);
 
    bool isSplittingCopy(TR::Node *node);
    void restoreOriginalSymbol(TR::Node *node, vcount_t visitCount);

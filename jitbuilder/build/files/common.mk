@@ -121,6 +121,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/optimizer/FieldPrivatizer.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/GeneralLoopUnroller.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/GlobalAnticipatability.cpp \
+    $(JIT_OMR_DIRTY_DIR)/optimizer/OMRGlobalRegister.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/GlobalRegisterAllocator.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/Inliner.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/RematTools.cpp \

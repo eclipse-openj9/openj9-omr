@@ -72,6 +72,8 @@
 #include "optimizer/TransformUtil.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
 #include "optimizer/UseDefInfo.hpp"
+#include "optimizer/GlobalRegister.hpp"
+#include "optimizer/GlobalRegister_inlines.hpp"
 #include "ras/Debug.hpp"
 
 
@@ -326,16 +328,14 @@ TR_GlobalRegisterAllocator::perform()
    candidates->initCandidateForSymRefs();
    TR::RegisterCandidate *rc = candidates->getFirst();
    for (; rc ; rc = rc->getNext())
-      (*(candidates->getCandidateForSymRefs()))[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(rc->getSymbolReference())] = rc;
+      candidates->setCandidateForSymRefs(GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(rc->getSymbolReference()), rc);
 
-   candidates->getStartOfExtendedBBForBB().init(trMemory(),
-                                            (uint32_t)(comp()->getFlowGraph()->getNextNodeNumber() * sizeof(TR::Block *) * 1.5),
-                                            false, stackAlloc);
+   candidates->initStartOfExtendedBBForBB();
    TR::Block * lastStartOfExtendedBB = comp()->getStartBlock();
    for (TR::Block * b = lastStartOfExtendedBB; b; b = b->getNextBlock())
       {
       lastStartOfExtendedBB = b->isExtensionOfPreviousBlock() ? lastStartOfExtendedBB : b;
-      candidates->getStartOfExtendedBBForBB()[b->getNumber()] = lastStartOfExtendedBB;
+      candidates->setStartOfExtendedBBForBB(b->getNumber(), lastStartOfExtendedBB);
       }
 
    comp()->getOptimizer()->setCachedExtendedBBInfoValid(true);
@@ -742,7 +742,7 @@ TR_GlobalRegisterAllocator::transformBlock(TR::TreeTop * tt)
 
    // Find out if there are any symbols that are in registers on entry and/or exit
    //
-   TR_Array<TR_GlobalRegister> & registers = block->getGlobalRegisters(comp());
+   TR_Array<TR::GlobalRegister> & registers = block->getGlobalRegisters(comp());
    bool found = false;
    int32_t i;
    for (i = _firstGlobalRegisterNumber; i <= _lastGlobalRegisterNumber; ++i)
@@ -750,7 +750,7 @@ TR_GlobalRegisterAllocator::transformBlock(TR::TreeTop * tt)
       TR::Block * b = block;
       while (b)
          {
-         TR_Array<TR_GlobalRegister> & curRegisters = b->getGlobalRegisters(comp());
+         TR_Array<TR::GlobalRegister> & curRegisters = b->getGlobalRegisters(comp());
          if (curRegisters[i].getRegisterCandidateOnEntry())
             found = true;
          if (curRegisters[i].getRegisterCandidateOnExit())
@@ -779,7 +779,7 @@ TR_GlobalRegisterAllocator::transformBlock(TR::TreeTop * tt)
    //
    _storesInBlockInfo.setFirst(0);
    TR::Node * node = tt->getNode();
-   TR_Array<TR_GlobalRegister> * curRegisters = NULL;
+   TR_Array<TR::GlobalRegister> * curRegisters = NULL;
    TR_NodeMappings extBlockNodeMapping;
 
    do
@@ -875,7 +875,7 @@ TR_GlobalRegisterAllocator::resolveTypeMismatch(TR::DataType inputOldType, TR::N
    return newNode;
    }
 
-static void setAutoContainsRegisterValue(TR::RegisterCandidate *rc, TR_Array<TR_GlobalRegister> * extRegisters, int32_t i, TR::Compilation *comp)
+static void setAutoContainsRegisterValue(TR::RegisterCandidate *rc, TR_Array<TR::GlobalRegister> * extRegisters, int32_t i, TR::Compilation *comp)
    {
    bool needs2Regs = false;
    if (rc->rcNeeds2Regs(comp))
@@ -900,10 +900,10 @@ static void setAutoContainsRegisterValue(TR::RegisterCandidate *rc, TR_Array<TR_
 
 void
 TR_GlobalRegisterAllocator::transformNode(
-   TR::Node * node, TR::Node * parent, int32_t childIndex, TR::TreeTop * tt, TR::Block * & block, TR_Array<TR_GlobalRegister> & registers, TR_NodeMappings *extBlockNodeMapping)
+   TR::Node * node, TR::Node * parent, int32_t childIndex, TR::TreeTop * tt, TR::Block * & block, TR_Array<TR::GlobalRegister> & registers, TR_NodeMappings *extBlockNodeMapping)
    {
    TR_ASSERT(comp()->getOptimizer()->cachedExtendedBBInfoValid(), "Incorrect value in _startOfExtendedBBForBB");
-   TR_Array<TR_GlobalRegister> * extRegisters = &(_candidates->getStartOfExtendedBBForBB()[block->getNumber()]->getGlobalRegisters(comp()));
+   TR_Array<TR::GlobalRegister> * extRegisters = &(_candidates->getStartOfExtendedBBForBB()[block->getNumber()]->getGlobalRegisters(comp()));
 
    if (node->getVisitCount() == _visitCount)
       return;
@@ -969,7 +969,7 @@ TR_GlobalRegisterAllocator::transformNode(
 
       bool changeNode = true;
       TR::Node * value = NULL;
-      TR_GlobalRegister *gr = NULL;
+      TR::GlobalRegister *gr = NULL;
       //traceMsg(comp(), "Node %p symbol %p tag %d\n", node, symbol, symbol->isInGlobalRegister());
 
       changeNode = false;
@@ -986,7 +986,7 @@ TR_GlobalRegisterAllocator::transformNode(
          }
       else
          {
-         TR_GlobalRegister *ptrToGr = getGlobalRegisterWithoutChangingCurrentCandidate(symbol, registers, block);
+         TR::GlobalRegister *ptrToGr = getGlobalRegisterWithoutChangingCurrentCandidate(symbol, registers, block);
          if (ptrToGr)
             {
             TR::RegisterCandidate * rc = ptrToGr->getCurrentRegisterCandidate();
@@ -1009,7 +1009,7 @@ TR_GlobalRegisterAllocator::transformNode(
                   int32_t highRegNum = currRC->getHighGlobalRegisterNumber();
                   if (ptrToGr == &((*extRegisters)[highRegNum]))
                      {
-                     TR_GlobalRegister *grLow = &((*extRegisters)[currRC->getLowGlobalRegisterNumber()]);
+                     TR::GlobalRegister *grLow = &((*extRegisters)[currRC->getLowGlobalRegisterNumber()]);
                      if (grLow->getCurrentRegisterCandidate() == currRC)
                         {
                         grLow->setAutoContainsRegisterValue(true);
@@ -1018,7 +1018,7 @@ TR_GlobalRegisterAllocator::transformNode(
                      }
                   else
                      {
-                     TR_GlobalRegister *grHigh = &((*extRegisters)[currRC->getHighGlobalRegisterNumber()]);
+                     TR::GlobalRegister *grHigh = &((*extRegisters)[currRC->getHighGlobalRegisterNumber()]);
                      if (grHigh->getCurrentRegisterCandidate() == currRC)
                         {
                         grHigh->setAutoContainsRegisterValue(true);
@@ -1092,13 +1092,13 @@ TR_GlobalRegisterAllocator::transformNode(
                   int32_t highRegNum = currRC->getHighGlobalRegisterNumber();
                   if (gr == &((*extRegisters)[highRegNum]))
                      {
-                     TR_GlobalRegister *grLow = &((*extRegisters)[currRC->getLowGlobalRegisterNumber()]);
+                     TR::GlobalRegister *grLow = &((*extRegisters)[currRC->getLowGlobalRegisterNumber()]);
                      if (grLow->getCurrentRegisterCandidate() == currRC)
                         grLow->setAutoContainsRegisterValue(true);
                      }
                   else
                      {
-                     TR_GlobalRegister *grHigh = &((*extRegisters)[currRC->getHighGlobalRegisterNumber()]);
+                     TR::GlobalRegister *grHigh = &((*extRegisters)[currRC->getHighGlobalRegisterNumber()]);
                      if (grHigh->getCurrentRegisterCandidate() == currRC)
                         grHigh->setAutoContainsRegisterValue(true);
                      }
@@ -1122,12 +1122,12 @@ TR_GlobalRegisterAllocator::transformNode(
                   if (i == highRegNum)
                      {
                      int32_t lowRegNum = rc->getLowGlobalRegisterNumber();
-                     TR_GlobalRegister & grLow = (*extRegisters)[lowRegNum];
+                     TR::GlobalRegister & grLow = (*extRegisters)[lowRegNum];
                      grLow.setLastRefTreeTop(tt);
                      }
                   else
                      {
-                     TR_GlobalRegister & grHigh = (*extRegisters)[highRegNum];
+                     TR::GlobalRegister & grHigh = (*extRegisters)[highRegNum];
                      grHigh.setLastRefTreeTop(tt);
                      }
                   }
@@ -1176,7 +1176,7 @@ TR_GlobalRegisterAllocator::transformNode(
          if (value->getOpCode().isLoadReg())
             {
             TR_ASSERT(comp()->getOptimizer()->cachedExtendedBBInfoValid(), "Incorrect value in _startOfExtendedBBForBB");
-            TR_Array<TR_GlobalRegister> & extRegisters = _candidates->getStartOfExtendedBBForBB()[block->getNumber()]->getGlobalRegisters(comp());
+            TR_Array<TR::GlobalRegister> & extRegisters = _candidates->getStartOfExtendedBBForBB()[block->getNumber()]->getGlobalRegisters(comp());
             extRegisters[value->getGlobalRegisterNumber()].setLastRefTreeTop(tt);
             }
          }
@@ -1186,7 +1186,7 @@ TR_GlobalRegisterAllocator::transformNode(
       TR::Symbol * symbol = node->getSymbolReference()->getSymbol();
       if (symbol->isInGlobalRegister())
          {
-         TR_GlobalRegister * gr = getGlobalRegister(symbol, registers, block);
+         TR::GlobalRegister * gr = getGlobalRegister(symbol, registers, block);
          if (gr && gr->getValue() && !gr->getAutoContainsRegisterValue())
             {
             gr->createStoreFromRegister(_visitCount, tt->getPrevTreeTop(), -1, comp());
@@ -1211,7 +1211,7 @@ TR_GlobalRegisterAllocator::transformNode(
          }
       else
          {
-         TR_GlobalRegister *ptrToGr = getGlobalRegisterWithoutChangingCurrentCandidate(symbol, registers, block);
+         TR::GlobalRegister *ptrToGr = getGlobalRegisterWithoutChangingCurrentCandidate(symbol, registers, block);
          if (ptrToGr)
             {
             TR::RegisterCandidate * rc = ptrToGr->getCurrentRegisterCandidate();
@@ -1234,7 +1234,7 @@ TR_GlobalRegisterAllocator::transformNode(
       TR::SymbolReference * symRef = origSymRef;
       TR::Symbol * symbol = symRef->getSymbol();
       //traceMsg(comp(), "Store node %p\n", node);
-      TR_GlobalRegister * gr;
+      TR::GlobalRegister * gr;
 
       if (symbol->isInGlobalRegister() &&
           (gr = getGlobalRegister(symbol, registers, block)))
@@ -1297,7 +1297,7 @@ TR_GlobalRegisterAllocator::transformNode(
                   TR::Block * b = block;
                   while (b)
                      {
-                     TR_Array<TR_GlobalRegister> & curRegisters = b->getGlobalRegisters(comp());
+                     TR_Array<TR::GlobalRegister> & curRegisters = b->getGlobalRegisters(comp());
 
                      if (curRegisters[i].getRegisterCandidateOnExit() &&
                          (curRegisters[i].getRegisterCandidateOnExit() != rc))
@@ -1426,7 +1426,7 @@ TR_GlobalRegisterAllocator::transformNode(
          }
       else
          {
-         TR_GlobalRegister *ptrToGr = getGlobalRegisterWithoutChangingCurrentCandidate(symbol, registers, block);
+         TR::GlobalRegister *ptrToGr = getGlobalRegisterWithoutChangingCurrentCandidate(symbol, registers, block);
 
          //traceMsg(comp(), "ptrToGr %p node %p mapping %d\n", ptrToGr, node, ptrToGr ? ptrToGr->getMappings().getTo(node) : 0);
          if (ptrToGr)
@@ -1453,7 +1453,7 @@ TR_GlobalRegisterAllocator::transformNode(
                   int32_t highRegNum = currRC->getHighGlobalRegisterNumber();
                   if (ptrToGr == &((*extRegisters)[highRegNum]))
                      {
-                     TR_GlobalRegister *grLow = &((*extRegisters)[currRC->getLowGlobalRegisterNumber()]);
+                     TR::GlobalRegister *grLow = &((*extRegisters)[currRC->getLowGlobalRegisterNumber()]);
                      if (grLow->getCurrentRegisterCandidate() == currRC)
                         {
                         grLow->setAutoContainsRegisterValue(true);
@@ -1462,7 +1462,7 @@ TR_GlobalRegisterAllocator::transformNode(
                      }
                   else
                      {
-                     TR_GlobalRegister *grHigh = &((*extRegisters)[currRC->getHighGlobalRegisterNumber()]);
+                     TR::GlobalRegister *grHigh = &((*extRegisters)[currRC->getHighGlobalRegisterNumber()]);
                      if (grHigh->getCurrentRegisterCandidate() == currRC)
                         {
                         grHigh->setAutoContainsRegisterValue(true);
@@ -1481,7 +1481,7 @@ TR_GlobalRegisterAllocator::transformNode(
  */
 void
 TR_GlobalRegisterAllocator::transformMultiWayBranch(
-   TR::TreeTop * exitTreeTop, TR::Node * node, TR::Block * block, TR_Array<TR_GlobalRegister> & registers, bool regStarTransformDone)
+   TR::TreeTop * exitTreeTop, TR::Node * node, TR::Block * block, TR_Array<TR::GlobalRegister> & registers, bool regStarTransformDone)
    {
    TR_Array<TR::Node *> regDepNodes(trMemory(), _lastGlobalRegisterNumber + 1, true, stackAlloc);;
 
@@ -1541,7 +1541,7 @@ TR_GlobalRegisterAllocator::transformMultiWayBranch(
 void
 TR_GlobalRegisterAllocator::transformBlockExit(
    TR::TreeTop * exitTreeTop, TR::Node * exitNode, TR::Block * block,
-   TR_Array<TR_GlobalRegister> & registers, TR::Block * successorBlock)
+   TR_Array<TR::GlobalRegister> & registers, TR::Block * successorBlock)
    {
    TR_Array<TR::Node *> regDepNodes(trMemory(), _lastGlobalRegisterNumber + 1, true, stackAlloc);;
 
@@ -1556,7 +1556,7 @@ TR_GlobalRegisterAllocator::transformBlockExit(
  * is successors of the passed block should we be not able to reload it in the current block
  * for reasons such as stack not being available
  */
-bool TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors(int32_t i, TR_GlobalRegister *extReg, TR_GlobalRegister *reg, TR::Block *block, bool traceIt)
+bool TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors(int32_t i, TR::GlobalRegister *extReg, TR::GlobalRegister *reg, TR::Block *block, bool traceIt)
    {
    bool result = false;    // Success or no?
    TR::Block *nextBlock = NULL;
@@ -1580,8 +1580,8 @@ bool TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors(int32_t i, T
    if (nextBlock && nextBlock->isExtensionOfPreviousBlock())
       {
       if (traceIt) traceMsg(comp(),"TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors nextBlock=%d\n",nextBlock->getNumber());
-      TR_Array<TR_GlobalRegister> & nextRegisters = nextBlock->getGlobalRegisters(comp());
-      TR_GlobalRegister &nextGr = nextRegisters[i];
+      TR_Array<TR::GlobalRegister> & nextRegisters = nextBlock->getGlobalRegisters(comp());
+      TR::GlobalRegister &nextGr = nextRegisters[i];
       nextRc = nextGr.getRegisterCandidateOnEntry();
       if (nextRc && nextRc != rc) // Not live anymore so leave. Should be caught on previous test on live on exit
          {
@@ -1604,8 +1604,8 @@ bool TR_GlobalRegisterAllocator::markCandidateForReloadInSuccessors(int32_t i, T
          {
          nextBlock = (*succ)->getTo()->asBlock();
 
-         TR_Array<TR_GlobalRegister> & nextRegisters = nextBlock->getGlobalRegisters(comp());
-         TR_GlobalRegister &nextGr = nextRegisters[i];
+         TR_Array<TR::GlobalRegister> & nextRegisters = nextBlock->getGlobalRegisters(comp());
+         TR::GlobalRegister &nextGr = nextRegisters[i];
          nextRc = nextGr.getRegisterCandidateOnEntry();
 
          if (nextRc == NULL || nextRc != rc)// not live on entry in successor, continue
@@ -1626,18 +1626,18 @@ void
 TR_GlobalRegisterAllocator::reloadNonRegStarVariables(TR::TreeTop *tt, TR::Node *node, TR::Block *block, bool traceIt)
    {
    TR_ASSERT(comp()->getOptimizer()->cachedExtendedBBInfoValid(), "Incorrect value in _startOfExtendedBBForBB");
-   TR_Array<TR_GlobalRegister> & extRegisters = block->startOfExtendedBlock()->getGlobalRegisters(comp());
+   TR_Array<TR::GlobalRegister> & extRegisters = block->startOfExtendedBlock()->getGlobalRegisters(comp());
 
    TR::SparseBitVector killedAliases(comp()->allocator());
    node->mayKill(true).getAliases(killedAliases);
    }
 
 void
-TR_GlobalRegisterAllocator::addCandidateReloadsToEntry(TR::TreeTop * bbStartTT, TR_Array<TR_GlobalRegister> & registers, TR::Block *block)
+TR_GlobalRegisterAllocator::addCandidateReloadsToEntry(TR::TreeTop * bbStartTT, TR_Array<TR::GlobalRegister> & registers, TR::Block *block)
    {
    TR::Node * bbStart = bbStartTT->getNode();
    int32_t i;
-   TR_Array<TR_GlobalRegister> & currRegisters = block->getGlobalRegisters(comp());
+   TR_Array<TR::GlobalRegister> & currRegisters = block->getGlobalRegisters(comp());
 
    for (i = _firstGlobalRegisterNumber; i <= _lastGlobalRegisterNumber; ++i)
       {
@@ -1651,7 +1651,7 @@ TR_GlobalRegisterAllocator::addCandidateReloadsToEntry(TR::TreeTop * bbStartTT, 
    }
 
 void
-TR_GlobalRegisterAllocator::addStoresForCatchBlockLoads(TR::TreeTop *appendPoint, TR_Array<TR_GlobalRegister> &registers, TR::Block *throwingBlock)
+TR_GlobalRegisterAllocator::addStoresForCatchBlockLoads(TR::TreeTop *appendPoint, TR_Array<TR::GlobalRegister> &registers, TR::Block *throwingBlock)
    {
    if (!throwingBlock->hasExceptionSuccessors() || !comp()->penalizePredsOfOSRCatchBlocksInGRA())
       return;
@@ -1698,11 +1698,11 @@ TR_GlobalRegisterAllocator::addStoresForCatchBlockLoads(TR::TreeTop *appendPoint
    }
 
 void
-TR_GlobalRegisterAllocator::addRegLoadsToEntry(TR::TreeTop * bbStartTT, TR_Array<TR_GlobalRegister> & registers, TR::Block *block)
+TR_GlobalRegisterAllocator::addRegLoadsToEntry(TR::TreeTop * bbStartTT, TR_Array<TR::GlobalRegister> & registers, TR::Block *block)
    {
    TR::Node * bbStart = bbStartTT->getNode();
    comp()->setCurrentBlock(bbStartTT->getEnclosingBlock());
-   TR_Array<TR_GlobalRegister> & currRegisters = block->getGlobalRegisters(comp());
+   TR_Array<TR::GlobalRegister> & currRegisters = block->getGlobalRegisters(comp());
    int32_t numLoads = 0;
    TR_ScratchList<TR::RegisterCandidate> seenCandidates(trMemory());
    int32_t i;
@@ -1749,12 +1749,12 @@ TR_GlobalRegisterAllocator::addRegLoadsToEntry(TR::TreeTop * bbStartTT, TR_Array
 
 void
 TR_GlobalRegisterAllocator::addGlRegDepToExit(
-   TR_Array<TR::Node *> & regDepNodes, TR::Node * exitNode, TR_Array<TR_GlobalRegister> & registers, TR::Block *block)
+   TR_Array<TR::Node *> & regDepNodes, TR::Node * exitNode, TR_Array<TR::GlobalRegister> & registers, TR::Block *block)
    {
    int32_t numLoads = 0, i;
 
    TR_ScratchList<TR::RegisterCandidate> seenCandidates(trMemory());
-   TR_Array<TR_GlobalRegister> & currRegisters = block->getGlobalRegisters(comp());
+   TR_Array<TR::GlobalRegister> & currRegisters = block->getGlobalRegisters(comp());
    for (i = _firstGlobalRegisterNumber; i <= _lastGlobalRegisterNumber; ++i)
       {
       if (regDepNodes[i])
@@ -1809,12 +1809,12 @@ TR_GlobalRegisterAllocator::findPrevTreeTop(
 void
 TR_GlobalRegisterAllocator::prepareForBlockExit(
    TR::TreeTop * & exitTreeTop, TR::Node * & exitNode, TR::Block * block,
-   TR_Array<TR_GlobalRegister> & registers, TR::Block * successorBlock,
+   TR_Array<TR::GlobalRegister> & registers, TR::Block * successorBlock,
    TR_Array<TR::Node *> & regDepNodes)
    {
    TR::Block * originalSuccessorBlock = successorBlock;
    TR_ASSERT(comp()->getOptimizer()->cachedExtendedBBInfoValid(), "Incorrect value in _startOfExtendedBBForBB");
-   TR_Array<TR_GlobalRegister> & extRegisters = _candidates->getStartOfExtendedBBForBB()[block->getNumber()]->getGlobalRegisters(comp());
+   TR_Array<TR::GlobalRegister> & extRegisters = _candidates->getStartOfExtendedBBForBB()[block->getNumber()]->getGlobalRegisters(comp());
 
    TR::TreeTop * prevTreeTop = 0;
    TR_ScratchList<TR::RegisterCandidate> seenCurrCandidates(trMemory()), seenExitCandidates(trMemory());
@@ -1822,8 +1822,8 @@ TR_GlobalRegisterAllocator::prepareForBlockExit(
    int32_t i;
    for (i = _firstGlobalRegisterNumber; i <= _lastGlobalRegisterNumber; ++i)
       {
-      TR_GlobalRegister * gr = &registers[i];
-      TR_GlobalRegister * extgr = &extRegisters[i];
+      TR::GlobalRegister * gr = &registers[i];
+      TR::GlobalRegister * extgr = &extRegisters[i];
       bool currCandidateAlreadySeen = false, exitCandidateAlreadySeen = false;
 
       TR::RegisterCandidate *candidate = gr->getRegisterCandidateOnExit();
@@ -1919,13 +1919,13 @@ TR_GlobalRegisterAllocator::prepareForBlockExit(
                int32_t highRegNum = currRC->getHighGlobalRegisterNumber();
                if (i == highRegNum)
                   {
-                  TR_GlobalRegister *grLow = &extRegisters[currRC->getLowGlobalRegisterNumber()];
+                  TR::GlobalRegister *grLow = &extRegisters[currRC->getLowGlobalRegisterNumber()];
                   grLow->setCurrentRegisterCandidate(gr->getRegisterCandidateOnExit(), _visitCount, exitTreeTop->getEnclosingBlock(), currRC->getLowGlobalRegisterNumber(), comp());
                   //grLow->copyCurrentRegisterCandidate(gr);
                   }
                else
                   {
-                  TR_GlobalRegister *grHigh = &extRegisters[currRC->getHighGlobalRegisterNumber()];
+                  TR::GlobalRegister *grHigh = &extRegisters[currRC->getHighGlobalRegisterNumber()];
                   grHigh->setCurrentRegisterCandidate(gr->getRegisterCandidateOnExit(), _visitCount, exitTreeTop->getEnclosingBlock(), currRC->getHighGlobalRegisterNumber(), comp());
                   //grHigh->copyCurrentRegisterCandidate(gr);
                   }
@@ -1973,13 +1973,13 @@ TR_GlobalRegisterAllocator::prepareForBlockExit(
                int32_t highRegNum = currRC->getHighGlobalRegisterNumber();
                if (i == highRegNum)
                   {
-                  TR_GlobalRegister *grLow = &extRegisters[currRC->getLowGlobalRegisterNumber()];
+                  TR::GlobalRegister *grLow = &extRegisters[currRC->getLowGlobalRegisterNumber()];
                   if (grLow->getCurrentRegisterCandidate() == currRC)
                      grLow->setAutoContainsRegisterValue(true);
                   }
                else
                   {
-                  TR_GlobalRegister *grHigh = &extRegisters[currRC->getHighGlobalRegisterNumber()];
+                  TR::GlobalRegister *grHigh = &extRegisters[currRC->getHighGlobalRegisterNumber()];
                   if (grHigh->getCurrentRegisterCandidate() == currRC)
                      grHigh->setAutoContainsRegisterValue(true);
                   }
@@ -2005,14 +2005,14 @@ TR_GlobalRegisterAllocator::prepareForBlockExit(
                   if (i == highRegNum)
                      {
                      regDepNodes[extgr->getCurrentRegisterCandidate()->getLowGlobalRegisterNumber()] = value;
-                     TR_GlobalRegister * grLow = &extRegisters[extgr->getCurrentRegisterCandidate()->getLowGlobalRegisterNumber()];
+                     TR::GlobalRegister * grLow = &extRegisters[extgr->getCurrentRegisterCandidate()->getLowGlobalRegisterNumber()];
                      grLow->setLastRefTreeTop(exitTreeTop);
                      grLow->setValue(actualValue);
                      }
                   else
                      {
                      regDepNodes[extgr->getCurrentRegisterCandidate()->getHighGlobalRegisterNumber()] = value;
-                     TR_GlobalRegister * grHigh = &extRegisters[extgr->getCurrentRegisterCandidate()->getHighGlobalRegisterNumber()];
+                     TR::GlobalRegister * grHigh = &extRegisters[extgr->getCurrentRegisterCandidate()->getHighGlobalRegisterNumber()];
                      grHigh->setLastRefTreeTop(exitTreeTop);
                      grHigh->setValue(actualValue);
                      }
@@ -2053,16 +2053,16 @@ TR_GlobalRegisterAllocator::prepareForBlockExit(
 bool
 TR_GlobalRegisterAllocator::registerIsLiveAcrossEdge(
    TR::TreeTop * exitTreeTop, TR::Node * exitNode, TR::Block * block,
-   TR_GlobalRegister * extgr, TR::Block * & successorBlock, int32_t i)
+   TR::GlobalRegister * extgr, TR::Block * & successorBlock, int32_t i)
    {
-   TR_Array<TR_GlobalRegister> & registers = block->getGlobalRegisters(comp());
-   TR_GlobalRegister * gr = &registers[i];
+   TR_Array<TR::GlobalRegister> & registers = block->getGlobalRegisters(comp());
+   TR::GlobalRegister * gr = &registers[i];
 
    TR::RegisterCandidate * rc = extgr->getCurrentRegisterCandidate();
    TR_ASSERT(comp()->getOptimizer()->cachedExtendedBBInfoValid(), "Incorrect value in _startOfExtendedBBForBB");
    TR::Block *extBlock = _candidates->getStartOfExtendedBBForBB()[block->getNumber()];
 
-   TR_GlobalRegister * successorRegister = &successorBlock->getGlobalRegisters(comp())[i];
+   TR::GlobalRegister * successorRegister = &successorBlock->getGlobalRegisters(comp())[i];
    if (rc == successorRegister->getRegisterCandidateOnEntry())
       return true;
 
@@ -2352,7 +2352,7 @@ TR_GlobalRegisterAllocator::extendBlock(TR::Block * block, TR::Block * successor
    TR::Block * newBlock = createBlock(block, successorBlock);
    newBlock->getEntry()->getNode()->setVisitCount(_visitCount);
    newBlock->setIsExtensionOfPreviousBlock();
-   _candidates->getStartOfExtendedBBForBB()[newBlock->getNumber()] = _candidates->getStartOfExtendedBBForBB()[block->getNumber()];
+   _candidates->setStartOfExtendedBBForBB(newBlock->getNumber(), _candidates->getStartOfExtendedBBForBB()[block->getNumber()]);
    block->getExit()->join(newBlock->getEntry());
    newBlock->getExit()->join(successorBlock->getEntry());
    comp()->getOptimizer()->setCachedExtendedBBInfoValid(true);
@@ -2363,10 +2363,10 @@ TR::Block *
 TR_GlobalRegisterAllocator::createNewSuccessorBlock(
    TR::Block * block, TR::Block * successorBlock, TR::TreeTop * exitTreeTop, TR::Node * exitNode, TR::RegisterCandidate * rc)
    {
-   TR_Array<TR_GlobalRegister> & successorRegisters = successorBlock->getGlobalRegisters(comp());
-   TR_Array<TR_GlobalRegister> & blockRegisters = block->getGlobalRegisters(comp());
+   TR_Array<TR::GlobalRegister> & successorRegisters = successorBlock->getGlobalRegisters(comp());
+   TR_Array<TR::GlobalRegister> & blockRegisters = block->getGlobalRegisters(comp());
    TR_ASSERT(comp()->getOptimizer()->cachedExtendedBBInfoValid(), "Incorrect value in _startOfExtendedBBForBB");
-   TR_Array<TR_GlobalRegister> & blockRegistersEBB = _candidates->getStartOfExtendedBBForBB()[block->getNumber()]->getGlobalRegisters(comp());
+   TR_Array<TR::GlobalRegister> & blockRegistersEBB = _candidates->getStartOfExtendedBBForBB()[block->getNumber()]->getGlobalRegisters(comp());
 
    TR::Block *newBlock = NULL;
 
@@ -2385,14 +2385,14 @@ TR_GlobalRegisterAllocator::createNewSuccessorBlock(
          if (newBlockCanBeReused)
             {
             TR_ASSERT(comp()->getOptimizer()->cachedExtendedBBInfoValid(), "Incorrect value in _startOfExtendedBBForBB");
-            TR_Array<TR_GlobalRegister> & predRegistersEBB = _candidates->getStartOfExtendedBBForBB()[predBlock->getNumber()]->getGlobalRegisters(comp());
-            TR_Array<TR_GlobalRegister> & predRegisters = predBlock->getGlobalRegisters(comp());
+            TR_Array<TR::GlobalRegister> & predRegistersEBB = _candidates->getStartOfExtendedBBForBB()[predBlock->getNumber()]->getGlobalRegisters(comp());
+            TR_Array<TR::GlobalRegister> & predRegisters = predBlock->getGlobalRegisters(comp());
 
             //printf("Considering next block_%d for reuse\n", nextNewBlock->getNumber());
             if ((nextNewBlock->getSuccessors().size() == 1) &&
                 nextNewBlock->getSuccessors().front()->getTo() == successorBlock)
                {
-               TR_Array<TR_GlobalRegister> & nextNewRegisters = nextNewBlock->getGlobalRegisters(comp());
+               TR_Array<TR::GlobalRegister> & nextNewRegisters = nextNewBlock->getGlobalRegisters(comp());
                int32_t j;
                for (j = _firstGlobalRegisterNumber; j <= _lastGlobalRegisterNumber; ++j)
                   {
@@ -2436,7 +2436,7 @@ TR_GlobalRegisterAllocator::createNewSuccessorBlock(
       {
       newBlock = createBlock(block, successorBlock);
       _newBlocks.add(newBlock);
-      TR_Array<TR_GlobalRegister> & newRegisters = newBlock->getGlobalRegisters(comp());
+      TR_Array<TR::GlobalRegister> & newRegisters = newBlock->getGlobalRegisters(comp());
 
       int32_t j;
       for (j = _firstGlobalRegisterNumber; j <= _lastGlobalRegisterNumber; ++j)
@@ -2522,17 +2522,17 @@ TR_GlobalRegisterAllocator::createBlock(TR::Block * block, TR::Block * successor
 
    cfg->removeEdge(block, successorBlock);
 
-   _candidates->getStartOfExtendedBBForBB()[newBlock->getNumber()] = newBlock;
+   _candidates->setStartOfExtendedBBForBB(newBlock->getNumber(), newBlock);
 
    if (_candidates->getStartOfExtendedBBForBB()[successorBlock->getNumber()] == block &&
        block != successorBlock)
-      _candidates->getStartOfExtendedBBForBB()[successorBlock->getNumber()] = newBlock;
+       _candidates->setStartOfExtendedBBForBB(successorBlock->getNumber(), newBlock);
 
    return newBlock;
    }
 
 int32_t
-TR_GlobalRegisterAllocator::numberOfRegistersLiveOnEntry(TR_Array<TR_GlobalRegister> & registers, bool countMachineRegs)
+TR_GlobalRegisterAllocator::numberOfRegistersLiveOnEntry(TR_Array<TR::GlobalRegister> & registers, bool countMachineRegs)
    {
    int32_t numLoads = 0;
    TR_ScratchList<TR::RegisterCandidate> seenCandidates(trMemory());
@@ -2552,17 +2552,17 @@ TR_GlobalRegisterAllocator::numberOfRegistersLiveOnEntry(TR_Array<TR_GlobalRegis
    return numLoads;
    }
 
-TR_GlobalRegister *
-TR_GlobalRegisterAllocator::getGlobalRegisterWithoutChangingCurrentCandidate(TR::Symbol * symbol, TR_Array<TR_GlobalRegister> & registers, TR::Block * block)
+TR::GlobalRegister *
+TR_GlobalRegisterAllocator::getGlobalRegisterWithoutChangingCurrentCandidate(TR::Symbol * symbol, TR_Array<TR::GlobalRegister> & registers, TR::Block * block)
    {
    TR_ASSERT(comp()->getOptimizer()->cachedExtendedBBInfoValid(), "Incorrect value in _startOfExtendedBBForBB");
    TR::Block *startOfExtendedBlock = _candidates->getStartOfExtendedBBForBB()[block->getNumber()];
-   TR_Array<TR_GlobalRegister> & extRegisters = startOfExtendedBlock->getGlobalRegisters(comp());
+   TR_Array<TR::GlobalRegister> & extRegisters = startOfExtendedBlock->getGlobalRegisters(comp());
    int32_t i;
    for (i = _firstGlobalRegisterNumber; i <= _lastGlobalRegisterNumber; ++i)
       {
-      TR_GlobalRegister * gr = &registers[i];
-      TR_GlobalRegister * extgr = &extRegisters[i];
+      TR::GlobalRegister * gr = &registers[i];
+      TR::GlobalRegister * extgr = &extRegisters[i];
 
       TR::RegisterCandidate * firstRc = gr->getRegisterCandidateOnEntry();
       TR::RegisterCandidate * secondRc = gr->getRegisterCandidateOnExit();
@@ -2590,17 +2590,17 @@ TR_GlobalRegisterAllocator::getGlobalRegisterWithoutChangingCurrentCandidate(TR:
    }
 
 
-TR_GlobalRegister *
-TR_GlobalRegisterAllocator::getGlobalRegister(TR::Symbol * symbol, TR_Array<TR_GlobalRegister> & registers, TR::Block * block)
+TR::GlobalRegister *
+TR_GlobalRegisterAllocator::getGlobalRegister(TR::Symbol * symbol, TR_Array<TR::GlobalRegister> & registers, TR::Block * block)
    {
    TR_ASSERT(comp()->getOptimizer()->cachedExtendedBBInfoValid(), "Incorrect value in _startOfExtendedBBForBB");
    TR::Block *startOfExtendedBlock = _candidates->getStartOfExtendedBBForBB()[block->getNumber()];
-   TR_Array<TR_GlobalRegister> & extRegisters = startOfExtendedBlock->getGlobalRegisters(comp());
+   TR_Array<TR::GlobalRegister> & extRegisters = startOfExtendedBlock->getGlobalRegisters(comp());
    int32_t i;
    for (i = _firstGlobalRegisterNumber; i <= _lastGlobalRegisterNumber; ++i)
       {
-      TR_GlobalRegister *gr = &registers[i];
-      TR_GlobalRegister *extgr = &extRegisters[i];
+      TR::GlobalRegister *gr = &registers[i];
+      TR::GlobalRegister *extgr = &extRegisters[i];
 
       TR::RegisterCandidate * firstRc = gr->getRegisterCandidateOnEntry();
       TR::RegisterCandidate * secondRc = gr->getRegisterCandidateOnExit();
@@ -2628,13 +2628,13 @@ TR_GlobalRegisterAllocator::getGlobalRegister(TR::Symbol * symbol, TR_Array<TR_G
          if (i == highRegNum)
             {
             int32_t lowRegNum = rc->getLowGlobalRegisterNumber();
-            TR_GlobalRegister *grLow = &extRegisters[lowRegNum];
+            TR::GlobalRegister *grLow = &extRegisters[lowRegNum];
             grLow->setCurrentRegisterCandidate(rc, _visitCount, block, lowRegNum, comp());
             //grLow.copyCurrentRegisterCandidate(gr);
             }
          else
             {
-            TR_GlobalRegister *grHigh = &extRegisters[highRegNum];
+            TR::GlobalRegister *grHigh = &extRegisters[highRegNum];
             grHigh->setCurrentRegisterCandidate(rc, _visitCount, block, highRegNum, comp());
             //grHigh.copyCurrentRegisterCandidate(gr);
             }
@@ -2645,340 +2645,6 @@ TR_GlobalRegisterAllocator::getGlobalRegister(TR::Symbol * symbol, TR_Array<TR_G
 
    TR_ASSERT(0, "couldn't find the global register");
    return NULL;
-   }
-
-
-
-//////////////////////////////////////////
-// TR_GlobalRegister
-//////////////////////////////////////////
-
-bool
-TR_GlobalRegister::getAutoContainsRegisterValue()
-   {
-   return _autoContainsRegisterValue;
-   // &&
-   //      (!getValue()->getOpCode().isFloatingPoint() ||
-   //       comp()->cg()->getSupportsJavaFloatSemantics()));
-   }
-
-
-void
-TR_GlobalRegister::setCurrentRegisterCandidate(
-   TR::RegisterCandidate * rc, vcount_t visitCount, TR::Block * currentBlock, int32_t i, TR::Compilation *comp, bool resetOtherHalfOfLong)
-   {
-   if (_rcCurrent != rc)
-      {
-      bool liveOnSomeSucc = true;
-      if (_rcCurrent && getValue() && !getAutoContainsRegisterValue())
-         {
-         if (liveOnSomeSucc)
-            createStoreFromRegister(visitCount, optimalPlacementForStore(currentBlock, comp), i, comp);
-
-         }
-      if (_rcCurrent)
-         _rcCurrent->getSymbolReference()->getSymbol()->setIsInGlobalRegister(false);
-
-
-
-      if (resetOtherHalfOfLong && _rcCurrent != NULL && _rcCurrent->rcNeeds2Regs(comp))
-         {
-       //  TR_ASSERT(currentBlock->startOfExtendedBlock() == _candidates->getStartOfExtendedBBForBB()[currentBlock->getNumber()], "Incorrect value in _startOfExtendedBBForBB");
-         TR::Block *startOfExtendedBlock = currentBlock->startOfExtendedBlock();
-         TR_Array<TR_GlobalRegister> & extRegisters = startOfExtendedBlock->getGlobalRegisters(comp);
-
-         int32_t highRegNum = _rcCurrent->getHighGlobalRegisterNumber();
-         if (i == highRegNum)
-            {
-            int32_t lowRegNum = _rcCurrent->getLowGlobalRegisterNumber();
-            TR_GlobalRegister *grLow = &extRegisters[lowRegNum];
-            grLow->setCurrentRegisterCandidate(NULL, visitCount, currentBlock, lowRegNum, comp, false);
-            //grLow.copyCurrentRegisterCandidate(gr);
-            }
-         else
-            {
-            TR_GlobalRegister *grHigh = &extRegisters[highRegNum];
-            grHigh->setCurrentRegisterCandidate(NULL, visitCount, currentBlock, highRegNum, comp, false);
-            //grHigh.copyCurrentRegisterCandidate(gr);
-            }
-         }
-
-      _rcCurrent = rc;
-      setValue(0); //regardless of whether or not we created a store we must setValue to NULL, else we can use the wrong value
-
-      if (currentBlock) comp->setCurrentBlock(currentBlock);
-      if (rc && (rc->getSymbol()->dontEliminateStores(comp)
-                 || keepAllStores
-                 || rc->isLiveAcrossExceptionEdge()))
-         setAutoContainsRegisterValue(true);
-      else
-         setAutoContainsRegisterValue(false);
-      }
-   }
-
-
-void
-TR_GlobalRegister::copyCurrentRegisterCandidate(TR_GlobalRegister *gr)
-   {
-   _rcCurrent = gr->getCurrentRegisterCandidate();
-   //_rcOnExit = gr->getRegisterCandidateOnExit();
-   //_rcOnEntry = gr->getRegisterCandidateOnEntry();
-   setValue(gr->getValue());
-   //setLastRefTreeTop(gr->getLastRefTreeTop());
-   //_mappings = gr->getMappings();
-   setAutoContainsRegisterValue(gr->getAutoContainsRegisterValue());
-   }
-
-
-
-TR::TreeTop *
-TR_GlobalRegister::optimalPlacementForStore(TR::Block * currentBlock, TR::Compilation *comp)
-   {
-   bool traceGRA = comp->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator);
-   if (traceGRA)
-      traceMsg(comp, "           optimalPlacementForStore([%p], block_%d)\n", getValue(), currentBlock->getNumber());
-
-   TR::TreeTop * lastRefTreeTop = getLastRefTreeTop();
-
-   TR::Block * lastRefBlock = lastRefTreeTop->getEnclosingBlock();
-
-   // if lastRefTreeTop is the last tree in the previous block,
-   // the store should be in the current block
-   if (lastRefBlock != currentBlock)
-      {
-      TR::Node * lastRefNode = lastRefTreeTop->getNode();
-      if(lastRefNode->getOpCodeValue() == TR::treetop)
-          lastRefNode = lastRefNode->getFirstChild();
-
-      TR::ILOpCode &prevOpCode = lastRefTreeTop->getNode()->getOpCode();
-      if (prevOpCode.isBranch() ||
-          prevOpCode.isJumpWithMultipleTargets() ||
-          prevOpCode.isReturn() ||
-          prevOpCode.getOpCodeValue() == TR::athrow ||
-          prevOpCode.getOpCodeValue() == TR::BBEnd)
-         {
-         lastRefTreeTop = lastRefTreeTop->getNextTreeTop();
-         }
-
-         if (lastRefTreeTop->getNode()->getOpCodeValue() == TR::BBEnd)
-            lastRefTreeTop = lastRefTreeTop->getNextTreeTop();
-      }
-
-   if (lastRefBlock == currentBlock)
-      {
-      if (traceGRA)
-         traceMsg(comp, "           - lastRefBlock == currentBlock: returning [%p]\n", lastRefTreeTop->getNode());
-      return lastRefTreeTop;
-      }
-
-   int32_t lastRefFreq = 1, currentFreq = 1;
-   if (!lastRefBlock->getStructureOf() || !currentBlock->getStructureOf())
-      {
-      if (traceGRA)
-         traceMsg(comp, "           - Structure info missing: returning [%p]\n", lastRefTreeTop->getNode());
-      return lastRefTreeTop;
-      }
-
-   TR::Optimizer * optimizer = (TR::Optimizer *)comp->getOptimizer();
-
-   optimizer->getStaticFrequency(lastRefBlock, &lastRefFreq);
-   optimizer->getStaticFrequency(currentBlock, &currentFreq);
-
-   if (lastRefFreq <= currentFreq)  // used to be ==
-      {
-      if (traceGRA)
-         traceMsg(comp, "           - Frequency is low enough: returning [%p]\n", lastRefTreeTop->getNode());
-      return lastRefTreeTop;
-      }
-
-   for (TR::Block * b = lastRefBlock->getNextBlock(); b; b = b->getNextBlock())
-      {
-      if (b != currentBlock)
-         {
-         int32_t freq = 1;
-         optimizer->getStaticFrequency(b, &freq);
-         if (freq > currentFreq)
-            continue;
-         }
-      if (traceGRA)
-         traceMsg(comp, "           - Found a suitable block: returning [%p]\n", b->getEntry()->getNode());
-      return b->getEntry();
-      }
-
-   TR_ASSERT(0, "optimalPlacementForStore didn't find optimal placement");
-   return 0;
-   }
-
-TR::Node *
-TR_GlobalRegister::createLoadFromRegister(TR::Node * n, TR::Compilation *comp)
-   {
-   TR::RegisterCandidate * rc = getCurrentRegisterCandidate();
-   TR::DataType dt = rc->getDataType();
-   if (dt == TR::Aggregate)
-      {
-      switch (rc->getSymbol()->getSize())
-         {
-            case 1: dt = TR::Int8; break;
-            case 2: dt = TR::Int16; break;
-            case 4: dt = TR::Int32; break;
-            case 8: dt = TR::Int64; break;
-         }
-      }
-
-   TR::Node *load;
-   load = TR::Node::create(n, comp->il.opCodeForRegisterLoad(dt));
-   load->setRegLoadStoreSymbolReference(rc->getSymbolReference());
-
-   if (load->requiresRegisterPair(comp))
-      {
-      load->setLowGlobalRegisterNumber(rc->getLowGlobalRegisterNumber());
-      load->setHighGlobalRegisterNumber(rc->getHighGlobalRegisterNumber());
-      }
-   else
-      load->setGlobalRegisterNumber(rc->getGlobalRegisterNumber());
-   if (!rc->is8BitGlobalGPR())
-      load->setIsInvalid8BitGlobalRegister(true);
-   setValue(load);
-   if (load->requiresRegisterPair(comp))
-      dumpOptDetails(comp, "%s create load [%p] from Register %d (low word) and Register %d (high word)\n", OPT_DETAILS, load, rc->getLowGlobalRegisterNumber(), rc->getHighGlobalRegisterNumber());
-   else
-      dumpOptDetails(comp, "%s create load [%p] %s from Register %d\n", OPT_DETAILS, load, rc->getSymbolReference()->getSymbol()->isMethodMetaData() ? rc->getSymbolReference()->getSymbol()->castToMethodMetaDataSymbol()->getName():"", rc->getGlobalRegisterNumber());
-   return load;
-   }
-
-TR::Node *
-TR_GlobalRegister::createStoreToRegister(TR::TreeTop * prevTreeTop, TR::Node *node, vcount_t visitCount, TR::Compilation *comp, TR_GlobalRegisterAllocator *gra)
-   {
-   TR::Node * n = prevTreeTop->getNode();
-   TR::RegisterCandidate * rc = getCurrentRegisterCandidate();
-   TR::Node * load = NULL;
-
-   TR::DataType dt = rc->getDataType();
-   if (dt == TR::Aggregate)
-      {
-      switch (rc->getSymbol()->getSize())
-         {
-         case 1: dt = TR::Int8; break;
-         case 2: dt = TR::Int16; break;
-         case 4: dt = TR::Int32; break;
-         case 8: dt = TR::Int64; break;
-         default:
-            TR_ASSERT(false,"unsupported size %d for aggregate in GRA\n",rc->getSymbol()->getSize());
-            break;
-         }
-      }
-
-   if (node)
-      {
-      load = node;
-      }
-   else
-      {
-      load = TR::Node::createWithSymRef(n, comp->il.opCodeForDirectLoad(dt), 0, rc->getSymbolReference());
-      }
-
-   load = gra->resolveTypeMismatch(dt, load);
-
-   TR::Node *store;
-   store = TR::Node::create(comp->il.opCodeForRegisterStore(dt), 1, load);
-   store->setRegLoadStoreSymbolReference(rc->getSymbolReference());
-
-   bool enableSignExtGRA = false; // enable for other platforms later
-   static char *doit = feGetEnv("TR_SIGNEXTGRA");
-   if (NULL != doit)
-      enableSignExtGRA = true;
-
-   if (comp->target().cpu.isZ())
-      {
-      enableSignExtGRA = true;
-      static char *doit2 = feGetEnv("TR_NSIGNEXTGRA");
-      if (NULL != doit2)
-         enableSignExtGRA = false;
-      }
-
-   if (comp->target().is64Bit() &&
-       (store->getOpCodeValue() == TR::iRegStore) &&
-       gra->candidateCouldNeedSignExtension(rc->getSymbolReference()->getReferenceNumber()) &&
-       enableSignExtGRA)
-      {
-      store->setNeedsSignExtension(true);
-      }
-
-   if (store->requiresRegisterPair(comp))
-      {
-      store->setLowGlobalRegisterNumber(rc->getLowGlobalRegisterNumber());
-      store->setHighGlobalRegisterNumber(rc->getHighGlobalRegisterNumber());
-      }
-   else
-      store->setGlobalRegisterNumber(rc->getGlobalRegisterNumber());
-
-   if (store->needsSignExtension())
-      gra->setSignExtensionRequired(true, rc->getGlobalRegisterNumber());
-   else
-      gra->setSignExtensionNotRequired(true, rc->getGlobalRegisterNumber());
-
-   TR::TreeTop *tt = TR::TreeTop::create(comp, prevTreeTop, store);
-   load->setVisitCount(visitCount);
-   TR::Symbol *sym = rc->getSymbolReference()->getSymbol();
-   if (!rc->is8BitGlobalGPR())
-      load->setIsInvalid8BitGlobalRegister(true);
-   setValue(load);
-   setAutoContainsRegisterValue(true);
-
-   if (store->requiresRegisterPair(comp))
-      dumpOptDetails(comp, "%s create store [%p] of symRef#%d to Register %d (low word) and Register %d (high word)\n", OPT_DETAILS, store, rc->getSymbolReference()->getReferenceNumber(), rc->getLowGlobalRegisterNumber(), rc->getHighGlobalRegisterNumber());
-   else
-      dumpOptDetails(comp, "%s create store [%p] of %s symRef#%d to Register %d\n", OPT_DETAILS, store,
-            rc->getSymbolReference()->getSymbol()->isMethodMetaData() ? rc->getSymbolReference()->getSymbol()->castToMethodMetaDataSymbol()->getName():"", rc->getSymbolReference()->getReferenceNumber(), rc->getGlobalRegisterNumber());
-
-   return load;
-   }
-
-TR::Node *
-TR_GlobalRegister::createStoreFromRegister(vcount_t visitCount, TR::TreeTop * prevTreeTop, int32_t i, TR::Compilation *comp, bool storeUnconditionally)
-   {
-   if (!storeUnconditionally)
-      {
-      TR_ASSERT(!getAutoContainsRegisterValue(), "don't need to store the register back into the auto");
-      TR_ASSERT(getLastRefTreeTop(), "expected getLastRefTreeTop to be nonzero");
-      }
-   else
-      TR_ASSERT(prevTreeTop, "expected prevTreeTop to be nonzero");
-
-   if (!prevTreeTop)
-      prevTreeTop = getLastRefTreeTop();
-
-   TR::Node *prevNode = prevTreeTop->getNode();
-   if ((prevNode->getOpCodeValue() == TR::NULLCHK) ||
-       (prevNode->getOpCodeValue() == TR::treetop))
-      prevNode = prevNode->getFirstChild();
-
-   TR::ILOpCode &prevOpCode = prevNode->getOpCode();
-   if (prevOpCode.isBranch() ||
-       prevOpCode.isJumpWithMultipleTargets() ||
-       prevOpCode.isReturn() ||
-       prevOpCode.getOpCodeValue() == TR::athrow ||
-       prevOpCode.getOpCodeValue() == TR::BBEnd)
-      prevTreeTop = prevTreeTop->getPrevTreeTop();
-
-   TR::RegisterCandidate * rc = getCurrentRegisterCandidate();
-   TR::Node *node = getValue();
-   TR::Node * store = TR::Node::createWithSymRef(comp->il.opCodeForDirectStore(rc->getDataType()), 1, 1, node, rc->getSymbolReference());
-   store->setVisitCount(visitCount);
-   rc->addStore(TR::TreeTop::create(comp, prevTreeTop, store));
-   setAutoContainsRegisterValue(true);
-   rc->setExtendedLiveRange(true);
-
-   if (i != -1)
-      {
-      if (store->requiresRegisterPair(comp))
-         dumpOptDetails(comp, "%s create store [%p] from Register %d (low word) and Register %d (high word)\n", OPT_DETAILS, store, rc->getLowGlobalRegisterNumber(), rc->getHighGlobalRegisterNumber());
-      else
-         dumpOptDetails(comp, "%s create store [%p] from Register %d for %s #%d\n", OPT_DETAILS, store,
-               rc->getGlobalRegisterNumber(), rc->getSymbolReference()->getSymbol()->isMethodMetaData() ? rc->getSymbolReference()->getSymbol()->castToMethodMetaDataSymbol()->getName():"",rc->getSymbolReference()->getReferenceNumber());
-      }
-
-   return store;
    }
 
 void
@@ -4060,7 +3726,7 @@ TR_GlobalRegisterAllocator::appendGotoBlock(TR::Block *gotoBlock, TR::Block *cur
    }
 
 
-StoresInBlockInfo *TR_GlobalRegisterAllocator::findRegInStoreInfo(TR_GlobalRegister *gr)
+StoresInBlockInfo *TR_GlobalRegisterAllocator::findRegInStoreInfo(TR::GlobalRegister *gr)
    {
    StoresInBlockInfo *nextStoreInfo;
    for (nextStoreInfo = _storesInBlockInfo.getFirst(); nextStoreInfo; nextStoreInfo=nextStoreInfo->getNext())

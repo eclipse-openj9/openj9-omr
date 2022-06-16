@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -292,6 +292,8 @@ OMR::Optimization::removeOrconvertIfToGoto(TR::Node* &node, TR::Block* block, in
    // doesn't matter taken or untaken, if it's a profiled guard we need to make sure the AOT relocation is created
    createGuardSiteForRemovedGuard(self()->comp(), node);
 #endif
+
+   node->setVirtualGuardInfo(NULL, self()->comp());
 
    if (takeBranch)
       {

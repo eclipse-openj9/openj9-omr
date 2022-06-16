@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2027,6 +2027,9 @@ OMR::ResolvedMethodSymbol::removeTree(TR::TreeTop *tt)
    TR::Node *node = tt->getNode();
    if (node != NULL)
       {
+      if (node->isTheVirtualGuardForAGuardedInlinedCall())
+         node->setVirtualGuardInfo(NULL, self()->comp());
+
       node->recursivelyDecReferenceCount();
       if (self()->comp()->getOption(TR_TraceAddAndRemoveEdge))
          traceMsg(self()->comp(), "remove [%s]\n", node->getName(self()->comp()->getDebug()));

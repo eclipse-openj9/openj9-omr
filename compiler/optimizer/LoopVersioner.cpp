@@ -6055,6 +6055,20 @@ void TR_LoopVersioner::buildConditionalTree(
          duplicateComparisonNode->setFlags(conditionalNode->getFlags());
          cleanseIntegralNodeFlagsInSubtree(comp(), duplicateComparisonNode);
 
+         if (conditionalNode->isTheVirtualGuardForAGuardedInlinedCall())
+            {
+            conditionalNode->copyVirtualGuardInfoTo(duplicateComparisonNode, comp());
+
+            // duplicateComparisonNode won't be put into the trees, so comp
+            // shouldn't track its guard info. The guard info still needs to be
+            // attached to the node though. If the prep is emitted, we'll make
+            // a new copy of this tree (via the intermediate Expr) and insert
+            // it ahead of the loop. That copy needs guard info, and so the
+            // Expr does too, and createLoopEntryPrep()/makeCanonicalExpr()
+            // will pick it up from duplicateComparisonNode.
+            comp()->removeVirtualGuard(duplicateComparisonNode->virtualGuardInfo());
+            }
+
          if (duplicateComparisonNode->isMaxLoopIterationGuard())
             {
             duplicateComparisonNode->setIsMaxLoopIterationGuard(false); //for the outer loop its not a maxloop itr guard anymore!
@@ -6135,7 +6149,7 @@ void TR_LoopVersioner::FoldConditional::improveLoop()
    constNode->incReferenceCount();
 
    TR::Node::recreate(_conditionalNode, _original ? TR::ificmpeq : TR::ificmpne);
-   _conditionalNode->resetIsTheVirtualGuardForAGuardedInlinedCall();
+   _conditionalNode->setVirtualGuardInfo(NULL, comp());
    }
 
 void TR_LoopVersioner::copyOnWriteNode(TR::Node *original, TR::Node **current)
@@ -8943,7 +8957,7 @@ bool TR_LoopVersioner::initExprFromNode(Expr *expr, TR::Node *node, bool onlySea
    // Initialize _op.
    expr->_op = node->getOpCode();
 
-   // Initialize _constValue or _symRef as appropriate.
+   // Initialize _constValue, _symRef, or _guard as appropriate.
    expr->_constValue = 0;
    if (expr->_op.isLoadConst())
       {
@@ -8954,10 +8968,11 @@ bool TR_LoopVersioner::initExprFromNode(Expr *expr, TR::Node *node, bool onlySea
       // Loads from the same original symref should intern to the same Expr.
       expr->_symRef = node->getSymbolReference()->getOriginalUnimprovedSymRef(comp());
       }
-   else
+   else if (expr->_op.isIf())
       {
+      expr->_guard = node->virtualGuardInfo();
       TR_ASSERT_FATAL(
-         !expr->_op.isIf() || node->getBranchDestination() == _exitGotoTarget,
+         node->getBranchDestination() == _exitGotoTarget,
          "versioning test n%un [%p] does not target _exitGotoTarget",
          node->getGlobalIndex(),
          node);
@@ -9545,6 +9560,8 @@ TR::Node *TR_LoopVersioner::emitExpr(const Expr *expr, EmitExprMemo &memo)
       {
       TR_ASSERT_FATAL(numChildren == 2, "expected if %p to have 2 children", expr);
       node = TR::Node::createif(opVal, children[0], children[1], _exitGotoTarget);
+      if (expr->_guard != NULL)
+         new (comp()->trHeapMemory()) TR_VirtualGuard(expr->_guard, node, comp());
       }
    else
       {
@@ -9828,6 +9845,21 @@ bool TR_LoopVersioner::Expr::operator<(const Expr &rhs) const
       if (symRefLt(lhs._symRef, rhs._symRef))
          return true;
       else if (symRefLt(rhs._symRef, lhs._symRef))
+         return false;
+      }
+   else if (lhs._op.isIf() && lhs._guard != rhs._guard)
+      {
+      if (lhs._guard == NULL)
+         return true; // Non-guards compare less than guards.
+      else if (rhs._guard == NULL)
+         return false;
+      else if (lhs._guard->getKind() < rhs._guard->getKind())
+         return true;
+      else if (lhs._guard->getKind() > rhs._guard->getKind())
+         return false;
+      else if (lhs._guard->getTestType() < rhs._guard->getTestType())
+         return true;
+      else if (lhs._guard->getTestType() > rhs._guard->getTestType())
          return false;
       }
 

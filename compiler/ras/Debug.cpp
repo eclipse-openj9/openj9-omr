@@ -941,10 +941,30 @@ TR_Debug::containingClass(TR::SymbolReference *symRef)
    return NULL;
    }
 
-
 void
 TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
    {
+   // This guard info is not strictly speaking in the node flags anymore, but
+   // with the node flags is a good place to show it.
+   TR_VirtualGuard *guard = node->virtualGuardInfo();
+   if (guard != NULL)
+      {
+      const char *kind = getVirtualGuardKindName(guard->getKind());
+      const char *testType = getVirtualGuardTestTypeName(guard->getTestType());
+      output.appendf("%s/%s", kind, testType);
+
+      if (guard->mergedWithHCRGuard())
+         output.appends("+HCRGuard");
+
+      if (guard->mergedWithOSRGuard())
+         output.appends("+OSRGuard");
+
+      if (!guard->getInnerAssumptions().isEmpty())
+         output.appends("+inner");
+
+      output.appends(" ");
+      }
+
    char *format = "%s";
 
    output.appendf(format, node->printHasFoldedImplicitNULLCHK());
@@ -975,17 +995,6 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
    output.appendf(format, node->printContainsCompressionSequence());
    output.appendf(format, node->printIsInternalPointer());
    output.appendf(format, node->printIsMaxLoopIterationGuard());
-   output.appendf(format, node->printIsProfiledGuard()     );
-   output.appendf(format, node->printIsInterfaceGuard()    );
-   output.appendf(format, node->printIsAbstractGuard()     );
-   output.appendf(format, node->printIsHierarchyGuard()    );
-   output.appendf(format, node->printIsNonoverriddenGuard());
-   output.appendf(format, node->printIsSideEffectGuard()   );
-   output.appendf(format, node->printIsDummyGuard()        );
-   output.appendf(format, node->printIsHCRGuard()          );
-   output.appendf(format, node->printIsOSRGuard()          );
-   output.appendf(format, node->printIsBreakpointGuard()          );
-   output.appendf(format, node->printIsMutableCallSiteTargetGuard() );
    output.appendf(format, node->printVFTEntryIsInBounds());
    output.appendf(format, node->printIsByteToByteTranslate());
    output.appendf(format, node->printIsByteToCharTranslate());
@@ -1056,7 +1065,6 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
    output.appendf(format, node->printCannotTrackLocalStringUses());
    output.appendf(format, node->printCharArrayTRT());
    output.appendf(format, node->printEscapesInColdBlock());
-   output.appendf(format, node->printIsDirectMethodGuard());
 #ifdef J9_PROJECT_SPECIFIC
    output.appendf(format, node->printIsDontInlineUnsafePutOrderedCall());
 #endif
@@ -1064,7 +1072,6 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
    output.appendf(format, node->printIsHeapificationAlloc());
    output.appendf(format, node->printIsIdentityless());
    output.appendf(format, node->printIsLiveMonitorInitStore());
-   output.appendf(format, node->printIsMethodEnterExitGuard());
    output.appendf(format, node->printReturnIsDummy());
 #ifdef J9_PROJECT_SPECIFIC
    output.appendf(format, node->printSharedMemory());
@@ -3509,7 +3516,7 @@ void
 TR_Debug::dump(TR::FILE *pOutFile, TR_CHTable * chTable)
    {
    if (pOutFile == NULL) return;
-   TR::list<TR_VirtualGuard*> &vguards = _comp->getVirtualGuards();
+   const TR::Compilation::GuardSet &vguards = _comp->getVirtualGuards();
 
    if (!chTable->_preXMethods && !chTable->_classes &&
        vguards.empty()) return;

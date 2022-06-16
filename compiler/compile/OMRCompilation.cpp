@@ -236,7 +236,7 @@ OMR::Compilation::Compilation(
    _devirtualizedCalls(getTypedAllocator<TR_DevirtualizedCallInfo*>(self()->allocator())),
    _inlinedCalls(0),
    _inlinedFramesAdded(0),
-   _virtualGuards(getTypedAllocator<TR_VirtualGuard*>(self()->allocator())),
+   _virtualGuards(GuardSetCmp(), heapMemoryRegion),
    _staticPICSites(getTypedAllocator<TR::Instruction*>(self()->allocator())),
    _staticHCRPICSites(getTypedAllocator<TR::Instruction*>(self()->allocator())),
    _staticMethodPICSites(getTypedAllocator<TR::Instruction*>(self()->allocator())),
@@ -1543,91 +1543,35 @@ TR_DevirtualizedCallInfo * OMR::Compilation::findOrCreateDevirtualizedCall(TR::N
 void
 OMR::Compilation::addVirtualGuard(TR_VirtualGuard *guard)
    {
-   _virtualGuards.push_front(guard);
+   TR::Node *node = guard->getGuardNode();
+   bool ok = _virtualGuards.insert(guard).second;
+   TR_ASSERT_FATAL_WITH_NODE(node, ok, "failed to insert guard %p", guard);
    }
 
 TR_VirtualGuard *
-OMR::Compilation::findVirtualGuardInfo(TR::Node*guardNode)
+OMR::Compilation::findVirtualGuardInfo(TR::Node *guardNode)
    {
-   TR_ASSERT(guardNode->isTheVirtualGuardForAGuardedInlinedCall() || guardNode->isOSRGuard() || guardNode->isHCRGuard() || guardNode->isProfiledGuard() || guardNode->isMethodEnterExitGuard() || guardNode->isBreakpointGuard(), "@node %p\n", guardNode);
-
-   TR_VirtualGuardKind guardKind = TR_NoGuard;
-   if (guardNode->isSideEffectGuard())
-      guardKind = TR_SideEffectGuard;
-   else if (guardNode->isHCRGuard())
-      guardKind = TR_HCRGuard;
-   else if (guardNode->isOSRGuard())
-      guardKind = TR_OSRGuard;
-   else if (guardNode->isMethodEnterExitGuard())
-      guardKind = TR_MethodEnterExitGuard;
-   else if (guardNode->isMutableCallSiteTargetGuard())
-      guardKind = TR_MutableCallSiteTargetGuard;
-   else if (guardNode->isBreakpointGuard())
-      guardKind = TR_BreakpointGuard;
-
-   TR_VirtualGuard *guard = NULL;
-
-   if (self()->getOption(TR_TraceRelocatableDataDetailsCG))
-      traceMsg(self(), "Looking for a guard for node %p with kind %d bcindex %d calleeindex %d\n", guardNode, guardKind, guardNode->getByteCodeInfo().getByteCodeIndex(), guardNode->getByteCodeInfo().getCallerIndex());
-
-   if (guardKind != TR_NoGuard)
-      {
-      for (auto current = _virtualGuards.begin(); current != _virtualGuards.end(); ++current)
-         {
-         //traceMsg(self(), "Looking at guard %p with kind %d bcindex %d calleeindex %d\n", current, current->getKind(), current->getByteCodeIndex(), current->getCalleeIndex());
-         if ((*current)->getKind() == guardKind &&
-             (*current)->getByteCodeIndex() == guardNode->getByteCodeInfo().getByteCodeIndex() &&
-             (*current)->getCalleeIndex() == guardNode->getByteCodeInfo().getCallerIndex())
-            {
-            guard = *current;
-            if (self()->getOption(TR_TraceRelocatableDataDetailsCG))
-               traceMsg(self(), "found guard %p, guardkind = %d\n", guard, guardKind);
-            break;
-            }
-         }
-      }
-   else
-      {
-      for (auto current = _virtualGuards.begin(); current != _virtualGuards.end(); ++current)
-         {
-         //traceMsg(self(), "Looking at guard %p kind %d bcindex %d calleeindex %d\n", current, current->getKind(), current->getByteCodeIndex(), current->getCalleeIndex());
-         if ((*current)->getByteCodeIndex() == guardNode->getByteCodeInfo().getByteCodeIndex() &&
-             (*current)->getCalleeIndex() == guardNode->getByteCodeInfo().getCallerIndex() &&
-             (*current)->getKind() != TR_SideEffectGuard &&
-             (*current)->getKind() != TR_HCRGuard &&
-             (*current)->getKind() != TR_OSRGuard &&
-             (*current)->getKind() != TR_MethodEnterExitGuard &&
-             (*current)->getKind() != TR_MutableCallSiteTargetGuard &&
-             (*current)->getKind() != TR_BreakpointGuard)
-            {
-            guard = *current;
-            if (self()->getOption(TR_TraceRelocatableDataDetailsCG))
-               traceMsg(self(), "found guard %p, guardkind = %d\n", guard, (*current)->getKind());
-            break;
-            }
-         }
-      }
-
-   TR_ASSERT(guard, "Can't find the virtual guard @ bci %d:%d, node %p \n", guardNode->getByteCodeInfo().getCallerIndex(), guardNode->getByteCodeInfo().getByteCodeIndex(), guardNode);
-
+   TR_VirtualGuard *guard = guardNode->virtualGuardInfo();
+   TR_ASSERT_FATAL_WITH_NODE(guardNode, guard != NULL, "missing guard info");
    return guard;
    }
 
 void
 OMR::Compilation::removeVirtualGuard(TR_VirtualGuard *guard)
    {
-   for (auto current = _virtualGuards.begin(); current != _virtualGuards.end(); ++current)
+   if (self()->getOption(TR_TraceRelocatableDataDetailsCG))
       {
-      if (((*current)->getCalleeIndex() == guard->getCalleeIndex()) &&
-          ((*current)->getByteCodeIndex() == guard->getByteCodeIndex()) &&
-          ((*current)->getKind() == guard->getKind()))
-         {
-         if (self()->getOption(TR_TraceRelocatableDataDetailsCG))
-            traceMsg(self(), "removeVirtualGuard %p, kind %d bcindex %d calleeindex %d\n", *current, (*current)->getKind(), (*current)->getByteCodeIndex(), (*current)->getCalleeIndex());
-         _virtualGuards.erase(current);
-         break;
-         }
+      traceMsg(
+         self(),
+         "removeVirtualGuard %p, kind %d bcindex %d calleeindex %d\n",
+         guard,
+         guard->getKind(),
+         guard->getByteCodeIndex(),
+         guard->getCalleeIndex());
       }
+
+   bool wasPresent = _virtualGuards.erase(guard) != 0;
+   TR_ASSERT_FATAL_WITH_NODE(guard->getGuardNode(), wasPresent, "missing guard");
    }
 
 

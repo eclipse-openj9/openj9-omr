@@ -40,6 +40,7 @@ namespace OMR { typedef OMR::Compilation CompilationConnector; }
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <set>
 #include "env/FrontEnd.hpp"
 #include "codegen/RecognizedMethods.hpp"
 #include "compile/CompilationTypes.hpp"
@@ -801,7 +802,11 @@ public:
    TR_DevirtualizedCallInfo * findOrCreateDevirtualizedCall(TR::Node *,
                          TR_OpaqueClassBlock *);
 
-   TR::list<TR_VirtualGuard*> &getVirtualGuards() { return _virtualGuards; }
+   typedef TR::typed_allocator<TR_VirtualGuard*, TR::Region&> GuardSetAlloc;
+   typedef std::less<TR_VirtualGuard*> GuardSetCmp;
+   typedef std::set<TR_VirtualGuard*, GuardSetCmp, GuardSetAlloc> GuardSet;
+
+   const GuardSet &getVirtualGuards() { return _virtualGuards; }
    TR_VirtualGuard *findVirtualGuardInfo(TR::Node *);
    void addVirtualGuard   (TR_VirtualGuard *guard);
    void removeVirtualGuard(TR_VirtualGuard *guard);
@@ -1214,7 +1219,7 @@ private:
    int32_t                            _inlinedCalls;
    int16_t                           _inlinedFramesAdded;
 
-   TR::list<TR_VirtualGuard*>              _virtualGuards;
+   GuardSet _virtualGuards;
 
    TR_LinkHead<TR_ClassLoadCheck>     _classesThatShouldNotBeLoaded;
    TR_LinkHead<TR_ClassExtendCheck>   _classesThatShouldNotBeNewlyExtended;

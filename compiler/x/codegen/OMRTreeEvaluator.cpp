@@ -4143,25 +4143,25 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
             {
             switch (OMR::ILOpCode::getVectorOperation(opcode))
                {
-               case OMR::vadd:
+               case TR::vadd:
                   arithmetic = BinaryArithmeticAdd;
                   break;
-               case OMR::vsub:
+               case TR::vsub:
                   arithmetic = BinaryArithmeticSub;
                   break;
-               case OMR::vmul:
+               case TR::vmul:
                   arithmetic = BinaryArithmeticMul;
                   break;
-               case OMR::vdiv:
+               case TR::vdiv:
                   arithmetic = BinaryArithmeticDiv;
                   break;
-               case OMR::vand:
+               case TR::vand:
                   arithmetic = BinaryArithmeticAnd;
                   break;
-               case OMR::vor:
+               case TR::vor:
                   arithmetic = BinaryArithmeticOr;
                   break;
-               case OMR::vxor:
+               case TR::vxor:
                   arithmetic = BinaryArithmeticXor;
                   break;
 
@@ -4185,7 +4185,7 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
       {
       if (operandNode1->getRegister()                               ||
           operandNode1->getReferenceCount() != 1                    ||
-          operandNode1->getOpCodeValue() != (type.isVector() ? TR::ILOpCode::createVectorOpCode(OMR::vload, type) : MemoryLoadOpCodes[type]) ||
+          operandNode1->getOpCodeValue() != (type.isVector() ? TR::ILOpCode::createVectorOpCode(TR::vload, type) : MemoryLoadOpCodes[type]) ||
           (type.isVector() ? VectorBinaryArithmeticOpCodesForMem[type.getVectorElementType() - 1][arithmetic]
                            : BinaryArithmeticOpCodesForMem[type][arithmetic]) == TR::InstOpCode::bad)
          {
@@ -4322,4 +4322,59 @@ OMR::X86::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *
    cg->decReferenceCount(length);
 
    return resultReg;
+   }
+
+
+TR::Register*
+OMR::X86::TreeEvaluator::vreductionAddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::X86::TreeEvaluator::vreductionAndEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::X86::TreeEvaluator::vreductionFirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::X86::TreeEvaluator::vreductionMaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::X86::TreeEvaluator::vreductionMinEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::X86::TreeEvaluator::vreductionMulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::X86::TreeEvaluator::vreductionOrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::X86::TreeEvaluator::vreductionOrUncheckedEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::X86::TreeEvaluator::vreductionXorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }

@@ -196,7 +196,7 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDsplatsEvaluator(TR::Node* node, TR::C
    return resultReg;
    }
 
-TR::Register* OMR::X86::TreeEvaluator::SIMDgetvelemEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+TR::Register* OMR::X86::TreeEvaluator::SIMDvgetelemEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
    TR::Node* firstChild = node->getChild(0);
    TR::Node* secondChild = node->getChild(1);
@@ -215,7 +215,7 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDgetvelemEvaluator(TR::Node* node, TR:
       {
       case TR::Int8:
       case TR::Int16:
-         TR_ASSERT(false, "unsupported vector type %s in SIMDgetvelemEvaluator.\n", firstChild->getDataType().toString());
+         TR_ASSERT(false, "unsupported vector type %s in SIMDvgetelemEvaluator.\n", firstChild->getDataType().toString());
          break;
       case TR::Int32:
          elementCount = 4;
@@ -243,7 +243,7 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDgetvelemEvaluator(TR::Node* node, TR:
          resReg = cg->allocateRegister(TR_FPR);
          break;
       default:
-         TR_ASSERT(false, "unrecognized vector type %s in SIMDgetvelemEvaluator.\n", firstChild->getDataType().toString());
+         TR_ASSERT(false, "unrecognized vector type %s in SIMDvgetelemEvaluator.\n", firstChild->getDataType().toString());
       }
 
    if (secondChild->getOpCode().isLoadConst())
@@ -348,7 +348,7 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDgetvelemEvaluator(TR::Node* node, TR:
    else
       {
       //TODO: handle non-constant second child case
-      TR_ASSERT(false, "non-const second child not currently supported in SIMDgetvelemEvaluator.\n");
+      TR_ASSERT(false, "non-const second child not currently supported in SIMDvgetelemEvaluator.\n");
       }
 
    node->setRegister(resReg);

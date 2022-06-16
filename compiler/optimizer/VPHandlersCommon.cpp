@@ -163,7 +163,7 @@ TR::Node *constrainVcall(OMR::ValuePropagation *vp, TR::Node *node)
 
 void ValuePropagationPointerTable::checkTableSize()
    {
-   static_assert((TR::NumScalarIlOps + OMR::NumVectorOperations) ==
+   static_assert((TR::NumScalarIlOps + TR::NumVectorOperations) ==
                  (sizeof(table) / sizeof(table[0])),
                  "ValuePropagationPointerTable::table[] is not the correct size");
    }

@@ -678,7 +678,7 @@ OMR::IlBuilder::VectorStore(const char *varName, TR::IlValue *value)
    if (!dt.isVector())
       {
       dt = dt.scalarToVector(TR::VectorLength128);
-      valueNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(OMR::vsplats, dt), 1, valueNode);
+      valueNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(TR::vsplats, dt), 1, valueNode);
       }
 
    if (!_methodBuilder->symbolDefined(varName))
@@ -722,7 +722,7 @@ OMR::IlBuilder::VectorStoreAt(TR::IlValue *address, TR::IlValue *value)
    if (!dt.isVector())
       {
       dt = dt.scalarToVector(TR::VectorLength128);
-      valueNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(OMR::vsplats, dt), 1, valueNode);
+      valueNode = TR::Node::create(TR::ILOpCode::createVectorOpCode(TR::vsplats, dt), 1, valueNode);
       }
 
    indirectStoreNode(loadValue(address), valueNode);
@@ -850,7 +850,7 @@ OMR::IlBuilder::IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index)
       {
       if (indexType != TR::Int64)
          {
-         TR::ILOpCodes op = TR::DataType::getDataTypeConversion(indexType, TR::Int64);
+         TR::ILOpCodes op = TR::ILOpCode::getDataTypeConversion(indexType, TR::Int64);
          indexNode = TR::Node::create(op, 1, indexNode);
          }
       elemSizeNode = TR::Node::lconst(elemType->getSize());
@@ -862,7 +862,7 @@ OMR::IlBuilder::IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index)
       TR::DataType targetType = TR::Int32;
       if (indexType != targetType)
          {
-         TR::ILOpCodes op = TR::DataType::getDataTypeConversion(indexType, targetType);
+         TR::ILOpCodes op = TR::ILOpCode::getDataTypeConversion(indexType, targetType);
          indexNode = TR::Node::create(op, 1, indexNode);
          }
       elemSizeNode = TR::Node::iconst(static_cast<int32_t>(elemType->getSize()));
@@ -1073,7 +1073,7 @@ OMR::IlBuilder::ConvertBitsTo(TR::IlType* t, TR::IlValue* v)
       return v;
       }
 
-   TR::ILOpCodes convertOpcode = TR::DataType::getDataTypeBitConversion(typeFrom, typeTo);
+   TR::ILOpCodes convertOpcode = TR::ILOpCode::getDataTypeBitConversion(typeFrom, typeTo);
    TR_ASSERT_FATAL(convertOpcode != TR::BadILOp && TR::DataType::getSize(typeTo) == TR::DataType::getSize(typeFrom),
              "Builder [ %p ] requested bit conversion for value %d from type of size %d (%s) to type of size %d (%s) (consider using ConvertTo() to for narrowing/widening)",
              this, v->getID(), TR::DataType::getSize(typeFrom), typeFrom.toString(), TR::DataType::getSize(typeTo), typeTo.toString());
@@ -1105,10 +1105,10 @@ OMR::IlBuilder::doVectorConversions(TR::Node **leftPtr, TR::Node **rightPtr)
    TR::DataType rType = right->getDataType();
 
    if (lType.isVector() && !rType.isVector())
-      *rightPtr = TR::Node::create(TR::ILOpCode::createVectorOpCode(OMR::vsplats, lType), 1, right);
+      *rightPtr = TR::Node::create(TR::ILOpCode::createVectorOpCode(TR::vsplats, lType), 1, right);
 
    if (!lType.isVector() && rType.isVector())
-      *leftPtr = TR::Node::create(TR::ILOpCode::createVectorOpCode(OMR::vsplats, rType), 1, left);
+      *leftPtr = TR::Node::create(TR::ILOpCode::createVectorOpCode(TR::vsplats, rType), 1, left);
    }
 
 TR::IlValue *

@@ -145,24 +145,8 @@ TR::Node* GenericNodeConverter::impl(const ASTNode* tree, IlGenState* state) {
         const auto name = tree->getName();
         auto compilation = TR::comp();
         TR::DataType type;
-        if (opcode.isVector() && !opcode.isVectorOpCode()) {
-            // Vector types in TR IL are "typeless", insofar as they are
-            // supposed to infer the vector type depending on the children.
-            // Loads determine their data type based on the symref. However,
-            // given that we are creating a symref here, we need a hint as to
-            // what type of symref to create. So, vloadi and vstorei will take
-            // an extra argument "type" to annotate the type desired.
-            if (tree->getArgByName("type") != NULL) {
-                auto nameoftype = tree->getArgByName("type")->getValue()->getString();
-                type = getTRDataTypes(nameoftype);
-                TraceIL(" of vector type %s\n", nameoftype);
-            } else {
-                throw GenericNodeGenError("Failed to find argument with name type");
-            }
-        } else {
-            TraceIL("\n");
-            type = opcode.getType();
-        }
+        TraceIL("\n");
+        type = opcode.getType();
         TR::Symbol* sym = TR::Symbol::createNamedShadow(compilation->trHeapMemory(), type, TR::DataType::getSize(opcode.getType()), (char*)name);
         TR::SymbolReference* symref = new (compilation->trHeapMemory()) TR::SymbolReference(compilation->getSymRefTab(), sym, compilation->getMethodSymbol()->getResolvedMethodIndex(), -1);
         symref->setOffset(offset);

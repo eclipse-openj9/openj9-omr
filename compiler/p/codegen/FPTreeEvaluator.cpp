@@ -496,60 +496,7 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
    }
 
 
-TR::Register *OMR::Power::TreeEvaluator::vdgetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Node *firstChild = node->getFirstChild();
-   TR::Node *secondChild = node->getSecondChild();
-   TR::Register *resReg = node->setRegister(cg->allocateRegister(TR_FPR));
-
-   if (secondChild->getOpCode().isLoadConst())
-      {
-      int elem = secondChild->getInt();
-      TR_ASSERT(elem == 0 || elem == 1, "Element can only be 0 or 1\n");
-
-      TR::Register *srcReg = cg->evaluate(firstChild);
-
-      if (elem == 1)
-         generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxsldwi, node, resReg, srcReg, srcReg, 0x2);
-      else
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, srcReg, srcReg);
-
-      cg->decReferenceCount(firstChild);
-      cg->decReferenceCount(secondChild);
-      return resReg;
-      }
-
-   TR::Register *vectorReg = cg->evaluate(firstChild);
-   TR::Register *idxReg = cg->evaluate(secondChild);
-   TR::Register    *condReg = cg->allocateRegister(TR_CCR);
-   TR::LabelSymbol *jumpLabel = generateLabelSymbol(cg);
-
-   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, idxReg, 0);
-
-   // copy vector register to result register
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, vectorReg, vectorReg);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, jumpLabel, condReg);
-   generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxsldwi, node, resReg, vectorReg, vectorReg, 0x2);
-
-   TR::RegisterDependencyConditions *dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
-   dep->addPostCondition(vectorReg, TR::RealRegister::NoReg);
-   dep->addPostCondition(idxReg, TR::RealRegister::NoReg);
-   dep->addPostCondition(resReg, TR::RealRegister::NoReg);
-   dep->addPostCondition(condReg, TR::RealRegister::NoReg);
-
-   generateDepLabelInstruction(cg, TR::InstOpCode::label, node, jumpLabel, dep);
-
-   cg->stopUsingRegister(condReg);
-
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
-
-   return resReg;
-
-   }
-
-
-TR::Register *OMR::Power::TreeEvaluator::vdsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::Power::TreeEvaluator::vdsetelemHelper(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
@@ -1732,13 +1679,15 @@ TR::Register *OMR::Power::TreeEvaluator::vRegLoadEvaluator(TR::Node *node, TR::C
 
    if (globalReg == NULL)
       {
-      if (node->getOpCode().getOpCodeValue() == TR::vbRegLoad ||
-          node->getOpCode().getOpCodeValue() == TR::vsRegLoad ||
-          node->getOpCode().getOpCodeValue() == TR::viRegLoad ||
-          node->getOpCode().getOpCodeValue() == TR::vlRegLoad)
+      TR::DataType elementType = node->getOpCode().getVectorResultDataType().getVectorElementType();
+
+      if (elementType == TR::Int8 ||
+          elementType == TR::Int16 ||
+          elementType == TR::Int32 ||
+          elementType == TR::Int64)
          globalReg = cg->allocateRegister(TR_VRF);
-      else if (node->getOpCode().getOpCodeValue() == TR::vfRegLoad ||
-               node->getOpCode().getOpCodeValue() == TR::vdRegLoad)
+      else if (elementType == TR::Float ||
+               elementType == TR::Double)
          globalReg = cg->allocateRegister(TR_VSX_VECTOR);
       else
          TR_ASSERT(0, "unknown operation.\n");

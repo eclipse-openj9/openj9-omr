@@ -494,11 +494,13 @@ TR::S390zLinuxSystemLinkage::callNativeFunction(TR::Node * callNode,
       case TR::calli:
          returnRegister = NULL;
          break;
-      case TR::vcall:
-      case TR::vcalli:
-         returnRegister = deps->searchPostConditionRegister(getVectorReturnRegister());
-         break;
       default:
+         if (callNode->getOpCode().isVectorOpCode() &&
+             (callNode->getOpCode().getVectorOperation() == TR::vcall || callNode->getOpCode().getVectorOperation() == TR::vcalli))
+            {
+            returnRegister = deps->searchPostConditionRegister(getVectorReturnRegister());
+            break;
+            }
          returnRegister = NULL;
          TR_ASSERT(0, "Unknown direct call Opcode %d.", callNode->getOpCodeValue());
       }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -54,7 +54,7 @@ OMR::Linkage::argumentRegisterKind(TR::Node *argumentNode)
    {
    if (argumentNode->getOpCode().isFloatingPoint())
       return TR_FPR;
-   else if (argumentNode->getOpCode().isVector())
+   else if (argumentNode->getOpCode().isVectorResult())
       return TR_VRF;
    else
       return TR_GPR;

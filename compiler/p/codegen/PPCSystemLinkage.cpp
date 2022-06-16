@@ -1504,14 +1504,17 @@ TR::Register *TR::PPCSystemLinkage::buildDirectDispatch(TR::Node *callNode)
          returnRegister = dependencies->searchPostConditionRegister(
                              pp.getFloatReturnRegister());
          break;
-      case TR::vcall:
-         returnRegister = dependencies->searchPostConditionRegister(
-                             pp.getVectorReturnRegister());
-         break;
       case TR::call:
          returnRegister = NULL;
          break;
       default:
+         if (callNode->getOpCode().isVectorOpCode() &&
+             callNode->getOpCode().getVectorOperation() == TR::vcall)
+             {
+             returnRegister = dependencies->searchPostConditionRegister(
+                              pp.getVectorReturnRegister());
+             break;
+             }
          returnRegister = NULL;
          TR_ASSERT(0, "Unknown direct call Opcode.");
       }

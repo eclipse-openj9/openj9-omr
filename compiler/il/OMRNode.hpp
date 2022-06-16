@@ -347,9 +347,6 @@ public:
    static TR::Node *createAddConstantToAddress(TR::Node * addr, intptr_t value, TR::Node * parent = NULL);
    static TR::Node *createLiteralPoolAddress(TR::Node *node, size_t offset);
 
-   static TR::Node *createVectorConst(TR::Node *originatingByteCodeNode, TR::DataType dt);
-   static TR::Node *createVectorConversion(TR::Node *src, TR::DataType trgType);
-
 /**
  * Private constructor helpers
  */
@@ -364,8 +361,6 @@ private:
       TR::ILOpCode opcode; opcode.setOpCodeValue(opvalue);
       TR_ASSERT(!opcode.isIf(), "use createif or createbranch on this node\n");
       TR_ASSERT(opvalue != TR::arraycopy, "use createArraycopy to create this node");
-      TR_ASSERT(opvalue != TR::v2v, "use createVectorConversion to create node: %s", opcode.getName());
-      TR_ASSERT(opvalue != TR::vconst, "use createVectorConst to create node: %s", opcode.getName());
       return true;
       }
 

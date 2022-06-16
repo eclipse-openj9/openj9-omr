@@ -4843,7 +4843,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                removeNodeFromList(node, &state->_currentlyCommonedFPCandidates, &state->_fpParents, false);
             }
          }
-      else if (node->getOpCode().isVector())
+      else if (node->getOpCode().isVectorResult())
          {
          state->_currentlyCommonedVector128Nodes.remove(node);
          if (isRematerializable(parent, node, true) &&
@@ -4885,7 +4885,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
          else
             addParentToList(node, &state->_currentlyCommonedFPCandidates, parent, &state->_fpParents);
          }
-      else if (node->getOpCode().isVector())
+      else if (node->getOpCode().isVectorResult())
          {
          if (isRematerializableLoad(node, parent))
             addParentToList(node, &state->_currentlyCommonedVector128Loads, parent, &state->_parentsOfCommonedVector128Loads);
@@ -4941,7 +4941,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
            {
            if (child->getOpCode().isFloatingPoint())
               fpChildAdjustment++;
-           else if (child->getOpCode().isVector())
+           else if (child->getOpCode().isVectorResult())
               {
               vector128ChildAdjustment++;
               }
@@ -5001,7 +5001,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
            {
            if (maxChild->getOpCode().isFloatingPoint())
               fpChildAdjustment++;
-           else if (maxChild->getOpCode().isVector())
+           else if (maxChild->getOpCode().isVectorResult())
               {
               vector128ChildAdjustment++;
               }
@@ -5048,7 +5048,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
          if (trace()) traceMsg(comp(), "1Removing node %p\n", node);
          if (node->getOpCode().isFloatingPoint())
             removeNodeFromList(node->getFirstChild(), &state->_currentlyCommonedFPLoads, &state->_parentsOfCommonedFPLoads, true);
-         else if (node->getOpCode().isVector())
+         else if (node->getOpCode().isVectorResult())
             {
             removeNodeFromList(node->getFirstChild(), &state->_currentlyCommonedVector128Loads, &state->_parentsOfCommonedVector128Loads, true);
             }
@@ -5100,7 +5100,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
          removeNodeFromList(node, &state->_currentlyCommonedFPLoads,
                            &state->_parentsOfCommonedFPLoads, true,
                            &state->_fpLoadsAlreadyVisited, &state->_fpLoadsAlreadyVisitedThatCannotBeRematerialized, aliases);
-      else if (node->getOpCode().isVector())
+      else if (node->getOpCode().isVectorResult())
          {
          removeNodeFromList(node, &state->_currentlyCommonedVector128Loads,
                            &state->_parentsOfCommonedVector128Loads, true,
@@ -5181,7 +5181,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
       rematerializeNode(treeTop, parent, node, visitCount, &state->_currentlyCommonedFPNodes, &state->_currentlyCommonedFPCandidates, &state->_fpParents, &state->_currentlyCommonedFPLoads, &state->_parentsOfCommonedFPLoads, &state->_fpLoadsAlreadyVisited, &state->_fpLoadsAlreadyVisitedThatCannotBeRematerialized, rematSpecialNode);
       }
 
-      if (trace() && node->getOpCode().isVector())
+      if (trace() && node->getOpCode().isVectorResult())
       {
       traceMsg(comp(), "At node %p VSR pressure is %d (child adjust %d parent adjust %d) limit is %d\n", node, state->_currentlyCommonedVector128Nodes.getSize() + vector128ChildAdjustment + adjustments.vector128AdjustmentFromParent, vector128ChildAdjustment, adjustments.vector128AdjustmentFromParent, vector128ChildAdjustment + adjustments.vector128AdjustmentFromParent);
       traceMsg(comp(), "candidate nodes size %d candidate loads size %d\n", state->_currentlyCommonedVector128Candidates.getSize(), state->_currentlyCommonedVector128Loads.getSize());
@@ -5203,7 +5203,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
             {
             if (node->getOpCode().isFloatingPoint())
                state->_currentlyCommonedFPNodes.add(node);
-            else if (node->getOpCode().isVector())
+            else if (node->getOpCode().isVectorResult())
                {
                state->_currentlyCommonedVector128Nodes.add(node);
                }
@@ -5230,7 +5230,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                      state->_parentsOfCommonedFPLoads.add(parentList);
                      }
                   }
-               else if (node->getOpCode().isVector())
+               else if (node->getOpCode().isVectorResult())
                   {
                   if (!state->_vector128LoadsAlreadyVisitedThatCannotBeRematerialized.find(node))
                      {
@@ -5263,7 +5263,7 @@ bool TR_Rematerialization::examineNode(TR::TreeTop *treeTop, TR::Node *parent, T
                   parentList->add(parent);
                   state->_fpParents.add(parentList);
                   }
-               else if (node->getOpCode().isVector())
+               else if (node->getOpCode().isVectorResult())
                   {
                   //traceMsg(comp(), "2Adding node %p to _currentlyCommonedVector128Candidates\n", node);
                   state->_currentlyCommonedVector128Candidates.add(node);

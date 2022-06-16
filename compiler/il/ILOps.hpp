@@ -35,7 +35,7 @@ public:
    ILOpCode(TR::ILOpCodes opCode)
       : OMR::ILOpCode(opCode)
       {
-      TR_ASSERT(opCode < NumAllIlOps, "assertion failure");
+      TR_ASSERT(opCode < TR::NumAllIlOps, "assertion failure");
       }
 
    };

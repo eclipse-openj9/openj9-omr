@@ -22,13 +22,51 @@
 #ifndef ILOPCODES_INCL
 #define ILOPCODES_INCL
 
+#include "il/OMRDataTypes.hpp"
+
 namespace TR
    {
-     enum ILOpCodes
-     {
-     #include "il/ILOpCodesEnum.hpp"
-     NumScalarIlOps
-     };
+
+   enum VectorOperation
+      {
+#define VECTOR_OPERATION_MACRO(                 \
+      operation, \
+      name, \
+      prop1, \
+      prop2, \
+      prop3, \
+      prop4, \
+      dataType, \
+      typeProps, \
+      childProps, \
+      swapChildrenOperation, \
+      reverseBranchOperation, \
+      boolCompareOpcode, \
+      ifCompareOpcode, \
+      ...) operation,
+
+      vBadOperation = 0,
+
+      #include "il/VectorOperations.enum"
+#undef VECTOR_OPERATION_MACRO
+
+      NumVectorOperations,
+
+      firstTwoTypeVectorOperation = vcast
+      };
+
+   enum ILOpCodes
+      {
+      #include "il/ILOpCodesEnum.hpp"
+      NumScalarIlOps,
+
+      NumOneVectorTypeOperations = TR::firstTwoTypeVectorOperation,
+      NumTwoTypeVectorOperations = TR::NumVectorOperations - TR::firstTwoTypeVectorOperation,
+
+      NumOneVectorTypeOps = NumOneVectorTypeOperations * TR::NumVectorTypes,
+      NumTwoTypeVectorOps = NumTwoTypeVectorOperations * TR::NumVectorTypes * TR::NumVectorTypes,
+      NumAllIlOps = TR::NumScalarIlOps + NumOneVectorTypeOps + NumTwoTypeVectorOps
+      };
    }
 
 #endif

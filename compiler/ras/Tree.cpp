@@ -1706,8 +1706,18 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
       }
    else if(node->getOpCode().isVectorOpCode())
       {
-      // example of a vector opcode: vaddVector128Int32
-      output.appendf("%s", getName(node->getDataType()));
+      TR::ILOpCode opcode = node->getOpCode();
+
+      if (opcode.isTwoTypeVectorOpCode())
+         {
+         // example: vconvVector128Int32_Vector128Float
+         output.appendf("%s_%s", getName(opcode.getVectorSourceDataType()), getName(opcode.getVectorResultDataType()));
+         }
+      else
+         {
+         // example: vaddVector128Int32
+         output.appendf("%s", getName(opcode.getVectorResultDataType()));
+         }
       }
 
 

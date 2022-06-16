@@ -76,14 +76,14 @@ class OpCodeTable : public TR::ILOpCode {
             std::string vectorTypeName = name.substr(pos);
 
             int i;
-            for (i = TR::NumScalarIlOps; i< OMR::ILOpCode::NumAllIlOps; i++) {
+            for (i = TR::NumScalarIlOps; i< TR::NumAllIlOps; i++) {
                const auto p_opCode = static_cast<TR::ILOpCodes>(i);
                const auto& p = TR::ILOpCode::_opCodeProperties[p_opCode];
                if (vectorOperationName == p.name) break;
             }
-            if (i == OMR::ILOpCode::NumAllIlOps) return TR::BadILOp;
+            if (i == TR::NumAllIlOps) return TR::BadILOp;
 
-            OMR::VectorOperation vop = (OMR::VectorOperation)(i - TR::NumScalarIlOps);
+            TR::VectorOperation vop = (TR::VectorOperation)(i - TR::NumScalarIlOps);
             const char* cStr = &*vectorTypeName.begin();
             TR::DataType vectorType = TR::DataType::getTypeFromName(cStr);
 

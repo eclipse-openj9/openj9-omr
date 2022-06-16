@@ -546,35 +546,8 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define compressedRefsVPHandler constrainChildren
 #define BBStartVPHandler constrainChildren
 #define BBEndVPHandler constrainChildren
-#define viminVPHandler constrainChildren
-#define vimaxVPHandler constrainChildren
-#define vigetelemVPHandler constrainChildren
-#define visetelemVPHandler constrainChildren
-#define vimergelVPHandler constrainChildren
-#define vimergehVPHandler constrainChildren
-#define vicmpeqVPHandler constrainChildren
-#define vicmpgtVPHandler constrainChildren
-#define vicmpgeVPHandler constrainChildren
-#define vicmpltVPHandler constrainChildren
-#define vicmpleVPHandler constrainChildren
 #define vnotVPHandler constrainChildren
-#define vbitselectVPHandler constrainChildren
-#define vpermVPHandler constrainChildren
 #define vsplatsVPHandler constrainChildren
-#define vdmergelVPHandler constrainChildren
-#define vdmergehVPHandler constrainChildren
-#define vdsetelemVPHandler constrainChildren
-#define vdgetelemVPHandler constrainChildren
-#define vdselVPHandler constrainChildren
-#define vdmaxVPHandler constrainChildren
-#define vdminVPHandler constrainChildren
-#define vdcmpeqVPHandler constrainCmp
-#define vdcmpneVPHandler constrainCmp
-#define vdcmpgtVPHandler constrainCmp
-#define vdcmpgeVPHandler constrainCmp
-#define vdcmpltVPHandler constrainCmp
-#define vdcmpleVPHandler constrainCmp
-#define vdsqrtVPHandler constrainChildren
 #define vfmaVPHandler constrainChildren
 #define vnegVPHandler constrainChildren
 #define vabsVPHandler constrainChildren
@@ -598,27 +571,28 @@ TR::Node * constrainLongBitCount(OMR::ValuePropagation *vp, TR::Node *node);
 #define vloadiVPHandler constrainChildren
 #define vstoreVPHandler constrainStore
 #define vstoreiVPHandler constrainStore
+#define vreductionAddVPHandler constrainChildren
+#define vreductionAndVPHandler constrainChildren
+#define vreductionFirstNonZeroVPHandler constrainChildren
+#define vreductionMaxVPHandler constrainChildren
+#define vreductionMinVPHandler constrainChildren
+#define vreductionMulVPHandler constrainChildren
+#define vreductionOrVPHandler constrainChildren
+#define vreductionOrUncheckedVPHandler constrainChildren
+#define vreductionXorVPHandler constrainChildren
 #define vreturnVPHandler constrainReturn
 #define vcallVPHandler constrainCall
 #define vcalliVPHandler constrainCall
-#define vselectVPHandler constrainChildrenFirstToLast
-#define v2vVPHandler constrainChildren
-#define vl2vdVPHandler constrainChildren
-#define vconstVPHandler constrainChildren
-#define getvelemVPHandler constrainChildren
+#define vbitselectVPHandler constrainChildrenFirstToLast
+#define vcastVPHandler constrainChildren
+#define vconvVPHandler constrainChildren
 #define vsetelemVPHandler constrainChildren
-#define vbRegLoadVPHandler constrainChildren
-#define vsRegLoadVPHandler constrainChildren
-#define viRegLoadVPHandler constrainChildren
-#define vlRegLoadVPHandler constrainChildren
-#define vfRegLoadVPHandler constrainChildren
-#define vdRegLoadVPHandler constrainChildren
-#define vbRegStoreVPHandler constrainChildren
-#define vsRegStoreVPHandler constrainChildren
-#define viRegStoreVPHandler constrainChildren
-#define vlRegStoreVPHandler constrainChildren
-#define vfRegStoreVPHandler constrainChildren
-#define vdRegStoreVPHandler constrainChildren
+#define vindexVectorVPHandler constrainChildren
+#define vorUncheckedVPHandler constrainChildren
+#define vRegLoadVPHandler constrainChildren
+#define vRegStoreVPHandler constrainChildren
+#define vfirstNonZeroVPHandler constrainChildren
+#define vgetelemVPHandler constrainChildren
 #define f2iuVPHandler constrainChildren
 #define f2luVPHandler constrainChildren
 #define f2buVPHandler constrainChildren
@@ -898,6 +872,8 @@ const ValuePropagationPtr ValuePropagationPointerTable::table[] =
    boolCompareOpcode, \
    ifCompareOpcode, \
    ...) operation ## VPHandler,
+
+   BadILOpVPHandler,
 
 #include "il/VectorOperations.enum"
 #undef VECTOR_OPERATION_MACRO

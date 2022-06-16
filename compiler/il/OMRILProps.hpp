@@ -47,8 +47,8 @@ namespace ILTypeProp
 #endif
       Floating_Point                    = 0x00000800,
       Unsigned                          = 0x00001000,
-      Vector                            = 0x00002000,
-      LastOMRILTypeProp                 = Vector
+      VectorResult                      = 0x00002000,
+      LastOMRILTypeProp                 = VectorResult
       };
    }
 

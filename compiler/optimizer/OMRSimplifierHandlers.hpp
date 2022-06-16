@@ -206,7 +206,7 @@ TR::Node * endBlockSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier
 TR::Node * selectSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * a2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * a2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
-TR::Node * v2vSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
+TR::Node * vcastSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * vsetelemSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * checkcastSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 TR::Node * checkcastAndNULLCHKSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s);

@@ -105,7 +105,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *ddivEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *cdivEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *cremEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bnegEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *snegEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bshlEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -275,7 +274,18 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *fpSqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *dsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
-   static TR::Register *vdsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
+   static TR::Register *vreductionAddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionAndEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionFirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionMaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionMinEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionMulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionOrEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionOrUncheckedEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vreductionXorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    // routines for floating point values that can fit in one GPR
    static TR::Register *floatingPointStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -292,7 +302,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *SIMDloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *SIMDstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *SIMDsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *SIMDgetvelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *SIMDvgetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    static TR::Register *icmpsetEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bztestnsetEvaluator(TR::Node *node, TR::CodeGenerator *cg);

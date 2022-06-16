@@ -1585,24 +1585,6 @@ OMR::Node::createLiteralPoolAddress(TR::Node *node, size_t offset)
    }
 
 
-
-TR::Node *
-OMR::Node::createVectorConst(TR::Node *originatingByteCodeNode, TR::DataType dt)
-   {
-   TR::Node *node = TR::Node::createInternal(originatingByteCodeNode, TR::vconst, 0, NULL);
-   node->setDataType(dt);
-   return node;
-   }
-
-// v2v is vector conversion that preserves bit-pattern, effectively a noop that only changes datatype.
-TR::Node *
-OMR::Node::createVectorConversion(TR::Node *src, TR::DataType trgType)
-   {
-   TR::Node *node = TR::Node::createWithoutSymRef(TR::v2v, 1, 1, src);
-   node->setDataType(trgType);
-   return node;
-   }
-
 /**
  * Node constructors and create functions end
  */
@@ -5251,25 +5233,6 @@ OMR::Node::computeDataType()
    if (_unionPropertyA._dataType != TR::NoType)
       return _unionPropertyA._dataType;
 
-   if (self()->getNumChildren() > 0)
-      {
-      // Type erasure for some vector opcodes. They deduce type from children nodes
-      if(_opCode.isVector())
-         {
-         // Vector comparison returning resultant vector should return vector bool int type, WCode ACR 265
-         if (_opCode.isBooleanCompare())
-            _unionPropertyA._dataType = self()->getFirstChild()->getDataType().getVectorIntegralType().getDataType();
-         else if (_opCode.isVectorReduction())
-            _unionPropertyA._dataType = self()->getFirstChild()->getDataType().getVectorElementType().getDataType();
-         else
-            _unionPropertyA._dataType = self()->getFirstChild()->getDataType().getDataType();
-
-         return _unionPropertyA._dataType;
-         }
-
-      if (_opCode.getOpCodeValue() == TR::getvelem)
-         return _unionPropertyA._dataType = self()->getFirstChild()->getDataType().vectorToScalar().getDataType();
-      }
    TR_ASSERT(false, "Unsupported typeless opcode in node %p\n", self());
    return TR::NoType;
    }

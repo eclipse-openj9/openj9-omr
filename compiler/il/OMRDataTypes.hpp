@@ -33,7 +33,6 @@ namespace OMR { typedef OMR::DataType DataTypeConnector; }
 
 #include <stddef.h>
 #include <stdint.h>
-#include "il/ILOpCodes.hpp"
 #include "infra/Annotations.hpp"
 
 #if defined(TR_HOST_ARM) && !defined(__VFP_FP__)
@@ -353,22 +352,9 @@ namespace TR
 namespace OMR
 {
 
-// temporary macro to be used only by this class
-#define OMR_TEMPORARY_CREATE_VECTOR_TYPE(elementType, length) (static_cast<TR::DataTypes>(TR::NumScalarTypes + (length - 1) * TR::NumVectorElementTypes + elementType - 1))
-
 class OMR_EXTENSIBLE DataType
    {
 public:
-
-   // Needed to initialize static opcode properties table,
-   // will be removed when all vector opcodes are switched to new ones
-   // as well as TRIL and JitBuilder
-   static const TR::DataTypes Vector128Int8   = OMR_TEMPORARY_CREATE_VECTOR_TYPE(TR::Int8,   TR::VectorLength128);
-   static const TR::DataTypes Vector128Int16  = OMR_TEMPORARY_CREATE_VECTOR_TYPE(TR::Int16,  TR::VectorLength128);
-   static const TR::DataTypes Vector128Int32  = OMR_TEMPORARY_CREATE_VECTOR_TYPE(TR::Int32,  TR::VectorLength128);
-   static const TR::DataTypes Vector128Int64  = OMR_TEMPORARY_CREATE_VECTOR_TYPE(TR::Int64,  TR::VectorLength128);
-   static const TR::DataTypes Vector128Float  = OMR_TEMPORARY_CREATE_VECTOR_TYPE(TR::Float,  TR::VectorLength128);
-   static const TR::DataTypes Vector128Double = OMR_TEMPORARY_CREATE_VECTOR_TYPE(TR::Double, TR::VectorLength128);
 
    DataType() : _type(TR::NoType) { }
    DataType(TR::DataTypes t) : _type(t) { }
@@ -509,10 +495,6 @@ public:
    static TR::DataType getIntegralTypeFromPrecision(int32_t precision);
 
    static TR::DataType getFloatTypeFromSize(int32_t size);
-
-   static TR::ILOpCodes getDataTypeConversion(TR::DataType t1, TR::DataType t2);
-
-   static TR::ILOpCodes getDataTypeBitConversion(TR::DataType t1, TR::DataType t2);
 
    static const char    * getName(TR::DataType dt);
    static TR::DataType getTypeFromName(const char *name);

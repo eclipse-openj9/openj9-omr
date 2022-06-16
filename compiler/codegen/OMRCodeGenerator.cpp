@@ -161,6 +161,8 @@ OMR::TreeEvaluatorFunctionPointerTable::table[] =
    ifCompareOpcode, \
    ...) TR::TreeEvaluator::operation ## Evaluator,
 
+   TR::TreeEvaluator::BadILOpEvaluator,
+
 #include "il/VectorOperations.enum"
 #undef VECTOR_OPERATION_MACRO
    };
@@ -168,7 +170,7 @@ OMR::TreeEvaluatorFunctionPointerTable::table[] =
 
 void OMR::TreeEvaluatorFunctionPointerTable::checkTableSize()
    {
-   static_assert((TR::NumScalarIlOps + OMR::NumVectorOperations) ==
+   static_assert((TR::NumScalarIlOps + TR::NumVectorOperations) ==
               (sizeof(table) / sizeof(table[0])),
               "OMR::TreeEvaluatorFunctionPointerTable::table is not the correct size");
    }

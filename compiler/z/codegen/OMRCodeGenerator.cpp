@@ -2623,7 +2623,7 @@ OMR::Z::CodeGenerator::gprClobberEvaluate(TR::Node * node, bool force_copy, bool
 
          return targetRegister;
          }
-      else if (node->getOpCode().isVector())
+      else if (node->getOpCode().isVectorResult())
          {
          TR::Register * targetRegister = self()->allocateClobberableRegister(srcRegister);
          generateVRRaInstruction(self(), TR::InstOpCode::VLR, node, targetRegister, srcRegister);
@@ -4719,34 +4719,9 @@ bool OMR::Z::CodeGenerator::isDispInRange(int64_t disp)
    return (MINLONGDISP <= disp) && (disp <= MAXLONGDISP);
    }
 
-bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt)
+bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
    {
-   /*
-    * Prior to z14, vector operations that operated on floating point numbers only supported
-    * Doubles. On z14 and onward, Float type floating point numbers are supported as well.
-    */
-   if (dt == TR::Float && !self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14))
-      {
-      return false;
-      }
-
-   if (!opcode.isVectorOpCode())
-      {
-      // Will be transformed into new vector opcodes soon
-      switch (opcode.getOpCodeValue())
-         {
-         case TR::getvelem:
-         case TR::vsetelem:
-            if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
-               return true;
-           else
-               return false;
-         case TR::vl2vd:
-            return true;
-         default:
-            return false;
-         }
-      }
+   TR_ASSERT_FATAL(opcode.isVectorOpCode(), "getSupportsOpCodeForAutoSIMD expects vector opcode\n");
 
    TR::DataType ot = opcode.getVectorResultDataType();
 
@@ -4754,37 +4729,57 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
 
    TR::DataType et = opcode.getVectorResultDataType().getVectorElementType();
 
-   TR_ASSERT_FATAL(et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double, "DataType %s is not supported for vectorization", et.toString());
+   TR_ASSERT_FATAL(et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double,
+                   "Unexpected vector element type\n");
+
+   /*
+    * Prior to z14, vector operations that operated on floating point numbers only supported
+    * Doubles. On z14 and onward, Float type floating point numbers are supported as well.
+    */
+   if (et == TR::Float && !self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_S390_Z14))
+      {
+      return false;
+      }
 
    // implemented vector opcodes
    switch (opcode.getVectorOperation())
       {
-      case OMR::vadd:
-      case OMR::vsub:
-      case OMR::vload:
-      case OMR::vloadi:
-      case OMR::vstore:
-      case OMR::vstorei:
-      case OMR::vneg:
-      case OMR::vsplats:
+      case TR::vadd:
+      case TR::vsub:
+      case TR::vload:
+      case TR::vloadi:
+      case TR::vstore:
+      case TR::vstorei:
+      case TR::vneg:
+      case TR::vsplats:
          return true;
-      case OMR::vmul:
+      case TR::vmul:
          if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case OMR::vdiv:
+      case TR::vdiv:
          if (et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
-      case OMR::vxor:
-      case OMR::vor:
-      case OMR::vand:
+      case TR::vxor:
+      case TR::vor:
+      case TR::vand:
          if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64)
             return true;
          else
             return false;
+      case TR::vgetelem:
+      case TR::vsetelem:
+         if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
+            return true;
+         else
+            return false;
+      case TR::vconv:
+         if (et == TR::Double &&
+             opcode.getVectorSourceDataType().getVectorElementType() == TR::Int64)
+            return true;
       default:
         return false;
       }

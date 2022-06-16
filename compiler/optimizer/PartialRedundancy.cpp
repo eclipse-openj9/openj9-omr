@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2063,9 +2063,10 @@ bool TR_PartialRedundancy::eliminateRedundantSupportedNodes(TR::Node *parent, TR
                      TR::Node *newLoad = TR::Node::createWithSymRef(node, comp()->il.opCodeForDirectLoad(node->getDataType()), 0, newSymbolReference);
 
                      TR::ILOpCodes conversionOpCode = TR::ILOpCode::getProperConversion(newLoad->getDataType(), node->getDataType(), false /* !wantZeroExtension */);
-                     if (conversionOpCode == TR::v2v)
+                     if (TR::ILOpCode::isVectorOpCode(conversionOpCode) &&
+                         TR::ILOpCode::getVectorOperation(conversionOpCode) == TR::vcast)
                         {
-                        node = TR::Node::createVectorConversion(newLoad, node->getDataType());
+                        node = TR::Node::create(TR::ILOpCode::createVectorOpCode(TR::vcast, newLoad->getDataType(), node->getDataType()), 1, newLoad);
                         }
                      else
                         {

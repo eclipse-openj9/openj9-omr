@@ -31,30 +31,17 @@ TEST_P(ParameterizedVectorTest, VLoadStore) {
     TR::VectorLength vl = std::get<0>(GetParam());
     TR::DataTypes et = std::get<1>(GetParam());
 
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
+    SKIP_IF(vl > TR::NumVectorLengths, MissingImplementation) << "Vector length is not supported by the target platform";
     SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
     SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
 
-    if (vl != TR::VectorLength128) {
-        SKIP_ON_POWER(MissingImplementation);
-        SKIP_ON_ARM(MissingImplementation);
-    }
+    TR::DataType vt = TR::DataType::createVectorType(et, vl);
 
-#if defined(TR_TARGET_X86)
-    OMRProcessorDesc desc;
-    omrsysinfo_get_processor_description(&desc);
-    bool supportsAVX = omrsysinfo_processor_has_feature(&desc, OMR_FEATURE_X86_AVX);
-    bool supportsAVX512 = omrsysinfo_processor_has_feature(&desc, OMR_FEATURE_X86_AVX512F);
-
-    if (!supportsAVX && vl == TR::VectorLength256) {
-        SKIP_ON_X86(UnsupportedFeature) << "Cannot execute 256-bit vector test without AVX hardware";
-        SKIP_ON_HAMMER(UnsupportedFeature) << "Cannot execute 256-bit vector test without AVX hardware";
-    } else if (!supportsAVX512 && vl == TR::VectorLength512) {
-        SKIP_ON_X86(UnsupportedFeature) << "Cannot execute 512-bit vector test without AVX-512 hardware";
-        SKIP_ON_HAMMER(UnsupportedFeature) << "Cannot execute 512-bit vector test without AVX-512 hardware";
-    }
-#endif
+    TR::ILOpCode loadOp = TR::ILOpCode::createVectorOpCode(TR::vloadi, vt);
+    TR::ILOpCode storeOp = TR::ILOpCode::createVectorOpCode(TR::vstorei, vt);
+    TR::CPU cpu = TR::CPU::detect(privateOmrPortLibrary);
+    bool platformSupport = TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&cpu, loadOp) && TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&cpu, loadOp);
+    SKIP_IF(!platformSupport, MissingImplementation) << "Opcode is not supported by the target platform";
 
     char inputTrees[1024];
     char *formatStr = "(method return= NoType args=[Address,Address]   "
@@ -63,7 +50,6 @@ TEST_P(ParameterizedVectorTest, VLoadStore) {
                       "         (aload parm=0)                         "
                       "         (vloadi%s (aload parm=1)))             "
                       "     (return)))                                 ";
-    TR::DataType vt = TR::DataType::createVectorType(et, vl);
 
     sprintf(inputTrees, formatStr, vt.toString(), vt.toString());
     auto trees = parseString(inputTrees);

@@ -282,7 +282,8 @@ public:
       return false;
       }
 
-   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode);
+   static bool getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpCode opcode);
+   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode);
 
    bool getSupportsEncodeUtf16LittleWithSurrogateTest();
 

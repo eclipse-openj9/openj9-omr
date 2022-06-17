@@ -91,16 +91,16 @@ class TR_LiveRangeSplitter : public TR::Optimization
    typedef std::less<uint32_t> SymRefCandidateMapComparator;
    typedef std::map<uint32_t, TR::RegisterCandidate*, SymRefCandidateMapComparator, SymRefCandidateMapAllocator> SymRefCandidateMap;
 
-   void splitLiveRanges();
+   virtual void splitLiveRanges();
    void splitLiveRanges(TR_StructureSubGraphNode *structureNode);
-   void replaceAutosUsedIn(TR::TreeTop *currentTree, TR::Node *node, TR::Node *parent, TR::Block * block, List<TR::Block> *blocksInLoop, List<TR::Block> *exitBlocks, vcount_t visitCount, int32_t executionFrequency, SymRefCandidateMap &registerCandidates, TR_SymRefCandidatePair **correspondingSymRefs, TR_BitVector *replacedAutosInCurrentLoop, TR_BitVector *autosThatCannotBereplacedInCurrentLoop, TR_StructureSubGraphNode *loop, TR::Block *loopInvariantBlock);
+   virtual void replaceAutosUsedIn(TR::TreeTop *currentTree, TR::Node *node, TR::Node *parent, TR::Block * block, List<TR::Block> *blocksInLoop, List<TR::Block> *exitBlocks, vcount_t visitCount, int32_t executionFrequency, SymRefCandidateMap &registerCandidates, TR_SymRefCandidatePair **correspondingSymRefs, TR_BitVector *replacedAutosInCurrentLoop, TR_BitVector *autosThatCannotBereplacedInCurrentLoop, TR_StructureSubGraphNode *loop, TR::Block *loopInvariantBlock);
    void placeStoresInLoopExits(TR::Node *node, TR_StructureSubGraphNode *loop, List<TR::Block> *blocksInLoop, TR::SymbolReference *orig, TR::SymbolReference *replacement);
    TR_SymRefCandidatePair *splitAndFixPreHeader(TR::SymbolReference *symRef, TR_SymRefCandidatePair **correspondingSymRefs, TR::Block *loopInvariantBlock, TR::Node *node);
    void fixExitsAfterSplit(TR::SymbolReference *symRef, TR_SymRefCandidatePair *correspondingSymRefCandidate, TR_SymRefCandidatePair **correspondingSymRefs, TR::Block *loopInvariantBlock, List<TR::Block> *blocksInLoop, TR::Node *node, SymRefCandidateMap &registerCandidates, TR_StructureSubGraphNode *loop, TR_BitVector *replacedAutosInCurrentLoop, TR::SymbolReference *origSymRef);
    void appendStoreToBlock(TR::SymbolReference *storeSymRef, TR::SymbolReference *loadSymRef, TR::Block *block, TR::Node *node);
    void prependStoreToBlock(TR::SymbolReference *storeSymRef, TR::SymbolReference *loadSymRef, TR::Block *block, TR::Node *node);
 
-   private:
+   protected:
    List<TR::Block> _splitBlocks;
    int32_t _numberOfGPRs;
    int32_t _numberOfFPRs;
@@ -170,65 +170,42 @@ public:
 private:
 
    void                findIfThenRegisterCandidates();
-   void                findLoopAutoRegisterCandidates();
    void                findLoopsAndCorrespondingAutos(TR_StructureSubGraphNode *, vcount_t, SymRefCandidateMap &);
    void                findLoopsAndAutosNoStructureInfo(vcount_t visitCount, TR::RegisterCandidate **registerCandidates);
    void                initializeControlFlowInfo();
-   void                markAutosUsedIn(TR::Node *, TR::Node *, TR::Node *, TR::Node **, TR::Block *, List<TR::Block> *, vcount_t, int32_t, SymRefCandidateMap &, TR_BitVector *, TR_BitVector *, bool);
+   virtual void        markAutosUsedIn(TR::Node *, TR::Node *, TR::Node *, TR::Node **, TR::Block *, List<TR::Block> *, vcount_t, int32_t, SymRefCandidateMap &, TR_BitVector *, TR_BitVector *, bool);
    void                signExtendAllDefNodes(TR::Node *, List<TR::Node> *);
    void                findSymsUsedInIndirectAccesses(TR::Node *, TR_BitVector *, TR_BitVector *, bool);
 
    void                offerAllAutosAndRegisterParmAsCandidates(TR::Block **, int32_t, bool onlySelectedCandidates = false);
    void                offerAllFPAutosAndParmsAsCandidates(TR::Block **, int32_t);
 
-   bool                isDependentStore(TR::Node *, const TR_UseDefInfo::BitVector &, TR::SymbolReference *, bool *);
-
    bool                allocateForSymRef(TR::SymbolReference *symRef);
-   bool                isSymRefAvailable(TR::SymbolReference *symRef);
-   bool                isSymRefAvailable(TR::SymbolReference *symRef, List<TR::Block> *blocksInLoop);
    bool                allocateForType(TR::DataType dt);
-   bool                isNodeAvailable(TR::Node *node);
-   bool                isTypeAvailable(TR::SymbolReference *symref);
 
    void                assignRegisters();
    void                assignRegisters(TR::Block *);
-   void                transformBlock(TR::TreeTop *);
-   void                transformNode(TR::Node *, TR::Node *, int32_t, TR::TreeTop *, TR::Block * &, TR_Array<TR::GlobalRegister> &, TR_NodeMappings *);
-   TR::GlobalRegister * getGlobalRegister(TR::Symbol *, TR_Array<TR::GlobalRegister> &, TR::Block *);
-   TR::GlobalRegister * getGlobalRegisterWithoutChangingCurrentCandidate(TR::Symbol *, TR_Array<TR::GlobalRegister> &, TR::Block *);
-   void                transformBlockExit(TR::TreeTop *, TR::Node *, TR::Block *, TR_Array<TR::GlobalRegister> &, TR::Block *);
-   void                transformMultiWayBranch(TR::TreeTop *, TR::Node *, TR::Block *, TR_Array<TR::GlobalRegister> &, bool regStarTransformDone = false);
-   void                addCandidateReloadsToEntry(TR::TreeTop *, TR_Array<TR::GlobalRegister> &, TR::Block *);
-   void                addRegLoadsToEntry(TR::TreeTop *, TR_Array<TR::GlobalRegister> &, TR::Block *);
+   virtual void        transformNode(TR::Node *, TR::Node *, int32_t, TR::TreeTop *, TR::Block * &, TR_Array<TR::GlobalRegister> &, TR_NodeMappings *);
    void                addGlRegDepToExit(TR_Array<TR::Node *> &, TR::Node *, TR_Array<TR::GlobalRegister> &, TR::Block *);
-   void                addStoresForCatchBlockLoads(TR::TreeTop *appendPoint, TR_Array<TR::GlobalRegister> &extBlockRegisters, TR::Block *throwingBlock);
-   TR::TreeTop *        findPrevTreeTop(TR::TreeTop * &, TR::Node * &, TR::Block *, TR::Block *);
-   void                prepareForBlockExit(TR::TreeTop * &, TR::Node * &, TR::Block *, TR_Array<TR::GlobalRegister> &,
+   virtual void        prepareForBlockExit(TR::TreeTop * &, TR::Node * &, TR::Block *, TR_Array<TR::GlobalRegister> &,
                                            TR::Block *, TR_Array<TR::Node *> &);
    bool                markCandidateForReloadInSuccessors(int32_t, TR::GlobalRegister *, TR::GlobalRegister *, TR::Block *, bool);
    void                reloadNonRegStarVariables(TR::TreeTop *, TR::Node *, TR::Block *, bool);
-
-   bool                registerIsLiveAcrossEdge(TR::TreeTop *, TR::Node *, TR::Block *, TR::GlobalRegister *, TR::Block * &, int32_t);
-   TR::Block *          createNewSuccessorBlock(TR::Block *, TR::Block *, TR::TreeTop *, TR::Node *, TR::RegisterCandidate * rc);
+   virtual bool        registerIsLiveAcrossEdge(TR::TreeTop *, TR::Node *, TR::Block *, TR::GlobalRegister *, TR::Block * &, int32_t);
    TR::Block *          extendBlock(TR::Block *, TR::Block *);
    TR::Block *          createBlock(TR::Block *, TR::Block *);
    bool                tagCandidates(TR::Block *, bool);
    bool                tagCandidates(TR::Block *, uint32_t, bool);
-   int32_t             numberOfRegistersLiveOnEntry(TR_Array<TR::GlobalRegister> &, bool);
    TR::Node *           createStoreToRegister();
    TR::Node *           createStoreFromRegister();
    TR::Node *           createLoadFromRegister();
 
-   void                appendGotoBlock(TR::Block *gotoBlock, TR::Block *curBlock);
    TR::Block           *getAppendBlock(TR::Block *);
 
    TR_ScratchList<TR_PairedSymbols> _pairedSymbols;
 
-   TR_PairedSymbols   *findOrCreatePairedSymbols(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2);
    TR_PairedSymbols   *findPairedSymbols(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2);
    TR_ScratchList<TR_PairedSymbols>   *getPairedSymbols() { return &_pairedSymbols; }
-
-   StoresInBlockInfo * findRegInStoreInfo(TR::GlobalRegister *);
 
    bool isSplittingCopy(TR::Node *node);
    void restoreOriginalSymbol(TR::Node *node, vcount_t visitCount);
@@ -245,6 +222,27 @@ private:
    void placeStoresInPreHeaderAndInLoopExits(TR::Node *node, TR_StructureSubGraphNode *loop, TR::Block *loopInvariantBlock, List<TR::Block> *blocksInLoop, TR::SymbolReference *orig, TR::SymbolReference *replacement);
    void appendStoreToBlock(TR::SymbolReference *storeSymRef, TR::SymbolReference *loadSymRef, TR::Block *block, TR::Node *node);
    */
+protected:
+   void                findLoopAutoRegisterCandidates();
+   TR::Block *          createNewSuccessorBlock(TR::Block *, TR::Block *, TR::TreeTop *, TR::Node *, TR::RegisterCandidate * rc);
+   void                appendGotoBlock(TR::Block *gotoBlock, TR::Block *curBlock);
+   void                transformBlock(TR::TreeTop *);
+   bool                isTypeAvailable(TR::SymbolReference *symref);
+   bool                isSymRefAvailable(TR::SymbolReference *symRef);
+   bool                isSymRefAvailable(TR::SymbolReference *symRef, List<TR::Block> *blocksInLoop);
+   void                transformMultiWayBranch(TR::TreeTop *, TR::Node *, TR::Block *, TR_Array<TR::GlobalRegister> &, bool regStarTransformDone = false);
+   void                transformBlockExit(TR::TreeTop *, TR::Node *, TR::Block *, TR_Array<TR::GlobalRegister> &, TR::Block *);
+   void                addCandidateReloadsToEntry(TR::TreeTop *, TR_Array<TR::GlobalRegister> &, TR::Block *);
+   void                addRegLoadsToEntry(TR::TreeTop *, TR_Array<TR::GlobalRegister> &, TR::Block *);
+   void                addStoresForCatchBlockLoads(TR::TreeTop *appendPoint, TR_Array<TR::GlobalRegister> &extBlockRegisters, TR::Block *throwingBlock);
+   bool                isNodeAvailable(TR::Node *node);
+   TR::GlobalRegister * getGlobalRegister(TR::Symbol *, TR_Array<TR::GlobalRegister> &, TR::Block *);
+   TR::GlobalRegister * getGlobalRegisterWithoutChangingCurrentCandidate(TR::Symbol *, TR_Array<TR::GlobalRegister> &, TR::Block *);
+   StoresInBlockInfo * findRegInStoreInfo(TR::GlobalRegister *);
+   int32_t             numberOfRegistersLiveOnEntry(TR_Array<TR::GlobalRegister> &, bool);
+   TR_PairedSymbols   *findOrCreatePairedSymbols(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2);
+   bool                isDependentStore(TR::Node *, const TR_UseDefInfo::BitVector &, TR::SymbolReference *, bool *);
+   TR::TreeTop *        findPrevTreeTop(TR::TreeTop * &, TR::Node * &, TR::Block *, TR::Block *);
 
    vcount_t     _visitCount;
    int32_t      _firstGlobalRegisterNumber;

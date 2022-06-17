@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -266,6 +266,16 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
     * @param[in] cg : CodeGenerator
     */
    void incRegisterTotalUseCounts(TR::CodeGenerator *cg);
+
+   /**
+    * @brief Kills all placeholder registers held by the RegisterDependencyConditions
+    * except @param notKilledReg (usually the return register).
+    *
+    * @param[in] cg : CodeGenerator
+    * @param[in] notKilledReg : not-killed register
+    */
+   void stopUsingDepRegs(TR::CodeGenerator *cg, TR::Register *notKilledReg = NULL);
+
    };
 
 } // RV

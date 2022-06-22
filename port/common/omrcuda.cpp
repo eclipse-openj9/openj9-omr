@@ -1203,56 +1203,44 @@ const J9CudaLibraryDescriptor runtimeLibraries[] = {
 
 /*
  * Include forward-compatible support for runtime libraries.
+ *
+ * Beginning with version 11, shared library file names use 0
+ * for the minor version, so we only need one entry for each
+ * major version.
  */
+#if CUDART_VERSION <= 11070
+	OMRCUDA_LIBRARY_ENTRY(11, 0),
+	/* 11.7.0 - May 2022 */
 
-#if CUDART_VERSION <= 11060
-	OMRCUDA_LIBRARY_ENTRY(11, 6),
 	/* 11.6.0 - January 2022 */
 	/* 11.6.1 - February 2022 */
-#endif /* CUDART_VERSION <= 11060 */
+	/* 11.6.2 - March 2022 */
 
-#if CUDART_VERSION <= 11050
-	OMRCUDA_LIBRARY_ENTRY(11, 5),
 	/* 11.5.0 - October 2021 */
 	/* 11.5.1 - November 2021 */
 	/* 11.5.2 - February 2022 */
-#endif /* CUDART_VERSION <= 11050 */
 
-#if CUDART_VERSION <= 11040
-	OMRCUDA_LIBRARY_ENTRY(11, 4),
 	/* 11.4.0 - June 2021 */
 	/* 11.4.1 - August 2021 */
 	/* 11.4.2 - September 2021 */
 	/* 11.4.3 - November 2021 */
 	/* 11.4.4 - February 2022 */
-#endif /* CUDART_VERSION <= 11040 */
 
-#if CUDART_VERSION <= 11030
-	OMRCUDA_LIBRARY_ENTRY(11, 3),
 	/* 11.3.0 - April 2021 */
 	/* 11.3.1 - May 2021 */
-#endif /* CUDART_VERSION <= 11030 */
 
-#if CUDART_VERSION <= 11020
-	OMRCUDA_LIBRARY_ENTRY(11, 2),
 	/* 11.2.0 - December 2020 */
 	/* 11.2.1 - February 2021 */
 	/* 11.2.2 - March 2021 */
-#endif /* CUDART_VERSION <= 11020 */
 
-#if CUDART_VERSION <= 11010
-	OMRCUDA_LIBRARY_ENTRY(11, 1),
 	/* 11.1.0 - September 2020 */
 	/* 11.1.1 - October 2020 */
-#endif /* CUDART_VERSION <= 11010 */
 
-#if CUDART_VERSION <= 11000
-	OMRCUDA_LIBRARY_ENTRY(11, 0),
 	/* 11.0.0 - March 2020 */
 	/* 11.0.1 - June 2020 */
 	/* 11.0.2 - July 2020 */
 	/* 11.0.3 - August 2020 */
-#endif /* CUDART_VERSION <= 11000 */
+#endif /* CUDART_VERSION <= 11070 */
 
 #if CUDART_VERSION <= 10020
 	OMRCUDA_LIBRARY_ENTRY(10, 2),

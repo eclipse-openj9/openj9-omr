@@ -1513,10 +1513,107 @@ OMR::ARM64::TreeEvaluator::vreductionAddEvaluator(TR::Node *node, TR::CodeGenera
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
+/**
+ * @brief A helper function for generating instuction sequence for reduction bitwise logical operations for vectors of integer elements.
+ *
+ * @param[in] node: node
+ * @param[in] et: element type
+ * @param[in] logicalOp: opcode
+ * @param[in] cg: CodeGenerator
+ * @return general purpose register containing the result
+ */
+static TR::Register*
+vreductionBitwiseLogicalHelper(TR::Node *node, TR::DataType et, TR::InstOpCode::Mnemonic logicalOp, TR::CodeGenerator *cg)
+   {
+   TR::Node *sourceChild = node->getFirstChild();
+   TR::Register *sourceReg = cg->evaluate(sourceChild);
+
+   TR_ASSERT_FATAL_WITH_NODE(node, sourceReg->getKind() == TR_VRF, "unexpected Register kind");
+
+   TR::InstOpCode::Mnemonic movOp;
+   switch (et)
+      {
+      case TR::Int8:
+         movOp = TR::InstOpCode::smovwb;
+         break;
+      case TR::Int16:
+         movOp = TR::InstOpCode::smovwh;
+         break;
+      case TR::Int32:
+         movOp = TR::InstOpCode::umovws;
+         break;
+      case TR::Int64:
+         movOp = TR::InstOpCode::umovxd;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
+         break;
+      }
+
+   TR::Register *tmp0Reg = cg->allocateRegister(TR_VRF);
+   TR::Register *tmp1Reg = cg->allocateRegister(TR_VRF);
+   TR::Register *resReg = cg->allocateRegister(TR_GPR);
+
+   /*
+    * Generating unzip instructions to split elements into 2 vector registers and perform a bitwise logical operation.
+    */
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp1_2d, node, tmp1Reg, sourceReg, sourceReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp2_2d, node, tmp0Reg, sourceReg, sourceReg);
+   generateTrg1Src2Instruction(cg, logicalOp, node, tmp0Reg, tmp0Reg, tmp1Reg);
+
+   if (et != TR::Int64)
+      {
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp1_4s, node, tmp1Reg, tmp0Reg, tmp0Reg);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp2_4s, node, tmp0Reg, tmp0Reg, tmp0Reg);
+      generateTrg1Src2Instruction(cg, logicalOp, node, tmp0Reg, tmp0Reg, tmp1Reg);
+
+      if (et != TR::Int32)
+         {
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp1_8h, node, tmp1Reg, tmp0Reg, tmp0Reg);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp2_8h, node, tmp0Reg, tmp0Reg, tmp0Reg);
+         generateTrg1Src2Instruction(cg, logicalOp, node, tmp0Reg, tmp0Reg, tmp1Reg);
+
+         if (et == TR::Int8)
+            {
+            generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp1_16b, node, tmp1Reg, tmp0Reg, tmp0Reg);
+            generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp2_16b, node, tmp0Reg, tmp0Reg, tmp0Reg);
+            generateTrg1Src2Instruction(cg, logicalOp, node, tmp0Reg, tmp0Reg, tmp1Reg);
+            }
+         }
+      }
+
+   generateMovVectorElementToGPRInstruction(cg, movOp, node, resReg, tmp0Reg, 0);
+
+   cg->stopUsingRegister(tmp0Reg);
+   cg->stopUsingRegister(tmp1Reg);
+   node->setRegister(resReg);
+   cg->decReferenceCount(sourceChild);
+
+   return resReg;
+   }
+
 TR::Register*
 OMR::ARM64::TreeEvaluator::vreductionAndEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
+
+   TR::DataType et = node->getFirstChild()->getDataType().getVectorElementType();
+   switch(et)
+      {
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         return vreductionBitwiseLogicalHelper(node, et, TR::InstOpCode::vand16b, cg);
+      case TR::Float:
+      case TR::Double:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      }
    }
 
 TR::Register*
@@ -1546,7 +1643,25 @@ OMR::ARM64::TreeEvaluator::vreductionMulEvaluator(TR::Node *node, TR::CodeGenera
 TR::Register*
 OMR::ARM64::TreeEvaluator::vreductionOrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
+
+   TR::DataType et = node->getFirstChild()->getDataType().getVectorElementType();
+   switch(et)
+      {
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         return vreductionBitwiseLogicalHelper(node, et, TR::InstOpCode::vorr16b, cg);
+      case TR::Float:
+      case TR::Double:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      }
    }
 
 TR::Register*
@@ -1558,7 +1673,25 @@ OMR::ARM64::TreeEvaluator::vreductionOrUncheckedEvaluator(TR::Node *node, TR::Co
 TR::Register*
 OMR::ARM64::TreeEvaluator::vreductionXorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
+
+   TR::DataType et = node->getFirstChild()->getDataType().getVectorElementType();
+   switch(et)
+      {
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         return vreductionBitwiseLogicalHelper(node, et, TR::InstOpCode::veor16b, cg);
+      case TR::Float:
+      case TR::Double:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      }
    }
 
 TR::Register*

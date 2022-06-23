@@ -1002,3 +1002,6 @@ TraceEvent=Trc_MM_SparseAddressOrderedFixedSizeDataPool_returnFreeListEntry_succ
 
 TraceEntry=Trc_MM_getSparseAddressAndDecommitLeaves_Entry Overhead=1 Level=3 Group=arraylet Template="MM_IndexableObjectAllocationModel::getSparseAddressAndDecommitLeaves_Entry: inHeapObjectPointer (spine): %p, bytesToAllocate: %p, arrayletLeafCount: %zu, arrayletLeafSize: %p"
 TraceExit=Trc_MM_getSparseAddressAndDecommitLeaves_Exit Overhead=1 Level=3 Group=arraylet Template="MM_IndexableObjectAllocationModel::getSparseAddressAndDecommitLeaves_Exit: inHeapObjectPointer (spine): %p, bytesStillRemainingToAllocate (should be zero if allocated successfully to sparse heap): %zu"
+
+TraceEntry=Trc_MM_DoFixHeapForCompact_Entry Overhead=1 Level=1 Template="Trc_MM_DoFixHeapForCompact Entry with walkflags: %zx and walkReason: %zx"
+TraceExit=Trc_MM_DoFixHeapForCompact_Exit Overhead=1 Level=1 Template="Trc_MM_DoFixHeapForCompact Exit after fixing up %zu objects"

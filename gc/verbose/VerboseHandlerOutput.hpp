@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -382,6 +382,13 @@ public:
 	 * @return string representing the reason for termination
 	 */ 
 	virtual const char *getConcurrentTerminationReason(MM_ConcurrentPhaseStatsBase *stats);
+
+	/**
+	 * Answer a string representation of a given heap fixup reason.
+	 * @param[IN] heap fixup reason
+	 * @return string representing the readable "reason" of heap fixup.
+	 */
+	const char *getHeapFixupReasonString(uintptr_t type);
 
 	/**
 	 * Handle any output or data tracking for the initialized phase of verbose GC.

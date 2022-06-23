@@ -98,7 +98,7 @@ void
 omrcpu_flush_icache(struct OMRPortLibrary *portLibrary, void *memoryPointer, uintptr_t byteAmount)
 {
 #if defined(LINUXPPC) || defined(PPC) || defined(RS6000)
-	uint32_t cacheLineSize = PPG_mem_ppcCacheLineSize;
+	uintptr_t cacheLineSize = PPG_mem_ppcCacheLineSize;
 	unsigned char *addr = NULL;
 	unsigned char *limit = (unsigned char *)
 			(((uintptr_t)memoryPointer + byteAmount + (cacheLineSize - 1))

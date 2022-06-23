@@ -74,12 +74,13 @@ OMRZeroMemory(void *ptr, uintptr_t length)
 	}
 #endif /* defined(LINUXPPC) */
 
-	/* one-time-only calculation of cache line size */
-	if (0 == cacheLineSize) {
-		cacheLineSize = getCacheLineSize();
-	}
+	uintptr_t localCacheLineSize = cacheLineSize;
 
-	uint32_t localCacheLineSize = cacheLineSize;
+	/* one-time-only calculation of cache line size */
+	if (0 == localCacheLineSize) {
+		localCacheLineSize = getCacheLineSize();
+		cacheLineSize = localCacheLineSize;
+	}
 
 	/* Zeroing by dcbz is effective if requested length is at least twice larger then Data Cache Block size */
 	if (length < (2 * localCacheLineSize)) {

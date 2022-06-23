@@ -746,7 +746,8 @@ public:
 
    virtual bool isDispInRange(int64_t disp);
 
-   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode);
+   static bool getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpCode opcode, bool supportsVectorRegisters = true);
+   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode);
 
    TR::Instruction *_ccInstruction;
    TR::Instruction* ccInstruction() { return _ccInstruction; }

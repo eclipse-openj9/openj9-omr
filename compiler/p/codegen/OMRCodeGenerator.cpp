@@ -1760,7 +1760,7 @@ OMR::Power::CodeGenerator::freeAndResetTransientLongs()
 
 
 
-bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
+bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpCode opcode)
    {
    TR_ASSERT_FATAL(opcode.isVectorOpCode(), "getSupportsOpCodeForAutoSIMD expects vector opcode\n");
 
@@ -1774,17 +1774,17 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
                    "Unexpected vector element type\n");
 
    // alignment issues
-   if (!self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
+   if (!cpu->isAtLeast(OMR_PROCESSOR_PPC_P8) &&
        et != TR::Double &&
        et != TR::Int64)
       return false;
 
-   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
+   if (cpu->isAtLeast(OMR_PROCESSOR_PPC_P8) &&
        (opcode.getVectorOperation() == TR::vadd || opcode.getVectorOperation() == TR::vsub || opcode.getVectorOperation() == TR::vmul || opcode.getVectorOperation() == TR::vabs || opcode.getVectorOperation() == TR::vmin || opcode.getVectorOperation() == TR::vmax) &&
        et == TR::Int64)
       return true;
 
-   if (self()->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P8) &&
+   if (cpu->isAtLeast(OMR_PROCESSOR_PPC_P8) &&
        (opcode.getVectorOperation() == TR::vmin || opcode.getVectorOperation() == TR::vmax) &&
        et == TR::Double)
       return true;
@@ -1857,6 +1857,11 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
       }
 
    return false;
+   }
+
+bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
+   {
+   return TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&self()->comp()->target().cpu, opcode);
    }
 
 bool

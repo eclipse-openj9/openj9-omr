@@ -4719,7 +4719,7 @@ bool OMR::Z::CodeGenerator::isDispInRange(int64_t disp)
    return (MINLONGDISP <= disp) && (disp <= MAXLONGDISP);
    }
 
-bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
+bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpCode opcode, bool supportsVectorRegisters)
    {
    TR_ASSERT_FATAL(opcode.isVectorOpCode(), "getSupportsOpCodeForAutoSIMD expects vector opcode\n");
 
@@ -4736,8 +4736,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
     * Prior to z14, vector operations that operated on floating point numbers only supported
     * Doubles. On z14 and onward, Float type floating point numbers are supported as well.
     */
-   if (!self()->getSupportsVectorRegisters() ||
-         (et == TR::Float && !self()->comp()->target().cpu.getSupportsVectorFacilityEnhancement1()))
+   if (!supportsVectorRegisters || (et == TR::Float && !cpu->getSupportsVectorFacilityEnhancement1()))
       {
       return false;
       }
@@ -4786,6 +4785,11 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
       }
 
    return false;
+   }
+
+bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
+   {
+   return TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&self()->comp()->target().cpu, opcode, self()->getSupportsVectorRegisters());
    }
 
 // simple syntactic test for matching direct loads when the caller knows (by some mechanism, e.g. _symRefsToCheckForKills) that

@@ -985,8 +985,7 @@ bool OMR::X86::CodeGenerator::supportsAddressRematerialization()         { stati
 #undef ALLOWED_TO_REMATERIALIZE
 #undef CAN_REMATERIALIZE
 
-bool
-OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
+bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpCode opcode)
    {
    TR_ASSERT_FATAL(opcode.isVectorOpCode(), "getSupportsOpCodeForAutoSIMD expects vector opcode\n");
 
@@ -1008,8 +1007,7 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
       case TR::vsub:
          return ot.getVectorLength() == TR::VectorLength128;
       case TR::vmul:
-         TR_ASSERT_FATAL(self()->comp()->compileRelocatableCode() || self()->comp()->isOutOfProcessCompilation() || self()->comp()->compilePortableCode() || self()->getX86ProcessorInfo().supportsSSE4_1() == self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1), "supportsSSE4_1() failed\n");
-         if (et == TR::Float || et == TR::Double || (et == TR::Int32 && self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE4_1)))
+         if (et == TR::Float || et == TR::Double || (et == TR::Int32 && cpu->supportsFeature(OMR_FEATURE_X86_SSE4_1)))
             return ot.getVectorLength() == TR::VectorLength128;
          else
             return false;
@@ -1034,11 +1032,11 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
          switch (ot.getVectorLength())
             {
             case TR::VectorLength512:
-               if (!self()->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F))
+               if (!cpu->supportsFeature(OMR_FEATURE_X86_AVX512F))
                   return false;
                return true;
             case TR::VectorLength256:
-               if (!self()->comp()->target().cpu.supportsAVX())
+               if (!cpu->supportsAVX())
                   return false;
                return true;
             case TR::VectorLength128:
@@ -1081,6 +1079,11 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
    return false;
    }
 
+bool
+OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode)
+   {
+   return TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&self()->comp()->target().cpu, opcode);
+   }
 
 bool
 OMR::X86::CodeGenerator::getSupportsEncodeUtf16LittleWithSurrogateTest()

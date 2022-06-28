@@ -1177,3 +1177,45 @@ TEST_F(VectorTest, VInt8Not) {
         EXPECT_EQ(~inputA[i], output[i]);
     }
 }
+
+TEST_F(VectorTest, VInt8BitSelect) {
+
+   auto inputTrees = "(method return= NoType args=[Address,Address,Address,Address]   "
+                     "  (block                                                        "
+                     "     (vstoreiVector128Int8 offset=0                             "
+                     "         (aload parm=0)                                         "
+                     "            (vbitselectVector128Int8                            "
+                     "                 (vloadiVector128Int8 (aload parm=1))           "
+                     "                 (vloadiVector128Int8 (aload parm=2))           "
+                     "                 (vloadiVector128Int8 (aload parm=3))))         "
+                     "     (return)))                                                 ";
+
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
+    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
+    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
+    SKIP_ON_RISCV(MissingImplementation);
+    SKIP_ON_X86(MissingImplementation);
+    SKIP_ON_HAMMER(MissingImplementation);
+
+    Tril::DefaultCompiler compiler(trees);
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+
+    auto entry_point = compiler.getEntryPoint<void (*)(int8_t[],int8_t[],int8_t[],int8_t[])>();
+    // This test currently assumes 128bit SIMD
+
+    int8_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    int8_t inputA[] =  {8, -3, 62, 56, -108, -13, 114, -100, 69, -80, 6, 104, 67, 78, 12, -72};
+    int8_t inputB[] =  {55, 107, -12, 39, 77, 103, -3, 15, -17, -16, -62, -41, 71, 77, 111, -119};
+    int8_t inputC[] =  {-121, 28, -85, 63, 59, 19, 21, 95, -14, -21, 8, -41, 8, 103, -100, -16};
+
+    entry_point(output,inputA,inputB,inputC);
+
+    // The expected result is a^((a^b)&c), which extracts bits from b if the corresponding bit of c is 1.
+    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
+        EXPECT_EQ(inputA[i] ^ ((inputA[i] ^ inputB[i]) & inputC[i]), output[i]);
+    }
+}

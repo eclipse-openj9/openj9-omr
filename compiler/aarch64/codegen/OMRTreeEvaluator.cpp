@@ -1715,7 +1715,57 @@ OMR::ARM64::TreeEvaluator::vcalliEvaluator(TR::Node *node, TR::CodeGenerator *cg
 TR::Register*
 OMR::ARM64::TreeEvaluator::vbitselectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
+
+   TR::DataType et = node->getDataType().getVectorElementType();
+
+   switch(et)
+      {
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         break;
+      case TR::Float:
+      case TR::Double:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      }
+
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Node *thirdChild = node->getThirdChild();
+
+   TR::Register *firstReg = cg->evaluate(firstChild);
+   TR::Register *secondReg = cg->evaluate(secondChild);
+   TR::Register *thirdReg = cg->evaluate(thirdChild);
+   TR::Register *targetReg;
+
+   if (cg->canClobberNodesRegister(thirdChild))
+      {
+      targetReg = thirdReg;
+      }
+   else
+      {
+      targetReg = cg->allocateRegister(TR_VRF);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::vorr16b, node, targetReg, thirdReg, thirdReg);
+      }
+
+   /*
+    * vbitselect extracts bits from the first operand if the corresponding bit of the third operand is 1,
+    * otherwise from the second operand.
+    */
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vbsl16b, node, targetReg, secondReg, firstReg);
+   node->setRegister(targetReg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   cg->decReferenceCount(thirdChild);
+
+   return targetReg;
    }
 
 TR::Register*

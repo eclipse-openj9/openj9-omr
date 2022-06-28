@@ -5377,7 +5377,7 @@ TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
 #ifdef DEBUG
       if (debug("traceVGNOP"))
          {
-         printf("####> virtual location(est) = %p+%d, label (relocation) = %p\n", cursor, distance, label);
+         printf("####> virtual location(est) = %p+%" OMR_PRIdPTR ", label (relocation) = %p\n", cursor, distance, label);
          }
 #endif
       }

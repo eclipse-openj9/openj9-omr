@@ -34,6 +34,8 @@ namespace OMR { typedef OMR::X86::InstOpCode InstOpCodeConnector; }
 #endif
 
 #include "compiler/codegen/OMRInstOpCode.hpp"
+#include "env/CPU.hpp"
+#include "il/OMRDataTypes.hpp"
 
 namespace TR { class CodeGenerator; }
 namespace TR { class Register; }
@@ -139,6 +141,40 @@ namespace TR { class Register; }
                                            IA32OpProp_ModifiesOverflowFlag)
 
 
+// Flags for SIMD opcode encoding support, and required CPU feature flags.
+// These flags will be added to SIMD opcodes and can be queried to verify
+// vector operation support.
+
+// SSE forms (2-operands)
+
+#define X86FeatureProp_MinTargetSupported        0x00000001 // The opcode is supported by the OMR min target CPU
+#define X86FeatureProp_SSE3Supported             0x00000002 // ISA supports instruction with SSE3
+#define X86FeatureProp_SSE4Supported             0x00000004 // ISA supports instruction with SSE4
+#define X86FeatureProp_SSE4_1Supported           0x00000008 // ISA supports instruction with SSE4.1
+#define X86FeatureProp_VEX128Supported           0x00000010 // ISA supports VEX-128 encoded version
+
+// VEX / EVEX forms (3-operands, except move instructions, etc.)
+
+#define X86FeatureProp_VEX128RequiresAVX         0x00000020 // VEX-128 encoded version requires AVX
+#define X86FeatureProp_VEX128RequiresAVX2        0x00000040 // VEX-128 encoded version requires AVX
+#define X86FeatureProp_VEX256Supported           0x00000080 // VEX-256 encoded version requires AVX2
+#define X86FeatureProp_VEX256RequiresAVX         0x00000100 // VEX-256 encoded version requires AVX
+#define X86FeatureProp_VEX256RequiresAVX2        0x00000200 // VEX-256 encoded version requires AVX2
+#define X86FeatureProp_EVEX128Supported          0x00000400 // ISA supports EVEX-128 encoded version
+#define X86FeatureProp_EVEX128RequiresAVX512F    0x00000800 // EVEX-128 encoded version requires AVX-512F
+#define X86FeatureProp_EVEX128RequiresAVX512VL   0x00001000 // EVEX-128 encoded version requires AVX-512VL
+#define X86FeatureProp_EVEX128RequiresAVX512BW   0x00002000 // EVEX-128 encoded version requires AVX-512BW
+#define X86FeatureProp_EVEX128RequiresAVX512DQ   0x00004000 // EVEX-128 encoded version requires AVX-512DQ
+#define X86FeatureProp_EVEX256Supported          0x00008000 // ISA supports EVEX-256 encoded version
+#define X86FeatureProp_EVEX256RequiresAVX512F    0x00010000 // EVEX-256 encoded version requires AVX-512F
+#define X86FeatureProp_EVEX256RequiresAVX512VL   0x00020000 // EVEX-256 encoded version requires AVX-512VL
+#define X86FeatureProp_EVEX256RequiresAVX512BW   0x00040000 // EVEX-256 encoded version requires AVX-512BW
+#define X86FeatureProp_EVEX256RequiresAVX512DQ   0x00080000 // EVEX-256 encoded version requires AVX-512DQ
+#define X86FeatureProp_EVEX512Supported          0x00100000 // ISA supports EVEX-512 encoded version
+#define X86FeatureProp_EVEX512RequiresAVX512F    0x00200000 // EVEX-512 encoded version requires AVX-512F
+#define X86FeatureProp_EVEX512RequiresAVX512BW   0x00400000 // EVEX-512 encoded version requires AVX-512BW
+#define X86FeatureProp_EVEX512RequiresAVX512DQ   0x00800000 // EVEX-512 encoded version requires AVX-512DQ
+
 typedef enum
    {
    IA32EFlags_OF = 0x01,
@@ -163,7 +199,8 @@ typedef enum
    Legacy   = 0x3,
    EVEX_L128 = 0x4,
    EVEX_L256 = 0x5,
-   EVEX_L512 = 0x6
+   EVEX_L512 = 0x6,
+   Bad       = 0x7
    } Encoding;
 
 class InstOpCode: public OMR::InstOpCode
@@ -333,6 +370,7 @@ class InstOpCode: public OMR::InstOpCode
    static const OpCode_t _binaries[];
    static const uint32_t _properties[];
    static const uint32_t _properties1[];
+   static const uint32_t _features[];
 
    protected:
 
@@ -425,6 +463,96 @@ class InstOpCode: public OMR::InstOpCode
    inline uint32_t sourceRegIsImplicit()           const { return _properties1[_mnemonic] & IA32OpProp1_SourceRegIsImplicit;}
    inline uint32_t isFusableCompare()              const { return _properties1[_mnemonic] & IA32OpProp1_FusableCompare; }
    inline bool     isEvexInstruction()             const { return _binaries[_mnemonic].vex_l >> 2 == 1; }
+   inline uint32_t getInstructionFeatureHints()    const { return _features[_mnemonic]; }
+
+   OMR::X86::Encoding getSIMDEncoding(TR::CPU *target, TR::VectorLength vl)
+      {
+      uint32_t flags = getInstructionFeatureHints();
+      TR_ASSERT_FATAL(flags, "Missing CPU feature flags for the instruction");
+
+      bool supported;
+
+      switch (vl)
+         {
+         case TR::VectorLength128:
+            if (flags & X86FeatureProp_EVEX128Supported)
+               {
+               supported = target->supportsFeature(OMR_FEATURE_X86_AVX512F);
+
+               if (flags & X86FeatureProp_EVEX128RequiresAVX512VL)
+                  supported = target->supportsFeature(OMR_FEATURE_X86_AVX512VL);
+               if (flags & X86FeatureProp_EVEX128RequiresAVX512BW)
+                  supported = target->supportsFeature(OMR_FEATURE_X86_AVX512BW);
+               if (flags & X86FeatureProp_EVEX128RequiresAVX512DQ)
+                  supported = target->supportsFeature(OMR_FEATURE_X86_AVX512DQ);
+
+               if (supported)
+                    return OMR::X86::EVEX_L128;
+               }
+
+            if (flags & X86FeatureProp_VEX128Supported)
+               {
+               if (flags & X86FeatureProp_VEX128RequiresAVX )
+                  return OMR::X86::VEX_L128;
+               }
+
+            if (flags & X86FeatureProp_SSE4_1Supported && target->supportsFeature(OMR_FEATURE_X86_SSE4_1))
+               return OMR::X86::Legacy;
+
+            if (flags & X86FeatureProp_SSE3Supported && target->supportsFeature(OMR_FEATURE_X86_SSE3))
+               return OMR::X86::Legacy;
+
+            if (flags & X86FeatureProp_MinTargetSupported)
+               return OMR::X86::Legacy;
+
+            break;
+         case TR::VectorLength256:
+            if (flags & X86FeatureProp_EVEX256Supported)
+               {
+               supported = target->supportsFeature(OMR_FEATURE_X86_AVX512F);
+
+               if (flags & X86FeatureProp_EVEX256RequiresAVX512VL)
+                  supported = target->supportsFeature(OMR_FEATURE_X86_AVX512VL);
+               if (flags & X86FeatureProp_EVEX256RequiresAVX512BW)
+                  supported = target->supportsFeature(OMR_FEATURE_X86_AVX512BW);
+               if (flags & X86FeatureProp_EVEX256RequiresAVX512DQ)
+                  supported = target->supportsFeature(OMR_FEATURE_X86_AVX512DQ);
+
+               if (supported)
+                  return OMR::X86::EVEX_L256;
+               }
+
+            if (flags & X86FeatureProp_VEX256Supported)
+               {
+               supported = target->supportsFeature(OMR_FEATURE_X86_AVX);
+
+               if (flags & X86FeatureProp_VEX256RequiresAVX2)
+                  supported = target->supportsFeature(OMR_FEATURE_X86_AVX2);
+
+               if (supported)
+                   return OMR::X86::VEX_L256;
+               }
+
+               break;
+         case TR::VectorLength512:
+            supported = flags & X86FeatureProp_EVEX512Supported && target->supportsFeature(OMR_FEATURE_X86_AVX512F);
+
+            if (supported && flags & X86FeatureProp_EVEX512RequiresAVX512BW)
+               supported = target->supportsFeature(OMR_FEATURE_X86_AVX512BW);
+
+            if (supported && flags & X86FeatureProp_EVEX512RequiresAVX512DQ)
+               supported = target->supportsFeature(OMR_FEATURE_X86_AVX512DQ);
+
+            if (supported)
+               return OMR::X86::EVEX_L512;
+
+            break;
+         default:
+            break;
+         }
+
+      return OMR::X86::Encoding::Bad;
+      }
 
    inline bool isSetRegInstruction() const
       {

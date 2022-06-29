@@ -449,13 +449,6 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
    return NULL;
    }
 
-TR::Register *OMR::X86::TreeEvaluator::fpBinaryArithmeticEvaluator(TR::Node          *node,
-                                                              bool              isFloat,
-                                                              TR::CodeGenerator *cg)
-   {
-      return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
-   }
-
 TR::Register *OMR::X86::TreeEvaluator::fpUnaryMaskEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    static uint8_t MASK_FABS[] =
@@ -578,42 +571,42 @@ TR::Register* OMR::X86::TreeEvaluator::vsqrtEvaluator(TR::Node *node, TR::CodeGe
 
 TR::Register *OMR::X86::TreeEvaluator::faddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, true, cg);
+   return TR::TreeEvaluator::floatingPointBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::daddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, false, cg);
+   return TR::TreeEvaluator::floatingPointBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::fsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, true, cg);
+   return TR::TreeEvaluator::floatingPointBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::dsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, false, cg);
+   return TR::TreeEvaluator::floatingPointBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::fmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, true, cg);
+   return TR::TreeEvaluator::floatingPointBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::dmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, false, cg);
+   return TR::TreeEvaluator::floatingPointBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::fdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, true, cg);
+   return TR::TreeEvaluator::floatingPointBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::ddivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, false, cg);
+   return TR::TreeEvaluator::floatingPointBinaryArithmeticEvaluator(node, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::fpRemEvaluator(TR::Node *node, TR::CodeGenerator *cg)

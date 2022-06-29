@@ -1140,6 +1140,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceExitExtraction",              "L\ttrace extraction of structure nodes that unconditionally exit to outer regions", SET_OPTION_BIT(TR_TraceExitExtraction), "F"},
    {"traceExplicitNewInitialization",   "L\ttrace explicit new initialization",            TR::Options::traceOptimization, explicitNewInitialization, 0, "P"},
    {"traceFieldPrivatization",          "L\ttrace field privatization",                    TR::Options::traceOptimization, fieldPrivatization, 0, "P"},
+   {"traceFileLength=",    "L\ttrace file length in MB", TR::Options::setStaticNumeric, (intptr_t)&OMR::Options::_traceFileLength, 0, "F%d", NOT_IN_SUBSET},
    {"traceFull",                        "L\tturn on all trace options",                    SET_OPTION_BIT(TR_TraceAll), "P"},
    {"traceGeneralStoreSinking",         "L\ttrace general store sinking",                  TR::Options::traceOptimization, generalStoreSinking, 0, "P"},
    {"traceGlobalCopyPropagation",       "L\ttrace global copy propagation",                TR::Options::traceOptimization, globalCopyPropagation, 0, "P"},
@@ -1653,6 +1654,8 @@ int32_t       OMR::Options::_inlinerVeryLargeCompiledMethodAdjustFactor = 20;
 int32_t       OMR::Options::_numUsableCompilationThreads = -1; // -1 means not initialized
 
 int32_t       OMR::Options::_trampolineSpacePercentage = 0; // 0 means no change from default
+
+int32_t       OMR::Options::_traceFileLength = 0; // in MBs, 0 unlimited
 
 bool          OMR::Options::_countsAreProvidedByUser = false;
 TR_YesNoMaybe OMR::Options::_startupTimeMatters = TR_maybe;

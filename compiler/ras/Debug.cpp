@@ -596,6 +596,12 @@ TR_Debug::vtrace(const char * format, va_list args)
    if (_file != NULL)
       {
       char buffer[256];
+      if(TR::Options::_traceFileLength && TR::IO::ftell(_file) > (TR::Options::_traceFileLength * (1 << 20)))
+         {
+         TR::IO::fseek(_file, 0, SEEK_SET); // rewind the trace file
+         sprintf(buffer, "Rewind trace file ...\n\n\n");
+         TR::IO::vfprintf(_file, buffer, args);
+         }
       TR::IO::vfprintf(_file, getDiagnosticFormat(format, buffer, sizeof(buffer)), args);
       trfflush(_file);
       }

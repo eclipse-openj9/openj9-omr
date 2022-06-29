@@ -1897,6 +1897,8 @@ public:
 
    static int32_t _trampolineSpacePercentage;
 
+   static int32_t _traceFileLength;
+
    static size_t _scratchSpaceLimit;
    static size_t _scratchSpaceLowerBound;
    static uint32_t _minBytesToLeaveAllocatedInSharedPool; // 0 to disable the feature and revert to old behavior

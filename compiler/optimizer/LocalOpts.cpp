@@ -3376,7 +3376,6 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
          firstNonFenceTree = firstNonFenceTree->getNextRealTreeTop();
          }
 
-
       bool containsTreesOtherThanGoto = false;
       if (firstNonFenceTree != lastNonFenceTree &&
          !emptyBlock)
@@ -3439,6 +3438,26 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
       TR::Block *destBlock = block->getSuccessors().front()->getTo()->asBlock();
       if (destBlock == block)
          continue; // No point trying to "update" predecessors
+
+      if (!containsTreesOtherThanGoto && !block->getExceptionSuccessors().empty())
+         {
+         // Structure repair doesn't deal well with exception successors in this case.
+         if (!performTransformation(comp(), "%sRemoving exception successor edges for block_%d\n", optDetailString(), block->getNumber()))
+          continue; // The exception successors remain, so skip this block
+
+         TR::CFGEdgeList &excSuccs = block->getExceptionSuccessors();
+         while (!excSuccs.empty())
+            {
+            if (trace())
+               {
+               TR::Block *from = excSuccs.front()->getFrom()->asBlock();
+               TR::Block *to = excSuccs.front()->getTo()->asBlock();
+               traceMsg(comp(), "Remove exception edge: block_%d (isValid %d) -> block_%d (isValid %d)\n", from->getNumber(), from->isValid(), to->getNumber(), to->isValid());
+               }
+
+            cfg->removeEdge(excSuccs.front());
+            }
+         }
 
       TR::CFGEdgeList fixablePreds(comp()->trMemory()->currentStackRegion());
       auto preds = block->getPredecessors();
@@ -3526,19 +3545,6 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
          block->getEntry()->join(lastNonFenceTree);
          //destBlock->setEntry(block->getEntry());
          //destBlock->setExit(block->getExit());
-         }
-      else
-         {
-         if (!block->getExceptionSuccessors().empty())
-            {
-            // A block with a goto, only a goto and nothing but the goto needs
-            // no exception successors (removing them is a good idea in general, but
-            // structure repair below specifically does not like such nasty nasty
-            // goto blocks)
-            //
-            for (auto edge = block->getExceptionSuccessors().begin(); edge != block->getExceptionSuccessors().end();)
-               cfg->removeEdge(*(edge++));
-            }
          }
 
       if (emptyBlock &&

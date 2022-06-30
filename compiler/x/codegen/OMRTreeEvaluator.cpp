@@ -4028,9 +4028,9 @@ OMR::X86::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR::CodeGenerator *c
    return target;
    }
 
-enum BinaryArithmeticOps : uint32_t
+enum ArithmeticOps : uint32_t
    {
-   BinaryArithmeticInvalid,
+   ArithmeticInvalid,
    BinaryArithmeticAdd,
    BinaryArithmeticSub,
    BinaryArithmeticMul,
@@ -4038,7 +4038,12 @@ enum BinaryArithmeticOps : uint32_t
    BinaryArithmeticAnd,
    BinaryArithmeticOr,
    BinaryArithmeticXor,
-   NumBinaryArithmeticOps
+   NumBinaryArithmeticOps,
+   UnaryArithmeticMin,
+   UnaryArithmeticMax,
+   UnaryArithmeticAbs,
+   LastOp,
+   NumUnaryArithmeticOps = LastOp - NumBinaryArithmeticOps + 1
    };
 
 static const TR::InstOpCode::Mnemonic BinaryArithmeticOpCodesForReg[TR::NumOMRTypes][NumBinaryArithmeticOps] =
@@ -4095,6 +4100,28 @@ static const TR::InstOpCode::Mnemonic VectorBinaryArithmeticOpCodesForMem[TR::Nu
    { TR::InstOpCode::bad, TR::InstOpCode::ADDPDRegMem, TR::InstOpCode::SUBPDRegMem, TR::InstOpCode::MULPDRegMem,  TR::InstOpCode::DIVPDRegMem, TR::InstOpCode::bad,  TR::InstOpCode::bad, TR::InstOpCode::bad  }, // Double
    };
 
+static const TR::InstOpCode::Mnemonic VectorUnaryArithmeticOpCodesForReg[TR::NumVectorElementTypes][NumUnaryArithmeticOps] =
+   {
+   //  Invalid,       min,         max,         abs,
+   { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int8
+   { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int16
+   { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int32
+   { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int64
+   { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Float
+   { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Double
+   };
+
+
+static const TR::InstOpCode::Mnemonic VectorUnaryArithmeticOpCodesForMem[TR::NumVectorElementTypes][NumUnaryArithmeticOps] =
+   {
+   //  Invalid,       min,         max,         abs,
+  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int8
+  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int16
+  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int32
+  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int64
+  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Float
+  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Double
+   };
 
 static const TR::ILOpCodes MemoryLoadOpCodes[TR::NumOMRTypes] =
    {
@@ -4111,32 +4138,42 @@ static const TR::ILOpCodes MemoryLoadOpCodes[TR::NumOMRTypes] =
 
 TR::InstOpCode OMR::X86::TreeEvaluator::getNativeSIMDOpcode(TR::ILOpCodes opcode, TR::DataType type, bool memForm)
    {
-   BinaryArithmeticOps arithmetic;
+   ArithmeticOps binaryOp = ArithmeticInvalid;
+   ArithmeticOps unaryOp = ArithmeticInvalid;
 
    if (OMR::ILOpCode::isVectorOpCode(opcode))
       {
       switch (OMR::ILOpCode::getVectorOperation(opcode))
          {
          case TR::vadd:
-            arithmetic = BinaryArithmeticAdd;
+            binaryOp = BinaryArithmeticAdd;
             break;
          case TR::vsub:
-            arithmetic = BinaryArithmeticSub;
+            binaryOp = BinaryArithmeticSub;
             break;
          case TR::vmul:
-            arithmetic = BinaryArithmeticMul;
+            binaryOp = BinaryArithmeticMul;
             break;
          case TR::vdiv:
-            arithmetic = BinaryArithmeticDiv;
+            binaryOp = BinaryArithmeticDiv;
             break;
          case TR::vand:
-            arithmetic = BinaryArithmeticAnd;
+            binaryOp = BinaryArithmeticAnd;
             break;
          case TR::vor:
-            arithmetic = BinaryArithmeticOr;
+            binaryOp = BinaryArithmeticOr;
             break;
          case TR::vxor:
-            arithmetic = BinaryArithmeticXor;
+            binaryOp = BinaryArithmeticXor;
+            break;
+         case TR::vmin:
+            unaryOp = UnaryArithmeticMin;
+            break;
+         case TR::vmax:
+            unaryOp = UnaryArithmeticMax;
+            break;
+         case TR::vabs:
+            unaryOp = UnaryArithmeticAbs;
             break;
          default:
             return TR::InstOpCode::bad;
@@ -4148,14 +4185,25 @@ TR::InstOpCode OMR::X86::TreeEvaluator::getNativeSIMDOpcode(TR::ILOpCodes opcode
       return TR::InstOpCode::bad;
       }
 
-   TR::InstOpCode::Mnemonic memOpcode = VectorBinaryArithmeticOpCodesForMem[type.getVectorElementType() - 1][arithmetic];
-   TR::InstOpCode::Mnemonic regOpcode = VectorBinaryArithmeticOpCodesForReg[type.getVectorElementType() - 1][arithmetic];
+   TR::InstOpCode::Mnemonic memOpcode;
+   TR::InstOpCode::Mnemonic regOpcode;
+
+   if (binaryOp != ArithmeticInvalid)
+      {
+      memOpcode = VectorBinaryArithmeticOpCodesForMem[type.getVectorElementType() - 1][binaryOp];
+      regOpcode = VectorBinaryArithmeticOpCodesForReg[type.getVectorElementType() - 1][binaryOp];
+      }
+   else
+      {
+      memOpcode = VectorUnaryArithmeticOpCodesForMem[type.getVectorElementType() - 1][unaryOp - NumBinaryArithmeticOps];
+      regOpcode = VectorUnaryArithmeticOpCodesForReg[type.getVectorElementType() - 1][unaryOp - NumBinaryArithmeticOps];
+      }
 
    if (memOpcode == TR::InstOpCode::bad)
-       TR_ASSERT_FATAL(regOpcode == TR::InstOpCode::bad, "Missing mem-source opcode for vector operation");
+      TR_ASSERT_FATAL(regOpcode == TR::InstOpCode::bad, "Missing mem-source opcode for vector operation");
 
    if (regOpcode == TR::InstOpCode::bad)
-       TR_ASSERT_FATAL(memOpcode == TR::InstOpCode::bad, "Missing reg-source opcode for vector operation");
+      TR_ASSERT_FATAL(memOpcode == TR::InstOpCode::bad, "Missing reg-source opcode for vector operation");
 
    return memForm ? memOpcode : regOpcode;
    }
@@ -4227,7 +4275,7 @@ TR::Register* OMR::X86::TreeEvaluator::floatingPointBinaryArithmeticEvaluator(TR
    {
    TR::DataType type = node->getDataType();
    TR::ILOpCodes opcode = node->getOpCodeValue();
-   BinaryArithmeticOps arithmetic;
+   ArithmeticOps arithmetic;
 
    switch (opcode)
       {

@@ -152,11 +152,15 @@ template <typename TBuffer> typename TBuffer::cursor_t OMR::X86::InstOpCode::OpC
          default:
             break;
          }
+
+#if defined(TR_TARGET_64BIT)
       // REX
       if (rex.value() || rexbits)
          {
          buffer.append(rex);
          }
+#endif
+
       // OpCode escape
       switch (escape)
          {

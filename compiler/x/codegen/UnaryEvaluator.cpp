@@ -136,17 +136,16 @@ TR::Register*
 OMR::X86::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::DataType type = node->getDataType();
-
-   TR_ASSERT_FATAL_WITH_NODE(node, type.getVectorLength() == TR::VectorLength128,
-                             "Only 128-bit vectors are supported right now\n");
-
    TR::Node *valueNode = node->getChild(0);
    TR::Register *resultReg = cg->allocateRegister(TR_VRF);
    TR::Register *valueReg = cg->evaluate(valueNode);
 
    // -valueReg = 0 - valueReg
-   generateRegRegInstruction(TR::InstOpCode::PXORRegReg, node, resultReg, resultReg, cg);
-   TR::InstOpCode::Mnemonic subOpcode;
+   TR::InstOpCode opcode = TR::InstOpCode::PXORRegReg;
+   OMR::X86::Encoding pxorEncoding = opcode.getSIMDEncoding(&cg->comp()->target().cpu, type.getVectorLength());
+
+   generateRegRegInstruction(TR::InstOpCode::PXORRegReg, node, resultReg, resultReg, cg, pxorEncoding);
+   TR::InstOpCode subOpcode;
 
    switch (type.getVectorElementType())
       {
@@ -173,7 +172,8 @@ OMR::X86::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          break;
       }
 
-   generateRegRegInstruction(subOpcode, node, resultReg, valueReg, cg);
+   OMR::X86::Encoding subEncoding = subOpcode.getSIMDEncoding(&cg->comp()->target().cpu, type.getVectorLength());
+   generateRegRegInstruction(subOpcode.getMnemonic(), node, resultReg, valueReg, cg, subEncoding);
 
    node->setRegister(resultReg);
    cg->decReferenceCount(valueNode);

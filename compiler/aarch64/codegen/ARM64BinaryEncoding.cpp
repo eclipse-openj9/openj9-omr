@@ -363,6 +363,23 @@ uint8_t *TR::ARM64RegBranchInstruction::generateBinaryEncoding()
    return cursor;
    }
 
+TR::Instruction *TR::ARM64AdminInstruction::expandInstruction()
+   {
+   TR::InstOpCode::Mnemonic op = getOpCodeValue();
+
+   if (op == TR::InstOpCode::retn)
+      {
+      /*
+       * Generates instructions for epilogue after retn pseudo instruction.
+       * We need to call expandInstruction on those instructions because
+       * memory instrutions are included.
+       */
+      cg()->getLinkage()->createEpilogue(self());
+      }
+
+   return self();
+   }
+
 uint8_t *TR::ARM64AdminInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
@@ -682,6 +699,11 @@ uint8_t *TR::ARM64Trg1Src3Instruction::generateBinaryEncoding()
    return cursor;
    }
 
+TR::Instruction *TR::ARM64Trg1MemInstruction::expandInstruction()
+   {
+   return getMemoryReference()->expandInstruction(self(), cg());
+   }
+
 uint8_t *TR::ARM64Trg1MemInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
@@ -699,6 +721,11 @@ int32_t TR::ARM64Trg1MemInstruction::estimateBinaryLength(int32_t currentEstimat
    {
    setEstimatedBinaryLength(getMemoryReference()->estimateBinaryLength(getOpCodeValue()));
    return currentEstimate + getEstimatedBinaryLength();
+   }
+
+TR::Instruction *TR::ARM64MemInstruction::expandInstruction()
+   {
+   return getMemoryReference()->expandInstruction(self(), cg());
    }
 
 uint8_t *TR::ARM64MemInstruction::generateBinaryEncoding()

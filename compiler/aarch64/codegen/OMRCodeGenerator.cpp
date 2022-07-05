@@ -228,8 +228,21 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
 
    while (data.cursorInstruction && data.cursorInstruction->getOpCodeValue() != TR::InstOpCode::proc)
       {
-      data.estimate = data.cursorInstruction->estimateBinaryLength(data.estimate);
-      data.cursorInstruction = data.cursorInstruction->getNext();
+      TR::Instruction *prev = data.cursorInstruction->getPrev();
+      /* The last instruction whose expansion is finished. */
+      TR::Instruction *expandedOrSelf = data.cursorInstruction->expandInstruction();
+      TR::Instruction *firstInstructionNotExpanded = expandedOrSelf->getNext();
+
+      if (prev != NULL)
+         {
+         /* The first instruction whose byte length has not been added to data.estimate */
+         data.cursorInstruction = prev->getNext();
+         }
+      while (data.cursorInstruction && (data.cursorInstruction != firstInstructionNotExpanded))
+         {
+         data.estimate = data.cursorInstruction->estimateBinaryLength(data.estimate);
+         data.cursorInstruction = data.cursorInstruction->getNext();
+         }
       }
 
    tempInstruction = data.cursorInstruction;
@@ -241,25 +254,20 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
 
    self()->getLinkage()->createPrologue(tempInstruction);
 
-   bool skipOneReturn = false;
    while (data.cursorInstruction)
       {
-      if (data.cursorInstruction->getOpCodeValue() == TR::InstOpCode::retn)
+      TR::Instruction *prev = data.cursorInstruction->getPrev();
+      /* The last instruction whose expansion is finished. */
+      TR::Instruction *expandedOrSelf = data.cursorInstruction->expandInstruction();
+      TR::Instruction *firstInstructionNotExpanded = expandedOrSelf->getNext();
+
+      /* The first instruction whose byte length has not been added to data.estimate */
+      data.cursorInstruction = prev->getNext();
+      while (data.cursorInstruction && (data.cursorInstruction != firstInstructionNotExpanded))
          {
-         if (skipOneReturn == false)
-            {
-            TR::Instruction *temp = data.cursorInstruction->getPrev();
-            self()->getLinkage()->createEpilogue(temp);
-            data.cursorInstruction = temp->getNext();
-            skipOneReturn = true;
-            }
-         else
-            {
-            skipOneReturn = false;
-            }
+         data.estimate = data.cursorInstruction->estimateBinaryLength(data.estimate);
+         data.cursorInstruction = data.cursorInstruction->getNext();
          }
-      data.estimate = data.cursorInstruction->estimateBinaryLength(data.estimate);
-      data.cursorInstruction = data.cursorInstruction->getNext();
       }
 
    data.estimate = self()->setEstimatedLocationsForSnippetLabels(data.estimate);

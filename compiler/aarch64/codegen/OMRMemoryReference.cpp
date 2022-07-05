@@ -1061,6 +1061,12 @@ static bool isImm9OffsetInstruction(uint32_t enc)
    return ((enc & 0x3b200000) == 0x38000000);
    }
 
+/* unscaled immediate offset */
+static bool isImm9UnscaledOffsetInstruction(uint32_t enc)
+   {
+   return ((enc & 0x3b200C00) == 0x38000000);
+   }
+
 
 /* unsigned immediate offset */
 static bool isImm12OffsetInstruction(uint32_t enc)
@@ -1092,6 +1098,134 @@ static bool isImm12VectorMemoryAccess(uint32_t enc)
    return ((enc & 0xffb00000) == 0x3d800000);
    }
 
+static TR::InstOpCode::Mnemonic getEquivalentRegisterOffsetMnemonic(TR::InstOpCode::Mnemonic op)
+   {
+   switch (op)
+      {
+      case TR::InstOpCode::ldurb:
+      case TR::InstOpCode::ldrbimm:
+         return TR::InstOpCode::ldrboff;
+      case TR::InstOpCode::ldursbw:
+      case TR::InstOpCode::ldrsbimmw:
+         return TR::InstOpCode::ldrsboffw;
+      case TR::InstOpCode::ldursbx:
+      case TR::InstOpCode::ldrsbimmx:
+         return TR::InstOpCode::ldrsboffx;
+      case TR::InstOpCode::ldurh:
+      case TR::InstOpCode::ldrhimm:
+         return TR::InstOpCode::ldrhoff;
+      case TR::InstOpCode::ldurshw:
+      case TR::InstOpCode::ldrshimmw:
+         return TR::InstOpCode::ldrshoffw;
+      case TR::InstOpCode::ldurshx:
+      case TR::InstOpCode::ldrshimmx:
+         return TR::InstOpCode::ldrshoffx;
+      case TR::InstOpCode::ldurw:
+      case TR::InstOpCode::ldrimmw:
+         return TR::InstOpCode::ldroffw;
+      case TR::InstOpCode::ldurx:
+      case TR::InstOpCode::ldrimmx:
+         return TR::InstOpCode::ldroffx;
+      case TR::InstOpCode::vldurb:
+      case TR::InstOpCode::vldrimmb:
+         return TR::InstOpCode::vldroffb;
+      case TR::InstOpCode::vldurh:
+      case TR::InstOpCode::vldrimmh:
+         return TR::InstOpCode::vldroffh;
+      case TR::InstOpCode::vldurs:
+      case TR::InstOpCode::vldrimms:
+         return TR::InstOpCode::vldroffs;
+      case TR::InstOpCode::vldurd:
+      case TR::InstOpCode::vldrimmd:
+         return TR::InstOpCode::vldroffd;
+      case TR::InstOpCode::vldurq:
+      case TR::InstOpCode::vldrimmq:
+         return TR::InstOpCode::vldroffq;
+
+      case TR::InstOpCode::sturb:
+      case TR::InstOpCode::strbimm:
+         return TR::InstOpCode::strboff;
+      case TR::InstOpCode::sturh:
+      case TR::InstOpCode::strhimm:
+         return TR::InstOpCode::strhoff;
+      case TR::InstOpCode::sturw:
+      case TR::InstOpCode::strimmw:
+         return TR::InstOpCode::stroffw;
+      case TR::InstOpCode::sturx:
+      case TR::InstOpCode::strimmx:
+         return TR::InstOpCode::stroffx;
+      case TR::InstOpCode::vsturb:
+      case TR::InstOpCode::vstrimmb:
+         return TR::InstOpCode::vstroffb;
+      case TR::InstOpCode::vsturh:
+      case TR::InstOpCode::vstrimmh:
+         return TR::InstOpCode::vstroffh;
+      case TR::InstOpCode::vsturs:
+      case TR::InstOpCode::vstrimms:
+         return TR::InstOpCode::vstroffs;
+      case TR::InstOpCode::vsturd:
+      case TR::InstOpCode::vstrimmd:
+         return TR::InstOpCode::vstroffd;
+      case TR::InstOpCode::vsturq:
+      case TR::InstOpCode::vstrimmq:
+         return TR::InstOpCode::vstroffq;
+      default:
+         return TR::InstOpCode::bad;
+      }
+   }
+
+static TR::InstOpCode::Mnemonic getEquivalentUnscaledOffsetMnemonic(TR::InstOpCode::Mnemonic op)
+   {
+   switch (op)
+      {
+      case TR::InstOpCode::ldrbimm:
+         return TR::InstOpCode::ldurb;
+      case TR::InstOpCode::ldrsbimmw:
+         return TR::InstOpCode::ldursbw;
+      case TR::InstOpCode::ldrsbimmx:
+         return TR::InstOpCode::ldursbx;
+      case TR::InstOpCode::ldrhimm:
+         return TR::InstOpCode::ldurh;
+      case TR::InstOpCode::ldrshimmw:
+         return TR::InstOpCode::ldurshw;
+      case TR::InstOpCode::ldrshimmx:
+         return TR::InstOpCode::ldurshx;
+      case TR::InstOpCode::ldrimmw:
+         return TR::InstOpCode::ldurw;
+      case TR::InstOpCode::ldrimmx:
+         return TR::InstOpCode::ldurx;
+      case TR::InstOpCode::vldrimmb:
+         return TR::InstOpCode::vldurb;
+      case TR::InstOpCode::vldrimmh:
+         return TR::InstOpCode::vldurh;
+      case TR::InstOpCode::vldrimms:
+         return TR::InstOpCode::vldurs;
+      case TR::InstOpCode::vldrimmd:
+         return TR::InstOpCode::vldurd;
+      case TR::InstOpCode::vldrimmq:
+         return TR::InstOpCode::vldurq;
+
+      case TR::InstOpCode::strbimm:
+         return TR::InstOpCode::sturb;
+      case TR::InstOpCode::strhimm:
+         return TR::InstOpCode::sturh;
+      case TR::InstOpCode::strimmw:
+         return TR::InstOpCode::sturw;
+      case TR::InstOpCode::strimmx:
+         return TR::InstOpCode::sturx;
+      case TR::InstOpCode::vstrimmh:
+         return TR::InstOpCode::vsturh;
+      case TR::InstOpCode::vstrimms:
+         return TR::InstOpCode::vsturs;
+      case TR::InstOpCode::vstrimmd:
+         return TR::InstOpCode::vsturd;
+      case TR::InstOpCode::vstrimmq:
+         return TR::InstOpCode::vsturq;
+      default:
+         return TR::InstOpCode::bad;
+      }
+   }
+
 uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *currentInstruction, uint8_t *cursor, TR::CodeGenerator *cg)
    {
    uint32_t *wcursor = (uint32_t *)cursor;
@@ -1104,7 +1238,9 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
       }
    else
       {
-      int32_t displacement = self()->getOffset(true);
+      TR_ASSERT_FATAL(self()->isDelayedOffsetDone(), "delayed offset must be done before generateBinaryEncoding");
+      /* delayed offset has been already applied to internal offset */
+      int32_t displacement = self()->getOffset(false);
       TR_ASSERT_FATAL(!((base != NULL) && (index != NULL) && (displacement != 0)), "AArch64 does not support [base + index + offset] form of memory access");
 
       TR::InstOpCode op = currentInstruction->getOpCode();
@@ -1141,8 +1277,6 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
                   // set scale bit
                   *wcursor |= (1 << 12);
                   }
-
-               cursor += ARM64_INSTRUCTION_LENGTH;
                }
             else
                {
@@ -1159,7 +1293,6 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
                if (constantIsImm9(displacement))
                   {
                   *wcursor |= (displacement & 0x1ff) << 12; /* imm9 */
-                  cursor += ARM64_INSTRUCTION_LENGTH;
                   }
                else
                   {
@@ -1180,20 +1313,10 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
                if (constantIsUnsignedImm12(shifted))
                   {
                   *wcursor |= (shifted & 0xfff) << 10; /* imm12 */
-                  cursor += ARM64_INSTRUCTION_LENGTH;
                   }
                else
                   {
-                  if (displacement < 0 && constantIsImm9(displacement))
-                     {
-                     *wcursor &= 0xFEFFFFFF; /* rewrite the instruction ldrimm -> ldur */
-                     *wcursor |= (displacement & 0x1ff) << 12; /* imm9 */
-                     cursor += ARM64_INSTRUCTION_LENGTH;
-                     }
-                  else
-                     {
-                     TR_ASSERT_FATAL(false, "Offset is too large for specified instruction.");
-                     }
+                  TR_ASSERT_FATAL(false, "Offset is too large for specified instruction.");
                   }
                }
             else if (isImm7OffsetGPRInstruction(enc))
@@ -1207,29 +1330,21 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
                if (constantIsImm7(shifted))
                   {
                   *wcursor |= (shifted & 0x7f) << 15; /* imm7 */
-                  cursor += ARM64_INSTRUCTION_LENGTH;
                   }
                else
                   {
                   TR_ASSERT_FATAL(false, "Offset is too large for specified instruction.");
                   }
                }
-            else if (isExclusiveMemAccessInstruction(enc))
+            else if (!(isExclusiveMemAccessInstruction(enc) || isAtomicOperationInstruction(enc)))
                {
-               TR_ASSERT(displacement == 0, "Offset must be zero for specified instruction.");
-               cursor += ARM64_INSTRUCTION_LENGTH;
-               }
-            else if (isAtomicOperationInstruction(enc))
-               {
-               TR_ASSERT(displacement == 0, "Offset must be zero for specified instruction.");
-               cursor += ARM64_INSTRUCTION_LENGTH;
-               }
-            else
-               {
+               TR_ASSERT_FATAL(false, "enc = 0x%x", enc);
+
                /* Register pair, literal instructions to be supported */
                TR_UNIMPLEMENTED();
                }
             }
+            cursor += ARM64_INSTRUCTION_LENGTH;
          }
       else
          {
@@ -1302,37 +1417,77 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
    return cursor;
    }
 
-
-uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::InstOpCode op)
+TR::Instruction *OMR::ARM64::MemoryReference::expandInstruction(TR::Instruction *currentInstruction, TR::CodeGenerator *cg)
    {
-   if (self()->getUnresolvedSnippet() != NULL)
+   // Due to the way the generate*Instruction helpers work, there's no way to use them to generate an instruction at the
+   // start of the instruction stream at the moment. As a result, we cannot peform expansion if the first instruction is
+   // a memory instruction.
+   TR_ASSERT_FATAL(currentInstruction->getPrev(), "The first instruction cannot be a memory instruction");
+
+   int32_t displacement = self()->getOffset(true);
+   /* Apply delayed offset to internal offset. */
+   self()->setOffset(displacement);
+   self()->setDelayedOffsetDone();
+
+   if (self()->getUnresolvedSnippet() == NULL)
       {
-      TR_UNIMPLEMENTED();
-      }
-   else
-      {
+      TR::Compilation *comp = cg->comp();
+      TR_Debug *debugObj = cg->getDebug();
+
+      TR::InstOpCode op = currentInstruction->getOpCode();
       if (op.getMnemonic() != TR::InstOpCode::addimmx)
          {
          // load/store instruction
          if (self()->getIndexRegister())
             {
-            return ARM64_INSTRUCTION_LENGTH;
+            return currentInstruction;
             }
          else
             {
             /* no index register */
-            int32_t displacement = self()->getOffset(true);
             uint32_t enc = (uint32_t)op.getOpCodeBinaryEncoding();
 
             if (isImm9OffsetInstruction(enc))
                {
                if (constantIsImm9(displacement))
                   {
-                  return ARM64_INSTRUCTION_LENGTH;
+                  return currentInstruction;
                   }
                else
                   {
-                  TR_ASSERT_FATAL(false, "Offset is too large for specified instruction.");
+                  if (isImm9UnscaledOffsetInstruction(enc))
+                     {
+                     if (isBaseModifiable() && constantIsUnsignedImm12(displacement))
+                        {
+                        TR::Instruction *prev = currentInstruction->getPrev();
+                        generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmw, currentInstruction->getNode(), self()->getBaseRegister(), self()->getBaseRegister(), displacement, prev);
+                        self()->setOffset(0);
+                        return currentInstruction;
+                        }
+                     else
+                        {
+                        /* X16 and X17 are IP0 and IP1, intra-procedure-call temporary registers, which are used for trampolines. */
+                        TR::RealRegister *x16 = cg->machine()->getRealRegister(TR::RealRegister::x16);
+                        TR::Instruction *prev = currentInstruction->getPrev();
+                        TR::Instruction *tmp = loadConstant32(cg, currentInstruction->getNode(), displacement, x16, prev);
+                        TR::InstOpCode::Mnemonic newOp = getEquivalentRegisterOffsetMnemonic(op.getMnemonic());
+
+                        if (comp->getOption(TR_TraceCG) && debugObj)
+                           {
+                           TR::InstOpCode newOpCode(newOp);
+                           traceMsg(comp, "Replacing opcode of instruction %p from %s to %s\n", currentInstruction, debugObj->getOpCodeName(&op), debugObj->getOpCodeName(&newOpCode));
+                           }
+                        currentInstruction->setOpCodeValue(newOp);
+                        self()->setIndexRegister(x16);
+                        self()->setOffset(0);
+                        return currentInstruction;
+                        }
+                     }
+                  else
+                     {
+                     /* Giving up for pre-index or post-index instructions */
+                     TR_ASSERT_FATAL(false, "Offset is too large for specified instruction.");
+                     }
                   }
                }
             else if (isImm12OffsetInstruction(enc))
@@ -1348,18 +1503,40 @@ uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::InstOpCode op)
 
                if (constantIsUnsignedImm12(shifted))
                   {
-                  return ARM64_INSTRUCTION_LENGTH;
+                  return currentInstruction;
                   }
                else
                   {
                   if (displacement < 0 && constantIsImm9(displacement))
                      {
-                     /* rewrite the instruction ldrimm -> ldur in generateBinaryEncoding() */
-                     return ARM64_INSTRUCTION_LENGTH;
+                     /* rewrite the instruction ldrimm -> ldur  */
+                     TR::InstOpCode::Mnemonic newOp = getEquivalentUnscaledOffsetMnemonic(op.getMnemonic());
+
+                     if (comp->getOption(TR_TraceCG) && debugObj)
+                        {
+                        TR::InstOpCode newOpCode(newOp);
+                        traceMsg(comp, "Replacing opcode of instruction %p from %s to %s\n", currentInstruction, debugObj->getOpCodeName(&op), debugObj->getOpCodeName(&newOpCode));
+                        }
+                     currentInstruction->setOpCodeValue(newOp);
+                     return currentInstruction;
                      }
                   else
                      {
-                     TR_ASSERT_FATAL(false, "Offset is too large for specified instruction.");
+                     /* X16 and X17 are IP0 and IP1, intra-procedure-call temporary registers, which are used for trampolines. */
+                     TR::RealRegister *x16 = cg->machine()->getRealRegister(TR::RealRegister::x16);
+                     TR::Instruction *prev = currentInstruction->getPrev();
+                     TR::Instruction *tmp = loadConstant32(cg, currentInstruction->getNode(), displacement, x16, prev);
+                     TR::InstOpCode::Mnemonic newOp = getEquivalentRegisterOffsetMnemonic(op.getMnemonic());
+
+                     if (comp->getOption(TR_TraceCG) && debugObj)
+                        {
+                        TR::InstOpCode newOpCode(newOp);
+                        traceMsg(comp, "Replacing opcode of instruction %p from %s to %s\n", currentInstruction, debugObj->getOpCodeName(&op), debugObj->getOpCodeName(&newOpCode));
+                        }
+                     currentInstruction->setOpCodeValue(newOp);
+                     self()->setIndexRegister(x16);
+                     self()->setOffset(0);
+                     return currentInstruction;
                      }
                   }
                }
@@ -1373,7 +1550,7 @@ uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::InstOpCode op)
 
                if (constantIsImm7(shifted))
                   {
-                  return ARM64_INSTRUCTION_LENGTH;
+                  return currentInstruction;
                   }
                else
                   {
@@ -1382,11 +1559,13 @@ uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::InstOpCode op)
                }
             else if (isExclusiveMemAccessInstruction(enc))
                {
-               return ARM64_INSTRUCTION_LENGTH;
+               TR_ASSERT_FATAL_WITH_NODE(currentInstruction->getNode(), displacement == 0, "displacement must be zero for load/store exclusive instructions");
+               return currentInstruction;
                }
             else if (isAtomicOperationInstruction(enc))
                {
-               return ARM64_INSTRUCTION_LENGTH;
+               TR_ASSERT_FATAL_WITH_NODE(currentInstruction->getNode(), displacement == 0, "displacement must be zero for atomic instructions");
+               return currentInstruction;
                }
             else
                {
@@ -1397,10 +1576,32 @@ uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::InstOpCode op)
          }
       else
          {
+         // TODO: addimmx instruction
+         return currentInstruction;
+         }
+      }
+
+   return currentInstruction;
+   }
+
+uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::InstOpCode op)
+   {
+   if (self()->getUnresolvedSnippet() != NULL)
+      {
+      TR_UNIMPLEMENTED();
+      }
+   else
+      {
+      if (op.getMnemonic() != TR::InstOpCode::addimmx)
+         {
+         return ARM64_INSTRUCTION_LENGTH;
+         }
+      else
+         {
          // addimmx instruction
          TR_ASSERT(self()->getIndexRegister() == NULL, "MemoryReference with unexpected indexed form");
 
-         int32_t displacement = self()->getOffset(true);
+         int32_t displacement = self()->getOffset(false);
          if (constantIsUnsignedImm12(displacement))
             {
             return ARM64_INSTRUCTION_LENGTH;

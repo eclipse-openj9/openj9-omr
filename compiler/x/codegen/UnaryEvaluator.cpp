@@ -52,8 +52,8 @@ TR::Register *OMR::X86::TreeEvaluator::unaryVectorArithmeticEvaluator(TR::Node *
          TR_ASSERT_FATAL_WITH_NODE(node, opcode.getVectorResultDataType().getVectorElementType() == TR::Double,
                                    "Only double vsqrt is currently supported");
 
-         regRegOpcode = supportsAvx ? OMR::InstOpCode::VSQRTPDRegReg : OMR::InstOpCode::SQRTPDRegReg;
-         regMemOpcode = supportsAvx ? OMR::InstOpCode::VSQRTPDRegMem : OMR::InstOpCode::bad;
+         regRegOpcode = OMR::InstOpCode::SQRTPDRegReg;
+         regMemOpcode = OMR::InstOpCode::VSQRTPDRegMem;
          // SSE RegMem instruction requires 16-byte alignment
          break;
       default:

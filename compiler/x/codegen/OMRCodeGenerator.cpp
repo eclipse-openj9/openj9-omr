@@ -1036,8 +1036,6 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
             return ot.getVectorLength() == TR::VectorLength128;
          else
             return false;
-      case TR::vsqrt:
-         return (et == TR::Double);
 
        /*
        * GRA does not work with vector registers on 32 bit due to a bug where xmm registers are not being assigned.

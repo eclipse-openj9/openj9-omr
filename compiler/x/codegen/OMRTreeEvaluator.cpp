@@ -4042,6 +4042,7 @@ enum ArithmeticOps : uint32_t
    UnaryArithmeticMin,
    UnaryArithmeticMax,
    UnaryArithmeticAbs,
+   UnaryArithmeticSqrt,
    LastOp,
    NumUnaryArithmeticOps = LastOp - NumBinaryArithmeticOps + 1
    };
@@ -4102,25 +4103,25 @@ static const TR::InstOpCode::Mnemonic VectorBinaryArithmeticOpCodesForMem[TR::Nu
 
 static const TR::InstOpCode::Mnemonic VectorUnaryArithmeticOpCodesForReg[TR::NumVectorElementTypes][NumUnaryArithmeticOps] =
    {
-   //  Invalid,       min,         max,         abs,
-   { TR::InstOpCode::bad, TR::InstOpCode::PMINSBRegReg, TR::InstOpCode::PMAXSBRegReg, TR::InstOpCode::PABSBRegReg }, // Int8
-   { TR::InstOpCode::bad, TR::InstOpCode::PMINSWRegReg, TR::InstOpCode::PMAXSWRegReg, TR::InstOpCode::PABSWRegReg }, // Int16
-   { TR::InstOpCode::bad, TR::InstOpCode::PMINSDRegReg, TR::InstOpCode::PMAXSDRegReg, TR::InstOpCode::PABSDRegReg }, // Int32
-   { TR::InstOpCode::bad, TR::InstOpCode::PMINSQRegReg, TR::InstOpCode::PMAXSQRegReg, TR::InstOpCode::PABSQRegReg }, // Int64
-   { TR::InstOpCode::bad, TR::InstOpCode::MINPSRegReg,  TR::InstOpCode::MAXPSRegReg,  TR::InstOpCode::bad         }, // Float
-   { TR::InstOpCode::bad, TR::InstOpCode::MINPDRegReg,  TR::InstOpCode::MAXPDRegReg,  TR::InstOpCode::bad         }, // Double
+   //  Invalid,       min,         max,         abs,         sqrt
+   { TR::InstOpCode::bad, TR::InstOpCode::PMINSBRegReg, TR::InstOpCode::PMAXSBRegReg, TR::InstOpCode::PABSBRegReg, TR::InstOpCode::bad }, // Int8
+   { TR::InstOpCode::bad, TR::InstOpCode::PMINSWRegReg, TR::InstOpCode::PMAXSWRegReg, TR::InstOpCode::PABSWRegReg, TR::InstOpCode::bad }, // Int16
+   { TR::InstOpCode::bad, TR::InstOpCode::PMINSDRegReg, TR::InstOpCode::PMAXSDRegReg, TR::InstOpCode::PABSDRegReg, TR::InstOpCode::bad }, // Int32
+   { TR::InstOpCode::bad, TR::InstOpCode::PMINSQRegReg, TR::InstOpCode::PMAXSQRegReg, TR::InstOpCode::PABSQRegReg, TR::InstOpCode::bad }, // Int64
+   { TR::InstOpCode::bad, TR::InstOpCode::MINPSRegReg,  TR::InstOpCode::MAXPSRegReg,  TR::InstOpCode::bad,         TR::InstOpCode::SQRTPSRegReg }, // Float
+   { TR::InstOpCode::bad, TR::InstOpCode::MINPDRegReg,  TR::InstOpCode::MAXPDRegReg,  TR::InstOpCode::bad,         TR::InstOpCode::SQRTPDRegReg }, // Double
    };
 
 
 static const TR::InstOpCode::Mnemonic VectorUnaryArithmeticOpCodesForMem[TR::NumVectorElementTypes][NumUnaryArithmeticOps] =
    {
-   //  Invalid,       min,         max,         abs,
-  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int8
-  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int16
-  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int32
-  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int64
-  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Float
-  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Double
+   //  Invalid,       min,         max,         abs,         sqrt
+  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int8
+  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int16
+  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int32
+  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int64
+  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::VSQRTPSRegMem }, // Float
+  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::VSQRTPDRegMem }, // Double
    };
 
 static const TR::ILOpCodes MemoryLoadOpCodes[TR::NumOMRTypes] =
@@ -4174,6 +4175,9 @@ TR::InstOpCode OMR::X86::TreeEvaluator::getNativeSIMDOpcode(TR::ILOpCodes opcode
             break;
          case TR::vabs:
             unaryOp = UnaryArithmeticAbs;
+            break;
+         case TR::vsqrt:
+            unaryOp = UnaryArithmeticSqrt;
             break;
          default:
             return TR::InstOpCode::bad;

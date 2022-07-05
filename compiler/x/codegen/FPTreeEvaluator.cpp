@@ -565,7 +565,7 @@ TR::Register *OMR::X86::TreeEvaluator::dsqrtEvaluator(TR::Node *node, TR::CodeGe
 
 TR::Register* OMR::X86::TreeEvaluator::vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT_FATAL(node->getDataType().getVectorElementType() == TR::Double, "Unsupported datatype for vsqrt opcode");
+   TR_ASSERT_FATAL(node->getDataType().getVectorElementType().isFloatingPoint(), "Unsupported datatype for vsqrt opcode");
    return TR::TreeEvaluator::unaryVectorArithmeticEvaluator(node, cg);
    }
 

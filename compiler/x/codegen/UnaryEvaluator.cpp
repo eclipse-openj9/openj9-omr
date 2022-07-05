@@ -41,7 +41,6 @@ TR::Register *OMR::X86::TreeEvaluator::unaryVectorArithmeticEvaluator(TR::Node *
    TR::Node *valueNode = node->getChild(0);
    TR::Register *resultReg = cg->allocateRegister(TR_VRF);
 
-   bool supportsAvx = cg->comp()->target().cpu.supportsAVX();
    TR::InstOpCode regRegOpcode = TR::InstOpCode::bad;
    TR::InstOpCode regMemOpcode = TR::InstOpCode::bad;
    TR::ILOpCode opcode = node->getOpCode();
@@ -50,6 +49,7 @@ TR::Register *OMR::X86::TreeEvaluator::unaryVectorArithmeticEvaluator(TR::Node *
 
    regMemOpcode = TR::TreeEvaluator::getNativeSIMDOpcode(opcode.getOpCodeValue(), node->getType(), true).getMnemonic();
    node->setRegister(resultReg);
+   TR_ASSERT_FATAL_WITH_NODE(node, opcode.isVectorOpCode(), "unaryVectorArithmeticEvaluator expects a vector opcode");
 
    if (valueNode->getRegister() == NULL && valueNode->getReferenceCount() == 1 && regMemOpcode.getMnemonic() != TR::InstOpCode::bad)
       {

@@ -4103,12 +4103,12 @@ static const TR::InstOpCode::Mnemonic VectorBinaryArithmeticOpCodesForMem[TR::Nu
 static const TR::InstOpCode::Mnemonic VectorUnaryArithmeticOpCodesForReg[TR::NumVectorElementTypes][NumUnaryArithmeticOps] =
    {
    //  Invalid,       min,         max,         abs,
-   { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int8
-   { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int16
-   { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int32
-   { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int64
-   { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Float
-   { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Double
+   { TR::InstOpCode::bad, TR::InstOpCode::PMINSBRegReg, TR::InstOpCode::PMAXSBRegReg, TR::InstOpCode::PABSBRegReg }, // Int8
+   { TR::InstOpCode::bad, TR::InstOpCode::PMINSWRegReg, TR::InstOpCode::PMAXSWRegReg, TR::InstOpCode::PABSWRegReg }, // Int16
+   { TR::InstOpCode::bad, TR::InstOpCode::PMINSDRegReg, TR::InstOpCode::PMAXSDRegReg, TR::InstOpCode::PABSDRegReg }, // Int32
+   { TR::InstOpCode::bad, TR::InstOpCode::PMINSQRegReg, TR::InstOpCode::PMAXSQRegReg, TR::InstOpCode::PABSQRegReg }, // Int64
+   { TR::InstOpCode::bad, TR::InstOpCode::MINPSRegReg,  TR::InstOpCode::MAXPSRegReg,  TR::InstOpCode::bad         }, // Float
+   { TR::InstOpCode::bad, TR::InstOpCode::MINPDRegReg,  TR::InstOpCode::MAXPDRegReg,  TR::InstOpCode::bad         }, // Double
    };
 
 
@@ -4198,12 +4198,6 @@ TR::InstOpCode OMR::X86::TreeEvaluator::getNativeSIMDOpcode(TR::ILOpCodes opcode
       memOpcode = VectorUnaryArithmeticOpCodesForMem[type.getVectorElementType() - 1][unaryOp - NumBinaryArithmeticOps];
       regOpcode = VectorUnaryArithmeticOpCodesForReg[type.getVectorElementType() - 1][unaryOp - NumBinaryArithmeticOps];
       }
-
-   if (memOpcode == TR::InstOpCode::bad)
-      TR_ASSERT_FATAL(regOpcode == TR::InstOpCode::bad, "Missing mem-source opcode for vector operation");
-
-   if (regOpcode == TR::InstOpCode::bad)
-      TR_ASSERT_FATAL(memOpcode == TR::InstOpCode::bad, "Missing reg-source opcode for vector operation");
 
    return memForm ? memOpcode : regOpcode;
    }

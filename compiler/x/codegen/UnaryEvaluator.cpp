@@ -42,40 +42,34 @@ TR::Register *OMR::X86::TreeEvaluator::unaryVectorArithmeticEvaluator(TR::Node *
    TR::Register *resultReg = cg->allocateRegister(TR_VRF);
 
    bool supportsAvx = cg->comp()->target().cpu.supportsAVX();
-   TR::InstOpCode::Mnemonic regRegOpcode;
-   TR::InstOpCode::Mnemonic regMemOpcode;
+   TR::InstOpCode regRegOpcode = TR::InstOpCode::bad;
+   TR::InstOpCode regMemOpcode = TR::InstOpCode::bad;
    TR::ILOpCode opcode = node->getOpCode();
+   TR::DataType type = node->getType();
+   OMR::X86::Encoding simdEncoding;
 
-   switch (opcode.getVectorOperation())
-      {
-      case TR::vsqrt:
-         TR_ASSERT_FATAL_WITH_NODE(node, opcode.getVectorResultDataType().getVectorElementType() == TR::Double,
-                                   "Only double vsqrt is currently supported");
-
-         regRegOpcode = OMR::InstOpCode::SQRTPDRegReg;
-         regMemOpcode = OMR::InstOpCode::VSQRTPDRegMem;
-         // SSE RegMem instruction requires 16-byte alignment
-         break;
-      default:
-         TR_ASSERT_FATAL_WITH_NODE(node, 0, "Opcode not supported by unaryVectorArithmeticEvaluator");
-         break;
-      }
-
-   if (valueNode->getRegister() == NULL && valueNode->getReferenceCount() == 1 && regMemOpcode != TR::InstOpCode::bad)
-      {
-      TR::MemoryReference *mr = generateX86MemoryReference(valueNode, cg);
-      generateRegMemInstruction(regMemOpcode, node, resultReg, mr, cg);
-      mr->decNodeReferenceCounts(cg);
-      }
-   else
-      {
-      TR_ASSERT_FATAL(regRegOpcode != TR::InstOpCode::bad, "Illegal opcode for unary operation");
-      TR::Register *valueReg = cg->evaluate(valueNode);
-      generateRegRegInstruction(regRegOpcode, node, resultReg, valueReg, cg);
-      cg->decReferenceCount(valueNode);
-      }
-
+   regMemOpcode = TR::TreeEvaluator::getNativeSIMDOpcode(opcode.getOpCodeValue(), node->getType(), true).getMnemonic();
    node->setRegister(resultReg);
+
+   if (valueNode->getRegister() == NULL && valueNode->getReferenceCount() == 1 && regMemOpcode.getMnemonic() != TR::InstOpCode::bad)
+      {
+      simdEncoding = regMemOpcode.getSIMDEncoding(&cg->comp()->target().cpu, type.getVectorLength());
+
+      if (simdEncoding != OMR::X86::Encoding::Bad)
+         {
+         TR::MemoryReference *mr = generateX86MemoryReference(valueNode, cg);
+         generateRegMemInstruction(regMemOpcode.getMnemonic(), node, resultReg, mr, cg, simdEncoding);
+         mr->decNodeReferenceCounts(cg);
+         return resultReg;
+         }
+      }
+
+   regRegOpcode = regRegOpcode.getMnemonic() != TR::InstOpCode::bad ? regRegOpcode : TR::TreeEvaluator::getNativeSIMDOpcode(opcode.getOpCodeValue(), node->getType(), false).getMnemonic();
+   TR_ASSERT_FATAL_WITH_NODE(node, regRegOpcode.getMnemonic() != TR::InstOpCode::bad, "Opcode not supported by unaryVectorArithmeticEvaluator");
+   simdEncoding = regRegOpcode.getSIMDEncoding(&cg->comp()->target().cpu, type.getVectorLength());
+   TR::Register *valueReg = cg->evaluate(valueNode);
+   generateRegRegInstruction(regRegOpcode.getMnemonic(), node, resultReg, valueReg, cg, simdEncoding);
+   cg->decReferenceCount(valueNode);
 
    return resultReg;
    }

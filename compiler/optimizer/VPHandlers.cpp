@@ -9380,34 +9380,147 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
 #endif
                   }
                break;
+
             case TR_MethodTest:
                   {
                   TR::Node *vtableEntryNode = node->getFirstChild();
-                  if ((vtableEntryNode->getOpCodeValue() == TR::aloadi) &&
-                      vtableEntryNode->getOpCode().hasSymbolReference() &&
-                      vp->comp()->getSymRefTab()->isVtableEntrySymbolRef(vtableEntryNode->getSymbolReference()))
+                  if (vtableEntryNode->getOpCodeValue() != TR::aloadi)
+                     break; // unexpected tree shape
+
+                  TR::SymbolReference *entrySR = vtableEntryNode->getSymbolReference();
+                  if (!vp->comp()->getSymRefTab()->isVtableEntrySymbolRef(entrySR))
+                     break; // unexpected tree shape
+
+                  TR::Node *methodPtrNode = node->getSecondChild();
+                  if (methodPtrNode->getOpCodeValue() != TR::aconst)
+                     break; // unexpected tree shape
+
+                  auto expectedMethodAddr =
+                     static_cast<intptr_t>(methodPtrNode->getAddress());
+
+                  TR_ASSERT_FATAL_WITH_NODE(
+                     methodPtrNode,
+                     expectedMethodAddr != 0,
+                     "method test method pointer constant is null");
+
+                  TR::Node *classNode = vtableEntryNode->getFirstChild();
+                  TR::VPConstraint *classConstraint = vp->getConstraint(classNode, isGlobal);
+
+                  TR_OpaqueMethodBlock *expectedMethodPtr =
+                     reinterpret_cast<TR_OpaqueMethodBlock*>(expectedMethodAddr);
+
+                  TR_ResolvedMethod *expectedMethod =
+                     vp->comp()->fe()->createResolvedMethod(
+                        vp->comp()->trMemory(), expectedMethodPtr);
+
+                  TR_OpaqueClassBlock *expectedClass =
+                     expectedMethod->containingClass();
+
+                  TR_YesNoMaybe taken = TR_maybe;
+                  const char *foldReason = NULL;
+                  if (classConstraint != NULL
+                      && classConstraint->isClassObject() == TR_yes
+                      && classConstraint->getClass() != NULL)
                      {
-                     TR::Node *classNode = vtableEntryNode->getFirstChild();
-                     TR::Node   *methodPtrNode    = node->getSecondChild();
-                     TR::VPConstraint *classConstraint = vp->getConstraint(classNode, isGlobal);
-                     if (ignoreVirtualGuard && classConstraint && classConstraint->isFixedClass())
+                     TR_OpaqueClassBlock *clazz = classConstraint->getClass();
+                     int32_t vftOffset = static_cast<int32_t>(entrySR->getOffset());
+                     // NOTE: clazz might not have a large enough VFT, in which
+                     // case vftEntry will be 0. This can happen:
+                     // - when the guard is for an interface call,
+                     // - when the guard is on a dead path, or
+                     // - maybe when the guard has been hoisted.
+                     intptr_t vftEntry = TR::Compiler->cls.getVFTEntry(
+                        vp->comp(), clazz, vftOffset);
+
+                     // We know the receiver is an instance of clazz, and if we
+                     // successfully found a VFT entry, then clazz has a large
+                     // enough VFT, so the VFT entry load will be in-bounds.
+                     if (vftEntry != 0
+                         && performTransformation(
+                              vp->comp(),
+                              "%sSetting vftEntryIsInBounds on method test n%un [%p]\n",
+                              OPT_DETAILS,
+                              node->getGlobalIndex(),
+                              node))
                         {
-                        TR_OpaqueClassBlock *clazz  = classConstraint->getClass();
-                        int32_t    vftOffset        = static_cast<int32_t>(vtableEntryNode->getSymbolReference()->getOffset());
-                        intptr_t  vftEntry         = TR::Compiler->cls.getVFTEntry(vp->comp(), clazz, vftOffset);
-                        bool       childrenAreEqual = (vftEntry == methodPtrNode->getAddress());
-                        bool       testForEquality  = false;
-                        if (vp->trace())
-                           traceMsg(vp->comp(), "TR_MethodTest: node=%p, vtableEntryNode=%p, clazz=%p, vftOffset=%d, vftEntry=%p, childrenAreEqual=%d\n",
-                                    node, vtableEntryNode, clazz, vftOffset, vftEntry, childrenAreEqual);
-                        if (childrenAreEqual)
-                           cannotBranch = true;
-                        else
-                           cannotFallThrough = true;
+                        node->setVFTEntryIsInBounds(true);
                         }
+
+                     if (ignoreVirtualGuard && classConstraint->isFixedClass())
+                        {
+                        // We know the exact type of the receiver and therefore
+                        // the exact result of the comparison.
+                        //
+                        // The case where clazz doesn't have a VFT entry at the
+                        // expected offset doesn't need to be handled specially.
+                        // In that case we should behave as though vftEntry is
+                        // not the expected method, which will be the natural
+                        // result of the comparison because vftEntry == 0 but
+                        // expectedMethodAddr != 0 (checked in the assertion above).
+                        //
+                        taken = (vftEntry == expectedMethodAddr) ? TR_no : TR_yes;
+                        foldReason = "fixed-type receiver";
+                        }
+                     else if (ignoreVirtualGuard)
+                        {
+                        bool fixedObjectType = false;
+                        bool fixedCastType = true;
+                        TR_YesNoMaybe isInstance = vp->comp()->fe()->isInstanceOf(
+                           clazz, expectedClass, fixedObjectType, fixedCastType);
+
+                        if (isInstance == TR_no)
+                           {
+                           taken = TR_yes; // necessarily unequal
+                           foldReason = "incompatible receiver";
+                           }
+                        else if (vftEntry == expectedMethodAddr
+                           && expectedMethod->isFinal())
+                           {
+                           taken = TR_no; // necessarily equal
+                           foldReason = "type bound has final inlined method";
+                           }
+                        }
+                     }
+
+                  if (taken != TR_maybe && vp->trace())
+                     {
+                     traceMsg(
+                        vp->comp(),
+                        "n%un [%p]: method test: %s: branch %s taken\n",
+                        node->getGlobalIndex(),
+                        node,
+                        foldReason,
+                        taken == TR_yes ? "is" : "is not");
+                     }
+
+                  if (taken == TR_yes)
+                     {
+                     cannotFallThrough = true;
+                     }
+                  else if (taken == TR_no)
+                     {
+                     cannotBranch = true;
+                     }
+                  else
+                     {
+                     // We can't fold, so at least learn a type bound (i.e.
+                     // expectedClass) for objects that pass the guard. Note
+                     // that instanceofObjectRef here is actually the VFT,
+                     // which will be accounted for and possibly changed just
+                     // after the switch.
+                     instanceofObjectRef = classNode;
+                     guardClassConstraint = TR::VPClass::create(
+                        vp,
+                        TR::VPResolvedClass::create(vp, expectedClass),
+                        TR::VPNonNullObject::create(vp),
+                        NULL,
+                        NULL,
+                        TR::VPObjectLocation::create(
+                           vp, TR::VPObjectLocation::J9ClassObject));
                      }
                   }
                break;
+
             default:
             	break;
             }

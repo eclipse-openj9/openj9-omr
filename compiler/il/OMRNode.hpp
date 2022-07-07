@@ -1410,6 +1410,10 @@ public:
    void resetIsTheVirtualGuardForAGuardedInlinedCall();
    bool isNopableInlineGuard();
 
+   bool vftEntryIsInBounds();
+   void setVFTEntryIsInBounds(bool inBounds);
+   const char * printVFTEntryIsInBounds();
+
    bool isMutableCallSiteTargetGuard();
    void setIsMutableCallSiteTargetGuard();
    const char * printIsMutableCallSiteTargetGuard();
@@ -2048,6 +2052,7 @@ protected:
       swappedChildren                       = 0x00020000,
       versionIfWithMaxExpr                  = 0x00010000,
       versionIfWithMinExpr                  = 0x00040000,
+      vftEntryIsInBoundsFlag                = 0x00080000, ///< For guards with method test
 
       // Can be set on int loads and arithmetic operations
       IsPowerOfTwo                          = 0x10000000,

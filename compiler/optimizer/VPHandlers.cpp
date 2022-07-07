@@ -8997,7 +8997,6 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
    if (fallThrough == target)
       return node;
 
-   TR::VPConstraint* constraintFromMethodPointer = NULL;
    TR::Node *lhsChild = node->getFirstChild();
    TR::Node *rhsChild = node->getSecondChild();
 
@@ -9409,7 +9408,6 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                   if ((vtableEntryNode->getOpCodeValue() == TR::aloadi) &&
                       vtableEntryNode->getOpCode().hasSymbolReference() &&
                       vp->comp()->getSymRefTab()->isVtableEntrySymbolRef(vtableEntryNode->getSymbolReference()))
-                     /*(vtableEntryNode->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef()))*/
                      {
                      TR::Node *classNode = vtableEntryNode->getFirstChild();
                      TR::Node   *methodPtrNode    = node->getSecondChild();
@@ -9429,13 +9427,6 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                         else
                            cannotBranch = true;
                         }
-
-                     if (vtableEntryNode->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef())
-                        {
-                        TR_OpaqueClassBlock* classFromMethod = vp->comp()->fe()->getClassFromMethodBlock((TR_OpaqueMethodBlock*)methodPtrNode->getAddress());
-                        constraintFromMethodPointer = TR::VPResolvedClass::create(vp, classFromMethod);
-                        }
-
                      }
                   }
                break;
@@ -9725,37 +9716,6 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
       {
       TR_ASSERT(!cannotBranch, "Cannot branch or fall through");
       changeConditionalToGoto(vp, node, edge);
-      }
-   else if (constraintFromMethodPointer && lhsChild->getFirstChild()->getFirstChild()->getOpCode().isLoadVarDirect())
-      {
-      //if constraintFromMethodPointer is set we should be able to assume that lhsChild->getFirstChild()->getFirstChild() is not NULL, since non-NULL constraintFromMethodPointer implies the following trees:
-      // n235n     ifacmpne --> block_25 BBStart at n230n (inlineProfiledGuard )                       [0x7fffd5110a40] bci=[0,0,314] rc=0 vc=56 vn=49 sti=- udi=- nc=2 flg=0x1020
-      // n233n       iaload <vtable-entry-symbol> [#552 Shadow +768] [flags 0x10607 0x0 ]              [0x7fffd51109b0] bci=[-1,0,2302] rc=1 vc=56 vn=7 sti=- udi=- nc=1
-      // n232n         iaload <vft-symbol> [#449 Shadow] [flags 0x18607 0x0 ] (X>=0 )                  [0x7fffd5110968] bci=[-1,0,2302] rc=1 vc=56 vn=6 sti=- udi=- nc=1 flg=0x100
-      // n3n             ==>aload
-      // n234n       aconst 0x7fd070 (methodPointerConstant )                                          [0x7fffd51109f8] bci=[0,0,314] rc=1 vc=56 vn=5 sti=- udi=- nc=0 flg=0x2000
-
-
-      bool isGlobal;
-      TR::VPConstraint* intersected = vp->getConstraint(lhsChild->getFirstChild()->getFirstChild(), isGlobal);
-
-         intersected =
-            (intersected) ?
-               intersected->intersect(constraintFromMethodPointer, vp):
-               intersected = constraintFromMethodPointer;
-
-      if (intersected)
-         {
-            if (!branchOnEqual)
-               {
-               vp->addBlockConstraint(lhsChild->getFirstChild()->getFirstChild(), intersected);
-               }
-               else
-               {
-               //not sure about this case (is this the right way to add an edge constraint??
-               vp->addEdgeConstraint(lhsChild->getFirstChild()->getFirstChild(), intersected, edgeConstraints);
-               }
-         }
       }
    else if (node->isProfiledGuard() && node->getOpCodeValue() == TR::ifacmpne)
        {

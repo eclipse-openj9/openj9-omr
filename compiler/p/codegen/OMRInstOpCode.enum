@@ -289,7 +289,7 @@
    mftexasr,         // Move from transaction exception and summary register to gpr
    mftexasru,        // Move from upper 32 bits of transaction exception and summary register to gpr
    mftgpr,           // Move Floating-Point To GPR
-// mfvsrld,          // Move from VSR lower Dword
+   mfvsrld,          // Move from VSR lower Dword
    modud,            // Modulo unsigned DWord
    modsd,            // Modulo signed DWord
    moduw,            // Modulo unsigned word

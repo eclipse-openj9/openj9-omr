@@ -563,9 +563,14 @@ TR::Instruction *generateMovBitMaskInstruction(TR::CodeGenerator *cg, TR::Node *
 TR::Instruction *generateMulInstruction(TR::CodeGenerator *cg, TR::Node *node,
    TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, TR::Instruction *preced)
    {
+   return generateMulInstruction(cg, node, treg, s1reg, s2reg, node->getDataType().isInt64(), preced);
+   }
+
+TR::Instruction *generateMulInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, bool is64bit, TR::Instruction *preced)
+   {
    /* Alias of MADD instruction */
 
-   bool is64bit = node->getDataType().isInt64();
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::maddx : TR::InstOpCode::maddw;
 
    if (preced)

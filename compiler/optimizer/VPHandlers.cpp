@@ -8762,7 +8762,7 @@ static void generateModifiedNopGuard(
 
    TR_ASSERT_FATAL_WITH_NODE(
       guardNode,
-      guardNode->isProfiledGuard(),
+      guardNode->isProfiledGuard() || kind == TR_HCRGuard,
       "can only create virtual guards based on profiled guards");
 
    TR_ASSERT_FATAL_WITH_NODE(
@@ -8815,6 +8815,8 @@ static void generateModifiedNopGuard(
    // This is important for hierarchy guards to ensure that we get a resolved
    // method symbol. Otherwise it could be confused for an interface guard.
    //
+   // HCR guards need the ResolvedMethodSymbol from the symref.
+   //
    // Using a fake call node this way also means that it's not necessary to
    // find the original call node in the trees.
    //
@@ -8834,9 +8836,12 @@ static void generateModifiedNopGuard(
 
    fakeCallNode->setByteCodeInfo(callBci);
 
-   // Remember the guard's receiver class.
+   // Remember the guard's receiver class, and also whether the guard is merged
+   // with an HCR or an OSR guard.
    TR_VirtualGuard *guard = comp->findVirtualGuardInfo(guardNode);
    TR_OpaqueClassBlock *thisClass = guard->getThisClass();
+   bool mergedWithHCRGuard = guard->mergedWithHCRGuard();
+   bool mergedWithOSRGuard = guard->mergedWithOSRGuard();
 
    // Remove the original guard, since node will be removed from the trees.
    comp->removeVirtualGuard(guard);
@@ -8908,6 +8913,35 @@ static void generateModifiedNopGuard(
          break;
          }
 
+      // When the caller requests HCR guard, the newly created guard will be
+      // patched when the receiver class of the original guard is redefined.
+      // That class must be the defining class of the inlined method, since an
+      // HCR guard will only be requested when the original guard was
+      // mergedWithHCRGuard().
+      case TR_HCRGuard:
+         {
+         TR_ASSERT_FATAL_WITH_NODE(
+            guardNode, mergedWithHCRGuard, "unexpected HCR guard request");
+
+         TR_ASSERT_FATAL_WITH_NODE(
+            guardNode,
+            thisClass == inlinedResolvedMethod->containingClass(),
+            "HCR assumption class mismatch");
+
+         mergedWithHCRGuard = false; // new guard will be a standalone HCR guard
+         mergedWithOSRGuard = false; // new guard represents only the HCR aspect
+
+         newGuardNode = TR_VirtualGuard::createHCRGuard(
+            comp,
+            calleeIndex,
+            fakeCallNode,
+            guardNode->getBranchDestination(),
+            inlinedMethodSym,
+            thisClass);
+
+         break;
+         }
+
       default:
          TR_ASSERT_FATAL(false, "unexpected guard kind %d", (int)kind);
       }
@@ -8915,6 +8949,12 @@ static void generateModifiedNopGuard(
    // Preserve guard merging, if any.
    guard = comp->findVirtualGuardInfo(newGuardNode);
    guard->setThisClass(thisClass);
+
+   if (mergedWithHCRGuard)
+      guard->setMergedWithHCRGuard();
+
+   if (mergedWithOSRGuard)
+      guard->setMergedWithOSRGuard();
 
    TR::TreeTop *newGuardTT = TR::TreeTop::create(comp, newGuardNode);
    vp->_curTree->insertAfter(newGuardTT);
@@ -8935,6 +8975,10 @@ static void changeConditionalToGoto(OMR::ValuePropagation *vp, TR::Node *node, T
 #ifdef J9_PROJECT_SPECIFIC
    createGuardSiteForRemovedGuard(vp->comp(), node);
 #endif
+
+   // NOTE: No special handling is required here to deal with the possibility
+   // that node is a virtual guard that has been merged with an HCR or an OSR
+   // guard. It's always safe to go to the taken (cold) side.
 
    // Fall through path is unreachable.
    // Set the current constraints to "unreachable path"
@@ -8965,10 +9009,66 @@ static void removeConditionalBranch(OMR::ValuePropagation *vp, TR::Node *node, T
    createGuardSiteForRemovedGuard(vp->comp(), node);
 #endif
 
+   // If node is a virtual guard merged with an HCR or an OSR guard, then it
+   // will still be possible to go to the cold side. In that case, node will
+   // still be removed, but an HCR or OSR guard will be added in its place, so
+   // the taken edge must still be considered reachable, and it must not be
+   // added to _edgesToBeRemoved.
+   bool edgeIsUnreachable = true;
+
+   if (node->isTheVirtualGuardForAGuardedInlinedCall())
+      {
+      TR_VirtualGuard *guard = vp->comp()->findVirtualGuardInfo(node);
+
+      // I don't think we have any way to generate a virtual guard that is
+      // merged with both HCR and OSR guards. The HCR guard would be redundant.
+      TR_ASSERT_FATAL_WITH_NODE(
+         node,
+         !guard->mergedWithHCRGuard() || !guard->mergedWithOSRGuard(),
+         "virtual guard is merged with both an HCR and an OSR guard");
+
+      if (guard->mergedWithHCRGuard())
+         {
+         dumpOptDetails(
+            vp->comp(),
+            "Separating HCR guard from n%un [%p]\n",
+            node->getGlobalIndex(),
+            node);
+
+         generateModifiedNopGuard(vp, node, TR_HCRGuard);
+
+         // The branch edge is still reachable via the HCR guard.
+         edgeIsUnreachable = false;
+         }
+      else if (guard->mergedWithOSRGuard())
+         {
+         TR::Node *osrGuardNode = TR_VirtualGuard::createOSRGuard(
+            vp->comp(), node->getBranchDestination());
+
+         TR::TreeTop *osrGuardTT = TR::TreeTop::create(vp->comp(), osrGuardNode);
+         vp->_curTree->insertAfter(osrGuardTT);
+
+         dumpOptDetails(
+            vp->comp(),
+            "Separated OSR guard from n%un [%p]. New OSR guard is n%un [%p].\n",
+            node->getGlobalIndex(),
+            node,
+            osrGuardNode->getGlobalIndex(),
+            osrGuardNode);
+
+         // The branch edge is still reachable via the OSR guard.
+         edgeIsUnreachable = false;
+         }
+
+      guard->setMergedWithHCRGuard(false);
+      guard->setMergedWithOSRGuard(false);
+      }
+
    // Branch path is unreachable.
    // Set the edge constraints on the branch path to "unreachable path"
    //
-   vp->setUnreachablePath(branchEdge);
+   if (edgeIsUnreachable)
+      vp->setUnreachablePath(branchEdge);
 
    // Remove this tree.
    //
@@ -8979,7 +9079,7 @@ static void removeConditionalBranch(OMR::ValuePropagation *vp, TR::Node *node, T
    // fall-through and target blocks are the same.
    TR::Block *fallThrough = vp->_curBlock->getExit()->getNextTreeTop()->getNode()->getBlock();
    TR::Block *target = node->getBranchDestination()->getNode()->getBlock();
-   if (fallThrough != target)
+   if (fallThrough != target && edgeIsUnreachable)
       vp->_edgesToBeRemoved->add(branchEdge);
    }
 
@@ -9177,18 +9277,27 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
    // vguards are handled specially later
    //
    bool ignoreVirtualGuard = true;
-   if (((node->getOpCodeValue() == TR::ifacmpne ||
-         node->getOpCodeValue() == TR::ifacmpeq ||
-         node->getOpCodeValue() == TR::ificmpne ||
-         node->getOpCodeValue() == TR::ificmpeq) &&
-         node->isTheVirtualGuardForAGuardedInlinedCall()))
+   TR_VirtualGuard *virtualGuard = node->virtualGuardInfo();
+   if (virtualGuard != NULL && !virtualGuard->canBeRemoved())
       {
-      TR_VirtualGuard *vGuard = vp->comp()->findVirtualGuardInfo(node);
-      if (vGuard && !vGuard->canBeRemoved())
+      // Merged guards are handled properly in removeConditionalBranch()
+      // (except in AOT compilations).
+      ignoreVirtualGuard =
+         virtualGuard->canBeRemoved(true)
+         && !vp->comp()->compileRelocatableCode();
+
+      if (vp->trace())
          {
-         if (vp->trace())
-            traceMsg(vp->comp(), "   found virtual guard node %p with inner assumptions (cannot be removed)\n", node);
-         ignoreVirtualGuard = false;
+         const char *msg = ignoreVirtualGuard
+            ? "is ok to remove (if possible) despite merged guards"
+            : "cannot be removed";
+
+         traceMsg(
+            vp->comp(),
+            "Virtual guard n%un [%p] %s.\n",
+            node->getGlobalIndex(),
+            node,
+            msg);
          }
       }
 
@@ -9468,265 +9577,260 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
    // Only accept VFT and method tests using ifacmpne here. Reversed (ifacmpeq)
    // guards are very rare, and shouldn't necessarily even be allowed, but they
    // are currently possible.
-   if (node->getOpCodeValue() == TR::ifacmpne
-       && node->isTheVirtualGuardForAGuardedInlinedCall())
+   if (node->getOpCodeValue() == TR::ifacmpne && virtualGuard != NULL)
       {
-      TR_VirtualGuard *virtualGuard = vp->comp()->findVirtualGuardInfo(node);
-      if (virtualGuard)
+      TR::VPConstraint *guardClassConstraint = NULL;
+      switch (virtualGuard->getTestType())
          {
-         TR::VPConstraint *guardClassConstraint = NULL;
-         switch (virtualGuard->getTestType())
-            {
-            case TR_VftTest:
-                  {
+         case TR_VftTest:
+               {
 #ifdef J9_PROJECT_SPECIFIC
-                  instanceofObjectRef = node->getFirstChild();
-                  TR::Node *classChild = node->getSecondChild();
-                  guardClassConstraint = vp->getConstraint(classChild, isGlobal);
-                  static const char* enableJavaLangClassFolding = feGetEnv ("TR_EnableFoldJavaLangClass");
-                  if (enableJavaLangClassFolding && (instanceofObjectRef->getOpCodeValue() == TR::aloadi) &&
-                      (instanceofObjectRef->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef()))
-                     {
-                     TR::Node *objectChild = instanceofObjectRef->getFirstChild();
-                     TR::VPConstraint *objectConstraint = vp->getConstraint(objectChild, isGlobal);
-
-                     //if objectConstraint is equal to java/lang/Class we can fold the guard
-                     if (ignoreVirtualGuard && guardClassConstraint && guardClassConstraint->getClassType() &&
-                         objectConstraint && objectConstraint->isClassObject() ==  TR_yes && vp->comp()->getClassClassPointer())
-                        {
-                        bool childrenAreEqual = vp->comp()->getClassClassPointer() == guardClassConstraint->getClass();
-                        if (childrenAreEqual)
-                           cannotBranch = true;
-                        else
-                           cannotFallThrough = true;
-                        }
-                     }
-
-                  TR::SymbolReference *vftSR =
-                     vp->comp()->getSymRefTab()->findVftSymbolRef();
-
-                  if (ignoreVirtualGuard
-                      && !cannotFallThrough
-                      && !cannotBranch
-                      && classChild->getOpCodeValue() == TR::aconst
-                      && instanceofObjectRef->getOpCodeValue() == TR::aloadi
-                      && instanceofObjectRef->getSymbolReference() == vftSR
-                      && node->isProfiledGuard())
-                     {
-                     TR::VPConstraint *receiverClassConstraint =
-                        vp->getConstraint(instanceofObjectRef, isGlobal);
-
-                     if (receiverClassConstraint != NULL
-                         && receiverClassConstraint->isClassObject() == TR_yes
-                         && receiverClassConstraint->getClass() != NULL)
-                        {
-                        auto expectedClassAddr =
-                           static_cast<uintptr_t>(classChild->getAddress());
-
-                        auto expectedClass =
-                           reinterpret_cast<TR_OpaqueClassBlock*>(expectedClassAddr);
-
-                        TR_OpaqueClassBlock *clazz =
-                           receiverClassConstraint->getClass();
-
-                        // There's no point checking for subtyping here, since
-                        // a class that hasn't been extended has no subtypes.
-                        if (clazz == expectedClass
-                            && !vp->comp()->fe()->classHasBeenExtended(expectedClass)
-                            && upgradeToNopGuard(vp, node, TR_HierarchyGuard))
-                           {
-                           return node;
-                           }
-                        }
-                     }
-#endif
-                  }
-               break;
-
-            case TR_MethodTest:
+               instanceofObjectRef = node->getFirstChild();
+               TR::Node *classChild = node->getSecondChild();
+               guardClassConstraint = vp->getConstraint(classChild, isGlobal);
+               static const char* enableJavaLangClassFolding = feGetEnv ("TR_EnableFoldJavaLangClass");
+               if (enableJavaLangClassFolding && (instanceofObjectRef->getOpCodeValue() == TR::aloadi) &&
+                   (instanceofObjectRef->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef()))
                   {
-                  TR::Node *vtableEntryNode = node->getFirstChild();
-                  if (vtableEntryNode->getOpCodeValue() != TR::aloadi)
-                     break; // unexpected tree shape
+                  TR::Node *objectChild = instanceofObjectRef->getFirstChild();
+                  TR::VPConstraint *objectConstraint = vp->getConstraint(objectChild, isGlobal);
 
-                  TR::SymbolReference *entrySR = vtableEntryNode->getSymbolReference();
-                  if (!vp->comp()->getSymRefTab()->isVtableEntrySymbolRef(entrySR))
-                     break; // unexpected tree shape
-
-                  TR::Node *methodPtrNode = node->getSecondChild();
-                  if (methodPtrNode->getOpCodeValue() != TR::aconst)
-                     break; // unexpected tree shape
-
-                  auto expectedMethodAddr =
-                     static_cast<intptr_t>(methodPtrNode->getAddress());
-
-                  TR_ASSERT_FATAL_WITH_NODE(
-                     methodPtrNode,
-                     expectedMethodAddr != 0,
-                     "method test method pointer constant is null");
-
-                  TR::Node *classNode = vtableEntryNode->getFirstChild();
-                  TR::VPConstraint *classConstraint = vp->getConstraint(classNode, isGlobal);
-
-                  TR_OpaqueMethodBlock *expectedMethodPtr =
-                     reinterpret_cast<TR_OpaqueMethodBlock*>(expectedMethodAddr);
-
-                  TR_ResolvedMethod *expectedMethod =
-                     vp->comp()->fe()->createResolvedMethod(
-                        vp->comp()->trMemory(), expectedMethodPtr);
-
-                  TR_OpaqueClassBlock *expectedClass =
-                     expectedMethod->containingClass();
-
-                  TR_YesNoMaybe taken = TR_maybe;
-                  const char *foldReason = NULL;
-                  if (classConstraint != NULL
-                      && classConstraint->isClassObject() == TR_yes
-                      && classConstraint->getClass() != NULL)
+                  //if objectConstraint is equal to java/lang/Class we can fold the guard
+                  if (ignoreVirtualGuard && guardClassConstraint && guardClassConstraint->getClassType() &&
+                      objectConstraint && objectConstraint->isClassObject() ==  TR_yes && vp->comp()->getClassClassPointer())
                      {
-                     TR_OpaqueClassBlock *clazz = classConstraint->getClass();
-                     int32_t vftOffset = static_cast<int32_t>(entrySR->getOffset());
-                     // NOTE: clazz might not have a large enough VFT, in which
-                     // case vftEntry will be 0. This can happen:
-                     // - when the guard is for an interface call,
-                     // - when the guard is on a dead path, or
-                     // - maybe when the guard has been hoisted.
-                     intptr_t vftEntry = TR::Compiler->cls.getVFTEntry(
-                        vp->comp(), clazz, vftOffset);
-
-                     // We know the receiver is an instance of clazz, and if we
-                     // successfully found a VFT entry, then clazz has a large
-                     // enough VFT, so the VFT entry load will be in-bounds.
-                     if (vftEntry != 0
-                         && performTransformation(
-                              vp->comp(),
-                              "%sSetting vftEntryIsInBounds on method test n%un [%p]\n",
-                              OPT_DETAILS,
-                              node->getGlobalIndex(),
-                              node))
-                        {
-                        node->setVFTEntryIsInBounds(true);
-                        }
-
-                     if (ignoreVirtualGuard && classConstraint->isFixedClass())
-                        {
-                        // We know the exact type of the receiver and therefore
-                        // the exact result of the comparison.
-                        //
-                        // The case where clazz doesn't have a VFT entry at the
-                        // expected offset doesn't need to be handled specially.
-                        // In that case we should behave as though vftEntry is
-                        // not the expected method, which will be the natural
-                        // result of the comparison because vftEntry == 0 but
-                        // expectedMethodAddr != 0 (checked in the assertion above).
-                        //
-                        taken = (vftEntry == expectedMethodAddr) ? TR_no : TR_yes;
-                        foldReason = "fixed-type receiver";
-                        }
-                     else if (ignoreVirtualGuard)
-                        {
-                        bool fixedObjectType = false;
-                        bool fixedCastType = true;
-                        TR_YesNoMaybe isInstance = vp->comp()->fe()->isInstanceOf(
-                           clazz, expectedClass, fixedObjectType, fixedCastType);
-
-                        if (isInstance == TR_no)
-                           {
-                           taken = TR_yes; // necessarily unequal
-                           foldReason = "incompatible receiver";
-                           }
-                        else if (vftEntry == expectedMethodAddr
-                           && expectedMethod->isFinal())
-                           {
-                           taken = TR_no; // necessarily equal
-                           foldReason = "type bound has final inlined method";
-                           }
-                        else if (vftEntry == expectedMethodAddr
-                           && node->isProfiledGuard()
-                           && !expectedMethod->virtualMethodIsOverridden()
-                           && node->getOpCodeValue() == TR::ifacmpne
-                           && upgradeToNopGuard(vp, node, TR_NonoverriddenGuard))
-                           {
-                           return node;
-                           }
-                        }
-                     }
-
-                  if (taken != TR_maybe && vp->trace())
-                     {
-                     traceMsg(
-                        vp->comp(),
-                        "n%un [%p]: method test: %s: branch %s taken\n",
-                        node->getGlobalIndex(),
-                        node,
-                        foldReason,
-                        taken == TR_yes ? "is" : "is not");
-                     }
-
-                  if (taken == TR_yes)
-                     {
-                     cannotFallThrough = true;
-                     }
-                  else if (taken == TR_no)
-                     {
-                     cannotBranch = true;
-                     }
-                  else
-                     {
-                     // We can't fold, so at least learn a type bound (i.e.
-                     // expectedClass) for objects that pass the guard. Note
-                     // that instanceofObjectRef here is actually the VFT,
-                     // which will be accounted for and possibly changed just
-                     // after the switch.
-                     instanceofObjectRef = classNode;
-                     guardClassConstraint = TR::VPClass::create(
-                        vp,
-                        TR::VPResolvedClass::create(vp, expectedClass),
-                        TR::VPNonNullObject::create(vp),
-                        NULL,
-                        NULL,
-                        TR::VPObjectLocation::create(
-                           vp, TR::VPObjectLocation::J9ClassObject));
+                     bool childrenAreEqual = vp->comp()->getClassClassPointer() == guardClassConstraint->getClass();
+                     if (childrenAreEqual)
+                        cannotBranch = true;
+                     else
+                        cannotFallThrough = true;
                      }
                   }
-               break;
 
-            default:
-            	break;
+               TR::SymbolReference *vftSR =
+                  vp->comp()->getSymRefTab()->findVftSymbolRef();
+
+               if (ignoreVirtualGuard
+                   && !cannotFallThrough
+                   && !cannotBranch
+                   && classChild->getOpCodeValue() == TR::aconst
+                   && instanceofObjectRef->getOpCodeValue() == TR::aloadi
+                   && instanceofObjectRef->getSymbolReference() == vftSR
+                   && node->isProfiledGuard())
+                  {
+                  TR::VPConstraint *receiverClassConstraint =
+                     vp->getConstraint(instanceofObjectRef, isGlobal);
+
+                  if (receiverClassConstraint != NULL
+                      && receiverClassConstraint->isClassObject() == TR_yes
+                      && receiverClassConstraint->getClass() != NULL)
+                     {
+                     auto expectedClassAddr =
+                        static_cast<uintptr_t>(classChild->getAddress());
+
+                     auto expectedClass =
+                        reinterpret_cast<TR_OpaqueClassBlock*>(expectedClassAddr);
+
+                     TR_OpaqueClassBlock *clazz =
+                        receiverClassConstraint->getClass();
+
+                     // There's no point checking for subtyping here, since
+                     // a class that hasn't been extended has no subtypes.
+                     if (clazz == expectedClass
+                         && !vp->comp()->fe()->classHasBeenExtended(expectedClass)
+                         && upgradeToNopGuard(vp, node, TR_HierarchyGuard))
+                        {
+                        return node;
+                        }
+                     }
+                  }
+#endif
+               }
+            break;
+
+         case TR_MethodTest:
+               {
+               TR::Node *vtableEntryNode = node->getFirstChild();
+               if (vtableEntryNode->getOpCodeValue() != TR::aloadi)
+                  break; // unexpected tree shape
+
+               TR::SymbolReference *entrySR = vtableEntryNode->getSymbolReference();
+               if (!vp->comp()->getSymRefTab()->isVtableEntrySymbolRef(entrySR))
+                  break; // unexpected tree shape
+
+               TR::Node *methodPtrNode = node->getSecondChild();
+               if (methodPtrNode->getOpCodeValue() != TR::aconst)
+                  break; // unexpected tree shape
+
+               auto expectedMethodAddr =
+                  static_cast<intptr_t>(methodPtrNode->getAddress());
+
+               TR_ASSERT_FATAL_WITH_NODE(
+                  methodPtrNode,
+                  expectedMethodAddr != 0,
+                  "method test method pointer constant is null");
+
+               TR::Node *classNode = vtableEntryNode->getFirstChild();
+               TR::VPConstraint *classConstraint = vp->getConstraint(classNode, isGlobal);
+
+               TR_OpaqueMethodBlock *expectedMethodPtr =
+                  reinterpret_cast<TR_OpaqueMethodBlock*>(expectedMethodAddr);
+
+               TR_ResolvedMethod *expectedMethod =
+                  vp->comp()->fe()->createResolvedMethod(
+                     vp->comp()->trMemory(), expectedMethodPtr);
+
+               TR_OpaqueClassBlock *expectedClass =
+                  expectedMethod->containingClass();
+
+               TR_YesNoMaybe taken = TR_maybe;
+               const char *foldReason = NULL;
+               if (classConstraint != NULL
+                   && classConstraint->isClassObject() == TR_yes
+                   && classConstraint->getClass() != NULL)
+                  {
+                  TR_OpaqueClassBlock *clazz = classConstraint->getClass();
+                  int32_t vftOffset = static_cast<int32_t>(entrySR->getOffset());
+                  // NOTE: clazz might not have a large enough VFT, in which
+                  // case vftEntry will be 0. This can happen:
+                  // - when the guard is for an interface call,
+                  // - when the guard is on a dead path, or
+                  // - maybe when the guard has been hoisted.
+                  intptr_t vftEntry = TR::Compiler->cls.getVFTEntry(
+                     vp->comp(), clazz, vftOffset);
+
+                  // We know the receiver is an instance of clazz, and if we
+                  // successfully found a VFT entry, then clazz has a large
+                  // enough VFT, so the VFT entry load will be in-bounds.
+                  if (vftEntry != 0
+                      && performTransformation(
+                           vp->comp(),
+                           "%sSetting vftEntryIsInBounds on method test n%un [%p]\n",
+                           OPT_DETAILS,
+                           node->getGlobalIndex(),
+                           node))
+                     {
+                     node->setVFTEntryIsInBounds(true);
+                     }
+
+                  if (ignoreVirtualGuard && classConstraint->isFixedClass())
+                     {
+                     // We know the exact type of the receiver and therefore
+                     // the exact result of the comparison.
+                     //
+                     // The case where clazz doesn't have a VFT entry at the
+                     // expected offset doesn't need to be handled specially.
+                     // In that case we should behave as though vftEntry is
+                     // not the expected method, which will be the natural
+                     // result of the comparison because vftEntry == 0 but
+                     // expectedMethodAddr != 0 (checked in the assertion above).
+                     //
+                     taken = (vftEntry == expectedMethodAddr) ? TR_no : TR_yes;
+                     foldReason = "fixed-type receiver";
+                     }
+                  else if (ignoreVirtualGuard)
+                     {
+                     bool fixedObjectType = false;
+                     bool fixedCastType = true;
+                     TR_YesNoMaybe isInstance = vp->comp()->fe()->isInstanceOf(
+                        clazz, expectedClass, fixedObjectType, fixedCastType);
+
+                     if (isInstance == TR_no)
+                        {
+                        taken = TR_yes; // necessarily unequal
+                        foldReason = "incompatible receiver";
+                        }
+                     else if (vftEntry == expectedMethodAddr
+                        && expectedMethod->isFinal())
+                        {
+                        taken = TR_no; // necessarily equal
+                        foldReason = "type bound has final inlined method";
+                        }
+                     else if (vftEntry == expectedMethodAddr
+                        && node->isProfiledGuard()
+                        && !expectedMethod->virtualMethodIsOverridden()
+                        && node->getOpCodeValue() == TR::ifacmpne
+                        && upgradeToNopGuard(vp, node, TR_NonoverriddenGuard))
+                        {
+                        return node;
+                        }
+                     }
+                  }
+
+               if (taken != TR_maybe && vp->trace())
+                  {
+                  traceMsg(
+                     vp->comp(),
+                     "n%un [%p]: method test: %s: branch %s taken\n",
+                     node->getGlobalIndex(),
+                     node,
+                     foldReason,
+                     taken == TR_yes ? "is" : "is not");
+                  }
+
+               if (taken == TR_yes)
+                  {
+                  cannotFallThrough = true;
+                  }
+               else if (taken == TR_no)
+                  {
+                  cannotBranch = true;
+                  }
+               else
+                  {
+                  // We can't fold, so at least learn a type bound (i.e.
+                  // expectedClass) for objects that pass the guard. Note
+                  // that instanceofObjectRef here is actually the VFT,
+                  // which will be accounted for and possibly changed just
+                  // after the switch.
+                  instanceofObjectRef = classNode;
+                  guardClassConstraint = TR::VPClass::create(
+                     vp,
+                     TR::VPResolvedClass::create(vp, expectedClass),
+                     TR::VPNonNullObject::create(vp),
+                     NULL,
+                     NULL,
+                     TR::VPObjectLocation::create(
+                        vp, TR::VPObjectLocation::J9ClassObject));
+                  }
+               }
+            break;
+
+         default:
+             break;
+         }
+
+      if (guardClassConstraint != NULL
+          && guardClassConstraint->getClassType() != NULL
+          && instanceofObjectRef != NULL
+          && !cannotBranch
+          && !cannotFallThrough)
+         {
+         instanceofOnBranch = false; // type bound is on the fallthrough edge
+         instanceofConstraint = guardClassConstraint;
+         instanceofDetectedAndFixedType =
+            virtualGuard->getTestType() == TR_VftTest;
+
+         if (vp->trace())
+            {
+            int32_t sigLen = 0;
+            const char *sig = guardClassConstraint->getClassSignature(sigLen);
+            traceMsg(
+               vp->comp(),
+               "n%un [%p]: guard only accepts instances of %s%.*s\n",
+               node->getGlobalIndex(),
+               node,
+               instanceofDetectedAndFixedType ? "(exactly) " : "",
+               sigLen,
+               sig);
             }
 
-         if (guardClassConstraint != NULL
-             && guardClassConstraint->getClassType() != NULL
-             && instanceofObjectRef != NULL
-             && !cannotBranch
-             && !cannotFallThrough)
+         instanceofObjectRefIsVft = true;
+         if (instanceofObjectRef->getOpCodeValue() == TR::aloadi
+             && instanceofObjectRef->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef())
             {
-            instanceofOnBranch = false; // type bound is on the fallthrough edge
-            instanceofConstraint = guardClassConstraint;
-            instanceofDetectedAndFixedType =
-               virtualGuard->getTestType() == TR_VftTest;
-
-            if (vp->trace())
-               {
-               int32_t sigLen = 0;
-               const char *sig = guardClassConstraint->getClassSignature(sigLen);
-               traceMsg(
-                  vp->comp(),
-                  "n%un [%p]: guard only accepts instances of %s%.*s\n",
-                  node->getGlobalIndex(),
-                  node,
-                  instanceofDetectedAndFixedType ? "(exactly) " : "",
-                  sigLen,
-                  sig);
-               }
-
-            instanceofObjectRefIsVft = true;
-            if (instanceofObjectRef->getOpCodeValue() == TR::aloadi
-                && instanceofObjectRef->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef())
-               {
-               instanceofObjectRef = instanceofObjectRef->getFirstChild();
-               instanceofObjectRefIsVft = false;
-               }
+            instanceofObjectRef = instanceofObjectRef->getFirstChild();
+            instanceofObjectRefIsVft = false;
             }
          }
       }

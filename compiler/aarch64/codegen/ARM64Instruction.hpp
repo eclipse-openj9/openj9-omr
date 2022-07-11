@@ -1324,6 +1324,14 @@ class ARM64AdminInstruction : public TR::Instruction
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 
    /**
+    * @brief Expand this instruction prior to binary encoding.
+    *
+    * @returns the last instruction in the expansion or this instruction if no expansion was
+    *          performed.
+    */
+   virtual TR::Instruction *expandInstruction();
+
+   /**
     * @brief Generates binary encoding of the instruction
     * @return instruction cursor
     */
@@ -3206,6 +3214,14 @@ class ARM64Trg1MemInstruction : public ARM64Trg1Instruction
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 
    /**
+    * @brief Expand this instruction prior to binary encoding.
+    *
+    * @returns the last instruction in the expansion or this instruction if no expansion was
+    *          performed.
+    */
+   virtual TR::Instruction *expandInstruction();
+
+   /**
     * @brief Generates binary encoding of the instruction
     * @return instruction cursor
     */
@@ -3314,6 +3330,15 @@ class ARM64MemInstruction : public TR::Instruction
     * @param[in] kindToBeAssigned : register kind
     */
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
+
+   /**
+    * @brief Expand this instruction prior to binary encoding.
+    *
+    * @returns the last instruction in the expansion or this instruction if no expansion was
+    *          performed.
+    */
+   virtual TR::Instruction *expandInstruction();
+
    /**
     * @brief Generates binary encoding of the instruction
     * @return instruction cursor

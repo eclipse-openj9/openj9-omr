@@ -147,6 +147,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
       TR_ARM64MemoryReferenceControl_Index_SignExtendedByte = 0x04,
       TR_ARM64MemoryReferenceControl_Index_SignExtendedHalf = 0x08,
       TR_ARM64MemoryReferenceControl_Index_SignExtendedWord = 0x10,
+      TR_ARM64MemoryReferenceControl_DelayedOffsetDone = 0x20
       /* To be added more if necessary */
       } TR_ARM64MemoryReferenceControl;
 
@@ -245,7 +246,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    intptr_t getOffset(bool withRegSym = false)
       {
       intptr_t displacement = _offset;
-      if (withRegSym &&
+      if (withRegSym && !isDelayedOffsetDone() &&
           _symbolReference->getSymbol() != NULL &&
           _symbolReference->getSymbol()->isRegisterMappedSymbol())
          displacement += _symbolReference->getSymbol()->getOffset();
@@ -395,6 +396,31 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
                                             TR_ARM64MemoryReferenceControl_Index_SignExtendedWord);}
 
    /**
+    * @brief Gets the flag indicating whether the delayed offset has already been applied.
+    *
+    * When this flag is set, the delayed offset of this MemoryReference from its register-mapped
+    * symbol has already been applied to this MemoryReference's internal offset and should not be
+    * applied again. When true, getOffset(false) and getOffset(true) are guaranteed to
+    * return the same value.
+    *
+    * @see setDelayedOffsetDone()
+    */
+   bool isDelayedOffsetDone()
+      {
+      return (_flag & TR_ARM64MemoryReferenceControl_DelayedOffsetDone) != 0;
+      }
+
+   /**
+    * @brief Sets the flag to indicate that the delayed offset has been applied.
+    *
+    * @see isDelayedOffsetDone()
+    */
+   void setDelayedOffsetDone()
+      {
+      _flag |= TR_ARM64MemoryReferenceControl_DelayedOffsetDone;
+      }
+
+   /**
     * @brief Returns the extend code for the index register
     * @returns the extend code for the index register
     */
@@ -521,6 +547,16 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
     * @return scale factor for node
     */
    int32_t getScaleForNode(TR::Node *node, TR::CodeGenerator *cg);
+
+   /**
+    * @brief Expands the instruction which uses this memory reference into multiple instructions if necessary
+    *
+    * @param currentInstruction: current instruction
+    * @param cg : CodeGenerator
+    * @return the last instruction in the expansion or this instruction if no expansion was
+    *          performed.
+    */
+   TR::Instruction *expandInstruction(TR::Instruction *currentInstruction, TR::CodeGenerator *cg);
 
    private:
 

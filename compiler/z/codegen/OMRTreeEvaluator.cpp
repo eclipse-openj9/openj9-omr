@@ -1135,7 +1135,7 @@ OMR::Z::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorElementType() == TR::Double ||
-                     (node->getDataType().getVectorElementType() == TR::Float && cg->comp()->target().cpu.getSupportsVectorFacilityEnhancement1()),
+                     (node->getDataType().getVectorElementType() == TR::Float && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1)),
                         "VFMA is only supported for VectorElementDataType TR::Double on z13 and onwards and TR::Float on z14 onwards");
    TR::Register *resultReg = TR::TreeEvaluator::tryToReuseInputVectorRegs(node, cg);
    TR::Register *va = cg->evaluate(node->getFirstChild());
@@ -1155,7 +1155,7 @@ OMR::Z::TreeEvaluator::vabsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
    TR::DataType dt = node->getDataType().getVectorElementType();
-   TR_ASSERT_FATAL(dt != TR::Float || cg->comp()->target().cpu.getSupportsVectorFacilityEnhancement1(),
+   TR_ASSERT_FATAL(dt != TR::Float || cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1),
                   "VFPSO is only supported for VectorElementDataType TR::Double on z13 and onwards and TR::Float on z14 onwards");
    return inlineVectorUnaryOp(node, cg, (dt == TR::Double || dt == TR::Float) ? TR::InstOpCode::VFPSO : TR::InstOpCode::VLP);
    }
@@ -1166,7 +1166,7 @@ OMR::Z::TreeEvaluator::vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorElementType() == TR::Double ||
-                     (node->getDataType().getVectorElementType() == TR::Float && cg->comp()->target().cpu.getSupportsVectorFacilityEnhancement1()),
+                     (node->getDataType().getVectorElementType() == TR::Float && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1)),
                         "VFSQ is only supported for VectorElementDataType TR::Double on z13 and onwards and TR::Float on z14 onwards");
    return inlineVectorUnaryOp(node, cg, TR::InstOpCode::VFSQ);
    }

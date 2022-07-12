@@ -4232,6 +4232,12 @@ TR::Register* OMR::X86::TreeEvaluator::vectorBinaryArithmeticEvaluator(TR::Node*
 
    TR::InstOpCode nativeOpcode = getNativeSIMDOpcode(opcode, type, useRegMemForm);
 
+   if (useRegMemForm && nativeOpcode.getMnemonic() == TR::InstOpCode::bad)
+      {
+      useRegMemForm = false;
+      nativeOpcode = getNativeSIMDOpcode(opcode, type, useRegMemForm);
+      }
+
    TR_ASSERT_FATAL(nativeOpcode.getMnemonic() != TR::InstOpCode::bad, "Unsupported vector operation for given element type: %s",
              type.getVectorElementType().toString());
 

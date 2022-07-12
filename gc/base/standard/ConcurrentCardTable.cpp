@@ -1079,6 +1079,9 @@ MM_ConcurrentCardTable::finalCleanCards(MM_EnvironmentBase *env, uintptr_t *byte
 		/* ..and address of last slot N.B Range is EXCLUSIVE */
 		uintptr_t *heapTop = (uintptr_t *)((uint8_t *)heapBase + CARD_SIZE);
 
+		/* prevent loading mark bits prematurely */
+		MM_AtomicOperations::readBarrier();
+
 		/* Then iterate over all marked objects in the heap between the two addresses */
 		MM_HeapMapIterator markedObjectIterator(_extensions, markMap, heapBase, heapTop);
 		while (NULL != (objectPtr = markedObjectIterator.nextObject())) {

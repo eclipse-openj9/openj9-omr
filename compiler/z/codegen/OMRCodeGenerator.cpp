@@ -426,6 +426,18 @@ OMR::Z::CodeGenerator::initialize()
 
    _cgFlags = 0;
 
+   bool supportsAutoSIMD = !comp->getOption(TR_DisableSIMD) && comp->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY);
+
+   if(supportsAutoSIMD)
+      {
+      cg->setSupportsVectorRegisters();
+      cg->setSupportsAutoSIMD();
+      }
+   else
+      {
+      comp->setOption(TR_DisableSIMD);
+      }
+
    // Initialize Linkage for Code Generator
    cg->initializeLinkage();
 

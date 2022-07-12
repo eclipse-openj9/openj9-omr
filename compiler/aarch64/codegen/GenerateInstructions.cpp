@@ -282,6 +282,30 @@ TR::Instruction *generateTrg1Src2ExtendedInstruction(TR::CodeGenerator *cg, TR::
    return new (cg->trHeapMemory()) TR::ARM64Trg1Src2ExtendedInstruction(op, node, treg, s1reg, s2reg, extendType, shiftAmount, cg);
    }
 
+TR::Instruction *generateTrg1Src2IndexedElementInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg,
+   uint32_t index, TR::Instruction *preced)
+   {
+   if ((op >= TR::InstOpCode::fmulelem_4s) && (op <= TR::InstOpCode::vfmulelem_2d))
+      {
+      if ((op == TR::InstOpCode::fmulelem_4s) || (op == TR::InstOpCode::vfmulelem_4s))
+         {
+         TR_ASSERT_FATAL_WITH_NODE(node, index <= 3, "index is out of range: %d", index);
+         }
+      else
+         {
+         TR_ASSERT_FATAL_WITH_NODE(node, index <= 1, "index is out of range: %d", index);
+         }
+      }
+   else
+      {
+      TR_ASSERT_FATAL_WITH_NODE(node, false, "unsupported opcode: %d", op);
+      }
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1Src2IndexedElementInstruction(op, node, treg, s1reg, s2reg, index, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1Src2IndexedElementInstruction(op, node, treg, s1reg, s2reg, index, cg);
+   }
+
 TR::Instruction *generateTrg1Src3Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, TR::Register *s3reg, TR::Instruction *preced)
    {

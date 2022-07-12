@@ -940,6 +940,11 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x6E020400,	/* INS  	vinseh  */
 		0x6E040400,	/* INS  	vinses  */
 		0x6E080400,	/* INS  	vinsed  */
+	/* Vector by element arithmetics */
+		0x5F809000,	/* FMUL (scalar)  	fmulelem_4s */
+		0x5FC09000,	/* FMUL (scalar)  	fmulelem_2d */
+		0x4F809000,	/* FMUL  	vfmulelem_4s */
+		0x4FC09000,	/* FMUL  	vfmulelem_4s */
 	/* Vector widening and narrowing arithmetics */
 		0x2E208000,	/* UMLAL   	vumlal_8h */
 		0x2E608000,	/* UMLAL   	vumlal_4s */

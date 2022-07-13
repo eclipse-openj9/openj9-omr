@@ -9341,9 +9341,11 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
    //
    bool isVirtualGuardNopable = node->isNopableInlineGuard();
 
-   if (((node->getOpCodeValue() == TR::ifacmpne ||
-         node->getOpCodeValue() == TR::ifacmpeq) &&
-        node->isTheVirtualGuardForAGuardedInlinedCall()))
+   // Only accept VFT and method tests using ifacmpne here. Reversed (ifacmpeq)
+   // guards are very rare, and shouldn't necessarily even be allowed, but they
+   // are currently possible.
+   if (node->getOpCodeValue() == TR::ifacmpne
+       && node->isTheVirtualGuardForAGuardedInlinedCall())
       {
       TR_VirtualGuard *virtualGuard = vp->comp()->findVirtualGuardInfo(node);
       if (virtualGuard)
@@ -9368,13 +9370,11 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                      if (ignoreVirtualGuard && guardClassConstraint && guardClassConstraint->getClassType() &&
                          objectConstraint && objectConstraint->isClassObject() ==  TR_yes && vp->comp()->getClassClassPointer())
                         {
-                        bool       testForEquality  = (node->getOpCodeValue() == TR::ifacmpeq);
-                        bool       childrenAreEqual = (vp->comp()->getClassClassPointer() == guardClassConstraint->getClass());
-
-                        if (testForEquality == childrenAreEqual)
-                           cannotFallThrough = true;
-                        else
+                        bool childrenAreEqual = vp->comp()->getClassClassPointer() == guardClassConstraint->getClass();
+                        if (childrenAreEqual)
                            cannotBranch = true;
+                        else
+                           cannotFallThrough = true;
                         }
                      }
 #endif
@@ -9396,14 +9396,14 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                         int32_t    vftOffset        = static_cast<int32_t>(vtableEntryNode->getSymbolReference()->getOffset());
                         intptr_t  vftEntry         = TR::Compiler->cls.getVFTEntry(vp->comp(), clazz, vftOffset);
                         bool       childrenAreEqual = (vftEntry == methodPtrNode->getAddress());
-                        bool       testForEquality  = (node->getOpCodeValue() == TR::ifacmpeq);
+                        bool       testForEquality  = false;
                         if (vp->trace())
-                           traceMsg(vp->comp(), "TR_MethodTest: node=%p, vtableEntryNode=%p, clazz=%p, vftOffset=%d, vftEntry=%p, childrenAreEqual=%d, testForEquality=%d\n",
-                                    node, vtableEntryNode, clazz, vftOffset, vftEntry, childrenAreEqual, testForEquality);
-                        if (testForEquality == childrenAreEqual)
-                           cannotFallThrough = true;
-                        else
+                           traceMsg(vp->comp(), "TR_MethodTest: node=%p, vtableEntryNode=%p, clazz=%p, vftOffset=%d, vftEntry=%p, childrenAreEqual=%d\n",
+                                    node, vtableEntryNode, clazz, vftOffset, vftEntry, childrenAreEqual);
+                        if (childrenAreEqual)
                            cannotBranch = true;
+                        else
+                           cannotFallThrough = true;
                         }
                      }
                   }
@@ -9418,7 +9418,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
              && !cannotBranch
              && !cannotFallThrough)
             {
-            instanceofOnBranch = node->getOpCodeValue() == TR::ifacmpeq;
+            instanceofOnBranch = false; // type bound is on the fallthrough edge
             instanceofConstraint = guardClassConstraint;
             instanceofDetectedAndFixedType =
                virtualGuard->getTestType() == TR_VftTest;

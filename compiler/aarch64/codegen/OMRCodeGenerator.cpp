@@ -649,6 +649,8 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
       case TR::vmax:
       case TR::vreductionAdd:
       case TR::vreductionMul:
+      case TR::vreductionMax:
+      case TR::vreductionMin:
          return true;
       case TR::vand:
       case TR::vor:

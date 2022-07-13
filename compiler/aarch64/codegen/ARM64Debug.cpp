@@ -947,6 +947,10 @@ static const char *opCodeToNameMap[] =
    "vinseh",
    "vinses",
    "vinsed",
+   "fmulelem_4s",
+   "fmulelem_2d",
+   "vfmulelem_4s",
+   "vfmulelem_2d",
    "vumlal_8h",
    "vumlal_4s",
    "vumlal_2d",
@@ -1106,6 +1110,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
          break;
       case OMR::Instruction::IsTrg1Src2Extended:
          print(pOutFile, (TR::ARM64Trg1Src2ExtendedInstruction *)instr);
+         break;
+      case OMR::Instruction::IsTrg1Src2IndexedElement:
+         print(pOutFile, (TR::ARM64Trg1Src2IndexedElementInstruction *)instr);
          break;
       case OMR::Instruction::IsTrg1Src2Zero:
          print(pOutFile, (TR::ARM64Trg1Src2ZeroInstruction *)instr);
@@ -2120,6 +2127,21 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src2ExtendedInstruction *instr)
    print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getSource2Register(), TR_WordReg);
    trfprintf(pOutFile, " %s %d", ARM64ExtendCodeNames[instr->getExtendType()], instr->getShiftAmount());
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src2IndexedElementInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+
+   print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource2Register(), TR_WordReg);
+
+   TR::InstOpCode::Mnemonic op = instr->getOpCodeValue();
+   trfprintf(pOutFile, ".[%d]", instr->getIndex());
    trfflush(_comp->getOutFile());
    }
 

@@ -579,6 +579,28 @@ TR::Instruction *generateTrg1Src2ExtendedInstruction(
                    TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates src2-to-trg indexed element instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] s1reg : source register 1
+ * @param[in] s2reg : source register 2
+ * @param[in] index : index of element in s2reg
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateTrg1Src2IndexedElementInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   TR::Register *s1reg,
+                   TR::Register *s2reg,
+                   uint32_t index,
+                   TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates src3-to-trg instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode

@@ -2866,6 +2866,80 @@ class ARM64Trg1Src2ExtendedInstruction : public ARM64Trg1Src2Instruction
    virtual uint8_t *generateBinaryEncoding();
    };
 
+class ARM64Trg1Src2IndexedElementInstruction : public ARM64Trg1Src2Instruction
+   {
+   uint32_t _index;
+
+   public:
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] s1reg : source register 1
+    * @param[in] s2reg : source register 2
+    * @param[in] index : index of element in s2reg
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1Src2IndexedElementInstruction(TR::InstOpCode::Mnemonic op,
+                             TR::Node *node,
+                             TR::Register *treg,
+                             TR::Register *s1reg,
+                             TR::Register *s2reg,
+                             uint32_t index, TR::CodeGenerator *cg)
+      : ARM64Trg1Src2Instruction(op, node, treg, s1reg, s2reg, cg), _index(index)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] s1reg : source register 1
+    * @param[in] s2reg : source register 2
+    * @param[in] index : index of element in s2reg
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1Src2IndexedElementInstruction(TR::InstOpCode::Mnemonic op,
+                             TR::Node *node,
+                             TR::Register *treg,
+                             TR::Register *s1reg,
+                             TR::Register *s2reg,
+                             uint32_t index,
+                             TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : ARM64Trg1Src2Instruction(op, node, treg, s1reg, s2reg, precedingInstruction, cg),
+        _index(index)
+      {
+      }
+
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsTrg1Src2IndexedElement; }
+
+   /**
+    * @brief Gets index
+    * @return index of element in s2reg
+    */
+   uint32_t getIndex() {return _index;}
+
+   /**
+    * @brief Sets index in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertIndex(uint32_t *instruction);
+
+   /**
+    * @brief Generates binary encoding of the instruction
+    * @return instruction cursor
+    */
+   virtual uint8_t *generateBinaryEncoding();
+   };
+
 /*
  * This class is designated to be used for alias instruction such as mulw, mulx
  */

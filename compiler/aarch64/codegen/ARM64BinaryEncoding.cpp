@@ -669,6 +669,43 @@ uint8_t *TR::ARM64Trg1Src2ExtendedInstruction::generateBinaryEncoding()
    return cursor;
    }
 
+void TR::ARM64Trg1Src2IndexedElementInstruction::insertIndex(uint32_t *instruction)
+   {
+   TR::InstOpCode::Mnemonic mnemonic = getOpCodeValue();
+   if ((mnemonic >= TR::InstOpCode::fmulelem_4s) && (mnemonic <= TR::InstOpCode::vfmulelem_2d))
+      {
+      uint8_t h = 0, l = 0;
+      if ((mnemonic == TR::InstOpCode::fmulelem_4s) || (mnemonic == TR::InstOpCode::vfmulelem_4s))
+         {
+         h = (getIndex() >> 1) & 1;
+         l = getIndex() & 1;
+         }
+      else
+         {
+         h = getIndex() & 1;
+         }
+      *instruction |= (h << 11) | (l << 21);
+      }
+   else
+      {
+      TR_ASSERT_FATAL(false, "unsupported opcode: %d", mnemonic);
+      }
+   }
+
+uint8_t *TR::ARM64Trg1Src2IndexedElementInstruction::generateBinaryEncoding()
+   {
+   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
+   uint8_t *cursor = getOpCode().copyBinaryToBuffer(instructionStart);
+   insertTargetRegister(toARM64Cursor(cursor));
+   insertSource1Register(toARM64Cursor(cursor));
+   insertSource2Register(toARM64Cursor(cursor));
+   insertIndex(toARM64Cursor(cursor));
+   cursor += ARM64_INSTRUCTION_LENGTH;
+   setBinaryLength(ARM64_INSTRUCTION_LENGTH);
+   setBinaryEncoding(instructionStart);
+   return cursor;
+   }
+
 uint8_t *TR::ARM64Trg1Src2ZeroInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();

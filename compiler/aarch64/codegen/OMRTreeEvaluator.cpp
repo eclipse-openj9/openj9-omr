@@ -1623,7 +1623,7 @@ OMR::ARM64::TreeEvaluator::vreductionAddEvaluator(TR::Node *node, TR::CodeGenera
    }
 
 /**
- * @brief A helper function for generating instuction sequence for reduction bitwise logical operations for vectors of integer elements.
+ * @brief A helper function for generating instuction sequence for reduction operations.
  *
  * @param[in] node: node
  * @param[in] et: element type
@@ -1632,12 +1632,14 @@ OMR::ARM64::TreeEvaluator::vreductionAddEvaluator(TR::Node *node, TR::CodeGenera
  * @return general purpose register containing the result
  */
 static TR::Register*
-vreductionBitwiseLogicalHelper(TR::Node *node, TR::DataType et, TR::InstOpCode::Mnemonic logicalOp, TR::CodeGenerator *cg)
+vreductionHelper(TR::Node *node, TR::DataType et, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
    {
    TR::Node *sourceChild = node->getFirstChild();
    TR::Register *sourceReg = cg->evaluate(sourceChild);
 
    TR_ASSERT_FATAL_WITH_NODE(node, sourceReg->getKind() == TR_VRF, "unexpected Register kind");
+
+   bool useGPRForResult = true;
 
    TR::InstOpCode::Mnemonic movOp;
    switch (et)
@@ -1655,48 +1657,56 @@ vreductionBitwiseLogicalHelper(TR::Node *node, TR::DataType et, TR::InstOpCode::
          movOp = TR::InstOpCode::umovxd;
          break;
       default:
-         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
+         useGPRForResult = false;
+         movOp = TR::InstOpCode::bad;
          break;
       }
 
    TR::Register *tmp0Reg = cg->allocateRegister(TR_VRF);
    TR::Register *tmp1Reg = cg->allocateRegister(TR_VRF);
-   TR::Register *resReg = cg->allocateRegister(TR_GPR);
+   TR::Register *resReg = useGPRForResult ? cg->allocateRegister(TR_GPR) : NULL;
 
    /*
     * Generating unzip instructions to split elements into 2 vector registers and perform a bitwise logical operation.
     */
    generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp1_2d, node, tmp1Reg, sourceReg, sourceReg);
    generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp2_2d, node, tmp0Reg, sourceReg, sourceReg);
-   generateTrg1Src2Instruction(cg, logicalOp, node, tmp0Reg, tmp0Reg, tmp1Reg);
+   generateTrg1Src2Instruction(cg, op, node, tmp0Reg, tmp0Reg, tmp1Reg);
 
-   if (et != TR::Int64)
+   if ((et != TR::Int64) && (et != TR::Double))
       {
       generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp1_4s, node, tmp1Reg, tmp0Reg, tmp0Reg);
       generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp2_4s, node, tmp0Reg, tmp0Reg, tmp0Reg);
-      generateTrg1Src2Instruction(cg, logicalOp, node, tmp0Reg, tmp0Reg, tmp1Reg);
+      generateTrg1Src2Instruction(cg, op, node, tmp0Reg, tmp0Reg, tmp1Reg);
 
-      if (et != TR::Int32)
+      if ((et != TR::Int32) && (et != TR::Float))
          {
          generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp1_8h, node, tmp1Reg, tmp0Reg, tmp0Reg);
          generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp2_8h, node, tmp0Reg, tmp0Reg, tmp0Reg);
-         generateTrg1Src2Instruction(cg, logicalOp, node, tmp0Reg, tmp0Reg, tmp1Reg);
+         generateTrg1Src2Instruction(cg, op, node, tmp0Reg, tmp0Reg, tmp1Reg);
 
          if (et == TR::Int8)
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp1_16b, node, tmp1Reg, tmp0Reg, tmp0Reg);
             generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp2_16b, node, tmp0Reg, tmp0Reg, tmp0Reg);
-            generateTrg1Src2Instruction(cg, logicalOp, node, tmp0Reg, tmp0Reg, tmp1Reg);
+            generateTrg1Src2Instruction(cg, op, node, tmp0Reg, tmp0Reg, tmp1Reg);
             }
          }
       }
 
-   generateMovVectorElementToGPRInstruction(cg, movOp, node, resReg, tmp0Reg, 0);
+   if (useGPRForResult)
+      {
+      generateMovVectorElementToGPRInstruction(cg, movOp, node, resReg, tmp0Reg, 0);
+      cg->stopUsingRegister(tmp0Reg);
+      }
+   else
+      {
+      resReg = tmp0Reg;
+      }
 
-   cg->stopUsingRegister(tmp0Reg);
    cg->stopUsingRegister(tmp1Reg);
-   node->setRegister(resReg);
    cg->decReferenceCount(sourceChild);
+   node->setRegister(resReg);
 
    return resReg;
    }
@@ -1714,7 +1724,7 @@ OMR::ARM64::TreeEvaluator::vreductionAndEvaluator(TR::Node *node, TR::CodeGenera
       case TR::Int16:
       case TR::Int32:
       case TR::Int64:
-         return vreductionBitwiseLogicalHelper(node, et, TR::InstOpCode::vand16b, cg);
+         return vreductionHelper(node, et, TR::InstOpCode::vand16b, cg);
       case TR::Float:
       case TR::Double:
          TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type %s", node->getFirstChild()->getDataType().toString());
@@ -1743,10 +1753,97 @@ OMR::ARM64::TreeEvaluator::vreductionMinEvaluator(TR::Node *node, TR::CodeGenera
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
+/**
+ * @brief A helper function for generating instuction sequence for reduce multiplication of vectors with 64-bit integer elements.
+ *
+ * @param[in] node: node
+ * @param[in] cg: CodeGenerator
+ * @return general purpose register containing the result
+ */
+TR::Register*
+vreductionMulInt64Helper(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *sourceChild = node->getFirstChild();
+   TR::Register *sourceReg = cg->evaluate(sourceChild);
+
+   TR_ASSERT_FATAL_WITH_NODE(node, sourceReg->getKind() == TR_VRF, "unexpected Register kind");
+
+   TR::Register *tmp0Reg = cg->allocateRegister(TR_GPR);
+   TR::Register *resReg = cg->allocateRegister(TR_GPR);
+
+   generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, tmp0Reg, sourceReg, 0);
+   generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, resReg, sourceReg, 1);
+   generateMulInstruction(cg, node, resReg, tmp0Reg, resReg, true);
+
+   cg->stopUsingRegister(tmp0Reg);
+   cg->decReferenceCount(sourceChild);
+   node->setRegister(resReg);
+
+   return resReg;
+   }
+
+/**
+ * @brief A helper function for generating instuction sequence for reduce multiplication of vectors with float or double elements.
+ *
+ * @details We cannot use vreductionHelper because the result of multiplication with helper is (a[0] * a[1]) * (a[2] * a[3]),
+ *          which is not exactly the same as (a[0] * a[1] * a[2] * a[3]) for floating point numbers.
+ *
+ * @param[in] node: node
+ * @param[in] et: element type
+ * @param[in] cg: CodeGenerator
+ * @return general purpose register containing the result
+ */
+TR::Register*
+vreductionMulFloatingPointHelper(TR::Node *node, TR::DataType et, TR::CodeGenerator *cg)
+   {
+   TR::Node *sourceChild = node->getFirstChild();
+   TR::Register *sourceReg = cg->evaluate(sourceChild);
+
+   TR_ASSERT_FATAL_WITH_NODE(node, sourceReg->getKind() == TR_VRF, "unexpected Register kind");
+
+   TR::Register *resReg = cg->allocateRegister(TR_VRF);
+
+   if (et == TR::Float)
+      {
+      generateTrg1Src2IndexedElementInstruction(cg, TR::InstOpCode::fmulelem_4s, node, resReg, sourceReg, sourceReg, 1);
+      generateTrg1Src2IndexedElementInstruction(cg, TR::InstOpCode::fmulelem_4s, node, resReg, resReg, sourceReg, 2);
+      generateTrg1Src2IndexedElementInstruction(cg, TR::InstOpCode::fmulelem_4s, node, resReg, resReg, sourceReg, 3);
+      }
+   else
+      {
+      generateTrg1Src2IndexedElementInstruction(cg, TR::InstOpCode::fmulelem_2d, node, resReg, sourceReg, sourceReg, 1);
+      }
+
+   cg->decReferenceCount(sourceChild);
+   node->setRegister(resReg);
+
+   return resReg;
+   }
+
 TR::Register*
 OMR::ARM64::TreeEvaluator::vreductionMulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
+
+   TR::DataType et = node->getFirstChild()->getDataType().getVectorElementType();
+   switch(et)
+      {
+      case TR::Int8:
+         return vreductionHelper(node, et, TR::InstOpCode::vmul16b, cg);
+      case TR::Int16:
+         return vreductionHelper(node, et, TR::InstOpCode::vmul8h, cg);
+      case TR::Int32:
+         return vreductionHelper(node, et, TR::InstOpCode::vmul4s, cg);
+      case TR::Int64:
+         return vreductionMulInt64Helper(node, cg);
+      case TR::Float:
+      case TR::Double:
+         return vreductionMulFloatingPointHelper(node, et, cg);
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      }
    }
 
 TR::Register*
@@ -1762,7 +1859,7 @@ OMR::ARM64::TreeEvaluator::vreductionOrEvaluator(TR::Node *node, TR::CodeGenerat
       case TR::Int16:
       case TR::Int32:
       case TR::Int64:
-         return vreductionBitwiseLogicalHelper(node, et, TR::InstOpCode::vorr16b, cg);
+         return vreductionHelper(node, et, TR::InstOpCode::vorr16b, cg);
       case TR::Float:
       case TR::Double:
          TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type %s", node->getFirstChild()->getDataType().toString());
@@ -1792,7 +1889,7 @@ OMR::ARM64::TreeEvaluator::vreductionXorEvaluator(TR::Node *node, TR::CodeGenera
       case TR::Int16:
       case TR::Int32:
       case TR::Int64:
-         return vreductionBitwiseLogicalHelper(node, et, TR::InstOpCode::veor16b, cg);
+         return vreductionHelper(node, et, TR::InstOpCode::veor16b, cg);
       case TR::Float:
       case TR::Double:
          TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type %s", node->getFirstChild()->getDataType().toString());

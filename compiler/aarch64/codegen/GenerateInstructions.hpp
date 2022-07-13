@@ -1021,6 +1021,26 @@ TR::Instruction *generateMulInstruction(
                   TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates MUL (register) instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] s1reg : source register 1
+ * @param[in] s2reg : source register 2
+ * @param[in] is64bit : true when it is 64-bit operation
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateMulInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::Node *node,
+                  TR::Register *treg,
+                  TR::Register *s1reg,
+                  TR::Register *s2reg,
+                  bool is64bit,
+                  TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates CSET instruction
  * @param[in] cg : CodeGenerator
  * @param[in] node : node

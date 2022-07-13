@@ -1309,6 +1309,7 @@ int32_t TR_OSRLiveRangeAnalysis::fullAnalysis(bool includeParms, bool containsPe
    bool ignoreOSRuses = true;
    bool includeParms = true;
    TR_Liveness liveLocals(comp(), optimizer(), comp()->getFlowGraph()->getStructure(), ignoreOSRuses, NULL, false, includeParms);
+   liveLocals.perform(comp()->getFlowGraph()->getStructure());
    _liveVars = new (trStackMemory()) TR_BitVector(liveLocals.getNumberOfBits(), trMemory(), stackAlloc);
 
    //set the structure to NULL so that the inliner (which is applied very soon after) doesn't need

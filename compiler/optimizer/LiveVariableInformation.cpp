@@ -64,16 +64,27 @@ TR_LiveVariableInformation::TR_LiveVariableInformation(TR::Compilation   *c,
    {
    _traceLiveVariableInfo = comp()->getOption(TR_TraceLiveness);
 
-   if (traceLiveVarInfo())
-      traceMsg(comp(), "Collecting live variable information\n");
-
    // Find the number of locals and assign an index to each
    //
    _numLocals = 0;
    _includeParms = includeParms;
    _splitLongs = splitLongs;
 
-   if (includeParms)
+   _localObjects = NULL;
+   _cachedRegularGenSetInfo = NULL;
+   _cachedRegularKillSetInfo = NULL;
+   _cachedExceptionGenSetInfo = NULL;
+   _cachedExceptionKillSetInfo = NULL;
+
+   _haveCachedGenAndKillSets = false;
+   _liveCommonedLoads = NULL;
+   }
+
+void TR_LiveVariableInformation::collectLiveVariableInformation()
+   {
+   if (traceLiveVarInfo())
+      traceMsg(comp(), "Collecting live variable information\n");
+   if (_includeParms)
       {
       TR::ParameterSymbol *p;
       ListIterator<TR::ParameterSymbol> parms(&comp()->getMethodSymbol()->getParameterList());
@@ -82,7 +93,7 @@ TR_LiveVariableInformation::TR_LiveVariableInformation(TR::Compilation   *c,
          if (traceLiveVarInfo())
             traceMsg(comp(), "#%2d : is a parm symbol at %p\n", _numLocals, p);
 
-         if (p->getType().isInt64() && splitLongs)
+         if (p->getType().isInt64() && _splitLongs)
             {
             p->setLiveLocalIndex(_numLocals, comp()->fe());
             _numLocals += 2;
@@ -99,7 +110,7 @@ TR_LiveVariableInformation::TR_LiveVariableInformation(TR::Compilation   *c,
       if (traceLiveVarInfo())
          traceMsg(comp(), "Local #%2d is symbol at %p\n",_numLocals,p);
 
-      if (p->getType().isInt64() && splitLongs)
+      if (p->getType().isInt64() && _splitLongs)
          {
          p->setLiveLocalIndex(_numLocals, comp()->fe());
          _numLocals += 2;
@@ -108,7 +119,7 @@ TR_LiveVariableInformation::TR_LiveVariableInformation(TR::Compilation   *c,
          p->setLiveLocalIndex(_numLocals++, comp()->fe());
       }
 
-    if (traceLiveVarInfo())
+   if (traceLiveVarInfo())
       traceMsg(comp(), "Finished collecting live variable information: %d locals found\n", _numLocals);
 
    _localObjects = NULL;

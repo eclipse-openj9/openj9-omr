@@ -147,6 +147,7 @@ int32_t TR_CompactLocals::perform()
    // Perform liveness analysis
    //
    TR_Liveness liveLocals(comp(), optimizer(), comp()->getFlowGraph()->getStructure());
+   liveLocals.perform(comp()->getFlowGraph()->getStructure());
 
    TR_BitVector *referenceLocals;
    TR_BitVector *nonReferenceLocals;

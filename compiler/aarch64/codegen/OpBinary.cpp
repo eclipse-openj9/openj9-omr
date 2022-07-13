@@ -1000,6 +1000,22 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x6E60D400,	/* FADDP  	vfaddp2d */
 		0x7E30D800,	/* FADDP(scalar) faddp2s */
 		0x7E70D800,	/* FADDP(scalar) faddp2d */
+		0x6E20C400,	/* FMAXNMP 	vfmaxnmp4s */
+		0x6E60C400,	/* FMAXNMP 	vfmaxnmp2d */
+		0x7E30C800,	/* FMAXNMP(scalar) 	fmaxnmp2s */
+		0x7E70C800,	/* FMAXNMP(scalar) 	fmaxnmp2d */
+		0x6E20F400,	/* FMAXP 	vfmaxp4s */
+		0x6E60F400,	/* FMAXP 	vfmaxp2d */
+		0x7E30F800,	/* FMAXP(scalar) 	fmaxp2s */
+		0x7E70F800,	/* FMAXP(scalar) 	fmaxp2d */
+		0x6EA0C400,	/* FMINNMP 	vfminnmp4s */
+		0x6EE0C400,	/* FMINNMP 	vfminnmp2d */
+		0x7EB0C800,	/* FMINNMP(scalar) 	fminnmp2s */
+		0x7EF0C800,	/* FMINNMP(scalar) 	fminnmp2d */
+		0x6EA0F400,	/* FMINP 	vfminp4s */
+		0x6EE0F400,	/* FMINP 	vfminp2d */
+		0x7EB0F800,	/* FMINP(scalar) 	fminp2s */
+		0x7EF0F800,	/* FMINP(scalar) 	fminp2d */
 	/* Hint instructions */
 		0xD503201F,	/* NOP          nop      */
 };

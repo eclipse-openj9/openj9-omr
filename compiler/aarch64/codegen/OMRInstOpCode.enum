@@ -999,6 +999,22 @@
 		vfaddp2d,                                               	/* 0x6E60D400	FADDP        	 */
 		faddp2s,                                                	/* 0x7E30D800	FADDP(scalar)	 */
 		faddp2d,                                                	/* 0x7E70D800	FADDP(scalar)	 */
+		vfmaxnmp4s,                                             	/* 0x6E20C400	FMAXNMP      	 */
+		vfmaxnmp2d,                                             	/* 0x6E60C400	FMAXNMP      	 */
+		fmaxnmp2s,                                              	/* 0x7E30C800	FMAXNMP(scalar)	 */
+		fmaxnmp2d,                                              	/* 0x7E70C800	FMAXNMP(scalar)	 */
+		vfmaxp4s,                                               	/* 0x6E20F400	FMAXP        	 */
+		vfmaxp2d,                                               	/* 0x6E60F400	FMAXP        	 */
+		fmaxp2s,                                                	/* 0x7E30F800	FMAXP(scalar)  	 */
+		fmaxp2d,                                                	/* 0x7E70F800	FMAXP(scalar)  	 */
+		vfminnmp4s,                                             	/* 0x6EA0C400	FMINNMP      	 */
+		vfminnmp2d,                                             	/* 0x6EE0C400	FMINNMP      	 */
+		fminnmp2s,                                              	/* 0x7EB0C800	FMINNMP(scalar)	 */
+		fminnmp2d,                                              	/* 0x7EF0C800	FMINNMP(scalar)	 */
+		vfminp4s,                                               	/* 0x6EA0F400	FMINP        	 */
+		vfminp2d,                                               	/* 0x6EE0F400	FMINP        	 */
+		fminp2s,                                                	/* 0x7EB0F800	FMINP(scalar)  	 */
+		fminp2d,                                                	/* 0x7EF0F800	FMINP(scalar)  	 */
 /* Hint instructions */
 		nop,                                                    	/* 0xD503201F   NOP          */
 /* Internal OpCodes */

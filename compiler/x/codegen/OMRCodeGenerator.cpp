@@ -1209,6 +1209,10 @@ void OMR::X86::CodeGenerator::saveBetterSpillPlacements(TR::Instruction * branch
 
 void OMR::X86::CodeGenerator::removeBetterSpillPlacementCandidate(TR::RealRegister * realReg)
    {
+   // This mechanism only supports GPR's due to interference between GPR and vector register masks
+   if (realReg->getKind() != TR_GPR)
+      return;
+
    // Remove the given real register as a candidate for better spill placement
    // of any virtual registers.
    //
@@ -1250,6 +1254,11 @@ OMR::X86::CodeGenerator::findBetterSpillPlacement(
    {
    TR::Instruction          * placement;
    TR_BetterSpillPlacement * info;
+
+   // This mechanism only supports GPR's due to interference between GPR and vector register masks
+   if (virtReg->getKind() != TR_GPR)
+      return NULL;
+
    for (info = _betterSpillPlacements; info; info = info->_next)
       {
       if (info->_virtReg == virtReg)

@@ -1620,7 +1620,7 @@ MM_Scavenger::copyForVariant(MM_EnvironmentStandard *env, MM_ForwardedHeader* fo
 
 			uintptr_t spaceAvailableForObject = _activeSubSpace->getMaxSpaceForObjectInEvacuateMemory(forwardedHeader->getObject());
 			Assert_GC_true_with_message4(env, objectCopySizeInBytes <= spaceAvailableForObject,
-					"Corruption in Evacuate at %p: calculated object size %zu larger then available %zu, Forwarded Header at %p\n",
+					"Corruption in Evacuate at %p: calculated object size %zu larger than available %zu, Forwarded Header at %p\n",
 					forwardedHeader->getObject(), objectCopySizeInBytes, spaceAvailableForObject, forwardedHeader);
 
 			copyCache = reserveMemoryForAllocateInTenureSpace(env, forwardedHeader->getObject(), objectReserveSizeInBytes);
@@ -1655,7 +1655,7 @@ MM_Scavenger::copyForVariant(MM_EnvironmentStandard *env, MM_ForwardedHeader* fo
 
 			uintptr_t spaceAvailableForObject = _activeSubSpace->getMaxSpaceForObjectInEvacuateMemory(forwardedHeader->getObject());
 			Assert_GC_true_with_message4(env, objectCopySizeInBytes <= spaceAvailableForObject,
-					"Corruption in Evacuate at %p: calculated object size %zu larger then available %zu, Forwarded Header at %p\n",
+					"Corruption in Evacuate at %p: calculated object size %zu larger than available %zu, Forwarded Header at %p\n",
 					forwardedHeader->getObject(), objectCopySizeInBytes, spaceAvailableForObject, forwardedHeader);
 
 			copyCache = reserveMemoryForAllocateInSemiSpace(env, forwardedHeader->getObject(), objectReserveSizeInBytes);
@@ -4900,13 +4900,13 @@ MM_Scavenger::calculateTiltRatio()
 	 * 	tilt_ratio =  --------------------------------------------------
 	 * 							Nursery size / 100
 	 *
-	 * Quality of calculation if good enough because Nursery size is a large number (at least grater then 1K)
+	 * Quality of calculation if good enough because Nursery size is a large number (at least greater than 1K)
 	 */
 
 	/* Calculate bottom part first */
 	uintptr_t tmp = _extensions->heap->getActiveMemorySize(MEMORY_TYPE_NEW) / 100;
 
-	/* Size of (Total - Tenure) can not be smaller then 100 bytes */
+	/* Size of (Total - Tenure) can not be smaller than 100 bytes */
 	Assert_MM_true (tmp > 0);
 
 	/* allocate size = nursery size - survivor size */

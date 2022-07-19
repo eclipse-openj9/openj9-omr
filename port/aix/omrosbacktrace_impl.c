@@ -166,11 +166,12 @@ omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9Platfor
  * @param portLbirary a pointer to an initialized port library
  * @param threadInfo a thread structure populated with a backtrace
  * @param heap a heap from which to allocate any necessary memory. If NULL malloc is used instead.
+ * @param options controls how much effort is expended trying to resolve symbols
  *
  * @return the number of frames for which a symbol was constructed.
  */
 uintptr_t
-omrintrospect_backtrace_symbols_raw(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap)
+omrintrospect_backtrace_symbols_raw(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap, uint32_t options)
 {
 	/* 32bit AIX needs 130 slots available for the base VM as of Java6sr7. This allows a little overhead for 3rd party jni libraries */
 	struct ld_info buffer[150];

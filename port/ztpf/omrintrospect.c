@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -666,7 +666,7 @@ upcall_handler(int signal, siginfo_t *siginfo, void *context_arg)
 	struct PlatformWalkData *data = NULL;
 	int ret = 0;
 	pid_t pid = getpid();
-	unsigned long tid = omrthread_get_ras_tid();
+	uintptr_t tid = omrthread_get_ras_tid();
 
 	/* check that this signal was queued by this process. */
 	if (siginfo->si_code != SI_QUEUE || siginfo->si_value.sival_ptr == NULL) {
@@ -701,7 +701,9 @@ upcall_handler(int signal, siginfo_t *siginfo, void *context_arg)
 			data->platformAllocatedContext = 1;
 			data->thread->context = context;
 			state->portLibrary->introspect_backtrace_thread(state->portLibrary, data->thread, state->heap, NULL);
-			state->portLibrary->introspect_backtrace_symbols(state->portLibrary, data->thread, state->heap);
+			if (OMR_ARE_NO_BITS_SET(state->options, OMR_INTROSPECT_NO_SYMBOLS)) {
+				state->portLibrary->introspect_backtrace_symbols_ex(state->portLibrary, data->thread, state->heap, 0);
+			}
 		}
 	}
 
@@ -1015,9 +1017,11 @@ setup_native_thread(J9ThreadWalkState *state, thread_context *sigContext, int he
 		CLEAR_ERROR(state);
 	}
 
-	if (state->current_thread->callstack && state->current_thread->callstack->symbol == NULL) {
+	if (OMR_ARE_ANY_BITS_SET(state->options, OMR_INTROSPECT_NO_SYMBOLS)) {
+		/* The caller asked us not to resolve symbols, so we don't expect to have a symbol for the top frame. */
+	} else if ((NULL != state->current_thread->callstack) && (NULL == state->current_thread->callstack->symbol)) {
 		SPECULATE_ERROR(state, FAULT_DURING_BACKTRACE, 3);
-		state->portLibrary->introspect_backtrace_symbols(state->portLibrary, state->current_thread, state->heap);
+		state->portLibrary->introspect_backtrace_symbols_ex(state->portLibrary, state->current_thread, state->heap, 0);
 		CLEAR_ERROR(state);
 	}
 

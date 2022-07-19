@@ -80,8 +80,9 @@ protectedBacktrace(struct OMRPortLibrary *port, void *arg)
 static uintptr_t
 backtrace_sigprotect(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, void **address_array, uintptr_t capacity)
 {
+	uintptr_t ret = 0;
+
 	if (omrthread_self()) {
-		uintptr_t ret = 0;
 		struct frameData args;
 		args.address_array = address_array;
 		args.capacity = capacity;
@@ -96,11 +97,11 @@ backtrace_sigprotect(struct OMRPortLibrary *portLibrary, J9PlatformThread *threa
 
 			threadInfo->error = FAULT_DURING_BACKTRACE;
 		}
-
-		return ret;
 	} else {
-		return backtrace(address_array, capacity);
+		ret = backtrace(address_array, capacity);
 	}
+
+	return ret;
 }
 
 /*
@@ -410,12 +411,12 @@ omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9Platfor
 	const char *regName = "";
 	void **faultingAddress = NULL;
 
-	if (threadInfo == NULL || (threadInfo->context == NULL && sigInfo == NULL)) {
+	if ((NULL == threadInfo) || ((NULL == threadInfo->context) && (NULL == sigInfo))) {
 		return 0;
 	}
 
 	/* if we've been passed a port library wrapped signal, then extract info from there */
-	if (sigInfo != NULL) {
+	if (NULL != sigInfo) {
 		threadInfo->context = sigInfo->platformSignalInfo.context;
 
 		/* get the faulting address so we can discard frames that are part of the signal handling */
@@ -426,26 +427,25 @@ omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9Platfor
 
 	nextFrame = &threadInfo->callstack;
 	for (i = 0; i < ret; i++) {
+		J9PlatformStackFrame *currentFrame = NULL;
 		if (NULL != heap) {
-			*nextFrame = portLibrary->heap_allocate(portLibrary, heap, sizeof(J9PlatformStackFrame));
+			currentFrame = portLibrary->heap_allocate(portLibrary, heap, sizeof(*currentFrame));
 		} else {
-			*nextFrame = portLibrary->mem_allocate_memory(portLibrary, sizeof(J9PlatformStackFrame), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+			currentFrame = portLibrary->mem_allocate_memory(portLibrary, sizeof(*currentFrame), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 		}
 
-		if (NULL == *nextFrame) {
+		if (NULL == currentFrame) {
 			if (0 == threadInfo->error) {
 				threadInfo->error = ALLOCATION_FAILURE;
 			}
 			break;
 		}
 
-		(*nextFrame)->parent_frame = NULL;
-		(*nextFrame)->symbol = NULL;
-		(*nextFrame)->instruction_pointer = (uintptr_t)addresses[i];
-		(*nextFrame)->stack_pointer = 0;
-		(*nextFrame)->base_pointer = 0;
+		memset(currentFrame, 0, sizeof(*currentFrame));
+		currentFrame->instruction_pointer = (uintptr_t)addresses[i];
 
-		nextFrame = &(*nextFrame)->parent_frame;
+		*nextFrame = currentFrame;
+		nextFrame = &currentFrame->parent_frame;
 
 		/* check to see if we should truncate the stack trace to omit handler frames */
 		if ((NULL != prevFrame) && (NULL != faultingAddress) && (addresses[i] == *faultingAddress)) {
@@ -494,11 +494,12 @@ omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9Platfor
  * @param portLbirary a pointer to an initialized port library
  * @param threadInfo a thread structure populated with a backtrace
  * @param heap a heap from which to allocate any necessary memory. If NULL malloc is used instead.
+ * @param options controls how much effort is expended trying to resolve symbols
  *
  * @return the number of frames for which a symbol was constructed.
  */
 uintptr_t
-omrintrospect_backtrace_symbols_raw(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap)
+omrintrospect_backtrace_symbols_raw(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap, uint32_t options)
 {
 	J9PlatformStackFrame *frame = threadInfo->callstack;
 	struct ElfSymbolData data;
@@ -539,8 +540,10 @@ omrintrospect_backtrace_symbols_raw(struct OMRPortLibrary *portLibrary, J9Platfo
 				data.offset = iar - (uintptr_t)dlInfo.dli_saddr;
 			} else {
 				memset(&data, 0, sizeof(data));
-				data.offset = iar;
-				dl_iterate_phdr(elf_ph_handler, &data);
+				if (OMR_ARE_NO_BITS_SET(options, OMR_BACKTRACE_SYMBOLS_BASIC)) {
+					data.offset = iar;
+					dl_iterate_phdr(elf_ph_handler, &data);
+				}
 				symbol_name = data.name;
 			}
 		}

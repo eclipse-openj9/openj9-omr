@@ -1174,13 +1174,27 @@ OMR::Z::TreeEvaluator::vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::Z::TreeEvaluator::vminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   TR::DataType dt = node->getDataType().getVectorElementType();
+   TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1) ||
+                                       !(dt == TR::Double ||
+                                          dt == TR::Float),
+                                    "VFMIN is only supported on z14 onwards.");
+   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, (dt == TR::Double || dt == TR::Float) ? TR::InstOpCode::VFMIN : TR::InstOpCode::VMN);
    }
 
 TR::Register*
 OMR::Z::TreeEvaluator::vmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   TR::DataType dt = node->getDataType().getVectorElementType();
+   TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1) ||
+                                       !(dt == TR::Double ||
+                                          dt == TR::Float),
+                                    "VFMAX is only supported on z14 onwards.");
+   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, (dt == TR::Double || dt == TR::Float) ? TR::InstOpCode::VFMAX : TR::InstOpCode::VMX);
    }
 
 TR::Register*
@@ -14490,6 +14504,16 @@ OMR::Z::TreeEvaluator::inlineVectorBinaryOp(TR::Node * node, TR::CodeGenerator *
       case TR::InstOpCode::VCHL:
          mask4 = getVectorElementSizeMask(node);
          breakInst = generateVRRbInstruction(cg, op, node, targetReg, sourceReg1, sourceReg2, 0, mask4);
+         break;
+      case TR::InstOpCode::VFMAX:
+      case TR::InstOpCode::VFMIN:
+         mask4 = getVectorElementSizeMask(node);
+         breakInst = generateVRRcInstruction(cg, op, node, targetReg, sourceReg1, sourceReg2, 1, 0, mask4);
+         break;
+      case TR::InstOpCode::VMX:
+      case TR::InstOpCode::VMN:
+         mask4 = getVectorElementSizeMask(node);
+         breakInst = generateVRRcInstruction(cg, op, node, targetReg, sourceReg1, sourceReg2, mask4);
          break;
       default:
          TR_ASSERT(false, "Binary Vector IL evaluation unimplemented for node : %s", cg->getDebug()->getName(node));

@@ -4791,6 +4791,12 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpC
             return true;
          else
             return false;
+      case TR::vmax:
+      case TR::vmin:
+         if ((et == TR::Float || et == TR::Double) && !cpu->supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1))
+            return false;
+         else
+            return true;
       case TR::vconv:
          if (et == TR::Double &&
              opcode.getVectorSourceDataType().getVectorElementType() == TR::Int64)

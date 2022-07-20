@@ -74,6 +74,7 @@ namespace TR { class Register; }
 #define IA32OpProp_TargetRegisterInModRM        0x08000000
 #define IA32OpProp_TargetRegisterIgnored        0x10000000
 #define IA32OpProp_SourceRegisterInModRM        0x20000000
+
 #define IA32OpProp_SourceRegisterIgnored        0x40000000
 #define IA32OpProp_BranchOp                     0x80000000
 
@@ -102,6 +103,9 @@ namespace TR { class Register; }
 #define IA32OpProp1_NeedsLockPrefix           0x00004000
 #define IA32OpProp1_CallOp                    0x00010000
 #define IA32OpProp1_SourceIsMemRef            0x00020000
+
+// For cases when source operand can be a register or mem-ref
+#define IA32OpProp1_SourceCanBeMemRef         0x00020000
 #define IA32OpProp1_SourceRegIsImplicit       0x00040000
 #define IA32OpProp1_TargetRegIsImplicit       0x00080000
 #define IA32OpProp1_FusableCompare            0x00100000

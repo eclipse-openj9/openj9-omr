@@ -4116,12 +4116,12 @@ static const TR::InstOpCode::Mnemonic VectorUnaryArithmeticOpCodesForReg[TR::Num
 static const TR::InstOpCode::Mnemonic VectorUnaryArithmeticOpCodesForMem[TR::NumVectorElementTypes][NumUnaryArithmeticOps] =
    {
    //  Invalid,       min,         max,         abs,         sqrt
-  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int8
-  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int16
-  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int32
-  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad }, // Int64
-  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::VSQRTPSRegMem }, // Float
-  { TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::bad, TR::InstOpCode::VSQRTPDRegMem }, // Double
+  { TR::InstOpCode::bad, TR::InstOpCode::PMINSBRegMem, TR::InstOpCode::PMAXSBRegMem, TR::InstOpCode::PABSBRegMem, TR::InstOpCode::bad }, // Int8
+  { TR::InstOpCode::bad, TR::InstOpCode::PMINSWRegMem, TR::InstOpCode::PMAXSWRegMem, TR::InstOpCode::PABSWRegMem, TR::InstOpCode::bad }, // Int16
+  { TR::InstOpCode::bad, TR::InstOpCode::PMINSDRegMem, TR::InstOpCode::PMAXSDRegMem, TR::InstOpCode::PABSDRegMem, TR::InstOpCode::bad }, // Int32
+  { TR::InstOpCode::bad, TR::InstOpCode::PMINSQRegMem, TR::InstOpCode::PMAXSQRegMem, TR::InstOpCode::PABSQRegMem, TR::InstOpCode::bad }, // Int64
+  { TR::InstOpCode::bad, TR::InstOpCode::MINPSRegMem,  TR::InstOpCode::MAXPSRegMem,  TR::InstOpCode::bad, TR::InstOpCode::VSQRTPSRegMem }, // Float
+  { TR::InstOpCode::bad, TR::InstOpCode::MINPDRegMem,  TR::InstOpCode::MAXPDRegMem,  TR::InstOpCode::bad, TR::InstOpCode::VSQRTPDRegMem }, // Double
    };
 
 static const TR::ILOpCodes MemoryLoadOpCodes[TR::NumOMRTypes] =

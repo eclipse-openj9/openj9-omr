@@ -6701,7 +6701,14 @@ TR::Node *removeRedundantREM(OMR::ValuePropagation *vp, TR::Node *node, TR::VPCo
          // this doesn't work for unsigned (iurem) as these ops treat the operands as unsigned so, for example, a prec=1 dividend that is negative
          // when interpreted as unsigned will actually have 10 digits of precision (-1 would be 0xFFffFFff = 4,294,967,295)
          //
-         return vp->replaceNode(node, node->getFirstChild(), vp->_curTree);
+
+         // Safely replace irem/lrem with first operand, using VP removeNode that ensures
+         // use/def info is preserved.
+         //
+         TR::Node *firstOperand = node->getFirstChild();
+         firstOperand->incReferenceCount();
+         vp->removeNode(node);
+         return firstOperand;
          }
       }
 

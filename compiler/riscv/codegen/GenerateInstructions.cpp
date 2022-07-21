@@ -219,6 +219,20 @@ TR::Instruction *generateJTYPE( TR::InstOpCode::Mnemonic op,
    return new (cg->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, label, cond, cg);
    }
 
+TR::Instruction *generateJTYPE( TR::InstOpCode::Mnemonic op,
+                                TR::Node          *n,
+                                TR::Register      *trgReg,
+                                TR::LabelSymbol   *label,
+                                TR::Snippet       *snippet,
+                                TR::RegisterDependencyConditions *cond,
+                                TR::CodeGenerator *cg,
+                                TR::Instruction   *previous)
+   {
+   if (previous)
+      return new (cg->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, label, snippet, cond, previous, cg);
+   return new (cg->trHeapMemory()) TR::JtypeInstruction(op, n, trgReg, label, snippet, cond, cg);
+   }
+
 #ifdef J9_PROJECT_SPECIFIC
 TR::Instruction *generateVGNOP( TR::Node *n,
                                 TR_VirtualGuardSite *site,

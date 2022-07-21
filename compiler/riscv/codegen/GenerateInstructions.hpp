@@ -210,6 +210,15 @@ TR::Instruction *generateJTYPE( TR::InstOpCode::Mnemonic op,
                                 TR::CodeGenerator *cg,
                                 TR::Instruction   *previous = NULL);
 
+TR::Instruction *generateJTYPE( TR::InstOpCode::Mnemonic op,
+                                TR::Node          *n,
+                                TR::Register      *trgReg,
+                                TR::LabelSymbol   *label,
+                                TR::Snippet       *snippet,
+                                TR::RegisterDependencyConditions *cond,
+                                TR::CodeGenerator *cg,
+                                TR::Instruction   *previous = NULL);
+
 #ifdef J9_PROJECT_SPECIFIC
 TR::Instruction *generateVGNOP( TR::Node *n,
                                 TR_VirtualGuardSite *site,

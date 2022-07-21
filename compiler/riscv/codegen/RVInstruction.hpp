@@ -995,6 +995,7 @@ class JtypeInstruction : public UtypeInstruction
    // Only one of the following can be used at time!
    TR::SymbolReference *_symbolReference;
    TR::LabelSymbol *_symbol;
+   TR::Snippet *_snippet;
 
    public:
 
@@ -1004,11 +1005,12 @@ class JtypeInstruction : public UtypeInstruction
          uintptr_t        imm,
          TR::RegisterDependencyConditions *cond,
          TR::SymbolReference *sr,
-         TR::Snippet       *s, // unused for now
+         TR::Snippet       *s,
          TR::CodeGenerator *codeGen)
       : UtypeInstruction(op, n, 0, treg, cond, codeGen),
         _symbolReference(sr),
-        _symbol(nullptr)
+        _symbol(nullptr),
+        _snippet(s)
       {
       }
 
@@ -1023,7 +1025,8 @@ class JtypeInstruction : public UtypeInstruction
          TR::CodeGenerator *codeGen)
       : UtypeInstruction(op, n, 0, treg, cond, precedingInstruction, codeGen),
         _symbolReference(sr),
-        _symbol(nullptr)
+        _symbol(nullptr),
+        _snippet(s)
       {
       }
 
@@ -1056,6 +1059,21 @@ class JtypeInstruction : public UtypeInstruction
          TR::Node          *n,
          TR::Register      *treg,
          TR::LabelSymbol   *label,
+         TR::Snippet       *snippet,
+         TR::RegisterDependencyConditions *cond,
+         TR::CodeGenerator *codeGen)
+
+      : UtypeInstruction(op, n, 0, treg, cond, codeGen),
+        _symbolReference(nullptr),
+        _symbol(label),
+        _snippet(snippet)
+      {
+      }
+
+   JtypeInstruction(TR::InstOpCode::Mnemonic op,
+         TR::Node          *n,
+         TR::Register      *treg,
+         TR::LabelSymbol   *label,
          TR::Instruction   *precedingInstruction,
          TR::CodeGenerator *codeGen)
       : UtypeInstruction(op, n, 0, treg, precedingInstruction, codeGen),
@@ -1075,6 +1093,22 @@ class JtypeInstruction : public UtypeInstruction
       : UtypeInstruction(op, n, 0, treg, cond, precedingInstruction, codeGen),
         _symbolReference(nullptr),
         _symbol(label)
+      {
+      }
+
+   JtypeInstruction(TR::InstOpCode::Mnemonic op,
+         TR::Node          *n,
+         TR::Register      *treg,
+         TR::LabelSymbol   *label,
+         TR::Snippet       *snippet,
+         TR::RegisterDependencyConditions *cond,
+         TR::Instruction   *precedingInstruction,
+         TR::CodeGenerator *codeGen)
+
+      : UtypeInstruction(op, n, 0, treg, cond, precedingInstruction, codeGen),
+        _symbolReference(nullptr),
+        _symbol(label),
+        _snippet(snippet)
       {
       }
 
@@ -1101,6 +1135,13 @@ class JtypeInstruction : public UtypeInstruction
       TR_ASSERT(false, "Should not be used with J-type instructions, use setLabelSymbol()!");
       return 0;
       }
+
+   /**
+    * @brief Gets snippet associated with this instruction (if any).
+    *
+    * @return snippet
+    */
+   TR::Snippet *getSnippet() { return _snippet;}
 
    /**
     * @brief Generates binary encoding of the instruction

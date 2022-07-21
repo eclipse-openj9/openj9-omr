@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -435,7 +435,7 @@ OMR::CodeGenerator::allocateSpill(bool containsCollectedReference, int32_t *offs
 TR_BackingStore *
 OMR::CodeGenerator::allocateSpill(int32_t dataSize, bool containsCollectedReference, int32_t *offset, bool reuse)
    {
-   TR_ASSERT_FATAL(dataSize <= 16, "assertion failure");
+   TR_ASSERT_FATAL(dataSize <= 64, "Spill size must be <= 64 bytes");
    TR_ASSERT_FATAL(!containsCollectedReference || (dataSize == TR::Compiler->om.sizeofReferenceAddress()), "assertion failure");
 
    if (self()->comp()->getOption(TR_TraceRA))
@@ -458,24 +458,37 @@ OMR::CodeGenerator::allocateSpill(int32_t dataSize, bool containsCollectedRefere
    //
    bool try8ByteSpills = (dataSize < 16) && ((TR::Compiler->om.sizeofReferenceAddress() == 8) || !containsCollectedReference);
    bool try16ByteSpills = (dataSize == 16);
+   bool try32ByteSpills = (dataSize == 32);
+   bool try64ByteSpills = (dataSize == 64);
 
    if(reuse)
-     {
-     if (dataSize <= 4 && !self()->getSpill4FreeList().empty())
-     {
-       spill = self()->getSpill4FreeList().front();
-       self()->getSpill4FreeList().pop_front();
-     }
-     if (!spill && try8ByteSpills && !self()->getSpill8FreeList().empty())
-     {
-       spill = self()->getSpill8FreeList().front();
-       self()->getSpill8FreeList().pop_front();
-     }
-     if (!spill && try16ByteSpills && !self()->getSpill16FreeList().empty())
-     {
-       spill = self()->getSpill16FreeList().front();
-       self()->getSpill16FreeList().pop_front();
-     }
+      {
+      if (dataSize <= 4 && !self()->getSpill4FreeList().empty())
+         {
+         spill = self()->getSpill4FreeList().front();
+         self()->getSpill4FreeList().pop_front();
+         }
+      else if (try8ByteSpills && !self()->getSpill8FreeList().empty())
+         {
+         spill = self()->getSpill8FreeList().front();
+         self()->getSpill8FreeList().pop_front();
+         }
+      else if (try16ByteSpills && !self()->getSpill16FreeList().empty())
+         {
+         spill = self()->getSpill16FreeList().front();
+         self()->getSpill16FreeList().pop_front();
+         }
+      else if (try32ByteSpills && !self()->getSpill32FreeList().empty())
+         {
+         spill = self()->getSpill32FreeList().front();
+         self()->getSpill32FreeList().pop_front();
+         }
+      else if (try64ByteSpills && !self()->getSpill64FreeList().empty())
+         {
+         spill = self()->getSpill64FreeList().front();
+         self()->getSpill64FreeList().pop_front();
+         }
+
      if (
          (spill && self()->comp()->getOption(TR_TraceRA) && !performTransformation(self()->comp(), "O^O SPILL TEMPS: Reuse spill temp %s\n", self()->getDebug()->getName(spill->getSymbolReference()))))
        {
@@ -504,8 +517,8 @@ OMR::CodeGenerator::allocateSpill(int32_t dataSize, bool containsCollectedRefere
       //
       int spillSize = std::max(dataSize, static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress()));
 
-      TR_ASSERT(4 <= spillSize && spillSize <= 16, "Spill temps should be between 4 and 16 bytes");
-      spillSymbol = TR::AutomaticSymbol::create(self()->trHeapMemory(),TR::NoType,spillSize);
+      TR_ASSERT_FATAL(4 <= spillSize && spillSize <= 64, "Spill temps should be between 4 and 64 bytes");
+      spillSymbol = TR::AutomaticSymbol::create(self()->trHeapMemory(), TR::NoType, spillSize);
       spillSymbol->setSpillTempAuto();
       self()->comp()->getMethodSymbol()->addAutomatic(spillSymbol);
       spill = new (self()->trHeapMemory()) TR_BackingStore(self()->comp()->getSymRefTab(), spillSymbol, 0);
@@ -556,9 +569,9 @@ OMR::CodeGenerator::allocateSpill(int32_t dataSize, bool containsCollectedRefere
 void
 OMR::CodeGenerator::freeSpill(TR_BackingStore *spill, int32_t dataSize, int32_t offset)
    {
-   TR_ASSERT(1 <= dataSize && dataSize <= 16, "assertion failure");
-   TR_ASSERT(offset == 0 || offset == 4, "assertion failure");
-   TR_ASSERT(dataSize + offset <= 16, "assertion failure");
+   TR_ASSERT_FATAL(1 <= dataSize && dataSize <= 64, "Spill size must be >= 1 and <= 64 bytes");
+   TR_ASSERT_FATAL(offset == 0 || offset == 4, "Spill offset must be 0 or 4 bytes");
+   TR_ASSERT_FATAL(dataSize + offset <= 64, "Spill size + offset must not exceed 64 bytes");
 
    if (self()->comp()->getOption(TR_TraceRA))
       {
@@ -659,6 +672,18 @@ OMR::CodeGenerator::freeSpill(TR_BackingStore *spill, int32_t dataSize, int32_t 
             if (self()->comp()->getOption(TR_TraceRA))
                traceMsg(self()->comp(), "\n -> added to spill16FreeList");
             }
+         else if (spill->getSymbolReference()->getSymbol()->getSize() == 32)
+            {
+            _spill32FreeList.push_front(spill);
+            if (self()->comp()->getOption(TR_TraceRA))
+               traceMsg(self()->comp(), "\n -> added to spill32FreeList");
+            }
+         else if (spill->getSymbolReference()->getSymbol()->getSize() == 64)
+            {
+            _spill64FreeList.push_front(spill);
+            if (self()->comp()->getOption(TR_TraceRA))
+               traceMsg(self()->comp(), "\n -> added to spill64FreeList");
+            }
          }
       }
    }
@@ -671,6 +696,8 @@ OMR::CodeGenerator::jettisonAllSpills()
    _spill4FreeList.clear();
    _spill8FreeList.clear();
    _spill16FreeList.clear();
+   _spill32FreeList.clear();
+   _spill64FreeList.clear();
    _internalPointerSpillFreeList.clear();
    }
 

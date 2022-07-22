@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -336,7 +336,8 @@ typedef enum
    TR_InlinedMethodPointer                = 108,
    TR_VMINLMethod                         = 109,
    TR_ValidateJ2IThunkFromMethod          = 110,
-   TR_NumExternalRelocationKinds          = 111,
+   TR_StaticDefaultValueInstance          = 111,
+   TR_NumExternalRelocationKinds          = 112,
    TR_ExternalRelocationTargetKindMask    = 0xff,
    } TR_ExternalRelocationTargetKind;
 

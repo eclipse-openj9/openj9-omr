@@ -16323,7 +16323,15 @@ TR::Node *ibits2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
       node->setNumChildren(0);
       node->setFloatBits(firstChild->getInt());
       firstChild->recursivelyDecReferenceCount();
+      return node;
       }
+
+   TR::Node * result;
+   if (firstChild->getOpCodeValue() == TR::fbits2i &&
+       !firstChild->normalizeNanValues() &&
+       (result = s->unaryCancelOutWithChild(node, firstChild, s->_curTree, TR::fbits2i)))
+      return result;
+
    return node;
    }
 
@@ -16339,7 +16347,15 @@ TR::Node *lbits2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
       node->setNumChildren(0);
       node->setDouble(firstChild->getDouble());
       firstChild->recursivelyDecReferenceCount();
+      return node;
       }
+
+   TR::Node * result;
+   if (firstChild->getOpCodeValue() == TR::dbits2l &&
+       !firstChild->normalizeNanValues() &&
+       (result = s->unaryCancelOutWithChild(node, firstChild, s->_curTree, TR::dbits2l)))
+      return result;
+
    return node;
    }
 
@@ -16362,7 +16378,14 @@ TR::Node *fbits2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
       node->setInt(intValue);
       node->setNumChildren(0);
       firstChild->recursivelyDecReferenceCount();
+      return node;
       }
+
+   TR::Node * result;
+   if (!node->normalizeNanValues() &&
+       (result = s->unaryCancelOutWithChild(node, firstChild, s->_curTree, TR::ibits2f)))
+      return result;
+
    return node;
    }
 
@@ -16385,7 +16408,14 @@ TR::Node *dbits2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
       node->setLongInt(longValue);
       node->setNumChildren(0);
       firstChild->recursivelyDecReferenceCount();
+      return node;
       }
+
+   TR::Node * result;
+   if (!node->normalizeNanValues() &&
+       (result = s->unaryCancelOutWithChild(node, firstChild, s->_curTree, TR::lbits2d)))
+      return result;
+
    return node;
    }
 

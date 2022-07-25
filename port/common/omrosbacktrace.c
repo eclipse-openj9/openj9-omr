@@ -59,7 +59,7 @@ protectedIntrospectBacktraceThread(struct OMRPortLibrary *port, void *arg)
 
 /* This function constructs a backtrace from a CPU context. Generally there are only one or two
  * values in the context that are actually used to construct the stack but these vary by platform
- * so arn't detailed here. If no heap is specified then this function will use malloc to allocate
+ * so aren't detailed here. If no heap is specified then this function will use malloc to allocate
  * the memory necessary for the stack frame structures which must be freed by the caller.
  *
  * @param portLbirary a pointer to an initialized port library

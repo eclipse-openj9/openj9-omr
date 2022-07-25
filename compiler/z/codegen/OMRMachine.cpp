@@ -1011,7 +1011,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
    // Have we already assigned a real register
    if (assignedRegister == NULL)
       {
-      // These values are only equal upon the first assignment.  Hence, if they arn't
+      // These values are only equal upon the first assignment.  Hence, if they aren't
       // the same, and there is no assigned reg, we must have spilled the reg, so invert
       // the spill state to get the reg back
       if(targetRegister->getTotalUseCount() != targetRegister->getFutureUseCount())
@@ -1052,7 +1052,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
                self()->cg()->getDebug()->getName(currInst->getNode()),
                currInst->getNode()->getReferenceCount());
 
-      // If we arn't re-using this reg anymore, kill assignment
+      // If we aren't re-using this reg anymore, kill assignment
       // OOL: if a register is first defined (became live) in the hot path, no matter how many futureUseCount left (in the code path)
       // the register is considered as dead now in the hot path, so GC map contains the correct list of live registers
 
@@ -1189,7 +1189,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
       freeRegisterHigh = self()->reverseSpillState(currInst, firstReg, toRealRegister(tfreeRegisterHigh));
       }
 
-   // TotalUse & FutureUse are only equal upon the first assignment.  Hence, if they arn't
+   // TotalUse & FutureUse are only equal upon the first assignment.  Hence, if they aren't
    // the same, and there is no assigned reg, we must have spilled the reg, so invert
    // the spill state to get the reg back
    if (freeRegisterLow == NULL && (lastReg->getTotalUseCount() != lastReg->getFutureUseCount()))
@@ -1207,7 +1207,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
          }
       }
 
-   // TotalUse & FutureUse are only equal upon the first assignment.  Hence, if they arn't
+   // TotalUse & FutureUse are only equal upon the first assignment.  Hence, if they aren't
    // the same, and there is no assigned reg, we must have spilled the reg, so invert
    // the spill state to get the reg back
    if (freeRegisterHigh == NULL && (firstReg->getTotalUseCount() != firstReg->getFutureUseCount()))

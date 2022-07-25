@@ -3985,6 +3985,16 @@ int32_t TR::GlobalValuePropagation::perform()
    if (checksWereRemoved())
       requestOpt(OMR::catchBlockRemoval);
 
+   // A reference to use/def info is cached by Global VP, but use/def info can be
+   // deleted in the optimizer if a TR::Node is discarded, unless use/def info
+   // is explicitly requested to be preserved.  This is just a safety check that
+   // the use/def info has been preserved throughout the processing of Global VP.
+   //
+   if (_useDefInfo != NULL)
+      {
+      TR_ASSERT_FATAL(optimizer()->getUseDefInfo() == _useDefInfo, "Use/def info was unexpectedly destroyed during Global Value Propagation\n");
+      }
+
    // Perform transformations that were delayed until the end of the analysis
    //
    doDelayedTransformations();

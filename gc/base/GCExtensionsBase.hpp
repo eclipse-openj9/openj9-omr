@@ -503,10 +503,11 @@ public:
 	bool scavengerRsoScanUnsafe;
 	uintptr_t cacheListSplit; /**< the number of ways to split scanCache lists, set by -XXgc:cacheListLockSplit=, or determined heuristically based on the number of GC threads */
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	bool softwareRangeCheckReadBarrier; /**< enable software read barrier instead of hardware guarded loads when running with CS */
+	bool softwareRangeCheckReadBarrier; /**< enable software read barrier instead of hardware guarded loads when running with CS, complimentary to concurrentScavengerHWSupport with CS active */
+	bool softwareRangeCheckReadBarrierForced; /**< true if usage of softwareRangeCheckReadBarrier is requested explicitly */
 	bool concurrentScavenger; /**< CS enabled/disabled flag */
 	bool concurrentScavengerForced; /**< set to true if CS is requested (by cmdline option), but there are more checks to do before deciding whether the request is to be obeyed */
-	bool concurrentScavengerHWSupport; /**< set to true if CS runs with HW support */
+	bool concurrentScavengerHWSupport; /**< set to true if CS runs with HW support, complimentary to softwareRangeCheckReadBarrier with CS active */
 	uintptr_t concurrentScavengerBackgroundThreads; /**< number of background GC threads during concurrent phase of Scavenge */
 	bool concurrentScavengerBackgroundThreadsForced; /**< true if concurrentScavengerBackgroundThreads set via command line option */
 	uintptr_t concurrentScavengerSlack; /**< amount of bytes added on top of avearge allocated bytes during concurrent cycle, in calcualtion for survivor size */
@@ -1608,6 +1609,7 @@ public:
 		, cacheListSplit(0)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		, softwareRangeCheckReadBarrier(false)
+		, softwareRangeCheckReadBarrierForced(false)
 		, concurrentScavenger(false)
 		, concurrentScavengerForced(false)
 		, concurrentScavengerHWSupport(false)

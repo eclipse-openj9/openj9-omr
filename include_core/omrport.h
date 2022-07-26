@@ -3019,7 +3019,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrintrospect_set_suspend_signal_offset(param1) privateOmrPortLibrary->introspect_set_suspend_signal_offset(privateOmrPortLibrary, param1)
 #define omrintrospect_threads_startDo(param1,param2) privateOmrPortLibrary->introspect_threads_startDo(privateOmrPortLibrary, (param1), (param2))
 #define omrintrospect_threads_startDo_with_signal(param1,param2,param3) privateOmrPortLibrary->introspect_threads_startDo_with_signal(privateOmrPortLibrary, (param1), (param2), (param3))
-#define omrintrospect_threads_nextDo() privateOmrPortLibrary->introspect_threads_nextDo(privateOmrPortLibrary)
+#define omrintrospect_threads_nextDo(param1) privateOmrPortLibrary->introspect_threads_nextDo(param1)
 #define omrintrospect_backtrace_thread(param1,param2,param3) privateOmrPortLibrary->introspect_backtrace_thread(privateOmrPortLibrary, (param1), (param2), (param3))
 #define omrintrospect_backtrace_symbols(param1,param2) privateOmrPortLibrary->introspect_backtrace_symbols(privateOmrPortLibrary, (param1), (param2))
 #define omrsyslog_query() privateOmrPortLibrary->syslog_query(privateOmrPortLibrary)

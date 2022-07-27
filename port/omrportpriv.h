@@ -951,8 +951,6 @@ extern J9_CFUNC struct J9PlatformThread *
 omrintrospect_threads_startDo_with_signal(struct OMRPortLibrary *portLibrary, J9Heap *heap, J9ThreadWalkState *state, void *signal_info);
 extern J9_CFUNC struct J9PlatformThread *
 omrintrospect_threads_nextDo(J9ThreadWalkState *state);
-extern J9_CFUNC struct J9PlatformThread *
-omrintrospect_threads_nextDo(J9ThreadWalkState *state);
 extern J9_CFUNC uintptr_t
 omrintrospect_backtrace_thread(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap, void *signalInfo);
 extern J9_CFUNC uintptr_t

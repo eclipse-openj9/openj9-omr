@@ -7728,7 +7728,7 @@ void OMR::ValuePropagation::doDelayedTransformations()
       TR::Node* oldNode = cvg->_currentTree->getNode();
 
       // !oldNode means that the branch was already removed
-      if (!oldNode || !performTransformation(comp(), "%sReplacing the old guard %p with the shiny new overridden guard %p at treetop %p\n", oldNode, cvg->_newGuardNode, cvg->_currentTree))
+      if (!oldNode || !performTransformation(comp(), "%sReplacing the old guard %p with the shiny new overridden guard %p at treetop %p\n", OPT_DETAILS, oldNode, cvg->_newGuardNode, cvg->_currentTree))
          {
          continue;
          }

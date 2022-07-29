@@ -3335,6 +3335,10 @@ const char* transformedTargetName (TR::RecognizedMethod rm)
    }
 
 #ifdef J9_PROJECT_SPECIFIC
+/**
+ * Can be called from doDelayedTransformations when nodes may have been removed from the tree. Issue 6623
+ * https://github.com/eclipse/omr/issues/6623
+ */
 void OMR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, OMR::ValuePropagation::ObjCloneInfo *cloneInfo)
    {
    TR_OpaqueClassBlock *j9class = cloneInfo->_clazz;
@@ -3344,6 +3348,12 @@ void OMR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, OMR:
 
    TR::Node *callNode = callTree->getNode()->getFirstChild();
    TR::Node *objNode = callNode->getFirstChild();
+
+   // Check that the node hasn't been removed (issue 6623)
+   if (callNode->getReferenceCount() < 1)
+      {
+      return;
+      }
 
    TR::SymbolReference * symRef = callNode->getSymbolReference();
    TR::ResolvedMethodSymbol *method = symRef->getSymbol()->getResolvedMethodSymbol();
@@ -3433,6 +3443,10 @@ void OMR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, OMR:
    return;
    }
 
+/**
+ * Can be called from doDelayedTransformations when nodes may have been removed from the tree. Issue 6623
+ * https://github.com/eclipse/omr/issues/6623
+ */
 void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, OMR::ValuePropagation::ArrayCloneInfo *cloneInfo)
    {
    static char *disableArrayCloneOpt = feGetEnv("TR_disableFastArrayClone");
@@ -3440,6 +3454,13 @@ void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, OMR::
       return;
 
    TR::Node *callNode = callTree->getNode()->getFirstChild();
+
+   // Check that the node hasn't been removed (issue 6623)
+   if (callNode->getReferenceCount() < 1)
+      {
+      return;
+      }
+
    TR::Node *objNode = callNode->getFirstChild();
 
    TR::SymbolReference * symRef = callNode->getSymbolReference();

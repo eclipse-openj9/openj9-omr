@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -148,6 +148,19 @@ TR::AMD64Win64FastCallLinkage::AMD64Win64FastCallLinkage(TR::CodeGenerator *cg)
    for(r=0; r<=5; r++)
       _properties._volatileRegisters[p++] = TR::RealRegister::xmmIndex(r);
    _properties._numberOfVolatileXMMRegisters = p - _properties._numberOfVolatileGPRegisters;
+
+   if (cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F))
+      {
+      _properties._volatileRegisters[p++] = TR::RealRegister::k0;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k1;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k2;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k3;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k4;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k5;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k6;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k7;
+      }
+
    _properties._numVolatileRegisters = p;
 
    // Return registers.
@@ -265,6 +278,18 @@ TR::AMD64Win64FastCallLinkage::AMD64Win64FastCallLinkage(TR::CodeGenerator *cg)
    _properties._OutgoingArgAlignment = AMD64_DEFAULT_STACK_ALIGNMENT;
 
    TR_ASSERT(p == (machine()->getNumGlobalGPRs() + machine()->_numGlobalFPRs), "assertion failure");
+
+   if (cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F))
+      {
+      _properties._allocationOrder[p++] = TR::RealRegister::k0;
+      _properties._allocationOrder[p++] = TR::RealRegister::k1;
+      _properties._allocationOrder[p++] = TR::RealRegister::k2;
+      _properties._allocationOrder[p++] = TR::RealRegister::k3;
+      _properties._allocationOrder[p++] = TR::RealRegister::k4;
+      _properties._allocationOrder[p++] = TR::RealRegister::k5;
+      _properties._allocationOrder[p++] = TR::RealRegister::k6;
+      _properties._allocationOrder[p++] = TR::RealRegister::k7;
+      }
    }
 
 
@@ -344,6 +369,19 @@ TR::AMD64ABILinkage::AMD64ABILinkage(TR::CodeGenerator *cg)
       _properties._volatileRegisters[p++] = TR::RealRegister::xmmIndex(r);
 
    _properties._numberOfVolatileXMMRegisters = p - _properties._numberOfVolatileGPRegisters;
+
+   if (cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F))
+      {
+      _properties._volatileRegisters[p++] = TR::RealRegister::k0;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k1;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k2;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k3;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k4;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k5;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k6;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k7;
+      }
+
    _properties._numVolatileRegisters = p;
 
    // Return registers.
@@ -459,6 +497,18 @@ TR::AMD64ABILinkage::AMD64ABILinkage(TR::CodeGenerator *cg)
    _properties.setOutgoingArgAlignment(AMD64_DEFAULT_STACK_ALIGNMENT);
 
    TR_ASSERT(p == (machine()->getNumGlobalGPRs() + machine()->_numGlobalFPRs), "assertion failure");
+
+   if (cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F))
+      {
+      _properties._allocationOrder[p++] = TR::RealRegister::k0;
+      _properties._allocationOrder[p++] = TR::RealRegister::k1;
+      _properties._allocationOrder[p++] = TR::RealRegister::k2;
+      _properties._allocationOrder[p++] = TR::RealRegister::k3;
+      _properties._allocationOrder[p++] = TR::RealRegister::k4;
+      _properties._allocationOrder[p++] = TR::RealRegister::k5;
+      _properties._allocationOrder[p++] = TR::RealRegister::k6;
+      _properties._allocationOrder[p++] = TR::RealRegister::k7;
+      }
    }
 
 
@@ -527,6 +577,10 @@ TR::AMD64SystemLinkage::buildVolatileAndReturnDependencies(
       if (regIndex != returnRegIndex)
          {
          TR_RegisterKinds rk = (i < getProperties()._numberOfVolatileGPRegisters) ? TR_GPR : TR_FPR;
+
+         if (i >= TR::RealRegister::k0 && i <= TR::RealRegister::k7)
+            rk = TR_VMR;
+
          TR::Register *dummy = cg()->allocateRegister(rk);
          deps->addPostCondition(dummy, regIndex, cg());
 

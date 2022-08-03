@@ -498,6 +498,7 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
       {
       self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastAssignableGPR));
       self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstXMMR, TR::RealRegister::LastXMMR));
+      self()->setVMRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::k1, TR::RealRegister::k7));
       }
 
    self()->setSupportsProfiledInlining();
@@ -1714,7 +1715,7 @@ void OMR::X86::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssig
    LexicalTimer pt2("GP register assignment", self()->comp()->phaseTimer());
    // Assign GPRs and XMMRs in a backward pass
    //
-   kindsToAssign = TR_RegisterKinds(kindsToAssign & (TR_GPR_Mask | TR_FPR_Mask | TR_VRF_Mask));
+   kindsToAssign = TR_RegisterKinds(kindsToAssign & (TR_GPR_Mask | TR_VMR_Mask | TR_FPR_Mask | TR_VRF_Mask));
    if (kindsToAssign)
       {
       self()->getVMThreadRegister()->setFutureUseCount(self()->getVMThreadRegister()->getTotalUseCount());

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -322,7 +322,9 @@ setup_native_thread(J9ThreadWalkState *state, CONTEXT *sigContext)
 
 	/* assemble the callstack */
 	state->portLibrary->introspect_backtrace_thread(state->portLibrary, state->current_thread, state->heap, NULL);
-	state->portLibrary->introspect_backtrace_symbols(state->portLibrary, state->current_thread, state->heap);
+	if (OMR_ARE_NO_BITS_SET(state->options, OMR_INTROSPECT_NO_SYMBOLS)) {
+		state->portLibrary->introspect_backtrace_symbols_ex(state->portLibrary, state->current_thread, state->heap, 0);
+	}
 
 	if (state->current_thread->error != 0) {
 		RECORD_ERROR(state, state->current_thread->error, 1);

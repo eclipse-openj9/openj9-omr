@@ -117,7 +117,11 @@ upcallHandler(int signal, siginfo_t *siginfo, void *context)
 	char *data = "A";
 
 	stateForBacktrace->portLibrary->introspect_backtrace_thread(stateForBacktrace->portLibrary, stateForBacktrace->current_thread, stateForBacktrace->heap, NULL);
-	stateForBacktrace->portLibrary->introspect_backtrace_symbols(stateForBacktrace->portLibrary, stateForBacktrace->current_thread, stateForBacktrace->heap);
+
+	if (OMR_ARE_NO_BITS_SET(stateForBacktrace->options, OMR_INTROSPECT_NO_SYMBOLS)) {
+		stateForBacktrace->portLibrary->introspect_backtrace_symbols_ex(stateForBacktrace->portLibrary, stateForBacktrace->current_thread, stateForBacktrace->heap, 0);
+	}
+
 	write(pipeFileDescriptor[1], data, 1);
 }
 
@@ -289,9 +293,11 @@ setupNativeThread(J9ThreadWalkState *state, thread_context *sigContext)
 				CLEAR_ERROR(state);
 			}
 
-			if ((NULL != state->current_thread->callstack) && (NULL == state->current_thread->callstack->symbol)) {
+			if (OMR_ARE_ANY_BITS_SET(state->options, OMR_INTROSPECT_NO_SYMBOLS)) {
+				/* The caller asked us not to resolve symbols, so we don't expect to have a symbol for the top frame. */
+			} else if ((NULL != state->current_thread->callstack) && (NULL == state->current_thread->callstack->symbol)) {
 				SPECULATE_ERROR(state, FAULT_DURING_BACKTRACE, 3);
-				state->portLibrary->introspect_backtrace_symbols(state->portLibrary, state->current_thread, state->heap);
+				state->portLibrary->introspect_backtrace_symbols_ex(state->portLibrary, state->current_thread, state->heap, 0);
 				CLEAR_ERROR(state);
 			}
 		}

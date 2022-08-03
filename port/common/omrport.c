@@ -347,6 +347,7 @@ static OMRPortLibrary MainPortLibraryTable = {
 	omrintrospect_threads_nextDo, /* introspect_threads_nextDo */
 	omrintrospect_backtrace_thread, /* introspect_backtrace_thread */
 	omrintrospect_backtrace_symbols, /* introspect_backtrace_symbols */
+	omrintrospect_backtrace_symbols_ex, /* introspect_backtrace_symbols_ex */
 	omrsyslog_query, /* syslog_query */
 	omrsyslog_set, /* syslog_set */
 	omrmem_walk_categories, /* mem_walk_categories */

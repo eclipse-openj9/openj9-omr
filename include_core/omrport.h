@@ -1280,7 +1280,28 @@ typedef struct J9ThreadWalkState {
 	intptr_t error;
 	uintptr_t error_detail;
 	const char *error_string;
+	uint32_t options;
 } J9ThreadWalkState;
+
+/*
+ * Possible options in J9ThreadWalkState.
+ */
+
+/*
+ * Don't resolve symbols in stack frames in introspect_threads_XXX();
+ * caller will use introspect_backtrace_symbols_ex() as necessary.
+ */
+#define OMR_INTROSPECT_NO_SYMBOLS 1
+
+/*
+ * Possible options in calls to introspect_backtrace_symbols_ex().
+ */
+
+/*
+ * Do only basic, low cost symbol resolution. Currently, this is only
+ * relevant on Linux where full symbol resolution can be costly.
+ */
+#define OMR_BACKTRACE_SYMBOLS_BASIC 1
 
 typedef struct J9PortSysInfoLoadData {
 	double oneMinuteAverage;
@@ -2397,6 +2418,8 @@ typedef struct OMRPortLibrary {
 	uintptr_t (*introspect_backtrace_thread)(struct OMRPortLibrary *portLibrary, J9PlatformThread *thread, J9Heap *heap, void *signalInfo) ;
 	/** see @ref omrintrospect.c::omrintrospect_backtrace_symbols "omrintrospect_backtrace_symbols"*/
 	uintptr_t (*introspect_backtrace_symbols)(struct OMRPortLibrary *portLibrary, J9PlatformThread *thread, J9Heap *heap) ;
+	/** see @ref omrintrospect.c::omrintrospect_backtrace_symbols_ex "omrintrospect_backtrace_symbols_ex"*/
+	uintptr_t (*introspect_backtrace_symbols_ex)(struct OMRPortLibrary *portLibrary, J9PlatformThread *thread, J9Heap *heap, uint32_t options);
 	/** see @ref omrsyslog.c::omrsyslog_query "omrsyslog_query"*/
 	uintptr_t (*syslog_query)(struct OMRPortLibrary *portLibrary) ;
 	/** see @ref omrsyslog.c::omrsyslog_set "omrsyslog_set"*/
@@ -3021,7 +3044,8 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrintrospect_threads_startDo_with_signal(param1,param2,param3) privateOmrPortLibrary->introspect_threads_startDo_with_signal(privateOmrPortLibrary, (param1), (param2), (param3))
 #define omrintrospect_threads_nextDo(param1) privateOmrPortLibrary->introspect_threads_nextDo(param1)
 #define omrintrospect_backtrace_thread(param1,param2,param3) privateOmrPortLibrary->introspect_backtrace_thread(privateOmrPortLibrary, (param1), (param2), (param3))
-#define omrintrospect_backtrace_symbols(param1,param2) privateOmrPortLibrary->introspect_backtrace_symbols(privateOmrPortLibrary, (param1), (param2))
+#define omrintrospect_backtrace_symbols(param1,param2) privateOmrPortLibrary->introspect_backtrace_symbols_ex(privateOmrPortLibrary, (param1), (param2), 0)
+#define omrintrospect_backtrace_symbols_ex(param1,param2,param3) privateOmrPortLibrary->introspect_backtrace_symbols_ex(privateOmrPortLibrary, (param1), (param2), (param3))
 #define omrsyslog_query() privateOmrPortLibrary->syslog_query(privateOmrPortLibrary)
 #define omrsyslog_set(param1) privateOmrPortLibrary->syslog_set(privateOmrPortLibrary, (param1))
 #define omrmem_walk_categories(param1) privateOmrPortLibrary->mem_walk_categories(privateOmrPortLibrary, (param1))

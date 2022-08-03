@@ -234,12 +234,13 @@ omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary,
  * @param portLbirary a pointer to an initialized port library
  * @param threadInfo a thread structure populated with a backtrace
  * @param heap a heap from which to allocate any necessary memory. If NULL malloc is used instead.
+ * @param options controls how much effort is expended trying to resolve symbols
  *
  * @return the number of frames for which a symbol was constructed.
  */
 uintptr_t
 omrintrospect_backtrace_symbols_raw(struct OMRPortLibrary *portLibrary,
-	J9PlatformThread *threadInfo, J9Heap *heap)
+		J9PlatformThread *threadInfo, J9Heap *heap, uint32_t options)
 {
 	J9PlatformStackFrame *frame;
 	int i;

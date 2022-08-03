@@ -955,6 +955,8 @@ extern J9_CFUNC uintptr_t
 omrintrospect_backtrace_thread(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap, void *signalInfo);
 extern J9_CFUNC uintptr_t
 omrintrospect_backtrace_symbols(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap);
+extern J9_CFUNC uintptr_t
+omrintrospect_backtrace_symbols_ex(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap, uint32_t options);
 
 /* omrcuda */
 #if defined(OMR_OPT_CUDA)

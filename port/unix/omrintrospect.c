@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -748,11 +748,11 @@ static void
 upcall_handler(int signal, siginfo_t *siginfo, void *context_arg)
 {
 	thread_context *context = (thread_context *)context_arg;
-	J9ThreadWalkState *state;
+	J9ThreadWalkState *state = NULL;
 	struct PlatformWalkData *data = NULL;
 	int ret = 0;
 	pid_t pid = getpid();
-	unsigned long tid = omrthread_get_ras_tid();
+	uintptr_t tid = omrthread_get_ras_tid();
 
 #ifdef AIXPPCX
 	struct sigaction handler;
@@ -764,13 +764,14 @@ upcall_handler(int signal, siginfo_t *siginfo, void *context_arg)
 #endif
 
 	/* check that this signal was queued by this process. */
-	if (siginfo->si_code != SI_QUEUE || siginfo->si_value.sival_ptr == NULL
-#ifndef J9ZOS390
-		/* pid is only valid on zOS if si_code <= 0. SI_QUEUE is > 0 */
-		|| siginfo->si_pid != pid
-#endif
+	if ((SI_QUEUE != siginfo->si_code)
+#if !defined(J9ZOS390)
+		/* pid is only valid on z/OS if si_code <= 0. SI_QUEUE is > 0. */
+		|| (pid != siginfo->si_pid)
+#endif /* !defined(J9ZOS390) */
+		|| (NULL == siginfo->si_value.sival_ptr)
 	) {
-		/* these are not the signals you are looking for */
+		/* these are not the signals we are looking for */
 		return;
 	}
 
@@ -812,7 +813,9 @@ upcall_handler(int signal, siginfo_t *siginfo, void *context_arg)
 
 #ifdef LINUX
 			state->portLibrary->introspect_backtrace_thread(state->portLibrary, data->thread, state->heap, NULL);
-			state->portLibrary->introspect_backtrace_symbols(state->portLibrary, data->thread, state->heap);
+			if (OMR_ARE_NO_BITS_SET(state->options, OMR_INTROSPECT_NO_SYMBOLS)) {
+				state->portLibrary->introspect_backtrace_symbols_ex(state->portLibrary, data->thread, state->heap, 0);
+			}
 #endif /* LINUX */
 		}
 	}
@@ -1468,9 +1471,11 @@ setup_native_thread(J9ThreadWalkState *state, thread_context *sigContext, int he
 #endif
 	}
 
-	if (state->current_thread->callstack && state->current_thread->callstack->symbol == NULL) {
+	if (OMR_ARE_ANY_BITS_SET(state->options, OMR_INTROSPECT_NO_SYMBOLS)) {
+		/* The caller asked us not to resolve symbols, so we don't expect to have a symbol for the top frame. */
+	} else if ((NULL != state->current_thread->callstack) && (NULL == state->current_thread->callstack->symbol)) {
 		SPECULATE_ERROR(state, FAULT_DURING_BACKTRACE, 3);
-		state->portLibrary->introspect_backtrace_symbols(state->portLibrary, state->current_thread, state->heap);
+		state->portLibrary->introspect_backtrace_symbols_ex(state->portLibrary, state->current_thread, state->heap, 0);
 		CLEAR_ERROR(state);
 	}
 

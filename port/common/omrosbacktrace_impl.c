@@ -54,17 +54,17 @@ omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9Platfor
  * If it isn't possible to determine any of the items in the string then they are omitted. If no heap is specified
  * then this function will use malloc to allocate the memory necessary for the symbols which must be freed by the caller.
  *
- * This function is called via the omrintrospect_backtrace_symbols function that provides signal protection
+ * This function is called via the omrintrospect_backtrace_symbols_ex function that provides signal protection
  *
  * @param portLbirary a pointer to an initialized port library
  * @param threadInfo a thread structure populated with a backtrace
  * @param heap a heap from which to allocate any necessary memory. If NULL malloc is used instead.
+ * @param options controls how much effort is expended trying to resolve symbols
  *
  * @return the number of frames for which a symbol was constructed.
  */
 uintptr_t
-omrintrospect_backtrace_symbols_raw(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap)
+omrintrospect_backtrace_symbols_raw(struct OMRPortLibrary *portLibrary, J9PlatformThread *threadInfo, J9Heap *heap, uint32_t options)
 {
 	return 0;
 }
-

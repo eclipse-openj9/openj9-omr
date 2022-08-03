@@ -1551,15 +1551,6 @@ MM_ParallelGlobalGC::completeExternalConcurrentCycle(MM_EnvironmentBase *env)
 	if (_extensions->isConcurrentScavengerEnabled()) {
 		/* ParallelGlobalGC or ConcurrentGC (STW phase) cannot start before Concurrent Scavenger cycle is in progress */
 		_extensions->scavenger->completeConcurrentCycle(env);
-
-		/* Push thread local buffers to the global list.
-		 * This is important to do because some threads can miss to flush their Ownable buffers. The scheduler may dispatch different threads for different phases of CS,
-		 * Ownable buffers are only flushed during final phase. Hence, threads that don't participate in the final phase (but built lists in prior phases) may still have buffers which need to
-		 * be flushed. Typically, this isn't an issue because all thread local buffers will be flushed when we acquire exclusive for global. However, we're already past that point now.
-		 *
-		 * TODO: This is a temporary workaround, it is Scavengers responsibility to ensure all buffers are flushed by the time we complete a cycle.
-		 */
-		GC_OMRVMInterface::flushNonAllocationCaches(env);
 	}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 }

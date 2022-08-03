@@ -5585,6 +5585,7 @@ MM_Scavenger::workThreadProcessRoots(MM_EnvironmentStandard *env)
 	 * we don't know which threads Scheduler will not use, so we do it for every thread.
 	 */
 	threadReleaseCaches(env, env, true, true);
+	rootScanner.flush(env);
 
 	mergeThreadGCStats(env);
 }
@@ -5606,6 +5607,7 @@ MM_Scavenger::workThreadScan(MM_EnvironmentStandard *env)
 	 * but this is not 100% guarantied (the control of what threads are inolved is in Dispatcher's domain).
 	 */
 	threadReleaseCaches(env, env, true, true);
+	rootScanner.flush(env);
 
 	mergeThreadGCStats(env);
 }

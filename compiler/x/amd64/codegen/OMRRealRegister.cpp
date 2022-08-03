@@ -72,4 +72,12 @@ const OMR::X86::RealRegister::TR_RegisterBinaryEncoding OMR::X86::AMD64::RealReg
    {0x05, 1, 1},        // xmm14
    {0x06, 1, 1},        // xmm14
    {0x07, 1, 1},        // xmm15
+   {0x00},              // k0
+   {0x01},              // k1
+   {0x02},              // k2
+   {0x03},              // k3
+   {0x04},              // k4
+   {0x05},              // k5
+   {0x06},              // k6
+   {0x07},              // k7
    };

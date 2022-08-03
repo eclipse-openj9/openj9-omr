@@ -56,3 +56,15 @@
    xmm6Mask          = 0x00000040,
    xmm7Mask          = 0x00000080,
    AvailableXMMRMask = 0x000000FF,
+
+   // Vector Mask Registers
+   //
+   k0Mask            = 0x00000001,
+   k1Mask            = 0x00000002,
+   k2Mask            = 0x00000004,
+   k3Mask            = 0x00000008,
+   k4Mask            = 0x00000010,
+   k5Mask            = 0x00000020,
+   k6Mask            = 0x00000040,
+   k7Mask            = 0x00000080,
+   AvailableKMask    = 0x000000FF,

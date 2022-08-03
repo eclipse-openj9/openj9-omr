@@ -39,7 +39,8 @@ enum TR_RegisterKinds
    TR_VRF           = 4,
    TR_VSX_SCALAR    = 5,
    TR_VSX_VECTOR    = 6,
-   TR_SSR           = 7,   // used for TR_PseudoRegisters for SS (storage to storage) instructions to return results
+   TR_VMR           = 7,   // used for masked vector operations
+   TR_SSR           = 8,   // used for TR_PseudoRegisters for SS (storage to storage) instructions to return results
    LastRegisterKind = TR_SSR,
    NumRegisterKinds = LastRegisterKind+1,
 
@@ -53,6 +54,7 @@ enum TR_RegisterKinds
    TR_VRF_Mask    = TO_KIND_MASK(TR_VRF),
    TR_VSX_SCALAR_Mask    = TO_KIND_MASK(TR_VSX_SCALAR),
    TR_VSX_VECTOR_Mask    = TO_KIND_MASK(TR_VSX_VECTOR),
+   TR_VMR_Mask    = TO_KIND_MASK(TR_VMR),
    TR_SSR_Mask    = TO_KIND_MASK(TR_SSR)
    };
 

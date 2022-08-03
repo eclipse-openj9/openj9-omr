@@ -2013,6 +2013,22 @@ TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
       case TR::RealRegister::xmm15:
          switch (size) { case 4: case -1: return "xmm15"; case TR_VectorReg256: return "ymm15"; case TR_VectorReg512: return "zmm15"; default: return "?mm15"; }
 #endif
+      case TR::RealRegister::k0:
+         return "k0";
+      case TR::RealRegister::k1:
+         return "k1";
+      case TR::RealRegister::k2:
+         return "k2";
+      case TR::RealRegister::k3:
+         return "k3";
+      case TR::RealRegister::k4:
+         return "k4";
+      case TR::RealRegister::k5:
+         return "k5";
+      case TR::RealRegister::k6:
+         return "k6";
+      case TR::RealRegister::k7:
+         return "k7";
       default: TR_ASSERT( 0, "unexpected register number"); return unknownRegisterName();
       }
    }

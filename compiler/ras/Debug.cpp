@@ -3026,6 +3026,7 @@ TR_Debug::getRegisterKindName(TR_RegisterKinds rk)
       {
       case TR_GPR:   return "GPR";
       case TR_FPR:   return "FPR";
+      case TR_VMR:   return "VMR";
       case TR_CCR:   return "CCR";
       case TR_X87:   return "X87";
       case TR_VRF:   return "VRF";
@@ -4739,6 +4740,18 @@ TR_Debug::traceRegisterAssignment(TR::Instruction *instr, bool insertedByRA, boo
                   }
                trfprintf(_file, "</fprs>\n");
                }
+
+            if (_registerKindsToAssign & TR_VMR_Mask)
+               {
+               trfprintf(_file, "<vmrs>\n");
+               TR::RegisterIterator *iter = _comp->cg()->getVMRegisterIterator();
+               for (TR::Register *vmr = iter->getFirst(); vmr; vmr = iter->getNext())
+                  {
+                  printFullRegInfo(_file, vmr);
+                  }
+               trfprintf(_file, "</vmrs>\n");
+               }
+
             trfprintf(_file, "</regstates>\n");
             }
          trfprintf(_file, "\n");

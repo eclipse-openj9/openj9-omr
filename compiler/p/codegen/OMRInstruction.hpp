@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -71,10 +71,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t *generateBinaryEncoding();
 
-   TR::InstOpCode& getOpCode()                       {return _opcode;}
-   TR::InstOpCode::Mnemonic getOpCodeValue()                  {return _opcode.getOpCodeValue();}
    TR::InstOpCode::Mnemonic getRecordFormOpCode()             {return _opcode.getRecordFormOpCodeValue();}
-   TR::InstOpCode::Mnemonic setOpCodeValue(TR::InstOpCode::Mnemonic op)  {return _opcode.setOpCodeValue(op);}
 
    virtual TR::Register *getTrg1Register()                   {return NULL;}
 

@@ -97,6 +97,7 @@ following names and aliases:
 | :--------           | :----    | :-----------   | :-------                                           |
 | linux_aarch64       | aarch64  | ARM            | 64-bit Linux on AArch64 (cross-compile build only) |
 | linux_arm           | arm      | ARM            | 32-bit Linux on AArch32 (cross-compile build only) |
+| osx_aarch64         | amac     | ARM            | 64-bit macOS on AArch64                            |
 | aix_ppc-64          | aix      | PPC            | 64-bit AIX                                         |
 | linux_ppc-64_le_gcc | plinux   | PPC            | 64-bit Linux on Power LE                           |
 | linux_riscv64_cross | riscv    | RISC-V         | 64-bit Linux on RISC-V (cross-compile build only)  |

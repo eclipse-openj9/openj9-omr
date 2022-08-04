@@ -176,7 +176,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    private:
 
-   TR::InstOpCode _opcode;
    TR::RegisterDependencyConditions *_conditions;
    void assumeValidInstruction();
 

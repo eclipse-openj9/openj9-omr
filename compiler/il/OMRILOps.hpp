@@ -883,6 +883,22 @@ public:
       return TR::BadILOp;
       }
 
+   static TR::ILOpCodes indirectStoreOpCode(TR::DataType type)
+      {
+      switch(type)
+         {
+         case TR::Int8:     return TR::bstorei;
+         case TR::Int16:    return TR::sstorei;
+         case TR::Int32:    return TR::istorei;
+         case TR::Int64:    return TR::lstorei;
+         case TR::Address:  return TR::astorei;
+         case TR::Float:    return TR::fstorei;
+         case TR::Double:   return TR::dstorei;
+         default: TR_ASSERT(0, "no load opcode for this datatype");
+        }
+      return TR::BadILOp;
+      }
+
    static TR::ILOpCodes absOpCode(TR::DataType type)
       {
       if (type.isVector()) return createVectorOpCode(TR::vabs, type);
@@ -1453,110 +1469,138 @@ public:
       if (!elementType.isVectorElement()) return TR::BadILOp;
 
       TR::DataTypes vectorType = TR::DataType::createVectorType(elementType.getDataType(), vectorLength);
+      TR::VectorOperation vectorOperation;
 
       switch (op)
          {
+         case TR::fsqrt:
+         case TR::dsqrt:
+            vectorOperation = TR::vsqrt;
+            break;
+         case TR::imin:
+         case TR::lmin:
+         case TR::fmin:
+         case TR::dmin:
+            vectorOperation = TR::vmin;
+            break;
+         case TR::imax:
+         case TR::lmax:
+         case TR::fmax:
+         case TR::dmax:
+            vectorOperation = TR::vmax;
+            break;
          case TR::bload:
          case TR::sload:
          case TR::iload:
          case TR::lload:
          case TR::fload:
          case TR::dload:
-            return ILOpCode::createVectorOpCode(TR::vload, vectorType);
+            vectorOperation = TR::vload;
+            break;
          case TR::bloadi:
          case TR::sloadi:
          case TR::iloadi:
          case TR::lloadi:
          case TR::floadi:
          case TR::dloadi:
-            return ILOpCode::createVectorOpCode(TR::vloadi, vectorType);
+            vectorOperation = TR::vloadi;
+            break;
          case TR::bstore:
          case TR::sstore:
          case TR::istore:
          case TR::lstore:
          case TR::fstore:
          case TR::dstore:
-            return ILOpCode::createVectorOpCode(TR::vstore, vectorType);
+            vectorOperation = TR::vstore;
+            break;
          case TR::bstorei:
          case TR::sstorei:
          case TR::istorei:
          case TR::lstorei:
          case TR::fstorei:
          case TR::dstorei:
-            return ILOpCode::createVectorOpCode(TR::vstorei, vectorType);
-
+            vectorOperation = TR::vstorei;
+            break;
          case TR::badd:
          case TR::sadd:
          case TR::iadd:
          case TR::ladd:
          case TR::fadd:
          case TR::dadd:
-            return ILOpCode::createVectorOpCode(TR::vadd, vectorType);
+            vectorOperation = TR::vadd;
+            break;
          case TR::bsub:
          case TR::ssub:
          case TR::isub:
          case TR::lsub:
          case TR::fsub:
          case TR::dsub:
-            return ILOpCode::createVectorOpCode(TR::vsub, vectorType);
+            vectorOperation = TR::vsub;
+            break;
          case TR::bmul:
          case TR::smul:
          case TR::imul:
          case TR::lmul:
          case TR::fmul:
          case TR::dmul:
-            return ILOpCode::createVectorOpCode(TR::vmul, vectorType);
+            vectorOperation = TR::vmul;
+            break;
          case TR::bdiv:
          case TR::sdiv:
          case TR::idiv:
          case TR::ldiv:
          case TR::fdiv:
          case TR::ddiv:
-            return ILOpCode::createVectorOpCode(TR::vdiv, vectorType);
+            vectorOperation = TR::vdiv;
+            break;
          case TR::bconst:
          case TR::sconst:
          case TR::iconst:
          case TR::lconst:
          case TR::fconst:
          case TR::dconst:
-            return ILOpCode::createVectorOpCode(TR::vsplats, vectorType);
+            vectorOperation = TR::vsplats;
+            break;
          case TR::bneg:
          case TR::sneg:
          case TR::ineg:
          case TR::lneg:
          case TR::fneg:
          case TR::dneg:
-            return ILOpCode::createVectorOpCode(TR::vneg, vectorType);
-
+            vectorOperation = TR::vneg;
+            break;
          case TR::iabs:
          case TR::labs:
          case TR::fabs:
          case TR::dabs:
-            return ILOpCode::createVectorOpCode(TR::vabs, vectorType);
-
+            vectorOperation = TR::vabs;
+            break;
          case TR::bor:
          case TR::sor:
          case TR::ior:
          case TR::lor:
-            return ILOpCode::createVectorOpCode(TR::vor, vectorType);
+            vectorOperation = TR::vor;
+            break;
          case TR::band:
          case TR::sand:
          case TR::iand:
          case TR::land:
-            return ILOpCode::createVectorOpCode(TR::vand, vectorType);
+            vectorOperation = TR::vand;
+            break;
          case TR::bxor:
          case TR::sxor:
          case TR::ixor:
          case TR::lxor:
-            return ILOpCode::createVectorOpCode(TR::vxor, vectorType);
+            vectorOperation = TR::vxor;
+            break;
          case TR::l2d:
             return ILOpCode::createVectorOpCode(TR::vconv, TR::DataType::createVectorType(TR::Int64, vectorLength),
                                                             TR::DataType::createVectorType(TR::Double, vectorLength));
          default:
             return TR::BadILOp;
-
          }
-      return TR::BadILOp;
+
+      return ILOpCode::createVectorOpCode(vectorOperation, vectorType);
       }
 
    static TR::ILOpCodes getRotateOpCodeFromDt(TR::DataType type)

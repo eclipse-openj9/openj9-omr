@@ -23,7 +23,399 @@
 #include "default_compiler.hpp"
 #include "compilerunittest/CompilerUnitTest.hpp"
 
+#define MAX(x, y) (x > y) ? x : y
+#define ABS(x) (x < 0) ? -x : x
+
 class VectorTest : public TRTest::JitTest {};
+
+class ParameterizedBinaryVectorArithmeticTest : public VectorTest, public ::testing::WithParamInterface<std::tuple<TR::ILOpCode, TR::VectorLength>> {};
+
+int vectorSize(TR::VectorLength vl) {
+    switch (vl) {
+        case TR::VectorLength64:
+            return 8;
+        case TR::VectorLength128:
+            return 16;
+        case TR::VectorLength256:
+            return 32;
+        case TR::VectorLength512:
+            return 64;
+        default:
+            TR_ASSERT_FATAL(0, "Illegal vector length");
+            return 0;
+    }
+}
+
+int typeSize(TR::DataTypes dt) {
+    switch (dt) {
+        case TR::Int8:
+            return 1;
+        case TR::Int16:
+            return 2;
+        case TR::Int32:
+            return 4;
+        case TR::Int64:
+            return 8;
+        case TR::Float:
+            return 4;
+        case TR::Double:
+            return 8;
+        default:
+            TR_ASSERT_FATAL(0, "Illegal data type");
+            return 0;
+    }
+}
+
+void compareResults(void *expected, void *actual, TR::DataTypes dt, TR::VectorLength vl) {
+    int lengthBytes = vectorSize(vl);
+    int elementBytes = typeSize(dt);
+
+    for (int i = 0; i < lengthBytes; i += elementBytes) {
+        switch (dt) {
+            case TR::Int8:
+                EXPECT_EQ(*((int8_t *) expected), *((int8_t *) actual));
+                break;
+            case TR::Int16:
+                EXPECT_EQ(*((int16_t *) expected), *((int16_t *) actual));
+                break;
+            case TR::Int32:
+                EXPECT_EQ(*((int32_t *) expected), *((int32_t *) actual));
+                break;
+            case TR::Int64:
+                EXPECT_EQ(*((int64_t *) expected), *((int64_t *) actual));
+                break;
+            case TR::Float:
+                EXPECT_FLOAT_EQ(*((float *) expected), *((float *) actual));
+                break;
+            case TR::Double:
+                EXPECT_DOUBLE_EQ(*((double *) expected), *((double *) actual));
+                break;
+            default:
+                TR_ASSERT_FATAL(0, "Illegal type to compare");
+                break;
+        }
+        expected = static_cast<char *>(expected) + elementBytes;
+        actual = static_cast<char *>(actual) + elementBytes;
+    }
+}
+
+void generateByType(void *output, TR::DataType dt, bool nonZero) {
+    switch (dt) {
+        case TR::Int8:
+            *((int8_t *) output) = -128 + static_cast<int8_t>(rand() % 255);
+            if (nonZero && *((int8_t *) output) == 0) *((int8_t *) output) = 1;
+            break;
+        case TR::Int16:
+            *((int16_t *) output) = -200 + static_cast<int16_t>(rand() % 400);
+            if (nonZero && *((int16_t *) output) == 0) *((int16_t *) output) = 1;
+            break;
+        case TR::Int32:
+            *((int32_t *) output) = -1000 + static_cast<int32_t>(rand() % 2000);
+            if (nonZero && *((int32_t *) output) == 0) *((int32_t *) output) = 1;
+            break;
+        case TR::Int64:
+            *((int64_t *) output) = -1000 + static_cast<int64_t>(rand() % 2000);
+            if (nonZero && *((int64_t *) output) == 0) *((int64_t *) output) = 1;
+            break;
+        case TR::Float:
+            *((float *) output) = static_cast<float>(rand() / 1000.0);
+            break;
+        case TR::Double:
+            *((double *) output) = static_cast<double>(rand() / 1000.0);
+            break;
+    }
+}
+
+void generateIO(TR::ILOpCode scalarOpcode, TR::VectorLength vl, void *output, void *inputA, void *inputB) {
+    TR::ILOpCode vectorOpcode = OMR::ILOpCode::convertScalarToVector(scalarOpcode.getOpCodeValue(), vl);
+    TR::DataType elementType = vectorOpcode.getType().getVectorElementType();
+    TR::ILOpCode storeOpcode = OMR::ILOpCode::indirectStoreOpCode(elementType);
+    TR::ILOpCode loadOpcode = OMR::ILOpCode::indirectLoadOpCode(elementType);
+    char inputTrees[1024];
+
+    if (inputB) {
+        std::snprintf(inputTrees, sizeof(inputTrees),
+                      "(method return=NoType args=[Address, Address, Address]"
+                      "  (block"
+                      "    (%s"
+                      "      (aload parm=0)"
+                      "        (%s"
+                      "          (%s (aload parm=1))"
+                      "          (%s (aload parm=2))))"
+                      "    (return)))",
+                      storeOpcode.getName(),
+                      scalarOpcode.getName(),
+                      loadOpcode.getName(),
+                      loadOpcode.getName()
+        );
+    } else {
+        std::snprintf(inputTrees, sizeof(inputTrees),
+                      "(method return=NoType args=[Address, Address]"
+                      "  (block"
+                      "    (%s"
+                      "      (aload parm=0)"
+                      "        (%s"
+                      "          (%s (aload parm=1))))"
+                      "    (return)))",
+                      storeOpcode.getName(),
+                      scalarOpcode.getName(),
+                      loadOpcode.getName()
+        );
+    }
+
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    int numBytes = vectorSize(vl);
+    int elementSize = typeSize(elementType.getDataType());
+
+    int numElements = numBytes / elementSize;
+
+    if (inputB) {
+        auto entry_point = compiler.getEntryPoint < void(*)(void * , void *, void *) > ();
+        void *aOff = inputA;
+        void *bOff = inputB;
+        void *outOff = output;
+
+        for (int i = 0; i < numElements; i++) {
+            generateByType(aOff, elementType, scalarOpcode.isDiv());
+            generateByType(bOff, elementType, scalarOpcode.isDiv());
+
+            entry_point(outOff, aOff, bOff);
+
+            aOff = static_cast<char *>(aOff) + elementSize;
+            bOff = static_cast<char *>(bOff) + elementSize;
+            outOff = static_cast<char *>(outOff) + elementSize;
+        }
+    } else {
+        auto entry_point = compiler.getEntryPoint < void(*)(void * , void *) > ();
+        void *aOff = inputA;
+        void *outOff = output;
+
+        for (int i = 0; i < numElements; i++) {
+            generateByType(aOff, elementType, scalarOpcode.isDiv());
+            entry_point(outOff, aOff);
+
+            aOff = static_cast<char *>(aOff) + elementSize;
+            outOff = static_cast<char *>(outOff) + elementSize;
+        }
+    }
+}
+
+void generateAndExecuteVectorTest(TR::ILOpCode vectorOpcode, void *expected, void *inputA, void *inputB) {
+    TR::VectorLength vl = vectorOpcode.getType().getVectorLength();
+    TR::DataType elementType = vectorOpcode.getType().getVectorElementType();
+    TR::DataType vt = TR::DataType::createVectorType(elementType.getDataType(), vl);
+    TR::ILOpCode loadOp = TR::ILOpCode::createVectorOpCode(TR::vloadi, vt);
+    TR::ILOpCode storeOp = TR::ILOpCode::createVectorOpCode(TR::vstorei, vt);
+
+    char type[64];
+    char inputTrees[1024];
+
+    std::snprintf(type, sizeof(type), "Vector%i%s", vectorSize(vl) * 8, TR::DataType::getName(elementType));
+
+    if (vectorOpcode.expectedChildCount() == 1) {
+        std::snprintf(inputTrees, sizeof(inputTrees),
+                      "(method return= NoType args=[Address,Address]                   "
+                      "  (block                                                        "
+                      "     (%s%s  offset=0                                            "
+                      "         (aload parm=0)                                         "
+                      "            (%s%s                                               "
+                      "                 (%s%s (aload parm=1))))                        "
+                      "     (return)))                                                 ",
+
+                      storeOp.getName(),
+                      type,
+                      vectorOpcode.getName(),
+                      type,
+                      loadOp.getName(),
+                      type
+        );
+    } else {
+        std::snprintf(inputTrees, sizeof(inputTrees),
+                      "(method return= NoType args=[Address,Address,Address]           "
+                      "  (block                                                        "
+                      "     (%s%s  offset=0                                            "
+                      "         (aload parm=0)                                         "
+                      "            (%s%s                                               "
+                      "                 (%s%s (aload parm=1))                          "
+                      "                 (%s%s (aload parm=2))))                        "
+                      "     (return)))                                                 ",
+
+                      storeOp.getName(),
+                      type,
+                      vectorOpcode.getName(),
+                      type,
+                      loadOp.getName(),
+                      type,
+                      loadOp.getName(),
+                      type
+        );
+    }
+
+    auto trees = parseString(inputTrees);
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    uint8_t result[64];
+    if (vectorOpcode.expectedChildCount() == 1) {
+        auto entry_point = compiler.getEntryPoint < void(*)(void * , void *) > ();
+        entry_point(result, inputA);
+    } else {
+        auto entry_point = compiler.getEntryPoint < void(*)(void * , void *, void *) > ();
+        entry_point(result, inputA, inputB);
+    }
+
+    compareResults(expected, result, elementType.getDataType(), vl);
+}
+
+TEST_P(ParameterizedBinaryVectorArithmeticTest, VLoadStore) {
+    TR::ILOpCode scalarOpcode = std::get<0>(GetParam());
+    TR::VectorLength vl = std::get<1>(GetParam());
+    TR::DataTypes et = scalarOpcode.getType().getDataType();
+
+    SKIP_IF(vl > TR::NumVectorLengths, MissingImplementation) << "Vector length is not supported by the target platform";
+    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
+    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
+
+    TR::ILOpCode vectorOpcode = OMR::ILOpCode::convertScalarToVector(scalarOpcode.getOpCodeValue(), vl);
+    ASSERT_NE(TR::BadILOp, vectorOpcode.getOpCodeValue());
+    TR::DataType elementType = vectorOpcode.getType().getVectorElementType();
+    TR::DataType vt = TR::DataType::createVectorType(et, vl);
+    TR::ILOpCode loadOp = TR::ILOpCode::createVectorOpCode(TR::vloadi, vt);
+    TR::ILOpCode storeOp = TR::ILOpCode::createVectorOpCode(TR::vstorei, vt);
+
+    char type[64];
+    std::snprintf(type, sizeof(type), "Vector%i%s", vectorSize(vl) * 8, TR::DataType::getName(elementType));
+
+    TR::CPU cpu = TR::CPU::detect(privateOmrPortLibrary);
+    bool platformSupport = TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&cpu, loadOp) &&
+                           TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&cpu, storeOp) &&
+                           TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&cpu, vectorOpcode);
+
+    SKIP_IF(!platformSupport, MissingImplementation) << "Opcode " << vectorOpcode.getName() << type << " is not supported by the target platform";
+
+    uint8_t expected[128];
+    uint8_t a[128];
+    uint8_t b[128];
+
+    generateIO(scalarOpcode, vl, expected, a, vectorOpcode.expectedChildCount() == 1 ? NULL : b);
+    generateAndExecuteVectorTest(vectorOpcode, expected, a, b);
+}
+
+#define ALL_VL(opcode) \
+    std::make_tuple(opcode, TR::VectorLength128),\
+    std::make_tuple(opcode, TR::VectorLength256),\
+    std::make_tuple(opcode, TR::VectorLength512)
+
+INSTANTIATE_TEST_CASE_P(VectorArithmetic, ParameterizedBinaryVectorArithmeticTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::ILOpCode, TR::VectorLength>>(
+    /* vadd */
+
+    ALL_VL(TR::badd),
+    ALL_VL(TR::sadd),
+    ALL_VL(TR::iadd),
+    ALL_VL(TR::ladd),
+    ALL_VL(TR::dadd),
+    ALL_VL(TR::fadd),
+
+    /* vsub */
+
+    ALL_VL(TR::bsub),
+    ALL_VL(TR::ssub),
+    ALL_VL(TR::isub),
+    ALL_VL(TR::lsub),
+    ALL_VL(TR::fsub),
+    ALL_VL(TR::dsub),
+
+    /* vmul */
+
+    ALL_VL(TR::bmul),
+    ALL_VL(TR::smul),
+    ALL_VL(TR::imul),
+    ALL_VL(TR::lmul),
+    ALL_VL(TR::fmul),
+    ALL_VL(TR::dmul),
+
+    /* vdiv */
+
+    ALL_VL(TR::bdiv),
+    ALL_VL(TR::sdiv),
+    ALL_VL(TR::idiv),
+    ALL_VL(TR::ldiv),
+    ALL_VL(TR::fdiv),
+    ALL_VL(TR::ddiv),
+
+    /* vand */
+
+    ALL_VL(TR::band),
+    ALL_VL(TR::sand),
+    ALL_VL(TR::iand),
+    ALL_VL(TR::land),
+
+    /* vor */
+
+    ALL_VL(TR::bor),
+    ALL_VL(TR::sor),
+    ALL_VL(TR::ior),
+    ALL_VL(TR::lor),
+
+    /* vxor */
+
+    ALL_VL(TR::bxor),
+    ALL_VL(TR::sxor),
+    ALL_VL(TR::ixor),
+    ALL_VL(TR::lxor),
+
+    /* vmin */
+
+    /* No opcode for bmin, smin */
+
+    ALL_VL(TR::imin),
+    ALL_VL(TR::lmin),
+
+    /* fmin is not supported */
+    /* dmin is not supported */
+
+    /* vmax */
+
+    /* No opcode for bmax, smax */
+
+    ALL_VL(TR::imax),
+    ALL_VL(TR::lmax),
+
+    /* fmax is not supported */
+    /* dmax is not supported */
+
+    /* ABS */
+
+    ALL_VL(TR::iabs),
+    ALL_VL(TR::labs),
+    ALL_VL(TR::fabs),
+    ALL_VL(TR::dabs),
+
+    /* vsqrt */
+
+    /* No opcode for bsqrt, ssqrt, isqrt, lsqrt */
+    ALL_VL(TR::fsqrt),
+    ALL_VL(TR::dsqrt),
+
+    /* vneg */
+
+    ALL_VL(TR::bneg),
+    ALL_VL(TR::sneg),
+    ALL_VL(TR::ineg),
+    ALL_VL(TR::lneg),
+    ALL_VL(TR::fneg),
+    ALL_VL(TR::dneg)
+)));
+
 
 class ParameterizedVectorTest : public VectorTest, public ::testing::WithParamInterface<std::tuple<TR::VectorLength, TR::DataTypes>> {};
 
@@ -95,1051 +487,6 @@ INSTANTIATE_TEST_CASE_P(VLoadStoreVectorTest, ParameterizedVectorTest, ::testing
     std::make_tuple(TR::VectorLength512, TR::Float),
     std::make_tuple(TR::VectorLength512, TR::Double)
 )));
-
-TEST_F(VectorTest, VDoubleAdd) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Double  offset=0                          "
-                     "         (aload parm=0)                                         "
-                     "            (vaddVector128Double                                "
-                     "                 (vloadiVector128Double (aload parm=1))         "
-                     "                 (vloadiVector128Double (aload parm=2))))       "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(double[],double[],double[])>();
-    // This test currently assumes 128bit SIMD
-
-    double output[] =  {0.0, 0.0};
-    double inputA[] =  {1.0, 2.0};
-    double inputB[] =  {1.0, 2.0};
-
-    entry_point(output,inputA,inputB);
-    EXPECT_DOUBLE_EQ(inputA[0] + inputB[0], output[0]); // Epsilon = 4ULP -- is this necessary?
-    EXPECT_DOUBLE_EQ(inputA[1] + inputB[1], output[1]); // Epsilon = 4ULP -- is this necessary?
-}
-
-TEST_F(VectorTest, VInt8Add) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Int8 offset=0                             "
-                     "         (aload parm=0)                                         "
-                     "            (vaddVector128Int8                                  "
-                     "                 (vloadiVector128Int8 (aload parm=1))           "
-                     "                 (vloadiVector128Int8 (aload parm=2))))         "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int8_t[],int8_t[],int8_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int8_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    int8_t inputA[] =  {7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, 7};
-    int8_t inputB[] =  {-14, -12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 1};
-
-    entry_point(output,inputA,inputB);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ(inputA[i] + inputB[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VInt16Add) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Int16 offset=0                            "
-                     "         (aload parm=0)                                         "
-                     "            (vaddVector128Int16                                 "
-                     "                 (vloadiVector128Int16 (aload parm=1))          "
-                     "                 (vloadiVector128Int16 (aload parm=2))))        "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int16_t[],int16_t[],int16_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int16_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0};
-    int16_t inputA[] =  {60, 45, 30, 0, -3, -2, -1, 2};
-    int16_t inputB[] =  {-5, -10, -1, 13, 15, 10, 7, 5};
-
-    entry_point(output,inputA,inputB);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ(inputA[i] + inputB[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VFloatAdd) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Float offset=0                            "
-                     "         (aload parm=0)                                         "
-                     "            (vaddVector128Float                                 "
-                     "                 (vloadiVector128Float (aload parm=1))          "
-                     "                 (vloadiVector128Float (aload parm=2))))        "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(float[],float[],float[])>();
-    // This test currently assumes 128bit SIMD
-
-    float output[] =  {0.0f, 0.0f, 0.0f, 0.0f};
-    float inputA[] =  {6.0f, 0.0f, -0.1f, 0.6f};
-    float inputB[] =  {-0.5f, 3.5f, 3.0f, 0.7f};
-
-    entry_point(output,inputA,inputB);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_FLOAT_EQ(inputA[i] + inputB[i], output[i]); // Epsilon = 4ULP -- is this necessary?
-    }
-}
-
-TEST_F(VectorTest, VInt8Sub) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Int8 offset=0                             "
-                     "         (aload parm=0)                                         "
-                     "            (vsubVector128Int8                                  "
-                     "                 (vloadiVector128Int8 (aload parm=1))           "
-                     "                 (vloadiVector128Int8 (aload parm=2))))         "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int8_t[],int8_t[],int8_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int8_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    int8_t inputA[] =  {7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, 9};
-    int8_t inputB[] =  {14, 12, 10, 8, 6, 4, 2, 0, -2, -4, -6, -8, -10, -12, -14, 1};
-
-    entry_point(output,inputA,inputB);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ(inputA[i] - inputB[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VInt16Sub) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Int16 offset=0                            "
-                     "         (aload parm=0)                                         "
-                     "            (vsubVector128Int16                                 "
-                     "                 (vloadiVector128Int16 (aload parm=1))          "
-                     "                 (vloadiVector128Int16 (aload parm=2))))        "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int16_t[],int16_t[],int16_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int16_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0};
-    int16_t inputA[] =  {60, 45, 30, 0, -3, -2, -1, 9};
-    int16_t inputB[] =  {5, 10, 1, -13, -15, -10, -7, 2};
-
-    entry_point(output,inputA,inputB);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ(inputA[i] - inputB[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VFloatSub) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Float offset=0                            "
-                     "         (aload parm=0)                                         "
-                     "            (vsubVector128Float                                 "
-                     "                 (vloadiVector128Float (aload parm=1))          "
-                     "                 (vloadiVector128Float (aload parm=2))))        "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(float[],float[],float[])>();
-    // This test currently assumes 128bit SIMD
-
-    float output[] =  {0.0f, 0.0f, 0.0f, 0.0f};
-    float inputA[] =  {6.0f, 0.0f, -0.1f, 2.0f};
-    float inputB[] =  {0.5f, -3.5f, -3.0f, 0.7f};
-
-    entry_point(output,inputA,inputB);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_FLOAT_EQ(inputA[i] - inputB[i], output[i]); // Epsilon = 4ULP -- is this necessary?
-    }
-}
-
-TEST_F(VectorTest, VDoubleSub) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Double offset=0                           "
-                     "         (aload parm=0)                                         "
-                     "            (vsubVector128Double                                "
-                     "                 (vloadiVector128Double (aload parm=1))         "
-                     "                 (vloadiVector128Double (aload parm=2))))       "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(double[],double[],double[])>();
-    // This test currently assumes 128bit SIMD
-
-    double output[] =  {0.0, 0.0};
-    double inputA[] =  {1.0, -1.5};
-    double inputB[] =  {1.1, -3.0};
-
-    entry_point(output,inputA,inputB);
-    EXPECT_DOUBLE_EQ(inputA[0] - inputB[0], output[0]); // Epsilon = 4ULP -- is this necessary?
-    EXPECT_DOUBLE_EQ(inputA[1] - inputB[1], output[1]); // Epsilon = 4ULP -- is this necessary?
-}
-
-TEST_F(VectorTest, VInt8Mul) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Int8 offset=0                             "
-                     "         (aload parm=0)                                         "
-                     "            (vmulVector128Int8                                  "
-                     "                 (vloadiVector128Int8 (aload parm=1))           "
-                     "                 (vloadiVector128Int8 (aload parm=2))))         "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-    SKIP_ON_X86(MissingImplementation);
-    SKIP_ON_HAMMER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int8_t[],int8_t[],int8_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int8_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    int8_t inputA[] =  {7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, 7};
-    int8_t inputB[] =  {-14, -12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, -14, 1};
-
-    entry_point(output,inputA,inputB);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ(inputA[i] * inputB[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VInt16Mul) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Int16 offset=0                            "
-                     "         (aload parm=0)                                         "
-                     "            (vmulVector128Int16                                 "
-                     "                 (vloadiVector128Int16 (aload parm=1))          "
-                     "                 (vloadiVector128Int16 (aload parm=2))))        "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int16_t[],int16_t[],int16_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int16_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0};
-    int16_t inputA[] =  {60, 45, 30, 0, -3, -2, -1, 2};
-    int16_t inputB[] =  {-5, -10, -1, 13, 15, 10, -7, 5};
-
-    entry_point(output,inputA,inputB);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ(inputA[i] * inputB[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VFloatMul) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Float offset=0                            "
-                     "         (aload parm=0)                                         "
-                     "            (vmulVector128Float                                 "
-                     "                 (vloadiVector128Float (aload parm=1))          "
-                     "                 (vloadiVector128Float (aload parm=2))))        "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(float[],float[],float[])>();
-    // This test currently assumes 128bit SIMD
-
-    float output[] =  {0.0f, 0.0f, 0.0f, 0.0f};
-    float inputA[] =  {6.0f, 0.0f, -0.1f, 0.6f};
-    float inputB[] =  {-0.5f, 3.5f, -3.0f, 0.7f};
-
-    entry_point(output,inputA,inputB);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_FLOAT_EQ(inputA[i] * inputB[i], output[i]); // Epsilon = 4ULP -- is this necessary?
-    }
-}
-
-TEST_F(VectorTest, VDoubleMul) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Double offset=0                           "
-                     "         (aload parm=0)                                         "
-                     "            (vmulVector128Double                                "
-                     "                 (vloadiVector128Double (aload parm=1))         "
-                     "                 (vloadiVector128Double (aload parm=2))))       "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(double[],double[],double[])>();
-    // This test currently assumes 128bit SIMD
-
-    double output[] =  {0.0, 0.0};
-    double inputA[] =  {1.0, -1.5};
-    double inputB[] =  {-1.1, -3.0};
-
-    entry_point(output,inputA,inputB);
-    EXPECT_DOUBLE_EQ(inputA[0] * inputB[0], output[0]); // Epsilon = 4ULP -- is this necessary?
-    EXPECT_DOUBLE_EQ(inputA[1] * inputB[1], output[1]); // Epsilon = 4ULP -- is this necessary?
-}
-
-TEST_F(VectorTest, VInt8Div) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstorei type=VectorInt8 offset=0                          "
-                     "         (aload parm=0)                                         "
-                     "            (vdiv                                               "
-                     "                 (vloadi type=VectorInt8 (aload parm=1))        "
-                     "                 (vloadi type=VectorInt8 (aload parm=2))))      "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-    SKIP_ON_X86(MissingImplementation);
-    SKIP_ON_HAMMER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int8_t[],int8_t[],int8_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int8_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    int8_t inputA[] =  {-128, 32, -96, 99, 35, -88, 45, 100, 17, 86, -28, -100, 71, 80, 15, 2};
-    int8_t inputB[] =  {32, 64, -4, 7,15, 11, 9, -25, 5, 43, -5, 7, 3, 10, 4, 2};
-
-    entry_point(output,inputA,inputB);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ(inputA[i] / inputB[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VInt16Div) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstorei type=VectorInt16 offset=0                         "
-                     "         (aload parm=0)                                         "
-                     "            (vdiv                                               "
-                     "                 (vloadi type=VectorInt16 (aload parm=1))       "
-                     "                 (vloadi type=VectorInt16 (aload parm=2))))     "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-    SKIP_ON_X86(MissingImplementation);
-    SKIP_ON_HAMMER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int16_t[],int16_t[],int16_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int16_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0};
-    int16_t inputA[] =  {-1024, 32, -30000, 9999, 4096, -8888, 9086, 150};
-    int16_t inputB[] =  {32, 2929, -40, 75, 1024, 11, 1, -3};
-
-    entry_point(output,inputA,inputB);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ(inputA[i] / inputB[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VInt32Div) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstorei type=VectorInt32 offset=0                         "
-                     "         (aload parm=0)                                         "
-                     "            (vdiv                                               "
-                     "                 (vloadi type=VectorInt32 (aload parm=1))       "
-                     "                 (vloadi type=VectorInt32 (aload parm=2))))     "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-    SKIP_ON_X86(MissingImplementation);
-    SKIP_ON_HAMMER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int32_t[],int32_t[],int32_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int32_t output[] =  {0, 0, 0, 0};
-    int32_t inputA[] =  {1992385, 32, -788811, 9999};
-    int32_t inputB[] =  {779, 2929, -4, 75};
-
-    entry_point(output,inputA,inputB);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ(inputA[i] / inputB[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VInt64Div) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstorei type=VectorInt64 offset=0                         "
-                     "         (aload parm=0)                                         "
-                     "            (vdiv                                               "
-                     "                 (vloadi type=VectorInt64 (aload parm=1))       "
-                     "                 (vloadi type=VectorInt64 (aload parm=2))))     "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-    SKIP_ON_X86(MissingImplementation);
-    SKIP_ON_HAMMER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int64_t[],int64_t[],int64_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int64_t output[] =  {0, 0, 0, 0};
-    int64_t inputA[] =  {(int64_t)0x10ff339955820123L, (int64_t)0xff00295014747555L, -64, 9999};
-    int64_t inputB[] =  {(int64_t)0x8000111122223333L, (int64_t)0xffffffff29231233L, 8, 75};
-
-    entry_point(output,inputA,inputB);
-    entry_point(&output[2],&inputA[2],&inputB[2]);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ(inputA[i] / inputB[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VFloatDiv) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Float offset=0                            "
-                     "         (aload parm=0)                                         "
-                     "            (vdivVector128Float                                 "
-                     "                 (vloadiVector128Float (aload parm=1))          "
-                     "                 (vloadiVector128Float (aload parm=2))))        "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(float[],float[],float[])>();
-    // This test currently assumes 128bit SIMD
-
-    float output[] =  {0.0f, 0.0f, 0.0f, 0.0f};
-    float inputA[] =  {6.0f, 0.0f, -9.0f, 0.6f};
-    float inputB[] =  {-0.5f, 3.5f, -3.0f, 0.7f};
-
-    entry_point(output,inputA,inputB);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_FLOAT_EQ(inputA[i] / inputB[i], output[i]); // Epsilon = 4ULP -- is this necessary?
-    }
-}
-
-TEST_F(VectorTest, VDoubleDiv) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Double offset=0                           "
-                     "         (aload parm=0)                                         "
-                     "            (vdivVector128Double                                "
-                     "                 (vloadiVector128Double (aload parm=1))         "
-                     "                 (vloadiVector128Double (aload parm=2))))       "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(double[],double[],double[])>();
-    // This test currently assumes 128bit SIMD
-
-    double output[] =  {0.0, 0.0};
-    double inputA[] =  {12.0, -1.5};
-    double inputB[] =  {-4.0, -3.0};
-
-    entry_point(output,inputA,inputB);
-    EXPECT_DOUBLE_EQ(inputA[0] / inputB[0], output[0]); // Epsilon = 4ULP -- is this necessary?
-    EXPECT_DOUBLE_EQ(inputA[1] / inputB[1], output[1]); // Epsilon = 4ULP -- is this necessary?
-}
-
-TEST_F(VectorTest, VInt8And) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Int8 offset=0                             "
-                     "         (aload parm=0)                                         "
-                     "            (vandVector128Int8                                  "
-                     "                 (vloadiVector128Int8 (aload parm=1))           "
-                     "                 (vloadiVector128Int8 (aload parm=2))))         "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-    SKIP_ON_X86(MissingImplementation);
-    SKIP_ON_HAMMER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int8_t[],int8_t[],int8_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int8_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    int8_t inputA[] =  {7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, 7};
-    int8_t inputB[] =  {-14, -12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, -14, 1};
-
-    entry_point(output,inputA,inputB);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ(inputA[i] & inputB[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VInt8Or) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Int8 offset=0                             "
-                     "         (aload parm=0)                                         "
-                     "            (vorVector128Int8                                   "
-                     "                 (vloadiVector128Int8 (aload parm=1))           "
-                     "                 (vloadiVector128Int8 (aload parm=2))))         "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-    SKIP_ON_X86(MissingImplementation);
-    SKIP_ON_HAMMER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int8_t[],int8_t[],int8_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int8_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    int8_t inputA[] =  {7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, 7};
-    int8_t inputB[] =  {-14, -12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, -14, 1};
-
-    entry_point(output,inputA,inputB);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ(inputA[i] | inputB[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VInt8Xor) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address,Address]           "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Int8 offset=0                             "
-                     "         (aload parm=0)                                         "
-                     "            (vxorVector128Int8                                  "
-                     "                 (vloadiVector128Int8 (aload parm=1))           "
-                     "                 (vloadiVector128Int8 (aload parm=2))))         "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-    SKIP_ON_X86(MissingImplementation);
-    SKIP_ON_HAMMER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int8_t[],int8_t[],int8_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int8_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    int8_t inputA[] =  {7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, 7};
-    int8_t inputB[] =  {-14, -12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, -14, 1};
-
-    entry_point(output,inputA,inputB);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ(inputA[i] ^ inputB[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VInt8Neg) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address]                   "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Int8 offset=0                             "
-                     "         (aload parm=0)                                         "
-                     "            (vnegVector128Int8                                  "
-                     "                 (vloadiVector128Int8 (aload parm=1))))         "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int8_t[],int8_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int8_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    int8_t inputA[] =  {7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, 7};
-
-    entry_point(output,inputA);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ((-1) * inputA[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VInt16Neg) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address]                   "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Int16 offset=0                            "
-                     "         (aload parm=0)                                         "
-                     "            (vnegVector128Int16                                 "
-                     "                 (vloadiVector128Int16 (aload parm=1))))        "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int16_t[],int16_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int16_t output[] =  {0, 0, 0, 0, 0, 0, 0, 0};
-    int16_t inputA[] =  {60, 45, 30, 0, -3, -2, -1, 2};
-
-    entry_point(output,inputA);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ((-1) * inputA[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VInt32Neg) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address]                   "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Int32 offset=0                            "
-                     "         (aload parm=0)                                         "
-                     "            (vnegVector128Int32                                 "
-                     "                 (vloadiVector128Int32 (aload parm=1))))        "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int32_t[],int32_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int32_t output[] =  {0, 0, 0, 0};
-    int32_t inputA[] =  {567890, 1234, 0, -20};
-
-    entry_point(output,inputA);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ((-1) * inputA[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VInt64Neg) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address]                   "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Int64 offset=0                            "
-                     "         (aload parm=0)                                         "
-                     "            (vnegVector128Int64                                 "
-                     "                 (vloadiVector128Int64 (aload parm=1))))        "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_POWER(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(int64_t[],int64_t[])>();
-    // This test currently assumes 128bit SIMD
-
-    int64_t output[] =  {0, 0};
-    int64_t inputA[] =  {60, -123456};
-
-    entry_point(output,inputA);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ((-1) * inputA[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VFloatNeg) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address]                   "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Float offset=0                            "
-                     "         (aload parm=0)                                         "
-                     "            (vnegVector128Float                                 "
-                     "                 (vloadiVector128Float (aload parm=1))))        "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(float[],float[])>();
-    // This test currently assumes 128bit SIMD
-
-    float output[] =  {0.0f, 0.0f, 0.0f, 0.0f};
-    float inputA[] =  {6.0f, 0.0f, -9.0f, 0.6f};
-
-    entry_point(output,inputA);
-
-    for (int i = 0; i < (sizeof(output) / sizeof(*output)); i++) {
-        EXPECT_EQ((-1) * inputA[i], output[i]);
-    }
-}
-
-TEST_F(VectorTest, VDoubleNeg) {
-
-   auto inputTrees = "(method return= NoType args=[Address,Address]                   "
-                     "  (block                                                        "
-                     "     (vstoreiVector128Double offset=0                           "
-                     "         (aload parm=0)                                         "
-                     "            (vnegVector128Double                                "
-                     "                 (vloadiVector128Double (aload parm=1))))       "
-                     "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(double[],double[])>();
-    // This test currently assumes 128bit SIMD
-
-    double output[] =  {0.0, 0.0};
-    double inputA[] =  {12.0, -1.5};
-
-    entry_point(output,inputA);
-    EXPECT_DOUBLE_EQ((-1) * inputA[0], output[0]); // Epsilon = 4ULP -- is this necessary?
-    EXPECT_DOUBLE_EQ((-1) * inputA[1], output[1]); // Epsilon = 4ULP -- is this necessary?
-}
-
-TEST_F(VectorTest, VDoubleSQRT) {
-
-    auto inputTrees = "(method return= NoType args=[Address,Address]                   "
-                      "  (block                                                        "
-                      "     (vstoreiVector128Double offset=0                           "
-                      "         (aload parm=0)                                         "
-                      "            (vsqrtVector128Double                               "
-                      "                 (vloadiVector128Double (aload parm=1))))       "
-                      "     (return)))                                                 ";
-
-    auto trees = parseString(inputTrees);
-
-    ASSERT_NOTNULL(trees);
-    //TODO: Re-enable this test on S390 after issue #1843 is resolved.
-    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
-    SKIP_ON_RISCV(MissingImplementation);
-    SKIP_ON_AARCH64(MissingImplementation);
-
-    Tril::DefaultCompiler compiler(trees);
-    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-
-    auto entry_point = compiler.getEntryPoint<void (*)(double[],double[])>();
-    // This test currently assumes 128bit SIMD
-
-    double output[] =  {0.0, 0.0};
-    double inputA[] =  {16.0, 100};
-
-    entry_point(output,inputA);
-    EXPECT_DOUBLE_EQ(sqrt(inputA[0]), output[0]); // Epsilon = 4ULP -- is this necessary?
-    EXPECT_DOUBLE_EQ(sqrt(inputA[1]), output[1]); // Epsilon = 4ULP -- is this necessary?
-}
 
 TEST_F(VectorTest, VInt8Not) {
 

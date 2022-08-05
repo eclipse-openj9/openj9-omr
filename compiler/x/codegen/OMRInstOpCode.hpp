@@ -74,6 +74,7 @@ namespace TR { class Register; }
 #define IA32OpProp_TargetRegisterInModRM        0x08000000
 #define IA32OpProp_TargetRegisterIgnored        0x10000000
 #define IA32OpProp_SourceRegisterInModRM        0x20000000
+
 #define IA32OpProp_SourceRegisterIgnored        0x40000000
 #define IA32OpProp_BranchOp                     0x80000000
 
@@ -102,6 +103,9 @@ namespace TR { class Register; }
 #define IA32OpProp1_NeedsLockPrefix           0x00004000
 #define IA32OpProp1_CallOp                    0x00010000
 #define IA32OpProp1_SourceIsMemRef            0x00020000
+
+// For cases when source operand can be a register or mem-ref
+#define IA32OpProp1_SourceCanBeMemRef         0x00020000
 #define IA32OpProp1_SourceRegIsImplicit       0x00040000
 #define IA32OpProp1_TargetRegIsImplicit       0x00080000
 #define IA32OpProp1_FusableCompare            0x00100000
@@ -479,11 +483,11 @@ class InstOpCode: public OMR::InstOpCode
                {
                supported = target->supportsFeature(OMR_FEATURE_X86_AVX512F);
 
-               if (flags & X86FeatureProp_EVEX128RequiresAVX512VL)
+               if (supported && flags & X86FeatureProp_EVEX128RequiresAVX512VL)
                   supported = target->supportsFeature(OMR_FEATURE_X86_AVX512VL);
-               if (flags & X86FeatureProp_EVEX128RequiresAVX512BW)
+               if (supported && flags & X86FeatureProp_EVEX128RequiresAVX512BW)
                   supported = target->supportsFeature(OMR_FEATURE_X86_AVX512BW);
-               if (flags & X86FeatureProp_EVEX128RequiresAVX512DQ)
+               if (supported && flags & X86FeatureProp_EVEX128RequiresAVX512DQ)
                   supported = target->supportsFeature(OMR_FEATURE_X86_AVX512DQ);
 
                if (supported)
@@ -492,7 +496,10 @@ class InstOpCode: public OMR::InstOpCode
 
             if (flags & X86FeatureProp_VEX128Supported)
                {
-               if (flags & X86FeatureProp_VEX128RequiresAVX )
+               if (flags & X86FeatureProp_VEX128RequiresAVX && target->supportsFeature(OMR_FEATURE_X86_AVX))
+                  return OMR::X86::VEX_L128;
+
+               if (flags & X86FeatureProp_VEX128RequiresAVX2 && target->supportsFeature(OMR_FEATURE_X86_AVX2))
                   return OMR::X86::VEX_L128;
                }
 
@@ -511,11 +518,11 @@ class InstOpCode: public OMR::InstOpCode
                {
                supported = target->supportsFeature(OMR_FEATURE_X86_AVX512F);
 
-               if (flags & X86FeatureProp_EVEX256RequiresAVX512VL)
+               if (supported && flags & X86FeatureProp_EVEX256RequiresAVX512VL)
                   supported = target->supportsFeature(OMR_FEATURE_X86_AVX512VL);
-               if (flags & X86FeatureProp_EVEX256RequiresAVX512BW)
+               if (supported && flags & X86FeatureProp_EVEX256RequiresAVX512BW)
                   supported = target->supportsFeature(OMR_FEATURE_X86_AVX512BW);
-               if (flags & X86FeatureProp_EVEX256RequiresAVX512DQ)
+               if (supported && flags & X86FeatureProp_EVEX256RequiresAVX512DQ)
                   supported = target->supportsFeature(OMR_FEATURE_X86_AVX512DQ);
 
                if (supported)
@@ -526,7 +533,7 @@ class InstOpCode: public OMR::InstOpCode
                {
                supported = target->supportsFeature(OMR_FEATURE_X86_AVX);
 
-               if (flags & X86FeatureProp_VEX256RequiresAVX2)
+               if (supported && flags & X86FeatureProp_VEX256RequiresAVX2)
                   supported = target->supportsFeature(OMR_FEATURE_X86_AVX2);
 
                if (supported)

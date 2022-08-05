@@ -1460,6 +1460,42 @@ public:
       return TR::BadILOp;
       }
 
+   static TR::ILOpCodes reductionToVerticalOpcode(TR::ILOpCodes op, TR::VectorLength vectorLength)
+      {
+      ILOpCode opcode;
+      opcode.setOpCodeValue(op);
+      TR::VectorOperation operation;
+
+      switch (opcode.getVectorOperation())
+         {
+         case TR::vreductionAdd:
+            operation = TR::vadd;
+            break;
+         case TR::vreductionMul:
+            operation = TR::vmul;
+            break;
+         case TR::vreductionAnd:
+            operation = TR::vand;
+            break;
+         case TR::vreductionOr:
+            operation = TR::vor;
+            break;
+         case TR::vreductionXor:
+            operation = TR::vxor;
+            break;
+         case TR::vreductionMin:
+            operation = TR::vmin;
+            break;
+         case TR::vreductionMax:
+            operation = TR::vmax;
+            break;
+         default:
+            return TR::BadILOp;
+         }
+
+      return ILOpCode::createVectorOpCode(operation, TR::DataType::createVectorType(opcode.getDataType().getDataType(), vectorLength));
+      }
+
    static TR::ILOpCodes convertScalarToVector(TR::ILOpCodes op, TR::VectorLength vectorLength)
       {
       ILOpCode opcode;

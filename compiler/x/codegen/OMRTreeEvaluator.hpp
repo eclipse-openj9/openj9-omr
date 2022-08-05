@@ -303,6 +303,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    // SIMD evaluators
    static TR::Register *SIMDRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *SIMDRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *SIMDreductionEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *SIMDloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *SIMDstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *SIMDsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg);

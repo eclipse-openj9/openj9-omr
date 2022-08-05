@@ -773,6 +773,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableYieldVMAccess",                "O\tenable yielding of VM access when GC is waiting", SET_OPTION_BIT(TR_EnableYieldVMAccess), "F"},
    {"enableZEpilogue",                    "O\tenable 64-bit 390 load-multiple breakdown.", SET_OPTION_BIT(TR_Enable39064Epilogue), "F"},
    {"enableZNext",                        "O\tenable zNext support",                        RESET_OPTION_BIT(TR_DisableZNext), "F"},
+   {"enforceVectorAPIExpansion",          "O\tSets up platform specific sub options to enforce Vector API Expansion of Vector API Instrinsics",           SET_OPTION_BIT(TR_EnforceVectorAPIExpansion), "F"},
    {"enumerateAddresses=", "D\tselect kinds of addresses to be replaced by unique identifiers in trace file", TR::Options::setAddressEnumerationBits, offsetof(OMR::Options, _addressToEnumerate), 0, "F"},
    {"estimateRegisterPressure",           "O\tdeprecated; equivalent to enableRegisterPressureSimulation", RESET_OPTION_BIT(TR_DisableRegisterPressureSimulation), "F"},
    {"experimentalClassLoadPhase",         "O\tenable the experimental class load phase algorithm", SET_OPTION_BIT(TR_ExperimentalClassLoadPhase), "F"},
@@ -1868,6 +1869,16 @@ OMR::Options::Options(
             self()->setAllowRecompilation(false); // disable recompilation for this method
          optimizationPlan->setOptLevelDowngraded(false);
          }
+      }
+   // Following set of options are needed as a workaround to enforce vector API
+   // expansion of Vector API intrinsics for each platform.
+   // TODO: This enforce option is added temporary to test JIT exploitation of
+   // Vector API, clean up is needed once we have resolved all workarounds.
+   if (self()->getOption(TR_EnforceVectorAPIExpansion))
+      {
+      self()->setOption(TR_DisableOSRGuardMerging);
+      self()->setOption(TR_ProcessHugeMethods);
+      optimizationPlan->setOptLevel(scorching);
       }
 
    // now set the current opt level in TR::Options
@@ -3679,7 +3690,6 @@ OMR::Options::jitPostProcess()
       self()->setOption (TR_DisableInterpreterSampling, true);
       TR::Options::disableSamplingThread();
       }
-
 
    if (self()->getOption(TR_StaticDebugCountersRequested) && !_enabledStaticCounterNames)
       _enabledStaticCounterNames = _enabledDynamicCounterNames;

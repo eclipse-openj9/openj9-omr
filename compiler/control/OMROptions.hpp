@@ -185,7 +185,7 @@ enum TR_CompilationOptions
    TR_DisableAotAtCheapWarm               = 0x00001000 + 3,
    TR_Profile                             = 0x00002000 + 3,
    TR_DisableAsyncCompilation             = 0x00004000 + 3,
-   // Available                           = 0x00008000 + 3,
+   TR_EnforceVectorAPIExpansion           = 0x00008000 + 3,
    // Available                           = 0x00010000 + 3,
    TR_EnableJITServerHeuristics           = 0x00020000 + 3,
    TR_SoftFailOnAssume                    = 0x00040000 + 3,

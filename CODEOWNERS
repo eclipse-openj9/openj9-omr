@@ -50,13 +50,13 @@
 /compiler/ilgen @mstoodle @Leonardo2718
 
 # Port Library
-/port/ @charliegracie @youngar @rwy0717
+/port/ @charliegracie @youngar @rwy0717 @babsingh
 
 # Thread Library
-/thread/ @charliegracie @youngar @rwy0717
+/thread/ @charliegracie @youngar @rwy0717 @babsingh
 
 # OMR Core Utilities
-/include_core/OMR/ @youngar @charliegracie @Leonardo2718 @rwy0717
+/include_core/OMR/ @youngar @charliegracie @Leonardo2718 @rwy0717 @babsingh
 
 # Tril and Testing
 /fvtest/tril/ @Leonardo2718 @fjeremic @0xdaryl

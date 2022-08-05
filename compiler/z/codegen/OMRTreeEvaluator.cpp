@@ -1226,6 +1226,210 @@ OMR::Z::TreeEvaluator::vfirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator 
    }
 
 TR::Register*
+OMR::Z::TreeEvaluator::vmabsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmindexVectorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmnotEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmorUncheckedEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmreductionAddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmreductionAndEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmreductionFirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmreductionMaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmreductionMinEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmreductionMulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmreductionOrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmreductionOrUncheckedEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmreductionXorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::vmfirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
 OMR::Z::TreeEvaluator::f2iuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::f2iEvaluator(node, cg);

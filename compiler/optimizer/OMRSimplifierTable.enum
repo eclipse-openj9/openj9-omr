@@ -450,6 +450,47 @@
 #define vRegStoreSimplifierHandler dftSimplifier
 #define vfirstNonZeroSimplifierHandler dftSimplifier
 #define vgetelemSimplifierHandler dftSimplifier
+
+#define vmaddSimplifierHandler dftSimplifier
+#define vmsubSimplifierHandler dftSimplifier
+#define vmmulSimplifierHandler dftSimplifier
+#define vmdivSimplifierHandler dftSimplifier
+
+#define vmabsSimplifierHandler dftSimplifier
+#define vmaddSimplifierHandler dftSimplifier
+#define vmandSimplifierHandler dftSimplifier
+#define vmcmpeqSimplifierHandler dftSimplifier
+#define vmcmpneSimplifierHandler dftSimplifier
+#define vmcmpgtSimplifierHandler dftSimplifier
+#define vmcmpgeSimplifierHandler dftSimplifier
+#define vmcmpltSimplifierHandler dftSimplifier
+#define vmcmpleSimplifierHandler dftSimplifier
+#define vmdivSimplifierHandler dftSimplifier
+#define vmfmaSimplifierHandler dftSimplifier
+#define vmindexVectorSimplifierHandler dftSimplifier
+#define vmloadiSimplifierHandler dftSimplifier
+#define vmmaxSimplifierHandler dftSimplifier
+#define vmminSimplifierHandler dftSimplifier
+#define vmmulSimplifierHandler dftSimplifier
+#define vmnegSimplifierHandler dftSimplifier
+#define vmnotSimplifierHandler dftSimplifier
+#define vmorSimplifierHandler dftSimplifier
+#define vmorUncheckedSimplifierHandler dftSimplifier
+#define vmreductionAddSimplifierHandler dftSimplifier
+#define vmreductionAndSimplifierHandler dftSimplifier
+#define vmreductionFirstNonZeroSimplifierHandler dftSimplifier
+#define vmreductionMaxSimplifierHandler dftSimplifier
+#define vmreductionMinSimplifierHandler dftSimplifier
+#define vmreductionMulSimplifierHandler dftSimplifier
+#define vmreductionOrSimplifierHandler dftSimplifier
+#define vmreductionOrUncheckedSimplifierHandler dftSimplifier
+#define vmreductionXorSimplifierHandler dftSimplifier
+#define vmsqrtSimplifierHandler dftSimplifier
+#define vmstoreiSimplifierHandler dftSimplifier
+#define vmsubSimplifierHandler dftSimplifier
+#define vmxorSimplifierHandler dftSimplifier
+#define vmfirstNonZeroSimplifierHandler dftSimplifier
+
 #define f2iuSimplifierHandler f2iSimplifier
 #define f2luSimplifierHandler f2lSimplifier
 #define f2buSimplifierHandler f2bSimplifier

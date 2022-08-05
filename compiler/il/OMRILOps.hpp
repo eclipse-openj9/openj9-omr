@@ -422,6 +422,7 @@ public:
    bool isCall()                     const { return properties1().testAny(ILProp1::Call); }
    bool isCallDirect()               const { return properties1().testValue(ILProp1::Indirect | ILProp1::Call, ILProp1::Call); }
    bool isCallIndirect()             const { return properties1().testAll(ILProp1::Call | ILProp1::Indirect); }
+   bool isVectorMaskedOperation()    const { return properties1().testAny(ILProp1::VectorMasked); }
 
    /**
     * @brief This query must return true for any opcode that may appear at the

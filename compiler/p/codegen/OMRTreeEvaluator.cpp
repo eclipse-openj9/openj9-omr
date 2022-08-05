@@ -3969,6 +3969,176 @@ TR::Register *OMR::Power::TreeEvaluator::vfirstNonZeroEvaluator(TR::Node *node, 
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
+TR::Register* OMR::Power::TreeEvaluator::vmabsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmindexVectorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmnotEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmorUncheckedEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmreductionAddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmreductionAndEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmreductionFirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmreductionMaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmreductionMinEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmreductionMulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmreductionOrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmreductionOrUncheckedEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmreductionXorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register* OMR::Power::TreeEvaluator::vmfirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
 static void inlineArrayCopy(TR::Node *node, int64_t byteLen, TR::Register *src, TR::Register *dst, TR::CodeGenerator *cg)
    {
    if (byteLen == 0)

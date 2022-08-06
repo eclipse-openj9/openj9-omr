@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,7 +33,7 @@ Region::Region(TR::SegmentProvider &segmentProvider, TR::RawAllocator rawAllocat
    _rawAllocator(rawAllocator),
    _initialSegment(_initialSegmentArea.data, INITIAL_SEGMENT_SIZE),
    _currentSegment(TR::ref(_initialSegment)),
-   _lastDestructable(NULL)
+   _lastDestroyer(NULL)
    {
    }
 
@@ -43,7 +43,7 @@ Region::Region(const Region &prototype) :
    _rawAllocator(prototype._rawAllocator),
    _initialSegment(_initialSegmentArea.data, INITIAL_SEGMENT_SIZE),
    _currentSegment(TR::ref(_initialSegment)),
-   _lastDestructable(NULL)
+   _lastDestroyer(NULL)
    {
    }
 
@@ -53,12 +53,11 @@ Region::~Region() throw()
     * Destroy all object instances that depend on the region
     * to manage their lifetimes.
     */
-   Destructable *lastDestructable = _lastDestructable;
-   while (lastDestructable)
+   Destroyer *lastDestroyer = _lastDestroyer;
+   while (lastDestroyer != NULL)
       {
-      Destructable * const currentDestructable = lastDestructable;
-      lastDestructable = currentDestructable->prev();
-      currentDestructable->~Destructable();
+      lastDestroyer->destroy();
+      lastDestroyer = lastDestroyer->prev();
       }
 
    for (

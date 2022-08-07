@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -852,6 +852,15 @@ class TR_Liveness : public TR_BackwardUnionBitVectorAnalysis
    TR_LiveVariableInformation *getLiveVariableInfo() { return _liveVariableInfo; }
    virtual Kind getKind();
    virtual TR_Liveness *asLiveness();
+
+   /**
+   * @brief Perform a liveness analysis on the given \c TR_Structure
+   *
+   * @param[in] rootStructure : \c TR_Structure to perform a liveness analysis over
+   *
+   * @return none
+   */
+   virtual void perform(TR_Structure *rootStructure) {}
 
    bool traceLiveness() { return _traceLiveness; }
 

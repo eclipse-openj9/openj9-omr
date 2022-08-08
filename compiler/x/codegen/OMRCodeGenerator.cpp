@@ -996,12 +996,6 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
 
     TR::DataType ot = opcode.getVectorResultDataType();
     TR::DataType et = ot.getVectorElementType();
-    TR::InstOpCode nativeOpcode = TR::TreeEvaluator::getNativeSIMDOpcode(opcode.getOpCodeValue(), ot, false);
-
-   if (nativeOpcode.getMnemonic() != TR::InstOpCode::bad)
-      {
-      return nativeOpcode.getSIMDEncoding(cpu, ot.getVectorLength()) != OMR::X86::Bad;
-      }
 
    TR_ASSERT_FATAL(et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double,
                    "Unexpected vector element type\n");
@@ -1009,6 +1003,11 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
    // implemented vector opcodes
    switch (opcode.getVectorOperation())
       {
+      case TR::vmin:
+      case TR::vmax:
+         if (et.isFloatingPoint() && ot.getVectorLength() == TR::VectorLength512)
+            return false;
+         break;
       case TR::vneg:
          switch (ot.getVectorLength()) {
             case TR::VectorLength128:
@@ -1073,7 +1072,16 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
             return false;
 
       default:
-         return false;
+         break;
+      }
+
+   TR::InstOpCode nativeOpcode = TR::TreeEvaluator::getNativeSIMDOpcode(opcode.getOpCodeValue(), ot, false);
+
+   // check if the operation can be mapped to a single native instruction,
+   // and that instruction is supported on the target cpu
+   if (nativeOpcode.getMnemonic() != TR::InstOpCode::bad)
+      {
+      return nativeOpcode.getSIMDEncoding(cpu, ot.getVectorLength()) != OMR::X86::Bad;
       }
 
    return false;

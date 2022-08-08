@@ -4069,8 +4069,8 @@ static const TR::InstOpCode::Mnemonic VectorBinaryArithmeticOpCodesForReg[TR::Nu
    { TR::InstOpCode::bad, TR::InstOpCode::PADDWRegReg, TR::InstOpCode::PSUBWRegReg, TR::InstOpCode::PMULLWRegReg, TR::InstOpCode::bad,         TR::InstOpCode::bad,        TR::InstOpCode::bad,       TR::InstOpCode::bad,        TR::InstOpCode::PMINSWRegReg, TR::InstOpCode::PMAXSWRegReg }, // Int16
    { TR::InstOpCode::bad, TR::InstOpCode::PADDDRegReg, TR::InstOpCode::PSUBDRegReg, TR::InstOpCode::PMULLDRegReg, TR::InstOpCode::bad,         TR::InstOpCode::PANDRegReg, TR::InstOpCode::PORRegReg, TR::InstOpCode::PXORRegReg, TR::InstOpCode::PMINSDRegReg, TR::InstOpCode::PMAXSDRegReg }, // Int32
    { TR::InstOpCode::bad, TR::InstOpCode::PADDQRegReg, TR::InstOpCode::PSUBQRegReg, TR::InstOpCode::bad,          TR::InstOpCode::bad,         TR::InstOpCode::PANDRegReg, TR::InstOpCode::PORRegReg, TR::InstOpCode::PXORRegReg, TR::InstOpCode::PMINSQRegReg, TR::InstOpCode::PMAXSQRegReg }, // Int64
-   { TR::InstOpCode::bad, TR::InstOpCode::ADDPSRegReg, TR::InstOpCode::SUBPSRegReg, TR::InstOpCode::MULPSRegReg,  TR::InstOpCode::DIVPSRegReg, TR::InstOpCode::bad,        TR::InstOpCode::bad,       TR::InstOpCode::bad,        TR::InstOpCode::bad,  TR::InstOpCode::bad  }, // Float
-   { TR::InstOpCode::bad, TR::InstOpCode::ADDPDRegReg, TR::InstOpCode::SUBPDRegReg, TR::InstOpCode::MULPDRegReg,  TR::InstOpCode::DIVPDRegReg, TR::InstOpCode::bad,        TR::InstOpCode::bad,       TR::InstOpCode::bad,        TR::InstOpCode::bad,  TR::InstOpCode::bad  }, // Double
+   { TR::InstOpCode::bad, TR::InstOpCode::ADDPSRegReg, TR::InstOpCode::SUBPSRegReg, TR::InstOpCode::MULPSRegReg,  TR::InstOpCode::DIVPSRegReg, TR::InstOpCode::bad,        TR::InstOpCode::bad,       TR::InstOpCode::bad,        TR::InstOpCode::MINPSRegReg,  TR::InstOpCode::MAXPSRegReg  }, // Float
+   { TR::InstOpCode::bad, TR::InstOpCode::ADDPDRegReg, TR::InstOpCode::SUBPDRegReg, TR::InstOpCode::MULPDRegReg,  TR::InstOpCode::DIVPDRegReg, TR::InstOpCode::bad,        TR::InstOpCode::bad,       TR::InstOpCode::bad,        TR::InstOpCode::MINPDRegReg,  TR::InstOpCode::MAXPDRegReg  }, // Double
    };
 
 
@@ -4206,6 +4206,40 @@ TR::InstOpCode OMR::X86::TreeEvaluator::getNativeSIMDOpcode(TR::ILOpCodes opcode
    return memForm ? memOpcode : regOpcode;
    }
 
+TR::Register* OMR::X86::TreeEvaluator::vectorFPNaNHelper(TR::Node *node, TR::Register *tmpReg, TR::Register *lhs, TR::Register *rhs, TR::MemoryReference *mr, TR::CodeGenerator *cg)
+   {
+   TR::DataType et = node->getType().getVectorElementType();
+   TR::VectorLength vl = node->getType().getVectorLength();
+
+   TR_ASSERT_FATAL(vl != TR::VectorLength512, "NaN helper is not supported for 512-bit vectors");
+
+   TR::InstOpCode movOpcode = TR::InstOpCode::MOVDQURegReg;
+   TR::InstOpCode orOpcode = mr ? TR::InstOpCode::ORPDRegMem : TR::InstOpCode::ORPDRegReg;
+   TR::InstOpCode cmpOpcode = et.isFloat() ? TR::InstOpCode::CMPPSRegRegImm1 : TR::InstOpCode::CMPPDRegRegImm1;
+
+   OMR::X86::Encoding movEncoding = movOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+   OMR::X86::Encoding cmpEncoding = cmpOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+   OMR::X86::Encoding orEncoding = orOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+
+   TR_ASSERT_FATAL(movEncoding != OMR::X86::Encoding::Bad, "No suitable encoding method for move opcode");
+   TR_ASSERT_FATAL(cmpEncoding != OMR::X86::Encoding::Bad, "No suitable encoding method for compare opcode");
+   TR_ASSERT_FATAL(orEncoding != OMR::X86::Encoding::Bad, "No suitable encoding method for por opcode");
+
+   generateRegRegInstruction(movOpcode.getMnemonic(), node, tmpReg, lhs, cg, movEncoding);
+   generateRegRegImmInstruction(cmpOpcode.getMnemonic(), node, tmpReg, tmpReg, 0x4, cg, cmpEncoding);
+
+   if (mr)
+      {
+      generateRegMemInstruction(orOpcode.getMnemonic(), node, tmpReg, mr, cg, orEncoding);
+      }
+   else
+      {
+      generateRegRegInstruction(orOpcode.getMnemonic(), node, tmpReg, rhs, cg, orEncoding);
+      }
+
+   return tmpReg;
+   }
+
 // For ILOpCode that can be translated to single SSE/AVX instructions
 TR::Register* OMR::X86::TreeEvaluator::vectorBinaryArithmeticEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
@@ -4216,8 +4250,10 @@ TR::Register* OMR::X86::TreeEvaluator::vectorBinaryArithmeticEvaluator(TR::Node*
                              "Expecting a vector opcode in vectorBinaryArithmeticEvaluator");
 
    TR::Register* resultReg = cg->allocateRegister(TR_VRF);
+   TR::DataType et = type.getVectorElementType();
    TR::Node* lhs = node->getChild(0);
    TR::Node* rhs = node->getChild(1);
+   TR::Register *tmpNaNReg = NULL;
 
    bool useRegMemForm = cg->comp()->target().cpu.supportsAVX();
 
@@ -4229,6 +4265,22 @@ TR::Register* OMR::X86::TreeEvaluator::vectorBinaryArithmeticEvaluator(TR::Node*
          useRegMemForm = false;
          }
       }
+
+   if (et.isFloatingPoint())
+      {
+      switch (node->getOpCode().getVectorOperation())
+         {
+         case TR::vmin:
+         case TR::vmax:
+            // These opcodes require special handling of NaN values
+            // If either operand is NaN, the result must be NaN
+            tmpNaNReg = cg->allocateRegister(TR_VRF);
+            TR_ASSERT_FATAL(type.getVectorLength() != TR::VectorLength512, "min/max f/d not supported for 512-bit vectors");
+         default:
+            break;
+         }
+      }
+
 
    TR::InstOpCode nativeOpcode = getNativeSIMDOpcode(opcode, type, useRegMemForm);
 
@@ -4252,16 +4304,30 @@ TR::Register* OMR::X86::TreeEvaluator::vectorBinaryArithmeticEvaluator(TR::Node*
 
    if (cg->comp()->target().cpu.supportsAVX())
       {
-      if (useRegMemForm)
-         generateRegRegMemInstruction(nativeOpcode.getMnemonic(), node, resultReg, lhsReg, generateX86MemoryReference(rhs, cg), cg, simdEncoding);
+      if (useRegMemForm && tmpNaNReg)
+         {
+         TR::Register *rSrcReg = tmpNaNReg ? vectorFPNaNHelper(node, tmpNaNReg, lhsReg, NULL, generateX86MemoryReference(rhs, cg), cg) : rhsReg;
+         generateRegRegRegInstruction(nativeOpcode.getMnemonic(), node, resultReg, lhsReg, rSrcReg, cg, simdEncoding);
+         }
+      else if (useRegMemForm)
+         {
+         generateRegRegMemInstruction(nativeOpcode.getMnemonic(), node, resultReg, lhsReg,generateX86MemoryReference(rhs, cg), cg, simdEncoding);
+         }
       else
-         generateRegRegRegInstruction(nativeOpcode.getMnemonic(), node, resultReg, lhsReg, rhsReg, cg, simdEncoding);
+         {
+         TR::Register *rSrcReg = tmpNaNReg ? vectorFPNaNHelper(node, tmpNaNReg, lhsReg, rhsReg, NULL, cg) : rhsReg;
+         generateRegRegRegInstruction(nativeOpcode.getMnemonic(), node, resultReg, lhsReg, rSrcReg, cg, simdEncoding);
+         }
       }
    else
       {
+      TR::Register *rSrcReg = tmpNaNReg ? vectorFPNaNHelper(node, tmpNaNReg, lhsReg, rhsReg, NULL, cg) : rhsReg;
       generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, resultReg, lhsReg, cg);
-      generateRegRegInstruction(nativeOpcode.getMnemonic(), node, resultReg, rhsReg, cg);
+      generateRegRegInstruction(nativeOpcode.getMnemonic(), node, resultReg, rSrcReg, cg, simdEncoding);
       }
+
+   if (tmpNaNReg)
+      cg->stopUsingRegister(tmpNaNReg);
 
    node->setRegister(resultReg);
    cg->decReferenceCount(lhs);

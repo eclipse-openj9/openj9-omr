@@ -9467,7 +9467,27 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
       if (callNode &&
           callNode->getOpCode().isCall())
          {
-         virtualGuardWillBeEliminated = canFoldNonOverriddenGuard(vp, callNode, node);
+         // Calling canFoldNonOverriddenGuard has the potential side effect of creating global
+         // constraints for definitions used by the call that reach the conditional branch that is
+         // under consideration, without taking into account definitions that might reach the call
+         // on other paths.  In order to decide correctly whether the guard can be eliminated and
+         // ensure any global constraints will be created correctly, this needs to check that the
+         // only path to the call must pass through the current branch.  The easiest way to do
+         // that is to check that the target of the branch is the call block itself and that the
+         // call block has no other predecessors, though that will fail to optimize any case where
+         // the call is reached by a sequence of branches from the target of the branch, each of
+         // which has a single predecessor.
+         //
+         if (target->getPredecessors().size() == 1)
+            {
+            TR::Block *callBlock = node->getVirtualCallTreeForGuard()->getEnclosingBlock();
+
+            if (callBlock == target)
+               {
+               virtualGuardWillBeEliminated = canFoldNonOverriddenGuard(vp, callNode, node);
+               }
+            }
+
          if (!virtualGuardWillBeEliminated &&
              vp->lastTimeThrough() &&
              vp->_isGlobalPropagation)

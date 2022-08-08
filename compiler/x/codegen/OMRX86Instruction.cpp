@@ -1163,23 +1163,25 @@ TR::X86RegImmSymInstruction::autoSetReloKind()
 // TR::X86RegRegImmInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 
-TR::X86RegRegImmInstruction::X86RegRegImmInstruction(TR::InstOpCode::Mnemonic     op,
-                                                       TR::Node          *node,
-                                                       TR::Register      *treg,
-                                                       TR::Register      *sreg,
-                                                       int32_t           imm,
-                                                       TR::CodeGenerator *cg)
-   : TR::X86RegRegInstruction(sreg, treg, node, op, cg), _sourceImmediate(imm)
+TR::X86RegRegImmInstruction::X86RegRegImmInstruction(TR::InstOpCode::Mnemonic op,
+                                                       TR::Node               *node,
+                                                       TR::Register           *treg,
+                                                       TR::Register           *sreg,
+                                                       int32_t                imm,
+                                                       TR::CodeGenerator      *cg,
+                                                       OMR::X86::Encoding     encoding)
+   : TR::X86RegRegInstruction(sreg, treg, node, op, cg, encoding), _sourceImmediate(imm)
    {
    }
 
-TR::X86RegRegImmInstruction::X86RegRegImmInstruction(TR::Instruction   *precedingInstruction,
-                                                       TR::InstOpCode::Mnemonic     op,
-                                                       TR::Register      *treg,
-                                                       TR::Register      *sreg,
-                                                       int32_t           imm,
-                                                       TR::CodeGenerator *cg)
-   : TR::X86RegRegInstruction(sreg, treg, op, precedingInstruction, cg), _sourceImmediate(imm)
+TR::X86RegRegImmInstruction::X86RegRegImmInstruction(TR::Instruction            *precedingInstruction,
+                                                       TR::InstOpCode::Mnemonic op,
+                                                       TR::Register             *treg,
+                                                       TR::Register             *sreg,
+                                                       int32_t                  imm,
+                                                       TR::CodeGenerator        *cg,
+                                                       OMR::X86::Encoding       encoding)
+   : TR::X86RegRegInstruction(sreg, treg, op, precedingInstruction, cg, encoding), _sourceImmediate(imm)
    {
    }
 
@@ -2408,20 +2410,22 @@ void TR::X86RegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
 TR::X86RegMemImmInstruction::X86RegMemImmInstruction(TR::InstOpCode::Mnemonic          op,
                                                        TR::Node               *node,
                                                        TR::Register           *treg,
-                                                       TR::MemoryReference *mr,
+                                                       TR::MemoryReference    *mr,
                                                        int32_t                imm,
-                                                       TR::CodeGenerator      *cg)
-   : TR::X86RegMemInstruction(mr, treg, node, op, cg), _sourceImmediate(imm)
+                                                       TR::CodeGenerator      *cg,
+                                                       OMR::X86::Encoding     encoding)
+   : TR::X86RegMemInstruction(mr, treg, node, op, cg, encoding), _sourceImmediate(imm)
    {
    }
 
-TR::X86RegMemImmInstruction::X86RegMemImmInstruction(TR::Instruction        *precedingInstruction,
-                                                       TR::InstOpCode::Mnemonic          op,
-                                                       TR::Register           *treg,
-                                                       TR::MemoryReference *mr,
-                                                       int32_t                imm,
-                                                       TR::CodeGenerator      *cg)
-   : TR::X86RegMemInstruction(mr, treg, op, precedingInstruction, cg), _sourceImmediate(imm)
+TR::X86RegMemImmInstruction::X86RegMemImmInstruction(TR::Instruction            *precedingInstruction,
+                                                       TR::InstOpCode::Mnemonic op,
+                                                       TR::Register             *treg,
+                                                       TR::MemoryReference      *mr,
+                                                       int32_t                  imm,
+                                                       TR::CodeGenerator        *cg,
+                                                       OMR::X86::Encoding       encoding)
+   : TR::X86RegMemInstruction(mr, treg, op, precedingInstruction, cg, encoding), _sourceImmediate(imm)
    {
    }
 
@@ -4179,15 +4183,15 @@ generateImmSnippetInstruction(TR::InstOpCode::Mnemonic op, TR::Node * node, int3
    }
 
 TR::X86RegMemImmInstruction  *
-generateRegMemImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node * node, TR::Register * reg, TR::MemoryReference  * mr, int32_t imm, TR::CodeGenerator *cg)
+generateRegMemImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node * node, TR::Register * reg, TR::MemoryReference  * mr, int32_t imm, TR::CodeGenerator *cg, OMR::X86::Encoding encoding)
    {
-   return new (cg->trHeapMemory()) TR::X86RegMemImmInstruction(op, node, reg, mr, imm, cg);
+   return new (cg->trHeapMemory()) TR::X86RegMemImmInstruction(op, node, reg, mr, imm, cg, encoding);
    }
 
 TR::X86RegRegImmInstruction  *
-generateRegRegImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node * node, TR::Register * treg, TR::Register * sreg, int32_t imm, TR::CodeGenerator *cg)
+generateRegRegImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node * node, TR::Register * treg, TR::Register * sreg, int32_t imm, TR::CodeGenerator *cg, OMR::X86::Encoding encoding)
    {
-   return new (cg->trHeapMemory()) TR::X86RegRegImmInstruction(op, node, treg, sreg, imm, cg);
+   return new (cg->trHeapMemory()) TR::X86RegRegImmInstruction(op, node, treg, sreg, imm, cg, encoding);
    }
 
 TR::X86CallMemInstruction  *

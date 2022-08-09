@@ -86,10 +86,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    virtual Kind getKind() { return IsNotExtended; }
 
-   TR::InstOpCode& getOpCode()                       {return _opcode;}
-   TR::InstOpCode::Mnemonic getOpCodeValue()                  {return _opcode.getOpCodeValue();}
    TR::InstOpCode::Mnemonic getRecordFormOpCode()             {return _opcode.getRecordFormOpCodeValue();}
-   TR::InstOpCode::Mnemonic setOpCodeValue(TR::InstOpCode::Mnemonic op)  {return _opcode.setOpCodeValue(op);}
 
    void ARMNeedsGCMap(uint32_t mask);
 

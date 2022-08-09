@@ -2958,6 +2958,7 @@ TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
             break;
 
          case TR_DataAddress:
+         case TR_StaticDefaultValueInstance:
             {
             if (cg()->needRelocationsForStatics())
                {

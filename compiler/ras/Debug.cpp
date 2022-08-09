@@ -1240,7 +1240,7 @@ TR_Debug::print(TR::SymbolReference * symRef, TR_PrettyPrinterString& output, bo
 
    numSpaces = getNumSpacesAfterIndex( symRef->getReferenceNumber(), getIntLength(_comp->getSymRefTab()->baseArray.size()) );
 
-      symRefNum.appendf("#%d", symRef->getReferenceNumber());
+   symRefNum.appendf("#%d", symRef->getReferenceNumber());
 
    if (verbose)
       {
@@ -1966,6 +1966,18 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
 
       if (sym->isConst())
          return "<constant>";
+
+      // Value Type default value instance slot address
+      if (sym->isStaticDefaultValueInstance() && staticAddress)
+         {
+         if (_comp->getOption(TR_MaskAddresses))
+            return "*Masked*";
+
+         const uint8_t EXTRA_SPACE = 5;
+         char * name = (char *)_comp->trMemory()->allocateHeapMemory(TR::Compiler->debug.pointerPrintfMaxLenInChars()+EXTRA_SPACE);
+         sprintf(name, POINTER_PRINTF_FORMAT, staticAddress);
+         return name;
+         }
 
       return getOwningMethod(symRef)->staticName(symRef->getCPIndex(), comp()->trMemory());
       }

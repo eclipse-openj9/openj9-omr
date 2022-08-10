@@ -778,6 +778,7 @@ class InstOpCode: public OMR::InstOpCode
       TARGET_PARAMETERIZED_OPCODE(MOVSRegMem     , MOVSDRegMem     , MOVSSRegMem     )
       // FMA
       TARGET_PARAMETERIZED_OPCODE(VFMADD231SRegRegReg, VFMADD231SDRegRegReg, VFMADD231SSRegRegReg)
+      TARGET_PARAMETERIZED_OPCODE(VFMADD213PRegRegReg, VFMADD213PDRegRegReg, VFMADD213PSRegRegReg)
 
 #define TARGET_CARRY_PARAMETERIZED_OPCODE(name, op64, op32) \
       static inline OMR::InstOpCode::Mnemonic name(bool is64Bit, bool isWithCarry) { return isWithCarry ? op64(is64Bit) : op32(is64Bit); }

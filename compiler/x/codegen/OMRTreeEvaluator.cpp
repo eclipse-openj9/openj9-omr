@@ -4517,6 +4517,67 @@ OMR::X86::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *
    return resultReg;
    }
 
+TR::Register*
+OMR::X86::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::DataType dt = node->getDataType();
+   TR::DataType et = dt.getVectorElementType();
+   TR::VectorLength vl = dt.getVectorLength();
+
+   TR::Node *leftNode = node->getChild(0);
+   TR::Node *middleNode = node->getChild(1);
+   TR::Node *rightNode = node->getChild(2);
+
+   TR::Register *resultReg = cg->allocateRegister(TR_VRF);
+   node->setRegister(resultReg);
+
+   TR::InstOpCode movOpcode = TR::InstOpCode::MOVDQURegReg;
+   TR::InstOpCode fmaOpcode = TR::InstOpCode::VFMADD213PRegRegReg(et.isDouble());
+   OMR::X86::Encoding movOpcodeEncoding = movOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+   OMR::X86::Encoding fmaEncoding = fmaOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+
+   TR::Register *leftReg = cg->evaluate(leftNode);
+   TR::Register *middleReg = cg->evaluate(middleNode);
+   TR::Register *rightReg = cg->evaluate(rightNode);
+
+   if (et.isFloatingPoint() && fmaEncoding != OMR::X86::Encoding::Bad)
+      {
+      generateRegRegInstruction(movOpcode.getMnemonic(), node, resultReg, leftReg, cg, movOpcodeEncoding);
+      generateRegRegRegInstruction(fmaOpcode.getMnemonic(), node, resultReg, middleReg, rightReg, cg, fmaEncoding);
+      }
+   else
+      {
+      TR::InstOpCode mulOpcode = VectorBinaryArithmeticOpCodesForReg[et - 1][BinaryArithmeticMul];
+      TR::InstOpCode addOpcode = VectorBinaryArithmeticOpCodesForReg[et - 1][BinaryArithmeticAdd];
+
+      TR_ASSERT_FATAL(mulOpcode.getMnemonic() != TR::InstOpCode::bad, "No multiplication opcode found");
+      TR_ASSERT_FATAL(addOpcode.getMnemonic() != TR::InstOpCode::bad, "No addition opcode found");
+
+      OMR::X86::Encoding mulEncoding = mulOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+      OMR::X86::Encoding addEncoding = addOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+
+      TR_ASSERT_FATAL(mulEncoding != OMR::X86::Encoding::Bad, "No supported encoding method for multiplication opcode");
+      TR_ASSERT_FATAL(addEncoding != OMR::X86::Encoding::Bad, "No supported encoding method for addition opcode");
+
+      if (mulEncoding == OMR::X86::Legacy)
+         {
+         generateRegRegInstruction(movOpcode.getMnemonic(), node, resultReg, leftReg, cg, movOpcodeEncoding);
+         generateRegRegInstruction(mulOpcode.getMnemonic(), node, resultReg, middleReg, cg, mulEncoding);
+         }
+      else
+         {
+         generateRegRegRegInstruction(mulOpcode.getMnemonic(), node, resultReg, leftReg, middleReg, cg, mulEncoding);
+         }
+
+      generateRegRegInstruction(addOpcode.getMnemonic(), node, resultReg, rightReg, cg, addEncoding);
+      }
+
+   cg->decReferenceCount(leftNode);
+   cg->decReferenceCount(middleNode);
+   cg->decReferenceCount(rightNode);
+
+   return resultReg;
+   }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vreductionAddEvaluator(TR::Node *node, TR::CodeGenerator *cg)

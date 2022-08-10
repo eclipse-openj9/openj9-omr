@@ -1340,11 +1340,157 @@ protected:
 public:
    TR_ALLOC(TR_Memory::Options)
 
-   Options() :
-         _optionSets(0),
-         _logListForOtherCompThreads(NULL)
-      {
-      }
+   void init()
+   {
+      _optionSets = 0;
+      _startOptions = NULL;
+      _envOptions = NULL;
+      _logFileName = NULL;
+      _suffixLogsFormat = NULL;
+      _logFile = NULL;
+      _optFileName = NULL;
+      _customStrategy = NULL;
+      _customStrategySize = 0;
+      _optLevel = 0;
+      _initialOptLevel = 0;
+      _countString = NULL;
+      _initialCount = 0;
+      _initialBCount = 0;
+      _initialMILCount = 0;
+      _initialColdRunCount = 0;
+      _initialColdRunBCount = 0;
+      _maxSpreadCountLoopless = 0;
+      _maxSpreadCountLoopy = 0;
+      _GCRCount = 0;
+      _GCRDecCount = 0;
+      _GCRResetCount = 0;
+      _firstOptIndex = 0;
+      _lastOptIndex = 0;
+      _lastOptSubIndex = 0;
+      _lastSearchCount = 0;
+      _lastIpaOptTransformationIndex = 0;
+      _firstOptTransformationIndex = 0;
+      _lastOptTransformationIndex = 0;
+      _largeNumberOfLoops = 0;
+      _stackPCDumpNumberOfBuffers = 0;
+      _stackPCDumpNumberOfFrames = 0;
+      _tracingOptimization = false;
+      _delayCompile = 0;
+      _disabledOptTransformations = NULL;
+      _disabledInlineSites = NULL;
+      _disabledOpts = NULL;
+      _optsToTrace = NULL;
+      _dontInline = NULL;
+      _onlyInline = NULL;
+      _tryToInline = NULL;
+      _slipTrap = NULL;
+      _lockReserveClass = NULL;
+      _breakOnOpts = NULL;
+      _breakOnCreate = NULL;
+      _debugOnCreate = NULL;
+      _breakOnThrow = NULL;
+      _breakOnPrint = NULL;
+      _enabledStaticCounterNames = NULL;
+      _enabledDynamicCounterNames = NULL;
+      _counterHistogramNames = NULL;
+      _verboseOptTransformationsRegex = NULL;
+      _packedTest = NULL;
+      _memUsage = NULL;
+      _classesWithFolableFinalFields = NULL;
+      _disabledIdiomPatterns = NULL;
+      _gcCardSize = 0;
+      _heapBase = 0;
+      _heapTop = 0;
+      _heapAddressToCardAddressShift = 0;
+      _heapBaseForBarrierRange0 = 0;
+      _heapSizeForBarrierRange0 = 0;
+      _activeCardTableBase = 0;
+      _isVariableHeapBaseForBarrierRange0 = false;
+      _isVariableHeapSizeForBarrierRange0 = false;
+      _isVariableActiveCardTableBase = false;
+      _osVersionString = NULL;
+      _allowRecompilation = false;
+      _anOptionSetContainsACountValue = false;
+      _numInterfaceCallCacheSlots = 0;
+      _numInterfaceCallStaticSlots = 0;
+      _storeSinkingLastOpt = 0;
+      _test390StackBuffer = 0;
+      _test390LitPoolBuffer = 0;
+      _addressToEnumerate = 0;
+      _debugEnableFlags = 0;
+      _optLevelDowngraded = false;
+      _compileExcludedmethods = false;
+      _maxUnloadedAddressRanges = 0;
+      _maxStaticPICSlots = 0;
+      _hotMaxStaticPICSlots = 0;
+      _newAotrtDebugLevel = 0;
+      _disableDLTBytecodeIndex = 0;
+      _enableDLTBytecodeIndex = 0;
+      _dltOptLevel = 0;
+      _profilingCount = 0;
+      _profilingFrequency = 0;
+      _counterBucketGranularity = 0;
+      _minCounterFidelity = 0;
+      _debugCounterWarmupSeconds = 0;
+      _insertDebuggingCounters = 0;
+      _inlineCntrCalleeTooBigBucketSize = 0;
+      _inlineCntrColdAndNotTinyBucketSize = 0;
+      _inlineCntrWarmCalleeTooBigBucketSize = 0;
+      _inlineCntrRanOutOfBudgetBucketSize = 0;
+      _inlineCntrCalleeTooDeepBucketSize = 0;
+      _inlineCntrWarmCallerHasTooManyNodesBucketSize = 0;
+      _inlineCntrWarmCalleeHasTooManyNodesBucketSize = 0;
+      _inlineCntrDepthExceededBucketSize = 0;
+      _inlineCntrAllBucketSize = 0;
+      _maxInlinedCalls = 0;
+      _dumbInlinerBytecodeSizeMaxCutoff = 0;
+      _dumbInlinerBytecodeSizeMinCutoff = 0;
+      _dumbInlinerBytecodeSizeCutoff = 0;
+      _dumbInlinerBytecodeSizeDivisor = 0;
+      _trivialInlinerMaxSize = 0;
+      _inlinerArgumentHeuristicFractionUpToWarm = 0;
+      _inlinerArgumentHeuristicFractionBeyondWarm = 0;
+      _inlinerVeryColdBorderFrequencyAtCold = 0;
+      _inlinerBorderFrequency = 0;
+      _inlinerColdBorderFrequency = 0;
+      _inlinerVeryColdBorderFrequency = 0;
+      _inlinerCGBorderFrequency = 0;
+      _inlinerCGColdBorderFrequency = 0;
+      _inlinerCGVeryColdBorderFrequency = 0;
+      _alwaysWorthInliningThreshold = 0;
+      _initialSCount = 0;
+      _enableSCHintFlags = 0;
+      _insertGCRTrees = false;
+      _maxLimitedGRACandidates = 0;
+      _maxLimitedGRARegs = 0;
+      _enableGPU = 0;
+      _isAOTCompile = false;
+      _jProfilingMethodRecompThreshold = 0;
+      _jProfilingLoopRecompThreshold = 0;
+      _blockShufflingSequence = NULL;
+      _randomSeed = 0;
+      _logListForOtherCompThreads = NULL;
+      _induceOSR = NULL;
+      _bigCalleeThreshold = 0;
+      _bigCalleeThresholdForColdCallsAtWarm = 0;
+      _bigCalleeFreqCutoffAtWarm = 0;
+      _bigCalleeHotOptThreshold = 0;
+      _bigCalleeThresholdForColdCallsAtHot = 0;
+      _bigCalleeFreqCutoffAtHot = 0;
+      _bigCalleeScorchingOptThreshold = 0;
+      _inlinerVeryLargeCompiledMethodThreshold = 0;
+      _inlinerVeryLargeCompiledMethodFaninThreshold = 0;
+      _largeCompiledMethodExemptionFreqCutoff = 0;
+      _maxSzForVPInliningWarm = 0;
+      _loopyAsyncCheckInsertionMaxEntryFreq = 0;
+      _objectFileName = 0;
+
+      memset(_options, 0, sizeof(_options));
+      memset(_disabledOptimizations, false, sizeof(_disabledOptimizations));
+      memset(_traceOptimizations, false, sizeof(_traceOptimizations));
+   }
+
+   Options() { OMR::Options::init(); }
    Options(TR_Memory *, int32_t index, int32_t lineNumber, TR_ResolvedMethod *compilee, void *oldStartPC, TR_OptimizationPlan *optimizationPlan, bool isAOT=false,  int32_t compThreadID=-1);
    Options(TR::Options &other);
 

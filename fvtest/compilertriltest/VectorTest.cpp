@@ -432,7 +432,7 @@ TEST_P(ParameterizedVectorTest, VLoadStore) {
     TR::ILOpCode loadOp = TR::ILOpCode::createVectorOpCode(TR::vloadi, vt);
     TR::ILOpCode storeOp = TR::ILOpCode::createVectorOpCode(TR::vstorei, vt);
     TR::CPU cpu = TR::CPU::detect(privateOmrPortLibrary);
-    bool platformSupport = TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&cpu, loadOp) && TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&cpu, loadOp);
+    bool platformSupport = TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&cpu, loadOp) && TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&cpu, storeOp);
     SKIP_IF(!platformSupport, MissingImplementation) << "Opcode is not supported by the target platform";
 
     char inputTrees[1024];
@@ -467,7 +467,66 @@ TEST_P(ParameterizedVectorTest, VLoadStore) {
     EXPECT_EQ(0, memcmp(output + TR::DataType::getSize(vt), zero, maxVectorLength - TR::DataType::getSize(vt)));
 }
 
-INSTANTIATE_TEST_CASE_P(VLoadStoreVectorTest, ParameterizedVectorTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorLength, TR::DataTypes>>(
+TEST_P(ParameterizedVectorTest, VSplats) {
+    TR::VectorLength vl = std::get<0>(GetParam());
+    TR::DataTypes et = std::get<1>(GetParam());
+
+    SKIP_IF(vl > TR::NumVectorLengths, MissingImplementation) << "Vector length is not supported by the target platform";
+    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
+    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";
+
+    TR::DataType vt = TR::DataType::createVectorType(et, vl);
+
+    TR::ILOpCode loadOp = TR::ILOpCode::createVectorOpCode(TR::vloadi, vt);
+    TR::ILOpCode storeOp = TR::ILOpCode::createVectorOpCode(TR::vstorei, vt);
+    TR::ILOpCode splatsOp = TR::ILOpCode::createVectorOpCode(TR::vsplats, vt);
+    TR::ILOpCode elementLoadOp = OMR::ILOpCode::indirectLoadOpCode(et);
+    TR::CPU cpu = TR::CPU::detect(privateOmrPortLibrary);
+
+    bool platformSupport = TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&cpu, loadOp) &&
+            TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&cpu, storeOp) &&
+            TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&cpu, splatsOp);
+
+    SKIP_IF(!platformSupport, MissingImplementation) << "Opcode " << splatsOp.getName() << vt.toString() << " is not supported by the target platform";
+
+    char inputTrees[1024];
+    char *formatStr = "(method return= NoType args=[Address,Address]   "
+                      "  (block                                        "
+                      "     (vstorei%s  offset=0                       "
+                      "         (aload parm=0)                         "
+                      "         (vsplats%s                             "
+                      "             (%s (aload parm=1))))              "
+                      "     (return)))                                 ";
+
+    sprintf(inputTrees, formatStr, vt.toString(), vt.toString(), elementLoadOp.getName());
+
+    auto trees = parseString(inputTrees);
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler(trees);
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<void (*)(void *,void *)>();
+
+    const uint8_t maxVectorLength = 64;
+    char output[maxVectorLength] = {0};
+    char expected[maxVectorLength] = {0};
+    char input[maxVectorLength] = {0};
+
+    int etSize = typeSize(et);
+    int vlSize = vectorSize(vl);
+    generateByType(input, et, false);
+
+    for (int i = 0; i < vlSize; i += etSize) {
+        memcpy(expected + i, input, etSize);
+    }
+
+    entry_point(output, input);
+
+    EXPECT_EQ(0, memcmp(expected, output, vlSize));
+}
+
+INSTANTIATE_TEST_CASE_P(VectorTypeParameters, ParameterizedVectorTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorLength, TR::DataTypes>>(
     std::make_tuple(TR::VectorLength128, TR::Int8),
     std::make_tuple(TR::VectorLength128, TR::Int16),
     std::make_tuple(TR::VectorLength128, TR::Int32),

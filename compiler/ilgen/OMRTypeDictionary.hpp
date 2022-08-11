@@ -26,6 +26,7 @@
 #include "map"
 #include "ilgen/IlBuilder.hpp"
 #include "env/TypedAllocator.hpp"
+#include "infra/Uncopyable.hpp"
 
 class TR_Memory;
 
@@ -43,9 +44,8 @@ typedef void * (*ImplGetter)(void *client);
 namespace OMR
 {
 
-class TypeDictionary
+class TypeDictionary : private TR::Uncopyable
    {
-   TypeDictionary(const TypeDictionary &src); // = delete;
 public:
    TR_ALLOC(TR_Memory::IlGenerator)
 

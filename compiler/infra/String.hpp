@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021, 2021 IBM Corp. and others
+ * Copyright (c) 2021, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,6 +26,7 @@
 #include <stddef.h>
 #include "env/defines.h"
 #include "env/TRMemory.hpp"
+#include "infra/Uncopyable.hpp"
 
 #if HOST_COMPILER == COMPILER_GCC || HOST_COMPILER == COMPILER_CLANG
 #define TR_PRINTF_FORMAT_ATTR(fmtIndex, argsIndex) \
@@ -55,7 +56,7 @@ int vsnprintfNoTrunc(char *buf, size_t size, const char *fmt, va_list args);
 int snprintfNoTrunc(char *buf, size_t size, const char *fmt, ...)
    TR_PRINTF_FORMAT_ATTR(3, 4);
 
-class StringBuf
+class StringBuf : private TR::Uncopyable
    {
    TR::Region &_region;
    size_t _cap;
@@ -100,11 +101,6 @@ class StringBuf
    void appendf(const char *fmt, ...) TR_PRINTF_FORMAT_ATTR(2, 3);
 
    private:
-
-   // Non-copyable. These are undefined and will cause a link error if anything
-   // attempts to use them accidentally.
-   StringBuf(const StringBuf &);
-   StringBuf &operator=(const StringBuf &);
 
    void ensureCapacity(size_t newLen);
    };

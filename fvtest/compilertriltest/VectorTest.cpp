@@ -66,9 +66,9 @@ int typeSize(TR::DataTypes dt) {
     }
 }
 
-void compareResults(void *expected, void *actual, TR::DataTypes dt, TR::VectorLength vl) {
-    int lengthBytes = vectorSize(vl);
+void compareResults(void *expected, void *actual, TR::DataTypes dt, TR::VectorLength vl, bool isReduction = false) {
     int elementBytes = typeSize(dt);
+    int lengthBytes = isReduction ? elementBytes : vectorSize(vl);
 
     for (int i = 0; i < lengthBytes; i += elementBytes) {
         switch (dt) {
@@ -85,10 +85,16 @@ void compareResults(void *expected, void *actual, TR::DataTypes dt, TR::VectorLe
                 EXPECT_EQ(*((int64_t *) expected), *((int64_t *) actual));
                 break;
             case TR::Float:
-                EXPECT_FLOAT_EQ(*((float *) expected), *((float *) actual));
+                if (std::isnan(*((float *) expected)))
+                    EXPECT_TRUE(std::isnan(*((float *) actual)));
+                else
+                    EXPECT_FLOAT_EQ(*((float *) expected), *((float *) actual));
                 break;
             case TR::Double:
-                EXPECT_DOUBLE_EQ(*((double *) expected), *((double *) actual));
+                if (std::isnan(*((double *) expected)))
+                    EXPECT_TRUE(std::isnan(*((double *) actual)));
+                else
+                    EXPECT_DOUBLE_EQ(*((double *) expected), *((double *) actual));
                 break;
             default:
                 TR_ASSERT_FATAL(0, "Illegal type to compare");
@@ -273,7 +279,7 @@ void generateAndExecuteVectorTest(TR::ILOpCode vectorOpcode, void *expected, voi
         entry_point(result, inputA, inputB);
     }
 
-    compareResults(expected, result, elementType.getDataType(), vl);
+    compareResults(expected, result, elementType.getDataType(), vl, vectorOpcode.isVectorReduction());
 }
 
 TEST_P(ParameterizedBinaryVectorArithmeticTest, VLoadStore) {
@@ -547,6 +553,96 @@ INSTANTIATE_TEST_CASE_P(VectorTypeParameters, ParameterizedVectorTest, ::testing
     std::make_tuple(TR::VectorLength512, TR::Double)
 )));
 
+template<typename T, int n>
+struct BinaryTestData {
+
+    T expected[n];
+    T inputA[n];
+    T inputB[n];
+};
+
+typedef BinaryTestData<int8_t, 64> BinaryByteTest;
+typedef BinaryTestData<int16_t, 32> BinaryShortTest;
+typedef BinaryTestData<int32_t, 16> BinaryIntTest;
+typedef BinaryTestData<int64_t, 8> BinaryLongTest;
+typedef BinaryTestData<float_t, 16> BinaryFloatTest;
+typedef BinaryTestData<double_t, 8> BinaryDoubleTest;
+
+void dataDrivenTestEvaluator(TR::VectorOperation operation, TR::VectorLength vl, TR::DataType dt, TR::CPU *cpu, void *expected, void *inputA, void* inputB) {
+    SKIP_IF(vl > TR::NumVectorLengths, MissingImplementation) << "Vector length is not supported by the target platform";
+
+    TR::DataType vectorType = TR::DataType::createVectorType(dt.getDataType(), vl);
+    TR::ILOpCode vectorOpcode = OMR::ILOpCode::createVectorOpCode(operation, vectorType);
+
+    TR::ILOpCode loadOp = TR::ILOpCode::createVectorOpCode(TR::vloadi, vectorType);
+    TR::ILOpCode storeOp = TR::ILOpCode::createVectorOpCode(TR::vstorei, vectorType);
+    bool platformSupport = TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(cpu, loadOp) &&
+                           TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(cpu, storeOp) &&
+                           TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(cpu, vectorOpcode);
+
+    SKIP_IF(!platformSupport, MissingImplementation) << "Opcode " << vectorOpcode.getName() << TR::DataType::getName(vectorType) << " is not supported by the target platform";
+
+    generateAndExecuteVectorTest(vectorOpcode, expected, inputA, vectorOpcode.expectedChildCount() == 2 ? inputB : NULL);
+}
+
+#define ParameterizedIOTest(type, testType) \
+class BinaryDataDriven##type##Test : public VectorTest, public ::testing::WithParamInterface<std::tuple<TR::VectorOperation, testType>> {};    \
+TEST_P(BinaryDataDriven##type##Test, BinaryVector128##type##Test) {                                                                            \
+    testType data = std::get<1>(GetParam());                                                                                                   \
+    TR::CPU cpu = TR::CPU::detect(privateOmrPortLibrary);                                                                                      \
+    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";  \
+    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)"; \
+    dataDrivenTestEvaluator(std::get<0>(GetParam()), TR::VectorLength128, TR::type, &cpu, data.expected, data.inputA, data.inputB);            \
+}                                                                                                                                              \
+TEST_P(BinaryDataDriven##type##Test, BinaryVector256##type##Test) {                                                                            \
+    testType data = std::get<1>(GetParam());                                                                                                   \
+    TR::CPU cpu = TR::CPU::detect(privateOmrPortLibrary);                                                                                      \
+    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";  \
+    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)"; \
+    dataDrivenTestEvaluator(std::get<0>(GetParam()), TR::VectorLength256, TR::type, &cpu, data.expected, data.inputA, data.inputB);            \
+}                                                                                                                                              \
+TEST_P(BinaryDataDriven##type##Test, BinaryVector512##type##Test) {                                                                            \
+    testType data = std::get<1>(GetParam());                                                                                                   \
+    TR::CPU cpu = TR::CPU::detect(privateOmrPortLibrary);                                                                                      \
+    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";  \
+    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)"; \
+    dataDrivenTestEvaluator(std::get<0>(GetParam()), TR::VectorLength512, TR::type, &cpu, data.expected, data.inputA, data.inputB);            \
+}                                                                                                                                              \
+class BinaryDataDriven128##type##Test : public VectorTest, public ::testing::WithParamInterface<std::tuple<TR::VectorOperation, testType>> {}; \
+TEST_P(BinaryDataDriven128##type##Test, BinaryVector128##type##Test) {                                                                         \
+    testType data = std::get<1>(GetParam());                                                                                                   \
+    TR::CPU cpu = TR::CPU::detect(privateOmrPortLibrary);                                                                                      \
+    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";  \
+    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)"; \
+    dataDrivenTestEvaluator(std::get<0>(GetParam()), TR::VectorLength128, TR::type, &cpu, data.expected, data.inputA, data.inputB);            \
+}                                                                                                                                              \
+class BinaryDataDriven256##type##Test : public VectorTest, public ::testing::WithParamInterface<std::tuple<TR::VectorOperation, testType>> {}; \
+TEST_P(BinaryDataDriven256##type##Test, BinaryVector256##type##Test) {                                                                         \
+    testType data = std::get<1>(GetParam());                                                                                                   \
+    TR::CPU cpu = TR::CPU::detect(privateOmrPortLibrary);                                                                                      \
+    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";  \
+    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)"; \
+    dataDrivenTestEvaluator(std::get<0>(GetParam()), TR::VectorLength256, TR::type, &cpu, data.expected, data.inputA, data.inputB);            \
+}                                                                                                                                              \
+class BinaryDataDriven512##type##Test : public VectorTest, public ::testing::WithParamInterface<std::tuple<TR::VectorOperation, testType>> {}; \
+TEST_P(BinaryDataDriven512##type##Test, BinaryVector512##type##Test) {                                                                         \
+    testType data = std::get<1>(GetParam());                                                                                                   \
+    TR::CPU cpu = TR::CPU::detect(privateOmrPortLibrary);                                                                                      \
+    SKIP_ON_S390(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)";  \
+    SKIP_ON_S390X(KnownBug) << "This test is currently disabled on Z platforms because not all Z platforms have vector support (issue #1843)"; \
+    dataDrivenTestEvaluator(std::get<0>(GetParam()), TR::VectorLength512, TR::type, &cpu, data.expected, data.inputA, data.inputB);            \
+}
+
+ParameterizedIOTest(Int8, BinaryByteTest)
+ParameterizedIOTest(Int16, BinaryShortTest)
+ParameterizedIOTest(Int32, BinaryIntTest)
+ParameterizedIOTest(Int64, BinaryLongTest)
+ParameterizedIOTest(Float, BinaryFloatTest)
+ParameterizedIOTest(Double, BinaryDoubleTest)
+
+#define FNAN std::numeric_limits<float>::quiet_NaN()
+#define DNAN std::numeric_limits<double>::quiet_NaN()
+
 TEST_F(VectorTest, VInt8Not) {
 
    auto inputTrees = "(method return= NoType args=[Address,Address]                   "
@@ -625,3 +721,62 @@ TEST_F(VectorTest, VInt8BitSelect) {
         EXPECT_EQ(inputA[i] ^ ((inputA[i] ^ inputB[i]) & inputC[i]), output[i]);
     }
 }
+
+/* 128/256/512-Bit Float tests*/
+#if !defined(J9ZOS390) && !defined(AIXPPC)
+/* XLC won't accept FNAN/DNAN or 0.0 / 0.0 */
+INSTANTIATE_TEST_CASE_P(BinaryFloatNaNTest, BinaryDataDrivenFloatTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryFloatTest>>(
+    std::make_tuple(TR::vmin, BinaryFloatTest {
+        { FNAN,  0.1, FNAN,  5, FNAN,  0.1, FNAN, 5,  FNAN,  0.1, FNAN,  5, FNAN, 25.5, FNAN,  5},
+        { FNAN, 25.5, 15.5, 12, FNAN,  0.1, 15.5, 12, FNAN, 25.5, 15.5, 12, FNAN, 25.5, 15.5, 12},
+        {   10,  0.1, FNAN,  5,   10, 25.5, FNAN,  5,   10,  0.1, FNAN,  5,   10, 55.1, FNAN,  5},
+    }),
+    std::make_tuple(TR::vmax, BinaryFloatTest {
+        { FNAN, 25.5, FNAN, 12, FNAN, 25.5, FNAN, 12, FNAN, 25.5, FNAN, 12, FNAN, 55.1, FNAN, 12},
+        { FNAN, 25.5, 15.5, 12, FNAN,  0.1, 15.5, 12, FNAN, 25.5, 15.5, 12, FNAN, 25.5, 15.5, 12},
+        {   10,  0.1, FNAN,  5,   10, 25.5, FNAN,  5,   10,  0.1, FNAN,  5,   10, 55.1, FNAN,  5},
+    })
+)));
+#endif
+
+INSTANTIATE_TEST_CASE_P(BinaryFloatTest, BinaryDataDrivenFloatTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryFloatTest>>(
+    std::make_tuple(TR::vmin, BinaryFloatTest {
+        {  -20, -0, 15.5,  5, 10.5,  0.1,  9.5, 5,   4,  0.1, 0,  5, -1,  1,  10,  5},
+        {  -20,  0, 15.5, 12, 22.1,  0.1, 15.5, 12,  4, 25.5, 0, 12,  1,  1,  10, 12},
+        {   10, -0, 21.5,  5, 10.5, 25.5,  9.5,  5, 10,  0.1, 0,  5, -1,  0, 100,  5},
+    }),
+    std::make_tuple(TR::vmax, BinaryFloatTest {
+        {   10,  0, 21.5, 12, 22.1, 25.5, 15.5, 12, 10, 25.5, 0, 12,  1,  1, 100, 12},
+        {  -20,  0, 15.5, 12, 22.1,  0.1, 15.5, 12,  4, 25.5, 0, 12,  1,  1,  10, 12},
+        {   10, -0, 21.5,  5, 10.5, 25.5,  9.5,  5, 10,  0.1, 0,  5, -1,  0, 100,  5},
+    })
+)));
+
+/* 128/256/512-Bit Double tests*/
+#if !defined(J9ZOS390) && !defined(AIXPPC)
+INSTANTIATE_TEST_CASE_P(BinaryDoubleNaNTest, BinaryDataDrivenDoubleTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryDoubleTest>>(
+    std::make_tuple(TR::vmin, BinaryDoubleTest {
+        { DNAN,  0.1, DNAN,  5, DNAN,  0.1, DNAN, 5},
+        { DNAN, 25.5, 15.5, 12, DNAN,  0.1, 15.5, 12},
+        {   10,  0.1, DNAN,  5,   10, 25.5, DNAN,  5},
+    }),
+    std::make_tuple(TR::vmax, BinaryDoubleTest {
+        { DNAN, 25.5, DNAN, 12, DNAN, 25.5, DNAN, 12},
+        { DNAN, 25.5, 15.5, 12, DNAN,  0.1, 15.5, 12},
+        {   10,  0.1, DNAN,  5,   10, 25.5, DNAN,  5},
+    })
+)));
+#endif
+
+INSTANTIATE_TEST_CASE_P(BinaryDoubleTest, BinaryDataDrivenDoubleTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryDoubleTest>>(
+    std::make_tuple(TR::vmin, BinaryDoubleTest {
+        { -0,  0.1, 0.01,  5, -0.00,  0.1, 15.5, 5},
+        { -0, 25.5, 15.5, 12,   0.0,  0.1, 15.5, 12},
+        {  0,  0.1, 0.01,  5, -0.00, 25.5, 2222,  5},
+    }),
+    std::make_tuple(TR::vmax, BinaryDoubleTest {
+        {  0, 25.5, 15.5, 12,  0, 25.5,  10, 12},
+        { -0, 25.5, 15.5, 12,  0,  0.1,  10, 12},
+        {  0,  0.1, 10.5,  5, -0, 25.5, -10,  5},
+    })
+)));

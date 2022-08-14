@@ -1512,6 +1512,36 @@ uint8_t* TR::X86RegRegRegInstruction::generateOperand(uint8_t* cursor)
    return cursor;
    }
 
+// -----------------------------------------------------------------------------
+// TR::X86RegMaskRegRegInstruction:: member functions
+
+uint8_t* TR::X86RegMaskRegRegInstruction::generateOperand(uint8_t* cursor)
+   {
+   TR_ASSERT_FATAL(getEncodingMethod() != OMR::X86::Bad && getEncodingMethod() >= OMR::X86::EVEX_L128, "Masks can be be used on AVX-512 instructions");
+   uint8_t *modRM = cursor - 1;
+
+   if (getOpCode().hasTargetRegisterIgnored() == 0)
+      {
+      applyTargetRegisterToModRMByte(modRM);
+      }
+
+   if (getOpCode().hasSourceRegisterIgnored() == 0)
+      {
+      applySourceRegisterToModRMByte(modRM);
+      }
+
+   if (getMaskRegister())
+      {
+      TR_ASSERT_FATAL(getMaskRegister()->getKind() == TR_VMR, "Mask register should be a VMR");
+      toRealRegister(getMaskRegister())->setMaskRegisterInEvex(modRM - 2, hasZeroMask());
+      }
+
+   applySource2ndRegisterToEVEX(modRM - 3);
+   applyTargetRegisterToEvex(modRM - 4);
+   applySourceRegisterToEvex(modRM - 4);
+
+   return cursor;
+   }
 
 // -----------------------------------------------------------------------------
 // TR::X86RegImmInstruction:: member functions

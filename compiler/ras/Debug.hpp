@@ -134,6 +134,7 @@ namespace TR { class X86RegMaskMemInstruction;             }
 namespace TR { class X86MemInstruction;                    }
 namespace TR { class X86MemImmInstruction;                 }
 namespace TR { class X86MemRegInstruction;                 }
+namespace TR { class X86MemMaskRegInstruction;             }
 namespace TR { class X86MemRegImmInstruction;              }
 namespace TR { class X86RegMemInstruction;                 }
 namespace TR { class X86RegMemImmInstruction;              }
@@ -820,6 +821,7 @@ public:
    void print(TR::FILE *, TR::X86MemInstruction *);
    void print(TR::FILE *, TR::X86MemImmInstruction *);
    void print(TR::FILE *, TR::X86MemRegInstruction *);
+   void print(TR::FILE *, TR::X86MemMaskRegInstruction *);
    void print(TR::FILE *, TR::X86MemRegImmInstruction *);
    void print(TR::FILE *, TR::X86RegMemInstruction *);
    void print(TR::FILE *, TR::X86RegMaskMemInstruction *);

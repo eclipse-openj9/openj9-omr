@@ -860,3 +860,25 @@ INSTANTIATE_TEST_CASE_P(X86RegMaskMemEnc, XRegMaskMemEncEncodingTest, ::testing:
     std::make_tuple(TR::InstOpCode::VSQRTPDRegMem, TR::RealRegister::xmm10, TR::RealRegister::k7, TR::RealRegister::eax, 0x0, OMR::X86::EVEX_L128, "6271fd0f5110")
 )));
 
+
+class XMemMaskRegEncEncodingTest : public TRTest::BinaryEncoderTest<>, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, int32_t, OMR::X86::Encoding, TRTest::BinaryInstruction>> {};
+
+TEST_P(XMemMaskRegEncEncodingTest, encode) {
+    auto target = getRealRegister(std::get<1>(GetParam()), cg());
+    auto mask = getRealRegister(std::get<2>(GetParam()), cg());
+    auto base = getRealRegister(std::get<3>(GetParam()), cg());
+    auto disp = std::get<4>(GetParam());
+    auto enc = std::get<5>(GetParam());
+
+    auto mr = generateX86MemoryReference(base, disp, cg());
+    auto instr = generateMemMaskRegInstruction(std::get<0>(GetParam()), fakeNode, mr, mask, target, cg(), enc);
+
+    ASSERT_EQ(std::get<6>(GetParam()), encodeInstruction(instr));
+}
+
+INSTANTIATE_TEST_CASE_P(X86MemMaskRegEnc, XMemMaskRegEncEncodingTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, int32_t, OMR::X86::Encoding, TRTest::BinaryInstruction>>(
+    std::make_tuple(TR::InstOpCode::MOVDQUMemReg, TR::RealRegister::xmm0, TR::RealRegister::k7, TR::RealRegister::esp, 0x0, OMR::X86::EVEX_L128, "62f17e0f7f0424"),
+    std::make_tuple(TR::InstOpCode::MOVDQUMemReg, TR::RealRegister::xmm1, TR::RealRegister::k6, TR::RealRegister::esp, 0x4, OMR::X86::EVEX_L128, "62f17e0e7f8c2404000000"),
+    std::make_tuple(TR::InstOpCode::MOVDQUMemReg, TR::RealRegister::xmm2, TR::RealRegister::k5, TR::RealRegister::esp, 0x8, OMR::X86::EVEX_L128, "62f17e0d7f942408000000"),
+    std::make_tuple(TR::InstOpCode::MOVDQUMemReg, TR::RealRegister::xmm3, TR::RealRegister::k4, TR::RealRegister::esp, 0x0, OMR::X86::EVEX_L128, "62f17e0c7f1c24")
+)));

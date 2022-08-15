@@ -2360,6 +2360,26 @@ uint8_t* TR::X86MemRegInstruction::generateOperand(uint8_t* cursor)
    return cursor;
    }
 
+// -----------------------------------------------------------------------------
+// TR::X86MemMaskRegInstruction:: member functions
+
+uint8_t* TR::X86MemMaskRegInstruction::generateOperand(uint8_t* cursor)
+   {
+   if (getOpCode().hasSourceRegisterIgnored() == 0)
+      {
+      toRealRegister(getSourceRegister())->setRegisterFieldInModRM(cursor - 1);
+      }
+
+   if (getMaskRegister())
+      {
+      toRealRegister(getMaskRegister())->setMaskRegisterInEvex(cursor - 3, hasZeroMask());
+      }
+
+   toRealRegister(getSourceRegister())->setTargetRegisterFieldInEVEX(cursor - 5);
+
+   cursor = getMemoryReference()->generateBinaryEncoding(cursor - 1, this, cg());
+   return cursor;
+   }
 
 // -----------------------------------------------------------------------------
 // TR::X86MemRegImmInstruction:: member functions

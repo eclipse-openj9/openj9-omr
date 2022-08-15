@@ -115,6 +115,9 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Instruction  * instr)
       case TR::Instruction::IsRegReg:
          print(pOutFile, (TR::X86RegRegInstruction  *)instr);
          break;
+      case TR::Instruction::IsRegMaskReg:
+         print(pOutFile, (TR::X86RegMaskRegInstruction  *)instr);
+         break;
       case TR::Instruction::IsRegRegReg:
          print(pOutFile, (TR::X86RegRegRegInstruction  *)instr);
          break;
@@ -968,6 +971,34 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86RegRegInstruction  * instr)
       trfprintf(pOutFile, ", ");
    if (!(instr->getOpCode().sourceRegIsImplicit() !=0 ))
       print(pOutFile, instr->getSourceRegister(), getSourceSizeFromInstruction(instr));
+   printInstructionComment(pOutFile, 2, instr);
+   dumpDependencies(pOutFile, instr);
+   trfflush(pOutFile);
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::X86RegMaskRegInstruction  * instr)
+   {
+   if (pOutFile == NULL)
+      return;
+
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s\t", getMnemonicName(&instr->getOpCode()));
+   if (instr->getOpCode().targetRegIsImplicit() == 0 || instr->getMaskRegister())
+      {
+      print(pOutFile, instr->getTargetRegister(), getTargetSizeFromInstruction(instr));
+      if (instr->getMaskRegister())
+         {
+         trfprintf(pOutFile, "{");
+         print(pOutFile, instr->getMaskRegister());
+         trfprintf(pOutFile, "}");
+         }
+      trfprintf(pOutFile, ", ");
+      }
+
+   if (instr->getOpCode().sourceRegIsImplicit() == 0)
+      print(pOutFile, instr->getSourceRegister(), getSourceSizeFromInstruction(instr));
+
    printInstructionComment(pOutFile, 2, instr);
    dumpDependencies(pOutFile, instr);
    trfflush(pOutFile);

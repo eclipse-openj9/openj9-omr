@@ -806,3 +806,28 @@ INSTANTIATE_TEST_CASE_P(XRegMaskRegRegEncTest, XRegMaskRegRegEncEncodingTest, ::
     std::make_tuple(TR::InstOpCode::ADDPSRegReg, TR::RealRegister::xmm4, TR::RealRegister::k5, TR::RealRegister::xmm2, TR::RealRegister::xmm8,  OMR::X86::EVEX_L128, "62d16c0d58e0"),
     std::make_tuple(TR::InstOpCode::ADDPDRegReg, TR::RealRegister::xmm5, TR::RealRegister::k6, TR::RealRegister::xmm3, TR::RealRegister::xmm7,  OMR::X86::EVEX_L128, "62f1e50e58ef")
 )));
+
+class XRegMaskRegEncEncodingTest : public TRTest::BinaryEncoderTest<>, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, OMR::X86::Encoding, TRTest::BinaryInstruction>> {};
+
+TEST_P(XRegMaskRegEncEncodingTest, encode) {
+    auto regA = getRealRegister(std::get<1>(GetParam()), cg());
+    auto maskReg = getRealRegister(std::get<2>(GetParam()), cg());
+    auto regB = getRealRegister(std::get<3>(GetParam()), cg());
+    auto enc = std::get<4>(GetParam());
+
+    auto instr = generateRegMaskRegInstruction(std::get<0>(GetParam()), fakeNode, regA, maskReg, regB, cg(), enc);
+
+    ASSERT_EQ(std::get<5>(GetParam()), encodeInstruction(instr));
+}
+
+INSTANTIATE_TEST_CASE_P(XRegMaskRegEncTest, XRegMaskRegEncEncodingTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, OMR::X86::Encoding, TRTest::BinaryInstruction>>(
+    std::make_tuple(TR::InstOpCode::PADDBRegReg,  TR::RealRegister::xmm0, TR::RealRegister::k1, TR::RealRegister::xmm4, OMR::X86::EVEX_L128, "62f17d09fcc4"),
+    std::make_tuple(TR::InstOpCode::PADDWRegReg,  TR::RealRegister::ymm1, TR::RealRegister::k2, TR::RealRegister::ymm3, OMR::X86::EVEX_L256, "62f1752afdcb"),
+    std::make_tuple(TR::InstOpCode::PADDDRegReg,  TR::RealRegister::zmm2, TR::RealRegister::k3, TR::RealRegister::zmm2, OMR::X86::EVEX_L512, "62f16d4bfed2"),
+    std::make_tuple(TR::InstOpCode::PADDQRegReg,  TR::RealRegister::xmm3, TR::RealRegister::k4, TR::RealRegister::xmm1, OMR::X86::EVEX_L128, "62f1e50cd4d9"),
+    std::make_tuple(TR::InstOpCode::ADDPSRegReg,  TR::RealRegister::xmm4, TR::RealRegister::k5, TR::RealRegister::xmm2, OMR::X86::EVEX_L128, "62f15c0d58e2"),
+    std::make_tuple(TR::InstOpCode::ADDPDRegReg,  TR::RealRegister::xmm5, TR::RealRegister::k6, TR::RealRegister::xmm3, OMR::X86::EVEX_L128, "62f1d50e58eb"),
+    std::make_tuple(TR::InstOpCode::MOVDQURegReg, TR::RealRegister::xmm6, TR::RealRegister::k6, TR::RealRegister::xmm4, OMR::X86::EVEX_L128, "62f17e0e6ff4"),
+    std::make_tuple(TR::InstOpCode::MOVDQURegReg, TR::RealRegister::xmm7, TR::RealRegister::k6, TR::RealRegister::xmm5, OMR::X86::EVEX_L256, "62f17e2e6ffd"),
+    std::make_tuple(TR::InstOpCode::MOVDQURegReg, TR::RealRegister::xmm8, TR::RealRegister::k6, TR::RealRegister::xmm6, OMR::X86::EVEX_L512, "62717e4e6fc6")
+)));

@@ -130,6 +130,7 @@ namespace TR { class X86RegRegImmInstruction;              }
 namespace TR { class X86RegRegRegInstruction;              }
 namespace TR { class X86RegMaskRegRegInstruction;          }
 namespace TR { class X86RegMaskRegInstruction;             }
+namespace TR { class X86RegMaskMemInstruction;             }
 namespace TR { class X86MemInstruction;                    }
 namespace TR { class X86MemImmInstruction;                 }
 namespace TR { class X86MemRegInstruction;                 }

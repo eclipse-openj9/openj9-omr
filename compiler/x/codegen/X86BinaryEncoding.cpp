@@ -2552,6 +2552,28 @@ uint8_t* TR::X86RegRegMemInstruction::generateOperand(uint8_t* cursor)
    return cursor;
    }
 
+// -----------------------------------------------------------------------------
+// TR::X86RegMaskMemInstruction:: member functions
+
+uint8_t* TR::X86RegMaskMemInstruction::generateOperand(uint8_t* cursor)
+   {
+   TR_ASSERT_FATAL(getEncodingMethod() != OMR::X86::Bad && getEncodingMethod() >= OMR::X86::EVEX_L128, "Masks can be be used on AVX-512 instructions");
+   uint8_t *modRM = cursor - 1;
+   if (getOpCode().hasTargetRegisterIgnored() == 0)
+      {
+      applyTargetRegisterToModRMByte(modRM);
+      }
+
+   applyTargetRegisterToEvex(cursor - 5);
+
+   if (getMaskRegister())
+      {
+      toRealRegister(getMaskRegister())->setMaskRegisterInEvex(modRM - 2, hasZeroMask());
+      }
+
+   cursor = getMemoryReference()->generateBinaryEncoding(modRM, this, cg());
+   return cursor;
+   }
 
 
 // -----------------------------------------------------------------------------

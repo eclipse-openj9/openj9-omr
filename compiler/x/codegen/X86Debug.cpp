@@ -118,6 +118,9 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Instruction  * instr)
       case TR::Instruction::IsRegMaskReg:
          print(pOutFile, (TR::X86RegMaskRegInstruction  *)instr);
          break;
+      case TR::Instruction::IsRegMaskMem:
+         print(pOutFile, (TR::X86RegMaskMemInstruction  *)instr);
+         break;
       case TR::Instruction::IsRegRegReg:
          print(pOutFile, (TR::X86RegRegRegInstruction  *)instr);
          break;
@@ -1344,6 +1347,46 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86RegMemInstruction  * instr)
    dumpDependencies(pOutFile, instr);
    trfflush(pOutFile);
    }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::X86RegMaskMemInstruction  * instr)
+   {
+   if (pOutFile == NULL)
+      return;
+
+   int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
+   int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(pOutFile, instr, barrier);
+
+   if (instr->getOpCode().targetRegIsImplicit() == 0 || instr->getMaskRegister())
+      {
+      print(pOutFile, instr->getTargetRegister(), getTargetSizeFromInstruction(instr));
+      if (instr->getMaskRegister())
+         {
+         trfprintf(pOutFile, "{");
+         print(pOutFile, instr->getMaskRegister());
+         trfprintf(pOutFile, "}");
+         }
+      trfprintf(pOutFile, ", ");
+      }
+
+   print(pOutFile, instr->getMemoryReference(), getSourceSizeFromInstruction(instr));
+   printInstructionComment(pOutFile, 2, instr);
+   printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
+   TR::Symbol *symbol = instr->getMemoryReference()->getSymbolReference().getSymbol();
+   if (symbol && symbol->isSpillTempAuto())
+      {
+      trfprintf(pOutFile, "%s, spilled for %s",
+                    commentString(),
+                    getName(instr->getNode()->getOpCode()));
+      }
+
+   if (barrier & NeedsExplicitBarrier)
+      printPrefixAndMemoryBarrier(pOutFile, instr, barrier, barrierOffset);
+
+   dumpDependencies(pOutFile, instr);
+   trfflush(pOutFile);
+   }
+
 
 void
 TR_Debug::printReferencedRegisterInfo(TR::FILE *pOutFile, TR::X86RegMemInstruction  * instr)

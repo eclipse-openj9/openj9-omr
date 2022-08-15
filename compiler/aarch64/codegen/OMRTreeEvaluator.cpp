@@ -1459,40 +1459,147 @@ OMR::ARM64::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return targetReg;
    }
 
+enum VectorCompareOps : int32_t
+   {
+   EQ,
+   NE,
+   LT,
+   LE,
+   GT,
+   GE,
+   NumVectorCompareOps
+   };
+
+static const TR::InstOpCode::Mnemonic vectorCompareOpCodes[NumVectorCompareOps][TR::NumVectorElementTypes] =
+   {  //       TR::Int8                 TR::Int16                TR::Int32                TR::Int64                TR::Float                TR::Double
+      { TR::InstOpCode::vcmeq16b, TR::InstOpCode::vcmeq8h, TR::InstOpCode::vcmeq4s, TR::InstOpCode::vcmeq2d, TR::InstOpCode::vfcmeq4s, TR::InstOpCode::vfcmeq2d}, // EQ
+      { TR::InstOpCode::vcmeq16b, TR::InstOpCode::vcmeq8h, TR::InstOpCode::vcmeq4s, TR::InstOpCode::vcmeq2d, TR::InstOpCode::vfcmeq4s, TR::InstOpCode::vfcmeq2d}, // NE (apply not after compare)
+      { TR::InstOpCode::vcmge16b, TR::InstOpCode::vcmge8h, TR::InstOpCode::vcmge4s, TR::InstOpCode::vcmge2d, TR::InstOpCode::vfcmge4s, TR::InstOpCode::vfcmge2d}, // LT (apply not after compare)
+      { TR::InstOpCode::vcmgt16b, TR::InstOpCode::vcmgt8h, TR::InstOpCode::vcmgt4s, TR::InstOpCode::vcmgt2d, TR::InstOpCode::vfcmgt4s, TR::InstOpCode::vfcmgt2d}, // LE (apply not after compare)
+      { TR::InstOpCode::vcmgt16b, TR::InstOpCode::vcmgt8h, TR::InstOpCode::vcmgt4s, TR::InstOpCode::vcmgt2d, TR::InstOpCode::vfcmgt4s, TR::InstOpCode::vfcmgt2d}, // GT
+      { TR::InstOpCode::vcmge16b, TR::InstOpCode::vcmge8h, TR::InstOpCode::vcmge4s, TR::InstOpCode::vcmge2d, TR::InstOpCode::vfcmge4s, TR::InstOpCode::vfcmge2d}, // GE
+   };
+
+static const bool vectorCompareOpCodesNeedsNot[NumVectorCompareOps] =
+   {
+      false,
+      true,
+      true,
+      true,
+      false,
+      false
+   };
+
+static const TR::InstOpCode::Mnemonic vectorCompareZeroOpCodes[NumVectorCompareOps][TR::NumVectorElementTypes] =
+   {  //       TR::Int8                      TR::Int16                     TR::Int32                     TR::Int64                     TR::Float                     TR::Double
+      { TR::InstOpCode::vcmeq16b_zero, TR::InstOpCode::vcmeq8h_zero, TR::InstOpCode::vcmeq4s_zero, TR::InstOpCode::vcmeq2d_zero, TR::InstOpCode::vfcmeq4s_zero, TR::InstOpCode::vfcmeq2d_zero}, // EQ
+      { TR::InstOpCode::vcmeq16b_zero, TR::InstOpCode::vcmeq8h_zero, TR::InstOpCode::vcmeq4s_zero, TR::InstOpCode::vcmeq2d_zero, TR::InstOpCode::vfcmeq4s_zero, TR::InstOpCode::vfcmeq2d_zero}, // NE (apply not after compare)
+      { TR::InstOpCode::vcmlt16b_zero, TR::InstOpCode::vcmlt8h_zero, TR::InstOpCode::vcmlt4s_zero, TR::InstOpCode::vcmlt2d_zero, TR::InstOpCode::vfcmlt4s_zero, TR::InstOpCode::vfcmlt2d_zero}, // LT
+      { TR::InstOpCode::vcmle16b_zero, TR::InstOpCode::vcmle8h_zero, TR::InstOpCode::vcmle4s_zero, TR::InstOpCode::vcmle2d_zero, TR::InstOpCode::vfcmle4s_zero, TR::InstOpCode::vfcmle2d_zero}, // LE
+      { TR::InstOpCode::vcmgt16b_zero, TR::InstOpCode::vcmgt8h_zero, TR::InstOpCode::vcmgt4s_zero, TR::InstOpCode::vcmgt2d_zero, TR::InstOpCode::vfcmgt4s_zero, TR::InstOpCode::vfcmgt2d_zero}, // GT
+      { TR::InstOpCode::vcmge16b_zero, TR::InstOpCode::vcmge8h_zero, TR::InstOpCode::vcmge4s_zero, TR::InstOpCode::vcmge2d_zero, TR::InstOpCode::vfcmge4s_zero, TR::InstOpCode::vfcmge2d_zero}, // GE
+   };
+
+static const bool vectorCompareZeroOpCodesNeedsNot[NumVectorCompareOps] =
+   {
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+   };
+
+/**
+ * @brief A helper function for generating instuction sequence for vector compare operations
+ *
+ * @param[in] node:            node
+ * @param[in] compareOp:       enum describing the compare operation
+ * @param[in] cg:              CodeGenerator
+ * @return vector register containing all 1 or all 0 elements depending on the result of the comparison.
+ */
+static TR::Register*
+vcmpHelper(TR::Node *node, VectorCompareOps compareOp, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::InstOpCode::Mnemonic op;
+   bool notAfterCompare;
+   bool recursivelyDecRefCountOnSecondChild;
+   TR::Register *firstReg  = cg->evaluate(firstChild);
+   TR::Register *targetReg = cg->allocateRegister(TR_VRF);
+   TR::DataType elemType = firstChild->getDataType().getVectorElementType();
+
+   TR_ASSERT_FATAL_WITH_NODE(node, (elemType >= TR::Int8) && (elemType <= TR::Double) , "unrecognized vector type %s", firstChild->getDataType().toString());
+
+   if ((secondChild->getOpCode().getVectorOperation() == TR::vsplats) && (secondChild->getRegister() == NULL) && (secondChild->getFirstChild()->isConstZeroValue()))
+      {
+      recursivelyDecRefCountOnSecondChild = true;
+      op = vectorCompareZeroOpCodes[compareOp][elemType - 1];
+      notAfterCompare = vectorCompareZeroOpCodesNeedsNot[compareOp];
+      generateTrg1Src1Instruction(cg, op, node, targetReg, firstReg);
+      }
+   else
+      {
+      TR::Register *secondReg  = cg->evaluate(secondChild);
+      recursivelyDecRefCountOnSecondChild = false;
+      op = vectorCompareOpCodes[compareOp][elemType - 1];
+      notAfterCompare = vectorCompareOpCodesNeedsNot[compareOp];
+      generateTrg1Src2Instruction(cg, op, node, targetReg, firstReg, secondReg);
+      }
+
+   if (notAfterCompare)
+      {
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::vnot16b, node, targetReg, targetReg);
+      }
+
+   node->setRegister(targetReg);
+   cg->decReferenceCount(firstChild);
+   if (recursivelyDecRefCountOnSecondChild)
+      {
+      cg->recursivelyDecReferenceCount(secondChild);
+      }
+   else
+      {
+      cg->decReferenceCount(secondChild);
+      }
+   return targetReg;
+   }
+
 TR::Register*
 OMR::ARM64::TreeEvaluator::vcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return vcmpHelper(node, EQ, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return vcmpHelper(node, NE, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return vcmpHelper(node, LT, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return vcmpHelper(node, GT, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return vcmpHelper(node, LE, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return vcmpHelper(node, GE, cg);
    }
 
 TR::Register*

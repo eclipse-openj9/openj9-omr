@@ -651,6 +651,12 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
       case TR::vreductionMul:
       case TR::vreductionMax:
       case TR::vreductionMin:
+      case TR::vcmpeq:
+      case TR::vcmpge:
+      case TR::vcmpgt:
+      case TR::vcmple:
+      case TR::vcmplt:
+      case TR::vcmpne:
          return true;
       case TR::vand:
       case TR::vor:

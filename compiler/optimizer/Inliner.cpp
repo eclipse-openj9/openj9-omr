@@ -6215,10 +6215,11 @@ OMR_InlinerPolicy::checkIfTargetInlineable(TR_CallTarget* target, TR_CallSite* c
    }
 
 /**
- * Do not perform privated inliner argument rematerialization on high probability profiled
- * guards when distrusted
+ * Determine whether to perform privatized inliner argument rematerialization
+ * on the given profiled guard.
  *
- * @return true if privatized inliner argumetn rematerialization should be suppressed
+ * @return true if privatized inliner argument rematerialization should be
+ *         performed, false otherwise
  */
 bool
 OMR_InlinerPolicy::suitableForRemat(TR::Compilation *comp, TR::Node *node, TR_VirtualGuardSelection *guard)

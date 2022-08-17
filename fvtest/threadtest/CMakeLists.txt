@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2021 IBM Corp. and others
+# Copyright (c) 2017, 2022 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -63,8 +63,28 @@ endif()
 
 set_property(TARGET omrthreadtest PROPERTY FOLDER fvtest)
 
-omr_add_test(NAME threadtest COMMAND $<TARGET_FILE:omrthreadtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadtest-results.xml)
-omr_add_test(NAME threadSetAttrThreadWeightTest COMMAND $<TARGET_FILE:omrthreadtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadtest-results.xml --gtest_also_run_disabled_tests --gtest_filter=ThreadCreateTest.DISABLED_SetAttrThreadWeight)
+if(OMR_OS_LINUX AND OMR_ARCH_RISCV AND CMAKE_CROSSCOMPILING)
+	set(EXCLUDE_LIST "${EXCLUDE_LIST}-PriorityInterrupt.*")
+endif()
+
+if(EXCLUDE_LIST)
+	set(EXCLUDE_LIST "--gtest_filter=${EXCLUDE_LIST}")
+	message(WARNING "Excluded omrthread tests: ${EXCLUDE_LIST}")
+endif()
+
+omr_add_test(
+	NAME threadtest
+	COMMAND $<TARGET_FILE:omrthreadtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadtest-results.xml ${EXCLUDE_LIST}
+)
+
+omr_add_test(
+	NAME threadSetAttrThreadWeightTest
+	COMMAND $<TARGET_FILE:omrthreadtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadtest-results.xml --gtest_also_run_disabled_tests --gtest_filter=ThreadCreateTest.DISABLED_SetAttrThreadWeight
+)
+
 if(OMR_OS_LINUX)
-	omr_add_test(NAME threadRealtimeTest COMMAND $<TARGET_FILE:omrthreadtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadtest-results.xml --gtest_filter=ThreadCreateTest.* -realtime)
+	omr_add_test(
+		NAME threadRealtimeTest
+		COMMAND $<TARGET_FILE:omrthreadtest> --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/omrthreadtest-results.xml --gtest_filter=ThreadCreateTest.* -realtime
+	)
 endif()

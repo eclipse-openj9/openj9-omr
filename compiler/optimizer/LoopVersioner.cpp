@@ -2712,7 +2712,8 @@ bool TR_LoopVersioner::isBranchSuitableToVersion(TR_ScratchList<TR::Block> *loop
       }
 
 #ifdef J9_PROJECT_SPECIFIC
-   if (node->isProfiledGuard())
+   if (node->isProfiledGuard()
+       && !node->getBranchDestination()->getNode()->getBlock()->isCold())
        {
        bool isGetFieldCacheCounts = !strncmp(comp->signature(),"org/apache/solr/request/SimpleFacets.getFieldCacheCounts(Lorg/apache/solr/search/SolrIndexSearcher;Lorg/apache/solr/search/DocSet;Ljava/lang/String;IIIZLjava/lang/String;Ljava/lang/String;)Lorg/apache/solr/common/util/NamedList;",60);
 

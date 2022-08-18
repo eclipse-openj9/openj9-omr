@@ -1857,6 +1857,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::RealRegister * reg, TR_RegisterSizes siz
       case TR_DoubleReg:
          trfprintf(pOutFile, "%s", getName(reg));
          break;
+      case TR_VectorReg128:
       case TR_VectorReg256:
       case TR_VectorReg512:
       case TR_QuadWordReg:

@@ -391,7 +391,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vreductionAdd", \
    /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \
@@ -407,7 +407,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vreductionAnd", \
    /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \
@@ -423,7 +423,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vreductionFirstNonZero", \
    /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \
@@ -439,7 +439,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vreductionMax", \
    /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \
@@ -455,7 +455,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vreductionMin", \
    /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \
@@ -471,7 +471,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vreductionMul", \
    /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \
@@ -487,7 +487,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vreductionOr", \
    /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \
@@ -503,7 +503,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vreductionOrUnchecked", \
    /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \
@@ -519,7 +519,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vreductionXor", \
    /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \

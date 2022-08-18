@@ -1152,35 +1152,28 @@ OMR::Z::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::Z::TreeEvaluator::vabsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
    TR::DataType dt = node->getDataType().getVectorElementType();
-   TR_ASSERT_FATAL(dt != TR::Float || cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1),
-                  "VFPSO is only supported for VectorElementDataType TR::Double on z13 and onwards and TR::Float on z14 onwards");
    return inlineVectorUnaryOp(node, cg, (dt == TR::Double || dt == TR::Float) ? TR::InstOpCode::VFPSO : TR::InstOpCode::VLP);
    }
 
 TR::Register*
 OMR::Z::TreeEvaluator::vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
-                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
-   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorElementType() == TR::Double ||
-                     (node->getDataType().getVectorElementType() == TR::Float && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1)),
-                        "VFSQ is only supported for VectorElementDataType TR::Double on z13 and onwards and TR::Float on z14 onwards");
    return inlineVectorUnaryOp(node, cg, TR::InstOpCode::VFSQ);
    }
 
 TR::Register*
 OMR::Z::TreeEvaluator::vminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::DataType dt = node->getDataType().getVectorElementType();
+   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, (dt == TR::Double || dt == TR::Float) ? TR::InstOpCode::VFMIN : TR::InstOpCode::VMN);
    }
 
 TR::Register*
 OMR::Z::TreeEvaluator::vmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::DataType dt = node->getDataType().getVectorElementType();
+   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, (dt == TR::Double || dt == TR::Float) ? TR::InstOpCode::VFMAX : TR::InstOpCode::VMX);
    }
 
 TR::Register*
@@ -14394,6 +14387,8 @@ OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node * node,
                                           TR::InstOpCode::Mnemonic op)
    {
    TR_ASSERT(node->getNumChildren() <= 1, "Unary node must only contain 1 or less children");
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
    TR::Node   *firstChild = node->getFirstChild();
    TR::Register *returnReg = TR::TreeEvaluator::tryToReuseInputVectorRegs(node, cg);
@@ -14418,12 +14413,17 @@ OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node * node,
           * Floating point operand, manually checking the opcode for node to get the
           * operation mask
           */
+         TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorElementType() != TR::Float || cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1),
+                           "VFPSO is only supported for VectorElementDataType TR::Double on z13 and onwards and TR::Float on z14 onwards");
          TR::ILOpCode opcode = node->getOpCode();
          uint8_t mask5 = opcode.isVectorOpCode() && opcode.getVectorOperation() == TR::vabs ? 2 : 0;
          breakInst = generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, mask5, 0, getVectorElementSizeMask(node));
          break;
          }
       case TR::InstOpCode::VFSQ:
+         TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorElementType() == TR::Double ||
+                                    (node->getDataType().getVectorElementType() == TR::Float && cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1)),
+                                    "VFSQ is only supported for VectorElementDataType TR::Double on z13 and onwards and TR::Float on z14 onwards");
          generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, getVectorElementSizeMask(node));
          break;
       default:
@@ -14440,6 +14440,8 @@ TR::Register *
 OMR::Z::TreeEvaluator::inlineVectorBinaryOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)
    {
    TR_ASSERT(node->getNumChildren() <= 2,"Binary Node must only contain 2 or less children");
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
    TR::Node *firstChild  = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
@@ -14490,6 +14492,18 @@ OMR::Z::TreeEvaluator::inlineVectorBinaryOp(TR::Node * node, TR::CodeGenerator *
       case TR::InstOpCode::VCHL:
          mask4 = getVectorElementSizeMask(node);
          breakInst = generateVRRbInstruction(cg, op, node, targetReg, sourceReg1, sourceReg2, 0, mask4);
+         break;
+      case TR::InstOpCode::VFMAX:
+      case TR::InstOpCode::VFMIN:
+         TR_ASSERT_FATAL_WITH_NODE(node, cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_S390_VECTOR_FACILITY_ENHANCEMENT_1),
+                                       "VFMAX/VFMIN is only supported on z14 onwards.");
+         mask4 = getVectorElementSizeMask(node);
+         breakInst = generateVRRcInstruction(cg, op, node, targetReg, sourceReg1, sourceReg2, 1, 0, mask4);
+         break;
+      case TR::InstOpCode::VMX:
+      case TR::InstOpCode::VMN:
+         mask4 = getVectorElementSizeMask(node);
+         breakInst = generateVRRcInstruction(cg, op, node, targetReg, sourceReg1, sourceReg2, mask4);
          break;
       default:
          TR_ASSERT(false, "Binary Vector IL evaluation unimplemented for node : %s", cg->getDebug()->getName(node));

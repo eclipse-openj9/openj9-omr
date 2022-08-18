@@ -1894,7 +1894,8 @@ TR_InlinerBase::addGuardForVirtual(
 
    getUtil()->refineInlineGuard(callNode, block1, block2, appendTestToBlock1, callerSymbol, cursorTree, virtualGuard, block4);
 
-   if ((guard->_kind == TR_ProfiledGuard) || (guard->_kind == TR_InnerGuard))
+   if ((guard->_kind == TR_ProfiledGuard || guard->_kind == TR_InnerGuard)
+       && !guard->_forceTakenSideCold)
       {
       if (block1->getFrequency() < 0)
          block4->setFrequency(block1->getFrequency());

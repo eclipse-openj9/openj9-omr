@@ -463,8 +463,19 @@ static bool tryFoldCompileTimeLoad(
             if (vp->comp()->compileRelocatableCode() && !vp->comp()->getOption(TR_UseSymbolValidationManager) && (vp->comp()->target().cpu.isPower() || fej9->getClassLoader(clazz) != fej9->getSystemClassLoader()))
                return false;
 #endif
-            if (vp->trace())
-               traceMsg(vp->comp(), "VP Transforming VFTLoad to loadaddr: as n%dn is VFT load of known class", node->getGlobalIndex());
+            // performTransformation() is needed here but not in the other cases
+            // because transformIndirectLoadChain[At]() does one internally.
+            if (!performTransformation(
+                  vp->comp(),
+                  "%sTransforming VFT load n%un [%p] to loadaddr "
+                  "based on the fixed type of n%un [%p]\n",
+                  OPT_DETAILS,
+                  node->getGlobalIndex(),
+                  node,
+                  curNode->getGlobalIndex(),
+                  curNode))
+               return false;
+
             node->setNumChildren(0);
             TR::Node::recreateWithSymRef(node, TR::loadaddr, vp->comp()->getSymRefTab()->findOrCreateClassSymbol(vp->comp()->getMethodSymbol(), -1, clazz));
             node->setFlags(0);

@@ -178,6 +178,8 @@ namespace TR { class Register; }
 #define X86FeatureProp_EVEX512RequiresAVX512F    0x00200000 // EVEX-512 encoded version requires AVX-512F
 #define X86FeatureProp_EVEX512RequiresAVX512BW   0x00400000 // EVEX-512 encoded version requires AVX-512BW
 #define X86FeatureProp_EVEX512RequiresAVX512DQ   0x00800000 // EVEX-512 encoded version requires AVX-512DQ
+#define X86FeatureProp_VEX128RequiresFMA         0x01000000 // VEX-128 encoded version requires AVX
+#define X86FeatureProp_VEX256RequiresFMA         0x02000000 // VEX-128 encoded version requires AVX
 
 typedef enum
    {
@@ -501,6 +503,9 @@ class InstOpCode: public OMR::InstOpCode
 
                if (flags & X86FeatureProp_VEX128RequiresAVX2 && target->supportsFeature(OMR_FEATURE_X86_AVX2))
                   return OMR::X86::VEX_L128;
+
+               if (flags & X86FeatureProp_VEX128RequiresFMA && target->supportsFeature(OMR_FEATURE_X86_FMA))
+                  return OMR::X86::VEX_L128;
                }
 
             if (flags & X86FeatureProp_SSE4_1Supported && target->supportsFeature(OMR_FEATURE_X86_SSE4_1))
@@ -535,6 +540,9 @@ class InstOpCode: public OMR::InstOpCode
 
                if (supported && flags & X86FeatureProp_VEX256RequiresAVX2)
                   supported = target->supportsFeature(OMR_FEATURE_X86_AVX2);
+
+               if (supported && flags & X86FeatureProp_VEX256RequiresFMA)
+                  supported = target->supportsFeature(OMR_FEATURE_X86_FMA);
 
                if (supported)
                    return OMR::X86::VEX_L256;
@@ -770,6 +778,7 @@ class InstOpCode: public OMR::InstOpCode
       TARGET_PARAMETERIZED_OPCODE(MOVSRegMem     , MOVSDRegMem     , MOVSSRegMem     )
       // FMA
       TARGET_PARAMETERIZED_OPCODE(VFMADD231SRegRegReg, VFMADD231SDRegRegReg, VFMADD231SSRegRegReg)
+      TARGET_PARAMETERIZED_OPCODE(VFMADD213PRegRegReg, VFMADD213PDRegRegReg, VFMADD213PSRegRegReg)
 
 #define TARGET_CARRY_PARAMETERIZED_OPCODE(name, op64, op32) \
       static inline OMR::InstOpCode::Mnemonic name(bool is64Bit, bool isWithCarry) { return isWithCarry ? op64(is64Bit) : op32(is64Bit); }

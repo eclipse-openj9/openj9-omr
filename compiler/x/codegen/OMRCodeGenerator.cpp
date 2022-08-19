@@ -1008,6 +1008,18 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
          if (et.isFloatingPoint() && ot.getVectorLength() == TR::VectorLength512)
             return false;
          break;
+      case TR::vfma:
+         {
+         TR::InstOpCode fmaOpcode = TR::InstOpCode::VFMADD213PRegRegReg(et.isDouble());
+
+         if (fmaOpcode.getSIMDEncoding(cpu, ot.getVectorLength()))
+            return true;
+
+         TR::ILOpCodes vMul = TR::ILOpCode::createVectorOpCode(TR::vmul, opcode.getType());
+         TR::ILOpCode vAdd = TR::ILOpCode::createVectorOpCode(TR::vadd, opcode.getType());
+
+         return getSupportsOpCodeForAutoSIMD(cpu, vMul) && getSupportsOpCodeForAutoSIMD(cpu, vAdd);
+         }
       case TR::vneg:
          switch (ot.getVectorLength()) {
             case TR::VectorLength128:

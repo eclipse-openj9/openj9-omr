@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -51,7 +51,13 @@ OMR::ClassEnv::getArrayElementWidthInBytes(TR::Compilation *comp, TR_OpaqueClass
 intptr_t
 OMR::ClassEnv::getVFTEntry(TR::Compilation *comp, TR_OpaqueClassBlock* clazz, int32_t offset)
    {
-   return *(intptr_t*) (((uint8_t *)clazz) + offset);
+   // There is no project-agnostic way to determine whether or not offset is a
+   // valid VFT offset for clazz, so return 0 to be safe. If offset were valid,
+   // the result would be:
+   //
+   //    *(intptr_t*) (((uint8_t *)clazz) + offset)
+   //
+   return 0;
    }
 
 bool

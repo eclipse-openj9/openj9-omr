@@ -7448,6 +7448,39 @@ OMR::Node::isNopableInlineGuard()
    }
 
 bool
+OMR::Node::vftEntryIsInBounds()
+   {
+   TR_ASSERT_FATAL_WITH_NODE(
+      self(),
+      self()->isTheVirtualGuardForAGuardedInlinedCall(),
+      "vftEntryIsInBounds can only be queried on guards");
+
+   return _flags.testAny(vftEntryIsInBoundsFlag);
+   }
+
+void
+OMR::Node::setVFTEntryIsInBounds(bool inBounds)
+   {
+   TR_ASSERT_FATAL_WITH_NODE(
+      self(),
+      self()->isTheVirtualGuardForAGuardedInlinedCall(),
+      "vftEntryIsInBounds can only be set on guards");
+
+   _flags.set(vftEntryIsInBoundsFlag, inBounds);
+   }
+
+const char *
+OMR::Node::printVFTEntryIsInBounds()
+   {
+   bool show =
+      self()->isTheVirtualGuardForAGuardedInlinedCall()
+      && self()->vftEntryIsInBounds();
+
+   return show ? "vftEntryIsInBounds " : "";
+   }
+
+
+bool
 OMR::Node::isMutableCallSiteTargetGuard()
    {
    return _flags.testValue(inlineGuardMask, mutableCallSiteTargetGuard) && self()->getOpCode().isIf();
@@ -8592,6 +8625,9 @@ resetFlagsAndPropertiesForCodeMotionHelper(TR::Node *node, TR::NodeChecklist &vi
 
    if (node->hasKnownObjectIndex())
       node->setKnownObjectIndex(TR::KnownObjectTable::UNKNOWN);
+
+   if (node->isTheVirtualGuardForAGuardedInlinedCall())
+      node->setVFTEntryIsInBounds(false);
    }
 
 // Clear out relevant flags set on the node; this will ensure

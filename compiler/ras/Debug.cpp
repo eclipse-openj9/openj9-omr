@@ -986,6 +986,7 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
    output.appendf(format, node->printIsOSRGuard()          );
    output.appendf(format, node->printIsBreakpointGuard()          );
    output.appendf(format, node->printIsMutableCallSiteTargetGuard() );
+   output.appendf(format, node->printVFTEntryIsInBounds());
    output.appendf(format, node->printIsByteToByteTranslate());
    output.appendf(format, node->printIsByteToCharTranslate());
    output.appendf(format, node->printIsCharToByteTranslate());

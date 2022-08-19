@@ -86,13 +86,13 @@ void compareResults(void *expected, void *actual, TR::DataTypes dt, TR::VectorLe
                 break;
             case TR::Float:
                 if (std::isnan(*((float *) expected)))
-                    EXPECT_TRUE(std::isnan(*((float *) actual)));
+                    EXPECT_TRUE(std::isnan(*((float *) actual))) << "Expected NaN but got " << *((float *) actual);
                 else
                     EXPECT_FLOAT_EQ(*((float *) expected), *((float *) actual));
                 break;
             case TR::Double:
                 if (std::isnan(*((double *) expected)))
-                    EXPECT_TRUE(std::isnan(*((double *) actual)));
+                    EXPECT_TRUE(std::isnan(*((double *) actual))) << "Expected NaN but got " << *((double *) actual);
                 else
                     EXPECT_DOUBLE_EQ(*((double *) expected), *((double *) actual));
                 break;
@@ -214,11 +214,11 @@ void generateIO(TR::ILOpCode scalarOpcode, TR::VectorLength vl, void *output, vo
 }
 
 void generateAndExecuteVectorTest(TR::ILOpCode vectorOpcode, void *expected, void *inputA, void *inputB, void *inputC) {
-    TR::VectorLength vl = vectorOpcode.getType().getVectorLength();
-    TR::DataType elementType = vectorOpcode.getType().getVectorElementType();
+    TR::VectorLength vl = (vectorOpcode.isVectorReduction() ? vectorOpcode.getVectorResultDataType() : vectorOpcode.getType()).getVectorLength();
+    TR::DataType elementType = vectorOpcode.isVectorReduction() ? vectorOpcode.getType() : vectorOpcode.getType().getVectorElementType();
     TR::DataType vt = TR::DataType::createVectorType(elementType.getDataType(), vl);
     TR::ILOpCode loadOp = TR::ILOpCode::createVectorOpCode(TR::vloadi, vt);
-    TR::ILOpCode storeOp = TR::ILOpCode::createVectorOpCode(TR::vstorei, vt);
+    TR::ILOpCode storeOp = vectorOpcode.isVectorReduction() ?  TR::ILOpCode::indirectStoreOpCode(elementType) : TR::ILOpCode::createVectorOpCode(TR::vstorei, vt);
 
     char type[64];
     char inputTrees[1024];
@@ -236,7 +236,7 @@ void generateAndExecuteVectorTest(TR::ILOpCode vectorOpcode, void *expected, voi
                       "     (return)))                                                 ",
 
                       storeOp.getName(),
-                      type,
+                      vectorOpcode.isVectorReduction() ? "" : type,
                       vectorOpcode.getName(),
                       type,
                       loadOp.getName(),
@@ -811,6 +811,7 @@ INSTANTIATE_TEST_CASE_P(BinaryFloatNaNTest, BinaryDataDrivenFloatTest, ::testing
         {   10,  0.1, FNAN,  5,   10, 25.5, FNAN,  5,   10,  0.1, FNAN,  5,   10, 55.1, FNAN,  5},
     })
 )));
+
 INSTANTIATE_TEST_CASE_P(TarnaryFloatNaNInfTest, TernaryDataDrivenFloatTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, TernaryFloatTest>>(
     std::make_tuple(TR::vfma, TernaryFloatTest {
         { FNAN, 1, 2,  FINF,  -FINF, 35e35,  FINF, FNAN, FNAN, FNAN, -FINF,  FNAN, FNAN,  FNAN, FNAN, FNAN},
@@ -836,6 +837,80 @@ INSTANTIATE_TEST_CASE_P(TarnaryFloatNaNInfTest, TernaryDataDrivenFloatTest, ::te
         {  10e10,    2, -FINF,     1},
         {      0, FNAN,     0, -FINF}
     })
+)));
+
+INSTANTIATE_TEST_CASE_P(Float512NaNReductionTest, BinaryDataDriven512FloatTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryFloatTest>>(
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { FNAN, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, FNAN, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, FNAN, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, FNAN, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, 2, FNAN, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, 2, 2, FNAN, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, 2, 2, 2, FNAN, 2, 2, 2, 2, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, 2, 2, 2, 2, FNAN, 2, 2, 2, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, 2, 2, 2, 2, 2, FNAN, 2, 2, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, 2, 2, 2, 2, 2, 2, FNAN, 2, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, FNAN, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, FNAN, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, FNAN, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, FNAN, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, FNAN, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, FNAN}, {} })
+)));
+
+INSTANTIATE_TEST_CASE_P(Double512NaNReductionTest, BinaryDataDriven512DoubleTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryDoubleTest>>(
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { DNAN }, { DNAN, 2, 2, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { DNAN }, { 2, DNAN, 2, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { DNAN }, { 2, 2, DNAN, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { DNAN }, { 2, 2, 2, DNAN, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { DNAN }, { 2, 2, 2, 2, DNAN, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { DNAN }, { 2, 2, 2, 2, 2, DNAN, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { DNAN }, { 2, 2, 2, 2, 2, 2, DNAN, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { DNAN }, { 2, 2, 2, 2, 2, 2, 2, DNAN}, {} })
+)));
+
+INSTANTIATE_TEST_CASE_P(Float256NaNReductionTest, BinaryDataDriven256FloatTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryFloatTest>>(
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { FNAN, 2, 2, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, FNAN, 2, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, FNAN, 2, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, FNAN, 2, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, 2, FNAN, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, 2, 2, FNAN, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, 2, 2, 2, FNAN, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, 2, 2, 2, 2, FNAN}, {} })
+)));
+
+INSTANTIATE_TEST_CASE_P(Double256NaNReductionTest, BinaryDataDriven256DoubleTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryDoubleTest>>(
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { DNAN }, { DNAN, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { DNAN }, { 2, DNAN, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { DNAN }, { 2, 2,DNAN, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { DNAN }, { 2, 2, 2, DNAN}, {} })
+)));
+
+INSTANTIATE_TEST_CASE_P(Float128NaNInfReductionTest, BinaryDataDriven128FloatTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryFloatTest>>(
+    std::make_tuple(TR::vreductionAdd, BinaryFloatTest { { FNAN }, { FNAN, 2, 4, 2}, {} }),
+    std::make_tuple(TR::vreductionAdd, BinaryFloatTest { { FNAN }, { 2, FNAN, 4, 5}, {} }),
+    std::make_tuple(TR::vreductionAdd, BinaryFloatTest { { FNAN }, { 2, 3, FNAN, 5}, {} }),
+    std::make_tuple(TR::vreductionAdd, BinaryFloatTest { { FNAN }, { 2, 3, 4, FNAN}, {} }),
+    std::make_tuple(TR::vreductionAdd, BinaryFloatTest { { FINF }, { 25e37, 25e37, 25e37, 25e37}, {} }),
+    std::make_tuple(TR::vreductionAdd, BinaryFloatTest { { FNAN }, { FINF, 10, 100, -FINF}, {} }),
+    std::make_tuple(TR::vreductionAdd, BinaryFloatTest { { FNAN }, { 1, FINF, 1, -FINF}, {} }),
+    std::make_tuple(TR::vreductionAdd, BinaryFloatTest { { FNAN }, { FINF, 2, -FINF, 4}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, FNAN, 5, FNAN}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { FNAN, 2, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, FNAN, 2, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, FNAN, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { FNAN }, { 2, 2, 2, FNAN}, {} })
+)));
+
+INSTANTIATE_TEST_CASE_P(Double128NaNInfReductionTest, BinaryDataDriven128DoubleTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryDoubleTest>>(
+    std::make_tuple(TR::vreductionMul, BinaryDoubleTest { { DNAN }, { DNAN, 2}, {} }),
+    std::make_tuple(TR::vreductionMul, BinaryDoubleTest { { DNAN }, { 2, DNAN}, {} }),
+    std::make_tuple(TR::vreductionMul, BinaryDoubleTest { { DINF }, { 25e200, 25e200}, {} }),
+    std::make_tuple(TR::vreductionMul, BinaryDoubleTest { { -DINF }, { DINF, -DINF}, {} }),
+    std::make_tuple(TR::vreductionAdd, BinaryDoubleTest { { DNAN }, { DINF, -DINF}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { DNAN }, { DNAN, 2}, {} }),
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { DNAN }, { 2, DNAN}, {} })
 )));
 #endif
 
@@ -923,4 +998,86 @@ INSTANTIATE_TEST_CASE_P(TarnaryDoubleTest, TernaryDataDrivenDoubleTest, ::testin
         {  8, 1},
         {  1, 1}
     })
+)));
+
+INSTANTIATE_TEST_CASE_P(Float512ReductionTest, BinaryDataDriven512FloatTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryFloatTest>>(
+    std::make_tuple(TR::vreductionAdd, BinaryFloatTest { { 116 }, { 1, 1, 1, 1, 4, 4, 4, 4, 8, 8, 8, 8, 16, 16, 16, 16}, {}, })
+)));
+
+INSTANTIATE_TEST_CASE_P(Float256ReductionTest, BinaryDataDriven256FloatTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryFloatTest>>(
+    std::make_tuple(TR::vreductionAdd, BinaryFloatTest { { 20 }, { 1, 1, 1, 1, 4, 4, 4, 4}, {}, })
+)));
+
+INSTANTIATE_TEST_CASE_P(Float128ReductionTest, BinaryDataDriven128FloatTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryFloatTest>>(
+    std::make_tuple(TR::vreductionAdd, BinaryFloatTest { { 10 },  { 1, 2, 3, 4}, {}, }),
+    std::make_tuple(TR::vreductionMul, BinaryFloatTest { { 32 },  { 2, 1, 4, 4}, {}, }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { -14 }, { 145, -14, 600, 500}, {}, }),
+    std::make_tuple(TR::vreductionMin, BinaryFloatTest { { -60 }, { -17, -14, -60, -50}, {}, }),
+    std::make_tuple(TR::vreductionMax, BinaryFloatTest { { 600 }, { -145, 14, 600, 500}, {}, }),
+    std::make_tuple(TR::vreductionMax, BinaryFloatTest { { -60 }, { -660, -6000, -601, -60}, {}, })
+)));
+
+INSTANTIATE_TEST_CASE_P(Double128ReductionTest, BinaryDataDriven128DoubleTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryDoubleTest>>(
+    std::make_tuple(TR::vreductionAdd, BinaryDoubleTest { { 300.5 }, { 100.5, 200}, {}, }),
+    std::make_tuple(TR::vreductionAdd, BinaryDoubleTest { { 0.5 },   { -1, 1.5}, {}, }),
+    std::make_tuple(TR::vreductionMul, BinaryDoubleTest { { 15 },    { 10, 1.5}, {}, }),
+    std::make_tuple(TR::vreductionMul, BinaryDoubleTest { { -15 },   { -10, 1.5}, {}, }),
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { 14 },    { 14, 145}, {}, }),
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { 14 },    { 145, 14}, {}, }),
+    std::make_tuple(TR::vreductionMin, BinaryDoubleTest { { -145 },  { -145, -14}, {}, }),
+    std::make_tuple(TR::vreductionMax, BinaryDoubleTest { { 600 },   { 600, 14}, {}, }),
+    std::make_tuple(TR::vreductionMax, BinaryDoubleTest { { 600 },   { 14, 600}, {}, }),
+    std::make_tuple(TR::vreductionMax, BinaryDoubleTest { { -1 },    { -1, -2}, {}, })
+)));
+
+INSTANTIATE_TEST_CASE_P(Byte128ReductionTest, BinaryDataDriven128Int8Test, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryByteTest>>(
+    std::make_tuple(TR::vreductionAdd, BinaryByteTest { { 18 }, { 1, 2, 3, 4, 1, 1, 1, -1, 1, 1, 1, -1, 1, 1, 1, 1}, {}, }),
+    std::make_tuple(TR::vreductionMul, BinaryByteTest { { 32 }, { 2, 1, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, }),
+    std::make_tuple(TR::vreductionMul, BinaryByteTest { { -32 }, { 2, 1, 4, 4, 1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, }),
+    std::make_tuple(TR::vreductionAnd, BinaryByteTest { { 0 }, { 32, 16, 8, 5, 4, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, {}, }),
+    std::make_tuple(TR::vreductionOr,  BinaryByteTest { { 63 }, { 32, 16, 8, 5, 4, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, {}, }),
+    std::make_tuple(TR::vreductionXor, BinaryByteTest { { 0 }, { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, }),
+    std::make_tuple(TR::vreductionXor, BinaryByteTest { { 1 }, { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0}, {}, }),
+    std::make_tuple(TR::vreductionMin, BinaryByteTest { { -59 }, { 2, -1, 2, 4, 0, 1, -6, 10, -59, 2, 100, 100, 55, 10, 20, 2}, {}, }),
+    std::make_tuple(TR::vreductionMax, BinaryByteTest { { 100 }, { 2, 1, 2, 4, 0, 1, -6, 10, 59, 2, -100, 100, -55, 10, 20, 2}, {}, })
+)));
+
+INSTANTIATE_TEST_CASE_P(Short128ReductionTest, BinaryDataDriven128Int16Test, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryShortTest>>(
+    std::make_tuple(TR::vreductionAdd, BinaryShortTest { { 6 },  { 1, 2, 3, -4, 1, 1, 1, 1}, {}, }),
+    std::make_tuple(TR::vreductionMul, BinaryShortTest { { 32 }, { 2, 1, 4, 4, 1, 1, 1, 1}, {}, }),
+    std::make_tuple(TR::vreductionAnd, BinaryShortTest { { 0 },  { 32, 16, 8, 5, 4, 3, 1, 1 }, {}, }),
+    std::make_tuple(TR::vreductionOr,  BinaryShortTest { { 63 }, { 32, 16, 8, 5, 4, 3, 1, 1 }, {}, }),
+    std::make_tuple(TR::vreductionXor, BinaryShortTest { { 0 },  { 1, 1, 1, 1, 1, 1, 1, 1 }, {}, }),
+    std::make_tuple(TR::vreductionXor, BinaryShortTest { { 1 },  { 1, 1, 1, 1, 1, 1, 1, 0}, {}, }),
+    std::make_tuple(TR::vreductionMin, BinaryShortTest { { 0 },  { 2, 1, 2, 4, 0, 1, 6, 10}, {}, }),
+    std::make_tuple(TR::vreductionMin, BinaryShortTest { { -1 }, { 2, 1, 2, 4, 0, -1, 6, 10}, {}, }),
+    std::make_tuple(TR::vreductionMax, BinaryShortTest { { 10 }, { 2, 1, 2, 4, 0, 1, 6, 10}, {}, }),
+    std::make_tuple(TR::vreductionMax, BinaryShortTest { { 10 }, { 2, -1, 2, -4, 0, 10, -6, 9}, {}, })
+)));
+
+INSTANTIATE_TEST_CASE_P(Int128ReductionTest, BinaryDataDriven128Int32Test, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryIntTest>>(
+    std::make_tuple(TR::vreductionAdd, BinaryIntTest { { 8 },  { -1, 2, 3, 4}, {}, }),
+    std::make_tuple(TR::vreductionMul, BinaryIntTest { { 32 }, { 2, 1, 4, 4}, {}, }),
+    std::make_tuple(TR::vreductionAnd, BinaryIntTest { { 0 },  { 32, 16, 8, 5}, {}, }),
+    std::make_tuple(TR::vreductionOr,  BinaryIntTest { { 61 }, { 32, 16, 8, 5}, {}, }),
+    std::make_tuple(TR::vreductionXor, BinaryIntTest { { 0 },  { 1, 1, 1, 1}, {}, }),
+    std::make_tuple(TR::vreductionXor, BinaryIntTest { { 1 },  { 1, 1, 1, 0}, {}, }),
+    std::make_tuple(TR::vreductionMin, BinaryIntTest { { 0 },  { 2, 1, 2, 0}, {}, }),
+    std::make_tuple(TR::vreductionMin, BinaryIntTest { { -1},  { 2, -1, 2, 0}, {}, }),
+    std::make_tuple(TR::vreductionMax, BinaryIntTest { { 10 }, { 2, 10, 2, 4}, {}, }),
+    std::make_tuple(TR::vreductionMax, BinaryIntTest { { -2 }, { -2, -10, -2, -4}, {}, })
+)));
+
+INSTANTIATE_TEST_CASE_P(Long128ReductionTest, BinaryDataDriven128Int64Test, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryLongTest>>(
+    std::make_tuple(TR::vreductionAdd, BinaryLongTest { { 11 }, { 5, 6}, {}, }),
+    std::make_tuple(TR::vreductionAdd, BinaryLongTest { { -1 }, { 5, -6}, {}, }),
+    std::make_tuple(TR::vreductionMul, BinaryLongTest { { 24 }, { 12, 2}, {}, }),
+    std::make_tuple(TR::vreductionMul, BinaryLongTest { { 24 }, { -12, -2}, {}, }),
+    std::make_tuple(TR::vreductionAnd, BinaryLongTest { { 0 }, { 32, 16 }, {}, }),
+    std::make_tuple(TR::vreductionAnd, BinaryLongTest { { 32 }, { 32, 32 }, {}, }),
+    std::make_tuple(TR::vreductionOr,  BinaryLongTest { { 48 }, { 32, 16 }, {}, }),
+    std::make_tuple(TR::vreductionXor, BinaryLongTest { { 3 }, { 2, 1}, {}, }),
+    std::make_tuple(TR::vreductionXor, BinaryLongTest { { 0 }, { 1, 1}, {}, }),
+    std::make_tuple(TR::vreductionMin, BinaryLongTest { { -1 }, { -1, 12}, {}, }),
+    std::make_tuple(TR::vreductionMax, BinaryLongTest { { 100 }, { 100, -100}, {}, })
 )));

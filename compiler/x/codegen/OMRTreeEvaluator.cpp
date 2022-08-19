@@ -4141,9 +4141,11 @@ TR::InstOpCode OMR::X86::TreeEvaluator::getNativeSIMDOpcode(TR::ILOpCodes opcode
    {
    ArithmeticOps binaryOp = ArithmeticInvalid;
    ArithmeticOps unaryOp = ArithmeticInvalid;
+   TR::DataType elementType = type.getVectorElementType();
 
    if (OMR::ILOpCode::isVectorOpCode(opcode))
       {
+      bool isMaskOp = false;
       switch (OMR::ILOpCode::getVectorOperation(opcode))
          {
          case TR::vadd:
@@ -4160,12 +4162,18 @@ TR::InstOpCode OMR::X86::TreeEvaluator::getNativeSIMDOpcode(TR::ILOpCodes opcode
             break;
          case TR::vand:
             binaryOp = BinaryArithmeticAnd;
+            // Masking opcodes require lanewise support for each element type, however, int8/int16
+            // bitwise instructions with masking are not supported without AVX-512. In non-masking
+            // operations, the element type does not matter.
+            if (!isMaskOp) elementType = TR::Int32;
             break;
          case TR::vor:
             binaryOp = BinaryArithmeticOr;
+            if (!isMaskOp) elementType = TR::Int32;
             break;
          case TR::vxor:
             binaryOp = BinaryArithmeticXor;
+            if (!isMaskOp) elementType = TR::Int32;
             break;
          case TR::vmin:
             binaryOp = BinaryArithmeticMin;
@@ -4194,13 +4202,13 @@ TR::InstOpCode OMR::X86::TreeEvaluator::getNativeSIMDOpcode(TR::ILOpCodes opcode
 
    if (binaryOp != ArithmeticInvalid)
       {
-      memOpcode = VectorBinaryArithmeticOpCodesForMem[type.getVectorElementType() - 1][binaryOp];
-      regOpcode = VectorBinaryArithmeticOpCodesForReg[type.getVectorElementType() - 1][binaryOp];
+      memOpcode = VectorBinaryArithmeticOpCodesForMem[elementType - 1][binaryOp];
+      regOpcode = VectorBinaryArithmeticOpCodesForReg[elementType - 1][binaryOp];
       }
    else
       {
-      memOpcode = VectorUnaryArithmeticOpCodesForMem[type.getVectorElementType() - 1][unaryOp - NumBinaryArithmeticOps];
-      regOpcode = VectorUnaryArithmeticOpCodesForReg[type.getVectorElementType() - 1][unaryOp - NumBinaryArithmeticOps];
+      memOpcode = VectorUnaryArithmeticOpCodesForMem[elementType - 1][unaryOp - NumBinaryArithmeticOps];
+      regOpcode = VectorUnaryArithmeticOpCodesForReg[elementType - 1][unaryOp - NumBinaryArithmeticOps];
       }
 
    return memForm ? memOpcode : regOpcode;

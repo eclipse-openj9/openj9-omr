@@ -861,7 +861,44 @@ OMR::Power::TreeEvaluator::PassThroughEvaluator(TR::Node *node, TR::CodeGenerato
    return TR::TreeEvaluator::passThroughEvaluator(node, cg);
    }
 
+// mask evaluators
+TR::Register*
+OMR::Power::TreeEvaluator::mloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return vloadEvaluator(node, cg);
+   }
 
+TR::Register*
+OMR::Power::TreeEvaluator::mloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return vloadiEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Power::TreeEvaluator::mstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return vstoreEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Power::TreeEvaluator::mstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return vstoreiEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Power::TreeEvaluator::mRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Power::TreeEvaluator::mRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   }
+
+// vector evaluators
 TR::Register*
 OMR::Power::TreeEvaluator::vcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -2765,10 +2802,19 @@ TR::Register *OMR::Power::TreeEvaluator::inlineVectorUnaryOp(TR::Node *node, TR:
 TR::Register *OMR::Power::TreeEvaluator::inlineVectorBinaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op) {
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
-   TR::Register *lhsReg = NULL, *rhsReg = NULL;
+   TR::Node *thirdChild = NULL;
+   TR::Register *lhsReg = NULL, *rhsReg = NULL, *maskReg = NULL;
+   bool masked = false;
 
    lhsReg = cg->evaluate(firstChild);
    rhsReg = cg->evaluate(secondChild);
+
+   if (node->getOpCode().isVectorMasked())
+      {
+      masked = true;
+      thirdChild = node->getThirdChild();
+      maskReg = cg->evaluate(thirdChild);
+      }
 
    if (TR::InstOpCode(op).isVMX())
       {
@@ -2781,11 +2827,22 @@ TR::Register *OMR::Power::TreeEvaluator::inlineVectorBinaryOp(TR::Node *node, TR
       resReg = cg->allocateRegister(TR_VSX_VECTOR);
    else
       resReg = cg->allocateRegister(TR_VRF);
-   node->setRegister(resReg);
+
    generateTrg1Src2Instruction(cg, op, node, resReg, lhsReg, rhsReg);
 
+   if (masked)
+      {
+      TR_ASSERT_FATAL(resReg->getKind() == TR_VSX_VECTOR, "Only masked VSX opcodes are currenlty supported\n");
+      generateTrg1Src3Instruction(cg, TR::InstOpCode::xxsel, node, resReg, lhsReg, resReg, maskReg);
+      }
+
+   node->setRegister(resReg);
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
+
+   if (masked)
+      cg->decReferenceCount(thirdChild);
+
    return resReg;
 }
 
@@ -3976,7 +4033,7 @@ TR::Register* OMR::Power::TreeEvaluator::vmabsEvaluator(TR::Node *node, TR::Code
 
 TR::Register* OMR::Power::TreeEvaluator::vmaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return vaddEvaluator(node, cg);
    }
 
 TR::Register* OMR::Power::TreeEvaluator::vmandEvaluator(TR::Node *node, TR::CodeGenerator *cg)

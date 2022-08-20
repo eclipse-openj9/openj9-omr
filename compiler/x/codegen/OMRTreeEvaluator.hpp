@@ -274,6 +274,15 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *fpSqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *dsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
+   // mask evaluators
+   static TR::Register *mloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
+   // vector evaluators
    static TR::Register *vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 

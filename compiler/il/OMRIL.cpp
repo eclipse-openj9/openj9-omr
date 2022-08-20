@@ -372,6 +372,9 @@ OMR::IL::opCodeForCorrespondingIndirectLoad(TR::ILOpCodes loadOpCode)
       {
       if (TR::ILOpCode::getVectorOperation(loadOpCode) == TR::vloadi)
          return TR::ILOpCode::createVectorOpCode(TR::vstorei, TR::ILOpCode::getVectorResultDataType(loadOpCode));
+
+      if (TR::ILOpCode::getVectorOperation(loadOpCode) == TR::mloadi)
+         return TR::ILOpCode::createVectorOpCode(TR::mstorei, TR::ILOpCode::getVectorResultDataType(loadOpCode));
       }
 
    switch (loadOpCode)
@@ -409,6 +412,9 @@ OMR::IL::opCodeForCorrespondingIndirectStore(TR::ILOpCodes storeOpCode)
       {
       if (TR::ILOpCode::getVectorOperation(storeOpCode) == TR::vstorei)
          return TR::ILOpCode::createVectorOpCode(TR::vloadi, TR::ILOpCode::getVectorResultDataType(storeOpCode));
+
+      if (TR::ILOpCode::getVectorOperation(storeOpCode) == TR::mstorei)
+         return TR::ILOpCode::createVectorOpCode(TR::mloadi, TR::ILOpCode::getVectorResultDataType(storeOpCode));
       }
 
    switch (storeOpCode)
@@ -470,6 +476,9 @@ OMR::IL::opCodeForCorrespondingDirectLoad(TR::ILOpCodes loadOpCode)
       {
       if (TR::ILOpCode::getVectorOperation(loadOpCode) == TR::vload)
          return TR::ILOpCode::createVectorOpCode(TR::vstore, TR::ILOpCode::getVectorResultDataType(loadOpCode));
+
+      if (TR::ILOpCode::getVectorOperation(loadOpCode) == TR::mload)
+         return TR::ILOpCode::createVectorOpCode(TR::mstore, TR::ILOpCode::getVectorResultDataType(loadOpCode));
       }
 
    switch (loadOpCode)
@@ -507,6 +516,9 @@ OMR::IL::opCodeForCorrespondingDirectStore(TR::ILOpCodes storeOpCode)
       {
       if (TR::ILOpCode::getVectorOperation(storeOpCode) == TR::vstore)
          return TR::ILOpCode::createVectorOpCode(TR::vload, TR::ILOpCode::getVectorResultDataType(storeOpCode));
+
+      if (TR::ILOpCode::getVectorOperation(storeOpCode) == TR::mstore)
+         return TR::ILOpCode::createVectorOpCode(TR::mload, TR::ILOpCode::getVectorResultDataType(storeOpCode));
       }
 
    switch (storeOpCode)
@@ -570,6 +582,7 @@ OMR::IL::opCodeForDirectLoad(TR::DataType dt)
               "OMR::IL::opCodesForDirectLoad is not the correct size");
 
    if (dt.isVector()) return TR::ILOpCode::createVectorOpCode(TR::vload, dt);
+   if (dt.isMask()) return TR::ILOpCode::createVectorOpCode(TR::mload, dt);
 
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -596,6 +609,7 @@ OMR::IL::opCodeForDirectStore(TR::DataType dt)
               "OMR::IL::opCodesForDirectStore is not the correct size");
 
    if (dt.isVector()) return TR::ILOpCode::createVectorOpCode(TR::vstore, dt);
+   if (dt.isMask()) return TR::ILOpCode::createVectorOpCode(TR::mstore, dt);
 
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -623,6 +637,7 @@ OMR::IL::opCodeForIndirectLoad(TR::DataType dt)
               "OMR::IL::opCodesForIndirectLoad is not the correct size");
 
    if (dt.isVector()) return TR::ILOpCode::createVectorOpCode(TR::vloadi, dt);
+   if (dt.isMask()) return TR::ILOpCode::createVectorOpCode(TR::mloadi, dt);
 
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -649,6 +664,7 @@ OMR::IL::opCodeForIndirectStore(TR::DataType dt)
               "OMR::IL::opCodesForIndirectStore is not the correct size");
 
    if (dt.isVector()) return TR::ILOpCode::createVectorOpCode(TR::vstorei, dt);
+   if (dt.isMask()) return TR::ILOpCode::createVectorOpCode(TR::mstorei, dt);
 
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -675,6 +691,7 @@ OMR::IL::opCodeForIndirectArrayLoad(TR::DataType dt)
               "OMR::IL::opCodesForIndirectArrayLoad is not the correct size");
 
    if (dt.isVector()) return TR::ILOpCode::createVectorOpCode(TR::vloadi, dt);
+   if (dt.isMask()) return TR::ILOpCode::createVectorOpCode(TR::mloadi, dt);
 
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -688,6 +705,7 @@ OMR::IL::opCodeForIndirectArrayStore(TR::DataType dt)
               "OMR::IL::opCodesForIndirectArrayStore is not the correct size");
 
    if (dt.isVector()) return TR::ILOpCode::createVectorOpCode(TR::vstorei, dt);
+   if (dt.isMask()) return TR::ILOpCode::createVectorOpCode(TR::mstorei, dt);
 
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 

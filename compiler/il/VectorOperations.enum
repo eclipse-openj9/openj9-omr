@@ -19,6 +19,102 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mload, \
+   /* .name                    = */ "mload", \
+   /* .properties1             = */ ILProp1::LoadVar | ILProp1::HasSymbolRef, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, \
+   /* .properties3             = */ ILProp3::LikeUse, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
+   /* .childProperties         = */ ILChildProp::NoChildren, \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    load mask */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mloadi, \
+   /* .name                    = */ "mloadi", \
+   /* .properties1             = */ ILProp1::LoadVar | ILProp1::Indirect | ILProp1::HasSymbolRef, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE| ILProp2::MayUseSystemStack, \
+   /* .properties3             = */ ILProp3::LikeUse, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
+   /* .childProperties         = */ ONE_CHILD(TR::Address), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    load indirect mask */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mstore, \
+   /* .name                    = */ "mstore", \
+   /* .properties1             = */ ILProp1::Store | ILProp1::TreeTop | ILProp1::HasSymbolRef, \
+   /* .properties2             = */ ILProp2::MayUseSystemStack, \
+   /* .properties3             = */ ILProp3::LikeDef, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    store mask */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mstorei, \
+   /* .name                    = */ "mstorei", \
+   /* .properties1             = */ ILProp1::Store | ILProp1::Indirect | ILProp1::TreeTop | ILProp1::HasSymbolRef, \
+   /* .properties2             = */ ILProp2::MayUseSystemStack, \
+   /* .properties3             = */ ILProp3::LikeDef, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
+   /* .childProperties         = */ TWO_CHILD(TR::Address, ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    store indirect mask */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mRegLoad, \
+   /* .name                    = */ "mRegLoad", \
+   /* .properties1             = */ ILProp1::LoadReg, \
+   /* .properties2             = */ 0, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
+   /* .childProperties         = */ ILChildProp::NoChildren, \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    Load mask global register */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mRegStore, \
+   /* .name                    = */ "mRegStore", \
+   /* .properties1             = */ ILProp1::StoreReg | ILProp1::TreeTop, \
+   /* .properties2             = */ 0, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    Store mask global register */ \
+)
+VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vabs, \
    /* .name                    = */ "vabs", \
    /* .properties1             = */ 0, \
@@ -106,7 +202,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::CompareTrueIfEqual, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ ILTypeProp::VectorResult, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vcmpeq, \
    /* .reverseBranchOperation  = */ TR::vcmpne, \
@@ -122,7 +218,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfGreater, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ ILTypeProp::VectorResult, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vcmpne, \
    /* .reverseBranchOperation  = */ TR::vcmpeq, \
@@ -138,7 +234,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::CompareTrueIfGreater, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ ILTypeProp::VectorResult, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vcmplt, \
    /* .reverseBranchOperation  = */ TR::vcmple, \
@@ -154,7 +250,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::CompareTrueIfGreater | ILProp3::CompareTrueIfEqual, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ ILTypeProp::VectorResult, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vcmple, \
    /* .reverseBranchOperation  = */ TR::vcmplt, \
@@ -170,7 +266,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::CompareTrueIfLess, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ ILTypeProp::VectorResult, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vcmpgt, \
    /* .reverseBranchOperation  = */ TR::vcmpge, \
@@ -186,7 +282,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::CompareTrueIfLess | ILProp3::CompareTrueIfEqual, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ ILTypeProp::VectorResult, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
    /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vcmpge, \
    /* .reverseBranchOperation  = */ TR::vcmpgt, \
@@ -797,7 +893,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ ILTypeProp::VectorResult, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
    /* .childProperties         = */ THREE_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vmcmpeq, \
    /* .reverseBranchOperation  = */ TR::vmcmpne, \
@@ -813,7 +909,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ ILTypeProp::VectorResult, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
    /* .childProperties         = */ THREE_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vmcmpne, \
    /* .reverseBranchOperation  = */ TR::vmcmpeq, \
@@ -829,7 +925,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ ILTypeProp::VectorResult, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
    /* .childProperties         = */ THREE_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vmcmplt, \
    /* .reverseBranchOperation  = */ TR::vmcmple, \
@@ -845,7 +941,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ ILTypeProp::VectorResult, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
    /* .childProperties         = */ THREE_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vmcmple, \
    /* .reverseBranchOperation  = */ TR::vmcmplt, \
@@ -861,7 +957,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ ILTypeProp::VectorResult, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
    /* .childProperties         = */ THREE_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vmcmpgt, \
    /* .reverseBranchOperation  = */ TR::vmcmpge, \
@@ -877,7 +973,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
-   /* .typeProperties          = */ ILTypeProp::VectorResult, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
    /* .childProperties         = */ THREE_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vmcmpge, \
    /* .reverseBranchOperation  = */ TR::vmcmpgt, \

@@ -158,6 +158,15 @@ OMR::DataType::getSize(TR::DataType dt)
             TR_ASSERT_FATAL(false, "Incorrect Vector Length\n");
          }
       }
+   else if (dt.isMask())
+      {
+#if defined(TR_TARGET_POWER) || defined(TR_TARGET_S390)
+      return 16;
+#else
+      TR_ASSERT_FATAL(false, "Please return the right mask length here\n");
+      return 16;
+#endif
+      }
 
    TR_ASSERT(dt < TR::NumOMRTypes, "dataTypeSizeMap called on unrecognized data type");
    return OMRDataTypeSizes[dt];
@@ -166,7 +175,7 @@ OMR::DataType::getSize(TR::DataType dt)
 void
 OMR::DataType::setSize(TR::DataType dt, int32_t newSize)
    {
-   if (dt.isVector()) return;
+   if (dt.isVector() || dt.isMask()) return;
 
    TR_ASSERT(dt < TR::NumOMRTypes, "setDataTypeSizeInMap called on unrecognized data type");
    OMRDataTypeSizes[dt] = newSize;
@@ -184,7 +193,7 @@ static const char * OMRDataTypeNames[TR::NumAllTypes] =
    "Double",
    "Address",
    "Aggregate",
-   // vector names will be created at runtime
+   // vector and mask names will be created at runtime
    };
 
 #define MAX_TYPE_NAME_LENGTH 20
@@ -192,11 +201,10 @@ static const char * OMRDataTypeNames[TR::NumAllTypes] =
 bool
 OMR::DataType::initVectorNames()
    {
-   int32_t numVectorTypes = TR::NumAllTypes - TR::NumScalarTypes;
-   char *names = (char*)TR_Memory::jitPersistentAlloc(MAX_TYPE_NAME_LENGTH*numVectorTypes*sizeof(char));
+   char *names = (char*)TR_Memory::jitPersistentAlloc(MAX_TYPE_NAME_LENGTH * TR::NumVectorTypes*sizeof(char));
    char *name = names;
 
-   for (int32_t i = TR::NumScalarTypes; i < TR::NumAllTypes; i++)
+   for (int32_t i = TR::FirstVectorType; i <= TR::LastVectorType; i++)
       {
       TR::DataType dt((TR::DataTypes)i);
       TR_ASSERT_FATAL(dt.isVector(), "Should be a vector type");
@@ -207,6 +215,25 @@ OMR::DataType::initVectorNames()
    return true;
    }
 
+
+bool
+OMR::DataType::initMaskNames()
+   {
+   char *names = (char*)TR_Memory::jitPersistentAlloc(MAX_TYPE_NAME_LENGTH * TR::NumMaskTypes*sizeof(char));
+   char *name = names;
+
+   for (int32_t i = TR::FirstMaskType; i <= TR::LastMaskType; i++)
+      {
+      TR::DataType dt((TR::DataTypes)i);
+      TR_ASSERT_FATAL(dt.isMask(), "Should be a masktype");
+      TR::snprintfNoTrunc(name, MAX_TYPE_NAME_LENGTH, "Mask%d%s", getSize(dt)*8, getName(dt.getVectorElementType()));
+      OMRDataTypeNames[dt] = name;
+      name += MAX_TYPE_NAME_LENGTH;
+      }
+   return true;
+   }
+
+
 const char *
 OMR::DataType::getName(TR::DataType dt)
    {
@@ -216,6 +243,13 @@ OMR::DataType::getName(TR::DataType dt)
       // as soon as first one is requested
       static bool staticallyInitialized = initVectorNames();
       TR_ASSERT_FATAL(staticallyInitialized && (OMRDataTypeNames[dt] != NULL), "Vector names should've been initialized");
+      }
+   else if (dt.isMask())
+      {
+      // to avoid any race conditions, initialize all mask names once,
+      // as soon as first one is requested
+      static bool staticallyInitialized = initMaskNames();
+      TR_ASSERT_FATAL(staticallyInitialized && (OMRDataTypeNames[dt] != NULL), "Mask names should've been initialized");
       }
 
    TR_ASSERT(dt.isOMRDataType(), "Name requested for a non-OMR datatype\n");

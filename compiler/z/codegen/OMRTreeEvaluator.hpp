@@ -254,6 +254,15 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *MethodExitHookEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *PassThroughEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
+   // mask evaluators
+   static TR::Register *mloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
+   // vector evaluators
    static TR::Register *vabsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vandEvaluator(TR::Node *node, TR::CodeGenerator *cg);

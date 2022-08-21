@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -80,15 +80,13 @@ OMR::ARM::Instruction::Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemon
 OMR::ARM::Instruction::Instruction(TR::Node *node, TR::CodeGenerator *cg)
    : OMR::InstructionConnector(cg, TR::InstOpCode::bad, node)
    {
-   self()->setOpCodeValue(TR::InstOpCode::bad);
    self()->setConditionCode(ARMConditionCodeAL);
    self()->setDependencyConditions(NULL);
    }
 
 OMR::ARM::Instruction::Instruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::CodeGenerator *cg)
-   : OMR::InstructionConnector(cg, TR::InstOpCode::bad, node)
+   : OMR::InstructionConnector(cg, op, node)
    {
-   self()->setOpCodeValue(op);
    self()->setConditionCode(ARMConditionCodeAL);
    self()->setDependencyConditions(NULL);
    }
@@ -97,9 +95,8 @@ OMR::ARM::Instruction::Instruction(TR::Instruction   *precedingInstruction,
             TR::InstOpCode::Mnemonic     op,
             TR::Node          *node,
             TR::CodeGenerator *cg)
-   : OMR::InstructionConnector(cg, precedingInstruction, TR::InstOpCode::bad, node)
+   : OMR::InstructionConnector(cg, precedingInstruction, op, node)
    {
-   self()->setOpCodeValue(op);
    self()->setConditionCode(ARMConditionCodeAL);
    self()->setDependencyConditions(NULL);
    }
@@ -108,9 +105,8 @@ OMR::ARM::Instruction::Instruction(TR::InstOpCode::Mnemonic                     
             TR::Node                            *node,
             TR::RegisterDependencyConditions    *cond,
             TR::CodeGenerator                   *cg)
-   : OMR::InstructionConnector(cg, TR::InstOpCode::bad, node)
+   : OMR::InstructionConnector(cg, op, node)
    {
-   self()->setOpCodeValue(op);
    self()->setConditionCode(ARMConditionCodeAL);
    self()->setDependencyConditions(cond);
    if (cond)
@@ -122,9 +118,8 @@ OMR::ARM::Instruction::Instruction(TR::Instruction                     *precedin
             TR::Node                            *node,
             TR::RegisterDependencyConditions    *cond,
             TR::CodeGenerator                   *cg)
-   : OMR::InstructionConnector(cg, precedingInstruction, TR::InstOpCode::bad, node)
+   : OMR::InstructionConnector(cg, precedingInstruction, op, node)
    {
-   self()->setOpCodeValue(op);
    self()->setConditionCode(ARMConditionCodeAL);
    self()->setDependencyConditions(cond);
    if (cond)

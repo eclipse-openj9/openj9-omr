@@ -36,15 +36,87 @@
 
 extern TR::Register *intOrLongClobberEvaluate(TR::Node *node, bool nodeIs64Bit, TR::CodeGenerator *cg);
 
+TR::Register *OMR::X86::TreeEvaluator::floatingPointAbsHelper(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *valueNode = node->getChild(0);
+   TR::Register *resultReg = cg->allocateRegister(TR_VRF);
+   TR::DataType et = node->getType().getVectorElementType();
+   TR::VectorLength vl = node->getType().getVectorLength();
+   TR::Register *valueReg = cg->evaluate(valueNode);
+
+   TR::InstOpCode andOpcode = TR::InstOpCode::PANDRegReg;
+   TR::InstOpCode shrOpcode = et == TR::Double ? TR::InstOpCode::PSRLQRegImm1 : TR::InstOpCode::PSRLDRegImm1;
+   OMR::X86::Encoding shrEncoding = shrOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+   OMR::X86::Encoding andEncoding = andOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+
+   TR_ASSERT_FATAL(shrEncoding != OMR::X86::Bad, "vabs: No encoding method for shift opcode");
+   TR_ASSERT_FATAL(andEncoding != OMR::X86::Bad, "vabs: No encoding method for and opcode");
+
+   // Generate mask 7fffffff for floats or 7fffffffffffffff doubles, then 'and' with input vector
+
+   if (vl == TR::VectorLength512)
+      {
+      TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F), "512-bit vabs requires AVX512");
+      TR::InstOpCode ternOpcode = et == TR::Double ? TR::InstOpCode::VPTERNLOGQRegMaskRegRegImm1 : TR::InstOpCode::VPTERNLOGDRegMaskRegRegImm1;
+      OMR::X86::Encoding ternEncoding = ternOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+      TR_ASSERT_FATAL(ternEncoding != OMR::X86::Bad, "vabs: No encoding method for vpternlog opcode");
+
+      // Predicate 0xff sets each bit to 1
+      generateRegRegImmInstruction(ternOpcode.getMnemonic(), node, resultReg, resultReg, 0xff, cg, ternEncoding);
+      generateRegRegImmInstruction(shrOpcode.getMnemonic(), node, resultReg, resultReg, 0x1, cg, shrEncoding);
+      generateRegRegRegInstruction(andOpcode.getMnemonic(), node, resultReg, resultReg, valueReg, cg, andEncoding);
+      }
+   else
+      {
+      TR::InstOpCode cmpOpcode = TR::InstOpCode::CMPPSRegRegImm1;
+      TR::InstOpCode xorOpcode = TR::InstOpCode::PXORRegReg;
+      OMR::X86::Encoding cmpEncoding = cmpOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+      OMR::X86::Encoding xorEncoding = xorOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+      TR_ASSERT_FATAL(cmpEncoding != OMR::X86::Bad, "vabs: No encoding method for compare opcode");
+      TR_ASSERT_FATAL(xorEncoding != OMR::X86::Bad, "vabs: No encoding method for xor opcode");
+
+      // Since we are comparing resultReg with itself to check for equality,
+      // resultReg cannot be NaN. We must XOR resultReg with itself to prevent this.
+      generateRegRegInstruction(xorOpcode.getMnemonic(), node, resultReg, resultReg, cg, xorEncoding);
+
+      if (cg->comp()->target().cpu.supportsAVX())
+         {
+         // First, put 1's into result reg with cmpps using predicate (VCMPEQ_UQPS -> 0x8)
+         // logical right shift by 1 to remove sign but from mask
+         // and the mask with input vector to clear the sign bit
+         generateRegRegImmInstruction(cmpOpcode.getMnemonic(), node, resultReg, resultReg, 0x8, cg, cmpEncoding);
+         generateRegRegImmInstruction(shrOpcode.getMnemonic(), node, resultReg, resultReg, 0x1, cg, shrEncoding);
+         generateRegRegRegInstruction(andOpcode.getMnemonic(), node, resultReg, resultReg, valueReg, cg, andEncoding);
+         }
+      else
+         {
+         generateRegRegImmInstruction(cmpOpcode.getMnemonic(), node, resultReg, resultReg, 0x8, cg, cmpEncoding);
+         generateRegImmInstruction(shrOpcode.getMnemonic(), node, resultReg, 0x1, cg, shrEncoding);
+         generateRegRegInstruction(andOpcode.getMnemonic(), node, resultReg, valueReg, cg, andEncoding);
+         }
+      }
+
+   node->setRegister(resultReg);
+   cg->decReferenceCount(valueNode);
+
+   return resultReg;
+   }
+
 TR::Register *OMR::X86::TreeEvaluator::unaryVectorArithmeticEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::ILOpCode opcode = node->getOpCode();
+   TR::DataType type = node->getType();
+
+   if (opcode.getVectorOperation() == TR::vabs && type.getVectorElementType().isFloatingPoint())
+      {
+      return TR::TreeEvaluator::floatingPointAbsHelper(node, cg);
+      }
+
    TR::Node *valueNode = node->getChild(0);
    TR::Register *resultReg = cg->allocateRegister(TR_VRF);
 
    TR::InstOpCode regRegOpcode = TR::InstOpCode::bad;
    TR::InstOpCode regMemOpcode = TR::InstOpCode::bad;
-   TR::ILOpCode opcode = node->getOpCode();
-   TR::DataType type = node->getType();
    OMR::X86::Encoding simdEncoding;
 
    regMemOpcode = TR::TreeEvaluator::getNativeSIMDOpcode(opcode.getOpCodeValue(), node->getType(), true).getMnemonic();

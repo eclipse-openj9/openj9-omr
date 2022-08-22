@@ -431,22 +431,28 @@ INSTANTIATE_TEST_CASE_P(AVXRegRegImm1Vex256Test, XRegRegImm1EncodingTest, ::test
 )));
 
 INSTANTIATE_TEST_CASE_P(AVXRegRegImm1Evex128Test, XRegRegImm1EncodingTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, int32_t, OMR::X86::Encoding, TRTest::BinaryInstruction>>(
-    std::make_tuple(TR::InstOpCode::PSHUFLWRegRegImm1, TR::RealRegister::xmm0, TR::RealRegister::xmm1, 0x0, OMR::X86::EVEX_L128, "62f17f0870c100"),
-    std::make_tuple(TR::InstOpCode::PSHUFLWRegRegImm1, TR::RealRegister::xmm0, TR::RealRegister::xmm1, 0xf, OMR::X86::EVEX_L128, "62f17f0870c10f")
+    std::make_tuple(TR::InstOpCode::VPTERNLOGDRegMaskRegRegImm1, TR::RealRegister::xmm0, TR::RealRegister::xmm1, 0xf, OMR::X86::EVEX_L128, "62f37d0825c10f"),
+    std::make_tuple(TR::InstOpCode::VPTERNLOGQRegMaskRegRegImm1, TR::RealRegister::xmm0, TR::RealRegister::xmm1, 0xf, OMR::X86::EVEX_L128, "62f3fd0825c10f"),
+    std::make_tuple(TR::InstOpCode::PSHUFLWRegRegImm1,           TR::RealRegister::xmm0, TR::RealRegister::xmm1, 0x0, OMR::X86::EVEX_L128, "62f17f0870c100"),
+    std::make_tuple(TR::InstOpCode::PSHUFLWRegRegImm1,           TR::RealRegister::xmm0, TR::RealRegister::xmm1, 0xf, OMR::X86::EVEX_L128, "62f17f0870c10f")
     /* cmpps, cmppd excluded until write mask registers are supported. */
 )));
 
 INSTANTIATE_TEST_CASE_P(AVXRegRegImm1Evex256Test, XRegRegImm1EncodingTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, int32_t, OMR::X86::Encoding, TRTest::BinaryInstruction>>(
-    std::make_tuple(TR::InstOpCode::PSHUFLWRegRegImm1, TR::RealRegister::ymm0, TR::RealRegister::ymm1, 0x0, OMR::X86::EVEX_L256, "62f17f2870c100"),
-    std::make_tuple(TR::InstOpCode::PSHUFLWRegRegImm1, TR::RealRegister::ymm0, TR::RealRegister::ymm1, 0xf, OMR::X86::EVEX_L256, "62f17f2870c10f")
+    std::make_tuple(TR::InstOpCode::VPTERNLOGDRegMaskRegRegImm1, TR::RealRegister::xmm0, TR::RealRegister::xmm1, 0xf, OMR::X86::EVEX_L256, "62f37d2825c10f"),
+    std::make_tuple(TR::InstOpCode::VPTERNLOGQRegMaskRegRegImm1, TR::RealRegister::xmm0, TR::RealRegister::xmm1, 0xf, OMR::X86::EVEX_L256, "62f3fd2825c10f"),
+    std::make_tuple(TR::InstOpCode::PSHUFLWRegRegImm1,           TR::RealRegister::ymm0, TR::RealRegister::ymm1, 0x0, OMR::X86::EVEX_L256, "62f17f2870c100"),
+    std::make_tuple(TR::InstOpCode::PSHUFLWRegRegImm1,           TR::RealRegister::ymm0, TR::RealRegister::ymm1, 0xf, OMR::X86::EVEX_L256, "62f17f2870c10f")
     /* cmpps, cmppd excluded until write mask registers are supported. */
 )));
 
 INSTANTIATE_TEST_CASE_P(AVXRegRegImm1Evex512Test, XRegRegImm1EncodingTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, int32_t, OMR::X86::Encoding, TRTest::BinaryInstruction>>(
-    std::make_tuple(TR::InstOpCode::VEXTRACTF64X4YmmZmmImm1, TR::RealRegister::zmm0, TR::RealRegister::zmm1, 0x0, OMR::X86::EVEX_L512, "62f3fd481bc800"),
-    std::make_tuple(TR::InstOpCode::VEXTRACTF64X4YmmZmmImm1, TR::RealRegister::zmm0, TR::RealRegister::zmm1, 0xc, OMR::X86::EVEX_L512, "62f3fd481bc80c"),
-    std::make_tuple(TR::InstOpCode::PSHUFLWRegRegImm1,       TR::RealRegister::zmm0, TR::RealRegister::zmm1, 0x0, OMR::X86::EVEX_L512, "62f17f4870c100"),
-    std::make_tuple(TR::InstOpCode::PSHUFLWRegRegImm1,       TR::RealRegister::zmm0, TR::RealRegister::zmm1, 0xF, OMR::X86::EVEX_L512, "62f17f4870c10f")
+    std::make_tuple(TR::InstOpCode::VPTERNLOGDRegMaskRegRegImm1, TR::RealRegister::xmm0, TR::RealRegister::xmm1, 0xf, OMR::X86::EVEX_L512, "62f37d4825c10f"),
+    std::make_tuple(TR::InstOpCode::VPTERNLOGQRegMaskRegRegImm1, TR::RealRegister::xmm0, TR::RealRegister::xmm1, 0xf, OMR::X86::EVEX_L512, "62f3fd4825c10f"),
+    std::make_tuple(TR::InstOpCode::VEXTRACTF64X4YmmZmmImm1,     TR::RealRegister::zmm0, TR::RealRegister::zmm1, 0x0, OMR::X86::EVEX_L512, "62f3fd481bc800"),
+    std::make_tuple(TR::InstOpCode::VEXTRACTF64X4YmmZmmImm1,     TR::RealRegister::zmm0, TR::RealRegister::zmm1, 0xc, OMR::X86::EVEX_L512, "62f3fd481bc80c"),
+    std::make_tuple(TR::InstOpCode::PSHUFLWRegRegImm1,           TR::RealRegister::zmm0, TR::RealRegister::zmm1, 0x0, OMR::X86::EVEX_L512, "62f17f4870c100"),
+    std::make_tuple(TR::InstOpCode::PSHUFLWRegRegImm1,           TR::RealRegister::zmm0, TR::RealRegister::zmm1, 0xF, OMR::X86::EVEX_L512, "62f17f4870c10f")
     /* cmpps, cmppd excluded until write mask registers are supported. */
 )));
 

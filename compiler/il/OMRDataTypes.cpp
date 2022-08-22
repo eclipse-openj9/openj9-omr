@@ -88,12 +88,6 @@ OMR::DataType::getVectorIntegralType()
    }
 
 TR::DataType
-OMR::DataType::vectorToScalar()
-   {
-   return self()->getVectorElementType();
-   }
-
-TR::DataType
 OMR::DataType::scalarToVector(TR::VectorLength length)
    {
    TR::DataTypes type = self()->getDataType();

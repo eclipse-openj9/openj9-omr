@@ -480,14 +480,6 @@ public:
    static bool initVectorNames();
 
   /** \brief
-   *     Returns vector element type
-   *
-   *  \return
-   *     Vector element type
-   */
-   TR::DataType vectorToScalar();
-
-  /** \brief
    *     Creates vector type based on element type and provided vector length
    *
    *  \param length

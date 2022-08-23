@@ -498,7 +498,7 @@ reserveMemory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t byteA
 	}
 
 #if defined(AARCH64)
-	if (category->categoryCode == OMRMEM_CATEGORY_JIT_CODE_CACHE) {
+	if (OMR_ARE_ANY_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_EXECUTE)) {
 		flags |= MAP_JIT;
 		protectionFlags &= ~PROT_EXEC;
 	}

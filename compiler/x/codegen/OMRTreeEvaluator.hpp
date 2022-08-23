@@ -278,6 +278,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    static TR::Register* vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vreductionAddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vreductionAndEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vreductionFirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator *cg);

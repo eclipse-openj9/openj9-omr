@@ -138,8 +138,6 @@ public:
 	 */
 	GC_ObjectScanner *getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, void *allocSpace, uintptr_t flags, MM_ScavengeScanReason reason, bool *shouldRemember);
 
-	/* temporary API for backward dependency, will be removed  after related changes are merged. */
-	GC_ObjectScanner *getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, void *allocSpace, uintptr_t flags);
 	/**
 	 * Scavenger calls this method when required to force GC threads to flush any locally-held references into
 	 * associated global buffers.

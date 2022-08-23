@@ -110,18 +110,6 @@ MM_ScavengerDelegate::getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr
 	return objectScanner;
 }
 
-/* temporary API for backward dependency, will be removed  after related changes are merged. */
-GC_ObjectScanner *
-MM_ScavengerDelegate::getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, void *allocSpace, uintptr_t flags)
-{
-#if defined(OMR_GC_MODRON_SCAVENGER_STRICT)
-	Assert_MM_true((GC_ObjectScanner::scanHeap == flags) ^ (GC_ObjectScanner::scanRoots == flags));
-#endif /* defined(OMR_GC_MODRON_SCAVENGER_STRICT) */
-	GC_ObjectScanner *objectScanner = NULL;
-	objectScanner = GC_MixedObjectScanner::newInstance(env, objectPtr, allocSpace, flags);
-	return objectScanner;
-}
-
 void
 MM_ScavengerDelegate::flushReferenceObjects(MM_EnvironmentStandard *env)
 {

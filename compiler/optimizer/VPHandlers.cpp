@@ -7690,42 +7690,34 @@ TR::Node *constrainIand(OMR::ValuePropagation *vp, TR::Node *node)
                if (vp->trace())
                   traceMsg(vp->comp(), "Found isArray test on node %p\n", node);
 
-               TR::Node *vftLoad = firstChild->getFirstChild();
+               TR::Node *classNode = firstChild->getFirstChild();
 
-               if (vftLoad->getOpCodeValue() == TR::aloadi || vftLoad->getOpCodeValue() == TR::loadaddr)
+               bool classConstraintIsGlobal;
+               TR::VPConstraint *classConstraint =
+                  vp->getConstraint(classNode, classConstraintIsGlobal);
+
+               const char *hitOrMiss = "miss";
+               if (classConstraint != NULL
+                   && classConstraint->isJ9ClassObject() == TR_yes
+                   && classConstraint->getClassType() != NULL
+                   && classConstraint->getClassType()->isArray() != TR_maybe)
                   {
-                  TR::Node *baseExpression = NULL;
-                  if (vftLoad->getOpCodeValue() == TR::loadaddr)
-                     baseExpression = vftLoad;
+                  hitOrMiss = "hit";
+
+                  if (classConstraint->getClassType()->isArray() == TR_yes)
+                     constraint = TR::VPIntConst::create(vp, rhs->asIntConst()->getLowInt());
                   else
-                     baseExpression = vftLoad->getFirstChild();
-
-                  if (vp->trace())
-                     traceMsg(vp->comp(), "Base expression node for isArray test is %p\n", baseExpression);
-
-                  bool baseExpressionGlobal;
-                  TR::VPConstraint *baseExpressionConstraint = vp->getConstraint(baseExpression, baseExpressionGlobal);
-                  if (baseExpressionConstraint && baseExpressionConstraint->getClassType() && (baseExpressionConstraint->getClassType()->isArray() != TR_maybe))
-                     {
-                     if (vp->trace())
-                        traceMsg(vp->comp(), "Fold isArray test in %p\n", baseExpression);
-
-                     if (baseExpressionConstraint->getClassType()->isArray() == TR_yes)
-                        constraint = TR::VPIntConst::create(vp, rhs->asIntConst()->getLowInt());
-                     else
-                        constraint = TR::VPIntConst::create(vp, 0);
-
-                     TR::DebugCounter::incStaticDebugCounter(vp->comp(), TR::DebugCounter::debugCounterName(vp->comp(), "isArrayTest/hit/(%s)/%s", vp->comp()->signature(), vp->comp()->getHotnessName(vp->comp()->getMethodHotness())));
-                     }
-                  else
-                     {
-                     TR::DebugCounter::incStaticDebugCounter(vp->comp(), TR::DebugCounter::debugCounterName(vp->comp(), "isArrayTest/miss/(%s)/%s", vp->comp()->signature(), vp->comp()->getHotnessName(vp->comp()->getMethodHotness())));
-                     }
+                     constraint = TR::VPIntConst::create(vp, 0);
                   }
-                  else
-                     {
-                     TR::DebugCounter::incStaticDebugCounter(vp->comp(), TR::DebugCounter::debugCounterName(vp->comp(), "isArrayTest/unsuitable/(%s)/%s", vp->comp()->signature(), vp->comp()->getHotnessName(vp->comp()->getMethodHotness())));
-                     }
+
+               TR::DebugCounter::incStaticDebugCounter(
+                  vp->comp(),
+                  TR::DebugCounter::debugCounterName(
+                     vp->comp(),
+                     "isArrayTest/%s/(%s)/%s",
+                     hitOrMiss,
+                     vp->comp()->signature(),
+                     vp->comp()->getHotnessName(vp->comp()->getMethodHotness())));
                }
             }
 

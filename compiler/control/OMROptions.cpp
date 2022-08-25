@@ -4844,7 +4844,9 @@ char *OMR::Options::_verboseOptionNames[TR_NumVerboseOptions] =
    "aotcompression",
    "JITServerConns",
    "vectorAPI",
-   "iprofilerPersistence"
+   "iprofilerPersistence",
+   "CheckpointRestore",
+   "CheckpointRestoreDetails"
    };
 
 

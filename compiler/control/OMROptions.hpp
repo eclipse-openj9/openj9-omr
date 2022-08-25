@@ -1070,6 +1070,8 @@ enum TR_VerboseFlags
    TR_VerboseJITServerConns,
    TR_VerboseVectorAPI,
    TR_VerboseIProfilerPersistence,
+   TR_VerboseCheckpointRestore,
+   TR_VerboseCheckpointRestoreDetails,
    //If adding new options add an entry to _verboseOptionNames as well
    TR_NumVerboseOptions        // Must be the last one;
    };

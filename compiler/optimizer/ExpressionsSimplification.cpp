@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -650,7 +650,7 @@ TR_ExpressionsSimplification::removeUncertainBlocks(TR_RegionStructure* region, 
    {
    // Examine the top region block first
    //
-   TR::Block *entryBlock = _currentRegion->getEntryBlock();
+   TR::Block *entryBlock = region->getEntryBlock();
    ListIterator<TR::Block> blocks;
    blocks.set(candidateBlocksList);
 
@@ -672,7 +672,7 @@ TR_ExpressionsSimplification::removeUncertainBlocks(TR_RegionStructure* region, 
    TR_PostDominators postDominators(comp());
    if (postDominators.isValid())
       {
-	  postDominators.findControlDependents();
+      postDominators.findControlDependents();
       for (TR::Block *block = blocks.getFirst(); block; block = blocks.getNext())
          {
          if (postDominators.dominates(block, entryBlock) == 0)
@@ -681,18 +681,48 @@ TR_ExpressionsSimplification::removeUncertainBlocks(TR_RegionStructure* region, 
             if (trace())
                traceMsg(comp(), "Block_%d is not guaranteed to be executed at least once. Removing it from the list.\n", block->getNumber());
             }
+         else
+            {
+            // If the block is within another loop that's nested in
+            // the current region, remove it from consideration - blocks
+            // must be executed exactly once in the loop to be considered
+            TR_BlockStructure *blockStructure = block->getStructureOf();
+            TR_Structure *parent = blockStructure->getParent();
+
+            while (parent != NULL)
+               {
+               TR_RegionStructure *parentRegion = parent->asRegion();
+
+               if (parentRegion == region)
+                  {
+                  break;
+                  }
+               if (parentRegion->isNaturalLoop() || parentRegion->containsInternalCycles())
+                  {
+                  candidateBlocksList->remove(block);
+
+                  if (trace())
+                     {
+                     traceMsg(comp(), "Block_%d is nested within another loop in the current loop. Removing it from the list.\n", block->getNumber());
+                     }
+                  break;
+                  }
+
+               parent = parent->getParent();
+               }
+            }
          }
       }
    else
       {
-	  if (trace())
-	     traceMsg(comp(), "There is no post dominators information. Removing all the blocks.\n");
-	  for (TR::Block *block = blocks.getFirst(); block; block = blocks.getNext())
-	     {
-	     candidateBlocksList->remove(block);
-	     if (trace())
-	        traceMsg(comp(), "Block_%d is removed from the list\n", block->getNumber());
-	     }
+      if (trace())
+         traceMsg(comp(), "There is no post dominators information. Removing all the blocks.\n");
+      for (TR::Block *block = blocks.getFirst(); block; block = blocks.getNext())
+         {
+         candidateBlocksList->remove(block);
+         if (trace())
+            traceMsg(comp(), "Block_%d is removed from the list\n", block->getNumber());
+         }
       }
    }
 

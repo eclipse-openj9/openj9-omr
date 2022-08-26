@@ -4587,16 +4587,139 @@ OMR::X86::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return resultReg;
    }
 
+TR::Register* OMR::X86::TreeEvaluator::SIMDreductionEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Node *child = node->getFirstChild();
+   TR::Register *inputVectorReg = cg->evaluate(child);
+   TR::VectorLength vl = child->getDataType().getVectorLength();
+   TR::DataType dt = child->getDataType().getVectorElementType();
+   TR::VectorOperation op = node->getOpCode().getVectorOperation();
+   bool useGPR = !dt.isFloatingPoint();
+
+   TR::InstOpCode regOpcode = getNativeSIMDOpcode(OMR::ILOpCode::reductionToVerticalOpcode(node->getOpCodeValue(), vl), child->getDataType(), false);
+   bool needsNaNHandling = dt.isFloatingPoint() && (op == TR::vreductionMax || op == TR::vreductionMin);
+
+   TR::Register *workingReg = cg->allocateRegister(TR_VRF);
+   TR::Register *resultVRF = cg->allocateRegister(TR_VRF);
+   TR::Register *fprReg = dt.isFloatingPoint() ? cg->allocateRegister(TR_FPR) : NULL;
+   TR::Register *tmpNaNReg = needsNaNHandling ? cg->allocateRegister(TR_VRF) : NULL;
+   TR::Register *rSrcReg = NULL;
+
+   TR_ASSERT_FATAL_WITH_NODE(node, regOpcode.getMnemonic() != TR::InstOpCode::bad, "No opcode for vector reduction");
+
+   TR::InstOpCode movOpcode = TR::InstOpCode::MOVDQURegReg;
+   generateRegRegInstruction(movOpcode.getMnemonic(), node, workingReg, inputVectorReg, cg, movOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl));
+
+   switch (vl)
+      {
+      case TR::VectorLength512:
+         // extract 256-bits from zmm and store in ymm, then perform vertical operation
+         generateRegRegImmInstruction(TR::InstOpCode::VEXTRACTF64X4YmmZmmImm1, node, resultVRF, workingReg, 0xFF, cg);
+         TR_ASSERT_FATAL(!needsNaNHandling, "NaN handling not supported for 512-bit vector reductions");
+         generateRegRegInstruction(regOpcode.getMnemonic(), node, workingReg, resultVRF, cg, regOpcode.getSIMDEncoding(&cg->comp()->target().cpu, TR::VectorLength256));
+         // Fallthrough to treat remaining result as 256-bit vector
+      case TR::VectorLength256:
+         // extract 128 bits from ymm and store in xmm, then perform vertical operation
+         generateRegRegImmInstruction(TR::InstOpCode::VEXTRACTF128RegRegImm1, node, resultVRF, workingReg, 0xFF, cg);
+         rSrcReg = needsNaNHandling ? vectorFPNaNHelper(child, tmpNaNReg, workingReg, resultVRF, NULL, cg) : resultVRF;
+         generateRegRegInstruction(regOpcode.getMnemonic(), node, workingReg, rSrcReg, cg);
+         // Fallthrough to treat remaining result as 128-bit vector
+      case TR::VectorLength128:
+         {
+         generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, resultVRF, workingReg, 0x0E, cg);
+         rSrcReg = needsNaNHandling ? vectorFPNaNHelper(child, tmpNaNReg, resultVRF, workingReg, NULL, cg) : workingReg;
+         generateRegRegInstruction(regOpcode.getMnemonic(), node, resultVRF, rSrcReg, cg);
+
+         if (dt != TR::Int64 && dt != TR::Double)
+            {
+            // reduce from 64-bit to 32-bit
+            generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, workingReg, resultVRF, 0x1, cg);
+            rSrcReg = needsNaNHandling ? vectorFPNaNHelper(child, tmpNaNReg, resultVRF, workingReg, NULL, cg) : workingReg;
+            generateRegRegInstruction(regOpcode.getMnemonic(), node, resultVRF, rSrcReg, cg);
+            if (dt != TR::Int32 && dt != TR::Float)
+               {
+               // reduce from 32-bit to 16-bit
+               generateRegRegImmInstruction(TR::InstOpCode::PSHUFLWRegRegImm1, node, workingReg, resultVRF, 0x1, cg);
+               generateRegRegInstruction(regOpcode.getMnemonic(), node, resultVRF, workingReg, cg);
+               if (dt != TR::Int16)
+                  {
+                  // reduce from 16-bit to 8-bit
+                  generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, workingReg, resultVRF, cg);
+                  generateRegImmInstruction(TR::InstOpCode::PSRLQRegImm1, node, workingReg, 0x8, cg);
+                  generateRegRegInstruction(regOpcode.getMnemonic(), node, resultVRF, workingReg, cg);
+                  }
+               }
+            }
+
+         break;
+         }
+      default:
+         TR_ASSERT_FATAL(0, "Unsupported vector length");
+      }
+
+   if (tmpNaNReg)
+      cg->stopUsingRegister(tmpNaNReg);
+   cg->stopUsingRegister(workingReg);
+   cg->decReferenceCount(child);
+
+   if (useGPR)
+      {
+      // move integer result from xmm to gpr
+      TR::Register *intReg = cg->allocateRegister(TR_GPR);
+      node->setRegister(intReg);
+
+      TR::InstOpCode::Mnemonic xmm2GPROpcode = TR::InstOpCode::bad;
+
+      switch (dt)
+         {
+         case TR::Int8:
+         case TR::Int16:
+         case TR::Int32:
+            xmm2GPROpcode = TR::InstOpCode::MOVDReg4Reg;
+            break;
+         case TR::Int64:
+            xmm2GPROpcode = TR::InstOpCode::MOVQReg8Reg;
+            break;
+         default:
+            TR_ASSERT_FATAL(0, "Unsupported vector element type");
+            break;
+         }
+
+      generateRegRegInstruction(xmm2GPROpcode, node, intReg, resultVRF, cg);
+      cg->stopUsingRegister(resultVRF);
+
+      return intReg;
+      }
+
+   // Since result register is a VRF, we need to allocate an FPR and copy value
+   // This will waste an instruction but should prevent a bug in CG
+   node->setRegister(fprReg);
+
+   if (dt == TR::Double)
+      {
+      generateRegRegInstruction(TR::InstOpCode::MOVSDRegReg, node, fprReg, resultVRF, cg);
+      }
+   else
+      {
+      fprReg->setIsSinglePrecision();
+      generateRegRegInstruction(TR::InstOpCode::MOVSSRegReg, node, fprReg, resultVRF, cg);
+      }
+
+   cg->stopUsingRegister(resultVRF);
+
+   return fprReg;
+   }
+
 TR::Register*
 OMR::X86::TreeEvaluator::vreductionAddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::SIMDreductionEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vreductionAndEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::SIMDreductionEvaluator(node, cg);
    }
 
 TR::Register*
@@ -4608,35 +4731,35 @@ OMR::X86::TreeEvaluator::vreductionFirstNonZeroEvaluator(TR::Node *node, TR::Cod
 TR::Register*
 OMR::X86::TreeEvaluator::vreductionMaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::SIMDreductionEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vreductionMinEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::SIMDreductionEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vreductionMulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::SIMDreductionEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vreductionOrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::X86::TreeEvaluator::vreductionOrUncheckedEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::SIMDreductionEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vreductionXorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::SIMDreductionEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::X86::TreeEvaluator::vreductionOrUncheckedEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }

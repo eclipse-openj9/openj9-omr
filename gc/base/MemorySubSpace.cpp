@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -936,8 +936,12 @@ MM_MemorySubSpace::systemGarbageCollect(MM_EnvironmentBase* env, uint32_t gcCode
 		reportSystemGCEnd(env);
 		env->releaseExclusiveVMAccessForGC();
 
+
+		if ((J9MMCONSTANT_EXPLICIT_GC_PREPARE_FOR_CHECKPOINT == gcCode)
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
-		if ((J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode) && (_extensions->gcOnIdle)) {
+		|| ((J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode) && (_extensions->gcOnIdle))
+#endif
+		) {
 			OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 			uint64_t startTime = omrtime_hires_clock();
 			uintptr_t releasedBytes = _extensions->heap->getDefaultMemorySpace()->releaseFreeMemoryPages(env);
@@ -958,7 +962,6 @@ MM_MemorySubSpace::systemGarbageCollect(MM_EnvironmentBase* env, uint32_t gcCode
 				1 
 				);
 		}
-#endif
 	}
 }
 
@@ -2005,11 +2008,9 @@ MM_MemorySubSpace::wasContractedThisGC(uintptr_t gcCount)
 	return (gcCount == _extensions->heap->getResizeStats()->getLastHeapContractionGCCount());
 }
 
-#if defined(OMR_GC_IDLE_HEAP_MANAGER)
 uintptr_t
 MM_MemorySubSpace::releaseFreeMemoryPages(MM_EnvironmentBase* env)
 {
 	Assert_MM_unreachable();
         return 0;
 }
-#endif

@@ -1986,6 +1986,11 @@ MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 	 * If we have had a RS overflow or an explicit gc (resulting for idleness) then 
 	 * abort the concurrent collection regardless of how far we got to force a full STW mark.
 	 */
+
+	if ((J9MMCONSTANT_EXPLICIT_GC_PREPARE_FOR_CHECKPOINT == gcCode) && (CONCURRENT_OFF < executionModeAtGC)) {
+			abortCollection(env, ABORT_COLLECTION_PREPARE_FOR_CHECKPOINT_GC);
+			MM_ParallelGlobalGC::internalPreCollect(env, subSpace, allocDescription, gcCode);
+	} else
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 	if ((J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode) && (CONCURRENT_OFF < executionModeAtGC)) {
 		abortCollection(env, ABORT_COLLECTION_IDLE_GC);

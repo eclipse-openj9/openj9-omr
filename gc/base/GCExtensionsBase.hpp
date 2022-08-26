@@ -854,8 +854,10 @@ public:
 
 	bool pretouchHeapOnExpand; /**< True to pretouch memory during initial heap inflation or heap expansion */
 
+	uintptr_t decommitMinimumFree;   /**< percentage of free heap to be retained as committed, default=0 for gencon, complete tenture free memory will be decommitted */
+
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
-	uintptr_t idleMinimumFree;   /**< percentage of free heap to be retained as committed, default=0 for gencon, complete tenture free memory will be decommitted */
+	uintptr_t idleMinimumFree;   /** TODO cleanup after openj9 fixes */
 	bool gcOnIdle; /**< Enables releasing free heap pages if true while systemGarbageCollect invoked with IDLE GC code, default is false */
 	bool compactOnIdle; /**< Forces compaction if global GC executed while VM Runtime State set to IDLE, default is false */
 	float gcOnIdleCompactThreshold; /**< Enables compaction when fragmented memory and dark matter exceed this limit. The larger this number, the more memory can be fragmented before compact is triggered **/

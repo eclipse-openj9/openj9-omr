@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -848,6 +848,9 @@ MM_VerboseHandlerOutputStandard::handleConcurrentAborted(J9HookInterface** hook,
 		reason = "restart cycle for idle gc";
 		break;
 #endif /* OMR_GC_IDLE_HEAP_MANAGER */
+	case ABORT_COLLECTION_PREPARE_FOR_CHECKPOINT_GC:
+		reason = "restart cycle for checkpoint gc";
+		break;
 	default:
 		reason = "unknown";
 		break;

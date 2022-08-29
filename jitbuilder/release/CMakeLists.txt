@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2021 IBM Corp. and others
+# Copyright (c) 2017, 2022 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -43,6 +43,7 @@ create_jitbuilder_test(nestedloop      cpp/samples/NestedLoop.cpp)
 create_jitbuilder_test(pow2            cpp/samples/Pow2.cpp)
 create_jitbuilder_test(simple          cpp/samples/Simple.cpp)
 create_jitbuilder_test(worklist        cpp/samples/Worklist.cpp)
+create_jitbuilder_test(power           cpp/samples/Power.cpp)
 
 # Extended JitBuilder Tests: These may not run properly on all platforms
 # Opt in by setting OMR_JITBUILDER_TEST_EXTENDED

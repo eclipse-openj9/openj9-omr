@@ -1008,6 +1008,22 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
          if (et.isFloatingPoint() && ot.getVectorLength() == TR::VectorLength512)
             return false;
          break;
+      case TR::vabs:
+         if (et.isFloatingPoint())
+            {
+            switch (ot.getVectorLength())
+               {
+               case TR::VectorLength128:
+                  return true;
+               case TR::VectorLength256:
+                  return cpu->supportsFeature(OMR_FEATURE_X86_AVX2);
+               case TR::VectorLength512:
+                  return cpu->supportsFeature(OMR_FEATURE_X86_AVX512F);
+               default:
+                  return false;
+               }
+            }
+         break;
       case TR::vfma:
          {
          TR::InstOpCode fmaOpcode = TR::InstOpCode::VFMADD213PRegRegReg(et.isDouble());

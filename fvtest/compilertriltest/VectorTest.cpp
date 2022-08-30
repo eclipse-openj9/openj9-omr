@@ -812,6 +812,22 @@ INSTANTIATE_TEST_CASE_P(BinaryFloatNaNTest, BinaryDataDrivenFloatTest, ::testing
     })
 )));
 
+INSTANTIATE_TEST_CASE_P(FloatAbsTest, BinaryDataDrivenFloatTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryFloatTest>>(
+    std::make_tuple(TR::vabs, BinaryFloatTest {
+        { 10.5,  10.5, FNAN,  0.5, 100,  100, 50.5, 10e10,  10e10, 0.0,  0.0, FNAN, 1,  1, 0, 0},
+        { 10.5, -10.5, FNAN, -0.5, 100, -100, 50.5, 10e10, -10e10, 0.0, -0.0, FNAN, 1, -1, 0, 0},
+        { },
+    })
+)));
+
+INSTANTIATE_TEST_CASE_P(DoubleAbsTest, BinaryDataDrivenDoubleTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, BinaryDoubleTest>>(
+    std::make_tuple(TR::vabs, BinaryDoubleTest {
+        { FNAN,  10.5, 0.5,  0.5, 100,  100, 50.5, 10e10},
+        { FNAN, -10.5, 0.5, -0.5, 100, -100, 50.5, 10e10},
+        { },
+    })
+)));
+
 INSTANTIATE_TEST_CASE_P(TarnaryFloatNaNInfTest, TernaryDataDrivenFloatTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::VectorOperation, TernaryFloatTest>>(
     std::make_tuple(TR::vfma, TernaryFloatTest {
         { FNAN, 1, 2,  FINF,  -FINF, 35e35,  FINF, FNAN, FNAN, FNAN, -FINF,  FNAN, FNAN,  FNAN, FNAN, FNAN},

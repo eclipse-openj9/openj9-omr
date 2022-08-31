@@ -289,9 +289,11 @@ public:
 	 */
 
 	MMINLINE void fixupForwardedSlot(GC_SlotObject *slotObject) {
-		omrobjectptr_t slot = slotObject->readReferenceFromSlot();
-		fixupForwardedSlot(&slot);
-		slotObject->writeReferenceToSlot(slot);
+		if (_extensions->isConcurrentScavengerEnabled() && _extensions->isScavengerBackOutFlagRaised()) {
+			omrobjectptr_t slot = slotObject->readReferenceFromSlot();
+			fixupForwardedSlot(&slot);
+			slotObject->writeReferenceToSlot(slot);
+		}
 	}
 
 	void fixupForwardedSlot(omrobjectptr_t *slotPtr);

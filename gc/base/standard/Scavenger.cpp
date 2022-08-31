@@ -2105,6 +2105,7 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 	/* Get an object scanner from the CLI if not resuming from a scan cache that was previously suspended */
 	GC_ObjectScanner *objectScanner = NULL;
 	if (!scanCache->_hasPartiallyScannedObject) {
+		scanCache->_shouldBeRemembered = false;
 		if (!scanCache->isSplitArray()) {
 			/* try to get a new scanner instance from the cli */
 			objectScanner = getObjectScanner(env, objectPtr, scanCache->getObjectScanner(), GC_ObjectScanner::scanHeap, SCAN_REASON_SCAVENGE, &scanCache->_shouldBeRemembered);
@@ -2127,7 +2128,6 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 				((GC_IndexableObjectScanner *)objectScanner)->scanToLimit();
 			}
 		}
-		scanCache->_shouldBeRemembered = false;
 	} else {
 		/* resume suspended object scanner */
 		objectScanner = scanCache->getObjectScanner();

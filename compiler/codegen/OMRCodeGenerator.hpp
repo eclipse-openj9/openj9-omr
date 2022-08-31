@@ -1654,6 +1654,8 @@ public:
    static bool getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILOpCode opcode) { return false; }
    bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode) { return false; }
 
+   bool usesMaskRegisters() { return false; }
+
    bool removeRegisterHogsInLowerTreesWalk() { return _flags3.testAny(RemoveRegisterHogsInLowerTreesWalk);}
    void setRemoveRegisterHogsInLowerTreesWalk() { _flags3.set(RemoveRegisterHogsInLowerTreesWalk);}
    void resetRemoveRegisterHogsInLowerTreesWalk() {_flags3.reset(RemoveRegisterHogsInLowerTreesWalk);}

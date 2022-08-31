@@ -27,6 +27,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "codegen/CodeGenerator.hpp"
+#include "compile/Compilation.hpp"
 #include "env/jittypes.h"
 #include "env/TRMemory.hpp"
 #include "il/DataTypes.hpp"
@@ -127,6 +129,23 @@ OMR::DataType::getFloatTypeFromSize(int32_t size)
    return type;
    }
 
+int32_t
+OMR::DataType::getVectorSize()
+   {
+   TR_ASSERT_FATAL(isVector() || isMask(), "getVectorSize() can only be called on vector or mask type\n");
+
+   switch (getVectorLength())
+      {
+      case TR::VectorLength64:  return 8;
+      case TR::VectorLength128: return 16;
+      case TR::VectorLength256: return 32;
+      case TR::VectorLength512: return 64;
+      default:
+         TR_ASSERT_FATAL(false, "Incorrect Vector Length\n");
+      }
+
+   return 0;
+   }
 
 static int32_t OMRDataTypeSizes[] =
    {
@@ -144,27 +163,43 @@ static int32_t OMRDataTypeSizes[] =
 static_assert(TR::NumOMRTypes == (sizeof(OMRDataTypeSizes) / sizeof(OMRDataTypeSizes[0])), "OMRDataTypeSizes is not the correct size");
 
 int32_t
+OMR::DataType::maskTypeSize()
+   {
+   TR::Compilation *comp = TR::comp();
+
+   if (!comp->cg()->usesMaskRegisters())
+      {
+      return 0;
+      }
+   else
+      {
+      // 64-bit Mask register on ARM-512
+      // TODO: have more specific check and perhaps smaller size if possible
+      // However, note that, currently, all Mask types(independent on the number of
+      // lanes in the corresponding vector type) need to have the same size.
+      // This can be changed by initializing a static array of sizes.
+      return 8;
+      }
+   }
+
+int32_t
 OMR::DataType::getSize(TR::DataType dt)
    {
    if (dt.isVector())
       {
-      switch (dt.getVectorLength())
-         {
-         case TR::VectorLength64:  return 8;
-         case TR::VectorLength128: return 16;
-         case TR::VectorLength256: return 32;
-         case TR::VectorLength512: return 64;
-         default:
-            TR_ASSERT_FATAL(false, "Incorrect Vector Length\n");
-         }
+      return dt.getVectorSize();
       }
    else if (dt.isMask())
       {
-#if defined(TR_TARGET_POWER) || defined(TR_TARGET_S390)
-      return 16;
+#if defined(TR_TARGET_POWER) || defined(TR_TARGET_S390) ||  defined(TR_TARGET_ARM64)
+      return dt.getVectorSize();
 #else
-      TR_ASSERT_FATAL(false, "Please return the right mask length here\n");
-      return 16;
+      static int32_t localStaticMaskTypeSize = maskTypeSize();
+
+      if (localStaticMaskTypeSize == 0)
+         return dt.getVectorSize();
+      else
+         return localStaticMaskTypeSize;
 #endif
       }
 
@@ -198,6 +233,21 @@ static const char * OMRDataTypeNames[TR::NumAllTypes] =
 
 #define MAX_TYPE_NAME_LENGTH 20
 
+const char*
+OMR::DataType::getVectorLengthName(TR::VectorLength length)
+   {
+   switch (length)
+      {
+      case TR::VectorLength64:  return "64";
+      case TR::VectorLength128: return "128";
+      case TR::VectorLength256: return "256";
+      case TR::VectorLength512: return "512";
+      default:
+         TR_ASSERT_FATAL(false, "Incorrect Vector Length\n");
+      }
+   return NULL;
+   }
+
 bool
 OMR::DataType::initVectorNames()
    {
@@ -208,7 +258,8 @@ OMR::DataType::initVectorNames()
       {
       TR::DataType dt((TR::DataTypes)i);
       TR_ASSERT_FATAL(dt.isVector(), "Should be a vector type");
-      TR::snprintfNoTrunc(name, MAX_TYPE_NAME_LENGTH, "Vector%d%s", getSize(dt)*8, getName(dt.getVectorElementType()));
+      TR::snprintfNoTrunc(name, MAX_TYPE_NAME_LENGTH, "Vector%s%s", getVectorLengthName(dt.getVectorLength()),
+                                                                    getName(dt.getVectorElementType()));
       OMRDataTypeNames[dt] = name;
       name += MAX_TYPE_NAME_LENGTH;
       }
@@ -226,7 +277,8 @@ OMR::DataType::initMaskNames()
       {
       TR::DataType dt((TR::DataTypes)i);
       TR_ASSERT_FATAL(dt.isMask(), "Should be a masktype");
-      TR::snprintfNoTrunc(name, MAX_TYPE_NAME_LENGTH, "Mask%d%s", getSize(dt)*8, getName(dt.getVectorElementType()));
+      TR::snprintfNoTrunc(name, MAX_TYPE_NAME_LENGTH, "Mask%s%s", getVectorLengthName(dt.getVectorLength()),
+                                                                  getName(dt.getVectorElementType()));
       OMRDataTypeNames[dt] = name;
       name += MAX_TYPE_NAME_LENGTH;
       }

@@ -534,7 +534,23 @@ public:
 
    static const char    * getName(TR::DataType dt);
    static TR::DataType getTypeFromName(const char *name);
+   static const char    * getVectorLengthName(TR::VectorLength length);
 
+   /** \brief
+   *     Used to initialize single Mask type size based on platfrom
+   *
+   *  \return
+   *     Mask type size if mask registers are supported, 0 otherwise
+   */
+   static int32_t maskTypeSize();
+
+   /** \brief
+   *     Returns vector size
+   *
+   *  \return
+   *     Vector size in bytes
+   */
+   int32_t                getVectorSize();
    static int32_t         getSize(TR::DataType dt);
    static void            setSize(TR::DataType dt, int32_t newValue);
 

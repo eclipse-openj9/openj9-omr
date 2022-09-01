@@ -81,7 +81,7 @@ OMR::DataType::isFloatingPoint()
 bool
 OMR::DataType::isVector()
    {
-   return _type >= TR::NumScalarTypes;
+   return _type >= TR::FirstVectorType && _type <= TR::LastVectorType;
    }
 
 bool
@@ -207,14 +207,16 @@ OMR::DataType::operator>(TR::DataTypes rhs)
    }		
 
 TR::DataTypes
-OMR::DataType::createVectorType(TR::DataTypes elementType, TR::VectorLength length)
+OMR::DataType::createVectorType(TR::DataType elementType, TR::VectorLength length)
    {
-   TR_ASSERT_FATAL(elementType > TR::NoType && elementType <= TR::NumVectorElementTypes,
-                   "Invalid vector element type %d\n", elementType);
+   TR::DataTypes et = elementType.getDataType();
+
+   TR_ASSERT_FATAL(et > TR::NoType && et <= TR::NumVectorElementTypes,
+                   "Invalid vector element type %d\n", et);
    TR_ASSERT_FATAL(length > TR::NoVectorLength && length <= TR::NumVectorLengths,
                    "Invalid vector length %d\n", length);
 
-   TR::DataTypes type = static_cast<TR::DataTypes>(TR::NumScalarTypes + (length - 1) * TR::NumVectorElementTypes + elementType - 1);
+   TR::DataTypes type = static_cast<TR::DataTypes>(TR::FirstVectorType + (length - 1) * TR::NumVectorElementTypes + et - 1);
 
    return type;
    }
@@ -222,17 +224,23 @@ OMR::DataType::createVectorType(TR::DataTypes elementType, TR::VectorLength leng
 TR::DataType
 OMR::DataType::getVectorElementType()
    {
-   TR_ASSERT_FATAL(isVector(), "getVectorElementType() is called on non-vector type\n");
+   TR_ASSERT_FATAL(isVector() || isMask(), "getVectorElementType() is called on non-vector and oon non-mask type\n");
 
-   return static_cast<TR::DataTypes>((_type - TR::NumScalarTypes) % TR::NumVectorElementTypes + 1);
+   if (isVector())
+      return static_cast<TR::DataTypes>((_type - TR::FirstVectorType) % TR::NumVectorElementTypes + 1);
+   else
+      return static_cast<TR::DataTypes>((_type - TR::FirstMaskType) % TR::NumVectorElementTypes + 1);
    }
 
 TR::VectorLength
 OMR::DataType::getVectorLength()
    {
-   TR_ASSERT_FATAL(isVector(), "getVectorLength() is called on non-vector type\n");
+   TR_ASSERT_FATAL(isVector() || isMask(), "getVectorLength() is called on non-vector and non-mask type\n");
 
-   return static_cast<TR::VectorLength>((_type - TR::NumScalarTypes) / TR::NumVectorElementTypes + 1);
+   if (isVector())
+      return static_cast<TR::VectorLength>((_type - TR::FirstVectorType) / TR::NumVectorElementTypes + 1);
+   else
+      return static_cast<TR::VectorLength>((_type - TR::FirstMaskType) / TR::NumVectorElementTypes + 1);
    }
 
 TR::VectorLength
@@ -248,6 +256,29 @@ OMR::DataType::bitsToVectorLength(int32_t bits)
       }
 
    return length;
+   }
+
+
+bool
+OMR::DataType::isMask()
+   {
+   return _type >= TR::FirstMaskType && _type <= TR::LastMaskType;
+   }
+
+
+TR::DataTypes
+OMR::DataType::createMaskType(TR::DataType elementType, TR::VectorLength length)
+   {
+   TR::DataTypes et = elementType.getDataType();
+
+   TR_ASSERT_FATAL(et > TR::NoType && et <= TR::NumVectorElementTypes,
+                   "Invalid vector element type %d\n", et);
+   TR_ASSERT_FATAL(length > TR::NoVectorLength && length <= TR::NumVectorLengths,
+                   "Invalid vector length %d\n", length);
+
+   TR::DataTypes type = static_cast<TR::DataTypes>(TR::FirstMaskType + (length - 1) * TR::NumVectorElementTypes + et - 1);
+
+   return type;
    }
 
 #endif // OMR_DATATYPES_INLINES_INCL

@@ -250,11 +250,19 @@ enum DataTypes
    NumScalarTypes,
    NumVectorElementTypes = Double,
    //
-   // this space is reserved for vector types generated at runtime
+   // this space is reserved for vector and mask types generated at runtime
    // the generated types can be used to index tables of size NumAllTypes as any other type
    //
    NumVectorTypes = NumVectorElementTypes * NumVectorLengths,
-   NumAllTypes =  NumScalarTypes + NumVectorTypes
+   NumMaskTypes = NumVectorTypes,
+
+   FirstVectorType = NumScalarTypes,
+   LastVectorType = FirstVectorType + NumVectorTypes - 1,
+
+   FirstMaskType = LastVectorType + 1,
+   LastMaskType = FirstMaskType + NumMaskTypes - 1,
+
+   NumAllTypes =  NumScalarTypes + NumVectorTypes + NumMaskTypes
    };
 }
 
@@ -414,7 +422,7 @@ public:
    *  \return
    *     True if OMR type and false otherwise
    */
-   bool isOMRDataType() {return (_type < TR::NumOMRTypes) || isVector(); }
+   bool isOMRDataType() {return (_type < TR::NumOMRTypes) || isVector() || isMask(); }
 
   /** \brief
    *     Returns vector type with integral element type of the same size as the original element type
@@ -452,7 +460,7 @@ public:
    *  \return
    *     Vector data type
    */
-   inline static TR::DataTypes createVectorType(TR::DataTypes elementType, TR::VectorLength length);
+   inline static TR::DataTypes createVectorType(TR::DataType elementType, TR::VectorLength length);
 
   /** \brief
    *     Converts length in bits to TR::VectorLength
@@ -490,6 +498,34 @@ public:
    */
    TR::DataType scalarToVector(TR::VectorLength length);
 
+  /** \brief
+   *     Checks if the type is a Mask type
+   *
+   *  \return
+   *     true iff is a Mask type
+   */
+   inline bool isMask();
+
+  /** \brief
+   *     Creates mask type based on element type and vector length
+   *
+   *  \param elementType
+   *     Element type
+   *
+   *  \param length
+   *     Vector length
+   *
+   *  \return
+   *     Mask data type
+   */
+   inline static TR::DataTypes createMaskType(TR::DataType elementType, TR::VectorLength length);
+
+   /** \brief
+   *     Initializes static table with all vector type names
+   *
+   */
+   static bool initMaskNames();
+
    const char * toString() const;
 
    static TR::DataType getIntegralTypeFromPrecision(int32_t precision);
@@ -498,7 +534,23 @@ public:
 
    static const char    * getName(TR::DataType dt);
    static TR::DataType getTypeFromName(const char *name);
+   static const char    * getVectorLengthName(TR::VectorLength length);
 
+   /** \brief
+   *     Used to initialize single Mask type size based on platfrom
+   *
+   *  \return
+   *     Mask type size if mask registers are supported, 0 otherwise
+   */
+   static int32_t maskTypeSize();
+
+   /** \brief
+   *     Returns vector size
+   *
+   *  \return
+   *     Vector size in bytes
+   */
+   int32_t                getVectorSize();
    static int32_t         getSize(TR::DataType dt);
    static void            setSize(TR::DataType dt, int32_t newValue);
 

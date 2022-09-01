@@ -302,6 +302,15 @@ public:
    static TR::Register *PassThroughEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *compressedRefsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
+   // mask evaluators
+   static TR::Register *mloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
+   // vector evaluators
    static TR::Register *vabsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vandEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -349,6 +358,41 @@ public:
    static TR::Register *vgetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vcastEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vconvEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
+   static TR::Register *vmabsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmandEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmdivEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmindexVectorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmminEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmnegEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmnotEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmorUncheckedEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmreductionAddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmreductionAndEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmreductionFirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmreductionMaxEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmreductionMinEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmreductionMulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmreductionOrEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmreductionOrUncheckedEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmreductionXorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmxorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vmfirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    static TR::Register *f2iuEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *f2luEvaluator(TR::Node *node, TR::CodeGenerator *cg);

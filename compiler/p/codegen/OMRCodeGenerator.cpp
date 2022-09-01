@@ -1821,6 +1821,10 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
       case TR::vloadi:
       case TR::vstore:
       case TR::vstorei:
+      case TR::mload:
+      case TR::mloadi:
+      case TR::mstore:
+      case TR::mstorei:
          if (et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double)
             return true;
          else
@@ -1853,6 +1857,14 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
       case TR::vconv:
          if (et == TR::Double &&
              opcode.getVectorSourceDataType().getVectorElementType() == TR::Int64)
+            return true;
+      case TR::vmadd:
+      case TR::vcmpeq:
+      case TR::vcmplt:
+      case TR::vcmpgt:
+      case TR::vcmple:
+      case TR::vcmpge:
+         if (et == TR::Double)
             return true;
       default:
          return false;

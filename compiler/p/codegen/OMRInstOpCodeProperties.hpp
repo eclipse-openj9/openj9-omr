@@ -3278,16 +3278,17 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::mfvsrld, */
-   /* .name        =    "mfvsrld", */
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::mfvsrld,
+   /* .name        = */ "mfvsrld",
    /* .description =    "Move from VSR lower Dword", */
-   /* .prefix      =    0x00000000, */
-   /* .opcode      =    0x7C000266, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    OMR_PROCESSOR_PPC_P9, */
-   /* .properties  =    PPCOpProp_SyncSideEffectFree, */
-   /* }, */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x7C000266,
+   /* .format      = */ FORMAT_RA_XS,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P9,
+   /* .properties  = */ PPCOpProp_IsVSX |
+                        PPCOpProp_SyncSideEffectFree,
+   },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::modud,
@@ -7551,7 +7552,7 @@
    /* .description =    "vector sum across signed word saturate", */
    /* .prefix      = */ 0x00000000,
    /* .opcode      = */ 0x10000788,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_P6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7575,7 +7576,7 @@
    /* .description =    "vector sum across partial signed byte saturate", */
    /* .prefix      = */ 0x00000000,
    /* .opcode      = */ 0x10000708,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_P6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,
@@ -7587,7 +7588,7 @@
    /* .description =    "vector sum across partial signed halfword saturate", */
    /* .prefix      = */ 0x00000000,
    /* .opcode      = */ 0x10000648,
-   /* .format      = */ FORMAT_UNKNOWN,
+   /* .format      = */ FORMAT_VRT_VRA_VRB,
    /* .minimumALS  = */ OMR_PROCESSOR_PPC_P6,
    /* .properties  = */ PPCOpProp_IsVMX |
                         PPCOpProp_SyncSideEffectFree,

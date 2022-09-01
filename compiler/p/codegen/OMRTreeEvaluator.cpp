@@ -982,10 +982,187 @@ OMR::Power::TreeEvaluator::vstoreiEvaluator(TR::Node *node, TR::CodeGenerator *c
    return TR::TreeEvaluator::vstoreEvaluator(node, cg);
    }
 
+static TR::Register *vreductionAddSubWordHelper(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic sumOp)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+
+   TR::Register *srcReg = cg->evaluate(firstChild);
+   TR::Register *resReg = cg->allocateRegister();
+
+   TR::Register *tempRes = cg->allocateRegister(TR_VRF);
+   TR::Register *zeroReg = cg->allocateRegister(TR_VRF);
+
+   node->setRegister(resReg);
+
+   //Evaluate sum across vector operand. Since the operands will be either 8 or 16 bytes long, and thus the results cannot overflow, it is safe to use saturate sum instructions here
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::vspltisw, node, zeroReg, 0);
+   generateTrg1Src2Instruction(cg, sumOp, node, tempRes, srcReg, zeroReg); //Sum across each word element
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vsumsws, node, tempRes, tempRes, zeroReg); //Sum word elements across entire vector operand
+
+   //Copy result into GPR
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::mfvsrld, node, resReg, tempRes);
+   else
+   {
+      generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxpermdi, node, tempRes, tempRes, zeroReg, 3); //move sum to upper doubleword element of tempRes
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::mfvsrd, node, resReg, tempRes);
+   }
+
+   cg->stopUsingRegister(tempRes);
+   cg->stopUsingRegister(zeroReg);
+   cg->decReferenceCount(firstChild);
+
+   return resReg;
+   }
+
+static TR::Register *vreductionAddWordHelper(TR::Node *node, TR::CodeGenerator *cg, TR::DataType type)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+
+   TR::Register *srcReg = cg->evaluate(firstChild);
+   TR::Register *resReg;
+
+   TR::Register *shiftReg = cg->allocateRegister(TR_VRF);
+   TR::Register *temp = cg->allocateRegister(TR_VRF);
+   TR::Register *tempGPR;
+   TR::Register *tempVSX;
+
+   //choose addOp and allocate registers based on data type
+   TR::InstOpCode::Mnemonic addOp;
+
+   if (type == TR::Int32)
+   {
+      addOp = TR::InstOpCode::vadduwm;
+      tempVSX = cg->allocateRegister(TR_VRF);
+      tempGPR = cg->allocateRegister();
+      resReg = tempGPR;
+   }
+   else if (type == TR::Float)
+   {
+      addOp = TR::InstOpCode::xvaddsp;
+      tempVSX = cg->allocateRegister(TR_FPR); //since the final answer is a floating point value, we want to make sure that
+                                              //the VSX register that is allocated is also an FPR (i.e.: one of VSX 0-31), so
+                                              //that we can avoid having to copy the final answer into an FPR at the end
+      tempGPR = NULL; //not used for TR::Float
+      resReg = tempVSX;
+   }
+   else
+   {
+      TR_ASSERT_FATAL(false, "cannot call vreductionAddWordHelper on vector type %s\n", type.toString());
+      return NULL;
+   }
+
+   node->setRegister(resReg);
+
+   //set shift amount to -32 bits. Since only the lowest 6 bits of shiftReg are used by vrld as an unsigned integer, this will result in a shift of 32 bits
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::vspltisw, node, shiftReg, -16);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vadduwm, node, shiftReg, shiftReg, shiftReg);
+
+   //Evaluate sum across vector operand by rotating and performing lanewise addition
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vrld, node, temp, srcReg, shiftReg);
+   generateTrg1Src2Instruction(cg, addOp, node, tempVSX, srcReg, temp);
+   generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxpermdi, node, temp, tempVSX, tempVSX, 2);
+   generateTrg1Src2Instruction(cg, addOp, node, tempVSX, tempVSX, temp);
+
+   //Copy result into GPR if data type is Integer, convert to double precision format if data type is Float
+   if (type == TR::Int32)
+   {
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::mfvsrd, node, tempGPR, tempVSX);
+      cg->stopUsingRegister(tempVSX);
+   }
+   else // type === TR::Float
+   {
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::xscvspdpn, node, tempVSX, tempVSX);
+   }
+
+   cg->stopUsingRegister(shiftReg);
+   cg->stopUsingRegister(temp);
+   cg->decReferenceCount(firstChild);
+
+   return resReg;
+   }
+
+static TR::Register *vreductionAddDoubleWordHelper(TR::Node *node, TR::CodeGenerator *cg, TR::DataType type)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+
+   TR::Register *srcReg = cg->evaluate(firstChild);
+   TR::Register *resReg;
+
+   TR::Register *tempGPR;
+   TR::Register *tempVSX;
+
+   //choose addOp and allocate registers based on data type
+   TR::InstOpCode::Mnemonic addOp;
+
+   if (type == TR::Int64)
+   {
+      addOp = TR::InstOpCode::vaddudm;
+      tempVSX = cg->allocateRegister(TR_VRF);
+      tempGPR = cg->allocateRegister();
+      resReg = tempGPR;
+   }
+   else if (type == TR::Double)
+   {
+      addOp = TR::InstOpCode::xvadddp;
+      tempVSX = cg->allocateRegister(TR_FPR); //since the final answer is a floating point value, we want to make sure that
+                                              //the VSX register that is allocated is also an FPR (i.e.: one of VSX 0-31), so
+                                              //that we can avoid having to copy the final answer into an FPR at the end
+      tempGPR = NULL; //not used for TR::Double
+      resReg = tempVSX;
+   }
+   else
+   {
+      TR_ASSERT_FATAL(false, "cannot call vreductionAddDoubleWordHelper on vector type %s\n", type.toString());
+      return NULL;
+   }
+
+   node->setRegister(resReg);
+
+   //Evaluate sum across vector operand by rotating and performing lanewise addition
+   generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxpermdi, node, tempVSX, srcReg, srcReg, 2);
+   generateTrg1Src2Instruction(cg, addOp, node, tempVSX, srcReg, tempVSX);
+
+   //Copy result into GPR if data type is Long Integer
+   if (type == TR::Int64)
+   {
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::mfvsrd, node, tempGPR, tempVSX);
+      cg->stopUsingRegister(tempVSX);
+   }
+
+   cg->decReferenceCount(firstChild);
+
+   return resReg;
+   }
+
 TR::Register*
 OMR::Power::TreeEvaluator::vreductionAddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getNumChildren() == 1, "vreductionAdd node should have exactly one child");
+
+   TR::Node *firstChild = node->getFirstChild();
+   TR::DataType type = firstChild->getDataType().getVectorElementType();
+
+   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", firstChild->getDataType().toString());
+
+   switch(type)
+     {
+     case TR::Int8:
+       return vreductionAddSubWordHelper(node, cg, TR::InstOpCode::vsum4sbs); //since the results will never overflow, it is safe to use a saturate sum instruction here
+     case TR::Int16:
+       return vreductionAddSubWordHelper(node, cg, TR::InstOpCode::vsum4shs); //since the results will never overflow, it is safe to use a saturate sum instruction here
+     case TR::Int32:
+       return vreductionAddWordHelper(node, cg, type);
+     case TR::Int64:
+       return vreductionAddDoubleWordHelper(node, cg, type);
+     case TR::Float:
+       return vreductionAddWordHelper(node, cg, type);
+     case TR::Double:
+       return vreductionAddDoubleWordHelper(node, cg, type);
+     default:
+       TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", firstChild->getDataType().toString()); return NULL;
+     }
    }
 
 TR::Register*

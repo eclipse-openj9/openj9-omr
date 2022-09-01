@@ -362,6 +362,18 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vectorBinaryArithmeticEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *floatingPointBinaryArithmeticEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
+   static TR::Register *ternaryVectorMaskHelper(TR::InstOpCode opcode,
+                                                OMR::X86::Encoding encoding,
+                                                TR::Node *node,
+                                                TR::Register *resultReg,
+                                                TR::Register *lhsReg,
+                                                TR::Register *middleReg,
+                                                TR::Register *rhsReg,
+                                                TR::Register *maskReg,
+                                                TR::CodeGenerator *cg);
+   static TR::Register *vectorMergeMaskHelper(TR::Node *node, TR::VectorLength vl, TR::DataType dt, TR::Register *resultReg, TR::Register *srcReg, TR::Register *maskReg, TR::CodeGenerator *cg, bool zeroMask = false);
+   static TR::Register *vectorMergeMaskHelper(TR::Node *node, TR::Register *resultReg, TR::Register *srcReg, TR::Register *maskReg, TR::CodeGenerator *cg, bool zeroMask = false);
+
    // For unary ILOpcodes that can be translated to a single SSE/AVX instruction
    static TR::Register *unaryVectorArithmeticEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *floatingPointAbsHelper(TR::Node *node, TR::CodeGenerator *cg);

@@ -1020,6 +1020,9 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
    TR_ASSERT_FATAL(et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64 || et == TR::Float || et == TR::Double,
                    "Unexpected vector element type\n");
 
+   if (opcode.isVectorMasked() && !cpu->supportsFeature(OMR_FEATURE_X86_SSE4_1))
+      return false;
+
    // implemented vector opcodes
    switch (opcode.getVectorOperation())
       {

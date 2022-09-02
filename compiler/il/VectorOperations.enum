@@ -19,6 +19,70 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mAnyTrue, \
+   /* .name                    = */ "mAnyTrue", \
+   /* .properties1             = */ 0, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::Int32, \
+   /* .typeProperties          = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    test if any mask element is true */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mAllTrue, \
+   /* .name                    = */ "mAllTrue", \
+   /* .properties1             = */ 0, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::Int32, \
+   /* .typeProperties          = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    test if all mask elements are true */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mmAnyTrue, \
+   /* .name                    = */ "mmAnyTrue", \
+   /* .properties1             = */ ILProp1::VectorMasked, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::Int32, \
+   /* .typeProperties          = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
+   /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    test if any mask element is true under mask*/ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mmAllTrue, \
+   /* .name                    = */ "mmAllTrue", \
+   /* .properties1             = */ ILProp1::VectorMasked, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::Int32, \
+   /* .typeProperties          = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
+   /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    test if all mask elements are true under mask*/ \
+)
+VECTOR_OPERATION_MACRO(\
    /* .operation               = */ mload, \
    /* .name                    = */ "mload", \
    /* .properties1             = */ ILProp1::LoadVar | ILProp1::HasSymbolRef, \

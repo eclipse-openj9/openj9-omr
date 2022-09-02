@@ -189,6 +189,10 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *PassThroughEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    // mask evaluators
+   static TR::Register *mAnyTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mAllTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mmAnyTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mmAllTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *mloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *mloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *mstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);

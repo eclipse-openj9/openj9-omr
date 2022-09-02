@@ -403,6 +403,10 @@
 #define compressedRefsSimplifierHandler anchorSimplifier
 #define BBStartSimplifierHandler dftSimplifier
 #define BBEndSimplifierHandler endBlockSimplifier
+#define mAnyTrueSimplifierHandler dftSimplifier
+#define mAllTrueSimplifierHandler dftSimplifier
+#define mmAnyTrueSimplifierHandler dftSimplifier
+#define mmAllTrueSimplifierHandler dftSimplifier
 #define mloadSimplifierHandler directLoadSimplifier
 #define mloadiSimplifierHandler indirectLoadSimplifier
 #define mstoreSimplifierHandler directStoreSimplifier

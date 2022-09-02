@@ -863,6 +863,30 @@ OMR::Power::TreeEvaluator::PassThroughEvaluator(TR::Node *node, TR::CodeGenerato
 
 // mask evaluators
 TR::Register*
+OMR::Power::TreeEvaluator::mAnyTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return vloadEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Power::TreeEvaluator::mAllTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return vloadEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Power::TreeEvaluator::mmAnyTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return vloadEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::Power::TreeEvaluator::mmAllTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return vloadEvaluator(node, cg);
+   }
+
+TR::Register*
 OMR::Power::TreeEvaluator::mloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return vloadEvaluator(node, cg);

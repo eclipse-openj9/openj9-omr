@@ -2416,9 +2416,10 @@ OMR::Options::processOptionsJIT(char *jitOptions, void *feBase, TR_FrontEnd *fe)
       _jitCmdLineOptions = new (PERSISTENT_NEW) TR::Options();
       _cmdLineOptions = _jitCmdLineOptions;
       }
-
-   if (_jitCmdLineOptions)
-      memset(_jitCmdLineOptions, 0, sizeof(TR::Options));
+   else
+      {
+      _jitCmdLineOptions->init();
+      }
 
    _feBase = feBase;
    _fe     = fe;
@@ -2457,9 +2458,8 @@ OMR::Options::processOptionsAOT(char *aotOptions, void *feBase, TR_FrontEnd *fe)
    //
    if (!_aotCmdLineOptions)
       _aotCmdLineOptions = new (PERSISTENT_NEW) TR::Options();
-
-   if (_aotCmdLineOptions)
-      memset(_aotCmdLineOptions, 0, sizeof(TR::Options));
+   else
+      _aotCmdLineOptions->init();
 
    _feBase = feBase;
    _fe     = fe;

@@ -261,8 +261,11 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
       TR::Instruction *expandedOrSelf = data.cursorInstruction->expandInstruction();
       TR::Instruction *firstInstructionNotExpanded = expandedOrSelf->getNext();
 
-      /* The first instruction whose byte length has not been added to data.estimate */
-      data.cursorInstruction = prev->getNext();
+      if (prev != NULL)
+         {
+         /* The first instruction whose byte length has not been added to data.estimate */
+         data.cursorInstruction = prev->getNext();
+         }
       while (data.cursorInstruction && (data.cursorInstruction != firstInstructionNotExpanded))
          {
          data.estimate = data.cursorInstruction->estimateBinaryLength(data.estimate);

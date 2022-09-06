@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,6 +42,7 @@
 #include <tpf/c_cinfc.h>
 #include <tpf/c_idsprg.h>
 #include <tpf/tpfapi.h>
+#include <tpf/c_syseq.h>
 #include <atoe.h>
 
 #include "portnls.h"
@@ -105,7 +106,7 @@ writeDumpFile(int32_t fd, uint8_t *buffer, uint64_t bytes)
 	uint64_t bytesWrittenTotal = 0;
 	uint64_t bytesLeft = bytes;
 	uint8_t *next = buffer;
-	uint64_t chunkSize = PAGE_SIZE;
+	uint64_t chunkSize = _FRM1MB_SIZE;
 
 	while (bytesLeft) {
 		if (bytesLeft < chunkSize) {

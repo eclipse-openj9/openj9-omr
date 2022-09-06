@@ -120,32 +120,66 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDloadEvaluator(TR::Node* node, TR::Cod
    TR::MemoryReference* tempMR = generateX86MemoryReference(node, cg);
    tempMR = ConvertToPatchableMemoryReference(tempMR, node, cg);
    TR::Register* resultReg = cg->allocateRegister(TR_VRF);
+   TR::Node* maskNode = node->getOpCode().isVectorMasked() ? node->getChild(1) : NULL;
+   TR::Register* maskReg = node->getOpCode().isVectorMasked() ? cg->evaluate(maskNode) :  NULL;
 
-   TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::MOVDQURegMem;
-   OMR::X86::Encoding encoding = Legacy;
+   TR::InstOpCode opCode = TR::InstOpCode::MOVDQURegMem;
 
-   switch (node->getSize())
+   if (maskReg && maskReg->getKind() == TR_VMR)
       {
-      case 16:
-         if (cg->comp()->target().cpu.supportsAVX())
-            encoding = VEX_L128;
-         break;
-      case 32:
-         TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsAVX(), "256-bit vload requires AVX");
-         encoding = VEX_L256;
-         break;
-      case 64:
-         TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F), "512-bit vload requires AVX-512");
-         encoding = EVEX_L512;
-         break;
-      default:
-         if (cg->comp()->getOption(TR_TraceCG))
-            traceMsg(cg->comp(), "Unsupported fill size: Node = %p\n", node);
-         TR_ASSERT_FATAL(false, "Unsupported fill size");
-         break;
+      switch (node->getDataType().getVectorElementType())
+         {
+         case TR::Int8:
+            opCode = TR::InstOpCode::VMOVDQU8RegMem;
+            break;
+         case TR::Int16:
+            opCode = TR::InstOpCode::VMOVDQU16RegMem;
+            break;
+         case TR::Int32:
+         case TR::Float:
+            opCode = TR::InstOpCode::VMOVDQU32RegMem;
+            break;
+         case TR::Int64:
+         case TR::Double:
+            opCode = TR::InstOpCode::VMOVDQU64RegMem;
+            break;
+         default:
+            TR_ASSERT_FATAL(0, "Unsupported element type for masking");
+            break;
+         }
       }
 
-   TR::Instruction* instr = generateRegMemInstruction(opCode, node, resultReg, tempMR, cg, encoding);
+   OMR::X86::Encoding encoding = opCode.getSIMDEncoding(&cg->comp()->target().cpu, node->getType().getVectorLength());
+
+   if (node->getSize() != 16 && node->getSize() != 32 && node->getSize() != 64)
+      {
+      if (cg->comp()->getOption(TR_TraceCG))
+         traceMsg(cg->comp(), "Unsupported fill size: Node = %p\n", node);
+      TR_ASSERT_FATAL(false, "Unsupported fill size");
+      }
+
+   TR::Instruction* instr = NULL;
+
+   if (maskReg && maskReg->getKind() == TR_VMR)
+      {
+      instr = generateRegMaskMemInstruction(opCode.getMnemonic(), node, resultReg, maskReg, tempMR, cg, encoding, true);
+      }
+   else
+      {
+      instr = generateRegMemInstruction(opCode.getMnemonic(), node, resultReg, tempMR, cg, encoding);
+
+      if (maskReg)
+         {
+         TR::InstOpCode andOpcode = TR::InstOpCode::PANDRegReg;
+         OMR::X86::Encoding andEncoding = andOpcode.getSIMDEncoding(&cg->comp()->target().cpu, node->getDataType().getVectorLength());
+         TR_ASSERT_FATAL(andEncoding != OMR::X86::Bad, "No supported encoding method for 'and' opcode");
+         generateRegRegInstruction(andOpcode.getMnemonic(), node, resultReg, maskReg, cg, andEncoding);
+         }
+      }
+
+   if (maskNode)
+      cg->decReferenceCount(maskNode);
+
    if (node->getOpCode().isIndirect())
       cg->setImplicitExceptionPoint(instr);
    node->setRegister(resultReg);

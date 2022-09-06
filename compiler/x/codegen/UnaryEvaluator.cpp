@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -113,7 +113,9 @@ TR::Register *OMR::X86::TreeEvaluator::unaryVectorArithmeticEvaluator(TR::Node *
       }
 
    TR::Node *valueNode = node->getChild(0);
+   TR::Node *maskNode = opcode.isVectorMasked() ? node->getChild(1) : NULL;
    TR::Register *resultReg = cg->allocateRegister(TR_VRF);
+   TR::Register *maskReg = opcode.isVectorMasked() ? cg->evaluate(maskNode) : NULL;
 
    TR::InstOpCode regRegOpcode = TR::InstOpCode::bad;
    TR::InstOpCode regMemOpcode = TR::InstOpCode::bad;
@@ -123,7 +125,7 @@ TR::Register *OMR::X86::TreeEvaluator::unaryVectorArithmeticEvaluator(TR::Node *
    node->setRegister(resultReg);
    TR_ASSERT_FATAL_WITH_NODE(node, opcode.isVectorOpCode(), "unaryVectorArithmeticEvaluator expects a vector opcode");
 
-   if (valueNode->getRegister() == NULL && valueNode->getReferenceCount() == 1 && regMemOpcode.getMnemonic() != TR::InstOpCode::bad)
+   if (!opcode.isVectorMasked() && valueNode->getRegister() == NULL && valueNode->getReferenceCount() == 1 && regMemOpcode.getMnemonic() != TR::InstOpCode::bad)
       {
       simdEncoding = regMemOpcode.getSIMDEncoding(&cg->comp()->target().cpu, type.getVectorLength());
 
@@ -140,7 +142,17 @@ TR::Register *OMR::X86::TreeEvaluator::unaryVectorArithmeticEvaluator(TR::Node *
    TR_ASSERT_FATAL_WITH_NODE(node, regRegOpcode.getMnemonic() != TR::InstOpCode::bad, "Opcode not supported by unaryVectorArithmeticEvaluator");
    simdEncoding = regRegOpcode.getSIMDEncoding(&cg->comp()->target().cpu, type.getVectorLength());
    TR::Register *valueReg = cg->evaluate(valueNode);
-   generateRegRegInstruction(regRegOpcode.getMnemonic(), node, resultReg, valueReg, cg, simdEncoding);
+
+   if (maskReg)
+      {
+      TR::TreeEvaluator::unaryVectorMaskHelper(regRegOpcode, simdEncoding, node, resultReg, valueReg, maskReg, cg);
+      cg->decReferenceCount(maskNode);
+      }
+   else
+      {
+      generateRegRegInstruction(regRegOpcode.getMnemonic(), node, resultReg, valueReg, cg, simdEncoding);
+      }
+
    cg->decReferenceCount(valueNode);
 
    return resultReg;
@@ -245,7 +257,21 @@ OMR::X86::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       }
 
    OMR::X86::Encoding subEncoding = subOpcode.getSIMDEncoding(&cg->comp()->target().cpu, type.getVectorLength());
-   generateRegRegInstruction(subOpcode.getMnemonic(), node, resultReg, valueReg, cg, subEncoding);
+
+   if (node->getOpCode().isVectorMasked())
+      {
+      TR::Node *maskNode = node->getChild(1);
+      TR::Register *maskReg = cg->evaluate(maskNode);
+      TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
+      generateRegRegInstruction(subOpcode.getMnemonic(), node, tmpReg, valueReg, cg, subEncoding);
+      TR::TreeEvaluator::vectorMergeMaskHelper(node, resultReg, tmpReg, maskReg, cg);
+      cg->stopUsingRegister(tmpReg);
+      cg->decReferenceCount(maskNode);
+      }
+   else
+      {
+      generateRegRegInstruction(subOpcode.getMnemonic(), node, resultReg, valueReg, cg, subEncoding);
+      }
 
    node->setRegister(resultReg);
    cg->decReferenceCount(valueNode);

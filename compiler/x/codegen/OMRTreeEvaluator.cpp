@@ -4890,6 +4890,37 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDreductionEvaluator(TR::Node* node, TR
    }
 
 TR::Register*
+OMR::X86::TreeEvaluator::unaryVectorMaskHelper(TR::InstOpCode opcode,
+                                               OMR::X86::Encoding encoding,
+                                               TR::Node *node,
+                                               TR::Register *resultReg,
+                                               TR::Register *valueReg,
+                                               TR::Register *maskReg,
+                                               TR::CodeGenerator *cg)
+   {
+   TR_ASSERT_FATAL(encoding != OMR::X86::Bad, "No suitable encoding method for opcode");
+   bool vectorMask = maskReg->getKind() == TR_VRF;
+   TR::Register *tmpReg = vectorMask ? cg->allocateRegister(TR_VRF) : NULL;
+
+   if (encoding == OMR::X86::Legacy || vectorMask)
+      {
+      generateRegRegInstruction(opcode.getMnemonic(), node, tmpReg, valueReg, cg, encoding);
+      TR_ASSERT_FATAL(vectorMask, "Native vector masking not supported");
+      generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, resultReg, valueReg, cg, encoding);
+      vectorMergeMaskHelper(node, resultReg, tmpReg, maskReg, cg);
+      cg->stopUsingRegister(tmpReg);
+      return resultReg;
+      }
+   else
+      {
+      generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, resultReg, valueReg, cg, encoding);
+      generateRegMaskRegInstruction(opcode.getMnemonic(), node, resultReg, maskReg, valueReg, cg, encoding);
+      }
+
+   return resultReg;
+   }
+
+TR::Register*
 OMR::X86::TreeEvaluator::binaryVectorMaskHelper(TR::InstOpCode opcode,
                                                 OMR::X86::Encoding encoding,
                                                 TR::Node *node,
@@ -5258,7 +5289,7 @@ OMR::X86::TreeEvaluator::vreductionOrUncheckedEvaluator(TR::Node *node, TR::Code
 TR::Register*
 OMR::X86::TreeEvaluator::vmabsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::unaryVectorArithmeticEvaluator(node, cg);
    }
 
 TR::Register*
@@ -5432,7 +5463,7 @@ OMR::X86::TreeEvaluator::vmreductionXorEvaluator(TR::Node *node, TR::CodeGenerat
 TR::Register*
 OMR::X86::TreeEvaluator::vmsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::unaryVectorArithmeticEvaluator(node, cg);
    }
 
 TR::Register*

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -135,6 +135,7 @@ typedef struct J9VMGC_SublistFragment {
 #define J9MMCONSTANT_EXPLICIT_GC_IDLE_GC 12
 #endif
 #define J9MMCONSTANT_IMPLICIT_GC_COMPLETE_CONCURRENT 13
+#define J9MMCONSTANT_EXPLICIT_GC_PREPARE_FOR_CHECKPOINT  14
 
 typedef struct J9MemorySpaceDescription {
 	uintptr_t oldSpaceSize;

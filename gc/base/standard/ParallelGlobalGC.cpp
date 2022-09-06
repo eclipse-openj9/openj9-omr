@@ -575,12 +575,14 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 		goto nocompact;
 	}	
 
+	if ((J9MMCONSTANT_EXPLICIT_GC_PREPARE_FOR_CHECKPOINT == gcCode.getCode())
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
-	if((_extensions->compactOnIdle) && (J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode.getCode())) {
+	|| ((_extensions->compactOnIdle) && (J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode.getCode()))
+#endif
+	) {
 		compactReason = COMPACT_FORCED_GC;
 		goto compactionReqd;
 	}
-#endif
 	
 	/* RAS dump compact requests override all other options. If a dump agent requested 
 	 * a compact we always honour it in order to produce optimal heap dumps
@@ -736,9 +738,11 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 			}
 		}
 
-#if defined(OMR_GC_IDLE_HEAP_MANAGER) 
-		if ((J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode.getCode()) && (_extensions->gcOnIdle)){
-
+		if ((J9MMCONSTANT_EXPLICIT_GC_PREPARE_FOR_CHECKPOINT == gcCode.getCode())
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+		|| ((J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode.getCode()) && (_extensions->gcOnIdle))
+#endif /* OMR_GC_IDLE_HEAP_MANAGER */
+		) {
 			MM_LargeObjectAllocateStats *stats = memoryPool->getLargeObjectAllocateStats();
 
 			uintptr_t pageSize = heap->getPageSize();
@@ -755,7 +759,6 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 				goto compactionReqd;
 			}
 		}
-#endif /* OMR_GC_IDLE_HEAP_MANAGER */
 	}
 
 	

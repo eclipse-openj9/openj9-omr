@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -168,9 +168,7 @@ public:
 	virtual void expandWithRange(MM_EnvironmentBase* env, uintptr_t expandSize, void* lowAddress, void* highAddress, bool canCoalesce);
 	virtual void* contractWithRange(MM_EnvironmentBase* env, uintptr_t contractSize, void* lowAddress, void* highAddress);
 
-#if defined(OMR_GC_IDLE_HEAP_MANAGER)
 	virtual uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env);
-#endif
 
 	/**
 	 * Create a MemoryPoolAddressOrderedList object.

@@ -418,12 +418,10 @@ public:
 		return _nonScannableBytes;
 	}
 
-#if defined(OMR_GC_IDLE_HEAP_MANAGER)
 	/**
 	 * @return bytes of free memory in the pool released/decommited back to OS
 	 */
 	virtual uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env);
-#endif
 	/**
 	 * Create a MemoryPool object.
 	 */

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -186,7 +186,6 @@ MM_MemoryPoolAddressOrderedListBase::abandonMemoryInPool(MM_EnvironmentBase* env
 	abandonHeapChunk((MM_HeapLinkedFreeHeader*)address, (uint8_t*)address + size);
 }
 
-#if defined(OMR_GC_IDLE_HEAP_MANAGER)
 uintptr_t
 MM_MemoryPoolAddressOrderedListBase::releaseFreeEntryMemoryPages(MM_EnvironmentBase* env, MM_HeapLinkedFreeHeader* freeEntry)
 {
@@ -203,8 +202,8 @@ MM_MemoryPoolAddressOrderedListBase::releaseFreeEntryMemoryPages(MM_EnvironmentB
 			if (0 < totalFreePagesCount) {
 				uintptr_t commitPagesCount = 0;
 				uintptr_t decommitPagesCount = 0;
-				if (0 < _extensions->idleMinimumFree) {
-					commitPagesCount = totalFreePagesCount * _extensions->idleMinimumFree / 100;
+				if (0 < _extensions->decommitMinimumFree) {
+					commitPagesCount = totalFreePagesCount * _extensions->decommitMinimumFree / 100;
 				}
 				decommitPagesCount = totalFreePagesCount - commitPagesCount;
 				/* leave commited pages of memory aside header */
@@ -221,4 +220,3 @@ MM_MemoryPoolAddressOrderedListBase::releaseFreeEntryMemoryPages(MM_EnvironmentB
 	}
 	return releasedMemory;
 }
-#endif

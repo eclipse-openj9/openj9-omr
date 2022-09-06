@@ -752,9 +752,9 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 			uintptr_t totalFragmentation = memoryFragmentationDiff + darkMatterBytes;
 			float totalFragmentationRatio = ((float)totalFragmentation)/((float)freeMemorySize + (float)totalSize / 2);
 
-			Trc_ParallelGlobalGC_shouldCompactThisCycle(env->getLanguageVMThread(), totalFragmentationRatio, _extensions->gcOnIdleCompactThreshold);
+			Trc_ParallelGlobalGC_shouldCompactThisCycle(env->getLanguageVMThread(), totalFragmentationRatio, _extensions->pageFragmentationCompactThreshold);
 
-			if (totalFragmentationRatio > _extensions->gcOnIdleCompactThreshold) {
+			if (totalFragmentationRatio > _extensions->pageFragmentationCompactThreshold) {
 				compactReason = COMPACT_PAGE;
 				goto compactionReqd;
 			}

@@ -386,6 +386,7 @@ public:
 	uintptr_t absoluteMinimumNewSubSpaceSize;
 
 	float darkMatterCompactThreshold; /**< Value used to trigger compaction when dark matter ratio reaches this percentage of memory pools memory*/
+	float pageFragmentationCompactThreshold; /**< Enables compaction when page-fragmented memory and dark matter exceed this limit. The larger this number, the more memory can be fragmented before compact is triggered **/
 
 	uintptr_t parSweepChunkSize;
 	uintptr_t heapExpansionMinimumSize;
@@ -854,13 +855,13 @@ public:
 
 	bool pretouchHeapOnExpand; /**< True to pretouch memory during initial heap inflation or heap expansion */
 
-	uintptr_t decommitMinimumFree;   /**< percentage of free heap to be retained as committed, default=0 for gencon, complete tenture free memory will be decommitted */
+	uintptr_t decommitMinimumFree; /**< percentage of free heap to be retained as committed, default=0 for gencon, complete tenture free memory will be decommitted */
 
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
-	uintptr_t idleMinimumFree;   /** TODO cleanup after openj9 fixes */
+	uintptr_t idleMinimumFree; /** TODO cleanup after openj9 fixes */
 	bool gcOnIdle; /**< Enables releasing free heap pages if true while systemGarbageCollect invoked with IDLE GC code, default is false */
 	bool compactOnIdle; /**< Forces compaction if global GC executed while VM Runtime State set to IDLE, default is false */
-	float gcOnIdleCompactThreshold; /**< Enables compaction when fragmented memory and dark matter exceed this limit. The larger this number, the more memory can be fragmented before compact is triggered **/
+	float gcOnIdleCompactThreshold; /** TODO cleanup after openj9 fixes */
 #endif
 
 #if defined(OMR_VALGRIND_MEMCHECK)
@@ -1515,6 +1516,7 @@ public:
 		, absoluteMinimumOldSubSpaceSize(MINIMUM_OLD_SPACE_SIZE)
 		, absoluteMinimumNewSubSpaceSize(MINIMUM_NEW_SPACE_SIZE)
 		, darkMatterCompactThreshold((float)0.15)
+		, pageFragmentationCompactThreshold((float)0.10)
 		, parSweepChunkSize(0)
 		, heapExpansionMinimumSize(1024 * 1024)
 		, heapExpansionMaximumSize(0)
@@ -1872,6 +1874,7 @@ public:
 		, trackMutatorThreadCategory(false)
 		, darkMatterSampleRate(32)
 		, pretouchHeapOnExpand(false)
+		, decommitMinimumFree(0)
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 		, idleMinimumFree(0)
 		, gcOnIdle(false)

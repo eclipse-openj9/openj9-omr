@@ -83,21 +83,18 @@
  * timeout to poll calls whether or not we have a deadline so we have a sample based scheduler visible
  * spinlock.
  */
-#if defined(LINUXPPC)
-/* poll timeout in milliseconds */
-#define POLL_RETRY_INTERVAL 100
-#elif defined(AIXPPC)
+#if defined(AIXPPC)
 /* AIX close call blocks until all other calls using the file descriptor return to user
  * space so we need to spin reasonably quickly or we'll not resume until the timeout in
  * error cases.
  */
 #define POLL_RETRY_INTERVAL 1000
-#else
-/* -1 means block indefinitely */
-#define POLL_RETRY_INTERVAL -1
-#endif
+#else /* defined(AIXPPC) */
+/* poll timeout in milliseconds */
+#define POLL_RETRY_INTERVAL 100
+#endif /* defined(AIXPPC) */
 
-typedef struct {
+typedef struct barrier_r {
 	int descriptor_pair[2];
 	volatile uintptr_t in_count;
 	volatile uintptr_t out_count;
@@ -105,7 +102,7 @@ typedef struct {
 	volatile uintptr_t released;
 } barrier_r;
 
-typedef struct {
+typedef struct sem_t_r {
 	int descriptor_pair[2];
 	volatile uintptr_t sem_value;
 	volatile uintptr_t initial_value;
@@ -130,7 +127,7 @@ struct PlatformWalkData {
 	/* backpointer to encapsulating state */
 	J9ThreadWalkState *state;
 	/* total number of threads in the process, including calling thread */
-	long threadCount;
+	int threadCount;
 	/* suspended threads unharvested */
 	int threadsOutstanding;
 	/* thread we're constructing */
@@ -139,7 +136,7 @@ struct PlatformWalkData {
 	unsigned char platformAllocatedContext;
 	/* records whether we need to clean up in resume */
 	unsigned char cleanupRequired;
-#ifdef AIXPPC
+#if defined(AIXPPC)
 	/* records whether there are threads suspended during initialization */
 	int uninitializedThreads;
 #if defined(J9OS_I5)
@@ -148,7 +145,7 @@ struct PlatformWalkData {
 	/* which thread will we return next */
 	pthread_t thr;
 #endif /* defined(J9OS_I5) */
-#endif
+#endif /* defined(AIXPPC) */
 	/* the semaphore all suspended threads wait on */
 	sem_t_r client_sem;
 	/* the semaphore the controller thread waits on */
@@ -183,21 +180,23 @@ close_wrapper(int fd)
  * @return 0 on success, -1 otherwise
  */
 static int
-barrier_init_r(barrier_r *barrier, int value)
+barrier_init_r(barrier_r *barrier, uintptr_t value)
 {
-	uintptr_t old_value;
+	uintptr_t old_value = 0;
 	memset(barrier, 0, sizeof(barrier_r));
 
-	if (pipe(barrier->descriptor_pair) != 0) {
+	if (0 != pipe(barrier->descriptor_pair)) {
 		return -1;
 	}
 
 	do {
 		old_value = barrier->initial_value;
 	} while (compareAndSwapUDATA((uintptr_t *)&barrier->initial_value, old_value, value) != old_value);
+
 	do {
 		old_value = barrier->in_count;
 	} while (compareAndSwapUDATA((uintptr_t *)&barrier->in_count, old_value, value) != old_value);
+
 	do {
 		old_value = barrier->released;
 	} while (compareAndSwapUDATA((uintptr_t *)&barrier->released, old_value, 0) != old_value);
@@ -218,20 +217,16 @@ static int
 barrier_block_until_poked(barrier_r *barrier, uintptr_t deadline)
 {
 	int ret = 0;
-	struct pollfd fds[1];
-	int interval = POLL_RETRY_INTERVAL;
+	struct pollfd fds;
+	intptr_t interval = POLL_RETRY_INTERVAL;
 	struct timespec spec;
-
-	fds[0].fd = barrier->descriptor_pair[0];
-	fds[0].events = (short)(POLLHUP | POLLERR | POLLNVAL | POLLIN);
-	fds[0].revents = 0;
 
 	if (deadline == 0) {
 		/* block indefinitely */
 		interval = POLL_RETRY_INTERVAL;
 	} else {
 		/* calculate the interval */
-		if (clock_gettime(CLOCK_REALTIME, &spec) == -1) {
+		if (-1 == clock_gettime(CLOCK_REALTIME, &spec)) {
 			interval = 0;
 		} else {
 			interval = (deadline - spec.tv_sec) * 1000;
@@ -240,21 +235,24 @@ barrier_block_until_poked(barrier_r *barrier, uintptr_t deadline)
 			if (interval < 0) {
 				/* deadline has expired so run through once then bail at the end */
 				interval = 0;
-			} else if (interval > POLL_RETRY_INTERVAL && POLL_RETRY_INTERVAL != -1) {
+			} else if (interval > POLL_RETRY_INTERVAL) {
 				interval = POLL_RETRY_INTERVAL;
 			}
 		}
 	}
 
 	/* wait for something to change */
-	ret = poll(fds, 1, interval);
-	if ((ret == -1 && errno != EINTR) || fds[0].revents & (POLLHUP | POLLERR | POLLNVAL)) {
+	memset(&fds, 0, sizeof(fds));
+	fds.fd = barrier->descriptor_pair[0];
+	fds.events = (short)POLLIN;
+	ret = poll(&fds, 1, (int)interval);
+	if (((-1 == ret) && (EINTR != errno)) || OMR_ARE_ANY_BITS_SET(fds.revents, POLLHUP | POLLERR | POLLNVAL)) {
 		return -2;
 	}
 
 	if (deadline != 0) {
 		/* check if we've timed out. Do this last as the other possibilities for return are of more interest */
-		if (clock_gettime(CLOCK_REALTIME, &spec) == -1) {
+		if (-1 == clock_gettime(CLOCK_REALTIME, &spec)) {
 			return -3;
 		}
 
@@ -281,17 +279,14 @@ barrier_release_r(barrier_r *barrier, uintptr_t seconds)
 {
 	char byte = 0;
 	int result = 0;
-
-	int deadline = 0;
+	uintptr_t deadline = 0;
 	struct timespec spec;
 
-	if (clock_gettime(CLOCK_REALTIME, &spec) == -1) {
-		seconds = 0;
-	} else {
+	if (-1 != clock_gettime(CLOCK_REALTIME, &spec)) {
 		deadline = spec.tv_sec + seconds;
 	}
 
-	if ((compareAndSwapUDATA((uintptr_t *)&barrier->released, 0, 1)) != 0) {
+	if (0 != compareAndSwapUDATA((uintptr_t *)&barrier->released, 0, 1)) {
 		/* barrier->released should have been 0, write something into the pipe so that poll doesn't block,
 		 * converts this to a busy wait
 		 */
@@ -302,8 +297,9 @@ barrier_release_r(barrier_r *barrier, uintptr_t seconds)
 	}
 
 	/* wait until all entrants have arrived */
-	while ((compareAndSwapUDATA((uintptr_t *)&barrier->in_count, -1, -1)) > 0) {
-		if ((result = barrier_block_until_poked(barrier, deadline)) == -1) {
+	while (0 != compareAndSwapUDATA((uintptr_t *)&barrier->in_count, 0, 0)) {
+		result = barrier_block_until_poked(barrier, deadline);
+		if (result < 0) {
 			/* timeout or error */
 			break;
 		}
@@ -313,17 +309,18 @@ barrier_release_r(barrier_r *barrier, uintptr_t seconds)
 		return -1;
 	}
 
-#if !defined(J9ZOS390) && !defined(AIXPPC)
-	/* On AIX it is not legal to call fdatasync() inside a signal handler */
+#if !(defined(AIXPPC) || defined(J9ZOS390))
+	/* On AIX and z/OS it is not legal to call fdatasync() inside a signal handler. */
 	fdatasync(barrier->descriptor_pair[1]);
-#endif
+#endif /* !(defined(AIXPPC) || defined(J9ZOS390)) */
 
 	return result;
 }
 
 /*
- * This function is called by entrants to the barrier. It will block until all expected entrants have called this
- * function and barrier_release_r has been called, or the deadline has expired.
+ * This function is called by entrants to the barrier. It will block until
+ * all expected entrants have called this function and barrier_release_r has
+ * been called, or the deadline has expired.
  *
  * @param barrier the barrier to enter
  * @param deadline the system time in seconds after which we should unblock
@@ -342,8 +339,8 @@ barrier_enter_r(barrier_r *barrier, uintptr_t deadline)
 		old_value = barrier->in_count;
 	} while (compareAndSwapUDATA((uintptr_t *)&barrier->in_count, old_value, old_value - 1) != old_value);
 
-	if (old_value == 1 && (compareAndSwapUDATA((uintptr_t *)&barrier->released, 0, 0))) {
-		/* we're the last through the barrier so wake everyone up */
+	if ((1 == old_value) && (0 != compareAndSwapUDATA((uintptr_t *)&barrier->released, 0, 0))) {
+		/* we're the last through the barrier so signal the conductor */
 		if (1 != write(barrier->descriptor_pair[1], &byte, 1)) {
 			return -1;
 		}
@@ -352,8 +349,9 @@ barrier_enter_r(barrier_r *barrier, uintptr_t deadline)
 	/* if we're entering a barrier with a negative count then count us out but we don't need to do anything */
 
 	/* wait until we are formally released */
-	while (compareAndSwapUDATA((uintptr_t *)&barrier->in_count, -1, -1) > 0 || !barrier->released) {
-		if ((result = barrier_block_until_poked(barrier, deadline)) < 0) {
+	while ((0 != compareAndSwapUDATA((uintptr_t *)&barrier->in_count, 0, 0)) || (0 == barrier->released)) {
+		result = barrier_block_until_poked(barrier, deadline);
+		if (result < 0) {
 			/* timeout or error */
 			break;
 		}
@@ -368,8 +366,8 @@ barrier_enter_r(barrier_r *barrier, uintptr_t deadline)
 }
 
 /*
- * This function updates the expected number of clients the barrier is waiting for. If all clients have already entered the barrier
- * the the update will fail.
+ * This function updates the expected number of clients the barrier is waiting for.
+ * If all clients have already entered the barrier the the update will fail.
  *
  * @param barrier the barrier to update
  * @param new_value the new number of entrants expected
@@ -377,13 +375,13 @@ barrier_enter_r(barrier_r *barrier, uintptr_t deadline)
  * @return 0 on success, -1 on failure
  */
 static int
-barrier_update_r(barrier_r *barrier, int new_value)
+barrier_update_r(barrier_r *barrier, uintptr_t new_value)
 {
 	/* we're altering the expected number of entries into the barrier */
-	uintptr_t old_value;
-	int difference = new_value - barrier->initial_value;
+	uintptr_t old_value = 0;
+	intptr_t difference = new_value - barrier->initial_value;
 
-	if (difference == 0) {
+	if (0 == difference) {
 		return 0;
 	}
 
@@ -391,7 +389,7 @@ barrier_update_r(barrier_r *barrier, int new_value)
 		old_value = barrier->in_count;
 	} while (compareAndSwapUDATA((uintptr_t *)&barrier->in_count, old_value, old_value + difference) != old_value);
 
-	if (old_value == 0 && barrier->initial_value != 0) {
+	if ((0 == old_value) && (0 != barrier->initial_value)) {
 		uintptr_t restore_value = old_value;
 
 		/* barrier was already exited, so undo update and return error */
@@ -407,7 +405,6 @@ barrier_update_r(barrier_r *barrier, int new_value)
 		} while (compareAndSwapUDATA((uintptr_t *)&barrier->initial_value, old_value, new_value) != old_value);
 
 		/* don't need to notify anyone if updated_value is <= 0 as release will do it when called */
-
 		return 0;
 	}
 }
@@ -437,17 +434,18 @@ barrier_destroy_r(barrier_r *barrier, int block)
 	/* On AIX it is not legal to call fdatasync() inside a signal handler */
 	fdatasync(barrier->descriptor_pair[1]);
 #endif
+
 	close_wrapper(barrier->descriptor_pair[1]);
 	close_wrapper(barrier->descriptor_pair[0]);
 
-	/* decrement the wait count */
-	if (block) {
-		int current = 0;
-		int in = 0;
+	if (0 != block) {
+		/* wait until waiters have exited */
+		uintptr_t current = 0;
+		uintptr_t in = 0;
 		do {
-			current = compareAndSwapUDATA((uintptr_t *)&barrier->out_count, -1, -1);
-			in = compareAndSwapUDATA((uintptr_t *)&barrier->in_count, -1, -1);
-		} while (current + in < barrier->initial_value);
+			current = compareAndSwapUDATA((uintptr_t *)&barrier->out_count, 0, 0);
+			in = compareAndSwapUDATA((uintptr_t *)&barrier->in_count, 0, 0);
+		} while ((current + in) < barrier->initial_value);
 	}
 
 	return rc;
@@ -464,7 +462,7 @@ barrier_destroy_r(barrier_r *barrier, int block)
  * @return 0 on success, -1 otherwise
  */
 static int
-sem_init_r(sem_t_r *sem, int value)
+sem_init_r(sem_t_r *sem, uintptr_t value)
 {
 	if (pipe(sem->descriptor_pair) != 0) {
 		return -1;
@@ -491,36 +489,35 @@ sem_timedwait_r(sem_t_r *sem, uintptr_t seconds)
 	uintptr_t old_value = -1;
 	char byte = 0;
 	int ret = -1;
-	struct pollfd fds[1];
+	struct pollfd fds;
 	struct timespec spec;
-	int deadline = 0;
-	int interval = seconds;
-	fds[0].fd = sem->descriptor_pair[0];
-	fds[0].events = (short)(POLLHUP | POLLERR | POLLNVAL | POLLIN);
-	fds[0].revents = 0;
+	uintptr_t deadline = 0;
+	/* poll timeout is specified in milliseconds */
+	uintptr_t interval = seconds * 1000;
 
-	if (seconds == 0) {
+	if (0 == seconds) {
 		/* block indefinitely */
 		interval = POLL_RETRY_INTERVAL;
 	} else {
 		/* calculate the deadline */
-		if (clock_gettime(CLOCK_REALTIME, &spec) == -1) {
+		if (-1 == clock_gettime(CLOCK_REALTIME, &spec)) {
 			interval = 0;
 		} else {
 			deadline = seconds + spec.tv_sec;
 
 			/* ensure that the poll timeout is set to the lesser of the retry interval or the deadline */
-			if ((seconds * 1000) < POLL_RETRY_INTERVAL || POLL_RETRY_INTERVAL == -1) {
-				/* poll timeout is specified in milliseconds */
-				interval = seconds * 1000;
-			} else {
+			if (interval > POLL_RETRY_INTERVAL) {
 				interval = POLL_RETRY_INTERVAL;
 			}
 		}
 	}
 
+	memset(&fds, 0, sizeof(fds));
+	fds.fd = sem->descriptor_pair[0];
+	fds.events = (short)(POLLHUP | POLLERR | POLLNVAL | POLLIN);
+
 	while (1) {
-		old_value = compareAndSwapUDATA((uintptr_t *)&sem->sem_value, -1, -1);
+		old_value = compareAndSwapUDATA((uintptr_t *)&sem->sem_value, 0, 0);
 		while (old_value > 0) {
 			if (compareAndSwapUDATA((uintptr_t *)&sem->sem_value, old_value, old_value - 1) == old_value) {
 				/* successfully acquired lock */
@@ -531,23 +528,23 @@ sem_timedwait_r(sem_t_r *sem, uintptr_t seconds)
 		}
 
 		/* wait for something to change */
-		ret = poll(fds, 1, interval);
-		if ((ret == -1 && errno != EINTR) || fds[0].revents & (POLLHUP | POLLERR | POLLNVAL)) {
+		ret = poll(&fds, 1, (int)interval);
+		if (((-1 == ret) && (EINTR != errno)) || OMR_ARE_ANY_BITS_SET(fds.revents, POLLHUP | POLLERR | POLLNVAL)) {
 			return -2;
 		}
 
 		/* consume a byte off the pipe if it wasn't a timeout */
 		if (ret > 0) {
-			/* the pipe is configured as non-blocking, waiting is done on the poll call above*/
-			ret = read(fds[0].fd, &byte, 1);
-			if (ret == 0) {
+			/* the pipe is configured as non-blocking, waiting is done on the poll call above */
+			ret = read(fds.fd, &byte, 1);
+			if (0 == ret) {
 				/* EOF, pipe has become invalid */
 				return -4;
 			}
 		}
 
 		/* check if we've timed out. Do this last as the other possibilities for return are of more interest */
-		if (ret == 0 && seconds != 0) {
+		if ((0 == ret) && (0 != seconds)) {
 			if (clock_gettime(CLOCK_REALTIME, &spec) == -1) {
 				return -3;
 			}
@@ -568,18 +565,17 @@ sem_timedwait_r(sem_t_r *sem, uintptr_t seconds)
 static int
 sem_trywait_r(sem_t_r *sem)
 {
-	uintptr_t old_value = 0;
-
 	/* try to get the lock */
-	old_value = compareAndSwapUDATA((uintptr_t *)&sem->sem_value, -1, -1);
+	uintptr_t old_value = compareAndSwapUDATA((uintptr_t *)&sem->sem_value, 0, 0);
+
 	while (old_value > 0) {
-		int value = compareAndSwapUDATA((uintptr_t *)&sem->sem_value, old_value, old_value - 1);
+		uintptr_t value = compareAndSwapUDATA((uintptr_t *)&sem->sem_value, old_value, old_value - 1);
 		if (value == old_value) {
 			/* successfully acquired lock */
 			return 0;
 		}
 
-		/* retry if simply contending rather than failed */
+		/* retry if simply contending rather than fail */
 		old_value = value;
 	}
 
@@ -598,7 +594,7 @@ sem_trywait_r(sem_t_r *sem)
 static int
 sem_post_r(sem_t_r *sem)
 {
-	uintptr_t old_value;
+	uintptr_t old_value = 0;
 	char byte = 1;
 
 	/* release the lock */
@@ -607,13 +603,13 @@ sem_post_r(sem_t_r *sem)
 	} while (compareAndSwapUDATA((uintptr_t *)&sem->sem_value, old_value, old_value + 1) != old_value);
 
 	/* wake up a waiter */
-	if (write(sem->descriptor_pair[1], &byte, 1) != 1) {
+	if (1 != write(sem->descriptor_pair[1], &byte, 1)) {
 		return -1;
 	}
-#if !defined(J9ZOS390) && !defined(AIXPPC)
-	/* On AIX it is not legal to call fdatasync() inside a signal handler */
+#if !(defined(AIXPPC) || defined(J9ZOS390))
+	/* On AIX and z/OS it is not legal to call fdatasync() inside a signal handler. */
 	fdatasync(sem->descriptor_pair[1]);
-#endif
+#endif /* !(defined(AIXPPC) || defined(J9ZOS390)) */
 
 	return 0;
 }
@@ -630,7 +626,7 @@ sem_post_r(sem_t_r *sem)
 static int
 sem_destroy_r(sem_t_r *sem)
 {
-	uintptr_t old_value;
+	uintptr_t old_value = 0;
 
 	/* prevent the semaphore from being acquired by subtracting initial value*/
 	do {
@@ -665,7 +661,8 @@ static int
 timedOut(uintptr_t deadline)
 {
 	struct timespec spec;
-	if (clock_gettime(CLOCK_REALTIME, &spec) == -1) {
+
+	if (-1 == clock_gettime(CLOCK_REALTIME, &spec)) {
 		return 0;
 	}
 
@@ -682,9 +679,9 @@ timedOut(uintptr_t deadline)
 static int
 timeout(uintptr_t deadline)
 {
-	int secs = 0;
-
+	intptr_t secs = 0;
 	struct timespec spec;
+
 	if (clock_gettime(CLOCK_REALTIME, &spec) == -1) {
 		return 0;
 	}
@@ -692,7 +689,7 @@ timeout(uintptr_t deadline)
 	secs = deadline - spec.tv_sec;
 
 	if (secs > 0) {
-		return secs;
+		return (int)secs;
 	}
 
 	return 0;
@@ -703,19 +700,11 @@ void
 get_thread_Info(struct PlatformWalkData *data, void *context_arg, unsigned long tid)
 {
 	thread_context *context = (thread_context *)context_arg;
-	J9ThreadWalkState *state;
-	J9PlatformThread *thread;
-	char buf;
-	int ret = 0;
-	int i = 0;
-	pid_t pid = getpid();
-	int64_t deadline;
-
-	state = data->state;
+	J9ThreadWalkState *state = data->state;
 
 	/* construct the thread to pass back */
 	data->thread = state->portLibrary->heap_allocate(state->portLibrary, state->heap, sizeof(J9PlatformThread));
-	if (data->thread == NULL) {
+	if (NULL == data->thread) {
 		data->error = ALLOCATION_FAILURE;
 	} else {
 		memset(data->thread, 0, sizeof(J9PlatformThread));
@@ -754,19 +743,19 @@ upcall_handler(int signal, siginfo_t *siginfo, void *context_arg)
 	pid_t pid = getpid();
 	uintptr_t tid = omrthread_get_ras_tid();
 
-#ifdef AIXPPCX
+#if defined(AIXPPCX)
 	struct sigaction handler;
 
 	/* altering the signal handler doesn't affect already queued signals on AIX */
-	if (sigaction(SUSPEND_SIG, NULL, &handler) == -1 || handler.sa_sigaction != upcall_handler) {
+	if ((-1 == sigaction(SUSPEND_SIG, NULL, &handler)) || (handler.sa_sigaction != upcall_handler)) {
 		return;
 	}
-#endif
+#endif /* defined(AIXPPCX) */
 
 	/* check that this signal was queued by this process. */
 	if ((SI_QUEUE != siginfo->si_code)
 #if !defined(J9ZOS390)
-		/* pid is only valid on z/OS if si_code <= 0. SI_QUEUE is > 0. */
+		/* Omit this test on z/OS because SI_QUEUE is > 0 and pid is only valid if si_code <= 0. */
 		|| (pid != siginfo->si_pid)
 #endif /* !defined(J9ZOS390) */
 		|| (NULL == siginfo->si_value.sival_ptr)
@@ -779,48 +768,52 @@ upcall_handler(int signal, siginfo_t *siginfo, void *context_arg)
 	state = data->state;
 
 	/* ignore the signal if we are the controller thread, or if an error/timeout has already occurred */
-	if (data->controllerThread == tid || data->error) {
+	if (data->controllerThread == tid) {
+		return;
+	}
+	if (0 != data->error) {
 		return;
 	}
 
 	/* block until a context is requested, ignoring interrupts */
 	ret = sem_timedwait_r(&data->client_sem, timeout(data->state->deadline1));
 
-	if (ret != 0) {
+	if (0 != ret) {
 		/* error or timeout in sem_timedwait_r(), set shared error flag and don't do the backtrace */
 		data->error = ret;
-	} else if (data->error) {
+	} else if (0 != data->error) {
 		/* error set by another thread while we were in sem_timedwait_r(), don't do the backtrace */
 	} else {
 		/* construct the thread to pass back */
 		data->thread = state->portLibrary->heap_allocate(state->portLibrary, state->heap, sizeof(J9PlatformThread));
-		if (data->thread == NULL) {
+		if (NULL == data->thread) {
 			data->error = ALLOCATION_FAILURE;
 		} else {
-#ifdef J9ZOS390
+#if defined(J9ZOS390)
 			int format = 0;
-#endif /* J9ZOS390 */
+#endif /* defined(J9ZOS390) */
 
 			memset(data->thread, 0, sizeof(J9PlatformThread));
 			data->thread->thread_id = tid;
 			data->platformAllocatedContext = 1;
 			data->thread->context = context;
-#ifdef J9ZOS390
+#if defined(J9ZOS390)
 			data->thread->caa = _gtca();
 			data->thread->dsa = __dsa_prev(getdsa(), __EDCWCCWI_LOGICAL, __EDCWCCWI_DOWN, NULL, data->thread->caa, &format, NULL, NULL);
 			data->thread->dsa_format = format;
-#endif /* J9ZOS390 */
+#endif /* defined(J9ZOS390) */
 
-#ifdef LINUX
+#if defined(LINUX)
 			state->portLibrary->introspect_backtrace_thread(state->portLibrary, data->thread, state->heap, NULL);
+
 			if (OMR_ARE_NO_BITS_SET(state->options, OMR_INTROSPECT_NO_SYMBOLS)) {
 				state->portLibrary->introspect_backtrace_symbols_ex(state->portLibrary, data->thread, state->heap, 0);
 			}
-#endif /* LINUX */
+#endif /* defined(LINUX) */
 		}
 	}
 
-	if (data->error) {
+	if (0 != data->error) {
 		/* error or timeout, exit signal handler without waiting for the controller thread */
 		return;
 	}
@@ -829,7 +822,7 @@ upcall_handler(int signal, siginfo_t *siginfo, void *context_arg)
 
 	/* wait for the controller to close the pipe */
 	ret = barrier_enter_r(&data->release_barrier, data->state->deadline2);
-	if (ret != 0) {
+	if (0 != ret) {
 		/* timeout or error */
 		data->error = ret;
 	}
@@ -855,17 +848,17 @@ count_threads(struct PlatformWalkData *data)
 	struct dirent *file = NULL;
 	int pid = getpid();
 	DIR *tids = opendir("/proc/self/task");
-	if (tids == NULL) {
+	if (NULL == tids) {
 		/* try looking for the tasks for linux 2.4 */
 		DIR *proc = opendir("/proc");
-		if (proc == NULL) {
+		if (NULL == proc) {
 			return -1;
 		}
 
 		/* threads are found in hidden folders in proc, i.e. /proc/.<pid>. We can tell if they belong to
 		 * us by checking the thread group id from the 3rd line of /proc/.<pid>/status
 		 */
-		while ((file = readdir(proc)) != NULL) {
+		while (NULL != (file = readdir(proc))) {
 			/* we need a directory who's name starts with a '.' - we filter out '.' and '..' */
 			if ((file->d_type == DT_DIR)
 				&& (file->d_name[0] == '.')
@@ -887,10 +880,10 @@ count_threads(struct PlatformWalkData *data)
 				strcat(buf, "/status");
 
 				status = fopen(buf, "r");
-				if (status != NULL) {
+				if (NULL != status) {
 					int tgid = 0;
-					if (fscanf(status, "%*[^\n]\n%*[^\n]\nTgid:%d", &tgid) == 1 && tgid == pid) {
-						thread_count++;
+					if ((1 == fscanf(status, "%*[^\n]\n%*[^\n]\nTgid:%d", &tgid)) && (tgid == pid)) {
+						thread_count += 1;
 					}
 					fclose(status);
 				}
@@ -900,16 +893,18 @@ count_threads(struct PlatformWalkData *data)
 		closedir(proc);
 
 		/* add 1 to account for the initial thread */
-		thread_count++;
+		thread_count += 1;
 	} else {
-		for (thread_count = 0; readdir(tids) != NULL; thread_count++);
+		for (thread_count = 0; NULL != readdir(tids);) {
+			thread_count += 1;
+		}
 		/* remove the count for . and .. */
 		thread_count -= 2;
 
 		closedir(tids);
 	}
 
-	if (errno == EBADF) {
+	if (EBADF == errno) {
 		return -2;
 	}
 
@@ -921,17 +916,17 @@ count_threads(struct PlatformWalkData *data)
 {
 	struct thrdentry64 thread;
 	tid64_t cursor = 0;
-	unsigned int count = 0;
+	int count = 0;
 
-	while (getthrds64(getpid(), &thread, sizeof(struct thrdentry64), &cursor, 1) == 1) {
-		/* we don't want to count threads that are being disposed of or are pooled for reuse.
-		 * Experimentation shows that threads can receive signals before they have a stack or complete construction
-		 * so those are included.
+	while (1 == getthrds64(getpid(), &thread, sizeof(thread), &cursor, 1)) {
+		/* We don't want to count threads that are being disposed of or are pooled for reuse.
+		 * Experimentation shows that threads can receive signals before they have a stack or
+		 * complete construction so those are included.
 		 */
-		if (thread.ti_state != TSNONE && thread.ti_state != TSZOMB) {
-			count++;
-			if (thread.ti_state == TSIDL) {
-				data->uninitializedThreads++;
+		if ((TSNONE != thread.ti_state) && (TSZOMB != thread.ti_state)) {
+			count += 1;
+			if (TSIDL == thread.ti_state) {
+				data->uninitializedThreads += 1;
 			}
 		}
 	}
@@ -946,11 +941,13 @@ count_threads(struct PlatformWalkData *data)
 	int output_size = sizeof(struct pgthb) + sizeof(struct pgthc) + 200;
 	char *output_buffer = (char *)alloca(output_size);
 	int input_size = sizeof(struct pgtha);
-	int ret_val, ret_code, reason_code;
+	int ret_val = 0;
+	int ret_code = 0;
+	int reason_code = 0;
 	unsigned int data_offset = 0;
 	struct pgtha pgtha;
 	struct pgtha *cursor = &pgtha;
-	struct pgthc *pgthc;
+	struct pgthc *pgthc = NULL;
 
 	/* set up the getthent input area */
 	memset(cursor, 0, sizeof(pgtha));
@@ -961,17 +958,17 @@ count_threads(struct PlatformWalkData *data)
 
 	/* get thread data and increment index */
 	getthent(&input_size, &cursor, &output_size, (void **)&output_buffer, &ret_val, &ret_code, &reason_code);
-	if (ret_val == -1) {
+	if (-1 == ret_val) {
 		/* failed to get thread context */
 		return -1;
 	}
 
 	/* sanity check */
-	if (__e2a_l(((struct pgthb *)output_buffer)->id, 4) != 4 || strncmp(((struct pgthb *)output_buffer)->id, "gthb", 4)) {
+	if ((4 != __e2a_l(((struct pgthb *)output_buffer)->id, 4)) || (0 != strncmp(((struct pgthb *)output_buffer)->id, "gthb", 4))) {
 		return -2;
 	}
 
-	if (((struct pgthb *)output_buffer)->limitc != PGTH_OK) {
+	if (PGTH_OK != ((struct pgthb *)output_buffer)->limitc) {
 		/* we don't have the thread data */
 		return -3;
 	}
@@ -979,7 +976,9 @@ count_threads(struct PlatformWalkData *data)
 	data_offset = *(unsigned int *)((struct pgthb *)output_buffer)->offc;
 	data_offset = data_offset >> 8;
 
-	if (data_offset > ((struct pgthb *)output_buffer)->lenused || data_offset > output_size - sizeof(struct pgthc)) {
+	if ((data_offset > ((struct pgthb *)output_buffer)->lenused)
+	||  (data_offset > (output_size - sizeof(struct pgthc)))
+	) {
 		/* the thread's data is past the end of the populated buffer */
 		return -4;
 	}
@@ -987,7 +986,7 @@ count_threads(struct PlatformWalkData *data)
 	pgthc = (struct pgthc *)((char *)output_buffer + data_offset);
 
 	/* sanity check */
-	if (__e2a_l(pgthc->id, 4) != 4 || strncmp(pgthc->id, "gthc", 4)) {
+	if ((4 != __e2a_l(pgthc->id, 4)) || (0 != strncmp(pgthc->id, "gthc", 4))) {
 		return -5;
 	}
 
@@ -996,7 +995,7 @@ count_threads(struct PlatformWalkData *data)
 #endif
 
 /* This function installs a signal handler then generates signals until all threads in the process bar the calling
- * thread are suspended. The signals have to be real-time signals (ie. >= SIGRTMIN) or it's not possible to pass
+ * thread are suspended. The signals have to be real-time signals (i.e. >= SIGRTMIN) or it's not possible to pass
  * a data via sigqueue. Also, non real-time signals of the same value can be collapsed and we require any threads
  * scheduled during this suspension to immediately receive a signal, so we need at least one signal per unsuspended
  * thread on the queue.
@@ -1014,6 +1013,7 @@ suspend_all_preemptive(struct PlatformWalkData *data)
 #if defined(OMR_CONFIGURABLE_SUSPEND_SIGNAL)
 	struct OMRPortLibrary *portLibrary = data->state->portLibrary;
 #endif /* defined(OMR_CONFIGURABLE_SUSPEND_SIGNAL) */
+
 	upcall_action.sa_sigaction = upcall_handler;
 	upcall_action.sa_flags = SA_SIGINFO | SA_RESTART;
 	sigemptyset(&upcall_action.sa_mask);
@@ -1021,7 +1021,7 @@ suspend_all_preemptive(struct PlatformWalkData *data)
 	sigaddset(&upcall_action.sa_mask, SUSPEND_SIG);
 
 	/* install the signal handler */
-	if (sigaction(SUSPEND_SIG, &upcall_action, &data->oldHandler) == -1) {
+	if (-1 == sigaction(SUSPEND_SIG, &upcall_action, &data->oldHandler)) {
 		/* no solution but to bail if we can't install the handler */
 		RECORD_ERROR(data->state, SIGNAL_SETUP_ERROR, -1);
 		return -1;
@@ -1079,7 +1079,7 @@ suspend_all_preemptive(struct PlatformWalkData *data)
 			 * number to see if we can avoid the added complexity of coordination between the signal handler and
 			 * this suspend logic. Testing shows 48 threads suspended on AIX5.3 at the point where we get EAGAIN.
 			 */
-			if ((i % 10) == 0) {
+			if (0 == (i % 10)) {
 				omrthread_yield();
 			}
 		}
@@ -1097,7 +1097,7 @@ suspend_all_preemptive(struct PlatformWalkData *data)
 		} else if (data->threadCount > thread_count) {
 			/* threads exited in between us counting and generating signals, so swallow the surplus */
 			sigset_t set;
-			int sig;
+			int sig = 0;
 
 			for (i = 0; i < data->threadCount - thread_count; i++) {
 				/* sanity check that there is a signal on the queue for us */
@@ -1108,9 +1108,9 @@ suspend_all_preemptive(struct PlatformWalkData *data)
 					sigaddset(&set, SUSPEND_SIG);
 #if defined(J9ZOS390)
 					sigwait(&set);
-#else
+#else /* defined(J9ZOS390) */
 					sigwait(&set, &sig);
-#endif
+#endif /* defined(J9ZOS390) */
 				}
 			}
 
@@ -1125,7 +1125,6 @@ suspend_all_preemptive(struct PlatformWalkData *data)
 	}
 
 	return data->threadCount - 1;
-
 #else /* !defined(J9OS_I5) */
 	struct __pthrdsinfo pinfo;
 	int regbuf[64];
@@ -1209,19 +1208,19 @@ suspend_all_preemptive(struct PlatformWalkData *data)
 static void
 freeThread(J9ThreadWalkState *state, J9PlatformThread *thread)
 {
-	J9PlatformStackFrame *frame;
+	J9PlatformStackFrame *frame = NULL;
 	struct PlatformWalkData *data = (struct PlatformWalkData *)state->platform_data;
 
-	if (thread == NULL) {
+	if (NULL == thread) {
 		return;
 	}
 
 	frame = thread->callstack;
-	while (frame) {
+	while (NULL != frame) {
 		J9PlatformStackFrame *tmp = frame;
 		frame = frame->parent_frame;
 
-		if (tmp->symbol) {
+		if (NULL != tmp->symbol) {
 			state->portLibrary->heap_free(state->portLibrary, state->heap, tmp->symbol);
 			tmp->symbol = NULL;
 		}
@@ -1229,7 +1228,7 @@ freeThread(J9ThreadWalkState *state, J9PlatformThread *thread)
 		state->portLibrary->heap_free(state->portLibrary, state->heap, tmp);
 	}
 
-	if (!data->platformAllocatedContext && thread->context) {
+	if (!data->platformAllocatedContext && (NULL != thread->context)) {
 		state->portLibrary->heap_free(state->portLibrary, state->heap, thread->context);
 	}
 
@@ -1264,7 +1263,7 @@ resume_all_preempted(struct PlatformWalkData *data)
 	 */
 
 	/* now there are no outstanding signals on the queue we can drop the handler */
-#ifdef AIXPPC
+#if defined(AIXPPC)
 	struct sigaction ign;
 
 	if (data->cleanupRequired) {
@@ -1280,7 +1279,7 @@ resume_all_preempted(struct PlatformWalkData *data)
 		/* we try this, nothing we can do if it doesn't work */
 		sigaction(SUSPEND_SIG, &ign, NULL);
 	}
-#endif
+#endif /* defined(AIXPPC) */
 
 	if (data->threadsOutstanding > 0) {
 		/* inhibit collection of contexts from any of the outstanding threads we release */
@@ -1296,7 +1295,7 @@ resume_all_preempted(struct PlatformWalkData *data)
 		struct OMRPortLibrary *portLibrary = data->state->portLibrary;
 #endif /* defined(OMR_CONFIGURABLE_SUSPEND_SIGNAL) */
 		/* clear out the signal queue so that any undispatched suspend signals are not left lying around */
-		while (sigpending(&set) == 0 && sigismember(&set, SUSPEND_SIG)) {
+		while ((0 == sigpending(&set)) && sigismember(&set, SUSPEND_SIG)) {
 			/* there is a suspend signal pending so swallow it. It is worth noting that sigwait isn't in the initial
 			 * set of posix signal safe functions, however the fact that it bypasses the installed signal handler is
 			 * too useful it ignore, so we risk it. It could be replaced with sigsuspend and some handler juggling if
@@ -1306,18 +1305,18 @@ resume_all_preempted(struct PlatformWalkData *data)
 			sigaddset(&set, SUSPEND_SIG);
 #if defined(J9ZOS390)
 			sigwait(&set);
-#else
+#else /* defined(J9ZOS390) */
 			/* the pending signal may have been dispatched to another thread since we made the sigpending() call above,
 			 * so use a non-blocking sigtimedwait() call to clear it if it's still there, don't actually wait
 			 */
 			time_out.tv_sec = 0;
 			time_out.tv_nsec = 0;
 			sigtimedwait(&set, NULL, &time_out);
-#endif
+#endif /* defined(J9ZOS390) */
 		}
 
 		/* restore the old signal handler */
-		if ((data->oldHandler.sa_flags & SA_SIGINFO) == 0 && data->oldHandler.sa_handler == SIG_DFL) {
+		if (OMR_ARE_NO_BITS_SET(data->oldHandler.sa_flags, SA_SIGINFO) && (SIG_DFL == data->oldHandler.sa_handler)) {
 			/* if there wasn't an old signal handler the set this to ignore. There shouldn't be any suspend signals
 			 * left but better safe than sorry
 			 */
@@ -1334,7 +1333,7 @@ resume_all_preempted(struct PlatformWalkData *data)
 		}
 	}
 
-	if (data->error) {
+	if (0 != data->error) {
 		/* allow threads in upcall handler to run */
 		omrthread_yield();
 	}
@@ -1354,9 +1353,8 @@ resume_all_preempted(struct PlatformWalkData *data)
 	state->platform_data = NULL;
 
 #else /* !defined(J9OS_I5) */
-
 	sigset_t set;
-	int sig;
+	int sig = 0;
 	int i = 0;
 	struct __pthrdsinfo pinfo;
 	int regbuf[64];
@@ -1373,8 +1371,8 @@ resume_all_preempted(struct PlatformWalkData *data)
 	while (pthread_getthrds_np(&thr, PTHRDSINFO_QUERY_TID, &pinfo, sizeof(pinfo), regbuf, &val) == 0 && thr != 0) {
 		ret = pthread_continue_np(thr);
 #if 0
-		if (ret) {
-			return ;
+		if (0 != ret) {
+			return;
 		}
 #endif
 	}
@@ -1386,7 +1384,6 @@ resume_all_preempted(struct PlatformWalkData *data)
 	/* clean up the heap */
 	data->state->portLibrary->heap_free(data->state->portLibrary, data->state->heap, data);
 	state->platform_data = NULL;
-
 #endif /* !defined(J9OS_I5) */
 }
 
@@ -1409,17 +1406,17 @@ setup_native_thread(J9ThreadWalkState *state, thread_context *sigContext, int he
 		size = sizeof(ucontext_t);
 	}
 
-	if (heapAllocate || sigContext) {
+	if ((0 != heapAllocate) || (NULL != sigContext)) {
 		/* allocate the thread container*/
 		state->current_thread = (J9PlatformThread *)state->portLibrary->heap_allocate(state->portLibrary, state->heap, sizeof(J9PlatformThread));
-		if (state->current_thread == NULL) {
+		if (NULL == state->current_thread) {
 			return -1;
 		}
 		memset(state->current_thread, 0, sizeof(J9PlatformThread));
 
 		/* allocate space for the copy of the context */
 		state->current_thread->context = (thread_context *)state->portLibrary->heap_allocate(state->portLibrary, state->heap, size);
-		if (state->current_thread->context == NULL) {
+		if (NULL == state->current_thread->context) {
 			return -2;
 		}
 		memset(state->current_thread->context, 0, size);
@@ -1430,7 +1427,7 @@ setup_native_thread(J9ThreadWalkState *state, thread_context *sigContext, int he
 		state->current_thread->callstack = data->thread->callstack;
 
 		/* copy the context */
-		if (sigContext) {
+		if (NULL != sigContext) {
 			/* we're using the provided context instead of generating it */
 			memcpy(state->current_thread->context, ((OMRUnixSignalInfo *)sigContext)->platformSignalInfo.context, size);
 		} else if (state->current_thread->thread_id == omrthread_get_ras_tid()) {
@@ -1445,16 +1442,16 @@ setup_native_thread(J9ThreadWalkState *state, thread_context *sigContext, int he
 	}
 
 	/* populate backtraces if not present */
-	if (state->current_thread->callstack == NULL) {
-		/* don't pass sigContext in here as we should have fixed up the thread already. It confuses heap/not heap allocations if we
-		 * pass it here.
+	if (NULL == state->current_thread->callstack) {
+		/* don't pass sigContext in here as we should have fixed up the thread already.
+		 * It confuses heap/not heap allocations if we pass it here.
 		 */
 		SPECULATE_ERROR(state, FAULT_DURING_BACKTRACE, 2);
 		state->portLibrary->introspect_backtrace_thread(state->portLibrary, state->current_thread, state->heap, NULL);
 		CLEAR_ERROR(state);
 
-#ifdef AIXPPC
-		if (state->current_thread->callstack == NULL && data->uninitializedThreads) {
+#if defined(AIXPPC)
+		if ((NULL == state->current_thread->callstack) && (0 != data->uninitializedThreads)) {
 			/* if we encountered threads under construction while counting then this could be legitimate */
 			char *message = "no stack frames available, the thread may not have finished initialization";
 			char *symbol = (char *)state->portLibrary->heap_allocate(state->portLibrary, state->heap, strlen(message) + 1);
@@ -1463,12 +1460,12 @@ setup_native_thread(J9ThreadWalkState *state, thread_context *sigContext, int he
 			 * when freeing thread data.
 			 */
 			strcpy(symbol, message);
-			memset(frame, 0, sizeof(J9PlatformStackFrame));
+			memset(frame, 0, sizeof(*frame));
 			frame->symbol = symbol;
 
 			state->current_thread->callstack = frame;
 		}
-#endif
+#endif /* defined(AIXPPC) */
 	}
 
 	if (OMR_ARE_ANY_BITS_SET(state->options, OMR_INTROSPECT_NO_SYMBOLS)) {
@@ -1479,7 +1476,7 @@ setup_native_thread(J9ThreadWalkState *state, thread_context *sigContext, int he
 		CLEAR_ERROR(state);
 	}
 
-	if (state->current_thread->error != 0) {
+	if (0 != state->current_thread->error) {
 		RECORD_ERROR(state, state->current_thread->error, 1);
 	}
 
@@ -1526,15 +1523,15 @@ sigqueue_is_reliable(void)
  * calling thread is always presented first.
  *
  * @param heap used to contain the thread context, the stack frame representations and symbol strings. No
- * 			memory is allocated outside of the heap provided. Must not be NULL.
+ *          memory is allocated outside of the heap provided. Must not be NULL.
  * @param state semi-opaque structure used as a cursor for iteration. Must not be NULL User visible fields
- *			are:
- * 			deadline - the system time in seconds at which to abort introspection and resume
- * 			error - numeric error description, 0 on success
- * 			error_detail - detail for the specific error
- * 			error_string - string description of error
+ *          are:
+ *          deadline - the system time in seconds at which to abort introspection and resume
+ *          error - numeric error description, 0 on success
+ *          error_detail - detail for the specific error
+ *          error_string - string description of error
  * @param signal_info a signal context to use. This will be used in place of the live context for the
- * 			calling thread.
+ *          calling thread.
  *
  * @return NULL if there is a problem suspending threads, gathering thread contexts or if the heap
  * is too small to contain even the context without stack trace. Errors are reported in the error,
@@ -1544,34 +1541,34 @@ J9PlatformThread *
 omrintrospect_threads_startDo_with_signal(struct OMRPortLibrary *portLibrary, J9Heap *heap, J9ThreadWalkState *state, void *signal_info)
 {
 	int result = 0;
-	struct PlatformWalkData *data;
+	struct PlatformWalkData *data = NULL;
 	J9PlatformThread thread;
 	sigset_t mask;
 	int suspend_result = 0;
-	int flag;
+	int flag = 0;
 
-#ifdef ZOS64
+#if defined(ZOS64)
 	RECORD_ERROR(state, UNSUPPORT_PLATFORM, 0);
 	return NULL;
-#endif
+#endif /* defined(ZOS64) */
 
 	/* construct the walk state and thread structures */
 	state->heap = heap;
 	state->portLibrary = portLibrary;
-	data = (struct PlatformWalkData *)portLibrary->heap_allocate(portLibrary, heap, sizeof(struct PlatformWalkData));
+	data = (struct PlatformWalkData *)portLibrary->heap_allocate(portLibrary, heap, sizeof(*data));
 	state->platform_data = data;
 	state->current_thread = NULL;
 
-	if (!data) {
+	if (NULL == data) {
 		RECORD_ERROR(state, ALLOCATION_FAILURE, 0);
 		return NULL;
 	}
 
-	memset(data, 0, sizeof(struct PlatformWalkData));
+	memset(data, 0, sizeof(*data));
 	data->state = state;
 	data->controllerThread = omrthread_get_ras_tid();
 
-	memset(&thread, 0, sizeof(J9PlatformThread));
+	memset(&thread, 0, sizeof(thread));
 
 #if !defined(J9OS_I5)
 	/* prevent this thread from receiving the suspend signal */
@@ -1592,7 +1589,7 @@ omrintrospect_threads_startDo_with_signal(struct OMRPortLibrary *portLibrary, J9
 	data->release_barrier.descriptor_pair[1] = -1;
 
 	/* set up the semaphores */
-	if ((sem_init_r(&data->client_sem, 0)) != 0 || (sem_init_r(&data->controller_sem, 0)) != 0) {
+	if ((sem_init_r(&data->client_sem, 0) != 0) || (sem_init_r(&data->controller_sem, 0) != 0)) {
 		RECORD_ERROR(state, INITIALIZATION_ERROR, errno);
 		goto cleanup;
 	}
@@ -1601,7 +1598,7 @@ omrintrospect_threads_startDo_with_signal(struct OMRPortLibrary *portLibrary, J9
 	fcntl(data->client_sem.descriptor_pair[0], F_SETFL, flag | O_NONBLOCK);
 
 	barrier_init_r(&data->release_barrier, 0);
-#ifdef AIXPPC
+#if defined(AIXPPC)
 	/* On AIX, initialize semaphore pipes to be sync-on-write (O_DSYNC flag). Previously we used the fdatasync()
 	 * call after writing to the pipe, but on AIX it is not legal to call fdatasync() inside a signal handler.
 	 */
@@ -1611,7 +1608,7 @@ omrintrospect_threads_startDo_with_signal(struct OMRPortLibrary *portLibrary, J9
 	fcntl(data->controller_sem.descriptor_pair[1], F_SETFL, flag | O_DSYNC);
 	flag = fcntl(data->release_barrier.descriptor_pair[1], F_GETFL);
 	fcntl(data->release_barrier.descriptor_pair[1], F_SETFL, flag | O_DSYNC);
-#endif
+#endif /* defined(AIXPPC) */
 #endif /* !defined(J9OS_I5) */
 
 	/* suspend all threads bar this one */
@@ -1684,19 +1681,20 @@ omrintrospect_threads_nextDo(J9ThreadWalkState *state)
 	J9PlatformThread *thread = NULL;
 	int result = 0;
 #if !defined(J9OS_I5)
-	sigset_t mask, old_mask;
+	sigset_t mask;
+	sigset_t old_mask;
 #else /* !defined(J9OS_I5) */
 	int regbuf[64];
 	int val = sizeof(regbuf);
 #endif /* !defined(J9OS_I5) */
 
-	if (data == NULL) {
+	if (NULL == data) {
 		/* state is invalid */
 		RECORD_ERROR(state, INVALID_STATE, 0);
 		return NULL;
 	}
 
-	if (!data->consistent) {
+	if (0 == data->consistent) {
 		/* state is invalid */
 		RECORD_ERROR(state, INVALID_STATE, 1);
 		goto cleanup;
@@ -1710,7 +1708,7 @@ omrintrospect_threads_nextDo(J9ThreadWalkState *state)
 	 */
 	sigemptyset(&mask);
 	sigaddset(&mask, SUSPEND_SIG);
-	if (sigprocmask(SIG_BLOCK, &mask, &old_mask) != 0 && !sigismember(&old_mask, SUSPEND_SIG)) {
+	if ((sigprocmask(SIG_BLOCK, &mask, &old_mask) != 0) && !sigismember(&old_mask, SUSPEND_SIG)) {
 		/* can't risk it if we can't filter the suspend signal from this thread */
 		RECORD_ERROR(state, SIGNAL_SETUP_ERROR, errno);
 		return NULL;
@@ -1720,25 +1718,27 @@ omrintrospect_threads_nextDo(J9ThreadWalkState *state)
 	/* cleanup the previous threads */
 	freeThread(state, state->current_thread);
 
-#if !defined(J9OS_I5)
 	if (data->threadsOutstanding <= 0) {
-#else /* !defined(J9OS_I5) */
-	if ((data->threadsOutstanding <= 0) || (data->threadsOutstanding != data->threadCount - 1) && (data->thr == 0)) {
-#endif /* !defined(J9OS_I5) */
 		/* we've finished processing threads */
 		goto cleanup;
 	}
+#if defined(J9OS_I5)
+	if ((data->threadsOutstanding != data->threadCount - 1) && (0 == data->thr)) {
+		/* we've finished processing threads */
+		goto cleanup;
+	}
+#endif /* defined(J9OS_I5) */
 
 	/* record that we've processed one of the suspended threads */
-	data->threadsOutstanding--;
+	data->threadsOutstanding -= 1;
 
 #if !defined(J9OS_I5)
 	/* solicit the next thread context */
 	result = sem_post_r(&data->client_sem);
 
-	if (result == -1 || data->error) {
+	if ((-1 == result) || (0 != data->error)) {
 		/* failed to solicit thread context */
-		RECORD_ERROR(state, COLLECTION_FAILURE, result == -1? -1 : data->error);
+		RECORD_ERROR(state, COLLECTION_FAILURE, (-1 == result) ? -1 : data->error);
 		goto cleanup;
 	}
 
@@ -1749,7 +1749,7 @@ omrintrospect_threads_nextDo(J9ThreadWalkState *state)
 			result = sem_trywait_r(&data->controller_sem);
 			if (0 == result) {
 				break;
-			} else if (timedOut(data->state->deadline1) || data->error) {
+			} else if (timedOut(data->state->deadline1) || (0 != data->error)) {
 				break;
 			} else {
 				union sigval val;
@@ -1765,9 +1765,9 @@ omrintrospect_threads_nextDo(J9ThreadWalkState *state)
 		}
 	}
 
-	if (result != 0 || data->error) {
+	if ((0 != result) || (0 != data->error)) {
 		/* we've not received notification from a client thread */
-		if (data->error) {
+		if (0 != data->error) {
 			RECORD_ERROR(state, COLLECTION_FAILURE, data->error);
 		} else {
 			RECORD_ERROR(state, TIMEOUT, result);
@@ -1776,14 +1776,16 @@ omrintrospect_threads_nextDo(J9ThreadWalkState *state)
 	}
 
 #else /* !defined(J9OS_I5) */
-	while (data->thr == pthread_self() || data->thr == 0) {
-		if ((result = pthread_getthrds_np(&data->thr, PTHRDSINFO_QUERY_TID, &data->pinfo, sizeof(data->pinfo), regbuf, &val)) != 0) {
+	while ((data->thr == pthread_self()) || (0 == data->thr)) {
+		result = pthread_getthrds_np(&data->thr, PTHRDSINFO_QUERY_TID, &data->pinfo, sizeof(data->pinfo), regbuf, &val);
+		if (0 != result) {
 			RECORD_ERROR(state, COLLECTION_FAILURE, result);
 			goto cleanup;
 		}
 	}
 
-	if ((result = pthread_getthrds_np(&data->thr, PTHRDSINFO_QUERY_ALL, &data->pinfo, sizeof(data->pinfo), regbuf, &val)) != 0) {
+	result = pthread_getthrds_np(&data->thr, PTHRDSINFO_QUERY_ALL, &data->pinfo, sizeof(data->pinfo), regbuf, &val);
+	if (0 != result) {
 		RECORD_ERROR(state, COLLECTION_FAILURE, result);
 		goto cleanup;
 	}
@@ -1794,7 +1796,6 @@ omrintrospect_threads_nextDo(J9ThreadWalkState *state)
 
 		get_thread_Info(data, (void *)&ut, data->pinfo.__pi_tid);
 	}
-
 #endif /* !defined(J9OS_I5) */
 
 	thread = data->thread;
@@ -1825,7 +1826,7 @@ omrintrospect_set_suspend_signal_offset(struct OMRPortLibrary *portLibrary, int3
 		|| (signalOffset > (SIGRTMAX - SIGRTMIN))
 #if defined(SIG_RI_INTERRUPT_INDEX)
 		|| (SIG_RI_INTERRUPT_INDEX == signalOffset)
-#endif  /* defined(SIG_RI_INTERRUPT_INDEX) */
+#endif /* defined(SIG_RI_INTERRUPT_INDEX) */
 	) {
 		result = OMRPORT_ERROR_INVALID;
 	} else {

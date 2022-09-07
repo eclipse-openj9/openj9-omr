@@ -105,13 +105,14 @@ namespace TR { class RegisterDependencyConditions; }
 // Hack markers
 #define CANT_REMATERIALIZE_ADDRESSES(cg) (cg->comp()->target().is64Bit()) // AMD64 produces a memref with an unassigned addressRegister
 
-TR_X86ProcessorInfo::TR_X86ProcessorInfo()
-   : _vendorFlags(0),
-     _featureFlags(0),
-     _featureFlags2(0),
-     _featureFlags8(0),
-     _processorDescription(0)
-   {}
+void TR_X86ProcessorInfo::reset()
+   {
+   _vendorFlags = 0;
+   _featureFlags = 0;
+   _featureFlags2 = 0;
+   _featureFlags8 = 0;
+   _processorDescription = 0;
+   }
 
 void TR_X86ProcessorInfo::initialize()
    {

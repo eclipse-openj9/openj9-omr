@@ -121,7 +121,7 @@ struct TR_X86ProcessorInfo
 
    TR_ALLOC(TR_Memory::IA32ProcessorInfo)
 
-   TR_X86ProcessorInfo();
+   TR_X86ProcessorInfo() { reset(); }
 
    enum TR_X86ProcessorVendors
       {
@@ -228,6 +228,16 @@ private:
 
    friend class OMR::X86::CodeGenerator;
 
+   /**
+    * @brief Zero initalize all member variables
+    *
+    */
+   void reset();
+
+   /**
+    * @brief Initialize all member variables
+    *
+    */
    void initialize();
 
    /**

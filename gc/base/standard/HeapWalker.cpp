@@ -71,9 +71,7 @@ heapWalkerObjectFieldSlotDo(OMR_VM *omrVM, omrobjectptr_t object, GC_SlotObject 
  * walk through slots of mixed object and apply the user function.
  */
 static void
-// comment just for back dependency
-//heapWalkerObjectSlotsDo(OMR_VMThread *omrVMThread, omrobjectptr_t object, MM_HeapWalkerSlotFunc oSlotIterator, void *localUserData, MM_HeapWalkerDelegate *delegate)
-heapWalkerObjectSlotsDo(OMR_VMThread *omrVMThread, omrobjectptr_t object, MM_HeapWalkerSlotFunc oSlotIterator, void *localUserData)
+heapWalkerObjectSlotsDo(OMR_VMThread *omrVMThread, omrobjectptr_t object, MM_HeapWalkerSlotFunc oSlotIterator, void *localUserData, MM_HeapWalkerDelegate *delegate)
 {
 	OMR_VM *omrVM = omrVMThread->_vm;
 	GC_ObjectIterator objectIterator(omrVM, object);
@@ -82,8 +80,7 @@ heapWalkerObjectSlotsDo(OMR_VMThread *omrVMThread, omrobjectptr_t object, MM_Hea
 	while ((slotObject = objectIterator.nextSlot()) != NULL) {
 		heapWalkerObjectFieldSlotDo(omrVM, object, slotObject, oSlotIterator, localUserData);
 	}
-// comment just for back dependency
-//	delegate->objectSlotsDo(omrVMThread, object, oSlotIterator, localUserData);
+	delegate->objectSlotsDo(omrVMThread, object, oSlotIterator, localUserData);
 }
 
 void
@@ -111,9 +108,7 @@ heapWalkerObjectSlotsDo(OMR_VMThread *omrVMThread, MM_HeapRegionDescriptor *regi
 		(*oSlotIterator)(omrVM, &indirectObject, localUserData, 0);
 	}
 
-// comment just for back dependency
-//	heapWalkerObjectSlotsDo(omrVMThread, object, oSlotIterator, localUserData, slotObjectDoUserData->heapWalker->getHeapWalkerDelegate());
-	heapWalkerObjectSlotsDo(omrVMThread, object, oSlotIterator, localUserData);
+	heapWalkerObjectSlotsDo(omrVMThread, object, oSlotIterator, localUserData, slotObjectDoUserData->heapWalker->getHeapWalkerDelegate());
 }
 
 MM_HeapWalker *
@@ -132,10 +127,9 @@ MM_HeapWalker::newInstance(MM_EnvironmentBase *env)
 bool
 MM_HeapWalker::initialize(MM_EnvironmentBase *env)
 {
-// comment just for back dependency
-//	if (!_delegate.initialize(env, this)) {
-//		return false;
-//	}
+	if (!_delegate.initialize(env, this)) {
+		return false;
+	}
 	return true;
 }
 

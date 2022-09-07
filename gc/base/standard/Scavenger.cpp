@@ -1872,9 +1872,7 @@ MM_Scavenger::copyHotField(MM_EnvironmentStandard *env, omrobjectptr_t destinati
 GC_ObjectScanner *
 MM_Scavenger::getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectptr, void *objectScannerState, uintptr_t flags, MM_ScavengeScanReason reason, bool *shouldRemember)
 {
-// for temporary backdependence, need to be updated after related changes are merged.
-//	return _delegate.getObjectScanner(env, objectptr, (void*) objectScannerState, flags, reason, shouldRemember);
-	return _delegate.getObjectScanner(env, objectptr, (void*) objectScannerState, flags);
+	return _delegate.getObjectScanner(env, objectptr, (void*) objectScannerState, flags, reason, shouldRemember);
 }
 
 uintptr_t
@@ -2803,14 +2801,8 @@ MM_Scavenger::shouldRememberObject(MM_EnvironmentStandard *env, omrobjectptr_t o
 		GC_SlotObject *slotPtr;
 		while (NULL != (slotPtr = objectScanner->getNextSlot())) {
 			omrobjectptr_t slotObjectPtr = slotPtr->readReferenceFromSlot();
-			if (NULL != slotObjectPtr) {
-				if (isObjectInNewSpace(slotObjectPtr)) {
-					Assert_MM_true(!isObjectInEvacuateMemory(slotObjectPtr));
-					return true;
-				} else if (IS_CONCURRENT_ENABLED && isBackOutFlagRaised() && isObjectInEvacuateMemory(slotObjectPtr)) {
-					/* Could happen if we aborted before completing RS scan */
-					return true;
-				}
+			if (shouldRememberSlot(&slotObjectPtr)) {
+				return true;
 			}
 		}
 	}

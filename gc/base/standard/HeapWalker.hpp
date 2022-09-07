@@ -28,8 +28,7 @@
 #include "objectdescription.h"
 
 #include "BaseVirtual.hpp"
-// comment just for back dependency
-//#include "HeapWalkerDelegate.hpp"
+#include "HeapWalkerDelegate.hpp"
 
 class MM_EnvironmentBase;
 class MM_Heap;
@@ -44,8 +43,7 @@ class MM_HeapWalker : public MM_BaseVirtual
 {
 private:
 protected:
-// comment just for back dependency
-//MM_HeapWalkerDelegate _delegate;
+MM_HeapWalkerDelegate _delegate;
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	void rememberedObjectSlotsDo(MM_EnvironmentBase *env, MM_HeapWalkerSlotFunc function, void *userData, uintptr_t walkFlags, bool parallel);
 #endif /* OMR_GC_MODRON_SCAVENGER */
@@ -59,8 +57,7 @@ public:
 	virtual void kill(MM_EnvironmentBase *env);
 	
 	void heapWalkerSlotCallback(MM_EnvironmentBase *env, omrobjectptr_t *objectSlotPtr, MM_HeapWalkerSlotFunc function, void * userData);
-// comment just for back dependency
-//	MM_HeapWalkerDelegate *getHeapWalkerDelegate() { return  &_delegate; }
+	MM_HeapWalkerDelegate *getHeapWalkerDelegate() { return  &_delegate; }
 	/**
 	 * constructor of Heap Walker
 	 */

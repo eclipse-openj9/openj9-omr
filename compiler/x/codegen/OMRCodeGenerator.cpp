@@ -207,9 +207,9 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
    {
    bool supportsSSE2 = false;
 
-   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.isGenuineIntel() == _targetProcessorInfo.isGenuineIntel(), "isGenuineIntel() failed\n");
-   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.isAuthenticAMD() == _targetProcessorInfo.isAuthenticAMD(), "isAuthenticAMD() failed\n");
-   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.prefersMultiByteNOP() == _targetProcessorInfo.prefersMultiByteNOP(), "prefersMultiByteNOP() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.isGenuineIntel() == getX86ProcessorInfo().isGenuineIntel(), "isGenuineIntel() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.isAuthenticAMD() == getX86ProcessorInfo().isAuthenticAMD(), "isAuthenticAMD() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.prefersMultiByteNOP() == getX86ProcessorInfo().prefersMultiByteNOP(), "prefersMultiByteNOP() failed\n");
 
    // Pick a padding table
    //
@@ -229,7 +229,7 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
 
 #if defined(TR_TARGET_X86)
 #if !defined(J9HAMMER)
-   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) == _targetProcessorInfo.supportsSSE2(), "supportsSSE2() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) == getX86ProcessorInfo().supportsSSE2(), "supportsSSE2() failed\n");
 
    if (comp->target().cpu.supportsFeature(OMR_FEATURE_X86_SSE2) && comp->target().cpu.testOSForSSESupport())
       supportsSSE2 = true;
@@ -239,7 +239,7 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
 #endif // !defined(J9HAMMER)
 #endif // defined(TR_TARGET_X86)
 
-   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_RTM) == _targetProcessorInfo.supportsTM(), "supportsTM() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.supportsFeature(OMR_FEATURE_X86_RTM) == getX86ProcessorInfo().supportsTM(), "supportsTM() failed\n");
 
    if (comp->target().cpu.supportsFeature(OMR_FEATURE_X86_RTM) && !comp->getOption(TR_DisableTM))
       {
@@ -249,7 +249,7 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
         *
         * TODO: Need to figure out from which mode of Broadwell start supporting TM
         */
-      TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.is(OMR_PROCESSOR_X86_INTELHASWELL) == _targetProcessorInfo.isIntelHaswell(), "isIntelHaswell() failed\n");
+      TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.is(OMR_PROCESSOR_X86_INTELHASWELL) == getX86ProcessorInfo().isIntelHaswell(), "isIntelHaswell() failed\n");
       if (!comp->target().cpu.is(OMR_PROCESSOR_X86_INTELHASWELL))
          {
          if (comp->target().is64Bit())
@@ -266,7 +266,7 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
 
    // Choose the best XMM double precision load instruction for the target architecture.
    //
-   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.isAuthenticAMD() == _targetProcessorInfo.isAuthenticAMD(), "isAuthenticAMD() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.isAuthenticAMD() == getX86ProcessorInfo().isAuthenticAMD(), "isAuthenticAMD() failed\n");
    static char *forceMOVLPD = feGetEnv("TR_forceMOVLPDforDoubleLoads");
    if (comp->target().cpu.isAuthenticAMD() || forceMOVLPD)
       {
@@ -427,9 +427,9 @@ OMR::X86::CodeGenerator::initializeX86(TR::Compilation *comp)
    // Make a conservative estimate of the boundary over which an executable instruction cannot
    // be patched.
    //
-   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.isGenuineIntel() == _targetProcessorInfo.isGenuineIntel(), "isGenuineIntel() failed\n");
-   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.isAuthenticAMD() == _targetProcessorInfo.isAuthenticAMD(), "isAuthenticAMD() failed\n");
-   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.is(OMR_PROCESSOR_X86_AMDFAMILY15H) == _targetProcessorInfo.isAMD15h(), "isAMD15h() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.isGenuineIntel() == getX86ProcessorInfo().isGenuineIntel(), "isGenuineIntel() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.isAuthenticAMD() == getX86ProcessorInfo().isAuthenticAMD(), "isAuthenticAMD() failed\n");
+   TR_ASSERT_FATAL(comp->compileRelocatableCode() || comp->isOutOfProcessCompilation() || comp->compilePortableCode() || comp->target().cpu.is(OMR_PROCESSOR_X86_AMDFAMILY15H) == getX86ProcessorInfo().isAMD15h(), "isAMD15h() failed\n");
    int32_t boundary;
    if (comp->target().cpu.isGenuineIntel() || (comp->target().cpu.isAuthenticAMD() && comp->target().cpu.is(OMR_PROCESSOR_X86_AMDFAMILY15H)))
       boundary = 32;

@@ -346,7 +346,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
 
    static TR_X86ProcessorInfo &getX86ProcessorInfo() {return _targetProcessorInfo;}
-   static void initializeX86TargetProcessorInfo() { _targetProcessorInfo.initialize(); }
+   static void initializeX86TargetProcessorInfo() { getX86ProcessorInfo().initialize(); }
 
    typedef enum
       {

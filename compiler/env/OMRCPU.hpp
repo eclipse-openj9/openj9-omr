@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -85,12 +85,12 @@ class OMR_EXTENSIBLE CPU
    {
 protected:
 
-   /** 
+   /**
     * @brief Default constructor that defaults down to OMR minimum supported CPU and features
     */
    CPU();
 
-   /** 
+   /**
     * @brief Constructor that initializes the cpu from processor description provided by user
     * @param[in] OMRProcessorDesc : the input processor description
     */
@@ -100,14 +100,14 @@ public:
 
    TR::CPU *self();
 
-   /** 
-    * @brief Detects the underlying processor type and features using the port library and constructs a TR::CPU object 
+   /**
+    * @brief Detects the underlying processor type and features using the port library and constructs a TR::CPU object
     * @param[in] omrPortLib : the port library
     * @return TR::CPU
     */
    static TR::CPU detect(OMRPortLibrary * const omrPortLib);
 
-  /** 
+  /**
     * @brief Returns the processor type and features that will be used by portable AOT compilations
     * @param[in] omrPortLib : the port library
     * @return TR::CPU
@@ -116,8 +116,9 @@ public:
 
    /**
     * @brief API to initialize platform specific target processor info if it exists
+    * @param[in] force : force initialization even if the target processor info has already been initialized
     */
-   static void initializeTargetProcessorInfo() {}
+   static void initializeTargetProcessorInfo(bool force = false) {}
 
    TR_Processor setProcessor(TR_Processor p) { return(_processor = p); }
 
@@ -172,13 +173,13 @@ public:
    bool isI386() { return _minorArch == TR::m_arch_i386; }
    bool isAMD64() { return _minorArch == TR::m_arch_amd64; }
 
-   /** 
+   /**
     * @brief Determines whether the Transactional Memory (TM) facility is available on the current processor.
     * @return false; this is the default answer unless overridden by an extending class.
     */
    bool supportsTransactionalMemoryInstructions() { return false; }
 
-   /** 
+   /**
     * @brief Determines whether current processor is the same as the input processor type
     * @param[in] p : the input processor type
     * @return true when current processor is the same as the input processor type
@@ -192,20 +193,20 @@ public:
     */
    bool isAtLeast(OMRProcessorArchitecture p) { return _processorDescription.processor >= p; }
 
-   /** 
+   /**
     * @brief Determines whether current processor is equal or older than the input processor type
     * @param[in] p : the input processor type
     * @return true when current processor is equal or newer than the input processor type
     */
    bool isAtMost(OMRProcessorArchitecture p) { return _processorDescription.processor <= p; }
 
-   /** 
+   /**
     * @brief Retrieves current processor's processor description
     * @return processor description which includes processor type and processor features
     */
    OMRProcessorDesc getProcessorDescription() { return _processorDescription; }
 
-   /** 
+   /**
     * @brief Determines whether current processor supports the input processor feature
     * @param[in] feature : the input processor feature
     * @return true when current processor supports the input processor feature

@@ -114,10 +114,17 @@ void TR_X86ProcessorInfo::reset()
    _processorDescription = 0;
    }
 
-void TR_X86ProcessorInfo::initialize()
+void TR_X86ProcessorInfo::initialize(bool force)
    {
-   if (_featureFlags.testAny(TR_X86ProcessorInfoInitialized))
+   if (force)
+      {
+      reset();
+      }
+   else if (_featureFlags.testAny(TR_X86ProcessorInfoInitialized))
+      {
       return;
+      }
+
    // For now, we only convert the feature bits into a flags32_t, for easier querying.
    // To retrieve other information, the VM functions can be called directly.
    //

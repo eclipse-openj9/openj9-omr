@@ -74,9 +74,9 @@ OMR::X86::CPU::detect(OMRPortLibrary * const omrPortLib)
    }
 
 void
-OMR::X86::CPU::initializeTargetProcessorInfo()
+OMR::X86::CPU::initializeTargetProcessorInfo(bool force)
    {
-   OMR::X86::CodeGenerator::initializeX86TargetProcessorInfo();
+   OMR::X86::CodeGenerator::initializeX86TargetProcessorInfo(force);
    }
 
 TR_X86CPUIDBuffer *

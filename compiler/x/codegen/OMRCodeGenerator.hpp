@@ -237,8 +237,9 @@ private:
    /**
     * @brief Initialize all member variables
     *
+    * @param force Force initialization even if it has already been performed
     */
-   void initialize();
+   void initialize(bool force = false);
 
    /**
     * @brief testFlag Ensures that the feature being tested for exists in the mask
@@ -356,9 +357,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void beginInstructionSelection();
    void endInstructionSelection();
 
-
    static TR_X86ProcessorInfo &getX86ProcessorInfo();
-   static void initializeX86TargetProcessorInfo() { getX86ProcessorInfo().initialize(); }
+   static void initializeX86TargetProcessorInfo(bool force = false) { getX86ProcessorInfo().initialize(force); }
 
    typedef enum
       {

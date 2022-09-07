@@ -121,6 +121,8 @@ struct TR_X86ProcessorInfo
 
    TR_ALLOC(TR_Memory::IA32ProcessorInfo)
 
+   TR_X86ProcessorInfo();
+
    enum TR_X86ProcessorVendors
       {
       TR_AuthenticAMD                  = 0x01,

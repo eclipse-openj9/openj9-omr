@@ -108,6 +108,14 @@ namespace TR { class RegisterDependencyConditions; }
 
 TR_X86ProcessorInfo OMR::X86::CodeGenerator::_targetProcessorInfo;
 
+TR_X86ProcessorInfo::TR_X86ProcessorInfo()
+   : _vendorFlags(0),
+     _featureFlags(0),
+     _featureFlags2(0),
+     _featureFlags8(0),
+     _processorDescription(0)
+   {}
+
 void TR_X86ProcessorInfo::initialize()
    {
    if (_featureFlags.testAny(TR_X86ProcessorInfoInitialized))

@@ -347,7 +347,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void endInstructionSelection();
 
 
-   static TR_X86ProcessorInfo &getX86ProcessorInfo() {return _targetProcessorInfo;}
+   static TR_X86ProcessorInfo &getX86ProcessorInfo();
    static void initializeX86TargetProcessorInfo() { getX86ProcessorInfo().initialize(); }
 
    typedef enum
@@ -650,9 +650,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     * \return : a constant data snippet containing one type T element
     */
    template<typename T> inline TR::X86ConstantDataSnippet* findOrCreateConstantDataSnippet(TR::Node* node, T data) { return findOrCreateConstantDataSnippet(node, &data, sizeof(data)); }
-
-
-   static TR_X86ProcessorInfo _targetProcessorInfo;
 
    // The core "clobberEvaluate" logic for single registers (not register
    // pairs), parameterized by the opcode used to move the desired value into a

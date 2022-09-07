@@ -105,9 +105,6 @@ namespace TR { class RegisterDependencyConditions; }
 // Hack markers
 #define CANT_REMATERIALIZE_ADDRESSES(cg) (cg->comp()->target().is64Bit()) // AMD64 produces a memref with an unassigned addressRegister
 
-
-TR_X86ProcessorInfo OMR::X86::CodeGenerator::_targetProcessorInfo;
-
 TR_X86ProcessorInfo::TR_X86ProcessorInfo()
    : _vendorFlags(0),
      _featureFlags(0),
@@ -641,6 +638,13 @@ OMR::X86::CodeGenerator::endInstructionSelection()
              "endInstructionSelection() ==> Could not find the dummy finally block!\n");
       generateMemInstruction(self()->getLastCatchAppendInstruction(), TR::InstOpCode::LDCWMem, generateX86MemoryReference(self()->findOrCreate2ByteConstant(self()->getLastCatchAppendInstruction()->getNode(), DOUBLE_PRECISION_ROUND_TO_NEAREST), self()), self());
       }
+   }
+
+TR_X86ProcessorInfo &
+OMR::X86::CodeGenerator::getX86ProcessorInfo()
+   {
+   static TR_X86ProcessorInfo processorInfo = TR_X86ProcessorInfo();
+   return processorInfo;
    }
 
 int32_t OMR::X86::CodeGenerator::getMaximumNumbersOfAssignableGPRs()

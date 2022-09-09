@@ -43,7 +43,7 @@ class MM_HeapWalker : public MM_BaseVirtual
 {
 private:
 protected:
-MM_HeapWalkerDelegate _delegate;
+	MM_HeapWalkerDelegate _delegate;
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	void rememberedObjectSlotsDo(MM_EnvironmentBase *env, MM_HeapWalkerSlotFunc function, void *userData, uintptr_t walkFlags, bool parallel);
 #endif /* OMR_GC_MODRON_SCAVENGER */

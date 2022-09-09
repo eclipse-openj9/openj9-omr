@@ -119,6 +119,10 @@ MM_HeapWalker::newInstance(MM_EnvironmentBase *env)
 	heapWalker = (MM_HeapWalker *)env->getForge()->allocate(sizeof(MM_HeapWalker), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (heapWalker) {
 		new(heapWalker) MM_HeapWalker();
+		if (!heapWalker->initialize(env)) {
+			heapWalker->kill(env);
+			heapWalker = NULL;
+		}
 	}
 
 	return heapWalker;

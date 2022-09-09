@@ -1420,6 +1420,8 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
         self()->isForceWideDisplacement()) ? 4 : 0);
 
    intptr_t displacement;
+   uint8_t displacementDivisor = 16;
+   bool isEvex = true;
 
    uint8_t *cursor = modRM;
    TR::RealRegister *base = NULL;
@@ -1427,6 +1429,26 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
    TR::RealRegister::RegNum baseRegisterNumber = TR::RealRegister::NoReg;
    TR::Symbol *symbol;
    uint8_t *immediateCursor = 0;
+
+   switch (containingInstruction->getEncodingMethod())
+      {
+      case OMR::X86::EVEX_L128:
+         break;
+      case OMR::X86::EVEX_L256:
+         displacementDivisor = 32;
+         break;
+      case OMR::X86::EVEX_L512:
+         displacementDivisor = 64;
+         break;
+      case OMR::X86::Default:
+         displacementDivisor = containingInstruction->getOpCode().info().isEvex256() ? 32 : displacementDivisor;
+         displacementDivisor = containingInstruction->getOpCode().info().isEvex512() ? 64 : displacementDivisor;
+         isEvex = containingInstruction->getOpCode().info().isEvex();
+         break;
+      default:
+         isEvex = false;
+         break;
+      }
 
    switch (addressTypes)
       {
@@ -1641,15 +1663,11 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
          displacement = self()->getDisplacement();
          TR_ASSERT(IS_32BIT_SIGNED(displacement), "64-bit displacement should have been replaced in TR_AMD64MemoryReference::generateBinaryEncoding");
 
-         uint8_t divisor = 16;
-         divisor = containingInstruction->getOpCode().info().isEvex256() ? 32 : divisor;
-         divisor = containingInstruction->getOpCode().info().isEvex512() ? 64 : divisor;
-
-         if (!isForceWideDisplacement() && containingInstruction->getOpCode().info().isEvex() && displacement % divisor == 0 && IS_8BIT_SIGNED(displacement / divisor))
+         if (!isForceWideDisplacement() && isEvex && (displacement % displacementDivisor) == 0 && IS_8BIT_SIGNED(displacement / displacementDivisor))
             {
-            displacement /= divisor;
+            displacement /= displacementDivisor;
             }
-         else if (containingInstruction->getOpCode().info().isEvex())
+         else if (isEvex)
             {
             setForceWideDisplacement();
             }
@@ -1716,15 +1734,11 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
 
          TR_ASSERT(IS_32BIT_SIGNED(displacement), "64-bit displacement should have been replaced in TR_AMD64MemoryReference::generateBinaryEncoding");
 
-         uint8_t divisor = 16;
-         divisor = containingInstruction->getOpCode().info().isEvex256() ? 32 : divisor;
-         divisor = containingInstruction->getOpCode().info().isEvex512() ? 64 : divisor;
-
-         if (!isForceWideDisplacement() && containingInstruction->getOpCode().info().isEvex() && displacement % divisor == 0 && IS_8BIT_SIGNED(displacement / divisor))
+         if (!isForceWideDisplacement() && isEvex && (displacement % displacementDivisor) == 0 && IS_8BIT_SIGNED(displacement / displacementDivisor))
             {
-            displacement /= divisor;
+            displacement /= displacementDivisor;
             }
-         else if (containingInstruction->getOpCode().info().isEvex())
+         else if (isEvex)
             {
             setForceWideDisplacement();
             }

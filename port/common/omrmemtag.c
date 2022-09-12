@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -177,7 +177,10 @@ omrmem_allocate_memory(struct OMRPortLibrary *portLibrary, uintptr_t byteAmount,
 	Trc_PRT_mem_omrmem_allocate_memory_Entry(byteAmount, callSite);
 	allocationByteAmount = ROUNDED_BYTE_AMOUNT(byteAmount);
 
-	pointer = allocateFunction(portLibrary, allocationByteAmount);
+	/* Guard against overflow when wrapped with ROUNDED_BYTE_AMOUNT. */
+	if (allocationByteAmount >= byteAmount) {
+		pointer = allocateFunction(portLibrary, allocationByteAmount);
+	}
 	if (NULL == pointer) {
 		Trc_PRT_memory_alloc_returned_null_2(callSite, allocationByteAmount);
 	} else {
@@ -291,7 +294,10 @@ omrmem_reallocate_memory(struct OMRPortLibrary *portLibrary, void *memoryPointer
 		}
 		allocationByteAmount = ROUNDED_BYTE_AMOUNT(byteAmount);
 
-		pointer = reallocateFunction(portLibrary, memoryPointer, allocationByteAmount);
+		/* Guard against overflow when wrapped with ROUNDED_BYTE_AMOUNT. */
+		if (allocationByteAmount >= byteAmount) {
+			pointer = reallocateFunction(portLibrary, memoryPointer, allocationByteAmount);
+		}
 		if (NULL != pointer) {
 			pointer = wrapBlockAndSetTags(portLibrary, pointer, byteAmount, callSite, category);
 		}
@@ -445,7 +451,11 @@ omrmem_allocate_memory32(struct OMRPortLibrary *portLibrary, uintptr_t byteAmoun
 
 #if defined(OMR_ENV_DATA64)
 	allocationByteAmount = ROUNDED_BYTE_AMOUNT(byteAmount);
-	pointer = allocate_memory32(portLibrary, allocationByteAmount, callSite);
+
+	/* Guard against very large allocation sizes which wrap with ROUNDED_BYTE_AMOUNT, and sizes larger than 4GB. */
+	if ((allocationByteAmount >= byteAmount) && (allocationByteAmount < (((uint64_t)1) << 32))) {
+		pointer = allocate_memory32(portLibrary, allocationByteAmount, callSite);
+	}
 	if (NULL == pointer) {
 		Trc_PRT_mem_omrmem_allocate_memory32_returned_null(callSite, allocationByteAmount);
 	} else {
@@ -508,4 +518,3 @@ omrmem_ensure_capacity32(struct OMRPortLibrary *portLibrary, uintptr_t byteAmoun
 
 	return retValue;
 }
-

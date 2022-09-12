@@ -274,14 +274,15 @@ SPECS = [
         'reference' : defaultReference,
         'environment' : [
             'GTEST_FILTER=-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended:PortSysinfoTest.sysinfo_test_get_tmp3:ThreadExtendedTest.TestOtherThreadCputime',
-            'GTEST_COLOR=0'
+            'GTEST_COLOR=0',
+            'PATH+TOOLS=/cygdrive/c/CMake/bin/:/cygdrive/c/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/:/cygdrive/c/Program Files (x86)/Windows Kits/10/bin/x86'
         ],
         'ccache' : false,
         'buildSystem' : 'cmake',
         'builds' : [
             [
                 'buildDir' : cmakeBuildDir,
-                'configureArgs' : '-Wdev -G "Visual Studio 11 2012 Win64" -C../cmake/caches/Windows.cmake',
+                'configureArgs' : '-Wdev -G "Visual Studio 15 2017" -A x64 -C../cmake/caches/Windows.cmake',
                 'compile' : 'cmake --build . -- /m'
             ]
         ],

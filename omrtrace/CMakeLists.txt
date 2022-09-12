@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2020 IBM Corp. and others
+# Copyright (c) 2017, 2022 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,6 +36,9 @@ omr_add_library(omrtrace STATIC
 # to implement variable length structs
 if (OMR_STRNCPY_FORTIFY_OPTIONS)
 	target_compile_options(omrtrace PRIVATE ${OMR_STRNCPY_FORTIFY_OPTIONS})
+	if (OMR_OS_LINUX)
+		target_compile_options(omrtrace PRIVATE -O3)
+	endif()
 endif()
 
 target_link_libraries(omrtrace

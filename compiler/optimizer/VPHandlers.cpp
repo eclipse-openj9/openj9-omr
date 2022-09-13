@@ -7510,11 +7510,9 @@ TR::Node *constrainIushr(OMR::ValuePropagation *vp, TR::Node *node)
 
       TR::VPConstraint *constraint = NULL;
       if (low == high)
-         constraint = TR::VPIntConst::create(vp, ((uint32_t)low) >> shiftAmount/*, isUnsigned*/);
-      else if (low >= 0)
-         constraint = TR::VPIntRange::create(vp, ((uint32_t)low) >> shiftAmount, ((uint32_t)high) >> shiftAmount/*, isUnsigned*/);
-      else if (high < 0 /*&& !isUnsigned*/)
-         constraint = TR::VPIntRange::create(vp, ((uint32_t)high) >> shiftAmount, ((uint32_t)low) >> shiftAmount);
+         constraint = TR::VPIntConst::create(vp, ((uint32_t)low) >> shiftAmount);
+      else if (low >= 0 || high < 0)
+         constraint = TR::VPIntRange::create(vp, ((uint32_t)low) >> shiftAmount, ((uint32_t)high) >> shiftAmount);
       // this path is probably never taken for unsigned
       else
          {
@@ -7582,10 +7580,8 @@ TR::Node *constrainLushr(OMR::ValuePropagation *vp, TR::Node *node)
       TR::VPConstraint *constraint = NULL;
       if (low == high)
          constraint = TR::VPLongConst::create(vp, ((uint64_t)low) >> shiftAmount);
-      else if (low >= 0)
+      else if (low >= 0 || high < 0)
          constraint = TR::VPLongRange::create(vp, ((uint64_t)low) >> shiftAmount, ((uint64_t)high) >> shiftAmount);
-      else if (high < 0)
-         constraint = TR::VPLongRange::create(vp, ((uint64_t)high) >> shiftAmount, ((uint64_t)low) >> shiftAmount);
       else
          {
          if (shiftAmount > 0)

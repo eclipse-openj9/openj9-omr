@@ -654,6 +654,8 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
       case TR::vreductionMul:
       case TR::vreductionMax:
       case TR::vreductionMin:
+      case TR::vmadd:
+      case TR::vmsub:
       case TR::vcmpeq:
       case TR::vcmpge:
       case TR::vcmpgt:
@@ -669,6 +671,9 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
       case TR::vreductionOr:
       case TR::vreductionXor:
       case TR::vbitselect:
+      case TR::vmand:
+      case TR::vmor:
+      case TR::vmxor:
          // Float/ Double are not supported
          return (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Int64);
       case TR::vload:

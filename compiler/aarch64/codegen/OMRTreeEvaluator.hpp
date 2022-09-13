@@ -297,8 +297,30 @@ public:
    static TR::Register *vmxorEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vmfirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
-   static TR::Register *vmulInt64Helper(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *vdivIntHelper(TR::Node *node, TR::CodeGenerator *cg);
+   /**
+    * @brief Helper for generating instructions for the multiplication operation of vectors with 64-bit integer elements
+    *
+    * @param[in] node: node
+    * @param[in] productReg: the result register
+    * @param[in] lhsReg: the first argument register
+    * @param[in] rhsReg: the second argument register
+    * @param[in] cg: CodeGenerator
+    * @return the result register
+    */
+   static TR::Register *vmulInt64Helper(TR::Node *node, TR::Register *productReg, TR::Register *lhsReg, TR::Register *rhsReg, TR::CodeGenerator *cg);
+
+   /**
+    * @brief Helper for generating instructions for the division operation of vectors with 64-bit integer elements
+    *
+    * @param[in] node: node
+    * @param[in] resReg: the result register
+    * @param[in] lhsReg: the first argument register
+    * @param[in] rhsReg: the second argument register
+    * @param[in] cg: CodeGenerator
+    * @return the result register
+    */
+   static TR::Register *vdivIntHelper(TR::Node *node, TR::Register *resReg, TR::Register *lhsReg, TR::Register *rhsReg, TR::CodeGenerator *cg);
+
    /**
     * @brief Helper for generating SIMD move immediate instruction for vsplats node.
     *
@@ -311,6 +333,30 @@ public:
     * @return instruction cursor if move instuction is successfully generated and otherwise returns NULL
     */
    static TR::Instruction *vsplatsImmediateHelper(TR::Node *node, TR::CodeGenerator *cg, TR::Node *firstChild, TR::DataType elementType, TR::Register *treg);
+
+   /**
+    * @brief Helper for generating instructions for the mininum operation of vectors with 64-bit integer elements
+    *
+    * @param[in] node: node
+    * @param[in] resReg: the result register
+    * @param[in] lhsReg: the first argument register
+    * @param[in] rhsReg: the second argument register
+    * @param[in] cg: CodeGenerator
+    * @return the result register
+    */
+   static TR::Register *vminInt64Helper(TR::Node *node, TR::Register *resReg, TR::Register *lhsReg, TR::Register *rhsReg, TR::CodeGenerator *cg);
+
+   /**
+    * @brief Helper for generating instructions for the maximum operation of vectors with 64-bit integer elements
+    *
+    * @param[in] node: node
+    * @param[in] resReg: the result register
+    * @param[in] lhsReg: the first argument register
+    * @param[in] rhsReg: the second argument register
+    * @param[in] cg: CodeGenerator
+    * @return the result register
+    */
+   static TR::Register *vmaxInt64Helper(TR::Node *node, TR::Register *resReg, TR::Register *lhsReg, TR::Register *rhsReg, TR::CodeGenerator *cg);
 
    static TR::Register *f2iuEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *f2luEvaluator(TR::Node *node, TR::CodeGenerator *cg);

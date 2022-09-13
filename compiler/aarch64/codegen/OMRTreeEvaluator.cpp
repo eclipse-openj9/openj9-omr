@@ -2338,16 +2338,18 @@ VectorCompareOps getVectorCompareOp(TR::VectorOperation op)
       }
    }
 
+typedef TR::Register *(*binaryEvaluatorHelper)(TR::Node *node, TR::Register *resReg, TR::Register *lhsRes, TR::Register *rhsReg, TR::CodeGenerator *cg);
 /**
  * @brief Helper functions for generating instruction sequence for masked binary operations
  *
  * @param[in] node: node
  * @param[in] cg: CodeGenerator
  * @param[in] op: binary opcode
+ * @param[in] evaluatorHelper: optional pointer to helper function which generates instruction stream for operation
  * @return vector register containing the result
  */
 static TR::Register *
-inlineVectorMaskedBinaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)
+inlineVectorMaskedBinaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, binaryEvaluatorHelper evaluatorHelper = NULL)
    {
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
@@ -2361,7 +2363,16 @@ inlineVectorMaskedBinaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode
    TR::Register *resReg = cg->allocateRegister(TR_VRF);
 
    node->setRegister(resReg);
-   generateTrg1Src2Instruction(cg, op, node, resReg, lhsReg, rhsReg);
+   TR_ASSERT_FATAL_WITH_NODE(node, (op != TR::InstOpCode::bad) || (evaluatorHelper != NULL), "If op is TR::InstOpCode::bad, evaluatorHelper must not be NULL");
+   if (evaluatorHelper != NULL)
+      {
+      (*evaluatorHelper)(node, resReg, lhsReg, rhsReg, cg);
+      }
+   else
+      {
+      generateTrg1Src2Instruction(cg, op, node, resReg, lhsReg, rhsReg);
+      }
+
    TR::ILOpCode thirdOp = thirdChild->getOpCode();
    bool flipMask = false;
    TR::Register *maskReg = NULL;
@@ -2493,7 +2504,30 @@ OMR::ARM64::TreeEvaluator::vmcmpleEvaluator(TR::Node *node, TR::CodeGenerator *c
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   TR::InstOpCode::Mnemonic divOp = TR::InstOpCode::bad;
+   binaryEvaluatorHelper evaluatorHelper = NULL;
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         evaluatorHelper = vdivIntHelper;
+         break;
+      case TR::Float:
+         divOp = TR::InstOpCode::vfdiv4s;
+         break;
+      case TR::Double:
+         divOp = TR::InstOpCode::vfdiv2d;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedBinaryOp(node, cg, divOp, evaluatorHelper);
    }
 
 TR::Register*
@@ -2517,19 +2551,106 @@ OMR::ARM64::TreeEvaluator::vmloadiEvaluator(TR::Node *node, TR::CodeGenerator *c
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
+   binaryEvaluatorHelper evaluatorHelper = NULL;
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         op = TR::InstOpCode::vsmax16b;
+         break;
+      case TR::Int16:
+         op = TR::InstOpCode::vsmax8h;
+         break;
+      case TR::Int32:
+         op = TR::InstOpCode::vsmax4s;
+         break;
+      case TR::Int64:
+         evaluatorHelper = vmaxInt64Helper;
+         break;
+      case TR::Float:
+         op = TR::InstOpCode::vfmax4s;
+         break;
+      case TR::Double:
+         op = TR::InstOpCode::vfmax2d;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedBinaryOp(node, cg, op, evaluatorHelper);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
+   binaryEvaluatorHelper evaluatorHelper = NULL;
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         op = TR::InstOpCode::vsmin16b;
+         break;
+      case TR::Int16:
+         op = TR::InstOpCode::vsmin8h;
+         break;
+      case TR::Int32:
+         op = TR::InstOpCode::vsmin4s;
+         break;
+      case TR::Int64:
+         evaluatorHelper = vminInt64Helper;
+         break;
+      case TR::Float:
+         op = TR::InstOpCode::vfmin4s;
+         break;
+      case TR::Double:
+         op = TR::InstOpCode::vfmin2d;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedBinaryOp(node, cg, op, evaluatorHelper);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   TR::InstOpCode::Mnemonic mulOp = TR::InstOpCode::bad;
+   binaryEvaluatorHelper evaluatorHelper = NULL;
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         mulOp = TR::InstOpCode::vmul16b;
+         break;
+      case TR::Int16:
+         mulOp = TR::InstOpCode::vmul8h;
+         break;
+      case TR::Int32:
+         mulOp = TR::InstOpCode::vmul4s;
+         break;
+      case TR::Int64:
+         evaluatorHelper = vmulInt64Helper;
+         break;
+      case TR::Float:
+         mulOp = TR::InstOpCode::vfmul4s;
+         break;
+      case TR::Double:
+         mulOp = TR::InstOpCode::vfmul2d;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedBinaryOp(node, cg, mulOp, evaluatorHelper);
    }
 
 TR::Register*

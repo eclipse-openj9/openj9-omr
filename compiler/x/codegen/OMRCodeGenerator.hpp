@@ -121,6 +121,8 @@ struct TR_X86ProcessorInfo
 
    TR_ALLOC(TR_Memory::IA32ProcessorInfo)
 
+   TR_X86ProcessorInfo() { reset(); }
+
    enum TR_X86ProcessorVendors
       {
       TR_AuthenticAMD                  = 0x01,
@@ -226,7 +228,18 @@ private:
 
    friend class OMR::X86::CodeGenerator;
 
-   void initialize();
+   /**
+    * @brief Zero initalize all member variables
+    *
+    */
+   void reset();
+
+   /**
+    * @brief Initialize all member variables
+    *
+    * @param force Force initialization even if it has already been performed
+    */
+   void initialize(bool force = false);
 
    /**
     * @brief testFlag Ensures that the feature being tested for exists in the mask
@@ -344,9 +357,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void beginInstructionSelection();
    void endInstructionSelection();
 
-
-   static TR_X86ProcessorInfo &getX86ProcessorInfo() {return _targetProcessorInfo;}
-   static void initializeX86TargetProcessorInfo() { _targetProcessorInfo.initialize(); }
+   static TR_X86ProcessorInfo &getX86ProcessorInfo();
+   static void initializeX86TargetProcessorInfo(bool force = false) { getX86ProcessorInfo().initialize(force); }
 
    typedef enum
       {
@@ -648,9 +660,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     * \return : a constant data snippet containing one type T element
     */
    template<typename T> inline TR::X86ConstantDataSnippet* findOrCreateConstantDataSnippet(TR::Node* node, T data) { return findOrCreateConstantDataSnippet(node, &data, sizeof(data)); }
-
-
-   static TR_X86ProcessorInfo _targetProcessorInfo;
 
    // The core "clobberEvaluate" logic for single registers (not register
    // pairs), parameterized by the opcode used to move the desired value into a

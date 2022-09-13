@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2016, 2021 IBM Corp. and others
+Copyright (c) 2016, 2022 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -145,7 +145,7 @@ source tree. For more detailed instructions please read [BuildingWithCMake.md](d
     cd build
 
     # Generate the build system using cmake
-    cmake ..
+    cmake -Wdev -C ../cmake/caches/Travis.cmake ..
 
     # Build (you can optionally compile in parallel by adding -j<N> to the make command)
     make

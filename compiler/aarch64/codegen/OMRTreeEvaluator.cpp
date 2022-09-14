@@ -2479,10 +2479,88 @@ inlineVectorMaskedBinaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode
    return resReg;
    }
 
+/**
+ * @brief Helper functions for generating instruction sequence for masked unary operations
+ *
+ * @param[in] node: node
+ * @param[in] cg: CodeGenerator
+ * @param[in] op: unary opcode
+ * @return vector register containing the result
+ */
+static TR::Register *
+inlineVectorMaskedUnaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+
+   TR::Register *srcReg = cg->evaluate(firstChild);
+
+   TR_ASSERT_FATAL_WITH_NODE(node, srcReg->getKind() == TR_VRF, "unexpected Register kind");
+
+   TR::Register *resReg = cg->allocateRegister(TR_VRF);
+   node->setRegister(resReg);
+
+   generateTrg1Src1Instruction(cg, op, node, resReg, srcReg);
+
+   TR::ILOpCode secondOp = secondChild->getOpCode();
+   bool flipMask = false;
+   TR::Register *maskReg = NULL;
+   VectorCompareOps compareOp;
+   if (secondOp.isVectorOpCode() && secondOp.isBooleanCompare() && (!secondOp.isVectorMasked())
+       && ((compareOp = getVectorCompareOp(secondOp.getVectorOperation())) != VECTOR_COMPARE_INVALID)
+       && (secondChild->getReferenceCount() == 1) && (secondChild->getRegister() == NULL))
+      {
+      maskReg = vcmpHelper(secondChild, compareOp, true, &flipMask, cg);
+      }
+   else
+      {
+      maskReg = cg->evaluate(secondChild);
+      }
+   TR_ASSERT_FATAL_WITH_NODE(node, maskReg->getKind() == TR_VRF, "unexpected Register kind");
+
+   /*
+    * BIT inserts each bit from the first source if the corresponding bit of the second source is 1.
+    * BIF inserts each bit from the first source if the corresponding bit of the second source is 0.
+    */
+   generateTrg1Src2Instruction(cg, flipMask ? TR::InstOpCode::vbit16b : TR::InstOpCode::vbif16b, node, resReg, srcReg, maskReg);
+
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   return resReg;
+   }
+
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmabsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                     "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   TR::InstOpCode::Mnemonic absOp;
+
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         absOp = TR::InstOpCode::vabs16b;
+         break;
+      case TR::Int16:
+         absOp = TR::InstOpCode::vabs8h;
+         break;
+      case TR::Int32:
+         absOp = TR::InstOpCode::vabs4s;
+         break;
+      case TR::Int64:
+         absOp = TR::InstOpCode::vabs2d;
+         break;
+      case TR::Float:
+         absOp = TR::InstOpCode::vfabs4s;
+         break;
+      case TR::Double:
+         absOp = TR::InstOpCode::vfabs2d;
+         break;
+      default:
+         TR_ASSERT_FATAL(false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedUnaryOp(node, cg, absOp);
    }
 
 TR::Register*
@@ -2729,13 +2807,59 @@ OMR::ARM64::TreeEvaluator::vmmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::InstOpCode::Mnemonic negOp;
+
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         negOp = TR::InstOpCode::vneg16b;
+         break;
+      case TR::Int16:
+         negOp = TR::InstOpCode::vneg8h;
+         break;
+      case TR::Int32:
+         negOp = TR::InstOpCode::vneg4s;
+         break;
+      case TR::Int64:
+         negOp = TR::InstOpCode::vneg2d;
+         break;
+      case TR::Float:
+         negOp = TR::InstOpCode::vfneg4s;
+         break;
+      case TR::Double:
+         negOp = TR::InstOpCode::vfneg2d;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedUnaryOp(node, cg, negOp);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmnotEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::InstOpCode::Mnemonic notOp;
+
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         notOp = TR::InstOpCode::vnot16b;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedUnaryOp(node, cg, notOp);
    }
 
 TR::Register*
@@ -2822,7 +2946,23 @@ OMR::ARM64::TreeEvaluator::vmreductionXorEvaluator(TR::Node *node, TR::CodeGener
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                           "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   TR::InstOpCode::Mnemonic sqrtOp;
+
+   switch(node->getDataType().getVectorElementType())
+      {
+      case TR::Float:
+         sqrtOp = TR::InstOpCode::vfsqrt4s;
+         break;
+      case TR::Double:
+         sqrtOp = TR::InstOpCode::vfsqrt2d;
+         break;
+      default:
+         TR_ASSERT_FATAL(false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedUnaryOp(node, cg, sqrtOp);
    }
 
 TR::Register*

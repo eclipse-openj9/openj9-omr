@@ -680,6 +680,10 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
       case TR::vloadi:
       case TR::vstore:
       case TR::vstorei:
+      case TR::mload:
+      case TR::mloadi:
+      case TR::mstore:
+      case TR::mstorei:
       case TR::vsplats:
          return true;
       case TR::vfma:

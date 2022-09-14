@@ -1292,25 +1292,25 @@ TR::Instruction *tryToGenerateMovImm32ShiftedInstruction(TR::Node *node, TR::Cod
 TR::Register*
 OMR::ARM64::TreeEvaluator::mloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::vloadEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::mloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::mloadEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::mstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::vstoreEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::mstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::mstoreEvaluator(node, cg);
    }
 
 TR::Register*
@@ -1532,13 +1532,15 @@ static const TR::InstOpCode::Mnemonic vectorCompareZeroOpCodes[NumVectorCompareO
 /**
  * @brief A helper function for generating instuction sequence for vector compare operations
  *
- * @param[in] node:            node
- * @param[in] compareOp:       enum describing the compare operation
- * @param[in] cg:              CodeGenerator
+ * @param[in] node:               node
+ * @param[in] compareOp:          enum describing the compare operation
+ * @param[in] omitNot:            if true, NOT instruction after comparison is not generated
+ * @param[out] flipCompareResult: when not NULL, true is returned if the compare result needs to be flipped
+ * @param[in] cg:                 CodeGenerator
  * @return vector register containing all 1 or all 0 elements depending on the result of the comparison.
  */
 static TR::Register*
-vcmpHelper(TR::Node *node, VectorCompareOps compareOp, TR::CodeGenerator *cg)
+vcmpHelper(TR::Node *node, VectorCompareOps compareOp, bool omitNot, bool *flipCompareResult, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
@@ -1573,11 +1575,32 @@ vcmpHelper(TR::Node *node, VectorCompareOps compareOp, TR::CodeGenerator *cg)
          }
       }
 
-   if (notAfterCompare)
+   /*
+    * If this vector compare node only appears once as a child of masked binary operations,
+    * the NOT instruction can be omitted because the inlineVectorMaskedBinaryOp generates `bit` instead of `bif`.
+    */
+   if (!omitNot)
       {
-      generateTrg1Src1Instruction(cg, TR::InstOpCode::vnot16b, node, targetReg, targetReg);
+      if (notAfterCompare)
+         {
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::vnot16b, node, targetReg, targetReg);
+         }
       }
-
+   else
+      {
+      if (notAfterCompare)
+         {
+         TR::Compilation *comp = cg->comp();
+         if (comp->getOption(TR_TraceCG))
+            {
+            traceMsg(comp, "omitting vnot instruction at node %p\n", node);
+            }
+         }
+      }
+   if (flipCompareResult != NULL)
+      {
+      *flipCompareResult = notAfterCompare;
+      }
    node->setRegister(targetReg);
    cg->decReferenceCount(firstChild);
    if (recursivelyDecRefCountOnSecondChild)
@@ -1594,37 +1617,37 @@ vcmpHelper(TR::Node *node, VectorCompareOps compareOp, TR::CodeGenerator *cg)
 TR::Register*
 OMR::ARM64::TreeEvaluator::vcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return vcmpHelper(node, VECTOR_COMPARE_EQ, cg);
+   return vcmpHelper(node, VECTOR_COMPARE_EQ, false, NULL, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return vcmpHelper(node, VECTOR_COMPARE_NE, cg);
+   return vcmpHelper(node, VECTOR_COMPARE_NE, false, NULL, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return vcmpHelper(node, VECTOR_COMPARE_LT, cg);
+   return vcmpHelper(node, VECTOR_COMPARE_LT, false, NULL, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return vcmpHelper(node, VECTOR_COMPARE_GT, cg);
+   return vcmpHelper(node,VECTOR_COMPARE_GT, false, NULL, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return vcmpHelper(node, VECTOR_COMPARE_LE, cg);
+   return vcmpHelper(node, VECTOR_COMPARE_LE, false, NULL, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return vcmpHelper(node, VECTOR_COMPARE_GE, cg);
+   return vcmpHelper(node, VECTOR_COMPARE_GE, false, NULL, cg);
    }
 
 TR::Register*
@@ -2293,6 +2316,85 @@ OMR::ARM64::TreeEvaluator::vRegStoreEvaluator(TR::Node *node, TR::CodeGenerator 
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
+static
+VectorCompareOps getVectorCompareOp(TR::VectorOperation op)
+   {
+   switch (op)
+      {
+      case TR::vcmpeq:
+         return VECTOR_COMPARE_EQ;
+      case TR::vcmpne:
+         return VECTOR_COMPARE_NE;
+      case TR::vcmpgt:
+         return VECTOR_COMPARE_GT;
+      case TR::vcmpge:
+         return VECTOR_COMPARE_GE;
+      case TR::vcmplt:
+         return VECTOR_COMPARE_LT;
+      case TR::vcmple:
+         return VECTOR_COMPARE_LE;
+      default:
+         return VECTOR_COMPARE_INVALID;
+      }
+   }
+
+/**
+ * @brief Helper functions for generating instruction sequence for masked binary operations
+ *
+ * @param[in] node: node
+ * @param[in] cg: CodeGenerator
+ * @param[in] op: binary opcode
+ * @return vector register containing the result
+ */
+static TR::Register *
+inlineVectorMaskedBinaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Node *thirdChild = node->getThirdChild();
+   TR::Register *lhsReg = cg->evaluate(firstChild);
+   TR::Register *rhsReg = cg->evaluate(secondChild);
+
+   TR_ASSERT_FATAL_WITH_NODE(node, lhsReg->getKind() == TR_VRF, "unexpected Register kind");
+   TR_ASSERT_FATAL_WITH_NODE(node, rhsReg->getKind() == TR_VRF, "unexpected Register kind");
+
+   TR::Register *resReg = cg->allocateRegister(TR_VRF);
+
+   node->setRegister(resReg);
+   generateTrg1Src2Instruction(cg, op, node, resReg, lhsReg, rhsReg);
+   TR::ILOpCode thirdOp = thirdChild->getOpCode();
+   bool flipMask = false;
+   TR::Register *maskReg = NULL;
+   VectorCompareOps compareOp;
+   if (thirdOp.isVectorOpCode() && thirdOp.isBooleanCompare() && (!thirdOp.isVectorMasked())
+       && ((compareOp = getVectorCompareOp(thirdOp.getVectorOperation())) != VECTOR_COMPARE_INVALID)
+       && (thirdChild->getReferenceCount() == 1) && (thirdChild->getRegister() == NULL))
+      {
+      maskReg = vcmpHelper(thirdChild, compareOp, true, &flipMask, cg);
+      }
+   else
+      {
+      maskReg = cg->evaluate(thirdChild);
+      }
+   TR_ASSERT_FATAL_WITH_NODE(node, maskReg->getKind() == TR_VRF, "unexpected Register kind");
+
+   if (flipMask)
+      {
+      /* BIT inserts each bit from the first source if the corresponding bit of the second source is 1. */
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::vbit16b, node, resReg, lhsReg, maskReg);
+      }
+   else
+      {
+      /* BIF inserts each bit from the first source if the corresponding bit of the second source is 0. */
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::vbif16b, node, resReg, lhsReg, maskReg);
+      }
+
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   cg->decReferenceCount(thirdChild);
+   return resReg;
+   }
+
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmabsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -2302,13 +2404,54 @@ OMR::ARM64::TreeEvaluator::vmabsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::InstOpCode::Mnemonic op;
+
+   switch (node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         op = TR::InstOpCode::vadd16b;
+         break;
+      case TR::Int16:
+         op = TR::InstOpCode::vadd8h;
+         break;
+      case TR::Int32:
+         op = TR::InstOpCode::vadd4s;
+         break;
+      case TR::Int64:
+         op = TR::InstOpCode::vadd2d;
+         break;
+      case TR::Float:
+         op = TR::InstOpCode::vfadd4s;
+         break;
+      case TR::Double:
+         op = TR::InstOpCode::vfadd2d;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedBinaryOp(node, cg, op);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::InstOpCode::Mnemonic op;
+
+   switch (node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         op = TR::InstOpCode::vand16b;
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedBinaryOp(node, cg, op);
    }
 
 TR::Register*
@@ -2404,7 +2547,22 @@ OMR::ARM64::TreeEvaluator::vmnotEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::InstOpCode::Mnemonic op;
+
+   switch (node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         op = TR::InstOpCode::vorr16b;
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedBinaryOp(node, cg, op);
    }
 
 TR::Register*
@@ -2482,13 +2640,54 @@ OMR::ARM64::TreeEvaluator::vmstoreiEvaluator(TR::Node *node, TR::CodeGenerator *
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::InstOpCode::Mnemonic op;
+
+   switch (node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+         op = TR::InstOpCode::vsub16b;
+         break;
+      case TR::Int16:
+         op = TR::InstOpCode::vsub8h;
+         break;
+      case TR::Int32:
+         op = TR::InstOpCode::vsub4s;
+         break;
+      case TR::Int64:
+         op = TR::InstOpCode::vsub2d;
+         break;
+      case TR::Float:
+         op = TR::InstOpCode::vfsub4s;
+         break;
+      case TR::Double:
+         op = TR::InstOpCode::vfsub2d;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedBinaryOp(node, cg, op);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::InstOpCode::Mnemonic op;
+
+   switch (node->getDataType().getVectorElementType())
+      {
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         op = TR::InstOpCode::veor16b;
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedBinaryOp(node, cg, op);
    }
 
 TR::Register*

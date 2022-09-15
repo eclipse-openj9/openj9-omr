@@ -266,6 +266,17 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *mRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *mRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
+   static TR::Register *b2mEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *s2mEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *i2mEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *l2mEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *v2mEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *m2bEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *m2sEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *m2iEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *m2lEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *m2vEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
    // vector evaluators
    static TR::Register *vabsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);

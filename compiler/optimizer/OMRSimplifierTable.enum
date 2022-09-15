@@ -413,6 +413,16 @@
 #define mstoreiSimplifierHandler indirectStoreSimplifier
 #define mRegLoadSimplifierHandler dftSimplifier
 #define mRegStoreSimplifierHandler dftSimplifier
+#define b2mSimplifierHandler dftSimplifier
+#define s2mSimplifierHandler dftSimplifier
+#define i2mSimplifierHandler dftSimplifier
+#define l2mSimplifierHandler dftSimplifier
+#define v2mSimplifierHandler dftSimplifier
+#define m2bSimplifierHandler dftSimplifier
+#define m2sSimplifierHandler dftSimplifier
+#define m2iSimplifierHandler dftSimplifier
+#define m2lSimplifierHandler dftSimplifier
+#define m2vSimplifierHandler dftSimplifier
 #define vnotSimplifierHandler dftSimplifier
 #define vsplatsSimplifierHandler dftSimplifier
 #define vfmaSimplifierHandler dftSimplifier

@@ -204,7 +204,7 @@ public:
 
       return (TR::VectorOperation) ((opcode < (TR::NumScalarIlOps + TR::NumOneVectorTypeOps)) ?
                                     (opcode - TR::NumScalarIlOps) / TR::NumVectorTypes :
-                                    (opcode - TR::NumScalarIlOps - TR::NumOneVectorTypeOps) / (TR::NumVectorTypes * TR::NumVectorTypes) + TR::firstTwoTypeVectorOperation - 1);
+                                    (opcode - TR::NumScalarIlOps - TR::NumOneVectorTypeOps) / (TR::NumVectorTypes * TR::NumVectorTypes) + TR::firstTwoTypeVectorOperation);
       }
 
   /** \brief

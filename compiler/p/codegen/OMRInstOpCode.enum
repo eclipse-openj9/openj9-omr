@@ -616,8 +616,8 @@
    vmuleuw,          // Vector Multiply Even Unsigned Word
 // vmulosw,          // Vector Multiply Odd Signed Word
    vmulouw,          // Vector Multiply Odd Unsigned Word
-// vnegw,            // vector negate word
-// vnegd,            // vector negate DWord
+   vnegw,            // vector negate word
+   vnegd,            // vector negate DWord
 // vprtybw,          // vector parity byte word
 // vprtybd,          // vector parity byte DWord
 // vprtybq,          // vector parity byte qword

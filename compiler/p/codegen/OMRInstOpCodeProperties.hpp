@@ -7208,29 +7208,29 @@
                         PPCOpProp_SyncSideEffectFree,
    },
 
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::vnegw, */
-   /* .name        =    "vnegw", */
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::vnegw,
+   /* .name        = */ "vnegw",
    /* .description =    "vector negate word", */
-   /* .prefix      =    0x00000000, */
-   /* .opcode      =    0x10060602, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    OMR_PROCESSOR_PPC_P9, */
-   /* .properties  =    PPCOpProp_IsVMX | */
-   /*                   PPCOpProp_SyncSideEffectFree, */
-   /* }, */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x10060602,
+   /* .format      = */ FORMAT_VRT_VRB,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P9,
+   /* .properties  = */ PPCOpProp_IsVMX |
+                        PPCOpProp_SyncSideEffectFree,
+   },
 
-   /* { */
-   /* .mnemonic    =    OMR::InstOpCode::vnegd, */
-   /* .name        =    "vnegd", */
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::vnegd,
+   /* .name        = */ "vnegd",
    /* .description =    "vector negate DWord", */
-   /* .prefix      =    0x00000000, */
-   /* .opcode      =    0x10070602, */
-   /* .format      =    FORMAT_UNKNOWN, */
-   /* .minimumALS  =    OMR_PROCESSOR_PPC_P9, */
-   /* .properties  =    PPCOpProp_IsVMX | */
-   /*                   PPCOpProp_SyncSideEffectFree, */
-   /* }, */
+   /* .prefix      = */ 0x00000000,
+   /* .opcode      = */ 0x10070602,
+   /* .format      = */ FORMAT_VRT_VRB,
+   /* .minimumALS  = */ OMR_PROCESSOR_PPC_P9,
+   /* .properties  = */ PPCOpProp_IsVMX |
+                        PPCOpProp_SyncSideEffectFree,
+   },
 
    /* { */
    /* .mnemonic    =    OMR::InstOpCode::vprtybw, */

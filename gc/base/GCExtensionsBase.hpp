@@ -73,9 +73,7 @@ class MM_RememberedSetCardBucket;
 #if defined(OMR_GC_REALTIME)
 class MM_RememberedSetSATB;
 #endif /* defined(OMR_GC_REALTIME) */
-#if defined(OMR_GC_MODRON_SCAVENGER)
 class MM_Scavenger;
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 class MM_SizeClasses;
 class MM_SparseVirtualMemory;
 class MM_SweepHeapSectioning;
@@ -983,6 +981,20 @@ public:
 		return scavengerEnabled;
 #else /* defined(OMR_GC_MODRON_SCAVENGER) */
 		return false;
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
+	}
+
+	virtual void registerScavenger(MM_Scavenger *scavenger)
+	{
+#if defined(OMR_GC_MODRON_SCAVENGER)
+		this->scavenger = scavenger;
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
+	}
+
+	virtual void unregisterScavenger()
+	{
+#if defined(OMR_GC_MODRON_SCAVENGER)
+		scavenger = NULL;
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 	}
 

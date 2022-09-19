@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -70,12 +70,14 @@ MM_ConcurrentOverflow::initialize(MM_EnvironmentBase *env)
 {
 	bool result = MM_WorkPacketOverflow::initialize(env);
 
+#if defined(OMR_GC_MODRON_SCAVENGER)
 	if (result) {
 		/* Initialize monitor for safe initial Cards cleaning in Work Packets Overflow handler */
 		if(omrthread_monitor_init_with_name(&_cardsClearingMonitor, 0, "MM_ConcurrentOverflow::cardsClearingMonitor")) {
 			result = false;
 		}
 	}
+#endif /*  OMR_GC_MODRON_SCAVENGER */
 
 	return result;
 }
@@ -86,10 +88,12 @@ MM_ConcurrentOverflow::initialize(MM_EnvironmentBase *env)
 void
 MM_ConcurrentOverflow::tearDown(MM_EnvironmentBase *env)
 {
-	if(NULL != _cardsClearingMonitor) {
+#if defined(OMR_GC_MODRON_SCAVENGER)
+	if (NULL != _cardsClearingMonitor) {
 		omrthread_monitor_destroy(_cardsClearingMonitor);
 		_cardsClearingMonitor = NULL;
 	}
+#endif /*  OMR_GC_MODRON_SCAVENGER */
 
 	MM_WorkPacketOverflow::tearDown(env);
 }

@@ -208,6 +208,19 @@ public:
 	{
 		return U_8_MAX;
 	}
+
+	/**
+	 * Returns the field offset of the third hottest field of the object referred to by the forwarded header.
+	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled
+	 *
+	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
+	 * @return the offset of the third hottest field of the given object referred to by the forwarded header, return U_8_MAX if the hot field does not exist
+	 */
+	MMINLINE uint8_t
+	getHotFieldOffset3(MM_ForwardedHeader *forwardedHeader)
+	{
+		return U_8_MAX;
+	}
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
 
 	/**
@@ -227,19 +240,6 @@ public:
 	isIndexable(MM_ForwardedHeader *forwardedHeader)
 	{
 		return false;
-	}
-
-	/**
-	 * Returns the field offset of the third hottest field of the object referred to by the forwarded header.
-	 * Valid if scavenger dynamicBreadthFirstScanOrdering is enabled
-	 *
-	 * @param forwardedHeader pointer to the MM_ForwardedHeader instance encapsulating the object
-	 * @return the offset of the third hottest field of the given object referred to by the forwarded header, return U_8_MAX if the hot field does not exist
-	 */
-	MMINLINE uint8_t
-	getHotFieldOffset3(MM_ForwardedHeader *forwardedHeader)
-	{
-		return U_8_MAX;
 	}
 
 	/**

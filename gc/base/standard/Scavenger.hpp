@@ -535,9 +535,9 @@ public:
 
 	void clearRememberedSetLists(MM_EnvironmentStandard *env);
 
-	MMINLINE bool isRememberedSetInOverflowState() { return _extensions->isRememberedSetInOverflowState(); }
-	MMINLINE void setRememberedSetOverflowState() { _extensions->setRememberedSetOverflowState(); }
-	MMINLINE void clearRememberedSetOverflowState() { _extensions->clearRememberedSetOverflowState(); }
+	MMINLINE bool isRememberedSetInOverflowState() { return _extensions->isScavengerRememberedSetInOverflowState(); }
+	MMINLINE void setRememberedSetOverflowState() { _extensions->setScavengerRememberedSetOverflowState(); }
+	MMINLINE void clearRememberedSetOverflowState() { _extensions->clearScavengerRememberedSetOverflowState(); }
 
 	/* Auto-remember stack objects so JIT can omit generational barriers */
 	void rescanThreadSlots(MM_EnvironmentStandard *env);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -217,7 +217,6 @@ MM_ConfigurationGenerational::createHeapWithManager(MM_EnvironmentBase *env, UDA
 	MM_GCExtensionsBase *extensions = env->getExtensions();
 	MM_Heap *heap = NULL;
 
-#if defined(OMR_GC_MODRON_SCAVENGER)
 	/* gencon supports split heaps so check that flag here when deciding what kind of MM_Heap to create */
 	if (extensions->enableSplitHeap) {
 		UDATA lowSize = extensions->oldSpaceSize;
@@ -228,9 +227,7 @@ MM_ConfigurationGenerational::createHeapWithManager(MM_EnvironmentBase *env, UDA
 		 * set and "inverted" flag in the extensions and check that in the PSA attach code when determining attachment policy.
 		 * May allow more versatile use cases of the split heaps, though.
 		 */
-	} else
-#endif /* OMR_GC_MODRON_SCAVENGER */
-	{
+	} else {
 		heap = MM_ConfigurationStandard::createHeapWithManager(env, heapBytesRequested, regionManager);
 	}
 	return heap;

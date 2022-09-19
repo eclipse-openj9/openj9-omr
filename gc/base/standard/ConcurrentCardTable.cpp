@@ -998,7 +998,7 @@ MM_ConcurrentCardTable::cleanSingleCard(MM_EnvironmentBase *env, Card *card, uin
 	 * mean we re-trace objects not in the RS but RS overflow is assumed to be
 	 * an exceptional circumstance.
 	 */
-	if (rememberedObjectsFound && (env->getExtensions()->isRememberedSetInOverflowState())) {
+	if (rememberedObjectsFound && (env->getExtensions()->isScavengerRememberedSetInOverflowState())) {
 		*card = (Card)CARD_DIRTY;
 	}
 

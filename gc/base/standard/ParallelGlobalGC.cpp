@@ -192,7 +192,7 @@ hookGlobalGcSweepEndRsoSafetyFixHeap(J9HookInterface** hook, uintptr_t eventNum,
 	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(event->currentThread);
 	MM_GCExtensionsBase *extensions = env->getExtensions();
 
-	extensions->scavengerRsoScanUnsafe = !extensions->isRememberedSetInOverflowState();
+	extensions->scavengerRsoScanUnsafe = !extensions->isScavengerRememberedSetInOverflowState();
 	if (!extensions->scavengerRsoScanUnsafe) {
 		MM_ParallelGlobalGC *pggc = (MM_ParallelGlobalGC *)userData;
 		pggc->fixHeapForWalk(env, MEMORY_TYPE_OLD_RAM, FIXUP_DEBUG_TOOLING, fixObject);

@@ -58,6 +58,15 @@ TR::Register *genericReturnEvaluator(TR::Node *node, TR::RealRegister::RegNum rn
 TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg);
 
 /**
+ * @brief Helper function for xloadEvaluators
+ * @param[in] node : node
+ * @param[in] op : instruction for load
+ * @param[in] targetReg : target register
+ * @param[in] cg : CodeGenerator
+ */
+TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::Register *targetReg, TR::CodeGenerator *cg);
+
+/**
  * @brief Helper function for xstoreEvaluators
  * @param[in] node : node
  * @param[in] op : instruction for store

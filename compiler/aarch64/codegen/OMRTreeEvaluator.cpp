@@ -1338,6 +1338,171 @@ OMR::ARM64::TreeEvaluator::mRegStoreEvaluator(TR::Node *node, TR::CodeGenerator 
    return TR::TreeEvaluator::iRegStoreEvaluator(node, cg);
    }
 
+/* This template function should be declared as constexpr if the compiler supports it. */
+template<TR::VectorOperation op>
+TR::ILOpCodes getLoadOpCodeForMaskConversion()
+   {
+   static_assert((op == TR::s2m) || (op == TR::i2m) || (op == TR::l2m) || (op == TR::v2m), "Expects s2m, i2m, l2m or v2m as opcode");
+   switch (op)
+      {
+      case TR::s2m:
+         return TR::sloadi;
+      case TR::i2m:
+         return TR::iloadi;
+      case TR::l2m:
+         return TR::lloadi;
+      case TR::v2m:
+      default:
+         return TR::lloadi; /* does not matter. Unused for v2m */
+      }
+   }
+
+/* This template function should be declared as constexpr if the compiler supports it. */
+template<TR::VectorOperation op>
+TR::InstOpCode::Mnemonic getLoadInstOpCodeForMaskConversion()
+   {
+   static_assert((op == TR::s2m) || (op == TR::i2m) || (op == TR::l2m) || (op == TR::v2m), "Expects s2m, i2m, l2m or v2m as opcode");
+   switch (op)
+      {
+      case TR::s2m:
+         return TR::InstOpCode::vldrimmh;
+      case TR::i2m:
+         return TR::InstOpCode::vldrimms;
+      case TR::l2m:
+         return TR::InstOpCode::vldrimmd;
+      case TR::v2m:
+      default:
+         return TR::InstOpCode::vldrimmq;
+      }
+   }
+
+/* This template function should be declared as constexpr if the compiler supports it. */
+template<TR::VectorOperation op>
+TR::InstOpCode::Mnemonic getCopyToGPRInstOpCodeForMaskConversion()
+   {
+   static_assert((op == TR::s2m) || (op == TR::i2m) || (op == TR::l2m) || (op == TR::v2m), "Expects s2m, i2m, l2m or v2m as opcode");
+   switch (op)
+      {
+      case TR::s2m:
+         return TR::InstOpCode::vinswh;
+      case TR::i2m:
+         return TR::InstOpCode::vinsws;
+      case TR::l2m:
+         return TR::InstOpCode::vinsxd;
+      case TR::v2m:
+      default:
+         return TR::InstOpCode::bad;
+      }
+   }
+
+/**
+ * @brief Helper template function to generate instructions for converting boolean array to mask
+ *
+ * @details This helper template function takes TR::VectorOperation as a template parameter.
+ *          op must be either of s2m, i2m, l2m or v2m. If the first child node is a load node and
+ *          the first child node is not referenced by other nodes, we directly load it into the vector register.
+ *          Otherwise, we evaluate it as usual and if it is loaded into a general purpose register,
+ *          we move it from the general purpose register to the vector register.
+ *          Then, we generate the appropriate instruction sequence for converting boolean array into the mask.
+ *          For s2m and v2m, NOT instruction is generated as the last instruction. If omitNot is true,
+ *          that NOT instruction is not generated.
+ *
+ * @param[in] node: node
+ * @param[in] omitNot: if true, NOT instruction coming last of the instruction sequence is not generated
+ * @param[in] cg: code generator
+ *
+ * @returns result register
+ */
+template<TR::VectorOperation op>
+TR::Register *toMaskConversionHelper(TR::Node *node, bool omitNot, TR::CodeGenerator *cg)
+   {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+   static_assert((op == TR::s2m) || (op == TR::i2m) || (op == TR::l2m) || (op == TR::v2m), "Expects s2m, i2m, l2m or v2m as opcode");
+
+   /* These three variables should be declared as constexpr if the compiler supports it. */
+   const TR::ILOpCodes loadOp = getLoadOpCodeForMaskConversion<op>();
+   const TR::InstOpCode::Mnemonic loadInstOp = getLoadInstOpCodeForMaskConversion<op>();
+   const TR::InstOpCode::Mnemonic copyToGPRInstOp = getCopyToGPRInstOpCodeForMaskConversion<op>();
+
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *firstReg;
+   TR::Register *maskReg;
+   if (((op == TR::v2m) || (firstChild->getOpCodeValue() == loadOp)) && firstChild->getRegister() == NULL && firstChild->getReferenceCount() == 1)
+      {
+      firstReg = commonLoadEvaluator(firstChild, loadInstOp, cg->allocateRegister(TR_VRF), cg);
+      maskReg = firstReg;
+      }
+   else
+      {
+      firstReg = cg->evaluate(firstChild);
+      maskReg = cg->allocateRegister(TR_VRF);
+      if (op != TR::v2m)
+         {
+         /* Clear maskReg, then insert the mask value in GPR to the first element of maskReg. */
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi16b, node, maskReg, 0);
+         generateMovGPRToVectorElementInstruction(cg, copyToGPRInstOp, node, maskReg, firstReg, 0);
+         }
+      }
+
+   if (op == TR::s2m)
+      {
+      /*
+      * Use vector extract to move the first and second element to 7th and 8th element position respectively.
+      * This makes the first element to be in lower 64bit and the second element to be in upper 64bit.
+      * Then, use cmeq to compare each 64bit element with 0.
+      */
+      generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::vext16b, node, maskReg, maskReg, maskReg, 9);
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::vcmeq2d_zero, node, maskReg, maskReg);
+      }
+   else if (op == TR::i2m)
+      {
+      /*
+      * Use unsigned extend long instruction to convert 8bit elements to 16bit elements,
+      * then 16bit elements to 32bit elements.
+      * It is guaranteed that the msb of each 32bit element is not set, so we can safely
+      * use cmgt_zero to check if the mask is set.
+      */
+      generateVectorUXTLInstruction(cg, TR::Int8, node, maskReg, maskReg, false);
+      generateVectorUXTLInstruction(cg, TR::Int16, node, maskReg, maskReg, false);
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::vcmgt4s_zero, node, maskReg, maskReg);
+      }
+   else if (op == TR::l2m)
+      {
+      /*
+      * Use unsigned extend long instruction to convert 8bit elements to 16bit elements.
+      * It is guaranteed that the msb of each 16bit element is not set, so we can safely
+      * use cmgt_zero to check if the mask is set.
+      */
+      generateVectorUXTLInstruction(cg, TR::Int8, node, maskReg, maskReg, false);
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::vcmgt8h_zero, node, maskReg, maskReg);
+      }
+   else /* op == TR::v2m */
+      {
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::vcmeq16b_zero, node, maskReg, firstReg);
+      }
+
+   if ((op == TR::s2m) || (op == TR::v2m))
+      {
+      if (omitNot)
+         {
+         TR::Compilation *comp = cg->comp();
+         if (comp->getOption(TR_TraceCG))
+            {
+            traceMsg(comp, "omitting vnot instruction at node %p\n", node);
+            }
+         }
+      else
+         {
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::vnot16b, node, maskReg, maskReg);
+         }
+      }
+
+   node->setRegister(maskReg);
+   cg->decReferenceCount(firstChild);
+   return maskReg;
+   }
+
 TR::Register*
 OMR::ARM64::TreeEvaluator::b2mEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -1347,25 +1512,25 @@ OMR::ARM64::TreeEvaluator::b2mEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::ARM64::TreeEvaluator::s2mEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return toMaskConversionHelper<TR::s2m>(node, false, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::i2mEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return toMaskConversionHelper<TR::i2m>(node, false, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::l2mEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return toMaskConversionHelper<TR::l2m>(node, false, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::v2mEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return toMaskConversionHelper<TR::v2m>(node, false, cg);
    }
 
 TR::Register*
@@ -1377,25 +1542,83 @@ OMR::ARM64::TreeEvaluator::m2bEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::ARM64::TreeEvaluator::m2sEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::Node *firstChild = node->getFirstChild();
+   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", firstChild->getDataType().toString());
+
+   TR::Register *maskReg = cg->evaluate(firstChild);
+   TR::Register *tempReg = cg->allocateRegister(TR_VRF);
+   TR::Register *resReg = cg->allocateRegister(TR_GPR);
+
+   /*
+    * Use vector extract to move the 7th and 8th element to the 1st and 2nd element position respectively.
+    * Then, perform unsigned shift right by 7bit to get boolean results.
+    */
+   generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::vext16b, node, tempReg, maskReg, maskReg, 7);
+   generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vushr16b, node, tempReg, tempReg, 7);
+   generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovwh, node, resReg, tempReg, 0);
+
+   node->setRegister(resReg);
+   cg->stopUsingRegister(tempReg);
+   cg->decReferenceCount(firstChild);
+   return resReg;
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::m2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::Node *firstChild = node->getFirstChild();
+   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", firstChild->getDataType().toString());
+
+   TR::Register *maskReg = cg->evaluate(firstChild);
+   TR::Register *tempReg = cg->allocateRegister(TR_VRF);
+   TR::Register *resReg = cg->allocateRegister(TR_GPR);
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::vxtn_4h, node, tempReg, maskReg);
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::vxtn_8b, node, tempReg, tempReg);
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::vneg16b, node, tempReg, tempReg);
+   generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovws, node, resReg, tempReg, 0);
+
+   node->setRegister(resReg);
+   cg->stopUsingRegister(tempReg);
+   cg->decReferenceCount(firstChild);
+   return resReg;
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::m2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::Node *firstChild = node->getFirstChild();
+   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", firstChild->getDataType().toString());
+
+   TR::Register *maskReg = cg->evaluate(firstChild);
+   TR::Register *tempReg = cg->allocateRegister(TR_VRF);
+   TR::Register *resReg = cg->allocateRegister(TR_GPR);
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::vxtn_8b, node, tempReg, maskReg);
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::vneg16b, node, tempReg, tempReg);
+   generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, resReg, tempReg, 0);
+
+   node->setRegister(resReg);
+   cg->stopUsingRegister(tempReg);
+   cg->decReferenceCount(firstChild);
+   return resReg;
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::m2vEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::Node *firstChild = node->getFirstChild();
+   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", firstChild->getDataType().toString());
+
+   TR::Register *maskReg = cg->evaluate(firstChild);
+   TR::Register *resReg = cg->allocateRegister(TR_VRF);
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::vneg16b, node, resReg, maskReg);
+
+   node->setRegister(resReg);
+   cg->decReferenceCount(firstChild);
+   return resReg;
    }
 
 // vector evaluators
@@ -2450,11 +2673,19 @@ inlineVectorMaskedBinaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode
    bool flipMask = false;
    TR::Register *maskReg = NULL;
    VectorCompareOps compareOp;
+   TR::VectorOperation convOp;
    if (thirdOp.isVectorOpCode() && thirdOp.isBooleanCompare() && (!thirdOp.isVectorMasked())
        && ((compareOp = getVectorCompareOp(thirdOp.getVectorOperation())) != VECTOR_COMPARE_INVALID)
        && (thirdChild->getReferenceCount() == 1) && (thirdChild->getRegister() == NULL))
       {
       maskReg = vcmpHelper(thirdChild, compareOp, true, &flipMask, cg);
+      }
+   else if (thirdOp.isVectorOpCode() && thirdOp.isConversion() && thirdOp.isMaskResult()
+       && (((convOp = thirdOp.getVectorOperation()) == TR::s2m) || (convOp == TR::v2m))
+       && (thirdChild->getReferenceCount() == 1) && (thirdChild->getRegister() == NULL))
+      {
+      flipMask = true;
+      maskReg = (convOp == TR::s2m) ? toMaskConversionHelper<TR::s2m>(thirdChild, true, cg) : toMaskConversionHelper<TR::v2m>(thirdChild, true, cg);
       }
    else
       {
@@ -2462,16 +2693,11 @@ inlineVectorMaskedBinaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode
       }
    TR_ASSERT_FATAL_WITH_NODE(node, maskReg->getKind() == TR_VRF, "unexpected Register kind");
 
-   if (flipMask)
-      {
-      /* BIT inserts each bit from the first source if the corresponding bit of the second source is 1. */
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::vbit16b, node, resReg, lhsReg, maskReg);
-      }
-   else
-      {
-      /* BIF inserts each bit from the first source if the corresponding bit of the second source is 0. */
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::vbif16b, node, resReg, lhsReg, maskReg);
-      }
+   /*
+    * BIT inserts each bit from the first source if the corresponding bit of the second source is 1.
+    * BIF inserts each bit from the first source if the corresponding bit of the second source is 0.
+    */
+   generateTrg1Src2Instruction(cg, flipMask ? TR::InstOpCode::vbit16b : TR::InstOpCode::vbif16b, node, resReg, lhsReg, maskReg);
 
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
@@ -2506,11 +2732,19 @@ inlineVectorMaskedUnaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode:
    bool flipMask = false;
    TR::Register *maskReg = NULL;
    VectorCompareOps compareOp;
+   TR::VectorOperation convOp;
    if (secondOp.isVectorOpCode() && secondOp.isBooleanCompare() && (!secondOp.isVectorMasked())
        && ((compareOp = getVectorCompareOp(secondOp.getVectorOperation())) != VECTOR_COMPARE_INVALID)
        && (secondChild->getReferenceCount() == 1) && (secondChild->getRegister() == NULL))
       {
       maskReg = vcmpHelper(secondChild, compareOp, true, &flipMask, cg);
+      }
+   else if (secondOp.isVectorOpCode() && secondOp.isConversion() && secondOp.isMaskResult()
+       && (((convOp = secondOp.getVectorOperation()) == TR::s2m) || (convOp == TR::v2m))
+       && (secondChild->getReferenceCount() == 1) && (secondChild->getRegister() == NULL))
+      {
+      flipMask = true;
+      maskReg = (convOp == TR::s2m) ? toMaskConversionHelper<TR::s2m>(secondChild, true, cg) : toMaskConversionHelper<TR::v2m>(secondChild, true, cg);
       }
    else
       {
@@ -2728,11 +2962,19 @@ OMR::ARM64::TreeEvaluator::vmfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    bool flipMask = false;
    TR::Register *maskReg = NULL;
    VectorCompareOps compareOp;
+   TR::VectorOperation convOp;
    if (fourthOp.isVectorOpCode() && fourthOp.isBooleanCompare() && (!fourthOp.isVectorMasked())
        && ((compareOp = getVectorCompareOp(fourthOp.getVectorOperation())) != VECTOR_COMPARE_INVALID)
        && (fourthChild->getReferenceCount() == 1) && (fourthChild->getRegister() == NULL))
       {
       maskReg = vcmpHelper(fourthChild, compareOp, true, &flipMask, cg);
+      }
+   else if (fourthOp.isVectorOpCode() && fourthOp.isConversion() && fourthOp.isMaskResult()
+       && (((convOp = fourthOp.getVectorOperation()) == TR::s2m) || (convOp == TR::v2m))
+       && (fourthChild->getReferenceCount() == 1) && (fourthChild->getRegister() == NULL))
+      {
+      flipMask = true;
+      maskReg = (convOp == TR::s2m) ? toMaskConversionHelper<TR::s2m>(fourthChild, true, cg) : toMaskConversionHelper<TR::v2m>(fourthChild, true, cg);
       }
    else
       {
@@ -4241,7 +4483,6 @@ OMR::ARM64::TreeEvaluator::badILOpEvaluator(TR::Node *node, TR::CodeGenerator *c
 TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
    {
    TR::Register *tempReg;
-   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
 
    if (op == TR::InstOpCode::vldrimms)
       {
@@ -4259,9 +4500,17 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, T
       {
       tempReg = cg->allocateRegister();
       }
-   node->setRegister(tempReg);
+
+   return commonLoadEvaluator(node, op, tempReg, cg);
+   }
+
+TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::Register *targetReg, TR::CodeGenerator *cg)
+   {
+   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
+
+   node->setRegister(targetReg);
    TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node);
-   generateTrg1MemInstruction(cg, op, node, tempReg, tempMR);
+   generateTrg1MemInstruction(cg, op, node, targetReg, tempMR);
 
    if (needSync)
       {
@@ -4270,7 +4519,7 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, T
 
    tempMR->decNodeReferenceCounts(cg);
 
-   return tempReg;
+   return targetReg;
    }
 
 // also handles iloadi

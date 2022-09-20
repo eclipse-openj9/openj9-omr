@@ -649,6 +649,28 @@ TR::Instruction *generateVectorShiftImmediateInstruction(TR::CodeGenerator *cg, 
    return generateTrg1Src1ImmInstruction(cg, op, node, treg, sreg, imm, preced);
    }
 
+TR::Instruction *generateVectorUXTLInstruction(TR::CodeGenerator *cg, TR::DataType elementType, TR::Node *node, TR::Register *treg, TR::Register *sreg,
+                  bool isUXTL2, TR::Instruction *preced)
+   {
+   TR::InstOpCode::Mnemonic op;
+   switch (elementType)
+      {
+      case TR::Int8:
+         op = isUXTL2 ? TR::InstOpCode::vushll2_8h : TR::InstOpCode::vushll_8h;
+         break;
+      case TR::Int16:
+         op = isUXTL2 ? TR::InstOpCode::vushll2_4s : TR::InstOpCode::vushll_4s;
+         break;
+      case TR::Int32:
+         op = isUXTL2 ? TR::InstOpCode::vushll2_2d : TR::InstOpCode::vushll_2d;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
+         break;
+      }
+   return generateVectorShiftImmediateInstruction(cg, op, node, treg, sreg, 0, preced);
+   }
+
 static
 bool isVectorRegister(TR::Register *reg)
    {

@@ -48,6 +48,7 @@
          IsTrg1Src1Imm,
          IsTrg1Src2,
             IsCondTrg1Src2,
+            IsTrg1Src2Imm,
             IsTrg1Src2Shifted,
             IsTrg1Src2Extended,
             IsTrg1Src2IndexedElement,

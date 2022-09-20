@@ -869,6 +869,7 @@
 		vbif16b,                                                  	/* 0x6EE01C00	BIF       	 */
 		vbit16b,                                                  	/* 0x6EA01C00	BIT       	 */
 		vbsl16b,                                                  	/* 0x6E601C00	BSL       	 */
+	/* Vector permute */
 		vzip1_16b,                                                	/* 0x4E003800	ZIP1      	 */
 		vzip1_8h,                                                 	/* 0x4E403800	ZIP1      	 */
 		vzip1_4s,                                                 	/* 0x4E803800	ZIP1      	 */
@@ -885,6 +886,8 @@
 		vuzp2_8h,                                                 	/* 0x4E405800	UZP2      	 */
 		vuzp2_4s,                                                 	/* 0x4E805800	UZP2      	 */
 		vuzp2_2d,                                                 	/* 0x4EC05800	UZP2      	 */
+	/* Vector extract */
+		vext16b,                                                  	/* 0x6E000000	EXT      	 */
 	/* Vector Data-processing (1 source) */
 		vneg16b,                                                  	/* 0x6E20B800	NEG      	 */
 		vneg8h,                                                  	/* 0x6E60B800	NEG      	 */

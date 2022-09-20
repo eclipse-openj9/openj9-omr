@@ -870,6 +870,7 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x6EE01C00,	/* BIF       	vbif16b	 */
 		0x6EA01C00,	/* BIT       	vbit16b	 */
 		0x6E601C00,	/* BSL       	vbsl16b	 */
+	/* Vector permute */
 		0x4E003800,	/* ZIP1      	vzip1_16b */
 		0x4E403800,	/* ZIP1      	vzip1_8h */
 		0x4E803800,	/* ZIP1      	vzip1_4s */
@@ -886,6 +887,8 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4E405800,	/* UZP2      	vuzp2_8h */
 		0x4E805800,	/* UZP2      	vuzp2_4s */
 		0x4EC05800,	/* UZP2      	vuzp2_2d */
+	/* Vector extract */
+		0x6E000000,	/* EXT       	vext16b	 */
 	/* Vector Data-processing (1 source) */
 		0x6E20B800,	/* NEG      	vneg16b	 */
 		0x6E60B800,	/* NEG      	vneg8h	 */

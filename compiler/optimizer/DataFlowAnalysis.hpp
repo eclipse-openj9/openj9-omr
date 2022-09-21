@@ -115,6 +115,9 @@ class TR_DataFlowAnalysis
    static void  operator delete(void *ptr, size_t size)
       { ((TR_DataFlowAnalysis*)ptr)->allocator().deallocate(ptr, size); } /* t->allocator() better return the same allocator as used for new */
 
+   static void *operator new(size_t size, TR::Region &region) { return region.allocate(size); }
+   static void operator delete(void *ptr, TR::Region &region) { region.deallocate(ptr); }
+
    /* Virtual destructor is necessary for the above delete operator to work
     * See "Modern C++ Design" section 4.7
     */

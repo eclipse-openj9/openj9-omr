@@ -73,7 +73,6 @@
 #include "x/codegen/HelperCallSnippet.hpp"
 #include "x/codegen/OutlinedInstructions.hpp"
 #include "x/codegen/RegisterRematerialization.hpp"
-#include "x/codegen/X86Evaluator.hpp"
 #include "x/codegen/X86Instruction.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "x/codegen/BinaryCommutativeAnalyser.hpp"
@@ -3758,7 +3757,7 @@ TR::Register *OMR::X86::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::Cod
    }
 
 bool
-TR_X86ComputeCC::setCarryBorrow(TR::Node *flagNode, bool invertValue, TR::CodeGenerator *cg)
+OMR::X86::TreeEvaluator::setCarryBorrow(TR::Node *flagNode, bool invertValue, TR::CodeGenerator *cg)
    {
    TR::Register *flagReg = NULL;
 

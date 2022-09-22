@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2018, 2021 IBM Corp. and others
+Copyright (c) 2018, 2022 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -122,3 +122,49 @@ mandatory.
 
 * Ensure the author has updated the copyright date on each file modified to the
 current year.
+
+## Pull Request Builds: Advanced Options
+
+The advanced options provide finer control over the PR builds.
+
+   Syntax to launch PR builds with the advanced options:
+   ```
+   jenkins build xlinux(OPTION1,OPTION2,...)
+   ```
+
+### Advanced Options
+
+| Option | Description |
+| :----- | :---------- |
+| cgroupv1 | Run the build on a cgroup.v1 node. <br />Only applies to the Linux operating system. <br />Example: `jenkins build xlinux(cgroupv1)`. |
+| !cgroupv1 | Remove the cgroup.v1 label before running the build. <br />Only applies to the Linux operating system. <br />Example: `jenkins build xlinux(!cgroupv1)`. |
+| cgroupv2 | Run the build on a cgroup.v2 node. <br />Only applies to the Linux operating system. <br />Example: `jenkins build xlinux(cgroupv2)`. |
+| !cgroupv2 | Remove the cgroup.v2 label before running the build. <br />Only applies to the Linux operating system. <br />Example: `jenkins build xlinux(!cgroupv2)`. |
+| docker | Run the build inside a Docker container. <br />Only applicable if Docker is installed on the machines. <br />Example: `jenkins build xlinux(cgroupv2,docker)`. |
+| !docker | Do not run the build inside a Docker container. <br />Example: `jenkins build xlinux(cgroupv1,!docker)`. |
+| cmake:'ARGS' | ARGS will be appended during the configure phase. <br />Example: `jenkins build xlinux(cmake:'-DCMAKE_C_FLAGS=-DDUMP_DBG')`. |
+| compile:'ARGS' | ARGS will be appended during the compile phase. <br />Example: `jenkins build xlinux(compile:'-d')`. |
+| test:'ARGS' | ARGS will be appended while running the tests. <br />Example: `jenkins build xlinux(test:'-R porttest')`. |
+| env:'VAR1=VAL1,VAR2=VAL2' | Environment variables will be added to the build environment. <br />Example: `jenkins build xlinux(env:'GTEST_FILTER=PortDumpTest.*')`. |
+
+### More Examples
+
+* **Example 1**: `jenkins build xlinux(<OPTIONS_A>),all`. <br />In this example, the xlinux
+PR build will use OPTIONS_A whereas all other PR builds will use their default
+settings/options.
+* **Example 2**: `jenkins build xlinux(<OPTIONS_A>),all(<OPTIONS_B>)`. <br />In this example,
+the xlinux PR build will use OPTIONS_A whereas all other PR builds will use OPTIONS_B.
+* **Example 3**: `jenkins build xlinux(<OPTIONS_A>),all,linux_x86-64(<OPTIONS_B>)`. <br />In
+this example, xlinux is an alias for linux_x86-64. Two different sets of options are
+provided for the same PR build specfication. The set of options of provided at the end
+will be enforced. In this example, OPTIONS_B will be used whereas OPTIONS_A will be
+ignored. The same analogy is used if N-sets of options are specified for a PR build
+specification.
+
+### Default Options
+
+| Platform | Default Option |
+| :------- | :------------- |
+| x32linux | Run on cgroup.v1 nodes inside a Docker container. |
+| xlinux | Run on cgroup.v2 nodes inside a Docker container. |
+| plinux | Run on cgroup.v2 nodes. |

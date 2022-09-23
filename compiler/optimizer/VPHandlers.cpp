@@ -8321,67 +8321,195 @@ void replaceWithSmallerType(OMR::ValuePropagation *vp, TR::Node *node)
 
    }
 
-
-static TR::Node *constrainNarrowIntValue(OMR::ValuePropagation *vp, TR::Node *node, int32_t low, int32_t high)
+static TR::Node *constrainNarrowIntValue(OMR::ValuePropagation *vp, TR::Node *node)
    {
    if (findConstant(vp, node))
       return node;
+
    constrainChildren(vp, node);
+
    bool isGlobal;
    TR::VPConstraint *constraint = vp->getConstraint(node->getFirstChild(), isGlobal);
+   if (constraint == NULL)
+      return node;
 
-   if (constraint)
+   const int32_t resultSizeBits = 8 * TR::DataType::getSize(node->getDataType());
+   const int64_t signBit = (int64_t)1 << (resultSizeBits - 1);
+   const int32_t padding64 = 64 - resultSizeBits;
+   const int64_t min = -signBit;
+   const int64_t max = signBit - 1;
+
+   // Find the range of values that the child could produce.
+   int64_t low = 0;
+   int64_t high = 0;
+   if (constraint->asLongConstraint() != NULL
+       || constraint->asMergedLongConstraints() != NULL)
       {
-      if (constraint->asIntConstraint() || constraint->asMergedIntConstraints())
-         {
-         if (constraint->getLowInt() > low && constraint->getHighInt() < high)
-            {
-            if (constraint->getLowInt() > low)
-               low  = constraint->getLowInt();
-            if (constraint->getHighInt() < high)
-               high = constraint->getHighInt();
-            }
-         }
-      else if (constraint->asLongConstraint() || constraint->asMergedLongConstraints())
-         {
-         if (constraint->getLowLong() > low && constraint->getHighLong() < high)
-            {
-            if (constraint->getLowLong() <= TR::getMaxSigned<TR::Int32>() &&
-               constraint->getLowLong() > low)
-               low  = (int32_t)constraint->getLowLong();
-            if (constraint->getHighLong() >= TR::getMinSigned<TR::Int32>() &&
-               constraint->getHighLong() < high)
-               high = (int32_t)constraint->getHighLong();
-            }
-
-         if (vp->comp()->getOptions()->getDebugEnableFlag(TR_EnableUnneededNarrowIntConversion) &&
-             constraint->getLowLong() >= 0 && node->isUnsigned())
-            {
-            node->setUnneededConversion(true);
-            }
-         }
+      low = constraint->getLowLong();
+      high = constraint->getHighLong();
+      }
+   else if (constraint->asIntConstraint() != NULL
+            || constraint->asMergedIntConstraints() != NULL)
+      {
+      low = constraint->getLowInt();
+      high = constraint->getHighInt();
+      }
+   else if (constraint->asShortConstraint() != NULL
+            || constraint->asMergedShortConstraints() != NULL)
+      {
+      low = constraint->getLowShort();
+      high = constraint->getHighShort();
+      }
+   else
+      {
+      TR_ASSERT_FATAL_WITH_NODE(node, false, "bad integer narrowing child constraint");
       }
 
-   if (low <= high)
+   TR_ASSERT_FATAL_WITH_NODE(node, low <= high, "reversed child constraint bounds");
+
+   if (min <= low && high <= max)
       {
-      // Make sure the constraint is not trivial
+      // The child's value is the sign-extension of a resultSizeBits-bit value,
+      // i.e. this conversion is lossless when the input and output are both
+      // interpreted as signed.
+      node->setCannotOverflow(true);
+      }
+
+   // Determine whether the range [low, high] contains two adjacent values that
+   // truncate to max and min, e.g. for a byte result:
+   //
+   //    { low, ..., 0x..7f, 0x..80, ..., high }
+   //
+   // This occurs precisely when [low + signBit, high + signBit] contains two
+   // adjacent values that truncate to the unsigned max and 0, e.g. for byte:
+   //
+   //    { low + signBit, ..., 0x..ff, 0x..00, ..., high + signBit }
+   //
+   // And, in turn, this is the case iff (low + signBit) and (high + signBit)
+   // are still in the right order, i.e. low + signBit <= high + signBit, and
+   // they differ in their upper bits, i.e. the bits that will be discarded.
+   //
+   // Cast to unsigned before adding to avoid undefined behaviour.
+   //
+   const int64_t biasedLow = (int64_t)((uint64_t)low + (uint64_t)signBit);
+   const int64_t biasedHigh = (int64_t)((uint64_t)high + (uint64_t)signBit);
+   if (biasedLow > biasedHigh)
+      {
+      // Signed overflow in (high + signBit) but not (low + signBit). Both min,
+      // max are possible. To see why, let b=resultSizeBits. Then because of
+      // the detected signed overflow, we know that
       //
-      int64_t min = TR::getMinSigned<TR::Int32>(), max = TR::getMaxSigned<TR::Int32>();
-      switch (node->getDataType())
+      //    low + 2**(b-1) < 2**63     and     high + 2**(b-1) >= 2**63.
+      //
+      // This means that low < k <= high, where
+      //
+      //    k = 2**63 - 2**(b-1) = 2**(63-b) * 2**b - 2**(b-1).
+      //
+      // Since the truncation of k is min, and the truncation of k-1 is max, and
+      // since k-1 and k are both in [low, high], both min and max are possible.
+      //
+      return node; // unconstrained
+      }
+
+   // There was overflow in both biasedLow and biasedHigh, or (more likely) in
+   // neither, so checking the top bits will work.
+   const int64_t lowTopBits = biasedLow >> resultSizeBits;
+   const int64_t highTopBits = biasedHigh >> resultSizeBits;
+
+   if (lowTopBits != highTopBits)
+      return node; // unconstrained (min, max are both possible)
+
+   // Since lowTopBits == highTopBits, truncation will always effectively
+   // subtract the same multiple of 2**resultSizeBits from the signed value,
+   // and so it preserves signed ordering, i.e. if x, y are possible values of
+   // the child with x <= y, then truncate(x) <= truncate(y).
+   //
+   // To see why this must be the case, let b=resultSizeBits, let Q=lowTopBits,
+   // and let x be the signed value of the child. Note that signBit = 2**(b-1).
+   // Then
+   //
+   //    Q * 2**b <= low + 2**(b-1)
+   //    Q * 2**b - 2**(b-1) <= low
+   //
+   // and
+   //
+   //    high + 2**(b-1) < (Q+1) * 2**b
+   //    high < (Q+1) * 2**b - 2**(b-1) = Q * 2**b + 2**(b-1)
+   //
+   // Since low <= x <= high, we know that
+   //
+   //    Q * 2**b - 2**(b-1) <= low <= x <= high < Q * 2**b + 2**(b-1)
+   //    -2**(b-1) <= x - Q * 2**b < 2**(b-1)
+   //
+   // Since [-2**(b-1), 2**(b-1)) is the signed range of the result type, the
+   // signed value of the result is x - Q * 2**b for every x.
+   //
+   // So if x, y are possible signed child values with x <= y, then
+   //
+   //    truncate(x) = x - Q * 2**b <= y - Q * 2**b = truncate(y),
+   //
+   // and in particular since low, high are also possible signed child values
+   // with low <= x <= high, we also know that
+   //
+   //    truncate(low) <= truncate(x) <= truncate(high).
+   //
+   // Therefore, truncating low and high will produce a signed range containing
+   // all possible truncated results.
+   //
+   // NOTE: The above proof assumes that the addition of signBit in the biased
+   // endpoints calculation does not signed-overflow, i.e. that the signed
+   // value of the 64-bit sum is ({low,high} + 2**(b-1)). But it is possible
+   // for such overflow to have occurred in both calculations. If it did, then
+   // the signed values of the sums were really
+   //
+   //    {low,high} + 2**(b-1) - 2**64.
+   //
+   // In this case, we can simply take Q = topLowBits + 2**(64-b) and
+   // everything else will still follow.
+   //
+   // With this justification, get the truncated (and re-extended) bounds. Cast
+   // to unsigned before shifting left to avoid undefined behaviour.
+   //
+   const uint64_t origDiff = (uint64_t)high - (uint64_t)low;
+   low = (int64_t)((uint64_t)low << padding64) >> padding64;
+   high = (int64_t)((uint64_t)high << padding64) >> padding64;
+
+   TR_ASSERT_FATAL_WITH_NODE(node, min <= low, "truncated lower bound is too low");
+   TR_ASSERT_FATAL_WITH_NODE(node, low <= high, "truncated bounds are out of order");
+   TR_ASSERT_FATAL_WITH_NODE(node, high <= max, "truncated upper bound is too high");
+   TR_ASSERT_FATAL_WITH_NODE(
+      node,
+      (uint64_t)high - (uint64_t)low == origDiff,
+      "truncated range is not the same size as the original range");
+
+   if (low >= 0)
+      node->setIsNonNegative(true);
+
+   // Constrain the result.
+   switch (node->getDataType())
+      {
+      case TR::Int16:
+         constraint = TR::VPShortRange::create(vp, (int16_t)low, (int16_t)high);
+         break;
+
+      case TR::Int8: // byte nodes are still using Int constraint
+      case TR::Int32:
+         constraint = TR::VPIntRange::create(vp, (int32_t)low, (int32_t)high);
+         break;
+
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Invalid node datatype");
+      }
+
+   if (constraint != NULL) // might have had low == min && high == max
+      {
+      if (low == high)
          {
-         case TR::Int16: constraint = TR::VPShortRange::create(vp, low, high); min = TR::getMinSigned<TR::Int16>(); max = TR::getMaxSigned<TR::Int16>(); break;
-         case TR::Int8:  min = TR::getMinSigned<TR::Int8>(); max = TR::getMaxSigned<TR::Int8>();    // byte nodes are still using Int constraint
-         case TR::Int32: constraint = TR::VPIntRange::create(vp, low, high); break;
-         default: TR_ASSERT(false, "Invalid node datatype");
+         vp->replaceByConstant(node, constraint, isGlobal);
+         return node;
          }
-      if (constraint)
-         {
-         vp->addBlockOrGlobalConstraint(node, constraint ,isGlobal);
-         }
-      if (low >= 0)
-         node->setIsNonNegative(true);
-      if ((low > min) || (high < max))
-         node->setCannotOverflow(true);
+
+      vp->addBlockOrGlobalConstraint(node, constraint, isGlobal);
       }
 
    replaceWithSmallerType(vp, node);
@@ -8391,17 +8519,17 @@ static TR::Node *constrainNarrowIntValue(OMR::ValuePropagation *vp, TR::Node *no
 
 TR::Node *constrainNarrowToByte(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   return constrainNarrowIntValue(vp, node, static_cast<int32_t>(TR::getMinSigned<TR::Int8>()), static_cast<int32_t>(TR::getMaxSigned<TR::Int8>()));
+   return constrainNarrowIntValue(vp, node);
    }
 
 TR::Node *constrainNarrowToShort(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   return constrainNarrowIntValue(vp, node, static_cast<int32_t>(TR::getMinSigned<TR::Int16>()), static_cast<int32_t>(TR::getMaxSigned<TR::Int16>()));
+   return constrainNarrowIntValue(vp, node);
    }
 
 TR::Node *constrainNarrowToInt(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   return constrainNarrowIntValue(vp, node, static_cast<int32_t>(TR::getMinSigned<TR::Int32>()), static_cast<int32_t>(TR::getMaxSigned<TR::Int32>()));
+   return constrainNarrowIntValue(vp, node);
    }
 
 /*

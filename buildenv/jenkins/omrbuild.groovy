@@ -160,26 +160,6 @@ SPECS = [
         'testArgs' : '',
         'junitPublish' : true
     ],
-    'linux_riscv64' : [
-        'alias': 'riscv',
-        'label' : 'compile:riscv64',
-        'reference' : defaultReference,
-        'environment' : [
-            'PATH+CCACHE=/usr/lib/ccache/'
-        ],
-        'ccache' : true,
-        'buildSystem' : 'cmake',
-        'builds' : [
-            [
-                'buildDir' : autoconfBuildDir,
-                'configureArgs' : '-Wdev -C../cmake/caches/Travis.cmake',
-                'compile' : defaultCompile
-            ]
-        ],
-        'test' : true,
-        'testArgs' : '',
-        'junitPublish' : true
-    ],
     'linux_riscv64_cross' : [
         'alias': 'riscv',
         'label' : 'compile:riscv64:cross',
@@ -235,27 +215,6 @@ SPECS = [
             [
                 'buildDir' : cmakeBuildDir,
                 'configureArgs' : '-Wdev -C../cmake/caches/Travis.cmake -DOMR_OPT_CUDA=ON -DOMR_CUDA_HOME=/usr/local/cuda',
-                'compile' : defaultCompile
-            ]
-        ],
-        'test' : true,
-        'testArgs' : '',
-        'junitPublish' : true
-    ],
-    'linux_x86-64_cmprssptrs' : [
-        'alias': 'xcrlinux',
-        'label' : 'compile:xlinux',
-        'reference' : defaultReference,
-        'environment' : [
-            'PATH+CCACHE=/usr/lib/ccache/',
-            'EXTRA_CONFIGURE_ARGS=--enable-DDR'
-        ],
-        'ccache' : true,
-        'buildSystem' : 'autoconf',
-        'builds' : [
-            [
-                'buildDir' : autoconfBuildDir,
-                'configureArgs': 'SPEC=linux_x86-64_cmprssptrs PLATFORM=amd64-linux64-gcc HAS_AUTOCONF=1 all',
                 'compile' : defaultCompile
             ]
         ],

@@ -337,7 +337,8 @@ typedef enum
    TR_VMINLMethod                         = 109,
    TR_ValidateJ2IThunkFromMethod          = 110,
    TR_StaticDefaultValueInstance          = 111,
-   TR_NumExternalRelocationKinds          = 112,
+   TR_ValidateIsClassVisible              = 112,
+   TR_NumExternalRelocationKinds          = 113,
    TR_ExternalRelocationTargetKindMask    = 0xff,
    } TR_ExternalRelocationTargetKind;
 

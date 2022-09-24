@@ -466,6 +466,7 @@ const char *TR::ExternalRelocation::_externalRelocationTargetKindNames[TR_NumExt
    "TR_VMINLMethod (109)",
    "TR_ValidateJ2IThunkFromMethod (110)",
    "TR_StaticDefaultValueInstance (111)",
+   "TR_ValidateIsClassVisible (112)",
    };
 
 uintptr_t TR::ExternalRelocation::_globalValueList[TR_NumGlobalValueItems] =

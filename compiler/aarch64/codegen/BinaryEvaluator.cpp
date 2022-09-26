@@ -1422,6 +1422,11 @@ generateUBFMForMaskAndShift(TR::Node *shiftNode, TR::CodeGenerator *cg)
           * to bit position shiftValue of the destination register.
           */
          uint32_t width = populationCount(maskValue);
+         uint32_t maxWidth = (is64bit ? 64 : 32) - static_cast<uint32_t>(shiftValue);
+         if (width > maxWidth)
+            {
+            width = maxWidth;
+            }
 
          TR::Register *reg;
          TR::Register *sreg = cg->evaluate(sourceNode);

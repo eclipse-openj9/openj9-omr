@@ -1638,7 +1638,8 @@ INSTANTIATE_TEST_CASE_P(VectorSplatsImm3, ARM64VectorSplatsImmediateEncodingTest
     std::make_tuple(TR::InstOpCode::bad, TR::RealRegister::v0, TR::Int32,            0x0ff000, ""),
     std::make_tuple(TR::InstOpCode::bad, TR::RealRegister::v0, TR::Int32,            0xf0000f, ""),
     std::make_tuple(TR::InstOpCode::bad, TR::RealRegister::v0, TR::Int32,          0x0f00f000, ""),
-    std::make_tuple(TR::InstOpCode::bad, TR::RealRegister::v0, TR::Int32,          0x0ff00000, "")
+    std::make_tuple(TR::InstOpCode::bad, TR::RealRegister::v0, TR::Int32,          0x0ff00000, ""),
+    std::make_tuple(TR::InstOpCode::bad, TR::RealRegister::v0, TR::Int32,          0xf00ff00f, "")
 ));
 
 INSTANTIATE_TEST_CASE_P(VectorSplatsImm4, ARM64VectorSplatsImmediateEncodingTest, ::testing::Values(
@@ -1675,7 +1676,13 @@ INSTANTIATE_TEST_CASE_P(VectorSplatsImm4, ARM64VectorSplatsImmediateEncodingTest
     std::make_tuple(TR::InstOpCode::bad,  TR::RealRegister::v0, TR::Int64,            0x1ff0000000000LL, ""),
     std::make_tuple(TR::InstOpCode::bad,  TR::RealRegister::v0, TR::Int64,           0x55000000000000LL, ""),
     std::make_tuple(TR::InstOpCode::bad,  TR::RealRegister::v0, TR::Int64,          0x1ff000000000000LL, ""),
-    std::make_tuple(TR::InstOpCode::bad,  TR::RealRegister::v0, TR::Int64,         0x5500000000000000LL, "")
+    std::make_tuple(TR::InstOpCode::bad,  TR::RealRegister::v0, TR::Int64,         0x5500000000000000LL, ""),
+    std::make_tuple(TR::InstOpCode::bad,  TR::RealRegister::v0, TR::Int64,         0x00000ff000000ff0LL, ""),
+    std::make_tuple(TR::InstOpCode::bad,  TR::RealRegister::v0, TR::Int64,         0x000ff000000ff000LL, ""),
+    std::make_tuple(TR::InstOpCode::bad,  TR::RealRegister::v0, TR::Int64,         0x00f0000f00f0000fLL, ""),
+    std::make_tuple(TR::InstOpCode::bad,  TR::RealRegister::v0, TR::Int64,         0x0f00f0000f00f000LL, ""),
+    std::make_tuple(TR::InstOpCode::bad,  TR::RealRegister::v0, TR::Int64,         0x0ff000000ff00000LL, ""),
+    std::make_tuple(TR::InstOpCode::bad,  TR::RealRegister::v0, TR::Int64,         0xf00ff00ff00ff00fLL, "")
 ));
 
 INSTANTIATE_TEST_CASE_P(DUP, ARM64VectorDupElementEncodingTest, ::testing::Values(

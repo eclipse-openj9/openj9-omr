@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1058,6 +1058,7 @@ TEST(PortMemTest, mem_test8_categories)
 		}
 	}
 
+#if !defined(OSX) || !defined(OMR_ARCH_AARCH64)
 	/* Try allocating with allocate32 */
 	{
 		uintptr_t initialBlocks = 0;
@@ -1219,6 +1220,7 @@ TEST(PortMemTest, mem_test8_categories)
 		}
 	}
 #endif /* defined(OMR_ENV_DATA64) */
+#endif /* !defined(OSX) || !defined(OMR_ARCH_AARCH64) */
 
 	/* Try allocating and reallocating */
 	{

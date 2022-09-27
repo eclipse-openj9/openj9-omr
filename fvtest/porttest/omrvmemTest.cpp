@@ -43,6 +43,10 @@
 #include <sys/vminfo.h>
 #endif /* defined(AIXPPC) */
 
+#if defined(OSX) && defined(OMR_ARCH_AARCH64)
+#include <pthread.h> /* for pthread_jit_write_protect_np */
+#endif /* defined(OSX) && defined(OMR_ARCH_AARCH64) */
+
 #define TWO_GIG_BAR 0x7FFFFFFF
 #define ONE_MB (1*1024*1024)
 #define FOUR_KB (4*1024)
@@ -2620,6 +2624,11 @@ TEST(PortVmemTest, vmem_test_reserveExecutableMemory)
 			} else {
 #endif /* J9ZOS39064 */
 
+#if defined(OSX) && defined(OMR_ARCH_AARCH64)
+				/* Start writing to executable memory */
+				pthread_jit_write_protect_np(0);
+#endif /* defined(OSX) && defined(OMR_ARCH_AARCH64) */
+
 				memset(memPtr, 0, params.pageSize);
 
 				if ((uintptr_t)&myFunction2 > (uintptr_t)&myFunction1) {
@@ -2635,6 +2644,11 @@ TEST(PortVmemTest, vmem_test_reserveExecutableMemory)
 				portTestEnv->log("function length = %d\n", length);
 
 				memcpy(memPtr, (void *)&myFunction1, length);
+
+#if defined(OSX) && defined(OMR_ARCH_AARCH64)
+				/* Stop writing to executable memory */
+				pthread_jit_write_protect_np(1);
+#endif /* defined(OSX) && defined(OMR_ARCH_AARCH64) */
 
 				portTestEnv->log("*memPtr: 0x%zx\n", *((unsigned int *)memPtr));
 

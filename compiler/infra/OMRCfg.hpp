@@ -345,6 +345,18 @@ class CFG
 
    TR::Region& getInternalMemoryRegion();
 
+   //FIXME: These public members should eventually be wrapped in an interface.
+   int32_t                  _max_edge_freq;
+   int32_t                  _calledFrequency;
+   int32_t                  _initialBlockFrequency;
+   static const int32_t MAX_PROF_EDGE_FREQ=0x3FFE;
+   enum OrphanType
+      {
+      IsParented = 0,
+      IsOrphanedNode,
+      IsOrphanedRegion
+      };
+
 protected:
    TR::Compilation *_compilation;
    TR::ResolvedMethodSymbol *_method;
@@ -383,16 +395,8 @@ protected:
    TR_BitVector            *_frequencySet;
    double                  *_edgeProbabilities; // temp array
 
-public: //FIXME: These public members should eventually be wrtapped in an interface.
-   int32_t                  _max_edge_freq;
-   int32_t                  _calledFrequency;
-   int32_t                  _initialBlockFrequency;
-   static const int32_t MAX_PROF_EDGE_FREQ=0x3FFE;
-   enum
-    {
-     StartBlock = 0,
-     EndBlock   = 1
-    };
+   OrphanType unreachableOrphan(TR::CFG *cfg, TR::CFGNode *from, TR::CFGNode *to);
+
    };
 
 }

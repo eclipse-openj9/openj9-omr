@@ -1234,11 +1234,11 @@ TR::Instruction *tryToGenerateMovImm16ShiftedInstruction(TR::Node *node, TR::Cod
       }
 
    TR::Instruction *instr;
-   if (instr = tryToGenerateImm16ShiftedInstrucion(node, cg, treg, TR::InstOpCode::vmovi8h, value))
+   if ((instr = tryToGenerateImm16ShiftedInstrucion(node, cg, treg, TR::InstOpCode::vmovi8h, value)))
       {
       return instr;
       }
-   else if (instr = tryToGenerateImm16ShiftedInstrucion(node, cg, treg, TR::InstOpCode::vmvni8h, ~value))
+   else if ((instr = tryToGenerateImm16ShiftedInstrucion(node, cg, treg, TR::InstOpCode::vmvni8h, ~value)))
       {
       return instr;
       }
@@ -1264,24 +1264,24 @@ TR::Instruction *tryToGenerateMovImm32ShiftedInstruction(TR::Node *node, TR::Cod
 
    if (lower16bit == upper16bit)
       {
-      if (instr = tryToGenerateMovImm16ShiftedInstruction(node, cg, treg, lower16bit));
+      if ((instr = tryToGenerateMovImm16ShiftedInstruction(node, cg, treg, lower16bit)))
          {
          return instr;
          }
       }
-   else if (instr = tryToGenerateImm32ShiftedInstruction(node, cg, treg, TR::InstOpCode::vmovi4s, value))
+   else if ((instr = tryToGenerateImm32ShiftedInstruction(node, cg, treg, TR::InstOpCode::vmovi4s, value)))
       {
       return instr;
       }
-   else if (instr = tryToGenerateImm32ShiftedInstruction(node, cg, treg, TR::InstOpCode::vmvni4s, ~value))
+   else if ((instr = tryToGenerateImm32ShiftedInstruction(node, cg, treg, TR::InstOpCode::vmvni4s, ~value)))
       {
       return instr;
       }
-   else if (instr = tryToGenerateImm32ShiftingOnesInstruction(node, cg, treg, TR::InstOpCode::vmovi4s_one, value))
+   else if ((instr = tryToGenerateImm32ShiftingOnesInstruction(node, cg, treg, TR::InstOpCode::vmovi4s_one, value)))
       {
       return instr;
       }
-   else if (instr = tryToGenerateImm32ShiftingOnesInstruction(node, cg, treg, TR::InstOpCode::vmvni4s_one, ~value))
+   else if ((instr = tryToGenerateImm32ShiftingOnesInstruction(node, cg, treg, TR::InstOpCode::vmvni4s_one, ~value)))
       {
       return instr;
       }
@@ -1360,7 +1360,7 @@ OMR::ARM64::TreeEvaluator::vsplatsImmediateHelper(TR::Node *node, TR::CodeGenera
                }
 
             uint64_t concatValue = (static_cast<uint64_t>(value) << 32) | value;
-            if (instr = tryToGenerateImm64Instruction(node, cg, treg, TR::InstOpCode::vmovi2d, concatValue))
+            if ((instr = tryToGenerateImm64Instruction(node, cg, treg, TR::InstOpCode::vmovi2d, concatValue)))
                {
                return instr;
                }
@@ -1375,13 +1375,13 @@ OMR::ARM64::TreeEvaluator::vsplatsImmediateHelper(TR::Node *node, TR::CodeGenera
 
             if (lower32bit == upper32bit)
                {
-               if (instr = tryToGenerateMovImm32ShiftedInstruction(node, cg, treg, lower32bit))
+               if ((instr = tryToGenerateMovImm32ShiftedInstruction(node, cg, treg, lower32bit)))
                   {
                   return instr;
                   }
                }
 
-            if (instr = tryToGenerateImm64Instruction(node, cg, treg, TR::InstOpCode::vmovi2d, constValue))
+            if ((instr = tryToGenerateImm64Instruction(node, cg, treg, TR::InstOpCode::vmovi2d, constValue)))
                {
                return instr;
                }

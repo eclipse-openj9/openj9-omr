@@ -1256,7 +1256,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"trustAllInterfaceTypeInfo",        "O\tGive Java interface type information the same level of trust afforded to class info.  The Java spec is much more lackadasical about interface type safety, and requires us to be conservative.", SET_OPTION_BIT(TR_TrustAllInterfaceTypeInfo), "F"},
    {"tryToInline=",                     "O{regex}\tlist of callee methods to be inlined if possible", TR::Options::setRegex, offsetof(OMR::Options, _tryToInline), 0, "P"},
    {"turnOffSelectiveNoOptServerIfNoStartupHint", "M\t", SET_OPTION_BIT(TR_TurnOffSelectiveNoOptServerIfNoStartupHint), "F", NOT_IN_SUBSET },
-   {"unleashStaticFieldFolding",        "O\tbypass the class white-list, and allow static final fields to be folded aggressively", RESET_OPTION_BIT(TR_RestrictStaticFieldFolding), "F"},
+   {"unleashStaticFieldFolding",        "O\tbypass the class allow-list, and allow static final fields to be folded aggressively", RESET_OPTION_BIT(TR_RestrictStaticFieldFolding), "F"},
    {"unresolvedSymbolsAreNotColdAtCold", "R\tMark unresolved symbols as cold blocks at cold or lower", SET_OPTION_BIT(TR_UnresolvedAreNotColdAtCold), "F"},
    {"upgradeBootstrapAtWarm",           "R\tRecompile bootstrap AOT methods at warm instead of cold", SET_OPTION_BIT(TR_UpgradeBootstrapAtWarm), "F", NOT_IN_SUBSET},
    {"useFlattenedArrayElementRuntimeHelpers",        "M\tuse the runtime helpers for flattened array elements", SET_OPTION_BIT(TR_UseFlattenedArrayElementRuntimeHelpers), "F"},

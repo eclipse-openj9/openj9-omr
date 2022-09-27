@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -78,12 +78,21 @@ TestCompiler::CodeCacheManager::allocateCodeCacheSegment(size_t segmentSize,
          mmap(NULL,
               codeCacheSizeToAllocate,
               PROT_READ | PROT_WRITE | PROT_EXEC,
+#if defined(OMR_ARCH_AARCH64) && defined(OSX)
+              MAP_ANONYMOUS | MAP_PRIVATE | MAP_JIT,
+#else
               MAP_ANONYMOUS | MAP_PRIVATE,
+#endif /* OMR_ARCH_AARCH64 && OSX */
               -1,
               0));
 #endif /* OMR_OS_WINDOWS */
+#if defined(OMR_ARCH_AARCH64) && defined(OSX)
+   TR::CodeCacheMemorySegment *memSegment = (TR::CodeCacheMemorySegment *) malloc(sizeof(TR::CodeCacheMemorySegment));
+   new (memSegment) TR::CodeCacheMemorySegment(memorySlab, reinterpret_cast<uint8_t *>(memorySlab) + codeCacheSizeToAllocate);
+#else  /* OMR_ARCH_AARCH64 && OSX */
    TR::CodeCacheMemorySegment *memSegment = (TR::CodeCacheMemorySegment *) ((size_t)memorySlab + codeCacheSizeToAllocate - sizeof(TR::CodeCacheMemorySegment));
    new (memSegment) TR::CodeCacheMemorySegment(memorySlab, reinterpret_cast<uint8_t *>(memSegment));
+#endif
    return memSegment;
    }
 
@@ -94,6 +103,9 @@ TestCompiler::CodeCacheManager::freeCodeCacheSegment(TR::CodeCacheMemorySegment 
    VirtualFree(memSegment->_base, 0, MEM_RELEASE); // second arg must be zero when calling with MEM_RELEASE
 #elif defined(J9ZOS390)
    free(memSegment->_base);
+#elif defined(OMR_ARCH_AARCH64) && defined(OSX)
+   munmap(memSegment->_base, memSegment->_top - memSegment->_base);
+   free(memSegment);
 #else
    munmap(memSegment->_base, memSegment->_top - memSegment->_base + sizeof(TR::CodeCacheMemorySegment));
 #endif

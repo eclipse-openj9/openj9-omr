@@ -56,7 +56,7 @@ From the [Pull Requests view](https://ci.eclipse.org/omr/view/Pull%20Requests/),
 		1. Admin list: `<Committers' Github IDs>` (Should be auto filled from Global Config)
 		1. Use github hooks for build triggering: `true`
 		1. Trigger phrase: `.*Jenkins build.*(aix|all).*` (Replace aix with spec shorthand. Where aix is a shorthand for aix_ppc-64)
-		1. White list: `<List of Github IDs allowed to launch PR builds>`
+		1. Allow list: `<List of Github IDs allowed to launch PR builds>`
 		1. Trigger Setup
 			1. Add -> Update commit status during build -> Commit Status Context: `continuous-integration/eclipse-omr/pr/<SPEC>`
 			1. Add -> Cancel build on update

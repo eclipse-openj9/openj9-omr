@@ -506,11 +506,7 @@ MM_ParallelGlobalGC::mainThreadGarbageCollect(MM_EnvironmentBase *env, MM_Alloca
 		if (!_fixHeapForWalkCompleted) {
 #if defined(OMR_GC_MODRON_COMPACTION)
 			if (compactedThisCycle) {
-				OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
-				U_64 startTime = omrtime_hires_clock();
-				getCompactScheme(env)->fixHeapForWalk(env);
-				_extensions->globalGCStats.fixHeapForWalkTime = omrtime_hires_delta(startTime, omrtime_hires_clock(), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
-				_extensions->globalGCStats.fixHeapForWalkReason = FIXUP_DEBUG_TOOLING;
+				getCompactScheme(env)->fixHeapForWalk(env, MEMORY_TYPE_RAM, FIXUP_DEBUG_TOOLING);
 			} else
 #endif /* OMR_GC_MODRON_COMPACTION */
 			{

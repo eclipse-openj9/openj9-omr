@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -312,7 +312,7 @@ public:
 	virtual void compact(MM_EnvironmentBase *env, bool rebuildMarkBits, bool aggressive);
 	omrobjectptr_t getForwardingPtr(omrobjectptr_t objectPtr) const;
 	void flushPool(MM_EnvironmentStandard *env, MM_CompactMemoryPoolState *freeListState);
-	void fixHeapForWalk(MM_EnvironmentBase *env);
+	void fixHeapForWalk(MM_EnvironmentBase *env, uintptr_t walkFlags, uintptr_t walkReason);
 	void parallelFixHeapForWalk(MM_EnvironmentBase *env);
 
 	/**

@@ -1458,10 +1458,20 @@ MM_CompactScheme::rebuildMarkbitsInSubArea(MM_EnvironmentStandard *env, MM_HeapR
  * no case in which a region may be only partially compacted.
  */
 void
-MM_CompactScheme::fixHeapForWalk(MM_EnvironmentBase *env)
+MM_CompactScheme::fixHeapForWalk(MM_EnvironmentBase *env, uintptr_t walkFlags, uintptr_t walkReason)
 {
+	Trc_MM_DoFixHeapForCompact_Entry(env->getLanguageVMThread(), walkFlags, walkReason);
+
+	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
+	uint64_t startTime = omrtime_hires_clock();
+
 	MM_CompactFixHeapForWalkTask fixHeapForWalkTask(env, _dispatcher, this);
 	_dispatcher->run(env, &fixHeapForWalkTask);
+
+	_extensions->globalGCStats.fixHeapForWalkTime = omrtime_hires_delta(startTime, omrtime_hires_clock(), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
+	_extensions->globalGCStats.fixHeapForWalkReason = walkReason;
+
+	Trc_MM_DoFixHeapForCompact_Exit(env->getLanguageVMThread(), _extensions->globalGCStats.fixHeapForWalkObjectCount);
 }
 
 void
@@ -1489,9 +1499,10 @@ MM_CompactScheme::parallelFixHeapForWalk(MM_EnvironmentBase *env)
 					omrobjectptr_t objectPtr = NULL;
 					while (NULL != (objectPtr = objectIterator.nextObject())) {
 						if (objectPtr >= alignedEnd || !_markMap->isBitSet(objectPtr)) {
-							// this is a hole that looks like an object and should be made to look like a hole
+							/* this is a hole that looks like an object and should be made to look like a hole */
 							uintptr_t deadObjectByteSize = _extensions->objectModel.getConsumedSizeInBytesWithHeader(objectPtr);
 							memorySubSpace->abandonHeapChunk(objectPtr, ((uint8_t*)objectPtr) + deadObjectByteSize);
+							_extensions->globalGCStats.fixHeapForWalkObjectCount += 1;
 						}
 					}
 				}

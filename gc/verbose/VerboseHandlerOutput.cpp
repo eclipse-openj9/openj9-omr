@@ -256,6 +256,25 @@ MM_VerboseHandlerOutput::getConcurrentTerminationReason(MM_ConcurrentPhaseStatsB
 	return reasonForTermination;
 }
 
+/**
+ * Return the reason for heap fixup as a string
+ * @param reason reason code
+ */
+const char *
+MM_VerboseHandlerOutput::getHeapFixupReasonString(uintptr_t reason)
+{
+	switch((FixUpReason)reason) {
+		case FIXUP_NONE:
+			return "no fixup";
+		case FIXUP_CLASS_UNLOADING:
+			return "class unloading";
+		case FIXUP_DEBUG_TOOLING:
+			return "debug tooling";
+		default:
+			return "unknown";
+	}
+}
+
 void
 MM_VerboseHandlerOutput::outputInitializedStanza(MM_EnvironmentBase *env, MM_VerboseBuffer *buffer)
 {
@@ -472,6 +491,7 @@ MM_VerboseHandlerOutput::handleCycleEnd(J9HookInterface** hook, uintptr_t eventN
 
 	const char* cycleType = getCurrentCycleType(env);
 	char tagTemplate[200];
+	char fixupTagTemplate[100];
 	getTagTemplate(tagTemplate, sizeof(tagTemplate), _manager->getIdAndIncrement(), cycleType, env->_cycleState->_verboseContextID, omrtime_current_time_millis());
 
 	enterAtomicReportingBlock();
@@ -482,6 +502,13 @@ MM_VerboseHandlerOutput::handleCycleEnd(J9HookInterface** hook, uintptr_t eventN
 	} else {
 		writer->formatAndOutput(env, 0, "<cycle-end %s />", tagTemplate);
 	}
+
+	if ((OMR_GC_CYCLE_TYPE_GLOBAL == event->cycleType) && (FIXUP_NONE != event->fixHeapForWalkReason)) {
+		uint64_t fixupDuration = event->fixHeapForWalkTime;
+		getTagTemplate(fixupTagTemplate, sizeof(fixupTagTemplate), omrtime_current_time_millis());
+		writer->formatAndOutput(env, 0, "<heap-fixup timems=\"%llu.%03llu\" reason=\"%s\"  %s />", fixupDuration / 1000, fixupDuration % 1000, getHeapFixupReasonString(event->fixHeapForWalkReason), fixupTagTemplate);
+	}
+
 	writer->flush(env);
 	exitAtomicReportingBlock();
 }

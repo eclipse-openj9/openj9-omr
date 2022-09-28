@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -50,12 +50,11 @@ public:
 
 	uintptr_t fixHeapForWalkReason;
 	uint64_t fixHeapForWalkTime;
+	uint64_t fixHeapForWalkObjectCount;
 
 	MM_MarkStats markStats;
 	MM_ClassUnloadStats classUnloadStats;
 	MM_MetronomeStats metronomeStats; /**< Stats collected during one GC increment (quantum) */
-
-	uintptr_t finalizableCount; /**< count of objects pushed for finalization during one GC cycle */
 
 	MMINLINE void clear()
 	{
@@ -69,12 +68,11 @@ public:
 
 		fixHeapForWalkReason = FIXUP_NONE;
 		fixHeapForWalkTime = 0;
+		fixHeapForWalkObjectCount = 0;
 
 		markStats.clear();
 		classUnloadStats.clear();
 		metronomeStats.clearStart();
-
-		finalizableCount = 0;
 	};
 
 	/**
@@ -87,19 +85,20 @@ public:
 		return markStats.getStallTime() + workPacketStats.getStallTime() + sweepStats.idleTime;
 	}
 
-	MM_GlobalGCStats()
-		: gcCount(0)
-		, workPacketStats()
-		, sweepStats()
+	MM_GlobalGCStats() :
+		gcCount(0),
+		workPacketStats(),
+		sweepStats(),
 #if defined(OMR_GC_MODRON_COMPACTION)
-		, compactStats()
+		compactStats(),
 #endif /* OMR_GC_MODRON_COMPACTION */
-		, fixHeapForWalkReason(FIXUP_NONE)
-		, fixHeapForWalkTime(0)
-		, markStats()
-		, classUnloadStats()
-		, metronomeStats()
-		, finalizableCount(0) {};
+		fixHeapForWalkReason(FIXUP_NONE),
+		fixHeapForWalkTime(0),
+		fixHeapForWalkObjectCount(0),
+		markStats(),
+		classUnloadStats(),
+		metronomeStats()
+	{}
 };
 
 #endif /* GLOBALGCSTATS_HPP_ */

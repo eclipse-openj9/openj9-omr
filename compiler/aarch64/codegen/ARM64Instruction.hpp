@@ -2666,6 +2666,89 @@ class ARM64CondTrg1Src2Instruction : public ARM64Trg1Src2Instruction
    virtual uint8_t *generateBinaryEncoding();
 };
 
+class ARM64Trg1Src2ImmInstruction : public ARM64Trg1Src2Instruction
+   {
+   uint32_t _sourceImmediate; /* imm4 */
+
+   public:
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] s1reg : source register 1
+    * @param[in] s2reg : source register 2
+    * @param[in] imm : immediate value
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1Src2ImmInstruction( TR::InstOpCode::Mnemonic op,
+                             TR::Node *node,
+                             TR::Register *treg,
+                             TR::Register *s1reg,
+                             TR::Register *s2reg,
+                             uint32_t imm, TR::CodeGenerator *cg)
+      : ARM64Trg1Src2Instruction(op, node, treg, s1reg, s2reg, cg), _sourceImmediate(imm)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] s1reg : source register 1
+    * @param[in] s2reg : source register 2
+    * @param[in] imm : immediate value
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1Src2ImmInstruction( TR::InstOpCode::Mnemonic op,
+                             TR::Node *node,
+                             TR::Register *treg,
+                             TR::Register *s1reg,
+                             TR::Register *s2reg,
+                             uint32_t imm,
+                             TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : ARM64Trg1Src2Instruction(op, node, treg, s1reg, s2reg, precedingInstruction, cg),
+        _sourceImmediate(imm)
+      {
+      }
+
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsTrg1Src2Imm; }
+
+   /**
+    * @brief Gets source immediate
+    * @return source immediate
+    */
+   uint32_t getSourceImmediate() {return _sourceImmediate;}
+   /**
+    * @brief Sets source immediate
+    * @param[in] si : immediate value
+    * @return source immediate
+    */
+   uint32_t setSourceImmediate(uint32_t si) {return (_sourceImmediate = si);}
+
+   /**
+    * @brief Sets immediate field in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertImmediateField(uint32_t *instruction)
+      {
+      *instruction |= ((_sourceImmediate & 0xf) << 11);
+      }
+
+   /**
+    * @brief Generates binary encoding of the instruction
+    * @return instruction cursor
+    */
+   virtual uint8_t *generateBinaryEncoding();
+   };
+
 class ARM64Trg1Src2ShiftedInstruction : public ARM64Trg1Src2Instruction
    {
    ARM64ShiftCode _shiftType;

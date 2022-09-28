@@ -901,6 +901,7 @@ static const char *opCodeToNameMap[] =
    "vuzp2_8h",
    "vuzp2_4s",
    "vuzp2_2d",
+   "vext16b",
    "vneg16b",
    "vneg8h",
    "vneg4s",
@@ -1120,6 +1121,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
          break;
       case OMR::Instruction::IsCondTrg1Src2:
          print(pOutFile, (TR::ARM64CondTrg1Src2Instruction *)instr);
+         break;
+      case OMR::Instruction::IsTrg1Src2Imm:
+         print(pOutFile, (TR::ARM64Trg1Src2ImmInstruction *)instr);
          break;
       case OMR::Instruction::IsTrg1Src2Shifted:
          print(pOutFile, (TR::ARM64Trg1Src2ShiftedInstruction *)instr);
@@ -2102,6 +2106,20 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64CondTrg1Src2Instruction *instr)
 
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
+
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src2ImmInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+
+   print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource2Register(), TR_WordReg);
+   trfprintf(pOutFile, ", %d", instr->getSourceImmediate());
 
    trfflush(_comp->getOutFile());
    }

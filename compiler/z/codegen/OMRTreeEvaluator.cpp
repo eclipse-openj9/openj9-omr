@@ -14642,6 +14642,7 @@ OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node * node,
          generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, 3);
          break;
       case TR::InstOpCode::VLC:
+      case TR::InstOpCode::VLP:
          generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, getVectorElementSizeMask(node));
          break;
       case TR::InstOpCode::VFPSO:
@@ -14669,7 +14670,7 @@ OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node * node,
          generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, getVectorElementSizeMask(node));
          break;
       default:
-         TR_ASSERT(false, "Unary Vector IL evaluation unimplemented for node : %s\n", cg->getDebug()->getName(node));
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unary Vector IL evaluation unimplemented for node\n");
          break;
       }
 

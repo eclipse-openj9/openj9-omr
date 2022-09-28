@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1445,6 +1445,14 @@ getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary,
 					PPG_vmem_pageSize[0], category);
 		}
 
+/**
+ * Disable address range search for z/TPF. Current z/TPF support for mmap
+ * is non-standard. Due to the non standard behaviour, the address range
+ * search may cause an infinite loop in some scenarios where mmap fails.
+ * The address range search maybe re-enabled in the future once z/TPF
+ * mmap support is updated.
+ */
+#ifndef OMRZTPF
 		if (NULL == memoryPointer) {
 			/* try all addresses within range */
 			while ((startAddress <= currentAddress)
@@ -1480,6 +1488,7 @@ getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary,
 				}
 			}
 		}
+#endif /* OMRZTPF */
 	}
 	/* if strict flag is not set and we did not get any memory, attempt to get memory at any address */
 	if (0 == (OMRPORT_VMEM_STRICT_ADDRESS & vmemOptions)

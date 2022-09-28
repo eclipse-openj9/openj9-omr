@@ -910,6 +910,12 @@
 		vrev64_16b,                                              	/* 0x4E200800	REV64    	 */
 		vrev64_8h,                                               	/* 0x4E600800	REV64    	 */
 		vrev64_4s,                                               	/* 0x4EA00800	REV64    	 */
+		vxtn_8b,                                                 	/* 0x0E212800	XTN     	 */
+		vxtn_4h,                                                 	/* 0x0E612800	XTN     	 */
+		vxtn_2s,                                                 	/* 0x0EA12800	XTN     	 */
+		vxtn2_16b,                                               	/* 0x4E212800	XTN2    	 */
+		vxtn2_8h,                                                	/* 0x4E612800	XTN2    	 */
+		vxtn2_4s,                                                	/* 0x4EA12800	XTN2    	 */
 	/* Vector Copy */
 		/* DUP (general) */
 		vdup16b,                                               		/* 0x4E010C00	DUP      	 */

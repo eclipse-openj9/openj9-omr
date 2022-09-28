@@ -82,47 +82,59 @@ public:
       }
 
   /** \brief
-   *     Creates vector opcode given vector operation and resulting vector type
+   *     Creates vector opcode given vector operation and the source/result vector or mask type
    *
    *  \param operation
    *     Vector operation
    *
    *  \param vectorType
-   *     Type of the vector which is either source or result (or both)
+   *     Type of the vector or mask which is either source or result (or both)
    *
    *  \return
    *     Vector opcode
    */
-   static TR::ILOpCodes createVectorOpCode(TR::VectorOperation operation, DataType vectorType)
+   static TR::ILOpCodes createVectorOpCode(TR::VectorOperation operation, TR::DataType vectorType)
       {
-      TR_ASSERT_FATAL(vectorType.isVector(), "createVectorOpCode should take vector type\n");
+      TR_ASSERT_FATAL(vectorType.isVector() || vectorType.isMask(), "createVectorOpCode should take vector or mask type\n");
 
       TR_ASSERT_FATAL(operation < TR::firstTwoTypeVectorOperation, "Vector operation should be one vector type operation\n");
+
+      if (vectorType.isMask())
+         vectorType = TR::DataType::vectorFromMaskType(vectorType);
 
       return (TR::ILOpCodes)(TR::NumScalarIlOps + operation*TR::NumVectorTypes + (vectorType - TR::FirstVectorType));
       }
 
   /** \brief
-   *     Creates vector opcode given vector operation and resulting vector type
+   *     Creates vector opcode given vector operation and both source and result vector or mask type
    *
    *  \param operation
    *     Vector operation
    *
-   *  \param vectorType
-   *     Type of the vector which is either source or result (or both)
+   *  \param srcVectorType
+   *     Type of the vector or mask which is the source
+   *
+   *  \param resVectorType
+   *     Type of the vector or mask which is the result
    *
    *  \return
    *     Vector opcode
    */
-   static TR::ILOpCodes createVectorOpCode(TR::VectorOperation operation, DataType srcVectorType, DataType resVectorType)
+   static TR::ILOpCodes createVectorOpCode(TR::VectorOperation operation, TR::DataType srcVectorType, TR::DataType resVectorType)
       {
-      TR_ASSERT_FATAL(srcVectorType.isVector(), "createVectorOpCode should take vector source type\n");
-      TR_ASSERT_FATAL(resVectorType.isVector(), "createVectorOpCode should take vector result type\n");
+      TR_ASSERT_FATAL(srcVectorType.isVector() || srcVectorType.isMask(), "createVectorOpCode should take vector or mask source type\n");
+      TR_ASSERT_FATAL(resVectorType.isVector() || resVectorType.isMask(), "createVectorOpCode should take vector or mask result type\n");
 
       TR_ASSERT_FATAL(operation >= TR::firstTwoTypeVectorOperation, "Vector operation should be two vector type operation\n");
 
+      if (srcVectorType.isMask())
+         srcVectorType = TR::DataType::vectorFromMaskType(srcVectorType);
+
+      if (resVectorType.isMask())
+         resVectorType = TR::DataType::vectorFromMaskType(resVectorType);
+
       return (TR::ILOpCodes)(TR::NumScalarIlOps + TR::NumOneVectorTypeOps +
-                             operation * TR::NumVectorTypes * TR::NumVectorTypes +
+                             (operation - TR::firstTwoTypeVectorOperation) * TR::NumVectorTypes * TR::NumVectorTypes +
                              (srcVectorType - TR::FirstVectorType) * TR::NumVectorTypes +
                              (resVectorType - TR::FirstVectorType));
       }
@@ -191,8 +203,8 @@ public:
       TR::ILOpCodes opcode = op._opCode;
 
       return (TR::VectorOperation) ((opcode < (TR::NumScalarIlOps + TR::NumOneVectorTypeOps)) ?
-                                   (opcode - TR::NumScalarIlOps) / TR::NumVectorTypes :
-                                    (opcode - TR::NumScalarIlOps - TR::NumOneVectorTypeOps) / (TR::NumVectorTypes * TR::NumVectorTypes));
+                                    (opcode - TR::NumScalarIlOps) / TR::NumVectorTypes :
+                                    (opcode - TR::NumScalarIlOps - TR::NumOneVectorTypeOps) / (TR::NumVectorTypes * TR::NumVectorTypes) + TR::firstTwoTypeVectorOperation - 1);
       }
 
   /** \brief

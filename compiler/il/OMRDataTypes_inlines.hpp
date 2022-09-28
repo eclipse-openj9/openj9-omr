@@ -281,4 +281,14 @@ OMR::DataType::createMaskType(TR::DataType elementType, TR::VectorLength length)
    return type;
    }
 
+
+TR::DataTypes
+OMR::DataType::vectorFromMaskType(TR::DataType maskType)
+   {
+   TR_ASSERT_FATAL(maskType.isMask(), "vectorFromMaskType should take mask type\n");
+
+   return static_cast<TR::DataTypes>(maskType - TR::NumVectorTypes);
+   }
+
+
 #endif // OMR_DATATYPES_INLINES_INCL

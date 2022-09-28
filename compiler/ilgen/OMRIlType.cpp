@@ -61,6 +61,17 @@ OMR::IlType::signatureNameForVectorType[TR::NumVectorElementTypes] =
    "VD", // VectorDouble
    };
 
+const char *
+OMR::IlType::signatureNameForMaskType[TR::NumVectorElementTypes] =
+   {
+   "M1", // MaskInt8
+   "M2", // MaskInt16
+   "M4", // MaskInt32
+   "M8", // MaskInt64
+   "MF", // MaskFloat
+   "MD", // MaskDouble
+   };
+
 const uint8_t
 OMR::IlType::primitiveTypeAlignment[TR::NumOMRTypes] =
    {
@@ -103,6 +114,9 @@ OMR::IlType::getSignatureName()
 
    if (dt.isVector())
       return (char *) signatureNameForVectorType[dt.getVectorElementType() - 1];
+
+   if (dt.isMask())
+      return (char *) signatureNameForMaskType[dt.getVectorElementType() - 1];
 
    return (char *) signatureNameForType[dt];
    }

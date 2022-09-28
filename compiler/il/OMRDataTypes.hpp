@@ -512,6 +512,19 @@ public:
    */
    inline static TR::DataTypes createMaskType(TR::DataType elementType, TR::VectorLength length);
 
+
+  /** \brief
+   *     Creates Vector type corresponding to a Mask type (the same length and element type)
+   *
+   *  \param maskType
+   *     Mask type
+   *
+   *  \return
+   *     Vector type
+   */
+   inline static TR::DataTypes vectorFromMaskType(TR::DataType maskType);
+
+
    /** \brief
    *     Initializes static table with all vector type names
    *

@@ -61,11 +61,11 @@ namespace TR
       NumScalarIlOps,
 
       NumOneVectorTypeOperations = TR::firstTwoTypeVectorOperation,
-      NumTwoTypeVectorOperations = TR::NumVectorOperations - TR::firstTwoTypeVectorOperation,
+      NumTwoVectorTypeOperations = TR::NumVectorOperations - TR::firstTwoTypeVectorOperation,
 
       NumOneVectorTypeOps = NumOneVectorTypeOperations * TR::NumVectorTypes,
-      NumTwoTypeVectorOps = NumTwoTypeVectorOperations * TR::NumVectorTypes * TR::NumVectorTypes,
-      NumAllIlOps = TR::NumScalarIlOps + NumOneVectorTypeOps + NumTwoTypeVectorOps
+      NumTwoVectorTypeOps = NumTwoVectorTypeOperations * TR::NumVectorTypes * TR::NumVectorTypes,
+      NumAllIlOps = TR::NumScalarIlOps + NumOneVectorTypeOps + NumTwoVectorTypeOps
       };
    }
 

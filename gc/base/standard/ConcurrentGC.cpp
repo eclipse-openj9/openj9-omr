@@ -1676,9 +1676,7 @@ MM_ConcurrentGC::timeToKickoffConcurrent(MM_EnvironmentBase *env, MM_AllocateDes
 			if (LANGUAGE_DEFINED_REASON != _stats.getKickoffReason()) {
 				_languageKickoffReason = NO_LANGUAGE_KICKOFF_REASON;
 			}
-#if defined(OMR_GC_MODRON_SCAVENGER)
 			_extensions->setConcurrentGlobalGCInProgress(true);
-#endif
 			reportConcurrentKickoff(env);
 		}
 		return true;
@@ -1923,8 +1921,6 @@ MM_ConcurrentGC::clearWorkStackOverflow()
 void
 MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription, uint32_t gcCode)
 {
-	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
-
 	Trc_MM_ConcurrentGC_internalPreCollect_Entry(env->getLanguageVMThread(), subSpace);
 
 	/* Thread roots must have been flushed by this point */
@@ -1997,8 +1993,8 @@ MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 		MM_ParallelGlobalGC::internalPreCollect(env, subSpace, allocDescription, gcCode);
 	} else
 #endif /* OMR_GC_IDLE_HEAP_MANAGER */
-	if (_extensions->isRememberedSetInOverflowState() || ((CONCURRENT_OFF < executionModeAtGC) && (CONCURRENT_TRACE_ONLY > executionModeAtGC))) {
-		CollectionAbortReason reason = (_extensions->isRememberedSetInOverflowState() ? ABORT_COLLECTION_REMEMBERSET_OVERFLOW : ABORT_COLLECTION_INSUFFICENT_PROGRESS);
+	if (_extensions->isScavengerRememberedSetInOverflowState() || ((CONCURRENT_OFF < executionModeAtGC) && (CONCURRENT_TRACE_ONLY > executionModeAtGC))) {
+		CollectionAbortReason reason = (_extensions->isScavengerRememberedSetInOverflowState() ? ABORT_COLLECTION_REMEMBERSET_OVERFLOW : ABORT_COLLECTION_INSUFFICENT_PROGRESS);
 		abortCollection(env, reason);
 		/* concurrent cycle was aborted so we need to kick off a new cycle and set up the cycle state */
 		MM_ParallelGlobalGC::internalPreCollect(env, subSpace, allocDescription, gcCode);
@@ -2011,9 +2007,7 @@ MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 		/* Switch the executionMode to OFF to complete the STW collection */
 		_stats.switchExecutionMode(executionModeAtGC, CONCURRENT_OFF);
 
-#if defined(OMR_GC_MODRON_SCAVENGER)
 		_extensions->setConcurrentGlobalGCInProgress(false);
-#endif
 
 		/* Mark map is usable. We got far enough into the concurrent to be
 		 * sure we at least initialized the mark map so no need to do so again.
@@ -2024,6 +2018,7 @@ MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 		if (_extensions->scavengerEnabled) {
+			OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 			reportConcurrentRememberedSetScanStart(env);
 			uint64_t startTime = omrtime_hires_clock();
 
@@ -2186,9 +2181,8 @@ MM_ConcurrentGC::abortCollection(MM_EnvironmentBase *env, CollectionAbortReason 
 	switchConHelperRequest(CONCURRENT_HELPER_MARK, CONCURRENT_HELPER_WAIT);
 
 	_stats.switchExecutionMode(_stats.getExecutionMode(), CONCURRENT_OFF);
-#if defined(OMR_GC_MODRON_SCAVENGER)
+
 	_extensions->setConcurrentGlobalGCInProgress(false);
-#endif
 
 	/* make sure to reset the init ranges before the next kickOff */
 	resetInitRangesForConcurrentKO();

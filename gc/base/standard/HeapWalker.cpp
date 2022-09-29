@@ -182,14 +182,12 @@ MM_HeapWalker::allObjectSlotsDo(MM_EnvironmentBase *env, MM_HeapWalkerSlotFunc f
 	SlotObjectDoUserData slotObjectDoUserData = { function, userData, walkFlags, this };
 	uintptr_t modifiedWalkFlags = walkFlags;
 
-#if defined(OMR_GC_MODRON_SCAVENGER)
 	/* If J9_MU_WALK_NEW_AND_REMEMBERED_ONLY is specified, and rsOverflow has
 	 * occurred, any object in old space might be remembered, so we must walk them all
 	 */
-	if (env->getExtensions()->isRememberedSetInOverflowState()) {
+	if (env->getExtensions()->isScavengerRememberedSetInOverflowState()) {
 		modifiedWalkFlags &= ~J9_MU_WALK_NEW_AND_REMEMBERED_ONLY;
 	}
-#endif /* OMR_GC_MODRON_SCAVENGER */
 
 	allObjectsDo(env, heapWalkerObjectSlotsDo, (void *)&slotObjectDoUserData, modifiedWalkFlags, parallel, prepareHeapForWalk);
 

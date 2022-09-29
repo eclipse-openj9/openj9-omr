@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -53,9 +53,7 @@ allocateMemoryForSublistFragment(void *vmThreadRawPtr, J9VMGC_SublistFragment *f
 	if (result) {
 		return 0;
 	} else {
-#if defined(OMR_GC_MODRON_SCAVENGER)
-		env->getExtensions()->setRememberedSetOverflowState();
-#endif /* OMR_GC_MODRON_SCAVENGER */
+		env->getExtensions()->setScavengerRememberedSetOverflowState();
 		return 1;
 	}
 }

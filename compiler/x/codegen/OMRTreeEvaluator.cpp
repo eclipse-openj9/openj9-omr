@@ -4750,6 +4750,139 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDreductionEvaluator(TR::Node* node, TR
 
 // vector evaluators
 TR::Register*
+OMR::X86::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::DataType type = node->getType();
+
+   if (type.getVectorElementType() == TR::Int8)
+      {
+      TR::VectorLength vl = type.getVectorLength();
+      TR::Node *lhsNode = node->getChild(0);
+      TR::Node *rhsNode = node->getChild(1);
+
+      TR::Register *lhsReg = cg->evaluate(lhsNode);
+      TR::Register *rhsReg = cg->evaluate(rhsNode);
+      TR::Register *resultReg = cg->allocateRegister(TR_VRF);
+      TR::Register *zeroReg = cg->allocateRegister(TR_VRF);
+      TR::Register *lhsTmpReg = cg->allocateRegister(TR_VRF);
+      TR::Register *rhsTmpReg = cg->allocateRegister(TR_VRF);
+      TR::Register *maskReg = cg->allocateRegister(TR_VRF);
+      TR::Register *gprTmpReg = cg->allocateRegister(TR_GPR);
+
+      TR::InstOpCode xorOpcode = TR::InstOpCode::PXORRegReg;
+      OMR::X86::Encoding xorEncoding = xorOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+      TR_ASSERT_FATAL(xorEncoding != OMR::X86::Encoding::Bad, "No suitable encoding form for pxor instruction");
+
+      generateRegRegInstruction(xorOpcode.getMnemonic(), node, zeroReg, zeroReg, cg, xorEncoding);
+
+      TR::InstOpCode unpackHOpcode = TR::InstOpCode::PUNPCKHBWRegReg;
+      TR::InstOpCode unpackLOpcode = TR::InstOpCode::PUNPCKLBWRegReg;
+      TR::InstOpCode packOpcode = TR::InstOpCode::PACKUSWBRegReg;
+      TR::InstOpCode mulOpcode = TR::InstOpCode::PMULLWRegReg;
+      TR::InstOpCode andOpcode = TR::InstOpCode::PANDRegReg;
+
+      OMR::X86::Encoding unpackHEncoding = unpackHOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+      OMR::X86::Encoding unpackLEncoding = unpackLOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+      OMR::X86::Encoding packEncoding = packOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+      OMR::X86::Encoding mulEncoding = mulOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+      OMR::X86::Encoding andEncoding = andOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+
+      TR_ASSERT_FATAL(unpackHEncoding != OMR::X86::Encoding::Bad, "No suitable encoding form for punpckhbw instruction");
+      TR_ASSERT_FATAL(unpackLEncoding != OMR::X86::Encoding::Bad, "No suitable encoding form for punpcklbw instruction");
+      TR_ASSERT_FATAL(packEncoding != OMR::X86::Encoding::Bad, "No suitable encoding form for packuswb instruction");
+      TR_ASSERT_FATAL(mulEncoding != OMR::X86::Encoding::Bad, "No suitable encoding form for pmulw instruction");
+      TR_ASSERT_FATAL(andEncoding != OMR::X86::Encoding::Bad, "No suitable encoding form for pand instruction");
+
+      generateRegImmInstruction(TR::InstOpCode::MOVRegImm4(), node, gprTmpReg, 0x00ff00ff, cg);
+      generateRegRegInstruction(TR::InstOpCode::MOVDRegReg4, node, maskReg, gprTmpReg, cg);
+
+      // We need to broadcast the mask 0x00ff and 'and' it with each result
+      // This is required because the pack instruction uses signed saturation
+      switch (vl)
+         {
+         case TR::VectorLength128:
+            generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, maskReg, maskReg, 0, cg);
+            break;
+         case TR::VectorLength256:
+            {
+            TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX2), "256-bit broadcast requires AVX2");
+            TR::InstOpCode opcode = TR::InstOpCode::VBROADCASTSSRegReg;
+            generateRegRegInstruction(opcode.getMnemonic(), node, maskReg, maskReg, cg, opcode.getSIMDEncoding(&cg->comp()->target().cpu, TR::VectorLength256));
+            break;
+            }
+         case TR::VectorLength512:
+            {
+            TR_ASSERT_FATAL(cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F), "512-bit broadcast requires AVX-512");
+            TR::InstOpCode opcode = TR::InstOpCode::VBROADCASTSSRegReg;
+            generateRegRegInstruction(opcode.getMnemonic(), node, maskReg, maskReg, cg, OMR::X86::EVEX_L512);
+            break;
+            }
+         default:
+            TR_ASSERT_FATAL(0, "Unsupported vector length");
+            break;
+         }
+
+      // unpack low half of each operand register, use the 16-bit multiplication opcode, then 'and' each word with 0xff
+      // repeat the process with the high bits of each operand, then pack the result
+      if (cg->comp()->target().cpu.supportsAVX())
+         {
+         generateRegRegRegInstruction(unpackLOpcode.getMnemonic(), node, lhsTmpReg, lhsReg, zeroReg, cg, unpackLEncoding);
+         generateRegRegRegInstruction(unpackLOpcode.getMnemonic(), node, resultReg, rhsReg, zeroReg, cg, unpackLEncoding);
+         }
+      else
+         {
+         generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, lhsTmpReg, lhsReg, cg);
+         generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, resultReg, rhsReg, cg);
+         generateRegRegInstruction(unpackLOpcode.getMnemonic(), node, lhsTmpReg, zeroReg, cg, unpackLEncoding);
+         generateRegRegInstruction(unpackLOpcode.getMnemonic(), node, resultReg, zeroReg, cg, unpackLEncoding);
+         }
+
+      generateRegRegInstruction(mulOpcode.getMnemonic(), node, lhsTmpReg, resultReg, cg, mulEncoding);
+      generateRegRegInstruction(andOpcode.getMnemonic(), node, lhsTmpReg, maskReg, cg, andEncoding);
+
+      if (cg->comp()->target().cpu.supportsAVX())
+         {
+         generateRegRegRegInstruction(unpackHOpcode.getMnemonic(), node, resultReg, lhsReg, zeroReg, cg, unpackHEncoding);
+         generateRegRegRegInstruction(unpackHOpcode.getMnemonic(), node, rhsTmpReg, rhsReg, zeroReg, cg, unpackHEncoding);
+         }
+      else
+         {
+         generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, resultReg, lhsReg, cg);
+         generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, rhsTmpReg, rhsReg, cg);
+         generateRegRegInstruction(unpackHOpcode.getMnemonic(), node, rhsTmpReg, zeroReg, cg, unpackHEncoding);
+         generateRegRegInstruction(unpackHOpcode.getMnemonic(), node, resultReg, zeroReg, cg, unpackHEncoding);
+         }
+
+      generateRegRegInstruction(mulOpcode.getMnemonic(), node, rhsTmpReg, resultReg, cg, mulEncoding);
+      generateRegRegInstruction(andOpcode.getMnemonic(), node, rhsTmpReg, maskReg, cg, andEncoding);
+
+      if (cg->comp()->target().cpu.supportsAVX())
+         {
+         generateRegRegRegInstruction(packOpcode.getMnemonic(), node, resultReg, lhsTmpReg, rhsTmpReg, cg, packEncoding);
+         }
+      else
+         {
+         generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, resultReg, lhsTmpReg, cg);
+         generateRegRegInstruction(packOpcode.getMnemonic(), node, resultReg, rhsTmpReg, cg, packEncoding);
+         }
+
+      cg->stopUsingRegister(lhsTmpReg);
+      cg->stopUsingRegister(rhsTmpReg);
+      cg->stopUsingRegister(zeroReg);
+      cg->stopUsingRegister(gprTmpReg);
+      cg->stopUsingRegister(maskReg);
+
+      node->setRegister(resultReg);
+      cg->decReferenceCount(lhsNode);
+      cg->decReferenceCount(rhsNode);
+
+      return resultReg;
+      }
+
+   return TR::TreeEvaluator::vectorBinaryArithmeticEvaluator(node, cg);
+   }
+
+TR::Register*
 OMR::X86::TreeEvaluator::vreductionAddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::SIMDreductionEvaluator(node, cg);

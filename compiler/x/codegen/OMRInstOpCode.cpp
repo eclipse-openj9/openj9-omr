@@ -214,6 +214,15 @@ void OMR::X86::InstOpCode::OpCode_t::finalize(uint8_t* cursor) const
             }
          }
          break;
+      case 0x62:
+         {
+         auto pVEX = (TR::Instruction::EVEX*)cursor;
+         if (vex_v == VEX_vReg_)
+            {
+            pVEX->v = ~(modrm_form == ModRM_EXT_ ? pVEX->RM() : pVEX->Reg());
+            }
+         }
+         break;
       default:
          break;
       }

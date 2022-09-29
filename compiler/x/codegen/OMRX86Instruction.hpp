@@ -1361,6 +1361,135 @@ class X86RegRegRegInstruction : public TR::X86RegRegInstruction
 #endif
    };
 
+class X86RegMaskRegInstruction : public TR::X86RegRegInstruction
+   {
+   TR::Register *_maskRegister;
+   bool _zeroMask;
+
+   public:
+
+   X86RegMaskRegInstruction(TR::Register *treg,
+                               TR::Register *mreg,
+                               TR::Register *srreg,
+                               TR::Node *node,
+                               TR::InstOpCode::Mnemonic op,
+                               TR::CodeGenerator *cg,
+                               OMR::X86::Encoding encoding = OMR::X86::Default,
+                               bool zeroMask = false)
+      : TR::X86RegRegInstruction(srreg, treg, node, op, cg, encoding), _maskRegister(mreg), _zeroMask(zeroMask)
+      {
+      useRegister(mreg);
+      }
+
+   X86RegMaskRegInstruction(TR::Register *treg,
+                               TR::Register *mreg,
+                               TR::Register *srreg,
+                               TR::Node *node,
+                               TR::InstOpCode::Mnemonic op,
+                               TR::RegisterDependencyConditions *cond,
+                               TR::CodeGenerator *cg,
+                               OMR::X86::Encoding encoding = OMR::X86::Default,
+                               bool zeroMask = false)
+   : TR::X86RegRegInstruction(cond, srreg, treg, node, op, cg, encoding), _maskRegister(mreg), _zeroMask(zeroMask)
+      {
+      useRegister(mreg);
+      }
+
+   virtual char *description() { return "X86RegMaskReg"; }
+
+   virtual Kind getKind() { return IsRegMaskReg; }
+
+   virtual TR::Register *getMaskRegister() { return _maskRegister; }
+
+   TR::Register *setMaskRegister(TR::Register *_mreg) { return (_maskRegister = _mreg); }
+
+   virtual bool hasZeroMask() { return _zeroMask; }
+
+   /** \brief
+   *    Fill operand bytes
+   *
+   *  \param cursor
+   *    The address to the first operand byte
+   *
+   *  \return
+   *    The address after last operand byte
+   */
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+   virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
+   virtual bool refsRegister(TR::Register *reg);
+   virtual bool defsRegister(TR::Register *reg);
+   virtual bool usesRegister(TR::Register *reg);
+
+#ifdef DEBUG
+   virtual uint32_t getNumOperandReferencedGPRegisters() { return 3; }
+#endif
+   };
+
+class X86RegMaskRegRegInstruction : public TR::X86RegRegRegInstruction
+   {
+   TR::Register *_maskRegister;
+   bool _zeroMask;
+
+   public:
+
+   X86RegMaskRegRegInstruction(TR::Register *treg,
+                               TR::Register *mreg,
+                               TR::Register *slreg,
+                               TR::Register *srreg,
+                               TR::Node *node,
+                               TR::InstOpCode::Mnemonic op,
+                               TR::CodeGenerator *cg,
+                               OMR::X86::Encoding encoding = OMR::X86::Default,
+                               bool zeroMask = false)
+      : TR::X86RegRegRegInstruction(srreg, slreg, treg, node, op, cg, encoding), _maskRegister(mreg), _zeroMask(zeroMask)
+      {
+      useRegister(mreg);
+      }
+
+   X86RegMaskRegRegInstruction(TR::Register *treg,
+                               TR::Register *mreg,
+                               TR::Register *slreg,
+                               TR::Register *srreg,
+                               TR::Node *node,
+                               TR::InstOpCode::Mnemonic op,
+                               TR::RegisterDependencyConditions *cond,
+                               TR::CodeGenerator *cg,
+                               OMR::X86::Encoding encoding = OMR::X86::Default,
+                               bool zeroMask = false)
+   : TR::X86RegRegRegInstruction(cond, srreg, slreg, treg, node, op, cg, encoding), _maskRegister(mreg), _zeroMask(zeroMask)
+      {
+      useRegister(mreg);
+      }
+
+   virtual char *description() { return "X86RegMaskRegReg"; }
+
+   virtual Kind getKind() { return IsRegMaskRegReg; }
+
+   virtual TR::Register *getMaskRegister() { return _maskRegister; }
+
+   virtual bool hasZeroMask() { return _zeroMask; }
+
+   TR::Register *setMaskRegister(TR::Register *_mreg) { return (_maskRegister = _mreg); }
+
+   /** \brief
+   *    Fill operand bytes
+   *
+   *  \param cursor
+   *    The address to the first operand byte
+   *
+   *  \return
+   *    The address after last operand byte
+   */
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+   virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
+   virtual bool refsRegister(TR::Register *reg);
+   virtual bool defsRegister(TR::Register *reg);
+   virtual bool usesRegister(TR::Register *reg);
+
+#ifdef DEBUG
+        virtual uint32_t getNumOperandReferencedGPRegisters() { return 4; }
+#endif
+   };
 
 class X86MemInstruction : public TR::Instruction
    {
@@ -1837,6 +1966,59 @@ class X86MemRegInstruction : public TR::X86MemInstruction
 #endif
    };
 
+class X86MemMaskRegInstruction : public TR::X86MemRegInstruction
+   {
+   TR::Register *_maskRegister;
+   bool _zeroMask;
+
+   public:
+
+   X86MemMaskRegInstruction(TR::InstOpCode::Mnemonic op,
+                            TR::Node *node,
+                            TR::MemoryReference *mr,
+                            TR::Register *mreg,
+                            TR::Register *sreg,
+                            TR::CodeGenerator *cg,
+                            OMR::X86::Encoding encoding = OMR::X86::Default,
+                            bool zeroMask = false)
+      : X86MemRegInstruction(op, node, mr, sreg, cg, encoding), _maskRegister(mreg), _zeroMask(zeroMask)
+      {
+      useRegister(mreg);
+      }
+
+   X86MemMaskRegInstruction(TR::InstOpCode::Mnemonic op,
+                            TR::Node *node,
+                            TR::MemoryReference *mr,
+                            TR::Register *mreg,
+                            TR::Register *sreg,
+                            TR::RegisterDependencyConditions *cond,
+                            TR::CodeGenerator *cg,
+                            OMR::X86::Encoding encoding = OMR::X86::Default,
+                            bool zeroMask = false)
+      : X86MemRegInstruction(op, node, mr, sreg, cond, cg, encoding), _maskRegister(mreg), _zeroMask(zeroMask)
+      {
+      useRegister(mreg);
+      }
+
+   virtual char *description() { return "X86MemMaskReg"; }
+
+   virtual Kind getKind() { return IsMemMaskReg; }
+
+   virtual TR::Register *getMaskRegister()         { return _maskRegister; }
+   TR::Register *setMaskRegister(TR::Register *mr) { return (_maskRegister = mr); }
+   virtual bool hasZeroMask() { return _zeroMask; }
+
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+
+   virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
+   virtual bool refsRegister(TR::Register *reg);
+   virtual bool defsRegister(TR::Register *reg);
+   virtual bool usesRegister(TR::Register *reg);
+
+#ifdef DEBUG
+   virtual uint32_t getNumOperandReferencedGPRegisters() { return 1 + getMemoryReference()->getNumMRReferencedGPRegisters(); }
+#endif
+   };
 
 class X86MemRegImmInstruction : public TR::X86MemRegInstruction
    {
@@ -2133,6 +2315,83 @@ class X86RegRegMemInstruction : public TR::X86RegMemInstruction
 #endif
    };
 
+class X86RegMaskMemInstruction : public TR::X86RegMemInstruction
+   {
+   TR::Register *_maskRegister;
+   bool _zeroMask;
+
+   public:
+
+   X86RegMaskMemInstruction(TR::InstOpCode::Mnemonic op,
+                           TR::Node *node,
+                           TR::Register *treg,
+                           TR::Register *mreg,
+                           TR::MemoryReference *mr,
+                           TR::CodeGenerator   *cg,
+                           OMR::X86::Encoding encoding = OMR::X86::Default,
+                           bool zeroMask = false)
+   : TR::X86RegMemInstruction(op, node, treg, mr, cg, encoding), _maskRegister(mreg), _zeroMask(zeroMask)
+      {
+      useRegister(mreg);
+      }
+
+   X86RegMaskMemInstruction(TR::InstOpCode::Mnemonic op,
+                           TR::Node *node,
+                           TR::Register *treg,
+                           TR::Register *mreg,
+                           TR::MemoryReference *mr,
+                           TR::RegisterDependencyConditions *cond,
+                           TR::CodeGenerator *cg,
+                           OMR::X86::Encoding encoding = OMR::X86::Default,
+                           bool zeroMask = false)
+   : TR::X86RegMemInstruction(op, node, treg, mr, cond, cg, encoding), _maskRegister(mreg), _zeroMask(zeroMask)
+      {
+      useRegister(mreg);
+      }
+
+   virtual char *description() { return "X86RegMaskMem"; }
+
+   virtual Kind getKind() { return IsRegMaskMem; }
+
+   /** \brief
+   *    Getter of the write mask register
+   *
+   *  \return
+   *    The write mask register
+   */
+   virtual TR::Register *getMaskRegister()          {return _maskRegister;}
+
+   /** \brief
+   *    Setter of the write mask register
+   *
+   *  \param mr
+   *    The new second source register
+   *
+   *  \return
+   *    The write mask register
+   */
+   TR::Register *setMaskRegister(TR::Register *mr) {return (_maskRegister = mr);}
+
+    virtual bool hasZeroMask() { return _zeroMask; }
+
+   /** \brief
+   *    Fill operand bytes
+   *
+   *  \param cursor
+   *    The address to the first operand byte
+   *
+   *  \return
+   *    The address after last operand byte
+   */
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+   virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
+   virtual bool refsRegister(TR::Register *reg);
+   virtual bool usesRegister(TR::Register *reg);
+
+#ifdef DEBUG
+   virtual uint32_t getNumOperandReferencedGPRegisters() { return 2 + getMemoryReference()->getNumMRReferencedGPRegisters(); }
+#endif
+   };
 
 class X86FPRegInstruction : public TR::X86RegInstruction
    {
@@ -3056,6 +3315,18 @@ TR::X86RegRegRegInstruction  * generateRegRegRegInstruction(TR::InstOpCode::Mnem
 TR::X86RegRegRegInstruction  * generateRegRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, TR::Register * reg2, TR::Register * reg3, TR::CodeGenerator *cg, OMR::X86::Encoding encoding = OMR::X86::Default);
 TR::X86RegRegMemInstruction  * generateRegRegMemInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, TR::Register * reg2, TR::MemoryReference  * mr, TR::RegisterDependencyConditions  *deps, TR::CodeGenerator *cg, OMR::X86::Encoding encoding = OMR::X86::Default);
 TR::X86RegRegMemInstruction  * generateRegRegMemInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, TR::Register * reg2, TR::MemoryReference  * mr, TR::CodeGenerator *cg, OMR::X86::Encoding encoding = OMR::X86::Default);
+
+TR::X86RegMaskRegRegInstruction  * generateRegMaskRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, TR::Register * mreg, TR::Register * reg2, TR::Register * reg3, TR::CodeGenerator *cg, OMR::X86::Encoding encoding = OMR::X86::Default, bool zeroMask = false);
+TR::X86RegMaskRegRegInstruction  * generateRegMaskRegRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, TR::Register * mreg, TR::Register * reg2, TR::Register * reg3, TR::RegisterDependencyConditions *deps, TR::CodeGenerator *cg, OMR::X86::Encoding encoding = OMR::X86::Default, bool zeroMask = false);
+
+TR::X86RegMaskRegInstruction  * generateRegMaskRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, TR::Register * mreg, TR::Register * reg2, TR::CodeGenerator *cg, OMR::X86::Encoding encoding = OMR::X86::Default, bool zeroMask = false);
+TR::X86RegMaskRegInstruction  * generateRegMaskRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, TR::Register * mreg, TR::Register * reg2, TR::RegisterDependencyConditions *deps, TR::CodeGenerator *cg, OMR::X86::Encoding encoding = OMR::X86::Default, bool zeroMask = false);
+
+TR::X86RegMaskMemInstruction  * generateRegMaskMemInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, TR::Register * mreg, TR::MemoryReference * mr, TR::CodeGenerator *cg, OMR::X86::Encoding encoding = OMR::X86::Default, bool zeroMask = false);
+TR::X86RegMaskMemInstruction  * generateRegMaskMemInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, TR::Register * mreg, TR::MemoryReference * mr, TR::RegisterDependencyConditions *deps, TR::CodeGenerator *cg, OMR::X86::Encoding encoding = OMR::X86::Default, bool zeroMask = false);
+
+TR::X86MemMaskRegInstruction  * generateMemMaskRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::MemoryReference  *mr, TR::Register * mreg, TR::Register *sreg, TR::CodeGenerator *cg, OMR::X86::Encoding encoding = OMR::X86::Default, bool zeroMask = false);
+TR::X86MemMaskRegInstruction  * generateMemMaskRegInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::MemoryReference  *mr, TR::Register * mreg, TR::Register *reg1, TR::RegisterDependencyConditions  *deps, TR::CodeGenerator *cg, OMR::X86::Encoding encoding = OMR::X86::Default, bool zeroMask = false);
 
 TR::X86ImmSnippetInstruction  * generateImmSnippetInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, int32_t imm, TR::UnresolvedDataSnippet *, TR::CodeGenerator *cg);
 

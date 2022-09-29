@@ -115,8 +115,17 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Instruction  * instr)
       case TR::Instruction::IsRegReg:
          print(pOutFile, (TR::X86RegRegInstruction  *)instr);
          break;
+      case TR::Instruction::IsRegMaskReg:
+         print(pOutFile, (TR::X86RegMaskRegInstruction  *)instr);
+         break;
+      case TR::Instruction::IsRegMaskMem:
+         print(pOutFile, (TR::X86RegMaskMemInstruction  *)instr);
+         break;
       case TR::Instruction::IsRegRegReg:
          print(pOutFile, (TR::X86RegRegRegInstruction  *)instr);
+         break;
+      case TR::Instruction::IsRegMaskRegReg:
+         print(pOutFile, (TR::X86RegMaskRegRegInstruction  *)instr);
          break;
       case TR::Instruction::IsRegRegImm:
          print(pOutFile, (TR::X86RegRegImmInstruction  *)instr);
@@ -167,6 +176,9 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Instruction  * instr)
          break;
       case TR::Instruction::IsMemReg:
          print(pOutFile, (TR::X86MemRegInstruction  *)instr);
+         break;
+      case TR::Instruction::IsMemMaskReg:
+         print(pOutFile, (TR::X86MemMaskRegInstruction  *)instr);
          break;
       case TR::Instruction::IsMemRegImm:
          print(pOutFile, (TR::X86MemRegImmInstruction  *)instr);
@@ -971,6 +983,34 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86RegRegInstruction  * instr)
    }
 
 void
+TR_Debug::print(TR::FILE *pOutFile, TR::X86RegMaskRegInstruction  * instr)
+   {
+   if (pOutFile == NULL)
+      return;
+
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s\t", getMnemonicName(&instr->getOpCode()));
+   if (instr->getOpCode().targetRegIsImplicit() == 0 || instr->getMaskRegister())
+      {
+      print(pOutFile, instr->getTargetRegister(), getTargetSizeFromInstruction(instr));
+      if (instr->getMaskRegister())
+         {
+         trfprintf(pOutFile, "{");
+         print(pOutFile, instr->getMaskRegister());
+         trfprintf(pOutFile, "}");
+         }
+      trfprintf(pOutFile, ", ");
+      }
+
+   if (instr->getOpCode().sourceRegIsImplicit() == 0)
+      print(pOutFile, instr->getSourceRegister(), getSourceSizeFromInstruction(instr));
+
+   printInstructionComment(pOutFile, 2, instr);
+   dumpDependencies(pOutFile, instr);
+   trfflush(pOutFile);
+   }
+
+void
 TR_Debug::printReferencedRegisterInfo(TR::FILE *pOutFile, TR::X86RegRegInstruction  * instr)
    {
    if (pOutFile == NULL)
@@ -1031,6 +1071,41 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86RegRegImmInstruction  * instr)
    trfprintf(pOutFile, " \t%s %s",
                  commentString(),
                  getOpCodeName(&instr->getOpCode()));
+   dumpDependencies(pOutFile, instr);
+   trfflush(pOutFile);
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::X86RegMaskRegRegInstruction  * instr)
+   {
+   if (pOutFile == NULL)
+      return;
+
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s\t", getMnemonicName(&instr->getOpCode()));
+
+   if (instr->getOpCode().targetRegIsImplicit() == 0 || instr->getMaskRegister())
+      {
+      print(pOutFile, instr->getTargetRegister(), getTargetSizeFromInstruction(instr));
+      if (instr->getMaskRegister())
+         {
+         trfprintf(pOutFile, "{");
+         print(pOutFile, instr->getMaskRegister());
+         trfprintf(pOutFile, "}");
+         }
+      trfprintf(pOutFile, ", ");
+      }
+
+   TR_RegisterSizes sourceSize = getSourceSizeFromInstruction(instr);
+
+   if (instr->getOpCode().sourceRegIsImplicit() == 0)
+      {
+      print(pOutFile, instr->getSource2ndRegister(), sourceSize);
+      trfprintf(pOutFile, ", ");
+      print(pOutFile, instr->getSourceRegister(), sourceSize);
+      }
+
+   printInstructionComment(pOutFile, 2, instr);
    dumpDependencies(pOutFile, instr);
    trfflush(pOutFile);
    }
@@ -1199,6 +1274,40 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86MemRegInstruction  * instr)
    }
 
 void
+TR_Debug::print(TR::FILE *pOutFile, TR::X86MemMaskRegInstruction  * instr)
+   {
+   if (pOutFile == NULL)
+      return;
+
+   int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
+   int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(pOutFile, instr, barrier);
+
+   print(pOutFile, instr->getMemoryReference(), getTargetSizeFromInstruction(instr));
+
+
+   if (instr->getOpCode().targetRegIsImplicit() == 0 || instr->getMaskRegister())
+      {
+      print(pOutFile, instr->getTargetRegister(), getTargetSizeFromInstruction(instr));
+      if (instr->getMaskRegister())
+         {
+         trfprintf(pOutFile, "{");
+         print(pOutFile, instr->getMaskRegister());
+         trfprintf(pOutFile, "}");
+         }
+      trfprintf(pOutFile, ", ");
+      }
+
+   printInstructionComment(pOutFile, 2, instr);
+   printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
+
+   if (barrier & NeedsExplicitBarrier)
+      printPrefixAndMemoryBarrier(pOutFile, instr, barrier, barrierOffset);
+
+   dumpDependencies(pOutFile, instr);
+   trfflush(pOutFile);
+   }
+
+void
 TR_Debug::printReferencedRegisterInfo(TR::FILE *pOutFile, TR::X86MemRegInstruction  * instr)
    {
    if (pOutFile == NULL)
@@ -1275,6 +1384,46 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86RegMemInstruction  * instr)
    dumpDependencies(pOutFile, instr);
    trfflush(pOutFile);
    }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::X86RegMaskMemInstruction  * instr)
+   {
+   if (pOutFile == NULL)
+      return;
+
+   int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
+   int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(pOutFile, instr, barrier);
+
+   if (instr->getOpCode().targetRegIsImplicit() == 0 || instr->getMaskRegister())
+      {
+      print(pOutFile, instr->getTargetRegister(), getTargetSizeFromInstruction(instr));
+      if (instr->getMaskRegister())
+         {
+         trfprintf(pOutFile, "{");
+         print(pOutFile, instr->getMaskRegister());
+         trfprintf(pOutFile, "}");
+         }
+      trfprintf(pOutFile, ", ");
+      }
+
+   print(pOutFile, instr->getMemoryReference(), getSourceSizeFromInstruction(instr));
+   printInstructionComment(pOutFile, 2, instr);
+   printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
+   TR::Symbol *symbol = instr->getMemoryReference()->getSymbolReference().getSymbol();
+   if (symbol && symbol->isSpillTempAuto())
+      {
+      trfprintf(pOutFile, "%s, spilled for %s",
+                    commentString(),
+                    getName(instr->getNode()->getOpCode()));
+      }
+
+   if (barrier & NeedsExplicitBarrier)
+      printPrefixAndMemoryBarrier(pOutFile, instr, barrier, barrierOffset);
+
+   dumpDependencies(pOutFile, instr);
+   trfflush(pOutFile);
+   }
+
 
 void
 TR_Debug::printReferencedRegisterInfo(TR::FILE *pOutFile, TR::X86RegMemInstruction  * instr)
@@ -2013,6 +2162,22 @@ TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
       case TR::RealRegister::xmm15:
          switch (size) { case 4: case -1: return "xmm15"; case TR_VectorReg256: return "ymm15"; case TR_VectorReg512: return "zmm15"; default: return "?mm15"; }
 #endif
+      case TR::RealRegister::k0:
+         return "k0";
+      case TR::RealRegister::k1:
+         return "k1";
+      case TR::RealRegister::k2:
+         return "k2";
+      case TR::RealRegister::k3:
+         return "k3";
+      case TR::RealRegister::k4:
+         return "k4";
+      case TR::RealRegister::k5:
+         return "k5";
+      case TR::RealRegister::k6:
+         return "k6";
+      case TR::RealRegister::k7:
+         return "k7";
       default: TR_ASSERT( 0, "unexpected register number"); return unknownRegisterName();
       }
    }

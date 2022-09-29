@@ -147,6 +147,34 @@ class OMR_EXTENSIBLE RealRegister : public OMR::X86::RealRegister
          }
       }
 
+   static RegMask vectorMaskMask(RegNum idx)
+      {
+      switch (idx)
+         {
+         case OMR::RealRegister::NoReg:
+            return OMR::RealRegister::noRegMask;
+         case OMR::RealRegister::k0:
+            return OMR::RealRegister::k0Mask;
+         case OMR::RealRegister::k1:
+            return OMR::RealRegister::k1Mask;
+         case OMR::RealRegister::k2:
+            return OMR::RealRegister::k2Mask;
+         case OMR::RealRegister::k3:
+            return OMR::RealRegister::k3Mask;
+         case OMR::RealRegister::k4:
+            return OMR::RealRegister::k4Mask;
+         case OMR::RealRegister::k5:
+            return OMR::RealRegister::k5Mask;
+         case OMR::RealRegister::k6:
+            return OMR::RealRegister::k6Mask;
+         case OMR::RealRegister::k7:
+            return OMR::RealRegister::k7Mask;
+         default:
+            TR_ASSERT_FATAL(0, "vector mask mask valid for k0-k7 only");
+            return OMR::RealRegister::noRegMask;
+         }
+      }
+
    static RegMask xmmrMask(RegNum idx)
       {
       switch(idx)
@@ -180,6 +208,12 @@ class OMR_EXTENSIBLE RealRegister : public OMR::X86::RealRegister
    void setRegisterFieldInOpcode(uint8_t *opcodeByte)
       {
       *opcodeByte |= _fullRegisterBinaryEncodings[_registerNumber].id; // reg field is in bits 0-2 of opcode
+      }
+
+   void setMaskRegisterInEvex(uint8_t *evex, bool zero = false)
+      {
+      uint8_t regNum = getRegisterNumber() - OMR::RealRegister::k0;
+      *evex = (*evex & 0xf8) | (0x7 & regNum) | (zero ? 0x80 : 0);
       }
 
    void setSourceRegisterFieldInEVEX(uint8_t *opcodeByte)

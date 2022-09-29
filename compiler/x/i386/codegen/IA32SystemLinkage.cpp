@@ -125,6 +125,19 @@ TR::IA32SystemLinkage::IA32SystemLinkage(
       _properties._volatileRegisters[p++] = TR::RealRegister::xmmIndex(r);
       }
    _properties._numberOfVolatileXMMRegisters = p - _properties._numberOfVolatileGPRegisters;
+
+   if (cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F))
+      {
+      _properties._volatileRegisters[p++] = TR::RealRegister::k0;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k1;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k2;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k3;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k4;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k5;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k6;
+      _properties._volatileRegisters[p++] = TR::RealRegister::k7;
+      }
+
    _properties._numVolatileRegisters = p;
 
    setOffsetToFirstParm(RETURN_ADDRESS_SIZE);
@@ -155,6 +168,17 @@ TR::IA32SystemLinkage::IA32SystemLinkage(
    _properties._allocationOrder[p++] = TR::RealRegister::st6;
    _properties._allocationOrder[p++] = TR::RealRegister::st7;
 
+   if (cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F))
+      {
+      _properties._allocationOrder[p++] = TR::RealRegister::k0;
+      _properties._allocationOrder[p++] = TR::RealRegister::k1;
+      _properties._allocationOrder[p++] = TR::RealRegister::k2;
+      _properties._allocationOrder[p++] = TR::RealRegister::k3;
+      _properties._allocationOrder[p++] = TR::RealRegister::k4;
+      _properties._allocationOrder[p++] = TR::RealRegister::k5;
+      _properties._allocationOrder[p++] = TR::RealRegister::k6;
+      _properties._allocationOrder[p++] = TR::RealRegister::k7;
+      }
    }
 
 uint32_t

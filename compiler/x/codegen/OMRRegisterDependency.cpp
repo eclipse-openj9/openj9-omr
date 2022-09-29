@@ -239,6 +239,13 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(
             op = cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F) ? InstOpCode::VMOVDQUZmmZmm : op;
             generateRegRegInstruction(op, node, copyReg, child->getRegister(), cg);
             }
+         else if (globalReg->getKind() == TR_VMR)
+            {
+            generateRegcopyDebugCounter(cg, "vmr");
+            copyReg = cg->allocateRegister(TR_VMR);
+            TR::InstOpCode::Mnemonic op = cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512BW) ? InstOpCode::KMOVQMaskMask : TR::InstOpCode::KMOVWMaskMask;
+            generateRegRegInstruction(op, node, copyReg, child->getRegister(), cg);
+            }
 
          globalReg = copyReg;
          highGlobalReg = highCopyReg;
@@ -758,6 +765,15 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
                   {
                   op = (assignedReg->isSinglePrecision()) ? TR::InstOpCode::MOVSSRegMem : (cg->getXMMDoubleLoadOpCode());
                   }
+               else if (assignedReg->getKind() == TR_VMR)
+                  {
+                  op = TR::InstOpCode::KMOVWMaskMem;
+
+                  if (cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512BW))
+                     {
+                     op = TR::InstOpCode::KMOVQMaskMem;
+                     }
+                  }
                else if (assignedReg->getKind() == TR_VRF)
                   {
                   op = cg->comp()->target().cpu.supportsAVX() ? InstOpCode::VMOVDQUYmmMem : TR::InstOpCode::MOVDQURegMem;
@@ -903,12 +919,14 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
          virtReg = dependencies[i]->getRegister();
          dependentRegNum = dependencies[i]->getRealRegister();
          dependentRealReg = machine->getRealRegister(dependentRegNum);
+
          if (dependentRealReg->getState() == TR::RealRegister::Free)
             {
             if (virtReg->getKind() == TR_FPR || virtReg->getKind() == TR_VRF)
                machine->coerceXMMRegisterAssignment(currentInstruction, virtReg, dependentRegNum);
             else
                machine->coerceGPRegisterAssignment(currentInstruction, virtReg, dependentRegNum);
+
             virtReg->block();
             changed = true;
             }
@@ -991,10 +1009,11 @@ void OMR::X86::RegisterDependencyGroup::assignRegisters(TR::Instruction   *curre
             virtReg = dependencies[i]->getRegister();
             if (toRealRegister(virtReg->getAssignedRealRegister()) == NULL)
                {
-               if (virtReg->getKind() == TR_FPR || virtReg->getKind() == TR_VRF)
+               if (virtReg->getKind() == TR_FPR || virtReg->getKind() == TR_VRF || virtReg->getKind() == TR_VMR)
                   machine->coerceGPRegisterAssignment(currentInstruction, virtReg, TR_QuadWordReg);
                else
                   machine->coerceGPRegisterAssignment(currentInstruction, virtReg);
+
                virtReg->block();
                changed = true;
                }

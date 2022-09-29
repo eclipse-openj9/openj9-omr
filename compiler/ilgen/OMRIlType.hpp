@@ -122,6 +122,7 @@ protected:
 
    static const char    * signatureNameForType[TR::NumOMRTypes];
    static const char    * signatureNameForVectorType[TR::NumVectorElementTypes];
+   static const char    * signatureNameForMaskType[TR::NumVectorElementTypes];
    static const uint8_t   primitiveTypeAlignment[TR::NumOMRTypes];
    static const uint8_t   primitiveVectorTypeAlignment[TR::NumVectorElementTypes];
    };

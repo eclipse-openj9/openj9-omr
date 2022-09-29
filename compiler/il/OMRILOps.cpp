@@ -337,6 +337,8 @@ OMR::ILOpCode::getDataTypeConversion(TR::DataType t1, TR::DataType t2)
    if (t1.isVector() || t2.isVector())
       return TR::BadILOp;
 
+   if (t1.isMask() || t2.isMask())
+      return TR::BadILOp;
 
    TR_ASSERT(t1 < TR::NumOMRTypes, "conversion opcode from unexpected datatype %s requested", t1.toString());
    TR_ASSERT(t2 < TR::NumOMRTypes, "conversion opcode to unexpected datatype %s requested", t2.toString());
@@ -347,6 +349,9 @@ TR::ILOpCodes
 OMR::ILOpCode::getDataTypeBitConversion(TR::DataType t1, TR::DataType t2)
    {
    if (t1.isVector() || t2.isVector())
+      return TR::BadILOp;
+
+   if (t1.isMask() || t2.isMask())
       return TR::BadILOp;
 
    TR_ASSERT(t1 < TR::NumOMRTypes, "conversion opcode from unexpected datatype %s requested", t1.toString());

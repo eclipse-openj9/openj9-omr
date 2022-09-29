@@ -67,16 +67,47 @@ class OpCodeTable : public TR::ILOpCode {
                   return p.opcode;
                }
             }
-            // Check if it's a vector opcode, e.g. vaddVector128Int32
-            std::size_t pos = name.find("Vector");
 
-            if (pos == std::string::npos) return TR::BadILOp;
+            // Check if it's a vector opcode, e.g. vaddVector128Int32 or vconvVector256Int32ToVector256Float
+            std::string opcodeAndSrcType = name;
+            TR::DataType resType = TR::NoType;
 
-            std::string vectorOperationName = name.substr(0, pos);
-            std::string vectorTypeName = name.substr(pos);
+            std::size_t pos = name.find("To");
+            std::size_t divider = 2;
+
+            if (pos != std::string::npos)
+               {
+               opcodeAndSrcType = name.substr(0, pos);
+               std::size_t resTypeStart = pos + 2;
+
+               if (name.find("Vector", resTypeStart) != resTypeStart &&
+                   name.find("Mask", resTypeStart) != resTypeStart)
+                  return TR::BadILOp;
+
+               std::string resTypeName = name.substr(resTypeStart);
+               const char* cStr = &*resTypeName.begin();
+               resType = TR::DataType::getTypeFromName(cStr);
+
+               if (resType == TR::NoType) return TR::BadILOp;
+               }
+
+            pos = opcodeAndSrcType.find("Vector");
+
+            if (pos == std::string::npos)
+               {
+               pos = opcodeAndSrcType.find("Mask");
+               if (pos == std::string::npos) return TR::BadILOp;
+               }
+
+            std::string vectorOperationName = opcodeAndSrcType.substr(0, pos);
+            std::string srcTypeName = opcodeAndSrcType.substr(pos);
+            const char* cStr = &*srcTypeName.begin();
+            TR::DataType srcType = TR::DataType::getTypeFromName(cStr);
+
+            if (srcType == TR::NoType) return TR::BadILOp;
 
             int i;
-            for (i = TR::NumScalarIlOps; i< TR::NumAllIlOps; i++) {
+            for (i = TR::NumScalarIlOps; i < TR::NumAllIlOps; i++) {
                const auto p_opCode = static_cast<TR::ILOpCodes>(i);
                const auto& p = TR::ILOpCode::_opCodeProperties[p_opCode];
                if (vectorOperationName == p.name) break;
@@ -84,12 +115,8 @@ class OpCodeTable : public TR::ILOpCode {
             if (i == TR::NumAllIlOps) return TR::BadILOp;
 
             TR::VectorOperation vop = (TR::VectorOperation)(i - TR::NumScalarIlOps);
-            const char* cStr = &*vectorTypeName.begin();
-            TR::DataType vectorType = TR::DataType::getTypeFromName(cStr);
-
-            if (vectorType == TR::NoType) return TR::BadILOp;
-
-            TR::ILOpCodes opcode = TR::ILOpCode::createVectorOpCode(vop, vectorType);
+            TR::ILOpCodes opcode = (resType == TR::NoType) ? TR::ILOpCode::createVectorOpCode(vop, srcType)
+                                                           : TR::ILOpCode::createVectorOpCode(vop, srcType, resType);
             _opcodeNameMap[name] = opcode;
             return opcode;
          }

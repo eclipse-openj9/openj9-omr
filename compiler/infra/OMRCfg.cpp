@@ -719,16 +719,10 @@ TR::CFGNode *OMR::CFG::removeNode(TR::CFGNode *node)
    return node;
    }
 
-enum OrphanType
-   {
-   IsParented = 0,
-   IsOrphanedNode,
-   IsOrphanedRegion
-   };
-
 // test if 'to' is an unreachable orphan
 //
-static OrphanType unreachableOrphan(TR::CFG *cfg, TR::CFGNode *from, TR::CFGNode *to)
+OMR::CFG::OrphanType
+OMR::CFG::unreachableOrphan(TR::CFG *cfg, TR::CFGNode *from, TR::CFGNode *to)
    {
    // If the "to" node is orphaned by removing this edge, remove it from the
    // CFG as long as it is not the exit node - it is valid for the exit node

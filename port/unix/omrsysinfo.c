@@ -205,9 +205,9 @@ static OMRProcessorArchitecture omrsysinfo_map_ppc_processor(const char *process
 const char* omrsysinfo_get_ppc_processor_feature_name(uint32_t feature);
 #endif /* (defined(LINUXPPC) || defined(AIXPPC)) */
 
-#if (defined(AIXPPC) || defined(S390) || defined(J9ZOS390))
+#if defined(AIXPPC) || defined(S390) || defined(J9ZOS390) || (defined(AARCH64) && defined(OSX))
 static void omrsysinfo_set_feature(OMRProcessorDesc *desc, uint32_t feature);
-#endif /* defined(AIXPPC) || defined(S390) || defined(J9ZOS390) */
+#endif /* defined(AIXPPC) || defined(S390) || defined(J9ZOS390) || (defined(AARCH64) && defined(OSX)) */
 
 #if defined(LINUXPPC)
 static intptr_t omrsysinfo_get_linux_ppc_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
@@ -267,10 +267,14 @@ const char * omrsysinfo_get_s390_processor_feature_name(uint32_t feature);
 static intptr_t omrsysinfo_get_riscv_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
 #endif
 
-#if defined(AARCH64) && defined(LINUX)
+#if defined(AARCH64)
 static const char *omrsysinfo_get_aarch64_processor_feature_name(uint32_t feature);
+#if defined(LINUX)
 static intptr_t omrsysinfo_get_linux_aarch64_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
-#endif /* defined(AARCH64) && defined(LINUX) */
+#elif defined(OSX) /* defined(LINUX) */
+static intptr_t omrsysinfo_get_macos_aarch64_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc);
+#endif /* defined(LINUX) */
+#endif /* defined(AARCH64) */
 
 static const char getgroupsErrorMsgPrefix[] = "getgroups : ";
 
@@ -739,19 +743,21 @@ omrsysinfo_get_processor_description(struct OMRPortLibrary *portLibrary, OMRProc
 	if (NULL != desc) {
 		memset(desc, 0, sizeof(OMRProcessorDesc));
 
-#if (defined(J9X86) || defined(J9HAMMER))
+#if defined(J9X86) || defined(J9HAMMER)
 		rc = omrsysinfo_get_x86_description(portLibrary, desc);
-#elif defined(LINUXPPC)
+#elif defined(LINUXPPC) /* defined(J9X86) || defined(J9HAMMER) */
 		rc = omrsysinfo_get_linux_ppc_description(portLibrary, desc);
-#elif defined(AIXPPC)
+#elif defined(AIXPPC) /* defined(LINUXPPC) */
 		rc = omrsysinfo_get_aix_ppc_description(portLibrary, desc);
-#elif (defined(S390) || defined(J9ZOS390))
+#elif defined(S390) || defined(J9ZOS390) /* defined(AIXPPC) */
 		rc = omrsysinfo_get_s390_description(portLibrary, desc);
-#elif defined(RISCV)
+#elif defined(RISCV) /* defined(S390) || defined(J9ZOS390) */
 		rc = omrsysinfo_get_riscv_description(portLibrary, desc);
-#elif (defined(AARCH64) && defined(LINUX))
+#elif defined(AARCH64) && defined(LINUX) /* defined(RISCV) */
 		rc = omrsysinfo_get_linux_aarch64_description(portLibrary, desc);
-#endif
+#elif defined(AARCH64) && defined(OSX) /* defined(AARCH64) && defined(LINUX) */
+		rc = omrsysinfo_get_macos_aarch64_description(portLibrary, desc);
+#endif /* defined(J9X86) || defined(J9HAMMER) */
 	}
 
 	Trc_PRT_sysinfo_get_processor_description_Exit(rc);
@@ -817,15 +823,15 @@ omrsysinfo_get_processor_feature_name(struct OMRPortLibrary *portLibrary, uint32
 {
 	const char* rc = "null";
 	Trc_PRT_sysinfo_get_processor_feature_name_Entered(feature);
-#if (defined(J9X86) || defined(J9HAMMER))
+#if defined(J9X86) || defined(J9HAMMER)
 	rc = omrsysinfo_get_x86_processor_feature_name(feature);
-#elif (defined(S390) || defined(J9ZOS390) || defined(J9ZTPF))
+#elif defined(S390) || defined(J9ZOS390) || defined(J9ZTPF) /* defined(J9X86) || defined(J9HAMMER) */
 	rc = omrsysinfo_get_s390_processor_feature_name(feature);
-#elif (defined(AIXPPC) || defined(LINUXPPC))
+#elif defined(AIXPPC) || defined(LINUXPPC) /* defined(S390) || defined(J9ZOS390) || defined(J9ZTPF) */
 	rc = omrsysinfo_get_ppc_processor_feature_name(feature);
-#elif (defined(AARCH64) && defined(LINUX))
+#elif defined(AARCH64) /* defined(AIXPPC) || defined(LINUXPPC) */
 	rc = omrsysinfo_get_aarch64_processor_feature_name(feature);
-#endif
+#endif /* defined(J9X86) || defined(J9HAMMER) */
 	Trc_PRT_sysinfo_get_processor_feature_name_Exit(rc);
 	return rc;
 }
@@ -881,7 +887,7 @@ omrsysinfo_get_processor_feature_string(struct OMRPortLibrary *portLibrary, OMRP
 	return 0;
 }
 
-#if (defined(AIXPPC) || defined(S390) || defined(J9ZOS390))
+#if defined(AIXPPC) || defined(S390) || defined(J9ZOS390) || (defined(AARCH64) && defined(OSX))
 /**
  * @internal
  * Helper to set appropriate feature field in a OMRProcessorDesc struct.
@@ -900,7 +906,7 @@ omrsysinfo_set_feature(OMRProcessorDesc *desc, uint32_t feature)
 		desc->features[featureIndex] = (desc->features[featureIndex] | (1u << (featureShift)));
 	}
 }
-#endif /* defined(AIXPPC) || defined(S390) || defined(J9ZOS390) */
+#endif /* defined(AIXPPC) || defined(S390) || defined(J9ZOS390) || (defined(AARCH64) && defined(OSX)) */
 
 
 #if (defined(LINUXPPC) || defined(AIXPPC))
@@ -1823,7 +1829,7 @@ omrsysinfo_get_riscv_description(struct OMRPortLibrary *portLibrary, OMRProcesso
 }
 #endif /* defined(RISCV) */
 
-#if defined(AARCH64) && defined(LINUX)
+#if defined(AARCH64)
 static const char *
 omrsysinfo_get_aarch64_processor_feature_name(uint32_t feature)
 {
@@ -1936,6 +1942,7 @@ omrsysinfo_get_aarch64_processor_feature_name(uint32_t feature)
 	return "null";
 }
 
+#if defined(LINUX)
 /**
  * @internal
  * Populates OMRProcessorDesc *desc on Linux ARM64
@@ -1967,7 +1974,194 @@ omrsysinfo_get_linux_aarch64_description(struct OMRPortLibrary *portLibrary, OMR
 
 	return 0;
 }
-#endif /* defined(AARCH64) && defined(LINUX) */
+#elif defined(OSX) /* defined(LINUX) */
+/**
+ * @internal
+ * Populates OMRProcessorDesc *desc on macOS ARM64.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] desc pointer to the struct that will contain the CPU type and features.
+ *
+ * @return 0 on success.
+ */
+static intptr_t
+omrsysinfo_get_macos_aarch64_description(struct OMRPortLibrary *portLibrary, OMRProcessorDesc *desc)
+{
+	int64_t val = 0;
+	size_t size = sizeof(val);
+
+	desc->processor = OMR_PROCESSOR_ARM64_V8_A;
+	desc->physicalProcessor = desc->processor;
+	desc->features[0] = 0;
+	desc->features[1] = 0;
+
+	/*
+	 * These features are standard on Apple Silicon
+	 * No need to check
+	 */
+	omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_FP);
+	omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_ASIMD);
+
+	/*
+	 * Advanced SIMD and Floating Point Capabilities
+	 */
+	if ((0 == sysctlbyname("hw.optional.arm.FEAT_BF16", &val, &size, NULL, 0))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_BF16);
+	}
+
+	if ((0 == sysctlbyname("hw.optional.arm.FEAT_DotProd", &val, &size, NULL, 0))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_DOTPROD);
+	}
+
+	/* Attribute name changed in macOS 12. */
+	if (((0 == sysctlbyname("hw.optional.arm.FEAT_FCMA", &val, &size, NULL, 0))
+	|| (0 == sysctlbyname("hw.optional.armv8_3_compnum", &val, &size, NULL, 0)))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_FCMA);
+	}
+
+	/* Attribute name changed in macOS 12. */
+	if (((0 == sysctlbyname("hw.optional.arm.FEAT_FHM", &val, &size, NULL, 0))
+	|| (0 == sysctlbyname("hw.optional.armv8_2_fhm", &val, &size, NULL, 0)))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_FHM);
+	}
+
+	/* Attribute name changed in macOS 12. */
+	if (((0 == sysctlbyname("hw.optional.arm.FEAT_FP16", &val, &size, NULL, 0))
+	|| (0 == sysctlbyname("hw.optional.neon_fp16", &val, &size, NULL, 0)))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_FP16);
+	}
+
+	if ((0 == sysctlbyname("hw.optional.arm.FEAT_FRINTTS", &val, &size, NULL, 0))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_FRINTTS);
+	}
+
+	if ((0 == sysctlbyname("hw.optional.arm.FEAT_I8MM", &val, &size, NULL, 0))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_I8MM);
+	}
+
+	if ((0 == sysctlbyname("hw.optional.arm.FEAT_JSCVT", &val, &size, NULL, 0))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_JSCVT);
+	}
+
+	if ((0 == sysctlbyname("hw.optional.arm.FEAT_RDM", &val, &size, NULL, 0))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_RDM);
+	}
+
+	/*
+	 * Integer Capabilities
+	 */
+	if ((0 == sysctlbyname("hw.optional.arm.FEAT_FlagM", &val, &size, NULL, 0))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_FLAGM);
+	}
+
+	if ((0 == sysctlbyname("hw.optional.arm.FEAT_FlagM2", &val, &size, NULL, 0))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_FLAGM2);
+	}
+
+	if ((0 == sysctlbyname("hw.optional.armv8_crc32", &val, &size, NULL, 0))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_CRC32);
+	}
+
+	/*
+	 * Atomic and Memory Ordering Instruction Capabilities
+	 */
+	if ((0 == sysctlbyname("hw.optional.arm.FEAT_LRCPC", &val, &size, NULL, 0))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_LRCPC);
+	}
+
+	if ((0 == sysctlbyname("hw.optional.arm.FEAT_LRCPC2", &val, &size, NULL, 0))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_LRCPC2);
+	}
+
+	/* Attribute name changed in macOS 12. */
+	if (((0 == sysctlbyname("hw.optional.arm.FEAT_LSE", &val, &size, NULL, 0))
+	|| (0 == sysctlbyname("hw.optional.armv8_1_atomics", &val, &size, NULL, 0)))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_LSE);
+	}
+
+	if ((0 == sysctlbyname("hw.optional.arm.FEAT_LSE2", &val, &size, NULL, 0))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_LSE2);
+	}
+
+	/*
+	 * Encryption Capabilities
+	 */
+	if ((0 == sysctlbyname("hw.optional.arm.FEAT_AES", &val, &size, NULL, 0))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_AES);
+	}
+
+	if ((0 == sysctlbyname("hw.optional.arm.FEAT_PMULL", &val, &size, NULL, 0))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_PMULL);
+	}
+
+	if ((0 == sysctlbyname("hw.optional.arm.FEAT_SHA1", &val, &size, NULL, 0))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_SHA1);
+	}
+
+	if ((0 == sysctlbyname("hw.optional.arm.FEAT_SHA256", &val, &size, NULL, 0))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_SHA256);
+	}
+
+	/* Attribute name changed in macOS 12. */
+	if (((0 == sysctlbyname("hw.optional.arm.FEAT_SHA512", &val, &size, NULL, 0))
+	|| (0 == sysctlbyname("hw.optional.armv8_2_sha512", &val, &size, NULL, 0)))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_SHA512);
+	}
+
+	/* Attribute name changed in macOS 12. */
+	if (((0 == sysctlbyname("hw.optional.arm.FEAT_SHA3", &val, &size, NULL, 0))
+	|| (0 == sysctlbyname("hw.optional.armv8_2_sha3", &val, &size, NULL, 0)))
+	&& (0 != val)
+	) {
+		omrsysinfo_set_feature(desc, OMR_FEATURE_ARM64_SHA3);
+	}
+
+	return 0;
+}
+#endif /* defined(LINUX) */
+#endif /* defined(AARCH64) */
 
 intptr_t
 omrsysinfo_get_env(struct OMRPortLibrary *portLibrary, const char *envVar, char *infoString, uintptr_t bufSize)

@@ -214,7 +214,7 @@ void TR_ExpressionsSimplification::simplifyInvariantLoopExpressions(ListIterator
 
    // Initialize the list of candidates
    //
-   _candidateTTs = new (trStackMemory()) TR_ScratchList<TR::TreeTop>(trMemory());
+   _candidates = new (trStackMemory()) TR_ScratchList<SimplificationCandidateTuple>(trMemory());
 
    for (TR::Block *currentBlock = blocks.getFirst(); currentBlock; currentBlock  = blocks.getNext())
       {
@@ -254,16 +254,19 @@ void TR_ExpressionsSimplification::simplifyInvariantLoopExpressions(ListIterator
 
    invalidateCandidates();
 
-   ListIterator<TR::TreeTop> treeTops(_candidateTTs);
-   for (TR::TreeTop *treeTop = treeTops.getFirst(); treeTop; treeTop = treeTops.getNext())
+   ListIterator<SimplificationCandidateTuple> candidates(_candidates);
+   for (SimplificationCandidateTuple *nextCandidate = candidates.getFirst(); nextCandidate; nextCandidate = candidates.getNext())
       {
+      TR::TreeTop *treeTop = nextCandidate->getTreeTop();
       if (trace())
-         traceMsg(comp(), "Candidate TreeTop: %p, Node:%p\n", treeTop, treeTop->getNode());
+         {
+         nextCandidate->print(comp());
+         }
 
       bool usedCandidate = false;
       bool isPreheaderBlockInvalid = false;
 
-      if (canReduceSummations)
+      if (canReduceSummations && nextCandidate->isSummationReductionCandidate())
          {
          usedCandidate = tranformSummationReductionCandidate(treeTop, loopInfo, &isPreheaderBlockInvalid);
          }
@@ -273,7 +276,7 @@ void TR_ExpressionsSimplification::simplifyInvariantLoopExpressions(ListIterator
          break;
          }
 
-      if (!usedCandidate)
+      if (!usedCandidate && nextCandidate->isInvariantExpressionCandidate())
          {
          tranformStoreMotionCandidate(treeTop, &isPreheaderBlockInvalid);
          }
@@ -330,14 +333,16 @@ void TR_ExpressionsSimplification::setSummationReductionCandidates(TR::Node *nod
             return;
             }
 
-         _candidateTTs->add(tt);
+         _candidates->add(new (trStackMemory()) SimplificationCandidateTuple(tt,
+                                                   flags32_t(SimplificationCandidateTuple::SummationReductionCandidate)));
          }
       else if (secondNode->getOpCode().hasSymbolReference() &&
             node->getSymbolReference() == secondNode->getSymbolReference() &&
             opNode->getReferenceCount() == 1 && secondNode->getReferenceCount() == 1 &&
             _currentRegion->isExprInvariant(firstNode))
          {
-         _candidateTTs->add(tt);
+         _candidates->add(new (trStackMemory()) SimplificationCandidateTuple(tt,
+                                                   flags32_t(SimplificationCandidateTuple::SummationReductionCandidate)));
          }
       }
    else if (opNode->getOpCodeValue() == TR::ixor ||
@@ -347,12 +352,18 @@ void TR_ExpressionsSimplification::setSummationReductionCandidates(TR::Node *nod
             node->getSymbolReference() == opNode->getFirstChild()->getSymbolReference() &&
             opNode->getReferenceCount() == 1 && opNode->getFirstChild()->getReferenceCount() == 1 &&
             (opNode->getOpCodeValue() == TR::ineg || _currentRegion->isExprInvariant(opNode->getSecondChild())))
-         _candidateTTs->add(tt);
+         {
+         _candidates->add(new (trStackMemory()) SimplificationCandidateTuple(tt,
+                                                   flags32_t(SimplificationCandidateTuple::SummationReductionCandidate)));
+         }
       else if (opNode->getOpCodeValue() == TR::ixor && opNode->getSecondChild()->getOpCode().hasSymbolReference() &&
             node->getSymbolReference() == opNode->getSecondChild()->getSymbolReference() &&
             opNode->getReferenceCount() == 1 && opNode->getSecondChild()->getReferenceCount() == 1 &&
             _currentRegion->isExprInvariant(opNode->getFirstChild()))
-         _candidateTTs->add(tt);
+         {
+         _candidates->add(new (trStackMemory()) SimplificationCandidateTuple(tt,
+                                                   flags32_t(SimplificationCandidateTuple::SummationReductionCandidate)));
+         }
       }
    }
 
@@ -382,7 +393,8 @@ void TR_ExpressionsSimplification::setStoreMotionCandidates(TR::Node *node, TR::
          traceMsg(comp(), "Node %p: The store's operands are all loop-invariant, adding candidate\n", node);
          traceMsg(comp(), "Node %p:   - value of isExprInvariant for the store itself is %s\n", node, _currentRegion->isExprInvariant(node) ? "true" : "false");
          }
-      _candidateTTs->add(tt);
+      _candidates->add(new (trStackMemory()) SimplificationCandidateTuple(tt,
+                                                SimplificationCandidateTuple::InvariantExpressionCandidate));
       }
    }
 
@@ -435,7 +447,7 @@ bool TR_ExpressionsSimplification::tranformSummationReductionCandidate(TR::TreeT
       if (loopInfo->getNumIterations() > 0 ||     // make sure that the loop is going to be executed at least once
             _currentRegion->isCanonicalizedLoop())  // or that the loop is canonicalized, in which case the preheader is
          {                                        // executed in its first iteration and is protected.
-         if (performTransformation(comp(), "%sMove out loop-invariant node [%p] to block_%d\n", OPT_DETAILS, node, preheaderBlock->getNumber()))
+         if (performTransformation(comp(), "%sMove out reduction node [%p] to block_%d\n", OPT_DETAILS, node, preheaderBlock->getNumber()))
             {
             if (!(removeOnly))
                {
@@ -501,10 +513,10 @@ TR_ExpressionsSimplification::invalidateCandidates()
       {
       traceMsg(comp(), "Checking which candidates may be invalidated\n");
 
-      ListIterator<TR::TreeTop> treeTops(_candidateTTs);
-      for (TR::TreeTop *treeTop = treeTops.getFirst(); treeTop; treeTop = treeTops.getNext())
+      ListIterator<SimplificationCandidateTuple> candidates(_candidates);
+      for (SimplificationCandidateTuple *nextCandidate = candidates.getFirst(); nextCandidate; nextCandidate = candidates.getNext())
          {
-         traceMsg(comp(), "   Candidate treetop: %p node: %p\n", treeTop, treeTop->getNode());
+         nextCandidate->print(comp());
          }
       }
 
@@ -534,16 +546,17 @@ TR_ExpressionsSimplification::invalidateCandidates()
 void
 TR_ExpressionsSimplification::removeUnsupportedCandidates()
    {
-   ListIterator<TR::TreeTop> candidateTTs(_candidateTTs);
-   for (TR::TreeTop *candidateTT = candidateTTs.getFirst(); candidateTT; candidateTT = candidateTTs.getNext())
+   ListIterator<SimplificationCandidateTuple> candidates(_candidates);
+   for (SimplificationCandidateTuple *nextCandidate = candidates.getFirst(); nextCandidate; nextCandidate = candidates.getNext())
       {
-      TR::Node *candidate = candidateTT->getNode();
-      if (!_supportedExpressions->get(candidate->getGlobalIndex()))
+      TR::TreeTop *candidateTT = nextCandidate->getTreeTop();
+      TR::Node *candidateNode = candidateTT->getNode();
+      if (!_supportedExpressions->get(candidateNode->getGlobalIndex()))
          {
          if (trace())
-            traceMsg(comp(), "Removing candidate %p which is unsupported or has unsupported subexpressions\n", candidate);
+            traceMsg(comp(), "Removing candidate %p which is unsupported or has unsupported subexpressions\n", candidateNode);
 
-         _candidateTTs->remove(candidateTT);
+         _candidates->remove(nextCandidate);
          }
       }
    }
@@ -559,9 +572,10 @@ TR_ExpressionsSimplification::removeCandidate(TR::Node *node, TR::TreeTop* tt)
    if (trace())
       traceMsg(comp(), "Looking at Node [%p]\n", node);
 
-   ListIterator<TR::TreeTop> candidateTTs(_candidateTTs);
-   for (TR::TreeTop *candidateTT = candidateTTs.getFirst(); candidateTT; candidateTT = candidateTTs.getNext())
+   ListIterator<SimplificationCandidateTuple> candidates(_candidates);
+   for (SimplificationCandidateTuple *nextCandidate = candidates.getFirst(); nextCandidate; nextCandidate = candidates.getNext())
       {
+      TR::TreeTop *candidateTT = nextCandidate->getTreeTop();
       if (tt != candidateTT &&
           node->getOpCode().hasSymbolReference() &&
           candidateTT->getNode()->mayKill(true).contains(node->getSymbolReference(), comp()))
@@ -569,7 +583,7 @@ TR_ExpressionsSimplification::removeCandidate(TR::Node *node, TR::TreeTop* tt)
          if (trace())
             traceMsg(comp(), "Removing candidate %p which has aliases in the loop\n", candidateTT->getNode());
 
-         _candidateTTs->remove(candidateTT);
+         _candidates->remove(nextCandidate);
          continue;
          }
       }
@@ -1027,4 +1041,22 @@ const char *
 TR_ExpressionsSimplification::optDetailString() const throw()
    {
    return "O^O EXPRESSION SIMPLIFICATION: ";
+   }
+
+void
+TR_ExpressionsSimplification::SimplificationCandidateTuple::print(TR::Compilation *comp)
+   {
+   traceMsg(comp, "   Candidate treetop: %p node: %p  flags={", _treeTop, _treeTop->getNode());
+
+   if (isSummationReductionCandidate())
+      {
+      traceMsg(comp, "SummationReductionCandidate ");
+      }
+
+   if (isInvariantExpressionCandidate())
+      {
+      traceMsg(comp, "InvariantExpressionCandidate ");
+      }
+
+   traceMsg(comp, "}\n");
    }

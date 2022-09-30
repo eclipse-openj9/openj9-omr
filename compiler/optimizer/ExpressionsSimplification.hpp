@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -163,9 +163,90 @@ class TR_ExpressionsSimplification : public TR::Optimization
    void removeUnsupportedCandidates();
    bool isSupportedNodeForExpressionSimplification(TR::Node *node);
 
+   /**
+    * Holds information from analysis of a candidate for expression simplification.
+    * Used to determine the kind of transformation that should be attempted.
+    */
+   class SimplificationCandidateTuple
+      {
+      public:
+
+      /**
+       * Public constructor for a candidate for expression simplification
+       * \param tt    The \ref TR::TreeTop whose tree is a candidate for expression
+       *              simplification
+       * \param flags Flags describing the kind of expression simplification that
+       *              should be attempted on this candidate
+       */
+      SimplificationCandidateTuple(TR::TreeTop *tt, flags32_t flags) : _treeTop(tt), _flags(flags) {}
+
+      enum
+         {
+         /**
+          * Flag that indicates this is a candidate for a loop invariant transformation
+          */
+         InvariantExpressionCandidate = 0x01,
+
+         /**
+          * Flag that indicates this is a candidate for a summation reduction transformation
+          */
+         SummationReductionCandidate = 0x02,
+         };
+
+      /**
+       * Query to check whether this was identified to be a candidate for a loop
+       * invariant transformation
+       * \return \c true if and only if this is a candidate for a loop invariant
+       *         transformation
+       */
+      bool isInvariantExpressionCandidate()
+         {
+         return _flags.testAny(InvariantExpressionCandidate);
+         }
+
+      /**
+       * Query to check whether this was identified to be a candidate for a summation
+       * reduction transformation
+       * \return \c true if and only if this is a candidate for a summation
+       *         reduction transformation
+       */
+      bool isSummationReductionCandidate()
+         {
+         return _flags.testAny(SummationReductionCandidate);
+         }
+
+      /**
+       * Query to retrieve the \ref TR::TreeTop whose tree is the candidate for an
+       * expression simplification transformation
+       * \return This candidate's \c TR::TreeTop
+       */
+      TR::TreeTop *getTreeTop()
+         {
+         return _treeTop;
+         }
+
+      /**
+       * Prints trace output describing this candidate for expression simplification
+       */
+      void print(TR::Compilation *comp);
+
+      private:
+
+      /**
+       * The \ref TR::TreeTop whose tree is the candidate for an expression
+       * simplification transformation
+       */
+      TR::TreeTop *_treeTop;
+
+      /**
+       * Flags describing the kind of expression simplification that should be
+       * attempted on this candidate
+       */
+      flags32_t _flags;
+      };
 
    TR_RegionStructure* _currentRegion;
-   List<TR::TreeTop> *_candidateTTs;
+   List<SimplificationCandidateTuple> *_candidates;
 
    TR_BitVector *_supportedExpressions;
    };

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -916,7 +916,7 @@ class TR_FlowSensitiveEscapeAnalysis : public TR_IntersectionBitVectorAnalysis
    virtual bool supportsGenAndKillSets();
    //virtual void initializeGenAndKillSetInfo();
 
-   virtual void analyzeNode(TR::Node *, bool, int32_t, TR::Node *);
+   virtual void analyzeNode(TR::Node *, TR::TreeTop *, bool, int32_t, TR::Node *);
    virtual void analyzeTreeTopsInBlockStructure(TR_BlockStructure *);
    virtual bool postInitializationProcessing();
 
@@ -933,6 +933,7 @@ class TR_FlowSensitiveEscapeAnalysis : public TR_IntersectionBitVectorAnalysis
    TR_EscapeAnalysis *_escapeAnalysis;
    bool _newlyAllocatedObjectWasLocked;
    TR_BitVector *_blocksWithFlushes, *_blocksWithSyncs; //, *_blocksThatNeedFlush;
+   TR::TreeTop **_syncNodeTTForBlock;   // For each BB, the treetop of a node that emits a sync (i.e. monexit or preferably a volatile access)
    List<TR::CFGEdge> _cfgBackEdges;
    TR_BitVector *_loopEntryBlocks;
    TR_BitVector *_catchBlocks;

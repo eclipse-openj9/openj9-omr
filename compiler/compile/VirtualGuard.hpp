@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -98,6 +98,9 @@ class TR_VirtualGuard
          TR::Node *guardNode=NULL,
          int32_t currentSiteIndex=-2);
 
+   TR_VirtualGuard(
+      TR_VirtualGuard *orig, TR::Node *newGuardNode, TR::Compilation *comp);
+
    static TR::Node *createVftGuard(
          TR_VirtualGuardKind,
          TR::Compilation *,
@@ -177,8 +180,6 @@ class TR_VirtualGuard
 
    static TR::Node *createBreakpointGuard(TR::Compilation * comp, int16_t calleeIndex, TR::Node* callNode, TR::TreeTop * destination, TR::ResolvedMethodSymbol * calleeSymbol);
    static TR::Node *createBreakpointGuardNode(TR::Compilation * comp, int16_t calleeIndex, TR::Node* callNode, TR::TreeTop * destination, TR::ResolvedMethodSymbol * calleeSymbol);
-
-   static void setGuardKind(TR::Node *guard, TR_VirtualGuardKind kind, TR::Compilation * comp);
 
    bool isNopable()
       {
@@ -268,7 +269,6 @@ class TR_VirtualGuard
    void                    setCurrentInlinedSiteIndex(int32_t index) { _currentInlinedSiteIndex = index; }
 
    TR::Node *getGuardNode() { return _guardNode; }
-   void setGuardNode(TR::Node *guardNode) { _guardNode = guardNode; }
 
    private:
 
@@ -281,12 +281,11 @@ class TR_VirtualGuard
    int32_t                   _byteCodeIndex;
    TR::SymbolReference       *_guardedMethod;
 
+   TR::Node                  *_guardNode;
+
    // Non-null for guarded-devirtualizations only
    TR::Node                  *_callNode;
-
-   // used for AOT
-   TR::Node                  *_guardNode;
-   int32_t                   _currentInlinedSiteIndex;
+   int32_t                   _currentInlinedSiteIndex; // used for AOT
 
    // used for Interface/Method, Abstract/Method, Hierarchy/Method
    TR_OpaqueClassBlock      *_thisClass;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -71,14 +71,18 @@ TR_VirtualGuard::TR_VirtualGuard(TR_VirtualGuardTestType test, TR_VirtualGuardKi
       _bcInfo.setDoNotProfile(true);
       }
 
-   comp->addVirtualGuard(this);
    if(kind != TR_ArrayStoreCheckGuard)
       {
+      guardNode->setVirtualGuardInfo(this, comp);
       guardNode->setInlinedSiteIndex(calleeIndex);
       guardNode->setByteCodeIndex(0);
       }
    else
+      {
+      comp->addVirtualGuard(this);
       _byteCodeIndex = callNode->getByteCodeInfo().getByteCodeIndex();
+      }
+
    if (comp->getOption(TR_TraceRelocatableDataDetailsCG))
       traceMsg(comp, "addVirtualGuard %p, guardkind = %d, virtualGuardTestType %d, bc index %d, callee index %d, callNode %p, guardNode %p, currentInlinedSiteIdx %d\n", this, _kind, test, this->getByteCodeIndex(), this->getCalleeIndex(), callNode, guardNode, _currentInlinedSiteIndex);
    }
@@ -109,10 +113,43 @@ TR_VirtualGuard::TR_VirtualGuard(TR_VirtualGuardTestType test, TR_VirtualGuardKi
       _bcInfo.setDoNotProfile(true);
       }
 
-   comp->addVirtualGuard(this);
+   if (guardNode != NULL)
+      guardNode->setVirtualGuardInfo(this, comp);
+   else
+      comp->addVirtualGuard(this);
+
    if (comp->getOption(TR_TraceRelocatableDataDetailsCG))
       traceMsg(comp, "addVirtualGuard %p, guardkind = %d, virtualGuardTestType %d, bc index %d, callee index %d, callNode %p, guardNode %p, currentInlinedSiteIdx %d\n", this, _kind, test, this->getByteCodeIndex(), this->getCalleeIndex(), callNode, guardNode, _currentInlinedSiteIndex);
 
+   }
+
+TR_VirtualGuard::TR_VirtualGuard(
+   TR_VirtualGuard *orig, TR::Node *newGuardNode, TR::Compilation *comp)
+   : _test(orig->_test)
+   , _kind(orig->_kind)
+   , _calleeIndex(orig->_calleeIndex)
+   , _byteCodeIndex(orig->_byteCodeIndex)
+   , _guardedMethod(orig->_guardedMethod)
+   , _guardNode(newGuardNode)
+   , _callNode(orig->_callNode)
+   , _currentInlinedSiteIndex(orig->_currentInlinedSiteIndex)
+   , _thisClass(orig->_thisClass)
+   , _cannotBeRemoved(orig->_cannotBeRemoved)
+   , _innerAssumptions(orig->_innerAssumptions.getRegion())
+   , _evalChildren(orig->_evalChildren)
+   , _mergedWithHCRGuard(orig->_mergedWithHCRGuard)
+   , _mergedWithOSRGuard(orig->_mergedWithOSRGuard)
+   , _mutableCallSiteObject(orig->_mutableCallSiteObject)
+   , _mutableCallSiteEpoch(orig->_mutableCallSiteEpoch)
+#ifdef J9_PROJECT_SPECIFIC
+   , _sites(orig->_sites.getRegion())
+#endif
+   {
+   ListIterator<TR_InnerAssumption> it(&orig->getInnerAssumptions());
+   for (TR_InnerAssumption *inner = it.getFirst(); inner != NULL; inner = it.getNext())
+      _innerAssumptions.add(inner);
+
+   newGuardNode->setVirtualGuardInfo(this, comp);
    }
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -151,7 +188,6 @@ TR_VirtualGuard::createVftGuardWithReceiver
    aconstNode->setByteCodeIndex(0);
 
    TR::Node*guard = TR::Node::createif(TR::ifacmpne, vft, aconstNode, destination);
-   setGuardKind(guard, kind, comp);
 
    TR_VirtualGuard *vg = new (comp->trHeapMemory()) TR_VirtualGuard(TR_VftTest, kind, comp, callNode, guard, calleeIndex, comp->getCurrentInlinedSiteIndex(), thisClass);
    //traceMsg(comp, "guard %p virtualguard %p\n", guard, vg);
@@ -238,7 +274,6 @@ TR_VirtualGuard::createBreakpointGuard
    {
    TR::Node *guard = createBreakpointGuardNode(comp, calleeIndex, callNode, destination, calleeSymbol);
    TR_VirtualGuard *vg = new (comp->trHeapMemory()) TR_VirtualGuard(TR_FSDTest, TR_BreakpointGuard, comp, callNode, guard, calleeIndex, comp->getCurrentInlinedSiteIndex());
-   setGuardKind(guard, TR_BreakpointGuard, comp);
 
    if (!comp->getOption(TR_DisableNopBreakpointGuard))
       vg->dontGenerateChildrenCode();
@@ -277,8 +312,6 @@ TR_VirtualGuard::createMethodGuardWithReceiver
    aconstNode->setByteCodeIndex(0);
 
    TR::Node *guard = TR::Node::createif(TR::ifacmpne, vftEntry, aconstNode, destination);
-   setGuardKind(guard, kind, comp);
-
    TR_VirtualGuard *vg = new (comp->trHeapMemory()) TR_VirtualGuard(TR_MethodTest, kind, comp, callNode, guard, calleeIndex, comp->getCurrentInlinedSiteIndex(), thisClass);
 
    if (comp->compileRelocatableCode())
@@ -321,8 +354,6 @@ TR_VirtualGuard::createNonoverriddenGuard
                destination);
       }
 
-   setGuardKind(guard, kind, comp);
-
    TR_VirtualGuard *vg = (TR_VirtualGuard*)(new (comp->trHeapMemory()) TR_VirtualGuard(TR_NonoverriddenTest, kind, comp, callNode, guard, calleeIndex, comp->getCurrentInlinedSiteIndex()));
 
    if (!forInline)
@@ -352,12 +383,12 @@ TR_VirtualGuard::createMutableCallSiteTargetGuard(TR::Compilation * comp, int16_
    TR::Node *guard    = TR::Node::createif(TR::ifacmpne, node, load, destination); // NOTE: take bytecode info from node so findVirtualGuardInfo works
    guard->getAndDecChild(0);
    guard->setAndIncChild(0, receiver);
-   setGuardKind(guard, TR_MutableCallSiteTargetGuard, comp);
 
    TR_VirtualGuard *vguard=new (comp->trHeapMemory()) TR_VirtualGuard(TR_DummyTest, TR_MutableCallSiteTargetGuard, comp, node, guard, comp->getCurrentInlinedSiteIndex());
    vguard->_mutableCallSiteObject = mcsObject;
    vguard->_mutableCallSiteEpoch  = mcsEpoch;
    vguard->dontGenerateChildrenCode();
+
    return guard;
    }
 
@@ -379,7 +410,6 @@ TR::Node *
 TR_VirtualGuard::createSideEffectGuard(TR::Compilation * comp, TR::Node * callNode, TR::TreeTop *destination)
    {
    TR::Node *guard = createDummyOrSideEffectGuard(comp, callNode, destination);
-   setGuardKind(guard, TR_SideEffectGuard, comp);
    TR_VirtualGuard *vguard=new (comp->trHeapMemory()) TR_VirtualGuard(TR_NonoverriddenTest, TR_SideEffectGuard, comp, callNode, guard, comp->getCurrentInlinedSiteIndex());
    vguard->dontGenerateChildrenCode();
    return guard;
@@ -389,7 +419,6 @@ TR::Node *
 TR_VirtualGuard::createAOTInliningGuard(TR::Compilation *comp, int16_t calleeIndex, TR::Node *callNode, TR::TreeTop *destination, TR_VirtualGuardKind kind)
    {
    TR::Node *guard = createDummyOrSideEffectGuard(comp, callNode, destination);
-   setGuardKind(guard, kind, comp);
    TR_VirtualGuard *vguard=new (comp->trHeapMemory()) TR_VirtualGuard(TR_NonoverriddenTest, kind, comp, callNode, guard, calleeIndex, comp->getCurrentInlinedSiteIndex());
    vguard->dontGenerateChildrenCode();
    vguard->setCannotBeRemoved();
@@ -400,7 +429,6 @@ TR::Node *
 TR_VirtualGuard::createAOTGuard(TR::Compilation *comp, int16_t siteIndex, TR::Node *callNode, TR::TreeTop *destination, TR_VirtualGuardKind kind)
    {
    TR::Node *guard = createDummyOrSideEffectGuard(comp, callNode, destination);
-   setGuardKind(guard, kind, comp);
    TR_VirtualGuard *vguard=new (comp->trHeapMemory()) TR_VirtualGuard(TR_NonoverriddenTest, kind, comp, callNode, guard, siteIndex);
    vguard->dontGenerateChildrenCode();
    vguard->setCannotBeRemoved();
@@ -411,7 +439,6 @@ TR::Node *
 TR_VirtualGuard::createDummyGuard(TR::Compilation *comp, int16_t calleeIndex, TR::Node *callNode, TR::TreeTop *destination)
    {
    TR::Node *guard = createDummyOrSideEffectGuard(comp, callNode, destination);
-   setGuardKind(guard, TR_DummyGuard, comp);
    TR_VirtualGuard *vguard=new (comp->trHeapMemory()) TR_VirtualGuard(TR_NonoverriddenTest, TR_DummyGuard, comp, callNode, guard, calleeIndex, comp->getCurrentInlinedSiteIndex());
    vguard->dontGenerateChildrenCode();
    if (comp->compileRelocatableCode())
@@ -447,7 +474,6 @@ TR_VirtualGuard::createOSRGuard(TR::Compilation *comp, TR::TreeTop *destination)
                load,
                flag,
                destination);
-   setGuardKind(guard, TR_OSRGuard, comp);
 
    TR_VirtualGuard *vguard = new (comp->trHeapMemory()) TR_VirtualGuard(TR_DummyTest, TR_OSRGuard, comp,
          NULL, guard, destination ? destination->getNode()->getByteCodeInfo().getCallerIndex() : -1, comp->getCurrentInlinedSiteIndex(), NULL);
@@ -469,7 +495,6 @@ TR_VirtualGuard::createHCRGuard
                load,
                flag,
                destination);
-   setGuardKind(guard, TR_HCRGuard, comp);
 
    TR_VirtualGuard *vguard = new (comp->trHeapMemory()) TR_VirtualGuard(TR_NonoverriddenTest, TR_HCRGuard, comp, node, guard, calleeIndex, comp->getCurrentInlinedSiteIndex(), thisClass);
    vguard->dontGenerateChildrenCode();
@@ -486,52 +511,4 @@ TR_VirtualGuard::addInnerAssumption(TR_InnerAssumption *a)
    {
    _cannotBeRemoved  = true;
    _innerAssumptions.add(a);
-   }
-
-void
-TR_VirtualGuard::setGuardKind(TR::Node * node, TR_VirtualGuardKind kind, TR::Compilation * comp)
-   {
-   switch (kind)
-      {
-      case TR_ProfiledGuard:
-         node->setIsProfiledGuard();
-         break;
-      case TR_InterfaceGuard:
-         node->setIsInterfaceGuard();
-         break;
-      case TR_AbstractGuard:
-         node->setIsAbstractGuard();
-         break;
-      case TR_HierarchyGuard:
-         node->setIsHierarchyGuard();
-         break;
-      case TR_DummyGuard:
-         node->setIsDummyGuard();
-         break;
-      case TR_HCRGuard:
-         node->setIsHCRGuard();
-         break;
-      case TR_SideEffectGuard:
-         node->setIsSideEffectGuard();
-         break;
-      case TR_MutableCallSiteTargetGuard:
-         node->setIsMutableCallSiteTargetGuard();
-         break;
-      case TR_MethodEnterExitGuard:
-         node->setIsMethodEnterExitGuard();
-         break;
-      case TR_DirectMethodGuard:
-         node->setIsDirectMethodGuard();
-         break;
-      case TR_OSRGuard:
-         node->setIsOSRGuard();
-         break;
-      case TR_BreakpointGuard:
-         node->setIsBreakpointGuard();
-         break;
-      default:
-         TR_ASSERT(kind == TR_NonoverriddenGuard, "Expected TR_NonoverriddenGuard(%d); found %d", (int)TR_NonoverriddenGuard, kind);
-         node->setIsNonoverriddenGuard();
-         break;
-      }
    }

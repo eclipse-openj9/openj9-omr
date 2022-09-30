@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -370,13 +370,24 @@ OMR::Node::decFutureUseCount()
 uint16_t
 OMR::Node::getUseDefIndex()
    {
-   return _unionA._useDefIndex;
+   if (_opCode.isIf())
+      return 0;
+   else
+      return _unionA._useDefIndex;
    }
 
 uint16_t
 OMR::Node::setUseDefIndex(uint16_t udi)
    {
-   return (_unionA._useDefIndex = udi);
+   if (_opCode.isIf())
+      {
+      TR_ASSERT_FATAL_WITH_NODE(self(), udi == 0, "if node with use-def index");
+      return 0;
+      }
+   else
+      {
+      return (_unionA._useDefIndex = udi);
+      }
    }
 
 /**

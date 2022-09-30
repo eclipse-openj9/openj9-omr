@@ -8787,6 +8787,7 @@ static void changeConditionalToGoto(OMR::ValuePropagation *vp, TR::Node *node, T
 
    // Remove the children and change the node to a goto,
    //
+   node->setVirtualGuardInfo(NULL, vp->comp());
    vp->removeChildren(node, false);
    TR::Node::recreate(node, TR::Goto);
    vp->setEnableSimplifier();
@@ -8980,8 +8981,6 @@ static void addDelayedConvertedGuard (TR::Node* node,
       }
 
    TR_VirtualGuard* newGuard = vp->comp()->findVirtualGuardInfo(newGuardNode);
-   //do not add a new guard yet ... it will be added in doDelayedTransformation and we will fix the IL accordingly
-   vp->comp()->removeVirtualGuard(newGuard);
    //finish the rest of a transformation in doDelayedTransformation
    vp->_convertedGuards.add(new (vp->trStackMemory()) OMR::ValuePropagation::VirtualGuardInfo(vp, oldVirtualGuard, newGuard, newGuardNode, callNode));
 

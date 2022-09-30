@@ -7188,6 +7188,7 @@ void OMR::ValuePropagation::transformUnknownTypeArrayCopy(TR_TreeTopWrtBarFlag *
 static void changeBranchToGoto(OMR::ValuePropagation *vp, TR::Node *guardNode, TR::Block *guard)
    {
    // change the if to goto
+   guardNode->setVirtualGuardInfo(NULL, vp->comp());
    TR::Node::recreate(guardNode, TR::Goto);
    guardNode->getFirstChild()->recursivelyDecReferenceCount();
    guardNode->getSecondChild()->recursivelyDecReferenceCount();
@@ -7735,10 +7736,7 @@ void OMR::ValuePropagation::doDelayedTransformations()
 
       oldNode->recursivelyDecReferenceCount();
       cvg->_currentTree->setNode(cvg->_newGuardNode);
-      //Guards clean up
-      comp()->removeVirtualGuard(comp()->findVirtualGuardInfo(oldNode));
-      comp()->addVirtualGuard(cvg->_newVirtualGuard);
-      //
+      oldNode->setVirtualGuardInfo(NULL, comp());
       }
    _convertedGuards.setFirst(0);
 

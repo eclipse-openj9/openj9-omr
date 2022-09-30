@@ -329,6 +329,7 @@ OMR::Node::copy(TR::Node * from)
       numChildren = 3;
 
    TR::Node * n = new (comp->getNodePool()) TR::Node(from);
+   from->copyVirtualGuardInfoTo(n, comp);
    return n;
    }
 
@@ -339,6 +340,7 @@ OMR::Node::copy(TR::Node * from, int32_t numChildren)
    TR_ASSERT(numChildren >= from->getNumChildren(), "copy must have at least as many children as original");
 
    TR::Node *clone = new (comp->getNodePool()) TR::Node(from, numChildren);
+   from->copyVirtualGuardInfoTo(clone, comp);
 
    return clone;
    }
@@ -1805,6 +1807,9 @@ OMR::Node::duplicateTree_DEPRECATED(bool duplicateChildren)
          newRoot->setAndIncChild(i, newChild);
          }
       }
+
+   self()->copyVirtualGuardInfoTo(newRoot, comp);
+
    return newRoot;
    }
 
@@ -4397,6 +4402,9 @@ OMR::Node::isRematerializeable()
 TR::Register*
 OMR::Node::getRegister()
    {
+   if (_opCode.isIf())
+      return NULL;
+
    TR_ASSERT(self()->getOpCodeValue() != TR::BBStart, "don't call getRegister for a BBStart");
    if ((uintptr_t)_unionA._register & 1) return 0; // tagged pointer means the field is actually an evaluation priority
    return _unionA._register;
@@ -4405,6 +4413,12 @@ OMR::Node::getRegister()
 TR::Register *
 OMR::Node::setRegister(TR::Register *reg)
    {
+   if (_opCode.isIf())
+      {
+      TR_ASSERT_FATAL_WITH_NODE(self(), reg == NULL, "if node with register");
+      return NULL;
+      }
+
    if (reg)
       {
       if (reg->isLive())
@@ -7240,203 +7254,45 @@ OMR::Node::isStopTheWorldGuard()
    return self()->isHCRGuard() || self()->isOSRGuard() || self()->isBreakpointGuard();
    }
 
-bool
-OMR::Node::isProfiledGuard()
+TR_VirtualGuard *
+OMR::Node::virtualGuardInfo()
    {
-   return _flags.testValue(inlineGuardMask, inlineProfiledGuard) && self()->getOpCode().isIf();
+   bool isGuard = _flags.testAny(inlineGuard) && self()->getOpCode().isIf();
+   return isGuard ? _unionA._guard : NULL;
    }
 
 void
-OMR::Node::setIsProfiledGuard()
+OMR::Node::setVirtualGuardInfo(TR_VirtualGuard *guard, TR::Compilation *comp)
    {
-   TR::Compilation *c = TR::comp();
-   TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
-   if (performNodeTransformation1(c, "O^O NODE FLAGS: Setting inlineProfiledGuard flag on node %p\n", self()))
-      _flags.set(inlineProfiledGuard);
-   }
+   TR_ASSERT_FATAL_WITH_NODE(self(), self()->getOpCode().isIf(), "expected an if");
+   if (_flags.testAny(inlineGuard))
+      comp->removeVirtualGuard(_unionA._guard);
 
-const char *
-OMR::Node::printIsProfiledGuard()
-   {
-   return self()->isProfiledGuard() ? "inlineProfiledGuard " : "";
-   }
-
-
-
-bool
-OMR::Node::isInterfaceGuard()
-   {
-   return _flags.testValue(inlineGuardMask, inlineInterfaceGuard) && self()->getOpCode().isIf();
+   _unionA._guard = guard;
+   _flags.set(inlineGuard, guard != NULL);
+   if (guard != NULL)
+      comp->addVirtualGuard(guard);
    }
 
 void
-OMR::Node::setIsInterfaceGuard()
+OMR::Node::copyVirtualGuardInfoTo(TR::Node *dupNode, TR::Compilation *comp)
    {
-   TR::Compilation *c = TR::comp();
-   TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
-   if (performNodeTransformation1(c, "O^O NODE FLAGS: Setting inlineInterfaceGuard flag on node %p\n", self()))
-      _flags.set(inlineInterfaceGuard);
+   TR_VirtualGuard *guard = self()->virtualGuardInfo();
+   if (guard != NULL)
+      {
+      // dupNode may have just had its flags copied from self(), but the guard
+      // itself hasn't been copied yet - that's what we're doing here. Clear
+      // the flag before creating the new guard info so that it doesn't look
+      // like there's a previous guard info to remove.
+      dupNode->_flags.reset(inlineGuard);
+      new (comp->trHeapMemory()) TR_VirtualGuard(guard, dupNode, comp);
+      }
    }
-
-const char *
-OMR::Node::printIsInterfaceGuard()
-   {
-   return self()->isInterfaceGuard() ? "inlineInterfaceGuard " : "";
-   }
-
-
-
-bool
-OMR::Node::isAbstractGuard()
-   {
-   return _flags.testValue(inlineGuardMask, inlineAbstractGuard) && self()->getOpCode().isIf();
-   }
-
-void
-OMR::Node::setIsAbstractGuard()
-   {
-   TR::Compilation *c = TR::comp();
-   TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
-   if (performNodeTransformation1(c, "O^O NODE FLAGS: Setting inlineAbstractGuard flag on node %p\n", self()))
-      _flags.set(inlineAbstractGuard);
-   }
-
-const char *
-OMR::Node::printIsAbstractGuard()
-   {
-   return self()->isAbstractGuard() ? "inlineAbstractGuard " : "";
-   }
-
-
-
-bool
-OMR::Node::isHierarchyGuard()
-   {
-   return _flags.testValue(inlineGuardMask, inlineHierarchyGuard) && self()->getOpCode().isIf();
-   }
-
-void
-OMR::Node::setIsHierarchyGuard()
-   {
-   TR::Compilation *c = TR::comp();
-   TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
-   if (performNodeTransformation1(c, "O^O NODE FLAGS: Setting inlineHierarchyGuard flag on node %p\n", self()))
-      _flags.set(inlineHierarchyGuard);
-   }
-
-const char *
-OMR::Node::printIsHierarchyGuard()
-   {
-   return self()->isHierarchyGuard() ? "inlineHierarchyGuard " : "";
-   }
-
-
-
-bool
-OMR::Node::isNonoverriddenGuard()
-   {
-   return _flags.testValue(inlineGuardMask, inlineNonoverriddenGuard) && self()->getOpCode().isIf();
-   }
-
-void
-OMR::Node::setIsNonoverriddenGuard()
-   {
-   TR::Compilation *c = TR::comp();
-   TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
-   if (performNodeTransformation1(c, "O^O NODE FLAGS: Setting inlineNonoverriddenGuard flag on node %p\n", self()))
-      _flags.set(inlineNonoverriddenGuard);
-   }
-
-const char *
-OMR::Node::printIsNonoverriddenGuard()
-   {
-   return self()->isNonoverriddenGuard() ? "inlineNonoverriddenGuard " : "";
-   }
-
-
-
-bool
-OMR::Node::isSideEffectGuard()
-   {
-   return _flags.testValue(inlineGuardMask, sideEffectGuard) && self()->getOpCode().isIf();
-   }
-
-void
-OMR::Node::setIsSideEffectGuard()
-   {
-   TR::Compilation *c = TR::comp();
-   TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
-   if (performNodeTransformation1(c, "O^O NODE FLAGS: Setting sideEffectGuard flag on node %p\n", self()))
-      _flags.set(sideEffectGuard);
-   }
-
-const char *
-OMR::Node::printIsSideEffectGuard()
-   {
-   return self()->isSideEffectGuard() ? "sideEffectGuard " : "";
-   }
-
-
-
-bool
-OMR::Node::isDummyGuard()
-   {
-   return _flags.testValue(inlineGuardMask, dummyGuard) && self()->getOpCode().isIf();
-   }
-
-void
-OMR::Node::setIsDummyGuard()
-   {
-   TR::Compilation *c = TR::comp();
-   TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
-   if (performNodeTransformation1(c, "O^O NODE FLAGS: Setting dummyGuard flag on node %p\n", self()))
-      _flags.set(dummyGuard);
-   }
-
-const char *
-OMR::Node::printIsDummyGuard()
-   {
-   return self()->isDummyGuard() ? "dummyGuard " : "";
-   }
-
-
-
-bool
-OMR::Node::isHCRGuard()
-   {
-   return _flags.testValue(inlineGuardMask, inlineHCRGuard) && self()->getOpCode().isIf();
-   }
-
-void
-OMR::Node::setIsHCRGuard()
-   {
-   TR::Compilation *c = TR::comp();
-   TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
-   if (performNodeTransformation1(c, "O^O NODE FLAGS: Setting inlineHCRGuard flag on node %p\n", self()))
-      _flags.set(inlineHCRGuard);
-   }
-
-const char *
-OMR::Node::printIsHCRGuard()
-   {
-   return self()->isHCRGuard() ? "inlineHCRGuard " : "";
-   }
-
-
 
 bool
 OMR::Node::isTheVirtualGuardForAGuardedInlinedCall()
    {
-   return (_flags.testAny(inlineGuardMask) || self()->isHCRGuard()) && self()->getOpCode().isIf();
-   }
-
-void
-OMR::Node::resetIsTheVirtualGuardForAGuardedInlinedCall()
-   {
-   TR::Compilation *c = TR::comp();
-   TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
-   if (performNodeTransformation1(c, "O^O NODE FLAGS: Resetting isTheVirtualGuardForAGuardedInlinedCall flag on node %p\n", self()))
-      _flags.reset(inlineGuardMask);
+   return virtualGuardInfo() != NULL;
    }
 
 bool
@@ -7477,118 +7333,6 @@ OMR::Node::printVFTEntryIsInBounds()
       && self()->vftEntryIsInBounds();
 
    return show ? "vftEntryIsInBounds " : "";
-   }
-
-
-bool
-OMR::Node::isMutableCallSiteTargetGuard()
-   {
-   return _flags.testValue(inlineGuardMask, mutableCallSiteTargetGuard) && self()->getOpCode().isIf();
-   }
-
-void
-OMR::Node::setIsMutableCallSiteTargetGuard()
-   {
-   TR::Compilation *c = TR::comp();
-   TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
-   if (performNodeTransformation1(c, "O^O NODE FLAGS: Setting mutableCallSiteTargetGuard flag on node %p\n", self()))
-      _flags.set(mutableCallSiteTargetGuard);
-   }
-
-const char *
-OMR::Node::printIsMutableCallSiteTargetGuard()
-   {
-   return self()->isMutableCallSiteTargetGuard() ? "mutableCallSiteTargetGuard " : "";
-   }
-
-
-
-bool
-OMR::Node::isMethodEnterExitGuard()
-   {
-   return _flags.testValue(inlineGuardMask, methodEnterExitGuard) && self()->getOpCode().isIf();
-   }
-
-void
-OMR::Node::setIsMethodEnterExitGuard(bool b)
-   {
-   TR::Compilation *c = TR::comp();
-   TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
-   if (b && performNodeTransformation2(c, "O^O NODE FLAGS: Setting methodEnterExitGuard flag to %d on node %p\n", b, self()))
-      _flags.set(methodEnterExitGuard);
-   }
-
-const char *
-OMR::Node::printIsMethodEnterExitGuard()
-   {
-   return self()->isMethodEnterExitGuard() ? "methodEnterExit " : "";
-   }
-
-
-
-bool
-OMR::Node::isDirectMethodGuard()
-   {
-   return _flags.testValue(inlineGuardMask, directMethodGuard) && self()->getOpCode().isIf();
-   }
-
-void
-OMR::Node::setIsDirectMethodGuard(bool b)
-   {
-   TR::Compilation *c = TR::comp();
-   TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
-   if (b && performNodeTransformation2(c, "O^O NODE FLAGS: Setting directMethodGuard flag to %d on node %p\n", b, self()))
-      _flags.set(directMethodGuard);
-   }
-
-const char *
-OMR::Node::printIsDirectMethodGuard()
-   {
-   return self()->isDirectMethodGuard() ? "directMethodGuard ": "";
-   }
-
-
-
-bool
-OMR::Node::isOSRGuard()
-   {
-   return _flags.testValue(inlineGuardMask, osrGuard) && self()->getOpCode().isIf();
-   }
-
-void
-OMR::Node::setIsOSRGuard()
-   {
-   TR::Compilation *c = TR::comp();
-   TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
-   if (performNodeTransformation1(c, "O^O NODE FLAGS: Setting osrGuard flag on node %p\n", self()))
-      _flags.set(osrGuard);
-   }
-
-void
-OMR::Node::setIsBreakpointGuard()
-   {
-   TR::Compilation *c = TR::comp();
-   TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
-   if (performNodeTransformation1(c, "O^O NODE FLAGS: Setting breakpoint guard flag on node %p\n", self()))
-      _flags.set(breakpointGuard);
-   }
-
-bool
-OMR::Node::isBreakpointGuard()
-   {
-   return _flags.testValue(inlineGuardMask, breakpointGuard) && self()->getOpCode().isIf();
-   }
-
-const char *
-OMR::Node::printIsBreakpointGuard()
-   {
-   return self()->isBreakpointGuard() ? "breakpointGuard " : "";
-   }
-
-const char *
-OMR::Node::printIsOSRGuard()
-   {
-   return self()->isOSRGuard() ? "osrGuard " : "";
    }
 
 bool

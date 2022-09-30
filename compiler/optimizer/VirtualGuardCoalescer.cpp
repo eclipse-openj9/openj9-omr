@@ -757,6 +757,7 @@ void TR_VirtualGuardTailSplitter::remergeGuard(TR_BlockCloner &cloner, VGInfo *i
    // convert the last treetop in G' into a goto
    //
    TR::TreeTop *ifTree = cloneG->getLastRealTreeTop();
+   ifTree->getNode()->setVirtualGuardInfo(NULL, comp());
    ifTree->getNode()->removeAllChildren();
    TR::Node::recreate(ifTree->getNode(), TR::Goto);
 
@@ -1038,7 +1039,6 @@ TR_InnerPreexistence::transform()
             TR_VirtualGuard *outerVirtualGuard = comp()->findVirtualGuardInfo(info->getGuardNode());
             TR_VirtualGuard *innerVirtualGuard = comp()->findVirtualGuardInfo(descendant->getGuardNode());
             outerVirtualGuard->addInnerAssumption(comp(), ordinal, innerVirtualGuard);
-            comp()->removeVirtualGuard(innerVirtualGuard);
             }
 
          devirtualize(descendant);
@@ -1063,6 +1063,9 @@ TR_InnerPreexistence::devirtualize(GuardInfo *info)
    TR_ASSERT(guardNode->getOpCodeValue() == TR::ificmpne ||
           guardNode->getOpCodeValue() == TR::ifacmpne,
           "Wrong kind of if discovered for virtual guard");
+
+   guardNode->setVirtualGuardInfo(NULL, comp());
+
    guardNode->getFirstChild()->recursivelyDecReferenceCount();
    guardNode->setAndIncChild(0, guardNode->getSecondChild());
 

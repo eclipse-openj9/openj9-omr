@@ -911,6 +911,12 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4E200800,	/* REV64   	vrev64_16b */
 		0x4E600800,	/* REV64   	vrev64_8h */
 		0x4EA00800,	/* REV64   	vrev64_4s */
+		0x0E212800,	/* XTN    	vxtn_8b   */
+		0x0E612800,	/* XTN    	vxtn_4h   */
+		0x0EA12800,	/* XTN    	vxtn_2s   */
+		0x4E212800,	/* XTN2    	vxtn2_16b */
+		0x4E612800,	/* XTN2    	vxtn2_8h  */
+		0x4EA12800,	/* XTN2    	vxtn2_4s  */
 	/* Vector Copy */
 		/* DUP (general) */
 		0x4E010C00,	/* DUP   	vdup16b */

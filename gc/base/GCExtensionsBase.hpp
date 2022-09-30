@@ -1127,32 +1127,6 @@ public:
 	}
 
 	MMINLINE bool
-	isRememberedSetInOverflowState()
-	{
-#if defined(OMR_GC_MODRON_SCAVENGER)
-		return _isRememberedSetInOverflow;
-#else /* defined(OMR_GC_MODRON_SCAVENGER) */
-		return false;
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
-	}
-
-	MMINLINE void
-	setRememberedSetOverflowState()
-	{
-#if defined(OMR_GC_MODRON_SCAVENGER)
-		_isRememberedSetInOverflow = true;
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
-	}
-
-	MMINLINE void
-	clearRememberedSetOverflowState()
-	{
-#if defined(OMR_GC_MODRON_SCAVENGER)
-		_isRememberedSetInOverflow = false;
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
-	}
-
-	MMINLINE bool
 	isScavengerRememberedSetInOverflowState()
 	{
 #if defined(OMR_GC_MODRON_SCAVENGER)

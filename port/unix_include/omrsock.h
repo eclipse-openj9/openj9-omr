@@ -28,11 +28,6 @@
 #include <sys/socketvar.h>
 #endif
 
-/* According to ZOS documentation, this definition is needed. */
-#if defined(OMR_OS_ZOS) && !defined(_OE_SOCKETS)
-#define _OE_SOCKETS
-#endif
-
 /* This exposes some definitions needed by the socket api */
 #if defined(OMR_OS_ZOS) && !defined(_OPEN_SYS_SOCK_IPV6)
 #define _OPEN_SYS_SOCK_IPV6

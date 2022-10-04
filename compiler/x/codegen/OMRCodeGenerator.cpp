@@ -46,7 +46,6 @@
 #include "codegen/RegisterRematerializationInfo.hpp"
 #include "codegen/Snippet.hpp"
 #include "codegen/TreeEvaluator.hpp"
-#include "codegen/X86Evaluator.hpp"
 #ifdef TR_TARGET_64BIT
 #include "x/amd64/codegen/AMD64SystemLinkage.hpp"
 #else

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,7 +29,6 @@
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterPair.hpp"
 #include "codegen/TreeEvaluator.hpp"
-#include "codegen/X86Evaluator.hpp"
 #include "compile/Compilation.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
@@ -156,7 +155,7 @@ TR::Register* TR_X86SubtractAnalyser::integerSubtractAnalyserImpl(TR::Node     *
       }
 
    if (borrow != 0)
-      TR_X86ComputeCC::setCarryBorrow(borrow, true, _cg);
+      TR::TreeEvaluator::setCarryBorrow(borrow, true, _cg);
 
    if (getCopyReg1())
       {
@@ -358,7 +357,7 @@ TR::Register* TR_X86SubtractAnalyser::longSubtractAnalyserImpl(TR::Node *root, T
       }
 
    if (root->getOpCodeValue() == TR::lusubb &&
-       TR_X86ComputeCC::setCarryBorrow(root->getChild(2), true, _cg))
+       TR::TreeEvaluator::setCarryBorrow(root->getChild(2), true, _cg))
       {
       // use SBB rather than SUB
       //

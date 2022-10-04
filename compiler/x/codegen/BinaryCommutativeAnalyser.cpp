@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,7 +33,6 @@
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterPair.hpp"
 #include "codegen/TreeEvaluator.hpp"
-#include "codegen/X86Evaluator.hpp"
 #include "compile/Compilation.hpp"
 #include "env/IO.hpp"
 #include "env/CompilerEnv.hpp"
@@ -845,7 +844,7 @@ TR::Register *TR_X86BinaryCommutativeAnalyser::integerAddAnalyserImpl(TR::Node  
       }
 
    if (carry != 0)
-      TR_X86ComputeCC::setCarryBorrow(carry, false, _cg);
+      TR::TreeEvaluator::setCarryBorrow(carry, false, _cg);
 
    if (getOpReg1Reg2())
       {
@@ -1108,7 +1107,7 @@ TR::Register* TR_X86BinaryCommutativeAnalyser::longAddAnalyserImpl(TR::Node *roo
       }
 
    if (root->getOpCodeValue() == TR::luaddc &&
-       TR_X86ComputeCC::setCarryBorrow(root->getChild(2), false, _cg))
+       TR::TreeEvaluator::setCarryBorrow(root->getChild(2), false, _cg))
       {
       // use ADC rather than ADD
       //

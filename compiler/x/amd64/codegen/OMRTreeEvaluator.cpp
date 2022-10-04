@@ -49,7 +49,6 @@
 #include "ras/Debug.hpp"
 #include "x/codegen/ConstantDataSnippet.hpp"
 #include "x/codegen/OutlinedInstructions.hpp"
-#include "x/codegen/X86Evaluator.hpp"
 #include "x/codegen/X86Instruction.hpp"
 #include "codegen/InstOpCode.hpp"
 

@@ -858,10 +858,8 @@ public:
 	uintptr_t decommitMinimumFree; /**< percentage of free heap to be retained as committed, default=0 for gencon, complete tenture free memory will be decommitted */
 
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
-	uintptr_t idleMinimumFree; /** TODO cleanup after openj9 fixes */
 	bool gcOnIdle; /**< Enables releasing free heap pages if true while systemGarbageCollect invoked with IDLE GC code, default is false */
 	bool compactOnIdle; /**< Forces compaction if global GC executed while VM Runtime State set to IDLE, default is false */
-	float gcOnIdleCompactThreshold; /** TODO cleanup after openj9 fixes */
 #endif /* defined(OMR_GC_IDLE_HEAP_MANAGER) */
 
 #if defined(OMR_VALGRIND_MEMCHECK)
@@ -1937,10 +1935,8 @@ public:
 		, pretouchHeapOnExpand(false)
 		, decommitMinimumFree(0)
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
-		, idleMinimumFree(0)
 		, gcOnIdle(false)
 		, compactOnIdle(false)
-		, gcOnIdleCompactThreshold((float)0.10)
 #endif /* defined(OMR_GC_IDLE_HEAP_MANAGER) */
 #if defined(OMR_VALGRIND_MEMCHECK)
 		, valgrindMempoolAddr(0)

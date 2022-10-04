@@ -203,6 +203,8 @@ elseif(OMR_OS_LINUX AND OMR_ARCH_RISCV AND CMAKE_CROSSCOMPILING)
 	set(EXCLUDE_LIST "${EXCLUDE_LIST}:PortSysinfoTest.sysinfo_test_sysinfo_set_limit_ADDRESS_SPACE")
 elseif(OMR_OS_LINUX AND OMR_ENV_DATA32)
 	set(EXCLUDE_LIST "${EXCLUDE_LIST}-PortVmemTest.vmem_test_reserveExecutableMemory")
+elseif(OMR_OS_OSX AND OMR_ARCH_AARCH64)
+	set(EXCLUDE_LIST "${EXCLUDE_LIST}-PortMemTest.mem_test7_allocate32")
 endif()
 
 if($ENV{OMR_RUNNING_IN_DOCKER})

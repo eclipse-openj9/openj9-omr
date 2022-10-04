@@ -2489,15 +2489,104 @@ void TR_LoopUnroller::addEdgeAndFixEverything(TR_RegionStructure *region,
             TR_ASSERT(context == BackEdgeFromPrevGeneration ||
                    context == BackEdgeToEntry,
                    "Original block sequence not preserved while cloning");
-            //Swing the blocks into the correct order
-            swingBlocks(newFrom, newTo);
-            }
 
-         if (!edgeAlreadyExists(newFromNode, newToNode))
-            TR::CFGEdge::createEdge(newFromNode,  newToNode, trMemory());
-         if (!cfgEdgeAlreadyExists(newFrom, newTo))
-            _cfg->addEdge(TR::CFGEdge::createEdge(newFrom,  newTo, trMemory()));
-         //I am sure that there is no need to adjust tree tops.
+            if (context == BackEdgeFromPrevGeneration)
+               {
+               //Swing the blocks into the correct order
+               swingBlocks(newFrom, newTo);
+
+               if (!edgeAlreadyExists(newFromNode, newToNode))
+                  TR::CFGEdge::createEdge(newFromNode, newToNode, trMemory());
+               if (!cfgEdgeAlreadyExists(newFrom, newTo))
+                  _cfg->addEdge(TR::CFGEdge::createEdge(newFrom, newTo, trMemory()));
+               }
+            else if (context == BackEdgeToEntry)
+               {
+               if (!cfgEdgeAlreadyExists(newFrom, newTo))
+                  {
+                  /*  Before:
+                   *       +-----------+
+                   *       | newFromTT |
+                   *       +-----+-----+
+                   *             |
+                   *   +---------v---------+  +-----------+
+                   *   | newFromNextBlockTT|  |  newToTT  |
+                   *   +-------------------+  +-----------+
+                   *
+                   *  After - TreeTop List:
+                   *
+                   *       +-----------+
+                   *       | newFromTT |
+                   *       +-----+-----+
+                   *             |
+                   *       +-----v-----+
+                   *       |   gotoTT  |
+                   *       +-----+-----+
+                   *             |
+                   *   +---------v----------+   +---------+
+                   *   | newFromNextBlockTT |   | newToTT |
+                   *   +--------------------+   +---------+
+                   *
+                   *  After - CFG edges:
+                   *
+                   *      +--------------+
+                   *      | newFromBlock |
+                   *      +-------+------+
+                   *              |
+                   *       +------v-----+       +------------+
+                   *       |  gotoBlock +-------> newToBlock |
+                   *       +------------+       +------------+
+                   *
+                   *     +------------------+
+                   *     | newFromNextBlock |
+                   *     +------------------+
+                   */
+                  //create a new goto block
+                  TR::Node *gotoNode = TR::Node::create(lastNode, TR::Goto);
+                  TR::TreeTop *gotoTree = TR::TreeTop::create(comp(), gotoNode);
+                  gotoNode->setBranchDestination(newTo->getEntry());
+                  gotoNode->setLocalIndex(CREATED_BY_GLU);
+                  TR::Block *gotoBlock = TR::Block::createEmptyBlock(lastNode, comp(), newTo->getFrequency(), newTo);
+                  gotoBlock->append(gotoTree);
+                  gotoBlock->getEntry()->getNode()->setLocalIndex(CREATED_BY_GLU);
+                  _cfg->addNode(gotoBlock);
+
+                  //fix the tree tops: insert the goto block in place
+                  newFrom->getExit()->join(gotoBlock->getEntry());
+                  if (newFromNextBlock)
+                     gotoBlock->getExit()->join(newFromNextBlock->getEntry());
+                  else
+                     gotoBlock->getExit()->setNextTreeTop(NULL);
+
+                  //create the structures
+                  TR_BlockStructure *gotoStruct = new (_cfg->structureMemoryRegion()) TR_BlockStructure(comp(), gotoBlock->getNumber(), gotoBlock);
+                  TR_StructureSubGraphNode *gotoSubNode = new (_cfg->structureMemoryRegion()) TR_StructureSubGraphNode(gotoStruct);
+                  region->addSubNode(gotoSubNode);
+
+                  //create the cfg edges
+                  _cfg->addEdge(TR::CFGEdge::createEdge(newFrom, gotoBlock, trMemory()));
+                  _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock, newTo, trMemory()));
+
+                  TR::CFGEdge::createEdge(newFromNode, gotoSubNode, trMemory());
+
+                  if (newToNode->getStructure()->getParent() == region)
+                     TR::CFGEdge::createEdge(gotoSubNode, newToNode, trMemory());
+                  else
+                     region->addExitEdge(gotoSubNode, newToNode->getNumber());
+                  }
+               else if (!edgeAlreadyExists(newFromNode, newToNode))
+                  {
+                  TR::CFGEdge::createEdge(newFromNode, newToNode, trMemory());
+                  }
+               }
+            }
+         else  // newFromNextBlock == newTo
+            {
+            if (!edgeAlreadyExists(newFromNode, newToNode))
+               TR::CFGEdge::createEdge(newFromNode, newToNode, trMemory());
+            if (!cfgEdgeAlreadyExists(newFrom, newTo))
+               _cfg->addEdge(TR::CFGEdge::createEdge(newFrom, newTo, trMemory()));
+            }
          }
 
       //Remove the original edge if required . this is the correct

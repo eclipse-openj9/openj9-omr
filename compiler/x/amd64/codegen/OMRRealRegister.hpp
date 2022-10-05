@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -267,7 +267,7 @@ class OMR_EXTENSIBLE RealRegister : public OMR::X86::RealRegister
 
    void setSourceRegisterFieldInEVEX(uint8_t *opcodeByte)
       {
-      uint8_t regNum = getRegisterNumber() - xmm0;
+      uint8_t regNum = ((_fullRegisterBinaryEncodings[_registerNumber].needsRexForByte << 3) | _fullRegisterBinaryEncodings[_registerNumber].id);
       uint8_t bits = 0;
       *opcodeByte &= 0x9F;
 
@@ -286,7 +286,7 @@ class OMR_EXTENSIBLE RealRegister : public OMR::X86::RealRegister
 
    void setSource2ndRegisterFieldInEVEX(uint8_t *opcodeByte)
       {
-      uint8_t regNum = getRegisterNumber() - xmm0;
+      uint8_t regNum = ((_fullRegisterBinaryEncodings[_registerNumber].needsRexForByte << 3) | _fullRegisterBinaryEncodings[_registerNumber].id);
 
       *opcodeByte &= 0x87; // zero out vvvv bits
       *opcodeByte |= (~(regNum << 3)) & 0x78;
@@ -301,7 +301,7 @@ class OMR_EXTENSIBLE RealRegister : public OMR::X86::RealRegister
 
    void setTargetRegisterFieldInEVEX(uint8_t *opcodeByte)
       {
-      uint8_t regNum = getRegisterNumber() - xmm0;
+      uint8_t regNum = ((_fullRegisterBinaryEncodings[_registerNumber].needsRexForByte << 3) | _fullRegisterBinaryEncodings[_registerNumber].id);
       uint8_t bits = 0;
       *opcodeByte &= 0x6F;
 

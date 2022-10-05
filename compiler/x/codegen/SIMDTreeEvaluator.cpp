@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 IBM Corp. and others
+ * Copyright (c) 2017, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -67,6 +67,52 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDRegStoreEvaluator(TR::Node* node, TR:
    cg->machine()->setXMMGlobalRegister(node->getGlobalRegisterNumber() - cg->machine()->getNumGlobalGPRs(), globalReg);
    cg->decReferenceCount(child);
    return globalReg;
+   }
+
+TR::Register* OMR::X86::TreeEvaluator::maskLoadEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   if (cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F))
+      {
+      TR::MemoryReference* tempMR = generateX86MemoryReference(node, cg);
+      tempMR = ConvertToPatchableMemoryReference(tempMR, node, cg);
+      TR::Register* resultReg = cg->allocateRegister(TR_VMR);
+      TR::InstOpCode::Mnemonic opcode = cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512DQ) ? TR::InstOpCode::KMOVQMaskMem : TR::InstOpCode::KMOVWMaskMem;
+
+      TR::Instruction* instr = generateRegMemInstruction(opcode, node, resultReg, tempMR, cg);
+
+      if (node->getOpCode().isIndirect())
+         cg->setImplicitExceptionPoint(instr);
+
+      node->setRegister(resultReg);
+      tempMR->decNodeReferenceCounts(cg);
+      return resultReg;
+      }
+
+   return SIMDloadEvaluator(node, cg);
+   }
+
+TR::Register* OMR::X86::TreeEvaluator::maskStoreEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   if (cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512F))
+      {
+      TR::MemoryReference* tempMR = generateX86MemoryReference(node, cg);
+      tempMR = ConvertToPatchableMemoryReference(tempMR, node, cg);
+      TR::Node *valueNode = node->getChild(node->getOpCode().isIndirect() ? 1 : 0);
+
+      TR::Register* resultReg = cg->evaluate(valueNode);
+      TR::InstOpCode::Mnemonic opcode = cg->comp()->target().cpu.supportsFeature(OMR_FEATURE_X86_AVX512DQ) ? TR::InstOpCode::KMOVQMemMask : TR::InstOpCode::KMOVWMemMask;
+
+      TR::Instruction* instr = generateMemRegInstruction(opcode, node, tempMR, resultReg, cg);
+
+      if (node->getOpCode().isIndirect())
+         cg->setImplicitExceptionPoint(instr);
+
+      node->setRegister(resultReg);
+      tempMR->decNodeReferenceCounts(cg);
+      return resultReg;
+      }
+
+   return SIMDstoreEvaluator(node, cg);
    }
 
 TR::Register* OMR::X86::TreeEvaluator::SIMDloadEvaluator(TR::Node* node, TR::CodeGenerator* cg)

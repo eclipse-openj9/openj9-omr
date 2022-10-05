@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -4553,25 +4553,25 @@ OMR::X86::TreeEvaluator::mmAllTrueEvaluator(TR::Node *node, TR::CodeGenerator *c
 TR::Register*
 OMR::X86::TreeEvaluator::mloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::maskLoadEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::mloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::maskLoadEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::mstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::maskStoreEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::mstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::maskStoreEvaluator(node, cg);
    }
 
 TR::Register*

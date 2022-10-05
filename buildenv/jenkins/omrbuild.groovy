@@ -346,15 +346,23 @@ def getSources() {
     stage('Get Sources') {
         def gitConfig = scm.getUserRemoteConfigs().get(0)
         def refspec = (gitConfig.getRefspec()) ? gitConfig.getRefspec() : ''
-        scmVars = checkout poll: false,
-            scm: [$class: 'GitSCM',
-            branches: [[name: "${scm.branches[0].name}"]],
-            extensions: [[$class: 'CloneOption', honorRefspec: true, timeout: 30, reference: SPECS[buildSpec].reference]],
-            userRemoteConfigs: [[name: 'origin',
-                refspec: "${refspec}",
-                url: "${gitConfig.getUrl()}"]
+        def ret = false
+        retry(10) {
+            if (ret) {
+                sleep time: 60, unit: 'SECONDS'
+            } else {
+                ret = true
+            }
+            scmVars = checkout poll: false,
+                scm: [$class: 'GitSCM',
+                branches: [[name: "${scm.branches[0].name}"]],
+                extensions: [[$class: 'CloneOption', honorRefspec: true, timeout: 30, reference: SPECS[buildSpec].reference]],
+                userRemoteConfigs: [[name: 'origin',
+                    refspec: "${refspec}",
+                    url: "${gitConfig.getUrl()}"]
+                ]
             ]
-        ]
+        }
         if (!pullId) {
             setBuildStatus("In Progress","PENDING","${scmVars.GIT_COMMIT}")
         }

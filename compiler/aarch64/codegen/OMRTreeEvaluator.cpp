@@ -2499,7 +2499,75 @@ OMR::ARM64::TreeEvaluator::vmdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Node *thirdChild = node->getThirdChild();
+   TR::Node *fourthChild = node->getChild(3);
+
+   TR::Register *firstReg = cg->evaluate(firstChild);
+   TR::Register *secondReg = cg->evaluate(secondChild);
+   TR::Register *thirdReg = cg->evaluate(thirdChild);
+   TR_ASSERT_FATAL_WITH_NODE(node, firstReg->getKind() == TR_VRF, "unexpected Register kind");
+   TR_ASSERT_FATAL_WITH_NODE(node, secondReg->getKind() == TR_VRF, "unexpected Register kind");
+   TR_ASSERT_FATAL_WITH_NODE(node, thirdReg->getKind() == TR_VRF, "unexpected Register kind");
+
+   TR::InstOpCode::Mnemonic op;
+
+   switch (node->getDataType().getVectorElementType())
+      {
+      case TR::Float:
+         op = TR::InstOpCode::vfmla4s;
+         break;
+      case TR::Double:
+         op = TR::InstOpCode::vfmla2d;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getDataType().toString());
+         return NULL;
+      }
+
+   TR::Register *targetReg;
+
+   if (cg->canClobberNodesRegister(thirdChild))
+      {
+      targetReg = thirdReg;
+      }
+   else
+      {
+      targetReg = cg->allocateRegister(TR_VRF);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::vorr16b, node, targetReg, thirdReg, thirdReg);
+      }
+   generateTrg1Src2Instruction(cg, op, node, targetReg, firstReg, secondReg);
+
+   TR::ILOpCode fourthOp = fourthChild->getOpCode();
+   bool flipMask = false;
+   TR::Register *maskReg = NULL;
+   VectorCompareOps compareOp;
+   if (fourthOp.isVectorOpCode() && fourthOp.isBooleanCompare() && (!fourthOp.isVectorMasked())
+       && ((compareOp = getVectorCompareOp(fourthOp.getVectorOperation())) != VECTOR_COMPARE_INVALID)
+       && (fourthChild->getReferenceCount() == 1) && (fourthChild->getRegister() == NULL))
+      {
+      maskReg = vcmpHelper(fourthChild, compareOp, true, &flipMask, cg);
+      }
+   else
+      {
+      maskReg = cg->evaluate(fourthChild);
+      }
+   TR_ASSERT_FATAL_WITH_NODE(node, maskReg->getKind() == TR_VRF, "unexpected Register kind");
+
+   /*
+    * BIT inserts each bit from the first source if the corresponding bit of the second source is 1.
+    * BIF inserts each bit from the first source if the corresponding bit of the second source is 0.
+    */
+   generateTrg1Src2Instruction(cg, flipMask ? TR::InstOpCode::vbit16b : TR::InstOpCode::vbif16b, node, targetReg, firstReg, maskReg);
+
+   node->setRegister(targetReg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   cg->decReferenceCount(thirdChild);
+   cg->decReferenceCount(fourthChild);
+
+   return targetReg;
    }
 
 TR::Register*

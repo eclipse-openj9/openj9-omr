@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1078,6 +1078,14 @@ class X86RegImmInstruction : public TR::X86RegInstruction
                            int32_t           imm,
                            TR::CodeGenerator *cg,
                            int32_t           reloKind=TR_NoRelocation);
+
+    X86RegImmInstruction(TR::InstOpCode::Mnemonic    op,
+                         TR::Node          *node,
+                         TR::Register      *treg,
+                         int32_t           imm,
+                         TR::CodeGenerator *cg,
+                         OMR::X86::Encoding encoding,
+                         int32_t           reloKind=TR_NoRelocation);
 
    X86RegImmInstruction(TR::Instruction   *precedingInstruction,
                            TR::InstOpCode::Mnemonic    op,
@@ -3293,6 +3301,7 @@ TR::X86VirtualGuardNOPInstruction  * generateVirtualGuardNOPInstruction(TR::Inst
 
 TR::X86RegImmInstruction  * generateRegImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, int32_t imm, TR::RegisterDependencyConditions  * cond, TR::CodeGenerator *cg);
 TR::X86RegImmInstruction  * generateRegImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, int32_t imm, TR::CodeGenerator *cg, int32_t reloKind=TR_NoRelocation);
+TR::X86RegImmInstruction  * generateRegImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, int32_t imm, TR::CodeGenerator *cg, int32_t reloKind, OMR::X86::Encoding encoding);
 
 TR::X86RegImmSymInstruction  *generateRegImmSymInstruction(TR::InstOpCode::Mnemonic op, TR::Node *, TR::Register * reg1, int32_t imm, TR::SymbolReference *, TR::CodeGenerator *cg);
 

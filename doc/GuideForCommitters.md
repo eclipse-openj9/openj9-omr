@@ -91,21 +91,21 @@ build, add a comment to the pull request that follows the syntax:
    Jenkins build [ all | {platform-list} ]
    ```
 Where `{platform-list}` is a comma-separated list of platforms chosen from the
-following tags:
+following names and aliases:
 
-| Tag      | Platform |
-| :----    | :------- |
-| zlinux   | 64-bit Linux on Z |
-| zos      | 64-bit zOS |
-| plinux   | 64-bit Power Linux LE |
-| aix      | 64-bit AIX |
-| x32linux | 32-bit Linux |
-| xlinux   | 64-bit Linux |
-| xcrlinux | 64-bit Compressed References Linux |
-| win      | 64-bit Windows |
-| osx      | 64-bit macOS |
-| arm      | 32-bit AArch32 (cross-compile build only) |
-| aarch64  | 64-bit AArch64 (cross-compile build only) |
+| Spec Name           | Alias    | Architecture   | Platform                                           |
+| :--------           | :----    | :-----------   | :-------                                           |
+| linux_aarch64       | aarch64  | ARM            | 64-bit Linux on AArch64 (cross-compile build only) |
+| linux_arm           | arm      | ARM            | 32-bit Linux on AArch32 (cross-compile build only) |
+| aix_ppc-64          | aix      | PPC            | 64-bit AIX                                         |
+| linux_ppc-64_le_gcc | plinux   | PPC            | 64-bit Linux on Power LE                           |
+| linux_riscv64_cross | riscv    | RISC-V         | 64-bit Linux on RISC-V (cross-compile build only)  |
+| linux_x86-64        | xlinux   | x64            | 64-bit Linux on x64                                |
+| osx_x86-64          | osx      | x64            | 64-bit macOS                                       |
+| win_x86-64          | win      | x64            | 64-bit Windows                                     |
+| linux_x86           | x32linux | x86            | 32-bit Linux on x86                                |
+| linux_390-64        | zlinux   | Z              | 64-bit Linux on Z                                  |
+| zos_390-64          | zos      | Z              | 64-bit zOS                                         |
 
    For example, to launch a pull request build on all platforms:
    ```

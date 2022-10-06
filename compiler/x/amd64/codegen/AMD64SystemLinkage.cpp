@@ -216,7 +216,7 @@ TR::AMD64Win64FastCallLinkage::AMD64Win64FastCallLinkage(TR::CodeGenerator *cg)
    //
    if (OMR::X86::AMD64::Machine::enableNewPickRegister())
       {
-      if (OMR::X86::AMD64::Machine::numGPRRegsWithheld(cg) == 0)
+      if (TR::Machine::numGPRRegsWithheld(cg) == 0)
          {
          _properties._allocationOrder[p++] = TR::RealRegister::eax;
          _properties._allocationOrder[p++] = TR::RealRegister::r10;
@@ -435,7 +435,7 @@ TR::AMD64ABILinkage::AMD64ABILinkage(TR::CodeGenerator *cg)
    //
    if (OMR::X86::AMD64::Machine::enableNewPickRegister())
       {
-      if (OMR::X86::AMD64::Machine::numGPRRegsWithheld(cg) == 0)
+      if (TR::Machine::numGPRRegsWithheld(cg) == 0)
          {
          _properties._allocationOrder[p++] = TR::RealRegister::eax;
          _properties._allocationOrder[p++] = TR::RealRegister::r10;

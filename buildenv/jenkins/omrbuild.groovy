@@ -244,6 +244,30 @@ SPECS = [
         'testArgs' : '',
         'junitPublish' : true
     ],
+
+    'osx_aarch64' : [
+        'alias' : 'amac',
+        'label' : 'compile:amac',
+        'reference' : defaultReference,
+        'environment' : [
+            'GTEST_FILTER=-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended:*DeathTest*',
+            'PATH+CCACHE=/usr/local/opt/ccache/libexec',
+            'GTEST_COLOR=0'
+        ],
+        'ccache' : true,
+        'buildSystem' : 'cmake',
+        'builds' : [
+            [
+                'buildDir' : cmakeBuildDir,
+                'configureArgs' : '-Wdev -C../cmake/caches/Travis.cmake',
+                'compile' : defaultCompile
+            ]
+        ],
+        'test' : true,
+        'testArgs' : '',
+        'junitPublish' : true
+    ],
+
     'win_x86-64' : [
         'alias': 'win',
         'label' : 'compile:xwindows',

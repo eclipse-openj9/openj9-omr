@@ -4647,6 +4647,9 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDreductionEvaluator(TR::Node* node, TR
    TR::InstOpCode movOpcode = TR::InstOpCode::MOVDQURegReg;
    generateRegRegInstruction(movOpcode.getMnemonic(), node, workingReg, inputVectorReg, cg, movOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl));
 
+   OMR::X86::Encoding regOpcodeEncoding128 = regOpcode.getSIMDEncoding(&cg->comp()->target().cpu, TR::VectorLength128);
+   TR_ASSERT_FATAL(regOpcodeEncoding128 != OMR::X86::Bad, "No encoding method for reduction opcode");
+
    switch (vl)
       {
       case TR::VectorLength512:
@@ -4659,31 +4662,31 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDreductionEvaluator(TR::Node* node, TR
          // extract 128 bits from ymm and store in xmm, then perform vertical operation
          generateRegRegImmInstruction(TR::InstOpCode::VEXTRACTF128RegRegImm1, node, resultVRF, workingReg, 0xFF, cg);
          rSrcReg = needsNaNHandling ? vectorFPNaNHelper(child, tmpNaNReg, workingReg, resultVRF, NULL, cg) : resultVRF;
-         generateRegRegInstruction(regOpcode.getMnemonic(), node, workingReg, rSrcReg, cg);
+         generateRegRegInstruction(regOpcode.getMnemonic(), node, workingReg, rSrcReg, cg, regOpcodeEncoding128);
          // Fallthrough to treat remaining result as 128-bit vector
       case TR::VectorLength128:
          {
          generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, resultVRF, workingReg, 0x0E, cg);
          rSrcReg = needsNaNHandling ? vectorFPNaNHelper(child, tmpNaNReg, resultVRF, workingReg, NULL, cg) : workingReg;
-         generateRegRegInstruction(regOpcode.getMnemonic(), node, resultVRF, rSrcReg, cg);
+         generateRegRegInstruction(regOpcode.getMnemonic(), node, resultVRF, rSrcReg, cg, regOpcodeEncoding128);
 
          if (dt != TR::Int64 && dt != TR::Double)
             {
             // reduce from 64-bit to 32-bit
             generateRegRegImmInstruction(TR::InstOpCode::PSHUFDRegRegImm1, node, workingReg, resultVRF, 0x1, cg);
             rSrcReg = needsNaNHandling ? vectorFPNaNHelper(child, tmpNaNReg, resultVRF, workingReg, NULL, cg) : workingReg;
-            generateRegRegInstruction(regOpcode.getMnemonic(), node, resultVRF, rSrcReg, cg);
+            generateRegRegInstruction(regOpcode.getMnemonic(), node, resultVRF, rSrcReg, cg, regOpcodeEncoding128);
             if (dt != TR::Int32 && dt != TR::Float)
                {
                // reduce from 32-bit to 16-bit
                generateRegRegImmInstruction(TR::InstOpCode::PSHUFLWRegRegImm1, node, workingReg, resultVRF, 0x1, cg);
-               generateRegRegInstruction(regOpcode.getMnemonic(), node, resultVRF, workingReg, cg);
+               generateRegRegInstruction(regOpcode.getMnemonic(), node, resultVRF, workingReg, cg, regOpcodeEncoding128);
                if (dt != TR::Int16)
                   {
                   // reduce from 16-bit to 8-bit
                   generateRegRegInstruction(TR::InstOpCode::MOVDQURegReg, node, workingReg, resultVRF, cg);
                   generateRegImmInstruction(TR::InstOpCode::PSRLQRegImm1, node, workingReg, 0x8, cg);
-                  generateRegRegInstruction(regOpcode.getMnemonic(), node, resultVRF, workingReg, cg);
+                  generateRegRegInstruction(regOpcode.getMnemonic(), node, resultVRF, workingReg, cg, regOpcodeEncoding128);
                   }
                }
             }

@@ -1095,5 +1095,7 @@ INSTANTIATE_TEST_CASE_P(Long128ReductionTest, BinaryDataDriven128Int64Test, ::te
     std::make_tuple(TR::vreductionXor, BinaryLongTest { { 3 }, { 2, 1}, {}, }),
     std::make_tuple(TR::vreductionXor, BinaryLongTest { { 0 }, { 1, 1}, {}, }),
     std::make_tuple(TR::vreductionMin, BinaryLongTest { { -1 }, { -1, 12}, {}, }),
-    std::make_tuple(TR::vreductionMax, BinaryLongTest { { 100 }, { 100, -100}, {}, })
+    std::make_tuple(TR::vreductionMin, BinaryLongTest { { 9223372036854775801 }, { 9223372036854775801, 9223372036854775804}, {}, }),
+    std::make_tuple(TR::vreductionMax, BinaryLongTest { { 100 }, { 100, -100}, {}, }),
+    std::make_tuple(TR::vreductionMax, BinaryLongTest { { 9223372036854775804 }, { 9223372036854775801, 9223372036854775804}, {}, })
 )));

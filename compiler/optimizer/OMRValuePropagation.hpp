@@ -766,7 +766,6 @@ class ValuePropagation : public TR::Optimization
         TR::Block            *_block;
         };
 
-    TR_LinkHead<VirtualGuardInfo> _convertedGuards;
     TR_LinkHead<CallInfo> _devirtualizedCalls;
     TR_LinkHead<CallInfo> _unsafeCallsToInline;
 

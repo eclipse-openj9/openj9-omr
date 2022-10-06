@@ -7719,27 +7719,6 @@ void OMR::ValuePropagation::doDelayedTransformations()
       }
    _devirtualizedCalls.setFirst(0);
 
-
-   for (VirtualGuardInfo *cvg = _convertedGuards.getFirst(); cvg; cvg = cvg->getNext())
-      {
-      if(cvg->_block->nodeIsRemoved())
-         continue;
-
-      //IL part
-      TR::Node* oldNode = cvg->_currentTree->getNode();
-
-      // !oldNode means that the branch was already removed
-      if (!oldNode || !performTransformation(comp(), "%sReplacing the old guard %p with the shiny new overridden guard %p at treetop %p\n", OPT_DETAILS, oldNode, cvg->_newGuardNode, cvg->_currentTree))
-         {
-         continue;
-         }
-
-      oldNode->recursivelyDecReferenceCount();
-      cvg->_currentTree->setNode(cvg->_newGuardNode);
-      oldNode->setVirtualGuardInfo(NULL, comp());
-      }
-   _convertedGuards.setFirst(0);
-
 #ifdef J9_PROJECT_SPECIFIC
    ListIterator<TR::Node> nodesIt(&_javaLangClassGetComponentTypeCalls);
    TR::Node *getComponentCallNode;

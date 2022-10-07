@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2021 IBM Corp. and others
+ * Copyright (c) 2019, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -316,10 +316,8 @@ TEST_F(MinimalTest, MeaningOfLife)
    SKIP_ON_PPC(MissingImplementation) << "Test is skipped on POWER because calls are not currently supported (see issue #1645)";
    SKIP_ON_PPC64(MissingImplementation) << "Test is skipped on POWER 64 because calls are not currently supported (see issue #1645)";
    SKIP_ON_PPC64LE(MissingImplementation) << "Test is skipped on POWER 64le because calls are not currently supported (see issue #1645)";
-   if ("z/OS" != omrsysinfo_get_OS_type()) {
-      SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
-      SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
-   }
+   SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
    SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
    SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
 
@@ -333,10 +331,8 @@ TEST_F(MinimalTest, ReturnArgI32)
    SKIP_ON_PPC(MissingImplementation) << "Test is skipped on POWER because calls are not currently supported (see issue #1645)";
    SKIP_ON_PPC64(MissingImplementation) << "Test is skipped on POWER 64 because calls are not currently supported (see issue #1645)";
    SKIP_ON_PPC64LE(MissingImplementation) << "Test is skipped on POWER 64le because calls are not currently supported (see issue #1645)";
-   if ("z/OS" != omrsysinfo_get_OS_type()) {
-      SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
-      SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
-   }
+   SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
    SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
    SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
 
@@ -352,10 +348,8 @@ TEST_F(MinimalTest, MaxIfThen)
    SKIP_ON_PPC(MissingImplementation) << "Test is skipped on POWER because calls are not currently supported (see issue #1645)";
    SKIP_ON_PPC64(MissingImplementation) << "Test is skipped on POWER 64 because calls are not currently supported (see issue #1645)";
    SKIP_ON_PPC64LE(MissingImplementation) << "Test is skipped on POWER 64le because calls are not currently supported (see issue #1645)";
-   if ("z/OS" != omrsysinfo_get_OS_type()) {
-      SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
-      SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
-   }
+   SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
    SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
    SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
 
@@ -372,10 +366,8 @@ TEST_F(MinimalTest, AddArgConst)
    SKIP_ON_PPC(MissingImplementation) << "Test is skipped on POWER because calls are not currently supported (see issue #1645)";
    SKIP_ON_PPC64(MissingImplementation) << "Test is skipped on POWER 64 because calls are not currently supported (see issue #1645)";
    SKIP_ON_PPC64LE(MissingImplementation) << "Test is skipped on POWER 64le because calls are not currently supported (see issue #1645)";
-   if ("z/OS" != omrsysinfo_get_OS_type()) {
-      SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
-      SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
-   }
+   SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
    SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
    SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
 
@@ -390,10 +382,8 @@ TEST_F(MinimalTest, SubArgArg)
    SKIP_ON_PPC(MissingImplementation) << "Test is skipped on POWER because calls are not currently supported (see issue #1645)";
    SKIP_ON_PPC64(MissingImplementation) << "Test is skipped on POWER 64 because calls are not currently supported (see issue #1645)";
    SKIP_ON_PPC64LE(MissingImplementation) << "Test is skipped on POWER 64le because calls are not currently supported (see issue #1645)";
-   if ("z/OS" != omrsysinfo_get_OS_type()) {
-      SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
-      SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
-   }
+   SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
    SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
    SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
 
@@ -410,10 +400,8 @@ TEST_F(MinimalTest, Factorial)
    SKIP_ON_PPC(MissingImplementation) << "Test is skipped on POWER because calls are not currently supported (see issue #1645)";
    SKIP_ON_PPC64(MissingImplementation) << "Test is skipped on POWER 64 because calls are not currently supported (see issue #1645)";
    SKIP_ON_PPC64LE(MissingImplementation) << "Test is skipped on POWER 64le because calls are not currently supported (see issue #1645)";
-   if ("z/OS" != omrsysinfo_get_OS_type()) {
-      SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
-      SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
-   }
+   SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
    SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
    SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
 
@@ -435,10 +423,8 @@ TEST_F(MinimalTest, RecursiveFibonnaci)
    SKIP_ON_PPC(MissingImplementation) << "Test is skipped on POWER because calls are not currently supported (see issue #1645)";
    SKIP_ON_PPC64(MissingImplementation) << "Test is skipped on POWER 64 because calls are not currently supported (see issue #1645)";
    SKIP_ON_PPC64LE(MissingImplementation) << "Test is skipped on POWER 64le because calls are not currently supported (see issue #1645)";
-   if ("z/OS" != omrsysinfo_get_OS_type()) {
-      SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
-      SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
-   }
+   SKIP_ON_S390(MissingImplementation) << "Test is skipped on S390 because calls are not currently supported (see issue #1645)";
+   SKIP_ON_S390X(MissingImplementation) << "Test is skipped on S390x because calls are not currently supported (see issue #1645)";
    SKIP_ON_ARM(MissingImplementation) << "Test is skipped on ARM because calls are not currently supported (see issue #1645)";
    SKIP_ON_AARCH64(MissingImplementation) << "Test is skipped on AArch64 because calls are not currently supported (see issue #1645)";
 

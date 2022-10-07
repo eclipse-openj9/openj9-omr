@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -54,6 +54,7 @@ MM_GCCode::isExplicitGC() const
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 	case J9MMCONSTANT_EXPLICIT_GC_IDLE_GC:
 #endif
+	case J9MMCONSTANT_EXPLICIT_GC_PREPARE_FOR_CHECKPOINT:
 		explicitGC = true;
 		break;
 	default:
@@ -93,6 +94,7 @@ MM_GCCode::shouldAggressivelyCompact() const
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 	case J9MMCONSTANT_EXPLICIT_GC_IDLE_GC:
 #endif
+	case J9MMCONSTANT_EXPLICIT_GC_PREPARE_FOR_CHECKPOINT:
 		aggressivelyCompact = false;
 		break;
 	default:
@@ -132,6 +134,7 @@ MM_GCCode::isOutOfMemoryGC() const
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 	case J9MMCONSTANT_EXPLICIT_GC_IDLE_GC:
 #endif
+	case J9MMCONSTANT_EXPLICIT_GC_PREPARE_FOR_CHECKPOINT:
 		OOM = false;
 		break;
 	default:
@@ -160,6 +163,7 @@ MM_GCCode::isAggressiveGC() const
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 	case J9MMCONSTANT_EXPLICIT_GC_IDLE_GC:
 #endif
+	case J9MMCONSTANT_EXPLICIT_GC_PREPARE_FOR_CHECKPOINT:
 		aggressiveGC = true;
 		break;
 	case J9MMCONSTANT_EXPLICIT_GC_NOT_AGGRESSIVE:
@@ -211,6 +215,7 @@ MM_GCCode::isPercolateGC() const
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 	case J9MMCONSTANT_EXPLICIT_GC_IDLE_GC:
 #endif
+	case J9MMCONSTANT_EXPLICIT_GC_PREPARE_FOR_CHECKPOINT:
 		percolateGC = false;
 		break;
 	default:

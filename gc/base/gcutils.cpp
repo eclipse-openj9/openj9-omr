@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -267,6 +267,8 @@ getSystemGCReasonAsString(uint32_t gcCode)
 	case J9MMCONSTANT_EXPLICIT_GC_IDLE_GC:
 		return "vm idle";
 #endif
+	case J9MMCONSTANT_EXPLICIT_GC_PREPARE_FOR_CHECKPOINT:
+		return "prepare for checkpoint GC";
 	case J9MMCONSTANT_IMPLICIT_GC_COMPLETE_CONCURRENT:
 		return "complete concurrent cycle";
 	default:

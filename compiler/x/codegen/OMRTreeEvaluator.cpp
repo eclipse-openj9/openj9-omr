@@ -4763,6 +4763,128 @@ OMR::X86::TreeEvaluator::vfmaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return resultReg;
    }
 
+TR::Register* OMR::X86::TreeEvaluator::maskReductionIdentity(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Node *child = node->getFirstChild();
+   TR::DataType et = child->getDataType().getVectorElementType();
+   TR::VectorLength vl = child->getDataType().getVectorLength();
+   TR::Register *identityReg = cg->allocateRegister(TR_VRF);
+   TR::ILOpCode opcode = node->getOpCode();
+   uint64_t identityValue = 0;
+   size_t elementSize = 0;
+
+   switch (et)
+      {
+      case TR::Int8:
+         elementSize = 1;
+         break;
+      case TR::Int16:
+         elementSize = 2;
+         break;
+      case TR::Int32:
+      case TR::Float:
+         elementSize = 4;
+         break;
+      case TR::Int64:
+      case TR::Double:
+         elementSize = 8;
+         break;
+      default:
+         TR_ASSERT_FATAL(0, "Unsupported element type");
+         break;
+      }
+   // Integers
+   // ADD OR XOR : 0
+   // MUL        : 1
+   // AND        : -1
+   // MIN        : MAX
+   // MAX        : MIN
+
+   // Floats
+   // ADD : +0
+   // MUL : +1
+   // MIN : +Inf
+   // MAX : -Inf
+
+   switch (opcode.getVectorOperation())
+      {
+      case TR::vmreductionAdd:
+      case TR::vmreductionXor:
+      case TR::vmreductionOr:
+         identityValue = 0x0;
+         break;
+      case TR::vmreductionAnd:
+         identityValue = 0xFFFFFFFFFFFFFFFF;
+         break;
+      case TR::vmreductionMul:
+         identityValue = 0x1;
+         if (et == TR::Float)
+            identityValue = 0x3F8000000;
+         else if (et == TR::Double)
+            identityValue = 0x3FF0000000000000;
+         break;
+      case TR::vmreductionMax:
+         identityValue = 1ULL << (8 * elementSize - 1);
+         if (et == TR::Float)
+            identityValue = 0xFF800000;
+         else if (et == TR::Double)
+            identityValue = 0xFFF0000000000000;
+         break;
+      case TR::vmreductionMin:
+         identityValue = 0xFFFFFFFFFFFFFFFF;
+         identityValue ^= 1ULL << (8 * elementSize - 1);
+         if (et == TR::Float)
+            identityValue = 0x7F800000;
+         else if (et == TR::Double)
+            identityValue = 0x7FF0000000000000;
+         break;
+      default:
+         TR_ASSERT_FATAL(0, "Unsupported operation");
+         break;
+      }
+
+   if (identityValue == 0)
+      {
+      TR::InstOpCode xorInsn = TR::InstOpCode::PXORRegReg;
+      OMR::X86::Encoding xorEncoding = xorInsn.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+      generateRegRegInstruction(xorInsn.getMnemonic(), node, identityReg, identityReg, cg, xorEncoding);
+      }
+   else
+      {
+      size_t vecSize = 0;
+      uint8_t data[64];
+
+      switch (vl)
+         {
+         case TR::VectorLength128:
+            vecSize = 16;
+            break;
+         case TR::VectorLength256:
+            vecSize = 32;
+            break;
+         case TR::VectorLength512:
+            vecSize = 64;
+            break;
+         default:
+            TR_ASSERT_FATAL(0, "Unsupported vector length");
+            break;
+         }
+
+      for (int i = 0; i < vecSize / elementSize; i++)
+         {
+         memcpy(data + i * elementSize, &identityValue, elementSize);
+         }
+
+      TR::X86DataSnippet *ds = cg->createDataSnippet(node, &data, vecSize);
+      TR::MemoryReference *mr = generateX86MemoryReference(ds, cg);
+      TR::InstOpCode opCode = TR::InstOpCode::MOVDQURegMem;
+      OMR::X86::Encoding encoding = opCode.getSIMDEncoding(&cg->comp()->target().cpu, vl);
+      generateRegMemInstruction(opCode.getMnemonic(), node, identityReg, mr, cg, encoding);
+      }
+
+   return identityReg;
+   }
+
 TR::Register* OMR::X86::TreeEvaluator::SIMDreductionEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
    TR::Node *child = node->getFirstChild();
@@ -4784,7 +4906,26 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDreductionEvaluator(TR::Node* node, TR
    TR_ASSERT_FATAL_WITH_NODE(node, regOpcode.getMnemonic() != TR::InstOpCode::bad, "No opcode for vector reduction");
 
    TR::InstOpCode movOpcode = TR::InstOpCode::MOVDQURegReg;
-   generateRegRegInstruction(movOpcode.getMnemonic(), node, workingReg, inputVectorReg, cg, movOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl));
+
+   if (node->getOpCode().isVectorMasked())
+      {
+      TR::Node *maskChild = node->getSecondChild();
+      TR::Register *maskChildReg = cg->evaluate(maskChild);
+      TR::Register *identityReg = maskReductionIdentity(node, cg);
+      TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
+
+      generateRegRegInstruction(movOpcode.getMnemonic(), node, tmpReg, inputVectorReg, cg, movOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl));
+      generateRegRegInstruction(movOpcode.getMnemonic(), node, workingReg, identityReg, cg, movOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl));
+      vectorMergeMaskHelper(node, vl, dt, workingReg, tmpReg, maskChildReg, cg);
+
+      cg->decReferenceCount(maskChild);
+      cg->stopUsingRegister(identityReg);
+      cg->stopUsingRegister(tmpReg);
+      }
+   else
+      {
+      generateRegRegInstruction(movOpcode.getMnemonic(), node, workingReg, inputVectorReg, cg, movOpcode.getSIMDEncoding(&cg->comp()->target().cpu, vl));
+      }
 
    OMR::X86::Encoding regOpcodeEncoding128 = regOpcode.getSIMDEncoding(&cg->comp()->target().cpu, TR::VectorLength128);
    TR_ASSERT_FATAL(regOpcodeEncoding128 != OMR::X86::Bad, "No encoding method for reduction opcode");
@@ -5511,43 +5652,43 @@ OMR::X86::TreeEvaluator::vmorUncheckedEvaluator(TR::Node *node, TR::CodeGenerato
 TR::Register*
 OMR::X86::TreeEvaluator::vmreductionAddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::SIMDreductionEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vmreductionAndEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::SIMDreductionEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vmreductionFirstNonZeroEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::SIMDreductionEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vmreductionMaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::SIMDreductionEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vmreductionMinEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::SIMDreductionEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vmreductionMulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::SIMDreductionEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::X86::TreeEvaluator::vmreductionOrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::SIMDreductionEvaluator(node, cg);
    }
 
 TR::Register*
@@ -5559,7 +5700,7 @@ OMR::X86::TreeEvaluator::vmreductionOrUncheckedEvaluator(TR::Node *node, TR::Cod
 TR::Register*
 OMR::X86::TreeEvaluator::vmreductionXorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::SIMDreductionEvaluator(node, cg);
    }
 
 TR::Register*

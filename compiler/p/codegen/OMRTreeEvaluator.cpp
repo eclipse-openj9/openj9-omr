@@ -3635,29 +3635,63 @@ TR::Register *OMR::Power::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeG
 
    switch(node->getDataType().getVectorElementType())
      {
+     case TR::Int8:
+       return TR::TreeEvaluator::vnegIntHelper(node, cg, TR::Int8);
+     case TR::Int16:
+       return TR::TreeEvaluator::vnegIntHelper(node, cg, TR::Int16);
      case TR::Int32:
-       return TR::TreeEvaluator::vnegInt32Helper(node,cg);
+       return TR::TreeEvaluator::vnegIntHelper(node, cg, TR::Int32);
+     case TR::Int64:
+       return TR::TreeEvaluator::vnegIntHelper(node, cg, TR::Int64);
      case TR::Float:
-       return TR::TreeEvaluator::vnegFloatHelper(node,cg);
+       return TR::TreeEvaluator::vnegFloatHelper(node, cg);
      case TR::Double:
-       return TR::TreeEvaluator::vnegDoubleHelper(node,cg);
+       return TR::TreeEvaluator::vnegDoubleHelper(node, cg);
      default:
        TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
      }
    }
 
-TR::Register *OMR::Power::TreeEvaluator::vnegInt32Helper(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::Power::TreeEvaluator::vnegIntHelper(TR::Node *node, TR::CodeGenerator *cg, TR::DataType type)
    {
+   if (cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9))
+      {
+      if (type == TR::Int32)
+         return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::vnegw);
+      else if (type == TR::Int64)
+         return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::vnegd);
+      }
+
    TR::Node *firstChild;
    TR::Register *srcReg;
    TR::Register *resReg;
+
+   TR::InstOpCode::Mnemonic sub;
+
+   switch(type)
+      {
+      case TR::Int8:
+         sub = TR::InstOpCode::vsububm;
+         break;
+      case TR::Int16:
+         sub = TR::InstOpCode::vsubuhm;
+         break;
+      case TR::Int32:
+         sub = TR::InstOpCode::vsubuwm;
+         break;
+      case TR::Int64:
+         sub = TR::InstOpCode::vsubudm;
+         break;
+      default:
+         TR_ASSERT_FATAL(false, "vnegIntHelper() can only be called on integer-type vectors");
+      }
 
    firstChild = node->getFirstChild();
    srcReg = cg->evaluate(firstChild);
 
    resReg = cg->allocateRegister(TR_VRF);
    generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlxor, node, resReg, srcReg, srcReg);
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::vsubuwm, node, resReg, resReg, srcReg);
+   generateTrg1Src2Instruction(cg, sub, node, resReg, resReg, srcReg);
    node->setRegister(resReg);
 
    cg->decReferenceCount(firstChild);

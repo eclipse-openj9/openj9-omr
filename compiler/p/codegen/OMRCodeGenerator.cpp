@@ -1800,11 +1800,12 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
          else
             return false;
       case TR::vdiv:
-      case TR::vneg:
          if (et == TR::Int32 || et == TR::Float || et == TR::Double)
             return true;
          else
             return false;
+      case TR::vneg:
+         return true;
       case TR::vabs:
          if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || et == TR::Float || et == TR::Double)
             return true;

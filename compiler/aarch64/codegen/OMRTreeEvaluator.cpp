@@ -1316,13 +1316,20 @@ OMR::ARM64::TreeEvaluator::mstoreiEvaluator(TR::Node *node, TR::CodeGenerator *c
 TR::Register*
 OMR::ARM64::TreeEvaluator::mRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::Register *globalReg = node->getRegister();
+
+   if (globalReg == NULL)
+      {
+      globalReg = cg->allocateRegister(TR_VRF);
+      node->setRegister(globalReg);
+      }
+   return globalReg;
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::mRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::iRegStoreEvaluator(node, cg);
    }
 
 // vector evaluators

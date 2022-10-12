@@ -523,9 +523,18 @@ OMR::ARM64::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return genericBinaryEvaluator(node, TR::InstOpCode::subx, TR::InstOpCode::subimmx, true, cg);
    }
 
-// vector add
+typedef TR::Register *(*binaryEvaluatorHelper)(TR::Node *node, TR::Register *resReg, TR::Register *lhsRes, TR::Register *rhsReg, TR::CodeGenerator *cg);
+/**
+ * @brief Helper functions for generating instruction sequence for masked binary operations
+ *
+ * @param[in] node: node
+ * @param[in] cg: CodeGenerator
+ * @param[in] op: binary opcode
+ * @param[in] evaluatorHelper: optional pointer to helper function which generates instruction stream for operation
+ * @return vector register containing the result
+ */
 static TR::Register *
-inlineVectorBinaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op)
+inlineVectorBinaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, binaryEvaluatorHelper evaluatorHelper = NULL)
    {
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
@@ -540,7 +549,15 @@ inlineVectorBinaryOp(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnem
    TR::Register *resReg = cg->allocateRegister(TR_VRF);
 
    node->setRegister(resReg);
-   generateTrg1Src2Instruction(cg, op, node, resReg, lhsReg, rhsReg);
+   TR_ASSERT_FATAL_WITH_NODE(node, (op != TR::InstOpCode::bad) || (evaluatorHelper != NULL), "If op is TR::InstOpCode::bad, evaluatorHelper must not be NULL");
+   if (evaluatorHelper != NULL)
+      {
+      (*evaluatorHelper)(node, resReg, lhsReg, rhsReg, cg);
+      }
+   else
+      {
+      generateTrg1Src2Instruction(cg, op, node, resReg, lhsReg, rhsReg);
+      }
 
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
@@ -616,7 +633,7 @@ OMR::ARM64::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register *
-OMR::ARM64::TreeEvaluator::vmulInt64Helper(TR::Node *node, TR::CodeGenerator *cg)
+OMR::ARM64::TreeEvaluator::vmulInt64Helper(TR::Node *node, TR::Register *productReg, TR::Register *lhsReg, TR::Register *rhsReg, TR::CodeGenerator *cg)
    {
    /*
     * Vector mul instruction on aarch64 does not support 64-bit interger element.
@@ -633,14 +650,8 @@ OMR::ARM64::TreeEvaluator::vmulInt64Helper(TR::Node *node, TR::CodeGenerator *cg
     * To perform (A*D + B*C), we reverse elements in AB and do 32-bit element wise multiplication for BA and CD.
     *
     */
-   TR::Node *firstChild = node->getFirstChild();
-   TR::Node *secondChild = node->getSecondChild();
-   TR::Register *lhsReg = cg->evaluate(firstChild);
-   TR::Register *rhsReg = cg->evaluate(secondChild);
-
    TR::Register *tmp1Reg = cg->allocateRegister(TR_VRF);
    TR::Register *tmp2Reg = cg->allocateRegister(TR_VRF);
-   TR::Register *productReg = cg->allocateRegister(TR_VRF);
 
    /* Reverse 32bit words in 64bit elements */
    generateTrg1Src1Instruction(cg, TR::InstOpCode::vrev64_4s, node, tmp1Reg, lhsReg);
@@ -661,11 +672,8 @@ OMR::ARM64::TreeEvaluator::vmulInt64Helper(TR::Node *node, TR::CodeGenerator *cg
    /* Finally, get the result by UMLAL. */
    generateTrg1Src2Instruction(cg, TR::InstOpCode::vumlal_2d, node, productReg, tmp1Reg, tmp2Reg);
 
-   node->setRegister(productReg);
    cg->stopUsingRegister(tmp1Reg);
    cg->stopUsingRegister(tmp2Reg);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
 
    return productReg;
    }
@@ -676,7 +684,8 @@ OMR::ARM64::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
-   TR::InstOpCode::Mnemonic mulOp;
+   TR::InstOpCode::Mnemonic mulOp = TR::InstOpCode::bad;
+   binaryEvaluatorHelper evaluatorHelper = NULL;
    switch(node->getDataType().getVectorElementType())
       {
       case TR::Int8:
@@ -689,7 +698,8 @@ OMR::ARM64::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          mulOp = TR::InstOpCode::vmul4s;
          break;
       case TR::Int64:
-         return vmulInt64Helper(node, cg);
+         evaluatorHelper = vmulInt64Helper;
+         break;
       case TR::Float:
          mulOp = TR::InstOpCode::vfmul4s;
          break;
@@ -700,11 +710,11 @@ OMR::ARM64::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
          return NULL;
       }
-   return inlineVectorBinaryOp(node, cg, mulOp);
+   return inlineVectorBinaryOp(node, cg, mulOp, evaluatorHelper);
    }
 
 TR::Register *
-OMR::ARM64::TreeEvaluator::vdivIntHelper(TR::Node *node, TR::CodeGenerator *cg)
+OMR::ARM64::TreeEvaluator::vdivIntHelper(TR::Node *node, TR::Register *resultReg, TR::Register *lhsReg, TR::Register *rhsReg, TR::CodeGenerator *cg)
    {
    struct DivOps
       {
@@ -725,12 +735,6 @@ OMR::ARM64::TreeEvaluator::vdivIntHelper(TR::Node *node, TR::CodeGenerator *cg)
                          ((eType == TR::Int32) ? 2 : 3));
    struct DivOps op = ops[index];
 
-   TR::Node *firstChild = node->getFirstChild();
-   TR::Node *secondChild = node->getSecondChild();
-   TR::Register *lhsReg = cg->evaluate(firstChild);
-   TR::Register *rhsReg = cg->evaluate(secondChild);
-
-   TR::Register *resultReg = cg->allocateRegister(TR_VRF);
    TR_ARM64ScratchRegisterManager *srm = cg->generateScratchRegisterManager();
    TR::Register *tmp1Reg = srm->findOrCreateScratchRegister(TR_GPR);
    TR::Register *tmp2Reg = srm->findOrCreateScratchRegister(TR_GPR);
@@ -834,10 +838,7 @@ OMR::ARM64::TreeEvaluator::vdivIntHelper(TR::Node *node, TR::CodeGenerator *cg)
          }
       }
 
-   node->setRegister(resultReg);
    srm->stopUsingRegisters();
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
 
    return resultReg;
    }
@@ -848,14 +849,16 @@ OMR::ARM64::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
-   TR::InstOpCode::Mnemonic divOp;
+   TR::InstOpCode::Mnemonic divOp = TR::InstOpCode::bad;
+   binaryEvaluatorHelper evaluatorHelper = NULL;
    switch(node->getDataType().getVectorElementType())
       {
       case TR::Int8:
       case TR::Int16:
       case TR::Int32:
       case TR::Int64:
-         return vdivIntHelper(node, cg);
+         evaluatorHelper = vdivIntHelper;
+         break;
       case TR::Float:
          divOp = TR::InstOpCode::vfdiv4s;
          break;
@@ -866,7 +869,7 @@ OMR::ARM64::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
          return NULL;
       }
-   return inlineVectorBinaryOp(node, cg, divOp);
+   return inlineVectorBinaryOp(node, cg, divOp, evaluatorHelper);
    }
 
 TR::Register *
@@ -940,11 +943,14 @@ OMR::ARM64::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
  *
  * @param[in] node: node
  * @param[in] isMax: true if operation is max
+ * @param[in] resReg: the result register
+ * @param[in] lhsReg: the first argument register
+ * @param[in] rhsReg: the second argument register
  * @param[in] cg: CodeGenerator
  * @return register containing the result
  */
 static TR::Register *
-vminmaxInt64Helper(TR::Node *node, bool isMax, TR::CodeGenerator *cg)
+vminmaxInt64Helper(TR::Node *node, bool isMax, TR::Register *resReg, TR::Register *lhsReg, TR::Register *rhsReg, TR::CodeGenerator *cg)
    {
    /*
     * Vector min/max instruction on aarch64 does not support 64-bit interger element.
@@ -960,26 +966,26 @@ vminmaxInt64Helper(TR::Node *node, bool isMax, TR::CodeGenerator *cg)
     * The result is in v2 for both cases.
     *
     */
-   TR::Node *firstChild = node->getFirstChild();
-   TR::Node *secondChild = node->getSecondChild();
-   TR::Register *lhsReg = NULL;
-   TR::Register *rhsReg = NULL;
-
-   lhsReg = cg->evaluate(firstChild);
-   rhsReg = cg->evaluate(secondChild);
 
    TR_ASSERT_FATAL_WITH_NODE(node, lhsReg->getKind() == TR_VRF, "unexpected Register kind");
    TR_ASSERT_FATAL_WITH_NODE(node, rhsReg->getKind() == TR_VRF, "unexpected Register kind");
 
-   TR::Register *resReg = cg->allocateRegister(TR_VRF);
-
    generateTrg1Src2Instruction(cg, TR::InstOpCode::vcmge2d, node, resReg, lhsReg, rhsReg);
    generateTrg1Src2Instruction(cg, TR::InstOpCode::vbsl16b, node, resReg, (isMax ? lhsReg : rhsReg), (isMax ? rhsReg : lhsReg));
 
-   node->setRegister(resReg);
-   cg->decReferenceCount(firstChild);
-   cg->decReferenceCount(secondChild);
    return resReg;
+   }
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::vminInt64Helper(TR::Node *node, TR::Register *resReg, TR::Register *lhsReg, TR::Register *rhsReg, TR::CodeGenerator *cg)
+   {
+   return vminmaxInt64Helper(node, false, resReg, lhsReg, rhsReg, cg);
+   }
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::vmaxInt64Helper(TR::Node *node, TR::Register *resReg, TR::Register *lhsReg, TR::Register *rhsReg, TR::CodeGenerator *cg)
+   {
+   return vminmaxInt64Helper(node, true, resReg, lhsReg, rhsReg, cg);
    }
 
 TR::Register*
@@ -988,7 +994,8 @@ OMR::ARM64::TreeEvaluator::vminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
-   TR::InstOpCode::Mnemonic minOp;
+   TR::InstOpCode::Mnemonic minOp = TR::InstOpCode::bad;
+   binaryEvaluatorHelper evaluatorHelper = NULL;
    switch(node->getDataType().getVectorElementType())
       {
       case TR::Int8:
@@ -1001,7 +1008,8 @@ OMR::ARM64::TreeEvaluator::vminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          minOp = TR::InstOpCode::vsmin4s;
          break;
       case TR::Int64:
-         return vminmaxInt64Helper(node, false, cg);
+         evaluatorHelper = vminInt64Helper;
+         break;
       /*
        * The behavior of vfmin and vfmax basically follows minimu/maximum of IEEE754-2019.
        * If either one of the arguments is NaN, the result is NaN.
@@ -1017,7 +1025,7 @@ OMR::ARM64::TreeEvaluator::vminEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
          return NULL;
       }
-   return inlineVectorBinaryOp(node, cg, minOp);
+   return inlineVectorBinaryOp(node, cg, minOp, evaluatorHelper);
    }
 
 TR::Register*
@@ -1026,7 +1034,8 @@ OMR::ARM64::TreeEvaluator::vmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
                    "Only 128-bit vectors are supported %s", node->getDataType().toString());
 
-   TR::InstOpCode::Mnemonic maxOp;
+   TR::InstOpCode::Mnemonic maxOp = TR::InstOpCode::bad;
+   binaryEvaluatorHelper evaluatorHelper = NULL;
    switch(node->getDataType().getVectorElementType())
       {
       case TR::Int8:
@@ -1039,7 +1048,8 @@ OMR::ARM64::TreeEvaluator::vmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          maxOp = TR::InstOpCode::vsmax4s;
          break;
       case TR::Int64:
-         return vminmaxInt64Helper(node, true, cg);
+         evaluatorHelper = vmaxInt64Helper;
+         break;
       /*
        * The behavior of vfmin and vfmax basically follows minimu/maximum of IEEE754-2019.
        * If either one of the arguments is NaN, the result is NaN.
@@ -1055,7 +1065,7 @@ OMR::ARM64::TreeEvaluator::vmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          TR_ASSERT(false, "unrecognized vector type %s", node->getDataType().toString());
          return NULL;
       }
-   return inlineVectorBinaryOp(node, cg, maxOp);
+   return inlineVectorBinaryOp(node, cg, maxOp, evaluatorHelper);
    }
 
 // Multiply a register by a 32-bit constant

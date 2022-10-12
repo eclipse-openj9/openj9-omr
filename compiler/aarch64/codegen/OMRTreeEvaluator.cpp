@@ -608,7 +608,7 @@ OMR::ARM64::TreeEvaluator::su2aEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::ARM64::TreeEvaluator::a2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::l2iEvaluator(node, cg);
    }
 
 TR::Register*

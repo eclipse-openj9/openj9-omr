@@ -1276,7 +1276,7 @@ static TR::Register *idivHelper(TR::Node *node, bool is64bit, TR::CodeGenerator 
    return trgReg;
    }
 
-static TR::Register *iremHelper(TR::Node *node, bool is64bit, TR::CodeGenerator *cg)
+static TR::Register *iremHelper(TR::Node *node, bool is64bit, bool isUnsigned, TR::CodeGenerator *cg)
    {
    // TODO: Add checks for special cases
 
@@ -1287,7 +1287,9 @@ static TR::Register *iremHelper(TR::Node *node, bool is64bit, TR::CodeGenerator 
    TR::Register *tmpReg = cg->allocateRegister();
    TR::Register *trgReg = cg->allocateRegister();
 
-   generateTrg1Src2Instruction(cg, is64bit ? TR::InstOpCode::sdivx : TR::InstOpCode::sdivw, node, tmpReg, src1Reg, src2Reg);
+   TR::InstOpCode::Mnemonic op = is64bit ? (isUnsigned ? TR::InstOpCode::udivx : TR::InstOpCode::sdivx) :
+                                           (isUnsigned ? TR::InstOpCode::udivw : TR::InstOpCode::sdivw);
+   generateTrg1Src2Instruction(cg, op, node, tmpReg, src1Reg, src2Reg);
    generateTrg1Src3Instruction(cg, is64bit ? TR::InstOpCode::msubx : TR::InstOpCode::msubw, node, trgReg, tmpReg, src2Reg, src1Reg);
 
    cg->stopUsingRegister(tmpReg);
@@ -1342,7 +1344,19 @@ OMR::ARM64::TreeEvaluator::idivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::iremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return iremHelper(node, false, cg);
+   return iremHelper(node, false, false, cg);
+   }
+
+TR::Register*
+OMR::ARM64::TreeEvaluator::iudivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return genericBinaryEvaluator(node, TR::InstOpCode::udivw, TR::InstOpCode::udivw, false, cg);
+   }
+
+TR::Register*
+OMR::ARM64::TreeEvaluator::iuremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return iremHelper(node, false, true, cg);
    }
 
 TR::Register *
@@ -1354,7 +1368,13 @@ OMR::ARM64::TreeEvaluator::ldivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::lremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return iremHelper(node, true, cg);
+   return iremHelper(node, true, false, cg);
+   }
+
+TR::Register*
+OMR::ARM64::TreeEvaluator::ludivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return genericBinaryEvaluator(node, TR::InstOpCode::udivx, TR::InstOpCode::udivx, true, cg);
    }
 
 /**

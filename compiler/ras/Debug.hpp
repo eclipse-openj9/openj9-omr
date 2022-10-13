@@ -673,7 +673,7 @@ public:
 
    TR_OpaqueClassBlock * containingClass(TR::SymbolReference *);
    const char * signature(TR::ResolvedMethodSymbol *s);
-   void nodePrintAllFlags(TR::Node *, TR_PrettyPrinterString &);
+   virtual void nodePrintAllFlags(TR::Node *, TR_PrettyPrinterString &);
 
    // used by DebugExt and may be overridden
    virtual void printDestination(TR::FILE *, TR::TreeTop *);

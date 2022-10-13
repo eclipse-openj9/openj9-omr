@@ -651,9 +651,13 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
       case TR::vmin:
       case TR::vmax:
       case TR::vreductionAdd:
+      case TR::vmreductionAdd:
       case TR::vreductionMul:
+      case TR::vmreductionMul:
       case TR::vreductionMax:
+      case TR::vmreductionMax:
       case TR::vreductionMin:
+      case TR::vmreductionMin:
       case TR::vmadd:
       case TR::vmsub:
       case TR::vmmul:
@@ -674,8 +678,11 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
       case TR::vxor:
       case TR::vnot:
       case TR::vreductionAnd:
+      case TR::vmreductionAnd:
       case TR::vreductionOr:
+      case TR::vmreductionOr:
       case TR::vreductionXor:
+      case TR::vmreductionXor:
       case TR::vbitselect:
       case TR::vmand:
       case TR::vmor:

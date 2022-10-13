@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -7350,7 +7350,11 @@ OMR::Node::setSwappedChildren(bool v)
       _flags.set(swappedChildren, v);
    }
 
-
+const char *
+OMR::Node::printSwappedChildren()
+   {
+   return self()->childrenWereSwapped() ? "swappedChildren " : "";
+   }
 
 bool
 OMR::Node::isVersionableIfWithMaxExpr()
@@ -7366,7 +7370,11 @@ OMR::Node::setIsVersionableIfWithMaxExpr(TR::Compilation * c)
       _flags.set(versionIfWithMaxExpr);
    }
 
-
+const char *
+OMR::Node::printIsVersionableIfWithMaxExpr()
+   {
+   return self()->isVersionableIfWithMaxExpr() ? "versionableIfWithMaxExpr " : "";
+   }
 
 bool
 OMR::Node::isVersionableIfWithMinExpr()
@@ -7382,7 +7390,11 @@ OMR::Node::setIsVersionableIfWithMinExpr(TR::Compilation * c)
       _flags.set(versionIfWithMinExpr);
    }
 
-
+const char *
+OMR::Node::printIsVersionableIfWithMinExpr()
+   {
+   return self()->isVersionableIfWithMinExpr() ? "versionableIfWithMinExpr " : "";
+   }
 
 bool
 OMR::Node::isStoreAlreadyEvaluated()

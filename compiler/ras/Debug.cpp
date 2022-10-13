@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -996,6 +996,9 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
    output.appendf(format, node->printIsInternalPointer());
    output.appendf(format, node->printIsMaxLoopIterationGuard());
    output.appendf(format, node->printVFTEntryIsInBounds());
+   output.appendf(format, node->printSwappedChildren());
+   output.appendf(format, node->printIsVersionableIfWithMaxExpr());
+   output.appendf(format, node->printIsVersionableIfWithMinExpr());
    output.appendf(format, node->printIsByteToByteTranslate());
    output.appendf(format, node->printIsByteToCharTranslate());
    output.appendf(format, node->printIsCharToByteTranslate());
@@ -1082,6 +1085,8 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
 #endif
    output.appendf(format, node->printStoreAlreadyEvaluated());
    output.appendf(format, node->printCopyToNewVirtualRegister());
+   output.appendf(format, node->printIsNodeCreatedByPRE());
+   output.appendf(format, node->printIsReferenceNonNull());
    }
 
 

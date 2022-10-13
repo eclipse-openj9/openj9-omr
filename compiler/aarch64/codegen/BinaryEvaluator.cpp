@@ -1335,6 +1335,40 @@ OMR::ARM64::TreeEvaluator::lmulhEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return trgReg;
    }
 
+static TR::Register* subInt32DivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src2Reg = cg->evaluate(secondChild);
+   TR::Register *tmpReg = cg->allocateRegister();
+   TR::Register *trgReg = cg->allocateRegister();
+   const uint32_t operandBits = TR::DataType::getSize(node->getDataType()) * 8;
+
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmw, node, trgReg, src1Reg, operandBits - 1); // sxtb or sxth
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmw, node, tmpReg, src2Reg, operandBits - 1); // sxtb or sxth
+
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::sdivw, node, trgReg, trgReg, tmpReg);
+
+   cg->stopUsingRegister(tmpReg);
+   node->setRegister(trgReg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   return trgReg;
+   }
+
+TR::Register*
+OMR::ARM64::TreeEvaluator::bdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return subInt32DivEvaluator(node, cg);
+   }
+
+TR::Register*
+OMR::ARM64::TreeEvaluator::sdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return subInt32DivEvaluator(node, cg);
+   }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::idivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

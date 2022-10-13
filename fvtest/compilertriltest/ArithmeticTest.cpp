@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2021 IBM Corp. and others
+ * Copyright (c) 2017, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -169,8 +169,6 @@ TEST_P(UInt32Arithmetic, UsingConst) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF((param.opcode == "iudiv" || param.opcode == "iurem") && (OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), MissingImplementation)
         << "The Power codegen does not yet support iudiv/iurem (see issue #3673)";
-    SKIP_IF((param.opcode == "iudiv" || param.opcode == "iurem") && OMRPORT_ARCH_AARCH64 == arch, MissingImplementation)
-        << "The AArch64 codegen does not yet support iudiv/iurem (see issue #5891)";
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -204,8 +202,6 @@ TEST_P(UInt32Arithmetic, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF((param.opcode == "iudiv" || param.opcode == "iurem") && (OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), MissingImplementation)
         << "The Power codegen does not yet support iudiv/iurem (see issue #3673)";
-    SKIP_IF((param.opcode == "iudiv" || param.opcode == "iurem") && OMRPORT_ARCH_AARCH64 == arch, MissingImplementation)
-        << "The AArch64 codegen does not yet support iudiv/iurem (see issue #5891)";
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -235,8 +231,6 @@ TEST_P(UInt32Arithmetic, UsingLoadParamAndLoadConst) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF((param.opcode == "iudiv" || param.opcode == "iurem") && (OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), MissingImplementation)
         << "The Power codegen does not yet support iudiv/iurem (see issue #3673)";
-    SKIP_IF((param.opcode == "iudiv" || param.opcode == "iurem") && OMRPORT_ARCH_AARCH64 == arch, MissingImplementation)
-        << "The AArch64 codegen does not yet support iudiv/iurem (see issue #5891)";
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -347,8 +341,6 @@ TEST_P(UInt64Arithmetic, UsingConst) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(param.opcode == "ludiv" && (OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), MissingImplementation)
         << "The Power codegen does not yet support ludiv (see issue #2227)";
-    SKIP_IF(param.opcode == "ludiv" && OMRPORT_ARCH_AARCH64 == arch, MissingImplementation)
-        << "The AArch64 codegen does not yet support ludiv (see issue #5891)";
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -382,8 +374,6 @@ TEST_P(UInt64Arithmetic, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(param.opcode == "ludiv" && (OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), MissingImplementation)
         << "The Power codegen does not yet support ludiv (see issue #2227)";
-    SKIP_IF(param.opcode == "ludiv" && OMRPORT_ARCH_AARCH64 == arch, MissingImplementation)
-        << "The AArch64 codegen does not yet support ludiv (see issue #5891)";
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -413,8 +403,6 @@ TEST_P(UInt64Arithmetic, UsingLoadParamAndLoadConst) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(param.opcode == "ludiv" && (OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), MissingImplementation)
         << "The Power codegen does not yet support ludiv (see issue #2227)";
-    SKIP_IF(param.opcode == "ludiv" && OMRPORT_ARCH_AARCH64 == arch, MissingImplementation)
-        << "The AArch64 codegen does not yet support ludiv (see issue #5891)";
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -441,8 +429,6 @@ TEST_P(UInt64Arithmetic, UsingLoadParamAndLoadConst) {
 
 TEST_P(Int16Arithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
-
-    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support sadd/ssub/smul (see issue #5891)";
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -473,8 +459,6 @@ TEST_P(Int16Arithmetic, UsingConst) {
 TEST_P(Int16Arithmetic, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
-    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support sadd/ssub/smul (see issue #5891)";
-
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
       "(method return=Int16 args=[Int16, Int16]"
@@ -499,8 +483,6 @@ TEST_P(Int16Arithmetic, UsingLoadParam) {
 
 TEST_P(Int16Arithmetic, UsingLoadParamAndLoadConst) {
     auto param = TRTest::to_struct(GetParam());
-
-    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support sadd/ssub/smul (see issue #5891)";
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -527,8 +509,6 @@ TEST_P(Int16Arithmetic, UsingLoadParamAndLoadConst) {
 
 TEST_P(Int8Arithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
-
-    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support badd/bsub/bmul (see issue #5891)";
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
@@ -559,8 +539,6 @@ TEST_P(Int8Arithmetic, UsingConst) {
 TEST_P(Int8Arithmetic, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
-    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support badd/bsub/bmul (see issue #5891)";
-
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),
       "(method return=Int8 args=[Int8, Int8]"
@@ -585,8 +563,6 @@ TEST_P(Int8Arithmetic, UsingLoadParam) {
 
 TEST_P(Int8Arithmetic, UsingLoadParamAndLoadConst) {
     auto param = TRTest::to_struct(GetParam());
-
-    SKIP_ON_AARCH64(MissingImplementation) << "The AArch64 codegen does not yet support badd/bsub/bmul (see issue #5891)";
 
     char inputTrees[1024] = {0};
     std::snprintf(inputTrees, sizeof(inputTrees),

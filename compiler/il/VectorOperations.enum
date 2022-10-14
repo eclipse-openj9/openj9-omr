@@ -19,6 +19,70 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mAnyTrue, \
+   /* .name                    = */ "mAnyTrue", \
+   /* .properties1             = */ 0, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::Int32, \
+   /* .typeProperties          = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    test if any mask element is true */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mAllTrue, \
+   /* .name                    = */ "mAllTrue", \
+   /* .properties1             = */ 0, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::Int32, \
+   /* .typeProperties          = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    test if all mask elements are true */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mmAnyTrue, \
+   /* .name                    = */ "mmAnyTrue", \
+   /* .properties1             = */ ILProp1::VectorMasked, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::Int32, \
+   /* .typeProperties          = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
+   /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    test if any mask element is true under mask*/ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mmAllTrue, \
+   /* .name                    = */ "mmAllTrue", \
+   /* .properties1             = */ ILProp1::VectorMasked, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::Int32, \
+   /* .typeProperties          = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
+   /* .childProperties         = */ TWO_SAME_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    test if all mask elements are true under mask*/ \
+)
+VECTOR_OPERATION_MACRO(\
    /* .operation               = */ mload, \
    /* .name                    = */ "mload", \
    /* .properties1             = */ ILProp1::LoadVar | ILProp1::HasSymbolRef, \
@@ -114,6 +178,136 @@ VECTOR_OPERATION_MACRO(\
    /* .ifCompareOpCode         = */ TR::BadILOp, \
    /* .description             =    Store mask global register */ \
 )
+// vector mask conversion opcodes
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ b2m, \
+   /* .name                    = */ "b2m", \
+   /* .properties1             = */ ILProp1::Conversion, \
+   /* .properties2             = */ ILProp2::ValueNumberShare, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
+   /* .childProperties         = */ ONE_CHILD(TR::Int8), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    convert byte into 1-element platform specific vector mask */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ s2m, \
+   /* .name                    = */ "s2m", \
+   /* .properties1             = */ ILProp1::Conversion, \
+   /* .properties2             = */ ILProp2::ValueNumberShare, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
+   /* .childProperties         = */ ONE_CHILD(TR::Int16), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    convert short into 2-element platform specific vector mask */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ i2m, \
+   /* .name                    = */ "i2m", \
+   /* .properties1             = */ ILProp1::Conversion, \
+   /* .properties2             = */ ILProp2::ValueNumberShare, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
+   /* .childProperties         = */ ONE_CHILD(TR::Int32), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    convert int into 4-element platform specific vector mask */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ l2m, \
+   /* .name                    = */ "l2m", \
+   /* .properties1             = */ ILProp1::Conversion, \
+   /* .properties2             = */ ILProp2::ValueNumberShare, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
+   /* .childProperties         = */ ONE_CHILD(TR::Int64), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    convert long into 4-element platform specific vector mask */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ m2b, \
+   /* .name                    = */ "m2b", \
+   /* .properties1             = */ ILProp1::Conversion, \
+   /* .properties2             = */ ILProp2::ValueNumberShare, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::Int8, \
+   /* .typeProperties          = */ ILTypeProp::Size_1 | ILTypeProp::Integer, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    convert 1-element platform specific vector mask into byte*/ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ m2s, \
+   /* .name                    = */ "m2s", \
+   /* .properties1             = */ ILProp1::Conversion, \
+   /* .properties2             = */ ILProp2::ValueNumberShare, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::Int16, \
+   /* .typeProperties          = */ ILTypeProp::Size_2 | ILTypeProp::Integer, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    convert 2-element platform specific vector mask into short*/ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ m2i, \
+   /* .name                    = */ "m2i", \
+   /* .properties1             = */ ILProp1::Conversion, \
+   /* .properties2             = */ ILProp2::ValueNumberShare, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::Int32, \
+   /* .typeProperties          = */ ILTypeProp::Size_4 | ILTypeProp::Integer, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    convert 4-element platform specific vector mask into int*/ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ m2l, \
+   /* .name                    = */ "m2l", \
+   /* .properties1             = */ ILProp1::Conversion, \
+   /* .properties2             = */ ILProp2::ValueNumberShare, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::Int64, \
+   /* .typeProperties          = */ ILTypeProp::Size_8 | ILTypeProp::Integer, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    convert 4-element platform specific vector mask into long*/ \
+)
+// vector opcodes
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vabs, \
    /* .name                    = */ "vabs", \
@@ -1415,4 +1609,36 @@ VECTOR_OPERATION_MACRO(\
    /* .booleanCompareOpCode    = */ TR::BadILOp, \
    /* .ifCompareOpCode         = */ TR::BadILOp, \
    /* .description             =    convert vector elements to a new type (not a noop) */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ v2m, \
+   /* .name                    = */ "v2m", \
+   /* .properties1             = */ ILProp1::Conversion, \
+   /* .properties2             = */ ILProp2::ValueNumberShare, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    convert boolean vector into platform specific vector mask with the same number of elements */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ m2v, \
+   /* .name                    = */ "m2v", \
+   /* .properties1             = */ ILProp1::Conversion, \
+   /* .properties2             = */ ILProp2::ValueNumberShare, \
+   /* .properties3             = */ 0, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::VectorResult, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    convert platform specific vector mask into boolean vector with the same number of elements */ \
 )

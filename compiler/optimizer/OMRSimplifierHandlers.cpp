@@ -11837,6 +11837,9 @@ TR::Node *i2sSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    if ((result = s->unaryCancelOutWithChild(node, firstChild, s->_curTree, TR::su2i)))
       return result;
 
+   if ((result = foldDemotionConversion(node, TR::l2i, TR::l2s, s)))
+      return result;
+
    TR::Node *resultNode = s->simplifyi2sPatterns(node);
    if (resultNode != NULL)
       {

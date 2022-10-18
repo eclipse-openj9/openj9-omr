@@ -1414,7 +1414,7 @@ bool TR_LoopVersioner::detectInvariantTrees(TR_RegionStructure *whileLoop, List<
             {
             if (!guardInfo)
                guardInfo = comp()->findVirtualGuardInfo(node);
-            //TR::Node *thisChild = NULL;
+
             if (nextRealNode && !thisChild)
                {
                if (nextRealNode->getOpCode().isCallIndirect())
@@ -1436,47 +1436,29 @@ bool TR_LoopVersioner::detectInvariantTrees(TR_RegionStructure *whileLoop, List<
                bool b = isExprInvariant(thisChild, ignoreHeapificationStore);
                if (!b)
                   {
-                  //if (node->isNonoverriddenGuard())
+                  if (!(thisChild->getOpCode().hasSymbolReference() &&
+                        thisChild->getSymbolReference()->getSymbol()->isAuto() &&
+                        isDependentOnInvariant(thisChild)))
                      {
-                     if (!(thisChild->getOpCode().hasSymbolReference() &&
-                           thisChild->getSymbolReference()->getSymbol()->isAuto() &&
-                           isDependentOnInvariant(thisChild)))
-                        {
-                        isTreeInvariant = false;
-                        }
-                     else
-                        {
-                        if (!guardInfo)
-                           guardInfo = comp()->findVirtualGuardInfo(node);
-
-                        if (guardInfo->getTestType() == TR_VftTest)
-                           {
-                           if (node->getFirstChild()->getNumChildren() == 0)
-                              isTreeInvariant = false;
-                           }
-                        else if (guardInfo->getTestType() == TR_MethodTest)
-                          {
-                          if ((node->getFirstChild()->getNumChildren() == 0) ||
-                              (node->getFirstChild()->getFirstChild()->getNumChildren() == 0))
-                             isTreeInvariant = false;
-                          }
-                      }
-
+                     isTreeInvariant = false;
                      }
-                  /*
                   else
                      {
-                     visitCount = comp()->incVisitCount();
-                     for (int32_t childNum=0;childNum < node->getNumChildren(); childNum++)
+                     if (!guardInfo)
+                        guardInfo = comp()->findVirtualGuardInfo(node);
+
+                     if (guardInfo->getTestType() == TR_VftTest)
                         {
-                        if (!isExprInvariant(node->getChild(childNum), visitCount))
-                          {
-                          isTreeInvariant = false;
-                          break;
-                          }
+                        if (node->getFirstChild()->getNumChildren() == 0)
+                           isTreeInvariant = false;
+                        }
+                     else if (guardInfo->getTestType() == TR_MethodTest)
+                        {
+                        if ((node->getFirstChild()->getNumChildren() == 0) ||
+                            (node->getFirstChild()->getFirstChild()->getNumChildren() == 0))
+                           isTreeInvariant = false;
                         }
                      }
-                  */
                   }
                }
             }

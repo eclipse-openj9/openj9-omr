@@ -7291,7 +7291,62 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
 
    // Quit if class is not compatible with the method
    if (resolvedMethod && receiverInfo->getClass() && !classIsCompatibleWithMethod(receiverInfo->getClass(), resolvedMethod))
+      {
+      if (trace())
+         traceMsg(comp(), "PREX:        - Receiver type incompatible with method \n");
+
       return;
+      }
+
+   TR::MethodSymbol *methSymbol = node->getSymbol()->getMethodSymbol();
+   if (methSymbol->isInterface())
+      {
+      // Interface type signatures can't be trusted most places in bytecode, so
+      // only transform interface calls when we have a class bound for the
+      // receiver.
+      TR_OpaqueClassBlock *klass = receiverInfo->getClass();
+      if (klass == NULL || TR::Compiler->cls.isInterfaceClass(comp(), klass))
+         {
+         if (trace())
+            {
+            traceMsg(
+               comp(),
+               "PREX:        - No class type bound for interface call receiver\n");
+            }
+
+         return;
+         }
+
+      TR_ResolvedMethod *caller = node->getSymbolReference()->getOwningMethod(comp());
+      TR::Method *callee = methSymbol->getMethod();
+      bool aotOk = true;
+      TR_OpaqueClassBlock *iface = fe()->getClassFromSignature(
+         callee->classNameChars(), callee->classNameLength(), caller, aotOk);
+
+      if (iface == NULL)
+         {
+         if (trace())
+            {
+            traceMsg(
+               comp(),
+               "PREX:        - Failed to identify interface for interface call\n");
+            }
+
+         return;
+         }
+
+      if (fe()->isInstanceOf(klass, iface, true, true, true) != TR_yes)
+         {
+         if (trace())
+            {
+            traceMsg(
+               comp(),
+               "PREX:        - Insufficient class type bound for interface call receiver\n");
+            }
+
+         return;
+         }
+      }
 
    //
    // Step 2: Transform
@@ -7395,7 +7450,6 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
          TR::ClassTableCriticalSection processIndirectCall(comp()->fe());
          TR::SymbolReference *symRef = node->getSymbolReference();
          TR_PersistentCHTable * chTable = comp()->getPersistentInfo()->getPersistentCHTable();
-         TR::MethodSymbol *methSymbol = node->getSymbol()->getMethodSymbol();
          if (methSymbol->isInterface() || methodSymbol)
             {
             TR_ResolvedMethod * method = NULL;
@@ -7414,8 +7468,16 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
                {
                if (comp()->getPersistentInfo()->getRuntimeAssumptionTable()->getAssumptionCount(RuntimeAssumptionOnClassExtend) < 100000)
                   method = chTable->findSingleInterfaceImplementer(receiverInfo->getClass(), node->getSymbolReference()->getCPIndex(), node->getSymbolReference()->getOwningMethod(comp()), comp());
-               //if (method)
-               //   fprintf(stderr, "%s assumptios=%d\n", comp()->signature(), comp()->getPersistentInfo()->getRuntimeAssumptionTable()->getAssumptionCount(RuntimeAssumptionOnClassExtend));
+               if (method == NULL)
+                  {
+                  if (trace())
+                     {
+                     traceMsg(
+                        comp(),
+                        "PREX:        - Failed to find interface callee\n");
+                     }
+                  return;
+                  }
                }
             else
                {

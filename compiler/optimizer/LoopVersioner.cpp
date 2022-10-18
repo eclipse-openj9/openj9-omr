@@ -2448,6 +2448,12 @@ bool TR_LoopVersioner::isExprInvariant(TR::Node *node, bool ignoreHeapificationS
    return isExprInvariantRecursive(node, ignoreHeapificationStore);
    }
 
+bool TR_LoopVersioner::areAllChildrenInvariant(TR::Node *node, bool ignoreHeapificationStore)
+   {
+   _visitedNodes.empty();
+   return areAllChildrenInvariantRecursive(node, ignoreHeapificationStore);
+   }
+
 bool TR_LoopVersioner::isExprInvariantRecursive(TR::Node *node, bool ignoreHeapificationStore)
    {
    static const bool paranoid = feGetEnv("TR_paranoidVersioning") != NULL;
@@ -2487,16 +2493,20 @@ bool TR_LoopVersioner::isExprInvariantRecursive(TR::Node *node, bool ignoreHeapi
          return false;
       }
 
+   return areAllChildrenInvariantRecursive(node, ignoreHeapificationStore);
+   }
+
+bool TR_LoopVersioner::areAllChildrenInvariantRecursive(TR::Node *node, bool ignoreHeapificationStore)
+   {
    int32_t i;
    for (i = 0;i < node->getNumChildren();i++)
       {
-      if (!isExprInvariantRecursive(node->getChild(i)))
+      if (!isExprInvariantRecursive(node->getChild(i), ignoreHeapificationStore))
          return false;
       }
 
    return true;
    }
-
 
 bool TR_LoopVersioner::hasWrtbarBeenSeen(List<TR::TreeTop> *awrtbariTrees, TR::Node *awrtbariNode)
    {

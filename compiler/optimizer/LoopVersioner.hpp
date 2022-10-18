@@ -950,7 +950,9 @@ class TR_LoopVersioner : public TR_LoopTransformer
    bool isVersionableArrayAccess(TR::Node *);
 
    bool isExprInvariant(TR::Node *, bool ignoreHeapificationStore = false);          // ignoreHeapificationStore flags for both
+   bool areAllChildrenInvariant(TR::Node *, bool ignoreHeapificationStore = false);
    bool isExprInvariantRecursive(TR::Node *, bool ignoreHeapificationStore = false); // methods need to be in sync!
+   bool areAllChildrenInvariantRecursive(TR::Node *, bool ignoreHeapificationStore = false);
 
    bool isDependentOnAllocation(TR::Node *, int32_t);
    bool hasWrtbarBeenSeen(List<TR::TreeTop> *, TR::Node *);

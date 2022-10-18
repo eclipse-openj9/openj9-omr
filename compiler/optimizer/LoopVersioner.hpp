@@ -943,7 +943,8 @@ class TR_LoopVersioner : public TR_LoopTransformer
    bool detectInvariantSpineChecks(List<TR::TreeTop> *);
    bool detectInvariantDivChecks(List<TR::TreeTop> *);
    bool detectInvariantAwrtbaris(List<TR::TreeTop> *);
-   bool detectInvariantTrees(TR_RegionStructure *whileLoop, List<TR::TreeTop> *, bool, bool *, SharedSparseBitVector &reverseBranchInLoops);
+   bool detectInvariantCheckCasts(List<TR::TreeTop> *);
+   bool detectInvariantConditionals(TR_RegionStructure *whileLoop, List<TR::TreeTop> *, bool, bool *, SharedSparseBitVector &reverseBranchInLoops);
    bool detectInvariantNodes(List<TR_NodeParentSymRef> *invariantNodes, List<TR_NodeParentSymRefWeightTuple> *invariantTranslationNodes);
    bool detectInvariantSpecializedExprs(List<TR::Node> *);
    bool detectInvariantArrayStoreChecks(List<TR::TreeTop> *);

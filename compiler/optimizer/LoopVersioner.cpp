@@ -576,10 +576,9 @@ int32_t TR_LoopVersioner::performWithoutDominators()
          awrtbariTrees.deleteAll();
 
       SharedSparseBitVector reverseBranchInLoops(comp()->allocator());
-      bool containsNonInlineGuard = false;
       bool checkCastTreesWillBeEliminated = false;
       if (!shouldOnlySpecializeLoops() && !refineAliases())
-         checkCastTreesWillBeEliminated = detectInvariantTrees(naturalLoop, &checkCastTrees, false, &containsNonInlineGuard, reverseBranchInLoops);
+         checkCastTreesWillBeEliminated = detectInvariantCheckCasts(&checkCastTrees);
       else
          checkCastTrees.deleteAll();
 
@@ -600,7 +599,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
 
       _conditionalTree = NULL;
       _duplicateConditionalTree = NULL;
-      containsNonInlineGuard = false;
+      bool containsNonInlineGuard = false;
       if (!shouldOnlySpecializeLoops() && !refineAliases())
          {
          // default hotness threshold
@@ -626,11 +625,22 @@ int32_t TR_LoopVersioner::performWithoutDominators()
              _nonInlineGuardConditionalsWillNotBeEliminated ||
              _loopTransferDone)
             {
-            conditionalsWillBeEliminated = detectInvariantTrees(naturalLoop, &conditionalTrees, true, &containsNonInlineGuard, reverseBranchInLoops);
+            conditionalsWillBeEliminated = detectInvariantConditionals(
+               naturalLoop,
+               &conditionalTrees,
+               true,
+               &containsNonInlineGuard,
+               reverseBranchInLoops);
             }
          else
             {
-            conditionalsWillBeEliminated = detectInvariantTrees(naturalLoop, &conditionalTrees, false, &containsNonInlineGuard, reverseBranchInLoops);
+            conditionalsWillBeEliminated = detectInvariantConditionals(
+               naturalLoop,
+               &conditionalTrees,
+               false,
+               &containsNonInlineGuard,
+               reverseBranchInLoops);
+
             if (containsNonInlineGuard)
                {
                _neitherLoopCold = true;
@@ -1217,8 +1227,61 @@ TR::Node *TR_LoopVersioner::findCallNodeInBlockForGuard(TR::Node *node)
    return NULL;
    }
 
+bool TR_LoopVersioner::detectInvariantCheckCasts(List<TR::TreeTop> *trees)
+   {
+   bool foundInvariantTrees = false;
+   ListElement<TR::TreeTop> *curTreesElem = trees->getListHead();
+   ListElement<TR::TreeTop> *prevTreesElem = NULL;
+   while (curTreesElem != NULL)
+      {
+      ListElement<TR::TreeTop> *nextTreesElem = curTreesElem->getNextElement();
+      TR::Node *node = curTreesElem->getData()->getNode();
+      TR_ASSERT_FATAL_WITH_NODE(
+         node, node->getOpCode().isCheckCast(), "expected a checkcast");
 
-bool TR_LoopVersioner::detectInvariantTrees(TR_RegionStructure *whileLoop, List<TR::TreeTop> *trees, bool onlyDetectHighlyBiasedBranches, bool *containsNonInlineGuard, SharedSparseBitVector &reverseBranchInLoops)
+      if (areAllChildrenInvariant(node))
+         {
+         foundInvariantTrees = true;
+         prevTreesElem = curTreesElem;
+         if (trace())
+            {
+            traceMsg(
+               comp(),
+               "Invariant checkcast n%un [%p]\n",
+               node->getGlobalIndex(),
+               node);
+            }
+         }
+      else
+         {
+         // Because curTreesElem is removed, prevTreesElem remains unchanged
+         if (prevTreesElem != NULL)
+            prevTreesElem->setNextElement(nextTreesElem);
+         else
+            trees->setListHead(nextTreesElem);
+
+         if (trace())
+            {
+            traceMsg(
+               comp(),
+               "Non-invariant checkcast n%un %p\n",
+               node->getGlobalIndex(),
+               node);
+            }
+         }
+
+      curTreesElem = nextTreesElem;
+      }
+
+   return foundInvariantTrees;
+   }
+
+bool TR_LoopVersioner::detectInvariantConditionals(
+   TR_RegionStructure *whileLoop,
+   List<TR::TreeTop> *trees,
+   bool onlyDetectHighlyBiasedBranches,
+   bool *containsNonInlineGuard,
+   SharedSparseBitVector &reverseBranchInLoops)
    {
    bool foundInvariantTrees = false;
    ListElement<TR::TreeTop> *nextTree = trees->getListHead();
@@ -1235,9 +1298,11 @@ bool TR_LoopVersioner::detectInvariantTrees(TR_RegionStructure *whileLoop, List<
       if (trace())
          traceMsg(comp(), "guard node %p %d\n", node, onlyDetectHighlyBiasedBranches);
 
+      TR_ASSERT_FATAL_WITH_NODE(node, node->getOpCode().isIf(), "expected if");
+
       bool highlyBiasedBranch = false;
       //static char *enableHBB = feGetEnv("TR_enableHighlyBiasedBranch");
-      if (node->getOpCode().isIf() && !node->isTheVirtualGuardForAGuardedInlinedCall())
+      if (!node->isTheVirtualGuardForAGuardedInlinedCall())
          {
          TR::Block *nextBlock=nextTree->getData()->getEnclosingBlock();
          TR::Block *targetBlock=node->getBranchDestination()->getNode()->getBlock();
@@ -1391,7 +1456,7 @@ bool TR_LoopVersioner::detectInvariantTrees(TR_RegionStructure *whileLoop, List<
             }
          }
 #ifdef J9_PROJECT_SPECIFIC
-      else if (!highlyBiasedBranch && comp()->hasIntStreamForEach() && node->getOpCode().isIf())
+      else if (!highlyBiasedBranch && comp()->hasIntStreamForEach())
          {
          TR::Block *nextBlock=nextTree->getData()->getEnclosingBlock();
          TR::Block *targetBlock=node->getBranchDestination()->getNode()->getBlock();

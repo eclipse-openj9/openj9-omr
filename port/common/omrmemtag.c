@@ -300,9 +300,19 @@ omrmem_reallocate_memory(struct OMRPortLibrary *portLibrary, void *memoryPointer
 		}
 		if (NULL != pointer) {
 			pointer = wrapBlockAndSetTags(portLibrary, pointer, byteAmount, callSite, category);
-		}
-		if (NULL == pointer) {
+		} else {
 			Trc_PRT_mem_omrmem_reallocate_memory_failed_2(callSite, memoryPointer, allocationByteAmount);
+
+			/* Original pointer is still valid, restore mem tags. */
+			if (NULL != memoryPointer) {
+				J9MemTag *savedMemTag = (J9MemTag *)memoryPointer;
+				wrapBlockAndSetTags(
+						portLibrary,
+						memoryPointer,
+						savedMemTag->allocSize,
+						savedMemTag->callSite,
+						savedMemTag->category->categoryCode);
+			}
 		}
 	}
 

@@ -471,6 +471,10 @@ OMR::Node::copyValidProperties(TR::Node *fromNode, TR::Node *toNode)
 
    // _flags
    toNode->setFlags(fromNode->getFlags());  // do not clear hasNodeExtension
+
+   // do not copy cannotOverflow
+   if (toNode->_flags.testAny(cannotOverFlow) && toNode->getOpCode().isArithmetic())
+      toNode->_flags.set(cannotOverFlow, false);
 #endif
 
    // DONE:

@@ -1353,6 +1353,7 @@ typedef enum OMRProcessorArchitecture {
 	OMR_PROCESSOR_S390_Z13,
 	OMR_PROCESSOR_S390_Z14,
 	OMR_PROCESSOR_S390_Z15,
+	OMR_PROCESSOR_S390_Z16,
 	OMR_PROCESSOR_S390_ZNEXT,
 	OMR_PROCESSOR_S390_LAST = OMR_PROCESSOR_S390_ZNEXT,
 
@@ -1599,7 +1600,7 @@ typedef struct OMRProcessorDesc {
 /* STFLE bit 152 - Vector packed decimal enhancement facility */
 #define OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY 152
 
-/* zNext facilities */
+/* z16 facilities */
 
 /* STFLE bit 192 - Vector-Packed-Decimal-Enhancement Facility 2 */
 #define OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY_2 192

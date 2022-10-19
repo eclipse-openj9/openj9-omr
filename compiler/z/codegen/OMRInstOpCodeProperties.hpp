@@ -15996,7 +15996,7 @@
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x51,
    /* .format      = */ VRRk_FORMAT,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_ZNEXT,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_Z16,
    /* .properties  = */ S390OpProp_SetsOperand1 |
                         S390OpProp_UsesM3
    },
@@ -16008,7 +16008,7 @@
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x70,
    /* .format      = */ VRIf_FORMAT,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_ZNEXT,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_Z16,
    /* .properties  = */ S390OpProp_SetsCC |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_UsesM5
@@ -16021,7 +16021,7 @@
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x5C,
    /* .format      = */ VRRk_FORMAT,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_ZNEXT,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_Z16,
    /* .properties  = */ S390OpProp_SetsOperand1 |
                         S390OpProp_UsesM3
    },
@@ -16033,7 +16033,7 @@
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x54,
    /* .format      = */ VRRk_FORMAT,
-   /* .minimumALS  = */ OMR_PROCESSOR_S390_ZNEXT,
+   /* .minimumALS  = */ OMR_PROCESSOR_S390_Z16,
    /* .properties  = */ S390OpProp_SetsOperand1 |
                         S390OpProp_UsesM3
    },

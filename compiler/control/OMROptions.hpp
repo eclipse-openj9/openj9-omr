@@ -328,7 +328,7 @@ enum TR_CompilationOptions
    TR_EnableLowerCompilationLimitsDecisionMaking
                                           = 0x00000020 + 8,
    TR_DisableDirectToJNI                  = 0x00000040 + 8,
-   // Available                           = 0x00000080 + 8,
+   TR_DisableZ16                          = 0x00000080 + 8,
    TR_EmitExecutableELFFile               = 0x00000100 + 8,
    TR_JITServerFollowRemoteCompileWithLocalCompile = 0x00000200 + 8,
    TR_EnableClassChainValidationCaching   = 0x00000800 + 8,

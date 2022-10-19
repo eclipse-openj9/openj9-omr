@@ -632,6 +632,57 @@ TEST(PortMemTest, mem_test7_allocate32)
 }
 
 
+
+/**
+ * Verify port library memory management.
+ *
+ * Ensure large allocation sizes do not overflow.
+ * @ref omrmem.c::omrmem_allocate_memory "omrmem_reallocate_memory()".
+ * @ref omrmem.c::omrmem_allocate_memory32 "omrmem_reallocate_memory32()".
+ */
+TEST(PortMemTest, mem_test8)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrmem_test8";
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+	/* Ensure that allocating a large size does not overflow into a reasonable size. */
+	uintptr_t byteAmount = UINTPTR_MAX;
+	void *memPtr = omrmem_allocate_memory(byteAmount, OMRMEM_CATEGORY_PORT_LIBRARY);
+	if (NULL != memPtr){
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "Unexpected allocation success\n");
+		omrmem_free_memory(memPtr);
+	}
+
+	/* Check for overflow in realloc. First we need a valid allocation. */
+	memPtr = omrmem_allocate_memory(32, OMRMEM_CATEGORY_PORT_LIBRARY);
+	if (NULL == memPtr) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "Allocation error while testing realloc\n");
+	} else {
+		void *memPtr2 = omrmem_reallocate_memory(memPtr, byteAmount, OMRMEM_CATEGORY_PORT_LIBRARY);
+		if (NULL != memPtr2) {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "Unexpected reallocation success\n");
+			omrmem_free_memory(memPtr2);
+		} else {
+			omrmem_free_memory(memPtr);
+		}
+	}
+
+#if defined(OMR_ENV_DATA64)
+	/* Check for overflow behaviour in 32 bit allocations. */
+	byteAmount = UINT32_MAX;
+	memPtr = omrmem_allocate_memory32(byteAmount, OMRMEM_CATEGORY_PORT_LIBRARY);
+	if (NULL != memPtr){
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "Unexpected 32-bit allocation success\n");
+		omrmem_free_memory(memPtr);
+	}
+#endif /* defined(OMR_ENV_DATA64) */
+
+	reportTestExit(OMRPORTLIB, testName);
+}
+
+
 /* Dummy categories for omrmem_test8_categories */
 
 #define DUMMY_CATEGORY_ONE 0

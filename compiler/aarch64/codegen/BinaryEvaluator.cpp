@@ -1420,14 +1420,15 @@ generateUBFMForMaskAndShift(TR::Node *shiftNode, TR::CodeGenerator *cg)
       {
       return NULL;
       }
+   const uint32_t operandBits = TR::DataType::getSize(shiftNode->getDataType()) * 8;
    const bool is64bit = shiftNode->getDataType().isInt64();
    const int64_t shiftValue = shiftValueNode->getConstValue();
 
-   if ((shiftValue <= 0) || (shiftValue > (is64bit ? 63 : 31)))
+   if ((shiftValue <= 0) || (shiftValue > (operandBits - 1)))
       {
       return NULL;
       }
-   const uint64_t maskValue = is64bit ? maskNode->getLongInt() : static_cast<uint32_t>(maskNode->getInt());
+   const uint64_t maskValue = maskNode->get64bitIntegralValueAsUnsigned();
 
    if (shiftNode->getOpCode().isLeftShift())
       {
@@ -1444,7 +1445,7 @@ generateUBFMForMaskAndShift(TR::Node *shiftNode, TR::CodeGenerator *cg)
          return reg;
          }
 
-      if (((maskValue & 1) == 1) && (((maskValue >> (is64bit ? 63 : 31)) & 1) == 0) && contiguousBits(maskValue))
+      if (((maskValue & 1) == 1) && (((maskValue >> (operandBits - 1)) & 1) == 0) && contiguousBits(maskValue))
          {
          /*
           * maskValue has consecutive 1s from the least significant bits. The most significant bit must be 0. Otherwise, mask is all 1s.
@@ -1452,7 +1453,7 @@ generateUBFMForMaskAndShift(TR::Node *shiftNode, TR::CodeGenerator *cg)
           * to bit position shiftValue of the destination register.
           */
          uint32_t width = populationCount(maskValue);
-         uint32_t maxWidth = (is64bit ? 64 : 32) - static_cast<uint32_t>(shiftValue);
+         uint32_t maxWidth = operandBits - static_cast<uint32_t>(shiftValue);
          if (width > maxWidth)
             {
             width = maxWidth;
@@ -1486,7 +1487,7 @@ generateUBFMForMaskAndShift(TR::Node *shiftNode, TR::CodeGenerator *cg)
       if (((shiftedMask & 1) == 1) && contiguousBits(shiftedMask))
          {
          uint32_t width = populationCount(shiftedMask);
-         uint32_t shiftRemainderWidth = (is64bit ? 64 : 32) - shiftValue;
+         uint32_t shiftRemainderWidth = operandBits - shiftValue;
 
          bool isRightShift = (width == shiftRemainderWidth);  /* In this case, it works as a shift. */
 
@@ -1503,13 +1504,24 @@ generateUBFMForMaskAndShift(TR::Node *shiftNode, TR::CodeGenerator *cg)
 
          if (isRightShift)
             {
+            TR::Register *shiftSrcReg = sreg;
             if (shiftNode->getOpCode().isShiftLogical())
                {
-               generateLogicalShiftRightImmInstruction(cg, shiftNode, reg, sreg, shiftValue, is64bit);
+               if (operandBits < 32)
+                  {
+                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ubfmw, andNode, reg, sreg, operandBits - 1); // uxth or uxtb
+                  shiftSrcReg = reg;
+                  }
+               generateLogicalShiftRightImmInstruction(cg, shiftNode, reg, shiftSrcReg, shiftValue, is64bit);
                }
             else
                {
-               generateArithmeticShiftRightImmInstruction(cg, shiftNode, reg, sreg, shiftValue, is64bit);
+               if (operandBits < 32)
+                  {
+                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmw, andNode, reg, sreg, operandBits - 1); // sxth or sxtb
+                  shiftSrcReg = reg;
+                  }
+               generateArithmeticShiftRightImmInstruction(cg, shiftNode, reg, shiftSrcReg, shiftValue, is64bit);
                }
             }
          else
@@ -1534,22 +1546,35 @@ static TR::Register *shiftHelper(TR::Node *node, TR::ARM64ShiftCode shiftType, T
    TR::Register *srcReg = cg->evaluate(firstChild);
    TR::Register *trgReg = cg->allocateRegister();
    bool is64bit = node->getDataType().isInt64();
+   const uint32_t operandBits = TR::DataType::getSize(node->getDataType()) * 8;
+
    TR::InstOpCode::Mnemonic op;
 
    if (secondOp == TR::iconst)
       {
       int32_t value = secondChild->getInt();
       uint32_t shift = is64bit ? (value & 0x3F) : (value & 0x1F);
+      TR::Register *shiftSrcReg = srcReg;
       switch (shiftType)
          {
          case TR::SH_LSL:
-            generateLogicalShiftLeftImmInstruction(cg, node, trgReg, srcReg, shift, is64bit);
+            generateLogicalShiftLeftImmInstruction(cg, node, trgReg, shiftSrcReg, shift, is64bit);
             break;
          case TR::SH_LSR:
-            generateLogicalShiftRightImmInstruction(cg, node, trgReg, srcReg, shift, is64bit);
+            if (operandBits < 32)
+               {
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ubfmw, node, trgReg, srcReg, operandBits - 1); // uxth or uxtb
+               shiftSrcReg = trgReg;
+               }
+            generateLogicalShiftRightImmInstruction(cg, node, trgReg, shiftSrcReg, shift, is64bit);
             break;
          case TR::SH_ASR:
-            generateArithmeticShiftRightImmInstruction(cg, node, trgReg, srcReg, shift, is64bit);
+            if (operandBits < 32)
+               {
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmw, node, trgReg, srcReg, operandBits - 1); // sxth or sxtb
+               shiftSrcReg = trgReg;
+               }
+            generateArithmeticShiftRightImmInstruction(cg, node, trgReg, shiftSrcReg, shift, is64bit);
             break;
          default:
             TR_ASSERT(false, "Unsupported shift type.");
@@ -1558,6 +1583,7 @@ static TR::Register *shiftHelper(TR::Node *node, TR::ARM64ShiftCode shiftType, T
    else
       {
       TR::Register *shiftAmountReg = cg->evaluate(secondChild);
+      TR::Register *shiftSrcReg = srcReg;
       switch (shiftType)
          {
          case TR::SH_LSL:
@@ -1565,14 +1591,24 @@ static TR::Register *shiftHelper(TR::Node *node, TR::ARM64ShiftCode shiftType, T
             break;
          case TR::SH_LSR:
             op = is64bit ? TR::InstOpCode::lsrvx : TR::InstOpCode::lsrvw;
+            if (operandBits < 32)
+               {
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ubfmw, node, trgReg, srcReg, operandBits - 1); // uxth or uxtb
+               shiftSrcReg = trgReg;
+               }
             break;
          case TR::SH_ASR:
             op = is64bit ? TR::InstOpCode::asrvx : TR::InstOpCode::asrvw;
+            if (operandBits < 32)
+               {
+               generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmw, node, trgReg, srcReg, operandBits - 1); // sxth or sxtb
+               shiftSrcReg = trgReg;
+               }
             break;
          default:
             TR_ASSERT(false, "Unsupported shift type.");
          }
-      generateTrg1Src2Instruction(cg, op, node, trgReg, srcReg, shiftAmountReg);
+      generateTrg1Src2Instruction(cg, op, node, trgReg, shiftSrcReg, shiftAmountReg);
       }
 
    node->setRegister(trgReg);
@@ -2015,13 +2051,14 @@ generateUBFMForShiftAndMask(TR::Node *andNode, TR::CodeGenerator *cg)
        shiftNode->getSecondChild()->getOpCode().isLoadConst() &&
        maskNode->getOpCode().isLoadConst())
       {
+      const uint32_t operandBits = TR::DataType::getSize(shiftNode->getDataType()) * 8;
       const bool is64bit = shiftNode->getDataType().isInt64();
       int64_t shiftValue = shiftNode->getSecondChild()->getConstValue();
-      if ((shiftValue <= 0) || (shiftValue > (is64bit ? 63 : 31)))
+      if ((shiftValue <= 0) || (shiftValue > (operandBits - 1)))
          {
          return NULL;
          }
-      uint64_t maskValue = is64bit ? maskNode->getLongInt() : static_cast<uint32_t>(maskNode->getInt());
+      uint64_t maskValue = maskNode->get64bitIntegralValueAsUnsigned();
       TR::Node *sourceNode = shiftNode->getFirstChild();
 
       if (shiftNode->getOpCode().isLeftShift())
@@ -2073,10 +2110,10 @@ generateUBFMForShiftAndMask(TR::Node *andNode, TR::CodeGenerator *cg)
           * consecutive 1s starting from the bit position shiftValue of the source register to the least significant bits of the destination register.
           * We consider arithmetic shift only.
           */
-         if ((!shiftNode->getOpCode().isShiftLogical()) && ((maskValue & 1) == 1) && (((maskValue >> (is64bit ? 63 : 31)) & 1) == 0) && contiguousBits(maskValue))
+         if ((!shiftNode->getOpCode().isShiftLogical()) && ((maskValue & 1) == 1) && (((maskValue >> (operandBits - 1)) & 1) == 0) && contiguousBits(maskValue))
             {
             uint32_t width = populationCount(maskValue);
-            uint32_t shiftRemainderWidth = (is64bit ? 64 : 32) - shiftValue;
+            uint32_t shiftRemainderWidth = operandBits - shiftValue;
 
             if (width > shiftRemainderWidth)
                {
@@ -2094,6 +2131,7 @@ generateUBFMForShiftAndMask(TR::Node *andNode, TR::CodeGenerator *cg)
 
             TR::Register *reg;
             TR::Register *sreg = cg->evaluate(sourceNode);
+            TR::Register *shiftSrcReg = sreg;
             if (sourceNode->getReferenceCount() == 1)
                {
                reg = sreg;
@@ -2104,7 +2142,12 @@ generateUBFMForShiftAndMask(TR::Node *andNode, TR::CodeGenerator *cg)
                }
             if (isLogicalShiftRight)
                {
-               generateLogicalShiftRightImmInstruction(cg, andNode, reg, sreg, shiftValue, is64bit);
+               if (operandBits < 32)
+                  {
+                  generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ubfmw, andNode, reg, sreg, operandBits - 1); // uxth or uxtb
+                  shiftSrcReg = reg;
+                  }
+               generateLogicalShiftRightImmInstruction(cg, andNode, reg, shiftSrcReg, shiftValue, is64bit);
                }
             else
                {

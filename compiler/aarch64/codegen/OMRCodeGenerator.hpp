@@ -538,7 +538,7 @@ public:
     * @brief Answers whether Unsafe.copyMemory transformation is supported or not
     * @return true if supported, false otherwise
     */
-   bool canTransformUnsafeCopyToArrayCopy() { return true; }
+   bool canTransformUnsafeCopyToArrayCopy();
 
    /**
     * @brief Generates instructions for incrementing debug counter

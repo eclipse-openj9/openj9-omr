@@ -828,6 +828,11 @@ TR::Register *OMR::Power::CodeGenerator::gprClobberEvaluate(TR::Node *node)
       }
    }
 
+bool OMR::Power::CodeGenerator::canTransformUnsafeCopyToArrayCopy()
+   {
+   return !self()->comp()->getOption(TR_DisableArrayCopyOpts);
+   }
+
 bool OMR::Power::CodeGenerator::canTransformUnsafeSetMemory()
    {
    return (self()->comp()->target().is64Bit());

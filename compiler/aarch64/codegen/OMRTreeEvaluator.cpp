@@ -266,13 +266,13 @@ OMR::ARM64::TreeEvaluator::callEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::ARM64::TreeEvaluator::baddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::iaddEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::saddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::iaddEvaluator(node, cg);
    }
 
 TR::Register*
@@ -296,25 +296,13 @@ OMR::ARM64::TreeEvaluator::asubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::ARM64::TreeEvaluator::bmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::imulEvaluator(node, cg);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::smulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::ARM64::TreeEvaluator::bdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
-   }
-
-TR::Register*
-OMR::ARM64::TreeEvaluator::sdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   return TR::TreeEvaluator::imulEvaluator(node, cg);
    }
 
 TR::Register*

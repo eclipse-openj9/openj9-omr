@@ -1188,6 +1188,26 @@ TR::Instruction *generateVectorShiftImmediateInstruction(
                   TR::Instruction *preced = NULL);
 
 /**
+ * @brief Generates vector unsigned extend long instruction
+ *
+ * @param[in] cg          : CodeGenerator
+ * @param[in] elementType : element type
+ * @param[in] node        : node
+ * @param[in] treg        : target register
+ * @param[in] sreg        : source register
+ * @param[in] isUXTL2     : if true, UXTL2 instruction is generated
+ * @param[in] preced      : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateVectorUXTLInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::DataType elementType,
+                  TR::Node *node,
+                  TR::Register *treg,
+                  TR::Register *sreg,
+                  bool isUXTL2,
+                  TR::Instruction *preced = NULL);
+/**
  * @brief Generates duplicate vector element instruction
  *
  * @param[in] cg          : CodeGenerator

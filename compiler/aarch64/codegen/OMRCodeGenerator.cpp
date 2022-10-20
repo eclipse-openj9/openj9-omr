@@ -700,6 +700,25 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
       case TR::vsqrt:
       case TR::vmsqrt:
          return (et == TR::Float || et == TR::Double);
+      case TR::s2m:
+      case TR::m2s:
+         /*
+          * For s2m/m2s, the mask has 2 lanes because each byte in the short value represents the mask value for a lane.
+          * Since we are dealing with 128-bit vector, the type of elements of the mask with 2 lanes are either 64-bit integer or double.
+          */
+         return (et == TR::Int64 || et == TR::Double);
+      case TR::i2m:
+      case TR::m2i:
+         /* For the same reason, the number of lanes is 4, which means that the type of elements is 32-bit integer or float. */
+         return (et == TR::Int32 || et == TR::Float);
+      case TR::l2m:
+      case TR::m2l:
+         /* For the same reason, the number of lanes is 8, which means that the type of elements is 16-bit integer. */
+         return et == TR::Int16;
+      case TR::v2m:
+      case TR::m2v:
+         /* For the same reason, the number of lanes is 16, which means that the type of elements is 8-bit integer. */
+         return et == TR::Int8;
       default:
          return false;
       }

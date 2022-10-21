@@ -68,10 +68,9 @@ MM_ConfigurationGenerational::tearDown(MM_EnvironmentBase* env)
 {
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 
-	/* Set pointer to scavenger in extensions to NULL
-	 * before Scavenger is teared down as part of clean up of defaultMemorySpace
+	/* unregisterScavenger before Scavenger is teared down as part of clean up of defaultMemorySpace
 	 * in MM_Configuration::tearDown. */
-	extensions->scavenger = NULL;
+	extensions->unregisterScavenger();
 
 	MM_ConfigurationStandard::tearDown(env);
 }
@@ -202,8 +201,7 @@ MM_ConfigurationGenerational::createDefaultMemorySpace(MM_EnvironmentBase *envBa
 		return NULL;
 	}
 	
-	/* register the scavenger in GCExtensionsBase */
-	ext->scavenger = scavenger;
+	ext->registerScavenger(scavenger);
 
 	return MM_MemorySpace::newInstance(env, heap, physicalArena, memorySubSpaceGenerational, parameters, MEMORY_SPACE_NAME_GENERATIONAL, MEMORY_SPACE_DESCRIPTION_GENERATIONAL);
 }

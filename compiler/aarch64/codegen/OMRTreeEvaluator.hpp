@@ -223,6 +223,11 @@ public:
    static TR::Register *mloadiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *mstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *mstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mTrueCountEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mFirstTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mLastTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mToLongBitsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *mLongBitsToMaskEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *mRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *mRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 

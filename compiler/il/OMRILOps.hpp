@@ -517,6 +517,7 @@ public:
    bool skipDynamicLitPoolOnInts()   const { return properties3().testAny(ILProp3::SkipDynamicLitPoolOnInts); }
    bool isAbs()                      const { return properties3().testAny(ILProp3::Abs); }
    bool isVectorReduction()          const { return properties3().testAny(ILProp3::VectorReduction); }
+   bool isMaskReduction()            const { return properties3().testAny(ILProp3::MaskReduction); }
    bool isSignum()                   const { return properties3().testAny(ILProp3::Signum); }
 
 

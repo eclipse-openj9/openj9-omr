@@ -1946,57 +1946,69 @@ OMR::ARM64::TreeEvaluator::vstoreiEvaluator(TR::Node *node, TR::CodeGenerator *c
    return TR::TreeEvaluator::vstoreEvaluator(node, cg);
    }
 
+typedef TR::Register *(*reductionEvaluatorHelper)(TR::Node *node, TR::DataType et, TR::Register *resReg, TR::Register *srcReg, TR::CodeGenerator *cg);
 /**
- * @brief A helper function for generating instuction sequence for reduction add operations for vectors of integer elements.
+ * @brief A helper function for generating instruction sequence for reduction operations
  *
  * @param[in] node: node
- * @param[in] et: element type
  * @param[in] cg: CodeGenerator
- * @return general purpose register containing the result
+ * @param[in] et: element type
+ * @param[in] op: reduction opcode
+ * @param[in] evaluatorHelper: optional pointer to helper function which generates instruction stream for operation
+ * @return vector register containing the result
  */
-static TR::Register*
-vreductionAddIntHelper(TR::Node *node, TR::DataType et, TR::CodeGenerator *cg)
+static TR::Register *
+inlineVectorReductionOp(TR::Node *node, TR::CodeGenerator *cg, TR::DataType et, TR::InstOpCode::Mnemonic op, reductionEvaluatorHelper evaluatorHelper = NULL)
    {
-   TR::Node *sourceChild = node->getFirstChild();
-   TR::Register *sourceReg = cg->evaluate(sourceChild);
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *sourceReg = cg->evaluate(firstChild);
 
    TR_ASSERT_FATAL_WITH_NODE(node, sourceReg->getKind() == TR_VRF, "unexpected Register kind");
 
-   TR::InstOpCode::Mnemonic addOp;
-   TR::InstOpCode::Mnemonic movOp;
-   switch (et)
+   TR::Register *resReg = et.isIntegral() ? cg->allocateRegister(TR_GPR) : cg->allocateRegister(TR_VRF);
+
+   node->setRegister(resReg);
+   TR_ASSERT_FATAL_WITH_NODE(node, (op != TR::InstOpCode::bad) || (evaluatorHelper != NULL), "If op is TR::InstOpCode::bad, evaluatorHelper must not be NULL");
+   if (evaluatorHelper != NULL)
       {
-      case TR::Int8:
-         addOp = TR::InstOpCode::vaddv16b;
-         movOp = TR::InstOpCode::smovwb;
-         break;
-      case TR::Int16:
-         addOp = TR::InstOpCode::vaddv8h;
-         movOp = TR::InstOpCode::smovwh;
-         break;
-      case TR::Int32:
-         addOp = TR::InstOpCode::vaddv4s;
-         movOp = TR::InstOpCode::umovws;
-         break;
-      case TR::Int64:
-         addOp = TR::InstOpCode::addp2d;
-         movOp = TR::InstOpCode::umovxd;
-         break;
-      default:
-         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
-         break;
+      (*evaluatorHelper)(node, et, resReg, sourceReg, cg);
+      }
+   else
+      {
+      TR::Register *tmpReg = NULL;
+      if (et.isIntegral())
+         {
+         tmpReg = cg->allocateRegister(TR_VRF);
+         TR::InstOpCode::Mnemonic movOp;
+         switch (et)
+            {
+            case TR::Int8:
+               movOp = TR::InstOpCode::smovwb;
+               break;
+            case TR::Int16:
+               movOp = TR::InstOpCode::smovwh;
+               break;
+            case TR::Int32:
+               movOp = TR::InstOpCode::umovws;
+               break;
+            case TR::Int64:
+               movOp = TR::InstOpCode::umovxd;
+               break;
+            default:
+               TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
+               break;
+            }
+         generateTrg1Src1Instruction(cg, op, node, tmpReg, sourceReg);
+         generateMovVectorElementToGPRInstruction(cg, movOp, node, resReg, tmpReg, 0);
+         cg->stopUsingRegister(tmpReg);
+         }
+      else
+         {
+         generateTrg1Src1Instruction(cg, op, node, resReg, sourceReg);
+         }
       }
 
-   TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
-   TR::Register *resReg = cg->allocateRegister(TR_GPR);
-
-   generateTrg1Src1Instruction(cg, addOp, node, tmpReg, sourceReg);
-   generateMovVectorElementToGPRInstruction(cg, movOp, node, resReg, tmpReg, 0);
-
-   cg->stopUsingRegister(tmpReg);
-   node->setRegister(resReg);
-   cg->decReferenceCount(sourceChild);
-
+   cg->decReferenceCount(firstChild);
    return resReg;
    }
 
@@ -2005,35 +2017,29 @@ vreductionAddIntHelper(TR::Node *node, TR::DataType et, TR::CodeGenerator *cg)
  *
  * @param[in] node: node
  * @param[in] et: element type
+ * @param[in] resReg: result register
+ * @param[in] srcReg: source register
  * @param[in] cg: CodeGenerator
  * @return floating point register containing the result
  */
 static TR::Register*
-vreductionAddFloatHelper(TR::Node *node, TR::DataType et, TR::CodeGenerator *cg)
+vreductionAddFloatHelper(TR::Node *node, TR::DataType et, TR::Register *resReg, TR::Register *srcReg, TR::CodeGenerator *cg)
    {
-   TR::Node *sourceChild = node->getFirstChild();
-   TR::Register *sourceReg = cg->evaluate(sourceChild);
-
-   TR_ASSERT_FATAL_WITH_NODE(node, sourceReg->getKind() == TR_VRF, "unexpected Register kind");
-   TR::Register *resReg = cg->allocateRegister(TR_FPR);
    if (et == TR::Float)
       {
       TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::vfaddp4s, node, tmpReg, sourceReg, sourceReg);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::vfaddp4s, node, tmpReg, srcReg, srcReg);
       generateTrg1Src1Instruction(cg, TR::InstOpCode::faddp2s, node, resReg, tmpReg);
       cg->stopUsingRegister(tmpReg);
       }
    else if (et == TR::Double)
       {
-      generateTrg1Src1Instruction(cg, TR::InstOpCode::faddp2d, node, resReg, sourceReg);
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::faddp2d, node, resReg, srcReg);
       }
    else
       {
       TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
       }
-
-   node->setRegister(resReg);
-   cg->decReferenceCount(sourceChild);
 
    return resReg;
    }
@@ -2045,20 +2051,31 @@ OMR::ARM64::TreeEvaluator::vreductionAddEvaluator(TR::Node *node, TR::CodeGenera
                    "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
 
    TR::DataType et = node->getFirstChild()->getDataType().getVectorElementType();
+   TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
+   reductionEvaluatorHelper evaluationHelper = NULL;
    switch(et)
       {
       case TR::Int8:
+         op = TR::InstOpCode::vaddv16b;
+         break;
       case TR::Int16:
+         op = TR::InstOpCode::vaddv8h;
+         break;
       case TR::Int32:
+         op = TR::InstOpCode::vaddv4s;
+         break;
       case TR::Int64:
-         return vreductionAddIntHelper(node, et, cg);
+         op = TR::InstOpCode::addp2d;
+         break;
       case TR::Float:
       case TR::Double:
-         return vreductionAddFloatHelper(node, et, cg);
+         evaluationHelper = vreductionAddFloatHelper;
+         break;
       default:
          TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
          return NULL;
       }
+   return inlineVectorReductionOp(node, cg, et, op, evaluationHelper);
    }
 
 /**
@@ -2066,18 +2083,15 @@ OMR::ARM64::TreeEvaluator::vreductionAddEvaluator(TR::Node *node, TR::CodeGenera
  *
  * @param[in] node: node
  * @param[in] et: element type
- * @param[in] logicalOp: opcode
+ * @param[in] op: opcode
+ * @param[in] resReg: result register
+ * @param[in] srcReg: source register
  * @param[in] cg: CodeGenerator
  * @return general purpose register containing the result
  */
 static TR::Register*
-vreductionHelper(TR::Node *node, TR::DataType et, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
+vreductionHelper(TR::Node *node, TR::DataType et, TR::InstOpCode::Mnemonic op, TR::Register *resReg, TR::Register *srcReg, TR::CodeGenerator *cg)
    {
-   TR::Node *sourceChild = node->getFirstChild();
-   TR::Register *sourceReg = cg->evaluate(sourceChild);
-
-   TR_ASSERT_FATAL_WITH_NODE(node, sourceReg->getKind() == TR_VRF, "unexpected Register kind");
-
    bool useGPRForResult = true;
 
    TR::InstOpCode::Mnemonic movOp;
@@ -2101,33 +2115,28 @@ vreductionHelper(TR::Node *node, TR::DataType et, TR::InstOpCode::Mnemonic op, T
          break;
       }
 
-   TR::Register *tmp0Reg = cg->allocateRegister(TR_VRF);
+   TR::Register *tmp0Reg = useGPRForResult ? cg->allocateRegister(TR_VRF) : resReg;
    TR::Register *tmp1Reg = cg->allocateRegister(TR_VRF);
-   TR::Register *resReg = useGPRForResult ? cg->allocateRegister(TR_GPR) : NULL;
 
    /*
-    * Generating unzip instructions to split elements into 2 vector registers and perform a bitwise logical operation.
+    * Generating an ext instruction to split elements into 2 vector registers and perform a lanewise operation.
     */
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp1_2d, node, tmp1Reg, sourceReg, sourceReg);
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp2_2d, node, tmp0Reg, sourceReg, sourceReg);
-   generateTrg1Src2Instruction(cg, op, node, tmp0Reg, tmp0Reg, tmp1Reg);
+   generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::vext16b, node, tmp1Reg, srcReg, srcReg, 8);
+   generateTrg1Src2Instruction(cg, op, node, tmp0Reg, srcReg, tmp1Reg);
 
    if ((et != TR::Int64) && (et != TR::Double))
       {
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp1_4s, node, tmp1Reg, tmp0Reg, tmp0Reg);
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp2_4s, node, tmp0Reg, tmp0Reg, tmp0Reg);
+      generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::vext16b, node, tmp1Reg, tmp0Reg, tmp0Reg, 4);
       generateTrg1Src2Instruction(cg, op, node, tmp0Reg, tmp0Reg, tmp1Reg);
 
       if ((et != TR::Int32) && (et != TR::Float))
          {
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp1_8h, node, tmp1Reg, tmp0Reg, tmp0Reg);
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp2_8h, node, tmp0Reg, tmp0Reg, tmp0Reg);
+         generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::vext16b, node, tmp1Reg, tmp0Reg, tmp0Reg, 2);
          generateTrg1Src2Instruction(cg, op, node, tmp0Reg, tmp0Reg, tmp1Reg);
 
          if (et == TR::Int8)
             {
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp1_16b, node, tmp1Reg, tmp0Reg, tmp0Reg);
-            generateTrg1Src2Instruction(cg, TR::InstOpCode::vuzp2_16b, node, tmp0Reg, tmp0Reg, tmp0Reg);
+            generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::vext16b, node, tmp1Reg, tmp0Reg, tmp0Reg, 1);
             generateTrg1Src2Instruction(cg, op, node, tmp0Reg, tmp0Reg, tmp1Reg);
             }
          }
@@ -2138,16 +2147,26 @@ vreductionHelper(TR::Node *node, TR::DataType et, TR::InstOpCode::Mnemonic op, T
       generateMovVectorElementToGPRInstruction(cg, movOp, node, resReg, tmp0Reg, 0);
       cg->stopUsingRegister(tmp0Reg);
       }
-   else
-      {
-      resReg = tmp0Reg;
-      }
 
    cg->stopUsingRegister(tmp1Reg);
-   cg->decReferenceCount(sourceChild);
-   node->setRegister(resReg);
 
    return resReg;
+   }
+
+/**
+ * @brief A helper function for generating instuction sequence for reduction and operation.
+ *
+ * @param[in] node: node
+ * @param[in] et: element type
+ * @param[in] resReg: result register
+ * @param[in] srcReg: source register
+ * @param[in] cg: CodeGenerator
+ * @return general purpose register containing the result
+ */
+static TR::Register*
+vreductionAndHelper(TR::Node *node, TR::DataType et, TR::Register *resReg, TR::Register *srcReg, TR::CodeGenerator *cg)
+   {
+   return vreductionHelper(node, et, TR::InstOpCode::vand16b, resReg, srcReg, cg);
    }
 
 TR::Register*
@@ -2163,7 +2182,7 @@ OMR::ARM64::TreeEvaluator::vreductionAndEvaluator(TR::Node *node, TR::CodeGenera
       case TR::Int16:
       case TR::Int32:
       case TR::Int64:
-         return vreductionHelper(node, et, TR::InstOpCode::vand16b, cg);
+         return inlineVectorReductionOp(node, cg, et, TR::InstOpCode::bad, vreductionAndHelper);
       case TR::Float:
       case TR::Double:
          TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type %s", node->getFirstChild()->getDataType().toString());
@@ -2181,122 +2200,45 @@ OMR::ARM64::TreeEvaluator::vreductionFirstNonZeroEvaluator(TR::Node *node, TR::C
    }
 
 /**
- * @brief A helper function for generating instuction sequence for reduction min/max operations for vectors of integer elements.
- *
- * @param[in] node: node
- * @param[in] et: element type
- * @param[in] isMax: true if operation is max
- * @param[in] cg: CodeGenerator
- * @return general purpose register containing the result
- */
-static TR::Register*
-vreductionMinMaxIntHelper(TR::Node *node, TR::DataType et, bool isMax, TR::CodeGenerator *cg)
-   {
-   TR::Node *sourceChild = node->getFirstChild();
-   TR::Register *sourceReg = cg->evaluate(sourceChild);
-
-   TR_ASSERT_FATAL_WITH_NODE(node, sourceReg->getKind() == TR_VRF, "unexpected Register kind");
-
-   TR::InstOpCode::Mnemonic op;
-   TR::InstOpCode::Mnemonic movOp;
-   switch (et)
-      {
-      case TR::Int8:
-         op = isMax ? TR::InstOpCode::vsmaxv16b : TR::InstOpCode::vsminv16b;
-         movOp = TR::InstOpCode::smovwb;
-         break;
-      case TR::Int16:
-         op = isMax ? TR::InstOpCode::vsmaxv8h : TR::InstOpCode::vsminv8h;
-         movOp = TR::InstOpCode::smovwh;
-         break;
-      case TR::Int32:
-         op = isMax ? TR::InstOpCode::vsmaxv4s : TR::InstOpCode::vsminv4s;
-         movOp = TR::InstOpCode::umovws;
-         break;
-      default:
-         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
-         break;
-      }
-
-   TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
-   TR::Register *resReg = cg->allocateRegister(TR_GPR);
-
-   generateTrg1Src1Instruction(cg, op, node, tmpReg, sourceReg);
-   generateMovVectorElementToGPRInstruction(cg, movOp, node, resReg, tmpReg, 0);
-
-   cg->stopUsingRegister(tmpReg);
-   node->setRegister(resReg);
-   cg->decReferenceCount(sourceChild);
-
-   return resReg;
-   }
-
-/**
  * @brief A helper function for generating instuction sequence for reduction min/max operations for vectors of 64-bit integer elements.
  *
  * @param[in] node: node
  * @param[in] isMax: true if operation is max
+ * @param[in] resReg: result register
+ * @param[in] srcReg: source register
  * @param[in] cg: CodeGenerator
  * @return register containing the result
  */
 static TR::Register *
-vreductionMinMaxInt64Helper(TR::Node *node, bool isMax, TR::CodeGenerator *cg)
+vreductionMinMaxInt64Helper(TR::Node *node, bool isMax, TR::Register *resReg, TR::Register *srcReg, TR::CodeGenerator *cg)
    {
-   TR::Node *sourceChild = node->getFirstChild();
-   TR::Register *sourceReg = cg->evaluate(sourceChild);
-
-   TR_ASSERT_FATAL_WITH_NODE(node, sourceReg->getKind() == TR_VRF, "unexpected Register kind");
-
    TR::Register *tmpReg = cg->allocateRegister(TR_GPR);
-   TR::Register *resReg = cg->allocateRegister(TR_GPR);
 
-   generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, tmpReg, sourceReg, 0);
-   generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, resReg, sourceReg, 1);
+   generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, tmpReg, srcReg, 0);
+   generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, resReg, srcReg, 1);
 
    generateCompareInstruction(cg, node, tmpReg, resReg, true);
    generateCondTrg1Src2Instruction(cg, TR::InstOpCode::cselx, node, resReg, tmpReg, resReg, isMax ? TR::CC_GT : TR::CC_LT);
 
    cg->stopUsingRegister(tmpReg);
-   node->setRegister(resReg);
-   cg->decReferenceCount(sourceChild);
 
    return resReg;
    }
 
 /**
- * @brief A helper function for generating instuction sequence for reduction min/max operations for vectors of float elements.
+ * @brief A helper function for generating instuction sequence for reduction max operations for vectors of 64-bit integer elements.
  *
  * @param[in] node: node
  * @param[in] et: element type
- * @param[in] isMax: true if operation is max
+ * @param[in] resReg: result register
+ * @param[in] srcReg: source register
  * @param[in] cg: CodeGenerator
- * @return floating point register containing the result
+ * @return register containing the result
  */
-static TR::Register*
-vreductionMinMaxFloatHelper(TR::Node *node, TR::DataType et, bool isMax, TR::CodeGenerator *cg)
+static TR::Register *
+vreductionMaxInt64Helper(TR::Node *node, TR::DataType et, TR::Register *resReg, TR::Register *srcReg, TR::CodeGenerator *cg)
    {
-   TR::Node *sourceChild = node->getFirstChild();
-   TR::Register *sourceReg = cg->evaluate(sourceChild);
-
-   TR_ASSERT_FATAL_WITH_NODE(node, sourceReg->getKind() == TR_VRF, "unexpected Register kind");
-   TR::Register *resReg = cg->allocateRegister(TR_FPR);
-   if (et == TR::Float)
-      {
-      generateTrg1Src1Instruction(cg, isMax ? TR::InstOpCode::vfmaxv4s : TR::InstOpCode::vfminv4s, node, resReg, sourceReg);
-      }
-   else if (et == TR::Double)
-      {
-      generateTrg1Src1Instruction(cg, isMax ? TR::InstOpCode::fmaxp2d : TR::InstOpCode::fminp2d, node, resReg, sourceReg);
-      }
-   else
-      {
-      TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
-      }
-
-   node->setRegister(resReg);
-   cg->decReferenceCount(sourceChild);
-
-   return resReg;
+   return vreductionMinMaxInt64Helper(node, true, resReg, srcReg, cg);
    }
 
 TR::Register*
@@ -2306,22 +2248,50 @@ OMR::ARM64::TreeEvaluator::vreductionMaxEvaluator(TR::Node *node, TR::CodeGenera
                    "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
 
    TR::DataType et = node->getFirstChild()->getDataType().getVectorElementType();
+   TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
+   reductionEvaluatorHelper evaluationHelper = NULL;
    switch(et)
       {
       case TR::Int8:
+         op = TR::InstOpCode::vsmaxv16b;
+         break;
       case TR::Int16:
+         op = TR::InstOpCode::vsmaxv8h;
+         break;
       case TR::Int32:
-         return vreductionMinMaxIntHelper(node, et, true, cg);
+         op = TR::InstOpCode::vsmaxv4s;
+         break;
       case TR::Int64:
          /* SMAXV does not accept 64bit elements */
-         return vreductionMinMaxInt64Helper(node, true, cg);
+         evaluationHelper = vreductionMaxInt64Helper;
+         break;
       case TR::Float:
+         op = TR::InstOpCode::vfmaxv4s;
+         break;
       case TR::Double:
-         return vreductionMinMaxFloatHelper(node, et, true, cg);
+         op = TR::InstOpCode::fmaxp2d;
+         break;
       default:
          TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
          return NULL;
       }
+   return inlineVectorReductionOp(node, cg, et, op, evaluationHelper);
+   }
+
+/**
+ * @brief A helper function for generating instuction sequence for reduction min operations for vectors of 64-bit integer elements.
+ *
+ * @param[in] node: node
+ * @param[in] et: element type
+ * @param[in] resReg: result register
+ * @param[in] srcReg: source register
+ * @param[in] cg: CodeGenerator
+ * @return register containing the result
+ */
+static TR::Register *
+vreductionMinInt64Helper(TR::Node *node, TR::DataType et, TR::Register *resReg, TR::Register *srcReg, TR::CodeGenerator *cg)
+   {
+   return vreductionMinMaxInt64Helper(node, false, resReg, srcReg, cg);
    }
 
 TR::Register*
@@ -2331,49 +2301,55 @@ OMR::ARM64::TreeEvaluator::vreductionMinEvaluator(TR::Node *node, TR::CodeGenera
                    "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
 
    TR::DataType et = node->getFirstChild()->getDataType().getVectorElementType();
+   TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
+   reductionEvaluatorHelper evaluationHelper = NULL;
    switch(et)
       {
       case TR::Int8:
+         op = TR::InstOpCode::vsminv16b;
+         break;
       case TR::Int16:
+         op = TR::InstOpCode::vsminv8h;
+         break;
       case TR::Int32:
-         return vreductionMinMaxIntHelper(node, et, false, cg);
+         op = TR::InstOpCode::vsminv4s;
+         break;
       case TR::Int64:
          /* SMINV does not accept 64bit elements */
-         return vreductionMinMaxInt64Helper(node, false, cg);
+         evaluationHelper = vreductionMinInt64Helper;
+         break;
       case TR::Float:
+         op = TR::InstOpCode::vfminv4s;
+         break;
       case TR::Double:
-         return vreductionMinMaxFloatHelper(node, et, false, cg);
+         op = TR::InstOpCode::fminp2d;
+         break;
       default:
          TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
          return NULL;
       }
+   return inlineVectorReductionOp(node, cg, et, op, evaluationHelper);
    }
 
 /**
  * @brief A helper function for generating instuction sequence for reduce multiplication of vectors with 64-bit integer elements.
  *
  * @param[in] node: node
+ * @param[in] resReg: result register
+ * @param[in] srcReg: source register
  * @param[in] cg: CodeGenerator
  * @return general purpose register containing the result
  */
-TR::Register*
-vreductionMulInt64Helper(TR::Node *node, TR::CodeGenerator *cg)
+static TR::Register*
+vreductionMulInt64Helper(TR::Node *node, TR::Register *resReg, TR::Register *srcReg, TR::CodeGenerator *cg)
    {
-   TR::Node *sourceChild = node->getFirstChild();
-   TR::Register *sourceReg = cg->evaluate(sourceChild);
-
-   TR_ASSERT_FATAL_WITH_NODE(node, sourceReg->getKind() == TR_VRF, "unexpected Register kind");
-
    TR::Register *tmp0Reg = cg->allocateRegister(TR_GPR);
-   TR::Register *resReg = cg->allocateRegister(TR_GPR);
 
-   generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, tmp0Reg, sourceReg, 0);
-   generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, resReg, sourceReg, 1);
+   generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, tmp0Reg, srcReg, 0);
+   generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, resReg, srcReg, 1);
    generateMulInstruction(cg, node, resReg, tmp0Reg, resReg, true);
 
    cg->stopUsingRegister(tmp0Reg);
-   cg->decReferenceCount(sourceChild);
-   node->setRegister(resReg);
 
    return resReg;
    }
@@ -2386,34 +2362,58 @@ vreductionMulInt64Helper(TR::Node *node, TR::CodeGenerator *cg)
  *
  * @param[in] node: node
  * @param[in] et: element type
+ * @param[in] resReg: result register
+ * @param[in] srcReg: source register
  * @param[in] cg: CodeGenerator
  * @return general purpose register containing the result
  */
-TR::Register*
-vreductionMulFloatingPointHelper(TR::Node *node, TR::DataType et, TR::CodeGenerator *cg)
+static TR::Register*
+vreductionMulFloatingPointHelper(TR::Node *node, TR::DataType et, TR::Register *resReg, TR::Register *srcReg, TR::CodeGenerator *cg)
    {
-   TR::Node *sourceChild = node->getFirstChild();
-   TR::Register *sourceReg = cg->evaluate(sourceChild);
-
-   TR_ASSERT_FATAL_WITH_NODE(node, sourceReg->getKind() == TR_VRF, "unexpected Register kind");
-
-   TR::Register *resReg = cg->allocateRegister(TR_VRF);
-
    if (et == TR::Float)
       {
-      generateTrg1Src2IndexedElementInstruction(cg, TR::InstOpCode::fmulelem_4s, node, resReg, sourceReg, sourceReg, 1);
-      generateTrg1Src2IndexedElementInstruction(cg, TR::InstOpCode::fmulelem_4s, node, resReg, resReg, sourceReg, 2);
-      generateTrg1Src2IndexedElementInstruction(cg, TR::InstOpCode::fmulelem_4s, node, resReg, resReg, sourceReg, 3);
+      generateTrg1Src2IndexedElementInstruction(cg, TR::InstOpCode::fmulelem_4s, node, resReg, srcReg, srcReg, 1);
+      generateTrg1Src2IndexedElementInstruction(cg, TR::InstOpCode::fmulelem_4s, node, resReg, resReg, srcReg, 2);
+      generateTrg1Src2IndexedElementInstruction(cg, TR::InstOpCode::fmulelem_4s, node, resReg, resReg, srcReg, 3);
       }
    else
       {
-      generateTrg1Src2IndexedElementInstruction(cg, TR::InstOpCode::fmulelem_2d, node, resReg, sourceReg, sourceReg, 1);
+      generateTrg1Src2IndexedElementInstruction(cg, TR::InstOpCode::fmulelem_2d, node, resReg, srcReg, srcReg, 1);
       }
 
-   cg->decReferenceCount(sourceChild);
-   node->setRegister(resReg);
-
    return resReg;
+   }
+
+/**
+ * @brief A helper function for generating instuction sequence for reduce multiplication of vectors.
+ *
+ * @param[in] node: node
+ * @param[in] et: element type
+ * @param[in] resReg: result register
+ * @param[in] srcReg: source register
+ * @param[in] cg: CodeGenerator
+ * @return general purpose register containing the result
+ */
+static TR::Register*
+vreductionMulHelper(TR::Node *node, TR::DataType et, TR::Register *resReg, TR::Register *srcReg, TR::CodeGenerator *cg)
+   {
+   switch(et)
+      {
+      case TR::Int8:
+         return vreductionHelper(node, et, TR::InstOpCode::vmul16b, resReg, srcReg, cg);
+      case TR::Int16:
+         return vreductionHelper(node, et, TR::InstOpCode::vmul8h, resReg, srcReg, cg);
+      case TR::Int32:
+         return vreductionHelper(node, et, TR::InstOpCode::vmul4s, resReg, srcReg, cg);
+      case TR::Int64:
+         return vreductionMulInt64Helper(node, resReg, srcReg, cg);
+      case TR::Float:
+      case TR::Double:
+         return vreductionMulFloatingPointHelper(node, et, resReg, srcReg, cg);
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", et.toString());
+         return NULL;
+      }
    }
 
 TR::Register*
@@ -2423,23 +2423,23 @@ OMR::ARM64::TreeEvaluator::vreductionMulEvaluator(TR::Node *node, TR::CodeGenera
                    "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
 
    TR::DataType et = node->getFirstChild()->getDataType().getVectorElementType();
-   switch(et)
-      {
-      case TR::Int8:
-         return vreductionHelper(node, et, TR::InstOpCode::vmul16b, cg);
-      case TR::Int16:
-         return vreductionHelper(node, et, TR::InstOpCode::vmul8h, cg);
-      case TR::Int32:
-         return vreductionHelper(node, et, TR::InstOpCode::vmul4s, cg);
-      case TR::Int64:
-         return vreductionMulInt64Helper(node, cg);
-      case TR::Float:
-      case TR::Double:
-         return vreductionMulFloatingPointHelper(node, et, cg);
-      default:
-         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
-         return NULL;
-      }
+   return inlineVectorReductionOp(node, cg, et, TR::InstOpCode::bad, vreductionMulHelper);
+   }
+
+/**
+ * @brief A helper function for generating instuction sequence for reduction or operation.
+ *
+ * @param[in] node: node
+ * @param[in] et: element type
+ * @param[in] resReg: result register
+ * @param[in] srcReg: source register
+ * @param[in] cg: CodeGenerator
+ * @return general purpose register containing the result
+ */
+static TR::Register*
+vreductionOrHelper(TR::Node *node, TR::DataType et, TR::Register *resReg, TR::Register *srcReg, TR::CodeGenerator *cg)
+   {
+   return vreductionHelper(node, et, TR::InstOpCode::vorr16b, resReg, srcReg, cg);
    }
 
 TR::Register*
@@ -2455,7 +2455,7 @@ OMR::ARM64::TreeEvaluator::vreductionOrEvaluator(TR::Node *node, TR::CodeGenerat
       case TR::Int16:
       case TR::Int32:
       case TR::Int64:
-         return vreductionHelper(node, et, TR::InstOpCode::vorr16b, cg);
+         return inlineVectorReductionOp(node, cg, et, TR::InstOpCode::bad, vreductionOrHelper);
       case TR::Float:
       case TR::Double:
          TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type %s", node->getFirstChild()->getDataType().toString());
@@ -2472,6 +2472,22 @@ OMR::ARM64::TreeEvaluator::vreductionOrUncheckedEvaluator(TR::Node *node, TR::Co
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
+/**
+ * @brief A helper function for generating instuction sequence for reduction xor operation.
+ *
+ * @param[in] node: node
+ * @param[in] et: element type
+ * @param[in] resReg: result register
+ * @param[in] srcReg: source register
+ * @param[in] cg: CodeGenerator
+ * @return general purpose register containing the result
+ */
+static TR::Register*
+vreductionXorHelper(TR::Node *node, TR::DataType et, TR::Register *resReg, TR::Register *srcReg, TR::CodeGenerator *cg)
+   {
+   return vreductionHelper(node, et, TR::InstOpCode::veor16b, resReg, srcReg, cg);
+   }
+
 TR::Register*
 OMR::ARM64::TreeEvaluator::vreductionXorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -2485,7 +2501,7 @@ OMR::ARM64::TreeEvaluator::vreductionXorEvaluator(TR::Node *node, TR::CodeGenera
       case TR::Int16:
       case TR::Int32:
       case TR::Int64:
-         return vreductionHelper(node, et, TR::InstOpCode::veor16b, cg);
+         return inlineVectorReductionOp(node, cg, et, TR::InstOpCode::bad, vreductionXorHelper);
       case TR::Float:
       case TR::Double:
          TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type %s", node->getFirstChild()->getDataType().toString());
@@ -3187,16 +3203,191 @@ OMR::ARM64::TreeEvaluator::vmorUncheckedEvaluator(TR::Node *node, TR::CodeGenera
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
+typedef void (*loadIdentityVectorHelper)(TR::Node *node, TR::DataType et, TR::Register *tmpReg, TR::CodeGenerator *cg);
+/**
+ * @brief A helper function for generating instruction sequence for masked reduction operations
+ *
+ * @param[in] node: node
+ * @param[in] cg: CodeGenerator
+ * @param[in] et: element type
+ * @param[in] op: reduction opcode
+ * @param[in] loadHelper: pointer to helper function which loads identity vector for the operation
+ * @param[in] evaluatorHelper: optional pointer to helper function which generates instruction stream for operation
+ * @return vector register containing the result
+ */
+static TR::Register *
+inlineVectorMaskedReductionOp(TR::Node *node, TR::CodeGenerator *cg, TR::DataType et, TR::InstOpCode::Mnemonic op, loadIdentityVectorHelper loadHelper, reductionEvaluatorHelper evaluatorHelper = NULL)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *sourceReg = cg->evaluate(firstChild);
+
+   TR_ASSERT_FATAL_WITH_NODE(node, sourceReg->getKind() == TR_VRF, "unexpected Register kind");
+
+   TR::ILOpCode secondOp = secondChild->getOpCode();
+   bool flipMask = false;
+   TR::Register *maskReg = NULL;
+   VectorCompareOps compareOp;
+   TR::VectorOperation convOp;
+   if (secondOp.isVectorOpCode() && secondOp.isBooleanCompare() && (!secondOp.isVectorMasked())
+       && ((compareOp = getVectorCompareOp(secondOp.getVectorOperation())) != VECTOR_COMPARE_INVALID)
+       && (secondChild->getReferenceCount() == 1) && (secondChild->getRegister() == NULL))
+      {
+      maskReg = vcmpHelper(secondChild, compareOp, true, &flipMask, cg);
+      }
+   else if (secondOp.isVectorOpCode() && secondOp.isConversion() && secondOp.isMaskResult()
+       && (((convOp = secondOp.getVectorOperation()) == TR::s2m) || (convOp == TR::v2m))
+       && (secondChild->getReferenceCount() == 1) && (secondChild->getRegister() == NULL))
+      {
+      flipMask = true;
+      maskReg = (convOp == TR::s2m) ? toMaskConversionHelper<TR::s2m>(secondChild, true, cg) : toMaskConversionHelper<TR::v2m>(secondChild, true, cg);
+      }
+   else
+      {
+      maskReg = cg->evaluate(secondChild);
+      }
+   TR_ASSERT_FATAL_WITH_NODE(node, maskReg->getKind() == TR_VRF, "unexpected Register kind");
+
+   TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
+   /* loads identity vector to tmpReg */
+   (*loadHelper)(node, et, tmpReg, cg);
+
+   /*
+    * BIT inserts each bit from the first source if the corresponding bit of the second source is 1.
+    * BIF inserts each bit from the first source if the corresponding bit of the second source is 0.
+    */
+   generateTrg1Src2Instruction(cg, flipMask ? TR::InstOpCode::vbif16b : TR::InstOpCode::vbit16b, node, tmpReg, sourceReg, maskReg);
+
+   TR::Register *resReg = et.isIntegral() ? cg->allocateRegister(TR_GPR) : cg->allocateRegister(TR_VRF);
+
+   node->setRegister(resReg);
+   TR_ASSERT_FATAL_WITH_NODE(node, (op != TR::InstOpCode::bad) || (evaluatorHelper != NULL), "If op is TR::InstOpCode::bad, evaluatorHelper must not be NULL");
+   if (evaluatorHelper != NULL)
+      {
+      (*evaluatorHelper)(node, et, resReg, tmpReg, cg);
+      }
+   else
+      {
+      if (et.isIntegral())
+         {
+         TR::InstOpCode::Mnemonic movOp;
+         switch (et)
+            {
+            case TR::Int8:
+               movOp = TR::InstOpCode::smovwb;
+               break;
+            case TR::Int16:
+               movOp = TR::InstOpCode::smovwh;
+               break;
+            case TR::Int32:
+               movOp = TR::InstOpCode::umovws;
+               break;
+            case TR::Int64:
+               movOp = TR::InstOpCode::umovxd;
+               break;
+            default:
+               TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
+               break;
+            }
+         generateTrg1Src1Instruction(cg, op, node, tmpReg, tmpReg);
+         generateMovVectorElementToGPRInstruction(cg, movOp, node, resReg, tmpReg, 0);
+         }
+      else
+         {
+         generateTrg1Src1Instruction(cg, op, node, resReg, tmpReg);
+         }
+      }
+
+   cg->stopUsingRegister(tmpReg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   return resReg;
+   }
+
+/**
+ * @brief A helper function for loading a zero vector, which is an identity vector for reduction add/or/xor
+ *
+ * @param[in] node: node
+ * @param[in] et: element type
+ * @param[in] identityReg: register to load identity vector
+ * @param[in] cg: CodeGenerator
+ */
+static void
+loadZeroVector(TR::Node *node, TR::DataType et, TR::Register *identityReg, TR::CodeGenerator *cg)
+   {
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi16b, node, identityReg, 0);
+   }
+
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmreductionAddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
+
+   TR::DataType et = node->getFirstChild()->getDataType().getVectorElementType();
+   TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
+   reductionEvaluatorHelper evaluationHelper = NULL;
+   switch(et)
+      {
+      case TR::Int8:
+         op = TR::InstOpCode::vaddv16b;
+         break;
+      case TR::Int16:
+         op = TR::InstOpCode::vaddv8h;
+         break;
+      case TR::Int32:
+         op = TR::InstOpCode::vaddv4s;
+         break;
+      case TR::Int64:
+         op = TR::InstOpCode::addp2d;
+         break;
+      case TR::Float:
+      case TR::Double:
+         evaluationHelper = vreductionAddFloatHelper;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedReductionOp(node, cg, et, op, loadZeroVector, evaluationHelper);
+   }
+
+/**
+ * @brief A helper function for loading identity vector for reduction add
+ *
+ * @param[in] node: node
+ * @param[in] et: element type
+ * @param[in] identityReg: register to load identity vector
+ * @param[in] cg: CodeGenerator
+ */
+static void
+loadIdentityVectorForReductionAnd(TR::Node *node, TR::DataType et, TR::Register *identityReg, TR::CodeGenerator *cg)
+   {
+   generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi16b, node, identityReg, 0xff);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmreductionAndEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
+
+   TR::DataType et = node->getFirstChild()->getDataType().getVectorElementType();
+   switch(et)
+      {
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         return inlineVectorMaskedReductionOp(node, cg, et, TR::InstOpCode::bad, loadIdentityVectorForReductionAnd, vreductionAndHelper);
+      case TR::Float:
+      case TR::Double:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      }
    }
 
 TR::Register*
@@ -3205,28 +3396,232 @@ OMR::ARM64::TreeEvaluator::vmreductionFirstNonZeroEvaluator(TR::Node *node, TR::
    return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
    }
 
+/**
+ * @brief A helper function for loading identity vector for reduction max
+ *
+ * @param[in] node: node
+ * @param[in] et: element type
+ * @param[in] identityReg: register to load identity vector
+ * @param[in] cg: CodeGenerator
+ */
+static void
+loadIdentityVectorForReductionMax(TR::Node *node, TR::DataType et, TR::Register *identityReg, TR::CodeGenerator *cg)
+   {
+   switch(et)
+      {
+      case TR::Int8:
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi16b, node, identityReg, 0x80);
+         break;
+      case TR::Int16:
+         generateTrg1ImmShiftedInstruction(cg, TR::InstOpCode::vmovi8h, node, identityReg, 0x80, 8);
+         break;
+      case TR::Int32:
+         generateTrg1ImmShiftedInstruction(cg, TR::InstOpCode::vmovi4s, node, identityReg, 0x80, 24);
+         break;
+      case TR::Int64:
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi2d, node, identityReg, 0x80); /* Loads 0xff000000_00000000 into each element */
+         generateTrg1ImmShiftedInstruction(cg, TR::InstOpCode::vbicimm4s, node, identityReg, 0x7f, 24); /* Clear unneeded bits. We do not have bic for 64bit integer, but vbicimm4s works for this case. */
+         break;
+      case TR::Float:
+         /* Negative Infinity */
+         generateTrg1ImmShiftedInstruction(cg, TR::InstOpCode::vmovi4s, node, identityReg, 0xff, 24);
+         generateTrg1ImmShiftedInstruction(cg, TR::InstOpCode::vorrimm4s, node, identityReg, 0x80, 16);
+         break;
+      case TR::Double:
+         /* Negative Infinity */
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi2d, node, identityReg, 0x80); /* Loads 0xff000000_00000000 into each element */
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsshr2d, node, identityReg, identityReg, 4); /* Do signed shift right by 4bits to get 0xfff00000_00000000 */
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
+         break;
+      }
+   }
+
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmreductionMaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::DataType et = node->getFirstChild()->getDataType().getVectorElementType();
+   TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
+   reductionEvaluatorHelper evaluationHelper = NULL;
+   switch(et)
+      {
+      case TR::Int8:
+         op = TR::InstOpCode::vsmaxv16b;
+         break;
+      case TR::Int16:
+         op = TR::InstOpCode::vsmaxv8h;
+         break;
+      case TR::Int32:
+         op = TR::InstOpCode::vsmaxv4s;
+         break;
+      case TR::Int64:
+         /* SMAXV does not accept 64bit elements */
+         evaluationHelper = vreductionMaxInt64Helper;
+         break;
+      case TR::Float:
+         op = TR::InstOpCode::vfmaxv4s;
+         break;
+      case TR::Double:
+         op = TR::InstOpCode::fmaxp2d;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedReductionOp(node, cg, et, op, loadIdentityVectorForReductionMax, evaluationHelper);
+   }
+
+/**
+ * @brief A helper function for loading identity vector for reduction min
+ *
+ * @param[in] node: node
+ * @param[in] et: element type
+ * @param[in] identityReg: register to load identity vector
+ * @param[in] cg: CodeGenerator
+ */
+static void
+loadIdentityVectorForReductionMin(TR::Node *node, TR::DataType et, TR::Register *identityReg, TR::CodeGenerator *cg)
+   {
+   switch(et)
+      {
+      case TR::Int8:
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi16b, node, identityReg, 0x7f);
+         break;
+      case TR::Int16:
+         generateTrg1ImmShiftedInstruction(cg, TR::InstOpCode::vmvni8h, node, identityReg, 0x80, 8);
+         break;
+      case TR::Int32:
+         generateTrg1ImmShiftedInstruction(cg, TR::InstOpCode::vmvni4s, node, identityReg, 0x80, 24);
+         break;
+      case TR::Int64:
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi16b, node, identityReg, 0xff);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vushr2d, node, identityReg, identityReg, 1);
+         break;
+      case TR::Float:
+         /* Positive Infinity */
+         generateTrg1ImmShiftedInstruction(cg, TR::InstOpCode::vmovi4s, node, identityReg, 0x7f, 24);
+         generateTrg1ImmShiftedInstruction(cg, TR::InstOpCode::vorrimm4s, node, identityReg, 0x80, 16);
+         break;
+      case TR::Double:
+         /* Positive Infinity */
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi2d, node, identityReg, 0x80); /* Loads 0xff000000_00000000 into each element */
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsshr2d, node, identityReg, identityReg, 4); /* Do signed shift right by 4bits to get 0xfff00000_00000000 */
+         generateTrg1ImmShiftedInstruction(cg, TR::InstOpCode::vbicimm4s, node, identityReg, 0x80, 24); /* Clear sign bit. We do not have bic for 64bit integer, but vbicimm4s works for this case. */
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
+         break;
+      }
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmreductionMinEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
+
+   TR::DataType et = node->getFirstChild()->getDataType().getVectorElementType();
+   TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
+   reductionEvaluatorHelper evaluationHelper = NULL;
+   switch(et)
+      {
+      case TR::Int8:
+         op = TR::InstOpCode::vsminv16b;
+         break;
+      case TR::Int16:
+         op = TR::InstOpCode::vsminv8h;
+         break;
+      case TR::Int32:
+         op = TR::InstOpCode::vsminv4s;
+         break;
+      case TR::Int64:
+         /* SMINV does not accept 64bit elements */
+         evaluationHelper = vreductionMinInt64Helper;
+         break;
+      case TR::Float:
+         op = TR::InstOpCode::vfminv4s;
+         break;
+      case TR::Double:
+         op = TR::InstOpCode::fminp2d;
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      }
+   return inlineVectorMaskedReductionOp(node, cg, et, op, loadIdentityVectorForReductionMin, evaluationHelper);
+   }
+
+/**
+ * @brief A helper function for loading identity vector for reduction mul
+ *
+ * @param[in] node: node
+ * @param[in] et: element type
+ * @param[in] identityReg: register to load identity vector
+ * @param[in] cg: CodeGenerator
+ */
+static void
+loadIdentityVectorForReductionMul(TR::Node *node, TR::DataType et, TR::Register *identityReg, TR::CodeGenerator *cg)
+   {
+   switch(et)
+      {
+      case TR::Int8:
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi16b, node, identityReg, 1);
+         break;
+      case TR::Int16:
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi8h, node, identityReg, 1);
+         break;
+      case TR::Int32:
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi4s, node, identityReg, 1);
+         break;
+      case TR::Int64:
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi2d, node, identityReg, 1); /* Loads 0x00000000_000000ff into each element */
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vbicimm4s, node, identityReg, 0xfe); /* Clear unneeded bits. We do not have bic for 64bit integer, but vbicimm4s works for this case. */
+         break;
+      case TR::Float:
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vfmov4s, node, identityReg, 0x70); /* Loads 0x3f800000 (1.0f) into each element */
+         break;
+      case TR::Double:
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vfmov2d, node, identityReg, 0x70); /* Loads 0x3ff00000_00000000 (1.0) into each element */
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
+         break;
+      }
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmreductionMulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
+
+   TR::DataType et = node->getFirstChild()->getDataType().getVectorElementType();
+   return inlineVectorMaskedReductionOp(node, cg, et, TR::InstOpCode::bad, loadIdentityVectorForReductionMul, vreductionMulHelper);
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmreductionOrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
+
+   TR::DataType et = node->getFirstChild()->getDataType().getVectorElementType();
+   switch(et)
+      {
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         return inlineVectorMaskedReductionOp(node, cg, et, TR::InstOpCode::bad, loadZeroVector, vreductionOrHelper);
+      case TR::Float:
+      case TR::Double:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      }
    }
 
 TR::Register*
@@ -3238,7 +3633,25 @@ OMR::ARM64::TreeEvaluator::vmreductionOrUncheckedEvaluator(TR::Node *node, TR::C
 TR::Register*
 OMR::ARM64::TreeEvaluator::vmreductionXorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getFirstChild()->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getFirstChild()->getDataType().toString());
+
+   TR::DataType et = node->getFirstChild()->getDataType().getVectorElementType();
+   switch(et)
+      {
+      case TR::Int8:
+      case TR::Int16:
+      case TR::Int32:
+      case TR::Int64:
+         return inlineVectorMaskedReductionOp(node, cg, et, TR::InstOpCode::bad, loadZeroVector, vreductionXorHelper);
+      case TR::Float:
+      case TR::Double:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
+         return NULL;
+      }
    }
 
 TR::Register*

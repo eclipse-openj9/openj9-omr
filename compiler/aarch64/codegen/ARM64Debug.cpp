@@ -758,14 +758,28 @@ static const char *opCodeToNameMap[] =
    "vushll2_8h",
    "vushll2_4s",
    "vushll2_2d",
+   "vsli16b",
+   "vsli8h",
+   "vsli4s",
+   "vsli2d",
    "vsshr16b",
    "vsshr8h",
    "vsshr4s",
    "vsshr2d",
+   "vshrn_8b",
+   "vshrn_4h",
+   "vshrn_2s",
+   "vshrn2_16b",
+   "vshrn2_8h",
+   "vshrn2_4s",
    "vushr16b",
    "vushr8h",
    "vushr4s",
    "vushr2d",
+   "vsri16b",
+   "vsri8h",
+   "vsri4s",
+   "vsri2d",
    "vshll_8h",
    "vshll_4s",
    "vshll_2d",
@@ -1863,10 +1877,10 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
             }
          }
       }
-   else if ((op >= TR::InstOpCode::vshl16b) && (op <= TR::InstOpCode::vushr2d))
+   else if ((op >= TR::InstOpCode::vshl16b) && (op <= TR::InstOpCode::vsri2d))
       {
       done = true;
-      bool isShiftLeft = (op <= TR::InstOpCode::vushll2_2d);
+      bool isShiftLeft = (op <= TR::InstOpCode::vsli2d);
       uint32_t immh = (TR::InstOpCode::getOpCodeBinaryEncoding(op) >> 19) & 0xf;
       uint32_t elementSize = 8 << (31 - leadingZeroes(immh));
       uint32_t imm = instr->getSourceImmediate();

@@ -1846,6 +1846,8 @@ protected:
 
 // Private functionality.
 private:
+   inline void setFlagsForConstIntegralValue(int64_t x);
+
    TR::Node * getExtendedChild(int32_t c);
    TR_YesNoMaybe computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesCollected, TR::NodeChecklist &processedNodesNotCollected);
 

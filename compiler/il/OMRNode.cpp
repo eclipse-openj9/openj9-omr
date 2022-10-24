@@ -657,11 +657,10 @@ OMR::Node::create(TR::Node * originatingByteCodeNode, TR::ILOpCodes op, uint16_t
    TR_ASSERT(op != TR::bconst && op != TR::sconst, "Invalid constructor for 8/16-bit constants");
    TR::Node * node = TR::Node::create(originatingByteCodeNode, op, numChildren, dest);
    if (op == TR::lconst)
-      {
-      node->setConstValue(intValue);
-      }
+      node->setLongInt(intValue);
    else
-      node->setConstValue((int32_t)intValue);
+      node->setInt(intValue);
+
    return node;
    }
 

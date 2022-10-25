@@ -1842,6 +1842,41 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src1ImmInstruction *instr)
          trfprintf(pOutFile, ", %d, %d", immr, imms);
          }
       }
+   else if (op == TR::InstOpCode::bfmx || op == TR::InstOpCode::bfmw)
+      {
+      uint32_t imm12 = instr->getSourceImmediate();
+      auto immr = imm12 >> 6;
+      auto imms = imm12 & 0x3f;
+      if ((op == TR::InstOpCode::bfmx) || (((immr & (1 << 6)) == 0) && ((imms & (1 << 6)) == 0)))
+         {
+         if (imms < immr)
+            {
+            // bfi alias
+            done = true;
+            trfprintf(pOutFile, "%s \t", (op == TR::InstOpCode::bfmx) ? "bfix" : "bfiw");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d, %d", 64 - immr, imms + 1);
+            }
+         else
+            {
+            // bfxil alias
+            done = true;
+            trfprintf(pOutFile, "%s \t", (op == TR::InstOpCode::bfmx) ? "bfxilx" : "bfxilw");
+            print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+            print(pOutFile, instr->getSource1Register(), TR_WordReg);
+            trfprintf(pOutFile, ", %d, %d", immr, imms + 1 - immr);
+            }
+         }
+      if (!done)
+         {
+         done = true;
+         trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+         print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+         print(pOutFile, instr->getSource1Register(), TR_WordReg);
+         trfprintf(pOutFile, ", %d, %d", immr, imms);
+         }
+      }
    else if (op == TR::InstOpCode::andimmx || op == TR::InstOpCode::andimmw ||
             op == TR::InstOpCode::andsimmx || op == TR::InstOpCode::andsimmw ||
             op == TR::InstOpCode::orrimmx || op == TR::InstOpCode::orrimmw ||

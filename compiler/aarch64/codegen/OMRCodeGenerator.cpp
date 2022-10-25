@@ -700,6 +700,11 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
       case TR::mstorei:
       case TR::mRegLoad:
       case TR::mRegStore:
+      case TR::mTrueCount:
+      case TR::mFirstTrue:
+      case TR::mLastTrue:
+      case TR::mToLongBits:
+      case TR::mLongBitsToMask:
       case TR::vsplats:
          return true;
       case TR::vfma:

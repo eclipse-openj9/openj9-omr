@@ -1167,6 +1167,34 @@ TR::Instruction *generateUBFIZInstruction(
                   TR::Instruction *preced = NULL);
 
 /**
+ * @brief Generates bfi instruction
+ *
+ * @details Generates bfi instruction which copies a bitfield of <width> bits
+ *          from the least significant bits of the source register to
+ *          the bit position <lsb> of the target register.
+ *          The bits above and below the bitfield in the target register is unchanged.
+ *
+ * @param[in] cg      : CodeGenerator
+ * @param[in] node    : node
+ * @param[in] treg    : target register
+ * @param[in] sreg    : source register
+ * @param[in] lsb     : the lsb to be copied in the source register
+ * @param[in] width   : the bitfield width to copy
+ * @param[in] is64bit : true if 64bit
+ * @param[in] preced  : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateBFIInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::Node *node,
+                  TR::Register *treg,
+                  TR::Register *sreg,
+                  uint32_t lsb,
+                  uint32_t width,
+                  bool is64bit,
+                  TR::Instruction *preced = NULL);
+
+/**
  * @brief Generates vector shift left immediate instruction
  *
  * @param[in] cg          : CodeGenerator

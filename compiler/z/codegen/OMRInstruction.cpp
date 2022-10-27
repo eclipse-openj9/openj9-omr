@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -713,7 +713,7 @@ static void handleLoadWithRegRanges(TR::Instruction *inst, TR::CodeGenerator *cg
                  i != highRegNum ;
                  i  = ((i == (isVector ? numVRFs - 1 : 15)) ? 0 : i+1))
       {
-      TR::RealRegister *reg = cg->machine()->getRealRegister(i + TR::RealRegister::GPR0);
+      TR::RealRegister *reg = cg->machine()->getRealRegister(i + isVector ? TR::RealRegister::VRF0 : TR::RealRegister::GPR0);
 
       // Registers that are assigned need to be checked whether they have a matching STM--otherwise we spill.
       // Since we are called post RA for the LM, we check if assigned registers are last used on the LM so we can

@@ -3196,7 +3196,7 @@ OMR::Options::processOptions(
    //
    if (strlen(options) == 0 && !envOptions)
       {
-      options = OMR::Options::getDefaultOptions();
+      options = TR::Options::getDefaultOptions();
       }
 
    return TR::Options::processOptions(options, envOptions, cmdLineOptions);

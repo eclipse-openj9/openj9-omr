@@ -2328,7 +2328,7 @@ TR_Debug::verifyTreesPass1(TR::Node *node)
             expectedType = TR::Address;
             }
 
-         if (debug("checkTypes") && expectedType != TR::NoType)
+         if (debug("checkTypes") && expectedType != TR::NoType && expectedType < TR::NumAllTypes)
             {
             // See if the child's type is compatible with this node's type
             // Temporarily allow known cases to succeed

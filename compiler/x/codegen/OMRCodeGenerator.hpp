@@ -729,6 +729,8 @@ protected:
    TR_VFPState                     _vfpState;
    TR::X86VFPSaveInstruction       *_vfpResetInstruction;
 
+   TR::vector<TR::X86DataSnippet*>       _dataSnippetList;
+
    private:
 
    bool nodeIsFoldableMemOperand(TR::Node *node, TR::Node *parent, TR_RegisterPressureState *state);
@@ -740,7 +742,6 @@ protected:
    TR::Instruction                 *_lastCatchAppendInstruction;
    TR_BetterSpillPlacement        *_betterSpillPlacements;
 
-   TR::vector<TR::X86DataSnippet*>       _dataSnippetList;
    TR::list<TR::Register*>               _spilledIntRegisters;
    TR::list<TR::Register*>               _liveDiscardableRegisters;
    TR::list<TR::Register*>               _dependentDiscardableRegisters;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -86,6 +86,10 @@ int get_protectionBits(uintptr_t mode);
 #define GET_BASE_PTR_FROM_ALIGNED_PTR(alignedPtr)	( *(void **)((uintptr_t)alignedPtr - sizeof(uintptr_t)) )
 
 #define GET_4K_ALIGNED_ALLOCATION_SIZE(byteAmount) (byteAmount + FOUR_K_MINUS_1 + sizeof(uintptr_t))
+
+#ifndef __MOPL_EXECUTABLE
+#define __MOPL_EXECUTABLE 0x04000000
+#endif /* __MOPL_EXECUTABLE */
 
 /* omrget_large_pageable_pages_supported.s */
 #pragma linkage (GLPPS,OS)
@@ -737,6 +741,15 @@ default_pageSize_reserve_memory(struct OMRPortLibrary *portLibrary, uintptr_t by
 			memset(&mymopl, 0, sizeof(__mopl_t));
 			mymopl.__mopldumppriority = __MO_DUMP_PRIORITY_HEAP;
 			mymopl.__moplrequestsize = numSegments;
+
+			/* Explicitly set the storage flag for executable. If left unspecified, the default is the
+			 * storage will be executable, unless DIAGxx IARNONEXEC64 trap is set. The __MOPL_EXECUTABLE
+			 * flag is ignored on systems that do not support the flag.
+			 */
+			if (OMR_ARE_ANY_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_EXECUTE)) {
+				mymopl.__moplgetstorflags |= __MOPL_EXECUTABLE;
+			}
+
 			rc = __moservices(__MO_GETSTOR, sizeof(mymopl), &mymopl, &ptr);
 			if (0 != rc) {
 				/* As per z/OS C/C++ Run-Time Library Reference, __moservices() returns EINVAL or EMVSERR in case of failure.
@@ -845,6 +858,15 @@ reserve_memory_with_moservices(struct OMRPortLibrary *portLibrary, struct J9Port
 		Trc_PRT_vmem_reserve_memory_using_moservices_invalid_page_size(params->pageSize);
 		rc = -1;
 	}
+
+	/* Explicitly set the storage flag for executable. If left unspecified, the default is the storage
+	 * will be executable, unless DIAGxx IARNONEXEC64 trap is set. The __MOPL_EXECUTABLE flag is
+	 * ignored on systems that do not support the flag.
+	 */
+	if (OMR_ARE_ANY_BITS_SET(params->mode, OMRPORT_VMEM_MEMORY_MODE_EXECUTE)) {
+		mymopl.__moplgetstorflags |= __MOPL_EXECUTABLE;
+	}
+
 	if (0 == rc) { /* valid page size */
 		rc = __moservices(__MO_GETSTOR, sizeof(mymopl), &mymopl, &ptr);
 	}

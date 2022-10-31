@@ -8127,20 +8127,15 @@ TR::Node *imulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             productNode->setInt((int32_t)product);
             TR::Node::recreate(node, TR::iadd);
             }
-         if (firstChild->getReferenceCount() != 1)
-            {
-            TR::Node * newFirst = TR::Node::create(firstChild, TR::imul, 2);
-            newFirst->setReferenceCount(1);
-            newFirst->setAndIncChild(0, firstChild->getFirstChild());
-            newFirst->setAndIncChild(1, lrChild);
-            firstChild->recursivelyDecReferenceCount();
-            firstChild = newFirst;
-            node->setChild(0, firstChild);
-            }
-         else
-            {
-            TR::Node::recreate(firstChild, TR::imul);
-            }
+
+         TR::Node * newFirst = TR::Node::create(firstChild, TR::imul, 2);
+         newFirst->setReferenceCount(1);
+         newFirst->setAndIncChild(0, firstChild->getFirstChild());
+         newFirst->setAndIncChild(1, lrChild);
+         firstChild->recursivelyDecReferenceCount();
+         firstChild = newFirst;
+         node->setChild(0, firstChild);
+
          if (lrChild->getReferenceCount() != 1)
             {
             lrChild->decReferenceCount();

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -166,6 +166,7 @@ class VPConstraint
    virtual bool isNonNullObject();
    virtual bool isPreexistentObject();
    virtual TR_OpaqueClassBlock *getClass();
+   virtual TR_OpaqueClassBlock *getTypeHintClass();
    virtual bool isFixedClass();
    virtual bool isConstString();
    virtual TR::VPClassType *getClassType();
@@ -545,11 +546,13 @@ class VPLongRange : public TR::VPLongConstraint
 class VPClass : public TR::VPConstraint
    {
    public:
-   VPClass(TR::VPClassType *type, TR::VPClassPresence *presence, TR::VPPreexistentObject *preexistence, TR::VPArrayInfo *arrayInfo, TR::VPObjectLocation *location)
-      : TR::VPConstraint(ClassPriority), _type(type), _presence(presence),
+   VPClass(TR::VPClassType *type, TR::VPClassPresence *presence, TR::VPPreexistentObject *preexistence,
+           TR::VPArrayInfo *arrayInfo, TR::VPObjectLocation *location, TR_OpaqueClassBlock *typeHintClass=NULL)
+      : TR::VPConstraint(ClassPriority), _type(type), _typeHintClass(typeHintClass), _presence(presence),
         _preexistence(preexistence), _arrayInfo(arrayInfo), _location(location)
       {}
-   static TR::VPConstraint *create(OMR::ValuePropagation *vp, TR::VPClassType *type, TR::VPClassPresence *presence, TR::VPPreexistentObject *preexistence, TR::VPArrayInfo *arrayInfo, TR::VPObjectLocation *location);
+   static TR::VPConstraint *create(OMR::ValuePropagation *vp, TR::VPClassType *type, TR::VPClassPresence *presence, TR::VPPreexistentObject *preexistence,
+                                     TR::VPArrayInfo *arrayInfo, TR::VPObjectLocation *location, TR_OpaqueClassBlock *typeHintClass = NULL);
    virtual TR::VPClass *asClass();
 
    virtual TR::VPConstraint *merge1(TR::VPConstraint *other, OMR::ValuePropagation *vp);
@@ -565,6 +568,7 @@ class VPClass : public TR::VPConstraint
    virtual bool isFixedClass();
    virtual bool isConstString();
    virtual TR::VPClassType *getClassType();
+   virtual TR_OpaqueClassBlock *getTypeHintClass();
    virtual TR::VPArrayInfo *getArrayInfo();
    virtual TR::VPClassPresence *getClassPresence();
    virtual TR::VPPreexistentObject *getPreexistence();
@@ -583,8 +587,17 @@ class VPClass : public TR::VPConstraint
    virtual void print(TR::Compilation *, TR::FILE *);
    virtual const char *name();
 
+   static TR_OpaqueClassBlock *intersectTypeHintClasses(TR_OpaqueClassBlock *hint1, TR_OpaqueClassBlock *hint2, OMR::ValuePropagation *vp);
+
    private:
    TR::VPClassType         *_type;  // Conditional on presence.  "If the reference is non-null, it has this type info"
+   /**
+    * _typeHintClass suggests the value is LIKELY an exact type.
+    * It could be used along with runtime checks on this speculation for other optimizations.
+    *
+    * _typeHintClass is the intersect of the initial typeHintClass and _type._typeHintClass if _type exists
+    */
+   TR_OpaqueClassBlock     *_typeHintClass;
    TR::VPClassPresence     *_presence;
    TR::VPPreexistentObject *_preexistence;
    TR::VPArrayInfo         *_arrayInfo;
@@ -594,13 +607,14 @@ class VPClass : public TR::VPConstraint
 class VPClassType : public TR::VPConstraint
    {
    public:
-   VPClassType(int32_t p) : TR::VPConstraint(p) {}
+   VPClassType(int32_t p, TR_OpaqueClassBlock *typeHintClass) : TR::VPConstraint(p), _typeHintClass(typeHintClass) {}
    static TR::VPClassType *create(OMR::ValuePropagation *vp, TR::SymbolReference *symRef, bool isFixedClass, bool isPointerToClass = false);
    static TR::VPClassType *create(OMR::ValuePropagation *vp, const char *sig, int32_t len, TR_ResolvedMethod *method, bool isFixed, TR_OpaqueClassBlock *j9class = 0);
    virtual TR::VPClassType *asClassType();
 
    virtual const char *getClassSignature(int32_t &len) = 0;
    virtual TR::VPClassType *getClassType();
+   virtual TR_OpaqueClassBlock *getTypeHintClass();
    virtual TR::VPClassType *getArrayClass(OMR::ValuePropagation *vp) = 0;
 
    virtual bool isReferenceArray(TR::Compilation *) = 0;
@@ -622,7 +636,15 @@ class VPClassType : public TR::VPConstraint
 
    protected:
    TR::VPConstraint *typeIntersectLocation(TR::VPObjectLocation *location, OMR::ValuePropagation *vp);
-
+   /**
+    * _typeHintClass suggests the value is LIKELY an exact type.
+    * It could be used along with runtime checks on this speculation for other optimizations.
+    *
+    * VPResolvedClass::_typeHintClass is the likely sub type of _class
+    * VPFixedClass::_typeHintClass is _class
+    * VPUnresolvedClass::_typeHintClass is NULL
+    */
+   TR_OpaqueClassBlock *_typeHintClass;
    const char *_sig;
    int32_t _len;
    };
@@ -630,8 +652,8 @@ class VPClassType : public TR::VPConstraint
 class VPResolvedClass : public TR::VPClassType
    {
    public:
-   VPResolvedClass(TR_OpaqueClassBlock *klass, TR::Compilation *);
-   VPResolvedClass(TR_OpaqueClassBlock *klass, TR::Compilation *, int32_t p);
+   VPResolvedClass(TR_OpaqueClassBlock *klass, TR::Compilation *, TR_OpaqueClassBlock *typeHintClass);
+   VPResolvedClass(TR_OpaqueClassBlock *klass, TR::Compilation *, int32_t p, TR_OpaqueClassBlock *typeHintClass);
    static TR::VPResolvedClass *create(OMR::ValuePropagation *vp, TR_OpaqueClassBlock *klass);
    virtual TR::VPResolvedClass *asResolvedClass();
 
@@ -657,7 +679,7 @@ class VPResolvedClass : public TR::VPClassType
 class VPFixedClass : public TR::VPResolvedClass
    {
    public:
-   VPFixedClass(TR_OpaqueClassBlock *klass, TR::Compilation * comp, int32_t p = FixedClassPriority) : TR::VPResolvedClass(klass, comp, p) {}
+   VPFixedClass(TR_OpaqueClassBlock *klass, TR::Compilation * comp, int32_t p = FixedClassPriority) : TR::VPResolvedClass(klass, comp, p, klass /* typeHintClass */) {}
    static TR::VPFixedClass *create(OMR::ValuePropagation *vp, TR_OpaqueClassBlock *klass);
    virtual TR::VPFixedClass *asFixedClass();
 
@@ -709,7 +731,7 @@ class VPUnresolvedClass : public TR::VPClassType
    {
    public:
    VPUnresolvedClass(const char *sig, int32_t len, TR_ResolvedMethod *method)
-      : TR::VPClassType(UnresolvedClassPriority), _method(method)
+      : TR::VPClassType(UnresolvedClassPriority, NULL /* typeHintClass */), _method(method)
       {_sig = sig; _len = len; _definiteType = false;}
    static TR::VPUnresolvedClass *create(OMR::ValuePropagation *vp, const char *sig, int32_t len, TR_ResolvedMethod *method);
    virtual TR::VPUnresolvedClass *asUnresolvedClass();

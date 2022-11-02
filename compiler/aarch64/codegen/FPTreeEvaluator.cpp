@@ -51,17 +51,6 @@ OMR::ARM64::TreeEvaluator::ibits2fEvaluator(TR::Node *node, TR::CodeGenerator *c
    }
 
 TR::Register *
-OMR::ARM64::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *trgReg = cg->allocateRegister();
-
-   fpBitsMovHelper(node, TR::InstOpCode::fmov_stow, trgReg, cg);
-
-   node->setRegister(trgReg);
-   return trgReg;
-   }
-
-TR::Register *
 OMR::ARM64::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *trgReg = cg->allocateRegister(TR_FPR);
@@ -72,15 +61,57 @@ OMR::ARM64::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::CodeGenerator *c
    return trgReg;
    }
 
+static TR::Register *fpBits2integerHelper(TR::Node *node, bool is64bit, TR::CodeGenerator *cg)
+   {
+   TR::Node *child = node->getFirstChild();
+   TR::Register *srcReg = cg->evaluate(child);
+   TR::Register *trgReg = cg->allocateRegister();
+   TR::InstOpCode::Mnemonic movOp = TR::InstOpCode::fmov_stow;
+   TR::InstOpCode::Mnemonic cmpOp = TR::InstOpCode::fcmps;
+   TR::InstOpCode::Mnemonic selOp = TR::InstOpCode::cselw;
+
+   if (is64bit)
+      {
+      movOp = TR::InstOpCode::fmov_dtox;
+      cmpOp = TR::InstOpCode::fcmpd;
+      selOp = TR::InstOpCode::cselx;
+      }
+
+   generateTrg1Src1Instruction(cg, movOp, node, trgReg, srcReg);
+
+   if (node->normalizeNanValues())
+      {
+      TR::Register *tmpReg = cg->allocateRegister();
+
+      generateSrc2Instruction(cg, cmpOp, node, srcReg, srcReg);
+      if (is64bit)
+         {
+         loadConstant64(cg, node, DOUBLE_NAN, tmpReg);
+         }
+      else
+         {
+         loadConstant32(cg, node, FLOAT_NAN, tmpReg);
+         }
+      generateCondTrg1Src2Instruction(cg, selOp, node, trgReg, tmpReg, trgReg, TR::CC_VS);
+
+      cg->stopUsingRegister(tmpReg);
+      }
+
+   cg->decReferenceCount(child);
+   node->setRegister(trgReg);
+   return trgReg;
+   }
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return fpBits2integerHelper(node, false, cg);
+   }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *trgReg = cg->allocateRegister();
-
-   fpBitsMovHelper(node, TR::InstOpCode::fmov_dtox, trgReg, cg);
-
-   node->setRegister(trgReg);
-   return trgReg;
+   return fpBits2integerHelper(node, true, cg);
    }
 
 static uint16_t

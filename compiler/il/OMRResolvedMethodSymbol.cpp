@@ -1233,9 +1233,12 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
                && comp->supportsInduceOSR()
                && !self()->cannotAttemptOSRDuring(siteIndex, comp);
 
-            optimizer = TR::Optimizer::createOptimizer(comp, self(), true);
-            previousOptimizer = comp->getOptimizer();
-            comp->setOptimizer(optimizer);
+            if (!(comp->getOption(TR_DisableIlgenOpts)))
+               {
+               optimizer = TR::Optimizer::createOptimizer(comp, self(), true);
+               previousOptimizer = comp->getOptimizer();
+               comp->setOptimizer(optimizer);
+               }
 
             self()->detectInternalCycles();
 

@@ -1407,6 +1407,7 @@ bool TR_LoopVersioner::detectInvariantTrees(TR_RegionStructure *whileLoop, List<
          if (onlyDetectHighlyBiasedBranches
              && (thisChild || nextRealNode)
              && node->isTheVirtualGuardForAGuardedInlinedCall()
+             && !node->isOSRGuard()
              && !node->isHCRGuard()
              && !node->isDirectMethodGuard()
              && !node->isBreakpointGuard())
@@ -1479,7 +1480,10 @@ bool TR_LoopVersioner::detectInvariantTrees(TR_RegionStructure *whileLoop, List<
                   }
                }
             }
-         else if (!node->isHCRGuard() && !node->isDirectMethodGuard() && !node->isBreakpointGuard())
+         else if (!node->isOSRGuard()
+                  && !node->isHCRGuard()
+                  && !node->isDirectMethodGuard()
+                  && !node->isBreakpointGuard())
             {
             for (int32_t childNum=0;childNum < node->getNumChildren(); childNum++)
                {
@@ -5675,8 +5679,12 @@ void TR_LoopVersioner::buildConditionalTree(
 
       TR::Node *dupThisChild = NULL;
 
-      if (conditionalNode->isTheVirtualGuardForAGuardedInlinedCall() &&
-          !conditionalNode->isNonoverriddenGuard()  && !conditionalNode->isHCRGuard() && !conditionalNode->isBreakpointGuard())
+      if (conditionalNode->isTheVirtualGuardForAGuardedInlinedCall()
+          && !conditionalNode->isNonoverriddenGuard()
+          && !conditionalNode->isOSRGuard()
+          && !conditionalNode->isHCRGuard()
+          && !conditionalNode->isDirectMethodGuard()
+          && !conditionalNode->isBreakpointGuard())
          {
          bool searchReqd = true;
          TR::Node *nextRealNode = NULL;

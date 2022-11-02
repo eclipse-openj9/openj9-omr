@@ -475,8 +475,17 @@ TR_VirtualGuard::createOSRGuard(TR::Compilation *comp, TR::TreeTop *destination)
                flag,
                destination);
 
-   TR_VirtualGuard *vguard = new (comp->trHeapMemory()) TR_VirtualGuard(TR_DummyTest, TR_OSRGuard, comp,
-         NULL, guard, destination ? destination->getNode()->getByteCodeInfo().getCallerIndex() : -1, comp->getCurrentInlinedSiteIndex(), NULL);
+   int16_t calleeIndex = -1;
+   TR_VirtualGuard *vguard = new (comp->trHeapMemory()) TR_VirtualGuard(
+      TR_DummyTest,
+      TR_OSRGuard,
+      comp,
+      NULL,
+      guard,
+      calleeIndex,
+      comp->getCurrentInlinedSiteIndex(),
+      NULL);
+
    vguard->dontGenerateChildrenCode();
    return guard;
    }

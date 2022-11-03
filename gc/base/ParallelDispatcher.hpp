@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -83,8 +83,11 @@ protected:
 	void* _handler_arg;
 	uintptr_t _defaultOSStackSize; /**< default OS stack size */
 
-public:
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	uintptr_t _threadCountMaximumAtCheckpointStartup;
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
+public:
 	/*
 	 * Function members
 	 */
@@ -116,9 +119,53 @@ protected:
 	
 	uintptr_t adjustThreadCount(uintptr_t maxThreadCount);
 	
+	/**
+	 * Main routine to fork and startup GC threads.
+	 *
+	 * @param[in] workerThreadCount the thread pool index to start at.
+	 * @param[in] maxWorkerThreadIndex the max thread pool index.
+	 * @return boolean indicating if threads started up successfully.
+	 */
+	virtual bool internalStartupThreads(uintptr_t workerThreadCount, uintptr_t maxWorkerThreadIndex);
+
 public:
 	virtual bool startUpThreads();
 	virtual void shutDownThreads();
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	/**
+	 * Expand/fill the thread pool by starting up threads based on what H/W supports.
+	 * This API is capped by the initial thread pool size, i.e expanding
+	 * past _threadCountMaximumAtCheckpointStartup is not possible
+	 * (expanding the dispatcher tables is currently not supported).
+	 *
+	 * This API assumes CRIU is the only consumer (not tested for general use).
+	 * The following conditions are required while expanding the thread pool:
+	 *     1) Caller is NOT holding exclusive VM access.
+	 *     2) Dispatcher is idle (no task can be dispatched).
+	 *     3) Dispatcher can't be in/enter shutdown.
+	 *
+	 * @param[in] env the current environment.
+	 * @return boolean indicating if threads started up successfully.
+	 */
+	virtual bool expandThreadPool(MM_EnvironmentBase *env);
+
+	/**
+	 * Contract the thread pool by shutting down threads in the pool to obtain newThreadCount.
+	 *
+	 * This API assumes  CRIU is the only consumer (not tested for general use).
+	 * The following conditions are assumed while contracting the thread pool:
+	 *     1) API can only be called once during VM lifetime.
+	 *     2) Caller is NOT holding exclusive VM access.
+	 *     3) Dispatcher is idle (no task can be dispatched).
+	 *     4) Another party can't enter Dispatcher shutdown.
+	 *
+	 * @param[in] env the current environment.
+	 * @param[in] newThreadCount the number of threads to keep in the thread pool.
+	 * @return void
+	 */
+	virtual void contractThreadPool(MM_EnvironmentBase *env, uintptr_t newThreadCount);
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 	virtual bool condYieldFromGCWrapper(MM_EnvironmentBase *env, uint64_t timeSlack = 0) { return false; }
 	
@@ -158,6 +205,9 @@ public:
 		,_handler(handler)
 		,_handler_arg(handler_arg)
 		,_defaultOSStackSize(defaultOSStackSize)
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+		,_threadCountMaximumAtCheckpointStartup(0)
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 	{
 		_typeId = __FUNCTION__;
 	}

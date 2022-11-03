@@ -261,4 +261,48 @@ MM_ConfigurationGenerational::calculateDefaultRegionSize(MM_EnvironmentBase *env
 	return regionSize;
 }
 
+void
+MM_ConfigurationGenerational::initializeGCThreadCount(MM_EnvironmentBase* env)
+{
+	MM_Configuration::initializeGCThreadCount(env);
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	initializeConcurrentScavengerThreadCount(env);
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+}
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+void
+MM_ConfigurationGenerational::initializeConcurrentScavengerThreadCount(MM_EnvironmentBase* env)
+{
+	MM_GCExtensionsBase* extensions = env->getExtensions();
+
+	/* If not explicitly set, concurrent phase of CS runs with approx 1/4 the
+	 * thread count (relative to STW phases thread count. */
+	if (!extensions->concurrentScavengerBackgroundThreadsForced) {
+		extensions->concurrentScavengerBackgroundThreads = OMR_MAX(1, (extensions->gcThreadCount + 1) / 4);
+	} else if (extensions->concurrentScavengerBackgroundThreads > extensions->gcThreadCount) {
+		extensions->concurrentScavengerBackgroundThreads = extensions->gcThreadCount;
+	}
+}
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+bool
+MM_ConfigurationGenerational::reinitializeGCThreadCountOnRestore(MM_EnvironmentBase* env)
+{
+	MM_GCExtensionsBase* extensions = env->getExtensions();
+
+	bool result = MM_Configuration::reinitializeGCThreadCountOnRestore(env);
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	initializeConcurrentScavengerThreadCount(env);
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+
+	extensions->scavenger->resetRecommendedThreads();
+
+	return result;
+}
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
+
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) */

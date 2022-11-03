@@ -63,6 +63,7 @@ typedef void *charconvState_t; /*dummy type */
 #include "omrutil.h"
 #include "omrcomp.h"
 #include "omrport.h"
+#include "omrportpriv.h"
 #include "omrgetasid.h"
 #include "omrgetjobid.h"
 #include "omrgetjobname.h"
@@ -166,7 +167,7 @@ static uintptr_t writeIntToBuffer(char *buf, uintptr_t bufLen, uint64_t width, u
 static uintptr_t writeUnicodeStringToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t precision, const uint16_t *value, uint8_t tag);
 static void convertUTCMillisToJ9Time(int64_t millisUTC, struct J9TimeInfo *tm, uint32_t flags);
 static void setJ9TimeToEpoch(struct J9TimeInfo *tm);
-static uint32_t omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, const char *format, int64_t timeMillis, uint32_t flags);
+static uint32_t omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, const char *format, int64_t timeMillis, uint32_t flags);
 static intptr_t omrstr_set_token_from_buf(struct OMRPortLibrary *portLibrary, struct J9StringTokens *tokens, const char *key, char *tokenBuf, uint32_t tokenLen);
 static int32_t convertPlatformToMutf8(struct OMRPortLibrary *portLibrary, uint32_t codePage, const uint8_t *inBuffer, uintptr_t inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize);
 static int32_t convertMutf8ToPlatform(struct OMRPortLibrary *portLibrary, uint32_t codePage, const uint8_t *inBuffer, uintptr_t inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize);
@@ -253,7 +254,7 @@ omrstr_printf(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, c
 #endif
 int32_t
 omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toCode,
-			   uint8_t *inBuffer, uintptr_t inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize)
+		const char *inBuffer, uintptr_t inBufferSize, char *outBuffer, uintptr_t outBufferSize)
 {
 	int32_t result = OMRPORT_ERROR_STRING_UNSUPPORTED_ENCODING;
 
@@ -261,13 +262,13 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 	case J9STR_CODE_PLATFORM_RAW: {
 		switch (toCode) {
 		case J9STR_CODE_MUTF8:
-			result = convertPlatformToMutf8(portLibrary, OS_ENCODING_CODE_PAGE, inBuffer, inBufferSize, outBuffer, outBufferSize);
+			result = convertPlatformToMutf8(portLibrary, OS_ENCODING_CODE_PAGE, (const uint8_t *)inBuffer, inBufferSize, (uint8_t *)outBuffer, outBufferSize);
 			break;
 		case J9STR_CODE_WIDE:
 			result = OMRPORT_ERROR_STRING_UNSUPPORTED_ENCODING;
 			break;
 		case J9STR_CODE_UTF8:
-			result = convertPlatformToUtf8(portLibrary, (const uint8_t*)inBuffer, inBufferSize, outBuffer, outBufferSize);
+			result = convertPlatformToUtf8(portLibrary, (const uint8_t *)inBuffer, inBufferSize, (uint8_t *)outBuffer, outBufferSize);
 			break;
 		default:
 			result = OMRPORT_ERROR_STRING_UNSUPPORTED_ENCODING;
@@ -280,7 +281,7 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 	case J9STR_CODE_WINDEFAULTACP:
 		switch (toCode) {
 		case J9STR_CODE_MUTF8:
-			result = convertPlatformToMutf8(portLibrary, (fromCode == J9STR_CODE_WINTHREADACP)? CP_THREAD_ACP: CP_ACP, inBuffer, inBufferSize, outBuffer, outBufferSize);
+			result = convertPlatformToMutf8(portLibrary, (fromCode == J9STR_CODE_WINTHREADACP)? CP_THREAD_ACP: CP_ACP, (const uint8_t *)inBuffer, inBufferSize, (uint8_t *)outBuffer, outBufferSize);
 			break;
 		default:
 			result = OMRPORT_ERROR_STRING_UNSUPPORTED_ENCODING;
@@ -291,12 +292,12 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 	case J9STR_CODE_MUTF8:
 		switch (toCode) {
 		case J9STR_CODE_PLATFORM_RAW:
-			result = convertMutf8ToPlatform(portLibrary, OS_ENCODING_CODE_PAGE, inBuffer, inBufferSize, outBuffer, outBufferSize);
+			result = convertMutf8ToPlatform(portLibrary, OS_ENCODING_CODE_PAGE, (const uint8_t *)inBuffer, inBufferSize, (uint8_t *)outBuffer, outBufferSize);
 			break;
 		case J9STR_CODE_LATIN1: {
-			const uint8_t *mutf8Cursor = inBuffer;
+			const uint8_t *mutf8Cursor = (const uint8_t *)inBuffer;
 			uintptr_t mutf8Remaining = inBufferSize;
-			result = convertMutf8ToLatin1(portLibrary, &mutf8Cursor, &mutf8Remaining, outBuffer, outBufferSize);
+			result = convertMutf8ToLatin1(portLibrary, &mutf8Cursor, &mutf8Remaining, (uint8_t *)outBuffer, outBufferSize);
 			/*
 			 * convertMutf8ToLatin1 is resumable so does not return error if buffer too small.
 			 * In this case we should have consumed all the data
@@ -308,16 +309,16 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 		break;
 #if defined(OMR_OS_WINDOWS)
 		case J9STR_CODE_WINTHREADACP:
-			result = convertMutf8ToPlatform(portLibrary, CP_THREAD_ACP, inBuffer, inBufferSize, outBuffer, outBufferSize);
+			result = convertMutf8ToPlatform(portLibrary, CP_THREAD_ACP, (const uint8_t *)inBuffer, inBufferSize, (uint8_t *)outBuffer, outBufferSize);
 			break;
 		case J9STR_CODE_WINDEFAULTACP:
-			result = convertMutf8ToPlatform(portLibrary, CP_ACP, inBuffer, inBufferSize, outBuffer, outBufferSize);
+			result = convertMutf8ToPlatform(portLibrary, CP_ACP, (const uint8_t *)inBuffer, inBufferSize, (uint8_t *)outBuffer, outBufferSize);
 			break;
 #endif /* defined(OMR_OS_WINDOWS) */
 		case J9STR_CODE_WIDE: {
-			const uint8_t *mutf8Cursor = inBuffer;
+			const uint8_t *mutf8Cursor = (const uint8_t *)inBuffer;
 			uintptr_t mutf8Remaining = inBufferSize;
-			result = convertMutf8ToWide(&mutf8Cursor, &mutf8Remaining, outBuffer, outBufferSize);
+			result = convertMutf8ToWide(&mutf8Cursor, &mutf8Remaining, (uint8_t *)outBuffer, outBufferSize);
 			/*
 			 * inBuffer parameters are updated to reflect data untranslated due to insufficient space in the output buffer.
 			 * In this case, all input characters should have been consumed.
@@ -335,9 +336,9 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 	case J9STR_CODE_UTF8:
 		switch (toCode) {
 		case J9STR_CODE_MUTF8: {
-			const uint8_t *utf8Cursor = inBuffer;
+			const uint8_t *utf8Cursor = (const uint8_t *)inBuffer;
 			uintptr_t utf8Remaining = inBufferSize;
-			result = convertUtf8ToMutf8(portLibrary, &utf8Cursor, &utf8Remaining, outBuffer, outBufferSize);
+			result = convertUtf8ToMutf8(portLibrary, &utf8Cursor, &utf8Remaining, (uint8_t *)outBuffer, outBufferSize);
 			/*
 			 * convertUtf8ToMutf8 is resumable so does not return error if buffer too small.
 			 * In this case we should have consumed all the data
@@ -358,9 +359,9 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 			result = OMRPORT_ERROR_STRING_UNSUPPORTED_ENCODING;
 			break;
 		case J9STR_CODE_MUTF8: {
-			const uint8_t *wideCursor = inBuffer;
+			const uint8_t *wideCursor = (const uint8_t *)inBuffer;
 			uintptr_t wideRemaining = inBufferSize;
-			result = convertWideToMutf8(&wideCursor, &wideRemaining, outBuffer, outBufferSize);
+			result = convertWideToMutf8(&wideCursor, &wideRemaining, (uint8_t *)outBuffer, outBufferSize);
 			/*
 			 * inBuffer parameters are updated to reflect data untranslated due to insufficient space in the output buffer.
 			 * In this case, all input characters should have been consumed.
@@ -378,9 +379,9 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 	case J9STR_CODE_LATIN1:
 		switch (toCode) {
 		case J9STR_CODE_MUTF8: {
-			const uint8_t *latin1Cursor = inBuffer;
+			const uint8_t *latin1Cursor = (const uint8_t *)inBuffer;
 			uintptr_t latin1Remaining = inBufferSize;
-			result = convertLatin1ToMutf8(portLibrary, &latin1Cursor, &latin1Remaining, outBuffer, outBufferSize);
+			result = convertLatin1ToMutf8(portLibrary, &latin1Cursor, &latin1Remaining, (uint8_t *)outBuffer, outBufferSize);
 			/*
 			 * convertLatin1ToMutf8 is resumable so does not return error if buffer too small.
 			 * In this case we should have consumed all the data
@@ -1383,6 +1384,7 @@ populateWithDefaultTokens(struct OMRPortLibrary *portLibrary, struct J9StringTok
 #define SYSNAME_BUF_LEN 32
 
 	uintptr_t pid = 0;
+	intptr_t statusCode = -1;
 	char username[USERNAME_BUF_LEN];
 	char jobname[JOBNAME_BUF_LEN];
 	char jobid[JOBID_BUF_LEN];
@@ -1415,9 +1417,31 @@ populateWithDefaultTokens(struct OMRPortLibrary *portLibrary, struct J9StringTok
 		return -1;
 	}
 
-	/* Let's add the username, note that this is done seperately since it
-	 * may fail on some platforms, but in that event, we just don't add it */
-	if (0 == portLibrary->sysinfo_get_username(portLibrary, username, USERNAME_BUF_LEN)) {
+	/* Attempt to retrieve the user name and add it to the token if found successfully.
+	 *
+	 * First, try sysinfo_get_username() if CRIU is not enabled or it is a final restoration.
+	 * If it fails, try sysinfo_get_username() instead.
+	 *
+	 * Notes:
+	 * - This doesn't take the user name longer than USERNAME_BUF_LEN. If both calls
+	 * fail, then the user name is not added to the tokens.
+	 * - CRIU requires sysinfo_get_env() if a checkpoint is to be taken and avoid
+	 * sysinfo_get_username() at VM early startup which might call getpwuid(), trigger SSSD
+	 * socket connection, and cause a checkpoint failure.
+	 * - More details are at https://github.com/eclipse-openj9/openj9/issues/15800.
+	 */
+#if defined(PPG_instantOnFlags)
+	if (OMR_ARE_NO_BITS_SET(PPG_instantOnFlags, OMRPORT_INSTANTON_ENABLED)
+		|| OMR_ARE_ANY_BITS_SET(PPG_instantOnFlags, OMRPORT_INSTANTON_FINAL_RESTORE)
+	)
+#endif /* defined(PPG_instantOnFlags) */
+	{
+		statusCode = portLibrary->sysinfo_get_username(portLibrary, username, USERNAME_BUF_LEN);
+	}
+	if (0 != statusCode) {
+		statusCode = portLibrary->sysinfo_get_env(portLibrary, "USER", username, USERNAME_BUF_LEN);
+	}
+	if (0 == statusCode) {
 		portLibrary->str_set_token(portLibrary, tokens, "uid", "%s", username);
 	}
 
@@ -1923,8 +1947,8 @@ omrstr_free_tokens(struct OMRPortLibrary *portLibrary, struct J9StringTokens *to
  *
  * If buf is too small, will return the minimum buf size required.
  */
-uint32_t
-omrstr_ftime_ex(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, const char *format, int64_t timeMillisUTC, uint32_t flags)
+uintptr_t
+omrstr_ftime_ex(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, const char *format, int64_t timeMillisUTC, uint32_t flags)
 {
 	if ((NULL != buf) && (bufLen > 0)) {
 		return omrstr_subst_time(portLibrary, buf, bufLen, format, timeMillisUTC, flags);
@@ -1960,8 +1984,8 @@ omrstr_ftime_ex(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, 
  *
  * If buf is too small, will return the minimum buf size required.
  */
-uint32_t
-omrstr_ftime(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, const char *format, int64_t timeMillisUTC)
+uintptr_t
+omrstr_ftime(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, const char *format, int64_t timeMillisUTC)
 {
 	return omrstr_ftime_ex(portLibrary, buf, bufLen, format, timeMillisUTC, OMRSTR_FTIME_FLAG_LOCAL);
 }
@@ -1996,7 +2020,7 @@ omrstr_ftime(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, con
  * If buf is too small, will return the minimum buf size required.
  */
 static uint32_t
-omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, const char *format, int64_t timeMillis, uint32_t flags)
+omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, const char *format, int64_t timeMillis, uint32_t flags)
 {
 	int8_t haveTick = 0;
 	uint32_t count = 0;

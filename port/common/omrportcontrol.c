@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -319,7 +319,12 @@ omrport_control(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t v
 		return 0;
 	}
 
+#if defined(PPG_instantOnFlags)
+	if (0 == strcmp(OMRPORT_CTLDATA_INSTANTON_FLAGS, key)) {
+		PPG_instantOnFlags = value;
+		return 0;
+	}
+#endif /* defined(PPG_instantOnFlags) */
+
 	return 1;
 }
-
-

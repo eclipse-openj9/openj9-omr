@@ -113,6 +113,7 @@ typedef struct OMRPortPlatformGlobals {
 #if defined(AIXPPC)
 	int pageProtectionPossible;
 #endif
+	uintptr_t instantOnFlags;
 } OMRPortPlatformGlobals;
 
 
@@ -172,6 +173,8 @@ typedef struct OMRPortPlatformGlobals {
 #define PAGE_PROTECTION_NOTAVAILABLE 1
 #define PAGE_PROTECTION_NOTCHECKED 2
 #endif
+
+#define PPG_instantOnFlags (portLibrary->portGlobals->platformGlobals.instantOnFlags)
 
 #endif /* omrportpg_h */
 

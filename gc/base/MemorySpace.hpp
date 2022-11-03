@@ -185,8 +185,8 @@ public:
 
 	static MM_MemorySpace *getMemorySpace(void *memorySpace) { return (MM_MemorySpace *)memorySpace; }
 
-	uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env);
-	
+	uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env, uintptr_t memoryType);
+
 	/**
 	 * Create a MemorySpace object.
 	 */

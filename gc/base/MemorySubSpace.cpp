@@ -936,15 +936,23 @@ MM_MemorySubSpace::systemGarbageCollect(MM_EnvironmentBase* env, uint32_t gcCode
 		reportSystemGCEnd(env);
 		env->releaseExclusiveVMAccessForGC();
 
+		bool isCheckpointGC = (J9MMCONSTANT_EXPLICIT_GC_PREPARE_FOR_CHECKPOINT == gcCode);
 
-		if ((J9MMCONSTANT_EXPLICIT_GC_PREPARE_FOR_CHECKPOINT == gcCode)
+		if (isCheckpointGC
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 		|| ((J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode) && (_extensions->gcOnIdle))
 #endif
 		) {
 			OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 			uint64_t startTime = omrtime_hires_clock();
-			uintptr_t releasedBytes = _extensions->heap->getDefaultMemorySpace()->releaseFreeMemoryPages(env);
+
+			uintptr_t releaseMemoryType = MEMORY_TYPE_OLD;
+
+			if (isCheckpointGC) {
+				releaseMemoryType |= MEMORY_TYPE_NEW;
+			}
+
+			uintptr_t releasedBytes = _extensions->heap->getDefaultMemorySpace()->releaseFreeMemoryPages(env, releaseMemoryType);
 			uint64_t endTime = omrtime_hires_clock();
 			TRIGGER_J9HOOK_MM_PRIVATE_HEAP_RESIZE(
 				_extensions->privateHookInterface,
@@ -2012,5 +2020,12 @@ uintptr_t
 MM_MemorySubSpace::releaseFreeMemoryPages(MM_EnvironmentBase* env)
 {
 	Assert_MM_unreachable();
-        return 0;
+	return 0;
+}
+
+uintptr_t
+MM_MemorySubSpace::releaseFreeMemoryPages(MM_EnvironmentBase* env, uintptr_t memoryType)
+{
+	Assert_MM_unreachable();
+	return 0;
 }

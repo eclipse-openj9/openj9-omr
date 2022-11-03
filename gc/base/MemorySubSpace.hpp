@@ -448,6 +448,8 @@ public:
 
 	virtual uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env);
 
+	virtual uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env, uintptr_t memoryType);
+
 	/**
 	 * Create a MemorySubSpace object.
 	 */

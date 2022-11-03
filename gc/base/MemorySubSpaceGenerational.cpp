@@ -323,9 +323,17 @@ MM_MemorySubSpaceGenerational::counterBalanceContract(
 }
 
 uintptr_t
-MM_MemorySubSpaceGenerational::releaseFreeMemoryPages(MM_EnvironmentBase* env)
+MM_MemorySubSpaceGenerational::releaseFreeMemoryPages(MM_EnvironmentBase* env, uintptr_t memoryType)
 {
-	return _memorySubSpaceOld->releaseFreeMemoryPages(env);
+	Assert_MM_true(OMR_ARE_ALL_BITS_SET(memoryType, MEMORY_TYPE_OLD));
+
+	uintptr_t releasedPages = _memorySubSpaceOld->releaseFreeMemoryPages(env);
+
+	if (OMR_ARE_ALL_BITS_SET(memoryType, MEMORY_TYPE_NEW)) {
+		releasedPages += _memorySubSpaceNew->releaseFreeMemoryPages(env);
+	}
+
+	return releasedPages;
 }
 
 #endif /* OMR_GC_MODRON_SCAVENGER */

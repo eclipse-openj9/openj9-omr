@@ -6179,6 +6179,7 @@ void TR_LoopVersioner::copyOnWriteNode(TR::Node *original, TR::Node **current)
       comp()->getDebug()->printWithFixedPrefix(comp()->getOutFile(), original, 1, true, false, "\t\t");
       dumpOptDetails(comp(), "\n\tduplicate node:\n");
       comp()->getDebug()->printWithFixedPrefix(comp()->getOutFile(), *current, 1, true, false, "\t\t");
+      dumpOptDetails(comp(), "\n");
       }
    }
 

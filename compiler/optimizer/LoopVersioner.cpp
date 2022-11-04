@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3499,10 +3499,21 @@ void TR_LoopVersioner::updateDefinitionsAndCollectProfiledExprs(TR::Node *parent
      _inNullCheckReference = false;
    }
 
+static void traceCannot(
+   const char *what, TR::Node *culprit, TR::Compilation *comp)
+   {
+   dumpOptDetails(
+      comp,
+      "Cannot %s due to n%un [%p]\n",
+      what,
+      culprit->getGlobalIndex(),
+      culprit);
+   }
 
 void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR::Node> *nullCheckedReferences, List<TR::TreeTop> *nullCheckTrees, List<TR::TreeTop> *boundCheckTrees, List<TR::TreeTop> *spineCheckTrees, List<TR::TreeTop> *conditionalTrees, List<TR::TreeTop> *divCheckTrees, List<TR::TreeTop> *awrtbariTrees, List<TR::TreeTop> *checkCastTrees, List<TR::TreeTop> *arrayStoreCheckTrees, List<TR::Node> *specializedNodes, List<TR_NodeParentSymRef> *invariantNodes, List<TR_NodeParentSymRefWeightTuple> *invariantTranslationNodesList, List<TR_Structure> *innerWhileLoops, List<TR_Structure> *clonedInnerWhileLoops, bool skipVersioningAsynchk, SharedSparseBitVector &reverseBranchInLoops)
    {
-   if (!performTransformation(comp(), "%sVersioning natural loop %d\n", OPT_DETAILS_LOOP_VERSIONER, whileLoop->getNumber()))
+   const int loopNum = whileLoop->getNumber();
+   if (!performTransformation(comp(), "%sVersioning natural loop %d\n", OPT_DETAILS_LOOP_VERSIONER, loopNum))
       return;
 
    TR_ScratchList<TR::Block> blocksInWhileLoop(trMemory());
@@ -3520,7 +3531,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    TR::TreeTop *treeTop;
    for (treeTop = comp()->getStartTree(); treeTop; treeTop = treeTop->getNextTreeTop())
       {
-      if (whileLoop->getNumber() == treeTop->getNode()->getBlock()->getNumber())
+      if (loopNum == treeTop->getNode()->getBlock()->getNumber())
          blockAtHeadOfLoop = treeTop->getNode()->getBlock();
 
       treeTop = treeTop->getNode()->getBlock()->getExit();
@@ -4286,34 +4297,105 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          }
       }
 
-   // Attempt to remove any HCR guards in the loop. This is important because
-   // if the loop contains any call, including on the taken side of an HCR
-   // guard, then it is impossible to privatize expressions to ensure they are
-   // invariant.
-   //
-   // TODO: For each of the following, confirm whether installation is a
-   // stop-the-world event. If it is, guards/tests for these can be treated
-   // like HCR guards.
-   // - breakpoints
-   // - method enter/exit hooks
-   //
-   bool safeToRemoveHCRGuards = false;
+   TR_ASSERT_FATAL(
+       _curLoop->_optimisticallyRemovableNodes.contains(_curLoop->_definitelyRemovableNodes),
+       "loop %d: privatization should only allow more versioning",
+       loopNum);
+
+   // Detect the presence of HCR and/or OSR guards in the loop.
    TR_ScratchList<TR::TreeTop> hcrGuards(trMemory());
-   static char *disableLoopHCR = feGetEnv("TR_DisableHCRGuardLoopVersioner");
-
-   if (comp()->getHCRMode() != TR::none && disableLoopHCR == NULL)
+   TR_ScratchList<TR::TreeTop> osrGuards(trMemory());
+   TR::NodeChecklist hcrGuardsSet(comp());
+   TR::NodeChecklist osrGuardsSet(comp());
+   // Search scope
       {
-      safeToRemoveHCRGuards = true;
+      TR::NodeChecklist noNodesRemoved(comp()); // search the loop as-is
+      LoopBodySearch search(
+         comp(),
+         _curLoop->_memRegion,
+         whileLoop,
+         &noNodesRemoved,
+         &_curLoop->_takenBranches);
 
+      for (; search.hasTreeTop(); search.advance())
+         {
+         TR::TreeTop *tt = search.currentTreeTop();
+         TR::Node *ttNode = tt->getNode();
+         if (ttNode->isHCRGuard())
+            {
+            hcrGuards.add(tt);
+            hcrGuardsSet.add(ttNode);
+            }
+         else if (ttNode->isOSRGuard())
+            {
+            osrGuards.add(tt);
+            osrGuardsSet.add(ttNode);
+            }
+         }
+      }
+
+   // Do a fixed-point computation to find the maximal set of versioning
+   // operations that can be safely performed. Initially, we'll consider
+   // allowing all versioning operations. Then until the analysis converges, we
+   // will tentatively assume that the types of versioning currently under
+   // consideration are safe and look at the operations that would still remain
+   // in the hot loop, some of which may prevent some versioning operations
+   // that we hoped would be possible.
+
+   // TODO: Handle breakpoint and method enter/exit hook guards?
+
+   static const bool disableLoopHCR =
+      feGetEnv("TR_DisableHCRGuardLoopVersioner") != NULL;
+   static const bool disableLoopOSR =
+      feGetEnv("TR_DisableOSRGuardLoopVersioner") != NULL;
+   static const bool disableWrtbarVersion =
+      feGetEnv("TR_disableWrtbarVersion") != NULL;
+
+   _curLoop->_privatizationOK = _curLoop->_privatizationsRequested;
+   _curLoop->_hcrGuardVersioningOK = !hcrGuards.isEmpty() && !disableLoopHCR;
+   _curLoop->_osrGuardVersioningOK = !osrGuards.isEmpty() && !disableLoopOSR;
+
+   bool awrtbariVersioningOK =
+      !awrtbariTrees->isEmpty()
+      && !disableWrtbarVersion
+      && !shouldOnlySpecializeLoops()
+      && !refineAliases();
+
+   bool alreadyAskedPermission = false; // permission to transform
+
+   while (_curLoop->_privatizationOK
+          || _curLoop->_hcrGuardVersioningOK
+          || _curLoop->_osrGuardVersioningOK
+          || awrtbariVersioningOK)
+      {
       // Search the part of the loop body that would remain *after removing
-      // all optimistically removable checks and HCR guards*. If the loop would
-      // still contain yield points that allow HCR, then the HCR guards can't
-      // be removed.
-      //
-      // Copy _optimisticallyRemovableNodes to allow the HCR guards to be added
-      // during the search.
+      // everything allowed by the current tentative assumptions*.
       TR::NodeChecklist removedNodes(comp());
-      removedNodes.add(_curLoop->_optimisticallyRemovableNodes);
+
+      if (_curLoop->_privatizationOK)
+         removedNodes.add(_curLoop->_optimisticallyRemovableNodes);
+      else
+         removedNodes.add(_curLoop->_definitelyRemovableNodes);
+
+      if (_curLoop->_hcrGuardVersioningOK)
+         removedNodes.add(hcrGuardsSet);
+
+      if (_curLoop->_osrGuardVersioningOK)
+         removedNodes.add(osrGuardsSet);
+
+      dumpOptDetails(
+         comp(),
+         "Trial versioning with:%s%s%s%s\n",
+         _curLoop->_privatizationOK ? " privatization" : "",
+         _curLoop->_hcrGuardVersioningOK ? " hcrGuards" : "",
+         _curLoop->_osrGuardVersioningOK ? " osrGuards" : "",
+         awrtbariVersioningOK ? " (awrtbari)" : "");
+
+      bool newPrivatizationOK = _curLoop->_privatizationOK;
+      bool newHCRGuardVersioningOK = _curLoop->_hcrGuardVersioningOK;
+      bool newOSRGuardVersioningOK = _curLoop->_osrGuardVersioningOK;
+      bool newAwrtbariVersioningOK = awrtbariVersioningOK;
+
       LoopBodySearch search(
          comp(),
          _curLoop->_memRegion,
@@ -4321,34 +4403,44 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          &removedNodes,
          &_curLoop->_takenBranches);
 
-      TR::Node *culprit = NULL; // only matters when !safeToRemoveHCRGuards
-      for (; search.hasTreeTop() && safeToRemoveHCRGuards; search.advance())
+      for (; search.hasTreeTop(); search.advance())
          {
          TR::TreeTop *tt = search.currentTreeTop();
          TR::Node *ttNode = tt->getNode();
-         culprit = ttNode;
-
-         if (ttNode->isHCRGuard())
-            {
-            hcrGuards.add(tt);
-            removedNodes.add(ttNode); // Don't search the taken side.
-            continue;
-            }
-
          if (removedNodes.contains(ttNode))
             continue;
 
-         // There is no need to identify the call nodes corresponding to HCR
-         // guards. Typically none will be found by this search, but even if
-         // HCR guards are removed, it's possible for such a call to be
-         // reachable, e.g. due to virtual guard tail splitter, in which case
-         // the call must be taken into account in the analysis, not ignored.
-
-         if (ttNode->canGCandReturn())
+         if (ttNode->getOpCodeValue() == TR::treetop
+             || ttNode->getOpCode().isNullCheck()
+             || ttNode->getOpCode().isResolveCheck())
             {
-            safeToRemoveHCRGuards = false;
+            TR::Node *child = ttNode->getChild(0);
+            if (child->getOpCode().isFunctionCall())
+               {
+               newPrivatizationOK = false;
+               if (_curLoop->_privatizationOK)
+                  traceCannot("privatize", child, comp());
+               }
             }
-         else if (ttNode->canGCandExcept())
+
+         // If the VM is configured to allow for OSR-HCR, then HCR invalidation
+         // can only happen at a subset of GC points even in compilations using
+         // traditional HCR. We could try to take advantage of that here, but
+         // so far no attempt is made to do so.
+
+         if (comp()->getHCRMode() == TR::osr
+             && comp()->isPotentialOSRPoint(ttNode, NULL, true))
+            {
+            newHCRGuardVersioningOK = false;
+            newOSRGuardVersioningOK = false;
+            if (_curLoop->_hcrGuardVersioningOK)
+               traceCannot("version HCR guards", ttNode, comp());
+            if (_curLoop->_osrGuardVersioningOK)
+               traceCannot("version OSR guards", ttNode, comp());
+            }
+
+         bool canGcAndStayInLoop = ttNode->canGCandReturn();
+         if (!canGcAndStayInLoop && ttNode->canGCandExcept())
             {
             TR::Block *block = search.currentBlock();
             TR::CFGEdgeList &excSuccs = block->getExceptionSuccessors();
@@ -4357,241 +4449,147 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
                TR::Block *handler = (*it)->getTo()->asBlock();
                if (whileLoop->contains(handler->getStructureOf()))
                   {
-                  safeToRemoveHCRGuards = false;
+                  canGcAndStayInLoop = true;
                   break;
                   }
                }
             }
+
+         if (canGcAndStayInLoop)
+            {
+            if (comp()->getHCRMode() == TR::traditional)
+               {
+               newHCRGuardVersioningOK = false;
+               if (_curLoop->_hcrGuardVersioningOK)
+                  traceCannot("version HCR guards", ttNode, comp());
+               }
+
+            newAwrtbariVersioningOK = false;
+            if (awrtbariVersioningOK)
+               traceCannot("version awrtbari", ttNode, comp());
+            }
          }
 
-      if (!safeToRemoveHCRGuards)
+      // Update awrtbariVersioningOK unconditionally here, since it is purely
+      // an output, not an input, of the analysis, so changes to it are not
+      // relevant to convergence.
+      if (awrtbariVersioningOK && !newAwrtbariVersioningOK)
+         dumpOptDetails(comp(), "No awrtbari versioning in loop %d\n", loopNum);
+
+      awrtbariVersioningOK = newAwrtbariVersioningOK;
+
+      // If nothing has changed, then the analysis has converged! It's possible
+      // to version with the current settings, and nothing remaining in the hot
+      // loop will interfere with that versioning.
+      if (newPrivatizationOK == _curLoop->_privatizationOK
+          && newHCRGuardVersioningOK == _curLoop->_hcrGuardVersioningOK
+          && newOSRGuardVersioningOK == _curLoop->_osrGuardVersioningOK)
+         {
+         // By checking performTransformation() here, we avoid asking about
+         // transformations that wouldn't have been possible anyway.
+         //
+         // Don't performTransformation() for privatization. Privatizations are
+         // part of transformations that were already optional earlier on.
+         //
+         // Don't performTransformation() for write barrier versioning here.
+         // That can be done separately for each barrier.
+         //
+         if (alreadyAskedPermission)
+            break;
+
+         // Permission to version HCR/OSR guards applies to all HCR/OSR guards
+         // (resp.), since whenever this analysis determines that they are safe
+         // to version, it does so under the assumption that all of them will
+         // be versioned.
+         alreadyAskedPermission = true;
+
+         if (newHCRGuardVersioningOK)
+            {
+            newHCRGuardVersioningOK = performTransformation(
+               comp(), "%sVersioning HCR guards\n", OPT_DETAILS_LOOP_VERSIONER);
+            }
+
+         if (newOSRGuardVersioningOK)
+            {
+            newOSRGuardVersioningOK = performTransformation(
+               comp(), "%sVersioning OSR guards\n", OPT_DETAILS_LOOP_VERSIONER);
+            }
+
+         if (newHCRGuardVersioningOK == _curLoop->_hcrGuardVersioningOK
+             && newOSRGuardVersioningOK == _curLoop->_osrGuardVersioningOK)
+            break;
+         }
+
+      // Discovered that we cannot do at least one of privatization, HCR guard
+      // versioning, and OSR guard versioning. Relax the tentative assumptions
+      // and re-analyze.
+      if (_curLoop->_privatizationOK && !newPrivatizationOK)
+         dumpOptDetails(comp(), "No privatization in loop %d\n", loopNum);
+      if (_curLoop->_hcrGuardVersioningOK && !newHCRGuardVersioningOK)
+         dumpOptDetails(comp(), "No HCR guard versioning in loop %d\n", loopNum);
+      if (_curLoop->_osrGuardVersioningOK && !newOSRGuardVersioningOK)
+         dumpOptDetails(comp(), "No OSR guard versioning in loop %d\n", loopNum);
+
+      _curLoop->_privatizationOK = newPrivatizationOK;
+      _curLoop->_hcrGuardVersioningOK = newHCRGuardVersioningOK;
+      _curLoop->_osrGuardVersioningOK = newOSRGuardVersioningOK;
+      }
+
+   // At this point, all of the transformations allowed by _privatizationOK,
+   // etc. are MANDATORY, since they have been determined to be safe under the
+   // assumption that all of them will be done.
+   //
+   // However, write barrier versioning is (exceptionally) still optional
+   // because no other transformations depend on it.
+
+   if (_curLoop->_hcrGuardVersioningOK)
+      {
+      ListIterator<TR::TreeTop> guardIt(&hcrGuards);
+      for (TR::TreeTop *tt = guardIt.getCurrent(); tt; tt = guardIt.getNext())
          {
          dumpOptDetails(
             comp(),
-            "Cannot remove HCR guards in loop %d due to n%un [%p]\n",
-            whileLoop->getNumber(),
-            culprit->getGlobalIndex(),
-            culprit);
-         }
-      else if (hcrGuards.isEmpty())
-         {
-         // Nothing to do. The analysis result (safeToRemoveHCRGuards) is not
-         // dependent on the removal of any HCR guards, so it can be used as-is
-         // for _privatizationOK and safeToVersionAwrtbari below.
+            "Creating versioned HCRGuard for guard n%dn\n",
+            tt->getNode()->getGlobalIndex());
 
-         // OTOH in the case where there are HCR guards (handled below in the
-         // remaining part of this if-else chain), it's fine to remove them
-         // immediately, because safeToRemoveHCRGuards means that after
-         // removing them, there will be no trees in the loop that
-         // canGCandReturn(). In particular there will be no calls, so
-         // privatization will definitely succeed, and the optimistic
-         // assumptions in the above search will be satisfied. However, this
-         // does require that all HCR guards be removed, so the
-         // performTransformation() is all-or-nothing.
-         }
-      else if (!performTransformation(
-         comp(),
-         "%sCreating versioned HCR guards\n", OPT_DETAILS_LOOP_VERSIONER))
-         {
-         dumpOptDetails(comp(), "Denied permission to version HCR guards\n");
-         safeToRemoveHCRGuards = false;
-         }
-      else
-         {
-         ListIterator<TR::TreeTop> guardIt(&hcrGuards);
-         for (TR::TreeTop *tt = guardIt.getCurrent(); tt; tt = guardIt.getNext())
-            {
-            dumpOptDetails(
-               comp(),
-               "Creating versioned HCRGuard for guard n%dn\n",
-               tt->getNode()->getGlobalIndex());
+         TR::Node *guard = tt->getNode()->duplicateTree();
+         guard->setBranchDestination(clonedLoopInvariantBlock->getEntry());
+         comparisonTrees.add(guard);
 
-            TR::Node *guard = tt->getNode()->duplicateTree();
-            guard->setBranchDestination(clonedLoopInvariantBlock->getEntry());
-            comparisonTrees.add(guard);
-            }
-         }
-
-      _curLoop->_privatizationOK = safeToRemoveHCRGuards;
-      }
-
-   // Construct the tests for invariant expressions that need to be checked for
-   // write barriers. Note that none of the above types of transformations
-   // depend on whether or not write barriers are removed.
-   //
-   // Use separate env variables to completely disable wrtbar versioning,
-   // or reenable wrtbar version (i.e. revert to old, more aggressive behavior)
-   //
-   // Piggy-back on the search that determines the safety of removing HCR
-   // guards. If HCR guards can be removed, privatization will succeed, and
-   // after removing the HCR guards and carrying out all LoopImprovements,
-   // there will be no GC points remaining in the loop (at least none that
-   // allow the loop to continue running after GC). That is, if it's safe to
-   // remove HCR guards, then it's also safe to version write barriers.
-   //
-   static char *disableWrtbarVersion = feGetEnv("TR_disableWrtbarVersion");
-   static char *enableWrtbarVersion = feGetEnv("TR_enableWrtbarVersion");
-   bool safeToVersionAwrtbari = safeToRemoveHCRGuards;
-   if (!awrtbariTrees->isEmpty()
-      && !disableWrtbarVersion
-      && (safeToVersionAwrtbari || enableWrtbarVersion)
-      && !shouldOnlySpecializeLoops()
-      && !refineAliases())
-      {
-      buildAwrtbariComparisonsTree(awrtbariTrees);
-      }
-
-   // Determine whether privatization of expressions is possible. For
-   // expressions that load from mutable memory that may be accessible to other
-   // threads, privatization is the only way to ensure that the value is truly
-   // loop-invariant.
-   //
-   // Skip this search if the HCR guard search has already succeeded, or if no
-   // privatizations have been requested (since in that case the result of the
-   // analysis is irrelevant).
-   if (!_curLoop->_privatizationOK && _curLoop->_privatizationsRequested)
-      {
-      // Search the part of the loop body that would remain *after removing
-      // all optimistically removable checks*. If the loop would still contain
-      // calls, then it is not possible to privatize.
-      //
-      // Note that because _privatizationsRequested holds, nodes for which
-      // PRIVATIZE LoopEntryPreps were created were considered invariant in the
-      // earlier parts of versioner's analysis of this loop. If there was any
-      // such node that requiresPrivatization(), then any call found here must
-      // be the cold call for an inline guard. If not, it would have caused the
-      // earlier analysis to consider fields, etc. to be written in the loop.
-      // Similarly, in that case there is no synchronization inside the loop.
-      //
-      LoopBodySearch search(
-         comp(),
-         _curLoop->_memRegion,
-         whileLoop,
-         &_curLoop->_optimisticallyRemovableNodes,
-         &_curLoop->_takenBranches);
-
-      _curLoop->_privatizationOK = true;
-      for (; search.hasTreeTop(); search.advance())
-         {
-         TR::Node *node = search.currentTreeTop()->getNode();
-         if (node->getNumChildren() == 0)
-            continue;
-
-         TR::Node *child = node->getChild(0);
-         if (child->getOpCode().isFunctionCall())
-            {
-            _curLoop->_privatizationOK = false;
-            dumpOptDetails(
-               comp(),
-               "NO PRIVATIZATION in loop %d due to n%un [%p]\n",
-               whileLoop->getNumber(),
-               node->getGlobalIndex(),
-               node);
-            break;
-            }
+         bool reverseBranch = false, origLoop = true;
+         FoldConditional fold(this, NULL, guard, reverseBranch, origLoop);
+         fold.improveLoop();
          }
       }
 
-   // If all yield points have been removed from the loop but OSR guards remain,
-   // they can be versioned out. Currently, this code assumes all OSR guards
-   // will be patched by the same runtime assumptions, so only one OSR guard is added
-   // to branch to the slow loop.
-   //
-   bool safeToRemoveOSRGuards = false;
-   bool seenOSRGuards = false;
-   static char *disableLoopOSR = feGetEnv("TR_DisableOSRGuardLoopVersioner");
-   if (comp()->getHCRMode() == TR::osr && disableLoopOSR == NULL)
+   if (_curLoop->_osrGuardVersioningOK)
       {
-      // Search the part of the loop body that would remain *after removing
-      // all possible checks and OSR guards* (based on privatizationOK). If the
-      // loop would still contain an OSR yield/invalidation point, then it is
-      // not possible to remove the OSR guards.
-
-      safeToRemoveOSRGuards = true;
-      ListIterator<TR::Block> blocksIt(&blocksInWhileLoop);
-      TR::Node *osrGuard = NULL;
-
+      // All OSR guards will be patched by the same runtime assumptions, so only
+      // one OSR guard is added to branch to the slow loop.
       TR_ASSERT_FATAL(
-          _curLoop->_optimisticallyRemovableNodes.contains(_curLoop->_definitelyRemovableNodes),
-          "all _definitelyRemovableNodes should also be _optimisticallyRemovableNodes in loop %d",
-          whileLoop->getNumber());
+         !osrGuards.isEmpty(), "unexpected attempt to version OSR guards");
 
-      // Make a copy of the set of nodes to be removed so that we can add OSR
-      // guards as we go. Because _privatizationOK is determined, the set of
-      // checks and branches to be removed is known exactly.
-      TR::NodeChecklist removedNodes(comp());
-      if (_curLoop->_privatizationOK)
-         removedNodes.add(_curLoop->_optimisticallyRemovableNodes);
-      else
-         removedNodes.add(_curLoop->_definitelyRemovableNodes);
-
+      TR::Node *osrGuard = osrGuards.getListHead()->getData()->getNode();
+      TR::Node *guard = osrGuard->duplicateTree();
       if (trace())
+         traceMsg(comp(), "OSRGuard n%dn has been created to guard against method invalidation\n", guard->getGlobalIndex());
+      guard->setBranchDestination(clonedLoopInvariantBlock->getEntry());
+      comparisonTrees.add(guard);
+
+      ListIterator<TR::TreeTop> guardIt(&osrGuards);
+      for (TR::TreeTop *tt = guardIt.getCurrent(); tt; tt = guardIt.getNext())
          {
-         traceMsg(comp(), "privatizationOK: %d : removedNodes ", _curLoop->_privatizationOK);
-         removedNodes.print();
-         traceMsg(comp(), "\n");
-         }
-
-      LoopBodySearch search(
-         comp(),
-         _curLoop->_memRegion,
-         whileLoop,
-         &removedNodes,
-         &_curLoop->_takenBranches);
-
-      for (; search.hasTreeTop(); search.advance())
-         {
-         TR::TreeTop *tt = search.currentTreeTop();
-         if (removedNodes.contains(tt->getNode()))
-            continue;
-
-         if (comp()->isPotentialOSRPoint(tt->getNode(), NULL, true))
-            {
-            if (trace())
-               traceMsg(comp(), "safeToRemoveOSRGuards false due to potential OSR point at n%dn\n", tt->getNode()->getGlobalIndex());
-            safeToRemoveOSRGuards = false;
-            break;
-            }
-         else if (tt->getNode()->isOSRGuard())
-            {
-            osrGuard = tt->getNode();
-            seenOSRGuards = true;
-            removedNodes.add(osrGuard); // Don't search the taken side.
-            if (trace())
-               traceMsg(comp(), "adding OSRGuard n%dn to the list of removedNodes\n", osrGuard->getGlobalIndex());
-            }
-         else
-            {
-            if (trace())
-               traceMsg(comp(), "osrGuardSafety traversed n%dn\n", tt->getNode()->getGlobalIndex());
-            }
-         }
-
-      if (seenOSRGuards && safeToRemoveOSRGuards)
-         {
-         // It's fine to remove the OSR guards immediately. There is no
-         // dependency (in either direction) between this and any other loop
-         // improvement.
-         if (performTransformation(comp(), "%sCreate versioned OSRGuard\n", OPT_DETAILS_LOOP_VERSIONER))
-            {
-            TR_ASSERT(osrGuard, "should have found an OSR guard to version");
-
-            // Duplicate the OSR guard tree
-            TR::Node *guard = osrGuard->duplicateTree();
-            if (trace())
-               traceMsg(comp(), "OSRGuard n%dn has been created to guard against method invalidation\n", guard->getGlobalIndex());
-            guard->setBranchDestination(clonedLoopInvariantBlock->getEntry());
-            comparisonTrees.add(guard);
-            }
-         else
-            {
-            safeToRemoveOSRGuards = false;
-            }
+         bool reverseBranch = false, origLoop = true;
+         FoldConditional fold(this, NULL, tt->getNode(), reverseBranch, origLoop);
+         fold.improveLoop();
          }
       }
+
+   if (awrtbariVersioningOK)
+      buildAwrtbariComparisonsTree(awrtbariTrees);
 
    // For each loop improvement that is still possible, emit its loop entry
-   // prep and transform the loop.
+   // prep and transform the loop. NB. These improvements are mandatory now.
    auto improvementsBegin = _curLoop->_loopImprovements.begin();
    auto improvementsEnd = _curLoop->_loopImprovements.end();
    for (auto it = improvementsBegin; it != improvementsEnd; ++it)
@@ -5159,45 +5157,8 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       properRegion->removeExternalEdgeTo(predBlock->getStructureOf(), succBlock->getStructureOf()->getNumber());
       }
 
-   // If OSR guards have been versioned out of the loop, walk the
-   // original loop and remove the guards and their branch edges
-   //
-   if (seenOSRGuards && safeToRemoveOSRGuards)
-      {
-      ListIterator<TR::Block> blocksIt(&blocksInWhileLoop);
-       for (TR::Block *block = blocksIt.getCurrent(); block; block = blocksIt.getNext())
-          {
-          TR::TreeTop *lastRealTT = block->getLastRealTreeTop();
-          if (lastRealTT
-              && lastRealTT->getNode()->isOSRGuard()
-              && performTransformation(comp(), "%sRemove OSR guard n%dn from hot loop\n", OPT_DETAILS_LOOP_VERSIONER, lastRealTT->getNode()->getGlobalIndex()))
-             {
-             block->removeBranch(comp());
-             }
-          }
-      }
-   if (safeToRemoveHCRGuards && !hcrGuards.isEmpty())
-      {
-      ListIterator<TR::Block> blocksIt(&blocksInWhileLoop);
-      for (TR::Block *block = blocksIt.getCurrent(); block; block = blocksIt.getNext())
-         {
-         TR::TreeTop *lastRealTT = block->getLastRealTreeTop();
-         if (lastRealTT
-             && lastRealTT->getNode()->isHCRGuard()
-             && performTransformation(comp(), "%sRemove HCR guard n%dn from hot loop\n", OPT_DETAILS_LOOP_VERSIONER, lastRealTT->getNode()->getGlobalIndex()))
-            {
-            block->removeBranch(comp());
-            }
-         }
-      }
-
    if (trace())
-      {
       comp()->dumpMethodTrees("Trees after this versioning");
-      //traceMsg(comp(), "Structure after versioning whileLoop : %d\n", whileLoop->getNumber());
-      //if (comp()->getFlowGraph()->getStructure())
-         //comp()->getFlowGraph()->getStructure()->print(comp()->getOutFile(), 6);
-      }
    }
 
 void TR_LoopVersioner::RemoveAsyncCheck::improveLoop()
@@ -10305,6 +10266,8 @@ TR_LoopVersioner::CurLoop::CurLoop(
    , _privTemps(std::less<const Expr*>(), memRegion)
    , _privatizationsRequested(false)
    , _privatizationOK(false)
+   , _hcrGuardVersioningOK(false)
+   , _osrGuardVersioningOK(false)
    {}
 
 /**

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -712,6 +712,12 @@ class TR_LoopVersioner : public TR_LoopTransformer
 
       /// The result of the analysis to say whether privatization can be done.
       bool _privatizationOK;
+
+      /// The result of the analysis to say whether HCR guards can be versioned.
+      bool _hcrGuardVersioningOK;
+
+      /// The result of the analysis to say whether OSR guards can be versioned.
+      bool _osrGuardVersioningOK;
       };
 
    class Hoist : public LoopImprovement

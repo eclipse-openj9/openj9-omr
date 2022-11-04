@@ -4302,6 +4302,16 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
        "loop %d: privatization should only allow more versioning",
        loopNum);
 
+   TR_ASSERT_FATAL(
+       _curLoop->_guardsRemovableWithPrivAndHCR.contains(_curLoop->_guardsRemovableWithHCR),
+       "loop %d: privatization should only allow more merged HCR guard versioning",
+       loopNum);
+
+   TR_ASSERT_FATAL(
+       _curLoop->_guardsRemovableWithPrivAndOSR.contains(_curLoop->_guardsRemovableWithOSR),
+       "loop %d: privatization should only allow more merged OSR guard versioning",
+       loopNum);
+
    // Detect the presence of HCR and/or OSR guards in the loop.
    TR_ScratchList<TR::TreeTop> hcrGuards(trMemory());
    TR_ScratchList<TR::TreeTop> osrGuards(trMemory());
@@ -4352,8 +4362,14 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       feGetEnv("TR_disableWrtbarVersion") != NULL;
 
    _curLoop->_privatizationOK = _curLoop->_privatizationsRequested;
-   _curLoop->_hcrGuardVersioningOK = !hcrGuards.isEmpty() && !disableLoopHCR;
-   _curLoop->_osrGuardVersioningOK = !osrGuards.isEmpty() && !disableLoopOSR;
+
+   _curLoop->_hcrGuardVersioningOK =
+      (!hcrGuards.isEmpty() || !_curLoop->_guardsRemovableWithPrivAndHCR.isEmpty())
+      && !disableLoopHCR;
+
+   _curLoop->_osrGuardVersioningOK =
+      (!osrGuards.isEmpty() || !_curLoop->_guardsRemovableWithPrivAndOSR.isEmpty())
+      && !disableLoopOSR;
 
    bool awrtbariVersioningOK =
       !awrtbariTrees->isEmpty()
@@ -4378,10 +4394,22 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          removedNodes.add(_curLoop->_definitelyRemovableNodes);
 
       if (_curLoop->_hcrGuardVersioningOK)
+         {
          removedNodes.add(hcrGuardsSet);
+         if (_curLoop->_privatizationOK)
+            removedNodes.add(_curLoop->_guardsRemovableWithPrivAndHCR);
+         else
+            removedNodes.add(_curLoop->_guardsRemovableWithHCR);
+         }
 
       if (_curLoop->_osrGuardVersioningOK)
+         {
          removedNodes.add(osrGuardsSet);
+         if (_curLoop->_privatizationOK)
+            removedNodes.add(_curLoop->_guardsRemovableWithPrivAndOSR);
+         else
+            removedNodes.add(_curLoop->_guardsRemovableWithOSR);
+         }
 
       dumpOptDetails(
          comp(),
@@ -4565,16 +4593,20 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    if (_curLoop->_osrGuardVersioningOK)
       {
       // All OSR guards will be patched by the same runtime assumptions, so only
-      // one OSR guard is added to branch to the slow loop.
-      TR_ASSERT_FATAL(
-         !osrGuards.isEmpty(), "unexpected attempt to version OSR guards");
+      // one OSR guard is added to branch to the slow loop. This is only needed
+      // if there are no virtual guards with merged OSR guards to be versioned,
+      // but it's more straightforward (and harmless) to generate it whenever
+      // there was originally a standalone OSR guard in the loop.
+      if (!osrGuards.isEmpty())
+         {
+         TR::Node *osrGuard = osrGuards.getListHead()->getData()->getNode();
+         TR::Node *guard = osrGuard->duplicateTree();
+         if (trace())
+            traceMsg(comp(), "OSRGuard n%dn has been created to guard against method invalidation\n", guard->getGlobalIndex());
 
-      TR::Node *osrGuard = osrGuards.getListHead()->getData()->getNode();
-      TR::Node *guard = osrGuard->duplicateTree();
-      if (trace())
-         traceMsg(comp(), "OSRGuard n%dn has been created to guard against method invalidation\n", guard->getGlobalIndex());
-      guard->setBranchDestination(clonedLoopInvariantBlock->getEntry());
-      comparisonTrees.add(guard);
+         guard->setBranchDestination(clonedLoopInvariantBlock->getEntry());
+         comparisonTrees.add(guard);
+         }
 
       ListIterator<TR::TreeTop> guardIt(&osrGuards);
       for (TR::TreeTop *tt = guardIt.getCurrent(); tt; tt = guardIt.getNext())
@@ -4596,7 +4628,9 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       {
       LoopImprovement *improvement = *it;
       LoopEntryPrep *prep = improvement->_prep;
-      if (!prep->_requiresPrivatization || _curLoop->_privatizationOK)
+      if ((!prep->_requiresPrivatization || _curLoop->_privatizationOK)
+          && (!prep->_expr->mergedWithHCRGuard() || _curLoop->_hcrGuardVersioningOK)
+          && (!prep->_expr->mergedWithOSRGuard() || _curLoop->_osrGuardVersioningOK))
          {
          emitPrep(prep, &comparisonTrees);
          improvement->improveLoop();
@@ -9923,9 +9957,22 @@ void TR_LoopVersioner::nodeWillBeRemovedIfPossible(
    TR::Node *node,
    LoopEntryPrep *prep)
    {
-   _curLoop->_optimisticallyRemovableNodes.add(node);
+   TR::NodeChecklist *removableWithPriv = &_curLoop->_optimisticallyRemovableNodes;
+   TR::NodeChecklist *removableWithoutPriv = &_curLoop->_definitelyRemovableNodes;
+   if (prep->_expr->mergedWithHCRGuard())
+      {
+      removableWithPriv = &_curLoop->_guardsRemovableWithPrivAndHCR;
+      removableWithoutPriv = &_curLoop->_guardsRemovableWithHCR;
+      }
+   else if (prep->_expr->mergedWithOSRGuard())
+      {
+      removableWithPriv = &_curLoop->_guardsRemovableWithPrivAndOSR;
+      removableWithoutPriv = &_curLoop->_guardsRemovableWithOSR;
+      }
+
+   removableWithPriv->add(node);
    if (!prep->_requiresPrivatization)
-      _curLoop->_definitelyRemovableNodes.add(node);
+      removableWithoutPriv->add(node);
    }
 
 /**
@@ -10261,6 +10308,10 @@ TR_LoopVersioner::CurLoop::CurLoop(
    , _boundCheckPrepsWithSpineChecks(std::less<TR::Node*>(), memRegion)
    , _definitelyRemovableNodes(comp)
    , _optimisticallyRemovableNodes(comp)
+   , _guardsRemovableWithHCR(comp)
+   , _guardsRemovableWithPrivAndHCR(comp)
+   , _guardsRemovableWithOSR(comp)
+   , _guardsRemovableWithPrivAndOSR(comp)
    , _takenBranches(comp)
    , _loopImprovements(memRegion)
    , _privTemps(std::less<const Expr*>(), memRegion)

@@ -391,6 +391,18 @@ class TR_LoopVersioner : public TR_LoopTransformer
        */
       flags32_t _flags;
 
+      /// Determine whether this expression is a guard merged with an HCR guard.
+      bool mergedWithHCRGuard() const
+         {
+         return _op.isIf() && _guard != NULL && _guard->mergedWithHCRGuard();
+         }
+
+      /// Determine whether this expression is a guard merged with an OSR guard.
+      bool mergedWithOSRGuard() const
+         {
+         return _op.isIf() && _guard != NULL && _guard->mergedWithOSRGuard();
+         }
+
       bool operator<(const Expr &rhs) const;
       };
 
@@ -697,6 +709,20 @@ class TR_LoopVersioner : public TR_LoopTransformer
 
       /// Check and branch nodes that will be removed if privatization is allowed.
       TR::NodeChecklist _optimisticallyRemovableNodes;
+
+      /// Guards that will be removed as long as HCR guard versioning is allowed.
+      TR::NodeChecklist _guardsRemovableWithHCR;
+
+      /// Guards that will be removed as long as both privatization and HCR
+      /// guard versioning are allowed.
+      TR::NodeChecklist _guardsRemovableWithPrivAndHCR;
+
+      /// Guards that will be removed as long as OSR guard versioning is allowed.
+      TR::NodeChecklist _guardsRemovableWithOSR;
+
+      /// Guards that will be removed as long as both privatization and OSR
+      /// guard versioning are allowed.
+      TR::NodeChecklist _guardsRemovableWithPrivAndOSR;
 
       /// Branch nodes that, if removed, will be taken.
       TR::NodeChecklist _takenBranches;

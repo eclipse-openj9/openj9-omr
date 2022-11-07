@@ -587,6 +587,10 @@ public:
 
    bool internalPointerSupportImplemented() {return true;}
 
+   bool considerTypeForGRA(TR::Node *node);
+   bool considerTypeForGRA(TR::DataType dt);
+   bool considerTypeForGRA(TR::SymbolReference *symRef);
+
    private:
 
    enum // flags

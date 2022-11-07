@@ -738,6 +738,28 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
    return TR::CodeGenerator::getSupportsOpCodeForAutoSIMD(&self()->comp()->target().cpu, opcode);
    }
 
+bool OMR::ARM64::CodeGenerator::considerTypeForGRA(TR::Node *node)
+   {
+   return !node->getOpCode().isVectorOpCode();
+   }
+
+bool OMR::ARM64::CodeGenerator::considerTypeForGRA(TR::DataType dt)
+   {
+   return !(dt.isVector() || dt.isMask());
+   }
+
+bool OMR::ARM64::CodeGenerator::considerTypeForGRA(TR::SymbolReference *symRef)
+   {
+   if (symRef && symRef->getSymbol())
+      {
+      return considerTypeForGRA(symRef->getSymbol()->getDataType());
+      }
+   else
+      {
+      return true;
+      }
+   }
+
 bool
 OMR::ARM64::CodeGenerator::directCallRequiresTrampoline(intptr_t targetAddress, intptr_t sourceAddress)
    {

@@ -513,7 +513,7 @@ const OptimizationStrategy finalGlobalOpts[] =
    { deadTreesElimination                 },
    //{ treeSimplification,       IfEnabled  },
    { localLiveRangeReduction              },
-   { compactLocals,             IfNotJitProfiling }, // analysis results are invalidated by profilingGroup
+   { compactLocals,             IfNotJitProfiling }, // analysis results are invalidated by jitProfilingGroup
 #ifdef J9_PROJECT_SPECIFIC
    { globalLiveVariablesForGC             },
 #endif
@@ -1307,6 +1307,11 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
 
       case IfNotProfiling:
          if (!comp()->isProfilingCompilation() || debug("ignoreIfNotProfiling"))
+            doThisOptimization = true;
+         break;
+
+      case IfJitProfiling:
+         if (comp()->getProfilingMode() == JitProfiling)
             doThisOptimization = true;
          break;
 

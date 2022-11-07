@@ -4869,6 +4869,11 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, T
 
    node->setRegister(targetReg);
    TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node);
+   if (op == TR::InstOpCode::vldrimmq)
+      {
+      tempMR->validateImmediateOffsetAlignment(node, 16, cg);
+      }
+
    generateTrg1MemInstruction(cg, op, node, targetReg, tempMR);
 
    if (needSync)
@@ -4980,6 +4985,11 @@ OMR::ARM64::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::CodeGenerator *c
 TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
    {
    TR::MemoryReference *tempMR = TR::MemoryReference::createWithRootLoadOrStore(cg, node);
+   if (op == TR::InstOpCode::vstrimmq)
+      {
+      tempMR->validateImmediateOffsetAlignment(node, 16, cg);
+      }
+
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && cg->comp()->target().isSMP());
    bool lazyVolatile = false;
    if (node->getSymbolReference()->getSymbol()->isShadow() &&

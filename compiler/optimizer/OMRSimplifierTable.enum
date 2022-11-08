@@ -411,6 +411,11 @@
 #define mloadiSimplifierHandler indirectLoadSimplifier
 #define mstoreSimplifierHandler directStoreSimplifier
 #define mstoreiSimplifierHandler indirectStoreSimplifier
+#define mTrueCountSimplifierHandler dftSimplifier
+#define mFirstTrueSimplifierHandler dftSimplifier
+#define mLastTrueSimplifierHandler dftSimplifier
+#define mToLongBitsSimplifierHandler dftSimplifier
+#define mLongBitsToMaskSimplifierHandler dftSimplifier
 #define mRegLoadSimplifierHandler dftSimplifier
 #define mRegStoreSimplifierHandler dftSimplifier
 #define b2mSimplifierHandler dftSimplifier

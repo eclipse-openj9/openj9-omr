@@ -147,6 +147,86 @@ VECTOR_OPERATION_MACRO(\
    /* .description             =    store indirect mask */ \
 )
 VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mTrueCount, \
+   /* .name                    = */ "mTrueCount", \
+   /* .properties1             = */ 0, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ ILProp3::MaskReduction, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::Int64, \
+   /* .typeProperties          = */ TR::NoType, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    mask true count */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mFirstTrue, \
+   /* .name                    = */ "mFirstTrue", \
+   /* .properties1             = */ 0, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ ILProp3::MaskReduction, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::Int64, \
+   /* .typeProperties          = */ TR::NoType, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    mask first true */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mLastTrue, \
+   /* .name                    = */ "mLastTrue", \
+   /* .properties1             = */ 0, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ ILProp3::MaskReduction, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::Int64, \
+   /* .typeProperties          = */ TR::NoType, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    mask last true */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mToLongBits, \
+   /* .name                    = */ "mToLongBits", \
+   /* .properties1             = */ 0, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ ILProp3::MaskReduction, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::Int64, \
+   /* .typeProperties          = */ TR::NoType, \
+   /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    mask to long bits */ \
+)
+VECTOR_OPERATION_MACRO(\
+   /* .operation               = */ mLongBitsToMask, \
+   /* .name                    = */ "mLongBitsToMask", \
+   /* .properties1             = */ 0, \
+   /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
+   /* .properties3             = */ ILProp3::MaskReduction, \
+   /* .properties4             = */ 0, \
+   /* .dataType                = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::MaskResult, \
+   /* .childProperties         = */ ONE_CHILD(TR::Int64), \
+   /* .swapChildrenOperation   = */ TR::vBadOperation, \
+   /* .reverseBranchOperation  = */ TR::vBadOperation, \
+   /* .booleanCompareOpCode    = */ TR::BadILOp, \
+   /* .ifCompareOpCode         = */ TR::BadILOp, \
+   /* .description             =    long bits to mask */ \
+)
+VECTOR_OPERATION_MACRO(\
    /* .operation               = */ mRegLoad, \
    /* .name                    = */ "mRegLoad", \
    /* .properties1             = */ ILProp1::LoadReg, \
@@ -1082,7 +1162,7 @@ VECTOR_OPERATION_MACRO(\
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmcmpeq, \
    /* .name                    = */ "vmcmpeq", \
-   /* .properties1             = */ ILProp1::VectorMasked, \
+   /* .properties1             = */ ILProp1::VectorMasked | ILProp1::BooleanCompare, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
@@ -1098,7 +1178,7 @@ VECTOR_OPERATION_MACRO(\
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmcmpne, \
    /* .name                    = */ "vmcmpne", \
-   /* .properties1             = */ ILProp1::VectorMasked, \
+   /* .properties1             = */ ILProp1::VectorMasked | ILProp1::BooleanCompare, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
@@ -1114,7 +1194,7 @@ VECTOR_OPERATION_MACRO(\
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmcmpgt, \
    /* .name                    = */ "vmcmpgt", \
-   /* .properties1             = */ ILProp1::VectorMasked, \
+   /* .properties1             = */ ILProp1::VectorMasked | ILProp1::BooleanCompare, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
@@ -1130,7 +1210,7 @@ VECTOR_OPERATION_MACRO(\
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmcmpge, \
    /* .name                    = */ "vmcmpge", \
-   /* .properties1             = */ ILProp1::VectorMasked, \
+   /* .properties1             = */ ILProp1::VectorMasked | ILProp1::BooleanCompare, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
@@ -1146,7 +1226,7 @@ VECTOR_OPERATION_MACRO(\
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmcmplt, \
    /* .name                    = */ "vmcmplt", \
-   /* .properties1             = */ ILProp1::VectorMasked, \
+   /* .properties1             = */ ILProp1::VectorMasked | ILProp1::BooleanCompare, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \
@@ -1162,7 +1242,7 @@ VECTOR_OPERATION_MACRO(\
 VECTOR_OPERATION_MACRO(\
    /* .operation               = */ vmcmple, \
    /* .name                    = */ "vmcmple", \
-   /* .properties1             = */ ILProp1::VectorMasked, \
+   /* .properties1             = */ ILProp1::VectorMasked | ILProp1::BooleanCompare, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
    /* .properties3             = */ 0, \
    /* .properties4             = */ 0, \

@@ -261,7 +261,7 @@ namespace ILProp3
       Abs                         = 0x00008000,
       VectorReduction             = 0x00010000, ///< Indicates if opcode performs vector reduction that produces scalar result
       Signum                      = 0x00020000, ///< For Xcmp opcodes
-      // Available                = 0x00040000,
+      MaskReduction               = 0x00040000, ///< Indicates if opcode performs mask reduction that produces scalar result
       // Available                = 0x00080000,
       // Available                = 0x00100000,
       // Available                = 0x00200000,

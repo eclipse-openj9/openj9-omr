@@ -558,6 +558,14 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
     */
    TR::Instruction *expandInstruction(TR::Instruction *currentInstruction, TR::CodeGenerator *cg);
 
+   /**
+    * @brief Validates the alignment of the immediate offset.
+    * @param[in] node: node
+    * @param[in] alignment: alignment in bytes
+    * @param[in] cg: CodeGenerator
+    */
+   void validateImmediateOffsetAlignment(TR::Node *node, uint32_t alignment, TR::CodeGenerator *cg);
+
    private:
 
    /**

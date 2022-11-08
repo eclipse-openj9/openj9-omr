@@ -347,6 +347,61 @@ void OMR::ARM64::MemoryReference::setSymbol(TR::Symbol *symbol, TR::CodeGenerato
       }
    }
 
+void OMR::ARM64::MemoryReference::validateImmediateOffsetAlignment(TR::Node *node, uint32_t alignment, TR::CodeGenerator *cg)
+   {
+   intptr_t displacement = self()->getOffset();
+   if ((displacement % alignment) != 0)
+      {
+      TR::Register *newBase;
+
+      self()->setOffset(0);
+
+      if (_baseRegister && self()->isBaseModifiable())
+         newBase = _baseRegister;
+      else
+         {
+         newBase = cg->allocateRegister();
+
+         if (_baseRegister && _baseRegister->containsInternalPointer())
+            {
+            newBase->setContainsInternalPointer();
+            newBase->setPinningArrayPointer(_baseRegister->getPinningArrayPointer());
+            }
+         }
+
+      if (_baseRegister != NULL)
+         {
+         if (constantIsUnsignedImm12(displacement))
+            {
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addimmx, node, newBase, _baseRegister, displacement);
+            }
+         else if (node->getOpCode().isLoadConst() && node->getRegister() && (node->getLongInt() == displacement))
+            {
+            generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, newBase, _baseRegister, node->getRegister());
+            }
+         else
+            {
+            TR::Register *tempReg = cg->allocateRegister();
+            loadConstant64(cg, node, displacement, tempReg);
+            generateTrg1Src2Instruction(cg, TR::InstOpCode::addx, node, newBase, _baseRegister, tempReg);
+            cg->stopUsingRegister(tempReg);
+            }
+         }
+      else
+         {
+         loadConstant64(cg, node, displacement, newBase);
+         }
+
+      if (_baseRegister != newBase)
+         {
+         self()->decNodeReferenceCounts(cg);
+         _baseNode = NULL;
+         self()->setBaseModifiable();
+         _baseRegister = newBase;
+         }
+      }
+   }
+
 void OMR::ARM64::MemoryReference::normalize(TR::Node *node, TR::CodeGenerator *cg)
    {
 

@@ -3939,6 +3939,7 @@ omrsysinfo_startup(struct OMRPortLibrary *portLibrary)
 	BOOLEAN runningInContainer = FALSE;
 #endif /* defined(LINUX) && !defined(OMRZTPF) */
 
+	PPG_instantOnFlags = 0;
 	PPG_sysinfoControlFlags = 0;
 	/* Obtain and cache executable name; if this fails, executable name remains NULL, but
 	 * shouldn't cause failure to startup port library.  Failure will be noticed only

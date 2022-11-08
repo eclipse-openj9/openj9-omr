@@ -84,6 +84,7 @@ typedef struct OMRPortPlatformGlobals {
 #if defined(OMR_ENV_DATA64)
 	char iptTtoken[TTOKEN_BUF_SZ];
 #endif /* defined(OMR_ENV_DATA64) */
+	uintptr_t instantOnFlags;
 } OMRPortPlatformGlobals;
 
 #define PPG_si_osType (portLibrary->portGlobals->platformGlobals.si_osType)
@@ -107,5 +108,7 @@ typedef struct OMRPortPlatformGlobals {
 #define PPG_ipt_ttoken (portLibrary->portGlobals->platformGlobals.iptTtoken)
 
 #define PPG_stfleCache (portLibrary->portGlobals->platformGlobals.stfleCache)
+
+#define PPG_instantOnFlags (portLibrary->portGlobals->platformGlobals.instantOnFlags)
 
 #endif /* omrportpg_h */

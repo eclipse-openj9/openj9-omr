@@ -636,16 +636,42 @@ static TR::Instruction *iffcmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, 
          }
       else
          {
-         generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, dstLabel, cc);
-         result = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, dstLabel, TR::CC_VS, deps);
+         if (cc == TR::CC_NE)
+            {
+            /* iffcmpne/ifdcmpne: false if CC_VS is set */
+            TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
+            generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, doneLabel, TR::CC_VS);
+            generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, dstLabel, cc, deps);
+            result = generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel);
+            }
+         else
+            {
+            generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, dstLabel, cc);
+            result = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, dstLabel, TR::CC_VS, deps);
+            }
          }
       }
    else
       {
-      result = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, dstLabel, cc);
-      if (needsExplicitUnorderedCheck)
+      if (!needsExplicitUnorderedCheck)
          {
-         result = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, dstLabel, TR::CC_VS);
+         result = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, dstLabel, cc);
+         }
+      else
+         {
+         if (cc == TR::CC_NE)
+            {
+            /* iffcmpne/ifdcmpne: false if CC_VS is set */
+            TR::LabelSymbol *doneLabel = generateLabelSymbol(cg);
+            generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, doneLabel, TR::CC_VS);
+            generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, dstLabel, cc);
+            result = generateLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel);
+            }
+         else
+            {
+            generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, dstLabel, cc);
+            result = generateConditionalBranchInstruction(cg, TR::InstOpCode::b_cond, node, dstLabel, TR::CC_VS);
+            }
          }
       }
 
@@ -668,7 +694,7 @@ OMR::ARM64::TreeEvaluator::iffcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *
 TR::Register *
 OMR::ARM64::TreeEvaluator::iffcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   iffcmpHelper(node, TR::CC_NE, false, false, cg);
+   iffcmpHelper(node, TR::CC_NE, false, true, cg); // need to check NaN
    return NULL;
    }
 
@@ -710,7 +736,7 @@ OMR::ARM64::TreeEvaluator::ifdcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *
 TR::Register *
 OMR::ARM64::TreeEvaluator::ifdcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   iffcmpHelper(node, TR::CC_NE, true, false, cg);
+   iffcmpHelper(node, TR::CC_NE, true, true, cg); // need to check NaN
    return NULL;
    }
 
@@ -1044,7 +1070,7 @@ OMR::ARM64::TreeEvaluator::iffcmpequEvaluator(TR::Node *node, TR::CodeGenerator 
 TR::Register *
 OMR::ARM64::TreeEvaluator::iffcmpneuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   iffcmpHelper(node, TR::CC_NE, false, false, cg);
+   iffcmpHelper(node, TR::CC_NE, false, false, cg); // no need to check NaN
    return NULL;
    }
 
@@ -1086,7 +1112,7 @@ OMR::ARM64::TreeEvaluator::ifdcmpequEvaluator(TR::Node *node, TR::CodeGenerator 
 TR::Register *
 OMR::ARM64::TreeEvaluator::ifdcmpneuEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   iffcmpHelper(node, TR::CC_NE, true, false, cg);
+   iffcmpHelper(node, TR::CC_NE, true, false, cg); // no need to check NaN
    return NULL;
    }
 

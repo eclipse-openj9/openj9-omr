@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -266,49 +266,6 @@ class VPConstraint
       TR::VPConstraint     *_other;
       const char          *_name;
    };
-
-   // The following {add,sub}WithOverflow require that the build (C++) compiler
-   // use two's complement (virtually guaranteed), and that type_t be a signed
-   // integer type.
-
-   template<typename type_t> type_t addWithOverflow(type_t a, type_t b, bool& overflow)
-      {
-      // Cast to uintmax_t to avoid undefined behaviour on signed overflow.
-      //
-      // The uintmax_t-typed operands are sign-extended from a and b. They
-      // won't undergo integer promotions, because they're already as large as
-      // possible. And they're already at a common type, so they won't undergo
-      // the "usual arithmetic conversions" either. Therefore this will do
-      // unsigned (modular) arithmitic. Converting back to type_t produces the
-      // expected two's complement result.
-      type_t sum = uintmax_t(a) + uintmax_t(b);
-
-      //The overflow flag is set when the arithmetic used to compute the sum overflows. This happens exactly
-      //when both operand have the same sign and the resulting value has the opposite sign to this.
-      //A non-negative result from xoring two numbers indicates that their sign bits are either both
-      //set, or both unset, meaning they have the same sign, while a negative result from xoring two
-      //numbers means that exactly one of them has its sign bit set, meaning the signs of the two numbers
-      //differ.
-      overflow = ( a ^ b ) >= 0 && ( a ^ sum ) < 0;
-
-      return sum;
-      }
-
-   template<typename type_t> type_t subWithOverflow(type_t a, type_t b, bool& overflow)
-      {
-      // About uintmax_t, see addWithOverflow above.
-      type_t diff = uintmax_t(a) - uintmax_t(b);
-
-      //The overflow flag is set when the arithmetic used to compute the difference overflows. This happens exactly
-      //when both operand bounds have a differing sign and the resulting value has the same sign as the first operand.
-      //A non-negative result from xoring two numbers indicates that their sign bits are either both
-      //set, or both unset, meaning they have the same sign, while a negative result from xoring two
-      //numbers means that exactly one of them has its sign bit set, meaning the signs of the two numbers
-      //differ.
-      overflow = ( a ^ b ) < 0 && ( a ^ diff ) < 0;
-
-      return diff;
-      }
 
    private:
    int32_t _mergePriority;

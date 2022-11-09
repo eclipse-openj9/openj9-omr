@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -45,6 +45,7 @@
 #include "il/SymbolReference.hpp"
 #include "ilgen/IlGenRequest.hpp"
 #include "ilgen/IlGeneratorMethodDetails.hpp"
+#include "infra/Arith.hpp"
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/ValuePropagation.hpp"
 
@@ -4495,10 +4496,10 @@ TR::VPConstraint *TR::VPShortConstraint::add(TR::VPConstraint *other, TR::DataTy
    //Compute the lower and upper bound values, and determine whether or not the arithmetic
    //has overflowed in either case.
    bool lowOverflow;
-   int16_t low  = addWithOverflow<int16_t>(getLow(), otherShort->getLow(), lowOverflow);
+   int16_t low  = TR::addWithOverflow<int16_t>(getLow(), otherShort->getLow(), lowOverflow);
 
    bool highOverflow;
-   int16_t high = addWithOverflow<int16_t>(getHigh(), otherShort->getHigh(), highOverflow);
+   int16_t high = TR::addWithOverflow<int16_t>(getHigh(), otherShort->getHigh(), highOverflow);
 
    return getRange(low, high, lowOverflow, highOverflow, vp);
    }
@@ -4523,10 +4524,10 @@ TR::VPConstraint *TR::VPIntConstraint::add(TR::VPConstraint *other, TR::DataType
    //Compute the lower and upper bound values, and determine whether or not the arithmetic
    //has overflowed in either case.
    bool lowOverflow;
-   int32_t low  = addWithOverflow<int32_t>(getLow(), otherInt->getLow(), lowOverflow);
+   int32_t low  = TR::addWithOverflow<int32_t>(getLow(), otherInt->getLow(), lowOverflow);
 
    bool highOverflow;
-   int32_t high = addWithOverflow<int32_t>(getHigh(), otherInt->getHigh(), highOverflow);
+   int32_t high = TR::addWithOverflow<int32_t>(getHigh(), otherInt->getHigh(), highOverflow);
 
    return getRange(low, high, lowOverflow, highOverflow, vp);
    }
@@ -4603,10 +4604,10 @@ TR::VPConstraint *TR::VPShortConstraint::subtract(TR::VPConstraint *other, TR::D
    //Compute the lower and upper bound values, and determine whether or not the arithmetic
    //has overflowed in either case.
    bool lowOverflow;
-   int16_t low  = subWithOverflow<int16_t>(getLow(), otherShort->getHigh(), lowOverflow);
+   int16_t low  = TR::subWithOverflow<int16_t>(getLow(), otherShort->getHigh(), lowOverflow);
 
    bool highOverflow;
-   int16_t high = subWithOverflow<int16_t>(getHigh(), otherShort->getLow(), highOverflow);
+   int16_t high = TR::subWithOverflow<int16_t>(getHigh(), otherShort->getLow(), highOverflow);
 
    return getRange(low, high, lowOverflow, highOverflow, vp);
    }
@@ -4628,10 +4629,10 @@ TR::VPConstraint *TR::VPIntConstraint::subtract(TR::VPConstraint *other, TR::Dat
    //Compute the lower and upper bound values, and determine whether or not the arithmetic
    //has overflowed in either case.
    bool lowOverflow;
-   int32_t low  = subWithOverflow<int32_t>(getLow(), otherInt->getHigh(), lowOverflow);
+   int32_t low  = TR::subWithOverflow<int32_t>(getLow(), otherInt->getHigh(), lowOverflow);
 
    bool highOverflow;
-   int32_t high = subWithOverflow<int32_t>(getHigh(), otherInt->getLow(), highOverflow);
+   int32_t high = TR::subWithOverflow<int32_t>(getHigh(), otherInt->getLow(), highOverflow);
 
    return getRange(low, high, lowOverflow, highOverflow, vp);
    }
@@ -4727,10 +4728,10 @@ TR::VPConstraint *TR::VPLongConstraint::add(TR::VPConstraint *other, TR::DataTyp
    //Compute the lower and upper bound values, and determine whether or not the arithmetic
    //has overflowed in either case.
    bool lowOverflow;
-   int64_t low  = addWithOverflow<int64_t>(getLow(), otherLong->getLow(), lowOverflow);
+   int64_t low  = TR::addWithOverflow<int64_t>(getLow(), otherLong->getLow(), lowOverflow);
 
    bool highOverflow;
-   int64_t high = addWithOverflow<int64_t>(getHigh(), otherLong->getHigh(), highOverflow);
+   int64_t high = TR::addWithOverflow<int64_t>(getHigh(), otherLong->getHigh(), highOverflow);
 
    return getRange(low, high, lowOverflow, highOverflow, vp);
    }
@@ -4748,10 +4749,10 @@ TR::VPConstraint *TR::VPLongConstraint::subtract(TR::VPConstraint *other, TR::Da
    //Compute the lower and upper bound values, and determine whether or not the arithmetic
    //has overflowed in either case.
    bool lowOverflow;
-   int64_t low  = subWithOverflow<int64_t>(getLow(), otherLong->getHigh(), lowOverflow);
+   int64_t low  = TR::subWithOverflow<int64_t>(getLow(), otherLong->getHigh(), lowOverflow);
 
    bool highOverflow;
-   int64_t high = subWithOverflow<int64_t>(getHigh(), otherLong->getLow(), highOverflow);
+   int64_t high = TR::subWithOverflow<int64_t>(getHigh(), otherLong->getLow(), highOverflow);
 
    return getRange(low, high, lowOverflow, highOverflow, vp);
    }

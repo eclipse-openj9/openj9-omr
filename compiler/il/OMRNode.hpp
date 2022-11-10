@@ -150,6 +150,8 @@ protected:
 
    static TR::Node *createInternal(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *originalNode = 0);
 
+   TR_YesNoMaybe computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesCollected, TR::NodeChecklist &processedNodesNotCollected);
+
 /**
  * Public constructors and helpers
  */
@@ -1847,10 +1849,7 @@ protected:
 // Private functionality.
 private:
    TR::Node * getExtendedChild(int32_t c);
-   TR_YesNoMaybe computeIsCollectedReferenceImpl(TR::NodeChecklist &processedNodesCollected, TR::NodeChecklist &processedNodesNotCollected);
-
    friend class TR::NodePool;
-
 
 // flag bits
 protected:

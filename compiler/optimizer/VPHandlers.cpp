@@ -1819,13 +1819,9 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
          if (sig)
             {
             TR_OpaqueClassBlock *classBlock = vp->fe()->getClassFromSignature(sig, len, symRef->getOwningMethod(vp->comp()));
-
-            if (  classBlock
-               && TR::Compiler->cls.isInterfaceClass(vp->comp(), classBlock)
-               && !vp->comp()->getOption(TR_TrustAllInterfaceTypeInfo))
-               {
-               classBlock = NULL;
-               }
+            TR_OpaqueClassBlock *erased = NULL;
+            if (vp->isUnreliableSignatureType(classBlock, erased))
+               classBlock = erased;
 
             if (classBlock)
                {
@@ -2611,13 +2607,9 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
       {
       TR_ResolvedMethod *method = node->getSymbolReference()->getOwningMethod(vp->comp());
       TR_OpaqueClassBlock *classBlock = vp->fe()->getClassFromSignature(sig, len, method);
-
-      if (  classBlock
-         && TR::Compiler->cls.isInterfaceClass(vp->comp(), classBlock)
-         && !vp->comp()->getOption(TR_TrustAllInterfaceTypeInfo))
-         {
-         classBlock = NULL;
-         }
+      TR_OpaqueClassBlock *erased = NULL;
+      if (vp->isUnreliableSignatureType(classBlock, erased))
+         classBlock = erased;
 
       if (classBlock)
          {

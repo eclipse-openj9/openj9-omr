@@ -284,54 +284,6 @@ static int32_t arrayElementSize(const char *signature, int32_t len, TR::Node *no
    return 0;
    }
 
-
-
-static void constrainBaseObjectOfIndirectAccess(OMR::ValuePropagation *vp, TR::Node *node)
-   {
-   return;  // 84287 - disabled for now.
-
-   //if (!debug("enableBaseConstraint"))
-   //   return;
-
-   int32_t baseObjectSigLen;
-   TR_ResolvedMethod *method = node->getSymbolReference()->getOwningMethod(vp->comp());
-   char *baseObjectSig = method->classNameOfFieldOrStatic(node->getSymbolReference()->getCPIndex(), baseObjectSigLen);
-   if (baseObjectSig)
-      baseObjectSig = TR::Compiler->cls.classNameToSignature(baseObjectSig, baseObjectSigLen, vp->comp());
-   if (baseObjectSig)
-      {
-      TR_OpaqueClassBlock *baseClass = vp->fe()->getClassFromSignature(baseObjectSig, baseObjectSigLen, method);
-      if (  baseClass
-         && TR::Compiler->cls.isInterfaceClass(vp->comp(), baseClass)
-         && !vp->comp()->getOption(TR_TrustAllInterfaceTypeInfo))
-         {
-         baseClass = NULL;
-         }
-
-      if (baseClass)
-         {
-         // check if there is an existing class constraint
-         // before trying to refine the constraint
-         bool isGlobal;
-         TR::VPConstraint *baseConstraint = vp->getConstraint(node->getFirstChild(), isGlobal);
-         TR::VPConstraint *constraint = TR::VPClassType::create(vp, baseObjectSig, baseObjectSigLen, method, false, baseClass);
-         // only if its a class constraint
-         if (baseConstraint && baseConstraint->getClassType())
-            {
-            if (vp->trace())
-               {
-               traceMsg(vp->comp(), "Found existing class constraint for node (%p) :\n", node->getFirstChild());
-               baseConstraint->print(vp->comp(), vp->comp()->getOutFile());
-               }
-            // check if it can be refined
-            if (!constraint->intersect(baseConstraint, vp))
-               return; // nope, bail
-            }
-         vp->addBlockConstraint(node->getFirstChild(), constraint);
-         }
-      }
-   }
-
 // When node is successfully folded, isGlobal is set to true iff all
 // constraints in the chain were global, and false otherwise.
 static bool tryFoldCompileTimeLoad(
@@ -1426,8 +1378,6 @@ TR::Node *constrainLload(OMR::ValuePropagation *vp, TR::Node *node)
 
    if (node->getOpCode().isIndirect())
       {
-      constrainBaseObjectOfIndirectAccess(vp, node);
-
       checkUnsafeArrayAccess(vp, node);
 
       // if the node contains an unsafe symbol reference
@@ -1474,8 +1424,6 @@ TR::Node *constrainFload(OMR::ValuePropagation *vp, TR::Node *node)
 
    if (node->getOpCode().isIndirect())
       {
-      constrainBaseObjectOfIndirectAccess(vp, node);
-
       // if the node contains an unsafe symbol reference
       // then don't inject a constraint
       if (containsUnsafeSymbolReference(vp, node))
@@ -1498,8 +1446,6 @@ TR::Node *constrainDload(OMR::ValuePropagation *vp, TR::Node *node)
 
    if (node->getOpCode().isIndirect())
       {
-      constrainBaseObjectOfIndirectAccess(vp, node);
-
       checkUnsafeArrayAccess(vp, node);
 
       // if the node contains an unsafe symbol reference
@@ -2068,8 +2014,6 @@ TR::Node *constrainIiload(OMR::ValuePropagation *vp, TR::Node *node)
       return node;
    constrainChildren(vp, node);
 
-   constrainBaseObjectOfIndirectAccess(vp, node);
-
    // if the node contains an unsafe symbol reference
    // then don't inject a constraint
    if (containsUnsafeSymbolReference(vp, node))
@@ -2141,8 +2085,6 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
    if (findConstant(vp, node))
       return node;
    constrainChildren(vp, node);
-
-   constrainBaseObjectOfIndirectAccess(vp, node);
 
    // if the node contains an unsafe symbol reference
    // then don't inject a constraint
@@ -2931,10 +2873,12 @@ TR::Node *constrainStore(OMR::ValuePropagation *vp, TR::Node *node)
        owningMethodDoesNotContainNullChecks(vp, node))
       vp->addBlockConstraint(node->getFirstChild(), TR::VPNonNullObject::create(vp));
 
-   if (node->getOpCode().isIndirect())
-      constrainBaseObjectOfIndirectAccess(vp, node);
-   else if (vp->_curDefinedOnAllPaths && node->getSymbol()->isAutoOrParm())
+   if (!node->getOpCode().isIndirect()
+       && vp->_curDefinedOnAllPaths
+       && node->getSymbol()->isAutoOrParm())
+      {
       vp->_curDefinedOnAllPaths->set(node->getSymbolReference()->getReferenceNumber());
+      }
 
    return node;
    }
@@ -3090,7 +3034,6 @@ TR::Node *constrainWrtBar(OMR::ValuePropagation *vp, TR::Node *node)
 
    if (node->getOpCode().isIndirect())
       {
-      constrainBaseObjectOfIndirectAccess(vp, node);
       // if the node contains an unsafe symbol reference
       // then don't inject a constraint
       if (containsUnsafeSymbolReference(vp, node))

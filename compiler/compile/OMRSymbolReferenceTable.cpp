@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1670,13 +1670,6 @@ OMR::SymbolReferenceTable::findOrCreateShadowSymbol(TR::ResolvedMethodSymbol * o
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrFabricateShadowSymbol(TR_OpaqueClassBlock *containingClass, TR::DataType type, uint32_t offset, bool isVolatile, bool isPrivate, bool isFinal, const char * name, const char * signature)
-   {
-   TR_UNIMPLEMENTED();
-   return NULL;
-   }
-
-TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrFabricateFlattenedArrayElementFieldShadowSymbol(TR_OpaqueClassBlock *arrayComponentClass, TR::DataType type, uint32_t offset, bool isPrivate, const char * name, const char * signature)
    {
    TR_UNIMPLEMENTED();
    return NULL;

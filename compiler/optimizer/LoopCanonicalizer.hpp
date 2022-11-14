@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -76,7 +76,11 @@ class TR_LoopTransformer : public TR::Optimization
         _readExactlyOnce(comp()->allocator("LoopTransformer")),
         _allKilledSymRefs(comp()->allocator("LoopTransformer")),
         _allSymRefs(comp()->allocator("LoopTransformer")),
-        _autosAccessed(NULL)
+        _autosAccessed(NULL),
+        _loopBlocksChecklists(
+           std::less<TR_RegionStructure*>(), trMemory()->currentStackRegion()),
+        _alwaysExecMemo(
+           std::less<AlwaysExecMemoKey>(), trMemory()->currentStackRegion())
       {
       _doingVersioning = false;
       _nodesInCycle = NULL;
@@ -126,7 +130,12 @@ class TR_LoopTransformer : public TR::Optimization
    void detectWhileLoopsInSubnodesInOrder(ListAppender<TR_Structure> &whileLoopsInnerFirst, List<TR_Structure> &whileLoops, ListAppender<TR_Structure> &doWhileLoopsInnerFirst, List<TR_Structure> &doWhileLoops, TR_Structure *root, TR_StructureSubGraphNode *rootNode, TR_RegionStructure *region, vcount_t visitCount, TR_BitVector *pendingList, bool innerFirst);
    void detectWhileLoopsInSubnodesInOrder(ListAppender<TR_Structure> &whileLoopsInnerFirst, List<TR_Structure> &whileLoops, ListAppender<TR_Structure> &doWhileLoopsInnerFirst, List<TR_Structure> &doWhileLoops, TR_RegionStructure *region, vcount_t visitCount, TR_BitVector *pendingList, bool innerFirst);
 
-   bool blockIsAlwaysExecutedInLoop(TR::Block *block, TR_RegionStructure *loopStructure, bool *atEntry = NULL);
+   const TR::BlockChecklist &getLoopBlocksChecklist(TR_RegionStructure *loop);
+   bool blockIsAlwaysExecutedInLoop(
+      TR::Block *queryBlock,
+      TR_RegionStructure *loopStructure,
+      bool *atEntry = NULL,
+      const TR::BlockChecklist **priorBlocks = NULL);
 
    TR::Block * createNewEmptyBlock();
    TR::Node* createNewGotoNode();
@@ -206,6 +215,37 @@ class TR_LoopTransformer : public TR::Optimization
    bool _indirectInductionVariable; // JIT Design 1347
 
    TR::SymbolReference        **_symRefUsedInLoopIncrement;
+
+ private:
+   typedef TR::typed_allocator<
+      std::pair<TR_RegionStructure * const, TR::BlockChecklist>, TR::Region&>
+      LoopChecklistAlloc;
+   typedef std::less<TR_RegionStructure*> LoopChecklistCmp;
+   typedef std::map<
+      TR_RegionStructure*, TR::BlockChecklist, LoopChecklistCmp, LoopChecklistAlloc>
+      LoopChecklistMap;
+
+   LoopChecklistMap _loopBlocksChecklists;
+
+   struct AlwaysExecMemoRecord
+      {
+      AlwaysExecMemoRecord(TR::Compilation *comp)
+         : _alwaysExecutes(false), _priorBlocks(comp) {}
+
+      bool _alwaysExecutes;
+      TR::BlockChecklist _priorBlocks; // empty unless _alwaysExecutes
+      };
+
+   typedef std::pair<TR_RegionStructure*, TR::Block*> AlwaysExecMemoKey;
+   typedef TR::typed_allocator<
+      std::pair<const AlwaysExecMemoKey, AlwaysExecMemoRecord>, TR::Region&>
+      AlwaysExecMemoAlloc;
+   typedef std::less<AlwaysExecMemoKey> AlwaysExecMemoCmp;
+   typedef std::map<
+      AlwaysExecMemoKey, AlwaysExecMemoRecord, AlwaysExecMemoCmp, AlwaysExecMemoAlloc>
+      AlwaysExecMemoMap;
+
+   AlwaysExecMemoMap _alwaysExecMemo;
    };
 
 

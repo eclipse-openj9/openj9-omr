@@ -1016,108 +1016,200 @@ OMR::Power::TreeEvaluator::m2vEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 OMR::Power::TreeEvaluator::vcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::DataType elementType = node->getDataType().getVectorElementType();
 
    switch (elementType)
       {
+      case TR::Int8:
+         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vcmpequb);
+      case TR::Int16:
+         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vcmpequh);
       case TR::Int32:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vcmpequw);
+      case TR::Int64:
+         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vcmpequd);
+      case TR::Float:
+         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvcmpeqsp);
       case TR::Double:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvcmpeqdp);
       default:
-         return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+         TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
+   }
+
+TR::Register *vcmpHelper(TR::Node *node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, bool complement, bool switchOperands)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+
+   TR::Register *lhsReg = cg->evaluate(firstChild);
+   TR::Register *rhsReg = cg->evaluate(secondChild);
+   TR::Register *resReg = cg->allocateRegister(TR_VRF);
+
+   node->setRegister(resReg);
+
+   if (switchOperands)
+      generateTrg1Src2Instruction(cg, op, node, resReg, rhsReg, lhsReg);
+   else
+      generateTrg1Src2Instruction(cg, op, node, resReg, lhsReg, rhsReg);
+
+   if (complement)
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlnor, node, resReg, resReg, resReg);
+
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+   return resReg;
    }
 
 TR::Register*
 OMR::Power::TreeEvaluator::vcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+      TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+      TR::DataType elementType = node->getDataType().getVectorElementType();
+      bool p9Plus = cg->comp()->target().cpu.isAtLeast(OMR_PROCESSOR_PPC_P9); // VMX vector NE instructions are only available on P9 and up
+
+      // for types/power versions where no PPC assembly instruction exists for NE, take the complement of EQ instead -> (A != B) == ~(A == B)
+      switch (elementType)
+         {
+         case TR::Int8:
+            if (p9Plus)
+               return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vcmpneb);
+            else
+               return vcmpHelper(node, cg, TR::InstOpCode::vcmpequb, true, false);
+         case TR::Int16:
+            if (p9Plus)
+               return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vcmpneh);
+            else
+               return vcmpHelper(node, cg, TR::InstOpCode::vcmpequh, true, false);
+         case TR::Int32:
+            if (p9Plus)
+               return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vcmpnew);
+            else
+               return vcmpHelper(node, cg, TR::InstOpCode::vcmpequw, true, false);
+         case TR::Int64:
+            return vcmpHelper(node, cg, TR::InstOpCode::vcmpequd, true, false);
+         case TR::Float:
+            return vcmpHelper(node, cg, TR::InstOpCode::xvcmpeqsp, true, false);
+         case TR::Double:
+            return vcmpHelper(node, cg, TR::InstOpCode::xvcmpeqdp, true, false);
+         default:
+            TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
+         }
    }
 
 TR::Register*
 OMR::Power::TreeEvaluator::vcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::DataType elementType = node->getDataType().getVectorElementType();
 
+   // since no PPC assembly instruction exists for LT, switch operands and take GT instead -> (A < B) == (B > A)
    switch (elementType)
       {
+      case TR::Int8:
+         return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsb, false, true);
+      case TR::Int16:
+         return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsh, false, true);
       case TR::Int32:
-         node->swapChildren();
-         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vcmpgtsw);
+         return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsw, false, true);
+      case TR::Int64:
+         return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsd, false, true);
+      case TR::Float:
+         return vcmpHelper(node, cg, TR::InstOpCode::xvcmpgtsp, false, true);
       case TR::Double:
-         node->swapChildren();
-         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvcmpgtdp);
+         return vcmpHelper(node, cg, TR::InstOpCode::xvcmpgtdp, false, true);
       default:
-         return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+         TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
 
 TR::Register*
 OMR::Power::TreeEvaluator::vcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::DataType elementType = node->getDataType().getVectorElementType();
 
    switch (elementType)
       {
+      case TR::Int8:
+         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vcmpgtsb);
+      case TR::Int16:
+         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vcmpgtsh);
       case TR::Int32:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vcmpgtsw);
+      case TR::Int64:
+         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vcmpgtsd);
+      case TR::Float:
+         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvcmpgtsp);
       case TR::Double:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvcmpgtdp);
       default:
-         return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+         TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
 
 TR::Register*
 OMR::Power::TreeEvaluator::vcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::DataType elementType = node->getDataType().getVectorElementType();
 
+   // since no PPC assembly instruction exists for LE, take complements/switch operands as needed and use other comparison operations instead
    switch (elementType)
       {
+      case TR::Int8:
+         return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsb, true, false); // (A <= B) == ~(A > B)
+      case TR::Int16:
+         return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsh, true, false);
       case TR::Int32:
-         node->swapChildren();
-         return TR::TreeEvaluator::vcmpgeEvaluator(node, cg);
+         return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsw, true, false);
+      case TR::Int64:
+         return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsd, true, false);
+      case TR::Float:
+         return vcmpHelper(node, cg, TR::InstOpCode::xvcmpgesp, false, true); // (A <= B) == (B >= A)
       case TR::Double:
-         node->swapChildren();
-         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvcmpgedp);
+         return vcmpHelper(node, cg, TR::InstOpCode::xvcmpgedp, false, true);
       default:
-         return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+         TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
 
 TR::Register*
 OMR::Power::TreeEvaluator::vcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
    TR::DataType elementType = node->getDataType().getVectorElementType();
 
+   // for types where no PPC assembly instruction exists for GE, reverse operands and then take the complement of GT instead -> (A >= B) == ~(B > A)
    switch (elementType)
       {
+      case TR::Int8:
+         return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsb, true, true);
+      case TR::Int16:
+         return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsh, true, true);
       case TR::Int32:
-         {
-         TR::Node *firstChild = node->getFirstChild();
-         TR::Node *secondChild = node->getSecondChild();
-         TR::Register *lhsReg = NULL, *rhsReg = NULL;
-
-         lhsReg = cg->evaluate(firstChild);
-         rhsReg = cg->evaluate(secondChild);
-
-         TR::Register *resReg = cg->allocateRegister(TR_VRF);
-         TR::Register *tempReg = cg->allocateRegister(TR_VRF);
-         node->setRegister(resReg);
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::vcmpgtsw, node, resReg, lhsReg, rhsReg);
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::vcmpequw, node, tempReg, lhsReg, rhsReg);
-         generateTrg1Src2Instruction(cg, TR::InstOpCode::vor, node, resReg, tempReg, resReg);
-         cg->stopUsingRegister(tempReg);
-         cg->decReferenceCount(firstChild);
-         cg->decReferenceCount(secondChild);
-         return resReg;
-         }
+         return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsw, true, true);
+      case TR::Int64:
+         return vcmpHelper(node, cg, TR::InstOpCode::vcmpgtsd, true, true);
+      case TR::Float:
+         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvcmpgesp);
       case TR::Double:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvcmpgedp);
       default:
-         return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+         TR_ASSERT_FATAL(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
 
@@ -3123,7 +3215,7 @@ TR::Register *OMR::Power::TreeEvaluator::inlineVectorBinaryOp(TR::Node *node, TR
 
    if (masked)
       {
-      TR_ASSERT_FATAL(resReg->getKind() == TR_VSX_VECTOR || resReg->getKind() == TR_VRF, "Only masked VSX opcodes are currenlty supported\n");
+      // Note: Both VFR and VSX registers are supported by xxsel
       generateTrg1Src3Instruction(cg, TR::InstOpCode::xxsel, node, resReg, lhsReg, resReg, maskReg);
       }
 

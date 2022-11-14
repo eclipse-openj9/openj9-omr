@@ -1868,12 +1868,15 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
       case TR::vmadd:
          return true;
       case TR::vcmpeq:
+      case TR::vcmpne:
       case TR::vcmplt:
       case TR::vcmpgt:
       case TR::vcmple:
       case TR::vcmpge:
-         if (et == TR::Double)
+         if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || (et == TR::Int64 && cpu->isAtLeast(OMR_PROCESSOR_PPC_P8)) || et == TR::Float || et == TR::Double)
             return true;
+         else
+            return false;
       default:
          return false;
       }

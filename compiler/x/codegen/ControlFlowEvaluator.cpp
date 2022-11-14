@@ -1027,7 +1027,7 @@ void OMR::X86::TreeEvaluator::compareIntegersForOrder(
    TR::CodeGenerator *cg)
    {
    intptr_t constValue;
-
+   int32_t compareSize = secondChild->getSize();
    if (secondChild->getOpCode().isLoadConst() &&
        secondChild->getRegister() == NULL     &&
        TR::TreeEvaluator::constNodeValueIs32BitSigned(secondChild, &constValue, cg))
@@ -1050,12 +1050,39 @@ void OMR::X86::TreeEvaluator::compareIntegersForOrder(
              firstChild->getReferenceCount() == 1)
             {
             TR::MemoryReference  *tempMR = generateX86MemoryReference(firstChild, cg);
-            TR::TreeEvaluator::compareGPMemoryToImmediate(node, tempMR, static_cast<int32_t>(constValue), cg);
+            if (compareSize == 1)
+               {
+               generateMemImmInstruction(TR::InstOpCode::CMP1MemImm1, node, tempMR, static_cast<int32_t>(constValue), cg);
+               }
+            else if (compareSize == 2)
+               {
+               //shouldn't use Imm2 instructions
+               TR::Register *tempReg = cg->allocateRegister();
+               TR::TreeEvaluator::loadConstant(node, constValue, TR_RematerializableShort, cg, tempReg);
+               generateMemRegInstruction(TR::InstOpCode::CMP2MemReg, node, tempMR, tempReg, cg);
+               cg->stopUsingRegister(tempReg);
+               }
+            else
+               {
+               TR::TreeEvaluator::compareGPMemoryToImmediate(node, tempMR, static_cast<int32_t>(constValue), cg);
+               }
             tempMR->decNodeReferenceCounts(cg);
             }
          else
             {
-            TR::TreeEvaluator::compareGPRegisterToImmediate(node, cg->evaluate(firstChild), static_cast<int32_t>(constValue), cg);
+            if (compareSize == 1)
+               {
+               generateRegImmInstruction(TR::InstOpCode::CMP1RegImm1, node, cg->evaluate(firstChild), static_cast<int32_t>(constValue), cg);
+               }
+            else if (compareSize == 2)
+               {
+               //avoid Imm2 instructions
+               generateWiderCompare(node, cg->evaluate(firstChild), constValue, cg);
+               }
+            else
+               {
+               TR::TreeEvaluator::compareGPRegisterToImmediate(node, cg->evaluate(firstChild), static_cast<int32_t>(constValue), cg);
+               }
             }
          }
 
@@ -1068,13 +1095,35 @@ void OMR::X86::TreeEvaluator::compareIntegersForOrder(
       // 64-bit compare -- we need to check a child.
       //
       bool is64Bit = TR::TreeEvaluator::getNodeIs64Bit(secondChild, cg);
+
+      uint32_t size = firstChild->getSize();
+      TR::InstOpCode::Mnemonic cmpRRInstr, cmpRMInstr, cmpMRInstr;
+      if(size == 1)
+         {
+         cmpRRInstr = TR::InstOpCode::CMP1RegReg;
+         cmpRMInstr = TR::InstOpCode::CMP1RegMem;
+         cmpMRInstr = TR::InstOpCode::CMP1MemReg;
+         }
+      else if(size == 2)
+         {
+         cmpRRInstr = TR::InstOpCode::CMP2RegReg;
+         cmpRMInstr = TR::InstOpCode::CMP2RegMem;
+         cmpMRInstr = TR::InstOpCode::CMP2MemReg;
+         }
+      else
+         {
+         cmpRRInstr = TR::InstOpCode::CMPRegReg(is64Bit);
+         cmpRMInstr = TR::InstOpCode::CMPRegMem(is64Bit);
+         cmpMRInstr = TR::InstOpCode::CMPMemReg(is64Bit);
+         }
+
       TR_X86CompareAnalyser temp(cg);
       temp.integerCompareAnalyser(
          node,
          firstChild,
          secondChild,
          false,
-         TR::InstOpCode::CMPRegReg(is64Bit), TR::InstOpCode::CMPRegMem(is64Bit), TR::InstOpCode::CMPMemReg(is64Bit));
+         cmpRRInstr, cmpRMInstr, cmpMRInstr);
       }
    }
 
@@ -1326,9 +1375,18 @@ TR::Register *OMR::X86::TreeEvaluator::iselectEvaluator(TR::Node *node, TR::Code
    else if (!longCompareOn32bit && conditionOp.isCompareForOrder() && condition->getFirstChild()->getOpCode().isIntegerOrAddress())
       {
       TR::TreeEvaluator::compareIntegersForOrder(condition, cg);
-      generateRegRegInstruction((conditionOp.isCompareTrueIfEqual()) ?
-                   ((conditionOp.isCompareTrueIfGreater()) ? TR::InstOpCode::CMOVLRegReg(trueValIs64Bit) : TR::InstOpCode::CMOVGRegReg(trueValIs64Bit)) :
-                   ((conditionOp.isCompareTrueIfGreater()) ? TR::InstOpCode::CMOVLERegReg(trueValIs64Bit) : TR::InstOpCode::CMOVGERegReg(trueValIs64Bit)), node, trueReg, falseReg, cg);
+      if (conditionOp.isUnsignedCompare())
+         {
+         generateRegRegInstruction((conditionOp.isCompareTrueIfEqual()) ?
+               ((conditionOp.isCompareTrueIfGreater()) ? TR::InstOpCode::CMOVBRegReg(trueValIs64Bit) : TR::InstOpCode::CMOVARegReg(trueValIs64Bit)) :
+               ((conditionOp.isCompareTrueIfGreater()) ? TR::InstOpCode::CMOVBERegReg(trueValIs64Bit) : TR::InstOpCode::CMOVAERegReg(trueValIs64Bit)), node, trueReg, falseReg, cg);
+         }
+      else
+         {
+         generateRegRegInstruction((conditionOp.isCompareTrueIfEqual()) ?
+               ((conditionOp.isCompareTrueIfGreater()) ? TR::InstOpCode::CMOVLRegReg(trueValIs64Bit) : TR::InstOpCode::CMOVGRegReg(trueValIs64Bit)) :
+               ((conditionOp.isCompareTrueIfGreater()) ? TR::InstOpCode::CMOVLERegReg(trueValIs64Bit) : TR::InstOpCode::CMOVGERegReg(trueValIs64Bit)), node, trueReg, falseReg, cg);
+         }
       }
    else
       {

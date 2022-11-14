@@ -1430,11 +1430,11 @@ populateWithDefaultTokens(struct OMRPortLibrary *portLibrary, struct J9StringTok
 	 * socket connection, and cause a checkpoint failure.
 	 * - More details are at https://github.com/eclipse-openj9/openj9/issues/15800.
 	 */
-#if defined(PPG_instantOnFlags)
-	if (OMR_ARE_NO_BITS_SET(PPG_instantOnFlags, OMRPORT_INSTANTON_ENABLED)
-		|| OMR_ARE_ANY_BITS_SET(PPG_instantOnFlags, OMRPORT_INSTANTON_FINAL_RESTORE)
+#if defined(PPG_criuSupportFlags)
+	if (OMR_ARE_NO_BITS_SET(PPG_criuSupportFlags, OMRPORT_CRIU_SUPPORT_ENABLED)
+		|| OMR_ARE_ANY_BITS_SET(PPG_criuSupportFlags, OMRPORT_CRIU_SUPPORT_FINAL_RESTORE)
 	)
-#endif /* defined(PPG_instantOnFlags) */
+#endif /* defined(PPG_criuSupportFlags) */
 	{
 		statusCode = portLibrary->sysinfo_get_username(portLibrary, username, USERNAME_BUF_LEN);
 	}

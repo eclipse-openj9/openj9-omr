@@ -319,12 +319,12 @@ omrport_control(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t v
 		return 0;
 	}
 
-#if defined(PPG_instantOnFlags)
-	if (0 == strcmp(OMRPORT_CTLDATA_INSTANTON_FLAGS, key)) {
-		PPG_instantOnFlags = value;
+#if defined(PPG_criuSupportFlags)
+	if (0 == strcmp(OMRPORT_CTLDATA_CRIU_SUPPORT_FLAGS, key)) {
+		PPG_criuSupportFlags = value;
 		return 0;
 	}
-#endif /* defined(PPG_instantOnFlags) */
+#endif /* defined(PPG_criuSupportFlags) */
 
 	return 1;
 }

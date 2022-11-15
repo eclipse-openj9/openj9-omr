@@ -7236,6 +7236,24 @@ bool OMR::ValuePropagation::transformDirectLoad(TR::Node *node)
    return TR::TransformUtil::transformDirectLoad(comp(), node);
    }
 
+bool OMR::ValuePropagation::isUnreliableSignatureType(
+   TR_OpaqueClassBlock *klass, TR_OpaqueClassBlock *&erased)
+   {
+   // TODO: Move this Java-specific logic into OpenJ9
+   erased = klass;
+   if (klass == NULL)
+      return false;
+
+   if (comp()->getOption(TR_TrustAllInterfaceTypeInfo))
+      return false;
+
+   if (!TR::Compiler->cls.isInterfaceClass(comp(), klass))
+      return false;
+
+   erased = NULL;
+   return true;
+   }
+
 bool OMR::ValuePropagation::checkAllUnsafeReferences(TR::Node *node, vcount_t visitCount)
    {
    if (node->getVisitCount() == visitCount)

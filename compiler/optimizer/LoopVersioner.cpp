@@ -8676,16 +8676,11 @@ int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loop
 
                 if (storeInRequiredForm)
                    {
-                   //dumpOptDetails(comp(), "1Store of %d in reqd form %d\n", nextInductionVariableNumber, storeInRequiredForm);
-                   if (storeInRequiredForm)
-                      {
-                      TR::Block *currentBlock = _storeTrees[nextInductionVariableNumber]->getEnclosingBlock();
-                      if (!blockIsAlwaysExecutedInLoop(currentBlock, regionStructure))
-                         storeInRequiredForm = false;
-                      if (currentBlock->getStructureOf()->getContainingLoop() != regionStructure)
-                         storeInRequiredForm = false;
-                      }
-                   //dumpOptDetails(comp(), "2Store of %d in reqd form %d\n", nextInductionVariableNumber, storeInRequiredForm);
+                   TR::Block *currentBlock = _storeTrees[nextInductionVariableNumber]->getEnclosingBlock();
+                   if (!blockIsAlwaysExecutedInLoop(currentBlock, regionStructure))
+                      storeInRequiredForm = false;
+                   else if (currentBlock->getStructureOf()->getContainingCyclicRegion() != regionStructure)
+                      storeInRequiredForm = false;
                    }
 
                 if (storeInRequiredForm /* && !_cannotBeEliminated->get(nextInductionVariableNumber) */)

@@ -637,13 +637,18 @@ TR::Instruction *generateUBFIZInstruction(TR::CodeGenerator *cg, TR::Node *node,
 TR::Instruction *generateVectorShiftImmediateInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::Register *treg, TR::Register *sreg, uint32_t shiftAmount, TR::Instruction *preced)
    {
-   TR_ASSERT_FATAL_WITH_NODE(node, (op >= TR::InstOpCode::vshl16b) && (op <= TR::InstOpCode::vushr2d), "Illegal opcode for generateVectorShiftImmediateInstruction: %d", op);
+   TR_ASSERT_FATAL_WITH_NODE(node, (op >= TR::InstOpCode::vshl16b) && (op <= TR::InstOpCode::vsri2d), "Illegal opcode for generateVectorShiftImmediateInstruction: %d", op);
 
-   bool isShiftLeft = (op <= TR::InstOpCode::vushll2_2d);
-   uint32_t immh = (TR::InstOpCode::getOpCodeBinaryEncoding(op) >> 19) & 0xf;
+   bool isShiftLeft = (op <= TR::InstOpCode::vsli2d);
+   const auto opcodeBinaryEncoding = TR::InstOpCode::getOpCodeBinaryEncoding(op);
+   /* If bit 11 - 15 is 0b100xx, then it is a variant of shift right narrow instructions. */
+   const bool isShiftRightNarrow = ((opcodeBinaryEncoding >> 11) & 0x1c) == 0x10;
+   uint32_t immh = (opcodeBinaryEncoding >> 19) & 0xf;
    uint32_t elementSize = 8 << (31 - leadingZeroes(immh));
    TR_ASSERT_FATAL_WITH_NODE(node, (elementSize == 8) || (elementSize == 16) || (elementSize == 32) || (elementSize == 64), "Illegal element size: %d", elementSize);
-   TR_ASSERT_FATAL_WITH_NODE(node, (shiftAmount >= 0) && (shiftAmount < elementSize), "Illegal shift amount: %d", shiftAmount);
+   const uint32_t shiftAmountLowerLimit = isShiftRightNarrow ? 1 : 0;
+   const uint32_t shiftAmountUpperLimit = isShiftRightNarrow ? elementSize : elementSize - 1;
+   TR_ASSERT_FATAL_WITH_NODE(node, (shiftAmount >= shiftAmountLowerLimit) && (shiftAmount <= shiftAmountUpperLimit), "Illegal shift amount: %d", shiftAmount);
 
    uint32_t imm = isShiftLeft ? (shiftAmount + elementSize) : (elementSize * 2 - shiftAmount);
    return generateTrg1Src1ImmInstruction(cg, op, node, treg, sreg, imm, preced);

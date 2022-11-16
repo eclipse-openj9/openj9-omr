@@ -2326,7 +2326,7 @@ class ARM64Trg1Src1ImmInstruction : public ARM64Trg1Src1Instruction
       {
       TR::InstOpCode::Mnemonic op = getOpCodeValue();
 
-      if ((op >= TR::InstOpCode::vshl16b) && (op <= TR::InstOpCode::vushr2d))
+      if ((op >= TR::InstOpCode::vshl16b) && (op <= TR::InstOpCode::vsri2d))
          {
          *instruction |= ((_source1Immediate & 0x7f) << 16); /* immh:immb */
          }

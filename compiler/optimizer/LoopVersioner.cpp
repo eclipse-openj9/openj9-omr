@@ -6263,6 +6263,99 @@ bool TR_LoopVersioner::replaceInductionVariable(TR::Node *parent, TR::Node *node
    return false;
    }
 
+/**
+ * \brief Determine whether \p ivLoad sees the updated IV value.
+ *
+ * \param ivLoad         The load in question. It must load a versionable IV.
+ * \param occurrenceTree A tree in which \p ivLoad occurs.
+ * \return true if the IV is updated before \p ivLoad, and false otherwise.
+ */
+bool TR_LoopVersioner::ivLoadSeesUpdatedValue(
+   TR::Node *ivLoad, TR::TreeTop *occurrenceTree)
+   {
+   TR_ASSERT_FATAL_WITH_NODE(
+      ivLoad, ivLoad->getOpCode().isLoadVarDirect(), "expected a direct load");
+
+   TR::SymbolReference *iv = ivLoad->getSymbolReference();
+   TR_ASSERT_FATAL_WITH_NODE(
+      ivLoad, iv->getSymbol()->isAutoOrParm(), "expected an auto");
+
+   bool foundOccurrence = false;
+   for (TR::PostorderNodeIterator it(occurrenceTree, comp());
+        it.isAt(occurrenceTree);
+        it.stepForward())
+      {
+      if (it.currentNode() == ivLoad)
+         {
+         foundOccurrence = true;
+         break;
+         }
+      }
+
+   TR_ASSERT_FATAL_WITH_NODE(
+      ivLoad,
+      foundOccurrence,
+      "expected node to occur beneath n%un [%p]",
+      occurrenceTree->getNode()->getGlobalIndex(),
+      occurrenceTree->getNode());
+
+   List<int32_t> *ivLists[] =
+      {
+      &_versionableInductionVariables,
+      &_derivedVersionableInductionVariables
+      };
+
+   int32_t ivNum = iv->getReferenceNumber();
+   bool isIV = false;
+   for (size_t i = 0; i < sizeof(ivLists) / sizeof(ivLists[0]) && !isIV; i++)
+      {
+      List<int32_t> *ivList = ivLists[i];
+      auto *elem = ivList->getListHead();
+      for (; elem != NULL; elem = elem->getNextElement())
+         {
+         if (*elem->getData() == ivNum)
+            {
+            isIV = true;
+            break;
+            }
+         }
+      }
+
+   TR_ASSERT_FATAL_WITH_NODE(ivLoad, isIV, "expected a primary or derived IV");
+
+   TR::TreeTop *ivUpdateTree = _storeTrees[ivNum];
+   TR::Block *ivUpdateBlock = ivUpdateTree->getEnclosingBlock();
+   const TR::BlockChecklist *priorBlocks = NULL;
+   bool updateAlwaysExecuted = blockIsAlwaysExecutedInLoop(
+      ivUpdateBlock, _curLoop->_loop, NULL, &priorBlocks);
+
+   TR_ASSERT_FATAL(
+      updateAlwaysExecuted, "expected IV #%d to be updated every iteration", ivNum);
+
+   TR::Block *loadBlock = occurrenceTree->getEnclosingBlock();
+   if (priorBlocks->contains(loadBlock))
+      return false; // the load is in a block that runs before the update
+   else if (loadBlock != ivUpdateBlock)
+      return true; // the load is in a block that runs after the update
+
+   // The load is in the same block as the IV update. Determine which is
+   // evaluated first.
+   TR::Node *ivUpdate = ivUpdateTree->getNode();
+   TR::TreeTop *entry = ivUpdateBlock->getEntry();
+   TR::TreeTop *exit = ivUpdateBlock->getExit();
+   for (TR::PostorderNodeIterator it(entry, comp()); !it.isAt(exit); it.stepForward())
+      {
+      TR::Node *node = it.currentNode();
+      if (node == ivLoad)
+         return false; // IV load is evaluated first, so it sees the old value
+      else if (node == ivUpdate)
+         return true; // IV update is evaluated first, so load sees the new value
+      }
+
+   TR_ASSERT_FATAL_WITH_NODE(ivLoad, false, "failed to distinguish old/new value");
+   return false; // unreachable, but may look reachable to some build compiler(s)
+   }
+
 void TR_LoopVersioner::buildSpineCheckComparisonsTree(List<TR::TreeTop> *spineCheckTrees)
    {
    ListElement<TR::TreeTop> *nextTree = spineCheckTrees->getListHead();

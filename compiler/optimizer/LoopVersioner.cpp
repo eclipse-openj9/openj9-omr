@@ -4299,7 +4299,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       if (trace())
          {
          traceMsg(comp(), "privatizationOK: %d : removedNodes ", _curLoop->_privatizationOK);
-         removedNodes.print(comp());
+         removedNodes.print();
          traceMsg(comp(), "\n");
          }
 

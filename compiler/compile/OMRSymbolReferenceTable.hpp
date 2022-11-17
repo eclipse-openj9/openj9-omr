@@ -678,26 +678,6 @@ class SymbolReferenceTable
     */
    TR::SymbolReference * findOrFabricateShadowSymbol(TR_OpaqueClassBlock *containingClass, TR::DataType type, uint32_t offset, bool isVolatile, bool isPrivate, bool isFinal, const char * name, const char * signature);
 
-   /** \brief
-    *     Returns an array shadow symbol reference fabricated for the field of a flattened array element.
-    *
-    *  \param arrayComponentClass
-    *     The array component class that contains the field.
-    *  \param type
-    *     The data type of the field.
-    *  \param fieldOffset
-    *     The offset of the field.
-    *  \param isPrivate
-    *     Specifies whether the field is private.
-    *  \param fieldName
-    *     The name of the field.
-    *  \param fieldSignature
-    *     The signature of the field.
-    *  \return
-    *     Returns an array shadow symbol reference fabricated for the field of a flattened array element.
-    */
-   TR::SymbolReference * findOrFabricateFlattenedArrayElementFieldShadowSymbol(TR_OpaqueClassBlock *arrayComponentClass, TR::DataType type, uint32_t fieldOffset, bool isPrivate, const char *fieldName, const char *fieldSignature);
-
    // --------------------------------------------------------------------------
    // OMR
    // --------------------------------------------------------------------------

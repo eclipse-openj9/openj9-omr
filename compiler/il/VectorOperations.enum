@@ -154,7 +154,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::MaskReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::Int64, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::Size_8 | ILTypeProp::Integer, \
    /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -170,7 +170,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::MaskReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::Int64, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::Size_8 | ILTypeProp::Integer, \
    /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -186,7 +186,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::MaskReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::Int64, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::Size_8 | ILTypeProp::Integer, \
    /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \
@@ -202,7 +202,7 @@ VECTOR_OPERATION_MACRO(\
    /* .properties3             = */ ILProp3::MaskReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::Int64, \
-   /* .typeProperties          = */ TR::NoType, \
+   /* .typeProperties          = */ ILTypeProp::Size_8 | ILTypeProp::Integer, \
    /* .childProperties         = */ ONE_CHILD(ILChildProp::UnspecifiedChildType), \
    /* .swapChildrenOperation   = */ TR::vBadOperation, \
    /* .reverseBranchOperation  = */ TR::vBadOperation, \

@@ -150,8 +150,7 @@ OMR::X86::CPU::getSupportsHardwareSQRT()
 bool
 OMR::X86::CPU::supportsTransactionalMemoryInstructions()
    {
-   flags32_t processorFeatureFlags8(self()->getX86ProcessorFeatureFlags8());
-   return processorFeatureFlags8.testAny(TR_RTM);
+   return self()->supportsFeature(OMR_FEATURE_X86_RTM);
    }
 
 bool

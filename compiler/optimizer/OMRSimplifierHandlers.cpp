@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,7 +23,7 @@
 #define OMR_SIMPLIFIERHANDLERS_INCL
 
 #include "optimizer/OMRSimplifierHelpers.hpp"
-#include "optimizer/OMRSimplifierHandlers.hpp"
+#include "optimizer/SimplifierHandlers.hpp"
 
 #include <limits.h>
 #include <math.h>

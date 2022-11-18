@@ -19,62 +19,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef SIMPLIFIERTABLE_INCL
-#define SIMPLIFIERTABLE_INCL
+#ifndef SIMPLIFIERHANDLERS_INCL
+#define SIMPLIFIERHANDLERS_INCL
 
-namespace TR { class Block; }
-namespace TR { class Node; }
-namespace TR { class Simplifier; }
-
-#include "optimizer/SimplifierHandlers.hpp"
-
-const SimplifierPointerTable simplifierOpts;
-
-const SimplifierPtr SimplifierPointerTable::table[] =
-   {
-   #include "optimizer/SimplifierTable.enum"
-#define OPCODE_MACRO(\
-   opcode, \
-   name, \
-   prop1, \
-   prop2, \
-   prop3, \
-   prop4, \
-   dataType, \
-   typeProps, \
-   childProps, \
-   swapChildrenOpcode, \
-   reverseBranchOpcode, \
-   boolCompareOpcode, \
-   ifCompareOpcode, \
-   ...) opcode ## SimplifierHandler,
-
-   BadILOpSimplifierHandler,
-
-   #include "il/Opcodes.enum"
-
-#define VECTOR_OPERATION_MACRO(\
-   operation, \
-   name, \
-   prop1, \
-   prop2, \
-   prop3, \
-   prop4, \
-   dataType, \
-   typeProps, \
-   childProps, \
-   swapChildrenOpcode, \
-   reverseBranchOpcode, \
-   boolCompareOpcode, \
-   ifCompareOpcode, \
-   ...) operation ## SimplifierHandler,
-
-   BadILOpSimplifierHandler,
-
-   #include "il/VectorOperations.enum"
-
-#undef OPCODE_MACRO
-#undef VECTOR_OPERATION_MACRO
-   };
+#include "optimizer/OMRSimplifierHandlers.hpp"
 
 #endif

@@ -634,6 +634,16 @@ TR::Instruction *generateUBFIZInstruction(TR::CodeGenerator *cg, TR::Node *node,
    return generateTrg1Src1ImmInstruction(cg, is64bit ? TR::InstOpCode::ubfmx : TR::InstOpCode::ubfmw, node, treg, sreg, (immr << 6) | imms, preced);
    }
 
+TR::Instruction *generateBFIInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *treg, TR::Register *sreg, uint32_t lsb, uint32_t width, bool is64bit, TR::Instruction *preced)
+   {
+   uint32_t imms = width - 1;
+   uint32_t immr = (is64bit ? 64 : 32) - lsb;
+   TR_ASSERT_FATAL((is64bit && (immr <= 63) && (imms <= 63)) || ((!is64bit) && (immr <= 31) && (imms <= 31)),
+                   "immediate field for bfm is out of range: is64bit=%d, immr=%d, imms=%d", is64bit, immr, imms);
+   return generateTrg1Src1ImmInstruction(cg, is64bit ? TR::InstOpCode::bfmx : TR::InstOpCode::bfmw, node, treg, sreg, (immr << 6) | imms, preced);
+   }
+
 TR::Instruction *generateVectorShiftImmediateInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::Register *treg, TR::Register *sreg, uint32_t shiftAmount, TR::Instruction *preced)
    {

@@ -1268,31 +1268,460 @@ OMR::ARM64::TreeEvaluator::mstoreiEvaluator(TR::Node *node, TR::CodeGenerator *c
 TR::Register*
 OMR::ARM64::TreeEvaluator::mTrueCountEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::Node *firstChild = node->getFirstChild();
+   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", firstChild->getDataType().toString());
+
+   TR::DataType et = firstChild->getDataType().getVectorElementType();
+   TR::Register *maskReg = cg->evaluate(firstChild);
+   TR::Register *tempReg = cg->allocateRegister(TR_VRF);
+   TR::Register *resReg = cg->allocateRegister();
+   TR::InstOpCode::Mnemonic negOp;
+   TR::InstOpCode::Mnemonic addvOp;
+
+   switch (et)
+      {
+      case TR::Int8:
+         negOp = TR::InstOpCode::vneg16b;
+         addvOp = TR::InstOpCode::vaddv16b;
+         break;
+      case TR::Int16:
+         negOp = TR::InstOpCode::vneg8h;
+         addvOp = TR::InstOpCode::vaddv8h;
+         break;
+      case TR::Int32:
+      case TR::Float:
+         negOp = TR::InstOpCode::vneg4s;
+         addvOp = TR::InstOpCode::vaddv4s;
+         break;
+      case TR::Int64:
+      case TR::Double:
+         negOp = TR::InstOpCode::vneg2d;
+         addvOp = TR::InstOpCode::vaddv4s; /* we do not have addv for long, but vaddv4s works for this case */
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
+         break;
+      }
+
+   generateTrg1Src1Instruction(cg, negOp, node, tempReg, maskReg);
+   generateTrg1Src1Instruction(cg, addvOp, node, tempReg, tempReg);
+   generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovwb, node, resReg, tempReg, 0);
+
+   node->setRegister(resReg);
+   cg->stopUsingRegister(tempReg);
+   cg->decReferenceCount(firstChild);
+
+   return resReg;
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::mFirstTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::Node *firstChild = node->getFirstChild();
+   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", firstChild->getDataType().toString());
+
+   TR::DataType et = firstChild->getDataType().getVectorElementType();
+   TR::Register *maskReg = cg->evaluate(firstChild);
+   TR::Register *tempReg = cg->allocateRegister(TR_VRF);
+   TR::Register *resReg = cg->allocateRegister();
+
+   /*
+    * This evaluator returns the index of the first lane that is set.
+    * If all lanes are not set, then the number of the lanes is returned.
+    */
+   switch (et)
+      {
+      case TR::Int8:
+         /*
+          * shrn    v1.8b, v0.8h, #7            ; Moves mask values to bit 0 and 1 of the lane 0 - 7.
+          * sli     v1.16b, v1.16b, #6          ; Shifts left v1 by 6 bits and inserts into v1. bit 6 - 9 of the lane 0, 1, 2 and 3 have mask values.
+          * ushr    v1.8h, v1.8h, #6            ; Moves mask values to bit 0 - 3 of each lane.
+          * sli     v1.8h, v1.8h, #12           ; Shifts left v1 by 12 bits and inserts into v1. bit 12 - 19 of the lane 0 and 1 have mask values.
+          * umov    x0, v1.2d[0]                ; Mask values at bit 12 - 19 and bit 44 - 51.
+          * bfi     x0, x0, #24, #20            ; Inserts bit 0 - 19 into bit 24 - 43.
+          * ubfx    x0, x0, #36, #16            ; Moves bit 36 - 51 to bit 0 - 15.
+          * orr     w0, w0, #0x10000            ; Sets the bit 16.
+          * rbit    w0, w0                      ; Reverses bits.
+          * clz     w0, w0                      ; Counts leading zeros.
+          */
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vshrn_8b, node, tempReg, maskReg, 7);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli16b, node, tempReg, tempReg, 6);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vushr8h, node, tempReg, tempReg, 6);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli8h, node, tempReg, tempReg, 12);
+         generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, resReg, tempReg, 0);
+         generateBFIInstruction(cg, node, resReg, resReg, 24, 20, true);
+         generateUBFXInstruction(cg, node, resReg, resReg, 36, 16, true);
+         generateLogicalImmInstruction(cg, TR::InstOpCode::orrimmw, node, resReg, resReg, false, 0x400); // immr=16, imms=0 for 0x10000
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::rbitw, node, resReg, resReg);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::clzw, node, resReg, resReg);
+         break;
+      case TR::Int16:
+         /*
+          * shrn    v1.4h, v0.4s, #15           ; Moves mask values to bit 0 and 1 of the lane 0 - 3.
+          * sli     v1.8h, v1.8h, #14           ; Shifts left v1 by 14 bits and inserts into v1. bit 14 - 17 of the lane 0 and 1 have mask values.
+          * umov    w0, v1.2d[0]
+          * bfi     x0, x0, #28, #18            ; Inserts bit 0 - 17 into bit 28 - 45.
+          * ubfx    x0, x0, #42, #8             ; Moves bit 42 - 49 to bit 0 - 7.
+          * orr     w0, w0, #0x100              ; Sets the bit 8.
+          * rbit    w0, w0                      ; Reverses bits.
+          * clz     w0, w0                      ; Counts leading zeros.
+          */
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vshrn_4h, node, tempReg, maskReg, 15);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli8h, node, tempReg, tempReg, 14);
+         generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, resReg, tempReg, 0);
+         generateBFIInstruction(cg, node, resReg, resReg, 28, 18, true);
+         generateUBFXInstruction(cg, node, resReg, resReg, 42, 8, true);
+         generateLogicalImmInstruction(cg, TR::InstOpCode::orrimmw, node, resReg, resReg, false, 0x600); // immr=24, imms=0 for 0x100
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::rbitw, node, resReg, resReg);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::clzw, node, resReg, resReg);
+         break;
+      case TR::Int32:
+      case TR::Float:
+         /*
+          * shrn    v1.2s, v0.2d, #31
+          * umov    w0, v1.2d[0]
+          * bfi     x0, x0, #30, #2
+          * ubfx    x0, x0, #30, #4
+          * orr     w0, w0, #0x10
+          * rbit    w0, w0
+          * clz     w0, w0
+          */
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vshrn_2s, node, tempReg, maskReg, 31);
+         generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, resReg, tempReg, 0);
+         generateBFIInstruction(cg, node, resReg, resReg, 30, 2, true);
+         generateUBFXInstruction(cg, node, resReg, resReg, 30, 4, true);
+         generateLogicalImmInstruction(cg, TR::InstOpCode::orrimmw, node, resReg, resReg, false, 0x700); // immr=28, imms=0 for 0x10
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::rbitw, node, resReg, resReg);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::clzw, node, resReg, resReg);
+         break;
+      case TR::Int64:
+      case TR::Double:
+         /*
+          * ext     v1.16b, v0.16b, v0.16b, #1
+          * umov    w0, v1.4s[3]                ; Byte 3 has the mask value of the lane 0. Byte 2 has the value of the lane 1.
+          * orr     w0, w0, #0x8000             ; Sets the bit 15.
+          * clz     w0, w0                      ; Counts leading zeros.
+          * lsr     w0, w0, #3                  ; Divide by 8.
+          */
+         generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::vext16b, node, tempReg, maskReg, maskReg, 1);
+         generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovws, node, resReg, tempReg, 3);
+         generateLogicalImmInstruction(cg, TR::InstOpCode::orrimmw, node, resReg, resReg, false, 0x440); // immr=17, imms=0 for 0x8000
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::clzw, node, resReg, resReg);
+         generateLogicalShiftRightImmInstruction(cg, node, resReg, resReg, 3, false);
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
+         break;
+      }
+
+   node->setRegister(resReg);
+   cg->stopUsingRegister(tempReg);
+   cg->decReferenceCount(firstChild);
+
+   return resReg;
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::mLastTrueEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::Node *firstChild = node->getFirstChild();
+   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", firstChild->getDataType().toString());
+
+   TR::DataType et = firstChild->getDataType().getVectorElementType();
+   TR::Register *maskReg = cg->evaluate(firstChild);
+   TR::Register *tempReg = cg->allocateRegister(TR_VRF);
+   TR::Register *maxLaneReg = cg->allocateRegister();
+   TR::Register *resReg = cg->allocateRegister();
+
+   /*
+    * This evaluator returns the index of the last lane that is set.
+    * If all lanes are not set, then -1 is returned.
+    */
+   switch (et)
+      {
+      case TR::Int8:
+         /*
+          * shrn    v1.8b, v0.8h, #7            ; Moves mask values to bit 0 and 1 of the lane 0 - 7.
+          * sli     v1.16b, v1.16b, #6          ; Shifts left v1 by 6 bits and inserts into v1. bit 6 - 9 of the lane 0, 1, 2 and 3 have mask values.
+          * ushr    v1.8h, v1.8h, #6            ; Moves mask values to bit 0 - 3 of each lane.
+          * sli     v1.8h, v1.8h, #12           ; Shifts left v1 by 12 bits and inserts into v1. bit 12 - 19 of the lane 0 and 1 have mask values.
+          * umov    x0, v1.2d[0]                ; Mask values at bit 12 - 19 and bit 44 - 51.
+          * bfi     x0, x0, #24, #20            ; Inserts bit 0 - 19 into bit 24 - 43.
+          * lsr     x0, x0, #20                 ; Moves mask values to bit 16 - 31.
+          * orr     w0, w0, #0x8000             ; Sets the bit 8.
+          * mov     w1, #15
+          * clz     w0, w0
+          * sub     x0, x1, x0
+          */
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vshrn_8b, node, tempReg, maskReg, 7);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli16b, node, tempReg, tempReg, 6);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vushr8h, node, tempReg, tempReg, 6);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli8h, node, tempReg, tempReg, 12);
+         generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, resReg, tempReg, 0);
+         generateBFIInstruction(cg, node, resReg, resReg, 24, 20, true);
+         generateLogicalShiftRightImmInstruction(cg, node, resReg, resReg, 20, true);
+         generateLogicalImmInstruction(cg, TR::InstOpCode::orrimmw, node, resReg, resReg, false, 0x440); // immr=17, imms=0 for 0x8000
+         loadConstant32(cg, node, 15, maxLaneReg);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::clzw, node, resReg, resReg);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::subx, node, resReg, maxLaneReg, resReg);
+         break;
+      case TR::Int16:
+         /*
+          * shrn    v1.4h, v0.4s, #15           ; Moves mask values to bit 0 and 1 of the lane 0 - 3.
+          * sli     v1.8h, v1.8h, #14           ; Shifts left v1 by 14 bits and inserts into v1. bit 14 - 17 of the lane 0 and 1 have mask values.
+          * umov    w0, v1.2d[0]
+          * bfi     x0, x0, #28, #18            ; Inserts bit 0 - 17 into bit 28 - 45.
+          * lsr     x0, x0, #18                 ; Moves mask values to bit 24 - 31.
+          * orr     w0, w0, #0x800000           ; Sets the bit 23.
+          * mov     w1, #7
+          * clz     w0, w0
+          * sub     x0, x1, x0
+          */
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vshrn_4h, node, tempReg, maskReg, 15);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli8h, node, tempReg, tempReg, 14);
+         generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, resReg, tempReg, 0);
+         generateBFIInstruction(cg, node, resReg, resReg, 28, 18, true);
+         generateLogicalShiftRightImmInstruction(cg, node, resReg, resReg, 18, true);
+         generateLogicalImmInstruction(cg, TR::InstOpCode::orrimmw, node, resReg, resReg, false, 0x240); // immr=9, imms=0 for 0x800000
+         loadConstant32(cg, node, 7, maxLaneReg);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::clzw, node, resReg, resReg);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::subx, node, resReg, maxLaneReg, resReg);
+         break;
+      case TR::Int32:
+      case TR::Float:
+         /*
+          * shrn    v1.2s, v0.2d, #31
+          * umov    w0, v1.2d[0]
+          * bfi     x0, x0, #30, #2
+          * lsr     x0, x0, #2
+          * orr     w0, w0, #0x8000000
+          * mov     w1, #3
+          * clz     w0, w0
+          * sub     x0, x1, x0
+          */
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vshrn_2s, node, tempReg, maskReg, 31);
+         generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, resReg, tempReg, 0);
+         generateBFIInstruction(cg, node, resReg, resReg, 30, 2, true);
+         generateLogicalShiftRightImmInstruction(cg, node, resReg, resReg, 2, true);
+         generateLogicalImmInstruction(cg, TR::InstOpCode::orrimmw, node, resReg, resReg, false, 0x140); // immr=5, imms=0 for 0x8000000
+         loadConstant32(cg, node, 3, maxLaneReg);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::clzw, node, resReg, resReg);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::subx, node, resReg, maxLaneReg, resReg);
+         break;
+      case TR::Int64:
+      case TR::Double:
+         /*
+          * ext     v1.16b, v0.16b, v0.16b, #9
+          * umov    w0, v1.4s[3]
+          * orr     w0, w0, #0x8000
+          * mov     w1, #1
+          * clz     w0, w0
+          * lsr     w0, w0, #3
+          * sub     x0, x1, x0
+          */
+         generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::vext16b, node, tempReg, maskReg, maskReg, 9);
+         generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovws, node, resReg, tempReg, 3);
+         generateLogicalImmInstruction(cg, TR::InstOpCode::orrimmw, node, resReg, resReg, false, 0x440); // immr=17, imms=0 for 0x8000
+         loadConstant32(cg, node, 1, maxLaneReg);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::clzw, node, resReg, resReg);
+         generateLogicalShiftRightImmInstruction(cg, node, resReg, resReg, 3, false);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::subx, node, resReg, maxLaneReg, resReg);
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
+         break;
+      }
+
+   node->setRegister(resReg);
+   cg->stopUsingRegister(maxLaneReg);
+   cg->stopUsingRegister(tempReg);
+   cg->decReferenceCount(firstChild);
+
+   return resReg;
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::mToLongBitsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   TR::Node *firstChild = node->getFirstChild();
+   TR_ASSERT_FATAL_WITH_NODE(node, firstChild->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", firstChild->getDataType().toString());
+
+   TR::DataType et = firstChild->getDataType().getVectorElementType();
+   TR::Register *maskReg = cg->evaluate(firstChild);
+   TR::Register *tempReg = cg->allocateRegister(TR_VRF);
+   TR::Register *resReg = cg->allocateRegister();
+
+   switch (et)
+      {
+      case TR::Int8:
+         /*
+          * shrn    v1.8b, v0.8h, #7            ; Moves mask values to bit 0 and 1 of the lane 0 - 7.
+          * sli     v1.16b, v1.16b, #6          ; Shifts left v1 by 6 bits and inserts into v1. bit 6 - 9 of the lane 0, 1, 2 and 3 have mask values.
+          * ushr    v1.8h, v1.8h, #6            ; Moves mask values to bit 0 - 3 of each lane.
+          * sli     v1.8h, v1.8h, #12           ; Shifts left v1 by 12 bits and inserts into v1. bit 12 - 19 of the lane 0 and 1 have mask values.
+          * umov    x0, v1.2d[0]                ; Mask values at bit 12 - 19 and bit 44 - 51.
+          * bfi     x0, x0, #24, #20            ; Inserts bit 0 - 19 into bit 24 - 43.
+          * ubfx    x0, x0, #36, #16            ; Moves bit 36 - 51 to bit 0 - 15. Other bits are cleared.
+          */
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vshrn_8b, node, tempReg, maskReg, 7);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli16b, node, tempReg, tempReg, 6);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vushr8h, node, tempReg, tempReg, 6);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli8h, node, tempReg, tempReg, 12);
+         generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, resReg, tempReg, 0);
+         generateBFIInstruction(cg, node, resReg, resReg, 24, 20, true);
+         generateUBFXInstruction(cg, node, resReg, resReg, 36, 16, true);
+         break;
+      case TR::Int16:
+         /*
+          * shrn    v1.4h, v0.4s, #15           ; Moves mask values to bit 0 and 1 of the lane 0 - 3.
+          * sli     v1.8h, v1.8h, #14           ; Shifts left v1 by 14 bits and inserts into v1. bit 14 - 17 of the lane 0 and 1 have mask values.
+          * umov    w0, v1.2d[0]
+          * bfi     x0, x0, #28, #18            ; Inserts bit 0 - 17 into bit 28 - 45.
+          * ubfx    x0, x0, #42, #8             ; Moves bit 42 - 49 to bit 0 - 7.
+          */
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vshrn_4h, node, tempReg, maskReg, 15);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli8h, node, tempReg, tempReg, 14);
+         generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, resReg, tempReg, 0);
+         generateBFIInstruction(cg, node, resReg, resReg, 28, 18, true);
+         generateUBFXInstruction(cg, node, resReg, resReg, 42, 8, true);
+         break;
+      case TR::Int32:
+      case TR::Float:
+         /*
+          * shrn    v1.2s, v0.2d, #31
+          * umov    w0, v1.2d[0]
+          * bfi     x0, x0, #30, #2
+          * ubfx    x0, x0, #30, #4
+          */
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vshrn_2s, node, tempReg, maskReg, 31);
+         generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovxd, node, resReg, tempReg, 0);
+         generateBFIInstruction(cg, node, resReg, resReg, 30, 2, true);
+         generateUBFXInstruction(cg, node, resReg, resReg, 30, 4, true);
+         break;
+      case TR::Int64:
+      case TR::Double:
+         /*
+          * ext     v1.16b, v0.16b, v0.16b, #7
+          * umov    w0, v1.4s[0]
+          * ubfx    w0, w0, #7, #2
+          */
+         generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::vext16b, node, tempReg, maskReg, maskReg, 7);
+         generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovws, node, resReg, tempReg, 0);
+         generateUBFXInstruction(cg, node, resReg, resReg, 7, 2, false);
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
+         break;
+      }
+
+   node->setRegister(resReg);
+   cg->stopUsingRegister(tempReg);
+   cg->decReferenceCount(firstChild);
+
+   return resReg;
    }
 
 TR::Register*
 OMR::ARM64::TreeEvaluator::mLongBitsToMaskEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::unImpOpEvaluator(node, cg);
+   /*
+    * The input to this evaluator is a long value. Each lane is set or unset according to the bits in the long value.
+    */
+   TR_ASSERT_FATAL_WITH_NODE(node, node->getDataType().getVectorLength() == TR::VectorLength128,
+                   "Only 128-bit vectors are supported %s", node->getDataType().toString());
+
+   TR::DataType et = node->getDataType().getVectorElementType();
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *srcReg = cg->evaluate(firstChild);
+   TR::Register *tempReg = cg->allocateRegister((et == TR::Int64 || et == TR::Double) ? TR_GPR : TR_VRF);
+   TR::Register *maskReg = cg->allocateRegister(TR_VRF);
+
+   switch (et)
+      {
+      case TR::Int8:
+         /*
+          * fmov    d0, x0
+          * sli     v0.2d, v0.2d, #24           ; Shifts left v0 by 24 bits and inserts into v0. bit 0 - 7 of the lane 0 and 1 in int32x4 vector have mask values.
+          * sli     v0.4s, v0.4s, #12           ; Shifts left v0 by 12 bits and inserts into v0. bit 0 - 3 of the lane 0 - 3 in int16x8 vector have mask values.
+          * sli     v0.8h, v0.8h, #6            ; Shifts left v0 by 6 bits and inserts into v0. bit 0 - 1 of the lane 0 - 7 in int8x16 vector have mask values.
+          * uxtl    v0.8h, v0.8b                ; bit 0 - 1 of the lane 0 - 7 in int16x8 vector have mask values.
+          * movi    v1.16b, #1
+          * sli     v0.8h, v0.8h, #7            ; bit 0 of each lane in int8x16 vector have mask values.
+          * cmtst   v0.16b, v0.16b, v1.16b      ; test if bit 0 of each lane is set
+          */
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, maskReg, srcReg);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli2d, node, maskReg, maskReg, 24);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli4s, node, maskReg, maskReg, 12);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli8h, node, maskReg, maskReg, 6);
+         generateVectorUXTLInstruction(cg, TR::Int8, node, maskReg, maskReg, false);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi16b, node, tempReg, 1);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli8h, node, maskReg, maskReg, 7);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::vcmtst16b, node, maskReg, maskReg, tempReg);
+         break;
+      case TR::Int16:
+         /*
+          * fmov    d0, x0
+          * sli     v0.2d, v0.2d, #28           ; Shifts left v0 by 28 bits and inserts into v0. bit 0 - 3 of the lane 0 and 1 in int32x4 vector have mask values.
+          * sli     v0.4s, v0.4s, #14           ; Shifts left v0 by 14 bits and inserts into v0. bit 0 - 1 of the lane 0 - 3 in int16x8 vector have mask values.
+          * sli     v0.8h, v0.8h, #7            ; Shifts left v0 by 7 bits and inserts into v0. The lsb of the lane 0 - 7 in int8x16 vector has mask values.
+          * movi    v1.8h, #1
+          * uxtl    v0.8h, v0.8b                ; The lsb of each lane in int16x8 vector has mask values.
+          * cmtst   v0.8h, v0.8h, v1.8h         ; test if bit 0 of each lane is set
+          */
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, maskReg, srcReg);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli2d, node, maskReg, maskReg, 28);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli4s, node, maskReg, maskReg, 14);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli8h, node, maskReg, maskReg, 7);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi8h, node, tempReg, 1);
+         generateVectorUXTLInstruction(cg, TR::Int8, node, maskReg, maskReg, false);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::vcmtst8h, node, maskReg, maskReg, tempReg);
+         break;
+      case TR::Int32:
+      case TR::Float:
+         /*
+          * fmov    d0, x0
+          * sli     v0.2d, v0.2d, #30           ; Shifts left v0 by 30 bits and inserts into v0. bit 0 - 1 of the lane 0 and 1 in int32x4 vector have mask values.
+          * sli     v0.4s, v0.4s, #15           ; Shifts left v0 by 15 bits and inserts into v0. The lsb of the lane 0 - 3 in int16x8 vector have mask values.
+          * movi    v1.4s, #1
+          * uxtl    v0.4s, v0.4h                ; The lsb of each lane in int32x4 vector has mask values.
+          * cmtst   v0.4s, v0.4s, v1.4s         ; test if bit 0 of each lane is set
+          */
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, maskReg, srcReg);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli2d, node, maskReg, maskReg, 30);
+         generateVectorShiftImmediateInstruction(cg, TR::InstOpCode::vsli4s, node, maskReg, maskReg, 15);
+         generateTrg1ImmInstruction(cg, TR::InstOpCode::vmovi4s, node, tempReg, 1);
+         generateVectorUXTLInstruction(cg, TR::Int16, node, maskReg, maskReg, false);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::vcmtst4s, node, maskReg, maskReg, tempReg);
+         break;
+      case TR::Int64:
+      case TR::Double:
+         /*
+          * ubfiz   x1, x0, #55, #2             ; Copies 2 bits from the lsb of x0 into the bit 55 of x1. Other bits of x1 are cleared.
+          * fmov    d0, x1
+          * ext     v0.16b, v0.16b, v0.16b, #15 ; Moves 8bits elements to the left. bit 63 and 64 have mask values.
+          * cmeq    v0.2d, v0.2d, #0
+          * not     v0.16b, v0.16b
+          */
+         generateUBFIZInstruction(cg, node, tempReg, srcReg, 55, 2, true);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, maskReg, tempReg);
+         generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::vext16b, node, maskReg, maskReg, maskReg, 15);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::vcmeq2d_zero, node, maskReg, maskReg);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::vnot16b, node, maskReg, maskReg);
+         break;
+      default:
+         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type");
+         break;
+      }
+
+   node->setRegister(maskReg);
+   cg->stopUsingRegister(tempReg);
+   cg->decReferenceCount(firstChild);
+
+   return maskReg;
    }
 
 TR::Register*

@@ -653,7 +653,7 @@ bool isMatchingStoreRestore(TR::Instruction *cursorLoad, TR::Instruction *cursor
    return false;
    }
 
-uint32_t getRegMaskFromRange(TR::Instruction * inst)
+uint32_t getGPRMaskFromRange(TR::Instruction * inst, TR::CodeGenerator *cg)
    {
    uint32_t regs = 0;
 
@@ -661,20 +661,43 @@ uint32_t getRegMaskFromRange(TR::Instruction * inst)
    TR::Register *highReg = toS390RSInstruction(inst)->getSecondRegister();
    if (inst->getRegisterOperand(1)->getRegisterPair())
       highReg = inst->getRegisterOperand(1)->getRegisterPair()->getHighOrder();
+   uint32_t lowRegNum = toRealRegister(lowReg)->getRegisterNumber();
+   uint32_t highRegNum = toRealRegister(highReg)->getRegisterNumber();
 
-   uint32_t lowRegNum = ANYREGINDEX(toRealRegister(lowReg)->getRegisterNumber());
-   uint32_t highRegNum = ANYREGINDEX(toRealRegister(highReg)->getRegisterNumber());
+   uint32_t minRegNum = TR::RealRegister::FirstGPR;
+   uint32_t maxRegNum = TR::RealRegister::LastAssignableGPR;
+   TR_ASSERT(lowRegNum >= minRegNum && lowRegNum <= maxRegNum && highRegNum >= minRegNum && highRegNum <= maxRegNum, "Unexpected register number");
 
-   TR_ASSERT(lowRegNum >= 0 && lowRegNum <= 15 && highRegNum >= 0 && highRegNum <= 15, "Unexpected register number");
-   for (uint32_t i = lowRegNum; ; i = ((i == 15) ? 0 : i+1))  // wrap around to 0 at 15
+   // wrap around for loop terminal index to minRegNum
+   for (uint32_t i = lowRegNum; ; i = ((i == maxRegNum) ? minRegNum : i+1))
       {
-      regs = regs | (0x1 << i);
+      regs |= cg->machine()->getRealRegister(i)->getRealRegisterMask();
       if (i == highRegNum)
          break;
       }
    return regs;
    }
-   
+
+uint32_t getVRFMaskFromRange(TR::Instruction * inst, TR::CodeGenerator *cg)
+   {
+   uint32_t regs = 0;
+
+   TR::Register *lowReg = toS390VRSInstruction(inst)->getFirstRegister();
+   TR::Register *highReg = toS390VRSInstruction(inst)->getSecondRegister();
+   uint32_t lowRegNum = toRealRegister(lowReg)->getRegisterNumber();
+   uint32_t highRegNum = toRealRegister(highReg)->getRegisterNumber();
+
+   TR_ASSERT_FATAL(lowRegNum <= highRegNum && (highRegNum - lowRegNum) < 16 &&
+                   lowRegNum >= TR::RealRegister::FirstAssignableVRF && highRegNum <= TR::RealRegister::LastAssignableVRF,
+                   "%s to %s is an invalid vector range", lowReg->getRegisterName(cg->comp(), TR_VectorReg128), highReg->getRegisterName(cg->comp(), TR_VectorReg128));
+
+   for (uint32_t i = lowRegNum; i <= highRegNum; ++i)
+      {
+      regs |= cg->machine()->getRealRegister(i)->getRealRegisterMask();
+      }
+   return regs;
+   }
+
 static void handleLoadWithRegRanges(TR::Instruction *inst, TR::CodeGenerator *cg)
    {
    TR::Compilation * comp = cg->comp();
@@ -683,37 +706,49 @@ static void handleLoadWithRegRanges(TR::Instruction *inst, TR::CodeGenerator *cg
          opCodeToUse == TR::InstOpCode::LMY || opCodeToUse == TR::InstOpCode::VLM))
       return;
 
-   bool isVector = opCodeToUse == TR::InstOpCode::VLM ? true : false;
-   uint32_t numVRFs = TR::RealRegister::LastAssignableVRF - TR::RealRegister::FirstAssignableVRF;
+   TR::Register *lowReg, *highReg;
+   uint32_t minRegNum, maxRegNum;
+   uint32_t availForShuffle;
 
-   TR::Register *lowReg  = isVector ? toS390VRSInstruction(inst)->getFirstRegister()  : toS390RSInstruction(inst)->getFirstRegister();
-   TR::Register *highReg = isVector ? toS390VRSInstruction(inst)->getSecondRegister() : toS390RSInstruction(inst)->getSecondRegister();
+   if (opCodeToUse == TR::InstOpCode::VLM)
+      {
+      lowReg = toS390VRSInstruction(inst)->getFirstRegister();
+      highReg = toS390VRSInstruction(inst)->getSecondRegister();
+      minRegNum = TR::RealRegister::FirstAssignableVRF;
+      maxRegNum = TR::RealRegister::LastAssignableVRF;
+      availForShuffle = cg->machine()->genBitMapOfAssignableVRFs() & ~(getVRFMaskFromRange(inst, cg));
+      }
+   else
+      {
+      lowReg = toS390RSInstruction(inst)->getFirstRegister();
+      highReg = toS390RSInstruction(inst)->getSecondRegister();
+      minRegNum = TR::RealRegister::FirstGPR;
+      maxRegNum = TR::RealRegister::LastAssignableGPR;
+      availForShuffle = cg->machine()->genBitMapOfAssignableGPRs() & ~(getGPRMaskFromRange(inst, cg));
+      }
 
    if (inst->getRegisterOperand(1)->getRegisterPair())
       highReg = inst->getRegisterOperand(1)->getRegisterPair()->getHighOrder();
-   uint32_t lowRegNum = ANYREGINDEX(toRealRegister(lowReg)->getRegisterNumber());
-   uint32_t highRegNum = ANYREGINDEX(toRealRegister(highReg)->getRegisterNumber());
+   uint32_t lowRegNum = toRealRegister(lowReg)->getRegisterNumber();
+   uint32_t highRegNum = toRealRegister(highReg)->getRegisterNumber();
 
    uint32_t regsInRange;
    if (highRegNum >= lowRegNum)
       regsInRange = (highRegNum - lowRegNum + 1);
    else
-      regsInRange = ((isVector ? numVRFs : 16) - lowRegNum) + highRegNum + 1;
+      regsInRange = (maxRegNum - lowRegNum + 1) + (highRegNum - minRegNum + 1);
 
    if (regsInRange <= 2)
       return;   // registers on instruction, nothing more to do.
 
    // visit all registers in range.  ignore first and last since RA will have taken care of already
-   lowRegNum = lowRegNum == (isVector ? numVRFs - 1 : 15) ? 0 : lowRegNum + 1;
-   // wrap around for loop terminal index to 0 at 15 or 31 for Vector Registers
-
-   uint32_t availForShuffle = cg->machine()->genBitMapOfAssignableGPRs() & ~(getRegMaskFromRange(inst));
-
+   lowRegNum = (lowRegNum == maxRegNum) ? minRegNum : lowRegNum + 1;
+   // wrap around for loop terminal index to minRegNum
    for (uint32_t i  = lowRegNum  ;
                  i != highRegNum ;
-                 i  = ((i == (isVector ? numVRFs - 1 : 15)) ? 0 : i+1))
+                 i  = ((i == maxRegNum) ? minRegNum : i+1))
       {
-      TR::RealRegister *reg = cg->machine()->getRealRegister(i + isVector ? TR::RealRegister::VRF0 : TR::RealRegister::GPR0);
+      TR::RealRegister *reg = cg->machine()->getRealRegister(i);
 
       // Registers that are assigned need to be checked whether they have a matching STM--otherwise we spill.
       // Since we are called post RA for the LM, we check if assigned registers are last used on the LM so we can

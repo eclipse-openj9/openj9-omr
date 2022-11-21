@@ -491,6 +491,25 @@ OMR::Z::Machine::genBitMapOfAssignableGPRs()
    }
 
 /**
+ * @return a bit map identifying assignable vector regs as 1's.
+ */
+uint32_t
+OMR::Z::Machine::genBitMapOfAssignableVRFs()
+   {
+   uint32_t availRegMask = 0x0;
+
+   for (int32_t i = TR::RealRegister::FirstVRF; i <= TR::RealRegister::LastAssignableVRF; ++i)
+      {
+      if (_registerFile[i]->getState() != TR::RealRegister::Locked)
+         {
+         availRegMask |= _registerFile[i]->getRealRegisterMask();
+         }
+      }
+
+   return availRegMask;
+   }
+
+/**
  * @return a bit vector identifying live regs pairs as 1's.
  */
 uint8_t

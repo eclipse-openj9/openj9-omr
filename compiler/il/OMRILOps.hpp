@@ -342,6 +342,10 @@ public:
             TR::DataType dt = getVectorResultDataType(op);
             return TR::DataType::createMaskType(dt.getVectorElementType(), dt.getVectorLength());
             }
+         else if (opcode.isMaskReduction())
+            {
+            return _opCodeProperties[opcode.getTableIndex()].dataType;
+            }
          else
             {
             // scalar result type (e.g. reduction)

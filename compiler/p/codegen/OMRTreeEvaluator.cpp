@@ -3123,7 +3123,7 @@ TR::Register *OMR::Power::TreeEvaluator::inlineVectorBinaryOp(TR::Node *node, TR
 
    if (masked)
       {
-      TR_ASSERT_FATAL(resReg->getKind() == TR_VSX_VECTOR, "Only masked VSX opcodes are currenlty supported\n");
+      TR_ASSERT_FATAL(resReg->getKind() == TR_VSX_VECTOR || resReg->getKind() == TR_VRF, "Only masked VSX opcodes are currenlty supported\n");
       generateTrg1Src3Instruction(cg, TR::InstOpCode::xxsel, node, resReg, lhsReg, resReg, maskReg);
       }
 

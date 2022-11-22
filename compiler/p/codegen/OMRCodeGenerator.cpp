@@ -1785,7 +1785,7 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
       return false;
 
    if (cpu->isAtLeast(OMR_PROCESSOR_PPC_P8) &&
-       (opcode.getVectorOperation() == TR::vadd || opcode.getVectorOperation() == TR::vsub || opcode.getVectorOperation() == TR::vmul || opcode.getVectorOperation() == TR::vabs || opcode.getVectorOperation() == TR::vmin || opcode.getVectorOperation() == TR::vmax) &&
+       (opcode.getVectorOperation() == TR::vadd || opcode.getVectorOperation() == TR::vsub || opcode.getVectorOperation() == TR::vmul || opcode.getVectorOperation() == TR::vabs || opcode.getVectorOperation() == TR::vmin || opcode.getVectorOperation() == TR::vmax || opcode.getVectorOperation() == TR::vmadd) &&
        et == TR::Int64)
       return true;
 
@@ -1866,6 +1866,7 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
              opcode.getVectorSourceDataType().getVectorElementType() == TR::Int64)
             return true;
       case TR::vmadd:
+         return true;
       case TR::vcmpeq:
       case TR::vcmplt:
       case TR::vcmpgt:

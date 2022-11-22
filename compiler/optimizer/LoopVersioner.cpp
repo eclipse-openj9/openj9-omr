@@ -2021,57 +2021,6 @@ bool TR_LoopVersioner::detectInvariantBoundChecks(List<TR::TreeTop> *boundCheckT
                      }
                   }
 
-
-                 if (!isInductionVariable /* &&
-                    !strncmp(comp()->signature(), "banshee/scan/encoding/Latin1EncodingSupport.load", 48) */)
-                  {
-                  if (_loopTestTree &&
-                      (_loopTestTree->getNode()->getNumChildren() > 1) &&
-                      ((_loopTestTree->getNode()->getOpCodeValue() == TR::ificmplt) ||
-                       (_loopTestTree->getNode()->getOpCodeValue() == TR::ificmpgt) ||
-                       (_loopTestTree->getNode()->getOpCodeValue() == TR::ificmpge) ||
-                       (_loopTestTree->getNode()->getOpCodeValue() == TR::ificmple)))
-                     {
-                     TR::Symbol *symbolInCompare = NULL;
-                     TR::Node *childInCompare = _loopTestTree->getNode()->getFirstChild();
-                     while (childInCompare->getOpCode().isAdd() || childInCompare->getOpCode().isSub())
-                        {
-                        if (childInCompare->getSecondChild()->getOpCode().isLoadConst())
-                           childInCompare = childInCompare->getFirstChild();
-                        else
-                           break;
-                        }
-
-
-                   if (childInCompare->getOpCode().hasSymbolReference())
-                      {
-                      symbolInCompare = childInCompare->getSymbolReference()->getSymbol();
-                      if (!symbolInCompare->isAutoOrParm())
-                         symbolInCompare = NULL;
-                      }
-
-                     if (symbolInCompare)
-                        {
-                        TR_InductionVariable *v;
-                        for (v = _currentNaturalLoop->getFirstInductionVariable(); v; v = v->getNext())
-                           {
-                           if ((v->getLocal() == indexSymRef->getSymbol()) &&
-                               (v->getLocal() == symbolInCompare) &&
-                               (v->getLocal()->getDataType() == TR::Int32) &&
-                               (v->isSigned()))
-                              {
-                              if ((v->getIncr()->getLowInt() == v->getIncr()->getHighInt()) &&
-                                  (v->getIncr()->getLowInt() > 0))
-                                 _additionInfo->set(symRefNum);
-                              isLoopDrivingInductionVariable = true;
-                              isInductionVariable = true;
-                              break;
-                              }
-                           }
-                        }
-                     }
-                  }
-
                if (!isInductionVariable)
                   {
                   bool isIndexChildMultiplied=false;

@@ -3975,8 +3975,6 @@ const TR::BlockChecklist &TR_LoopTransformer::getLoopBlocksChecklist(
  *
  * \param[in]  queryBlock    The block to consider.
  * \param[in]  loopStructure The loop to consider, which must contain \p queryBlock.
- * \param[out] atEntry       Updated (if provided) when the result is true.
- *                           True when \p queryBlock is the loop entry block.
  * \param[out] priorBlocks   The set of blocks in the loop that may run before
  *                           \p queryBlock (when the result is true).
  * \return true if \p queryBlock always runs, and false otherwise.
@@ -3984,7 +3982,6 @@ const TR::BlockChecklist &TR_LoopTransformer::getLoopBlocksChecklist(
 bool TR_LoopTransformer::blockIsAlwaysExecutedInLoop(
    TR::Block *queryBlock,
    TR_RegionStructure *loopStructure,
-   bool *atEntry,
    const TR::BlockChecklist **priorBlocks)
    {
    TR::Block *entryBlock = loopStructure->asRegion()->getEntryBlock();
@@ -3999,12 +3996,7 @@ bool TR_LoopTransformer::blockIsAlwaysExecutedInLoop(
       *priorBlocks = &memoRecord._priorBlocks;
 
    if (!insertSuccess)
-      {
-      if (atEntry != NULL && memoRecord._alwaysExecutes)
-         *atEntry = queryBlock == entryBlock;
-
       return memoRecord._alwaysExecutes;
-      }
 
    // _alwaysExecutes defaults to false, so it only needs to be updated if we
    // return true.
@@ -4076,9 +4068,6 @@ bool TR_LoopTransformer::blockIsAlwaysExecutedInLoop(
          queue.add(succ);
          }
       }
-
-   if (atEntry != NULL)
-      *atEntry = queryBlock == entryBlock;
 
    memoRecord._alwaysExecutes = true;
    return true;

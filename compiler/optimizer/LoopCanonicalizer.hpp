@@ -134,7 +134,6 @@ class TR_LoopTransformer : public TR::Optimization
    bool blockIsAlwaysExecutedInLoop(
       TR::Block *queryBlock,
       TR_RegionStructure *loopStructure,
-      bool *atEntry = NULL,
       const TR::BlockChecklist **priorBlocks = NULL);
 
    TR::Block * createNewEmptyBlock();

@@ -6298,8 +6298,8 @@ bool TR_LoopVersioner::ivLoadSeesUpdatedValue(
    TR::TreeTop *ivUpdateTree = _storeTrees[ivNum];
    TR::Block *ivUpdateBlock = ivUpdateTree->getEnclosingBlock();
    const TR::BlockChecklist *priorBlocks = NULL;
-   bool updateAlwaysExecuted = blockIsAlwaysExecutedInLoop(
-      ivUpdateBlock, _curLoop->_loop, NULL, &priorBlocks);
+   bool updateAlwaysExecuted =
+      blockIsAlwaysExecutedInLoop(ivUpdateBlock, _curLoop->_loop, &priorBlocks);
 
    TR_ASSERT_FATAL(
       updateAlwaysExecuted, "expected IV #%d to be updated every iteration", ivNum);

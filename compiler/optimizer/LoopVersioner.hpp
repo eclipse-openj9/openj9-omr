@@ -928,9 +928,8 @@ class TR_LoopVersioner : public TR_LoopTransformer
    bool isStoreInSpecialForm(int32_t, TR_Structure *);
    bool isConditionalTreeCandidateForElimination(TR::TreeTop * curTree) { return (!curTree->getNode()->getFirstChild()->getOpCode().isLoadConst() ||
                                                                                   !curTree->getNode()->getSecondChild()->getOpCode().isLoadConst()); };
-   TR::Node *isDependentOnInductionVariable(TR::Node *, bool, bool &, TR::Node* &, TR::Node* &, bool &);
+   TR::Node *isDependentOnInductionVariable(TR::Node *, bool, bool &, TR::Node* &, TR::Node* &, bool &, TR::TreeTop* &);
    TR::Node *isDependentOnInvariant(TR::Node *);
-   bool boundCheckUsesUnchangedValue(TR::TreeTop *, TR::Node *, TR::SymbolReference *, TR_RegionStructure *);
    bool findStore(TR::TreeTop *start, TR::TreeTop *end, TR::Node *node, TR::SymbolReference *symRef, bool ignoreLoads = false, bool lastTimeThrough = false);
    TR::Node *findLoad(TR::Node *node, TR::SymbolReference *symRef, vcount_t origVisitCount);
    void versionNaturalLoop(TR_RegionStructure *, List<TR::Node> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR_NodeParentSymRef> *, List<TR_NodeParentSymRefWeightTuple> *, List<TR_Structure> *whileLoops, List<TR_Structure> *clonedInnerWhileLoops, bool skipVersioningAsynchk, SharedSparseBitVector &reverseBranchInLoops);

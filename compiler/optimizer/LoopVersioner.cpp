@@ -1756,8 +1756,11 @@ TR::Node *TR_LoopVersioner::isDependentOnInductionVariable(
    bool &isIndexChildMultiplied,
    TR::Node * &mulNode,
    TR::Node * &strideNode,
-   bool &indVarOccursAsSecondChildOfSub)
+   bool &indVarOccursAsSecondChildOfSub,
+   TR::TreeTop * &outDefTree)
    {
+   outDefTree = NULL;
+
    TR_UseDefInfo *useDefInfo = optimizer()->getUseDefInfo();
    if (!useDefInfo)
       return NULL;
@@ -1766,10 +1769,12 @@ TR::Node *TR_LoopVersioner::isDependentOnInductionVariable(
    if (!useIndex || !useDefInfo->isUseIndex(useIndex))
       return NULL;
 
+   int32_t useSymRefNum = useNode->getSymbolReference()->getReferenceNumber();
+
    TR_UseDefInfo::BitVector defs(comp()->allocator());
    if (useDefInfo->getUseDef(defs, useIndex) &&
        (defs.PopulationCount() == 1) &&
-       _writtenExactlyOnce.ValueAt(useNode->getSymbolReference()->getReferenceNumber()))
+       _writtenExactlyOnce.ValueAt(useSymRefNum))
       {
       TR_UseDefInfo::BitVector::Cursor cursor(defs);
       for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
@@ -1779,6 +1784,18 @@ TR::Node *TR_LoopVersioner::isDependentOnInductionVariable(
             return NULL;
 
          TR::Node *defNode = useDefInfo->getNode(defIndex);
+         TR::TreeTop *defTree = _storeTrees[useSymRefNum];
+         TR_ASSERT_FATAL_WITH_NODE(
+            useNode,
+            defNode == defTree->getNode(),
+            "n%un [%p] def discrepancy: use-def n%un [%p] vs. _storeTrees n%un [%p]",
+            useNode->getGlobalIndex(),
+            useNode,
+            defNode->getGlobalIndex(),
+            defNode,
+            defTree->getNode()->getGlobalIndex(),
+            defTree->getNode());
+
          TR::Node *child = defNode->getFirstChild();
          bool goodAccess = isVersionableArrayAccess(child);
          while (!noArithmeticAllowed && (child->getOpCode().isAdd() || child->getOpCode().isSub() || child->getOpCode().isMul()))
@@ -1823,7 +1840,10 @@ TR::Node *TR_LoopVersioner::isDependentOnInductionVariable(
 
          if (child &&
              child->getOpCode().hasSymbolReference() && goodAccess)
+            {
+            outDefTree = defTree;
             return child;
+            }
          }
       }
 
@@ -1894,7 +1914,8 @@ bool TR_LoopVersioner::detectInvariantBoundChecks(List<TR::TreeTop> *boundCheckT
 
    for (;nextTree;)
       {
-      TR::Node *node = nextTree->getData()->getNode();
+      TR::TreeTop *checkTree = nextTree->getData();
+      TR::Node *node = checkTree->getNode();
 
       TR::Node *boundNode =
          (node->getOpCodeValue() == TR::BNDCHKwithSpineCHK) ? node->getChild(2) : node->getFirstChild();
@@ -1923,11 +1944,13 @@ bool TR_LoopVersioner::detectInvariantBoundChecks(List<TR::TreeTop> *boundCheckT
 
       TR::SymbolReference *indexSymRef = NULL;
       TR::Node *indexChild = NULL;
-      //dumpOptDetails(comp(), "maxBound %p (invariant %d) for BNDCHK node %p loop condition invariant %d\n", node->getFirstChild(), isMaxBoundInvariant, node, _loopConditionInvariant);
+      TR::TreeTop *occurrenceTree = NULL;
       bool isLoopDrivingInductionVariable = false;
       bool isDerivedInductionVariable = false;
+      bool isSpecialIv = false;
       if (isMaxBoundInvariant)
          {
+         occurrenceTree = checkTree;
          indexChild =
             (node->getOpCodeValue() == TR::BNDCHKwithSpineCHK) ? node->getChild(3) : node->getSecondChild();
 
@@ -1998,6 +2021,7 @@ bool TR_LoopVersioner::detectInvariantBoundChecks(List<TR::TreeTop> *boundCheckT
                      if (symRefNum == *(versionableInductionVar->getData()))
                         {
                         isInductionVariable = true;
+                        isSpecialIv = true;
                         break;
                         }
                      versionableInductionVar = versionableInductionVar->getNextElement();
@@ -2027,13 +2051,15 @@ bool TR_LoopVersioner::detectInvariantBoundChecks(List<TR::TreeTop> *boundCheckT
                   TR::Node *mulNode=NULL;
                   TR::Node *strideNode=NULL;
                   bool indVarOccursAsSecondChildOfSub=false;
+                  TR::TreeTop *defTree = NULL;
                   indexChild = isDependentOnInductionVariable(
                      indexChild,
                      changedIndexSymRefAtSomePoint,
                      isIndexChildMultiplied,
                      mulNode,
                      strideNode,
-                     indVarOccursAsSecondChildOfSub);
+                     indVarOccursAsSecondChildOfSub,
+                     defTree);
                   if (!indexChild ||
                       !indexChild->getOpCode().hasSymbolReference() ||
                       !indexChild->getSymbolReference()->getSymbol()->isAutoOrParm() ||
@@ -2046,21 +2072,18 @@ bool TR_LoopVersioner::detectInvariantBoundChecks(List<TR::TreeTop> *boundCheckT
                      indexSymRef = indexChild->getSymbolReference();
                      changedIndexSymRef = true;
                      changedIndexSymRefAtSomePoint = true;
+                     occurrenceTree = defTree;
                      }
                   }
                }
             }
          }
 
-
       if (isInductionVariable && indexSymRef)
          {
-         if (!boundCheckUsesUnchangedValue(nextTree->getData(), indexChild, indexSymRef, _currentNaturalLoop))
-            {
-            //isInductionVariable = false;
-            }
-         else
+         if (!isSpecialIv && !ivLoadSeesUpdatedValue(indexChild, occurrenceTree))
             _unchangedValueUsedInBndCheck->set(node->getGlobalIndex());
+
          // check for multiple loop exits when versioning a derived iv
          //
          if (isDerivedInductionVariable && !_hasPredictableExits->get(indexSymRef->getReferenceNumber()))
@@ -2072,7 +2095,7 @@ bool TR_LoopVersioner::detectInvariantBoundChecks(List<TR::TreeTop> *boundCheckT
          }
 
       if (isIndexInvariant &&
-         _checksInDupHeader.find(nextTree->getData()))
+         _checksInDupHeader.find(checkTree))
          isIndexInvariant = false;
 
       if (!isIndexInvariant &&
@@ -6839,13 +6862,15 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
 
             if (!foundInductionVariable)
                {
+               TR::TreeTop *defTree = NULL;
                indexChild = isDependentOnInductionVariable(
                   indexChild,
                   changedIndexSymRefAtSomePoint,
                   isIndexChildMultiplied,
                   mulNode,
                   strideNode,
-                  indVarOccursAsSecondChildOfSub);
+                  indVarOccursAsSecondChildOfSub,
+                  defTree);
 
                if (!indexChild ||
                    !indexChild->getOpCode().hasSymbolReference() ||
@@ -6967,6 +6992,12 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
             {
             TR::Node *duplicateIndex = boundCheckNode->getChild(indexChildIndex)->duplicateTreeForCodeMotion();
 
+            // TODO: Always consult _unchangedValueUsedInBndCheck even when we
+            // changedIndexSymRefAtSomePoint? It may be that the check here for
+            // changedIndexSymRefAtSomePoint is trying to be conservative for
+            // substitutions via isDependentOnInductionVariable() because they
+            // used to interfere with the correct determination of the value in
+            // _unchangedValueUsedInBndCheck.
             if ( changedIndexSymRefAtSomePoint || !_unchangedValueUsedInBndCheck->get(boundCheckNode->getGlobalIndex()))
                {
                if (_storeTrees[origIndexSymRef->getReferenceNumber()])
@@ -8409,251 +8440,6 @@ bool TR_LoopVersioner::findStore(TR::TreeTop *start, TR::TreeTop *end, TR::Node 
          return false;
       }
    }
-
-bool TR_LoopVersioner::boundCheckUsesUnchangedValue(TR::TreeTop *bndCheckTree, TR::Node *node, TR::SymbolReference *symRef, TR_RegionStructure *loopStructure)
-   {
-   TR::Block *currentBlock = bndCheckTree->getEnclosingBlock();
-   TR::Block *entryBlock = loopStructure->asRegion()->getEntryBlock();
-   // needAuxiliaryWalk flag is not needed whenever the walk of the trees
-   // ends at the bndCheckTree (refer to 138095 for some notes)
-   //
-   if (currentBlock == entryBlock)
-      {
-      if (!findStore(currentBlock->getEntry(), bndCheckTree, node, symRef))
-         return true;
-      else
-         return false;
-      }
-
-   if (currentBlock == _loopTestBlock)
-      {
-      if (findStore(bndCheckTree, currentBlock->getExit(), node, symRef, true))
-         return true;
-      else
-         return false;
-      }
-
-   if ((currentBlock->getSuccessors().size() == 1) &&
-       (currentBlock->getSuccessors().front()->getTo() == _loopTestBlock))
-      {
-      if (findStore(bndCheckTree, currentBlock->getExit(), node, symRef, true) ||
-          findStore(_loopTestBlock->getEntry(), _loopTestBlock->getExit(), node, symRef, true))
-         return true;
-      else
-         return false;
-      }
-
-   // check for a straight-line path to the current block from the entry block
-   //
-   if (entryBlock->getSuccessors().size() == 1)
-      {
-      TR::Block *succBlock = entryBlock->getSuccessors().front()->getTo()->asBlock();
-      bool searchForStore = false;
-      if (currentBlock == succBlock)
-         searchForStore = true;
-
-      if (!searchForStore)
-         {
-         // skip over goto blocks if any
-         //
-         if ((succBlock->getSuccessors().size() == 1) &&
-               succBlock->getSuccessors().front()->getTo() == currentBlock)
-            {
-            if (!findStore(succBlock->getEntry(), succBlock->getExit(), node, symRef))
-               searchForStore = true;
-            }
-         }
-
-      if (searchForStore)
-         {
-         if (!findStore(currentBlock->getEntry(), bndCheckTree, node, symRef))
-            return true;
-         }
-      }
-
-   TR_ScratchList<TR::Block> blocksInRegion(trMemory());
-   loopStructure->getBlocks(&blocksInRegion);
-
-   bool flag = true;
-   TR::Block *cursorBlock = currentBlock;
-   TR_ScratchList<TR::Block> innerLoopEntries(trMemory());
-   while (flag)
-      {
-      flag = false;
-      // check if cursorBlock is the entry of an inner loop or an improper region
-      // if it is the start of an improper region, exit the walk
-      // if it is the start of an inner loop, add to the list. if already added,
-      // this means that the block is being analyzed for the second time, and the
-      // walk needs to terminate ; otherwise there is a chance of an infinite loop
-      //
-      TR_Structure *cursorStruct = cursorBlock->getStructureOf();
-      TR_RegionStructure *parent = cursorStruct->getParent()->asRegion();
-      if (parent && (parent != loopStructure))
-         {
-         if (parent->isNaturalLoop()) // inner loop detected
-            {
-            if (cursorBlock == parent->getEntryBlock())
-               {
-               if (!innerLoopEntries.find(cursorBlock))
-                  innerLoopEntries.add(cursorBlock);
-               else
-                  break; // terminate
-               }
-            }
-         else if (!parent->isAcyclic()) // improper
-            break;
-         }
-
-      if (cursorBlock == currentBlock)
-         {
-         if (findStore(bndCheckTree, cursorBlock->getExit(), node, symRef, true))
-            return true;
-         }
-      else
-         {
-         if (findStore(cursorBlock->getEntry(), cursorBlock->getExit(), node, symRef))
-            return true;
-         }
-
-      if ((cursorBlock == _loopTestBlock) ||
-          (cursorBlock == entryBlock))
-         break;
-
-      TR::Block *onlySuccInsideLoop = NULL;
-      for (auto succ = cursorBlock->getSuccessors().begin(); succ != cursorBlock->getSuccessors().end(); ++succ)
-         {
-         TR::Block *succBlock = (*succ)->getTo()->asBlock();
-         if (blocksInRegion.find(succBlock))
-            {
-            if (!onlySuccInsideLoop)
-               onlySuccInsideLoop = succBlock;
-            else
-               {
-               onlySuccInsideLoop = NULL;
-               break;
-               }
-            }
-         }
-      if (onlySuccInsideLoop)
-         {
-         cursorBlock = onlySuccInsideLoop;
-         flag = true;
-         }
-      }
-
-
-
-   if ((cursorBlock == _loopTestBlock) ||
-       (cursorBlock == entryBlock))
-      return false;
-
-   flag = true;
-   cursorBlock = currentBlock;
-   innerLoopEntries.deleteAll();
-   while (flag)
-      {
-      flag = false;
-
-      TR_Structure *cursorStruct = cursorBlock->getStructureOf();
-      TR_RegionStructure *parent = cursorStruct->getParent()->asRegion();
-      if (parent && (parent != loopStructure))
-         {
-         if (parent->isNaturalLoop()) // inner loop detected
-            {
-            if (cursorBlock == parent->getEntryBlock())
-               {
-               if (!innerLoopEntries.find(cursorBlock))
-                  innerLoopEntries.add(cursorBlock);
-               else
-                  break; // terminate
-               }
-            }
-         else if (!parent->isAcyclic()) // improper
-            break;
-         }
-
-      if (cursorBlock == currentBlock)
-         {
-         if (findStore(cursorBlock->getEntry(), bndCheckTree, node, symRef))
-            return false;
-         }
-      else
-         {
-         if (findStore(cursorBlock->getEntry(), cursorBlock->getExit(), node, symRef))
-            return false;
-         }
-
-      if ((cursorBlock == _loopTestBlock) ||
-          (cursorBlock == entryBlock))
-         break;
-
-      TR::Block *predInsideLoop = NULL;
-      for (auto pred = cursorBlock->getPredecessors().begin(); pred != cursorBlock->getPredecessors().end(); ++pred)
-         {
-         TR::Block *predBlock = (*pred)->getFrom()->asBlock();
-         if (blocksInRegion.find(predBlock))
-            {
-            if (!predInsideLoop)
-               predInsideLoop = predBlock;
-            else
-               {
-               predInsideLoop = NULL;
-               break;
-               }
-            }
-         }
-
-      if (predInsideLoop)
-         {
-         TR::Block *onlySuccInsideLoop = NULL;
-         for (auto succ = predInsideLoop->getSuccessors().begin(); succ != predInsideLoop->getSuccessors().end(); ++succ)
-            {
-            TR::Block *succBlock = (*succ)->getTo()->asBlock();
-            if (blocksInRegion.find(succBlock))
-               {
-               if (!onlySuccInsideLoop)
-                  onlySuccInsideLoop = succBlock;
-               else
-                  {
-                  onlySuccInsideLoop = NULL;
-                  break;
-                  }
-               }
-            }
-         if (!onlySuccInsideLoop)
-            predInsideLoop = NULL;
-         }
-
-      if (predInsideLoop)
-         {
-         cursorBlock = predInsideLoop;
-         flag = true;
-         }
-      }
-
-   if ((cursorBlock == _loopTestBlock) ||
-       (cursorBlock == entryBlock))
-      return true;
-
-   TR::TreeTop *storeTree = _storeTrees[symRef->getReferenceNumber()];
-   if (storeTree)
-      {
-      TR::Block *storeBlock = storeTree->getEnclosingBlock();
-      bool atEntry = false;
-      if (blockIsAlwaysExecutedInLoop(storeBlock, loopStructure, &atEntry))
-         {
-         if (!atEntry)
-            return true;
-         else
-            return false;
-         }
-      }
-
-   return false;
-   }
-
-
-
 
 int32_t TR_LoopVersioner::detectCanonicalizedPredictableLoops(TR_Structure *loopStructure, TR_BitVector **optSetInfo, int32_t bitVectorSize)
    {

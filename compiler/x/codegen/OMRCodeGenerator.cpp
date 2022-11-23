@@ -1577,6 +1577,52 @@ void OMR::X86::CodeGenerator::processClobberingInstructions(TR::ClobberingInstru
       }
    }
 
+TR::Instruction *OMR::X86::CodeGenerator::generateInterpreterEntryInstruction(TR::Instruction *procEntryInstruction)
+   {
+   TR::Instruction * interpreterEntryInstruction;
+   if (self()->comp()->target().is64Bit())
+      {
+      if (self()->comp()->getMethodSymbol()->getLinkageConvention() != TR_System)
+         interpreterEntryInstruction = self()->getLinkage()->copyStackParametersToLinkageRegisters(procEntryInstruction);
+      else
+         interpreterEntryInstruction = procEntryInstruction;
+
+      // Patching can occur at the jit entry point, so insert padding if necessary.
+      //
+      if (self()->comp()->target().isSMP())
+         {
+         TR::Recompilation * recompilation = self()->comp()->getRecompilationInfo();
+         const TR_AtomicRegion *atomicRegions;
+#ifdef J9_PROJECT_SPECIFIC
+         if (recompilation && !recompilation->useSampling())
+            {
+            // Counting recomp can patch a 5-byte call instruction
+            static const TR_AtomicRegion countingAtomicRegions[] = { {0,5}, {0,0} };
+            atomicRegions = countingAtomicRegions;
+            }
+         else
+#endif
+            {
+            // It's safe to protect just the first 2 bytes because we won't patch anything other than a 2-byte jmp
+            static const TR_AtomicRegion samplingAtomicRegions[] = { {0,2}, {0,0} };
+            atomicRegions = samplingAtomicRegions;
+            }
+
+         TR::Instruction *pcai = generatePatchableCodeAlignmentInstruction(atomicRegions, procEntryInstruction, self());
+         if (interpreterEntryInstruction == procEntryInstruction)
+            {
+            // Interpreter prologue contains no instructions other than this
+            // nop, so the nop becomes the interpreter entry instruction
+            interpreterEntryInstruction = pcai;
+            }
+         }
+      }
+   else
+      interpreterEntryInstruction = procEntryInstruction;
+
+   return interpreterEntryInstruction;
+   }
+
 void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(
       TR_RegisterKinds kindsToAssign,
       TR::Instruction *instructionCursor,
@@ -1781,46 +1827,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       procEntryInstruction = procEntryInstruction->getNext();
       }
 
-   TR::Instruction * interpreterEntryInstruction;
-   if (self()->comp()->target().is64Bit())
-      {
-      if (self()->comp()->getMethodSymbol()->getLinkageConvention() != TR_System)
-         interpreterEntryInstruction = self()->getLinkage()->copyStackParametersToLinkageRegisters(procEntryInstruction);
-      else
-         interpreterEntryInstruction = procEntryInstruction;
-
-      // Patching can occur at the jit entry point, so insert padding if necessary.
-      //
-      if (self()->comp()->target().isSMP())
-         {
-         TR::Recompilation * recompilation = self()->comp()->getRecompilationInfo();
-         const TR_AtomicRegion *atomicRegions;
-#ifdef J9_PROJECT_SPECIFIC
-         if (recompilation && !recompilation->useSampling())
-            {
-            // Counting recomp can patch a 5-byte call instruction
-            static const TR_AtomicRegion countingAtomicRegions[] = { {0,5}, {0,0} };
-            atomicRegions = countingAtomicRegions;
-            }
-         else
-#endif
-            {
-            // It's safe to protect just the first 2 bytes because we won't patch anything other than a 2-byte jmp
-            static const TR_AtomicRegion samplingAtomicRegions[] = { {0,2}, {0,0} };
-            atomicRegions = samplingAtomicRegions;
-            }
-
-         TR::Instruction *pcai = generatePatchableCodeAlignmentInstruction(atomicRegions, procEntryInstruction, self());
-         if (interpreterEntryInstruction == procEntryInstruction)
-            {
-            // Interpreter prologue contains no instructions other than this
-            // nop, so the nop becomes the interpreter entry instruction
-            interpreterEntryInstruction = pcai;
-            }
-         }
-      }
-   else
-      interpreterEntryInstruction = procEntryInstruction;
+   TR::Instruction * interpreterEntryInstruction = self()->generateInterpreterEntryInstruction(procEntryInstruction);
 
    // Sort data snippets before encoding to compact spaces
    //

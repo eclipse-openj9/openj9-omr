@@ -99,6 +99,110 @@ static kern_return_t coredump_to_file(mach_port_t, pid_t);
 static kern_return_t list_thread_commands(mach_port_t, struct thread_command_full_64 **, natural_t *);
 static kern_return_t list_segment_commands(mach_port_t, struct segment_command_64 **, natural_t *);
 
+/**
+ * Create a mach port with send and receive rights that can be used to receive
+ * messages from other processes.
+ * For the core dump, the process to be dumped creates a child process which
+ * does the work of creating the core dump. A message port needs to be created
+ * on both the parent and child process. The ports are used in the core dump
+ * process as follows:
+ * First the parent creates a port for messaging. This message port is passed
+ * to the child via bootstrap port inheritance.
+ * The child process needs to create a port in order to receive task port
+ * rights from the parent. The child sends the rights to its new messaging port
+ * to the parent via the parent's messaging port it receives.
+ * Finally, the parent process receives the messaging port rights from the
+ * child process and sends the task port rights to the child using that port.
+ *
+ * @param[out] port the newly created port
+ *
+ * @return KERN_SUCCESS on success, error code from kernel on failure
+*/
+static kern_return_t
+setup_msg_port(mach_port_t *port)
+{
+	kern_return_t kr = KERN_SUCCESS;
+	mach_port_t messagePort = MACH_PORT_NULL;
+
+	kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &messagePort);
+	if (KERN_SUCCESS != kr) {
+		mach_error("failed to create port:\n", kr);
+		return kr;
+	}
+	kr = mach_port_insert_right(mach_task_self(), messagePort, messagePort, MACH_MSG_TYPE_MAKE_SEND);
+	if (KERN_SUCCESS != kr) {
+		mach_error("failed to add send right to created port:\n", kr);
+		return kr;
+	}
+	*port = messagePort;
+	return kr;
+}
+
+/**
+ * Send a port right to the specified messaging port on another process.
+ *
+ * @param[in] messagePort the mach port in a remote process to send the port right to
+ * @param[in] toSend the port right to be sent
+ *
+ * @return KERN_SUCCESS on success, error code from kernel on failure
+*/
+static kern_return_t
+send_port_msg(mach_port_t messagePort, mach_port_t toSend)
+{
+	kern_return_t kr = KERN_SUCCESS;
+	struct {
+		mach_msg_header_t header;
+		mach_msg_body_t body;
+		mach_msg_port_descriptor_t task_port;
+	} msg;
+
+	memset(&msg, 0, sizeof(msg));
+	msg.header.msgh_remote_port = messagePort;
+	msg.header.msgh_local_port = MACH_PORT_NULL;
+	msg.header.msgh_bits = MACH_MSGH_BITS(MACH_MSG_TYPE_COPY_SEND, 0) | MACH_MSGH_BITS_COMPLEX;
+	msg.header.msgh_size = sizeof(msg);
+	msg.body.msgh_descriptor_count = 1;
+	msg.task_port.name = toSend;
+	msg.task_port.disposition = MACH_MSG_TYPE_COPY_SEND;
+	msg.task_port.type = MACH_MSG_PORT_DESCRIPTOR;
+
+	kr = mach_msg_send(&msg.header);
+	if (KERN_SUCCESS != kr) {
+		mach_error("failed to send msg over mach port:\n", kr);
+	}
+	return kr;
+}
+
+/**
+ * Receive a message on the specified port containing a port right from another
+ * process.
+ *
+ * @param[in] messagePort the mach port in a remote process which sends us the port right
+ * @param[out] toReceive the port right retrieved from the message or MACH_PORT_NULL in case of failure
+ *
+ * @return KERN_SUCCESS on success, error code from kernel on failure
+*/
+static kern_return_t
+recv_port_msg(mach_port_t messagePort, mach_port_t *toReceive)
+{
+	kern_return_t kr = KERN_SUCCESS;
+	struct {
+		mach_msg_header_t header;
+		mach_msg_body_t body;
+		mach_msg_port_descriptor_t task_port;
+		mach_msg_trailer_t trailer;
+	} msg;
+
+	kr = mach_msg(&msg.header, MACH_RCV_MSG, 0, sizeof(msg), messagePort, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+	if (kr != KERN_SUCCESS) {
+		mach_error("Can't recieve mach message\n", kr);
+		*toReceive = MACH_PORT_NULL;
+	} else {
+		*toReceive = msg.task_port.name;
+	}
+	return kr;
+}
+
 static kern_return_t
 coredump_to_file(mach_port_t task_port, pid_t pid)
 {
@@ -494,7 +598,8 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 	pid_t child_pid = 0;
 	char *lastSep = NULL;
 	kern_return_t kr = KERN_SUCCESS;
-	mach_port_t pass_port = MACH_PORT_NULL;
+	mach_port_t parent_msg_port = MACH_PORT_NULL;
+	mach_port_t child_msg_port = MACH_PORT_NULL;
 	mach_port_t special_port = MACH_PORT_NULL;
 
 	/* filename cannot be null */
@@ -512,15 +617,18 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 		strncpy(corefile_name, filename, PATH_MAX);
 	}
 
-	/* save the original special port so we can restore it after using it to pass the task port */
+	/* save the original special port so we can restore it after using it to pass a message port */
 	kr = task_get_bootstrap_port(mach_task_self(), &special_port);
 	if (KERN_SUCCESS != kr) {
 		mach_error("failed get special port:\n", kr);
 		goto done;
 	}
-	pass_port = mach_task_self();
-	/* pass parent task port to child through special port inheritance */
-	kr = task_set_bootstrap_port(mach_task_self(), pass_port);
+	/* set up a message port and pass to child through special port inheritance */
+	kr = setup_msg_port(&parent_msg_port);
+	if (KERN_SUCCESS != kr) {
+		goto done;
+	}
+	kr = task_set_bootstrap_port(mach_task_self(), parent_msg_port);
 	if (KERN_SUCCESS != kr) {
 		mach_error("failed set special port:\n", kr);
 		goto done;
@@ -528,10 +636,23 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 
 	child_pid = fork();
 	if (0 == child_pid) { /* in child process */
-		kr = task_get_bootstrap_port(mach_task_self(), &pass_port);
+		kr = task_get_bootstrap_port(mach_task_self(), &parent_msg_port);
 		if (KERN_SUCCESS != kr) {
 			mach_error("failed get special port:\n", kr);
 		} else {
+			/* set up port to receive message from parent, then get task port */
+			kr = setup_msg_port(&child_msg_port);
+			if (KERN_SUCCESS != kr) {
+				goto childdone;
+			}
+			kr = send_port_msg(parent_msg_port, child_msg_port);
+			if (KERN_SUCCESS != kr) {
+				goto childdone;
+			}
+			kr = recv_port_msg(child_msg_port, &special_port);
+			if (KERN_SUCCESS != kr) {
+				goto childdone;
+			}
 			/* Move to specified folder before dumping */
 			if (NULL != lastSep) {
 				/* keep separator for cases such as when the path is '/' */
@@ -540,22 +661,33 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 					perror("failed to change directories, attempting to create dump in current dir");
 				}
 			}
-			kr = coredump_to_file(pass_port, parent_pid);
+			kr = coredump_to_file(special_port, parent_pid);
 		}
+childdone:
 		raise(SIGKILL); /* kill child process without running any exit procedures */
 	} else if (child_pid < 0) { /* fork failed */
 		perror("forking for core dump failed");
 	} else { /* in parent process */
-		waitpid(child_pid, NULL, 0);
-		/* restore special port to original value */
-		kr = task_set_bootstrap_port(mach_task_self(), special_port);
+		kr = recv_port_msg(parent_msg_port, &child_msg_port);
 		if (KERN_SUCCESS != kr) {
-			mach_error("failed set special port:\n", kr);
 			goto done;
 		}
+		kr = send_port_msg(child_msg_port, mach_task_self());
+		if (KERN_SUCCESS != kr) {
+			goto done;
+		}
+		waitpid(child_pid, NULL, 0);
 	} /* 0 == child_pid */
 
 done:
+	/* restore special port to original value, success is not important to core dump */
+	if (MACH_PORT_NULL != special_port) {
+		task_set_bootstrap_port(mach_task_self(), special_port);
+	}
+	/* deallocate msg port, again success is not important to core dump */
+	if (MACH_PORT_NULL != parent_msg_port) {
+		mach_port_deallocate(mach_task_self(), parent_msg_port);
+	}
 	if (KERN_SUCCESS == kr) {
 		/* check if the core file has been created in the right directory */
 		if (0 == access(filename, F_OK)) {

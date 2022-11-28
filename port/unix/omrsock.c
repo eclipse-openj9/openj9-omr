@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020, 2020 IBM Corp. and others
+ * Copyright (c) 2020, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -904,7 +904,7 @@ omrsock_recvfrom(struct OMRPortLibrary *portLibrary, omrsock_socket_t sock, uint
 int32_t
 omrsock_pollfd_init(struct OMRPortLibrary *portLibrary, omrsock_pollfd_t handle, omrsock_socket_t sock, int16_t events)
 {
-	if (NULL == handle || NULL == sock || 0 == events) {
+	if ((NULL == handle) || (NULL == sock)) {
 		return OMRPORT_ERROR_INVALID_ARGUMENTS;
 	}
 	memset(handle, 0, sizeof(OMRPollFd));

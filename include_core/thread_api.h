@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,12 +33,15 @@
 *
 * This file contains public function prototypes and
 * type definitions for the THREAD module.
-*
 */
 
 #include "omrcfg.h"
 #include "omrthread.h"
 #include "omrcomp.h"
+
+#if defined(OSX) && defined(AARCH64)
+#include <pthread.h> /* for pthread_jit_write_protect_np() */
+#endif /* defined(OSX) && defined(AARCH64) */
 
 #ifdef __cplusplus
 extern "C" {
@@ -166,7 +169,7 @@ uintptr_t
 omrthread_get_stack_range(omrthread_t thread, void **stackStart, void **stackEnd);
 
 
-#if (defined(OMR_THR_JLM))
+#if defined(OMR_THR_JLM)
 /**
 * @brief
 * @param monitor
@@ -174,7 +177,7 @@ omrthread_get_stack_range(omrthread_t thread, void **stackStart, void **stackEnd
 */
 J9ThreadMonitorTracing *
 omrthread_monitor_get_tracing(omrthread_monitor_t monitor);
-#endif /* OMR_THR_JLM */
+#endif /* defined(OMR_THR_JLM) */
 
 
 /**
@@ -282,15 +285,13 @@ omrthread_rwmutex_try_enter_write(omrthread_rwmutex_t mutex);
 intptr_t
 omrthread_rwmutex_exit_read(omrthread_rwmutex_t mutex);
 
-
 /**
-* @brief
-* @param mutex
-* @return intptr_t
-*/
+ * @brief
+ * @param mutex
+ * @return intptr_t
+ */
 intptr_t
 omrthread_rwmutex_exit_write(omrthread_rwmutex_t mutex);
-
 
 /**
 * @brief
@@ -577,7 +578,7 @@ uintptr_t
 omrthread_interrupted(omrthread_t thread);
 
 
-#if (defined(OMR_THR_JLM))
+#if defined(OMR_THR_JLM)
 /**
 * @brief
 * @param void
@@ -585,10 +586,9 @@ omrthread_interrupted(omrthread_t thread);
 */
 J9ThreadMonitorTracing *
 omrthread_jlm_get_gc_lock_tracing(void);
-#endif /* OMR_THR_JLM */
+#endif /* defined(OMR_THR_JLM) */
 
-
-#if (defined(OMR_THR_JLM))
+#if defined(OMR_THR_JLM)
 /**
 * @brief
 * @param flags
@@ -596,7 +596,7 @@ omrthread_jlm_get_gc_lock_tracing(void);
 */
 intptr_t
 omrthread_jlm_init(uintptr_t flags);
-#endif /* OMR_THR_JLM */
+#endif /* defined(OMR_THR_JLM) */
 
 #if defined(OMR_THR_ADAPTIVE_SPIN)
 /**
@@ -1428,7 +1428,20 @@ omrthread_monitor_unpin(omrthread_monitor_t monitor, omrthread_t self);
 struct J9ThreadLibrary;
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
+
+/*
+ * @brief Control write access to memory containing dynamically generated code.
+ *
+ * Currently only meaningful on macOS using Aarch64 processors.
+ */
+#if defined(OSX) && defined(AARCH64)
+#define omrthread_jit_write_protect_disable() pthread_jit_write_protect_np(0)
+#define omrthread_jit_write_protect_enable()  pthread_jit_write_protect_np(1)
+#else /* defined(OSX) && defined(AARCH64) */
+#define omrthread_jit_write_protect_disable() /* nop */
+#define omrthread_jit_write_protect_enable()  /* nop */
+#endif /* defined(OSX) && defined(AARCH64) */
 
 #endif /* thread_api_h */

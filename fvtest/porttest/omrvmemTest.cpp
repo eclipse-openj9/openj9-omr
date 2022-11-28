@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2022 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,10 +42,6 @@
 #if defined(AIXPPC)
 #include <sys/vminfo.h>
 #endif /* defined(AIXPPC) */
-
-#if defined(OSX) && defined(OMR_ARCH_AARCH64)
-#include <pthread.h> /* for pthread_jit_write_protect_np */
-#endif /* defined(OSX) && defined(OMR_ARCH_AARCH64) */
 
 #define TWO_GIG_BAR 0x7FFFFFFF
 #define ONE_MB (1*1024*1024)
@@ -2624,10 +2620,8 @@ TEST(PortVmemTest, vmem_test_reserveExecutableMemory)
 			} else {
 #endif /* J9ZOS39064 */
 
-#if defined(OSX) && defined(OMR_ARCH_AARCH64)
 				/* Start writing to executable memory */
-				pthread_jit_write_protect_np(0);
-#endif /* defined(OSX) && defined(OMR_ARCH_AARCH64) */
+				omrthread_jit_write_protect_disable();
 
 				memset(memPtr, 0, params.pageSize);
 
@@ -2645,10 +2639,8 @@ TEST(PortVmemTest, vmem_test_reserveExecutableMemory)
 
 				memcpy(memPtr, (void *)&myFunction1, length);
 
-#if defined(OSX) && defined(OMR_ARCH_AARCH64)
 				/* Stop writing to executable memory */
-				pthread_jit_write_protect_np(1);
-#endif /* defined(OSX) && defined(OMR_ARCH_AARCH64) */
+				omrthread_jit_write_protect_enable();
 
 				portTestEnv->log("*memPtr: 0x%zx\n", *((unsigned int *)memPtr));
 

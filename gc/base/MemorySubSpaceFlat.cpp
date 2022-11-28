@@ -460,5 +460,12 @@ MM_MemorySubSpaceFlat::collectorExpand(MM_EnvironmentBase* env, MM_Collector* re
 uintptr_t
 MM_MemorySubSpaceFlat::releaseFreeMemoryPages(MM_EnvironmentBase* env)
 {
+	return releaseFreeMemoryPages(env, MEMORY_TYPE_OLD);
+}
+
+uintptr_t
+MM_MemorySubSpaceFlat::releaseFreeMemoryPages(MM_EnvironmentBase* env, uintptr_t memoryType)
+{
+	Assert_MM_true_internal(OMR_ARE_ALL_BITS_SET(memoryType, MEMORY_TYPE_OLD));
 	return _memorySubSpace->releaseFreeMemoryPages(env);
 }

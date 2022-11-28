@@ -582,12 +582,12 @@ MM_MemorySpace::getAllTypeFlags()
  * iterate through memorysubspace list & free up pages of free entries 
  */
 uintptr_t
-MM_MemorySpace::releaseFreeMemoryPages(MM_EnvironmentBase* env)
+MM_MemorySpace::releaseFreeMemoryPages(MM_EnvironmentBase* env, uintptr_t memoryType)
 {
         uintptr_t releasedMemory = 0;
         MM_MemorySubSpace* memorySubSpace = _memorySubSpaceList;
         while(NULL != memorySubSpace) {
-                releasedMemory += memorySubSpace->releaseFreeMemoryPages(env);
+                releasedMemory += memorySubSpace->releaseFreeMemoryPages(env, memoryType);
                 memorySubSpace = memorySubSpace->getNext();
         }
         return releasedMemory;

@@ -85,6 +85,7 @@ public:
 	virtual bool expanded(MM_EnvironmentBase *env, MM_PhysicalSubArena *subArena, uintptr_t size, void *lowAddress, void *highAddress, bool canCoalesce);
 	virtual uintptr_t getAvailableContractionSize(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription);	
 	virtual uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env);
+	virtual uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env, uintptr_t memoryType);
 
 	/**
 	 * Create a new MM_MemorySubSpaceFlat object

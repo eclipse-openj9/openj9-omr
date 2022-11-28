@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1112,6 +1112,12 @@ MM_MemorySubSpaceSemiSpace::mergeLargeObjectAllocateStats(MM_EnvironmentBase *en
 	_memorySubSpaceSurvivor->getMemoryPool()->mergeLargeObjectAllocateStats();
 	_largeObjectAllocateStats->mergeCurrent(_memorySubSpaceAllocate->getMemoryPool()->getLargeObjectAllocateStats());
 	_largeObjectAllocateStats->mergeCurrent(_memorySubSpaceSurvivor->getMemoryPool()->getLargeObjectAllocateStats());
+}
+
+uintptr_t
+MM_MemorySubSpaceSemiSpace::releaseFreeMemoryPages(MM_EnvironmentBase* env)
+{
+	return _memorySubSpaceAllocate->releaseFreeMemoryPages(env) + _memorySubSpaceSurvivor->releaseFreeMemoryPages(env);
 }
 
 #endif /* OMR_GC_MODRON_SCAVENGER */

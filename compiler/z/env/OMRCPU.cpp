@@ -75,7 +75,7 @@ OMR::Z::CPU::detect(OMRPortLibrary * const omrPortLib)
       omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY, FALSE);
       }
 
-   if (processorDescription.processor < OMR_PROCESSOR_S390_ZNEXT)
+   if (processorDescription.processor < OMR_PROCESSOR_S390_Z16)
       {
       omrsysinfo_processor_set_feature(&processorDescription, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY_2, FALSE);
       }
@@ -140,6 +140,9 @@ OMR::Z::CPU::isAtLeastOldAPI(OMRProcessorArchitecture p)
          break;
       case OMR_PROCESSOR_S390_Z15:
          ans = self()->getSupportsArch(TR::CPU::z15);
+         break;
+      case OMR_PROCESSOR_S390_Z16:
+         ans = self()->getSupportsArch(TR::CPU::z16);
          break;
       case OMR_PROCESSOR_S390_ZNEXT:
          ans = self()->getSupportsArch(TR::CPU::zNext);
@@ -240,6 +243,9 @@ OMR::Z::CPU::getProcessorName()
          break;
       case OMR_PROCESSOR_S390_Z15:
          result = "z15";
+         break;
+      case OMR_PROCESSOR_S390_Z16:
+         result = "z16";
          break;
       case OMR_PROCESSOR_S390_ZNEXT:
          result = "zNext";

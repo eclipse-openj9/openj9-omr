@@ -1704,7 +1704,7 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 		}
 	}
 
-   /* zNext facility and processor detection */
+   /* z16 facility and processor detection */
 
 	if (omrsysinfo_test_stfle(portLibrary, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY_2)) {
 #if defined(J9ZOS390)
@@ -1715,7 +1715,7 @@ omrsysinfo_get_s390_description(struct OMRPortLibrary *portLibrary, OMRProcessor
 		{
 			omrsysinfo_set_feature(desc, OMR_FEATURE_S390_VECTOR_PACKED_DECIMAL_ENHANCEMENT_FACILITY_2);
 
-			desc->processor = OMR_PROCESSOR_S390_ZNEXT;
+			desc->processor = OMR_PROCESSOR_S390_Z16;
 		}
 	}
 

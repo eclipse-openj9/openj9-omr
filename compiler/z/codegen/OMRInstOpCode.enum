@@ -1173,7 +1173,7 @@
    VSRD,                // vector shift right double by bit
    VSTRS,               // vector string search
 
-   /* zNext Instructions */
+   /* z16 Instructions */
    VCLZDP,              // VECTOR COUNT LEADING ZERO DIGITS
    VPKZR,               // VECTOR PACK ZONED REGISTER
    VUPKZL,              // VECTOR UNPACK ZONED LOW

@@ -2635,7 +2635,13 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    {
 
    TR::MemoryReference * dataref = generateS390MemoryReference(imm, TR::Float, cg, node);
-   return generateRXInstruction(cg, op, node, treg, dataref);
+   auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
+   TR::Instruction *instr = NULL;
+   if (instructionFormat == RXE_FORMAT)
+      instr = generateRXEInstruction(cg, op, node, treg, dataref);
+   else
+      instr = generateRXInstruction(cg, op, node, treg, dataref);
+   return instr;
    }
 
 /**

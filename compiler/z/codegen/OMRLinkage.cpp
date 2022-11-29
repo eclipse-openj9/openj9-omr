@@ -1007,8 +1007,8 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
             case TR::Float:
                if (freeScratchable.isSet(ai))
                   {
-                  cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::LE, firstNode, self()->getRealRegister(REGNUM(ai)),
-                              generateS390MemoryReference(stackPtr, offset, self()->cg()), (TR::Instruction *) cursor);
+                  cursor = generateRXEInstruction(self()->cg(), TR::InstOpCode::LDE, firstNode, self()->getRealRegister(REGNUM(ai)),
+                              generateS390MemoryReference(stackPtr, offset, self()->cg()), 0, static_cast<TR::Instruction *>(cursor));
                   ((TR::Instruction*)cursor)->setBinLocalFreeRegs(binLocalRegs);
 
                   freeScratchable.reset(ai);
@@ -1101,8 +1101,8 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                   break;
                   }
                case 3: // Floats
-                  cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::LE, firstNode, self()->getRealRegister(REGNUM(target)),
-                              generateS390MemoryReference(stackPtr, source, self()->cg()), (TR::Instruction *) cursor);
+                  cursor = generateRXEInstruction(self()->cg(), TR::InstOpCode::LDE, firstNode, self()->getRealRegister(REGNUM(target)),
+                              generateS390MemoryReference(stackPtr, source, self()->cg()), 0, static_cast<TR::Instruction *>(cursor));
                   ((TR::Instruction*)cursor)->setBinLocalFreeRegs(binLocalRegs);
                   break;
                case 4:  // Doubles

@@ -1882,7 +1882,6 @@ OMR::Options::Options(
    // Vector API, clean up is needed once we have resolved all workarounds.
    if (self()->getOption(TR_EnforceVectorAPIExpansion))
       {
-      self()->setOption(TR_DisableOSRGuardMerging);
       self()->setOption(TR_ProcessHugeMethods);
       optimizationPlan->setOptLevel(scorching);
       }

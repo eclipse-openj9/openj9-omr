@@ -229,7 +229,7 @@ enum TR_CompilationOptions
    TR_EnableYieldVMAccess                 = 0x02000000 + 4,
    TR_DisableNoVMAccess                   = 0x04000000 + 4,
    TR_DisableStoreSinking                 = 0x08000000 + 4,
-   // Available                           = 0x10000000 + 4,
+   TR_DisableIlgenOpts                    = 0x10000000 + 4,
    TR_HWProfileDeleteEmptyBlocks          = 0x20000000 + 4,
    TR_DisableLiveMonitorMetadata          = 0x40000000 + 4,
    TR_DisableMonitorOpts                  = 0x80000000 + 4,

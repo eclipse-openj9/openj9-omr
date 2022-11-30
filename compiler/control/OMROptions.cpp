@@ -366,6 +366,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
                                           TR::Options::setRegex, offsetof(OMR::Options, _disabledIdiomPatterns), 0, "P"},
    {"disableIdiomRecognition",            "O\tdisable idiom recognition",                       TR::Options::disableOptimization, idiomRecognition, 0, "P"},
 #endif
+   {"disableIlgenOpts", "O\tDo not run the optimizer during ilgen", SET_OPTION_BIT(TR_DisableIlgenOpts), "F"},
    {"disableImmutableFieldAliasing",      "O\tdisable special handling for immutable fields.", SET_OPTION_BIT(TR_DisableImmutableFieldAliasing), "P"},
    {"disableIncrementalCCR",              "O\tdisable incremental ccr",      SET_OPTION_BIT(TR_DisableIncrementalCCR), "F" ,NOT_IN_SUBSET},
 

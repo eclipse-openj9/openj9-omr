@@ -1855,6 +1855,8 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
          if (et == TR::Double &&
              opcode.getVectorSourceDataType().getVectorElementType() == TR::Int64)
             return true;
+         else
+            return false;
       case TR::vmadd:
          if (et == TR::Int8 || et == TR::Int16 || et == TR::Int32 || (et == TR::Int64 && cpu->isAtLeast(OMR_PROCESSOR_PPC_P8)) || et == TR::Float || et == TR::Double)
             return true;
@@ -1870,6 +1872,8 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
             return true;
          else
             return false;
+      case TR::vbitselect:
+         return true;
       default:
          return false;
       }

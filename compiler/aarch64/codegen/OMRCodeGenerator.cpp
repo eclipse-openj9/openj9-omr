@@ -678,6 +678,7 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
       case TR::vmcmple:
       case TR::vmcmplt:
       case TR::vmcmpne:
+      case TR::vbitselect:
          return true;
       case TR::vand:
       case TR::vor:
@@ -689,7 +690,6 @@ bool OMR::ARM64::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::I
       case TR::vmreductionOr:
       case TR::vreductionXor:
       case TR::vmreductionXor:
-      case TR::vbitselect:
       case TR::vmand:
       case TR::vmor:
       case TR::vmxor:

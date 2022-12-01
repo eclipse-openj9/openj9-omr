@@ -3061,11 +3061,9 @@ OMR::ARM64::TreeEvaluator::vbitselectEvaluator(TR::Node *node, TR::CodeGenerator
       case TR::Int16:
       case TR::Int32:
       case TR::Int64:
-         break;
       case TR::Float:
       case TR::Double:
-         TR_ASSERT_FATAL_WITH_NODE(node, false, "Unexpected element type %s", node->getFirstChild()->getDataType().toString());
-         return NULL;
+         break;
       default:
          TR_ASSERT_FATAL_WITH_NODE(node, false, "unrecognized vector type %s", node->getFirstChild()->getDataType().toString());
          return NULL;
@@ -3091,7 +3089,7 @@ OMR::ARM64::TreeEvaluator::vbitselectEvaluator(TR::Node *node, TR::CodeGenerator
       }
 
    /*
-    * vbitselect extracts bits from the first operand if the corresponding bit of the third operand is 1,
+    * vbitselect extracts bits from the first operand if the corresponding bit of the third operand is 0,
     * otherwise from the second operand.
     */
    generateTrg1Src2Instruction(cg, TR::InstOpCode::vbsl16b, node, targetReg, secondReg, firstReg);

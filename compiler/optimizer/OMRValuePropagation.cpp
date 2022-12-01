@@ -8071,6 +8071,21 @@ void OMR::ValuePropagation::doDelayedTransformations()
       }
    }
 
+TR_OpaqueClassBlock *OMR::ValuePropagation::findLikelySubtype(TR_OpaqueClassBlock *klass)
+   {
+   return NULL;
+   }
+
+TR_OpaqueClassBlock *OMR::ValuePropagation::findLikelySubtype(const char *sig, int32_t len, TR_ResolvedMethod *owningMethod)
+   {
+   return NULL;
+   }
+
+TR::VPConstraint *OMR::ValuePropagation::createTypeHintConstraint(TR_ResolvedMethod *owningMethod, const char *sig, int32_t len)
+   {
+   return NULL;
+   }
+
 void constrainRangeByPrecision(const int64_t low, const int64_t high, const int32_t precision, int64_t &lowResult, int64_t &highResult, bool isNonNegative)
    {
    lowResult = low;

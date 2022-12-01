@@ -1818,10 +1818,19 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
             }
          if (sig)
             {
-            TR_OpaqueClassBlock *classBlock = vp->fe()->getClassFromSignature(sig, len, symRef->getOwningMethod(vp->comp()));
+            TR_ResolvedMethod *owningMethod = symRef->getOwningMethod(vp->comp());
+            TR_OpaqueClassBlock *classBlock = vp->fe()->getClassFromSignature(sig, len, owningMethod);
             TR_OpaqueClassBlock *erased = NULL;
-            if (vp->isUnreliableSignatureType(classBlock, erased))
+            if (!classBlock || vp->isUnreliableSignatureType(classBlock, erased))
+               {
                classBlock = erased;
+
+               constraint = vp->createTypeHintConstraint(owningMethod, sig, len);
+               if (constraint)
+                  {
+                  vp->addGlobalConstraint(node, constraint);
+                  }
+               }
 
             if (classBlock)
                {
@@ -1830,7 +1839,7 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
                   {
                   if (classBlock != jlClass)
                      {
-                     constraint = TR::VPClassType::create(vp, sig, len, symRef->getOwningMethod(vp->comp()), isFixed, classBlock);
+                     constraint = TR::VPClassType::create(vp, sig, len, owningMethod, isFixed, classBlock);
                      if (*sig == '[' || sig[0] == 'L' || sig[0] == 'Q')
                         {
                         int32_t elementSize = arrayElementSize(sig, len, node, vp);
@@ -2608,8 +2617,17 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
       TR_ResolvedMethod *method = node->getSymbolReference()->getOwningMethod(vp->comp());
       TR_OpaqueClassBlock *classBlock = vp->fe()->getClassFromSignature(sig, len, method);
       TR_OpaqueClassBlock *erased = NULL;
-      if (vp->isUnreliableSignatureType(classBlock, erased))
+
+      if (!classBlock || vp->isUnreliableSignatureType(classBlock, erased))
+         {
          classBlock = erased;
+
+         constraint = vp->createTypeHintConstraint(method, sig, len);
+         if (constraint)
+            {
+            vp->addGlobalConstraint(node, constraint);
+            }
+         }
 
       if (classBlock)
          {

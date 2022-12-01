@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2021 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -267,6 +267,11 @@ TR::VPClassType *TR::VPConstraint::getClassType()
    return NULL;
    }
 
+TR_OpaqueClassBlock *TR::VPConstraint::getTypeHintClass()
+   {
+   return NULL;
+   }
+
 TR::VPClassPresence *TR::VPConstraint::getClassPresence()
    {
    return NULL;
@@ -514,6 +519,11 @@ TR::VPClassType *TR::VPClass::getClassType()
    return _type;
    }
 
+TR_OpaqueClassBlock *TR::VPClass::getTypeHintClass()
+   {
+   return _typeHintClass;
+   }
+
 TR::VPArrayInfo *TR::VPClass::getArrayInfo()
    {
    return _arrayInfo;
@@ -547,6 +557,11 @@ TR::VPConstString *TR::VPClass::getConstString()
 TR::VPClassType *TR::VPClassType::getClassType()
    {
    return this;
+   }
+
+TR_OpaqueClassBlock *TR::VPClassType::getTypeHintClass()
+   {
+   return _typeHintClass;
    }
 
 TR::VPClassPresence *TR::VPClassPresence::getClassPresence()
@@ -640,8 +655,8 @@ TR_YesNoMaybe TR::VPClassType::isArray()
    return TR_no; // all arrays are direct subclasses of Object or other arrays (both cases covered above)
    }
 
-TR::VPResolvedClass::VPResolvedClass(TR_OpaqueClassBlock *klass, TR::Compilation * comp)
-   : TR::VPClassType(ResolvedClassPriority), _class(klass)
+TR::VPResolvedClass::VPResolvedClass(TR_OpaqueClassBlock *klass, TR::Compilation * comp, TR_OpaqueClassBlock *typeHintClass)
+   : TR::VPClassType(ResolvedClassPriority, typeHintClass), _class(klass)
    {
    if (TR::VPConstraint::isSpecialClass((uintptr_t)klass))
       { _len = 0; _sig = 0; }
@@ -649,8 +664,8 @@ TR::VPResolvedClass::VPResolvedClass(TR_OpaqueClassBlock *klass, TR::Compilation
       _sig = TR::Compiler->cls.classSignature_DEPRECATED(comp, klass, _len, comp->trMemory());
    }
 
-TR::VPResolvedClass::VPResolvedClass(TR_OpaqueClassBlock *klass, TR::Compilation * comp, int32_t p)
-   : TR::VPClassType(p), _class(klass)
+TR::VPResolvedClass::VPResolvedClass(TR_OpaqueClassBlock *klass, TR::Compilation * comp, int32_t p, TR_OpaqueClassBlock *typeHintClass)
+   : TR::VPClassType(p, typeHintClass), _class(klass)
    {
    if (TR::VPConstraint::isSpecialClass((uintptr_t)klass))
       { _len = 0; _sig = 0; }
@@ -1119,7 +1134,7 @@ TR::VPLongConstraint *TR::VPLongRange::create(OMR::ValuePropagation *vp, int64_t
    }
 
 TR::VPConstraint *TR::VPClass::create(OMR::ValuePropagation *vp, TR::VPClassType *type, TR::VPClassPresence *presence,
-                                    TR::VPPreexistentObject *preexistence, TR::VPArrayInfo *arrayInfo, TR::VPObjectLocation *location)
+                                    TR::VPPreexistentObject *preexistence, TR::VPArrayInfo *arrayInfo, TR::VPObjectLocation *location, TR_OpaqueClassBlock *typeHintClass)
    {
    // We shouldn't create a class constraint that contains the "null" constraint
    // since null objects are not typed.
@@ -1131,7 +1146,7 @@ TR::VPConstraint *TR::VPClass::create(OMR::ValuePropagation *vp, TR::VPClassType
 
    // If only one of the parts is non-null we don't need a TR::VPClass constraint
    //
-   if (!type)
+   if (!type && !typeHintClass)
       {
       if (!presence)
          {
@@ -1148,8 +1163,30 @@ TR::VPConstraint *TR::VPClass::create(OMR::ValuePropagation *vp, TR::VPClassType
       else if (!preexistence && !arrayInfo && !location)
          return presence;
       }
-   else if (!presence && !preexistence && !arrayInfo && !location)
+   else if (((type && !typeHintClass) || (type && (typeHintClass == type->getTypeHintClass())))
+            && !presence && !preexistence && !arrayInfo && !location)
+      {
       return type;
+      }
+
+   if (type)
+      {
+      if ((location != NULL) && (location->isClassObject() == TR_yes))
+         {
+         // This will let us hold off on deciding the meaning of type hints
+         typeHintClass = (TR_OpaqueClassBlock *)VP_SPECIALKLASS;
+         }
+      else
+         {
+         typeHintClass = intersectTypeHintClasses(typeHintClass, type->getTypeHintClass(), vp);
+         }
+
+      if (type->asResolvedClass() && (typeHintClass != NULL) && !isSpecialClass((uintptr_t)typeHintClass))
+         {
+         if (vp->fe()->isInstanceOf(typeHintClass, type->getClass(), false, true, false) == TR_no)
+            typeHintClass = (TR_OpaqueClassBlock *)VP_SPECIALKLASS;
+         }
+      }
 
 #ifdef J9_PROJECT_SPECIFIC
    // TR::VPFixedClass combined with JavaLangClassObject location picks out a
@@ -1175,7 +1212,7 @@ TR::VPConstraint *TR::VPClass::create(OMR::ValuePropagation *vp, TR::VPClassType
    // If the constraint does not already exist, create it
    //
    int32_t hash = (((int32_t)(intptr_t)type)>>2) + (((int32_t)(intptr_t)presence)>>2) + (((int32_t)(intptr_t)preexistence)>>2) +
-      (((int32_t)(intptr_t)arrayInfo)>>2) + (((int32_t)(intptr_t)location)>>2);
+      (((int32_t)(intptr_t)arrayInfo)>>2) + (((int32_t)(intptr_t)location)>>2) + (((int32_t)(intptr_t)typeHintClass)>>2);
    hash = ((uint32_t)hash) % VP_HASH_TABLE_SIZE;
    TR::VPClass *constraint;
    OMR::ValuePropagation::ConstraintsHashTableEntry *entry;
@@ -1184,13 +1221,14 @@ TR::VPConstraint *TR::VPClass::create(OMR::ValuePropagation *vp, TR::VPClassType
       constraint = entry->constraint->asClass();
       if (constraint &&
           constraint->_type         == type &&
+          constraint->_typeHintClass== typeHintClass &&
           constraint->_presence     == presence &&
           constraint->_preexistence == preexistence &&
           constraint->_arrayInfo    == arrayInfo &&
           constraint->_location     == location)
          return constraint;
       }
-   constraint = new (vp->trStackMemory()) TR::VPClass(type, presence, preexistence, arrayInfo, location);
+   constraint = new (vp->trStackMemory()) TR::VPClass(type, presence, preexistence, arrayInfo, location, typeHintClass);
    vp->addConstraint(constraint, hash);
    return constraint;
    }
@@ -1267,7 +1305,7 @@ TR::VPResolvedClass *TR::VPResolvedClass::create(OMR::ValuePropagation *vp, TR_O
           constraint->getClass() == klass)
          return constraint;
       }
-   constraint = new (vp->trStackMemory()) TR::VPResolvedClass(klass, vp->comp());
+   constraint = new (vp->trStackMemory()) TR::VPResolvedClass(klass, vp->comp(), vp->findLikelySubtype(klass));
    vp->addConstraint(constraint, hash);
    return constraint;
    }
@@ -1927,8 +1965,32 @@ TR::VPConstraint *TR::VPClass::merge1(TR::VPConstraint *other, OMR::ValuePropaga
    else
       return NULL;
 
-   if (type || presence || preexistence || arrayInfo || location)
-      return TR::VPClass::create(vp, type, presence, preexistence, arrayInfo, location);
+   // There are two scenarios where we need to distinguish why it is lack of a hint type
+   //    1. "top" case: There is no good type to suggest a hint, meaning we don't know
+   //                   anything and the type hint could be anything
+   //        - Represented by NULL
+   //
+   //    2. "bottom" case: There are multiple types where we cannot derive a hint, meaning
+   //                      we know too much
+   //        - Represented by VP_SPECIALKLASS
+   //
+   //    Merge
+   //        top    merge x      = top
+   //        bottom merge x      = bottom
+   //        x      merge x      = x
+   //        x      merge y      = top
+   //        top    merge bottom = bottom
+   //
+   TR_OpaqueClassBlock *otherTypeHintClass = other->getTypeHintClass();
+   TR_OpaqueClassBlock *typeHintClass = NULL;
+
+   if (isSpecialClass((uintptr_t)_typeHintClass) || isSpecialClass((uintptr_t)otherTypeHintClass))
+      typeHintClass = (TR_OpaqueClassBlock *)VP_SPECIALKLASS;
+   else if (_typeHintClass == otherTypeHintClass)
+      typeHintClass = _typeHintClass;
+
+   if (type || presence || preexistence || arrayInfo || location || typeHintClass)
+      return TR::VPClass::create(vp, type, presence, preexistence, arrayInfo, location, typeHintClass);
    return NULL;
    }
 
@@ -3157,6 +3219,49 @@ void TR::VPClass::typeIntersect(TR::VPClassPresence* &presence, TR::VPClassType*
       }
    }
 
+TR_OpaqueClassBlock *TR::VPClass::intersectTypeHintClasses(TR_OpaqueClassBlock *hint1, TR_OpaqueClassBlock *hint2, OMR::ValuePropagation *vp)
+   {
+   // There are two scenarios where we need to distinguish why it is lack of a hint type
+   //    1. "top" case: There is no good type to suggest a hint, meaning we don't know
+   //                   anything and the type hint could be anything
+   //        - Represented by NULL
+   //
+   //    2. "bottom" case: There are multiple types where we cannot derive a hint, meaning
+   //                      we know too much
+   //        - Represented by VP_SPECIALKLASS
+   //
+   //    Intersect
+   //        top    intersect x      = x
+   //        bottom intersect x      = bottom
+   //        x      intersect x      = x
+   //        x      intersect y      = bottom
+   //        top    intersect bottom = bottom
+   //
+   //  If we don't differentiate the possible reasons for lacking a hint, the result from
+   //  intersect of multiple constraints is arbitrary.
+   //
+   //  For example, we need to intersect A, B, and C class types. It could be done by order of
+   //  "(A intersect B) intersect C", or "A intersect (B intersect C)". The result of "(A intersect B)"
+   //  is NULL. The result of "(NULL intersect C)" is C. If we do "A intersect (B intersect C)",
+   //  the final result is A.
+   //
+   //  With the "top" and "bottom" concepts, the result of "(A intersect B)" is "bottom".
+   //  The result of "(bottom intersect C)" is "bottom". We get the same result if we do
+   //  "A intersect (B intersect C)" or by other intersect orders.
+   //
+   TR_OpaqueClassBlock *typeHintClass = (TR_OpaqueClassBlock*)VP_SPECIALKLASS;
+   if (hint1 == NULL)
+      {
+      typeHintClass = hint2;
+      }
+   else if ((hint2 == NULL) || (hint1 == hint2))
+      {
+      typeHintClass = hint1;
+      }
+
+   return typeHintClass;
+   }
+
 TR::VPConstraint *TR::VPClass::intersect1(TR::VPConstraint *other, OMR::ValuePropagation *vp)
    {
    TRACER(vp, this, other);
@@ -3379,8 +3484,11 @@ TR::VPConstraint *TR::VPClass::intersect1(TR::VPConstraint *other, OMR::ValuePro
    else
       return NULL;
 
-   if (type || presence || preexistence || arrayInfo || location)
-      return TR::VPClass::create(vp, type, presence, preexistence, arrayInfo, location);
+   TR_OpaqueClassBlock *otherTypeHintClass = other->getTypeHintClass();
+   TR_OpaqueClassBlock *typeHintClass = intersectTypeHintClasses(_typeHintClass, otherTypeHintClass, vp);
+
+   if (type || presence || preexistence || arrayInfo || location || typeHintClass)
+      return TR::VPClass::create(vp, type, presence, preexistence, arrayInfo, location, typeHintClass);
    return NULL;
    }
 
@@ -5797,6 +5905,24 @@ void TR::VPClass::print(TR::Compilation *comp, TR::FILE *outFile)
       return;
    if (_type)
       _type->print(comp, outFile);
+   if (_typeHintClass)
+      {
+      TR_OpaqueClassBlock *typeHintClassFromVPClassType = _type ? _type->getTypeHintClass() : NULL;
+      if (_typeHintClass != typeHintClassFromVPClassType)
+         {
+         trfprintf(outFile, " (+hint 0x%p", _typeHintClass);
+         if (!isSpecialClass((uintptr_t)_typeHintClass))
+            {
+            int32_t len;
+            const char *sig = TR::Compiler->cls.classSignature_DEPRECATED(comp, _typeHintClass, len, comp->trMemory());
+            trfprintf(outFile, " %.*s)", len, sig);
+            }
+         else
+            {
+            trfprintf(outFile, " <bottom>)");
+            }
+         }
+      }
    if (getKnownObject() && !isNonNullObject())
       trfprintf(outFile, " (maybe NULL)");
    if (_presence)
@@ -5821,6 +5947,19 @@ void TR::VPResolvedClass::print(TR::Compilation *comp, TR::FILE *outFile)
       }
 
    trfprintf(outFile, "class %.*s", len, sig);
+   if (_typeHintClass)
+      {
+      trfprintf(outFile, " (hint 0x%p", _typeHintClass);
+      if (!isSpecialClass((uintptr_t)_typeHintClass))
+         {
+         sig = TR::Compiler->cls.classSignature_DEPRECATED(comp, _typeHintClass, len, comp->trMemory());
+         trfprintf(outFile, " %.*s)", len, sig);
+         }
+      else
+         {
+         trfprintf(outFile, " <bottom>)");
+         }
+      }
    }
 
 void TR::VPFixedClass::print(TR::Compilation *comp, TR::FILE *outFile)

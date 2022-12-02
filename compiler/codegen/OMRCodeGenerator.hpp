@@ -1048,8 +1048,25 @@ public:
 
    TR_Array<TR::Register *>& getRegisterArray() {return _registerArray;}
 
+   /**
+   * \brief Checks if global register allocation is supported for the given node
+   *
+   * \return true if the node can support GRA, otherwise false
+   */
    bool considerTypeForGRA(TR::Node *node) {return true;}
+
+   /**
+   * \brief Checks if global register allocation is supported for the given type
+   *
+   * \return true if the data-type can support GRA, otherwise false
+   */
    bool considerTypeForGRA(TR::DataType dt) {return true;}
+
+   /**
+   * \brief Checks if global register allocation is supported for the symbol reference
+   *
+   * \return true if the symbol can support GRA, otherwise false
+   */
    bool considerTypeForGRA(TR::SymbolReference *symRef) {return true;}
 
    void enableLiteralPoolRegisterForGRA () {}

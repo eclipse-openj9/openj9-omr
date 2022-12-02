@@ -622,6 +622,10 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::X86DataSnippet *create8ByteData(TR::Node *, int64_t c);
    TR::X86DataSnippet *create16ByteData(TR::Node *, void *c);
 
+   bool considerTypeForGRA(TR::Node *node);
+   bool considerTypeForGRA(TR::DataType dt);
+   bool considerTypeForGRA(TR::SymbolReference *symRef);
+
    /*
     * \brief create a data snippet.
     *

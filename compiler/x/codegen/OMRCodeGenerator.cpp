@@ -3227,3 +3227,28 @@ OMR::X86::CodeGenerator::directCallRequiresTrampoline(intptr_t targetAddress, in
       !self()->comp()->target().cpu.isTargetWithinRIPRange(targetAddress, sourceAddress+5) ||
       self()->comp()->getOption(TR_StressTrampolines);
    }
+
+bool
+OMR::X86::CodeGenerator::considerTypeForGRA(TR::Node *node)
+   {
+   return !node->getOpCode().isVectorOpCode();
+   }
+
+bool
+OMR::X86::CodeGenerator::considerTypeForGRA(TR::DataType dt)
+   {
+   return !(dt.isVector() || dt.isMask());
+   }
+
+bool
+OMR::X86::CodeGenerator::considerTypeForGRA(TR::SymbolReference *symRef)
+   {
+   if (symRef && symRef->getSymbol())
+      {
+      return self()->considerTypeForGRA(symRef->getSymbol()->getDataType());
+      }
+   else
+      {
+      return true;
+      }
+   }

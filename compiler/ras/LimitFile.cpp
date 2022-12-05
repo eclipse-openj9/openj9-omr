@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -612,12 +612,12 @@ TR_Debug::limitfileOption(char *option, void *base, TR::OptionTable *entry, TR::
    }
 
 char *
-TR_Debug::limitOption(char *option, void *base, TR::OptionTable *entry, TR::Options * cmdLineOptions, bool loadLimit)
+TR_Debug::limitOption(char *option, void *base, TR::OptionTable *entry, TR::Options * cmdLineOptions, TR::CompilationFilters *&filters)
    {
    char *p = option;
 
-   // this use the old interface
-   TR_FilterBST *filter = addFilter(p, static_cast<int32_t>(entry->parm1), 0, 0, loadLimit);
+   filters = findOrCreateFilters(filters);
+   TR_FilterBST *filter = addFilter(p, static_cast<int32_t>(entry->parm1), 0, 0, filters);
 
    if (!filter)
       return option;
@@ -680,6 +680,19 @@ TR_Debug::limitOption(char *option, void *base, TR::OptionTable *entry, TR::Opti
       }
 
    return p;
+   }
+
+char *
+TR_Debug::limitOption(char *option, void *base, TR::OptionTable *entry, TR::Options * cmdLineOptions, bool loadLimit)
+   {
+   if (loadLimit)
+      {
+      return limitOption(option, base, entry, cmdLineOptions, _relocationFilters);
+      }
+   else
+      {
+      return limitOption(option, base, entry, cmdLineOptions, _compilationFilters);
+      }
    }
 
 

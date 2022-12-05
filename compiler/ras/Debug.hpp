@@ -463,6 +463,7 @@ public:
    virtual char *          limitfileOption(char *, void *, TR::OptionTable *, TR::Options *, bool loadLimit, TR_PseudoRandomNumbersListElement **pseudoRandomListHeadPtr = 0);
    virtual char *          inlinefileOption(char *, void *, TR::OptionTable *, TR::Options *);
    virtual char *          limitOption(char *, void *, TR::OptionTable *, TR::Options *, bool loadLimit);
+   char *                  limitOption(char *, void *, TR::OptionTable *, TR::Options *, TR::CompilationFilters * &);
    virtual int32_t *       loadCustomStrategy(char *optFileName);
    virtual bool            methodCanBeCompiled(TR_Memory *mem, TR_ResolvedMethod *, TR_FilterBST * &);
    virtual bool            methodCanBeRelocated(TR_Memory *mem, TR_ResolvedMethod *, TR_FilterBST * &);

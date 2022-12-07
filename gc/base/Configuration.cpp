@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2022 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -511,16 +511,36 @@ MM_Configuration::createParallelDispatcher(MM_EnvironmentBase *env, omrsig_handl
 
 #if defined(J9VM_OPT_CRIU_SUPPORT)
 void
-MM_Configuration::adjustGCThreadCountOnCheckpoint(MM_EnvironmentBase* env)
+MM_Configuration::adjustGCThreadCountForCheckpoint(MM_EnvironmentBase* env)
 {
 	MM_GCExtensionsBase* extensions = env->getExtensions();
+	MM_ParallelDispatcher* dispatcher = extensions->dispatcher;
 
-	extensions->dispatcher->contractThreadPool(env, extensions->checkpointGCthreadCount);
+	dispatcher->contractThreadPool(env, extensions->checkpointGCthreadCount);
+
+	/* This line is temporary, it's required to prevent thread pool growth beyond
+	 * the initial pool sizing done at startup. It's required until dependent
+	 * functional components (beyond just Dispatcher) are sufficiently tested with unbounded growth.
+	 */
+	_delegate.setMaxGCThreadCount(env, dispatcher->getPoolMaxCapacity());
 }
 
 bool
-MM_Configuration::reinitializeGCThreadCountOnRestore(MM_EnvironmentBase* env)
+MM_Configuration::reinitializeGCThreadCountForRestore(MM_EnvironmentBase* env)
 {
-	return env->getExtensions()->dispatcher->expandThreadPool(env);
+	MM_GCExtensionsBase* extensions = env->getExtensions();
+
+	uintptr_t checkpointThreadCount = extensions->gcThreadCount;
+
+	initializeGCThreadCount(env);
+
+	/* Currently, threads don't shutdown during restore, so ensure
+	 * thread count doesn't fall below the checkpoint thread count.
+	 * This adjustment can be removed in the future when dispatcher
+	 * thread shutdown is sufficiently tested at restore.
+	 */
+	extensions->gcThreadCount = OMR_MAX(checkpointThreadCount, extensions->gcThreadCount);
+
+	return extensions->dispatcher->expandThreadPool(env);
 }
 #endif /* defined(J9VM_OPT_CRIU_SUPPORT) */

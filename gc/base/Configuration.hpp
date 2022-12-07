@@ -136,29 +136,16 @@ public:
 	 * @param[in] env the current environment
 	 * @return void
 	 */
-	virtual void
-	adjustGCThreadCountForCheckpoint(MM_EnvironmentBase* env)
-	{
-		adjustGCThreadCountOnCheckpoint(env);
-	}
-
-	/* Temp: To be deleted and replaced by adjustGCThreadCountForCheckpoint.  */
-	virtual void adjustGCThreadCountOnCheckpoint(MM_EnvironmentBase* env);
+	virtual void adjustGCThreadCountForCheckpoint(MM_EnvironmentBase* env);
 
 	/**
 	 * Startup GC threads on restore.
 	 *
 	 * @param[in] env the current environment
-	 * @return void
+	 * @return bool indicating if the restore thread count was
+	 * successfully set and accommodated (thread pool resized).
 	 */
-	virtual bool
-	reinitializeGCThreadCountForRestore(MM_EnvironmentBase* env)
-	{
-		return reinitializeGCThreadCountOnRestore(env);
-	}
-
-	/* Temp: To be deleted and replaced by reinitializeGCThreadCountForRestore.  */
-	virtual bool reinitializeGCThreadCountOnRestore(MM_EnvironmentBase* env);
+	virtual bool reinitializeGCThreadCountForRestore(MM_EnvironmentBase* env);
 #endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 	MM_Configuration(MM_EnvironmentBase* env, MM_GCPolicy gcPolicy, MM_AlignmentType alignmentType, uintptr_t defaultRegionSize, uintptr_t defaultArrayletLeafSize, MM_GCWriteBarrierType writeBarrierType, MM_GCAllocationType allocationType)

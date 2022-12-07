@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2019 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -107,14 +107,14 @@ class LocalCSE : public TR::Optimization
    void addToHashTable(TR::Node *node, int32_t hashValue);
    void removeFromHashTable(HashTable *hashTable, int32_t hashValue);
    TR::Node *replaceCopySymbolReferenceByOriginalIn(TR::SymbolReference *,/* TR::SymbolReference *,*/ TR::Node *, TR::Node *, TR::Node *, TR::Node *, int32_t);
-   void examineNode(TR::Node *, TR_BitVector &, TR::Node *, int32_t, int32_t *, bool *, int32_t);
+   virtual void examineNode(TR::Node *, TR_BitVector &, TR::Node *, int32_t, int32_t *, bool *, int32_t);
    void commonNode(TR::Node *, int32_t, TR::Node *, TR::Node *);
-   void transformBlock(TR::TreeTop *, TR::TreeTop *);
+   virtual void transformBlock(TR::TreeTop *, TR::TreeTop *);
    void getNumberOfNodes(TR::Node *);
    bool allowNodeTypes(TR::Node *storeNode, TR::Node *node);
    void setIsInMemoryCopyPropFlag(TR::Node *rhsOfStoreDefNode);
    void makeNodeAvailableForCommoning(TR::Node *, TR::Node *, TR_BitVector &, bool *);
-   bool canBeAvailable(TR::Node *, TR::Node *, TR_BitVector &, bool);
+   virtual bool canBeAvailable(TR::Node *, TR::Node *, TR_BitVector &, bool);
    bool isAvailableNullCheck(TR::Node *, TR_BitVector &);
    TR::Node *getAvailableExpression(TR::Node *parent, TR::Node *node);
    bool killExpressionsIfVolatileLoad(TR::Node *node, TR_BitVector &seenAvailableLoadedSymbolReferences, TR_UseDefAliasSetInterface &UseDefAliases);

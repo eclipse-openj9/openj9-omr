@@ -287,7 +287,7 @@ MM_Scavenger::initialize(MM_EnvironmentBase *env)
 	_cacheLineAlignment = CACHE_LINE_SIZE;
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	if (_extensions->concurrentScavenger) {
+	if (IS_CONCURRENT_ENABLED) {
 		if (!_mainGCThread.initialize(this, true, true, true)) {
 			return false;
 		}
@@ -332,7 +332,7 @@ bool
 MM_Scavenger::collectorStartup(MM_GCExtensionsBase* extensions)
 {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	if (_extensions->concurrentScavenger) {
+	if (IS_CONCURRENT_ENABLED) {
 		if (!_mainGCThread.startup()) {
 			return false;
 		}
@@ -349,7 +349,7 @@ void
 MM_Scavenger::collectorShutdown(MM_GCExtensionsBase* extensions)
 {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	if (_extensions->concurrentScavenger) {
+	if (IS_CONCURRENT_ENABLED) {
 		_mainGCThread.shutdown();
 	}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
@@ -490,7 +490,7 @@ MM_Scavenger::calculateMaxCacheCount(uintptr_t activeMemorySize)
 void
 MM_Scavenger::calculateRecommendedWorkingThreads(MM_EnvironmentStandard *env)
 {
-	if (!_extensions->adaptiveThreadingEnabled() || _extensions->isConcurrentScavengerEnabled()) {
+	if (!_extensions->adaptiveThreadingEnabled() || IS_CONCURRENT_ENABLED) {
 		return;
 	}
 
@@ -873,7 +873,11 @@ MM_Scavenger::mergeThreadGCStats(MM_EnvironmentBase *env)
 	uint64_t syncStall = omrtime_hires_delta(0, (scavStats->_adjustedSyncStallTime), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
 	uint64_t notifyStallTime = omrtime_hires_delta(0, (scavStats->_notifyStallTime), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
 
-	Trc_MM_Scavenger_calculateRecommendedWorkingThreads_threadStallBreakDown(env->getLanguageVMThread(), env->getWorkerID(), timeToStartCollection, scanStall, syncStall, notifyStallTime);
+	if (!IS_CONCURRENT_ENABLED) {
+		Trc_MM_Scavenger_calculateRecommendedWorkingThreads_threadStallBreakDown(
+				env->getLanguageVMThread(), env->getWorkerID(), timeToStartCollection,
+				scanStall, syncStall, notifyStallTime);
+	}
 
 	omrthread_monitor_exit(_extensions->gcStatsMutex);
 
@@ -1421,7 +1425,7 @@ MM_Scavenger::copyAndForward(MM_EnvironmentStandard *env, volatile omrobjectptr_
 					/* raise the alert and return (true - must look like a new object was handled) */
 					toReturn = true;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-					if (_extensions->concurrentScavenger) {
+					if (IS_CONCURRENT_ENABLED) {
 						/* We have no place to copy. We will return the original location of the object.
 						 * But we must prevent any other thread of making a copy of this object.
 						 * So we will attempt to atomically self forward it.  */
@@ -3980,7 +3984,7 @@ MM_Scavenger::processRememberedSetInBackout(MM_EnvironmentStandard *env)
 	bool const compressed = _extensions->compressObjectReferences();
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	if (_extensions->concurrentScavenger) {
+	if (IS_CONCURRENT_ENABLED) {
 		GC_SublistIterator remSetIterator(&(_extensions->rememberedSet));
 		while((puddle = remSetIterator.nextList()) != NULL) {
 			GC_SublistSlotIterator remSetSlotIterator(puddle);
@@ -4229,7 +4233,7 @@ MM_Scavenger::mainThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_AllocateD
 	_cycleTimes.incrementStart = omrtime_hires_clock();
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	if (_extensions->concurrentScavenger) {
+	if (IS_CONCURRENT_ENABLED) {
 		scavengeIncremental(env);
 	} else
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
@@ -4606,7 +4610,7 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 	}
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	if (_extensions->concurrentScavenger && isBackOutFlagRaised()) {
+	if (IS_CONCURRENT_ENABLED && isBackOutFlagRaised()) {
 		bool result = percolateGarbageCollect(env, subSpace, NULL, ABORTED_SCAVENGE, J9MMCONSTANT_IMPLICIT_GC_PERCOLATE_ABORTED_SCAVENGE);
 
 		Assert_MM_true(result);
@@ -4757,7 +4761,7 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 	_collectorExpandedSize = 0;
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	if (_extensions->concurrentScavenger) {
+	if (IS_CONCURRENT_ENABLED) {
 		/* this may trigger either start or end of Concurrent Scavenge cycle */
 		triggerConcurrentScavengerTransition(env, allocDescription);
 	}
@@ -5629,7 +5633,7 @@ MM_Scavenger::workThreadScan(MM_EnvironmentStandard *env)
 void
 MM_Scavenger::workThreadComplete(MM_EnvironmentStandard *env)
 {
-	Assert_MM_true(_extensions->concurrentScavenger);
+	Assert_MM_true(IS_CONCURRENT_ENABLED);
 
 	/* record that this thread is participating in this cycle */
 	env->_scavengerStats._gcCount = _extensions->scavengerStats._gcCount;

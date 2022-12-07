@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2021 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -437,14 +437,22 @@ MM_Configuration::initializeGCThreadCount(MM_EnvironmentBase* env)
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 
 	if (!extensions->gcThreadCountForced) {
-		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-		extensions->gcThreadCount = omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_TARGET);
-
-		/* but not higher than maximum default */
-		if (_delegate.getMaxGCThreadCount(env) < extensions->gcThreadCount) {
-			extensions->gcThreadCount = _delegate.getMaxGCThreadCount(env);
-		}
+		extensions->gcThreadCount = supportedGCThreadCount(env);
 	}
+}
+
+uintptr_t
+MM_Configuration::supportedGCThreadCount(MM_EnvironmentBase* env)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+	uintptr_t threadCount = omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_TARGET);
+
+	/* The thread count can't be higher than the maximum default. */
+	if (_delegate.getMaxGCThreadCount(env) < threadCount) {
+		threadCount = _delegate.getMaxGCThreadCount(env);
+	}
+
+	return threadCount;
 }
 
 void
@@ -500,3 +508,19 @@ MM_Configuration::createParallelDispatcher(MM_EnvironmentBase *env, omrsig_handl
 {
 	return MM_ParallelDispatcher::newInstance(env, handler, handler_arg, defaultOSStackSize);
 }
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+void
+MM_Configuration::adjustGCThreadCountOnCheckpoint(MM_EnvironmentBase* env)
+{
+	MM_GCExtensionsBase* extensions = env->getExtensions();
+
+	extensions->dispatcher->contractThreadPool(env, extensions->checkpointGCthreadCount);
+}
+
+bool
+MM_Configuration::reinitializeGCThreadCountOnRestore(MM_EnvironmentBase* env)
+{
+	return env->getExtensions()->dispatcher->expandThreadPool(env);
+}
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */

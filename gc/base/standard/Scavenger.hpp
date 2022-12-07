@@ -600,6 +600,13 @@ public:
 	 */
 	void calculateRecommendedWorkingThreads(MM_EnvironmentStandard *env);
 
+	/**
+	 * Sets the collector recommended thread count to UDATA_MAX (default value).
+	 *
+	 * @return void
+	 */
+	void resetRecommendedThreads() { _recommendedThreads = UDATA_MAX; };
+
 	void scavenge(MM_EnvironmentBase *env);
 	bool scavengeCompletedSuccessfully(MM_EnvironmentStandard *env);
 	virtual	void mainThreadGarbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool initMarkMap = false, bool rebuildMarkBits = false);

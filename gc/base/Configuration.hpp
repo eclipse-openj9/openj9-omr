@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -125,6 +125,27 @@ public:
 	virtual void defaultMemorySpaceAllocated(MM_GCExtensionsBase* extensions, void* defaultMemorySpace);
 
 	virtual void kill(MM_EnvironmentBase* env);
+
+	/* Number of GC threads supported based on hardware and dispatcher's max. */
+	virtual uintptr_t supportedGCThreadCount(MM_EnvironmentBase* env);
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	/**
+	 * Shutdown GC threads on checkpoint.
+	 *
+	 * @param[in] env the current environment
+	 * @return void
+	 */
+	virtual void adjustGCThreadCountOnCheckpoint(MM_EnvironmentBase* env);
+
+	/**
+	 * Startup GC threads on restore.
+	 *
+	 * @param[in] env the current environment
+	 * @return void
+	 */
+	virtual bool reinitializeGCThreadCountOnRestore(MM_EnvironmentBase* env);
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 	MM_Configuration(MM_EnvironmentBase* env, MM_GCPolicy gcPolicy, MM_AlignmentType alignmentType, uintptr_t defaultRegionSize, uintptr_t defaultArrayletLeafSize, MM_GCWriteBarrierType writeBarrierType, MM_GCAllocationType allocationType)
 		: MM_BaseVirtual()

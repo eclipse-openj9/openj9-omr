@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -74,13 +74,6 @@ public:
 protected:
 	virtual bool initialize(MM_EnvironmentBase* env);
 	virtual MM_EnvironmentBase* allocateNewEnvironment(MM_GCExtensionsBase* extensions, OMR_VMThread* omrVMThread);
-	
-	/**
-	 * Sets the number of gc threads
-	 *
-	 * @param env[in] - the current environment
-	 */
-	virtual void initializeGCThreadCount(MM_EnvironmentBase* env);
 
 private:
 	static MM_GCWriteBarrierType getWriteBarrierType(MM_EnvironmentBase* env)

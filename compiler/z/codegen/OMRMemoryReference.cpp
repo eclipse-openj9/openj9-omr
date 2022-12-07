@@ -2451,6 +2451,7 @@ OMR::Z::MemoryReference::needsAdjustDisp(TR::Instruction * instr, OMR::Z::Memory
       opCode == TR::InstOpCode::CE ||
       opCode == TR::InstOpCode::DE ||
       opCode == TR::InstOpCode::LE ||
+      opCode == TR::InstOpCode::LDE ||
       opCode == TR::InstOpCode::MEEB ||
       opCode == TR::InstOpCode::MAEB ||
       opCode == TR::InstOpCode::SEB ||

@@ -365,7 +365,7 @@ TR::Instruction * generateRXEInstruction(
                    TR::Node                *n,
                    TR::Register            *treg,
                    TR::MemoryReference *mf,
-                   uint8_t                mask3,
+                   uint8_t                mask3 = 0,
                    TR::Instruction     *preced = 0);
 
 TR::Instruction * generateRXFInstruction(

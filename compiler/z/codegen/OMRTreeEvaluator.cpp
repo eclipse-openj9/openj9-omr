@@ -2453,7 +2453,7 @@ generateLoad32BitConstant(TR::CodeGenerator * cg, TR::Node * constExpr)
          }
       case TR::Float:
          tempReg = cg->allocateRegister(TR_FPR);
-         generateRegLitRefInstruction(cg, TR::InstOpCode::LE, constExpr, tempReg, constExpr->getFloat());
+         generateRegLitRefInstruction(cg, TR::InstOpCode::LDE, constExpr, tempReg, constExpr->getFloat());
          break;
       case TR::Double:
          tempReg = cg->allocateRegister(TR_FPR);

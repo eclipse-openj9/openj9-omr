@@ -3192,9 +3192,16 @@ TR::S390RXEInstruction::generateBinaryEncoding()
 
    cursor += (getOpCode().getInstructionLength());
 
+   // Finish patching up if long disp was needed
+   int32_t longDispTouchUpPadding = 0;
+   if (getMemoryReference() != NULL)
+      {
+      longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
+      }
+
    setBinaryLength(cursor - instructionStart);
    setBinaryEncoding(instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength() - padding);
+   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength() - padding - longDispTouchUpPadding);
 
    return cursor;
    }

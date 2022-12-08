@@ -84,8 +84,8 @@ class LocalDeadStoreElimination : public TR::Optimization
    bool isEntireNodeRemovable(TR::Node *);
    void setExternalReferenceCountToTree(TR::Node *node, rcount_t *externalReferenceCount);
     bool seenIdenticalStore(TR::Node *);
-   bool areLhsOfStoresSyntacticallyEquivalent(TR::Node *, TR::Node *);
-   void adjustStoresInfo(TR::Node *, TR_BitVector &);
+   virtual bool areLhsOfStoresSyntacticallyEquivalent(TR::Node *, TR::Node *);
+   virtual void adjustStoresInfo(TR::Node *, TR_BitVector &);
    TR::Node *getAnchorNode(TR::Node *parentNode, int32_t nodeIndex, TR::Node *, TR::TreeTop *, TR::NodeChecklist& visited);
 
    void setupReferenceCounts(TR::Node *);

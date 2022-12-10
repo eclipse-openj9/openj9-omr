@@ -1639,101 +1639,33 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
       if (!symRef->getSymbol()->isArrayShadowSymbol())
          {
          TR::Symbol *sym = symRef->getSymbol();
-         bool haveClassLookaheadInfo = false;
-         if (sym->isStatic() &&
-            !symRef->isUnresolved() &&
-            (sym->isPrivate() ||
-               sym->isFinal()))
-            haveClassLookaheadInfo = true;
-
          bool allowForAOT = vp->comp()->getOption(TR_UseSymbolValidationManager);
-         if (haveClassLookaheadInfo)
+         if (sym->isStatic() && !symRef->isUnresolved() && (sym->isPrivate() || sym->isFinal()))
             {
-            bool foundInfo = false;
-            if (sym->isStatic() && sym->isFinal())
+            TR_PersistentClassInfo * classInfo =
+               vp->comp()->getPersistentInfo()->getPersistentCHTable()->findClassInfoAfterLocking(symRef->getOwningMethod(vp->comp())->classOfStatic(symRef->getCPIndex()), vp->comp(), allowForAOT);
+            if (classInfo && classInfo->getFieldInfo())
                {
-               TR::StaticSymbol * symbol = sym->castToStaticSymbol();
-               TR::DataType type = symbol->getDataType();
-               TR_OpaqueClassBlock * classOfStatic = symRef->getOwningMethod(vp->comp())->classOfStatic(symRef->getCPIndex());
-               if (classOfStatic == NULL)
+               TR_PersistentFieldInfo * fieldInfo = classInfo->getFieldInfo()->findFieldInfo(vp->comp(), node, false);
+               if (fieldInfo)
                   {
-                  int         len = 0;
-                  char * classNameOfFieldOrStatic = NULL;
-                  classNameOfFieldOrStatic = symRef->getOwningMethod(vp->comp())->classNameOfFieldOrStatic(symRef->getCPIndex(), len);
-                  if (classNameOfFieldOrStatic)
+                  TR_PersistentArrayFieldInfo *arrayFieldInfo = fieldInfo ? fieldInfo->asPersistentArrayFieldInfo() : 0;
+                  if (arrayFieldInfo && arrayFieldInfo->isDimensionInfoValid())
                      {
-                     classNameOfFieldOrStatic = TR::Compiler->cls.classNameToSignature(classNameOfFieldOrStatic, len, vp->comp());
-                     TR_OpaqueClassBlock * curClass  = vp->fe()->getClassFromSignature(classNameOfFieldOrStatic, len, symRef->getOwningMethod(vp->comp()));
-                     TR_OpaqueClassBlock * owningClass = vp->comp()->getJittedMethodSymbol()->getResolvedMethod()->containingClass();
-                     if (owningClass == curClass)
-                        classOfStatic = curClass;
-                     }
-                  }
-               bool isClassInitialized = false;
-               TR_PersistentClassInfo * classInfo =
-                  vp->comp()->getPersistentInfo()->getPersistentCHTable()->findClassInfoAfterLocking(classOfStatic, vp->comp(), allowForAOT);
-               if (classInfo && classInfo->isInitialized())
-                  isClassInitialized = true;
-
-               if (classOfStatic != vp->comp()->getSystemClassPointer() &&
-                   isClassInitialized &&
-                   (type == TR::Address))
-                  {
-                  TR::VMAccessCriticalSection constrainAloadCriticalSection(vp->comp(),
-                                                                             TR::VMAccessCriticalSection::tryToAcquireVMAccess);
-                  if (constrainAloadCriticalSection.hasVMAccess())
-                     {
-                     uintptr_t arrayStaticAddress = (uintptr_t)symbol->getStaticAddress();
-                     uintptr_t arrayObject = vp->comp()->fej9()->getStaticReferenceFieldAtAddress(arrayStaticAddress);
-                     if (arrayObject != 0)
+                     int32_t firstDimension = arrayFieldInfo->getDimensionInfo(0);
+                     if (firstDimension >= 0)
                         {
-                        int32_t arrLength = TR::Compiler->om.getArrayLengthInElements(vp->comp(), arrayObject);
                         int32_t len;
-                        const char *sig = symRef->getTypeSignature(len);
-                        if (sig && (len > 0) &&
-                            (sig[0] == '[' || sig[0] == 'L' || sig[0] == 'Q'))
+                        const char *sig = getFieldSignature(vp, node, len);
+                        if (sig && (len > 0) && (sig[0] == '[' || sig[0] == 'L' || sig[0] == 'Q'))
                            {
                            int32_t elementSize = arrayElementSize(sig, len, node, vp);
                            if (elementSize != 0)
                               {
-                              vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
-                              vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, arrLength, arrLength, elementSize));
+                              if (vp->trace())
+                                 traceMsg(vp->comp(), "Using class lookahead info to find out non null, array dimension, and object location\n");
+                              vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, firstDimension, firstDimension, elementSize));
                               vp->addGlobalConstraint(node, TR::VPObjectLocation::create(vp, TR::VPObjectLocation::NotClassObject));
-                              foundInfo = true;
-                              }
-                           }
-                        }
-                     }
-                  }
-               }
-
-            if (!foundInfo)
-               {
-               TR_PersistentClassInfo * classInfo =
-                  vp->comp()->getPersistentInfo()->getPersistentCHTable()->findClassInfoAfterLocking(symRef->getOwningMethod(vp->comp())->classOfStatic(symRef->getCPIndex()), vp->comp(), allowForAOT);
-               if (classInfo && classInfo->getFieldInfo())
-                  {
-                  TR_PersistentFieldInfo * fieldInfo = classInfo->getFieldInfo()->findFieldInfo(vp->comp(), node, false);
-                  if (fieldInfo)
-                     {
-                     TR_PersistentArrayFieldInfo *arrayFieldInfo = fieldInfo ? fieldInfo->asPersistentArrayFieldInfo() : 0;
-                     if (arrayFieldInfo && arrayFieldInfo->isDimensionInfoValid())
-                        {
-                        int32_t firstDimension = arrayFieldInfo->getDimensionInfo(0);
-                        if (firstDimension >= 0)
-                           {
-                           int32_t len;
-                           const char *sig = getFieldSignature(vp, node, len);
-                           if (sig && (len > 0) && (sig[0] == '[' || sig[0] == 'L' || sig[0] == 'Q'))
-                              {
-                              int32_t elementSize = arrayElementSize(sig, len, node, vp);
-                              if (elementSize != 0)
-                                 {
-                                 if (vp->trace())
-                                    traceMsg(vp->comp(), "Using class lookahead info to find out non null, array dimension, and object location\n");
-                                 vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, firstDimension, firstDimension, elementSize));
-                                 vp->addGlobalConstraint(node, TR::VPObjectLocation::create(vp, TR::VPObjectLocation::NotClassObject));
-                                 }
                               }
                            }
                         }
@@ -2464,92 +2396,33 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
       if (!symRef->getSymbol()->isArrayShadowSymbol())
          {
          TR::Symbol *sym = symRef->getSymbol();
-         bool haveClassLookaheadInfo = false;
-         if (((sym->isShadow() &&
-             node->getFirstChild()->isThisPointer()) ||
-             sym->isStatic()) &&
-             !symRef->isUnresolved() &&
-             (sym->isPrivate() ||
-              sym->isFinal()))
-            haveClassLookaheadInfo = true;
-
          bool allowForAOT = vp->comp()->getOption(TR_UseSymbolValidationManager);
-         if (haveClassLookaheadInfo)
+         if (((sym->isShadow() && node->getFirstChild()->isThisPointer()) || sym->isStatic()) &&
+            !symRef->isUnresolved() && (sym->isPrivate() || sym->isFinal()))
             {
-            if (sym->isStatic() && sym->isFinal())
+            TR_PersistentClassInfo * classInfo =
+               vp->comp()->getPersistentInfo()->getPersistentCHTable()->findClassInfoAfterLocking(vp->comp()->getCurrentMethod()->containingClass(), vp->comp());
+            if (classInfo && classInfo->getFieldInfo())
                {
-               TR::StaticSymbol * symbol = sym->castToStaticSymbol();
-               TR::DataType type = symbol->getDataType();
-               TR_OpaqueClassBlock * classOfStatic = symRef->getOwningMethod(vp->comp())->classOfStatic(symRef->getCPIndex());
-               bool isClassInitialized = false;
-               TR_PersistentClassInfo * classInfo =
-                  vp->comp()->getPersistentInfo()->getPersistentCHTable()->findClassInfoAfterLocking(classOfStatic, vp->comp(), allowForAOT);
-               if (classInfo && classInfo->isInitialized())
-                  isClassInitialized = true;
-
-               if ((classOfStatic != vp->comp()->getSystemClassPointer() &&
-                   isClassInitialized &&
-                    (type == TR::Address)))
+               TR_PersistentFieldInfo * fieldInfo = classInfo->getFieldInfo()->findFieldInfo(vp->comp(), node, false);
+               if (fieldInfo)
                   {
-                  TR::VMAccessCriticalSection constrainIaloadCriticalSection(vp->comp(),
-                                                                              TR::VMAccessCriticalSection::tryToAcquireVMAccess);
-                  if (constrainIaloadCriticalSection.hasVMAccess())
+                  TR_PersistentArrayFieldInfo *arrayFieldInfo = fieldInfo ? fieldInfo->asPersistentArrayFieldInfo() : 0;
+                  if (arrayFieldInfo && arrayFieldInfo->isDimensionInfoValid())
                      {
-                     uintptr_t arrayStaticAddress = (uintptr_t)symbol->getStaticAddress();
-                     uintptr_t arrayObject = vp->comp()->fej9()->getStaticReferenceFieldAtAddress(arrayStaticAddress);
-                     if (arrayObject != 0)
+                     arrLength = arrayFieldInfo->getDimensionInfo(0);
+                     if (arrLength >= 0 && sig && (len > 0) &&
+                         (sig[0] == '[' || sig[0] == 'L' || sig[0] == 'Q'))
                         {
-                        /*
-                         * This line is left commented because of the commented lines further below which make use
-                         * of the arrLength variable. This can be removed once it is determined that the commented
-                         * out lines below will never be needed.
-                         */
-                        //int32_t arrLength = TR::Compiler->om.getArrayLengthInElements(vp->comp(), arrayObject);
-
-                        sig = symRef->getTypeSignature(len);
-                        if (sig && (len > 0) &&
-                            (sig[0] == '[' || sig[0] == 'L' || sig[0] == 'Q'))
+                        elementSize = arrayElementSize(sig, len, node, vp);
+                        if (elementSize != 0)
                            {
-                           elementSize = arrayElementSize(sig, len, node, vp);
-                           if (elementSize != 0)
-                              {
-                              //vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
-                              //vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, arrLength, arrLength, elementSize));
-                              foundInfo = true;
-                              isFixed = true;
-                              }
-                           }
-                        }
-                     }
-                  }
-               }
-
-            if (!foundInfo)
-               {
-               TR_PersistentClassInfo * classInfo =
-                  vp->comp()->getPersistentInfo()->getPersistentCHTable()->findClassInfoAfterLocking(vp->comp()->getCurrentMethod()->containingClass(), vp->comp());
-               if (classInfo && classInfo->getFieldInfo())
-                  {
-                  TR_PersistentFieldInfo * fieldInfo = classInfo->getFieldInfo()->findFieldInfo(vp->comp(), node, false);
-                  if (fieldInfo)
-                     {
-                     TR_PersistentArrayFieldInfo *arrayFieldInfo = fieldInfo ? fieldInfo->asPersistentArrayFieldInfo() : 0;
-                     if (arrayFieldInfo && arrayFieldInfo->isDimensionInfoValid())
-                        {
-                        arrLength = arrayFieldInfo->getDimensionInfo(0);
-                        if (arrLength >= 0 && sig && (len > 0) &&
-                            (sig[0] == '[' || sig[0] == 'L' || sig[0] == 'Q'))
-                           {
-                           elementSize = arrayElementSize(sig, len, node, vp);
-                           if (elementSize != 0)
-                              {
-                              if (vp->trace())
-                                 traceMsg(vp->comp(), "Using class lookahead info to find out non null, array dimension\n");
-                              //vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
-                              //vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, arrLength, arrLength, elementSize));
-                              isFixed = true;
-                              foundInfo = true;
-                              }
+                           if (vp->trace())
+                              traceMsg(vp->comp(), "Using class lookahead info to find out non null, array dimension\n");
+                           //vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
+                           //vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, arrLength, arrLength, elementSize));
+                           isFixed = true;
+                           foundInfo = true;
                            }
                         }
                      }

@@ -3944,148 +3944,134 @@ void TR_LoopTransformer::checkIfIncrementInDifferentExtendedBlock(TR::Block *blo
       }
    }
 
+/// Get a checklist containing exactly the blocks within \p loop.
+const TR::BlockChecklist &TR_LoopTransformer::getLoopBlocksChecklist(
+   TR_RegionStructure *loop)
+   {
+   TR::BlockChecklist empty(comp());
+   auto insertResult = _loopBlocksChecklists.insert(std::make_pair(loop, empty));
+   TR::BlockChecklist &loopBlocks = insertResult.first->second;
+   bool insertSuccess = insertResult.second;
+   if (!insertSuccess)
+      return loopBlocks; // already computed the checklist
 
-bool TR_LoopTransformer::blockIsAlwaysExecutedInLoop(TR::Block *currentBlock, TR_RegionStructure *loopStructure, bool *atEntry)
+   TR_ScratchList<TR::Block> list(trMemory());
+   loop->getBlocks(&list);
+   for (auto *b = list.getListHead(); b != NULL; b = b->getNextElement())
+      loopBlocks.add(b->getData());
+
+   return loopBlocks;
+   }
+
+/**
+ * \brief Determine whether all of \p queryBlock is on every path from the
+ * start of the loop header of \p loopStructure to a back-edge.
+ *
+ * If it is, then \p queryBlock is guaranteed to run in its entirety in every
+ * loop iteration except possibly the last, which may take an earlier exit. In
+ * this case, \p priorBlocks will specify the set of blocks in the loop that
+ * are reachable from the loop header without running \p queryBlock (excluding
+ * \p queryBlock itself).
+ *
+ * \param[in]  queryBlock    The block to consider.
+ * \param[in]  loopStructure The loop to consider, which must contain \p queryBlock.
+ * \param[out] priorBlocks   The set of blocks in the loop that may run before
+ *                           \p queryBlock (when the result is true).
+ * \return true if \p queryBlock always runs, and false otherwise.
+ */
+bool TR_LoopTransformer::blockIsAlwaysExecutedInLoop(
+   TR::Block *queryBlock,
+   TR_RegionStructure *loopStructure,
+   const TR::BlockChecklist **priorBlocks)
    {
    TR::Block *entryBlock = loopStructure->asRegion()->getEntryBlock();
-   if ((currentBlock == _loopTestBlock) ||
-       (currentBlock == entryBlock))
+
+   AlwaysExecMemoRecord emptyMemoRecord(comp());
+   AlwaysExecMemoKey key = std::make_pair(loopStructure, queryBlock);
+   auto insertResult = _alwaysExecMemo.insert(std::make_pair(key, emptyMemoRecord));
+   AlwaysExecMemoRecord &memoRecord = insertResult.first->second;
+   bool insertSuccess = insertResult.second;
+
+   if (priorBlocks != NULL)
+      *priorBlocks = &memoRecord._priorBlocks;
+
+   if (!insertSuccess)
+      return memoRecord._alwaysExecutes;
+
+   // _alwaysExecutes defaults to false, so it only needs to be updated if we
+   // return true.
+
+   const TR::BlockChecklist &loopBlocks = getLoopBlocksChecklist(loopStructure);
+   TR_ASSERT_FATAL(
+      loopBlocks.contains(queryBlock),
+      "block_%d is not in loop %d",
+      queryBlock->getNumber(),
+      entryBlock->getNumber());
+
+   // When queryBlock has an exception successor within the loop, even if every
+   // path from the header to a back-edge goes through queryBlock, there might
+   // be paths that don't go through *all* of queryBlock, since it's possible
+   // to run part of it and then take an exception while remaining in the loop.
+   const auto &excSuccs = queryBlock->getExceptionSuccessors();
+   for (auto it = excSuccs.begin(); it != excSuccs.end(); ++it)
       {
-      if (atEntry)
+      if (loopBlocks.contains((*it)->getTo()->asBlock()))
          {
-         if (currentBlock == entryBlock)
-            *atEntry = true;
-         else
-            *atEntry = false;
-         }
-
-      return true;
-      }
-
-   if ((currentBlock->getSuccessors().size() == 1) &&
-       (currentBlock->getSuccessors().front()->getTo() == _loopTestBlock))
-      {
-      if (atEntry)
-         *atEntry = false;
-      return true;
-      }
-
-   TR_ScratchList<TR::Block> blocksInRegion(trMemory());
-   loopStructure->getBlocks(&blocksInRegion);
-
-   TR_ScratchList<TR::Block> seenBlocks(trMemory());
-
-   bool flag = true;
-   TR::Block *cursorBlock = currentBlock;
-   while (flag)
-      {
-      flag = false;
-      TR::Block *onlySuccInsideLoop = NULL;
-      seenBlocks.add(cursorBlock);
-      for (auto succ = cursorBlock->getSuccessors().begin(); succ != cursorBlock->getSuccessors().end(); ++succ)
-         {
-         TR::Block *succBlock = (*succ)->getTo()->asBlock();
-         if (blocksInRegion.find(succBlock))
-            {
-            if (!onlySuccInsideLoop)
-               onlySuccInsideLoop = succBlock;
-            else
-               {
-               onlySuccInsideLoop = NULL;
-               break;
-               }
-            }
-         }
-      if (onlySuccInsideLoop)
-         {
-         cursorBlock = onlySuccInsideLoop;
-         flag = true;
-         }
-
-      if (flag)
-         {
-         if ((cursorBlock == _loopTestBlock) ||
-             (cursorBlock == entryBlock))
-            {
-            if (atEntry)
-               *atEntry = false;
-            return true;
-            }
-
-         if (seenBlocks.find(cursorBlock))
-            return false;
+         memoRecord._priorBlocks.clear();
+         return false;
          }
       }
 
-
-   seenBlocks.deleteAll();
-
-   flag = true;
-   cursorBlock = currentBlock;
-   while (flag)
+   // Within the loop body excluding queryBlock, search forward from the
+   // header; queryBlock runs every iteration iff no back-edges are reachable.
+   // The search order doesn't matter. The queue is incidentally LIFO (DFS).
+   TR::BlockChecklist backEdgePreds(comp());
+   const auto &entryPreds = entryBlock->getPredecessors();
+   for (auto it = entryPreds.begin(); it != entryPreds.end(); ++it)
       {
-      flag = false;
-      seenBlocks.add(cursorBlock);
-      TR::Block *predInsideLoop = NULL;
-      for (auto pred = cursorBlock->getPredecessors().begin(); pred != cursorBlock->getPredecessors().end(); ++pred)
+      TR::Block *pred = (*it)->getFrom()->asBlock();
+      if (loopBlocks.contains(pred))
+         backEdgePreds.add(pred);
+      }
+
+   TR_ScratchList<TR::Block> queue(trMemory());
+   TR::BlockChecklist &seen = memoRecord._priorBlocks;
+
+   if (queryBlock != entryBlock)
+      {
+      // Adding entryBlock to seen is not necessary for the search, but add it
+      // anyway to make sure that it's in priorBlocks.
+      queue.add(entryBlock);
+      seen.add(entryBlock);
+      }
+
+   while (!queue.isEmpty())
+      {
+      TR::Block *b = queue.popHead();
+      if (backEdgePreds.contains(b))
          {
-         TR::Block *predBlock = (*pred)->getFrom()->asBlock();
-         if (blocksInRegion.find(predBlock))
-            {
-            if (!predInsideLoop)
-               predInsideLoop = predBlock;
-            else
-               {
-               predInsideLoop = NULL;
-               break;
-               }
-            }
+         // back-edge is reachable without going through queryBlock
+         memoRecord._priorBlocks.clear();
+         return false;
          }
 
-      if (predInsideLoop)
+      TR_SuccessorIterator it(b);
+      for (auto *edge = it.getFirst(); edge != NULL; edge = it.getNext())
          {
-         TR::Block *onlySuccInsideLoop = NULL;
-         for (auto succ = predInsideLoop->getSuccessors().begin(); succ != predInsideLoop->getSuccessors().end(); ++succ)
-            {
-            TR::Block *succBlock = (*succ)->getTo()->asBlock();
-            if (blocksInRegion.find(succBlock))
-               {
-               if (!onlySuccInsideLoop)
-                  onlySuccInsideLoop = succBlock;
-               else
-                  {
-                  onlySuccInsideLoop = NULL;
-                  break;
-                  }
-               }
-            }
-         if (!onlySuccInsideLoop)
-            predInsideLoop = NULL;
-         }
+         TR::Block *succ = edge->getTo()->asBlock();
+         if (!loopBlocks.contains(succ)
+             || seen.contains(succ)
+             || succ == queryBlock)
+            continue;
 
-      if (predInsideLoop)
-         {
-         cursorBlock = predInsideLoop;
-         flag = true;
-         }
-
-      if (flag)
-         {
-         if ((cursorBlock == _loopTestBlock) ||
-             (cursorBlock == entryBlock))
-            {
-            if (atEntry)
-               *atEntry = false;
-            return true;
-            }
-
-         if (seenBlocks.find(cursorBlock))
-            return false;
+         seen.add(succ);
+         queue.add(succ);
          }
       }
 
-   return false;
-   }
+   memoRecord._alwaysExecutes = true;
+   return true;
+}
 
 
 /******************************************/

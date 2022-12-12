@@ -111,6 +111,17 @@ TR_RegionStructure *TR_Structure::getContainingLoop()
    return NULL;
    }
 
+TR_RegionStructure *TR_Structure::getContainingCyclicRegion()
+   {
+   for (TR_RegionStructure *p = getParent(); p != NULL; p = p->getParent())
+      {
+      if (!p->isAcyclic())
+         return p;
+      }
+
+   return NULL;
+   }
+
 // Note that if A contains B, the common parent is parent(A)
 //
 TR_RegionStructure *TR_Structure::findCommonParent(TR_Structure *other, TR::CFG *cfg)

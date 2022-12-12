@@ -928,9 +928,8 @@ class TR_LoopVersioner : public TR_LoopTransformer
    bool isStoreInSpecialForm(int32_t, TR_Structure *);
    bool isConditionalTreeCandidateForElimination(TR::TreeTop * curTree) { return (!curTree->getNode()->getFirstChild()->getOpCode().isLoadConst() ||
                                                                                   !curTree->getNode()->getSecondChild()->getOpCode().isLoadConst()); };
-   TR::Node *isDependentOnInductionVariable(TR::Node *, bool, bool &, TR::Node* &, TR::Node* &, bool &);
+   TR::Node *isDependentOnInductionVariable(TR::Node *, bool, bool &, TR::Node* &, TR::Node* &, bool &, TR::TreeTop* &);
    TR::Node *isDependentOnInvariant(TR::Node *);
-   bool boundCheckUsesUnchangedValue(TR::TreeTop *, TR::Node *, TR::SymbolReference *, TR_RegionStructure *);
    bool findStore(TR::TreeTop *start, TR::TreeTop *end, TR::Node *node, TR::SymbolReference *symRef, bool ignoreLoads = false, bool lastTimeThrough = false);
    TR::Node *findLoad(TR::Node *node, TR::SymbolReference *symRef, vcount_t origVisitCount);
    void versionNaturalLoop(TR_RegionStructure *, List<TR::Node> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR_NodeParentSymRef> *, List<TR_NodeParentSymRefWeightTuple> *, List<TR_Structure> *whileLoops, List<TR_Structure> *clonedInnerWhileLoops, bool skipVersioningAsynchk, SharedSparseBitVector &reverseBranchInLoops);
@@ -943,14 +942,61 @@ class TR_LoopVersioner : public TR_LoopTransformer
    bool detectInvariantSpineChecks(List<TR::TreeTop> *);
    bool detectInvariantDivChecks(List<TR::TreeTop> *);
    bool detectInvariantAwrtbaris(List<TR::TreeTop> *);
-   bool detectInvariantTrees(TR_RegionStructure *whileLoop, List<TR::TreeTop> *, bool, bool *, SharedSparseBitVector &reverseBranchInLoops);
+   bool detectInvariantCheckCasts(List<TR::TreeTop> *);
+   bool detectInvariantConditionals(TR_RegionStructure *whileLoop, List<TR::TreeTop> *, bool, bool *, SharedSparseBitVector &reverseBranchInLoops);
    bool detectInvariantNodes(List<TR_NodeParentSymRef> *invariantNodes, List<TR_NodeParentSymRefWeightTuple> *invariantTranslationNodes);
    bool detectInvariantSpecializedExprs(List<TR::Node> *);
    bool detectInvariantArrayStoreChecks(List<TR::TreeTop> *);
    bool isVersionableArrayAccess(TR::Node *);
 
+   /**
+    * \brief Analysis results describing a conditional tree that can be
+    * versioned based on an extremum of a non-invariant function of an IV.
+    */
+   struct ExtremumConditional
+      {
+      /// The index of the non-invariant child of the conditional node
+      int32_t varyingChildIndex;
+
+      /// The induction variable
+      TR::SymbolReference *iv;
+
+      /// The load of the IV that appears within the conditional
+      TR::Node *ivLoad;
+
+      /// The amount by which the IV increases in each iteration. May be negative.
+      int32_t step;
+
+      /// Is the extremum the final value? Otherwise it's the initial value.
+      bool extremumIsFinalValue;
+
+      /// Do we need to reverse the branch? True when the fall-through is cold.
+      bool reverseBranch;
+
+      /**
+       * Information about the loop test. This data is useful, and therefore
+       * set to meaningful values, only when the final IV value will be needed,
+       * i.e. when extremumIsFinalValue or when versioning an unsigned comparison.
+       */
+      struct
+         {
+         /// True when the LHS of the comparison is the updated IV value.
+         /// Otherwise, it's the iteration-initial IV value.
+         bool usesUpdatedIv;
+
+         /// The opcode decribing the condition under which the loop test
+         /// decides to keep looping.
+         TR::ILOpCode keepLoopingCmpOp;
+         }
+         loopTest;
+      };
+
+   bool isVersionableIfWithExtremum(TR::TreeTop *ifTree, ExtremumConditional *out);
+
    bool isExprInvariant(TR::Node *, bool ignoreHeapificationStore = false);          // ignoreHeapificationStore flags for both
+   bool areAllChildrenInvariant(TR::Node *, bool ignoreHeapificationStore = false);
    bool isExprInvariantRecursive(TR::Node *, bool ignoreHeapificationStore = false); // methods need to be in sync!
+   bool areAllChildrenInvariantRecursive(TR::Node *, bool ignoreHeapificationStore = false);
 
    bool isDependentOnAllocation(TR::Node *, int32_t);
    bool hasWrtbarBeenSeen(List<TR::TreeTop> *, TR::Node *);
@@ -989,6 +1035,8 @@ class TR_LoopVersioner : public TR_LoopTransformer
    void performLoopTransfer();
 
    bool replaceInductionVariable(TR::Node *, TR::Node *, int, int, TR::Node *, int);
+
+   bool ivLoadSeesUpdatedValue(TR::Node *ivLoad, TR::TreeTop *occurrenceTree);
 
    TR::Block *createEmptyGoto(TR::Block *source, TR::Block *dest, TR::TreeTop *endTree);
    TR::Block *createClonedHeader(TR::Block *origHeader, TR::TreeTop **endTree);

@@ -75,7 +75,8 @@ static void loadRelocatableConstant(TR::Node *node,
    if (isPicSite && !cg->comp()->compileRelocatableCode()
        && cg->wantToPatchClassPointer((TR_OpaqueClassBlock*)symbol->getStaticSymbol()->getStaticAddress(), node))
       {
-      TR_UNIMPLEMENTED();
+      intptr_t address = (intptr_t)symbol->getStaticSymbol()->getStaticAddress();
+      loadAddressConstantInSnippet(cg, node ? node : cg->getCurrentEvaluationTreeTop()->getNode(), address, reg, TR_ClassAddress);
       return;
       }
 

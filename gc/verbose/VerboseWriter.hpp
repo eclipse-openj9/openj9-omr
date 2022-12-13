@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -74,6 +74,13 @@ public:
 	virtual void endOfCycle(MM_EnvironmentBase *env) = 0;
 
 	virtual void closeStream(MM_EnvironmentBase *env) = 0;
+
+	/**
+	 * Open the output mechanism for the writer.
+	 * @param[in] env the current environment.
+	 * @return boolean indicating if the output stream opened successfully.
+	 */
+	virtual bool openStream(MM_EnvironmentBase *env) { return true; }
 
 	MMINLINE WriterType getType(void) { return _type; }
 

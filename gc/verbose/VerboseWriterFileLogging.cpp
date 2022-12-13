@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -292,6 +292,13 @@ void
 MM_VerboseWriterFileLogging::closeStream(MM_EnvironmentBase *env)
 {
 	closeFile(env);
+}
+
+bool
+MM_VerboseWriterFileLogging::openStream(MM_EnvironmentBase *env)
+{
+	/* Pass in true to print the verbose initialize header in the file being opened. */
+	return openFile(env, true);
 }
 
 /**

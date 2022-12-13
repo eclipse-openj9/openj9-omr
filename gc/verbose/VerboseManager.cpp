@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -138,6 +138,21 @@ MM_VerboseManager::closeStreams(MM_EnvironmentBase *env)
 		writer->closeStream(env);
 		writer = writer->getNextWriter();
 	}
+}
+
+bool
+MM_VerboseManager::openStreams(MM_EnvironmentBase *env)
+{
+	bool result = true;
+
+	MM_VerboseWriter *writer = _writerChain->getFirstWriter();
+	while (NULL != writer) {
+		/* Return false if any one of the streams fails to open. */
+		result = writer->openStream(env) && result;
+		writer = writer->getNextWriter();
+	}
+
+	return result;
 }
 
 void

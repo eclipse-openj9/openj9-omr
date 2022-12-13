@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2020 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -115,6 +115,35 @@ public:
 	 * @param env vm thread.
 	 */
 	virtual void closeStreams(MM_EnvironmentBase *env);
+
+	/**
+	 * Open all output mechanisms on the receiver.
+	 * @param[in] env the current environment.
+	 * @return boolean indicating if all output streams opened successfully.
+	 */
+	virtual bool openStreams(MM_EnvironmentBase *env);
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+	/**
+	 * Prepare the Verbose GC Components for checkpoint.
+	 * @param[in] env the current environment.
+	 * @return void
+	 */
+	virtual void prepareForCheckpoint(MM_EnvironmentBase *env) { closeStreams(env); }
+
+	/**
+	 * Reinitalize the Verbose GC Components for restore.
+	 * @param[in] env the current environment.
+	 * @return boolean indicating if the verbose manager reinitialized successfully.
+	 */
+	virtual bool
+	reinitializeForRestore(MM_EnvironmentBase *env)
+	{
+		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+		setInitializedTime(omrtime_hires_clock());
+		return openStreams(env);
+	}
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 	MMINLINE MM_VerboseWriterChain* getWriterChain() { return _writerChain; }
 	MM_VerboseHandlerOutput* getVerboseHandlerOutput() { return _verboseHandlerOutput; }

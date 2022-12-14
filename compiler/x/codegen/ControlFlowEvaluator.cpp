@@ -931,13 +931,6 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
             {
             cmpInstruction = generateRegImmInstruction(TR::InstOpCode::CMPRegImm4(is64Bit), node, firstChildReg, static_cast<int32_t>(constValue), cg);
             }
-         TR::Symbol *symbol = NULL;
-         if (node && secondChild->getOpCode().hasSymbolReference())
-            symbol = secondChild->getSymbol();
-         bool isPICCandidate = symbol ? symbol->isStatic() && symbol->isClassObject() : false;
-
-         if (isPICCandidate && cg->wantToPatchClassPointer((TR_OpaqueClassBlock*)constValue, secondChild))
-            comp->getStaticHCRPICSites()->push_front(cmpInstruction);
 
          if (secondChild->getOpCodeValue() == TR::aconst)
             {

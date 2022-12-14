@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2020 IBM Corp. and others
+ * Copyright (c) 2000, 2022 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -180,7 +180,7 @@ TR_PPCTableOfConstants::lookUp(int32_t val, struct TR_tocHashEntry *tmplate, int
    {
    TR::Compilation *comp = cg->comp();
 
-   if (comp->compileRelocatableCode() || comp->getOption(TR_DisableTOC) || (comp->getOption(TR_EnableHCR) && comp->getOption(TR_HCRPatchClassPointers)) || comp->getOption(TR_MimicInterpreterFrameShape))
+   if (comp->compileRelocatableCode() || comp->getOption(TR_DisableTOC) || comp->getOption(TR_MimicInterpreterFrameShape))
       return PTOC_FULL_INDEX;
 
    if (comp->isOptServer())
@@ -391,7 +391,7 @@ int32_t TR_PPCTableOfConstants::lookUp(int8_t *name, int32_t len, bool isAddr, i
    struct TR_tocHashEntry localEntry;
    int32_t                val, offsetInSlot;
 
-   if (comp->compileRelocatableCode() || comp->getOption(TR_DisableTOC) || (comp->getOption(TR_EnableHCR) && comp->getOption(TR_HCRPatchClassPointers)))
+   if (comp->compileRelocatableCode() || comp->getOption(TR_DisableTOC))
       return PTOC_FULL_INDEX;
 
    if (comp->isOptServer())
@@ -568,7 +568,7 @@ int32_t TR_PPCTableOfConstants::allocateChunk(uint32_t numEntries, TR::CodeGener
    {
    TR_PPCTableOfConstants *tocManagement = toPPCTableOfConstants(TR_PersistentMemory::getNonThreadSafePersistentInfo()->getPersistentTOC());
 
-   if (tocManagement == NULL || cg->comp()->getOption(TR_DisableTOC) || cg->comp()->compileRelocatableCode() || (cg->comp()->getOption(TR_EnableHCR) && cg->comp()->getOption(TR_HCRPatchClassPointers)))
+   if (tocManagement == NULL || cg->comp()->getOption(TR_DisableTOC) || cg->comp()->compileRelocatableCode())
       return PTOC_FULL_INDEX;
 
    if (grabMonitor)

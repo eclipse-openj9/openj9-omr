@@ -274,14 +274,6 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
          movInstruction = generateRegImmInstruction(currentInstruction, ops[opsRow][MOV], target, static_cast<int32_t>(value), cg, reloKind);
          }
 
-      // HCR register PIC site in TR::TreeEvaluator::insertLoadConstant
-      TR::Symbol *symbol = NULL;
-      if (node && node->getOpCode().hasSymbolReference())
-         symbol = node->getSymbol();
-      bool isPICCandidate = symbol ? target && symbol->isStatic() && symbol->isClassObject() : false;
-      if (isPICCandidate && cg->wantToPatchClassPointer((TR_OpaqueClassBlock*)value, node))
-         comp->getStaticHCRPICSites()->push_front(movInstruction);
-
       if (target && node &&
           node->getOpCodeValue() == TR::aconst &&
           node->isClassPointerConstant() &&
@@ -466,12 +458,6 @@ OMR::X86::TreeEvaluator::insertLoadMemory(
       i = generateRegMemInstruction(opCode, node, target, tempMR, cg);
       }
 
-   // HCR in insertLoadMemory to do: handle unresolved data
-   if (node && node->getSymbol()->isStatic() && node->getSymbol()->isClassObject() && cg->wantToPatchClassPointer(NULL, node))
-      {
-      // I think this has no effect; i has no immediate source operand.
-      comp->getStaticHCRPICSites()->push_front(i);
-      }
    return i;
    }
 
@@ -3174,12 +3160,6 @@ TR::Register *OMR::X86::TreeEvaluator::generateLEAForLoadAddr(TR::Node *node,
 
    TR::Instruction *instr = generateRegMemInstruction(op, node, targetRegister, memRef, cg);
    memRef->decNodeReferenceCounts(cg);
-   // HCR register PIC site in generateLEAForLoadAddr
-   if (node && node->getSymbol()->isClassObject() && cg->wantToPatchClassPointer(NULL, node))
-      {
-      // I think this has no effect; instr has no immediate source operand.
-      comp->getStaticHCRPICSites()->push_front(instr);
-      }
    if (cg->enableRematerialisation())
        {
        TR_RematerializableTypes type;

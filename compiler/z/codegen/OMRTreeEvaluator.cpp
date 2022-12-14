@@ -2353,15 +2353,7 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptr_t value,
       return generateRegLitRefInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister, (uintptr_t) value, reloKind, cond, cursor, base);
       }
 
-   TR::Symbol *symbol = NULL;
    TR::Compilation *comp = cg->comp();
-
-   if (node && node->getOpCode().hasSymbolReference())
-      symbol = node->getSymbol();
-   bool isPICCandidate = symbol ? symbol->isStatic() && symbol->isClassObject() : false;
-   if (isPICCandidate && !cg->comp()->compileRelocatableCode()
-       && cg->wantToPatchClassPointer((TR_OpaqueClassBlock*)value, node))
-      return genLoadAddressConstantInSnippet(cg, node, (uintptr_t)value, targetRegister, cursor, cond, base, true);
 
    if (node->isClassUnloadingConst())
       {
@@ -6894,32 +6886,11 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
       }
 
    TR::SymbolReference * symRef = node->getSymbolReference();
-   TR::Symbol * symbol = symRef->getSymbol();
    TR::Node *constNode = reinterpret_cast<TR::Node *>(node->getSymbolReference()->getOffset());
    bool dynLitPoolLoad = false;
    tempReg = TR::TreeEvaluator::checkAndAllocateReferenceRegister(node, cg, dynLitPoolLoad);
 
-   bool isStatic = symbol->isStatic() && !symRef->isUnresolved();
-   bool isPICCandidate = isStatic && symbol->isClassObject();
-   if (isPICCandidate
-           && !cg->comp()->compileRelocatableCode() // AOT Class Address are loaded via snippets already
-           && cg->wantToPatchClassPointer((TR_OpaqueClassBlock*)symbol->getStaticSymbol()->getStaticAddress(), node))
-      {
-      if (tempMR == NULL)
-         {
-         uintptr_t value = (uintptr_t) symbol->getStaticSymbol()->getStaticAddress();
-         genLoadAddressConstantInSnippet(cg, node, value, tempReg, NULL, NULL, NULL, true);
-         }
-      // HCR to do for compressed references
-      else
-         {
-         generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, tempReg, tempMR);
-         }
-
-      updateReferenceNode(node, tempReg);
-      cg->decReferenceCount(node->getFirstChild());
-      }
-   else if ((symRef->isLiteralPoolAddress()) && (node->getOpCodeValue() == TR::aload))
+   if ((symRef->isLiteralPoolAddress()) && (node->getOpCodeValue() == TR::aload))
       {
       // the imm. operand will be patched when the actual address of
       // the literal pool is known

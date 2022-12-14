@@ -311,10 +311,6 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
       TR_ASSERT(udsPatchLocation != NULL,"Literal Pool Reference has NULL Unresolved Data Snippet patch site!");
       *(intptr_t *)udsPatchLocation = (intptr_t)cursor;
       getUnresolvedDataSnippet()->setLiteralPoolSlot(cursor);
-      if (getUnresolvedDataSnippet()->getDataSymbol()->isClassObject() && cg()->wantToPatchClassPointer(NULL, cursor)) // unresolved
-         {
-         cg()->jitAddPicToPatchOnClassRedefinition((void*) *(uintptr_t *)cursor , (void *) cursor, true);
-         }
       }
 #endif
 

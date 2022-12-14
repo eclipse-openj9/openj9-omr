@@ -922,7 +922,7 @@ enum TR_CompilationOptions
 
    // Option word 29
    TR_InlineVeryLargeCompiledMethods                  = 0x00000040 + 29,
-   TR_HCRPatchClassPointers                           = 0x00000080 + 29,
+   // Available                                       = 0x00000080 + 29,
    TR_UseOldHCRGuardAOTRelocations                    = 0x00000100 + 29,
    // Available                                       = 0x00000200 + 29,
    TR_DisableSupportForCpuSpentInCompilation          = 0x00000400 + 29,

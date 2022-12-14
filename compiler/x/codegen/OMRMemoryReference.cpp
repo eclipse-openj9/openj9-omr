@@ -1210,13 +1210,6 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                                  __FILE__,__LINE__, node);
             }
 
-         if (self()->getSymbolReference().getSymbol()
-            && self()->getSymbolReference().getSymbol()->isClassObject()
-            && cg->wantToPatchClassPointer(NULL, cursor)) // might not point to beginning of class
-            {
-            cg->jitAdd32BitPicToPatchOnClassRedefinition((void*)(uintptr_t)*(int32_t*)cursor, (void *) cursor, self()->getUnresolvedDataSnippet() != NULL);
-            }
-
          break;
          }
 
@@ -1260,11 +1253,6 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                                                                                                     node ? (uint8_t *)(intptr_t)node->getInlinedSiteIndex() : (uint8_t *)-1,
                                                                                                     TR_ClassAddress, cg), __FILE__, __LINE__, node);
                            }
-                        }
-
-                     if (cg->wantToPatchClassPointer(NULL, cursor)) // might not point to beginning of class
-                        {
-                        cg->jitAdd32BitPicToPatchOnClassRedefinition((void*)(uintptr_t)*(int32_t*)cursor, (void *) cursor, false);
                         }
                      }
                   else
@@ -1315,13 +1303,6 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                         }
                      }
                   }
-               else
-                  {
-                  if (symbol->isClassObject() && cg->wantToPatchClassPointer(NULL, cursor)) // unresolved
-                     {
-                     cg->jitAdd32BitPicToPatchOnClassRedefinition((void*)-1, (void *) cursor, true);
-                     }
-                  }
                }
             }
          else
@@ -1355,50 +1336,6 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
 
          break;
          }
-
-      case 5:
-         {
-         intptr_t displacement = self()->getDisplacement();
-         TR::RealRegister *base = toRealRegister(self()->getBaseRegister());
-
-         if (!(displacement == 0 &&
-               !base->needsDisp() &&
-               !base->needsDisp() &&
-               !self()->isForceWideDisplacement()) &&
-             !(displacement >= -128 &&
-               displacement <= 127  &&
-               !self()->isForceWideDisplacement()))
-            {
-            if (self()->getSymbolReference().getSymbol()
-               && self()->getSymbolReference().getSymbol()->isClassObject()
-               && cg->wantToPatchClassPointer(NULL, cursor)) // possibly unresolved, may not point to beginning of class
-               {
-               cg->jitAdd32BitPicToPatchOnClassRedefinition((void*)(uintptr_t)*(int32_t*)cursor, (void *) cursor, self()->getUnresolvedDataSnippet() != NULL);
-               }
-            }
-
-         break;
-         }
-
-      case 7:
-         {
-         intptr_t displacement = self()->getDisplacement();
-
-         if (!(displacement >= -128 &&
-               displacement <= 127  &&
-               !self()->isForceWideDisplacement()))
-            {
-            if (self()->getSymbolReference().getSymbol()
-               && self()->getSymbolReference().getSymbol()->isClassObject()
-               && cg->wantToPatchClassPointer(NULL, cursor)) // possibly unresolved, may not point to beginning of class
-               {
-               cg->jitAdd32BitPicToPatchOnClassRedefinition((void*)(uintptr_t)*(int32_t*)cursor, (void *)cursor, self()->getUnresolvedDataSnippet() != NULL);
-               }
-            }
-
-         break;
-         }
-
       }
 
    }

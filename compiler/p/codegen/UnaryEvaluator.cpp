@@ -72,8 +72,7 @@ TR::Register *OMR::Power::TreeEvaluator::aconstEvaluator(TR::Node *node, TR::Cod
 
    // use data snippet only on class pointers when HCR is enabled
    intptr_t address = cg->comp()->target().is64Bit()? node->getLongInt(): node->getInt();
-   if (isClass && cg->wantToPatchClassPointer((TR_OpaqueClassBlock*)address, node) ||
-       isProfiledPointerConstant && cg->profiledPointersRequireRelocation())
+   if (isProfiledPointerConstant && cg->profiledPointersRequireRelocation())
       {
       TR::Register *trgReg = cg->allocateRegister();
       loadAddressConstantInSnippet(cg, node, address, trgReg, NULL,TR::InstOpCode::Op_load, isPicSite, NULL);

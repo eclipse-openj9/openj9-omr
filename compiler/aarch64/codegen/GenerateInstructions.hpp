@@ -920,6 +920,7 @@ TR::Instruction *generateCompareInstruction(
  * @param[in] node : node
  * @param[in] sreg : source register
  * @param[in] imm : immediate value
+ * @param[in] N : N bit (bit 22) value
  * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
@@ -929,6 +930,7 @@ TR::Instruction *generateTestImmInstruction(
                   TR::Node *node,
                   TR::Register *sreg,
                   int32_t imm,
+                  bool N = false,
                   bool is64bit = false,
                   TR::Instruction *preced = NULL);
 

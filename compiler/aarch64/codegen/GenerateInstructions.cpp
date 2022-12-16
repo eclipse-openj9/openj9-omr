@@ -487,15 +487,15 @@ TR::Instruction *generateCompareImmInstruction(TR::CodeGenerator *cg, TR::Node *
    }
 
 TR::Instruction *generateTestImmInstruction(TR::CodeGenerator *cg, TR::Node *node,
-   TR::Register *sreg, int32_t imm, bool is64bit, TR::Instruction *preced)
+   TR::Register *sreg, int32_t imm, bool N, bool is64bit, TR::Instruction *preced)
    {
    /* Alias of ANDS instruction */
 
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::andsimmx : TR::InstOpCode::andsimmw;
 
    if (preced)
-      return new (cg->trHeapMemory()) TR::ARM64ZeroSrc1ImmInstruction(op, node, sreg, imm, preced, cg);
-   return new (cg->trHeapMemory()) TR::ARM64ZeroSrc1ImmInstruction(op, node, sreg, imm, cg);
+      return new (cg->trHeapMemory()) TR::ARM64ZeroSrc1ImmInstruction(op, node, sreg, N, imm, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64ZeroSrc1ImmInstruction(op, node, sreg, N, imm, cg);
    }
 
 TR::Instruction *generateCompareInstruction(TR::CodeGenerator *cg, TR::Node *node,

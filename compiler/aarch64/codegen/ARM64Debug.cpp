@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2022 IBM Corp. and others
+ * Copyright (c) 2018, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -943,6 +943,8 @@ static const char *opCodeToNameMap[] =
    "vxtn2_16b",
    "vxtn2_8h",
    "vxtn2_4s",
+   "vcnt8b",
+   "vcnt16b",
    "vdup16b",
    "vdup8h",
    "vdup4s",
@@ -990,6 +992,7 @@ static const char *opCodeToNameMap[] =
    "vumull2_8h",
    "vumull2_4s",
    "vumull2_2d",
+   "vaddv8b",
    "vaddv16b",
    "vaddv8h",
    "vaddv4s",

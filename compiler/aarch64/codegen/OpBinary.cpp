@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2022 IBM Corp. and others
+ * Copyright (c) 2018, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -931,6 +931,8 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x4E212800,	/* XTN2    	vxtn2_16b */
 		0x4E612800,	/* XTN2    	vxtn2_8h  */
 		0x4EA12800,	/* XTN2    	vxtn2_4s  */
+		0x0E205800,	/* CNT  	vcnt8b */
+		0x4E205800,	/* CNT  	vcnt16b */
 	/* Vector Copy */
 		/* DUP (general) */
 		0x4E010C00,	/* DUP   	vdup16b */
@@ -988,6 +990,7 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x6E60C000,	/* UMULL2  	vumull2_4s */
 		0x6EA0C000,	/* UMULL2  	vumull2_2d */
 	/* Vector reduce instructions */
+		0x0E31B800,	/* ADDV   	vaddv8b */
 		0x4E31B800,	/* ADDV   	vaddv16b */
 		0x4E71B800,	/* ADDV   	vaddv8h */
 		0x4Eb1B800,	/* ADDV   	vaddv4s */

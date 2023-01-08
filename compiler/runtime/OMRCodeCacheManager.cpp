@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -53,10 +53,6 @@
 TR::CodeCacheSymbolContainer * OMR::CodeCacheManager::_symbolContainer = NULL;
 
 #endif //HOST_OS == OMR_LINUX
-
-#if defined(OSX) && defined(AARCH64)
-#include <pthread.h> // for pthread_jit_write_protect_np
-#endif
 
 OMR::CodeCacheManager::CodeCacheManager(TR::RawAllocator rawAllocator) :
    _rawAllocator(rawAllocator),
@@ -843,16 +839,12 @@ OMR::CodeCacheManager::allocateCodeCacheRepository(size_t repositorySize)
       // a TR::CodeCache structure and the first two entries in the cache
       // to be warmCodeAlloc and coldCodeAlloc.
 
-#if defined(OSX) && defined(AARCH64)
-      pthread_jit_write_protect_np(0);
-#endif
+      omrthread_jit_write_protect_disable();
 
       uint8_t * start = _codeCacheRepositorySegment->segmentAlloc();
       *((TR::CodeCache**)start) = self()->getRepositoryCodeCacheAddress();
 
-#if defined(OSX) && defined(AARCH64)
-      pthread_jit_write_protect_np(1);
-#endif
+      omrthread_jit_write_protect_enable();
 
       _codeCacheRepositorySegment->adjustAlloc(sizeof(TR::CodeCache*)); // jump over the pointer we setup
 

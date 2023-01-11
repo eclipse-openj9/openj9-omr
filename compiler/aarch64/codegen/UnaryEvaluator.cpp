@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2022 IBM Corp. and others
+ * Copyright (c) 2018, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -418,6 +418,47 @@ TR::Register *OMR::ARM64::TreeEvaluator::inotzEvaluator(TR::Node *node, TR::Code
 TR::Register *OMR::ARM64::TreeEvaluator::lnotzEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return notzHelper(node, true, cg);
+   }
+
+/*
+ * population count
+ */
+static TR::Register *popcntHelper(TR::Node *node, bool is64bit, TR::CodeGenerator *cg)
+   {
+   TR::Node *child = node->getFirstChild();
+   TR::Register *srcReg = cg->evaluate(child);
+   TR::Register *trgReg = (child->getReferenceCount() == 1) ? srcReg : cg->allocateRegister();
+   TR::Register *tmpReg = cg->allocateRegister(TR_VRF);
+
+   if (is64bit)
+      {
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, tmpReg, srcReg);
+      }
+   else
+      {
+      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ubfmx, node, trgReg, srcReg, 31); // zero extension
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, tmpReg, trgReg);
+      }
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::vcnt8b, node, tmpReg, tmpReg);
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::vaddv8b, node, tmpReg, tmpReg);
+   generateMovVectorElementToGPRInstruction(cg, TR::InstOpCode::umovwb, node, trgReg, tmpReg, 0);
+
+   cg->stopUsingRegister(tmpReg);
+   node->setRegister(trgReg);
+   cg->decReferenceCount(child);
+   return trgReg;
+   }
+
+TR::Register*
+OMR::ARM64::TreeEvaluator::ipopcntEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return popcntHelper(node, false, cg);
+   }
+
+TR::Register*
+OMR::ARM64::TreeEvaluator::lpopcntEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return popcntHelper(node, true, cg);
    }
 
 // also handles i2b, i2s, l2b, l2s, s2b

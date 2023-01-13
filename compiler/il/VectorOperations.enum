@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022, 2022 IBM Corp. and others
+ * Copyright (c) 2022, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1404,7 +1404,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vmor", \
    /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ ILTypeProp::VectorResult, \
@@ -1420,7 +1420,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vmorUnchecked", \
    /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ ILTypeProp::VectorResult, \
@@ -1436,7 +1436,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vmreductionAdd", \
    /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \
@@ -1452,7 +1452,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vmreductionAnd", \
    /* .properties1             = */ ILProp1::Commutative | ILProp1::Associative | ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \
@@ -1484,7 +1484,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vmreductionMax", \
    /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \
@@ -1500,7 +1500,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vmreductionMin", \
    /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \
@@ -1516,7 +1516,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vmreductionMul", \
    /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \
@@ -1532,7 +1532,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vmreductionOr", \
    /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \
@@ -1548,7 +1548,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vmreductionOrUnchecked", \
    /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \
@@ -1564,7 +1564,7 @@ VECTOR_OPERATION_MACRO(\
    /* .name                    = */ "vmreductionXor", \
    /* .properties1             = */ ILProp1::VectorMasked, \
    /* .properties2             = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE, \
-   /* .properties3             = */ 0, \
+   /* .properties3             = */ ILProp3::VectorReduction, \
    /* .properties4             = */ 0, \
    /* .dataType                = */ TR::NoType, \
    /* .typeProperties          = */ TR::NoType, \

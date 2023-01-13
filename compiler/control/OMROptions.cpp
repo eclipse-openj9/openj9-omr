@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -590,7 +590,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableVMCSProfiling",               "O\tdisable VM data for virtual call sites", SET_OPTION_BIT(TR_DisableVMCSProfiling), "F", NOT_IN_SUBSET},
    {"disableVSSStackCompaction",          "O\tdisable VariableSizeSymbol stack compaction", SET_OPTION_BIT(TR_DisableVSSStackCompaction), "F"},
    {"disableWriteBarriersRangeCheck",     "O\tdisable adding range check to write barriers",   SET_OPTION_BIT(TR_DisableWriteBarriersRangeCheck), "F"},
-   {"disableWrtBarSrcObjCheck",           "O\tdisable to not check srcObj location for wrtBar in gc", SET_OPTION_BIT(TR_DisableWrtBarSrcObjCheck), "F"},
    {"disableZ10",                         "O\tdisable z10 support",                            SET_OPTION_BIT(TR_DisableZ10), "F"},
    {"disableZ13",                         "O\tdisable z13 support",                        SET_OPTION_BIT(TR_DisableZ13), "F"},
    {"disableZ14",                         "O\tdisable z14 support",                            SET_OPTION_BIT(TR_DisableZ14), "F"},

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -6569,18 +6569,23 @@ TR::Node *constrainIrem(OMR::ValuePropagation *vp, TR::Node *node)
       int32_t rhsConst = rhs->asIntConst()->getInt();
       if (!isUnsigned && rhsConst < 0)
          rhsConst *= -1;
-      rhsConst--; // If the original const was 10, the range is from 0 to 9
 
-      if (lhsLow > 0)
-         constraint = TR::VPIntRange::create(vp, 0, rhsConst);
-      else if (!isUnsigned && lhsHigh < 0)
-         constraint = TR::VPIntRange::create(vp, -rhsConst, 0);
-      else if (!isUnsigned)
-         constraint = TR::VPIntRange::create(vp, -rhsConst, rhsConst);
-
-      if (constraint)
+      // Guard against division by zero
+      if (rhsConst != 0)
          {
-         vp->addBlockOrGlobalConstraint(node, constraint ,lhsGlobal);
+         rhsConst--; // If the original const was 10, the range is from 0 to 9
+
+         if (lhsLow > 0)
+            constraint = TR::VPIntRange::create(vp, 0, rhsConst);
+         else if (!isUnsigned && lhsHigh < 0)
+            constraint = TR::VPIntRange::create(vp, -rhsConst, 0);
+         else if (!isUnsigned)
+            constraint = TR::VPIntRange::create(vp, -rhsConst, rhsConst);
+
+         if (constraint)
+            {
+            vp->addBlockOrGlobalConstraint(node, constraint ,lhsGlobal);
+            }
          }
       }
 
@@ -6627,22 +6632,27 @@ TR::Node *constrainLrem(OMR::ValuePropagation *vp, TR::Node *node)
       int64_t rhsConst = rhs->asLongConst()->getLong();
       if (rhsConst < 0)
          rhsConst *= -1;
-      rhsConst--; // If the original const was 10, the range is from 0 to 9
 
-      if (lhsLow > 0)
-         constraint = TR::VPLongRange::create(vp, 0, rhsConst);
-      else if (lhsHigh < 0)
-         constraint = TR::VPLongRange::create(vp, -rhsConst, 0);
-      else
-         constraint = TR::VPLongRange::create(vp, -rhsConst, rhsConst);
-
-      if (constraint)
+      // Guard against division by zero
+      if (rhsConst != 0)
          {
-         bool didReduction = reduceLongOpToIntegerOp(vp, node, constraint);
-         vp->addBlockOrGlobalConstraint(node, constraint ,lhsGlobal);
+         rhsConst--; // If the original const was 10, the range is from 0 to 9
 
-         if (didReduction)
-            return node;
+         if (lhsLow > 0)
+            constraint = TR::VPLongRange::create(vp, 0, rhsConst);
+         else if (lhsHigh < 0)
+            constraint = TR::VPLongRange::create(vp, -rhsConst, 0);
+         else
+            constraint = TR::VPLongRange::create(vp, -rhsConst, rhsConst);
+
+         if (constraint)
+            {
+            bool didReduction = reduceLongOpToIntegerOp(vp, node, constraint);
+            vp->addBlockOrGlobalConstraint(node, constraint ,lhsGlobal);
+
+            if (didReduction)
+               return node;
+            }
          }
       }
 

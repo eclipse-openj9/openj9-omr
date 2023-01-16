@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2022 IBM Corp. and others
+ * Copyright (c) 2018, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -683,6 +683,26 @@ TR::Instruction *generateTrg1MemInstruction(
                    TR::InstOpCode::Mnemonic op,
                    TR::Node *node,
                    TR::Register *treg,
+                   TR::MemoryReference *mr,
+                   TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates mem-to-trg2 instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] treg1 : target 1 register
+ * @param[in] treg2 : target 2 register
+ * @param[in] mr : memory reference
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateTrg2MemInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *treg1,
+                   TR::Register *treg2,
                    TR::MemoryReference *mr,
                    TR::Instruction *preced = NULL);
 

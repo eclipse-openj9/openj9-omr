@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2022 IBM Corp. and others
+ * Copyright (c) 2018, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -56,6 +56,7 @@
             IsTrg1Src3,
       IsTrg1Mem,
          IsTrg1MemSrc1,
+         IsTrg2Mem,
    IsMem,
       IsMemSrc1,
          IsMemSrc2,

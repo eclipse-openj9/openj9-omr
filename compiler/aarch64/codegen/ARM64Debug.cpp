@@ -1166,6 +1166,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsTrg1Mem:
          print(pOutFile, (TR::ARM64Trg1MemInstruction *)instr);
          break;
+      case OMR::Instruction::IsTrg2Mem:
+         print(pOutFile, (TR::ARM64Trg2MemInstruction *)instr);
+         break;
       case OMR::Instruction::IsMem:
          print(pOutFile, (TR::ARM64MemInstruction *)instr);
          break;
@@ -2291,6 +2294,22 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1MemInstruction *instr)
       {
       trfprintf(pOutFile, "\t\t; Backpatched branch to Unresolved Data %s", getName(instr->getSnippetForGC()->getSnippetLabel()));
       }
+
+   printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
+   printInstructionComment(pOutFile, 1, instr);
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg2MemInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+
+   print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getTarget2Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+
+   print(pOutFile, instr->getMemoryReference());
 
    printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
    printInstructionComment(pOutFile, 1, instr);

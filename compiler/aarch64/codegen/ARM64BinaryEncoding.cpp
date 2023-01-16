@@ -743,6 +743,25 @@ int32_t TR::ARM64Trg1MemInstruction::estimateBinaryLength(int32_t currentEstimat
    return currentEstimate + getEstimatedBinaryLength();
    }
 
+uint8_t *TR::ARM64Trg2MemInstruction::generateBinaryEncoding()
+   {
+   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
+   uint8_t *cursor = getOpCode().copyBinaryToBuffer(instructionStart);
+   insertTargetRegister(toARM64Cursor(cursor));
+   insertTarget2Register(toARM64Cursor(cursor));
+   cursor = getMemoryReference()->generateBinaryEncoding(this, cursor, cg());
+   setBinaryLength(cursor - instructionStart);
+   setBinaryEncoding(instructionStart);
+   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
+   return cursor;
+   }
+
+int32_t TR::ARM64Trg2MemInstruction::estimateBinaryLength(int32_t currentEstimate)
+   {
+   setEstimatedBinaryLength(getMemoryReference()->estimateBinaryLength(getOpCodeValue()));
+   return currentEstimate + getEstimatedBinaryLength();
+   }
+
 TR::Instruction *TR::ARM64MemInstruction::expandInstruction()
    {
    return getMemoryReference()->expandInstruction(self(), cg());

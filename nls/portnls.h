@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2005 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -170,5 +170,8 @@
 #define J9NLS_PORT_DUMP_PATH_EXISTS__MODULE 0x504f5254
 #define J9NLS_PORT_DUMP_PATH_EXISTS__ID 48
 #define J9NLS_PORT_DUMP_PATH_EXISTS J9NLS_PORT_DUMP_PATH_EXISTS__MODULE, J9NLS_PORT_DUMP_PATH_EXISTS__ID
+#define J9NLS_PORT_LINUXDUMP_PIPE_CORE_NOT_FOUND__MODULE 0x504f5254
+#define J9NLS_PORT_LINUXDUMP_PIPE_CORE_NOT_FOUND__ID 49
+#define J9NLS_PORT_LINUXDUMP_PIPE_CORE_NOT_FOUND J9NLS_PORT_LINUXDUMP_PIPE_CORE_NOT_FOUND__MODULE, J9NLS_PORT_LINUXDUMP_PIPE_CORE_NOT_FOUND__ID
 
 #endif

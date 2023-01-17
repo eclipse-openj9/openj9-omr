@@ -1345,7 +1345,8 @@ public:
 
    void init()
    {
-      _optionSets = 0;
+      _optionSets = NULL;
+      _postRestoreOptionSets = NULL;
       _startOptions = NULL;
       _envOptions = NULL;
       _logFileName = NULL;
@@ -1531,6 +1532,8 @@ public:
    static void        setAOTCmdLineOptions(TR::Options *options);
    static TR::Options *getJITCmdLineOptions();
           void        addOptionSet(TR::OptionSet *o) {o->setNext(_optionSets);_optionSets = o;}
+          void        addPostRestoreOptionSet(TR::OptionSet *o) {o->setNext(_postRestoreOptionSets);_postRestoreOptionSets = o;}
+          void        mergePostRestoreOptionSets();
           bool        hasOptionSets() {return _optionSets != NULL;}
    char*              setCounts();
 
@@ -2004,6 +2007,18 @@ public:
 
    const char *getObjectFileName() { return _objectFileName; }
 
+   /**
+    * \brief API to process options post restore (from a checkpoint).
+    *
+    * \param jitConfig Pointer to a JitConfig instance.
+    * \param options Pointer to the options string to be parsed and processed.
+    * \param optBase Pointer to the TR::Options object that will represent the parsed options.
+    * \param isAOT bool to represent whether optBase represents relocatable compilation options.
+    *
+    * \return pointer to the end of the options string if success, or to the invalid option
+    */
+   static char *processOptionSetPostRestore(void *jitConfig, char *options, TR::Options *optBase, bool isAOT);
+
 protected:
    void  jitPreProcess();
    bool  fePreProcess(void *base);
@@ -2058,7 +2073,7 @@ private:
 
    static char *processOptionSet(char *options, char *envOptions, TR::Options *jitBase, bool isAOT);
    static char *processOptionSet(char *options, char *envOptions, TR::OptionSet *optionSet);
-   static char *processOptionSet(char *options, TR::OptionSet *optionSet, void *jitBase, bool isAOT);
+   static char *processOptionSet(char *options, TR::OptionSet *optionSet, void *jitBase, bool isAOT, bool postRestore = false);
    static char *processOption(char *option, TR::OptionTable *table, void *base, int32_t numEntries, TR::OptionSet *optionSet);
           void  printOptions(char *options, char *envOptions);
 
@@ -2276,6 +2291,7 @@ protected:
    static TR::Options    *_jitCmdLineOptions;
    static TR::Options    *_aotCmdLineOptions;
           TR::OptionSet  *_optionSets;
+          TR::OptionSet  *_postRestoreOptionSets;
    static void          *_feBase;
    static TR_FrontEnd   *_fe;
    static bool           _hasLogFile;

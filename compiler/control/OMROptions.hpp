@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1716,6 +1716,7 @@ public:
    TR::SimpleRegex * getPackedTestRegex()              {return _packedTest;}
    TR::SimpleRegex * getClassesWithFoldableFinalFields(){return _classesWithFolableFinalFields;}
    TR::SimpleRegex * getDisabledIdiomPatterns()        {return _disabledIdiomPatterns;}
+   TR::SimpleRegex * getSuppressEARegex()              {return _suppressEA;}
 
    char* getInduceOSR()                               {return _induceOSR;}
    int32_t getBigCalleeThreshold() const              {return _bigCalleeThreshold;}
@@ -2355,6 +2356,7 @@ protected:
    TR::SimpleRegex *            _memUsage;
    TR::SimpleRegex *            _classesWithFolableFinalFields;
    TR::SimpleRegex *            _disabledIdiomPatterns;
+   TR::SimpleRegex *            _suppressEA;
    uintptr_t                   _gcCardSize;
    uintptr_t                   _heapBase;
    uintptr_t                   _heapTop;

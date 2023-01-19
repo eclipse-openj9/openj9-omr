@@ -1985,12 +1985,7 @@ OMR::ResolvedMethodSymbol::getAutoSymRefs(int32_t slot)
    {
    TR_Memory * m = self()->comp()->trMemory();
    if (!_autoSymRefs)
-      {
-      if (self()->comp()->getJittedMethodSymbol() == self())
-         _autoSymRefs = new (m->trHeapMemory()) TR_Array<List<TR::SymbolReference> >(m, 100, true);
-      else
-         _autoSymRefs = new (m->trHeapMemory()) TR_Array<List<TR::SymbolReference> >(m, _resolvedMethod->numberOfParameterSlots() + _resolvedMethod->numberOfTemps() + 5, true);
-      }
+      _autoSymRefs = new (m->trHeapMemory()) TR_Array<List<TR::SymbolReference> >(m, _resolvedMethod->numberOfParameterSlots() + _resolvedMethod->numberOfTemps() + 5, true);
 
    (*_autoSymRefs)[slot].setRegion(m->heapMemoryRegion());
 

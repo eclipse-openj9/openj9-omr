@@ -1038,6 +1038,35 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
             {
             break;
             }
+      case TR::vcmpgt:
+      case TR::vmcmpgt:
+      case TR::vcmpge:
+      case TR::vmcmpge:
+         // PRE-AVX must use NLT/NLE to implement GT/GTE.
+         // This is only valid for integer types due to nan handling.
+         if (et.isFloatingPoint() && !cpu->supportsFeature(OMR_FEATURE_X86_AVX))
+            return false;
+      case TR::vcmpeq:
+      case TR::vmcmpeq:
+      case TR::vcmpne:
+      case TR::vmcmpne:
+      case TR::vcmplt:
+      case TR::vmcmplt:
+      case TR::vcmple:
+      case TR::vmcmple:
+         switch (ot.getVectorLength())
+            {
+            case TR::VectorLength128:
+               if (et == TR::Int64)
+                  return cpu->supportsFeature(OMR_FEATURE_X86_SSE4_2);
+               return true;
+            case TR::VectorLength256:
+               return cpu->supportsFeature(OMR_FEATURE_X86_AVX2);
+            case TR::VectorLength512:
+               return cpu->supportsFeature(OMR_FEATURE_X86_AVX512F);
+            default:
+               return false;
+            }
       case TR::b2m:
       case TR::s2m:
       case TR::i2m:

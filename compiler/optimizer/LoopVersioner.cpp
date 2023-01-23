@@ -5909,15 +5909,13 @@ void TR_LoopVersioner::buildConditionalTree(
       LoopEntryPrep *prep = NULL;
       bool chainPrep = false;
 
-      TR::Node *dupThisChild = NULL;
-
       if (conditionalNode->isTheVirtualGuardForAGuardedInlinedCall()
-          && !conditionalNode->isNonoverriddenGuard()
           && !conditionalNode->isOSRGuard()
           && !conditionalNode->isHCRGuard()
           && !conditionalNode->isDirectMethodGuard()
           && !conditionalNode->isBreakpointGuard())
          {
+
          bool searchReqd = true;
          TR::Node *nextRealNode = NULL;
          TR::Node *thisChild = NULL;
@@ -5951,12 +5949,19 @@ void TR_LoopVersioner::buildConditionalTree(
          if (searchReqd)
             nextRealNode = findCallNodeInBlockForGuard(conditionalNode);
 
+         // The receiver of an inlined call guarded by conditionalNode, if that
+         // receiver does not occur within the guard tree, e.g. as part of VFT
+         // test or method test.
+         TR::Node *unmentionedReceiver = NULL;
+
          if (nextRealNode && !thisChild)
             {
             if (nextRealNode->getOpCode().isCallIndirect())
                thisChild = nextRealNode->getSecondChild();
             else
                thisChild = nextRealNode->getFirstChild();
+
+            unmentionedReceiver = thisChild;
             }
 
          bool ignoreHeapificationStore = false;
@@ -5970,29 +5975,34 @@ void TR_LoopVersioner::buildConditionalTree(
             if (thisChild->getOpCode().hasSymbolReference() &&
                 thisChild->getSymbolReference()->getSymbol()->isAuto())
                 {
-                dupThisChild = isDependentOnInvariant(thisChild);
+                TR::Node *dupThisChild = isDependentOnInvariant(thisChild);
                 if (dupThisChild)
                    {
                    if (!guardInfo)
                       guardInfo = comp()->findVirtualGuardInfo(conditionalNode);
 
-                   copyOnWriteNode(origConditionalNode, &conditionalNode);
 
                    TR::Node *invariantThisChild = NULL;
 
                    if (guardInfo->getTestType() == TR_VftTest)
                       {
+                      copyOnWriteNode(origConditionalNode, &conditionalNode);
                       invariantThisChild = conditionalNode->getFirstChild()->getFirstChild();
                       conditionalNode->getFirstChild()->setAndIncChild(0, dupThisChild->duplicateTree());
                       }
-                   else
+                   else if (guardInfo->getTestType() == TR_MethodTest)
                       {
-                      TR_ASSERT((guardInfo->getTestType() == TR_MethodTest), "Unknown guard type @ node kind %d test %d %p\n", conditionalNode, guardInfo->getKind(), guardInfo->getTestType());
+                      copyOnWriteNode(origConditionalNode, &conditionalNode);
                       invariantThisChild = conditionalNode->getFirstChild()->getFirstChild()->getFirstChild();
                       conditionalNode->getFirstChild()->getFirstChild()->setAndIncChild(0, dupThisChild->duplicateTree());
                       }
+                   else
+                      {
+                      unmentionedReceiver = dupThisChild;
+                      }
 
-                   invariantThisChild->recursivelyDecReferenceCount();
+                   if (invariantThisChild != NULL)
+                      invariantThisChild->recursivelyDecReferenceCount();
                    }
                 else
                    TR_ASSERT(0, "Cannot version with respect to non-invariant guard\n");
@@ -6000,6 +6010,14 @@ void TR_LoopVersioner::buildConditionalTree(
              else
                 TR_ASSERT(0, "Cannot version with respect to non-invariant guard\n");
              }
+
+         if (unmentionedReceiver != NULL
+             && requiresPrivatization(unmentionedReceiver))
+            {
+            chainPrep = true;
+            prep =
+               createLoopEntryPrep(LoopEntryPrep::PRIVATIZE, unmentionedReceiver);
+            }
          }
 
       if (performTransformation(

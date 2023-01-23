@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2022 IBM Corp. and others
+ * Copyright (c) 1991, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -136,6 +136,13 @@ public:
 	 * @param[in] env the current environment
 	 * @return void
 	 */
+	virtual void
+	adjustGCThreadCountForCheckpoint(MM_EnvironmentBase* env)
+	{
+		adjustGCThreadCountOnCheckpoint(env);
+	}
+
+	/* Temp: To be deleted and replaced by adjustGCThreadCountForCheckpoint.  */
 	virtual void adjustGCThreadCountOnCheckpoint(MM_EnvironmentBase* env);
 
 	/**
@@ -144,6 +151,13 @@ public:
 	 * @param[in] env the current environment
 	 * @return void
 	 */
+	virtual bool
+	reinitializeGCThreadCountForRestore(MM_EnvironmentBase* env)
+	{
+		return reinitializeGCThreadCountOnRestore(env);
+	}
+
+	/* Temp: To be deleted and replaced by reinitializeGCThreadCountForRestore.  */
 	virtual bool reinitializeGCThreadCountOnRestore(MM_EnvironmentBase* env);
 #endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 

@@ -1061,12 +1061,26 @@ bool OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::CPU *cpu, TR::ILO
                   return cpu->supportsFeature(OMR_FEATURE_X86_SSE4_2);
                return true;
             case TR::VectorLength256:
+               if (et.isFloatingPoint())
+                  return cpu->supportsFeature(OMR_FEATURE_X86_AVX);
                return cpu->supportsFeature(OMR_FEATURE_X86_AVX2);
             case TR::VectorLength512:
                return cpu->supportsFeature(OMR_FEATURE_X86_AVX512F);
             default:
                return false;
             }
+      case TR::mToLongBits:
+          switch (ot.getVectorLength())
+             {
+             case TR::VectorLength128:
+                return !et.isInt16();
+             case TR::VectorLength256:
+                return cpu->supportsFeature(OMR_FEATURE_X86_AVX2) && !et.isInt16();
+             case TR::VectorLength512:
+                return cpu->supportsFeature(OMR_FEATURE_X86_AVX512F);
+             default:
+                return false;
+             }
       case TR::b2m:
       case TR::s2m:
       case TR::i2m:

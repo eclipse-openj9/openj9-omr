@@ -296,12 +296,18 @@ INSTANTIATE_TEST_CASE_P(LegacySimdTest, XRegRegEncEncodingTest, ::testing::Value
     std::make_tuple(TR::InstOpCode::PMOVZXBDRegReg,  TR::RealRegister::xmm2, TR::RealRegister::xmm4, OMR::X86::Legacy, "660f3831d4"),
     std::make_tuple(TR::InstOpCode::PMOVZXBQRegReg,  TR::RealRegister::xmm0, TR::RealRegister::xmm0, OMR::X86::Legacy, "660f3832c0"),
     std::make_tuple(TR::InstOpCode::ANDNPSRegReg,    TR::RealRegister::xmm0, TR::RealRegister::xmm1, OMR::X86::Legacy, "0f55c1"),
-    std::make_tuple(TR::InstOpCode::ANDNPDRegReg,    TR::RealRegister::xmm0, TR::RealRegister::xmm1, OMR::X86::Legacy, "66480f55c1")
+    std::make_tuple(TR::InstOpCode::ANDNPDRegReg,    TR::RealRegister::xmm0, TR::RealRegister::xmm1, OMR::X86::Legacy, "66480f55c1"),
+    std::make_tuple(TR::InstOpCode::PMOVMSKB4RegReg, TR::RealRegister::eax, TR::RealRegister::xmm0,  OMR::X86::Legacy, "660fd7c0"),
+    std::make_tuple(TR::InstOpCode::MOVMSKPSRegReg,  TR::RealRegister::ecx, TR::RealRegister::xmm7,  OMR::X86::Legacy, "0f50cf"),
+    std::make_tuple(TR::InstOpCode::MOVMSKPDRegReg,  TR::RealRegister::edx, TR::RealRegister::xmm15, OMR::X86::Legacy, "66410f50d7")
 )));
 
 INSTANTIATE_TEST_CASE_P(AVXSimdRegRegVex128Test, XRegRegEncEncodingTest, ::testing::ValuesIn(*TRTest::MakeVector<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, OMR::X86::Encoding, TRTest::BinaryInstruction>>(
     std::make_tuple(TR::InstOpCode::VBROADCASTSSRegReg, TR::RealRegister::xmm11, TR::RealRegister::xmm15, OMR::X86::VEX_L128, "c4427918df"),
     std::make_tuple(TR::InstOpCode::PUNPCKLBWRegReg,    TR::RealRegister::xmm11, TR::RealRegister::xmm15, OMR::X86::VEX_L128, "c4412160df"),
+    std::make_tuple(TR::InstOpCode::PMOVMSKB4RegReg,    TR::RealRegister::eax,   TR::RealRegister::xmm0, OMR::X86::VEX_L128,  "c5f9d7c0"),
+    std::make_tuple(TR::InstOpCode::MOVMSKPSRegReg,     TR::RealRegister::ecx,   TR::RealRegister::xmm7, OMR::X86::VEX_L128,  "c5f850cf"),
+    std::make_tuple(TR::InstOpCode::MOVMSKPDRegReg,     TR::RealRegister::edx,   TR::RealRegister::xmm15, OMR::X86::VEX_L128, "c4c17950d7"),
     std::make_tuple(TR::InstOpCode::PMOVZXBWRegReg,     TR::RealRegister::xmm4,  TR::RealRegister::xmm2,  OMR::X86::VEX_L128, "c4e27930e2"),
     std::make_tuple(TR::InstOpCode::PMOVZXBDRegReg,     TR::RealRegister::xmm2,  TR::RealRegister::xmm4,  OMR::X86::VEX_L128, "c4e27931d4"),
     std::make_tuple(TR::InstOpCode::PMOVZXBQRegReg,     TR::RealRegister::xmm0,  TR::RealRegister::xmm0,  OMR::X86::VEX_L128, "c4e27932c0"),
@@ -856,7 +862,11 @@ INSTANTIATE_TEST_CASE_P(MaskMaskEnc, XRegRegEncEncodingTest, ::testing::ValuesIn
     std::make_tuple(TR::InstOpCode::KMOVBMaskMask, TR::RealRegister::k1,  TR::RealRegister::k7, OMR::X86::VEX_L128, "c5f990cf"),
     std::make_tuple(TR::InstOpCode::KMOVWMaskMask, TR::RealRegister::k2,  TR::RealRegister::k6, OMR::X86::VEX_L128, "c5f890d6"),
     std::make_tuple(TR::InstOpCode::KMOVDMaskMask, TR::RealRegister::k3,  TR::RealRegister::k5, OMR::X86::VEX_L128, "c4e1f990dd"),
-    std::make_tuple(TR::InstOpCode::KMOVQMaskMask, TR::RealRegister::k4,  TR::RealRegister::k4, OMR::X86::VEX_L128, "c4e1f890e4")
+    std::make_tuple(TR::InstOpCode::KMOVQMaskMask, TR::RealRegister::k4,  TR::RealRegister::k4, OMR::X86::VEX_L128, "c4e1f890e4"),
+    std::make_tuple(TR::InstOpCode::KMOVWRegMask, TR::RealRegister::eax,  TR::RealRegister::k4, OMR::X86::VEX_L128, "c5f893c4"),
+    std::make_tuple(TR::InstOpCode::KMOVWMaskReg, TR::RealRegister::k3,   TR::RealRegister::ebx, OMR::X86::VEX_L128, "c5f892db"),
+    std::make_tuple(TR::InstOpCode::KMOVQRegMask, TR::RealRegister::ecx,  TR::RealRegister::k2, OMR::X86::VEX_L128, "c4e1fb93ca"),
+    std::make_tuple(TR::InstOpCode::KMOVQMaskReg, TR::RealRegister::k1,   TR::RealRegister::edx, OMR::X86::VEX_L128, "c4e1fb92ca")
 )));
 
 class XRegMaskRegRegEncEncodingTest : public TRTest::BinaryEncoderTest<>, public ::testing::WithParamInterface<std::tuple<TR::InstOpCode::Mnemonic, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, TR::RealRegister::RegNum, OMR::X86::Encoding, TRTest::BinaryInstruction>> {};

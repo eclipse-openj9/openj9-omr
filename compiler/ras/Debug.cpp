@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2022 IBM Corp. and others
+ * Copyright (c) 2000, 2023 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3941,6 +3941,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_PPCAESCBCDecrypt:                                 return "PPCAESCBCDecrypt";
          case TR_PPCAESCBCEncrypt:                                 return "PPCAESCBCEncrypt";
          case TR_PPCAESKeyExpansion:                               return "PPCAESKeyExpansion";
+         case TR_PPCcrc32_vpmsum:                                  return "PPCcrc32_vpmsum";
          }
       }
 #elif defined (TR_TARGET_S390)

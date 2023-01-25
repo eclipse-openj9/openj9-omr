@@ -1653,6 +1653,7 @@ int64_t       OMR::Options::INLINE_calleeHasTooManyNodesSum      = 0;
 int32_t       OMR::Options::_inlinerVeryLargeCompiledMethodAdjustFactor = 20;
 
 int32_t       OMR::Options::_numUsableCompilationThreads = -1; // -1 means not initialized
+int32_t       OMR::Options::_numAllocatedCompilationThreads = -1; // -1 means not initialized
 
 int32_t       OMR::Options::_trampolineSpacePercentage = 0; // 0 means no change from default
 
@@ -5460,7 +5461,10 @@ void OMR::Options::setDefaultsForDeterministicMode()
       self()->setOption(TR_DisablePersistIProfile, true); // AOT specific
       OMR::Options::_bigAppThreshold = 1;
       if (TR::Options::getNumUsableCompilationThreads() == -1) // not yet set
+         {
          OMR::Options::_numUsableCompilationThreads = 7;
+         OMR::Options::_numAllocatedCompilationThreads = OMR::Options::_numUsableCompilationThreads;
+         }
 #ifdef J9_PROJECT_SPECIFIC
       TR::Options::_veryHotSampleThreshold = 240; // 12.5 %
       TR::Options::_scorchingSampleThreshold = 120; // 25% CPU

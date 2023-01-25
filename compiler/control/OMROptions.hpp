@@ -1833,6 +1833,7 @@ public:
    static void shutdown(TR_FrontEnd * fe);
 
    static int32_t getNumUsableCompilationThreads() { return _numUsableCompilationThreads; }
+   static int32_t getNumAllocatedCompilationThreads() { return _numAllocatedCompilationThreads; }
 
    static int32_t getTrampolineSpacePercentage() { return _trampolineSpacePercentage; }
    static size_t getScratchSpaceLimit() { return _scratchSpaceLimit; }
@@ -1898,6 +1899,7 @@ public:
    static int32_t _inlinerVeryLargeCompiledMethodAdjustFactor;
 
    static int32_t _numUsableCompilationThreads;
+   static int32_t _numAllocatedCompilationThreads;
 
    static int32_t _trampolineSpacePercentage;
 
